@@ -1121,10 +1121,10 @@ template<class T>
 inline alps::IDump& operator>>(alps::IDump& id, alps::SimpleObservableData<T>& m)
 { m.load(id); return id; }
 
-#endif // !ALPS_WITHOUT_OSIRIS
-
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // namespace alps
 #endif
 
-#endif // PALM_ALEA_SIMPLEOBSDATA_H
+#endif // !ALPS_WITHOUT_OSIRIS
+
+#endif // ALPS_ALEA_SIMPLEOBSDATA_H
