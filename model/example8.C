@@ -51,7 +51,7 @@ int main()
       alps::HamiltonianDescriptor<short> ham(models.get_hamiltonian(parms[i]["MODEL"]));
       parms[i].copy_undefined(ham.default_parameters());
       ham.set_parameters(parms[i]);
-      if (has_sign_problem(ham,lattice,models.operators(),parms[i]))
+      if (has_sign_problem(ham,lattice,parms[i]))
         std::cout << "Model " << i+1 << " has a sign problem.\n";
       else
         std::cout << "Model " << i+1 << " has no sign problem.\n";

@@ -42,8 +42,7 @@ check_PROGRAMS = example1$(EXEEXT) example2$(EXEEXT) example3$(EXEEXT) \
 	parity$(EXEEXT)
 subdir = test/lattice
 DIST_COMMON = $(dist_noinst_DATA) $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(srcdir)/lattices.xml.in \
-	$(srcdir)/parameters.in
+	$(srcdir)/Makefile.in $(srcdir)/parameters.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
 	$(top_srcdir)/config/ac_compiler.m4 \
@@ -59,7 +58,7 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/src/alps/config.h \
 	$(top_builddir)/src/boost/po_utf8_codecvt_facet.cpp
-CONFIG_CLEAN_FILES = lattices.xml parameters
+CONFIG_CLEAN_FILES = parameters
 am_example1_OBJECTS = example1.$(OBJEXT)
 example1_OBJECTS = $(am_example1_OBJECTS)
 example1_LDADD = $(LDADD)
@@ -326,8 +325,6 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
-lattices.xml: $(top_builddir)/config.status $(srcdir)/lattices.xml.in
-	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 parameters: $(top_builddir)/config.status $(srcdir)/parameters.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 

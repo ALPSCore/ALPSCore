@@ -47,7 +47,7 @@ int main()
 try {
 #endif
   
-  std::ifstream in ("models.xml");
+  std::ifstream in("../../lib/xml/models.xml");
   alps::ModelLibrary lib(in);
 
   alps::Parameters p;

@@ -1,5 +1,6 @@
 L=2
 MODEL = "spin"
+LATTICE_LIBRARY = "../../lib/xml/lattices.xml"
 LATTICE = "square lattice"
 Sz_total = 0
 

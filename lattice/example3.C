@@ -43,7 +43,7 @@ int main()
   try {
 #endif
     // create the library from an XML file
-    std::ifstream in("lattices.xml");
+    std::ifstream in("../../lib/xml/lattices.xml");
     alps::LatticeLibrary lib(in);
 
     // write one of the lattices in XML

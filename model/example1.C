@@ -38,7 +38,7 @@ int main()
   try {
 #endif
     // create the library from an XML file
-    std::ifstream in ("models.xml");
+    std::ifstream in("../../lib/xml/models.xml");
     alps::ModelLibrary lib(in);
 
     // write the library in XML

@@ -1,6 +1,7 @@
 MODEL = "spin"
 J = 1
 L=4
+LATTICE_LIBRARY = "../../lib/xml/lattices.xml"
 { LATTICE = "square lattice" }
 { LATTICE = "frustrated square lattice" }
 { J'=1, LATTICE = "frustrated square lattice" }

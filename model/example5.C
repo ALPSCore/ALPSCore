@@ -38,11 +38,11 @@ int main()
   try {
 #endif
     // create the library from an XML file
-    std::ifstream in ("models.xml");
+    std::ifstream in("../../lib/xml/models.xml");
     alps::ModelLibrary lib(in);
 
     // get operators in one bond term 
-    std::set<alps::Term> ops = lib.get_hamiltonian("hardcore boson").bond_term().split(lib.operators());
+    std::set<alps::Term> ops = lib.get_hamiltonian("hardcore boson").bond_term().split();
     std::copy(ops.begin(),ops.end(),std::ostream_iterator<alps::Term>(std::cout,"\n"));
 
 #ifndef BOOST_NO_EXCEPTIONS

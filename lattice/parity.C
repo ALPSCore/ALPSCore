@@ -43,7 +43,7 @@ int main() {
     typedef alps::coordinate_graph_type graph_type;
 
     // create the library from an XML file
-    std::ifstream in ("lattices.xml");
+    std::ifstream in("../../lib/xml/lattices.xml");
     alps::LatticeLibrary lib(in);
 
     // generate graph and set parity

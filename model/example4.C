@@ -39,9 +39,9 @@ boost::multi_array<alps::Expression,2> bondmatrix(const alps::ModelLibrary lib, 
   
   // get site and bond terms
   boost::multi_array<alps::Expression,2> sitematrix = 
-    alps::get_matrix(alps::Expression(),ham.site_term(),ham.basis().site_basis(),lib.operators());
+    alps::get_matrix(alps::Expression(),ham.site_term(),ham.basis().site_basis());
   boost::multi_array<alps::Expression,4> bondtensor = 
-    alps::get_matrix(alps::Expression(),ham.bond_term(),ham.basis().site_basis(), ham.basis().site_basis(),lib.operators());
+    alps::get_matrix(alps::Expression(),ham.bond_term(),ham.basis().site_basis(), ham.basis().site_basis());
     
   // add site terms to bond terms
   for (int i=0;i<dim;++i)
@@ -68,7 +68,7 @@ int main()
   try {
 #endif
     // create the library from an XML file
-    std::ifstream in ("models.xml");
+    std::ifstream in("../../lib/xml/models.xml");
     alps::ModelLibrary lib(in);
 
     // calculate bond matrices 
