@@ -24,6 +24,8 @@
 #define ALPS_MODEL_QUANTUMNUMBER_H
 
 #include <alps/config.h>
+#include <alps/parameters.h>
+#include <alps/expression.h>
 
 #ifndef ALPS_WITHOUT_XML
 #include <alps/parser/parser.h>
@@ -42,7 +44,7 @@ public:
   typedef I integer_type;
   half_integer() : val_(0) {}
   half_integer(double x) :val_(integer_type(2*x+0.01)) {}
-  const half_integer& operator=(double x) { val_=integer_type(2*x+0.01); return *this;}
+  const half_integer& operator=(double x) { val_=integer_type(2*x+(x < 0 ? -0.01 : 0.01)); return *this;}
   operator double() const { return 0.5*val_;}
   
   void set_half(integer_type x) { val_=x;}
@@ -123,19 +125,22 @@ class QuantumNumber
 {
 public:
   typedef half_integer<I> value_type;
-  QuantumNumber(const std::string& n, value_type minVal=0, value_type maxVal=0, bool f=false)
-   : _name(n), _min(minVal),_max(maxVal),_fermionic(f) {}
+  QuantumNumber(const std::string& n, value_type minVal=0, value_type maxVal=0, bool f=false);
 #ifndef ALPS_WITHOUT_XML
   QuantumNumber(const XMLTag&, std::istream&);
 #endif
   
   bool valid(value_type x) const { return x >= min() && x<= max();}
-  value_type min() const {return _min;} 
-  value_type max() const {return _max;}
+  const std::string min_expression() const { return min_string_;}
+  const std::string max_expression() const { return max_string_;}
+  value_type min() const 
+  {if (!valid_ && !evaluate()) boost::throw_exception(std::runtime_error("Cannot evaluate expression " + min_string_ )); return _min;} 
+  value_type max() const 
+  {if (!valid_ && !evaluate()) boost::throw_exception(std::runtime_error("Cannot evaluate expression " + max_string_ )); return _max;} 
   I levels() const { return max().distance(min())+1;}
   const std::string& name() const {return _name;}
-  bool operator== ( const QuantumNumber& x) const
-  { return min()==x.min() && max() ==x.max() && name() == x.name();} 
+  //bool operator== ( const QuantumNumber& x) const
+  //{ return min()==x.min() && max() ==x.max() && name() == x.name();} 
  
   const QuantumNumber& operator+=(const QuantumNumber& rhs);
 
@@ -143,21 +148,45 @@ public:
   void write_xml(std::ostream&, const std::string& = "") const;
 #endif
   bool fermionic() const { return _fermionic;}
+  bool set_parameters(const Parameters&); // returns true if it can be evaluated
 private:
   std::string _name;
-  value_type _min;
-  value_type _max;
+  std::string min_string_;
+  std::string max_string_;
+  mutable value_type _min;
+  mutable value_type _max;
   bool _fermionic;
+  mutable bool valid_;
+  bool evaluate(const Parameters& =Parameters()) const;
 };
+
+template <class I>
+QuantumNumber<I>:: QuantumNumber(const std::string& n, value_type minVal=0, value_type maxVal=0, bool f=false)
+   : _name(n), 
+     _min(minVal),
+     _max(maxVal),
+     _fermionic(f), 
+     valid_(true), 
+     min_string_(boost::lexical_cast<std::string,value_type>(minVal)),
+     max_string_(boost::lexical_cast<std::string,value_type>(maxVal))
+{}
+
 
 template <class I>
 const QuantumNumber<I>& QuantumNumber<I>::operator+=(const QuantumNumber<I>& rhs)
 {
-  if (min()!=value_type::min() && rhs.min()!=value_type::min())
-    _min += rhs._min;
-  if (max()!=value_type::max() && rhs.max()!=value_type::max())
-    _max += rhs._max;
-  assert(fermionic() == rhs.fermionic());
+  valid_ = valid_ && rhs.valid_;
+  min_string_ = Expression(min_string_)+Expression(rhs.min_string_);
+  max_string_ = Expression(max_string_)+Expression(rhs.max_string_);
+  if (valid_) {
+    if (min()!=value_type::min() && rhs.min()!=value_type::min())
+      _min += rhs._min;
+    if (max()!=value_type::max() && rhs.max()!=value_type::max())
+      _max += rhs._max;
+  }
+  if (fermionic() != rhs.fermionic())
+    boost::throw_exception(std::runtime_error("Adding fermionic and bosonic quantum numbers: " 
+                                              + name() + " + " + rhs.name()));
 }
 
 template <class I>
@@ -172,31 +201,54 @@ QuantumNumber<I> operator+(const QuantumNumber<I>& x,const QuantumNumber<I>& y)
 
 template <class I>
 QuantumNumber<I>::QuantumNumber(const XMLTag& intag, std::istream& is)
+ : valid_(false)
 {
   XMLTag tag(intag);
   _name = tag.attributes["name"];
   _fermionic = tag.attributes["type"]=="fermionic";
-  if (tag.attributes["min"]=="-infinity")
-    _min = value_type::min();
-  else if (tag.attributes["min"]!="")
-    _min = boost::lexical_cast<value_type,std::string>(tag.attributes["min"]);
-  else
+  min_string_=tag.attributes["min"];
+  if (min_string_=="")
     boost::throw_exception(std::runtime_error("min attribute missing in QUANTUMNUMBER element"));
-  if (tag.attributes["max"]=="infinity" || tag.attributes["max"]=="+infinity")
-    _max = value_type::max();
-  else if (tag.attributes["max"]!="")
-    _max = boost::lexical_cast<value_type,std::string>(tag.attributes["max"]);
-  else
+  max_string_=tag.attributes["max"];
+  if (max_string_=="")
     boost::throw_exception(std::runtime_error("max attribute missing in QUANTUMNUMBER element"));
-  if(_min>_max)
-    boost::throw_exception(std::runtime_error("min > max in QUANTUMNUMBER element"));
 }
 
+template <class I>
+bool QuantumNumber<I>::set_parameters(const Parameters& p)
+{
+  return evaluate(p);
+}
+
+template <class I>
+bool QuantumNumber<I>::evaluate(const Parameters& p) const
+{
+  ParameterEvaluator eval(p);
+  Expression min_exp_(min_string_);
+  Expression max_exp_(max_string_);
+  min_exp_.partial_evaluate(eval);
+  max_exp_.partial_evaluate(eval);
+  valid_=true;
+  if (min_exp_=="- infinity")
+    _min = value_type::min();
+  else if (min_exp_.can_evaluate(eval))
+    _min = min_exp_.value();
+  else valid_=false;
+  if (max_exp_=="infinity")
+    _max = value_type::max();
+  else if (max_exp_.can_evaluate(eval))
+    _max = max_exp_.value();
+  else valid_=false;
+  if(valid_ && _min>_max)
+    boost::throw_exception(std::runtime_error("min > max in QUANTUMNUMBER element"));
+  return valid_;
+}
+  
 template <class I>
 void QuantumNumber<I>::write_xml(std::ostream& os,  const std::string& prefix) const
 {
   os << prefix << "<QUANTUMNUMBER name=\"" << name() 
-    << "\" min=\"" << min() <<  "\" max=\"" << max() << "\"";
+    << "\" min=\"" << min_expression() <<  "\" max=\"" << max_expression() << "\"";
   if (fermionic())
     os << " type=\"fermionic\"";
    os << "/>\n";

@@ -82,6 +82,7 @@ public:
   bool is_negative() const { return is_negative_;}
   boost::shared_ptr<Term> flatten_one_term();
   void partial_evaluate(const Evaluator& p);
+  inline std::string operator std::string () const;
 private:
   bool is_negative_;
   std::vector<detail::Value> terms_;
@@ -107,6 +108,7 @@ public:
   boost::shared_ptr<Expression> flatten_one_expression();
   const Expression& operator +=(const Term& term) { terms_.push_back(term); return *this;}
   const Expression& operator +=(const Expression& e);
+  inline std::string operator std::string () const;
 private:
   std::vector<Term> terms_;
 };
@@ -160,40 +162,50 @@ inline std::istream& operator>>(std::istream& is, alps::Expression& e)
   return is;
 }
 
+
 inline bool operator==(const std::string& s, const alps::Expression& e)
 {
-  return s==boost::lexical_cast<std::string,alps::Expression>(e);
+  return s==static_cast<std::string>(e);
 }
 
 inline bool operator==(const alps::Expression& e, const std::string& s)
 {
-  return boost::lexical_cast<std::string,alps::Expression>(e)==s;
+  return static_cast<std::string>(e)==s;
 }
 
 inline bool operator==(const alps::Expression& e1, const alps::Expression& e2)
 {
-  return boost::lexical_cast<std::string,alps::Expression>(e1)
-         == boost::lexical_cast<std::string,alps::Expression>(e2);
+  return static_cast<std::string>(e1) == static_cast<std::string>(e2);
 }
 
 inline bool operator==(const alps::Term& e, const std::string& s)
 {
-  return boost::lexical_cast<std::string,alps::Term>(e)==s;
+  return s==static_cast<std::string>(e);
 }
 
 inline bool operator==( const std::string& s, const alps::Term& e)
 {
-  return s==boost::lexical_cast<std::string,alps::Term>(e);
+  return s==static_cast<std::string>(e);
 }
 
 inline bool operator==(const alps::Term& e1, const alps::Term& e2)
 {
-  return boost::lexical_cast<std::string,alps::Term>(e1)
-         == boost::lexical_cast<std::string,alps::Term>(e2);
+  return static_cast<std::string>(e1) == static_cast<std::string>(e2);
 }
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // end namespace alps
 #endif
+
+alps::Expression::operator std::string() const 
+{ 
+  return boost::lexical_cast<std::string,Expression>(*this);
+}
+
+alps::Term::operator std::string() const 
+{ 
+  return boost::lexical_cast<std::string,Term>(*this);
+}
+
 
 #endif // ALPS_EXPRESSION_H

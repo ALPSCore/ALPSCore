@@ -141,6 +141,12 @@ public:
     return *this;
   }
 
+  void copy_undefined(const Parameters& p) {
+    for (const_iterator it=p.begin();it!=p.end();++it)
+      if (!defined(it->key()))
+        push_back(*it);
+  }
+  
   void write_xml(std::ostream& xml) const
   {
     xml << "<PARAMETERS>\n";

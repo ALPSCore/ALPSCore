@@ -42,10 +42,15 @@ public:
 
   const std::string& name() const { return name_;}
   bool valid(const std::vector<half_integer<I> >&) const;
-  std::size_t num_states() const { return num_states_;}
+  std::size_t num_states() const { if (!valid_ && !evaluate()) boost::throw_exception(std::runtime_error("Cannot evaluate quantum numbers in site basis " +name())); return num_states_;}
+  bool set_parameters(const Parameters&);
+  const Parameters& get_parameters() const { return parms_;}
 private:
+  mutable bool valid_;
+  bool evaluate() const;
+  Parameters parms_;
   std::string name_;
-  std::size_t num_states_;
+  mutable std::size_t num_states_;
 };
 
 template <class I>
@@ -55,18 +60,6 @@ public:
   StateDescriptor() {}
   StateDescriptor(const std::vector<half_integer<I> >& x) : std::vector<half_integer<I> >(x)  {}
 };
-
-
-template <class I>
-bool SiteBasisDescriptor<I>::valid(const std::vector<half_integer<I> >& x) const
-{
-  if (size() != x.size())
-    return false;
-  for (int i=0;i<size();++i)
-    if (!(*this)[i].valid(x[i]))
-      return false;
-  return true;
-}
 
 
 template <class I>
@@ -84,6 +77,51 @@ public:
 private:
   SiteBasisDescriptor<I> basis_;
 };
+
+
+// ------------------------------- implementation ----------------------------------
+
+template <class I>
+bool SiteBasisDescriptor<I>::valid(const std::vector<half_integer<I> >& x) const
+{
+  if(!valid_ && !evaluate()) 
+    boost::throw_exception(std::runtime_error("Cannot evaluate quantum numbers in site basis " +name()));
+  if (size() != x.size())
+    return false;
+  for (int i=0;i<size();++i)
+    if (!(*this)[i].valid(x[i]))
+      return false;
+  return true;
+}
+
+
+template <class I>
+bool SiteBasisDescriptor<I>::set_parameters(const Parameters& p)
+{
+  for (Parameters::const_iterator it=parms_.begin();it!=parms_.end();++it)
+    if (p.defined(it->key())) 
+	it->value() = p[it->key()];
+  evaluate();
+  return valid_;
+}
+
+template <class I>
+bool SiteBasisDescriptor<I>::evaluate() const
+{
+  valid_=true;
+  for (iterator it=begin();it!=end();++it)
+    valid_ = valid_ && const_cast<QuantumNumber<I>&>(*it).set_parameters(parms_);
+  if (valid_) {
+    num_states_=1;
+    for (const_iterator it=begin();it!=end();++it) {
+      if(it->levels()==std::numeric_limits<I>::max()) {
+        num_states_=std::numeric_limits<I>::max();
+        break;
+      }
+      num_states_ *= it->levels();
+    }
+  }
+}
 
 template <class I>
 typename SiteBasisStates<I>::size_type SiteBasisStates<I>::index(const value_type& x) const
@@ -119,25 +157,23 @@ SiteBasisStates<I>::SiteBasisStates(const SiteBasisDescriptor<I>& b)
 
 template <class I>
 SiteBasisDescriptor<I>::SiteBasisDescriptor(const XMLTag& intag, std::istream& is)
+ : valid_(false)
 {
   XMLTag tag(intag);
   name_ = tag.attributes["name"];
   if (tag.type!=XMLTag::SINGLE) {
     tag = parse_tag(is);
-    while (tag.name=="QUANTUMNUMBER") {
-      push_back(QuantumNumber<I>(tag,is));
+    while (tag.name!="/SITEBASIS") {
+      if (tag.name=="QUANTUMNUMBER")
+        push_back(QuantumNumber<I>(tag,is));
+      else if (tag.name=="PARAMETER")
+        parms_[tag.attributes["name"]]=tag.attributes["default"];
+      if (tag.type!=XMLTag::SINGLE)
+        tag = parse_tag(is);
       tag = parse_tag(is);
     }
     if (tag.name !="/SITEBASIS")
       boost::throw_exception(std::runtime_error("Illegal tag <" + tag.name + "> in <SITEBASIS> element"));
-  }
-  num_states_=1;
-  for (const_iterator it=begin();it!=end();++it) {
-    if(it->levels()==std::numeric_limits<I>::max()) {
-      num_states_=std::numeric_limits<I>::max();
-      break;
-    }
-    num_states_ *= it->levels();
   }
 }
 
@@ -145,6 +181,8 @@ template <class I>
 void SiteBasisDescriptor<I>::write_xml(std::ostream& os,  const std::string& prefix) const
 {
   os << prefix << "<SITEBASIS name=\"" << name() <<"\">\n";
+  for (Parameters::const_iterator it=parms_.begin();it!=parms_.end();++it)
+    os << prefix << "  <PARAMETER name=\"" << it->key() << "\" default=\"" << it->value() << "\"/>\n";
   for (const_iterator it=begin();it!=end();++it)
     it->write_xml(os,prefix+"  ");
   os << prefix << "</SITEBASIS>\n";

@@ -73,6 +73,7 @@ public:
 private:
   int type_;
   std::string term_;
+  Parameters parms_;
 };
 
 template<class I>
@@ -117,12 +118,16 @@ public:
   SiteTermDescriptor<I> site_term(int type=0) const;
   BondTermDescriptor<I> bond_term(int type=0) const;
   const BasisDescriptor<I>& basis() const { return basis_;}
+  BasisDescriptor<I>& basis() { return basis_;}
+  const Parameters& default_parameters() const { return parms_;}
+  bool set_parameters(Parameters p);
 private:
   std::string name_;
   std::string basisname_;
   BasisDescriptor<I> basis_;
   std::vector<SiteTermDescriptor<I> > siteterms_;
   std::vector<BondTermDescriptor<I> > bondterms_;
+  Parameters parms_;
 };
 
 template <class I>
@@ -166,8 +171,7 @@ public:
 
   BondOperatorEvaluator(StateDescriptor<I> s1, StateDescriptor<I> s2, 
 			const SiteBasisDescriptor<I>& b1, const SiteBasisDescriptor<I>& b2, 
-			std::string site1, std::string site2,
-                        const Parameters& p, const operator_map& o)
+			std::string site1, std::string site2,const Parameters& p, const operator_map& o)
     : OperatorEvaluator<I>(p,o), state_(s1,s2), basis1_(b1), basis2_(b2), sites_(site1,site2) {}
   bool can_evaluate_function(const std::string& name, const Expression& argument) const;
   Expression partial_evaluate_function(const std::string& name, const Expression& argument) const;
@@ -243,6 +247,7 @@ OperatorDescriptor<I>::apply(StateDescriptor<I> state, const SiteBasisDescriptor
 {
   // set quantum numbers as parameters
   Parameters p=eval.parameters();
+  p.copy_undefined(basis.get_parameters());
   for (int i=0;i<basis.size();++i)
     if (p.defined(basis[i].name()))
       boost::throw_exception(std::runtime_error(basis[i].name()+" exists as quantum number and as parameter"));
@@ -270,6 +275,8 @@ OperatorDescriptor<I>::apply(StateDescriptor<I> state, const SiteBasisDescriptor
 template <class I> boost::multi_array<Expression,2> 
 SiteTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& basis, const operator_map& ops, const Parameters& p) const
 {
+  Parameters parms(p);
+  parms.copy_undefined(basis.get_parameters());
   std::size_t dim=basis.num_states();
   boost::multi_array<Expression,2> mat(boost::extents[dim][dim]);
   // parse expression and store it as sum of terms
@@ -281,7 +288,7 @@ SiteTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& basis, const operato
   for (int i=0;i<states.size();++i) {
     //calculate expression applied to state *it and store it into matrix
     for (alps::Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
-      SiteOperatorEvaluator<I> evaluator(states[i],basis,p,ops);
+      SiteOperatorEvaluator<I> evaluator(states[i],basis,parms,ops);
       Term term(*tit);
       term.partial_evaluate(evaluator);
       int j=states.index(evaluator.state());
@@ -310,7 +317,8 @@ BondTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& basis1, const SiteBa
     {
       //calculate expression applied to state *it and store it into matrix
       for (alps::Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
-        BondOperatorEvaluator<I> evaluator(states1[i1],states2[i2],basis1,basis2,source(),target(),p,ops);
+        BondOperatorEvaluator<I> evaluator(states1[i1],states2[i2],basis1,basis2,
+	                                   source(),target(),p,ops);
         Term term(*tit);
         term.partial_evaluate(evaluator);
         int j1=states1.index(evaluator.state().first);
@@ -340,6 +348,12 @@ BondTermDescriptor<I>  HamiltonianDescriptor<I>::bond_term(int type) const
   return BondTermDescriptor<I>();
 }
 
+template <class I>
+bool HamiltonianDescriptor<I>::set_parameters(Parameters p)
+{
+  p.copy_undefined(parms_);
+  return basis_.set_parameters(p);
+}
 
 #ifndef ALPS_WITHOUT_XML
 template <class I>
@@ -349,6 +363,15 @@ HamiltonianDescriptor<I>::HamiltonianDescriptor<I>(const XMLTag& intag, std::ist
   name_=tag.attributes["name"];
   if (tag.type!=XMLTag::SINGLE) {
     tag = parse_tag(is);
+    while (tag.name=="PARAMETER") {
+      parms_[tag.attributes["name"]]=tag.attributes["default"];
+      if (tag.type!=XMLTag::SINGLE) {
+        tag=parse_tag(is);
+	if (tag.name!="/PARAMETER")
+	  boost::throw_exception(std::runtime_error("End tag </PARAMETER> missing while parsing " + name() + " Hamiltonian"));
+      }
+      tag=parse_tag(is);
+    }  
     if (tag.name!="BASIS")
       boost::throw_exception(std::runtime_error("unexpected element: " + tag.name + " in <HAMILTONIAN>"));
     basisname_ = tag.attributes["ref"];
@@ -438,6 +461,8 @@ void HamiltonianDescriptor<I>::write_xml(std::ostream& os,  const std::string& p
   if (name()!="")
     os << " name=\"" << name() << "\"";
   os << ">\n";
+  for (Parameters::const_iterator it=parms_.begin();it!=parms_.end();++it)
+    os << prefix << "  <PARAMETER name=\"" << it->key() << "\" default=\"" << it->value() << "\"/>\n";
   if (basisname_=="")
     basis_.write_xml(os,prefix+"  ");
   else 

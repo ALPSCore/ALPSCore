@@ -50,7 +50,7 @@ public:
   Expression partial_evaluate(const std::string& name) const;
   const Parameters& parameters() const { return parms_;}
 private:
-  const Parameters& parms_;
+  Parameters parms_;
 };
   
 } // end namespace alps

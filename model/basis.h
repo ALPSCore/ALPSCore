@@ -61,6 +61,7 @@ public:
 #endif
   const SiteBasisDescriptor<I>& site_basis(int type=0) const;
   const std::string& name() const { return name_;}
+  bool set_parameters(const Parameters& p);
 private:
   std::string name_;
 };
@@ -77,6 +78,16 @@ private:
   SiteBasisDescriptor<I> basis_;
 };
 
+// -------------------------- implementation -----------------------------------
+
+template <class I>
+bool BasisDescriptor<I>::set_parameters(const Parameters& p)
+{
+  bool valid=true;
+  for (const_iterator it=begin();it!=end();++it)
+    valid = valid && it->set_parameters(p);
+  return valid;
+}
 
 
 template <class I>
