@@ -784,14 +784,14 @@ inline U evaluate(const StringValue& v, const Parameters& p)
 //
 
 template<class T>
-bool is_zero(expression::Expression<T> x)
+bool is_zero(const expression::Expression<T>& x)
 {
   std::string s = boost::lexical_cast<std::string>(x);
   return s=="" || s=="0" || s=="0." || s=="-0" || s=="-0.";
 }
 
 template<class T>
-bool is_zero(expression::Term<T> x)
+bool is_zero(const expression::Term<T>& x)
 {
   std::string s = boost::lexical_cast<std::string>(x);
   return s=="" || s=="0" || s=="0.";

@@ -65,7 +65,7 @@ inline T abs2(const std::complex<T>& x) {
 }
 
 template<class T>
-bool is_zero(T x) { return x == T(0); }
+bool is_zero(T x) { return x == T(0.); }
 
 template<class T>
 bool is_nonzero(T x) { return !is_zero(x); }
