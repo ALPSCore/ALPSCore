@@ -164,7 +164,7 @@ BasisStatesDescriptor<I>::BasisStatesDescriptor(const BasisDescriptor<I>& b, con
  : basis_(b)
 {
   // construct SiteBasisStates for each site
-  typename property_map<site_type_t,const G,int>::type site_type(get_or_default(site_type_t(),g,0));
+  typename property_map<site_type_t,G,int>::const_type site_type(get_or_default(site_type_t(),g,0));
   for (typename boost::graph_traits<G>::vertex_iterator it=sites(g).first;it!=sites(g).second ; ++it) {
     push_back(SiteBasisStates<I>(basis_.site_basis(site_type[*it])));
   }

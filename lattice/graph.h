@@ -70,22 +70,22 @@ inline void write_graph_xml(std::ostream& out, const GRAPH& g, const std::string
   typename boost::property_map<graph_type,boost::vertex_index_t>::const_type 
     vertexindex = boost::get(vertex_index_t(),g);
     
-  typename property_map<vertex_type_t,const_graph_type,int>::type
+  typename property_map<vertex_type_t,graph_type,int>::const_type
     vertextype = get_or_default(vertex_type_t(),g,0);
 
-  typename property_map<edge_type_t,const_graph_type,int>::type
+  typename property_map<edge_type_t,graph_type,int>::const_type
     edgetype = get_or_default(edge_type_t(),g,0);
 
-  typename property_map<edge_index_t,const_graph_type,int>::type
+  typename property_map<edge_index_t,graph_type,int>::const_type
     edgeindex = get_or_default(edge_index_t(),g,0);
 
-  typename property_map<coordinate_t,const_graph_type,std::vector<int> >::type
+  typename property_map<coordinate_t,graph_type,std::vector<int> >::const_type
     vertexcoordinate = get_or_default(coordinate_t(),g,std::vector<int>());
     
-  typename property_map<graph_name_t,const_graph_type,std::string>::type
+  typename property_map<graph_name_t,graph_type,std::string>::const_type
     graphname = get_or_default(graph_name_t(),g,std::string());
 
-  typename property_map<dimension_t,const_graph_type,uint32_t>::type
+  typename property_map<dimension_t,graph_type,uint32_t>::const_type
     graphdimension = get_or_default(dimension_t(),g,uint32_t(0));
     
   out << "<GRAPH";

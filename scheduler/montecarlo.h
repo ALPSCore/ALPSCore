@@ -173,8 +173,8 @@ private:
    graph_factory<G> factory_;
    graph_type& graph_;
    bool is_bipartite_;
-   typename property_map<parity_t,const graph_type,double>::type parity_map_;
-   typename property_map<bond_type_t,const graph_type,int>::type bond_type_map_;
+   typename property_map<parity_t,graph_type,double>::const_type parity_map_;
+   typename property_map<bond_type_t,graph_type,int>::const_type bond_type_map_;
 
 };
 
