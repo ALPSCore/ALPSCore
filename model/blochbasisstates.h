@@ -226,7 +226,7 @@ template <class I, class S, class SS>
 inline std::ostream& operator<<(std::ostream& out, const alps::bloch_basis_states<I,S,SS>& q)
 {
   out << "{\n";
-  for (int i=i;i<q.size();++i) {
+  for (int i=0;i<q.size();++i) {
     out << q.normalization(i) << "*[ ";
     unsigned int n=q[i].size();
     for (unsigned int j=0; j!=n;++j)
