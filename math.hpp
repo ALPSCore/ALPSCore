@@ -66,7 +66,7 @@ inline T abs2(const std::complex<T>& x) {
   return x.real()*x.real()+x.imag()*x.imag();
 }
 
-/*
+
 namespace detail {
 template <bool F>
 struct is_zero_float
@@ -86,12 +86,13 @@ struct is_zero_float<false>
 
 template<class T>
 bool is_zero(T x) { return detail::is_zero_float<boost::is_float<T>::value>::is_zero(x); }
-*/
 
+/*
 template <class T>
 bool is_zero(T x) { return x == T(0.); }
 
-bool is_zero(double x) { return std::abs(x)<1e-50;}
+inline bool is_zero(double x) { return std::abs(x)<1e-50;}
+*/
 
 template<class T>
 bool is_zero(std::complex<T> x) { return is_zero(std::abs(x)); }
