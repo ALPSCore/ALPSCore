@@ -341,7 +341,7 @@ void SimpleBinning<T>::output_scalar(std::ostream& out) const
 {
   if(count())
   {
-    out << ": " << mean() << " +/- " << error() << "; tau = "
+    out << ": " << mean() << " +/- " << error() << "; tau = " << std::setprecision(3)
         << tau() << std::endl;
     if (binning_depth()>1)
     { 
