@@ -128,31 +128,28 @@ void LatticeGraphDescriptor::set_parameters(const Parameters& p)
   static_cast<base_type&>(*this) = finitelattice_;
 }
 
-void LatticeGraphDescriptor::write_xml(std::ostream& xml, const std::string& prefix) const
+void LatticeGraphDescriptor::write_xml(oxstream& xml) const
 {
-  xml << prefix << "<LATTICEGRAPH";
+  xml << start_tag("LATTICEGRAPH");
   if(name()!="")
-    xml << " name=\"" << name() << "\"";
-  xml << ">\n";
-  if(lattice_is_finite_)
-  {
+    xml << attribute("name", name());
+  if(lattice_is_finite_) {
     if (lattice_name_=="")
-      finitelattice_.write_xml(xml, prefix + "  ");
+      xml << finitelattice_;
     else
-      xml << prefix << "  <FINITELATTICE ref=\"" << lattice_name_ << "\"/>\n";
+      xml << start_tag("FINITELATTICE") << attribute("ref", lattice_name_) << end_tag("FINITELATTICE");
   }
-  else
-  {
+  else {
     if (lattice_name_=="")
-      lattice_.write_xml(xml, prefix + "  ");
+      xml << lattice_;
     else
-      xml << prefix << "  <FINITELATTICE ref=\"" << lattice_name_ << "\"/>\n";
+      xml << start_tag("LATTICE") << attribute("ref", lattice_name_) << end_tag("LATTICE");
   }
   if (unitcell_name_=="")
-    unit_cell_.write_xml(xml, prefix + "  ");
+    xml << unit_cell_;
   else
-    xml << prefix << "  <UNITCELL ref=\"" << unitcell_name_ << "\"/>\n";
-  xml << prefix << "</LATTICEGRAPH>\n";
+    xml << start_tag("UNITCELL") << attribute("ref", unitcell_name_) << end_tag("UNITCELL");
+  xml << end_tag("LATTICEGRAPH");
 }
 
 } // end namespace alps

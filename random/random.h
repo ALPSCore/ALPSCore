@@ -61,15 +61,16 @@ void seed_with_sequence(RNG& rng, uint32_t seed)
   rng.seed(start_it,end_it);
 }
 
-template <class T=double>
 class BufferedRandomNumberGeneratorBase
 {
 public:
-  typedef T result_type;
+  typedef double result_type;
+  BOOST_STATIC_CONSTANT(bool, has_fixed_range = false);
+
   BufferedRandomNumberGeneratorBase(std::size_t b=10240) 
    : buf_(b), ptr_(buf_.end()) {}
 
-  T operator()() {
+  result_type operator()() {
     if(ptr_==buf_.end()) {
       fill_buffer();
       ptr_=buf_.begin();
@@ -80,20 +81,24 @@ public:
   virtual void seed() =0;
   virtual void write(std::ostream&) const =0;
   virtual void read(std::istream&)=0;
+
+  result_type min() const { return result_type(0); }
+  result_type max() const { return result_type(1); }
+
 protected:
-  std::vector<T> buf_;
-  typename std::vector<T>::iterator ptr_;
+  std::vector<result_type> buf_;
+  typename std::vector<result_type>::iterator ptr_;
 private:
   virtual void fill_buffer() = 0;
 };
 
-template <class RNG> class BufferedRandomNumberGeneratorAdaptor
- : public BufferedRandomNumberGeneratorAdaptor<typename RNG::result_type>
+
+template <class RNG> class BufferedRandomNumberGenerator
+ : public BufferedRandomNumberGeneratorBase
 {
 public:
-  typedef typename RNG::result_type result_type;
-
-  BufferedRandomNumberGeneratorAdaptor(RNG& rng) : rng_(rng) {}
+  BufferedRandomNumberGenerator() : rng_(), gen_(rng_,boost::uniform_real<>()) {}
+  BufferedRandomNumberGenerator(RNG rng) : rng_(rng), gen_(rng_,boost::uniform_real<>()) {}
 
   void fill_buffer();
   template <class IT>
@@ -103,51 +108,41 @@ public:
   virtual void write(std::ostream&) const;
   virtual void read(std::istream&);
 protected:
-  const RNG& rng_;
+  RNG rng_;
+  boost::variate_generator<RNG&,boost::uniform_real<> > gen_;
 };
 
 
 
 template <class RNG>
-void BufferedRandomNumberGeneratorAdaptor<RNG>::seed(uint32_t s)
+void BufferedRandomNumberGenerator<RNG>::seed(uint32_t s)
 {
   seed_with_sequence(rng_,s);
 }
 
 template <class RNG>
-void BufferedRandomNumberGeneratorAdaptor<RNG>::read(std::istream& is)
+void BufferedRandomNumberGenerator<RNG>::seed()
+{
+  rng_.seed();
+}
+
+template <class RNG>
+void BufferedRandomNumberGenerator<RNG>::read(std::istream& is)
 {
   is >> rng_;
 }
 
 template <class RNG>
-void BufferedRandomNumberGeneratorAdaptor<RNG>::write(std::ostream& os) const
+void BufferedRandomNumberGenerator<RNG>::write(std::ostream& os) const
 {
   os << rng_;
 }
 
 template <class RNG>
-void BufferedRandomNumberGeneratorAdaptor<RNG>::fill_buffer()
+void BufferedRandomNumberGenerator<RNG>::fill_buffer()
 {
-  std::fill(buf_.begin(),buf_.end(),rng_);
+  std::generate(buf_.begin(),buf_.end(),gen_);
 }
-
-template <class RNG> class BufferedRandomNumberGenerator
- : public BufferedRandomNumberGeneratorAdaptor<typename RNG::result_type>
-{
-public:
-  typedef typename RNG::result_type result_type;
-
-  BufferedRandomNumberGenerator() 
-   : BufferedRandomNumberGeneratorAdaptor<RNG>(rngstore_) {}
-   
-  BufferedRandomNumberGenerator(const RNG& r) 
-   : BufferedRandomNumberGeneratorAdaptor<RNG>(r),
-     rngstore_(r) {}
-
- private:
-  RNG rngstore_;
-};
 
 } // end namespace
 
@@ -155,14 +150,12 @@ public:
 namespace alps {
 #endif
 
-template <class T>
-inline std::ostream& operator<<(std::ostream& os, const BufferedRandomNumberGeneratorBase<T>& r) {
+inline std::ostream& operator<<(std::ostream& os, const BufferedRandomNumberGeneratorBase& r) {
   r.write(os);
   return os;
 }
 
-template <class T>
-std::istream& operator>>(std::istream& is, BufferedRandomNumberGeneratorBase<T>& r) {
+inline std::istream& operator>>(std::istream& is, BufferedRandomNumberGeneratorBase& r) {
   r.read(is);
   return is;
 }

@@ -80,8 +80,7 @@ public:
   typedef typename obs_value_traits<T>::time_type time_type;
   //@}
   
-  /// constructor needs a name
-  AbstractSimpleObservable(const std::string& name) : Observable(name) {}
+  AbstractSimpleObservable(const std::string& name="") : Observable(name) {}
   virtual ~AbstractSimpleObservable() {}
   //@{
   //@name Properties of the observable
@@ -184,7 +183,7 @@ public:
   typedef typename AbstractSimpleObservable<T>::slice_iterator slice_iterator;
   
   /// the constructor needs a name
-  SimpleObservable(const std::string& name) : AbstractSimpleObservable<T>(name) {}
+  SimpleObservable(const std::string& name="") : AbstractSimpleObservable<T>(name) {}
   virtual ~SimpleObservable() {}
   /// add another measurement to the observable
   virtual SimpleObservable<T>& operator<<(const T& x) =0;
@@ -220,10 +219,10 @@ public:
 
   BOOST_STATIC_CONSTANT(int,version=(obs_value_traits<T>::magic_id+ (binning_type::magic_id << 16)));
   /// the constructor needs a name and optionally specifications for the binning strategy
-  BasicSimpleObservable(const std::string& name ,const binning_type&)
+  BasicSimpleObservable(const std::string& name,const binning_type&)
    : SimpleObservable<T>(name), b_(b) {}
 
-  BasicSimpleObservable(const std::string& name ,uint32_t s=0)
+  BasicSimpleObservable(const std::string& name="" ,uint32_t s=0)
    : SimpleObservable<T>(name), b_(s) {}
    
   uint32_t version_id() const { return version;}

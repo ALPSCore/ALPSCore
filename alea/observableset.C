@@ -48,43 +48,41 @@ namespace alps {
 
 namespace detail {
 
-Factory::Factory()
+inline void deleteit(Observable& obs)
 {
-  ObservableSet::register_type<IntObsevaluator>();
-  ObservableSet::register_type<IntObservable>();
-  ObservableSet::register_type<IntTimeSeriesObservable>();
-  ObservableSet::register_type<SimpleIntObservable>();
-  ObservableSet::register_type<RealObsevaluator>();
-  ObservableSet::register_type<RealObservable>();
-  ObservableSet::register_type<RealTimeSeriesObservable>();
-  ObservableSet::register_type<SimpleRealObservable>();
-#ifdef ALPS_HAVE_VALARRAY
-  ObservableSet::register_type<RealVectorObsevaluator>();
-  ObservableSet::register_type<RealVectorObservable>();
-  ObservableSet::register_type<RealVectorTimeSeriesObservable>();
-  ObservableSet::register_type<SimpleRealVectorObservable>();
-  ObservableSet::register_type<IntVectorObsevaluator>();
-  ObservableSet::register_type<IntVectorObservable>();
-  ObservableSet::register_type<IntVectorTimeSeriesObservable>();
-  ObservableSet::register_type<SimpleIntVectorObservable>();
-#endif
-  ObservableSet::register_type<Real2DArrayObservable>();
-  ObservableSet::register_type<SimpleReal2DArrayObservable>();
-  ObservableSet::register_type<HistogramObservable<int32_t> >();
-  ObservableSet::register_type<HistogramObservable<int32_t,double> >();
+  delete &obs;
 }
 
-Factory::~Factory()
-{
-  for (iterator it = begin(); it!=end(); ++it)
-  {
-#ifndef ALPS_NO_DELETE
-    delete it->second;
-#endif
-  }
-} 
+} // end namespace detail
 
-} // namespace detail
+
+
+ObservableFactory::ObservableFactory()
+{
+  register_observable<IntObsevaluator>();
+  register_observable<IntObservable>();
+  register_observable<IntTimeSeriesObservable>();
+  register_observable<SimpleIntObservable>();
+  register_observable<RealObsevaluator>();
+  register_observable<RealObservable>();
+  register_observable<RealTimeSeriesObservable>();
+  register_observable<SimpleRealObservable>();
+#ifdef ALPS_HAVE_VALARRAY
+  register_observable<RealVectorObsevaluator>();
+  register_observable<RealVectorObservable>();
+  register_observable<RealVectorTimeSeriesObservable>();
+  register_observable<SimpleRealVectorObservable>();
+  register_observable<IntVectorObsevaluator>();
+  register_observable<IntVectorObservable>();
+  register_observable<IntVectorTimeSeriesObservable>();
+  register_observable<SimpleIntVectorObservable>();
+#endif
+  register_observable<Real2DArrayObservable>();
+  register_observable<SimpleReal2DArrayObservable>();
+  register_observable<HistogramObservable<int32_t> >();
+  register_observable<HistogramObservable<int32_t,double> >();
+}
+
 
 #ifndef ALPS_WITHOUT_OSIRIS
 
@@ -102,14 +100,9 @@ void ObservableSet::load(IDump& dump)
   uint32_t n(dump);
   for (int i = 0; i < n; ++i) {
     uint32_t v(dump);
-    if (factory_.find(v) != factory_.end() && factory_.find(v)->second != 0) {
-      Observable* obs = factory_[v]->make("untitled");
-      dump >> *obs;
-      addObservable(obs);
-    } else {
-      boost::throw_exception(std::runtime_error("No factory exists for observable type"
-      +(boost::lexical_cast<std::string,uint32_t>(v))));
-    }
+    Observable* obs = factory_.create(v);
+    dump >> *obs;
+    addObservable(obs);
   }
 }
 
@@ -131,9 +124,7 @@ ObservableSet::ObservableSet(const ObservableSet& m)
 
 const ObservableSet& ObservableSet::operator=(const ObservableSet& m)
 {
-#ifndef ALPS_NO_DELETE
   do_for_all(detail::deleteit);
-#endif
   erase(begin(),end());  
   for (const_iterator it = m.begin(); it != m.end(); ++it)
     addObservable(it->second->clone());
@@ -142,9 +133,7 @@ const ObservableSet& ObservableSet::operator=(const ObservableSet& m)
 
 ObservableSet::~ObservableSet()
 {
-#ifndef ALPS_NO_DELETE
   do_for_all(detail::deleteit);
-#endif
 }
 
 Observable& ObservableSet::operator[](const std::string& name) 
@@ -305,7 +294,7 @@ const ObservableSet& ObservableSet::operator<<(const Observable& obs)
   return *this;
 }
 
-detail::Factory ObservableSet::factory_;
+ObservableFactory ObservableSet::factory_;
 
 void ObservableSet::compact()
 {

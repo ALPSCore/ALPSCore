@@ -95,7 +95,7 @@ inline void make_graph_from_lattice(GRAPH& g,const LATTICE& l)
   edge_iterator first_edge, last_edge;
   size_type edge_index=0;
   
-  alps::prevent_optimization(); 
+  prevent_optimization(); 
   for ( boost::tie(cit,cend)=cells(l); cit != cend ; ++cit)
   {
     // vertex properties
@@ -186,6 +186,7 @@ struct lattice_traits<lattice_graph<L,G> >
 
   typedef typename lattice_graph<L,G>::basis_vector_iterator basis_vector_iterator;
   typedef typename lattice_graph<L,G>::cell_iterator cell_iterator;
+  typedef typename lattice_graph<L,G>::momentum_iterator momentum_iterator;
   typedef typename lattice_graph<L,G>::size_type size_type;
   typedef typename lattice_graph<L,G>::vector_type vector_type;
   typedef typename lattice_graph<L,G>::boundary_crossing_type boundary_crossing_type;

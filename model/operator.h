@@ -52,16 +52,13 @@ class OperatorDescriptor : public std::map<std::string,half_integer<I> >
 public:
   typedef typename std::map<std::string,half_integer<I> >::const_iterator const_iterator;
   OperatorDescriptor() {}
-#ifndef ALPS_WITHOUT_XML
   OperatorDescriptor(const XMLTag&, std::istream&);
-#endif
+
+  void write_xml(oxstream&) const;
   
-#ifndef ALPS_WITHOUT_XML
-  void write_xml(std::ostream&, const std::string& = "") const;
-#endif
-  
-  std::pair<StateDescriptor<I>,Expression> 
-  apply(StateDescriptor<I> state, const SiteBasisDescriptor<I>& basis, const ParameterEvaluator& p) const;
+  template <class STATE>
+  std::pair<STATE,Expression> 
+  apply(STATE state, const SiteBasisDescriptor<I>& basis, const ParameterEvaluator& p) const;
   
   const std::string& name() const { return name_;}
   const std::string& matrixelement() const { return matrixelement_;}
@@ -78,10 +75,8 @@ public:
   SiteTermDescriptor() : type_(-2) {}
   SiteTermDescriptor(std::string t) : type_(-2), term_(t) {}
   SiteTermDescriptor(Term t) : type_(-2), term_(boost::lexical_cast<std::string>(t)) {}
-#ifndef ALPS_WITHOUT_XML
   SiteTermDescriptor(const XMLTag&, std::istream&);
-  void write_xml(std::ostream&, const std::string& = "") const;
-#endif
+  void write_xml(oxstream&) const;
 
   bool match_type(int type) const { return type_==-1 || type==type_;}
   const std::string& term() const { return term_;}
@@ -99,10 +94,8 @@ class BondTermDescriptor
 public:
   typedef std::map<std::string,OperatorDescriptor<I> > operator_map;
   BondTermDescriptor() : type_(-2) {}
-#ifndef ALPS_WITHOUT_XML
   BondTermDescriptor(const XMLTag&, std::istream&);
-  void write_xml(std::ostream&, const std::string& = "") const;
-#endif
+  void write_xml(oxstream&) const;
 
   bool match_type(int type) const { return type_==-1 || type==type_;}
   const std::string& term () const { return term_;}
@@ -126,10 +119,8 @@ class HamiltonianDescriptor
 public:
   typedef std::map<std::string,BasisDescriptor<I> > basis_map;
   HamiltonianDescriptor() {}
-#ifndef ALPS_WITHOUT_XML
   HamiltonianDescriptor(const XMLTag&, std::istream&, const basis_map& = basis_map());
-  void write_xml(std::ostream&, const std::string& = "") const;
-#endif
+  void write_xml(oxstream&) const;
 
   const std::string& name() const { return name_;}
   const std::vector<SiteTermDescriptor<I> >& site_terms() const { return siteterms_;}
@@ -165,38 +156,39 @@ protected:
   const operator_map& ops_;
 };
 
-template <class I>
+template <class I, class STATE=StateDescriptor<I> >
 class SiteOperatorEvaluator : public OperatorEvaluator<I>
 {
 public:
   typedef typename OperatorEvaluator<I>::operator_map operator_map;
-
-  SiteOperatorEvaluator(const StateDescriptor<I>& s, const SiteBasisDescriptor<I>& b, 
+  typedef STATE state_type;
+  
+  SiteOperatorEvaluator(const state_type& s, const SiteBasisDescriptor<I>& b, 
                         const Parameters& p, const operator_map& o) 
     : OperatorEvaluator<I>(p,o), state_(s), basis_(b) {}
   bool can_evaluate(const std::string&) const;
   Expression partial_evaluate(const std::string& name) const;
-  const StateDescriptor<I>& state() const { return state_;}
+  const state_type& state() const { return state_;}
 private:
-  mutable StateDescriptor<I> state_;
+  mutable state_type state_;
   const SiteBasisDescriptor<I>& basis_;
 };
 
-template <class I>
+template <class I, class STATE1=StateDescriptor<I>, class STATE2=StateDescriptor<I>  >
 class BondOperatorEvaluator : public OperatorEvaluator<I>
 {
 public:
   typedef typename OperatorEvaluator<I>::operator_map operator_map;
 
-  BondOperatorEvaluator(StateDescriptor<I> s1, StateDescriptor<I> s2, 
+  BondOperatorEvaluator(const STATE1& s1, const STATE2& s2, 
 			const SiteBasisDescriptor<I>& b1, const SiteBasisDescriptor<I>& b2, 
 			std::string site1, std::string site2,const Parameters& p, const operator_map& o)
     : OperatorEvaluator<I>(p,o), state_(s1,s2), basis1_(b1), basis2_(b2), sites_(site1,site2) {}
   bool can_evaluate_function(const std::string& name, const Expression& argument) const;
   Expression partial_evaluate_function(const std::string& name, const Expression& argument) const;
-  const std::pair<StateDescriptor<I>,StateDescriptor<I> >& state() const { return state_;}
+  const std::pair<STATE1,STATE2>& state() const { return state_;}
 private:
-  mutable std::pair<StateDescriptor<I>,StateDescriptor<I> > state_;
+  mutable std::pair<STATE1,STATE2> state_;
   const SiteBasisDescriptor<I>& basis1_;
   const SiteBasisDescriptor<I>& basis2_;
   std::pair<std::string,std::string> sites_;
@@ -234,22 +226,22 @@ double OperatorEvaluator<I>::evaluate_function(const std::string& name, const Ex
 }
 
 
-template <class I>
-bool SiteOperatorEvaluator<I>::can_evaluate(const std::string& name) const 
+template <class I, class STATE>
+bool SiteOperatorEvaluator<I,STATE>::can_evaluate(const std::string& name) const 
 {
   if (ops_.find(name) != ops_.end()) {
-    SiteOperatorEvaluator<I> eval(*this);
+    SiteOperatorEvaluator<I,STATE> eval(*this);
     return eval.partial_evaluate(name).can_evaluate(ParameterEvaluator(*this));
   }
   else
     return ParameterEvaluator::can_evaluate(name);
 }
 
-template <class I>
-bool BondOperatorEvaluator<I>::can_evaluate_function(const std::string& name, const Expression& arg) const 
+template <class I, class STATE1, class STATE2>
+bool BondOperatorEvaluator<I,STATE1,STATE2>::can_evaluate_function(const std::string& name, const Expression& arg) const 
 {
   if (ops_.find(name) != ops_.end() && (arg== sites_.first || arg==sites_.second)) {
-    BondOperatorEvaluator<I> eval(*this);
+    BondOperatorEvaluator<I,STATE1,STATE2> eval(*this);
     return eval.partial_evaluate_function(name,arg).can_evaluate(ParameterEvaluator(*this));
   }
   else 
@@ -257,14 +249,14 @@ bool BondOperatorEvaluator<I>::can_evaluate_function(const std::string& name, co
 }
 
 template <class I>
-bool BondOperatorSplitter<I>::can_evaluate_function(const std::string& name, const Expression& arg) const 
+bool BondOperatorSplitter<I>::can_evaluate_function(const std::string& name, const Expression& arg) const
 {
   return (ops_.find(name) != ops_.end() && (arg== sites_.first || arg==sites_.second)) || 
          ParameterEvaluator::can_evaluate_function(name,arg);
 }
 
-template <class I>
-Expression SiteOperatorEvaluator<I>::partial_evaluate(const std::string& name) const
+template <class I,class STATE>
+Expression SiteOperatorEvaluator<I,STATE>::partial_evaluate(const std::string& name) const
 {
   typename operator_map::const_iterator op = ops_.find(name);
   if (op!=ops_.end()) {  // evaluate operator
@@ -276,8 +268,8 @@ Expression SiteOperatorEvaluator<I>::partial_evaluate(const std::string& name) c
     return OperatorEvaluator<I>::partial_evaluate(name);
 }
 
-template <class I>
-Expression BondOperatorEvaluator<I>::partial_evaluate_function(const std::string& name, const Expression& arg) const
+template <class I, class STATE1, class STATE2>
+Expression BondOperatorEvaluator<I,STATE1,STATE2>::partial_evaluate_function(const std::string& name, const Expression& arg) const
 {
   typename operator_map::const_iterator op = ops_.find(name);
   if (op!=ops_.end()) {  // evaluate operator
@@ -313,9 +305,9 @@ Expression BondOperatorSplitter<I>::partial_evaluate_function(const std::string&
 }
 
 
-template <class I> 
-std::pair<StateDescriptor<I>,Expression> 
-OperatorDescriptor<I>::apply(StateDescriptor<I> state, const SiteBasisDescriptor<I>& basis, const ParameterEvaluator& eval) const
+template <class I> template <class STATE> 
+std::pair<STATE,Expression> 
+OperatorDescriptor<I>::apply(STATE state, const SiteBasisDescriptor<I>& basis, const ParameterEvaluator& eval) const
 {
   // set quantum numbers as parameters
   Parameters p=eval.parameters();
@@ -324,7 +316,7 @@ OperatorDescriptor<I>::apply(StateDescriptor<I> state, const SiteBasisDescriptor
     if (p.defined(basis[i].name()))
       boost::throw_exception(std::runtime_error(basis[i].name()+" exists as quantum number and as parameter"));
     else
-      p[basis[i].name()]=state[i];
+      p[basis[i].name()]=get_quantumnumber(state,i);
   
   // evaluate matrix element
   Expression e(matrixelement());
@@ -334,8 +326,8 @@ OperatorDescriptor<I>::apply(StateDescriptor<I> state, const SiteBasisDescriptor
   for (int i=0;i<basis.size();++i) {
     const_iterator it=find(basis[i].name());
     if (it!=end()) {
-      state[i]+=it->second; // apply change to QN
-       if (!basis[i].valid(state[i])) {
+      get_quantumnumber(state,i)+=it->second; // apply change to QN
+       if (!basis[i].valid(get_quantumnumber(state,i))) {
          e=Expression(0.);
 	 break;
        }
@@ -350,6 +342,7 @@ boost::multi_array<T,2> get_matrix(T,const SiteTermDescriptor<I>& m, const SiteB
   return m.template matrix<T>(basis1,ops,p);
 }
 
+
 template <class I> template <class T> boost::multi_array<T,2> 
 SiteTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& basis, const operator_map& ops, const Parameters& p) const
 {
@@ -362,16 +355,33 @@ SiteTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& basis, const operato
   ex.flatten();
 
   // fill the matrix
-  SiteBasisStates<I> states(basis);
-  for (int i=0;i<states.size();++i) {
+  if (basis.size()==1) {
+    typedef SingleQNStateDescriptor<I> state_type;
+    SiteBasisStates<I,state_type> states(basis);
+    for (int i=0;i<states.size();++i) {
+      //calculate expression applied to state *it and store it into matrix
+      for (alps::Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
+        SiteOperatorEvaluator<I,state_type> evaluator(states[i],basis,parms,ops);
+        Term term(*tit);
+        term.partial_evaluate(evaluator);
+        int j=states.index(evaluator.state());
+        if (boost::lexical_cast<std::string,Term>(term)!="0")
+          mat[i][j]+=term;
+      }
+    }
+  }
+  else {
+    SiteBasisStates<I> states(basis);
+    for (int i=0;i<states.size();++i) {
     //calculate expression applied to state *it and store it into matrix
-    for (alps::Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
-      SiteOperatorEvaluator<I> evaluator(states[i],basis,parms,ops);
-      Term term(*tit);
-      term.partial_evaluate(evaluator);
-      int j=states.index(evaluator.state());
-      if (boost::lexical_cast<std::string,Term>(term)!="0")
-        mat[i][j]+=term;
+      for (alps::Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
+        SiteOperatorEvaluator<I> evaluator(states[i],basis,parms,ops);
+        Term term(*tit);
+        term.partial_evaluate(evaluator);
+        int j=states.index(evaluator.state());
+        if (boost::lexical_cast<std::string,Term>(term)!="0")
+          mat[i][j]+=term;
+      }
     }
   }
   return mat;
@@ -394,21 +404,41 @@ BondTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& basis1, const SiteBa
   alps::Expression ex(term());
   ex.flatten();
   // fill the matrix
-  SiteBasisStates<I> states1(basis1);
-  SiteBasisStates<I> states2(basis2);
-  for (int i1=0;i1<states1.size();++i1)
-    for (int i2=0;i2<states2.size();++i2)
-    {
+  if (basis1.size()==1 && basis2.size()==1) {
+    typedef SingleQNStateDescriptor<I> state_type;
+    SiteBasisStates<I,state_type> states1(basis1);
+    SiteBasisStates<I,state_type> states2(basis2);
+    for (int i1=0;i1<states1.size();++i1)
+      for (int i2=0;i2<states2.size();++i2) {
       //calculate expression applied to state *it and store it into matrix
-      for (alps::Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
-        BondOperatorEvaluator<I> evaluator(states1[i1],states2[i2],basis1,basis2,
+        for (alps::Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
+          BondOperatorEvaluator<I,state_type,state_type> evaluator(states1[i1],states2[i2],basis1,basis2,
 	                                   source(),target(),p,ops);
-        Term term(*tit);
-        term.partial_evaluate(evaluator);
-        int j1=states1.index(evaluator.state().first);
-        int j2=states2.index(evaluator.state().second);
-        if (boost::lexical_cast<std::string,Term>(term)!="0")
-          mat[i1][i2][j1][j2]+=term;
+          Term term(*tit);
+          term.partial_evaluate(evaluator);
+          int j1=states1.index(evaluator.state().first);
+          int j2=states2.index(evaluator.state().second);
+          if (boost::lexical_cast<std::string,Term>(term)!="0")
+            mat[i1][i2][j1][j2]+=term;
+      }
+    }
+  }
+  else  {
+    SiteBasisStates<I> states1(basis1);
+    SiteBasisStates<I> states2(basis2);
+    for (int i1=0;i1<states1.size();++i1)
+      for (int i2=0;i2<states2.size();++i2) {
+      //calculate expression applied to state *it and store it into matrix
+        for (alps::Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
+          BondOperatorEvaluator<I> evaluator(states1[i1],states2[i2],basis1,basis2,
+	                                   source(),target(),p,ops);
+          Term term(*tit);
+          term.partial_evaluate(evaluator);
+          int j1=states1.index(evaluator.state().first);
+          int j2=states2.index(evaluator.state().second);
+          if (boost::lexical_cast<std::string,Term>(term)!="0")
+            mat[i1][i2][j1][j2]+=term;
+      }
     }
   }
   return mat;
@@ -555,57 +585,55 @@ OperatorDescriptor<I>::OperatorDescriptor(const XMLTag& intag, std::istream& is)
 }
 
 template <class I>
-void HamiltonianDescriptor<I>::write_xml(std::ostream& os,  const std::string& prefix) const
+void HamiltonianDescriptor<I>::write_xml(oxstream& os) const
 {
-  os << prefix << "<HAMILTONIAN";
+  os << start_tag("HAMILTONIAN");
   if (name()!="")
-    os << " name=\"" << name() << "\"";
-  os << ">\n";
+    os << attribute("name", name());
   for (Parameters::const_iterator it=parms_.begin();it!=parms_.end();++it)
-    os << prefix << "  <PARAMETER name=\"" << it->key() << "\" default=\"" << it->value() << "\"/>\n";
+    os << start_tag("PARAMETER") << attribute("name", it->key()) 
+       << attribute("default", it->value()) << end_tag("PARAMETER");
   if (basisname_=="")
-    basis_.write_xml(os,prefix+"  ");
+    os << basis_;
   else 
-    os << prefix << "  <BASIS ref=\"" << basisname_ << "\"/>\n";
+    os << start_tag("BASIS") << attribute("ref", basisname_) << end_tag("BASIS");
   for (typename std::vector<SiteTermDescriptor<I> >::const_iterator it=siteterms_.begin();it!=siteterms_.end();++it)
-    it->write_xml(os,prefix+"  ");
+    it->write_xml(os);
   for (typename std::vector<BondTermDescriptor<I> >::const_iterator it=bondterms_.begin();it!=bondterms_.end();++it)
-    it->write_xml(os,prefix+"  ");
-  os << prefix << "</HAMILTONIAN>\n";
+    it->write_xml(os);
+  os << end_tag("HAMILTONIAN");
 }
 
 template <class I>
-void OperatorDescriptor<I>::write_xml(std::ostream& os,  const std::string& prefix) const
+void OperatorDescriptor<I>::write_xml(oxstream& os) const
 {
-  os << prefix << "<OPERATOR name=\"" << name() << "\" matrixelement=\"" << matrixelement() << "\">\n";
+  os << start_tag("OPERATOR") << attribute("name", name()) << attribute("matrixelement", matrixelement());
   for (const_iterator it=begin();it!=end();++it)
-    os << prefix << "  <CHANGE quantumnumber=\"" << it->first << "\" change=\"" << it->second << "\"/>\n";
-  os << prefix << "</OPERATOR>\n";
+    os << start_tag("CHANGE") << attribute("quantumnumber", it->first) 
+       << attribute("change", it->second) << end_tag("CHANGE");
+  os << end_tag("OPERATOR");
 }
 
 template <class I>
-void SiteTermDescriptor<I>::write_xml(std::ostream& os,  const std::string& prefix) const
+void SiteTermDescriptor<I>::write_xml(oxstream& os) const
 {
-  os << prefix << "<SITETERM";
+  os << start_tag("SITETERM");
   if (type_>=0)
-    os << " type=\"" << type_ << "\"";
+    os << attribute("type", type_);
   if (term()!="")
-    os << ">\n" << prefix << "    " << term() << "\n" << prefix << "</SITETERM>\n";
-  else
-    os << "/>\n";
+    os << term();
+  os << end_tag("SITETERM");
 }
 
 template <class I>
-void BondTermDescriptor<I>::write_xml(std::ostream& os,  const std::string& prefix) const
+void BondTermDescriptor<I>::write_xml(oxstream& os) const
 {
-  os << prefix << "<BONDTERM";
+  os << start_tag("BONDTERM");
   if (type_>=0)
-    os << " type=\"" << type_ << "\"";
+    os << attribute("type", type_);
   if (term()!="")
-    os << " source=\"" << source() << "\" target=\"" << target() << "\">\n"
-       << prefix << "    " << term() << "\n" << prefix << "</BONDTERM>\n";
-  else
-    os << "/>\n";
+    os << attribute("source", source()) << attribute("target", target()) << term();  
+  os << end_tag("BONDTERM");
 }
 
 #endif
@@ -616,23 +644,35 @@ void BondTermDescriptor<I>::write_xml(std::ostream& os,  const std::string& pref
 namespace alps {
 #endif
 
-#ifndef ALPS_WITHOUT_XML
+template <class I>
+inline alps::oxstream& operator<<(alps::oxstream& out, const alps::OperatorDescriptor<I>& q)
+{
+  q.write_xml(out);
+  return out;	
+}
+
+template <class I>
+inline alps::oxstream& operator<<(alps::oxstream& out, const alps::HamiltonianDescriptor<I>& q)
+{
+  q.write_xml(out);
+  return out;	
+}
 
 template <class I>
 inline std::ostream& operator<<(std::ostream& out, const alps::OperatorDescriptor<I>& q)
 {
-  q.write_xml(out);
+  alps::oxstream xml(out);
+  xml << q;
   return out;	
 }
 
 template <class I>
 inline std::ostream& operator<<(std::ostream& out, const alps::HamiltonianDescriptor<I>& q)
 {
-  q.write_xml(out);
+  alps::oxstream xml(out);
+  xml << q;
   return out;	
 }
-
-#endif
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // namespace alps

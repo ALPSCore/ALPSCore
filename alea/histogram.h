@@ -53,7 +53,7 @@ class HistogramObservable : public Observable
 {
 public:
   enum { version=TypeTraits<T>::type_tag+(TypeTraits<INT>::type_tag << 8) + (2<<16)};
-  HistogramObservable(const std::string& n);
+  HistogramObservable(const std::string& n="");
   HistogramObservable(const std::string& n, T min, T max, T stepsize=1);
   void set_range(T min, T max, T stepsize=1);
   virtual Observable* clone() const {return new HistogramObservable<T,INT>(*this);}

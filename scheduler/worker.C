@@ -57,9 +57,10 @@ namespace scheduler {
 
 Worker::Worker(const ProcessList& w,const alps::Parameters&  myparms,int32_t n)
   : AbstractWorker(),
-    version(MCDump_run_version),
-    random(),
-    random_01(random,boost::uniform_real<>()),
+    version(MCDump_worker_version),
+    random_ptr(rng_factory.create(myparms.value_or_default("RNG","lagged_fibonacci607"))),
+    random(*random_ptr),
+    random_01(*random_ptr),
     node(n),
     parms(myparms),
     where(w),
@@ -71,14 +72,15 @@ Worker::Worker(const ProcessList& w,const alps::Parameters&  myparms,int32_t n)
   // TODO: create slave runs
 
   if (where.size())
-    seed_with_sequence(random,parms["SEED"]);
+    random.seed(parms["SEED"]);
 }
 
 Worker::Worker(const alps::Parameters&  myparms,int32_t n)
   : AbstractWorker(),
-    version(MCDump_run_version),
-    random(),
-    random_01(random,boost::uniform_real<>()),
+    version(MCDump_worker_version),
+    random_ptr(rng_factory.create(myparms.value_or_default("RNG","lagged_fibonacci607"))),
+    random(*random_ptr),
+    random_01(*random_ptr),
     node(n),
     parms(myparms),
     where(1),
@@ -90,7 +92,7 @@ Worker::Worker(const alps::Parameters&  myparms,int32_t n)
   // TODO: create slave runs
 
   if (where.size())
-    seed_with_sequence(random,parms["SEED"]);
+   random.seed(parms["SEED"]);
 }
 
 
@@ -107,18 +109,19 @@ void Worker::load_worker(IDump& dump)
     boost::throw_exception(std::runtime_error("dump does not contain a run"));
   int32_t u;
   dump >> u >> version;
-  if(version>MCDump_run_version) {
+  if(version>MCDump_worker_version) {
     std::string msg = "The run on dump is version " 
         + boost::lexical_cast<std::string,int32_t>(version) + 
         + " but this program can read only up to version "
-        + boost::lexical_cast<std::string,int32_t>(MCDump_run_version);
+        + boost::lexical_cast<std::string,int32_t>(MCDump_worker_version);
     boost::throw_exception(std::runtime_error(msg));
   }
 
   dump >> parms;
   std::string state;
   dump >> state;
-  random = boost::lexical_cast<random_type,std::string>(state);
+  std::stringstream rngstream(state);
+  random.read(rngstream);
   if(node==0) {
     int32_t dummy;
     info.load(dump,version);
@@ -131,7 +134,9 @@ void Worker::load_worker(IDump& dump)
 void Worker::save_worker(ODump& dump) const
 {
   dump << int32_t(MCDump_run) << int32_t(0) << version << parms;
-  dump << boost::lexical_cast<std::string,random_type>(random);
+  std::ostringstream rngstream;
+  rngstream << random;
+  dump << rngstream.str();
   if(node==0)
     dump << info;
   // TODO: save slave runs

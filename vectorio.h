@@ -50,6 +50,7 @@
 #else
 # include <strstream>
 # define istringstream istrstream
+# define ostringstream ostrstream
 #endif
 #include <stdexcept>
 
@@ -155,37 +156,13 @@ inline void write_vector(std::ostream& out, const CONTAINER& v)
 }
 
 template <class CONTAINER>
-class vector_writer_t
+inline std::string vector_writer(const CONTAINER& c)
 {
-public:
-  vector_writer_t(const CONTAINER& c) : c_(c) {}
-  void write(std::ostream& out) const {write_vector(out,c_);}
-private:
-  const CONTAINER& c_;
-};
-
-template <class CONTAINER>
-inline vector_writer_t<CONTAINER> vector_writer(const CONTAINER& c)
-{
-  return vector_writer_t<CONTAINER>(c);
+  std::ostringstream str;
+  write_vector(str,c);
+  return str.str();
 }
 
-} // end namespace lattice
-
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-namespace alps {
-#endif
-
-template <class CONTAINER>
-inline std::ostream& operator<<(std::ostream& out,
-				const alps::vector_writer_t<CONTAINER>& w)
-{
-  w.write(out);
-  return out;
-}
-
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-} // namespace alps
-#endif
+} // end namespace alps
 
 #endif // ALPS_VECTORIO_H

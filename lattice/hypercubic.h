@@ -150,7 +150,7 @@ public:
     cell_descriptor operator*() const { return lattice_->cell(offset_);}
     // operator-> looks harder to implement. any good ideas?
 
-  private:
+  protected:
     const lattice_type* lattice_;
     offset_type offset_;
   };
@@ -283,6 +283,27 @@ public:
     }    
   }
   
+  class momentum_iterator : public cell_iterator {
+  public:
+    momentum_iterator(cell_iterator it=cell_iterator()) : cell_iterator(it) {}
+    const vector_type& operator*() const { set_k(); return k_; }
+    const vector_type* operator->() const { set_k(); return &k_; }
+  private:
+    mutable vector_type k_;
+    void set_k() 
+    {
+      k_=*basis_vectors(*lattice_).first;
+      for (int i=0;i<dimension(*lattice_);++i)
+        k_[i]=offset_[i]*2.*M_PI/double(l->extent()[i]);
+    }
+  };
+
+  std::pair<momentum_iterator,momentum_iterator> momenta() const 
+  {
+    return std::make_pair(momentum_iterator(cells().first),momentum_iterator(cells().second));
+  }
+  
+  
 protected:
   extent_type extent_;
   std::vector<std::string> bc_;
@@ -296,6 +317,7 @@ struct lattice_traits<hypercubic_lattice<BASE,EX> >
   typedef typename hypercubic_lattice<BASE,EX>::offset_type offset_type;
 
   typedef typename hypercubic_lattice<BASE,EX>::basis_vector_iterator basis_vector_iterator;
+  typedef typename hypercubic_lattice<BASE,EX>::momentum_iterator momentum_iterator;
   typedef typename hypercubic_lattice<BASE,EX>::cell_iterator cell_iterator;
   typedef typename hypercubic_lattice<BASE,EX>::size_type size_type;
   typedef typename hypercubic_lattice<BASE,EX>::vector_type vector_type;

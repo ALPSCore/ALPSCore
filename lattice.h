@@ -6,6 +6,7 @@
 * $Id$
 *
 * Copyright (C) 2003 by Synge Todo <wistaria@comp-phys.org>
+*                    and Matthias Troyer <troyer@comp-phys.org>
 *
 * Permission is hereby granted, free of charge, to any person or organization 
 * obtaining a copy of the software covered by this license (the "Software") 
@@ -34,5 +35,5 @@
 *
 **************************************************************************/
 
-#include <alps/lattice/latticelibrary.h>
+#include <alps/lattice/latticefactory.h>
 #include <alps/lattice/parity.h>

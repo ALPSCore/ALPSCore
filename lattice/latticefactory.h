@@ -1,7 +1,7 @@
 /***************************************************************************
-* ALPS++/scheduler library
+* ALPS++/lattice library
 *
-* scheduler/latticeplugin.h
+* lattice/latticefactory.h
 *
 * $Id$
 *
@@ -38,13 +38,12 @@
 #define ALPS_SCHEDULER_LATTICEPLUGIN_H
 
 
-#include <alps/lattice.h>
+#include <alps/lattice/latticelibrary.h>
 
 namespace alps {
-namespace scheduler {
 
 template <class G=graph_factory<>::graph_type>
-class LatticePlugin
+class LatticeFactory
 {
 public:
   typedef G graph_type;
@@ -69,7 +68,7 @@ public:
   typedef typename graph_traits<graph_type>::neighbors_size_type neighbors_size_type;
   typedef typename graph_traits<graph_type>::neighbor_iterator neighbor_iterator;
   
-  LatticePlugin(const alps::Parameters& p)
+  LatticeFactory(const alps::Parameters& p)
    : factory_(p), 
      graph_(factory_.graph()), 
      is_bipartite_(set_parity(graph())),
@@ -120,7 +119,6 @@ private:
    typename property_map<bond_type_t,graph_type,int>::const_type bond_type_map_;
 };
 
-} // end namespace
 } // end namespace
 
 #endif

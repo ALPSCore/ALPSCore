@@ -41,6 +41,7 @@
 #include <alps/alea.h>
 #include <alps/osiris.h>
 #include <alps/parameters.h>
+#include <alps/random/rngfactory.h>
 #include <boost/smart_ptr.hpp>
 #include <boost/random.hpp>
 #include <boost/filesystem/path.hpp>
@@ -114,12 +115,12 @@ public:
 protected:
   int32_t version;
   int32_t user_version;
-  typedef boost::lagged_fibonacci607 random_type;
-  //typedef boost::mt19937 random_type;
-  random_type random;
-  boost::variate_generator<random_type&,boost::uniform_real<> > random_01;
-  double random_real(double a=0., double b=1.) 
-  { return boost::variate_generator<random_type&,boost::uniform_real<> >(random,boost::uniform_real<>(a,b))();}
+  typedef BufferedRandomNumberGeneratorBase random_type;
+  boost::shared_ptr<random_type> random_ptr;
+  random_type& random;
+  random_type& random_01;
+  double random_real(double a=0., double b=1.) { return a+b*random();}
+  //return boost::variate_generator<random_type&,boost::uniform_real<> >(random,boost::uniform_real<>(a,b))();
   int random_int(int a, int b) 
   { return a+int((b-a+1)*random());}
   //{ return boost::variate_generator<random_type&,boost::uniform_int<> >(random,boost::uniform_int<>(a,b))();}

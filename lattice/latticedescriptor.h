@@ -40,10 +40,13 @@
 
 #include <alps/config.h>
 
-#include <alps/parameters.h>
-#ifndef ALPS_WITHOUT_XML
-# include <alps/parser/parser.h>
+#ifdef ALPS_WITHOUT_XML
+#error "Lattice library requires XML support"
 #endif
+
+#include <alps/parameters.h>
+#include <alps/parser/parser.h>
+#include <alps/parser/xmlstream.h>
 #include <alps/lattice/coordinatelattice.h>
 #include <alps/lattice/hypercubic.h>
 
@@ -60,11 +63,9 @@ public:
   typedef lattice_traits<base_type>::basis_vector_iterator basis_vector_iterator;
   
   LatticeDescriptor() : dim_(0) {}
-#ifndef ALPS_WITHOUT_XML
   LatticeDescriptor(const alps::XMLTag&, std::istream&);
-#endif
 
-  void write_xml(std::ostream&, const std::string& = "") const;
+  void write_xml(oxstream&) const;
   const std::string& name() const { return name_;}
   std::size_t dimension() const { return dim_;}
 
@@ -92,12 +93,10 @@ public:
   
   FiniteLatticeDescriptor() : dim_(0) {}
   
-#ifndef ALPS_WITHOUT_XML
   FiniteLatticeDescriptor(const alps::XMLTag&, std::istream&, 
                           const LatticeMap& = LatticeMap());
-#endif
 
-  void write_xml(std::ostream&, const std::string& n= "") const;
+  void write_xml(oxstream&) const;
 
   const std::string& name() const { return name_;}
   void set_parameters(const alps::Parameters&);
@@ -133,15 +132,29 @@ typedef std::map<std::string,FiniteLatticeDescriptor> FiniteLatticeMap;
 namespace alps {
 #endif
 
-inline std::ostream& operator<<(std::ostream& out, const alps::LatticeDescriptor& l)
+inline alps::oxstream& operator<<(alps::oxstream& out, const alps::LatticeDescriptor& l)
 {
   l.write_xml(out);
   return out;
 }
 
-inline std::ostream& operator<<(std::ostream& out, const alps::FiniteLatticeDescriptor& l)
+inline alps::oxstream& operator<<(alps::oxstream& out, const alps::FiniteLatticeDescriptor& l)
 {
   l.write_xml(out);
+  return out;
+}
+
+inline std::ostream& operator<<(std::ostream& out, const alps::LatticeDescriptor& l)
+{
+  alps::oxstream xml(out);
+  xml << l;
+  return out;
+}
+
+inline std::ostream& operator<<(std::ostream& out, const alps::FiniteLatticeDescriptor& l)
+{
+  alps::oxstream xml(out);
+  xml << l;
   return out;
 }
 

@@ -36,5 +36,3 @@
 **************************************************************************/
 
 #include <alps/scheduler/montecarlo.h>
-#include <alps/scheduler/latticeplugin.h>
-#include <alps/scheduler/modelplugin.h>

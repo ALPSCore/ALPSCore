@@ -83,16 +83,16 @@ void LatticeLibrary::read_xml(const XMLTag& intag, std::istream& p)
         LatticeGraphDescriptor(tag,p,lattices_,finitelattices_,unitcells_);
     else if (tag.name=="GRAPH") {
       graphs_[tag.attributes["name"]]=coordinate_graph_type();
-      alps::read_graph_xml(tag,p,graphs_[tag.attributes["name"]]);
+      read_graph_xml(tag,p,graphs_[tag.attributes["name"]]);
     }
     else
       boost::throw_exception(std::runtime_error("encountered unknown tag <" + tag.name+ "> while parsing <LATTICES>"));
   }
 }
 
-void LatticeLibrary::write_xml(std::ostream& out) const
+void LatticeLibrary::write_xml(oxstream& out) const
 {
-  out << "<LATTICES>\n";
+  out << start_tag("LATTICES");
   for (LatticeMap::const_iterator it=lattices_.begin();it!=lattices_.end();++it)
     out << it->second;
   for (FiniteLatticeMap::const_iterator it=finitelattices_.begin();it!=finitelattices_.end();++it)
@@ -102,8 +102,8 @@ void LatticeLibrary::write_xml(std::ostream& out) const
   for (LatticeGraphMap::const_iterator it=latticegraphs_.begin();it!=latticegraphs_.end();++it)
     out << it->second;
   for (GraphMap::const_iterator it=graphs_.begin();it!=graphs_.end();++it)
-    alps::write_graph_xml(out,it->second,it->first);
-  out << "</LATTICES>\n";
+    write_graph_xml(out,it->second,it->first);
+  out << end_tag("LATTICES");
 }
 
 bool LatticeLibrary::has_graph(const std::string& name) const

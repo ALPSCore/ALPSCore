@@ -1,7 +1,7 @@
 /***************************************************************************
-* ALPS++/scheduler library
+* ALPS++/model library
 *
-* scheduler/modelplugin.h
+* model/modelfactory.h
 *
 * $Id$
 *
@@ -34,18 +34,17 @@
 *
 **************************************************************************/
 
-#ifndef ALPS_SCHEDULER_MODELPLUGIN_H
-#define ALPS_SCHEDULER_MODELPLUGIN_H
+#ifndef ALPS_MODEL_MODELFACTORY_H
+#define ALPS_MODEL_MODELFACTORY_H
 
-#include <alps/model.h>
+#include <alps/model/modellibrary.h>
 
 namespace alps {
-namespace scheduler {
 
-class ModelPlugin
+class ModelFactory
 {
 public:  
-  ModelPlugin(alps::Parameters& p) // it updates the parameter object passed to it!
+  ModelFactory(alps::Parameters& p) // it updates the parameter object passed to it!
    : model_library_(p), 
      model_(model_library_.hamiltonian(p["MODEL"])) 
   {
@@ -65,7 +64,6 @@ private:
    HamiltonianDescriptor<short> model_;
 };
 
-} // end namespace
 } // end namespace
 
 #endif

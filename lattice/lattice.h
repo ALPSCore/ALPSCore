@@ -147,7 +147,16 @@ origin(const typename lattice_traits<Lattice>::cell_descriptor& c, const Lattice
     v = v + (*first) * (*off);
   return v;
 }
-  void prevent_optimization();
+
+void prevent_optimization();
+
+template <class Lattice>
+inline std::pair<typename lattice_traits<Lattice>::momentum_iterator,
+                 typename lattice_traits<Lattice>::momentum_iterator>
+momenta(const Lattice& l)
+{
+  return l.momenta();
+}
 
 } // end namespace alps
 

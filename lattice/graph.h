@@ -43,6 +43,7 @@
 #ifndef ALPS_WITHOUT_XML
 
 #include <alps/parser/parser.h>
+#include <alps/parser/xmlstream.h>
 #include <alps/lattice/graphproperties.h>
 #include <alps/lattice/graph_traits.h>
 #include <alps/lattice/coordinate_traits.h>
@@ -60,7 +61,7 @@ namespace alps {
 // XML I/O for graphs
 
 template <class GRAPH>
-inline void write_graph_xml(std::ostream& out, const GRAPH& g, const std::string& n="")
+inline void write_graph_xml(oxstream& out, const GRAPH& g, const std::string& n="")
 {
   typedef GRAPH graph_type;
   typedef const GRAPH const_graph_type;
@@ -88,46 +89,46 @@ inline void write_graph_xml(std::ostream& out, const GRAPH& g, const std::string
   typename property_map<dimension_t,graph_type,uint32_t>::const_type
     graphdimension = get_or_default(dimension_t(),g,uint32_t(0));
     
-  out << "<GRAPH";
+  out << start_tag("GRAPH");
 
   std::string name(n);
   if (name=="")
     name=graphname;
   if(name!="")
-    out << " name=\"" << name << "\"";
+    out << attribute("name", name);
   
   uint32_t dim = graphdimension;
   if (dim>0)
-    out << " dimension=\"" << dim << "\"";
+    out << attribute("dimension", dim);
     
-  out << " vertices=\"" << boost::num_vertices(g) 
-      << "\" edges=\"" << boost::num_edges(g) << "\">\n";
+  out << attribute("vertices", boost::num_vertices(g))
+      << attribute("edges", boost::num_edges(g));
       
   for (vertex_iterator it=boost::vertices(g).first;
                        it!=boost::vertices(g).second;++it) {
-    out << "  <VERTEX id=\"" << vertexindex[*it]+1 <<"\"";
+    out << start_tag("VERTEX") << attribute("id", vertexindex[*it]+1);
     if (has_property<vertex_type_t,graph_type>::vertex_property)
-      out << " type=\"" << vertextype[*it] << "\"";
-    out << ">";
+      out << attribute("type", vertextype[*it]);
     if (has_property<coordinate_t,graph_type>::vertex_property)
       if(alps::coordinates(vertexcoordinate[*it]).first != 
-         alps::coordinates(vertexcoordinate[*it]).second)
-        out << "<COORDINATE>" << vector_writer(vertexcoordinate[*it]) << "</COORDINATE>";
-    out << "</VERTEX>\n";
+         alps::coordinates(vertexcoordinate[*it]).second) {
+        no_linebreak(out) << start_tag("COORDINATE");
+        no_linebreak(out) << vector_writer(vertexcoordinate[*it]) << end_tag("COORDINATE");
+      }
+    out << end_tag("VERTEX");
   }
   typedef typename boost::graph_traits<graph_type>::edge_iterator edge_iterator;
   for (edge_iterator it=boost::edges(g).first;
                      it!=boost::edges(g).second;++it) {
-    out << "  <EDGE source=\"" << vertexindex[boost::source(*it,g)]+1 << "\" target=\""
-        << vertexindex[boost::target(*it,g)]+1 << "\"";
+    out << start_tag("EDGE") << attribute("source", vertexindex[boost::source(*it,g)]+1)
+        << attribute("target", vertexindex[boost::target(*it,g)]+1);
     if (has_property<boost::edge_index_t,graph_type>::edge_property)
-      out << " id=\"" << edgeindex[*it] << "\"";
+      out << attribute("id", edgeindex[*it]);
     if (has_property<edge_type_t,graph_type>::edge_property)
-      out << " type=\"" << edgetype[*it] << "\"";
-    out << "/>\n";
+      out << attribute("type", edgetype[*it]);
+    out << end_tag("EDGE");
   }
-
-  out << "</GRAPH>\n";
+  out << end_tag("GRAPH");
 }
 
 template <class GRAPH>
@@ -425,14 +426,21 @@ void disorder_sites(G& g, MAP& t)
 namespace alps {
 #endif
 
-inline std::ostream& operator<<(std::ostream& out, const alps::coordinate_graph_type& g)
+inline alps::oxstream& operator<<(alps::oxstream& out, const alps::coordinate_graph_type& g)
 {
   alps::write_graph_xml(out,g);
   return out;
 }
 
+inline std::ostream& operator<<(std::ostream& out, const alps::coordinate_graph_type& g)
+{
+  alps::oxstream xml(out);
+  xml << g;
+  return out;
+}
+
 template<class T0, class T1, class T2, class T3, class T4, class T5, class T6>
-inline std::ostream& operator<<(std::ostream& out, const boost::adjacency_list<T0, T1, T2, T3, T4, T5, T6>& g)
+inline alps::oxstream& operator<<(alps::oxstream& out, const boost::adjacency_list<T0, T1, T2, T3, T4, T5, T6>& g)
 {
   alps::write_graph_xml(out,g);
   return out;

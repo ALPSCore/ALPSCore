@@ -39,13 +39,11 @@
 #define ALPS_LATTICE_LIBRARY_H
 
 #include <alps/config.h>
-
-#ifndef ALPS_WITHOUT_XML
-
 #include <alps/lattice/latticegraph.h>
 #include <alps/lattice/latticegraphdescriptor.h>
 #include <alps/lattice/latticedescriptor.h>
 #include <alps/lattice/graph.h>
+#include <alps/parser/xmlstream.h>
 
 #include <fstream>
 
@@ -56,12 +54,12 @@ class LatticeLibrary
 public:
   LatticeLibrary() {};
   LatticeLibrary(std::istream& in) { read_xml(in);}
-  LatticeLibrary(const alps::XMLTag& tag, std::istream& p) {read_xml(tag,p);}
+  LatticeLibrary(const XMLTag& tag, std::istream& p) {read_xml(tag,p);}
   LatticeLibrary(const Parameters& p);
   void read_xml(std::istream& in);
-  void read_xml(const alps::XMLTag& tag, std::istream& p);
+  void read_xml(const XMLTag& tag, std::istream& p);
 
-  void write_xml(std::ostream&) const;
+  void write_xml(oxstream&) const;
   
   bool has_graph(const std::string& name) const;
   bool has_lattice(const std::string& name) const;
@@ -77,7 +75,7 @@ public:
 
 private:
   typedef std::map<std::string,LatticeGraphDescriptor> LatticeGraphMap;
-  typedef std::map<std::string,alps::coordinate_graph_type> GraphMap;
+  typedef std::map<std::string,coordinate_graph_type> GraphMap;
 
   LatticeMap lattices_;
   FiniteLatticeMap finitelattices_;
@@ -93,12 +91,12 @@ public:
   typedef G graph_type;
   graph_factory() : g_(0), to_delete_(false) {}
   graph_factory(std::istream& in) : LatticeLibrary(in), g_(0), to_delete_(false) {}
-  graph_factory(std::istream& in, const alps::Parameters& parm) 
+  graph_factory(std::istream& in, const Parameters& parm) 
     : LatticeLibrary(in), g_(0), to_delete_(false) { make_graph(parm);}
-  graph_factory(const alps::Parameters& parm);
+  graph_factory(const Parameters& parm);
   ~graph_factory() { if (to_delete_) delete g_;}
 
-  void make_graph(const alps::Parameters& p);
+  void make_graph(const Parameters& p);
   graph_type& graph()
   {
     if (g_==0) boost::throw_exception(std::runtime_error("no graph created in graph_factory"));
@@ -130,7 +128,7 @@ inline bool LatticeLibrary::get_graph(G& g, const std::string& name) const
 }
 
 template <class G>
-inline alps::graph_factory<G>::graph_factory(const alps::Parameters& parms)
+inline graph_factory<G>::graph_factory(const Parameters& parms)
  : LatticeLibrary(parms), g_(0), to_delete_(false)
 {
   make_graph(parms);
@@ -138,7 +136,7 @@ inline alps::graph_factory<G>::graph_factory(const alps::Parameters& parms)
 
 template <class G>
 inline void
-alps::graph_factory<G>::make_graph(const alps::Parameters& parms)
+graph_factory<G>::make_graph(const Parameters& parms)
 {
   std::string name;
   bool have_graph=false;
@@ -176,9 +174,16 @@ alps::graph_factory<G>::make_graph(const alps::Parameters& parms)
 namespace alps {
 #endif
 
+inline alps::oxstream& operator<<(alps::oxstream& xml, const alps::LatticeLibrary& l)
+{
+  l.write_xml(xml);
+  return xml;
+}
+
 inline std::ostream& operator<<(std::ostream& os, const alps::LatticeLibrary& l)
 {
-  l.write_xml(os);
+  oxstream xml(os);
+  xml << l;
   return os;
 }
 
@@ -190,8 +195,6 @@ inline std::istream& operator>>(std::istream& is, alps::LatticeLibrary& l)
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // end namespace alps
-#endif
-
 #endif
 
 #endif // ALPS_LATTICE_LIBRARY_H

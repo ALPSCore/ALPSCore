@@ -79,9 +79,9 @@ void ModelLibrary::read_xml(const XMLTag& intag, std::istream& p)
   }
 }
 
-void ModelLibrary::write_xml(std::ostream& out) const
+void ModelLibrary::write_xml(oxstream& out) const
 {
-  out << "<MODELS>\n";
+  out << start_tag("MODELS");
   for (SiteBasisDescriptorMap::const_iterator it=sitebases_.begin();it!=sitebases_.end();++it)
     out << it->second;
   for (BasisDescriptorMap::const_iterator it=bases_.begin();it!=bases_.end();++it)
@@ -90,7 +90,7 @@ void ModelLibrary::write_xml(std::ostream& out) const
     out << it->second;
   for (HamiltonianDescriptorMap::const_iterator it=hamiltonians_.begin();it!=hamiltonians_.end();++it)
     out << it->second;
-  out << "</MODELS>\n";
+  out << end_tag("MODELS");
 }
 
 bool ModelLibrary::has_basis(const std::string& name) const

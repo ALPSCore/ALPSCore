@@ -38,8 +38,8 @@
 #define ALPS_SCHEDULER_MONTECARLO_H
 
 #include <alps/scheduler/scheduler.h>
-#include <alps/scheduler/modelplugin.h>
-#include <alps/scheduler/latticeplugin.h>
+#include <alps/model/modelfactory.h>
+#include <alps/lattice/latticefactory.h>
 #include <alps/scheduler/worker.h>
 #include <alps/scheduler/task.h>
 #include <alps/lattice.h>
@@ -101,21 +101,21 @@ private:
 
 
 template <class G=graph_factory<>::graph_type>
-class LatticeMCRun : public MCRun, public LatticePlugin<G>
+class LatticeMCRun : public MCRun, public LatticeFactory<G>
 {
 public:
   LatticeMCRun(const ProcessList& w,const alps::Parameters& p,int n)
-   : MCRun(w,p,n), LatticePlugin<G>(parms)
+   : MCRun(w,p,n), LatticeFactory<G>(parms)
   {}
 };
 
 
 template <class G=graph_factory<>::graph_type>
-class LatticeModelMCRun : public LatticeMCRun<G>, public ModelPlugin
+class LatticeModelMCRun : public LatticeMCRun<G>, public ModelFactory
 {
 public:  
   LatticeModelMCRun(const ProcessList& w,const alps::Parameters& p,int n)
-   : LatticeMCRun<G>(w,p,n), ModelPlugin(parms)
+   : LatticeMCRun<G>(w,p,n), ModelFactory(parms)
   {}
 };
 

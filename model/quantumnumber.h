@@ -41,15 +41,15 @@
 #define ALPS_MODEL_QUANTUMNUMBER_H
 
 #include <alps/config.h>
-#include <alps/parameters.h>
-#include <alps/expression.h>
-
-#ifndef ALPS_WITHOUT_XML
-#include <alps/parser/parser.h>
+#ifdef ALPS_WITHOUT_XML
+#error "Model library needs XML support"
 #endif
 
+#include <alps/parser/xmlstream.h>
+#include <alps/parser/parser.h>
+#include <alps/parameters.h>
+#include <alps/expression.h>
 #include <boost/lexical_cast.hpp>
-
 #include <set>
 #include <stdexcept>
 #include <string>
@@ -212,9 +212,7 @@ public:
  
   const QuantumNumber& operator+=(const QuantumNumber& rhs);
 
-#ifndef ALPS_WITHOUT_XML
-  void write_xml(std::ostream&, const std::string& = "") const;
-#endif
+  void write_xml(alps::oxstream&) const;
   bool fermionic() const { return _fermionic;}
   bool set_parameters(const Parameters&); // returns true if it can be evaluated
   bool depends_on(const Parameters::key_type& s) const;
@@ -344,36 +342,40 @@ bool QuantumNumber<I>::evaluate(const Parameters& p) const
 }
   
 template <class I>
-void QuantumNumber<I>::write_xml(std::ostream& os,  const std::string& prefix) const
+void QuantumNumber<I>::write_xml(oxstream& os) const
 {
-  os << prefix << "<QUANTUMNUMBER name=\"" << name() 
-     << "\" min=\"" << min_expression() <<  "\" max=\"" << max_expression() << "\"";
+  os << start_tag("QUANTUMNUMBER") << attribute("name", name())
+     << attribute("min", min_expression()) << attribute("max", max_expression());
   if (fermionic())
-    os << " type=\"fermionic\"";
-   os << "/>\n";
+    os << attribute("type","fermionic");
+   os << end_tag("QUANTUMNUMBER");
 }
 
 #endif
 
 } // namespace alps
-
-#ifndef ALPS_WITHOUT_XML
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 namespace alps {
 #endif
 
 template <class I>
-inline std::ostream& operator<<(std::ostream& out, const alps::QuantumNumber<I>& q)
+inline alps::oxstream& operator<<(alps::oxstream& out, const alps::QuantumNumber<I>& q)
 {
   q.write_xml(out);
   return out;	
 }
 
+template <class I>
+inline std::ostream& operator<<(std::ostream& out, const alps::QuantumNumber<I>& q)
+{
+  alps::oxstream xml(out);
+  xml << q;
+  return out;	
+}
+
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // namespace alps
-#endif
-
 #endif
 
 #endif

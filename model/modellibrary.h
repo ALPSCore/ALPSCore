@@ -43,7 +43,7 @@
 
 #include <alps/model/sitebasis.h>
 #include <alps/model/operator.h>
-#include <alps/model/basis.h>
+#include <alps/model/basisstates.h>
 #include <alps/parser/parser.h>
 
 #include <string>
@@ -62,7 +62,7 @@ public:
   
   void read_xml(std::istream& in) { read_xml(parse_tag(in),in);}
   void read_xml(const XMLTag& tag, std::istream& p);
-  void write_xml(std::ostream&) const;
+  void write_xml(alps::oxstream&) const;
   
   bool has_basis(const std::string& name) const;
   bool has_site_basis(const std::string& name) const;
@@ -95,9 +95,16 @@ private:
 namespace alps {
 #endif
 
-inline std::ostream& operator<<(std::ostream& os, const alps::ModelLibrary& l)
+inline alps::oxstream& operator<<(alps::oxstream& os, const alps::ModelLibrary& l)
 {
   l.write_xml(os);
+  return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const alps::ModelLibrary& l)
+{
+  alps::oxstream xml(os);
+  xml << l;
   return os;
 }
 

@@ -162,37 +162,39 @@ const GraphUnitCell& GraphUnitCell::operator=(const EmptyUnitCell& e)
   return *this;
 }
 
-void GraphUnitCell::write_xml(std::ostream& xml, const std::string& prefix) const
+void GraphUnitCell::write_xml(oxstream& xml) const
 {
-  xml << prefix << "<UNITCELL";
+  xml << start_tag("UNITCELL");
   if (name()!="")
-    xml << " name=\"" << name() << "\"";
-  xml << " dimension=\"" << dimension() << "\"";
-  xml << " vertices=\"" << boost::num_vertices(graph_) << "\">\n";
+    xml << attribute("name", name());
+  xml << attribute("dimension", dimension());
+  xml << attribute("vertices", num_vertices(graph_));
   
   typedef boost::graph_traits<graph_type>::vertex_iterator vertex_iterator;
   typedef boost::graph_traits<graph_type>::edge_iterator edge_iterator;
   for (vertex_iterator it=boost::vertices(graph_).first;
                        it!=boost::vertices(graph_).second;++it) {
-    xml << prefix << "  <VERTEX id=\"" << boost::get(vertex_index_t(),graph_,*it)+1 <<"\" type=\"" 
-        << boost::get(vertex_type_t(),graph_,*it) << "\"";
+    xml << start_tag("VERTEX") 
+        << attribute("id", boost::get(vertex_index_t(),graph_,*it)+1) 
+        << attribute("type", boost::get(vertex_type_t(),graph_,*it));
     if (alps::dimension(boost::get(coordinate_t(),graph_,*it)))
-      xml << " coordinate=\"" << vector_writer(boost::get(coordinate_t(),graph_,*it)) << "\"";
-    xml << "/>\n";
+      xml << attribute("coordinate", vector_writer(boost::get(coordinate_t(),graph_,*it)));
+    xml << end_tag("VERTEX");
   }
   typedef boost::graph_traits<graph_type>::edge_iterator edge_iterator;
   for (edge_iterator it=boost::edges(graph_).first;
                      it!=boost::edges(graph_).second;++it) {
-    xml << prefix << "  <EDGE type=\"" << boost::get(edge_type_t(),graph_,*it) << "\">";
-    xml << "<SOURCE vertex=\""<< boost::source(*it,graph_)+1 << "\"";
+    xml << start_tag("EDGE") << attribute("type", boost::get(edge_type_t(),graph_,*it));
+    no_linebreak(xml) << start_tag("SOURCE") << attribute("vertex",boost::source(*it,graph_)+1);
     if (boost::get(source_offset_t(),graph_,*it).size())
-      xml << " offset=\"" << vector_writer(boost::get(source_offset_t(),graph_,*it)) << "\"";
-    xml << "/><TARGET vertex=\"" << boost::target(*it,graph_)+1 << "\"";
+      xml << attribute("offset", vector_writer(boost::get(source_offset_t(),graph_,*it)));
+    no_linebreak(xml) << end_tag("SOURCE") << start_tag("TARGET");
+    no_linebreak(xml) << attribute("vertex", boost::target(*it,graph_)+1);
     if (boost::get(target_offset_t(),graph_,*it).size())
-      xml << " offset=\"" << vector_writer(boost::get(target_offset_t(),graph_,*it)) << "\"";
-    xml << "/></EDGE>\n";
+      xml << attribute("offset", vector_writer(boost::get(target_offset_t(),graph_,*it)));
+    xml << end_tag("TARGET") << end_tag("EDGE");
   }
-  xml << prefix << "</UNITCELL>\n";
+  xml << end_tag("UNITCELL");
 }
 
 } // end namespace alps

@@ -39,9 +39,13 @@
 #define ALPS_LATTICE_UNITCELL_H
 
 #include <alps/config.h>
-#ifndef ALPS_WITHOUT_XML
-# include <alps/parser/parser.h>
+
+#ifdef ALPS_WITHOUT_XML
+#error "Lattice library requires XML support"
 #endif
+
+#include <alps/parser/parser.h>
+#include <alps/parser/xmlstream.h>
 #include <alps/lattice/graph.h>
 #include <alps/lattice/graphproperties.h>
 #include <alps/lattice/dimensional_traits.h>
@@ -80,16 +84,9 @@ public:
 
   GraphUnitCell();
   GraphUnitCell(const EmptyUnitCell& e);
-#ifndef ALPS_WITHOUT_XML
-  GraphUnitCell(const alps::XMLTag&, std::istream&);
-#endif
-
+  GraphUnitCell(const XMLTag&, std::istream&);
   const GraphUnitCell& operator=(const EmptyUnitCell& e);
-
-#ifndef ALPS_WITHOUT_XML
-  void write_xml(std::ostream&, const std::string& = "") const;
-#endif
-
+  void write_xml(oxstream&) const;
   graph_type& graph() { return graph_;}
   const graph_type& graph() const { return graph_;}
   std::size_t dimension() const { return dim_;}
@@ -116,22 +113,25 @@ typedef std::map<std::string,GraphUnitCell> UnitCellMap;
 
 } // end namespace alps
 
-#ifndef ALPS_WITHOUT_XML
-
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 namespace alps {
 #endif
 
-inline std::ostream& operator<<(std::ostream& out, const alps::GraphUnitCell& u)
+inline alps::oxstream& operator<<(alps::oxstream& out, const alps::GraphUnitCell& u)
 {
   u.write_xml(out);
   return out;	
 }
 
+inline std::ostream& operator<<(std::ostream& out, const alps::GraphUnitCell& u)
+{
+  oxstream xml(out);
+  xml << u;
+  return out;	
+}
+
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // end namespace alps
-#endif
-
 #endif
 
 #endif // ALPS_LATTICE_UNITCELL_H

@@ -41,6 +41,7 @@
 #define ALPS_ALEA_OBSERVABLESET_H
 
 #include <alps/config.h>
+#include <alps/factory.h>
 #include <alps/alea/observable.h>
 #include <alps/parser/parser.h>
 #include <alps/xml.h>
@@ -55,54 +56,26 @@
 
 namespace alps {
 
-namespace detail {
-
-inline void deleteit(Observable& obs)
-{
-  delete &obs;
-}
-
-class AbstractObservableFactory {
-public:
-  virtual Observable* make(const std::string& name) const =0;
-};
-
-template <class T>
-class ObservableFactory : public AbstractObservableFactory
-{
-public:
-  Observable* make(const std::string& name ) const { return new T(name);}
-;
-};
-
-class Factory : public std::map<uint32_t,detail::AbstractObservableFactory*>
-{
-public:
-  Factory();
-  ~Factory();
-};
-} // end namespace detail
-
-
 /** A class to collect the various measurements performed in a simulation
     It is implemented as a map, with std::string as key type */
     
+class ObservableFactory : public factory<uint32_t,Observable>
+{
+public:
+  ObservableFactory();
+  template <class T>
+  void register_observable() { register_type<T>(T::version);}
+};
+
 class ObservableSet: public std::map<std::string,Observable*>
 {
   typedef std::map<std::string,Observable*> base_type; 
-  static detail::Factory factory_;
+  static ObservableFactory factory_;
+  
  public:
-  /// register a class derived from observable to allow automatic loading
   template <class T>
-  static void register_type()
-  {
-#ifndef ALPS_NO_DELETE
-    if (factory_.find(T::version)!=factory_.end())
-      delete factory_[T::version] ;
-#endif
-    factory_[T::version] = new detail::ObservableFactory<T>();
-  }
-
+  static void register_observable() { factory_.register_observable<T>();}
+  
   /// the default constructor
   ObservableSet() {};
   /// sign problem support requires a non-trivial copy constructor

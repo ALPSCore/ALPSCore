@@ -92,23 +92,24 @@ LatticeDescriptor::LatticeDescriptor(const XMLTag& intag, std::istream& p)
 }
 
 
-void LatticeDescriptor::write_xml(std::ostream& xml, const std::string& prefix) const
+void LatticeDescriptor::write_xml(oxstream& xml) const
 {
-    xml << prefix << "<LATTICE";
-    if (name()!="")
-      xml << " name=\"" << name() << "\"";
-    xml << " dimension=\"" << dimension();
+  xml << start_tag("LATTICE");
+  if (name()!="")
+    xml << attribute("name", name());
+  xml << attribute("dimension", dimension());
   for (Parameters::const_iterator it=lparms_.begin();it!=lparms_.end();++it)
-    xml << prefix << "  <PARAMETER name=\"" << it->key() << "\" default=\"" << it->value() << "\"/>\n";
+    xml << start_tag("PARAMETER") << attribute("name", it->key()) << attribute("default", it->value())
+        << end_tag("PARAMETER");
   if (!basis_vectors_.empty()) {
-    xml << "\">\n";
-    xml << prefix << "  <BASIS>\n";
-    for (int i=0;i<basis_vectors_.size();++i)
-      xml << prefix << "    <VECTOR>" << vector_writer(basis_vectors_[i]) << "</VECTOR>\n";
-    xml << prefix << "  </BASIS>\n";	
-    xml << prefix << "</LATTICE>\n";
-  } else
-    xml << "\"/>\n";
+    xml << start_tag("BASIS");
+    for (int i=0;i<basis_vectors_.size();++i) {
+      xml << start_tag("VECTOR");
+      no_linebreak(xml) << vector_writer(basis_vectors_[i]) << end_tag("VECTOR");
+    }
+    xml << end_tag("BASIS");	
+  }
+  xml << end_tag("LATTICE");
 }
 
 FiniteLatticeDescriptor::FiniteLatticeDescriptor(const XMLTag& intag, std::istream& p,
@@ -198,24 +199,24 @@ FiniteLatticeDescriptor::FiniteLatticeDescriptor(const XMLTag& intag, std::istre
     boost::throw_exception(std::runtime_error("<BOUNDARY> element missing in <FINITELATTICE>"));
 }
 
-void FiniteLatticeDescriptor::write_xml(std::ostream& xml, const std::string& prefix) const
+void FiniteLatticeDescriptor::write_xml(oxstream& xml) const
 {
-  xml << prefix << "<FINITELATTICE";
+  xml << start_tag("FINITELATTICE");
   if(name()!="")
-    xml << " name=\"" << name() << "\"";
-  xml << ">\n";
+    xml << attribute("name",  name());
   if (lattice_name_=="")
-    lattice_.write_xml(xml, prefix + "  ");
+    xml << lattice_;
   else
-    xml << prefix << "  <LATTICE ref=\"" << lattice_name_ << "\"/>\n";
+    xml << start_tag("LATTICE") << attribute("ref", lattice_name_) << end_tag("LATTICE");
   for (Parameters::const_iterator it=flparms_.begin();it!=flparms_.end();++it)
-    xml << prefix << "  <PARAMETER name=\"" << it->key() << "\" default=\"" << it->value() << "\"/>\n";
+    xml << start_tag("PARAMETER") << attribute("name", it->key()) 
+        << attribute("default", it->value()) << end_tag("PARAMETER");
   for (int i=0;i<dimension();++i) 
-    xml << prefix << "  <EXTENT dimension=\"" << i+1 << "\" size=\"" << extent_[i] << "\"/>\n";
+    xml << start_tag("EXTENT") << attribute("dimension", i+1) << attribute("size", extent_[i]) << end_tag();
   for (int i=0;i<dimension();++i)
     if (bc_[i] != "")
-      xml << prefix << "  <BOUNDARY dimension=\"" << i+1 << "\" type=\"" << bc_[i] << "\"/>\n";
-  xml << prefix << "</FINITELATTICE>\n";
+      xml  << start_tag("BOUNDARY") << attribute("dimension", i+1) << attribute("type", bc_[i]) << end_tag();
+  xml << end_tag("FINITELATTICE");
 }
 #endif
 

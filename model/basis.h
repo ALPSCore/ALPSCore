@@ -52,10 +52,8 @@ public:
   typedef std::map<std::string,SiteBasisDescriptor<I> > sitebasis_map_type;
 
   SiteBasisMatch() : type_(-2) {} // matches no site type
-#ifndef ALPS_WITHOUT_XML
   SiteBasisMatch(const XMLTag&, std::istream&,const sitebasis_map_type& bases_= sitebasis_map_type());
-  void write_xml(std::ostream&, const std::string& = "") const;
-#endif
+  void write_xml(oxstream&) const;
   bool match_type(int type) const { return type_==-1 || type==type_;}
 private:
   int type_;
@@ -72,10 +70,8 @@ public:
   typedef typename base_type::const_iterator const_iterator;
   typedef std::map<std::string,SiteBasisDescriptor<I> > sitebasis_map_type;
   BasisDescriptor() {}
-#ifndef ALPS_WITHOUT_XML
   BasisDescriptor(const XMLTag&, std::istream&,const sitebasis_map_type& bases_= sitebasis_map_type());
-  void write_xml(std::ostream&, const std::string& = "") const;
-#endif
+  void write_xml(oxstream&) const;
   const SiteBasisDescriptor<I>& site_basis(int type=0) const;
   const std::string& name() const { return name_;}
   bool set_parameters(const Parameters& p);
@@ -83,92 +79,8 @@ private:
   std::string name_;
 };
 
-template <class I>
-class BasisStatesDescriptor : public std::vector<SiteBasisStates<I> >
-{
-public:
-  typedef std::vector<SiteBasisStates<I> > base_type;
-  typedef typename base_type::const_iterator const_iterator;
-  template <class G> BasisStatesDescriptor(const BasisDescriptor<I>& b, const G& graph);
-  const BasisDescriptor<I>& basis() const { return basis_;}
-private:
-  BasisDescriptor<I> basis_;
-};
-
-template <class I, class S=std::vector<StateDescriptor<I> > >
-class BasisStates : public std::vector<S>
-{
-public:
-  typedef std::vector<S> base_type;
-  typedef typename base_type::const_iterator const_iterator;
-  typedef S value_type;
-  typedef typename base_type::size_type size_type;
-  BasisStates(const BasisStatesDescriptor<I>& b);
-  size_type index(const value_type& x) const;
-  bool check_sort() const;
-};
 
 // -------------------------- implementation -----------------------------------
-
-template <class I, class S>
-bool BasisStates<I,S>::check_sort() const
-{
-  for (int i=0;i<size()-1;++i)
-    if ((*this)[i]>=(*this)[i+1])
-      return false;
-  return true;
-}
-
-template <class I, class S>
-BasisStates<I,S>::BasisStates(const BasisStatesDescriptor<I>& b)
-{
-  std::vector<int> idx(b.size(),0);
-  if (b.size())
-  while (true) {
-    int k=idx.size()-1;
-    while (idx[k]>=b[k].size()) {
-      if (b[k].size()==0)
-        boost::throw_exception(std::runtime_error("No states for site basis " + 
-	     boost::lexical_cast<std::string, SiteBasisDescriptor<I> >(b[k].basis())));
-      idx[k]=0;
-      --k;
-      if (k<0)
-        return;
-      else
-        ++idx[k];
-    }
-    value_type v;
-    for (int i=0;i<idx.size();++i) 
-      v.push_back(b[i][idx[i]]);
-    push_back(v);
-    idx[idx.size()-1]++;
-  }
-  if (!check_sort())
-    boost::throw_exception(std::logic_error("Basis not sorted correctly"));
-}
-
-
-template <class I, class S>
-typename BasisStates<I,S>::size_type BasisStates<I,S>::index(const typename BasisStates<I,S>::value_type& x) const
-{
-  if (binary_search(begin(),end(),x))
-    return lower_bound(begin(),end(),x)-begin();
-  else
-    return size();
-  //return std::find(begin(),end(),x)-begin();
-}
-
-
-template <class I> template <class G>
-BasisStatesDescriptor<I>::BasisStatesDescriptor(const BasisDescriptor<I>& b, const G& g)
- : basis_(b)
-{
-  // construct SiteBasisStates for each site
-  typename property_map<site_type_t,G,int>::const_type site_type(get_or_default(site_type_t(),g,0));
-  for (typename boost::graph_traits<G>::vertex_iterator it=sites(g).first;it!=sites(g).second ; ++it) {
-    push_back(SiteBasisStates<I>(basis_.site_basis(site_type[*it])));
-  }
-}
 
 
 template <class I>
@@ -236,28 +148,26 @@ BasisDescriptor<I>::BasisDescriptor(const XMLTag& intag, std::istream& is, const
 }
 
 template <class I>
-void SiteBasisMatch<I>::write_xml(std::ostream& os,  const std::string& prefix) const
+void SiteBasisMatch<I>::write_xml(oxstream& os) const
 {
-  os << prefix << "<SITEBASIS";
+  os << start_tag("SITEBASIS");
   if (type_>=0) 
-    os << " type=\"" << type_ << "\"";
+    os << attribute("type", type_);
   if (sitebasis_name_!="")
-    os << " ref=\"" << sitebasis_name_ << "\"/>\n";
-  else {
-    os << ">\n";
+    os << attribute("ref", sitebasis_name_);
+  else
     for (const_iterator it=begin();it!=end();++it)
-      it->write_xml(os,prefix+"  ");
-    os << prefix << "</SITEBASIS>\n";
-  }
+      os << *it;
+  os << end_tag("SITEBASIS");
 }
 
 template <class I>
-void BasisDescriptor<I>::write_xml(std::ostream& os,  const std::string& prefix) const
+void BasisDescriptor<I>::write_xml(oxstream& os) const
 {
-  os << prefix << "<BASIS name=\"" << name() << "\">\n";
+  os << start_tag("BASIS") << attribute("name", name());
   for (const_iterator it=begin();it!=end();++it)
-    it->write_xml(os,prefix+"  ");
-  os << prefix << "</BASIS>\n";
+    os << *it;
+  os << end_tag("BASIS");
 }
 
 #endif
@@ -271,18 +181,36 @@ namespace alps {
 #ifndef ALPS_WITHOUT_XML
 
 template <class I>
-inline std::ostream& operator<<(std::ostream& out, const alps::SiteBasisMatch<I>& q)
+inline alps::oxstream& operator<<(alps::oxstream& out, const alps::SiteBasisMatch<I>& q)
+{
+  q.write_xml(out);
+  return out;	
+}
+
+
+template <class I>
+inline alps::oxstream& operator<<(alps::oxstream& out, const alps::BasisDescriptor<I>& q)
 {
   q.write_xml(out);
   return out;	
 }
 
 template <class I>
-inline std::ostream& operator<<(std::ostream& out, const alps::BasisDescriptor<I>& q)
+inline std::ostream& operator<<(std::ostream& out, const alps::SiteBasisMatch<I>& q)
 {
-  q.write_xml(out);
+  alps::oxstream xml(out);
+  xml << q;
   return out;	
 }
+
+template <class I>
+inline std::ostream& operator<<(std::ostream& out, const alps::BasisDescriptor<I>& q)
+{
+  alps::oxstream xml(out);
+  xml << q;
+  return out;	
+}
+
 
 #endif
 
