@@ -14,27 +14,44 @@
  *
  */
 
-#ifndef ALPS_NUMERIC_BINDINGS_LAPACK_LAPACK_NAMES_H
-#define ALPS_NUMERIC_BINDINGS_LAPACK_LAPACK_NAMES_H
+#ifndef ALPS_BINDINGS_LAPACK_NAMES_H
+#define ALPS_BINDINGS_LAPACK_NAMES_H
 
 #include <boost/numeric/bindings/traits/fortran.h>
+#include <boost/numeric/bindings/lapack/lapack_names.h>
 
 /********************************************/
 /* eigenproblems */ 
 
 /* symmetric/Hermitian positive definite */
 
-#define LAPACK_SSYEV FORTRAN_ID( ssyev )
-#define LAPACK_DSYEV FORTRAN_ID( dsyev )
+#ifndef LAPACK_SSYEV
+# define LAPACK_SSYEV FORTRAN_ID( ssyev )
+#endif
+#ifndef LAPACK_DSYEV
+# define LAPACK_DSYEV FORTRAN_ID( dsyev )
+#endif
 
-#define LAPACK_CHEEV FORTRAN_ID( cheev )
-#define LAPACK_ZHEEV FORTRAN_ID( zheev )
+#ifndef LAPACK_CHEEV
+# define LAPACK_CHEEV FORTRAN_ID( cheev )
+#endif
+#ifndef LAPACK_ZHEEV
+# define LAPACK_ZHEEV FORTRAN_ID( zheev )
+#endif
 
 /* linear least squares problems */
 
-#define LAPACK_SGELS FORTRAN_ID( sgels )
-#define LAPACK_DGELS FORTRAN_ID( dgels )
-#define LAPACK_CGELS FORTRAN_ID( cgels )
-#define LAPACK_ZGELS FORTRAN_ID( zgels )
+#ifndef LAPACK_SGELS
+# define LAPACK_SGELS FORTRAN_ID( sgels )
+#endif
+#ifndef LAPACK_DGELS
+# define LAPACK_DGELS FORTRAN_ID( dgels )
+#endif
+#ifndef LAPACK_CGELS
+# define LAPACK_CGELS FORTRAN_ID( cgels )
+#endif
+#ifndef LAPACK_ZGELS
+# define LAPACK_ZGELS FORTRAN_ID( zgels )
+#endif
 
 #endif 

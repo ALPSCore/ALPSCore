@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2004 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -143,7 +143,7 @@ XMLParser::~XMLParser() {
   delete parser_;
   XERCES_CPP_NAMESPACE_QUALIFIER XMLPlatformUtils::Terminate();
 }
-  
+
 void XMLParser::parse(const std::string& file) {
   parser_->parse(file.c_str());
 }
@@ -214,7 +214,7 @@ XMLParser::XMLParser(XMLHandlerBase& h) : parser_(XML_ParserCreate(0)) {
   XML_SetExternalEntityRefHandler(parser_, detail::externalEntity);
 }
 XMLParser::~XMLParser() { XML_ParserFree(parser_); }
-  
+
 void XMLParser::parse(std::istream& is) {
   char buf[BUFSIZ];
   do {
@@ -242,7 +242,7 @@ namespace alps {
 
 XMLParser::XMLParser(XMLHandlerBase& h) : handler_(h) {}
 XMLParser::~XMLParser() {}
-  
+
 void XMLParser::parse(const std::string& file) {
   std::ifstream is(file.c_str());
   parse(is);
@@ -268,14 +268,23 @@ void XMLParser::parse(std::istream& in) {
       if(tag.type == XMLTag::CLOSING || tag.type== XMLTag::SINGLE) {
         // end tag
         if (tag.type == XMLTag::CLOSING)
-          tag.name.erase(0,1); 
+          tag.name.erase(0,1);
         handler_.end_element(tag.name);
       }
     }
     else {
-      std::string t=parse_content(in);
-      if (t.length())
-        handler_.text(t);
+      std::string t = parse_content(in);
+      int pi = 0;
+      for (int p = 0; p <= t.length(); ++p) {
+        if (t[p] == '\n' || p == t.length()) {
+          std::string s = t.substr(pi, p - pi);
+          // remove preceding and following blanks
+          s = s.erase(0, s.find_first_not_of(' '));
+          s = s.erase(s.find_last_not_of(' ') + 1);
+          if (s.size()) handler_.text(s);
+          pi = p + 1;
+        }
+      }
     }
   }
 }
