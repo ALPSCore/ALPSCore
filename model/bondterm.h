@@ -267,11 +267,7 @@ BondTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b1,
             else
               mat[i1][i2][j1][j2].second=evaluator.fermionic();
             if (boost::is_arithmetic<T>::value || TypeTraits<T>::is_complex)
-#ifndef ALPS_WITH_NEW_EXPRESSION
               if (!can_evaluate(term))
-#else
-              if (!can_evaluate<T>(term))
-#endif
                 boost::throw_exception(std::runtime_error("Cannot evaluate expression " + boost::lexical_cast<std::string>(term)));
 #ifndef ALPS_WITH_NEW_EXPRESSION
             mat[i1][i2][j1][j2].first += term;
