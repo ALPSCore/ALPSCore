@@ -71,43 +71,80 @@ public:
     val_=integer_type(2*x+(x < 0 ? -0.01 : 0.01));
     return *this;
   }
-  operator double() const { return 0.5*val_;}
+  operator double() const { return 0.5*val_; }
   
-  void set_half(integer_type x) { val_=x;}
-  integer_type get_twice() const {return val_;}
+  void set_half(integer_type x) { val_=x; }
+  integer_type get_twice() const { return val_; }
   
-  template <class J> bool operator==(half_integer<J> rhs) { return val_==rhs.val_;}
-  template <class J> bool operator!=(half_integer<J> rhs) { return val_!=rhs.val_;}
-  template <class J> bool operator<(half_integer<J> rhs) { return val_<rhs.val_;}
-  template <class J> bool operator>(half_integer<J> rhs) { return val_>rhs.val_;}
-  template <class J> bool operator<=(half_integer<J> rhs) { return val_<=rhs.val_;}
-  template <class J> bool operator>=(half_integer<J> rhs) { return val_>=rhs.val_;}
-  half_integer operator-() const { half_integer x(-val_,0); return x;}
-  const half_integer& operator++() { val_+=2; return *this;}
-  const half_integer& operator--() { val_-=2; return *this;}
-  half_integer operator++(int) { half_integer tmp(*this); val_+=2; return tmp;}
-  half_integer operator--(int) { half_integer tmp(*this); val_-=2; return tmp;}
-  const half_integer& operator+=(integer_type x) { val_+=2*x; return *this;}
-  const half_integer& operator-=(integer_type x) { val_-=2*x; return *this;}
-  template <class J> const half_integer& operator+=(half_integer<J> x) { val_+=x.val_; return *this;}
-  template <class J> const half_integer& operator-=(half_integer<J> x) { val_-=x.val_; return *this;}
-  template <class J> half_integer operator+(half_integer<J> x) { half_integer res(*this); return res+=x;}
-  template <class J> half_integer operator-(half_integer<J> x) { half_integer res(*this); return res-=x;}
-  I distance(half_integer x) 
+  template <class J> bool operator==(const half_integer<J>& rhs) const
+  { return val_ == rhs.val_; }
+  template <class J> bool operator!=(const half_integer<J>& rhs) const
+  { return val_ != rhs.val_; }
+  template <class J> bool operator<(const half_integer<J>& rhs) const
+  { return val_ < rhs.val_; }
+  template <class J> bool operator>(const half_integer<J>& rhs) const
+  { return val_ > rhs.val_; }
+  template <class J> bool operator<=(const half_integer<J>& rhs) const
+  { return val_ <= rhs.val_; }
+  template <class J> bool operator>=(const half_integer<J>& rhs) const
+  { return val_ >= rhs.val_; }
+
+  half_integer operator-() const { return half_integer(-val_, 0); }
+
+  half_integer& operator++() { val_ += 2; return *this; }
+  half_integer& operator--() { val_ -= 2; return *this; }
+  half_integer operator++(int) { half_integer tmp(*this); return ++tmp; }
+  half_integer operator--(int) { half_integer tmp(*this); return --tmp; }
+
+  half_integer& operator+=(integer_type x) { val_+=2*x; return *this; }
+  half_integer& operator-=(integer_type x) { val_-=2*x; return *this; }
+  template <class J>
+  half_integer& operator+=(const half_integer<J>& x)
+  { val_ += x.val_; return *this; }
+  template <class J>
+  half_integer& operator-=(const half_integer<J>& x)
+  { val_ -= x.val_; return *this; }
+
+  template <class J>
+  half_integer operator+(const half_integer<J>& x) const
+  { half_integer res(*this); return res += x; }
+  template <class J>
+  half_integer operator-(const half_integer<J>& x) const
+  { half_integer res(*this); return res -= x; }
+  half_integer operator+(integer_type x) const
+  { half_integer res(*this); return res += x; }
+  half_integer operator-(integer_type x) const
+  { half_integer res(*this); return res -= x; }
+
+  integer_type distance(half_integer x) const
   { 
-    if((*this==max())!=(x==max())) return std::numeric_limits<I>::max();
-    if(std::numeric_limits<I>::is_signed && (*this==min())!=(x==min())) return std::numeric_limits<I>::max();
-    assert(std::abs(val_)%2==std::abs(x.val_)%2);
+    if((*this==max()) != (x==max())) return std::numeric_limits<I>::max();
+    if(std::numeric_limits<I>::is_signed && (*this==min())!=(x==min()))
+      return std::numeric_limits<I>::max();
+    assert(std::abs(val_)%2 == std::abs(x.val_)%2);
     return (val_-x.val_)/2;
   }
-  static half_integer max() { return half_integer(std::numeric_limits<I>::max(),0);}
-  static half_integer min() { return std::numeric_limits<I>::is_signed ? 
-       -half_integer(std::numeric_limits<I>::max(),0): half_integer(std::numeric_limits<I>::min(),0);}
+  static half_integer max()
+  { return half_integer(std::numeric_limits<I>::max(),0);}
+  static half_integer min()
+  {
+    return std::numeric_limits<I>::is_signed ? 
+      -half_integer(std::numeric_limits<I>::max(),0) :
+      half_integer(std::numeric_limits<I>::min(),0);
+  }
   
 private:
   half_integer(integer_type i, int /* to distinguish */) : val_(i) {}
   integer_type val_;
 };
+
+template <class I>
+inline half_integer<I> operator+(I x, const half_integer<I>& y)
+{ return y + x; }
+
+template <class I>
+inline half_integer<I> operator-(I x, const half_integer<I>& y)
+{ return y - x; }
 
 template <class I>
 inline std::ostream& operator<<(std::ostream& os, const half_integer<I>& x)
