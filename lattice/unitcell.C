@@ -73,7 +73,7 @@ GraphUnitCell::GraphUnitCell(const XMLTag& intag, std::istream& p)
         if (fixed_nvertices)
           boost::throw_exception(std::runtime_error("too many vertices"));
         for (int i=boost::num_vertices(graph_);i<=id;++i)
-          boost::add_vertex(graph_);
+          boost::put(vertex_type_t(),graph_,boost::add_vertex(graph_),0);
       }
 
       if (tag.type!=XMLTag::SINGLE) {
