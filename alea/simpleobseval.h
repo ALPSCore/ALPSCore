@@ -66,6 +66,9 @@ template <class T>
 class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
 {
  public:
+  template <class X>
+  friend class SimpleObservableEvaluator;  
+  
   typedef T value_type;
   typedef typename obs_value_traits<T>::time_type time_type;
   typedef typename AbstractSimpleObservable<T>::result_type result_type;
