@@ -5,7 +5,7 @@
 *
 * $Id$
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
 *
 * This program is free software; you can redistribute it and/or
 * modify it under the terms of the GNU General Public License
@@ -26,6 +26,11 @@
 using namespace model;
 #endif
 
+void write_set(const std::string& name, const alps::ModelLibrary& lib)
+{
+  std::cout << "States of basis " << name << "=" << lib.site_states(name);
+}
+
 int main()
 {
 
@@ -36,7 +41,11 @@ int main()
     alps::ModelLibrary lib(std::cin);
 
     // write all basis states
-    lib.write_all_sets(std::cout);
+    write_set("Hubbard",lib);
+    write_set("hardcore boson",lib);
+    write_set("spin-1",lib);
+    write_set("spin-1/2",lib);
+    write_set("spin-3/2",lib);
 
 #ifndef BOOST_NO_EXCEPTIONS
 }

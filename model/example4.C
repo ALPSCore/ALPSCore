@@ -1,0 +1,85 @@
+/***************************************************************************
+* PALM++/model library
+*
+* example/example1.C
+*
+* $Id$
+*
+* Copyright (C) 2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+*
+* This program is free software; you can redistribute it and/or
+* modify it under the terms of the GNU General Public License
+* as published by the Free Software Foundation; either version 2
+* of the License, or (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+**************************************************************************/
+
+#include <alps/model.h>
+#include <iostream>
+
+#ifdef BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP
+using namespace model;
+#endif
+
+boost::multi_array<alps::Expression,2> bondmatrix(const alps::ModelLibrary lib, const std::string& name)
+{
+  int dim=lib.hamiltonian(name).basis().site_basis().num_states();
+  
+  // get site and bond terms
+  boost::multi_array<alps::Expression,2> sitematrix = lib.hamiltonian(name).site_term().matrix(
+    lib.hamiltonian(name).basis().site_basis(),lib.simple_operators());
+  boost::multi_array<alps::Expression,4> bondtensor = lib.hamiltonian(name).bond_term().matrix(
+    lib.hamiltonian(name).basis().site_basis(), lib.hamiltonian(name).basis().site_basis(),
+    lib.simple_operators());
+    
+  // add site terms to bond terms
+  for (int i=0;i<dim;++i)
+    for (int j=0;j<dim;++j)
+      for (int k=0;k<dim;++k) {
+        bondtensor[i][j][i][k]+=sitematrix[j][k];
+        bondtensor[j][i][k][i]+=sitematrix[j][k];
+      }
+      
+  //convert tensor into matrix
+  boost::multi_array<alps::Expression,2> bondmatrix(boost::extents[dim*dim][dim*dim]);
+  for (int i=0;i<dim;++i)
+    for (int j=0;j<dim;++j)
+      for (int k=0;k<dim;++k)
+        for (int l=0;l<dim;++l)
+	  bondmatrix[i+j*dim][k+l*dim]=bondtensor[i][j][k][l];
+  return bondmatrix;
+}
+
+int main()
+{
+
+#ifndef BOOST_NO_EXCEPTIONS
+  try {
+#endif
+    // create the library from an XML file
+    alps::ModelLibrary lib(std::cin);
+
+    // calculate bond matrices for HCB and spin-1/2
+    
+    std::cout << "HBoson = \n" << bondmatrix(lib,"hardcore boson") << "\n\n";
+    std::cout << "HSpin = \n" << bondmatrix(lib,"spin-1/2")  << "\n\n";
+
+#ifndef BOOST_NO_EXCEPTIONS
+}
+catch (std::exception& e)
+{
+  std::cerr << "Caught exception: " << e.what() << "\n";
+  exit(-1);
+}
+catch (...)
+{
+  std::cerr << "Caught unknown exception\n";
+  exit(-2);
+}
+#endif
+}

@@ -23,7 +23,7 @@
 #include <iostream>
 
 #ifdef BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP
-using namespace alps;
+using namespace model;
 #endif
 
 int main()
@@ -35,8 +35,24 @@ int main()
     // create the library from an XML file
     alps::ModelLibrary lib(std::cin);
 
-    // write the library in XML
-    std::cout << lib;
+    // write site term matrices
+    std::cout << "HBosonSite =\n" << lib.hamiltonian("hardcore boson").site_term().matrix(
+             lib.hamiltonian("hardcore boson").basis().site_basis(),
+	     lib.simple_operators()) << "\n";
+    std::cout << "HSpinSite =\n" << lib.hamiltonian("spin-1/2").site_term().matrix(
+             lib.hamiltonian("spin-1/2").basis().site_basis(),
+	     lib.simple_operators()) << "\n";
+
+    // write bond term matrices
+    std::cout << "HBosonBond =\n" << lib.hamiltonian("hardcore boson").bond_term().matrix(
+             lib.hamiltonian("hardcore boson").basis().site_basis(),
+	     lib.hamiltonian("hardcore boson").basis().site_basis(),
+	     lib.simple_operators()) << "\n";
+    std::cout << "HSpinBond =\n" << lib.hamiltonian("spin-1/2").bond_term().matrix(
+             lib.hamiltonian("spin-1/2").basis().site_basis(),
+	     lib.hamiltonian("spin-1/2").basis().site_basis(),
+	     lib.simple_operators()) << "\n";
+
 #ifndef BOOST_NO_EXCEPTIONS
 }
 catch (std::exception& e)

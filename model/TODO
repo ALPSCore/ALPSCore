@@ -1,0 +1,8 @@
+* default parameters for couplings
+* creation of many-site basis sets with constraints given by quantum numbers
+  e.g. total particle number N, spin Sz, ...
+  also maybe an XML format for describing these sets?
+* parametrized basis sets, 
+  e.g. spin-S with Sz going from -S to S, or softcore bosons with cutoff
+* better symbolic evaluation
+* fermion signs

@@ -21,13 +21,22 @@
     <QUANTUMNUMBER name="Sz" min="-1/2" max="1/2"/>
   </SITEBASIS>
 </BASIS>
+<BASIS name="hardcore boson">
+  <SITEBASIS ref="hardcore boson"/>
+</BASIS>
 <BASIS name="spin-1/2">
   <SITEBASIS ref="spin-1/2"/>
 </BASIS>
-<OPERATOR name="S+" matrixelement="1">
+<OPERATOR name="Sminus" matrixelement="1">
   <CHANGE quantumnumber="Sz" change="-1"/>
 </OPERATOR>
+<OPERATOR name="Splus" matrixelement="1">
+  <CHANGE quantumnumber="Sz" change="1"/>
+</OPERATOR>
 <OPERATOR name="Sz" matrixelement="Sz">
+</OPERATOR>
+<OPERATOR name="b" matrixelement="sqrt(N)">
+  <CHANGE quantumnumber="N" change="-1"/>
 </OPERATOR>
 <OPERATOR name="bdag" matrixelement="sqrt(N+1)">
   <CHANGE quantumnumber="N" change="1"/>
@@ -51,7 +60,7 @@
 <OPERATOR name="n" matrixelement="N">
 </OPERATOR>
 <HAMILTONIAN name="hardcore boson">
-  <BASIS ref="spin-1/2"/>
+  <BASIS ref="hardcore boson"/>
   <SITETERM>
       -mu*n
   </SITETERM>
@@ -60,6 +69,15 @@
   </BONDTERM>
   <BONDTERM type="1" source="i" target="j">
       -t'*(bdag(i)*b(j)+bdag(j)*b(i)) + V'*n(i)*n(j)
+  </BONDTERM>
+</HAMILTONIAN>
+<HAMILTONIAN name="spin-1/2">
+  <BASIS ref="spin-1/2"/>
+  <SITETERM>
+      -h*Sz-Gamma/2*(Splus+Sminus)
+  </SITETERM>
+  <BONDTERM source="i" target="j">
+      Jz*Sz(i)*Sz(j)+Jxy/2*(Splus(i)*Sminus(j)+Sminus(i)*Splus(j))
   </BONDTERM>
 </HAMILTONIAN>
 </MODELS>

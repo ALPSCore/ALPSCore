@@ -36,12 +36,14 @@ int main()
   std::cin >> parms;
   std::cout << "Parameters:\n" << parms << std::endl;
   alps::check_character(std::cin,'%',"Expected a %-sign separating parameters from expressions");
+  
+  alps::ParameterEvaluator eval(parms);
   while (std::cin) {
     alps::Expression expr(std::cin);
-    if (!expr.can_evaluate(parms))
+    if (!expr.can_evaluate(eval))
       std::cout << "Cannot evaluate [" << expr << "]." << std::endl;
     else 
-      std::cout << "The value of [" << expr << "] is " << expr.value(parms) 
+      std::cout << "The value of [" << expr << "] is " << expr.value(eval) 
 		<< std::endl;
     char c;
     std::cin >> c;
