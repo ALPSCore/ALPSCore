@@ -11,16 +11,16 @@
       <CHANGE quantumnumber="Nup" change="1"/>
     </OPERATOR>
     <OPERATOR name="Sz" matrixelement="(Nup+Ndown)/2"/>
-    <OPERATOR name="cdown" matrixelement="1">
+    <OPERATOR name="c_down" matrixelement="1">
       <CHANGE quantumnumber="Ndown" change="-1"/>
     </OPERATOR>
-    <OPERATOR name="cdown_dag" matrixelement="1">
-      <CHANGE quantumnumber="Ndown" change="1"/>
-    </OPERATOR>
-    <OPERATOR name="cup" matrixelement="1">
+    <OPERATOR name="c_up" matrixelement="1">
       <CHANGE quantumnumber="Nup" change="-1"/>
     </OPERATOR>
-    <OPERATOR name="cup_dag" matrixelement="1">
+    <OPERATOR name="cdag_down" matrixelement="1">
+      <CHANGE quantumnumber="Ndown" change="1"/>
+    </OPERATOR>
+    <OPERATOR name="cdag_up" matrixelement="1">
       <CHANGE quantumnumber="Nup" change="1"/>
     </OPERATOR>
     <OPERATOR name="n" matrixelement="Nup+Ndown"/>
@@ -50,16 +50,16 @@
       <CHANGE quantumnumber="Nup" change="1"/>
     </OPERATOR>
     <OPERATOR name="Sz" matrixelement="(Nup+Ndown)/2"/>
-    <OPERATOR name="cdown" matrixelement="1">
+    <OPERATOR name="c_down" matrixelement="1">
       <CHANGE quantumnumber="Ndown" change="-1"/>
     </OPERATOR>
-    <OPERATOR name="cdown_dag" matrixelement="1">
-      <CHANGE quantumnumber="Ndown" change="1"/>
-    </OPERATOR>
-    <OPERATOR name="cup" matrixelement="1">
+    <OPERATOR name="c_up" matrixelement="1">
       <CHANGE quantumnumber="Nup" change="-1"/>
     </OPERATOR>
-    <OPERATOR name="cup_dag" matrixelement="1">
+    <OPERATOR name="cdag_down" matrixelement="1">
+      <CHANGE quantumnumber="Ndown" change="1"/>
+    </OPERATOR>
+    <OPERATOR name="cdag_up" matrixelement="1">
       <CHANGE quantumnumber="Nup" change="1"/>
     </OPERATOR>
     <OPERATOR name="n" matrixelement="Nup+Ndown"/>
@@ -125,22 +125,22 @@
       <CHANGE quantumnumber="Sz" change="1"/>
     </OPERATOR>
     <OPERATOR name="Sz" matrixelement="Sz"/>
-    <OPERATOR name="cdown" matrixelement="1">
+    <OPERATOR name="c_down" matrixelement="1">
       <CHANGE quantumnumber="N" change="-1"/>
       <CHANGE quantumnumber="S" change="-1/2"/>
       <CHANGE quantumnumber="Sz" change="1/2"/>
     </OPERATOR>
-    <OPERATOR name="cdown_dag" matrixelement="1">
-      <CHANGE quantumnumber="Ndown" change="1"/>
-      <CHANGE quantumnumber="S" change="1/2"/>
-      <CHANGE quantumnumber="Sz" change="-1/2"/>
-    </OPERATOR>
-    <OPERATOR name="cup" matrixelement="1">
+    <OPERATOR name="c_up" matrixelement="1">
       <CHANGE quantumnumber="Nup" change="-1"/>
       <CHANGE quantumnumber="S" change="-1/2"/>
       <CHANGE quantumnumber="Sz" change="-1/2"/>
     </OPERATOR>
-    <OPERATOR name="cup_dag" matrixelement="1">
+    <OPERATOR name="cdag_down" matrixelement="1">
+      <CHANGE quantumnumber="Ndown" change="1"/>
+      <CHANGE quantumnumber="S" change="1/2"/>
+      <CHANGE quantumnumber="Sz" change="-1/2"/>
+    </OPERATOR>
+    <OPERATOR name="cdag_u" matrixelement="1">
       <CHANGE quantumnumber="Nup" change="1"/>
       <CHANGE quantumnumber="S" change="1/2"/>
       <CHANGE quantumnumber="Sz" change="1/2"/>
