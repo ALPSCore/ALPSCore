@@ -68,20 +68,20 @@ public:
 
   hypercubic_lattice(const parent_lattice_type& p, size_type length,
                      const std::string& bc = "periodic")
-    : parent_lattice_type(p), extent_(dimension(), length),
-      bc_(dimension(), bc) {}
+    : parent_lattice_type(p), extent_(BASE::dimension(), length),
+      bc_(BASE::dimension(), bc) {}
 
   template <class InputIterator>
   hypercubic_lattice(const parent_lattice_type& p,
                      InputIterator first, InputIterator last,
                      const std::string& bc = "periodic")
-    : parent_lattice_type(p), extent_(first, last), bc_(dimension(), bc)
+    : parent_lattice_type(p), extent_(first, last), bc_(BASE::dimension(), bc)
   { fill_extent(); }
 
   template <class InputIterator2>
   hypercubic_lattice(const parent_lattice_type& p, size_type length,
                      InputIterator2 first2, InputIterator2 last2)
-    : parent_lattice_type(p), extent_(dimension(), length),
+    : parent_lattice_type(p), extent_(BASE::dimension(), length),
       bc_(first2, last2)
   { fill_extent(); }
 
@@ -255,7 +255,7 @@ public:
   std::vector<size_type> distance_sizes()
   {
     std::vector<int> sizes;
-    for (int i=0;i<dimension();++i) {
+    for (int i=0;i<BASE::dimension();++i) {
       sizes.push_back(extent(i));
       if(boundary(i)!="periodic")
          sizes.push_back(extent(i));
@@ -266,7 +266,7 @@ public:
   std::vector<size_type> distance_vector(const offset_type& x, const offset_type& y)
   {
     std::vector<size_type> d;
-    for (int i=0;i<dimension();++i) {
+    for (int i=0;i<BASE::dimension();++i) {
       if(boundary(i)=="periodic") {
         d.push_back(x[i]<y[i] ? y[i]-x[i] : x[i]-y[i]);
       }
