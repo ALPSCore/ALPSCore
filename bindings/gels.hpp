@@ -71,7 +71,7 @@ namespace boost { namespace numeric { namespace bindings {
     }
 
     template<class T>
-    int gels (char const trans, int const m, int const n, int const int nrhs,
+    int gels (char const trans, int const m, int const n, int const nrhs,
 	      T* a, int const lda, T* b, int const ldb) {
       int info;
       int lwork = std::min(m,n) + std::max(std::max(1,m), std::max(n,nrhs)) * 64;
