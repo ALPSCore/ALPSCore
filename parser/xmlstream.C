@@ -44,9 +44,8 @@ try {
 
   oxs << alps::header("MyEncoding");
 
-  oxs << alps::processing_instruction("xml-stylesheet")
-      << alps::attribute("type", "text/xsl")
-      << alps::attribute("href", "URL to my stylesheet");
+  oxs << alps::stylesheet("URL to my stylesheet")
+      << alps::processing_instruction("my_pi");
 
   oxs << alps::start_tag("tag0")
       << alps::attribute("name0", 1)
