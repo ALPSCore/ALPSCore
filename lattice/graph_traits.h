@@ -101,11 +101,11 @@ target_impl(const typename boost::graph_traits<G>::edge_descriptor& e,
 template <class V, class G> 
 typename graph_traits<G>::site_descriptor 
 neighbor (const V& v, typename graph_traits<G>::degree_size_type i, const G& g) 
-{ return *(adjacent_vertices(v,g).first+i);}
+{ return *(boost::adjacent_vertices(v,g).first+i);}
 
 template <class G>
 typename graph_traits<G>::site_descriptor site(typename graph_traits<G>::sites_size_type i, const G& g)
-{ return vertex(i,g);}
+{ return boost::vertex(i,g);}
 
 template <class T>
 const typename graph_traits<T>::graph_type& graph(const T& x)

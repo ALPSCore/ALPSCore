@@ -60,6 +60,8 @@ template <typename G>
 inline
 bool bond_descriptor_compare<G>::operator()(bond_descriptor b1, bond_descriptor b2) const
 {
+  using boost::source;
+  using boost::target;
   site_descriptor s1 = source(b1, *Graph); 
   site_descriptor s2 = source(b2, *Graph);
   return s1 < s2 || (s1 == s2 && target(b1, *Graph) < target(b2, *Graph)); 
@@ -92,6 +94,8 @@ inline
 bool bond_descriptor_compare_undirected<G>::operator()(bond_descriptor b1, bond_descriptor b2) const
 {
   using std::swap;
+  using boost::source;
+  using boost::target;
   site_descriptor s1 = source(b1, *Graph); 
   site_descriptor s2 = source(b2, *Graph);
   site_descriptor t1 = target(b1, *Graph); 
