@@ -78,7 +78,7 @@ bool xdr_hyper (XDR *xdrs, long long *llp)
     {
       if (!XDR_GETLONG(xdrs, &t1) || !XDR_GETLONG(xdrs, &t2))
 	return FALSE;
-      *llp = ((quad_t) t1) << 32;
+      *llp = ((long long) t1) << 32;
       *llp |= t2;
       return TRUE;
     }
