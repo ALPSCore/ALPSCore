@@ -83,7 +83,7 @@ bool xdr_hyper(XDR *xdrs, long long *llp)
   long t2;
   if (xdrs->x_op == XDR_ENCODE) {
     t1 = (long)((*llp) >> 32);
-    t2 = (long)(*llp);
+    t2 = (long)(*llp - (((long long) t1) << 32));
     return (::xdr_long(xdrs, &t1) && ::xdr_long(xdrs, &t2));
   } else if (xdrs->x_op == XDR_DECODE) {
     if (!::xdr_long(xdrs, &t1) || !::xdr_long(xdrs, &t2)) return false;
@@ -102,7 +102,7 @@ bool xdr_u_hyper(XDR *xdrs, unsigned long long *llp)
   unsigned long t2;
   if (xdrs->x_op == XDR_ENCODE) {
     t1 = (unsigned long)((*llp) >> 32);
-    t2 = (unsigned long)(*llp);
+    t2 = (unsigned long)(*llp - (((unsigned long long) t1) << 32));
     return (::xdr_u_long(xdrs, &t1) && ::xdr_u_long(xdrs, &t2));
   } else if (xdrs->x_op == XDR_DECODE) {
     if (!::xdr_u_long(xdrs, &t1) || !::xdr_u_long(xdrs, &t2)) return false;
@@ -196,6 +196,7 @@ ALPS_DUMP_DO_TYPE(float, xdr_float)
 ALPS_DUMP_DO_TYPE(double, xdr_double)
 ALPS_DUMP_DO_TYPE(long double, xdr_long_double)
 #undef ALPS_DUMP_DO_TYPE
+#undef ALPS_DUMP_DO_TYPE_N
 
 } // namespace detail
 
