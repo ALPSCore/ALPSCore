@@ -164,9 +164,6 @@ public:
   Factor(const std::string& s) : super_type(s), is_inverse_(false), power_(1) {}
   Factor(const Evaluatable<T>& v) : super_type(v), is_inverse_(false), power_(1) {}
   virtual ~Factor() {}
-
-  const Factor& operator=(const Factor& v);
-
   value_type value(const Evaluator<T>& p) const;
   void output(std::ostream&) const;
   bool can_evaluate(const Evaluator<T>& p) const;
