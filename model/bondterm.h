@@ -91,9 +91,9 @@ public:
     : super_type(p), state_(s1,s2), basis1_(b1), basis2_(b2),
       sites_(site1,site2), fermionic_(false,false) {}
   bool can_evaluate_function(const std::string& name,
-                             const Expression& argument) const;
+                             const Expression& argument,bool=false) const;
   Expression partial_evaluate_function(const std::string& name,
-                                        const Expression& argument) const;
+                                        const Expression& argument,bool=false) const;
   const std::pair<STATE1,STATE2>& state() const { return state_;}
   std::pair<bool,bool> fermionic() const { return fermionic_;}
 
@@ -125,8 +125,8 @@ public:
                        const Parameters& p)
     : super_type(p), basis1_(b1), basis2_(b2), sites_(site1,site2), second_site_fermionic_(false) {}
 
-  bool can_evaluate_function(const std::string& name, const Expression& argument) const;
-  Expression partial_evaluate_function(const std::string& name, const Expression& argument) const;
+  bool can_evaluate_function(const std::string& name, const Expression& argument,bool=false) const;
+  Expression partial_evaluate_function(const std::string& name, const Expression& argument,bool=false) const;
   const std::pair<Term, Term>& site_operators() const { return site_ops_; }
   bool has_operator(const std::string& name, const Expression& arg) const
   { 
@@ -143,30 +143,30 @@ private:
 };
 
 template <class I, class STATE1, class STATE2>
-bool BondOperatorEvaluator<I, STATE1, STATE2>::can_evaluate_function(const std::string& name, const Expression& arg) const
+bool BondOperatorEvaluator<I, STATE1, STATE2>::can_evaluate_function(const std::string& name, const Expression& arg, bool isarg) const
 {
   if (has_operator(name,arg)) {
     SELF_ eval(*this);
-    return eval.partial_evaluate_function(name,arg).can_evaluate(ParameterEvaluator(*this));
+    return eval.partial_evaluate_function(name,arg,isarg).can_evaluate(ParameterEvaluator(*this),isarg);
   }
   else
-    return ParameterEvaluator::can_evaluate_function(name,arg);
+    return ParameterEvaluator::can_evaluate_function(name,arg,isarg);
 }
 
 template <class I>
-bool BondOperatorSplitter<I>::can_evaluate_function(const std::string&, const Expression& arg) const
+bool BondOperatorSplitter<I>::can_evaluate_function(const std::string&, const Expression& arg,bool) const
 {
   return (arg==sites_.first || arg==sites_.second);
 }
 
 template <class I, class STATE1, class STATE2>
-Expression BondOperatorEvaluator<I, STATE1, STATE2>::partial_evaluate_function(const std::string& name, const Expression& arg) const
+Expression BondOperatorEvaluator<I, STATE1, STATE2>::partial_evaluate_function(const std::string& name, const Expression& arg,bool isarg) const
 {
   Expression e;
   if (has_operator(name,arg)) {  // evaluate operator
     bool f;
     if (arg==sites_.first) {
-      boost::tie(state_.first,e,f) =  basis1_.apply(name,state_.first,*this);
+      boost::tie(state_.first,e,f) =  basis1_.apply(name,state_.first,*this,isarg);
       if (f && is_nonzero(e)) {
         fermionic_.first=!fermionic_.first;
         if (fermionic_.second) // for normal ordering
@@ -174,20 +174,20 @@ Expression BondOperatorEvaluator<I, STATE1, STATE2>::partial_evaluate_function(c
       }
     }
     else  if (arg==sites_.second) {
-      boost::tie(state_.second,e,f) =  basis2_.apply(name,state_.second,*this);
+      boost::tie(state_.second,e,f) =  basis2_.apply(name,state_.second,*this,isarg);
       if (f)
         fermionic_.second=!fermionic_.second;
     }
     else
-      e=ParameterEvaluator(*this).partial_evaluate_function(name,arg);
+      e=ParameterEvaluator(*this).partial_evaluate_function(name,arg,isarg);
   }
   else
-    e=ParameterEvaluator(*this).partial_evaluate_function(name,arg);
+    e=ParameterEvaluator(*this).partial_evaluate_function(name,arg,isarg);
   return e;
 }
 
 template <class I>
-Expression BondOperatorSplitter<I>::partial_evaluate_function(const std::string& name, const Expression& arg) const
+Expression BondOperatorSplitter<I>::partial_evaluate_function(const std::string& name, const Expression& arg, bool isarg) const
 {
   if (arg==sites_.first) {
     site_ops_.first *= name;
@@ -199,7 +199,7 @@ Expression BondOperatorSplitter<I>::partial_evaluate_function(const std::string&
         second_site_fermionic_ = !second_site_fermionic_;
     return Expression(1.);
   }
-  return ParameterEvaluator(*this).partial_evaluate_function(name,arg);
+  return ParameterEvaluator(*this).partial_evaluate_function(name,arg,isarg);
 }
 
 template <class I, class T>

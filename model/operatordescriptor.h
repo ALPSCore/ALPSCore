@@ -60,7 +60,7 @@ public:
 
   template <class STATE>
   boost::tuple<STATE, Expression,bool>
-  apply(STATE state, const SiteBasisDescriptor<I>& basis, const ParameterEvaluator& p) const;
+  apply(STATE state, const SiteBasisDescriptor<I>& basis, const ParameterEvaluator& p, bool) const;
   bool is_fermionic(const SiteBasisDescriptor<I>& basis) const;
 
   const std::string& name() const { return name_;}
@@ -88,7 +88,7 @@ bool OperatorDescriptor<I>::is_fermionic(const SiteBasisDescriptor<I>& basis) co
 template <class I>
 template <class STATE>
 boost::tuple<STATE, Expression,bool>
-OperatorDescriptor<I>::apply(STATE state, const SiteBasisDescriptor<I>& basis, const ParameterEvaluator& eval) const
+OperatorDescriptor<I>::apply(STATE state, const SiteBasisDescriptor<I>& basis, const ParameterEvaluator& eval, bool isarg) const
 {
   // set quantum numbers as parameters
   Parameters p=eval.parameters();
@@ -115,6 +115,8 @@ OperatorDescriptor<I>::apply(STATE state, const SiteBasisDescriptor<I>& basis, c
         if (fermion_count)
           e.negate();
       }
+      if (isarg && (it->second!=0))
+        boost::throw_exception(std::runtime_error("Cannot apply offdiagonal operator inside function argument or power"));
       get_quantumnumber(state,i)+=it->second; // apply change to QN
     }
     if (basis[i].fermionic() && is_odd(get_quantumnumber(state,i)))

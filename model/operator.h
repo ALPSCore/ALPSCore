@@ -47,11 +47,11 @@ public:
     : ParameterEvaluator(p) {}
   Direction direction() const { return right_to_left; }
 
-  value_type evaluate(const std::string& name) const
-  { return partial_evaluate(name).value();}
+  value_type evaluate(const std::string& name, bool isarg=false) const
+  { return partial_evaluate(name,isarg).value();}
 
-  value_type evaluate_function(const std::string& name, const Expression& arg) const
-  { return partial_evaluate_function(name,arg).value();}
+  value_type evaluate_function(const std::string& name, const Expression& arg,bool isarg=false) const
+  { return partial_evaluate_function(name,arg,isarg).value();}
 };
 
 } // namespace alps

@@ -77,7 +77,7 @@ public:
   { return operators_.find(name) != operators_.end(); }
   
   template <class STATE>
-  boost::tuple<STATE, Expression,bool> apply(const std::string& name, STATE state, const ParameterEvaluator& eval) const;
+  boost::tuple<STATE, Expression,bool> apply(const std::string& name, STATE state, const ParameterEvaluator& eval, bool) const;
   bool is_fermionic(const std::string& name) const;
 private:
   mutable bool valid_;
@@ -104,12 +104,12 @@ bool SiteBasisDescriptor<I>::is_fermionic(const std::string& name) const
 template <class I>
 template <class STATE>
 boost::tuple<STATE, Expression,bool> 
-SiteBasisDescriptor<I>::apply(const std::string& name, STATE state, const ParameterEvaluator& eval) const 
+SiteBasisDescriptor<I>::apply(const std::string& name, STATE state, const ParameterEvaluator& eval, bool isarg) const 
 {
   operator_iterator op=operators_.find(name);
   if(op==operators_.end())
     return boost::make_tuple(state,Expression(),false);
-  return op->second.apply(state,*this,eval);
+  return op->second.apply(state,*this,eval,isarg);
 }
 
 template <class I>

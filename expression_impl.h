@@ -50,13 +50,13 @@ namespace expression {
 //
 
 template<class T>
-bool Evaluator<T>::can_evaluate(const std::string&) const
+bool Evaluator<T>::can_evaluate(const std::string&, bool) const
 {
   return false;
 }
 
 template<class T>
-bool Evaluator<T>::can_evaluate_function(const std::string& name, const Expression<T>& arg) const
+bool Evaluator<T>::can_evaluate_function(const std::string& name, const Expression<T>& arg, bool) const
 {
   return arg.can_evaluate(*this) &&
          (name=="sqrt" || name=="abs" ||
@@ -71,32 +71,32 @@ typename Evaluator<T>::Direction Evaluator<T>::direction() const
 }
 
 template<class T>
-typename Evaluator<T>::value_type Evaluator<T>::evaluate(const std::string& name) const
+typename Evaluator<T>::value_type Evaluator<T>::evaluate(const std::string& name,bool isarg) const
 {
-  return partial_evaluate(name).value();
+  return partial_evaluate(name,isarg).value();
 }
 
 template<class T>
-typename Evaluator<T>::value_type Evaluator<T>::evaluate_function(const std::string& name, const Expression<T>& arg) const
+typename Evaluator<T>::value_type Evaluator<T>::evaluate_function(const std::string& name, const Expression<T>& arg,bool isarg) const
 {
-  return partial_evaluate_function(name,arg).value();
+  return partial_evaluate_function(name,arg,isarg).value();
 }
 
 template<class T>
-Expression<T> Evaluator<T>::partial_evaluate(const std::string& name) const
+Expression<T> Evaluator<T>::partial_evaluate(const std::string& name,bool) const
 {
   return Expression<T>(name);
 }
 
 template<class T>
-Expression<T> Evaluator<T>::partial_evaluate_function(const std::string& name, const Expression<T>& arg) const
+Expression<T> Evaluator<T>::partial_evaluate_function(const std::string& name, const Expression<T>& arg,bool) const
 {
-  if(!arg.can_evaluate(*this)) {
+  if(!arg.can_evaluate(*this,true)) {
     Expression<T> e(arg);
-    e.partial_evaluate(*this);
+    e.partial_evaluate(*this,true);
     return Expression<T>(Function<T>(name,e));
   }
-  value_type val=arg.value(*this);
+  value_type val=arg.value(*this,true);
   if (name=="sqrt")
     val = std::sqrt(val);
   else if (name=="abs")
@@ -121,42 +121,42 @@ Expression<T> Evaluator<T>::partial_evaluate_function(const std::string& name, c
 //
 
 template<class T>
-bool ParameterEvaluator<T>::can_evaluate(const std::string& name) const
+bool ParameterEvaluator<T>::can_evaluate(const std::string& name, bool isarg) const
 {
-  if (evaluate_helper<T>::can_evaluate_symbol(name)) return true;
+  if (evaluate_helper<T>::can_evaluate_symbol(name,isarg)) return true;
   if (!parms_.defined(name) || !parms_[name].valid()) return false;
   Parameters parms(parms_);
   parms[name] = ""; // set illegal to avoid infinite recursion
-  return Expression<T>(parms_[name]).can_evaluate(ParameterEvaluator<T>(parms));
+  return Expression<T>(parms_[name]).can_evaluate(ParameterEvaluator<T>(parms),isarg);
 }
 
 template<class T>
-Expression<T> ParameterEvaluator<T>::partial_evaluate(const std::string& name) const
+Expression<T> ParameterEvaluator<T>::partial_evaluate(const std::string& name, bool isarg) const
 {
   Expression<T> e;
-  if (ParameterEvaluator<T>::can_evaluate(name))
-    e=ParameterEvaluator<T>::evaluate(name);
+  if (ParameterEvaluator<T>::can_evaluate(name,isarg))
+    e=ParameterEvaluator<T>::evaluate(name,isarg);
   else if(!parms_.defined(name))
     e=Expression<T>(name);
   else {
     Parameters p(parms_);
     p[name]="";
     e=Expression<T>(static_cast<std::string>(parms_[name]));
-    e.partial_evaluate(ParameterEvaluator<T>(p));
+    e.partial_evaluate(ParameterEvaluator<T>(p),isarg);
   }
   return e;
 }
 
 template<class T>
-typename ParameterEvaluator<T>::value_type ParameterEvaluator<T>::evaluate(const std::string& name) const
+typename ParameterEvaluator<T>::value_type ParameterEvaluator<T>::evaluate(const std::string& name, bool isarg) const
 {
-  if (evaluate_helper<T>::can_evaluate_symbol(name))
-    return evaluate_helper<T>::evaluate_symbol(name);
+  if (evaluate_helper<T>::can_evaluate_symbol(name,isarg))
+    return evaluate_helper<T>::evaluate_symbol(name,isarg);
   if (parms_[name].template get<std::string>()=="Infinite recursion check" )
     boost::throw_exception(std::runtime_error("Infinite recursion when evaluating " + name));
   Parameters parms(parms_);
   parms[name] = "Infinite recursion check";
-  return alps::evaluate<value_type>(parms_[name], ParameterEvaluator<T>(parms));
+  return alps::evaluate<value_type>(parms_[name], ParameterEvaluator<T>(parms), isarg);
 }
 
 //
@@ -218,20 +218,20 @@ Factor<T>::Factor(std::istream& in, bool inv) : super_type(in), is_inverse_(inv)
 }
 
 template<class T>
-void SimpleFactor<T>::partial_evaluate(const Evaluator<T>& p)
+void SimpleFactor<T>::partial_evaluate(const Evaluator<T>& p, bool isarg)
 {
   if (!term_)
     boost::throw_exception(std::runtime_error("Empty value in expression"));
-  Evaluatable<T>* e=term_->partial_evaluate_replace(p);
+  Evaluatable<T>* e=term_->partial_evaluate_replace(p,isarg);
   if(e!=term_.get()) term_.reset(e);
 }
 
 
 template<class T>
-void Factor<T>::partial_evaluate(const Evaluator<T>& p)
+void Factor<T>::partial_evaluate(const Evaluator<T>& p,bool isarg)
 {
-  super_type::partial_evaluate(p);
-  power_.partial_evaluate(p);
+  super_type::partial_evaluate(p,isarg);
+  power_.partial_evaluate(p,isarg);
 }
 
 //
@@ -289,16 +289,16 @@ Term<T>::Term(std::istream& in, bool negate) : is_negative_(negate)
 }
 
 template<class T>
-typename Term<T>::value_type Term<T>::value(const Evaluator<T>& p) const
+typename Term<T>::value_type Term<T>::value(const Evaluator<T>& p, bool isarg) const
 {
   value_type val(1.);
   if (p.direction() == Evaluator<T>::left_to_right)  {
     for (int i = 0; i < terms_.size() && is_nonzero(val); ++i)
-      val *= terms_[i].value(p);
+      val *= terms_[i].value(p,isarg);
 }
   else {
     for (int i = terms_.size()-1; i >= 0 && is_nonzero(val); --i) {
-      value_type tmp=terms_[i].value(p);
+      value_type tmp=terms_[i].value(p,isarg);
       val *=tmp;
     }
   }
@@ -308,33 +308,33 @@ typename Term<T>::value_type Term<T>::value(const Evaluator<T>& p) const
 }
 
 template<class T>
-void Term<T>::partial_evaluate(const Evaluator<T>& p)
+void Term<T>::partial_evaluate(const Evaluator<T>& p, bool isarg)
 {
-  if (can_evaluate(p)) {
-    (*this) = Term<T>(value(p));
+  if (can_evaluate(p,isarg)) {
+    (*this) = Term<T>(value(p,isarg));
   } else {
     value_type val(1);
     if (p.direction() == Evaluator<T>::left_to_right) {
       for (int i=0; i<terms_.size(); ++i) {
-        if (terms_[i].can_evaluate(p)) {
-          val *= terms_[i].value(p);
+        if (terms_[i].can_evaluate(p,isarg)) {
+          val *= terms_[i].value(p,isarg);
           if (is_zero(val))
             break;
           terms_.erase(terms_.begin()+i);
           --i;
         } else {
-          terms_[i].partial_evaluate(p);
+          terms_[i].partial_evaluate(p,isarg);
         }
       }
     } else {
       for (int i = terms_.size()-1; i >= 0; --i) {
-        if (terms_[i].can_evaluate(p)) {
-          val *= terms_[i].value(p);
+        if (terms_[i].can_evaluate(p,isarg)) {
+          val *= terms_[i].value(p,isarg);
           if (is_zero(val))
             break;
           terms_.erase(terms_.begin()+i);
         } else
-          terms_[i].partial_evaluate(p);
+          terms_[i].partial_evaluate(p,isarg);
       }
     }
     if (is_zero(val))
@@ -351,11 +351,11 @@ void Term<T>::partial_evaluate(const Evaluator<T>& p)
 }
 
 template<class T>
-bool Term<T>::can_evaluate(const Evaluator<T>& p) const
+bool Term<T>::can_evaluate(const Evaluator<T>& p, bool isarg) const
 {
   bool can=true;
   for (int i=0;i<terms_.size();++i)
-    can = can && terms_[i].can_evaluate(p);
+    can = can && terms_[i].can_evaluate(p,isarg);
   return can;
 }
 
@@ -517,41 +517,41 @@ boost::shared_ptr<Evaluatable<T> > Function<T>::flatten_one()
 //
 
 template<class T>
-typename Expression<T>::value_type Expression<T>::value(const Evaluator<T>& p) const
+typename Expression<T>::value_type Expression<T>::value(const Evaluator<T>& p, bool isarg) const
 {
   if (terms_.size()==0)
     return value_type(0.);
   value_type val=terms_[0].value(p);
   for (int i=1;i<terms_.size();++i)
-    val += terms_[i].value(p);
+    val += terms_[i].value(p,isarg);
   return val;
 }
 
 template<class T>
-bool Expression<T>::can_evaluate(const Evaluator<T>& p) const
+bool Expression<T>::can_evaluate(const Evaluator<T>& p, bool isarg) const
 {
   if (terms_.size()==0)
     return true;
   bool can=true;
   for (int i=0;i<terms_.size();++i)
-    can = can && terms_[i].can_evaluate(p);
+    can = can && terms_[i].can_evaluate(p,isarg);
   return can;
 }
 
 template<class T>
-void Expression<T>::partial_evaluate(const Evaluator<T>& p)
+void Expression<T>::partial_evaluate(const Evaluator<T>& p, bool isarg)
 {
-  if (can_evaluate(p))
-    (*this) = Expression<T>(value(p));
+  if (can_evaluate(p,isarg))
+    (*this) = Expression<T>(value(p,isarg));
   else {
     value_type val(0);
     for (int i=0; i<terms_.size(); ++i) {
-      if (terms_[i].can_evaluate(p)) {
-        val += terms_[i].value(p);
+      if (terms_[i].can_evaluate(p,isarg)) {
+        val += terms_[i].value(p,isarg);
         terms_.erase(terms_.begin()+i);
         --i;
       } else {
-        terms_[i].partial_evaluate(p);
+        terms_[i].partial_evaluate(p,isarg);
       }
     }
     if (val != value_type(0.)) terms_.insert(terms_.begin(), Term<T>(val));
@@ -585,35 +585,35 @@ const SimpleFactor<T>& SimpleFactor<T>::operator=(const SimpleFactor<T>& v)
 
 
 template<class T>
-bool SimpleFactor<T>::can_evaluate(const Evaluator<T>& p) const
+bool SimpleFactor<T>::can_evaluate(const Evaluator<T>& p, bool isarg) const
 {
   if (!term_)
     boost::throw_exception(std::runtime_error("Empty value in expression"));
-  return term_->can_evaluate(p);
+  return term_->can_evaluate(p,isarg);
 }
 
 template<class T>
-bool Factor<T>::can_evaluate(const Evaluator<T>& p) const
+bool Factor<T>::can_evaluate(const Evaluator<T>& p, bool isarg) const
 {
-  return super_type::can_evaluate(p) && power_.can_evaluate(p);
+  return super_type::can_evaluate(p,unit_power() ? isarg : true) && power_.can_evaluate(p,true);
 }
 
 template <class T>
-typename SimpleFactor<T>::value_type SimpleFactor<T>::value(const Evaluator<T>& p) const
+typename SimpleFactor<T>::value_type SimpleFactor<T>::value(const Evaluator<T>& p, bool isarg) const
 {
   if (!term_)
     boost::throw_exception(std::runtime_error("Empty value in expression"));
-  return term_->value(p);
+  return term_->value(p,isarg);
 }
 
 template <class T>
-typename Factor<T>::value_type Factor<T>::value(const Evaluator<T>& p) const
+typename Factor<T>::value_type Factor<T>::value(const Evaluator<T>& p, bool isarg) const
 {
-  value_type val = super_type::value(p);
+  value_type val = super_type::value(p,unit_power() ? isarg : true);
   if (is_inverse())
     val = 1./val;
   if (!unit_power())
-    val = std::pow(evaluate_helper<T>::real(val),evaluate_helper<T>::real(power_.value(p)));
+    val = std::pow(evaluate_helper<T>::real(val),evaluate_helper<T>::real(power_.value(p,true)));
   return val;
 }
 
@@ -642,14 +642,14 @@ void Block<T>::output(std::ostream& os) const
 }
 
 template<class T>
-Evaluatable<T>* Block<T>::partial_evaluate_replace(const Evaluator<T>& p)
+Evaluatable<T>* Block<T>::partial_evaluate_replace(const Evaluator<T>& p, bool isarg)
 {
-  partial_evaluate(p);
+  partial_evaluate(p,isarg);
   return this;
 }
 
 template<class T>
-typename Number<T>::value_type Number<T>::value(const Evaluator<T>&) const
+typename Number<T>::value_type Number<T>::value(const Evaluator<T>&, bool) const
 {
   return val_;
 }
@@ -664,43 +664,43 @@ void Number<T>::output(std::ostream& os) const
 }
 
 template<class T>
-typename Symbol<T>::value_type Symbol<T>::value(const Evaluator<T>& eval) const
+typename Symbol<T>::value_type Symbol<T>::value(const Evaluator<T>& eval, bool isarg) const
 {
-  return eval.evaluate(name_);
+  return eval.evaluate(name_,isarg);
 }
 
 template<class T>
-Evaluatable<T>* Symbol<T>::partial_evaluate_replace(const Evaluator<T>& p)
+Evaluatable<T>* Symbol<T>::partial_evaluate_replace(const Evaluator<T>& p, bool isarg)
 {
-  Expression<T> e(p.partial_evaluate(name_));
+  Expression<T> e(p.partial_evaluate(name_,isarg));
   if (e==name_)
     return this;
   else
-    return new Block<T>(p.partial_evaluate(name_));
+    return new Block<T>(p.partial_evaluate(name_,isarg));
 }
 
 template<class T>
-Evaluatable<T>* Function<T>::partial_evaluate_replace(const Evaluator<T>& p)
+Evaluatable<T>* Function<T>::partial_evaluate_replace(const Evaluator<T>& p, bool isarg)
 {
-  if (can_evaluate(p))
-    return new Expression<T>(value(p));
+  if (can_evaluate(p,isarg))
+    return new Expression<T>(value(p,isarg));
   else {
-    arg_.partial_evaluate(p);
+    arg_.partial_evaluate(p,true);
     return this;
   }
 }
 
 template<class T>
-typename Function<T>::value_type Function<T>::value(const Evaluator<T>& p) const
+typename Function<T>::value_type Function<T>::value(const Evaluator<T>& p, bool isarg) const
 {
-  value_type val=p.evaluate_function(name_,arg_);
+  value_type val=p.evaluate_function(name_,arg_,isarg);
   return val;
 }
 
 template<class T>
-bool Function<T>::can_evaluate(const Evaluator<T>& p) const
+bool Function<T>::can_evaluate(const Evaluator<T>& p, bool isarg) const
 {
-  return p.can_evaluate_function(name_,arg_);
+  return p.can_evaluate_function(name_,arg_,isarg);
 }
 
 template<class T>

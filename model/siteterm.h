@@ -74,8 +74,8 @@ public:
   SiteOperatorEvaluator(const state_type& s, const SiteBasisDescriptor<I>& b,
                         const Parameters& p)
     : super_type(p), state_(s), basis_(b), fermionic_(false) {}
-  bool can_evaluate(const std::string&) const;
-  Expression partial_evaluate(const std::string& name) const;
+  bool can_evaluate(const std::string&,bool=false) const;
+  Expression partial_evaluate(const std::string& name,bool=false) const;
   const state_type& state() const { return state_;}
   bool fermionic() const { return fermionic_;}
   
@@ -87,27 +87,27 @@ private:
 
 
 template <class I, class STATE>
-bool SiteOperatorEvaluator<I, STATE>::can_evaluate(const std::string& name) const
+bool SiteOperatorEvaluator<I, STATE>::can_evaluate(const std::string& name,bool isarg) const
 {
   if (basis_.has_operator(name)) {
     SELF_ eval(*this);
-    return eval.partial_evaluate(name).can_evaluate(ParameterEvaluator(*this));
+    return eval.partial_evaluate(name,isarg).can_evaluate(ParameterEvaluator(*this),isarg);
   }
-  return ParameterEvaluator::can_evaluate(name);
+  return ParameterEvaluator::can_evaluate(name,isarg);
 }
 
 template <class I, class STATE>
-Expression SiteOperatorEvaluator<I, STATE>::partial_evaluate(const std::string& name) const
+Expression SiteOperatorEvaluator<I, STATE>::partial_evaluate(const std::string& name,bool isarg) const
 {
   if (basis_.has_operator(name)) {  // evaluate operator
     Expression e;
     bool fermionic;
-    boost::tie(state_,e,fermionic) = basis_.apply(name,state_, ParameterEvaluator(*this));
+    boost::tie(state_,e,fermionic) = basis_.apply(name,state_, ParameterEvaluator(*this),isarg);
     if (fermionic)
       fermionic_=!fermionic_;
     return e;
   }
-  return super_type::partial_evaluate(name);
+  return super_type::partial_evaluate(name,isarg);
 }
 
 
