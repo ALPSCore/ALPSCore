@@ -1,6 +1,6 @@
 /*
  * 
- * Copyright (c) Toon Knapen & Kresimir Fresl & Matthias Troyer 2003
+ * Copyright (c) Toon Knapen, Kresimir Fresl, Matthias Troyer, & Synge Todo 2003,2004
  *
  * Permission to copy, modify, use and distribute this software 
  * for any non-commercial or commercial purpose is granted provided 
@@ -27,8 +27,14 @@
 #define LAPACK_SSYEV FORTRAN_ID( ssyev )
 #define LAPACK_DSYEV FORTRAN_ID( dsyev )
 
-#define LAPACK_CHEEV FORTRAN_ID ( cheev )
-#define LAPACK_ZHEEV FORTRAN_ID ( zheev )
+#define LAPACK_CHEEV FORTRAN_ID( cheev )
+#define LAPACK_ZHEEV FORTRAN_ID( zheev )
+
+/* linear least squares problems */
+
+#define LAPACK_SGELS FORTRAN_ID( sgels )
+#define LAPACK_DGELS FORTRAN_ID( dgels )
+#define LAPACK_CGELS FORTRAN_ID( cgels )
+#define LAPACK_ZGELS FORTRAN_ID( zgels )
 
 #endif 
-

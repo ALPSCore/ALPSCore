@@ -1,6 +1,6 @@
 /*
  * 
- * Copyright (c) Toon Knapen & Kresimir Fresl 2003
+ * Copyright (c) Toon Knapen, Kresimir Fresl, Matthias Troyer, & Synge Todo 2003,2004
  *
  * Permission to copy, modify, use and distribute this software 
  * for any non-commercial or commercial purpose is granted provided 
@@ -17,6 +17,7 @@
 #ifndef ALPS_NUMERIC_BINDINGS_LAPACK_LAPACK_H
 #define ALPS_NUMERIC_BINDINGS_LAPACK_LAPACK_H
 
+#include <boost/numeric/bindings/traits/type.h>
 #include <alps/bindings/lapack_names.h>
 
 extern "C" {
@@ -42,6 +43,26 @@ extern "C" {
   void LAPACK_ZHEEV (const char* jobz, const char* uplo, const int* n, dcomplex_t* a, 
                      const int * lda, double * w, dcomplex_t * work, const int * lwork,
                      double * rwork, int* info);
+
+  /**********************************************************************/
+  /* linear least squares problems */
+  /**********************************************************************/
+
+  void LAPACK_SGELS (const char* trans, const int* m, const int* n, const int* nrhs,
+		     float * a, const int* lda, float * b, const int* ldb,
+		     float * work, const int* lwork, int* info);
+
+  void LAPACK_DGELS (const char* trans, const int* m, const int* n, const int* nrhs,
+		     double * a, const int* lda, double * b, const int* ldb,
+		     double * work, const int* lwork, int* info);
+
+  void LAPACK_CGELS (const char* trans, const int* m, const int* n, const int* nrhs,
+		     fcomplex_t * a, const int* lda, fcomplex_t * b, const int& ldb,
+		     fcomplex_t * work, const int* lwork, int* info);
+
+  void LAPACK_ZGELS (const char* trans, const int* m, const int* n, const int* nrhs,
+		     dcomplex_t * a, const int* lda, dcomplex_t * b, const int& ldb,
+		     dcomplex_t * work, const int* lwork, int* info);
 
 }
 
