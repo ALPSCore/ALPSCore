@@ -31,9 +31,9 @@ boost::multi_array<alps::Expression,2> bondmatrix(const alps::ModelLibrary lib, 
   
   // get site and bond terms
   boost::multi_array<alps::Expression,2> sitematrix = 
-    ham.site_term().matrix(ham.basis().site_basis(),lib.simple_operators());
+    ham.site_term().matrix<alps::Expression>(ham.basis().site_basis(),lib.simple_operators());
   boost::multi_array<alps::Expression,4> bondtensor = 
-    ham.bond_term().matrix(ham.basis().site_basis(), ham.basis().site_basis(),lib.simple_operators());
+    ham.bond_term().matrix<alps::Expression>(ham.basis().site_basis(), ham.basis().site_basis(),lib.simple_operators());
     
   // add site terms to bond terms
   for (int i=0;i<dim;++i)
