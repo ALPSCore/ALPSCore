@@ -119,11 +119,8 @@ public:
 private:
   Observable* convert_mergeable() const;
   
-  virtual HistogramObservableEvaluator<T> make_evaluator() const
-  {
-    return HistogramObservableEvaluator<T>(*this, name());
-  }  
-  
+  virtual HistogramObservableEvaluator<T> make_evaluator() const;
+    
   friend class HistogramObservableEvaluator<T>;
 
   uint32_t size_;
@@ -202,7 +199,7 @@ inline void HistogramObservable<T>::set_range(T min, T max, T stepsize)
   max_=max;
   stepsize_=stepsize;
   std::cout<<"*** "<<(max-min)/stepsize<<std::endl;
-  histogram_.resize((max-min)/stepsize);
+  histogram_.resize(static_cast<size_type>((max-min)/stepsize));
 }
 
 template <class T>
@@ -262,6 +259,14 @@ inline void HistogramObservable<T>::load(IDump& dump)
 }
 
 #endif
+
+#include <alps/alea/histogrameval.h>
+
+template <class T>
+HistogramObservableEvaluator<T> HistogramObservable<T>::make_evaluator() const
+{
+  return HistogramObservableEvaluator<T>(*this, name());
+}  
 
 } // end namespace alps
 
