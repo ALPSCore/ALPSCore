@@ -307,7 +307,7 @@ public:
 
   void calculate_distances() const 
   {
-    distance_lookup_=boost::multi_array<size_type,2>(boost::extents[num_sites()][num_sites()]);
+    distance_lookup_.resize(boost::extents[num_sites()][num_sites()]);
     for (vertex_iterator it1=vertices().first; it1 != vertices().second;++it1)
       for (vertex_iterator it2=vertices().first; it2 != vertices().second;++it2)
         distance_lookup_[int(*it1)][int(*it2)]=(have_lattice_ && !disordered() ? l_.distance(*it1,*it2) : (*it1)*num_sites()+(*it2));
