@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2004 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -30,8 +30,6 @@
 
 #include <alps/lattice/latticegraphdescriptor.h>
 
-#ifndef ALPS_WITHOUT_XML
-
 #include <alps/lattice/latticegraph.h>
 #include <alps/lattice/unitcell.h>
 #include <alps/lattice/lattice.h>
@@ -43,30 +41,32 @@
 namespace alps {
 namespace detail {
 #endif
-alps::oxstream& operator<< (alps::oxstream& out, const alps::detail::BasicVertexReference& d)
+
+alps::oxstream& operator<<(alps::oxstream& out,
+                           const alps::detail::BasicVertexReference& d)
 {
   if (d.cell_offset().size())
     out << attribute("cell", vector_writer(d.cell_offset()));
   if (d.offset().size())
-    out << attribute("offset",vector_writer(d.offset()));
-  out << attribute("vertex",d.vertex());
+    out << attribute("offset", vector_writer(d.offset()));
+  out << attribute("vertex", d.vertex());
   return out;
 }
 
-
-alps::oxstream& operator<< (alps::oxstream& out, const alps::detail::VertexReference& d)
+alps::oxstream& operator<<(alps::oxstream& out,
+                           const alps::detail::VertexReference& d)
 {
   out << start_tag("CELL")
       << static_cast<const alps::detail::BasicVertexReference&>(d) 
-      << attribute("type",d.new_type())
+      << attribute("type", d.new_type())
       << end_tag("CELL");
   return out;
 }
 
-
-alps::oxstream& operator<< (alps::oxstream& out, const alps::detail::EdgeReference& d)
+alps::oxstream& operator<<(alps::oxstream& out,
+                           const alps::detail::EdgeReference& d)
 {
-  out << start_tag("EDGE") << attribute("type",d.new_type())
+  out << start_tag("EDGE") << attribute("type", d.new_type())
       << start_tag("SOURCE") << no_linebreak << d.source() << end_tag("SOURCE")
       << start_tag("TARGET") << no_linebreak << d.target() << end_tag("TARGET")
       << end_tag("EDGE");
@@ -137,15 +137,16 @@ EdgeReference::EdgeReference(XMLTag tag, std::istream& in)
 
 } // end namespace detail
 
-LatticeGraphDescriptor::LatticeGraphDescriptor(const XMLTag& intag, std::istream& p,
-                          const LatticeMap& lm, const FiniteLatticeMap& flm, const UnitCellMap& um)
- : disorder_all_vertices_(false),
-   disorder_all_edges_(false)
+
+LatticeGraphDescriptor::LatticeGraphDescriptor(const XMLTag& intag,
+  std::istream& p, const LatticeMap& lm, const FiniteLatticeMap& flm,
+  const UnitCellMap& um)
+ : disorder_all_vertices_(false), disorder_all_edges_(false)
 {
   XMLTag tag(intag);
 
-  for (XMLTag::AttributeMap::const_iterator it=tag.attributes.begin();it!=tag.attributes.end();++it)
-  {
+  for (XMLTag::AttributeMap::const_iterator it=tag.attributes.begin();
+       it!=tag.attributes.end(); ++it) {
     if(it->first=="name")
       name_=it->second;
     else
@@ -202,10 +203,10 @@ LatticeGraphDescriptor::LatticeGraphDescriptor(const XMLTag& intag, std::istream
     }
     if(um.find(unitcell_name_)==um.end())
       boost::throw_exception(std::runtime_error("unknown unit cell: " + unitcell_name_));
-    unit_cell_=const_cast<UnitCellMap&>(um)[unitcell_name_];
+    unit_cell() = const_cast<UnitCellMap&>(um)[unitcell_name_];
   }
   else
-    unit_cell_=GraphUnitCell(tag,p);
+    unit_cell() = GraphUnitCell(tag,p);
 
   tag=parse_tag(p);
   if (tag.name=="CHANGED") {
@@ -281,7 +282,7 @@ void LatticeGraphDescriptor::write_xml(oxstream& xml) const
       xml << start_tag("LATTICE") << attribute("ref", lattice_name_) << end_tag("LATTICE");
   }
   if (unitcell_name_=="")
-    xml << unit_cell_;
+    xml << unit_cell();
   else
     xml << start_tag("UNITCELL") << attribute("ref", unitcell_name_) << end_tag("UNITCELL");
   if (!changed_vertices_.empty() || !changed_edges_.empty()) {
@@ -312,5 +313,3 @@ void LatticeGraphDescriptor::write_xml(oxstream& xml) const
 }
 
 } // end namespace alps
-
-#endif

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2004 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -31,7 +31,7 @@
 #ifndef ALPS_LATTICE_COORDINATELATTICE_H
 #define ALPS_LATTICE_COORDINATELATTICE_H
 
-#include <alps/config.h>
+#include <alps/expression.h>
 #include <alps/lattice/lattice.h>
 #include <alps/lattice/simplelattice.h>
 #include <alps/lattice/coordinate_traits.h>
@@ -41,72 +41,102 @@
 namespace alps {
 
 template <class BASE = simple_lattice<>, class Vector = std::vector<double> >
-class coordinate_lattice: public BASE {
+class coordinate_lattice : public BASE
+{
 public:
-  typedef BASE parent_lattice_type;
-  typedef typename lattice_traits<parent_lattice_type>::unit_cell_type unit_cell_type;
-  typedef typename lattice_traits<parent_lattice_type>::offset_type offset_type;
-  typedef typename lattice_traits<parent_lattice_type>::cell_descriptor cell_descriptor;
+  typedef BASE   parent_lattice_type;
+  typedef typename lattice_traits<parent_lattice_type>::unit_cell_type
+                 unit_cell_type;
+  typedef typename lattice_traits<parent_lattice_type>::offset_type
+                 offset_type;
+  typedef typename lattice_traits<parent_lattice_type>::cell_descriptor
+                 cell_descriptor;
   typedef Vector vector_type;
-  typedef typename std::vector<vector_type>::const_iterator basis_vector_iterator;
+  typedef typename std::vector<vector_type>::const_iterator
+                 basis_vector_iterator;
   
   coordinate_lattice() {}
   
   template <class B2,class V2>
   coordinate_lattice(const coordinate_lattice<B2,V2>& l)
-   : parent_lattice_type(l),
-     basis_vectors_(alps::basis_vectors(l).second-alps::basis_vectors(l).first),
-     reciprocal_basis_vectors_(alps::reciprocal_basis_vectors(l).second-alps::reciprocal_basis_vectors(l).first)
+    : parent_lattice_type(l),
+      basis_vectors_(alps::basis_vectors(l).second - 
+                     alps::basis_vectors(l).first),
+      reciprocal_basis_vectors_(alps::reciprocal_basis_vectors(l).second - 
+                                alps::reciprocal_basis_vectors(l).first)
   {
-    typename lattice_traits<coordinate_lattice<B2,V2> >::basis_vector_iterator it;
-    int i=0;
-    for(it=alps::basis_vectors(l).first; it!=alps::basis_vectors(l).second;++it,++i)
-      std::copy(it->begin(),it->end(),std::back_inserter(basis_vectors_[i]));
-    for(it=alps::reciprocal_basis_vectors(l).first; it!=alps::reciprocal_basis_vectors(l).second;++it,++i)
-      std::copy(it->begin(),it->end(),std::back_inserter(reciprocal_basis_vectors_[i]));
+    typename lattice_traits<coordinate_lattice<B2,V2> >::
+      basis_vector_iterator it;
+    int i = 0;
+    for(it = alps::basis_vectors(l).first;
+        it != alps::basis_vectors(l).second; ++it, ++i)
+      std::copy(it->begin(), it->end(), std::back_inserter(basis_vectors_[i]));
+    i = 0;
+    for(it = alps::reciprocal_basis_vectors(l).first;
+        it!=alps::reciprocal_basis_vectors(l).second; ++it, ++i)
+      std::copy(it->begin(), it->end(),
+                std::back_inserter(reciprocal_basis_vectors_[i]));
   }
   
   template <class InputIterator>
-  coordinate_lattice(const unit_cell_type& u, InputIterator first, InputIterator last)
-  : parent_lattice_type (u),
-    basis_vectors_(first,last)
-    {}
+  coordinate_lattice(const unit_cell_type& u, InputIterator first,
+                     InputIterator last)
+    : parent_lattice_type(u), basis_vectors_(first, last) {}
 
-  template <class InputIterator1,class InputIterator2>
-  coordinate_lattice(const unit_cell_type& u, InputIterator1 first1, InputIterator1 last1, 
-                     InputIterator2 first2, InputIterator2 last2)
-  : parent_lattice_type (u),
-    basis_vectors_(first1,last1),
-    reciprocal_basis_vectors_(first2,last2)
-    {}
+  template <class InputIterator1, class InputIterator2>
+  coordinate_lattice(const unit_cell_type& u, InputIterator1 first1,
+                     InputIterator1 last1, InputIterator2 first2,
+                     InputIterator2 last2)
+    : parent_lattice_type(u), basis_vectors_(first1, last1),
+      reciprocal_basis_vectors_(first2, last2) {}
 
-  coordinate_lattice(const unit_cell_type& u)
-  : parent_lattice_type(u)
-    {
-    }
+  coordinate_lattice(const unit_cell_type& u) : parent_lattice_type(u) {}
 
   template <class B2, class V2>
   const coordinate_lattice& operator=(const coordinate_lattice<B2,V2>& l)
   {
-    static_cast<parent_lattice_type&>(*this)=l;
-     basis_vectors_=std::vector<vector_type>(
-       alps::basis_vectors(l).first, alps::basis_vectors(l).second);
-     return *this;
+    unit_cell() = l.unit_cell();
+    basis_vectors_ = std::vector<vector_type>(
+      alps::basis_vectors(l).first, alps::basis_vectors(l).second);
+    return *this;
   }
 
-  std::pair<basis_vector_iterator,basis_vector_iterator>
-  basis_vectors() const
+  void set_parameters(const Parameters& p)
   {
-    return std::make_pair(basis_vectors_.begin(),basis_vectors_.end());
+    typename std::vector<vector_type>::iterator v_end = basis_vectors_.end();
+    for (typename std::vector<vector_type>::iterator
+           v = basis_vectors_.begin(); v != v_end; ++v) {
+      typename vector_type::iterator b_end = v->end();
+      for (typename vector_type::iterator b = v->begin(); b != b_end; ++b)
+        *b = alps::evaluate(*b, p);
+    }
+    v_end = reciprocal_basis_vectors_.end();
+    for (typename std::vector<vector_type>::iterator
+           v = reciprocal_basis_vectors_.begin(); v != v_end; ++v) {
+      typename vector_type::iterator b_end = v->end();
+      for (typename vector_type::iterator b = v->begin(); b != b_end; ++b)
+        *b = alps::evaluate(*b, p);
+    }
   }
 
-  std::pair<basis_vector_iterator,basis_vector_iterator>
+  void add_basis_vector(const vector_type& v) { basis_vectors_.push_back(v); }
+  std::size_t num_basis_vectors() const { return basis_vectors_.size(); }
+  std::pair<basis_vector_iterator, basis_vector_iterator>
+  basis_vectors() const
+  { return std::make_pair(basis_vectors_.begin(), basis_vectors_.end()); }
+
+  void add_reciprocal_basis_vector(const vector_type& v)
+  { reciprocal_basis_vectors_.push_back(v); }
+  std::size_t num_reciprocal_basis_vectors() const
+  { return reciprocal_basis_vectors_.size(); }
+  std::pair<basis_vector_iterator, basis_vector_iterator>
   reciprocal_basis_vectors() const
   {
-    return std::make_pair(reciprocal_basis_vectors_.begin(),reciprocal_basis_vectors_.end());
+    return std::make_pair(reciprocal_basis_vectors_.begin(),
+                          reciprocal_basis_vectors_.end());
   }
 
-protected:
+private:
   std::vector<vector_type> basis_vectors_;
   std::vector<vector_type> reciprocal_basis_vectors_;
 };
@@ -114,11 +144,12 @@ protected:
 template <class B, class V>
 struct lattice_traits<coordinate_lattice<B,V> >
 {
-  typedef typename coordinate_lattice<B,V>::unit_cell_type unit_cell_type;
+  typedef typename coordinate_lattice<B,V>::unit_cell_type  unit_cell_type;
   typedef typename coordinate_lattice<B,V>::cell_descriptor cell_descriptor;
-  typedef typename coordinate_lattice<B,V>::offset_type offset_type;
-  typedef typename coordinate_lattice<B,V>::vector_type vector_type;
-  typedef typename coordinate_lattice<B,V>::basis_vector_iterator basis_vector_iterator;
+  typedef typename coordinate_lattice<B,V>::offset_type     offset_type;
+  typedef typename coordinate_lattice<B,V>::vector_type     vector_type;
+  typedef typename coordinate_lattice<B,V>::basis_vector_iterator
+    basis_vector_iterator;
 };
 
 } // end namespace alps

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2001-2004 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -67,7 +67,7 @@ LatticeDescriptor::LatticeDescriptor(const XMLTag& intag, std::istream& p)
         else if (tag.name=="VECTOR")  {
           if (tag.type==XMLTag::SINGLE)
             boost::throw_exception(std::runtime_error("coordinate contents expected in <VECTOR>"));
-          basis_vectors_.push_back(read_vector<vector_type>(parse_content(p),dimension()));
+          add_basis_vector(read_vector<vector_type>(parse_content(p),dimension()));
           tag=parse_tag(p);
           if(tag.name!="/VECTOR")
               boost::throw_exception(std::runtime_error("invalid element <"+tag.name+
@@ -87,7 +87,7 @@ LatticeDescriptor::LatticeDescriptor(const XMLTag& intag, std::istream& p)
         else if (tag.name=="VECTOR")  {
           if (tag.type==XMLTag::SINGLE)
             boost::throw_exception(std::runtime_error("coordinate contents expected in <VECTOR>"));
-          reciprocal_basis_vectors_.push_back(read_vector<vector_type>(parse_content(p),dimension()));
+          add_reciprocal_basis_vector(read_vector<vector_type>(parse_content(p),dimension()));
           tag=parse_tag(p);
           if(tag.name!="/VECTOR")
               boost::throw_exception(std::runtime_error("invalid element <"+tag.name+
@@ -100,7 +100,7 @@ LatticeDescriptor::LatticeDescriptor(const XMLTag& intag, std::istream& p)
     else
       boost::throw_exception(std::runtime_error("invalid tag <" + tag.name + "> encountered in <LATTICE>"));
   }
-  if (!basis_vectors_.empty() && basis_vectors_.size()!=dimension())
+  if (!num_basis_vectors() && num_basis_vectors() != dimension())
     boost::throw_exception(std::runtime_error("incorrect number of basis vectors in <LATTICE>"));
 }
 
@@ -108,34 +108,34 @@ LatticeDescriptor::LatticeDescriptor(const XMLTag& intag, std::istream& p)
 void LatticeDescriptor::write_xml(oxstream& xml) const
 {
   xml << start_tag("LATTICE");
-  if (name()!="")
-    xml << attribute("name", name());
+  if (name() != "") xml << attribute("name", name());
   xml << attribute("dimension", dimension());
-  for (Parameters::const_iterator it=lparms_.begin();it!=lparms_.end();++it)
-    xml << start_tag("PARAMETER") << attribute("name", it->key()) << attribute("default", it->value())
-        << end_tag("PARAMETER");
-  if (!basis_vectors_.empty()) {
+  for (Parameters::const_iterator it = lparms_.begin(); it != lparms_.end();
+       ++it)
+    xml << start_tag("PARAMETER") << attribute("name", it->key())
+        << attribute("default", it->value()) << end_tag("PARAMETER");
+  if (num_basis_vectors()) {
     xml << start_tag("BASIS");
-    for (int i=0;i<basis_vectors_.size();++i) {
-      xml << start_tag("VECTOR");
-      no_linebreak(xml) << vector_writer(basis_vectors_[i]) << end_tag("VECTOR");
-    }
+    basis_vector_iterator v, v_end;
+    for (boost::tie(v, v_end) = basis_vectors(); v != v_end; ++v)
+      xml << start_tag("VECTOR") << no_linebreak << vector_writer(*v)
+          << end_tag("VECTOR");
     xml << end_tag("BASIS");        
   }
-  if (!reciprocal_basis_vectors_.empty()) {
+  if (num_reciprocal_basis_vectors()) {
     xml << start_tag("RECIPROCALBASIS");
-    for (int i=0;i<reciprocal_basis_vectors_.size();++i) {
-      xml << start_tag("VECTOR");
-      no_linebreak(xml) << vector_writer(reciprocal_basis_vectors_[i]) << end_tag("VECTOR");
-    }
+    basis_vector_iterator v, v_end;
+    for (boost::tie(v, v_end) = reciprocal_basis_vectors(); v != v_end; ++v)
+      xml << start_tag("VECTOR") << no_linebreak << vector_writer(*v)
+          << end_tag("VECTOR");
     xml << end_tag("RECIPROCALBASIS");        
   }
   xml << end_tag("LATTICE");
 }
 
-FiniteLatticeDescriptor::FiniteLatticeDescriptor(const XMLTag& intag, std::istream& p,
-                          const LatticeMap& lm)
- : dim_(0)
+
+FiniteLatticeDescriptor::FiniteLatticeDescriptor(const XMLTag& intag,
+  std::istream& p, const LatticeMap& lm) : dim_(0)
 {
   XMLTag tag(intag);
   name_ = tag.attributes["name"];
@@ -250,13 +250,7 @@ void LatticeDescriptor::set_parameters(const Parameters& p)
 {
   Parameters parms(lparms_);
   parms << p;
-  for (int i=0;i<basis_vectors_.size();++i)
-    for (int j=0;j<basis_vectors_[i].size();++j)
-      basis_vectors_[i][j] = alps::evaluate(basis_vectors_[i][j], parms);
-  for (int i=0;i<reciprocal_basis_vectors_.size();++i)
-    for (int j=0;j<reciprocal_basis_vectors_[i].size();++j)
-      reciprocal_basis_vectors_[i][j] = alps::evaluate(reciprocal_basis_vectors_[i][j], parms);
-      
+  base_type::set_parameters(parms);
 }
 
 void FiniteLatticeDescriptor::set_parameters(const Parameters& p)

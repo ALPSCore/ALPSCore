@@ -31,12 +31,6 @@
 #ifndef ALPS_LATTICE_UNITCELL_H
 #define ALPS_LATTICE_UNITCELL_H
 
-#include <alps/config.h>
-
-#ifdef ALPS_WITHOUT_XML
-#error "Lattice library requires XML support"
-#endif
-
 #include <alps/parser/parser.h>
 #include <alps/parser/xmlstream.h>
 #include <alps/lattice/graph.h>

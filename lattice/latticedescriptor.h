@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2004 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -31,12 +31,6 @@
 #ifndef ALPS_LATTICE_LATTICEDESCRIPTOR_H
 #define ALPS_LATTICE_LATTICEDESCRIPTOR_H
 
-#include <alps/config.h>
-
-#ifdef ALPS_WITHOUT_XML
-#error "Lattice library requires XML support"
-#endif
-
 #include <alps/parameters.h>
 #include <alps/parser/parser.h>
 #include <alps/parser/xmlstream.h>
@@ -48,14 +42,18 @@ namespace alps {
 class LatticeDescriptor : public coordinate_lattice<simple_lattice<>,std::vector<alps::StringValue> >
 {
 public:
-  typedef coordinate_lattice<simple_lattice<>,std::vector<alps::StringValue> > base_type;
+  typedef coordinate_lattice<simple_lattice<>, std::vector<alps::StringValue> >
+    base_type;
   typedef lattice_traits<base_type>::unit_cell_type unit_cell_type;
   typedef lattice_traits<base_type>::offset_type offset_type;
   typedef lattice_traits<base_type>::cell_descriptor cell_descriptor;
   typedef lattice_traits<base_type>::vector_type vector_type;
-  typedef lattice_traits<base_type>::basis_vector_iterator basis_vector_iterator;
+  typedef lattice_traits<base_type>::basis_vector_iterator
+    basis_vector_iterator;
   
-  LatticeDescriptor() : dim_(0) {}
+  LatticeDescriptor() : base_type(), lparms_(), name_(), dim_(0) {}
+  LatticeDescriptor(const std::string& name, std::size_t dim) :
+    base_type(), lparms_(), name_(name), dim_(dim) {}
   LatticeDescriptor(const alps::XMLTag&, std::istream&);
 
   void write_xml(oxstream&) const;
@@ -63,6 +61,12 @@ public:
   std::size_t dimension() const { return dim_;}
 
   void set_parameters(const alps::Parameters&);
+
+  template<class T>
+  void add_default_parameter(const std::string& name,
+                             const T& value)
+  { lparms_[name] = value; }
+
 private:
   alps::Parameters lparms_;
   std::string name_;

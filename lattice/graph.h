@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2004 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -30,10 +30,6 @@
 
 #ifndef ALPS_LATTICE_GRAPH_H
 #define ALPS_LATTICE_GRAPH_H
-
-#include <alps/config.h>
-
-#ifndef ALPS_WITHOUT_XML
 
 #include <alps/parser/parser.h>
 #include <alps/parser/xmlstream.h>
@@ -434,13 +430,11 @@ inline alps::oxstream& operator<<(alps::oxstream& oxs,
   const boost::adjacency_list<T0, T1, T2, T3, T4, T5, T6>& g)
 {
   alps::write_graph_xml(oxs, g);
-  return out;
+  return oxs;
 }
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // end namespace alps
-#endif
-
 #endif
 
 #endif // ALPS_LATTICE_GRAPH_H
