@@ -51,11 +51,11 @@ try {
   std::string o11 = "test string";
 
   {
-    alps::OXDRFileDump od("xdrdump.dump");
+    alps::OXDRFileDump od(boost::filesystem::path("xdrdump.dump",boost::filesystem::native));
     od << o1 << o2 << o3 << o4 << o5 << o6 << o7 << o8 << o9 << o10 << o11;
   }
   
-  alps::IXDRFileDump id("xdrdump.dump");
+  alps::IXDRFileDump id(boost::filesystem::path("xdrdump.dump",boost::filesystem::native));
   std::cout << id.get<bool>() << ' ';
   std::cout << static_cast<int32_t>(id.get<int8_t>()) << ' ';
   std::cout << static_cast<int32_t>(id.get<uint8_t>()) << ' ';
