@@ -333,6 +333,11 @@ OXDRFileDump::~OXDRFileDump()
     std::fclose(file_);
 }
 
+void OXDRFileDump::flush() 
+{
+  std::fflush(file_);
+}
+
 
 //=======================================================================
 // IXDRFileDump

@@ -151,6 +151,8 @@ public:
   OXDRFileDump(const boost::filesystem::path& name);
   virtual ~OXDRFileDump();
 
+  void flush();
+  
 private:
   // file reference and file name, needed by dump reference
   std::FILE* file_;
