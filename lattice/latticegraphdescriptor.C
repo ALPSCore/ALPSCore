@@ -146,6 +146,8 @@ EdgeReference::EdgeReference(XMLTag tag, std::istream& in)
 
 LatticeGraphDescriptor::LatticeGraphDescriptor(const XMLTag& intag, std::istream& p,
                           const LatticeMap& lm, const FiniteLatticeMap& flm, const UnitCellMap& um)
+ : disorder_all_vertices_(false),
+   disorder_all_edges_(false)
 {
   XMLTag tag(intag);
 
