@@ -363,8 +363,8 @@ void SimpleBinning<T>::write_scalar_xml(oxstream& oxs) const {
     prec = (prec>=3 && prec<20 ? prec : 16);
     oxs << start_tag("BINNED") << attribute("size",boost::lexical_cast<std::string,int>(1<<i))
         << no_linebreak << start_tag("COUNT") << count()/(1<<i) << end_tag("COUNT")
-        << start_tag("MEAN") << attribute("method", "simple") << precision(binmean(i), prec) << end_tag("MEAN")
-        << start_tag("ERROR") << attribute("method", "simple") << precision(error(i), 3) << end_tag("ERROR")
+        << start_tag("MEAN") << attribute("method", "simple") << no_linebreak << precision(binmean(i), prec) << end_tag("MEAN")
+        << start_tag("ERROR") << attribute("method", "simple") << no_linebreak << precision(error(i), 3) << end_tag("ERROR")
         << end_tag("BINNED");
   }
 }
@@ -377,8 +377,8 @@ void SimpleBinning<T>::write_vector_xml(oxstream& oxs, IT it) const {
     prec = (prec>=3 && prec<20 ? prec : 16);
     oxs << start_tag("BINNED") << attribute("size",boost::lexical_cast<std::string,int>(1<<i))
               << no_linebreak << start_tag("COUNT") << count()/(1<<i) << end_tag("COUNT")
-        << start_tag("MEAN") << attribute("method", "simple") << precision(obs_value_traits<result_type>::slice_value(binmean(i),it), 8) << end_tag("MEAN")
-        << start_tag("ERROR") << attribute("method", "simple") << precision(obs_value_traits<result_type>::slice_value(error(i),it), 3) << end_tag("ERROR")
+        << start_tag("MEAN") << attribute("method", "simple") << no_linebreak << precision(obs_value_traits<result_type>::slice_value(binmean(i),it), 8) << end_tag("MEAN")
+        << start_tag("ERROR") << attribute("method", "simple") << no_linebreak << precision(obs_value_traits<result_type>::slice_value(error(i),it), 3) << end_tag("ERROR")
         << end_tag("BINNED");
   }
 }
