@@ -344,6 +344,12 @@ OperatorDescriptor<I>::apply(StateDescriptor<I> state, const SiteBasisDescriptor
   return std::make_pair(state,e);
 }
 
+template <class I, class T> 
+boost::multi_array<T,2> get_matrix(T,const SiteTermDescriptor<I>& m, const SiteBasisDescriptor<I>& basis1, const typename SiteTermDescriptor<I>::operator_map& ops, const Parameters& p=Parameters())
+{
+  return m.template matrix<T>(basis1,ops,p);
+}
+
 template <class I> template <class T> boost::multi_array<T,2> 
 SiteTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& basis, const operator_map& ops, const Parameters& p) const
 {
@@ -369,6 +375,12 @@ SiteTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& basis, const operato
     }
   }
   return mat;
+}
+
+template <class I, class T> 
+boost::multi_array<T,4> get_matrix(T,const BondTermDescriptor<I>& m, const SiteBasisDescriptor<I>& basis1, const SiteBasisDescriptor<I>& basis2, const  typename BondTermDescriptor<I>::operator_map& ops, const Parameters& p=Parameters())
+{
+  return m.template matrix<T>(basis1,basis2,ops,p);
 }
 
 template <class I> template <class T> boost::multi_array<T,4> 
