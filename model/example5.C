@@ -39,8 +39,6 @@ int main()
     // create the library from an XML file
     alps::ModelLibrary lib(std::cin);
 
-    std::cerr << "here\n";
-
     // get operators in one bond term 
 #ifndef ALPS_WITH_NEW_EXPRESSION
     std::set<alps::Term> ops = lib.get_hamiltonian("hardcore boson").bond_term().split(lib.operators());
