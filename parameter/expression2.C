@@ -40,11 +40,7 @@ int main()
   try {
 #endif
 
-#ifndef ALPS_WITH_NEW_EXPRESSION
     alps::Expression x("3*(a*b)*2");
-#else
-    alps::Expression<double> x("3*(a*b)*2");
-#endif
     x.simplify();
     std::cout << x << "\n";
 

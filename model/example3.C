@@ -37,11 +37,7 @@ int main()
   try {
 #endif
 
-#ifndef ALPS_WITH_NEW_EXPRESSION
     typedef alps::Expression Expression_;
-#else
-    typedef alps::Expression<> Expression_;
-#endif
 
     // create the library from an XML file
     alps::ModelLibrary lib(std::cin);
