@@ -46,10 +46,13 @@ public:
 
   half_integer() : val_(0) {}
   explicit half_integer(double x) : val_(integer_type(2*x+(x<0?-0.01:0.01))) {}
+  half_integer(integer_type x) : val_(2*x) {}
   template<class J>
   explicit half_integer(const half_integer<J>& x) : val_(x.get_twice()) {}
 
-  half_integer& operator=(double x)
+  const half_integer& operator=(integer_type x)
+  { val_ = 2*x; return *this; }
+  const half_integer& operator=(double x)
   { val_ = integer_type(2*x+(x < 0 ? -0.01 : 0.01)); return *this; }
   template<class J>
   half_integer& operator=(const half_integer<J>& x)
