@@ -1,22 +1,20 @@
-/***************************************************************************
-* PALM++/alea library
+/*****************************************************************************
 *
-* alea/simpleobseval.C    simple example program for observable evaluator
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
 * Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
-*                            Synge Todo <wistaria@comp-phys.org>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -26,7 +24,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 #include <alps/alea.h>
 #include <boost/random.hpp> 
@@ -75,22 +75,22 @@ try {
   alps::RealObsevaluator obseval_a(obs_a);
   std::cout << obseval_a;
   std::cout << "  count = " << obseval_a.count()
-	    << ", bin size = " << obseval_a.bin_size()
-	    << ", number of bins = " << obseval_a.bin_number()
-	    << std::endl;
+            << ", bin size = " << obseval_a.bin_size()
+            << ", number of bins = " << obseval_a.bin_number()
+            << std::endl;
 
   alps::RealObsevaluator obseval_b(obs_b);
   std::cout << obseval_b;
   std::cout << "  count = " << obseval_b.count()
-	    << ", bin size = " << obseval_b.bin_size()
-	    << ", number of bins = " << obseval_b.bin_number()
-	    << std::endl;
+            << ", bin size = " << obseval_b.bin_size()
+            << ", number of bins = " << obseval_b.bin_number()
+            << std::endl;
   alps::RealObsevaluator obseval_c(obs_c);
   std::cout << obseval_c;
   std::cout << "  count = " << obseval_c.count()
-	    << ", bin size = " << obseval_c.bin_size()
-	    << ", number of bins = " << obseval_c.bin_number()
-	    << std::endl;
+            << ", bin size = " << obseval_c.bin_size()
+            << ", number of bins = " << obseval_c.bin_number()
+            << std::endl;
 
   std::cout << "five different methods to construct RealObsevaluator\n";
 
@@ -112,18 +112,18 @@ try {
   std::cout << "  " << obseval_4;
 
   std::cout << "  count = " << obseval_4.count()
-	    << ", bin size = " << obseval_4.bin_size()
-	    << ", number of bins = " << obseval_4.bin_number()
-	    << std::endl;
+            << ", bin size = " << obseval_4.bin_size()
+            << ", number of bins = " << obseval_4.bin_number()
+            << std::endl;
 
   std::cout << "merging observables b and c\n";
   alps::RealObsevaluator obseval_5("obseval_5");
   obseval_5 << obseval_b << obseval_c;
   std::cout << "  " << obseval_5;
   std::cout << "  count = " << obseval_5.count()
-	    << ", bin size = " << obseval_5.bin_size()
-	    << ", number of bins = " << obseval_5.bin_number()
-	    << std::endl;
+            << ", bin size = " << obseval_5.bin_size()
+            << ", number of bins = " << obseval_5.bin_number()
+            << std::endl;
   
   alps::RealObsevaluator obseval_h = 1.0 / obseval_a;
   std::cout << obseval_h;

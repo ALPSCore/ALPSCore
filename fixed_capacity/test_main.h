@@ -1,21 +1,19 @@
-/***************************************************************************
-* ALPS library
+/*****************************************************************************
 *
-* test_main.h test for fixed-capacity containers
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
 * Copyright (C) 2002-2003 by Synge Todo <wistaria@comp-phys.org>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -25,7 +23,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 #include <boost/random.hpp>
 #include <cstdlib>
@@ -218,25 +218,25 @@ void test_main(std::size_t m, std::size_t n) {
       if (rng() < 0.5) {
         double d = rng();
 #ifdef VERBOSE
-	std::cout << "insert " << p << ' ' << x << ' ' << d << std::endl;
+        std::cout << "insert " << p << ' ' << x << ' ' << d << std::endl;
 #endif
-	if (x != 1) {
-	  s.insert(s.begin() + p, x, d);
-	  t.insert(t.begin() + p, x, d);
-	  u.insert(u.begin() + p, x, d);
-	} else {
-	  s.insert(s.begin() + p, d);
-	  t.insert(t.begin() + p, d);
-	  u.insert(u.begin() + p, d);
-	}
+        if (x != 1) {
+          s.insert(s.begin() + p, x, d);
+          t.insert(t.begin() + p, x, d);
+          u.insert(u.begin() + p, x, d);
+        } else {
+          s.insert(s.begin() + p, d);
+          t.insert(t.begin() + p, d);
+          u.insert(u.begin() + p, d);
+        }
       } else {
 #ifdef VERBOSE
-	std::cout << "insert sequence\n";
+        std::cout << "insert sequence\n";
 #endif
-	make_array(v, rng, x);
-	s.insert(s.begin() + p, v.begin(), v.end());
-	t.insert(t.begin() + p, v.begin(), v.end());
-	u.insert(u.begin() + p, v.begin(), v.end());
+        make_array(v, rng, x);
+        s.insert(s.begin() + p, v.begin(), v.end());
+        t.insert(t.begin() + p, v.begin(), v.end());
+        u.insert(u.begin() + p, v.begin(), v.end());
       }
     } else {
       // erase
@@ -246,13 +246,13 @@ void test_main(std::size_t m, std::size_t n) {
       std::cout << "erase " << p << ' ' << x << std::endl;
 #endif
       if (x != 1) {
-	s.erase(s.begin() + p, s.begin() + x);
-	t.erase(t.begin() + p, t.begin() + x);
-	u.erase(u.begin() + p, u.begin() + x);
+        s.erase(s.begin() + p, s.begin() + x);
+        t.erase(t.begin() + p, t.begin() + x);
+        u.erase(u.begin() + p, u.begin() + x);
       } else {
-	s.erase(s.begin() + p);
-	t.erase(t.begin() + p);
-	u.erase(u.begin() + p);
+        s.erase(s.begin() + p);
+        t.erase(t.begin() + p);
+        u.erase(u.begin() + p);
       }
     } 
     

@@ -1,21 +1,19 @@
-/***************************************************************************
-* PALM++/model library
+/*****************************************************************************
 *
-* example/example1.C
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
 * Copyright (C) 2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -25,7 +23,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 #include <alps/model.h>
 #include <iostream>
@@ -57,7 +57,7 @@ boost::multi_array<alps::Expression,2> bondmatrix(const alps::ModelLibrary lib, 
     for (int j=0;j<dim;++j)
       for (int k=0;k<dim;++k)
         for (int l=0;l<dim;++l)
-	  bondmatrix[i+j*dim][k+l*dim]=bondtensor[i][j][k][l];
+          bondmatrix[i+j*dim][k+l*dim]=bondtensor[i][j][k][l];
   return bondmatrix;
 }
 
