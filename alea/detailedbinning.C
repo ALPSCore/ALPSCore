@@ -48,7 +48,7 @@ try {
 
   //DEFINE OBSERVABLES
   //------------------
-  alps::IntObservable obs_a("observable a");
+  alps::RealObservable obs_a("observable a");
   alps::RealObservable obs_b("observable b");
 
   //READ PARAMETERS
@@ -60,7 +60,7 @@ try {
   //ADD MEASUREMENTS TO THE OBSERVABLES
   //----------------------------------- 
   for(uint i = 0; i < thermalization_steps; ++i){ 
-    obs_a << random_int();
+    obs_a << random();
     obs_b << random()+1;
   }
 
@@ -72,7 +72,7 @@ try {
   //ADD MEASUREMENTS TO THE OBSERVABLES
   //-----------------------------------
   for(uint32_t i = 0; i < number_of_steps; ++i){
-    obs_a << random_int();
+    obs_a << random();
     obs_b << random()+1;
   }
 
@@ -86,7 +86,7 @@ try {
 
   //JACKKNIVE ANALYSIS
   //------------------
-  alps::IntObsevaluator obseval_a(obs_a);
+  alps::RealObsevaluator obseval_a(obs_a);
   alps::RealObsevaluator obseval_b(obs_b);
   alps::RealObsevaluator obseval_c;
   obseval_c = obseval_b / obseval_a;
