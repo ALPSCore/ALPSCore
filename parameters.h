@@ -148,8 +148,8 @@ public:
       if (it->value().valid())
 	xml << "<PARAMETER name=\"" << it->key() << "\">" << it->value()
 	    << "</PARAMETER>\n";
-      xml << "</PARAMETERS>\n";
     }
+    xml << "</PARAMETERS>\n";
   }
 
   void read_xml(XMLTag tag, std::istream& xml)
