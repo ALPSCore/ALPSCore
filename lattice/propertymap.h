@@ -35,10 +35,10 @@
 
 namespace alps {
 
-template <class V> // singleton_property_map and constant_property_map
+template <class V, class K=std::size_t> // singleton_property_map and constant_property_map
 class singleton_property_map {
 public:
-  typedef std::size_t key_type;
+  typedef K key_type;
   typedef V value_type;
   typedef V& reference;
   typedef boost::lvalue_property_map_tag category;

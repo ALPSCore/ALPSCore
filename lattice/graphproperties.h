@@ -44,16 +44,16 @@
 namespace alps {
 
 struct vertex_type_t { typedef boost::vertex_property_tag kind; };
-struct original_vertex_type_t { typedef boost::vertex_property_tag kind; };
+//struct original_vertex_type_t { typedef boost::vertex_property_tag kind; };
 typedef vertex_type_t site_type_t;
-typedef original_vertex_type_t original_site_type_t;
+//typedef original_vertex_type_t original_site_type_t;
 struct coordinate_t { typedef boost::vertex_property_tag kind; };
 struct parity_t { typedef boost::vertex_property_tag kind; };
 
 struct edge_type_t { typedef boost::edge_property_tag kind; };
-struct original_edge_type_t { typedef boost::edge_property_tag kind; };
+//struct original_edge_type_t { typedef boost::edge_property_tag kind; };
 typedef edge_type_t bond_type_t;
-typedef original_edge_type_t original_bond_type_t;
+//typedef original_edge_type_t original_bond_type_t;
 struct source_offset_t { typedef boost::edge_property_tag kind; };
 struct target_offset_t { typedef boost::edge_property_tag kind; };
 struct boundary_crossing_t { typedef boost::edge_property_tag kind; };
@@ -177,7 +177,7 @@ const bool has_property<P, const boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>,D>:
 #endif 
 
 
-template <class P, class G, class Default>
+template <class P, class G, class Default, class K=std::size_t>
 struct property_map
 {
   typedef 
@@ -185,7 +185,7 @@ struct property_map
       typename has_property<P,G>::graph_property_type&,
       typename detail::choose<has_property<P,G>::any_property,
         typename boost::property_map<G,P>::type,
-        singleton_property_map<Default> 
+        singleton_property_map<Default,K> 
       >::type
     >::type type;
 
@@ -194,7 +194,7 @@ struct property_map
       const typename has_property<P,G>::graph_property_type&,
       typename detail::choose<has_property<P,G>::any_property,
         typename boost::property_map<G,P>::const_type,
-        singleton_property_map<Default>
+        singleton_property_map<Default,K>
       >::type
     >::type const_type;
 };
@@ -321,10 +321,10 @@ typedef boost::adjacency_list<boost::vecS,boost::vecS,boost::undirectedS,
                               // vertex property
                               boost::property<coordinate_t,detail::coordinate_type,
                                 boost::property<parity_t,int8_t,
-                                   boost::property<vertex_type_t,int > > >,
+                                   boost::property<vertex_type_t,unsigned int > > >,
                               // edge property
-                              boost::property<edge_type_t,int,
-                                boost::property<boost::edge_index_t,int,
+                              boost::property<edge_type_t,unsigned int,
+                                boost::property<boost::edge_index_t,unsigned int,
                                   boost::property<boundary_crossing_t,boundary_crossing> > >,
                               // graph property
                               boost::property<dimension_t,std::size_t,

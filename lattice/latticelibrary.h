@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -77,37 +77,6 @@ private:
   GraphMap graphs_;
 };
 
-template <class G=coordinate_graph_type>
-class graph_factory : public LatticeLibrary
-{
-public:
-  typedef G graph_type;
-  graph_factory() : g_(0), to_delete_(false) {}
-  graph_factory(std::istream& in) : LatticeLibrary(in), g_(0), to_delete_(false) {}
-  graph_factory(std::istream& in, const Parameters& parm) 
-    : LatticeLibrary(in), g_(0), to_delete_(false) { make_graph(parm);}
-  graph_factory(const Parameters& parm);
-  ~graph_factory() { if (to_delete_) delete g_;}
-
-  void make_graph(const Parameters& p);
-  graph_type& graph()
-  {
-    if (g_==0) boost::throw_exception(std::runtime_error("no graph created in graph_factory"));
-    return *g_;
-  }
-  const graph_type& graph() const
-  {
-    if (g_==0) boost::throw_exception(std::runtime_error("no graph created in graph_factory"));
-    return *g_;
-  }
-
-private:
-  typedef lattice_graph<hypercubic_lattice<coordinate_lattice<simple_lattice<GraphUnitCell> > >,graph_type> lattice_type;
-  graph_type* g_;
-  bool to_delete_;
-  lattice_type l_;
-};
-
 template <class G>
 inline bool LatticeLibrary::get_graph(G& g, const std::string& name) const
 {
@@ -118,47 +87,6 @@ inline bool LatticeLibrary::get_graph(G& g, const std::string& name) const
     copy_graph(const_cast<GraphMap&>(graphs_)[name],g);
     return true;
   }
-}
-
-template <class G>
-inline graph_factory<G>::graph_factory(const Parameters& parms)
- : LatticeLibrary(parms), g_(0), to_delete_(false)
-{
-  make_graph(parms);
-}
-
-template <class G>
-inline void
-graph_factory<G>::make_graph(const Parameters& parms)
-{
-  std::string name;
-  bool have_graph=false;
-  bool have_lattice=false;
-  
-  if (have_graph = parms.defined("GRAPH"))
-    name = static_cast<std::string>(parms["GRAPH"]);
-  if (have_lattice = parms.defined("LATTICE"))
-    name = static_cast<std::string>(parms["LATTICE"]);
-  if (have_lattice && have_graph)
-    boost::throw_exception(std::runtime_error("both GRAPH and LATTICE were specified"));
-  if (have_lattice && has_lattice(name)) {
-    LatticeGraphDescriptor desc(lattice_descriptor(name));
-    desc.set_parameters(parms);
-    l_ = lattice_type(desc);
-    if (to_delete_)
-      delete g_;
-    g_ = &(l_.graph());
-    to_delete_=false;
-  }
-  else if ((have_lattice || have_graph) && has_graph(name)) {
-    if (to_delete_)
-      delete g_;
-    g_= new graph_type();
-    get_graph(*g_,name);
-    to_delete_=true;
-  }
-  else
-    boost::throw_exception(std::runtime_error("could not find graph/lattice specified in parameters"));
 }
 
 } // end namespace alps

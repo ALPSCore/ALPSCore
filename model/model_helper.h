@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003 by Matthias Troyer <troyer@comp-phys.org>
+* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -27,6 +27,44 @@
 
 /* $Id$ */
 
-#include <alps/lattice/graph.h>
+#ifndef ALPS_MODEL_MODEL_HELPER_H
+#define ALPS_MODEL_MODEL_HELPER_H
 
-alps::singleton_property_map<int> alps::detail::dummy_map;
+#include <alps/model/modellibrary.h>
+
+namespace alps {
+
+template <class I=short>
+class model_helper
+{
+public:  
+
+  typedef BasisDescriptor<I> basis_descriptor_type;
+  typedef half_integer<I> half_integer_type;
+  typedef QuantumNumber<I> quantum_number_type;
+  
+  model_helper(alps::Parameters& p) // it updates the parameter object passed to it!
+   : model_library_(p), 
+     model_(model_library_.hamiltonian(p["MODEL"])) 
+  {
+    p.copy_undefined(model_.default_parameters());
+    model_.set_parameters(p);
+  }
+  
+  const ModelLibrary::OperatorDescriptorMap& simple_operators() const { 
+    return model_library_.simple_operators();
+  }
+  
+  HamiltonianDescriptor<I>& model() { return model_;}
+  const HamiltonianDescriptor<I>& model() const { return model_;}
+  basis_descriptor_type& basis() { return model().basis();}
+  const basis_descriptor_type& basis() const { return model().basis();}
+     
+private:
+   ModelLibrary model_library_;
+   HamiltonianDescriptor<I> model_;
+};
+
+} // end namespace
+
+#endif

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@comp-phys.orgh>,
+* Copyright (C) 2001-2004 by Matthias Troyer <troyer@comp-phys.orgh>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -33,7 +33,7 @@
 
 #include <alps/config.h>
 #include <alps/parameters.h>
-#include <alps/lattice/unitcell.h>
+#include <alps/lattice/disorder.h>
 #include <alps/lattice/lattice.h>
 #include <alps/lattice/latticegraph.h>
 #include <alps/lattice/latticedescriptor.h>
@@ -44,46 +44,6 @@
 #include <iostream>
 
 namespace alps {
-
-namespace detail {
-
-class BasicVertexReference {
-public:
-  typedef GraphUnitCell::offset_type offset_type;
-  BasicVertexReference() {}
-  BasicVertexReference(XMLTag);
-  const offset_type& cell_offset() const { return cell_;}
-  const offset_type& offset() const { return offset_;}
-  unsigned int vertex() const { return vertex_;}
-private:
-  offset_type cell_;
-  offset_type offset_;
-  unsigned int vertex_;
-};
-
-
-class VertexReference : public BasicVertexReference {
-public:
-  VertexReference(XMLTag, std::istream&);
-  unsigned int new_type() const { return new_type_;}
-private:
-  unsigned int new_type_;
-};
-
-
-class EdgeReference {
-public:
-  EdgeReference(XMLTag, std::istream&);
-  const BasicVertexReference& source() const { return source_;}
-  const BasicVertexReference& target() const { return target_;}
-  unsigned int new_type() const { return new_type_;}
-private:
-  BasicVertexReference source_;
-  BasicVertexReference target_;
-  unsigned int new_type_;
-};
-
-}
 
 class LatticeGraphDescriptor
   : public hypercubic_lattice<coordinate_lattice<simple_lattice<GraphUnitCell>,std::vector<StringValue> >, std::vector<StringValue> >
@@ -109,17 +69,11 @@ public:
   void write_xml(oxstream&) const;
   const std::string& name() const { return name_;}
   void set_parameters(const Parameters&);
+  const DisorderDescriptor& disorder() const { return disorder_;}
 private:
   std::string name_, lattice_name_, unitcell_name_;
   bool lattice_is_finite_;
-  std::vector<detail::VertexReference> changed_vertices_;
-  std::vector<detail::EdgeReference> changed_edges_;
-  bool disorder_all_vertices_;
-  bool disorder_all_edges_;
-  std::vector<unsigned int> disordered_vertices_;
-  std::vector<unsigned int> disordered_edges_;
-  
-  
+  DisorderDescriptor disorder_;
   FiniteLatticeDescriptor finitelattice_; 
   LatticeDescriptor lattice_; // for printing only
 };
@@ -160,17 +114,8 @@ inline std::ostream& operator<< (std::ostream& out, const alps::LatticeGraphDesc
     return out;
   }
 
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-namespace detail {
-#endif
-
-alps::oxstream& operator<< (alps::oxstream&, const alps::detail::BasicVertexReference&);
-alps::oxstream& operator<< (alps::oxstream&, const alps::detail::VertexReference&);
-alps::oxstream& operator<< (alps::oxstream&, const alps::detail::EdgeReference&);
-
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-} // end namespace detail
 } // end namespace alps
 #endif
 

@@ -330,7 +330,7 @@ inline int32_t maximum_edge_type(const G& g)
 }
 
 template <class G>
-inline int32_t maximum_vertex_type(const G& g)
+inline unsigned int maximum_vertex_type(const G& g)
 {
   if(!has_property<vertex_type_t,G>::vertex_property)
     return 0;
@@ -349,59 +349,39 @@ inline int32_t maximum_vertex_type(const G& g)
 
 
 namespace detail {
-template <class IT, class MAP, class ORIGINALMAP>
-void disorder_it(IT start, IT end, MAP& type, ORIGINALMAP& original_type)
+template <class IT, class MAP, class T>
+T disorder_it(IT start, IT end, MAP& type, T i=0)
 {
-  for (std::size_t i=0; start!=end;++start) {
-    original_type[*start]=type[*start];
+  for (; start!=end;++start) {
     type[*start]=i++;
   }
+  return i;
 }
 
-  extern singleton_property_map<int> dummy_map;
-
-}
-
-template <class G, class MAP, class ORIGINALMAP>
-void disorder_vertices(G& g, MAP& type, ORIGINALMAP& original_type)
+template <class IT, class MAP>
+unsigned int disorder_it(IT start, IT end, MAP& type)
 {
-  detail::disorder_it(boost::vertices(g).first,boost::vertices(g).second,type,original_type); 
+  return disorder_it(start,end,type,0u);
+}
+
 }
 
 template <class G, class MAP>
 void disorder_vertices(G& g, MAP& type)
 {
-  detail::disorder_it(boost::vertices(g).first,boost::vertices(g).second,type,detail::dummy_map); 
-}
-
-template <class G, class MAP, class ORIGINALMAP>
-void disorder_edges(G& g, MAP& type, ORIGINALMAP& original_type)
-{
-  detail::disorder_it(boost::edges(g).first,boost::edges(g).second,type,original_type); 
+  detail::disorder_it(boost::vertices(g).first,boost::vertices(g).second,type); 
 }
 
 template <class G, class MAP>
 void disorder_edges(G& g, MAP& type)
 {
-  detail::disorder_it(boost::edges(g).first,boost::edges(g).second,type,detail::dummy_map); 
-}
-
-template <class G, class MAP, class ORIGINALMAP>
-void disorder_bonds(G& g, MAP& type, ORIGINALMAP& original_type)
-{
-  disorder_edges(g,type,original_type);
+  detail::disorder_it(boost::edges(g).first,boost::edges(g).second,type); 
 }
 
 template <class G, class MAP>
 void disorder_bonds(G& g, MAP& type)
 {
   disorder_edges(g,type);
-}
-
-template <class G, class MAP, class ORIGINALMAP>
-void disorder_sites(G& g, MAP& type, ORIGINALMAP& original_type)
-{
-  disorder_vertices(g,type,original_type);
 }
 
 template <class G, class MAP>

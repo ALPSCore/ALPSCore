@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 2000-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -27,16 +27,18 @@
 
 /* $Id$ */
 
-#ifndef ALPS_SCHEDULER_LATTICEPLUGIN_H
-#define ALPS_SCHEDULER_LATTICEPLUGIN_H
+#ifndef ALPS_SCHEDULER_LATTICEHELPER_H
+#define ALPS_SCHEDULER_LATTICEHELPER_H
 
 
 #include <alps/lattice/latticelibrary.h>
+#include <alps/lattice/disorder.h>
+#include <boost/vector_property_map.hpp>
 
 namespace alps {
 
-template <class G=graph_factory<>::graph_type>
-class LatticeFactory
+template <class G=coordinate_graph_type>
+class graph_helper : public LatticeLibrary
 {
 public:
   typedef G graph_type;
@@ -60,18 +62,41 @@ public:
   typedef typename graph_traits<graph_type>::bonds_size_type bonds_size_type;
   typedef typename graph_traits<graph_type>::neighbors_size_type neighbors_size_type;
   typedef typename graph_traits<graph_type>::neighbor_iterator neighbor_iterator;
-  
-  LatticeFactory(const alps::Parameters& p)
-   : factory_(p), 
-     graph_(factory_.graph()), 
+
+ graph_helper(std::istream& in, const Parameters& p)
+   : LatticeLibrary(in), 
+	 to_delete_(false), 
+     g_(make_graph(p)),
      is_bipartite_(set_parity(graph())),
      parity_map_(get_or_default(parity_t(),const_graph(),0.)),
-     bond_type_map_(get_or_default(bond_type_t(),const_graph(),0.))
+     edge_type_map_(get_or_default(edge_type_t(),const_graph(),0.)),
+     vertex_type_map_(get_or_default(vertex_type_t(),const_graph(),0.)),
+	 disordered_vertex_type_map_(),
+	 disordered_edge_type_map_(get_or_default(edge_index_t(),const_graph(),0))
   {
+	d_.disorder_vertices(graph(),disordered_vertex_type_map_);
+	d_.disorder_edges(graph(),disordered_edge_type_map_);
   }
-   
-  graph_type& graph() { return graph_;}
-  const graph_type& graph() const { return graph_;}
+  
+  
+  graph_helper(const alps::Parameters& p)
+   : LatticeLibrary(p), 
+	 to_delete_(false), 
+     g_(make_graph(p)),
+     is_bipartite_(set_parity(graph())),
+     parity_map_(get_or_default(parity_t(),const_graph(),0.)),
+     edge_type_map_(get_or_default(edge_type_t(),const_graph(),0)),
+     vertex_type_map_(get_or_default(vertex_type_t(),const_graph(),0)),
+	 disordered_vertex_type_map_(),
+	 disordered_edge_type_map_(get_or_default(edge_index_t(),const_graph(),0))
+  {
+	d_.disorder_vertices(graph(),disordered_vertex_type_map_);
+	d_.disorder_edges(graph(),disordered_edge_type_map_);
+  }
+
+  ~graph_helper() { if (to_delete_) delete g_;}
+  graph_type& graph() { return *g_;}
+  const graph_type& graph() const { return *g_;}
   
   sites_size_type num_sites() const { return alps::num_sites(graph());}
   bonds_size_type num_bonds() const { return alps::num_bonds(graph());}
@@ -102,15 +127,67 @@ public:
   vertex_descriptor vertex(vertices_size_type i) const { return vertex(i,graph());}
   double parity(const site_descriptor& v) const { return parity_map_[v]==0 ? 1. :  parity_map_[v]==1 ? -1. : 0.;}
   bool is_bipartite() const { return is_bipartite_;}
-  int bond_type(const bond_descriptor& b) const { return bond_type_map_[b];}
+  unsigned int bond_type(const bond_descriptor& b) const { return edge_type_map_[b];}
+  unsigned int edge_type(const edge_descriptor& e) const { return edge_type_map_[e];}
+  unsigned int site_type(const site_descriptor& s) const { return vertex_type_map_[s];}
+  unsigned int vertex_type(const edge_descriptor& v) const { return vertex_type_map_[v];}
+  unsigned int disordered_edge_type(const edge_descriptor& e) const 
+  { return d_.disordered_edges() ? disordered_edge_type_map_[e] : edge_type_map_[e];}
+  unsigned int disordered_bond_type(const bond_descriptor& b) const { return disordered_edge_type(b);}
+  unsigned int disordered_vertex_type(const vertex_descriptor& v) const 
+  { return d_.disordered_vertices() ? disordered_vertex_type_map_[v] : vertex_type_map_[v];}
+  unsigned int disordered_site_type(const site_descriptor& s) const { return disordered_vertex_type(s);}
+  bool disordered() const { return d_.disordered();}
 private:
-   const graph_type& const_graph() const { return graph_;}
-   graph_factory<G> factory_;
-   graph_type& graph_;
-   bool is_bipartite_;
-   typename property_map<parity_t,graph_type,double>::const_type parity_map_;
-   typename property_map<bond_type_t,graph_type,int>::const_type bond_type_map_;
+  typedef lattice_graph<hypercubic_lattice<coordinate_lattice<simple_lattice<GraphUnitCell> > >,graph_type> lattice_type;
+  graph_type* make_graph(const Parameters& p);
+  const graph_type& const_graph() const { return *g_;}
+
+  lattice_type l_;
+  bool to_delete_;
+  DisorderDescriptor d_;
+  graph_type* g_;
+  bool is_bipartite_;
+  typename property_map<parity_t,graph_type,double>::const_type parity_map_;
+  typename property_map<edge_type_t,graph_type,unsigned int>::const_type edge_type_map_;
+  typename property_map<edge_index_t,graph_type,unsigned int>::const_type edge_index_map_;
+  typename property_map<vertex_type_t,graph_type,unsigned int>::const_type vertex_type_map_;
+  boost::vector_property_map<unsigned int> disordered_vertex_type_map_;
+  boost::vector_property_map<unsigned int,typename property_map<edge_index_t,graph_type,unsigned int>::const_type> disordered_edge_type_map_;
 };
+
+
+template <class G>
+G* graph_helper<G>::make_graph(const Parameters& parms)
+{
+  std::string name;
+  bool have_graph=false;
+  bool have_lattice=false;
+  graph_type* g;
+  
+  if (have_graph = parms.defined("GRAPH"))
+    name = static_cast<std::string>(parms["GRAPH"]);
+  if (have_lattice = parms.defined("LATTICE"))
+    name = static_cast<std::string>(parms["LATTICE"]);
+  if (have_lattice && have_graph)
+    boost::throw_exception(std::runtime_error("both GRAPH and LATTICE were specified"));
+  if (have_lattice && has_lattice(name)) {
+    LatticeGraphDescriptor desc(lattice_descriptor(name));
+    desc.set_parameters(parms);
+    l_ = lattice_type(desc);
+	d_ = desc.disorder();
+    g = &(l_.graph());
+    to_delete_=false;
+  }
+  else if ((have_lattice || have_graph) && has_graph(name)) {
+    g = new graph_type();
+    get_graph(*g,name);
+    to_delete_=true;
+  }
+  else
+    boost::throw_exception(std::runtime_error("could not find graph/lattice specified in parameters"));
+  return g;
+}
 
 } // end namespace
 

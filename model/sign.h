@@ -150,22 +150,20 @@ bool is_frustrated(const G& graph, M bond_map)
 }
                                  
 template <class I, class G>
-bool has_sign_problem(const HamiltonianDescriptor<I>& ham, const G& graph, const std::map<std::string,OperatorDescriptor<I> >& ops, const Parameters& p) {
+bool has_sign_problem(const HamiltonianDescriptor<I>& ham, const graph_helper<G>& lattice, const std::map<std::string,OperatorDescriptor<I> >& ops, const Parameters& p) {
   typedef G graph_type;
-
-  typename alps::property_map<alps::site_type_t, graph_type, int>::const_type
-  site_type(alps::get_or_default(alps::site_type_t(), graph, 0));
-
-  typename alps::property_map<alps::bond_type_t,  graph_type, int>::const_type
-  bond_type(alps::get_or_default(alps::bond_type_t(), graph,0));
+  const graph_type& graph(lattice.graph());
+  
+  if (lattice.disordered())
+    boost::throw_exception(std::runtime_error("Disordered lattices not supported by the sign check program.\n"));
 
   // build and check bond matrices for all bond types
   std::map<boost::tuple<int,int,int>,int> bond_sign;
   for (typename boost::graph_traits<graph_type>::edge_iterator
          it=boost::edges(graph).first; it!=boost::edges(graph).second ; ++it) {
-    int btype  = bond_type[*it];
-    int stype1 = site_type[boost::source(*it,graph)];
-    int stype2 = site_type[boost::target(*it,graph)];
+    int btype  = lattice.bond_type(*it);
+    int stype1 = lattice.site_type(lattice.source(*it));
+    int stype2 = lattice.site_type(lattice.target(*it));
     if (bond_sign[boost::make_tuple(btype,stype1,stype2)]==0) {
       boost::multi_array<double,4> mat = get_matrix(0.,ham.bond_term(btype),ham.basis().site_basis(stype1),
                                         ham.basis().site_basis(stype2),ops,p);

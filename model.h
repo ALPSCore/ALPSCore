@@ -27,5 +27,5 @@
 
 /* $Id$ */
 
-#include <alps/model/modelfactory.h>
+#include <alps/model/model_helper.h>
 #include <alps/model/sign.h>

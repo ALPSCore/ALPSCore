@@ -133,6 +133,11 @@ inline void make_graph_from_lattice(GRAPH& g,const LATTICE& l)
     }
   }
   graphdimension=alps::dimension(l);
+  
+  // add site disorder
+  
+  // add bond disorder
+  
 }
 
 template <class LATTICE, class GRAPH> 

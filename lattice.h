@@ -28,5 +28,5 @@
 
 /* $Id$ */
 
-#include <alps/lattice/latticefactory.h>
+#include <alps/lattice/graph_helper.h>
 #include <alps/lattice/parity.h>

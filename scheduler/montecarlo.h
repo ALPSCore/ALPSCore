@@ -33,8 +33,8 @@
 #include <alps/scheduler/scheduler.h>
 #include <alps/scheduler/task.h>
 #include <alps/scheduler/worker.h>
-#include <alps/model/modelfactory.h>
-#include <alps/lattice/latticefactory.h>
+#include <alps/model/model_helper.h>
+#include <alps/lattice/graph_helper.h>
 #include <alps/lattice.h>
 #include <alps/model.h>
 #include <alps/alea.h>
@@ -93,22 +93,22 @@ private:
 };
 
 
-template <class G=graph_factory<>::graph_type>
-class LatticeMCRun : public MCRun, public LatticeFactory<G>
+template <class G=graph_helper<>::graph_type>
+class LatticeMCRun : public MCRun, public graph_helper<G>
 {
 public:
   LatticeMCRun(const ProcessList& w,const alps::Parameters& p,int n)
-   : MCRun(w,p,n), LatticeFactory<G>(parms)
+   : MCRun(w,p,n), graph_helper<G>(parms)
   {}
 };
 
 
-template <class G=graph_factory<>::graph_type, class I=short>
-class LatticeModelMCRun : public LatticeMCRun<G>, public ModelFactory<I>
+template <class G=graph_helper<>::graph_type, class I=short>
+class LatticeModelMCRun : public LatticeMCRun<G>, public model_helper<I>
 {
 public:  
   LatticeModelMCRun(const ProcessList& w,const alps::Parameters& p,int n)
-   : LatticeMCRun<G>(w,p,n), ModelFactory<I>(parms)
+   : LatticeMCRun<G>(w,p,n), model_helper<I>(parms)
   {}
 };
 
