@@ -8,6 +8,7 @@
 *
 * Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>,
+*                            Mathias Koerner <mkoerner@itp.phys.ethz.ch>
 *
 * Permission is hereby granted, free of charge, to any person or organization 
 * obtaining a copy of the software covered by this license (the "Software") 
@@ -46,6 +47,10 @@
 #include <string>
 #include <stdexcept>
 
+// #define NEW_STRINGVALUE_IMPL 1
+
+#ifndef NEW_STRINGVALUE_IMPL
+
 namespace alps {
 
 class StringValue
@@ -57,6 +62,8 @@ public:
   
   template <class T>
   StringValue(const T& x) : value_(boost::lexical_cast<std::string, T>(x)) {}
+  // we "recast" errors below to std::runtime_error, but here we
+  // leave it as a boost::bad_lexical_cast?! (mkoerner)
 
   operator std::string () const { return value_;}
 
@@ -121,7 +128,6 @@ private:
 
 } // end namespace alps
 
-
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 namespace alps {
 #endif
@@ -142,5 +148,95 @@ inline std::istream& operator >> (std::istream& is, alps::StringValue& v)
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // end namespace alps
 #endif
+
+#else // NEW_STRINGVALUE_IMPL
+
+namespace alps {
+
+// New implementation for the ValueString class. By deriving from
+// std::string, we keep the complete functionality of std::string
+// such as input and output, comparison, concatenation, while
+// adding the conversion operators.
+//
+// The class is implemented by templating it on the
+// basic string class we are using, although this might add
+// some compilation overhead.
+//
+// The new implementation also does not catch any exceptions
+// that occur, but instead lets any boost::bad_lexical_cast
+// propagate.
+
+template < class StringBase = std::string > class lexical_cast_string;
+typedef lexical_cast_string<> StringValue;
+
+template < class StringBase >
+class lexical_cast_string : public StringBase
+{
+public:
+
+  typedef StringBase base_type;
+
+  lexical_cast_string(const lexical_cast_string& s)
+    : base_type(s) { }
+
+  lexical_cast_string(const base_type& s = base_type())
+    : base_type(s) { }
+
+  lexical_cast_string(const char* s)
+    : base_type(s) { }
+
+  template <class T>
+  lexical_cast_string(const T& x) 
+    : base_type(boost::lexical_cast<base_type>(x)) { 
+  }
+
+  bool valid() const {
+    return !empty();
+  }
+
+  template <class T>
+  T get() const { 
+    return operator T(); 
+  }
+
+  operator bool() const {
+    if ( *this == "true" ) return true;
+    if ( *this == "false" ) return false;
+    return boost::lexical_cast<bool>(*this);
+  }
+
+  // This has to be there, because get<std::string>() is
+  // called somewhere.
+  operator base_type() const {
+    return *this;
+  }
+
+#define CONVERTIT(T) operator T() const { \
+  return boost::lexical_cast<T>(*this); \
+}
+
+  CONVERTIT(int8_t)
+  CONVERTIT(uint8_t)
+  CONVERTIT(int16_t)
+  CONVERTIT(uint16_t)
+  CONVERTIT(int32_t)
+  CONVERTIT(uint32_t)
+#ifndef BOOST_NO_INT64_T
+  CONVERTIT(int64_t)
+  CONVERTIT(uint64_t)
+#endif
+  CONVERTIT(float)
+  CONVERTIT(double)
+  CONVERTIT(long double)
+  CONVERTIT(std::complex<float>)
+  CONVERTIT(std::complex<double>)
+  CONVERTIT(std::complex<long double>)
+#undef CONVERTIT
+
+};
+
+} // end namespace alps
+
+#endif // NEW_STRINGVALUE_IMPL
 
 #endif // ALPS_PARSER_STRINGVALUE_H
