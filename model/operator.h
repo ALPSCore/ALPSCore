@@ -74,7 +74,7 @@ public:
 private:
   int type_;
   std::string term_;
-  Parameters parms_;
+  //Parameters parms_;
 };
 
 template<class I>

@@ -121,7 +121,7 @@ bool SiteBasisDescriptor<I>::evaluate() const
       num_states_ *= it->levels();
     }
   }
-  return true; // ??
+  return valid_;
 }
 
 template <class I>

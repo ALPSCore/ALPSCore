@@ -1,0 +1,58 @@
+<SITEBASIS name="t-J">
+  <QUANTUMNUMBER name="N" min="0" max="1"/>
+  <QUANTUMNUMBER name="Sz" min="-N/2" max="N/2"/>
+</SITEBASIS>
+
+<SITEBASIS name="t-J">
+  <QUANTUMNUMBER name="Nup" min="0" max="1"/>
+  <QUANTUMNUMBER name="Ndown" min="0" max="1-Nup"/>
+</SITEBASIS>
+
+<COMPOSITE_OPERATOR name="hop">
+  <SITE name="i"/>
+  <SITE name="j"/>
+  bdad(i)*b(j)+bdag(j)*b(i)
+</COMPOSITE_OPERATOR>
+
+<HAMILTONIAN name="hardcore boson">
+  <PARAMETER name="mu" default="0"/>
+  <PARAMETER name="t" default="1"/>
+  <PARAMETER name="V" default="0"/>
+  <PARAMETER name="t'" default="0"/>
+  <PARAMETER name="V'" default="0"/>
+  <BASIS ref="hardcore boson"/>
+  <SITETERM>
+    -mu*n
+  </SITETERM> 
+  <BONDTERM type="0" source="i" target="j">
+    -t*hop(i,j) + V*n(i)*n(j)
+  </BONDTERM>
+
+  <COMPLEXTERM>
+    <SITE name="i" type="0"/>
+    <SITE name="j" type="0"/>
+    <SITE name="k" type="0"/>
+    <BOND type="0" source="i" target="j"/>
+    <BOND type="0" source="j" target="k"/>
+    <BOND type="1" source="i" target="k"/>
+      -t'*hop(i,k)*n(j)
+  </COMPLEXTERM>
+
+  <COMPLEXTERM>
+    <SITE name="i" type="0"/>
+    <SITE name="j" type="0"/>
+    <SITE name="k" type="0"/>
+    <SITE name="l" type="0"/>
+    <BOND type="0" source="i" target="j"/>
+    <BOND type="0" source="j" target="k"/>
+    <BOND type="0" source="k" target="l"/>
+    <BOND type="0" source="l" target="i"/>
+      bdag(i)*b(j)*bdag(k)*b(l)+bdag(j)*b(k)*bdag(l)*b(i)
+  </COMPLEXTERM>
+  
+  <COMPLEXTERM>
+    <SITE name="i"/>
+    <SITE name="j"/>
+      V/distance(i,j)*n(i)*n(j)
+  </COMPLEXTERM
+</HAMILTONIAN>

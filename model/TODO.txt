@@ -1,0 +1,42 @@
+* adding of quantum numbers
+  - make sure that (1-N) + (1-N) gets evaluated to 2-N
+
+* evaluate a sum of QNs on a state
+
+* site basis sets with dependency of min/max of one QN on other QN, e.g. t-J
+
+* basis sets with restriction to specific QNs, e.g. N, Sz
+
+* start with limited basis set, add basis states
+
+* merging of basis sets
+
+* leave sqrt(2) ... symbolic in Expression
+
+* complex (n-site) terms in Hamiltonian
+
+* definition of multi-site operators (e.g. hop()).
+
+* iterator over embeddings of "constraint-graph" of multi-site operator into lattice
+
+* allow complex values in Expression library
+
+* add Nauty interface to BGL
+
+* fermion sign:
+  - normal order sort site operators in term by site number
+  - determine sign
+  
+* split multi-site term into site terms
+
+* basis transformation for bond Hamiltonian
+
+* symbolic basis transformation for bond Hamiltonian
+
+* arbitrary multi-site operators for measurements, also useful as base class of Hamiltonian
+
+
+
+
+
+
