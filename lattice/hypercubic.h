@@ -258,9 +258,9 @@ public:
     return std::make_pair(ison,crossing);
   }
 
-  const std::string& boundary(uint32_t dim) const{ return bc_[dim];}
+  const std::string& boundary(unsigned int dim) const{ return bc_[dim];}
   const std::vector<std::string>& boundary() const { return bc_;}
-  typename extent_type::value_type extent(uint32_t dim) const {return extent_[dim];}
+  typename extent_type::value_type extent(unsigned int dim) const {return extent_[dim];}
   const extent_type& extent() const { return extent_;}
 
   distance_type distance_sizes() const
@@ -326,7 +326,7 @@ struct lattice_traits<hypercubic_lattice<BASE,EX> >
   typedef typename hypercubic_lattice<BASE,EX>::unit_cell_type unit_cell_type;
   typedef typename hypercubic_lattice<BASE,EX>::cell_descriptor cell_descriptor;
   typedef typename hypercubic_lattice<BASE,EX>::offset_type offset_type;
-
+  typedef typename hypercubic_lattice<BASE,EX>::extent_type extent_type;
   typedef typename hypercubic_lattice<BASE,EX>::basis_vector_iterator basis_vector_iterator;
   typedef typename hypercubic_lattice<BASE,EX>::momentum_iterator momentum_iterator;
   typedef typename hypercubic_lattice<BASE,EX>::cell_iterator cell_iterator;

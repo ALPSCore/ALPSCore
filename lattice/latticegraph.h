@@ -93,6 +93,9 @@ inline void make_graph_from_lattice(GRAPH& g,const LATTICE& l)
 
   typename property_map<bond_vector_t,graph_type,std::vector<double> >::type
     bondvector = get_or_default(bond_vector_t(),g,std::vector<double>());
+
+  typename property_map<bond_vector_relative_t,graph_type,std::vector<double> >::type
+    bondvectorrelative = get_or_default(bond_vector_relative_t(),g,std::vector<double>());
   
   for (int i=0;i<num;++i)
     boost::add_vertex(g);
@@ -158,6 +161,10 @@ inline void make_graph_from_lattice(GRAPH& g,const LATTICE& l)
             for (int i=0;i<alps::dimension(*first);++i)
               bondvector_absolute[i] += *rit * (*first)[i];
           bondvector[edge]=bondvector_absolute;
+          // divide relative bond vector by lattice extent
+          for (int i=0; i<dimension(l) && i<bondvector_relative.size() ; ++i)
+            bondvector_relative[i]/=extent(l,i);
+          bondvectorrelative[edge]=bondvector_relative;
         }
       }
     }
@@ -206,7 +213,7 @@ struct lattice_traits<lattice_graph<L,G> >
   typedef typename lattice_graph<L,G>::unit_cell_type unit_cell_type;
   typedef typename lattice_graph<L,G>::cell_descriptor cell_descriptor;
   typedef typename lattice_graph<L,G>::offset_type offset_type;
-
+  typedef typename lattice_graph<L,G>::extent_type extent_type;
   typedef typename lattice_graph<L,G>::basis_vector_iterator basis_vector_iterator;
   typedef typename lattice_graph<L,G>::cell_iterator cell_iterator;
   typedef typename lattice_graph<L,G>::momentum_iterator momentum_iterator;

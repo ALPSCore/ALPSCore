@@ -184,6 +184,20 @@ momentum(const typename lattice_traits<Lattice>::vector_type& m, const Lattice& 
     return m;
 }
 
+template <class Lattice>
+inline typename lattice_traits<Lattice>::extent_type
+extent(const Lattice& l)
+{
+  return l.extent();
+}
+
+template <class Lattice>
+inline typename lattice_traits<Lattice>::extent_type::value_type
+extent(const Lattice& l, unsigned int d)
+{
+  return l.extent(d);
+}
+
 } // end namespace alps
 
 #endif // ALPS_LATTICE_LATTICE_H

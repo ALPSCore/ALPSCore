@@ -84,6 +84,7 @@ struct lattice_traits<LatticeGraphDescriptor>
   typedef LatticeGraphDescriptor::unit_cell_type unit_cell_type;
   typedef LatticeGraphDescriptor::cell_descriptor cell_descriptor;
   typedef LatticeGraphDescriptor::offset_type offset_type;
+  typedef LatticeGraphDescriptor::extent_type extent_type;
   typedef LatticeGraphDescriptor::basis_vector_iterator basis_vector_iterator;
   typedef LatticeGraphDescriptor::cell_iterator cell_iterator;
   typedef LatticeGraphDescriptor::momentum_iterator momentum_iterator;

@@ -103,6 +103,7 @@ public:
      vertex_type_map_(get_or_default(vertex_type_t(),const_graph(),0.)),
      coordinate_map_(get_or_default(coordinate_t(),const_graph(),0)),
      bond_vector_map_(get_or_default(bond_vector_t(),const_graph(),0)),
+     bond_vector_relative_map_(get_or_default(bond_vector_relative_t(),const_graph(),0)),
 	 disordered_vertex_type_map_(),
 	 disordered_edge_type_map_(get_or_default(edge_index_t(),const_graph(),0))
   {
@@ -182,6 +183,7 @@ public:
   bool disordered_edges() const { return d_.disordered_edges();}
   const vector_type& coordinate(const site_descriptor& s) const { return coordinate_map_[s];}
   const vector_type& bond_vector(const bond_descriptor& b) const { return bond_vector_map_[b];}
+  const vector_type& bond_vector_relative(const bond_descriptor& b) const { return bond_vector_relative_map_[b];}
   std::size_t dimension() const { return detail::graph_dimension_helper<has_property<dimension_t,G>::graph_property>::dimension(graph());}
 
   void throw_if_xyz_defined(const Parameters& p, const vertex_descriptor& v) const
@@ -262,6 +264,7 @@ private:
   typename property_map<vertex_type_t,graph_type,type_type>::const_type vertex_type_map_;
   typename property_map<coordinate_t,graph_type,vector_type>::const_type coordinate_map_;
   typename property_map<bond_vector_t,graph_type,vector_type>::const_type bond_vector_map_;
+  typename property_map<bond_vector_relative_t,graph_type,vector_type>::const_type bond_vector_relative_map_;
   boost::vector_property_map<type_type> disordered_vertex_type_map_;
   boost::vector_property_map<type_type,typename property_map<edge_index_t,graph_type,type_type>::const_type> disordered_edge_type_map_;
 };
