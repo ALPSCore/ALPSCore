@@ -29,10 +29,10 @@
     -h*Sz-Gamma/2*(Splus+Sminus)
   </SITETERM> 
   <BONDTERM type="0" source="i" target="j">
-    Jz*Sz(i)*Sz(j)-Jxy/2*(Splus(i)*Sminus(j)+Sminus(i)*Splus(j))
+    Jz*Sz(i)*Sz(j)+Jxy/2*(Splus(i)*Sminus(j)+Sminus(i)*Splus(j))
   </BONDTERM>
   <BONDTERM type="1" source="i" target="j">
-    Jz'*Sz(i)*Sz(j)-Jxy'/2*(Splus(i)*Sminus(j)+Sminus(i)*Splus(j))
+    Jz'*Sz(i)*Sz(j)+Jxy'/2*(Splus(i)*Sminus(j)+Sminus(i)*Splus(j))
   </BONDTERM>
 </HAMILTONIAN>
 </MODELS>

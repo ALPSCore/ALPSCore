@@ -1,16 +1,11 @@
 <AVERAGES>
-  <SCALAR_AVERAGE name="a/b">
-    <COUNT>9984</COUNT>
-    <MEAN method="jackknife">0.33867</MEAN>
-    <ERROR method="jackknife">0.00978</ERROR>
-  </SCALAR_AVERAGE>
-  <SCALAR_AVERAGE name="observable a" signed="true">
+  <SCALAR_AVERAGE name="Observable a" signed="true">
     <COUNT>10000</COUNT>
     <MEAN>0.49931</MEAN>
     <ERROR>0.0142</ERROR>
-    <SIGN signed_observable="Sign * observable a" sign="sign"/>
+    <SIGN signed_observable="Sign * Observable a" sign="Sign"/>
   </SCALAR_AVERAGE>
-  <SCALAR_AVERAGE name="Sign * observable a">
+  <SCALAR_AVERAGE name="Sign * Observable a">
     <COUNT>10000</COUNT>
     <MEAN method="simple">0.09565</MEAN>
     <ERROR method="binning">0.0056</ERROR>
@@ -24,13 +19,13 @@
     <BINNED size="32"><COUNT>312</COUNT><MEAN method="simple">0.09582</MEAN><ERROR method="simple">0.00564</ERROR></BINNED>
     <BINNED size="64"><COUNT>156</COUNT><MEAN method="simple">0.09582</MEAN><ERROR method="simple">0.0056</ERROR></BINNED>
   </SCALAR_AVERAGE>
-  <SCALAR_AVERAGE name="observable b" signed="true">
+  <SCALAR_AVERAGE name="Observable b" signed="true">
     <COUNT>10000</COUNT>
     <MEAN>1.47424</MEAN>
     <ERROR>0.0138</ERROR>
-    <SIGN signed_observable="Sign * observable b" sign="sign"/>
+    <SIGN signed_observable="Sign * Observable b" sign="Sign"/>
   </SCALAR_AVERAGE>
-  <SCALAR_AVERAGE name="Sign * observable b">
+  <SCALAR_AVERAGE name="Sign * Observable b">
     <COUNT>10000</COUNT>
     <MEAN method="simple">0.28227</MEAN>
     <ERROR method="binning">0.0154</ERROR>
@@ -44,7 +39,7 @@
     <BINNED size="32"><COUNT>312</COUNT><MEAN method="simple">0.2829</MEAN><ERROR method="simple">0.015</ERROR></BINNED>
     <BINNED size="64"><COUNT>156</COUNT><MEAN method="simple">0.2829</MEAN><ERROR method="simple">0.0154</ERROR></BINNED>
   </SCALAR_AVERAGE>
-  <SCALAR_AVERAGE name="sign">
+  <SCALAR_AVERAGE name="Sign">
     <COUNT>10000</COUNT>
     <MEAN method="simple">0.1916</MEAN>
     <ERROR method="binning">0.0102</ERROR>
@@ -57,5 +52,10 @@
     <BINNED size="16"><COUNT>625</COUNT><MEAN method="simple">0.1916</MEAN><ERROR method="simple">0.00976</ERROR></BINNED>
     <BINNED size="32"><COUNT>312</COUNT><MEAN method="simple">0.19191</MEAN><ERROR method="simple">0.00979</ERROR></BINNED>
     <BINNED size="64"><COUNT>156</COUNT><MEAN method="simple">0.19191</MEAN><ERROR method="simple">0.0102</ERROR></BINNED>
+  </SCALAR_AVERAGE>
+  <SCALAR_AVERAGE name="a/b">
+    <COUNT>9984</COUNT>
+    <MEAN method="jackknife">0.33867</MEAN>
+    <ERROR method="jackknife">0.00978</ERROR>
   </SCALAR_AVERAGE>
 </AVERAGES>

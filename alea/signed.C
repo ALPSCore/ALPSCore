@@ -50,9 +50,9 @@ try {
   //DEFINE OBSERVABLES
   //------------------
   alps::ObservableSet measurement;
-  measurement << alps::RealObservable("sign");
-  measurement << alps::SignedObservable<alps::RealObservable>("observable a");
-  measurement << alps::SignedObservable<alps::RealObservable>("observable b");
+  measurement << alps::RealObservable("Sign");
+  measurement << alps::SignedObservable<alps::RealObservable>("Observable a");
+  measurement << alps::SignedObservable<alps::RealObservable>("Observable b");
 
   //READ PARAMETERS
   //---------------
@@ -64,9 +64,9 @@ try {
   //----------------------------------- 
   for(uint i = 0; i < thermalization_steps; ++i){ 
     double sign = (random() < 0.4 ? -1. : 1.);
-    measurement["sign"] << sign;  
-    measurement["observable a"] << sign*random();
-    measurement["observable b"] << sign*(random()+1.);
+    measurement["Sign"] << sign;  
+    measurement["Observable a"] << sign*random();
+    measurement["Observable b"] << sign*(random()+1.);
   }
 
   //RESET OBSERVABLES (THERMALIZATION FINISHED)
@@ -77,42 +77,42 @@ try {
   //-----------------------------------
   for(uint32_t i = 0; i < number_of_steps; ++i){
     double sign = (random() < 0.4 ? -1. : 1.);
-    measurement["sign"] << sign;
-    measurement["observable a"] << sign*random();
-    measurement["observable b"] << sign*(random()+1.);
+    measurement["Sign"] << sign;
+    measurement["Observable a"] << sign*random();
+    measurement["Observable b"] << sign*(random()+1.);
   }
 
   // SAVE and LOAD
   {
-    alps::OXDRFileDump dump(boost::filesystem::path("observableset.dump",boost::filesystem::native));
+    alps::OXDRFileDump dump(boost::filesystem::path("Observableset.dump",boost::filesystem::native));
     dump << measurement;
   }
   measurement.clear();
   {
-    alps::IXDRFileDump dump(boost::filesystem::path("observableset.dump",boost::filesystem::native));
+    alps::IXDRFileDump dump(boost::filesystem::path("Observableset.dump",boost::filesystem::native));
     dump >> measurement;
   }
 
-  alps::RealObsevaluator obse_a = measurement["observable a"];
-  alps::RealObsevaluator obse_b = measurement["observable b"];
+  alps::RealObsevaluator obse_a = measurement["Observable a"];
+  alps::RealObsevaluator obse_b = measurement["Observable b"];
   measurement << alps::RealObsevaluator("a/b");
   measurement.get<alps::RealObsevaluator>("a/b") = obse_a / obse_b;
 
   // SAVE and LOAD
   {
-    alps::OXDRFileDump dump(boost::filesystem::path("observableset.dump",boost::filesystem::native));
+    alps::OXDRFileDump dump(boost::filesystem::path("Observableset.dump",boost::filesystem::native));
     dump << measurement;
   }
   measurement.clear();
   {
-    alps::IXDRFileDump dump(boost::filesystem::path("observableset.dump",boost::filesystem::native));
+    alps::IXDRFileDump dump(boost::filesystem::path("Observableset.dump",boost::filesystem::native));
     dump >> measurement;
   }
 
   alps::oxstream oxs;
   measurement.write_xml(oxs);
 
-  boost::filesystem::remove(boost::filesystem::path("observableset.dump",boost::filesystem::native));
+  boost::filesystem::remove(boost::filesystem::path("Observableset.dump",boost::filesystem::native));
 
 #ifndef BOOST_NO_EXCEPTIONS
 }
