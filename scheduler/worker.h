@@ -99,7 +99,7 @@ public:
 protected:
   int32_t version;
   int32_t user_version;
-  typedef alps::lagged_fibonacci607 random_type;
+  typedef boost::lagged_fibonacci607 random_type;
   //typedef boost::mt19937 random_base_type;
   typedef boost::uniform_01<random_type> random_01_type;
 
