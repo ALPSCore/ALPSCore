@@ -227,7 +227,7 @@ struct obs_value_traits<std::valarray<T> >
   static std::string slice_name(const value_type& ,slice_iterator i) 
     { return boost::lexical_cast<std::string,int>(i); }
   static element_type slice_value(const value_type& x, slice_iterator i) { return x[i];}
-  static element_type& slice_value(value_type& x, slice_iterator i) { return x[i];}
+  static element_type& slice_value(value_type& x, slice_iterator i) { return  x[i];}
  
   template <class X> static std::valarray<T> convert(const std::valarray<X>& x) 
   { 
@@ -255,8 +255,8 @@ struct obs_value_traits<std::vector<T> >
   static slice_iterator slice_end(const value_type& x) { return x.size();}
   static std::string slice_name(const value_type& ,slice_iterator i) 
     { return boost::lexical_cast<std::string,int>(i); }
-  static element_type slice_value(const value_type& x, slice_iterator i) { return x[i];}
-  static element_type& slice_value(value_type& x, slice_iterator i) { return x[i];}
+  static element_type slice_value(const value_type& x, slice_iterator i) { return (i<x.size()) ? x[i] : element_type();}
+  static element_type& slice_value(value_type& x, slice_iterator i) { return (i<x.size()) ? x[i] : element_type();}
 };
 
 template<typename T, std::size_t NumDims, typename Allocator>

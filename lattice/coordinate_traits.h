@@ -121,6 +121,7 @@ std::string coordinate_to_string(const C& c)
     if (n)
       s+=", ";
     s+=boost::lexical_cast<std::string>(*first++);
+    ++n;
   }
   if (n>1)
     s="( "+s+" )";
