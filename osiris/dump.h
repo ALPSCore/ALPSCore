@@ -293,10 +293,7 @@ alps::ODump& operator<<(alps::ODump& dump, const std::complex<T>& x)
 
 template<class T>
 alps::IDump& operator>>(alps::IDump& dump, std::complex<T>& x)
-{
-  dump.read_simple(x);
-  return dump;
-}
+{ dump.read_complex(x); return dump; }
 
 // conversion function
 // template <class T>

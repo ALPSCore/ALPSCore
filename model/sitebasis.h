@@ -218,7 +218,7 @@ SiteBasisStates<I>::SiteBasisStates(const SiteBasisDescriptor<I>& b)
     boost::throw_exception(std::runtime_error("Cannot build infinite set of basis states\n"));
   typedef std::pair<typename SiteBasisDescriptor<I>::const_iterator,half_integer<I> > q_pair;
   std::stack<q_pair> s;
-  SiteBasisDescriptor<I>::const_iterator it=b.begin();
+  typename SiteBasisDescriptor<I>::const_iterator it=b.begin();
   std::vector<half_integer<I> > quantumnumbers(basis_.size());
   const_cast<QuantumNumber<I>&>(*it).set_parameters(b.get_parameters());
   for(half_integer<I> q=it->max();q>=it->min();--q) 
