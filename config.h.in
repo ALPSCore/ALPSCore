@@ -37,6 +37,9 @@
 // latest publish year of ALPS
 #undef ALPS_YEAR
 
+// XSLT PATH
+#undef ALPS_XML_DIR
+
 //
 // Experimental Features
 //

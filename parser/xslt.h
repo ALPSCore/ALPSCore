@@ -40,4 +40,4 @@ extern std::string xslt_path(const std::string& stylefile);
   
 } // end namespace alps
 
-#endif // PALM_PARSER_PARSER_H
+#endif // ALPS_PARSER_PARSER_H

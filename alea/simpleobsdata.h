@@ -944,7 +944,6 @@ void SimpleObservableData<T>::fill_jack() const
     jack_.clear();
     jack_.resize(bin_number() + 1);
 
-#ifndef PALM_OLD_JACKKNIFE
     // Order-N initialization of jackknife data structure
     obs_value_traits<result_type>::resize_same_as(jack_[0], bin_value(0));
     for(uint32_t i = 0; i < bin_number(); ++i)
@@ -959,19 +958,6 @@ void SimpleObservableData<T>::fill_jack() const
       jack_[i+1] /= count_type(bin_number() - 1);
     }
     jack_[0] /= count_type(bin_number());
-#else
-    // Original order-N^2 initialization
-    for(int32_t i=0;i<bin_number()+1;++i) {
-      obs_value_traits<result_type>::resize_same_as(jack_[i],bin_value(0));
-      for(int32_t j(0);j<bin_number();++j){
-        if(j+1!=i)
-          jack_[i]+=obs_value_cast<result_type,value_type>(bin_value(j)) / count_type(bin_size());
-      }
-    }
-    jack_[0]/=count_type(bin_number());
-    for(uint32_t j = 1; j < jack_.size(); ++j)
-      jack_[j]/=count_type(bin_number()-1);
-#endif
   }
   jack_valid_ = true;
 }

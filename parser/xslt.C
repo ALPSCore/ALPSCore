@@ -29,18 +29,23 @@
 /* $Id$ */
 
 #include <alps/parser/xslt.h>
+#include <alps/config.h>
 
 std::string alps::xslt_path(const std::string& stylefile) {
+  std::string path("file:");
+  path += ALPS_XML_DIR;
   char* p =getenv("ALPS_XSLT_PATH");
-  if (p)
-    return std::string(p)+"/"+stylefile;
-else if (stylefile == "job.xsl")
-  return "http://xml.comp-phys.org/2002/10/job.xsl";
-else if (stylefile == "ALPS.xsl")
-  return "http://xml.comp-phys.org/2004/10/ALPS.xsl";
+  if (p!=0) 
+    path=*p;
+  if (path != "http://xml.comp-phys.org" && path != "http://xml.comp-phys.org/")
+    return path+"/"+stylefile;
+  else if (stylefile == "job.xsl")
+    return "http://xml.comp-phys.org/2002/10/job.xsl";
+  else if (stylefile == "ALPS.xsl")
+    return "http://xml.comp-phys.org/2004/10/ALPS.xsl";
   else if (stylefile == "plot2html.xsl")
     return "http://xml.comp-phys.org/2003/4/plot2html.xsl";
-else
-  return "http://xml.comp-phys.org/"+stylefile;
+  else
+    return "http://xml.comp-phys.org/"+stylefile;
 }
   

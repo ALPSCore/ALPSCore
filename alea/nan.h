@@ -38,4 +38,4 @@ double inf();
 
 } // namespace alps
 
-#endif // PALM_ALEA_NAN_H
+#endif // ALPS_ALEA_NAN_H

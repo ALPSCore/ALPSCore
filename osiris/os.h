@@ -28,8 +28,8 @@
 
 /* $Id$ */
 
-#ifndef PALM_OS_H
-#define PALM_OS_H
+#ifndef ALPS_OS_H
+#define ALPS_OS_H
 
 //=======================================================================
 // This file includes low level functions which depend on the OS used
@@ -45,4 +45,4 @@ std::string hostname();
 
 } // end namespace
 
-#endif // PALM_OS_H
+#endif // ALPS_OS_H

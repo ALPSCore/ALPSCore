@@ -76,4 +76,4 @@ void check_tag(std::istream& in, const std::string& name);
 
 } // end namespace alps
 
-#endif // PALM_PARSER_PARSER_H
+#endif // ALPS_PARSER_PARSER_H

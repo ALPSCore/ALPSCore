@@ -28,8 +28,8 @@
 
 /* $Id$ */
 
-#ifndef PALM_XML_XMLHANDLER_H
-#define PALM_XML_XMLHANDLER_H
+#ifndef ALPS_XML_XMLHANDLER_H
+#define ALPS_XML_XMLHANDLER_H
 
 #include <alps/parser/xmlattributes.h>
 #include <alps/parser/xmlstream.h>
@@ -224,4 +224,4 @@ private:
 
 } // namespace alps
 
-#endif // PALM_XML_XMLHANDLER_H
+#endif // ALPS_XML_XMLHANDLER_H
