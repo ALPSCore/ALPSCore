@@ -712,7 +712,7 @@ inline bool can_evaluate(const std::string& v, const expression::Evaluator<T>& p
   return expression::Expression<T>(v).can_evaluate(p);
 }
 
-inline bool can_evaluate(const std::string& v, const Parameters& p)
+inline bool can_evaluate(const std::string& v, const Parameters& p=Parameters())
 {
   return can_evaluate(v, expression::ParameterEvaluator<>(p));
 }
@@ -723,7 +723,7 @@ inline bool can_evaluate(const std::string& v, const Parameters& p, const U&)
   return can_evaluate(v, expression::ParameterEvaluator<U>(p));
 }
 
-inline bool can_evaluate(const StringValue& v, const Parameters& p)
+inline bool can_evaluate(const StringValue& v, const Parameters& p=Parameters())
 {
   return can_evaluate(static_cast<std::string>(v), p);
 }
