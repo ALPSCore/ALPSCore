@@ -34,6 +34,7 @@
 #include <alps/lattice/unitcell.h>
 #include <alps/lattice/graph.h>
 #include <alps/parser/xmlstream.h>
+#include <boost/random.hpp>
 
 namespace alps {
 

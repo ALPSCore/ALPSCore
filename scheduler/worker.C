@@ -29,6 +29,7 @@
 
 #include <alps/random.h>
 #include <alps/scheduler/scheduler.h>
+#include <alps/expression.h>
 #include <alps/osiris.h>
 
 #include <boost/lexical_cast.hpp>
@@ -66,6 +67,7 @@ Worker::Worker(const ProcessList& w,const alps::Parameters&  myparms,int32_t n)
 
   if (where.size())
     random.seed(parms["SEED"]);
+  Disorder::seed(parms.value_or_default("DISORDER_SEED",0));
 }
 
 Worker::Worker(const alps::Parameters&  myparms,int32_t n)
@@ -86,6 +88,7 @@ Worker::Worker(const alps::Parameters&  myparms,int32_t n)
 
   if (where.size())
    random.seed(parms["SEED"]);
+  Disorder::seed(parms.value_or_default("DISORDER_SEED",0));
 }
 
 
@@ -123,6 +126,7 @@ void Worker::load_worker(IDump& dump)
     if(version<200) 
       dump >> dummy >> dummy >> dummy;
   }
+  Disorder::seed(parms.value_or_default("REALIZATION_SEED",0));
   // TODO: load slave runs
 }
 

@@ -39,6 +39,7 @@
 #include <stdexcept>
 
 namespace alps {
+
 namespace expression {
 
 //
@@ -58,7 +59,7 @@ bool Evaluator<T>::can_evaluate_function(const std::string& name, const Expressi
          (name=="sqrt" || name=="abs" ||
           name=="sin" || name=="cos" || name=="tan" ||
           name=="asin" || name=="acos" || name=="atan" ||
-          name=="log" || name=="exp");
+          name=="log" || name=="exp" || name=="integer_random");
 }
 
 
@@ -84,9 +85,12 @@ void Evaluator<T>::partial_evaluate_expressions(std::vector<Expression<T> >& arg
 template<class T>
 bool Evaluator<T>::can_evaluate_function(const std::string& name, const std::vector<Expression<T> >& arg, bool f) const
 {
-  return ((arg.size()==1 && can_evaluate_function(name,arg[0],f)) || 
-          (arg.size()==2 && name=="atan2" && can_evaluate_expressions(arg,true)));
+  return can_evaluate_expressions(arg,true) &&
+       ((arg.size()==0 && (name == "random" || name=="gaussian_random" || name == "normal_random")) ||
+        (arg.size()==1 && can_evaluate_function(name,arg[0],f)) || 
+        (arg.size()==2 && (name=="gaussian_random" || name=="atan2")));
 }
+
 
 template<class T>
 typename Evaluator<T>::Direction Evaluator<T>::direction() const
@@ -118,6 +122,7 @@ Expression<T> Evaluator<T>::partial_evaluate(const std::string& name,bool) const
   return Expression<T>(name);
 }
 
+
 template<class T>
 Expression<T> Evaluator<T>::partial_evaluate_function(const std::string& name, const Expression<T>& arg,bool) const
 {
@@ -147,6 +152,8 @@ Expression<T> Evaluator<T>::partial_evaluate_function(const std::string& name, c
     val = std::exp(val);
   else if (name=="log")
     val = std::log(val);
+  else if (name=="integer_random")
+    val=static_cast<int>(evaluate_helper<T>::real(val)*Disorder::random());
   else
     return Expression<T>(Function<T>(name,Expression<T>(val)));
   return Expression<T>(val);
@@ -165,14 +172,23 @@ Expression<T> Evaluator<T>::partial_evaluate_function(const std::string& name, c
     could_evaluate = could_evaluate && it->can_evaluate(*this,true);
     evaluated.rbegin()->partial_evaluate(*this,true);
   }
-  if (evaluated.size()==2 && name=="atan2" && could_evaluate) {
+  if (evaluated.size()==2 && could_evaluate) {
     double arg1=evaluate_helper<T>::real(evaluated[0].value());
     double arg2=evaluate_helper<T>::real(evaluated[1].value());
-    return Expression<T>(static_cast<T>(std::atan2(arg1,arg2)));
+    if (name=="atan2")
+      return Expression<T>(static_cast<T>(std::atan2(arg1,arg2)));
+    else if (name=="gaussian_random" || name=="normal_random")
+      return Expression<T>(arg1+arg2*Disorder::gaussian_random());
   }
-  else
-    return Expression<T>(Function<T>(name,evaluated));
+  else if (evaluated.size()==0) {
+    if (name=="random")
+      return Expression<T>(Disorder::random());
+    else if (name=="gaussian_random" || name=="normal_random")
+      return Expression<T>(Disorder::gaussian_random());
+  }
+  return Expression<T>(Function<T>(name,evaluated));
 }
+
 
 //
 // implementation of ParameterEvaluator<T>

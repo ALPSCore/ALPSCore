@@ -36,6 +36,7 @@
 #include <alps/cctype.h>
 #include <alps/math.hpp>
 #include <alps/parameters.h>
+#include <alps/random.h>
 #include <alps/parser/parser.h>
 #include <alps/typetraits.h>
 
@@ -44,6 +45,7 @@
 #include <boost/throw_exception.hpp>
 #include <boost/type_traits/is_arithmetic.hpp>
 #include <boost/utility/enable_if.hpp>
+#include <boost/random.hpp>
 
 #include <cmath>
 #include <complex>
@@ -57,7 +59,20 @@ struct expression_value_type_traits {
   typedef T value_type;
 };
 
- 
+class Disorder
+{
+public:
+  typedef boost::mt19937 random_type;
+private:
+  static random_type rng_;
+public:
+  typedef boost::mt19937 random_type;
+  static boost::variate_generator<random_type&,boost::uniform_real<> > random;
+  static boost::variate_generator<random_type&,boost::normal_distribution<> > gaussian_random;
+  static void seed();
+  static void seed(unsigned int); 
+};
+
 namespace expression {
 
 template<class T = std::complex<double> > class Expression;
@@ -94,6 +109,7 @@ public:
 template<class T>
 class ParameterEvaluator : public Evaluator<T> {
 public:
+  typedef Evaluator<T> super_type;
   typedef T value_type;
   ParameterEvaluator(const Parameters& p) : parms_(p) {}
   virtual ~ParameterEvaluator() {}

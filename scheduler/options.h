@@ -57,7 +57,8 @@ public:
   double time_limit;          // time limit for the simulation
   bool valid;                 // shall we really run?
 
-  Options(int argc=0, char** argv=0);
+  Options(int argc, char** argv);
+  Options();
 };
 
 } // end namespace

@@ -28,6 +28,8 @@
 /* $Id$ */
 
 #include <alps/lattice/disorder.h>
+#include <alps/expression.h>
+#include <alps/random/random.h>
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 namespace alps {
@@ -205,5 +207,24 @@ void DisorderDescriptor::write_xml(oxstream& xml) const
     xml << end_tag("DISORDER");
   }
 }
+
+  Disorder::random_type Disorder::rng_;
+  
+  boost::variate_generator<Disorder::random_type&,boost::uniform_real<> > 
+    Disorder::random(Disorder::rng_,boost::uniform_real<>());
+    
+  boost::variate_generator<Disorder::random_type&,boost::normal_distribution<> > 
+    Disorder::gaussian_random(Disorder::rng_,boost::normal_distribution<>());;
+
+  void Disorder::seed() 
+  { 
+    rng_.seed();
+  }
+  
+  void Disorder::seed(unsigned int i) 
+  { 
+    seed_with_sequence(rng_,i);
+  }
+
 
 } // end namespace alps

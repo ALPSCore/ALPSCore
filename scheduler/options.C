@@ -39,10 +39,22 @@ namespace scheduler {
 
 namespace po = boost::program_options;
 
-Options::Options(int argc, char** argv) 
-  : programname(argv[0]),
+Options::Options()
+  : min_check_time(60),
+    max_check_time(900),
+    checkpoint_time(1800),
+    min_cpus(1),
+    max_cpus(1),
+    time_limit(0.),
     valid(true) // shall we really run?
 {
+}
+
+Options::Options(int argc, char** argv) 
+  : programname(std::string(argv[0])),
+    valid(true) // shall we really run?
+{
+  if (argc) {
   std::string filename;
   
   po::options_description desc("Allowed options");
@@ -83,6 +95,7 @@ Options::Options(int argc, char** argv)
     boost::throw_exception(std::runtime_error("Minimum number of CPUs larger than maximum number of CPU"));
   if(min_check_time>max_check_time)
     boost::throw_exception(std::runtime_error("Minimum time between checks larger than maximum time"));
+  }
 }
 
 } // namespace scheduler
