@@ -43,14 +43,14 @@ int main()
     std::cout << params;
 
     {
-      alps::OXDRFileDump od("parameterlist.dump");
+      alps::OXDRFileDump od(boost::filesystem::path("parameterlist.dump",boost::filesystem::native));
       od << params;
     }
 
     params.clear();
 
     {
-      alps::IXDRFileDump id("parameterlist.dump");
+      alps::IXDRFileDump id(boost::filesystem::path("parameterlist.dump",boost::filesystem::native));
       id >> params;
     }
 
