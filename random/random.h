@@ -7,6 +7,7 @@
 *
 * Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>,
+*                            Mario Ruetti <mruetti@gmx.net>,
 *
 * This software is part of the ALPS library, published under the 
 * ALPS Library License; you can use, redistribute it and/or modify 
@@ -63,6 +64,13 @@ public:
 
   BufferedRandomNumberGeneratorBase(std::size_t b=10240) 
    : buf_(b), ptr_(buf_.end()) {}
+
+  BufferedRandomNumberGeneratorBase(const BufferedRandomNumberGeneratorBase& gen)
+  {
+    buf_ = gen.buf_;
+    ptr_ = buf_.begin()+(gen.ptr_-gen.buf_.begin());
+  }
+
   virtual ~BufferedRandomNumberGeneratorBase() {}
 
   result_type operator()() {
@@ -136,7 +144,13 @@ void BufferedRandomNumberGenerator<RNG>::write(std::ostream& os) const
 template <class RNG>
 void BufferedRandomNumberGenerator<RNG>::fill_buffer()
 {
-  std::generate(buf_.begin(),buf_.end(),gen_);
+//  std::generate(buf_.begin(),buf_.end(),gen_);
+  std::vector<result_type>::iterator xx = buf_.begin();
+  while (xx != buf_.end())
+  {
+    *xx = rng_();
+    ++xx;
+  }
 }
 
 } // end namespace
