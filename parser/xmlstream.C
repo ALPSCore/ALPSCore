@@ -214,7 +214,8 @@ std::string convert(const std::string& str)
   std::ostream_iterator<char> oi(out);
   boost::regex_merge(oi, str.begin(), str.end(), 
 		     boost::regex("(&)|(')|(>)|(<)|(\")"), 
-		     "(?1&amp;)(?2&apos;)(?3&gt;)(?4&lt;)(?5&quot;)");
+		     "(?1&amp;)(?2&apos;)(?3&gt;)(?4&lt;)(?5&quot;)",
+		     boost::match_default | boost::format_all);
   return out.str();
 }
 
