@@ -52,6 +52,7 @@ class BasisDescriptor : public std::vector<SiteBasisMatch<I> >
 {
 public:
   typedef std::vector<SiteBasisMatch<I> > base_type;
+  typedef typename base_type::iterator iterator;
   typedef typename base_type::const_iterator const_iterator;
   typedef std::map<std::string,SiteBasisDescriptor<I> > sitebasis_map_type;
   BasisDescriptor() {}
@@ -84,7 +85,7 @@ template <class I>
 bool BasisDescriptor<I>::set_parameters(const Parameters& p)
 {
   bool valid=true;
-  for (const_iterator it=begin();it!=end();++it)
+  for (iterator it=begin();it!=end();++it)
     valid = valid && it->set_parameters(p);
   return valid;
 }

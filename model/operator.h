@@ -357,7 +357,7 @@ bool HamiltonianDescriptor<I>::set_parameters(Parameters p)
 
 #ifndef ALPS_WITHOUT_XML
 template <class I>
-HamiltonianDescriptor<I>::HamiltonianDescriptor<I>(const XMLTag& intag, std::istream& is, const basis_map& bases) 
+HamiltonianDescriptor<I>::HamiltonianDescriptor(const XMLTag& intag, std::istream& is, const basis_map& bases) 
 {
   XMLTag tag(intag);
   name_=tag.attributes["name"];

@@ -63,8 +63,8 @@ public:
   bool is_inverse() const { return is_inverse_;}
   void partial_evaluate(const Evaluator& p);
 private:
-  bool is_inverse_;
   boost::shared_ptr<Evaluatable> term_;
+  bool is_inverse_;
 };
 
 } // end namespace detail
@@ -82,7 +82,7 @@ public:
   bool is_negative() const { return is_negative_;}
   boost::shared_ptr<Term> flatten_one_term();
   void partial_evaluate(const Evaluator& p);
-  inline std::string operator std::string () const;
+  inline operator std::string () const;
 private:
   bool is_negative_;
   std::vector<detail::Value> terms_;
@@ -108,7 +108,7 @@ public:
   boost::shared_ptr<Expression> flatten_one_expression();
   const Expression& operator +=(const Term& term) { terms_.push_back(term); return *this;}
   const Expression& operator +=(const Expression& e);
-  inline std::string operator std::string () const;
+  inline operator std::string () const;
 private:
   std::vector<Term> terms_;
 };

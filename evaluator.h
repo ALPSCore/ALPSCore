@@ -45,6 +45,7 @@ public:
 class ParameterEvaluator : public Evaluator {
 public:
   ParameterEvaluator(const Parameters& p) : parms_(p) {}
+  virtual ~ParameterEvaluator() {}
   bool can_evaluate(const std::string&) const;
   double evaluate(const std::string&) const;
   Expression partial_evaluate(const std::string& name) const;

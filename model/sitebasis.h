@@ -98,7 +98,7 @@ bool SiteBasisDescriptor<I>::valid(const std::vector<half_integer<I> >& x) const
 template <class I>
 bool SiteBasisDescriptor<I>::set_parameters(const Parameters& p)
 {
-  for (Parameters::const_iterator it=parms_.begin();it!=parms_.end();++it)
+  for (Parameters::iterator it=parms_.begin();it!=parms_.end();++it)
     if (p.defined(it->key())) 
 	it->value() = p[it->key()];
   evaluate();
@@ -109,7 +109,7 @@ template <class I>
 bool SiteBasisDescriptor<I>::evaluate() const
 {
   valid_=true;
-  for (iterator it=begin();it!=end();++it)
+  for (const_iterator it=begin();it!=end();++it)
     valid_ = valid_ && const_cast<QuantumNumber<I>&>(*it).set_parameters(parms_);
   if (valid_) {
     num_states_=1;

@@ -161,7 +161,7 @@ private:
 };
 
 template <class I>
-QuantumNumber<I>:: QuantumNumber(const std::string& n, value_type minVal=0, value_type maxVal=0, bool f=false)
+QuantumNumber<I>:: QuantumNumber(const std::string& n, value_type minVal, value_type maxVal, bool f)
    : _name(n), 
      _min(minVal),
      _max(maxVal),
