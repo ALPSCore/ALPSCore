@@ -513,137 +513,6 @@ struct evaluate_helper<std::complex<U> >
 };
 
 } // end namespace expression
-
-typedef expression::Expression<std::complex<double> > Expression;
-typedef expression::Term<std::complex<double> > Term;
-typedef expression::Factor<std::complex<double> > Factor;
-typedef expression::Evaluator<std::complex<double> > Evaluator;
-typedef expression::ParameterEvaluator<std::complex<double> > ParameterEvaluator;
-
-template<class T>
-inline bool can_evaluate(const expression::Evaluatable<T>& ex, const expression::Evaluator<T>& ev)
-{
-  return ex.can_evaluate(ev);
-}
-
-template<class T>
-inline bool can_evaluate(const std::string& v, const expression::Evaluator<T>& p)
-{
-  return expression::Expression<T>(v).can_evaluate(p);
-}
-
-inline bool can_evaluate(const std::string& v, const Parameters& p)
-{
-  return can_evaluate(v, expression::ParameterEvaluator<>(p));
-}
-
-template<class U>
-inline bool can_evaluate(const std::string& v, const Parameters& p, const U&)
-{
-  return can_evaluate(v, expression::ParameterEvaluator<U>(p));
-}
-
-inline bool can_evaluate(const StringValue& v, const Parameters& p)
-{
-  return can_evaluate(static_cast<std::string>(v), p);
-}
-
-template<class U>
-inline bool can_evaluate(const StringValue& v, const Parameters& p, const U&)
-{
-  return can_evaluate(static_cast<std::string>(v), p, U());
-}
-
-template<class U, class T>
-inline U evaluate(const expression::Expression<T>& ex, const expression::Evaluator<T>& ev = expression::Evaluator<T>())
-{
-  return expression::evaluate_helper<U>::value(ex, ev);
-}
-
-template<class U, class T>
-inline U evaluate(const expression::Term<T>& ex, const expression::Evaluator<T>& ev = expression::Evaluator<T>())
-{
-  return expression::evaluate_helper<U>::value(ex, ev);
-}
-
-template<class U, class T>
-inline U evaluate(const char* v, const expression::Evaluator<T>& ev)
-{
-  return expression::evaluate_helper<U>::value(expression::Expression<T>(std::string(v)), ev);
-}
-
-template<class U, class T>
-inline U evaluate(const std::string& v, const expression::Evaluator<T>& ev)
-{
-  return expression::evaluate_helper<U>::value(expression::Expression<T>(v), ev);
-}
-
-template<class U, class T>
-inline U evaluate(const StringValue& v, const expression::Evaluator<T>& ev)
-{
-  return evaluate<U>(static_cast<std::string>(v), ev);
-}
-
-template<class U>
-inline U evaluate(const char* v)
-{
-  return evaluate<U,U>(v, expression::Evaluator<typename expression::evaluate_helper<U>::value_type>());
-}
-
-template<class U>
-inline U evaluate(const std::string& v)
-{
-  return evaluate<U,U>(v, expression::Evaluator<typename expression::evaluate_helper<U>::value_type>());
-}
-
-template<class U>
-inline U evaluate(const StringValue& v)
-{
-  return evaluate<U,U>(v, expression::Evaluator<typename expression::evaluate_helper<U>::value_type>());
-}
-
-template<class U>
-inline U evaluate(const char* v, const Parameters& p)
-{
-  return evaluate<U,typename expression::evaluate_helper<U>::value_type>(v, expression::ParameterEvaluator<typename expression::evaluate_helper<U>::value_type>(p));
-}
-
-template<class U>
-inline U evaluate(const std::string& v, const Parameters& p)
-{
-  return evaluate<U,typename expression::evaluate_helper<U>::value_type>(v, expression::ParameterEvaluator<typename expression::evaluate_helper<U>::value_type>(p));
-}
-
-template<class U>
-inline U evaluate(const StringValue& v, const Parameters& p)
-{
-  return evaluate<U,typename expression::evaluate_helper<U>::value_type>(v, expression::ParameterEvaluator<typename expression::evaluate_helper<U>::value_type>(p));
-}
-
-//
-// function is_zero and is_nonzero
-//
-
-template<class T>
-bool is_zero(T x) { return x == T(0); }
-
-template<class T>
-bool is_zero(expression::Expression<T> x)
-{
-  std::string s = boost::lexical_cast<std::string>(x);
-  return s=="" || s=="0" || s=="0.";
-}
-
-template<class T>
-bool is_zero(expression::Term<T> x)
-{
-  std::string s = boost::lexical_cast<std::string>(x);
-  return s=="" || s=="0" || s=="0.";
-}
-
-template<class T>
-bool is_nonzero(T x) { return !is_zero(x); }
-
 } // end namespace alps
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
@@ -793,6 +662,140 @@ inline bool operator<(const std::string& s, const alps::expression::Term<T>& ex)
 } // end namespace expression
 } // end namespace alps
 #endif
+
+namespace alps {
+
+typedef expression::Expression<std::complex<double> > Expression;
+typedef expression::Term<std::complex<double> > Term;
+typedef expression::Factor<std::complex<double> > Factor;
+typedef expression::Evaluator<std::complex<double> > Evaluator;
+typedef expression::ParameterEvaluator<std::complex<double> > ParameterEvaluator;
+
+template<class T>
+inline bool can_evaluate(const expression::Evaluatable<T>& ex, const expression::Evaluator<T>& ev)
+{
+  return ex.can_evaluate(ev);
+}
+
+template<class T>
+inline bool can_evaluate(const std::string& v, const expression::Evaluator<T>& p)
+{
+  return expression::Expression<T>(v).can_evaluate(p);
+}
+
+inline bool can_evaluate(const std::string& v, const Parameters& p)
+{
+  return can_evaluate(v, expression::ParameterEvaluator<>(p));
+}
+
+template<class U>
+inline bool can_evaluate(const std::string& v, const Parameters& p, const U&)
+{
+  return can_evaluate(v, expression::ParameterEvaluator<U>(p));
+}
+
+inline bool can_evaluate(const StringValue& v, const Parameters& p)
+{
+  return can_evaluate(static_cast<std::string>(v), p);
+}
+
+template<class U>
+inline bool can_evaluate(const StringValue& v, const Parameters& p, const U&)
+{
+  return can_evaluate(static_cast<std::string>(v), p, U());
+}
+
+template<class U, class T>
+inline U evaluate(const expression::Expression<T>& ex, const expression::Evaluator<T>& ev = expression::Evaluator<T>())
+{
+  return expression::evaluate_helper<U>::value(ex, ev);
+}
+
+template<class U, class T>
+inline U evaluate(const expression::Term<T>& ex, const expression::Evaluator<T>& ev = expression::Evaluator<T>())
+{
+  return expression::evaluate_helper<U>::value(ex, ev);
+}
+
+template<class U, class T>
+inline U evaluate(const char* v, const expression::Evaluator<T>& ev)
+{
+  return expression::evaluate_helper<U>::value(expression::Expression<T>(std::string(v)), ev);
+}
+
+template<class U, class T>
+inline U evaluate(const std::string& v, const expression::Evaluator<T>& ev)
+{
+  return expression::evaluate_helper<U>::value(expression::Expression<T>(v), ev);
+}
+
+template<class U, class T>
+inline U evaluate(const StringValue& v, const expression::Evaluator<T>& ev)
+{
+  return evaluate<U>(static_cast<std::string>(v), ev);
+}
+
+template<class U>
+inline U evaluate(const char* v)
+{
+  return evaluate<U,U>(v, expression::Evaluator<typename expression::evaluate_helper<U>::value_type>());
+}
+
+template<class U>
+inline U evaluate(const std::string& v)
+{
+  return evaluate<U,U>(v, expression::Evaluator<typename expression::evaluate_helper<U>::value_type>());
+}
+
+template<class U>
+inline U evaluate(const StringValue& v)
+{
+  return evaluate<U,U>(v, expression::Evaluator<typename expression::evaluate_helper<U>::value_type>());
+}
+
+template<class U>
+inline U evaluate(const char* v, const Parameters& p)
+{
+  return evaluate<U,typename expression::evaluate_helper<U>::value_type>(v, expression::ParameterEvaluator<typename expression::evaluate_helper<U>::value_type>(p));
+}
+
+template<class U>
+inline U evaluate(const std::string& v, const Parameters& p)
+{
+  return evaluate<U,typename expression::evaluate_helper<U>::value_type>(v, expression::ParameterEvaluator<typename expression::evaluate_helper<U>::value_type>(p));
+}
+
+template<class U>
+inline U evaluate(const StringValue& v, const Parameters& p)
+{
+  return evaluate<U,typename expression::evaluate_helper<U>::value_type>(v, expression::ParameterEvaluator<typename expression::evaluate_helper<U>::value_type>(p));
+}
+
+//
+// function is_zero and is_nonzero
+//
+
+template<class T>
+bool is_zero(T x) { return x == T(0); }
+
+template<class T>
+bool is_zero(expression::Expression<T> x)
+{
+  std::string s = boost::lexical_cast<std::string>(x);
+  return s=="" || s=="0" || s=="0.";
+}
+
+template<class T>
+bool is_zero(expression::Term<T> x)
+{
+  std::string s = boost::lexical_cast<std::string>(x);
+  return s=="" || s=="0" || s=="0.";
+}
+
+template<class T>
+bool is_nonzero(T x) { return !is_zero(x); }
+
+} // end namespace alps
 
 #include <alps/expression2_impl.h>
 
