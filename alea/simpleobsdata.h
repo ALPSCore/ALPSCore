@@ -364,7 +364,7 @@ inline void SimpleObservableData<T>::read_xml_scalar(std::istream& infile, const
         check_tag(infile,"/ERROR");
       }
     }
-    else if (tag.name=="VARIANE") {
+    else if (tag.name=="VARIANCE") {
       if (tag.type !=XMLTag::SINGLE) {
         has_variance_=true;
         variance_=text_to_double(parse_content(infile));
@@ -422,7 +422,7 @@ inline void SimpleObservableData<T>::read_xml_vector(std::istream& infile, const
           check_tag(infile,"/ERROR");
         }
       }
-      else if (tag.name=="VARIANE") {
+      else if (tag.name=="VARIANCE") {
         if (tag.type !=XMLTag::SINGLE) {
           has_variance_=true;
           variance_[i]=text_to_double(parse_content(infile));
