@@ -1,5 +1,5 @@
 
-observable a: 0.499479 +/- 0.00274915; tau = -0.0521369
+observable a: 0.499479 +/- 0.00282794; tau = -0.0260998
     bin #1   : 10000    entries: error = 0.00290477
     bin #2   : 5000     entries: error = 0.00290752
     bin #3   : 2500     entries: error = 0.00287766
@@ -8,7 +8,7 @@ observable a: 0.499479 +/- 0.00274915; tau = -0.0521369
     bin #6   : 312      entries: error = 0.00279057
     bin #7   : 156      entries: error = 0.00282794
 
-observable b: 1.49968 +/- 0.00275272; tau = -0.0451267
+observable b: 1.49968 +/- 0.0027477; tau = -0.0467849
     bin #1   : 10000    entries: error = 0.00288604
     bin #2   : 5000     entries: error = 0.00287808
     bin #3   : 2500     entries: error = 0.00287685
