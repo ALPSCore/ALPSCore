@@ -56,6 +56,75 @@ struct graph_dimension_helper<true> {
 
 }  
   
+// helper functions
+
+template <class G>
+void throw_if_xyz_defined(const Parameters& p, const G& graph)
+{
+  // check whether x, y, or z is set
+  unsigned int dim = detail::graph_dimension_helper<
+    has_property<dimension_t, G>::graph_property>::dimension(graph);
+  if (dim >= 1 && p.defined("x") ||
+      dim >= 2 && p.defined("y") ||
+      dim >= 3 && p.defined("z")) 
+    boost::throw_exception(std::runtime_error(
+      "x, y or z is predefined as parameter and used as coordinate"));
+}
+  
+template <class G>
+Parameters coordinate_as_parameter(const G& graph,
+  const typename boost::graph_traits<G>::edge_descriptor& edge)
+{
+  Parameters parms;
+  unsigned int dim = detail::graph_dimension_helper<
+    has_property<dimension_t, G>::graph_property>::dimension(graph);
+  switch (dim) {
+  case 3 :
+    parms["z"] = 0.5 * (boost::get(coordinate_t(), graph,
+                                   boost::source(edge, graph))[2] + 
+                        boost::get(coordinate_t(), graph,
+                                   boost::target(edge, graph))[2]);
+    // continue
+  case 2 :
+    parms["y"] = 0.5 * (boost::get(coordinate_t(), graph,
+                                   boost::source(edge, graph))[1] + 
+                        boost::get(coordinate_t(), graph,
+                                   boost::target(edge, graph))[1]);
+    // continue
+  case 1 :
+    parms["x"] = 0.5 * (boost::get(coordinate_t(), graph,
+                                   boost::source(edge, graph))[0] + 
+                        boost::get(coordinate_t(), graph,
+                                   boost::target(edge, graph))[0]);
+  default :
+    break;
+  }
+  return parms;
+}
+
+template <class G>
+Parameters coordinate_as_parameter(const G& graph,
+  const typename boost::graph_traits<G>::vertex_descriptor& vertex)
+{
+  Parameters parms;
+  unsigned int dim = detail::graph_dimension_helper<
+    has_property<dimension_t, G>::graph_property>::dimension(graph);
+  switch (dim) {
+  case 3 :
+    parms["z"] = boost::get(coordinate_t(), graph, vertex)[2];
+    // continue
+  case 2 :
+    parms["y"] = boost::get(coordinate_t(), graph, vertex)[1];
+    // continue
+  case 1 :
+    parms["x"] = boost::get(coordinate_t(), graph, vertex)[0];
+  default :
+    break;
+  }
+  return parms;
+}
+
+
 template <class G=coordinate_graph_type>
 class graph_helper : public LatticeLibrary
 {
@@ -232,54 +301,20 @@ public:
   const vector_type& bond_vector_relative(const bond_descriptor& b) const { return bond_vector_relative_map_[b];}
   std::size_t dimension() const { return detail::graph_dimension_helper<has_property<dimension_t,G>::graph_property>::dimension(graph());}
   std::pair<momentum_iterator,momentum_iterator> momenta() const { return alps::momenta(lattice());}
-  void throw_if_xyz_defined(const Parameters& p, const vertex_descriptor& v) const
-  {   
-   // check whether x, y, or z is set
-    unsigned int dim=alps::dimension(coordinate(v));
-    if (dim >= 1 && p.defined("x") ||
-        dim >= 2 && p.defined("y") ||
-        dim >= 3 && p.defined("z")) 
-      boost::throw_exception(std::runtime_error("x, y or z is predefined as parameter and used as coordinate"));
-  }
+
+  void throw_if_xyz_defined(const Parameters& p,
+                            const vertex_descriptor&) const
+  { alps::throw_if_xyz_defined(p, graph()); }
   
-  void throw_if_xyz_defined(const Parameters& p, const edge_descriptor& e)         const
-  {
-    throw_if_xyz_defined(p,source(e));
-    throw_if_xyz_defined(p,target(e));
-  }
+  void throw_if_xyz_defined(const Parameters& p,
+                            const edge_descriptor&) const
+  { alps::throw_if_xyz_defined(p, graph()); }
   
+  Parameters coordinate_as_parameter(const edge_descriptor& e) const
+  { return alps::coordinate_as_parameter(graph(), e); }
   
-  Parameters coordinate_as_parameter(const edge_descriptor& e) const {
-    // check whether x, y, or z is set
-    Parameters parms;
-    unsigned int dim=alps::dimension(coordinate(source(e)));
-    // set x, y, and z
-    if (dim>=1) {
-      parms["x"] = 0.5*(coordinate(source(e))[0]+coordinate(target(e))[0]);
-      if (dim>=2) {
-        parms["y"] =  0.5*(coordinate(source(e))[1]+coordinate(target(e))[1]);
-        if (dim>=3)
-          parms["z"] =  0.5*(coordinate(source(e))[2]+coordinate(target(e))[2]);
-      }
-    }
-    return parms;
-  }
-  
-  Parameters coordinate_as_parameter(const vertex_descriptor& v) const {
-    // check whether x, y, or z is set
-    Parameters parms;
-    unsigned int dim=alps::dimension(coordinate(v));
-    // set x, y, and z
-    if (dim>=1) {
-      parms["x"] = coordinate(v)[0];
-      if (dim>=2) {
-        parms["y"] =  coordinate(v)[1];
-        if (dim>=3)
-          parms["z"] =  coordinate(v)[2];
-      }
-    }
-    return parms;
-  }
+  Parameters coordinate_as_parameter(const vertex_descriptor& v) const
+  { return alps::coordinate_as_parameter(graph(), v); }
   
   size_type volume() const { return alps::volume(lattice());}
   const unit_cell_type& unit_cell() const { return alps::unit_cell(lattice());}
