@@ -60,8 +60,8 @@ public:
   const half_integer& operator=(typename boost::enable_if<boost::is_integral<U>, U>::type x)
   { val_ = 2*x; return *this; }
   template <class U>
-  const half_integer& operator=(typename boost::enable_if<boost::is_float<U>, U>::type x x)
-  { val_ = integer_type(std::floor(x*2 + 0.5))); return *this; }
+  const half_integer& operator=(typename boost::enable_if<boost::is_float<U>, U>::type x)
+  { val_ = integer_type(std::floor(x*2 + 0.5)); return *this; }
   template<class J>
   half_integer& operator=(const half_integer<J>& x)
   { val_ = x.get_twice(); return *this; }
