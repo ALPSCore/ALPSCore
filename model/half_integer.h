@@ -79,6 +79,13 @@ public:
   template <class J> bool operator>=(const half_integer<J>& rhs) const
   { return val_ >= rhs.get_twice(); }
 
+  bool operator==(double rhs) const { return *this == half_integer(rhs); }
+  bool operator!=(double rhs) const { return *this != half_integer(rhs); }
+  bool operator<(double rhs) const { return *this < half_integer(rhs); }
+  bool operator>(double rhs) const { return *this > half_integer(rhs); }
+  bool operator<=(double rhs) const { return *this <= half_integer(rhs); }
+  bool operator>=(double rhs) const { return *this >= half_integer(rhs); }
+
   half_integer operator-() const { return half_integer(-val_, 0); }
 
   half_integer& operator++() { val_ += 2; return *this; }
@@ -134,50 +141,6 @@ private:
   integer_type val_;
 };
 
-template <class I>
-inline half_integer<I> operator+(double x, const half_integer<I>& y)
-{ return y + x; }
-
-template <class I>
-inline half_integer<I> operator-(double x, const half_integer<I>& y)
-{ return - y + x; }
-
-template <class I>
-inline std::ostream& operator<<(std::ostream& os, const half_integer<I>& x)
-{
-  if (x==half_integer<I>::max())
-    return os << "infinity";
-  else if (std::numeric_limits<I>::is_signed && x==half_integer<I>::min())
-    return os << "-infinity";
-  else if(x.get_twice() %2==0)
-    return os << x.get_twice()/2;
-  return os << x.get_twice() << "/2";
-}
-
-template <class I>
-inline std::istream& operator>>(std::istream& is, half_integer<I>& x)
-{
-  I nominator;
-  is >> nominator;
-  char c;
-  is >> c;
-  if ( is && c=='/') {
-    is >> c;
-    if (c!='2') {
-      is.putback(c);
-      is.putback('/');
-      x.set_half(2*nominator);
-    }
-    x.set_half(nominator);
-  }
-  else {
-    if (is)
-      is.putback(c);
-    x.set_half(2*nominator);
-  }
-  is.clear();
-  return is;
-}
 
 template <class I>
 inline double to_double(const half_integer<I>& x) 
@@ -203,8 +166,90 @@ inline bool is_odd(const half_integer<I>& x)
   return (std::abs(x.get_twice())%4==2);
 }
 
-
 } // namespace alps
+
+
+#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
+namespace alps {
+#endif
+
+template <class I>
+inline bool operator==(double x, const alps::half_integer<I>& y)
+{ return y == x; }
+
+template <class I>
+inline bool operator!=(double x, const alps::half_integer<I>& y)
+{ return y != x; }
+
+template <class I>
+inline bool operator<(double x, const alps::half_integer<I>& y)
+{ return y > x; }
+
+template <class I>
+inline bool operator>(double x, const alps::half_integer<I>& y)
+{ return y < x; }
+
+template <class I>
+inline bool operator<=(double x, const alps::half_integer<I>& y)
+{ return y >= x; }
+
+template <class I>
+inline bool operator>=(double x, const alps::half_integer<I>& y)
+{ return y <= x; }
+
+template <class I>
+inline
+alps::half_integer<I> operator+(double x, const alps::half_integer<I>& y)
+{ return y + x; }
+
+template <class I>
+inline
+alps::half_integer<I> operator-(double x, const alps::half_integer<I>& y)
+{ return - y + x; }
+
+template <class I>
+inline
+std::ostream& operator<<(std::ostream& os, const alps::half_integer<I>& x)
+{
+  if (x == alps::half_integer<I>::max())
+    return os << "infinity";
+  else if (std::numeric_limits<I>::is_signed &&
+           x == alps::half_integer<I>::min())
+    return os << "-infinity";
+  else if (x.get_twice()%2 ==0)
+    return os << x.get_twice()/2;
+  return os << x.get_twice() << "/2";
+}
+
+template <class I>
+inline std::istream& operator>>(std::istream& is, alps::half_integer<I>& x)
+{
+  I nominator;
+  is >> nominator;
+  char c;
+  is >> c;
+  if ( is && c=='/') {
+    is >> c;
+    if (c!='2') {
+      is.putback(c);
+      is.putback('/');
+      x.set_half(2*nominator);
+    }
+    x.set_half(nominator);
+  }
+  else {
+    if (is)
+      is.putback(c);
+    x.set_half(2*nominator);
+  }
+  is.clear();
+  return is;
+}
+
+#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
+} // end namespace alps
+#endif
+
 
 namespace std {
 
