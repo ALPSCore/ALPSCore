@@ -52,13 +52,8 @@ int main()
     if (!expr.can_evaluate(eval))
       std::cout << "Cannot evaluate [" << expr << "]." << std::endl;
     else 
-#ifndef ALPS_WITH_NEW_EXPRESSION
-      std::cout << "The value of [" << expr << "] is " << expr.value(eval) 
-                << std::endl;
-#else
       std::cout << "The value of [" << expr << "] is "
                 << alps::evaluate<double>(expr, eval) << std::endl;
-#endif
     char c;
     std::cin >> c;
     if (c!=',')
@@ -72,13 +67,8 @@ int main()
     if (!alps::can_evaluate(v, parms))
       std::cout << "Cannot evaluate [" << v << "]." << std::endl;
     else 
-#ifndef ALPS_WITH_NEW_EXPRESSION
-      std::cout << "The value of [" << v << "] is "
-                << alps::evaluate(v, parms) << std::endl;
-#else
       std::cout << "The value of [" << v << "] is "
                 << alps::evaluate<double>(v, parms) << std::endl;
-#endif
   }
 
 #ifndef BOOST_NO_EXCEPTIONS
