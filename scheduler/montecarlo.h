@@ -34,6 +34,7 @@
 #include <alps/scheduler/task.h>
 #include <alps/scheduler/worker.h>
 #include <alps/model/model_helper.h>
+#include <alps/model/sign.h>
 #include <alps/lattice/graph_helper.h>
 #include <alps/lattice.h>
 #include <alps/model.h>
@@ -110,6 +111,11 @@ public:
   LatticeModelMCRun(const ProcessList& w,const alps::Parameters& p,int n)
    : LatticeMCRun<G>(w,p,n), model_helper<I>(LatticeMCRun<G>::parms)
   {}
+  
+  bool has_sign_problem() const 
+  {
+    return has_sign_problem(model(),lattice(),operators(),parms);
+  }
 };
 
 
