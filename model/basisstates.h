@@ -60,7 +60,6 @@ class basis_states : public std::vector<S>
 {
   typedef std::vector<S> super_type;
 public:
-  typedef std::vector<S> super_type;
   typedef typename super_type::const_iterator const_iterator;
   typedef S value_type;
   typedef typename super_type::size_type size_type;
