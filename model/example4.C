@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 2003-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -33,15 +33,15 @@
 boost::multi_array<alps::Expression,2> bondmatrix(const alps::ModelLibrary lib, const std::string& name, 
                                                   const alps::Parameters& p=alps::Parameters())
 {
-  alps::HamiltonianDescriptor<short> ham=lib.hamiltonian(name);
+  alps::HamiltonianDescriptor<short> ham=lib.get_hamiltonian(name);
   ham.set_parameters(p);
   int dim=ham.basis().site_basis().num_states();
   
   // get site and bond terms
   boost::multi_array<alps::Expression,2> sitematrix = 
-    alps::get_matrix(alps::Expression(),ham.site_term(),ham.basis().site_basis(),lib.simple_operators());
+    alps::get_matrix(alps::Expression(),ham.site_term(),ham.basis().site_basis(),lib.operators());
   boost::multi_array<alps::Expression,4> bondtensor = 
-    alps::get_matrix(alps::Expression(),ham.bond_term(),ham.basis().site_basis(), ham.basis().site_basis(),lib.simple_operators());
+    alps::get_matrix(alps::Expression(),ham.bond_term(),ham.basis().site_basis(), ham.basis().site_basis(),lib.operators());
     
   // add site terms to bond terms
   for (int i=0;i<dim;++i)

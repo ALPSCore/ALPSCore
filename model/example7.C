@@ -4,8 +4,8 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
-*                       Axel Grzesik <axel@th.physik.uni-bonn.de>
+* Copyright (C) 2003-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+*                            Axel Grzesik <axel@th.physik.uni-bonn.de>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -35,13 +35,13 @@
 void write_two_site_basis(const std::string& name, const alps::ModelLibrary& lib, 
                           const alps::Parameters& p=alps::Parameters())
 {
-  alps::SiteBasisDescriptor<short> sitebasis=lib.site_basis(name),
-                                   sitebasis2=lib.site_basis(name);
+  alps::SiteBasisDescriptor<short> sitebasis=lib.get_site_basis(name),
+                                   sitebasis2=lib.get_site_basis(name);
   sitebasis.set_parameters(p);
-  std::cout << "States of basis " << name << "=" << alps::SiteBasisStates<short>(sitebasis);
+  std::cout << "States of basis " << name << "=" << alps::site_basis<short>(sitebasis);
   for(int i=0;i<sitebasis.size();++i)
     sitebasis[i]+=sitebasis2[i];
-  std::cout << "States of basis " << name << "=" << alps::SiteBasisStates<short>(sitebasis);
+  std::cout << "States of basis " << name << "=" << alps::site_basis<short>(sitebasis);
 }
 
 int main()

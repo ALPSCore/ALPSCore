@@ -60,7 +60,9 @@ try {
   for(int i=0; i < (1<<12); ++i) {
     obs_a << random();
     obs_b << random()+1;
-    obs_c << random()+1 << random()+1 << random()+1;
+    obs_c << random()+1;
+    obs_c << random()+1;
+    obs_c << random()+1;
   }
 
   std::cout << obs_a;

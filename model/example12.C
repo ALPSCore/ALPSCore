@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 2003-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -40,11 +40,11 @@ int main()
     std::cin >> parms;
     alps::ModelLibrary models(parms);
     alps::graph_helper<> lattices(parms);
-    alps::HamiltonianDescriptor<short> ham(models.hamiltonian(parms["MODEL"]));
+    alps::HamiltonianDescriptor<short> ham(models.get_hamiltonian(parms["MODEL"]));
     parms.copy_undefined(ham.default_parameters());
     ham.set_parameters(parms);
-    alps::BasisStatesDescriptor<short> basis(ham.basis(),lattices.graph());
-    alps::BasisStates<short> states(basis);
+    alps::basis_states_descriptor<short> basis(ham.basis(),lattices.graph());
+    alps::basis_states<short> states(basis);
     std::cout << "Built states:\n" << states << std::endl;
 
 #ifndef BOOST_NO_EXCEPTIONS

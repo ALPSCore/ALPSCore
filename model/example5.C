@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 2003-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -40,7 +40,7 @@ int main()
     alps::ModelLibrary lib(std::cin);
 
     // get operators in one bond term 
-    std::set<alps::Term> ops = lib.hamiltonian("hardcore boson").bond_term().split(lib.simple_operators());
+    std::set<alps::Term> ops = lib.get_hamiltonian("hardcore boson").bond_term().split(lib.operators());
    
     std::copy(ops.begin(),ops.end(),std::ostream_iterator<alps::Term>(std::cout,"\n"));
 

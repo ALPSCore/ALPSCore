@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 2003-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -45,10 +45,10 @@ int main()
     for (int i=0;i<parms.size();++i) {
       alps::ModelLibrary models(parms[i]);
       alps::graph_helper<> lattice(parms[i]);
-      alps::HamiltonianDescriptor<short> ham(models.hamiltonian(parms[i]["MODEL"]));
+      alps::HamiltonianDescriptor<short> ham(models.get_hamiltonian(parms[i]["MODEL"]));
       parms[i].copy_undefined(ham.default_parameters());
       ham.set_parameters(parms[i]);
-      if (has_sign_problem(ham,lattice,models.simple_operators(),parms[i]))
+      if (has_sign_problem(ham,lattice,models.operators(),parms[i]))
         std::cout << "Model " << i+1 << " has a sign problem.\n";
       else
         std::cout << "Model " << i+1 << " has no sign problem.\n";
