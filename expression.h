@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2001-2004 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -33,263 +33,787 @@
 
 #include <alps/config.h>
 
-#ifndef ALPS_WITH_NEW_EXPRESSION
-
-#include <alps/evaluator.h>
+#include <alps/cctype.h>
+#include <alps/math.hpp>
+#include <alps/parameters.h>
 #include <alps/parser/parser.h>
+#include <alps/typetraits.h>
+
+#include <boost/call_traits.hpp>
 #include <boost/smart_ptr.hpp>
+#include <boost/throw_exception.hpp>
+#include <boost/type_traits/is_arithmetic.hpp>
+#include <boost/utility/enable_if.hpp>
+
+#include <cmath>
+#include <complex>
 #include <string>
 #include <vector>
 
 namespace alps {
 
-class Factor;
-class Term;
+namespace expression {
 
-namespace detail {
+template<class T = std::complex<double> > class Expression;
+template<class T = std::complex<double> > class Term;
+template<class T = std::complex<double> > class Factor;
 
-class Evaluatable {
+template<class T = std::complex<double> > class Evaluator;
+template<class T = std::complex<double> > class ParameterEvaluator;
+
+template<class T>
+class Evaluator {
 public:
-  Evaluatable() {}
-  virtual ~Evaluatable() {}
-  double value() const;
-  virtual double value(const Evaluator&) const=0;
-  operator double() const;
-  bool can_evaluate() const;
-  virtual bool can_evaluate(const Evaluator&) const=0;
-  virtual void output(std::ostream&) const =0;
-  virtual Evaluatable* clone() const=0;
-  virtual boost::shared_ptr<Evaluatable> flatten_one();
-  virtual Evaluatable* partial_evaluate_replace(const Evaluator& p);
-  virtual bool is_single_term() const;
-  virtual Term term() const;
-  virtual bool depends_on(const std::string&) const;
+  typedef T value_type;
+  enum Direction { left_to_right, right_to_left };
+  Evaluator() {}
+  virtual ~Evaluator() {}
+
+  virtual bool can_evaluate(const std::string&) const;
+  virtual bool can_evaluate_function(const std::string&, const Expression<T>&) const;
+  virtual value_type evaluate(const std::string&) const;
+  virtual value_type evaluate_function(const std::string&, const Expression<T>&) const;
+  virtual Expression<T> partial_evaluate(const std::string& name) const;
+  virtual Expression<T> partial_evaluate_function(const std::string& name, const Expression<T>&) const;
+  virtual Direction direction() const;
 };
 
-} // end namespace detail
-
-class Factor : public detail::Evaluatable {
+template<class T>
+class ParameterEvaluator : public Evaluator<T> {
 public:
-  Factor(std::istream&, bool inverse=false);
-  Factor(double x);
-  Factor(const std::string& s);
-  Factor(const Factor&);
-  Factor(const detail::Evaluatable& e)  : term_(e.clone()), is_inverse_(false) {}
-  const Factor& operator=(const Factor&);
-  double value(const Evaluator& p) const;
-  void output(std::ostream&) const;
-  bool can_evaluate(const Evaluator& p) const;
-  detail::Evaluatable* clone() const;
-  boost::shared_ptr<Factor> flatten_one_value();
-  bool is_inverse() const { return is_inverse_;}
-  void partial_evaluate(const Evaluator& p);
-  bool is_single_term() const;
-  Term term() const;
-  bool depends_on(const std::string&) const;
-  inline operator std::string () const;
+  typedef T value_type;
+  ParameterEvaluator(const Parameters& p) : parms_(p) {}
+  virtual ~ParameterEvaluator() {}
+
+  bool can_evaluate(const std::string&) const;
+  value_type evaluate(const std::string&) const;
+  Expression<T> partial_evaluate(const std::string& name) const;
+  const Parameters& parameters() const { return parms_;}
+
 private:
-  boost::shared_ptr<detail::Evaluatable> term_;
+  Parameters parms_;
+};
+
+template<class T>
+class Evaluatable {
+public:
+  typedef T value_type;
+
+  Evaluatable() {}
+  virtual ~Evaluatable() {}
+  virtual value_type value(const Evaluator<T>&) const = 0;
+  virtual bool can_evaluate(const Evaluator<T>&) const = 0;
+  virtual void output(std::ostream&) const = 0;
+  virtual Evaluatable* clone() const = 0;
+  virtual boost::shared_ptr<Evaluatable> flatten_one() { return boost::shared_ptr<Evaluatable>(); }
+  virtual Evaluatable* partial_evaluate_replace(const Evaluator<T>&) { return this; }
+  virtual bool is_single_term() const { return false; }
+  virtual Term<T> term() const;
+  virtual bool depends_on(const std::string&) const { return false; }
+};
+
+template<class T>
+class Factor : public Evaluatable<T> {
+public:
+  typedef T value_type;
+
+  Factor(std::istream&, bool inverse = false);
+  Factor(value_type x);
+  Factor(const std::string& s);
+  Factor(const Factor& v)
+    : Evaluatable<T>(v), term_(), is_inverse_(v.is_inverse_)
+  {
+    if (v.term_) term_.reset(v.term_->clone());
+  }
+  Factor(const Evaluatable<T>& v)
+    : Evaluatable<T>(v), term_(v.clone()), is_inverse_(false) {}
+  virtual ~Factor() {}
+
+  const Factor& operator=(const Factor& v);
+
+  value_type value(const Evaluator<T>& p) const
+  {
+    if (!term_)
+      boost::throw_exception(std::runtime_error("Empty value in expression"));
+    return is_inverse() ? 1./term_->value(p) : term_->value(p);
+  }
+  void output(std::ostream&) const;
+  bool can_evaluate(const Evaluator<T>& p) const;
+  Evaluatable<T>* clone() const { return new Factor<T>(*this); }
+  boost::shared_ptr<Factor> flatten_one_value();
+  bool is_inverse() const { return is_inverse_; }
+  void partial_evaluate(const Evaluator<T>& p);
+  bool is_single_term() const { return term_ ? term_->is_single_term() : false; }
+  Term<T> term() const { return term_ ? term_->term() : Term<T>(); }
+  bool depends_on(const std::string& s) const
+  {
+    return term_ ? term_->depends_on(s) : false;
+  }
+
+private:
+  boost::shared_ptr<Evaluatable<T> > term_;
   bool is_inverse_;
 };
 
-
-class Term : public detail::Evaluatable {
+template<class T>
+class Term : public Evaluatable<T> {
 public:
-  Term(std::istream&, bool =false);
+  typedef T value_type;
+  typedef typename std::vector<Factor<T> >::const_iterator factor_iterator;
+
+  Term(std::istream& is, bool negate = false);
   Term() : is_negative_(false) {}
-  Term(double x) : is_negative_(false), terms_(1,Factor(x)) {}
-  Term(const detail::Evaluatable& e) : is_negative_(false), terms_(1,Factor(e)) {}
+  Term(value_type x) : is_negative_(false), terms_(1,Factor<T>(x)) {}
+  Term(const Evaluatable<T>& e)
+    : is_negative_(false), terms_(1,Factor<T>(e)) {}
   virtual ~Term() {}
-  double value(const Evaluator& p) const;
-  bool can_evaluate(const Evaluator& p) const;
+
+  value_type value(const Evaluator<T>& p) const;
+
+  bool can_evaluate(const Evaluator<T>& p) const;
   void output(std::ostream&) const;
-  detail::Evaluatable* clone() const;
+  Evaluatable<T>* clone() const { return new Term<T>(*this); }
   bool is_negative() const { return is_negative_;}
   boost::shared_ptr<Term> flatten_one_term();
-  void partial_evaluate(const Evaluator& p);
-  inline operator std::string () const;
-  const Term& operator*=(const Factor& v) { terms_.push_back(v); return *this;}
-  const Term& operator*=(const std::string& s) { return operator*=(Factor(s));}
+  void partial_evaluate(const Evaluator<T>& p);
+
+  const Term& operator*=(const Factor<T>& v)
+  {
+    terms_.push_back(v);
+    return *this;
+  }
+  const Term& operator*=(const std::string& s)
+  {
+    return operator*=(Factor<T>(s));
+  }
   void simplify();
-  typedef std::vector<Factor>::const_iterator factor_iterator;
-  virtual std::pair<factor_iterator,factor_iterator> factors() const;
+
+  virtual std::pair<factor_iterator,factor_iterator> factors() const
+  {
+    return std::make_pair(terms_.begin(),terms_.end());
+  }
+
   bool depends_on(const std::string&) const;
+
+  int num_factors() const {return terms_.size(); }
   void negate() { is_negative_ = !is_negative_;}
 private:
   bool is_negative_;
-  std::vector<Factor> terms_;
+  std::vector<Factor<T> > terms_;
 };
 
-
-class Expression : public detail::Evaluatable {
+template<class T>
+class Expression : public Evaluatable<T> {
 public:
-  typedef std::vector<Term>::const_iterator term_iterator;
+  typedef T value_type;
+  typedef Term<T> term_type;
+  typedef typename std::vector<Term<T> >::const_iterator term_iterator;
+
   Expression() {}
-  Expression(const std::string&);
-  Expression(std::istream&);
-  Expression(double val) : terms_(1,Term(val)) {}
-  Expression(const detail::Evaluatable& e) : terms_(1,Term(e)) {}
-  operator bool() const;
-  double value(const Evaluator& p=Evaluator()) const;
-  double value(const Parameters& p) const { return value(ParameterEvaluator(p));}
-  bool can_evaluate(const Evaluator& p=Evaluator()) const;
-  bool can_evaluate(const Parameters& p) const { return can_evaluate(ParameterEvaluator(p));}
-  void partial_evaluate(const Evaluator& p=Evaluator());
-  void partial_evaluate(const Parameters& p) { partial_evaluate(ParameterEvaluator(p));}
-  void output(std::ostream&) const;
-  detail::Evaluatable* clone() const;
-  std::pair<term_iterator,term_iterator> terms() const 
-  { return std::make_pair(terms_.begin(),terms_.end());}
+  Expression(const std::string& str) { parse(str); }
+  Expression(std::istream& in) { parse(in); }
+  Expression(value_type val) : terms_(1,Term<T>(val)) {}
+  template<class U>
+  Expression(U val, typename boost::enable_if<boost::is_arithmetic<U> >::type* = 0) : terms_(1,Term<T>(value_type(val))) {}
+  Expression(const Evaluatable<T>& e) : terms_(1,Term<T>(e)) {}
+  Expression(const Term<T>& e) : terms_(1,e) {}
+  virtual ~Expression() {}
+
+  value_type value(const Evaluator<T>& p = Evaluator<T>()) const;
+  value_type value(const Parameters& p) const {
+    return value(ParameterEvaluator<T>(p));
+  }
+
+  bool can_evaluate(const Evaluator<T>& p = Evaluator<T>()) const;
+  bool can_evaluate(const Parameters& p) const
+  {
+    return can_evaluate(ParameterEvaluator<T>(p));
+  }
+  void partial_evaluate(const Evaluator<T>& p=Evaluator<T>());
+  void partial_evaluate(const Parameters& p) {
+    partial_evaluate(ParameterEvaluator<T>(p));
+  }
+
+  void output(std::ostream& os) const;
+
+  Evaluatable<T>* clone() const { return new Expression<T>(*this); }
+  std::pair<term_iterator,term_iterator> terms() const
+  {
+    return std::make_pair(terms_.begin(),terms_.end());
+  }
   void flatten(); // multiply out all blocks
   boost::shared_ptr<Expression> flatten_one_expression();
-  const Expression& operator +=(const Term& term) { terms_.push_back(term); return *this;}
-  const Expression& operator +=(const Expression& e);
-  inline operator std::string () const;
+  const Expression& operator+=(const Term<T>& term)
+  {
+    terms_.push_back(term);
+    return *this;
+  }
+  const Expression& operator+=(const Expression& e)
+  {
+    std::copy(e.terms_.begin(),e.terms_.end(),std::back_inserter(terms_));
+    partial_evaluate();
+    return *this;
+  }
   void simplify();
-  bool is_single_term() const;
-  Term term() const;
+
+  bool is_single_term() const { return terms_.size() == 1; }
+  Term<T> term() const;
   bool depends_on(const std::string&) const;
+
+  void parse(const std::string& str);
+  void parse(std::istream& is);
+
   Expression operator-() const { Expression e(*this); e.negate(); return e;}
   const Expression& negate() 
   {
-    for (std::vector<Term>::iterator it=terms_.begin();it!=terms_.end();++it)
+    for (typename std::vector<Term<T> >::iterator it=terms_.begin();it!=terms_.end();++it)
       it->negate();
     return *this;
   } 
-
 private:
-  std::vector<Term> terms_;
+  std::vector<Term<T> > terms_;
 };
 
-// evaluate all the parameters as far as possible
-extern Parameters evaluate(const Parameters& in);
+template<class T>
+class Block : public Expression<T> {
+private:
+  typedef Expression<T> BASE_;
 
-inline bool can_evaluate(const StringValue& v, const Evaluator& eval= Evaluator())
+public:
+  Block(std::istream&);
+  Block(const Expression<T>& e) : BASE_(e) {}
+  void output(std::ostream&) const;
+  Evaluatable<T>* clone() const { return new Block<T>(*this); }
+  void flatten();
+  boost::shared_ptr<Evaluatable<T> > flatten_one();
+  Evaluatable<T>* partial_evaluate_replace(const Evaluator<T>& p);
+};
+
+template<class T>
+class Symbol : public Evaluatable<T> {
+public:
+  typedef T value_type;
+
+  Symbol(const std::string& n) : name_(n) {}
+  value_type value(const Evaluator<T>& p) const;
+  bool can_evaluate(const Evaluator<T>& ev) const
+  { return ev.can_evaluate(name_);}
+  void output(std::ostream& os) const { os << name_; }
+  Evaluatable<T>* clone() const { return new Symbol<T>(*this); }
+  Evaluatable<T>* partial_evaluate_replace(const Evaluator<T>& p);
+  bool depends_on(const std::string& s) const;
+private:
+  std::string name_;
+};
+
+template<class T>
+class Function : public Evaluatable<T> {
+public:
+  typedef T value_type;
+
+  Function(std::istream&, const std::string&);
+  Function(const std::string& n, const Expression<T>& e) : name_(n), arg_(e) {}
+  value_type value(const Evaluator<T>& p) const;
+  bool can_evaluate(const Evaluator<T>& p) const;
+  void output(std::ostream&) const;
+  Evaluatable<T>* clone() const { return new Function<T>(*this); }
+  boost::shared_ptr<Evaluatable<T> > flatten_one();
+  Evaluatable<T>* partial_evaluate_replace(const Evaluator<T>& p);
+  bool depends_on(const std::string& s) const;
+private:
+ std::string name_;
+ Expression<T> arg_;
+};
+
+template<class T>
+class Number : public Evaluatable<T> {
+public:
+  typedef T value_type;
+  typedef typename alps::TypeTraits<T>::real_t real_type;
+
+  Number(value_type x) : val_(x) {}
+  value_type value(const Evaluator<T>& p) const;
+  bool can_evaluate(const Evaluator<T>&) const { return true; }
+  void output(std::ostream&) const;
+  Evaluatable<T>* clone() const { return new Number<T>(*this); }
+private:
+  value_type val_;
+};
+
+//
+// expression traits class
+//
+
+template<class T>
+struct expression {
+  typedef std::complex<T> value_type;
+  typedef Expression<value_type> type;
+  typedef Term<value_type> term_type;
+};
+
+template<class T>
+struct expression<std::complex<T> > {
+  typedef std::complex<T> value_type;
+  typedef Expression<value_type> type;
+  typedef Term<value_type> term_type;
+};
+
+template<class T>
+struct expression<Expression<T> > {
+  typedef T value_type;
+  typedef Expression<value_type> type;
+  typedef Term<value_type> term_type;
+};
+
+template<typename U, typename T>
+struct numeric_cast_helper {
+  static U value(typename boost::call_traits<T>::param_type x)
+  {
+    return x;
+  }
+};
+
+template<typename U, typename T>
+struct numeric_cast_helper<U, std::complex<T> > {
+  static U value(const std::complex<T>& x) {
+    if (x.imag() != 0)
+      boost::throw_exception(std::runtime_error("can not convert complex number into real one"));
+    return x.real();
+  }
+};
+
+template<typename U, typename T>
+U numeric_cast(T x, typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0)
 {
-  return v.valid() && Expression(static_cast<std::string>(v)).can_evaluate(eval);
+  return numeric_cast_helper<U,T>::value(x);
 }
 
-inline double evaluate(const StringValue& v, const Evaluator& p = Evaluator())
+template<typename U, typename T>
+U numeric_cast(const T& x, typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0)
 {
-  return Expression(static_cast<std::string>(v)).value(p);
+  return numeric_cast_helper<U,T>::value(x);
 }
 
-inline bool can_evaluate(const StringValue& v, const Parameters& p)
-{
-  return can_evaluate(v,ParameterEvaluator(p));
-}
 
-inline double evaluate(const StringValue& v, const Parameters& p)
+template<class U>
+struct evaluate_helper
 {
-  return evaluate(v,ParameterEvaluator(p));
-}
+  typedef U value_type;
+  template<class R>
+  static U value(const Term<R>& ex, const Evaluator<R>&) { return ex; }
+  template<class R>
+  static U value(const Expression<R>& ex, const Evaluator<R>&) { return ex; }
+  static U real(U u) { return u; }
+};
 
-Expression operator+(const Expression& ex1,const Expression& ex2);
+template<class U>
+struct evaluate_helper<Expression<U> >
+{
+  typedef U value_type;
+  static Expression<U> value(const Term<U> ex, const Evaluator<U>& ev) {
+    Term<U> t(ex);
+    t.partial_evaluate(ev);
+    return t;
+  }
+  static Expression<U> value(const Expression<U>& ex, const Evaluator<U>& ev) {
+    Expression<U> e(ex);
+    e.partial_evaluate(ev);
+    return e;
+  }
+};
+
+template<>
+struct evaluate_helper<double>
+{
+  typedef double value_type;
+  template<class R>
+  static double value(const Term<R>& ex, const Evaluator<R>& ev)
+  {
+    return numeric_cast<double>(ex.value(ev));
+  }
+  template<class R>
+  static double value(const Expression<R>& ex, const Evaluator<R>& ev)
+  {
+    return numeric_cast<double>(ex.value(ev));
+  }
+  static double real(double u) { return u; }
+  static double imag(double) { return 0; }
+  static bool can_evaluate_symbol(const std::string& name)
+  {
+    return (name=="Pi" || name=="PI" || name == "pi");
+  }
+  static double evaluate_symbol(const std::string& name)
+  {
+    if (name=="Pi" || name=="PI" || name == "pi") return std::acos(-1.);
+    boost::throw_exception(std::runtime_error("can not evaluate " + name));
+    return 0.;
+  }
+};
+
+template<>
+struct evaluate_helper<float>
+{
+  typedef float value_type;
+  template<class R>
+  static float value(const Term<R>& ex, const Evaluator<R>& ev)
+  {
+    return numeric_cast<float>(ex.value(ev));
+  }
+  template<class R>
+  static float value(const Expression<R>& ex, const Evaluator<R>& ev)
+  {
+    return numeric_cast<float>(ex.value(ev));
+  }
+  static float real(float u) { return u; }
+  static float imag(float) { return 0; }
+  static bool can_evaluate_symbol(const std::string& name)
+  {
+    return (name=="Pi" || name=="PI" || name == "pi");
+  }
+  static float evaluate_symbol(const std::string& name)
+  {
+    if (name=="Pi" || name=="PI" || name == "pi") return std::acos(-1.);
+    boost::throw_exception(std::runtime_error("can not evaluate " + name));
+    return 0.;
+  }
+};
+
+template<>
+struct evaluate_helper<long double>
+{
+  typedef long double value_type;
+  template<class R>
+  static long double value(const Term<R>& ex, const Evaluator<R>& ev)
+  {
+    return numeric_cast<long double>(ex.value(ev));
+  }
+  template<class R>
+  static long double value(const Expression<R>& ex, const Evaluator<R>& ev)
+  {
+    return numeric_cast<long double>(ex.value(ev));
+  }
+  static long double real(long double u) { return u; }
+  static long double imag(long double) { return 0; }
+  static bool can_evaluate_symbol(const std::string& name)
+  {
+    return (name=="Pi" || name=="PI" || name == "pi");
+  }
+  static long double evaluate_symbol(const std::string& name)
+  {
+    if (name=="Pi" || name=="PI" || name == "pi") return std::acos(-1.);
+    boost::throw_exception(std::runtime_error("can not evaluate " + name));
+    return 0.;
+  }
+};
+
+template<class U>
+struct evaluate_helper<std::complex<U> >
+{
+  typedef std::complex<U> value_type;
+  template<class R>
+  static std::complex<U> value(const Term<R>& ex, const Evaluator<R>& ev)
+  {
+    return ex.value(ev);
+  }
+  template<class R>
+  static std::complex<U> value(const Expression<R>& ex, const Evaluator<R>& ev)
+  {
+    return ex.value(ev);
+  }
+  static U real(const std::complex<U>& u) { return u.real(); }
+  static U imag(const std::complex<U>& u) { return u.imag(); }
+  static bool can_evaluate_symbol(const std::string& name)
+  {
+    return (name=="Pi" || name=="PI" || name == "pi" || name == "I");
+  }
+  static std::complex<U> evaluate_symbol(const std::string& name)
+  {
+    if (name=="Pi" || name=="PI" || name == "pi") return std::acos(-1.);
+    if (name=="I") return std::complex<U>(0.,1.);
+    boost::throw_exception(std::runtime_error("can not evaluate " + name));
+    return 0.;
+  }
+};
+
+} // end namespace expression
 } // end namespace alps
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 namespace alps {
-namespace detail {
+namespace expression {
 #endif
 
-inline std::ostream& operator<<(std::ostream& os,
-                                const alps::detail::Evaluatable& e)
+template<class T>
+inline std::ostream& operator<<(std::ostream& os, const alps::expression::Evaluatable<T>& e)
 {
   e.output(os);
   return os;
 }
 
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-} // end namespace detail
-#endif
+template<class T>
+inline alps::expression::Expression<T> operator+(const alps::expression::Expression<T>& ex1, const alps::expression::Expression<T>& ex2)
+{
+  alps::expression::Expression<T> ex(ex1);
+  ex += ex2;
+  return ex;
+}
 
-inline std::istream& operator>>(std::istream& is, alps::Expression& e)
+template<class T>
+inline std::istream& operator>>(std::istream& is, alps::expression::Expression<T>& e)
 {
   std::string s;
   is >> s;
-  e = Expression(s);
+  e.parse(s);
   return is;
 }
 
-
-inline bool operator==(const std::string& s, const alps::Expression& e)
+template<class T>
+inline bool operator==(const alps::expression::Expression<T>& ex1, const alps::expression::Expression<T>& ex2)
 {
-  return s==static_cast<std::string>(e);
+  return (boost::lexical_cast<std::string>(ex1) ==
+          boost::lexical_cast<std::string>(ex2));
 }
 
-inline bool operator==(const alps::Expression& e, const std::string& s)
+template<class T>
+inline bool operator==(const alps::expression::Expression<T>& ex, const std::string& s)
 {
-  return static_cast<std::string>(e)==s;
+  return boost::lexical_cast<std::string>(ex) == s;
 }
 
-inline bool operator==(const alps::Expression& e1, const alps::Expression& e2)
+template<class T>
+inline bool operator==(const std::string& s, const alps::expression::Expression<T>& ex)
 {
-  return static_cast<std::string>(e1) == static_cast<std::string>(e2);
+  return ex == s;
 }
 
-inline bool operator==(const alps::Term& e, const std::string& s)
+template<class T>
+inline bool operator==(const alps::expression::Factor<T>& ex1, const alps::expression::Factor<T>& ex2)
 {
-  return s==static_cast<std::string>(e);
+  return (boost::lexical_cast<std::string>(ex1) ==
+          boost::lexical_cast<std::string>(ex2));
 }
 
-inline bool operator==( const std::string& s, const alps::Term& e)
+template<class T>
+inline bool operator==(const alps::expression::Factor<T>& ex, const std::string& s)
 {
-  return s==static_cast<std::string>(e);
+  return boost::lexical_cast<std::string>(ex) == s;
 }
 
-inline bool operator==(const alps::Term& e1, const alps::Term& e2)
+template<class T>
+inline bool operator==(const std::string& s, const alps::expression::Factor<T>& ex)
 {
-  return static_cast<std::string>(e1) == static_cast<std::string>(e2);
+  return ex == s;
 }
 
-inline bool operator<(const alps::Term& e1, const alps::Term& e2)
+template<class T>
+inline bool operator==(const alps::expression::Term<T>& ex1, const alps::expression::Term<T>& ex2)
 {
-  return static_cast<std::string>(e1) < static_cast<std::string>(e2);
+  return (boost::lexical_cast<std::string>(ex1) ==
+          boost::lexical_cast<std::string>(ex2));
 }
 
-inline bool operator==(const alps::Factor& e1, const alps::Factor& e2)
+template<class T>
+inline bool operator==(const alps::expression::Term<T>& ex, const std::string& s)
 {
-  return static_cast<std::string>(e1) == static_cast<std::string>(e2);
+  return boost::lexical_cast<std::string>(ex) == s;
 }
 
-inline bool operator<(const alps::Factor& e1, const alps::Factor& e2)
+template<class T>
+inline bool operator==(const std::string& s, const alps::expression::Term<T>& ex)
 {
-  return static_cast<std::string>(e1) < static_cast<std::string>(e2);
+  return ex == s;
 }
 
-inline bool operator==(const alps::Factor& e, const std::string& s)
+template<class T>
+inline bool operator<(const alps::expression::Expression<T>& ex1, const alps::expression::Expression<T>& ex2)
 {
-  return s==static_cast<std::string>(e);
+  return (boost::lexical_cast<std::string>(ex1) <
+          boost::lexical_cast<std::string>(ex2));
 }
 
-inline bool operator==( const std::string& s, const alps::Factor& e)
+template<class T>
+inline bool operator<(const alps::expression::Expression<T>& ex, const std::string& s)
 {
-  return s==static_cast<std::string>(e);
+  return boost::lexical_cast<std::string>(ex) < s;
+}
+
+template<class T>
+inline bool operator<(const std::string& s, const alps::expression::Expression<T>& ex)
+{
+  return s < boost::lexical_cast<std::string>(ex);
+}
+
+template<class T>
+inline bool operator<(const alps::expression::Factor<T>& ex1, const alps::expression::Factor<T>& ex2)
+{
+  return (boost::lexical_cast<std::string>(ex1) <
+          boost::lexical_cast<std::string>(ex2));
+}
+
+template<class T>
+inline bool operator<(const alps::expression::Factor<T>& ex, const std::string& s)
+{
+  return boost::lexical_cast<std::string>(ex) < s;
+}
+
+template<class T>
+inline bool operator<(const std::string& s, const alps::expression::Factor<T>& ex)
+{
+  return s < boost::lexical_cast<std::string>(ex);
+}
+
+template<class T>
+inline bool operator<(const alps::expression::Term<T>& ex1, const alps::expression::Term<T>& ex2)
+{
+  return (boost::lexical_cast<std::string>(ex1) <
+          boost::lexical_cast<std::string>(ex2));
+}
+
+template<class T>
+inline bool operator<(const alps::expression::Term<T>& ex, const std::string& s)
+{
+  return boost::lexical_cast<std::string>(ex) < s;
+}
+
+template<class T>
+inline bool operator<(const std::string& s, const alps::expression::Term<T>& ex)
+{
+  return s < boost::lexical_cast<std::string>(ex);
 }
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
+} // end namespace expression
 } // end namespace alps
 #endif
 
-alps::Expression::operator std::string() const 
-{ 
-  return boost::lexical_cast<std::string,Expression>(*this);
+namespace alps {
+
+typedef expression::Expression<std::complex<double> > Expression;
+typedef expression::Term<std::complex<double> > Term;
+typedef expression::Factor<std::complex<double> > Factor;
+typedef expression::Evaluator<std::complex<double> > Evaluator;
+typedef expression::ParameterEvaluator<std::complex<double> > ParameterEvaluator;
+
+template<class T>
+inline bool can_evaluate(const expression::Evaluatable<T>& ex, const expression::Evaluator<T>& ev)
+{
+  return ex.can_evaluate(ev);
 }
 
-alps::Term::operator std::string() const 
-{ 
-  return boost::lexical_cast<std::string,Term>(*this);
+template<class T>
+inline bool can_evaluate(const std::string& v, const expression::Evaluator<T>& p)
+{
+  return expression::Expression<T>(v).can_evaluate(p);
 }
 
-alps::Factor::operator std::string() const 
-{ 
-  return boost::lexical_cast<std::string,Factor>(*this);
+inline bool can_evaluate(const std::string& v, const Parameters& p=Parameters())
+{
+  return can_evaluate(v, expression::ParameterEvaluator<>(p));
 }
 
-#else
+template<class U>
+inline bool can_evaluate(const std::string& v, const Parameters& p, const U&)
+{
+  return can_evaluate(v, expression::ParameterEvaluator<U>(p));
+}
 
-#include <alps/expression2.h>
+inline bool can_evaluate(const StringValue& v, const Parameters& p=Parameters())
+{
+  return can_evaluate(static_cast<std::string>(v), p);
+}
 
-#endif // ! ALPS_WITH_NEW_EXPRESSION
+template<class U>
+inline bool can_evaluate(const StringValue& v, const Parameters& p, const U&)
+{
+  return can_evaluate(static_cast<std::string>(v), p, U());
+}
 
-#endif // ! ALPS_EXPRESSION_H
+template<class U, class T>
+inline U evaluate(const expression::Expression<T>& ex, const expression::Evaluator<T>& ev = expression::Evaluator<T>())
+{
+  return expression::evaluate_helper<U>::value(ex, ev);
+}
+
+template<class U, class T>
+inline U evaluate(const expression::Term<T>& ex, const expression::Evaluator<T>& ev = expression::Evaluator<T>())
+{
+  return expression::evaluate_helper<U>::value(ex, ev);
+}
+
+template<class U, class T>
+inline U evaluate(const char* v, const expression::Evaluator<T>& ev)
+{
+  return expression::evaluate_helper<U>::value(expression::Expression<T>(std::string(v)), ev);
+}
+
+template<class U, class T>
+inline U evaluate(const std::string& v, const expression::Evaluator<T>& ev)
+{
+  return expression::evaluate_helper<U>::value(expression::Expression<T>(v), ev);
+}
+
+template<class U, class T>
+inline U evaluate(const StringValue& v, const expression::Evaluator<T>& ev)
+{
+  return evaluate<U>(static_cast<std::string>(v), ev);
+}
+
+template<class U>
+inline U evaluate(const char* v)
+{
+  return evaluate<U,U>(v, expression::Evaluator<typename expression::evaluate_helper<U>::value_type>());
+}
+
+template<class U>
+inline U evaluate(const std::string& v)
+{
+  return evaluate<U,U>(v, expression::Evaluator<typename expression::evaluate_helper<U>::value_type>());
+}
+
+template<class U>
+inline U evaluate(const StringValue& v)
+{
+  return evaluate<U,U>(v, expression::Evaluator<typename expression::evaluate_helper<U>::value_type>());
+}
+
+template<class U>
+inline U evaluate(const char* v, const Parameters& p)
+{
+  return evaluate<U,typename expression::evaluate_helper<U>::value_type>(v, expression::ParameterEvaluator<typename expression::evaluate_helper<U>::value_type>(p));
+}
+
+template<class U>
+inline U evaluate(const std::string& v, const Parameters& p)
+{
+  return evaluate<U,typename expression::evaluate_helper<U>::value_type>(v, expression::ParameterEvaluator<typename expression::evaluate_helper<U>::value_type>(p));
+}
+
+template<class U>
+inline U evaluate(const StringValue& v, const Parameters& p)
+{
+  return evaluate<U,typename expression::evaluate_helper<U>::value_type>(v, expression::ParameterEvaluator<typename expression::evaluate_helper<U>::value_type>(p));
+}
+
+//
+// function is_zero and is_nonzero
+//
+
+template<class T>
+bool is_zero(const expression::Expression<T>& x)
+{
+  std::string s = boost::lexical_cast<std::string>(x);
+  return s=="" || s=="0" || s=="0." || s=="-0" || s=="-0.";
+}
+
+template<class T>
+bool is_zero(const expression::Term<T>& x)
+{
+  std::string s = boost::lexical_cast<std::string>(x);
+  return s=="" || s=="0" || s=="0.";
+}
+
+} // end namespace alps
+
+#include <alps/expression2_impl.h>
+
+#endif // ! ALPS_EXPRESSION2_H

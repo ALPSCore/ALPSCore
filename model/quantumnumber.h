@@ -217,20 +217,12 @@ bool QuantumNumberDescriptor<I>::evaluate(const Parameters& p) const
   if (min_exp_==" - infinity")
     min_ = value_type::min();
   else if (min_exp_.can_evaluate(eval))
-#ifndef ALPS_WITH_NEW_EXPRESSION
-    min_ = alps::evaluate(min_exp_);
-#else
     min_ = alps::evaluate<double>(min_exp_);
-#endif
   else valid_=false;
   if (max_exp_=="infinity")
     max_ = value_type::max();
   else if (max_exp_.can_evaluate(eval))
-#ifndef ALPS_WITH_NEW_EXPRESSION
-    max_ = alps::evaluate(max_exp_);
-#else
     max_ = alps::evaluate<double>(max_exp_);
-#endif
   else valid_=false;
   if(valid_ && min_>max_)
     boost::throw_exception(std::runtime_error("min > max in QUANTUMNUMBER element"));

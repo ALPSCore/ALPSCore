@@ -354,11 +354,7 @@ double WorkerTask::work() const
 {
   if (finished_)
     return 0.;
-#ifndef ALPS_WITH_NEW_EXPRESSION
-  return (parms.defined("WORK_FACTOR") ? alps::evaluate(parms["WORK_FACTOR"], parms) : 1. )
-#else
   return (parms.defined("WORK_FACTOR") ? alps::evaluate<double>(parms["WORK_FACTOR"], parms) : 1. )
-#endif
          *(1.-work_done());
 }
 

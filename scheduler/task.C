@@ -148,11 +148,7 @@ void Task::halt()
 
 double Task::work() const
 {
-#ifndef ALPS_WITH_NEW_EXPRESSION
-  return (finished_ ? 0. : (parms.defined("WORK_FACTOR") ? alps::evaluate(parms["WORK_FACTOR"], parms) : 1. ));
-#else
   return (finished_ ? 0. : (parms.defined("WORK_FACTOR") ? alps::evaluate<double>(parms["WORK_FACTOR"], parms) : 1. ));
-#endif // ! ALPS_WITH_NEW_EXPRESSION
 }
 
 void Task::write_xml_header(oxstream& out) const

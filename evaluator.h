@@ -30,51 +30,5 @@
 
 #ifndef ALPS_EVALUATOR_H
 #define ALPS_EVALUATOR_H
-
-#include <alps/config.h>
-
-#ifndef ALPS_WITH_NEW_EXPRESSION
-
-#include <alps/parameters.h>
-#include <string>
-
-namespace alps {
-
-class Expression;
-
-class Evaluator {
-public:
-  typedef double value_type;
-  enum Direction { left_to_right, right_to_left};
-  Evaluator() {}
-  virtual bool can_evaluate(const std::string&) const;
-  virtual bool can_evaluate_function(const std::string&, const Expression& ) const;
-  virtual double evaluate(const std::string&) const;
-  virtual double evaluate_function(const std::string&, const Expression&) const;
-  virtual Expression partial_evaluate(const std::string& name) const;
-  virtual Expression partial_evaluate_function(const std::string& name, const Expression&) const;
-  virtual Direction direction() const;
-};
-
-class ParameterEvaluator : public Evaluator {
-public:
-  typedef double value_type;
-  ParameterEvaluator(const Parameters& p) : parms_(p) {}
-  virtual ~ParameterEvaluator() {}
-  bool can_evaluate(const std::string&) const;
-  double evaluate(const std::string&) const;
-  Expression partial_evaluate(const std::string& name) const;
-  const Parameters& parameters() const { return parms_;}
-private:
-  Parameters parms_;
-};
-  
-} // end namespace alps
-
-#else
-
-#include <alps/expression2.h>
-
-#endif // ! ALPS_WITH_NEW_EXPRESSION
-
-#endif // ! ALPS_EVALUATOR_H
+#include <alps/expression.h>
+#endif

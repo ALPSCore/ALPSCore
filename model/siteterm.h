@@ -179,11 +179,7 @@ SiteTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b,
               if (!can_evaluate(boost::lexical_cast<std::string>(term)))
                 boost::throw_exception(std::runtime_error("Cannot evaluate expression " + boost::lexical_cast<std::string>(term)));
 
-#ifndef ALPS_WITH_NEW_EXPRESSION
-          mat[i][j].first += term;
-#else 
           mat[i][j].first += evaluate<T>(term);
-#endif
         }
       }
     }

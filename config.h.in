@@ -45,7 +45,7 @@
 //
 
 // Define to 1 if you want use newer Expression class
-#undef ALPS_WITH_NEW_EXPRESSION
+#define ALPS_WITH_NEW_EXPRESSION
 
 //
 // C/C++ headers

@@ -116,11 +116,7 @@ void BasisDescriptor<I>::check_constraints(const Parameters& p)
   unevaluated_constraints_.clear();
   for (typename unevaluated_constraints_type::iterator it=constraints_.begin();it!=constraints_.end();++it)
     if (it->second.can_evaluate(p))
-#ifndef ALPS_WITH_NEW_EXPRESSION
-      evaluated_constraints_.push_back(std::make_pair(it->first,half_integer<I>(alps::evaluate(it->second, p))));
-#else
       evaluated_constraints_.push_back(std::make_pair(it->first,half_integer<I>(alps::evaluate<double>(it->second, p))));
-#endif
     else
       unevaluated_constraints_.push_back(*it);
 }
