@@ -121,7 +121,7 @@ void Worker::load_worker(IDump& dump)
     if(version<200) 
       dump >> dummy >> dummy >> dummy;
   }
-  // TODO: create slave runs
+  // TODO: load slave runs
 }
 
 void Worker::save_worker(ODump& dump) const
