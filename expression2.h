@@ -45,6 +45,7 @@
 #include <boost/smart_ptr.hpp>
 #include <boost/throw_exception.hpp>
 
+#include <cmath>
 #include <complex>
 #include <string>
 #include <vector>
