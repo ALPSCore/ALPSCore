@@ -31,13 +31,15 @@
 #ifndef ALPS_PARSER_PATH_H
 #define ALPS_PARSER_PATH_H
 
+#include <boost/filesystem/path.hpp>
 #include <cstdlib>
 #include <string>
 
 namespace alps {
 
 extern std::string xslt_path(const std::string& stylefile);
-extern std::string xml_library_path(const std::string& file);
+extern boost::filesystem::path xml_library_path(const std::string& file);
+extern boost::filesystem::path search_xml_library_path(const std::string& file);
   
 } // end namespace alps
 

@@ -828,6 +828,8 @@ void Number<T>::output(std::ostream& os) const
 template<class T>
 typename Symbol<T>::value_type Symbol<T>::value(const Evaluator<T>& eval, bool isarg) const
 {
+  if (!eval.can_evaluate(name_,isarg))
+    boost::throw_exception(std::runtime_error("Cannot evaluate " + name_ ));
   return eval.evaluate(name_,isarg);
 }
 

@@ -30,6 +30,9 @@
 
 #include <alps/parser/path.h>
 #include <alps/config.h>
+#include <boost/throw_exception.hpp>
+#include <boost/filesystem/operations.hpp>
+#include <stdexcept>
 
 std::string alps::xslt_path(const std::string& stylefile) {
   std::string path("file:");
@@ -49,7 +52,18 @@ std::string alps::xslt_path(const std::string& stylefile) {
     return "http://xml.comp-phys.org/"+stylefile;
 }
   
-std::string xml_library_path(const std::string& file) 
+boost::filesystem::path alps::xml_library_path(const std::string& file) 
 {
-  return std::string(ALPS_XML_DIR)+"/"+file;
+  return boost::filesystem::path(std::string(ALPS_XML_DIR)+"/"+file,boost::filesystem::native);
+}
+
+boost::filesystem::path alps::search_xml_library_path(const std::string& file) 
+{
+  boost::filesystem::path p(file,boost::filesystem::native);
+  if (!boost::filesystem::exists(p)) {
+    p=xml_library_path(file);
+    if (!boost::filesystem::exists(p))
+      boost::throw_exception(std::runtime_error("Cannot find file " + file ));
+  }
+  return p;
 }

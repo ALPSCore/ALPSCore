@@ -32,6 +32,7 @@
 #ifndef ALPS_WITHOUT_XML
 
 #include <alps/parser/parser.h>
+#include <alps/parser/path.h>
 #include <boost/throw_exception.hpp>
 #include <stdexcept>
 
@@ -44,7 +45,10 @@ ModelLibrary::ModelLibrary(const Parameters& parms)
     libname = static_cast<std::string>(parms["MODEL_LIBRARY"]);
   else
     libname = "models.xml";
-  std::ifstream libfile(libname.c_str());
+    
+  boost::filesystem::path p=search_xml_library_path(libname);
+  
+  std::ifstream libfile(p.native_file_string().c_str());
   if(!libfile)
     boost::throw_exception(std::runtime_error("Could not find model library file " + libname));
   read_xml(libfile);
