@@ -172,11 +172,11 @@ inline Set<C>& Set<C>::operator<<(boost::tuples::tuple<C,C,C,C> t) {
 
 
 template<class C>
-inline oxstream& operator<<(oxstream& out, const Set<C> S) {
+inline oxstream& operator<<(oxstream& out,  Set<C> S) {
   out << start_tag("set") << attribute("label",S.label()) 
       << attribute("show_legend", S.show_legend() ? "true" : "false");
   for(int i=0; i<S.size(); ++i) 
-    S[i].output(out);
+    S[i].output(out,S.type());
   out << end_tag("set");
   return out;
 }   
