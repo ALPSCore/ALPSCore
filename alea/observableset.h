@@ -77,22 +77,25 @@ class ObservableSet: public std::map<std::string,Observable*>
   virtual ~ObservableSet();
   
   /// sign problem support requires non-trivial assignment
-  const ObservableSet& operator=(const ObservableSet& m);
+  ObservableSet& operator=(const ObservableSet& m);
   
   /** merge two observable set.
       If observables with identical names exist in both sets, a merger of the
       observables is attempted. In case of failure an exception is thrown.
       @throws std::bad_cast if merging fails
   */
-  const ObservableSet& operator<<(const ObservableSet& obs);
+  ObservableSet& operator<<(const ObservableSet& obs);
   
   /** merge an observable into the set.
       If an observables with identical names exists, a merger of the
       observables is attempted. In case of failure an exception is thrown.
       @throws std::bad_cast if merging fails
   */
-  const ObservableSet& operator<<(const Observable& obs);
-  const ObservableSet& operator<<(const boost::shared_ptr<Observable>& obs) { return (*this) << (*obs); }
+  ObservableSet& operator<<(const Observable& obs);
+  ObservableSet& operator<<(const boost::shared_ptr<Observable>& obs)
+  {
+    return (*this) << (*obs);
+  }
 
   /** add an observable to the set.
       The ObservableSet will delete the object at the end.
@@ -107,7 +110,7 @@ class ObservableSet: public std::map<std::string,Observable*>
   /** get an observable with the given name
       @throws throws a std::runtime_error if no observable exists with the given name
   */
-  Observable&       operator[](const std::string& name);
+  Observable& operator[](const std::string& name);
   /** get an observable with the given name
       @throws throws a std::runtime_error if no observable exists with the given name
   */

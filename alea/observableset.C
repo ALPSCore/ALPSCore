@@ -149,7 +149,7 @@ ObservableSet::ObservableSet(const ObservableSet& m)
     addObservable(it->second->clone());
 }
 
-const ObservableSet& ObservableSet::operator=(const ObservableSet& m)
+ObservableSet& ObservableSet::operator=(const ObservableSet& m)
 {
   do_for_all(detail::deleteit);
   erase(begin(),end());  
@@ -300,14 +300,14 @@ ObservableSet ObservableSet::get_run(uint32_t i) const
   return runset;
 }
 
-const ObservableSet& ObservableSet::operator<<(const ObservableSet& obs)
+ObservableSet& ObservableSet::operator<<(const ObservableSet& obs)
 {
   for (const_iterator it=obs.begin(); it !=obs.end(); ++it)
     (*this) << *(it->second);
   return *this;
 }
 
-const ObservableSet& ObservableSet::operator<<(const Observable& obs)
+ObservableSet& ObservableSet::operator<<(const Observable& obs)
 {
   if(has(obs.name()))
   {
