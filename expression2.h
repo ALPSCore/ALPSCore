@@ -45,6 +45,8 @@
 
 #include <boost/smart_ptr.hpp>
 #include <boost/throw_exception.hpp>
+#include <boost/type_traits/is_arithmetic.hpp>
+#include <boost/utility/enable_if.hpp>
 
 #include <cmath>
 #include <complex>
@@ -214,6 +216,8 @@ public:
   Expression(const std::string& str) { parse(str); }
   Expression(std::istream& in) { parse(in); }
   Expression(value_type val) : terms_(1,Term<T>(val)) {}
+  template<class U>
+  Expression(U val, typename boost::enable_if<boost::is_arithmetic<U> >::type* = 0) : terms_(1,Term<T>(value_type(val))) {}
   Expression(const Evaluatable<T>& e) : terms_(1,Term<T>(e)) {}
   Expression(const Term<T>& e) : terms_(1,e) {}
   virtual ~Expression() {}
