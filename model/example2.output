@@ -1,7 +1,7 @@
 States of basis fermion={
   | Nup=0 Ndown=0 >
-  | Nup=1 Ndown=0 >
   | Nup=0 Ndown=1 >
+  | Nup=1 Ndown=0 >
   | Nup=1 Ndown=1 >
 }
 States of basis hardcore boson={
