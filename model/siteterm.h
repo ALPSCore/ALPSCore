@@ -140,8 +140,8 @@ boost::multi_array<std::pair<T,bool>,2> get_fermionic_matrix(T,const SiteTermDes
 
 template <class I> template <class T> boost::multi_array<std::pair<T,bool>,2>
 SiteTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b,
-			      const operator_map& ops,
-			      const Parameters& p) const
+                              const operator_map& ops,
+                              const Parameters& p) const
 {
   SiteBasisDescriptor<I> basis(b);
   basis.set_parameters(p);
@@ -161,11 +161,11 @@ SiteTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b,
     for (int i=0;i<states.size();++i) {
     //calculate expression applied to state *it and store it into matrix
       for (typename Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
-	    SiteOperatorEvaluator<I> evaluator(states[i], basis,parms,ops);
+            SiteOperatorEvaluator<I> evaluator(states[i], basis,parms,ops);
         Term term(*tit);
         term.partial_evaluate(evaluator);
         unsigned int j = states.index(evaluator.state());
-	    if (is_nonzero(term)) {
+            if (is_nonzero(term)) {
           if (is_nonzero(mat[i][j].first) && j<states.size()) {
             if (mat[i][j].second != evaluator.fermionic())
               boost::throw_exception(std::runtime_error("Inconsistent fermionic nature of a matrix element: "

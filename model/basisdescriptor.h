@@ -223,7 +223,7 @@ void BasisDescriptor<I>::write_xml(oxstream& os) const
   for (const_iterator it=super_type::begin();it!=super_type::end();++it)
     os << *it;
   for (typename unevaluated_constraints_type::const_iterator
-	 it=constraints_.begin(); it!=constraints_.end(); ++it)
+         it=constraints_.begin(); it!=constraints_.end(); ++it)
     os << start_tag("CONSTRAINT") << attribute("quantumnumber",it->first)
        << attribute("value", boost::lexical_cast<std::string>(it->second))
        << end_tag("CONSTRAINT");

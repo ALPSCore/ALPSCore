@@ -34,9 +34,10 @@
 #include <alps/config.h>
 #include <alps/lattice/graphproperties.h>
 
-#include <boost/graph/depth_first_search.hpp>
+#include <boost/graph/undirected_dfs.hpp>
 #include <boost/graph/visitors.hpp>
 #include <boost/throw_exception.hpp>
+#include <boost/vector_property_map.hpp>
 #include <stdexcept>
 
 namespace alps {
@@ -49,44 +50,28 @@ BOOST_STATIC_CONSTANT(parity_type, black = 1);
 BOOST_STATIC_CONSTANT(parity_type, undefined = 2);
 
 template<class Graph, class PropertyMap>
-class ParityVisitor
+class ParityVisitor : public boost::dfs_visitor<>
 {
 public:
-  typedef typename boost::graph_traits<Graph>::edge_descriptor
-    edge_descriptor;
   typedef typename boost::graph_traits<Graph>::vertex_descriptor
     vertex_descriptor;
+  typedef typename boost::graph_traits<Graph>::edge_descriptor
+    edge_descriptor;
 
-  // constructor
   ParityVisitor(PropertyMap& map, bool* check) :
     p_(white), map_(map), check_(check) { *check_ = true; }
 
-  // callback member functions
-  void initialize_vertex(vertex_descriptor s, const Graph&) {
-    map_[s]=undefined;
-  }
-  void start_vertex(vertex_descriptor, const Graph&) {}
-  void discover_vertex(vertex_descriptor s, const Graph&) {
+  void discover_vertex(vertex_descriptor s, const Graph&)
+  {
     flip();
-    map_[s]=p_;
+    map_[s] = p_;
   }
-  void examine_edge(edge_descriptor, const Graph&) {}
-  void tree_edge(edge_descriptor, const Graph&) {}
   void back_edge(edge_descriptor e, const Graph& g) { check(e, g); }
-  void forward_or_cross_edge(edge_descriptor e, const Graph& g) {
-    check(e, g);
-  }
   void finish_vertex(vertex_descriptor, const Graph&) { flip(); }
 
 protected:
-  ParityVisitor();
-
   void flip() { p_ = (p_ == white ? black : white); }
   void check(edge_descriptor e, const Graph& g) {
-    if (map_[boost::source(e, g)] == undefined ||
-         map_[boost::target(e, g)] == undefined) {
-      boost::throw_exception(std::runtime_error("unvisited vertex found"));
-    }
     if (map_[boost::source(e, g)] == map_[boost::target(e, g)]) 
       *check_ = false;
   }
@@ -102,17 +87,22 @@ private:
 template <class Graph, class Map>
 bool set_parity(Map map, const Graph& g)
 {
-  typedef typename boost::graph_traits<Graph>::vertex_iterator
-    vertex_iterator;
   typedef typename parity::ParityVisitor<Graph, Map> visitor_type;
+
   bool check = true;
-  visitor_type v(map, &check);
-  boost::depth_first_search(g, boost::visitor(v));
+
+  std::vector<boost::default_color_type> vcolor_map(boost::num_vertices(g));
+  std::vector<boost::default_color_type> ecolor_map(boost::num_edges(g));
+  boost::undirected_dfs(g, visitor_type(map, &check),
+    boost::make_iterator_property_map(vcolor_map.begin(),
+      boost::get(vertex_index_t(), g)),
+    boost::make_iterator_property_map(ecolor_map.begin(),
+      boost::get(edge_index_t(), g)));
+
   if (!check) {
-    for (vertex_iterator itr = boost::vertices(g).first;
-          itr != boost::vertices(g).second; ++itr)
-      //boost::put(map, *itr, parity::undefined);
-      map[*itr]=parity::undefined;
+    typename boost::graph_traits<Graph>::vertex_iterator vi, vi_end;
+    for (boost::tie(vi, vi_end) = boost::vertices(g); vi != vi_end; ++vi)
+      map[*vi]=parity::undefined;
   }
   return check;
 }
@@ -130,10 +120,11 @@ template<>
 struct helper<true>
 {
   template<class Graph>
-  static bool set_parity(Graph& g) {
+  static bool set_parity(Graph& g)
+  {
     typedef typename property_map<parity_t, Graph, int>::type map_type;
     map_type map = boost::get(parity_t(), g);
-    return alps::set_parity(map,g);
+    return alps::set_parity(map, g);
   }
 };
 

@@ -22,7 +22,7 @@
 * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
 * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
-* uuDEALINGS IN THE SOFTWARE.
+* DEALINGS IN THE SOFTWARE.
 *
 *****************************************************************************/
 
@@ -172,13 +172,13 @@ void HistogramObservable<T>::write_xml(oxstream& oxs, const boost::filesystem::p
 { 
   if(count())
     {
-	oxs << start_tag("HISTOGRAM") << attribute("name",name()) << attribute("nvalues",histogram_.size());
+        oxs << start_tag("HISTOGRAM") << attribute("name",name()) << attribute("nvalues",histogram_.size());
       for(int i=0;i<histogram_.size();++i)
-	{ oxs << start_tag("ENTRY") << attribute("indexvalue", i);
-	  oxs << start_tag("COUNT") << no_linebreak << count() <<end_tag;
-	  oxs << start_tag("VALUE") << no_linebreak << histogram_[i] <<end_tag;
-	  oxs << end_tag;
-	}
+        { oxs << start_tag("ENTRY") << attribute("indexvalue", i);
+          oxs << start_tag("COUNT") << no_linebreak << count() <<end_tag;
+          oxs << start_tag("VALUE") << no_linebreak << histogram_[i] <<end_tag;
+          oxs << end_tag;
+        }
       oxs << end_tag;
     }
 }
@@ -186,8 +186,8 @@ void HistogramObservable<T>::write_xml(oxstream& oxs, const boost::filesystem::p
 template <class T>
 void HistogramObservable<T>::my_output() const
 {
-	std::cout<<"*** DEBUG: "<<name()<<std::endl;
-	std::cout<<"***      : "<<count()<<std::endl;
+        std::cout<<"*** DEBUG: "<<name()<<std::endl;
+        std::cout<<"***      : "<<count()<<std::endl;
 }
  
 template <class T>

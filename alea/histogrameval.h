@@ -209,7 +209,7 @@ inline void HistogramObservableEvaluator<T>::merge(const Observable& o)
 {
   if (automatic_naming_ && supertype::name()=="") Observable::rename(o.name());
   if (dynamic_cast<const HistogramObservable<T>*>(&o)!=0) {
-	(*this) <<
+        (*this) <<
         HistogramObservableData<T>(dynamic_cast<const HistogramObservable<T>&>(o));
   } else {
     const HistogramObservableEvaluator<T>& eval =
@@ -268,7 +268,7 @@ void HistogramObservableEvaluator<T>::output_histogram(std::ostream& out) const
     out << " no measurements.\n";
   else
     for(integer_type j=0; j<supertype::histogram_.size();++j)
-	  out << " " <<j<<": "<<supertype::histogram_[j]<<std::endl;
+          out << " " <<j<<": "<<supertype::histogram_[j]<<std::endl;
 }
 
 template <class T>

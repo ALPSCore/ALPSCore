@@ -491,7 +491,7 @@ void SimpleObservableEvaluator<T>::output_vector(std::ostream& out) const
           sit!=obs_value_traits<result_type>::slice_end(value_);++sit)
     {
       out << "Entry["
-	  << obs_value_traits<result_type>::slice_name(value_,sit)  << "]: "
+          << obs_value_traits<result_type>::slice_name(value_,sit)  << "]: "
           << obs_value_traits<result_type>::slice_value(value_,sit) << " +/- " 
           << obs_value_traits<result_type>::slice_value(error_,sit);
       if(has_tau())

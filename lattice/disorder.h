@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2004 by Matthias Troyer <troyer@comp-phys.orgh>,
+* Copyright (C) 2001-2004 by Matthias Troyer <troyer@comp-phys.orgh>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -134,24 +134,24 @@ public:
   void disorder_edges(G& g, M& m) const {
     if (!changed_edges_.empty()) 
       boost::throw_exception(
-	    std::runtime_error("Changed edges not yet implemented. Please contact troyer@comp-phys.org"));
+            std::runtime_error("Changed edges not yet implemented. Please contact troyer@comp-phys.org"));
     if (disorder_all_edges_)
-	  alps::disorder_edges(g,m);
-	else if(!disordered_edges_.empty())
+          alps::disorder_edges(g,m);
+        else if(!disordered_edges_.empty())
       boost::throw_exception(
-	    std::runtime_error("Disordering special edge types not yet implemented. Please contact troyer@comp-phys.org"));
+            std::runtime_error("Disordering special edge types not yet implemented. Please contact troyer@comp-phys.org"));
   }
 
   template <class G, class M>
   void disorder_vertices(G& g, M& m) const {
     if (!changed_vertices_.empty()) 
       boost::throw_exception(
-	    std::runtime_error("Changed vertices not yet implemented. Please contact troyer@comp-phys.org"));
+            std::runtime_error("Changed vertices not yet implemented. Please contact troyer@comp-phys.org"));
     if (disorder_all_vertices_)
-	  alps::disorder_vertices(g,m);
-	else if(!disordered_vertices_.empty())
+          alps::disorder_vertices(g,m);
+        else if(!disordered_vertices_.empty())
       boost::throw_exception(
-	    std::runtime_error("Disordering special vertex types not yet implemented. Please contact troyer@comp-phys.org"));
+            std::runtime_error("Disordering special vertex types not yet implemented. Please contact troyer@comp-phys.org"));
   }
   
   template <class G>

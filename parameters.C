@@ -132,13 +132,13 @@ void Parameters::parse(std::istream& is)
       case '$':
         check_character(is, '{', "{ expected in Parameter environment variable expansion");
         value = read_until(is, '}');
-	{
-	  char const* EnvStr = getenv(value.c_str());
-	  if (EnvStr)
-	    value = EnvStr;  // if the environment string exists, then substitute its value
-	  else
-	    value = "${" + value + '}'; // pass through unchanged if the environment string doesnt exist
-	}
+        {
+          char const* EnvStr = getenv(value.c_str());
+          if (EnvStr)
+            value = EnvStr;  // if the environment string exists, then substitute its value
+          else
+            value = "${" + value + '}'; // pass through unchanged if the environment string doesnt exist
+        }
         break;
 
       default:

@@ -82,7 +82,7 @@ public:
   ALPS_DUMMY_VOID compact() {
     count_=count();
     ALPS_RETURN_VOID;
-  }	
+  }        
 
 #ifndef ALPS_WITHOUT_OSIRIS
     void save(ODump& dump) const;
@@ -130,33 +130,33 @@ inline void HistogramObservableData<T>::collect_from(const std::vector<Histogram
   count_=0;
 
   for(typename std::vector<HistogramObservableData<T> >::const_iterator r = runs.begin(); r!=runs.end();++r) { 
-	if(r->count()) {
-	  if(!got_data) {
-	    can_set_thermal_=r->can_set_thermal_;
-	    thermalcount_=r->thermalcount_;
-	    count_=r->count_;
-	    thermalcount_=r->thermalcount_;
-	    min_=r->min_;
-	    max_=r->max_;
-	    stepsize_=r->stepsize_;
-	    histogram_.resize(r->histogram_.size());
+        if(r->count()) {
+          if(!got_data) {
+            can_set_thermal_=r->can_set_thermal_;
+            thermalcount_=r->thermalcount_;
+            count_=r->count_;
+            thermalcount_=r->thermalcount_;
+            min_=r->min_;
+            max_=r->max_;
+            stepsize_=r->stepsize_;
+            histogram_.resize(r->histogram_.size());
         std::copy(r->histogram_.begin(),r->histogram_.end(),histogram_.begin());
         got_data=true;
       }
-	  else {
-	    size_type loc_size=histogram_.size();
+          else {
+            size_type loc_size=histogram_.size();
         if(min_!=r->min_) 
           boost::throw_exception(std::runtime_error("Cannot collect data from histograms with different min_."));
-	    if(max_!=r->max_) 
+            if(max_!=r->max_) 
           boost::throw_exception(std::runtime_error("Cannot collect data from histograms with different max_."));
-	    if(stepsize_!=r->stepsize_) 
+            if(stepsize_!=r->stepsize_) 
           boost::throw_exception(std::runtime_error("Cannot collect data from histograms with different stepsize_."));
-	    if(loc_size!=r->histogram_.size()) 
+            if(loc_size!=r->histogram_.size()) 
           boost::throw_exception(std::runtime_error("Cannot collect data from histograms with different size_."));
-	    count_+=r->count_;
+            count_+=r->count_;
         std::transform(histogram_.begin(),histogram_.end(),r->histogram_.begin(),histogram_.begin(),std::plus<value_type>());
-	  }
-	}
+          }
+        }
   }
 }
  
@@ -189,20 +189,20 @@ template <class T>
   while (tag.name =="ENTRY") {
     tag=parse_tag(infile);
     while (tag.name !="/ENTRY") {
-	  if (tag.name=="COUNT") {
+          if (tag.name=="COUNT") {
         if (tag.type !=XMLTag::SINGLE) {
-		  count_=boost::lexical_cast<integer_type, std::string>(parse_content(infile));
-		  check_tag(infile,"/COUNT");
+                  count_=boost::lexical_cast<integer_type, std::string>(parse_content(infile));
+                  check_tag(infile,"/COUNT");
         }
       }
-	  else if (tag.name=="VALUE") {
+          else if (tag.name=="VALUE") {
         if (tag.type !=XMLTag::SINGLE) {
-		  histogram_[i]=static_cast<value_type>(text_to_double(parse_content(infile)));
-		  check_tag(infile,"/VALUE");
+                  histogram_[i]=static_cast<value_type>(text_to_double(parse_content(infile)));
+                  check_tag(infile,"/VALUE");
         }
       }
-	  else skip_element(infile,tag);
-	  tag = parse_tag(infile);
+          else skip_element(infile,tag);
+          tag = parse_tag(infile);
     }
     ++i;
     tag = parse_tag(infile);

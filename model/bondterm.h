@@ -90,15 +90,15 @@ public:
 
   BondOperatorEvaluator(const STATE1& s1, const STATE2& s2,
                         const SiteBasisDescriptor<I>& b1,
-			            const SiteBasisDescriptor<I>& b2,
+                                    const SiteBasisDescriptor<I>& b2,
                         const std::string& site1, const std::string& site2,
                         const Parameters& p, const operator_map& o)
     : super_type(p,o), state_(s1,s2), basis1_(b1), basis2_(b2),
       sites_(site1,site2), fermionic_(false,false) {}
   bool can_evaluate_function(const std::string& name,
-			     const Expression& argument) const;
+                             const Expression& argument) const;
   Expression partial_evaluate_function(const std::string& name,
-					const Expression& argument) const;
+                                        const Expression& argument) const;
   const std::pair<STATE1,STATE2>& state() const { return state_;}
   std::pair<bool,bool> fermionic() const { return fermionic_;}
 
@@ -271,7 +271,7 @@ BondTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b1,
           term.partial_evaluate(evaluator);
           unsigned int j1=states1.index(evaluator.state().first);
           unsigned int j2=states2.index(evaluator.state().second);
-	  if (is_nonzero(term) && j1<dim1 && j2<dim2) {
+          if (is_nonzero(term) && j1<dim1 && j2<dim2) {
             if (is_nonzero(mat[i1][i2][j1][j2].first)) {
               if (mat[i1][i2][j1][j2].second.first != evaluator.fermionic().first || 
                   mat[i1][i2][j1][j2].second.second != evaluator.fermionic().second) 

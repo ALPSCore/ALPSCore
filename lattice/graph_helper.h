@@ -95,7 +95,7 @@ public:
 
  graph_helper(std::istream& in, const Parameters& p)
    : LatticeLibrary(in), 
-	 to_delete_(false), 
+         to_delete_(false), 
      g_(make_graph(p)),
      is_bipartite_(set_parity(graph())),
      parity_map_(get_or_default(parity_t(),const_graph(),0.)),
@@ -104,28 +104,28 @@ public:
      coordinate_map_(get_or_default(coordinate_t(),const_graph(),0)),
      bond_vector_map_(get_or_default(bond_vector_t(),const_graph(),0)),
      bond_vector_relative_map_(get_or_default(bond_vector_relative_t(),const_graph(),0)),
-	 disordered_vertex_type_map_(),
-	 disordered_edge_type_map_(get_or_default(edge_index_t(),const_graph(),0))
+         disordered_vertex_type_map_(),
+         disordered_edge_type_map_(get_or_default(edge_index_t(),const_graph(),0))
   {
-	d_.disorder_vertices(graph(),disordered_vertex_type_map_);
-	d_.disorder_edges(graph(),disordered_edge_type_map_);
+        d_.disorder_vertices(graph(),disordered_vertex_type_map_);
+        d_.disorder_edges(graph(),disordered_edge_type_map_);
   }
   
   
   graph_helper(const alps::Parameters& p)
    : LatticeLibrary(p), 
-	 to_delete_(false), 
+         to_delete_(false), 
      g_(make_graph(p)),
      is_bipartite_(set_parity(graph())),
      parity_map_(get_or_default(parity_t(),const_graph(),0.)),
      edge_type_map_(get_or_default(edge_type_t(),const_graph(),0)),
      vertex_type_map_(get_or_default(vertex_type_t(),const_graph(),0)),
      coordinate_map_(get_or_default(coordinate_t(),const_graph(),std::vector<double>())),
-	 disordered_vertex_type_map_(),
-	 disordered_edge_type_map_(get_or_default(edge_index_t(),const_graph(),0))
+         disordered_vertex_type_map_(),
+         disordered_edge_type_map_(get_or_default(edge_index_t(),const_graph(),0))
   {
-	d_.disorder_vertices(graph(),disordered_vertex_type_map_);
-	d_.disorder_edges(graph(),disordered_edge_type_map_);
+        d_.disorder_vertices(graph(),disordered_vertex_type_map_);
+        d_.disorder_edges(graph(),disordered_edge_type_map_);
   }
 
   ~graph_helper() { if (to_delete_) delete g_;}
@@ -196,7 +196,7 @@ public:
       boost::throw_exception(std::runtime_error("x, y or z is predefined as parameter and used as coordinate"));
   }
   
-  void throw_if_xyz_defined(const Parameters& p, const edge_descriptor& e)	 const
+  void throw_if_xyz_defined(const Parameters& p, const edge_descriptor& e)         const
   {
     throw_if_xyz_defined(p,source(e));
     throw_if_xyz_defined(p,target(e));
@@ -290,7 +290,7 @@ G* graph_helper<G>::make_graph(const Parameters& parms)
     LatticeGraphDescriptor desc(lattice_descriptor(name));
     desc.set_parameters(parms);
     l_ = lattice_type(desc);
-	d_ = desc.disorder();
+        d_ = desc.disorder();
     g = &(l_.graph());
     to_delete_=false;
   }

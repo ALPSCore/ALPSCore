@@ -4,8 +4,8 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
-*                       Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 2003-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -33,10 +33,13 @@
 
 #include <alps/lattice.h>
 #include <alps/model/modellibrary.h>
+
+#include <boost/graph/filtered_graph.hpp>
+#include <boost/graph/undirected_dfs.hpp>
+#include <boost/graph/visitors.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
 #include <boost/vector_property_map.hpp>
-#include <boost/graph/filtered_graph.hpp>
 
 namespace alps {
 
@@ -47,42 +50,33 @@ BOOST_STATIC_CONSTANT(parity_type, sign_black = 1);
 BOOST_STATIC_CONSTANT(parity_type, sign_undefined = 0);
 
 template<class Graph, class PropertyMap, class BondPropertyMap>
-class SignVisitor {
+class SignVisitor : public boost::dfs_visitor<>
+{
 public:
-  typedef typename boost::graph_traits<Graph>::edge_descriptor edge_descriptor;
-  typedef typename boost::graph_traits<Graph>::vertex_descriptor vertex_descriptor;
+  typedef typename boost::graph_traits<Graph>::vertex_descriptor
+    vertex_descriptor;
+  typedef typename boost::graph_traits<Graph>::edge_descriptor
+    edge_descriptor;
 
-  // constructor
   SignVisitor(PropertyMap& map, bool* check, BondPropertyMap bondsign) :
     map_(map), check_(check), bond_sign_(bondsign) { *check_ = false; }
 
-  // callback member functions
-  void initialize_vertex(vertex_descriptor s, const Graph&) {
-    map_[s]=sign_undefined;
-  }
-  void start_vertex(vertex_descriptor, const Graph&) {}
   void discover_vertex(vertex_descriptor s, const Graph&) {
-    if (!map_[s]) map_[s]=sign_white;
+    if (!map_[s]) map_[s] = sign_white;
   }
-  void examine_edge(edge_descriptor, const Graph&) {}
-  void tree_edge(edge_descriptor e, const Graph& g) {
-    map_[boost::target(e,g)]=int(map_[boost::source(e,g)]*bond_sign_[e]);
+  void tree_edge(edge_descriptor e, const Graph& g)
+  {
+    map_[boost::target(e,g)] = int(map_[boost::source(e,g)]*bond_sign_[e]);
   }
   void back_edge(edge_descriptor e, const Graph& g) { check(e, g); }
-  void forward_or_cross_edge(edge_descriptor e, const Graph& g) {
-    check(e, g);
-  }
-  void finish_vertex(vertex_descriptor, const Graph&) {}
 
 protected:
-  void check(edge_descriptor e, const Graph& g) {
-    if (map_[boost::source(e, g)] == sign_undefined ||
-        map_[boost::target(e, g)] == sign_undefined) {
-boost::throw_exception(std::runtime_error("unvisited vertex found"));
-    }
-    if ( bond_sign_[e]*map_[boost::source(e, g)] != map_[boost::target(e, g)])
+  void check(edge_descriptor e, const Graph& g)
+  {
+    if (bond_sign_[e]*map_[boost::source(e, g)] != map_[boost::target(e, g)])
       *check_ = true;
   }
+
 private:
   PropertyMap map_;
   bool* check_;
@@ -103,13 +97,13 @@ public:
   BondMap() {}
   BondMap(const map_type& map, const graph_type& graph)
     : site_type_(alps::get_or_default(alps::site_type_t(), graph, 0)),
-      bond_type_(alps::get_or_default(alps::bond_type_t(), graph, 0)),          
+      bond_type_(alps::get_or_default(alps::bond_type_t(), graph, 0)),
       map_(&map),
       graph_(&graph)
   {}
             
   template <class E>
-  int operator[] (const E& e) {
+  int operator[] (const E& e) const {
     return const_cast<map_type&>(*map_)[boost::tie(bond_type_[e], site_type_[boost::source(e,*graph_)], site_type_[boost::target(e,*graph_)])];
 }
 private:
@@ -129,19 +123,28 @@ struct nonzero_edge_weight {
   nonzero_edge_weight(EdgeWeightMap weight) : m_weight(weight) { }
   template <typename Edge>
   bool operator()(const Edge& e) const {
-    return  m_weight[e]!=0;
+    return m_weight[e]!=0;
   }
-  mutable EdgeWeightMap m_weight;
+  EdgeWeightMap m_weight;
 };
 
 template <class G, class M>
 bool is_frustrated(const G& graph, M bond_map)
 {  
   typedef G graph_type;
-  boost::filtered_graph<graph_type,nonzero_edge_weight<M> > g(graph,nonzero_edge_weight<M>(bond_map));
+  boost::filtered_graph<graph_type, nonzero_edge_weight<M> >
+    g(graph, nonzero_edge_weight<M>(bond_map));
   boost::vector_property_map<int> map; // map to store the relative signs of the sublattices
   bool check=false; // no sign problem
-  boost::depth_first_search(g, boost::visitor(parity::make_sign_visitor(g,map, &check, bond_map)));
+  std::vector<boost::default_color_type> vcolor_map(boost::num_vertices(g));
+  std::vector<boost::default_color_type> ecolor_map(boost::num_edges(g));
+  boost::undirected_dfs(
+    g,
+    parity::make_sign_visitor(g, map, &check, bond_map),
+    boost::make_iterator_property_map(vcolor_map.begin(),
+      boost::get(vertex_index_t(), g)),
+    boost::make_iterator_property_map(ecolor_map.begin(),
+      boost::get(edge_index_t(), g)));
   return check; // no sign problem=>not frustrated
 }
                                  
