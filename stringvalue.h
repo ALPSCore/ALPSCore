@@ -191,7 +191,7 @@ public:
   lexical_cast_string(const T& x)
     : base_type(boost::lexical_cast<base_type>(x)) {}
 
-  bool valid() const { return !empty(); }
+  bool valid() const { return !StringBase::empty(); }
 
   template <class T> T get() const
   { return detail::lexical_cast_string_helper<base_type, T>::get(*this); }
