@@ -385,11 +385,12 @@ void SimpleBinning<T>::output_scalar(std::ostream& out) const
   if(count())
   {
     out << ": " << std::setprecision(6) << mean() << " +/- " << std::setprecision(3) << error() << "; tau = " << std::setprecision(3)
-        << tau() << std::setprecision(6) << std::endl;
+        << tau() << std::setprecision(6);
     if (converged_errors()==MAYBE_CONVERGED)
       out << " WARNING: check error convergence";
     if (converged_errors()==NOT_CONVERGED)
       out << " WARNING: ERRORS NOT CONVERGED!!!";
+    out << std::endl;
     if (binning_depth()>1)
     { 
       // detailed errors
