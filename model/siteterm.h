@@ -166,7 +166,7 @@ SiteTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b,
         term.partial_evaluate(evaluator);
         int j = states.index(evaluator.state());
 	    if (is_nonzero(term)) {
-          if (is_nonzero(mat[i][j].first)) {
+          if (is_nonzero(mat[i][j].first) && j<states.size()) {
             if (mat[i][j].second != evaluator.fermionic())
               boost::throw_exception(std::runtime_error("Inconsistent fermionic nature of a matrix element: "
                                     + boost::lexical_cast<std::string,Term>(*tit) + " is inconsistent with "

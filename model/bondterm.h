@@ -154,7 +154,6 @@ bool BondOperatorSplitter<I>::can_evaluate_function(const std::string& name, con
 template <class I, class STATE1, class STATE2>
 Expression BondOperatorEvaluator<I, STATE1, STATE2>::partial_evaluate_function(const std::string& name, const Expression& arg) const
 {
-  //std::cerr << "BondOperatorEvaluator<I, STATE1, STATE2>::partial_evaluate_function(" << name << ")\n";
   typename operator_map::const_iterator op = super_type::ops_.find(name);
   Expression e;
   if (op!=super_type::ops_.end()) {  // evaluate operator
@@ -177,7 +176,6 @@ Expression BondOperatorEvaluator<I, STATE1, STATE2>::partial_evaluate_function(c
   }
   else
     e=ParameterEvaluator(*this).partial_evaluate_function(name,arg);
-  //std::cerr << "BondOperatorEvaluator<I, STATE1, STATE2>::partial_evaluate_function(" << name << ") returns " << e << "\n";
   return e;
 }
 
@@ -254,12 +252,10 @@ BondTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b1,
         for (typename Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
           BondOperatorEvaluator<I> evaluator(states1[i1], states2[i2], basis1, basis2, source(), target(), parms, ops);
           Term term(*tit);
-          //std::cerr << term << " evaluates to ";
           term.partial_evaluate(evaluator);
-          //std::cerr << term << "\n";
           int j1=states1.index(evaluator.state().first);
           int j2=states2.index(evaluator.state().second);
-	      if (is_nonzero(term)) {
+	      if (is_nonzero(term) && j1<dim1 && j2<dim2) {
             if (is_nonzero(mat[i1][i2][j1][j2].first)) {
               if (mat[i1][i2][j1][j2].second.first != evaluator.fermionic().first || 
                   mat[i1][i2][j1][j2].second.second != evaluator.fermionic().second) 

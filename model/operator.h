@@ -78,12 +78,10 @@ public:
   Direction direction() const { return right_to_left; }
   super_type::value_type evaluate(const std::string& name) const
   {
-    //std::cerr << "OperatorEvaluator::evaluate(" << name << ")\n";
     return partial_evaluate(name).value();
   }
   super_type::value_type evaluate_function(const std::string& name, const Expression& arg) const
   {
-    //std::cerr << "OperatorEvaluator::evaluate_function(" << name << ")\n";
     return partial_evaluate_function(name,arg).value();
   }
 
@@ -96,7 +94,6 @@ template <class STATE>
 boost::tuple<STATE, Expression,bool>
 OperatorDescriptor<I>::apply(STATE state, const SiteBasisDescriptor<I>& basis, const ParameterEvaluator& eval) const
 {
-  //std::cerr << "OperatorDescriptor<I>::apply(" << name_ << ")\n";
   // set quantum numbers as parameters
   Parameters p=eval.parameters();
   p.copy_undefined(basis.get_parameters());
@@ -129,7 +126,6 @@ OperatorDescriptor<I>::apply(STATE state, const SiteBasisDescriptor<I>& basis, c
     if (basis[i].fermionic() && is_odd(get_quantumnumber(state,i)))
       fermion_count=!fermion_count;
   }
-  //std::cerr << "OperatorDescriptor<I>::apply(" << name_ << ") returns " << e << "\n";
   return boost::make_tuple(state,e,fermionic);
 }
 
