@@ -28,8 +28,8 @@
 
 /* $Id$ */
 
-#ifndef ALPS_LATTICE_GRAPH_PROPERTIES_H
-#define ALPS_LATTICE_GRAPH_PROPERTIES_H
+#ifndef ALPS_LATTICE_BOUNDARY_H
+#define ALPS_LATTICE_BOUNDARY_H
 
 #include <alps/config.h>
 #include <alps/lattice/propertymap.h>

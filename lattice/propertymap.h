@@ -41,6 +41,29 @@
 
 namespace alps {
 
+template <class V, class K=std::size_t> // singleton_property_map and constant_property_map
+class singleton_property_map {
+public:
+  typedef K key_type;
+  typedef V value_type;
+  typedef V& reference;
+  typedef boost::lvalue_property_map_tag category;
+
+  singleton_property_map(V v=V()) : v_(v) {}
+
+  operator V () const { return v_;}
+
+  const singleton_property_map<V>& operator=(const V& v) { v_=v; return *this;}
+
+  template <class T>
+  V& operator[](T ) { return v_;}
+
+  template <class T>
+  const V& operator[](T ) const { return v_;}
+private:
+  V v_;
+};
+
 namespace detail {
 
 // helper functions to probe for graph properties
@@ -248,28 +271,6 @@ struct copy_property_helper<SRC,DST,PROPERTY,true>
   }
 };
 
-template <class V, class K=std::size_t> // singleton_property_map and constant_property_map
-class singleton_property_map {
-public:
-  typedef K key_type;
-  typedef V value_type;
-  typedef V& reference;
-  typedef boost::lvalue_property_map_tag category;
-
-  singleton_property_map(V v=V()) : v_(v) {}
-
-  operator V () const { return v_;}
-
-  const singleton_property_map<V>& operator=(const V& v) { v_=v; return *this;}
-
-  template <class T>
-  V& operator[](T ) { return v_;}
-
-  template <class T>
-  const V& operator[](T ) const { return v_;}
-private:
-  V v_;
-};
 
 /*
 template <class Container, class Graph, class Property>
