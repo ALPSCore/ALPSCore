@@ -30,11 +30,7 @@
 #include <alps/parser/parser.h>
 #include <alps/xml.h>
 
-#ifndef BOOST_NO_VOID_RETURNS
-# include <boost/functional.hpp>
-#else
-# include <boost/functional_void.hpp>
-#endif
+#include <boost/functional.hpp>
 #include <boost/filesystem/path.hpp>
 #include <map>
 
@@ -257,11 +253,7 @@ namespace alps {
 /// output all observables in an ObservableSet
 inline std::ostream& operator<<(std::ostream& out,const alps::ObservableSet& obs)
 {
-#ifndef BOOST_NO_VOID_RETURNS
   obs.do_for_all(boost::bind2nd(boost::mem_fun_ref(&alps::Observable::output),out));
-#else
-  obs.do_for_all(boost::bind2nd_void(boost::mem_fun_ref(&alps::Observable::output),out));
-#endif
   return out;
 }
 

@@ -42,8 +42,9 @@ public:
   HistogramObservable(const std::string& n, T min, T max, T stepsize=1);
   void set_range(T min, T max, T stepsize=1);
   virtual Observable* clone() const {return new HistogramObservable<T,INT>(*this);}
-  virtual void reset(bool forthermalization=false);
-  virtual void output(std::ostream&) const;
+  virtual ALPS_DUMMY_VOID reset(bool forthermalization=false);
+  virtual ALPS_DUMMY_VOID output(std::ostream&) const;
+
 #ifndef ALPS_WITHOUT_OSIRIS
   virtual uint32_t version_id() const { return version;}
   virtual void save(ODump& dump) const;
@@ -127,15 +128,18 @@ inline void HistogramObservable<T,INT>::add(const T& x)
 }
 
 template <class T, class INT>
-inline void HistogramObservable<T,INT>::reset(bool forthermalization)
+inline ALPS_DUMMY_VOID
+HistogramObservable<T,INT>::reset(bool forthermalization)
 {
   thermalcount_ = (forthermalization ? count_ : 0);
   count_=0;
   std::fill(histogram_.begin(),histogram_.end(),0);
+  ALPS_RETURN_VOID
 }
 
 template <class T, class INT>
-inline void HistogramObservable<T,INT>::output(std::ostream& out) const
+inline ALPS_DUMMY_VOID
+HistogramObservable<T,INT>::output(std::ostream& out) const
 {
   out << name() << ":\n";
   for (std::size_t i=0;i<histogram_.size();++i)
@@ -149,6 +153,7 @@ inline void HistogramObservable<T,INT>::output(std::ostream& out) const
         out << "[" << min_+i*stepsize_ << "," << min_+(i+1)*stepsize_ << "[";
     out << ": " << histogram_[i] << " entries.\n";
   }
+  ALPS_RETURN_VOID
 }
 
 #ifndef ALPS_WITHOUT_OSIRIS

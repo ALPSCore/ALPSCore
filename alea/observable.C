@@ -136,9 +136,10 @@ void Observable::set_thermalization(uint32_t)
   boost::throw_exception(std::logic_error("alps::Observable::set_thermalization not implemented for this observable."));
 }
 
-void Observable::compact()
+ALPS_DUMMY_VOID Observable::compact()
 {
   // do nothing
+  ALPS_RETURN_VOID
 }
 
 void Observable::rename(const std::string& newname)

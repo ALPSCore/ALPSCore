@@ -156,11 +156,7 @@ bool ObservableSet::has(const std::string& name) const
 
 void ObservableSet::reset(bool why)
 {
-#ifndef BOOST_NO_VOID_RETURNS
   do_for_all(boost::bind2nd(boost::mem_fun_ref(&Observable::reset),why));
-#else
-  do_for_all(boost::bind2nd_void(boost::mem_fun_ref(&Observable::reset),why));
-#endif
 }
 
 void ObservableSet::addObservable(Observable* obs)

@@ -23,11 +23,7 @@
 #include <alps/osiris.h>
 
 #include <algorithm>
-#ifndef BOOST_NO_VOID_RETURNS
-# include <boost/functional.hpp>
-#else
-# include <boost/functional_void.hpp>
-#endif
+#include <boost/functional.hpp>
 
 namespace alps {
 namespace scheduler {
@@ -92,7 +88,7 @@ void Info::checkpoint()
 }
 
 
-void Info::write_xml(std::ostream& xml) const
+ALPS_DUMMY_VOID Info::write_xml(std::ostream& xml) const
 {
   std::string time1=ctime(&startt);
   time1.erase(time1.size()-1,1);
@@ -107,6 +103,7 @@ void Info::write_xml(std::ostream& xml) const
   xml << "<TO>" << time2 << "</TO>\n";
   xml << "<MACHINE><NAME>" << host << "</NAME></MACHINE>\n";
   xml << "</EXECUTED>\n";
+  ALPS_RETURN_VOID
 }
 
 
@@ -159,11 +156,7 @@ void TaskInfo::halt()
 
 void TaskInfo::write_xml(std::ostream& xml) const
 {
-#ifndef BOOST_NO_VOID_RETURNS
   std::for_each(begin(),end(),boost::bind2nd(boost::mem_fun_ref(&Info::write_xml),xml));
-#else
-  std::for_each(begin(),end(),boost::bind2nd_void(boost::mem_fun_ref(&Info::write_xml),xml));
-#endif
 }
 
 } // namespace scheduler

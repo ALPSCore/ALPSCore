@@ -85,7 +85,7 @@ public:
   void read_xml_scalar(std::istream&, const XMLTag&);
   void read_xml_vector(std::istream&, const XMLTag&);
   
-  void set_thermalization(uint32_t todiscard);
+  ALPS_DUMMY_VOID set_thermalization(uint32_t todiscard);
   uint32_t get_thermalization() const;
   bool can_set_thermalization() const { return can_set_thermal_ && !nonlinear_operations_;}
 
@@ -117,7 +117,7 @@ public:
         return SimpleObservableData<typename obs_value_slice<T,S>::value_type>(*this,s);
       }
 
-  void compact();
+  ALPS_DUMMY_VOID compact();
   
 #ifndef ALPS_WITHOUT_OSIRIS
   void extract_timeseries(ODump& dump) const;
@@ -563,12 +563,13 @@ void SimpleObservableData<T>::transform(const SimpleObservableData<X>& x,
 }
 
 template <class T>
-inline void SimpleObservableData<T>::compact()
+inline ALPS_DUMMY_VOID SimpleObservableData<T>::compact()
 {
   analyze();
   values_.clear();
   values2_.clear();
   jack_.clear();
+  ALPS_RETURN_VOID
 }
 
 template <class T> template <class OPV, class OPR>
@@ -968,7 +969,8 @@ inline uint32_t SimpleObservableData<T>::get_thermalization() const
 }
 
 template <class T>
-inline void SimpleObservableData<T>::set_thermalization(uint32_t thermal)
+inline ALPS_DUMMY_VOID
+SimpleObservableData<T>::set_thermalization(uint32_t thermal)
 {
   if (nonlinear_operations_)
     boost::throw_exception(std::runtime_error("cannot set thermalization after nonlinear operations"));
@@ -981,6 +983,7 @@ inline void SimpleObservableData<T>::set_thermalization(uint32_t thermal)
     valid_ = false;
     jack_valid_ = false;
   }
+  ALPS_RETURN_VOID
 }
 
 template <class T>

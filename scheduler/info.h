@@ -49,7 +49,7 @@ public:
   
   // write the info
   void save (ODump&) const;
-  void write_xml(std::ostream&) const;
+  ALPS_DUMMY_VOID write_xml(std::ostream&) const;
   void load (IDump& dump,int version=MCDump_task_version);
 private:
    // how was it stopped? ... for historic reasons

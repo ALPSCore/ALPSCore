@@ -106,13 +106,15 @@ class Observable
   virtual void rename(const std::string& newname);
 
   /** reset the observable */
-  virtual void reset(bool forthermalization=false) = 0;
+  virtual ALPS_DUMMY_VOID reset(bool forthermalization=false) = 0;
   
   /** output the result */
-  virtual void output(std::ostream&) const = 0;
+  virtual ALPS_DUMMY_VOID output(std::ostream&) const = 0;
+
   /** output the result */
   virtual void write_xml(std::ostream&,const boost::filesystem::path& fn_hdf5=boost::filesystem::path()) const;
   virtual void write_xml(oxstream& oxs, const boost::filesystem::path& fn_hdf5=boost::filesystem::path()) const;
+
 #ifndef ALPS_WITHOUT_OSIRIS
   /// return a version ID uniquely identifying the class
   virtual uint32_t version_id() const =0;
@@ -156,7 +158,7 @@ class Observable
 //@}
 
 /// compact the data, useful e.g. for time series when I just need th result
-  virtual void compact();
+  virtual ALPS_DUMMY_VOID compact();
 
 protected:
   virtual void merge(const Observable&);

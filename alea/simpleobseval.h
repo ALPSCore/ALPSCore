@@ -31,11 +31,8 @@
 #include <alps/parser/parser.h>
 
 #include <algorithm>
-#ifndef BOOST_NO_VOID_RETURNS
-# include <boost/functional.hpp> // for mem_fun_ref & bind2nd
-#else
-# include <boost/functional_void.hpp>
-#endif
+#include <boost/functional.hpp>
+
 #include <iostream>
 
 #ifndef ALPS_WITHOUT_OSIRIS
@@ -94,7 +91,7 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
     Observable::rename(n);
     automatic_naming_ = a;
   }
-  void reset(bool = false);
+  ALPS_DUMMY_VOID reset(bool = false);
   
   bool has_tau() const { collect(); return all_.has_tau(); }
   bool has_variance() const { collect(); return all_.has_variance(); }
@@ -122,7 +119,7 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
   uint32_t number_of_runs() const;
   Observable* get_run(uint32_t) const;
   
-  void compact();
+  ALPS_DUMMY_VOID compact();
   
   //@{
   //@name Transformations
@@ -157,7 +154,7 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
   const SimpleObservableEvaluator<T>& operator/=(const SimpleObservableEvaluator<X>&);
   //@}
   
-  void output(std::ostream&) const;
+  ALPS_DUMMY_VOID output(std::ostream&) const;
   void output_scalar(std::ostream&) const;
   void output_vector(std::ostream&) const;
   
@@ -356,11 +353,7 @@ inline const SimpleObservableEvaluator<T>&  SimpleObservableEvaluator<T>::operat
 template <class T>
 inline void SimpleObservableEvaluator<T>::set_thermalization(uint32_t todiscard)
 {
-#ifndef BOOST_NO_VOID_RETURNS
   std::for_each(runs_.begin(), runs_.end(), boost::bind2nd(boost::mem_fun_ref(&SimpleObservableData<T>::set_thermalization), todiscard));
-#else
-  std::for_each(runs_.begin(), runs_.end(), boost::bind2nd_void(boost::mem_fun_ref(&SimpleObservableData<T>::set_thermalization), todiscard));
-#endif
   valid_ = false;
 }
 
@@ -418,24 +411,27 @@ inline Observable* SimpleObservableEvaluator<T>::get_run(uint32_t i) const
 
 
 template <class T>
-inline void SimpleObservableEvaluator<T>::reset(bool)
+inline ALPS_DUMMY_VOID SimpleObservableEvaluator<T>::reset(bool)
 {
   runs_.clear();
   all_ = SimpleObservableData<T>();
+  ALPS_RETURN_VOID
 }
 
 template <class T>
-inline void SimpleObservableEvaluator<T>::compact()
+inline ALPS_DUMMY_VOID SimpleObservableEvaluator<T>::compact()
 {
   collect(); 
   std::for_each(runs_.begin(), runs_.end(), boost::mem_fun_ref(&SimpleObservableData<T>::compact));
   all_.compact();
+  ALPS_RETURN_VOID
 }
 
 template <class T>
-void SimpleObservableEvaluator<T>::output(std::ostream& out) const
+ALPS_DUMMY_VOID SimpleObservableEvaluator<T>::output(std::ostream& out) const
 {
   output_helper<obs_value_traits<T>::array_valued>::output(*this,out);
+  ALPS_RETURN_VOID
 }
 
 template <class T>

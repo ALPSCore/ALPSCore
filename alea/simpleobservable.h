@@ -217,11 +217,12 @@ public:
   
   Observable* clone() const {return new BasicSimpleObservable<T,BINNING>(*this);}
 
-  void output(std::ostream& o) const;
+  ALPS_DUMMY_VOID output(std::ostream&) const;
 
-  void reset(bool forthermalization=false) 
+  ALPS_DUMMY_VOID reset(bool forthermalization=false) 
   {
     b_.reset(forthermalization);
+    ALPS_RETURN_VOID
   }
 
   result_type mean() const {return b_.mean();}
@@ -268,7 +269,7 @@ public:
   void extract_timeseries(ODump& dump) const { b_.extract_timeseries(dump);}
 #endif
 
-  void compact() { b_.compact();}
+  ALPS_DUMMY_VOID compact() { b_.compact(); ALPS_RETURN_VOID }
   virtual std::string evaluation_method(Target t) const 
   { return (t==Mean || t== Variance) ? std::string("simple") : b_.evaluation_method();}
 
@@ -405,7 +406,8 @@ inline Observable* SimpleObservable<T>::convert_mergeable() const
 
 
 template <class T,class BINNING>
-void BasicSimpleObservable<T,BINNING>::output(std::ostream& o) const 
+ALPS_DUMMY_VOID
+BasicSimpleObservable<T,BINNING>::output(std::ostream& o) const 
 { 
   if(count()==0)
   {
@@ -417,6 +419,7 @@ void BasicSimpleObservable<T,BINNING>::output(std::ostream& o) const
     o << name ();
     output_helper<obs_value_traits<T>::array_valued>::output(b_,o);
   }
+  ALPS_RETURN_VOID
 }
 
 template <class T,class BINNING>
