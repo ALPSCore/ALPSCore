@@ -140,8 +140,9 @@ std::size_t get_quantumnumber_index(const std::string& n, const SiteBasisDescrip
 {
   for (std::size_t i=0;i<b.size();++i) {
     if (b[i].name()==n)
-      break;
+      return i;
   }
+  return b.size();
 }
 
 template <class S, class I>
