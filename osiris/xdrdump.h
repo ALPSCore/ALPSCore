@@ -26,6 +26,7 @@
 #include <alps/config.h>
 #include <alps/osiris/dump.h>
 #include <boost/filesystem/path.hpp>
+#include <boost/cstdint.hpp>
 #include <cstdio>
 #include <string>
 #include <stdio.h>
