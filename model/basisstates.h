@@ -45,9 +45,11 @@ public:
   typedef SiteBasisStates<I,S> site_state_type;
   typedef std::vector<site_state_type> base_type;
   typedef typename base_type::const_iterator const_iterator;
+  BasisStatesDescriptor() {}
   template <class G> BasisStatesDescriptor(const BasisDescriptor<I>& b, const G& graph);
   const BasisDescriptor<I>& basis() const { return basis_;}
   const SiteBasisDescriptor<I>& site_basis(int i) const { return site_basis_[i];}
+  bool set_parameters(const Parameters& p) { return basis_.set_parameters(p);}
 private:
   BasisDescriptor<I> basis_;
   std::vector<SiteBasisDescriptor<I> > site_basis_;

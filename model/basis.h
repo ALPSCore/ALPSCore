@@ -63,6 +63,7 @@ public:
   typedef typename base_type::const_iterator const_iterator;
   typedef std::map<std::string,SiteBasisDescriptor<I> > sitebasis_map_type;
   typedef std::vector<std::pair<std::string,half_integer<I> > > constraints_type;
+  typedef std::vector<std::pair<std::string,alps::Expression> > unevaluated_constraints_type;
 
   BasisDescriptor() {}
   BasisDescriptor(const XMLTag&, std::istream&,const sitebasis_map_type& bases_= sitebasis_map_type());
@@ -71,11 +72,13 @@ public:
   const std::string& name() const { return name_;}
   bool set_parameters(const Parameters& p);
   const constraints_type& constraints() const { return evaluated_constraints_;}
+  const unevaluated_constraints_type& unevaluated_constraints() const { return unevaluated_constraints_;}
+  const unevaluated_constraints_type& all_constraints() const { return constraints_;}
 private:
   std::string name_;
-  typedef std::vector<std::pair<std::string,alps::Expression> > unevaluated_constraints_type;
-  void check_constraints();
+  void check_constraints(const Parameters& =Parameters());
   unevaluated_constraints_type constraints_;
+  unevaluated_constraints_type unevaluated_constraints_;
   constraints_type evaluated_constraints_;
 };
 
@@ -89,19 +92,20 @@ bool BasisDescriptor<I>::set_parameters(const Parameters& p)
   bool valid=true;
   for (iterator it=begin();it!=end();++it)
     valid = valid && it->set_parameters(p);
-  evaluated_constraints_.clear();
-  for (typename unevaluated_constraints_type::iterator it=constraints_.begin();it!=constraints_.end();++it)
-    it->second.partial_evaluate(p);
-  check_constraints();
+  check_constraints(p);
   return valid;
 }
 
 template <class I>
-void BasisDescriptor<I>::check_constraints()
+void BasisDescriptor<I>::check_constraints(const Parameters& p)
 {
+  evaluated_constraints_.clear();
+  unevaluated_constraints_.clear();
   for (typename unevaluated_constraints_type::iterator it=constraints_.begin();it!=constraints_.end();++it)
-    if (it->second.can_evaluate())
-      evaluated_constraints_.push_back(std::make_pair(it->first,half_integer<I>(it->second.value())));
+    if (it->second.can_evaluate(p))
+      evaluated_constraints_.push_back(std::make_pair(it->first,half_integer<I>(it->second.value(p))));
+    else
+      unevaluated_constraints_.push_back(*it);
 }
 
 

@@ -38,6 +38,11 @@ template <class I=short>
 class ModelFactory
 {
 public:  
+
+  typedef BasisDescriptor<I> basis_descriptor_type;
+  typedef half_integer<I> half_integer_type;
+  typedef QuantumNumber<I> quantum_number_type;
+  
   ModelFactory(alps::Parameters& p) // it updates the parameter object passed to it!
    : model_library_(p), 
      model_(model_library_.hamiltonian(p["MODEL"])) 
@@ -52,7 +57,9 @@ public:
   
   HamiltonianDescriptor<I>& model() { return model_;}
   const HamiltonianDescriptor<I>& model() const { return model_;}
-   
+  basis_descriptor_type& basis() { return model().basis();}
+  const basis_descriptor_type& basis() const { return model().basis();}
+     
 private:
    ModelLibrary model_library_;
    HamiltonianDescriptor<I> model_;

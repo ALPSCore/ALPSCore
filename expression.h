@@ -127,7 +127,9 @@ public:
   Expression(const detail::Evaluatable& e) : terms_(1,Term(e)) {}
   operator bool() const;
   double value(const Evaluator& p=Evaluator()) const;
+  double value(const Parameters& p) const { return value(ParameterEvaluator(p));}
   bool can_evaluate(const Evaluator& p=Evaluator()) const;
+  bool can_evaluate(const Parameters& p) const { return can_evaluate(ParameterEvaluator(p));}
   void partial_evaluate(const Evaluator& p=Evaluator());
   void partial_evaluate(const Parameters& p) { partial_evaluate(ParameterEvaluator(p));}
   void output(std::ostream&) const;
