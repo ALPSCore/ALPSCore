@@ -64,6 +64,12 @@ inline T abs2(const std::complex<T>& x) {
   return x.real()*x.real()+x.imag()*x.imag();
 }
 
+template<class T>
+bool is_zero(T x) { return x == T(0); }
+
+template<class T>
+bool is_nonzero(T x) { return !is_zero(x); }
+
 } // end namespace
 
 #endif // ALPS_MATH_HPP
