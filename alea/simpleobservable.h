@@ -504,7 +504,7 @@ void AbstractSimpleObservable<T>::write_xml_scalar(oxstream& oxs, const boost::f
 void AbstractSimpleObservable<T>::write_xml_scalar(oxstream& oxs, const boost::filesystem::path&) const
 #endif
 {
-  if (count()>1)
+  if (count())
   {
     std::string mm = evaluation_method(Mean);
     std::string em = evaluation_method(Error);
