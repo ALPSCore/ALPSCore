@@ -30,7 +30,7 @@ include $(top_srcdir)/config/include-build.mk
 
 libs_program = -lalps -lcomm-sgl $(XML_LIBS) $(BASE_LIBS)
 
-TESTOK = detailedbinning.ok simpleobseval.ok
+TESTOK = detailedbinning.ok observableset.ok simpleobseval.ok
 
 include $(top_srcdir)/config/rules.mk
 include $(srcdir)/Makefile.dep
