@@ -21,7 +21,7 @@
 **************************************************************************/
 
 #include <alps/parameters.h>
-
+#include <alps/expression.h>
 #include <alps/cctype.h>
 #include <alps/parser/parser.h>
 
@@ -31,6 +31,11 @@
 #include <stdexcept>
 
 namespace alps {
+
+double Parameters::evaluate(const key_type& name) const
+{
+  return Expression((*this)[name]).value(*this);
+}
 
 void Parameters::parse(std::istream& is)
 {
