@@ -44,7 +44,7 @@ class half_integer {
 public:
   typedef I integer_type;
   half_integer() : val_(0) {}
-  half_integer(double x) :val_(integer_type(2*x+0.01)) {}
+  half_integer(double x) :val_(integer_type(2*x+(x<0?-0.01:0.01))) {}
   half_integer& operator=(const half_integer& x) {
     val_ = x.val_;
     return *this;
