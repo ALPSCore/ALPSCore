@@ -85,22 +85,19 @@ public:
   bool unregister_type(key_type k) 
   {
     iterator it = creators_.find(k);
-    if (it != creators_.end()) {
-      creators_.erase(it);
-      return true;
-    }
-    else
-      return false;
+    if (it == creators_.end()) return false;
+    creators_.erase(it);
+    return true;
   }
 
   base_type* create(key_type k) const
   {
     const_iterator it = creators_.find(k);
-    if (it != creators_.end() && it->second)
-      return it->second->create();
-    else
+    if (it == creators_.end() || it->second == 0)
       boost::throw_exception(std::runtime_error("Type not registered in alps::factory::create"));
+    return it->second->create();
   }
+
 private:
   typedef std::map<key_type,pointer_type> map_type;
   typedef typename map_type::iterator iterator;

@@ -72,6 +72,7 @@ public:
         state_|=mask_;
       else
         state_&=mask_;
+      return *this;
     }
   private:
     I& state_;
