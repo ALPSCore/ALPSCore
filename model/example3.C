@@ -31,33 +31,32 @@ int main()
     // create the library from an XML file
     alps::ModelLibrary lib(std::cin);
 
-    std::cerr << "yep" << std::endl;
-    // write site term matrices
-//     std::cout << "HHardcoreBosonSite =\n" << lib.hamiltonian("hardcore boson").site_term().matrix<alps::Expression>(
-//              lib.hamiltonian("hardcore boson").basis().site_basis(),
-// 	     lib.simple_operators()) << "\n";
+     // write site term matrices
+     std::cout << "HHardcoreBosonSite =\n" << lib.hamiltonian("hardcore boson").site_term().matrix<alps::Expression>(
+              lib.hamiltonian("hardcore boson").basis().site_basis(),
+ 	     lib.simple_operators()) << "\n";
     std::cout << "HSpinSite =\n" << lib.hamiltonian("spin").site_term().matrix<alps::Expression>(
              lib.hamiltonian("spin").basis().site_basis(),
 	     lib.simple_operators()) << "\n";
     
     // write bond term matrices
-//     std::cout << "HHardcoreBosonBond =\n" << lib.hamiltonian("hardcore boson").bond_term().matrix<alps::Expression>(
-//              lib.hamiltonian("hardcore boson").basis().site_basis(),
-// 	     lib.hamiltonian("hardcore boson").basis().site_basis(),
-// 	     lib.simple_operators()) << "\n";
+     std::cout << "HHardcoreBosonBond =\n" << lib.hamiltonian("hardcore boson").bond_term().matrix<alps::Expression>(
+              lib.hamiltonian("hardcore boson").basis().site_basis(),
+ 	     lib.hamiltonian("hardcore boson").basis().site_basis(),
+ 	     lib.simple_operators()) << "\n";
     std::cout << "HSpinBond =\n" << lib.hamiltonian("spin").bond_term().matrix<alps::Expression>(
              lib.hamiltonian("spin").basis().site_basis(),
 	     lib.hamiltonian("spin").basis().site_basis(),
 	     lib.simple_operators()) << "\n";
 
- //    alps::Parameters parms;
-//     parms["Nmax"]=2;
-//     alps::HamiltonianDescriptor<short> ham = lib.hamiltonian("boson");
-//     ham.set_parameters(parms);
-//     std::cout << "HBosonSite =\n" << ham.site_term().matrix<alps::Expression>(
-//              ham.basis().site_basis(),lib.simple_operators()) << "\n";
-//     std::cout << "HBosonBond =\n" << ham.bond_term().matrix<alps::Expression>( ham.basis().site_basis(),
-//              ham.basis().site_basis(),lib.simple_operators()) << "\n";
+     alps::Parameters parms;
+     parms["Nmax"]=2;
+     alps::HamiltonianDescriptor<short> ham = lib.hamiltonian("boson");
+     ham.set_parameters(parms);
+     std::cout << "HBosonSite =\n" << ham.site_term().matrix<alps::Expression>(
+              ham.basis().site_basis(),lib.simple_operators()) << "\n";
+     std::cout << "HBosonBond =\n" << ham.bond_term().matrix<alps::Expression>( ham.basis().site_basis(),
+              ham.basis().site_basis(),lib.simple_operators()) << "\n";
 
 #ifndef BOOST_NO_EXCEPTIONS
 }
