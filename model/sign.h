@@ -1,12 +1,12 @@
 /***************************************************************************
-* ALPS++/model library
+* ALPS/model library
 *
 * model/sign.h    checks for sign problem
 *
 * $Id$
 *
-* Copyright (C) 2003-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
-*                            and Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 2003-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+*                            Synge Todo <wistaria@comp-phys.org>,
 *
 * Permission is hereby granted, free of charge, to any person or organization 
 * obtaining a copy of the software covered by this license (the "Software") 
@@ -60,7 +60,7 @@ public:
   typedef typename boost::graph_traits<Graph>::vertex_descriptor vertex_descriptor;
 
   // constructor
-  SignVisitor(PropertyMap& map, bool* check, BondPropertyMap bondsign ) :
+  SignVisitor(PropertyMap& map, bool* check, BondPropertyMap bondsign) :
     map_(map), check_(check), bond_sign_(bondsign) { *check_ = false; }
 
   // callback member functions
@@ -94,8 +94,8 @@ boost::throw_exception(std::runtime_error("unvisited vertex found"));
   }
 private:
   PropertyMap map_;
-  BondPropertyMap bond_sign_;
   bool* check_;
+  BondPropertyMap bond_sign_;
 };
 
 template<class Graph, class PropertyMap, class BondPropertyMap>
@@ -148,16 +148,16 @@ template <class I, class G>
 bool has_sign_problem(const HamiltonianDescriptor<I>& ham, const G& graph, const std::map<std::string,OperatorDescriptor<I> >& ops, const Parameters& p) {
   typedef G graph_type;
 
-  alps::property_map<alps::site_type_t, graph_type, int>::const_type
+  typename alps::property_map<alps::site_type_t, graph_type, int>::const_type
   site_type(alps::get_or_default(alps::site_type_t(), graph, 0));
 
-  alps::property_map<alps::bond_type_t,  graph_type, int>::const_type
+  typename alps::property_map<alps::bond_type_t,  graph_type, int>::const_type
   bond_type(alps::get_or_default(alps::bond_type_t(), graph,0));
 
   // build and check bond matrices for all bond types
   std::map<boost::tuple<int,int,int>,int> bond_sign;
-  for (boost::graph_traits<graph_type>::edge_iterator it=boost::edges(graph).first;
-       it!=boost::edges(graph).second ; ++it) {
+  for (typename boost::graph_traits<graph_type>::edge_iterator
+	 it=boost::edges(graph).first; it!=boost::edges(graph).second ; ++it) {
     int btype  = bond_type[*it];
     int stype1 = site_type[boost::source(*it,graph)];
     int stype2 = site_type[boost::target(*it,graph)];

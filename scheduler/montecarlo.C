@@ -1,11 +1,12 @@
 /***************************************************************************
-* ALPS++/scheduler library
+* ALPS/scheduler library
 *
 * scheduler/montecarlo.C   A class to store parameters
 *
 * $Id$
 *
 * Copyright (C) 2002-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+*                            Synge Todo <wistaria@comp-phys.org>,
 *
 * Permission is hereby granted, free of charge, to any person or organization 
 * obtaining a copy of the software covered by this license (the "Software") 
@@ -111,7 +112,7 @@ void MCSimulation::write_xml_body(oxstream& out, const boost::filesystem::path& 
 }
 
 
-static void MCRun::print_copyright(std::ostream& out) 
+void MCRun::print_copyright(std::ostream& out) 
 {
   out << "Non-copyrighted program. Please insert your own copyright statement by overwriting the print_copyright static member function of your MCRun class or the print_copyright virtual function of your factory class.\n\n";
 }

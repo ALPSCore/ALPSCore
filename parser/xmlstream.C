@@ -247,6 +247,6 @@ oxstream& oxstream::operator<<(const detail::stylesheet_t& c)
 
 } // end namespace alps
 
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__ICC) // ICC 8.0 defines __GNUC__!
 template boost::re_detail::perl_matcher<__gnu_cxx::__normal_iterator<char const*, std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<boost::sub_match<__gnu_cxx::__normal_iterator<char const*, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, boost::regex_traits<char>, std::allocator<char> >;
 #endif

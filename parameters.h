@@ -136,7 +136,8 @@ public:
 
   void push_back(const parameter_type& p, bool allow_overwrite=false);
   
-  void push_back(const key_type& k, const value_type& v, bool allow_overwrite=false) {
+  void push_back(const key_type& k, const value_type& v,
+		 bool allow_overwrite=false) {
     push_back(Parameter(k, v),allow_overwrite);
   }
 

@@ -47,7 +47,7 @@
 
 namespace alps {
 
-void Parameters::push_back(const parameter_type& p, bool allow_overwrite=false) 
+void Parameters::push_back(const parameter_type& p, bool allow_overwrite) 
 {
   if (p.key().empty())
     boost::throw_exception(std::runtime_error("empty key"));

@@ -1,11 +1,12 @@
 /***************************************************************************
-* ALPS++/scheduler library
+* ALPS/scheduler library
 *
 * scheduler/scheduler.C
 *
 * $Id$
 *
 * Copyright (C) 1994-2003 by Matthias Troyer <troyer@comp-phys.org>,
+*                            Synge Todo <wistaria@comp-phys.org>,
 *
 * Permission is hereby granted, free of charge, to any person or organization 
 * obtaining a copy of the software covered by this license (the "Software") 
@@ -38,7 +39,6 @@
 
 #include <alps/scheduler/scheduler.h>
 #include <alps/scheduler/types.h>
-#include <alps/scheduler/copyright.h>
 #include <alps/config.h>
 #include <alps/osiris.h>
 #include <alps/copyright.h>
@@ -48,6 +48,12 @@
 
 namespace alps {
 namespace scheduler {
+
+void print_copyright(std::ostream& out) {
+  out << "using the ALPS parallelizing scheduler\n";
+  out << "  copyright (c) 1994-@CURRENT_YEAR@ by Matthias Troyer <troyer@comp-phys.org>.\n";
+  out << "  see Lecture Notes in Computer Science, Vol. 1505, p. 191 (1998).\n\n";
+}
 
 // global variable: the scheduler on this node
 Scheduler* theScheduler=0;

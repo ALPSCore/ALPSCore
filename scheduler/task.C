@@ -1,11 +1,12 @@
 /***************************************************************************
-* ALPS++/scheduler library
+* ALPS/scheduler library
 *
 * scheduler/task.C   A class to store parameters
 *
 * $Id$
 *
-* Copyright (C) 2003 by Matthias Troyer <troyer@comp-phys.org>
+* Copyright (C) 2003 by Matthias Troyer <troyer@comp-phys.org>,
+*                       Synge Todo <wistaria@comp-phys.org>,
 *
 * Permission is hereby granted, free of charge, to any person or organization 
 * obtaining a copy of the software covered by this license (the "Software") 
@@ -51,7 +52,7 @@ namespace alps {
 namespace scheduler {
 
 
-static void Task::print_copyright(std::ostream& out) 
+void Task::print_copyright(std::ostream& out) 
 {
   out << "Non-copyrighted program. Please insert your own copyright statement by overwriting the print_copyright static member function of your Task class.\n";
 }
@@ -59,9 +60,9 @@ static void Task::print_copyright(std::ostream& out)
 
 Task::Task(const ProcessList& w,const boost::filesystem::path& filename)
   : AbstractTask(w),
+    finished_(false),
     infilename(filename),
-    started_(false),
-    finished_(false)
+    started_(false)
 {
   parse_task_file(true);
 }
@@ -121,21 +122,21 @@ void Task::run()
 }
 
 // start an extra run on a new node
-void Task::add_process(const Process& p)
+void Task::add_process(const Process& /* p */)
 {
   boost::throw_exception(std::runtime_error("Cannot add a process to a single process task"));
 }
 
 
 // remove one run : hope that a checkpoint was created before!!!
-void Task::delete_process(const Process& p)
+void Task::delete_process(const Process& /* p */)
 {
   boost::throw_exception(std::runtime_error("Cannot delete a process from a single process task"));
 }
 
 
 // is it finished???
-bool Task::finished(double& more_time) const
+bool Task::finished(double& /* more_time */) const
 {
   return finished_;
 }

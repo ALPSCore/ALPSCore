@@ -6,8 +6,9 @@
 * $Id$
 *
 * Copyright (C) 2003-2003 by Matthias Troyer <troyer@comp-phys.org>,
-*                            Martin Joestingmeier
-*                            Axel Grzesik <axel@th.physik.uni-bonn.de>
+*                            Martin Joestingmeier,
+*                            Axel Grzesik <axel@th.physik.uni-bonn.de>,
+*                            Synge Todo <wistaria@comp-phys.org>,
 *
 * Permission is hereby granted, free of charge, to any person or organization 
 * obtaining a copy of the software covered by this license (the "Software") 
@@ -94,9 +95,9 @@ public:
   template <class J> half_integer operator-(half_integer<J> x) { half_integer res(*this); return res-=x;}
   I distance(half_integer x) 
   { 
-    assert(std::abs(val_)%2==std::abs(x.val_)%2);
     if((*this==max())!=(x==max())) return std::numeric_limits<I>::max();
     if(std::numeric_limits<I>::is_signed && (*this==min())!=(x==min())) return std::numeric_limits<I>::max();
+    assert(std::abs(val_)%2==std::abs(x.val_)%2);
     return (val_-x.val_)/2;
   }
   static half_integer max() { return half_integer(std::numeric_limits<I>::max(),0);}
@@ -179,7 +180,7 @@ public:
   bool set_parameters(const Parameters&); // returns true if it can be evaluated
   bool depends_on(const Parameters::key_type& s) const;
   bool depends_on(const QuantumNumber& qn) const { return (dependency_.find(qn)!=dependency_.end()); }
-  bool add_dependency(const QuantumNumber& qn) { dependency_.insert(qn); }
+  void add_dependency(const QuantumNumber& qn) { dependency_.insert(qn); }
 private:
   std::string _name;
   std::string min_string_;
@@ -288,7 +289,7 @@ bool QuantumNumber<I>::evaluate(const Parameters& p) const
   max_exp_.partial_evaluate(eval);
   max_exp_.simplify();
   valid_=true;
-  if (min_exp_==" - infinity") 
+  if (min_exp_==" - infinity")
     _min = value_type::min();
   else if (min_exp_.can_evaluate(eval))
     _min = min_exp_.value();

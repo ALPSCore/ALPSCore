@@ -1,11 +1,12 @@
 /***************************************************************************
-* ALPS++/scheduler library 
+* ALPS/scheduler library 
 *
 * scheduler/scheduler.h
 *
 * $Id$
 *
 * Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+*                            Synge Todo <wistaria@comp-phys.org>,
 *
 * Permission is hereby granted, free of charge, to any person or organization 
 * obtaining a copy of the software covered by this license (the "Software") 
@@ -49,8 +50,12 @@
 #include <alps/parameterlist.h>
 #include <boost/smart_ptr.hpp>
 
+#include <iostream>
+
 namespace alps {
 namespace scheduler {
+
+void print_copyright(std::ostream& out);
 
 //=======================================================================
 // Scheduler
