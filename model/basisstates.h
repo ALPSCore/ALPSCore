@@ -77,9 +77,10 @@ public:
     I mask_;
   };
   
-  IntegerState(representation_type x) : state_(x) {}
+  IntegerState(representation_type x=0) : state_(x) {}
+  
   template <class J>
-  IntegerState(const std::vector<J>& x) 
+  IntegerState(const std::vector<J>& x) : state_(0)
   { 
     for (int i=0;i<x.size();++i)  
       if(x[i])
@@ -149,7 +150,7 @@ public:
     if (use_lookup_)
       return lookup_[x];
     else
-      return BasisStates<J,S,SS>::lookup(x);
+      return BasisStates<J,S,SS>::index(x);
   }
 
 private:
@@ -177,7 +178,7 @@ template <class I, class S, class SS>
 bool BasisStates<I,S,SS>::check_sort() const
 {
   for (int i=0;i<size()-1;++i)
-    if ((*this)[i]>=(*this)[i+1])
+    if (!((*this)[i]<(*this)[i+1]))
       return false;
   return true;
 }
@@ -204,8 +205,11 @@ BasisStates<I,S,SS>::BasisStates(const BasisStatesDescriptor<I,SS>& b)
     push_back(idx);
     ++idx[last];
   }
-  if (!check_sort())
-    boost::throw_exception(std::logic_error("Basis not sorted correctly"));
+  if (!check_sort()) {
+    std::sort(begin(),end());
+    if (!check_sort())
+      boost::throw_exception(std::logic_error("Basis not sorted correctly"));
+  }
 }
 
 } // namespace alps

@@ -83,7 +83,27 @@ LatticeDescriptor::LatticeDescriptor(const XMLTag& intag, std::istream& p)
         else
           boost::throw_exception(std::runtime_error("invalid element <" + tag.name + "> encountered in <BASIS>"));
         }
-      }
+    }
+    else if (tag.name=="RECIPROCALBASIS")  {
+      if (tag.type==XMLTag::SINGLE)
+        continue;
+      while(true)  {
+        tag=parse_tag(p);
+        if(tag.name=="/RECIPROCALBASIS")
+          break;
+        else if (tag.name=="VECTOR")  {
+          if (tag.type==XMLTag::SINGLE)
+            boost::throw_exception(std::runtime_error("coordinate contents expected in <VECTOR>"));
+          reciprocal_basis_vectors_.push_back(read_vector<vector_type>(parse_content(p),dimension()));
+          tag=parse_tag(p);
+          if(tag.name!="/VECTOR")
+  	    boost::throw_exception(std::runtime_error("invalid element <"+tag.name+
+                        "> encountered in <VECTOR>"));
+        }
+        else
+          boost::throw_exception(std::runtime_error("invalid element <" + tag.name + "> encountered in <RECIPROCALBASIS>"));
+        }
+    }
     else
       boost::throw_exception(std::runtime_error("invalid tag <" + tag.name + "> encountered in <LATTICE>"));
   }
@@ -108,6 +128,14 @@ void LatticeDescriptor::write_xml(oxstream& xml) const
       no_linebreak(xml) << vector_writer(basis_vectors_[i]) << end_tag("VECTOR");
     }
     xml << end_tag("BASIS");	
+  }
+  if (!reciprocal_basis_vectors_.empty()) {
+    xml << start_tag("RECIPROCALBASIS");
+    for (int i=0;i<reciprocal_basis_vectors_.size();++i) {
+      xml << start_tag("VECTOR");
+      no_linebreak(xml) << vector_writer(reciprocal_basis_vectors_[i]) << end_tag("VECTOR");
+    }
+    xml << end_tag("RECIPROCALBASIS");	
   }
   xml << end_tag("LATTICE");
 }

@@ -62,18 +62,29 @@ public:
   template <class B2,class V2>
   coordinate_lattice(const coordinate_lattice<B2,V2>& l)
    : parent_lattice_type(l),
-     basis_vectors_(alps::basis_vectors(l).second-alps::basis_vectors(l).first)
+     basis_vectors_(alps::basis_vectors(l).second-alps::basis_vectors(l).first),
+     reciprocal_basis_vectors_(alps::reciprocal_basis_vectors(l).second-alps::reciprocal_basis_vectors(l).first)
   {
     typename lattice_traits<coordinate_lattice<B2,V2> >::basis_vector_iterator it;
     int i=0;
     for(it=alps::basis_vectors(l).first; it!=alps::basis_vectors(l).second;++it,++i)
       std::copy(it->begin(),it->end(),std::back_inserter(basis_vectors_[i]));
+    for(it=alps::reciprocal_basis_vectors(l).first; it!=alps::reciprocal_basis_vectors(l).second;++it,++i)
+      std::copy(it->begin(),it->end(),std::back_inserter(reciprocal_basis_vectors_[i]));
   }
   
   template <class InputIterator>
   coordinate_lattice(const unit_cell_type& u, InputIterator first, InputIterator last)
   : parent_lattice_type (u),
     basis_vectors_(first,last)
+    {}
+
+  template <class InputIterator1,class InputIterator2>
+  coordinate_lattice(const unit_cell_type& u, InputIterator1 first1, InputIterator1 last1, 
+                     InputIterator2 first2, InputIterator2 last2)
+  : parent_lattice_type (u),
+    basis_vectors_(first1,last1),
+    reciprocal_basis_vectors_(first2,last2)
     {}
 
   coordinate_lattice(const unit_cell_type& u)
@@ -96,8 +107,15 @@ public:
     return std::make_pair(basis_vectors_.begin(),basis_vectors_.end());
   }
 
+  std::pair<basis_vector_iterator,basis_vector_iterator>
+  reciprocal_basis_vectors() const
+  {
+    return std::make_pair(reciprocal_basis_vectors_.begin(),reciprocal_basis_vectors_.end());
+  }
+
 protected:
   std::vector<vector_type> basis_vectors_;
+  std::vector<vector_type> reciprocal_basis_vectors_;
 };
 
 template <class B, class V>

@@ -118,6 +118,14 @@ basis_vectors(const Lattice& l)
 }
 
 template <class Lattice>
+inline std::pair<typename lattice_traits<Lattice>::basis_vector_iterator,
+                 typename lattice_traits<Lattice>::basis_vector_iterator>
+reciprocal_basis_vectors(const Lattice& l)
+{
+  return l.reciprocal_basis_vectors();
+}
+
+template <class Lattice>
 inline typename lattice_traits<Lattice>::vector_type
 coordinate(const typename lattice_traits<Lattice>::cell_descriptor& c, 
        const typename lattice_traits<Lattice>::vector_type& p, const Lattice& l)
