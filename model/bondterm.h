@@ -239,6 +239,7 @@ BondTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b1,
   // parse expression and store it as sum of terms
   Expression ex(term());
   ex.flatten();
+  ex.simplify();
   // fill the matrix
     site_basis<I> states1(basis1);
     site_basis<I> states2(basis2);
@@ -256,7 +257,7 @@ BondTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b1,
           term.partial_evaluate(evaluator);
           unsigned int j1=states1.index(evaluator.state().first);
           unsigned int j2=states2.index(evaluator.state().second);
-	      if (is_nonzero(term) && j1<dim1 && j2<dim2) {
+	  if (is_nonzero(term) && j1<dim1 && j2<dim2) {
             if (is_nonzero(mat[i1][i2][j1][j2].first)) {
               if (mat[i1][i2][j1][j2].second.first != evaluator.fermionic().first || 
                   mat[i1][i2][j1][j2].second.second != evaluator.fermionic().second) 

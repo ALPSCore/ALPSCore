@@ -118,14 +118,12 @@ OperatorDescriptor<I>::apply(STATE state, const SiteBasisDescriptor<I>& basis, c
           e.negate();
       }
       get_quantumnumber(state,i)+=it->second; // apply change to QN
-       if (!basis[i].valid(get_quantumnumber(state,i))) {
-         e=Expression();
-         break;
-       }
     }
     if (basis[i].fermionic() && is_odd(get_quantumnumber(state,i)))
       fermion_count=!fermion_count;
   }
+  if (!basis.valid(state))
+    e=Expression();
   return boost::make_tuple(state,e,fermionic);
 }
 

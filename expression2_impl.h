@@ -284,14 +284,16 @@ template<class T>
 typename Term<T>::value_type Term<T>::value(const Evaluator<T>& p) const
 {
   value_type val(1.);
-  if (p.direction() == Evaluator<T>::left_to_right)
+  if (p.direction() == Evaluator<T>::left_to_right)  {
     for (int i = 0; i < terms_.size() && is_nonzero(val); ++i)
       val *= terms_[i].value(p);
-  else
+}
+  else {
     for (int i = terms_.size()-1; i >= 0 && is_nonzero(val); --i) {
       value_type tmp=terms_[i].value(p);
       val *=tmp;
     }
+  }
   if (is_negative() && is_nonzero(val))
     val = val*(-1.);
   return val;

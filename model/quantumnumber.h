@@ -56,6 +56,7 @@ public:
   QuantumNumberDescriptor(const XMLTag&, std::istream&);
 
   bool valid(value_type x) const { return x >= min() && x<= max(); }
+
   const std::string min_expression() const { return min_string_; }
   const std::string max_expression() const { return max_string_; }
   value_type min() const

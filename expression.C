@@ -61,8 +61,6 @@ namespace detail {
 Evaluatable::operator double() const {
   if (!can_evaluate()) {
     std::cerr << "Was trying to evaluate " << *this << "\n";
-//    int* x=0;
-//    std::cerr << *x;
     boost::throw_exception(std::runtime_error("Cannot evaluate expression"));
   }
   return value();

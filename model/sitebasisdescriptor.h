@@ -83,13 +83,18 @@ private:
 template <class I>
 bool SiteBasisDescriptor<I>::valid(const std::vector<half_integer<I> >& x) const
 {
+  alps::Parameters p(parms_);
   if(!valid_ && !evaluate())
     boost::throw_exception(std::runtime_error("Cannot evaluate quantum numbers in site basis " +name()));
   if (super_type::size() != x.size())
     return false;
-  for (int i=0;i<super_type::size();++i)
+  for (int i=0;i<super_type::size();++i) {
+    (*this)[i].set_parameters(p);
     if (!(*this)[i].valid(x[i]))
       return false;
+    else
+      p[(*this)[i].name()]=x[i];
+  }
   return true;
 }
 
