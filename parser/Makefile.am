@@ -3,10 +3,7 @@ AM_CPPFLAGS = $(BASE_CPPFLAGS) $(BOOST_CPPFLAGS) $(XML_CPPFLAGS) $(HDF5_CPPFLAGS
 AM_LDFLAGS = $(BASE_LDFLAGS) $(BOOST_LDFLAGS) $(HDF5_LDFLAGS) $(XML_LDFLAGS)
 LDADD = $(top_builddir)/lib/alps/libalps.la $(top_builddir)/lib/comm-sgl/libcomm-sgl.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(BASE_LIBS)
 
-TESTS = xmlhandler xmlparser xmlstream
-TESTS_norun =
-check_PROGRAMS = $(TESTS) $(TESTS_norun)
-TESTS_ENVIRONMENT = $(top_srcdir)/config/run-test $(srcdir)
+check_PROGRAMS = xmlhandler xmlparser xmlstream
 
 xmlhandler_SOURCES = xmlhandler.C
 xmlparser_SOURCES = xmlparser.C

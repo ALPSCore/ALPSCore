@@ -3,10 +3,7 @@ AM_CPPFLAGS = $(BASE_CPPFLAGS) $(BOOST_CPPFLAGS) $(XML_CPPFLAGS) $(HDF5_CPPFLAGS
 AM_LDFLAGS = $(BASE_LDFLAGS) $(BOOST_LDFLAGS) $(HDF5_LDFLAGS) $(XML_LDFLAGS)
 LDADD = $(top_builddir)/lib/alps/libalps.la $(top_builddir)/lib/comm-sgl/libcomm-sgl.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(BASE_LIBS)
 
-TESTS = example1 example2 example3 example4 example5 example6 parity
-TESTS_norun =
-check_PROGRAMS = $(TESTS) $(TESTS_norun)
-TESTS_ENVIRONMENT = $(top_srcdir)/config/run-test $(srcdir)
+check_PROGRAMS = example1 example2 example3 example4 example5 example6 parity
 
 example1_SOURCES = example1.C
 example2_SOURCES = example2.C

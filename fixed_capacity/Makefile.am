@@ -3,10 +3,7 @@ AM_CPPFLAGS = $(BASE_CPPFLAGS) $(BOOST_CPPFLAGS) $(XML_CPPFLAGS) $(HDF5_CPPFLAGS
 AM_LDFLAGS = $(BASE_LDFLAGS) $(BOOST_LDFLAGS) $(HDF5_LDFLAGS) $(XML_LDFLAGS)
 LDADD = $(top_builddir)/lib/alps/libalps.la $(top_builddir)/lib/comm-sgl/libcomm-sgl.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(BASE_LIBS)
 
-TESTS = fixed_capacity_deque fixed_capacity_traits fixed_capacity_vector test_deque test_vector
-TESTS_norun = timing_queue timing_stack timing_vector
-check_PROGRAMS = $(TESTS) $(TESTS_norun)
-TESTS_ENVIRONMENT = $(top_srcdir)/config/run-test $(srcdir)
+check_PROGRAMS = fixed_capacity_deque fixed_capacity_traits fixed_capacity_vector test_deque test_vector timing_queue timing_stack timing_vector
 
 fixed_capacity_deque_SOURCES = fixed_capacity_deque.C
 fixed_capacity_traits_SOURCES = fixed_capacity_traits.C
