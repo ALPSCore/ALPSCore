@@ -259,9 +259,11 @@ inline void HistogramObservable<T>::load(IDump& dump)
 }
 
 #endif
+}
 
 #include <alps/alea/histogrameval.h>
 
+namespace alps {
 template <class T>
 HistogramObservableEvaluator<T> HistogramObservable<T>::make_evaluator() const
 {
