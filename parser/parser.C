@@ -5,7 +5,7 @@
 *
 * $Id$
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>,
 *                            Prakash Dayal <prakash@comp-phys.org>,
 *
@@ -47,6 +47,24 @@ std::string parse_identifier(std::istream& in)
   std::string name;
   while (detail::is_identifier_char(c)) {
     name+=c;
+    c=in.get();
+  }
+  in.putback(c);
+  return name;
+}
+
+std::string parse_parameter_name(std::istream& in) 
+{
+  char c;
+  in >> c;
+  std::string name;
+  while (detail::is_identifier_char(c) || c=='[') {
+    name+=c;
+	if (c=='[') 
+	  do {
+	    c=in.get();
+		name+=c;
+	  } while (c!=']');
     c=in.get();
   }
   in.putback(c);

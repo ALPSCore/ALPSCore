@@ -5,7 +5,7 @@
 *
 * $Id$
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>,
 *
 * This software is part of the ALPS library, published under the 
@@ -47,6 +47,8 @@ inline bool is_identifier_char(char c)
 } // end namespace detail
 
 extern std::string parse_identifier(std::istream& in);
+
+extern std::string parse_parameter_name(std::istream& in);
 
 extern std::string read_until(std::istream& in, char end);
 

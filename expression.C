@@ -321,7 +321,7 @@ Factor::Factor(std::istream& in, bool inv)
   }
   else if (std::isalnum(c)) {
     in.putback(c);
-    std::string name=parse_identifier(in);
+    std::string name=parse_parameter_name(in);
     in>>c;
     if(in && c=='(')
       term_.reset(new detail::Function(in,name));

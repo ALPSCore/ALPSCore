@@ -118,7 +118,7 @@ void Parameters::parse(std::istream& is)
     while (c==';' || c==',') is >> c;  // ignore extra semi-colons  
     if (is && std::isalpha(c)) {
       is.putback(c);
-      std::string key = parse_identifier(is);
+      std::string key = parse_parameter_name(is);
       std::string value;
 
       check_character(is, '=', "= expected in assignment while parsing Parameters");
