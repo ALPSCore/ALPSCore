@@ -5,7 +5,7 @@
 * ALPS Libraries
 *
 * Copyright (C) 1994-2004 by Matthias Troyer <troyer@comp-phys.org>,
-*                            Fabian Stoeckli
+*                            Fabian Stoeckli <fabstoec@phys.ethz.ch>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under

@@ -199,7 +199,7 @@ inline void HistogramObservable<T>::set_range(T min, T max, T stepsize)
   max_=max;
   stepsize_=stepsize;
   //std::cout<<"*** "<<(max-min)/stepsize<<std::endl;
-  histogram_.resize(static_cast<size_type>((max-min)/stepsize));
+  histogram_.resize(static_cast<size_type>((max-min)/stepsize)+0.5);
 }
 
 template <class T>
