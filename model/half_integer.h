@@ -83,9 +83,9 @@ public:
   half_integer& operator++() { val_ += 2; return *this; }
   half_integer& operator--() { val_ -= 2; return *this; }
   half_integer operator++(int)
-    { half_integer tmp(*this); ++(*this); return tmp; }
+  { half_integer tmp(*this); ++(*this); return tmp; }
   half_integer operator--(int)
-    { half_integer tmp(*this); --(*this); return tmp; }
+  { half_integer tmp(*this); --(*this); return tmp; }
 
   half_integer& operator+=(integer_type x) { val_ += 2*x; return *this; }
   half_integer& operator-=(integer_type x) { val_ -= 2*x; return *this; }
@@ -130,6 +130,7 @@ public:
     res.val_ = std::abs(res.val_);
     return res;
   }
+
 private:
   half_integer(integer_type i, int /* to distinguish */) : val_(i) {}
   integer_type val_;
@@ -154,20 +155,6 @@ inline std::ostream& operator<<(std::ostream& os, const half_integer<I>& x)
     return os << x.get_twice()/2;
   return os << x.get_twice() << "/2";
 }
-
-
-template <class I>
-double to_double(half_integer<I> x) 
-{ 
-  return x.to_double();
-}
-
-template <class I>
-I to_integer(half_integer<I> x) 
-{ 
-  return x.to_integer();
-}
-
 
 template <class I>
 inline std::istream& operator>>(std::istream& is, half_integer<I>& x)
@@ -194,14 +181,26 @@ inline std::istream& operator>>(std::istream& is, half_integer<I>& x)
   return is;
 }
 
+template <class I>
+inline double to_double(const half_integer<I>& x) 
+{ 
+  return x.to_double();
+}
+
+template <class I>
+inline I to_integer(const half_integer<I>& x) 
+{ 
+  return x.to_integer();
+}
+
 template <class T>
-bool is_odd(T x)
+inline bool is_odd(T x)
 {
   return (x%2);
 }
 
 template <class I>
-bool is_odd(half_integer<I> x)
+inline bool is_odd(const half_integer<I>& x)
 {
   return (std::abs(x.get_twice())%4==2);
 }
@@ -212,10 +211,11 @@ bool is_odd(half_integer<I> x)
 namespace std {
 
 template <class I>
-alps::half_integer<I> abs(alps::half_integer<I> x)
+inline alps::half_integer<I> abs(const alps::half_integer<I>& x)
 {
   return x.abs();
 }
+
 } // namespace std
 
 #endif
