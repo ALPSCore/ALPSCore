@@ -5,7 +5,7 @@
 #
 # $Id$
 #
-# Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+# Copyright (C) 2001-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 #                            Synge Todo <wistaria@comp-phys.org>,
 #
 # This software is part of the ALPS library, published under the 
@@ -36,7 +36,7 @@ top_builddir = ./@top_builddir@
 
 include $(top_srcdir)/config/include-build.mk
 
-libs_program = -lalps -lcomm-sgl $(XML_LIBS) $(BASE_LIBS)
+libs_program = -lalps -lcomm-sgl $(BOOST_LIBS) $(XML_LIBS) $(BASE_LIBS)
 
 LOCAL_CONFIG = lattices.xml models.xml parameters
 EXAMPLE = example1 example2 example3 example4 example5 example6 example7 example8 example9 example10 example11 example12

@@ -5,7 +5,7 @@
 #
 # $Id$
 #
-# Copyright (C) 2002-2003 by Synge Todo <wistaria@comp-phys.org>
+# Copyright (C) 2002-2004 by Synge Todo <wistaria@comp-phys.org>
 #
 # This software is part of the ALPS library, published under the 
 # ALPS Library License; you can use, redistribute it and/or modify 
@@ -35,7 +35,7 @@ top_builddir = ./@top_builddir@
 
 include $(top_srcdir)/config/include-build.mk
 
-libs_program = -lalps -lcomm-sgl $(XML_LIBS) $(BASE_LIBS)
+libs_program = -lalps -lcomm-sgl $(BOOST_LIBS) $(XML_LIBS) $(BASE_LIBS)
 
 EXAMPLE = timing_queue timing_stack timing_vector
 TESTOK = fixed_capacity_deque.ok fixed_capacity_traits.ok fixed_capacity_vector.ok test_deque.ok test_vector.ok
