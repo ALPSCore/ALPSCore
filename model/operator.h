@@ -89,7 +89,7 @@ public:
   }
   double evaluate_function(const std::string& name, const Expression& arg) const
   {
-      return partial_evaluate_function(name,arg).value();
+    return partial_evaluate_function(name,arg).value();
   }
 
 protected:
@@ -101,20 +101,26 @@ protected:
 template <class I, class T>
 class OperatorEvaluator : public ParameterEvaluator<T>
 {
+private:
+  typedef ParameterEvaluator<T> BASE_;
+
 public:
   typedef T value_type;
   typedef std::map<std::string, OperatorDescriptor<I> > operator_map;
 
   OperatorEvaluator(const Parameters& p, const operator_map& o)
-    : ParameterEvaluator<T>(p), ops_(o) {}
-  typename Evaluator<T>::Direction direction() const { return right_to_left; }
+    : BASE_(p), ops_(o) {}
+  typename Evaluator<T>::Direction direction() const
+  { 
+    return BASE_::right_to_left;
+  }
   value_type evaluate(const std::string& name) const
   {
-    return partial_evaluate(name).value();
+    return this->partial_evaluate(name).value();
   }
   value_type evaluate_function(const std::string& name, const Expression<T>& arg) const
   {
-      return partial_evaluate_function(name,arg).value();
+    return this->partial_evaluate_function(name,arg).value();
   }
 
 protected:
@@ -181,7 +187,7 @@ OperatorDescriptor<I>::apply(STATE state, const SiteBasisDescriptor<I>& basis, c
   // apply operators
   for (int i=0;i<basis.size();++i) {
     const_iterator it=this->find(basis[i].name());
-    if (it!=end()) {
+    if (it!=super_type::end()) {
       get_quantumnumber(state,i)+=it->second; // apply change to QN
        if (!basis[i].valid(get_quantumnumber(state,i))) {
          e=Expression<T>(0.);

@@ -270,11 +270,13 @@ private:
 namespace detail {
 
 template<class T>
-class Block : public Expression<T>
-{
+class Block : public Expression<T> {
+private:
+  typedef Expression<T> BASE_;
+
 public:
   Block(std::istream&);
-  Block(const Expression<T>& e) : Expression<T>(e) {}
+  Block(const Expression<T>& e) : BASE_(e) {}
   void output(std::ostream&) const;
   Evaluatable<T>* clone() const { return new Block<T>(*this); }
   void flatten();
@@ -567,6 +569,12 @@ inline U evaluate(const Term<T>& ex, const Evaluator<T>& ev = Evaluator<T>())
 }
 
 template<class U, class T>
+inline U evaluate(const char* v, const Evaluator<T>& ev)
+{
+  return detail::evaluate_helper<U>::value(Expression<T>(std::string(v)), ev);
+}
+
+template<class U, class T>
 inline U evaluate(const std::string& v, const Evaluator<T>& ev)
 {
   return detail::evaluate_helper<U>::value(Expression<T>(v), ev);
@@ -579,6 +587,12 @@ inline U evaluate(const StringValue& v, const Evaluator<T>& ev)
 }
 
 template<class U>
+inline U evaluate(const char* v)
+{
+  return evaluate<U,U>(v, Evaluator<typename detail::evaluate_helper<U>::value_type>());
+}
+
+template<class U>
 inline U evaluate(const std::string& v)
 {
   return evaluate<U,U>(v, Evaluator<typename detail::evaluate_helper<U>::value_type>());
@@ -588,6 +602,12 @@ template<class U>
 inline U evaluate(const StringValue& v)
 {
   return evaluate<U,U>(v, Evaluator<typename detail::evaluate_helper<U>::value_type>());
+}
+
+template<class U>
+inline U evaluate(const char* v, const Parameters& p)
+{
+  return evaluate<U,typename detail::evaluate_helper<U>::value_type>(v, ParameterEvaluator<typename detail::evaluate_helper<U>::value_type>(p));
 }
 
 template<class U>

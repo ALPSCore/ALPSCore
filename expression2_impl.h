@@ -453,7 +453,7 @@ detail::Block<T>::Block(std::istream& in) : Expression<T>(in)
 template<class T>
 boost::shared_ptr<detail::Evaluatable<T> > detail::Block<T>::flatten_one()
 {
-  boost::shared_ptr<Expression<T> > ex = flatten_one_expression();
+  boost::shared_ptr<Expression<T> > ex = BASE_::flatten_one_expression();
   if (ex)
     return boost::shared_ptr<Evaluatable<T> >(new Block<T>(*ex));
   else
@@ -589,7 +589,7 @@ template<class T>
 void detail::Block<T>::output(std::ostream& os) const
 {
   os << "(";
-  Expression<T>::output(os);
+  BASE_::output(os);
   os << ")";
 }
 
