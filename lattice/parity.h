@@ -5,7 +5,7 @@
 *
 * $Id$
 *
-* Copyright (C) 2001-2002 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This program is free software; you can redistribute it and/or
@@ -26,7 +26,13 @@
 #include <alps/config.h>
 #include <alps/lattice/graphproperties.h>
 
-#include <boost/graph/depth_first_search.hpp>
+#define ALPS_USE_DFS2 // define this if you want non-recursive version of DFS
+
+#ifndef ALPS_USE_DFS2
+# include <boost/graph/depth_first_search.hpp>
+#else
+# include <boost/depth_first_search_2.hpp> // non-recursive version of DFS
+#endif
 #include <boost/graph/visitors.hpp>
 #include <boost/throw_exception.hpp>
 #include <stdexcept>
@@ -99,7 +105,11 @@ bool set_parity(Map map, const Graph& g)
   typedef typename parity::ParityVisitor<Graph, Map> visitor_type;
   bool check = true;
   visitor_type v(map, &check);
+#ifndef ALPS_USE_DFS2
   boost::depth_first_search(g, boost::visitor(v));
+#else
+  boost::depth_first_search_2(g, boost::visitor(v));
+#endif
   if (!check) {
     for (vertex_iterator itr = boost::vertices(g).first;
 	  itr != boost::vertices(g).second; ++itr) {
