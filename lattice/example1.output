@@ -42,8 +42,8 @@
 <LATTICEGRAPH name="simple cubic lattice">
   <FINITELATTICE>
     <LATTICE ref="simple cubic lattice"/>
-    <PARAMETER name="H" default="W"/>
     <PARAMETER name="W" default="L"/>
+    <PARAMETER name="H" default="W"/>
     <EXTENT dimension="1" size="L"/>
     <EXTENT dimension="2" size="W"/>
     <EXTENT dimension="3" size="H"/>
@@ -84,7 +84,7 @@
   </FINITELATTICE>
   <UNITCELL ref="simple2d"/>
 </LATTICEGRAPH>
-<GRAPH name="5-site dimerized" vertices="5" edges="4">
+<GRAPH name="5-site dimerized" dimension="134918288" vertices="5" edges="4">
   <VERTEX id="1" type="0"></VERTEX>
   <VERTEX id="2" type="0"></VERTEX>
   <VERTEX id="3" type="1"><COORDINATE>1 2 3 4 5</COORDINATE></VERTEX>
