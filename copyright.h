@@ -5,7 +5,8 @@
 *
 * $Id$
 *
-* Copyright (C) 2003 by Matthias Troyer <troyer@comp-phys.org>
+* Copyright (C) 2003-2004 by Matthias Troyer <troyer@comp-phys.org>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS library, published under the 
 * ALPS Library License; you can use, redistribute it and/or modify 
@@ -15,7 +16,6 @@
 * You should have received a copy of the ALPS Library License along with 
 * the ALPS Library; see the file License.txt. If not, the license is also 
 * available from http://alps.comp-phys.org/. 
-
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -29,6 +29,7 @@
 
 #ifndef ALPS_COPYRIGHT_H
 #define ALPS_COPYRIGHT_H
+
 #include <iostream>
 
 namespace alps {
@@ -39,5 +40,3 @@ void print_license(std::ostream& out);
 }
 
 #endif
-
-

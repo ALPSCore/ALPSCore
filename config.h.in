@@ -31,6 +31,12 @@
 #ifndef ALPS_CONFIG_H
 #define ALPS_CONFIG_H
 
+// ALPS version
+#undef ALPS_VERSION
+
+// latest publish year of ALPS
+#undef ALPS_YEAR
+
 //
 // C/C++ headers
 //
