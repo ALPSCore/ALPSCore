@@ -36,6 +36,8 @@
 #include <boost/pending/property.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/any.hpp>
+#include <boost/mpl/if.hpp>
+
 
 #include <string>
 #include <vector>
@@ -93,16 +95,6 @@ struct existing_property<boost::detail::error_property_not_found,DEFAULT> {
   typedef DEFAULT type;
 };
 
-template <bool FLAG, class T1, class T2>
-struct choose {
-  typedef T1 type;
-};
-
-template <class T1, class T2>
-struct choose<false,T1,T2> {
-  typedef T2 type;
-};
-
 } // end namespace detail
 
 
@@ -134,8 +126,8 @@ struct has_property<P, boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>, D>
     typename boost::property_value<VP,P>::type,D>::type vertex_property_type;
   typedef typename detail::existing_property<
     typename boost::property_value<GP,P>::type,D>::type graph_property_type;
-  typedef typename detail::choose<edge_property,edge_property_type,
-    typename detail::choose<vertex_property,vertex_property_type,
+  typedef typename boost::if_c<edge_property,edge_property_type,
+    typename boost::if_c<vertex_property,vertex_property_type,
     graph_property_type>::type>::type property_type;
   typedef property_type type;
 };
@@ -150,8 +142,6 @@ const bool has_property<P, boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>,D>::graph
 template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, class P, class D>
 const bool has_property<P, boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>,D>::any_property;
 #endif
-
-#if  !defined(__IBMCPP__) || defined (__APPLE__)
 
 template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, class P, class D>
 struct has_property<P, const boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>, D>
@@ -171,8 +161,8 @@ struct has_property<P, const boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>, D>
     typename boost::property_value<VP,P>::type,D>::type vertex_property_type;
   typedef typename detail::existing_property<
     typename boost::property_value<GP,P>::type,D>::type graph_property_type;
-  typedef typename detail::choose<edge_property,edge_property_type,
-    typename detail::choose<vertex_property,vertex_property_type,
+  typedef typename boost::if_c<edge_property,edge_property_type,
+    typename boost::if_c<vertex_property,vertex_property_type,
     graph_property_type>::type>::type property_type;
   typedef property_type type;
 };
@@ -188,25 +178,22 @@ template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, 
 const bool has_property<P, const boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>,D>::any_property;
 #endif
 
-#endif 
-
-
 template <class P, class G, class Default>
 struct property_map
 {
   typedef 
-    typename detail::choose<has_property<P,G>::graph_property,
+    typename boost::if_c<has_property<P,G>::graph_property,
       typename has_property<P,G>::graph_property_type&,
-      typename detail::choose<has_property<P,G>::any_property,
+      typename boost::if_c<has_property<P,G>::any_property,
         typename boost::property_map<G,P>::type,
         singleton_property_map<Default> 
       >::type
     >::type type;
 
   typedef
-    typename detail::choose<has_property<P,G>::graph_property,
+    typename boost::if_c<has_property<P,G>::graph_property,
       const typename has_property<P,G>::graph_property_type&,
-      typename detail::choose<has_property<P,G>::any_property,
+      typename boost::if_c<has_property<P,G>::any_property,
         typename boost::property_map<G,P>::const_type,
         singleton_property_map<Default>
       >::type
@@ -217,9 +204,9 @@ template <class P, class G, class Default>
 struct property_map<P, const G, Default>
 {
   typedef
-    typename detail::choose<has_property<P,G>::graph_property,
+    typename boost::if_c<has_property<P,G>::graph_property,
       const typename has_property<P,G>::graph_property_type&,
-      typename detail::choose<has_property<P,G>::any_property,
+      typename boost::if_c<has_property<P,G>::any_property,
         typename boost::property_map<G,P>::const_type,
         singleton_property_map<Default>
       >::type
@@ -238,13 +225,16 @@ template <>
 struct put_get_helper<true>
 {
   template <class P, class G, class T>
-  static typename property_map<P,G,int>::type get (P p, G& g, T) {
+  static typename property_map<P,G,T>::type get (P p, G& g, T) {
     return put_get_helper<has_property<P,G>::graph_property>::get_property(p,g);
   }
 
   template <class P, class G>
   static typename property_map<P,G,int>::type get_property (P p, G& g) 
-  { return boost::get_property(g,p);}
+  { 
+    BOOST_STATIC_ASSERT((has_property<P,G>::graph_property));
+    return boost::get_property(g,p);
+  }
 };
 
 template <>
@@ -252,11 +242,19 @@ struct put_get_helper<false>
 {
   template <class P, class G, class V>
   static singleton_property_map<V> get (P, const G&, const V& v)
-  { return singleton_property_map<V>(v);}
+  { 
+    BOOST_STATIC_ASSERT((!has_property<P,G>::any_property));
+    return singleton_property_map<V>(v);
+  }
+
 
   template <class P, class G>
   static typename property_map<P,G,int>::type get_property (P p, G& g) 
-  { return boost::get(p,g);}
+  { 
+    BOOST_STATIC_ASSERT((has_property<P,G>::any_property));
+    BOOST_STATIC_ASSERT((!has_property<P,G>::graph_property));
+    return boost::get(p,g);
+  }
 };
 
 } // end namespace detail
