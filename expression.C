@@ -317,7 +317,7 @@ Factor::Factor(std::istream& in, bool inv)
 
 
 Factor::Factor(const Factor& v)
- : Evaluatable(v), term_(), is_inverse_(v.is_inverse_)
+ : detail::Evaluatable(v), term_(), is_inverse_(v.is_inverse_)
 {
   if (v.term_)
     term_.reset(v.term_->clone());
@@ -365,7 +365,7 @@ void Factor::partial_evaluate(const Evaluator& p)
 {
   if (!term_)
     boost::throw_exception(std::runtime_error("Empty value in expression"));
-  Evaluatable* e=term_->partial_evaluate_replace(p);
+  detail::Evaluatable* e=term_->partial_evaluate_replace(p);
   if(e!=term_.get() )
     term_.reset(e);
 }
