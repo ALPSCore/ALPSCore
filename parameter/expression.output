@@ -22,3 +22,8 @@ The value of [sqrt(L)] is 3.16228
 The value of [sin(2 * Pi / L)] is 0.587785
 The value of [cos(2 * Pi / L)] is 0.809017
 Cannot evaluate [error].
+The value of [sqrt(3.33)] is 1.82483
+The value of [L*T] is 1
+The value of [1/L] is 0.1
+The value of [2*Pi*L] is 62.8319
+Cannot evaluate [error].

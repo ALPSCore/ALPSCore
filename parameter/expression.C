@@ -1,11 +1,11 @@
 /***************************************************************************
-* PALM++/palm library
+* ALPS library
 *
-* example/palm/expression.C   simple test program for expression class
+* test/parameter/expression.C   simple test program for expression class
 *
 * $Id$
 *
-* Copyright (C) 2001-2002 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>,
 *
 * This program is free software; you can redistribute it and/or
@@ -31,6 +31,7 @@ int main()
 #ifndef BOOST_NO_EXCEPTIONS
   try {
 #endif
+
   alps::Parameters parms;
   std::cin >> parms;
   std::cout << "Parameters:\n" << parms << std::endl;
@@ -47,6 +48,18 @@ int main()
     if (c!=',')
       break;
   }
+
+  while (std::cin) {
+    std::string v;
+    std::cin >> v;
+    if (v.empty()) break;
+    if (!alps::can_evaluate(v, parms))
+      std::cout << "Cannot evaluate [" << v << "]." << std::endl;
+    else 
+      std::cout << "The value of [" << v << "] is " << alps::evaluate(v, parms)
+		<< std::endl;
+  }
+
 #ifndef BOOST_NO_EXCEPTIONS
 }
 catch (std::exception& e)
