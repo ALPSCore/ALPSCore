@@ -89,7 +89,7 @@ bool SiteBasisDescriptor<I>::valid(const std::vector<half_integer<I> >& x) const
   if (super_type::size() != x.size())
     return false;
   for (int i=0;i<super_type::size();++i) {
-    (*this)[i].set_parameters(p);
+    const_cast<SiteBasisDescriptor<I>&>(*this)[i].set_parameters(p);
     if (!(*this)[i].valid(x[i]))
       return false;
     else
