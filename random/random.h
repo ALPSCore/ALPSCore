@@ -5,7 +5,7 @@
 *
 * $Id$
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>,
 *                            Mario Ruetti <mruetti@gmx.net>,
 *
@@ -150,7 +150,7 @@ void BufferedRandomNumberGenerator<RNG>::fill_buffer()
   std::vector<result_type>::iterator xx = buf_.begin();
   while (xx != buf_.end())
   {
-    *xx = rng_();
+    *xx = gen_();
     ++xx;
   }
 }
