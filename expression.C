@@ -586,7 +586,7 @@ void Term::simplify()
 void Expression::simplify()
 {
   partial_evaluate();
-  for (term_iterator it=terms_.begin();it!=terms_.end();++it)
+  for (std::vector<Term>::iterator it=terms_.begin();it!=terms_.end();++it)
     it->simplify();
 }
 
