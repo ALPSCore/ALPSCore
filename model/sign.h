@@ -141,11 +141,7 @@ bool is_frustrated(const G& graph, M bond_map)
   boost::filtered_graph<graph_type,nonzero_edge_weight<M> > g(graph,nonzero_edge_weight<M>(bond_map));
   boost::vector_property_map<int> map; // map to store the relative signs of the sublattices
   bool check=false; // no sign problem
-#ifndef ALPS_USE_DFS2
   boost::depth_first_search(g, boost::visitor(parity::make_sign_visitor(g,map, &check, bond_map)));
-#else
-  boost::depth_first_search_2(g, boost::visitor(parity::make_sign_visitor(g,map, &check, bond_map)));
-#endif
   return check; // no sign problem=>not frustrated
 }
                                  
