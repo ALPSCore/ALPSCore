@@ -47,7 +47,7 @@
 #include <alps/alea/simpleobservable.h>
 #include <alps/parser/parser.h>
 
-#include <boost/compose.hpp>
+#include <boost/bind.hpp>
 #include <iostream>
 #include <numeric>
 #include <vector>
