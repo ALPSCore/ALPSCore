@@ -138,13 +138,6 @@ QuantumNumberDescriptor<I>:: QuantumNumberDescriptor(const std::string& n,
 template <class I>
 const QuantumNumberDescriptor<I>& QuantumNumberDescriptor<I>::operator+=(const QuantumNumberDescriptor<I>& rhs)
 {
-#ifndef ALPS_WITH_NEW_EXPRESSION
-  typedef alps::Expression Expression_;
-  typedef alps::ParameterEvaluator ParameterEvaluator_;
-#else
-  typedef alps::Expression<> Expression_;
-  typedef alps::ParameterEvaluator<> ParameterEvaluator_;
-#endif
 
   Parameters p;
   if(dependency_.size()!=rhs.dependency_.size())
@@ -154,13 +147,13 @@ const QuantumNumberDescriptor<I>& QuantumNumberDescriptor<I>::operator+=(const Q
     p[it->name()]=0;
   }
 
-  ParameterEvaluator_ eval(p);
-  Expression_ min_exp(min_string_);
-  Expression_ max_exp(max_string_);
+  ParameterEvaluator eval(p);
+  Expression min_exp(min_string_);
+  Expression max_exp(max_string_);
   min_exp.partial_evaluate(eval);
   max_exp.partial_evaluate(eval);
-  min_string_ = boost::lexical_cast<std::string>(min_exp+Expression_(rhs.min_string_));
-  max_string_ = boost::lexical_cast<std::string>(max_exp+Expression_(rhs.max_string_));
+  min_string_ = boost::lexical_cast<std::string>(min_exp+Expression(rhs.min_string_));
+  max_string_ = boost::lexical_cast<std::string>(max_exp+Expression(rhs.max_string_));
   if (valid_) {
     if (min()!=value_type::min() && rhs.min()!=value_type::min())
       min_ += rhs.min_;
@@ -204,28 +197,17 @@ bool QuantumNumberDescriptor<I>::set_parameters(const Parameters& p)
 template<class I >
 bool QuantumNumberDescriptor<I>::depends_on(const Parameters::key_type& s) const
 {
-#ifndef ALPS_WITH_NEW_EXPRESSION
   Expression min_exp_(min_string_);
   Expression max_exp_(max_string_);
-#else
-  Expression<> min_exp_(min_string_);
-  Expression<> max_exp_(max_string_);
-#endif
   return (min_exp_.depends_on(s) || max_exp_.depends_on(s));
 }
 
 template <class I>
 bool QuantumNumberDescriptor<I>::evaluate(const Parameters& p) const
 {
-#ifndef ALPS_WITH_NEW_EXPRESSION
   ParameterEvaluator eval(p);
   Expression min_exp_(min_string_);
   Expression max_exp_(max_string_);
-#else
-  ParameterEvaluator<> eval(p);
-  Expression<> min_exp_(min_string_);
-  Expression<> max_exp_(max_string_);
-#endif
   min_exp_.partial_evaluate(eval);
   min_exp_.simplify();
   max_exp_.partial_evaluate(eval);

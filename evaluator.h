@@ -44,6 +44,7 @@ class Expression;
 
 class Evaluator {
 public:
+  typedef double value_type;
   enum Direction { left_to_right, right_to_left};
   Evaluator() {}
   virtual bool can_evaluate(const std::string&) const;
@@ -57,6 +58,7 @@ public:
 
 class ParameterEvaluator : public Evaluator {
 public:
+  typedef double value_type;
   ParameterEvaluator(const Parameters& p) : parms_(p) {}
   virtual ~ParameterEvaluator() {}
   bool can_evaluate(const std::string&) const;

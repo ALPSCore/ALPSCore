@@ -52,6 +52,8 @@
 
 namespace alps {
 
+namespace expression {
+
 template<class T = std::complex<double> > class Expression;
 template<class T = std::complex<double> > class Term;
 template<class T = std::complex<double> > class Factor;
@@ -92,8 +94,6 @@ private:
   Parameters parms_;
 };
 
-namespace detail {
-
 template<class T>
 class Evaluatable {
 public:
@@ -112,10 +112,8 @@ public:
   virtual bool depends_on(const std::string&) const { return false; }
 };
 
-} // end namespace detail
-
 template<class T>
-class Factor : public detail::Evaluatable<T> {
+class Factor : public Evaluatable<T> {
 public:
   typedef T value_type;
 
@@ -123,12 +121,12 @@ public:
   Factor(value_type x);
   Factor(const std::string& s);
   Factor(const Factor& v)
-    : detail::Evaluatable<T>(v), term_(), is_inverse_(v.is_inverse_)
+    : Evaluatable<T>(v), term_(), is_inverse_(v.is_inverse_)
   {
     if (v.term_) term_.reset(v.term_->clone());
   }
-  Factor(const detail::Evaluatable<T>& v)
-    : detail::Evaluatable<T>(v), term_(v.clone()), is_inverse_(false) {}
+  Factor(const Evaluatable<T>& v)
+    : Evaluatable<T>(v), term_(v.clone()), is_inverse_(false) {}
   virtual ~Factor() {}
 
   const Factor& operator=(const Factor& v);
@@ -141,7 +139,7 @@ public:
   }
   void output(std::ostream&) const;
   bool can_evaluate(const Evaluator<T>& p) const;
-  detail::Evaluatable<T>* clone() const { return new Factor<T>(*this); }
+  Evaluatable<T>* clone() const { return new Factor<T>(*this); }
   boost::shared_ptr<Factor> flatten_one_value();
   bool is_inverse() const { return is_inverse_; }
   void partial_evaluate(const Evaluator<T>& p);
@@ -153,12 +151,12 @@ public:
   }
 
 private:
-  boost::shared_ptr<detail::Evaluatable<T> > term_;
+  boost::shared_ptr<Evaluatable<T> > term_;
   bool is_inverse_;
 };
 
 template<class T>
-class Term : public detail::Evaluatable<T> {
+class Term : public Evaluatable<T> {
 public:
   typedef T value_type;
   typedef typename std::vector<Factor<T> >::const_iterator factor_iterator;
@@ -166,7 +164,7 @@ public:
   Term(std::istream& is, bool negate = false);
   Term() : is_negative_(false) {}
   Term(value_type x) : is_negative_(false), terms_(1,Factor<T>(x)) {}
-  Term(const detail::Evaluatable<T>& e)
+  Term(const Evaluatable<T>& e)
     : is_negative_(false), terms_(1,Factor<T>(e)) {}
   virtual ~Term() {}
 
@@ -174,7 +172,7 @@ public:
 
   bool can_evaluate(const Evaluator<T>& p) const;
   void output(std::ostream&) const;
-  detail::Evaluatable<T>* clone() const { return new Term<T>(*this); }
+  Evaluatable<T>* clone() const { return new Term<T>(*this); }
   bool is_negative() const { return is_negative_;}
   boost::shared_ptr<Term> flatten_one_term();
   void partial_evaluate(const Evaluator<T>& p);
@@ -205,7 +203,7 @@ private:
 };
 
 template<class T>
-class Expression : public detail::Evaluatable<T> {
+class Expression : public Evaluatable<T> {
 public:
   typedef T value_type;
   typedef Term<T> term_type;
@@ -215,7 +213,7 @@ public:
   Expression(const std::string& str) { parse(str); }
   Expression(std::istream& in) { parse(in); }
   Expression(value_type val) : terms_(1,Term<T>(val)) {}
-  Expression(const detail::Evaluatable<T>& e) : terms_(1,Term<T>(e)) {}
+  Expression(const Evaluatable<T>& e) : terms_(1,Term<T>(e)) {}
   Expression(const Term<T>& e) : terms_(1,e) {}
   virtual ~Expression() {}
 
@@ -236,7 +234,7 @@ public:
 
   void output(std::ostream& os) const;
 
-  detail::Evaluatable<T>* clone() const { return new Expression<T>(*this); }
+  Evaluatable<T>* clone() const { return new Expression<T>(*this); }
   std::pair<term_iterator,term_iterator> terms() const
   {
     return std::make_pair(terms_.begin(),terms_.end());
@@ -266,8 +264,6 @@ public:
 private:
   std::vector<Term<T> > terms_;
 };
-
-namespace detail {
 
 template<class T>
 class Block : public Expression<T> {
@@ -337,8 +333,6 @@ private:
   value_type val_;
 };
 
-} // end namespace detail
-
 //
 // expression traits class
 //
@@ -363,8 +357,6 @@ struct expression<Expression<T> > {
   typedef Expression<value_type> type;
   typedef Term<value_type> term_type;
 };
-
-namespace detail {
 
 template<class U, class T>
 struct numeric_cast {
@@ -520,29 +512,34 @@ struct evaluate_helper<std::complex<U> >
   }
 };
 
-} // end namespace detail
+} // end namespace expression
+
+typedef expression::Expression<std::complex<double> > Expression;
+typedef expression::Term<std::complex<double> > Term;
+typedef expression::Evaluator<std::complex<double> > Evaluator;
+typedef expression::ParameterEvaluator<std::complex<double> > ParameterEvaluator;
 
 template<class T>
-inline bool can_evaluate(const detail::Evaluatable<T>& ex, const Evaluator<T>& ev)
+inline bool can_evaluate(const expression::Evaluatable<T>& ex, const expression::Evaluator<T>& ev)
 {
   return ex.can_evaluate(ev);
 }
 
 template<class T>
-inline bool can_evaluate(const std::string& v, const Evaluator<T>& p)
+inline bool can_evaluate(const std::string& v, const expression::Evaluator<T>& p)
 {
-  return Expression<T>(v).can_evaluate(p);
+  return expression::Expression<T>(v).can_evaluate(p);
 }
 
 inline bool can_evaluate(const std::string& v, const Parameters& p)
 {
-  return can_evaluate(v, ParameterEvaluator<>(p));
+  return can_evaluate(v, expression::ParameterEvaluator<>(p));
 }
 
 template<class U>
 inline bool can_evaluate(const std::string& v, const Parameters& p, const U&)
 {
-  return can_evaluate(v, ParameterEvaluator<U>(p));
+  return can_evaluate(v, expression::ParameterEvaluator<U>(p));
 }
 
 inline bool can_evaluate(const StringValue& v, const Parameters& p)
@@ -557,31 +554,31 @@ inline bool can_evaluate(const StringValue& v, const Parameters& p, const U&)
 }
 
 template<class U, class T>
-inline U evaluate(const Expression<T>& ex, const Evaluator<T>& ev = Evaluator<T>())
+inline U evaluate(const expression::Expression<T>& ex, const expression::Evaluator<T>& ev = expression::Evaluator<T>())
 {
-  return detail::evaluate_helper<U>::value(ex, ev);
+  return expression::evaluate_helper<U>::value(ex, ev);
 }
 
 template<class U, class T>
-inline U evaluate(const Term<T>& ex, const Evaluator<T>& ev = Evaluator<T>())
+inline U evaluate(const expression::Term<T>& ex, const expression::Evaluator<T>& ev = expression::Evaluator<T>())
 {
-  return detail::evaluate_helper<U>::value(ex, ev);
+  return expression::evaluate_helper<U>::value(ex, ev);
 }
 
 template<class U, class T>
-inline U evaluate(const char* v, const Evaluator<T>& ev)
+inline U evaluate(const char* v, const expression::Evaluator<T>& ev)
 {
-  return detail::evaluate_helper<U>::value(Expression<T>(std::string(v)), ev);
+  return expression::evaluate_helper<U>::value(expression::Expression<T>(std::string(v)), ev);
 }
 
 template<class U, class T>
-inline U evaluate(const std::string& v, const Evaluator<T>& ev)
+inline U evaluate(const std::string& v, const expression::Evaluator<T>& ev)
 {
-  return detail::evaluate_helper<U>::value(Expression<T>(v), ev);
+  return expression::evaluate_helper<U>::value(expression::Expression<T>(v), ev);
 }
 
 template<class U, class T>
-inline U evaluate(const StringValue& v, const Evaluator<T>& ev)
+inline U evaluate(const StringValue& v, const expression::Evaluator<T>& ev)
 {
   return evaluate<U>(static_cast<std::string>(v), ev);
 }
@@ -589,37 +586,37 @@ inline U evaluate(const StringValue& v, const Evaluator<T>& ev)
 template<class U>
 inline U evaluate(const char* v)
 {
-  return evaluate<U,U>(v, Evaluator<typename detail::evaluate_helper<U>::value_type>());
+  return evaluate<U,U>(v, expression::Evaluator<typename expression::evaluate_helper<U>::value_type>());
 }
 
 template<class U>
 inline U evaluate(const std::string& v)
 {
-  return evaluate<U,U>(v, Evaluator<typename detail::evaluate_helper<U>::value_type>());
+  return evaluate<U,U>(v, expression::Evaluator<typename expression::evaluate_helper<U>::value_type>());
 }
 
 template<class U>
 inline U evaluate(const StringValue& v)
 {
-  return evaluate<U,U>(v, Evaluator<typename detail::evaluate_helper<U>::value_type>());
+  return evaluate<U,U>(v, expression::Evaluator<typename expression::evaluate_helper<U>::value_type>());
 }
 
 template<class U>
 inline U evaluate(const char* v, const Parameters& p)
 {
-  return evaluate<U,typename detail::evaluate_helper<U>::value_type>(v, ParameterEvaluator<typename detail::evaluate_helper<U>::value_type>(p));
+  return evaluate<U,typename expression::evaluate_helper<U>::value_type>(v, expression::ParameterEvaluator<typename expression::evaluate_helper<U>::value_type>(p));
 }
 
 template<class U>
 inline U evaluate(const std::string& v, const Parameters& p)
 {
-  return evaluate<U,typename detail::evaluate_helper<U>::value_type>(v, ParameterEvaluator<typename detail::evaluate_helper<U>::value_type>(p));
+  return evaluate<U,typename expression::evaluate_helper<U>::value_type>(v, expression::ParameterEvaluator<typename expression::evaluate_helper<U>::value_type>(p));
 }
 
 template<class U>
 inline U evaluate(const StringValue& v, const Parameters& p)
 {
-  return evaluate<U,typename detail::evaluate_helper<U>::value_type>(v, ParameterEvaluator<typename detail::evaluate_helper<U>::value_type>(p));
+  return evaluate<U,typename expression::evaluate_helper<U>::value_type>(v, expression::ParameterEvaluator<typename expression::evaluate_helper<U>::value_type>(p));
 }
 
 //
@@ -630,14 +627,14 @@ template<class T>
 bool is_zero(T x) { return x == T(0); }
 
 template<class T>
-bool is_zero(Expression<T> x)
+bool is_zero(expression::Expression<T> x)
 {
   std::string s = boost::lexical_cast<std::string>(x);
   return s=="" || s=="0" || s=="0.";
 }
 
 template<class T>
-bool is_zero(Term<T> x)
+bool is_zero(expression::Term<T> x)
 {
   std::string s = boost::lexical_cast<std::string>(x);
   return s=="" || s=="0" || s=="0.";
@@ -650,30 +647,26 @@ bool is_nonzero(T x) { return !is_zero(x); }
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 namespace alps {
-namespace detail {
+namespace expression {
 #endif
 
 template<class T>
-inline std::ostream& operator<<(std::ostream& os, const alps::detail::Evaluatable<T>& e)
+inline std::ostream& operator<<(std::ostream& os, const alps::expression::Evaluatable<T>& e)
 {
   e.output(os);
   return os;
 }
 
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-} // end namespace detail
-#endif
-
 template<class T>
-inline alps::Expression<T> operator+(const alps::Expression<T>& ex1, const alps::Expression<T>& ex2)
+inline alps::expression::Expression<T> operator+(const alps::expression::Expression<T>& ex1, const alps::expression::Expression<T>& ex2)
 {
-  alps::Expression<T> ex(ex1);
+  alps::expression::Expression<T> ex(ex1);
   ex += ex2;
   return ex;
 }
 
 template<class T>
-inline std::istream& operator>>(std::istream& is, alps::Expression<T>& e)
+inline std::istream& operator>>(std::istream& is, alps::expression::Expression<T>& e)
 {
   std::string s;
   is >> s;
@@ -682,120 +675,121 @@ inline std::istream& operator>>(std::istream& is, alps::Expression<T>& e)
 }
 
 template<class T>
-inline bool operator==(const alps::Expression<T>& ex1, const alps::Expression<T>& ex2)
+inline bool operator==(const alps::expression::Expression<T>& ex1, const alps::expression::Expression<T>& ex2)
 {
   return (boost::lexical_cast<std::string>(ex1) ==
           boost::lexical_cast<std::string>(ex2));
 }
 
 template<class T>
-inline bool operator==(const alps::Expression<T>& ex, const std::string& s)
+inline bool operator==(const alps::expression::Expression<T>& ex, const std::string& s)
 {
   return boost::lexical_cast<std::string>(ex) == s;
 }
 
 template<class T>
-inline bool operator==(const std::string& s, const alps::Expression<T>& ex)
+inline bool operator==(const std::string& s, const alps::expression::Expression<T>& ex)
 {
   return ex == s;
 }
 
 template<class T>
-inline bool operator==(const alps::Factor<T>& ex1, const alps::Factor<T>& ex2)
+inline bool operator==(const alps::expression::Factor<T>& ex1, const alps::expression::Factor<T>& ex2)
 {
   return (boost::lexical_cast<std::string>(ex1) ==
           boost::lexical_cast<std::string>(ex2));
 }
 
 template<class T>
-inline bool operator==(const alps::Factor<T>& ex, const std::string& s)
+inline bool operator==(const alps::expression::Factor<T>& ex, const std::string& s)
 {
   return boost::lexical_cast<std::string>(ex) == s;
 }
 
 template<class T>
-inline bool operator==(const std::string& s, const alps::Factor<T>& ex)
+inline bool operator==(const std::string& s, const alps::expression::Factor<T>& ex)
 {
   return ex == s;
 }
 
 template<class T>
-inline bool operator==(const alps::Term<T>& ex1, const alps::Term<T>& ex2)
+inline bool operator==(const alps::expression::Term<T>& ex1, const alps::expression::Term<T>& ex2)
 {
   return (boost::lexical_cast<std::string>(ex1) ==
           boost::lexical_cast<std::string>(ex2));
 }
 
 template<class T>
-inline bool operator==(const alps::Term<T>& ex, const std::string& s)
+inline bool operator==(const alps::expression::Term<T>& ex, const std::string& s)
 {
   return boost::lexical_cast<std::string>(ex) == s;
 }
 
 template<class T>
-inline bool operator==(const std::string& s, const alps::Term<T>& ex)
+inline bool operator==(const std::string& s, const alps::expression::Term<T>& ex)
 {
   return ex == s;
 }
 
 template<class T>
-inline bool operator<(const alps::Expression<T>& ex1, const alps::Expression<T>& ex2)
+inline bool operator<(const alps::expression::Expression<T>& ex1, const alps::expression::Expression<T>& ex2)
 {
   return (boost::lexical_cast<std::string>(ex1) <
           boost::lexical_cast<std::string>(ex2));
 }
 
 template<class T>
-inline bool operator<(const alps::Expression<T>& ex, const std::string& s)
+inline bool operator<(const alps::expression::Expression<T>& ex, const std::string& s)
 {
   return boost::lexical_cast<std::string>(ex) < s;
 }
 
 template<class T>
-inline bool operator<(const std::string& s, const alps::Expression<T>& ex)
+inline bool operator<(const std::string& s, const alps::expression::Expression<T>& ex)
 {
   return s < boost::lexical_cast<std::string>(ex);
 }
 
 template<class T>
-inline bool operator<(const alps::Factor<T>& ex1, const alps::Factor<T>& ex2)
+inline bool operator<(const alps::expression::Factor<T>& ex1, const alps::expression::Factor<T>& ex2)
 {
   return (boost::lexical_cast<std::string>(ex1) <
           boost::lexical_cast<std::string>(ex2));
 }
 
 template<class T>
-inline bool operator<(const alps::Factor<T>& ex, const std::string& s)
+inline bool operator<(const alps::expression::Factor<T>& ex, const std::string& s)
 {
   return boost::lexical_cast<std::string>(ex) < s;
 }
 
 template<class T>
-inline bool operator<(const std::string& s, const alps::Factor<T>& ex)
+inline bool operator<(const std::string& s, const alps::expression::Factor<T>& ex)
 {
   return s < boost::lexical_cast<std::string>(ex);
 }
 
 template<class T>
-inline bool operator<(const alps::Term<T>& ex1, const alps::Term<T>& ex2)
+inline bool operator<(const alps::expression::Term<T>& ex1, const alps::expression::Term<T>& ex2)
 {
   return (boost::lexical_cast<std::string>(ex1) <
           boost::lexical_cast<std::string>(ex2));
 }
 
 template<class T>
-inline bool operator<(const alps::Term<T>& ex, const std::string& s)
+inline bool operator<(const alps::expression::Term<T>& ex, const std::string& s)
 {
   return boost::lexical_cast<std::string>(ex) < s;
 }
 
 template<class T>
-inline bool operator<(const std::string& s, const alps::Term<T>& ex)
+inline bool operator<(const std::string& s, const alps::expression::Term<T>& ex)
 {
   return s < boost::lexical_cast<std::string>(ex);
 }
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
+} // end namespace expression
 } // end namespace alps
 #endif
 

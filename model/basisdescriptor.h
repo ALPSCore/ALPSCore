@@ -71,11 +71,7 @@ public:
   typedef typename super_type::const_iterator const_iterator;
   typedef std::map<std::string,SiteBasisDescriptor<I> > sitebasis_map_type;
   typedef std::vector<std::pair<std::string,half_integer<I> > > constraints_type;
-#ifndef ALPS_WITH_NEW_EXPRESSION
   typedef alps::Expression expression_type;
-#else
-  typedef alps::Expression<> expression_type;
-#endif
   typedef std::vector<std::pair<std::string, expression_type> > unevaluated_constraints_type;
 
   BasisDescriptor(const std::string& name = "") : name_(name) {}

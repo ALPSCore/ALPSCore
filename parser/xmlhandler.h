@@ -50,7 +50,7 @@ public:
   }
   virtual ~XMLHandlerBase() {}
 
-  void set_basename(const std::string& basename) {
+  void set_basename(const std::string&) {
     if (basename_.empty())
       boost::throw_exception(std::invalid_argument("XMLHandlerBase: empty basename"));
   }

@@ -50,7 +50,6 @@ public:
   BondTermDescriptor(const std::string& term, const std::string& source,
                      const std::string& target)
     : type_(-2), term_(term), source_(source), target_(target) {}
-#ifndef ALPS_WITH_NEW_EXPRESSION
   BondTermDescriptor(const Term& term)
     : type_(-2), term_(boost::lexical_cast<std::string>(term)),
       source_("i"), target_("j") {}
@@ -58,17 +57,6 @@ public:
                      const std::string& target)
     : type_(-2), term_(boost::lexical_cast<std::string>(term)),
       source_(source), target_(target) {}
-#else
-  template<class T>
-  BondTermDescriptor(const Term<T>& term)
-    : type_(-2), term_(boost::lexical_cast<std::string>(term)),
-      source_("i"), target_("j") {}
-  template<class T>
-  BondTermDescriptor(const Term<T>& term, const std::string& source,
-                     const std::string& target)
-    : type_(-2), term_(boost::lexical_cast<std::string>(term)),
-      source_(source), target_(target) {}
-#endif // ! ALPS_WITH_NEW_EXPRESSION
   BondTermDescriptor(const XMLTag&, std::istream&);
   void write_xml(oxstream&) const;
 
@@ -79,11 +67,7 @@ public:
 
   template <class T>
   boost::multi_array<T,4> matrix(const SiteBasisDescriptor<I>&, const SiteBasisDescriptor<I>&, const operator_map&, const Parameters& =Parameters()) const;
-#ifndef ALPS_WITH_NEW_EXPRESSION
   std::set<Term> split(const operator_map&, const Parameters& = Parameters()) const;
-#else
-  std::set<Term<> > split(const operator_map&, const Parameters& = Parameters()) const;
-#endif
 
 private:
   int type_;
@@ -93,28 +77,12 @@ private:
 };
 
 
-#ifndef ALPS_WITH_NEW_EXPRESSION
 template <class I, class STATE1=site_state<I>, class STATE2=site_state<I>  >
 class BondOperatorEvaluator : public OperatorEvaluator<I>
-#else
-template <class I, class T, class STATE1=site_state<I>, class STATE2=site_state<I>  >
-class BondOperatorEvaluator : public OperatorEvaluator<I, T>
-#endif
 {
 private:
-#ifndef ALPS_WITH_NEW_EXPRESSION
   typedef OperatorEvaluator<I> super_type;
   typedef BondOperatorEvaluator<I, STATE1, STATE2> SELF_;
-  typedef OperatorEvaluator<I> super_type;
-  typedef Expression Expression_;
-  typedef ParameterEvaluator ParameterEvaluator_;
-#else
-  typedef OperatorEvaluator<I, T> super_type;
-  typedef BondOperatorEvaluator<I, T, STATE1, STATE2> SELF_;
-  typedef OperatorEvaluator<I, T> super_type;
-  typedef Expression<T> Expression_;
-  typedef ParameterEvaluator<T> ParameterEvaluator_;
-#endif
 
 public:
   typedef typename super_type::operator_map operator_map;
@@ -127,9 +95,9 @@ public:
     : super_type(p,o), state_(s1,s2), basis1_(b1), basis2_(b2),
       sites_(site1,site2) {}
   bool can_evaluate_function(const std::string& name,
-			     const Expression_& argument) const;
-  Expression_ partial_evaluate_function(const std::string& name,
-					const Expression_& argument) const;
+			     const Expression& argument) const;
+  Expression partial_evaluate_function(const std::string& name,
+					const Expression& argument) const;
   const std::pair<STATE1,STATE2>& state() const { return state_;}
 
 private:
@@ -139,28 +107,12 @@ private:
   std::pair<std::string, std::string> sites_;
 };
 
-#ifndef ALPS_WITH_NEW_EXPRESSION
 template <class I>
 class BondOperatorSplitter : public OperatorEvaluator<I>
-#else
-template <class I, class T>
-class BondOperatorSplitter : public OperatorEvaluator<I, T>
-#endif
 {
 private:
-#ifndef ALPS_WITH_NEW_EXPRESSION
-  typedef BondOperatorSplitter<I> SELF_;
   typedef OperatorEvaluator<I> super_type;
-  typedef Expression Expression_;
-  typedef Term Term_;
-  typedef ParameterEvaluator ParameterEvaluator_;
-#else
-  typedef BondOperatorSplitter<I, T> SELF_;
-  typedef OperatorEvaluator<I, T> super_type;
-  typedef Expression<T> Expression_;
-  typedef Term<T> Term_;
-  typedef ParameterEvaluator<T> ParameterEvaluator_;
-#endif
+  typedef BondOperatorSplitter<I> SELF_;
 
 public:
   typedef typename super_type::operator_map operator_map;
@@ -169,88 +121,68 @@ public:
                        const Parameters& p, const operator_map& o)
     : super_type(p,o), sites_(site1,site2) {}
 
-  bool can_evaluate_function(const std::string& name, const Expression_& argument) const;
-  Expression_ partial_evaluate_function(const std::string& name, const Expression_& argument) const;
-  const std::pair<Term_, Term_>& site_operators() const { return site_ops_; }
+  bool can_evaluate_function(const std::string& name, const Expression& argument) const;
+  Expression partial_evaluate_function(const std::string& name, const Expression& argument) const;
+  const std::pair<Term, Term>& site_operators() const { return site_ops_; }
 
 private:
-  mutable std::pair<Term_, Term_> site_ops_;
+  mutable std::pair<Term, Term> site_ops_;
   std::pair<std::string, std::string> sites_;
 };
 
-#ifndef ALPS_WITH_NEW_EXPRESSION
 template <class I, class STATE1, class STATE2>
 bool BondOperatorEvaluator<I, STATE1, STATE2>::can_evaluate_function(const std::string& name, const Expression& arg) const
-#else
-template <class I, class T, class STATE1, class STATE2>
-bool BondOperatorEvaluator<I, T, STATE1, STATE2>::can_evaluate_function(const std::string& name, const Expression<T>& arg) const
-#endif
 {
   if (super_type::ops_.find(name) != super_type::ops_.end() && (arg== sites_.first || arg==sites_.second)) {
     SELF_ eval(*this);
-    return eval.partial_evaluate_function(name,arg).can_evaluate(ParameterEvaluator_(*this));
+    return eval.partial_evaluate_function(name,arg).can_evaluate(ParameterEvaluator(*this));
   }
   else
-    return ParameterEvaluator_::can_evaluate_function(name,arg);
+    return ParameterEvaluator::can_evaluate_function(name,arg);
 }
 
-#ifndef ALPS_WITH_NEW_EXPRESSION
 template <class I>
 bool BondOperatorSplitter<I>::can_evaluate_function(const std::string& name, const Expression& arg) const
-#else
-template <class I, class T>
-bool BondOperatorSplitter<I, T>::can_evaluate_function(const std::string& name, const Expression<T>& arg) const
-#endif
 {
   return (super_type::ops_.find(name) != super_type::ops_.end() 
           && (arg== sites_.first || arg==sites_.second)) ||
-         ParameterEvaluator_::can_evaluate_function(name,arg);
+         ParameterEvaluator::can_evaluate_function(name,arg);
 }
 
-#ifndef ALPS_WITH_NEW_EXPRESSION
 template <class I, class STATE1, class STATE2>
 Expression BondOperatorEvaluator<I, STATE1, STATE2>::partial_evaluate_function(const std::string& name, const Expression& arg) const
-#else
-template <class I, class T, class STATE1, class STATE2>
-Expression<T> BondOperatorEvaluator<I, T, STATE1, STATE2>::partial_evaluate_function(const std::string& name, const Expression<T>& arg) const
-#endif
 {
   typename operator_map::const_iterator op = super_type::ops_.find(name);
   if (op!=super_type::ops_.end()) {  // evaluate operator
-    Expression_ e;
+    Expression e;
     if (arg==sites_.first)
       boost::tie(state_.first,e) = op->second.apply(state_.first,basis1_,*this);
     else  if (arg==sites_.second)
       boost::tie(state_.second,e) = op->second.apply(state_.second,basis2_,*this);
     else
-      return ParameterEvaluator_(*this).partial_evaluate_function(name,arg);
+      return ParameterEvaluator(*this).partial_evaluate_function(name,arg);
     return e;
   }
   else
-    return ParameterEvaluator_(*this).partial_evaluate_function(name,arg);
+    return ParameterEvaluator(*this).partial_evaluate_function(name,arg);
 }
 
-#ifndef ALPS_WITH_NEW_EXPRESSION
 template <class I>
 Expression BondOperatorSplitter<I>::partial_evaluate_function(const std::string& name, const Expression& arg) const
-#else
-template <class I, class T>
-Expression<T> BondOperatorSplitter<I, T>::partial_evaluate_function(const std::string& name, const Expression<T>& arg) const
-#endif
 {
   typename operator_map::const_iterator op = super_type::ops_.find(name);
   if (op!=super_type::ops_.end()) {  // evaluate operator
-    Expression_ e;
+    Expression e;
     if (arg==sites_.first)
       site_ops_.first *= name;
     else  if (arg==sites_.second)
       site_ops_.second *= name;
     else
-      return ParameterEvaluator_(*this).partial_evaluate_function(name,arg);
-    return Expression_(1.);
+      return ParameterEvaluator(*this).partial_evaluate_function(name,arg);
+    return Expression(1.);
   }
   else
-    return ParameterEvaluator_(*this).partial_evaluate_function(name,arg);
+    return ParameterEvaluator(*this).partial_evaluate_function(name,arg);
 }
 
 template <class I, class T>
@@ -265,14 +197,6 @@ BondTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b1,
                               const operator_map& ops,
                               const Parameters& p) const
 {
-#ifndef ALPS_WITH_NEW_EXPRESSION
-  typedef alps::Expression Expression_;
-  typedef alps::Term Term_;
-#else
-  typedef typename alps::expression<T>::type Expression_;
-  typedef typename alps::expression<T>::term_type Term_;
-#endif
-
   SiteBasisDescriptor<I> basis1(b1);
   SiteBasisDescriptor<I> basis2(b2);
   basis1.set_parameters(p);
@@ -284,7 +208,7 @@ BondTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b1,
   std::size_t dim2=basis2.num_states();
   boost::multi_array<T,4> mat(boost::extents[dim1][dim2][dim1][dim2]);
   // parse expression and store it as sum of terms
-  Expression_ ex(term());
+  Expression ex(term());
   ex.flatten();
   // fill the matrix
   if (basis1.size()==1 && basis2.size()==1) {
@@ -294,18 +218,14 @@ BondTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b1,
     for (int i1=0;i1<states1.size();++i1)
       for (int i2=0;i2<states2.size();++i2) {
       //calculate expression applied to state *it and store it into matrix
-        for (typename Expression_::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
-#ifndef ALPS_WITH_NEW_EXPRESSION
+        for (typename Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
 	  BondOperatorEvaluator<I,state_type,state_type> evaluator(states1[i1],states2[i2],basis1,basis2, source(),target(),parms,ops);
-#else
-	  BondOperatorEvaluator<I,typename Expression_::value_type,state_type,state_type> evaluator(states1[i1],states2[i2],basis1,basis2, source(),target(),parms,ops);
-#endif
-          Term_ term(*tit);
+          Term term(*tit);
           term.partial_evaluate(evaluator);
           int j1=states1.index(evaluator.state().first);
           int j2=states2.index(evaluator.state().second);
 #ifndef ALPS_WITH_NEW_EXPRESSION
-	  if (boost::lexical_cast<std::string,Term_>(term)!="0")
+	  if (boost::lexical_cast<std::string,Term>(term)!="0")
             mat[i1][i2][j1][j2] += term;
 #else
           if (alps::is_nonzero(term))
@@ -320,18 +240,14 @@ BondTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b1,
     for (int i1=0;i1<states1.size();++i1)
       for (int i2=0;i2<states2.size();++i2) {
       //calculate expression applied to state *it and store it into matrix
-        for (typename Expression_::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
-#ifndef ALPS_WITH_NEW_EXPRESSION
+        for (typename Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
 	  BondOperatorEvaluator<I> evaluator(states1[i1], states2[i2], basis1, basis2, source(), target(), parms, ops);
-#else
-	  BondOperatorEvaluator<I,typename Expression_::value_type> evaluator(states1[i1], states2[i2], basis1, basis2, source(), target(), parms, ops);
-#endif
-          Term_ term(*tit);
+          Term term(*tit);
           term.partial_evaluate(evaluator);
           int j1=states1.index(evaluator.state().first);
           int j2=states2.index(evaluator.state().second);
 #ifndef ALPS_WITH_NEW_EXPRESSION
-	  if (boost::lexical_cast<std::string,Term_>(term)!="0")
+	  if (boost::lexical_cast<std::string,Term>(term)!="0")
             mat[i1][i2][j1][j2] += term;
 #else
           if (alps::is_nonzero(term))
@@ -343,30 +259,15 @@ BondTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b1,
   return mat;
 }
 
-#ifndef ALPS_WITH_NEW_EXPRESSION
 template <class I>
 std::set<Term> BondTermDescriptor<I>::split(const operator_map& ops, const Parameters& p) const
-#else
-template <class I>
-std::set<Term<> > BondTermDescriptor<I>::split(const operator_map& ops, const Parameters& p) const
-#endif
 {
-#ifndef ALPS_WITH_NEW_EXPRESSION
-  typedef alps::Expression Expression_;
-  typedef alps::Term Term_;
-  typedef BondOperatorSplitter<I> Evaluator_;
-#else
-  typedef alps::Expression<> Expression_;
-  typedef alps::Term<> Term_;
-  typedef BondOperatorSplitter<I, Expression_::value_type> Evaluator_;
-#endif
-
-  std::set<Term_> terms;
-  Expression_ ex(term());
+  std::set<Term> terms;
+  Expression ex(term());
   ex.flatten();
-  for (typename Expression_::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
-    Evaluator_ evaluator(source(),target(),p,ops);
-    Term_ term(*tit);
+  for (typename Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
+    BondOperatorSplitter<I> evaluator(source(),target(),p,ops);
+    Term term(*tit);
     term.partial_evaluate(evaluator);
     terms.insert(evaluator.site_operators().first);
     terms.insert(evaluator.site_operators().second);

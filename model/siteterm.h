@@ -46,14 +46,8 @@ public:
 
   SiteTermDescriptor() : type_(-2) {}
   SiteTermDescriptor(const std::string& t) : type_(-2), term_(t) {}
-#ifndef ALPS_WITH_NEW_EXPRESSION
   SiteTermDescriptor(const Term& t) : type_(-2),
     term_(boost::lexical_cast<std::string>(t)) {}
-#else
-  template<class T>
-  SiteTermDescriptor(const Term<T>& t) : type_(-2),
-    term_(boost::lexical_cast<std::string>(t)) {}
-#endif // ! ALPS_WITH_NEW_EXPRESSION
   SiteTermDescriptor(const XMLTag&, std::istream&);
 
   void write_xml(oxstream&) const;
@@ -69,38 +63,22 @@ private:
 };
 
 
-#ifndef ALPS_WITH_NEW_EXPRESSION
 template <class I, class STATE = site_state<I> >
 class SiteOperatorEvaluator : public OperatorEvaluator<I>
-#else
-template <class I, class T, class STATE = site_state<I> >
-class SiteOperatorEvaluator : public OperatorEvaluator<I, T>
-#endif
 {
 private:
-#ifndef ALPS_WITH_NEW_EXPRESSION
   typedef OperatorEvaluator<I> super_type;
   typedef SiteOperatorEvaluator<I, STATE> SELF_;
-  typedef OperatorEvaluator<I> BASE_;
-  typedef Expression Expression_;
-  typedef ParameterEvaluator ParameterEvaluator_;
-#else
-  typedef OperatorEvaluator<I, T> super_type;
-  typedef SiteOperatorEvaluator<I, T, STATE> SELF_;
-  typedef OperatorEvaluator<I, T> BASE_;
-  typedef Expression<T> Expression_;
-  typedef ParameterEvaluator<T> ParameterEvaluator_;
-#endif
 
 public:
-  typedef typename BASE_::operator_map operator_map;
+  typedef typename super_type::operator_map operator_map;
   typedef STATE state_type;
 
   SiteOperatorEvaluator(const state_type& s, const SiteBasisDescriptor<I>& b,
                         const Parameters& p, const operator_map& o)
-    : BASE_(p,o), state_(s), basis_(b) {}
+    : super_type(p,o), state_(s), basis_(b) {}
   bool can_evaluate(const std::string&) const;
-  Expression_ partial_evaluate(const std::string& name) const;
+  Expression partial_evaluate(const std::string& name) const;
   const state_type& state() const { return state_;}
 
 private:
@@ -109,38 +87,28 @@ private:
 };
 
 
-#ifndef ALPS_WITH_NEW_EXPRESSION
 template <class I, class STATE>
 bool SiteOperatorEvaluator<I, STATE>::can_evaluate(const std::string& name) const
-#else
-template <class I, class T, class STATE>
-bool SiteOperatorEvaluator<I, T, STATE>::can_evaluate(const std::string& name) const
-#endif
 {
   if (super_type::ops_.find(name) != super_type::ops_.end()) {
     SELF_ eval(*this);
-    return eval.partial_evaluate(name).can_evaluate(ParameterEvaluator_(*this));
+    return eval.partial_evaluate(name).can_evaluate(ParameterEvaluator(*this));
   }
   else
-    return ParameterEvaluator_::can_evaluate(name);
+    return ParameterEvaluator::can_evaluate(name);
 }
 
-#ifndef ALPS_WITH_NEW_EXPRESSION
 template <class I, class STATE>
 Expression SiteOperatorEvaluator<I, STATE>::partial_evaluate(const std::string& name) const
-#else
-template <class I, class T, class STATE>
-Expression<T> SiteOperatorEvaluator<I, T, STATE>::partial_evaluate(const std::string& name) const
-#endif
 {
   typename operator_map::const_iterator op = super_type::ops_.find(name);
   if (op!=super_type::ops_.end()) {  // evaluate operator
-    Expression_ e;
-    boost::tie(state_,e) = op->second.apply(state_, basis_, ParameterEvaluator_(*this));
+    Expression e;
+    boost::tie(state_,e) = op->second.apply(state_, basis_, ParameterEvaluator(*this));
     return e;
   }
   else
-    return BASE_::partial_evaluate(name);
+    return super_type::partial_evaluate(name);
 }
 
 
@@ -156,14 +124,6 @@ SiteTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b,
 			      const operator_map& ops,
 			      const Parameters& p) const
 {
-#ifndef ALPS_WITH_NEW_EXPRESSION
-  typedef alps::Expression Expression_;
-  typedef alps::Term Term_;
-#else
-  typedef typename alps::expression<T>::type Expression_;
-  typedef typename alps::expression<T>::term_type Term_;
-#endif
-
   SiteBasisDescriptor<I> basis(b);
   basis.set_parameters(p);
   Parameters parms(p);
@@ -171,7 +131,7 @@ SiteTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b,
   std::size_t dim=basis.num_states();
   boost::multi_array<T,2> mat(boost::extents[dim][dim]);
   // parse expression and store it as sum of terms
-  Expression_ ex(term());
+  Expression ex(term());
   ex.flatten();
 
   // fill the matrix
@@ -180,17 +140,13 @@ SiteTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b,
     site_basis<I,state_type> states(basis);
     for (int i=0;i<states.size();++i) {
       //calculate expression applied to state *it and store it into matrix
-      for (typename Expression_::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
-#ifndef ALPS_WITH_NEW_EXPRESSION
+      for (typename Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
 	SiteOperatorEvaluator<I, state_type> evaluator(states[i], basis,parms,ops);
-#else
-	SiteOperatorEvaluator<I, typename Expression_::value_type, state_type> evaluator(states[i], basis,parms,ops);
-#endif
-        Term_ term(*tit);
+        Term term(*tit);
         term.partial_evaluate(evaluator);
         int j = states.index(evaluator.state());
 #ifndef ALPS_WITH_NEW_EXPRESSION
-	if (boost::lexical_cast<std::string,Term_>(term)!="0")
+	if (boost::lexical_cast<std::string,Term>(term)!="0")
           mat[i][j] += term;
 #else
 	if (alps::is_nonzero(term))
@@ -203,17 +159,13 @@ SiteTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b,
     site_basis<I> states(basis);
     for (int i=0;i<states.size();++i) {
     //calculate expression applied to state *it and store it into matrix
-      for (typename Expression_::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
-#ifndef ALPS_WITH_NEW_EXPRESSION
+      for (typename Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
 	SiteOperatorEvaluator<I> evaluator(states[i], basis,parms,ops);
-#else
-	SiteOperatorEvaluator<I, typename Expression_::value_type> evaluator(states[i], basis,parms,ops);
-#endif
-        Term_ term(*tit);
+        Term term(*tit);
         term.partial_evaluate(evaluator);
         int j = states.index(evaluator.state());
 #ifndef ALPS_WITH_NEW_EXPRESSION
-	if (boost::lexical_cast<std::string,Term_>(term)!="0")
+	if (boost::lexical_cast<std::string,Term>(term)!="0")
           mat[i][j] += term;
 #else
 	if (alps::is_nonzero(term))

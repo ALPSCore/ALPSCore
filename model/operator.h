@@ -53,15 +53,9 @@ public:
 
   void write_xml(oxstream&) const;
 
-#ifndef ALPS_WITH_NEW_EXPRESSION
   template <class STATE>
   std::pair<STATE, Expression>
   apply(STATE state, const SiteBasisDescriptor<I>& basis, const ParameterEvaluator& p) const;
-#else
-  template <class STATE, class T>
-  std::pair<STATE, Expression<T> >
-  apply(STATE state, const SiteBasisDescriptor<I>& basis, const ParameterEvaluator<T>& p) const;
-#endif
 
   const std::string& name() const { return name_;}
   const std::string& matrixelement() const { return matrixelement_;}
@@ -71,23 +65,21 @@ private:
   std::string matrixelement_;
 };
 
-
-#ifndef ALPS_WITH_NEW_EXPRESSION
-
 template <class I>
 class OperatorEvaluator : public ParameterEvaluator
 {
 public:
+  typedef ParameterEvaluator super_type;
   typedef std::map<std::string, OperatorDescriptor<I> > operator_map;
 
   OperatorEvaluator(const Parameters& p, const operator_map& o)
     : ParameterEvaluator(p), ops_(o) {}
   Direction direction() const { return right_to_left; }
-  double evaluate(const std::string& name) const
+  super_type::value_type evaluate(const std::string& name) const
   {
     return partial_evaluate(name).value();
   }
-  double evaluate_function(const std::string& name, const Expression& arg) const
+  super_type::value_type evaluate_function(const std::string& name, const Expression& arg) const
   {
     return partial_evaluate_function(name,arg).value();
   }
@@ -95,42 +87,6 @@ public:
 protected:
   const operator_map& ops_;
 };
-
-#else
-
-template <class I, class T>
-class OperatorEvaluator : public ParameterEvaluator<T>
-{
-private:
-  typedef ParameterEvaluator<T> BASE_;
-
-public:
-  typedef T value_type;
-  typedef std::map<std::string, OperatorDescriptor<I> > operator_map;
-
-  OperatorEvaluator(const Parameters& p, const operator_map& o)
-    : BASE_(p), ops_(o) {}
-  typename Evaluator<T>::Direction direction() const
-  { 
-    return BASE_::right_to_left;
-  }
-  value_type evaluate(const std::string& name) const
-  {
-    return this->partial_evaluate(name).value();
-  }
-  value_type evaluate_function(const std::string& name, const Expression<T>& arg) const
-  {
-    return this->partial_evaluate_function(name,arg).value();
-  }
-
-protected:
-  const operator_map& ops_;
-};
-
-#endif // ! ALPS_WITH_NEW_EXPRESSION
-
-
-#ifndef ALPS_WITH_NEW_EXPRESSION
 
 template <class I>
 template <class STATE>
@@ -163,42 +119,6 @@ OperatorDescriptor<I>::apply(STATE state, const SiteBasisDescriptor<I>& basis, c
   }
   return std::make_pair(state,e);
 }
-
-#else
-
-template <class I>
-template <class STATE, class T>
-std::pair<STATE, Expression<T> >
-OperatorDescriptor<I>::apply(STATE state, const SiteBasisDescriptor<I>& basis, const ParameterEvaluator<T>& eval) const
-{
-  // set quantum numbers as parameters
-  Parameters p=eval.parameters();
-  p.copy_undefined(basis.get_parameters());
-  for (int i=0;i<basis.size();++i)
-    if (p.defined(basis[i].name()))
-      boost::throw_exception(std::runtime_error(basis[i].name()+" exists as quantum number and as parameter"));
-    else
-      p[basis[i].name()]=get_quantumnumber(state,i);
-
-  // evaluate matrix element
-  Expression<T> e(matrixelement());
-  e.partial_evaluate(ParameterEvaluator<T>(p));
-
-  // apply operators
-  for (int i=0;i<basis.size();++i) {
-    const_iterator it=this->find(basis[i].name());
-    if (it!=super_type::end()) {
-      get_quantumnumber(state,i)+=it->second; // apply change to QN
-       if (!basis[i].valid(get_quantumnumber(state,i))) {
-         e=Expression<T>(0.);
-         break;
-       }
-    }
-  }
-  return std::make_pair(state,e);
-}
-
-#endif // ! ALPS_WITH_NEW_EXPRESSION
 
 #ifndef ALPS_WITHOUT_XML
 
