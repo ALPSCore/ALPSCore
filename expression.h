@@ -83,6 +83,7 @@ public:
   bool is_single_term() const;
   Term term() const;
   bool depends_on(const std::string&) const;
+  inline operator std::string () const;
 private:
   boost::shared_ptr<detail::Evaluatable> term_;
   bool is_inverse_;
@@ -235,6 +236,26 @@ inline bool operator<(const alps::Term& e1, const alps::Term& e2)
   return static_cast<std::string>(e1) < static_cast<std::string>(e2);
 }
 
+inline bool operator==(const alps::Factor& e1, const alps::Factor& e2)
+{
+  return static_cast<std::string>(e1) == static_cast<std::string>(e2);
+}
+
+inline bool operator<(const alps::Factor& e1, const alps::Factor& e2)
+{
+  return static_cast<std::string>(e1) < static_cast<std::string>(e2);
+}
+
+inline bool operator==(const alps::Factor& e, const std::string& s)
+{
+  return s==static_cast<std::string>(e);
+}
+
+inline bool operator==( const std::string& s, const alps::Factor& e)
+{
+  return s==static_cast<std::string>(e);
+}
+
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // end namespace alps
 #endif
@@ -247,6 +268,11 @@ alps::Expression::operator std::string() const
 alps::Term::operator std::string() const 
 { 
   return boost::lexical_cast<std::string,Term>(*this);
+}
+
+alps::Factor::operator std::string() const 
+{ 
+  return boost::lexical_cast<std::string,Factor>(*this);
 }
 
 
