@@ -296,7 +296,7 @@ public:
     const vector_type* operator->() const { set_k(); return &k_; }
   private:
     mutable vector_type k_;
-    void set_k()
+    void set_k() const
     {
       k_=*basis_vectors(*cell_iterator::lattice_).first;
       for (int i=0;i<dimension(*cell_iterator::lattice_);++i)

@@ -164,7 +164,6 @@ public:
   std::pair<adjacency_iterator,adjacency_iterator> adjacent_vertices (const site_descriptor& v) const 
   { return boost::adjacent_vertices(v,graph());}
   vertex_descriptor vertex(vertices_size_type i) const { return boost::vertex(i,graph());}
-=======
   double parity(const site_descriptor& v) const { return parity_map_[v]==0 ? 1. :  parity_map_[v]==1 ? -1. : 0.;}
   bool is_bipartite() const { return is_bipartite_;}
   type_type bond_type(const bond_descriptor& b) const { return edge_type_map_[b];}

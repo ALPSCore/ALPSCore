@@ -30,6 +30,7 @@
 #ifndef ALPS_RANDOMFACTORY_H
 #define ALPS_RANDOMFACTORY_H
 
+#include <boost/limits.hpp>
 #include <alps/random/random.h>
 #include <alps/factory.h>
 #include <string>
