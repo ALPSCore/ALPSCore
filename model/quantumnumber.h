@@ -70,7 +70,7 @@ public:
   I distance(half_integer x) 
   { 
     assert(std::abs(val_)%2==std::abs(x.val_)%2);
-    return (val_/2-x.val_/2)+ ((val_>=0 && x.val_<0)||(val_<0 && x.val_>=0) ? 1 : 0);
+    return (val_-x.val_)/2;
   }
   static half_integer max() { return half_integer(std::numeric_limits<I>::max(),0);}
   static half_integer min() { return std::numeric_limits<I>::is_signed ? 
