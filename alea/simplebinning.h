@@ -230,7 +230,7 @@ typename SimpleBinning<T>::convergence_type SimpleBinning<T>::converged_errors()
   convergence_type conv;
   result_type err=error();
   obs_value_traits<T>::resize_same_as(conv,err);
-  const int range=5;
+  const int range=4;
   typename obs_value_traits<convergence_type>::slice_iterator it;
   if (binning_depth()<range) {
     for (it= obs_value_traits<convergence_type>::slice_begin(conv); 
