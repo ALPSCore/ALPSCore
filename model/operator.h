@@ -35,6 +35,7 @@
 #include <alps/expression.h>
 #include <alps/multi_array.hpp>
 #include <alps/parameters.h>
+#include <boost/tuple/tuple.hpp>
 #include <vector>
 
 namespace alps {
@@ -54,7 +55,7 @@ public:
   void write_xml(oxstream&) const;
 
   template <class STATE>
-  std::pair<STATE, Expression>
+  boost::tuple<STATE, Expression,bool>
   apply(STATE state, const SiteBasisDescriptor<I>& basis, const ParameterEvaluator& p) const;
 
   const std::string& name() const { return name_;}
@@ -90,7 +91,7 @@ protected:
 
 template <class I>
 template <class STATE>
-std::pair<STATE, Expression>
+boost::tuple<STATE, Expression,bool>
 OperatorDescriptor<I>::apply(STATE state, const SiteBasisDescriptor<I>& basis, const ParameterEvaluator& eval) const
 {
   // set quantum numbers as parameters
@@ -107,17 +108,26 @@ OperatorDescriptor<I>::apply(STATE state, const SiteBasisDescriptor<I>& basis, c
   e.partial_evaluate(ParameterEvaluator(p));
 
   // apply operators
+  bool fermion_count=false;
+  bool fermionic=false;
   for (int i=0;i<basis.size();++i) {
     const_iterator it=this->find(basis[i].name());
     if (it!=super_type::end()) {
+      if (basis[i].fermionic() && is_odd(it->second)) {
+        fermionic=!fermionic;
+        if (fermion_count)
+          e.negate();
+      }
       get_quantumnumber(state,i)+=it->second; // apply change to QN
        if (!basis[i].valid(get_quantumnumber(state,i))) {
          e=Expression(0.);
          break;
        }
     }
+    if (basis[i].fermionic() && is_odd(get_quantumnumber(state,i)))
+      fermion_count=!fermion_count;
   }
-  return std::make_pair(state,e);
+  return boost::make_tuple(state,e,fermionic);
 }
 
 #ifndef ALPS_WITHOUT_XML

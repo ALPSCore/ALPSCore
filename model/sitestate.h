@@ -144,6 +144,16 @@ typename S::quantumnumber_type get_quantumnumber(const S& s, const std::string& 
   return get_quantumnumber(s,get_quantumnumber_index(n,b));
 }
 
+template <class I, class S>
+bool is_fermionic(const SiteBasisDescriptor<I>& b, const S& s)
+{
+  bool f=false;
+  for (int i=0;i<b.size();++i)
+    if (b[i].fermionic() && is_odd(get_quantumnumber(s,i)))
+      f=!f;
+  return f;
+}
+
 }
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE

@@ -167,6 +167,19 @@ inline std::istream& operator>>(std::istream& is, half_integer<I>& x)
   return is;
 }
 
+template <class T>
+bool is_odd(T x)
+{
+  return (x%2);
+}
+
+template <class I>
+bool is_odd(half_integer<I> x)
+{
+  return (std::abs(x.get_twice())%4==2);
+}
+
+
 } // namespace alps
 
 #endif

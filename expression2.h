@@ -196,8 +196,8 @@ public:
   bool depends_on(const std::string&) const;
 
   int num_factors() const {return terms_.size(); }
-private:
   void negate() { is_negative_ = !is_negative_;}
+private:
   bool is_negative_;
   std::vector<Factor<T> > terms_;
 };
@@ -261,6 +261,13 @@ public:
   void parse(const std::string& str);
   void parse(std::istream& is);
 
+  Expression operator-() const { Expression e(*this); e.negate(); return e;}
+  const Expression& negate() 
+  {
+    for (typename std::vector<Term<T> >::iterator it=terms_.begin();it!=terms_.end();++it)
+      it->negate();
+    return *this;
+  } 
 private:
   std::vector<Term<T> > terms_;
 };

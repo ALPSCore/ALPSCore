@@ -114,8 +114,8 @@ public:
   typedef std::vector<Factor>::const_iterator factor_iterator;
   virtual std::pair<factor_iterator,factor_iterator> factors() const;
   bool depends_on(const std::string&) const;
-private:
   void negate() { is_negative_ = !is_negative_;}
+private:
   bool is_negative_;
   std::vector<Factor> terms_;
 };
@@ -149,6 +149,14 @@ public:
   bool is_single_term() const;
   Term term() const;
   bool depends_on(const std::string&) const;
+  Expression operator-() const { Expression e(*this); e.negate(); return e;}
+  const Expression& negate() 
+  {
+    for (std::vector<Term>::iterator it=terms_.begin();it!=terms_.end();++it)
+      it->negate();
+    return *this;
+  } 
+
 private:
   std::vector<Term> terms_;
 };

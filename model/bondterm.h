@@ -66,7 +66,7 @@ public:
   const std::string& target () const { return target_;}
 
   template <class T>
-  boost::multi_array<T,4> matrix(const SiteBasisDescriptor<I>&, const SiteBasisDescriptor<I>&, const operator_map&, const Parameters& =Parameters()) const;
+  boost::multi_array<std::pair<T,std::pair<bool,bool> >,4> matrix(const SiteBasisDescriptor<I>&, const SiteBasisDescriptor<I>&, const operator_map&, const Parameters& =Parameters()) const;
   std::set<Term> split(const operator_map&, const Parameters& = Parameters()) const;
 
 private:
@@ -93,18 +93,20 @@ public:
                         std::string site1, std::string site2,
 			const Parameters& p, const operator_map& o)
     : super_type(p,o), state_(s1,s2), basis1_(b1), basis2_(b2),
-      sites_(site1,site2) {}
+      sites_(site1,site2), fermionic_(false,false) {}
   bool can_evaluate_function(const std::string& name,
 			     const Expression& argument) const;
   Expression partial_evaluate_function(const std::string& name,
 					const Expression& argument) const;
   const std::pair<STATE1,STATE2>& state() const { return state_;}
+  std::pair<bool,bool> fermionic() const { return fermionic_;}
 
 private:
   mutable std::pair<STATE1,STATE2> state_;
   const SiteBasisDescriptor<I>& basis1_;
   const SiteBasisDescriptor<I>& basis2_;
   std::pair<std::string, std::string> sites_;
+  mutable std::pair<bool,bool> fermionic_;
 };
 
 template <class I>
@@ -155,10 +157,17 @@ Expression BondOperatorEvaluator<I, STATE1, STATE2>::partial_evaluate_function(c
   typename operator_map::const_iterator op = super_type::ops_.find(name);
   if (op!=super_type::ops_.end()) {  // evaluate operator
     Expression e;
-    if (arg==sites_.first)
-      boost::tie(state_.first,e) = op->second.apply(state_.first,basis1_,*this);
-    else  if (arg==sites_.second)
-      boost::tie(state_.second,e) = op->second.apply(state_.second,basis2_,*this);
+    bool f;
+    if (arg==sites_.first) {
+      boost::tie(state_.first,e,f) = op->second.apply(state_.first,basis1_,*this);
+      if (f)
+        fermionic_.first=!fermionic_.first;
+    }
+    else  if (arg==sites_.second) {
+      boost::tie(state_.second,e,f) = op->second.apply(state_.second,basis2_,*this);
+      if (f)
+        fermionic_.second=!fermionic_.second;
+    }
     else
       return ParameterEvaluator(*this).partial_evaluate_function(name,arg);
     return e;
@@ -186,12 +195,28 @@ Expression BondOperatorSplitter<I>::partial_evaluate_function(const std::string&
 }
 
 template <class I, class T>
-boost::multi_array<T,4> get_matrix(T,const BondTermDescriptor<I>& m, const SiteBasisDescriptor<I>& basis1, const SiteBasisDescriptor<I>& basis2, const  typename BondTermDescriptor<I>::operator_map& ops, const Parameters& p=Parameters())
+boost::multi_array<std::pair<T,std::pair<bool,bool> >,4> get_fermionic_matrix(T,const BondTermDescriptor<I>& m, const SiteBasisDescriptor<I>& basis1, const SiteBasisDescriptor<I>& basis2, const  typename BondTermDescriptor<I>::operator_map& ops, const Parameters& p=Parameters())
 {
   return m.template matrix<T>(basis1,basis2,ops,p);
 }
 
-template <class I> template <class T> boost::multi_array<T,4>
+template <class I, class T>
+boost::multi_array<T,4> get_matrix(T,const BondTermDescriptor<I>& m, const SiteBasisDescriptor<I>& basis1, const SiteBasisDescriptor<I>& basis2, const  typename BondTermDescriptor<I>::operator_map& ops, const Parameters& p=Parameters())
+{
+  boost::multi_array<std::pair<T,std::pair<bool,bool> >,4> f_matrix = m.template matrix<T>(basis1,basis2,ops,p);
+  boost::multi_array<T,4> matrix(boost::extents[f_matrix.shape()[0]][f_matrix.shape()[1]][f_matrix.shape()[2]][f_matrix.shape()[3]]);
+  for (int i=0;i<f_matrix.shape()[0];++i)
+    for (int j=0;j<f_matrix.shape()[1];++j)
+      for (int k=0;k<f_matrix.shape()[2];++k)
+        for (int l=0;l<f_matrix.shape()[3];++l)
+          if (f_matrix[i][j][k][l].second.first || f_matrix[i][j][k][l].second.second)
+            boost::throw_exception(std::runtime_error("Cannot convert fermionic operator to a bosonic matrix"));
+          else
+           matrix[i][j][k][l]=f_matrix[i][j][k][l].first;
+  return matrix;
+}
+
+template <class I> template <class T> boost::multi_array<std::pair<T,std::pair<bool,bool> >,4>
 BondTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b1,
                               const SiteBasisDescriptor<I>& b2,
                               const operator_map& ops,
@@ -206,7 +231,7 @@ BondTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b1,
   parms.copy_undefined(basis2.get_parameters());
   std::size_t dim1=basis1.num_states();
   std::size_t dim2=basis2.num_states();
-  boost::multi_array<T,4> mat(boost::extents[dim1][dim2][dim1][dim2]);
+  boost::multi_array<std::pair<T,std::pair<bool,bool> >,4> mat(boost::extents[dim1][dim2][dim1][dim2]);
   // parse expression and store it as sum of terms
   Expression ex(term());
   ex.flatten();
@@ -215,6 +240,11 @@ BondTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b1,
     typedef single_qn_site_state<I> state_type;
     site_basis<I,state_type> states1(basis1);
     site_basis<I,state_type> states2(basis2);
+    for (int i=0;i<mat.shape()[0];++i)
+      for (int j=0;j<mat.shape()[1];++j)
+        for (int k=0;k<mat.shape()[2];++k)
+          for (int l=0;l<mat.shape()[3];++l)
+            mat[i][j][k][l].second=std::make_pair(false,false);
     for (int i1=0;i1<states1.size();++i1)
       for (int i2=0;i2<states2.size();++i2) {
       //calculate expression applied to state *it and store it into matrix
@@ -224,19 +254,31 @@ BondTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b1,
           term.partial_evaluate(evaluator);
           int j1=states1.index(evaluator.state().first);
           int j2=states2.index(evaluator.state().second);
+	      if (alps::is_nonzero(term)) {
+            if (!alps::is_nonzero(mat[i1][i2][j1][j2].first)) {
+              if (mat[i1][i2][j1][j2].second.first != evaluator.fermionic().first || 
+                  mat[i1][i2][j1][j2].second.second != evaluator.fermionic().second) 
+                boost::throw_exception(std::runtime_error("Inconsistent fermionic nature of a matrix element. Please contact the library authors for an extension to the ALPS model library."));
+            }
+            else
+              mat[i1][i2][j1][j2].second=evaluator.fermionic();
 #ifndef ALPS_WITH_NEW_EXPRESSION
-	  if (boost::lexical_cast<std::string,Term>(term)!="0")
-            mat[i1][i2][j1][j2] += term;
+            mat[i1][i2][j1][j2].first += term;
 #else
-          if (alps::is_nonzero(term))
-            mat[i1][i2][j1][j2] += evaluate<T>(term);
+            mat[i1][i2][j1][j2].first += evaluate<T>(term);
 #endif
+        }
       }
     }
   }
   else  {
     site_basis<I> states1(basis1);
     site_basis<I> states2(basis2);
+    for (int i=0;i<mat.shape()[0];++i)
+      for (int j=0;j<mat.shape()[1];++j)
+        for (int k=0;k<mat.shape()[2];++k)
+          for (int l=0;l<mat.shape()[3];++l)
+            mat[i][j][k][l].second=std::make_pair(false,false);
     for (int i1=0;i1<states1.size();++i1)
       for (int i2=0;i2<states2.size();++i2) {
       //calculate expression applied to state *it and store it into matrix
@@ -246,13 +288,20 @@ BondTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b1,
           term.partial_evaluate(evaluator);
           int j1=states1.index(evaluator.state().first);
           int j2=states2.index(evaluator.state().second);
+	      if (alps::is_nonzero(term)) {
+            if (!alps::is_nonzero(mat[i1][i2][j1][j2].first)) {
+              if (mat[i1][i2][j1][j2].second.first != evaluator.fermionic().first || 
+                  mat[i1][i2][j1][j2].second.second != evaluator.fermionic().second) 
+                boost::throw_exception(std::runtime_error("Inconsistent fermionic nature of a matrix element. Please contact the library authors for an extension to the ALPS model library."));
+            }
+            else
+              mat[i1][i2][j1][j2].second=evaluator.fermionic();
 #ifndef ALPS_WITH_NEW_EXPRESSION
-	  if (boost::lexical_cast<std::string,Term>(term)!="0")
-            mat[i1][i2][j1][j2] += term;
+            mat[i1][i2][j1][j2].first += term;
 #else
-          if (alps::is_nonzero(term))
-            mat[i1][i2][j1][j2] += evaluate<T>(term);
+            mat[i1][i2][j1][j2].first += evaluate<T>(term);
 #endif
+        }
       }
     }
   }
