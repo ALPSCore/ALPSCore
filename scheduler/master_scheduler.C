@@ -192,7 +192,7 @@ void MasterScheduler::checkpoint()
     out << alps::processing_instruction("xml-stylesheet") << alps::attribute("type","text/xsl") 
         << alps::attribute("href","http://xml.comp-phys.org/2002/10/job.xsl");
     out << alps::start_tag("JOB") << alps::xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
-	      << alps::attribute("xsi:noNamespaceSchemaLocation","http://xml.comp-phys.org/2002/10/job.xsd");
+	      << alps::attribute("xsi:noNamespaceSchemaLocation","http://xml.comp-phys.org/2003/8/job.xsd");
     int local_sim=-1;
     
     for (int i=0; i<tasks.size();i++) {
