@@ -98,7 +98,7 @@ void MCSimulation::write_xml_body(oxstream& out, const boost::filesystem::path& 
   boost::filesystem::path fn_hdf5;
   if(!name.empty())
     fn_hdf5=name.branch_path()/(name.leaf()+".hdf");
-  get_measurements(true).write_xml(out,fn_hdf5); // write compacted measurements
+  get_measurements(false).write_xml(out,fn_hdf5); // write non-compacted measurements
   WorkerTask::write_xml_body(out,name);
 }
 

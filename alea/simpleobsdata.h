@@ -585,7 +585,6 @@ void SimpleObservableData<T>::transform(const SimpleObservableData<X>& x,
   valid_ = false;
   nonlinear_operations_ = true;
   changed_ = true;
-  mean_ = opr(mean_, x.mean_);
   has_minmax_ = false;
   has_variance_ = false;
   has_tau_=false;

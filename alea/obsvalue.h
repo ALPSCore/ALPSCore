@@ -84,6 +84,8 @@ struct obs_value_traits
   template <class X> static std::size_t size(const X&) { return 1;}
   
   template <class X> static T convert(X x) { return static_cast<T>(x);}
+  static element_type slice_value(const value_type& x, int) { return x;}
+
 };
 
 template <class DST,class SRC> DST obs_value_cast(const SRC& s) 

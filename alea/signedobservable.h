@@ -86,6 +86,7 @@ public:
 
   uint32_t version_id() const { return version;}
 
+  void compact() { obs_.compact();}
   void rename(const std::string& newname) { rename(newname); obs_.rename(sign_name_ + " * "+newname);}
   ALPS_DUMMY_VOID reset(bool forthermalization) { obs_.reset(forthermalization); ALPS_RETURN_VOID}
   ALPS_DUMMY_VOID output(std::ostream& out) const 
@@ -103,8 +104,8 @@ public:
 
 
   count_type count() const { return obs_.count();}
-  result_type mean() const { return static_cast<SimpleObservableEvaluator<value_type> >(*this).mean();}
-  result_type error() const { return static_cast<SimpleObservableEvaluator<value_type> >(*this).error();}
+  result_type mean() const { return make_evaluator().mean();}
+  result_type error() const { return make_evaluator().error();}
   
   bool can_set_thermalization() const { return  obs_.can_set_thermalization();}
   void set_thermalization(uint32_t todiscard) { obs_.set_thermalization(todiscard);}

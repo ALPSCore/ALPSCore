@@ -51,11 +51,11 @@ class AbstractBinning
   AbstractBinning(uint32_t=0) { }
 
   time_type tau()                  const { boost::throw_exception(std::logic_error("Called non-implemented function of AbstractBinning")); return time_type(); }
-  uint32_t max_bin_number()        const { return 0; }
-  uint32_t bin_number()            const { return 0; }
-  uint32_t filled_bin_number()     const { return 0; }
-  uint32_t filled_bin_number2()     const { return 0; }
-  uint32_t bin_size()              const { return 0; }
+  virtual uint32_t max_bin_number()        const { return 0; }
+  virtual uint32_t bin_number()            const { return 0; }
+  virtual uint32_t filled_bin_number()     const { return 0; }
+  virtual uint32_t filled_bin_number2()     const { return 0; }
+  virtual uint32_t bin_size()              const { return 0; }
   const value_type& bin_value(uint32_t  ) const {
     boost::throw_exception(std::logic_error("Binning is not supported for this observable"));
     return *(new value_type); // dummy return

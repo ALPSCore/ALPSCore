@@ -54,44 +54,46 @@ ObservableFactory::ObservableFactory()
 {
   register_observable<IntObsevaluator>();
   register_observable<RealObsevaluator>();
-  register_observable<SimpleIntObservable>();
   register_observable<IntObservable>();
-  register_observable<IntTimeSeriesObservable>();
-  register_observable<SimpleRealObservable>();
   register_observable<RealObservable>();
-  register_observable<RealTimeSeriesObservable>();
-  //register_observable<AbstractSignedObservable<IntObsevaluator> >();
   register_observable<AbstractSignedObservable<RealObsevaluator> >();
+  //register_observable<AbstractSignedObservable<IntObsevaluator> >();
   //register_observable<SignedObservable<SimpleIntObservable> >();
   //register_observable<SignedObservable<IntObservable> >();
   //register_observable<SignedObservable<IntTimeSeriesObservable> >();
-  register_observable<SignedObservable<SimpleRealObservable> >();
   register_observable<SignedObservable<RealObservable> >();
+  register_observable<SignedObservable<SimpleRealObservable> >();
   register_observable<SignedObservable<RealTimeSeriesObservable> >();
+  register_observable<IntTimeSeriesObservable>();
+  register_observable<RealTimeSeriesObservable>();
+  register_observable<SimpleRealObservable>();
+  register_observable<SimpleIntObservable>();
 #ifdef ALPS_HAVE_VALARRAY
   register_observable<RealVectorObsevaluator>();
-  register_observable<IntVectorObsevaluator>();
   register_observable<RealVectorObservable>();
-  register_observable<SimpleRealVectorObservable>();
+  register_observable<SignedObservable<RealVectorObservable> >();
+  register_observable<IntVectorObservable>();
+  register_observable<IntVectorObsevaluator>();
+  register_observable<IntVectorTimeSeriesObservable>();
   register_observable<RealVectorTimeSeriesObservable>();
   register_observable<SimpleIntVectorObservable>();
-  register_observable<IntVectorObservable>();
-  register_observable<IntVectorTimeSeriesObservable>();
+  register_observable<SimpleRealVectorObservable>();
   register_observable<AbstractSignedObservable<RealVectorObsevaluator> >();
   //register_observable<AbstractSignedObservable<IntVectorObsevaluator> >();
-  register_observable<SignedObservable<RealVectorObservable> >();
   register_observable<SignedObservable<SimpleRealVectorObservable> >();
   register_observable<SignedObservable<RealVectorTimeSeriesObservable> >();
   //register_observable<SignedObservable<SimpleIntVectorObservable> >();
   //register_observable<SignedObservable<IntVectorObservable> >();
   //register_observable<SignedObservable<IntVectorTimeSeriesObservable> >();
 #endif
+/*
   register_observable<Real2DArrayObservable>();
   register_observable<SimpleReal2DArrayObservable>();
   register_observable<SignedObservable<Real2DArrayObservable> >();
   register_observable<SignedObservable<SimpleReal2DArrayObservable> >();
   register_observable<HistogramObservable<int32_t> >();
   register_observable<HistogramObservable<int32_t,double> >();
+*/
 }
 
 
