@@ -31,6 +31,7 @@
 #ifndef ALPS_LATTICE_GRAPH_H
 #define ALPS_LATTICE_GRAPH_H
 
+#include <alps/lattice/dimensional_traits.h>
 #include <alps/parser/parser.h>
 #include <alps/parser/xmlstream.h>
 #include <alps/lattice/graphproperties.h>
