@@ -195,15 +195,30 @@ struct property_map
         singleton_property_map<Default> 
       >::type
     >::type type;
-    
-  typedef 
+
+  typedef
     typename detail::choose<has_property<P,G>::graph_property,
       const typename has_property<P,G>::graph_property_type&,
       typename detail::choose<has_property<P,G>::any_property,
         typename boost::property_map<G,P>::const_type,
-        singleton_property_map<Default> 
+        singleton_property_map<Default>
       >::type
     >::type const_type;
+};
+
+template <class P, class G, class Default>
+struct property_map<P, const G, Default>
+{
+  typedef
+    typename detail::choose<has_property<P,G>::graph_property,
+      const typename has_property<P,G>::graph_property_type&,
+      typename detail::choose<has_property<P,G>::any_property,
+        typename boost::property_map<G,P>::const_type,
+        singleton_property_map<Default>
+      >::type
+    >::type type;
+
+  typedef type const_type;
 };
 
 
@@ -219,31 +234,18 @@ struct put_get_helper
   template <class P, class G>
   static typename property_map<P,G,int>::type get_property (P p, G& g) 
   { return boost::get(p,g);}
-
-  template <class P, class G>
-  static typename property_map<P,G,int>::const_type get_property (P p, const G& g) 
-  { return boost::get(p,g);}
 };
 
 template <>
 struct put_get_helper<true>
 {
   template <class P, class G, class T>
-  static typename property_map<P,G,int>::type get (P p, G& g, const T&) {
-    return put_get_helper<has_property<P,G>::graph_property>::get_property(p,g);
-  }
-
-  template <class P, class G, class T>
-  static typename property_map<P,G,int>::const_type get (P p, const G& g, const T&) {
+  static typename property_map<P,G,int>::type get (P p, G& g, T) {
     return put_get_helper<has_property<P,G>::graph_property>::get_property(p,g);
   }
 
   template <class P, class G>
   static typename property_map<P,G,int>::type get_property (P p, G& g) 
-  { return boost::get_property(g,p);}
-
-  template <class P, class G>
-  static typename property_map<P,const G,int>::const_type get_property (P p, const G& g) 
   { return boost::get_property(g,p);}
 };
 
@@ -251,14 +253,7 @@ struct put_get_helper<true>
 
 template <class P, class G, class V>
 inline typename property_map<P,G,V>::type
-get_or_default(P p, G& g, const V& v=V())
-{
-  return detail::put_get_helper<has_property<P,G>::any_property>::get(p,g,v);
-}
-
-template <class P, class G, class V>
-inline typename property_map<P,G,V>::const_type
-get_or_default(P p, const G& g, const V& v=V())
+get_or_default(P p, G& g, const V& v)
 {
   return detail::put_get_helper<has_property<P,G>::any_property>::get(p,g,v);
 }
