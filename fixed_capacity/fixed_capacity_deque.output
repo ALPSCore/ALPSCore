@@ -1,0 +1,35 @@
+initialize fixed_capacity_deque of size = 3
+assign(2)
+push_back(4)
+a.erase(a.begin() + 1)
+a.insert(a.begin() + 2, 5)
+a.insert(a.begin() + 1, 2, 6)
+a.pop_back()
+size:     5
+empty:    false
+max_size: 6
+front:    2
+back:     5
+elems:    2 6 6 2 5 
+a.pop_back() two times
+a.push_front(1) three times
+elems:    1 1 1 2 6 6 
+a.erase(a.begin(), a.end())
+elems:    
+resize(2,1)
+insert of std::vector (2,3,4,5) at begin() + 1
+elems:    1 2 3 4 5 1 
+erase(begin()+3, begin()+6)
+insert of std::list (6,7,8) at begin()
+elems:    8 7 6 1 2 3 
+copy construction and copy assignment are OK
+copy construction and copy assignment for different size are OK
+elems in reverse order:    3 2 1 6 7 8 
+a elems:    8 7 6 1 2 3 
+b elems:    10 11 12 
+swap a and b
+a elems:    10 11 12 
+b elems:    8 7 6 1 2 3 
+swap again
+a elems:    8 7 6 1 2 3 
+b elems:    10 11 12 
