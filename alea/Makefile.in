@@ -28,7 +28,7 @@ top_builddir = ./@top_builddir@
 
 include $(top_srcdir)/config/include-build.mk
 
-libs_program = -lalps $(XML_LIBS) $(BASE_LIBS)
+libs_program = -lalps -lcomm-sgl $(XML_LIBS) $(BASE_LIBS)
 
 TESTOK = detailedbinning.ok simpleobseval.ok
 

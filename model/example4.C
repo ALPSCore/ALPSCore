@@ -22,10 +22,6 @@
 #include <alps/model.h>
 #include <iostream>
 
-#ifdef BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP
-using namespace model;
-#endif
-
 boost::multi_array<alps::Expression,2> bondmatrix(const alps::ModelLibrary lib, const std::string& name, 
                                                   const alps::Parameters& p=alps::Parameters())
 {

@@ -22,10 +22,6 @@
 #include <alps/model.h>
 #include <iostream>
 
-#ifdef BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP
-using namespace model;
-#endif
-
 void write_set(const std::string& name, const alps::ModelLibrary& lib, 
                const alps::Parameters& p=alps::Parameters())
 {
