@@ -34,6 +34,7 @@
 #include <boost/mpl/and.hpp>
 #include <boost/mpl/not.hpp>
 #include <boost/throw_exception.hpp>
+#include <boost/type.hpp>
 #include <boost/type_traits/is_float.hpp>
 #include <boost/type_traits/is_integral.hpp>
 #include <boost/type_traits/is_same.hpp>
@@ -153,18 +154,21 @@ public:
     return (val_-x.get_twice())/2;
   }
   static half_integer max()
-  { return half_integer(std::numeric_limits<I>::max(),0); }
+  { return half_integer(std::numeric_limits<I>::max(), to_distinguish()); }
   static half_integer min()
   {
     return std::numeric_limits<I>::is_signed ?
-      -half_integer(std::numeric_limits<I>::max(),0) :
-      half_integer(std::numeric_limits<I>::min(),0);
+      -half_integer(std::numeric_limits<I>::max(), to_distinguish()) :
+      half_integer(std::numeric_limits<I>::min(), to_distinguish());
   }
   
-  half_integer abs() const { return half_integer(std::abs(val_), int()); }
+  half_integer abs() const
+  { return half_integer(std::abs(val_), to_distinguish()); }
 
 private:
-  half_integer(integer_type i, int /* to distinguish */) : val_(i) {}
+  struct to_distinguish {};
+  half_integer(integer_type i, const to_distinguish&)
+    : val_(i) {}
   integer_type val_;
 };
 
