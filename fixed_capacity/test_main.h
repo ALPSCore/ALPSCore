@@ -232,6 +232,8 @@ void test_main(std::size_t m, std::size_t n) {
         }
       } else {
 #if !(__GNUC__ == 3 && __GNUC_MINOR__ == 1)
+	// gcc-3.1 has a bug in std::uninitialized_copy,
+	// so just skip this test.
 #ifdef VERBOSE
         std::cout << "insert sequence\n";
 #endif
@@ -239,7 +241,7 @@ void test_main(std::size_t m, std::size_t n) {
         s.insert(s.begin() + p, v.begin(), v.end());
         t.insert(t.begin() + p, v.begin(), v.end());
         u.insert(u.begin() + p, v.begin(), v.end());
-#endif
+#endif // !(__GNUC__ == 3 && __GNUC_MINOR__ == 1)
       }
     } else {
       // erase
