@@ -40,13 +40,12 @@ namespace detail {
 class Buffer;
 
 /** a simple Buffer class. values can be written into it or read from it. */
-class Buffer : public std::vector<uint8_t>
+class Buffer : public std::vector<char>
 {
   public:
-  /** create a buffer. 
-      @param n the inital memory size allocated for the buffer.*/
+  /** create a buffer. */
   Buffer()
-    : std::vector<uint8_t>(),
+    : std::vector<char>(),
       read_pos(0) {}
 
  /// erase the Buffer
@@ -55,12 +54,8 @@ class Buffer : public std::vector<uint8_t>
   /** get a pointer to the Buffer. 
       This pointer might be invalidated by writing to the Buffer.
   */
-  operator uint8_t* () { return (size() ? &(this->operator[](0)) : 0); }
+  operator char* () { return (size() ? &(this->operator[](0)) : 0); }
 
-//-----------------------------------------------------------------------
-// READING AND WRITING
-//-----------------------------------------------------------------------
- 
   // write basic data types and arrays of them
 
 template <class T>
@@ -78,24 +73,14 @@ template <class T>
   // read basic data types and arrays of them
   
   template <class T>
-  void read(T* p,size_type n=1) 
-  {
-    read_buffer(p, n*sizeof(T));
-  }
+  void read(T* p,size_type n=1) { read_buffer(p, n*sizeof(T));}
 
   template <class T>
-  void read(T& x) 
-  {
-    read_buffer(&x, sizeof(T));
-  }
+  void read(T& x) { read_buffer(&x, sizeof(T)); }
 
 private:
   // the position at which reading will take place
   uint32_t read_pos; 
-
-//-----------------------------------------------------------------------
-// READING AND WRITING
-//-----------------------------------------------------------------------
 
   void write_buffer(const void*, size_type);
   void read_buffer(void*, size_type);

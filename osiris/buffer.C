@@ -38,8 +38,7 @@
 namespace alps {
 namespace detail {
 
-// write a few bytes and update length
-
+// write a few bytes
 void Buffer::write_buffer(const void* p, size_type n)
 {
   size_type write_pos=size();
@@ -49,7 +48,6 @@ void Buffer::write_buffer(const void* p, size_type n)
 
 
 // read a few bytes and update position
-
 void Buffer::read_buffer(void* p, size_type n)
 {
   if(read_pos+n>size())
