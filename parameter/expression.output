@@ -21,6 +21,9 @@ The value of [beta] is 10
 The value of [sqrt(L)] is 3.16228
 The value of [sin(2 * Pi / L)] is 0.587785
 The value of [cos(2 * Pi / L)] is 0.809017
+The value of [L^2] is 100
+The value of [(L + 1)^3] is 1331
+The value of [(L + 1)^-1 * 5] is 0.454545
 Cannot evaluate [error].
 The value of [sqrt(3.33)] is 1.82483
 The value of [L*T] is 1

@@ -40,7 +40,7 @@ int main()
   try {
 #endif
 
-    alps::Expression x("3*(a*b)*2");
+    alps::Expression x("3*(a*b)*2+5*(x*y)^2*x*3");
     x.simplify();
     std::cout << x << "\n";
 
