@@ -74,12 +74,12 @@ class SimpleFactory : public Factory
 public:
   SimpleFactory() {}
   
-  TASK* make_task(const ProcessList& w,const boost::filesystem::path& fn) const
+  Task* make_task(const ProcessList& w,const boost::filesystem::path& fn) const
   {
     return new TASK(w,fn);
   }
 
-  WORKER* make_worker(const ProcessList& where ,const Parameters& parms,int node) const
+  Worker* make_worker(const ProcessList& where ,const Parameters& parms,int node) const
   {
     return new WORKER(where,parms,node);
   }

@@ -253,7 +253,7 @@ public:
     return std::make_pair(ison,crossing);
   }
   
-  std::string boundary(uint32_t dim) const{ return bc_[dim];}
+  const std::string& boundary(uint32_t dim) const{ return bc_[dim];}
   const std::vector<std::string>& boundary() const { return bc_;}
   typename extent_type::value_type extent(uint32_t dim) const {return extent_[dim];}
   const extent_type& extent() const { return extent_;}

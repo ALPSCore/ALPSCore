@@ -48,7 +48,7 @@ namespace alps {
 
 /** a host descriptor.
     the Host class describes a host computer. */
-class Host // : public Dumpable
+class Host
 {
 public:	
   /// construct an invalid hosts
