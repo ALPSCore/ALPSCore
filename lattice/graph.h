@@ -118,7 +118,7 @@ inline void write_graph_xml(oxstream& out, const GRAPH& g, const std::string& n=
     out << start_tag("EDGE") << attribute("source", vertexindex[boost::source(*it,g)]+1)
         << attribute("target", vertexindex[boost::target(*it,g)]+1);
     if (has_property<boost::edge_index_t,graph_type>::edge_property)
-      out << attribute("id", edgeindex[*it]);
+      out << attribute("id", edgeindex[*it]+1);
     if (has_property<edge_type_t,graph_type>::edge_property)
       out << attribute("type", edgetype[*it]);
     out << end_tag("EDGE");
