@@ -331,7 +331,7 @@ inline SimpleObservableData<T>::SimpleObservableData(std::istream& infile, const
 
 inline double text_to_double(const std::string& val) 
 {
-  return  ((val=="NaN" || val=="nan" || val=="NaNQ") ? alps::nan() : ( (val=="Inf" || val == "inf") ? alps::inf() : boost::lexical_cast<double,std::string>(val)));
+  return  ((val=="NaN" || val=="nan" || val=="NaNQ") ? alps::nan() : ( (val=="INF" || val=="Inf" || val == "inf") ? alps::inf() : boost::lexical_cast<double,std::string>(val)));
 }
 
 template <class T>
