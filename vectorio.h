@@ -152,6 +152,7 @@ template <class CONTAINER>
 inline std::string vector_writer(const CONTAINER& c, const std::string& delim=" ")
 {
   std::ostringstream str;
+  str << std::setprecision(20);
   write_vector(str,c,delim);
   return str.str();
 }

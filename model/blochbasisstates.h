@@ -211,9 +211,10 @@ void bloch_basis_states<I,S,SS>::build(const translation_type& trans, const std:
     ++idx[last];
   }
 
-  for (int i=0;i<super_type::size()-1;++i)
-    if (!((*this)[i]<(*this)[i+1]))
-      boost::throw_exception(std::logic_error("Bloch basis not sorted correctly"));
+  if (super_type::size())
+    for (int i=0;i<super_type::size()-1;++i)
+      if (!((*this)[i]<(*this)[i+1]))
+        boost::throw_exception(std::logic_error("Bloch basis not sorted correctly"));
 }
 
 } // namespace alps
