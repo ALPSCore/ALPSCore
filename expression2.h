@@ -789,7 +789,7 @@ template<class T>
 bool is_zero(expression::Expression<T> x)
 {
   std::string s = boost::lexical_cast<std::string>(x);
-  return s=="" || s=="0" || s=="0.";
+  return s=="" || s=="0" || s=="0." || s=="-0" || s=="-0.";
 }
 
 template<class T>

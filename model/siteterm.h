@@ -170,7 +170,7 @@ SiteTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b,
         term.partial_evaluate(evaluator);
         int j = states.index(evaluator.state());
 	    if (alps::is_nonzero(term)) {
-          if (!alps::is_nonzero(mat[i][j].first)) {
+          if (alps::is_nonzero(mat[i][j].first)) {
             if (mat[i][j].second != evaluator.fermionic())
               boost::throw_exception(std::runtime_error("Inconsistent fermionic nature of a matrix element. Please contact the library authors for an extension to the ALPS model library."));
           }
