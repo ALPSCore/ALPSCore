@@ -140,7 +140,7 @@ bool is_frustrated(const G& graph, M bond_map)
   typedef G graph_type;
   boost::filtered_graph<graph_type,nonzero_edge_weight<M> > g(graph,nonzero_edge_weight<M>(bond_map));
   boost::vector_property_map<int> map; // map to store the relative signs of the sublattices
-  bool check; // no sign problem
+  bool check=false; // no sign problem
 #ifndef ALPS_USE_DFS2
   boost::depth_first_search(g, boost::visitor(parity::make_sign_visitor(g,map, &check, bond_map)));
 #else
@@ -181,8 +181,8 @@ bool has_sign_problem(const HamiltonianDescriptor<I>& ham, const graph_helper<G>
             else if (this_sign && sign!=this_sign) // compare other nonzero matrix elements
               return true; // we might have a sign problem: indefinite sign of matrix elements 
           }
-      bond_sign[boost::make_tuple(btype,stype1,stype2)]=sign;
-      bond_sign[boost::make_tuple(btype,stype2,stype1)]=sign;
+      bond_sign[boost::make_tuple(btype,stype1,stype2)]=-sign;
+      bond_sign[boost::make_tuple(btype,stype2,stype1)]=-sign;
     }
   }
 

@@ -92,6 +92,7 @@ class ObservableSet: public std::map<std::string,Observable*>
       @throws std::bad_cast if merging fails
   */
   const ObservableSet& operator<<(const Observable& obs);
+  const ObservableSet& operator<<(const boost::shared_ptr<Observable>& obs) { return (*this) << (*obs); }
 
   /** add an observable to the set.
       The ObservableSet will delete the object at the end.

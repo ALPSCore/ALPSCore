@@ -191,7 +191,6 @@ void ObservableSet::addObservable(Observable* obs)
 {
   if (obs) {
   // store pointer
-  obs->clone();
   obs->added_to_set(); // can no longer change name
   if(has(obs->name()))
     removeObservable(obs->name());

@@ -195,27 +195,27 @@ void AbstractSimpleObservable<T>::write_xml_scalar(oxstream& oxs, const boost::f
     if (is_signed())
       oxs << attribute("signed","true");     
 
-    oxs << start_tag("COUNT") << no_linebreak << count() << end_tag;
+    oxs << start_tag("COUNT") << no_linebreak << count() << end_tag("COUNT");
 
     oxs << start_tag("MEAN") << no_linebreak;
     if (mm != "") oxs << attribute("method", mm);
     int prec=int(4-std::log10(std::abs(error()/mean())));
     prec = (prec>=3 && prec<20 ? prec : 8);
-    oxs << precision(mean(),prec) << end_tag;
+    oxs << precision(mean(),prec) << end_tag("MEAN");
 
     oxs << start_tag("ERROR") << no_linebreak;
     if (em != "") oxs << attribute("method", em);
-    oxs << precision(error(), 3) << end_tag;
+    oxs << precision(error(), 3) << end_tag("ERROR");
 
     if (has_variance()) {
       oxs << start_tag("VARIANCE") << no_linebreak;
       if (vm != "") oxs << attribute("method", vm);
-      oxs << precision(variance(), 3) << end_tag;
+      oxs << precision(variance(), 3) << end_tag("VARIANCE");
     }
     if (has_tau()) {
       oxs << start_tag("AUTOCORR") << no_linebreak;
       if (tm != "") oxs << attribute("method", tm);
-      oxs << precision(tau(), 3) << end_tag;
+      oxs << precision(tau(), 3) << end_tag("AUTOCORR");
     }
 
 #ifdef ALPS_HAVE_HDF5
@@ -287,24 +287,24 @@ void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, const boost::f
       oxs << start_tag("MEAN") << no_linebreak;
       if (mm != "") oxs << attribute("method", mm);
       oxs << precision(obs_value_traits<result_type>::slice_value(mean_, it), prec)
-          << end_tag;
+          << end_tag("MEAN");
       
       oxs << start_tag("ERROR") << no_linebreak;
       if (em != "") oxs << attribute("method", em);
       oxs << precision(obs_value_traits<result_type>::slice_value(error_, it), 3)
-          << end_tag;
+          << end_tag("ERROR");
       
       if (has_variance()) {
         oxs << start_tag("VARIANCE") << no_linebreak;
         if (vm != "") oxs << attribute("method", vm);
         oxs << precision(obs_value_traits<result_type>::slice_value(variance_, it), 3)
-            << end_tag;
+            << end_tag("VARIANCE");
       }
       if (has_tau()) {
         oxs << start_tag("AUTOCORR") << no_linebreak;
         if (tm != "") oxs << attribute("method", tm);
         oxs << precision(obs_value_traits<time_type>::slice_value(tau_, it), 3)
-            << end_tag;
+            << end_tag("AUTOCORR");
       }
       
 #ifdef ALPS_HAVE_HDF5

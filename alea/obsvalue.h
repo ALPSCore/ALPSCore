@@ -71,13 +71,12 @@ struct obs_value_traits
 
   static inline time_type t_max() {return std::numeric_limits<time_type>::max();}
 
-  static inline void variance_check(const T& a,time_type& b, T eps)
-  { if (std::abs(a) < eps) b=t_max(); }
-
-  static inline time_type check_divide(const result_type& a,const result_type& b) 
+  static inline value_type check_divide(const result_type& a,const result_type& b) 
     {
-      return (b==0 ? t_max() : std::abs(a/b)); 
+      return (b==0 && a==0? 1. : a/b); 
     }
+    
+  static void fix_negative(value_type& x) { if (x<0.) x=0.;}
 
   /* resize a to the lenth size */
   template <class X, class Y> static void resize_same_as(X&,const Y&) {}
@@ -116,11 +115,11 @@ struct obs_value_traits<std::complex<T> >
 
   static inline time_type t_max() { return  std::numeric_limits<time_type>::max();}
 
-  static inline void variance_check(const value_type& a,time_type& b, T eps) { if (std::abs(a) < eps) b=t_max(); }
+  static void fix_negative(value_type& x) { if (std::real(x)<0. || std::imag(x)<0.) x=0.;}
 
-  static inline time_type check_divide(const result_type& a,const result_type& b)
+  static inline T check_divide(const result_type& a,const result_type& b)
     {
-      return (b==0 ? t_max() : std::abs(a/b)); 
+      return (b==0 && a==0 ? 1. : a/b); 
     }
 
   /** resize a to the lenth size */
@@ -159,26 +158,23 @@ struct obs_value_traits<std::valarray<T> >
     for(int32_t i=0;i!=a.size();++i)
       obs_value_traits<T>::check_for_min(a[i],b[i]);
   }    
-
+  static void fix_negative(value_type& a) 
+  {
+    for(int32_t i=0;i!=a.size();++i)
+      obs_value_traits<element_type>::fix_negative(a[i]);
+  }
   static element_type min() {return obs_value_traits<T>::min();}
   static element_type max() {return obs_value_traits<T>::max();}
   static element_type epsilon() { return obs_value_traits<T>::epsilon();}
 
   static time_element_type t_max() {return obs_value_traits<T>::max();}
 
-  static void variance_check(const std::valarray<T>& a,time_type& b, T eps)
-  {
-    for(int32_t j=0;j<a.size();++j)
-      if (std::abs(a[j])< eps)
-        b[j]=t_max();
-  }
-
   static inline time_type check_divide(const result_type& a,const result_type& b) 
   {
     time_type retval;
     resize_same_as(retval,b);
     for(int32_t i(0);i<b.size();++i)
-      retval[i] = (b[i]==0.0 ? t_max() : std::abs(a[i]/b[i]));
+      retval[i] = obs_value_traits<element_type>::check_divide(a[i],b[i]);
     return retval;
   }
 
@@ -247,17 +243,6 @@ template<typename T, std::size_t NumDims, typename Allocator>
 
   static time_element_type t_max() {return obs_value_traits<T>::max();}
 
-  static void variance_check(const value_type& a,time_type& b, T eps) 
-  {
-    typename value_type::const_iterator ait=a.begin();
-    typename time_type::iterator bit=b.begin();
-    for(;ait!=a.end() && bit!=b.end();++ait,++bit)
-        if (std::abs(*ait)< eps)
-          *bit=t_max();
-    if (ait!=a.end() || bit!=b.end())
-      boost::throw_exception(std::runtime_error("multi_arrays not of identical size in obs_value_traits::variance_check"));
-  }
-
   static inline time_type check_divide(const result_type& a,const result_type& b) 
   {
     time_type retval;
@@ -268,11 +253,18 @@ template<typename T, std::size_t NumDims, typename Allocator>
     typename time_type::iterator rit=retval.begin();
 
     for(;ait!=a.end() && bit!=b.end() && rit !=retval.end();++ait,++bit,++rit)
-      *rit=(*bit==0. ? t_max() : std::abs(*ait / *bit));
+      *rit= obs_value_traits<element_type>::check_divide(*ait,*bit);
     if (ait!=a.end() || bit!=b.end() || rit !=retval.end())
       boost::throw_exception(std::runtime_error("multi_arrays not of identical size in obs_value_traits::check_divide"));
     return retval;
   }
+
+  static void fix_negative(value_type& a) 
+  {
+    for(typename value_type::iterator it=a.begin();it!=a.end();++it)
+      obs_value_traits<element_type>::fix_negative(*it);
+  }
+
 
   template <class X, class AX, class Y, class AY> 
   static void resize_same_as(boost::multi_array<X,NumDims,AX>& x,

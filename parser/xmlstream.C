@@ -48,9 +48,12 @@ oxstream::oxstream(const boost::filesystem::path& file, uint32_t incr)
     linebreak_(true), offset_(0), offset_incr_(incr) {}
 oxstream::~oxstream() {
   output();
-  if (stack_.size() != 0)
-    boost::throw_exception(std::runtime_error(
-      "unclosed tag: " + stack_.top().first));
+  if (stack_.size() != 0) {
+    std::cerr << "WARNING: Unclosed tag: " << stack_.top().first << "!\n";
+    // ATTN: destructor should not throw
+    //boost::throw_exception(std::runtime_error(
+    //  "unclosed tag: " + stack_.top().first));
+    }
 }
 
 oxstream& oxstream::operator<<(const detail::header_t& c)
@@ -82,7 +85,7 @@ oxstream& oxstream::operator<<(const detail::start_tag_t& c)
 oxstream& oxstream::operator<<(const detail::end_tag_t& c)
 {
   if (!c.name.empty() && c.name != stack_.top().first)
-    boost::throw_exception(std::runtime_error("inconsistent end tag name"));
+    boost::throw_exception(std::runtime_error("inconsistent end tag name: " +  c.name + " does not agree with " + stack_.top().first));
   output(true);
   return *this;
 }

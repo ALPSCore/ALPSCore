@@ -63,12 +63,12 @@ public:
 
   BOOST_STATIC_CONSTANT(int,version=observable_type::version+(1<<24));
 
-  AbstractSignedObservable(const OBS& obs, const std::string& s="sign") 
+  AbstractSignedObservable(const OBS& obs, const std::string& s="Sign") 
     : base_type(obs.name()), obs_(obs), sign_name_(s), sign_(0) 
-  {  obs_.rename("Sign * "+super_type::name()); }
+  {  obs_.rename(s + " * "+super_type::name()); }
 
-  AbstractSignedObservable(const std::string& name="", const std::string& s="sign") 
-   : base_type(name), obs_("Sign * "+name), sign_name_(s), sign_(0) {}
+  AbstractSignedObservable(const std::string& name="", const std::string& s="Sign") 
+   : base_type(name), obs_(s +" * "+name), sign_name_(s), sign_(0) {}
 
   template <class OBS2>
   AbstractSignedObservable(const AbstractSignedObservable<OBS2,SIGN>& o) 
@@ -76,17 +76,17 @@ public:
 
   template <class ARG>
   AbstractSignedObservable(const std::string& name,const ARG& arg) 
-   : base_type(name), obs_("Sign * "+name,arg), sign_(0) {}
+   : base_type(name), obs_("Sign * "+name,arg), sign_name_("Sign"), sign_(0) {}
   
   template <class ARG>
   AbstractSignedObservable(const std::string& name,std::string& s, const ARG& arg) 
-   : base_type(name), obs_("Sign * "+name,arg), sign_name_(s), sign_(0) {}
+   : base_type(name), obs_(s + " * "+name,arg), sign_name_(s), sign_(0) {}
    
   ~AbstractSignedObservable() {}
 
   uint32_t version_id() const { return version;}
 
-  void rename(const std::string& newname) { rename(newname); obs_.rename("Sign * "+newname);}
+  void rename(const std::string& newname) { rename(newname); obs_.rename(sign_name_ + " * "+newname);}
   ALPS_DUMMY_VOID reset(bool forthermalization) { obs_.reset(forthermalization); ALPS_RETURN_VOID}
   ALPS_DUMMY_VOID output(std::ostream& out) const 
   { 
@@ -128,7 +128,7 @@ public:
     if(!newname.empty())
       result.rename(newname);
     result.obs_=obs_.slice(s);
-    result.obs_.rename("Sign * " + super_type::name());
+    result.obs_.rename(sign_name_+" * " + super_type::name());
     return result;
   }
 
@@ -193,8 +193,8 @@ public:
   typedef std::size_t count_type;
   typedef typename obs_value_traits<value_type>::time_type time_type;
 
-  SignedObservable(const OBS& obs, const std::string& s="sign") : base_type(obs,s) {}
-  SignedObservable(const std::string& name="", const std::string& s="sign") 
+  SignedObservable(const OBS& obs, const std::string& s="Sign") : base_type(obs,s) {}
+  SignedObservable(const std::string& name="", const std::string& s="Sign") 
    : base_type(name,s) {}
   template <class ARG>
   SignedObservable(const std::string& name,const ARG& arg) 
@@ -220,7 +220,7 @@ public:
 //-----------------------------------------------------------------------
 
 template <class OBS>
-boost::shared_ptr<Observable> make_observable(const Observable& obs, bool issigned=false) 
+boost::shared_ptr<Observable> make_observable(const OBS& obs, bool issigned=false) 
 {
   if (issigned)
     return boost::shared_ptr<Observable>(new SignedObservable<OBS,double>(obs));
@@ -229,7 +229,7 @@ boost::shared_ptr<Observable> make_observable(const Observable& obs, bool issign
 }
 
 template <class OBS, class SIGN>
-boost::shared_ptr<Observable>  make_observable(const Observable& obs, const std::string& s, SIGN, bool issigned=true) 
+boost::shared_ptr<Observable>  make_observable(const OBS& obs, const std::string& s, SIGN, bool issigned=true) 
 {
   if (issigned)
     return boost::shared_ptr<Observable>(new SignedObservable<OBS,SIGN>(obs,s));

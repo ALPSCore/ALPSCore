@@ -279,6 +279,7 @@ inline typename SimpleBinning<T>::result_type SimpleBinning<T>::variance() const
   result_type tmp(sum_[0]);
   tmp *= tmp/count_type(count());
   tmp = sum2_[0] -tmp;
+  obs_value_traits<result_type>::fix_negative(tmp);
   return tmp/count_type(count()-1);
 }
 
@@ -300,7 +301,7 @@ inline typename SimpleBinning<T>::result_type SimpleBinning<T>::error(uint32_t i
   
   uint32_t binsize_ = bin_entries_[i];
   
-  result_type correction = binvariance(i)/binvariance(0);
+  result_type correction = obs_value_traits<result_type>::check_divide(binvariance(i),binvariance(0));
   using std::sqrt;
   using alps::sqrt;
   correction *=(variance()/count_type(binsize_-1));
@@ -361,9 +362,9 @@ void SimpleBinning<T>::write_scalar_xml(oxstream& oxs) const {
     int prec=int(4-std::log10(std::abs(error(i)/binmean(i))));
     prec = (prec>=3 && prec<20 ? prec : 16);
     oxs << start_tag("BINNED") << attribute("size",boost::lexical_cast<std::string,int>(1<<i))
-        << no_linebreak << start_tag("COUNT") << count()/(1<<i) << end_tag
-        << start_tag("MEAN") << attribute("method", "simple") << precision(binmean(i), prec) << end_tag
-        << start_tag("ERROR") << attribute("method", "simple") << precision(error(i), 3) << end_tag
+        << no_linebreak << start_tag("COUNT") << count()/(1<<i) << end_tag("COUNT")
+        << start_tag("MEAN") << attribute("method", "simple") << precision(binmean(i), prec) << end_tag("MEAN")
+        << start_tag("ERROR") << attribute("method", "simple") << precision(error(i), 3) << end_tag("ERROR")
         << end_tag("BINNED");
   }
 }
@@ -375,9 +376,9 @@ void SimpleBinning<T>::write_vector_xml(oxstream& oxs, IT it) const {
                             /obs_value_traits<result_type>::slice_value(binmean(i),it))));
     prec = (prec>=3 && prec<20 ? prec : 16);
     oxs << start_tag("BINNED") << attribute("size",boost::lexical_cast<std::string,int>(1<<i))
-              << no_linebreak << start_tag("COUNT") << count()/(1<<i) << end_tag
-        << start_tag("MEAN") << attribute("method", "simple") << precision(obs_value_traits<result_type>::slice_value(binmean(i),it), 8) << end_tag
-        << start_tag("ERROR") << attribute("method", "simple") << precision(obs_value_traits<result_type>::slice_value(error(i),it), 3)        << end_tag
+              << no_linebreak << start_tag("COUNT") << count()/(1<<i) << end_tag("COUNT")
+        << start_tag("MEAN") << attribute("method", "simple") << precision(obs_value_traits<result_type>::slice_value(binmean(i),it), 8) << end_tag("MEAN")
+        << start_tag("ERROR") << attribute("method", "simple") << precision(obs_value_traits<result_type>::slice_value(error(i),it), 3) << end_tag("ERROR")
         << end_tag("BINNED");
   }
 }
