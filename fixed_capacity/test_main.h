@@ -35,7 +35,7 @@
 
 template<class T>
 struct non_pod {
-  BOOST_STATIC_CONSTANT(int, magic = -3);
+  BOOST_STATIC_CONSTANT(int, magic = -1190884);
 
   non_pod() {
     if (init_ == magic) throw std::logic_error("non_pod");
