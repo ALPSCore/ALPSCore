@@ -268,10 +268,8 @@ void WorkerTask::delete_process(const Process& p)
 // is it finished???
 bool WorkerTask::finished(double& more_time) const
 {
-  if (Task::finished())
+  if (finished_)
     return true;
-    
-  static double old_work;
 
   // get work estimate
   double w = work();
@@ -360,7 +358,7 @@ double WorkerTask::work_done()  const
 
 double WorkerTask::work() const
 {
-  if (Task::finished())
+  if (finished_)
     return 0.;
   return (parms.defined("WORK_FACTOR") ? evaluate(parms["WORK_FACTOR"], parms) : 1. )
          *(1.-work_done());

@@ -113,7 +113,7 @@ void MCSimulation::write_xml_body(oxstream& out, const boost::filesystem::path& 
 
 static void MCRun::print_copyright(std::ostream& out) 
 {
-  out << "Non-copyrighted program. Please insert your own copyright statement by overwriting the print_copyright static member function of your MCRun class.\n";
+  out << "Non-copyrighted program. Please insert your own copyright statement by overwriting the print_copyright static member function of your MCRun class or the print_copyright virtual function of your factory class.\n\n";
 }
 
 

@@ -156,13 +156,13 @@ protected:
   virtual void handle_tag(std::istream&, const XMLTag&);
 
   alps::Parameters parms;
+  bool finished_;
 
 private:
   void parse_task_file();
   
   boost::filesystem::path infilename;
   bool started_; // is the task running?
-  bool finished_;
 };
 
 
@@ -202,6 +202,7 @@ protected:
 private:
   mutable time_t start_time; // when as the simulation started?
   mutable double start_work; // how much work was to be done?
+  mutable double old_work;
   boost::filesystem::path infilename;
   mutable std::vector<CheckpointFiles> runfiles; 
 };

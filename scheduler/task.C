@@ -152,7 +152,7 @@ void Task::halt()
 
 double Task::work() const
 {
-  return (finished() ? 0. : (parms.defined("WORK_FACTOR") ? evaluate(parms["WORK_FACTOR"], parms) : 1. ));
+  return (finished_ ? 0. : (parms.defined("WORK_FACTOR") ? evaluate(parms["WORK_FACTOR"], parms) : 1. ));
 }
 
 void Task::write_xml_header(oxstream& out) const
