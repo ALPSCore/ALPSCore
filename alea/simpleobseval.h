@@ -649,6 +649,24 @@ inline alps::SimpleObservableEvaluator<T> operator*(const alps::SimpleObservable
   return tmp;
 }
 
+/// product of vector and scalar observable
+template <class T>
+inline alps::SimpleObservableEvaluator<std::valarray<T> > operator*(const alps::SimpleObservableEvaluator<std::valarray<T> >& x, const alps::SimpleObservableEvaluator<T>& y)
+{
+  alps::SimpleObservableEvaluator<T> tmp(x);
+  tmp *= y;
+  return tmp;
+}
+
+template <class T>
+inline alps::SimpleObservableEvaluator<std::valarray<T> > operator*(const alps::SimpleObservableEvaluator<T>& y, const alps::SimpleObservableEvaluator<std::valarray<T> >& x)
+{
+  alps::SimpleObservableEvaluator<T> tmp(x);
+  tmp *= y;
+  return tmp;
+}
+
+
 /// ratio of two observables or of observable and number
 template <class T, class Y>
 inline alps::SimpleObservableEvaluator<T> operator/(const alps::SimpleObservableEvaluator<T>& x, const Y& y)
