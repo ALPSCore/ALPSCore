@@ -169,6 +169,11 @@ inline bool is_odd(const half_integer<I>& x)
   return (std::abs(x.get_twice())%4==2);
 }
 
+template <class I>
+inline half_integer<I> abs(const half_integer<I>& x)
+{
+  return x.abs();
+}
 } // namespace alps
 
 
@@ -252,16 +257,5 @@ inline std::istream& operator>>(std::istream& is, alps::half_integer<I>& x)
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // end namespace alps
 #endif
-
-
-namespace std {
-
-template <class I>
-inline alps::half_integer<I> abs(const alps::half_integer<I>& x)
-{
-  return x.abs();
-}
-
-} // namespace std
 
 #endif
