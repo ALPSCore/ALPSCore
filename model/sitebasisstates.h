@@ -4,8 +4,8 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003 by Matthias Troyer <troyer@comp-phys.org>,
-*                       Axel Grzesik <axel@th.physik.uni-bonn.de>
+* Copyright (C) 2003-2004 by Matthias Troyer <troyer@comp-phys.org>,
+*                            Axel Grzesik <axel@th.physik.uni-bonn.de>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -38,8 +38,8 @@
 
 namespace alps {
 
-template <class I, class STATE=StateDescriptor<I> >
-class SiteBasisStates : public std::vector<STATE>
+template <class I, class STATE=site_state<I> >
+class site_basis : public std::vector<STATE>
 {
 public:
   typedef STATE state_type;
@@ -47,7 +47,7 @@ public:
   typedef typename base_type::const_iterator const_iterator;
   typedef typename base_type::value_type value_type;
   typedef typename base_type::size_type size_type;
-  SiteBasisStates(const SiteBasisDescriptor<I>& b);
+  site_basis(const SiteBasisDescriptor<I>& b);
     
   size_type index(const value_type& x) const;
   const SiteBasisDescriptor<I>& basis() const { return basis_;}
@@ -61,14 +61,14 @@ private:
 // ------------------------------- implementation ----------------------------------
 
 template <class I, class STATE>
-typename SiteBasisStates<I,STATE>::size_type SiteBasisStates<I,STATE>::index(const value_type& x) const
+typename site_basis<I,STATE>::size_type site_basis<I,STATE>::index(const value_type& x) const
 {
   const_iterator it = std::lower_bound(begin(),end(),x);
   return (*it==x ? it-begin() : size());
 }
 
 template <class I, class STATE>
-bool SiteBasisStates<I,STATE>::check_sort() const
+bool site_basis<I,STATE>::check_sort() const
 {
   for (int i=0;i<size()-1;++i)
     if ((*this)[i]>=(*this)[i+1])
@@ -77,7 +77,7 @@ bool SiteBasisStates<I,STATE>::check_sort() const
 }
 
 template <class I, class STATE>
-SiteBasisStates<I,STATE>::SiteBasisStates(const SiteBasisDescriptor<I>& b)
+site_basis<I,STATE>::site_basis(const SiteBasisDescriptor<I>& b)
  : basis_(b)
 {
   if (b.num_states()==std::numeric_limits<I>::max())
@@ -85,7 +85,7 @@ SiteBasisStates<I,STATE>::SiteBasisStates(const SiteBasisDescriptor<I>& b)
   std::stack<std::pair<typename SiteBasisDescriptor<I>::const_iterator,half_integer<I> > > s;
   typename SiteBasisDescriptor<I>::const_iterator it=b.begin();
   std::vector<half_integer<I> > quantumnumbers(basis_.size());
-  const_cast<QuantumNumber<I>&>(*it).set_parameters(b.get_parameters());
+  const_cast<QuantumNumberDescriptor<I>&>(*it).set_parameters(b.get_parameters());
   for(half_integer<I> q=it->max();q>=it->min();--q) 
     s.push(std::make_pair(it,q));
   while(!s.empty()) {
@@ -99,7 +99,7 @@ SiteBasisStates<I,STATE>::SiteBasisStates(const SiteBasisDescriptor<I>& b)
       Parameters p=b.get_parameters();
       for(typename SiteBasisDescriptor<I>::const_iterator qit=b.begin();qit!=it;++qit)
         p[qit->name()]=quantumnumbers[qit-b.begin()];
-      const_cast<QuantumNumber<I>&>(*it).set_parameters(p);
+      const_cast<QuantumNumberDescriptor<I>&>(*it).set_parameters(p);
       for(half_integer<I> q=it->max();q>=it->min();--q)
         s.push(std::make_pair(it,q));
     }
@@ -115,10 +115,10 @@ namespace alps {
 #endif
 
 template <class I, class STATE>
-std::ostream& operator<<(std::ostream& out, const alps::SiteBasisStates<I,STATE>& s)
+std::ostream& operator<<(std::ostream& out, const alps::site_basis<I,STATE>& s)
 { 
   out << "{\n";
-  for (typename alps::SiteBasisStates<I,STATE>::const_iterator it=s.begin();it!=s.end();++it) {
+  for (typename alps::site_basis<I,STATE>::const_iterator it=s.begin();it!=s.end();++it) {
     out << "  |";
     for (int i=0;i<s.basis().size();++i)
       out << " " << s.basis()[i].name() << "=" << get_quantumnumber(*it,i);

@@ -28,29 +28,29 @@
 
 /* $Id$ */
 
-#ifndef ALPS_MODEL_BASIS_H
-#define ALPS_MODEL_BASIS_H
+#ifndef ALPS_MODEL_BASISDESCRIPTOR_H
+#define ALPS_MODEL_BASISDESCRIPTOR_H
 
-#include <alps/model/sitebasis.h>
+#include <alps/model/sitebasisstates.h>
 #include <alps/lattice/lattice.h>
 #include <vector>
 
 namespace alps {
 
 template<class I>
-class SiteBasisMatch : public SiteBasisDescriptor<I>
+class site_basis_match : public SiteBasisDescriptor<I>
 {
 public:
   typedef SiteBasisDescriptor<I> base_type;
   typedef typename base_type::const_iterator const_iterator;
   typedef std::map<std::string,SiteBasisDescriptor<I> > sitebasis_map_type;
 
-  SiteBasisMatch() : type_(-2) {} // matches no site type
-  SiteBasisMatch(const base_type& site_basis, int type = -2)
+  site_basis_match() : type_(-2) {} // matches no site type
+  site_basis_match(const base_type& site_basis, int type = -2)
     : base_type(site_basis), type_(type), sitebasis_name_() {}
-  SiteBasisMatch(const std::string& name, int type = -2)
+  site_basis_match(const std::string& name, int type = -2)
     : base_type(), type_(type), sitebasis_name_(name) {}
-  SiteBasisMatch(const XMLTag&, std::istream&,
+  site_basis_match(const XMLTag&, std::istream&,
                  const sitebasis_map_type& bases_= sitebasis_map_type());
 
   void write_xml(oxstream&) const;
@@ -63,10 +63,10 @@ private:
 
 
 template<class I>
-class BasisDescriptor : public std::vector<SiteBasisMatch<I> >
+class BasisDescriptor : public std::vector<site_basis_match<I> >
 {
 public:
-  typedef std::vector<SiteBasisMatch<I> > base_type;
+  typedef std::vector<site_basis_match<I> > base_type;
   typedef typename base_type::iterator iterator;
   typedef typename base_type::const_iterator const_iterator;
   typedef std::map<std::string,SiteBasisDescriptor<I> > sitebasis_map_type;
@@ -134,7 +134,7 @@ const SiteBasisDescriptor<I>& BasisDescriptor<I>::site_basis(int type) const {
 
 
 template <class I>
-SiteBasisMatch<I>::SiteBasisMatch(const XMLTag& intag, std::istream& is, const sitebasis_map_type& bases_)
+site_basis_match<I>::site_basis_match(const XMLTag& intag, std::istream& is, const sitebasis_map_type& bases_)
 {
   XMLTag tag(intag);
   sitebasis_name_ = tag.attributes["ref"];
@@ -164,7 +164,7 @@ BasisDescriptor<I>::BasisDescriptor(const XMLTag& intag, std::istream& is, const
   if (tag.type!=XMLTag::SINGLE) {
     tag = parse_tag(is);
     while (tag.name=="SITEBASIS") {
-      push_back(SiteBasisMatch<I>(tag,is,bases_));
+      push_back(site_basis_match<I>(tag,is,bases_));
       tag = parse_tag(is);
     }
     while (tag.name=="CONSTRAINT") {
@@ -183,7 +183,7 @@ BasisDescriptor<I>::BasisDescriptor(const XMLTag& intag, std::istream& is, const
 }
 
 template <class I>
-void SiteBasisMatch<I>::write_xml(oxstream& os) const
+void site_basis_match<I>::write_xml(oxstream& os) const
 {
   os << start_tag("SITEBASIS");
   if (type_>=0)
@@ -220,7 +220,7 @@ namespace alps {
 #endif
 
 template <class I>
-inline alps::oxstream& operator<<(alps::oxstream& out, const alps::SiteBasisMatch<I>& q)
+inline alps::oxstream& operator<<(alps::oxstream& out, const alps::site_basis_match<I>& q)
 {
   q.write_xml(out);
   return out;
@@ -235,7 +235,7 @@ inline alps::oxstream& operator<<(alps::oxstream& out, const alps::BasisDescript
 }
 
 template <class I>
-inline std::ostream& operator<<(std::ostream& out, const alps::SiteBasisMatch<I>& q)
+inline std::ostream& operator<<(std::ostream& out, const alps::site_basis_match<I>& q)
 {
   alps::oxstream xml(out);
   xml << q;

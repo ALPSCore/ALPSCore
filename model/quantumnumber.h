@@ -32,6 +32,7 @@
 #ifndef ALPS_MODEL_QUANTUMNUMBER_H
 #define ALPS_MODEL_QUANTUMNUMBER_H
 
+#include <alps/model/half_integer.h>
 #include <alps/parser/xmlstream.h>
 #include <alps/parser/parser.h>
 #include <alps/parameters.h>
@@ -40,150 +41,19 @@
 #include <set>
 #include <stdexcept>
 #include <string>
-#include <cassert>
 
 namespace alps {
 
-template <class I>
-class half_integer {
-public:
-  typedef I integer_type;
-  half_integer() : val_(0) {}
-  half_integer(double x) :val_(integer_type(2*x+(x<0?-0.01:0.01))) {}
-  half_integer& operator=(const half_integer& x) {
-    val_ = x.val_;
-    return *this;
-  }
-  half_integer& operator=(double x) {
-    val_=integer_type(2*x+(x < 0 ? -0.01 : 0.01));
-    return *this;
-  }
-  operator double() const { return 0.5*val_; }
-
-  void set_half(integer_type x) { val_=x; }
-  integer_type get_twice() const { return val_; }
-
-  template <class J> bool operator==(const half_integer<J>& rhs) const
-  { return val_ == rhs.val_; }
-  template <class J> bool operator!=(const half_integer<J>& rhs) const
-  { return val_ != rhs.val_; }
-  template <class J> bool operator<(const half_integer<J>& rhs) const
-  { return val_ < rhs.val_; }
-  template <class J> bool operator>(const half_integer<J>& rhs) const
-  { return val_ > rhs.val_; }
-  template <class J> bool operator<=(const half_integer<J>& rhs) const
-  { return val_ <= rhs.val_; }
-  template <class J> bool operator>=(const half_integer<J>& rhs) const
-  { return val_ >= rhs.val_; }
-
-  half_integer operator-() const { return half_integer(-val_, 0); }
-
-  half_integer& operator++() { val_ += 2; return *this; }
-  half_integer& operator--() { val_ -= 2; return *this; }
-  half_integer operator++(int)
-    { half_integer tmp(*this); ++(*this); return tmp; }
-  half_integer operator--(int)
-    { half_integer tmp(*this); --(*this); return tmp; }
-
-  half_integer& operator+=(integer_type x) { val_ += 2*x; return *this; }
-  half_integer& operator-=(integer_type x) { val_ -= 2*x; return *this; }
-  template <class J>
-  half_integer& operator+=(const half_integer<J>& x)
-  { val_ += x.val_; return *this; }
-  template <class J>
-  half_integer& operator-=(const half_integer<J>& x)
-  { val_ -= x.val_; return *this; }
-
-  template <class J>
-  half_integer operator+(const half_integer<J>& x) const
-  { half_integer res(*this); return res += x; }
-  template <class J>
-  half_integer operator-(const half_integer<J>& x) const
-  { half_integer res(*this); return res -= x; }
-  half_integer operator+(integer_type x) const
-  { half_integer res(*this); return res += x; }
-  half_integer operator-(integer_type x) const
-  { half_integer res(*this); return res -= x; }
-
-  integer_type distance(const half_integer& x) const
-  {
-    if ((*this==max()) != (x==max())) return std::numeric_limits<I>::max();
-    if (std::numeric_limits<I>::is_signed && (*this==min())!=(x==min()))
-      return std::numeric_limits<I>::max();
-    assert(std::abs(val_)%2 == std::abs(x.val_)%2);
-    return (val_-x.val_)/2;
-  }
-  static half_integer max()
-  { return half_integer(std::numeric_limits<I>::max(),0); }
-  static half_integer min()
-  {
-    return std::numeric_limits<I>::is_signed ?
-      -half_integer(std::numeric_limits<I>::max(),0) :
-      half_integer(std::numeric_limits<I>::min(),0);
-  }
-
-private:
-  half_integer(integer_type i, int /* to distinguish */) : val_(i) {}
-  integer_type val_;
-};
-
-template <class I>
-inline half_integer<I> operator+(I x, const half_integer<I>& y)
-{ return y + x; }
-
-template <class I>
-inline half_integer<I> operator-(I x, const half_integer<I>& y)
-{ return - y + x; }
-
-template <class I>
-inline std::ostream& operator<<(std::ostream& os, const half_integer<I>& x)
-{
-  if (x==half_integer<I>::max())
-    return os << "infinity";
-  else if (std::numeric_limits<I>::is_signed && x==half_integer<I>::min())
-    return os << "-infinity";
-  else if(x.get_twice() %2==0)
-    return os << x.get_twice()/2;
-  else
-    return os << x.get_twice() << "/2";
-  return os;
-}
-
-template <class I>
-inline std::istream& operator>>(std::istream& is, half_integer<I>& x)
-{
-  I nominator;
-  is >> nominator;
-  char c;
-  is >> c;
-  if ( is && c=='/') {
-    is >> c;
-    if (c!='2') {
-      is.putback(c);
-      is.putback('/');
-      x.set_half(2*nominator);
-    }
-    x.set_half(nominator);
-  }
-  else {
-    if (is)
-      is.putback(c);
-    x.set_half(2*nominator);
-  }
-  is.clear();
-  return is;
-}
-
 template<class I>
-class QuantumNumber
+class QuantumNumberDescriptor
 {
 public:
   typedef half_integer<I> value_type;
-  QuantumNumber(const std::string& n, value_type minVal=0, value_type maxVal=0,
+  QuantumNumberDescriptor(const std::string& n, value_type minVal=0, value_type maxVal=0,
                 bool f=false);
-  QuantumNumber(const std::string& n, const std::string& min_str,
+  QuantumNumberDescriptor(const std::string& n, const std::string& min_str,
                 const std::string& max_str, bool f=false);
-  QuantumNumber(const XMLTag&, std::istream&);
+  QuantumNumberDescriptor(const XMLTag&, std::istream&);
 
   bool valid(value_type x) const { return x >= min() && x<= max(); }
   const std::string min_expression() const { return min_string_; }
@@ -209,7 +79,7 @@ public:
   }
   const std::string& name() const { return name_; }
 
-  const QuantumNumber& operator+=(const QuantumNumber& rhs);
+  const QuantumNumberDescriptor& operator+=(const QuantumNumberDescriptor& rhs);
 
   void write_xml(alps::oxstream&) const;
   bool fermionic() const { return fermionic_;}
@@ -218,9 +88,9 @@ public:
   // returns true if it can be evaluated
 
   bool depends_on(const Parameters::key_type& s) const;
-  bool depends_on(const QuantumNumber& qn) const
+  bool depends_on(const QuantumNumberDescriptor& qn) const
   { return (dependency_.find(qn)!=dependency_.end()); }
-  void add_dependency(const QuantumNumber& qn) { dependency_.insert(qn); }
+  void add_dependency(const QuantumNumberDescriptor& qn) { dependency_.insert(qn); }
 
 private:
   std::string name_;
@@ -231,16 +101,16 @@ private:
   bool fermionic_;
   mutable bool valid_;
   bool evaluate(const Parameters& =Parameters()) const;
-  mutable std::set<QuantumNumber> dependency_;
+  mutable std::set<QuantumNumberDescriptor> dependency_;
 };
 
 template<class I>
-inline bool operator< (const QuantumNumber<I>& q1,const QuantumNumber<I>& q2) {
+inline bool operator< (const QuantumNumberDescriptor<I>& q1,const QuantumNumberDescriptor<I>& q2) {
   return q1.name()<q2.name();
 }
 
 template <class I>
-QuantumNumber<I>:: QuantumNumber(const std::string& n, value_type minVal, value_type maxVal, bool f)
+QuantumNumberDescriptor<I>:: QuantumNumberDescriptor(const std::string& n, value_type minVal, value_type maxVal, bool f)
    : name_(n),
      min_string_(boost::lexical_cast<std::string,value_type>(minVal)),
      max_string_(boost::lexical_cast<std::string,value_type>(maxVal)),
@@ -251,7 +121,7 @@ QuantumNumber<I>:: QuantumNumber(const std::string& n, value_type minVal, value_
 {}
 
 template <class I>
-QuantumNumber<I>:: QuantumNumber(const std::string& n,
+QuantumNumberDescriptor<I>:: QuantumNumberDescriptor(const std::string& n,
                                  const std::string& min_str,
                                  const std::string& max_str,
                                  bool f)
@@ -266,12 +136,12 @@ QuantumNumber<I>:: QuantumNumber(const std::string& n,
 
 
 template <class I>
-const QuantumNumber<I>& QuantumNumber<I>::operator+=(const QuantumNumber<I>& rhs)
+const QuantumNumberDescriptor<I>& QuantumNumberDescriptor<I>::operator+=(const QuantumNumberDescriptor<I>& rhs)
 {
   Parameters p;
   if(dependency_.size()!=rhs.dependency_.size())
     boost::throw_exception(std::runtime_error("Adding quantum numbers that do not depend on the same quantum numbers: " + name() + " + " + rhs.name()));
-  for(typename std::set<QuantumNumber<I> >::const_iterator it=dependency_.begin();it!=dependency_.end();++it) {
+  for(typename std::set<QuantumNumberDescriptor<I> >::const_iterator it=dependency_.begin();it!=dependency_.end();++it) {
     if(!rhs.depends_on(*it)) boost::throw_exception(std::runtime_error("Adding quantum numbers that do not both depend on quantum number " + it->name() + ": " + name() + " + " + rhs.name()));
     p[it->name()]=0;
   }
@@ -295,15 +165,15 @@ return *this;
 }
 
 template <class I>
-QuantumNumber<I> operator+(const QuantumNumber<I>& x,const QuantumNumber<I>& y)
+QuantumNumberDescriptor<I> operator+(const QuantumNumberDescriptor<I>& x,const QuantumNumberDescriptor<I>& y)
 {
-  QuantumNumber<I> res(x);
+  QuantumNumberDescriptor<I> res(x);
   res +=y;
   return res;
 }
 
 template <class I>
-QuantumNumber<I>::QuantumNumber(const XMLTag& intag, std::istream&)
+QuantumNumberDescriptor<I>::QuantumNumberDescriptor(const XMLTag& intag, std::istream&)
  : valid_(false)
 {
   XMLTag tag(intag);
@@ -318,13 +188,13 @@ QuantumNumber<I>::QuantumNumber(const XMLTag& intag, std::istream&)
 }
 
 template <class I>
-bool QuantumNumber<I>::set_parameters(const Parameters& p)
+bool QuantumNumberDescriptor<I>::set_parameters(const Parameters& p)
 {
   return evaluate(p);
 }
 
 template<class I >
-bool QuantumNumber<I>::depends_on(const Parameters::key_type& s) const
+bool QuantumNumberDescriptor<I>::depends_on(const Parameters::key_type& s) const
 {
   Expression min_exp_(min_string_);
   Expression max_exp_(max_string_);
@@ -332,7 +202,7 @@ bool QuantumNumber<I>::depends_on(const Parameters::key_type& s) const
 }
 
 template <class I>
-bool QuantumNumber<I>::evaluate(const Parameters& p) const
+bool QuantumNumberDescriptor<I>::evaluate(const Parameters& p) const
 {
   ParameterEvaluator eval(p);
   Expression min_exp_(min_string_);
@@ -358,7 +228,7 @@ bool QuantumNumber<I>::evaluate(const Parameters& p) const
 }
 
 template <class I>
-void QuantumNumber<I>::write_xml(oxstream& os) const
+void QuantumNumberDescriptor<I>::write_xml(oxstream& os) const
 {
   os << start_tag("QUANTUMNUMBER") << attribute("name", name())
      << attribute("min", min_expression()) << attribute("max", max_expression());
@@ -374,14 +244,14 @@ namespace alps {
 #endif
 
 template <class I>
-inline alps::oxstream& operator<<(alps::oxstream& out, const alps::QuantumNumber<I>& q)
+inline alps::oxstream& operator<<(alps::oxstream& out, const alps::QuantumNumberDescriptor<I>& q)
 {
   q.write_xml(out);
   return out;
 }
 
 template <class I>
-inline std::ostream& operator<<(std::ostream& out, const alps::QuantumNumber<I>& q)
+inline std::ostream& operator<<(std::ostream& out, const alps::QuantumNumberDescriptor<I>& q)
 {
   alps::oxstream xml(out);
   xml << q;

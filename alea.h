@@ -4,7 +4,8 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 2003-2004 by Synge Todo <wistaria@comp-phys.org>
+*                            Matthias Troyer <troyer@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -28,12 +29,7 @@
 /* $Id$ */
 
 #include <alps/alea/detailedbinning.h>
-#include <alps/alea/obsvalue.h>
 #include <alps/alea/histogram.h>
-#include <alps/alea/simplebinning.h>
 #include <alps/alea/nobinning.h>
-#include <alps/alea/simpleobsdata.h>
-#include <alps/alea/observable.h>
-#include <alps/alea/simpleobservable.h>
 #include <alps/alea/observableset.h>
-#include <alps/alea/simpleobseval.h>
+#include <alps/alea/signedobservable.h>

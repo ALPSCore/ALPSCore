@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 1994-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -41,18 +41,18 @@ public:
 
   typedef BasisDescriptor<I> basis_descriptor_type;
   typedef half_integer<I> half_integer_type;
-  typedef QuantumNumber<I> quantum_number_type;
+  typedef QuantumNumberDescriptor<I> quantum_number_type;
   
   model_helper(alps::Parameters& p) // it updates the parameter object passed to it!
    : model_library_(p), 
-     model_(model_library_.hamiltonian(p["MODEL"])) 
+     model_(model_library_.get_hamiltonian(p["MODEL"])) 
   {
     p.copy_undefined(model_.default_parameters());
     model_.set_parameters(p);
   }
   
-  const ModelLibrary::OperatorDescriptorMap& simple_operators() const { 
-    return model_library_.simple_operators();
+  const ModelLibrary::OperatorDescriptorMap& operators() const { 
+    return model_library_.operators();
   }
   
   HamiltonianDescriptor<I>& model() { return model_;}

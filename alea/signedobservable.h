@@ -50,7 +50,6 @@ public:
   typedef OBS observable_type;
   typedef SIGN sign_type;
   typedef AbstractSimpleObservable<typename OBS::value_type> base_type;
-  typedef typename base_type::value_type value_type;
   typedef typename observable_type::value_type value_type;
   typedef typename obs_value_traits<value_type>::result_type result_type;
   typedef typename obs_value_traits<result_type>::slice_iterator slice_iterator;
@@ -201,6 +200,7 @@ public:
   bool is_thermalized() const { return obs_.is_thermalized();}
 };
 
+/*
 //=======================================================================
 // helper function
 //
@@ -224,7 +224,7 @@ Observable make_observable(const Observable& obs, const std::string& s, SIGN, bo
   else
     return obs;
 }
-
+*/
 
 //=======================================================================
 // implementations

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003 by Matthias Troyer <troyer@comp-phys.org>
+* Copyright (C) 2003-2004 by Matthias Troyer <troyer@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -107,28 +107,28 @@ bool ModelLibrary::has_operator(const std::string& name) const
   return (operators_.find(name)!=operators_.end());
 }
 
-const BasisDescriptor<short>& ModelLibrary::basis(const std::string& name) const
+const BasisDescriptor<short>& ModelLibrary::get_basis(const std::string& name) const
 {
   if (!has_basis(name))
     boost::throw_exception(std::runtime_error("No basis named '" +name+"' found in model library"));
   return bases_.find(name)->second;
 }
 
-const HamiltonianDescriptor<short>& ModelLibrary::hamiltonian(const std::string& name) const
+const HamiltonianDescriptor<short>& ModelLibrary::get_hamiltonian(const std::string& name) const
 {
   if (!has_hamiltonian(name))
     boost::throw_exception(std::runtime_error("No Hamiltonian named '" +name+"' found in model library"));
   return hamiltonians_.find(name)->second;
 }
 
-const SiteBasisDescriptor<short>& ModelLibrary::site_basis(const std::string& name) const
+const SiteBasisDescriptor<short>& ModelLibrary::get_site_basis(const std::string& name) const
 {
   if (!has_site_basis(name))
     boost::throw_exception(std::runtime_error("No site basis named '" +name+"' found in model library"));
   return sitebases_.find(name)->second;
 }
 
-const OperatorDescriptor<short>& ModelLibrary::simple_operator(const std::string& name) const
+const OperatorDescriptor<short>& ModelLibrary::get_operator(const std::string& name) const
 {
   if (!has_operator(name))
     boost::throw_exception(std::runtime_error("No operator named '" +name+"' found in model library"));

@@ -31,7 +31,7 @@
 #ifndef ALPS_MODEL_OPERATOR_H
 #define ALPS_MODEL_OPERATOR_H
 
-#include <alps/model/basis.h>
+#include <alps/model/basisdescriptor.h>
 #include <alps/expression.h>
 #include <alps/multi_array.hpp>
 #include <alps/parameters.h>
@@ -171,7 +171,7 @@ protected:
   const operator_map& ops_;
 };
 
-template <class I, class STATE=StateDescriptor<I> >
+template <class I, class STATE=site_state<I> >
 class SiteOperatorEvaluator : public OperatorEvaluator<I>
 {
 public:
@@ -189,7 +189,7 @@ private:
   const SiteBasisDescriptor<I>& basis_;
 };
 
-template <class I, class STATE1=StateDescriptor<I>, class STATE2=StateDescriptor<I>  >
+template <class I, class STATE1=site_state<I>, class STATE2=site_state<I>  >
 class BondOperatorEvaluator : public OperatorEvaluator<I>
 {
 public:
@@ -373,8 +373,8 @@ SiteTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b, const operator_ma
 
   // fill the matrix
   if (basis.size()==1) {
-    typedef SingleQNStateDescriptor<I> state_type;
-    SiteBasisStates<I,state_type> states(basis);
+    typedef single_qn_site_state<I> state_type;
+    site_basis<I,state_type> states(basis);
     for (int i=0;i<states.size();++i) {
       //calculate expression applied to state *it and store it into matrix
       for (alps::Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
@@ -388,7 +388,7 @@ SiteTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b, const operator_ma
     }
   }
   else {
-    SiteBasisStates<I> states(basis);
+    site_basis<I> states(basis);
     for (int i=0;i<states.size();++i) {
     //calculate expression applied to state *it and store it into matrix
       for (alps::Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
@@ -431,9 +431,9 @@ BondTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b1,
   ex.flatten();
   // fill the matrix
   if (basis1.size()==1 && basis2.size()==1) {
-    typedef SingleQNStateDescriptor<I> state_type;
-    SiteBasisStates<I,state_type> states1(basis1);
-    SiteBasisStates<I,state_type> states2(basis2);
+    typedef single_qn_site_state<I> state_type;
+    site_basis<I,state_type> states1(basis1);
+    site_basis<I,state_type> states2(basis2);
     for (int i1=0;i1<states1.size();++i1)
       for (int i2=0;i2<states2.size();++i2) {
       //calculate expression applied to state *it and store it into matrix
@@ -450,8 +450,8 @@ BondTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b1,
     }
   }
   else  {
-    SiteBasisStates<I> states1(basis1);
-    SiteBasisStates<I> states2(basis2);
+    site_basis<I> states1(basis1);
+    site_basis<I> states2(basis2);
     for (int i1=0;i1<states1.size();++i1)
       for (int i2=0;i2<states2.size();++i2) {
       //calculate expression applied to state *it and store it into matrix

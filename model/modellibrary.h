@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 2003-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -34,7 +34,7 @@
 
 #ifndef ALPS_WITHOUT_XML
 
-#include <alps/model/sitebasis.h>
+#include <alps/model/sitebasisstates.h>
 #include <alps/model/operator.h>
 #include <alps/model/basisstates.h>
 #include <alps/parser/parser.h>
@@ -62,14 +62,11 @@ public:
   bool has_operator(const std::string& name) const;
   bool has_hamiltonian(const std::string& name) const;
   
-  const SiteBasisDescriptor<short>& site_basis(const std::string& name) const;
-  const BasisDescriptor<short>& basis(const std::string& name) const;
-  const OperatorDescriptor<short>& simple_operator(const std::string& name) const;
-  const HamiltonianDescriptor<short>& hamiltonian(const std::string& name) const;
-  const OperatorDescriptorMap& simple_operators() const { return operators_;}
-  
-  SiteBasisStates<short> site_states(const std::string& name) const 
-  { return SiteBasisStates<short>(site_basis(name));}
+  const SiteBasisDescriptor<short>& get_site_basis(const std::string& name) const;
+  const BasisDescriptor<short>& get_basis(const std::string& name) const;
+  const OperatorDescriptor<short>& get_operator(const std::string& name) const;
+  const HamiltonianDescriptor<short>& get_hamiltonian(const std::string& name) const;
+  const OperatorDescriptorMap& operators() const { return operators_;}
 
 private:
   typedef std::map<std::string,SiteBasisDescriptor<short> > SiteBasisDescriptorMap;
