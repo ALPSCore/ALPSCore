@@ -58,9 +58,9 @@ inline void write_graph_xml(oxstream& out, const GRAPH& g, const std::string& n=
   typedef typename boost::graph_traits<graph_type>::vertex_iterator vertex_iterator;
   typedef typename boost::graph_traits<graph_type>::edge_iterator edge_iterator;
 
-  typename boost::property_map<graph_type,boost::vertex_index_t>::const_type 
+  typename boost::property_map<graph_type,boost::vertex_index_t>::const_type
     vertexindex = boost::get(vertex_index_t(),g);
-    
+
   typename property_map<vertex_type_t,graph_type,int>::const_type
     vertextype = get_or_default(vertex_type_t(),g,0);
 
@@ -72,13 +72,16 @@ inline void write_graph_xml(oxstream& out, const GRAPH& g, const std::string& n=
 
   typename property_map<coordinate_t,graph_type,std::vector<double> >::const_type
     vertexcoordinate = get_or_default(coordinate_t(),g,std::vector<double>());
-    
+
+  typename property_map<edge_vector_t,graph_type,coordinate_type>::const_type
+    edgevector = get_or_default(edge_vector_t(),g,coordinate_type(0));
+
   typename property_map<graph_name_t,graph_type,std::string>::const_type
     graphname = get_or_default(graph_name_t(),g,std::string());
 
   typename property_map<dimension_t,graph_type,uint32_t>::const_type
     graphdimension = get_or_default(dimension_t(),g,uint32_t(0));
-    
+
   out << start_tag("GRAPH");
 
   std::string name(n);
@@ -86,21 +89,21 @@ inline void write_graph_xml(oxstream& out, const GRAPH& g, const std::string& n=
     name=graphname;
   if(name!="")
     out << attribute("name", name);
-  
+
   uint32_t dim = graphdimension;
   if (dim>0)
     out << attribute("dimension", dim);
-    
+
   out << attribute("vertices", boost::num_vertices(g))
       << attribute("edges", boost::num_edges(g));
-      
+
   for (vertex_iterator it=boost::vertices(g).first;
                        it!=boost::vertices(g).second;++it) {
     out << start_tag("VERTEX") << attribute("id", vertexindex[*it]+1);
     if (has_property<vertex_type_t,graph_type>::vertex_property)
       out << attribute("type", vertextype[*it]);
     if (has_property<coordinate_t,graph_type>::vertex_property)
-      if(alps::coordinates(vertexcoordinate[*it]).first != 
+      if(alps::coordinates(vertexcoordinate[*it]).first !=
          alps::coordinates(vertexcoordinate[*it]).second) {
         out << no_linebreak
             << start_tag("COORDINATE")
@@ -118,8 +121,9 @@ inline void write_graph_xml(oxstream& out, const GRAPH& g, const std::string& n=
       out << attribute("id", edgeindex[*it]+1);
     if (has_property<edge_type_t,graph_type>::edge_property)
       out << attribute("type", edgetype[*it]);
-    if (has_property<edge_vector_t,graph_type>::edge_property && alps::dimension(boost::get(edge_vector_t(),g,*it)))
-      out << attribute("vector", vector_writer(boost::get(edge_vector_t(),g,*it)));
+    if (has_property<edge_vector_t,graph_type>::edge_property &&
+        alps::dimension(edgevector[*it]))
+      out << attribute("vector", vector_writer(edgevector[*it]));
     out << end_tag("EDGE");
   }
   out << end_tag("GRAPH");
@@ -139,9 +143,9 @@ inline std::string read_graph_xml(const XMLTag& intag, std::istream& p, GRAPH& g
 {
   typedef GRAPH graph_type;
 
-  //typename boost::property_map<graph_type,vertex_index_t>::const_type 
+  //typename boost::property_map<graph_type,vertex_index_t>::const_type
   //vertexindex = boost::get(vertex_index_t(),g);
-    
+
   typename property_map<vertex_type_t,graph_type,int>::type
     vertextype = get_or_default(vertex_type_t(),g,0);
 
@@ -153,7 +157,7 @@ inline std::string read_graph_xml(const XMLTag& intag, std::istream& p, GRAPH& g
 
   typename property_map<coordinate_t,graph_type,std::vector<double> >::type
     vertexcoordinate = get_or_default(coordinate_t(),g,std::vector<double>());
-    
+
   typename property_map<graph_name_t,graph_type,std::string>::type
     graphname = get_or_default(graph_name_t(),g,std::string());
 
@@ -173,11 +177,11 @@ inline std::string read_graph_xml(const XMLTag& intag, std::istream& p, GRAPH& g
     fixed_nvertices=true;
     for (vertex_iterator it = boost::vertices(g).first ; it !=  boost::vertices(g).second ; ++it)
       vertextype[*it]=0;
-  }      
+  }
   graphdimension = (tag.attributes["dimension"]=="" ? 0 :
     boost::lexical_cast<uint32_t, std::string>(tag.attributes["dimension"]));
   graphname = name = tag.attributes["name"];
-  
+
   if (tag.type !=XMLTag::SINGLE)
   while(true) {
     tag=parse_tag(p);
@@ -188,7 +192,7 @@ inline std::string read_graph_xml(const XMLTag& intag, std::istream& p, GRAPH& g
       type_type t=0;
       coordinate_type coord;
       t = tag.attributes["type"]=="" ? boost::lexical_cast<type_type,int>(0) : boost::lexical_cast<type_type,std::string>(tag.attributes["type"]);
-      id = tag.attributes["id"]=="" ? vertex_number++ 
+      id = tag.attributes["id"]=="" ? vertex_number++
            : boost::lexical_cast<int,std::string>(tag.attributes["id"])-1;
       if (id>=boost::num_vertices(g)) {
         if (fixed_nvertices)
@@ -233,7 +237,7 @@ inline std::string read_graph_xml(const XMLTag& intag, std::istream& p, GRAPH& g
           boost::throw_exception(std::runtime_error("Nonempty <EDGE> tag in <GRAPH>"));
       }
 
-      typename boost::graph_traits<graph_type>::edge_descriptor edge = 
+      typename boost::graph_traits<graph_type>::edge_descriptor edge =
                boost::add_edge(source-1,target-1,g).first;
       edgetype[edge]=t;
       edgeindex[edge]=num_edges-1;
@@ -261,7 +265,7 @@ inline void copy_graph(const SRC& src, DST& dst)
 {
   typedef SRC source_graph_type;
   typedef DST destination_graph_type;
-  
+
   typedef typename boost::graph_traits<source_graph_type>::vertex_iterator vertex_iterator;
   typedef typename boost::graph_traits<source_graph_type>::edge_iterator edge_iterator;
   typedef typename boost::graph_traits<destination_graph_type>::vertex_descriptor vertex_descriptor;
@@ -283,7 +287,7 @@ inline void copy_graph(const SRC& src, DST& dst)
     copy_property(parity_t(),src,*it,dst,v);
 //    vertexindex[v]=i;
   }
-  
+
   i=0;
   for (edge_iterator it=boost::edges(src).first;
                      it!=boost::edges(src).second;++it,++i)
@@ -301,7 +305,7 @@ inline int constant_degree(const G& g)
   boost::tie(it,end)=boost::vertices(g);
   int degree=0;
   if (it!=end)
-  { 
+  {
     degree=boost::out_degree(*it,g);
     ++it;
   }
@@ -318,13 +322,13 @@ inline int32_t maximum_edge_type(const G& g)
 {
   if(!has_property<edge_type_t,G>::edge_property)
     return 0;
-    
-  typename property_map<edge_type_t, const G, int>::type 
+
+  typename property_map<edge_type_t, const G, int>::type
   edge_type_map = get_or_default(edge_type_t(),g,0);
 
   typename boost::graph_traits<G>::edge_iterator it,end;
   boost::tie(it,end)=boost::edges(g);
-  
+
   int num=0;
   for (; it!=end;++it)
     num = std::max(num,edge_type_map[*it]);
@@ -337,10 +341,10 @@ inline unsigned int maximum_vertex_type(const G& g)
 {
   if(!has_property<vertex_type_t,G>::vertex_property)
     return 0;
-    
+
   typename boost::graph_traits<G>::vertex_iterator it,end;
-  
-  typename property_map<vertex_type_t, const G, unsigned int>::type 
+
+  typename property_map<vertex_type_t, const G, unsigned int>::type
   vertex_type_map = get_or_default(vertex_type_t(),g,0u);
 
   unsigned int num=0;
