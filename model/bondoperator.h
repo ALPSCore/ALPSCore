@@ -41,8 +41,38 @@
 namespace alps {
 
 template <class I, class T=std::complex<double>, class STATE1=site_state<I>, class STATE2=site_state<I> > class BondOperatorEvaluator;
-template <class I, class T=std::complex<double> > class BondOperatorSplitter;
 class ModelLibrary;
+
+template <class I, class T>
+class BondOperatorSplitter : public OperatorEvaluator<T>
+{
+private:
+  typedef OperatorEvaluator<T> super_type;
+  typedef BondOperatorSplitter<I,T> SELF_;
+
+public:
+  BondOperatorSplitter(const SiteBasisDescriptor<I>& b1,
+                       const SiteBasisDescriptor<I>& b2,
+                       const std::string& site1, const std::string& site2,
+                       const Parameters& p)
+    : super_type(p), basis1_(b1), basis2_(b2), sites_(site1,site2), second_site_fermionic_(false) {}
+
+  bool can_evaluate_function(const std::string& name, const expression::Expression<T>& argument,bool=false) const;
+  expression::Expression<T> partial_evaluate_function(const std::string& name, const expression::Expression<T>& argument,bool=false) const;
+  const std::pair<Term, Term>& site_operators() const { return site_ops_; }
+  bool has_operator(const std::string& name, const expression::Expression<T>& arg) const
+  { 
+    return (arg==sites_.first && basis1_.has_operator(name)) || 
+           (arg==sites_.second && basis2_.has_operator(name)); 
+  }
+  
+private:
+  const SiteBasisDescriptor<I>& basis1_;
+  const SiteBasisDescriptor<I>& basis2_;
+  mutable std::pair<Term, Term> site_ops_;
+  std::pair<std::string, std::string> sites_;
+  mutable bool second_site_fermionic_;
+};
 
 class BondOperator
 {
@@ -76,6 +106,32 @@ private:
   std::string source_;
   std::string target_;
 };
+
+
+
+template <class I, class T>
+bool BondOperatorSplitter<I,T>::can_evaluate_function(const std::string&name , const expression::Expression<T>& arg,bool isarg) const
+{
+  return (arg==sites_.first || arg==sites_.second || expression::ParameterEvaluator<T>::can_evaluate_function(name,arg,isarg));
+}
+
+
+template <class I, class T>
+expression::Expression<T> BondOperatorSplitter<I,T>::partial_evaluate_function(const std::string& name, const expression::Expression<T>& arg, bool isarg) const
+{
+  if (arg==sites_.first) {
+    site_ops_.first *= name;
+    return expression::Expression<T>(second_site_fermionic_ && basis1_.is_fermionic(name) ? -1. : 1.);
+  }
+  else  if (arg==sites_.second) {
+    site_ops_.second *= name;
+    if (basis2_.is_fermionic(name))
+        second_site_fermionic_ = !second_site_fermionic_;
+    return expression::Expression<T>(1.);
+  }
+  return expression::ParameterEvaluator<T>(*this).partial_evaluate_function(name,arg,isarg);
+}
+
 
 template <class I, class T>
 boost::multi_array<std::pair<T,std::pair<bool,bool> >,4> get_fermionic_matrix(T,const BondOperator& m, const SiteBasisDescriptor<I>& basis1, const SiteBasisDescriptor<I>& basis2, const Parameters& p=Parameters())
