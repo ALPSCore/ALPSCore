@@ -114,6 +114,7 @@ Expression::Expression(std::istream& in)
 const Expression& Expression::operator+=(const Expression& e)
 {
   std::copy(e.terms_.begin(),e.terms_.end(),std::back_inserter(terms_));
+  partial_evaluate();
   return *this;
 }
 
