@@ -52,12 +52,16 @@ int main()
 
     // write all basis states
     write_set("hardcore boson",lib);
-    write_set("spin-1",lib);
-    write_set("spin-1/2",lib);
-    write_set("spin-3/2",lib);
-    alps::Parameters p;
-    p["S"]=2;
+    write_set("spinless fermion",lib);
+/*    alps::Parameters p;
+    p["local_spin"]=1;
     write_set("spin",lib,p);
+    write_set("spin",lib);
+    p["local_spin"]=1.5;
+    write_set("spin",lib,p);
+    p["local_spin"]=2;
+    write_set("spin",lib,p);
+*/
 
 #ifndef BOOST_NO_EXCEPTIONS
 }

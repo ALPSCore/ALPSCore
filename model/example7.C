@@ -55,7 +55,7 @@ try {
   alps::ModelLibrary lib(in);
   alps::Parameters p;
   p["NMax"]=2;
-  write_two_site_basis("spin-1 boson",lib,p);
+  write_two_site_basis("spinful boson",lib,p);
 
 #ifndef BOOST_NO_EXCEPTIONS
 }

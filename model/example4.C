@@ -76,10 +76,10 @@ int main()
     
     std::cout << "HHardcoreBoson = \n" << bondmatrix(lib,"hardcore boson") << "\n\n";
     parms["Nmax"]=2;
-    std::cout << "HBoson = \n" << bondmatrix(lib,"boson",parms)  << "\n\n";
-    parms["S"]="1/2";
+    std::cout << "HBoson = \n" << bondmatrix(lib,"boson Hubbard",parms)  << "\n\n";
+    parms["local_spin"]="1/2";
     std::cout << "HSpinHalf = \n" << bondmatrix(lib,"spin")  << "\n\n";
-    parms["S"]=1;
+    parms["local_spin"]=1;
     std::cout << "HSpinOne = \n" << bondmatrix(lib,"spin",parms)  << "\n\n";
     
 

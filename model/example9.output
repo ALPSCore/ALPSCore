@@ -2,25 +2,7 @@ States of basis hardcore boson={
   | N=0 >
   | N=1 >
 }
-States of basis spin-1={
-  | Sz=-1 >
-  | Sz=0 >
-  | Sz=1 >
-}
-States of basis spin-1/2={
-  | Sz=-1/2 >
-  | Sz=1/2 >
-}
-States of basis spin-3/2={
-  | Sz=-3/2 >
-  | Sz=-1/2 >
-  | Sz=1/2 >
-  | Sz=3/2 >
-}
-States of basis spin={
-  | Sz=-2 >
-  | Sz=-1 >
-  | Sz=0 >
-  | Sz=1 >
-  | Sz=2 >
+States of basis spinless fermion={
+  | N=0 >
+  | N=1 >
 }

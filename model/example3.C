@@ -62,7 +62,7 @@ int main()
 
      alps::Parameters parms;
      parms["Nmax"]=2;
-     alps::HamiltonianDescriptor<short> ham = lib.get_hamiltonian("boson");
+     alps::HamiltonianDescriptor<short> ham = lib.get_hamiltonian("boson Hubbard");
      ham.set_parameters(parms);
      std::cout << "HBosonSite =\n"
                << alps::get_matrix(Expression_(),ham.site_term(),

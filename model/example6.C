@@ -51,17 +51,16 @@ try {
   alps::ModelLibrary lib(in);
 
   alps::Parameters p;
-  p["S"]=2;
-  write_set("spin-1 boson",lib,p);
+  write_set("spinful boson",lib);
+  p["boson_spin"]=2;
   p["NMax"]=2;
-  write_set("spin-S boson",lib,p);
+  write_set("spinful boson",lib,p);
   write_set("t-J",lib);
-  write_set("t-J alternative",lib);
+  write_set("alternative t-J",lib);
 #ifndef BOOST_NO_EXCEPTIONS
 }
 catch (std::exception& exc) {
   std::cerr << exc.what() << "\n";
-  //alps::comm_exit(true);
   return -1;
 }
 catch (...) {

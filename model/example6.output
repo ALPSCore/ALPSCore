@@ -1,11 +1,11 @@
-States of basis spin-1 boson={
+States of basis spinful boson={
   | N=0 J=0 Jz=0 >
   | N=1 J=0 Jz=0 >
   | N=1 J=1 Jz=-1 >
   | N=1 J=1 Jz=0 >
   | N=1 J=1 Jz=1 >
 }
-States of basis spin-S boson={
+States of basis spinful boson={
   | N=0 J=0 Jz=0 >
   | N=1 J=0 Jz=0 >
   | N=1 J=1 Jz=-1 >
@@ -43,11 +43,11 @@ States of basis spin-S boson={
   | N=2 J=4 Jz=4 >
 }
 States of basis t-J={
-  | N=0 Sz=0 >
-  | N=1 Sz=-1/2 >
-  | N=1 Sz=1/2 >
+  | N=0 Sz=0 S=0 >
+  | N=1 Sz=-1/2 S=1/2 >
+  | N=1 Sz=1/2 S=1/2 >
 }
-States of basis t-J alternative={
+States of basis alternative t-J={
   | Nup=0 Ndown=0 >
   | Nup=0 Ndown=1 >
   | Nup=1 Ndown=0 >
