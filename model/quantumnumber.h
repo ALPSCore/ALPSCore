@@ -287,7 +287,7 @@ QuantumNumber<I> operator+(const QuantumNumber<I>& x,const QuantumNumber<I>& y)
 #ifndef ALPS_WITHOUT_XML
 
 template <class I>
-QuantumNumber<I>::QuantumNumber(const XMLTag& intag, std::istream& is)
+QuantumNumber<I>::QuantumNumber(const XMLTag& intag, std::istream&)
  : valid_(false)
 {
   XMLTag tag(intag);

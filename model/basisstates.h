@@ -39,6 +39,7 @@
 #define ALPS_MODEL_BASISSTATES_H
 
 #include <alps/model/basis.h>
+#include <boost/integer/static_log2.hpp>
 #include <algorithm>
 #include <vector>
 
@@ -53,12 +54,55 @@ public:
   typedef typename base_type::const_iterator const_iterator;
   template <class G> BasisStatesDescriptor(const BasisDescriptor<I>& b, const G& graph);
   const BasisDescriptor<I>& basis() const { return basis_;}
+  const SiteBasisDescriptor<I>& site_basis(int i) const { return site_basis_[i];}
 private:
   BasisDescriptor<I> basis_;
+  std::vector<SiteBasisDescriptor<I> > site_basis_;
+};
+
+template <class I, int N=1> class IntegerState;
+
+template <class I, int N>
+class IntegerState {
+public:
+  static const int bits = boost::static_log2<N>::value+1;
+  static const int mask = (1<<bits)-1;
+  typedef I representation_type;
+  
+  class reference {
+  public:
+    reference(I& s, int i) : state_(s), shift_(i*bits) {}
+    operator int() const { return (state_ >> shift_) & mask_;}
+    template <class T>
+    reference& operator=(T x)
+    {
+      state_ &= ~(mask<<shift_);
+      state |= ((mask & x)<<shift_);
+      return *this;
+    }
+  private:
+    I& state_;
+    std::size_t shift_;
+  };
+  
+  IntegerState(representation_type x=0) : state_(x) {}
+  
+  template <class J>
+  IntegerState(const std::vector<J>& x) : state_(0)
+  { 
+    for (int i=0;i<x.size();++i)  
+      state_ |=(x[i]<<(i*bits));
+  }
+  int operator[](int i) const { return (state_>>i)&mask;}
+  reference operator[](int i) { return reference(state_,i);}
+  operator representation_type() const { return state_;}
+  representation_type state() const { return state_;}
+private:
+  representation_type state_;
 };
 
 template <class I>
-class IntegerState {
+class IntegerState<I,1> {
 public:
   typedef I representation_type;
   
@@ -97,12 +141,13 @@ private:
   representation_type state_;
 };
 
-template <class I>
-bool operator == (IntegerState<I> x, IntegerState<I> y)
+
+template <class I, int N>
+bool operator == (IntegerState<I,N> x, IntegerState<I,N> y)
 { return x.state() == y.state(); }
 
-template <class I>
-bool operator < (IntegerState<I> x, IntegerState<I> y)
+template <class I, int N>
+bool operator < (IntegerState<I,N> x, IntegerState<I,N> y)
 { return x.state() < y.state(); }
 
 template <class I, class S=std::vector<I>, class SS=StateDescriptor<I> >
@@ -115,7 +160,20 @@ public:
   typedef typename base_type::size_type size_type;
   typedef BasisStatesDescriptor<I,SS> basis_type;
 
-  BasisStates(const BasisStatesDescriptor<I,SS>& b);
+  template <class J>
+  BasisStates(const BasisStatesDescriptor<I,SS>& b, 
+              const std::vector<std::pair<std::string,half_integer<J> > >& c)
+    : basis_(b)
+  { build(c);}
+
+  BasisStates(const BasisStatesDescriptor<I,SS>& b)
+    : basis_(b)
+  { 
+    std::vector<std::pair<std::string,half_integer<I> > > no_constraint;
+    build(no_constraint);
+  }
+                    
+                
   inline size_type index(const value_type& x) const
   {
     const_iterator it = std::lower_bound(begin(), end(), x);
@@ -125,6 +183,13 @@ public:
   bool check_sort() const;
   const basis_type& basis() const { return basis_;}
 private:
+  template <class J>
+  bool satisfies_quantumnumbers(const std::vector<I>& idx, 
+                                const std::pair<std::string,half_integer<J> >&);
+  template <class J>
+  void build(const std::vector<std::pair<std::string,half_integer<J> > >&);
+                    
+
   BasisStatesDescriptor<I,SS> basis_;
 };
 
@@ -174,7 +239,9 @@ BasisStatesDescriptor<I,S>::BasisStatesDescriptor(const BasisDescriptor<I>& b, c
   // construct SiteBasisStates for each site
   typename property_map<site_type_t,G,int>::const_type site_type(get_or_default(site_type_t(),g,0));
   for (typename boost::graph_traits<G>::vertex_iterator it=sites(g).first;it!=sites(g).second ; ++it) {
-    push_back(site_state_type(basis_.site_basis(site_type[*it])));
+    const SiteBasisDescriptor<I>& sb=basis_.site_basis(site_type[*it]);
+    site_basis_.push_back(sb);
+    push_back(site_state_type(sb));
   }
 }
 
@@ -188,26 +255,40 @@ bool BasisStates<I,S,SS>::check_sort() const
   return true;
 }
 
-template <class I, class S, class SS>
-BasisStates<I,S,SS>::BasisStates(const BasisStatesDescriptor<I,SS>& b)
- : basis_(b)
+template <class I, class S, class SS> template <class J>
+bool BasisStates<I,S,SS>::satisfies_quantumnumbers(const std::vector<I>& idx, const std::pair<std::string, half_integer<J> >& constraint )
 {
-  if (b.empty())
+  half_integer<J> val=0;
+  for (int i=0;i<basis_.size();++i)
+    val += get_quantumnumber(basis_[i][idx[i]],constraint.first,basis_.site_basis(i));
+  return val==constraint.second;
+}
+
+template <class I, class S, class SS> template<class J>
+void BasisStates<I,S,SS>::build(const std::vector<std::pair<std::string,half_integer<J> > >& constraints)
+{
+  if (basis_.empty())
     return;
-  std::vector<I> idx(b.size(),0);
+  std::vector<I> idx(basis_.size(),0);
   unsigned int last=idx.size()-1;
   while (true) {
     unsigned int k=last;
-    while (idx[k]>=b[k].size() && k) {
+    while (idx[k]>=basis_[k].size() && k) {
       idx[k]=0;
       if (k==0)
         break;
       --k;
       ++idx[k];
     }
-    if (k==0 && idx[k]>=b[k].size())
+    if (k==0 && idx[k]>=basis_[k].size())
       break;
-    push_back(idx);
+      
+    bool satisfies=true;
+    for (int i=0;i<constraints.size();++i)
+      satisfies = satisfies && satisfies_quantumnumbers(idx,constraints[i]);
+
+    if (satisfies)
+      push_back(idx);
     ++idx[last];
   }
   if (!check_sort()) {

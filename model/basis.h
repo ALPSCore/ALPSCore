@@ -69,14 +69,21 @@ public:
   typedef typename base_type::iterator iterator;
   typedef typename base_type::const_iterator const_iterator;
   typedef std::map<std::string,SiteBasisDescriptor<I> > sitebasis_map_type;
+  typedef std::vector<std::pair<std::string,half_integer<I> > > constraints_type;
+
   BasisDescriptor() {}
   BasisDescriptor(const XMLTag&, std::istream&,const sitebasis_map_type& bases_= sitebasis_map_type());
   void write_xml(oxstream&) const;
   const SiteBasisDescriptor<I>& site_basis(int type=0) const;
   const std::string& name() const { return name_;}
   bool set_parameters(const Parameters& p);
+  const constraints_type& constraints() const { return evaluated_constraints_;}
 private:
   std::string name_;
+  typedef std::vector<std::pair<std::string,alps::Expression> > unevaluated_constraints_type;
+  void check_constraints();
+  unevaluated_constraints_type constraints_;
+  constraints_type evaluated_constraints_;
 };
 
 
@@ -89,7 +96,19 @@ bool BasisDescriptor<I>::set_parameters(const Parameters& p)
   bool valid=true;
   for (iterator it=begin();it!=end();++it)
     valid = valid && it->set_parameters(p);
+  evaluated_constraints_.clear();
+  for (typename unevaluated_constraints_type::iterator it=constraints_.begin();it!=constraints_.end();++it)
+    it->second.partial_evaluate(p);
+  check_constraints();
   return valid;
+}
+
+template <class I>
+void BasisDescriptor<I>::check_constraints()
+{
+  for (typename unevaluated_constraints_type::iterator it=constraints_.begin();it!=constraints_.end();++it)
+    if (it->second.can_evaluate())
+      evaluated_constraints_.push_back(std::make_pair(it->first,half_integer<I>(it->second.value())));
 }
 
 
@@ -142,9 +161,19 @@ BasisDescriptor<I>::BasisDescriptor(const XMLTag& intag, std::istream& is, const
       push_back(SiteBasisMatch<I>(tag,is,bases_));
       tag = parse_tag(is);
     }
+    while (tag.name=="CONSTRAINT") {
+      constraints_.push_back(std::make_pair(tag.attributes["quantumnumber"],Expression(tag.attributes["value"])));
+      if (tag.type!=XMLTag::SINGLE) {
+        tag=parse_tag(is);
+        if (tag.name!="/CONSTRAINT")
+          boost::throw_exception(std::runtime_error("Unexpected tag " + tag.name + " in <CONSTRAINT> element"));
+      }
+      tag = parse_tag(is);
+    }
     if (tag.name !="/BASIS")
-      boost::throw_exception(std::runtime_error("Illegal tag <" + tag.name + "> in <BASIS> element"));
+      boost::throw_exception(std::runtime_error("Unexpected tag <" + tag.name + "> in <BASIS> element"));
   }
+  check_constraints();
 }
 
 template <class I>
@@ -167,6 +196,9 @@ void BasisDescriptor<I>::write_xml(oxstream& os) const
   os << start_tag("BASIS") << attribute("name", name());
   for (const_iterator it=begin();it!=end();++it)
     os << *it;
+  for (typename unevaluated_constraints_type::const_iterator it=constraints_.begin();it!=constraints_.end();++it)
+    os << start_tag("CONSTRAINT") << attribute("quantumnumber",it->first) 
+       << attribute("value",static_cast<std::string>(it->second)) << end_tag("CONSTRAINT");
   os << end_tag("BASIS");
 }
 

@@ -136,6 +136,7 @@ public:
   double value(const Evaluator& p=Evaluator()) const;
   bool can_evaluate(const Evaluator& p=Evaluator()) const;
   void partial_evaluate(const Evaluator& p=Evaluator());
+  void partial_evaluate(const Parameters& p) { partial_evaluate(ParameterEvaluator(p));}
   void output(std::ostream&) const;
   detail::Evaluatable* clone() const;
   std::pair<term_iterator,term_iterator> terms() const 

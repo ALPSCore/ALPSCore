@@ -36,5 +36,3 @@
 **************************************************************************/
 
 #include <alps/model/sitebasisstates.h>
-#include <alps/model/sitebasisdescriptor.h>
-#include <alps/model/sitestate.h>

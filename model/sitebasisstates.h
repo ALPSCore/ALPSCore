@@ -40,7 +40,6 @@
 
 #include <alps/model/quantumnumber.h>
 #include <alps/model/sitestate.h>
-#include <alps/model/sitebasisdescriptor.h>
 #include <vector>
 #include <iostream>
 

@@ -37,7 +37,7 @@
 #ifndef ALPS_MODEL_SITESTATE_H
 #define ALPS_MODEL_SITESTATE_H
 
-#include <alps/model/quantumnumber.h>
+#include <alps/model/sitebasisdescriptor.h>
 #include <vector>
 #include <iostream>
 
@@ -46,7 +46,8 @@ namespace alps {
 template <class I>
 class StateDescriptor : public std::vector<half_integer<I> > {
 public:
-  typename std::vector<half_integer<I> >::const_iterator const_iterator;
+  typedef half_integer<I> quantumnumber_type;
+  typedef typename std::vector<half_integer<I> >::const_iterator const_iterator;
   StateDescriptor() {}
   StateDescriptor(const std::vector<half_integer<I> >& x) : std::vector<half_integer<I> >(x)  {}
 };
@@ -56,6 +57,7 @@ template <class I>
 class SingleQNStateDescriptor {
 public:
   typedef half_integer<I> representation_type;
+  typedef half_integer<I> quantumnumber_type;
   typedef std::size_t size_type;
   
   SingleQNStateDescriptor() {}
@@ -104,27 +106,48 @@ bool operator >= (const SingleQNStateDescriptor<I>& x,  const SingleQNStateDescr
 template <class I>
 half_integer<I> get_quantumnumber(const StateDescriptor<I>& s, typename StateDescriptor<I>::size_type i)
 {
+  if (i>=s.size())
+    boost::throw_exception(std::logic_error("Called get_quantumnumber with illegal index"));
   return s[i];
 }
 
 template <class I>
 half_integer<I> get_quantumnumber(const SingleQNStateDescriptor<I>& s, std::size_t i)
 {
-  assert(i==0);
+  if (i!=0)
+    boost::throw_exception(std::logic_error("Called get_quantumnumber with illegal index"));
   return s.state();
 }
 
 template <class I>
 half_integer<I>& get_quantumnumber(StateDescriptor<I>& s, typename StateDescriptor<I>::size_type i)
 {
+  if (i>=s.size())
+    boost::throw_exception(std::logic_error("Called get_quantumnumber with illegal index"));
   return s[i];
 }
 
 template <class I>
 half_integer<I>& get_quantumnumber(SingleQNStateDescriptor<I>& s, std::size_t i)
 {
-  assert(i==0);
+  if (i!=0)
+    boost::throw_exception(std::logic_error("Called get_quantumnumber with illegal index"));
   return s.state();
+}
+
+template <class I>
+std::size_t get_quantumnumber_index(const std::string& n, const SiteBasisDescriptor<I>& b)
+{
+  for (std::size_t i=0;i<b.size();++i) {
+    if (b[i].name()==n)
+      break;
+  }
+}
+
+template <class S, class I>
+typename S::quantumnumber_type get_quantumnumber(const S& s, const std::string& n, const SiteBasisDescriptor<I>& b)
+{
+  return get_quantumnumber(s,get_quantumnumber_index(n,b));
 }
 
 }
