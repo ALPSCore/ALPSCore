@@ -66,10 +66,10 @@ public:
    : buf_(b), ptr_(buf_.end()) {}
 
   BufferedRandomNumberGeneratorBase(const BufferedRandomNumberGeneratorBase& gen)
-  {
-    buf_ = gen.buf_;
-    ptr_ = buf_.begin()+(gen.ptr_-gen.buf_.begin());
-  }
+  {
+    buf_ = gen.buf_;
+    ptr_ = buf_.begin()+(gen.ptr_-gen.buf_.begin());
+  }
 
   virtual ~BufferedRandomNumberGeneratorBase() {}
 
