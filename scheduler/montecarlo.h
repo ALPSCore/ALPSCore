@@ -1,3 +1,4 @@
+
 /*****************************************************************************
 *
 * ALPS Project: Algorithms and Libraries for Physics Simulations
@@ -114,7 +115,8 @@ public:
   
   bool has_sign_problem() const 
   {
-    return has_sign_problem(model_helper<I>::model(),LatticeMCRun<G>::lattice(),model_helper<I>::operators(),LatticeMCRun<G>::parms);
+    return alps::has_sign_problem(model_helper<I>::model(),*this,
+                                  model_helper<I>::operators(),LatticeMCRun<G>::parms);
   }
 };
 
