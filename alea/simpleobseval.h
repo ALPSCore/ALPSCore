@@ -78,7 +78,8 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
   SimpleObservableEvaluator(const SimpleObservableEvaluator& eval);
 
   /** constructor from an observable */
-  SimpleObservableEvaluator(const Observable& obs, const std::string& n = "");
+  SimpleObservableEvaluator(const Observable& obs, const std::string& n);
+  SimpleObservableEvaluator(const Observable& obs);
 
   SimpleObservableEvaluator(const std::string& n, std::istream&, const XMLTag&);
   // /** needed for silcing: */
@@ -194,6 +195,8 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
   bool can_merge() const {return true;} 
   bool can_merge(const Observable&) const;
   Observable* convert_mergeable() const {return clone();}
+  SimpleObservableEvaluator<value_type> make_evaluator() const { return *this;}
+
  private:
   typedef typename std::vector<SimpleObservableData<T> >::iterator iterator;
   typedef typename std::vector<SimpleObservableData<T> >::const_iterator const_iterator;
@@ -515,6 +518,17 @@ inline SimpleObservableEvaluator<T>::SimpleObservableEvaluator(const Observable&
     automatic_naming_(n=="")
 {
   merge(b);
+}
+
+template <class T>
+inline SimpleObservableEvaluator<T>::SimpleObservableEvaluator(const Observable& b)
+  : AbstractSimpleObservable<T>(b.name()), valid_(false),
+    automatic_naming_(true)
+{
+  if (dynamic_cast<const AbstractSimpleObservable<T>*>(&b)==0)
+    merge(b);
+  else
+    (*this) = dynamic_cast<const AbstractSimpleObservable<T>&>(b).make_evaluator();
 }
 
 template <class T>

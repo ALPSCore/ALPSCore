@@ -36,7 +36,6 @@
 #include <boost/smart_ptr.hpp>
 #include <boost/random.hpp>
 #include <boost/filesystem/path.hpp>
-#include <alps/alea.h>
 #include <alps/osiris.h>
 
 namespace alps {

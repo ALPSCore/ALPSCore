@@ -60,11 +60,11 @@ ObservableFactory::ObservableFactory()
   register_observable<SimpleRealObservable>();
   register_observable<RealObservable>();
   register_observable<RealTimeSeriesObservable>();
-  register_observable<AbstractSignedObservable<IntObsevaluator> >();
+  //register_observable<AbstractSignedObservable<IntObsevaluator> >();
   register_observable<AbstractSignedObservable<RealObsevaluator> >();
-  register_observable<SignedObservable<SimpleIntObservable> >();
-  register_observable<SignedObservable<IntObservable> >();
-  register_observable<SignedObservable<IntTimeSeriesObservable> >();
+  //register_observable<SignedObservable<SimpleIntObservable> >();
+  //register_observable<SignedObservable<IntObservable> >();
+  //register_observable<SignedObservable<IntTimeSeriesObservable> >();
   register_observable<SignedObservable<SimpleRealObservable> >();
   register_observable<SignedObservable<RealObservable> >();
   register_observable<SignedObservable<RealTimeSeriesObservable> >();
@@ -78,13 +78,13 @@ ObservableFactory::ObservableFactory()
   register_observable<IntVectorObservable>();
   register_observable<IntVectorTimeSeriesObservable>();
   register_observable<AbstractSignedObservable<RealVectorObsevaluator> >();
-  register_observable<AbstractSignedObservable<IntVectorObsevaluator> >();
+  //register_observable<AbstractSignedObservable<IntVectorObsevaluator> >();
   register_observable<SignedObservable<RealVectorObservable> >();
   register_observable<SignedObservable<SimpleRealVectorObservable> >();
   register_observable<SignedObservable<RealVectorTimeSeriesObservable> >();
-  register_observable<SignedObservable<SimpleIntVectorObservable> >();
-  register_observable<SignedObservable<IntVectorObservable> >();
-  register_observable<SignedObservable<IntVectorTimeSeriesObservable> >();
+  //register_observable<SignedObservable<SimpleIntVectorObservable> >();
+  //register_observable<SignedObservable<IntVectorObservable> >();
+  //register_observable<SignedObservable<IntVectorTimeSeriesObservable> >();
 #endif
   register_observable<Real2DArrayObservable>();
   register_observable<SimpleReal2DArrayObservable>();
@@ -325,7 +325,6 @@ void ObservableSet::compact()
   do_for_all(boost::mem_fun_ref(&Observable::compact));
 }
 
-
 void ObservableSet::write_xml(oxstream& oxs, const boost::filesystem::path& fn_hdf5) const
 {
   oxs << start_tag("AVERAGES");
@@ -349,5 +348,12 @@ void ObservableSet::read_xml(std::istream& infile, const XMLTag& intag)
     tag = parse_tag(infile);
   }
 }
+
+void ObservableSet::clear()
+{
+  base_type::clear();
+  signs_.clear();
+}
+
 
 } // namespace alps

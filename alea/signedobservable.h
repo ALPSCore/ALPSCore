@@ -42,16 +42,18 @@ namespace alps {
 //
 //-----------------------------------------------------------------------
 
-template <class OBS, class SIGN=int32_t>
+template <class OBS, class SIGN=double>
 class AbstractSignedObservable 
  : public AbstractSimpleObservable<typename OBS::value_type> 
 {
 public:
   typedef OBS observable_type;
   typedef SIGN sign_type;
-  typedef AbstractSimpleObservable<typename OBS::value_type> base_type;
-  typedef typename observable_type::value_type value_type;
-  typedef typename obs_value_traits<value_type>::result_type result_type;
+  typedef typename observable_type::value_type obs_value_type;
+  typedef typename obs_value_traits<obs_value_type>::result_type obs_result_type;
+  typedef obs_result_type result_type;
+  typedef obs_value_type value_type;
+  typedef AbstractSimpleObservable<obs_value_type> base_type;
   typedef typename obs_value_traits<result_type>::slice_iterator slice_iterator;
   typedef std::size_t count_type;
   typedef typename obs_value_traits<value_type>::time_type time_type;
@@ -86,23 +88,31 @@ public:
   void rename(const std::string& newname) { rename(newname); obs_.rename("Sign * "+newname);}
   ALPS_DUMMY_VOID reset(bool forthermalization) { obs_.reset(forthermalization); ALPS_RETURN_VOID}
   ALPS_DUMMY_VOID output(std::ostream& out) const 
-  { output_helper<obs_value_traits<value_type>::array_valued>::output(*this,out); ALPS_RETURN_VOID}
+  { 
+    output_helper<obs_value_traits<value_type>::array_valued>::output(*this,out); 
+    obs_.output(out); ALPS_RETURN_VOID
+  }
   void output_scalar(std::ostream&) const;
   void output_vector(std::ostream&) const;
-  //write_xml(oxstream& oxs, const boost::filesystem::path& fn_hdf5=boost::filesystem::path()) const;
+  void write_xml(oxstream& oxs, const boost::filesystem::path& p) const
+  {
+    base_type::write_xml(oxs,p);
+    obs_.write_xml(oxs,p);
+  }
+
 
   count_type count() const { return obs_.count();}
-  result_type mean() const { return SimpleObservableEvaluator<value_type>(*this).mean();}
-  result_type error() const { return SimpleObservableEvaluator<value_type>(*this).error();}
+  result_type mean() const { return static_cast<SimpleObservableEvaluator<value_type> >(*this).mean();}
+  result_type error() const { return static_cast<SimpleObservableEvaluator<value_type> >(*this).error();}
   
   bool can_set_thermalization() const { return  obs_.can_set_thermalization();}
   void set_thermalization(uint32_t todiscard) { obs_.set_thermalization(todiscard);}
   uint32_t get_thermalization() const { return obs_.get_thermalization();}
 
-  operator SimpleObservableEvaluator<value_type>() const
+  SimpleObservableEvaluator<value_type> make_evaluator() const
   {
     SimpleObservableEvaluator<value_type> result(obs_);
-    result /=SimpleObservableEvaluator<sign_type>(sign());
+    result /= static_cast<SimpleObservableEvaluator<sign_type> >(dynamic_cast<const AbstractSimpleObservable<sign_type>&>(sign()));
     result.rename(name());
     return result;
   }
@@ -166,7 +176,7 @@ protected:
 //
 //-----------------------------------------------------------------------
 
-template <class OBS, class SIGN=int32_t>
+template <class OBS, class SIGN=double>
 class SignedObservable 
  : public AbstractSignedObservable<OBS,SIGN>, 
    public RecordableObservable<typename OBS::value_type,SIGN>
@@ -254,12 +264,14 @@ void AbstractSignedObservable<OBS,SIGN>::set_sign(const Observable& sign)
 template <class OBS, class SIGN>
 void AbstractSignedObservable<OBS,SIGN>::save(ODump& dump) const
 {
+  AbstractSimpleObservable<value_type>::save(dump);
   dump << obs_ << sign_name_;
 }
 
 template <class OBS, class SIGN>
 void AbstractSignedObservable<OBS,SIGN>::load(IDump& dump)
 {
+  AbstractSimpleObservable<value_type>::load(dump);
   dump >> obs_ >> sign_name_;
   clear_sign();
 }
@@ -269,7 +281,7 @@ void AbstractSignedObservable<OBS,SIGN>::write_more_xml(oxstream& oxs, slice_ite
 {
   oxs << start_tag("SIGN") << attribute("signed_observable",obs_.name());
   if (!sign_name_.empty())
-     oxs << attribute("name",sign_name_);
+     oxs << attribute("sign",sign_name_);
   oxs << end_tag("SIGN");
 }
 
@@ -294,7 +306,7 @@ void AbstractSignedObservable<OBS,SIGN>::output_scalar(std::ostream& out) const
   else {
     out << ": " << mean() << " +/- " << error();
     if (!sign_name_.empty())
-      out << "; sign in observable \"" << sign_name_;
+      out << "; sign in observable \"" << sign_name_ << "\"";
     out << std::endl;
   }
 }

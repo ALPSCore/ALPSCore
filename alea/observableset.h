@@ -216,6 +216,8 @@ class ObservableSet: public std::map<std::string,Observable*>
   void write_xml(oxstream& oxs, const boost::filesystem::path& =boost::filesystem::path()) const;
 
   void read_xml(std::istream& infile, const XMLTag& tag);
+  
+  void clear();
 
 private:
   typedef std::multimap<std::string,std::string> signmap;        

@@ -130,10 +130,6 @@ public:
   virtual const value_type& bin_value2(count_type) const 
   { boost::throw_exception(std::logic_error("bin_value2 called but no bins present")); return *(new value_type());}
 
-  //@}
-  
-  
-  //@{ 
   //@name Slicing of observables
           
   /** slice the data type using a single argument.
@@ -160,8 +156,16 @@ public:
   void write_xml_vector(oxstream&, const boost::filesystem::path&) const;
 
   virtual std::string evaluation_method(Target) const { return "";}
+  
+  operator SimpleObservableEvaluator<value_type> () const { return make_evaluator();}
 
 private:
+  virtual SimpleObservableEvaluator<value_type> make_evaluator() const
+  { 
+    return SimpleObservableEvaluator<value_type>(*this,name());
+  }
+  friend class SimpleObservableEvaluator<value_type>;
+  
   virtual void write_more_xml(oxstream&, slice_iterator = slice_iterator()) const {}
 };
 
@@ -171,7 +175,7 @@ private:
 // an observable that can store new measurements
 //-----------------------------------------------------------------------
 
-template <class T=double, class SIGN=int32_t>
+template <class T=double, class SIGN=double>
 class RecordableObservable
 {
 public:
