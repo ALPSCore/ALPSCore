@@ -165,14 +165,17 @@ SiteTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b,
     for (int i=0;i<states.size();++i) {
       //calculate expression applied to state *it and store it into matrix
       for (typename Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
-	SiteOperatorEvaluator<I, state_type> evaluator(states[i], basis,parms,ops);
+        SiteOperatorEvaluator<I, state_type> evaluator(states[i], basis,parms,ops);
         Term term(*tit);
         term.partial_evaluate(evaluator);
         int j = states.index(evaluator.state());
-	    if (alps::is_nonzero(term)) {
-          if (alps::is_nonzero(mat[i][j].first)) {
+	    if (is_nonzero(term)) {
+          if (is_nonzero(mat[i][j].first)) {
             if (mat[i][j].second != evaluator.fermionic())
-              boost::throw_exception(std::runtime_error("Inconsistent fermionic nature of a matrix element. Please contact the library authors for an extension to the ALPS model library."));
+              boost::throw_exception(std::runtime_error("Inconsistent fermionic nature of a matrix element: "
+                                    + boost::lexical_cast<std::string,Term>(*tit) + " is inconsistent with "
+                                    + boost::lexical_cast<std::string,T>(mat[i][j].first) + 
+                                    ". Please contact the library authors for an extension to the ALPS model library."));
           }
           else
             mat[i][j].second=evaluator.fermionic();
@@ -197,17 +200,20 @@ SiteTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b,
         Term term(*tit);
         term.partial_evaluate(evaluator);
         int j = states.index(evaluator.state());
-	    if (alps::is_nonzero(term)) {
-          if (!alps::is_nonzero(mat[i][j].first)) {
+	    if (is_nonzero(term)) {
+          if (is_nonzero(mat[i][j].first)) {
             if (mat[i][j].second != evaluator.fermionic())
-              boost::throw_exception(std::runtime_error("Inconsistent fermionic nature of a matrix element. Please contact the library authors for an extension to the ALPS model library."));
+              boost::throw_exception(std::runtime_error("Inconsistent fermionic nature of a matrix element: "
+                                    + boost::lexical_cast<std::string,Term>(*tit) + " is inconsistent with "
+                                    + boost::lexical_cast<std::string,T>(mat[i][j].first) + 
+                                    ". Please contact the library authors for an extension to the ALPS model library."));
           }
           else
             mat[i][j].second=evaluator.fermionic();
 #ifndef ALPS_WITH_NEW_EXPRESSION
           mat[i][j].first += term;
-#else
-	  mat[i][j].first += evaluate<T>(term);
+#else 
+          mat[i][j].first += evaluate<T>(term);
 #endif
         }
       }

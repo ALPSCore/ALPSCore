@@ -283,9 +283,13 @@ typename Term<T>::value_type Term<T>::value(const Evaluator<T>& p) const
     for (int i = 0; i < terms_.size(); ++i)
       val *= terms_[i].value(p);
   else
-    for (int i = terms_.size()-1; i >= 0; --i)
-      val *=terms_[i].value(p);
-  return (is_negative() ? -val : val);
+    for (int i = terms_.size()-1; i >= 0; --i) {
+      value_type tmp=terms_[i].value(p);
+      val *=tmp;
+    }
+  if (is_negative() && is_nonzero(val))
+    val = val*(-1.);
+  return val;
 }
 
 template<class T>
@@ -315,9 +319,9 @@ void Term<T>::partial_evaluate(const Evaluator<T>& p)
         }
       }
     }
-    if (val == value_type(0.)) {
+    if (val == value_type(0.))
       (*this) = Term<T>(value_type(0.));
-    } else {
+    else {
       if (evaluate_helper<T>::real(val) < 0.) {
         is_negative_=!is_negative_;
         val=-val;
@@ -642,7 +646,8 @@ Evaluatable<T>* Function<T>::partial_evaluate_replace(const Evaluator<T>& p)
 template<class T>
 typename Function<T>::value_type Function<T>::value(const Evaluator<T>& p) const
 {
-  return p.evaluate_function(name_,arg_);
+  value_type val=p.evaluate_function(name_,arg_);
+  return val;
 }
 
 template<class T>

@@ -33,11 +33,13 @@
 
 #include <alps/config.h>
 #include <alps/typetraits.h>
+#include <boost/type_traits.hpp>
 
 #include <algorithm>
 #include <complex>
 #include <cmath>
 #include <cstddef>
+#include <limits>
 
 namespace alps {
 
@@ -64,8 +66,27 @@ inline T abs2(const std::complex<T>& x) {
   return x.real()*x.real()+x.imag()*x.imag();
 }
 
+namespace detail {
+template <bool F>
+struct is_zero_float
+{
+  template <class T>
+  static bool is_zero(T x) { return std::abs(x) < std::numeric_limits<T>::min()/std::numeric_limits<T>::epsilon(); }
+};
+
+template <>
+struct is_zero_float<false>
+{
+  template <class T>
+  static bool is_zero(T x) { return x == T(0.); }
+};
+}
+
 template<class T>
-bool is_zero(T x) { return x == T(0.); }
+bool is_zero(T x) { return detail::is_zero_float<boost::is_float<T>::value>::is_zero(x); }
+
+template<class T>
+bool is_zero(std::complex<T> x) { return is_zero(std::abs(x)); }
 
 template<class T>
 bool is_nonzero(T x) { return !is_zero(x); }
