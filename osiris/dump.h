@@ -42,6 +42,7 @@
 //#include <rpc/types.h>
 #include <typeinfo>
 #include <vector>
+#include <string>
 
 namespace alps {
 
@@ -107,6 +108,7 @@ public:
   { write_array(2 * n, reinterpret_cast<const T*>(p)); }
 
   virtual void write_string(std::size_t n, const char* s);
+  virtual void write_string(const std::string&);
 
   /** register an object to prepare serializing a pointer to it.
       after writing an object it has to be registered with the dump to
@@ -190,6 +192,7 @@ public:
   { read_array(2 * n, reinterpret_cast<float*>(p)); }
 
   virtual void read_string(std::size_t n, char* s);
+  virtual void read_string(std::string&);
 
 # define ALPS_DUMP_DO_TYPE(T) \
   operator T () { return get<T>(); }

@@ -65,6 +65,14 @@ inline alps::IDump& operator >> (alps::IDump& dump,
   return dump;
 }
 
+
+inline alps::IDump& operator >> (alps::IDump& dump, std::string& s)
+{
+  dump.read_string(s);
+  return dump;
+}
+
+
 template <class charT, class traits, class Allocator>
 inline alps::ODump& operator << (alps::ODump& dump,
   const std::basic_string<charT,traits,Allocator>& s)
@@ -73,6 +81,12 @@ inline alps::ODump& operator << (alps::ODump& dump,
  if(s.size())
    dump.write_string(s.size()+1,s.c_str());
  return dump;
+}
+
+inline alps::ODump& operator << (alps::ODump& dump, const std::string& s)
+{
+  dump.write_string(s);
+  return dump;
 }
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE

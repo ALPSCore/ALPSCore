@@ -90,6 +90,13 @@ void ODump::write_string(std::size_t n, const char* p)
   for (std::size_t i=0;i<n;i++) write_simple(uint8_t(p[i]));
 }
 
+void ODump::write_string(const std::string& s) 
+{
+  (*this) << uint32_t(s.size());
+  if(s.size())
+    write_string(s.size()+1,s.c_str());
+}
+
 // pointers are stored in an assocatiove array and assigned numbers
 void ODump::registerObjectAddress(void* p) 
 {
@@ -170,6 +177,24 @@ void IDump::read_string(std::size_t n, char* p)
     p[i] = c;
   }
 }
+
+void IDump::read_string(std::string& s) 
+{
+  uint32_t sz(*this);
+  if(sz) {
+    char* t = new char[sz+1];
+    read_string(sz+1,t);
+    if(t[sz]!=char(0))
+      boost::throw_exception(std::runtime_error("string on dump not terminating with '\\0'"));
+        s=t;
+    delete t;
+    if(s.length()!=sz)
+      boost::throw_exception(std::runtime_error("string on dump has incorrect length"));
+  } 
+  else
+    s="";
+}
+
 
 void IDump::registerObjectAddress(void* p)
 { pointerVector_.push_back(p); }
