@@ -334,7 +334,7 @@ public:
     mutable vector_type k_;
     void set_k() const
     {
-      k_=*basis_vectors(*cell_iterator::lattice_).first;
+      k_=*alps::basis_vectors(*cell_iterator::lattice_).first;
       for (int i=0;i<dimension(*cell_iterator::lattice_);++i)
         k_[i]=cell_iterator::offset_[i]*2.*M_PI/double(cell_iterator::lattice_->extent()[i]);
     }
