@@ -59,6 +59,7 @@ try {
   alps::RealObservable obs_a("observable a");
   alps::RealObservable obs_b("observable b");
   alps::RealObservable obs_c("observable c");
+  alps::RealVectorObservable obs_d("observable d");
   obs_a.reset(true);
   obs_b.reset(true);
   obs_c.reset(true);
@@ -136,6 +137,9 @@ try {
 
   alps::RealObsevaluator obseval_i = 1.0 / obseval_b;
   std::cout << obseval_i;
+
+  alps::RealVectorObsevaluator obseval_v = obs_d;
+  obseval_v /= obseval_i;
 
 #ifndef BOOST_NO_EXCEPTIONS
 }
