@@ -34,6 +34,7 @@
 #include <boost/throw_exception.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_integral.hpp>
+#include <boost/numeric/conversion/cast.hpp>
 #include <iostream>
 #include <cassert>
 #include <limits>
@@ -50,7 +51,7 @@ public:
   explicit half_integer(double x) : val_(integer_type(2*x+(x<0?-0.01:0.01))) {}
   template <class U>
   half_integer(typename boost::enable_if<boost::is_integral<U>, U>::type x)
-  : val_(boost::numeric_cast<T>(2*x)) {}
+  : val_(boost::numeric_cast<integer_type>(2*x)) {}
   template<class J>
   explicit half_integer(const half_integer<J>& x) : val_(x.get_twice()) {}
 
