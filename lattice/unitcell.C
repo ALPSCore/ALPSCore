@@ -153,6 +153,15 @@ GraphUnitCell::GraphUnitCell(const XMLTag& intag, std::istream& p)
   }
 }
 
+GraphUnitCell::GraphUnitCell() : dim_(0) {}
+GraphUnitCell::GraphUnitCell(const EmptyUnitCell& e) : dim_(alps::dimension(e)) {}
+
+const GraphUnitCell& GraphUnitCell::operator=(const EmptyUnitCell& e)
+{
+  if (dim_==0) dim_=alps::dimension(e);
+  return *this;
+}
+
 void GraphUnitCell::write_xml(std::ostream& xml, const std::string& prefix) const
 {
   xml << prefix << "<UNITCELL";

@@ -67,10 +67,7 @@ public:
   bool has_lattice(const std::string& name) const;
   
   const LatticeGraphDescriptor& lattice_descriptor(const std::string& name) const;
-  hypercubic_lattice<coordinate_lattice<simple_lattice<GraphUnitCell> > > lattice(const std::string& name) const
-  {
-    return hypercubic_lattice<coordinate_lattice<simple_lattice<GraphUnitCell> > >(lattice_descriptor(name));
-  }
+  hypercubic_lattice<coordinate_lattice<simple_lattice<GraphUnitCell> > > lattice(const std::string& name) const;
   const coordinate_graph_type& graph(const std::string& name) const;
   
   template <class G>

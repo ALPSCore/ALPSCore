@@ -111,6 +111,12 @@ bool LatticeLibrary::has_graph(const std::string& name) const
   return (graphs_.find(name)!=graphs_.end());
 }
 
+
+hypercubic_lattice<coordinate_lattice<simple_lattice<GraphUnitCell> > > LatticeLibrary::lattice(const std::string& name) const
+  {
+    return hypercubic_lattice<coordinate_lattice<simple_lattice<GraphUnitCell> > >(lattice_descriptor(name));
+  }
+
 bool LatticeLibrary::has_lattice(const std::string& name) const
 {
   return (latticegraphs_.find(name)!=latticegraphs_.end());
