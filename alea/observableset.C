@@ -80,7 +80,8 @@ try {
     dump >> measurement;
   }
 
-  std::cout << measurement;
+  alps::oxstream oxs;
+  measurement.write_xml(oxs);
 
   boost::filesystem::remove("observableset.dump");
 
