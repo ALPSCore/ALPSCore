@@ -288,8 +288,7 @@
 <LATTICEGRAPH name = "ladder">
   <FINITELATTICE>
     <LATTICE ref="square lattice"/>
-    <PARAMETER name="W" default="L"/>
-    <PARAMETER name="L" default="2"/>
+    <PARAMETER name="W" default="2"/>
     <EXTENT dimension="1" size="L"/>
     <EXTENT dimension="2" size="W"/>
     <BOUNDARY dimension="1" type="periodic"/>
