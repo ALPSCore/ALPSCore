@@ -184,7 +184,7 @@ inline oxstream& operator<<(oxstream& o,  Set<C> S) {
 //- Plot ----------------------------------------------------------------------------------------------------------
 
 template<class C>
-class Plot : std::vector<Set<C> > {
+class Plot : public std::vector<Set<C> > {
 
 public:
   Plot(std::string name="No name", bool show_legend=true) : name_(name), show_legend_(show_legend) {};
