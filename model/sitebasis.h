@@ -74,6 +74,7 @@ public:
   
   size_type index(const value_type& x) const;
   const SiteBasisDescriptor<I>& basis() const { return basis_;}
+  bool check_sort() const;
 private:
   SiteBasisDescriptor<I> basis_;
 };
@@ -130,6 +131,14 @@ typename SiteBasisStates<I>::size_type SiteBasisStates<I>::index(const value_typ
   return std::find(begin(),end(),x)-begin();
 }
 
+template <class I>
+bool SiteBasisStates<I>::check_sort() const
+{
+  for (int i=0;i<size()-1;++i)
+    if ((*this)[i]>=(*this)[i+1])
+      return false;
+  return true;
+}
 
 template <class I>
 SiteBasisStates<I>::SiteBasisStates(const SiteBasisDescriptor<I>& b)
@@ -144,14 +153,16 @@ SiteBasisStates<I>::SiteBasisStates(const SiteBasisDescriptor<I>& b)
   if (basis_.valid(quantumnumbers)) 
     do {
       push_back(quantumnumbers);
-      i=0;
-      while (i<basis_.size()) {
+      i=basis_.size()-1;
+      while (i>=0) {
 	if(basis_[i].valid(++quantumnumbers[i]))
 	  break;
 	quantumnumbers[i]=basis_[i].min();
-	++i;
+	--i;
       }
     } while (i<basis_.size());
+  if (!check_sort())
+    boost::throw_exception(std::logic_error("Site basis not sorted correctly"));
 }
 
 #ifndef ALPS_WITHOUT_XML

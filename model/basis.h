@@ -90,9 +90,19 @@ public:
   typedef typename base_type::size_type size_type;
   BasisStates(const BasisStatesDescriptor<I>& b);
   size_type index(const value_type& x) const;
+  bool check_sort() const;
 };
 
 // -------------------------- implementation -----------------------------------
+
+template <class I, class S>
+bool BasisStates<I,S>::check_sort() const
+{
+  for (int i=0;i<size()-1;++i)
+    if ((*this)[i]>=(*this)[i+1])
+      return false;
+  return true;
+}
 
 template <class I, class S>
 BasisStates<I,S>::BasisStates(const BasisStatesDescriptor<I>& b)
@@ -100,7 +110,7 @@ BasisStates<I,S>::BasisStates(const BasisStatesDescriptor<I>& b)
   std::vector<int> idx(b.size(),0);
   if (b.size())
   while (true) {
-    int k=idx.size();
+    int k=idx.size()-1;
     while (idx[k]>=b[k].size()) {
       if (b[k].size()==0)
         boost::throw_exception(std::runtime_error("No states for site basis " + 
@@ -116,15 +126,21 @@ BasisStates<I,S>::BasisStates(const BasisStatesDescriptor<I>& b)
     for (int i=0;i<idx.size();++i) 
       v.push_back(b[i][idx[i]]);
     push_back(v);
-    idx[0]++;
+    idx[idx.size()-1]++;
   }
+  if (!check_sort())
+    boost::throw_exception(std::logic_error("Basis not sorted correctly"));
 }
 
 
 template <class I, class S>
 typename BasisStates<I,S>::size_type BasisStates<I,S>::index(const typename BasisStates<I,S>::value_type& x) const
 {
-  return std::find(begin(),end(),x)-begin();
+  if (binary_search(begin(),end(),x))
+    return lower_bound(begin(),end(),x)-begin();
+  else
+    return size();
+  //return std::find(begin(),end(),x)-begin();
 }
 
 

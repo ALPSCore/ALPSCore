@@ -222,14 +222,23 @@ double OperatorEvaluator<I>::evaluate_function(const std::string& name, const Ex
 template <class I>
 bool SiteOperatorEvaluator<I>::can_evaluate(const std::string& name) const 
 {
-  return ops_.find(name) != ops_.end() || ParameterEvaluator::can_evaluate(name);
+  if (ops_.find(name) != ops_.end()) {
+    SiteOperatorEvaluator<I> eval(*this);
+    return eval.partial_evaluate(name).can_evaluate(ParameterEvaluator(*this));
+  }
+  else
+    return ParameterEvaluator::can_evaluate(name);
 }
 
 template <class I>
 bool BondOperatorEvaluator<I>::can_evaluate_function(const std::string& name, const Expression& arg) const 
 {
-  return (ops_.find(name) != ops_.end() && (arg== sites_.first || arg==sites_.second)) || 
-         ParameterEvaluator::can_evaluate_function(name,arg);
+  if (ops_.find(name) != ops_.end() && (arg== sites_.first || arg==sites_.second)) {
+    BondOperatorEvaluator<I> eval(*this);
+    return eval.partial_evaluate_function(name,arg).can_evaluate(ParameterEvaluator(*this));
+  }
+  else 
+    return ParameterEvaluator::can_evaluate_function(name,arg);
 }
 
 template <class I>
@@ -245,7 +254,7 @@ Expression SiteOperatorEvaluator<I>::partial_evaluate(const std::string& name) c
   typename operator_map::const_iterator op = ops_.find(name);
   if (op!=ops_.end()) {  // evaluate operator
     Expression e;
-    boost::tie(state_,e) = op->second.apply(state_,basis_,*this);
+    boost::tie(state_,e) = op->second.apply(state_,basis_,ParameterEvaluator(*this));
     return e;
   }
   else 

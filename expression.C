@@ -129,7 +129,7 @@ const Expression& Expression::operator+=(const Expression& e)
 double Expression::value(const Evaluator& p) const
 {
   if (terms_.size()==0)
-    boost::throw_exception(std::runtime_error("Empty expression"));
+    return 0.;
   double val=terms_[0].value(p);
   for (int i=1;i<terms_.size();++i)
     val +=terms_[i].value(p);
@@ -139,7 +139,7 @@ double Expression::value(const Evaluator& p) const
 bool Expression::can_evaluate(const Evaluator& p) const
 {
   if (terms_.size()==0)
-    return false;
+    return true;
   bool can=true;
   for (int i=0;i<terms_.size();++i)
     can = can && terms_[i].can_evaluate(p);
@@ -223,8 +223,10 @@ double Term::value(const Evaluator& p) const
 
 void Term::partial_evaluate(const Evaluator& p)
 {
-  if (can_evaluate(p))
+  if (can_evaluate(p)) {
+    //std::cerr << "Evaluator claims that " << *this << "can be evaluated\n";
     (*this) = Term(value(p));
+  }
   else {
     double val=1.;
     if (p.direction()==Evaluator::left_to_right) {

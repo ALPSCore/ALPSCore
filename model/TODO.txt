@@ -15,12 +15,9 @@
 *regular expressions for wild card in Hamiltonian (ST)
 
 
-08/03
+09/03
 
 * multisite (n-site) terms in Hamiltonian (tba)
-
-
-09/03
 
 * start with limited basis set, add basis states (AG/ST)
 
@@ -31,7 +28,6 @@
 * basis transformation for bond Hamiltonian (AG/ST)
 
 * arbitrary multi-site operators for measurements, also useful as base class of Hamiltonian (tba)
-
 
 * site basis sets with dependency of min/max of one QN on other QN, e.g. t-J
 
