@@ -1,0 +1,37 @@
+<MODELS>
+<SITEBASIS name="spin">
+  <PARAMETER name="S" default="1/2"/>
+  <QUANTUMNUMBER name="Sz" min="-S" max="S"/>
+</SITEBASIS>
+<BASIS name="spin">
+  <SITEBASIS ref="spin"/>
+</BASIS>
+<OPERATOR name="Splus" matrixelement="sqrt(S*(S+1)-Sz*(Sz+1))">
+  <CHANGE quantumnumber="Sz" change="1"/>
+</OPERATOR>
+<OPERATOR name="Sminus" matrixelement="sqrt(S*(S+1)-Sz*(Sz-1))">
+  <CHANGE quantumnumber="Sz" change="-1"/>
+</OPERATOR>
+<OPERATOR name="Sz" matrixelement="Sz"/>
+<HAMILTONIAN name="spin">
+  <PARAMETER name="Jz" default="J"/>
+  <PARAMETER name="Jxy" default="J"/>
+  <PARAMETER name="J" default="1"/>
+  <PARAMETER name="Jz'" default="J'"/>
+  <PARAMETER name="Jxy'" default="J'"/>
+  <PARAMETER name="J'" default="0"/>
+  <PARAMETER name="h" default="0"/>
+  <PARAMETER name="Gamma" default="0"/>
+  <PARAMETER name="S" default="1/2"/>
+  <BASIS ref="spin"/>
+  <SITETERM>
+    -h*Sz-Gamma/2*(Splus+Sminus)
+  </SITETERM> 
+  <BONDTERM type="0" source="i" target="j">
+    Jz*Sz(i)*Sz(j)-Jxy/2*(Splus(i)*Sminus(j)+Sminus(i)*Splus(j))
+  </BONDTERM>
+  <BONDTERM type="1" source="i" target="j">
+    Jz'*Sz(i)*Sz(j)-Jxy'/2*(Splus(i)*Sminus(j)+Sminus(i)*Splus(j))
+  </BONDTERM>
+</HAMILTONIAN>
+</MODELS>
