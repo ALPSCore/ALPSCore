@@ -347,10 +347,14 @@ Factor::Factor(const Factor& v)
 
 const Factor& Factor::operator=(const Factor& v)
 {
-  if (v.term_)
+  if (v.term_) {
     term_.reset(v.term_->clone());
-  else
+    is_inverse_=v.is_inverse_;
+  }
+  else {
+    is_inverse_=false;
     term_.reset();
+  }
   return *this;
 }
 
