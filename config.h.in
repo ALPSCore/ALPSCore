@@ -35,6 +35,9 @@
 // C/C++ headers
 //
 
+// Define to 1 if you have the <stdarg.h> header file.
+#undef ALPS_HAVE_STDARG_H
+
 // Define to 1 if you have the <stdint.h> header file.
 #undef ALPS_HAVE_STDINT_H
 
