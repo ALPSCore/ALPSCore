@@ -32,6 +32,9 @@
 #define ALPS_OSIRIS_DUMP_H
 
 #include <alps/config.h>
+#ifdef ALPS_HAVE_STDARG_H
+# include <stdarg.h>
+#endif
 #include <boost/smart_ptr.hpp>
 #include <complex>
 #include <iostream>

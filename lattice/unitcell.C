@@ -161,7 +161,7 @@ void GraphUnitCell::write_xml(oxstream& xml) const
   if (name()!="")
     xml << attribute("name", name());
   xml << attribute("dimension", dimension());
-  xml << attribute("vertices", num_vertices(graph_));
+  xml << attribute("vertices", boost::num_vertices(graph_));
   
   typedef boost::graph_traits<graph_type>::vertex_iterator vertex_iterator;
   typedef boost::graph_traits<graph_type>::edge_iterator edge_iterator;
