@@ -147,6 +147,10 @@ public:
   template <class S>
   SimpleObservableEvaluator<typename obs_value_slice<T,S>::value_type>
     slice(S s, const std::string& newname="") const;
+
+  template <class S>
+  SimpleObservableEvaluator<typename obs_value_slice<T,S>::value_type>
+    operator[](S s) const { return slice(s);}
   //@}
 #ifndef ALPS_WITHOUT_OSIRIS
   void extract_timeseries(ODump& dump) const;

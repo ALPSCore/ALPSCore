@@ -189,6 +189,7 @@ bool has_sign_problem(const HamiltonianDescriptor<I>& ham, const G& graph, const
   boost::filtered_graph<graph_type,nonzero_edge_weight<parity::BondMap<graph_type> > > g(graph,nonzero_edge_weight<parity::BondMap<graph_type> >(bond_map));
   boost::vector_property_map<int> map; // map to store the relative signs of the sublattices
   bool check; // no sign problem
+#undef ALPS_USE_DFS2
 #ifndef ALPS_USE_DFS2
   boost::depth_first_search(g, boost::visitor(parity::make_sign_visitor(g,map, &check, bond_map)));
 #else

@@ -75,6 +75,8 @@ template <class T>
 class SimpleObservableData
 {
 public:
+  template <class X>
+  friend class SimpleObservableData;
   typedef T value_type;
   typedef typename obs_value_traits<T>::time_type time_type;
   typedef typename obs_value_traits<T>::size_type size_type;
