@@ -9,3 +9,5 @@ L*L,beta,sqrt(L),sin(2*Pi/L), cos(2*Pi/L), error
 %
 sqrt(3.33) L*T 1/L 2*Pi*L error
 I*I sqrt(4+3*I) I*L I/T S 1/S S*S T*S
+L*((S-T)/(2*I))*((S-T)/(2*I)) abs(T) abs(3*I)
+
