@@ -44,9 +44,9 @@ int main()
     parms.copy_undefined(ham.default_parameters());
     ham.set_parameters(parms);
     alps::basis_states_descriptor<short> basis(ham.basis(),lattices.graph());
-    for (int i=0;i<basis.basis().constraints().size();++i)
-      std::cout << "Constraint: " << basis.basis().constraints()[i].first << "=" 
-                <<  basis.basis().constraints()[i].second << std::endl;
+    for (int i=0;i<basis.get_basis().constraints().size();++i)
+      std::cout << "Constraint: " << basis.get_basis().constraints()[i].first << "=" 
+                <<  basis.get_basis().constraints()[i].second << std::endl;
 
 #ifndef BOOST_NO_EXCEPTIONS
 }
