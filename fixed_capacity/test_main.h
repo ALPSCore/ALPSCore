@@ -27,6 +27,7 @@
 
 /* $Id$ */
 
+#include <cmath>
 #include <boost/random.hpp>
 #include <cstdlib>
 #include <iostream>
