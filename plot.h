@@ -187,7 +187,7 @@ public:
   const std::string& name() const { return name_; }
   const std::string& xaxis() const { return xaxis_; }
   const std::string& yaxis() const { return yaxis_; }
-  bool& show_legend() { return show_legend_; }
+  bool show_legend() const { return show_legend_; }
   
   void set_name(const std::string& name) { name_ = name; }
   void set_labels(const std::string& xaxis, const std::string& yaxis) { xaxis_ = xaxis; yaxis_ = yaxis; }
