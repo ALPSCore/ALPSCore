@@ -1,0 +1,23 @@
+<LATTICES>
+
+<LATTICE name="square lattice" dimension="2">
+  <BASIS><VECTOR>1 0</VECTOR><VECTOR>0 1</VECTOR></BASIS>
+</LATTICE>
+
+<UNITCELL name="simple2d" dimension="2">
+  <VERTEX/>
+  <EDGE><SOURCE vertex="1" offset="0 0"/><TARGET vertex="1" offset="0 1"/></EDGE>
+  <EDGE><SOURCE vertex="1" offset="0 0"/><TARGET vertex="1" offset="1 0"/></EDGE>
+</UNITCELL>
+
+<LATTICEGRAPH name = "square lattice 4x4">
+  <FINITELATTICE>
+    <LATTICE ref="square lattice"/>
+    <EXTENT dimension="1" size="4"/>
+    <EXTENT dimension="2" size="4"/>
+    <BOUNDARY type="periodic"/>
+  </FINITELATTICE>
+  <UNITCELL ref="simple2d"/>
+</LATTICEGRAPH>
+
+</LATTICES>

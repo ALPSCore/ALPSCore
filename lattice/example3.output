@@ -1,0 +1,10 @@
+<LATTICEGRAPH name="square lattice 3x3">
+  <FINITELATTICE>
+    <LATTICE ref="square lattice"/>
+    <EXTENT dimension="1" size="3"/>
+    <EXTENT dimension="2" size="3"/>
+    <BOUNDARY dimension="1" type="periodic"/>
+    <BOUNDARY dimension="2" type="open"/>
+  </FINITELATTICE>
+  <UNITCELL ref="simple2d"/>
+</LATTICEGRAPH>

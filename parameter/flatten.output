@@ -1,0 +1,6 @@
+The flattened expression [(a + b) * (c + d)] is 
+(a) * (c) + (a) * (d) + (b) * (c) + (b) * (d)
+The flattened expression [(-a + b) / (c + d)] is 
+(-a) / (c + d) + (b) / (c + d)
+The flattened expression [sin(5 * (x + y))] is 
+sin(5 * (x) + 5 * (y))

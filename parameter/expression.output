@@ -1,0 +1,24 @@
+Parameters:
+L = 10;
+T = 0.1;
+beta = 1/T;
+error = error;
+
+The value of [sqrt(4)] is 2
+The value of [3 + 5] is 8
+The value of [L] is 10
+The value of [T] is 0.1
+The value of [1 / L] is 0.1
+The value of [1 / T] is 10
+The value of [2 * Pi / L] is 0.628319
+The value of [L + T] is 10.1
+The value of [L + 10] is 20
+The value of [L - T] is 9.9
+The value of [1 / T + 10] is 20
+The value of [L / (1 / T + 10)] is 0.5
+The value of [L * L] is 100
+The value of [beta] is 10
+The value of [sqrt(L)] is 3.16228
+The value of [sin(2 * Pi / L)] is 0.587785
+The value of [cos(2 * Pi / L)] is 0.809017
+Cannot evaluate [error].

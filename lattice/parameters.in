@@ -1,0 +1,4 @@
+LATTICE_LIBRARY = "@srcdir@/lattices.xml"
+LATTICE = "anisotropic square lattice"
+L = 10
+W = 4

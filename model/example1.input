@@ -1,0 +1,63 @@
+<MODELS>
+<SITEBASIS name="Hubbard">
+  <QUANTUMNUMBER name="Nup" min="0" max="1" type="fermionic"/>
+  <QUANTUMNUMBER name="Ndown" min="0" max="1" type="fermionic"/>
+</SITEBASIS>
+<SITEBASIS name="hardcore boson">
+  <QUANTUMNUMBER name="N" min="0" max="1"/>
+</SITEBASIS>
+<SITEBASIS name="spin-1">
+  <QUANTUMNUMBER name="Sz" min="-1" max="1"/>
+</SITEBASIS>
+<SITEBASIS name="spin-1/2">
+  <QUANTUMNUMBER name="Sz" min="-1/2" max="1/2"/>
+</SITEBASIS>
+<SITEBASIS name="spin-3/2">
+  <QUANTUMNUMBER name="Sz" min="-3/2" max="3/2"/>
+</SITEBASIS>
+<BASIS name="spin-1/2">
+  <SITEBASIS ref="spin-1/2"/>
+</BASIS>
+<BASIS name="Kondo lattice">
+  <SITEBASIS type="0" ref="Hubbard"/>
+  <SITEBASIS type="1">
+    <QUANTUMNUMBER name="Sz" min="-1/2" max="1/2"/>
+  </SITEBASIS>
+</BASIS>
+<OPERATOR name="S+" matrixelement="1">
+  <CHANGE quantumnumber="Sz" change="-1"/>
+</OPERATOR>
+<OPERATOR name="Sz" matrixelement="Sz"/>
+<OPERATOR name="bdag" matrixelement="sqrt(N+1)">
+  <CHANGE quantumnumber="N" change="1"/>
+</OPERATOR>
+<OPERATOR name="cdown" matrixelement="1">
+  <CHANGE quantumnumber="N" change="-1"/>
+  <CHANGE quantumnumber="Sz" change="1/2"/>
+</OPERATOR>
+<OPERATOR name="cdown_dag" matrixelement="1">
+  <CHANGE quantumnumber="N" change="1"/>
+  <CHANGE quantumnumber="Sz" change="-1/2"/>
+</OPERATOR>
+<OPERATOR name="cup" matrixelement="1">
+  <CHANGE quantumnumber="N" change="-1"/>
+  <CHANGE quantumnumber="Sz" change="-1/2"/>
+</OPERATOR>
+<OPERATOR name="cup_dag" matrixelement="1">
+  <CHANGE quantumnumber="N" change="1"/>
+  <CHANGE quantumnumber="Sz" change="1/2"/>
+</OPERATOR>
+<OPERATOR name="n" matrixelement="N"/>
+<HAMILTONIAN name="hardcore boson">
+<BASIS ref="spin-1/2"/>
+<SITETERM>
+-mu*n
+</SITETERM> 
+<BONDTERM type="0" source="i" target="j">
+-t*(bdag(i)*b(j)+bdag(j)*b(i)) + V*n(i)*n(j)
+</BONDTERM>
+<BONDTERM type="1" source="i" target="j">
+-t'*(bdag(i)*b(j)+bdag(j)*b(i)) + V'*n(i)*n(j)
+</BONDTERM>
+</HAMILTONIAN>
+</MODELS>

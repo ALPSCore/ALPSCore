@@ -1,0 +1,25 @@
+States of basis Hubbard={
+  | Nup=0 Ndown=0 >
+  | Nup=1 Ndown=0 >
+  | Nup=0 Ndown=1 >
+  | Nup=1 Ndown=1 >
+}
+States of basis hardcore boson={
+  | N=0 >
+  | N=1 >
+}
+States of basis spin-1={
+  | Sz=-1 >
+  | Sz=0 >
+  | Sz=1 >
+}
+States of basis spin-1/2={
+  | Sz=-1/2 >
+  | Sz=1/2 >
+}
+States of basis spin-3/2={
+  | Sz=-3/2 >
+  | Sz=-1/2 >
+  | Sz=1/2 >
+  | Sz=3/2 >
+}

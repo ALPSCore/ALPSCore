@@ -1,0 +1,38 @@
+###########################################################################
+# ALPS++/lattice library
+#
+# test/lattice/Makefile.in
+#
+# $Id$
+#
+# Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+#                            Synge Todo <wistaria@comp-phys.org>,
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+###########################################################################
+
+# directories
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+builddir = @builddir@
+top_builddir = ./@top_builddir@
+
+include $(top_srcdir)/config/include-build.mk
+
+libs_program = -lalps $(XML_LIBS) $(BASE_LIBS)
+
+LOCAL_CONFIG = parameters
+EXAMPLE = example1 example2 example3 example4 parity
+TESTOK = example1.ok example2.ok example3.ok example4.ok parity.ok
+
+include $(top_srcdir)/config/rules.mk
+include $(srcdir)/Makefile.dep

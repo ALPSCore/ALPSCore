@@ -1,0 +1,4 @@
+Makefile
+xdrdump
+*.dump
+*.ok
