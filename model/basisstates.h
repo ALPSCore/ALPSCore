@@ -46,8 +46,8 @@ public:
   typedef typename base_type::const_iterator const_iterator;
   basis_states_descriptor() {}
   template <class G> basis_states_descriptor(const BasisDescriptor<I>& b, const G& graph);
-  const BasisDescriptor<I>& basis() const { return basis_descriptor_;}
-  const SiteBasisDescriptor<I>& site_basis(int i) const { return site_basis_descriptor_[i];}
+  const BasisDescriptor<I>& get_basis() const { return basis_descriptor_;}
+  const SiteBasisDescriptor<I>& get_site_basis(int i) const { return site_basis_descriptor_[i];}
   bool set_parameters(const Parameters& p) { return basis_.set_parameters(p);}
 private:
   BasisDescriptor<I> basis_descriptor_;
