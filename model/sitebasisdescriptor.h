@@ -69,8 +69,8 @@ public:
         " numbers in site basis " + name()));
     return num_states_;
   }
-  bool set_parameters(const Parameters&);
-  const Parameters& get_parameters() const { return parms_; }
+  bool set_parameters(const Parameters&, bool=false);
+  const Parameters& get_parameters(bool all=false) const { return all ? parms_ : read_parms_; }
   const operator_map& operators() const { return operators_;}
   bool has_operator(const std::string& name) const
   { return operators_.find(name) != operators_.end(); }
@@ -82,6 +82,7 @@ private:
   mutable bool valid_;
   bool evaluate() const;
   Parameters parms_;
+  Parameters read_parms_;
   std::string name_;
   mutable std::size_t num_states_;
   void init_dependencies() const;
@@ -136,12 +137,15 @@ bool SiteBasisDescriptor<I>::valid(const std::vector<half_integer<I> >& x) const
 }
 
 template <class I>
-bool SiteBasisDescriptor<I>::set_parameters(const Parameters& p)
+bool SiteBasisDescriptor<I>::set_parameters(const Parameters& p, bool override)
 {
-  for (Parameters::iterator it=parms_.begin();it!=parms_.end();++it)
-    if (p.defined(it->key()))
-      it->value() = p[it->key()];
+  for (Parameters::const_iterator it=p.begin();it!=p.end();++it) {
+    parms_[it->key()] = it->value();
+    if (override)
+      read_parms_[it->key()] = it->value();
+  }
   evaluate();
+  
   return valid_;
 }
 
@@ -149,7 +153,7 @@ template <class I>
 bool SiteBasisDescriptor<I>::evaluate() const
 {
   valid_=true;
-  Parameters q_parms_=get_parameters();
+  Parameters q_parms_(parms_);
   for (const_iterator it=super_type::begin();it!=super_type::end();++it) {
     valid_ = valid_ && const_cast<QuantumNumberDescriptor<I>&>(*it).set_parameters(q_parms_);
     if(!valid_) break;
@@ -224,7 +228,7 @@ SiteBasisDescriptor<I>::SiteBasisDescriptor(const XMLTag& intag, std::istream& i
     tag = parse_tag(is);
     if (tag.name!="/SITEBASIS") {
       while (tag.name=="PARAMETER") {
-        parms_[tag.attributes["name"]]=tag.attributes["default"];
+        read_parms_[tag.attributes["name"]]=tag.attributes["default"];
         if (tag.type!=XMLTag::SINGLE)
           tag = parse_tag(is);
         tag = parse_tag(is);
@@ -243,6 +247,7 @@ SiteBasisDescriptor<I>::SiteBasisDescriptor(const XMLTag& intag, std::istream& i
     if (tag.name !="/SITEBASIS")
       boost::throw_exception(std::runtime_error("Illegal tag <" + tag.name + "> in <SITEBASIS> element"));
   }
+  parms_=read_parms_;
   init_dependencies();
   // I need this line, otherwise the expressions in quantumnumbers cannot be evaluated. Dirty patch. Looks like a bug. To be looked at again. Axel Grzesik, 07/08/03
   evaluate();
@@ -260,7 +265,7 @@ template <class I>
 void SiteBasisDescriptor<I>::write_xml(oxstream& os) const
 {
   os << start_tag("SITEBASIS") << attribute("name", name());
-  for (Parameters::const_iterator it=parms_.begin();it!=parms_.end();++it)
+  for (Parameters::const_iterator it=read_parms_.begin();it!=read_parms_.end();++it)
     os << start_tag("PARAMETER") << attribute("name", it->key())
        << attribute("default", it->value()) << end_tag("PARAMETER");
   for (const_iterator it=super_type::begin();it!=super_type::end();++it)

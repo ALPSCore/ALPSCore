@@ -86,7 +86,7 @@ site_basis<I,STATE>::site_basis(const SiteBasisDescriptor<I>& b)
   std::stack<std::pair<typename SiteBasisDescriptor<I>::const_iterator,half_integer<I> > > s;
   typename SiteBasisDescriptor<I>::const_iterator it=b.begin();
   std::vector<half_integer<I> > quantumnumbers(basis_.size());
-  const_cast<QuantumNumberDescriptor<I>&>(*it).set_parameters(b.get_parameters());
+  const_cast<QuantumNumberDescriptor<I>&>(*it).set_parameters(b.get_parameters(true));
   for(half_integer<I> q=it->max();q>=it->min();--q) 
     s.push(std::make_pair(it,q));
   while(!s.empty()) {
@@ -97,7 +97,7 @@ site_basis<I,STATE>::site_basis(const SiteBasisDescriptor<I>& b)
       push_back(state_type(quantumnumbers));
     else {
       ++it;
-      Parameters p=b.get_parameters();
+      Parameters p=b.get_parameters(true);
       for(typename SiteBasisDescriptor<I>::const_iterator qit=b.begin();qit!=it;++qit)
         p[qit->name()]=quantumnumbers[qit-b.begin()];
       const_cast<QuantumNumberDescriptor<I>&>(*it).set_parameters(p);

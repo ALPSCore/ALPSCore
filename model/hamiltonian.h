@@ -87,7 +87,6 @@ BondTermDescriptor<I>  HamiltonianDescriptor<I>::bond_term(int type) const
 template <class I>
 bool HamiltonianDescriptor<I>::set_parameters(Parameters p)
 {
-  p.copy_undefined(parms_);
   return basis_.set_parameters(p);
 }
 

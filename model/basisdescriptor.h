@@ -104,7 +104,7 @@ bool BasisDescriptor<I>::set_parameters(const Parameters& p)
 {
   bool valid=true;
   for (iterator it=super_type::begin();it!=super_type::end();++it)
-    valid = valid && it->set_parameters(p);
+    valid = valid && it->set_parameters(p,true);
   check_constraints(p);
   return valid;
 }
@@ -162,6 +162,7 @@ site_basis_match<I>::site_basis_match(const XMLTag& intag, std::istream& is, con
           tag = parse_tag(is);
         tag = parse_tag(is);
       }
+      set_parameters(parms_);
       if (tag.name!="/SITEBASIS")
         boost::throw_exception(std::runtime_error("Illegal element name <" + tag.name + "> found in sitebasis reference"));
     }
