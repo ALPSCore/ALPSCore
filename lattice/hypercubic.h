@@ -282,8 +282,8 @@ public:
   std::vector<std::string> momenta_labels() const
   {
     std::vector<std::string> label;
-    for (momentum_iterator it=momenta().first; it1 != moments().second;++it)
-      label.push_back(alps::coordinate_to_string(*this)); 
+    for (momentum_iterator it=momenta().first; it != moments().second;++it)
+      label.push_back(alps::coordinate_to_string(*it)); 
     return label;
   }
   
