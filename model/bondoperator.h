@@ -43,7 +43,7 @@ namespace alps {
 template <class I, class T=std::complex<double>, class STATE1=site_state<I>, class STATE2=site_state<I> > class BondOperatorEvaluator;
 class ModelLibrary;
 
-template <class I, class T>
+template <class I, class T=std::complex<double> >
 class BondOperatorSplitter : public OperatorEvaluator<T>
 {
 private:
