@@ -419,7 +419,7 @@ protected:
     // for interator-type second argument: dispatch depending on
     // whether InputIterator is a random access iterator or not
     insert_dispatch(pos, first, last,
-                    std::iterator_traits<InputIterator>::iterator_category());
+                    typename std::iterator_traits<InputIterator>::iterator_category());
   }
   template<class InputIterator>
   void insert_dispatch(iterator pos, InputIterator first, InputIterator last,

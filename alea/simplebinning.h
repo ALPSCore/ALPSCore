@@ -51,6 +51,7 @@ namespace alps {
 template <class T=double>
 class SimpleBinning : public AbstractBinning<T>
 {
+  typedef AbstractBinning<T> super_type;
  public:
   typedef T value_type;  
   typedef typename obs_value_traits<T>::time_type time_type;
@@ -67,7 +68,7 @@ class SimpleBinning : public AbstractBinning<T>
   void reset(bool forthermalization=false);
   void operator<<(const T& x);
   
-  uint32_t count() const {return is_thermalized() ? count_ : 0;} // number of measurements performed
+  uint32_t count() const {return super_type::is_thermalized() ? count_ : 0;} // number of measurements performed
   result_type mean() const;
   result_type variance() const;
   result_type error(uint32_t bin_used=std::numeric_limits<uint32_t>::max()) const;
@@ -79,7 +80,7 @@ class SimpleBinning : public AbstractBinning<T>
   value_type min() const {return min_;}
   value_type max() const {return max_;}
 
-  uint32_t get_thermalization() const { return is_thermalized() ? thermal_count_ : count_;}
+  uint32_t get_thermalization() const { return super_type::is_thermalized() ? thermal_count_ : count_;}
 
   uint32_t size() const { return obs_value_traits<T>::size(min_);}
   

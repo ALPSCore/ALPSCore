@@ -174,10 +174,10 @@ momentum(const typename lattice_traits<Lattice>::vector_type& m, const Lattice& 
   boost::tie(first,last) = reciprocal_basis_vectors(l);
   if (first!=last) {
     typename lattice_traits<Lattice>::vector_type v(*first);
-    v*=m[0]/(2.*MP_PI);
+    v*=m[0]/(2.*3.14159265358979323846);
     ++first;
     for (int i=1; first!=last; ++first, ++i)
-      v = v + (*first) * m[i]/(2.*MP_PI);
+      v = v + (*first) * m[i]/(2.*3.14159265358979323846);
     return v;
   }
   else

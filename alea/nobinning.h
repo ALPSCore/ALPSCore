@@ -54,6 +54,7 @@ namespace alps {
 template <class T=double>
 class NoBinning : public AbstractBinning<T>
 {
+  typedef AbstractBinning<T> super_type;
  public:
   typedef T value_type;
   typedef typename obs_value_traits<T>::size_type size_type;
@@ -75,13 +76,13 @@ class NoBinning : public AbstractBinning<T>
   result_type variance() const;
   result_type error() const;
 
-  uint32_t count() const { return is_thermalized() ? count_ : 0;}
+  uint32_t count() const { return super_type::is_thermalized() ? count_ : 0;}
 
   bool has_minmax() const { return true;}
   value_type min() const {return min_;}
   value_type max() const {return max_;}
   
-  uint32_t get_thermalization() const { return is_thermalized() ? thermal_count_ : count_;}
+  uint32_t get_thermalization() const { return super_type::is_thermalized() ? thermal_count_ : count_;}
     
   void output_scalar(std::ostream& out) const;
   void output_vector(std::ostream& out) const;

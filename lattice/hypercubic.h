@@ -43,6 +43,16 @@
 namespace alps {
 
 template <class BASE, class EX = typename lattice_traits<BASE>::offset_type>
+class hypercubic_lattice;
+
+template <class BASE, class EX>
+inline std::size_t dimension(const hypercubic_lattice<BASE,EX>& l)
+{
+  return l.dimension();
+}
+
+
+template <class BASE, class EX>
 class hypercubic_lattice : public BASE {
 public:
   typedef hypercubic_lattice<BASE> lattice_type;
@@ -288,9 +298,9 @@ public:
     mutable vector_type k_;
     void set_k()
     {
-      k_=*basis_vectors(*lattice_).first;
-      for (int i=0;i<dimension(*lattice_);++i)
-        k_[i]=offset_[i]*2.*M_PI/double(l->extent()[i]);
+      k_=*basis_vectors(*cell_iterator::lattice_).first;
+      for (int i=0;i<dimension(*cell_iterator::lattice_);++i)
+        k_[i]=cell_iterator::offset_[i]*2.*M_PI/double(cell_iterator::lattice_->extent()[i]);
     }
   };
 
@@ -324,12 +334,6 @@ struct lattice_traits<hypercubic_lattice<BASE,EX> >
   typedef typename hypercubic_lattice<BASE,EX>::vector_type vector_type;
   typedef typename hypercubic_lattice<BASE,EX>::boundary_crossing_type boundary_crossing_type;
 };
-
-template <class BASE, class EX>
-inline std::size_t dimension(const hypercubic_lattice<BASE,EX>& l)
-{
-  return l.dimension();
-}
 
 } // end namespace alps
 

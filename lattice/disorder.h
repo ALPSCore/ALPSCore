@@ -36,6 +36,48 @@
 #include <alps/parser/xmlstream.h>
 
 namespace alps {
+
+namespace detail {
+template <class IT, class MAP, class T>
+T disorder_it(IT start, IT end, MAP& type, T i=0)
+{
+  for (; start!=end;++start)
+    type[*start]=i++;
+  return i;
+}
+
+template <class IT, class MAP>
+unsigned int disorder_it(IT start, IT end, MAP& type)
+{
+  return disorder_it(start,end,type,0u);
+}
+
+}
+
+template <class G, class MAP>
+void disorder_vertices(G& g, MAP& type)
+{
+  detail::disorder_it(boost::vertices(g).first,boost::vertices(g).second,type); 
+}
+
+template <class G, class MAP>
+void disorder_edges(G& g, MAP& type)
+{
+  detail::disorder_it(boost::edges(g).first,boost::edges(g).second,type); 
+}
+
+template <class G, class MAP>
+void disorder_bonds(G& g, MAP& type)
+{
+  disorder_edges(g,type);
+}
+
+template <class G, class MAP>
+void disorder_sites(G& g, MAP& t)
+{
+  disorder_vertices(g,t);
+}
+
 namespace detail {
 class BasicVertexReference {
 public:
@@ -137,48 +179,6 @@ private:
   std::vector<type_type> disordered_vertices_;
   std::vector<type_type> disordered_edges_;
 };
-
-
-namespace detail {
-template <class IT, class MAP, class T>
-T disorder_it(IT start, IT end, MAP& type, T i=0)
-{
-  for (; start!=end;++start)
-    type[*start]=i++;
-  return i;
-}
-
-template <class IT, class MAP>
-unsigned int disorder_it(IT start, IT end, MAP& type)
-{
-  return disorder_it(start,end,type,0u);
-}
-
-}
-
-template <class G, class MAP>
-void disorder_vertices(G& g, MAP& type)
-{
-  detail::disorder_it(boost::vertices(g).first,boost::vertices(g).second,type); 
-}
-
-template <class G, class MAP>
-void disorder_edges(G& g, MAP& type)
-{
-  detail::disorder_it(boost::edges(g).first,boost::edges(g).second,type); 
-}
-
-template <class G, class MAP>
-void disorder_bonds(G& g, MAP& type)
-{
-  disorder_edges(g,type);
-}
-
-template <class G, class MAP>
-void disorder_sites(G& g, MAP& t)
-{
-  disorder_vertices(g,t);
-}
 
 } // end namespace alps
 

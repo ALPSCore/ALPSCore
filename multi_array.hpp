@@ -113,13 +113,13 @@ public:
   typedef T* iterator;
   typedef const T* const_iterator;
   
-  iterator begin() { return data();}
-  const_iterator begin() const { return data();}
-  iterator end() { return data()+num_elements();}
-  const_iterator end() const { return data()+num_elements();}
+  iterator begin() { return super_type::data();}
+  const_iterator begin() const { return super_type::data();}
+  iterator end() { return super_type::data()+super_type::num_elements();}
+  const_iterator end() const { return super_type::data()+super_type::num_elements();}
 
   template <class X, class Alloc>
-  const multi_array& operator=(const alps::multi_array<X,NumDims,Alloc>&) 
+  const multi_array& operator=(const alps::multi_array<X,NumDims,Alloc>& x) 
   {
     super_type::operator=(x);
     return *this;

@@ -47,7 +47,7 @@ public:
   class reference {
   public:
     reference(I& s, int i) : state_(s), shift_(i*bits) {}
-    operator int() const { return (state_ >> shift_) & mask_;}
+    operator int() const { return (state_ >> shift_) & mask;}
     template <class T>
     reference& operator=(T x)
     {

@@ -28,5 +28,6 @@
 
 /* $Id$ */
 
+#include <alps/lattice/hypercubic.h>
 #include <alps/lattice/graph_helper.h>
 #include <alps/lattice/parity.h>

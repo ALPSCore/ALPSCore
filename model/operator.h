@@ -42,6 +42,7 @@ namespace alps {
 template<class I>
 class OperatorDescriptor : public std::map<std::string,half_integer<I> >
 {
+  typedef std::map<std::string,half_integer<I> > super_type;
 public:
   typedef typename std::map<std::string,half_integer<I> >::const_iterator const_iterator;
   OperatorDescriptor() {}
@@ -146,7 +147,7 @@ OperatorDescriptor<I>::apply(STATE state, const SiteBasisDescriptor<I>& basis, c
   // apply operators
   for (int i=0;i<basis.size();++i) {
     const_iterator it=this->find(basis[i].name());
-    if (it!=end()) {
+    if (it!=super_type::end()) {
       get_quantumnumber(state,i)+=it->second; // apply change to QN
        if (!basis[i].valid(get_quantumnumber(state,i))) {
          e=Expression(0.);
@@ -224,7 +225,7 @@ template <class I>
 void OperatorDescriptor<I>::write_xml(oxstream& os) const
 {
   os << start_tag("OPERATOR") << attribute("name", name()) << attribute("matrixelement", matrixelement());
-  for (const_iterator it=begin();it!=end();++it)
+  for (const_iterator it=super_type::begin();it!=super_type::end();++it)
     os << start_tag("CHANGE") << attribute("quantumnumber", it->first)
        << attribute("change", it->second) << end_tag("CHANGE");
   os << end_tag("OPERATOR");

@@ -40,15 +40,16 @@ namespace alps {
 template <class I, class S=site_state<I> >
 class basis_states_descriptor : public std::vector<site_basis<I,S> >
 {
+  typedef std::vector<site_basis<I,S> > super_type;
 public:
   typedef site_basis<I,S> site_basis_type;
-  typedef std::vector<site_basis_type> base_type;
-  typedef typename base_type::const_iterator const_iterator;
+  typedef std::vector<site_basis_type> super_type;
+  typedef typename super_type::const_iterator const_iterator;
   basis_states_descriptor() {}
   template <class G> basis_states_descriptor(const BasisDescriptor<I>& b, const G& graph);
   const BasisDescriptor<I>& get_basis() const { return basis_descriptor_;}
   const SiteBasisDescriptor<I>& get_site_basis(int i) const { return site_basis_descriptor_[i];}
-  bool set_parameters(const Parameters& p) { return basis_.set_parameters(p);}
+  bool set_parameters(const Parameters& p) { return basis_descriptor_.set_parameters(p);}
 private:
   BasisDescriptor<I> basis_descriptor_;
   std::vector<SiteBasisDescriptor<I> > site_basis_descriptor_;
@@ -58,11 +59,12 @@ private:
 template <class I, class S=std::vector<I>, class SS=site_state<I> >
 class basis_states : public std::vector<S>
 {
+  typedef std::vector<S> super_type;
 public:
-  typedef std::vector<S> base_type;
-  typedef typename base_type::const_iterator const_iterator;
+  typedef std::vector<S> super_type;
+  typedef typename super_type::const_iterator const_iterator;
   typedef S value_type;
-  typedef typename base_type::size_type size_type;
+  typedef typename super_type::size_type size_type;
   typedef basis_states_descriptor<I,SS> basis_type;
 
   template <class J>
@@ -80,8 +82,8 @@ public:
                 
   inline size_type index(const value_type& x) const
   {
-    const_iterator it = std::lower_bound(begin(), end(), x);
-    return (*it==x ? it-begin() : size());
+    const_iterator it = std::lower_bound(super_type::begin(), super_type::end(), x);
+    return (*it==x ? it-super_type::begin() : super_type::size());
   }
 
   bool check_sort() const;
@@ -101,21 +103,21 @@ private:
 template <class I=unsigned int, class J=short, class S=integer_state<I>, class SS=basis_states_descriptor<J> >
 class lookup_basis_states : public basis_states<J,S,SS>
 {
+  typedef basis_states<I,S,SS> super_type;
 public:
-  typedef basis_states<I,S,SS> base_type;
-  typedef typename base_type::const_iterator const_iterator;
+  typedef typename super_type::const_iterator const_iterator;
   typedef S value_type;
-  typedef typename base_type::size_type size_type;
-  typedef typename base_type::basis_type basis_type;
+  typedef typename super_type::size_type size_type;
+  typedef typename super_type::basis_type basis_type;
 
   lookup_basis_states(const basis_states_descriptor<J,SS>& b) 
     : basis_states<J,S,SS>(b), use_lookup_(false) 
   {
     if (b.size()<=24) {
       use_lookup_=true;
-      lookup_.resize(1<<b.size(),size());
-      for (int i=0;i<size();++i)
-        lookup_[operator[](i)]=i;
+      lookup_.resize(1<<b.size(),super_type::size());
+      for (int i=0;i<super_type::size();++i)
+        lookup_[super_type::operator[](i)]=i;
     }
   }
   
@@ -153,7 +155,7 @@ basis_states_descriptor<I,S>::basis_states_descriptor(const BasisDescriptor<I>& 
 template <class I, class S, class SS>
 bool basis_states<I,S,SS>::check_sort() const
 {
-  for (int i=0;i<size()-1;++i)
+  for (int i=0;i<super_type::size()-1;++i)
     if (!((*this)[i]<(*this)[i+1]))
       return false;
   return true;
@@ -196,7 +198,7 @@ void basis_states<I,S,SS>::build(const std::vector<std::pair<std::string,half_in
     ++idx[last];
   }
   if (!check_sort()) {
-    std::sort(begin(),end());
+    std::sort(super_type::begin(),super_type::end());
     if (!check_sort())
       boost::throw_exception(std::logic_error("Basis not sorted correctly"));
   }

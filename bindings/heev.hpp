@@ -133,6 +133,7 @@ namespace boost { namespace numeric { namespace bindings {
 
       int const n = traits::matrix_size1 (a);
       int const lw = traits::vector_size (work); 
+      char uplo = traits::matrix_uplo_tag (a);
       assert (lw >= std::max(1,2*n-1)); 
       assert (traits::vector_size (rwork)>=std::max(1,3*n-2));
       return detail::heev (jobz,uplo,a,w,work,lw,rwork); 
@@ -210,6 +211,7 @@ namespace boost { namespace numeric { namespace bindings {
         int nb = std::max(1,info);
         info = -102; 
         int lw = std::max(1,(nb+1)*traits::matrix_size1 (a)); 
+        int n = traits::matrix_size1 (a);
         traits::detail::array<val_t> work (lw); 
         traits::detail::array<real_t> rwork (std::max(1,3*n-2)); 
         if (work.valid() && rwork.valid())

@@ -79,11 +79,13 @@ class SiteOperatorEvaluator : public OperatorEvaluator<I, T>
 {
 private:
 #ifndef ALPS_WITH_NEW_EXPRESSION
+  typedef OperatorEvaluator<I> super_type;
   typedef SiteOperatorEvaluator<I, STATE> SELF_;
   typedef OperatorEvaluator<I> BASE_;
   typedef Expression Expression_;
   typedef ParameterEvaluator ParameterEvaluator_;
 #else
+  typedef OperatorEvaluator<I, T> super_type;
   typedef SiteOperatorEvaluator<I, T, STATE> SELF_;
   typedef OperatorEvaluator<I, T> BASE_;
   typedef Expression<T> Expression_;
@@ -115,7 +117,7 @@ template <class I, class T, class STATE>
 bool SiteOperatorEvaluator<I, T, STATE>::can_evaluate(const std::string& name) const
 #endif
 {
-  if (ops_.find(name) != ops_.end()) {
+  if (super_type::ops_.find(name) != super_type::ops_.end()) {
     SELF_ eval(*this);
     return eval.partial_evaluate(name).can_evaluate(ParameterEvaluator_(*this));
   }
@@ -131,8 +133,8 @@ template <class I, class T, class STATE>
 Expression<T> SiteOperatorEvaluator<I, T, STATE>::partial_evaluate(const std::string& name) const
 #endif
 {
-  typename operator_map::const_iterator op = ops_.find(name);
-  if (op!=ops_.end()) {  // evaluate operator
+  typename operator_map::const_iterator op = super_type::ops_.find(name);
+  if (op!=super_type::ops_.end()) {  // evaluate operator
     Expression_ e;
     boost::tie(state_,e) = op->second.apply(state_, basis_, ParameterEvaluator_(*this));
     return e;

@@ -47,6 +47,7 @@ namespace alps {
 template <class T,class BINNING>
 class SimpleObservable: public AbstractSimpleObservable<T>, public RecordableObservable<T>
 {
+  typedef AbstractSimpleObservable<T> super_type;
 public:
   typedef typename AbstractSimpleObservable<T>::value_type value_type;
   typedef typename AbstractSimpleObservable<T>::time_type time_type;
@@ -152,11 +153,11 @@ SimpleObservable<T,BINNING>::output(std::ostream& o) const
   if(count()==0)
   {
     if(get_thermalization()>0)
-    o << name() << " " << get_thermalization() << " thermalization steps, no measurements.\n";
+    o << super_type::name() << " " << get_thermalization() << " thermalization steps, no measurements.\n";
   }
   else 
   {
-    o << name ();
+    o << super_type::name ();
     output_helper<obs_value_traits<T>::array_valued>::output(b_,o);
   }
   ALPS_RETURN_VOID

@@ -41,15 +41,15 @@ template<class I>
 class site_basis_match : public SiteBasisDescriptor<I>
 {
 public:
-  typedef SiteBasisDescriptor<I> base_type;
-  typedef typename base_type::const_iterator const_iterator;
+  typedef SiteBasisDescriptor<I> super_type;
+  typedef typename super_type::const_iterator const_iterator;
   typedef std::map<std::string,SiteBasisDescriptor<I> > sitebasis_map_type;
 
   site_basis_match() : type_(-2) {} // matches no site type
-  site_basis_match(const base_type& site_basis, int type = -2)
-    : base_type(site_basis), type_(type), sitebasis_name_() {}
+  site_basis_match(const super_type& site_basis, int type = -2)
+    : super_type(site_basis), type_(type), sitebasis_name_() {}
   site_basis_match(const std::string& name, int type = -2)
-    : base_type(), type_(type), sitebasis_name_(name) {}
+    : super_type(), type_(type), sitebasis_name_(name) {}
   site_basis_match(const XMLTag&, std::istream&,
                  const sitebasis_map_type& bases_= sitebasis_map_type());
 
@@ -65,10 +65,11 @@ private:
 template<class I>
 class BasisDescriptor : public std::vector<site_basis_match<I> >
 {
+  typedef std::vector<site_basis_match<I> > super_type;
 public:
-  typedef std::vector<site_basis_match<I> > base_type;
-  typedef typename base_type::iterator iterator;
-  typedef typename base_type::const_iterator const_iterator;
+  typedef std::vector<site_basis_match<I> > super_type;
+  typedef typename super_type::iterator iterator;
+  typedef typename super_type::const_iterator const_iterator;
   typedef std::map<std::string,SiteBasisDescriptor<I> > sitebasis_map_type;
   typedef std::vector<std::pair<std::string,half_integer<I> > > constraints_type;
 #ifndef ALPS_WITH_NEW_EXPRESSION
@@ -106,7 +107,7 @@ template <class I>
 bool BasisDescriptor<I>::set_parameters(const Parameters& p)
 {
   bool valid=true;
-  for (iterator it=begin();it!=end();++it)
+  for (iterator it=super_type::begin();it!=super_type::end();++it)
     valid = valid && it->set_parameters(p);
   check_constraints(p);
   return valid;
@@ -132,10 +133,10 @@ void BasisDescriptor<I>::check_constraints(const Parameters& p)
 template <class I>
 const SiteBasisDescriptor<I>& BasisDescriptor<I>::site_basis(int type) const {
   const_iterator it;
-  for (it=begin();it!=end();++it)
+  for (it=super_type::begin();it!=super_type::end();++it)
     if (it->match_type(type))
       break;
-  if (it==end())
+  if (it==super_type::end())
     boost::throw_exception(std::runtime_error("No matching site basis found for site type" +
                             boost::lexical_cast<std::string,int>(type) + "\n"));
   return *it;
@@ -149,14 +150,14 @@ site_basis_match<I>::site_basis_match(const XMLTag& intag, std::istream& is, con
   sitebasis_name_ = tag.attributes["ref"];
   type_ = tag.attributes["type"]=="" ? -1 : boost::lexical_cast<int,std::string>(tag.attributes["type"]);
   if (sitebasis_name_=="") {
-    base_type sitebasis(intag,is);
+    super_type sitebasis(intag,is);
     std::copy(sitebasis.begin(),sitebasis.end(),std::back_inserter(*this));
   }
   else {
     if (bases_.find(sitebasis_name_)==bases_.end())
       boost::throw_exception(std::runtime_error("unknown site basis: " + sitebasis_name_ + " in <BASIS>"));
     else
-      static_cast<base_type&>(*this) = bases_.find(sitebasis_name_)->second;
+      static_cast<super_type&>(*this) = bases_.find(sitebasis_name_)->second;
     if (tag.type!=XMLTag::SINGLE) {
       tag = parse_tag(is);
       if (tag.name!="/SITEBASIS")
@@ -200,11 +201,11 @@ void site_basis_match<I>::write_xml(oxstream& os) const
   if (sitebasis_name_!="") {
     os << attribute("ref", sitebasis_name_);
   } else {
-    for (Parameters::const_iterator p_itr = get_parameters().begin();
-         p_itr != get_parameters().end(); ++p_itr)
+    for (Parameters::const_iterator p_itr = super_type::get_parameters().begin();
+         p_itr != super_type::get_parameters().end(); ++p_itr)
       os << start_tag("PARAMETER") << attribute("name", p_itr->key())
          << attribute("default", p_itr->value()) << end_tag("PARAMETER");
-    for (const_iterator it = begin(); it != end(); ++it)
+    for (const_iterator it = super_type::begin(); it != super_type::end(); ++it)
       os << *it;
   }
   os << end_tag("SITEBASIS");
@@ -214,7 +215,7 @@ template <class I>
 void BasisDescriptor<I>::write_xml(oxstream& os) const
 {
   os << start_tag("BASIS") << attribute("name", name());
-  for (const_iterator it=begin();it!=end();++it)
+  for (const_iterator it=super_type::begin();it!=super_type::end();++it)
     os << *it;
   for (typename unevaluated_constraints_type::const_iterator
 	 it=constraints_.begin(); it!=constraints_.end(); ++it)

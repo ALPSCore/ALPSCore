@@ -46,9 +46,19 @@ struct dimensional_traits {
   }
 };
 
+/*
 template <class Dimensional>
 inline typename dimensional_traits<Dimensional>::dimension_type
 dimension(const Dimensional& d)
+{
+  return d.size();
+}
+*/
+
+
+template <class T, class A>
+inline typename dimensional_traits<std::vector<T,A> >::dimension_type
+dimension(const std::vector<T,A>& d)
 {
   return d.size();
 }

@@ -40,6 +40,15 @@
 
 namespace alps {
 
+template <class L, class G> class lattice_graph;
+
+template  <class L, class G>
+inline std::size_t dimension(const lattice_graph<L,G>& l)
+{
+  return l.dimension();
+}
+
+
 template <class LATTICE, class GRAPH>
 inline void make_graph_from_lattice(GRAPH& g,const LATTICE& l)
 {
@@ -195,12 +204,6 @@ struct graph_traits<lattice_graph<L,G> >
 {
   typedef G graph_type;
 };
-
-template  <class L, class G>
-inline std::size_t dimension(const lattice_graph<L,G>& l)
-{
-  return l.dimension();
-}
 
 } // end namespace alps
 

@@ -168,6 +168,7 @@ namespace boost { namespace numeric { namespace bindings {
     inline
     int syev (char jobz, SymmA& a, Vector& w) {
       // with 'internal' work vectors 
+      int info;
 
       assert (jobz == 'V' || jobz == 'N'); 
 

@@ -103,26 +103,28 @@ class BondOperatorEvaluator : public OperatorEvaluator<I, T>
 {
 private:
 #ifndef ALPS_WITH_NEW_EXPRESSION
+  typedef OperatorEvaluator<I> super_type;
   typedef BondOperatorEvaluator<I, STATE1, STATE2> SELF_;
-  typedef OperatorEvaluator<I> BASE_;
+  typedef OperatorEvaluator<I> super_type;
   typedef Expression Expression_;
   typedef ParameterEvaluator ParameterEvaluator_;
 #else
+  typedef OperatorEvaluator<I, T> super_type;
   typedef BondOperatorEvaluator<I, T, STATE1, STATE2> SELF_;
-  typedef OperatorEvaluator<I, T> BASE_;
+  typedef OperatorEvaluator<I, T> super_type;
   typedef Expression<T> Expression_;
   typedef ParameterEvaluator<T> ParameterEvaluator_;
 #endif
 
 public:
-  typedef typename BASE_::operator_map operator_map;
+  typedef typename super_type::operator_map operator_map;
 
   BondOperatorEvaluator(const STATE1& s1, const STATE2& s2,
                         const SiteBasisDescriptor<I>& b1,
 			const SiteBasisDescriptor<I>& b2,
                         std::string site1, std::string site2,
 			const Parameters& p, const operator_map& o)
-    : BASE_(p,o), state_(s1,s2), basis1_(b1), basis2_(b2),
+    : super_type(p,o), state_(s1,s2), basis1_(b1), basis2_(b2),
       sites_(site1,site2) {}
   bool can_evaluate_function(const std::string& name,
 			     const Expression_& argument) const;
@@ -148,24 +150,24 @@ class BondOperatorSplitter : public OperatorEvaluator<I, T>
 private:
 #ifndef ALPS_WITH_NEW_EXPRESSION
   typedef BondOperatorSplitter<I> SELF_;
-  typedef OperatorEvaluator<I> BASE_;
+  typedef OperatorEvaluator<I> super_type;
   typedef Expression Expression_;
   typedef Term Term_;
   typedef ParameterEvaluator ParameterEvaluator_;
 #else
   typedef BondOperatorSplitter<I, T> SELF_;
-  typedef OperatorEvaluator<I, T> BASE_;
+  typedef OperatorEvaluator<I, T> super_type;
   typedef Expression<T> Expression_;
   typedef Term<T> Term_;
   typedef ParameterEvaluator<T> ParameterEvaluator_;
 #endif
 
 public:
-  typedef typename BASE_::operator_map operator_map;
+  typedef typename super_type::operator_map operator_map;
 
   BondOperatorSplitter(std::string site1, std::string site2,
                        const Parameters& p, const operator_map& o)
-    : BASE_(p,o), sites_(site1,site2) {}
+    : super_type(p,o), sites_(site1,site2) {}
 
   bool can_evaluate_function(const std::string& name, const Expression_& argument) const;
   Expression_ partial_evaluate_function(const std::string& name, const Expression_& argument) const;
@@ -184,7 +186,7 @@ template <class I, class T, class STATE1, class STATE2>
 bool BondOperatorEvaluator<I, T, STATE1, STATE2>::can_evaluate_function(const std::string& name, const Expression<T>& arg) const
 #endif
 {
-  if (ops_.find(name) != ops_.end() && (arg== sites_.first || arg==sites_.second)) {
+  if (super_type::ops_.find(name) != super_type::ops_.end() && (arg== sites_.first || arg==sites_.second)) {
     SELF_ eval(*this);
     return eval.partial_evaluate_function(name,arg).can_evaluate(ParameterEvaluator_(*this));
   }
@@ -200,7 +202,8 @@ template <class I, class T>
 bool BondOperatorSplitter<I, T>::can_evaluate_function(const std::string& name, const Expression<T>& arg) const
 #endif
 {
-  return (ops_.find(name) != ops_.end() && (arg== sites_.first || arg==sites_.second)) ||
+  return (super_type::ops_.find(name) != super_type::ops_.end() 
+          && (arg== sites_.first || arg==sites_.second)) ||
          ParameterEvaluator_::can_evaluate_function(name,arg);
 }
 
@@ -212,8 +215,8 @@ template <class I, class T, class STATE1, class STATE2>
 Expression<T> BondOperatorEvaluator<I, T, STATE1, STATE2>::partial_evaluate_function(const std::string& name, const Expression<T>& arg) const
 #endif
 {
-  typename operator_map::const_iterator op = ops_.find(name);
-  if (op!=ops_.end()) {  // evaluate operator
+  typename operator_map::const_iterator op = super_type::ops_.find(name);
+  if (op!=super_type::ops_.end()) {  // evaluate operator
     Expression_ e;
     if (arg==sites_.first)
       boost::tie(state_.first,e) = op->second.apply(state_.first,basis1_,*this);
@@ -235,8 +238,8 @@ template <class I, class T>
 Expression<T> BondOperatorSplitter<I, T>::partial_evaluate_function(const std::string& name, const Expression<T>& arg) const
 #endif
 {
-  typename operator_map::const_iterator op = ops_.find(name);
-  if (op!=ops_.end()) {  // evaluate operator
+  typename operator_map::const_iterator op = super_type::ops_.find(name);
+  if (op!=super_type::ops_.end()) {  // evaluate operator
     Expression_ e;
     if (arg==sites_.first)
       site_ops_.first *= name;

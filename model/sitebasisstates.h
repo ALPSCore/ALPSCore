@@ -41,6 +41,7 @@ namespace alps {
 template <class I, class STATE=site_state<I> >
 class site_basis : public std::vector<STATE>
 {
+  typedef std::vector<STATE> super_type;
 public:
   typedef STATE state_type;
   typedef std::vector<state_type> base_type;
@@ -63,14 +64,14 @@ private:
 template <class I, class STATE>
 typename site_basis<I,STATE>::size_type site_basis<I,STATE>::index(const value_type& x) const
 {
-  const_iterator it = std::lower_bound(begin(),end(),x);
-  return (*it==x ? it-begin() : size());
+  const_iterator it = std::lower_bound(super_type::begin(),super_type::end(),x);
+  return (*it==x ? it-super_type::begin() : super_type::size());
 }
 
 template <class I, class STATE>
 bool site_basis<I,STATE>::check_sort() const
 {
-  for (int i=0;i<size()-1;++i)
+  for (int i=0;i<super_type::size()-1;++i)
     if ((*this)[i]>=(*this)[i+1])
       return false;
   return true;

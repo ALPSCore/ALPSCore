@@ -32,6 +32,7 @@
 #ifndef ALPS_RANDOM_H
 #define ALPS_RANDOM_H
 
+#include <cmath>
 #include <alps/config.h>
 #include <alps/random/pseudo_des.h>
 

@@ -108,7 +108,7 @@ class LatticeModelMCRun : public LatticeMCRun<G>, public model_helper<I>
 {
 public:  
   LatticeModelMCRun(const ProcessList& w,const alps::Parameters& p,int n)
-   : LatticeMCRun<G>(w,p,n), model_helper<I>(parms)
+   : LatticeMCRun<G>(w,p,n), model_helper<I>(LatticeMCRun<G>::parms)
   {}
 };
 

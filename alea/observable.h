@@ -82,23 +82,6 @@ public:
 };
 
 
-class Observable;
-
-namespace detail {
-template <bool F>
-struct pick_add_merge {};
-
-template<>
-struct pick_add_merge<true> {
-  template <class T> static void add_or_merge(Observable& obs, const T& x) { obs.merge(x);}
-};
-
-template<>
-struct pick_add_merge<false> {
-  template <class T> static void add_or_merge(Observable& obs, const T& x) { obs.add(x);}
-};
-
-}
 
 
 //=======================================================================
@@ -198,13 +181,7 @@ class Observable
   virtual Observable* convert_mergeable() const;
 
   /// merge this observable with another or add measurement
-  template <class T>
-  void operator<<(const T& x)
-  {
-    detail::pick_add_merge<boost::is_base_and_derived<Observable,T>::value>::add_or_merge(*this,x);
-  }
-  
-  //void operator<<(const Observable& o) { merge(o);}
+  template <class T> inline void operator<<(const T& x);
   
   template <class T>
   void add(const T& x) 
@@ -227,6 +204,28 @@ private:
   std::string name_; // the name
   bool in_observable_set_;
 };
+
+namespace detail {
+template <bool F>
+struct pick_add_merge {};
+
+template<>
+struct pick_add_merge<true> {
+  template <class T> static void add_or_merge(Observable& obs, const T& x) { obs.merge(x);}
+};
+
+template<>
+struct pick_add_merge<false> {
+  template <class T> static void add_or_merge(Observable& obs, const T& x) { obs.add(x);}
+};
+
+}
+
+template <class T> 
+void Observable::operator<<(const T& x)
+{
+    detail::pick_add_merge<boost::is_base_and_derived<Observable,T>::value>::add_or_merge(*this,x);
+}
 
 } // end namespace alps
 

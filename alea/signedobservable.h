@@ -46,6 +46,7 @@ template <class OBS, class SIGN=double>
 class AbstractSignedObservable 
  : public AbstractSimpleObservable<typename OBS::value_type> 
 {
+  typedef AbstractSimpleObservable<typename OBS::value_type> super_type;
 public:
   typedef OBS observable_type;
   typedef SIGN sign_type;
@@ -64,7 +65,7 @@ public:
 
   AbstractSignedObservable(const OBS& obs, const std::string& s="sign") 
     : base_type(obs.name()), obs_(obs), sign_name_(s), sign_(0) 
-  {  obs_.rename("Sign * "+name); }
+  {  obs_.rename("Sign * "+super_type::name()); }
 
   AbstractSignedObservable(const std::string& name="", const std::string& s="sign") 
    : base_type(name), obs_("Sign * "+name), sign_name_(s), sign_(0) {}
@@ -113,7 +114,7 @@ public:
   {
     SimpleObservableEvaluator<value_type> result(obs_);
     result /= static_cast<SimpleObservableEvaluator<sign_type> >(dynamic_cast<const AbstractSimpleObservable<sign_type>&>(sign()));
-    result.rename(name());
+    result.rename(super_type::name());
     return result;
   }
    
@@ -121,13 +122,13 @@ public:
   AbstractSignedObservable<SimpleObservableEvaluator<typename obs_value_slice<value_type,S>::value_type>,SIGN>
     slice(S s, const std::string& newname="") const 
   {
-    AbstractSignedObservable<SimpleObservableEvaluator<typename obs_value_slice<value_type,S>::value_type>,SIGN> result(name());
+    AbstractSignedObservable<SimpleObservableEvaluator<typename obs_value_slice<value_type,S>::value_type>,SIGN> result(super_type::name());
     result.sign_=sign_;
     result.sign_name_=sign_name_;
     if(!newname.empty())
       result.rename(newname);
     result.obs_=obs_.slice(s);
-    result.obs_.rename("Sign * " + name());
+    result.obs_.rename("Sign * " + super_type::name());
     return result;
   }
 
@@ -181,6 +182,7 @@ class SignedObservable
  : public AbstractSignedObservable<OBS,SIGN>, 
    public RecordableObservable<typename OBS::value_type,SIGN>
 {
+  typedef AbstractSignedObservable<OBS,SIGN> super_type;
 public:
   typedef OBS observable_type;
   typedef SIGN sign_type;
@@ -204,10 +206,10 @@ public:
 
   Observable* clone() const {return new SignedObservable<OBS,SIGN>(*this);}
    
-  void operator<<(const value_type& x) { obs_ << x;}
+  void operator<<(const value_type& x) { super_type::obs_ << x;}
   void add(const value_type& x) { operator<<(x);}
   void add(const value_type& x, sign_type s) { add(x*static_cast<element_type>(s));}
-  bool is_thermalized() const { return obs_.is_thermalized();}
+  bool is_thermalized() const { return super_type::obs_.is_thermalized();}
 };
 
 
@@ -288,7 +290,7 @@ void AbstractSignedObservable<OBS,SIGN>::write_more_xml(oxstream& oxs, slice_ite
 template <class OBS, class SIGN>
 Observable* AbstractSignedObservable<OBS,SIGN>::get_run(uint32_t n) const 
 {
-  AbstractSignedObservable* result = new AbstractSignedObservable(name());
+  AbstractSignedObservable* result = new AbstractSignedObservable(super_type::name());
   result->sign_=sign_;
   result->sign_name_=sign_name_;
   Observable* o = obs_.get_run(n);
@@ -300,7 +302,7 @@ Observable* AbstractSignedObservable<OBS,SIGN>::get_run(uint32_t n) const
 template <class OBS, class SIGN>
 void AbstractSignedObservable<OBS,SIGN>::output_scalar(std::ostream& out) const
 {
-  out << name();
+  out << super_type::name();
   if(count()==0)
     out << " no measurements.\n";
   else {
@@ -314,7 +316,7 @@ void AbstractSignedObservable<OBS,SIGN>::output_scalar(std::ostream& out) const
 template <class OBS, class SIGN>
 void AbstractSignedObservable<OBS,SIGN>::output_vector(std::ostream& out) const
 {
-  out << name();
+  out << super_type::name();
   if (!sign_name_.empty())
     out << "; sign in observable \"" << sign_name_;
 
