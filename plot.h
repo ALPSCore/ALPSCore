@@ -36,6 +36,7 @@
 **************************************************************************/
 
 #include <alps/parser/xmlstream.h>
+#include <alps/parser/xslt.h>
 #include <boost/tuple/tuple.hpp>
 
 #include <vector>
@@ -218,10 +219,8 @@ private:
 
 template<class C>
 inline oxstream& operator<<(oxstream& out, Plot<C> P) {
-  out << header("UTF-8")
-      << processing_instruction("xml-stylesheet") << alps::attribute("type","text/xsl") 
-      << attribute("href","http://xml.comp-phys.org/2003/4/plot2html.xsl");
-  out << start_tag("plot") << alps::xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
+  out << header("UTF-8") << stylesheet(xslt_path("plot2html.xsl"))
+      << start_tag("plot") << alps::xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
       << attribute("xsi:noNamespaceSchemaLocation","http://xml.comp-phys.org/2003/4/plot.xsd")
       << attribute("name",P.name());
   out << start_tag("legend") << attribute("show", P.show_legend() ? "true" : "false") << end_tag("legend");

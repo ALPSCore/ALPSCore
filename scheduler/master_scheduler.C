@@ -186,20 +186,18 @@ void MasterScheduler::checkpoint()
   if (make_backup)
     filename=dir/(filename.leaf()+".bak");
   { // scope for out
-    alps::oxstream out(filename);
-    
-    out << alps::header("UTF-8");
-    out << alps::processing_instruction("xml-stylesheet") << alps::attribute("type","text/xsl") 
-        << alps::attribute("href","http://xml.comp-phys.org/2002/10/job.xsl");
-    out << alps::start_tag("JOB") << alps::xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
-	      << alps::attribute("xsi:noNamespaceSchemaLocation","http://xml.comp-phys.org/2003/8/job.xsd");
+    oxstream out(filename);
+
+    out << header("UTF-8") << stylesheet(xslt_path("job.xsl"));
+    out << start_tag("JOB") << xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
+	      << attribute("xsi:noNamespaceSchemaLocation","http://xml.comp-phys.org/2003/8/job.xsd");
     int local_sim=-1;
     
     for (int i=0; i<tasks.size();i++) {
       if (taskstatus[i]==TaskFinished) {
-        out << alps::start_tag("TASK") << alps::attribute("status","finished")
-            << alps::start_tag("INPUT") << alps::attribute("file",taskfiles[i].out.native_file_string())
-            << alps::end_tag() << alps::end_tag();
+        out << start_tag("TASK") << attribute("status","finished")
+            << start_tag("INPUT") << attribute("file",taskfiles[i].out.native_file_string())
+            << end_tag() << end_tag();
         std::cout  << "Checkpointing task# " << i+1 << "\n";
         if (tasks[i]!=0 && boost::filesystem::complete(taskfiles[i].out,dir).string()!=taskfiles[i].in.string()) {          
 	  tasks[i]->checkpoint(boost::filesystem::complete(taskfiles[i].out,dir));
@@ -210,16 +208,16 @@ void MasterScheduler::checkpoint()
         tasks[i]=0;
       }
       else if(taskstatus[i]==TaskNotExisting) {
-        out << alps::start_tag("TASK") << alps::attribute("status","finished")
-            << alps::start_tag("INPUT") << alps::attribute("file",taskfiles[i].in.native_file_string())
-            << alps::end_tag() << alps::end_tag();
+        out << start_tag("TASK") << attribute("status","finished")
+            << start_tag("INPUT") << attribute("file",taskfiles[i].in.native_file_string())
+            << end_tag() << end_tag();
         std::cout  << "Task# " << i+1 << " does not exist\n";
       } 
       else {
-        out << alps::start_tag("TASK") 
-            << alps::attribute("status",((taskstatus[i]==TaskNotStarted) ? "new" : "running"))
-            << alps::start_tag("INPUT") << alps::attribute("file",taskfiles[i].out.native_file_string())
-            << alps::end_tag() << alps::end_tag();
+        out << start_tag("TASK") 
+            << attribute("status",((taskstatus[i]==TaskNotStarted) ? "new" : "running"))
+            << start_tag("INPUT") << attribute("file",taskfiles[i].out.native_file_string())
+            << end_tag() << end_tag();
         if(theTask != tasks[i]) {
           tasks[i]->checkpoint(boost::filesystem::complete(taskfiles[i].out,dir));
 	        taskfiles[i].in=boost::filesystem::complete(taskfiles[i].out,dir);
@@ -234,7 +232,7 @@ void MasterScheduler::checkpoint()
       taskfiles[local_sim].in=boost::filesystem::complete(taskfiles[local_sim].out,dir);
       std::cout  << "Checkpointing local task# " << local_sim+1 << "\n";
     }
-    out << alps::end_tag("JOB");
+    out << end_tag("JOB");
   }
   if(make_backup) {
     boost::filesystem::remove(outfilepath);

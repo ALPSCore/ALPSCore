@@ -39,6 +39,7 @@
 #include <alps/scheduler/scheduler.h>
 #include <alps/alea.h>
 #include <alps/osiris.h>
+#include <alps/parser/xslt.h>
 #include <boost/filesystem/fstream.hpp>
 
 namespace alps {
@@ -101,11 +102,9 @@ std::string MCSimulation::worker_tag() const
 
 void MCSimulation::write_xml_header(oxstream& out) const
 {
-  out << header("UTF-8")
-      << processing_instruction("xml-stylesheet") << attribute("type","text/xsl") 
-        << attribute("href","http://xml.comp-phys.org/2002/10/QMCXML.xsl")
-      << start_tag("SIMULATION") << xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
-        << attribute("xsi:noNamespaceSchemaLocation","http://xml.comp-phys.org/2002/10/QMCXML.xsd");
+  out << header("UTF-8") << stylesheet(xslt_path("QMCXML.xsl"));
+  out << start_tag("SIMULATION") << xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
+      << attribute("xsi:noNamespaceSchemaLocation","http://xml.comp-phys.org/2002/10/QMCXML.xsd");
 }
 
 
@@ -187,10 +186,8 @@ void MCRun::write_xml(const boost::filesystem::path& name, const boost::filesyst
   oxstream xml(name.branch_path()/(name.leaf()+".xml"));
   boost::filesystem::path fn_hdf5(name.branch_path()/(name.leaf()+".hdf"));
 
-  xml << header("UTF-8")
-      << processing_instruction("xml-stylesheet") << attribute("type","text/xsl") 
-        << attribute("href","http://xml.comp-phys.org/2002/10/QMCXML.xsl")
-      << start_tag("SIMULATION") << xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
+  xml << header("UTF-8") << stylesheet(xslt_path("QMCXML.xsl"));
+  xml << start_tag("SIMULATION") << xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
         << attribute("xsi:noNamespaceSchemaLocation","http://xml.comp-phys.org/2002/10/QMCXML.xsd");
   xml << parms;
   measurements.write_xml(xml);

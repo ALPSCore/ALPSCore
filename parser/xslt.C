@@ -1,7 +1,7 @@
 /***************************************************************************
-* ALPS library
+* ALPS++ library
 *
-* alps/xml.h
+* parser/xslt.C   functions to set path for XSLT stylefiles
 *
 * $Id$
 *
@@ -35,11 +35,19 @@
 *
 **************************************************************************/
 
-#ifdef ALPS_WITHOUT_XML
-# error "XML not supported"
-#endif
-
-#include <alps/parser/xmlhandler.h>
-#include <alps/parser/xmlparser.h>
-#include <alps/parser/xmlstream.h>
 #include <alps/parser/xslt.h>
+
+std::string alps::xslt_path(const std::string& stylefile) {
+  char* p =getenv("ALPS_XSLT_PATH");
+  if (p)
+    return std::string(p)+"/"+stylefile;
+else if (stylefile == "job.xsl")
+  return "http://xml.comp-phys.org/2002/10/job.xsl";
+else if (stylefile == "QMCXML.xsl")
+  return "http://xml.comp-phys.org/2002/10/QMCXML.xsl";
+  else if (stylefile == "plot2html.xsl")
+    return "http://xml.comp-phys.org/2003/4/plot2html.xsl";
+else
+  return "http://xml.comp-phys.org/"+stylefile;
+}
+  

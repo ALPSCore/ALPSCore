@@ -1,7 +1,7 @@
 /***************************************************************************
-* ALPS library
+* ALPS++ library
 *
-* alps/xml.h
+* parser/xslt.h   functions to set path for XSLT stylefiles
 *
 * $Id$
 *
@@ -35,11 +35,16 @@
 *
 **************************************************************************/
 
-#ifdef ALPS_WITHOUT_XML
-# error "XML not supported"
-#endif
+#ifndef ALPS_PARSER_XSLT_H
+#define ALPS_PARSER_XSLT_H
 
-#include <alps/parser/xmlhandler.h>
-#include <alps/parser/xmlparser.h>
-#include <alps/parser/xmlstream.h>
-#include <alps/parser/xslt.h>
+#include <cstdlib>
+#include <string>
+
+namespace alps {
+
+extern std::string xslt_path(const std::string& stylefile);
+  
+} // end namespace alps
+
+#endif // PALM_PARSER_PARSER_H

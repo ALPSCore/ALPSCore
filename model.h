@@ -35,3 +35,4 @@
 **************************************************************************/
 
 #include <alps/model/modellibrary.h>
+#include <alps/model/sign.h>

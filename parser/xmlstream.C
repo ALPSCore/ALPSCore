@@ -238,6 +238,12 @@ std::string convert(const std::string& str)
   return out.str();
 }
 
+oxstream& oxstream::operator<<(const detail::stylesheet_t& c)
+{
+  (*this) << processing_instruction("xml-stylesheet") << attribute("type","text/xsl")
+    << attribute("href",c.name);
+}
+
 } // end namespace alps
 
 #ifdef __GNUC__

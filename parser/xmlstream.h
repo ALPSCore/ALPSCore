@@ -80,6 +80,12 @@ struct attribute_t
   XMLAttribute attr;
 };
 
+struct stylesheet_t
+{
+  stylesheet_t(const std::string& n) : name(n) {}
+  std::string name;
+};
+
 struct pi_t : public start_tag_t
 {
   pi_t(const std::string& n) : start_tag_t(n) {}
@@ -97,6 +103,7 @@ public:
   oxstream& operator<<(const detail::header_t& c);
   oxstream& operator<<(const detail::start_tag_t& c);
   oxstream& operator<<(const detail::end_tag_t& c);
+  oxstream& operator<<(const detail::stylesheet_t& c);
   oxstream& operator<<(const XMLAttribute& c);
   oxstream& operator<<(const XMLAttributes& c);
   oxstream& operator<<(const detail::attribute_t& c);
@@ -178,6 +185,10 @@ inline detail::header_t header(const std::string& enc) {
 
 inline detail::start_tag_t start_tag(const std::string& name) {
   return detail::start_tag_t(name);
+}
+
+inline detail::stylesheet_t stylesheet(const std::string& name) {
+  return detail::stylesheet_t(name);
 }
 
 inline detail::end_tag_t end_tag(const std::string& name = "") {
