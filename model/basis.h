@@ -4,7 +4,8 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003 by Matthias Troyer <troyer@comp-phys.org>
+* Copyright (C) 2003-2004 by Matthias Troyer <troyer@comp-phys.org>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -45,9 +46,16 @@ public:
   typedef std::map<std::string,SiteBasisDescriptor<I> > sitebasis_map_type;
 
   SiteBasisMatch() : type_(-2) {} // matches no site type
-  SiteBasisMatch(const XMLTag&, std::istream&,const sitebasis_map_type& bases_= sitebasis_map_type());
+  SiteBasisMatch(const base_type& site_basis, int type = -2)
+    : base_type(site_basis), type_(type), sitebasis_name_() {}
+  SiteBasisMatch(const std::string& name, int type = -2)
+    : base_type(), type_(type), sitebasis_name_(name) {}
+  SiteBasisMatch(const XMLTag&, std::istream&,
+                 const sitebasis_map_type& bases_= sitebasis_map_type());
+
   void write_xml(oxstream&) const;
   bool match_type(int type) const { return type_==-1 || type==type_;}
+
 private:
   int type_;
   std::string sitebasis_name_;
@@ -65,8 +73,10 @@ public:
   typedef std::vector<std::pair<std::string,half_integer<I> > > constraints_type;
   typedef std::vector<std::pair<std::string,alps::Expression> > unevaluated_constraints_type;
 
-  BasisDescriptor() {}
-  BasisDescriptor(const XMLTag&, std::istream&,const sitebasis_map_type& bases_= sitebasis_map_type());
+  BasisDescriptor(const std::string& name = "") : name_(name) {}
+  BasisDescriptor(const XMLTag&, std::istream&,
+                  const sitebasis_map_type& bases_= sitebasis_map_type());
+
   void write_xml(oxstream&) const;
   const SiteBasisDescriptor<I>& site_basis(int type=0) const;
   const std::string& name() const { return name_;}
@@ -74,6 +84,7 @@ public:
   const constraints_type& constraints() const { return evaluated_constraints_;}
   const unevaluated_constraints_type& unevaluated_constraints() const { return unevaluated_constraints_;}
   const unevaluated_constraints_type& all_constraints() const { return constraints_;}
+
 private:
   std::string name_;
   void check_constraints(const Parameters& =Parameters());
@@ -116,16 +127,14 @@ const SiteBasisDescriptor<I>& BasisDescriptor<I>::site_basis(int type) const {
     if (it->match_type(type))
       break;
   if (it==end())
-    boost::throw_exception(std::runtime_error("No matching site basis found for site type" + 
+    boost::throw_exception(std::runtime_error("No matching site basis found for site type" +
                             boost::lexical_cast<std::string,int>(type) + "\n"));
   return *it;
 }
 
 
-#ifndef ALPS_WITHOUT_XML
-
 template <class I>
-SiteBasisMatch<I>::SiteBasisMatch(const XMLTag& intag, std::istream& is, const sitebasis_map_type& bases_) 
+SiteBasisMatch<I>::SiteBasisMatch(const XMLTag& intag, std::istream& is, const sitebasis_map_type& bases_)
 {
   XMLTag tag(intag);
   sitebasis_name_ = tag.attributes["ref"];
@@ -177,12 +186,16 @@ template <class I>
 void SiteBasisMatch<I>::write_xml(oxstream& os) const
 {
   os << start_tag("SITEBASIS");
-  if (type_>=0) 
+  if (type_>=0)
     os << attribute("type", type_);
   if (sitebasis_name_!="")
     os << attribute("ref", sitebasis_name_);
   else
-    for (const_iterator it=begin();it!=end();++it)
+    for (Parameters::const_iterator p_itr = get_parameters().begin();
+         p_itr != get_parameters().end(); ++p_itr)
+      os << start_tag("PARAMETER") << attribute("name", p_itr->key())
+         << attribute("default", p_itr->value()) << end_tag("PARAMETER");
+    for (const_iterator it = begin(); it != end(); ++it)
       os << *it;
   os << end_tag("SITEBASIS");
 }
@@ -194,12 +207,10 @@ void BasisDescriptor<I>::write_xml(oxstream& os) const
   for (const_iterator it=begin();it!=end();++it)
     os << *it;
   for (typename unevaluated_constraints_type::const_iterator it=constraints_.begin();it!=constraints_.end();++it)
-    os << start_tag("CONSTRAINT") << attribute("quantumnumber",it->first) 
+    os << start_tag("CONSTRAINT") << attribute("quantumnumber",it->first)
        << attribute("value",static_cast<std::string>(it->second)) << end_tag("CONSTRAINT");
   os << end_tag("BASIS");
 }
-
-#endif
 
 } // namespace alps
 
@@ -207,13 +218,11 @@ void BasisDescriptor<I>::write_xml(oxstream& os) const
 namespace alps {
 #endif
 
-#ifndef ALPS_WITHOUT_XML
-
 template <class I>
 inline alps::oxstream& operator<<(alps::oxstream& out, const alps::SiteBasisMatch<I>& q)
 {
   q.write_xml(out);
-  return out;        
+  return out;
 }
 
 
@@ -221,7 +230,7 @@ template <class I>
 inline alps::oxstream& operator<<(alps::oxstream& out, const alps::BasisDescriptor<I>& q)
 {
   q.write_xml(out);
-  return out;        
+  return out;
 }
 
 template <class I>
@@ -229,7 +238,7 @@ inline std::ostream& operator<<(std::ostream& out, const alps::SiteBasisMatch<I>
 {
   alps::oxstream xml(out);
   xml << q;
-  return out;        
+  return out;
 }
 
 template <class I>
@@ -237,11 +246,9 @@ inline std::ostream& operator<<(std::ostream& out, const alps::BasisDescriptor<I
 {
   alps::oxstream xml(out);
   xml << q;
-  return out;        
+  return out;
 }
 
-
-#endif
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // namespace alps

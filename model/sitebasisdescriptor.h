@@ -4,8 +4,9 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003 by Matthias Troyer <troyer@comp-phys.org>,
-*                       Axel Grzesik <axel@th.physik.uni-bonn.de>
+* Copyright (C) 2003-2004 by Matthias Troyer <troyer@comp-phys.org>,
+*                            Axel Grzesik <axel@th.physik.uni-bonn.de>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -45,17 +46,28 @@ template<class I>
 class SiteBasisDescriptor : public std::vector<QuantumNumber<I> >
 {
 public:
-  typedef typename std::vector<QuantumNumber<I> >::const_iterator const_iterator;
-  
+  typedef typename std::vector<QuantumNumber<I> >::const_iterator
+    const_iterator;
+
   SiteBasisDescriptor() : num_states_(0) { }
+  SiteBasisDescriptor(const std::string& name,
+                      const Parameters& parms = Parameters())
+    : parms_(parms), name_(name), num_states_(0) { }
   SiteBasisDescriptor(const XMLTag&, std::istream&);
   void write_xml(oxstream&) const;
 
   const std::string& name() const { return name_;}
   bool valid(const std::vector<half_integer<I> >&) const;
-  std::size_t num_states() const { if (!valid_ && !evaluate()) boost::throw_exception(std::runtime_error("Cannot evaluate quantum numbers in site basis " +name()));  return num_states_;}
+  std::size_t num_states() const
+  {
+    if (!valid_ && !evaluate())
+      boost::throw_exception(std::runtime_error("Cannot evaluate quantum"
+        " numbers in site basis " + name()));
+    return num_states_;
+  }
   bool set_parameters(const Parameters&);
-  const Parameters& get_parameters() const { return parms_;}
+  const Parameters& get_parameters() const { return parms_; }
+
 private:
   mutable bool valid_;
   bool evaluate() const;
@@ -70,7 +82,7 @@ private:
 template <class I>
 bool SiteBasisDescriptor<I>::valid(const std::vector<half_integer<I> >& x) const
 {
-  if(!valid_ && !evaluate()) 
+  if(!valid_ && !evaluate())
     boost::throw_exception(std::runtime_error("Cannot evaluate quantum numbers in site basis " +name()));
   if (size() != x.size())
     return false;
@@ -82,9 +94,9 @@ bool SiteBasisDescriptor<I>::valid(const std::vector<half_integer<I> >& x) const
 
 template <class I>
 bool SiteBasisDescriptor<I>::set_parameters(const Parameters& p)
-{ 
+{
   for (Parameters::iterator it=parms_.begin();it!=parms_.end();++it)
-    if (p.defined(it->key())) 
+    if (p.defined(it->key()))
       it->value() = p[it->key()];
   evaluate();
   return valid_;
@@ -122,7 +134,7 @@ bool SiteBasisDescriptor<I>::evaluate() const
       if(it->levels()==std::numeric_limits<I>::max()) {
         num_states_=std::numeric_limits<I>::max();
         return true;
-      }      
+      }
       for(half_integer<I> q=it->min();q<=it->max();++q) {
         p[it->name()]=q;
         s.push(q_pair(it,p));
@@ -168,9 +180,9 @@ SiteBasisDescriptor<I>::SiteBasisDescriptor(const XMLTag& intag, std::istream& i
   if (tag.type!=XMLTag::SINGLE) {
     tag = parse_tag(is);
     while (tag.name!="/SITEBASIS") {
-      if (tag.name=="QUANTUMNUMBER") 
+      if (tag.name=="QUANTUMNUMBER")
         push_back(QuantumNumber<I>(tag,is));
-      else if (tag.name=="PARAMETER") 
+      else if (tag.name=="PARAMETER")
         parms_[tag.attributes["name"]]=tag.attributes["default"];
       if (tag.type!=XMLTag::SINGLE)
         tag = parse_tag(is);
@@ -178,7 +190,7 @@ SiteBasisDescriptor<I>::SiteBasisDescriptor(const XMLTag& intag, std::istream& i
     }
     if (tag.name !="/SITEBASIS")
       boost::throw_exception(std::runtime_error("Illegal tag <" + tag.name + "> in <SITEBASIS> element"));
-  } 
+  }
   init_dependencies();
 
   // I need this line, otherwise the expressions in quantumnumbers cannot be evaluated. Dirty patch. Looks like a bug. To be looked at again. Axel Grzesik, 07/08/03
@@ -187,9 +199,9 @@ SiteBasisDescriptor<I>::SiteBasisDescriptor(const XMLTag& intag, std::istream& i
 
 template<class I>
 void SiteBasisDescriptor<I>::init_dependencies() const {
-  for(const_iterator it=begin();it!=end();++it) 
-    for(const_iterator jt=begin();jt!=it;++jt) 
-      if(const_cast<QuantumNumber<I>&>(*it).depends_on(jt->name())) 
+  for(const_iterator it=begin();it!=end();++it)
+    for(const_iterator jt=begin();jt!=it;++jt)
+      if(const_cast<QuantumNumber<I>&>(*it).depends_on(jt->name()))
         const_cast<QuantumNumber<I>&>(*it).add_dependency(*jt);
 }
 
@@ -198,7 +210,7 @@ void SiteBasisDescriptor<I>::write_xml(oxstream& os) const
 {
   os << start_tag("SITEBASIS") << attribute("name", name());
   for (Parameters::const_iterator it=parms_.begin();it!=parms_.end();++it)
-    os << start_tag("PARAMETER") << attribute("name", it->key()) 
+    os << start_tag("PARAMETER") << attribute("name", it->key())
        << attribute("default", it->value()) << end_tag("PARAMETER");
   for (const_iterator it=begin();it!=end();++it)
     os << *it;
@@ -215,7 +227,7 @@ template <class I>
 inline alps::oxstream& operator<<(alps::oxstream& out, const alps::SiteBasisDescriptor<I>& q)
 {
   q.write_xml(out);
-  return out;        
+  return out;
 }
 
 template <class I>
@@ -223,7 +235,7 @@ inline std::ostream& operator<<(std::ostream& out, const alps::SiteBasisDescript
 {
   alps::oxstream xml(out);
   xml << q;
-  return out;        
+  return out;
 }
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE

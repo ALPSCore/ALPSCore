@@ -4,9 +4,9 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003 by Matthias Troyer <troyer@comp-phys.org>,
-*                       Axel Grzesik <axel@th.physik.uni-bonn.de>,
-*                       Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 2003-2004 by Matthias Troyer <troyer@comp-phys.org>,
+*                            Axel Grzesik <axel@th.physik.uni-bonn.de>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -31,11 +31,6 @@
 
 #ifndef ALPS_MODEL_QUANTUMNUMBER_H
 #define ALPS_MODEL_QUANTUMNUMBER_H
-
-#include <alps/config.h>
-#ifdef ALPS_WITHOUT_XML
-#error "Model library needs XML support"
-#endif
 
 #include <alps/parser/xmlstream.h>
 #include <alps/parser/parser.h>
@@ -64,10 +59,10 @@ public:
     return *this;
   }
   operator double() const { return 0.5*val_; }
-  
+
   void set_half(integer_type x) { val_=x; }
   integer_type get_twice() const { return val_; }
-  
+
   template <class J> bool operator==(const half_integer<J>& rhs) const
   { return val_ == rhs.val_; }
   template <class J> bool operator!=(const half_integer<J>& rhs) const
@@ -111,7 +106,7 @@ public:
   { half_integer res(*this); return res -= x; }
 
   integer_type distance(const half_integer& x) const
-  { 
+  {
     if ((*this==max()) != (x==max())) return std::numeric_limits<I>::max();
     if (std::numeric_limits<I>::is_signed && (*this==min())!=(x==min()))
       return std::numeric_limits<I>::max();
@@ -122,11 +117,11 @@ public:
   { return half_integer(std::numeric_limits<I>::max(),0); }
   static half_integer min()
   {
-    return std::numeric_limits<I>::is_signed ? 
+    return std::numeric_limits<I>::is_signed ?
       -half_integer(std::numeric_limits<I>::max(),0) :
       half_integer(std::numeric_limits<I>::min(),0);
   }
-  
+
 private:
   half_integer(integer_type i, int /* to distinguish */) : val_(i) {}
   integer_type val_;
@@ -147,7 +142,7 @@ inline std::ostream& operator<<(std::ostream& os, const half_integer<I>& x)
     return os << "infinity";
   else if (std::numeric_limits<I>::is_signed && x==half_integer<I>::min())
     return os << "-infinity";
-  else if(x.get_twice() %2==0) 
+  else if(x.get_twice() %2==0)
     return os << x.get_twice()/2;
   else
     return os << x.get_twice() << "/2";
@@ -184,39 +179,56 @@ class QuantumNumber
 {
 public:
   typedef half_integer<I> value_type;
-  QuantumNumber(const std::string& n, value_type minVal=0, value_type maxVal=0, bool f=false);
-#ifndef ALPS_WITHOUT_XML
+  QuantumNumber(const std::string& n, value_type minVal=0, value_type maxVal=0,
+                bool f=false);
+  QuantumNumber(const std::string& n, const std::string& min_str,
+                const std::string& max_str, bool f=false);
   QuantumNumber(const XMLTag&, std::istream&);
-#endif
-  
-  bool valid(value_type x) const { return x >= min() && x<= max();}
-  const std::string min_expression() const { return min_string_;}
-  const std::string max_expression() const { return max_string_;}
-  value_type min() const 
-  {if (!valid_ && !evaluate()) boost::throw_exception(std::runtime_error("Cannot evaluate expression " + min_string_ )); return _min;} 
-  value_type max() const 
-  {if (!valid_ && !evaluate()) boost::throw_exception(std::runtime_error("Cannot evaluate expression " + max_string_ )); return _max;} 
-  I levels() const {
-    return (max().distance(min())==std::numeric_limits<I>::max()) ? std::numeric_limits<I>::max() : max().distance(min())+1;}
-  const std::string& name() const {return _name;}
-  //bool operator== ( const QuantumNumber& x) const
-  //{ return min()==x.min() && max() ==x.max() && name() == x.name();} 
- 
+
+  bool valid(value_type x) const { return x >= min() && x<= max(); }
+  const std::string min_expression() const { return min_string_; }
+  const std::string max_expression() const { return max_string_; }
+  value_type min() const
+  {
+    if (!valid_ && !evaluate())
+      boost::throw_exception(std::runtime_error("Cannot evaluate expression " +
+                                                min_string_ ));
+    return min_;
+  }
+  value_type max() const
+  {
+    if (!valid_ && !evaluate())
+      boost::throw_exception(std::runtime_error("Cannot evaluate expression " +
+                                                max_string_ ));
+    return max_;
+  }
+  I levels() const
+  {
+    return (max().distance(min())==std::numeric_limits<I>::max()) ?
+      std::numeric_limits<I>::max() : (max().distance(min()) + 1);
+  }
+  const std::string& name() const { return name_; }
+
   const QuantumNumber& operator+=(const QuantumNumber& rhs);
 
   void write_xml(alps::oxstream&) const;
-  bool fermionic() const { return _fermionic;}
-  bool set_parameters(const Parameters&); // returns true if it can be evaluated
+  bool fermionic() const { return fermionic_;}
+
+  bool set_parameters(const Parameters&);
+  // returns true if it can be evaluated
+
   bool depends_on(const Parameters::key_type& s) const;
-  bool depends_on(const QuantumNumber& qn) const { return (dependency_.find(qn)!=dependency_.end()); }
+  bool depends_on(const QuantumNumber& qn) const
+  { return (dependency_.find(qn)!=dependency_.end()); }
   void add_dependency(const QuantumNumber& qn) { dependency_.insert(qn); }
+
 private:
-  std::string _name;
+  std::string name_;
   std::string min_string_;
   std::string max_string_;
-  mutable value_type _min;
-  mutable value_type _max;
-  bool _fermionic;
+  mutable value_type min_;
+  mutable value_type max_;
+  bool fermionic_;
   mutable bool valid_;
   bool evaluate(const Parameters& =Parameters()) const;
   mutable std::set<QuantumNumber> dependency_;
@@ -229,27 +241,41 @@ inline bool operator< (const QuantumNumber<I>& q1,const QuantumNumber<I>& q2) {
 
 template <class I>
 QuantumNumber<I>:: QuantumNumber(const std::string& n, value_type minVal, value_type maxVal, bool f)
-   : _name(n), 
-     _min(minVal),
-     _max(maxVal),
-     _fermionic(f), 
-     valid_(true), 
+   : name_(n),
      min_string_(boost::lexical_cast<std::string,value_type>(minVal)),
-     max_string_(boost::lexical_cast<std::string,value_type>(maxVal))
+     max_string_(boost::lexical_cast<std::string,value_type>(maxVal)),
+     min_(minVal),
+     max_(maxVal),
+     fermionic_(f),
+     valid_(true)
+{}
+
+template <class I>
+QuantumNumber<I>:: QuantumNumber(const std::string& n,
+                                 const std::string& min_str,
+                                 const std::string& max_str,
+                                 bool f)
+   : name_(n),
+     min_string_(min_str),
+     max_string_(max_str),
+     min_(),
+     max_(),
+     fermionic_(f),
+     valid_(true)
 {}
 
 
 template <class I>
 const QuantumNumber<I>& QuantumNumber<I>::operator+=(const QuantumNumber<I>& rhs)
 {
-  Parameters p; 
+  Parameters p;
   if(dependency_.size()!=rhs.dependency_.size())
     boost::throw_exception(std::runtime_error("Adding quantum numbers that do not depend on the same quantum numbers: " + name() + " + " + rhs.name()));
   for(typename std::set<QuantumNumber<I> >::const_iterator it=dependency_.begin();it!=dependency_.end();++it) {
     if(!rhs.depends_on(*it)) boost::throw_exception(std::runtime_error("Adding quantum numbers that do not both depend on quantum number " + it->name() + ": " + name() + " + " + rhs.name()));
     p[it->name()]=0;
   }
-  
+
   ParameterEvaluator eval(p);
   Expression min_exp = Expression(min_string_);
   Expression max_exp = Expression(max_string_);
@@ -259,9 +285,9 @@ const QuantumNumber<I>& QuantumNumber<I>::operator+=(const QuantumNumber<I>& rhs
   max_string_ = static_cast<std::string>(max_exp+Expression(rhs.max_string_));
   if (valid_) {
     if (min()!=value_type::min() && rhs.min()!=value_type::min())
-      _min += rhs._min;
+      min_ += rhs.min_;
     if (max()!=value_type::max() && rhs.max()!=value_type::max())
-      _max += rhs._max;
+      max_ += rhs.max_;
   }
   if (fermionic() != rhs.fermionic())
     boost::throw_exception(std::runtime_error("Adding fermionic and bosonic quantum numbers: " + name() + " + " + rhs.name()));
@@ -276,15 +302,13 @@ QuantumNumber<I> operator+(const QuantumNumber<I>& x,const QuantumNumber<I>& y)
   return res;
 }
 
-#ifndef ALPS_WITHOUT_XML
-
 template <class I>
 QuantumNumber<I>::QuantumNumber(const XMLTag& intag, std::istream&)
  : valid_(false)
 {
   XMLTag tag(intag);
-  _name = tag.attributes["name"];
-  _fermionic = tag.attributes["type"]=="fermionic";
+  name_ = tag.attributes["name"];
+  fermionic_ = tag.attributes["type"]=="fermionic";
   min_string_=tag.attributes["min"];
   if (min_string_=="")
     boost::throw_exception(std::runtime_error("min attribute missing in QUANTUMNUMBER element"));
@@ -319,20 +343,20 @@ bool QuantumNumber<I>::evaluate(const Parameters& p) const
   max_exp_.simplify();
   valid_=true;
   if (min_exp_==" - infinity")
-    _min = value_type::min();
+    min_ = value_type::min();
   else if (min_exp_.can_evaluate(eval))
-    _min = min_exp_.value();
+    min_ = min_exp_.value();
   else valid_=false;
   if (max_exp_=="infinity")
-    _max = value_type::max();
+    max_ = value_type::max();
   else if (max_exp_.can_evaluate(eval))
-    _max = max_exp_.value();
+    max_ = max_exp_.value();
   else valid_=false;
-  if(valid_ && _min>_max)
+  if(valid_ && min_>max_)
     boost::throw_exception(std::runtime_error("min > max in QUANTUMNUMBER element"));
   return valid_;
 }
-  
+
 template <class I>
 void QuantumNumber<I>::write_xml(oxstream& os) const
 {
@@ -342,8 +366,6 @@ void QuantumNumber<I>::write_xml(oxstream& os) const
     os << attribute("type","fermionic");
    os << end_tag("QUANTUMNUMBER");
 }
-
-#endif
 
 } // namespace alps
 
@@ -355,7 +377,7 @@ template <class I>
 inline alps::oxstream& operator<<(alps::oxstream& out, const alps::QuantumNumber<I>& q)
 {
   q.write_xml(out);
-  return out;        
+  return out;
 }
 
 template <class I>
@@ -363,7 +385,7 @@ inline std::ostream& operator<<(std::ostream& out, const alps::QuantumNumber<I>&
 {
   alps::oxstream xml(out);
   xml << q;
-  return out;        
+  return out;
 }
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
