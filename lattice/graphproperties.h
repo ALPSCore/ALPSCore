@@ -177,7 +177,7 @@ const bool has_property<P, const boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>,D>:
 #endif 
 
 
-template <class P, class G, class Default, class K=std::size_t>
+template <class P, class G, class Default>
 struct property_map
 {
   typedef 
@@ -185,7 +185,7 @@ struct property_map
       typename has_property<P,G>::graph_property_type&,
       typename detail::choose<has_property<P,G>::any_property,
         typename boost::property_map<G,P>::type,
-        singleton_property_map<Default,K> 
+        singleton_property_map<Default> 
       >::type
     >::type type;
 
@@ -194,7 +194,7 @@ struct property_map
       const typename has_property<P,G>::graph_property_type&,
       typename detail::choose<has_property<P,G>::any_property,
         typename boost::property_map<G,P>::const_type,
-        singleton_property_map<Default,K>
+        singleton_property_map<Default>
       >::type
     >::type const_type;
 };

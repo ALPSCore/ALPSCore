@@ -95,7 +95,7 @@ public:
   template <class B2, class V2>
   const coordinate_lattice& operator=(const coordinate_lattice<B2,V2>& l)
   {
-    unit_cell() = l.unit_cell();
+    BASE::unit_cell() = l.unit_cell();
     basis_vectors_ = std::vector<vector_type>(
       alps::basis_vectors(l).first, alps::basis_vectors(l).second);
     return *this;

@@ -303,8 +303,8 @@ protected:
   std::vector<std::string> bc_;
 private:
   void fill_extent() {
-    extent_.resize(dimension(),1);
-    bc_.resize(dimension(),"open");
+    extent_.resize(BASE::dimension(),1);
+    bc_.resize(BASE::dimension(),"open");
   }
 };
 
