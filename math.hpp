@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1999-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1999-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -34,6 +34,7 @@
 #include <alps/config.h>
 #include <alps/typetraits.h>
 #include <boost/type_traits.hpp>
+#include <boost/utility/enable_if.hpp>
 
 #include <algorithm>
 #include <complex>
@@ -99,6 +100,22 @@ bool is_zero(std::complex<T> x) { return is_zero(std::abs(x)); }
 
 template<class T>
 bool is_nonzero(T x) { return !is_zero(x); }
+
+//
+// round
+//
+
+template<class T>
+inline T round(T x, typename boost::enable_if<boost::is_float<T> >::type* = 0)
+{ return (std::abs(x) < 1.0e-12) ? T(0.) : x; }
+
+template<class T>
+inline T round(T x, typename boost::disable_if<boost::is_float<T> >::type* = 0)
+{ return x; }
+
+template<class T>
+inline std::complex<T> round(const std::complex<T>& x)
+{ return std::complex<T>(round(x.real()), round(x.imag())); }
 
 } // end namespace
 
