@@ -55,7 +55,8 @@ am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
-CONFIG_HEADER = $(top_builddir)/src/alps/config.h
+CONFIG_HEADER = $(top_builddir)/src/alps/config.h \
+	$(top_builddir)/src/boost/po_utf8_codecvt_facet.cpp
 CONFIG_CLEAN_FILES =
 am_xmlhandler_OBJECTS = xmlhandler.$(OBJEXT)
 xmlhandler_OBJECTS = $(am_xmlhandler_OBJECTS)
