@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -29,11 +29,8 @@
 /* $Id$ */
 
 #include <alps/osiris.h>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
 #include <iostream>
 #include <cstdlib>
-#include <fstream>
 
 int main()
 {
@@ -54,30 +51,26 @@ try {
   std::string o11 = "test string";
 
   {
-    std::ofstream of("textdump.dump");
-    boost::archive::text_oarchive oa(of,boost::archive::no_header);
-    alps::archive_odump<boost::archive::text_oarchive> od(oa);
+    alps::OXDRFileDump od(boost::filesystem::path("xdrdump.dump",boost::filesystem::native));
     od << o1 << o2 << o3 << o4 << o5 << o6 << o7 << o8 << o9 << o10 << o11;
   }
-
-  std::ifstream inf("textdump.dump");
-  boost::archive::text_iarchive ia(inf,boost::archive::no_header);
-  alps::archive_idump<boost::archive::text_iarchive> id(ia);
-
-  std::cout << id.get<bool>() << ' ';
-  std::cout << static_cast<int32_t>(id.get<int8_t>()) << ' ';
-  std::cout << static_cast<int32_t>(id.get<uint8_t>()) << ' ';
-  std::cout << id.get<int16_t>() << ' ';
-  std::cout << id.get<uint16_t>() << ' ';
-  std::cout << static_cast<int32_t>(id) << ' ';
-  std::cout << static_cast<uint32_t>(id) << ' ';
-  int64_t i8 = id;
-  uint64_t i9(id);
+  
+  alps::IXDRFileDump id(boost::filesystem::path("xdrdump.dump",boost::filesystem::native));
+  alps::idump_archive ar(id);
+  std::cout << alps::get<bool>(ar) << ' ';
+  std::cout << static_cast<int32_t>(alps::get<int8_t>(ar)) << ' ';
+  std::cout << static_cast<int32_t>(alps::get<uint8_t>(ar)) << ' ';
+  std::cout << alps::get<int16_t>(ar) << ' ';
+  std::cout << alps::get<uint16_t>(ar) << ' ';
+  std::cout << alps::get<int32_t>(ar) << ' ';
+  std::cout << alps::get<uint32_t>(ar) << ' ';
+  int64_t i8 = alps::get<int64_t>(ar);
+  uint64_t i9(alps::get<uint64_t>(ar));
   std::cout << i8 << ' '  << i9  << ' ';
-  double i10 = static_cast<double>(id);
+  double i10 = alps::get<double>(ar);
   std::cout << i10 << ' ';
   std::string str;
-  id >> str;
+  ar >> str;
   std::cout << str << std::endl;
   
 #ifndef BOOST_NO_EXCEPTIONS

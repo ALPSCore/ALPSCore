@@ -3,14 +3,17 @@ AM_CPPFLAGS = $(BASE_CPPFLAGS) $(BOOST_CPPFLAGS) $(XML_CPPFLAGS) $(HDF5_CPPFLAGS
 AM_LDFLAGS = $(BASE_LDFLAGS) $(BOOST_LDFLAGS) $(HDF5_LDFLAGS) $(XML_LDFLAGS)
 LDADD = $(top_builddir)/lib/alps/libalps.la $(top_builddir)/lib/comm-sgl/libcomm-sgl.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(BASE_LIBS)
 
-check_PROGRAMS = sizeof xdrdump xdrdump2 boostdump
+check_PROGRAMS = sizeof xdrdump xdrdump2 boostdump boostdump2 boostdump3 boostdump4
 
 sizeof_SOURCES = sizeof.C
 xdrdump_SOURCES = xdrdump.C
 xdrdump2_SOURCES = xdrdump2.C
 boostdump_SOURCES = boostdump.C
+boostdump2_SOURCES = boostdump2.C
+boostdump3_SOURCES = boostdump3.C
+boostdump4_SOURCES = boostdump4.C
 
-dist_noinst_DATA = xdrdump.output xdrdump2.dump xdrdump2.output boostdump.output
+dist_noinst_DATA = xdrdump.output xdrdump2.dump xdrdump2.output boostdump.output boostdump2.output boostdump3.output boostdump4.output
 
 .PHONY : test tests example examples
 test tests : check
