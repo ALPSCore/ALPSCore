@@ -208,21 +208,21 @@ public:
 //-----------------------------------------------------------------------
 
 template <class OBS>
-Observable make_observable(const Observable& obs, const std::string& s, bool issigned=false) 
+Observable* make_observable(Observable& obs, const std::string& s, bool issigned=false) 
 {
   if (issigned)
-    return SignedObservable<OBS,double>(obs,s);
+    return new SignedObservable<OBS,double>(obs,s);
   else
-    return obs;
+    return &obs;
 }
 
 template <class OBS, class SIGN>
-Observable make_observable(const Observable& obs, const std::string& s, SIGN, bool issigned=true) 
+Observable* make_observable(Observable& obs, const std::string& s, SIGN, bool issigned=true) 
 {
   if (issigned)
-    return SignedObservable<OBS,SIGN>(obs,s);
+    return new SignedObservable<OBS,SIGN>(obs,s);
   else
-    return obs;
+    return &obs;
 }
 */
 
