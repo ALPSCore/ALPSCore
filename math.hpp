@@ -71,7 +71,7 @@ template <bool F>
 struct is_zero_float
 {
   template <class T>
-  static bool is_zero(T x) { return std::abs(x) < std::numeric_limits<T>::min()/std::numeric_limits<T>::epsilon(); }
+  static bool is_zero(T x) { return std::abs(x) < std::sqrt(std::numeric_limits<T>::min()); }
 };
 
 template <>
