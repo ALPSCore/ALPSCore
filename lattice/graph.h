@@ -73,8 +73,8 @@ inline void write_graph_xml(oxstream& out, const GRAPH& g, const std::string& n=
   typename property_map<edge_index_t,graph_type,int>::const_type
     edgeindex = get_or_default(edge_index_t(),g,0);
 
-  typename property_map<coordinate_t,graph_type,std::vector<int> >::const_type
-    vertexcoordinate = get_or_default(coordinate_t(),g,std::vector<int>());
+  typename property_map<coordinate_t,graph_type,std::vector<double> >::const_type
+    vertexcoordinate = get_or_default(coordinate_t(),g,std::vector<double>());
     
   typename property_map<graph_name_t,graph_type,std::string>::const_type
     graphname = get_or_default(graph_name_t(),g,std::string());
@@ -152,8 +152,8 @@ inline std::string read_graph_xml(const XMLTag& intag, std::istream& p, GRAPH& g
   typename property_map<edge_index_t,graph_type,int>::type
     edgeindex = get_or_default(edge_index_t(),g,0);
 
-  typename property_map<coordinate_t,graph_type,std::vector<int> >::type
-    vertexcoordinate = get_or_default(coordinate_t(),g,std::vector<int>());
+  typename property_map<coordinate_t,graph_type,std::vector<double> >::type
+    vertexcoordinate = get_or_default(coordinate_t(),g,std::vector<double>());
     
   typename property_map<graph_name_t,graph_type,std::string>::type
     graphname = get_or_default(graph_name_t(),g,std::string());
