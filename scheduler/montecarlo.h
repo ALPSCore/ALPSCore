@@ -30,6 +30,7 @@
 #include <alps/scheduler/worker.h>
 #include <alps/scheduler/task.h>
 #include <alps/lattice.h>
+#include <alps/model.h>
 #include <alps/alea.h>
 #include <alps/osiris.h>
 #include <boost/smart_ptr.hpp>
@@ -146,6 +147,32 @@ private:
    graph_factory<G> factory_;
    graph_type& graph_;
 };
+
+
+template <class G=graph_factory<>::graph_type>
+class LatticeModelMCRun : public LatticeMCRun<G>
+{
+public:  
+  LatticeModelMCRun(const ProcessList& w,const alps::Parameters& p,int n)
+   : LatticeMCRun<G>(w,p,n),
+     model_library_(parms), 
+     model_(model_library_.hamiltonian(parms["MODEL"])) 
+  {
+    model_.set_parameters(parms);
+  }
+  
+  const ModelLibrary::OperatorDescriptorMap& simple_operators() const { 
+    return model_library_.simple_operators();
+  }
+  
+  HamiltonianDescriptor<short>& model() { return model_;}
+  const HamiltonianDescriptor<short>& model() const { return model_;}
+   
+private:
+   ModelLibrary model_library_;
+   HamiltonianDescriptor<short> model_;
+};
+
 
 template <class WORKER>
 class SimpleMCFactory : public SimpleFactory<WORKER,MCSimulation>
