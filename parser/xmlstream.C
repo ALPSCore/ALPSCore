@@ -38,13 +38,15 @@ oxstream::oxstream(const boost::filesystem::path& file, uint32_t incl)
 oxstream::~oxstream() {
   output();
   if (stack_.size() != 0)
-    boost::throw_exception(std::runtime_error("unclosed tags exist"));
+    boost::throw_exception(std::runtime_error(
+      "unclosed tag: " + stack_.top().first));
 }
 
 oxstream& oxstream::operator<<(const detail::header_t& c)
 {
   if (context_ == Comment || context_ == Cdata)
-    boost::throw_exception(std::runtime_error("header not allowed in comment or CDATA section"));
+    boost::throw_exception(std::runtime_error(
+      "header not allowed in comment or CDATA section"));
     
   *this << detail::pi_t("xml")
 	<< detail::attribute_t("version", c.version);
@@ -56,7 +58,8 @@ oxstream& oxstream::operator<<(const detail::header_t& c)
 oxstream& oxstream::operator<<(const detail::start_tag_t& c)
 {
   if (context_ == Comment || context_ == Cdata)
-    boost::throw_exception(std::runtime_error("start tag not allowed in comment or CDATA section"));
+    boost::throw_exception(std::runtime_error(
+      "start tag not allowed in comment or CDATA section"));
 
   output();
   stack_.push(std::make_pair(c.name, linebreak_));
@@ -76,7 +79,8 @@ oxstream& oxstream::operator<<(const detail::end_tag_t& c)
 oxstream& oxstream::operator<<(const XMLAttribute& c)
 {
   if (context_ != StartTag && context_ != PI)
-    boost::throw_exception(std::runtime_error("attribute is allowed only in tag"));
+    boost::throw_exception(std::runtime_error(
+      "attribute is allowed only in tag"));
   attr_.push_back(c);
   return *this;
 }
