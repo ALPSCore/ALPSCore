@@ -274,8 +274,10 @@ inline typename SimpleBinning<T>::result_type SimpleBinning<T>::variance() const
       retval=inf();
       return retval;
     }
-
-  return (sum2_[0] - sum_[0]*sum_[0]/count_type(count()))/count_type(count()-1);
+  result_type tmp(sum_[0]);
+  tmp *= tmp/count_type(count());
+  tmp = sum2_[0] -tmp;
+  return tmp/count_type(count()-1);
 }
 
 
@@ -299,7 +301,8 @@ inline typename SimpleBinning<T>::result_type SimpleBinning<T>::error(uint32_t i
   result_type correction = binvariance(i)/binvariance(0);
   using std::sqrt;
   using alps::sqrt;
-  return sqrt(correction*variance()/count_type(binsize_-1));
+  correction *=(variance()/count_type(binsize_-1));
+  return sqrt(correction);
 }
 
 
@@ -314,8 +317,11 @@ inline typename obs_value_traits<T>::time_type SimpleBinning<T>::tau() const
   if( binning_depth() >= 2 )
   {
     count_type factor =count()-1;
-    result_type er(error()*error()*factor/variance());
-    return 0.5*(er-1.);
+    result_type er(error());
+    er *=er*factor;
+    er /= variance();
+    er -=1.;
+    return 0.5*er;
   }
   else
   {

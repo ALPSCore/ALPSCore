@@ -137,7 +137,7 @@ template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, 
 const bool has_property<P, boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>,D>::any_property;
 #endif
 
-#ifndef __IBMCPP__
+#if  !defined(__IBMCPP__) || defined (__APPLE__)
 
 template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, class P, class D>
 struct has_property<P, const boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>, D>
@@ -218,16 +218,7 @@ struct property_map<P, const G, Default>
 namespace detail {
 
 template <bool F>
-struct put_get_helper
-{
-  template <class P, class G, class V>
-  static singleton_property_map<V> get (P, const G&, const V& v)
-  { return singleton_property_map<V>(v);}
-
-  template <class P, class G>
-  static typename property_map<P,G,int>::type get_property (P p, G& g) 
-  { return boost::get(p,g);}
-};
+struct put_get_helper {};
 
 template <>
 struct put_get_helper<true>
@@ -240,6 +231,18 @@ struct put_get_helper<true>
   template <class P, class G>
   static typename property_map<P,G,int>::type get_property (P p, G& g) 
   { return boost::get_property(g,p);}
+};
+
+template <>
+struct put_get_helper<false>
+{
+  template <class P, class G, class V>
+  static singleton_property_map<V> get (P, const G&, const V& v)
+  { return singleton_property_map<V>(v);}
+
+  template <class P, class G>
+  static typename property_map<P,G,int>::type get_property (P p, G& g) 
+  { return boost::get(p,g);}
 };
 
 } // end namespace detail

@@ -802,19 +802,41 @@ inline void SimpleObservableData<T>::collect_from(const std::vector<SimpleObserv
           obs_value_traits<value_type>::check_for_min(min_, r->min_);
           obs_value_traits<value_type>::check_for_max(max_, r->max_);
         }
-        mean_ = (double(count_)*mean_+double(r->count_)*r->mean_)
-                / double(count_ + r->count_);
+
+        result_type tmp(mean_);
+        tmp *= double(count_);
+        result_type tmp2(r->mean_);
+        tmp2 *= double(r->count_);
+        mean_ = tmp-tmp2;
+        mean_ /= double(count_ + r->count_);
+        //mean_ = (double(count_)*mean_+double(r->count_)*r->mean_)
+        //        / double(count_ + r->count_);
         using std::sqrt;
         using alps::sqrt;
-        error_ = sqrt(double(count_)*double(count_)*error_*error_
-                      +double(r->count_)*double(r->count_)*r->error_*r->error_)
-          / double(count_ + r->count_);
-        if(has_variance_)
-          variance_ = (double(count_)*variance_+double(r->count_)*r->variance_)
-            / double(count_ + r->count_);
-        if(has_tau_)
-          tau_ = (double(count_)*tau_+double(r->count_)*r->tau_)
-            / double(count_ + r->count_);
+        tmp = error_;
+        tmp *= error_*(double(count_)*double(count_));
+        tmp2 = r->error_;
+        tmp2 *= r->error_*(double(r->count_)*double(r->count_));
+        error_=tmp+tmp2;
+        error_=sqrt(error_);
+        error_/=double(count_ + r->count_);
+        //error_ = sqrt(double(count_)*double(count_)*error_*error_
+         //             +double(r->count_)*double(r->count_)*r->error_*r->error_)
+         // / double(count_ + r->count_);
+        if(has_variance_) {
+          variance_*=double(count_);
+          variance_+=double(r->count_)*r->variance_;
+          variance_ /= double(count_ + r->count_);
+          //variance_ = (double(count_)*variance_+double(r->count_)*r->variance_)
+          //  / double(count_ + r->count_);
+        }
+        if(has_tau_) {
+          tau_ *= double(count_);
+          tau_ += double(r->count_)*r->tau_;
+          tau_ /= double(count_ + r->count_);
+          //tau_ = (double(count_)*tau_+double(r->count_)*r->tau_)
+          //  / double(count_ + r->count_);
+        }
         if(has_minmax_) {
           obs_value_traits<value_type>::check_for_min(min_,r->min_);
           obs_value_traits<value_type>::check_for_max(max_,r->max_);
@@ -889,8 +911,11 @@ void SimpleObservableData<T>::fill_jack() const
       jack_[0] += obs_value_cast<result_type,value_type>(bin_value(i)) / count_type(bin_size());
     for(uint32_t i = 0; i < bin_number(); ++i) {
       obs_value_traits<result_type>::resize_same_as(jack_[i+1], jack_[0]);
+      result_type tmp(obs_value_cast<result_type,value_type>(bin_value(i)));
+      tmp /= count_type(bin_size());
       jack_[i+1] = jack_[0]
-        - (obs_value_cast<result_type,value_type>(bin_value(i)) / count_type(bin_size()));
+          - tmp;
+//        - (obs_value_cast<result_type,value_type>(bin_value(i)) / count_type(bin_size()));
       jack_[i+1] /= count_type(bin_number() - 1);
     }
     jack_[0] /= count_type(bin_number());
@@ -932,10 +957,16 @@ void SimpleObservableData<T>::analyze() const
       for (int i=0;i<values2_.size();++i)
         variance_+=obs_value_cast<result_type,value_type>(values2_[i]);
       // was: variance_ = std::accumulate(values2_.begin(), values2_.end(), variance_);
-      variance_ -= mean_ * mean_ * count_type(count());
+      result_type mean2(mean_);
+      mean2*=mean_*count_type(count());
+      variance_ -= mean2;
       variance_ /= count_type(count()-1);
       obs_value_traits<result_type>::resize_same_as(tau_, error_);
-      tau_ = 0.5*(error_*error_*count_type(count())/variance_-1.);
+      tau_=error_;
+      tau_*=error_*count_type(count());
+      tau_/=variance_;
+      tau_-=1.;
+      tau_*=0.5;
     } else {
       has_variance_ = false;
       has_tau_ = false;
@@ -959,13 +990,20 @@ inline void SimpleObservableData<T>::jackknife() const
     rav = 0;
     rav = std::accumulate(jack_.begin()+1, jack_.end(), rav);
     rav /= count_type(k);
-    mean_ = jack_[0] - (rav - jack_[0]) * count_type(k - 1);
+    
+    result_type tmp(rav);
+    tmp -= jack_[0];
+    tmp *= count_type(k - 1);
+    mean_  = jack_[0]-tmp;
+    //mean_ = jack_[0] - (rav - jack_[0]) * count_type(k - 1);
 
     error_ = 0.0;
     for (uint32_t i = 1; i < jack_.size(); ++i)
       error_ += jack_[i] * jack_[i];
     
-    error_ = (error_ / count_type(k) - rav * rav);
+    error_/=count_type(k);
+    error_-= rav * rav;
+    //error_ = (error_ / count_type(k) - rav * rav);
     error_ *= count_type(k - 1);
     using std::sqrt;
     using alps::sqrt;

@@ -190,7 +190,10 @@ inline typename NoBinning<T>::result_type NoBinning<T>::variance() const
       retval=inf();
       return retval;
     } // no data collected
-  return ( obs_value_cast<result_type,value_type>(sum2_) -  obs_value_cast<result_type,value_type>(sum_)* obs_value_cast<result_type,value_type>(sum_)/ count_type(count_))/ count_type(count_-1);
+  result_type tmp(obs_value_cast<result_type,value_type>(sum_));
+  tmp *=tmp/ count_type(count_);
+  tmp=obs_value_cast<result_type,value_type>(sum2_) - tmp;
+  return tmp/ count_type(count_-1);
 }
 
 template <class T>
@@ -198,7 +201,10 @@ inline typename NoBinning<T>::result_type NoBinning<T>::error() const
 {
   using std::sqrt;
   using alps::sqrt;
-  return sqrt(variance()/count_type(count()));
+  result_type tmp(variance());
+  tmp /= count_type(count());
+  
+  return sqrt(tmp);
 }
 
 template <class T>
