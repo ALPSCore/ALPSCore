@@ -134,7 +134,7 @@ public:
   multi_array operator-() const {
     multi_array res(*this);
     std::transform(res.begin(),res.end(),res.begin(),std::negate<T>());
-    return *this;
+    return res;
   }
  
 const multi_array& operator+=(const multi_array& x)
