@@ -273,6 +273,7 @@ struct copy_property_helper
 {
   template <class SRCREF, class DSTREF>
   static void copy(const SRC&, const SRCREF&, DST&, const DSTREF&) {}
+  static void copy(const SRC&, DST&) {}
 };
 
 template <class SRC, class DST, class PROPERTY>
@@ -280,45 +281,12 @@ struct copy_property_helper<SRC,DST,PROPERTY,true>
 {
   template <class SRCREF, class DSTREF>
   static void copy(const SRC& s, const SRCREF& sr, DST& d, const DSTREF& dr) {
-    boost::put(PROPERTY(),d,dr, boost::get(PROPERTY(),s,sr));
+    boost::put(PROPERTY(),d,boost::get(PROPERTY(),s,sr));
+  }
+  static void copy(const SRC& s, DST& d) {
+    boost::put_property(d,PROPERTY(),d, boost::get_property(s,PROPERTY()));
   }
 };
-
-
-/*
-template <class Container, class Graph, class Property>
-struct container_property_map
-{
-  typedef typename Container::value_type value_type;
-  typedef typename Container::reference reference;
-  typedef typename Container::const_reference const_reference;
-  typedef typename Container::iterator iterator;
-  typedef typename Container::const_iterator const_iterator;
-  typedef typename boost::property_map<Graph,Property>::const_type 
-                     index_map_type;
-  typedef boost::iterator_property_map<iterator, index_map_type,
-              value_type, reference> type;
-  typedef boost::iterator_property_map<const_iterator, index_map_type,
-              value_type, const_reference> const_type;
-};
-
-template <class Container, class Graph, class Property>
-typename container_property_map<Container,Graph,Property>::type
-make_container_property_map(Container& c, const Graph& g, Property p)
-{
-  return typename container_property_map<Container,Graph,Property>::type
-    (c.begin(),boost::get(p,g));
-}
-
-template <class Container, class Graph, class Property>
-typename container_property_map<Container,Graph,Property>::const_type
-make_const_container_property_map(Container& c, const Graph& g, Property p)
-{
-  return typename container_property_map<Container,Graph,Property>::type
-    (c.begin(),boost::get(p,g));
-}
-
-*/
 
 } // end namespace alps
 

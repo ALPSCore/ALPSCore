@@ -260,6 +260,18 @@ inline void copy_property(PROPERTY, const SRC& s, const SRCREF& sr, DST& d, DSTR
     >::copy(s,sr,d,dr);
 }
 
+template <class PROPERTY, class SRC, class DST>
+inline void copy_property(PROPERTY, const SRC& s, DST& d)
+{
+  typedef SRC source_graph_type;
+  typedef DST destination_graph_type;
+  typedef PROPERTY property_type;
+  copy_property_helper<source_graph_type,destination_graph_type,property_type,
+    (has_property<property_type,source_graph_type>::graph_property &&
+    has_property<property_type,destination_graph_type>::graph_property)
+    >::copy(s,d);
+}
+
 template <class SRC, class DST>
 inline void copy_graph(const SRC& src, DST& dst)
 {
@@ -294,8 +306,27 @@ inline void copy_graph(const SRC& src, DST& dst)
   {
     edge_descriptor v=boost::add_edge(boost::source(*it,src), boost::target(*it,src),dst).first;
     copy_property(edge_type_t(),src,*it,dst,v);
+    copy_property(boundary_crossing_t(),src,*it,dst,v);
+    copy_property(bond_vector_t(),src,*it,dst,v);
+    copy_property(bond_vector_relative_t(),src,*it,dst,v);
     edgeindex[v]=i;
   }
+//  copy_property(dimension_t(),src,dst);
+//  copy_property(graph_name_t(),src,dst);
+  typename property_map<graph_name_t,DST,std::string>::type
+    graphname_dst = get_or_default(graph_name_t(),dst,std::string());
+
+  typename property_map<dimension_t,DST,uint32_t>::type
+    graphdimension_dst = get_or_default(dimension_t(),dst,uint32_t(0));
+
+  typename property_map<graph_name_t,SRC,std::string>::const_type
+    graphname_src = get_or_default(graph_name_t(),src,std::string());
+
+  typename property_map<dimension_t,SRC,uint32_t>::const_type
+    graphdimension_src = get_or_default(dimension_t(),src,uint32_t(0));
+  
+  graphdimension_dst = static_cast<uint32_t>(graphdimension_src);
+  graphname_dst = static_cast<std::string>(graphname_src);
 }
 
 template <class G>
