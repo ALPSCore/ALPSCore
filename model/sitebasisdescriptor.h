@@ -117,7 +117,7 @@ bool SiteBasisDescriptor<I>::evaluate() const
     num_states_=1;
     const_iterator rit=super_type::end()-1;
     while(const_cast<QuantumNumberDescriptor<I>&>(*rit).set_parameters(parms_)) {
-      if(rit->levels()==half_integer<I>::max()) {
+      if(rit->levels()>=half_integer<I>::max().to_double()) {
         num_states_=std::numeric_limits<I>::max();
         return true;
       }

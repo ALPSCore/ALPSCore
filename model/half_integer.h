@@ -31,9 +31,11 @@
 #ifndef ALPS_MODEL_HALF_INTEGER_H
 #define ALPS_MODEL_HALF_INTEGER_H
 
+#include <boost/throw_exception.hpp>
 #include <iostream>
 #include <cassert>
 #include <limits>
+#include <stdexcept>
 
 namespace alps {
 
@@ -41,8 +43,9 @@ template <class I>
 class half_integer {
 public:
   typedef I integer_type;
+  template <class J> friend class half_integer;
   half_integer() : val_(0) {}
-  half_integer(double x) :val_(integer_type(2*x+(x<0?-0.01:0.01))) {}
+  explicit half_integer(double x) :val_(integer_type(2*x+(x<0?-0.01:0.01))) {}
   half_integer& operator=(const half_integer& x) {
     val_ = x.val_;
     return *this;
@@ -51,7 +54,13 @@ public:
     val_=integer_type(2*x+(x < 0 ? -0.01 : 0.01));
     return *this;
   }
-  operator double() const { return 0.5*val_; }
+  double to_double() const { return 0.5*val_; }
+  integer_type to_integer() const 
+  { 
+    if (get_twice()%2!=0) 
+      boost::throw_exception(std::runtime_error("Cannot convert odd half-integer to integer"));
+    return get_twice()/2;
+  }
 
   void set_half(integer_type x) { val_=x; }
   integer_type get_twice() const { return val_; }
@@ -114,7 +123,13 @@ public:
       -half_integer(std::numeric_limits<I>::max(),0) :
       half_integer(std::numeric_limits<I>::min(),0);
   }
-
+  
+  half_integer abs() const
+  {
+    half_integer res(*this);
+    res.val_ = std::abs(res.val_);
+    return res;
+  }
 private:
   half_integer(integer_type i, int /* to distinguish */) : val_(i) {}
   integer_type val_;
@@ -137,10 +152,22 @@ inline std::ostream& operator<<(std::ostream& os, const half_integer<I>& x)
     return os << "-infinity";
   else if(x.get_twice() %2==0)
     return os << x.get_twice()/2;
-  else
-    return os << x.get_twice() << "/2";
-  return os;
+  return os << x.get_twice() << "/2";
 }
+
+
+template <class I>
+double to_double(half_integer<I> x) 
+{ 
+  return x.to_double();
+}
+
+template <class I>
+I to_integer(half_integer<I> x) 
+{ 
+  return x.to_integer();
+}
+
 
 template <class I>
 inline std::istream& operator>>(std::istream& is, half_integer<I>& x)
@@ -181,5 +208,14 @@ bool is_odd(half_integer<I> x)
 
 
 } // namespace alps
+
+namespace std {
+
+template <class I>
+alps::half_integer<I> abs(alps::half_integer<I> x)
+{
+  return x.abs();
+}
+} // namespace std
 
 #endif

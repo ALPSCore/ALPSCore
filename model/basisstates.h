@@ -162,7 +162,7 @@ bool basis_states<I,S,SS>::check_sort() const
 template <class I, class S, class SS> template <class J>
 bool basis_states<I,S,SS>::satisfies_quantumnumbers(const std::vector<I>& idx, const std::pair<std::string, half_integer<J> >& constraint )
 {
-  half_integer<J> val=0;
+  half_integer<J> val;
   for (int i=0;i<basis_descriptor_.size();++i)
     val += get_quantumnumber(basis_descriptor_[i][idx[i]],constraint.first,basis_descriptor_.get_site_basis(i));
   return val==constraint.second;
