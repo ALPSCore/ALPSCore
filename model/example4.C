@@ -33,8 +33,8 @@
 
 boost::multi_array<alps::Expression,2> bondmatrix(const alps::ModelLibrary lib, const std::string& name, const alps::Parameters& p=alps::Parameters())
 {
-  alps::HamiltonianDescriptor<short> ham=lib.get_hamiltonian(name);
-  ham.set_parameters(p);
+  alps::HamiltonianDescriptor<short> ham=lib.get_hamiltonian(name,p,true);
+  // ham.set_parameters(p);
   int dim=ham.basis().site_basis().num_states();
   
   // get site and bond terms
@@ -48,7 +48,9 @@ boost::multi_array<alps::Expression,2> bondmatrix(const alps::ModelLibrary lib, 
     for (int j=0;j<dim;++j)
       for (int k=0;k<dim;++k) {
         bondtensor[i][j][i][k]+=sitematrix[j][k];
+        alps::simplify(bondtensor[i][j][i][k]);
         bondtensor[j][i][k][i]+=sitematrix[j][k];
+        alps::simplify(bondtensor[j][i][k][i]);
       }
       
   //convert tensor into matrix

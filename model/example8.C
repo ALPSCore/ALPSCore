@@ -48,7 +48,7 @@ int main()
     for (int i=0;i<parms.size();++i) {
       alps::ModelLibrary models(parms[i]);
       alps::graph_helper<> lattice(parms[i]);
-      alps::HamiltonianDescriptor<short> ham(models.get_hamiltonian(parms[i]["MODEL"]));
+      alps::HamiltonianDescriptor<short> ham(models.get_hamiltonian(parms[i]["MODEL"],parms[i]));
       parms[i].copy_undefined(ham.default_parameters());
       ham.set_parameters(parms[i]);
       if (has_sign_problem(ham,lattice,parms[i]))
