@@ -87,13 +87,13 @@ public:
 
   uint32_t version_id() const { return version;}
 
-  void compact() { obs_.compact();}
+  ALPS_DUMMY_VOID compact() { obs_.compact(); ALPS_RETURN_VOID; }
   void rename(const std::string& newname) { rename(newname); obs_.rename(sign_name_ + " * "+newname);}
-  ALPS_DUMMY_VOID reset(bool forthermalization) { obs_.reset(forthermalization); ALPS_RETURN_VOID}
+  ALPS_DUMMY_VOID reset(bool forthermalization) { obs_.reset(forthermalization); ALPS_RETURN_VOID; }
   ALPS_DUMMY_VOID output(std::ostream& out) const 
   { 
     output_helper<obs_value_traits<value_type>::array_valued>::output(*this,out); 
-    obs_.output(out); ALPS_RETURN_VOID
+    obs_.output(out); ALPS_RETURN_VOID;
   }
   void output_scalar(std::ostream&) const;
   void output_vector(std::ostream&) const;

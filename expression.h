@@ -213,8 +213,12 @@ public:
   Expression(const std::string& str) { parse(str); }
   Expression(std::istream& in) { parse(in); }
   Expression(value_type val) : terms_(1,Term<T>(val)) {}
+#ifndef BOOST_NO_SFINAE
   template<class U>
   Expression(U val, typename boost::enable_if<boost::is_arithmetic<U> >::type* = 0) : terms_(1,Term<T>(value_type(val))) {}
+#else
+  Expression(int val) : terms_(1,Term<T>(value_type(val))) {}
+#endif
   Expression(const Evaluatable<T>& e) : terms_(1,Term<T>(e)) {}
   Expression(const Term<T>& e) : terms_(1,e) {}
   virtual ~Expression() {}
@@ -382,6 +386,7 @@ struct numeric_cast_helper<U, std::complex<T> > {
   }
 };
 
+#ifndef BOOST_NO_SFINAE
 template<typename U, typename T>
 U numeric_cast(T x, typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0)
 {
@@ -393,7 +398,13 @@ U numeric_cast(const T& x, typename boost::disable_if<boost::is_arithmetic<T> >:
 {
   return numeric_cast_helper<U,T>::value(x);
 }
-
+#else
+template<typename U, typename T>
+U numeric_cast(const T& x)
+{
+  return numeric_cast_helper<U,T>::value(x);
+}
+#endif
 
 template<class U>
 struct evaluate_helper

@@ -58,11 +58,11 @@ public:
   template<class J>
   half_integer(const half_integer<J>& x) : val_(x.get_twice()) {}
 
+#ifndef BOOST_NO_SFINAE
   template <typename J>
   half_integer(J x, typename
     boost::enable_if<boost::is_integral<J> >::type* = 0)
     : val_(2*boost::numeric_cast<I>(x)) {}
-
   template <typename J>
   half_integer(J x, typename boost::enable_if<
                   boost::mpl::and_<
@@ -70,6 +70,9 @@ public:
                      boost::mpl::not_<boost::is_same<J,double> > 
                   > >::type* = 0)
      : val_(integer_type(std::floor(2*x+0.5))) {}
+#else
+  half_integer(int x) : val_(2*boost::numeric_cast<I>(x)) {}
+#endif
 
   // catch-all for implicit conversions
   half_integer(double x) : val_(integer_type(std::floor(2*x+0.5))) {}
