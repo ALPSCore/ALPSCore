@@ -115,7 +115,7 @@ template<bool HasParity>
 struct helper
 {
   template<class Graph>
-  static bool set_parity(Graph& g) { return false; }
+  static bool set_parity(Graph&) { return false; }
 };
 
 template<>
