@@ -39,15 +39,12 @@
 #include <boost/type_traits/is_integral.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/utility/enable_if.hpp>
+#include <boost/cast.hpp>
 #include <cassert>
 #include <cmath>
 #include <iostream>
 #include <limits>
 #include <stdexcept>
-
-#if (BOOST_VERSION >= 103200)
-# include <boost/numeric/conversion/cast.hpp>
-#endif
 
 namespace alps {
 
@@ -64,11 +61,7 @@ public:
   template <typename J>
   half_integer(J x, typename
     boost::enable_if<boost::is_integral<J> >::type* = 0)
-#if (BOOST_VERSION >= 103200)
     : val_(2*boost::numeric_cast<I>(x)) {}
-#else
-    : val_(2*x) {}
-#endif
 
   template <typename J>
   half_integer(J x, typename boost::enable_if<

@@ -230,7 +230,7 @@ typename SimpleBinning<T>::convergence_type SimpleBinning<T>::converged_errors()
   convergence_type conv;
   result_type err=error();
   obs_value_traits<T>::resize_same_as(conv,err);
-  const int range=3;
+  const int range=5;
   typename obs_value_traits<convergence_type>::slice_iterator it;
   if (binning_depth()<range) {
     for (it= obs_value_traits<convergence_type>::slice_begin(conv); 
@@ -249,13 +249,10 @@ typename SimpleBinning<T>::convergence_type SimpleBinning<T>::converged_errors()
         if (obs_value_traits<result_type>::slice_value(this_err,it) >= 
             obs_value_traits<result_type>::slice_value(err,it))
           obs_value_traits<convergence_type>::slice_value(conv,it)=CONVERGED;
-        else if (obs_value_traits<result_type>::slice_value(this_err,it) <0.9* 
+        else if (obs_value_traits<result_type>::slice_value(this_err,it) <0.824* 
             obs_value_traits<result_type>::slice_value(err,it))
           obs_value_traits<convergence_type>::slice_value(conv,it)=NOT_CONVERGED;
         else if (obs_value_traits<result_type>::slice_value(this_err,it) <0.9* 
-            obs_value_traits<result_type>::slice_value(err,it))
-          obs_value_traits<convergence_type>::slice_value(conv,it)=NOT_CONVERGED;
-        else if (obs_value_traits<result_type>::slice_value(this_err,it) <0.95* 
             obs_value_traits<result_type>::slice_value(err,it)  &&
             obs_value_traits<convergence_type>::slice_value(conv,it)!=NOT_CONVERGED)
           obs_value_traits<convergence_type>::slice_value(conv,it)=MAYBE_CONVERGED;
@@ -412,7 +409,7 @@ void SimpleBinning<T>::write_scalar_xml(oxstream& oxs) const {
     oxs << start_tag("BINNED") << attribute("size",boost::lexical_cast<std::string,int>(1<<i))
         << no_linebreak << start_tag("COUNT") << count()/(1<<i) << end_tag("COUNT")
         << start_tag("MEAN") << attribute("method", "simple") << no_linebreak << precision(binmean(i), prec) << end_tag("MEAN")
-        << start_tag("ERROR") << attribute("method", "simple") << attribute("converged", convergence_to_text(converged_errors())) 
+        << start_tag("ERROR") << attribute("method", "simple") 
         << no_linebreak << precision(error(i), 3) << end_tag("ERROR")
         << end_tag("BINNED");
   }
@@ -428,7 +425,7 @@ void SimpleBinning<T>::write_vector_xml(oxstream& oxs, IT it) const {
               << no_linebreak << start_tag("COUNT") << count()/(1<<i) << end_tag("COUNT")
         << start_tag("MEAN") << attribute("method", "simple") 
         << no_linebreak << precision(obs_value_traits<result_type>::slice_value(binmean(i),it), 8) << end_tag("MEAN")
-        << start_tag("ERROR") << attribute("method", "simple") << attribute("converged", convergence_to_text(obs_value_traits<convergence_type>::slice_value(converged_errors(),it)))
+        << start_tag("ERROR") << attribute("method", "simple")
         << no_linebreak << precision(obs_value_traits<result_type>::slice_value(error(i),it), 3) << end_tag("ERROR")
         << end_tag("BINNED");
   }
