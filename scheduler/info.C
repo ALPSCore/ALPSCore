@@ -1,0 +1,170 @@
+/***************************************************************************
+* ALPS++/scheduler library
+*
+* scheduler/info.C   A class to store parameters
+*
+* $Id$
+*
+* Copyright (C) 1994-2002 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+*
+* This program is free software; you can redistribute it and/or
+* modify it under the terms of the GNU General Public License
+* as published by the Free Software Foundation; either version 2
+* of the License, or (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+**************************************************************************/
+
+#include <alps/scheduler/info.h>
+#include <alps/osiris.h>
+
+#include <algorithm>
+#ifndef BOOST_NO_VOID_RETURNS
+# include <boost/functional.hpp>
+#else
+# include <boost/functional_void.hpp>
+#endif
+
+namespace alps {
+namespace scheduler {
+
+Info::Info()
+  : startt(time(0)),
+    stopt(time(0)),
+    host(alps::hostname())
+{
+}
+
+void Info::save(ODump& dump) const
+{
+  dump << host << int32_t(startt) << int32_t(stopt) << phase;
+}
+
+void Info::load(IDump& dump, int version)
+{
+  dump >> host;
+  startt = int32_t(dump);
+  stopt = int32_t(dump);
+  if (version<200) {
+    int32_t reason;
+    int32_t thermalized;
+    dump >> reason >> thermalized;
+    switch(reason) {
+      case THERMALIZED:
+        phase = "equilibrating";
+	break;
+      case INTERRUPTED:
+      case HALTED:
+        phase = "running";
+	break;
+      default:
+        boost::throw_exception(std::logic_error("unknow reason in Info::load"));
+    }
+  }
+  else
+    dump >> phase; 
+}
+
+
+// start the run: save start time and current time as last checkpoint
+void Info::start(const std::string& p)
+{
+  startt = stopt = time(0);
+  phase = p;
+}
+
+
+// halt the run: save current time as stop time
+void Info::halt()
+{
+  stopt=time(0);
+}
+
+
+// make a checkpoint: store current time as stop time
+void Info::checkpoint()
+{
+  stopt=time(0);
+}
+
+
+void Info::write_xml(std::ostream& xml) const
+{
+  std::string time1=ctime(&startt);
+  time1.erase(time1.size()-1,1);
+  
+  std::string time2=ctime(&stopt);
+  time2.erase(time2.size()-1,1);
+  if (phase=="")
+    xml << "<EXECUTED>\n";
+  else
+    xml << "<EXECUTED phase=\"" << phase << "\">\n";
+  xml << "<FROM>" << time1 << "</FROM>\n";
+  xml << "<TO>" << time2 << "</TO>\n";
+  xml << "<MACHINE><NAME>" << host << "</NAME></MACHINE>\n";
+  xml << "</EXECUTED>\n";
+}
+
+
+void TaskInfo::save (ODump& dump) const
+{
+  if(!empty()) // update checkpoint time if running
+    const_cast<TaskInfo&>(*this).rbegin()->checkpoint();
+  dump << static_cast<const std::vector<Info>&>(*this);
+}
+
+
+void TaskInfo::load(IDump& dump, int version)
+{
+  resize(static_cast<int32_t>(dump));
+  for (int i=0;i<size();++i)
+    operator[](i).load(dump,version);
+  if (version<200) {
+    std::string host;
+    int32_t dummy;
+    dump >> host >> dummy;
+    if(dummy)
+      dump >> dummy;
+    int find_thermalized=0;
+    for (int i=0; i<size();++i)
+      if (at(i).phase=="equlibrating")
+        find_thermalized=i;
+    for (int i=0;i<find_thermalized;++i)
+      at(i).phase="equlibrating";
+  }
+}
+
+
+// start the run new: create new info
+void TaskInfo::start(const std::string& phase)
+{
+  push_back(Info());
+  rbegin()->start(phase);
+}
+
+
+// halt the run: store times
+void TaskInfo::halt()
+{
+  if(!empty())
+    rbegin()->halt();
+  else
+    boost::throw_exception( std::logic_error("empty TaskInfo in TaskInfo::halt"));
+}
+
+
+void TaskInfo::write_xml(std::ostream& xml) const
+{
+#ifndef BOOST_NO_VOID_RETURNS
+  std::for_each(begin(),end(),boost::bind2nd(boost::mem_fun_ref(&Info::write_xml),xml));
+#else
+  std::for_each(begin(),end(),boost::bind2nd_void(boost::mem_fun_ref(&Info::write_xml),xml));
+#endif
+}
+
+} // namespace scheduler
+} // namespace alps

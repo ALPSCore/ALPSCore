@@ -1,0 +1,137 @@
+/***************************************************************************
+* ALPS++/scheduler library
+*
+* scheduler/single_scheduler.C
+*
+* $Id$
+*
+* Copyright (C) 1994-2002 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+*
+* This program is free software; you can redistribute it and/or
+* modify it under the terms of the GNU General Public License
+* as published by the Free Software Foundation; either version 2
+* of the License, or (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+**************************************************************************/
+
+#include <alps/scheduler/scheduler.h>
+#include <alps/osiris.h>
+
+namespace alps {
+namespace scheduler {
+
+//=======================================================================
+// SingleScheduler
+// 
+// a scheduler for a single CPU, finishes one task after the other
+// on multi-node computers or clusters all nodes work for the same
+// Task
+//-----------------------------------------------------------------------
+
+
+SingleScheduler::SingleScheduler(const Options& opt,const Factory& p)
+  : MasterScheduler(opt,p)
+{
+  if(min_cpus!=1)
+    boost::throw_exception(std::invalid_argument("cannot do more than one run on a single process"));
+ }
+
+int SingleScheduler::run()
+{
+  double end_time=dclock()+time_limit;
+  double task_time=0;
+  std::cout << "Scheduling " << tasks.size() << " tasks.\n";
+  // do all Tasks
+  for(int i=0;i<tasks.size();i++) {
+    if(time_limit>0. && dclock()>end_time)
+      return 1;
+    // update process configuration
+    check_comm_signals();
+    if(taskstatus[i]==TaskFinished)
+      std::cout << "Task " << i+1 << " finished.\n";
+    else if(taskstatus[i]==TaskNotExisting)
+      std::cout  << "Task " << i+1 << " does not exist.\n";
+    else if(taskstatus[i]==TaskNotStarted || taskstatus[i]==TaskRunning ||
+	    (taskstatus[i]==TaskHalted)) {
+      int n=tasks[i]->cpus();
+      if(n<1)
+	boost::throw_exception(std::logic_error("at least one node required for a run!"));
+      if(n>processes.size())
+	std::cerr  << "Task " << i+1 << " needs more nodes than available and will not run.\n";
+      else {
+	// create new Task in memory (new start)
+	std::cout  << "Creating task " << i+1 << ".\n";
+	remake_task(processes,i);
+	theTask=tasks[i];
+      }
+    }
+    else
+      boost::throw_exception( std::logic_error("In SingleScheduler::start: illegal Task status"));
+    if(taskstatus[i]==TaskNotStarted || taskstatus[i]==TaskRunning || (taskstatus[i]==TaskHalted)) { 
+      // do work with this Task
+      taskstatus[i] = TaskRunning;
+      std::cout  << "Starting task " << i+1 << ".\n";
+      tasks[i]->start();
+
+      task_time = -dclock();
+      int task_finished=0;
+      double next_check=dclock();
+      double last_checkpoint=dclock();
+	
+      do {
+	if (check_signals() == SignalHandler::TERMINATE) {
+	  theTask->halt();
+	  checkpoint();
+	  return -1;
+	}	      
+	  
+	theTask->run();
+	  
+	if(time_limit >0. && dclock()>end_time) {
+	  std::cout << "Time limit exceeded\n";
+	  if (theTask->finished_notime())
+	    finish_task(i);
+	  else
+	    theTask->halt();
+	  checkpoint();
+	  return 1;
+	}
+	  
+	if(dclock()>next_check) {
+	  std::cout  << "Checking if it is finished: " << std::flush;
+	  double more_time=0;
+	  task_finished=theTask->finished(more_time);
+	      
+	  // next check after at more_time, restrained to min. and max. times
+	  more_time= (more_time < min_check_time ? min_check_time :
+		      (more_time > max_check_time ? max_check_time : more_time));
+	  next_check=dclock()+more_time;
+	  if(!task_finished)
+	    std::cout  << "not yet, next check in " << int(more_time) << " seconds.\n";
+	}
+	if((!task_finished)&&(dclock()>last_checkpoint+checkpoint_time)) {
+	  // make regular checkpoints if not yet finished
+	  std::cout  << "Making regular checkpoint.\n";
+	  checkpoint();
+	  last_checkpoint=dclock();
+	  std::cout  << "Done with checkpoint.\n";
+	}
+      } while (!task_finished);
+	    
+      finish_task(i);
+      task_time += dclock();
+      std::cout  << "This task took " << task_time << " seconds.\n";
+      checkpoint();
+    }
+  }
+  std::cout << "Finished with everything.\n";
+  return 0;
+}
+
+} // namespace scheduler
+} // namespace alps

@@ -1,0 +1,12 @@
+#include <alps/osiris/comm.h>
+#include <alps/osiris/dump.h>
+#include <alps/osiris/mpdump.h>
+#include <alps/osiris/os.h>
+#include <alps/osiris/process.h>
+#include <alps/osiris/xdrdump.h>
+#include <alps/osiris/std/list.h>
+#include <alps/osiris/std/map.h>
+#include <alps/osiris/std/pair.h>
+#include <alps/osiris/std/string.h>
+#include <alps/osiris/std/valarray.h>
+#include <alps/osiris/std/vector.h>

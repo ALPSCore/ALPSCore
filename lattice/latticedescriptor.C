@@ -1,0 +1,231 @@
+/***************************************************************************
+* ALPS++/lattice library
+*
+* lattice/latticedesriptor.C    the lattice class
+*
+* $Id$
+*
+* Copyright (C) 2001-2003 by Matthias Troyer <troyer@comp-phys.org>
+*                            Synge Todo <wistaria@comp-phys.org>
+*
+* This program is free software; you can redistribute it and/or
+* modify it under the terms of the GNU General Public License
+* as published by the Free Software Foundation; either version 2
+* of the License, or (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+**************************************************************************/
+
+#include <alps/expression.h>
+#include <alps/lattice/latticedescriptor.h>
+#include <alps/lattice/lattice.h>
+
+#ifndef ALPS_WITHOUT_XML
+
+namespace alps {
+
+LatticeDescriptor::LatticeDescriptor(const XMLTag& intag, std::istream& p)
+{
+  XMLTag tag(intag);
+  name_ = tag.attributes["name"];
+  dim_ = tag.attributes["dimension"]=="" ? 0 
+           : boost::lexical_cast<uint32_t,std::string>(tag.attributes["dimension"]);
+  if(tag.attributes["ref"]!="")
+    boost::throw_exception(std::runtime_error("Illegal ref attribute in fully defined <LATTICE>"));
+  if (tag.type !=XMLTag::SINGLE) while(true) {
+    tag=parse_tag(p);
+    if(tag.name=="/LATTICE")
+      return;
+    else if (tag.name=="PARAMETER") {
+      lparms_[tag.attributes["name"]]=tag.attributes["default"];
+      if (tag.type != XMLTag::SINGLE) {
+        tag=parse_tag(p);
+	if (tag.name!="/PARAMETER")
+	  boost::throw_exception(std::runtime_error("closing tag </PARAMETER> missing in <LATTICE> element"));
+      }
+    }
+    else if (tag.name=="BASIS")  {
+      if (tag.type==XMLTag::SINGLE)
+        continue;
+      while(true)  {
+        tag=parse_tag(p);
+        if(tag.name=="/BASIS")
+          break;
+        else if (tag.name=="VECTOR")  {
+          if (tag.type==XMLTag::SINGLE)
+            boost::throw_exception(std::runtime_error("coordinate contents expected in <VECTOR>"));
+          basis_vectors_.push_back(read_vector<vector_type>(parse_content(p),dimension()));
+          tag=parse_tag(p);
+          if(tag.name!="/VECTOR")
+  	    boost::throw_exception(std::runtime_error("invalid element <"+tag.name+
+                        "> encountered in <VECTOR>"));
+        }
+        else
+          boost::throw_exception(std::runtime_error("invalid element <" + tag.name + "> encountered in <BASIS>"));
+        }
+      }
+    else
+      boost::throw_exception(std::runtime_error("invalid tag <" + tag.name + "> encountered in <LATTICE>"));
+  }
+  if (!basis_vectors_.empty() && basis_vectors_.size()!=dimension())
+    boost::throw_exception(std::runtime_error("incorrect number of basis vectors in <LATTICE>"));
+}
+
+
+void LatticeDescriptor::write_xml(std::ostream& xml, const std::string& prefix) const
+{
+    xml << prefix << "<LATTICE";
+    if (name()!="")
+      xml << " name=\"" << name() << "\"";
+    xml << " dimension=\"" << dimension();
+  for (Parameters::const_iterator it=lparms_.begin();it!=lparms_.end();++it)
+    xml << prefix << "  <PARAMETER name=\"" << it->key() << "\" default=\"" << it->value() << "\"/>\n";
+  if (!basis_vectors_.empty()) {
+    xml << "\">\n";
+    xml << prefix << "  <BASIS>\n";
+    for (int i=0;i<basis_vectors_.size();++i)
+      xml << prefix << "    <VECTOR>" << vector_writer(basis_vectors_[i]) << "</VECTOR>\n";
+    xml << prefix << "  </BASIS>\n";	
+    xml << prefix << "</LATTICE>\n";
+  } else
+    xml << "\"/>\n";
+}
+
+FiniteLatticeDescriptor::FiniteLatticeDescriptor(const XMLTag& intag, std::istream& p,
+                          const LatticeMap& lm)
+ : dim_(0)
+{
+  XMLTag tag(intag);
+  name_ = tag.attributes["name"];
+  dim_ = tag.attributes["dimension"]=="" ? 0 
+           : boost::lexical_cast<uint32_t,std::string>(tag.attributes["dimension"]);
+  if(tag.attributes["ref"]!="")
+    boost::throw_exception(std::runtime_error("Illegal ref attribute in fully defined <FINITELATTICE>"));
+  
+  if (tag.type == XMLTag::SINGLE) 
+    boost::throw_exception(std::runtime_error("missing <LATTICE> element in <FINITELATTICE>"));
+
+  tag=parse_tag(p);
+  if (tag.name!="LATTICE")
+    boost::throw_exception(std::runtime_error("missing <LATTICE> element in <FINITELATTICE>"));
+  
+  lattice_name_=tag.attributes["ref"];
+  if(lattice_name_!="")   {
+    if (tag.type !=XMLTag::SINGLE) {
+      tag=parse_tag(p);
+      if(tag.name!="/LATTICE")
+         boost::throw_exception(std::runtime_error("illegal contents in <LATTICE> reference tag"));
+    }
+    if(lm.find(lattice_name_)==lm.end())
+      boost::throw_exception(std::runtime_error("unknown lattice: " + lattice_name_ + " in <FINITELATTICE>"));
+    lattice_=lm.find(lattice_name_)->second;
+  }
+  else
+    lattice_=LatticeDescriptor(tag,p);
+  
+  static_cast<base_type::parent_lattice_type&>(*this) 
+   = static_cast<const LatticeDescriptor::base_type&>(lattice_);
+  
+  if (dim_==0)
+    dim_ = alps::dimension(lattice_);
+  else if (alps::dimension(lattice_)!=0 && (alps::dimension(lattice_) !=dim_))
+    boost::throw_exception(std::runtime_error("inconsistent lattice dimension between <LATTICE> and enclosing <FINITELATTICE>"));
+  while(true)  {
+    tag=parse_tag(p);
+    if(tag.name=="/FINITELATTICE") break;
+    else if (tag.name=="PARAMETER") {
+      flparms_[tag.attributes["name"]]=tag.attributes["default"];
+      if (tag.type != XMLTag::SINGLE) {
+        tag=parse_tag(p);
+	if (tag.name!="/PARAMETER")
+	  boost::throw_exception(std::runtime_error("closing tag </PARAMETER> missing in <LATTICE> element"));
+      }
+    }
+    else if (tag.name=="BOUNDARY")  {
+      std::string bc = tag.attributes["type"];
+      uint32_t dim=tag.attributes["dimension"]=="" ? 
+        0 : boost::lexical_cast<uint32_t,std::string>(tag.attributes["dimension"]);
+      bc_.resize(dimension());
+      if (bc=="")
+        boost::throw_exception(std::runtime_error("missing type attribute in <BOUNDARY>"));
+      if (dim==0)
+        std::fill(bc_.begin(),bc_.end(),bc);
+      else if (dim>dimension())
+        boost::throw_exception(std::runtime_error("incorrect dimension attribute in <BOUNDARY>"));
+      else
+        bc_[dim-1]=bc;
+    }
+    else if(tag.name=="EXTENT")  {
+      uint32_t dim=tag.attributes["dimension"]=="" ? 
+        0 : boost::lexical_cast<uint32_t,std::string>(tag.attributes["dimension"]);
+      std::string ex =  tag.attributes["size"];
+      extent_.resize(dimension());
+      if (ex=="")
+        boost::throw_exception(std::runtime_error("missing size attribute in <EXTENT>"));
+      if (dim==0)
+        std::fill(extent_.begin(),extent_.end(),ex);
+      else if (dim>dimension())
+        boost::throw_exception(std::runtime_error("incorrect dimension attribute in <BOUNDARY>"));
+      else
+        extent_[dim-1]=ex;
+    }
+    else
+      boost::throw_exception(std::runtime_error("invalid element <" + tag.name + "> encountered in <FINITELATTICE>"));
+  }
+  if (alps::dimension(extent_)!=dimension())
+    boost::throw_exception(std::runtime_error("<EXTENT> element missing in <FINITELATTICE>"));
+  if (alps::dimension(bc_)!=dimension())
+    boost::throw_exception(std::runtime_error("<BOUNDARY> element missing in <FINITELATTICE>"));
+}
+
+void FiniteLatticeDescriptor::write_xml(std::ostream& xml, const std::string& prefix) const
+{
+  xml << prefix << "<FINITELATTICE";
+  if(name()!="")
+    xml << " name=\"" << name() << "\"";
+  xml << ">\n";
+  if (lattice_name_=="")
+    lattice_.write_xml(xml, prefix + "  ");
+  else
+    xml << prefix << "  <LATTICE ref=\"" << lattice_name_ << "\"/>\n";
+  for (Parameters::const_iterator it=flparms_.begin();it!=flparms_.end();++it)
+    xml << prefix << "  <PARAMETER name=\"" << it->key() << "\" default=\"" << it->value() << "\"/>\n";
+  for (int i=0;i<dimension();++i) 
+    xml << prefix << "  <EXTENT dimension=\"" << i+1 << "\" size=\"" << extent_[i] << "\"/>\n";
+  for (int i=0;i<dimension();++i)
+    if (bc_[i] != "")
+      xml << prefix << "  <BOUNDARY dimension=\"" << i+1 << "\" type=\"" << bc_[i] << "\"/>\n";
+  xml << prefix << "</FINITELATTICE>\n";
+}
+#endif
+
+void LatticeDescriptor::set_parameters(const Parameters& p)
+{
+  Parameters parms(lparms_);
+  parms << p;
+  for (int i=0;i<basis_vectors_.size();++i)
+    for (int j=0;j<basis_vectors_[i].size();++j)
+      basis_vectors_[i][j] = alps::evaluate(basis_vectors_[i][j], parms);
+}
+
+void FiniteLatticeDescriptor::set_parameters(const Parameters& p)
+{
+  lattice_.set_parameters(p);
+  static_cast<base_base_type&>(*this) = lattice_;
+  Parameters parms(flparms_);
+  parms << p;
+  for (int i=0;i<bc_.size();++i) {
+    if(bc_[i]!="")
+      while (parms.defined(bc_[i]) && static_cast<std::string>(parms[bc_[i]]) != bc_[i])
+        bc_[i] = static_cast<std::string>(parms[bc_[i]]);
+    extent_[i] = alps::evaluate(extent_[i], parms);
+  }
+}
+
+void prevent_optimization() {}
+
+} // end namespace alps

@@ -1,0 +1,227 @@
+/***************************************************************************
+* ALPS++/scheduler library
+*
+* scheduler/scheduler.C
+*
+* $Id$
+*
+* Copyright (C) 1994-2003 by Matthias Troyer <troyer@comp-phys.org>,
+*
+* This program is free software; you can redistribute it and/or
+* modify it under the terms of the GNU General Public License
+* as published by the Free Software Foundation; either version 2
+* of the License, or (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+**************************************************************************/
+
+// This file implements behavior common to all schedulers
+
+#include <alps/scheduler/scheduler.h>
+#include <alps/scheduler/types.h>
+#include <alps/osiris.h>
+#include <unistd.h>
+
+namespace alps {
+namespace scheduler {
+
+// global variable: the scheduler on this node
+Scheduler* theScheduler=0;
+
+//=======================================================================
+// Scheduler
+//
+// the base class for schedulers, defining common functions
+//-----------------------------------------------------------------------
+
+int Scheduler::run() // a slave scheduler
+{
+  bool terminate = false;
+  bool messageswaiting=false;
+  
+  Process master=master_process();
+  Process simmaster;
+  std::string filename;
+  ProcessList where;
+  IMPDump message;
+  
+  do {
+    /*switch(sig()) {
+      case palm::SignalHandler::NOSIGNAL:
+      case palm::SignalHandler::USER1:
+      case palm::SignalHandler::USER2:
+        break;
+          
+      case palm::SignalHandler::STOP:
+	std::cerr  << "stopping slave...\n";
+	sig.stopprocess(); // stop the process
+	break;
+
+      case palm::SignalHandler::TERMINATE:
+        std::cerr  << "exiting slave...\n";
+	if(theTask) {
+	  theTask->halt();
+	  delete theTask;
+	  theTask=0;
+	}
+	return -1; 
+	break;
+          
+      default:
+	boost::throw_exception(std::logic_error("invalid signal"));
+    }*/
+      
+      // check true
+      messageswaiting=true;
+      do {
+	if(IMPDump::probe(master,MCMP_stop_slave_scheduler)) {
+	  message.receive(master,MCMP_stop_slave_scheduler);
+	  terminate=true;
+	}
+      OMPDump dump;
+      if(!theTask) {
+	switch(IMPDump::probe()) {
+	  case 0:
+	    messageswaiting=false; // no messages
+	    break;
+		  
+	  case MCMP_stop_slave_scheduler:
+	    break; // dealt with at another place
+		  
+	  case MCMP_make_slave_task:
+	    message.receive(MCMP_make_slave_task);
+	    simmaster = message.sender();
+	    theTask = new SlaveTask(simmaster);
+	    break;
+		  
+	  case MCMP_make_task:
+	    message.receive(MCMP_make_task);
+	    simmaster = message.sender();
+	    message >> where >> filename;
+	    theTask = make_task(where,boost::filesystem::path(filename,boost::filesystem::native));
+	    break;
+		  
+	  default:
+	    boost::throw_exception( std::logic_error("received invalid message in Scheduler::run()"));
+	}                
+      }
+      else {
+	int tag=IMPDump::probe(simmaster);
+	switch(tag) {
+	  case 0: // no messages
+	    messageswaiting=false;
+	    break;
+                    
+	  case MCMP_delete_task:
+	    message.receive(simmaster,MCMP_delete_task);
+	    delete theTask;
+	    theTask=0;
+	    simmaster = Process();
+	    break;
+                
+	  default:
+	    messageswaiting=theTask->handle_message(simmaster,tag);
+	    break;
+	}
+      }
+    } while (messageswaiting);
+    
+    if(terminate&&!theTask)
+      return 0; // received stop message and all other messages are processed
+    if(theTask)
+      theTask->run();
+    else
+      sleep(1);
+  } while(true) ;// forever
+}
+
+Scheduler::Scheduler (const Options& opt, const Factory& p)
+  : proc(p), programname(opt.programname), theTask(0)
+{
+  theScheduler=this;
+}
+
+
+// load/create tasks and runs
+
+// creation of slave task by message to slave scheduler
+void Scheduler::make_slave_task(const Process& w)
+{
+  OMPDump dump;
+  dump.send(w,MCMP_make_slave_task);
+}
+
+// similar deletion of slave task
+void Scheduler::delete_slave_task(const Process& w)
+{
+  OMPDump dump;
+  dump.send(w,MCMP_delete_task);
+}
+
+// load from file
+AbstractTask* Scheduler::make_task(const ProcessList& w,const boost::filesystem::path& fname)
+{
+  ProcessList where(w); // we will modify it
+  bool found=false;
+  
+  if(where.empty())
+    found=true; // just information, start locally
+  else { //look for the local process
+    std::sort(where.begin(),where.end());
+    found=where.begin()->local();
+  }
+  if(found)  { // local
+    AbstractTask* task= proc.make_task(where,fname);
+    //dynamic_cast<Task*>(task)->construct();
+    return task;
+  }
+  else
+    return new RemoteTask(where,fname);
+}
+
+AbstractTask* Scheduler::make_task(const boost::filesystem::path& fn)
+{
+  ProcessList nowhere;
+  return make_task(nowhere,fn);
+}
+
+AbstractWorker* Scheduler::make_worker(const ProcessList& w, const alps::Parameters& p,int n)
+{
+  return proc.make_worker(w,p,n);
+}
+
+AbstractWorker* Scheduler::make_worker(const alps::Parameters& p)
+{
+  return proc.make_worker(ProcessList(),p,0);
+}
+
+void init(const Factory& p)
+{
+  theScheduler = new SingleScheduler(Options(),p);
+}
+
+// initialize a scheduler for real work, parsing the command line
+int start(int argc, char** argv, const Factory& p)
+{
+  comm_init(&argc,&argv);
+
+  Options opt(argc,argv);
+  if(!runs_parallel())
+    theScheduler = new SingleScheduler(opt,p);
+  else if (is_master()) 
+    theScheduler = new MPPScheduler(opt,p);
+  else
+    theScheduler = new Scheduler(opt,p);
+  int res = theScheduler->run();
+  delete theScheduler; 
+
+  comm_exit();
+  return res;
+}
+
+} // namespace scheduler
+} // namespace alps

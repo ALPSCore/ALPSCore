@@ -1,0 +1,283 @@
+/***************************************************************************
+* ALPS++/scheduler library
+*
+* scheduler/master_scheduler.C
+*
+* $Id$
+*
+* Copyright (C) 1994-2003 by Matthias Troyer <troyer@comp-phys.org>
+*
+* This program is free software; you can redistribute it and/or
+* modify it under the terms of the GNU General Public License
+* as published by the Free Software Foundation; either version 2
+* of the License, or (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+**************************************************************************/
+
+#include <alps/scheduler/scheduler.h>
+#include <alps/scheduler/signal.hpp>
+#include <alps/scheduler/types.h>
+#include <alps/osiris.h>
+#include <alps/parser/parser.h>
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/fstream.hpp>
+#include <boost/smart_ptr.hpp>
+#include <fstream>
+
+namespace alps {
+namespace scheduler {
+
+MasterScheduler::MasterScheduler(const Options& opt,const Factory& p)
+  : Scheduler(opt,p),
+    min_check_time(opt.min_check_time),
+    max_check_time(opt.max_check_time),
+    checkpoint_time(opt.checkpoint_time),
+    min_cpus(opt.min_cpus),
+    max_cpus(opt.max_cpus),
+    time_limit(opt.time_limit),
+    outfilepath(opt.jobfilename),
+    infilepath(opt.jobfilename)
+{
+  // register all processes and hosts with the MP signal handler
+  if(opt.programname.size()!=0)
+    processes=start_all_processes(programname);
+
+  infilepath=boost::filesystem::complete(infilepath);
+  outfilepath=boost::filesystem::complete(outfilepath);
+
+  if (!opt.jobfilename.empty())
+    parse_job_file(infilepath);
+      
+  //CommRegisterSignal(mpsig);
+  //mpsig.update();
+
+  tasks.resize(taskfiles.size());
+
+  // create simulation objects
+  for (int i=0; i<taskfiles.size(); i++) {
+#ifndef BOOST_NO_EXCEPTIONS
+    try {
+#endif
+      tasks[i]=make_task(taskfiles[i].in);
+      if (tasks[i] && taskstatus[i]!= TaskFinished && tasks[i]->finished_notime())  {
+        tasks[i]->start();
+        std::cout << "Task " << i+1 << " is actually finished.\n";
+        finish_task(i);
+      }
+
+#ifndef BOOST_NO_EXCEPTIONS
+    }
+    catch (const std::runtime_error& err) // file does not exist
+    {
+      std::cerr << err.what() << "\n";
+      std::cerr  << "Cannot open simulation file " << taskfiles[i].in.string() << ".\n";
+      tasks[i]=0;
+      taskstatus[i] = TaskNotExisting;
+    }
+#endif
+  }
+}
+
+void MasterScheduler::parse_job_file(const boost::filesystem::path& filename)
+{
+  boost::filesystem::ifstream infile(filename);
+  XMLTag tag=parse_tag(infile,true);
+  if (tag.name!="JOB")
+    boost::throw_exception(std::runtime_error("missing <JOB> element in jobfile"));
+  tag=parse_tag(infile);
+  if (tag.name=="OUTPUT") {
+    if(tag.attributes["file"]!="")
+      outfilepath=boost::filesystem::complete(
+        boost::filesystem::path(tag.attributes["file"],boost::filesystem::native),filename.branch_path());
+    else
+	boost::throw_exception(std::runtime_error("missing 'file' attribute in <OUTPUT> element in jobfile"));
+    tag=parse_tag(infile);
+    if (tag.name=="/OUTPUT")
+      tag=parse_tag(infile);
+  }
+  // make output path absolute
+  while (tag.name=="TASK") {
+    if (tag.attributes["status"]=="" || tag.attributes["status"]=="new")
+      taskstatus.push_back(TaskNotStarted);
+    else if (tag.attributes["status"]=="running")
+      taskstatus.push_back(TaskHalted);
+    else if (tag.attributes["status"]=="finished")
+      taskstatus.push_back(TaskFinished);
+    else
+      boost::throw_exception(std::runtime_error("illegal status attribute in <TASK> element in jobfile"));
+    tag=parse_tag(infile);
+    CheckpointFiles files;
+    if (tag.name=="INPUT") {
+      files.in=boost::filesystem::path(tag.attributes["file"],boost::filesystem::native);
+      if (files.in.empty())
+	boost::throw_exception(std::runtime_error("missing 'file' attribute in <INPUT> element in jobfile"));
+      tag=parse_tag(infile);
+      if (tag.name=="/INPUT")
+        tag=parse_tag(infile);
+    }
+    else
+      boost::throw_exception(std::runtime_error("missing <INPUT> element in jobfile"));
+    if (tag.name=="OUTPUT") {
+      files.out=boost::filesystem::path(tag.attributes["file"],boost::filesystem::native);
+      if (files.out.empty())
+	boost::throw_exception(std::runtime_error("missing 'file' attribute in <OUTPUT> element in jobfile"));
+      tag=parse_tag(infile);
+      if (tag.name=="/OUTPUT")
+        tag=parse_tag(infile);
+    }
+    if (files.out.empty())
+      files.out=files.in;
+    files.in=boost::filesystem::complete(files.in,filename.branch_path());
+    if (tag.name!="/TASK")
+      boost::throw_exception(std::runtime_error("missing </TASK> tag in jobfile"));
+    tag = parse_tag(infile);
+    taskfiles.push_back(files);
+  }
+  if (tag.name!="/JOB")
+    boost::throw_exception(std::runtime_error("missing </JOB> tag in jobfile"));
+}
+
+// reload a simulation, this time to perform actual work
+void  MasterScheduler::remake_task(ProcessList& where, const int i)
+{
+  if(tasks[i]==0)
+    boost::throw_exception(std::logic_error( "cannot remake a simulation that does not exist"));
+  delete tasks[i];
+  tasks[i]=make_task(where,taskfiles[i].in);
+}
+
+MasterScheduler::~MasterScheduler()
+{
+  for (int i=0;i<tasks.size();++i)
+    if(tasks[i])
+      delete tasks[i];
+  if(processes.size()>1) {
+    OMPDump dump;
+    dump.send(processes,MCMP_stop_slave_scheduler);
+  }
+}
+
+void MasterScheduler::checkpoint()
+{
+  bool make_backup=boost::filesystem::exists(outfilepath);
+  boost::filesystem::path filename=outfilepath;
+  boost::filesystem::path dir=outfilepath.branch_path();
+  if (make_backup)
+    filename=dir/(filename.leaf()+".bak");
+  { // scope for out
+    boost::filesystem::ofstream out(filename);
+    
+    out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+	<< "<?xml-stylesheet type=\"text/xsl\" href=\"http://xml.comp-phys.org/2002/10/job.xsl\"?>\n"
+	<< "<JOB xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+	<< "xsi:noNamespaceSchemaLocation=\"http://xml.comp-phys.org/2002/10/job.xsd\">\n";
+    int local_sim=-1;
+    
+    for (int i=0; i<tasks.size();i++) {
+      if (taskstatus[i]==TaskFinished) {
+        out << "  <TASK status=\"finished\">\n";
+        out << "    <INPUT file=\"" << taskfiles[i].out.native_file_string() << "\"/>\n";
+        out << "  </TASK>\n";
+        std::cout  << "Checkpointing task# " << i+1 << "\n";
+        if (tasks[i]!=0 && boost::filesystem::complete(taskfiles[i].out,dir).string()!=taskfiles[i].in.string()) {          
+	  tasks[i]->checkpoint(boost::filesystem::complete(taskfiles[i].out,dir));
+	  taskfiles[i].in=boost::filesystem::complete(taskfiles[i].out,dir);
+	}
+	if (tasks[i]!=0)
+	  delete tasks[i];
+        tasks[i]=0;
+      }
+      else if(taskstatus[i]==TaskNotExisting) {
+        out << "  <TASK>\n";
+        out << "    <INPUT file=\"" << taskfiles[i].in.native_file_string() << "\"/>\n";
+        out << "  </TASK>\n";
+        std::cout  << "Task# " << i+1 << " does not exist\n";
+      } 
+      else {
+        out << "  <TASK status=\"" << ((taskstatus[i]==TaskNotStarted) ? "new" : "running") << "\">\n";
+        out << "    <INPUT file=\"" << taskfiles[i].out.native_file_string() << "\"/>\n";
+        out << "  </TASK>\n";
+        if(theTask != tasks[i]) {
+          tasks[i]->checkpoint(boost::filesystem::complete(taskfiles[i].out,dir));
+	  taskfiles[i].in=boost::filesystem::complete(taskfiles[i].out,dir);
+	  std::cout  << "Checkpointing task# " << i+1 << "\n";
+        }
+        else
+          local_sim=i;
+      }
+    }
+    if(local_sim>=0) {
+      tasks[local_sim]->checkpoint(boost::filesystem::complete(taskfiles[local_sim].out,dir));
+      taskfiles[local_sim].in=boost::filesystem::complete(taskfiles[local_sim].out,dir);
+      std::cout  << "Checkpointing local task# " << local_sim+1 << "\n";
+    }
+    out << "</JOB>\n";
+  } // close file
+  if(make_backup) {
+    boost::filesystem::remove(outfilepath);
+    boost::filesystem::rename(filename,outfilepath);
+  }
+}
+
+
+int MasterScheduler::check_comm_signals(ProcessList& )
+{  
+  return 0;
+}
+
+
+int MasterScheduler::check_comm_signals()
+{
+  ProcessList p;
+  return check_comm_signals(p);
+}
+
+
+int MasterScheduler::check_signals()
+{
+  switch(sig())
+    {
+    case SignalHandler::NOSIGNAL:
+	break;
+      
+    case SignalHandler::USER1:
+    case SignalHandler::USER2:
+      std::cerr << "Checkpointing...\n";
+      checkpoint();
+      break;
+      
+    case SignalHandler::STOP:
+      std::cerr  << "Checkpointing and stopping...\n";
+      checkpoint();
+      sig.stopprocess(); // stop the process
+      break;
+
+    case SignalHandler::TERMINATE:
+      std::cerr  << "Checkpointing and exiting...\n";
+      return SignalHandler::TERMINATE;
+      
+    default:
+      boost::throw_exception ( std::logic_error( "default on switch reached in MasterScheduler::check_signals()"));
+    }
+  return SignalHandler::NOSIGNAL;
+}
+
+// store the results and delete the simulation
+void MasterScheduler::finish_task(int i)
+{
+  std::cout  << "Halting Task " << i+1 << ".\n";
+  tasks[i]->halt();
+  taskstatus[i] = TaskHalted;
+  tasks[i]->checkpoint(boost::filesystem::complete(taskfiles[i].out,outfilepath.branch_path()));
+  delete tasks[i];
+  tasks[i]=0;
+  taskstatus[i] = TaskFinished;      
+}
+
+} // namespace scheduler
+} // namespace alps

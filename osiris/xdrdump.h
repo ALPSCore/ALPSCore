@@ -1,0 +1,172 @@
+/***************************************************************************
+* PALM++/osiris library
+*
+* osiris/xdrdump.h      dumps for object serialization sing XDR
+*
+* $Id$
+*
+* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+*                            Synge Todo <wistaria@comp-phys.org>,
+*
+* This program is free software; you can redistribute it and/or
+* modify it under the terms of the GNU General Public License
+* as published by the Free Software Foundation; either version 2
+* of the License, or (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+**************************************************************************/
+
+#ifndef OSIRIS_XDRDUMP_H
+#define OSIRIS_XDRDUMP_H
+
+#include <alps/config.h>
+#include <alps/osiris/dump.h>
+#include <boost/filesystem/path.hpp>
+#include <cstdio>
+#include <string>
+#include <stdio.h>
+#include <rpc/rpc.h>
+
+#ifdef BOOST_NO_STDC_NAMESPACE
+  namespace std {
+    using ::FILE;
+    using ::fopen;
+    using ::fclose;
+    using ::ftell;
+  }
+#endif
+
+namespace alps {
+
+/** The abstract base class for serializing an object 
+    using the XDR stream library to write the architecture 
+    indepedent XDR format. */
+
+class OXDRDump : public ODump
+{
+public:
+  OXDRDump () : ODump(0) {}    
+  virtual ~OXDRDump() {}
+
+# define ALPS_DUMP_DO_TYPE(T) \
+  void write_simple(T x); \
+  void write_array(std::size_t, const T *);
+  ALPS_DUMP_DO_TYPE(bool)
+  ALPS_DUMP_DO_TYPE(int8_t)
+  ALPS_DUMP_DO_TYPE(uint8_t)
+  ALPS_DUMP_DO_TYPE(int16_t)
+  ALPS_DUMP_DO_TYPE(uint16_t)
+  ALPS_DUMP_DO_TYPE(int32_t)
+  ALPS_DUMP_DO_TYPE(uint32_t)
+# ifndef BOOST_NO_INT64_T
+  ALPS_DUMP_DO_TYPE(int64_t)
+  ALPS_DUMP_DO_TYPE(uint64_t)
+# endif
+  ALPS_DUMP_DO_TYPE(float)
+  ALPS_DUMP_DO_TYPE(double)
+  ALPS_DUMP_DO_TYPE(long double)
+# undef ALPS_DUMP_DO_TYPE
+    
+  // write a c-style string
+  virtual void write_string(std::size_t, const char *);
+
+protected:
+  /// get the position in the XDR stream.
+  uint32_t getPosition() const;
+  /// set the position in the XDR stream.
+  void setPosition(uint32_t pos);  
+
+  XDR xdr_; // the XDR stream
+};
+
+
+/** The abstract base class for deserializing an object 
+    using the XDR stream library to read the architecture 
+    indepedent XDR format. */
+
+class IXDRDump : public IDump
+{
+public:
+  IXDRDump() : IDump(0) {}
+  virtual ~IXDRDump() {}
+
+# define ALPS_DUMP_DO_TYPE(T) \
+  void read_simple(T& x); \
+  void read_array(std::size_t, T *);
+  ALPS_DUMP_DO_TYPE(bool)
+  ALPS_DUMP_DO_TYPE(int8_t)
+  ALPS_DUMP_DO_TYPE(uint8_t)
+  ALPS_DUMP_DO_TYPE(int16_t)
+  ALPS_DUMP_DO_TYPE(uint16_t)
+  ALPS_DUMP_DO_TYPE(int32_t)
+  ALPS_DUMP_DO_TYPE(uint32_t)
+# ifndef BOOST_NO_INT64_T
+  ALPS_DUMP_DO_TYPE(int64_t)
+  ALPS_DUMP_DO_TYPE(uint64_t)
+# endif
+  ALPS_DUMP_DO_TYPE(float)
+  ALPS_DUMP_DO_TYPE(double)
+  ALPS_DUMP_DO_TYPE(long double)
+# undef ALPS_DUMP_DO_TYPE
+      
+  virtual void read_string(std::size_t n, char* s);
+  
+protected:
+  /// get the position in the XDR stream.
+  uint32_t getPosition() const;
+
+  /// set the position in the XDR stream.
+  void setPosition(uint32_t pos);
+
+  XDR xdr_; // the XDR stream
+};
+
+
+/** a dump for serializing objects into a file using the XDR format. */
+
+class OXDRFileDump: public OXDRDump
+{
+public:
+  /// open a new dump file with the given name
+  // OXDRFileDump(const std::string& n);
+  OXDRFileDump(const boost::filesystem::path& name);
+  virtual ~OXDRFileDump();
+
+private:
+  // file reference and file name, needed by dump reference
+  std::FILE* file_;
+
+  /// open a file
+  void open_file(const std::string&);
+};
+
+
+/** a dump for deserializing objects from a file using the XDR format. */
+
+class IXDRFileDump: public IXDRDump
+{
+public:
+  /** open a file.
+      @throws palm::FileOpenError if the file could not be openend. */
+  // IXDRFileDump(const std::string& name);
+  IXDRFileDump(const boost::filesystem::path& name);
+  bool couldOpen() { return valid_;}
+
+  virtual ~IXDRFileDump();
+
+private:
+  // file reference and name, needed by dump reference
+  
+  std::FILE* file_;  
+  bool valid_;
+  
+  void open_file(const std::string&);
+};
+
+} // end namespace alps
+
+#endif // OSIRIS_XDRDUMP_H

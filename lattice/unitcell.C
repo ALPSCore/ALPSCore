@@ -1,0 +1,176 @@
+/***************************************************************************
+* ALPS++/lattice library
+*
+* lattice/unitcell.C     the unit cell of a lattice
+*
+* $Id$
+*
+* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+*                            Synge Todo <wistaria@comp-phys.org>
+*
+* This program is free software; you can redistribute it and/or
+* modify it under the terms of the GNU General Public License
+* as published by the Free Software Foundation; either version 2
+* of the License, or (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+**************************************************************************/
+
+#include <alps/config.h>
+
+#ifndef ALPS_WITHOUT_XML
+
+#include <alps/lattice/unitcell.h>
+#include <alps/vectorio.h>
+
+#include <boost/lexical_cast.hpp>
+
+namespace alps {
+
+GraphUnitCell::GraphUnitCell(const XMLTag& intag, std::istream& p)
+{
+  XMLTag tag(intag);
+  bool fixed_nvertices=false;
+  uint32_t vertex_number=0;
+  name_ = tag.attributes["name"];
+  dim_ = tag.attributes["dimension"]=="" ? 0 
+    : boost::lexical_cast<uint32_t,std::string>(tag.attributes["dimension"]);
+  if (tag.attributes["vertices"]!="") {
+      uint32_t nvert=boost::lexical_cast<uint32_t,std::string>(tag.attributes["vertices"]);
+      graph_ = graph_type(nvert);
+      fixed_nvertices=true;
+  }
+  
+  if (tag.type !=XMLTag::SINGLE)
+  while(true) {
+    tag=parse_tag(p);
+    if(tag.name=="/UNITCELL")
+      return;
+    else if (tag.name=="VERTEX") {
+      coordinate_type coord;
+      int t=tag.attributes["type"]=="" ? 0 : boost::lexical_cast<uint32_t,std::string>(tag.attributes["type"]);
+      int id=tag.attributes["id"]=="" ? -1 : boost::lexical_cast<int,std::string>(tag.attributes["id"])-1;
+      if (id==-1)
+        id=vertex_number++;
+      if (id>=boost::num_vertices(graph_)) {
+        if (fixed_nvertices)
+          boost::throw_exception(std::runtime_error("too many vertices"));
+        for (int i=boost::num_vertices(graph_);i<=id;++i)
+          boost::add_vertex(graph_);
+      }
+
+      if (tag.type!=XMLTag::SINGLE) {
+      	tag = parse_tag(p);
+        if(tag.name=="COORDINATE") {
+          if (tag.type!=XMLTag::SINGLE) {
+            read_vector(parse_content(p),coord,dimension());
+            tag = parse_tag(p);
+            if (tag.name!="/COORDINATE")
+              boost::throw_exception(std::runtime_error("closing </COORDINATE> tag missing"));
+          }
+          tag=parse_tag(p);
+        }
+      	if (tag.name!="/VERTEX")
+          boost::throw_exception(std::runtime_error("closing </VERTEX> tag missing"));
+      }
+
+      boost::graph_traits<graph_type>::vertex_iterator vit = boost::vertices(graph_).first+id;
+      boost::put(vertex_type_t(),graph_,*vit,t);
+      boost::put(coordinate_t(),graph_,*vit,coord);
+            
+    }
+    else if (tag.name=="EDGE") {
+      uint32_t source=0, target=0;
+      offset_type source_offset(dimension()), target_offset(dimension());
+      
+      bool got_source=false;
+      bool got_target=false;
+      
+      uint32_t t =tag.attributes["type"]=="" ? 0 
+        : boost::lexical_cast<uint32_t,std::string>(tag.attributes["type"]);
+      
+      if (tag.type!=XMLTag::SINGLE) while (true) {
+        tag = parse_tag(p);
+        if (tag.name=="/EDGE")
+          break;
+        if (tag.name=="SOURCE") {
+          if(got_source)
+            boost::throw_exception(std::runtime_error("Got two <SOURCE> tags in <EDGE>"));
+          got_source=true;
+          source=boost::lexical_cast<uint32_t,std::string>(tag.attributes["vertex"])-1;
+          if(tag.attributes["offset"].size())
+            read_vector(tag.attributes["offset"],source_offset);
+          if (tag.type!=XMLTag::SINGLE) {
+            tag = parse_tag(p);
+            if (tag.name !="/SOURCE")
+               boost::throw_exception(std::runtime_error("</SOURCE> tag missing"));
+          }
+        }
+        else if(tag.name=="TARGET") {
+          if(got_target)
+            boost::throw_exception(std::runtime_error("Got two <TARGET> tags in <EDGE>"));
+          got_target=true;
+          target=boost::lexical_cast<uint32_t,std::string>(tag.attributes["vertex"])-1;
+          if(tag.attributes["offset"].size())
+            read_vector(tag.attributes["offset"],target_offset);
+          if (tag.type!=XMLTag::SINGLE)
+          {
+            tag = parse_tag(p);
+            if (tag.name !="/TARGET")
+               boost::throw_exception(std::runtime_error("</TARGET> tag missing"));
+          }
+        }
+      }
+      if (!got_source || !got_target)
+        boost::throw_exception(std::runtime_error("did not get <SOURCE> and <TARGET> in <EDGE>"));
+
+      boost::graph_traits<graph_type>::edge_descriptor edge = boost::add_edge(source,target,graph_).first;
+      boost::put(edge_type_t(),graph_,edge,t);
+      boost::put(source_offset_t(),graph_,edge,source_offset);
+      boost::put(target_offset_t(),graph_,edge,target_offset);
+    }
+    else
+      boost::throw_exception(std::runtime_error("encountered illegal tag <" + tag.name + "> in UNITCELL"));
+  }
+}
+
+void GraphUnitCell::write_xml(std::ostream& xml, const std::string& prefix) const
+{
+  xml << prefix << "<UNITCELL";
+  if (name()!="")
+    xml << " name=\"" << name() << "\"";
+  xml << " dimension=\"" << dimension() << "\"";
+  xml << " vertices=\"" << boost::num_vertices(graph_) << "\">\n";
+  
+  typedef boost::graph_traits<graph_type>::vertex_iterator vertex_iterator;
+  typedef boost::graph_traits<graph_type>::edge_iterator edge_iterator;
+  for (vertex_iterator it=boost::vertices(graph_).first;
+                       it!=boost::vertices(graph_).second;++it) {
+    xml << prefix << "  <VERTEX id=\"" << boost::get(vertex_index_t(),graph_,*it)+1 <<"\" type=\"" 
+        << boost::get(vertex_type_t(),graph_,*it) << "\"";
+    if (alps::dimension(boost::get(coordinate_t(),graph_,*it)))
+      xml << " coordinate=\"" << vector_writer(boost::get(coordinate_t(),graph_,*it)) << "\"";
+    xml << "/>\n";
+  }
+  typedef boost::graph_traits<graph_type>::edge_iterator edge_iterator;
+  for (edge_iterator it=boost::edges(graph_).first;
+                     it!=boost::edges(graph_).second;++it) {
+    xml << prefix << "  <EDGE type=\"" << boost::get(edge_type_t(),graph_,*it) << "\">";
+    xml << "<SOURCE vertex=\""<< boost::source(*it,graph_)+1 << "\"";
+    if (boost::get(source_offset_t(),graph_,*it).size())
+      xml << " offset=\"" << vector_writer(boost::get(source_offset_t(),graph_,*it)) << "\"";
+    xml << "/><TARGET vertex=\"" << boost::target(*it,graph_)+1 << "\"";
+    if (boost::get(target_offset_t(),graph_,*it).size())
+      xml << " offset=\"" << vector_writer(boost::get(target_offset_t(),graph_,*it)) << "\"";
+    xml << "/></EDGE>\n";
+  }
+  xml << prefix << "</UNITCELL>\n";
+}
+
+} // end namespace alps
+
+#endif

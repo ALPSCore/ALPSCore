@@ -1,0 +1,277 @@
+/***************************************************************************
+* ALPS++ library
+*
+* xml/xmlparser.C   XML parser
+*
+* $Id$
+*
+* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+*                            Synge Todo <wistaria@comp-phys.org>,
+*
+* This program is free software; you can redistribute it and/or
+* modify it under the terms of the GNU General Public License
+* as published by the Free Software Foundation; either version 2
+* of the License, or (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+**************************************************************************/
+
+#include <alps/parser/xmlparser.h>
+#include <alps/cctype.h>
+
+#include <boost/throw_exception.hpp>
+#include <fstream>
+#include <iostream>
+#include <stdexcept>
+#include <string>
+
+#if defined(HAVE_XERCES_PARSER)
+
+//
+// Xerces C++ XML parser
+//
+
+#include <xercesc/parsers/SAXParser.hpp>
+#include <xercesc/sax/HandlerBase.hpp>
+#include <xercesc/sax/InputSource.hpp>
+#include <xercesc/util/BinInputStream.hpp>
+#include <xercesc/util/PlatformUtils.hpp>
+#include <xercesc/util/TransService.hpp>
+
+namespace alps {
+
+namespace detail {
+
+class XMLHandlerAdaptor : public XERCES_CPP_NAMESPACE_QUALIFIER HandlerBase
+{
+public:
+  XMLHandlerAdaptor(XMLHandlerBase& h)
+    : XERCES_CPP_NAMESPACE_QUALIFIER HandlerBase(), handler_(h) {}
+
+  void startElement(const XMLCh* const name,
+		    XERCES_CPP_NAMESPACE_QUALIFIER AttributeList& attributes) {
+    const std::string n =
+      XERCES_CPP_NAMESPACE_QUALIFIER XMLString::transcode(name);
+    XMLAttributes attr;
+    for (std::size_t i = 0; i < attributes.getLength(); ++i) {
+      attr.push_back(
+        XMLAttribute(
+          XERCES_CPP_NAMESPACE_QUALIFIER XMLString::transcode(attributes.getName(i)),
+	  XERCES_CPP_NAMESPACE_QUALIFIER XMLString::transcode(attributes.getValue(i))));
+    }
+    handler_.start_element(n, attr);
+  }
+  void endElement(const XMLCh* const name) {
+    const std::string n =
+      XERCES_CPP_NAMESPACE_QUALIFIER XMLString::transcode(name);
+    handler_.end_element(n);
+  }
+  void characters(const XMLCh* const chars, const unsigned int /* length */) {
+    std::string t =
+      XERCES_CPP_NAMESPACE_QUALIFIER XMLString::transcode(chars);
+    std::size_t pi = 0;
+    for (std::size_t p = 0; p <= t.length(); ++p) {
+      if (t[p] == '\n' || p == t.length()) {
+	std::string s = t.substr(pi, p - pi);
+	// remove preceding and following blanks
+	s = s.erase(0, s.find_first_not_of(' '));
+	s = s.erase(s.find_last_not_of(' ')+1);
+	if (s.size()) handler_.text(s);
+	pi = p + 1;
+      }
+    }
+  }
+
+protected:
+  XMLHandlerAdaptor();
+
+private:
+  XMLHandlerBase& handler_;
+};
+
+class IStreamBinInputStream
+  : public XERCES_CPP_NAMESPACE_QUALIFIER BinInputStream
+{
+public:
+  IStreamBinInputStream(std::istream& is)
+    : XERCES_CPP_NAMESPACE_QUALIFIER BinInputStream(), is_(is) {}
+  unsigned int curPos() const { return count_; }
+  unsigned int readBytes(XMLByte* const toFill, const unsigned int maxToRead) {
+    is_.read(reinterpret_cast<char*>(toFill), maxToRead);
+    count_ += is_.gcount();
+    return is_.gcount();
+  }
+private:
+  std::istream& is_;
+  unsigned int count_;
+};
+
+class IStreamBinInputSource
+  : public XERCES_CPP_NAMESPACE_QUALIFIER InputSource
+{
+public:
+  IStreamBinInputSource(std::istream& is)
+    : XERCES_CPP_NAMESPACE_QUALIFIER InputSource(), stream_(is) {}
+  XERCES_CPP_NAMESPACE_QUALIFIER BinInputStream* makeStream() const {
+    return new IStreamBinInputStream(stream_);
+  }
+private:
+  std::istream& stream_;
+};
+
+} // end namespace detail
+
+XMLParser::XMLParser(XMLHandlerBase& h) {
+  XERCES_CPP_NAMESPACE_QUALIFIER XMLPlatformUtils::Initialize();
+  parser_ = new XERCES_CPP_NAMESPACE_QUALIFIER SAXParser;
+  handler_ = new detail::XMLHandlerAdaptor(h);
+  parser_->setDocumentHandler(handler_);
+}
+XMLParser::~XMLParser() {
+  delete parser_;
+  XERCES_CPP_NAMESPACE_QUALIFIER XMLPlatformUtils::Terminate();
+}
+  
+void XMLParser::parse(const std::string& file) {
+  parser_->parse(file.c_str());
+}
+void XMLParser::parse(std::istream& is) {
+  parser_->parse(detail::IStreamBinInputSource(is));
+}
+
+} // namespace alps
+
+#elif defined(HAVE_EXPAT_PARSER)
+
+//
+// Expat XML Parser
+//
+
+namespace alps {
+
+namespace detail {
+
+static void startElement(void* h, const char* name, const char** atts) {
+  XMLHandlerBase* handler = (XMLHandlerBase*)h;
+  const std::string n = name;
+  XMLAttributes attr;
+  for (std::size_t i = 0; atts[i]; i += 2) {
+    attr.push_back(XMLAttribute(atts[i], atts[i+1]));
+  }
+  handler->start_element(n, attr);
+}
+static void endElement(void* h, const char* name) {
+  XMLHandlerBase* handler = (XMLHandlerBase*)h;
+  const std::string n = name;
+  handler->end_element(n);
+}
+static void characters(void* h, const char* s, int len) {
+  XMLHandlerBase* handler = (XMLHandlerBase*)h;
+  std::string t(s, len);
+  // remove preceding and following blanks
+  t = t.erase(0, t.find_first_not_of(' '));
+  t = t.erase(t.find_last_not_of(' ')+1);
+  // remove appended CR, NL, \t, etc
+  if (t.length() && std::isspace(t[t.length()-1])) t.erase(t.length()-1);
+  if (t.length()) handler->text(t);
+}
+static int externalEntity(XML_Parser parser, const char* context,
+			  const char* /* base */, const char* systemId,
+			  const char* /* publicId */) {
+  XML_Parser p = XML_ExternalEntityParserCreate(parser, context, 0);
+  std::ifstream fin(systemId);
+  char buf[BUFSIZ];
+  int done;
+  do {
+    fin.read(buf, sizeof(buf));
+    done = (fin.gcount() < sizeof(buf));
+    if (!XML_Parse(p, buf, fin.gcount(), done)) {
+      boost::throw_exception(std::runtime_error("XMLParser: " + std::string(XML_ErrorString(XML_GetErrorCode(p)))));
+    }
+  } while (!done);
+  XML_ParserFree(p);
+  return 1;
+}
+
+} // end namespace detail
+
+XMLParser::XMLParser(XMLHandlerBase& h) : parser_(XML_ParserCreate(0)) {
+  XML_SetUserData(parser_, &h);
+  XML_SetElementHandler(parser_, detail::startElement, detail::endElement);
+  XML_SetCharacterDataHandler(parser_, detail::characters);
+  XML_SetExternalEntityRefHandler(parser_, detail::externalEntity);
+}
+XMLParser::~XMLParser() { XML_ParserFree(parser_); }
+  
+void XMLParser::parse(std::istream& is) {
+  char buf[BUFSIZ];
+  do {
+    is.read(buf, sizeof(buf));
+    if (!XML_Parse(parser_, buf, is.gcount(), (is.gcount() < sizeof(buf))))
+      boost::throw_exception(std::runtime_error("XMLParser: " + std::string(XML_ErrorString(XML_GetErrorCode(parser_)))));
+  } while (is.gcount() == sizeof(buf));
+}
+void XMLParser::parse(const std::string& file) {
+  std::ifstream fin(file.c_str());
+  parse(fin);
+}
+
+} // namespace alps
+
+#else
+
+//
+// native XML Parser
+//
+
+#include <alps/parser/parser.h>
+
+namespace alps {
+
+XMLParser::XMLParser(XMLHandlerBase& h) : handler_(h) {}
+XMLParser::~XMLParser() {}
+  
+void XMLParser::parse(const std::string& file) {
+  std::ifstream is(file.c_str());
+  parse(is);
+}
+
+void XMLParser::parse(std::istream& in) {
+  while (in) {
+    char c;
+    in >> c;
+    if (!in)
+      break;
+    in.putback(c);
+    if (c=='<') {
+      XMLTag tag = parse_tag(in);
+      if(tag.type == XMLTag::OPENING || tag.type== XMLTag::SINGLE) {
+        // start tag
+        // map to attribute list
+        XMLAttributes attributes;
+        for (XMLTag::AttributeMap::const_iterator it=tag.attributes.begin();it!=tag.attributes.end();++it)
+          attributes.push_back(XMLAttribute(it->first,it->second));
+        handler_.start_element(tag.name,attributes);
+      }
+      if(tag.type == XMLTag::CLOSING || tag.type== XMLTag::SINGLE) {
+        // end tag
+        if (tag.type == XMLTag::CLOSING)
+	  tag.name.erase(0,1); 
+        handler_.end_element(tag.name);
+      }
+    }
+    else {
+      std::string t=parse_content(in);
+      if (t.length())
+        handler_.text(t);
+    }
+  }
+}
+
+} // namespace alps
+
+#endif

@@ -1,0 +1,237 @@
+/***************************************************************************
+* ALPS++/scheduler library
+*
+* scheduler/montecarlo.C   A class to store parameters
+*
+* $Id$
+*
+* Copyright (C) 2002 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+*
+* This program is free software; you can redistribute it and/or
+* modify it under the terms of the GNU General Public License
+* as published by the Free Software Foundation; either version 2
+* of the License, or (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+**************************************************************************/
+
+#include <alps/scheduler/montecarlo.h>
+#include <alps/scheduler/types.h>
+#include <alps/scheduler/scheduler.h>
+#include <alps/alea.h>
+#include <alps/osiris.h>
+#include <boost/filesystem/fstream.hpp>
+
+namespace alps {
+namespace scheduler {
+
+// collect all measurements
+ObservableSet MCSimulation::get_measurements() const
+{
+  // old measurements
+  ObservableSet all_measurements;
+  
+  ProcessList where_master;
+  int remote_runs=0;
+  // add runs stored locally
+  for (int i=0;i<runs.size();i++) {
+    if(workerstatus[i]==RemoteRun) {
+      if(!runs[i])
+	boost::throw_exception(std::runtime_error( "run does not exist in MCSimulation::get_measurements"));
+      where_master.push_back( Process(dynamic_cast<const RemoteWorker*>(runs[i])->process()));
+      remote_runs++;
+    }
+    else if(runs[i])
+      all_measurements << dynamic_cast<const MCRun*>(runs[i])->get_measurements();
+  }
+
+  // adding measurements from remote runs:
+  if(remote_runs) {
+    // broadcast request to all slaves
+    OMPDump send;
+    send.send(where_master,MCMP_get_measurements);
+      
+    // collect results
+    for (int i=0;i<where_master.size();i++) {
+      // receive dump from remote process, abort if error
+      IMPDump receive(MCMP_measurements);
+      ObservableSet m;
+      receive >> m;
+      all_measurements << m;
+    }
+  }
+  for (ObservableSet::const_iterator it=measurements.begin();it!=measurements.end();++it)
+    if (!all_measurements.has(it->first))
+      all_measurements << *(it->second);
+  return all_measurements;
+}
+
+
+std::string MCSimulation::worker_tag() const 
+{
+  return "MCRUN";
+}
+
+void MCSimulation::write_xml_header(std::ostream& out) const
+{
+  out <<"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+      << "<?xml-stylesheet type=\"text/xsl\" href=\"http://xml.comp-phys.org/2002/10/QMCXML.xsl\"?>\n"
+      << "<SIMULATION xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+      << "xsi:noNamespaceSchemaLocation=\"http://xml.comp-phys.org/2002/10/QMCXML.xsd\">\n";
+}
+
+void MCSimulation::write_xml_trailer(std::ostream& out) const
+{
+  out << "</SIMULATION>\n";
+}
+
+void MCSimulation::write_xml_body(std::ostream& out, const boost::filesystem::path& name) const
+{
+  boost::filesystem::path fn_hdf5;
+  if(!name.empty())
+    fn_hdf5=name.branch_path()/(name.leaf()+".hdf");
+  get_measurements().write_xml(out,fn_hdf5);
+}
+
+MCRun::MCRun(const ProcessList& w,const alps::Parameters&  myparms,int n)
+  : Worker(w,myparms,n)
+{
+}
+
+
+void MCRun::load_worker(IDump& dump)
+{
+  Worker::load_worker(dump);
+  if(node==0)
+    dump >> measurements;
+  load(dump);
+}
+
+void MCRun::save_worker(ODump& dump) const
+{
+  Worker::save_worker(dump);
+  if(node==0)
+    dump << measurements; 
+  save(dump);
+}
+
+void MCRun::save(ODump&) const
+{
+}
+
+void MCRun::load(IDump&)
+{
+}
+
+// start/restart the run
+std::string MCRun::work_phase()
+{
+  return is_thermalized() ? "running" : "equilibrating";
+}
+		
+// do some work, either thermalization or measurements serrps
+void MCRun::run()
+{
+  bool thermalized=is_thermalized();
+  // do some work
+  Worker::run();
+  // check if it just became thermalized
+  if(!thermalized&&node==0&&is_thermalized()) {
+    if(node==0)
+      measurements.reset(true);
+    change_phase("running");
+    }
+}
+
+// do one sweep
+bool MCRun::is_thermalized() const
+{
+  // this should be implemented
+  boost::throw_exception( std::logic_error("is_thermalized needs to be implemented"));
+  return false;
+}
+
+
+void MCRun::write_xml(const boost::filesystem::path& name, const boost::filesystem::path& osirisname) const
+{
+  boost::filesystem::ofstream xml(name.branch_path()/(name.leaf()+".xml"));
+  boost::filesystem::path fn_hdf5(name.branch_path()/(name.leaf()+".hdf"));
+
+  xml << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+  xml << "<?xml-stylesheet type=\"text/xsl\" href=\"http://xml.comp-phys.org/2002/10/QMCXML.xsl\"?>\n";
+  xml << "<SIMULATION xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
+  xml << "xsi:noNamespaceSchemaLocation=\"http://xml.comp-phys.org/2002/4/QMCXML.xsd\">\n";
+  parms.write_xml(xml);
+  measurements.write_xml(xml);
+  xml << "<MCRUN>\n";
+  if(!osirisname.empty())
+    xml << "<CHECKPOINT format=\"osiris\" file=\"" << osirisname.native_file_string() << "\"/>";
+  xml << get_info();
+  measurements.write_xml(xml,fn_hdf5);
+  xml << "</MCRUN>\n</SIMULATION>\n";
+}
+
+
+bool MCRun::handle_message(const Process& runmaster,int tag)
+{
+  IMPDump message;
+  OMPDump dump;
+  switch(tag)
+  {
+    case MCMP_get_measurements:
+      message.receive(runmaster,MCMP_get_measurements);
+      dump << get_measurements();
+      dump.send(runmaster,MCMP_measurements);
+      return true;
+
+    default:
+      return Worker::handle_message(runmaster,tag);
+  }
+}
+
+void DummyMCRun::dostep()
+{
+  boost::throw_exception(std::logic_error("User-level checkpointing needs to be implemented for restarting from a checkpoint\n"));
+}
+
+double DummyMCRun::work_done() const 
+{
+  boost::throw_exception(std::logic_error("User-level checkpointing needs to be implemented for restarting from a checkpoint\n"));
+  return 0.;
+}
+
+Task* Factory::make_task(const ProcessList& w,const boost::filesystem::path& fn) const
+{
+  return new MCSimulation(w,fn);
+}
+
+void MCSimulation::handle_tag(std::istream& infile, const XMLTag& tag) 
+{
+  if (tag.name!="AVERAGES")
+    Task::handle_tag(infile,tag);
+  else
+    measurements.read_xml(infile,tag);
+}
+
+MCSimulation& MCSimulation::operator<<(const Observable& obs)
+{
+  measurements<<obs;
+  return *this;
+}
+
+DummyMCRun::DummyMCRun()
+  : MCRun(ProcessList(),alps::Parameters(),0) 
+{
+}
+
+DummyMCRun::DummyMCRun(const ProcessList& w,const alps::Parameters& p,int n)
+: MCRun(w,p,n) 
+{
+}
+
+} // namespace scheduler
+} // namespace alps
