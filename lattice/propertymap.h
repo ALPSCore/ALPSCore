@@ -273,7 +273,6 @@ struct copy_property_helper
 {
   template <class SRCREF, class DSTREF>
   static void copy(const SRC&, const SRCREF&, DST&, const DSTREF&) {}
-  static void copy(const SRC&, DST&) {}
 };
 
 template <class SRC, class DST, class PROPERTY>
@@ -282,9 +281,6 @@ struct copy_property_helper<SRC,DST,PROPERTY,true>
   template <class SRCREF, class DSTREF>
   static void copy(const SRC& s, const SRCREF& sr, DST& d, const DSTREF& dr) {
     boost::put(PROPERTY(),d,dr, boost::get(PROPERTY(),s,sr));
-  }
-  static void copy(const SRC& s, DST& d) {
-    boost::put_property(d,PROPERTY(),d, boost::get_property(s,PROPERTY()));
   }
 };
 
