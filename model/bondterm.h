@@ -79,7 +79,11 @@ public:
 
   template <class T>
   boost::multi_array<T,4> matrix(const SiteBasisDescriptor<I>&, const SiteBasisDescriptor<I>&, const operator_map&, const Parameters& =Parameters()) const;
-  std::set<std::string> split(const operator_map&, const Parameters& = Parameters()) const;
+#ifndef ALPS_WITH_NEW_EXPRESSION
+  std::set<Term> split(const operator_map&, const Parameters& = Parameters()) const;
+#else
+  std::set<Term<> > split(const operator_map&, const Parameters& = Parameters()) const;
+#endif
 
 private:
   int type_;
@@ -336,8 +340,13 @@ BondTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b1,
   return mat;
 }
 
+#ifndef ALPS_WITH_NEW_EXPRESSION
 template <class I>
-std::set<std::string> BondTermDescriptor<I>::split(const operator_map& ops, const Parameters& p) const
+std::set<Term> BondTermDescriptor<I>::split(const operator_map& ops, const Parameters& p) const
+#else
+template <class I>
+std::set<Term<> > BondTermDescriptor<I>::split(const operator_map& ops, const Parameters& p) const
+#endif
 {
 #ifndef ALPS_WITH_NEW_EXPRESSION
   typedef alps::Expression Expression_;
@@ -349,15 +358,15 @@ std::set<std::string> BondTermDescriptor<I>::split(const operator_map& ops, cons
   typedef BondOperatorSplitter<I, Expression_::value_type> Evaluator_;
 #endif
 
-  std::set<std::string> terms;
+  std::set<Term_> terms;
   Expression_ ex(term());
   ex.flatten();
   for (typename Expression_::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
     Evaluator_ evaluator(source(),target(),p,ops);
     Term_ term(*tit);
     term.partial_evaluate(evaluator);
-    terms.insert(boost::lexical_cast<std::string>(evaluator.site_operators().first));
-    terms.insert(boost::lexical_cast<std::string>(evaluator.site_operators().second));
+    terms.insert(evaluator.site_operators().first);
+    terms.insert(evaluator.site_operators().second);
   }
   return terms;
 }
