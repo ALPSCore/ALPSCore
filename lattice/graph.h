@@ -151,13 +151,11 @@ inline std::string read_graph_xml(const XMLTag& intag, std::istream& p, GRAPH& g
     graphdimension = get_or_default(dimension_t(),g,uint32_t(0));
 
   typedef typename boost::graph_traits<graph_type>::vertex_iterator vertex_iterator;
-  using namespace alps;
 
   XMLTag tag(intag);
   bool fixed_nvertices=false;
   uint32_t vertex_number=0;
   uint32_t num_edges=0;
-  uint32_t dim;
   std::string name;
   if (tag.attributes["vertices"]!="") {
     uint32_t nvert=boost::lexical_cast<uint32_t,std::string>(tag.attributes["vertices"]);
@@ -166,8 +164,8 @@ inline std::string read_graph_xml(const XMLTag& intag, std::istream& p, GRAPH& g
     for (vertex_iterator it = boost::vertices(g).first ; it !=  boost::vertices(g).second ; ++it)
       vertextype[*it]=0;
   }      
-  graphdimension = dim = (tag.attributes["dimension"]=="" ? 0 :
-     boost::lexical_cast<uint32_t,std::string>(tag.attributes["dimension"]));
+  graphdimension = (tag.attributes["dimension"]=="" ? 0 :
+    boost::lexical_cast<uint32_t, std::string>(tag.attributes["dimension"]));
   graphname = name = tag.attributes["name"];
   
   if (tag.type !=XMLTag::SINGLE)

@@ -41,36 +41,50 @@ struct graph_traits : public boost::graph_traits<G>
 };
 
 template <class G> 
-std::pair<typename graph_traits<G>::site_iterator,typename graph_traits<G>::site_iterator> sites(const G& g) { return vertices(g);}
+std::pair<typename graph_traits<G>::site_iterator,
+          typename graph_traits<G>::site_iterator> sites(const G& g) {
+  return boost::vertices(g);
+}
 
 template <class G> 
-typename graph_traits<G>::sites_size_type num_sites (const G& g) { return num_vertices(g);}
+typename graph_traits<G>::sites_size_type num_sites (const G& g) {
+  return boost::num_vertices(g);
+}
 
 template <class G> 
-std::pair<typename graph_traits<G>::bond_iterator,typename graph_traits<G>::bond_iterator> bonds(const G& g) { return edges(g);}
+std::pair<typename graph_traits<G>::bond_iterator,
+          typename graph_traits<G>::bond_iterator> bonds(const G& g) {
+  return boost::edges(g);
+}
 
 template <class G> 
-typename graph_traits<G>::bonds_size_type num_bonds (const G& g) { return num_edges(g);}
+typename graph_traits<G>::bonds_size_type num_bonds (const G& g) {
+  return boost::num_edges(g);
+}
 
 template <class V, class G> 
-typename graph_traits<G>::degree_size_type num_neighbors (const V& v,const G& g) { return out_degree(v,g);}
+typename graph_traits<G>::degree_size_type
+num_neighbors(const V& v, const G& g) { return boost::out_degree(v,g); }
 
 template <class V, class G> 
-std::pair<typename graph_traits<G>::neighbor_bond_iterator,typename graph_traits<G>::neighbor_bond_iterator>
- neighbor_bonds (const V& v,const G& g) { return out_edges(v,g);}
+std::pair<typename graph_traits<G>::neighbor_bond_iterator,
+          typename graph_traits<G>::neighbor_bond_iterator>
+neighbor_bonds(const V& v, const G& g) { return boost::out_edges(v,g);}
 
 template <class V, class G> 
-std::pair<typename graph_traits<G>::neighbor_iterator,typename graph_traits<G>::neighbor_iterator> neighbors (const V& v,const G& g) 
-{ return adjacent_vertices(v,g);}
-
+std::pair<typename graph_traits<G>::neighbor_iterator,
+          typename graph_traits<G>::neighbor_iterator>
+neighbors(const V& v, const G& g) { return boost::adjacent_vertices(v,g); }
 
 template <class G>
-typename boost::graph_traits<G>::vertex_descriptor source_impl(const typename boost::graph_traits<G>::edge_descriptor& e,
-  const G& g) { return source(e,g);}
+typename boost::graph_traits<G>::vertex_descriptor
+source_impl(const typename boost::graph_traits<G>::edge_descriptor& e,
+            const G& g) { return boost::source(e,g); }
   
 template <class G>
-typename boost::graph_traits<G>::vertex_descriptor target_impl(const typename boost::graph_traits<G>::edge_descriptor& e,
-  const G& g) { return target(e,g);}
+typename boost::graph_traits<G>::vertex_descriptor
+target_impl(const typename boost::graph_traits<G>::edge_descriptor& e,
+            const G& g) { return boost::target(e,g); }
 
 
 template <class V, class G> 

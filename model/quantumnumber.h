@@ -44,7 +44,14 @@ public:
   typedef I integer_type;
   half_integer() : val_(0) {}
   half_integer(double x) :val_(integer_type(2*x+0.01)) {}
-  const half_integer& operator=(double x) { val_=integer_type(2*x+(x < 0 ? -0.01 : 0.01)); return *this;}
+  half_integer& operator=(const half_integer& x) {
+    val_ = x.val_;
+    return *this;
+  }
+  half_integer& operator=(double x) {
+    val_=integer_type(2*x+(x < 0 ? -0.01 : 0.01));
+    return *this;
+  }
   operator double() const { return 0.5*val_;}
   
   void set_half(integer_type x) { val_=x;}
