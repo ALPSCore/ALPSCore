@@ -35,7 +35,7 @@
 #ifndef ALPS_WITHOUT_XML
 
 #include <alps/model/sitebasisstates.h>
-#include <alps/model/operator.h>
+#include <alps/model/hamiltonian.h>
 #include <alps/model/basisstates.h>
 #include <alps/parser/parser.h>
 
