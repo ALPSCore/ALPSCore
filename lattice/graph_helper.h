@@ -4,7 +4,8 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2000-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 2000-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -27,9 +28,8 @@
 
 /* $Id$ */
 
-#ifndef ALPS_SCHEDULER_GRAPHHELPER_H
-#define ALPS_SCHEDULER_GRAPHHELPER_H
-
+#ifndef ALPS_LATTICE_GRAPHHELPER_H
+#define ALPS_LATTICE_GRAPHHELPER_H
 
 #include <alps/lattice/latticelibrary.h>
 #include <alps/lattice/disorder.h>
@@ -44,13 +44,14 @@ namespace detail {
 template <bool F>
 struct graph_dimension_helper {
   template <class G>
-  static std::size_t dimension(const G&) { return 0;} 
+  static std::size_t dimension(const G&) { return 0; } 
 };
 
 template <>
 struct graph_dimension_helper<true> {
   template <class G>
-  static  std::size_t dimension(const G& g) { return boost::get_property(g,dimension_t());} 
+  static  std::size_t dimension(const G& g)
+  { return boost::get_property(g,dimension_t()); } 
 };
 
 }  
@@ -176,29 +177,55 @@ public:
   vertex_descriptor vertex(vertices_size_type i) const { return boost::vertex(i,graph());}
   double parity(const site_descriptor& v) const { return parity_map_[v]==0 ? 1. :  parity_map_[v]==1 ? -1. : 0.;}
   bool is_bipartite() const { return is_bipartite_;}
-  type_type bond_type(const bond_descriptor& b) const { return edge_type_map_[b];}
-  type_type edge_type(const edge_descriptor& e) const { return edge_type_map_[e];}
-  type_type site_type(const site_descriptor& s) const { return vertex_type_map_[s];}
-  type_type vertex_type(const edge_descriptor& v) const { return vertex_type_map_[v];}
-  type_type disordered_edge_type(const edge_descriptor& e) const 
-  { return d_.disordered_edges() ? disordered_edge_type_map_[e] : edge_type_map_[e];}
-  type_type disordered_bond_type(const bond_descriptor& b) const { return disordered_edge_type(b);}
+
+  vertex_type_map_type vertex_type_map() const { return vertex_type_map_; }
+  site_type_map_type site_type_map() const { return vertex_type_map_; }
+  edge_type_map_type edge_type_map() const { return edge_type_map_; }
+  bond_type_map_type bond_type_map() const { return edge_type_map_; }
+
+  type_type vertex_type(const vertex_descriptor& v) const
+  { return vertex_type_map_[v]; }
+  type_type site_type(const site_descriptor& s) const
+  { return vertex_type_map_[s]; }
+  type_type edge_type(const edge_descriptor& e) const
+  { return edge_type_map_[e]; }
+  type_type bond_type(const bond_descriptor& b) const
+  { return edge_type_map_[b]; }
+
+  //
+  // disorder
+  // 
+
+  bool disordered() const { return d_.disordered(); }
+  bool disordered_vertices() const { return d_.disordered_vertices(); }
+  bool disordered_sites() const { return d_.disordered_sites(); }
+  bool disordered_edges() const { return d_.disordered_edges(); }
+  bool disordered_bonds() const { return d_.disordered_bonds(); }
+
+  disordered_vertex_type_map_type disordered_vertex_type_map() const
+  { return disordered_vertex_type_map_; }
+  disordered_site_type_map_type disordered_site_type_map() const
+  { return disordered_vertex_type_map_; }
+  disordered_edge_type_map_type disordered_edge_type_map() const
+  { return disordered_edge_type_map_; }
+  disordered_bond_type_map_type disordered_bond_type_map() const
+  { return disordered_edge_type_map_; }
+
   type_type disordered_vertex_type(const vertex_descriptor& v) const 
-  { return d_.disordered_vertices() ? disordered_vertex_type_map_[v] : vertex_type_map_[v];}
-  type_type disordered_site_type(const site_descriptor& s) const { return disordered_vertex_type(s);}
-  disordered_edge_type_map_type disordered_edge_type_map() const { return disordered_edge_type_map_;}
-  disordered_bond_type_map_type disordered_bond_type_map() const { return disordered_edge_type_map_;}
-  disordered_vertex_type_map_type disordered_vertex_type_map() const { return disordered_vertex_type_map_;}
-  disordered_site_type_map_type disordered_site_type_map() const { return disordered_vertex_type_map_;}
-  edge_type_map_type edge_type_map() const { return edge_type_map_;}
-  bond_type_map_type bond_type_map() const { return edge_type_map_;}
-  vertex_type_map_type vertex_type_map() const { return vertex_type_map_;}
-  site_type_map_type site_type_map() const { return vertex_type_map_;}
-  bool disordered() const { return d_.disordered();}
-  bool disordered_sites() const { return d_.disordered_sites();}
-  bool disordered_bonds() const { return d_.disordered_bonds();}
-  bool disordered_vertices() const { return d_.disordered_vertices();}
-  bool disordered_edges() const { return d_.disordered_edges();}
+  { 
+    return d_.disordered_vertices() ?
+      disordered_vertex_type_map_[v] : vertex_type_map_[v];
+  }
+  type_type disordered_site_type(const site_descriptor& s) const
+  { return disordered_vertex_type(s); }
+  type_type disordered_edge_type(const edge_descriptor& e) const 
+  {
+    return d_.disordered_edges() ?
+      disordered_edge_type_map_[e] : edge_type_map_[e];
+  }
+  type_type disordered_bond_type(const bond_descriptor& b) const
+  { return disordered_edge_type(b); }
+
   const vector_type& coordinate(const site_descriptor& s) const { return coordinate_map_[s];}
   std::string coordinate_string(const site_descriptor& s) const { return coordinate_to_string(coordinate(s));}
   const vector_type& bond_vector(const bond_descriptor& b) const { return bond_vector_map_[b];}
@@ -261,9 +288,18 @@ public:
   const offset_type& offset(const cell_descriptor& c) const { return alps::offset(c,lattice());}
   bool on_lattice(const offset_type& o) const { return alps::on_lattice(o,lattice());}
   std::pair<bool,boundary_crossing_type> shift(offset_type& o, const offset_type& s) const { return alps::shift(o,s,lattice());}
-  size_type index(const cell_descriptor& c) const { return alps::index(c,lattice());}
-  size_type index(const edge_descriptor& e) const { return boost::get(edge_index_t(),graph(),e);}
-  size_type index(const vertex_descriptor& v) const { return v;}
+
+  size_type cell_index(const cell_descriptor& c) const
+  { return alps::index(c, lattice()); }
+  size_type vertex_index(const vertex_descriptor& v) const
+  { return boost::get(vertex_index_t(), graph(), v); }
+  size_type edge_index(const edge_descriptor& e) const
+  { return boost::get(edge_index_t(), graph(), e); }
+
+  size_type index(const cell_descriptor& c) const { return cell_index(c); }
+  size_type index(const vertex_descriptor& v) const { return vertex_index(v); }
+  size_type index(const edge_descriptor& e) const { return edge_index(e); }
+
   std::pair<basis_vector_iterator,basis_vector_iterator> basis_vectors() const { return alps::basis_vectors(lattice());}
   std::pair<basis_vector_iterator,basis_vector_iterator> reciprocal_basis_vectors() const { return alps::reciprocal_basis_vectors(lattice());}
   vector_type origin(const cell_descriptor& c) const { return alps::origin(c,lattice());}
