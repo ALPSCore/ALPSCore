@@ -27,8 +27,8 @@
 *
 **************************************************************************/
 
-#include <alps/scheduler/scheduler.h>
 #include <alps/random.h>
+#include <alps/scheduler/scheduler.h>
 #include <alps/osiris.h>
 
 #include <boost/lexical_cast.hpp>

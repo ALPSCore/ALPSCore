@@ -317,7 +317,7 @@ OperatorDescriptor<I>::apply(STATE state, const SiteBasisDescriptor<I>& basis, c
   
   // apply operators
   for (int i=0;i<basis.size();++i) {
-    const_iterator it=find(basis[i].name());
+    const_iterator it=this->find(basis[i].name());
     if (it!=end()) {
       get_quantumnumber(state,i)+=it->second; // apply change to QN
        if (!basis[i].valid(get_quantumnumber(state,i))) {

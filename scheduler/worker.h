@@ -31,13 +31,13 @@
 #define ALPS_SCHEDULER_WORKER_H
 
 #include <alps/scheduler/info.h>
-#include <alps/alea.h>
-#include <alps/osiris.h>
 #include <alps/parameters.h>
 #include <alps/random/rngfactory.h>
 #include <boost/smart_ptr.hpp>
 #include <boost/random.hpp>
 #include <boost/filesystem/path.hpp>
+#include <alps/alea.h>
+#include <alps/osiris.h>
 
 namespace alps {
 

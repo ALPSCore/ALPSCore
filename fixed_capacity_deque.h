@@ -141,6 +141,12 @@ struct deque_iterator
 
 }; // deque_iterator
 
+#ifndef BOOST_NO_INCLASS_MEMBER_INITIALIZATION
+template<class T, std::size_t N, class Ref, class Ptr>
+const std::size_t deque_iterator<T,N,Ref,Ptr>::M;
+#endif
+
+
 } // namespace fixed_capacity_deque
 
 
@@ -457,6 +463,12 @@ private:
 
 }; // fixed_capacity_deque
 
+#ifndef BOOST_NO_INCLASS_MEMBER_INITIALIZATION
+template<class T, std::size_t N, class CheckingPolicy>
+const std::size_t fixed_capacity_deque<T,N,CheckingPolicy>::M;
+template<class T, std::size_t N, class CheckingPolicy>
+const std::size_t fixed_capacity_deque<T,N,CheckingPolicy>::static_max_size;
+#endif
 
 template<class T, std::size_t N>
 inline bool operator==(const fixed_capacity_deque<T, N>& x,

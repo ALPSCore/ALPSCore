@@ -31,10 +31,10 @@
 #define ALPS_SCHEDULER_MONTECARLO_H
 
 #include <alps/scheduler/scheduler.h>
+#include <alps/scheduler/task.h>
+#include <alps/scheduler/worker.h>
 #include <alps/model/modelfactory.h>
 #include <alps/lattice/latticefactory.h>
-#include <alps/scheduler/worker.h>
-#include <alps/scheduler/task.h>
 #include <alps/lattice.h>
 #include <alps/model.h>
 #include <alps/alea.h>

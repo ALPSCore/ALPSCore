@@ -27,6 +27,7 @@
 *
 **************************************************************************/
 
+#include <boost/iterator/iterator_adaptor.hpp>
 #include <alps/scheduler/task.h>
 #include <alps/scheduler/types.h>
 #include <alps/osiris.h>

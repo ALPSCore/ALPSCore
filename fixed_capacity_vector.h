@@ -373,6 +373,12 @@ inline void swap(fixed_capacity_vector<T, N>& x,
   x.swap(y);
 }
 
+#ifndef BOOST_NO_INCLASS_MEMBER_INITIALIZATION
+template<class T, std::size_t N, class CheckingPolicy>
+const typename fixed_capacity_vector<T,N,CheckingPolicy>::size_type
+fixed_capacity_vector<T,N,CheckingPolicy>::static_max_size;
+#endif
+
 } // namespace alps
 
 #endif // ALPS_FIXED_CAPACITY_VECTOR_H

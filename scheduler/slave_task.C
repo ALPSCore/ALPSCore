@@ -28,8 +28,8 @@
 **************************************************************************/
 
 #include <alps/config.h>
-#include <alps/osiris.h>
 #include <alps/scheduler/scheduler.h>
+#include <alps/osiris.h>
 #ifdef ALPS_HAVE_UNISTD_H
 # include <unistd.h>
 #endif
