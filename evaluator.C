@@ -28,6 +28,7 @@
 *
 **************************************************************************/
 
+#include <boost/filesystem/fstream.hpp>
 #include <alps/evaluator.h>
 #include <alps/expression_impl.h>
 #include <alps/expression.h>

@@ -104,7 +104,7 @@ void OMPDump::init()
 void OMPDump::send(const Process& where,int32_t t)
 {
 #ifdef ALPS_TRACE
-  std::cerr << "Sending message " << t << " to process " << where.tid << ".\n";
+  std::cerr << "Sending message " << t << " to process " << where << ".\n";
 #endif
 
 #ifdef ALPS_DEBUG
@@ -129,7 +129,7 @@ void OMPDump::send(const Process& where,int32_t t)
 void OMPDump::send(const Process& where,int32_t t)
 {
 #ifdef ALPS_TRACE
-  std::cerr << "Sending message " << t << " to process " << where.tid << ".\n";
+  std::cerr << "Sending message " << t << " to process " << where << ".\n";
 #endif
 
 #ifdef ALPS_DEBUG
@@ -347,6 +347,9 @@ const Process& IMPDump::sender() const
 #ifdef ALPS_PVM
 void IMPDump::receive(const Process* where,int32_t t)
 {
+#ifdef ALPS_TRACE
+  std::cerr << "Preparing receive\n";
+#endif
   int tid = (where ? int(*where) : -1);  
   valid_=false;
   int info = bufid_ = pvm_recv(tid,t);

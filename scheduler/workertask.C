@@ -107,7 +107,7 @@ void WorkerTask::construct() // delayed until child class is fully constructed
     if(in+cpus()<=where.size()) {// a process is available
       if(j==0&&where[in].local()) {
         // one run runs locally
-#ifdef OSIRIS_TRACE
+#ifdef ALPS_TRACE
         std::cerr  << "Loading run 1 locally on " << where[0].name() << ".\n";
 #endif
         std::copy(where.begin()+in,where.begin()+in+cpus(),here.begin());
@@ -118,7 +118,7 @@ void WorkerTask::construct() // delayed until child class is fully constructed
         in+=cpus();
       }
       else { // load other runs onto remote nodes
-#ifdef OSIRIS_TRACE
+#ifdef ALPS_TRACE
         std::cerr  << "Loading run " << j+1 << " remote on " << where[j].name() << ".\n";
 #endif
         std::copy(where.begin()+in,where.begin()+in+cpus(),here.begin());
@@ -129,7 +129,7 @@ void WorkerTask::construct() // delayed until child class is fully constructed
       }
     }
     else { // no node available: load information only
-#ifdef OSIRIS_TRACE
+#ifdef ALPS_TRACE
       std::cerr  << "Loading information about run " << j+1 << " from file " << runfiles[i].in.string() << ".\n";
 #endif
       runs[j]=theScheduler->make_worker(parms);
@@ -146,7 +146,7 @@ void WorkerTask::construct() // delayed until child class is fully constructed
     {
       std::copy(where.begin()+in,where.begin()+in+cpus(),here.begin());
       if(in==0&&here[0].local()) { // one on the local node
-#ifdef OSIRIS_TRACE
+#ifdef ALPS_TRACE
         std::cerr  << "Creating run 1 locally .\n";
 #endif
         runs[0]=theScheduler->make_worker(here,parms);
@@ -156,7 +156,7 @@ void WorkerTask::construct() // delayed until child class is fully constructed
         workerstatus[0] = LocalRun;
       }
       else { // other runs on remote nodes
-#ifdef OSIRIS_TRACE
+#ifdef ALPS_TRACE
         std::cerr  << "Creating run " << i+1 << " remote on Host ID: " << where[i]<< ".\n";
 #endif
         runs[i]=new RemoteWorker(here,parms);
@@ -210,7 +210,7 @@ void WorkerTask::add_process(const Process& p)
     runs.resize(j+1);
     workerstatus.resize(j+1);
     runfiles.resize(j+1);
-#ifdef OSIRIS_TRACE
+#ifdef ALPS_TRACE
     std::cerr  << "Creating additional run " << j+1 << " remote on Host: " << p.name() << ".\n";
 #endif
     runs[j]=new RemoteWorker(here,parms);
@@ -220,7 +220,7 @@ void WorkerTask::add_process(const Process& p)
       runs[j]->start_worker();
   }
   else {// continue old run
-#ifdef OSIRIS_TRACE
+#ifdef ALPS_TRACE
     std::cerr  << "Loading additional run " << j << " remote on Host: " << p.name() << ".\n";
 #endif
     runs[j]=new RemoteWorker(here,parms);
@@ -291,7 +291,7 @@ bool WorkerTask::finished(double& more_time) const
     time_t now = time(0);
     more_time = 0.25*w*(now-start_time)/(start_work-w);
   }
-  return 0;
+  return false;
 }
 
 
@@ -323,9 +323,10 @@ double WorkerTask::work_done()  const
   if(runs.size()) {
     for (int i=0;i<runs.size();i++) {
       if(workerstatus[i]==RemoteRun) {
-	      if(!runs[i])
-	        boost::throw_exception(std::runtime_error( "run does not exist in Task::get_measurements"));
-        where_master.push_back( Process(dynamic_cast<RemoteWorker&>(*runs[i]).process()));
+	 if(!runs[i])
+	    boost::throw_exception(std::runtime_error( "run does not exist in Task::get_measurements"));
+        //where_master.push_back( Process(dynamic_cast<RemoteWorker&>(*runs[i]).process()));
+        where_master.push_back(dynamic_cast<RemoteWorker*>(runs[i])->process());
       }
       else if(runs[i])
         w += runs[i]->work_done();
