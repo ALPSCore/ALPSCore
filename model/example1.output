@@ -198,14 +198,8 @@
   <SITEOPERATOR name="Sx" site="x">
     1/2*(Splus(x)+Sminus(x))
   </SITEOPERATOR>
-  <SITEOPERATOR name="density" site="x">
-    n(x)
-  </SITEOPERATOR>
   <SITEOPERATOR name="double_occupancy" site="x">
-    n(x)*(n(x)-1)/1
-  </SITEOPERATOR>
-  <SITEOPERATOR name="magnetization" site="x">
-    Sz(x)
+    n(x)*(n(x)-1)/2
   </SITEOPERATOR>
   <BONDOPERATOR name="boson_hop" source="x" target="y">
     bdag(x)*b(y)+bdag(y)*b(x)
@@ -222,6 +216,30 @@
   <BONDOPERATOR name="hop" source="x" target="y">
     cdag(x)*c(y)+cdag(y)*c(x)
   </BONDOPERATOR>
+  <GLOBALOPERATOR name="boson_kinetic_energy">
+    <BONDTERM type="0" source="i" target="j">
+      -t*(bdag(i)*b(j)+bdag(j)*b(i))
+    </BONDTERM>
+    <BONDTERM type="1" source="i" target="j">
+      -t'*(bdag(i)*b(j)+bdag(j)*b(i))
+    </BONDTERM>
+  </GLOBALOPERATOR>
+  <GLOBALOPERATOR name="fermion_kinetic_energy">
+    <BONDTERM type="0" source="i" target="j">
+      -t*fermion_hop(i,j)
+    </BONDTERM>
+    <BONDTERM type="1" source="i" target="j">
+      -t'*fermion_hop(i,j)
+    </BONDTERM>
+  </GLOBALOPERATOR>
+  <GLOBALOPERATOR name="spin_exchange_energy">
+    <BONDTERM type="0" source="i" target="j">
+      Jz*Sz(i)*Sz(j)+Jxy/2*exchange_xy(i,j)
+    </BONDTERM>
+    <BONDTERM type="1" source="i" target="j">
+      Jz'*Sz(i)*Sz(j)+Jxy'/2*exchange_xy(i,j)
+    </BONDTERM>
+  </GLOBALOPERATOR>
   <HAMILTONIAN name="Ian's fermion Hubbard">
     <PARAMETER name="mu" default="0"/>
     <PARAMETER name="t" default="1"/>
