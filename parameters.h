@@ -141,8 +141,6 @@ public:
     return *this;
   }
 
-  double evaluate(const key_type& name) const;
-  
   void write_xml(std::ostream& xml) const
   {
     xml << "<PARAMETERS>\n";

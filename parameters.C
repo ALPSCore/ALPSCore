@@ -32,11 +32,6 @@
 
 namespace alps {
 
-double Parameters::evaluate(const key_type& name) const
-{
-  return Expression((*this)[name]).value(*this);
-}
-
 void Parameters::parse(std::istream& is)
 {
   char c;
