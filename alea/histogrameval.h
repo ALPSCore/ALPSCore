@@ -46,7 +46,7 @@
 #endif
 
 //======================================================
-//HistogramObsEvaluator
+//HistogramObservableEvaluator
 //
 //Observable class for Histograms
 //======================================================
@@ -166,10 +166,10 @@ template<class T>
 inline void HistogramObservableEvaluator<T>::collect() const
 {
   all_.collect_from(runs_);
-  count_=all_.count();
-  histogram_.resize(all_.size());
+  supertype::count_=all_.count();
+  supertype::histogram_.resize(all_.size());
   for (std::size_t i=0;i<all_.size();++i)
-    histogram_[i] = all_[i];
+    supertype::histogram_[i] = all_[i];
 }
 
 template <class T>
@@ -266,8 +266,8 @@ void HistogramObservableEvaluator<T>::output_histogram(std::ostream& out) const
   if(count()==0)
     out << " no measurements.\n";
   else
-    for(integer_type j=0; j<histogram_.size();++j)
-	  out << " " <<j<<": "<<histogram_[j]<<std::endl;
+    for(integer_type j=0; j<supertype::histogram_.size();++j)
+	  out << " " <<j<<": "<<supertype::histogram_[j]<<std::endl;
 }
 
 template <class T>
