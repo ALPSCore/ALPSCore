@@ -75,6 +75,7 @@ private:
 class Term : public detail::Evaluatable {
 public:
   Term(std::istream&, bool =false);
+  Term() : is_negative_(false) {}
   Term(double x) : is_negative_(false), terms_(1,Factor(x)) {}
   Term(const detail::Evaluatable& e) : is_negative_(false), terms_(1,Factor(e)) {}
   virtual ~Term() {}
@@ -197,6 +198,11 @@ inline bool operator==( const std::string& s, const alps::Term& e)
 inline bool operator==(const alps::Term& e1, const alps::Term& e2)
 {
   return static_cast<std::string>(e1) == static_cast<std::string>(e2);
+}
+
+inline bool operator<(const alps::Term& e1, const alps::Term& e2)
+{
+  return static_cast<std::string>(e1) < static_cast<std::string>(e2);
 }
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE

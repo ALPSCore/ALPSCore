@@ -96,6 +96,7 @@ public:
   template <class T>
   boost::multi_array<T,4> matrix(const SiteBasisDescriptor<I>&, const SiteBasisDescriptor<I>&,
                                           const operator_map&, const Parameters& =Parameters()) const;
+  std::set<Term> split(const operator_map&, const Parameters& =Parameters()) const;
 private:
   int type_;
   std::string term_;
@@ -374,6 +375,22 @@ BondTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& basis1, const SiteBa
     }
   }
   return mat;
+}
+
+template <class I> 
+std::set<Term> BondTermDescriptor<I>::split(const operator_map& ops, const Parameters& p) const
+{
+  std::set<Term> terms;
+  alps::Expression ex(term());
+  ex.flatten();
+  for (alps::Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
+    BondOperatorSplitter<I> evaluator(source(),target(),p,ops);
+    Term term(*tit);
+    term.partial_evaluate(evaluator);
+    terms.insert(evaluator.site_operators().first);
+    terms.insert(evaluator.site_operators().second);
+  }
+  return terms;
 }
 
 template <class I>
