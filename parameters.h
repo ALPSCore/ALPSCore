@@ -108,9 +108,7 @@ public:
   void clear() { list_.clear(); map_.clear(); }
   size_type size() const { return list_.size(); }
 
-  bool defined(const key_type& k) const {
-    return (map_.find(k) != map_.end());
-  }
+  bool defined(const key_type& k) const { return (map_.find(k) != map_.end());}
 
   // accessing elements by key
   value_type& operator[](const key_type& k) {
@@ -126,6 +124,7 @@ public:
       boost::throw_exception(std::runtime_error("parameter " + k + " not defined"));
     return list_[map_.find(k)->second].value();
   }
+  
   value_type value_or_default(const key_type& k, const value_type& v) const {
     return defined(k) ? (*this)[k] : v;
   }
@@ -135,60 +134,22 @@ public:
   iterator end() { return list_.end(); }
   const_iterator end() const { return list_.end(); }
 
-  void push_back(const parameter_type& p, bool allow_overwrite=false) {
-    if (p.key().empty())
-      boost::throw_exception(std::runtime_error("empty key"));
-    if (defined(p.key())) {
-      if (allow_overwrite)    
-        list_[map_.find(p.key())->second].value()=p.value();
-      else
-        boost::throw_exception(std::runtime_error("duplicated parameter: " + p.key()));
-    }
-    else {
-      map_[p.key()] = list_.size();
-      list_.push_back(p);
-    }
-  }
+  void push_back(const parameter_type& p, bool allow_overwrite=false);
+  
   void push_back(const key_type& k, const value_type& v, bool allow_overwrite=false) {
     push_back(Parameter(k, v),allow_overwrite);
   }
+
   Parameters& operator<<(const parameter_type& p) {
     (*this)[p.key()] = p.value();
     return *this;
   }
-  Parameters& operator<<(const Parameters& params) {
-    for (const_iterator it = params.begin(); it != params.end(); ++it)
-      (*this) << *it;
-    return *this;
-  }
 
-  void copy_undefined(const Parameters& p) {
-    for (const_iterator it=p.begin();it!=p.end();++it)
-      if (!defined(it->key()))
-        push_back(*it);
-  }
+  Parameters& operator<<(const Parameters& params);
+  void copy_undefined(const Parameters& p);
   
-  
-  void read_xml(XMLTag tag, std::istream& xml)
-  {
-    if (tag.name!="PARAMETERS")
-      boost::throw_exception(std::runtime_error("<PARAMETERS> element expected"));
-    if (tag.type==XMLTag::SINGLE)
-      return;
-    tag = parse_tag(xml);
-    while (tag.name!="/PARAMETERS") {
-      if(tag.name!="PARAMETER")
-	boost::throw_exception(std::runtime_error("<PARAMETER> element expected in <PARAMETERS>"));
-      std::string name = tag.attributes["name"];
-      if(name=="")
-	boost::throw_exception(std::runtime_error("nonempty name attribute expected in <PARAMETER>"));
-      push_back(name, parse_content(xml));
-      tag = parse_tag(xml);
-      if(tag.name!="/PARAMETER")
-	boost::throw_exception(std::runtime_error("</PARAMETER> expected at end of <PARAMETER> element"));
-      tag = parse_tag(xml);
-    }
-  }
+  void read_xml(XMLTag tag, std::istream& xml);
+  void extract_from_xml(std::istream& xml);
 
 private:
   list_type list_;
@@ -201,21 +162,7 @@ private:
 namespace alps {
 #endif
 
-inline std::ostream& operator<<(std::ostream& os, const alps::Parameters& p)
-{
-  for (alps::Parameters::const_iterator it = p.begin(); it != p.end(); ++it) {
-    if (it->value().valid()) {
-      std::string s = it->value().c_str();
-      os << it->key() << " = ";
-      if (s.find(' ') != std::string::npos)
-	os << '"' << s << '"';
-      else
-	os << s;
-      os << ";\n";
-    }
-  }
-  return os;
-}
+std::ostream& operator<<(std::ostream& os, const alps::Parameters& p);
 
 inline std::istream& operator>>(std::istream& is, alps::Parameters& p)
 {

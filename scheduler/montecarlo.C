@@ -100,19 +100,6 @@ std::string MCSimulation::worker_tag() const
   return "MCRUN";
 }
 
-void MCSimulation::write_xml_header(oxstream& out) const
-{
-  out << header("UTF-8") << stylesheet(xslt_path("QMCXML.xsl"));
-  out << start_tag("SIMULATION") << xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
-      << attribute("xsi:noNamespaceSchemaLocation","http://xml.comp-phys.org/2002/10/QMCXML.xsd");
-}
-
-
-void MCSimulation::write_xml_trailer(oxstream& out) const
-{
-  out << end_tag("SIMULATION");
-}
-
 
 void MCSimulation::write_xml_body(oxstream& out, const boost::filesystem::path& name) const
 {
@@ -120,7 +107,15 @@ void MCSimulation::write_xml_body(oxstream& out, const boost::filesystem::path& 
   if(!name.empty())
     fn_hdf5=name.branch_path()/(name.leaf()+".hdf");
   get_measurements(true).write_xml(out,fn_hdf5); // write compacted measurements
+  WorkerTask::write_xml_body(out,name);
 }
+
+
+static void MCRun::print_copyright(std::ostream& out) 
+{
+  out << "Non-copyrighted program. Please insert your own copyright statement by overwriting the print_copyright static member function of your MCRun class.\n";
+}
+
 
 MCRun::MCRun(const ProcessList& w,const Parameters&  myparms,int n)
   : Worker(w,myparms,n)
@@ -186,9 +181,9 @@ void MCRun::write_xml(const boost::filesystem::path& name, const boost::filesyst
   oxstream xml(name.branch_path()/(name.leaf()+".xml"));
   boost::filesystem::path fn_hdf5(name.branch_path()/(name.leaf()+".hdf"));
 
-  xml << header("UTF-8") << stylesheet(xslt_path("QMCXML.xsl"));
+  xml << header("UTF-8") << stylesheet(xslt_path("ALPS.xsl"));
   xml << start_tag("SIMULATION") << xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
-        << attribute("xsi:noNamespaceSchemaLocation","http://xml.comp-phys.org/2002/10/QMCXML.xsd");
+        << attribute("xsi:noNamespaceSchemaLocation","http://xml.comp-phys.org/2002/10/ALPS.xsd");
   xml << parms;
   measurements.write_xml(xml);
   xml << start_tag("MCRUN");
@@ -246,7 +241,7 @@ double DummyMCRun::work_done() const
 void MCSimulation::handle_tag(std::istream& infile, const XMLTag& tag) 
 {
   if (tag.name!="AVERAGES")
-    Task::handle_tag(infile,tag);
+    WorkerTask::handle_tag(infile,tag);
   else
     measurements.read_xml(infile,tag);
 }

@@ -89,7 +89,8 @@ public:
 class Worker : public AbstractWorker
 {
 public:
-  Worker(const ProcessList&,const Parameters&, int32_t);
+  Worker(const ProcessList&,const Parameters&, int32_t=0);
+  Worker(const Parameters&, int32_t=0);
   virtual ~Worker();
   void set_parameters(const Parameters& parms);
   virtual bool change_parameter(const std::string& name, const StringValue& value);
@@ -133,7 +134,6 @@ protected:
 private:
   TaskInfo info;
   int halted,started;
-  float stepspersec;
 };
 
 

@@ -35,7 +35,7 @@
 **************************************************************************/
 
 #include <alps/scheduler/options.h>
-
+#include <alps/copyright.h>
 #include <boost/limits.hpp>
 #include <boost/throw_exception.hpp>
 #include <cstdio>
@@ -63,7 +63,9 @@ Options::Options(int argc, char** argv)
 	boost::throw_exception(std::runtime_error( "Illegal option: " + std::string(argv[i])));
     }
     else {
-      if(argv[i][1]=='T') {
+      if(argv[i][1]=='l')
+        print_license(std::cout);
+      else if(argv[i][1]=='T') {
         if(i+1<argc) {
           if(!strcmp(argv[i]+2,"c")) {
             if(std::sscanf(argv[++i],"%lf",&checkpoint_time)==EOF)
@@ -74,11 +76,11 @@ Options::Options(int argc, char** argv)
               boost::throw_exception(std::runtime_error( "illegal minimum time"));
           }
           else if(!strcmp(argv[i]+2,"max")) {
-	    if(std::sscanf(argv[++i],"%lf",&max_check_time)==EOF)
+            if(std::sscanf(argv[++i],"%lf",&max_check_time)==EOF)
               boost::throw_exception(std::runtime_error( "illegal maximum time"));
           }
           else if(argv[i][2]=='\0') {
-	    if(std::sscanf(argv[++i],"%lf",&time_limit)==EOF)
+            if(std::sscanf(argv[++i],"%lf",&time_limit)==EOF)
               boost::throw_exception(std::runtime_error( "illegal time limit"));
           }
           else

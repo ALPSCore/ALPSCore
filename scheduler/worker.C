@@ -63,30 +63,45 @@ Worker::Worker(const ProcessList& w,const alps::Parameters&  myparms,int32_t n)
     node(n),
     parms(myparms),
     where(w),
-    started(false),
-    stepspersec(0.)
+    started(false)
 {
-  // we really want to do measurements => create measurements object
   if( node<0||(node>=where.size()&&where.size()!=0))
     boost::throw_exception(std::logic_error("illegal node number " + boost::lexical_cast<std::string,int>(n)+" in Worker::Worker"));
   
   // TODO: create slave runs
 
-  // TODO: replace by generic seeding scheme
-  // boost::minstd_rand0 gen(331);
+  if (where.size())
+    seed_with_sequence(random,parms["SEED"]);
+}
+
+Worker::Worker(const alps::Parameters&  myparms,int32_t n)
+  : AbstractWorker(),
+    version(MCDump_run_version),
+    random(),
+    random_01(random,boost::uniform_real<>()),
+    node(n),
+    parms(myparms),
+    where(1),
+    started(false)
+{
+  if( node<0||(node>=where.size()&&where.size()!=0))
+    boost::throw_exception(std::logic_error("illegal node number " + boost::lexical_cast<std::string,int>(n)+" in Worker::Worker"));
+  
+  // TODO: create slave runs
+
   if (where.size())
     seed_with_sequence(random,parms["SEED"]);
 }
 
 
 Worker::~Worker()
-{// TODO: delete slave runs!!!
+{
+  // TODO: delete slave runs!!!
 }
 
 
 void Worker::load_worker(IDump& dump)
 {
-
   int32_t l(dump);
   if(l!=MCDump_run)
     boost::throw_exception(std::runtime_error("dump does not contain a run"));
@@ -149,10 +164,8 @@ void Worker::change_phase(const std::string& p)
 // start/restart the run
 void Worker::start_worker()
 {
-  if(node==0) {
-    stepspersec=0.;
+  if(node==0) 
     info.start(work_phase()); // store info about starting
-    }
   started=true;
   start(); // user start
   // TODO: start all slaves
@@ -255,8 +268,8 @@ void Worker::set_parameters(const alps::Parameters& p)
   for (Parameters::const_iterator it = p.begin(); it != p.end(); ++it) {
     if(it->key() != "SEED" && parms[it->key()] != it->value()) {
       if(!(change_parameter(it->key(), it->value()) ||
-	   Worker::change_parameter(it->key(), it->value())))
-	boost::throw_exception(std::runtime_error("Cannot change parameter " + it->key()));
+          Worker::change_parameter(it->key(), it->value())))
+        boost::throw_exception(std::runtime_error("Cannot change parameter " + it->key()));
       parms[it->key()]=it->value();
     }    
   }

@@ -1,12 +1,11 @@
 /***************************************************************************
-* ALPS++ library
+* ALPS++/scheduler library 
 *
-* parser/xslt.C   functions to set path for XSLT stylefiles
+* scheduler/scheduler.h
 *
 * $Id$
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
-*                            Synge Todo <wistaria@comp-phys.org>,
+* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *
 * Permission is hereby granted, free of charge, to any person or organization 
 * obtaining a copy of the software covered by this license (the "Software") 
@@ -35,19 +34,51 @@
 *
 **************************************************************************/
 
-#include <alps/parser/xslt.h>
+#ifndef ALPS_SCHEDULER_FACTORY_H
+#define ALPS_SCHEDULER_FACTORY_H
 
-std::string alps::xslt_path(const std::string& stylefile) {
-  char* p =getenv("ALPS_XSLT_PATH");
-  if (p)
-    return std::string(p)+"/"+stylefile;
-else if (stylefile == "job.xsl")
-  return "http://xml.comp-phys.org/2002/10/job.xsl";
-else if (stylefile == "ALPS.xsl")
-  return "http://xml.comp-phys.org/2002/10/ALPS.xsl";
-  else if (stylefile == "plot2html.xsl")
-    return "http://xml.comp-phys.org/2003/4/plot2html.xsl";
-else
-  return "http://xml.comp-phys.org/"+stylefile;
-}
+#include <alps/scheduler/task.h>
+#include <alps/osiris.h>
+#include <boost/filesystem/path.hpp>
+#include <iostream>
+
+namespace alps {
+namespace scheduler {
+
+//=======================================================================
+// Factory
+//
+// a factory for user defined task and subtask objects
+//-----------------------------------------------------------------------
+
+class Factory
+{
+public:
+  Factory() {}
+  virtual Task* make_task(const ProcessList&,const boost::filesystem::path&) const;
+  virtual Task* make_task(const ProcessList&,const boost::filesystem::path&,const Parameters&) const;
+  virtual Worker* make_worker(const ProcessList&,const Parameters&,int) const;
+  virtual void print_copyright(std::ostream&) const=0;
+};
+
+template <class TASK>
+class SimpleFactory : public Factory
+{
+public:
+  SimpleFactory() {}
   
+  Task* make_task(const ProcessList& w,const boost::filesystem::path& fn) const
+  {
+    return new TASK(w,fn);
+  }
+  
+  void print_copyright(std::ostream& out) const
+  {
+    TASK::print_copyright(out);
+  }
+};
+
+} // namespace scheduler
+} // namespace alps
+ 
+#endif

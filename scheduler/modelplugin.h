@@ -1,12 +1,11 @@
 /***************************************************************************
-* ALPS++ library
+* ALPS++/scheduler library
 *
-* parser/xslt.C   functions to set path for XSLT stylefiles
+* scheduler/modelplugin.h
 *
 * $Id$
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
-*                            Synge Todo <wistaria@comp-phys.org>,
+* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *
 * Permission is hereby granted, free of charge, to any person or organization 
 * obtaining a copy of the software covered by this license (the "Software") 
@@ -35,19 +34,38 @@
 *
 **************************************************************************/
 
-#include <alps/parser/xslt.h>
+#ifndef ALPS_SCHEDULER_MODELPLUGIN_H
+#define ALPS_SCHEDULER_MODELPLUGIN_H
 
-std::string alps::xslt_path(const std::string& stylefile) {
-  char* p =getenv("ALPS_XSLT_PATH");
-  if (p)
-    return std::string(p)+"/"+stylefile;
-else if (stylefile == "job.xsl")
-  return "http://xml.comp-phys.org/2002/10/job.xsl";
-else if (stylefile == "ALPS.xsl")
-  return "http://xml.comp-phys.org/2002/10/ALPS.xsl";
-  else if (stylefile == "plot2html.xsl")
-    return "http://xml.comp-phys.org/2003/4/plot2html.xsl";
-else
-  return "http://xml.comp-phys.org/"+stylefile;
-}
+#include <alps/model.h>
+
+namespace alps {
+namespace scheduler {
+
+class ModelPlugin
+{
+public:  
+  ModelPlugin(alps::Parameters& p) // it updates the parameter object passed to it!
+   : model_library_(p), 
+     model_(model_library_.hamiltonian(p["MODEL"])) 
+  {
+    p.copy_undefined(model_.default_parameters());
+    model_.set_parameters(p);
+  }
   
+  const ModelLibrary::OperatorDescriptorMap& simple_operators() const { 
+    return model_library_.simple_operators();
+  }
+  
+  HamiltonianDescriptor<short>& model() { return model_;}
+  const HamiltonianDescriptor<short>& model() const { return model_;}
+   
+private:
+   ModelLibrary model_library_;
+   HamiltonianDescriptor<short> model_;
+};
+
+} // end namespace
+} // end namespace
+
+#endif

@@ -42,48 +42,15 @@
 // tasks to be performed
 //=======================================================================
 
+#include <alps/scheduler/factory.h>
 #include <alps/scheduler/options.h>
-#include <alps/scheduler/task.h>
 #include <alps/scheduler/types.h>
 #include <alps/scheduler/signal.hpp>
 #include <alps/parameterlist.h>
-#include <alps/osiris.h>
 #include <boost/smart_ptr.hpp>
-#include <boost/filesystem/path.hpp>
 
 namespace alps {
 namespace scheduler {
-
-//=======================================================================
-// Factory
-//
-// a factory for user defined task and subtask objects
-//-----------------------------------------------------------------------
-
-class Factory
-{
-public:
-  Factory() {}
-  virtual Task* make_task(const ProcessList&,const boost::filesystem::path&) const=0;
-  virtual Worker* make_worker(const ProcessList&,const Parameters&,int) const=0;
-};
-
-template <class WORKER, class TASK=Task>
-class SimpleFactory : public Factory
-{
-public:
-  SimpleFactory() {}
-  
-  Task* make_task(const ProcessList& w,const boost::filesystem::path& fn) const
-  {
-    return new TASK(w,fn);
-  }
-
-  Worker* make_worker(const ProcessList& where ,const Parameters& parms,int node) const
-  {
-    return new WORKER(where,parms,node);
-  }
-};
 
 //=======================================================================
 // Scheduler

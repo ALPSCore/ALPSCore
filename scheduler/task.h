@@ -119,7 +119,54 @@ protected:
   ProcessList where; // the list of work processes for this simulation
 };
 
+
 class Task : public AbstractTask
+{
+public:
+  static void print_copyright(std::ostream&);
+  
+  Task(const ProcessList&, const boost::filesystem::path&);	
+  ~Task();
+  
+  virtual void construct(); // needs to be called to finish construction
+
+  void checkpoint(const boost::filesystem::path&) const; // write into a file
+
+  void add_process(const Process&);
+  void delete_process(const Process&);
+
+  uint32_t cpus() const {return 1;}
+  bool local() {return (where.size() ? 1 : 0);} 
+  const alps::Parameters& get_parameters() const { return parms;}
+
+  void start(); // start simulation
+  void run(); // run a few steps and return control
+  virtual void dostep()=0; // do a step
+  void finish(); // mark as finished
+  bool finished() const { double dummy ; return finished(dummy);}
+  bool finished(double&) const; // check if simulation is finished
+  bool started() const { return started_;}
+  void halt();
+  double work() const; // return amount of work needed
+
+protected:
+  virtual void write_xml_header(alps::oxstream&) const;
+  virtual void write_xml_trailer(alps::oxstream&) const;
+  virtual void write_xml_body(alps::oxstream&, const boost::filesystem::path&) const=0;
+  virtual void handle_tag(std::istream&, const XMLTag&);
+
+  alps::Parameters parms;
+
+private:
+  void parse_task_file();
+  
+  boost::filesystem::path infilename;
+  bool started_; // is the task running?
+  bool finished_;
+};
+
+
+class WorkerTask : public Task
 {
 protected:	
   enum RunStatus {
@@ -130,42 +177,29 @@ protected:
   };
 
 public:
-  Task(const ProcessList&, const boost::filesystem::path&);	
-  ~Task();
+  WorkerTask(const ProcessList&, const boost::filesystem::path&);	
+  ~WorkerTask();
   
-  void checkpoint(const boost::filesystem::path&) const; // write into a file
+  void construct(); // needs to be called to finish construction
 
   void add_process(const Process&);
   void delete_process(const Process&);
 
-  uint32_t cpus() const {return 1;}
-  bool local() {return (where.size() ? 1 : 0);} 
-
   void start(); // start simulation
-  void run(); // run a few steps and return control
+  void dostep(); // run a few steps and return control
   bool finished(double&) const; // check if simulation is finished
   void halt();
   double work() const; // return amount of work needed
   double work_done() const; // return amount of work done
   std::vector<AbstractWorker*> runs; // the list of all runs
-  void construct(); // needs to be called to finish construction
-  const alps::Parameters& get_parameters() const { return parms;}
 
 protected:
   virtual std::string worker_tag() const=0;
-  virtual void write_xml_header(alps::oxstream&) const=0;
-  virtual void write_xml_trailer(alps::oxstream&) const=0;
-  virtual void write_xml_body(alps::oxstream&, const boost::filesystem::path&) const=0;
-  virtual void handle_tag(std::istream&, const XMLTag&);
-
-  alps::Parameters parms;
-  std::vector<int> workerstatus; // status of the runs
+  void write_xml_body(alps::oxstream&, const boost::filesystem::path&) const;
+  void handle_tag(std::istream&, const XMLTag&);
+  std::vector<RunStatus> workerstatus;
 
 private:
-  void parse_task_file(const boost::filesystem::path&);
-  bool started; // is the task running?
-
-  // collected information about the simulation
   mutable time_t start_time; // when as the simulation started?
   mutable double start_work; // how much work was to be done?
   boost::filesystem::path infilename;

@@ -36,10 +36,12 @@
 
 // This file implements behavior common to all schedulers
 
-#include <alps/config.h>
-#include <alps/osiris.h>
 #include <alps/scheduler/scheduler.h>
 #include <alps/scheduler/types.h>
+#include <alps/scheduler/copyright.h>
+#include <alps/config.h>
+#include <alps/osiris.h>
+#include <alps/copyright.h>
 #ifdef ALPS_HAVE_UNISTD_H
 # include <unistd.h>
 #endif
@@ -226,7 +228,10 @@ void init(const Factory& p)
 int start(int argc, char** argv, const Factory& p)
 {
   comm_init(&argc,&argv);
-
+  p.print_copyright(std::cout);
+  alps::scheduler::print_copyright(std::cout);
+  alps::print_copyright(std::cout);
+  
   Options opt(argc,argv);
   if(!runs_parallel())
     theScheduler = new SingleScheduler(opt,p);

@@ -1,12 +1,11 @@
 /***************************************************************************
-* ALPS++ library
+* ALPS library
 *
-* parser/xslt.C   functions to set path for XSLT stylefiles
+* alps/scheduler/copyright.h is the header to print copyright and license information
 *
 * $Id$
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
-*                            Synge Todo <wistaria@comp-phys.org>,
+* Copyright (C) 2003 by Matthias Troyer <wistaria@comp-phys.org>
 *
 * Permission is hereby granted, free of charge, to any person or organization 
 * obtaining a copy of the software covered by this license (the "Software") 
@@ -35,19 +34,18 @@
 *
 **************************************************************************/
 
-#include <alps/parser/xslt.h>
+#ifndef ALPS_SCHEDULER_COPYRIGHT_H
+#define ALPS_SCHEDULER_COPYRIGHT_H
+#include <iostream>
 
-std::string alps::xslt_path(const std::string& stylefile) {
-  char* p =getenv("ALPS_XSLT_PATH");
-  if (p)
-    return std::string(p)+"/"+stylefile;
-else if (stylefile == "job.xsl")
-  return "http://xml.comp-phys.org/2002/10/job.xsl";
-else if (stylefile == "ALPS.xsl")
-  return "http://xml.comp-phys.org/2002/10/ALPS.xsl";
-  else if (stylefile == "plot2html.xsl")
-    return "http://xml.comp-phys.org/2003/4/plot2html.xsl";
-else
-  return "http://xml.comp-phys.org/"+stylefile;
+namespace alps {
+namespace scheduler {
+
+void print_copyright(std::ostream& out);
+
 }
-  
+}
+
+#endif
+
+

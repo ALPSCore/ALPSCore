@@ -37,11 +37,9 @@
 #ifndef ALPS_SCHEDULER_MONTECARLO_H
 #define ALPS_SCHEDULER_MONTECARLO_H
 
-//=======================================================================
-// This file all include files for Monte Carlo simulations
-//=======================================================================
-
 #include <alps/scheduler/scheduler.h>
+#include <alps/scheduler/modelplugin.h>
+#include <alps/scheduler/latticeplugin.h>
 #include <alps/scheduler/worker.h>
 #include <alps/scheduler/task.h>
 #include <alps/lattice.h>
@@ -56,6 +54,8 @@ namespace scheduler {
 class MCRun : public Worker
 {
 public:
+  static void print_copyright(std::ostream&);
+
   MCRun(const ProcessList&,const alps::Parameters&,int);
 
   void save_worker(ODump&) const;
@@ -75,6 +75,7 @@ protected:
   ObservableSet measurements;
 };
 
+
 class DummyMCRun : public MCRun
 {
 public:
@@ -84,132 +85,56 @@ public:
   double work_done() const;
 };
 
-class MCSimulation : public Task
+
+class MCSimulation : public WorkerTask
 {	
 public:
-  MCSimulation(const ProcessList& w,const boost::filesystem::path& p) : Task(w,p) { construct();}	
+  MCSimulation(const ProcessList& w,const boost::filesystem::path& p) : WorkerTask(w,p) { construct();}	
   ObservableSet get_measurements(bool compact=false) const;
   MCSimulation& operator<<(const Observable& obs);
 private:
   std::string worker_tag() const;
-  void write_xml_header(alps::oxstream&) const;
-  void write_xml_trailer(alps::oxstream&) const;
   void write_xml_body(alps::oxstream&, const boost::filesystem::path&) const;
   virtual void handle_tag(std::istream&, const XMLTag&);
   ObservableSet measurements;
 };
 
+
 template <class G=graph_factory<>::graph_type>
-class LatticeMCRun : public MCRun
+class LatticeMCRun : public MCRun, public LatticePlugin<G>
 {
 public:
-  typedef G graph_type;
-  typedef typename graph_traits<graph_type>::vertex_iterator vertex_iterator;
-  typedef typename graph_traits<graph_type>::edge_iterator edge_iterator;
-  typedef typename graph_traits<graph_type>::out_edge_iterator out_edge_iterator;
-  typedef typename graph_traits<graph_type>::in_edge_iterator in_edge_iterator;
-  typedef typename graph_traits<graph_type>::edge_descriptor edge_descriptor;
-  typedef typename graph_traits<graph_type>::vertex_descriptor vertex_descriptor;
-  typedef typename graph_traits<graph_type>::vertices_size_type vertices_size_type;
-  typedef typename graph_traits<graph_type>::edges_size_type edges_size_type;
-  typedef typename graph_traits<graph_type>::degree_size_type degree_size_type;
-  typedef typename graph_traits<graph_type>::adjacency_iterator adjacency_iterator;
-  
-  typedef typename graph_traits<graph_type>::site_iterator site_iterator;
-  typedef typename graph_traits<graph_type>::bond_iterator bond_iterator;
-  typedef typename graph_traits<graph_type>::neighbor_bond_iterator neighbor_bond_iterator;
-  typedef typename graph_traits<graph_type>::bond_descriptor bond_descriptor;
-  typedef typename graph_traits<graph_type>::site_descriptor site_descriptor;
-  typedef typename graph_traits<graph_type>::sites_size_type sites_size_type;
-  typedef typename graph_traits<graph_type>::bonds_size_type bonds_size_type;
-  typedef typename graph_traits<graph_type>::neighbors_size_type neighbors_size_type;
-  typedef typename graph_traits<graph_type>::neighbor_iterator neighbor_iterator;
-  
   LatticeMCRun(const ProcessList& w,const alps::Parameters& p,int n)
-   : MCRun(w,p,n), 
-     factory_(parms), 
-     graph_(factory_.graph()), 
-     is_bipartite_(set_parity(graph())),
-     parity_map_(get_or_default(parity_t(),const_graph(),0.)),
-     bond_type_map_(get_or_default(bond_type_t(),const_graph(),0.))
-  {
-  }
-   
-  graph_type& graph() { return graph_;}
-  const graph_type& graph() const { return graph_;}
-  
-  sites_size_type num_sites() const { return alps::num_sites(graph());}
-  bonds_size_type num_bonds() const { return alps::num_bonds(graph());}
-  std::pair<site_iterator,site_iterator> sites() const { return alps::sites(graph());}
-  std::pair<bond_iterator,bond_iterator> bonds() const { return alps::bonds(graph());}
-  bond_descriptor bond(bonds_size_type i) const { return *(bonds().first+i);}
-  neighbors_size_type num_neighbors (const site_descriptor& v) const { return alps::num_neighbors(v,graph());}
-  std::pair<neighbor_bond_iterator,neighbor_bond_iterator> neighbor_bonds (const site_descriptor& v) const 
-    { return alps::neighbor_bonds(v,graph());}
-  std::pair<neighbor_iterator,neighbor_iterator> neighbors (const site_descriptor& v) const 
-    { return alps::neighbors(v,graph());}
-  site_descriptor neighbor (const site_descriptor& v, neighbors_size_type i) const { return alps::neighbor(v,i,graph());} 
-  site_descriptor site(sites_size_type i) const { return alps::site(i,graph());}
-  site_descriptor source(const bond_descriptor& b) const { return alps::source_impl(b,graph());}  
-  site_descriptor target(const bond_descriptor& b) const { return alps::target_impl(b,graph());}  
-  
-  vertices_size_type num_vertices() const { return num_vertices(graph());}
-  edges_size_type num_edges() const { return num_edges(graph());}
-  std::pair<vertex_iterator,vertex_iterator> vertices() const { return vertices(graph());}
-  std::pair<edge_iterator,edge_iterator> edges() const { return edges(graph());}
-  degree_size_type out_degree (const vertex_descriptor& v) const { return out_degree(v,graph());}
-  degree_size_type in_degree (const vertex_descriptor& v) const { return in_degree(v,graph());}
-  degree_size_type degree (const vertex_descriptor& v) const { return degree(v,graph());}
-  out_edge_iterator out_edges (const vertex_descriptor& v) const { return out_edges(v,graph());}
-  in_edge_iterator in_edges (const vertex_descriptor& v) const { return in_edges(v,graph());}
-  std::pair<adjacency_iterator,adjacency_iterator> adjacent_vertices (const site_descriptor& v) const 
-  { return adjacent_vertices(v,graph());}
-  vertex_descriptor vertex(vertices_size_type i) const { return vertex(i,graph());}
-  double parity(const site_descriptor& v) const { return parity_map_[v]==0 ? 1. :  parity_map_[v]==1 ? -1. : 0.;}
-  bool is_bipartite() const { return is_bipartite_;}
-  int bond_type(const bond_descriptor& b) const { return bond_type_map_[b];}
-private:
-   const graph_type& const_graph() const { return graph_;}
-   graph_factory<G> factory_;
-   graph_type& graph_;
-   bool is_bipartite_;
-   typename property_map<parity_t,graph_type,double>::const_type parity_map_;
-   typename property_map<bond_type_t,graph_type,int>::const_type bond_type_map_;
-
+   : MCRun(w,p,n), LatticePlugin<G>(parms)
+  {}
 };
 
 
 template <class G=graph_factory<>::graph_type>
-class LatticeModelMCRun : public LatticeMCRun<G>
+class LatticeModelMCRun : public LatticeMCRun<G>, public ModelPlugin
 {
 public:  
   LatticeModelMCRun(const ProcessList& w,const alps::Parameters& p,int n)
-   : LatticeMCRun<G>(w,p,n),
-     model_library_(parms), 
-     model_(model_library_.hamiltonian(parms["MODEL"])) 
-  {
-    parms.copy_undefined(model_.default_parameters());
-    model_.set_parameters(parms);
-  }
-  
-  const ModelLibrary::OperatorDescriptorMap& simple_operators() const { 
-    return model_library_.simple_operators();
-  }
-  
-  HamiltonianDescriptor<short>& model() { return model_;}
-  const HamiltonianDescriptor<short>& model() const { return model_;}
-   
-private:
-   ModelLibrary model_library_;
-   HamiltonianDescriptor<short> model_;
+   : LatticeMCRun<G>(w,p,n), ModelPlugin(parms)
+  {}
 };
 
 
 template <class WORKER>
-class SimpleMCFactory : public SimpleFactory<WORKER,MCSimulation>
+class SimpleMCFactory : public SimpleFactory<MCSimulation>
 {
 public:
   SimpleMCFactory() {}
+
+  Worker* make_worker(const ProcessList& where ,const Parameters& parms,int node) const
+  {
+    return new WORKER(where,parms,node);
+  }
+
+  void print_copyright(std::ostream& out) const
+  {
+    WORKER::print_copyright(out);
+  }
 };
 
 } // end namespace
