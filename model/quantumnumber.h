@@ -93,11 +93,13 @@ public:
 
   half_integer& operator++() { val_ += 2; return *this; }
   half_integer& operator--() { val_ -= 2; return *this; }
-  half_integer operator++(int) { half_integer tmp(*this); return ++tmp; }
-  half_integer operator--(int) { half_integer tmp(*this); return --tmp; }
+  half_integer operator++(int)
+    { half_integer tmp(*this); ++(*this); return tmp; }
+  half_integer operator--(int)
+    { half_integer tmp(*this); --(*this); return tmp; }
 
-  half_integer& operator+=(integer_type x) { val_+=2*x; return *this; }
-  half_integer& operator-=(integer_type x) { val_-=2*x; return *this; }
+  half_integer& operator+=(integer_type x) { val_ += 2*x; return *this; }
+  half_integer& operator-=(integer_type x) { val_ -= 2*x; return *this; }
   template <class J>
   half_integer& operator+=(const half_integer<J>& x)
   { val_ += x.val_; return *this; }
@@ -116,16 +118,16 @@ public:
   half_integer operator-(integer_type x) const
   { half_integer res(*this); return res -= x; }
 
-  integer_type distance(half_integer x) const
+  integer_type distance(const half_integer& x) const
   { 
-    if((*this==max()) != (x==max())) return std::numeric_limits<I>::max();
-    if(std::numeric_limits<I>::is_signed && (*this==min())!=(x==min()))
+    if ((*this==max()) != (x==max())) return std::numeric_limits<I>::max();
+    if (std::numeric_limits<I>::is_signed && (*this==min())!=(x==min()))
       return std::numeric_limits<I>::max();
     assert(std::abs(val_)%2 == std::abs(x.val_)%2);
     return (val_-x.val_)/2;
   }
   static half_integer max()
-  { return half_integer(std::numeric_limits<I>::max(),0);}
+  { return half_integer(std::numeric_limits<I>::max(),0); }
   static half_integer min()
   {
     return std::numeric_limits<I>::is_signed ? 
@@ -144,7 +146,7 @@ inline half_integer<I> operator+(I x, const half_integer<I>& y)
 
 template <class I>
 inline half_integer<I> operator-(I x, const half_integer<I>& y)
-{ return y - x; }
+{ return - y + x; }
 
 template <class I>
 inline std::ostream& operator<<(std::ostream& os, const half_integer<I>& x)
