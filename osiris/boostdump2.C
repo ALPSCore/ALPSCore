@@ -29,7 +29,6 @@
 /* $Id$ */
 
 #include <alps/osiris.h>
-#include <alps/osiris/dumparchive.h>
 #include <iostream>
 #include <cstdlib>
 
