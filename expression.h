@@ -73,7 +73,7 @@ class Term : public detail::Evaluatable {
 public:
   Term(std::istream&, bool =false);
   Term(double x) : is_negative_(false), terms_(1,detail::Value(x)) {}
-  Term(const Evaluatable& e) : is_negative_(false), terms_(1,detail::Value(e)) {}
+  Term(const detail::Evaluatable& e) : is_negative_(false), terms_(1,detail::Value(e)) {}
   virtual ~Term() {}
   double value(const Evaluator& p) const;
   bool can_evaluate(const Evaluator& p) const;
@@ -96,7 +96,7 @@ public:
   Expression(const std::string&);
   Expression(std::istream&);
   Expression(double val) : terms_(1,Term(val)) {}
-  Expression(const Evaluatable& e) : terms_(1,Term(e)) {}
+  Expression(const detail::Evaluatable& e) : terms_(1,Term(e)) {}
   double value(const Evaluator& p=Evaluator()) const;
   bool can_evaluate(const Evaluator& p=Evaluator()) const;
   void partial_evaluate(const Evaluator& p=Evaluator());
