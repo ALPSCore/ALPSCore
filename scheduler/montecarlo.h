@@ -49,6 +49,7 @@ public:
 
   void write_xml(const boost::filesystem::path& name, const boost::filesystem::path& osirisname="") const;
   const ObservableSet& get_measurements() const { return measurements;}
+  ObservableSet get_compacted_measurements() const;
 
   std::string work_phase();
   void run();
@@ -71,7 +72,7 @@ class MCSimulation : public Task
 {	
 public:
   MCSimulation(const ProcessList& w,const boost::filesystem::path& p) : Task(w,p) { construct();}	
-  ObservableSet get_measurements() const;
+  ObservableSet get_measurements(bool compact=false) const;
   MCSimulation& operator<<(const Observable& obs);
 private:
   std::string worker_tag() const;

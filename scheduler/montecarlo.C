@@ -30,7 +30,7 @@ namespace alps {
 namespace scheduler {
 
 // collect all measurements
-ObservableSet MCSimulation::get_measurements() const
+ObservableSet MCSimulation::get_measurements(bool compactit) const
 {
   // old measurements
   ObservableSet all_measurements;
@@ -45,14 +45,19 @@ ObservableSet MCSimulation::get_measurements() const
       where_master.push_back( Process(dynamic_cast<const RemoteWorker*>(runs[i])->process()));
       remote_runs++;
     }
-    else if(runs[i])
-      all_measurements << dynamic_cast<const MCRun*>(runs[i])->get_measurements();
+    else if(runs[i]) {
+      if (compactit)
+        all_measurements << dynamic_cast<const MCRun*>(runs[i])->get_compacted_measurements();
+      else
+        all_measurements << dynamic_cast<const MCRun*>(runs[i])->get_measurements();
+    }
   }
 
   // adding measurements from remote runs:
   if(remote_runs) {
     // broadcast request to all slaves
     OMPDump send;
+    send << compactit;
     send.send(where_master,MCMP_get_measurements);
       
     // collect results
@@ -65,8 +70,11 @@ ObservableSet MCSimulation::get_measurements() const
     }
   }
   for (ObservableSet::const_iterator it=measurements.begin();it!=measurements.end();++it)
-    if (!all_measurements.has(it->first))
+    if (!all_measurements.has(it->first)) {
       all_measurements << *(it->second);
+    }
+  if (compactit)
+    all_measurements.compact();
   return all_measurements;
 }
 
@@ -94,7 +102,7 @@ void MCSimulation::write_xml_body(std::ostream& out, const boost::filesystem::pa
   boost::filesystem::path fn_hdf5;
   if(!name.empty())
     fn_hdf5=name.branch_path()/(name.leaf()+".hdf");
-  get_measurements().write_xml(out,fn_hdf5);
+  get_measurements(true).write_xml(out,fn_hdf5); // write compacted measurements
 }
 
 MCRun::MCRun(const ProcessList& w,const alps::Parameters&  myparms,int n)
@@ -184,7 +192,12 @@ bool MCRun::handle_message(const Process& runmaster,int tag)
   {
     case MCMP_get_measurements:
       message.receive(runmaster,MCMP_get_measurements);
-      dump << get_measurements();
+      bool compactit;
+      message >> compactit;
+      if (compactit)
+        dump << get_compacted_measurements();
+      else
+        dump << get_measurements();
       dump.send(runmaster,MCMP_measurements);
       return true;
 
@@ -192,6 +205,14 @@ bool MCRun::handle_message(const Process& runmaster,int tag)
       return Worker::handle_message(runmaster,tag);
   }
 }
+
+ObservableSet MCRun::get_compacted_measurements() const 
+{
+  ObservableSet m(get_measurements());
+  m.compact();
+  return m;
+}
+
 
 void DummyMCRun::dostep()
 {
