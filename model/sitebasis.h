@@ -6,6 +6,7 @@
 * $Id$
 *
 * Copyright (C) 2003-2003 by Matthias Troyer <troyer@comp-phys.org>,
+*                            Axel Grzesik <axel@th.physik.uni-bonn.de>
 *
 * This program is free software; you can redistribute it and/or
 * modify it under the terms of the GNU General Public License
@@ -24,7 +25,11 @@
 
 #include <alps/model/quantumnumber.h>
 #include <cstddef>
+#include <stack>
+#include <utility>
 #include <vector>
+
+#include <iostream>
 
 namespace alps {
 
@@ -34,7 +39,7 @@ class SiteBasisDescriptor : public std::vector<QuantumNumber<I> >
 public:
   typedef typename std::vector<QuantumNumber<I> >::const_iterator const_iterator;
   
-  SiteBasisDescriptor() : num_states_(0) {}
+  SiteBasisDescriptor() : num_states_(0) { }
 #ifndef ALPS_WITHOUT_XML
   SiteBasisDescriptor(const XMLTag&, std::istream&);
   void write_xml(std::ostream&, const std::string& = "") const;
@@ -42,9 +47,9 @@ public:
 
   const std::string& name() const { return name_;}
   bool valid(const std::vector<half_integer<I> >&) const;
-  std::size_t num_states() const { if (!valid_ && !evaluate()) boost::throw_exception(std::runtime_error("Cannot evaluate quantum numbers in site basis " +name())); return num_states_;}
+  std::size_t num_states() const { if (!valid_ && !evaluate()) boost::throw_exception(std::runtime_error("Cannot evaluate quantum numbers in site basis " +name()));  return num_states_;}
   bool set_parameters(const Parameters&);
-  const Parameters& get_parameters() const { return parms_;}
+  const Parameters& get_parameters() const {  return parms_;}
 private:
   mutable bool valid_;
   bool evaluate() const;
@@ -71,10 +76,11 @@ public:
   typedef typename base_type::value_type value_type;
   typedef typename base_type::size_type size_type;
   SiteBasisStates(const SiteBasisDescriptor<I>& b);
-  
+    
   size_type index(const value_type& x) const;
   const SiteBasisDescriptor<I>& basis() const { return basis_;}
   bool check_sort() const;
+
 private:
   SiteBasisDescriptor<I> basis_;
 };
@@ -95,13 +101,12 @@ bool SiteBasisDescriptor<I>::valid(const std::vector<half_integer<I> >& x) const
   return true;
 }
 
-
 template <class I>
 bool SiteBasisDescriptor<I>::set_parameters(const Parameters& p)
-{
+{ 
   for (Parameters::iterator it=parms_.begin();it!=parms_.end();++it)
     if (p.defined(it->key())) 
-	it->value() = p[it->key()];
+      it->value() = p[it->key()];
   evaluate();
   return valid_;
 }
@@ -110,16 +115,66 @@ template <class I>
 bool SiteBasisDescriptor<I>::evaluate() const
 {
   valid_=true;
-  for (const_iterator it=begin();it!=end();++it)
-    valid_ = valid_ && const_cast<QuantumNumber<I>&>(*it).set_parameters(parms_);
-  if (valid_) {
+  Parameters q_parms_=get_parameters();
+  for (const_iterator it=begin();it!=end();++it) {
+    valid_ = valid_ && const_cast<QuantumNumber<I>&>(*it).set_parameters(q_parms_);
+    if(!valid_) break;
+    q_parms_[it->name()]=it->min();
+  }
+  if (valid_ && begin()!=end()) {
     num_states_=1;
-    for (const_iterator it=begin();it!=end();++it) {
-      if(it->levels()==std::numeric_limits<I>::max()) {
-        num_states_=std::numeric_limits<I>::max();
-        break;
+    const_iterator rit=end()-1;
+    while(const_cast<QuantumNumber<I>&>(*rit).set_parameters(parms_)) {
+      if(rit->levels()==half_integer<I>::max()) {
+	num_states_=std::numeric_limits<I>::max();
+	return true;
       }
-      num_states_ *= it->levels();
+      num_states_ *= rit->levels();
+      if(rit==begin()) break;
+      --rit;
+    }
+    if( rit!=begin() ) {
+      unsigned int n=0;
+      typedef std::pair<const_iterator,Parameters> q_pair;
+      std::stack<q_pair> s;
+      const_iterator it=begin();
+      Parameters p=q_parms_;
+      const_cast<QuantumNumber<I>&>(*it).set_parameters(p);
+      if(it->levels()==std::numeric_limits<I>::max()) {
+	num_states_=std::numeric_limits<I>::max();
+	return true;
+      }      
+      for(half_integer<I> q=it->min();q<=it->max();++q) {
+	p[it->name()]=q;
+	s.push(q_pair(it,p));
+      }
+      while(!s.empty()) {
+	const_iterator it=s.top().first;
+	Parameters      p=s.top().second;
+	s.pop();
+	const_iterator itt=it+1;
+	if(itt==rit) {
+	  const_cast<QuantumNumber<I>&>(*itt).set_parameters(p);
+	  if(itt->levels()==std::numeric_limits<I>::max()) {
+	    num_states_=std::numeric_limits<I>::max();
+	    return true;
+	  }
+	  n+=itt->levels();
+	}
+	else {
+	  ++it;
+	  const_cast<QuantumNumber<I>&>(*it).set_parameters(p);
+	  if(it->levels()==std::numeric_limits<I>::max()) {
+	    num_states_=std::numeric_limits<I>::max();
+	    return true;
+	  }
+	  for(half_integer<I> q=it->min();q<=it->max();++q) {
+	    p[it->name()]=q;
+	    s.push(q_pair(it,p));
+	  }
+	}
+      }
+      num_states_ *= n;
     }
   }
   return valid_;
@@ -146,24 +201,57 @@ SiteBasisStates<I>::SiteBasisStates(const SiteBasisDescriptor<I>& b)
 {
   if (b.num_states()==std::numeric_limits<I>::max())
     boost::throw_exception(std::runtime_error("Cannot build infinite set of basis states\n"));
-  std::vector<half_integer<I> > quantumnumbers;
-  for (int i=0;i<basis_.size();++i)
-    quantumnumbers.push_back(basis_[i].min());
-  int i=0;
-  if (basis_.valid(quantumnumbers)) 
-    do {
+  typedef std::pair<typename SiteBasisDescriptor<I>::const_iterator,half_integer<I> > q_pair;
+  std::stack<q_pair> s;
+  SiteBasisDescriptor<I>::const_iterator it=b.begin();
+  std::vector<half_integer<I> > quantumnumbers(basis_.size());
+  const_cast<QuantumNumber<I>&>(*it).set_parameters(b.get_parameters());
+  for(half_integer<I> q=it->max();q>=it->min();--q) 
+    s.push(q_pair(it,q));
+  while(!s.empty()) {
+    it=s.top().first;
+    quantumnumbers[it-b.begin()]=s.top().second;
+    s.pop();
+    if(it==b.end()-1) 
       push_back(quantumnumbers);
-      i=basis_.size()-1;
-      while (i>=0) {
-	if(basis_[i].valid(++quantumnumbers[i]))
-	  break;
-	quantumnumbers[i]=basis_[i].min();
-	--i;
-      }
-    } while (i<basis_.size());
-  if (!check_sort())
+    else {
+      ++it;
+      Parameters p=b.get_parameters();
+      for(typename SiteBasisDescriptor<I>::const_iterator qit=b.begin();qit!=it;++qit)
+	p[qit->name()]=quantumnumbers[qit-b.begin()];
+      const_cast<QuantumNumber<I>&>(*it).set_parameters(p);
+      for(half_integer<I> q=it->max();q>=it->min();--q)
+	s.push(q_pair(it,q));
+    }
+  }
+  if(!check_sort())
     boost::throw_exception(std::logic_error("Site basis not sorted correctly"));
 }
+
+/* template <class I> */
+/* SiteBasisStates<I>::SiteBasisStates(const SiteBasisDescriptor<I>& b,int) */
+/*  : basis_(b) */
+/* { */
+/*   if (b.num_states()==std::numeric_limits<I>::max()) */
+/*     boost::throw_exception(std::runtime_error("Cannot build infinite set of basis states\n")); */
+/*   std::vector<half_integer<I> > quantumnumbers; */
+/*   for (int i=0;i<basis_.size();++i) */
+/*     quantumnumbers.push_back(basis_[i].min()); */
+/*   int i=0; */
+/*   if (basis_.valid(quantumnumbers))  */
+/*     do { */
+/*       push_back(quantumnumbers); */
+/*       i=basis_.size()-1; */
+/*       while (i>=0) { */
+/* 	if(basis_[i].valid(++quantumnumbers[i])) */
+/* 	  break; */
+/* 	quantumnumbers[i]=basis_[i].min(); */
+/* 	--i; */
+/*       } */
+/*     } while (i<basis_.size()); */
+/*   if (!check_sort()) */
+/*     boost::throw_exception(std::logic_error("Site basis not sorted correctly")); */
+/* } */
 
 #ifndef ALPS_WITHOUT_XML
 
@@ -176,9 +264,9 @@ SiteBasisDescriptor<I>::SiteBasisDescriptor(const XMLTag& intag, std::istream& i
   if (tag.type!=XMLTag::SINGLE) {
     tag = parse_tag(is);
     while (tag.name!="/SITEBASIS") {
-      if (tag.name=="QUANTUMNUMBER")
+      if (tag.name=="QUANTUMNUMBER") 
         push_back(QuantumNumber<I>(tag,is));
-      else if (tag.name=="PARAMETER")
+      else if (tag.name=="PARAMETER") 
         parms_[tag.attributes["name"]]=tag.attributes["default"];
       if (tag.type!=XMLTag::SINGLE)
         tag = parse_tag(is);
@@ -231,7 +319,7 @@ std::ostream& operator<<(std::ostream& out, const alps::StateDescriptor<I>& s)
 
 template <class I>
 std::ostream& operator<<(std::ostream& out, const alps::SiteBasisStates<I>& s)
-{
+{ 
   out << "{\n";
   for (typename alps::SiteBasisStates<I>::const_iterator it=s.begin();it!=s.end();++it) {
     out << "  |";
