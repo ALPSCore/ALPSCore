@@ -516,6 +516,7 @@ struct evaluate_helper<std::complex<U> >
 
 typedef expression::Expression<std::complex<double> > Expression;
 typedef expression::Term<std::complex<double> > Term;
+typedef expression::Factor<std::complex<double> > Factor;
 typedef expression::Evaluator<std::complex<double> > Evaluator;
 typedef expression::ParameterEvaluator<std::complex<double> > ParameterEvaluator;
 
