@@ -1,7 +1,7 @@
 /***************************************************************************
-* ALPS++/alps library
+* ALPS library
 *
-* alps/evaluator.C   A class to store parameters
+* alps/expression.C   A class to evaluate expressions
 *
 * $Id$
 *
@@ -17,7 +17,6 @@
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 * GNU General Public License for more details.
-*
 *
 **************************************************************************/
 

@@ -1,5 +1,5 @@
 /***************************************************************************
-* ALPS++ library
+* ALPS library
 *
 * alps/expression.h   A class to evaluate expressions
 *
@@ -105,35 +105,17 @@ private:
 // evaluate all the parameters as far as possible
 extern Parameters evaluate(const Parameters& in);
 
-} // end namespace alps
-
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-namespace alps {
-#endif
-
 inline bool can_evaluate(const alps::StringValue& v, const alps::Parameters& p = alps::Parameters())
 {
   return v.valid() && Expression(v).can_evaluate(p);
 }
 
-inline double evaluate(const alps::StringValue& v, const alps::Parameters& p = alps::Parameters())
+inline double evaluate(const StringValue& v, const alps::Parameters& p = alps::Parameters())
 {
   return Expression(v).value(p);
 }
 
-// inline bool can_evaluate(const StringValue& v)
-// {
-//   return v.valid() && Expression(v).can_evaluate();
-// }
-
-// inline double evaluate(const StringValue& v)
-// {
-//   return Expression(v).value();
-// }
-
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // end namespace alps
-#endif
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 namespace alps {

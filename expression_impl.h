@@ -1,11 +1,11 @@
 /***************************************************************************
-* ALPS++ library
+* ALPS library
 *
-* alps/expression_impl.h  Classes to store and evaluate expressions
+* alps/expression_impl.h   A Class to evaluate expressions
 *
 * $Id$
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2001-2003 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>,
 *
 * This program is free software; you can redistribute it and/or
