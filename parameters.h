@@ -219,8 +219,9 @@ public:
   ParameterXMLHandler(Parameter& p);
 
   void start_element(const std::string& name,
-                     const XMLAttributes& attributes);
-  void end_element(const std::string& name);
+                     const XMLAttributes& attributes,
+                     xml::tag_type type);
+  void end_element(const std::string& name, xml::tag_type type);
   void text(const std::string& text);
 
 private:
@@ -234,8 +235,9 @@ public:
 
 protected:
   void start_child(const std::string& name,
-                   const XMLAttributes& attributes);
-  void end_child(const std::string& name);
+                   const XMLAttributes& attributes,
+                   xml::tag_type type);
+  void end_child(const std::string& name, xml::tag_type type);
 
 private:
   Parameters& parameters_;

@@ -45,42 +45,47 @@ bool CompositeXMLHandler::has_handler(const std::string& name) const {
 }
   
 void CompositeXMLHandler::start_element(const std::string& name,
-  const XMLAttributes& attributes) {
+  const XMLAttributes& attributes, xml::tag_type type) {
   if (level_ == 0) {
     if (name != basename())
-      boost::throw_exception(std::runtime_error("XMLCompositeHandler: unknown start tag : " + name));
-    start_top(name, attributes);
+      boost::throw_exception(std::runtime_error(
+        "XMLCompositeHandler: unknown start tag : " + name));
+    start_top(name, attributes, type);
   } else if (level_ == 1) {
-    if (start_element_impl(name, attributes) == false) {
+    if (start_element_impl(name, attributes, type) == false) {
       map_type::const_iterator h = handlers_.find(name);
       if (h == handlers_.end())
-        boost::throw_exception(std::runtime_error("XMLCompositeHandler: unknown start tag : " + name));
-      start_child(name, attributes);
+        boost::throw_exception(std::runtime_error(
+          "XMLCompositeHandler: unknown start tag : " + name));
+      start_child(name, attributes, type);
       current_ = h->second;
-      current_->start_element(name, attributes);
+      current_->start_element(name, attributes, type);
     }
   } else {
     if (current_ == 0) {
-      if (start_element_impl(name, attributes) == false) {
-        boost::throw_exception(std::runtime_error("XMLCompositeHandler: unknown start tag : " + name));
+      if (start_element_impl(name, attributes, type) == false) {
+        boost::throw_exception(std::runtime_error(
+          "XMLCompositeHandler: unknown start tag : " + name));
       }
     } else {
-      current_->start_element(name, attributes);
+      current_->start_element(name, attributes, type);
     }
   }
   ++level_;
 }
-void CompositeXMLHandler::end_element(const std::string& name) {
+void CompositeXMLHandler::end_element(const std::string& name,
+                                      xml::tag_type type) {
   if (level_ == 1) {
-    end_top(name);
+    end_top(name, type);
   } else {
     if (current_ == 0) {
-      if (end_element_impl(name) == false)
-        boost::throw_exception(std::runtime_error("XMLCompositeHandler: unknown end tag : " + name));
+      if (end_element_impl(name, type) == false)
+        boost::throw_exception(std::runtime_error(
+          "XMLCompositeHandler: unknown end tag : " + name));
     } else {
-      current_->end_element(name);
+      current_->end_element(name, type);
       if (level_ == 2) {
-        end_child(name);
+        end_child(name, type);
         current_ = 0;
       }
     }
@@ -90,7 +95,8 @@ void CompositeXMLHandler::end_element(const std::string& name) {
 void CompositeXMLHandler::text(const std::string& text) {
   if (current_ == 0) {
     if (text_impl(text) == false)
-      boost::throw_exception(std::runtime_error("XMLCompositeHandler: text is not allowed here"));
+      boost::throw_exception(std::runtime_error(
+        "XMLCompositeHandler: text is not allowed here"));
   } else {
     current_->text(text);
   }

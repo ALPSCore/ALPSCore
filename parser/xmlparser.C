@@ -163,21 +163,24 @@ namespace alps {
 
 namespace detail {
 
-static void startElement(void* h, const char* name, const char** atts) {
+static void startElement(void* h, const char* name, const char** atts)
+{
   XMLHandlerBase* handler = (XMLHandlerBase*)h;
   const std::string n = name;
   XMLAttributes attr;
   for (std::size_t i = 0; atts[i]; i += 2) {
     attr.push_back(XMLAttribute(atts[i], atts[i+1]));
   }
-  handler->start_element(n, attr);
+  handler->start_element(n, attr, xml::element);
 }
-static void endElement(void* h, const char* name) {
+static void endElement(void* h, const char* name)
+{
   XMLHandlerBase* handler = (XMLHandlerBase*)h;
   const std::string n = name;
-  handler->end_element(n);
+  handler->end_element(n, xml::element);
 }
-static void characters(void* h, const char* s, int len) {
+static void characters(void* h, const char* s, int len)
+{
   XMLHandlerBase* handler = (XMLHandlerBase*)h;
   std::string t(s, len);
   // remove preceding and following blanks
@@ -186,6 +189,19 @@ static void characters(void* h, const char* s, int len) {
   // remove appended CR, NL, \t, etc
   if (t.length() && std::isspace(t[t.length()-1])) t.erase(t.length()-1);
   if (t.length()) handler->text(t);
+}
+static void processingInstruction(void* h, const char* name, const char* data)
+{
+  XMLHandlerBase* handler = (XMLHandlerBase*)h;
+  const std::string n = name;
+  XMLAttributes attr(data);
+  if (n == "xml-stylesheet") {
+    handler->start_element(n, attr, xml::stylesheet);
+    handler->end_element(n, xml::stylesheet);
+  } else {
+    handler->start_element(n, attr, xml::processing_instruction);
+    handler->end_element(n, xml::processing_instruction);
+  }
 }
 static int externalEntity(XML_Parser parser, const char* context,
                           const char* /* base */, const char* systemId,
@@ -198,7 +214,8 @@ static int externalEntity(XML_Parser parser, const char* context,
     fin.read(buf, sizeof(buf));
     done = (fin.gcount() < sizeof(buf));
     if (!XML_Parse(p, buf, fin.gcount(), done)) {
-      boost::throw_exception(std::runtime_error("XMLParser: " + std::string(XML_ErrorString(XML_GetErrorCode(p)))));
+      boost::throw_exception(std::runtime_error("XMLParser: " +
+        std::string(XML_ErrorString(XML_GetErrorCode(p)))));
     }
   } while (!done);
   XML_ParserFree(p);
@@ -211,6 +228,7 @@ XMLParser::XMLParser(XMLHandlerBase& h) : parser_(XML_ParserCreate(0)) {
   XML_SetUserData(parser_, &h);
   XML_SetElementHandler(parser_, detail::startElement, detail::endElement);
   XML_SetCharacterDataHandler(parser_, detail::characters);
+  XML_SetProcessingInstructionHandler(parser_, detail::processingInstruction);
   XML_SetExternalEntityRefHandler(parser_, detail::externalEntity);
 }
 XMLParser::~XMLParser() { XML_ParserFree(parser_); }
@@ -220,7 +238,8 @@ void XMLParser::parse(std::istream& is) {
   do {
     is.read(buf, sizeof(buf));
     if (!XML_Parse(parser_, buf, is.gcount(), (is.gcount() < sizeof(buf))))
-      boost::throw_exception(std::runtime_error("XMLParser: " + std::string(XML_ErrorString(XML_GetErrorCode(parser_)))));
+      boost::throw_exception(std::runtime_error("XMLParser: " +
+        std::string(XML_ErrorString(XML_GetErrorCode(parser_)))));
   } while (is.gcount() == sizeof(buf));
 }
 void XMLParser::parse(const std::string& file) {
@@ -261,15 +280,16 @@ void XMLParser::parse(std::istream& in) {
         // start tag
         // map to attribute list
         XMLAttributes attributes;
-        for (XMLTag::AttributeMap::const_iterator it=tag.attributes.begin();it!=tag.attributes.end();++it)
+        for (XMLTag::AttributeMap::const_iterator it = tag.attributes.begin();
+             it != tag.attributes.end(); ++it)
           attributes.push_back(XMLAttribute(it->first,it->second));
-        handler_.start_element(tag.name,attributes);
+        handler_.start_element(tag.name,attributes,xml::element);
       }
       if(tag.type == XMLTag::CLOSING || tag.type== XMLTag::SINGLE) {
         // end tag
         if (tag.type == XMLTag::CLOSING)
           tag.name.erase(0,1);
-        handler_.end_element(tag.name);
+        handler_.end_element(tag.name,xml::element);
       }
     }
     else {

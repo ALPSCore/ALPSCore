@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -78,18 +78,23 @@ ParameterListXMLHandler::ParameterListXMLHandler(ParameterList& list)
 }
 
 void ParameterListXMLHandler::start_child(const std::string& name,
-  const XMLAttributes& /* attributes */) {
-  if (name == "PARAMETER") {
-    parameter_ = Parameter();
-  } else if (name == "PARAMETERS") {
-    current_ = default_;
+  const XMLAttributes& /* attributes */, xml::tag_type type) {
+  if (type == xml::element) {
+    if (name == "PARAMETER") {
+      parameter_ = Parameter();
+    } else if (name == "PARAMETERS") {
+      current_ = default_;
+    }
   }
 }
-void ParameterListXMLHandler::end_child(const std::string& name) {
-  if (name == "PARAMETER") {
-    default_[parameter_.key()] = parameter_.value();
-  } else if (name == "PARAMETERS") {
-    list_.push_back(current_);
+void ParameterListXMLHandler::end_child(const std::string& name,
+                                        xml::tag_type type) {
+  if (type == xml::element) {
+    if (name == "PARAMETER") {
+      default_[parameter_.key()] = parameter_.value();
+    } else if (name == "PARAMETERS") {
+      list_.push_back(current_);
+    }
   }
 }
 

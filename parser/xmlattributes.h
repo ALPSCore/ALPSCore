@@ -79,6 +79,7 @@ public:
 
 public:
   XMLAttributes() {}
+  XMLAttributes(const std::string& str);
 
   void clear() { list_.clear(); map_.clear(); }
   size_type size() const { return list_.size(); }
@@ -110,12 +111,7 @@ public:
   iterator end() { return list_.end(); }
   const_iterator end() const { return list_.end(); }
 
-  void push_back(const XMLAttribute& attr) {
-    if (defined(attr.key()))
-      boost::throw_exception(std::runtime_error("duplicated attribute " + attr.key()));
-    map_[attr.key()] = list_.size();
-    list_.push_back(attr);
-  }
+  void push_back(const XMLAttribute& attr);
   void push_back(const key_type& k, const value_type& v) {
     push_back(XMLAttribute(k, v));
   }

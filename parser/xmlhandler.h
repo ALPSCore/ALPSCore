@@ -41,6 +41,12 @@
 
 namespace alps {
 
+namespace xml {
+
+enum tag_type { element, processing_instruction, stylesheet };
+
+} // namespace xml
+
 class XMLHandlerBase
 {
 public:
@@ -57,8 +63,9 @@ public:
   std::string basename() const { return basename_; }
 
   virtual void start_element(const std::string& name,
-                             const XMLAttributes& attributes) = 0;
-  virtual void end_element(const std::string& name) = 0;
+                             const XMLAttributes& attributes,
+                             xml::tag_type type) = 0;
+  virtual void end_element(const std::string& name, xml::tag_type type) = 0;
   virtual void text(const std::string& text) = 0;
 
 private:
@@ -73,8 +80,9 @@ public:
   DummyXMLHandler(const std::string& basename)
     : XMLHandlerBase(basename) {}
   void start_element(const std::string& /* name */,
-                     const XMLAttributes& /* attributes */) {}
-  void end_element(const std::string& /* name */) {}
+                     const XMLAttributes& /* attributes */,
+                     xml::tag_type /* type */) {}
+  void end_element(const std::string& /* name */, xml::tag_type /* type */) {}
   void text(const std::string& /* text */) {}
 };
 
@@ -85,35 +93,47 @@ class SimpleXMLHandler : public XMLHandlerBase
 public:
   typedef T value_type;
 
-  SimpleXMLHandler(const std::string& basename,
-                   T& t,
+  SimpleXMLHandler(const std::string& basename, T& val,
                    const std::string& attr = "")
-    : XMLHandlerBase(basename), value_(t), attr_(attr), started_(false) {}
+    : XMLHandlerBase(basename), value_(val), attr_(attr), started_(false) {}
     
   virtual void start_element(const std::string& name,
-                             const XMLAttributes& attributes) {
-    if (name != basename())
-      boost::throw_exception(std::runtime_error("SimpleXMLHandler::start_element: unknown start tag <" + name + ">"));
-    if (started_)
-      boost::throw_exception(std::runtime_error("SimpleXMLHandler::start_element: encountered nested start tags <" + name + ">"));
-    started_ = true;
-    if (!attr_.empty()) {
-      if (!attributes.defined(attr_))
-        boost::throw_exception(std::runtime_error("SimpleXMLHandler::start_element: attribute \"" + attr_ + "\" not defined in <" + name + "> tag"));
-      value_ =
-        boost::lexical_cast<value_type>(attributes[attr_]);
+                             const XMLAttributes& attributes,
+                             xml::tag_type type) {
+    if (type == xml::element) {
+      if (name != basename())
+        boost::throw_exception(std::runtime_error(
+          "SimpleXMLHandler::start_element: unknown start tag <" + name + 
+          ">"));
+      if (started_)
+        boost::throw_exception(std::runtime_error(
+          "SimpleXMLHandler::start_element: encountered nested start tags <" +
+          name + ">"));
+      started_ = true;
+      if (!attr_.empty()) {
+        if (!attributes.defined(attr_))
+          boost::throw_exception(std::runtime_error(
+            "SimpleXMLHandler::start_element: attribute \"" + attr_ + 
+            "\" not defined in <" + name + "> tag"));
+        value_ = boost::lexical_cast<value_type>(attributes[attr_]);
+      }
+      started_ = true;
     }
-    started_ = true;
   }
 
-  virtual void end_element(const std::string& name) {
-    if (name != "" && name != basename())
-      boost::throw_exception(std::runtime_error("SimpleXMLHandler::end_element: unknown end tag </" + name + ">"));
-    if (!started_)
-      boost::throw_exception(std::runtime_error("SimpleXMLHandler::end_element: unbalanced end tag </" + basename() + ">"));
-    if (attr_.empty()) {
-      value_ = boost::lexical_cast<value_type>(buffer_);
-      buffer_.clear();
+  virtual void end_element(const std::string& name, xml::tag_type type) {
+    if (type == xml::element) {
+      if (name != "" && name != basename())
+        boost::throw_exception(std::runtime_error(
+          "SimpleXMLHandler::end_element: unknown end tag </" + name + ">"));
+      if (!started_)
+        boost::throw_exception(std::runtime_error(
+          "SimpleXMLHandler::end_element: unbalanced end tag </" + basename() +
+          ">"));
+      if (attr_.empty()) {
+        value_ = boost::lexical_cast<value_type>(buffer_);
+        buffer_.clear();
+      }
     }
   }
     
@@ -146,23 +166,30 @@ public:
   bool has_handler(const std::string& name) const;
 
   void start_element(const std::string& name,
-                     const XMLAttributes& attributes);
-  void end_element(const std::string& name);
+                     const XMLAttributes& attributes,
+                     xml::tag_type type);
+  void end_element(const std::string& name, xml::tag_type type);
   void text(const std::string& text);
 
 protected:
   virtual void start_top(const std::string& /* name */,
-                         const XMLAttributes& /* attributes */) {}
-  virtual void end_top(const std::string& /* name */) {}
+                         const XMLAttributes& /* attributes */,
+                         xml::tag_type /* type */) {}
+  virtual void end_top(const std::string& /* name */,
+                       xml::tag_type /* type */) {}
   virtual void start_child(const std::string& /* name */,
-                           const XMLAttributes& /* attributes */) {}
-  virtual void end_child(const std::string& /* name */) {}
+                           const XMLAttributes& /* attributes */,
+                           xml::tag_type /* type */) {}
+  virtual void end_child(const std::string& /* name */,
+                         xml::tag_type /* type */) {}
 
   virtual bool start_element_impl(const std::string& /* name */,
-                                  const XMLAttributes& /* attributes */) {
-    return false;
-  }
-  virtual bool end_element_impl(const std::string& /* name */) { return false; }
+                                  const XMLAttributes& /* attributes */,
+                                  xml::tag_type /* type */)
+  { return false; }
+  virtual bool end_element_impl(const std::string& /* name */,
+                                xml::tag_type /* type */)
+  { return false; }
   virtual bool text_impl(const std::string& /* text */) { return false; }
 
 private:  
@@ -184,8 +211,9 @@ public:
   virtual ~VectorXMLHandler() {}
 
 protected:
-  virtual void end_child(const std::string& name) {
-    if (name == handler_.basename()) cont_.push_back(val_);
+  virtual void end_child(const std::string& name, xml::tag_type type) {
+    if (type == xml::element && name == handler_.basename())
+      cont_.push_back(val_);
   }
 
 private:  
@@ -202,14 +230,35 @@ public:
     : XMLHandlerBase("printer"), oxs_(os), in_text_(false) {}
 
   void start_element(const std::string& name,
-                     const XMLAttributes& attributes) {
-    oxs_ << start_tag(name)
-         << attributes;
+                     const XMLAttributes& attributes,
+                     xml::tag_type type) {
     in_text_ = false;
+    switch (type) {
+    case xml::element :
+      oxs_ << start_tag(name)
+           << attributes;
+      break;
+    case xml::processing_instruction :
+      oxs_ << processing_instruction(name)
+           << attributes;
+    case xml::stylesheet :
+      oxs_ << stylesheet(attributes["href"]);
+    default :
+      break;
+    }
   }
-  void end_element(const std::string& name) {
-    oxs_ << end_tag(name);
+  void end_element(const std::string& name, xml::tag_type type) {
     in_text_ = false;
+    switch (type) {
+    case xml::element :
+      oxs_ << end_tag(name);
+      break;
+    case xml::processing_instruction :
+    case xml::stylesheet :
+      // nothing to do
+    default :
+      break;
+    }
   }
   void text(const std::string& text) {
     if (in_text_) oxs_ << '\n';

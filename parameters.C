@@ -167,16 +167,19 @@ ParameterXMLHandler::ParameterXMLHandler(Parameter& p)
   : XMLHandlerBase("PARAMETER"), parameter_(p) {}
 
 void ParameterXMLHandler::start_element(const std::string& name,
-                                        const XMLAttributes& attributes)
+                                        const XMLAttributes& attributes,
+                                        xml::tag_type type)
 {
-  if (name != "PARAMETER")
-    boost::throw_exception(std::runtime_error("ParameterXMLHandler: unknown tag name : " + name));
-  if (!attributes.defined("name"))
-    boost::throw_exception(std::runtime_error("ParameterXMLHandler: name attribute not found in PARAMETER tag"));
-  parameter_.key() = attributes["name"];
+  if (type == xml::element) {
+    if (name != "PARAMETER")
+      boost::throw_exception(std::runtime_error("ParameterXMLHandler: unknown tag name : " + name));
+    if (!attributes.defined("name"))
+      boost::throw_exception(std::runtime_error("ParameterXMLHandler: name attribute not found in PARAMETER tag"));
+    parameter_.key() = attributes["name"];
+  }
 }
 
-void ParameterXMLHandler::end_element(const std::string&) {}
+void ParameterXMLHandler::end_element(const std::string&, xml::tag_type) {}
 
 void ParameterXMLHandler::text(const std::string& text) {
   parameter_.value() = text;
@@ -190,14 +193,14 @@ ParametersXMLHandler::ParametersXMLHandler(Parameters& p)
 }
 
 void ParametersXMLHandler::start_child(const std::string&,
-                                       const XMLAttributes&)
-{
-  parameter_ = Parameter();
-}
+                                       const XMLAttributes&,
+                                       xml::tag_type type)
+{ if (type == xml::element) parameter_ = Parameter(); }
 
-void ParametersXMLHandler::end_child(const std::string&)
+void ParametersXMLHandler::end_child(const std::string&, xml::tag_type type)
 {
-  parameters_.operator[](parameter_.key()) = parameter_.value();
+  if (type == xml::element) 
+    parameters_.operator[](parameter_.key()) = parameter_.value();
 }
 
 } // namespace alps

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2004 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -119,8 +119,9 @@ public:
 
 protected:  
   void start_child(const std::string& name,
-                   const XMLAttributes& attributes);
-  void end_child(const std::string& name);
+                   const XMLAttributes& attributes,
+                   xml::tag_type type);
+  void end_child(const std::string& name, xml::tag_type type);
 
 private:
   ParameterList& list_;
