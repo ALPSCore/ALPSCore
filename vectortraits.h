@@ -32,7 +32,7 @@
 #include <iostream>
 #include <numeric>
 #include <vector>
-#ifdef HAS_VALARRAY
+#ifdef ALPS_HAVE_VALARRAY
 # include <valarray>
 #endif
 
@@ -66,6 +66,7 @@ struct VectorTraits
   static const bool is_complex = TypeTraits<value_type>::is_complex;
 };
 
+#ifdef ALPS_HAVE_VALARRAY
 template <class T> 
 struct VectorTraits<std::valarray<T> > {
   typedef T value_type;
@@ -75,6 +76,7 @@ struct VectorTraits<std::valarray<T> > {
   typedef std::size_t size_type;
   static const bool is_complex = TypeTraits<value_type>::is_complex;
 };
+#endif
 
 template <class T, std::size_t sz> 
 struct VectorTraits<T[sz]> {
@@ -216,6 +218,7 @@ inline void deallocate(C& c)
 }
   
   
+#ifdef ALPS_HAVE_VALARRAY
 template <class T> inline typename VectorTraits<std::valarray<T> >::iterator 
 begin(std::valarray<T>& c) { return &(c[0]);}
 
@@ -274,7 +277,7 @@ inline void assign (std::valarray<T>& c1, const T& x)
 
 template <class T>
 inline void deallocate(std::valarray<T> & c) { c.resize(0);}
-  
+#endif  
  /* 
 template <class T, std::size_t sz>
 inline T* begin(T[sz]& c) { return c;}
