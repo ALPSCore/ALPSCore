@@ -52,6 +52,7 @@ public:
   typedef hypercubic_lattice<coordinate_lattice<simple_lattice<GraphUnitCell>, std::vector<StringValue> >, std::vector<StringValue> > base_type;
   typedef lattice_traits<base_type>::unit_cell_type unit_cell_type;
   typedef lattice_traits<base_type>::offset_type offset_type;
+  typedef lattice_traits<base_type>::extent_type extent_type;
   typedef lattice_traits<base_type>::cell_descriptor cell_descriptor;
   typedef lattice_traits<base_type>::vector_type vector_type;
   typedef lattice_traits<base_type>::basis_vector_iterator basis_vector_iterator;

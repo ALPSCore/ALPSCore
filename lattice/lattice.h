@@ -35,6 +35,7 @@
 #include <alps/lattice/unitcell.h>
 #include <alps/lattice/coordinate_traits.h>
 #include <alps/vectorio.h>
+#include <alps/vectortraits.h>
 
 namespace alps {
 
@@ -192,7 +193,7 @@ extent(const Lattice& l)
 }
 
 template <class Lattice>
-inline typename lattice_traits<Lattice>::extent_type::value_type
+inline typename VectorTraits<typename lattice_traits<Lattice>::extent_type>::value_type
 extent(const Lattice& l, unsigned int d)
 {
   return l.extent(d);

@@ -179,7 +179,7 @@ public:
   typedef LATTICE base_type;
   typedef typename lattice_traits<base_type>::unit_cell_type unit_cell_type;
   typedef typename lattice_traits<base_type>::offset_type offset_type;
-  typedef typename lattice_traits<base_type>::cell_descriptor cell_descriptor;
+  typedef typename lattice_traits<base_type>::extent_type extent_type;
   typedef typename lattice_traits<base_type>::vector_type vector_type;
   typedef typename lattice_traits<base_type>::basis_vector_iterator basis_vector_iterator;
   typedef typename lattice_traits<base_type>::cell_iterator cell_iterator;
