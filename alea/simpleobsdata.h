@@ -333,6 +333,11 @@ inline SimpleObservableData<T>::SimpleObservableData(std::istream& infile, const
   read_xml(infile,intag);
 }
 
+inline double text_to_double(const std::string& val) 
+{
+  return  ((val=="NaN" || val=="nan" || val=="NaNQ") ? sqrt(-1.) : boost::lexical_cast<double,std::string>(val));
+}
+
 template <class T>
 inline void SimpleObservableData<T>::read_xml_scalar(std::istream& infile, const XMLTag& intag)
 {
@@ -352,15 +357,13 @@ inline void SimpleObservableData<T>::read_xml_scalar(std::istream& infile, const
     }
     else if (tag.name=="MEAN") {
       if (tag.type !=XMLTag::SINGLE) {
-        std::string val=parse_content(infile);
-        mean_=((val=="NaN" || val=="nan") ? sqrt(-1.) : boost::lexical_cast<double,std::string>(val));
+        mean_=text_to_double(parse_content(infile));
         check_tag(infile,"/MEAN");
       }
     }
     else if (tag.name=="ERROR") {
       if (tag.type !=XMLTag::SINGLE) {
-        std::string val=parse_content(infile);
-        error_=((val=="NaN" || val=="nan") ? sqrt(-1.) : boost::lexical_cast<double,std::string>(val));
+        error_=text_to_double(parse_content(infile));
         eval_method_=tag.attributes["method"]; 
         check_tag(infile,"/ERROR");
       }
@@ -368,16 +371,14 @@ inline void SimpleObservableData<T>::read_xml_scalar(std::istream& infile, const
     else if (tag.name=="VARIANE") {
       if (tag.type !=XMLTag::SINGLE) {
         has_variance_=true;
-        std::string val=parse_content(infile);
-        variance_=((val=="NaN" || val=="nan") ? sqrt(-1.) : boost::lexical_cast<double,std::string>(val));
+        variance_=text_to_double(parse_content(infile));
         check_tag(infile,"/VARIANCE");
       }
     }
     else if (tag.name=="AUTOCORR") {
       if (tag.type !=XMLTag::SINGLE) {
         has_tau_=true;
-        std::string val=parse_content(infile);
-        tau_=((val=="NaN" || val=="nan") ? sqrt(-1.) : boost::lexical_cast<double,std::string>(val));
+        tau_=text_to_double(parse_content(infile));
         check_tag(infile,"/AUTOCORR");
       }
     }
@@ -414,15 +415,13 @@ inline void SimpleObservableData<T>::read_xml_vector(std::istream& infile, const
       }
       else if (tag.name=="MEAN") {
         if (tag.type !=XMLTag::SINGLE) {
-          std::string val=parse_content(infile);
-          mean_[i]=((val=="NaN" || val=="nan") ? sqrt(-1.) : boost::lexical_cast<double,std::string>(val));
+          mean_[i]=text_to_double(parse_content(infile));
           check_tag(infile,"/MEAN");
         }
       }
       else if (tag.name=="ERROR") {
         if (tag.type != XMLTag::SINGLE) {
-          std::string val=parse_content(infile);
-          error_[i]=((val=="NaN" || val=="nan") ? sqrt(-1.) : boost::lexical_cast<double,std::string>(val));
+          error_[i]=text_to_double(parse_content(infile));
           eval_method_=tag.attributes["method"]; 
           check_tag(infile,"/ERROR");
         }
@@ -430,16 +429,14 @@ inline void SimpleObservableData<T>::read_xml_vector(std::istream& infile, const
       else if (tag.name=="VARIANE") {
         if (tag.type !=XMLTag::SINGLE) {
           has_variance_=true;
-          std::string val=parse_content(infile);
-          variance_[i]=((val=="NaN" || val=="nan") ? sqrt(-1.) : boost::lexical_cast<double,std::string>(val));
+          variance_[i]=text_to_double(parse_content(infile));
           check_tag(infile,"/VARIANCE");
         }
       }
       else if (tag.name=="AUTOCORR") {
         if (tag.type !=XMLTag::SINGLE) {
           has_tau_=true;
-          std::string val=parse_content(infile);
-          tau_[i]=((val=="NaN" || val=="nan") ? 0. : boost::lexical_cast<double,std::string>(val));
+          tau_[i]=text_to_double(parse_content(infile));
           check_tag(infile,"/AUTOCORR");
         }
       }
