@@ -17,4 +17,4 @@ observable b: 1.49968 +/- 0.00275; tau = -0.0468
     bin #6   : 312      entries: error = 0.00285328
     bin #7   : 156      entries: error = 0.0027477
 
-(observable b) / (observable a): 3.00282 +/- 0.0157275
+(observable b) / (observable a): 3.00282 +/- 0.0157
