@@ -471,8 +471,9 @@ void SimpleObservableEvaluator<T>::output_vector(std::ostream& out) const
 {
   out << super_type::name();
   if(count()==0)
-    out << " no measurements.\n";
+    out << ": no measurements.\n";
   else {
+    out << std::endl;
     result_type value_(mean());
     result_type error_(error());
     time_type tau_;
@@ -482,7 +483,8 @@ void SimpleObservableEvaluator<T>::output_vector(std::ostream& out) const
            obs_value_traits<result_type>::slice_begin(value_);
           sit!=obs_value_traits<result_type>::slice_end(value_);++sit)
     {
-      out << obs_value_traits<result_type>::slice_name(value_,sit)  << ": "
+      out << "Entry["
+	  << obs_value_traits<result_type>::slice_name(value_,sit)  << "]: "
           << obs_value_traits<result_type>::slice_value(value_,sit) << " +/- " 
           << obs_value_traits<result_type>::slice_value(error_,sit);
       if(has_tau())
