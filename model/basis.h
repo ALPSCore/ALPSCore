@@ -100,14 +100,14 @@ BasisStates<I,S>::BasisStates(const BasisStatesDescriptor<I>& b)
   std::vector<int> idx(b.size(),0);
   if (b.size())
   while (true) {
-    int k=0;
+    int k=idx.size();
     while (idx[k]>=b[k].size()) {
       if (b[k].size()==0)
         boost::throw_exception(std::runtime_error("No states for site basis " + 
 	     boost::lexical_cast<std::string, SiteBasisDescriptor<I> >(b[k].basis())));
       idx[k]=0;
-      ++k;
-      if (k>=idx.size())
+      --k;
+      if (k<0)
         return;
       else
         ++idx[k];

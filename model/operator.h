@@ -61,6 +61,8 @@ class SiteTermDescriptor
 public:
   typedef std::map<std::string,OperatorDescriptor<I> > operator_map;
   SiteTermDescriptor() : type_(-2) {}
+  SiteTermDescriptor(std::string t) : type_(-2), term_(t) {}
+  SiteTermDescriptor(Term t) : type_(-2), term_(boost::lexical_cast<std::string>(t)) {}
 #ifndef ALPS_WITHOUT_XML
   SiteTermDescriptor(const XMLTag&, std::istream&);
   void write_xml(std::ostream&, const std::string& = "") const;
@@ -74,7 +76,6 @@ public:
 private:
   int type_;
   std::string term_;
-  //Parameters parms_;
 };
 
 template<class I>

@@ -7,8 +7,6 @@
 
 * basis sets with restriction to specific QNs, e.g. N, Sz (AG)
 
-* split multi-site term into site terms (MT)
-
 * sorted basis sets + binary search (MT)
 
 
@@ -56,7 +54,3 @@ XX/03
   - determine sign (AG/ST)
   
 * symbolic basis transformation for bond Hamiltonian (tba)
-
-
-
-
