@@ -66,7 +66,7 @@ void Parameters::parse(std::istream& is)
 	if (c=='{' || c=='}')
 	  is.putback(c);
       }
-      push_back(key, value);
+      push_back(key, value, true);
     } else {
       is.putback(c);
       break;

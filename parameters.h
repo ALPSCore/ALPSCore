@@ -120,16 +120,22 @@ public:
   iterator end() { return list_.end(); }
   const_iterator end() const { return list_.end(); }
 
-  void push_back(const parameter_type& p) {
+  void push_back(const parameter_type& p, bool allow_overwrite=false) {
     if (p.key().empty())
       boost::throw_exception(std::runtime_error("empty key"));
-    if (defined(p.key()))
-      boost::throw_exception(std::runtime_error("duplicated parameter: " + p.key()));
-    map_[p.key()] = list_.size();
-    list_.push_back(p);
+    if (defined(p.key())) {
+      if (allow_overwrite)    
+        list_[map_.find(p.key())->second].value()=p.value();
+      else
+        boost::throw_exception(std::runtime_error("duplicated parameter: " + p.key()));
+    }
+    else {
+      map_[p.key()] = list_.size();
+      list_.push_back(p);
+    }
   }
-  void push_back(const key_type& k, const value_type& v) {
-    push_back(Parameter(k, v));
+  void push_back(const key_type& k, const value_type& v, bool allow_overwrite=false) {
+    push_back(Parameter(k, v),allow_overwrite);
   }
   Parameters& operator<<(const parameter_type& p) {
     (*this)[p.key()] = p.value();
