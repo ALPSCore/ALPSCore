@@ -103,11 +103,11 @@ public:
     : type_(-2), term_(term), source_(source), target_(target) {}
   BondTermDescriptor(const Term& term)
     : type_(-2), term_(boost::lexical_cast<std::string>(term)),
-      source_("i"), target("j") {}
+      source_("i"), target_("j") {}
   BondTermDescriptor(const Term& term, const std::string& source,
                      const std::string& target)
     : type_(-2), term_(boost::lexical_cast<std::string>(term)),
-      source_(source), target(target) {}
+      source_(source), target_(target) {}
   BondTermDescriptor(const XMLTag&, std::istream&);
   void write_xml(oxstream&) const;
 
