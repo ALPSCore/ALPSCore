@@ -14,7 +14,7 @@
 
 @SET_MAKE@
 
-SOURCES = $(example1_SOURCES) $(example10_SOURCES) $(example11_SOURCES) $(example12_SOURCES) $(example13_SOURCES) $(example14_SOURCES) $(example2_SOURCES) $(example3_SOURCES) $(example4_SOURCES) $(example5_SOURCES) $(example6_SOURCES) $(example7_SOURCES) $(example8_SOURCES) $(example9_SOURCES)
+SOURCES = $(example1_SOURCES) $(example10_SOURCES) $(example11_SOURCES) $(example12_SOURCES) $(example13_SOURCES) $(example14_SOURCES) $(example15_SOURCES) $(example16_SOURCES) $(example2_SOURCES) $(example3_SOURCES) $(example4_SOURCES) $(example5_SOURCES) $(example6_SOURCES) $(example7_SOURCES) $(example8_SOURCES) $(example9_SOURCES)
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -42,7 +42,8 @@ check_PROGRAMS = example1$(EXEEXT) example2$(EXEEXT) example3$(EXEEXT) \
 	example4$(EXEEXT) example5$(EXEEXT) example6$(EXEEXT) \
 	example7$(EXEEXT) example8$(EXEEXT) example9$(EXEEXT) \
 	example10$(EXEEXT) example11$(EXEEXT) example12$(EXEEXT) \
-	example13$(EXEEXT) example14$(EXEEXT)
+	example13$(EXEEXT) example14$(EXEEXT) example15$(EXEEXT) \
+	example16$(EXEEXT)
 subdir = test/model
 DIST_COMMON = $(dist_noinst_DATA) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in
@@ -102,6 +103,20 @@ am_example14_OBJECTS = example14.$(OBJEXT)
 example14_OBJECTS = $(am_example14_OBJECTS)
 example14_LDADD = $(LDADD)
 example14_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+am_example15_OBJECTS = example15.$(OBJEXT)
+example15_OBJECTS = $(am_example15_OBJECTS)
+example15_LDADD = $(LDADD)
+example15_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+am_example16_OBJECTS = example16.$(OBJEXT)
+example16_OBJECTS = $(am_example16_OBJECTS)
+example16_LDADD = $(LDADD)
+example16_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
 	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
@@ -173,14 +188,16 @@ CXXLINK = $(LIBTOOL) --tag=CXX --mode=link $(CXXLD) $(AM_CXXFLAGS) \
 	$(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = $(example1_SOURCES) $(example10_SOURCES) \
 	$(example11_SOURCES) $(example12_SOURCES) $(example13_SOURCES) \
-	$(example14_SOURCES) $(example2_SOURCES) $(example3_SOURCES) \
-	$(example4_SOURCES) $(example5_SOURCES) $(example6_SOURCES) \
-	$(example7_SOURCES) $(example8_SOURCES) $(example9_SOURCES)
+	$(example14_SOURCES) $(example15_SOURCES) $(example16_SOURCES) \
+	$(example2_SOURCES) $(example3_SOURCES) $(example4_SOURCES) \
+	$(example5_SOURCES) $(example6_SOURCES) $(example7_SOURCES) \
+	$(example8_SOURCES) $(example9_SOURCES)
 DIST_SOURCES = $(example1_SOURCES) $(example10_SOURCES) \
 	$(example11_SOURCES) $(example12_SOURCES) $(example13_SOURCES) \
-	$(example14_SOURCES) $(example2_SOURCES) $(example3_SOURCES) \
-	$(example4_SOURCES) $(example5_SOURCES) $(example6_SOURCES) \
-	$(example7_SOURCES) $(example8_SOURCES) $(example9_SOURCES)
+	$(example14_SOURCES) $(example15_SOURCES) $(example16_SOURCES) \
+	$(example2_SOURCES) $(example3_SOURCES) $(example4_SOURCES) \
+	$(example5_SOURCES) $(example6_SOURCES) $(example7_SOURCES) \
+	$(example8_SOURCES) $(example9_SOURCES)
 DATA = $(dist_noinst_DATA)
 ETAGS = etags
 CTAGS = ctags
@@ -354,7 +371,9 @@ example11_SOURCES = example11.C
 example12_SOURCES = example12.C
 example13_SOURCES = example13.C
 example14_SOURCES = example14.C
-dist_noinst_DATA = example1.output example2.output example3.output example4.output example5.output example6.output example7.output example8.input example8.output example9.output example10.input example10.output example11.input example11.output example12.input example12.output example13.input example13.output example14.input example14.output
+example15_SOURCES = example15.C
+example16_SOURCES = example16.C
+dist_noinst_DATA = example1.output example2.output example3.output example4.output example5.output example6.output example7.output example8.input example8.output example9.output example10.input example10.output example11.input example11.output example12.input example12.output example13.input example13.output example14.input example14.output example15.input example15.output example16.input example16.output
 all: all-am
 
 .SUFFIXES:
@@ -413,6 +432,12 @@ example13$(EXEEXT): $(example13_OBJECTS) $(example13_DEPENDENCIES)
 example14$(EXEEXT): $(example14_OBJECTS) $(example14_DEPENDENCIES) 
 	@rm -f example14$(EXEEXT)
 	$(CXXLINK) $(example14_LDFLAGS) $(example14_OBJECTS) $(example14_LDADD) $(LIBS)
+example15$(EXEEXT): $(example15_OBJECTS) $(example15_DEPENDENCIES) 
+	@rm -f example15$(EXEEXT)
+	$(CXXLINK) $(example15_LDFLAGS) $(example15_OBJECTS) $(example15_LDADD) $(LIBS)
+example16$(EXEEXT): $(example16_OBJECTS) $(example16_DEPENDENCIES) 
+	@rm -f example16$(EXEEXT)
+	$(CXXLINK) $(example16_LDFLAGS) $(example16_OBJECTS) $(example16_LDADD) $(LIBS)
 example2$(EXEEXT): $(example2_OBJECTS) $(example2_DEPENDENCIES) 
 	@rm -f example2$(EXEEXT)
 	$(CXXLINK) $(example2_LDFLAGS) $(example2_OBJECTS) $(example2_LDADD) $(LIBS)
@@ -450,6 +475,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/example12.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/example13.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/example14.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/example15.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/example16.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/example2.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/example3.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/example4.Po@am__quote@
