@@ -255,6 +255,10 @@ void LatticeDescriptor::set_parameters(const Parameters& p)
   for (int i=0;i<basis_vectors_.size();++i)
     for (int j=0;j<basis_vectors_[i].size();++j)
       basis_vectors_[i][j] = alps::evaluate(basis_vectors_[i][j], parms);
+  for (int i=0;i<reciprocal_basis_vectors_.size();++i)
+    for (int j=0;j<reciprocal_basis_vectors_[i].size();++j)
+      reciprocal_basis_vectors_[i][j] = alps::evaluate(reciprocal_basis_vectors_[i][j], parms);
+      
 }
 
 void FiniteLatticeDescriptor::set_parameters(const Parameters& p)
