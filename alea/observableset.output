@@ -1,4 +1,9 @@
 <AVERAGES>
+  <SCALAR_AVERAGE name="a/b">
+    <COUNT>9984</COUNT>
+    <MEAN method="jackknife">0.3330110557883458</MEAN>
+    <ERROR method="jackknife">0.00174</ERROR>
+  </SCALAR_AVERAGE>
   <SCALAR_AVERAGE name="observable a">
     <COUNT>10000</COUNT>
     <MEAN method="simple">0.4994786087170967</MEAN>
