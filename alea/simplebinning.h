@@ -451,8 +451,10 @@ inline void SimpleBinning<T>::output_vector(std::ostream& out, const L& label) c
            obs_value_traits<result_type>::slice_begin(mean_);
           sit!=obs_value_traits<result_type>::slice_end(mean_);++sit,++it2)
     {
-      out << "Entry[" << obs_value_traits<result_type>::slice_name(mean_,sit) << "] " 
-          << "(" << obs_value_traits<L>::slice_value(label,it2) << ")" << ": "
+      std::string lab=obs_value_traits<L>::slice_value(label,it2);
+      if (lab=="")
+        lab=obs_value_traits<result_type>::slice_name(mean_,sit);
+      out << "Entry[" << lab << "]: "
           << obs_value_traits<result_type>::slice_value(mean_,sit) << " +/- " 
           << obs_value_traits<result_type>::slice_value(error_,sit) << "; tau = "
           << obs_value_traits<time_type>::slice_value(tau_,sit);

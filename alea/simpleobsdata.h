@@ -408,7 +408,7 @@ void SimpleObservableData<T>::read_xml_vector(std::istream& infile, const XMLTag
   tag = parse_tag(infile);
   int i=0;
   while (tag.name =="SCALAR_AVERAGE") {
-    label[i]=tag.attributes["label"];
+    label[i]=tag.attributes["indexvalue"];
     tag = parse_tag(infile);
     while (tag.name !="/SCALAR_AVERAGE") {
       if (tag.name=="COUNT") {

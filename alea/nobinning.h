@@ -239,11 +239,14 @@ inline void NoBinning<T>::output_vector(std::ostream& out, const L& label) const
     typename obs_value_traits<L>::slice_iterator it2=obs_value_traits<L>::slice_begin(label);
     for (typename obs_value_traits<result_type>::slice_iterator sit=
            obs_value_traits<result_type>::slice_begin(mean_);
-          sit!=obs_value_traits<result_type>::slice_end(mean_);++sit,++it2)
-      out << "Entry[" << obs_value_traits<result_type>::slice_name(mean_,sit) << "] " 
-          << "(" << obs_value_traits<L>::slice_value(label,it2) << ")" << ": "
+          sit!=obs_value_traits<result_type>::slice_end(mean_);++sit,++it2) {
+      std::string lab=obs_value_traits<L>::slice_value(label,it2);
+      if (lab=="")
+        lab=obs_value_traits<result_type>::slice_name(mean_,sit);
+      out << "Entry[" << lab << "]: "
           << obs_value_traits<result_type>::slice_value(mean_,sit) << " +/- " 
           << obs_value_traits<result_type>::slice_value(error_,sit) << std::endl;
+    }
   }
 }
 

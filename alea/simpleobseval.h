@@ -510,9 +510,10 @@ void SimpleObservableEvaluator<T>::output_vector(std::ostream& out) const
            obs_value_traits<result_type>::slice_begin(value_);
           sit!=obs_value_traits<result_type>::slice_end(value_);++sit,++it2)
     {
-      out << "Entry["
-          << obs_value_traits<result_type>::slice_name(value_,sit)  << "] "
-          << "(" << obs_value_traits<label_type>::slice_value(super_type::label(),it2) << ")" << ": "
+      std::string lab=obs_value_traits<label_type>::slice_value(super_type::label(),it2);
+      if (lab=="")
+        lab=obs_value_traits<result_type>::slice_name(value_,sit);
+      out << "Entry[" << lab << "]: "
           << obs_value_traits<result_type>::slice_value(value_,sit) << " +/- " 
           << obs_value_traits<result_type>::slice_value(error_,sit);
       if(has_tau())

@@ -296,9 +296,11 @@ void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, const boost::f
     typename obs_value_traits<label_type>::slice_iterator it2=obs_value_traits<label_type>::slice_begin(label());
     while (it!=end)
     {
+      std::string lab=obs_value_traits<label_type>::slice_value(label(),it2);
+      if (lab=="")
+        lab=obs_value_traits<result_type>::slice_name(mean_,it);
       oxs << start_tag("SCALAR_AVERAGE")
-          << attribute("indexvalue", obs_value_traits<result_type>::slice_name(mean_,it))
-          << attribute("label",obs_value_traits<label_type>::slice_name(label(),it2));
+          << attribute("indexvalue",lab);
       oxs << start_tag("COUNT") << no_linebreak << count() << end_tag;
       int prec=(count()==1) ? 20 : int(4-std::log10(std::abs(obs_value_traits<result_type>::slice_value(error_,it)/obs_value_traits<result_type>::slice_value(mean_,it)))); 
       
