@@ -66,7 +66,8 @@ public:
                                 // edge property
                                 boost::property<target_offset_t,offset_type,
                                   boost::property<source_offset_t,offset_type,
-                                    boost::property<edge_type_t,type_type> > >
+                                    boost::property<edge_type_t,type_type,
+                                      boost::property<bond_vector_t,coordinate_type> > > >
                                 > graph_type;
 
   GraphUnitCell();

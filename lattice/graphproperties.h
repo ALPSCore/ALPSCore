@@ -43,19 +43,17 @@
 namespace alps {
 
 struct vertex_type_t { typedef boost::vertex_property_tag kind; };
-//struct original_vertex_type_t { typedef boost::vertex_property_tag kind; };
 typedef vertex_type_t site_type_t;
-//typedef original_vertex_type_t original_site_type_t;
 struct coordinate_t { typedef boost::vertex_property_tag kind; };
 struct parity_t { typedef boost::vertex_property_tag kind; };
 
 struct edge_type_t { typedef boost::edge_property_tag kind; };
-//struct original_edge_type_t { typedef boost::edge_property_tag kind; };
 typedef edge_type_t bond_type_t;
-//typedef original_edge_type_t original_bond_type_t;
 struct source_offset_t { typedef boost::edge_property_tag kind; };
 struct target_offset_t { typedef boost::edge_property_tag kind; };
 struct boundary_crossing_t { typedef boost::edge_property_tag kind; };
+struct edge_vector_t { typedef boost::edge_property_tag kind; };
+typedef edge_vector_t bond_vector_t;
 struct graph_name_t { typedef boost::graph_property_tag kind; };
 struct dimension_t { typedef boost::graph_property_tag kind; };
 
@@ -77,11 +75,22 @@ typedef boost::adjacency_list<boost::vecS,boost::vecS,boost::undirectedS,
                               // edge property
                               boost::property<edge_type_t,type_type,
                                 boost::property<boost::edge_index_t,unsigned int,
-                                  boost::property<boundary_crossing_t,boundary_crossing> > >,
+                                  boost::property<boundary_crossing_t,boundary_crossing,
+                                    boost::property<bond_vector_t,coordinate_type> > > >,
                               // graph property
                               boost::property<dimension_t,std::size_t,
                                 boost::property<graph_name_t,std::string > >
                               , boost::vecS> coordinate_graph_type;
+
+typedef boost::adjacency_list<boost::vecS,boost::vecS,boost::undirectedS,
+                              // vertex property
+                              boost::no_property,
+                              // edge property
+                              boost::property<boost::edge_index_t,unsigned int>,
+                              // graph property
+                              boost::property<dimension_t,std::size_t,
+                                boost::property<graph_name_t,std::string > >
+                              , boost::vecS> minimal_graph_type;
 
 } // end namespace alps
 

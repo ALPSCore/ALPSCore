@@ -62,7 +62,7 @@ GraphUnitCell::GraphUnitCell(const XMLTag& intag, std::istream& p)
   while(true) {
     tag=parse_tag(p);
     if(tag.name=="/UNITCELL")
-      return;
+      break;
     else if (tag.name=="VERTEX") {
       coordinate_type coord;
       type_type t=tag.attributes["type"]=="" ? boost::lexical_cast<type_type,int>(0) : boost::lexical_cast<type_type,std::string>(tag.attributes["type"]);
@@ -149,6 +149,29 @@ GraphUnitCell::GraphUnitCell(const XMLTag& intag, std::istream& p)
     else
       boost::throw_exception(std::runtime_error("encountered illegal tag <" + tag.name + "> in UNITCELL"));
   }
+  // calculate bond vectors
+  for (graph_type::edge_iterator it = boost::edges(graph_).first; it !=boost::edges(graph_).second ; ++it) {
+    offset_type source_offset=boost::get(source_offset_t(),graph_,*it);
+    offset_type target_offset=boost::get(target_offset_t(),graph_,*it);
+    coordinate_type source_coordinate=boost::get(coordinate_t(),graph_,boost::source(*it,graph_));
+    coordinate_type target_coordinate=boost::get(coordinate_t(),graph_,boost::target(*it,graph_));
+    coordinate_type bond_coordinate(dimension());
+    std::pair<coordinate_type::const_iterator,coordinate_type::const_iterator> scit=alps::coordinates(source_coordinate);
+    std::pair<coordinate_type::const_iterator,coordinate_type::const_iterator> tcit=alps::coordinates(target_coordinate);
+    std::pair<offset_type::const_iterator,offset_type::const_iterator> soit=alps::coordinates(source_offset);
+    std::pair<offset_type::const_iterator,offset_type::const_iterator> toit=alps::coordinates(target_offset);
+    std::pair<coordinate_type::iterator,coordinate_type::iterator> bit=alps::coordinates(bond_coordinate);
+    while (bit.first != bit.second) {
+      if (scit.first !=scit.second) *(bit.first) -= *(scit.first++);
+      if (tcit.first !=tcit.second) *(bit.first) += *(tcit.first++);
+      if (soit.first !=soit.second) *(bit.first) -= *(soit.first++);
+      if (toit.first !=toit.second) *(bit.first) += *(toit.first++);
+      ++bit.first;
+    }
+    if (scit.first != scit.second || tcit.first != tcit.second || soit.first != soit.second || toit.first != toit.second)
+      boost::throw_exception(std::logic_error("Iterator range errors in constructing unit cell"));
+    boost::put(bond_vector_t(),graph_,*it,bond_coordinate);
+  }
 }
 
 GraphUnitCell::GraphUnitCell(const std::string& name, std::size_t dim) :
@@ -184,6 +207,7 @@ void GraphUnitCell::write_xml(oxstream& xml) const
                      it!=boost::edges(graph_).second;++it) {
     xml << start_tag("EDGE")
         << attribute("type", boost::get(edge_type_t(),graph_,*it))
+        << attribute("vector", vector_writer(boost::get(bond_vector_t(),graph_,*it)))
         << no_linebreak;
     xml << start_tag("SOURCE")
         << attribute("vertex",boost::source(*it,graph_)+1);

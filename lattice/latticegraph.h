@@ -64,8 +64,10 @@ inline void make_graph_from_lattice(GRAPH& g,const LATTICE& l)
   typedef typename boost::graph_traits<graph_type>::edge_descriptor edge_descriptor;
   typedef typename lattice_traits<lattice_type>::cell_iterator cell_iterator;
   typedef typename lattice_traits<lattice_type>::offset_type offset_type;
+  typedef typename lattice_traits<lattice_type>::vector_type vector_type;
   typedef typename lattice_traits<lattice_type>::size_type size_type;
   typedef typename lattice_traits<lattice_type>::boundary_crossing_type boundary_crossing_type;
+  typedef typename lattice_traits<lattice_type>::basis_vector_iterator basis_vector_iterator;
 
   int num = alps::volume(l)*boost::num_vertices(alps::graph(alps::unit_cell(l)));
   const unit_graph_type& ug(alps::graph(alps::unit_cell(l)));
@@ -88,6 +90,9 @@ inline void make_graph_from_lattice(GRAPH& g,const LATTICE& l)
 
   typename property_map<dimension_t,graph_type,uint32_t>::type
     graphdimension = get_or_default(dimension_t(),g,uint32_t(0));
+
+  typename property_map<bond_vector_t,graph_type,std::vector<double> >::type
+    bondvector = get_or_default(bond_vector_t(),g,std::vector<double>());
   
   for (int i=0;i<num;++i)
     boost::add_vertex(g);
@@ -131,24 +136,33 @@ inline void make_graph_from_lattice(GRAPH& g,const LATTICE& l)
 
         if(source_index!=target_index) {
           edge_descriptor edge=boost::add_edge(source_index,target_index,g).first;
+          
           // store bond kind and index
           edgeindex[edge]=edge_index++;
           edgetype[edge]=boost::get(edge_type_t(),ug,*first_edge);
+          
+          // store boundary crossing
           if (source_cross.second && target_cross.second)
             boost::throw_exception(
               std::logic_error("ALPS++::lattice: Cannot calculate boundary crossing if neither vertex is in the original cell"));
-            boundary_crossing_type bt( source_cross.second ? source_cross.second.invert() : target_cross.second);
-            edgeboundary[edge]=bt;
+          boundary_crossing_type bt( source_cross.second ? source_cross.second.invert() : target_cross.second);
+          edgeboundary[edge]=bt;
+          
+          // store edge vector
+          vector_type bondvector_relative = boost::get(bond_vector_t(),ug,*first_edge);
+          vector_type bondvector_absolute(alps::dimension(bondvector_relative));
+          // perform basis transformation to lattice basis
+          basis_vector_iterator first, last;
+          boost::tie(first,last) = basis_vectors(l);
+          for (typename vector_type::iterator rit = coordinates(bondvector_relative).first; first!=last; ++first, ++rit)
+            for (int i=0;i<alps::dimension(*first);++i)
+              bondvector_absolute[i] += *rit * (*first)[i];
+          bondvector[edge]=bondvector_absolute;
         }
       }
     }
   }
   graphdimension=alps::dimension(l);
-  
-  // add site disorder
-  
-  // add bond disorder
-  
 }
 
 template <class LATTICE, class GRAPH> 

@@ -35,13 +35,14 @@
 #include <boost/limits.hpp>
 #include <boost/pending/property.hpp>
 #include <boost/graph/adjacency_list.hpp>
+#include <boost/any.hpp>
 
 #include <string>
 #include <vector>
 
 namespace alps {
 
-template <class V, class K=std::size_t> // singleton_property_map and constant_property_map
+template <class V, class K=boost::any> // singleton_property_map and constant_property_map
 class singleton_property_map {
 public:
   typedef K key_type;
@@ -52,8 +53,9 @@ public:
   singleton_property_map(V v=V()) : v_(v) {}
 
   operator V () const { return v_;}
+  V value() const { return v_;}
 
-  const singleton_property_map<V>& operator=(const V& v) { v_=v; return *this;}
+  const singleton_property_map<V,K>& operator=(const V& v) { v_=v; return *this;}
 
   template <class T>
   V& operator[](T ) { return v_;}
@@ -64,6 +66,17 @@ private:
   V v_;
 };
 
+} // end namespace
+
+namespace boost {
+template <class V, class K>
+V get(const alps::singleton_property_map<V,K>& m, const K&) { return m.value();}
+
+template <class V, class K>
+void put(alps::singleton_property_map<V,K>& m, const K& k, const V& v) { m[k]=v;}
+}
+
+namespace alps {
 namespace detail {
 
 // helper functions to probe for graph properties

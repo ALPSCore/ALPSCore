@@ -117,6 +117,8 @@ inline void write_graph_xml(oxstream& out, const GRAPH& g, const std::string& n=
       out << attribute("id", edgeindex[*it]+1);
     if (has_property<edge_type_t,graph_type>::edge_property)
       out << attribute("type", edgetype[*it]);
+    if (has_property<edge_vector_t,graph_type>::edge_property && alps::dimension(boost::get(edge_vector_t(),g,*it)))
+      out << attribute("vector", vector_writer(boost::get(edge_vector_t(),g,*it)));
     out << end_tag("EDGE");
   }
   out << end_tag("GRAPH");

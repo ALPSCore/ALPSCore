@@ -33,6 +33,7 @@
 
 #include <alps/lattice/latticelibrary.h>
 #include <alps/lattice/disorder.h>
+#include <alps/lattice/propertymap.h>
 #include <boost/vector_property_map.hpp>
 
 namespace alps {
@@ -85,6 +86,7 @@ public:
      edge_type_map_(get_or_default(edge_type_t(),const_graph(),0.)),
      vertex_type_map_(get_or_default(vertex_type_t(),const_graph(),0.)),
      coordinate_map_(get_or_default(coordinate_t(),const_graph(),0)),
+     bond_vector_map_(get_or_default(bond_vector_t(),const_graph(),0)),
 	 disordered_vertex_type_map_(),
 	 disordered_edge_type_map_(get_or_default(edge_index_t(),const_graph(),0))
   {
@@ -162,7 +164,8 @@ public:
   bool disordered_bonds() const { return d_.disordered_bonds();}
   bool disordered_vertices() const { return d_.disordered_vertices();}
   bool disordered_edges() const { return d_.disordered_edges();}
-  const coordinate_type& coordinate(const site_descriptor& s) const { return coordinate_map_[s];}
+  const vector_type& coordinate(const site_descriptor& s) const { return coordinate_map_[s];}
+  const vector_type& bond_vector(const bond_descriptor& b) const { return bond_vector_map_[b];}
 
   void throw_if_xyz_defined(const Parameters& p, const vertex_descriptor& v) const
   {   
@@ -240,7 +243,8 @@ private:
   typename property_map<edge_type_t,graph_type,type_type>::const_type edge_type_map_;
   typename property_map<edge_index_t,graph_type,unsigned int>::const_type edge_index_map_;
   typename property_map<vertex_type_t,graph_type,type_type>::const_type vertex_type_map_;
-  typename property_map<coordinate_t,graph_type,coordinate_type>::const_type coordinate_map_;
+  typename property_map<coordinate_t,graph_type,vector_type>::const_type coordinate_map_;
+  typename property_map<bond_vector_t,graph_type,vector_type>::const_type bond_vector_map_;
   boost::vector_property_map<type_type> disordered_vertex_type_map_;
   boost::vector_property_map<type_type,typename property_map<edge_index_t,graph_type,type_type>::const_type> disordered_edge_type_map_;
 };
