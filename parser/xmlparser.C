@@ -72,12 +72,12 @@ public:
           XERCES_CPP_NAMESPACE_QUALIFIER XMLString::transcode(attributes.getName(i)),
           XERCES_CPP_NAMESPACE_QUALIFIER XMLString::transcode(attributes.getValue(i))));
     }
-    handler_.start_element(n, attr);
+    handler_.start_element(n, attr, xml::element);
   }
   void endElement(const XMLCh* const name) {
     const std::string n =
       XERCES_CPP_NAMESPACE_QUALIFIER XMLString::transcode(name);
-    handler_.end_element(n);
+    handler_.end_element(n, xml::element);
   }
   void characters(const XMLCh* const chars, const unsigned int /* length */) {
     std::string t =
@@ -92,6 +92,20 @@ public:
         if (s.size()) handler_.text(s);
         pi = p + 1;
       }
+    }
+  }
+  void processingInstruction(const XMLCh* const target,
+                             const XMLCh* const data) {
+    const std::string name =
+      XERCES_CPP_NAMESPACE_QUALIFIER XMLString::transcode(target);
+    XMLAttributes attr(
+      XERCES_CPP_NAMESPACE_QUALIFIER XMLString::transcode(data));
+    if (name == "xml-stylesheet") {
+      handler_.start_element(name, attr, xml::stylesheet);
+      handler_.end_element(name, xml::stylesheet);
+    } else {
+      handler_.start_element(name, attr, xml::processing_instruction);
+      handler_.end_element(name, xml::processing_instruction);
     }
   }
 
@@ -149,11 +163,12 @@ void XMLParser::parse(const std::string& file) {
   parser_->parse(file.c_str());
 }
 void XMLParser::parse(std::istream& is) {
-  parser_->parse(detail::IStreamBinInputSource(is));
+  detail::IStreamBinInputSource bis(is);
+  parser_->parse(bis);
 }
 void XMLParser::parse(const boost::filesystem::path& file) {
   boost::filesystem::ifstream is(file);
-  parser_->parse(detail::IStreamBinInputSource(is));
+  parse(is);
 }
 
 } // namespace alps
