@@ -171,7 +171,7 @@ public:
   boost::shared_ptr<Factor> flatten_one_value();
   bool is_inverse() const { return is_inverse_; }
   void partial_evaluate(const Evaluator<T>& =Evaluator<T>(), bool=false);
-  Term<T> term() const { return unit_power() ? super_type::term() : (term_ ? Term<T>(*this) : Term<T>()); }
+  Term<T> term() const { return unit_power() ? super_type::term() : (super_type::term_ ? Term<T>(*this) : Term<T>()); }
   bool depends_on(const std::string& s) const
   {
     return super_type::depends_on(s) || power_.depends_on(s);

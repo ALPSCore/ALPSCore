@@ -505,14 +505,14 @@ void SimpleObservableEvaluator<T>::output_vector(std::ostream& out) const
     time_type tau_;
     if (has_tau())
       obs_value_traits<value_type>::copy(tau_,tau());
-    typename obs_value_traits<label_type>::slice_iterator it2=obs_value_traits<label_type>::slice_begin(label());
+    typename obs_value_traits<label_type>::slice_iterator it2=obs_value_traits<label_type>::slice_begin(super_type::label());
     for (typename obs_value_traits<result_type>::slice_iterator sit=
            obs_value_traits<result_type>::slice_begin(value_);
           sit!=obs_value_traits<result_type>::slice_end(value_);++sit,++it2)
     {
       out << "Entry["
           << obs_value_traits<result_type>::slice_name(value_,sit)  << "] "
-          << "(" << obs_value_traits<label_type>::slice_value(label(),it2) << ")" << ": "
+          << "(" << obs_value_traits<label_type>::slice_value(super_type::label(),it2) << ")" << ": "
           << obs_value_traits<result_type>::slice_value(value_,sit) << " +/- " 
           << obs_value_traits<result_type>::slice_value(error_,sit);
       if(has_tau())
@@ -549,7 +549,7 @@ inline SimpleObservableEvaluator<T>::SimpleObservableEvaluator(const SimpleObser
 
 template <class T>
 inline SimpleObservableEvaluator<T>::SimpleObservableEvaluator(const Observable& b, const std::string& n)
-  : AbstractSimpleObservable<T>(n,dynamic_cast<const AbstractSimpleObservable<T>&>(b).label()), valid_(false),
+  : AbstractSimpleObservable<T>(n,dynamic_cast<const AbstractSimpleObservable<T>&>(b).super_type::label()), valid_(false),
     automatic_naming_(n=="")
 {
   merge(b);
@@ -571,7 +571,7 @@ inline SimpleObservableEvaluator<T>::SimpleObservableEvaluator(const std::string
   : AbstractSimpleObservable<T>(n), 
     valid_(true),
     automatic_naming_(false), 
-    all_(infile,intag,label_)
+    all_(infile,intag,super_type::label_)
 {}
 
 template <class T>

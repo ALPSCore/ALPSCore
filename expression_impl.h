@@ -760,7 +760,7 @@ template<class T>
 boost::shared_ptr<Factor<T> > Factor<T>::flatten_one_value()
 {
   if (unit_power()) {
-    boost::shared_ptr<Evaluatable<T> > term=term_->flatten_one();
+    boost::shared_ptr<Evaluatable<T> > term=super_type::term_->flatten_one();
     boost::shared_ptr<Factor<T> > val(new Factor<T>(*this));
     val->term_=term;
     return val->term_ ? val : boost::shared_ptr<Factor<T> >();

@@ -74,7 +74,7 @@ public:
 
   template <class OBS2>
   AbstractSignedObservable(const AbstractSignedObservable<OBS2,SIGN>& o) 
-   : base_type(o.name(),o.label()), obs_(o.obs_), sign_name_(o.sign_name_), sign_(o.sign_) {}  
+   : base_type(o.name(),o.super_type::label()), obs_(o.obs_), sign_name_(o.sign_name_), sign_(o.sign_) {}  
 
   template <class ARG>
   AbstractSignedObservable(const std::string& name,const ARG& arg, const label_type& l=label_type()) 
@@ -117,7 +117,7 @@ public:
   SimpleObservableEvaluator<value_type> make_evaluator() const
   {
     SimpleObservableEvaluator<value_type> result(obs_);
-    result.set_label(label());
+    result.set_label(super_type::label());
     result /= static_cast<SimpleObservableEvaluator<sign_type> >(dynamic_cast<const AbstractSimpleObservable<sign_type>&>(sign()));
     result.rename(super_type::name());
     return result;
@@ -336,13 +336,13 @@ void AbstractSignedObservable<OBS,SIGN>::output_vector(std::ostream& out) const
     result_type value_(mean());
     result_type error_(error());
     convergence_type conv_(converged_errors());
-    typename obs_value_traits<label_type>::slice_iterator it2=obs_value_traits<label_type>::slice_begin(label());
+    typename obs_value_traits<label_type>::slice_iterator it2=obs_value_traits<label_type>::slice_begin(super_type::label());
     for (typename obs_value_traits<result_type>::slice_iterator sit=
            obs_value_traits<result_type>::slice_begin(value_);
           sit!=obs_value_traits<result_type>::slice_end(value_);++sit,++it2)
     {
       out << "Entry[" << obs_value_traits<result_type>::slice_name(value_,sit) << "]" 
-          << "(" << obs_value_traits<label_type>::slice_value(label(),it2) << ")" << ": "
+          << "(" << obs_value_traits<label_type>::slice_value(super_type::label(),it2) << ")" << ": "
           << obs_value_traits<result_type>::slice_value(value_,sit) << " +/- " 
           << obs_value_traits<result_type>::slice_value(error_,sit);
       if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==MAYBE_CONVERGED)

@@ -165,7 +165,7 @@ SimpleObservable<T,BINNING>::output(std::ostream& o) const
   else 
   {
     o << super_type::name ();
-    output_helper<obs_value_traits<T>::array_valued>::output(b_,o,label());
+    output_helper<obs_value_traits<T>::array_valued>::output(b_,o,super_type::label());
   }
   ALPS_RETURN_VOID
 }
