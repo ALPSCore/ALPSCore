@@ -112,8 +112,9 @@ inline void write_graph_xml(oxstream& out, const GRAPH& g, const std::string& n=
     if (has_property<coordinate_t,graph_type>::vertex_property)
       if(alps::coordinates(vertexcoordinate[*it]).first != 
          alps::coordinates(vertexcoordinate[*it]).second) {
-        no_linebreak(out) << start_tag("COORDINATE");
-        no_linebreak(out) << vector_writer(vertexcoordinate[*it]) << end_tag("COORDINATE");
+        out << start_tag("COORDINATE") << no_linebreak
+	    << vector_writer(vertexcoordinate[*it])
+	    << end_tag("COORDINATE");
       }
     out << end_tag("VERTEX");
   }

@@ -69,7 +69,7 @@ private:
 };
 
 
-class VertexReference : BasicVertexReference {
+class VertexReference : public BasicVertexReference {
 public:
   VertexReference(XMLTag, std::istream&);
   unsigned int new_type() const { return new_type_;}

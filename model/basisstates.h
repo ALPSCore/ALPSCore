@@ -6,6 +6,7 @@
 * $Id$
 *
 * Copyright (C) 2003-2003 by Matthias Troyer <troyer@comp-phys.org>,
+*                            Synge Todo <wistaria@comp-phys.org>,
 *
 * Permission is hereby granted, free of charge, to any person or organization 
 * obtaining a copy of the software covered by this license (the "Software") 
@@ -95,10 +96,12 @@ private:
 };
 
 template <class I>
-operator == (IntegerState<I> x, IntegerState<I> y) { return x.state()==y.state();}
+bool operator == (IntegerState<I> x, IntegerState<I> y)
+{ return x.state() == y.state(); }
 
 template <class I>
-operator < (IntegerState<I> x, IntegerState<I> y) { return x.state()<y.state();}
+bool operator < (IntegerState<I> x, IntegerState<I> y)
+{ return x.state() < y.state(); }
 
 template <class I, class S=std::vector<I>, class SS=StateDescriptor<I> >
 class BasisStates : public std::vector<S>

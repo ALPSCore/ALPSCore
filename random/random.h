@@ -5,7 +5,8 @@
 *
 * $Id$
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+*                            Synge Todo <wistaria@comp-phys.org>,
 *
 * Permission is hereby granted, free of charge, to any person or organization 
 * obtaining a copy of the software covered by this license (the "Software") 
@@ -69,6 +70,7 @@ public:
 
   BufferedRandomNumberGeneratorBase(std::size_t b=10240) 
    : buf_(b), ptr_(buf_.end()) {}
+  virtual ~BufferedRandomNumberGeneratorBase() {}
 
   result_type operator()() {
     if(ptr_==buf_.end()) {
@@ -87,7 +89,7 @@ public:
 
 protected:
   std::vector<result_type> buf_;
-  typename std::vector<result_type>::iterator ptr_;
+  std::vector<result_type>::iterator ptr_;
 private:
   virtual void fill_buffer() = 0;
 };

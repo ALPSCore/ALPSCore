@@ -63,17 +63,21 @@ alps::oxstream& operator<< (alps::oxstream& out, const alps::detail::BasicVertex
 
 alps::oxstream& operator<< (alps::oxstream& out, const alps::detail::VertexReference& d)
 {
-  out << start_tag("CELL") << static_cast<const alps::detail::BasicVertexReference&>(d) 
-      << attribute("type",d.new_type()) << end_tag("CELL");
+  out << start_tag("CELL")
+      << static_cast<const alps::detail::BasicVertexReference&>(d) 
+      << attribute("type",d.new_type())
+      << end_tag("CELL");
+  return out;
 }
 
 
 alps::oxstream& operator<< (alps::oxstream& out, const alps::detail::EdgeReference& d)
 {
-  out << start_tag("EDGE") << attribute("type",d.new_type());
-  no_linebreak(out) << start_tag("SOURCE") << d.source();
-  no_linebreak(out) << end_tag("SOURCE") << start_tag("TARGET") << d.target();
-  no_linebreak(out) << end_tag("TARGET") << end_tag("EDGE");
+  out << start_tag("EDGE") << attribute("type",d.new_type())
+      << start_tag("SOURCE") << no_linebreak << d.source() << end_tag("SOURCE")
+      << start_tag("TARGET") << no_linebreak << d.target() << end_tag("TARGET")
+      << end_tag("EDGE");
+  return out;
 }
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
