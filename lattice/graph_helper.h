@@ -154,15 +154,15 @@ public:
   
   vertices_size_type num_vertices() const { return num_vertices(graph());}
   edges_size_type num_edges() const { return num_edges(graph());}
-  std::pair<vertex_iterator,vertex_iterator> vertices() const { return vertices(graph());}
-  std::pair<edge_iterator,edge_iterator> edges() const { return edges(graph());}
-  degree_size_type out_degree (const vertex_descriptor& v) const { return out_degree(v,graph());}
-  degree_size_type in_degree (const vertex_descriptor& v) const { return in_degree(v,graph());}
-  degree_size_type degree (const vertex_descriptor& v) const { return degree(v,graph());}
-  out_edge_iterator out_edges (const vertex_descriptor& v) const { return out_edges(v,graph());}
-  in_edge_iterator in_edges (const vertex_descriptor& v) const { return in_edges(v,graph());}
+  std::pair<vertex_iterator,vertex_iterator> vertices() const { return boost::vertices(graph());}
+  std::pair<edge_iterator,edge_iterator> edges() const { return boost::edges(graph());}
+  degree_size_type out_degree (const vertex_descriptor& v) const { return boost::out_degree(v,graph());}
+  degree_size_type in_degree (const vertex_descriptor& v) const { return boost::in_degree(v,graph());}
+  degree_size_type degree (const vertex_descriptor& v) const { return boost::degree(v,graph());}
+  std::pair<out_edge_iterator,out_edge_iterator> out_edges (const vertex_descriptor& v) const { return boost::out_edges(v,graph());}
+  std::pair<in_edge_iterator,in_edge_iterator> in_edges (const vertex_descriptor& v) const { return boost::in_edges(v,graph());}
   std::pair<adjacency_iterator,adjacency_iterator> adjacent_vertices (const site_descriptor& v) const 
-  { return adjacent_vertices(v,graph());}
+  { return boost::adjacent_vertices(v,graph());}
   vertex_descriptor vertex(vertices_size_type i) const { return vertex(i,graph());}
   double parity(const site_descriptor& v) const { return parity_map_[v]==0 ? 1. :  parity_map_[v]==1 ? -1. : 0.;}
   bool is_bipartite() const { return is_bipartite_;}
@@ -243,6 +243,8 @@ public:
   bool on_lattice(const offset_type& o) const { return alps::on_lattice(o,lattice());}
   std::pair<bool,boundary_crossing_type> shift(offset_type& o, const offset_type& s) const { return alps::shift(o,s,lattice());}
   size_type index(const cell_descriptor& c) const { return alps::index(c,lattice());}
+  size_type index(const edge_descriptor& e) const { return boost::get(edge_index_t(),graph(),e);}
+  size_type index(const vertex_descriptor& v) const { return v;}
   std::pair<basis_vector_iterator,basis_vector_iterator> basis_vectors() const { return alps::basis_vectors(lattice());}
   std::pair<basis_vector_iterator,basis_vector_iterator> reciprocal_basis_vectors() const { return alps::reciprocal_basis_vectors(lattice());}
   vector_type origin(const cell_descriptor& c) const { return alps::origin(c,lattice());}
