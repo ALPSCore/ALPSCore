@@ -7,6 +7,7 @@
 *
 * Copyright (C) 2003-2003 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Martin Joestingmeier
+*                            Axel Grzesik <axel@th.physik.uni-bonn.de>
 *
 * This program is free software; you can redistribute it and/or
 * modify it under the terms of the GNU General Public License
@@ -77,6 +78,8 @@ public:
   I distance(half_integer x) 
   { 
     assert(std::abs(val_)%2==std::abs(x.val_)%2);
+    if((*this==max())!=(x==max())) return std::numeric_limits<I>::max();
+    if(std::numeric_limits<I>::is_signed && (*this==min())!=(x==min())) return std::numeric_limits<I>::max();
     return (val_-x.val_)/2;
   }
   static half_integer max() { return half_integer(std::numeric_limits<I>::max(),0);}
@@ -144,7 +147,8 @@ public:
   {if (!valid_ && !evaluate()) boost::throw_exception(std::runtime_error("Cannot evaluate expression " + min_string_ )); return _min;} 
   value_type max() const 
   {if (!valid_ && !evaluate()) boost::throw_exception(std::runtime_error("Cannot evaluate expression " + max_string_ )); return _max;} 
-  I levels() const { return max().distance(min())+1;}
+  I levels() const {
+    return (max().distance(min())==std::numeric_limits<I>::max()) ? std::numeric_limits<I>::max() : max().distance(min())+1;}
   const std::string& name() const {return _name;}
   //bool operator== ( const QuantumNumber& x) const
   //{ return min()==x.min() && max() ==x.max() && name() == x.name();} 
@@ -234,9 +238,11 @@ bool QuantumNumber<I>::evaluate(const Parameters& p) const
   Expression min_exp_(min_string_);
   Expression max_exp_(max_string_);
   min_exp_.partial_evaluate(eval);
+  min_exp_.simplify();
   max_exp_.partial_evaluate(eval);
+  max_exp_.simplify();
   valid_=true;
-  if (min_exp_=="- infinity")
+  if (min_exp_==" - infinity") 
     _min = value_type::min();
   else if (min_exp_.can_evaluate(eval))
     _min = min_exp_.value();
