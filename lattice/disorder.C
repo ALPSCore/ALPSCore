@@ -130,11 +130,9 @@ EdgeReference::EdgeReference(XMLTag tag, std::istream& in)
 } // end namespace detail
 
 
-DisorderDescriptor::DisorderDescriptor(const XMLTag& intag, std::istream& p)
+DisorderDescriptor::DisorderDescriptor(XMLTag& tag, std::istream& p)
  : disorder_all_vertices_(false), disorder_all_edges_(false)
 {
-  XMLTag tag(intag);
-
   if (tag.name=="CHANGED") {
     tag=parse_tag(p); 
     while (tag.name!="/CHANGED") {

@@ -78,7 +78,7 @@ class DisorderDescriptor
 {
 public:
   DisorderDescriptor() : disorder_all_vertices_(false), disorder_all_edges_(false) {}
-  DisorderDescriptor(const XMLTag&, std::istream&);
+  DisorderDescriptor(XMLTag&, std::istream&);
   
   void write_xml(oxstream&) const;
   

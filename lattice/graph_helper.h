@@ -145,6 +145,57 @@ public:
   bool disordered_vertices() const { return d_.disordered_vertices();}
   bool disordered_edges() const { return d_.disordered_edges();}
   const std::vector<double>& coordinate(const site_descriptor& s) const { return coordinate_map_[s];}
+
+  void throw_if_xyz_defined(const Parameters& p, const vertex_descriptor& v)	
+  {   
+   // check whether x, y, or z is set
+    unsigned int dim=alps::dimension(coordinate(v));
+    if (dim >= 1 && p.defined("x") ||
+        dim >= 2 && p.defined("y") ||
+        dim >= 3 && p.defined("z")) 
+      boost::throw_exception(std::runtime_error("x, y or z is predefined as parameter and used as coordinate"));
+  }
+  
+  void throw_if_xyz_defined(const Parameters& p, const edge_descriptor& e)	
+  {
+    throw_if_xyz_defined(p,source(e));
+    throw_if_xyz_defined(p,target(e));
+  }
+  
+  
+  Parameters coordinate_as_parameter(const edge_descriptor& e) {
+    // check whether x, y, or z is set
+    Parameters parms;
+    unsigned int dim=alps::dimension(coordinate(source(e)));
+    // set x, y, and z
+    if (dim>=1) {
+      parms["x"] = 0.5*(coordinate(source(e))[0]+coordinate(target(e))[0]);
+      if (dim>=2) {
+        parms["y"] =  0.5*(coordinate(source(e))[1]+coordinate(target(e))[1]);
+        if (dim>=3)
+          parms["z"] =  0.5*(coordinate(source(e))[2]+coordinate(target(e))[2]);
+      }
+    }
+    return parms;
+  }
+  
+  Parameters coordinate_as_parameter(const vertex_descriptor& v) {
+    // check whether x, y, or z is set
+    Parameters parms;
+    unsigned int dim=alps::dimension(coordinate(v));
+    // set x, y, and z
+    if (dim>=1) {
+      parms["x"] = coordinate(v)[0];
+      if (dim>=2) {
+        parms["y"] =  coordinate(v)[1];
+        if (dim>=3)
+          parms["z"] =  coordinate(v)[2];
+      }
+    }
+    return parms;
+  }
+  
+  
 private:
   typedef lattice_graph<hypercubic_lattice<coordinate_lattice<simple_lattice<GraphUnitCell> > >,graph_type> lattice_type;
   graph_type* make_graph(const Parameters& p);
