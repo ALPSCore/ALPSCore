@@ -5,8 +5,8 @@
 *
 * $Id$
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
-*                            Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+*                            Synge Todo <wistaria@comp-phys.org>,
 *
 * Permission is hereby granted, free of charge, to any person or organization 
 * obtaining a copy of the software covered by this license (the "Software") 
@@ -112,7 +112,8 @@ inline void write_graph_xml(oxstream& out, const GRAPH& g, const std::string& n=
     if (has_property<coordinate_t,graph_type>::vertex_property)
       if(alps::coordinates(vertexcoordinate[*it]).first != 
          alps::coordinates(vertexcoordinate[*it]).second) {
-        out << start_tag("COORDINATE") << no_linebreak
+        out << no_linebreak
+	    << start_tag("COORDINATE")
 	    << vector_writer(vertexcoordinate[*it])
 	    << end_tag("COORDINATE");
       }
@@ -420,30 +421,26 @@ void disorder_sites(G& g, MAP& t)
   disorder_vertices(g,t);
 }
 
-
 } // end namespace alps
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 namespace alps {
 #endif
 
-inline alps::oxstream& operator<<(alps::oxstream& out, const alps::coordinate_graph_type& g)
+template<class T0, class T1, class T2, class T3, class T4, class T5, class T6>
+inline std::ostream& operator<<(std::ostream& os,
+  const boost::adjacency_list<T0, T1, T2, T3, T4, T5, T6>& g)
 {
-  alps::write_graph_xml(out,g);
-  return out;
-}
-
-inline std::ostream& operator<<(std::ostream& out, const alps::coordinate_graph_type& g)
-{
-  alps::oxstream xml(out);
-  xml << g;
-  return out;
+  alps::oxstream oxs(os);
+  alps::write_graph_xml(oxs, g);
+  return os;
 }
 
 template<class T0, class T1, class T2, class T3, class T4, class T5, class T6>
-inline alps::oxstream& operator<<(alps::oxstream& out, const boost::adjacency_list<T0, T1, T2, T3, T4, T5, T6>& g)
+inline alps::oxstream& operator<<(alps::oxstream& oxs,
+  const boost::adjacency_list<T0, T1, T2, T3, T4, T5, T6>& g)
 {
-  alps::write_graph_xml(out,g);
+  alps::write_graph_xml(oxs, g);
   return out;
 }
 
