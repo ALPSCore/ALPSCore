@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2004 by Matthias Troyer <troyer@comp-phys.orgh>,
+* Copyright (C) 2001-2005 by Matthias Troyer <troyer@comp-phys.orgh>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -70,11 +70,11 @@ public:
   void write_xml(oxstream&) const;
   const std::string& name() const { return name_;}
   void set_parameters(const Parameters&);
-  const DisorderDescriptor& disorder() const { return disorder_;}
+  const InhomogeneityDescriptor& inhomogeneity() const { return inhomogeneity_;}
 private:
   std::string name_, lattice_name_, unitcell_name_;
   bool lattice_is_finite_;
-  DisorderDescriptor disorder_;
+  InhomogeneityDescriptor inhomogeneity_;
   FiniteLatticeDescriptor finitelattice_; 
   LatticeDescriptor lattice_; // for printing only
 };

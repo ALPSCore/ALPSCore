@@ -167,10 +167,10 @@ public:
   typedef edge_type_map_type bond_type_map_type;
   typedef typename property_map<vertex_type_t,graph_type,type_type>::const_type vertex_type_map_type;
   typedef vertex_type_map_type site_type_map_type;
-  typedef boost::vector_property_map<type_type> disordered_vertex_type_map_type;
-  typedef disordered_vertex_type_map_type disordered_site_type_map_type;
-  typedef boost::vector_property_map<type_type,typename property_map<edge_index_t,graph_type,type_type>::const_type> disordered_edge_type_map_type;
-  typedef disordered_edge_type_map_type disordered_bond_type_map_type;
+  typedef boost::vector_property_map<type_type> inhomogeneous_vertex_type_map_type;
+  typedef inhomogeneous_vertex_type_map_type inhomogeneous_site_type_map_type;
+  typedef boost::vector_property_map<type_type,typename property_map<edge_index_t,graph_type,type_type>::const_type> inhomogeneous_edge_type_map_type;
+  typedef inhomogeneous_edge_type_map_type inhomogeneous_bond_type_map_type;
 
  graph_helper(std::istream& in, const Parameters& p)
    : LatticeLibrary(in), 
@@ -183,12 +183,12 @@ public:
      coordinate_map_(get_or_default(coordinate_t(),const_graph(),0)),
      bond_vector_map_(get_or_default(bond_vector_t(),const_graph(),0)),
      bond_vector_relative_map_(get_or_default(bond_vector_relative_t(),const_graph(),0)),
-     disordered_vertex_type_map_(),
-     disordered_edge_type_map_(get_or_default(edge_index_t(),const_graph(),0)),
+     inhomogeneous_vertex_type_map_(),
+     inhomogeneous_edge_type_map_(get_or_default(edge_index_t(),const_graph(),0)),
      distances_calculated_(false)
   {
-    d_.disorder_vertices(graph(),disordered_vertex_type_map_);
-    d_.disorder_edges(graph(),disordered_edge_type_map_);
+    d_.inhomogeneous_vertices(graph(),inhomogeneous_vertex_type_map_);
+    d_.inhomogeneous_edges(graph(),inhomogeneous_edge_type_map_);
   }
   
   
@@ -201,12 +201,12 @@ public:
      edge_type_map_(get_or_default(edge_type_t(),const_graph(),0)),
      vertex_type_map_(get_or_default(vertex_type_t(),const_graph(),0)),
      coordinate_map_(get_or_default(coordinate_t(),const_graph(),std::vector<double>())),
-     disordered_vertex_type_map_(),
-     disordered_edge_type_map_(get_or_default(edge_index_t(),const_graph(),0)),
+     inhomogeneous_vertex_type_map_(),
+     inhomogeneous_edge_type_map_(get_or_default(edge_index_t(),const_graph(),0)),
      distances_calculated_(false)
   {
-    d_.disorder_vertices(graph(),disordered_vertex_type_map_);
-    d_.disorder_edges(graph(),disordered_edge_type_map_);
+    d_.disorder_vertices(graph(),inhomogeneous_vertex_type_map_);
+    d_.disorder_edges(graph(),inhomogeneous_edge_type_map_);
   }
 
   ~graph_helper() { if (to_delete_) delete g_;}
@@ -262,38 +262,38 @@ public:
   { return edge_type_map_[b]; }
 
   //
-  // disorder
+  // inhomogeneous
   // 
 
-  bool disordered() const { return d_.disordered(); }
-  bool disordered_vertices() const { return d_.disordered_vertices(); }
-  bool disordered_sites() const { return d_.disordered_sites(); }
-  bool disordered_edges() const { return d_.disordered_edges(); }
-  bool disordered_bonds() const { return d_.disordered_bonds(); }
+  bool inhomogeneous() const { return d_.inhomogeneous(); }
+  bool inhomogeneous_vertices() const { return d_.inhomogeneous_vertices(); }
+  bool inhomogeneous_sites() const { return d_.inhomogeneous_sites(); }
+  bool inhomogeneous_edges() const { return d_.inhomogeneous_edges(); }
+  bool inhomogeneous_bonds() const { return d_.inhomogeneous_bonds(); }
 
-  disordered_vertex_type_map_type disordered_vertex_type_map() const
-  { return disordered_vertex_type_map_; }
-  disordered_site_type_map_type disordered_site_type_map() const
-  { return disordered_vertex_type_map_; }
-  disordered_edge_type_map_type disordered_edge_type_map() const
-  { return disordered_edge_type_map_; }
-  disordered_bond_type_map_type disordered_bond_type_map() const
-  { return disordered_edge_type_map_; }
+  inhomogeneous_vertex_type_map_type inhomogeneous_vertex_type_map() const
+  { return inhomogeneous_vertex_type_map_; }
+  inhomogeneous_site_type_map_type inhomogeneous_site_type_map() const
+  { return inhomogeneous_vertex_type_map_; }
+  inhomogeneous_edge_type_map_type inhomogeneous_edge_type_map() const
+  { return inhomogeneous_edge_type_map_; }
+  inhomogeneous_bond_type_map_type inhomogeneous_bond_type_map() const
+  { return inhomogeneous_edge_type_map_; }
 
-  type_type disordered_vertex_type(const vertex_descriptor& v) const 
+  type_type inhomogeneous_vertex_type(const vertex_descriptor& v) const 
   { 
-    return d_.disordered_vertices() ?
-      disordered_vertex_type_map_[v] : vertex_type_map_[v];
+    return d_.inhomogeneous_vertices() ?
+      inhomogeneous_vertex_type_map_[v] : vertex_type_map_[v];
   }
-  type_type disordered_site_type(const site_descriptor& s) const
-  { return disordered_vertex_type(s); }
-  type_type disordered_edge_type(const edge_descriptor& e) const 
+  type_type inhomogeneous_site_type(const site_descriptor& s) const
+  { return inhomogeneous_vertex_type(s); }
+  type_type inhomogeneous_edge_type(const edge_descriptor& e) const 
   {
-    return d_.disordered_edges() ?
-      disordered_edge_type_map_[e] : edge_type_map_[e];
+    return d_.inhomogeneous_edges() ?
+      inhomogeneous_edge_type_map_[e] : edge_type_map_[e];
   }
-  type_type disordered_bond_type(const bond_descriptor& b) const
-  { return disordered_edge_type(b); }
+  type_type inhomogeneous_bond_type(const bond_descriptor& b) const
+  { return inhomogeneous_edge_type(b); }
 
   const vector_type& coordinate(const site_descriptor& s) const { return coordinate_map_[s];}
   std::string coordinate_string(const site_descriptor& s) const { return coordinate_to_string(coordinate(s));}
@@ -341,11 +341,11 @@ public:
   vector_type coordinate(const cell_descriptor& c, const vector_type& p) const { return alps::coordinate(c,p,lattice());}
   vector_type momentum(const vector_type& m) const { return alps::momentum(m,lattice());}  
   
-  size_type num_distances() const { return have_lattice_ && !disordered() ? l_.num_distances() : num_sites()*num_sites(); }
+  size_type num_distances() const { return have_lattice_ && !inhomogeneous() ? l_.num_distances() : num_sites()*num_sites(); }
   
   std::vector<unsigned int> distance_multiplicities() const 
   {
-    if (have_lattice_ && !disordered())
+    if (have_lattice_ && !inhomogeneous())
       return l_.distance_multiplicities();
     std::vector<unsigned int> m(num_distances(),1u);
     return m;
@@ -353,7 +353,7 @@ public:
   
   std::vector<std::string> distance_labels() const
   {
-    if (have_lattice_ && !disordered())
+    if (have_lattice_ && !inhomogeneous())
       return l_.distance_labels();
     std::vector<std::string> label(num_distances());
     for (vertex_iterator it1=vertices().first; it1 != vertices().second;++it1)
@@ -369,7 +369,7 @@ public:
 
   size_type distance(vertex_descriptor x, vertex_descriptor y) const
   {
-    if (disordered() ||!have_lattice_)
+    if (inhomogeneous() ||!have_lattice_)
       return size_type(x)*num_sites()+size_type(y);
     if (!distances_calculated_)
       calculate_distances();
@@ -381,13 +381,13 @@ public:
     distance_lookup_.resize(boost::extents[num_sites()][num_sites()]);
     for (vertex_iterator it1=vertices().first; it1 != vertices().second;++it1)
       for (vertex_iterator it2=vertices().first; it2 != vertices().second;++it2)
-        distance_lookup_[int(*it1)][int(*it2)]=(have_lattice_ && !disordered() ? l_.distance(*it1,*it2) : (*it1)*num_sites()+(*it2));
+        distance_lookup_[int(*it1)][int(*it2)]=(have_lattice_ && !inhomogeneous() ? l_.distance(*it1,*it2) : (*it1)*num_sites()+(*it2));
     distances_calculated_=true;
   }
   
   std::vector<std::pair<std::complex<double>,std::vector<std::size_t> > > translations(const vector_type& k) const
   {
-    if (have_lattice_&& !disordered())
+    if (have_lattice_&& !inhomogeneous())
       return l_.translations(k);
     else
       return std::vector<std::pair<std::complex<double>,std::vector<std::size_t> > >();
@@ -395,7 +395,7 @@ public:
 
   std::vector<vector_type> translation_momenta() const 
   {
-    if (have_lattice_ && !disordered())
+    if (have_lattice_ && !inhomogeneous())
       return l_.translation_momenta();
     else
       return std::vector<vector_type>();
@@ -407,7 +407,7 @@ private:
 
   lattice_type l_;
   bool to_delete_;
-  DisorderDescriptor d_;
+  InhomogeneityDescriptor d_;
   graph_type* g_;
   bool is_bipartite_;
   typename property_map<parity_t,graph_type,double>::const_type parity_map_;
@@ -417,8 +417,8 @@ private:
   typename property_map<coordinate_t,graph_type,vector_type>::const_type coordinate_map_;
   typename property_map<bond_vector_t,graph_type,vector_type>::const_type bond_vector_map_;
   typename property_map<bond_vector_relative_t,graph_type,vector_type>::const_type bond_vector_relative_map_;
-  disordered_vertex_type_map_type disordered_vertex_type_map_;
-  disordered_edge_type_map_type disordered_edge_type_map_;
+  inhomogeneous_vertex_type_map_type inhomogeneous_vertex_type_map_;
+  inhomogeneous_edge_type_map_type inhomogeneous_edge_type_map_;
   bool have_lattice_;
   mutable bool distances_calculated_;
   mutable boost::multi_array<size_type,2> distance_lookup_;
@@ -443,7 +443,7 @@ G* graph_helper<G>::make_graph(const Parameters& parms)
     LatticeGraphDescriptor desc(lattice_descriptor(name));
     desc.set_parameters(parms);
     l_ = lattice_type(desc);
-    d_ = desc.disorder();
+    d_ = desc.inhomogeneity();
     g = &(l_.graph());
     to_delete_=false;
     have_lattice_=true;

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2004 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2001-2005 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -110,7 +110,7 @@ LatticeGraphDescriptor::LatticeGraphDescriptor(const XMLTag& intag,
 
   tag=parse_tag(p);
   if(tag.name!="/LATTICEGRAPH")
-    disorder_=DisorderDescriptor(tag,p);
+    inhomogeneity_=InhomogeneityDescriptor(tag,p);
   if(tag.name!="/LATTICEGRAPH")
     boost::throw_exception(std::runtime_error("illegal element <" + tag.name + "> in LATTICEGRAPH"));
 }
@@ -143,7 +143,7 @@ void LatticeGraphDescriptor::write_xml(oxstream& xml) const
     xml << unit_cell();
   else
     xml << start_tag("UNITCELL") << attribute("ref", unitcell_name_) << end_tag("UNITCELL");
-  xml << disorder_;
+  xml << inhomogeneity_;
   xml << end_tag("LATTICEGRAPH");
 }
 

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2004 by Matthias Troyer <troyer@comp-phys.org>
+* Copyright (C) 2001-2005 by Matthias Troyer <troyer@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -132,7 +132,7 @@ EdgeReference::EdgeReference(XMLTag tag, std::istream& in)
 } // end namespace detail
 
 
-DisorderDescriptor::DisorderDescriptor(XMLTag& tag, std::istream& p)
+InhomogeneityDescriptor::InhomogeneityDescriptor(XMLTag& tag, std::istream& p)
  : disorder_all_vertices_(false), disorder_all_edges_(false)
 {
   if (tag.name=="CHANGED") {
@@ -155,7 +155,7 @@ DisorderDescriptor::DisorderDescriptor(XMLTag& tag, std::istream& p)
         if (tag.attributes["type"]=="")
           disorder_all_vertices_=true;
         else
-          disordered_vertices_.push_back(boost::lexical_cast<type_type>(tag.attributes["type"]));
+          inhomogeneous_vertices_.push_back(boost::lexical_cast<type_type>(tag.attributes["type"]));
         if (tag.type !=XMLTag::SINGLE) {
           tag=parse_tag(p); 
           if (tag.name!="/VERTEX")
@@ -166,7 +166,7 @@ DisorderDescriptor::DisorderDescriptor(XMLTag& tag, std::istream& p)
         if (tag.attributes["type"]=="")
           disorder_all_edges_=true;
         else
-          disordered_edges_.push_back(boost::lexical_cast<type_type>(tag.attributes["type"]));
+          inhomogeneous_edges_.push_back(boost::lexical_cast<type_type>(tag.attributes["type"]));
         if (tag.type !=XMLTag::SINGLE) {
           tag=parse_tag(p); 
           if (tag.name!="/EDGE")
@@ -181,7 +181,7 @@ DisorderDescriptor::DisorderDescriptor(XMLTag& tag, std::istream& p)
   }
 }
 
-void DisorderDescriptor::write_xml(oxstream& xml) const
+void InhomogeneityDescriptor::write_xml(oxstream& xml) const
 {
   if (!changed_vertices_.empty() || !changed_edges_.empty()) {
     xml << start_tag("CHANGED");
@@ -191,19 +191,19 @@ void DisorderDescriptor::write_xml(oxstream& xml) const
       xml << changed_edges_[i];
     xml << end_tag("CHANGED");
   }
-  if (!disordered_vertices_.empty() || !disordered_edges_.empty() || 
+  if (!inhomogeneous_vertices_.empty() || !inhomogeneous_edges_.empty() || 
        disorder_all_vertices_ || disorder_all_edges_) {
     xml << start_tag("DISORDER");
     if (disorder_all_vertices_)
       xml << start_tag("VERTEX") << end_tag("VERTEX");
     else
-      for (unsigned int i=0;i<disordered_vertices_.size();++i)
-        xml << start_tag("VERTEX") << attribute("type",disordered_vertices_[i]) << end_tag("VERTEX");
+      for (unsigned int i=0;i<inhomogeneous_vertices_.size();++i)
+        xml << start_tag("VERTEX") << attribute("type",inhomogeneous_vertices_[i]) << end_tag("VERTEX");
     if (disorder_all_edges_)
       xml << start_tag("EDGE") << end_tag("EDGE");
     else
-      for (unsigned int i=0;i<disordered_edges_.size();++i)
-        xml << start_tag("EDGE") << attribute("type",disordered_edges_[i]) << end_tag("EDGE");
+      for (unsigned int i=0;i<inhomogeneous_edges_.size();++i)
+        xml << start_tag("EDGE") << attribute("type",inhomogeneous_edges_[i]) << end_tag("EDGE");
     xml << end_tag("DISORDER");
   }
 }

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2004 by Matthias Troyer <troyer@comp-phys.orgh>
+* Copyright (C) 2001-2005 by Matthias Troyer <troyer@comp-phys.orgh>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -117,19 +117,19 @@ private:
 
 }
 
-class DisorderDescriptor
+class InhomogeneityDescriptor
 {
 public:
-  DisorderDescriptor() : disorder_all_vertices_(false), disorder_all_edges_(false) {}
-  DisorderDescriptor(XMLTag&, std::istream&);
+  InhomogeneityDescriptor() : disorder_all_vertices_(false), disorder_all_edges_(false) {}
+  InhomogeneityDescriptor(XMLTag&, std::istream&);
   
   void write_xml(oxstream&) const;
   
-  bool disordered_vertices() const { return disorder_all_vertices_ || !disordered_vertices_.empty();}
-  bool disordered_edges() const { return disorder_all_edges_ || !disordered_edges_.empty();}
-  bool disordered_sites() const { return disordered_vertices();}
-  bool disordered_bonds() const { return disordered_edges();}
-  bool disordered() const { return disordered_edges() || disordered_vertices();}
+  bool inhomogeneous_vertices() const { return disorder_all_vertices_ || !inhomogeneous_vertices_.empty();}
+  bool inhomogeneous_edges() const { return disorder_all_edges_ || !inhomogeneous_edges_.empty();}
+  bool inhomogeneous_sites() const { return inhomogeneous_vertices();}
+  bool inhomogeneous_bonds() const { return inhomogeneous_edges();}
+  bool inhomogeneous() const { return inhomogeneous_edges() || inhomogeneous_vertices();}
   
   template <class G, class M>
   void disorder_edges(G& g, M& m) const {
@@ -138,7 +138,7 @@ public:
             std::runtime_error("Changed edges not yet implemented. Please contact troyer@comp-phys.org"));
     if (disorder_all_edges_)
           alps::disorder_edges(g,m);
-        else if(!disordered_edges_.empty())
+        else if(!inhomogeneous_edges_.empty())
       boost::throw_exception(
             std::runtime_error("Disordering special edge types not yet implemented. Please contact troyer@comp-phys.org"));
   }
@@ -150,7 +150,7 @@ public:
             std::runtime_error("Changed vertices not yet implemented. Please contact troyer@comp-phys.org"));
     if (disorder_all_vertices_)
           alps::disorder_vertices(g,m);
-        else if(!disordered_vertices_.empty())
+        else if(!inhomogeneous_vertices_.empty())
       boost::throw_exception(
             std::runtime_error("Disordering special vertex types not yet implemented. Please contact troyer@comp-phys.org"));
   }
@@ -177,8 +177,8 @@ private:
   std::vector<detail::EdgeReference> changed_edges_;
   bool disorder_all_vertices_;
   bool disorder_all_edges_;
-  std::vector<type_type> disordered_vertices_;
-  std::vector<type_type> disordered_edges_;
+  std::vector<type_type> inhomogeneous_vertices_;
+  std::vector<type_type> inhomogeneous_edges_;
 };
 
 } // end namespace alps
@@ -187,13 +187,13 @@ private:
 namespace alps {
 #endif
 
-inline alps::oxstream& operator<< (alps::oxstream& out, const alps::DisorderDescriptor& l)
+inline alps::oxstream& operator<< (alps::oxstream& out, const alps::InhomogeneityDescriptor& l)
   {
     l.write_xml(out);
     return out;
   }
 
-inline std::ostream& operator<< (std::ostream& out, const alps::DisorderDescriptor& l)
+inline std::ostream& operator<< (std::ostream& out, const alps::InhomogeneityDescriptor& l)
   {
     alps::oxstream xml(out);
     xml << l;

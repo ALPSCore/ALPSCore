@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2003-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -160,14 +160,14 @@ bool has_sign_problem(const HamiltonianDescriptor<I>& ham, const graph_helper<G>
   typedef G graph_type;
   const graph_type& graph(lattice.graph());
   
-  if (lattice.disordered_bonds())
+  if (lattice.inhomogeneous_bonds())
     boost::throw_exception(std::runtime_error("Disordered bonds on lattice not currently supported by the sign check program. Please contact the ALPS developers for assistance.\n"));
 
   // build and check bond matrices for all bond types
   std::map<boost::tuple<int,int,int>,int> bond_sign;
   for (typename boost::graph_traits<graph_type>::edge_iterator
          it=boost::edges(graph).first; it!=boost::edges(graph).second ; ++it) {
-//    int dbtype = lattice.disordered_bond_type(*it);
+//    int dbtype = lattice.inhomogeneous_bond_type(*it);
     int btype  = lattice.bond_type(*it);
     int stype1 = lattice.site_type(lattice.source(*it));
     int stype2 = lattice.site_type(lattice.target(*it));
