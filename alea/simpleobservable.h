@@ -458,8 +458,8 @@ template <class T> template <class S>
 inline SimpleObservableEvaluator<typename obs_value_slice<T,S>::value_type> 
 AbstractSimpleObservable<T>::slice (S s, const std::string& n) const
 {
-  if (dynamic_cast<SimpleObservableEvaluator<T>*>(this)!=0)
-    return dynamic_cast<SimpleObservableEvaluator<T>*>(this)->slice(s,n);
+  if (dynamic_cast<const SimpleObservableEvaluator<T>*>(this)!=0)
+    return dynamic_cast<const SimpleObservableEvaluator<T>*>(this)->slice(s,n);
   else
     return SimpleObservableEvaluator<T>(*this).slice(s,n);	
 }
