@@ -47,7 +47,7 @@
 #include <string>
 #include <stdexcept>
 
-// #define NEW_STRINGVALUE_IMPL 1
+#define NEW_STRINGVALUE_IMPL 1
 
 #ifndef NEW_STRINGVALUE_IMPL
 
