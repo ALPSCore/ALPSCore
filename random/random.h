@@ -55,7 +55,10 @@ void seed_with_sequence(RNG& rng, uint32_t seed)
   pseudo_des start(seed);
   pseudo_des end(seed);
   start(); // make start!=end
-  rng.seed(boost::make_generator_iterator(start),boost::make_generator_iterator(end));
+  typedef boost::generator_iterator_generator<pseudo_des>::type iterator_type;
+  iterator_type start_it(boost::make_generator_iterator(start));
+  iterator_type end_it(boost::make_generator_iterator(end));
+  rng.seed(start_it,end_it);
 }
 
 template <class T=double>

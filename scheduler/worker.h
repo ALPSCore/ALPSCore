@@ -41,7 +41,6 @@
 #include <alps/alea.h>
 #include <alps/osiris.h>
 #include <alps/parameters.h>
-#include <alps/random.h>
 #include <boost/smart_ptr.hpp>
 #include <boost/random.hpp>
 #include <boost/filesystem/path.hpp>

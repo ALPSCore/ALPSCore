@@ -35,6 +35,7 @@
 **************************************************************************/
 
 #include <alps/scheduler/scheduler.h>
+#include <alps/random.h>
 #include <alps/osiris.h>
 
 #include <boost/lexical_cast.hpp>
@@ -72,11 +73,8 @@ Worker::Worker(const ProcessList& w,const alps::Parameters&  myparms,int32_t n)
 
   // TODO: replace by generic seeding scheme
   boost::minstd_rand0 gen(331);
-  for (int i=0;
-       i < boost::lagged_fibonacci607::long_lag*(static_cast<int>(where.size() ? static_cast<int32_t>(parms["SEED"]) : 0));
-       ++i) 
-    gen();
-  random.seed(gen);
+  if (where.size())
+    seed_with_sequence(random,parms["SEED"]);
 }
 
 
