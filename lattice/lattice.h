@@ -150,10 +150,17 @@ origin(const typename lattice_traits<Lattice>::cell_descriptor& c, const Lattice
     >::const_iterator offset_iterator;
   boost::tie(first,last) = basis_vectors(l);
   offset_iterator off = coordinates(offset(c,l)).first; 
-  typename lattice_traits<Lattice>::vector_type v;
-  for (; first!=last; ++first, ++off)
-    v = v + (*first) * (*off);
-  return v;
+  if (first!=last) {
+    typename lattice_traits<Lattice>::vector_type v(*first);
+    v*=*off;
+    ++first;
+    ++off;
+    for (; first!=last; ++first, ++off)
+      v = v + (*first) * (*off);
+    return v;
+  }
+  else
+    return lattice_traits<Lattice>::vector_type();
 }
 
 void prevent_optimization();
@@ -164,6 +171,24 @@ inline std::pair<typename lattice_traits<Lattice>::momentum_iterator,
 momenta(const Lattice& l)
 {
   return l.momenta();
+}
+
+template <class Lattice>
+inline typename lattice_traits<Lattice>::vector_type
+momentum(const typename lattice_traits<Lattice>::vector_type& m, const Lattice& l)
+{
+  typename lattice_traits<Lattice>::basis_vector_iterator first, last;
+  boost::tie(first,last) = reciprocal_basis_vectors(l);
+  if (first!=last) {
+    typename lattice_traits<Lattice>::vector_type v(*first);
+    v*=m[0];
+    ++first;
+    for (int i=1; first!=last; ++first, ++i)
+      v = v + (*first) * m[i];
+    return v;
+  }
+  else
+    return m;
 }
 
 } // end namespace alps
