@@ -162,7 +162,7 @@ inline HistogramObservable<T>::HistogramObservable(const std::string& n, T min, 
    thermalcount_(0),
    count_(0)
 {
-  std::cout<<"calling set_range"<<std::endl;
+  //std::cout<<"calling set_range"<<std::endl;
   set_range(min,max,stepsize);  
 }
 
@@ -198,14 +198,14 @@ inline void HistogramObservable<T>::set_range(T min, T max, T stepsize)
   min_=min;
   max_=max;
   stepsize_=stepsize;
-  std::cout<<"*** "<<(max-min)/stepsize<<std::endl;
+  //std::cout<<"*** "<<(max-min)/stepsize<<std::endl;
   histogram_.resize(static_cast<size_type>((max-min)/stepsize));
 }
 
 template <class T>
 inline void HistogramObservable<T>::add(const T& x)
 {
-  if (x>= min_ && x<= max_)
+  if (x>= min_ && x< max_)
   {
     //std::cout<<(x-min_)/stepsize_<<std::endl;
     histogram_[uint32_t((x-min_)/stepsize_)]++;
