@@ -97,7 +97,7 @@ inline alps::IDump& loadStackLikeContainer(alps::IDump& dump, C& x)
   x=C(); // empty stack
   int n(dump); // number of elements
   
-  typename C::ValueType elem;
+  typename C::value_type elem;
   while (n--)
     {
       dump >> elem;
@@ -113,11 +113,11 @@ inline alps::IDump& loadSetLikeContainer(alps::IDump& dump, C& x)
   x=C(); // empty stack
   int n(dump); // number of elements
 
-  typename C::ValueType elem;
+  typename C::value_type elem;
   while (n--)
     {
       dump >> elem;
-      x.insert(elem,x.end());
+      x.insert(x.end(),elem);
     }
   return dump;
 }

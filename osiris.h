@@ -46,3 +46,4 @@
 #include <alps/osiris/std/string.h>
 #include <alps/osiris/std/valarray.h>
 #include <alps/osiris/std/vector.h>
+#include <alps/osiris/std/set.h>
