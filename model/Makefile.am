@@ -18,7 +18,7 @@ example10_SOURCES = example10.C
 example11_SOURCES = example11.C
 example12_SOURCES = example12.C
 
-dist_noinst_DATA = example1.input example1.output example2.input example2.output example3.input example3.output example4.input example4.output example5.input example5.output example6.input example6.output example7.input example7.output example8.input example8.output example9.input example9.output
+dist_noinst_DATA = example1.input example1.output example2.input example2.output example3.input example3.output example4.input example4.output example5.input example5.output example6.input example6.output example7.input example7.output example8.input example8.output example9.input example9.output example10.input example10.output example11.input example11.output example12.input example12.output
 
 .PHONY : test tests example examples
 test tests : check
