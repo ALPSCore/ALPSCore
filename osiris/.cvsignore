@@ -1,7 +1,11 @@
 Makefile
+.DS_Store
+.deps
+.libs
+*.la
+*.lo
 sizeof
 xdrdump
 xdrdump2
 xdrdump.dump
 xdrdump2.input
-*.ok

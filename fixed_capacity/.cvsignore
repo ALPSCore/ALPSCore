@@ -1,4 +1,9 @@
 Makefile
+.DS_Store
+.deps
+.libs
+*.la
+*.lo
 fixed_capacity_deque
 fixed_capacity_traits
 fixed_capacity_vector
@@ -7,5 +12,3 @@ test_vector
 timing_queue
 timing_stack
 timing_vector
-*.ok
-.DS_Store

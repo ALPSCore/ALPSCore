@@ -1,5 +1,9 @@
 Makefile
+.DS_Store
+.deps
+.libs
+*.la
+*.lo
 xmlhandler
 xmlparser
 xmlstream
-*.ok

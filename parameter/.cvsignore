@@ -1,4 +1,9 @@
 Makefile
+.DS_Store
+.deps
+.libs
+*.la
+*.lo
 expression
 expression2
 flatten
@@ -6,4 +11,3 @@ parameterlist
 parameterlist_xml
 parameters
 *.dump
-*.ok

@@ -33,13 +33,16 @@
 #include <iostream>
 #include <string>
 
+#ifdef BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP
+using namespace alps;
+#endif
 
 int main()
 {
 #ifndef BOOST_NO_EXCEPTIONS
   try {
 #endif
- 
+
     alps::ParameterList parms;
     std::cin >> parms;
     for (int i=0;i<parms.size();++i) {

@@ -1,4 +1,9 @@
 Makefile
+.DS_Store
+.deps
+.libs
+*.la
+*.lo
 example1
 example2
 example3
@@ -14,5 +19,3 @@ example12
 lattices.xml
 models.xml
 parameters
-*.ok
-.DS_Store

@@ -1,7 +1,10 @@
 Makefile
+.DS_Store
+.deps
+.libs
+*.la
+*.lo
 detailedbinning
 simpleobseval
 signed
 testobservableset
-*.ok
-.DS_Store
