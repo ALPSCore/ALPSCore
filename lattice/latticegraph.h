@@ -36,6 +36,8 @@
 #include <alps/parser/parser.h>
 #include <alps/lattice/graph.h>
 #include <alps/lattice/lattice.h>
+#include <alps/lattice/coordinatelattice.h>
+#include <alps/lattice/hypercubic.h>
 #include <alps/vectorio.h>
 
 namespace alps {

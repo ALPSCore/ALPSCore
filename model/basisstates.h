@@ -43,7 +43,6 @@ class basis_states_descriptor : public std::vector<site_basis<I,S> >
   typedef std::vector<site_basis<I,S> > super_type;
 public:
   typedef site_basis<I,S> site_basis_type;
-  typedef std::vector<site_basis_type> super_type;
   typedef typename super_type::const_iterator const_iterator;
   basis_states_descriptor() {}
   template <class G> basis_states_descriptor(const BasisDescriptor<I>& b, const G& graph);
