@@ -50,8 +50,10 @@ try {
       << alps::xml_namespace("MyNameSpace", "MyURL")
     
       << "text 2 "
-      << "text 3 "
-      << "text 4\n"
+      << "text 3 " << std::endl
+      << alps::precision(3.14159265358979323846, 3) << ' '
+      << alps::precision(3.14159265358979323846, 6) << '\n'
+      << "text 4" << std::endl
       << alps::convert("text <&\">'")
 
       << alps::start_tag("tag3")

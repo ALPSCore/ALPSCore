@@ -1,4 +1,5 @@
 Makefile
 detailedbinning
+observableset
 simpleobseval
 *.ok

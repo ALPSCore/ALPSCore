@@ -4,7 +4,9 @@
   this is a text
   <tag1>
     <tag2 xmlns:MyNameSpace="MyURL">
-      text 2 text 3 text 4
+      text 2 text 3 
+      3.14 3.14159
+      text 4
       text &lt;&amp;&quot;&gt;&apos;
       <tag3/>
       3.14
