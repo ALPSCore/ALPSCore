@@ -126,8 +126,8 @@ struct has_property<P, boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>, D>
     typename boost::property_value<VP,P>::type,D>::type vertex_property_type;
   typedef typename detail::existing_property<
     typename boost::property_value<GP,P>::type,D>::type graph_property_type;
-  typedef typename boost::if_c<edge_property,edge_property_type,
-    typename boost::if_c<vertex_property,vertex_property_type,
+  typedef typename boost::mpl::if_c<edge_property,edge_property_type,
+    typename boost::mpl::if_c<vertex_property,vertex_property_type,
     graph_property_type>::type>::type property_type;
   typedef property_type type;
 };
@@ -161,8 +161,8 @@ struct has_property<P, const boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>, D>
     typename boost::property_value<VP,P>::type,D>::type vertex_property_type;
   typedef typename detail::existing_property<
     typename boost::property_value<GP,P>::type,D>::type graph_property_type;
-  typedef typename boost::if_c<edge_property,edge_property_type,
-    typename boost::if_c<vertex_property,vertex_property_type,
+  typedef typename boost::mpl::if_c<edge_property,edge_property_type,
+    typename boost::mpl::if_c<vertex_property,vertex_property_type,
     graph_property_type>::type>::type property_type;
   typedef property_type type;
 };
@@ -182,18 +182,18 @@ template <class P, class G, class Default>
 struct property_map
 {
   typedef 
-    typename boost::if_c<has_property<P,G>::graph_property,
+    typename boost::mpl::if_c<has_property<P,G>::graph_property,
       typename has_property<P,G>::graph_property_type&,
-      typename boost::if_c<has_property<P,G>::any_property,
+      typename boost::mpl::if_c<has_property<P,G>::any_property,
         typename boost::property_map<G,P>::type,
         singleton_property_map<Default> 
       >::type
     >::type type;
 
   typedef
-    typename boost::if_c<has_property<P,G>::graph_property,
+    typename boost::mpl::if_c<has_property<P,G>::graph_property,
       const typename has_property<P,G>::graph_property_type&,
-      typename boost::if_c<has_property<P,G>::any_property,
+      typename boost::mpl::if_c<has_property<P,G>::any_property,
         typename boost::property_map<G,P>::const_type,
         singleton_property_map<Default>
       >::type
@@ -204,9 +204,9 @@ template <class P, class G, class Default>
 struct property_map<P, const G, Default>
 {
   typedef
-    typename boost::if_c<has_property<P,G>::graph_property,
+    typename boost::mpl::if_c<has_property<P,G>::graph_property,
       const typename has_property<P,G>::graph_property_type&,
-      typename boost::if_c<has_property<P,G>::any_property,
+      typename boost::mpl::if_c<has_property<P,G>::any_property,
         typename boost::property_map<G,P>::const_type,
         singleton_property_map<Default>
       >::type
