@@ -60,7 +60,7 @@ public:
   // write the info
   void save (ODump&) const;
   ALPS_DUMMY_VOID write_xml(alps::oxstream&) const;
-  void load (IDump& dump,int version=MCDump_task_version);
+  void load (IDump& dump,int version=MCDump_worker_version);
 private:
    // how was it stopped? ... for historic reasons
   enum { HALTED=1, INTERRUPTED=2, THERMALIZED=3, NOTSTARTED=4 };
@@ -80,7 +80,7 @@ public:
   void halt(); // the run is halted/thermalized NOW
   
   void save (ODump& dump) const;
-  void load (IDump& dump,int version=MCDump_task_version);
+  void load (IDump& dump,int version=MCDump_worker_version);
   void write_xml(alps::oxstream&) const;
 };
 

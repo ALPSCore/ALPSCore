@@ -126,7 +126,7 @@ void Worker::load_worker(IDump& dump)
 
 void Worker::save_worker(ODump& dump) const
 {
-  dump << int32_t(MCDump_run) << int32_t(0) << version << parms;
+  dump << int32_t(MCDump_run) << int32_t(0) << int32_t(MCDump_worker_version) << parms;
   std::ostringstream rngstream;
   rngstream << random;
   dump << rngstream.str();
