@@ -39,7 +39,7 @@ int main()
     alps::Parameters parms;
     std::cin >> parms;
     alps::ModelLibrary models(parms);
-    alps::graph_factory<> lattices(parms);
+    alps::graph_helper<> lattices(parms);
     alps::HamiltonianDescriptor<short> ham(models.hamiltonian(parms["MODEL"]));
     parms.copy_undefined(ham.default_parameters());
     ham.set_parameters(parms);

@@ -89,9 +89,9 @@ int main()
     std::ifstream parmfile("parameters");
     parmfile >> parameters;
     // create a graph factory with default graph type
-    alps::graph_factory<> factory(parameters);
+    alps::graph_helper<> lattice(parameters);
 
-    IterateOverBonds(factory.graph());
+    IterateOverBonds(lattice.graph());
 
 #ifndef BOOST_NO_EXCEPTIONS
   }

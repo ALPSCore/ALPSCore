@@ -48,9 +48,9 @@ int main()
     std::ifstream parmfile("parameters");
     parmfile >> parameters;
     // create a graph factory with default graph type
-    alps::graph_factory<> factory(parameters);
+    alps::graph_helper<> lattice(parameters);
     // write the graph created from the input in XML
-    std::cout << factory.graph();
+    std::cout << lattice.graph();
 
 #ifndef BOOST_NO_EXCEPTIONS
 }
