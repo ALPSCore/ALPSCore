@@ -41,7 +41,7 @@ namespace alps {
 Expression::operator bool() const 
 {
   std::string s = boost::lexical_cast<std::string,Expression>(*this);
-  return s=="" || s=="0" || s=="0.";
+  return s!="" && s!="0" && s!="0.";
 }
 
 namespace detail {
