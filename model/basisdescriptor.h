@@ -67,7 +67,6 @@ class BasisDescriptor : public std::vector<site_basis_match<I> >
 {
   typedef std::vector<site_basis_match<I> > super_type;
 public:
-  typedef std::vector<site_basis_match<I> > super_type;
   typedef typename super_type::iterator iterator;
   typedef typename super_type::const_iterator const_iterator;
   typedef std::map<std::string,SiteBasisDescriptor<I> > sitebasis_map_type;
