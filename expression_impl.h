@@ -171,16 +171,16 @@ inline Term<T> Evaluatable<T>::term() const { return Term<T>(); }
 //
 
 template<class T>
-Factor<T>::Factor(value_type x) : term_(new Number<T>(x)), is_inverse_(false) {}
+Factor<T>::Factor(value_type x) : term_(new Number<T>(x)), is_inverse_(false), power_(1) {}
 
 template<class T>
 Factor<T>::Factor(const std::string& s)
-  : term_(new Symbol<T>(s)), is_inverse_(false) 
+  : term_(new Symbol<T>(s)), is_inverse_(false), power_(1)
 {
 }
 
 template<class T>
-Factor<T>::Factor(std::istream& in, bool inv) : term_(), is_inverse_(inv)
+Factor<T>::Factor(std::istream& in, bool inv) : term_(), is_inverse_(inv), power_(1)
 {
   char c;
   in >> c;
@@ -208,6 +208,23 @@ Factor<T>::Factor(std::istream& in, bool inv) : term_(), is_inverse_(inv)
     term_.reset(new Block<T>(in));
   else
     boost::throw_exception(std::runtime_error("Illegal term in expression"));
+  in >> c;
+  if (in) {
+    if (c=='^') {
+      in >> power_;
+      if (power_<0) {
+        is_inverse_ = !is_inverse_;
+        power_=-power_;
+      }
+      else if (power_==0) {
+        power_=1;
+        is_inverse_=false;
+        term_.reset(new Number<T>(1.));
+      }
+    }
+    else
+      in.putback(c);
+  }
 }
 
 
@@ -563,6 +580,7 @@ void Expression<T>::output(std::ostream& os) const
 template<class T>
 const Factor<T>& Factor<T>::operator=(const Factor<T>& v)
 {
+  power_=v.power_;
   if (v.term_) {
     term_.reset(v.term_->clone());
     is_inverse_=v.is_inverse_;
@@ -583,12 +601,25 @@ bool Factor<T>::can_evaluate(const Evaluator<T>& p) const
   return term_->can_evaluate(p);
 }
 
+template <class T>
+typename Factor<T>::value_type Factor<T>::value(const Evaluator<T>& p) const
+{
+  if (!term_)
+    boost::throw_exception(std::runtime_error("Empty value in expression"));
+  value_type val = is_inverse() ? 1./term_->value(p) : term_->value(p);
+  if (power_!=1)
+    val = std::pow(val,power_);
+  return val;
+}
+
 template<class T>
 void Factor<T>::output(std::ostream& os) const
 {
   if (!term_)
     boost::throw_exception(std::runtime_error("Empty value in expression"));
   term_->output(os);
+  if (power_!=1)
+    os << "^" << power_;
 }
 
 template<class T>

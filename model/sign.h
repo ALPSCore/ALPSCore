@@ -160,13 +160,14 @@ bool has_sign_problem(const HamiltonianDescriptor<I>& ham, const graph_helper<G>
   typedef G graph_type;
   const graph_type& graph(lattice.graph());
   
-  if (lattice.disordered())
-    boost::throw_exception(std::runtime_error("Disordered lattices not supported by the sign check program.\n"));
+  if (lattice.disordered_bonds())
+    boost::throw_exception(std::runtime_error("Disordered bonds on lattice not currently supported by the sign check program. Please contact the ALPS developers for assistance.\n"));
 
   // build and check bond matrices for all bond types
   std::map<boost::tuple<int,int,int>,int> bond_sign;
   for (typename boost::graph_traits<graph_type>::edge_iterator
          it=boost::edges(graph).first; it!=boost::edges(graph).second ; ++it) {
+//    int dbtype = lattice.disordered_bond_type(*it);
     int btype  = lattice.bond_type(*it);
     int stype1 = lattice.site_type(lattice.source(*it));
     int stype2 = lattice.site_type(lattice.target(*it));

@@ -89,7 +89,6 @@ public:
   value_type evaluate(const std::string&) const;
   Expression<T> partial_evaluate(const std::string& name) const;
   const Parameters& parameters() const { return parms_;}
-
 private:
   Parameters parms_;
 };
@@ -116,27 +115,23 @@ template<class T>
 class Factor : public Evaluatable<T> {
 public:
   typedef T value_type;
-
+  typedef typename TypeTraits<T>::norm_t norm_type;
+  
   Factor(std::istream&, bool inverse = false);
   Factor(value_type x);
   Factor(const std::string& s);
   Factor(const Factor& v)
-    : Evaluatable<T>(v), term_(), is_inverse_(v.is_inverse_)
+    : Evaluatable<T>(v), term_(), is_inverse_(v.is_inverse_), power_(v.power_)
   {
     if (v.term_) term_.reset(v.term_->clone());
   }
   Factor(const Evaluatable<T>& v)
-    : Evaluatable<T>(v), term_(v.clone()), is_inverse_(false) {}
+    : Evaluatable<T>(v), term_(v.clone()), is_inverse_(false), power_(1) {}
   virtual ~Factor() {}
 
   const Factor& operator=(const Factor& v);
 
-  value_type value(const Evaluator<T>& p) const
-  {
-    if (!term_)
-      boost::throw_exception(std::runtime_error("Empty value in expression"));
-    return is_inverse() ? 1./term_->value(p) : term_->value(p);
-  }
+  value_type value(const Evaluator<T>& p) const;
   void output(std::ostream&) const;
   bool can_evaluate(const Evaluator<T>& p) const;
   Evaluatable<T>* clone() const { return new Factor<T>(*this); }
@@ -153,6 +148,7 @@ public:
 private:
   boost::shared_ptr<Evaluatable<T> > term_;
   bool is_inverse_;
+  int power_;
 };
 
 template<class T>
@@ -595,6 +591,25 @@ template<class T>
 inline bool operator==(const std::string& s, const alps::expression::Expression<T>& ex)
 {
   return ex == s;
+}
+
+template<class T>
+inline bool operator!=(const alps::expression::Expression<T>& ex1, const alps::expression::Expression<T>& ex2)
+{
+  return (boost::lexical_cast<std::string>(ex1) !=
+          boost::lexical_cast<std::string>(ex2));
+}
+
+template<class T>
+inline bool operator!=(const alps::expression::Expression<T>& ex, const std::string& s)
+{
+  return boost::lexical_cast<std::string>(ex) != s;
+}
+
+template<class T>
+inline bool operator!=(const std::string& s, const alps::expression::Expression<T>& ex)
+{
+  return ex != s;
 }
 
 template<class T>

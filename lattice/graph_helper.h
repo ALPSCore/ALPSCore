@@ -92,6 +92,14 @@ public:
   typedef typename lattice_traits<lattice_type>::cell_iterator basis_vector_iterator;
   typedef typename lattice_traits<lattice_type>::cell_iterator boundary_crossing_type;
   
+  typedef typename property_map<edge_type_t,graph_type,type_type>::const_type edge_type_map_type;
+  typedef edge_type_map_type bond_type_map_type;
+  typedef typename property_map<vertex_type_t,graph_type,type_type>::const_type vertex_type_map_type;
+  typedef vertex_type_map_type site_type_map_type;
+  typedef boost::vector_property_map<type_type> disordered_vertex_type_map_type;
+  typedef disordered_vertex_type_map_type disordered_site_type_map_type;
+  typedef boost::vector_property_map<type_type,typename property_map<edge_index_t,graph_type,type_type>::const_type> disordered_edge_type_map_type;
+  typedef disordered_edge_type_map_type disordered_bond_type_map_type;
 
  graph_helper(std::istream& in, const Parameters& p)
    : LatticeLibrary(in), 
@@ -176,6 +184,14 @@ public:
   type_type disordered_vertex_type(const vertex_descriptor& v) const 
   { return d_.disordered_vertices() ? disordered_vertex_type_map_[v] : vertex_type_map_[v];}
   type_type disordered_site_type(const site_descriptor& s) const { return disordered_vertex_type(s);}
+  disordered_edge_type_map_type disordered_edge_type_map() const { return disordered_edge_type_map_;}
+  disordered_bond_type_map_type disordered_bond_type_map() const { return disordered_edge_type_map_;}
+  disordered_vertex_type_map_type disordered_vertex_type_map() const { return disordered_vertex_type_map_;}
+  disordered_site_type_map_type disordered_site_type_map() const { return disordered_vertex_type_map_;}
+  edge_type_map_type edge_type_map() const { return edge_type_map_;}
+  bond_type_map_type bond_type_map() const { return edge_type_map_;}
+  vertex_type_map_type vertex_type_map() const { return vertex_type_map_;}
+  site_type_map_type site_type_map() const { return vertex_type_map_;}
   bool disordered() const { return d_.disordered();}
   bool disordered_sites() const { return d_.disordered_sites();}
   bool disordered_bonds() const { return d_.disordered_bonds();}
@@ -261,14 +277,14 @@ private:
   graph_type* g_;
   bool is_bipartite_;
   typename property_map<parity_t,graph_type,double>::const_type parity_map_;
-  typename property_map<edge_type_t,graph_type,type_type>::const_type edge_type_map_;
+  edge_type_map_type edge_type_map_;
   typename property_map<edge_index_t,graph_type,unsigned int>::const_type edge_index_map_;
-  typename property_map<vertex_type_t,graph_type,type_type>::const_type vertex_type_map_;
+  vertex_type_map_type vertex_type_map_;
   typename property_map<coordinate_t,graph_type,vector_type>::const_type coordinate_map_;
   typename property_map<bond_vector_t,graph_type,vector_type>::const_type bond_vector_map_;
   typename property_map<bond_vector_relative_t,graph_type,vector_type>::const_type bond_vector_relative_map_;
-  boost::vector_property_map<type_type> disordered_vertex_type_map_;
-  boost::vector_property_map<type_type,typename property_map<edge_index_t,graph_type,type_type>::const_type> disordered_edge_type_map_;
+  disordered_vertex_type_map_type disordered_vertex_type_map_;
+  disordered_edge_type_map_type disordered_edge_type_map_;
 };
 
 
