@@ -4,7 +4,8 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 2003-2005 by Synge Todo <wistaria@comp-phys.org>
+*                            Matthias Troyer <troyer@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under

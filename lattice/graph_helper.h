@@ -325,7 +325,7 @@ public:
   std::vector<vector_type> translation_momenta() const 
   {
     if (have_lattice_ && !disordered())
-      return l_.translation_momenta(k);
+      return l_.translation_momenta();
     else
       return std::vector<vector_type>();
   }

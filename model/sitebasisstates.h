@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2004 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2003-2005 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Axel Grzesik <axel@th.physik.uni-bonn.de>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -57,6 +57,13 @@ public:
 private:
   SiteBasisDescriptor<I> basis_;
 };
+
+
+template <class I, class STATE>
+bool is_fermionic(const site_basis<I,STATE>& b, int s) 
+{
+  return is_fermionic(b.basis(),b[s]);
+}
 
 
 // ------------------------------- implementation ----------------------------------

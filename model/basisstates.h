@@ -79,7 +79,7 @@ public:
   }
                     
                 
-  inline size_type index(const value_type& x) const
+  inline std::size_t index(const value_type& x) const
   {
     const_iterator it = std::lower_bound(super_type::begin(), super_type::end(), x);
     if (it==super_type::end())
@@ -87,12 +87,14 @@ public:
     return (*it==x ? it-super_type::begin() : super_type::size());
   }
 
-  inline std::pair<size_type,std::complex<double> > index_and_phase(const value_type& x) const
+  inline std::pair<std::size_t,std::complex<double> > index_and_phase(const value_type& x) const
   {
     return std::make_pair(index(x),std::complex<double>(1.));
   }
 
   double normalization(size_type) const { return 1.;}
+  
+  bool is_real() const { return true;}
 
   bool check_sort() const;
   const basis_type& basis() const { return basis_descriptor_;}

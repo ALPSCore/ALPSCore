@@ -352,12 +352,12 @@ public:
     for (int i=0;i<bc_.size();++i)
       if (bc_[i]=="periodic") {
         if (ks.empty())
-          for (int k=0;j<extent_[i];++j)
+          for (int j=0;j<extent_[i];++j)
             ks.push_back(vector_type(1,2.*j*M_PI/extent_[i]));
         else {
           std::vector<vector_type> newks;
           for (int l=0;l<ks.size();++l) 
-            for (int k=0;j<extent_[i];++j) {
+            for (int j=0;j<extent_[i];++j) {
               vector_type k=ks[l];
               k.push_back(2.*j*M_PI/extent_[i]);
               newks.push_back(k);

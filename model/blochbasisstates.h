@@ -60,7 +60,7 @@ public:
   }
                     
                 
-  inline std::pair<size_type,std::complex<double> > index_and_phase(const value_type& x) const
+  inline std::pair<std::size_t,std::complex<double> > index_and_phase(const value_type& x) const
   {
     const_iterator it = std::lower_bound(full_list_.begin(), full_list_.end(), x);
     if (it==full_list_.end() || *it != x)
@@ -73,6 +73,15 @@ public:
   const basis_type& basis() const { return basis_descriptor_;}
   
   double normalization(size_type i) const { return normalization_[i];}
+  
+  bool is_real() const
+  {
+    for (int i=0;i<phase_.size();++i)
+      if (std::abs(std::imag(phase_[i]))>1.e-8)
+        return false;
+    return true;
+  }
+  
 private:
   template <class J>
   bool satisfies_quantumnumbers(const std::vector<I>& idx, 
@@ -110,6 +119,7 @@ void bloch_basis_states<I,S,SS>::build(const translation_type& trans, const std:
   if (basis_descriptor_.empty())
     return;
   std::vector<I> idx(basis_descriptor_.size(),0);
+  std::vector<int> fermionic(basis_descriptor_.size());
   unsigned int last=idx.size()-1;
   while (true) {
     unsigned int k=last;
@@ -143,21 +153,37 @@ void bloch_basis_states<I,S,SS>::build(const translation_type& trans, const std:
         for (int i=0;i<it->second.size();++i)
           translated_state[it->second[i]]=idx[i];
 
+        // if translated state is not smaller: next translation
+        if (translated_state>idx)
+          continue;
+        
+        // count fermion signs
+        bool fermion_exchange=false;
+        std::fill(fermionic.begin(),fermionic.end(),false);
+        for (int i=basis().size()-1;i>=0;--i) {
+          bool is=is_fermionic(basis()[i],idx[i]);
+          if (is) {
+            fermionic[it->second[i]]=is;
+            if (std::accumulate(fermionic.begin(),fermionic.begin()+it->second[i],0) %2) 
+              fermion_exchange=true;
+          }
+        }
+        
+        double weight=(fermion_exchange ? -1. : 1.);
+
         // if is same after translation: increase count
         if (translated_state==idx) {
           ++found_same;
-          phase_sum += it->first;
+          phase_sum += weight*it->first;
+          continue;
         }
 
-        // if translated state is not smaller: next translation
-        if (translated_state>=idx)
-          continue;
         // look it up
         size_type i = index_and_phase(translated_state).first;
         if (i<super_type::size() && super_type::operator[](i)==translated_state) {
           // have found it and stored the phase
           representative_number = i;
-          ph = it->first;
+          ph = weight*it->first;
           break; 
         }
       }
