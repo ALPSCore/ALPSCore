@@ -200,7 +200,7 @@ public:
   bool is_thermalized() const { return obs_.is_thermalized();}
 };
 
-/*
+
 //=======================================================================
 // helper function
 //
@@ -208,23 +208,23 @@ public:
 //-----------------------------------------------------------------------
 
 template <class OBS>
-Observable* make_observable(Observable& obs, const std::string& s, bool issigned=false) 
+boost::shared_ptr<Observable> make_observable(const Observable& obs, bool issigned=false) 
 {
   if (issigned)
-    return new SignedObservable<OBS,double>(obs,s);
+    return boost::shared_ptr<Observable>(new SignedObservable<OBS,double>(obs));
   else
-    return &obs;
+    return boost::shared_ptr<Observable>(obs.clone());
 }
 
 template <class OBS, class SIGN>
-Observable* make_observable(Observable& obs, const std::string& s, SIGN, bool issigned=true) 
+boost::shared_ptr<Observable>  make_observable(const Observable& obs, const std::string& s, SIGN, bool issigned=true) 
 {
   if (issigned)
-    return new SignedObservable<OBS,SIGN>(obs,s);
+    return boost::shared_ptr<Observable>(new SignedObservable<OBS,SIGN>(obs,s));
   else
-    return &obs;
+    return boost::shared_ptr<Observable>(obs.clone());
 }
-*/
+
 
 //=======================================================================
 // implementations
