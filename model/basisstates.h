@@ -72,7 +72,7 @@ public:
       if (x)
         state_|=mask_;
       else
-        state_&=mask_;
+        state_&=~mask_;
       return *this;
     }
   private:
@@ -123,7 +123,7 @@ public:
   }
 
   bool check_sort() const;
-  const basis_type& basis() { return basis_;}
+  const basis_type& basis() const { return basis_;}
 private:
   BasisStatesDescriptor<I,SS> basis_;
 };
@@ -229,10 +229,23 @@ inline std::ostream& operator<<(std::ostream& out, const alps::BasisStates<I,S,S
   out << "{\n";
   for (typename alps::BasisStates<I,S>::const_iterator it=q.begin();it!=q.end();++it) {
     out << "[ ";
-    for (unsigned int i=0; i!= it->size();++i)
-      out << q.basis()[i][(*it)[i]] << " ";
+    //out << *it;
+    unsigned int n=it->size();
+    for (unsigned int i=0; i!=n;++i)
+      //out << q.basis()[i][(*it)[i]] << " ";
+//      out << (*it)[i] << " ";
     out << " ]\n";
   }
+  out << "}\n";
+  return out;	
+}
+
+template <class I, class J, class S, class SS>
+inline std::ostream& operator<<(std::ostream& out, const alps::LookupBasisStates<I,J,S,SS>& q)
+{
+  out << "{\n";
+  for (typename alps::BasisStates<I,S>::const_iterator it=q.begin();it!=q.end();++it)
+    out << "[ " << *it << " ]\n";
   out << "}\n";
   return out;	
 }
