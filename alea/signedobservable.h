@@ -59,29 +59,30 @@ public:
   typedef std::size_t count_type;
   typedef typename obs_value_traits<value_type>::time_type time_type;
   typedef typename obs_value_traits<value_type>::convergence_type convergence_type;
+  typedef typename super_type::label_type label_type;
   
   template <class X, class Y> friend class AbstractSignedObservable;
 
   BOOST_STATIC_CONSTANT(int,version=observable_type::version+(1<<24));
 
   AbstractSignedObservable(const OBS& obs, const std::string& s="Sign") 
-    : base_type(obs.name()), obs_(obs), sign_name_(s), sign_(0) 
+    : base_type(obs), obs_(obs), sign_name_(s), sign_(0) 
   {  obs_.rename(s + " * "+super_type::name()); }
 
-  AbstractSignedObservable(const std::string& name="", const std::string& s="Sign") 
-   : base_type(name), obs_(s +" * "+name), sign_name_(s), sign_(0) {}
+  AbstractSignedObservable(const std::string& name="", const std::string& s="Sign", const label_type& l=label_type()) 
+   : base_type(name,l), obs_(s +" * "+name), sign_name_(s), sign_(0) {}
 
   template <class OBS2>
   AbstractSignedObservable(const AbstractSignedObservable<OBS2,SIGN>& o) 
-   : base_type(o.name()), obs_(o.obs_), sign_name_(o.sign_name_), sign_(o.sign_) {}  
+   : base_type(o.name(),o.label()), obs_(o.obs_), sign_name_(o.sign_name_), sign_(o.sign_) {}  
 
   template <class ARG>
-  AbstractSignedObservable(const std::string& name,const ARG& arg) 
-   : base_type(name), obs_("Sign * "+name,arg), sign_name_("Sign"), sign_(0) {}
+  AbstractSignedObservable(const std::string& name,const ARG& arg, const label_type& l=label_type()) 
+   : base_type(name,l), obs_("Sign * "+name,arg), sign_name_("Sign"), sign_(0) {}
   
   template <class ARG>
-  AbstractSignedObservable(const std::string& name,std::string& s, const ARG& arg) 
-   : base_type(name), obs_(s + " * "+name,arg), sign_name_(s), sign_(0) {}
+  AbstractSignedObservable(const std::string& name,std::string& s, const ARG& arg, const label_type& l=label_type()) 
+   : base_type(name,l), obs_(s + " * "+name,arg), sign_name_(s), sign_(0) {}
    
   ~AbstractSignedObservable() {}
 
@@ -116,6 +117,7 @@ public:
   SimpleObservableEvaluator<value_type> make_evaluator() const
   {
     SimpleObservableEvaluator<value_type> result(obs_);
+    result.set_label(label());
     result /= static_cast<SimpleObservableEvaluator<sign_type> >(dynamic_cast<const AbstractSimpleObservable<sign_type>&>(sign()));
     result.rename(super_type::name());
     return result;
@@ -195,16 +197,17 @@ public:
   typedef typename obs_value_traits<value_type>::element_type element_type;
   typedef std::size_t count_type;
   typedef typename obs_value_traits<value_type>::time_type time_type;
+  typedef typename super_type::label_type label_type;
 
   SignedObservable(const OBS& obs, const std::string& s="Sign") : base_type(obs,s) {}
-  SignedObservable(const std::string& name="", const std::string& s="Sign") 
-   : base_type(name,s) {}
+  SignedObservable(const std::string& name="", const std::string& s="Sign", const label_type& l=label_type()) 
+   : base_type(name,s,l) {}
   template <class ARG>
-  SignedObservable(const std::string& name,const ARG& arg) 
-   : base_type(name,arg) {}
+  SignedObservable(const std::string& name,const ARG& arg, const label_type& l=label_type()) 
+   : base_type(name,arg,l) {}
   template <class ARG>
-  SignedObservable(const std::string& name,std::string& s, const ARG& arg) 
-   : base_type(name,s,arg) {}
+  SignedObservable(const std::string& name,std::string& s, const ARG& arg, const label_type& l=label_type()) 
+   : base_type(name,s,arg,l) {}
   ~SignedObservable() {}
 
   Observable* clone() const {return new SignedObservable<OBS,SIGN>(*this);}
@@ -333,11 +336,13 @@ void AbstractSignedObservable<OBS,SIGN>::output_vector(std::ostream& out) const
     result_type value_(mean());
     result_type error_(error());
     convergence_type conv_(converged_errors());
+    typename obs_value_traits<label_type>::slice_iterator it2=obs_value_traits<label_type>::slice_begin(label());
     for (typename obs_value_traits<result_type>::slice_iterator sit=
            obs_value_traits<result_type>::slice_begin(value_);
-          sit!=obs_value_traits<result_type>::slice_end(value_);++sit)
+          sit!=obs_value_traits<result_type>::slice_end(value_);++sit,++it2)
     {
-      out << obs_value_traits<result_type>::slice_name(value_,sit)  << ": "
+      out << "Entry[" << obs_value_traits<result_type>::slice_name(value_,sit) << "]" 
+          << "(" << obs_value_traits<label_type>::slice_value(label(),it2) << ")" << ": "
           << obs_value_traits<result_type>::slice_value(value_,sit) << " +/- " 
           << obs_value_traits<result_type>::slice_value(error_,sit);
       if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==MAYBE_CONVERGED)

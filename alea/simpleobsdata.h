@@ -77,22 +77,23 @@ public:
   typedef typename obs_value_traits<T>::count_type count_type;
   typedef typename obs_value_traits<T>::result_type result_type;
   typedef typename obs_value_traits<T>::convergence_type convergence_type;
+  typedef typename obs_value_traits<T>::label_type label_type;
 
   // constructors
   SimpleObservableData();
   template <class U, class S>
   SimpleObservableData(const SimpleObservableData<U>& x, S s);
   SimpleObservableData(const AbstractSimpleObservable<value_type>& obs);
-  SimpleObservableData(std::istream&, const XMLTag&);
+  SimpleObservableData(std::istream&, const XMLTag&, label_type& );
 
   template <class S>
   SimpleObservableData<typename obs_value_slice<T,S>::value_type> slice(S s) {
     return SimpleObservableData<typename obs_value_slice<T,S>::value_type>(*this, s);
   }
 
-  void read_xml(std::istream&, const XMLTag&);
+  void read_xml(std::istream&, const XMLTag&, label_type& label);
   void read_xml_scalar(std::istream&, const XMLTag&);
-  void read_xml_vector(std::istream&, const XMLTag&);
+  void read_xml_vector(std::istream&, const XMLTag&, label_type& label);
   
   inline ALPS_DUMMY_VOID set_thermalization(uint32_t todiscard);
   inline uint32_t get_thermalization() const;
@@ -309,7 +310,7 @@ SimpleObservableData<T>::SimpleObservableData(const AbstractSimpleObservable<T>&
 }
 
 template <class T>
-SimpleObservableData<T>::SimpleObservableData(std::istream& infile, const XMLTag& intag)
+SimpleObservableData<T>::SimpleObservableData(std::istream& infile, const XMLTag& intag, label_type& l)
   : count_(0),
     has_variance_(false),
     has_tau_(false),
@@ -326,7 +327,7 @@ SimpleObservableData<T>::SimpleObservableData(std::istream& infile, const XMLTag
     mean_(), error_(), variance_(), tau_(), min_(), max_(),
     values_(), values2_(), jack_()
 {
-  read_xml(infile,intag);
+  read_xml(infile,intag,l);
 }
 
 inline double text_to_double(const std::string& val) 
@@ -388,7 +389,7 @@ void SimpleObservableData<T>::read_xml_scalar(std::istream& infile, const XMLTag
 }
 
 template <class T>
-void SimpleObservableData<T>::read_xml_vector(std::istream& infile, const XMLTag& intag)
+void SimpleObservableData<T>::read_xml_vector(std::istream& infile, const XMLTag& intag, label_type& label)
 {
   if (intag.name != "VECTOR_AVERAGE")
     boost::throw_exception(std::runtime_error ("Encountered tag <" + intag.name + "> instead of <VECTOR_AVERAGE>"));
@@ -402,10 +403,12 @@ void SimpleObservableData<T>::read_xml_vector(std::istream& infile, const XMLTag
   obs_value_traits<time_type>::resize(tau_,s);
   obs_value_traits<convergence_type>::resize(converged_errors_,s);
   obs_value_traits<convergence_type>::resize(any_converged_errors_,s);
+  obs_value_traits<label_type>::resize(label,s);
   
   tag = parse_tag(infile);
   int i=0;
   while (tag.name =="SCALAR_AVERAGE") {
+    label[i]=tag.attributes["label"];
     tag = parse_tag(infile);
     while (tag.name !="/SCALAR_AVERAGE") {
       if (tag.name=="COUNT") {
@@ -461,16 +464,16 @@ template <bool arrayvalued> struct input_helper {};
   
 template <> struct input_helper<true>
 {
-  template <class T>
-  static void read_xml(SimpleObservableData<T>& obs, std::istream& infile, const XMLTag& tag) {
-    obs.read_xml_vector(infile,tag);
+  template <class T, class L>
+  static void read_xml(SimpleObservableData<T>& obs, std::istream& infile, const XMLTag& tag, L& l) {
+    obs.read_xml_vector(infile,tag,l);
   }
 };
   
 template <> struct input_helper<false>
 {
-  template <class T>
-  static void read_xml(SimpleObservableData<T>& obs, std::istream& infile, const XMLTag& tag) {
+  template <class T, class L>
+  static void read_xml(SimpleObservableData<T>& obs, std::istream& infile, const XMLTag& tag,L&) {
     obs.read_xml_scalar(infile,tag);
   }
 };
@@ -478,9 +481,9 @@ template <> struct input_helper<false>
 } // namespace detail
 
 template <class T>
-inline void SimpleObservableData<T>::read_xml(std::istream& infile, const XMLTag& intag)
+inline void SimpleObservableData<T>::read_xml(std::istream& infile, const XMLTag& intag, label_type& l)
 {
-  detail::input_helper<obs_value_traits<T>::array_valued>::read_xml(*this,infile,intag);
+  detail::input_helper<obs_value_traits<T>::array_valued>::read_xml(*this,infile,intag,l);
 }
 
 template <class T> 

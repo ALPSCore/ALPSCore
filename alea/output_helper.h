@@ -43,6 +43,11 @@ namespace alps {
 template <bool ARRAY_VALUED>
 struct output_helper
 {
+  template <class X, class L> static void output(const X& b, std::ostream& out, const L&)
+  {
+    b.output_scalar(out);
+  }
+
   template <class X> static void output(const X& b, std::ostream& out)
   {
     b.output_scalar(out);
@@ -61,6 +66,11 @@ struct output_helper
 template <>
 struct output_helper<true>
 {
+  template <class T, class L> static void output(const T& b, std::ostream& out, const L& label)
+  {
+    b.output_vector(out,label);
+  }
+
   template <class T> static void output(const T& b, std::ostream& out)
   {
     b.output_vector(out);

@@ -257,9 +257,8 @@ void Term<T>::simplify()
       if (t.is_negative()) negate();
       std::copy(t.factors().first, t.factors().second,
                 std::back_inserter(s));
-    } else {
+    } else
       s.push_back(*it);
-    }
   }
   terms_ = s;
 }
@@ -613,7 +612,7 @@ typename Factor<T>::value_type Factor<T>::value(const Evaluator<T>& p) const
   value_type val = super_type::value(p);
   if (is_inverse())
     val = 1./val;
-  if (power_.value(p)!=1.)
+  if (!unit_power())
     val = std::pow(evaluate_helper<T>::real(val),evaluate_helper<T>::real(power_.value(p)));
   return val;
 }
@@ -630,9 +629,7 @@ template<class T>
 void Factor<T>::output(std::ostream& os) const
 {
   super_type::output(os);
-  Parameters p;
-  ParameterEvaluator<T> dummy(p);
-  if (!power_.can_evaluate(dummy) || power_.value(dummy)!=1.)
+  if (!unit_power())
     os << "^" << power_;
 }
 
@@ -760,20 +757,16 @@ boost::shared_ptr<Term<T> > Term<T>::flatten_one_term()
 }
 
 template<class T>
-boost::shared_ptr<SimpleFactor<T> > SimpleFactor<T>::flatten_one_value()
-{
-  boost::shared_ptr<Evaluatable<T> > term=term_->flatten_one();
-  boost::shared_ptr<SimpleFactor<T> > val(new SimpleFactor<T>(*this));
-  val->term_=term;
-  return val->term_ ? val : boost::shared_ptr<SimpleFactor<T> >();
-}
-
-template<class T>
 boost::shared_ptr<Factor<T> > Factor<T>::flatten_one_value()
 {
-  boost::shared_ptr<Factor<T> > val(new Factor<T>(*this));
-  super_type::operator=(*super_type::flatten_one_value());
-  return val;
+  if (unit_power()) {
+    boost::shared_ptr<Evaluatable<T> > term=term_->flatten_one();
+    boost::shared_ptr<Factor<T> > val(new Factor<T>(*this));
+    val->term_=term;
+    return val->term_ ? val : boost::shared_ptr<Factor<T> >();
+  }
+  else
+    return boost::shared_ptr<Factor<T> >();
 }
 
 template<class T>

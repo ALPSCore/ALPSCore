@@ -85,7 +85,7 @@ class NoBinning : public AbstractBinning<T>
   uint32_t get_thermalization() const { return super_type::is_thermalized() ? thermal_count_ : count_;}
     
   void output_scalar(std::ostream& out) const;
-  void output_vector(std::ostream& out) const;
+  template <class L> void output_vector(std::ostream& out, const L& l) const;
 #ifndef ALPS_WITHOUT_OSIRIS
   virtual void save(ODump& dump) const;
   virtual void load(IDump& dump);
@@ -228,18 +228,20 @@ inline void NoBinning<T>::output_scalar(std::ostream& out) const
       out << ": " << mean() << " +/- " << error() << std::endl;
 }
 
-template <class T>
-inline void NoBinning<T>::output_vector(std::ostream& out) const
+template <class T> template <class L>
+inline void NoBinning<T>::output_vector(std::ostream& out, const L& label) const
 {
   if(count()) {
     result_type mean_(mean());
     result_type error_(error());
         
     out << ":\n";
+    typename obs_value_traits<L>::slice_iterator it2=obs_value_traits<L>::slice_begin(label);
     for (typename obs_value_traits<result_type>::slice_iterator sit=
            obs_value_traits<result_type>::slice_begin(mean_);
-          sit!=obs_value_traits<result_type>::slice_end(mean_);++sit)
-      out << "Entry[" << obs_value_traits<result_type>::slice_name(mean_,sit) << "]: " 
+          sit!=obs_value_traits<result_type>::slice_end(mean_);++sit,++it2)
+      out << "Entry[" << obs_value_traits<result_type>::slice_name(mean_,sit) << "] " 
+          << "(" << obs_value_traits<L>::slice_value(label,it2) << ")" << ": "
           << obs_value_traits<result_type>::slice_value(mean_,sit) << " +/- " 
           << obs_value_traits<result_type>::slice_value(error_,sit) << std::endl;
   }

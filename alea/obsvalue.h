@@ -69,6 +69,7 @@ struct obs_value_traits
   BOOST_STATIC_CONSTANT( uint32_t, magic_id = TypeTraits<T>::type_tag);
   typedef uint32_t size_type;
   BOOST_STATIC_CONSTANT( bool, array_valued = false);
+  typedef std::string label_type;
 
   template <class X>
   static inline void check_for_max(T& a,const X& b) { if (b>a) a=b;}
@@ -122,6 +123,7 @@ struct obs_value_traits<std::complex<T> >
   typedef int slice_iterator;
   BOOST_STATIC_CONSTANT(uint32_t, magic_id = TypeTraits<T>::type_tag);
   BOOST_STATIC_CONSTANT(bool, array_valued=false);
+  typedef std::string label_type;
 
   template <class X> static inline void check_for_max(std::complex<T>&,const X&) {}
   template <class X> static inline void check_for_min(std::complex<T>&,const X& b) {}
@@ -167,6 +169,7 @@ struct obs_value_traits<std::valarray<T> >
   typedef std::valarray<typename TypeTraits<T>::average_t> result_type;
   typedef std::valarray<int> convergence_type;
   BOOST_STATIC_CONSTANT(uint32_t, magic_id = 256+TypeTraits<T>::type_tag);
+  typedef std::vector<std::string> label_type;
 
   template <class X> static inline void check_for_max(std::valarray<T>& a,const std::valarray<X>& b) 
   {
@@ -237,6 +240,25 @@ struct obs_value_traits<std::valarray<T> >
 
 #endif
 
+template <class T>
+struct obs_value_traits<std::vector<T> >
+{
+  typedef std::vector<T> value_type;
+  typedef T element_type;
+  template <class X, class Y> static void resize_same_as(X& a, const Y& y) {a.resize(y.size());}
+  template <class X, class Y> static void copy(X& x,const Y& y) {x.resize(y.size()); for (int i=0;i<y.size();++i) x[i]=y[i];}
+  template <class X> static std::size_t size(const X& a) { return a.size();}
+  template <class X> static void resize(X& a, std::size_t s) {a.resize(s);}
+
+  typedef uint32_t slice_iterator;
+  static slice_iterator slice_begin(const value_type&) { return 0;}
+  static slice_iterator slice_end(const value_type& x) { return x.size();}
+  static std::string slice_name(const value_type& ,slice_iterator i) 
+    { return boost::lexical_cast<std::string,int>(i); }
+  static element_type slice_value(const value_type& x, slice_iterator i) { return x[i];}
+  static element_type& slice_value(value_type& x, slice_iterator i) { return x[i];}
+};
+
 template<typename T, std::size_t NumDims, typename Allocator>
   struct obs_value_traits<alps::multi_array<T,NumDims,Allocator> >
 {
@@ -252,6 +274,7 @@ template<typename T, std::size_t NumDims, typename Allocator>
   typedef alps::multi_array<typename TypeTraits<T>::average_t,NumDims> result_type;
   typedef alps::multi_array<int,NumDims> convergence_type;
   BOOST_STATIC_CONSTANT(uint32_t, magic_id = (1+NumDims)*256+TypeTraits<T>::type_tag);
+  typedef alps::multi_array<std::string,NumDims> label_type;
 
   template <class X, class A> static inline void check_for_max(value_type& a,const alps::multi_array<X,NumDims,A>& b) 
   {

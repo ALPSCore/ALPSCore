@@ -54,16 +54,21 @@ public:
   typedef typename AbstractSimpleObservable<T>::count_type count_type;
   typedef typename AbstractSimpleObservable<T>::result_type result_type;
   typedef typename AbstractSimpleObservable<T>::slice_iterator slice_iterator;
+  typedef typename AbstractSimpleObservable<T>::label_type label_type;
   typedef typename obs_value_traits<T>::convergence_type convergence_type;
   typedef BINNING binning_type;
 
   BOOST_STATIC_CONSTANT(int,version=(obs_value_traits<T>::magic_id+ (binning_type::magic_id << 16)));
   /// the constructor needs a name and optionally specifications for the binning strategy
-  SimpleObservable(const std::string& name,const binning_type& b)
-   : AbstractSimpleObservable<T>(name), b_(b) {}
+  SimpleObservable(const std::string& name=std::string(), const label_type& l=label_type())
+   : AbstractSimpleObservable<T>(name,l) {}
 
-  SimpleObservable(const std::string& name="" ,uint32_t s=0)
-   : AbstractSimpleObservable<T>(name), b_(s) {}
+  SimpleObservable(const std::string& name,const binning_type& b, const label_type& l=label_type())
+   : AbstractSimpleObservable<T>(name,l), b_(b) {}
+
+  SimpleObservable(const std::string& name,uint32_t s, const label_type& l=label_type())
+   : AbstractSimpleObservable<T>(name,l), b_(s) {}
+
    
   uint32_t version_id() const { return version;}
   
@@ -160,7 +165,7 @@ SimpleObservable<T,BINNING>::output(std::ostream& o) const
   else 
   {
     o << super_type::name ();
-    output_helper<obs_value_traits<T>::array_valued>::output(b_,o);
+    output_helper<obs_value_traits<T>::array_valued>::output(b_,o,label());
   }
   ALPS_RETURN_VOID
 }

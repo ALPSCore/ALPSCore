@@ -86,7 +86,7 @@ class SimpleBinning : public AbstractBinning<T>
   uint32_t size() const { return obs_value_traits<T>::size(min_);}
   
   void output_scalar(std::ostream& out) const;
-  void output_vector(std::ostream& out) const;
+  template <class L> void output_vector(std::ostream& out, const L&) const;
 #ifndef ALPS_WITHOUT_OSIRIS
   virtual void save(ODump& dump) const;
   virtual void load(IDump& dump);
@@ -432,8 +432,8 @@ void SimpleBinning<T>::write_vector_xml(oxstream& oxs, IT it) const {
 }
 
 
-template <class T>
-inline void SimpleBinning<T>::output_vector(std::ostream& out) const
+template <class T> template <class L>
+inline void SimpleBinning<T>::output_vector(std::ostream& out, const L& label) const
 {
   if(count())
   {
@@ -446,11 +446,13 @@ inline void SimpleBinning<T>::output_vector(std::ostream& out) const
       errs_[i]=error(i);
       
     out << "\n";
+    typename obs_value_traits<L>::slice_iterator it2=obs_value_traits<L>::slice_begin(label);
     for (typename obs_value_traits<result_type>::slice_iterator sit=
            obs_value_traits<result_type>::slice_begin(mean_);
-          sit!=obs_value_traits<result_type>::slice_end(mean_);++sit)
+          sit!=obs_value_traits<result_type>::slice_end(mean_);++sit,++it2)
     {
-      out << "Entry[" << obs_value_traits<result_type>::slice_name(mean_,sit) << "]: " 
+      out << "Entry[" << obs_value_traits<result_type>::slice_name(mean_,sit) << "] " 
+          << "(" << obs_value_traits<L>::slice_value(label,it2) << ")" << ": "
           << obs_value_traits<result_type>::slice_value(mean_,sit) << " +/- " 
           << obs_value_traits<result_type>::slice_value(error_,sit) << "; tau = "
           << obs_value_traits<time_type>::slice_value(tau_,sit);

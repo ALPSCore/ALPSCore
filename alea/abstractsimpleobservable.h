@@ -71,8 +71,11 @@ public:
   
   typedef typename obs_value_traits<T>::convergence_type convergence_type;
   //@}
+
+  typedef typename obs_value_traits<value_type>::label_type label_type;
   
-  AbstractSimpleObservable(const std::string& name="") : Observable(name) {}
+  AbstractSimpleObservable(const std::string& name="", const label_type& l=label_type()) 
+   : Observable(name), label_(l) {}
   
   virtual ~AbstractSimpleObservable() {}
   //@{
@@ -159,6 +162,9 @@ public:
   virtual std::string evaluation_method(Target) const { return "";}
   
   operator SimpleObservableEvaluator<value_type> () const { return make_evaluator();}
+  
+  void set_label(const label_type& l) { label_=l;}
+  const label_type& label() const { return label_;}
 
 private:
   virtual SimpleObservableEvaluator<value_type> make_evaluator() const
@@ -168,6 +174,8 @@ private:
   friend class SimpleObservableEvaluator<value_type>;
   
   virtual void write_more_xml(oxstream&, slice_iterator = slice_iterator()) const {}
+  
+  label_type label_;
 };
 
 
@@ -285,10 +293,12 @@ void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, const boost::f
 
     typename obs_value_traits<result_type>::slice_iterator it=obs_value_traits<result_type>::slice_begin(mean_);
     typename obs_value_traits<result_type>::slice_iterator end=obs_value_traits<result_type>::slice_end(mean_);
+    typename obs_value_traits<label_type>::slice_iterator it2=obs_value_traits<label_type>::slice_begin(label());
     while (it!=end)
     {
       oxs << start_tag("SCALAR_AVERAGE")
-          << attribute("indexvalue", obs_value_traits<result_type>::slice_name(mean_,it));
+          << attribute("indexvalue", obs_value_traits<result_type>::slice_name(mean_,it))
+          << attribute("label",obs_value_traits<label_type>::slice_name(label(),it2));
       oxs << start_tag("COUNT") << no_linebreak << count() << end_tag;
       int prec=(count()==1) ? 20 : int(4-std::log10(std::abs(obs_value_traits<result_type>::slice_value(error_,it)/obs_value_traits<result_type>::slice_value(mean_,it)))); 
       
@@ -337,6 +347,7 @@ void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, const boost::f
       write_more_xml(oxs,it);
 
       ++it;
+      ++it2;
       oxs << end_tag("SCALAR_AVERAGE");
     }
     oxs << end_tag("VECTOR_AVERAGE");

@@ -68,6 +68,7 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
   typedef typename AbstractSimpleObservable<T>::result_type result_type;
   typedef typename obs_value_traits<T>::convergence_type convergence_type;
   typedef std::size_t count_type;
+  typedef typename AbstractSimpleObservable<T>::label_type label_type;
   
   enum { version = obs_value_traits<T>::magic_id + (6 << 16) };
   uint32_t version_id() const { return version; }
@@ -486,12 +487,14 @@ void SimpleObservableEvaluator<T>::output_vector(std::ostream& out) const
     time_type tau_;
     if (has_tau())
       obs_value_traits<value_type>::copy(tau_,tau());
+    typename obs_value_traits<label_type>::slice_iterator it2=obs_value_traits<label_type>::slice_begin(label());
     for (typename obs_value_traits<result_type>::slice_iterator sit=
            obs_value_traits<result_type>::slice_begin(value_);
-          sit!=obs_value_traits<result_type>::slice_end(value_);++sit)
+          sit!=obs_value_traits<result_type>::slice_end(value_);++sit,++it2)
     {
       out << "Entry["
-          << obs_value_traits<result_type>::slice_name(value_,sit)  << "]: "
+          << obs_value_traits<result_type>::slice_name(value_,sit)  << "] "
+          << "(" << obs_value_traits<label_type>::slice_value(label(),it2) << ")" << ": "
           << obs_value_traits<result_type>::slice_value(value_,sit) << " +/- " 
           << obs_value_traits<result_type>::slice_value(error_,sit);
       if(has_tau())
@@ -523,12 +526,12 @@ inline SimpleObservableEvaluator<T>::SimpleObservableEvaluator(const char* n)
 
 template <class T>
 inline SimpleObservableEvaluator<T>::SimpleObservableEvaluator(const SimpleObservableEvaluator& eval)
-  : AbstractSimpleObservable<T>(eval.name()), valid_(eval.valid_),
+  : AbstractSimpleObservable<T>(eval), valid_(eval.valid_),
     automatic_naming_(true), runs_(eval.runs_), all_(eval.all_) {}
 
 template <class T>
 inline SimpleObservableEvaluator<T>::SimpleObservableEvaluator(const Observable& b, const std::string& n)
-  : AbstractSimpleObservable<T>(n=="" ? b.name() : n), valid_(false),
+  : AbstractSimpleObservable<T>(n,dynamic_cast<const AbstractSimpleObservable<T>&>(b).label()), valid_(false),
     automatic_naming_(n=="")
 {
   merge(b);
@@ -536,7 +539,7 @@ inline SimpleObservableEvaluator<T>::SimpleObservableEvaluator(const Observable&
 
 template <class T>
 inline SimpleObservableEvaluator<T>::SimpleObservableEvaluator(const Observable& b)
-  : AbstractSimpleObservable<T>(b.name()), valid_(false),
+  : AbstractSimpleObservable<T>(dynamic_cast<const AbstractSimpleObservable<T>&>(b)), valid_(false),
     automatic_naming_(true)
 {
   if (dynamic_cast<const AbstractSimpleObservable<T>*>(&b)==0)
@@ -550,7 +553,7 @@ inline SimpleObservableEvaluator<T>::SimpleObservableEvaluator(const std::string
   : AbstractSimpleObservable<T>(n), 
     valid_(true),
     automatic_naming_(false), 
-    all_(infile,intag)
+    all_(infile,intag,label_)
 {}
 
 template <class T>
