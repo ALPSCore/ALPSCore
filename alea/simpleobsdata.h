@@ -537,7 +537,7 @@ inline SimpleObservableData<T>& SimpleObservableData<T>::operator/=(const Simple
   using std::sqrt;
   using alps::sqrt;
   if(count() && x.count())
-  error_ = sqrt((error()*error()-mean()*mean()*x.error()*x.error()/x.mean()/x.mean())/x.mean()/x.mean());
+  error_ = sqrt((error()*error()+mean()*mean()*x.error()*x.error()/x.mean()/x.mean())/x.mean()/x.mean());
   transform(x,alps::divides<value_type,X,value_type>(),alps::divides<
   result_type,typename SimpleObservableData<X>::result_type,result_type>());
   return (*this);
