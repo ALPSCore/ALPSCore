@@ -82,7 +82,7 @@ public:
   virtual result_type mean() const =0;
   
   /// the variance
-  virtual result_type variance() const { return result_type();}
+  virtual result_type variance() const { return boost::throw_exception(std::logic_error("No variance provided in observable"));  result_type();}
   
   /// the error
   virtual result_type error() const =0;
@@ -92,16 +92,16 @@ public:
   virtual bool has_minmax() const { return false;}
   
   /// the minimum value
-  virtual value_type min() const { return value_type();}
+  virtual value_type min() const { boost::throw_exception(std::logic_error("No min provided in observable")); return value_type();}
   
   /// the maximum value
-  virtual value_type max() const { return value_type();}
+  virtual value_type max() const { boost::throw_exception(std::logic_error("No max provided in observable")); return value_type();}
   
   /// is autocorrelation information available ? 
   virtual bool has_tau() const { return false;}
     
   /// the autocorrelation time, throws an exception if not available
-  virtual time_type tau() const { return time_type();}
+  virtual time_type tau() const { return boost::throw_exception(std::logic_error("No autocorelation time provided in observable")); time_type();}
 
   /// is variance  available ? 
   virtual bool has_variance() const { return false;}

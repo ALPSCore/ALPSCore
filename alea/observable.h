@@ -135,7 +135,7 @@ class Observable
   virtual void rename(const std::string& newname);
 
   /** reset the observable */
-  virtual ALPS_DUMMY_VOID reset(bool forthermalization=false) = 0;
+  virtual ALPS_DUMMY_VOID reset(bool equilibrated=false) = 0;
   
   /** output the result */
   virtual ALPS_DUMMY_VOID output(std::ostream&) const = 0;
