@@ -1,7 +1,7 @@
 /***************************************************************************
 * ALPS library
 *
-*random.h includes all header files for the ALPS osiris library
+* osiris.h  includes all header files for the ALPS osiris library
 *
 * $Id$
 *

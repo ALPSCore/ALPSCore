@@ -1,7 +1,7 @@
 /***************************************************************************
 * ALPS library
 *
-*random.h includes all header files for the ALPS alea library
+* alea.h  includes all header files for the ALPS alea library
 *
 * $Id$
 *

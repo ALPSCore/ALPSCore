@@ -1,7 +1,7 @@
 /***************************************************************************
 * ALPS library
 *
-*random.h includes all header files for the ALPS scheduler library
+* scheduler.h  includes all header files for the ALPS scheduler library
 *
 * $Id$
 *

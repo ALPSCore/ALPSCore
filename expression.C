@@ -92,7 +92,7 @@ bool Evaluatable::can_evaluate() const
   return can_evaluate(Evaluator());
 }
 
-bool Evaluatable::depends_on(const std::string& s) const {
+bool Evaluatable::depends_on(const std::string&) const {
   return false;
 }
 

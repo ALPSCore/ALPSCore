@@ -1,7 +1,7 @@
 /***************************************************************************
 * ALPS library
 *
-*random.h includes all header files for the ALPS lattice library
+* lattice.h  includes all header files for the ALPS lattice library
 *
 * $Id$
 *

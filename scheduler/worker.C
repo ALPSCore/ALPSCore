@@ -72,7 +72,7 @@ Worker::Worker(const ProcessList& w,const alps::Parameters&  myparms,int32_t n)
   // TODO: create slave runs
 
   // TODO: replace by generic seeding scheme
-  boost::minstd_rand0 gen(331);
+  // boost::minstd_rand0 gen(331);
   if (where.size())
     seed_with_sequence(random,parms["SEED"]);
 }
