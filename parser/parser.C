@@ -112,9 +112,10 @@ std::string xml_parse_name(std::istream& in)
  if(c=='!' || c=='?')
    return the_string;
 
-  // copy following alphanumeric characters or /,:,_ into the string
+  // copy following alphanumeric characters or /,:,_,-,. into the string
   c=in.get();
-  while ((std::isalnum(c) || (c=='/') || (c==':') || (c=='_')) &&in) {
+  while ((std::isalnum(c) || (c=='/') || (c==':') || (c=='_') || (c=='-') ||
+          (c=='.')) && in) {
     the_string += c;
     c=in.get();
   }
@@ -164,11 +165,21 @@ XMLTag parse_tag(std::istream& in, bool skip_comments)
   XMLTag tag;
   tag.name = detail::xml_read_tag(in);
   if(tag.name=="?") {
-    tag.type=XMLTag::COMMENT;
+    tag.type=XMLTag::PROCESSING;
+    tag.name = detail::xml_parse_name(in);
+    std::string n,v;
+    char c;
+    in >> c;
+    while (c!='?') {
+      in.putback(c);
+      detail::xml_read_attribute(in, n, v);
+      tag.attributes[n]=v;
+      in >> c;
+    }
     detail::skip_comment(in);
   }
   else if( tag.name=="!") {
-    tag.type=XMLTag::PROCESSING;
+    tag.type=XMLTag::COMMENT;
     detail::skip_comment(in);
   }
   else {
@@ -184,7 +195,6 @@ XMLTag parse_tag(std::istream& in, bool skip_comments)
       detail::xml_close_tag(in);
       return tag;
     }
-    
 
     std::string n,v;
     char c;
