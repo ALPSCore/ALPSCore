@@ -42,9 +42,13 @@ int main()
     std::cerr << "here\n";
 
     // get operators in one bond term 
-    std::set<std::string> ops = lib.get_hamiltonian("hardcore boson").bond_term().split(lib.operators());
-   
-    std::copy(ops.begin(),ops.end(),std::ostream_iterator<std::string>(std::cout,"\n"));
+#ifndef ALPS_WITH_NEW_EXPRESSION
+    std::set<alps::Term> ops = lib.get_hamiltonian("hardcore boson").bond_term().split(lib.operators());
+    std::copy(ops.begin(),ops.end(),std::ostream_iterator<alps::Term>(std::cout,"\n"));
+#else
+    std::set<alps::Term<> > ops = lib.get_hamiltonian("hardcore boson").bond_term().split(lib.operators());
+    std::copy(ops.begin(),ops.end(),std::ostream_iterator<alps::Term<> >(std::cout,"\n"));
+#endif
 
 #ifndef BOOST_NO_EXCEPTIONS
 }
