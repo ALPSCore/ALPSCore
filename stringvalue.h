@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>,
 *                            Mathias Koerner <mkoerner@itp.phys.ethz.ch>
 *
@@ -51,7 +51,7 @@ public:
   StringValue() {}
   StringValue(const std::string& x) : value_(x) {}
   StringValue(const char * x) : value_(x) {}
-  
+
   template <class T>
   StringValue(const T& x) : value_(boost::lexical_cast<std::string, T>(x)) {}
   // we "recast" errors below to std::runtime_error, but here we
@@ -64,8 +64,8 @@ public:
 
   template <class T>
   T get() const { return operator T(); }
-    
-  operator bool() const { 
+
+  operator bool() const {
     return value_ == "true" ? true : (value_ == "false" ? false : boost::lexical_cast<bool,std::string>(value_));
   }
 
@@ -161,35 +161,40 @@ namespace alps {
 template < class StringBase = std::string > class lexical_cast_string;
 typedef lexical_cast_string<> StringValue;
 
-template < class StringBase >
+namespace detail {
+
+template<class S, class T>
+struct lexical_cast_string_helper
+{
+  static T get(const lexical_cast_string<S>& s)
+  { return boost::lexical_cast<T>(s); }
+};
+
+template<class S>
+struct lexical_cast_string_helper<S, S>
+{
+  static S get(const lexical_cast_string<S>& s) { return s; }
+};
+
+} // end namespace detail
+
+template<class StringBase>
 class lexical_cast_string : public StringBase
 {
 public:
-
   typedef StringBase base_type;
 
-  lexical_cast_string(const lexical_cast_string& s)
-    : base_type(s) { }
-
-  lexical_cast_string(const base_type& s = base_type())
-    : base_type(s) { }
-
-  lexical_cast_string(const char* s)
-    : base_type(s) { }
-
+  lexical_cast_string(const base_type& s = base_type()) : base_type(s) {}
+  lexical_cast_string(const lexical_cast_string& s) : base_type(s) {}
+  lexical_cast_string(const char* s) : base_type(s) {}
   template <class T>
-  lexical_cast_string(const T& x) 
-    : base_type(boost::lexical_cast<base_type>(x)) { 
-  }
+  lexical_cast_string(const T& x)
+    : base_type(boost::lexical_cast<base_type>(x)) {}
 
-  bool valid() const {
-    return !empty();
-  }
+  bool valid() const { return !empty(); }
 
-  template <class T>
-  T get() const { 
-    return operator T(); 
-  }
+  template <class T> T get() const
+  { return detail::lexical_cast_string_helper<base_type, T>::get(*this); }
 
   operator bool() const {
     if ( *this == "true" ) return true;
@@ -197,16 +202,9 @@ public:
     return boost::lexical_cast<bool>(*this);
   }
 
-  // This has to be there, because get<std::string>() is
-  // called somewhere.
-  operator base_type() const {
-    return *this;
-  }
-
 #define CONVERTIT(T) operator T() const { \
   return boost::lexical_cast<T>(*this); \
 }
-
   CONVERTIT(int8_t)
   CONVERTIT(uint8_t)
   CONVERTIT(int16_t)
