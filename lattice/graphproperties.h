@@ -76,13 +76,13 @@ namespace detail {
 
 template <class T, class DEFAULT=int>
 struct existing_property {
-  static const bool result=true;
+  BOOST_STATIC_CONSTANT(bool, result=true);
   typedef T type;
 };
 
 template <class DEFAULT>
 struct existing_property<boost::detail::error_property_not_found,DEFAULT> {
-  static const bool result=false;
+  BOOST_STATIC_CONSTANT(bool, result=false);
   typedef DEFAULT type;
 };
 
@@ -102,10 +102,10 @@ struct choose<false,T1,T2> {
 
 template <class Property, class Graph, class Default=int>
 struct has_property {
-  static const bool edge_property=false;
-  static const bool vertex_property=false;
-  static const bool graph_property=false;
-  static const bool any_property=false;
+  BOOST_STATIC_CONSTANT(bool, edge_property=false);
+  BOOST_STATIC_CONSTANT(bool, vertex_property=false);
+  BOOST_STATIC_CONSTANT(bool, graph_property=false);
+  BOOST_STATIC_CONSTANT(bool, any_property=false);
   typedef Default vertex_property_type;
   typedef Default edge_property_type;
   typedef Default graph_property_type;
@@ -117,14 +117,10 @@ template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, 
 struct has_property<P, boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>, D>
 {
   typedef boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4> Graph;
-  static const bool edge_property = detail::existing_property<
-    typename boost::property_value<EP,P>::type,D>::result;
-  static const bool vertex_property = detail::existing_property<
-    typename boost::property_value<VP,P>::type,D>::result;
-  static const bool graph_property = detail::existing_property<
-    typename boost::property_value<GP,P>::type,D>::result;
-  static const bool any_property =
-    edge_property || vertex_property || graph_property;
+  BOOST_STATIC_CONSTANT(bool, edge_property = (detail::existing_property<typename boost::property_value<EP,P>::type,D>::result));
+  BOOST_STATIC_CONSTANT(bool, vertex_property = (detail::existing_property<typename boost::property_value<VP,P>::type,D>::result));
+  BOOST_STATIC_CONSTANT(bool, graph_property = (detail::existing_property<typename boost::property_value<GP,P>::type,D>::result));
+  BOOST_STATIC_CONSTANT(bool, any_property = edge_property || vertex_property || graph_property;
   typedef typename detail::existing_property<
     typename boost::property_value<EP,P>::type,D>::type edge_property_type;
   typedef typename detail::existing_property<
@@ -137,30 +133,6 @@ struct has_property<P, boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>, D>
   typedef property_type type;
 };
 
-
-template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, class P, class D>
-struct has_property<P, const boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>, D>
-{
-  typedef boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>  Graph;
-  static const bool edge_property = detail::existing_property<
-    typename boost::property_value<EP,P>::type,D>::result;
-  static const bool vertex_property = detail::existing_property<
-    typename boost::property_value<VP,P>::type,D>::result;
-  static const bool graph_property = detail::existing_property<
-    typename boost::property_value<GP,P>::type,D>::result;
-  static const bool any_property =
-    edge_property || vertex_property || graph_property;
-  typedef typename detail::existing_property<
-    typename boost::property_value<EP,P>::type,D>::type edge_property_type;
-  typedef typename detail::existing_property<
-    typename boost::property_value<VP,P>::type,D>::type vertex_property_type;
-  typedef typename detail::existing_property<
-    typename boost::property_value<GP,P>::type,D>::type graph_property_type;
-  typedef typename detail::choose<edge_property,edge_property_type,
-    typename detail::choose<vertex_property,vertex_property_type,
-    graph_property_type>::type>::type property_type;
-  typedef property_type type;
-};
 
 template <class P, class G, class Default>
 struct property_map

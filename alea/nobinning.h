@@ -66,8 +66,8 @@ class NoBinning : public AbstractBinning<T>
   typedef typename obs_value_traits<T>::count_type count_type;
   typedef typename obs_value_traits<T>::result_type result_type;
   
-  static const bool has_tau=false;
-  static const int magic_id=1;
+  BOOST_STATIC_CONSTANT(bool, has_tau=false);
+  BOOST_STATIC_CONSTANT(int, magic_id=1);
   
 //SIGN  typedef SignedNoBinning<T> signed_type;
     

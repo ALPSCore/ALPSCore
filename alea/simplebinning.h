@@ -63,8 +63,8 @@ class SimpleBinning : public AbstractBinning<T>
   typedef typename obs_value_traits<T>::count_type count_type;
   typedef typename obs_value_traits<T>::result_type result_type;
 
-  static const bool has_tau=true;
-  static const int magic_id=2;
+  BOOST_STATIC_CONSTANT(bool, has_tau=true);
+  BOOST_STATIC_CONSTANT(int, magic_id=2);
 
   SimpleBinning(uint32_t=0);
   virtual ~SimpleBinning() {}

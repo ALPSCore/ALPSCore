@@ -46,7 +46,7 @@ namespace alps {
 template <class Dimensional>
 struct dimensional_traits {
   typedef std::size_t dimension_type;
-  static const bool fixed_dimension=false;
+  BOOST_STATIC_CONSTANT(bool, fixed_dimension=false);
   static dimension_type infinity()
   {
     return std::numeric_limits<dimension_type>::max();
@@ -64,8 +64,8 @@ dimension(const Dimensional& d)
 template <class T, int sz>
 struct dimensional_traits<T[sz]> {
   typedefint dimension_type;
-  static const bool fixed_dimension=true;
-  static const dimension_type dimension=sz;
+  BOOST_STATIC_CONSTANT(bool, fixed_dimension=true);
+  BOOST_STATIC_CONSTANT(dimension_type, dimension=sz);
   static dimension_type infinity() { return=std::numeric_limits<dimension_type>::max();}
 };
   

@@ -58,9 +58,9 @@ template <class T>
 struct TypeTraits
 {
   /// true if specialized for a type
-  static const bool is_specialized = false;
+  BOOST_STATIC_CONSTANT(bool, is_specialized = false);
   /// a numeric identifier for the type
-  static const type_tag_t type_tag = -1;
+  BOOST_STATIC_CONSTANT(type_tag_t, type_tag = -1);
   /// type to store the norm of a value, useful only for numeric types
   typedef T norm_t;
   /// type to store the averages of values, useful only for numeric types
@@ -70,7 +70,7 @@ struct TypeTraits
   /// unsigned type corresponding to the type
   typedef T unsigned_t;
   
-  static const bool is_complex = false;
+  BOOST_STATIC_CONSTANT(bool, is_complex = false);
 };
 
 /** A class to help numeric type conversions.
@@ -104,9 +104,9 @@ struct NumericTypeConversion<std::complex<T>,std::complex<X> >
 
 #define DEFINE_NUMERIC_TYPE_TRAITS(TYPE,TAG,NORMT,SIGNT,UNSIGNT,REALT,AVT) \
 template<> struct TypeTraits< TYPE > {                               \
-  static const bool is_specialized = true;      \
-  static const type_tag_t type_tag=TAG;     \
-  static const bool is_complex = (TAG>=3 && TAG <= 5); \
+  BOOST_STATIC_CONSTANT(bool, is_specialized = true);      \
+  BOOST_STATIC_CONSTANT(type_tag_t, type_tag=TAG);     \
+  BOOST_STATIC_CONSTANT(bool, is_complex = (TAG>=3 && TAG <= 5)); \
   typedef NORMT norm_t;                                \
   typedef SIGNT signed_t;                                \
   typedef UNSIGNT unsigned_t;                                \
@@ -139,9 +139,9 @@ DEFINE_NUMERIC_TYPE_TRAITS(bool,15,bool,bool,bool,bool,bool)
 template<>
 struct TypeTraits<std::string>
 {
-  static const bool is_specialized = true;      
-  static const type_tag_t type_tag=14;     
-  static const bool is_complex = false;
+  BOOST_STATIC_CONSTANT(bool, is_specialized = true);      
+  BOOST_STATIC_CONSTANT(type_tag_t, type_tag=14);     
+  BOOST_STATIC_CONSTANT(bool, is_complex = false);
 };
 
 } // namespace alps

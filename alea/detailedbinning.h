@@ -65,8 +65,8 @@ public:
   typedef typename obs_value_traits<T>::count_type count_type;
   typedef typename obs_value_traits<T>::result_type result_type;
 
-  static const bool has_tau=true;
-  static const int magic_id=3;
+  BOOST_STATIC_CONSTANT(bool, has_tau=true);
+  BOOST_STATIC_CONSTANT(int, magic_id=3);
 
   BasicDetailedBinning(uint32_t binsize=1, uint32_t binnum=std::numeric_limits<uint32_t>::max());
 
@@ -110,7 +110,7 @@ template<class T> class DetailedBinning : public BasicDetailedBinning<T>
 {
 public:
   typedef T value_type;
-  static const int magic_id=4;
+  BOOST_STATIC_CONSTANT(int, magic_id=4);
   DetailedBinning(uint32_t binnum=128) 
   : BasicDetailedBinning<T>(1,binnum==0 ? 128 : binnum) {}
 };
@@ -119,7 +119,7 @@ template<class T> class FixedBinning : public BasicDetailedBinning<T>
 {
 public:
   typedef T value_type;
-  static const int magic_id=5;
+  BOOST_STATIC_CONSTANT(int, magic_id=5);
   FixedBinning(uint32_t binsize=1) 
   : BasicDetailedBinning<T>(binsize,std::numeric_limits<uint32_t>::max()) {}
 };

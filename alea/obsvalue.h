@@ -64,10 +64,10 @@ struct obs_value_traits
   typedef double time_type;
   typedef time_type time_element_type;
   typedef typename TypeTraits<T>::average_t result_type;
-  static const uint32_t magic_id = TypeTraits<T>::type_tag;
+  BOOST_STATIC_CONSTANT( uint32_t, magic_id = TypeTraits<T>::type_tag);
   typedef uint32_t size_type;
   typedef uint32_t slice_iterator;
-  static const bool array_valued = false;
+  BOOST_STATIC_CONSTANT( bool, array_valued = false);
 
   static inline void check_for_max(const T a,T& b) { if (a>b) b=a;}
   static inline void check_for_min(const T a,T& b) { if (a<b) b=a;}
@@ -111,8 +111,8 @@ struct obs_value_traits<std::complex<T> >
   typedef uint32_t size_type;
   typedef uint32_t slice_iterator;
   typedef typename TypeTraits<T>::average_t result_type;
-  static const uint32_t magic_id = TypeTraits<T>::type_tag;
-  static const bool array_valued=false;
+  BOOST_STATIC_CONSTANT(uint32_t, magic_id = TypeTraits<T>::type_tag);
+  BOOST_STATIC_CONSTANT(bool, array_valued=false);
 
   static inline void check_for_max(const std::complex<T>& a,std::complex<T>& b) {}
   static inline void check_for_min(const std::complex<T>& a,std::complex<T>& b) {}
@@ -150,10 +150,10 @@ struct obs_value_traits<std::valarray<T> >
   typedef std::size_t size_type;
   typedef std::valarray<double> time_type;
   typedef double time_element_type;
-  static const bool array_valued = true;
+  BOOST_STATIC_CONSTANT(bool, array_valued = true);
   
   typedef std::valarray<typename TypeTraits<T>::average_t> result_type;
-  static const uint32_t magic_id = 256+TypeTraits<T>::type_tag;
+  BOOST_STATIC_CONSTANT(uint32_t, magic_id = 256+TypeTraits<T>::type_tag);
 
   static inline void check_for_max(const std::valarray<T>& a,std::valarray<T>& b) 
   {
@@ -223,10 +223,10 @@ template<typename T, std::size_t NumDims, typename Allocator>
   typedef typename value_type::size_type size_type;
   typedef alps::multi_array<double,NumDims> time_type;
   typedef double time_element_type;
-  static const bool array_valued = true;
+  BOOST_STATIC_CONSTANT(bool, array_valued = true);
   
   typedef alps::multi_array<typename TypeTraits<T>::average_t,NumDims> result_type;
-  static const uint32_t magic_id = (1+NumDims)*256+TypeTraits<T>::type_tag;
+  BOOST_STATIC_CONSTANT(uint32_t, magic_id = (1+NumDims)*256+TypeTraits<T>::type_tag);
 
   static inline void check_for_max(const value_type& a,value_type& b) 
   {
@@ -372,14 +372,14 @@ template<typename T, std::size_t NumDims, typename Allocator>
 template <class T,class I>
 struct obs_value_slice
 {                               
-  static const bool sliceable=false;
+  BOOST_STATIC_CONSTANT(bool, sliceable=false);
 };                                            
 
 #ifdef ALPS_HAVE_VALARRAY
 template <class T, class I>                           
 struct obs_value_slice<std::valarray<T>,I>  
 {                                           
-  static const bool sliceable=true;       
+  BOOST_STATIC_CONSTANT(bool, sliceable=true);       
   typedef T value_type;                  
   typedef T result_type;                
   typedef const std::valarray<T>& first_argument_type;
@@ -391,7 +391,7 @@ struct obs_value_slice<std::valarray<T>,I>
 template<typename T, std::size_t NumDims, typename Allocator, class I>
   struct obs_value_slice<alps::multi_array<T,NumDims,Allocator>,I>
 {                                           
-  static const bool sliceable=true;       
+  BOOST_STATIC_CONSTANT(bool, sliceable=true);       
   typedef T value_type;                  
   typedef T result_type;                
   typedef const alps::multi_array<T,NumDims,Allocator>& first_argument_type;

@@ -214,8 +214,7 @@ public:
   typedef typename SimpleObservable<T>::slice_iterator slice_iterator;
   typedef BINNING binning_type;
 
-  //static const version_type version=obs_value_traits<T>::magic_id+ (binning_type::magic_id << 16);
-  enum { version=obs_value_traits<T>::magic_id+ (binning_type::magic_id << 16)};
+  BOOST_STATIC_CONSTANT(version_type,version=obs_value_traits<T>::magic_id+ (binning_type::magic_id << 16));
 
   /// the constructor needs a name and optionally specifications for the binning strategy
   BasicSimpleObservable(const std::string& name ,const binning_type&)

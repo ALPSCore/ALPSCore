@@ -132,7 +132,7 @@ IMPLEMENT_READ_WRITE( std::complex<long double> x) { operator=(x);}
 
 private:
   // the amount in multiples of which the Buffer grows
-  static const size_type buffer_grow_steps=10240; 
+  BOOST_STATIC_CONSTANT(size_type, buffer_grow_steps=10240); 
   
   // the position at which reading will take place
   uint32_t read_pos; 

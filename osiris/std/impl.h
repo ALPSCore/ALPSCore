@@ -127,11 +127,11 @@ inline alps::IDump& loadSetLikeContainer(alps::IDump& dump, C& x)
     saveArray functions in the dump classes */
 
 template <class T> struct TypeDumpTraits {
-  static const bool hasArrayFunction=false;
+  BOOST_STATIC_CONSTANT(bool, hasArrayFunction=false);
 };
 
 #define _HAS_ARRAY(T) template<> struct TypeDumpTraits< T > {\
-  static const bool hasArrayFunction=true;};
+  BOOST_STATIC_CONSTANT(bool, hasArrayFunction=true);};
   
 #ifdef PALM_HAS_INT64
 _HAS_ARRAY(int64_t)

@@ -61,7 +61,7 @@ struct VectorTraits
   typedef typename CONTAINER::iterator iterator;
   typedef typename CONTAINER::const_iterator const_iterator;
   typedef typename CONTAINER::size_type size_type;
-  static const bool is_complex = TypeTraits<value_type>::is_complex;
+  BOOST_STATIC_CONSTANT(bool, is_complex = TypeTraits<value_type>::is_complex);
 };
 
 #ifdef ALPS_HAVE_VALARRAY
@@ -72,7 +72,7 @@ struct VectorTraits<std::valarray<T> > {
   typedef T* iterator; 
   typedef const T* const_iterator; 
   typedef std::size_t size_type;
-  static const bool is_complex = TypeTraits<value_type>::is_complex;
+  BOOST_STATIC_CONSTANT(bool, is_complex = TypeTraits<value_type>::is_complex);
 };
 #endif
 
@@ -83,7 +83,7 @@ struct VectorTraits<T[sz]> {
   typedef T* iterator; 
   typedef const T* const_iterator; 
   typedef std::size_t size_type;
-  static const bool is_complex = TypeTraits<value_type>::is_complex;
+  BOOST_STATIC_CONSTANT(bool, is_complex = TypeTraits<value_type>::is_complex);
 };
 
 namespace vectorops {
