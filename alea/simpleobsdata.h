@@ -495,8 +495,13 @@ inline SimpleObservableData<T>& SimpleObservableData<T>::operator+=(const Simple
 {
   using std::sqrt;
   using alps::sqrt;
-  if(count() && x.count())
-    error_=sqrt(error_*error_+x.error()*x.error());
+  if(count() && x.count()) {
+    mean_ += x.mean();
+    error_ *= error_;
+    error_ += x.error()*x.error();
+    error_ = sqrt(error_);
+    // error_=sqrt(error_*error_+x.error()*x.error());
+  }
   transform(x,std::plus<value_type>(),std::plus<result_type>());
   return (*this);
 }
@@ -506,8 +511,13 @@ inline SimpleObservableData<T>& SimpleObservableData<T>::operator-=(const Simple
 {
   using std::sqrt;
   using alps::sqrt;
-  if(count() && x.count())
-    error_=sqrt(error_*error_+x.error()*x.error());
+  if(count() && x.count()) {
+    mean_ -= x.mean();
+    error_ *= error_;
+    error_ += x.error()*x.error();
+    error_ = sqrt(error_);
+    //error_=sqrt(error_*error_+x.error()*x.error());
+  }
   transform(x,std::minus<value_type>(),std::minus<result_type>());
   return (*this);
 }
@@ -518,8 +528,18 @@ inline SimpleObservableData<T>& SimpleObservableData<T>::operator*=(const Simple
 {
   using std::sqrt;
   using alps::sqrt;
-  if(count() && x.count())
-    error_=sqrt(error()*error()*x.mean()*x.mean()+mean()*mean()*x.error()*x.error());
+  if(count() && x.count()) {
+    error_=error()*error();
+    error_*=x.mean()*x.mean();
+    typename SimpleObservableData<X>::result_type tmp(x.error());
+    tmp *=tmp;
+    result_type tmp2(mean_);
+    tmp2 *= tmp2*tmp;
+    error_ += tmp2;
+    error_ = sqrt(error_);
+    mean_ *= x.mean();
+    //error_=sqrt(error()*error()*x.mean()*x.mean()+mean()*mean()*x.error()*x.error());
+  }
   transform(x,alps::multiplies<value_type,X,value_type>(), alps::multiplies<
             result_type, typename SimpleObservableData<X>::result_type,
             result_type>());
@@ -532,8 +552,19 @@ inline SimpleObservableData<T>& SimpleObservableData<T>::operator/=(const Simple
 {
   using std::sqrt;
   using alps::sqrt;
-  if(count() && x.count())
-  error_ = sqrt((error()*error()+mean()*mean()*x.error()*x.error()/x.mean()/x.mean())/x.mean()/x.mean());
+  if(count() && x.count()) {
+    error_=error()*error();
+    typename SimpleObservableData<X>::result_type m(x.mean());
+    m *=m;
+    typename SimpleObservableData<X>::result_type tmp(x.error());
+    tmp *=m;
+    tmp *=x.error()*m;
+    error_ +=tmp;
+    error_ /=m;
+    error_ = sqrt(error_);
+    mean_ /= x.mean();
+    //error_ = sqrt((error()*error()+mean()*mean()*x.error()*x.error()/x.mean()/x.mean())/x.mean()/x.mean());
+  }
   transform(x,alps::divides<value_type,X,value_type>(),alps::divides<
   result_type,typename SimpleObservableData<X>::result_type,result_type>());
   return (*this);

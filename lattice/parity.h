@@ -110,9 +110,9 @@ bool set_parity(Map map, const Graph& g)
   boost::depth_first_search(g, boost::visitor(v));
   if (!check) {
     for (vertex_iterator itr = boost::vertices(g).first;
-          itr != boost::vertices(g).second; ++itr) {
-      boost::put(map, *itr, parity::undefined);
-    }
+          itr != boost::vertices(g).second; ++itr)
+      //boost::put(map, *itr, parity::undefined);
+      map[*itr]=parity::undefined;
   }
   return check;
 }

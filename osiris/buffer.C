@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -38,37 +38,13 @@
 namespace alps {
 namespace detail {
 
-// load Buffer from dump
-
-Buffer::Buffer(IDump& dump)
-{
-  load(dump);
-}
-
-// save the Buffer contents
-
-void Buffer::save(ODump& dump) const
-{
-  dump << static_cast<const std::vector<uint8_t>&>(*this) << read_pos << write_pos;
-}
-
-
-// load the Buffer contents
-
-void Buffer::load(IDump& dump)
-{
-  dump >> static_cast<std::vector<uint8_t>&>(*this) >> read_pos >> write_pos;
-}
-
-
 // write a few bytes and update length
 
 void Buffer::write_buffer(const void* p, size_type n)
 {
-  if(write_pos+n>size())
-    resize((((write_pos+n)/buffer_grow_steps)+1)*buffer_grow_steps);
+  size_type write_pos=size();
+  resize(write_pos+n);
   memcpy(&((*this)[write_pos]),p,n);
-  write_pos+=n;
 }
 
 
@@ -82,8 +58,5 @@ void Buffer::read_buffer(void* p, size_type n)
   read_pos+=n;
 }
 
-#ifndef BOOST_NO_INCLASS_MEMBER_INITIALIZATION
-const Buffer::size_type Buffer::buffer_grow_steps;
-#endif
 } // end namespace detail
 } // end namespace alps
