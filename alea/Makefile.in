@@ -7,7 +7,7 @@ include $(top_srcdir)/config/include-build.mk
 
 libs_program = -lalps -lcomm-sgl $(BOOST_LIBS) $(XML_LIBS) $(BASE_LIBS)
 
-TESTOK = detailedbinning.ok testobservableset.ok simpleobseval.ok
+TESTOK = detailedbinning.ok testobservableset.ok simpleobseval.ok signed.ok
 
 include $(top_srcdir)/config/rules.mk
 include $(srcdir)/Makefile.dep
