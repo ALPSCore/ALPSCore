@@ -82,8 +82,6 @@ public:
   void finish_vertex(vertex_descriptor, const Graph&) {}
 
 protected:
-//  ParityVisitor();
-
   void check(edge_descriptor e, const Graph& g) {
     if (map_[boost::source(e, g)] == sign_undefined ||
         map_[boost::target(e, g)] == sign_undefined) {
@@ -143,6 +141,20 @@ struct nonzero_edge_weight {
   mutable EdgeWeightMap m_weight;
 };
 
+template <class G, class M>
+bool is_frustrated(const G& graph, M bond_map)
+{  
+  typedef G graph_type;
+  boost::filtered_graph<graph_type,nonzero_edge_weight<M> > g(graph,nonzero_edge_weight<M>(bond_map));
+  boost::vector_property_map<int> map; // map to store the relative signs of the sublattices
+  bool check; // no sign problem
+#ifndef ALPS_USE_DFS2
+  boost::depth_first_search(g, boost::visitor(parity::make_sign_visitor(g,map, &check, bond_map)));
+#else
+  boost::depth_first_search_2(g, boost::visitor(parity::make_sign_visitor(g,map, &check, bond_map)));
+#endif
+  return check; // no sign problem=>not frustrated
+}
                                  
 template <class I, class G>
 bool has_sign_problem(const HamiltonianDescriptor<I>& ham, const G& graph, const std::map<std::string,OperatorDescriptor<I> >& ops, const Parameters& p) {
@@ -186,16 +198,7 @@ bool has_sign_problem(const HamiltonianDescriptor<I>& ham, const G& graph, const
   // determine "parity" of lattice w.r.t. bond signs
 
   parity::BondMap<graph_type> bond_map(bond_sign,graph);
-  boost::filtered_graph<graph_type,nonzero_edge_weight<parity::BondMap<graph_type> > > g(graph,nonzero_edge_weight<parity::BondMap<graph_type> >(bond_map));
-  boost::vector_property_map<int> map; // map to store the relative signs of the sublattices
-  bool check; // no sign problem
-#undef ALPS_USE_DFS2
-#ifndef ALPS_USE_DFS2
-  boost::depth_first_search(g, boost::visitor(parity::make_sign_visitor(g,map, &check, bond_map)));
-#else
-  boost::depth_first_search_2(g, boost::visitor(parity::make_sign_visitor(g,map, &check, bond_map)));
-#endif
-  return check; // no sign problem
+  return is_frustrated(graph,bond_map);
 }
 
 
