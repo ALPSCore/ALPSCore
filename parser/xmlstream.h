@@ -91,7 +91,7 @@ public:
   oxstream& start_cdata();
   oxstream& end_cdata();
   oxstream& no_linebreak();
-  oxstream& endl() { *this << '\n'; }
+  oxstream& endl() { *this << "\n"; return *this; }
 
   oxstream& operator<<(const std::string& t) {
     return text_str(t);
