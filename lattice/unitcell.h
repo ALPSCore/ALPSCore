@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2001-2004 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -55,7 +55,7 @@ private:
 };
 
 inline dimensional_traits<EmptyUnitCell>::dimension_type
-dimension(EmptyUnitCell c)
+dimension(const EmptyUnitCell& c)
 {
   return c.dimension();
 }
@@ -78,13 +78,20 @@ public:
   GraphUnitCell();
   GraphUnitCell(const EmptyUnitCell& e);
   GraphUnitCell(const XMLTag&, std::istream&);
+  GraphUnitCell(const std::string& name, std::size_t dim);
+
   const GraphUnitCell& operator=(const EmptyUnitCell& e);
+
   void write_xml(oxstream&) const;
   graph_type& graph() { return graph_;}
   const graph_type& graph() const { return graph_;}
   std::size_t dimension() const { return dim_;}
   const std::string& name() const { return name_;}
-  
+
+  std::size_t add_vertex(int type, const coordinate_type& coord);
+  std::size_t add_edge(int type, uint32_t si, const offset_type& so,
+                       uint32_t ti, const offset_type& to);
+
 private:        
   graph_type graph_;
   std::size_t dim_;

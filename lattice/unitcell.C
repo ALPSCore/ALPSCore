@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -38,6 +38,11 @@
 #include <boost/lexical_cast.hpp>
 
 namespace alps {
+
+GraphUnitCell::GraphUnitCell() : dim_(0) {}
+
+GraphUnitCell::GraphUnitCell(const EmptyUnitCell& e) : 
+  dim_(alps::dimension(e)) {}
 
 GraphUnitCell::GraphUnitCell(const XMLTag& intag, std::istream& p)
 {
@@ -146,8 +151,8 @@ GraphUnitCell::GraphUnitCell(const XMLTag& intag, std::istream& p)
   }
 }
 
-GraphUnitCell::GraphUnitCell() : dim_(0) {}
-GraphUnitCell::GraphUnitCell(const EmptyUnitCell& e) : dim_(alps::dimension(e)) {}
+GraphUnitCell::GraphUnitCell(const std::string& name, std::size_t dim) :
+  graph_(), dim_(dim), name_(name) {}
 
 const GraphUnitCell& GraphUnitCell::operator=(const EmptyUnitCell& e)
 {
@@ -193,6 +198,29 @@ void GraphUnitCell::write_xml(oxstream& xml) const
     xml << end_tag("EDGE");
   }
   xml << end_tag("UNITCELL");
+}
+
+std::size_t GraphUnitCell::add_vertex(int type, const coordinate_type& coord)
+{
+  boost::graph_traits<graph_type>::vertex_descriptor
+    vd = boost::add_vertex(graph_);
+  boost::put(vertex_type_t(), graph_, vd, type);
+  boost::put(coordinate_t(), graph_, vd, coord);
+  return boost::num_vertices(graph_);
+}
+
+std::size_t GraphUnitCell::add_edge(int type,
+                                    uint32_t si, const offset_type& so,
+                                    uint32_t ti, const offset_type& to)
+{
+  boost::graph_traits<graph_type>::edge_descriptor
+    ed = boost::add_edge(*(boost::vertices(graph_).first + si - 1),
+                         *(boost::vertices(graph_).first + ti - 1),
+                         graph_).first;
+  boost::put(edge_type_t(), graph_, ed, type);
+  boost::put(source_offset_t(), graph_, ed, so);
+  boost::put(target_offset_t(), graph_, ed, to);
+  return boost::num_edges(graph_);
 }
 
 } // end namespace alps
