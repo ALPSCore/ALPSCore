@@ -176,7 +176,7 @@ inline oxstream& operator<<(oxstream& out, const Set<C> S) {
   out << start_tag("set") << attribute("label",S.label()) 
       << attribute("show_legend", S.show_legend() ? "true" : "false");
   for(int i=0; i<S.size(); ++i) 
-    S[i].output(out)
+    S[i].output(out);
   out << end_tag("set");
   return out;
 }   
