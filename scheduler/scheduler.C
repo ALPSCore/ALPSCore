@@ -227,9 +227,11 @@ void init(const Factory& p)
 int start(int argc, char** argv, const Factory& p)
 {
   comm_init(&argc,&argv);
-  p.print_copyright(std::cout);
-  alps::scheduler::print_copyright(std::cout);
-  alps::print_copyright(std::cout);
+  if (is_master() || !runs_parallel()) {
+    p.print_copyright(std::cout);
+    alps::scheduler::print_copyright(std::cout);
+    alps::print_copyright(std::cout);
+  }
   
   Options opt(argc,argv);
   if(!runs_parallel())
