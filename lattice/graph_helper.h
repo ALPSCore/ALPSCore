@@ -314,6 +314,22 @@ public:
     distances_calculated_=true;
   }
   
+  std::vector<std::pair<std::complex<double>,std::vector<std::size_t> > > translations(const vector_type& k) const
+  {
+    if (have_lattice_&& !disordered())
+      return l_.translations(k);
+    else
+      return std::vector<std::pair<std::complex<double>,std::vector<std::size_t> > >();
+  }
+
+  std::vector<vector_type> translation_momenta() const 
+  {
+    if (have_lattice_ && !disordered())
+      return l_.translation_momenta(k);
+    else
+      return std::vector<vector_type>();
+  }
+
 private:
   graph_type* make_graph(const Parameters& p);
   const graph_type& const_graph() const { return *g_;}

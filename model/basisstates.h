@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2004 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2003-2005 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -87,6 +87,13 @@ public:
     return (*it==x ? it-super_type::begin() : super_type::size());
   }
 
+  inline std::pair<size_type,std::complex<double> > index_and_phase(const value_type& x) const
+  {
+    return std::make_pair(index(x),std::complex<double>(1.));
+  }
+
+  double normalization(size_type) const { return 1.;}
+
   bool check_sort() const;
   const basis_type& basis() const { return basis_descriptor_;}
 private:
@@ -128,6 +135,11 @@ public:
       return (x >= 0 && x < lookup_.size() ? lookup_[x] : super_type::size());
     else
       return basis_states<J,S,SS>::index(x);
+  }
+
+  inline std::pair<size_type,std::complex<double> > index_and_phase(const value_type& x) const
+  {
+    return std::make_pair(index(x),std::complex<double>(1.));
   }
 
 private:

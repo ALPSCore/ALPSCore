@@ -337,6 +337,75 @@ public:
     return std::make_pair(momentum_iterator(cells().first),momentum_iterator(cells().second));
   }
 
+  std::vector<int> translation_directions() const 
+  {
+    std::vector<int> dirs;
+    for (int i=0;i<bc_.size();++i)
+      if (bc_[i]=="periodic")
+        dirs.push_back(i);
+    return dirs;
+  }
+
+  std::vector<vector_type> translation_momenta() const 
+  {
+    std::vector<vector_type> ks;
+    for (int i=0;i<bc_.size();++i)
+      if (bc_[i]=="periodic") {
+        if (ks.empty())
+          for (int k=0;j<extent_[i];++j)
+            ks.push_back(vector_type(1,2.*j*M_PI/extent_[i]));
+        else {
+          std::vector<vector_type> newks;
+          for (int l=0;l<ks.size();++l) 
+            for (int k=0;j<extent_[i];++j) {
+              vector_type k=ks[l];
+              k.push_back(2.*j*M_PI/extent_[i]);
+              newks.push_back(k);
+            }
+          ks.swap(newks);
+        }
+      }
+    return ks;
+  }
+  
+  std::vector<std::pair<std::complex<double>,std::vector<std::size_t> > > translations(const vector_type& k) const
+  {
+    std::vector<int> dirs=translation_directions();
+    std::vector<std::pair<std::complex<double>,std::vector<std::size_t> > > trans;
+    if (alps::dimension(k)!=dirs.size())
+      boost::throw_exception(std::runtime_error("Incorrect number of momenta specified in hypercubic_lattice::translations"));
+    
+    std::vector<int> theshift(dirs.size());
+    offset_type off(extent_);
+    for (int i=0;i<alps::dimension(off);++i)
+      off[i]=0;
+    
+    bool done=false;
+    while (!done) {
+      double phase=0.;
+      for (int i=0;i<dirs.size();++i) {
+        off[dirs[i]]=theshift[i];
+        phase += theshift[i]*k[i];
+      }
+      std::vector<std::size_t> shifted_index;
+      for (cell_iterator it=cells().first; it !=cells().second;++it) {
+        offset_type shifted_offset=(*it).offset();
+        if (!shift(shifted_offset,off).first)
+          boost::throw_exception(std::logic_error("Shifting along periodic direction leaves lattice"));
+        shifted_index.push_back(index(cell(shifted_offset)));
+      }
+      trans.push_back(std::make_pair(std::exp(std::complex<double>(0.,phase)),shifted_index));
+      done=true;
+      for (int i=0; i<theshift.size() && done;++i) {
+        if (++theshift[i]>=extent_[dirs[i]]) 
+          theshift[i]=0;
+         else
+           done=false;
+      }
+    }
+    
+    return trans;
+  }
 
 protected:
   extent_type extent_;

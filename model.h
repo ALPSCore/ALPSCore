@@ -28,4 +28,5 @@
 /* $Id$ */
 
 #include <alps/model/model_helper.h>
+#include <alps/model/blochbasisstates.h>
 #include <alps/model/sign.h>

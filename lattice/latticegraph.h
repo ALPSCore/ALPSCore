@@ -243,6 +243,23 @@ public:
             + vert_num_x*vertices_in_cell+vert_num_y;
   }
 
+  std::vector<std::pair<std::complex<double>,std::vector<std::size_t> > > translations(const vector_type& k) const
+  {
+    typedef std::vector<std::pair<std::complex<double>,std::vector<std::size_t> > > translation_type;
+    translation_type trans = super_type::translations(k);
+    translation_type graph_trans;
+
+    int vertices_in_cell = boost::num_vertices(alps::graph(alps::unit_cell(*this)));
+    for (typename translation_type::const_iterator it=trans.begin();it!=trans.end();++it) {
+      std::vector<std::size_t> shifted_vertices;
+      for (typename std::vector<std::size_t>::const_iterator sit = it->second.begin();sit != it->second.end();++sit)
+        for (int i=0;i<vertices_in_cell;++i)
+          shifted_vertices.push_back(*sit*vertices_in_cell+i);
+      graph_trans.push_back(std::make_pair(it->first,shifted_vertices));
+    }
+    return graph_trans;
+  }
+
 private:
   GRAPH graph_;        
 };
