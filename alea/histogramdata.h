@@ -54,9 +54,10 @@ class HistogramObservableData {
 public:
   template <class X> friend class HistogramObservableData;
   typedef uint32_t integer_type;
-  typedef T value_type;
+  typedef integer_type value_type;
   typedef integer_type size_type;
   typedef integer_type count_type;
+  typedef T range_type;
 
     //constructors
   HistogramObservableData();
@@ -73,10 +74,10 @@ public:
   bool can_set_thermalization() const { return false;}
 
   size_type count() const {return count_;}
-  value_type value(uint32_t) const;
-  value_type min() const { return min_;}
-  value_type max() const { return max_;}
-  size_type stepsize() const { return stepsize_;}
+  size_type value(uint32_t) const;
+  range_type min() const { return min_;}
+  range_type max() const { return max_;}
+  range_type stepsize() const { return stepsize_;}
 
   ALPS_DUMMY_VOID compact() {
     count_=count();
@@ -104,9 +105,9 @@ private:
   //mutable bool valid_;
 
   mutable std::vector<value_type> histogram_;
-  mutable value_type min_;
-  mutable value_type max_;
-  mutable size_type stepsize_;
+  mutable range_type min_;
+  mutable range_type max_;
+  mutable range_type stepsize_;
   mutable size_type size_;
 
 };
@@ -207,6 +208,21 @@ template <class T>
     tag = parse_tag(infile);
   }
   if (tag.name !="/HISTOGRAM") boost::throw_exception(std::runtime_error("Encountered unknown tag <"+tag.name+"> in <HISTOGRAM>"));
+}
+
+template <class T>
+  inline HistogramObservableData<T>::HistogramObservableData(const HistogramObservable<T>& obs)
+    : count_(obs.count()),
+     can_set_thermal_(obs.can_set_thermalization()),
+     thermalcount_(obs.get_thermalization()),
+     histogram_(obs.size()),
+     min_(obs.min()),
+     max_(obs.max()),
+     stepsize_(obs.stepsize())
+{
+  if(count())
+    for (int i=0;i<obs.size();++i) 
+      histogram_[i]=obs[i];
 }
 
 

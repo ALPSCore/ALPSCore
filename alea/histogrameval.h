@@ -61,7 +61,8 @@ class HistogramObservableEvaluator:public HistogramObservable<T>
     public:
      template <class X>
      friend class HistogramObservableEvaluator;
-     typedef T value_type;
+     typedef integer_type value_type;
+     typedef T range_type;
      typedef std::size_t count_type;
 
      //constructors
@@ -166,10 +167,9 @@ inline void HistogramObservableEvaluator<T>::collect() const
 {
   all_.collect_from(runs_);
   count_=all_.count();
-  size_type now_size=all_.size();
-  histogram_.resize(now_size);
-  for(int l=0;l<now_size;++l)
-    histogram_[l]=all_[l];
+  histogram_.resize(all_.size());
+  for (std::size_t i=0;i<all_.size();++i)
+    histogram_[i] = all_[i];
 }
 
 template <class T>

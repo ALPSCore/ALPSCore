@@ -85,6 +85,7 @@ public:
   // forward a few things from container
   
   typedef integer_type value_type;
+  typedef T range_type;
   typedef typename std::vector<integer_type>::const_iterator const_iterator;
   typedef typename std::vector<integer_type>::const_reverse_iterator const_reverse_iterator;
   typedef typename std::vector<integer_type>::size_type size_type;
@@ -108,9 +109,9 @@ public:
 
   inline uint32_t count() const { return count_;}
   inline void set_count(uint32_t h) {count_=h;}
-  inline uint32_t stepsize() const {return stepsize_;}
-  inline T max() const {return max_;}
-  inline T min() const {return min_;}
+  inline range_type stepsize() const {return stepsize_;}
+  inline range_type max() const {return max_;}
+  inline range_type min() const {return min_;}
   
   operator HistogramObservableEvaluator<T> () const { return make_evaluator();}
 
@@ -127,9 +128,9 @@ private:
 
   uint32_t size_;
   uint32_t thermalcount_;
-  T min_;
-  T max_;
-  T stepsize_;
+  range_type min_;
+  range_type max_;
+  range_type stepsize_;
   
 protected:  
   mutable std::vector<value_type> histogram_;
@@ -148,20 +149,21 @@ inline Observable* HistogramObservable<T>::convert_mergeable() const
 template <class T>
 HistogramObservable<T>::HistogramObservable(const std::string& n) 
  : Observable(n),
+   size_(0),
    thermalcount_(0),
    min_(std::numeric_limits<T>::max()),
    max_(std::numeric_limits<T>::min()),
-   stepsize_(0), size_(0),
-    count_(0)
-
+   stepsize_(0),
+   count_(0)
  {
  }
 
 template <class T>
 inline HistogramObservable<T>::HistogramObservable(const std::string& n, T min, T max, T stepsize) 
  : Observable(n),
+   size_(0),
    thermalcount_(0),
-  size_(0),count_(0)
+   count_(0)
 {
   std::cout<<"calling set_range"<<std::endl;
   set_range(min,max,stepsize);  
