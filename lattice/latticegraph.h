@@ -163,7 +163,7 @@ inline void make_graph_from_lattice(GRAPH& g,const LATTICE& l)
           bondvector[edge]=bondvector_absolute;
           // divide relative bond vector by lattice extent
           for (int i=0; i<dimension(l) && i<bondvector_relative.size() ; ++i)
-            bondvector_relative[i]/=extent(l,i);
+            bondvector_relative[i]/=alps::extent(l,i);
           bondvectorrelative[edge]=bondvector_relative;
         }
       }
