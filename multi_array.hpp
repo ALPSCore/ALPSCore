@@ -369,4 +369,66 @@ inline alps::ODump& operator<<(alps::ODump& dump, const boost::multi_array<T, Nu
 
 #endif // !ALPS_WITHOUT_OSIRIS
 
+#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
+namespace boost {
+#endif
+
+/// write a boost::multi_array 2-d array
+template <class T, class Allocator>
+inline std::ostream& operator<<(std::ostream& out, const boost::multi_array<T, 2, Allocator>& x)
+{
+  std::vector<uint32_t> ex(x.shape(), x.shape() + x.num_dimensions());
+  out << "{";
+  for (int i=0;i<ex[0];++i) {
+    out << "{";
+    for (int j=0;j<ex[1];++j) {
+      out << x[i][j];
+      if (j!=ex[1]-1)
+        out << ", ";
+    }
+    out << "}";
+    if (i!=ex[0]-1)
+      out << ",\n";
+  }
+  out << "};";
+  return out;
+}	  
+
+/// write a boost::multi_array 4-d array
+template <class T, class Allocator>
+inline std::ostream& operator<<(std::ostream& out, const boost::multi_array<T, 4, Allocator>& x)
+{
+  std::vector<uint32_t> ex(x.shape(), x.shape() + x.num_dimensions());
+  out << "{";
+  for (int i=0;i<ex[0];++i) {
+    out << "{";
+    for (int j=0;j<ex[1];++j) {
+      out << "{";
+      for (int k=0;k<ex[2];++k) {
+	out << "{";
+	for (int l=0;l<ex[3];++l) {
+          out << x[i][j][k][l];
+          if (l!=ex[3]-1)
+            out << ", ";
+	  }
+	out << "}";
+	if (k!=ex[2]-1)
+	  out << ", ";
+      }
+      out << "}";
+      if (j!=ex[1]-1)
+        out << ",\n";
+    }
+    out << "}";
+    if (i!=ex[0]-1)
+      out << ",\n";
+  }
+  out << "};";
+  return out;
+}	  
+
+#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
+} // end namespace boost
+#endif
+
 #endif // ALPS_MULTI_ARRAY_H

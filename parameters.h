@@ -108,7 +108,7 @@ public:
   }
   const value_type& operator[](const key_type& k) const {
     if (!defined(k))
-      boost::throw_exception(std::runtime_error("parameter not defined"));
+      boost::throw_exception(std::runtime_error("parameter " + k + " not defined"));
     return list_[map_.find(k)->second].value();
   }
   value_type value_or_default(const key_type& k, const value_type& v) const {

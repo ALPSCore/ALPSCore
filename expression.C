@@ -42,7 +42,7 @@ namespace detail {
 
 double Evaluatable::value() const
 {
-  return value(Parameters());
+  return value(Evaluator());
 }
 
 boost::shared_ptr<Evaluatable> Evaluatable::flatten_one() 
@@ -50,9 +50,15 @@ boost::shared_ptr<Evaluatable> Evaluatable::flatten_one()
   return boost::shared_ptr<Evaluatable>();
 }
 
+Evaluatable* Evaluatable::partial_evaluate_replace(const Evaluator& )
+{
+  return this;
+}
+
+
 bool Evaluatable::can_evaluate() const
 {
-  return can_evaluate(Parameters());
+  return can_evaluate(Evaluator());
 }
 
 } // namespace detail
@@ -97,7 +103,13 @@ Expression::Expression(std::istream& in)
   }
 }
 
-double Expression::value(const Parameters& p) const
+const Expression& Expression::operator+=(const Expression& e)
+{
+  std::copy(e.terms_.begin(),e.terms_.end(),std::back_inserter(terms_));
+  return *this;
+}
+
+double Expression::value(const Evaluator& p) const
 {
   if (terms_.size()==0)
     boost::throw_exception(std::runtime_error("Empty expression"));
@@ -107,7 +119,7 @@ double Expression::value(const Parameters& p) const
   return val;
 }
 
-bool Expression::can_evaluate(const Parameters& p) const
+bool Expression::can_evaluate(const Evaluator& p) const
 {
   if (terms_.size()==0)
     return false;
@@ -117,16 +129,36 @@ bool Expression::can_evaluate(const Parameters& p) const
   return can;
 }
 
+void Expression::partial_evaluate(const Evaluator& p)
+{
+  if (can_evaluate(p))
+    (*this) = Expression(value(p));
+  else {
+    double val=0.;
+    for (int i=0;i<terms_.size();++i)
+      if (terms_[i].can_evaluate(p)) {
+        val += terms_[i].value(p);
+        terms_.erase(terms_.begin()+i);
+        --i;
+      }
+      else
+        terms_[i].partial_evaluate(p);
+    if (val!=0)
+      terms_.insert(terms_.begin(),Term(val));
+  }
+}
+
 void Expression::output(std::ostream& out) const
 {
   if (terms_.size()==0)
-    return;
-  if (terms_[0].is_negative())
-    out << "-";
-  terms_[0].output(out);
-  for (int i=1;i<terms_.size();++i) {
-    out << (terms_[i].is_negative() ? " - " : " + ");
-    terms_[i].output(out);
+    out <<"0";
+  else {
+    terms_[0].output(out);
+    for (int i=1;i<terms_.size();++i) {
+      if(!terms_[i].is_negative())
+        out << " + ";
+      terms_[i].output(out);
+    }
   }
 }
 
@@ -138,7 +170,8 @@ detail::Evaluatable* Expression::clone() const
 Term::Term(std::istream& in, bool negate)
  : is_negative_(negate)
 {
-  terms_.push_back(detail::Value(in));
+  bool is_inverse=false;
+  terms_.push_back(detail::Value(in,is_inverse));
   while (true) {
     char c;
     in >> c;
@@ -146,31 +179,70 @@ Term::Term(std::istream& in, bool negate)
       break;
     switch(c) {
       case '*':
-        ops_.push_back(MULTIPLY);
+        is_inverse=false;;
         break;
       case '/':
-        ops_.push_back(DIVIDE);
+        is_inverse=true;
         break;
       default:
         in.putback(c);
         return;
     }
-    terms_.push_back(detail::Value(in));
+    terms_.push_back(detail::Value(in,is_inverse));
   }
 }
 
-double Term::value(const Parameters& p) const
+double Term::value(const Evaluator& p) const
 {
-  double val=terms_[0].value(p);
-  for (int i=0;i<ops_.size();++i)
-    if (ops_[i]==MULTIPLY)
-      val *=terms_[i+1].value(p);
-    else 
-      val /=terms_[i+1].value(p);
+  double val=1.;
+  if (p.direction()==Evaluator::left_to_right)
+    for (int i=0;i<terms_.size();++i)
+      val *=terms_[i].value(p);
+  else
+    for (int i=terms_.size()-1;i>=0;--i)
+      val *=terms_[i].value(p);
   return (is_negative() ? -val : val);
 }
 
-bool Term::can_evaluate(const Parameters& p) const
+void Term::partial_evaluate(const Evaluator& p)
+{
+  if (can_evaluate(p))
+    (*this) = Term(value(p));
+  else {
+    double val=1.;
+    if (p.direction()==Evaluator::left_to_right) {
+      for (int i=0;i<terms_.size();++i)
+        if (terms_[i].can_evaluate(p)) {
+          val *= terms_[i].value(p);
+          terms_.erase(terms_.begin()+i);
+          --i;
+        }
+        else
+          terms_[i].partial_evaluate(p);
+    }
+    else {
+      for (int i=terms_.size()-1;i>=0;--i) 
+        if (terms_[i].can_evaluate(p)) {
+          val *= terms_[i].value(p);
+          terms_.erase(terms_.begin()+i);
+        }
+        else
+          terms_[i].partial_evaluate(p);
+    }
+    if(val==0.)
+      (*this)=Term(0.);
+    else {
+      if (val<0.) {
+        is_negative_=!is_negative_;
+	val=-val;
+      }
+      if (val!=1.)
+        terms_.insert(terms_.begin(),detail::Value(val));
+    }
+  }
+}
+
+bool Term::can_evaluate(const Evaluator& p) const
 {
   bool can=true;
   for (int i=0;i<terms_.size();++i)
@@ -180,11 +252,12 @@ bool Term::can_evaluate(const Parameters& p) const
 
 void Term::output(std::ostream& out) const
 {
+  if(is_negative())
+    out << " - ";
   terms_[0].output(out);
-  for (int i=0;i<ops_.size();++i)
-  {
-    out << " " << (ops_[i]==MULTIPLY ? "*" : "/") << " ";
-    terms_[i+1].output(out);
+  for (int i=1;i<terms_.size();++i) {
+    out << " " << (terms_[i].is_inverse() ? "/" : "*") << " ";
+    terms_[i].output(out);
   }
 }
 
@@ -193,8 +266,9 @@ detail::Evaluatable* Term::clone() const
   return new Term(*this);
 }
 
-detail::Value::Value(std::istream& in)
- : term_(0)
+
+detail::Value::Value(std::istream& in, bool inv)
+ : term_(), is_inverse_(inv)
 {
   char c;
   in >> c;
@@ -204,45 +278,40 @@ detail::Value::Value(std::istream& in)
     in.putback(c);
     double val;
     in>>val;
-    term_=new Number(val);
+    term_.reset(new Number(val));
   }
   else if (std::isalnum(c)) {
     in.putback(c);
     std::string name=parse_identifier(in);
     in>>c;
     if(in && c=='(')
-      term_=new Function(in,name);
+      term_.reset(new Function(in,name));
     else  {
       if (in)
         in.putback(c);
-      term_=new Symbol(name);
+      term_.reset(new Symbol(name));
     }
   }
   else if (c=='(')
-    term_=new Block(in);
+    term_.reset(new Block(in));
   else
     boost::throw_exception(std::runtime_error("Illegal term in expression"));
 }
 
-detail::Value::~Value()
-{
-  if (term_)
-    delete term_;
-}
 
 detail::Value::Value(const detail::Value& v)
- : Evaluatable(v), term_(0)
+ : Evaluatable(v), term_(), is_inverse_(v.is_inverse_)
 {
-  if(v.term_!=0)
-    term_=v.term_->clone();
+  if (v.term_)
+    term_.reset(v.term_->clone());
 }
 
 const detail::Value& detail::Value::operator=(const detail::Value& v)
 {
-  if(term_)
-    delete term_;
-  if(v.term_!=0)
-    term_=v.term_->clone();
+  if (v.term_)
+    term_.reset(v.term_->clone());
+  else
+    term_.reset();
   return *this;
 }
 
@@ -251,24 +320,38 @@ detail::Evaluatable* detail::Value::clone() const
   return new Value(*this);
 }
 
-double detail::Value::value(const Parameters& p) const
+detail::Value::Value(double x) 
+ : term_(new Number(x)), is_inverse_(false) 
 {
-  if (term_==0)
-    boost::throw_exception(std::logic_error("No term present in Value"));
-  return term_->value(p);
 }
 
-bool detail::Value::can_evaluate(const Parameters& p) const
+double detail::Value::value(const Evaluator& p) const
 {
-  if (term_==0)
-    boost::throw_exception(std::logic_error("No term present in Value"));
+  if (!term_)
+    boost::throw_exception(std::runtime_error("Empty value in expression"));
+  return is_inverse() ? 1./term_->value(p) : term_->value(p);
+}
+
+bool detail::Value::can_evaluate(const Evaluator& p) const
+{
+  if (!term_)
+    boost::throw_exception(std::runtime_error("Empty value in expression"));
   return term_->can_evaluate(p);
+}
+
+void detail::Value::partial_evaluate(const Evaluator& p)
+{
+  if (!term_)
+    boost::throw_exception(std::runtime_error("Empty value in expression"));
+  Evaluatable* e=term_->partial_evaluate_replace(p);
+  if(e!=term_.get() )
+    term_.reset(e);
 }
 
 void detail::Value::output(std::ostream& out) const
 {
-  if (term_==0)
-    boost::throw_exception(std::logic_error("No term present in Value"));
+  if (!term_)
+    boost::throw_exception(std::runtime_error("Empty value in expression"));  
   term_->output(out);
 }
 
@@ -290,18 +373,20 @@ detail::Evaluatable* detail::Block::clone() const
   return new Block(*this);
 }
 
-detail::Number::Number(double val)
- : val_(val)
-{}
-
-double detail::Number::value(const Parameters&) const
+detail::Evaluatable* detail::Block::partial_evaluate_replace(const Evaluator& p)
 {
-  return val_;
+  partial_evaluate(p);
+  return this;
 }
 
-bool detail::Number::can_evaluate(const Parameters&) const
+bool detail::Number::can_evaluate(const Evaluator&) const
 {
   return true;
+}
+
+double detail::Number::value(const Evaluator&) const
+{
+  return val_;
 }
 
 void detail::Number::output(std::ostream& out) const
@@ -314,26 +399,23 @@ detail::Evaluatable* detail::Number::clone() const
   return new Number(*this);
 }
 
-detail::Symbol::Symbol(const std::string& name)
- : name_(name)
-{}
-
-double detail::Symbol::value(const Parameters& p) const
+double detail::Symbol::value(const Evaluator& eval) const
 {
-  if (name_=="Pi")
-    return std::acos(-1.);
-  if (p[name_].get<std::string>()=="Infinite recursion check" )
-    boost::throw_exception(std::runtime_error("Infinite recursion when evaluating " + name_));
-  Parameters parms(p);
-  parms[name_]="Infinite recursion check";
-  return evaluate(p[name_], p);
+   return eval.evaluate(name_);
 }
 
-bool detail::Symbol::can_evaluate(const Parameters& p) const
+detail::Evaluatable* detail::Symbol::partial_evaluate_replace(const Evaluator& p)
 {
-  Parameters parms(p);
-  parms[name_]=""; // set illegal to avoid infinite recursion
-  return (name_=="Pi" || alps::can_evaluate(p[name_], parms));
+  Expression e(p.partial_evaluate(name_));
+  if (e==name_)
+    return this;
+  else
+    return new detail::Block(p.partial_evaluate(name_));
+}
+
+bool detail::Symbol::can_evaluate(const Evaluator& eval) const
+{
+  return eval.can_evaluate(name_);
 }
 
 void detail::Symbol::output(std::ostream& out) const
@@ -347,43 +429,34 @@ detail::Evaluatable* detail::Symbol::clone() const
 }
 
 detail::Function::Function(std::istream& in,const std::string& name)
- : Expression(in), name_(name)
+ :  name_(name), arg_(in)
 {
   check_character(in,')',") expected after function call");
 }
 
-double detail::Function::value(const Parameters& p) const
+detail::Evaluatable* detail::Function::partial_evaluate_replace(const Evaluator& p)
 {
-  double val = Expression::value(p);
-  if (name_=="sqrt")
-    val = std::sqrt(val);
-  else if (name_=="sin")
-    val = std::sin(val);
-  else if (name_=="cos")
-    val = std::cos(val);
-  else if (name_=="tan")
-    val = std::tan(val);
-  else if (name_=="exp")
-    val = std::exp(val);
-  else if (name_=="log")
-    val = std::log(val);
-  else
-    boost::throw_exception(std::runtime_error("undefined function: " + name_));
-  return val;
+  if (can_evaluate(p))
+    return new Expression(value(p));
+  else {
+    arg_.partial_evaluate(p);
+    return this;
+  }
 }
 
-bool detail::Function::can_evaluate(const Parameters& p) const
+double detail::Function::value(const Evaluator& p) const
 {
-  return Expression::can_evaluate(p) &&
-         (name_=="sin" || name_=="cos" || name_=="tan" ||
-          name_=="log" || name_=="exp" || name_=="sqrt");
+  return p.evaluate_function(name_,arg_);
+}
+
+bool detail::Function::can_evaluate(const Evaluator& p) const
+{
+  return p.can_evaluate_function(name_,arg_);
 }
 
 void detail::Function::output(std::ostream& out) const
 {
-  out << name_ << "(";
-  Expression::output(out);
-  out << ")";
+  out << name_ << "(" << arg_ << ")";
 }
 
 detail::Evaluatable* detail::Function::clone() const
@@ -395,13 +468,14 @@ detail::Evaluatable* detail::Function::clone() const
 Parameters evaluate(const Parameters& in) 
 {
   Parameters out;
+  ParameterEvaluator eval(in);
   for (Parameters::const_iterator p = in.begin(); p != in.end(); ++p) {
     const std::string name = p->key();
     const std::string value = static_cast<std::string>(p->value());
     Expression e(value);
-    if (e.can_evaluate(in)) {
+    if (e.can_evaluate(eval)) {
       // if value can be evaluated, then replace it by the evaluated value
-      out[name] = e.value(in);
+      out[name] = e.value(eval);
     } else {
       // if value cannot be evaluated, then it remains untouched
       out[name] = value;
@@ -425,8 +499,7 @@ void Expression::flatten()
 boost::shared_ptr<Term> Term::flatten_one_term()
 {
   for (int i=0;i<terms_.size();++i) 
-    if (i==0 || ops_[i-1]==MULTIPLY)
-    {
+    if (!terms_[i].is_inverse()) {
       boost::shared_ptr<detail::Value> val = terms_[i].flatten_one_value();
       if (val) {
         boost::shared_ptr<Term> term(new Term(*this));
@@ -439,16 +512,10 @@ boost::shared_ptr<Term> Term::flatten_one_term()
 
 boost::shared_ptr<detail::Value> detail::Value::flatten_one_value()
 {
-  if(!term_)
-    return boost::shared_ptr<Value>();
   boost::shared_ptr<detail::Evaluatable> term=term_->flatten_one();
-  if (term) {
-    boost::shared_ptr<Value> val(new Value(*this));
-    val->term_=term->clone();
-    return val;
-  }
-  else
-    return boost::shared_ptr<Value>();
+  boost::shared_ptr<Value> val(new Value(*this));
+  val->term_=term;
+  return val->term_ ? val : boost::shared_ptr<detail::Value>();
 }
 
 boost::shared_ptr<Expression> Expression::flatten_one_expression()
@@ -466,18 +533,15 @@ boost::shared_ptr<Expression> Expression::flatten_one_expression()
 
 boost::shared_ptr<detail::Evaluatable> detail::Function::flatten_one()
 {
-  flatten();
+  arg_.flatten();
   return boost::shared_ptr<Expression>();
 }
 
 boost::shared_ptr<detail::Evaluatable> detail::Block::flatten_one()
 {
   boost::shared_ptr<Expression> ex = flatten_one_expression();
-  if (ex) {
-    Block* block = new Block(*this);
-    static_cast<Expression&>(*block) = *ex;
-    return boost::shared_ptr<Evaluatable>(block);
-  }
+  if (ex)
+    return boost::shared_ptr<Evaluatable>(new Block(*ex));
   else
     return boost::shared_ptr<Evaluatable>();
 }

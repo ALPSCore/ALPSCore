@@ -85,12 +85,6 @@ bool ModelLibrary::has_operator(const std::string& name) const
   return (operators_.find(name)!=operators_.end());
 }
 
-void ModelLibrary::write_all_sets(std::ostream& os) const
-{
-  for (SiteBasisDescriptorMap::const_iterator it=sitebases_.begin(); it !=sitebases_.end();++it)
-    os << "States of basis " << it->first << "=" << SiteBasisStates<short>(it->second);
-}
-
 const BasisDescriptor<short>& ModelLibrary::basis(const std::string& name) const
 {
   if (!has_basis(name))

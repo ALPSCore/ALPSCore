@@ -35,40 +35,46 @@ class Block : public Expression
 {
 public:
   Block(std::istream&);
+  Block(const Expression& e) : Expression(e) {}
   void output(std::ostream&) const;
   Evaluatable* clone() const;
   void flatten();
   boost::shared_ptr<Evaluatable> flatten_one();
+  Evaluatable* partial_evaluate_replace(const Evaluator& p);
 };
 
 class Symbol : public Evaluatable {
 public:
-  Symbol(const std::string&);
-  double value(const Parameters& p) const;
-  bool can_evaluate(const Parameters& p) const;
+  Symbol(const std::string& n) : name_(n) {}
+  double value(const Evaluator& p) const;
+  bool can_evaluate(const Evaluator& p) const;
   void output(std::ostream&) const;
   Evaluatable* clone() const;
+  Evaluatable* partial_evaluate_replace(const Evaluator& p);
 private:
   std::string name_;
 };
 
-class Function : public Expression {
+class Function : public Evaluatable {
 public:
   Function(std::istream&, const std::string&);
-  double value(const Parameters& p) const;
-  bool can_evaluate(const Parameters& p) const;
+  Function(const std::string& n, const Expression& e) : name_(n), arg_(e) {}
+  double value(const Evaluator& p) const;
+  bool can_evaluate(const Evaluator& p) const;
   void output(std::ostream&) const;
   Evaluatable* clone() const;
   boost::shared_ptr<Evaluatable> flatten_one();
+  Evaluatable* partial_evaluate_replace(const Evaluator& p);
 private:
  std::string name_;
+ Expression arg_;
 };
 
 class Number : public Evaluatable {
 public:
-  Number(double);
-  double value(const Parameters& p) const;
-  bool can_evaluate(const Parameters& p) const;
+  Number(double x) : val_(x) {}
+  double value(const Evaluator& p) const;
+  bool can_evaluate(const Evaluator& p) const;
   void output(std::ostream&) const;
   Evaluatable* clone() const;
 private:

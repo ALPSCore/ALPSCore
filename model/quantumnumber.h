@@ -65,7 +65,11 @@ public:
   template <class J> const half_integer& operator-=(half_integer<J> x) { val_-=x.val_; return *this;}
   template <class J> half_integer operator+(half_integer<J> x) { half_integer res(*this); return res+=x;}
   template <class J> half_integer operator-(half_integer<J> x) { half_integer res(*this); return res-=x;}
-  I distance(half_integer x) { assert(val_%2==x.val_%2); return (val_/2-x.val_/2);}
+  I distance(half_integer x) 
+  { 
+    assert(std::abs(val_)%2==std::abs(x.val_)%2);
+    return (val_/2-x.val_/2)+ ((val_>=0 && x.val_<0)||(val_<0 && x.val_>=0) ? 1 : 0);
+  }
   static half_integer max() { return half_integer(std::numeric_limits<I>::max(),0);}
   static half_integer min() { return std::numeric_limits<I>::is_signed ? 
        -half_integer(std::numeric_limits<I>::max(),0): half_integer(std::numeric_limits<I>::min(),0);}
@@ -119,7 +123,7 @@ class QuantumNumber
 {
 public:
   typedef half_integer<I> value_type;
-  QuantumNumber(const std::string& n, value_type minVal, value_type maxVal, bool f=false)
+  QuantumNumber(const std::string& n, value_type minVal=0, value_type maxVal=0, bool f=false)
    : _name(n), _min(minVal),_max(maxVal),_fermionic(f) {}
 #ifndef ALPS_WITHOUT_XML
   QuantumNumber(const XMLTag&, std::istream&);
@@ -132,6 +136,8 @@ public:
   const std::string& name() const {return _name;}
   bool operator== ( const QuantumNumber& x) const
   { return min()==x.min() && max() ==x.max() && name() == x.name();} 
+ 
+  const QuantumNumber& operator+=(const QuantumNumber& rhs);
 
 #ifndef ALPS_WITHOUT_XML
   void write_xml(std::ostream&, const std::string& = "") const;
@@ -143,6 +149,24 @@ private:
   value_type _max;
   bool _fermionic;
 };
+
+template <class I>
+const QuantumNumber<I>& QuantumNumber<I>::operator+=(const QuantumNumber<I>& rhs)
+{
+  if (min()!=value_type::min() && rhs.min()!=value_type::min())
+    _min += rhs._min;
+  if (max()!=value_type::max() && rhs.max()!=value_type::max())
+    _max += rhs._max;
+  assert(fermionic() == rhs.fermionic());
+}
+
+template <class I>
+QuantumNumber<I> operator+(const QuantumNumber<I>& x,const QuantumNumber<I>& y)
+{
+  QuantumNumber<I> res(x);
+  res +=y;
+  return res;
+}
 
 #ifndef ALPS_WITHOUT_XML
 

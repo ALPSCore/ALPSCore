@@ -59,7 +59,7 @@ public:
   BasisDescriptor(const XMLTag&, std::istream&,const sitebasis_map_type& bases_= sitebasis_map_type());
   void write_xml(std::ostream&, const std::string& = "") const;
 #endif
-  const SiteBasisDescriptor<I>& site_basis(int type) const;
+  const SiteBasisDescriptor<I>& site_basis(int type=0) const;
   const std::string& name() const { return name_;}
 private:
   std::string name_;
@@ -86,7 +86,8 @@ const SiteBasisDescriptor<I>& BasisDescriptor<I>::site_basis(int type) const {
     if (it->match_type(type))
       break;
   if (it==end())
-    boost::throw_exception("No matching site basis found for site type" << type << "\n");
+    boost::throw_exception(std::runtime_error("No matching site basis found for site type" + 
+                            boost::lexical_cast<std::string,int>(type) + "\n"));
   return *it;
 }
 
@@ -107,7 +108,7 @@ SiteBasisMatch<I>::SiteBasisMatch(const XMLTag& intag, std::istream& is, const s
     if (bases_.find(sitebasis_name_)==bases_.end())
       boost::throw_exception(std::runtime_error("unknown site basis: " + sitebasis_name_ + " in <BASIS>"));
     else
-      static_cast<base_type>(*this) = bases_.find(sitebasis_name_)->second;
+      static_cast<base_type&>(*this) = bases_.find(sitebasis_name_)->second;
     if (tag.type!=XMLTag::SINGLE) {
       tag = parse_tag(is);
       if (tag.name!="/SITEBASIS")

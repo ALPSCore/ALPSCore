@@ -38,6 +38,8 @@ namespace alps {
 class ModelLibrary
 {
 public:
+  typedef std::map<std::string,OperatorDescriptor<short> > OperatorDescriptorMap;
+
   ModelLibrary() {};
   ModelLibrary(std::istream& in) { read_xml(in);}
   ModelLibrary(const XMLTag& tag, std::istream& p) {read_xml(tag,p);}
@@ -55,16 +57,14 @@ public:
   const BasisDescriptor<short>& basis(const std::string& name) const;
   const OperatorDescriptor<short>& simple_operator(const std::string& name) const;
   const HamiltonianDescriptor<short>& hamiltonian(const std::string& name) const;
+  const OperatorDescriptorMap& simple_operators() const { return operators_;}
   
   SiteBasisStates<short> site_states(const std::string& name) const 
   { return SiteBasisStates<short>(site_basis(name));}
 
-  void write_all_sets(std::ostream& os) const;
-
 private:
   typedef std::map<std::string,SiteBasisDescriptor<short> > SiteBasisDescriptorMap;
   typedef std::map<std::string,BasisDescriptor<short> > BasisDescriptorMap;
-  typedef std::map<std::string,OperatorDescriptor<short> > OperatorDescriptorMap;
   typedef std::map<std::string,HamiltonianDescriptor<short> > HamiltonianDescriptorMap;
 
   SiteBasisDescriptorMap sitebases_;
