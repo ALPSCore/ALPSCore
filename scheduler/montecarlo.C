@@ -103,7 +103,7 @@ void MCSimulation::write_xml_header(oxstream& out) const
 {
   out << header("UTF-8")
       << processing_instruction("xml-stylesheet") << attribute("type","text/xsl") 
-        << attribute("href","http://xml.comp-phys.org/2002/10/job.xsl")
+        << attribute("href","http://xml.comp-phys.org/2002/10/QMCXML.xsl")
       << start_tag("SIMULATION") << xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
         << attribute("xsi:noNamespaceSchemaLocation","http://xml.comp-phys.org/2002/10/QMCXML.xsd");
 }
@@ -189,7 +189,7 @@ void MCRun::write_xml(const boost::filesystem::path& name, const boost::filesyst
 
   xml << header("UTF-8")
       << processing_instruction("xml-stylesheet") << attribute("type","text/xsl") 
-        << attribute("href","http://xml.comp-phys.org/2002/10/job.xsl")
+        << attribute("href","http://xml.comp-phys.org/2002/10/QMCXML.xsl")
       << start_tag("SIMULATION") << xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
         << attribute("xsi:noNamespaceSchemaLocation","http://xml.comp-phys.org/2002/10/QMCXML.xsd");
   xml << parms;
