@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2000-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 2000-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -35,6 +35,7 @@
 #include <alps/lattice/disorder.h>
 #include <alps/lattice/propertymap.h>
 #include <boost/vector_property_map.hpp>
+#include <boost/multi_array.hpp>
 
 namespace alps {
 
@@ -112,11 +113,12 @@ public:
      coordinate_map_(get_or_default(coordinate_t(),const_graph(),0)),
      bond_vector_map_(get_or_default(bond_vector_t(),const_graph(),0)),
      bond_vector_relative_map_(get_or_default(bond_vector_relative_t(),const_graph(),0)),
-         disordered_vertex_type_map_(),
-         disordered_edge_type_map_(get_or_default(edge_index_t(),const_graph(),0))
+     disordered_vertex_type_map_(),
+     disordered_edge_type_map_(get_or_default(edge_index_t(),const_graph(),0)),
+     distances_calculated_(false)
   {
-        d_.disorder_vertices(graph(),disordered_vertex_type_map_);
-        d_.disorder_edges(graph(),disordered_edge_type_map_);
+    d_.disorder_vertices(graph(),disordered_vertex_type_map_);
+    d_.disorder_edges(graph(),disordered_edge_type_map_);
   }
   
   
@@ -129,11 +131,12 @@ public:
      edge_type_map_(get_or_default(edge_type_t(),const_graph(),0)),
      vertex_type_map_(get_or_default(vertex_type_t(),const_graph(),0)),
      coordinate_map_(get_or_default(coordinate_t(),const_graph(),std::vector<double>())),
-         disordered_vertex_type_map_(),
-         disordered_edge_type_map_(get_or_default(edge_index_t(),const_graph(),0))
+     disordered_vertex_type_map_(),
+     disordered_edge_type_map_(get_or_default(edge_index_t(),const_graph(),0)),
+     distances_calculated_(false)
   {
-        d_.disorder_vertices(graph(),disordered_vertex_type_map_);
-        d_.disorder_edges(graph(),disordered_edge_type_map_);
+    d_.disorder_vertices(graph(),disordered_vertex_type_map_);
+    d_.disorder_edges(graph(),disordered_edge_type_map_);
   }
 
   ~graph_helper() { if (to_delete_) delete g_;}
@@ -144,7 +147,6 @@ public:
   lattice_type& lattice() { return l_;}
   const lattice_type& lattice() const { return l_;}
 
-  
   sites_size_type num_sites() const { return alps::num_sites(graph());}
   bonds_size_type num_bonds() const { return alps::num_bonds(graph());}
   std::pair<site_iterator,site_iterator> sites() const { return alps::sites(graph());}
@@ -268,6 +270,48 @@ public:
   vector_type coordinate(const cell_descriptor& c, const vector_type& p) const { return alps::coordinate(c,p,lattice());}
   vector_type momentum(const vector_type& m) const { return alps::momentum(m,lattice());}  
   
+  size_type num_distances() const { return have_lattice_ && !disordered() ? l_.num_distances() : num_sites()*num_sites(); }
+  
+  std::vector<unsigned int> distance_multiplicities() const 
+  {
+    if (have_lattice_ && !disordered())
+      return l_.distance_multiplicities();
+    std::vector<unsigned int> m(num_distances(),1u);
+    return m;
+  }
+  
+  std::vector<std::string> distance_labels() const
+  {
+    if (have_lattice_ && !disordered())
+      return l_.distance_labels();
+    std::vector<std::string> label(num_distances());
+    for (vertex_iterator it1=vertices().first; it1 != vertices().second;++it1)
+      for (vertex_iterator it2=vertices().first; it2 != vertices().second;++it2)
+        if (have_lattice_)
+          label[int(*it1)*num_vertices()+int(*it2)]=alps::coordinate_to_string(coordinate(*it1))+" -- " + 
+                      alps::coordinate_to_string(coordinate(*it2));
+        else
+          label[int(*it1)*num_vertices()+int(*it2)]=boost::lexical_cast<std::string>(int(*it1)) + " -- " + 
+                      boost::lexical_cast<std::string>(int(*it2));
+    return label;
+  }
+
+  size_type distance(vertex_descriptor x, vertex_descriptor y) const
+  {
+    if (!distances_calculated_)
+      calculate_distances();
+    return distance_lookup_[int(x)][int(y)];
+  }
+
+  void calculate_distances() const 
+  {
+    distance_lookup_=boost::multi_array<size_type,2>(boost::extents[num_sites()][num_sites()]);
+    for (vertex_iterator it1=vertices().first; it1 != vertices().second;++it1)
+      for (vertex_iterator it2=vertices().first; it2 != vertices().second;++it2)
+        distance_lookup_[int(*it1)][int(*it2)]=(have_lattice_ && !disordered() ? l_.distance(*it1,*it2) : (*it1)*num_sites()+(*it2));
+    distances_calculated_=true;
+  }
+  
 private:
   graph_type* make_graph(const Parameters& p);
   const graph_type& const_graph() const { return *g_;}
@@ -286,6 +330,9 @@ private:
   typename property_map<bond_vector_relative_t,graph_type,vector_type>::const_type bond_vector_relative_map_;
   disordered_vertex_type_map_type disordered_vertex_type_map_;
   disordered_edge_type_map_type disordered_edge_type_map_;
+  bool have_lattice_;
+  mutable bool distances_calculated_;
+  mutable boost::multi_array<size_type,2> distance_lookup_;
 };
 
 
@@ -307,14 +354,16 @@ G* graph_helper<G>::make_graph(const Parameters& parms)
     LatticeGraphDescriptor desc(lattice_descriptor(name));
     desc.set_parameters(parms);
     l_ = lattice_type(desc);
-        d_ = desc.disorder();
+    d_ = desc.disorder();
     g = &(l_.graph());
     to_delete_=false;
+    have_lattice_=true;
   }
   else if ((have_lattice || have_graph) && has_graph(name)) {
     g = new graph_type();
     get_graph(*g,name);
     to_delete_=true;
+    have_lattice_=false;
   }
   else
     boost::throw_exception(std::runtime_error("could not find graph/lattice specified in parameters"));

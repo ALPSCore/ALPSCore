@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2004 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2001-2005 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -210,7 +210,7 @@ public:
     CIT ex = coordinates(extent_).first;
     IT offit = coordinates(o).first;
 
-    for (;exit!=coordinates(extent_).last;++ex,++offit)
+    for (;ex!=coordinates(extent_).second;++ex,++offit)
     {
       *offit=i%(*ex);
       i/=(*ex);
@@ -263,31 +263,56 @@ public:
   typename extent_type::value_type extent(unsigned int dim) const {return extent_[dim];}
   const extent_type& extent() const { return extent_;}
 
-  distance_type distance_sizes() const
+
+  std::vector<std::string> distance_labels() const
   {
-    distance_type sizes;
-    for (int i=0;i<BASE::dimension();++i) {
-      sizes.push_back(extent(i));
-      if(boundary(i)!="periodic")
-         sizes.push_back(extent(i));
+    std::vector<std::string> label(num_distances());
+    for (cell_iterator it1=cells().begin; it1 != cells().end();++it1) {
+      for (cell_iterator it2=cells().begin; it2 != cells().end();++it2) {
+        offset_type x=alps::offset(*it1,*this);
+        offset_type y=alps::offset(*it2,*this);
+        std::size_t d=distance(alps::offset(*it1,*this),alps::offset(*it2,*this));
+        if (label[d].empty())
+          label[d] = alps::coordinate_to_string(alps::offset(*it1,*this))+" -- " + 
+                      alps::coordinate_to_string(alps::offset(*it2,*this));
+      }
     }
-    return sizes;
+    return label;
+  }
+  
+  std::vector<unsigned int> distance_multiplicities() const
+  {
+    std::vector<unsigned int> mult(num_distances());
+    for (cell_iterator it1=cells().begin; it1 != cells().end();++it1)
+      for (cell_iterator it2=cells().begin; it2 != cells().end();++it2)
+        mult[distance(alps::offset(*it1,*this),alps::offset(*it2,*this))]++;
+    return mult;
   }
 
-  distance_type distance_vector(const offset_type& x, const offset_type& y) const
+  std::size_t num_distances() const
   {
-    distance_type d;
+    std::size_t d=1;
     for (int i=0;i<BASE::dimension();++i) {
-      if(boundary(i)=="periodic") {
-        d.push_back(x[i]<y[i] ? y[i]-x[i] : x[i]-y[i]);
-      }
-      else {
-        d.push_back(x[i]);
-        d.push_back(y[i]);
-      }
+      if(boundary(i)=="periodic")
+        d*=extent(i);
+      else
+        d*=extent(i)*extent(i);
     }
     return d;
   }
+  
+  std::size_t distance(const offset_type& x, const offset_type& y) const
+  {
+    std::size_t d=0;
+    for (int i=0;i<BASE::dimension();++i) {
+      if(boundary(i)=="periodic")
+        d = d*extent(i) + (x[i] < y[i] ? y[i]-x[i] : extent(i)+y[i]-x[i]);
+      else
+        d = extent(i)*(d*extent(i) +x[i])+y[i];
+    }
+    return d;
+  }
+
 
   class momentum_iterator : public cell_iterator {
   public:

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2001-2005 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -176,6 +176,7 @@ template <class LATTICE, class GRAPH>
 class lattice_graph : public LATTICE
 {
 public:
+  typedef LATTICE super_type;
   typedef LATTICE base_type;
   typedef typename lattice_traits<base_type>::unit_cell_type unit_cell_type;
   typedef typename lattice_traits<base_type>::offset_type offset_type;
@@ -184,9 +185,11 @@ public:
   typedef typename lattice_traits<base_type>::basis_vector_iterator basis_vector_iterator;
   typedef typename lattice_traits<base_type>::cell_iterator cell_iterator;
   typedef typename lattice_traits<base_type>::boundary_crossing_type boundary_crossing_type;
+  typedef typename lattice_traits<base_type>::size_type size_type;
   typedef GRAPH graph_type;
 
   typedef typename boost::graph_traits<graph_type>::vertex_iterator vertex_iterator;
+  typedef typename boost::graph_traits<graph_type>::vertex_descriptor vertex_descriptor;
   typedef typename boost::graph_traits<graph_type>::edge_iterator edge_iterator;
 
   lattice_graph() {}
@@ -195,6 +198,51 @@ public:
 
   const graph_type& graph() const { return graph_;}
   graph_type& graph() { return graph_;}
+
+  std::vector<std::string> distance_labels() const
+  {
+    typename property_map<coordinate_t,graph_type,vector_type>::const_type coordinate_map=get_or_default(coordinate_t(),graph(),0);
+    std::vector<std::string> label(num_distances());
+    for (vertex_iterator it1=boost::vertices(graph()).first; it1 != boost::vertices(graph()).second;++it1) {
+      for (vertex_iterator it2=boost::vertices(graph()).first; it2 != boost::vertices(graph()).second;++it2) {
+        std::size_t d=distance(*it1,*it2);
+        if (label[d].empty())
+          label[d] = alps::coordinate_to_string(coordinate_map[*it1])+" -- " + 
+                      alps::coordinate_to_string(coordinate_map[*it2]);
+      }
+    }
+    return label;
+  }
+
+  std::vector<unsigned int> distance_multiplicities() const
+  {
+    std::vector<unsigned int> mult(num_distances());
+    for (vertex_iterator it1=boost::vertices(graph()).first; it1 != boost::vertices(graph()).second;++it1)
+      for (vertex_iterator it2=boost::vertices(graph()).first; it2 != boost::vertices(graph()).second;++it2)
+        mult[distance(*it1,*it2)]++;
+    return mult;
+  }
+
+
+  size_type num_distances() const
+  {
+    size_type vertices_in_cell = boost::num_vertices(alps::graph(alps::unit_cell(*this)));
+    return super_type::num_distances()*vertices_in_cell*vertices_in_cell;
+  }
+  
+ size_type distance(vertex_descriptor x, vertex_descriptor y) const
+  {
+    int vertices_in_cell = boost::num_vertices(alps::graph(alps::unit_cell(*this)));
+    int cell_num_x = int(x) / vertices_in_cell;
+    int cell_num_y = int(y) / vertices_in_cell;
+    int vert_num_x = int(x) % vertices_in_cell;
+    int vert_num_y = int(y) % vertices_in_cell;
+    offset_type offset_x = alps::offset(super_type::cell(cell_num_x),*this);
+    offset_type offset_y = alps::offset(super_type::cell(cell_num_y),*this);
+    return super_type::distance(offset_x,offset_y)*vertices_in_cell*vertices_in_cell
+            + vert_num_x*vertices_in_cell+vert_num_y;
+  }
+
 private:
   GRAPH graph_;        
 };
