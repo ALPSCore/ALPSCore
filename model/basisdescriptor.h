@@ -162,7 +162,7 @@ site_basis_match<I>::site_basis_match(const XMLTag& intag, std::istream& is, con
           tag = parse_tag(is);
         tag = parse_tag(is);
       }
-      set_parameters(parms_);
+      super_type::set_parameters(parms_);
       if (tag.name!="/SITEBASIS")
         boost::throw_exception(std::runtime_error("Illegal element name <" + tag.name + "> found in sitebasis reference"));
     }

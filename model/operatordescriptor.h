@@ -48,7 +48,6 @@ class OperatorDescriptor : public std::map<std::string,half_integer<I> >
   typedef std::map<std::string,half_integer<I> > super_type;
 public:
   typedef typename std::map<std::string,half_integer<I> >::const_iterator const_iterator;
-  typedef std::map<std::string,half_integer<I> > super_type;
   typedef std::map<std::string, OperatorDescriptor<I> > operator_map;
 
   OperatorDescriptor() {}
