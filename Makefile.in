@@ -47,5 +47,9 @@ default all libs programs examples tests install uninstall clean distclean depen
 	    if test "$$?" != 0; then break; fi; \
 	  fi; \
 	done
+	@if test "$@" = "distclean"; then \
+	  echo "rm -f Makefile"; \
+	  rm -f Makefile; \
+	fi
 Makefile : $(srcdir)/Makefile.in
 	(cd $(top_builddir) && ./config.status)
