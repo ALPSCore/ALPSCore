@@ -114,7 +114,7 @@ public:
   
   bool has_sign_problem() const 
   {
-    return has_sign_problem(model(),lattice(),operators(),parms);
+    return has_sign_problem(model_helper<I>::model(),LatticeMCRun<G>::lattice(),model_helper<I>::operators(),LatticeMCRun<G>::parms);
   }
 };
 
