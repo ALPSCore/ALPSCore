@@ -56,7 +56,7 @@ public:
   SiteBasisDescriptor() : num_states_(0) { }
   SiteBasisDescriptor(const std::string& name,
                       const Parameters& parms = Parameters())
-    : parms_(parms), name_(name), num_states_(0) { }
+    : parms_(parms), read_parms_(parms), name_(name), num_states_(0) { }
   SiteBasisDescriptor(const XMLTag&, std::istream&);
   void write_xml(oxstream&) const;
 
