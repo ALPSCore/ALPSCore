@@ -1,0 +1,5 @@
+L=2
+MODEL = "spin"
+LATTICE = "square lattice"
+Sz_total = 0
+

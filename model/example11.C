@@ -1,12 +1,11 @@
 /***************************************************************************
-* PALM++/lattice library
+* PALM++/model library
 *
-* example/example4.C
+* example/example1.C
 *
 * $Id$
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
-*                            Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
 *
 * This software is part of the ALPS library, published under the 
 * ALPS Library License; you can use, redistribute it and/or modify 
@@ -28,13 +27,8 @@
 *
 **************************************************************************/
 
-#include <alps/lattice.h>
+#include <alps/model.h>
 #include <iostream>
-#include <fstream>
-
-#ifdef BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP
-using namespace alps;
-#endif
 
 int main()
 {
@@ -42,15 +36,17 @@ int main()
 #ifndef BOOST_NO_EXCEPTIONS
   try {
 #endif
-
-    // read parameters
-    alps::Parameters parameters;
-    std::ifstream parmfile("parameters");
-    parmfile >> parameters;
-    // create a graph factory with default graph type
-    alps::graph_factory<> factory(parameters);
-    // write the graph created from the input in XML
-    std::cout << factory.graph();
+    alps::Parameters parms;
+    std::cin >> parms;
+    alps::ModelLibrary models(parms);
+    alps::graph_factory<> lattices(parms);
+    alps::HamiltonianDescriptor<short> ham(models.hamiltonian(parms["MODEL"]));
+    parms.copy_undefined(ham.default_parameters());
+    ham.set_parameters(parms);
+    alps::BasisStatesDescriptor<short> basis(ham.basis(),lattices.graph());
+    for (int i=0;i<basis.basis().constraints().size();++i)
+      std::cout << "Constraint: " << basis.basis().constraints()[i].first << "=" 
+                <<  basis.basis().constraints()[i].second << std::endl;
 
 #ifndef BOOST_NO_EXCEPTIONS
 }

@@ -31,12 +31,15 @@
   </BASIS>
   <BASIS name="boson">
     <SITEBASIS ref="boson"/>
+    <CONSTRAINT quantumnumber="N" value="N_total"/>
   </BASIS>
   <BASIS name="hardcore boson">
     <SITEBASIS ref="hardcore boson"/>
+    <CONSTRAINT quantumnumber="N" value="N_total"/>
   </BASIS>
   <BASIS name="spin">
     <SITEBASIS ref="spin"/>
+    <CONSTRAINT quantumnumber="Sz" value="Sz_total"/>
   </BASIS>
   <BASIS name="spin-1/2">
     <SITEBASIS ref="spin-1/2"/>

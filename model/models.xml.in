@@ -5,6 +5,7 @@
 </SITEBASIS>
 <BASIS name="spin">
   <SITEBASIS ref="spin"/>
+  <CONSTRAINT quantumnumber="Sz" value="Sz_total"/>
 </BASIS>
 <OPERATOR name="Splus" matrixelement="sqrt(S*(S+1)-Sz*(Sz+1))">
   <CHANGE quantumnumber="Sz" change="1"/>
