@@ -32,8 +32,10 @@
 #define ALPS_EXPRESSION_IMPL_H
 
 #include <alps/config.h>
-#include <alps/expression.h>
 
+#ifndef ALPS_WITH_NEW_EXPRESSION
+
+#include <alps/expression.h>
 #include <iostream>
 
 namespace alps {
@@ -94,4 +96,6 @@ private:
 } // end namespace detail
 } // end namespace alps
 
-#endif // ALPS_EXPRESSION_IMPL_H
+#endif // ! ALPS_WITH_NEW_EXPRESSION
+
+#endif // ! ALPS_EXPRESSION_IMPL_H

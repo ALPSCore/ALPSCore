@@ -32,6 +32,9 @@
 #define ALPS_EXPRESSION_H
 
 #include <alps/config.h>
+
+#ifndef ALPS_WITH_NEW_EXPRESSION
+
 #include <alps/evaluator.h>
 #include <alps/parser/parser.h>
 #include <boost/smart_ptr.hpp>
@@ -275,5 +278,10 @@ alps::Factor::operator std::string() const
   return boost::lexical_cast<std::string,Factor>(*this);
 }
 
+#else
 
-#endif // ALPS_EXPRESSION_H
+#include <alps/expression2.h>
+
+#endif // ! ALPS_WITH_NEW_EXPRESSION
+
+#endif // ! ALPS_EXPRESSION_H

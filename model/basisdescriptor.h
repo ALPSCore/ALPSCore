@@ -71,7 +71,12 @@ public:
   typedef typename base_type::const_iterator const_iterator;
   typedef std::map<std::string,SiteBasisDescriptor<I> > sitebasis_map_type;
   typedef std::vector<std::pair<std::string,half_integer<I> > > constraints_type;
-  typedef std::vector<std::pair<std::string,alps::Expression> > unevaluated_constraints_type;
+#ifndef ALPS_WITH_NEW_EXPRESSION
+  typedef alps::Expression expression_type;
+#else
+  typedef alps::Expression<> expression_type;
+#endif
+  typedef std::vector<std::pair<std::string, expression_type> > unevaluated_constraints_type;
 
   BasisDescriptor(const std::string& name = "") : name_(name) {}
   BasisDescriptor(const XMLTag&, std::istream&,
@@ -114,7 +119,11 @@ void BasisDescriptor<I>::check_constraints(const Parameters& p)
   unevaluated_constraints_.clear();
   for (typename unevaluated_constraints_type::iterator it=constraints_.begin();it!=constraints_.end();++it)
     if (it->second.can_evaluate(p))
-      evaluated_constraints_.push_back(std::make_pair(it->first,half_integer<I>(it->second.value(p))));
+#ifndef ALPS_WITH_NEW_EXPRESSION
+      evaluated_constraints_.push_back(std::make_pair(it->first,half_integer<I>(alps::evaluate(it->second, p))));
+#else
+      evaluated_constraints_.push_back(std::make_pair(it->first,half_integer<I>(alps::evaluate<double>(it->second, p))));
+#endif
     else
       unevaluated_constraints_.push_back(*it);
 }
@@ -168,7 +177,7 @@ BasisDescriptor<I>::BasisDescriptor(const XMLTag& intag, std::istream& is, const
       tag = parse_tag(is);
     }
     while (tag.name=="CONSTRAINT") {
-      constraints_.push_back(std::make_pair(tag.attributes["quantumnumber"],Expression(tag.attributes["value"])));
+      constraints_.push_back(std::make_pair(tag.attributes["quantumnumber"], expression_type(tag.attributes["value"])));
       if (tag.type!=XMLTag::SINGLE) {
         tag=parse_tag(is);
         if (tag.name!="/CONSTRAINT")
@@ -207,9 +216,11 @@ void BasisDescriptor<I>::write_xml(oxstream& os) const
   os << start_tag("BASIS") << attribute("name", name());
   for (const_iterator it=begin();it!=end();++it)
     os << *it;
-  for (typename unevaluated_constraints_type::const_iterator it=constraints_.begin();it!=constraints_.end();++it)
+  for (typename unevaluated_constraints_type::const_iterator
+	 it=constraints_.begin(); it!=constraints_.end(); ++it)
     os << start_tag("CONSTRAINT") << attribute("quantumnumber",it->first)
-       << attribute("value",static_cast<std::string>(it->second)) << end_tag("CONSTRAINT");
+       << attribute("value", boost::lexical_cast<std::string>(it->second))
+       << end_tag("CONSTRAINT");
   os << end_tag("BASIS");
 }
 

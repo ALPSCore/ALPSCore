@@ -108,14 +108,22 @@ public:
            v = basis_vectors_.begin(); v != v_end; ++v) {
       typename vector_type::iterator b_end = v->end();
       for (typename vector_type::iterator b = v->begin(); b != b_end; ++b)
+#ifndef ALPS_WITH_NEW_EXPRESSION
         *b = alps::evaluate(*b, p);
+#else
+        *b = alps::evaluate<double>(*b, p);
+#endif
     }
     v_end = reciprocal_basis_vectors_.end();
     for (typename std::vector<vector_type>::iterator
            v = reciprocal_basis_vectors_.begin(); v != v_end; ++v) {
       typename vector_type::iterator b_end = v->end();
       for (typename vector_type::iterator b = v->begin(); b != b_end; ++b)
+#ifndef ALPS_WITH_NEW_EXPRESSION
         *b = alps::evaluate(*b, p);
+#else
+        *b = alps::evaluate<double>(*b, p);
+#endif
     }
   }
 

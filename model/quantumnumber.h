@@ -138,6 +138,14 @@ QuantumNumberDescriptor<I>:: QuantumNumberDescriptor(const std::string& n,
 template <class I>
 const QuantumNumberDescriptor<I>& QuantumNumberDescriptor<I>::operator+=(const QuantumNumberDescriptor<I>& rhs)
 {
+#ifndef ALPS_WITH_NEW_EXPRESSION
+  typedef alps::Expression Expression_;
+  typedef alps::ParameterEvaluator ParameterEvaluator_;
+#else
+  typedef alps::Expression<> Expression_;
+  typedef alps::ParameterEvaluator<> ParameterEvaluator_;
+#endif
+
   Parameters p;
   if(dependency_.size()!=rhs.dependency_.size())
     boost::throw_exception(std::runtime_error("Adding quantum numbers that do not depend on the same quantum numbers: " + name() + " + " + rhs.name()));
@@ -146,13 +154,13 @@ const QuantumNumberDescriptor<I>& QuantumNumberDescriptor<I>::operator+=(const Q
     p[it->name()]=0;
   }
 
-  ParameterEvaluator eval(p);
-  Expression min_exp = Expression(min_string_);
-  Expression max_exp = Expression(max_string_);
+  ParameterEvaluator_ eval(p);
+  Expression_ min_exp(min_string_);
+  Expression_ max_exp(max_string_);
   min_exp.partial_evaluate(eval);
   max_exp.partial_evaluate(eval);
-  min_string_ = static_cast<std::string>(min_exp+Expression(rhs.min_string_));
-  max_string_ = static_cast<std::string>(max_exp+Expression(rhs.max_string_));
+  min_string_ = boost::lexical_cast<std::string>(min_exp+Expression_(rhs.min_string_));
+  max_string_ = boost::lexical_cast<std::string>(max_exp+Expression_(rhs.max_string_));
   if (valid_) {
     if (min()!=value_type::min() && rhs.min()!=value_type::min())
       min_ += rhs.min_;
@@ -196,17 +204,28 @@ bool QuantumNumberDescriptor<I>::set_parameters(const Parameters& p)
 template<class I >
 bool QuantumNumberDescriptor<I>::depends_on(const Parameters::key_type& s) const
 {
+#ifndef ALPS_WITH_NEW_EXPRESSION
   Expression min_exp_(min_string_);
   Expression max_exp_(max_string_);
+#else
+  Expression<> min_exp_(min_string_);
+  Expression<> max_exp_(max_string_);
+#endif
   return (min_exp_.depends_on(s) || max_exp_.depends_on(s));
 }
 
 template <class I>
 bool QuantumNumberDescriptor<I>::evaluate(const Parameters& p) const
 {
+#ifndef ALPS_WITH_NEW_EXPRESSION
   ParameterEvaluator eval(p);
   Expression min_exp_(min_string_);
   Expression max_exp_(max_string_);
+#else
+  ParameterEvaluator<> eval(p);
+  Expression<> min_exp_(min_string_);
+  Expression<> max_exp_(max_string_);
+#endif
   min_exp_.partial_evaluate(eval);
   min_exp_.simplify();
   max_exp_.partial_evaluate(eval);
@@ -215,12 +234,20 @@ bool QuantumNumberDescriptor<I>::evaluate(const Parameters& p) const
   if (min_exp_==" - infinity")
     min_ = value_type::min();
   else if (min_exp_.can_evaluate(eval))
-    min_ = min_exp_.value();
+#ifndef ALPS_WITH_NEW_EXPRESSION
+    min_ = alps::evaluate(min_exp_);
+#else
+    min_ = alps::evaluate<double>(min_exp_);
+#endif
   else valid_=false;
   if (max_exp_=="infinity")
     max_ = value_type::max();
   else if (max_exp_.can_evaluate(eval))
-    max_ = max_exp_.value();
+#ifndef ALPS_WITH_NEW_EXPRESSION
+    max_ = alps::evaluate(max_exp_);
+#else
+    max_ = alps::evaluate<double>(max_exp_);
+#endif
   else valid_=false;
   if(valid_ && min_>max_)
     boost::throw_exception(std::runtime_error("min > max in QUANTUMNUMBER element"));

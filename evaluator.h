@@ -31,12 +31,17 @@
 #ifndef ALPS_EVALUATOR_H
 #define ALPS_EVALUATOR_H
 
+#include <alps/config.h>
+
+#ifndef ALPS_WITH_NEW_EXPRESSION
+
 #include <alps/parameters.h>
 #include <string>
 
 namespace alps {
 
 class Expression;
+
 class Evaluator {
 public:
   enum Direction { left_to_right, right_to_left};
@@ -64,4 +69,10 @@ private:
   
 } // end namespace alps
 
-#endif // ALPS_EVALUATOR_H
+#else
+
+#include <alps/expression2.h>
+
+#endif // ! ALPS_WITH_NEW_EXPRESSION
+
+#endif // ! ALPS_EVALUATOR_H

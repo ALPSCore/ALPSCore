@@ -28,6 +28,10 @@
 
 /* $Id$ */
 
+#include <alps/config.h>
+
+#ifndef ALPS_WITH_NEW_EXPRESSION
+
 #include <alps/evaluator.h>
 #include <alps/expression_impl.h>
 #include <alps/expression.h>
@@ -133,3 +137,5 @@ double ParameterEvaluator::evaluate(const std::string& name) const
 }
 
 } // namespace alps
+
+#endif // ! ALPS_WITH_NEW_EXPRESSION

@@ -28,6 +28,10 @@
 
 /* $Id$ */
 
+#include <alps/config.h>
+
+#ifndef ALPS_WITH_NEW_EXPRESSION
+
 #include <alps/expression.h>
 #include <alps/expression_impl.h>
 
@@ -680,3 +684,5 @@ std::pair<Term::factor_iterator,Term::factor_iterator> Term::factors() const
 }
 
 } // namespace alps
+
+#endif // !ALPS_WITH_NEW_EXPRESSION

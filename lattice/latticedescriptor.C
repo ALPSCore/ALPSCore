@@ -263,7 +263,11 @@ void FiniteLatticeDescriptor::set_parameters(const Parameters& p)
     if(bc_[i]!="")
       while (parms.defined(bc_[i]) && static_cast<std::string>(parms[bc_[i]]) != bc_[i])
         bc_[i] = static_cast<std::string>(parms[bc_[i]]);
+#ifndef ALPS_WITH_NEW_EXPRESSION
     extent_[i] = alps::evaluate(extent_[i], parms);
+#else
+    extent_[i] = alps::evaluate<double>(extent_[i], parms);
+#endif // ! ALPS_WITH_NEW_EXPRESSION
   }
 }
 
