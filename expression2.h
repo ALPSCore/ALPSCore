@@ -301,9 +301,7 @@ public:
   Symbol(const std::string& n) : name_(n) {}
   value_type value(const Evaluator<T>& p) const;
   bool can_evaluate(const Evaluator<T>& ev) const
-  {
-    return ev.can_evaluate(name_);
-  }
+  { return ev.can_evaluate(name_);}
   void output(std::ostream& os) const { os << name_; }
   Evaluatable<T>* clone() const { return new Symbol<T>(*this); }
   Evaluatable<T>* partial_evaluate_replace(const Evaluator<T>& p);

@@ -163,8 +163,8 @@ bool has_sign_problem(const HamiltonianDescriptor<I>& ham, const graph_helper<G>
     if (bond_sign[boost::make_tuple(btype,stype1,stype2)]==0) {
       boost::multi_array<double,4> mat = get_matrix(0.,ham.bond_term(btype),ham.basis().site_basis(stype1),
                                         ham.basis().site_basis(stype2),ops,p);
-      int dim1 = mat.shape()[1];
-      int dim2 = mat.shape()[2];
+      int dim1 = mat.shape()[0];
+      int dim2 = mat.shape()[1];
       int sign=0;
       for (int i1=0;i1<dim1;++i1)
         for (int j1=0;j1<dim2;++j1)

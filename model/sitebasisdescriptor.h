@@ -33,6 +33,7 @@
 #define ALPS_MODEL_SITEBASISDESCRIPTOR_H
 
 #include <alps/model/quantumnumber.h>
+#include <alps/model/operatordescriptor.h>
 #include <cstddef>
 #include <stack>
 #include <utility>
@@ -49,6 +50,8 @@ class SiteBasisDescriptor : public std::vector<QuantumNumberDescriptor<I> >
 public:
   typedef typename std::vector<QuantumNumberDescriptor<I> >::const_iterator
     const_iterator;
+  typedef typename OperatorDescriptor<I>::operator_map operator_map;
+  typedef typename operator_map::const_iterator operator_iterator;
 
   SiteBasisDescriptor() : num_states_(0) { }
   SiteBasisDescriptor(const std::string& name,
@@ -68,7 +71,13 @@ public:
   }
   bool set_parameters(const Parameters&);
   const Parameters& get_parameters() const { return parms_; }
-
+  const operator_map& operators() const { return operators_;}
+  bool has_operator(const std::string& name) const
+  { return operators_.find(name) != operators_.end(); }
+  
+  template <class STATE>
+  boost::tuple<STATE, Expression,bool> apply(const std::string& name, STATE state, const ParameterEvaluator& eval, const operator_map& operators) const;
+  bool is_fermionic(const std::string& name,const operator_map& operators) const;
 private:
   mutable bool valid_;
   bool evaluate() const;
@@ -76,9 +85,37 @@ private:
   std::string name_;
   mutable std::size_t num_states_;
   void init_dependencies() const;
+  operator_map operators_;
 };
 
 // ------------------------------- implementation ----------------------------------
+
+template <class I>
+bool SiteBasisDescriptor<I>::is_fermionic(const std::string& name, const operator_map& ops) const 
+{
+  operator_iterator op=operators_.find(name);
+  if(op==operators_.end()) {
+    Expression e;
+    op = ops.find(name);
+    if (op==ops.end())
+      return false;
+  }
+  return op->second.is_fermionic(*this);
+}
+
+template <class I>
+template <class STATE>
+boost::tuple<STATE, Expression,bool> 
+SiteBasisDescriptor<I>::apply(const std::string& name, STATE state, const ParameterEvaluator& eval, const operator_map& ops) const 
+{
+  operator_iterator op=operators_.find(name);
+  if(op==operators_.end()) {
+    op = ops.find(name);
+    if (op==ops.end())
+      return boost::make_tuple(state,Expression(),false);
+  }
+  return op->second.apply(state,*this,eval);
+}
 
 template <class I>
 bool SiteBasisDescriptor<I>::valid(const std::vector<half_integer<I> >& x) const
@@ -185,20 +222,28 @@ SiteBasisDescriptor<I>::SiteBasisDescriptor(const XMLTag& intag, std::istream& i
   name_ = tag.attributes["name"];
   if (tag.type!=XMLTag::SINGLE) {
     tag = parse_tag(is);
-    while (tag.name!="/SITEBASIS") {
-      if (tag.name=="QUANTUMNUMBER")
-        push_back(QuantumNumberDescriptor<I>(tag,is));
-      else if (tag.name=="PARAMETER")
+    if (tag.name!="/SITEBASIS") {
+      while (tag.name=="PARAMETER") {
         parms_[tag.attributes["name"]]=tag.attributes["default"];
-      if (tag.type!=XMLTag::SINGLE)
+        if (tag.type!=XMLTag::SINGLE)
+          tag = parse_tag(is);
         tag = parse_tag(is);
-      tag = parse_tag(is);
+      }
+      while (tag.name=="QUANTUMNUMBER") {
+        push_back(QuantumNumberDescriptor<I>(tag,is));
+        if (tag.type!=XMLTag::SINGLE)
+          tag = parse_tag(is);
+        tag = parse_tag(is);
+      }
+      while (tag.name=="OPERATOR") {
+        operators_[tag.attributes["name"]] = OperatorDescriptor<I>(tag,is);
+        tag = parse_tag(is);
+      }
     }
     if (tag.name !="/SITEBASIS")
       boost::throw_exception(std::runtime_error("Illegal tag <" + tag.name + "> in <SITEBASIS> element"));
   }
   init_dependencies();
-
   // I need this line, otherwise the expressions in quantumnumbers cannot be evaluated. Dirty patch. Looks like a bug. To be looked at again. Axel Grzesik, 07/08/03
   evaluate();
 }
@@ -220,6 +265,8 @@ void SiteBasisDescriptor<I>::write_xml(oxstream& os) const
        << attribute("default", it->value()) << end_tag("PARAMETER");
   for (const_iterator it=super_type::begin();it!=super_type::end();++it)
     os << *it;
+  for (typename operator_map::const_iterator it=operators_.begin();it!=operators_.end();++it)
+    os << it->second;
   os << end_tag("SITEBASIS");
 }
 

@@ -1,15 +1,3 @@
-06/03
-
-* adding of quantum numbers
-  - make sure that (1-N) + (1-N) gets evaluated to 2-N (AG)
-
-* evaluate a sum of QNs on a state (MT)
-
-* basis sets with restriction to specific QNs, e.g. N, Sz (AG)
-
-* sorted basis sets + binary search (MT)
-
-
 07/03
 
 *regular expressions for wild card in Hamiltonian (ST)
@@ -29,9 +17,6 @@
 
 * arbitrary multi-site operators for measurements, also useful as base class of Hamiltonian (tba)
 
-* site basis sets with dependency of min/max of one QN on other QN, e.g. t-J
-
-
 10/03
 
 * definition of multi-site operators (e.g. hop()). (MT)
@@ -41,12 +26,6 @@ XX/03
 
 * leave sqrt(2) ... symbolic in Expression (MT)
 
-* allow complex values in Expression library (MT)
-
 * add Nauty interface to BGL (ST)
 
-* fermion sign:
-  - normal order sort site operators in term by site number
-  - determine sign (AG/ST)
-  
 * symbolic basis transformation for bond Hamiltonian (tba)

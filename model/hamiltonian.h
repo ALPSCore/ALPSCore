@@ -33,6 +33,7 @@
 
 #include <alps/model/siteterm.h>
 #include <alps/model/bondterm.h>
+#include <alps/model/basisdescriptor.h>
 #include <vector>
 
 namespace alps {

@@ -325,9 +325,8 @@ void Term<T>::partial_evaluate(const Evaluator<T>& p)
           if (is_zero(val))
             break;
           terms_.erase(terms_.begin()+i);
-        } else {
+        } else
           terms_[i].partial_evaluate(p);
-        }
       }
     }
     if (is_zero(val))

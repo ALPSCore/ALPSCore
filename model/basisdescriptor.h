@@ -59,6 +59,7 @@ public:
 private:
   int type_;
   std::string sitebasis_name_;
+  Parameters parms_;
 };
 
 
@@ -155,6 +156,12 @@ site_basis_match<I>::site_basis_match(const XMLTag& intag, std::istream& is, con
       static_cast<super_type&>(*this) = bases_.find(sitebasis_name_)->second;
     if (tag.type!=XMLTag::SINGLE) {
       tag = parse_tag(is);
+      while (tag.name=="PARAMETER") {
+        parms_[tag.attributes["name"]]=tag.attributes["value"];
+        if (tag.type!=XMLTag::SINGLE)
+          tag = parse_tag(is);
+        tag = parse_tag(is);
+      }
       if (tag.name!="/SITEBASIS")
         boost::throw_exception(std::runtime_error("Illegal element name <" + tag.name + "> found in sitebasis reference"));
     }
@@ -195,6 +202,9 @@ void site_basis_match<I>::write_xml(oxstream& os) const
     os << attribute("type", type_);
   if (sitebasis_name_!="") {
     os << attribute("ref", sitebasis_name_);
+    for (Parameters::const_iterator it = parms_.begin(); it != parms_.end(); ++it)
+      os << start_tag("PARAMETER") << attribute("name", it->key())
+         << attribute("value", it->value()) << end_tag("PARAMETER");
   } else {
     for (Parameters::const_iterator p_itr = super_type::get_parameters().begin();
          p_itr != super_type::get_parameters().end(); ++p_itr)

@@ -231,6 +231,6 @@ namespace std {
 
 inline alps::oxstream& endl(alps::oxstream& oxs) { return oxs.endl(); }
 
-};
+}
 
 #endif // ALPS_PARSER_XMLSTREAM_H

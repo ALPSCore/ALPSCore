@@ -86,12 +86,13 @@ private:
 
 public:
   typedef typename super_type::operator_map operator_map;
+  typedef typename super_type::operator_iterator operator_iterator;
 
   BondOperatorEvaluator(const STATE1& s1, const STATE2& s2,
                         const SiteBasisDescriptor<I>& b1,
-			const SiteBasisDescriptor<I>& b2,
-                        std::string site1, std::string site2,
-			const Parameters& p, const operator_map& o)
+			            const SiteBasisDescriptor<I>& b2,
+                        const std::string& site1, const std::string& site2,
+                        const Parameters& p, const operator_map& o)
     : super_type(p,o), state_(s1,s2), basis1_(b1), basis2_(b2),
       sites_(site1,site2), fermionic_(false,false) {}
   bool can_evaluate_function(const std::string& name,
@@ -101,6 +102,13 @@ public:
   const std::pair<STATE1,STATE2>& state() const { return state_;}
   std::pair<bool,bool> fermionic() const { return fermionic_;}
 
+  bool has_operator(const std::string& name, const Expression& arg) const
+  { 
+    return (arg==sites_.first && basis1_.has_operator(name)) || 
+           (arg==sites_.second && basis2_.has_operator(name)) || 
+           super_type::has_operator(name); 
+  }
+  
 private:
   mutable std::pair<STATE1,STATE2> state_;
   const SiteBasisDescriptor<I>& basis1_;
@@ -118,24 +126,36 @@ private:
 
 public:
   typedef typename super_type::operator_map operator_map;
+  typedef typename super_type::operator_iterator operator_iterator;
 
-  BondOperatorSplitter(std::string site1, std::string site2,
+  BondOperatorSplitter(const SiteBasisDescriptor<I>& b1,
+                       const SiteBasisDescriptor<I>& b2,
+                       const std::string& site1, const std::string& site2,
                        const Parameters& p, const operator_map& o)
-    : super_type(p,o), sites_(site1,site2) {}
+    : super_type(p,o), basis1_(b1), basis2_(b2), sites_(site1,site2), second_site_fermionic_(false) {}
 
   bool can_evaluate_function(const std::string& name, const Expression& argument) const;
   Expression partial_evaluate_function(const std::string& name, const Expression& argument) const;
   const std::pair<Term, Term>& site_operators() const { return site_ops_; }
-
+  bool has_operator(const std::string& name, const Expression& arg) const
+  { 
+    return (arg==sites_.first && basis1_.has_operator(name)) || 
+           (arg==sites_.second && basis2_.has_operator(name)) || 
+           ( (arg==sites_.first || arg==sites_.second) && super_type::has_operator(name)); 
+  }
+  
 private:
+  const SiteBasisDescriptor<I>& basis1_;
+  const SiteBasisDescriptor<I>& basis2_;
   mutable std::pair<Term, Term> site_ops_;
   std::pair<std::string, std::string> sites_;
+  mutable bool second_site_fermionic_;
 };
 
 template <class I, class STATE1, class STATE2>
 bool BondOperatorEvaluator<I, STATE1, STATE2>::can_evaluate_function(const std::string& name, const Expression& arg) const
 {
-  if (super_type::ops_.find(name) != super_type::ops_.end() && (arg== sites_.first || arg==sites_.second)) {
+  if (has_operator(name,arg)) {
     SELF_ eval(*this);
     return eval.partial_evaluate_function(name,arg).can_evaluate(ParameterEvaluator(*this));
   }
@@ -146,20 +166,18 @@ bool BondOperatorEvaluator<I, STATE1, STATE2>::can_evaluate_function(const std::
 template <class I>
 bool BondOperatorSplitter<I>::can_evaluate_function(const std::string& name, const Expression& arg) const
 {
-  return (super_type::ops_.find(name) != super_type::ops_.end() 
-          && (arg== sites_.first || arg==sites_.second)) ||
+  return (has_operator(name,arg)) ||
          ParameterEvaluator::can_evaluate_function(name,arg);
 }
 
 template <class I, class STATE1, class STATE2>
 Expression BondOperatorEvaluator<I, STATE1, STATE2>::partial_evaluate_function(const std::string& name, const Expression& arg) const
 {
-  typename operator_map::const_iterator op = super_type::ops_.find(name);
   Expression e;
-  if (op!=super_type::ops_.end()) {  // evaluate operator
+  if (has_operator(name,arg)) {  // evaluate operator
     bool f;
     if (arg==sites_.first) {
-      boost::tie(state_.first,e,f) = op->second.apply(state_.first,basis1_,*this);
+      boost::tie(state_.first,e,f) =  basis1_.apply(name,state_.first,*this,ops_);
       if (f && is_nonzero(e)) {
         fermionic_.first=!fermionic_.first;
         if (fermionic_.second) // for normal ordering
@@ -167,13 +185,12 @@ Expression BondOperatorEvaluator<I, STATE1, STATE2>::partial_evaluate_function(c
       }
     }
     else  if (arg==sites_.second) {
-      boost::tie(state_.second,e,f) = op->second.apply(state_.second,basis2_,*this);
+      boost::tie(state_.second,e,f) =  basis2_.apply(name,state_.second,*this,ops_);
       if (f)
         fermionic_.second=!fermionic_.second;
     }
-    else {
+    else
       e=ParameterEvaluator(*this).partial_evaluate_function(name,arg);
-}
   }
   else
     e=ParameterEvaluator(*this).partial_evaluate_function(name,arg);
@@ -183,19 +200,20 @@ Expression BondOperatorEvaluator<I, STATE1, STATE2>::partial_evaluate_function(c
 template <class I>
 Expression BondOperatorSplitter<I>::partial_evaluate_function(const std::string& name, const Expression& arg) const
 {
-  typename operator_map::const_iterator op = super_type::ops_.find(name);
-  if (op!=super_type::ops_.end()) {  // evaluate operator
+  if (has_operator(name,arg)) {  // evaluate operator
     Expression e;
-    if (arg==sites_.first)
+    if (arg==sites_.first) {
       site_ops_.first *= name;
-    else  if (arg==sites_.second)
+      return Expression(second_site_fermionic_ && basis1_.is_fermionic(name,ops_) ? -1. : 1.);
+    }
+    else  if (arg==sites_.second) {
       site_ops_.second *= name;
-    else
-      return ParameterEvaluator(*this).partial_evaluate_function(name,arg);
-    return Expression(1.);
+      if (basis2_.is_fermionic(name,ops_))
+         second_site_fermionic_ = !second_site_fermionic_;
+      return Expression(1.);
+    }
   }
-  else
-    return ParameterEvaluator(*this).partial_evaluate_function(name,arg);
+  return ParameterEvaluator(*this).partial_evaluate_function(name,arg);
 }
 
 template <class I, class T>
@@ -288,8 +306,10 @@ std::set<Term> BondTermDescriptor<I>::split(const operator_map& ops, const Param
   std::set<Term> terms;
   Expression ex(term());
   ex.flatten();
+  ex.simplify();
+  SiteBasisDescriptor<I> b;
   for (typename Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
-    BondOperatorSplitter<I> evaluator(source(),target(),p,ops);
+    BondOperatorSplitter<I> evaluator(b,b,source(),target(),p,ops);
     Term term(*tit);
     term.partial_evaluate(evaluator);
     terms.insert(evaluator.site_operators().first);

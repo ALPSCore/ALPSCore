@@ -72,6 +72,7 @@ private:
 
 public:
   typedef typename super_type::operator_map operator_map;
+  typedef typename super_type::operator_iterator operator_iterator;
   typedef STATE state_type;
 
   SiteOperatorEvaluator(const state_type& s, const SiteBasisDescriptor<I>& b,
@@ -81,7 +82,9 @@ public:
   Expression partial_evaluate(const std::string& name) const;
   const state_type& state() const { return state_;}
   bool fermionic() const { return fermionic_;}
-
+  
+  bool has_operator(const std::string& name) const
+  { return basis_.has_operator(name) || super_type::has_operator(name); }
 private:
   mutable state_type state_;
   const SiteBasisDescriptor<I>& basis_;
@@ -92,28 +95,25 @@ private:
 template <class I, class STATE>
 bool SiteOperatorEvaluator<I, STATE>::can_evaluate(const std::string& name) const
 {
-  if (super_type::ops_.find(name) != super_type::ops_.end()) {
+  if (has_operator(name)) {
     SELF_ eval(*this);
     return eval.partial_evaluate(name).can_evaluate(ParameterEvaluator(*this));
   }
-  else
-    return ParameterEvaluator::can_evaluate(name);
+  return ParameterEvaluator::can_evaluate(name);
 }
 
 template <class I, class STATE>
 Expression SiteOperatorEvaluator<I, STATE>::partial_evaluate(const std::string& name) const
 {
-  typename operator_map::const_iterator op = super_type::ops_.find(name);
-  if (op!=super_type::ops_.end()) {  // evaluate operator
+  if (has_operator(name)) {  // evaluate operator
     Expression e;
     bool fermionic;
-    boost::tie(state_,e,fermionic) = op->second.apply(state_, basis_, ParameterEvaluator(*this));
+    boost::tie(state_,e,fermionic) = basis_.apply(name,state_, ParameterEvaluator(*this),ops_);
     if (fermionic)
       fermionic_=!fermionic_;
     return e;
   }
-  else
-    return super_type::partial_evaluate(name);
+  return super_type::partial_evaluate(name);
 }
 
 
