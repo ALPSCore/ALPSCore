@@ -5,6 +5,8 @@ Makefile
 *.la
 *.lo
 sizeof
+boostdump
+textdump.dump
 xdrdump
 xdrdump2
 xdrdump.dump

@@ -14,7 +14,7 @@
 
 @SET_MAKE@
 
-SOURCES = $(sizeof_SOURCES) $(xdrdump_SOURCES) $(xdrdump2_SOURCES)
+SOURCES = $(boostdump_SOURCES) $(sizeof_SOURCES) $(xdrdump_SOURCES) $(xdrdump2_SOURCES)
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -38,7 +38,8 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-check_PROGRAMS = sizeof$(EXEEXT) xdrdump$(EXEEXT) xdrdump2$(EXEEXT)
+check_PROGRAMS = sizeof$(EXEEXT) xdrdump$(EXEEXT) xdrdump2$(EXEEXT) \
+	boostdump$(EXEEXT)
 subdir = test/osiris
 DIST_COMMON = $(dist_noinst_DATA) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/xdrdump2.input.in
@@ -58,10 +59,17 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/src/alps/config.h \
 	$(top_builddir)/src/boost/po_utf8_codecvt_facet.cpp
 CONFIG_CLEAN_FILES = xdrdump2.input
+am_boostdump_OBJECTS = boostdump.$(OBJEXT)
+boostdump_OBJECTS = $(am_boostdump_OBJECTS)
+boostdump_LDADD = $(LDADD)
+am__DEPENDENCIES_1 =
+boostdump_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_sizeof_OBJECTS = sizeof.$(OBJEXT)
 sizeof_OBJECTS = $(am_sizeof_OBJECTS)
 sizeof_LDADD = $(LDADD)
-am__DEPENDENCIES_1 =
 sizeof_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
 	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
@@ -90,9 +98,10 @@ LTCXXCOMPILE = $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) \
 CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --tag=CXX --mode=link $(CXXLD) $(AM_CXXFLAGS) \
 	$(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(sizeof_SOURCES) $(xdrdump_SOURCES) $(xdrdump2_SOURCES)
-DIST_SOURCES = $(sizeof_SOURCES) $(xdrdump_SOURCES) \
+SOURCES = $(boostdump_SOURCES) $(sizeof_SOURCES) $(xdrdump_SOURCES) \
 	$(xdrdump2_SOURCES)
+DIST_SOURCES = $(boostdump_SOURCES) $(sizeof_SOURCES) \
+	$(xdrdump_SOURCES) $(xdrdump2_SOURCES)
 DATA = $(dist_noinst_DATA)
 ETAGS = etags
 CTAGS = ctags
@@ -255,7 +264,8 @@ LDADD = $(top_builddir)/lib/alps/libalps.la $(top_builddir)/lib/comm-sgl/libcomm
 sizeof_SOURCES = sizeof.C
 xdrdump_SOURCES = xdrdump.C
 xdrdump2_SOURCES = xdrdump2.C
-dist_noinst_DATA = xdrdump.output xdrdump2.dump xdrdump2.output
+boostdump_SOURCES = boostdump.C
+dist_noinst_DATA = xdrdump.output xdrdump2.dump xdrdump2.output boostdump.output
 all: all-am
 
 .SUFFIXES:
@@ -298,6 +308,9 @@ clean-checkPROGRAMS:
 	  echo " rm -f $$p $$f"; \
 	  rm -f $$p $$f ; \
 	done
+boostdump$(EXEEXT): $(boostdump_OBJECTS) $(boostdump_DEPENDENCIES) 
+	@rm -f boostdump$(EXEEXT)
+	$(CXXLINK) $(boostdump_LDFLAGS) $(boostdump_OBJECTS) $(boostdump_LDADD) $(LIBS)
 sizeof$(EXEEXT): $(sizeof_OBJECTS) $(sizeof_DEPENDENCIES) 
 	@rm -f sizeof$(EXEEXT)
 	$(CXXLINK) $(sizeof_LDFLAGS) $(sizeof_OBJECTS) $(sizeof_LDADD) $(LIBS)
@@ -314,6 +327,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/boostdump.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sizeof.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xdrdump.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xdrdump2.Po@am__quote@
@@ -522,7 +536,7 @@ test tests : check
 example examples :
 
 clean-local :
-	rm -f xdrdump.dump
+	rm -f xdrdump.dump textdump.dump
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
