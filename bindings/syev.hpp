@@ -123,6 +123,7 @@ namespace boost { namespace numeric { namespace bindings {
 #endif
 
       int const lw = traits::vector_size (work); 
+      int const n = traits::matrix_size1 (a);
       assert (lw >= std::max(1,3*n-1)); 
       char uplo = traits::matrix_uplo_tag (a);
       return detail::syev (jobz, uplo, a, w, work, lw); 
