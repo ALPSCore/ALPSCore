@@ -181,7 +181,7 @@ bool xdr_long_double(XDR *xdrs, long double *ldp)
 }
 
 template<class T, int N>
-struct xdr_helper;
+struct xdr_helper {};
 
 #define ALPS_DUMP_DO_TYPE(T,X) \
   template<int N> struct xdr_helper<T, N> { \
@@ -233,24 +233,24 @@ void OXDRDump::setPosition(uint32_t pos)
 #define ALPS_DUMP_DO_TYPE(T) \
 void OXDRDump::write_simple(T x)  \
 { \
-  if (!detail::xdr_helper<T, sizeof(T)>::xdr_do_type(&xdr_, const_cast<T*>(&x))) \
+  if (!detail::xdr_helper<T, int(sizeof(T))>::xdr_do_type(&xdr_, const_cast<T*>(&x))) \
     boost::throw_exception(std::runtime_error("failed to write type "#T" to an OXDRDump"));\
 } \
 void OXDRDump::write_array(size_t n, const T* p)  \
 { \
   int l = n; \
-  if (!xdr_vector(&xdr_, reinterpret_cast<char*>(const_cast<T*>(p)), l, sizeof(T), (xdrproc_t) &detail::xdr_helper<T, sizeof(T)>::xdr_do_type)) \
+  if (!xdr_vector(&xdr_, reinterpret_cast<char*>(const_cast<T*>(p)), l, int(sizeof(T)), (xdrproc_t) &detail::xdr_helper<T, int(sizeof(T))>::xdr_do_type)) \
     boost::throw_exception ( std::runtime_error("failed to write array of type "#T" to an OXDRDump")); \
 } \
 void IXDRDump::read_simple(T& x)\
 { \
-  if (!detail::xdr_helper<T, sizeof(T)>::xdr_do_type(&xdr_, &x)) \
+  if (!detail::xdr_helper<T, int(sizeof(T))>::xdr_do_type(&xdr_, &x)) \
     boost::throw_exception(std::runtime_error("failed to read type "#T" from an IXDRDump")); \
 } \
 void IXDRDump::read_array(size_t n, T* p) \
 { \
   int l = n; \
-  if (!xdr_vector(&xdr_, reinterpret_cast<char*>(p), l, sizeof(T), (xdrproc_t) &detail::xdr_helper<T, sizeof(T)>::xdr_do_type)) \
+  if (!xdr_vector(&xdr_, reinterpret_cast<char*>(p), l, int(sizeof(T)), (xdrproc_t) &detail::xdr_helper<T, int(sizeof(T))>::xdr_do_type)) \
     boost::throw_exception ( std::runtime_error("failed to read array of type "#T" from an IXDRDump")); \
 }
 

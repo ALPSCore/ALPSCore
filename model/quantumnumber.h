@@ -225,8 +225,8 @@ const QuantumNumber<I>& QuantumNumber<I>::operator+=(const QuantumNumber<I>& rhs
   Expression max_exp = Expression(max_string_);
   min_exp.partial_evaluate(eval);
   max_exp.partial_evaluate(eval);
-  min_string_ = min_exp+Expression(rhs.min_string_);
-  max_string_ = max_exp+Expression(rhs.max_string_);
+  min_string_ = static_cast<std::string>(min_exp+Expression(rhs.min_string_));
+  max_string_ = static_cast<std::string>(max_exp+Expression(rhs.max_string_));
   if (valid_) {
     if (min()!=value_type::min() && rhs.min()!=value_type::min())
       _min += rhs._min;
@@ -234,8 +234,8 @@ const QuantumNumber<I>& QuantumNumber<I>::operator+=(const QuantumNumber<I>& rhs
       _max += rhs._max;
   }
   if (fermionic() != rhs.fermionic())
-    boost::throw_exception(std::runtime_error("Adding fermionic and bosonic quantum numbers: " 
-                                              + name() + " + " + rhs.name()));
+    boost::throw_exception(std::runtime_error("Adding fermionic and bosonic quantum numbers: " + name() + " + " + rhs.name()));
+return *this;
 }
 
 template <class I>

@@ -181,7 +181,7 @@ template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, 
 const bool has_property<P, const boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>,D>::any_property;
 #endif
 
-#endif __IBMCPP__
+#endif 
 
 
 template <class P, class G, class Default>
