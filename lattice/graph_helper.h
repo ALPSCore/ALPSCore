@@ -38,6 +38,22 @@
 
 namespace alps {
 
+namespace detail {
+
+template <bool F>
+struct graph_dimension_helper {
+  template <class G>
+  static std::size_t dimension(const G&) { return 0;} 
+};
+
+template <>
+struct graph_dimension_helper<true> {
+  template <class G>
+  static  std::size_t dimension(const G& g) { return boost::get_property(g,dimension_t());} 
+};
+
+}  
+  
 template <class G=coordinate_graph_type>
 class graph_helper : public LatticeLibrary
 {
@@ -166,6 +182,7 @@ public:
   bool disordered_edges() const { return d_.disordered_edges();}
   const vector_type& coordinate(const site_descriptor& s) const { return coordinate_map_[s];}
   const vector_type& bond_vector(const bond_descriptor& b) const { return bond_vector_map_[b];}
+  std::size_t dimension() const { return detail::graph_dimension_helper<has_property<dimension_t,G>::graph_property>::dimension(graph());}
 
   void throw_if_xyz_defined(const Parameters& p, const vertex_descriptor& v) const
   {   
