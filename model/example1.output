@@ -198,6 +198,18 @@
   <SITEOPERATOR name="Sx" site="x">
     1/2*(Splus(x)+Sminus(x))
   </SITEOPERATOR>
+  <SITEOPERATOR name="density" site="x">
+    n(x)
+  </SITEOPERATOR>
+  <SITEOPERATOR name="double_occupancy" site="x">
+    n(x)*(n(x)-1)/1
+  </SITEOPERATOR>
+  <SITEOPERATOR name="magnetization" site="x">
+    Sz(x)
+  </SITEOPERATOR>
+  <BONDOPERATOR name="boson_hop" source="x" target="y">
+    bdag(x)*b(y)+bdag(y)*b(x)
+  </BONDOPERATOR>
   <BONDOPERATOR name="exchange" source="x" target="y">
     Sz(x)*Sz(y)+1/2*(Splus(x)*Sminus(y)+Sminus(x)*Splus(y))
   </BONDOPERATOR>
@@ -206,6 +218,9 @@
   </BONDOPERATOR>
   <BONDOPERATOR name="fermion_hop" source="x" target="y">
     cdag_up(x)*c_up(y)+cdag_up(y)*c_up(x)+cdag_down(x)*c_down(y)+cdag_down(y)*c_down(x)
+  </BONDOPERATOR>
+  <BONDOPERATOR name="hop" source="x" target="y">
+    cdag(x)*c(y)+cdag(y)*c(x)
   </BONDOPERATOR>
   <HAMILTONIAN name="Ian's fermion Hubbard">
     <PARAMETER name="mu" default="0"/>
