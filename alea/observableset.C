@@ -33,7 +33,7 @@
 #include <alps/alea/nobinning.h>
 #include <alps/alea/detailedbinning.h>
 #include <alps/alea/simpleobseval.h>
-#include <alps/alea/histogram.h>
+#include <alps/alea/histogrameval.h>
 #include <alps/multi_array.hpp>
 #include <boost/lexical_cast.hpp>
 
@@ -82,6 +82,7 @@ ObservableFactory::ObservableFactory()
   //register_observable<AbstractSignedObservable<IntVectorObsevaluator> >();
   register_observable<SignedObservable<SimpleRealVectorObservable> >();
   register_observable<SignedObservable<RealVectorTimeSeriesObservable> >();
+  register_observable<HistogramObservable<double> >();
   //register_observable<SignedObservable<SimpleIntVectorObservable> >();
   //register_observable<SignedObservable<IntVectorObservable> >();
   //register_observable<SignedObservable<IntVectorTimeSeriesObservable> >();
@@ -344,6 +345,9 @@ void ObservableSet::read_xml(std::istream& infile, const XMLTag& intag)
       operator<<(RealObsevaluator(tag.attributes["name"],infile,tag));
     else if (tag.name == "VECTOR_AVERAGE")
       operator<<(RealVectorObsevaluator(tag.attributes["name"],infile,tag));
+    else if (tag.name == "HISTOGRAM") {
+     operator<< (HistogramObservableEvaluator<int>(tag.attributes["name"],infile,tag));
+    }
     else
       boost::throw_exception(std::runtime_error("Cannot parse tag " + tag.name + " in <" + intag.name + ">"));
     tag = parse_tag(infile);
