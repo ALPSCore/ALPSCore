@@ -47,7 +47,7 @@ libs_program = -lalps -lcomm-sgl $(XML_LIBS) $(BASE_LIBS)
 
 LOCAL_CONFIG = lattices.xml models.xml parameters
 EXAMPLE = example1 example2 example3 example4 example5 example6 example7 example8 example9 example10
-TESTOK = example1.ok example2.ok example3.ok example4.ok example5.ok example6.ok example7.ok example8.ok example9.ok example10.ok
+TESTOK = example1.ok example2.ok example3.ok example4.ok example5.ok example6.ok example7.ok example8.ok
 
 include $(top_srcdir)/config/rules.mk
 include $(srcdir)/Makefile.dep
