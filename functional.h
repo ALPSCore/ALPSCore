@@ -96,7 +96,7 @@ private:
 
 template <class T>
 struct absmax : public std::binary_function<T, T, typename TypeTraits<T>::norm_t> {
-    typename TypeTraits<T>::norm_t operator () (const T& x, const T& y) const { return std::max(alps::abs(x),alps::abs(y)); }
+    typename TypeTraits<T>::norm_t operator () (const T& x, const T& y) const { return std::max(std::abs(x),std::abs(y)); }
 };
 
 template <class T>
@@ -116,7 +116,7 @@ inline std::complex<T> operator()(const std::complex<T>& a, const std::complex<T
 
 template<class T> 
 struct add_abs : public std::binary_function<T,typename TypeTraits<T>::norm_t,typename TypeTraits<T>::norm_t> {
-inline typename TypeTraits<T>::norm_t operator()(typename TypeTraits<T>::norm_t sum, T val) const { return sum+alps::abs(val);}
+inline typename TypeTraits<T>::norm_t operator()(typename TypeTraits<T>::norm_t sum, T val) const { return sum+std::abs(val);}
 };
 
 template<class T> 
