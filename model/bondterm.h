@@ -253,8 +253,8 @@ BondTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b1,
           BondOperatorEvaluator<I> evaluator(states1[i1], states2[i2], basis1, basis2, source(), target(), parms, ops);
           Term term(*tit);
           term.partial_evaluate(evaluator);
-          int j1=states1.index(evaluator.state().first);
-          int j2=states2.index(evaluator.state().second);
+          unsigned int j1=states1.index(evaluator.state().first);
+          unsigned int j2=states2.index(evaluator.state().second);
 	      if (is_nonzero(term) && j1<dim1 && j2<dim2) {
             if (is_nonzero(mat[i1][i2][j1][j2].first)) {
               if (mat[i1][i2][j1][j2].second.first != evaluator.fermionic().first || 

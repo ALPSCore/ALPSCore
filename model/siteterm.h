@@ -164,7 +164,7 @@ SiteTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b,
 	    SiteOperatorEvaluator<I> evaluator(states[i], basis,parms,ops);
         Term term(*tit);
         term.partial_evaluate(evaluator);
-        int j = states.index(evaluator.state());
+        unsigned int j = states.index(evaluator.state());
 	    if (is_nonzero(term)) {
           if (is_nonzero(mat[i][j].first) && j<states.size()) {
             if (mat[i][j].second != evaluator.fermionic())
