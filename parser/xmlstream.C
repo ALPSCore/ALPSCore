@@ -29,13 +29,6 @@
 
 #include <alps/parser/xmlstream.h>
 
-// workaround for Intel C++ 8.0 for IA64 with -O3
-#if (__ECC==800) && defined(BOOST_NO_STDC_NAMESPACE)
-# undef BOOST_NO_STDC_NAMESPACE
-# include <boost/regex/config/cwchar.hpp>
-# define BOOST_NO_STDC_NAMESPACE
-#endif
-
 #include <boost/regex.hpp>
 #include <boost/throw_exception.hpp>
 #include <stdexcept>
