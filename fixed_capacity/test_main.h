@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2002-2003 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 2002-2004 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -231,6 +231,7 @@ void test_main(std::size_t m, std::size_t n) {
           u.insert(u.begin() + p, d);
         }
       } else {
+#if !(__GNUC__ == 3 && __GNUC_MINOR__ == 1)
 #ifdef VERBOSE
         std::cout << "insert sequence\n";
 #endif
@@ -238,6 +239,7 @@ void test_main(std::size_t m, std::size_t n) {
         s.insert(s.begin() + p, v.begin(), v.end());
         t.insert(t.begin() + p, v.begin(), v.end());
         u.insert(u.begin() + p, v.begin(), v.end());
+#endif
       }
     } else {
       // erase
