@@ -337,12 +337,12 @@ inline unsigned int maximum_vertex_type(const G& g)
     
   typename boost::graph_traits<G>::vertex_iterator it,end;
   
-  typename property_map<vertex_type_t, const G, int>::type 
-  vertex_type_map = get_or_default(vertex_type_t(),g,0);
+  typename property_map<vertex_type_t, const G, unsigned int>::type 
+  vertex_type_map = get_or_default(vertex_type_t(),g,0u);
 
-  int num=0;
+  unsigned int num=0;
   for (boost::tie(it,end)=boost::vertices(g); it!=end;++it)
-    num = std::max(num,vertex_type_map[*it]);
+    num = std::max(num,static_cast<unsigned int>(vertex_type_map[*it]));
 
   return num;
 }
