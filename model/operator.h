@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2004 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2003-2005 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -36,22 +36,25 @@
 
 namespace alps {
 
-template <class I>
-class OperatorEvaluator : public ParameterEvaluator
+template <class T=std::complex<double> >
+class OperatorEvaluator : public expression::ParameterEvaluator<T>
 {
 public:
-  typedef ParameterEvaluator super_type;
-  typedef super_type::value_type value_type;
+  typedef expression::ParameterEvaluator<T> super_type;
+  typedef typename super_type::value_type value_type;
   
   OperatorEvaluator(const Parameters& p)
-    : ParameterEvaluator(p) {}
-  Direction direction() const { return right_to_left; }
+    : super_type(p) {}
+  typename super_type::Direction direction() const { return right_to_left; }
 
   value_type evaluate(const std::string& name, bool isarg=false) const
   { return partial_evaluate(name,isarg).value();}
 
-  value_type evaluate_function(const std::string& name, const Expression& arg,bool isarg=false) const
+  value_type evaluate_function(const std::string& name, const expression::Expression<T>& arg,bool isarg=false) const
   { return partial_evaluate_function(name,arg,isarg).value();}
+
+  value_type evaluate_function(const std::string& name, const std::vector<expression::Expression<T> >& args,bool isarg=false) const
+  { return partial_evaluate_function(name,args,isarg).value();}
 };
 
 } // namespace alps

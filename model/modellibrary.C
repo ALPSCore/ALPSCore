@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2004 by Matthias Troyer <troyer@comp-phys.org>
+* Copyright (C) 2003-2005 by Matthias Troyer <troyer@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -64,6 +64,10 @@ void ModelLibrary::read_xml(const XMLTag& intag, std::istream& p)
       bases_[tag.attributes["name"]]=BasisDescriptor<short>(tag,p,sitebases_);
     else if (tag.name=="OPERATOR")
       boost::throw_exception(std::runtime_error("Global operator descriptions were removed after ALPS 1.2"));
+    else if (tag.name=="SITEOPERATOR")
+      site_operators_[tag.attributes["name"]]=SiteOperator(tag,p);
+    else if (tag.name=="BONDOPERATOR")
+      bond_operators_[tag.attributes["name"]]=BondOperator(tag,p);
     else if (tag.name=="HAMILTONIAN")
       hamiltonians_[tag.attributes["name"]]=HamiltonianDescriptor<short>(tag,p,bases_);
     else
@@ -78,6 +82,10 @@ void ModelLibrary::write_xml(oxstream& out) const
   for (SiteBasisDescriptorMap::const_iterator it=sitebases_.begin();it!=sitebases_.end();++it)
     out << it->second;
   for (BasisDescriptorMap::const_iterator it=bases_.begin();it!=bases_.end();++it)
+    out << it->second;
+  for (SiteOperatorMap::const_iterator it=site_operators_.begin();it!=site_operators_.end();++it)
+    out << it->second;
+  for (BondOperatorMap::const_iterator it=bond_operators_.begin();it!=bond_operators_.end();++it)
     out << it->second;
   for (HamiltonianDescriptorMap::const_iterator it=hamiltonians_.begin();it!=hamiltonians_.end();++it)
     out << it->second;
@@ -99,6 +107,15 @@ bool ModelLibrary::has_site_basis(const std::string& name) const
   return (sitebases_.find(name)!=sitebases_.end());
 }
 
+bool ModelLibrary::has_site_operator(const std::string& name) const
+{
+  return (site_operators_.find(name)!=site_operators_.end());
+}
+
+bool ModelLibrary::has_bond_operator(const std::string& name) const
+{
+  return (bond_operators_.find(name)!=bond_operators_.end());
+}
 
 const BasisDescriptor<short>& ModelLibrary::get_basis(const std::string& name) const
 {
@@ -114,11 +131,39 @@ const HamiltonianDescriptor<short>& ModelLibrary::get_hamiltonian(const std::str
   return hamiltonians_.find(name)->second;
 }
 
+HamiltonianDescriptor<short> ModelLibrary::get_hamiltonian(const std::string& name, Parameters p, bool issymbolic) const
+{
+  alps::HamiltonianDescriptor<short> ham(get_hamiltonian(name));
+  if (!issymbolic)
+    p.copy_undefined(ham.default_parameters());
+  ham.set_parameters(p);
+  ham.substitute_operators(*this,p);
+  return ham;
+}
+
 const SiteBasisDescriptor<short>& ModelLibrary::get_site_basis(const std::string& name) const
 {
   if (!has_site_basis(name))
     boost::throw_exception(std::runtime_error("No site basis named '" +name+"' found in model library"));
   return sitebases_.find(name)->second;
+}
+
+SiteOperator ModelLibrary::get_site_operator(const std::string& name,Parameters p) const
+{
+  if (!has_site_operator(name))
+    boost::throw_exception(std::runtime_error("No site operator named '" +name+"' found in model library"));
+  SiteOperator op(site_operators_.find(name)->second);
+  op.substitute_operators(*this,p);
+  return op;
+}
+
+BondOperator ModelLibrary::get_bond_operator(const std::string& name,Parameters p) const
+{
+  if (!has_bond_operator(name))
+    boost::throw_exception(std::runtime_error("No bond operator named '" +name+"' found in model library"));
+  BondOperator op(bond_operators_.find(name)->second);
+  op.substitute_operators(*this,p);
+  return op;
 }
 
 } // namespace alps

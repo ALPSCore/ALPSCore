@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2004 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2003-2005 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -31,180 +31,129 @@
 #ifndef ALPS_MODEL_SITETERM_H
 #define ALPS_MODEL_SITETERM_H
 
-#include <alps/model/operator.h>
-#include <alps/expression.h>
-#include <alps/multi_array.hpp>
-#include <alps/parameters.h>
+#include <alps/model/siteoperator.h>
 
 namespace alps {
 
-template<class I>
-class SiteTermDescriptor
+class SiteTermDescriptor : public SiteOperator
 {
 public:
+  typedef SiteOperator super_type;
+  
   SiteTermDescriptor() : type_(-2) {}
-  SiteTermDescriptor(const std::string& t) : type_(-2), term_(t) {}
-  SiteTermDescriptor(const Term& t) : type_(-2),
-    term_(boost::lexical_cast<std::string>(t)) {}
+  SiteTermDescriptor(const std::string& t, const std::string& s="") 
+   : super_type(t,s), type_(-2) {}
+ template <class T>
+ SiteTermDescriptor(const T& t, const std::string& s="") 
+   : super_type(t,s), type_(-2) {}
   SiteTermDescriptor(const XMLTag&, std::istream&);
 
   void write_xml(oxstream&) const;
 
   bool match_type(int type) const { return type_==-1 || type==type_;}
-  const std::string& term() const { return term_;}
-  template <class T>
-  boost::multi_array<std::pair<T,bool>,2> matrix(const SiteBasisDescriptor<I>&,
-                                          const Parameters& =Parameters()) const;
+
 private:
   int type_;
-  std::string term_;
 };
 
-
-template <class I, class STATE = site_state<I> >
-class SiteOperatorEvaluator : public OperatorEvaluator<I>
+template <class I, class T, class STATE>
+class SiteOperatorEvaluator : public OperatorEvaluator<T>
 {
 private:
-  typedef OperatorEvaluator<I> super_type;
-  typedef SiteOperatorEvaluator<I, STATE> SELF_;
+  typedef OperatorEvaluator<T> super_type;
+  typedef SiteOperatorEvaluator<I,T,STATE> SELF_;
 
 public:
   typedef STATE state_type;
 
   SiteOperatorEvaluator(const state_type& s, const SiteBasisDescriptor<I>& b,
-                        const Parameters& p)
-    : super_type(p), state_(s), basis_(b), fermionic_(false) {}
+                        const Parameters& p, const std::string sit="")
+    : super_type(p), state_(s), basis_(b), fermionic_(false), site_(sit) {}
   bool can_evaluate(const std::string&,bool=false) const;
-  Expression partial_evaluate(const std::string& name,bool=false) const;
+  bool can_evaluate_function(const std::string&, const expression::Expression<T>&, bool=false) const;
+  bool can_evaluate_function(const std::string&, const std::vector<expression::Expression<T> >&, bool=false) const;
+  expression::Expression<T> partial_evaluate(const std::string&,bool=false) const;
+  expression::Expression<T> partial_evaluate_function(const std::string&, const expression::Expression<T>&, bool=false) const;
+  expression::Expression<T> partial_evaluate_function(const std::string&, const std::vector<expression::Expression<T> >&, bool=false) const;
   const state_type& state() const { return state_;}
   bool fermionic() const { return fermionic_;}
-  
+  const std::string& site() const { return site_;}
+  bool has_operator(const std::string& n) const { return basis_.has_operator(n);}
 private:
+
   mutable state_type state_;
   const SiteBasisDescriptor<I>& basis_;
   mutable bool fermionic_;
+  std::string site_;
 };
 
 
-template <class I, class STATE>
-bool SiteOperatorEvaluator<I, STATE>::can_evaluate(const std::string& name,bool isarg) const
+template <class I, class T, class STATE>
+bool SiteOperatorEvaluator<I,T,STATE>::can_evaluate(const std::string& name,bool isarg) const
 {
   if (basis_.has_operator(name)) {
     SELF_ eval(*this);
-    return eval.partial_evaluate(name,isarg).can_evaluate(ParameterEvaluator(*this),isarg);
+    return eval.partial_evaluate(name,isarg).can_evaluate(expression::ParameterEvaluator<T>(*this),isarg);
   }
-  return ParameterEvaluator::can_evaluate(name,isarg);
+  return expression::ParameterEvaluator<T>::can_evaluate(name,isarg);
 }
 
-template <class I, class STATE>
-Expression SiteOperatorEvaluator<I, STATE>::partial_evaluate(const std::string& name,bool isarg) const
+template <class I, class T, class STATE>
+bool SiteOperatorEvaluator<I,T,STATE>::can_evaluate_function(const std::string& name,const expression::Expression<T>& arg, bool isarg) const
 {
-  if (basis_.has_operator(name)) {  // evaluate operator
-    Expression e;
+  if (arg==site() && basis_.has_operator(name))
+    return can_evaluate(name,isarg);
+  else
+    return expression::ParameterEvaluator<T>::can_evaluate_function(name,arg,isarg);
+}
+
+template <class I, class T, class STATE>
+bool SiteOperatorEvaluator<I,T,STATE>::can_evaluate_function(const std::string& name,const std::vector<expression::Expression<T> >& args, bool isarg) const
+{
+  if (args.size()==1)
+    return can_evaluate_function(name,args[0],isarg);
+  else
+    return expression::ParameterEvaluator<T>::can_evaluate_function(name,args,isarg);
+}
+
+template <class I, class T, class STATE>
+expression::Expression<T> SiteOperatorEvaluator<I,T,STATE>::partial_evaluate(const std::string& name,bool isarg) const
+{
+  if (basis_.has_operator(name)) {
+    expression::Expression<T> e;
     bool fermionic;
-    boost::tie(state_,e,fermionic) = basis_.apply(name,state_, ParameterEvaluator(*this),isarg);
+    boost::tie(state_,e,fermionic) = basis_.apply(name,state_, expression::ParameterEvaluator<T>(*this),isarg);
     if (fermionic)
       fermionic_=!fermionic_;
     return e;
   }
-  return super_type::partial_evaluate(name,isarg);
+  else
+    return super_type::partial_evaluate(name,isarg);
 }
 
-
-template <class I, class T>
-boost::multi_array<T,2> get_matrix(T,const SiteTermDescriptor<I>& m, const SiteBasisDescriptor<I>& basis1, const Parameters& p=Parameters())
+template <class I, class T, class STATE>
+expression::Expression<T> SiteOperatorEvaluator<I,T,STATE>::partial_evaluate_function(const std::string& name,const expression::Expression<T>& arg,bool isarg) const
 {
-  boost::multi_array<std::pair<T,bool>,2> f_matrix = m.template matrix<T>(basis1,p);
-  boost::multi_array<T,2> matrix(boost::extents[f_matrix.shape()[0]][f_matrix.shape()[1]]);
-  for (int i=0;i<f_matrix.shape()[0];++i)
-    for (int j=0;j<f_matrix.shape()[1];++j)
-      if (f_matrix[i][j].second)
-        boost::throw_exception(std::runtime_error("Cannot convert fermionic operator to a bosonic matrix"));
-      else
-        matrix[i][j]=f_matrix[i][j].first;
-  return matrix;
-}
-
-template <class I, class T>
-boost::multi_array<std::pair<T,bool>,2> get_fermionic_matrix(T,const SiteTermDescriptor<I>& m, const SiteBasisDescriptor<I>& basis1, const Parameters& p=Parameters())
-{
-  return m.template matrix<T>(basis1,p);
-}
-
-
-template <class I> template <class T> boost::multi_array<std::pair<T,bool>,2>
-SiteTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b, const Parameters& p) const
-{
-  SiteBasisDescriptor<I> basis(b);
-  basis.set_parameters(p);
-  Parameters parms(p);
-  parms.copy_undefined(basis.get_parameters());
-  std::size_t dim=basis.num_states();
-  boost::multi_array<std::pair<T,bool>,2> mat(boost::extents[dim][dim]);
-  // parse expression and store it as sum of terms
-  Expression ex(term());
-  ex.flatten();
-
-  // fill the matrix
-    site_basis<I> states(basis);
-    for (int i=0;i<states.size();++i)
-      for (int j=0;j<states.size();++j)
-        mat[i][j].second=false;
-    for (int i=0;i<states.size();++i) {
-    //calculate expression applied to state *it and store it into matrix
-      for (typename Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
-            SiteOperatorEvaluator<I> evaluator(states[i], basis,parms);
-        Term term(*tit);
-        term.partial_evaluate(evaluator);
-        unsigned int j = states.index(evaluator.state());
-            if (is_nonzero(term)) {
-          if (is_nonzero(mat[i][j].first) && j<states.size()) {
-            if (mat[i][j].second != evaluator.fermionic())
-              boost::throw_exception(std::runtime_error("Inconsistent fermionic nature of a matrix element: "
-                                    + boost::lexical_cast<std::string,Term>(*tit) + " is inconsistent with "
-                                    + boost::lexical_cast<std::string,T>(mat[i][j].first) + 
-                                    ". Please contact the library authors for an extension to the ALPS model library."));
-          }
-          else
-            mat[i][j].second=evaluator.fermionic();
-            if (boost::is_arithmetic<T>::value || TypeTraits<T>::is_complex)
-              if (!can_evaluate(boost::lexical_cast<std::string>(term)))
-                boost::throw_exception(std::runtime_error("Cannot evaluate expression " + boost::lexical_cast<std::string>(term)));
-
-          mat[i][j].first += evaluate<T>(term);
-        }
-      }
-    }
-  return mat;
-}
-
-#ifndef ALPS_WITHOUT_XML
-
-template <class I>
-SiteTermDescriptor<I>::SiteTermDescriptor(const XMLTag& intag, std::istream& is)
-{
-  XMLTag tag(intag);
-  type_ = tag.attributes["type"]=="" ? -1 : boost::lexical_cast<int,std::string>(tag.attributes["type"]);
-  if (tag.type!=XMLTag::SINGLE) {
-    term_=parse_content(is);
-    tag = parse_tag(is);
-    if (tag.name !="/SITETERM")
-      boost::throw_exception(std::runtime_error("Illegal tag <" + tag.name + "> in <SITETERM> element"));
+  if (arg==site() && basis_.has_operator(name)) {  // evaluate operator
+    expression::Expression<T> e;
+    bool fermionic;
+    boost::tie(state_,e,fermionic) = basis_.apply(name,state_, expression::ParameterEvaluator<T>(*this),isarg);
+    if (fermionic)
+      fermionic_=!fermionic_;
+    return e;
   }
+  else
+    return expression::ParameterEvaluator<T>(*this).partial_evaluate_function(name,arg,isarg);
 }
 
-template <class I>
-void SiteTermDescriptor<I>::write_xml(oxstream& os) const
+template <class I, class T, class STATE>
+expression::Expression<T> SiteOperatorEvaluator<I,T,STATE>::partial_evaluate_function(const std::string& name,const std::vector<expression::Expression<T> >& args,bool isarg) const
 {
-  os << start_tag("SITETERM");
-  if (type_>=0)
-    os << attribute("type", type_);
-  if (term()!="")
-    os << term();
-  os << end_tag("SITETERM");
+  if (args.size()==1)
+    return partial_evaluate_function(name,args[0],isarg);
+  else
+    return expression::ParameterEvaluator<T>(*this).partial_evaluate_function(name,args,isarg);
 }
-
-#endif
 
 } // namespace alps
 
@@ -212,15 +161,13 @@ void SiteTermDescriptor<I>::write_xml(oxstream& os) const
 namespace alps {
 #endif
 
-template <class I>
-inline alps::oxstream& operator<<(alps::oxstream& out, const alps::SiteTermDescriptor<I>& q)
+inline alps::oxstream& operator<<(alps::oxstream& out, const alps::SiteTermDescriptor& q)
 {
   q.write_xml(out);
   return out;
 }
 
-template <class I>
-inline std::ostream& operator<<(std::ostream& out, const alps::SiteTermDescriptor<I>& q)
+inline std::ostream& operator<<(std::ostream& out, const alps::SiteTermDescriptor& q)
 {
   alps::oxstream xml(out);
   xml << q;

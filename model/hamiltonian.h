@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2004 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2003-2005 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -38,6 +38,8 @@
 
 namespace alps {
 
+class ModelLibrary;
+
 template<class I>
 class HamiltonianDescriptor
 {
@@ -48,40 +50,49 @@ public:
   void write_xml(oxstream&) const;
 
   const std::string& name() const { return name_;}
-  const std::vector<SiteTermDescriptor<I> >& site_terms() const { return siteterms_;}
-  const std::vector<BondTermDescriptor<I> >& bond_terms() const { return bondterms_;}
-  SiteTermDescriptor<I> site_term(int type=0) const;
-  BondTermDescriptor<I> bond_term(int type=0) const;
+  const std::vector<SiteTermDescriptor>& site_terms() const { return siteterms_;}
+  const std::vector<BondTermDescriptor>& bond_terms() const { return bondterms_;}
+  SiteTermDescriptor site_term(int type=0) const;
+  BondTermDescriptor bond_term(int type=0) const;
   const BasisDescriptor<I>& basis() const { return basis_;}
   BasisDescriptor<I>& basis() { return basis_;}
   const Parameters& default_parameters() const { return parms_;}
   bool set_parameters(Parameters p);
+  void substitute_operators(const ModelLibrary& m, const Parameters& p);
 private:
   std::string name_;
   std::string basisname_;
   BasisDescriptor<I> basis_;
-  std::vector<SiteTermDescriptor<I> > siteterms_;
-  std::vector<BondTermDescriptor<I> > bondterms_;
+  std::vector<SiteTermDescriptor> siteterms_;
+  std::vector<BondTermDescriptor> bondterms_;
   Parameters parms_;
 };
 
-
 template <class I>
-SiteTermDescriptor<I> HamiltonianDescriptor<I>::site_term(int type) const
+void HamiltonianDescriptor<I>::substitute_operators(const ModelLibrary& m, const Parameters& p)
 {
-  for (typename std::vector<SiteTermDescriptor<I> >::const_iterator it =siteterms_.begin();it!=siteterms_.end();++it)
-    if (it->match_type(type))
-      return *it;
-  return SiteTermDescriptor<I>();
+  for (std::vector<SiteTermDescriptor>::iterator it=siteterms_.begin();it!=siteterms_.end();++it)
+    it->substitute_operators(m,p);
+  for (std::vector<BondTermDescriptor>::iterator it=bondterms_.begin();it!=bondterms_.end();++it)
+    it->substitute_operators(m,p);
 }
 
 template <class I>
-BondTermDescriptor<I>  HamiltonianDescriptor<I>::bond_term(int type) const
+SiteTermDescriptor HamiltonianDescriptor<I>::site_term(int type) const
 {
-  for (typename std::vector<BondTermDescriptor<I> >::const_iterator it =bondterms_.begin();it!=bondterms_.end();++it)
+  for (typename std::vector<SiteTermDescriptor>::const_iterator it =siteterms_.begin();it!=siteterms_.end();++it)
     if (it->match_type(type))
       return *it;
-  return BondTermDescriptor<I>();
+  return SiteTermDescriptor();
+}
+
+template <class I>
+BondTermDescriptor HamiltonianDescriptor<I>::bond_term(int type) const
+{
+  for (typename std::vector<BondTermDescriptor>::const_iterator it =bondterms_.begin();it!=bondterms_.end();++it)
+    if (it->match_type(type))
+      return *it;
+  return BondTermDescriptor();
 }
 
 template <class I>
@@ -126,9 +137,9 @@ HamiltonianDescriptor<I>::HamiltonianDescriptor(const XMLTag& intag, std::istrea
     tag = parse_tag(is);
     while (tag.name!="/HAMILTONIAN") {
       if (tag.name=="SITETERM")
-        siteterms_.push_back(SiteTermDescriptor<I>(tag,is));
+        siteterms_.push_back(SiteTermDescriptor(tag,is));
       else if (tag.name=="BONDTERM")
-        bondterms_.push_back(BondTermDescriptor<I>(tag,is));
+        bondterms_.push_back(BondTermDescriptor(tag,is));
       else
         boost::throw_exception(std::runtime_error("Illegal element name <" + tag.name + "> found in <HAMILTONIAN>"));
       tag=parse_tag(is);
@@ -149,9 +160,9 @@ void HamiltonianDescriptor<I>::write_xml(oxstream& os) const
     os << basis_;
   else
     os << start_tag("BASIS") << attribute("ref", basisname_) << end_tag("BASIS");
-  for (typename std::vector<SiteTermDescriptor<I> >::const_iterator it=siteterms_.begin();it!=siteterms_.end();++it)
+  for (typename std::vector<SiteTermDescriptor>::const_iterator it=siteterms_.begin();it!=siteterms_.end();++it)
     it->write_xml(os);
-  for (typename std::vector<BondTermDescriptor<I> >::const_iterator it=bondterms_.begin();it!=bondterms_.end();++it)
+  for (typename std::vector<BondTermDescriptor>::const_iterator it=bondterms_.begin();it!=bondterms_.end();++it)
     it->write_xml(os);
   os << end_tag("HAMILTONIAN");
 }

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 2003-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -47,6 +47,8 @@ class ModelLibrary
 {
 public:
   typedef std::map<std::string,OperatorDescriptor<short> > OperatorDescriptorMap;
+  typedef std::map<std::string,SiteOperator> SiteOperatorMap;
+  typedef std::map<std::string,BondOperator> BondOperatorMap;
 
   ModelLibrary() {};
   ModelLibrary(std::istream& in) { read_xml(in);}
@@ -60,19 +62,36 @@ public:
   bool has_basis(const std::string& name) const;
   bool has_site_basis(const std::string& name) const;
   bool has_hamiltonian(const std::string& name) const;
-  
+  bool has_site_operator(const std::string& name) const;
+  bool has_bond_operator(const std::string& name) const;
+  bool has_operator(const std::string& name) const 
+  { return has_site_operator(name) || has_bond_operator(name);}
+
   const SiteBasisDescriptor<short>& get_site_basis(const std::string& name) const;
   const BasisDescriptor<short>& get_basis(const std::string& name) const;
   const HamiltonianDescriptor<short>& get_hamiltonian(const std::string& name) const;
-
+  HamiltonianDescriptor<short> get_hamiltonian(const std::string& name, Parameters p, bool issymbolic=false) const;
+  HamiltonianDescriptor<short> get_hamiltonian(Parameters p, bool issymbolic=false) const 
+  { return get_hamiltonian(p["MODEL"],p,issymbolic);}
+  
+  const SiteOperatorMap& site_operators() const { return site_operators_;}
+  const BondOperatorMap& bond_operators() const { return bond_operators_;}
+  
+  SiteOperator get_site_operator(const std::string& name,Parameters p=Parameters()) const;
+  BondOperator get_bond_operator(const std::string& name,Parameters p=Parameters()) const;
+  
 private:
   typedef std::map<std::string,SiteBasisDescriptor<short> > SiteBasisDescriptorMap;
   typedef std::map<std::string,BasisDescriptor<short> > BasisDescriptorMap;
   typedef std::map<std::string,HamiltonianDescriptor<short> > HamiltonianDescriptorMap;
+  typedef std::map<std::string,SiteOperator> SiteOperatorMap;
+  typedef std::map<std::string,BondOperator> BondOperatorMap;
 
   SiteBasisDescriptorMap sitebases_;
   BasisDescriptorMap bases_;
   HamiltonianDescriptorMap hamiltonians_;
+  SiteOperatorMap site_operators_;
+  BondOperatorMap bond_operators_;
 };
 
 } // namespace alps

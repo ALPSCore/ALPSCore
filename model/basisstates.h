@@ -65,6 +65,7 @@ public:
   typedef typename super_type::size_type size_type;
   typedef basis_states_descriptor<I,SS> basis_type;
 
+  basis_states() {}
   template <class J>
   basis_states(const basis_states_descriptor<I,SS>& b, 
               const std::vector<std::pair<std::string,half_integer<J> > >& c)

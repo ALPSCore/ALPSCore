@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 1994-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -45,20 +45,28 @@ public:
   
   model_helper(alps::Parameters& p) // it updates the parameter object passed to it!
    : model_library_(p), 
-     model_(model_library_.get_hamiltonian(p["MODEL"])) 
+     model_(model_library_.get_hamiltonian(p)),
+     parms_(p) 
   {
-    p.copy_undefined(model_.default_parameters());
-    model_.set_parameters(p);
   }
   
   HamiltonianDescriptor<I>& model() { return model_;}
   const HamiltonianDescriptor<I>& model() const { return model_;}
   basis_descriptor_type& basis() { return model().basis();}
   const basis_descriptor_type& basis() const { return model().basis();}
-     
+
+  bool has_site_operator(const std::string& name) const { return model_library_.has_site_operator(name);}
+  bool has_bond_operator(const std::string& name) const { return model_library_.has_bond_operator(name);}
+  bool has_operator(const std::string& name) const { return model_library_.has_operator(name);}
+  SiteOperator get_site_operator(const std::string& name,const Parameters& p) const { return model_library_.get_site_operator(name,p);}
+  BondOperator get_bond_operator(const std::string& name,const Parameters& p) const { return model_library_.get_bond_operator(name,p);}
+  SiteOperator get_site_operator(const std::string& name) const { return model_library_.get_site_operator(name,parms_);}
+  BondOperator get_bond_operator(const std::string& name) const { return model_library_.get_bond_operator(name,parms_);}
+  
 private:
    ModelLibrary model_library_;
    HamiltonianDescriptor<I> model_;
+   Parameters parms_;
 };
 
 } // end namespace

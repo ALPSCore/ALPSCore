@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2004 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2003-2005 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Axel Grzesik <axel@th.physik.uni-bonn.de>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
@@ -76,8 +76,8 @@ public:
   bool has_operator(const std::string& name) const
   { return operators_.find(name) != operators_.end(); }
   
-  template <class STATE>
-  boost::tuple<STATE, Expression,bool> apply(const std::string& name, STATE state, const ParameterEvaluator& eval, bool) const;
+  template <class STATE, class T>
+  boost::tuple<STATE, expression::Expression<T>,bool> apply(const std::string& name, STATE state, const expression::ParameterEvaluator<T>& eval, bool) const;
   bool is_fermionic(const std::string& name) const;
 private:
   mutable bool valid_;
@@ -102,13 +102,13 @@ bool SiteBasisDescriptor<I>::is_fermionic(const std::string& name) const
 }
 
 template <class I>
-template <class STATE>
-boost::tuple<STATE, Expression,bool> 
-SiteBasisDescriptor<I>::apply(const std::string& name, STATE state, const ParameterEvaluator& eval, bool isarg) const 
+template <class STATE, class T>
+boost::tuple<STATE, expression::Expression<T>,bool> 
+SiteBasisDescriptor<I>::apply(const std::string& name, STATE state, const expression::ParameterEvaluator<T>& eval, bool isarg) const 
 {
   operator_iterator op=operators_.find(name);
   if(op==operators_.end())
-    return boost::make_tuple(state,Expression(),false);
+    return boost::make_tuple(state,expression::Expression<T>(),false);
   return op->second.apply(state,*this,eval,isarg);
 }
 

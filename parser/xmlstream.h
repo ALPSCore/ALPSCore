@@ -41,6 +41,7 @@
 #include <sstream>
 #include <stack>
 #include <string>
+#include <complex>
 
 namespace alps {
 
@@ -143,6 +144,11 @@ public:
   ALPS_XMLSTREAM_DO_TYPE(long double)
 
 # undef ALPS_XMLSTREAM_DO_TYPE
+
+  template <class T>
+  oxstream& operator<<(const std::complex<T>& t) { 
+    return text_str(boost::lexical_cast<std::string>(t)); 
+  }
 
   // for manipulators
   template<class T>

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2004 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2001-2005 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -33,14 +33,10 @@
 
 #include <alps/config.h>
 #include <alps/expression.h>
+#include <alps/vectorio.h>
 
 #include <cmath>
 #include <stdexcept>
-#ifndef BOOST_NO_STRINGSTREAM
-# include <sstream>
-#else
-# include <strstream>
-#endif
 
 namespace alps {
 namespace expression {
@@ -58,10 +54,38 @@ bool Evaluator<T>::can_evaluate(const std::string&, bool) const
 template<class T>
 bool Evaluator<T>::can_evaluate_function(const std::string& name, const Expression<T>& arg, bool) const
 {
-  return arg.can_evaluate(*this) &&
+  return arg.can_evaluate(*this,true) &&
          (name=="sqrt" || name=="abs" ||
           name=="sin" || name=="cos" || name=="tan" ||
+          name=="asin" || name=="acos" || name=="atan" ||
           name=="log" || name=="exp");
+}
+
+
+template<class T>
+bool Evaluator<T>::can_evaluate_expressions(const std::vector<Expression<T> >& arg, bool f) const
+{
+  bool can=true;
+  for (typename std::vector<Expression<T> >::const_iterator it=arg.begin();it!=arg.end();++it)
+    can = can && it->can_evaluate(*this,f);
+  return can;
+}
+
+template<class T>
+void Evaluator<T>::partial_evaluate_expressions(std::vector<Expression<T> >& arg, bool f) const
+{
+  for (typename std::vector<Expression<T> >::iterator it=arg.begin();it!=arg.end();++it) {
+   it->partial_evaluate(*this,f);
+   it->simplify();
+  }
+}
+
+
+template<class T>
+bool Evaluator<T>::can_evaluate_function(const std::string& name, const std::vector<Expression<T> >& arg, bool f) const
+{
+  return ((arg.size()==1 && can_evaluate_function(name,arg[0],f)) || 
+          (arg.size()==2 && name=="atan2" && can_evaluate_expressions(arg,true)));
 }
 
 template<class T>
@@ -78,6 +102,12 @@ typename Evaluator<T>::value_type Evaluator<T>::evaluate(const std::string& name
 
 template<class T>
 typename Evaluator<T>::value_type Evaluator<T>::evaluate_function(const std::string& name, const Expression<T>& arg,bool isarg) const
+{
+  return partial_evaluate_function(name,arg,isarg).value();
+}
+
+template<class T>
+typename Evaluator<T>::value_type Evaluator<T>::evaluate_function(const std::string& name, const std::vector<Expression<T> >& arg,bool isarg) const
 {
   return partial_evaluate_function(name,arg,isarg).value();
 }
@@ -107,6 +137,12 @@ Expression<T> Evaluator<T>::partial_evaluate_function(const std::string& name, c
     val = std::cos(val);
   else if (name=="tan")
     val = std::tan(val);
+  else if (name=="asin")
+    val = std::asin(evaluate_helper<T>::real(val));
+  else if (name=="acos")
+    val = std::acos(evaluate_helper<T>::real(val));
+  else if (name=="atan")
+    val = std::atan(evaluate_helper<T>::real(val));
   else if (name=="exp")
     val = std::exp(val);
   else if (name=="log")
@@ -114,6 +150,28 @@ Expression<T> Evaluator<T>::partial_evaluate_function(const std::string& name, c
   else
     return Expression<T>(Function<T>(name,Expression<T>(val)));
   return Expression<T>(val);
+}
+
+template<class T>
+Expression<T> Evaluator<T>::partial_evaluate_function(const std::string& name, const std::vector<Expression<T> >& args,bool isarg) const
+{
+  if (args.size()==1)
+    return partial_evaluate_function(name,args[0],isarg);
+    
+  std::vector<Expression<T> > evaluated;
+  bool could_evaluate = true;
+  for (typename std::vector<Expression<T> >::const_iterator it = args.begin(); it !=args.end();++it) {
+    evaluated.push_back(*it);
+    could_evaluate = could_evaluate && it->can_evaluate(*this,true);
+    evaluated.rbegin()->partial_evaluate(*this,true);
+  }
+  if (evaluated.size()==2 && name=="atan2" && could_evaluate) {
+    double arg1=evaluate_helper<T>::real(evaluated[0].value());
+    double arg2=evaluate_helper<T>::real(evaluated[1].value());
+    return Expression<T>(static_cast<T>(std::atan2(arg1,arg2)));
+  }
+  else
+    return Expression<T>(Function<T>(name,evaluated));
 }
 
 //
@@ -249,6 +307,12 @@ bool Term<T>::depends_on(const std::string& s) const {
 template<class T>
 void Term<T>::simplify()
 {
+  partial_evaluate();
+}
+
+template<class T>
+void Term<T>::remove_spurious_parentheses()
+{
   std::vector<Factor<T> > s;
   for (typename std::vector<Factor<T> >::iterator it = terms_.begin();
        it != terms_.end(); ++it) {
@@ -348,6 +412,7 @@ void Term<T>::partial_evaluate(const Evaluator<T>& p, bool isarg)
         terms_.insert(terms_.begin(), Factor<T>(val));
     }
   }
+  remove_spurious_parentheses();
 }
 
 template<class T>
@@ -375,6 +440,41 @@ void Term<T>::output(std::ostream& os) const
   }
 }
 
+template<class T>
+Term<T>::Term(const std::pair<T,Term<T> >& t)
+ :  is_negative_(false),terms_(t.second.terms_)
+{
+  terms_.insert(terms_.begin(), Factor<T>(t.first));
+  partial_evaluate();
+}
+
+template<class T>
+std::pair<T,Term<T> > Term<T>::split() const
+{
+  Term<T> t(*this);
+  t.partial_evaluate();
+  T val=1.;
+  if (t.terms_.empty())
+    val=0.;
+  else
+    if (t.terms_[0].can_evaluate()) {
+    val=t.terms_[0].value();
+    t.terms_.erase(t.terms_.begin());
+  }
+  if (t.is_negative_) 
+    val=-val;
+  t.is_negative_=false;
+  return std::make_pair(val,t);
+}
+
+template <class T>
+struct term_less {
+  bool operator()(const Term<T>& x, const Term<T>& y) {
+    return x.split().second < y.split().second;
+  }
+};
+
+
 //
 // implementation of Expression<T>
 //
@@ -388,12 +488,22 @@ bool Expression<T>::depends_on(const std::string& s) const {
 }
 
 template<class T>
+void Expression<T>::remove_spurious_parentheses()
+{
+  for (typename std::vector<Term<T> >::iterator it=terms_.begin();
+       it!=terms_.end(); ++it)
+    it->remove_spurious_parentheses();
+}
+
+template<class T>
 void Expression<T>::simplify()
 {
   partial_evaluate();
   for (typename std::vector<Term<T> >::iterator it=terms_.begin();
        it!=terms_.end(); ++it)
     it->simplify();
+  sort();
+  partial_evaluate();
 }
 
 template<class T>
@@ -447,74 +557,42 @@ void Expression<T>::parse(std::istream& is)
   }
 }
 
-//
-// implementation of Block<T>
-//
-
-template<class T>
-Block<T>::Block(std::istream& in) : Expression<T>(in)
+template <class T>
+void Expression<T>::sort()
 {
-  char c;
-  in >> c;
-  if (c != ')' && c != ',')
-    boost::throw_exception(std::runtime_error(") or , expected in expression"));
-  if (c == ',') {
-    // read imaginary part
-    Expression<T> ex(in);
-    Block<T> bl(ex);
-    Term<T> term(bl);
-    term *= "I";
-    *this += term;
-    check_character(in,')',") expected in expression");
+  partial_evaluate();
+  std::sort(terms_.begin(),terms_.end(),term_less<T>());
+  typename std::vector<Term<T> >::iterator prev,it;
+  prev=terms_.begin();
+  if (prev==terms_.end())
+    return;
+  it=prev;
+  ++it;
+  bool added=false;
+  std::pair<T,Term<T> > prev_term=prev->split();
+  while (it !=terms_.end()) {
+    std::pair<T,Term<T> > current_term=it->split();
+    
+    if (prev_term.second==current_term.second) {
+      prev_term.first += current_term.first;
+      terms_.erase(it);
+      added=true;
+      *prev=Term<T>(prev_term);
+    }
+    else {
+      if (added && is_zero(prev_term.first))
+        terms_.erase(prev);
+      else {
+        prev=it;
+        ++it;
+      }
+      prev_term=current_term;
+    }
+    added=false;
   }
+  if (added && is_zero(prev_term.first))
+    terms_.erase(prev);
 }
-
-template<class T>
-boost::shared_ptr<Evaluatable<T> > Block<T>::flatten_one()
-{
-  boost::shared_ptr<Expression<T> > ex = BASE_::flatten_one_expression();
-  if (ex)
-    return boost::shared_ptr<Evaluatable<T> >(new Block<T>(*ex));
-  else
-    return boost::shared_ptr<Evaluatable<T> >();
-}
-
-//
-// implementation of Symbol<T>
-//
-
-template<class T>
-bool Symbol<T>::depends_on(const std::string& s) const {
-  return (name_==s);
-}
-
-//
-// implementation of Function<T>
-//
-
-template<class T>
-Function<T>::Function(std::istream& in,const std::string& name)
-  :  name_(name), arg_(in)
-{
-  check_character(in,')',") expected after function call");
-}
-
-template<class T>
-bool Function<T>::depends_on(const std::string& s) const {
-  if (name_==s) return true;
-  return arg_.depends_on(s);
-}
-
-template<class T>
-boost::shared_ptr<Evaluatable<T> > Function<T>::flatten_one()
-{
-  arg_.flatten();
-  return boost::shared_ptr<Expression<T> >();
-}
-
-//
-// implementation of Number<T>
-//
 
 template<class T>
 typename Expression<T>::value_type Expression<T>::value(const Evaluator<T>& p, bool isarg) const
@@ -572,6 +650,90 @@ void Expression<T>::output(std::ostream& os) const
     }
   }
 }
+
+//
+// implementation of Block<T>
+//
+
+template<class T>
+Block<T>::Block(std::istream& in) : Expression<T>(in)
+{
+  char c;
+  in >> c;
+  if (c != ')' && c != ',')
+    boost::throw_exception(std::runtime_error(") or , expected in expression"));
+  if (c == ',') {
+    // read imaginary part
+    Expression<T> ex(in);
+    Block<T> bl(ex);
+    Term<T> term(bl);
+    term *= "I";
+    *this += term;
+    check_character(in,')',") expected in expression");
+  }
+}
+
+template<class T>
+boost::shared_ptr<Evaluatable<T> > Block<T>::flatten_one()
+{
+  boost::shared_ptr<Expression<T> > ex = BASE_::flatten_one_expression();
+  if (ex)
+    return boost::shared_ptr<Evaluatable<T> >(new Block<T>(*ex));
+  else
+    return boost::shared_ptr<Evaluatable<T> >();
+}
+
+//
+// implementation of Symbol<T>
+//
+
+template<class T>
+bool Symbol<T>::depends_on(const std::string& s) const {
+  return (name_==s);
+}
+
+//
+// implementation of Function<T>
+//
+
+template<class T>
+Function<T>::Function(std::istream& in,const std::string& name)
+  :  name_(name), args_()
+{
+  char c;
+  in >> c;
+  if (c!=')') {
+    in.putback(c);
+    do {
+      args_.push_back(Expression<T>(in));
+      in >> c;
+    } while (c==',');
+    if (c!=')')
+      boost::throw_exception(std::runtime_error(std::string("received ") + c + " instead of ) at end of function argument list"));
+  }
+}
+
+template<class T>
+bool Function<T>::depends_on(const std::string& s) const {
+  if (name_==s) return true;
+  for (typename std::vector<Expression<T> >::const_iterator it=args_.begin();it != args_.end();++it)
+    if (it->depends_on(s))
+      return true;
+  return false;
+}
+
+template<class T>
+boost::shared_ptr<Evaluatable<T> > Function<T>::flatten_one()
+{
+  for (typename std::vector<Expression<T> >::iterator it=args_.begin();it != args_.end();++it)
+    it->flatten();
+  return boost::shared_ptr<Expression<T> >();
+}
+
+//
+// implementation of Number<T>
+//
+
 
 template<class T>
 const SimpleFactor<T>& SimpleFactor<T>::operator=(const SimpleFactor<T>& v)
@@ -682,31 +844,27 @@ Evaluatable<T>* Symbol<T>::partial_evaluate_replace(const Evaluator<T>& p, bool 
 template<class T>
 Evaluatable<T>* Function<T>::partial_evaluate_replace(const Evaluator<T>& p, bool isarg)
 {
-  if (can_evaluate(p,isarg))
-    return new Expression<T>(value(p,isarg));
-  else {
-    arg_.partial_evaluate(p,true);
-    return this;
-  }
+  p.partial_evaluate_expressions(args_,true);
+  return new Block<T>(p.partial_evaluate_function(name_,args_,isarg));
 }
 
 template<class T>
 typename Function<T>::value_type Function<T>::value(const Evaluator<T>& p, bool isarg) const
 {
-  value_type val=p.evaluate_function(name_,arg_,isarg);
+  value_type val=p.evaluate_function(name_,args_,isarg);
   return val;
 }
 
 template<class T>
 bool Function<T>::can_evaluate(const Evaluator<T>& p, bool isarg) const
 {
-  return p.can_evaluate_function(name_,arg_,isarg);
+  return p.can_evaluate_function(name_,args_,isarg);
 }
 
 template<class T>
 void Function<T>::output(std::ostream& os) const
 {
-  os << name_ << "(" << arg_ << ")";
+  os << name_ << "(" << vector_writer(args_,", ") << ")";
 }
 
 // Parameters evaluate(const Parameters& in)

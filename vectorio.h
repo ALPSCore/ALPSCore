@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -139,20 +139,20 @@ inline CONTAINER read_vector (std::istream& in)
 }
 
 template <class CONTAINER>
-inline void write_vector(std::ostream& out, const CONTAINER& v)
+inline void write_vector(std::ostream& out, const CONTAINER& v, const std::string& delim=" ")
 {
   for (std::size_t i=0;i<vectorops::size(v);++i) {
     out << v[i];
     if (i!=vectorops::size(v)-1)
-      out << " ";
+      out << delim;
   }
 }
 
 template <class CONTAINER>
-inline std::string vector_writer(const CONTAINER& c)
+inline std::string vector_writer(const CONTAINER& c, const std::string& delim=" ")
 {
   std::ostringstream str;
-  write_vector(str,c);
+  write_vector(str,c,delim);
   return str.str();
 }
 

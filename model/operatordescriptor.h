@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2004 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2003-2005 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -58,9 +58,9 @@ public:
 
   void write_xml(oxstream&) const;
 
-  template <class STATE>
-  boost::tuple<STATE, Expression,bool>
-  apply(STATE state, const SiteBasisDescriptor<I>& basis, const ParameterEvaluator& p, bool) const;
+  template <class STATE, class T>
+  boost::tuple<STATE, expression::Expression<T>,bool>
+  apply(STATE state, const SiteBasisDescriptor<I>& basis, const expression::ParameterEvaluator<T>& p, bool) const;
   bool is_fermionic(const SiteBasisDescriptor<I>& basis) const;
 
   const std::string& name() const { return name_;}
@@ -86,9 +86,9 @@ bool OperatorDescriptor<I>::is_fermionic(const SiteBasisDescriptor<I>& basis) co
 }
 
 template <class I>
-template <class STATE>
-boost::tuple<STATE, Expression,bool>
-OperatorDescriptor<I>::apply(STATE state, const SiteBasisDescriptor<I>& basis, const ParameterEvaluator& eval, bool isarg) const
+template <class STATE, class T>
+boost::tuple<STATE, expression::Expression<T>,bool>
+OperatorDescriptor<I>::apply(STATE state, const SiteBasisDescriptor<I>& basis, const expression::ParameterEvaluator<T>& eval, bool isarg) const
 {
   // set quantum numbers as parameters
   Parameters p=eval.parameters();
@@ -100,8 +100,8 @@ OperatorDescriptor<I>::apply(STATE state, const SiteBasisDescriptor<I>& basis, c
       p[basis[i].name()]=get_quantumnumber(state,i);
   }
   // evaluate matrix element
-  Expression e(matrixelement());
-  e.partial_evaluate(ParameterEvaluator(p));
+  expression::Expression<T> e(matrixelement());
+  e.partial_evaluate(expression::ParameterEvaluator<T>(p));
   // apply operators
   bool fermion_count=false;
   bool fermionic=false;
@@ -125,7 +125,7 @@ OperatorDescriptor<I>::apply(STATE state, const SiteBasisDescriptor<I>& basis, c
   if (count != super_type::size())
     boost::throw_exception(std::runtime_error("Not all quantum numbers exist when applying operator " +name()));
   if (!basis.valid(state))
-    e=Expression();
+    e=expression::Expression<T>();
   return boost::make_tuple(state,e,fermionic);
 }
 

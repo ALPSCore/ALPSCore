@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2004 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2001-2005 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -52,9 +52,16 @@
 
 namespace alps {
 
+template <class T>
+struct expression_value_type_traits {
+  typedef T value_type;
+};
+
+ 
 namespace expression {
 
 template<class T = std::complex<double> > class Expression;
+
 template<class T = std::complex<double> > class Term;
 template<class T = std::complex<double> > class Factor;
 
@@ -71,11 +78,17 @@ public:
 
   virtual bool can_evaluate(const std::string&, bool=false) const;
   virtual bool can_evaluate_function(const std::string&, const Expression<T>&, bool=false) const;
+  virtual bool can_evaluate_function(const std::string&, const std::vector<Expression<T> >&, bool=false) const;
   virtual value_type evaluate(const std::string&, bool=false) const;
   virtual value_type evaluate_function(const std::string&, const Expression<T>&, bool=false) const;
+  virtual value_type evaluate_function(const std::string&, const std::vector<Expression<T> >&, bool=false) const;
   virtual Expression<T> partial_evaluate(const std::string& name, bool=false) const;
   virtual Expression<T> partial_evaluate_function(const std::string& name, const Expression<T>&, bool=false) const;
+  virtual Expression<T> partial_evaluate_function(const std::string& name, const std::vector<Expression<T> >&, bool=false) const;
   virtual Direction direction() const;
+
+  bool can_evaluate_expressions(const std::vector<Expression<T> >&, bool=false) const;
+  void partial_evaluate_expressions(std::vector<Expression<T> >&, bool=false) const;
 };
 
 template<class T>
@@ -89,6 +102,8 @@ public:
   value_type evaluate(const std::string&, bool=false) const;
   Expression<T> partial_evaluate(const std::string& name, bool=false) const;
   const Parameters& parameters() const { return parms_;}
+protected:
+  void set_parameters(const Parameters& p) { parms_=p;}
 private:
   Parameters parms_;
 };
@@ -195,6 +210,7 @@ public:
   Term(value_type x) : is_negative_(false), terms_(1,Factor<T>(x)) {}
   Term(const Evaluatable<T>& e)
     : is_negative_(false), terms_(1,Factor<T>(e)) {}
+  Term(const std::pair<T,Term<T> >&);
   virtual ~Term() {}
 
   value_type value(const Evaluator<T>& =Evaluator<T>(), bool=false) const;
@@ -205,6 +221,8 @@ public:
   bool is_negative() const { return is_negative_;}
   boost::shared_ptr<Term> flatten_one_term();
   void partial_evaluate(const Evaluator<T>& =Evaluator<T>(), bool=false);
+  std::pair<T,Term<T> > split() const;
+  
 
   const Term& operator*=(const Factor<T>& v)
   {
@@ -215,7 +233,9 @@ public:
   {
     return operator*=(Factor<T>(s));
   }
+  
   void simplify();
+  void remove_spurious_parentheses();
 
   virtual std::pair<factor_iterator,factor_iterator> factors() const
   {
@@ -267,6 +287,7 @@ public:
     partial_evaluate(ParameterEvaluator<T>(p));
   }
 
+  void sort();
   void output(std::ostream& os) const;
 
   Evaluatable<T>* clone() const { return new Expression<T>(*this); }
@@ -288,6 +309,7 @@ public:
     return *this;
   }
   void simplify();
+  void remove_spurious_parentheses();
 
   bool is_single_term() const { return terms_.size() == 1; }
   Term<T> term() const;
@@ -345,7 +367,8 @@ public:
   typedef T value_type;
 
   Function(std::istream&, const std::string&);
-  Function(const std::string& n, const Expression<T>& e) : name_(n), arg_(e) {}
+  Function(const std::string& n, const Expression<T>& e) : name_(n), args_(1,e) {}
+  Function(const std::string& n, const std::vector<Expression<T> >& e) : name_(n), args_(e) {}
   value_type value(const Evaluator<T>& =Evaluator<T>(), bool=false) const;
   bool can_evaluate(const Evaluator<T>& =Evaluator<T>(), bool=false) const;
   void output(std::ostream&) const;
@@ -355,7 +378,7 @@ public:
   bool depends_on(const std::string& s) const;
 private:
  std::string name_;
- Expression<T> arg_;
+ std::vector<Expression<T> > args_;
 };
 
 template<class T>
@@ -870,6 +893,18 @@ bool is_zero(const expression::Term<T>& x)
   std::string s = boost::lexical_cast<std::string>(x);
   return s=="" || s=="0" || s=="0.";
 }
+
+template <class T>
+struct expression_value_type_traits<expression::Expression<T> > {
+  typedef T value_type;
+};
+
+template<class T>
+void simplify(T) {}
+
+template<class T>
+void simplify(expression::Expression<T>& x) { x.simplify();}
+
 
 } // end namespace alps
 
