@@ -48,24 +48,27 @@ namespace scheduler {
 class Factory
 {
 public:
-  virtual Task* make_task(const ProcessList&,const boost::filesystem::path&) const;
+  Factory() {}
+  virtual Task* make_task(const ProcessList&,const boost::filesystem::path&) const=0;
   virtual Worker* make_worker(const ProcessList&,const Parameters&,int) const=0;
 };
 
-template <class WORKER>
+template <class WORKER, class TASK=Task>
 class SimpleFactory : public Factory
 {
 public:
-  Worker* make_worker(const ProcessList&,const Parameters&,int ) const;
+  SimpleFactory() {}
+  
+  TASK* make_task(const ProcessList& w,const boost::filesystem::path& fn) const
+  {
+    return new TASK(w,fn);
+  }
+
+  WORKER* make_worker(const ProcessList& where ,const Parameters& parms,int node) const
+  {
+    return new WORKER(where,parms,node);
+  }
 };
-
-template <class WORKER>
-Worker* SimpleFactory<WORKER>::make_worker(const ProcessList& where,
-  const Parameters& parms,int node) const 
-{
-  return new WORKER(where,parms,node);
-}
-
 
 //=======================================================================
 // Scheduler

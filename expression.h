@@ -40,6 +40,7 @@ public:
   virtual ~Evaluatable() {}
   double value() const;
   virtual double value(const Evaluator&) const=0;
+  operator double() const;
   bool can_evaluate() const;
   virtual bool can_evaluate(const Evaluator&) const=0;
   virtual void output(std::ostream&) const =0;

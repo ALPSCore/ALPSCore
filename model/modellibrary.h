@@ -43,7 +43,8 @@ public:
   ModelLibrary() {};
   ModelLibrary(std::istream& in) { read_xml(in);}
   ModelLibrary(const XMLTag& tag, std::istream& p) {read_xml(tag,p);}
-
+  ModelLibrary(const Parameters& parms);
+  
   void read_xml(std::istream& in) { read_xml(parse_tag(in),in);}
   void read_xml(const XMLTag& tag, std::istream& p);
   void write_xml(std::ostream&) const;

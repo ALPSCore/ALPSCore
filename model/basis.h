@@ -23,6 +23,7 @@
 #define ALPS_MODEL_BASIS_H
 
 #include <alps/model/sitebasis.h>
+#include <alps/lattice/lattice.h>
 #include <vector>
 
 namespace alps {
@@ -73,13 +74,71 @@ class BasisStatesDescriptor : public std::vector<SiteBasisStates<I> >
 public:
   typedef std::vector<SiteBasisStates<I> > base_type;
   typedef typename base_type::const_iterator const_iterator;
-  BasisStatesDescriptor(const SiteBasisDescriptor<I>& b);
-  const SiteBasisDescriptor<I>& basis() const { return basis_;}
+  template <class G> BasisStatesDescriptor(const BasisDescriptor<I>& b, const G& graph);
+  const BasisDescriptor<I>& basis() const { return basis_;}
 private:
-  SiteBasisDescriptor<I> basis_;
+  BasisDescriptor<I> basis_;
+};
+
+template <class I, class S=std::vector<StateDescriptor<I> > >
+class BasisStates : public std::vector<S>
+{
+public:
+  typedef std::vector<S> base_type;
+  typedef typename base_type::const_iterator const_iterator;
+  typedef S value_type;
+  typedef typename base_type::size_type size_type;
+  BasisStates(const BasisStatesDescriptor<I>& b);
+  size_type index(const value_type& x) const;
 };
 
 // -------------------------- implementation -----------------------------------
+
+template <class I, class S>
+BasisStates<I,S>::BasisStates(const BasisStatesDescriptor<I>& b)
+{
+  std::vector<int> idx(b.size(),0);
+  if (b.size())
+  while (true) {
+    int k=0;
+    while (idx[k]>=b[k].size()) {
+      if (b[k].size()==0)
+        boost::throw_exception(std::runtime_error("No states for site basis " + 
+	     boost::lexical_cast<std::string, SiteBasisDescriptor<I> >(b[k].basis())));
+      idx[k]=0;
+      ++k;
+      if (k>=idx.size())
+        return;
+      else
+        ++idx[k];
+    }
+    value_type v;
+    for (int i=0;i<idx.size();++i) 
+      v.push_back(b[i][idx[i]]);
+    push_back(v);
+    idx[0]++;
+  }
+}
+
+
+template <class I, class S>
+typename BasisStates<I,S>::size_type BasisStates<I,S>::index(const typename BasisStates<I,S>::value_type& x) const
+{
+  return std::find(begin(),end(),x)-begin();
+}
+
+
+template <class I> template <class G>
+BasisStatesDescriptor<I>::BasisStatesDescriptor(const BasisDescriptor<I>& b, const G& g)
+ : basis_(b)
+{
+  // construct SiteBasisStates for each site
+  typename property_map<site_type_t,const G,int>::type site_type(get_or_default(site_type_t(),g,0));
+  for (typename boost::graph_traits<G>::vertex_iterator it=sites(g).first;it!=sites(g).second ; ++it) {
+    push_back(SiteBasisStates<I>(basis_.site_basis(site_type[*it])));
+  }
+}
+
 
 template <class I>
 bool BasisDescriptor<I>::set_parameters(const Parameters& p)

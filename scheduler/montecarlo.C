@@ -225,11 +225,6 @@ double DummyMCRun::work_done() const
   return 0.;
 }
 
-Task* Factory::make_task(const ProcessList& w,const boost::filesystem::path& fn) const
-{
-  return new MCSimulation(w,fn);
-}
-
 void MCSimulation::handle_tag(std::istream& infile, const XMLTag& tag) 
 {
   if (tag.name!="AVERAGES")

@@ -29,6 +29,20 @@
 
 namespace alps {
 
+ModelLibrary::ModelLibrary(const Parameters& parms)
+{
+  std::string libname;
+  if (parms.defined("MODEL_LIBRARY"))
+    libname = static_cast<std::string>(parms["MODEL_LIBRARY"]);
+  else
+    libname = "models.xml";
+  std::ifstream libfile(libname.c_str());
+  if(!libfile)
+    boost::throw_exception(std::runtime_error("Could not find model library file " + libname));
+  read_xml(libfile);
+}
+
+
 void ModelLibrary::read_xml(const XMLTag& intag, std::istream& p)
 {
   XMLTag tag(intag);

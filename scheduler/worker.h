@@ -94,8 +94,8 @@ public:
   void change_phase(const std::string&);
   virtual void run();
   bool handle_message(const Process& runmaster,int32_t tag);
-  virtual void dostep()=0;
-  double work_done() const=0;
+  virtual void dostep();
+  double work_done() const;
 protected:
   int32_t version;
   int32_t user_version;

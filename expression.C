@@ -40,6 +40,14 @@ namespace alps {
 
 namespace detail {
 
+Evaluatable::operator double() const {
+  if (!can_evaluate()) {
+    std::cerr << "Was trying to evaluate " << *this << "\n";
+    boost::throw_exception(std::runtime_error("Cannot evaluate expression"));
+  }
+  return value();
+}
+
 double Evaluatable::value() const
 {
   return value(Evaluator());

@@ -42,7 +42,7 @@ public:
   LatticeLibrary() {};
   LatticeLibrary(std::istream& in) { read_xml(in);}
   LatticeLibrary(const alps::XMLTag& tag, std::istream& p) {read_xml(tag,p);}
-
+  LatticeLibrary(const Parameters& p);
   void read_xml(std::istream& in);
   void read_xml(const alps::XMLTag& tag, std::istream& p);
 
@@ -119,17 +119,8 @@ inline bool LatticeLibrary::get_graph(G& g, const std::string& name) const
 
 template <class G>
 inline alps::graph_factory<G>::graph_factory(const alps::Parameters& parms)
- : g_(0), to_delete_(false)
+ : LatticeLibrary(parms), g_(0), to_delete_(false)
 {
-  std::string libname;
-  if (parms.defined("LATTICE_LIBRARY"))
-    libname = static_cast<std::string>(parms["LATTICE_LIBRARY"]);
-  else
-    libname = "lattices.xml";
-  std::ifstream libfile(libname.c_str());
-  if(!libfile)
-    boost::throw_exception(std::runtime_error("Could not find lattice library file " + libname));
-  read_xml(libfile);
   make_graph(parms);
 }
 

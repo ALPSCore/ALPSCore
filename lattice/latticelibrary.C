@@ -28,6 +28,19 @@
 
 namespace alps {
 
+LatticeLibrary::LatticeLibrary(const Parameters& parms)
+{
+  std::string libname;
+  if (parms.defined("LATTICE_LIBRARY"))
+    libname = static_cast<std::string>(parms["LATTICE_LIBRARY"]);
+  else
+    libname = "lattices.xml";
+  std::ifstream libfile(libname.c_str());
+  if(!libfile)
+    boost::throw_exception(std::runtime_error("Could not find lattice library file " + libname));
+  read_xml(libfile);
+}
+
 void LatticeLibrary::read_xml(std::istream& in)
 {
   XMLTag tag=parse_tag(in);

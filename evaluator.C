@@ -101,8 +101,8 @@ bool ParameterEvaluator::can_evaluate(const std::string& name) const
 
 Expression ParameterEvaluator::partial_evaluate(const std::string& name) const
 {
-  if (can_evaluate(name))
-    return Expression(evaluate(name));
+  if ( ParameterEvaluator::can_evaluate(name)) 
+    return Expression(ParameterEvaluator::evaluate(name));
   if(!parms_.defined(name))
     return Expression(name);
   Parameters p(parms_);

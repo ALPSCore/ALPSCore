@@ -68,7 +68,8 @@ public:
 
   bool match_type(int type) const { return type_==-1 || type==type_;}
   const std::string& term() const { return term_;}
-  boost::multi_array<Expression,2> matrix(const SiteBasisDescriptor<I>&, const operator_map&, 
+  template <class T>
+  boost::multi_array<T,2> matrix(const SiteBasisDescriptor<I>&, const operator_map&, 
                                           const Parameters& =Parameters()) const;
 private:
   int type_;
@@ -92,7 +93,8 @@ public:
   const std::string& source () const { return source_;}
   const std::string& target () const { return target_;}
   
-  boost::multi_array<Expression,4> matrix(const SiteBasisDescriptor<I>&, const SiteBasisDescriptor<I>&,
+  template <class T>
+  boost::multi_array<T,4> matrix(const SiteBasisDescriptor<I>&, const SiteBasisDescriptor<I>&,
                                           const operator_map&, const Parameters& =Parameters()) const;
 private:
   int type_;
@@ -272,13 +274,13 @@ OperatorDescriptor<I>::apply(StateDescriptor<I> state, const SiteBasisDescriptor
   return std::make_pair(state,e);
 }
 
-template <class I> boost::multi_array<Expression,2> 
+template <class I> template <class T> boost::multi_array<T,2> 
 SiteTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& basis, const operator_map& ops, const Parameters& p) const
 {
   Parameters parms(p);
   parms.copy_undefined(basis.get_parameters());
   std::size_t dim=basis.num_states();
-  boost::multi_array<Expression,2> mat(boost::extents[dim][dim]);
+  boost::multi_array<T,2> mat(boost::extents[dim][dim]);
   // parse expression and store it as sum of terms
   alps::Expression ex(term());
   ex.flatten();
@@ -299,13 +301,13 @@ SiteTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& basis, const operato
   return mat;
 }
 
-template <class I> boost::multi_array<Expression,4> 
+template <class I> template <class T> boost::multi_array<T,4> 
 BondTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& basis1, const SiteBasisDescriptor<I>& basis2, 
                               const operator_map& ops, const Parameters& p) const
 {
   std::size_t dim1=basis1.num_states();
   std::size_t dim2=basis2.num_states();
-  boost::multi_array<Expression,4> mat(boost::extents[dim1][dim2][dim1][dim2]);
+  boost::multi_array<T,4> mat(boost::extents[dim1][dim2][dim1][dim2]);
   // parse expression and store it as sum of terms
   alps::Expression ex(term());
   ex.flatten();

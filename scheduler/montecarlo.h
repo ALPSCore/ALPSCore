@@ -146,6 +146,13 @@ private:
    graph_type& graph_;
 };
 
+template <class WORKER>
+class SimpleMCFactory : public SimpleFactory<WORKER,MCSimulation>
+{
+public:
+  SimpleMCFactory() {}
+};
+
 } // end namespace
 } // end namespace
 

@@ -238,12 +238,6 @@ std::string Worker::work_phase()
 
 void Worker::set_parameters(const alps::Parameters& p)
 {
-//   for (std::map<std::string,alps::StringValue>::const_iterator it=p.begin();it!=p.end();++it)
-//     if(it->first != "SEED" && parms[it->first]!=it->second) {
-//       if(!(change_parameter(it->first,it->second) || Worker::change_parameter(it->first, it->second)))
-//         boost::throw_exception(std::runtime_error("Cannot change parameter " + it->first));
-//       parms[it->first]=it->second;
-//     }
   for (Parameters::const_iterator it = p.begin(); it != p.end(); ++it) {
     if(it->key() != "SEED" && parms[it->key()] != it->value()) {
       if(!(change_parameter(it->key(), it->value()) ||
@@ -257,6 +251,15 @@ void Worker::set_parameters(const alps::Parameters& p)
 bool Worker::change_parameter(const std::string& p, const alps::StringValue&)
 {
   return p=="SEED";
+}
+
+void Worker::dostep()
+{
+}
+
+double Worker::work_done() const
+{
+  return 0.;
 }
 
 } // namespace scheduler
