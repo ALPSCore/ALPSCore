@@ -104,7 +104,7 @@ public:
   uint32_t get_thermalization() const;
   bool can_set_thermalization() const { return can_set_thermal_ && !nonlinear_operations_;}
 
-  uint32_t count() const { return changed_ ? bin_size()*bin_number() : count_;}
+  uint32_t count() const { return changed_ ? (bin_size()*bin_number() == 0 ? count_ : bin_size()*bin_number()) : count_;}
   const result_type& mean() const;
   const result_type& error() const;
   const result_type& variance() const;
@@ -581,6 +581,7 @@ template <class T>
 inline ALPS_DUMMY_VOID SimpleObservableData<T>::compact()
 {
   analyze();
+  count_=count();
   values_.clear();
   values2_.clear();
   jack_.clear();

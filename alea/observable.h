@@ -127,7 +127,6 @@ class Observable
   virtual ALPS_DUMMY_VOID output(std::ostream&) const = 0;
 
   /** output the result */
-  virtual void write_xml(std::ostream&,const boost::filesystem::path& fn_hdf5=boost::filesystem::path()) const;
   virtual void write_xml(oxstream& oxs, const boost::filesystem::path& fn_hdf5=boost::filesystem::path()) const;
 
 #ifndef ALPS_WITHOUT_OSIRIS

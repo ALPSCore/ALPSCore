@@ -178,6 +178,7 @@ void ObservableSet::addObservable(Observable* obs)
 {
   if (obs) {
   // store pointer
+  obs->clone();
   obs->added_to_set(); // can no longer change name
   if(has(obs->name()))
     removeObservable(obs->name());
@@ -198,6 +199,7 @@ void ObservableSet::addObservable(Observable* obs)
        it != signs_.upper_bound(obs->name()); ++it)
     (*this)[it->second].set_sign(*obs);
   }
+  base_type::operator[](obs->name())->clone();
 }
 
 void ObservableSet::removeObservable(const std::string& name) 
@@ -315,8 +317,10 @@ void ObservableSet::compact()
 void ObservableSet::write_xml(oxstream& oxs, const boost::filesystem::path& fn_hdf5) const
 {
   oxs << start_tag("AVERAGES");
-  for(const_iterator i = begin(); i != end(); ++i) 
+  for(const_iterator i = begin(); i != end(); ++i) {
+    i->second->clone();
     i->second->write_xml(oxs, fn_hdf5);
+  }
   oxs << end_tag("AVERAGES");
 }
 
