@@ -26,9 +26,12 @@
 using namespace model;
 #endif
 
-void write_set(const std::string& name, const alps::ModelLibrary& lib)
+void write_set(const std::string& name, const alps::ModelLibrary& lib, 
+               const alps::Parameters& p=alps::Parameters())
 {
-  std::cout << "States of basis " << name << "=" << lib.site_states(name);
+  alps::SiteBasisDescriptor<short> sitebasis=lib.site_basis(name);
+  sitebasis.set_parameters(p);
+  std::cout << "States of basis " << name << "=" << alps::SiteBasisStates<short>(sitebasis);
 }
 
 int main()
@@ -41,11 +44,14 @@ int main()
     alps::ModelLibrary lib(std::cin);
 
     // write all basis states
-    write_set("Hubbard",lib);
+    write_set("fermion",lib);
     write_set("hardcore boson",lib);
     write_set("spin-1",lib);
     write_set("spin-1/2",lib);
     write_set("spin-3/2",lib);
+    alps::Parameters p;
+    p["S"]=2;
+    write_set("spin",lib,p);
 
 #ifndef BOOST_NO_EXCEPTIONS
 }

@@ -26,16 +26,18 @@
 using namespace model;
 #endif
 
-boost::multi_array<alps::Expression,2> bondmatrix(const alps::ModelLibrary lib, const std::string& name)
+boost::multi_array<alps::Expression,2> bondmatrix(const alps::ModelLibrary lib, const std::string& name, 
+                                                  const alps::Parameters& p=alps::Parameters())
 {
-  int dim=lib.hamiltonian(name).basis().site_basis().num_states();
+  alps::HamiltonianDescriptor<short> ham=lib.hamiltonian(name);
+  ham.set_parameters(p);
+  int dim=ham.basis().site_basis().num_states();
   
   // get site and bond terms
-  boost::multi_array<alps::Expression,2> sitematrix = lib.hamiltonian(name).site_term().matrix(
-    lib.hamiltonian(name).basis().site_basis(),lib.simple_operators());
-  boost::multi_array<alps::Expression,4> bondtensor = lib.hamiltonian(name).bond_term().matrix(
-    lib.hamiltonian(name).basis().site_basis(), lib.hamiltonian(name).basis().site_basis(),
-    lib.simple_operators());
+  boost::multi_array<alps::Expression,2> sitematrix = 
+    ham.site_term().matrix(ham.basis().site_basis(),lib.simple_operators());
+  boost::multi_array<alps::Expression,4> bondtensor = 
+    ham.bond_term().matrix(ham.basis().site_basis(), ham.basis().site_basis(),lib.simple_operators());
     
   // add site terms to bond terms
   for (int i=0;i<dim;++i)
@@ -64,10 +66,17 @@ int main()
     // create the library from an XML file
     alps::ModelLibrary lib(std::cin);
 
-    // calculate bond matrices for HCB and spin-1/2
+    // calculate bond matrices 
+    alps::Parameters parms;
     
-    std::cout << "HBoson = \n" << bondmatrix(lib,"hardcore boson") << "\n\n";
-    std::cout << "HSpin = \n" << bondmatrix(lib,"spin-1/2")  << "\n\n";
+    std::cout << "HHardcoreBoson = \n" << bondmatrix(lib,"hardcore boson") << "\n\n";
+    parms["Nmax"]=2;
+    std::cout << "HBoson = \n" << bondmatrix(lib,"boson",parms)  << "\n\n";
+    parms["S"]="1/2";
+    std::cout << "HSpinHalf = \n" << bondmatrix(lib,"spin")  << "\n\n";
+    parms["S"]=1;
+    std::cout << "HSpinOne = \n" << bondmatrix(lib,"spin",parms)  << "\n\n";
+    
 
 #ifndef BOOST_NO_EXCEPTIONS
 }

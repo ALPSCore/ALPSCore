@@ -36,22 +36,32 @@ int main()
     alps::ModelLibrary lib(std::cin);
 
     // write site term matrices
-    std::cout << "HBosonSite =\n" << lib.hamiltonian("hardcore boson").site_term().matrix(
+    std::cout << "HHardcoreBosonSite =\n" << lib.hamiltonian("hardcore boson").site_term().matrix(
              lib.hamiltonian("hardcore boson").basis().site_basis(),
 	     lib.simple_operators()) << "\n";
-    std::cout << "HSpinSite =\n" << lib.hamiltonian("spin-1/2").site_term().matrix(
-             lib.hamiltonian("spin-1/2").basis().site_basis(),
+    std::cout << "HSpinSite =\n" << lib.hamiltonian("spin").site_term().matrix(
+             lib.hamiltonian("spin").basis().site_basis(),
 	     lib.simple_operators()) << "\n";
+    
 
     // write bond term matrices
-    std::cout << "HBosonBond =\n" << lib.hamiltonian("hardcore boson").bond_term().matrix(
+    std::cout << "HHardcoreBosonBond =\n" << lib.hamiltonian("hardcore boson").bond_term().matrix(
              lib.hamiltonian("hardcore boson").basis().site_basis(),
 	     lib.hamiltonian("hardcore boson").basis().site_basis(),
 	     lib.simple_operators()) << "\n";
-    std::cout << "HSpinBond =\n" << lib.hamiltonian("spin-1/2").bond_term().matrix(
-             lib.hamiltonian("spin-1/2").basis().site_basis(),
-	     lib.hamiltonian("spin-1/2").basis().site_basis(),
+    std::cout << "HSpinBond =\n" << lib.hamiltonian("spin").bond_term().matrix(
+             lib.hamiltonian("spin").basis().site_basis(),
+	     lib.hamiltonian("spin").basis().site_basis(),
 	     lib.simple_operators()) << "\n";
+
+    alps::Parameters parms;
+    parms["Nmax"]=2;
+    alps::HamiltonianDescriptor<short> ham = lib.hamiltonian("boson");
+    ham.set_parameters(parms);
+    std::cout << "HBosonSite =\n" << ham.site_term().matrix(
+             ham.basis().site_basis(),lib.simple_operators()) << "\n";
+    std::cout << "HBosonBond =\n" << ham.bond_term().matrix( ham.basis().site_basis(),
+             ham.basis().site_basis(),lib.simple_operators()) << "\n";
 
 #ifndef BOOST_NO_EXCEPTIONS
 }
