@@ -100,4 +100,16 @@
   <EDGE type="1" source="4" target="5"/>
 </GRAPH>
 
+<LATTICEGRAPH name = "disordered square lattice">
+  <FINITELATTICE>
+    <LATTICE ref="square lattice"/>
+    <PARAMETER name="W" default="L"/>
+    <EXTENT dimension="1" size="L"/>
+    <EXTENT dimension="2" size="W"/>
+    <BOUNDARY type="open"/>
+  </FINITELATTICE>
+  <UNITCELL ref="simple2d"/>
+  <DISORDER><VERTEX/></DISORDER>
+</LATTICEGRAPH>
+
 </LATTICES>
