@@ -39,19 +39,4 @@
 # define LAPACK_ZHEEV FORTRAN_ID( zheev )
 #endif
 
-/* linear least squares problems */
-
-#ifndef LAPACK_SGELS
-# define LAPACK_SGELS FORTRAN_ID( sgels )
-#endif
-#ifndef LAPACK_DGELS
-# define LAPACK_DGELS FORTRAN_ID( dgels )
-#endif
-#ifndef LAPACK_CGELS
-# define LAPACK_CGELS FORTRAN_ID( cgels )
-#endif
-#ifndef LAPACK_ZGELS
-# define LAPACK_ZGELS FORTRAN_ID( zgels )
-#endif
-
 #endif 
