@@ -171,16 +171,7 @@ inline Term<T> Evaluatable<T>::term() const { return Term<T>(); }
 //
 
 template<class T>
-Factor<T>::Factor(value_type x) : term_(new Number<T>(x)), is_inverse_(false), power_(1) {}
-
-template<class T>
-Factor<T>::Factor(const std::string& s)
-  : term_(new Symbol<T>(s)), is_inverse_(false), power_(1)
-{
-}
-
-template<class T>
-Factor<T>::Factor(std::istream& in, bool inv) : term_(), is_inverse_(inv), power_(1)
+SimpleFactor<T>::SimpleFactor(std::istream& in) : term_()
 {
   char c;
   in >> c;
@@ -208,33 +199,39 @@ Factor<T>::Factor(std::istream& in, bool inv) : term_(), is_inverse_(inv), power
     term_.reset(new Block<T>(in));
   else
     boost::throw_exception(std::runtime_error("Illegal term in expression"));
+}
+
+
+template<class T>
+Factor<T>::Factor(std::istream& in, bool inv) : super_type(in), is_inverse_(inv), power_(1.)
+{
+  char c;
   in >> c;
   if (in) {
     if (c=='^') {
-      in >> power_;
-      if (power_<0) {
-        is_inverse_ = !is_inverse_;
-        power_=-power_;
-      }
-      else if (power_==0) {
-        power_=1;
-        is_inverse_=false;
-        term_.reset(new Number<T>(1.));
-      }
+      SimpleFactor<T> p(in);
+      power_=p;
     }
     else
       in.putback(c);
   }
 }
 
-
 template<class T>
-void Factor<T>::partial_evaluate(const Evaluator<T>& p)
+void SimpleFactor<T>::partial_evaluate(const Evaluator<T>& p)
 {
   if (!term_)
     boost::throw_exception(std::runtime_error("Empty value in expression"));
   Evaluatable<T>* e=term_->partial_evaluate_replace(p);
   if(e!=term_.get()) term_.reset(e);
+}
+
+
+template<class T>
+void Factor<T>::partial_evaluate(const Evaluator<T>& p)
+{
+  super_type::partial_evaluate(p);
+  power_.partial_evaluate(p);
 }
 
 //
@@ -578,47 +575,64 @@ void Expression<T>::output(std::ostream& os) const
 }
 
 template<class T>
-const Factor<T>& Factor<T>::operator=(const Factor<T>& v)
+const SimpleFactor<T>& SimpleFactor<T>::operator=(const SimpleFactor<T>& v)
 {
-  power_=v.power_;
-  if (v.term_) {
+  if (v.term_)
     term_.reset(v.term_->clone());
-    is_inverse_=v.is_inverse_;
-  }
-  else {
-    is_inverse_=false;
+  else
     term_.reset();
-  }
   return *this;
 }
 
 
 template<class T>
-bool Factor<T>::can_evaluate(const Evaluator<T>& p) const
+bool SimpleFactor<T>::can_evaluate(const Evaluator<T>& p) const
 {
   if (!term_)
     boost::throw_exception(std::runtime_error("Empty value in expression"));
   return term_->can_evaluate(p);
 }
 
+template<class T>
+bool Factor<T>::can_evaluate(const Evaluator<T>& p) const
+{
+  return super_type::can_evaluate(p) && power_.can_evaluate(p);
+}
+
 template <class T>
-typename Factor<T>::value_type Factor<T>::value(const Evaluator<T>& p) const
+typename SimpleFactor<T>::value_type SimpleFactor<T>::value(const Evaluator<T>& p) const
 {
   if (!term_)
     boost::throw_exception(std::runtime_error("Empty value in expression"));
-  value_type val = is_inverse() ? 1./term_->value(p) : term_->value(p);
-  if (power_!=1)
-    val = std::pow(val,power_);
+  return term_->value(p);
+}
+
+template <class T>
+typename Factor<T>::value_type Factor<T>::value(const Evaluator<T>& p) const
+{
+  value_type val = super_type::value(p);
+  if (is_inverse())
+    val = 1./val;
+  if (power_.value(p)!=1.)
+    val = std::pow(evaluate_helper<T>::real(val),evaluate_helper<T>::real(power_.value(p)));
   return val;
+}
+
+template<class T>
+void SimpleFactor<T>::output(std::ostream& os) const
+{
+  if (!term_)
+    boost::throw_exception(std::runtime_error("Empty value in expression"));
+  term_->output(os);
 }
 
 template<class T>
 void Factor<T>::output(std::ostream& os) const
 {
-  if (!term_)
-    boost::throw_exception(std::runtime_error("Empty value in expression"));
-  term_->output(os);
-  if (power_!=1)
+  super_type::output(os);
+  Parameters p;
+  ParameterEvaluator<T> dummy(p);
+  if (!power_.can_evaluate(dummy) || power_.value(dummy)!=1.)
     os << "^" << power_;
 }
 
@@ -746,12 +760,20 @@ boost::shared_ptr<Term<T> > Term<T>::flatten_one_term()
 }
 
 template<class T>
-boost::shared_ptr<Factor<T> > Factor<T>::flatten_one_value()
+boost::shared_ptr<SimpleFactor<T> > SimpleFactor<T>::flatten_one_value()
 {
   boost::shared_ptr<Evaluatable<T> > term=term_->flatten_one();
-  boost::shared_ptr<Factor<T> > val(new Factor<T>(*this));
+  boost::shared_ptr<SimpleFactor<T> > val(new SimpleFactor<T>(*this));
   val->term_=term;
-  return val->term_ ? val : boost::shared_ptr<Factor<T> >();
+  return val->term_ ? val : boost::shared_ptr<SimpleFactor<T> >();
+}
+
+template<class T>
+boost::shared_ptr<Factor<T> > Factor<T>::flatten_one_value()
+{
+  boost::shared_ptr<Factor<T> > val(new Factor<T>(*this));
+  super_type::operator=(*super_type::flatten_one_value());
+  return val;
 }
 
 template<class T>

@@ -111,22 +111,58 @@ public:
   virtual bool depends_on(const std::string&) const { return false; }
 };
 
+template <class T> class Number;
+template <class T> class Symbol;
+
 template<class T>
-class Factor : public Evaluatable<T> {
+class SimpleFactor : public Evaluatable<T> {
 public:
   typedef T value_type;
   typedef typename TypeTraits<T>::norm_t norm_type;
   
-  Factor(std::istream&, bool inverse = false);
-  Factor(value_type x);
-  Factor(const std::string& s);
-  Factor(const Factor& v)
-    : Evaluatable<T>(v), term_(), is_inverse_(v.is_inverse_), power_(v.power_)
+  SimpleFactor(std::istream&);
+  SimpleFactor(value_type x) : term_(new Number<T>(x)) {}
+  SimpleFactor(const std::string& s) : term_(new Symbol<T>(s)) {}
+
+  SimpleFactor(const SimpleFactor& v)
+    : Evaluatable<T>(v), term_()
   {
     if (v.term_) term_.reset(v.term_->clone());
   }
-  Factor(const Evaluatable<T>& v)
-    : Evaluatable<T>(v), term_(v.clone()), is_inverse_(false), power_(1) {}
+  
+  SimpleFactor(const Evaluatable<T>& v) : Evaluatable<T>(v), term_(v.clone()) {}
+  virtual ~SimpleFactor() {}
+
+  const SimpleFactor& operator=(const SimpleFactor& v);
+
+  value_type value(const Evaluator<T>& p) const;
+  void output(std::ostream&) const;
+  bool can_evaluate(const Evaluator<T>& p) const;
+  Evaluatable<T>* clone() const { return new SimpleFactor<T>(*this); }
+  boost::shared_ptr<SimpleFactor> flatten_one_value();
+  void partial_evaluate(const Evaluator<T>& p);
+  bool is_single_term() const { return term_ ? term_->is_single_term() : false; }
+//  Term<T> term() const { return term_ ? term_->term() : Term<T>(); }
+  bool depends_on(const std::string& s) const
+  {
+    return term_ ? term_->depends_on(s) : false;
+  }
+
+protected:
+  boost::shared_ptr<Evaluatable<T> > term_;
+};
+
+template<class T>
+class Factor : public SimpleFactor<T> {
+public:
+  typedef T value_type;
+  typedef SimpleFactor<T> super_type;
+  typedef typename TypeTraits<T>::norm_t norm_type;
+  
+  Factor(std::istream&, bool inverse = false);
+  Factor(value_type x) : super_type(x), is_inverse_(false), power_(1.) {}
+  Factor(const std::string& s) : super_type(s), is_inverse_(false), power_(1) {}
+  Factor(const Evaluatable<T>& v) : super_type(v), is_inverse_(false), power_(1) {}
   virtual ~Factor() {}
 
   const Factor& operator=(const Factor& v);
@@ -138,17 +174,14 @@ public:
   boost::shared_ptr<Factor> flatten_one_value();
   bool is_inverse() const { return is_inverse_; }
   void partial_evaluate(const Evaluator<T>& p);
-  bool is_single_term() const { return term_ ? term_->is_single_term() : false; }
-  Term<T> term() const { return term_ ? term_->term() : Term<T>(); }
   bool depends_on(const std::string& s) const
   {
-    return term_ ? term_->depends_on(s) : false;
+    return super_type::depends_on(s) || power_.depends_on(s);
   }
 
 private:
-  boost::shared_ptr<Evaluatable<T> > term_;
   bool is_inverse_;
-  int power_;
+  SimpleFactor<T> power_;
 };
 
 template<class T>
