@@ -43,6 +43,7 @@
 #include <alps/parser/parser.h>
 #include <alps/typetraits.h>
 
+#include <boost/call_traits.hpp>
 #include <boost/smart_ptr.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/type_traits/is_arithmetic.hpp>
@@ -370,19 +371,35 @@ struct expression<Expression<T> > {
   typedef Term<value_type> term_type;
 };
 
-template<class U, class T>
-struct numeric_cast {
-  static U value(T x) { return x; }
+template<typename U, typename T>
+struct numeric_cast_helper {
+  static U value(typename boost::call_traits<T>::param_type x)
+  {
+    return x;
+  }
 };
 
-template<class U, class T>
-struct numeric_cast<U, std::complex<T> > {
+template<typename U, typename T>
+struct numeric_cast_helper<U, std::complex<T> > {
   static U value(const std::complex<T>& x) {
     if (x.imag() != 0)
-      boost::throw_exception(std::runtime_error("can not convert complex to real"));
+      boost::throw_exception(std::runtime_error("can not convert complex number into real one"));
     return x.real();
   }
 };
+
+template<typename U, typename T>
+U numeric_cast(T x, typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0)
+{
+  return numeric_cast_helper<U,T>::value(x);
+}
+
+template<typename U, typename T>
+U numeric_cast(const T& x, typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0)
+{
+  return numeric_cast_helper<U,T>::value(x);
+}
+
 
 template<class U>
 struct evaluate_helper
@@ -418,12 +435,12 @@ struct evaluate_helper<double>
   template<class R>
   static double value(const Term<R>& ex, const Evaluator<R>& ev)
   {
-    return numeric_cast<double, R>::value(ex.value(ev));
+    return numeric_cast<double>(ex.value(ev));
   }
   template<class R>
   static double value(const Expression<R>& ex, const Evaluator<R>& ev)
   {
-    return numeric_cast<double, R>::value(ex.value(ev));
+    return numeric_cast<double>(ex.value(ev));
   }
   static double real(double u) { return u; }
   static double imag(double) { return 0; }
@@ -446,12 +463,12 @@ struct evaluate_helper<float>
   template<class R>
   static float value(const Term<R>& ex, const Evaluator<R>& ev)
   {
-    return numeric_cast<float, R>::value(ex.value(ev));
+    return numeric_cast<float>(ex.value(ev));
   }
   template<class R>
   static float value(const Expression<R>& ex, const Evaluator<R>& ev)
   {
-    return numeric_cast<float, R>::value(ex.value(ev));
+    return numeric_cast<float>(ex.value(ev));
   }
   static float real(float u) { return u; }
   static float imag(float) { return 0; }
@@ -474,12 +491,12 @@ struct evaluate_helper<long double>
   template<class R>
   static long double value(const Term<R>& ex, const Evaluator<R>& ev)
   {
-    return numeric_cast<long double, R>::value(ex.value(ev));
+    return numeric_cast<long double>(ex.value(ev));
   }
   template<class R>
   static long double value(const Expression<R>& ex, const Evaluator<R>& ev)
   {
-    return numeric_cast<long double, R>::value(ex.value(ev));
+    return numeric_cast<long double>(ex.value(ev));
   }
   static long double real(long double u) { return u; }
   static long double imag(long double) { return 0; }
