@@ -48,17 +48,20 @@ public:
   typedef I integer_type;
 
   half_integer() : val_(0) {}
-  explicit half_integer(double x) : val_(integer_type(2*x+(x<0?-0.01:0.01))) {}
+  template <class U>
+  explicit half_integer(typename boost::enable_if<boost::is_float<U>, U>::type x) : val_(integer_type(std::floor(x*2 + 0.5))) {}
   template <class U>
   half_integer(typename boost::enable_if<boost::is_integral<U>, U>::type x)
   : val_(boost::numeric_cast<integer_type>(2*x)) {}
   template<class J>
   explicit half_integer(const half_integer<J>& x) : val_(x.get_twice()) {}
 
-  const half_integer& operator=(integer_type x)
+  template<class U>
+  const half_integer& operator=(typename boost::enable_if<boost::is_integral<U>, U>::type x)
   { val_ = 2*x; return *this; }
-  const half_integer& operator=(double x)
-  { val_ = integer_type(2*x+(x < 0 ? -0.01 : 0.01)); return *this; }
+  template <class U>
+  const half_integer& operator=(typename boost::enable_if<boost::is_float<U>, U>::type x x)
+  { val_ = integer_type(std::floor(x*2 + 0.5))); return *this; }
   template<class J>
   half_integer& operator=(const half_integer<J>& x)
   { val_ = x.get_twice(); return *this; }
