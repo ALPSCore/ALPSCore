@@ -36,8 +36,8 @@ void alps::print_copyright(std::ostream& out) {
   out << "  available from http://alps.comp-phys.org/\n";
   out << "  copyright (c) 1994-" << ALPS_YEAR
       << " by the ALPS collaboration.\n";
-  out << "  consult above web page or use the -l command line option"
-      << " for license details.\n\n";
+  out << " consult the web page  for license details.\n";
+  out << " for details see the publication: F. Alet et al., Report cond-mat/0410407.\n\n";
 }
 
 void alps::print_license(std::ostream& out) {
