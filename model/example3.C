@@ -47,12 +47,11 @@ int main()
     alps::ModelLibrary lib(std::cin);
 
      // write site term matrices
-     std::cout << "HHardcoreBosonSite =\n" << lib.hamiltonian("hardcore boson").site_term().matrix<alps::Expression>(
-              lib.hamiltonian("hardcore boson").basis().site_basis(),
- 	     lib.simple_operators()) << "\n";
+     std::cout << "HHardcoreBosonSite =\n" 
+               << alps::get_matrix(alps::Expression(),lib.hamiltonian("hardcore boson").site_term(),
+                lib.hamiltonian("hardcore boson").basis().site_basis(),lib.simple_operators()) << "\n";
     std::cout << "HSpinSite =\n" << lib.hamiltonian("spin").site_term().matrix<alps::Expression>(
-             lib.hamiltonian("spin").basis().site_basis(),
-	     lib.simple_operators()) << "\n";
+                lib.hamiltonian("spin").basis().site_basis(),lib.simple_operators()) << "\n";
     
     // write bond term matrices
      std::cout << "HHardcoreBosonBond =\n" << lib.hamiltonian("hardcore boson").bond_term().matrix<alps::Expression>(
