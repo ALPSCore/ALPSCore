@@ -291,8 +291,6 @@ void IXDRDump::setPosition(uint32_t pos)
 //=======================================================================
 // OXDRFileDump
 // 
-// derived from OXDRDump
-//
 // implements a dump for writing into a file using the XDR format
 //-----------------------------------------------------------------------
 
@@ -312,12 +310,6 @@ void OXDRFileDump::open_file(const std::string& fn)
 }
 
 
-// // create a new dump file
-// OXDRFileDump::OXDRFileDump(const std::string& fn)
-// {
-//   open_file(fn);
-// }
-
 // create a new dump file
 OXDRFileDump::OXDRFileDump(const boost::filesystem::path& fn)
 {
@@ -336,16 +328,8 @@ OXDRFileDump::~OXDRFileDump()
 //=======================================================================
 // IXDRFileDump
 // 
-// derived from IXDRDump
-//
 // implements a dump for reading from a file using the XDR format
 //-----------------------------------------------------------------------
-
-// // open a dump file
-// IXDRFileDump::IXDRFileDump(const std::string& fn)
-// {
-//   open_file(fn);
-// }
 
 // open a dump file
 IXDRFileDump::IXDRFileDump(const boost::filesystem::path& p)
