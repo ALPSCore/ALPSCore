@@ -1,12 +1,13 @@
 /***************************************************************************
 * PALM++/lattice library
 *
-* example/example4.C
+* example/example6.C
 *
 * $Id$
 *
 * Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
 *                            Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 2004      by Ian McCulloch <ianmcc@physik.rwth-aachen.de>
 *
 * This software is part of the ALPS library, published under the 
 * ALPS Library License; you can use, redistribute it and/or modify 
