@@ -83,7 +83,7 @@ public:
   Set<C>& operator<<(const boost::tuples::tuple<C, C>);
   Set<C>& operator<<(const boost::tuples::tuple<C,C,C>);
   Set<C>& operator<<(const boost::tuples::tuple<C,C,C,C>);
-  Set<C>& operator<<(std::string label) { label_ = label;}
+  Set<C>& operator<<(std::string label) { label_ = label; return *this;}
 
     
   std::string label() const { return label_; }
@@ -172,13 +172,13 @@ inline Set<C>& Set<C>::operator<<(boost::tuples::tuple<C,C,C,C> t) {
 
 
 template<class C>
-inline oxstream& operator<<(oxstream& out,  Set<C> S) {
-  out << start_tag("set") << attribute("label",S.label()) 
+inline oxstream& operator<<(oxstream& o,  Set<C> S) {
+  o << start_tag("set") << attribute("label",S.label()) 
       << attribute("show_legend", S.show_legend() ? "true" : "false");
   for(int i=0; i<S.size(); ++i) 
-    S[i].output(out,S.type());
-  out << end_tag("set");
-  return out;
+    S[i].output(o,S.type());
+  o << end_tag("set");  
+  return o;
 }   
 
 //- Plot ----------------------------------------------------------------------------------------------------------
