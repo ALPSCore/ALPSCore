@@ -104,7 +104,7 @@ public:
   bool operator<=(double rhs) const { return *this <= half_integer(rhs); }
   bool operator>=(double rhs) const { return *this >= half_integer(rhs); }
 
-  half_integer operator-() const { return half_integer(-val_, 0); }
+  half_integer operator-() const { half_integer tmp(*this); tmp.val_=-val_; return tmp; }
 
   half_integer& operator++() { val_ += 2; return *this; }
   half_integer& operator--() { val_ -= 2; return *this; }
