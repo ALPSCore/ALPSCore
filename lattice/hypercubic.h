@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2001-2004 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -47,7 +47,7 @@ class hypercubic_lattice : public BASE {
 public:
   typedef hypercubic_lattice<BASE> lattice_type;
   typedef BASE parent_lattice_type;
-  
+
   typedef typename lattice_traits<parent_lattice_type>::unit_cell_type unit_cell_type;
   typedef typename lattice_traits<parent_lattice_type>::cell_descriptor cell_descriptor;
   typedef typename lattice_traits<parent_lattice_type>::offset_type offset_type;
@@ -55,42 +55,43 @@ public:
   typedef typename lattice_traits<parent_lattice_type>::basis_vector_iterator basis_vector_iterator;
   typedef typename lattice_traits<parent_lattice_type>::vector_type vector_type;
   typedef boundary_crossing boundary_crossing_type;
-  
-  typedef std::size_t size_type;  
+
+  typedef std::size_t size_type;
 
   hypercubic_lattice() {}
-  
+
   template <class BASE2, class EX2>
   hypercubic_lattice(const hypercubic_lattice<BASE2,EX2>& l)
-   : parent_lattice_type(l), extent_(l.extent().begin(),l.extent().end()),bc_(l.boundary()) 
-   { fill_extent();}
-  
-  hypercubic_lattice(const parent_lattice_type& p, size_type length, std::string bc="periodic") 
-   : parent_lattice_type(p), extent_(dimension(p),length), bc_(dimension(p),bc) {}
+   : parent_lattice_type(l), extent_(l.extent().begin(), l.extent().end()),
+     bc_(l.boundary())
+   { fill_extent(); }
+
+  hypercubic_lattice(const parent_lattice_type& p, size_type length,
+                     const std::string& bc = "periodic")
+    : parent_lattice_type(p), extent_(dimension(), length),
+      bc_(dimension(), bc) {}
 
   template <class InputIterator>
-  hypercubic_lattice(const parent_lattice_type& p, InputIterator first, InputIterator last, std::string bc="periodic" ) 
-   : parent_lattice_type(p), 
-     extent_(first,last), 
-     bc_(dimension(p),bc) 
-  {fill_extent();}
+  hypercubic_lattice(const parent_lattice_type& p,
+                     InputIterator first, InputIterator last,
+                     const std::string& bc = "periodic")
+    : parent_lattice_type(p), extent_(first, last), bc_(dimension(), bc)
+  { fill_extent(); }
 
   template <class InputIterator2>
-  hypercubic_lattice(const parent_lattice_type& p, size_type length, InputIterator2 first2, InputIterator2 last2) 
-   : parent_lattice_type(p), 
-     extent_(dimension(p),length), 
-     bc_(first2,last2) 
-     {fill_extent();}
+  hypercubic_lattice(const parent_lattice_type& p, size_type length,
+                     InputIterator2 first2, InputIterator2 last2)
+    : parent_lattice_type(p), extent_(dimension(), length),
+      bc_(first2, last2)
+  { fill_extent(); }
 
      template <class InputIterator, class InputIterator2>
-  hypercubic_lattice(const parent_lattice_type& p, InputIterator first, InputIterator last, 
-                     InputIterator2 first2, InputIterator2 last2) 
-   : parent_lattice_type(p), 
-     extent_(first,last), 
-     bc_(first2,last2) 
-     {fill_extent();}
+  hypercubic_lattice(const parent_lattice_type& p,
+                     InputIterator first, InputIterator last,
+                     InputIterator2 first2, InputIterator2 last2)
+   : parent_lattice_type(p), extent_(first, last), bc_(first2, last2)
+  { fill_extent(); }
 
-  
   template <class BASE2, class EX2>
   const hypercubic_lattice& operator=(const hypercubic_lattice<BASE2,EX2>& l)
   {
@@ -102,11 +103,11 @@ public:
 
   class cell_iterator {
   public:
-  
+
     cell_iterator() {}
     cell_iterator(const lattice_type& l, const offset_type& o)
      : lattice_(&l), offset_(o) {}
-   
+
     const cell_iterator& operator++() {
       typedef typename coordinate_traits<offset_type>::iterator offset_iterator;
       typedef typename coordinate_traits<offset_type>::const_iterator const_offset_iterator;
@@ -123,7 +124,7 @@ public:
         }
       return *this;
     }
-  
+
     cell_iterator operator++(int) {
       cell_iterator tmp(*this);
       operator++();
@@ -139,7 +140,7 @@ public:
     {
       return (lattice_ != it.lattice_ || offset_ != it.offset_);
     }
-  
+
     cell_descriptor operator*() const { return lattice_->cell(offset_);}
     // operator-> looks harder to implement. any good ideas?
 
@@ -147,7 +148,7 @@ public:
     const lattice_type* lattice_;
     offset_type offset_;
   };
- 
+
   std::pair<cell_iterator,cell_iterator> cells() const
   {
     offset_type begin(extent_);
@@ -161,8 +162,8 @@ public:
     return std::accumulate(extent_.begin(),extent_.end(),size_type(1),
            std::multiplies<size_type>());
   }
-  
-  size_type index(const cell_descriptor& c) const 
+
+  size_type index(const cell_descriptor& c) const
   {
     size_type ind=0;
     size_type factor=1;
@@ -170,7 +171,7 @@ public:
     typedef typename coordinate_traits<offset_type>::const_iterator CI;
     CI exit = coordinates(extent_).first;
     CI offit = coordinates(o).first;
-    
+
     for (;exit!=coordinates(extent_).second;++exit,++offit)
     {
       ind += factor* (*offit);
@@ -178,18 +179,18 @@ public:
     }
     return ind;
   }
-  
+
   bool on_lattice(const cell_descriptor& c) const {
     typedef typename coordinate_traits<offset_type>::const_iterator CI;
     CI exit = coordinates(extent_).first;
     CI offit = coordinates(offset(c,*this)).first;
-    
+
     for (;exit!=coordinates(extent_).last;++exit,++offit)
       if(*offit<0 || *offit>=*exit)
         return false;
     return true;
   }
-  
+
   cell_descriptor cell(size_type i)  const{
     offset_type o;
 
@@ -197,7 +198,7 @@ public:
     typedef typename coordinate_traits<offset_type>::iterator IT;
     CIT ex = coordinates(extent_).first;
     IT offit = coordinates(o).first;
-    
+
     for (;exit!=coordinates(extent_).last;++ex,++offit)
     {
       *offit=i%(*ex);
@@ -210,7 +211,7 @@ public:
   {
     return alps::cell(o,static_cast<const parent_lattice_type&>(*this));
   }
-  
+
   std::pair<bool,boundary_crossing_type> shift(offset_type& o,const offset_type& s) const
   {
     o=o+s;
@@ -245,13 +246,13 @@ public:
     }
     return std::make_pair(ison,crossing);
   }
-  
+
   const std::string& boundary(uint32_t dim) const{ return bc_[dim];}
   const std::vector<std::string>& boundary() const { return bc_;}
   typename extent_type::value_type extent(uint32_t dim) const {return extent_[dim];}
   const extent_type& extent() const { return extent_;}
-  
-  std::vector<size_type> distance_sizes() 
+
+  std::vector<size_type> distance_sizes()
   {
     std::vector<int> sizes;
     for (int i=0;i<dimension();++i) {
@@ -261,7 +262,7 @@ public:
     }
     return sizes;
   }
-  
+
   std::vector<size_type> distance_vector(const offset_type& x, const offset_type& y)
   {
     std::vector<size_type> d;
@@ -273,9 +274,9 @@ public:
         d.push_back(x[i]);
         d.push_back(y[i]);
       }
-    }    
+    }
   }
-  
+
   class momentum_iterator : public cell_iterator {
   public:
     momentum_iterator(cell_iterator it=cell_iterator()) : cell_iterator(it) {}
@@ -283,7 +284,7 @@ public:
     const vector_type* operator->() const { set_k(); return &k_; }
   private:
     mutable vector_type k_;
-    void set_k() 
+    void set_k()
     {
       k_=*basis_vectors(*lattice_).first;
       for (int i=0;i<dimension(*lattice_);++i)
@@ -291,12 +292,12 @@ public:
     }
   };
 
-  std::pair<momentum_iterator,momentum_iterator> momenta() const 
+  std::pair<momentum_iterator,momentum_iterator> momenta() const
   {
     return std::make_pair(momentum_iterator(cells().first),momentum_iterator(cells().second));
   }
-  
-  
+
+
 protected:
   extent_type extent_;
   std::vector<std::string> bc_;
@@ -327,7 +328,6 @@ inline std::size_t dimension(const hypercubic_lattice<BASE,EX>& l)
 {
   return l.dimension();
 }
-
 
 } // end namespace alps
 

@@ -188,15 +188,16 @@ void SiteBasisMatch<I>::write_xml(oxstream& os) const
   os << start_tag("SITEBASIS");
   if (type_>=0)
     os << attribute("type", type_);
-  if (sitebasis_name_!="")
+  if (sitebasis_name_!="") {
     os << attribute("ref", sitebasis_name_);
-  else
+  } else {
     for (Parameters::const_iterator p_itr = get_parameters().begin();
          p_itr != get_parameters().end(); ++p_itr)
       os << start_tag("PARAMETER") << attribute("name", p_itr->key())
          << attribute("default", p_itr->value()) << end_tag("PARAMETER");
     for (const_iterator it = begin(); it != end(); ++it)
       os << *it;
+  }
   os << end_tag("SITEBASIS");
 }
 
