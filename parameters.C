@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2004 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -29,7 +29,6 @@
 /* $Id$ */
 
 #include <alps/parameters.h>
-#include <alps/expression.h>
 #include <alps/cctype.h>
 #include <alps/parser/parser.h>
 
@@ -40,12 +39,12 @@
 
 namespace alps {
 
-void Parameters::push_back(const parameter_type& p, bool allow_overwrite) 
+void Parameters::push_back(const parameter_type& p, bool allow_overwrite)
 {
   if (p.key().empty())
     boost::throw_exception(std::runtime_error("empty key"));
   if (defined(p.key())) {
-    if (allow_overwrite)    
+    if (allow_overwrite)
       list_[map_.find(p.key())->second].value()=p.value();
     else
       boost::throw_exception(std::runtime_error("duplicated parameter: " + p.key()));
@@ -55,23 +54,20 @@ void Parameters::push_back(const parameter_type& p, bool allow_overwrite)
     list_.push_back(p);
   }
 }
-  
 
-Parameters& Parameters::operator<<(const Parameters& params) 
+Parameters& Parameters::operator<<(const Parameters& params)
 {
   for (const_iterator it = params.begin(); it != params.end(); ++it)
     (*this) << *it;
   return *this;
 }
 
-
-void Parameters::copy_undefined(const Parameters& p) 
+void Parameters::copy_undefined(const Parameters& p)
 {
   for (const_iterator it=p.begin();it!=p.end();++it)
     if (!defined(it->key()))
       push_back(*it);
 }
-
 
 void Parameters::read_xml(XMLTag tag, std::istream& xml,bool ignore_duplicates)
 {
@@ -93,10 +89,8 @@ void Parameters::read_xml(XMLTag tag, std::istream& xml,bool ignore_duplicates)
       tag = parse_tag(xml);
     }
 }
-  
-  
-  
-void Parameters::extract_from_xml(std::istream& infile) 
+
+void Parameters::extract_from_xml(std::istream& infile)
 {
   XMLTag tag=alps::parse_tag(infile,true);
   std::string closingtag = "/"+tag.name;
@@ -111,17 +105,17 @@ void Parameters::extract_from_xml(std::istream& infile)
 void Parameters::parse(std::istream& is)
 {
   char c;
-  do {   
+  do {
     is >> c;
-    if (!is)
-      break;
-    while (c==';' || c==',') is >> c;  // ignore extra semi-colons  
-    if (is && std::isalpha(c)) {
+    while (is && (c==';' || c==',')) is >> c;  // ignore extra semi-colons
+    if (!is) break;
+    if (std::isalpha(c)) {
       is.putback(c);
       std::string key = parse_parameter_name(is);
       std::string value;
 
-      check_character(is, '=', "= expected in assignment while parsing Parameters");
+      check_character(is, '=',
+        "= expected in assignment while parsing Parameters");
 
       is >> c;
       switch (c) {
@@ -134,8 +128,9 @@ void Parameters::parse(std::istream& is)
       case '\'':
         value = read_until(is, '\'');
         break;
-      default:                            
-        while(c!=';' && c!=',' && c!='}' && c!= '{' && c!='\r' && c!='\n' && is) {
+      default:
+        while(c!=';' && c!=',' && c!='}' && c!= '{' &&
+              c!='\r' && c!='\n' && is) {
           value+=c;
           c = is.get();
         }
@@ -150,19 +145,14 @@ void Parameters::parse(std::istream& is)
   } while (true);
 }
 
-} // namespace alps
 
 //
 // XML support
 //
 
-#ifndef ALPS_WITHOUT_XML
-
-namespace alps {
-
 ParameterXMLHandler::ParameterXMLHandler(Parameter& p)
   : XMLHandlerBase("PARAMETER"), parameter_(p) {}
-  
+
 void ParameterXMLHandler::start_element(const std::string& name,
                                         const XMLAttributes& attributes)
 {
@@ -178,7 +168,7 @@ void ParameterXMLHandler::end_element(const std::string&) {}
 void ParameterXMLHandler::text(const std::string& text) {
   parameter_.value() = text;
 }
-  
+
 ParametersXMLHandler::ParametersXMLHandler(Parameters& p)
   : CompositeXMLHandler("PARAMETERS"), parameters_(p), parameter_(),
     handler_(parameter_)
@@ -196,8 +186,9 @@ void ParametersXMLHandler::end_child(const std::string&)
 {
   parameters_.operator[](parameter_.key()) = parameter_.value();
 }
- 
+
 } // namespace alps
+
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 namespace alps {
@@ -222,7 +213,3 @@ std::ostream& operator<<(std::ostream& os, const alps::Parameters& p)
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // end namespace alps
 #endif
-
-
-
-#endif // !ALPS_WITHOUT_XML

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -31,16 +31,10 @@
 #ifndef ALPS_PARSER_PARAMETERS_H
 #define ALPS_PARSER_PARAMETERS_H
 
-#include <alps/config.h>
+#include <alps/osiris.h>
+#include <alps/parser/parser.h>
 #include <alps/stringvalue.h>
-
-#ifndef ALPS_WITHOUT_OSIRIS
-# include <alps/osiris.h>
-#endif
-#ifndef ALPS_WITHOUT_XML
-# include <alps/parser/parser.h>
-# include <alps/xml.h>
-#endif
+#include <alps/xml.h>
 
 #include <boost/throw_exception.hpp>
 #include <map>
@@ -117,7 +111,7 @@ public:
       boost::throw_exception(std::runtime_error("parameter " + k + " not defined"));
     return list_[map_.find(k)->second].value();
   }
-  
+
   value_type value_or_default(const key_type& k, const value_type& v) const {
     return defined(k) ? (*this)[k] : v;
   }
@@ -128,7 +122,7 @@ public:
   const_iterator end() const { return list_.end(); }
 
   void push_back(const parameter_type& p, bool allow_overwrite=false);
-  
+
   void push_back(const key_type& k, const value_type& v,
                  bool allow_overwrite=false) {
     push_back(Parameter(k, v),allow_overwrite);
@@ -141,7 +135,7 @@ public:
 
   Parameters& operator<<(const Parameters& params);
   void copy_undefined(const Parameters& p);
-  
+
   void read_xml(XMLTag tag, std::istream& xml,bool ignore_duplicates=false);
   void extract_from_xml(std::istream& xml);
 
@@ -172,8 +166,6 @@ inline std::istream& operator>>(std::istream& is, alps::Parameters& p)
 //
 // OSIRIS support
 //
-
-#ifndef ALPS_WITHOUT_OSIRIS
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 namespace alps {
@@ -214,14 +206,10 @@ inline alps::IDump& operator>>(alps::IDump& id, alps::Parameters& p)
 } // end namespace alps
 #endif
 
-#endif // !ALPS_WITHOUT_OSIRIS
-
 
 //
 // XML support
 //
-
-#ifndef ALPS_WITHOUT_XML
 
 namespace alps {
 
@@ -229,12 +217,12 @@ class ParameterXMLHandler : public XMLHandlerBase
 {
 public:
   ParameterXMLHandler(Parameter& p);
-  
+
   void start_element(const std::string& name,
                      const XMLAttributes& attributes);
   void end_element(const std::string& name);
   void text(const std::string& text);
-  
+
 private:
   Parameter& parameter_;
 };
@@ -244,11 +232,11 @@ class ParametersXMLHandler : public CompositeXMLHandler
 public:
   ParametersXMLHandler(Parameters& p);
 
-protected:  
+protected:
   void start_child(const std::string& name,
                    const XMLAttributes& attributes);
   void end_child(const std::string& name);
-  
+
 private:
   Parameters& parameters_;
   Parameter parameter_;
@@ -286,7 +274,5 @@ inline alps::oxstream& operator<<(alps::oxstream& oxs,
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // end namespace alps
 #endif
-
-#endif // !ALPS_WITHOUT_XML
 
 #endif // ALPS_PARSER_PARAMETERS_H
