@@ -1,7 +1,7 @@
 /***************************************************************************
-* ALPS++ library
+* ALPS/parser library
 *
-* alps/xmlstream.h   XML stream
+* alps/parser/xmlstream.h   XML stream class
 *
 * $Id$
 *
@@ -19,8 +19,8 @@
 *
 **************************************************************************/
 
-#ifndef ALPS_XMLSTREAM_H
-#define ALPS_XMLSTREAM_H
+#ifndef ALPS_PARSER_XMLSTREAM_H
+#define ALPS_PARSER_XMLSTREAM_H
 
 #include <alps/config.h>
 #include <alps/parser/attributes.h>
@@ -106,15 +106,17 @@ public:
   oxstream& operator<<(const T t) \
   { return text_str(boost::lexical_cast<std::string, T>(t)); }
   ALPS_XMLSTREAM_DO_TYPE(bool)
-  // ALPS_XMLSTREAM_DO_TYPE(int8_t)
-  // ALPS_XMLSTREAM_DO_TYPE(uint8_t)
-  ALPS_XMLSTREAM_DO_TYPE(int16_t)
-  ALPS_XMLSTREAM_DO_TYPE(uint16_t)
-  ALPS_XMLSTREAM_DO_TYPE(int32_t)
-  ALPS_XMLSTREAM_DO_TYPE(uint32_t)
-# ifndef BOOST_NO_INT64_T
-  ALPS_XMLSTREAM_DO_TYPE(int64_t)
-  ALPS_XMLSTREAM_DO_TYPE(uint64_t)
+  ALPS_XMLSTREAM_DO_TYPE(signed char)
+  ALPS_XMLSTREAM_DO_TYPE(unsigned char)
+  ALPS_XMLSTREAM_DO_TYPE(short)
+  ALPS_XMLSTREAM_DO_TYPE(unsigned short)
+  ALPS_XMLSTREAM_DO_TYPE(int)
+  ALPS_XMLSTREAM_DO_TYPE(unsigned int)
+  ALPS_XMLSTREAM_DO_TYPE(long)
+  ALPS_XMLSTREAM_DO_TYPE(unsigned long)
+# ifdef BOOST_HAS_LONG_LONG
+  ALPS_XMLSTREAM_DO_TYPE(long long)
+  ALPS_XMLSTREAM_DO_TYPE(unsigned long long)
 # endif
   ALPS_XMLSTREAM_DO_TYPE(float)
   ALPS_XMLSTREAM_DO_TYPE(double)
@@ -193,4 +195,4 @@ std::string convert(const std::string& str);
 
 } // namespace alps
 
-#endif // ALPS_XMLSTREAM_H
+#endif // ALPS_PARSER_XMLSTREAM_H

@@ -1,7 +1,7 @@
 /***************************************************************************
-* ALPS++ library
+* ALPS/parser library
 *
-* xmlstream.C   XML stream
+* alps/parser/xmlstream.C   XML stream class
 *
 * $Id$
 *
@@ -28,8 +28,6 @@
 #include <string>
 
 namespace alps {
-
-// oxstream
 
 oxstream::oxstream(std::ostream& os, uint32_t incl)
   : of_(), os_(os), stack_(), attr_(), context_(NotSpecified),
