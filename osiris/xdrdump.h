@@ -56,15 +56,18 @@ public:
   void write_simple(T x); \
   void write_array(std::size_t, const T *);
   ALPS_DUMP_DO_TYPE(bool)
-  ALPS_DUMP_DO_TYPE(int8_t)
-  ALPS_DUMP_DO_TYPE(uint8_t)
-  ALPS_DUMP_DO_TYPE(int16_t)
-  ALPS_DUMP_DO_TYPE(uint16_t)
-  ALPS_DUMP_DO_TYPE(int32_t)
-  ALPS_DUMP_DO_TYPE(uint32_t)
-# ifndef BOOST_NO_INT64_T
-  ALPS_DUMP_DO_TYPE(int64_t)
-  ALPS_DUMP_DO_TYPE(uint64_t)
+  ALPS_DUMP_DO_TYPE(char)
+  ALPS_DUMP_DO_TYPE(signed char)
+  ALPS_DUMP_DO_TYPE(unsigned char)
+  ALPS_DUMP_DO_TYPE(short)
+  ALPS_DUMP_DO_TYPE(unsigned short)
+  ALPS_DUMP_DO_TYPE(int)
+  ALPS_DUMP_DO_TYPE(unsigned int)
+  ALPS_DUMP_DO_TYPE(long)
+  ALPS_DUMP_DO_TYPE(unsigned long)
+# ifdef BOOST_HAS_LONG_LONG
+  ALPS_DUMP_DO_TYPE(long long)
+  ALPS_DUMP_DO_TYPE(unsigned long long)
 # endif
   ALPS_DUMP_DO_TYPE(float)
   ALPS_DUMP_DO_TYPE(double)
@@ -98,15 +101,18 @@ public:
   void read_simple(T& x); \
   void read_array(std::size_t, T *);
   ALPS_DUMP_DO_TYPE(bool)
-  ALPS_DUMP_DO_TYPE(int8_t)
-  ALPS_DUMP_DO_TYPE(uint8_t)
-  ALPS_DUMP_DO_TYPE(int16_t)
-  ALPS_DUMP_DO_TYPE(uint16_t)
-  ALPS_DUMP_DO_TYPE(int32_t)
-  ALPS_DUMP_DO_TYPE(uint32_t)
-# ifndef BOOST_NO_INT64_T
-  ALPS_DUMP_DO_TYPE(int64_t)
-  ALPS_DUMP_DO_TYPE(uint64_t)
+  ALPS_DUMP_DO_TYPE(char)
+  ALPS_DUMP_DO_TYPE(signed char)
+  ALPS_DUMP_DO_TYPE(unsigned char)
+  ALPS_DUMP_DO_TYPE(short)
+  ALPS_DUMP_DO_TYPE(unsigned short)
+  ALPS_DUMP_DO_TYPE(int)
+  ALPS_DUMP_DO_TYPE(unsigned int)
+  ALPS_DUMP_DO_TYPE(long)
+  ALPS_DUMP_DO_TYPE(unsigned long)
+# ifdef BOOST_HAS_LONG_LONG
+  ALPS_DUMP_DO_TYPE(long long)
+  ALPS_DUMP_DO_TYPE(unsigned long long)
 # endif
   ALPS_DUMP_DO_TYPE(float)
   ALPS_DUMP_DO_TYPE(double)

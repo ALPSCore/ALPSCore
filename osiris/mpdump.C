@@ -197,27 +197,27 @@ static int pvm_not_implemented(const void*, int, int)
 }
 }
 
-#define ALPS_DUMP_DO_TYPE(T,XDRFUNC,XDRUFUNC,XDRTYPE) \
+#define ALPS_DUMP_DO_TYPE(T,PVMFUNC,PVMUFUNC,PVMTYPE) \
 void OMPDump::write_simple(T x) { \
-  int info = XDRFUNC(reinterpret_cast<XDRTYPE *>(&x), 1, 1); \
+  int info = PVMFUNC(reinterpret_cast<PVMTYPE *>(&x), 1, 1); \
   if (info < 0) boost::throw_exception(std::runtime_error(("Error " + boost::lexical_cast<std::string, int>(info) + " when writing"))); \
 } \
 void OMPDump::write_array(std::size_t n, const T* p) { \
-  int info = XDRFUNC(reinterpret_cast<XDRTYPE *>(const_cast<T *>(p)), n, 1); \
+  int info = PVMFUNC(reinterpret_cast<PVMTYPE *>(const_cast<T *>(p)), n, 1); \
   if (info < 0) boost::throw_exception(std::runtime_error(("Error " + boost::lexical_cast<std::string, int>(info) + " when writing"))); \
 } \
 void IMPDump::read_simple(T& x) { \
-  int info = XDRUFUNC(reinterpret_cast<XDRTYPE *>(&x), 1, 1); \
+  int info = PVMUFUNC(reinterpret_cast<PVMTYPE *>(&x), 1, 1); \
   if (info < 0) boost::throw_exception(std::runtime_error(("Error " + boost::lexical_cast<std::string, int>(info) + " when reading"))); \
 } \
 void IMPDump::read_array(std::size_t n, T *p) { \
-  int info = XDRUFUNC(reinterpret_cast<XDRTYPE *>(p), n, 1); \
+  int info = PVMUFUNC(reinterpret_cast<PVMTYPE *>(p), n, 1); \
   if (info < 0) boost::throw_exception(std::runtime_error(("Error " + boost::lexical_cast<std::string, int>(info) + " when reading"))); \
 }
 
 #elif defined(ALPS_MPI)
 
-#define ALPS_DUMP_DO_TYPE(T,XDRFUNC,XDRUFUNC,XDRTYPE) \
+#define ALPS_DUMP_DO_TYPE(T,A,B,C) \
 void OMPDump::write_simple(T x) { buf_.write(x);} \
 void OMPDump::write_array(std::size_t n,const T *p) {buf_.write(p,n);} \
 void IMPDump::read_simple(T& x) {buf_.read(x);} \
@@ -225,7 +225,7 @@ void IMPDump::read_array(std::size_t n,T *p) {buf_.read(p,n);}
 
 #else
 
-#define ALPS_DUMP_DO_TYPE(T,XDRFUNC,XDRUFUNC,XDRTYPE) \
+#define ALPS_DUMP_DO_TYPE(T,A,B,C) \
 void OMPDump::write_simple(T) { \
   boost::throw_exception(std::logic_error("message passing useless for single process programs")); \
 } \
@@ -241,16 +241,19 @@ void OMPDump::write_array(std::size_t n, const T *p) {\
 #endif
 
 ALPS_DUMP_DO_TYPE(bool, pvm_pkbyte, pvm_upkbyte, char)
-ALPS_DUMP_DO_TYPE(int8_t, pvm_pkbyte, pvm_upkbyte, char)
-ALPS_DUMP_DO_TYPE(uint8_t, pvm_pkbyte, pvm_upkbyte, char)
-ALPS_DUMP_DO_TYPE(int16_t, pvm_pkshort, pvm_upkshort, int16_t)
-ALPS_DUMP_DO_TYPE(uint16_t, pvm_pkushort, pvm_upkushort, uint16_t)
-ALPS_DUMP_DO_TYPE(int32_t, pvm_pkint, pvm_upkint, int32_t)
-ALPS_DUMP_DO_TYPE(uint32_t, pvm_pkuint, pvm_upkuint, uint32_t)
-# ifndef BOOST_NO_INT64_T
-ALPS_DUMP_DO_TYPE(int64_t, detail::pvm_not_implemented, detail::pvm_not_implemented, int64_t)
-ALPS_DUMP_DO_TYPE(uint64_t, detail::pvm_not_implemented, detail::pvm_not_implemented, uint64_t)
-# endif
+ALPS_DUMP_DO_TYPE(char, pvm_pkbyte, pvm_upkbyte, char)
+ALPS_DUMP_DO_TYPE(signed char, pvm_pkbyte, pvm_upkbyte, char)
+ALPS_DUMP_DO_TYPE(unsigned char, pvm_pkbyte, pvm_upkbyte, char)
+ALPS_DUMP_DO_TYPE(short, pvm_pkshort, pvm_upkshort, short)
+ALPS_DUMP_DO_TYPE(unsigned short, pvm_pkushort, pvm_upkushort, unsigned short)
+ALPS_DUMP_DO_TYPE(int, pvm_pkint, pvm_upkint, int)
+ALPS_DUMP_DO_TYPE(unsigned int, pvm_pkuint, pvm_upkuint, unsigned int)
+ALPS_DUMP_DO_TYPE(long, pvm_pklong, pvm_upklong, long)
+ALPS_DUMP_DO_TYPE(unsigned long, pvm_pkulong, pvm_upkulong, unsigned long)
+#ifdef BOOST_HAS_LONG_LONG
+ALPS_DUMP_DO_TYPE(long long, detail::pvm_not_implemented, detail::pvm_not_implemented, long long)
+ALPS_DUMP_DO_TYPE(unsigned long long, detail::pvm_not_implemented, detail::pvm_not_implemented, unsigned long long)
+#endif
 ALPS_DUMP_DO_TYPE(float, pvm_pkfloat, pvm_upkfloat, float)
 ALPS_DUMP_DO_TYPE(double, pvm_pkdouble,pvm_upkdouble,double)
 ALPS_DUMP_DO_TYPE(long double, detail::pvm_not_implemented, detail::pvm_not_implemented, long double)

@@ -24,154 +24,178 @@
 #include <alps/osiris/std/string.h>
 
 #include <boost/throw_exception.hpp>
+#include <boost/static_assert.hpp>
 #include <cstdio>
 #include <stdexcept>
 #include <string>
 
 namespace alps {
 
+#ifdef BOOST_HAS_LONG_LONG
+
+namespace {
+
+void static_assertion() {
+  BOOST_STATIC_ASSERT(sizeof(long long) == 8);
+}
+    
+} // end namespace
+
+#endif
+
 namespace detail {
 
-bool xdr_bool(XDR *xdr, bool *bp)
+bool xdr_bool(XDR *xdrs, bool *bp)
 {
-  if (xdr->x_op == XDR_ENCODE) {
+  if (xdrs->x_op == XDR_ENCODE) {
     bool_t b = *bp;
-    return ::xdr_bool(xdr, &b);
-  } else if (xdr->x_op == XDR_DECODE) {
+    return ::xdr_bool(xdrs, &b);
+  } else if (xdrs->x_op == XDR_DECODE) {
     bool_t b;
-    bool retval = ::xdr_bool(xdr, &b);
+    bool retval = ::xdr_bool(xdrs, &b);
     *bp=b;
     return retval;
+  } else if (xdrs->x_op == XDR_FREE) {
+    return true;
   }
-  return true;
+  return false;
 }
 
-bool xdr_long_double(XDR *xdr, long double *ldp) 
+static bool xdr_s_char(XDR *xdrs, signed char *scp) 
 {
-  if (xdr->x_op == XDR_ENCODE) {
-    double high = *ldp;
-    double low  = (*ldp-high);
-    return xdr_double(xdr, &high) && xdr_double(xdr, &low);
-  } else if (xdr->x_op == XDR_DECODE) {
-    double high;
-    double low;
-    bool retval = xdr_double(xdr, &high) && xdr_double(xdr, &low); 
-    *ldp = low + high;
+  if (xdrs->x_op == XDR_ENCODE) {
+    char c = *scp;
+    return xdr_char(xdrs, &c);
+  } else if (xdrs->x_op == XDR_DECODE) {
+    char c;
+    bool retval = ::xdr_char(xdrs, &c);
+    *scp = c;
     return retval;
+  } else if (xdrs->x_op == XDR_FREE) {
+    return true;
   }
-  return true;
+  return false;
 }
 
-bool xdr_hyper (XDR *xdrs, long long *llp)
+bool xdr_hyper(XDR *xdrs, long long *llp)
 {
   long t1;
   long t2;
-
-  if (xdrs->x_op == XDR_ENCODE)
-    {
-      t1 = (long) ((*llp) >> 32);
-      t2 = (long) (*llp);
-      return (XDR_PUTLONG(xdrs, &t1) && XDR_PUTLONG(xdrs, &t2));
-    }
-
-  if (xdrs->x_op == XDR_DECODE)
-    {
-      if (!XDR_GETLONG(xdrs, &t1) || !XDR_GETLONG(xdrs, &t2))
-	return FALSE;
-      *llp = ((long long) t1) << 32;
-      *llp |= t2;
-      return TRUE;
-    }
-
-  if (xdrs->x_op == XDR_FREE)
-    return TRUE;
-
-  return FALSE;
+  if (xdrs->x_op == XDR_ENCODE) {
+    t1 = (long)((*llp) >> 32);
+    t2 = (long)(*llp);
+    return (::xdr_long(xdrs, &t1) && ::xdr_long(xdrs, &t2));
+  } else if (xdrs->x_op == XDR_DECODE) {
+    if (!::xdr_long(xdrs, &t1) || !::xdr_long(xdrs, &t2)) return false;
+    *llp = ((long long) t1) << 32;
+    *llp |= t2;
+    return true;
+  } else if (xdrs->x_op == XDR_FREE) {
+    return true;
+  }
+  return false;
 }
 
-bool xdr_u_hyper (XDR *xdrs, unsigned long long *ullp)
+bool xdr_u_hyper(XDR *xdrs, unsigned long long *llp)
 {
   unsigned long t1;
   unsigned long t2;
-
-  if (xdrs->x_op == XDR_ENCODE)
-    {
-      t1 = (unsigned long) ((*ullp) >> 32);
-      t2 = (unsigned long) (*ullp);
-      return (XDR_PUTLONG(xdrs, (long *)&t1) &&
-	      XDR_PUTLONG(xdrs, (long *)&t2));
-    }
-
-  if (xdrs->x_op == XDR_DECODE)
-    {
-      if (!XDR_GETLONG(xdrs, (long *)&t1) || !XDR_GETLONG(xdrs, (long *)&t2))
-	return FALSE;
-      *ullp = ((unsigned long long) t1) << 32;
-      *ullp |= t2;
-      return TRUE;
-    }
-
-  if (xdrs->x_op == XDR_FREE)
-    return TRUE;
-
-  return FALSE;
-}
-
-template<class T>
-struct xdr_helper;
-
-template<>
-struct xdr_helper<char>
-{
-  static bool xdr_int8_t(XDR *xdr, char *v)
-  { return xdr_char(xdr, v); };
-};
-
-template<>
-struct xdr_helper<signed char>
-{
-  static bool xdr_int8_t(XDR *xdr, signed char *scp) 
-  {
-    if (xdr->x_op == XDR_ENCODE) {
-      char c = *scp;
-      return xdr_char(xdr, &c);
-    } else if (xdr->x_op == XDR_DECODE) {
-      char c;
-      bool retval = xdr_char(xdr, &c);
-      *scp = c;
-      return retval;
-    }
+  if (xdrs->x_op == XDR_ENCODE) {
+    t1 = (unsigned long)((*llp) >> 32);
+    t2 = (unsigned long)(*llp);
+    return (::xdr_u_long(xdrs, &t1) && ::xdr_u_long(xdrs, &t2));
+  } else if (xdrs->x_op == XDR_DECODE) {
+    if (!::xdr_u_long(xdrs, &t1) || !::xdr_u_long(xdrs, &t2)) return false;
+    *llp = ((unsigned long long) t1) << 32;
+    *llp |= t2;
+    return true;
+  } else if (xdrs->x_op == XDR_FREE) {
     return true;
   }
-};
+  return false;
+}
 
-template<>
-struct xdr_helper<int>
+bool xdr_long_8(XDR *xdrs, long *lp)
 {
-  static bool xdr_int32_t(XDR *xdr, int *v)
-  { return xdr_int(xdr, v); };
-};
+  long long t;
+  if (xdrs->x_op == XDR_ENCODE) {
+    t = (long long)(*lp);
+    return alps::detail::xdr_hyper(xdrs, &t);
+  } else if (xdrs->x_op == XDR_DECODE) {
+    if (!alps::detail::xdr_hyper(xdrs, &t)) return false;
+    *lp = (long)t;
+    return true;
+  } else if (xdrs->x_op == XDR_FREE) {
+    return true;
+  }
+  return false;
+}
 
-template<>
-struct xdr_helper<long>
+bool xdr_u_long_8(XDR *xdrs, unsigned long *lp)
 {
-  static bool xdr_int32_t(XDR *xdr, long *v)
-  { return xdr_long(xdr, v); };
-};
+  unsigned long long t;
+  if (xdrs->x_op == XDR_ENCODE) {
+    t = (unsigned long long)(*lp);
+    return alps::detail::xdr_u_hyper(xdrs, &t);
+  } else if (xdrs->x_op == XDR_DECODE) {
+    if (!alps::detail::xdr_u_hyper(xdrs, &t)) return false;
+    *lp = (unsigned long)t;
+    return true;
+  } else if (xdrs->x_op == XDR_FREE) {
+    return true;
+  }
+  return false;
+}
 
-template<>
-struct xdr_helper<unsigned int>
+bool xdr_long_double(XDR *xdrs, long double *ldp) 
 {
-  static bool xdr_uint32_t(XDR *xdr, unsigned int *v)
-  { return xdr_u_int(xdr, v); };
-};
+  if (xdrs->x_op == XDR_ENCODE) {
+    double high = *ldp;
+    double low  = (*ldp-high);
+    return xdr_double(xdrs, &high) && xdr_double(xdrs, &low);
+  } else if (xdrs->x_op == XDR_DECODE) {
+    double high;
+    double low;
+    bool retval = xdr_double(xdrs, &high) && xdr_double(xdrs, &low); 
+    *ldp = low + high;
+    return retval;
+  } else if (xdrs->x_op == XDR_FREE) {
+    return true;
+  }
+  return false;
+}
 
-template<>
-struct xdr_helper<unsigned long>
-{
-  static bool xdr_uint32_t(XDR *xdr, unsigned long *v)
-  { return xdr_u_long(xdr, v); };
-};
+template<class T, int N>
+struct xdr_helper;
+
+#define ALPS_DUMP_DO_TYPE(T,X) \
+  template<int N> struct xdr_helper<T, N> { \
+    static bool xdr_do_type(XDR * xdrs, T * v) { return X (xdrs, v); } \
+  };
+#define ALPS_DUMP_DO_TYPE_N(T,N,X) \
+  template<> struct xdr_helper<T, N> { \
+    static bool xdr_do_type(XDR * xdrs, T * v) { return X (xdrs, v); } \
+  };
+ALPS_DUMP_DO_TYPE(bool, alps::detail::xdr_bool)
+ALPS_DUMP_DO_TYPE(char, xdr_char)
+ALPS_DUMP_DO_TYPE(signed char, xdr_s_char)
+ALPS_DUMP_DO_TYPE(unsigned char, xdr_u_char)
+ALPS_DUMP_DO_TYPE(short, xdr_short)
+ALPS_DUMP_DO_TYPE(unsigned short, xdr_u_short)
+ALPS_DUMP_DO_TYPE(int, xdr_int)
+ALPS_DUMP_DO_TYPE(unsigned int, xdr_u_int)
+ALPS_DUMP_DO_TYPE_N(long, 4, xdr_long)
+ALPS_DUMP_DO_TYPE_N(long, 8, xdr_long_8)
+ALPS_DUMP_DO_TYPE_N(unsigned long, 4, xdr_u_long)
+ALPS_DUMP_DO_TYPE_N(unsigned long, 8, xdr_u_long_8)
+#ifdef BOOST_HAS_LONG_LONG
+ALPS_DUMP_DO_TYPE(long long, alps::detail::xdr_hyper)
+ALPS_DUMP_DO_TYPE(unsigned long long, alps::detail::xdr_u_hyper)
+#endif
+ALPS_DUMP_DO_TYPE(float, xdr_float)
+ALPS_DUMP_DO_TYPE(double, xdr_double)
+ALPS_DUMP_DO_TYPE(long double, xdr_long_double)
+#undef ALPS_DUMP_DO_TYPE
 
 } // namespace detail
 
@@ -190,44 +214,47 @@ void OXDRDump::setPosition(uint32_t pos)
     boost::throw_exception(std::runtime_error("failed to reposition OXDRDump"));
 }
 
-#define ALPS_DUMP_DO_TYPE(T,XDR) \
+#define ALPS_DUMP_DO_TYPE(T) \
 void OXDRDump::write_simple(T x)  \
 { \
-  if (!XDR(&xdr_, const_cast<T*>(&x))) \
+  if (!detail::xdr_helper<T, sizeof(T)>::xdr_do_type(&xdr_, const_cast<T*>(&x))) \
     boost::throw_exception(std::runtime_error("failed to write type "#T" to an OXDRDump"));\
 } \
 void OXDRDump::write_array(size_t n, const T* p)  \
 { \
   int l = n; \
-  if (!xdr_vector(&xdr_, reinterpret_cast<char*>(const_cast<T*>(p)), l, sizeof(T), (xdrproc_t) &XDR)) \
+  if (!xdr_vector(&xdr_, reinterpret_cast<char*>(const_cast<T*>(p)), l, sizeof(T), (xdrproc_t) &detail::xdr_helper<T, sizeof(T)>::xdr_do_type)) \
     boost::throw_exception ( std::runtime_error("failed to write array of type "#T" to an OXDRDump")); \
 } \
 void IXDRDump::read_simple(T& x)\
 { \
-  if (!XDR(&xdr_, &x)) \
+  if (!detail::xdr_helper<T, sizeof(T)>::xdr_do_type(&xdr_, &x)) \
     boost::throw_exception(std::runtime_error("failed to read type "#T" from an IXDRDump")); \
 } \
 void IXDRDump::read_array(size_t n, T* p) \
 { \
   int l = n; \
-  if (!xdr_vector(&xdr_, reinterpret_cast<char*>(p), l, sizeof(T), (xdrproc_t) &XDR)) \
+  if (!xdr_vector(&xdr_, reinterpret_cast<char*>(p), l, sizeof(T), (xdrproc_t) &detail::xdr_helper<T, sizeof(T)>::xdr_do_type)) \
     boost::throw_exception ( std::runtime_error("failed to read array of type "#T" from an IXDRDump")); \
 }
 
-ALPS_DUMP_DO_TYPE(bool, detail::xdr_bool)
-ALPS_DUMP_DO_TYPE(int8_t, detail::xdr_helper<int8_t>::xdr_int8_t)
-ALPS_DUMP_DO_TYPE(uint8_t, xdr_u_char)
-ALPS_DUMP_DO_TYPE(int16_t, xdr_short)
-ALPS_DUMP_DO_TYPE(uint16_t, xdr_u_short)
-ALPS_DUMP_DO_TYPE(int32_t, detail::xdr_helper<int32_t>::xdr_int32_t)
-ALPS_DUMP_DO_TYPE(uint32_t, detail::xdr_helper<uint32_t>::xdr_uint32_t)
-# ifndef BOOST_NO_INT64_T
-ALPS_DUMP_DO_TYPE(int64_t, detail::xdr_hyper)
-ALPS_DUMP_DO_TYPE(uint64_t, detail::xdr_u_hyper)
-# endif
-ALPS_DUMP_DO_TYPE(float, xdr_float)
-ALPS_DUMP_DO_TYPE(double, xdr_double)
-ALPS_DUMP_DO_TYPE(long double, detail::xdr_long_double)
+ALPS_DUMP_DO_TYPE(bool)
+ALPS_DUMP_DO_TYPE(char)
+ALPS_DUMP_DO_TYPE(signed char)
+ALPS_DUMP_DO_TYPE(unsigned char)
+ALPS_DUMP_DO_TYPE(short)
+ALPS_DUMP_DO_TYPE(unsigned short)
+ALPS_DUMP_DO_TYPE(int)
+ALPS_DUMP_DO_TYPE(unsigned int)
+ALPS_DUMP_DO_TYPE(long)
+ALPS_DUMP_DO_TYPE(unsigned long)
+#ifdef BOOST_HAS_LONG_LONG
+ALPS_DUMP_DO_TYPE(long long)
+ALPS_DUMP_DO_TYPE(unsigned long long)
+#endif
+ALPS_DUMP_DO_TYPE(float)
+ALPS_DUMP_DO_TYPE(double)
+ALPS_DUMP_DO_TYPE(long double)
 
 #undef ALPS_DUMP_DO_TYPE
 

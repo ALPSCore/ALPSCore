@@ -45,15 +45,18 @@ public:
 # define ALPS_DUMP_DO_TYPE(T) \
   virtual void write_simple(T x);
   ALPS_DUMP_DO_TYPE(bool)
-  ALPS_DUMP_DO_TYPE(int8_t)
-  ALPS_DUMP_DO_TYPE(uint8_t)
-  ALPS_DUMP_DO_TYPE(int16_t)
-  ALPS_DUMP_DO_TYPE(uint16_t)
-  virtual void write_simple(int32_t x) = 0;
-  ALPS_DUMP_DO_TYPE(uint32_t)
-# ifndef BOOST_NO_INT64_T
-  ALPS_DUMP_DO_TYPE(int64_t)
-  ALPS_DUMP_DO_TYPE(uint64_t)
+  ALPS_DUMP_DO_TYPE(char)
+  ALPS_DUMP_DO_TYPE(signed char)
+  ALPS_DUMP_DO_TYPE(unsigned char)
+  ALPS_DUMP_DO_TYPE(short)
+  ALPS_DUMP_DO_TYPE(unsigned short)
+  virtual void write_simple(int x) = 0;
+  ALPS_DUMP_DO_TYPE(unsigned int)
+  ALPS_DUMP_DO_TYPE(long)
+  ALPS_DUMP_DO_TYPE(unsigned long)
+# ifdef BOOST_HAS_LONG_LONG
+  ALPS_DUMP_DO_TYPE(long long)
+  ALPS_DUMP_DO_TYPE(unsigned long long)
 # endif
   ALPS_DUMP_DO_TYPE(float)
   virtual void write_simple(double x) = 0;
@@ -70,15 +73,18 @@ public:
 # define ALPS_DUMP_DO_TYPE(T) \
   virtual void write_array(std::size_t n, const T * p);
   ALPS_DUMP_DO_TYPE(bool)
-  ALPS_DUMP_DO_TYPE(int8_t)
-  ALPS_DUMP_DO_TYPE(uint8_t)
-  ALPS_DUMP_DO_TYPE(int16_t)
-  ALPS_DUMP_DO_TYPE(uint16_t)
-  ALPS_DUMP_DO_TYPE(int32_t)
-  ALPS_DUMP_DO_TYPE(uint32_t)
-# ifndef BOOST_NO_INT64_T
-  ALPS_DUMP_DO_TYPE(int64_t)
-  ALPS_DUMP_DO_TYPE(uint64_t)
+  ALPS_DUMP_DO_TYPE(char)
+  ALPS_DUMP_DO_TYPE(signed char)
+  ALPS_DUMP_DO_TYPE(unsigned char)
+  ALPS_DUMP_DO_TYPE(short)
+  ALPS_DUMP_DO_TYPE(unsigned short)
+  ALPS_DUMP_DO_TYPE(int)
+  ALPS_DUMP_DO_TYPE(unsigned int)
+  ALPS_DUMP_DO_TYPE(long)
+  ALPS_DUMP_DO_TYPE(unsigned long)
+# ifdef BOOST_HAS_LONG_LONG
+  ALPS_DUMP_DO_TYPE(long long)
+  ALPS_DUMP_DO_TYPE(unsigned long long)
 # endif
   ALPS_DUMP_DO_TYPE(float)
   ALPS_DUMP_DO_TYPE(double)
@@ -122,15 +128,18 @@ public:
 # define ALPS_DUMP_DO_TYPE(T) \
   virtual void read_simple(T& x);
   ALPS_DUMP_DO_TYPE(bool)
-  ALPS_DUMP_DO_TYPE(int8_t)
-  ALPS_DUMP_DO_TYPE(uint8_t)
-  ALPS_DUMP_DO_TYPE(int16_t)
-  ALPS_DUMP_DO_TYPE(uint16_t)
-  virtual void read_simple(int32_t& x) = 0;
-  ALPS_DUMP_DO_TYPE(uint32_t)
-# ifndef BOOST_NO_INT64_T
-  ALPS_DUMP_DO_TYPE(int64_t)
-  ALPS_DUMP_DO_TYPE(uint64_t)
+  ALPS_DUMP_DO_TYPE(char)
+  ALPS_DUMP_DO_TYPE(signed char)
+  ALPS_DUMP_DO_TYPE(unsigned char)
+  ALPS_DUMP_DO_TYPE(short)
+  ALPS_DUMP_DO_TYPE(unsigned short)
+  virtual void read_simple(int& x) = 0;
+  ALPS_DUMP_DO_TYPE(unsigned int)
+  ALPS_DUMP_DO_TYPE(long)
+  ALPS_DUMP_DO_TYPE(unsigned long)
+# ifdef BOOST_HAS_LONG_LONG
+  ALPS_DUMP_DO_TYPE(long long)
+  ALPS_DUMP_DO_TYPE(unsigned long long)
 # endif
   ALPS_DUMP_DO_TYPE(float)
   virtual void read_simple(double& x) = 0;
@@ -146,15 +155,18 @@ public:
 # define ALPS_DUMP_DO_TYPE(T) \
   virtual void read_array(std::size_t n, T * p);
   ALPS_DUMP_DO_TYPE(bool)
-  ALPS_DUMP_DO_TYPE(int8_t)
-  ALPS_DUMP_DO_TYPE(uint8_t)
-  ALPS_DUMP_DO_TYPE(int16_t)
-  ALPS_DUMP_DO_TYPE(uint16_t)
-  ALPS_DUMP_DO_TYPE(int32_t)
-  ALPS_DUMP_DO_TYPE(uint32_t)
-# ifndef BOOST_NO_INT64_T
-  ALPS_DUMP_DO_TYPE(int64_t)
-  ALPS_DUMP_DO_TYPE(uint64_t)
+  ALPS_DUMP_DO_TYPE(char)
+  ALPS_DUMP_DO_TYPE(signed char)
+  ALPS_DUMP_DO_TYPE(unsigned char)
+  ALPS_DUMP_DO_TYPE(short)
+  ALPS_DUMP_DO_TYPE(unsigned short)
+  ALPS_DUMP_DO_TYPE(int)
+  ALPS_DUMP_DO_TYPE(unsigned int)
+  ALPS_DUMP_DO_TYPE(long)
+  ALPS_DUMP_DO_TYPE(unsigned long)
+# ifdef BOOST_HAS_LONG_LONG
+  ALPS_DUMP_DO_TYPE(long long)
+  ALPS_DUMP_DO_TYPE(unsigned long long)
 # endif
   ALPS_DUMP_DO_TYPE(float)
   ALPS_DUMP_DO_TYPE(double)
@@ -170,15 +182,18 @@ public:
 # define ALPS_DUMP_DO_TYPE(T) \
   operator T () { return get<T>(); }
   ALPS_DUMP_DO_TYPE(bool)
-  ALPS_DUMP_DO_TYPE(int8_t)
-  ALPS_DUMP_DO_TYPE(uint8_t)
-  ALPS_DUMP_DO_TYPE(int16_t)
-  ALPS_DUMP_DO_TYPE(uint16_t)
-  ALPS_DUMP_DO_TYPE(int32_t)
-  ALPS_DUMP_DO_TYPE(uint32_t)
-# ifndef BOOST_NO_INT64_T
-  ALPS_DUMP_DO_TYPE(int64_t)
-  ALPS_DUMP_DO_TYPE(uint64_t)
+  ALPS_DUMP_DO_TYPE(char)
+  ALPS_DUMP_DO_TYPE(signed char)
+  ALPS_DUMP_DO_TYPE(unsigned char)
+  ALPS_DUMP_DO_TYPE(short)
+  ALPS_DUMP_DO_TYPE(unsigned short)
+  ALPS_DUMP_DO_TYPE(int)
+  ALPS_DUMP_DO_TYPE(unsigned int)
+  ALPS_DUMP_DO_TYPE(long)
+  ALPS_DUMP_DO_TYPE(unsigned long)
+# ifdef BOOST_HAS_LONG_LONG
+  ALPS_DUMP_DO_TYPE(long long)
+  ALPS_DUMP_DO_TYPE(unsigned long long)
 # endif
   ALPS_DUMP_DO_TYPE(float)
   ALPS_DUMP_DO_TYPE(double)
@@ -233,26 +248,29 @@ private:
 namespace alps {
 #endif
 
-#define DUMP_DO_TYPE(T) \
+#define ALPS_DUMP_DO_TYPE(T) \
 inline alps::ODump& operator<<(alps::ODump& dump, T x) \
 { dump.write_simple(x); return dump; } \
 inline alps::IDump& operator>>(alps::IDump& dump, T& x) \
 { dump.read_simple(x); return dump; }
-DUMP_DO_TYPE(bool)
-DUMP_DO_TYPE(int8_t)
-DUMP_DO_TYPE(uint8_t)
-DUMP_DO_TYPE(int16_t)
-DUMP_DO_TYPE(uint16_t)
-DUMP_DO_TYPE(int32_t)
-DUMP_DO_TYPE(uint32_t)
-#ifndef BOOST_NO_INT64_T
-DUMP_DO_TYPE(int64_t)
-DUMP_DO_TYPE(uint64_t)
+ALPS_DUMP_DO_TYPE(bool)
+ALPS_DUMP_DO_TYPE(char)
+ALPS_DUMP_DO_TYPE(signed char)
+ALPS_DUMP_DO_TYPE(unsigned char)
+ALPS_DUMP_DO_TYPE(short)
+ALPS_DUMP_DO_TYPE(unsigned short)
+ALPS_DUMP_DO_TYPE(int)
+ALPS_DUMP_DO_TYPE(unsigned int)
+ALPS_DUMP_DO_TYPE(long)
+ALPS_DUMP_DO_TYPE(unsigned long)
+#ifdef BOOST_HAS_LONG_LONG
+ALPS_DUMP_DO_TYPE(long long)
+ALPS_DUMP_DO_TYPE(unsigned long long)
 #endif
-DUMP_DO_TYPE(float)
-DUMP_DO_TYPE(double)
-DUMP_DO_TYPE(long double)
-#undef DUMP_DO_TYPE
+ALPS_DUMP_DO_TYPE(float)
+ALPS_DUMP_DO_TYPE(double)
+ALPS_DUMP_DO_TYPE(long double)
+#undef ALPS_DUMP_DO_TYPE
 
 template<class T>
 alps::ODump& operator<<(alps::ODump& dump, const std::complex<T>& x)
