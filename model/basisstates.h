@@ -81,6 +81,8 @@ public:
   inline size_type index(const value_type& x) const
   {
     const_iterator it = std::lower_bound(super_type::begin(), super_type::end(), x);
+    if (it==super_type::end())
+      return super_type::size();
     return (*it==x ? it-super_type::begin() : super_type::size());
   }
 
