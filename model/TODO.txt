@@ -1,41 +1,61 @@
-* adding of quantum numbers
-  - make sure that (1-N) + (1-N) gets evaluated to 2-N
+06/03
 
-* evaluate a sum of QNs on a state
+* adding of quantum numbers
+  - make sure that (1-N) + (1-N) gets evaluated to 2-N (AG)
+
+* evaluate a sum of QNs on a state (MT)
+
+* basis sets with restriction to specific QNs, e.g. N, Sz (AG)
+
+* split multi-site term into site terms (MT)
+
+* sorted basis sets + binary search (MT)
+
+
+07/03
+
+*regular expressions for wild card in Hamiltonian (ST)
+
+
+08/03
+
+* multisite (n-site) terms in Hamiltonian (tba)
+
+
+09/03
+
+* start with limited basis set, add basis states (AG/ST)
+
+* merging of basis sets + subsequent sort (AG/ST)
+
+* iterator over embeddings of "constraint-graph" of multi-site operator into lattice (AG/ST)
+
+* basis transformation for bond Hamiltonian (AG/ST)
+
+* arbitrary multi-site operators for measurements, also useful as base class of Hamiltonian (tba)
+
 
 * site basis sets with dependency of min/max of one QN on other QN, e.g. t-J
 
-* basis sets with restriction to specific QNs, e.g. N, Sz
 
-* start with limited basis set, add basis states
+10/03
 
-* merging of basis sets
+* definition of multi-site operators (e.g. hop()). (MT)
 
-* leave sqrt(2) ... symbolic in Expression
 
-* complex (n-site) terms in Hamiltonian
+XX/03
 
-* definition of multi-site operators (e.g. hop()).
+* leave sqrt(2) ... symbolic in Expression (MT)
 
-* iterator over embeddings of "constraint-graph" of multi-site operator into lattice
+* allow complex values in Expression library (MT)
 
-* allow complex values in Expression library
-
-* add Nauty interface to BGL
+* add Nauty interface to BGL (ST)
 
 * fermion sign:
   - normal order sort site operators in term by site number
-  - determine sign
+  - determine sign (AG/ST)
   
-* split multi-site term into site terms
-
-* basis transformation for bond Hamiltonian
-
-* symbolic basis transformation for bond Hamiltonian
-
-* arbitrary multi-site operators for measurements, also useful as base class of Hamiltonian
-
-
+* symbolic basis transformation for bond Hamiltonian (tba)
 
 
 
