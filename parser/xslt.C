@@ -37,7 +37,7 @@ std::string alps::xslt_path(const std::string& stylefile) {
 else if (stylefile == "job.xsl")
   return "http://xml.comp-phys.org/2002/10/job.xsl";
 else if (stylefile == "ALPS.xsl")
-  return "http://xml.comp-phys.org/2002/10/ALPS.xsl";
+  return "http://xml.comp-phys.org/2004/10/ALPS.xsl";
   else if (stylefile == "plot2html.xsl")
     return "http://xml.comp-phys.org/2003/4/plot2html.xsl";
 else
