@@ -1,25 +1,23 @@
-/***************************************************************************
-* ALPS++/alea library
+/*****************************************************************************
 *
-* alps/alea/simpleobsdata.h     Monte Carlo observable class
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
 * Copyright (C) 1994-2003 by Matthias Troyer <troyer@comp-phys.org>,
-*                            Beat Ammon <beat.ammon@bluewin.ch>, 
+*                            Beat Ammon <beat.ammon@bluewin.ch>,
 *                            Andreas Laeuchli <laeuchli@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>,
 *                            Andreas Lange <alange@phys.ethz.ch>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -29,7 +27,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 #ifndef ALPS_ALEA_SIMPLEOBSDATA_H
 #define ALPS_ALEA_SIMPLEOBSDATA_H
@@ -263,10 +263,10 @@ SimpleObservableData<T>::SimpleObservableData(const SimpleObservableData<U>& x, 
   std::transform(x.values_.begin(), x.values_.end(), values_.begin(),
                  boost::bind2nd(obs_value_slice<U,S>(),s));
   std::transform(x.values2_.begin(), x.values2_.end(), values2_.begin(),
-		 boost::bind2nd(obs_value_slice<U,S>(),s));
+                 boost::bind2nd(obs_value_slice<U,S>(),s));
   if (jack_valid_)
     std::transform(x.jack_.begin(), x.jack_.end(), jack_.begin(),
-		   boost::bind2nd(obs_value_slice<U,S>(),s));
+                   boost::bind2nd(obs_value_slice<U,S>(),s));
 }
 
 template <class T>
@@ -521,8 +521,8 @@ inline SimpleObservableData<T>& SimpleObservableData<T>::operator*=(const Simple
   if(count() && x.count())
     error_=sqrt(error()*error()*x.mean()*x.mean()+mean()*mean()*x.error()*x.error());
   transform(x,alps::multiplies<value_type,X,value_type>(), alps::multiplies<
-	    result_type, typename SimpleObservableData<X>::result_type,
-	    result_type>());
+            result_type, typename SimpleObservableData<X>::result_type,
+            result_type>());
   return (*this);
 }
 
@@ -543,7 +543,7 @@ template <class T>
 template <class OPV, class OPR, class X>
 inline
 void SimpleObservableData<T>::transform(const SimpleObservableData<X>& x,
-					OPV opv, OPR opr)
+                                        OPV opv, OPR opr)
 {
   if ((count()==0) || (x.count()==0))
     boost::throw_exception(std::runtime_error("both observables need measurements"));
@@ -560,8 +560,8 @@ void SimpleObservableData<T>::transform(const SimpleObservableData<X>& x,
   has_tau_=false;
   values2_.clear();
   bool delete_bins = (bin_number() != x.bin_number() ||
-		      bin_size() != x.bin_size() ||
-		      jack_.size() != x.jack_.size() );
+                      bin_size() != x.bin_size() ||
+                      jack_.size() != x.jack_.size() );
   if (delete_bins) {
     values_.clear();
     jack_.clear();
@@ -738,7 +738,7 @@ inline void SimpleObservableData<T>::collect_from(const std::vector<SimpleObserv
   uint32_t minsize = std::numeric_limits<uint32_t>::max();
   uint32_t maxsize = 0;
   for (typename std::vector<SimpleObservableData<T> >::const_iterator
-	 r = runs.begin(); r != runs.end(); ++r) {
+         r = runs.begin(); r != runs.end(); ++r) {
     if (r->count()) {
       if (r->bin_size() < minsize) minsize = r->bin_size();
       if (r->bin_size() > maxsize) maxsize = r->bin_size();
@@ -748,17 +748,17 @@ inline void SimpleObservableData<T>::collect_from(const std::vector<SimpleObserv
   binsize_ = maxsize;
   
   for (typename std::vector<SimpleObservableData<T> >::const_iterator
-	 r = runs.begin(); r != runs.end(); ++r) {
+         r = runs.begin(); r != runs.end(); ++r) {
     if (r->count()) {
       if (!got_data) {
-	// initialize
-	jack_valid_ = true;
+        // initialize
+        jack_valid_ = true;
 
         has_variance_ = r->has_variance_;
         has_tau_ = r->has_tau_;
         has_minmax_ = r->has_minmax_;
         can_set_thermal_ = r->can_set_thermal_;
-	nonlinear_operations_ = r->nonlinear_operations_;
+        nonlinear_operations_ = r->nonlinear_operations_;
         changed_ = r->changed_;
         obs_value_traits<result_type>::copy(mean_,r->mean_);
         obs_value_traits<result_type>::copy(error_,r->error_);
@@ -774,49 +774,49 @@ inline void SimpleObservableData<T>::collect_from(const std::vector<SimpleObserv
         discardedmeas_ = r->discardedmeas_;
         count_ = r->count();
 
-	if (r->bin_size() == maxsize) {
-	  r->fill_jack();
-	  values_ = r->values_;
-	  values2_ = r->values2_;
-	  jack_ = r->jack_;
-	} else {
-	  SimpleObservableData<T> tmp(*r);
-	  tmp.set_bin_size(maxsize);
-	  tmp.fill_jack();
-	  values_ = tmp.values_;
-	  values2_ = tmp.values2_;
-	  jack_ = tmp.jack_;
-	}
+        if (r->bin_size() == maxsize) {
+          r->fill_jack();
+          values_ = r->values_;
+          values2_ = r->values2_;
+          jack_ = r->jack_;
+        } else {
+          SimpleObservableData<T> tmp(*r);
+          tmp.set_bin_size(maxsize);
+          tmp.fill_jack();
+          values_ = tmp.values_;
+          values2_ = tmp.values2_;
+          jack_ = tmp.jack_;
+        }
         got_data=true;
       } else {
-	// add
-	jack_valid_ = false;
+        // add
+        jack_valid_ = false;
 
         has_variance_ = has_variance_ && r->has_variance_;
         has_tau_ = has_tau_ && r->has_tau_;
         has_minmax_ = has_minmax_ && r->has_minmax_;
         can_set_thermal_ = can_set_thermal_ && r->can_set_thermal_;
-	nonlinear_operations_ = nonlinear_operations_ || r->nonlinear_operations_;
+        nonlinear_operations_ = nonlinear_operations_ || r->nonlinear_operations_;
         changed_ = changed_ && r->changed_;
         if(has_minmax_) {
           obs_value_traits<value_type>::check_for_min(min_, r->min_);
           obs_value_traits<value_type>::check_for_max(max_, r->max_);
-	}
+        }
         mean_ = (double(count_)*mean_+double(r->count_)*r->mean_)
                 / double(count_ + r->count_);
         using std::sqrt;
         using alps::sqrt;
         error_ = sqrt(double(count_)*double(count_)*error_*error_
-		      +double(r->count_)*double(r->count_)*r->error_*r->error_)
-	  / double(count_ + r->count_);
+                      +double(r->count_)*double(r->count_)*r->error_*r->error_)
+          / double(count_ + r->count_);
         if(has_variance_)
           variance_ = (double(count_)*variance_+double(r->count_)*r->variance_)
-	    / double(count_ + r->count_);
+            / double(count_ + r->count_);
         if(has_tau_)
           tau_ = (double(count_)*tau_+double(r->count_)*r->tau_)
-	    / double(count_ + r->count_);
+            / double(count_ + r->count_);
         if(has_minmax_) {
-	  obs_value_traits<value_type>::check_for_min(min_,r->min_);
+          obs_value_traits<value_type>::check_for_min(min_,r->min_);
           obs_value_traits<value_type>::check_for_max(max_,r->max_);
         }
 
@@ -824,19 +824,19 @@ inline void SimpleObservableData<T>::collect_from(const std::vector<SimpleObserv
         discardedmeas_ = std::min(discardedmeas_, r->discardedmeas_);
         count_ += r->count();
 
-	if (r->bin_size() == maxsize) {
-	  std::copy(r->values_.begin(), r->values_.end(),
-		    std::back_inserter(values_));
-	  std::copy(r->values2_.begin(), r->values2_.end(),
-		    std::back_inserter(values2_));
-	} else {
-	  SimpleObservableData<T> tmp(*r);
-	  tmp.set_bin_size(maxsize);
-	  std::copy(tmp.values_.begin(), tmp.values_.end(),
-		    std::back_inserter(values_));
-	  std::copy(tmp.values2_.begin(), tmp.values2_.end(),
-		    std::back_inserter(values2_));
-	}
+        if (r->bin_size() == maxsize) {
+          std::copy(r->values_.begin(), r->values_.end(),
+                    std::back_inserter(values_));
+          std::copy(r->values2_.begin(), r->values2_.end(),
+                    std::back_inserter(values2_));
+        } else {
+          SimpleObservableData<T> tmp(*r);
+          tmp.set_bin_size(maxsize);
+          std::copy(tmp.values_.begin(), tmp.values_.end(),
+                    std::back_inserter(values_));
+          std::copy(tmp.values2_.begin(), tmp.values2_.end(),
+                    std::back_inserter(values2_));
+        }
       }
     }
   }
@@ -890,7 +890,7 @@ void SimpleObservableData<T>::fill_jack() const
     for(uint32_t i = 0; i < bin_number(); ++i) {
       obs_value_traits<result_type>::resize_same_as(jack_[i+1], jack_[0]);
       jack_[i+1] = jack_[0]
-	- (obs_value_cast<result_type,value_type>(bin_value(i)) / count_type(bin_size()));
+        - (obs_value_cast<result_type,value_type>(bin_value(i)) / count_type(bin_size()));
       jack_[i+1] /= count_type(bin_number() - 1);
     }
     jack_[0] /= count_type(bin_number());
@@ -899,8 +899,8 @@ void SimpleObservableData<T>::fill_jack() const
     for(int32_t i=0;i<bin_number()+1;++i) {
       obs_value_traits<result_type>::resize_same_as(jack_[i],bin_value(0));
       for(int32_t j(0);j<bin_number();++j){
-	if(j+1!=i)
-	  jack_[i]+=obs_value_cast<result_type,value_type>(bin_value(j)) / count_type(bin_size());
+        if(j+1!=i)
+          jack_[i]+=obs_value_cast<result_type,value_type>(bin_value(j)) / count_type(bin_size());
       }
     }
     jack_[0]/=count_type(bin_number());

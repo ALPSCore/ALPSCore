@@ -1,21 +1,19 @@
-/***************************************************************************
-* ALPS++/scheduler library
+/*****************************************************************************
 *
-* scheduler/types.h
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -25,7 +23,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 #ifndef ALPS_SCHEDULER_FORWARD_H___
 #define ALPS_SCHEDULER_FORWARD_H___
@@ -41,7 +41,7 @@ namespace scheduler {
 
 enum MCDumpType {
     // dump magic numbers
-    MCDump_scheduler		=1,
+    MCDump_scheduler                =1,
     MCDump_task              =2,
     MCDump_run                     =3,
     MCDump_measurements            =4,
@@ -62,7 +62,7 @@ enum MCMP_Tags {
   MCMP_stop_slave_scheduler        = 101,
   MCMP_make_slave_task             = 102,
   MCMP_make_task                   = 103,
-  MCMP_dump_name		   = 104,
+  MCMP_dump_name                   = 104,
   MCMP_delete_task                 = 106,
   MCMP_get_task_finished           = 108,
   MCMP_start_task                  = 109,
@@ -84,7 +84,7 @@ enum MCMP_Tags {
   MCMP_get_measurements            = 208,
   MCMP_save_run_to_file            = 211,
   MCMP_load_run_from_file          = 212,
-  MCMP_get_run_work		   = 215,
+  MCMP_get_run_work                   = 215,
   MCMP_set_parameters              = 216,
 
 // messages returned to the scheduler or task
@@ -94,7 +94,7 @@ enum MCMP_Tags {
   MCMP_measurements                = 303,
   MCMP_task_finished               = 304,
   MCMP_work                        = 311,
-  MCMP_run_work			   = 315,
+  MCMP_run_work                           = 315,
 
 // messages between main and slave runs
   MCMP_do_steps                    = 500

@@ -1,22 +1,20 @@
-/***************************************************************************
-* ALPS++/lattice library
+/*****************************************************************************
 *
-* lattice/parity.h   setting parity for bipartite graphs
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
-* Copyright (C) 2001-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 2001-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -26,7 +24,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 #ifndef ALPS_LATTICE_PARITY_H
 #define ALPS_LATTICE_PARITY_H
@@ -84,7 +84,7 @@ protected:
   void flip() { p_ = (p_ == white ? black : white); }
   void check(edge_descriptor e, const Graph& g) {
     if (map_[boost::source(e, g)] == undefined ||
- 	map_[boost::target(e, g)] == undefined) {
+         map_[boost::target(e, g)] == undefined) {
       boost::throw_exception(std::runtime_error("unvisited vertex found"));
     }
     if (map_[boost::source(e, g)] == map_[boost::target(e, g)]) 
@@ -110,7 +110,7 @@ bool set_parity(Map map, const Graph& g)
   boost::depth_first_search(g, boost::visitor(v));
   if (!check) {
     for (vertex_iterator itr = boost::vertices(g).first;
-	  itr != boost::vertices(g).second; ++itr) {
+          itr != boost::vertices(g).second; ++itr) {
       boost::put(map, *itr, parity::undefined);
     }
   }

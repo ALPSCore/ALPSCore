@@ -1,22 +1,20 @@
-/***************************************************************************
-* ALPS/scheduler library
+/*****************************************************************************
 *
-* scheduler/scheduler.C
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
 * Copyright (C) 1994-2003 by Matthias Troyer <troyer@comp-phys.org>,
-*                            Synge Todo <wistaria@comp-phys.org>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -26,7 +24,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 // This file implements behavior common to all schedulers
 
@@ -76,76 +76,76 @@ int Scheduler::run() // a slave scheduler
         break;
           
       case palm::SignalHandler::STOP:
-	std::cerr  << "stopping slave...\n";
-	sig.stopprocess(); // stop the process
-	break;
+        std::cerr  << "stopping slave...\n";
+        sig.stopprocess(); // stop the process
+        break;
 
       case palm::SignalHandler::TERMINATE:
         std::cerr  << "exiting slave...\n";
-	if(theTask) {
-	  theTask->halt();
-	  delete theTask;
-	  theTask=0;
-	}
-	return -1; 
-	break;
+        if(theTask) {
+          theTask->halt();
+          delete theTask;
+          theTask=0;
+        }
+        return -1; 
+        break;
           
       default:
-	boost::throw_exception(std::logic_error("invalid signal"));
+        boost::throw_exception(std::logic_error("invalid signal"));
     }*/
       
       // check true
       messageswaiting=true;
       do {
-	if(IMPDump::probe(master,MCMP_stop_slave_scheduler)) {
-	  message.receive(master,MCMP_stop_slave_scheduler);
-	  terminate=true;
-	}
+        if(IMPDump::probe(master,MCMP_stop_slave_scheduler)) {
+          message.receive(master,MCMP_stop_slave_scheduler);
+          terminate=true;
+        }
       OMPDump dump;
       if(!theTask) {
-	switch(IMPDump::probe()) {
-	  case 0:
-	    messageswaiting=false; // no messages
-	    break;
-		  
-	  case MCMP_stop_slave_scheduler:
-	    break; // dealt with at another place
-		  
-	  case MCMP_make_slave_task:
-	    message.receive(MCMP_make_slave_task);
-	    simmaster = message.sender();
-	    theTask = new SlaveTask(simmaster);
-	    break;
-		  
-	  case MCMP_make_task:
-	    message.receive(MCMP_make_task);
-	    simmaster = message.sender();
-	    message >> where >> filename;
-	    theTask = make_task(where,boost::filesystem::path(filename,boost::filesystem::native));
-	    break;
-		  
-	  default:
-	    boost::throw_exception( std::logic_error("received invalid message in Scheduler::run()"));
-	}                
+        switch(IMPDump::probe()) {
+          case 0:
+            messageswaiting=false; // no messages
+            break;
+                  
+          case MCMP_stop_slave_scheduler:
+            break; // dealt with at another place
+                  
+          case MCMP_make_slave_task:
+            message.receive(MCMP_make_slave_task);
+            simmaster = message.sender();
+            theTask = new SlaveTask(simmaster);
+            break;
+                  
+          case MCMP_make_task:
+            message.receive(MCMP_make_task);
+            simmaster = message.sender();
+            message >> where >> filename;
+            theTask = make_task(where,boost::filesystem::path(filename,boost::filesystem::native));
+            break;
+                  
+          default:
+            boost::throw_exception( std::logic_error("received invalid message in Scheduler::run()"));
+        }                
       }
       else {
-	int tag=IMPDump::probe(simmaster);
-	switch(tag) {
-	  case 0: // no messages
-	    messageswaiting=false;
-	    break;
+        int tag=IMPDump::probe(simmaster);
+        switch(tag) {
+          case 0: // no messages
+            messageswaiting=false;
+            break;
                     
-	  case MCMP_delete_task:
-	    message.receive(simmaster,MCMP_delete_task);
-	    delete theTask;
-	    theTask=0;
-	    simmaster = Process();
-	    break;
+          case MCMP_delete_task:
+            message.receive(simmaster,MCMP_delete_task);
+            delete theTask;
+            theTask=0;
+            simmaster = Process();
+            break;
                 
-	  default:
-	    messageswaiting=theTask->handle_message(simmaster,tag);
-	    break;
-	}
+          default:
+            messageswaiting=theTask->handle_message(simmaster,tag);
+            break;
+        }
       }
     } while (messageswaiting);
     

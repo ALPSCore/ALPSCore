@@ -1,22 +1,20 @@
-/***************************************************************************
-* ALPS++/lattice library
+/*****************************************************************************
 *
-* lattice/unitcell.C     the unit cell of a lattice
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -26,7 +24,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 #include <alps/config.h>
 
@@ -72,7 +72,7 @@ GraphUnitCell::GraphUnitCell(const XMLTag& intag, std::istream& p)
       }
 
       if (tag.type!=XMLTag::SINGLE) {
-      	tag = parse_tag(p);
+              tag = parse_tag(p);
         if(tag.name=="COORDINATE") {
           if (tag.type!=XMLTag::SINGLE) {
             read_vector(parse_content(p),coord,dimension());
@@ -82,7 +82,7 @@ GraphUnitCell::GraphUnitCell(const XMLTag& intag, std::istream& p)
           }
           tag=parse_tag(p);
         }
-      	if (tag.name!="/VERTEX")
+              if (tag.name!="/VERTEX")
           boost::throw_exception(std::runtime_error("closing </VERTEX> tag missing"));
       }
 
@@ -178,15 +178,15 @@ void GraphUnitCell::write_xml(oxstream& xml) const
   for (edge_iterator it=boost::edges(graph_).first;
                      it!=boost::edges(graph_).second;++it) {
     xml << start_tag("EDGE")
-	<< attribute("type", boost::get(edge_type_t(),graph_,*it))
-	<< no_linebreak;
+        << attribute("type", boost::get(edge_type_t(),graph_,*it))
+        << no_linebreak;
     xml << start_tag("SOURCE")
-	<< attribute("vertex",boost::source(*it,graph_)+1);
+        << attribute("vertex",boost::source(*it,graph_)+1);
     if (boost::get(source_offset_t(),graph_,*it).size())
       xml << attribute("offset", vector_writer(boost::get(source_offset_t(),graph_,*it)));
     xml << end_tag("SOURCE");
     xml << start_tag("TARGET")
-	<< attribute("vertex", boost::target(*it,graph_)+1);
+        << attribute("vertex", boost::target(*it,graph_)+1);
     if (boost::get(target_offset_t(),graph_,*it).size())
       xml << attribute("offset", vector_writer(boost::get(target_offset_t(),graph_,*it)));
     xml << end_tag("TARGET");

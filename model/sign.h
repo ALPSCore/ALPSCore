@@ -1,22 +1,20 @@
-/***************************************************************************
-* ALPS/model library
+/*****************************************************************************
 *
-* model/sign.h    checks for sign problem
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
-* Copyright (C) 2003-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
-*                            Synge Todo <wistaria@comp-phys.org>,
+* Copyright (C) 2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+*                       Synge Todo <wistaria@comp-phys.org>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -26,7 +24,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 #ifndef ALPS_MODEL_SIGN_H
 #define ALPS_MODEL_SIGN_H
@@ -162,7 +162,7 @@ bool has_sign_problem(const HamiltonianDescriptor<I>& ham, const G& graph, const
   // build and check bond matrices for all bond types
   std::map<boost::tuple<int,int,int>,int> bond_sign;
   for (typename boost::graph_traits<graph_type>::edge_iterator
-	 it=boost::edges(graph).first; it!=boost::edges(graph).second ; ++it) {
+         it=boost::edges(graph).first; it!=boost::edges(graph).second ; ++it) {
     int btype  = bond_type[*it];
     int stype1 = site_type[boost::source(*it,graph)];
     int stype2 = site_type[boost::target(*it,graph)];

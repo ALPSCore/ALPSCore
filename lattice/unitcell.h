@@ -1,22 +1,20 @@
-/***************************************************************************
-* ALPS++/lattice library
+/*****************************************************************************
 *
-* lattice/unitcell.h     the unit cell of a lattice
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@comp-phys.org>
+* Copyright (C) 2001-2003 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -26,7 +24,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 #ifndef ALPS_LATTICE_UNITCELL_H
 #define ALPS_LATTICE_UNITCELL_H
@@ -51,7 +51,7 @@ public:
   EmptyUnitCell(std::size_t d=0) : dim_(d) {}
   std::size_t dimension() const {return dim_;}
 private:
-  std::size_t dim_;	
+  std::size_t dim_;        
 };
 
 inline dimensional_traits<EmptyUnitCell>::dimension_type
@@ -68,12 +68,12 @@ public:
   typedef boost::adjacency_list<boost::vecS,boost::vecS,boost::directedS,
                                 // vertex property
                                 boost::property<coordinate_t,detail::coordinate_type,
-				  boost::property<vertex_type_t,int> >,
-				// edge property
-				boost::property<target_offset_t,offset_type,
-				  boost::property<source_offset_t,offset_type,
-				    boost::property<edge_type_t,int > > >
-				> graph_type;
+                                  boost::property<vertex_type_t,int> >,
+                                // edge property
+                                boost::property<target_offset_t,offset_type,
+                                  boost::property<source_offset_t,offset_type,
+                                    boost::property<edge_type_t,int > > >
+                                > graph_type;
 
   GraphUnitCell();
   GraphUnitCell(const EmptyUnitCell& e);
@@ -85,7 +85,7 @@ public:
   std::size_t dimension() const { return dim_;}
   const std::string& name() const { return name_;}
   
-private:	
+private:        
   graph_type graph_;
   std::size_t dim_;
   std::string name_;
@@ -113,14 +113,14 @@ namespace alps {
 inline alps::oxstream& operator<<(alps::oxstream& out, const alps::GraphUnitCell& u)
 {
   u.write_xml(out);
-  return out;	
+  return out;        
 }
 
 inline std::ostream& operator<<(std::ostream& out, const alps::GraphUnitCell& u)
 {
   oxstream xml(out);
   xml << u;
-  return out;	
+  return out;        
 }
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE

@@ -1,22 +1,20 @@
-/***************************************************************************
-* PALM++/xml library
+/*****************************************************************************
 *
-* xml/xmlhandler.h   XML handler abstract class
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
 * Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
-*                            Synge Todo <wistaria@comp-phys.org>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -26,7 +24,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 #ifndef PALM_XML_XMLHANDLER_H
 #define PALM_XML_XMLHANDLER_H
@@ -57,7 +57,7 @@ public:
   std::string basename() const { return basename_; }
 
   virtual void start_element(const std::string& name,
-			     const XMLAttributes& attributes) = 0;
+                             const XMLAttributes& attributes) = 0;
   virtual void end_element(const std::string& name) = 0;
   virtual void text(const std::string& text) = 0;
 
@@ -73,7 +73,7 @@ public:
   DummyXMLHandler(const std::string& basename)
     : XMLHandlerBase(basename) {}
   void start_element(const std::string& /* name */,
-		     const XMLAttributes& /* attributes */) {}
+                     const XMLAttributes& /* attributes */) {}
   void end_element(const std::string& /* name */) {}
   void text(const std::string& /* text */) {}
 };
@@ -86,12 +86,12 @@ public:
   typedef T value_type;
 
   SimpleXMLHandler(const std::string& basename,
-		   T& t,
-		   const std::string& attr = "")
+                   T& t,
+                   const std::string& attr = "")
     : XMLHandlerBase(basename), value_(t), attr_(attr), started_(false) {}
     
   virtual void start_element(const std::string& name,
-			     const XMLAttributes& attributes) {
+                             const XMLAttributes& attributes) {
     if (name != basename())
       boost::throw_exception(std::runtime_error("SimpleXMLHandler::start_element: unknown start tag <" + name + ">"));
     if (started_)
@@ -99,9 +99,9 @@ public:
     started_ = true;
     if (!attr_.empty()) {
       if (!attributes.defined(attr_))
-	boost::throw_exception(std::runtime_error("SimpleXMLHandler::start_element: attribute \"" + attr_ + "\" not defined in <" + name + "> tag"));
+        boost::throw_exception(std::runtime_error("SimpleXMLHandler::start_element: attribute \"" + attr_ + "\" not defined in <" + name + "> tag"));
       value_ =
-	boost::lexical_cast<value_type>(attributes[attr_]);
+        boost::lexical_cast<value_type>(attributes[attr_]);
     }
     started_ = true;
   }
@@ -146,7 +146,7 @@ public:
   bool has_handler(const std::string& name) const;
 
   void start_element(const std::string& name,
-		     const XMLAttributes& attributes);
+                     const XMLAttributes& attributes);
   void end_element(const std::string& name);
   void text(const std::string& text);
 
@@ -159,7 +159,7 @@ protected:
   virtual void end_child(const std::string& /* name */) {}
 
   virtual bool start_element_impl(const std::string& /* name */,
-				  const XMLAttributes& /* attributes */) {
+                                  const XMLAttributes& /* attributes */) {
     return false;
   }
   virtual bool end_element_impl(const std::string& /* name */) { return false; }
@@ -202,9 +202,9 @@ public:
     : XMLHandlerBase("printer"), oxs_(os), in_text_(false) {}
 
   void start_element(const std::string& name,
-		     const XMLAttributes& attributes) {
+                     const XMLAttributes& attributes) {
     oxs_ << start_tag(name)
-	 << attributes;
+         << attributes;
     in_text_ = false;
   }
   void end_element(const std::string& name) {

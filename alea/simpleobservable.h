@@ -1,24 +1,22 @@
-/***************************************************************************
-* ALPS++/alea library
+/*****************************************************************************
 *
-* alps/alea/simpleobservable.h     Monte Carlo observable class
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
 * Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@itp.phys.ethz.ch>,
-*                            Synge Todo <wistaria@comp-phys.org>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -28,7 +26,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 #ifndef ALPS_ALEA_SIMPLEOBSERVABLE_H
 #define ALPS_ALEA_SIMPLEOBSERVABLE_H
@@ -58,7 +58,7 @@ class AbstractSimpleObservable: public Observable
 public:
   //@{
   //@name Type members
-	
+        
   /// the data type of the observable
   typedef T value_type;
 
@@ -77,7 +77,7 @@ public:
   virtual ~AbstractSimpleObservable() {}
   //@{
   //@name Properties of the observable
-  		
+                  
   /// the number of measurements
   virtual count_type count() const =0;
   
@@ -128,7 +128,7 @@ public:
   
   //@{ 
   //@name Slicing of observables
-  	
+          
   /** slice the data type using a single argument.
       This can easily be extended when needed to more data types. 
       @param s the slice
@@ -453,7 +453,7 @@ AbstractSimpleObservable<T>::slice (S s, const std::string& n) const
   if (dynamic_cast<const SimpleObservableEvaluator<T>*>(this)!=0)
     return dynamic_cast<const SimpleObservableEvaluator<T>*>(this)->slice(s,n);
   else
-    return SimpleObservableEvaluator<T>(*this).slice(s,n);	
+    return SimpleObservableEvaluator<T>(*this).slice(s,n);        
 }
 
 template <class T>
@@ -540,8 +540,8 @@ void AbstractSimpleObservable<T>::write_xml_scalar(oxstream& oxs, const boost::f
     if (!fn_hdf5.empty() && bin_size() == 1) {
       //write tag for timeseries and the hdf5-file
       oxs << start_tag("TIMESERIES") << attribute("format", "HDF5")
-	  << attribute("file", fn_hdf5.leaf()) << attribute("set", name())
-	  << end_tag;
+          << attribute("file", fn_hdf5.leaf()) << attribute("set", name())
+          << end_tag;
 
       //open the hdf5 file and write data
       H5File hdf5(fn_hdf5.native_file_string().c_str(),H5F_ACC_CREAT | H5F_ACC_RDWR);
@@ -589,46 +589,46 @@ void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, const boost::f
     }
 
     oxs << start_tag("VECTOR_AVERAGE")<< attribute("name", name())
-	<< attribute("nvalues", obs_value_traits<T>::size(mean()));
+        << attribute("nvalues", obs_value_traits<T>::size(mean()));
 
     typename obs_value_traits<result_type>::slice_iterator it=obs_value_traits<result_type>::slice_begin(mean_);
     typename obs_value_traits<result_type>::slice_iterator end=obs_value_traits<result_type>::slice_end(mean_);
     while (it!=end)
     {
       oxs << start_tag("SCALAR_AVERAGE")
-	  << attribute("indexvalue", obs_value_traits<result_type>::slice_name(mean_,it));
+          << attribute("indexvalue", obs_value_traits<result_type>::slice_name(mean_,it));
       oxs << start_tag("COUNT") << no_linebreak << count() << end_tag;
       int prec=(count()==1) ? 20 : int(4-std::log10(std::abs(obs_value_traits<result_type>::slice_value(error_,it)/obs_value_traits<result_type>::slice_value(mean_,it)))); 
       
       oxs << start_tag("MEAN") << no_linebreak;
       if (mm != "") oxs << attribute("method", mm);
       oxs << precision(obs_value_traits<result_type>::slice_value(mean_, it), prec)
-	  << end_tag;
+          << end_tag;
       
       oxs << start_tag("ERROR") << no_linebreak;
       if (em != "") oxs << attribute("method", em);
       oxs << precision(obs_value_traits<result_type>::slice_value(error_, it), 3)
-	  << end_tag;
+          << end_tag;
       
       if (has_variance()) {
-	oxs << start_tag("VARIANCE") << no_linebreak;
-	if (vm != "") oxs << attribute("method", vm);
-	oxs << precision(obs_value_traits<result_type>::slice_value(variance_, it), 3)
-	    << end_tag;
+        oxs << start_tag("VARIANCE") << no_linebreak;
+        if (vm != "") oxs << attribute("method", vm);
+        oxs << precision(obs_value_traits<result_type>::slice_value(variance_, it), 3)
+            << end_tag;
       }
       if (has_tau()) {
-	oxs << start_tag("AUTOCORR") << no_linebreak;
-	if (tm != "") oxs << attribute("method", tm);
-	oxs << precision(obs_value_traits<time_type>::slice_value(tau_, it), 3)
-	    << end_tag;
+        oxs << start_tag("AUTOCORR") << no_linebreak;
+        if (tm != "") oxs << attribute("method", tm);
+        oxs << precision(obs_value_traits<time_type>::slice_value(tau_, it), 3)
+            << end_tag;
       }
       
 #ifdef ALPS_HAVE_HDF5
       if(!fn_hdf5.empty() && bin_size() == 1) {
         //write tag for timeseries and the hdf5-file
-	oxs << start_tag("TIMESERIES") << attribute("format", "HDF5")
-	    << attribute("file", fn_hdf5.leaf()) << attribute("set", name())
-	    << end_tag;
+        oxs << start_tag("TIMESERIES") << attribute("format", "HDF5")
+            << attribute("file", fn_hdf5.leaf()) << attribute("set", name())
+            << end_tag;
 
         //open the hdf5 file and write data
         H5File hdf5(fn_hdf5.native_file_string().c_str(),H5F_ACC_CREAT | H5F_ACC_RDWR);

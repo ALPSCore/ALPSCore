@@ -1,21 +1,19 @@
-/***************************************************************************
-* ALPS++/scheduler library
+/*****************************************************************************
 *
-* scheduler/master_scheduler.C
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
 * Copyright (C) 1994-2003 by Matthias Troyer <troyer@comp-phys.org>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -25,7 +23,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 #include <alps/scheduler/scheduler.h>
 #include <alps/scheduler/signal.hpp>
@@ -104,7 +104,7 @@ void MasterScheduler::parse_job_file(const boost::filesystem::path& filename)
       outfilepath=boost::filesystem::complete(
         boost::filesystem::path(tag.attributes["file"],boost::filesystem::native),filename.branch_path());
     else
-	boost::throw_exception(std::runtime_error("missing 'file' attribute in <OUTPUT> element in jobfile"));
+        boost::throw_exception(std::runtime_error("missing 'file' attribute in <OUTPUT> element in jobfile"));
     tag=parse_tag(infile);
     if (tag.name=="/OUTPUT")
       tag=parse_tag(infile);
@@ -124,7 +124,7 @@ void MasterScheduler::parse_job_file(const boost::filesystem::path& filename)
     if (tag.name=="INPUT") {
       files.in=boost::filesystem::path(tag.attributes["file"],boost::filesystem::native);
       if (files.in.empty())
-	boost::throw_exception(std::runtime_error("missing 'file' attribute in <INPUT> element in jobfile"));
+        boost::throw_exception(std::runtime_error("missing 'file' attribute in <INPUT> element in jobfile"));
       tag=parse_tag(infile);
       if (tag.name=="/INPUT")
         tag=parse_tag(infile);
@@ -134,7 +134,7 @@ void MasterScheduler::parse_job_file(const boost::filesystem::path& filename)
     if (tag.name=="OUTPUT") {
       files.out=boost::filesystem::path(tag.attributes["file"],boost::filesystem::native);
       if (files.out.empty())
-	boost::throw_exception(std::runtime_error("missing 'file' attribute in <OUTPUT> element in jobfile"));
+        boost::throw_exception(std::runtime_error("missing 'file' attribute in <OUTPUT> element in jobfile"));
       tag=parse_tag(infile);
       if (tag.name=="/OUTPUT")
         tag=parse_tag(infile);
@@ -183,7 +183,7 @@ void MasterScheduler::checkpoint()
 
     out << header("UTF-8") << stylesheet(xslt_path("job.xsl"));
     out << start_tag("JOB") << xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
-	      << attribute("xsi:noNamespaceSchemaLocation","http://xml.comp-phys.org/2003/8/job.xsd");
+              << attribute("xsi:noNamespaceSchemaLocation","http://xml.comp-phys.org/2003/8/job.xsd");
     int local_sim=-1;
     
     for (int i=0; i<tasks.size();i++) {
@@ -193,11 +193,11 @@ void MasterScheduler::checkpoint()
             << end_tag() << end_tag();
         std::cout  << "Checkpointing task# " << i+1 << "\n";
         if (tasks[i]!=0 && boost::filesystem::complete(taskfiles[i].out,dir).string()!=taskfiles[i].in.string()) {          
-	  tasks[i]->checkpoint(boost::filesystem::complete(taskfiles[i].out,dir));
-	  taskfiles[i].in=boost::filesystem::complete(taskfiles[i].out,dir);
-	}
-	if (tasks[i]!=0)
-	  delete tasks[i];
+          tasks[i]->checkpoint(boost::filesystem::complete(taskfiles[i].out,dir));
+          taskfiles[i].in=boost::filesystem::complete(taskfiles[i].out,dir);
+        }
+        if (tasks[i]!=0)
+          delete tasks[i];
         tasks[i]=0;
       }
       else if(taskstatus[i]==TaskNotExisting) {
@@ -213,8 +213,8 @@ void MasterScheduler::checkpoint()
             << end_tag() << end_tag();
         if(theTask != tasks[i]) {
           tasks[i]->checkpoint(boost::filesystem::complete(taskfiles[i].out,dir));
-	        taskfiles[i].in=boost::filesystem::complete(taskfiles[i].out,dir);
-	        std::cout  << "Checkpointing task# " << i+1 << "\n";
+                taskfiles[i].in=boost::filesystem::complete(taskfiles[i].out,dir);
+                std::cout  << "Checkpointing task# " << i+1 << "\n";
         }
         else
           local_sim=i;
@@ -252,7 +252,7 @@ int MasterScheduler::check_signals()
   switch(sig())
     {
     case SignalHandler::NOSIGNAL:
-	break;
+        break;
       
     case SignalHandler::USER1:
     case SignalHandler::USER2:

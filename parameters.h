@@ -1,22 +1,20 @@
-/***************************************************************************
-* ALPS++ library
+/*****************************************************************************
 *
-* parser/parameters.h
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
 * Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
-*                            Synge Todo <wistaria@comp-phys.org>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -26,7 +24,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 #ifndef ALPS_PARSER_PARAMETERS_H
 #define ALPS_PARSER_PARAMETERS_H
@@ -130,7 +130,7 @@ public:
   void push_back(const parameter_type& p, bool allow_overwrite=false);
   
   void push_back(const key_type& k, const value_type& v,
-		 bool allow_overwrite=false) {
+                 bool allow_overwrite=false) {
     push_back(Parameter(k, v),allow_overwrite);
   }
 
@@ -246,7 +246,7 @@ public:
 
 protected:  
   void start_child(const std::string& name,
-		   const XMLAttributes& attributes);
+                   const XMLAttributes& attributes);
   void end_child(const std::string& name);
   
 private:
@@ -263,7 +263,7 @@ namespace alps {
 #endif
 
 inline alps::oxstream& operator<<(alps::oxstream& oxs,
-				  const alps::Parameter& parameter)
+                                  const alps::Parameter& parameter)
 {
   oxs << alps::start_tag("PARAMETER")
       << alps::attribute("name", parameter.key()) << alps::no_linebreak
@@ -273,7 +273,7 @@ inline alps::oxstream& operator<<(alps::oxstream& oxs,
 }
 
 inline alps::oxstream& operator<<(alps::oxstream& oxs,
-				  const alps::Parameters& parameters)
+                                  const alps::Parameters& parameters)
 {
   oxs << alps::start_tag("PARAMETERS");
   alps::Parameters::const_iterator p_end = parameters.end();

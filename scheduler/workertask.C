@@ -1,21 +1,19 @@
-/***************************************************************************
-* ALPS++/scheduler library
+/*****************************************************************************
 *
-* scheduler/workertask.C  A task with more than one worker to do the actual work
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
 * Copyright (C) 1994-2003 by Matthias Troyer <troyer@comp-phys.org>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -25,7 +23,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 #include <alps/scheduler/task.h>
 #include <alps/scheduler/types.h>
@@ -112,7 +112,7 @@ void WorkerTask::construct() // delayed until child class is fully constructed
 #endif
         std::copy(where.begin()+in,where.begin()+in+cpus(),here.begin());
         runs[0]=theScheduler->make_worker(here,parms);
-	runs[0]->load_from_file(runfiles[i].in);
+        runs[0]->load_from_file(runfiles[i].in);
         theWorker = runs[0];
         workerstatus[0] = LocalRun;
         in+=cpus();
@@ -123,7 +123,7 @@ void WorkerTask::construct() // delayed until child class is fully constructed
 #endif
         std::copy(where.begin()+in,where.begin()+in+cpus(),here.begin());
         runs[j]=new RemoteWorker(here,parms);
-	runs[j]->load_from_file(runfiles[i].in);
+        runs[j]->load_from_file(runfiles[i].in);
         workerstatus[j] = RemoteRun;
         in+=cpus();
       }
@@ -170,7 +170,7 @@ void WorkerTask::construct() // delayed until child class is fully constructed
     runs[i]->set_parameters(parms);
 }
         
-	
+        
 // start all runs which are active
 void WorkerTask::start()
 {
@@ -323,8 +323,8 @@ double WorkerTask::work_done()  const
   if(runs.size()) {
     for (int i=0;i<runs.size();i++) {
       if(workerstatus[i]==RemoteRun) {
-	 if(!runs[i])
-	    boost::throw_exception(std::runtime_error( "run does not exist in Task::get_measurements"));
+         if(!runs[i])
+            boost::throw_exception(std::runtime_error( "run does not exist in Task::get_measurements"));
         //where_master.push_back( Process(dynamic_cast<RemoteWorker&>(*runs[i]).process()));
         where_master.push_back(dynamic_cast<RemoteWorker*>(runs[i])->process());
       }
@@ -365,7 +365,7 @@ void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::pa
   for (int i=0;i<runs.size();++i) {
     if(workerstatus[i] == RunNotExisting) {
       if(runs[i])
-	boost::throw_exception(std::logic_error("run exists but marked as non-existing"));
+        boost::throw_exception(std::logic_error("run exists but marked as non-existing"));
     }
     else if(runs[i]==0)
       boost::throw_exception(std::logic_error("run does not exist but marked as existing"));
@@ -374,31 +374,31 @@ void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::pa
         runfiles[i].in=boost::filesystem::complete(runfiles[i].out,dir);
       else {
         // search file name
-	int j=0;
-	bool found=false;
-	std::string name;
-	do {
-	  found = false;
-	  name =fn.leaf();
-	  name.erase(name.size()-4,4);
+        int j=0;
+        bool found=false;
+        std::string name;
+        do {
+          found = false;
+          name =fn.leaf();
+          name.erase(name.size()-4,4);
           name+= ".run" + boost::lexical_cast<std::string,int>(j+1);
-	  for (int k=0;k<runfiles.size();++k)
-	  if(runfiles[k].out.leaf()==name) 
-	    found=true;
-	  j++;
-	} while (found);
-	runfiles[i].out = boost::filesystem::path(name);
+          for (int k=0;k<runfiles.size();++k)
+          if(runfiles[k].out.leaf()==name) 
+            found=true;
+          j++;
+        } while (found);
+        runfiles[i].out = boost::filesystem::path(name);
       }
       if(workerstatus[i] == LocalRun || workerstatus[i] == RemoteRun)
-	runs[i]->save_to_file(boost::filesystem::complete(runfiles[i].out,dir));
+        runs[i]->save_to_file(boost::filesystem::complete(runfiles[i].out,dir));
       else if (workerstatus[i] == RunOnDump) {
         if(boost::filesystem::complete(runfiles[i].out,dir).string()!=runfiles[i].in.string()) {
-	  boost::filesystem::remove(boost::filesystem::complete(runfiles[i].out,dir));
-	  boost::filesystem::copy_file(boost::filesystem::complete(runfiles[i].in,dir),boost::filesystem::complete(runfiles[i].out,dir));
-	}
+          boost::filesystem::remove(boost::filesystem::complete(runfiles[i].out,dir));
+          boost::filesystem::copy_file(boost::filesystem::complete(runfiles[i].in,dir),boost::filesystem::complete(runfiles[i].out,dir));
+        }
       }
       else 
-	boost::throw_exception(std::logic_error("incorrect status of run"));
+        boost::throw_exception(std::logic_error("incorrect status of run"));
       out << alps::start_tag(worker_tag());
       out << runs[i]->get_info();
       out << alps::start_tag("CHECKPOINT") << alps::attribute("format","osiris")

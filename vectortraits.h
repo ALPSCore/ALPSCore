@@ -1,22 +1,20 @@
-/***************************************************************************
-* ALPS++ library
+/*****************************************************************************
 *
-* alps/vectortraits.h   A class to store parameters
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
 * Copyright (C) 1999-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
-*                            Synge Todo <wistaria@comp-phys.org>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -26,7 +24,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 #ifndef ALPS_VECTORTRAITS_H
 #define ALPS_VECTORTRAITS_H
@@ -151,14 +151,14 @@ template <class C, class X>
 inline void add_scaled(C& c1, const C& c2, X val) 
 {
   std::transform(const_begin(c1),const_end(c1),const_begin(c2),begin(c1), 
-			plus_scaled<typename VectorTraits<C>::value_type,X>(val));
+                        plus_scaled<typename VectorTraits<C>::value_type,X>(val));
 }
 
 template <class C, class X>
 inline void subtract_scaled(C& c1, const C& c2, X val) 
 {
   std::transform(const_begin(c1),const_end(c1),const_begin(c2),begin(c1), 
-			minus_scaled<typename VectorTraits<C>::value_type,X>(val));
+                        minus_scaled<typename VectorTraits<C>::value_type,X>(val));
 }
 
 template <class C>
@@ -173,7 +173,7 @@ template <class C>
 inline void resize(C& c, std::size_t n) 
 {
   if(c.size()!=n)
-   	c.resize(n);
+           c.resize(n);
 }
 
 template <class C>

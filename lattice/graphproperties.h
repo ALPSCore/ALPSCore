@@ -1,22 +1,20 @@
-/***************************************************************************
-* ALPS++/lattice library
+/*****************************************************************************
 *
-* lattice/graphproperties.h    the graph property types
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@comp-phys.org>
+* Copyright (C) 2001-2003 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -26,7 +24,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 #ifndef ALPS_LATTICE_GRAPH_PROPERTIES_H
 #define ALPS_LATTICE_GRAPH_PROPERTIES_H
@@ -318,18 +318,18 @@ private:
 
 
 typedef boost::adjacency_list<boost::vecS,boost::vecS,boost::undirectedS,
-			      // vertex property
+                              // vertex property
                               boost::property<coordinate_t,detail::coordinate_type,
-			        boost::property<parity_t,int8_t,
-				   boost::property<vertex_type_t,int > > >,
-			      // edge property
+                                boost::property<parity_t,int8_t,
+                                   boost::property<vertex_type_t,int > > >,
+                              // edge property
                               boost::property<edge_type_t,int,
-			        boost::property<boost::edge_index_t,int,
-				  boost::property<boundary_crossing_t,boundary_crossing> > >,
-			      // graph property
+                                boost::property<boost::edge_index_t,int,
+                                  boost::property<boundary_crossing_t,boundary_crossing> > >,
+                              // graph property
                               boost::property<dimension_t,std::size_t,
-			        boost::property<graph_name_t,std::string > >
-			      , boost::vecS> coordinate_graph_type;
+                                boost::property<graph_name_t,std::string > >
+                              , boost::vecS> coordinate_graph_type;
 
 } // end namespace alps
 

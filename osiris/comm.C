@@ -1,22 +1,20 @@
-/***************************************************************************
-* PALM++/osiris library
+/*****************************************************************************
 *
-* osiris/comm.C      communication subroutines
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
 * Copyright (C) 1994-2003 by Matthias Troyer <troyer@comp-phys.org>,
-*                            Synge Todo <wistaria@comp-phys.org>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -26,7 +24,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 #include <alps/osiris/comm.h>
 #include <alps/osiris/os.h>
@@ -309,8 +309,8 @@ alps::ProcessList alps::all_processes()
     boost::throw_exception( std::runtime_error( ("Error code " + boost::lexical_cast<std::string,int>(info) + " from pvm_tasks")));
     
       for(int j=0;j<ntask;j++)
-	if ( taskp[j].ti_tid == pvm_mytid() 
-	     || taskp[j].ti_ptid ==pvm_mytid() )
+        if ( taskp[j].ti_tid == pvm_mytid() 
+             || taskp[j].ti_ptid ==pvm_mytid() )
             p.push_back(Process(
                 Host(hostp[i].hi_tid,hostp[i].hi_name,hostp[i].hi_speed/1000.),
                 taskp[j].ti_tid));
@@ -368,8 +368,8 @@ alps::Process alps::start_process(const Host& h, const std::string& name)
   
   int tid;
   int info = pvm_spawn(const_cast<char*>(name.c_str()),0,
-		       PvmTaskHost+PvmTaskTrace,
-		       const_cast<char*>(h.name().c_str()),1,&tid);
+                       PvmTaskHost+PvmTaskTrace,
+                       const_cast<char*>(h.name().c_str()),1,&tid);
   if(info<1)    
     {
 #ifdef OSIRIS_TRACE

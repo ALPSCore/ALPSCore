@@ -1,21 +1,19 @@
-/***************************************************************************
-* ALPS/parser library
+/*****************************************************************************
 *
-* alps/parser/xmlstream.C   XML stream class
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
-* Copyright (C) 2001-2004 by Synge Todo <wistaria@comp-phys.org>,
+* Copyright (C) 2001-2004 by Synge Todo <wistaria@comp-phys.org>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -25,7 +23,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 #include <alps/parser/xmlstream.h>
 
@@ -60,7 +60,7 @@ oxstream& oxstream::operator<<(const detail::header_t& c)
       "header not allowed in comment or CDATA section"));
     
   *this << detail::pi_t("xml")
-	<< detail::attribute_t("version", c.version);
+        << detail::attribute_t("version", c.version);
   if (!c.encoding.empty())
     *this << detail::attribute_t("encoding", c.encoding);
   return *this;
@@ -159,10 +159,10 @@ oxstream& oxstream::text_str(const std::string& text)
       os_ << text.substr(pos0, pos1);
       if (pos1 == std::string::npos) break;
       if (linebreak_) {
-	os_ << '\n';
-	for (uint32_t i = 0; i < offset_; ++i) os_ << ' ';
+        os_ << '\n';
+        for (uint32_t i = 0; i < offset_; ++i) os_ << ' ';
       } else {
-	os_ << ' ';
+        os_ << ' ';
       }
       pos0 = pos1 + 1;
     }
@@ -181,18 +181,18 @@ void oxstream::output(bool close)
     }
 
     for (XMLAttributes::const_iterator a = attr_.begin();
-	 a != attr_.end(); ++a)
+         a != attr_.end(); ++a)
       os_ << " " << a->key() << "=\"" << static_cast<std::string>(a->value())
-	  << "\"";
+          << "\"";
     
     if (context_ == PI) {
       os_ << "?>";
     } else {
       if (close) {
-	os_ << "/>";
+        os_ << "/>";
       } else {
-	os_ << ">";
-	offset_ += offset_incr_;
+        os_ << ">";
+        offset_ += offset_incr_;
       }
     }
     if (context_ == PI || close) {
@@ -228,9 +228,9 @@ std::string convert(const std::string& str)
   std::ostringstream out;
   std::ostream_iterator<char> oi(out);
   boost::regex_merge(oi, str.begin(), str.end(), 
-		     boost::regex("(&)|(')|(>)|(<)|(\")"), 
-		     "(?1&amp;)(?2&apos;)(?3&gt;)(?4&lt;)(?5&quot;)",
-		     boost::match_default | boost::format_all);
+                     boost::regex("(&)|(')|(>)|(<)|(\")"), 
+                     "(?1&amp;)(?2&apos;)(?3&gt;)(?4&lt;)(?5&quot;)",
+                     boost::match_default | boost::format_all);
   return out.str();
 }
 

@@ -1,22 +1,20 @@
-/***************************************************************************
-* ALPS++/model library
+/*****************************************************************************
 *
-* model/basisstates.h    basis states for full lattice
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
-* Copyright (C) 2003-2003 by Matthias Troyer <troyer@comp-phys.org>,
-*                            Synge Todo <wistaria@comp-phys.org>,
+* Copyright (C) 2003 by Matthias Troyer <troyer@comp-phys.org>,
+*                       Synge Todo <wistaria@comp-phys.org>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -26,7 +24,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 #ifndef ALPS_MODEL_BASISSTATES_H
 #define ALPS_MODEL_BASISSTATES_H
@@ -312,7 +312,7 @@ inline std::ostream& operator<<(std::ostream& out, const alps::BasisStates<I,S,S
     out << " ]\n";
   }
   out << "}\n";
-  return out;	
+  return out;        
 }
 
 template <class I, class J, class S, class SS>
@@ -322,7 +322,7 @@ inline std::ostream& operator<<(std::ostream& out, const alps::LookupBasisStates
   for (typename alps::BasisStates<I,S>::const_iterator it=q.begin();it!=q.end();++it)
     out << "[ " << *it << " ]\n";
   out << "}\n";
-  return out;	
+  return out;        
 }
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE

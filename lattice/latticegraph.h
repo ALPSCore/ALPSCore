@@ -1,22 +1,20 @@
-/***************************************************************************
-* ALPS++/lattice library
+/*****************************************************************************
 *
-* lattice/latticegraph.h    the lattice graph class
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@comp-phys.org>
+* Copyright (C) 2001-2003 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -26,7 +24,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 #ifndef ALPS_LATTICE_LATTICEGRAPH_H
 #define ALPS_LATTICE_LATTICEGRAPH_H
@@ -123,10 +123,10 @@ inline void make_graph_from_lattice(GRAPH& g,const LATTICE& l)
           // store bond kind and index
           edgeindex[edge]=edge_index++;
           edgetype[edge]=boost::get(edge_type_t(),ug,*first_edge);
-	  if (source_cross.second && target_cross.second)
-	    boost::throw_exception(
-	      std::logic_error("ALPS++::lattice: Cannot calculate boundary crossing if neither vertex is in the original cell"));
-	    boundary_crossing_type bt( source_cross.second ? source_cross.second.invert() : target_cross.second);
+          if (source_cross.second && target_cross.second)
+            boost::throw_exception(
+              std::logic_error("ALPS++::lattice: Cannot calculate boundary crossing if neither vertex is in the original cell"));
+            boundary_crossing_type bt( source_cross.second ? source_cross.second.invert() : target_cross.second);
             edgeboundary[edge]=bt;
         }
       }
@@ -159,7 +159,7 @@ public:
   const graph_type& graph() const { return graph_;}
   graph_type& graph() { return graph_;}
 private:
-  GRAPH graph_;	
+  GRAPH graph_;        
 };
 
 template <class LATTICE, class GRAPH>

@@ -1,24 +1,22 @@
-/***************************************************************************
-* ALPS++/alea library
+/*****************************************************************************
 *
-* alea/obsvalue.h     observable value traits class
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
 * Copyright (C) 1994-2003 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@comp-phys.org>,
-*                            Synge Todo <wistaria@comp-phys.org>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -28,7 +26,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 #ifndef ALPS_ALEA_OBSVALUE_H
 #define ALPS_ALEA_OBSVALUE_H
@@ -170,7 +170,7 @@ struct obs_value_traits<std::valarray<T> >
   {
     for(int32_t j=0;j<a.size();++j)
       if (std::abs(a[j])< eps)
-	b[j]=t_max();
+        b[j]=t_max();
   }
 
   static inline time_type check_divide(const result_type& a,const result_type& b) 
@@ -252,8 +252,8 @@ template<typename T, std::size_t NumDims, typename Allocator>
     typename value_type::const_iterator ait=a.begin();
     typename time_type::iterator bit=b.begin();
     for(;ait!=a.end() && bit!=b.end();++ait,++bit)
-	if (std::abs(*ait)< eps)
-	  *bit=t_max();
+        if (std::abs(*ait)< eps)
+          *bit=t_max();
     if (ait!=a.end() || bit!=b.end())
       boost::throw_exception(std::runtime_error("multi_arrays not of identical size in obs_value_traits::variance_check"));
   }
@@ -276,7 +276,7 @@ template<typename T, std::size_t NumDims, typename Allocator>
 
   template <class X, class AX, class Y, class AY> 
   static void resize_same_as(boost::multi_array<X,NumDims,AX>& x,
-			     const boost::multi_array<Y,NumDims,AY>& y)
+                             const boost::multi_array<Y,NumDims,AY>& y)
   {
     x=boost::multi_array<X,NumDims,AX>(
      std::vector<boost::multi_array_types::size_type>(
@@ -299,7 +299,7 @@ template<typename T, std::size_t NumDims, typename Allocator>
     bool operator==(const slice_iterator rhs) { return idx==rhs.idx;}
     
     slice_iterator() {} // IRIX MIPSpro compiler requires explicit
-			// definition of default constructor
+                        // definition of default constructor
 
     slice_iterator(const value_type& array, bool is_begin=true)
     {
@@ -307,8 +307,8 @@ template<typename T, std::size_t NumDims, typename Allocator>
       std::copy(array.shape(),array.shape()+NumDims,shape.begin());
       for (int i=0;i<NumDims;++i) {
         shape[i]+=bases[i];
-	idx[i]= (is_begin ? bases[i] : shape[i]);
-	}
+        idx[i]= (is_begin ? bases[i] : shape[i]);
+        }
     }
     
     const slice_iterator& operator++() {
@@ -316,8 +316,8 @@ template<typename T, std::size_t NumDims, typename Allocator>
       idx[dim]++;
       while(idx[dim]==shape[dim] && dim<NumDims-1) {
         idx[dim]=bases[dim];
-	dim++;
-	idx[dim]++;
+        dim++;
+        idx[dim]++;
       }
       return *this;
     }
@@ -334,8 +334,8 @@ template<typename T, std::size_t NumDims, typename Allocator>
       std::string n;
       for (int i=0;i<NumDims;++i) {
         n += boost::lexical_cast<std::string,size_type>(idx[i]);
-	if (i!=NumDims-1)
-	n+=", ";
+        if (i!=NumDims-1)
+        n+=", ";
       }
       return n;
     }

@@ -1,21 +1,19 @@
-/***************************************************************************
-* ALPS++/scheduler library
+/*****************************************************************************
 *
-* scheduler/single_scheduler.C
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -25,7 +23,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 #include <alps/scheduler/scheduler.h>
 #include <alps/osiris.h>
@@ -66,17 +66,17 @@ int SingleScheduler::run()
     else if(taskstatus[i]==TaskNotExisting)
       std::cout  << "Task " << i+1 << " does not exist.\n";
     else if(taskstatus[i]==TaskNotStarted || taskstatus[i]==TaskRunning ||
-	    (taskstatus[i]==TaskHalted)) {
+            (taskstatus[i]==TaskHalted)) {
       int n=tasks[i]->cpus();
       if(n<1)
-	boost::throw_exception(std::logic_error("at least one node required for a run!"));
+        boost::throw_exception(std::logic_error("at least one node required for a run!"));
       if(n>processes.size())
-	std::cerr  << "Task " << i+1 << " needs more nodes than available and will not run.\n";
+        std::cerr  << "Task " << i+1 << " needs more nodes than available and will not run.\n";
       else {
-	// create new Task in memory (new start)
-	std::cout  << "Creating task " << i+1 << ".\n";
-	remake_task(processes,i);
-	theTask=tasks[i];
+        // create new Task in memory (new start)
+        std::cout  << "Creating task " << i+1 << ".\n";
+        remake_task(processes,i);
+        theTask=tasks[i];
       }
     }
     else
@@ -91,47 +91,47 @@ int SingleScheduler::run()
       int task_finished=0;
       ptime next_check=second_clock::local_time();
       ptime last_checkpoint=second_clock::local_time();
-	
+        
       do {
-	if (check_signals() == SignalHandler::TERMINATE) {
-	  theTask->halt();
-	  checkpoint();
-	  return -1;
-	}	      
-	  
-	theTask->run();
-	  
-	if(time_limit >0. && second_clock::local_time()>end_time) {
-	  std::cout << "Time limit exceeded\n";
-	  if (theTask->finished_notime())
-	    finish_task(i);
-	  else
-	    theTask->halt();
-	  checkpoint();
-	  return 1;
-	}
-	  
-	if(second_clock::local_time()>next_check) {
-	  std::cout  << "Checking if it is finished: " << std::flush;
-	  double more_time=0;
-	  task_finished=theTask->finished(more_time);
-	      
-	  // next check after at more_time, restrained to min. and max. times
-	  more_time= (more_time < min_check_time ? min_check_time :
-		      (more_time > max_check_time ? max_check_time : more_time));
-	  next_check=second_clock::local_time()+seconds(int(more_time));
-	  if(!task_finished)
-	    std::cout  << "not yet, next check in " << int(more_time) << " seconds.\n";
-	}
-	if((!task_finished)&&(second_clock::local_time()>last_checkpoint+seconds(int(checkpoint_time)))) {
-	  // make regular checkpoints if not yet finished
-	  std::cout  << "Making regular checkpoint.\n";
-	  checkpoint();
-	  last_checkpoint=second_clock::local_time();
-	  std::cout  << "Done with checkpoint.\n";
-	}
+        if (check_signals() == SignalHandler::TERMINATE) {
+          theTask->halt();
+          checkpoint();
+          return -1;
+        }              
+          
+        theTask->run();
+          
+        if(time_limit >0. && second_clock::local_time()>end_time) {
+          std::cout << "Time limit exceeded\n";
+          if (theTask->finished_notime())
+            finish_task(i);
+          else
+            theTask->halt();
+          checkpoint();
+          return 1;
+        }
+          
+        if(second_clock::local_time()>next_check) {
+          std::cout  << "Checking if it is finished: " << std::flush;
+          double more_time=0;
+          task_finished=theTask->finished(more_time);
+              
+          // next check after at more_time, restrained to min. and max. times
+          more_time= (more_time < min_check_time ? min_check_time :
+                      (more_time > max_check_time ? max_check_time : more_time));
+          next_check=second_clock::local_time()+seconds(int(more_time));
+          if(!task_finished)
+            std::cout  << "not yet, next check in " << int(more_time) << " seconds.\n";
+        }
+        if((!task_finished)&&(second_clock::local_time()>last_checkpoint+seconds(int(checkpoint_time)))) {
+          // make regular checkpoints if not yet finished
+          std::cout  << "Making regular checkpoint.\n";
+          checkpoint();
+          last_checkpoint=second_clock::local_time();
+          std::cout  << "Done with checkpoint.\n";
+        }
       } while (!task_finished);
-	    
+            
       finish_task(i);
       std::cout  << "This task took " << (second_clock::local_time()-task_time).total_seconds() << " seconds.\n";
       checkpoint();

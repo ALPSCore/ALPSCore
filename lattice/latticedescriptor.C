@@ -1,22 +1,20 @@
-/***************************************************************************
-* ALPS++/lattice library
+/*****************************************************************************
 *
-* lattice/latticedesriptor.C    the lattice class
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@comp-phys.org>
+* Copyright (C) 2001-2003 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -26,7 +24,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 #include <alps/expression.h>
 #include <alps/lattice/latticedescriptor.h>
@@ -53,8 +53,8 @@ LatticeDescriptor::LatticeDescriptor(const XMLTag& intag, std::istream& p)
       lparms_[tag.attributes["name"]]=tag.attributes["default"];
       if (tag.type != XMLTag::SINGLE) {
         tag=parse_tag(p);
-	if (tag.name!="/PARAMETER")
-	  boost::throw_exception(std::runtime_error("closing tag </PARAMETER> missing in <LATTICE> element"));
+        if (tag.name!="/PARAMETER")
+          boost::throw_exception(std::runtime_error("closing tag </PARAMETER> missing in <LATTICE> element"));
       }
     }
     else if (tag.name=="BASIS")  {
@@ -70,7 +70,7 @@ LatticeDescriptor::LatticeDescriptor(const XMLTag& intag, std::istream& p)
           basis_vectors_.push_back(read_vector<vector_type>(parse_content(p),dimension()));
           tag=parse_tag(p);
           if(tag.name!="/VECTOR")
-  	    boost::throw_exception(std::runtime_error("invalid element <"+tag.name+
+              boost::throw_exception(std::runtime_error("invalid element <"+tag.name+
                         "> encountered in <VECTOR>"));
         }
         else
@@ -90,7 +90,7 @@ LatticeDescriptor::LatticeDescriptor(const XMLTag& intag, std::istream& p)
           reciprocal_basis_vectors_.push_back(read_vector<vector_type>(parse_content(p),dimension()));
           tag=parse_tag(p);
           if(tag.name!="/VECTOR")
-  	    boost::throw_exception(std::runtime_error("invalid element <"+tag.name+
+              boost::throw_exception(std::runtime_error("invalid element <"+tag.name+
                         "> encountered in <VECTOR>"));
         }
         else
@@ -120,7 +120,7 @@ void LatticeDescriptor::write_xml(oxstream& xml) const
       xml << start_tag("VECTOR");
       no_linebreak(xml) << vector_writer(basis_vectors_[i]) << end_tag("VECTOR");
     }
-    xml << end_tag("BASIS");	
+    xml << end_tag("BASIS");        
   }
   if (!reciprocal_basis_vectors_.empty()) {
     xml << start_tag("RECIPROCALBASIS");
@@ -128,7 +128,7 @@ void LatticeDescriptor::write_xml(oxstream& xml) const
       xml << start_tag("VECTOR");
       no_linebreak(xml) << vector_writer(reciprocal_basis_vectors_[i]) << end_tag("VECTOR");
     }
-    xml << end_tag("RECIPROCALBASIS");	
+    xml << end_tag("RECIPROCALBASIS");        
   }
   xml << end_tag("LATTICE");
 }
@@ -182,18 +182,18 @@ FiniteLatticeDescriptor::FiniteLatticeDescriptor(const XMLTag& intag, std::istre
       flparms_[tag.attributes["name"]]=tag.attributes["default"];
       if (tag.type != XMLTag::SINGLE) {
         tag=parse_tag(p);
-	if (tag.name!="/PARAMETER")
-	  boost::throw_exception(std::runtime_error("closing tag </PARAMETER> missing in <LATTICE> element"));
+        if (tag.name!="/PARAMETER")
+          boost::throw_exception(std::runtime_error("closing tag </PARAMETER> missing in <LATTICE> element"));
       }
     }
     else if (tag.name=="BOUNDARY")  {
       std::string bc = tag.attributes["type"];
       uint32_t dim=0;
-	  if (tag.attributes["dimension"]!="") {
+          if (tag.attributes["dimension"]!="") {
         dim = boost::lexical_cast<uint32_t,std::string>(tag.attributes["dimension"]);
-		if (dim==0 || dim>dimension())
+                if (dim==0 || dim>dimension())
           boost::throw_exception(std::runtime_error("incorrect dimension attribute in <BOUNDARY>"));
-	  }
+          }
       if (bc=="")
         boost::throw_exception(std::runtime_error("missing type attribute in <BOUNDARY>"));
       if (dim==0)
@@ -203,11 +203,11 @@ FiniteLatticeDescriptor::FiniteLatticeDescriptor(const XMLTag& intag, std::istre
     }
     else if(tag.name=="EXTENT")  {
       uint32_t dim=0;
-	  if (tag.attributes["dimension"]!="") {
-	    dim =  boost::lexical_cast<uint32_t,std::string>(tag.attributes["dimension"]);
-		if (dim==0 || dim >dimension())
+          if (tag.attributes["dimension"]!="") {
+            dim =  boost::lexical_cast<uint32_t,std::string>(tag.attributes["dimension"]);
+                if (dim==0 || dim >dimension())
           boost::throw_exception(std::runtime_error("incorrect dimension attribute in <BOUNDARY>"));
-	  }
+          }
       std::string ex =  tag.attributes["size"];
       if (ex=="")
         boost::throw_exception(std::runtime_error("missing size attribute in <EXTENT>"));

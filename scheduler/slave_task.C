@@ -1,21 +1,19 @@
-/***************************************************************************
-* ALPS++/scheduler library
+/*****************************************************************************
 *
-* scheduler/slave_task.C   A class to store parameters
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -25,7 +23,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 #include <alps/config.h>
 #include <alps/scheduler/scheduler.h>
@@ -52,7 +52,7 @@ SlaveTask::SlaveTask(const Process& p)
 {
   theWorker=0;
   started = false;
-}	
+}        
 
 
 void SlaveTask::run()
@@ -69,30 +69,30 @@ void SlaveTask::run()
     int tag=IMPDump::probe(runmaster);
     switch(tag) {
       case 0: // no more messages
-	messageswaiting=false;
-	break;
-	  
+        messageswaiting=false;
+        break;
+          
       case MCMP_make_run:
-	message.receive(runmaster,MCMP_make_run);
-	if(theWorker)
-	  boost::throw_exception(std::logic_error("cannot have more than one run per process"));
-	message >> w >> p >> n;
-	theWorker = theScheduler->make_worker(w,p,n);
-	started=false;
-	break;
-	  
+        message.receive(runmaster,MCMP_make_run);
+        if(theWorker)
+          boost::throw_exception(std::logic_error("cannot have more than one run per process"));
+        message >> w >> p >> n;
+        theWorker = theScheduler->make_worker(w,p,n);
+        started=false;
+        break;
+          
       case MCMP_delete_run:
-	message.receive(runmaster,MCMP_delete_run);
-	if(theWorker) {
-	  delete theWorker;
-	  theWorker=0;
-	}
-	else
-	  boost::throw_exception(std::logic_error("run does not exist"));
-	break;
-	
-	default:
-	  messageswaiting= (theWorker ? theWorker->handle_message(runmaster,tag) : false);
+        message.receive(runmaster,MCMP_delete_run);
+        if(theWorker) {
+          delete theWorker;
+          theWorker=0;
+        }
+        else
+          boost::throw_exception(std::logic_error("run does not exist"));
+        break;
+        
+        default:
+          messageswaiting= (theWorker ? theWorker->handle_message(runmaster,tag) : false);
         }
     } while (messageswaiting);
 

@@ -1,23 +1,21 @@
-/***************************************************************************
-* PALM++/xml library
+/*****************************************************************************
 *
-* xml/xml.C     a simple XML parser
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
 * Copyright (C) 2001-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>,
-*                            Prakash Dayal <prakash@comp-phys.org>,
+*                            Prakash Dayal <prakash@comp-phys.org>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -27,7 +25,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 #include <alps/parser/parser.h>
 
@@ -60,11 +60,11 @@ std::string parse_parameter_name(std::istream& in)
   std::string name;
   while (detail::is_identifier_char(c) || c=='[') {
     name+=c;
-	if (c=='[') 
-	  do {
-	    c=in.get();
-		name+=c;
-	  } while (c!=']');
+        if (c=='[') 
+          do {
+            c=in.get();
+                name+=c;
+          } while (c!=']');
     c=in.get();
   }
   in.putback(c);
@@ -224,13 +224,13 @@ void skip_element(std::istream& in, const XMLTag& start)
     XMLTag t = parse_tag(in);
     if (t.is_element()) {
       if (t.type==XMLTag::CLOSING) {
-	if (t.name == ("/" + start.name))
-	  break;
-	else {
-	  boost::throw_exception(std::runtime_error("illegal closing tag in XML"));}
+        if (t.name == ("/" + start.name))
+          break;
+        else {
+          boost::throw_exception(std::runtime_error("illegal closing tag in XML"));}
       }
       else
-	skip_element(in,t);
+        skip_element(in,t);
     }
   } // end of while(true)
 }

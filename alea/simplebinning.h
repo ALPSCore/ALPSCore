@@ -1,24 +1,22 @@
-/***************************************************************************
-* ALPS++/alea library
+/*****************************************************************************
 *
-* alps/alea/simplebinning.h     Monte Carlo observable class
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
 * Copyright (C) 1994-2002 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@itp.phys.ethz.ch>,
-*                            Synge Todo <wistaria@comp-phys.org>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -28,7 +26,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 #ifndef ALPS_ALEA_SIMPLEBINNING_H
 #define ALPS_ALEA_SIMPLEBINNING_H
@@ -182,34 +182,34 @@ inline void SimpleBinning<T>::operator<<(const T& x)
   do 
     {
       if(i&1) 
-	{ 
-	  // a bin is filled
-	  binlen*=2;
-	  bin++;
+        { 
+          // a bin is filled
+          binlen*=2;
+          bin++;
           if(bin>=last_bin_.size())
           {
-	    last_bin_.resize(std::max(bin+1,last_bin_.size()));
-	    sum_.resize(std::max(bin+1, sum_.size()));
-	    sum2_.resize(std::max(bin+1,sum2_.size()));
-	    bin_entries_.resize(std::max(bin+1,bin_entries_.size()));
+            last_bin_.resize(std::max(bin+1,last_bin_.size()));
+            sum_.resize(std::max(bin+1, sum_.size()));
+            sum2_.resize(std::max(bin+1,sum2_.size()));
+            bin_entries_.resize(std::max(bin+1,bin_entries_.size()));
 
-	    obs_value_traits<result_type>::resize_same_as(last_bin_[bin],x);
-	    obs_value_traits<result_type>::resize_same_as(sum_[bin],x);
-	    obs_value_traits<result_type>::resize_same_as(sum2_[bin],x);
-	  }
+            obs_value_traits<result_type>::resize_same_as(last_bin_[bin],x);
+            obs_value_traits<result_type>::resize_same_as(sum_[bin],x);
+            obs_value_traits<result_type>::resize_same_as(sum2_[bin],x);
+          }
 
-	  result_type x1=(sum_[0]-sum_[bin]);
-	  x1/=count_type(binlen);
+          result_type x1=(sum_[0]-sum_[bin]);
+          x1/=count_type(binlen);
 
-	  result_type y1 = x1*x1;
+          result_type y1 = x1*x1;
 
-	  last_bin_[bin]=x1;
-	  sum2_[bin] += y1;
-	  sum_[bin] = sum_[0];
-	  bin_entries_[bin]++;
-	}
+          last_bin_[bin]=x1;
+          sum2_[bin] += y1;
+          sum_[bin] = sum_[0];
+          bin_entries_[bin]++;
+        }
       else
-	break;
+        break;
     } while ( i>>=1);
 }
 
@@ -341,7 +341,7 @@ void SimpleBinning<T>::output_scalar(std::ostream& out) const
       for(int i=0;i<binning_depth();i++)
         out << "    bin #" << std::setw(3) <<  i+1 
             << " : " << std::setw(8) << count()/(1<<i)
-	    << " entries: error = " << error(i) << std::endl;
+            << " entries: error = " << error(i) << std::endl;
       out.setf(oldflags);
     }
   }
@@ -356,7 +356,7 @@ void SimpleBinning<T>::write_scalar_xml(oxstream& oxs) const {
         << no_linebreak << start_tag("COUNT") << count()/(1<<i) << end_tag
         << start_tag("MEAN") << attribute("method", "simple") << precision(binmean(i), prec) << end_tag
         << start_tag("ERROR") << attribute("method", "simple") << precision(error(i), 3) << end_tag
-	<< end_tag("BINNED");
+        << end_tag("BINNED");
   }
 }
 
@@ -367,10 +367,10 @@ void SimpleBinning<T>::write_vector_xml(oxstream& oxs, IT it) const {
                             /obs_value_traits<result_type>::slice_value(binmean(i),it))));
     prec = (prec>=3 && prec<20 ? prec : 16);
     oxs << start_tag("BINNED") << attribute("size",boost::lexical_cast<std::string,int>(1<<i))
-	      << no_linebreak << start_tag("COUNT") << count()/(1<<i) << end_tag
+              << no_linebreak << start_tag("COUNT") << count()/(1<<i) << end_tag
         << start_tag("MEAN") << attribute("method", "simple") << precision(obs_value_traits<result_type>::slice_value(binmean(i),it), 8) << end_tag
-        << start_tag("ERROR") << attribute("method", "simple") << precision(obs_value_traits<result_type>::slice_value(error(i),it), 3)	<< end_tag
-	<< end_tag("BINNED");
+        << start_tag("ERROR") << attribute("method", "simple") << precision(obs_value_traits<result_type>::slice_value(error(i),it), 3)        << end_tag
+        << end_tag("BINNED");
   }
 }
 
@@ -397,17 +397,17 @@ inline void SimpleBinning<T>::output_vector(std::ostream& out) const
           << obs_value_traits<result_type>::slice_value(error_,sit) << "; tau = "
           << obs_value_traits<time_type>::slice_value(tau_,sit) << std::endl;
       if (binning_depth()>1)
-	{
-	  // detailed errors
-	  std::ios::fmtflags oldflags = out.setf(std::ios::left,std::ios::adjustfield);
-	  for(int i=0;i<binning_depth();i++)
-	    out << "    bin #" << std::setw(3) <<  i+1 
-		<< " : " << std::setw(8) << count()/(1<<i)
-		<< " entries: error = "
-		<< obs_value_traits<result_type>::slice_value(errs_[i],sit)
-		<< std::endl;
-	  out.setf(oldflags);
-	}
+        {
+          // detailed errors
+          std::ios::fmtflags oldflags = out.setf(std::ios::left,std::ios::adjustfield);
+          for(int i=0;i<binning_depth();i++)
+            out << "    bin #" << std::setw(3) <<  i+1 
+                << " : " << std::setw(8) << count()/(1<<i)
+                << " entries: error = "
+                << obs_value_traits<result_type>::slice_value(errs_[i],sit)
+                << std::endl;
+          out.setf(oldflags);
+        }
     }
   }
 }

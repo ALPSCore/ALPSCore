@@ -1,22 +1,20 @@
-/***************************************************************************
-* ALPS++ library
+/*****************************************************************************
 *
-* xml/xmlparser.C   XML parser
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
 * Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
-*                            Synge Todo <wistaria@comp-phys.org>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -26,7 +24,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 #include <alps/parser/xmlparser.h>
 #include <alps/cctype.h>
@@ -61,7 +61,7 @@ public:
     : XERCES_CPP_NAMESPACE_QUALIFIER HandlerBase(), handler_(h) {}
 
   void startElement(const XMLCh* const name,
-		    XERCES_CPP_NAMESPACE_QUALIFIER AttributeList& attributes) {
+                    XERCES_CPP_NAMESPACE_QUALIFIER AttributeList& attributes) {
     const std::string n =
       XERCES_CPP_NAMESPACE_QUALIFIER XMLString::transcode(name);
     XMLAttributes attr;
@@ -69,7 +69,7 @@ public:
       attr.push_back(
         XMLAttribute(
           XERCES_CPP_NAMESPACE_QUALIFIER XMLString::transcode(attributes.getName(i)),
-	  XERCES_CPP_NAMESPACE_QUALIFIER XMLString::transcode(attributes.getValue(i))));
+          XERCES_CPP_NAMESPACE_QUALIFIER XMLString::transcode(attributes.getValue(i))));
     }
     handler_.start_element(n, attr);
   }
@@ -84,12 +84,12 @@ public:
     std::size_t pi = 0;
     for (std::size_t p = 0; p <= t.length(); ++p) {
       if (t[p] == '\n' || p == t.length()) {
-	std::string s = t.substr(pi, p - pi);
-	// remove preceding and following blanks
-	s = s.erase(0, s.find_first_not_of(' '));
-	s = s.erase(s.find_last_not_of(' ')+1);
-	if (s.size()) handler_.text(s);
-	pi = p + 1;
+        std::string s = t.substr(pi, p - pi);
+        // remove preceding and following blanks
+        s = s.erase(0, s.find_first_not_of(' '));
+        s = s.erase(s.find_last_not_of(' ')+1);
+        if (s.size()) handler_.text(s);
+        pi = p + 1;
       }
     }
   }
@@ -188,8 +188,8 @@ static void characters(void* h, const char* s, int len) {
   if (t.length()) handler->text(t);
 }
 static int externalEntity(XML_Parser parser, const char* context,
-			  const char* /* base */, const char* systemId,
-			  const char* /* publicId */) {
+                          const char* /* base */, const char* systemId,
+                          const char* /* publicId */) {
   XML_Parser p = XML_ExternalEntityParserCreate(parser, context, 0);
   std::ifstream fin(systemId);
   char buf[BUFSIZ];
@@ -268,7 +268,7 @@ void XMLParser::parse(std::istream& in) {
       if(tag.type == XMLTag::CLOSING || tag.type== XMLTag::SINGLE) {
         // end tag
         if (tag.type == XMLTag::CLOSING)
-	  tag.name.erase(0,1); 
+          tag.name.erase(0,1); 
         handler_.end_element(tag.name);
       }
     }

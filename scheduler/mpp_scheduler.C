@@ -1,21 +1,19 @@
-/***************************************************************************
-* ALPS++/scheduler library
+/*****************************************************************************
 *
-* scheduler/mpp_scheduler.C
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2003 by Matthias Troyer <troyer@comp-phys.org>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -25,7 +23,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 #include <alps/scheduler/scheduler.h>
 #include <alps/config.h>
@@ -64,8 +64,8 @@ int MPPScheduler::run()
   assign_processes(free);
 
   while((!all_done)&&
-	(active.size()>0)&&
-	((time_limit<=0)||(second_clock::local_time()<end_time))) {
+        (active.size()>0)&&
+        ((time_limit<=0)||(second_clock::local_time()<end_time))) {
 
     if (check_signals() == SignalHandler::TERMINATE) {
       for(int i=0;i<active.size();i++)
@@ -73,7 +73,7 @@ int MPPScheduler::run()
           tasks[active[i].number]->halt();
       checkpoint();
       return -1;
-    }	      
+    }              
     
     check_system(free);
     int freen=0;
@@ -104,7 +104,7 @@ int MPPScheduler::run()
     // make checkpoint if necessary
     if((!simfinished)&&(second_clock::local_time()>last_checkpoint+seconds(long(checkpoint_time)))&&
        ((time_limit<=0)||(second_clock::local_time()<end_time))) {
-	// make regular checkpoints if not yet finished
+        // make regular checkpoints if not yet finished
       std::cout  << "Making regular checkpoint.\n" ;
       last_checkpoint = second_clock::local_time();
       checkpoint();
@@ -116,7 +116,7 @@ int MPPScheduler::run()
   if(active.size()) {
     if(all_done)
       std::cout  << "Remaining " << active.size() << " tasks need more than " << free.size()
-		 << " processes.\n";
+                 << " processes.\n";
     else
       std::cout  << "Reached time limit.\n" ;
     return 1;
@@ -184,7 +184,7 @@ void MPPScheduler::assign_processes(ProcessList& free)
               }
             }
           }
-	      
+              
           // assign one more process to this simulation
           if(found>=0) {
             more_processes[found]+=active[found].cpus;
@@ -210,10 +210,10 @@ void MPPScheduler::assign_processes(ProcessList& free)
 
       // assign other processors
       for(i=0;i<active.size()&&!creation_failed;i++)
-	if(more_processes[i]) {
+        if(more_processes[i]) {
           w.resize(more_processes[i]);
           std::copy(free.begin(),free.begin()+w.size(),w.begin());
-	  if(active[i].where.size()) {
+          if(active[i].where.size()) {
             // add more processes
             std::cout  << "Adding " << w.size() << " processes to simulation " << active[i].number+1 << "\n";
             tasks[active[i].number]->add_processes(w);
@@ -231,8 +231,8 @@ void MPPScheduler::assign_processes(ProcessList& free)
       }
       
       if(first_new>=0) {
-	std::cout << "Creating new simulation:  " << active[first_new].number+1
-		  << " on " << w1.size()  << " processes\n";
+        std::cout << "Creating new simulation:  " << active[first_new].number+1
+                  << " on " << w1.size()  << " processes\n";
 
         if(create_task(first_new,w1))
           more_processes[first_new]=0;
@@ -264,58 +264,58 @@ void MPPScheduler::check_system(ProcessList& /*free*/)
   do
     switch(check_comm_signals(changed)) {
       case CommSignal::nosignal:
-	messageswaiting=0;
-	break;
-	
+        messageswaiting=0;
+        break;
+        
       case CommSignal::host_failed:
       case CommSignal::process_failed:
-	// first try to save as much as possible
-	if(messageswaiting==1) {
-	    checkpoint();
-	    messageswaiting = -1;
-	  }
-	
-	// delete all failed processes
+        // first try to save as much as possible
+        if(messageswaiting==1) {
+            checkpoint();
+            messageswaiting = -1;
+          }
+        
+        // delete all failed processes
         for(i=0;i<active.size();i++)  {
             int k;
             for (k=0;k<changed.size();k++) {
-		  Process& p = changed[k];
-		  ProcessList::iterator found=
-		  std::find(active[i].where.begin(),active[i].where.end(),p);
+                  Process& p = changed[k];
+                  ProcessList::iterator found=
+                  std::find(active[i].where.begin(),active[i].where.end(),p);
                   if(found!=active[i].where.end()) {
-		      // delete from active list
-		      std::cout << "Process " << k << " on sim "
-			   << active[i].number << " : " << found << "\n";
-		      active[i].where.erase(found);
-		      // delete run
-		      tasks[active[i].number]->delete_process(p);
-		    }
+                      // delete from active list
+                      std::cout << "Process " << k << " on sim "
+                           << active[i].number << " : " << found << "\n";
+                      active[i].where.erase(found);
+                      // delete run
+                      tasks[active[i].number]->delete_process(p);
+                    }
                 }
           }
 
-	for (i=0;i<active.size();i++) {
-	    int k=active[i].number;
-	    if((active[i].where.size()==0)&&(taskstatus[k]==TaskRunning)) {
-		std::cout << "Stopping simulation " << k+1 << "\n";
-		taskstatus[k] = TaskHalted;
-	      }
-	  }
+        for (i=0;i<active.size();i++) {
+            int k=active[i].number;
+            if((active[i].where.size()==0)&&(taskstatus[k]==TaskRunning)) {
+                std::cout << "Stopping simulation " << k+1 << "\n";
+                taskstatus[k] = TaskHalted;
+              }
+          }
 
         // rebalance the workload
-	std::cout << "REBALANCING NOT YET IMPLEMENTED\n";
-	break;
-	
+        std::cout << "REBALANCING NOT YET IMPLEMENTED\n";
+        break;
+        
       case CommSignal::host_added:
         if(runs_parallel()) {
-	  TO CHANGE
+          TO CHANGE
           dump << dumpname;
           dump.send(changed,MCMP_dump_name);
         }
-	free.insert(free.end(), changed.begin(),changed.end());
-	break;
-	
+        free.insert(free.end(), changed.begin(),changed.end());
+        break;
+        
       default: 
-	boost::throw_exception( std::logic_error("default reached in MPPScheduler::check_system()"));
+        boost::throw_exception( std::logic_error("default reached in MPPScheduler::check_system()"));
       }
   while (messageswaiting);
   */
@@ -336,31 +336,31 @@ int MPPScheduler::check_tasks(ProcessList& free)
   int i=last_check;    
   if(i<active.size()) {
       if(active[i].where.size() && second_clock::local_time() >active[i].next_check) {
-	  double more_time=0.;
-	 // if(active[i].next_check==0.)
-	 //   more_time=-1.;
-	  std::cout  << "Checking if Simulation " << active[i].number+1 << " is finished: ";
-	  
-	  int simfinished=tasks[active[i].number]->finished(more_time);
-	  // next check after at more_time, restrained to min. and max. times
-	  more_time=
-	    (more_time < min_check_time ? min_check_time :
-	     (more_time > max_check_time ? max_check_time : more_time));
-	  active[i].next_check=second_clock::local_time()+seconds(long(more_time));
-	  if(!simfinished)
-	      std::cout  << "Not yet, next check in " << int(more_time) << " seconds.\n";
-	  else { 
-	      std::cout << "Finished\n";
-	      running_tasks--;
-	      one_finished=1;
-	      int j=active[i].number;
-	      if(theTask == tasks[j])
-		theTask=0;
-	      finish_task(j);
-	      free.insert(free.end(),active[i].where.begin(),active[i].where.end());
-	      active.erase(active.begin()+i);
-	    }
-	}
+          double more_time=0.;
+         // if(active[i].next_check==0.)
+         //   more_time=-1.;
+          std::cout  << "Checking if Simulation " << active[i].number+1 << " is finished: ";
+          
+          int simfinished=tasks[active[i].number]->finished(more_time);
+          // next check after at more_time, restrained to min. and max. times
+          more_time=
+            (more_time < min_check_time ? min_check_time :
+             (more_time > max_check_time ? max_check_time : more_time));
+          active[i].next_check=second_clock::local_time()+seconds(long(more_time));
+          if(!simfinished)
+              std::cout  << "Not yet, next check in " << int(more_time) << " seconds.\n";
+          else { 
+              std::cout << "Finished\n";
+              running_tasks--;
+              one_finished=1;
+              int j=active[i].number;
+              if(theTask == tasks[j])
+                theTask=0;
+              finish_task(j);
+              free.insert(free.end(),active[i].where.begin(),active[i].where.end());
+              active.erase(active.begin()+i);
+            }
+        }
     }
 
   if(!one_finished)
@@ -379,23 +379,23 @@ int MPPScheduler::create_task(int j,ProcessList& p)
 {
   int i=active[j].number;
   if(taskstatus[i]==TaskNotStarted || taskstatus[i]==TaskRunning ||
-	  (taskstatus[i]==TaskHalted && !tasks[i]->finished_notime())) {
-	// create new copy in memory (new start)
+          (taskstatus[i]==TaskHalted && !tasks[i]->finished_notime())) {
+        // create new copy in memory (new start)
       remake_task(p,i);
       if(tasks[i]==0) {
-	  active.erase(active.begin()+j);
-	  return 0;
-	}
+          active.erase(active.begin()+j);
+          return 0;
+        }
       active[j].where.insert(active[j].where.end(),p.begin(),p.end());
       p.resize(0);
       tasks[i]->start();
       taskstatus[i] = TaskRunning;
       if(tasks[i]->local()) {
-	  if(theTask)
-	      boost::throw_exception(std::logic_error( "MPPScheduler::create_simulation: two local tasks"));
-	  else
-	    theTask=tasks[i];
-	}
+          if(theTask)
+              boost::throw_exception(std::logic_error( "MPPScheduler::create_simulation: two local tasks"));
+          else
+            theTask=tasks[i];
+        }
       running_tasks++;
       return 1;
     }
@@ -410,18 +410,18 @@ void MPPScheduler::determine_active()
   int j=0;
   for(int i=0;i<tasks.size();i++) {
     if(taskstatus[i]==TaskFinished)
-	std::cout  << "Simulation " << i+1 << " finished.\n";
+        std::cout  << "Simulation " << i+1 << " finished.\n";
     else if(taskstatus[i]==TaskNotExisting)
-	std::cout  << "Simulation " << i+1 << " does not exist.\n";
+        std::cout  << "Simulation " << i+1 << " does not exist.\n";
     else if(taskstatus[i]==TaskNotStarted || taskstatus[i]==TaskRunning ||
-	    (taskstatus[i]==TaskHalted && !tasks[i]->finished_notime()))
+            (taskstatus[i]==TaskHalted && !tasks[i]->finished_notime()))
       { // create new copy in memory (new start)
-	active.push_back(TaskStatus());
-	active[j] = TaskStatus();
-	active[j].number = i;	
-	active[j].work = tasks[i]->work();
-	active[j].cpus= tasks[i]->cpus();
-	j++;
+        active.push_back(TaskStatus());
+        active[j] = TaskStatus();
+        active[j].number = i;        
+        active[j].work = tasks[i]->work();
+        active[j].cpus= tasks[i]->cpus();
+        j++;
       }
     else if (tasks[i]->finished_notime())
       finish_task(i);

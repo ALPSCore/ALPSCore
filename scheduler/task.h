@@ -1,21 +1,19 @@
-/***************************************************************************
-* ALPS++/scheduler library
+/*****************************************************************************
 *
-* scheduler/task.h   A class to store parameters
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
-* Copyright (C) 2002-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2002-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -25,7 +23,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 #ifndef ALPS_SCHEDULER_TASK_H
 #define ALPS_SCHEDULER_TASK_H
@@ -93,7 +93,7 @@ public:
   
   virtual void start() = 0; // start all runs
   virtual void run() = 0; // run for some time (in seconds)
-  virtual void halt() = 0; // halt all runs, simulation is finished	
+  virtual void halt() = 0; // halt all runs, simulation is finished        
 
   virtual double work() const {return 1.;}; // return amount of work needed
   virtual bool finished(double&) const = 0; // check if task is finished
@@ -118,7 +118,7 @@ class Task : public AbstractTask
 public:
   static void print_copyright(std::ostream&);
   
-  Task(const ProcessList&, const boost::filesystem::path&);	
+  Task(const ProcessList&, const boost::filesystem::path&);        
   ~Task();
   
   virtual void construct(); // needs to be called to finish construction
@@ -161,7 +161,7 @@ private:
 
 class WorkerTask : public Task
 {
-protected:	
+protected:        
   enum RunStatus {
     RunNotExisting = 0,
     LocalRun = 1,
@@ -170,7 +170,7 @@ protected:
   };
 
 public:
-  WorkerTask(const ProcessList&, const boost::filesystem::path&);	
+  WorkerTask(const ProcessList&, const boost::filesystem::path&);        
   ~WorkerTask();
   
   void construct(); // needs to be called to finish construction

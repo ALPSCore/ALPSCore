@@ -1,21 +1,19 @@
-/***************************************************************************
-* ALPS++/model library
+/*****************************************************************************
 *
-* model/operator.h    the operator classes
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
-* Copyright (C) 2003-2003 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2003 by Matthias Troyer <troyer@comp-phys.org>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -25,7 +23,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 #ifndef ALPS_MODEL_OPERATOR_H
 #define ALPS_MODEL_OPERATOR_H
@@ -174,8 +174,8 @@ public:
   typedef typename OperatorEvaluator<I>::operator_map operator_map;
 
   BondOperatorEvaluator(const STATE1& s1, const STATE2& s2, 
-			const SiteBasisDescriptor<I>& b1, const SiteBasisDescriptor<I>& b2, 
-			std::string site1, std::string site2,const Parameters& p, const operator_map& o)
+                        const SiteBasisDescriptor<I>& b1, const SiteBasisDescriptor<I>& b2, 
+                        std::string site1, std::string site2,const Parameters& p, const operator_map& o)
     : OperatorEvaluator<I>(p,o), state_(s1,s2), basis1_(b1), basis2_(b2), sites_(site1,site2) {}
   bool can_evaluate_function(const std::string& name, const Expression& argument) const;
   Expression partial_evaluate_function(const std::string& name, const Expression& argument) const;
@@ -194,7 +194,7 @@ class BondOperatorSplitter : public OperatorEvaluator<I>
   typedef typename OperatorEvaluator<I>::operator_map operator_map;
 
   BondOperatorSplitter(std::string site1, std::string site2,
-		       const Parameters& p, const operator_map& o)
+                       const Parameters& p, const operator_map& o)
     : OperatorEvaluator<I>(p,o), sites_(site1,site2) {}
 
   bool can_evaluate_function(const std::string& name, const Expression& argument) const;
@@ -322,7 +322,7 @@ OperatorDescriptor<I>::apply(STATE state, const SiteBasisDescriptor<I>& basis, c
       get_quantumnumber(state,i)+=it->second; // apply change to QN
        if (!basis[i].valid(get_quantumnumber(state,i))) {
          e=Expression(0.);
-	 break;
+         break;
        }
     }
   }
@@ -406,7 +406,7 @@ BondTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& basis1, const SiteBa
       //calculate expression applied to state *it and store it into matrix
         for (alps::Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
           BondOperatorEvaluator<I,state_type,state_type> evaluator(states1[i1],states2[i2],basis1,basis2,
-	                                   source(),target(),p,ops);
+                                           source(),target(),p,ops);
           Term term(*tit);
           term.partial_evaluate(evaluator);
           int j1=states1.index(evaluator.state().first);
@@ -424,7 +424,7 @@ BondTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& basis1, const SiteBa
       //calculate expression applied to state *it and store it into matrix
         for (alps::Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
           BondOperatorEvaluator<I> evaluator(states1[i1],states2[i2],basis1,basis2,
-	                                   source(),target(),p,ops);
+                                           source(),target(),p,ops);
           Term term(*tit);
           term.partial_evaluate(evaluator);
           int j1=states1.index(evaluator.state().first);
@@ -490,8 +490,8 @@ HamiltonianDescriptor<I>::HamiltonianDescriptor(const XMLTag& intag, std::istrea
       parms_[tag.attributes["name"]]=tag.attributes["default"];
       if (tag.type!=XMLTag::SINGLE) {
         tag=parse_tag(is);
-	if (tag.name!="/PARAMETER")
-	  boost::throw_exception(std::runtime_error("End tag </PARAMETER> missing while parsing " + name() + " Hamiltonian"));
+        if (tag.name!="/PARAMETER")
+          boost::throw_exception(std::runtime_error("End tag </PARAMETER> missing while parsing " + name() + " Hamiltonian"));
       }
       tag=parse_tag(is);
     }  
@@ -518,7 +518,7 @@ HamiltonianDescriptor<I>::HamiltonianDescriptor(const XMLTag& intag, std::istrea
       else if (tag.name=="BONDTERM")
         bondterms_.push_back(BondTermDescriptor<I>(tag,is));
       else
-	boost::throw_exception(std::runtime_error("Illegal element name <" + tag.name + "> found in <HAMILTONIAN>"));
+        boost::throw_exception(std::runtime_error("Illegal element name <" + tag.name + "> found in <HAMILTONIAN>"));
       tag=parse_tag(is);
     }
   }
@@ -569,7 +569,7 @@ OperatorDescriptor<I>::OperatorDescriptor(const XMLTag& intag, std::istream& is)
         tag = parse_tag(is);
         if (tag.name !="/CHANGE")
           boost::throw_exception(std::runtime_error("Illegal tag <" + tag.name + "> in <OPERATOR> element."));
-	}
+        }
       tag = parse_tag(is);
     }
     if (tag.name !="/OPERATOR")
@@ -641,14 +641,14 @@ template <class I>
 inline alps::oxstream& operator<<(alps::oxstream& out, const alps::OperatorDescriptor<I>& q)
 {
   q.write_xml(out);
-  return out;	
+  return out;        
 }
 
 template <class I>
 inline alps::oxstream& operator<<(alps::oxstream& out, const alps::HamiltonianDescriptor<I>& q)
 {
   q.write_xml(out);
-  return out;	
+  return out;        
 }
 
 template <class I>
@@ -656,7 +656,7 @@ inline std::ostream& operator<<(std::ostream& out, const alps::OperatorDescripto
 {
   alps::oxstream xml(out);
   xml << q;
-  return out;	
+  return out;        
 }
 
 template <class I>
@@ -664,7 +664,7 @@ inline std::ostream& operator<<(std::ostream& out, const alps::HamiltonianDescri
 {
   alps::oxstream xml(out);
   xml << q;
-  return out;	
+  return out;        
 }
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE

@@ -1,22 +1,20 @@
-/***************************************************************************
-* ALPS++ library
+/*****************************************************************************
 *
-* alps/parser/parameters.C
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
 * Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
-*                            Synge Todo <wistaria@comp-phys.org>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -26,7 +24,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 #include <alps/parameters.h>
 #include <alps/expression.h>
@@ -82,14 +82,14 @@ void Parameters::read_xml(XMLTag tag, std::istream& xml,bool ignore_duplicates)
     tag = parse_tag(xml);
     while (tag.name!="/PARAMETERS") {
       if(tag.name!="PARAMETER")
-	boost::throw_exception(std::runtime_error("<PARAMETER> element expected in <PARAMETERS>"));
+        boost::throw_exception(std::runtime_error("<PARAMETER> element expected in <PARAMETERS>"));
       std::string name = tag.attributes["name"];
       if(name=="")
-	boost::throw_exception(std::runtime_error("nonempty name attribute expected in <PARAMETER>"));
+        boost::throw_exception(std::runtime_error("nonempty name attribute expected in <PARAMETER>"));
       push_back(name, parse_content(xml),ignore_duplicates);
       tag = parse_tag(xml);
       if(tag.name!="/PARAMETER")
-	boost::throw_exception(std::runtime_error("</PARAMETER> expected at end of <PARAMETER> element"));
+        boost::throw_exception(std::runtime_error("</PARAMETER> expected at end of <PARAMETER> element"));
       tag = parse_tag(xml);
     }
 }
@@ -126,21 +126,21 @@ void Parameters::parse(std::istream& is)
       is >> c;
       switch (c) {
       case '[':
-	value = read_until(is, ']');
-	break;
+        value = read_until(is, ']');
+        break;
       case '"':
-	value = read_until(is, '"');
-	break;
+        value = read_until(is, '"');
+        break;
       case '\'':
-	value = read_until(is, '\'');
-	break;
+        value = read_until(is, '\'');
+        break;
       default:                            
-	while(c!=';' && c!=',' && c!='}' && c!= '{' && c!='\r' && c!='\n' && is) {
-	  value+=c;
-	  c = is.get();
-	}
-	if (c=='{' || c=='}')
-	  is.putback(c);
+        while(c!=';' && c!=',' && c!='}' && c!= '{' && c!='\r' && c!='\n' && is) {
+          value+=c;
+          c = is.get();
+        }
+        if (c=='{' || c=='}')
+          is.putback(c);
       }
       push_back(key, value, true);
     } else {
@@ -164,7 +164,7 @@ ParameterXMLHandler::ParameterXMLHandler(Parameter& p)
   : XMLHandlerBase("PARAMETER"), parameter_(p) {}
   
 void ParameterXMLHandler::start_element(const std::string& name,
-					const XMLAttributes& attributes)
+                                        const XMLAttributes& attributes)
 {
   if (name != "PARAMETER")
     boost::throw_exception(std::runtime_error("ParameterXMLHandler: unknown tag name : " + name));
@@ -187,7 +187,7 @@ ParametersXMLHandler::ParametersXMLHandler(Parameters& p)
 }
 
 void ParametersXMLHandler::start_child(const std::string&,
-				       const XMLAttributes&)
+                                       const XMLAttributes&)
 {
   parameter_ = Parameter();
 }
@@ -210,9 +210,9 @@ std::ostream& operator<<(std::ostream& os, const alps::Parameters& p)
       std::string s = it->value().c_str();
       os << it->key() << " = ";
       if (s.find(' ') != std::string::npos)
-	os << '"' << s << '"';
+        os << '"' << s << '"';
       else
-	os << s;
+        os << s;
       os << ";\n";
     }
   }

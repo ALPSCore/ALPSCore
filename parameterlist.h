@@ -1,22 +1,20 @@
-/***************************************************************************
-* ALPS++ library
+/*****************************************************************************
 *
-* parser/parameterlist.h   An array of parameters
+* ALPS Project: Algorithms and Libraries for Physics Simulations
 *
-* $Id$
+* ALPS Libraries
 *
 * Copyright (C) 1994-2003 by Matthias Troyer <troyer@comp-phys.org>,
-*                            Synge Todo <wistaria@comp-phys.org>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
-* This software is part of the ALPS library, published under the 
-* ALPS Library License; you can use, redistribute it and/or modify 
-* it under the terms of the License, either version 1 or (at your option) 
-* any later version.
-*
-* You should have received a copy of the ALPS Library License along with 
-* the ALPS Library; see the file License.txt. If not, the license is also 
-* available from http://alps.comp-phys.org/. 
-
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -26,7 +24,9 @@
 * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 * DEALINGS IN THE SOFTWARE.
 *
-**************************************************************************/
+*****************************************************************************/
+
+/* $Id$ */
 
 #ifndef ALPS_PARSER_PARAMETERLIST_H
 #define ALPS_PARSER_PARAMETERLIST_H
@@ -61,7 +61,7 @@ namespace alps {
 #endif
 
 inline std::ostream& operator<<(std::ostream& os,
-				const alps::ParameterList& params)
+                                const alps::ParameterList& params)
 {
   for (alps::ParameterList::const_iterator it = params.begin();
        it != params.end(); ++it) os << "{\n" << *it << "}\n";
@@ -90,11 +90,11 @@ namespace alps {
 #endif
 
 inline alps::ODump& operator<<(alps::ODump& od,
-			       const alps::ParameterList& p)
+                               const alps::ParameterList& p)
 { return od << static_cast<std::vector<alps::Parameters> >(p); }
 
 inline alps::IDump& operator>>(alps::IDump& id,
-			       alps::ParameterList& p)
+                               alps::ParameterList& p)
 { return id >> reinterpret_cast<std::vector<alps::Parameters>&>(p); }
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
@@ -119,7 +119,7 @@ public:
 
 protected:  
   void start_child(const std::string& name,
-		   const XMLAttributes& attributes);
+                   const XMLAttributes& attributes);
   void end_child(const std::string& name);
 
 private:
@@ -137,7 +137,7 @@ namespace alps {
 #endif
 
 inline alps::oxstream& operator<<(alps::oxstream& oxs,
-				  const alps::ParameterList& parameterlist)
+                                  const alps::ParameterList& parameterlist)
 {
   oxs << alps::start_tag("PARAMETERLIST");
   alps::ParameterList::const_iterator p_end = parameterlist.end();
