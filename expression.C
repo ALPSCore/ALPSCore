@@ -188,7 +188,7 @@ Term::Term(std::istream& in, bool negate)
  : is_negative_(negate)
 {
   bool is_inverse=false;
-  terms_.push_back(detail::Value(in,is_inverse));
+  terms_.push_back(Factor(in,is_inverse));
   while (true) {
     char c;
     in >> c;
@@ -196,7 +196,7 @@ Term::Term(std::istream& in, bool negate)
       break;
     switch(c) {
       case '*':
-        is_inverse=false;;
+        is_inverse=false;
         break;
       case '/':
         is_inverse=true;
@@ -205,7 +205,7 @@ Term::Term(std::istream& in, bool negate)
         in.putback(c);
         return;
     }
-    terms_.push_back(detail::Value(in,is_inverse));
+    terms_.push_back(Factor(in,is_inverse));
   }
 }
 
@@ -254,7 +254,7 @@ void Term::partial_evaluate(const Evaluator& p)
 	val=-val;
       }
       if (val!=1.)
-        terms_.insert(terms_.begin(),detail::Value(val));
+        terms_.insert(terms_.begin(),Factor(val));
     }
   }
 }
@@ -284,7 +284,7 @@ detail::Evaluatable* Term::clone() const
 }
 
 
-detail::Value::Value(std::istream& in, bool inv)
+Factor::Factor(std::istream& in, bool inv)
  : term_(), is_inverse_(inv)
 {
   char c;
@@ -295,35 +295,35 @@ detail::Value::Value(std::istream& in, bool inv)
     in.putback(c);
     double val;
     in>>val;
-    term_.reset(new Number(val));
+    term_.reset(new detail::Number(val));
   }
   else if (std::isalnum(c)) {
     in.putback(c);
     std::string name=parse_identifier(in);
     in>>c;
     if(in && c=='(')
-      term_.reset(new Function(in,name));
+      term_.reset(new detail::Function(in,name));
     else  {
       if (in)
         in.putback(c);
-      term_.reset(new Symbol(name));
+      term_.reset(new detail::Symbol(name));
     }
   }
   else if (c=='(')
-    term_.reset(new Block(in));
+    term_.reset(new detail::Block(in));
   else
     boost::throw_exception(std::runtime_error("Illegal term in expression"));
 }
 
 
-detail::Value::Value(const detail::Value& v)
+Factor::Factor(const Factor& v)
  : Evaluatable(v), term_(), is_inverse_(v.is_inverse_)
 {
   if (v.term_)
     term_.reset(v.term_->clone());
 }
 
-const detail::Value& detail::Value::operator=(const detail::Value& v)
+const Factor& Factor::operator=(const Factor& v)
 {
   if (v.term_)
     term_.reset(v.term_->clone());
@@ -332,31 +332,36 @@ const detail::Value& detail::Value::operator=(const detail::Value& v)
   return *this;
 }
 
-detail::Evaluatable* detail::Value::clone() const
+detail::Evaluatable* Factor::clone() const
 {
-  return new Value(*this);
+  return new Factor(*this);
 }
 
-detail::Value::Value(double x) 
- : term_(new Number(x)), is_inverse_(false) 
+Factor::Factor(double x) 
+ : term_(new detail::Number(x)), is_inverse_(false) 
 {
 }
 
-double detail::Value::value(const Evaluator& p) const
+Factor::Factor(const std::string& s) 
+ : term_(new detail::Symbol(s)), is_inverse_(false) 
+{
+}
+
+double Factor::value(const Evaluator& p) const
 {
   if (!term_)
     boost::throw_exception(std::runtime_error("Empty value in expression"));
   return is_inverse() ? 1./term_->value(p) : term_->value(p);
 }
 
-bool detail::Value::can_evaluate(const Evaluator& p) const
+bool Factor::can_evaluate(const Evaluator& p) const
 {
   if (!term_)
     boost::throw_exception(std::runtime_error("Empty value in expression"));
   return term_->can_evaluate(p);
 }
 
-void detail::Value::partial_evaluate(const Evaluator& p)
+void Factor::partial_evaluate(const Evaluator& p)
 {
   if (!term_)
     boost::throw_exception(std::runtime_error("Empty value in expression"));
@@ -365,7 +370,7 @@ void detail::Value::partial_evaluate(const Evaluator& p)
     term_.reset(e);
 }
 
-void detail::Value::output(std::ostream& out) const
+void Factor::output(std::ostream& out) const
 {
   if (!term_)
     boost::throw_exception(std::runtime_error("Empty value in expression"));  
@@ -517,7 +522,7 @@ boost::shared_ptr<Term> Term::flatten_one_term()
 {
   for (int i=0;i<terms_.size();++i) 
     if (!terms_[i].is_inverse()) {
-      boost::shared_ptr<detail::Value> val = terms_[i].flatten_one_value();
+      boost::shared_ptr<Factor> val = terms_[i].flatten_one_value();
       if (val) {
         boost::shared_ptr<Term> term(new Term(*this));
         term->terms_[i]=*val;
@@ -527,12 +532,12 @@ boost::shared_ptr<Term> Term::flatten_one_term()
   return boost::shared_ptr<Term>();
 }
 
-boost::shared_ptr<detail::Value> detail::Value::flatten_one_value()
+boost::shared_ptr<Factor> Factor::flatten_one_value()
 {
   boost::shared_ptr<detail::Evaluatable> term=term_->flatten_one();
-  boost::shared_ptr<Value> val(new Value(*this));
+  boost::shared_ptr<Factor> val(new Factor(*this));
   val->term_=term;
-  return val->term_ ? val : boost::shared_ptr<detail::Value>();
+  return val->term_ ? val : boost::shared_ptr<Factor>();
 }
 
 boost::shared_ptr<Expression> Expression::flatten_one_expression()

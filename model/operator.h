@@ -186,6 +186,25 @@ private:
 };
 
 template <class I>
+class BondOperatorSplitter : public OperatorEvaluator<I>
+{
+ public:
+  typedef typename OperatorEvaluator<I>::operator_map operator_map;
+
+  BondOperatorSplitter(std::string site1, std::string site2,
+		       const Parameters& p, const operator_map& o)
+    : OperatorEvaluator<I>(p,o), sites_(site1,site2) {}
+
+  bool can_evaluate_function(const std::string& name, const Expression& argument) const;
+  Expression partial_evaluate_function(const std::string& name, const Expression& argument) const;
+  const std::pair<Term,Term>& site_operators() const { return site_ops_;}
+ private:
+  mutable std::pair<Term,Term> site_ops_;
+  std::pair<std::string,std::string> sites_;
+};
+
+
+template <class I>
 double OperatorEvaluator<I>::evaluate(const std::string& name) const
 {
   return partial_evaluate(name).value();
@@ -206,6 +225,13 @@ bool SiteOperatorEvaluator<I>::can_evaluate(const std::string& name) const
 
 template <class I>
 bool BondOperatorEvaluator<I>::can_evaluate_function(const std::string& name, const Expression& arg) const 
+{
+  return (ops_.find(name) != ops_.end() && (arg== sites_.first || arg==sites_.second)) || 
+         ParameterEvaluator::can_evaluate_function(name,arg);
+}
+
+template <class I>
+bool BondOperatorSplitter<I>::can_evaluate_function(const std::string& name, const Expression& arg) const 
 {
   return (ops_.find(name) != ops_.end() && (arg== sites_.first || arg==sites_.second)) || 
          ParameterEvaluator::can_evaluate_function(name,arg);
@@ -237,6 +263,24 @@ Expression BondOperatorEvaluator<I>::partial_evaluate_function(const std::string
     else
       return ParameterEvaluator(*this).partial_evaluate_function(name,arg);
     return e;
+  }
+  else 
+    return ParameterEvaluator(*this).partial_evaluate_function(name,arg);
+}
+
+template <class I>
+Expression BondOperatorSplitter<I>::partial_evaluate_function(const std::string& name, const Expression& arg) const
+{
+  typename operator_map::const_iterator op = ops_.find(name);
+  if (op!=ops_.end()) {  // evaluate operator
+    Expression e;
+    if (arg==sites_.first)
+      site_ops_.first *= name;
+    else  if (arg==sites_.second)
+      site_ops_.second *= name;
+    else
+      return ParameterEvaluator(*this).partial_evaluate_function(name,arg);
+    return Expression(1.);
   }
   else 
     return ParameterEvaluator(*this).partial_evaluate_function(name,arg);

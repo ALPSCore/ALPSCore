@@ -49,32 +49,34 @@ public:
   virtual Evaluatable* partial_evaluate_replace(const Evaluator& p);
 };
 
-class Value : public Evaluatable {
+} // end namespace detail
+
+class Factor : public detail::Evaluatable {
 public:
-  Value(std::istream&, bool inverse=false);
-  Value(double x);
-  Value(const Value&);
-  Value(const Evaluatable& e)  : term_(e.clone()), is_inverse_(false) {}
-  const Value& operator=(const Value&);
+  Factor(std::istream&, bool inverse=false);
+  Factor(double x);
+  Factor(const std::string& s);
+  Factor(const Factor&);
+  Factor(const detail::Evaluatable& e)  : term_(e.clone()), is_inverse_(false) {}
+  const Factor& operator=(const Factor&);
   double value(const Evaluator& p) const;
   void output(std::ostream&) const;
   bool can_evaluate(const Evaluator& p) const;
-  Evaluatable* clone() const;
-  boost::shared_ptr<Value> flatten_one_value();
+  detail::Evaluatable* clone() const;
+  boost::shared_ptr<Factor> flatten_one_value();
   bool is_inverse() const { return is_inverse_;}
   void partial_evaluate(const Evaluator& p);
 private:
-  boost::shared_ptr<Evaluatable> term_;
+  boost::shared_ptr<detail::Evaluatable> term_;
   bool is_inverse_;
 };
 
-} // end namespace detail
 
 class Term : public detail::Evaluatable {
 public:
   Term(std::istream&, bool =false);
-  Term(double x) : is_negative_(false), terms_(1,detail::Value(x)) {}
-  Term(const detail::Evaluatable& e) : is_negative_(false), terms_(1,detail::Value(e)) {}
+  Term(double x) : is_negative_(false), terms_(1,Factor(x)) {}
+  Term(const detail::Evaluatable& e) : is_negative_(false), terms_(1,Factor(e)) {}
   virtual ~Term() {}
   double value(const Evaluator& p) const;
   bool can_evaluate(const Evaluator& p) const;
@@ -84,9 +86,11 @@ public:
   boost::shared_ptr<Term> flatten_one_term();
   void partial_evaluate(const Evaluator& p);
   inline operator std::string () const;
+  const Term& operator*=(const Factor& v) { terms_.push_back(v); return *this;}
+  const Term& operator*=(const std::string& s) { return operator*=(Factor(s));}
 private:
   bool is_negative_;
-  std::vector<detail::Value> terms_;
+  std::vector<Factor> terms_;
 };
 
 
