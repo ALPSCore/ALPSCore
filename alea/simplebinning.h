@@ -358,30 +358,22 @@ void SimpleBinning<T>::write_vector_xml(std::ostream& xml, IT it) const {
 template <class T>
 void SimpleBinning<T>::write_scalar_xml(oxstream& oxs) const { 
   for (int i = 0; i < binning_depth(); ++i) {
-    oxs << alps::start_tag("BINNED")
-	<< alps::no_linebreak
-	<< alps::start_tag("COUNT") << count()/(1<<i) << alps::end_tag
-        << alps::start_tag("MEAN") << alps::attribute("method", "simple")
-	<< binmean(i) << alps::end_tag
-        << alps::start_tag("ERROR") << alps::attribute("method", "simple")
-	<< error(i) << alps::end_tag
-	<< alps::end_tag("BINNED");
+    oxs << start_tag("BINNED")<< no_linebreak
+	<< start_tag("COUNT") << count()/(1<<i) << end_tag
+        << start_tag("MEAN") << attribute("method", "simple") << precision(binmean(i), 8) << end_tag
+        << start_tag("ERROR") << attribute("method", "simple") << precision(error(i), 3) << end_tag
+	<< end_tag("BINNED");
   }
 }
 
 template <class T> template <class IT> 
 void SimpleBinning<T>::write_vector_xml(oxstream& oxs, IT it) const {
   for (int i = 0; i < binning_depth() ; ++i) {
-    oxs << alps::start_tag("BINNED")
-	<< alps::no_linebreak
-	<< alps::start_tag("COUNT") << count()/(1<<i) << alps::end_tag
-        << alps::start_tag("MEAN") << alps::attribute("method", "simple")
-	<< obs_value_traits<result_type>::slice_value(binmean(i),it)
-	<< alps::end_tag
-        << alps::start_tag("ERROR") << alps::attribute("method", "simple")
-	<< obs_value_traits<result_type>::slice_value(error(i),it)
-	<< alps::end_tag
-	<< alps::end_tag("BINNED");
+    oxs << start_tag("BINNED")<< no_linebreak
+	<< start_tag("COUNT") << count()/(1<<i) << end_tag
+        << start_tag("MEAN") << attribute("method", "simple") << precision(obs_value_traits<result_type>::slice_value(binmean(i),it), 8) << end_tag
+        << start_tag("ERROR") << attribute("method", "simple") << precision(obs_value_traits<result_type>::slice_value(error(i),it), 3)	<< end_tag
+	<< end_tag("BINNED");
   }
 }
 

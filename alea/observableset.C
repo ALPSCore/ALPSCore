@@ -310,10 +310,10 @@ void ObservableSet::write_xml(std::ostream& xml, const boost::filesystem::path& 
 
 void ObservableSet::write_xml(oxstream& oxs, const boost::filesystem::path& fn_hdf5) const
 {
-  oxs << alps::start_tag("AVERAGES");
+  oxs << start_tag("AVERAGES");
   for(const_iterator i = begin(); i != end(); ++i) 
     i->second->write_xml(oxs, fn_hdf5);
-  oxs << alps::end_tag("AVERAGES");
+  oxs << end_tag("AVERAGES");
 }
 
 void ObservableSet::read_xml(std::istream& infile, const XMLTag& intag)

@@ -28,7 +28,9 @@
 #include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/lexical_cast.hpp>
+#include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <stack>
 #include <string>
 
@@ -58,14 +60,14 @@ struct end_tag_t
 
 struct attribute_t
 {
-template<class T>
-attribute_t(const std::string& n, const T& v) : attr(n, v) {}
-XMLAttribute attr;
+  template<class T>
+  attribute_t(const std::string& n, const T& v) : attr(n, v) {}
+  XMLAttribute attr;
 };
 
 struct pi_t : public start_tag_t
 {
-pi_t(const std::string& n) : start_tag_t(n) {}
+  pi_t(const std::string& n) : start_tag_t(n) {}
 };
 
 } // namespace detail
@@ -89,6 +91,7 @@ public:
   oxstream& start_cdata();
   oxstream& end_cdata();
   oxstream& no_linebreak();
+  oxstream& endl() { *this << '\n'; }
 
   oxstream& operator<<(const std::string& t) {
     return text_str(t);
@@ -193,6 +196,20 @@ inline oxstream& no_linebreak(oxstream& oxs) { return oxs.no_linebreak(); }
 // replace "<", "&", etc to entities
 std::string convert(const std::string& str);
 
+template<class T>
+inline std::string precision(const T& d, int n)
+{
+  std::ostringstream stream;
+  stream << std::setprecision(n) << d;
+  return stream.str();
+}
+
 } // namespace alps
+
+namespace std {
+
+inline alps::oxstream& endl(alps::oxstream& oxs) { return oxs.endl(); }
+
+};
 
 #endif // ALPS_PARSER_XMLSTREAM_H

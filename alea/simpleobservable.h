@@ -668,41 +668,35 @@ void AbstractSimpleObservable<T>::write_xml_scalar(oxstream& oxs, const boost::f
     std::string vm = evaluation_method(Variance);
     std::string tm = evaluation_method(Tau);
 
-    oxs << alps::start_tag("SCALAR_AVERAGE")
-	<< alps::attribute("name", name());
+    oxs << start_tag("SCALAR_AVERAGE") << attribute("name", name());
 
-    oxs << alps::start_tag("COUNT") << alps::no_linebreak << count()
-	<< alps::end_tag;
+    oxs << start_tag("COUNT") << no_linebreak << count() << end_tag;
 
-    oxs << alps::start_tag("MEAN") << alps::no_linebreak;
-    if (mm != "") oxs << alps::attribute("method", mm);
-    oxs.stream() << std::setprecision(16);
-    oxs << mean() << alps::end_tag;
+    oxs << start_tag("MEAN") << no_linebreak;
+    if (mm != "") oxs << attribute("method", mm);
+    oxs << precision(mean(), 16) << end_tag;
 
-    oxs << alps::start_tag("ERROR") << alps::no_linebreak;
-    if (em != "") oxs << alps::attribute("method", em);
-    oxs.stream() << std::setprecision(3);
-    oxs << error() << alps::end_tag;
+    oxs << start_tag("ERROR") << no_linebreak;
+    if (em != "") oxs << attribute("method", em);
+    oxs << precision(error(), 3) << end_tag;
 
     if (has_variance()) {
-      oxs << alps::start_tag("VARIANCE") << alps::no_linebreak
-	  << alps::attribute("method", vm) << variance() << alps::end_tag;
+      oxs << start_tag("VARIANCE") << no_linebreak;
+      if (vm != "") oxs << attribute("method", vm);
+      oxs << precision(variance(), 3) << end_tag;
     }
     if (has_tau()) {
-      oxs << alps::start_tag("AUTOCORR") << alps::no_linebreak
-	  << alps::attribute("method", tm);
-      oxs.stream() << std::setprecision(3);
-      oxs << tau() << alps::end_tag;
+      oxs << start_tag("AUTOCORR") << no_linebreak;
+      if (tm != "") oxs << attribute("method", tm);
+      oxs << precision(tau(), 3) << end_tag;
     }
 
 #ifdef ALPS_HAVE_HDF5
     if (!fn_hdf5.empty() && bin_size() == 1) {
       //write tag for timeseries and the hdf5-file
-      oxs << alps::start_tag("TIMESERIES")
-	  << alps::attribute("format", "HDF5")
-	  << alps::attribute("file", fn_hdf5.leaf())
-	  << alps::attribute("set", name())
-	  << alps::end_tag;
+      oxs << start_tag("TIMESERIES") << attribute("format", "HDF5")
+	  << attribute("file", fn_hdf5.leaf()) << attribute("set", name())
+	  << end_tag;
 
       //open the hdf5 file and write data
       H5File hdf5(fn_hdf5.native_file_string().c_str(),H5F_ACC_CREAT | H5F_ACC_RDWR);
@@ -717,7 +711,7 @@ void AbstractSimpleObservable<T>::write_xml_scalar(oxstream& oxs, const boost::f
     }
 #endif
     write_more_xml(oxs);
-    oxs << alps::end_tag("SCALAR_AVERAGE");
+    oxs << end_tag("SCALAR_AVERAGE");
   }
 }
 
@@ -749,51 +743,47 @@ void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, const boost::f
       obs_value_traits<T>::copy(variance_,variance());
     }
 
-    oxs << alps::start_tag("VECTOR_AVERAGE")
-	<< alps::attribute("name", name())
-	<< alps::attribute("nvalues", obs_value_traits<T>::size(mean()));
+    oxs << start_tag("VECTOR_AVERAGE")<< attribute("name", name())
+	<< attribute("nvalues", obs_value_traits<T>::size(mean()));
 
     typename obs_value_traits<result_type>::slice_iterator it=obs_value_traits<result_type>::slice_begin(mean_);
     typename obs_value_traits<result_type>::slice_iterator end=obs_value_traits<result_type>::slice_end(mean_);
     while (it!=end)
     {
-      oxs << alps::start_tag("SCALAR_AVERAGE")
-	  << alps::attribute("indexvalue", obs_value_traits<result_type>::slice_name(mean_,it));
+      oxs << start_tag("SCALAR_AVERAGE")
+	  << attribute("indexvalue", obs_value_traits<result_type>::slice_name(mean_,it));
       
-      oxs << alps::start_tag("COUNT") << count() << alps::end_tag;
+      oxs << start_tag("COUNT") << count() << end_tag;
       
-      oxs << alps::start_tag("MEAN");
-      if (mm != "") oxs << alps::attribute("method", mm);
-      oxs.stream() << std::setprecision(16);
-      oxs << obs_value_traits<result_type>::slice_value(mean_, it)
-	  << alps::end_tag;
+      oxs << start_tag("MEAN");
+      if (mm != "") oxs << attribute("method", mm);
+      oxs << precision(obs_value_traits<result_type>::slice_value(mean_, it), 16)
+	  << end_tag;
       
-      oxs << alps::start_tag("ERROR");
-      if (em != "") oxs << alps::attribute("method", em);
-      oxs.stream() << std::setprecision(3);
-      oxs << obs_value_traits<result_type>::slice_value(error_, it)
-	  << alps::end_tag;
+      oxs << start_tag("ERROR");
+      if (em != "") oxs << attribute("method", em);
+      oxs << precision(obs_value_traits<result_type>::slice_value(error_, it), 3)
+	  << end_tag;
       
       if (has_variance()) {
-	oxs << alps::start_tag("VARIANCE") << alps::attribute("method", vm)
-	    << obs_value_traits<result_type>::slice_value(variance_, it)
-	    << alps::end_tag;
+	oxs << start_tag("VARIANCE");
+	if (vm != "") oxs << attribute("method", vm);
+	oxs << precision(obs_value_traits<result_type>::slice_value(variance_, it), 3)
+	    << end_tag;
       }
       if (has_tau()) {
-	oxs << alps::start_tag("AUTOCORR") << alps::attribute("method", tm);
-	oxs.stream() << std::setprecision(3);
-	oxs << obs_value_traits<time_type>::slice_value(tau_, it)
-	    << alps::end_tag;
+	oxs << start_tag("AUTOCORR");
+	if (tm != "") oxs << attribute("method", tm);
+	oxs << precision(obs_value_traits<time_type>::slice_value(tau_, it), 3)
+	    << end_tag;
       }
       
 #ifdef ALPS_HAVE_HDF5
       if(!fn_hdf5.empty() && bin_size() == 1) {
         //write tag for timeseries and the hdf5-file
-	oxs << alps::start_tag("TIMESERIES")
-	    << alps::attribute("format", "HDF5")
-	    << alps::attribute("file", fn_hdf5.leaf())
-	    << alps::attribute("set", name())
-	    << alps::end_tag;
+	oxs << start_tag("TIMESERIES") << attribute("format", "HDF5")
+	    << attribute("file", fn_hdf5.leaf()) << attribute("set", name())
+	    << end_tag;
 
         //open the hdf5 file and write data
         H5File hdf5(fn_hdf5.native_file_string().c_str(),H5F_ACC_CREAT | H5F_ACC_RDWR);
@@ -810,9 +800,9 @@ void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, const boost::f
       write_more_xml(oxs,it);
 
       ++it;
-      oxs << alps::end_tag("SCALAR_AVERAGE");
+      oxs << end_tag("SCALAR_AVERAGE");
     }
-    oxs << alps::end_tag("VECTOR_AVERAGE");
+    oxs << end_tag("VECTOR_AVERAGE");
   }
 }
 

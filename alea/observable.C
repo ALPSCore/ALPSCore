@@ -36,8 +36,7 @@ void Observable::write_xml(std::ostream& xml,const boost::filesystem::path&) con
 
 void Observable::write_xml(oxstream& oxs, const boost::filesystem::path&) const
 {
-  oxs << alps::start_tag("AVERAGE") << alps::attribute("name", name())
-      << alps::end_tag;
+  oxs << start_tag("AVERAGE") << attribute("name", name()) << end_tag;
 }
 
 #ifndef ALPS_WITHOUT_OSIRIS
