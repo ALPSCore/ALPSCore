@@ -28,6 +28,7 @@
 /* $Id$ */
 
 #include <alps/model.h>
+#include <fstream>
 #include <iostream>
 
 void write_set(const std::string& name, const alps::ModelLibrary& lib, 
@@ -45,7 +46,8 @@ int main()
   try {
 #endif
     // create the library from an XML file
-    alps::ModelLibrary lib(std::cin);
+    std::ifstream in ("models.xml");
+    alps::ModelLibrary lib(in);
 
     // write all basis states
     write_set("fermion",lib);

@@ -13,7 +13,7 @@ example5_SOURCES = example5.C
 example6_SOURCES = example6.C
 parity_SOURCES = parity.C
 
-dist_noinst_DATA = example1.input example1.output example2.input example2.output example3.input example3.output example4.output example5.output example6.output parity.input parity.output
+dist_noinst_DATA = example1.output example2.output example3.output example4.output example5.output example6.output parity.output
 
 .PHONY : test tests example examples
 test tests : check

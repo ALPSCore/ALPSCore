@@ -1,6 +1,0 @@
-* creation of many-site basis sets with constraints given by quantum numbers
-  e.g. total particle number N, spin Sz, ... -> done!!
-  also maybe an XML format for describing these sets?
-* better symbolic evaluation, e.g. not evaluate sqrt(2) unless full evaluation
-* fermion signs
-* splitting of bond-term into site terms for DMRG

@@ -28,6 +28,7 @@
 /* $Id$ */
 
 #include <alps/model.h>
+#include <fstream>
 #include <iostream>
 
 boost::multi_array<alps::Expression,2> bondmatrix(const alps::ModelLibrary lib, const std::string& name, const alps::Parameters& p=alps::Parameters())
@@ -67,7 +68,8 @@ int main()
   try {
 #endif
     // create the library from an XML file
-    alps::ModelLibrary lib(std::cin);
+    std::ifstream in ("models.xml");
+    alps::ModelLibrary lib(in);
 
     // calculate bond matrices 
     alps::Parameters parms;

@@ -1,7 +1,0 @@
-<MODELS>
-<SITEBASIS name="spin-1 boson">
-  <QUANTUMNUMBER name="N" min="0" max="2"/>
-  <QUANTUMNUMBER name="J" min="0" max="N"/>
-  <QUANTUMNUMBER name="Jz" min="-J" max="J"/>
-</SITEBASIS>
-</MODELS>

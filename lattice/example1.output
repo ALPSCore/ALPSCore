@@ -1,21 +1,112 @@
 <LATTICES>
-  <LATTICE name="simple cubic lattice" dimension="3">
+  <LATTICE name="0d lattice" dimension="0"/>
+  <LATTICE name="body-centered cubic lattice" dimension="3">
+    <PARAMETER name="a" default="1"/>
     <BASIS>
-      <VECTOR>1 0 0</VECTOR>
-      <VECTOR>0 1 0</VECTOR>
-      <VECTOR>0 0 1</VECTOR>
+      <VECTOR>a/2 a/2 -a/2</VECTOR>
+      <VECTOR>a/2 -a/2 a/2</VECTOR>
+      <VECTOR>-a/2 a/2 a/2</VECTOR>
+    </BASIS>
+  </LATTICE>
+  <LATTICE name="centered rectangular lattice" dimension="2">
+    <PARAMETER name="a" default="1"/>
+    <PARAMETER name="b" default="1"/>
+    <BASIS>
+      <VECTOR>a 0</VECTOR>
+      <VECTOR>sqrt(b*b-a*a/4) a/2</VECTOR>
+    </BASIS>
+  </LATTICE>
+  <LATTICE name="chain lattice" dimension="1">
+    <BASIS>
+      <VECTOR>1</VECTOR>
+    </BASIS>
+  </LATTICE>
+  <LATTICE name="face-centered cubic lattice" dimension="3">
+    <PARAMETER name="a" default="1"/>
+    <BASIS>
+      <VECTOR>a/2 a/2 0</VECTOR>
+      <VECTOR>a/2 0 a/2</VECTOR>
+      <VECTOR>0 a/2 a/2</VECTOR>
+    </BASIS>
+  </LATTICE>
+  <LATTICE name="hexagonal lattice" dimension="2">
+    <PARAMETER name="a" default="1"/>
+    <PARAMETER name="c" default="1"/>
+    <BASIS>
+      <VECTOR>a 0</VECTOR>
+      <VECTOR>a*sqrt(3)/2 a/2</VECTOR>
+      <VECTOR>0 0</VECTOR>
+    </BASIS>
+  </LATTICE>
+  <LATTICE name="oblique lattice" dimension="2">
+    <PARAMETER name="a" default="1"/>
+    <PARAMETER name="b" default="1"/>
+    <PARAMETER name="phi" default="Pi/2"/>
+    <BASIS>
+      <VECTOR>a 0</VECTOR>
+      <VECTOR>b*sin(phi) b*cos(phi)</VECTOR>
+    </BASIS>
+  </LATTICE>
+  <LATTICE name="orthorhombic lattice" dimension="3">
+    <PARAMETER name="a" default="1"/>
+    <PARAMETER name="b" default="1"/>
+    <PARAMETER name="c" default="1"/>
+    <BASIS>
+      <VECTOR>a 0 0</VECTOR>
+      <VECTOR>0 b 0</VECTOR>
+      <VECTOR>0 0 c</VECTOR>
+    </BASIS>
+  </LATTICE>
+  <LATTICE name="rectangular lattice" dimension="2">
+    <PARAMETER name="a" default="1"/>
+    <PARAMETER name="b" default="1"/>
+    <BASIS>
+      <VECTOR>a 0</VECTOR>
+      <VECTOR>0 b</VECTOR>
+    </BASIS>
+  </LATTICE>
+  <LATTICE name="simple cubic lattice" dimension="3">
+    <PARAMETER name="a" default="1"/>
+    <BASIS>
+      <VECTOR>a 0 0</VECTOR>
+      <VECTOR>0 a 0</VECTOR>
+      <VECTOR>0 0 a</VECTOR>
     </BASIS>
   </LATTICE>
   <LATTICE name="square lattice" dimension="2">
+    <PARAMETER name="a" default="1"/>
     <BASIS>
       <VECTOR>1 0</VECTOR>
       <VECTOR>0 1</VECTOR>
+    </BASIS>
+  </LATTICE>
+  <LATTICE name="tetragonal lattice" dimension="3">
+    <PARAMETER name="a" default="1"/>
+    <PARAMETER name="c" default="1"/>
+    <BASIS>
+      <VECTOR>a 0 0</VECTOR>
+      <VECTOR>0 a 0</VECTOR>
+      <VECTOR>0 0 c</VECTOR>
+    </BASIS>
+  </LATTICE>
+  <LATTICE name="triangular lattice" dimension="2">
+    <PARAMETER name="a" default="1"/>
+    <BASIS>
+      <VECTOR>a 0</VECTOR>
+      <VECTOR>a*sqrt(3)/2 a/2</VECTOR>
     </BASIS>
   </LATTICE>
   <UNITCELL name="anisotropic2d" dimension="2" vertices="1">
     <VERTEX id="1" type="0"/>
     <EDGE type="0" vector="0 1"><SOURCE vertex="1" offset="0 0"/><TARGET vertex="1" offset="0 1"/></EDGE>
     <EDGE type="1" vector="1 0"><SOURCE vertex="1" offset="0 0"/><TARGET vertex="1" offset="1 0"/></EDGE>
+  </UNITCELL>
+  <UNITCELL name="isolated" dimension="0" vertices="1">
+    <VERTEX id="1" type="0"/>
+  </UNITCELL>
+  <UNITCELL name="simple1d" dimension="1" vertices="1">
+    <VERTEX id="1" type="0"/>
+    <EDGE type="0" vector="1"><SOURCE vertex="1" offset="0"/><TARGET vertex="1" offset="1"/></EDGE>
   </UNITCELL>
   <UNITCELL name="simple2d" dimension="2" vertices="1">
     <VERTEX id="1" type="0"/>
@@ -39,6 +130,22 @@
     </FINITELATTICE>
     <UNITCELL ref="anisotropic2d"/>
   </LATTICEGRAPH>
+  <LATTICEGRAPH name="chain lattice">
+    <FINITELATTICE>
+      <LATTICE ref="chain lattice"/>
+      <EXTENT dimension="1" size="L"/>
+      <BOUNDARY dimension="1" type="periodic"/>
+    </FINITELATTICE>
+    <UNITCELL ref="simple1d"/>
+  </LATTICEGRAPH>
+  <LATTICEGRAPH name="dimer">
+    <FINITELATTICE>
+      <LATTICE ref="chain lattice"/>
+      <EXTENT dimension="1" size="2"/>
+      <BOUNDARY dimension="1" type="open"/>
+    </FINITELATTICE>
+    <UNITCELL ref="simple1d"/>
+  </LATTICEGRAPH>
   <LATTICEGRAPH name="disordered square lattice">
     <FINITELATTICE>
       <LATTICE ref="square lattice"/>
@@ -52,6 +159,18 @@
     <DISORDER>
       <VERTEX/>
     </DISORDER>
+  </LATTICEGRAPH>
+  <LATTICEGRAPH name="ladder">
+    <FINITELATTICE>
+      <LATTICE ref="square lattice"/>
+      <PARAMETER name="W" default="L"/>
+      <PARAMETER name="L" default="2"/>
+      <EXTENT dimension="1" size="L"/>
+      <EXTENT dimension="2" size="W"/>
+      <BOUNDARY dimension="1" type="periodic"/>
+      <BOUNDARY dimension="2" type="open"/>
+    </FINITELATTICE>
+    <UNITCELL ref="anisotropic2d"/>
   </LATTICEGRAPH>
   <LATTICEGRAPH name="simple cubic lattice">
     <FINITELATTICE>
@@ -67,22 +186,20 @@
     </FINITELATTICE>
     <UNITCELL ref="simple3d"/>
   </LATTICEGRAPH>
+  <LATTICEGRAPH name="site">
+    <FINITELATTICE>
+      <LATTICE ref="chain lattice"/>
+      <EXTENT dimension="1" size="1"/>
+      <BOUNDARY dimension="1" type="open"/>
+    </FINITELATTICE>
+    <UNITCELL ref="isolated"/>
+  </LATTICEGRAPH>
   <LATTICEGRAPH name="square lattice">
     <FINITELATTICE>
       <LATTICE ref="square lattice"/>
       <PARAMETER name="W" default="L"/>
       <EXTENT dimension="1" size="L"/>
       <EXTENT dimension="2" size="W"/>
-      <BOUNDARY dimension="1" type="periodic"/>
-      <BOUNDARY dimension="2" type="periodic"/>
-    </FINITELATTICE>
-    <UNITCELL ref="simple2d"/>
-  </LATTICEGRAPH>
-  <LATTICEGRAPH name="square lattice 2x2">
-    <FINITELATTICE>
-      <LATTICE ref="square lattice"/>
-      <EXTENT dimension="1" size="2"/>
-      <EXTENT dimension="2" size="2"/>
       <BOUNDARY dimension="1" type="periodic"/>
       <BOUNDARY dimension="2" type="periodic"/>
     </FINITELATTICE>
@@ -95,6 +212,16 @@
       <EXTENT dimension="2" size="3"/>
       <BOUNDARY dimension="1" type="periodic"/>
       <BOUNDARY dimension="2" type="open"/>
+    </FINITELATTICE>
+    <UNITCELL ref="simple2d"/>
+  </LATTICEGRAPH>
+  <LATTICEGRAPH name="square lattice 4x4">
+    <FINITELATTICE>
+      <LATTICE ref="square lattice"/>
+      <EXTENT dimension="1" size="4"/>
+      <EXTENT dimension="2" size="4"/>
+      <BOUNDARY dimension="1" type="periodic"/>
+      <BOUNDARY dimension="2" type="periodic"/>
     </FINITELATTICE>
     <UNITCELL ref="simple2d"/>
   </LATTICEGRAPH>

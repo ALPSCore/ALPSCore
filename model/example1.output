@@ -17,11 +17,33 @@
   <SITEBASIS name="spin-1">
     <QUANTUMNUMBER name="Sz" min="-1" max="1"/>
   </SITEBASIS>
+  <SITEBASIS name="spin-1 boson">
+    <PARAMETER name="NMax" default="1"/>
+    <QUANTUMNUMBER name="N" min="0" max="NMax"/>
+    <QUANTUMNUMBER name="J" min="0" max="N"/>
+    <QUANTUMNUMBER name="Jz" min="-J" max="J"/>
+  </SITEBASIS>
   <SITEBASIS name="spin-1/2">
     <QUANTUMNUMBER name="Sz" min="-1/2" max="1/2"/>
   </SITEBASIS>
   <SITEBASIS name="spin-3/2">
     <QUANTUMNUMBER name="Sz" min="-3/2" max="3/2"/>
+  </SITEBASIS>
+  <SITEBASIS name="spin-S boson">
+    <PARAMETER name="NMax" default="1"/>
+    <PARAMETER name="S" default="1"/>
+    <QUANTUMNUMBER name="N" min="0" max="NMax"/>
+    <QUANTUMNUMBER name="J" min="0" max="N*S"/>
+    <QUANTUMNUMBER name="Jz" min="-J" max="J"/>
+  </SITEBASIS>
+  <SITEBASIS name="t-J">
+    <PARAMETER name="NMax" default="1"/>
+    <QUANTUMNUMBER name="N" min="0" max="NMax"/>
+    <QUANTUMNUMBER name="Sz" min="-N/2" max="N/2"/>
+  </SITEBASIS>
+  <SITEBASIS name="t-J alternative">
+    <QUANTUMNUMBER name="Nup" min="0" max="1"/>
+    <QUANTUMNUMBER name="Ndown" min="0" max="1-Nup"/>
   </SITEBASIS>
   <BASIS name="Kondo lattice">
     <SITEBASIS type="0" ref="fermion"/>
@@ -113,6 +135,9 @@
     <PARAMETER name="Jz" default="J"/>
     <PARAMETER name="Jxy" default="J"/>
     <PARAMETER name="J" default="1"/>
+    <PARAMETER name="Jz'" default="J'"/>
+    <PARAMETER name="Jxy'" default="J'"/>
+    <PARAMETER name="J'" default="0"/>
     <PARAMETER name="h" default="0"/>
     <PARAMETER name="Gamma" default="0"/>
     <PARAMETER name="S" default="1/2"/>
@@ -120,8 +145,11 @@
     <SITETERM>
       -h*Sz-Gamma/2*(Splus+Sminus)
     </SITETERM>
-    <BONDTERM source="i" target="j">
+    <BONDTERM type="0" source="i" target="j">
       Jz*Sz(i)*Sz(j)+Jxy/2*(Splus(i)*Sminus(j)+Sminus(i)*Splus(j))
+    </BONDTERM>
+    <BONDTERM type="1" source="i" target="j">
+      Jz'*Sz(i)*Sz(j)+Jxy'/2*(Splus(i)*Sminus(j)+Sminus(i)*Splus(j))
     </BONDTERM>
   </HAMILTONIAN>
 </MODELS>

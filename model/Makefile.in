@@ -44,7 +44,7 @@ check_PROGRAMS = example1$(EXEEXT) example2$(EXEEXT) example3$(EXEEXT) \
 subdir = test/model
 DIST_COMMON = $(dist_noinst_DATA) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/lattices.xml.in \
-	$(srcdir)/models.xml.in $(srcdir)/parameters.in TODO
+	$(srcdir)/models.xml.in $(srcdir)/parameters.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
 	$(top_srcdir)/config/ac_compiler.m4 \
@@ -343,7 +343,7 @@ example9_SOURCES = example9.C
 example10_SOURCES = example10.C
 example11_SOURCES = example11.C
 example12_SOURCES = example12.C
-dist_noinst_DATA = example1.input example1.output example2.input example2.output example3.input example3.output example4.input example4.output example5.input example5.output example6.input example6.output example7.input example7.output example8.input example8.output example9.input example9.output example10.input example10.output example11.input example11.output example12.input example12.output
+dist_noinst_DATA = example1.output example2.output example3.output example4.output example5.output example6.output example7.output example8.input example8.output example9.output example10.input example10.output example11.input example11.output example12.input example12.output
 all: all-am
 
 .SUFFIXES:

@@ -30,6 +30,7 @@
 
 #include <alps/lattice.h>
 #include <iostream>
+#include <fstream>
 
 #ifdef BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP
 using namespace alps;
@@ -42,7 +43,8 @@ int main()
   try {
 #endif
     // create the library from an XML file
-    alps::LatticeLibrary lib(std::cin);
+    std::ifstream in("lattices.xml");
+    alps::LatticeLibrary lib(in);
 
     // write one of the lattices in XML
     std::cout << lib.lattice_descriptor("square lattice 3x3");

@@ -29,6 +29,7 @@
 /* $Id$ */
 
 #include <alps/lattice.h>
+#include <fstream>
 #include <iostream>
 
 #ifdef BOOST_NO_ARGUMENT_DEPENDENT_LOOKUP
@@ -42,7 +43,8 @@ int main() {
     typedef alps::coordinate_graph_type graph_type;
 
     // create the library from an XML file
-    alps::LatticeLibrary lib(std::cin);
+    std::ifstream in ("lattices.xml");
+    alps::LatticeLibrary lib(in);
 
     // generate graph and set parity
     graph_type graph;

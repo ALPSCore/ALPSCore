@@ -28,6 +28,7 @@
 /* $Id$ */
 
 #include <alps/model.h>
+#include <fstream>
 #include <iostream>
 
 int main()
@@ -40,7 +41,8 @@ int main()
     typedef alps::Expression Expression_;
 
     // create the library from an XML file
-    alps::ModelLibrary lib(std::cin);
+    std::ifstream in ("models.xml");
+    alps::ModelLibrary lib(in);
 
      // write site term matrices
      std::cout << "HHardcoreBosonSite =\n"

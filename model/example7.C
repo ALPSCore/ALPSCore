@@ -29,6 +29,7 @@
 /* $Id$ */
 
 #include <alps/model.h>
+#include <fstream>
 #include <iostream>
 #include <string>
 
@@ -50,7 +51,8 @@ int main()
 try {
 #endif
   
-  alps::ModelLibrary lib( std::cin );
+  std::ifstream in ("models.xml");
+  alps::ModelLibrary lib(in);
   alps::Parameters p;
   p["NMax"]=2;
   write_two_site_basis("spin-1 boson",lib,p);
