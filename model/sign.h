@@ -140,7 +140,7 @@ struct nonzero_edge_weight {
   bool operator()(const Edge& e) const {
     return  m_weight[e]!=0;
   }
-  EdgeWeightMap m_weight;
+  mutable EdgeWeightMap m_weight;
 };
 
                                  
