@@ -161,18 +161,16 @@ typedef HistogramObservableEvaluator<double> HistogramObsevaluator;
 
 #endif
 
- template<class T>
-   inline void HistogramObservableEvaluator<T>::collect() const
-   {
-       all_.collect_from(runs_);
-       count_=all_.count();
-       uint32_t now_size=all_.size();
-       histogram_.resize(now_size);
-       for(int l=0;l<now_size;++l)
-	{
-	  histogram_[l]=all_[l];
-	}
-   }
+template<class T>
+inline void HistogramObservableEvaluator<T>::collect() const
+{
+  all_.collect_from(runs_);
+  count_=all_.count();
+  size_type now_size=all_.size();
+  histogram_.resize(now_size);
+  for(int l=0;l<now_size;++l)
+    histogram_[l]=all_[l];
+}
 
 template <class T>
 inline const HistogramObservableEvaluator<T>&  HistogramObservableEvaluator<T>::operator=(const HistogramObservableEvaluator<T>& eval)

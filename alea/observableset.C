@@ -346,7 +346,7 @@ void ObservableSet::read_xml(std::istream& infile, const XMLTag& intag)
     else if (tag.name == "VECTOR_AVERAGE")
       operator<<(RealVectorObsevaluator(tag.attributes["name"],infile,tag));
     else if (tag.name == "HISTOGRAM") {
-     operator<< (HistogramObservableEvaluator<int>(tag.attributes["name"],infile,tag));
+     operator<< (HistogramObservableEvaluator<double>(tag.attributes["name"],infile,tag));
     }
     else
       boost::throw_exception(std::runtime_error("Cannot parse tag " + tag.name + " in <" + intag.name + ">"));

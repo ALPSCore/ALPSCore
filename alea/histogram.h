@@ -132,7 +132,7 @@ private:
   T stepsize_;
   
 protected:  
-  mutable std::vector<integer_type> histogram_;
+  mutable std::vector<value_type> histogram_;
   mutable uint32_t count_;
 
 };
