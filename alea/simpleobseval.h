@@ -460,10 +460,10 @@ void SimpleObservableEvaluator<T>::output_scalar(std::ostream& out) const
     out << " no measurements.\n";
   else 
   {
-    out << ": " << mean() << " +/- " << error();
+    out << ": " << std::setprecision(6) << mean() << " +/- " << std::setprecision(3) << error();
     if(has_tau())
-      out << "; tau = " << tau();
-    out << std::endl;
+      out << std::setprecision(3) <<  "; tau = " << tau();
+    out << std::setprecision(6) << std::endl;
   }
 }
 template <class T>
