@@ -36,6 +36,7 @@
 #include <alps/config.h>
 #include <alps/alea/observable.h>
 #include <alps/alea/simpleobservable.h>
+#include <alps/alea/nan.h>
 #include <alps/multi_array.hpp>
 
 #ifdef ALPS_HAVE_VALARRAY
@@ -186,7 +187,7 @@ inline typename NoBinning<T>::result_type NoBinning<T>::variance() const
     {
       result_type retval;
       obs_value_traits<T>::resize_same_as(retval,sum_);
-      retval=obs_value_traits<T>::max();
+      retval=inf();
       return retval;
     } // no data collected
   return ( obs_value_cast<result_type,value_type>(sum2_) -  obs_value_cast<result_type,value_type>(sum_)* obs_value_cast<result_type,value_type>(sum_)/ count_type(count_))/ count_type(count_-1);

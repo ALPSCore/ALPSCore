@@ -36,6 +36,7 @@
 #include <alps/config.h>
 #include <alps/alea/observable.h>
 #include <alps/alea/simpleobservable.h>
+#include <alps/alea/nan.h>
 #include <alps/xml.h>
 
 //=======================================================================
@@ -270,7 +271,7 @@ inline typename SimpleBinning<T>::result_type SimpleBinning<T>::variance() const
     {
       result_type retval;
       obs_value_traits<T>::resize_same_as(retval,min_);
-      retval=obs_value_traits<result_type>::max();
+      retval=inf();
       return retval;
     }
 
@@ -320,7 +321,7 @@ inline typename obs_value_traits<T>::time_type SimpleBinning<T>::tau() const
   {
     time_type retval;
     obs_value_traits<T>::resize_same_as(retval,min_);
-    retval=obs_value_traits<T>::t_max();
+    retval=inf();
     return retval;
   }
 }
