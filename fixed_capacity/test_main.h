@@ -84,6 +84,10 @@ struct non_pod {
   int init_;
 };
 
+#ifndef BOOST_NO_INCLASS_MEMBER_INITIALIZATION
+template <class T>
+const int non_pod<T>::magic;
+#endif
 
 template<class S, class T, class U>
 bool check(const S& s, const T& t, const U& u) {
