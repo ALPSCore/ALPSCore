@@ -176,14 +176,14 @@ inline Term<T> Evaluatable<T>::term() const { return Term<T>(); }
 //
 
 template<class T>
-Factor<T>::Factor<T>(value_type x) : term_(new detail::Number<T>(x)), is_inverse_(false) {}
+Factor<T>::Factor(value_type x) : term_(new detail::Number<T>(x)), is_inverse_(false) {}
 
 template<class T>
-Factor<T>::Factor<T>(const std::string& s)
+Factor<T>::Factor(const std::string& s)
   : term_(new detail::Symbol<T>(s)), is_inverse_(false) {}
 
 template<class T>
-Factor<T>::Factor<T>(std::istream& in, bool inv) : term_(), is_inverse_(inv)
+Factor<T>::Factor(std::istream& in, bool inv) : term_(), is_inverse_(inv)
 {
   char c;
   in >> c;
@@ -253,214 +253,8 @@ void Term<T>::simplify()
   terms_ = s;
 }
 
-//
-// implementation of Expression<T>
-//
-
 template<class T>
-bool Expression<T>::depends_on(const std::string& s) const {
-  for(term_iterator it=terms().first; it!=terms().second; ++it)
-    if (it->depends_on(s))
-      return true;
-  return false;
-}
-
-template<class T>
-void Expression<T>::simplify()
-{
-  partial_evaluate();
-  for (typename std::vector<Term<T> >::iterator it=terms_.begin();
-       it!=terms_.end(); ++it)
-    it->simplify();
-}
-
-template<class T>
-Term<T> Expression<T>::term() const
-{
-  if (!is_single_term())
-    boost::throw_exception(std::logic_error("Called term() for multi-term expression"));
-  return terms_[0];
-}
-
-template<class T>
-void Expression<T>::parse(const std::string& str)
-{
-#ifndef BOOST_NO_STRINGSTREAM
-  std::istringstream in(str);
-#else
-  std::istrstream in(str.c_str()); // for out-of-the-box g++ 2.95.2
-#endif
-  parse(in);
-}
-
-template<class T>
-void Expression<T>::parse(std::istream& is)
-{
-  terms_.clear();
-  bool negate=false;
-  char c;
-  is >> c;
-  if (!is)
-    return;
-  if (c=='-')
-    negate=true;
-  else if (c=='+')
-    negate=false;
-  else
-    is.putback(c);
-  terms_.push_back(Term<T>(is,negate));
-  while(true) {
-    is >> c;
-    if (!is)
-      return;
-    if (c=='-')
-      negate=true;
-    else if (c=='+')
-      negate=false;
-    else {
-      is.putback(c);
-      return;
-    }
-    terms_.push_back(Term<T>(is,negate));
-  }
-}
-
-//
-// implementation of Block<T>
-//
-
-template<class T>
-detail::Block<T>::Block<T>(std::istream& in) : Expression<T>(in)
-{
-  char c;
-  in >> c;
-  if (c != ')' && c != ',')
-    boost::throw_exception(std::runtime_error(") or , expected in expression"));
-  if (c == ',') {
-    // read imaginary part
-    Expression<T> ex(in);
-    Block<T> bl(ex);
-    Term<T> term(bl);
-    //Expression<T>("I") * f.term();
-    // std::cerr << term << std::endl;
-    // std::cerr << term.num_factors() << std::endl;
-    // std::cerr << term.value(ParameterEvaluator<T>(Parameters())) << std::endl;
-    term *= "I";
-    // std::cerr << term << std::endl;
-    // std::cerr << term.num_factors() << std::endl;
-    // std::cerr << term.value(ParameterEvaluator<T>(Parameters())) << std::endl;
-    *this += term;
-    // std::cerr << *this << std::endl;
-    check_character(in,')',") expected in expression");
-  }
-}
-
-template<class T>
-boost::shared_ptr<detail::Evaluatable<T> > detail::Block<T>::flatten_one()
-{
-  boost::shared_ptr<Expression<T> > ex = flatten_one_expression();
-  if (ex)
-    return boost::shared_ptr<Evaluatable<T> >(new Block<T>(*ex));
-  else
-    return boost::shared_ptr<Evaluatable<T> >();
-}
-
-//
-// implementation of Symbol<T>
-//
-
-template<class T>
-bool detail::Symbol<T>::depends_on(const std::string& s) const {
-  return (name_==s);
-}
-
-//
-// implementation of Function<T>
-//
-
-template<class T>
-detail::Function<T>::Function<T>(std::istream& in,const std::string& name)
-  :  name_(name), arg_(in)
-{
-  check_character(in,')',") expected after function call");
-}
-
-template<class T>
-bool detail::Function<T>::depends_on(const std::string& s) const {
-  if (name_==s) return true;
-  return arg_.depends_on(s);
-}
-
-template<class T>
-boost::shared_ptr<detail::Evaluatable<T> > detail::Function<T>::flatten_one()
-{
-  arg_.flatten();
-  return boost::shared_ptr<Expression<T> >();
-}
-
-//
-// implementation of Number<T>
-//
-
-template<class T>
-typename Expression<T>::value_type Expression<T>::value(const Evaluator<T>& p) const
-{
-  if (terms_.size()==0)
-    return value_type(0.);
-  value_type val=terms_[0].value(p);
-  for (int i=1;i<terms_.size();++i)
-    val += terms_[i].value(p);
-  return val;
-}
-
-template<class T>
-bool Expression<T>::can_evaluate(const Evaluator<T>& p) const
-{
-  if (terms_.size()==0)
-    return true;
-  bool can=true;
-  for (int i=0;i<terms_.size();++i)
-    can = can && terms_[i].can_evaluate(p);
-  return can;
-}
-
-template<class T>
-void Expression<T>::partial_evaluate(const Evaluator<T>& p)
-{
-  if (can_evaluate(p))
-    (*this) = Expression<T>(value(p));
-  else {
-    value_type val(0);
-    for (int i=0; i<terms_.size(); ++i) {
-      if (terms_[i].can_evaluate(p)) {
-        val += terms_[i].value(p);
-        terms_.erase(terms_.begin()+i);
-        --i;
-      } else {
-        terms_[i].partial_evaluate(p);
-      }
-    }
-    if (val != value_type(0.)) terms_.insert(terms_.begin(), Term<T>(val));
-  }
-}
-
-template<class T>
-void Expression<T>::output(std::ostream& os) const
-{
-  if (terms_.size()==0)
-    os <<"0";
-  else {
-    terms_[0].output(os);
-    for (int i=1;i<terms_.size();++i) {
-      if(!terms_[i].is_negative())
-        os << " + ";
-      terms_[i].output(os);
-    }
-  }
-}
-
-template<class T>
-Term<T>::Term<T>(std::istream& in, bool negate) : is_negative_(negate)
+Term<T>::Term(std::istream& in, bool negate) : is_negative_(negate)
 {
   bool is_inverse=false;
   terms_.push_back(Factor<T>(in,is_inverse));
@@ -559,6 +353,204 @@ void Term<T>::output(std::ostream& os) const
   for (int i=1;i<terms_.size();++i) {
     os << " " << (terms_[i].is_inverse() ? "/" : "*") << " ";
     terms_[i].output(os);
+  }
+}
+
+//
+// implementation of Expression<T>
+//
+
+template<class T>
+bool Expression<T>::depends_on(const std::string& s) const {
+  for(term_iterator it=terms().first; it!=terms().second; ++it)
+    if (it->depends_on(s))
+      return true;
+  return false;
+}
+
+template<class T>
+void Expression<T>::simplify()
+{
+  partial_evaluate();
+  for (typename std::vector<Term<T> >::iterator it=terms_.begin();
+       it!=terms_.end(); ++it)
+    it->simplify();
+}
+
+template<class T>
+Term<T> Expression<T>::term() const
+{
+  if (!is_single_term())
+    boost::throw_exception(std::logic_error("Called term() for multi-term expression"));
+  return terms_[0];
+}
+
+template<class T>
+void Expression<T>::parse(const std::string& str)
+{
+#ifndef BOOST_NO_STRINGSTREAM
+  std::istringstream in(str);
+#else
+  std::istrstream in(str.c_str()); // for out-of-the-box g++ 2.95.2
+#endif
+  parse(in);
+}
+
+template<class T>
+void Expression<T>::parse(std::istream& is)
+{
+  terms_.clear();
+  bool negate=false;
+  char c;
+  is >> c;
+  if (!is)
+    return;
+  if (c=='-')
+    negate=true;
+  else if (c=='+')
+    negate=false;
+  else
+    is.putback(c);
+  terms_.push_back(Term<T>(is,negate));
+  while(true) {
+    is >> c;
+    if (!is)
+      return;
+    if (c=='-')
+      negate=true;
+    else if (c=='+')
+      negate=false;
+    else {
+      is.putback(c);
+      return;
+    }
+    terms_.push_back(Term<T>(is,negate));
+  }
+}
+
+//
+// implementation of Block<T>
+//
+
+template<class T>
+detail::Block<T>::Block(std::istream& in) : Expression<T>(in)
+{
+  char c;
+  in >> c;
+  if (c != ')' && c != ',')
+    boost::throw_exception(std::runtime_error(") or , expected in expression"));
+  if (c == ',') {
+    // read imaginary part
+    Expression<T> ex(in);
+    Block<T> bl(ex);
+    Term<T> term(bl);
+    term *= "I";
+    *this += term;
+    check_character(in,')',") expected in expression");
+  }
+}
+
+template<class T>
+boost::shared_ptr<detail::Evaluatable<T> > detail::Block<T>::flatten_one()
+{
+  boost::shared_ptr<Expression<T> > ex = flatten_one_expression();
+  if (ex)
+    return boost::shared_ptr<Evaluatable<T> >(new Block<T>(*ex));
+  else
+    return boost::shared_ptr<Evaluatable<T> >();
+}
+
+//
+// implementation of Symbol<T>
+//
+
+template<class T>
+bool detail::Symbol<T>::depends_on(const std::string& s) const {
+  return (name_==s);
+}
+
+//
+// implementation of Function<T>
+//
+
+template<class T>
+detail::Function<T>::Function(std::istream& in,const std::string& name)
+  :  name_(name), arg_(in)
+{
+  check_character(in,')',") expected after function call");
+}
+
+template<class T>
+bool detail::Function<T>::depends_on(const std::string& s) const {
+  if (name_==s) return true;
+  return arg_.depends_on(s);
+}
+
+template<class T>
+boost::shared_ptr<detail::Evaluatable<T> > detail::Function<T>::flatten_one()
+{
+  arg_.flatten();
+  return boost::shared_ptr<Expression<T> >();
+}
+
+//
+// implementation of Number<T>
+//
+
+template<class T>
+typename Expression<T>::value_type Expression<T>::value(const Evaluator<T>& p) const
+{
+  if (terms_.size()==0)
+    return value_type(0.);
+  value_type val=terms_[0].value(p);
+  for (int i=1;i<terms_.size();++i)
+    val += terms_[i].value(p);
+  return val;
+}
+
+template<class T>
+bool Expression<T>::can_evaluate(const Evaluator<T>& p) const
+{
+  if (terms_.size()==0)
+    return true;
+  bool can=true;
+  for (int i=0;i<terms_.size();++i)
+    can = can && terms_[i].can_evaluate(p);
+  return can;
+}
+
+template<class T>
+void Expression<T>::partial_evaluate(const Evaluator<T>& p)
+{
+  if (can_evaluate(p))
+    (*this) = Expression<T>(value(p));
+  else {
+    value_type val(0);
+    for (int i=0; i<terms_.size(); ++i) {
+      if (terms_[i].can_evaluate(p)) {
+        val += terms_[i].value(p);
+        terms_.erase(terms_.begin()+i);
+        --i;
+      } else {
+        terms_[i].partial_evaluate(p);
+      }
+    }
+    if (val != value_type(0.)) terms_.insert(terms_.begin(), Term<T>(val));
+  }
+}
+
+template<class T>
+void Expression<T>::output(std::ostream& os) const
+{
+  if (terms_.size()==0)
+    os <<"0";
+  else {
+    terms_[0].output(os);
+    for (int i=1;i<terms_.size();++i) {
+      if(!terms_[i].is_negative())
+        os << " + ";
+      terms_[i].output(os);
+    }
   }
 }
 
