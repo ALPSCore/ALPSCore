@@ -5,7 +5,7 @@
 *
 * $Id$
 *
-* Copyright (C) 1994-2002 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *
 * Permission is hereby granted, free of charge, to any person or organization 
 * obtaining a copy of the software covered by this license (the "Software") 
@@ -113,15 +113,16 @@ public:
 protected:
   int32_t version;
   int32_t user_version;
-  typedef boost::lagged_fibonacci607 random_base_type;
-  //typedef boost::mt19937 random_base_type;
-  typedef boost::uniform_01<random_base_type> random_type;
-  random_base_type random;
-  boost::variate_generator<random_base_type&,boost::uniform_real<> > random_01;
+  typedef boost::lagged_fibonacci607 random_type;
+  //typedef boost::mt19937 random_type;
+  random_type random;
+  boost::variate_generator<random_type&,boost::uniform_real<> > random_01;
   double random_real(double a=0., double b=1.) 
-  { return boost::variate_generator<random_base_type&,boost::uniform_real<> >(random,boost::uniform_real<>(a,b))();}
+  { return boost::variate_generator<random_type&,boost::uniform_real<> >(random,boost::uniform_real<>(a,b))();}
   int random_int(int a, int b) 
-  { return boost::variate_generator<random_base_type&,boost::uniform_int<> >(random,boost::uniform_int<>(a,b))();}
+  { return boost::variate_generator<random_type&,boost::uniform_int<> >(random,boost::uniform_int<>(a,b))();}
+  int random_int(int n) 
+  { return boost::variate_generator<random_type&,boost::uniform_int<> >(random,boost::uniform_int<>(0,n-1))();}
 
   
   int node;
