@@ -27,7 +27,7 @@
 // This file includes low level functions which depend on the OS used
 //=======================================================================
 
-// #include <palm/config.h>
+#include <alps/config.h>
 #include <string>
 
 namespace alps {

@@ -29,10 +29,10 @@
 #include <iosfwd>
 #include <string>
 
-#if defined(HAVE_XERCES_PARSER)
+#if defined(ALPS_HAVE_XERCES_PARSER)
 # include <xercesc/parsers/SAXParser.hpp>
 # include <xercesc/sax/HandlerBase.hpp>
-#elif defined(HAVE_EXPAT_PARSER)
+#elif defined(ALPS_HAVE_EXPAT_PARSER)
 # include <expat.h>
 #endif
 
@@ -50,10 +50,10 @@ public:
 private:
   XMLParser();
 
-#if defined(HAVE_XERCES_PARSER)
+#if defined(ALPS_HAVE_XERCES_PARSER)
   XERCES_CPP_NAMESPACE_QUALIFIER SAXParser* parser_;
   XERCES_CPP_NAMESPACE_QUALIFIER HandlerBase* handler_;
-#elif defined(HAVE_EXPAT_PARSER)
+#elif defined(ALPS_HAVE_EXPAT_PARSER)
   XML_Parser parser_;
 #else
   XMLHandlerBase& handler_;

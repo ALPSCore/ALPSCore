@@ -33,7 +33,7 @@
 #include <cstddef>
 #include <complex>
 
-#ifdef HAVE_VALARRAY
+#ifdef ALPS_HAVE_VALARRAY
 # include <valarray>
 #endif
 
@@ -124,7 +124,7 @@ struct obs_value_traits<std::complex<T> >
   template <class X> static T convert(X x) { return static_cast<T>(x);}
 };
 
-#ifdef HAVE_VALARRAY
+#ifdef ALPS_HAVE_VALARRAY
 template <class T>
 struct obs_value_traits<std::valarray<T> >
 {
@@ -360,7 +360,7 @@ struct obs_value_slice
   static const bool sliceable=false;
 };                                            
 
-#ifdef HAVE_VALARRAY
+#ifdef ALPS_HAVE_VALARRAY
 template <class T, class I>                           
 struct obs_value_slice<std::valarray<T>,I>  
 {                                           

@@ -28,69 +28,69 @@
 //
 
 // Define to 1 if you have the <stdint.h> header file.
-#undef HAVE_STDINT_H
+#undef ALPS_HAVE_STDINT_H
 
 // Define to 1 if you have the <inttypes.h> header file.
-#undef HAVE_INTTYPES_H
+#undef ALPS_HAVE_INTTYPES_H
 
 // Define to 1 if you have the <unistd.h> header file.
-#undef HAVE_UNISTD_H
+#undef ALPS_HAVE_UNISTD_H
 
 // Define to 1 if you have the <bind/bitypes.h> header file.
-#undef HAVE_BIND_BITYPES_H
+#undef ALPS_HAVE_BIND_BITYPES_H
 
 // Define to 1 if you have the <sys/int_types.h> header file.
-#undef HAVE_SYS_INT_TYPES_H
-
-// Define to 1 if you have the <sys/param.h> header file.
-#undef HAVE_SYS_PARAM_H
+#undef ALPS_HAVE_SYS_INT_TYPES_H
 
 // Define to 1 if you have the <sys/systeminfo.h> header file.
-#undef HAVE_SYS_SYSTEMINFO_H
+#undef ALPS_HAVE_SYS_SYSTEMINFO_H
 
 // Define to 1 if you have the <sys/time.h> header file.
-#undef HAVE_SYS_TIME_H
+#undef ALPS_HAVE_SYS_TIME_H
 
 // Define to 1 if you have the <sys/types.h> header file.
-#undef HAVE_SYS_TYPES_H
+#undef ALPS_HAVE_SYS_TYPES_H
 
 // Define to 1 if you have valarray<T>.
-#undef HAVE_VALARRAY
+#undef ALPS_HAVE_VALARRAY
 
 //
 // Libraries
 //
 
+// Define to 1 if you have the PTHREAD library
+#undef ALPS_HAVE_PTHREAD
+
 // Define to 1 if you have the MPI library
-#undef HAVE_MPI
+#undef ALPS_HAVE_MPI
 
 // Define to 1 if you have the PVM library
-#undef HAVE_PVM
+#undef ALPS_HAVE_PVM
 
 // Define to 1 if you have the HDF5 library
-#undef HAVE_HDF5
+#undef ALPS_HAVE_HDF5
 
 //
 // XML parser
 //
 
 // Define to 1 if you use Expat XML parser by James Clark.
-#undef HAVE_EXPAT_PARSER
+#undef ALPS_HAVE_EXPAT_PARSER
 
 // Define to 1 if you use Xerces C++ XML parser by Apache Software Foundation.
-#undef HAVE_XERCES_PARSER
+#undef ALPS_HAVE_XERCES_PARSER
 
 //
 // Introduce [int,uint]*_t into alps namespace
 //
 
-#ifdef HAVE_STDINT_H
+#ifdef ALPS_HAVE_STDINT_H
 # include <stdint.h>
-#elif defined(HAVE_INTTYPES_H)
+#elif defined(ALPS_HAVE_INTTYPES_H)
 # include <inttypes.h>
-#elif defined(HAVE_SYS_INT_TYPES_H)
+#elif defined(ALPS_HAVE_SYS_INT_TYPES_H)
 # include <sys/int_types.h>
-#elif defined(HAVE_BIND_BITYPES_H)
+#elif defined(ALPS_HAVE_BIND_BITYPES_H)
 # include <bind/bitypes.h>
   typedef u_int8_t uint8_t;
   typedef u_int16_t uint16_t;

@@ -28,7 +28,7 @@
 #include <alps/config.h>
 #include <alps/alea/observable.h>
 
-#ifdef HAVE_HDF5
+#ifdef ALPS_HAVE_HDF5
 # include <H5Cpp.h>
 using namespace H5;
 #endif
@@ -442,33 +442,42 @@ void AbstractSimpleObservable<T>::write_xml(std::ostream& xml, const boost::file
   output_helper<obs_value_traits<T>::array_valued>::write_xml(*this,xml,fn_hdf5);
 }
 
-#ifdef HAVE_HDF5
-template<class T> class HDF5Traits 
-{ public: 
-   static void pred_type() 
-   { boost::throw_exception(runtime_error("HDF5Traits not implemented for this type")); } 
+#ifdef ALPS_HAVE_HDF5
+
+template<class T>
+struct HDF5Traits 
+{
+  static PredType pred_type() 
+  {
+    boost::throw_exception(runtime_error("HDF5Traits not implemented for this type"));
+    return PredType::NATIVE_INT; // dummy return
+  }
 };
-template<> class HDF5Traits<double> 
-{ public: 
-   static PredType pred_type() 
-   { return PredType::NATIVE_DOUBLE; } 
+
+template<>
+struct HDF5Traits<double> 
+{
+  static PredType pred_type() { return PredType::NATIVE_DOUBLE; } 
 };
-template<> class HDF5Traits<int>    
-{ public: 
-   static PredType pred_type() 
-   { return PredType::NATIVE_INT;} 
+
+template<>
+struct HDF5Traits<int>    
+{
+  static PredType pred_type() { return PredType::NATIVE_INT; } 
 };
-#ifdef HAVE_VALARRAY
-template<class T> class HDF5Traits<std::valarray<T> > 
-{ public: 
-   static PredType pred_type() 
-   { return HDF5Traits<T>::pred_type(); } 
+
+#ifdef ALPS_HAVE_VALARRAY
+template<class T>
+struct HDF5Traits<std::valarray<T> > 
+{
+  static PredType pred_type() { return HDF5Traits<T>::pred_type(); } 
 };
-#endif
-#endif
+#endif // ALPS_HAVE_VALARRAY
+
+#endif // ALPS_HAVE_HDF5
 
 template <class T>
-#ifdef HAVE_HDF5
+#ifdef ALPS_HAVE_HDF5
 void AbstractSimpleObservable<T>::write_xml_scalar(std::ostream& xml, const boost::filesystem::path& fn_hdf5) const
 #else
 void AbstractSimpleObservable<T>::write_xml_scalar(std::ostream& xml, const boost::filesystem::path&) const
@@ -501,7 +510,7 @@ void AbstractSimpleObservable<T>::write_xml_scalar(std::ostream& xml, const boos
       xml << ">" << std::setprecision(3) << tau() << "</AUTOCORR>";
     }
 
-#ifdef HAVE_HDF5
+#ifdef ALPS_HAVE_HDF5
     if(!fn_hdf5.empty() && bin_size()==1){
       //write tag for timeseries and the hdf5-file
       xml << "<TIMESERIES format=\"HDF5\" file=\"" 
@@ -525,7 +534,7 @@ void AbstractSimpleObservable<T>::write_xml_scalar(std::ostream& xml, const boos
 }
 
 template <class T>
-#ifdef HAVE_HDF5
+#ifdef ALPS_HAVE_HDF5
 void AbstractSimpleObservable<T>::write_xml_vector(std::ostream& xml, const boost::filesystem::path& fn_hdf5) const
 #else
 void AbstractSimpleObservable<T>::write_xml_vector(std::ostream& xml, const boost::filesystem::path&) const
@@ -577,7 +586,7 @@ void AbstractSimpleObservable<T>::write_xml_vector(std::ostream& xml, const boos
         xml << ">" << std::setprecision(3) << obs_value_traits<time_type>::slice_value(tau_,it) << "</AUTOCORR>";
       }
 
-#ifdef HAVE_HDF5
+#ifdef ALPS_HAVE_HDF5
       if(!fn_hdf5.empty() && bin_size()==1){
         //write tag for timeseries and the hdf5-file
         xml << "<TIMESERIES format=\"HDF5\" file=\"" 

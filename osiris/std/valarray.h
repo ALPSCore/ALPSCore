@@ -25,7 +25,7 @@
 
 #include <alps/config.h>
 
-#ifdef HAVE_VALARRAY
+#ifdef ALPS_HAVE_VALARRAY
 
 #include <alps/osiris/dump.h>
 #include <alps/osiris/std/impl.h>
@@ -58,6 +58,6 @@ inline alps::ODump& operator << (alps::ODump& dump,
 } // end namespace alps
 #endif
 
-#endif // HAVE_VALARRAY
+#endif // ALPS_HAVE_VALARRAY
 
 #endif // OSIRIS_STD_VALARRAY_H

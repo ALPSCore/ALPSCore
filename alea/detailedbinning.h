@@ -29,7 +29,7 @@
 #include <alps/alea/observable.h>
 #include <alps/alea/simplebinning.h>
 
-#ifdef HAVE_VALARRAY
+#ifdef ALPS_HAVE_VALARRAY
 # include <valarray>
 #endif
 
@@ -115,7 +115,7 @@ typedef BasicSimpleObservable<std::complex<double>,DetailedBinning<std::complex<
 typedef BasicSimpleObservable<double,FixedBinning<double> > RealTimeSeriesObservable;
 typedef BasicSimpleObservable<int32_t,FixedBinning<int32_t> > IntTimeSeriesObservable;
 
-#ifdef HAVE_VALARRAY
+#ifdef ALPS_HAVE_VALARRAY
 typedef BasicSimpleObservable< std::valarray<int32_t> , 
                          DetailedBinning<std::valarray<int32_t> > > IntVectorObservable;
 typedef BasicSimpleObservable< std::valarray<double> , 

@@ -35,7 +35,7 @@
 #include <iostream>
 #include <numeric>
 #include <vector>
-#ifdef HAVE_VALARRAY
+#ifdef ALPS_HAVE_VALARRAY
 # include <valarray>
 #endif
 
@@ -43,7 +43,7 @@
 # include <alps/osiris.h>
 #endif
 
-#ifdef HAVE_VALARRAY
+#ifdef ALPS_HAVE_VALARRAY
 template <class T> std::ostream& operator<<(std::ostream& o, const std::valarray<T>&) { return o;}
 #endif
 

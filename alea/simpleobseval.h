@@ -199,7 +199,7 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
 typedef SimpleObservableEvaluator<double> RealObsevaluator;
 typedef SimpleObservableEvaluator<int32_t> IntObsevaluator;
 typedef SimpleObservableEvaluator<std::complex<double> > ComplexObsevaluator;
-#ifdef HAVE_VALARRAY
+#ifdef ALPS_HAVE_VALARRAY
 typedef SimpleObservableEvaluator<std::valarray<int32_t> > IntVectorObsevaluator;
 typedef SimpleObservableEvaluator<std::valarray<double> > RealVectorObsevaluator;
 #endif

@@ -26,8 +26,8 @@
 #include <alps/config.h>
 #include <algorithm>
 
-#ifdef HAVE_VALARRAY
-#include <valarray>
+#ifdef ALPS_HAVE_VALARRAY
+# include <valarray>
 #endif
 
 namespace alps {
@@ -83,7 +83,7 @@ coordinates(const T[sz]& c)
 }
 */
 
-#ifdef HAVE_VALARRAY
+#ifdef ALPS_HAVE_VALARRAY
 template <class T>
 struct coordinate_traits<std::valarray<T> > {
   typedef T value_type;

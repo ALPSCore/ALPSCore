@@ -19,9 +19,12 @@
 *
 **************************************************************************/
 
-#include <alps/scheduler/scheduler.h>
+#include <alps/config.h>
 #include <alps/osiris.h>
-#include <unistd.h>
+#include <alps/scheduler/scheduler.h>
+#ifdef ALPS_HAVE_UNISTD_H
+# include <unistd.h>
+#endif
 
 namespace alps {
 namespace scheduler {

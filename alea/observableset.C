@@ -43,7 +43,7 @@ Factory::Factory()
   ObservableSet::register_type<RealObservable>();
   ObservableSet::register_type<RealTimeSeriesObservable>();
   ObservableSet::register_type<SimpleRealObservable>();
-#ifdef HAVE_VALARRAY
+#ifdef ALPS_HAVE_VALARRAY
   ObservableSet::register_type<RealVectorObsevaluator>();
   ObservableSet::register_type<RealVectorObservable>();
   ObservableSet::register_type<RealVectorTimeSeriesObservable>();

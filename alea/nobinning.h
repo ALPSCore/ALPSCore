@@ -30,7 +30,7 @@
 #include <alps/alea/simpleobservable.h>
 #include <alps/multi_array.hpp>
 
-#ifdef HAVE_VALARRAY
+#ifdef ALPS_HAVE_VALARRAY
 # include <valarray>
 #endif
 
@@ -92,7 +92,7 @@ class NoBinning : public AbstractBinning<T>
 typedef BasicSimpleObservable<int32_t,NoBinning<int32_t> > SimpleIntObservable;
 typedef BasicSimpleObservable<double,NoBinning<double> > SimpleRealObservable;
 typedef BasicSimpleObservable<std::complex<double>,NoBinning<std::complex<double> > > SimpleComplexObservable;
-#ifdef HAVE_VALARRAY
+#ifdef ALPS_HAVE_VALARRAY
 typedef BasicSimpleObservable< std::valarray<int32_t> , NoBinning<std::valarray<int32_t> > > SimpleIntVectorObservable;
 typedef BasicSimpleObservable< std::valarray<double> , NoBinning<std::valarray<double> > > SimpleRealVectorObservable;
 typedef BasicSimpleObservable< std::valarray<std::complex<double> > , 

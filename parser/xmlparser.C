@@ -29,7 +29,7 @@
 #include <stdexcept>
 #include <string>
 
-#if defined(HAVE_XERCES_PARSER)
+#if defined(ALPS_HAVE_XERCES_PARSER)
 
 //
 // Xerces C++ XML parser
@@ -145,7 +145,7 @@ void XMLParser::parse(std::istream& is) {
 
 } // namespace alps
 
-#elif defined(HAVE_EXPAT_PARSER)
+#elif defined(ALPS_HAVE_EXPAT_PARSER)
 
 //
 // Expat XML Parser

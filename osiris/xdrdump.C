@@ -32,7 +32,7 @@ namespace alps {
 
 namespace detail {
 
-static bool xdr_bool(XDR *xdr, bool *bp)
+bool xdr_bool(XDR *xdr, bool *bp)
 {
   if (xdr->x_op == XDR_ENCODE) {
     bool_t b = *bp;
@@ -46,7 +46,7 @@ static bool xdr_bool(XDR *xdr, bool *bp)
   return true;
 }
 
-static bool xdr_long_double(XDR *xdr, long double *ldp) 
+bool xdr_long_double(XDR *xdr, long double *ldp) 
 {
   if (xdr->x_op == XDR_ENCODE) {
     double high = *ldp;
@@ -60,6 +60,61 @@ static bool xdr_long_double(XDR *xdr, long double *ldp)
     return retval;
   }
   return true;
+}
+
+bool xdr_hyper (XDR *xdrs, long long *llp)
+{
+  long t1;
+  long t2;
+
+  if (xdrs->x_op == XDR_ENCODE)
+    {
+      t1 = (long) ((*llp) >> 32);
+      t2 = (long) (*llp);
+      return (XDR_PUTLONG(xdrs, &t1) && XDR_PUTLONG(xdrs, &t2));
+    }
+
+  if (xdrs->x_op == XDR_DECODE)
+    {
+      if (!XDR_GETLONG(xdrs, &t1) || !XDR_GETLONG(xdrs, &t2))
+	return FALSE;
+      *llp = ((quad_t) t1) << 32;
+      *llp |= t2;
+      return TRUE;
+    }
+
+  if (xdrs->x_op == XDR_FREE)
+    return TRUE;
+
+  return FALSE;
+}
+
+bool xdr_u_hyper (XDR *xdrs, unsigned long long *ullp)
+{
+  unsigned long t1;
+  unsigned long t2;
+
+  if (xdrs->x_op == XDR_ENCODE)
+    {
+      t1 = (unsigned long) ((*ullp) >> 32);
+      t2 = (unsigned long) (*ullp);
+      return (XDR_PUTLONG(xdrs, (long *)&t1) &&
+	      XDR_PUTLONG(xdrs, (long *)&t2));
+    }
+
+  if (xdrs->x_op == XDR_DECODE)
+    {
+      if (!XDR_GETLONG(xdrs, (long *)&t1) || !XDR_GETLONG(xdrs, (long *)&t2))
+	return FALSE;
+      *ullp = ((unsigned long long) t1) << 32;
+      *ullp |= t2;
+      return TRUE;
+    }
+
+  if (xdrs->x_op == XDR_FREE)
+    return TRUE;
+
+  return FALSE;
 }
 
 template<class T>
@@ -167,8 +222,8 @@ ALPS_DUMP_DO_TYPE(uint16_t, xdr_u_short)
 ALPS_DUMP_DO_TYPE(int32_t, detail::xdr_helper<int32_t>::xdr_int32_t)
 ALPS_DUMP_DO_TYPE(uint32_t, detail::xdr_helper<uint32_t>::xdr_uint32_t)
 # ifndef BOOST_NO_INT64_T
-ALPS_DUMP_DO_TYPE(int64_t, xdr_hyper)
-ALPS_DUMP_DO_TYPE(uint64_t, xdr_u_hyper)
+ALPS_DUMP_DO_TYPE(int64_t, detail::xdr_hyper)
+ALPS_DUMP_DO_TYPE(uint64_t, detail::xdr_u_hyper)
 # endif
 ALPS_DUMP_DO_TYPE(float, xdr_float)
 ALPS_DUMP_DO_TYPE(double, xdr_double)

@@ -21,10 +21,13 @@
 
 // This file implements behavior common to all schedulers
 
+#include <alps/config.h>
+#include <alps/osiris.h>
 #include <alps/scheduler/scheduler.h>
 #include <alps/scheduler/types.h>
-#include <alps/osiris.h>
-#include <unistd.h>
+#ifdef ALPS_HAVE_UNISTD_H
+# include <unistd.h>
+#endif
 
 namespace alps {
 namespace scheduler {

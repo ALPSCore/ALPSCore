@@ -31,11 +31,14 @@
 #include <stdexcept>
 
 #include <errno.h>
-#include <sys/time.h>
 
-#if defined(HAVE_SYS_SYSTEMINFO_H)
+#ifdef ALPS_HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
+
+#if defined(ALPS_HAVE_SYS_SYSTEMINFO_H)
 # include <sys/systeminfo.h> // for sysinfo()
-#elif defined(HAVE_UNISTD_H)
+#elif defined(ALPS_HAVE_UNISTD_H)
 # include <unistd.h>      // for gethostname()
 # ifndef MAXHOSTNAMELEN
 #   define MAXHOSTNAMELEN 256
@@ -86,13 +89,13 @@ os_variables the_os_vars;
 
 std::string hostname()
 {
-#if defined(HAVE_SYS_SYSTEMINFO_H)
+#if defined(ALPS_HAVE_SYS_SYSTEMINFO_H)
   // the UNIX System V version
   char n[256];
   if(sysinfo(SI_HOSTNAME,n,256) < 0)
     boost::throw_exception(std::runtime_error("call to sysinfo failed in get_host_name"));
   return n;
-#elif defined(HAVE_UNISTD_H)
+#elif defined(ALPS_HAVE_UNISTD_H)
   // the BSD UNIX version
   char n[MAXHOSTNAMELEN];
   if(gethostname(n,MAXHOSTNAMELEN))

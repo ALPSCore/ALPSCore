@@ -44,7 +44,7 @@
 #include <iomanip>
 #include <utility>
 
-#ifdef HAVE_VALARRAY
+#ifdef ALPS_HAVE_VALARRAY
 # include <valarray>
 #endif
 
