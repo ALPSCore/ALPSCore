@@ -82,7 +82,7 @@ public:
   virtual result_type mean() const =0;
   
   /// the variance
-  virtual result_type variance() const { return boost::throw_exception(std::logic_error("No variance provided in observable"));  result_type();}
+  virtual result_type variance() const { boost::throw_exception(std::logic_error("No variance provided in observable"));  return result_type();}
   
   /// the error
   virtual result_type error() const =0;
@@ -101,7 +101,7 @@ public:
   virtual bool has_tau() const { return false;}
     
   /// the autocorrelation time, throws an exception if not available
-  virtual time_type tau() const { return boost::throw_exception(std::logic_error("No autocorelation time provided in observable")); time_type();}
+  virtual time_type tau() const { return boost::throw_exception(std::logic_error("No autocorelation time provided in observable")); return time_type();}
 
   /// is variance  available ? 
   virtual bool has_variance() const { return false;}
