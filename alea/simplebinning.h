@@ -36,6 +36,7 @@
 #include <alps/config.h>
 #include <alps/alea/observable.h>
 #include <alps/alea/simpleobservable.h>
+#include <alps/alea/abstractbinning.h>
 #include <alps/alea/nan.h>
 #include <alps/xml.h>
 

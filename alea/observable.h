@@ -41,10 +41,11 @@
 
 #include <alps/config.h>
 #include <alps/alea/obsvalue.h>
+#include <alps/alea/recordableobservable.h>
 #include <alps/xml.h>
 
 #include <boost/filesystem/path.hpp>
-
+#include <boost/type_traits.hpp>
 #include <complex>
 #include <vector>
 #include <string>
@@ -79,6 +80,26 @@ public:
    : std::runtime_error("No measurements available.")
    { }
 };
+
+
+class Observable;
+
+namespace detail {
+template <bool F>
+struct pick_add_merge {};
+
+template<>
+struct pick_add_merge<true> {
+  template <class T> static void add_or_merge(Observable& obs, const T& x) { obs.merge(x);}
+};
+
+template<>
+struct pick_add_merge<false> {
+  template <class T> static void add_or_merge(Observable& obs, const T& x) { obs.add(x);}
+};
+
+}
+
 
 //=======================================================================
 // Observable
@@ -175,9 +196,32 @@ class Observable
   virtual bool can_merge(const Observable&) const;
   /// create a copy of the observable that can be merged
   virtual Observable* convert_mergeable() const;
-  /// merge this observable with another
-  void operator<<(const Observable& o) { merge(o);}
 
+  /// merge this observable with another or add measurement
+  template <class T>
+  void operator<<(const T& x)
+  {
+    detail::pick_add_merge<boost::is_base_and_derived<Observable,T>::value>::add_or_merge(*this,x);
+  }
+  
+  //void operator<<(const Observable& o) { merge(o);}
+  
+  template <class T>
+  void add(const T& x) 
+  { 
+    if (dynamic_cast<RecordableObservable<T>*>(this)==0)
+      boost::throw_exception(std::runtime_error("Cannot add measurement to observable " + name()));
+    dynamic_cast<RecordableObservable<T> *>(this)->add(x); 
+  }
+
+  template <class T,class S>
+  void add(const T& x, S s) 
+  { 
+    if (dynamic_cast<RecordableObservable<T>*>(this)==0)
+      boost::throw_exception(std::runtime_error("Cannot add measurement to observable " + name()));
+    dynamic_cast<RecordableObservable<T> *>(this)->add(x,s); 
+  }
+  
 private:
   void added_to_set() { in_observable_set_=true;}
   std::string name_; // the name
