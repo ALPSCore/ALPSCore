@@ -31,6 +31,7 @@
 #include <alps/parser/xmlparser.h>
 #include <alps/cctype.h>
 
+#include <boost/filesystem/fstream.hpp>
 #include <boost/throw_exception.hpp>
 #include <fstream>
 #include <iostream>
@@ -150,6 +151,10 @@ void XMLParser::parse(const std::string& file) {
 void XMLParser::parse(std::istream& is) {
   parser_->parse(detail::IStreamBinInputSource(is));
 }
+void XMLParser::parse(const boost::filesystem::path& file) {
+  boost::filesystem::ifstream is(file);
+  parser_->parse(detail::IStreamBinInputSource(is));
+}
 
 } // namespace alps
 
@@ -246,6 +251,10 @@ void XMLParser::parse(const std::string& file) {
   std::ifstream fin(file.c_str());
   parse(fin);
 }
+void XMLParser::parse(const boost::filesystem::path& file) {
+  boost::filesystem::ifstream fin(file);
+  parse(fin);
+}
 
 } // namespace alps
 
@@ -260,14 +269,11 @@ void XMLParser::parse(const std::string& file) {
 namespace alps {
 
 XMLParser::XMLParser(XMLHandlerBase& h) : handler_(h) {}
+
 XMLParser::~XMLParser() {}
 
-void XMLParser::parse(const std::string& file) {
-  std::ifstream is(file.c_str());
-  parse(is);
-}
-
-void XMLParser::parse(std::istream& in) {
+void XMLParser::parse(std::istream& in)
+{
   while (in) {
     char c;
     in >> c;
@@ -307,6 +313,14 @@ void XMLParser::parse(std::istream& in) {
       }
     }
   }
+}
+void XMLParser::parse(const std::string& file) {
+  std::ifstream is(file.c_str());
+  parse(is);
+}
+void XMLParser::parse(const boost::filesystem::path& file) {
+  boost::filesystem::ifstream is(file);
+  parse(is);
 }
 
 } // namespace alps
