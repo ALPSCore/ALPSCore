@@ -13,9 +13,9 @@ Built states:
 
 Momentum: 1.5708 
 Translation 0 with phase (1,0) maps 0->0 1->1 2->2 3->3 
-Translation 1 with phase (6.12323e-17,1) maps 0->1 1->2 2->3 3->0 
-Translation 2 with phase (-1,1.22465e-16) maps 0->2 1->3 2->0 3->1 
-Translation 3 with phase (-1.83697e-16,-1) maps 0->3 1->0 2->1 3->2 
+Translation 1 with phase (0,1) maps 0->1 1->2 2->3 3->0 
+Translation 2 with phase (-1,0) maps 0->2 1->3 2->0 3->1 
+Translation 3 with phase (0,-1) maps 0->3 1->0 2->1 3->2 
 Built states:
 {
 0.5*[ |0 > |0 > |0 > |1 >  ] + translations
@@ -26,9 +26,9 @@ Built states:
 
 Momentum: 3.14159 
 Translation 0 with phase (1,0) maps 0->0 1->1 2->2 3->3 
-Translation 1 with phase (-1,1.22465e-16) maps 0->1 1->2 2->3 3->0 
-Translation 2 with phase (1,-2.44929e-16) maps 0->2 1->3 2->0 3->1 
-Translation 3 with phase (-1,3.67394e-16) maps 0->3 1->0 2->1 3->2 
+Translation 1 with phase (-1,0) maps 0->1 1->2 2->3 3->0 
+Translation 2 with phase (1,0) maps 0->2 1->3 2->0 3->1 
+Translation 3 with phase (-1,0) maps 0->3 1->0 2->1 3->2 
 Built states:
 {
 0.5*[ |0 > |0 > |0 > |1 >  ] + translations
@@ -39,9 +39,9 @@ Built states:
 
 Momentum: 4.71239 
 Translation 0 with phase (1,0) maps 0->0 1->1 2->2 3->3 
-Translation 1 with phase (-1.83697e-16,-1) maps 0->1 1->2 2->3 3->0 
-Translation 2 with phase (-1,3.67394e-16) maps 0->2 1->3 2->0 3->1 
-Translation 3 with phase (5.51091e-16,1) maps 0->3 1->0 2->1 3->2 
+Translation 1 with phase (0,-1) maps 0->1 1->2 2->3 3->0 
+Translation 2 with phase (-1,0) maps 0->2 1->3 2->0 3->1 
+Translation 3 with phase (0,1) maps 0->3 1->0 2->1 3->2 
 Built states:
 {
 0.5*[ |0 > |0 > |0 > |1 >  ] + translations

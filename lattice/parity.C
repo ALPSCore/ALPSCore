@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -43,15 +43,12 @@ int main() {
     typedef alps::coordinate_graph_type graph_type;
 
     // create the library from an XML file
-    std::ifstream in("../../lib/xml/lattices.xml");
-    alps::LatticeLibrary lib(in);
+    alps::Parameters params;
+    params["LATTICE_LIBRARY"] = "../../lib/xml/lattices.xml";
+    params["LATTICE"] = "square lattice 4x4";
+    alps::graph_helper<> lattice(params);
+    const graph_type& graph = lattice.graph();
 
-    // generate graph and set parity
-    graph_type graph;
-    alps::make_graph_from_lattice(graph, lib.lattice("square lattice 4x4"));
-    alps::set_parity(graph);
-
-    // write the library in XML
     std::cout << graph;
 
     for (graph_type::vertex_iterator vi = boost::vertices(graph).first;
