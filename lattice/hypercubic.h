@@ -282,7 +282,7 @@ public:
   std::vector<std::string> momenta_labels() const
   {
     std::vector<std::string> label;
-    for (momentum_iterator it=momenta().first; it != moments().second;++it)
+    for (momentum_iterator it=momenta().first; it != momenta().second;++it)
       label.push_back(alps::coordinate_to_string(*it)); 
     return label;
   }
@@ -335,7 +335,7 @@ public:
     void set_k() const
     {
       k_=*alps::basis_vectors(*cell_iterator::lattice_).first;
-      for (int i=0;i<dimension(*cell_iterator::lattice_);++i)
+      for (int i=0;i<alps::dimension(*cell_iterator::lattice_);++i)
         k_[i]=cell_iterator::offset_[i]*2.*M_PI/double(cell_iterator::lattice_->extent()[i]);
     }
   };
