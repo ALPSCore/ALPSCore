@@ -101,7 +101,7 @@ public:
   virtual bool has_tau() const { return false;}
     
   /// the autocorrelation time, throws an exception if not available
-  virtual time_type tau() const { return boost::throw_exception(std::logic_error("No autocorelation time provided in observable")); return time_type();}
+  virtual time_type tau() const { boost::throw_exception(std::logic_error("No autocorelation time provided in observable")); return time_type();}
 
   /// is variance  available ? 
   virtual bool has_variance() const { return false;}
