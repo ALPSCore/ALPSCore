@@ -237,7 +237,7 @@ inline std::string read_graph_xml(const XMLTag& intag, std::istream& p, GRAPH& g
       typename boost::graph_traits<graph_type>::edge_descriptor edge = 
                boost::add_edge(source-1,target-1,g).first;
       edgetype[edge]=t;
-      edgeindex[edge]=num_edges;
+      edgeindex[edge]=num_edges-1;
     }
     else
       boost::throw_exception(std::runtime_error("illegal element <" + tag.name + "> in <GRAPH>"));
