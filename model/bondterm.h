@@ -83,14 +83,12 @@ private:
   typedef BondOperatorEvaluator<I, STATE1, STATE2> SELF_;
 
 public:
-  typedef typename super_type::operator_iterator operator_iterator;
-
   BondOperatorEvaluator(const STATE1& s1, const STATE2& s2,
                         const SiteBasisDescriptor<I>& b1,
                                     const SiteBasisDescriptor<I>& b2,
                         const std::string& site1, const std::string& site2,
                         const Parameters& p)
-    : super_type(p,o), state_(s1,s2), basis1_(b1), basis2_(b2),
+    : super_type(p), state_(s1,s2), basis1_(b1), basis2_(b2),
       sites_(site1,site2), fermionic_(false,false) {}
   bool can_evaluate_function(const std::string& name,
                              const Expression& argument) const;

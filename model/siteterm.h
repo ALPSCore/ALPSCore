@@ -73,7 +73,7 @@ public:
 
   SiteOperatorEvaluator(const state_type& s, const SiteBasisDescriptor<I>& b,
                         const Parameters& p)
-    : super_type(p,o), state_(s), basis_(b), fermionic_(false) {}
+    : super_type(p), state_(s), basis_(b), fermionic_(false) {}
   bool can_evaluate(const std::string&) const;
   Expression partial_evaluate(const std::string& name) const;
   const state_type& state() const { return state_;}
