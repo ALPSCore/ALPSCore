@@ -109,7 +109,6 @@ OperatorDescriptor<I>::apply(STATE state, const SiteBasisDescriptor<I>& basis, c
   // evaluate matrix element
   Expression e(matrixelement());
   e.partial_evaluate(ParameterEvaluator(p));
-
   // apply operators
   bool fermion_count=false;
   bool fermionic=false;

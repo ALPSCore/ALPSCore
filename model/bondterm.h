@@ -241,45 +241,6 @@ BondTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b1,
   Expression ex(term());
   ex.flatten();
   // fill the matrix
-  if (basis1.size()==1 && basis2.size()==1) {
-    typedef single_qn_site_state<I> state_type;
-    site_basis<I,state_type> states1(basis1);
-    site_basis<I,state_type> states2(basis2);
-    for (int i=0;i<mat.shape()[0];++i)
-      for (int j=0;j<mat.shape()[1];++j)
-        for (int k=0;k<mat.shape()[2];++k)
-          for (int l=0;l<mat.shape()[3];++l)
-            mat[i][j][k][l].second=std::make_pair(false,false);
-    for (int i1=0;i1<states1.size();++i1)
-      for (int i2=0;i2<states2.size();++i2) {
-      //calculate expression applied to state *it and store it into matrix
-        for (typename Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
-	  BondOperatorEvaluator<I,state_type,state_type> evaluator(states1[i1],states2[i2],basis1,basis2, source(),target(),parms,ops);
-          Term term(*tit);
-          term.partial_evaluate(evaluator);
-          int j1=states1.index(evaluator.state().first);
-          int j2=states2.index(evaluator.state().second);
-	      if (is_nonzero(term)) {
-            if (is_nonzero(mat[i1][i2][j1][j2].first)) {
-              if (mat[i1][i2][j1][j2].second.first != evaluator.fermionic().first || 
-                  mat[i1][i2][j1][j2].second.second != evaluator.fermionic().second)
-              boost::throw_exception(std::runtime_error("Inconsistent fermionic nature of a matrix element: "
-                                    + boost::lexical_cast<std::string,Term>(*tit) + " is inconsistent with "
-                                    + boost::lexical_cast<std::string,T>(mat[i1][i2][j1][j2].first) + 
-                                    ". Please contact the library authors for an extension to the ALPS model library."));
-            }
-            else
-              mat[i1][i2][j1][j2].second=evaluator.fermionic();
-#ifndef ALPS_WITH_NEW_EXPRESSION
-          mat[i1][i2][j1][j2].first += term;
-#else
-          mat[i1][i2][j1][j2].first += evaluate<T>(term);
-#endif
-        }
-      }
-    }
-  }
-  else  {
     site_basis<I> states1(basis1);
     site_basis<I> states2(basis2);
     for (int i=0;i<mat.shape()[0];++i)
@@ -291,9 +252,11 @@ BondTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b1,
       for (int i2=0;i2<states2.size();++i2) {
       //calculate expression applied to state *it and store it into matrix
         for (typename Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
-	  BondOperatorEvaluator<I> evaluator(states1[i1], states2[i2], basis1, basis2, source(), target(), parms, ops);
+          BondOperatorEvaluator<I> evaluator(states1[i1], states2[i2], basis1, basis2, source(), target(), parms, ops);
           Term term(*tit);
+          //std::cerr << term << " evaluates to ";
           term.partial_evaluate(evaluator);
+          //std::cerr << term << "\n";
           int j1=states1.index(evaluator.state().first);
           int j2=states2.index(evaluator.state().second);
 	      if (is_nonzero(term)) {
@@ -315,7 +278,6 @@ BondTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b1,
         }
       }
     }
-  }
   return mat;
 }
 

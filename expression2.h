@@ -265,9 +265,10 @@ public:
   Expression operator-() const { Expression e(*this); e.negate(); return e;}
   const Expression& negate() 
   {
-    //std::cerr << "Expression::negate()\n";
+    //std::cerr << "Expression::negate(): from " << *this;
     for (typename std::vector<Term<T> >::iterator it=terms_.begin();it!=terms_.end();++it)
       it->negate();
+    //std::cerr << " to " << *this << "\n";
     return *this;
   } 
 private:
