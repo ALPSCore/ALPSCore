@@ -72,7 +72,7 @@ public:
   
   dimension_type dimension() const { return alps::dimension(unit_cell_); }
 
-private:
+protected:
   unit_cell_type unit_cell_;
 };
 

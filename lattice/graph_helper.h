@@ -71,6 +71,7 @@ public:
      parity_map_(get_or_default(parity_t(),const_graph(),0.)),
      edge_type_map_(get_or_default(edge_type_t(),const_graph(),0.)),
      vertex_type_map_(get_or_default(vertex_type_t(),const_graph(),0.)),
+     coordinate_map_(get_or_default(coordinate_t(),const_graph(),0)),
 	 disordered_vertex_type_map_(),
 	 disordered_edge_type_map_(get_or_default(edge_index_t(),const_graph(),0))
   {
@@ -87,6 +88,7 @@ public:
      parity_map_(get_or_default(parity_t(),const_graph(),0.)),
      edge_type_map_(get_or_default(edge_type_t(),const_graph(),0)),
      vertex_type_map_(get_or_default(vertex_type_t(),const_graph(),0)),
+     coordinate_map_(get_or_default(coordinate_t(),const_graph(),std::vector<double>())),
 	 disordered_vertex_type_map_(),
 	 disordered_edge_type_map_(get_or_default(edge_index_t(),const_graph(),0))
   {
@@ -138,6 +140,11 @@ public:
   { return d_.disordered_vertices() ? disordered_vertex_type_map_[v] : vertex_type_map_[v];}
   unsigned int disordered_site_type(const site_descriptor& s) const { return disordered_vertex_type(s);}
   bool disordered() const { return d_.disordered();}
+  bool disordered_sites() const { return d_.disordered_sites();}
+  bool disordered_bonds() const { return d_.disordered_bonds();}
+  bool disordered_vertices() const { return d_.disordered_vertices();}
+  bool disordered_edges() const { return d_.disordered_edges();}
+  const std::vector<double>& coordinate(const site_descriptor& s) const { return coordinate_map_[s];}
 private:
   typedef lattice_graph<hypercubic_lattice<coordinate_lattice<simple_lattice<GraphUnitCell> > >,graph_type> lattice_type;
   graph_type* make_graph(const Parameters& p);
@@ -152,6 +159,7 @@ private:
   typename property_map<edge_type_t,graph_type,unsigned int>::const_type edge_type_map_;
   typename property_map<edge_index_t,graph_type,unsigned int>::const_type edge_index_map_;
   typename property_map<vertex_type_t,graph_type,unsigned int>::const_type vertex_type_map_;
+  typename property_map<coordinate_t,graph_type,std::vector<double> >::const_type coordinate_map_;
   boost::vector_property_map<unsigned int> disordered_vertex_type_map_;
   boost::vector_property_map<unsigned int,typename property_map<edge_index_t,graph_type,unsigned int>::const_type> disordered_edge_type_map_;
 };
