@@ -323,17 +323,34 @@ public:
 
   class momentum_iterator : public cell_iterator {
   public:
-    momentum_iterator(cell_iterator it=cell_iterator()) : cell_iterator(it) {}
+    momentum_iterator(cell_iterator it=cell_iterator()) : cell_iterator(it), valid_(false) {}
     const vector_type& operator*() const { set_k(); return k_; }
     const vector_type* operator->() const { set_k(); return &k_; }
     std::complex<double> phase(const vector_type& pos) const {
+      set_k();
       double phase=vectorops::scalar_product(k_,pos);
       return std::complex<double>(std::cos(phase),std::sin(phase));
     }
+    const momentum_iterator& operator++() { 
+      valid_=false; 
+      cell_iterator::operator++(); 
+      return *this;
+    }
+    
+    const momentum_iterator& operator++(int) { 
+      momentum_iterator save(*this);
+      operator++();
+      return save;
+    }
+
   private:
     mutable vector_type k_;
+    mutable bool valid_;
     void set_k() const
     {
+      if (valid_)
+        return;
+      valid_=true;
       k_=*alps::basis_vectors(*cell_iterator::lattice_).first;
       for (int i=0;i<alps::dimension(*cell_iterator::lattice_);++i)
         k_[i]=cell_iterator::offset_[i]*2.*M_PI/double(cell_iterator::lattice_->extent()[i]);
