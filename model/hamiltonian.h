@@ -34,6 +34,7 @@
 #include <alps/model/siteterm.h>
 #include <alps/model/bondterm.h>
 #include <alps/model/basisdescriptor.h>
+#include <alps/model/globaloperator.h>
 #include <vector>
 
 namespace alps {
@@ -41,59 +42,27 @@ namespace alps {
 class ModelLibrary;
 
 template<class I>
-class HamiltonianDescriptor
+class HamiltonianDescriptor : public GlobalOperator
 {
 public:
   typedef std::map<std::string,BasisDescriptor<I> > basis_map;
+  typedef std::map<std::string,GlobalOperator> operator_map;
   HamiltonianDescriptor() {}
-  HamiltonianDescriptor(const XMLTag&, std::istream&, const basis_map& = basis_map());
+  HamiltonianDescriptor(const XMLTag&, std::istream&, const basis_map& = basis_map(), const operator_map& = operator_map());
   void write_xml(oxstream&) const;
 
   const std::string& name() const { return name_;}
-  const std::vector<SiteTermDescriptor>& site_terms() const { return siteterms_;}
-  const std::vector<BondTermDescriptor>& bond_terms() const { return bondterms_;}
-  SiteTermDescriptor site_term(int type=0) const;
-  BondTermDescriptor bond_term(int type=0) const;
   const BasisDescriptor<I>& basis() const { return basis_;}
   BasisDescriptor<I>& basis() { return basis_;}
   const Parameters& default_parameters() const { return parms_;}
   bool set_parameters(Parameters p);
-  void substitute_operators(const ModelLibrary& m, const Parameters& p);
 private:
   std::string name_;
+  std::string operator_name_;
   std::string basisname_;
   BasisDescriptor<I> basis_;
-  std::vector<SiteTermDescriptor> siteterms_;
-  std::vector<BondTermDescriptor> bondterms_;
   Parameters parms_;
 };
-
-template <class I>
-void HamiltonianDescriptor<I>::substitute_operators(const ModelLibrary& m, const Parameters& p)
-{
-  for (std::vector<SiteTermDescriptor>::iterator it=siteterms_.begin();it!=siteterms_.end();++it)
-    it->substitute_operators(m,p);
-  for (std::vector<BondTermDescriptor>::iterator it=bondterms_.begin();it!=bondterms_.end();++it)
-    it->substitute_operators(m,p);
-}
-
-template <class I>
-SiteTermDescriptor HamiltonianDescriptor<I>::site_term(int type) const
-{
-  for (typename std::vector<SiteTermDescriptor>::const_iterator it =siteterms_.begin();it!=siteterms_.end();++it)
-    if (it->match_type(type))
-      return *it;
-  return SiteTermDescriptor();
-}
-
-template <class I>
-BondTermDescriptor HamiltonianDescriptor<I>::bond_term(int type) const
-{
-  for (typename std::vector<BondTermDescriptor>::const_iterator it =bondterms_.begin();it!=bondterms_.end();++it)
-    if (it->match_type(type))
-      return *it;
-  return BondTermDescriptor();
-}
 
 template <class I>
 bool HamiltonianDescriptor<I>::set_parameters(Parameters p)
@@ -103,7 +72,7 @@ bool HamiltonianDescriptor<I>::set_parameters(Parameters p)
 
 #ifndef ALPS_WITHOUT_XML
 template <class I>
-HamiltonianDescriptor<I>::HamiltonianDescriptor(const XMLTag& intag, std::istream& is, const basis_map& bases)
+HamiltonianDescriptor<I>::HamiltonianDescriptor(const XMLTag& intag, std::istream& is, const basis_map& bases, const operator_map& ops)
 {
   XMLTag tag(intag);
   name_=tag.attributes["name"];
@@ -126,8 +95,7 @@ HamiltonianDescriptor<I>::HamiltonianDescriptor(const XMLTag& intag, std::istrea
     else {
       if (bases.find(basisname_)==bases.end())
         boost::throw_exception(std::runtime_error("unknown basis: " + basisname_ + " in <HAMILTONIAN>"));
-      else
-        basis_ = bases.find(basisname_)->second;
+      basis_ = bases.find(basisname_)->second;
       if (tag.type!=XMLTag::SINGLE) {
         tag = parse_tag(is);
         if (tag.name!="/BASIS")
@@ -135,15 +103,21 @@ HamiltonianDescriptor<I>::HamiltonianDescriptor(const XMLTag& intag, std::istrea
       }
     }
     tag = parse_tag(is);
-    while (tag.name!="/HAMILTONIAN") {
-      if (tag.name=="SITETERM")
-        siteterms_.push_back(SiteTermDescriptor(tag,is));
-      else if (tag.name=="BONDTERM")
-        bondterms_.push_back(BondTermDescriptor(tag,is));
-      else
-        boost::throw_exception(std::runtime_error("Illegal element name <" + tag.name + "> found in <HAMILTONIAN>"));
-      tag=parse_tag(is);
+    if (tag.name=="HAMILTONIANOPERATOR") {
+      operator_name_==tag.attributes["ref"];
+      if (ops.find(operator_name_)==ops.end())
+        boost::throw_exception(std::runtime_error("unknown operator: " + operator_name_ + " in <HAMILTONIAN>"));
+      static_cast<GlobalOperator&>(*this) = ops.find(operator_name_)->second;
+      if (tag.type!=XMLTag::SINGLE) {
+        tag = parse_tag(is);
+        if (tag.name!="/HAMILTONIANOPERATOR")
+          boost::throw_exception(std::runtime_error("Illegal element name <" + tag.name + "> found in operator reference"));
+      }
     }
+    else if (tag.name!="/" + intag.name)
+      tag = read_xml(tag,is);
+    if (tag.name!="/" + intag.name)
+      boost::throw_exception(std::runtime_error("Illegal element name <" + tag.name + "> found in <" + intag.name +">"));
   }
 }
 
@@ -160,10 +134,10 @@ void HamiltonianDescriptor<I>::write_xml(oxstream& os) const
     os << basis_;
   else
     os << start_tag("BASIS") << attribute("ref", basisname_) << end_tag("BASIS");
-  for (typename std::vector<SiteTermDescriptor>::const_iterator it=siteterms_.begin();it!=siteterms_.end();++it)
-    it->write_xml(os);
-  for (typename std::vector<BondTermDescriptor>::const_iterator it=bondterms_.begin();it!=bondterms_.end();++it)
-    it->write_xml(os);
+  if (operator_name_.empty())
+    write_operators_xml(os);
+  else
+    os << start_tag("HAMILTONIANOPERATOR") << attribute("ref", operator_name_) << end_tag("HAMILTONIANOPERATOR");
   os << end_tag("HAMILTONIAN");
 }
 

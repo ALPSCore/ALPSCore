@@ -49,6 +49,7 @@ public:
   typedef std::map<std::string,OperatorDescriptor<short> > OperatorDescriptorMap;
   typedef std::map<std::string,SiteOperator> SiteOperatorMap;
   typedef std::map<std::string,BondOperator> BondOperatorMap;
+  typedef std::map<std::string,GlobalOperator> GlobalOperatorMap;
 
   ModelLibrary() {};
   ModelLibrary(std::istream& in) { read_xml(in);}
@@ -64,8 +65,9 @@ public:
   bool has_hamiltonian(const std::string& name) const;
   bool has_site_operator(const std::string& name) const;
   bool has_bond_operator(const std::string& name) const;
+  bool has_global_operator(const std::string& name) const;
   bool has_operator(const std::string& name) const 
-  { return has_site_operator(name) || has_bond_operator(name);}
+  { return has_site_operator(name) || has_bond_operator(name) || has_global_operator(name);}
 
   const SiteBasisDescriptor<short>& get_site_basis(const std::string& name) const;
   const BasisDescriptor<short>& get_basis(const std::string& name) const;
@@ -76,9 +78,11 @@ public:
   
   const SiteOperatorMap& site_operators() const { return site_operators_;}
   const BondOperatorMap& bond_operators() const { return bond_operators_;}
+  const GlobalOperatorMap& global_operators() const { return global_operators_;}
   
   SiteOperator get_site_operator(const std::string& name,Parameters p=Parameters()) const;
   BondOperator get_bond_operator(const std::string& name,Parameters p=Parameters()) const;
+  GlobalOperator get_global_operator(const std::string& name,Parameters p=Parameters()) const;
   
 private:
   typedef std::map<std::string,SiteBasisDescriptor<short> > SiteBasisDescriptorMap;
@@ -90,6 +94,7 @@ private:
   HamiltonianDescriptorMap hamiltonians_;
   SiteOperatorMap site_operators_;
   BondOperatorMap bond_operators_;
+  GlobalOperatorMap global_operators_;
 };
 
 } // namespace alps

@@ -57,11 +57,13 @@ public:
 
   bool has_site_operator(const std::string& name) const { return model_library_.has_site_operator(name);}
   bool has_bond_operator(const std::string& name) const { return model_library_.has_bond_operator(name);}
+  bool has_global_operator(const std::string& name) const { return model_library_.has_global_operator(name);}
   bool has_operator(const std::string& name) const { return model_library_.has_operator(name);}
   SiteOperator get_site_operator(const std::string& name,const Parameters& p) const { return model_library_.get_site_operator(name,p);}
   BondOperator get_bond_operator(const std::string& name,const Parameters& p) const { return model_library_.get_bond_operator(name,p);}
   SiteOperator get_site_operator(const std::string& name) const { return model_library_.get_site_operator(name,parms_);}
   BondOperator get_bond_operator(const std::string& name) const { return model_library_.get_bond_operator(name,parms_);}
+  GlobalOperator get_global_operator(const std::string& name) const { return model_library_.get_global_operator(name,parms_);}
   
 private:
    ModelLibrary model_library_;
