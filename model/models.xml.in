@@ -165,9 +165,11 @@
 <BASIS name="mixed spin">
   <SITEBASIS type="0" ref="spin">
     <PARAMETER name="local_spin" value="local_S"/>
+    <PARAMETER name="local_S" value="1/2"/>
   </SITEBASIS>
   <SITEBASIS type="1" ref="spin">
     <PARAMETER name="local_spin" value="local_S'"/>
+    <PARAMETER name="local_S'" value="1/2"/>
   </SITEBASIS>
   <CONSTRAINT quantumnumber="Sz" value="Sz_total"/>
 </BASIS>
@@ -219,7 +221,6 @@
   <PARAMETER name="J'" default="0"/>
   <PARAMETER name="h" default="0"/>
   <PARAMETER name="Gamma" default="0"/>
-  <PARAMETER name="local_S" default="1/2"/>
   <BASIS ref="spin"/>
   <SITETERM>
     -h*Sz-Gamma/2*(Splus+Sminus)
@@ -241,8 +242,6 @@
   <PARAMETER name="J'" default="0"/>
   <PARAMETER name="h" default="0"/>
   <PARAMETER name="Gamma" default="0"/>
-  <PARAMETER name="local_S" default="1/2"/>
-  <PARAMETER name="local_S'" default="1/2"/>
   <BASIS ref="mixed spin"/>
   <SITETERM>
     -h*Sz-Gamma/2*(Splus+Sminus)

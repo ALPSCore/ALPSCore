@@ -1,7 +1,7 @@
 <GRAPH name="5-site dimerized" vertices="5" edges="4">
   <VERTEX id="1" type="0"/>
   <VERTEX id="2" type="0"/>
-  <VERTEX id="3" type="1"><COORDINATE>1 2 3 4 5</COORDINATE></VERTEX>
+  <VERTEX id="3" type="0"/>
   <VERTEX id="4" type="0"/>
   <VERTEX id="5" type="0"/>
   <EDGE source="1" target="2" id="1" type="0"/>

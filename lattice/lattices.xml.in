@@ -311,11 +311,23 @@
 </LATTICEGRAPH>
 
 <GRAPH name="5-site dimerized" vertices="5">
-  <VERTEX id="3" type="1"><COORDINATE>1 2 3 4 5</COORDINATE></VERTEX>
   <EDGE type="0" source="1" target="2"/>
   <EDGE type="1" source="2" target="3"/>
   <EDGE type="0" source="3" target="4"/>
   <EDGE type="1" source="4" target="5"/>
+</GRAPH>
+
+<GRAPH name="4-site mixed" vertices="4">
+  <VERTEX id="1" type="0"/>
+  <VERTEX id="2" type="1"/>
+  <VERTEX id="3" type="0"/>
+  <VERTEX id="4" type="1"/>
+  <EDGE type="0" source="1" target="2"/>
+  <EDGE type="0" source="2" target="3"/>
+  <EDGE type="0" source="3" target="4"/>
+  <EDGE type="0" source="4" target="1"/>
+  <EDGE type="1" source="1" target="3"/>
+  <EDGE type="1" source="2" target="4"/>
 </GRAPH>
 
 </LATTICES>

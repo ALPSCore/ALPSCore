@@ -314,10 +314,22 @@
     </FINITELATTICE>
     <UNITCELL ref="triangular"/>
   </LATTICEGRAPH>
+  <GRAPH name="4-site mixed" vertices="4" edges="6">
+    <VERTEX id="1" type="0"/>
+    <VERTEX id="2" type="1"/>
+    <VERTEX id="3" type="0"/>
+    <VERTEX id="4" type="1"/>
+    <EDGE source="1" target="2" id="1" type="0"/>
+    <EDGE source="2" target="3" id="2" type="0"/>
+    <EDGE source="3" target="4" id="3" type="0"/>
+    <EDGE source="4" target="1" id="4" type="0"/>
+    <EDGE source="1" target="3" id="5" type="1"/>
+    <EDGE source="2" target="4" id="6" type="1"/>
+  </GRAPH>
   <GRAPH name="5-site dimerized" vertices="5" edges="4">
     <VERTEX id="1" type="0"/>
     <VERTEX id="2" type="0"/>
-    <VERTEX id="3" type="1"><COORDINATE>1 2 3 4 5</COORDINATE></VERTEX>
+    <VERTEX id="3" type="0"/>
     <VERTEX id="4" type="0"/>
     <VERTEX id="5" type="0"/>
     <EDGE source="1" target="2" id="1" type="0"/>
