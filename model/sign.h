@@ -45,10 +45,6 @@ namespace alps {
 
 namespace parity {
 
-BOOST_STATIC_CONSTANT(parity_type, sign_white = -1);
-BOOST_STATIC_CONSTANT(parity_type, sign_black = 1);
-BOOST_STATIC_CONSTANT(parity_type, sign_undefined = 0);
-
 template<class Graph, class PropertyMap, class BondPropertyMap>
 class SignVisitor : public boost::dfs_visitor<>
 {
@@ -61,19 +57,30 @@ public:
   SignVisitor(PropertyMap& map, bool* check, BondPropertyMap bondsign) :
     map_(map), check_(check), bond_sign_(bondsign) { *check_ = false; }
 
-  void discover_vertex(vertex_descriptor s, const Graph&) {
-    if (!map_[s]) map_[s] = sign_white;
-  }
+  void initialize_vertex(vertex_descriptor s, const Graph&) { map_[s] = 0; }
+  void start_vertex(vertex_descriptor s, const Graph&) { map_[s] = 1; }
   void tree_edge(edge_descriptor e, const Graph& g)
   {
-    map_[boost::target(e,g)] = int(map_[boost::source(e,g)]*bond_sign_[e]);
+    if (map_[boost::target(e,g)] == 0) {
+      if (bond_sign_[e] > 0) {
+	map_[boost::target(e,g)] = map_[boost::source(e,g)];
+      } else {
+	map_[boost::target(e,g)] = -map_[boost::source(e,g)];
+      }
+    } else {
+      if (bond_sign_[e] > 0) {
+	map_[boost::source(e,g)] = map_[boost::target(e,g)];
+      } else {
+	map_[boost::source(e,g)] = -map_[boost::target(e,g)];
+      }
+    }
   }
   void back_edge(edge_descriptor e, const Graph& g) { check(e, g); }
 
 protected:
   void check(edge_descriptor e, const Graph& g)
   {
-    if (bond_sign_[e]*map_[boost::source(e, g)] != map_[boost::target(e, g)])
+    if (bond_sign_[e]*map_[boost::source(e,g)]*map_[boost::target(e,g)] < 0) 
       *check_ = true;
   }
 
@@ -163,7 +170,8 @@ bool has_sign_problem(const HamiltonianDescriptor<I>& ham, const graph_helper<G>
     int btype  = lattice.bond_type(*it);
     int stype1 = lattice.site_type(lattice.source(*it));
     int stype2 = lattice.site_type(lattice.target(*it));
-    if (bond_sign[boost::make_tuple(btype,stype1,stype2)]==0) {
+    if (bond_sign.find(boost::make_tuple(btype,stype1,stype2)) ==
+        bond_sign.end()) {
       boost::multi_array<double,4> mat = get_matrix(0.,ham.bond_term(btype),ham.basis().site_basis(stype1),
                                         ham.basis().site_basis(stype2),p);
       int dim1 = mat.shape()[0];
@@ -174,7 +182,7 @@ bool has_sign_problem(const HamiltonianDescriptor<I>& ham, const graph_helper<G>
           for (int i2=0;i2<dim1;++i2)
             for (int j2=0;j2<dim2;++j2)
               if (i1!=i2 && j1 !=j2) {
-            int this_sign=(mat[i1][j1][i2][j2] < 0. ? -1 : (mat[i1][j1][i2][j2] > 0. ? 1 : 0));
+            int this_sign=(mat[i1][j1][i2][j2] < -1.0e-10 ? -1 : (mat[i1][j1][i2][j2] > 1.0e-10 ? 1 : 0));
             if (!sign) // the first nonzero matrix element
               sign = this_sign; // is stored
             else if (this_sign && sign!=this_sign) // compare other nonzero matrix elements
