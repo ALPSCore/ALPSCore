@@ -33,6 +33,8 @@
 
 #include <boost/throw_exception.hpp>
 #include <boost/utility/enable_if.hpp>
+#include <boost/mpl/and.hpp>
+#include <boost/mpl/not.hpp>
 #include <boost/type_traits/is_integral.hpp>
 #include <boost/type_traits/is_float.hpp>
 #include <boost/numeric/conversion/cast.hpp>
@@ -40,6 +42,7 @@
 #include <cassert>
 #include <limits>
 #include <stdexcept>
+#include <cmath>
 
 namespace alps {
 
@@ -49,25 +52,26 @@ public:
   typedef I integer_type;
 
   half_integer() : val_(0) {}
-  //template <class U>
-  //explicit half_integer(typename boost::enable_if<boost::is_float<U>, U>::type x) : val_(integer_type(std::floor(x*2 + 0.5))) {}
-  explicit half_integer(double x) : val_(integer_type(std::floor(x*2 + 0.5))) {}
-  template <class U>
-  half_integer(typename boost::enable_if<boost::is_integral<U>, U>::type x)
-  : val_(boost::numeric_cast<integer_type>(2*x)) {}
-  template<class J>
-  explicit half_integer(const half_integer<J>& x) : val_(x.get_twice()) {}
 
-  template<class U>
-  const half_integer& operator=(typename boost::enable_if<boost::is_integral<U>, U>::type x)
-  { val_ = 2*x; return *this; }
-//  template <class U>
-//  const half_integer& operator=(typename boost::enable_if<boost::is_float<U>, U>::type x)
-  const half_integer& operator=(double x)
-  { val_ = integer_type(std::floor(x*2 + 0.5)); return *this; }
   template<class J>
-  half_integer& operator=(const half_integer<J>& x)
-  { val_ = x.get_twice(); return *this; }
+  half_integer(const half_integer<J>& x) : val_(x.get_twice()) {}
+
+  template <typename J>
+  half_integer(J x, typename boost::enable_if<boost::is_integral<J> >::type* dummy = 0)
+     : val_(2*boost::numeric_cast<I>(x)) {}
+
+  template <typename J>
+  half_integer(J x, typename boost::enable_if<
+                  boost::mpl::and_<
+                     boost::is_float<J>,
+                     boost::mpl::not_<boost::is_same<J,double> > 
+                  > >::type* dummy = 0)
+     : val_(integer_type(std::floor(2*x+0.5))) {}
+
+  // catch-all for implicit conversions
+  half_integer(double x) : val_(integer_type(std::floor(2*x+0.5))) {}
+
+  // compiler-generated assignment and dtor are OK
 
   double to_double() const { return 0.5*val_; }
   integer_type to_integer() const 
@@ -154,7 +158,6 @@ private:
   half_integer(integer_type i, int /* to distinguish */) : val_(i) {}
   integer_type val_;
 };
-
 
 template <class I>
 inline double to_double(const half_integer<I>& x) 
