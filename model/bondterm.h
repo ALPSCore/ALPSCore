@@ -171,8 +171,9 @@ Expression BondOperatorEvaluator<I, STATE1, STATE2>::partial_evaluate_function(c
       if (f)
         fermionic_.second=!fermionic_.second;
     }
-    else
+    else {
       e=ParameterEvaluator(*this).partial_evaluate_function(name,arg);
+}
   }
   else
     e=ParameterEvaluator(*this).partial_evaluate_function(name,arg);

@@ -155,9 +155,10 @@ basis_states_descriptor<I,S>::basis_states_descriptor(const BasisDescriptor<I>& 
 template <class I, class S, class SS>
 bool basis_states<I,S,SS>::check_sort() const
 {
-  for (int i=0;i<super_type::size()-1;++i)
-    if (!((*this)[i]<(*this)[i+1]))
-      return false;
+  if (!super_type::empty())
+    for (int i=0;i<super_type::size()-1;++i)
+      if (!((*this)[i]<(*this)[i+1]))
+        return false;
   return true;
 }
 

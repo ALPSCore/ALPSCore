@@ -175,6 +175,10 @@ SiteTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b,
           }
           else
             mat[i][j].second=evaluator.fermionic();
+            if (boost::is_arithmetic<T>::value || TypeTraits<T>::is_complex)
+              if (!can_evaluate(boost::lexical_cast<std::string>(term)))
+                boost::throw_exception(std::runtime_error("Cannot evaluate expression " + boost::lexical_cast<std::string>(term)));
+
 #ifndef ALPS_WITH_NEW_EXPRESSION
           mat[i][j].first += term;
 #else 
