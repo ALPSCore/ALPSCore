@@ -17,8 +17,6 @@
     <BINNED><COUNT>625</COUNT><MEAN method="simple">0.49947861</MEAN><ERROR method="simple">0.00277</ERROR></BINNED>
     <BINNED><COUNT>312</COUNT><MEAN method="simple">0.49936786</MEAN><ERROR method="simple">0.00279</ERROR></BINNED>
     <BINNED><COUNT>156</COUNT><MEAN method="simple">0.49936786</MEAN><ERROR method="simple">0.00283</ERROR></BINNED>
-    <BINNED><COUNT>78</COUNT><MEAN method="simple">0.49936786</MEAN><ERROR method="simple">0.00267</ERROR></BINNED>
-    <BINNED><COUNT>39</COUNT><MEAN method="simple">0.49936786</MEAN><ERROR method="simple">0.00275</ERROR></BINNED>
   </SCALAR_AVERAGE>
   <SCALAR_AVERAGE name="observable b">
     <COUNT>10000</COUNT>
@@ -33,7 +31,5 @@
     <BINNED><COUNT>625</COUNT><MEAN method="simple">1.4996806</MEAN><ERROR method="simple">0.00276</ERROR></BINNED>
     <BINNED><COUNT>312</COUNT><MEAN method="simple">1.4995519</MEAN><ERROR method="simple">0.00285</ERROR></BINNED>
     <BINNED><COUNT>156</COUNT><MEAN method="simple">1.4995519</MEAN><ERROR method="simple">0.00275</ERROR></BINNED>
-    <BINNED><COUNT>78</COUNT><MEAN method="simple">1.4995519</MEAN><ERROR method="simple">0.00264</ERROR></BINNED>
-    <BINNED><COUNT>39</COUNT><MEAN method="simple">1.4995519</MEAN><ERROR method="simple">0.00275</ERROR></BINNED>
   </SCALAR_AVERAGE>
 </AVERAGES>

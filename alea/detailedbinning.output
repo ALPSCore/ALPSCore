@@ -7,8 +7,6 @@ observable a: 0.499479 +/- 0.00274915; tau = -0.0521369
     bin #5   : 625      entries: error = 0.00277273
     bin #6   : 312      entries: error = 0.00279057
     bin #7   : 156      entries: error = 0.00282794
-    bin #8   : 78       entries: error = 0.00266797
-    bin #9   : 39       entries: error = 0.00274915
 
 observable b: 1.49968 +/- 0.00275272; tau = -0.0451267
     bin #1   : 10000    entries: error = 0.00288604
@@ -18,7 +16,5 @@ observable b: 1.49968 +/- 0.00275272; tau = -0.0451267
     bin #5   : 625      entries: error = 0.00275769
     bin #6   : 312      entries: error = 0.00285328
     bin #7   : 156      entries: error = 0.0027477
-    bin #8   : 78       entries: error = 0.00264477
-    bin #9   : 39       entries: error = 0.00275272
 
 (observable b) / (observable a): 3.00282 +/- 0.0157275
