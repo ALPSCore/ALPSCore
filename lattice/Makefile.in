@@ -39,8 +39,8 @@ include $(top_srcdir)/config/include-build.mk
 libs_program = -lalps -lcomm-sgl $(BOOST_LIBS) $(XML_LIBS) $(BASE_LIBS)
 
 LOCAL_CONFIG = lattices.xml parameters
-EXAMPLE = example1 example2 example3 example4 parity
-TESTOK = example1.ok example2.ok example3.ok example4.ok parity.ok
+EXAMPLE = example1 example2 example3 example4 example5 example6 parity
+TESTOK = example1.ok example2.ok example3.ok example4.ok example5.ok example6.ok parity.ok
 
 include $(top_srcdir)/config/rules.mk
 include $(srcdir)/Makefile.dep
