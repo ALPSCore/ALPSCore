@@ -124,7 +124,7 @@ public:
   inline size_type index(const value_type& x) const
   {
     if (use_lookup_)
-      return lookup_[x];
+      return (x >= 0 && x < lookup_.size() ? lookup_[x] : super_type::size());
     else
       return basis_states<J,S,SS>::index(x);
   }
