@@ -75,7 +75,7 @@ public:
   typedef lattice_traits<base_type>::cell_iterator cell_iterator;
   typedef lattice_traits<base_type>::size_type size_type;
   
-  FiniteLatticeDescriptor() {}
+  FiniteLatticeDescriptor() : dim_(0) {}
   
 #ifndef ALPS_WITHOUT_XML
   FiniteLatticeDescriptor(const alps::XMLTag&, std::istream&, 

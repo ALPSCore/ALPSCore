@@ -29,6 +29,7 @@
 namespace alps {
 
 LatticeDescriptor::LatticeDescriptor(const XMLTag& intag, std::istream& p)
+  : dim_(0)
 {
   XMLTag tag(intag);
   name_ = tag.attributes["name"];

@@ -39,6 +39,7 @@ public:
   typedef UnitCell unit_cell_type;
   typedef typename alps::dimensional_traits<UnitCell>::dimension_type dimension_type;
 
+  simple_cell() : dim_(0) {}
   simple_cell(const unit_cell_type& u, const offset_type& o)
    : dim_(alps::dimension(u)), offset_(o) {}
   

@@ -64,7 +64,7 @@ public:
 				    boost::property<edge_type_t,int > > >
 				> graph_type;
 
-  GraphUnitCell() {}
+  GraphUnitCell() : dim_(0) {}
   GraphUnitCell(const EmptyUnitCell& e) : dim_(alps::dimension(e)) {}
 #ifndef ALPS_WITHOUT_XML
   GraphUnitCell(const alps::XMLTag&, std::istream&);

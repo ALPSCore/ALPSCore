@@ -159,9 +159,6 @@ inline std::string read_graph_xml(const XMLTag& intag, std::istream& p, GRAPH& g
   uint32_t num_edges=0;
   uint32_t dim;
   std::string name;
-  graphdimension = dim = (tag.attributes["dimension"]=="" ? 0 :
-     boost::lexical_cast<uint32_t,std::string>(tag.attributes["dimension"]));
-  graphname = name = tag.attributes["name"];
   if (tag.attributes["vertices"]!="") {
     uint32_t nvert=boost::lexical_cast<uint32_t,std::string>(tag.attributes["vertices"]);
     g = graph_type(nvert); // graph type needs to have a constructor taking # vertices as argument
@@ -169,6 +166,9 @@ inline std::string read_graph_xml(const XMLTag& intag, std::istream& p, GRAPH& g
     for (vertex_iterator it = boost::vertices(g).first ; it !=  boost::vertices(g).second ; ++it)
       vertextype[*it]=0;
   }      
+  graphdimension = dim = (tag.attributes["dimension"]=="" ? 0 :
+     boost::lexical_cast<uint32_t,std::string>(tag.attributes["dimension"]));
+  graphname = name = tag.attributes["name"];
   
   if (tag.type !=XMLTag::SINGLE)
   while(true) {
