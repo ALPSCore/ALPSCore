@@ -182,9 +182,9 @@ inline std::string read_graph_xml(const XMLTag& intag, std::istream& p, GRAPH& g
       break;
     else if (tag.name=="VERTEX") {
       int id=-1;
-      int t=0;
+      detail::type_type t=0;
       detail::coordinate_type coord;
-      t = tag.attributes["type"]=="" ? 0 : boost::lexical_cast<uint32_t,std::string>(tag.attributes["type"]);
+      t = tag.attributes["type"]=="" ? boost::lexical_cast<detail::type_type,int>(0) : boost::lexical_cast<detail::type_type,std::string>(tag.attributes["type"]);
       id = tag.attributes["id"]=="" ? vertex_number++ 
            : boost::lexical_cast<int,std::string>(tag.attributes["id"])-1;
       if (id>=boost::num_vertices(g)) {
@@ -216,13 +216,13 @@ inline std::string read_graph_xml(const XMLTag& intag, std::istream& p, GRAPH& g
     }
     else if (tag.name=="EDGE") {
       uint32_t source, target;
-      uint32_t t = 0;
+      detail::type_type t = boost::lexical_cast<detail::type_type,int>(0);
       num_edges++;
 
       source=boost::lexical_cast<uint32_t,std::string>(tag.attributes["source"]);
       target=boost::lexical_cast<uint32_t,std::string>(tag.attributes["target"]);
       if(tag.attributes["type"]!="")
-        t=boost::lexical_cast<uint32_t,std::string>(tag.attributes["type"]);
+        t=boost::lexical_cast<detail::type_type,std::string>(tag.attributes["type"]);
       // ignoring id
       if (tag.type!=XMLTag::SINGLE)  {
         tag = parse_tag(p);
@@ -345,49 +345,6 @@ inline unsigned int maximum_vertex_type(const G& g)
     num = std::max(num,vertex_type_map[*it]);
 
   return num;
-}
-
-
-namespace detail {
-template <class IT, class MAP, class T>
-T disorder_it(IT start, IT end, MAP& type, T i=0)
-{
-  for (; start!=end;++start) {
-    type[*start]=i++;
-  }
-  return i;
-}
-
-template <class IT, class MAP>
-unsigned int disorder_it(IT start, IT end, MAP& type)
-{
-  return disorder_it(start,end,type,0u);
-}
-
-}
-
-template <class G, class MAP>
-void disorder_vertices(G& g, MAP& type)
-{
-  detail::disorder_it(boost::vertices(g).first,boost::vertices(g).second,type); 
-}
-
-template <class G, class MAP>
-void disorder_edges(G& g, MAP& type)
-{
-  detail::disorder_it(boost::edges(g).first,boost::edges(g).second,type); 
-}
-
-template <class G, class MAP>
-void disorder_bonds(G& g, MAP& type)
-{
-  disorder_edges(g,type);
-}
-
-template <class G, class MAP>
-void disorder_sites(G& g, MAP& t)
-{
-  disorder_vertices(g,t);
 }
 
 } // end namespace alps

@@ -62,11 +62,11 @@ public:
   typedef boost::adjacency_list<boost::vecS,boost::vecS,boost::directedS,
                                 // vertex property
                                 boost::property<coordinate_t,detail::coordinate_type,
-                                  boost::property<vertex_type_t,int> >,
+                                  boost::property<vertex_type_t,detail::type_type> >,
                                 // edge property
                                 boost::property<target_offset_t,offset_type,
                                   boost::property<source_offset_t,offset_type,
-                                    boost::property<edge_type_t,int > > >
+                                    boost::property<edge_type_t,detail::type_type> > >
                                 > graph_type;
 
   GraphUnitCell();

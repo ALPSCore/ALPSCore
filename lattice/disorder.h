@@ -53,23 +53,25 @@ private:
 
 class VertexReference : public BasicVertexReference {
 public:
+  typedef detail::type_type type_type;
   VertexReference(XMLTag, std::istream&);
-  unsigned int new_type() const { return new_type_;}
+  type_type new_type() const { return new_type_;}
 private:
-  unsigned int new_type_;
+  type_type new_type_;
 };
 
 
 class EdgeReference {
 public:
+  typedef detail::type_type type_type;
   EdgeReference(XMLTag, std::istream&);
   const BasicVertexReference& source() const { return source_;}
   const BasicVertexReference& target() const { return target_;}
-  unsigned int new_type() const { return new_type_;}
+  type_type new_type() const { return new_type_;}
 private:
   BasicVertexReference source_;
   BasicVertexReference target_;
-  unsigned int new_type_;
+  type_type new_type_;
 };
 
 }
@@ -139,9 +141,51 @@ private:
   std::vector<detail::EdgeReference> changed_edges_;
   bool disorder_all_vertices_;
   bool disorder_all_edges_;
-  std::vector<unsigned int> disordered_vertices_;
-  std::vector<unsigned int> disordered_edges_;
+  std::vector<detail::type_type> disordered_vertices_;
+  std::vector<detail::type_type> disordered_edges_;
 };
+
+
+namespace detail {
+template <class IT, class MAP, class T>
+T disorder_it(IT start, IT end, MAP& type, T i=0)
+{
+  for (; start!=end;++start)
+    type[*start]=i++;
+  return i;
+}
+
+template <class IT, class MAP>
+unsigned int disorder_it(IT start, IT end, MAP& type)
+{
+  return disorder_it(start,end,type,0u);
+}
+
+}
+
+template <class G, class MAP>
+void disorder_vertices(G& g, MAP& type)
+{
+  detail::disorder_it(boost::vertices(g).first,boost::vertices(g).second,type); 
+}
+
+template <class G, class MAP>
+void disorder_edges(G& g, MAP& type)
+{
+  detail::disorder_it(boost::edges(g).first,boost::edges(g).second,type); 
+}
+
+template <class G, class MAP>
+void disorder_bonds(G& g, MAP& type)
+{
+  disorder_edges(g,type);
+}
+
+template <class G, class MAP>
+void disorder_sites(G& g, MAP& t)
+{
+  disorder_vertices(g,t);
+}
 
 } // end namespace alps
 

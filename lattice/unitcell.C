@@ -64,8 +64,8 @@ GraphUnitCell::GraphUnitCell(const XMLTag& intag, std::istream& p)
     if(tag.name=="/UNITCELL")
       return;
     else if (tag.name=="VERTEX") {
-      coordinate_type coord;
-      int t=tag.attributes["type"]=="" ? 0 : boost::lexical_cast<uint32_t,std::string>(tag.attributes["type"]);
+      detail::coordinate_type coord;
+      detail::type_type t=tag.attributes["type"]=="" ? boost::lexical_cast<detail::type_type,int>(0) : boost::lexical_cast<detail::type_type,std::string>(tag.attributes["type"]);
       int id=tag.attributes["id"]=="" ? -1 : boost::lexical_cast<int,std::string>(tag.attributes["id"])-1;
       if (id==-1)
         id=vertex_number++;
@@ -103,8 +103,8 @@ GraphUnitCell::GraphUnitCell(const XMLTag& intag, std::istream& p)
       bool got_source=false;
       bool got_target=false;
       
-      uint32_t t =tag.attributes["type"]=="" ? 0 
-        : boost::lexical_cast<uint32_t,std::string>(tag.attributes["type"]);
+      detail::type_type t =tag.attributes["type"]=="" ? boost::lexical_cast<detail::type_type,int>(0) 
+        : boost::lexical_cast<detail::type_type,std::string>(tag.attributes["type"]);
       
       if (tag.type!=XMLTag::SINGLE) while (true) {
         tag = parse_tag(p);

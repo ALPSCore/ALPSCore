@@ -31,6 +31,8 @@
 #ifndef ALPS_LATTICE_GRAPH_TRAITS_H
 #define ALPS_LATTICE_GRAPH_TRAITS_H
 
+#include <boost/graph/graph_traits.hpp>
+
 namespace alps {
 
 template <class G>
@@ -47,6 +49,7 @@ struct graph_traits : public boost::graph_traits<G>
   typedef typename boost::graph_traits<graph_type>::degree_size_type neighbors_size_type;
   typedef typename boost::graph_traits<graph_type>::adjacency_iterator neighbor_iterator;
 };
+
 
 template <class G> 
 std::pair<typename graph_traits<G>::site_iterator,

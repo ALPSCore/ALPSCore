@@ -834,19 +834,16 @@ inline void SimpleObservableData<T>::collect_from(const std::vector<SimpleObserv
           obs_value_traits<value_type>::check_for_max(max_, r->max_);
         }
 
-        result_type tmp(mean_);
-        tmp *= double(count_);
-        result_type tmp2(r->mean_);
-        tmp2 *= double(r->count_);
-        mean_ = tmp-tmp2;
+        mean_ *= double(count_);
+        mean_ += double(r->count_)*r->mean_;
         mean_ /= double(count_ + r->count_);
         //mean_ = (double(count_)*mean_+double(r->count_)*r->mean_)
         //        / double(count_ + r->count_);
         using std::sqrt;
         using alps::sqrt;
-        tmp = error_;
+        result_type tmp = error_;
         tmp *= error_*(double(count_)*double(count_));
-        tmp2 = r->error_;
+        result_type tmp2 = r->error_;
         tmp2 *= r->error_*(double(r->count_)*double(r->count_));
         error_=tmp+tmp2;
         error_=sqrt(error_);
