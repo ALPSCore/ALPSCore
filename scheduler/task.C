@@ -110,7 +110,7 @@ void Task::start()
 
 void Task::run()
 {
-  if(started())
+  if(started() && !finished_)
     dostep();
 }
 
