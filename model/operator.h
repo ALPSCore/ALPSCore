@@ -45,16 +45,16 @@ public:
   
   OperatorEvaluator(const Parameters& p)
     : super_type(p) {}
-  typename super_type::Direction direction() const { return right_to_left; }
+  typename super_type::Direction direction() const { return super_type::right_to_left; }
 
   value_type evaluate(const std::string& name, bool isarg=false) const
-  { return partial_evaluate(name,isarg).value();}
+  { return super_type::partial_evaluate(name,isarg).value();}
 
   value_type evaluate_function(const std::string& name, const expression::Expression<T>& arg,bool isarg=false) const
-  { return partial_evaluate_function(name,arg,isarg).value();}
+  { return super_type::partial_evaluate_function(name,arg,isarg).value();}
 
   value_type evaluate_function(const std::string& name, const std::vector<expression::Expression<T> >& args,bool isarg=false) const
-  { return partial_evaluate_function(name,args,isarg).value();}
+  { return super_type::partial_evaluate_function(name,args,isarg).value();}
 };
 
 } // namespace alps

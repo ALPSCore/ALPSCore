@@ -68,7 +68,7 @@ public:
   boost::multi_array<std::pair<T,std::pair<bool,bool> >,4> matrix(const SiteBasisDescriptor<I>&, const SiteBasisDescriptor<I>&, const Parameters& =Parameters()) const;
 template <class T>
   std::set<expression::Term<T> > templated_split(const Parameters& = Parameters()) const;
-  std::set<Term> split(const Parameters& p= Parameters()) { return this->template templated_split<std::complex<double> >(p);}
+  std::set<Term> split(const Parameters& p= Parameters()) { return templated_split<std::complex<double> >(p);}
 
 private:
   std::string name_;
