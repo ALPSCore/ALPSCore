@@ -203,15 +203,14 @@ public:
   }
 
   cell_descriptor cell(size_type i)  const{
-    offset_type o;
+    offset_type o(extent_);
 
     typedef typename coordinate_traits<offset_type>::const_iterator CIT;
     typedef typename coordinate_traits<offset_type>::iterator IT;
     CIT ex = coordinates(extent_).first;
     IT offit = coordinates(o).first;
 
-    for (;ex!=coordinates(extent_).second;++ex,++offit)
-    {
+    for (;ex!=coordinates(extent_).second;++ex,++offit) {
       *offit=i%(*ex);
       i/=(*ex);
     }
@@ -306,7 +305,7 @@ public:
     std::size_t d=0;
     for (int i=0;i<BASE::dimension();++i) {
       if(boundary(i)=="periodic")
-        d = d*extent(i) + (x[i] < y[i] ? y[i]-x[i] : extent(i)+y[i]-x[i]);
+        d = d*extent(i) + (x[i] <= y[i] ? y[i]-x[i] : extent(i)+y[i]-x[i]);
       else
         d = extent(i)*(d*extent(i) +x[i])+y[i];
     }

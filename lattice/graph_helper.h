@@ -298,6 +298,8 @@ public:
 
   size_type distance(vertex_descriptor x, vertex_descriptor y) const
   {
+    if (disordered() ||!have_lattice_)
+      return size_type(x)*num_sites()+size_type(y);
     if (!distances_calculated_)
       calculate_distances();
     return distance_lookup_[int(x)][int(y)];
