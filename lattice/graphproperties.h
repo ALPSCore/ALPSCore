@@ -64,18 +64,18 @@ using boost::edge_index_t;
 
 // the default graph class
 
-namespace detail {
-  typedef std::vector<double> coordinate_type;
-  typedef unsigned int type_type;
-}
+typedef std::vector<double> coordinate_type;
+typedef std::vector<int> offset_type;
+typedef std::vector<int> distance_type;
+typedef unsigned int type_type;
 
 typedef boost::adjacency_list<boost::vecS,boost::vecS,boost::undirectedS,
                               // vertex property
-                              boost::property<coordinate_t,detail::coordinate_type,
+                              boost::property<coordinate_t,coordinate_type,
                                 boost::property<parity_t,int8_t,
-                                   boost::property<vertex_type_t,detail::type_type> > >,
+                                   boost::property<vertex_type_t,type_type> > >,
                               // edge property
-                              boost::property<edge_type_t,detail::type_type,
+                              boost::property<edge_type_t,type_type,
                                 boost::property<boost::edge_index_t,unsigned int,
                                   boost::property<boundary_crossing_t,boundary_crossing> > >,
                               // graph property

@@ -53,7 +53,6 @@ private:
 
 class VertexReference : public BasicVertexReference {
 public:
-  typedef detail::type_type type_type;
   VertexReference(XMLTag, std::istream&);
   type_type new_type() const { return new_type_;}
 private:
@@ -63,7 +62,6 @@ private:
 
 class EdgeReference {
 public:
-  typedef detail::type_type type_type;
   EdgeReference(XMLTag, std::istream&);
   const BasicVertexReference& source() const { return source_;}
   const BasicVertexReference& target() const { return target_;}
@@ -95,14 +93,11 @@ public:
     if (!changed_edges_.empty()) 
       boost::throw_exception(
 	    std::runtime_error("Changed edges not yet implemented. Please contact troyer@comp-phys.org"));
-	typename property_map<edge_type_t,G,unsigned int>::type o=get_or_default(edge_type_t(),g,0);
     if (disorder_all_edges_)
 	  alps::disorder_edges(g,m);
-	else if(!disordered_edges_.empty()) {
-	  //typename property_map<edge_type_t,G,unsigned int>::type o=get_or_default(edge_type_t(),g,0);
+	else if(!disordered_edges_.empty())
       boost::throw_exception(
 	    std::runtime_error("Disordering special edge types not yet implemented. Please contact troyer@comp-phys.org"));
-    }
   }
 
   template <class G, class M>
@@ -112,23 +107,21 @@ public:
 	    std::runtime_error("Changed vertices not yet implemented. Please contact troyer@comp-phys.org"));
     if (disorder_all_vertices_)
 	  alps::disorder_vertices(g,m);
-	else if(!disordered_vertices_.empty()) {
-	  // typename property_map<vertex_type_t,G,unsigned int>::type o=get_or_default(vertex_type_t(),g,0);
+	else if(!disordered_vertices_.empty())
       boost::throw_exception(
 	    std::runtime_error("Disordering special vertex types not yet implemented. Please contact troyer@comp-phys.org"));
-    }
   }
   
   template <class G>
   void disorder_vertices(G& g) const {
-    singleton_property_map<unsigned int> dummy;
-    disorder_vertices(g,dummy);
+    typename property_map<vertex_type_t,G,unsigned int>::type o=get_or_default(vertex_type_t(),g,0);
+    disorder_vertices(g,o);
   }
   
   template <class G>
   void disorder_edges(G& g) const {
-    singleton_property_map<unsigned int> dummy;
-    disorder_edges(g,dummy);
+    typename property_map<edge_type_t,G,unsigned int>::type o=get_or_default(edge_type_t(),g,0);
+    disorder_edges(g,o);
   }
 
   template <class G> void disorder_sites(G& g) const { disorder_vertices(g);}
@@ -141,8 +134,8 @@ private:
   std::vector<detail::EdgeReference> changed_edges_;
   bool disorder_all_vertices_;
   bool disorder_all_edges_;
-  std::vector<detail::type_type> disordered_vertices_;
-  std::vector<detail::type_type> disordered_edges_;
+  std::vector<type_type> disordered_vertices_;
+  std::vector<type_type> disordered_edges_;
 };
 
 

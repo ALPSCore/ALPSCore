@@ -91,7 +91,7 @@ VertexReference::VertexReference(XMLTag tag, std::istream& in)
 {  
   if(tag.attributes["type"]=="")
     boost::throw_exception(std::runtime_error("type attribute missing in changed vertex element"));
-  new_type_=boost::lexical_cast<detail::type_type>(tag.attributes["type"]);
+  new_type_=boost::lexical_cast<type_type>(tag.attributes["type"]);
   if (tag.type != XMLTag::SINGLE) {
     tag=parse_tag(in);
     if(tag.name!="/VERTEX")
@@ -103,7 +103,7 @@ EdgeReference::EdgeReference(XMLTag tag, std::istream& in)
 {
   if(tag.attributes["type"]=="")
     boost::throw_exception(std::runtime_error("type attribute missing in changed edge"));
-  new_type_=boost::lexical_cast<detail::type_type>(tag.attributes["type"]);
+  new_type_=boost::lexical_cast<type_type>(tag.attributes["type"]);
   tag=parse_tag(in);
   if (tag.name!="SOURCE")
     boost::throw_exception(std::runtime_error("<SOURCE> element missing in changed edge"));
@@ -153,7 +153,7 @@ DisorderDescriptor::DisorderDescriptor(XMLTag& tag, std::istream& p)
         if (tag.attributes["type"]=="")
           disorder_all_vertices_=true;
         else
-          disordered_vertices_.push_back(boost::lexical_cast<detail::type_type>(tag.attributes["type"]));
+          disordered_vertices_.push_back(boost::lexical_cast<type_type>(tag.attributes["type"]));
         if (tag.type !=XMLTag::SINGLE) {
           tag=parse_tag(p); 
           if (tag.name!="/VERTEX")
@@ -164,7 +164,7 @@ DisorderDescriptor::DisorderDescriptor(XMLTag& tag, std::istream& p)
         if (tag.attributes["type"]=="")
           disorder_all_edges_=true;
         else
-          disordered_edges_.push_back(boost::lexical_cast<detail::type_type>(tag.attributes["type"]));
+          disordered_edges_.push_back(boost::lexical_cast<type_type>(tag.attributes["type"]));
         if (tag.type !=XMLTag::SINGLE) {
           tag=parse_tag(p); 
           if (tag.name!="/EDGE")

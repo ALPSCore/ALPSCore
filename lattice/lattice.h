@@ -73,7 +73,7 @@ volume(const Lattice& l)
 
 template <class Lattice>
 inline bool 
-on_lattice(typename lattice_traits<Lattice>::offset_type o, const Lattice& l)
+on_lattice(const typename lattice_traits<Lattice>::offset_type& o, const Lattice& l)
 {
   return l.on_lattice(o);
 }
@@ -97,7 +97,7 @@ shift(typename lattice_traits<Lattice>::offset_type& o,
 
 template <class Lattice>
 inline typename lattice_traits<Lattice>::size_type
-index(typename lattice_traits<Lattice>::cell_descriptor c, const Lattice& l)
+index(const typename lattice_traits<Lattice>::cell_descriptor& c, const Lattice& l)
 {
   return l.index(c);
 }

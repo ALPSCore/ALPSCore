@@ -55,8 +55,9 @@ public:
   typedef typename lattice_traits<parent_lattice_type>::basis_vector_iterator basis_vector_iterator;
   typedef typename lattice_traits<parent_lattice_type>::vector_type vector_type;
   typedef boundary_crossing boundary_crossing_type;
+  typedef std::vector<unsigned int> distance_type;
 
-  typedef std::size_t size_type;
+  typedef int size_type;
 
   hypercubic_lattice() {}
 
@@ -252,9 +253,9 @@ public:
   typename extent_type::value_type extent(uint32_t dim) const {return extent_[dim];}
   const extent_type& extent() const { return extent_;}
 
-  std::vector<size_type> distance_sizes()
+  distance_type distance_sizes() const
   {
-    std::vector<int> sizes;
+    distance_type sizes;
     for (int i=0;i<BASE::dimension();++i) {
       sizes.push_back(extent(i));
       if(boundary(i)!="periodic")
@@ -263,9 +264,9 @@ public:
     return sizes;
   }
 
-  std::vector<size_type> distance_vector(const offset_type& x, const offset_type& y)
+  distance_type distance_vector(const offset_type& x, const offset_type& y) const
   {
-    std::vector<size_type> d;
+    distance_type d;
     for (int i=0;i<BASE::dimension();++i) {
       if(boundary(i)=="periodic") {
         d.push_back(x[i]<y[i] ? y[i]-x[i] : x[i]-y[i]);
@@ -275,6 +276,7 @@ public:
         d.push_back(y[i]);
       }
     }
+    return d;
   }
 
   class momentum_iterator : public cell_iterator {

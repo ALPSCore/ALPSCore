@@ -182,9 +182,9 @@ inline std::string read_graph_xml(const XMLTag& intag, std::istream& p, GRAPH& g
       break;
     else if (tag.name=="VERTEX") {
       int id=-1;
-      detail::type_type t=0;
-      detail::coordinate_type coord;
-      t = tag.attributes["type"]=="" ? boost::lexical_cast<detail::type_type,int>(0) : boost::lexical_cast<detail::type_type,std::string>(tag.attributes["type"]);
+      type_type t=0;
+      coordinate_type coord;
+      t = tag.attributes["type"]=="" ? boost::lexical_cast<type_type,int>(0) : boost::lexical_cast<type_type,std::string>(tag.attributes["type"]);
       id = tag.attributes["id"]=="" ? vertex_number++ 
            : boost::lexical_cast<int,std::string>(tag.attributes["id"])-1;
       if (id>=boost::num_vertices(g)) {
@@ -216,13 +216,13 @@ inline std::string read_graph_xml(const XMLTag& intag, std::istream& p, GRAPH& g
     }
     else if (tag.name=="EDGE") {
       uint32_t source, target;
-      detail::type_type t = boost::lexical_cast<detail::type_type,int>(0);
+      type_type t = boost::lexical_cast<type_type,int>(0);
       num_edges++;
 
       source=boost::lexical_cast<uint32_t,std::string>(tag.attributes["source"]);
       target=boost::lexical_cast<uint32_t,std::string>(tag.attributes["target"]);
       if(tag.attributes["type"]!="")
-        t=boost::lexical_cast<detail::type_type,std::string>(tag.attributes["type"]);
+        t=boost::lexical_cast<type_type,std::string>(tag.attributes["type"]);
       // ignoring id
       if (tag.type!=XMLTag::SINGLE)  {
         tag = parse_tag(p);

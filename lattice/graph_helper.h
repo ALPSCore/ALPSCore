@@ -27,8 +27,8 @@
 
 /* $Id$ */
 
-#ifndef ALPS_SCHEDULER_LATTICEHELPER_H
-#define ALPS_SCHEDULER_LATTICEHELPER_H
+#ifndef ALPS_SCHEDULER_GRAPHHELPER_H
+#define ALPS_SCHEDULER_GRAPHHELPER_H
 
 
 #include <alps/lattice/latticelibrary.h>
@@ -42,6 +42,8 @@ class graph_helper : public LatticeLibrary
 {
 public:
   typedef G graph_type;
+  typedef lattice_graph<hypercubic_lattice<coordinate_lattice<simple_lattice<GraphUnitCell> > >,graph_type> lattice_type;
+
   typedef typename graph_traits<graph_type>::vertex_iterator vertex_iterator;
   typedef typename graph_traits<graph_type>::edge_iterator edge_iterator;
   typedef typename graph_traits<graph_type>::out_edge_iterator out_edge_iterator;
@@ -62,6 +64,17 @@ public:
   typedef typename graph_traits<graph_type>::bonds_size_type bonds_size_type;
   typedef typename graph_traits<graph_type>::neighbors_size_type neighbors_size_type;
   typedef typename graph_traits<graph_type>::neighbor_iterator neighbor_iterator;
+  
+  typedef typename lattice_traits<lattice_type>::unit_cell_type unit_cell_type;
+  typedef typename lattice_traits<lattice_type>::cell_descriptor cell_descriptor;
+  typedef typename lattice_traits<lattice_type>::offset_type offset_type;
+  typedef typename lattice_traits<lattice_type>::vector_type vector_type;
+  typedef typename lattice_traits<lattice_type>::size_type size_type;
+  typedef typename lattice_traits<lattice_type>::cell_iterator cell_iterator;
+  typedef typename lattice_traits<lattice_type>::cell_iterator momentum_iterator;
+  typedef typename lattice_traits<lattice_type>::cell_iterator basis_vector_iterator;
+  typedef typename lattice_traits<lattice_type>::cell_iterator boundary_crossing_type;
+  
 
  graph_helper(std::istream& in, const Parameters& p)
    : LatticeLibrary(in), 
@@ -97,8 +110,13 @@ public:
   }
 
   ~graph_helper() { if (to_delete_) delete g_;}
+
   graph_type& graph() { return *g_;}
   const graph_type& graph() const { return *g_;}
+
+  lattice_type& lattice() { return l_;}
+  const lattice_type& lattice() const { return l_;}
+
   
   sites_size_type num_sites() const { return alps::num_sites(graph());}
   bonds_size_type num_bonds() const { return alps::num_bonds(graph());}
@@ -129,22 +147,22 @@ public:
   vertex_descriptor vertex(vertices_size_type i) const { return vertex(i,graph());}
   double parity(const site_descriptor& v) const { return parity_map_[v]==0 ? 1. :  parity_map_[v]==1 ? -1. : 0.;}
   bool is_bipartite() const { return is_bipartite_;}
-  unsigned int bond_type(const bond_descriptor& b) const { return edge_type_map_[b];}
-  unsigned int edge_type(const edge_descriptor& e) const { return edge_type_map_[e];}
-  unsigned int site_type(const site_descriptor& s) const { return vertex_type_map_[s];}
-  unsigned int vertex_type(const edge_descriptor& v) const { return vertex_type_map_[v];}
-  unsigned int disordered_edge_type(const edge_descriptor& e) const 
+  type_type bond_type(const bond_descriptor& b) const { return edge_type_map_[b];}
+  type_type edge_type(const edge_descriptor& e) const { return edge_type_map_[e];}
+  type_type site_type(const site_descriptor& s) const { return vertex_type_map_[s];}
+  type_type vertex_type(const edge_descriptor& v) const { return vertex_type_map_[v];}
+  type_type disordered_edge_type(const edge_descriptor& e) const 
   { return d_.disordered_edges() ? disordered_edge_type_map_[e] : edge_type_map_[e];}
-  unsigned int disordered_bond_type(const bond_descriptor& b) const { return disordered_edge_type(b);}
-  unsigned int disordered_vertex_type(const vertex_descriptor& v) const 
+  type_type disordered_bond_type(const bond_descriptor& b) const { return disordered_edge_type(b);}
+  type_type disordered_vertex_type(const vertex_descriptor& v) const 
   { return d_.disordered_vertices() ? disordered_vertex_type_map_[v] : vertex_type_map_[v];}
-  unsigned int disordered_site_type(const site_descriptor& s) const { return disordered_vertex_type(s);}
+  type_type disordered_site_type(const site_descriptor& s) const { return disordered_vertex_type(s);}
   bool disordered() const { return d_.disordered();}
   bool disordered_sites() const { return d_.disordered_sites();}
   bool disordered_bonds() const { return d_.disordered_bonds();}
   bool disordered_vertices() const { return d_.disordered_vertices();}
   bool disordered_edges() const { return d_.disordered_edges();}
-  const std::vector<double>& coordinate(const site_descriptor& s) const { return coordinate_map_[s];}
+  const coordinate_type& coordinate(const site_descriptor& s) const { return coordinate_map_[s];}
 
   void throw_if_xyz_defined(const Parameters& p, const vertex_descriptor& v) const
   {   
@@ -195,6 +213,19 @@ public:
     return parms;
   }
   
+  size_type volume() const { return alps::volume(lattice());}
+  const unit_cell_type& unit_cell() const { return alps::unit_cell(lattice());}
+  cell_descriptor cell(const offset_type& o) const { return alps::cell(o,lattice());}
+  std::pair<cell_iterator,cell_iterator> cells() const { return alps::cells(lattice());}
+  const offset_type& offset(const cell_descriptor& c) const { return alps::offset(c,lattice());}
+  bool on_lattice(const offset_type& o) const { return alps::on_lattice(o,lattice());}
+  std::pair<bool,boundary_crossing_type> shift(offset_type& o, const offset_type& s) const { return alps::shift(o,s,lattice());}
+  size_type index(const cell_descriptor& c) const { return alps::index(c,lattice());}
+  std::pair<basis_vector_iterator,basis_vector_iterator> basis_vectors() const { return alps::basis_vectors(lattice());}
+  std::pair<basis_vector_iterator,basis_vector_iterator> reciprocal_basis_vectors() const { return alps::reciprocal_basis_vectors(lattice());}
+  vector_type origin(const cell_descriptor& c) const { return alps::origin(c,lattice());}
+  vector_type coordinate(const cell_descriptor& c, const vector_type& p) const { return alps::coordinate(c,p,lattice());}
+  vector_type momentum(const vector_type& m) const { return alps::momentum(m,lattice());}  
   
 private:
   typedef lattice_graph<hypercubic_lattice<coordinate_lattice<simple_lattice<GraphUnitCell> > >,graph_type> lattice_type;
@@ -207,12 +238,12 @@ private:
   graph_type* g_;
   bool is_bipartite_;
   typename property_map<parity_t,graph_type,double>::const_type parity_map_;
-  typename property_map<edge_type_t,graph_type,unsigned int>::const_type edge_type_map_;
+  typename property_map<edge_type_t,graph_type,type_type>::const_type edge_type_map_;
   typename property_map<edge_index_t,graph_type,unsigned int>::const_type edge_index_map_;
-  typename property_map<vertex_type_t,graph_type,unsigned int>::const_type vertex_type_map_;
-  typename property_map<coordinate_t,graph_type,std::vector<double> >::const_type coordinate_map_;
-  boost::vector_property_map<unsigned int> disordered_vertex_type_map_;
-  boost::vector_property_map<unsigned int,typename property_map<edge_index_t,graph_type,unsigned int>::const_type> disordered_edge_type_map_;
+  typename property_map<vertex_type_t,graph_type,type_type>::const_type vertex_type_map_;
+  typename property_map<coordinate_t,graph_type,coordinate_type>::const_type coordinate_map_;
+  boost::vector_property_map<type_type> disordered_vertex_type_map_;
+  boost::vector_property_map<type_type,typename property_map<edge_index_t,graph_type,type_type>::const_type> disordered_edge_type_map_;
 };
 
 

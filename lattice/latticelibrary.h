@@ -45,6 +45,8 @@ namespace alps {
 class LatticeLibrary
 {
 public:
+  typedef hypercubic_lattice<coordinate_lattice<simple_lattice<GraphUnitCell> > > lattice_type;
+  
   LatticeLibrary() {};
   LatticeLibrary(std::istream& in) { read_xml(in);}
   LatticeLibrary(const XMLTag& tag, std::istream& p) {read_xml(tag,p);}
@@ -58,7 +60,7 @@ public:
   bool has_lattice(const std::string& name) const;
   
   const LatticeGraphDescriptor& lattice_descriptor(const std::string& name) const;
-  hypercubic_lattice<coordinate_lattice<simple_lattice<GraphUnitCell> > > lattice(const std::string& name) const;
+  lattice_type lattice(const std::string& name) const;
   const coordinate_graph_type& graph(const std::string& name) const;
   
   template <class G>
