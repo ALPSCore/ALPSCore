@@ -149,6 +149,11 @@ GraphUnitCell::GraphUnitCell(const XMLTag& intag, std::istream& p)
     else
       boost::throw_exception(std::runtime_error("encountered illegal tag <" + tag.name + "> in UNITCELL"));
   }
+  update_bond_vectors();
+}
+
+void GraphUnitCell::update_bond_vectors()
+{
   // calculate bond vectors
   for (graph_type::edge_iterator it = boost::edges(graph_).first; it !=boost::edges(graph_).second ; ++it) {
     offset_type source_offset=boost::get(source_offset_t(),graph_,*it);
@@ -244,6 +249,7 @@ std::size_t GraphUnitCell::add_edge(int type,
   boost::put(edge_type_t(), graph_, ed, type);
   boost::put(source_offset_t(), graph_, ed, so);
   boost::put(target_offset_t(), graph_, ed, to);
+  update_bond_vectors();
   return boost::num_edges(graph_);
 }
 

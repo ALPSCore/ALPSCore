@@ -88,6 +88,7 @@ public:
                        uint32_t ti, const offset_type& to);
 
 private:        
+  void update_bond_vectors();
   graph_type graph_;
   std::size_t dim_;
   std::string name_;
