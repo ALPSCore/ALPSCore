@@ -119,6 +119,7 @@ public:
   bonds_size_type num_bonds() const { return alps::num_bonds(graph());}
   std::pair<site_iterator,site_iterator> sites() const { return alps::sites(graph());}
   std::pair<bond_iterator,bond_iterator> bonds() const { return alps::bonds(graph());}
+  bond_descriptor bond(bonds_size_type i) const { return *(bonds().first+i);}
   neighbors_size_type num_neighbors (const site_descriptor& v) const { return alps::num_neighbors(v,graph());}
   std::pair<neighbor_bond_iterator,neighbor_bond_iterator> neighbor_bonds (const site_descriptor& v) const 
     { return alps::neighbor_bonds(v,graph());}

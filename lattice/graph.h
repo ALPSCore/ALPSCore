@@ -314,8 +314,8 @@ inline int32_t maximum_edge_type(const G& g)
   typename property_map<edge_type_t, const G, int>::type 
   edge_type_map = get_or_default(edge_type_t(),g,0);
 
-  typename boost::graph_traits<G>::vertex_iterator it,end;
-  boost::tie(it,end)=boost::vertices(g);
+  typename boost::graph_traits<G>::edge_iterator it,end;
+  boost::tie(it,end)=boost::edges(g);
   
   int num=0;
   for (; it!=end;++it)
