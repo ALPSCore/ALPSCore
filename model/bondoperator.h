@@ -35,8 +35,8 @@
 #include <alps/model/sitestate.h>
 #include <alps/model/sitebasisstates.h>
 #include <alps/expression.h>
-#include <alps/multi_array.hpp>
 #include <alps/parameters.h>
+#include <alps/multi_array.hpp>
 
 namespace alps {
 

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -36,6 +36,10 @@
 #include <alps/stringvalue.h>
 #include <alps/xml.h>
 
+#include <boost/serialization/collections_save_imp.hpp>
+#include <boost/serialization/collections_load_imp.hpp>
+#include <boost/serialization/split_member.hpp>
+#include <boost/serialization/string.hpp>
 #include <boost/throw_exception.hpp>
 #include <map>
 #include <stdexcept>
@@ -63,6 +67,10 @@ public:
   value_type& value() { return value_; }
   const value_type& value() const { return value_; }
 
+  template<class Archive>
+  void serialize(Archive & ar, const unsigned int version)
+  { ar & key_ & value_; }
+  
 private:
   key_type key_;
   value_type value_;
@@ -138,6 +146,22 @@ public:
 
   void read_xml(XMLTag tag, std::istream& xml,bool ignore_duplicates=false);
   void extract_from_xml(std::istream& xml);
+
+  BOOST_SERIALIZATION_SPLIT_MEMBER();
+  
+  template<class Archive>
+  inline void save(Archive & ar, const unsigned int)
+  {
+    boost::serialization::stl::save_collection<Archive,Parameters>(ar,*this); 
+  }
+
+  template<class Archive>
+  inline void load(Archive & ar, const unsigned int)
+  {
+    boost::serialization::stl::load_collection<Archive,Parameters,
+      boost::serialization::stl::archive_input_seq<Archive,Parameters>,
+        boost::serialization::stl::no_reserve_imp<Parameters> >(ar, *this);
+  }
 
 private:
   list_type list_;

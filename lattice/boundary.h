@@ -76,6 +76,9 @@ struct boundary_crossing {
   
   void save (ODump& dump) const { dump << bc;}
   void load (IDump& dump) { dump >> bc;}
+  template<class Archive>
+  void serialize(Archive & ar, const unsigned int version)
+  { ar & bc; }
 private:  
   typedef uint8_t integer_type;
   integer_type bc;

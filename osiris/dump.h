@@ -82,8 +82,13 @@ public:
     write_simple(std::imag(x));
   }
 
+  template<class T>
+  ODump& operator<<(const std::complex<T>& x) { write_complex(x); return *this; }
+
+
 # define ALPS_DUMP_DO_TYPE(T) \
-  virtual void write_array(std::size_t n, const T * p);
+  virtual void write_array(std::size_t n, const T * p); \
+  ODump& operator<<( T x) { write_simple(x); return *this; }
   ALPS_DUMP_DO_TYPE(bool)
   ALPS_DUMP_DO_TYPE(char)
   ALPS_DUMP_DO_TYPE(signed char)
@@ -141,6 +146,7 @@ public:
   
 # define ALPS_DUMP_DO_TYPE(T) \
   virtual void read_simple(T& x);
+
   ALPS_DUMP_DO_TYPE(bool)
   ALPS_DUMP_DO_TYPE(char)
   ALPS_DUMP_DO_TYPE(signed char)
@@ -161,13 +167,15 @@ public:
 # undef ALPS_DUMP_DO_TYPE
 
   template <class T>
-  void read_complex(std::complex<T>& x)
-  {
-    x = std::complex<T>(get<T>(), get<T>());
-  }
+  void read_complex(std::complex<T>& x) { x = std::complex<T>(get<T>(), get<T>());}
+  
+  template<class T>
+  IDump& operator>>(std::complex<T>& x) { read_complex(x); return *this; }
 
 # define ALPS_DUMP_DO_TYPE(T) \
-  virtual void read_array(std::size_t n, T * p);
+  virtual void read_array(std::size_t n, T * p); \
+  IDump& operator>>(T& x) { read_simple(x); return *this; } \
+  operator T () { return get<T>(); }
   ALPS_DUMP_DO_TYPE(bool)
   ALPS_DUMP_DO_TYPE(char)
   ALPS_DUMP_DO_TYPE(signed char)
@@ -193,27 +201,6 @@ public:
 
   virtual void read_string(std::size_t n, char* s);
   virtual void read_string(std::string&);
-
-# define ALPS_DUMP_DO_TYPE(T) \
-  operator T () { return get<T>(); }
-  ALPS_DUMP_DO_TYPE(bool)
-  ALPS_DUMP_DO_TYPE(char)
-  ALPS_DUMP_DO_TYPE(signed char)
-  ALPS_DUMP_DO_TYPE(unsigned char)
-  ALPS_DUMP_DO_TYPE(short)
-  ALPS_DUMP_DO_TYPE(unsigned short)
-  ALPS_DUMP_DO_TYPE(int)
-  ALPS_DUMP_DO_TYPE(unsigned int)
-  ALPS_DUMP_DO_TYPE(long)
-  ALPS_DUMP_DO_TYPE(unsigned long)
-# ifdef BOOST_HAS_LONG_LONG
-  ALPS_DUMP_DO_TYPE(long long)
-  ALPS_DUMP_DO_TYPE(unsigned long long)
-# endif
-  ALPS_DUMP_DO_TYPE(float)
-  ALPS_DUMP_DO_TYPE(double)
-  ALPS_DUMP_DO_TYPE(long double)
-# undef ALPS_DUMP_DO_TYPE
 
   template <class T>
   operator std::complex<T> ()
@@ -259,48 +246,6 @@ private:
 
 } // end namespace
 
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-namespace alps {
-#endif
-
-#define ALPS_DUMP_DO_TYPE(T) \
-inline alps::ODump& operator<<(alps::ODump& dump, T x) \
-{ dump.write_simple(x); return dump; } \
-inline alps::IDump& operator>>(alps::IDump& dump, T& x) \
-{ dump.read_simple(x); return dump; }
-ALPS_DUMP_DO_TYPE(bool)
-ALPS_DUMP_DO_TYPE(char)
-ALPS_DUMP_DO_TYPE(signed char)
-ALPS_DUMP_DO_TYPE(unsigned char)
-ALPS_DUMP_DO_TYPE(short)
-ALPS_DUMP_DO_TYPE(unsigned short)
-ALPS_DUMP_DO_TYPE(int)
-ALPS_DUMP_DO_TYPE(unsigned int)
-ALPS_DUMP_DO_TYPE(long)
-ALPS_DUMP_DO_TYPE(unsigned long)
-#ifdef BOOST_HAS_LONG_LONG
-ALPS_DUMP_DO_TYPE(long long)
-ALPS_DUMP_DO_TYPE(unsigned long long)
-#endif
-ALPS_DUMP_DO_TYPE(float)
-ALPS_DUMP_DO_TYPE(double)
-ALPS_DUMP_DO_TYPE(long double)
-#undef ALPS_DUMP_DO_TYPE
-
-template<class T>
-alps::ODump& operator<<(alps::ODump& dump, const std::complex<T>& x)
-{ dump.write_complex(x); return dump; }
-
-template<class T>
-alps::IDump& operator>>(alps::IDump& dump, std::complex<T>& x)
-{ dump.read_complex(x); return dump; }
-
-// conversion function
-// template <class T>
-// inline T read(alps::IDump& dump) { return dump.template get<T>(); }
-
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-} // namespace alps
-#endif
+#include "dumparchive.h"
 
 #endif // OSIRIS_DUMP_H

@@ -273,14 +273,16 @@ template <class OBS, class SIGN>
 void AbstractSignedObservable<OBS,SIGN>::save(ODump& dump) const
 {
   AbstractSimpleObservable<value_type>::save(dump);
-  dump << obs_ << sign_name_;
+  obs_.save(dump);
+  dump << sign_name_;
 }
 
 template <class OBS, class SIGN>
 void AbstractSignedObservable<OBS,SIGN>::load(IDump& dump)
 {
   AbstractSimpleObservable<value_type>::load(dump);
-  dump >> obs_ >> sign_name_;
+  obs_.load(dump);
+  dump >> sign_name_;
   clear_sign();
 }
 

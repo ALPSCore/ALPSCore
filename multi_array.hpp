@@ -35,7 +35,9 @@
 //=======================================================================
 
 #include <alps/config.h>
+#define access alps_multiarray_access
 #include <boost/multi_array.hpp>
+#undef access
 #include <boost/throw_exception.hpp>
 #include <cmath>
 #include <stdexcept>

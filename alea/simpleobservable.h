@@ -196,4 +196,26 @@ inline void SimpleObservable<T,BINNING>::load(IDump& dump)
 
 } // end namespace alps
 
+#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
+namespace alps {
+#endif
+
+
+#ifndef ALPS_WITHOUT_OSIRIS
+
+template <class T,class BINNING>
+inline alps::ODump& operator<<(alps::ODump& od, const alps::SimpleObservable<T,BINNING>& m)
+{ m.save(od); return od; }
+
+template <class T,class BINNING>
+inline alps::IDump& operator>>(alps::IDump& id, alps::SimpleObservable<T,BINNING>& m)
+{ m.load(id); return id; }
+
+#endif // !ALPS_WITHOUT_OSIRIS
+
+#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
+} // end namespace alps
+#endif
+
+
 #endif // ALPS_ALEA_SIMPLEOBSERVABLE_H

@@ -308,4 +308,40 @@ inline void BasicDetailedBinning<T>::load(IDump& dump)
 
 } // end namespace alps
 
+#ifndef ALPS_WITHOUT_OSIRIS
+
+#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
+namespace alps {
+#endif
+
+template<class T>
+inline alps::ODump& operator<<(alps::ODump& od, const alps::BasicDetailedBinning<T>& m)
+{ m.save(od); return od; }
+
+template<class T>
+inline alps::IDump& operator>>(alps::IDump& id, alps::BasicDetailedBinning<T>& m)
+{ m.load(id); return id; }
+
+template<class T>
+inline alps::ODump& operator<<(alps::ODump& od, const alps::DetailedBinning<T>& m)
+{ m.save(od); return od; }
+
+template<class T>
+inline alps::IDump& operator>>(alps::IDump& id, alps::DetailedBinning<T>& m)
+{ m.load(id); return id; }
+
+template<class T>
+inline alps::ODump& operator<<(alps::ODump& od, const alps::FixedBinning<T>& m)
+{ m.save(od); return od; }
+
+template<class T>
+inline alps::IDump& operator>>(alps::IDump& id, alps::FixedBinning<T>& m)
+{ m.load(id); return id; }
+
+#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
+} // namespace alps
+#endif
+
+#endif
+
 #endif // ALPS_ALEA_DETAILEDBINNING_H

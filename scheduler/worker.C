@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@comp-phys.org>
+* Copyright (C) 1994-2005 by Matthias Troyer <troyer@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -126,7 +126,7 @@ void Worker::load_worker(IDump& dump)
     if(version<200) 
       dump >> dummy >> dummy >> dummy;
   }
-  Disorder::seed(parms.value_or_default("REALIZATION_SEED",0));
+  Disorder::seed(parms.value_or_default("DISORDER_SEED",0));
   // TODO: load slave runs
 }
 

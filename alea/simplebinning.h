@@ -500,4 +500,24 @@ inline void SimpleBinning<T>::load(IDump& dump)
 
 } // end namespace alps
 
+#ifndef ALPS_WITHOUT_OSIRIS
+
+#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
+namespace alps {
+#endif
+
+template<class T>
+inline alps::ODump& operator<<(alps::ODump& od, const alps::SimpleBinning<T>& m)
+{ m.save(od); return od; }
+
+template<class T>
+inline alps::IDump& operator>>(alps::IDump& id, alps::SimpleBinning<T>& m)
+{ m.load(id); return id; }
+
+#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
+} // namespace alps
+#endif
+
+#endif
+
 #endif // ALPS_ALEA_SIMPLEBINNING_H

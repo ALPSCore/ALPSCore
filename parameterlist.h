@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2004 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2005 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -33,6 +33,7 @@
 
 #include <alps/config.h>
 #include <alps/parameters.h>
+#include <boost/serialization/vector.hpp>
 
 #ifndef ALPS_WITHOUT_OSIRIS
 # include <alps/osiris.h>
@@ -49,9 +50,15 @@ namespace alps {
 class ParameterList : public std::vector<Parameters>
 {
 public:
+  typedef std::vector<Parameters> super_type;
   ParameterList() {}
   ParameterList(std::istream& is) { parse(is); }
   void parse(std::istream& is);
+  
+  template <class ARCHIVE>
+  void serialize(ARCHIVE & ar, const unsigned int)
+  { ar & static_cast<super_type&>(*this); }
+
 };
 
 } // end namespace
