@@ -135,6 +135,7 @@ public:
   virtual ~IDump() {}
 
   uint32_t version() const { return version_;} 
+  void set_version(uint32_t v) { version_=v;} 
   
 # define ALPS_DUMP_DO_TYPE(T) \
   virtual void read_simple(T& x);

@@ -54,6 +54,7 @@ public:
   typedef typename AbstractSimpleObservable<T>::count_type count_type;
   typedef typename AbstractSimpleObservable<T>::result_type result_type;
   typedef typename AbstractSimpleObservable<T>::slice_iterator slice_iterator;
+  typedef typename obs_value_traits<T>::convergence_type convergence_type;
   typedef BINNING binning_type;
 
   BOOST_STATIC_CONSTANT(int,version=(obs_value_traits<T>::magic_id+ (binning_type::magic_id << 16)));
@@ -80,6 +81,7 @@ public:
   bool has_variance() const { return b_.has_variance();}
   result_type variance() const {return b_.variance();}
   result_type error() const {return b_.error();}
+  convergence_type converged_errors() const {return b_.converged_errors();}
   count_type count() const {return b_.count();}
   bool has_minmax() const { return b_.has_minmax();}
   value_type min() const {return b_.min();}

@@ -58,6 +58,7 @@ public:
   typedef typename obs_value_traits<result_type>::slice_iterator slice_iterator;
   typedef std::size_t count_type;
   typedef typename obs_value_traits<value_type>::time_type time_type;
+  typedef typename obs_value_traits<value_type>::convergence_type convergence_type;
   
   template <class X, class Y> friend class AbstractSignedObservable;
 
@@ -106,6 +107,7 @@ public:
   count_type count() const { return obs_.count();}
   result_type mean() const { return make_evaluator().mean();}
   result_type error() const { return make_evaluator().error();}
+  convergence_type converged_errors() const { return make_evaluator().converged_errors();}
   
   bool can_set_thermalization() const { return  obs_.can_set_thermalization();}
   void set_thermalization(uint32_t todiscard) { obs_.set_thermalization(todiscard);}
@@ -310,6 +312,10 @@ void AbstractSignedObservable<OBS,SIGN>::output_scalar(std::ostream& out) const
     out << ": " << mean() << " +/- " << error();
     if (!sign_name_.empty())
       out << "; sign in observable \"" << sign_name_ << "\"";
+    if (converged_errors()==MAYBE_CONVERGED)
+      out << " WARNING: check error convergence";
+    if (converged_errors()==NOT_CONVERGED)
+      out << " WARNING: ERRORS NOT CONVERGED!!!";
     out << std::endl;
   }
 }
@@ -326,13 +332,19 @@ void AbstractSignedObservable<OBS,SIGN>::output_vector(std::ostream& out) const
   else {
     result_type value_(mean());
     result_type error_(error());
+    convergence_type conv_(converged_errors());
     for (typename obs_value_traits<result_type>::slice_iterator sit=
            obs_value_traits<result_type>::slice_begin(value_);
           sit!=obs_value_traits<result_type>::slice_end(value_);++sit)
     {
       out << obs_value_traits<result_type>::slice_name(value_,sit)  << ": "
           << obs_value_traits<result_type>::slice_value(value_,sit) << " +/- " 
-          << obs_value_traits<result_type>::slice_value(error_,sit) << std::endl;
+          << obs_value_traits<result_type>::slice_value(error_,sit);
+      if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==MAYBE_CONVERGED)
+        out << " WARNING: check error convergence";
+      if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==NOT_CONVERGED)
+        out << " WARNING: ERRORS NOT CONVERGED!!!";
+      out << std::endl;
     }
   }
 }

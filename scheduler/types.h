@@ -47,7 +47,7 @@ enum MCDumpType {
     MCDump_measurements            =4,
 
     // dump version numbers
-    MCDump_worker_version          =300
+    MCDump_worker_version          =301
 };
 
 

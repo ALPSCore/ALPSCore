@@ -60,21 +60,21 @@ class NoBinning : public AbstractBinning<T>
   typedef typename obs_value_traits<T>::size_type size_type;
   typedef typename obs_value_traits<T>::count_type count_type;
   typedef typename obs_value_traits<T>::result_type result_type;
+  typedef typename obs_value_traits<T>::convergence_type convergence_type;
   
   BOOST_STATIC_CONSTANT(bool, has_tau=false);
   BOOST_STATIC_CONSTANT(int, magic_id=1);
   
-//SIGN  typedef SignedNoBinning<T> signed_type;
-    
   NoBinning(uint32_t=0);
   virtual ~NoBinning() {}
  
   void reset(bool=false);
-  void operator<<(const value_type& x);
+  inline void operator<<(const value_type& x);
   
   result_type mean() const;
   result_type variance() const;
   result_type error() const;
+  convergence_type converged_errors() const;
 
   uint32_t count() const { return super_type::is_thermalized() ? count_ : 0;}
 
@@ -141,7 +141,20 @@ inline void NoBinning<T>::reset(bool forthermalization)
 
 
 template <class T>
-inline void NoBinning<T>::operator<<(const T& x) 
+typename NoBinning<T>::convergence_type NoBinning<T>::converged_errors() const
+{
+  convergence_type conv;
+  obs_value_traits<T>::resize_same_as(conv,sum_);
+  typename obs_value_traits<convergence_type>::slice_iterator it;
+  
+  for (it= obs_value_traits<convergence_type>::slice_begin(conv); 
+       it!= obs_value_traits<convergence_type>::slice_end(conv); ++it)
+    obs_value_traits<convergence_type>::slice_value(conv,it) = CONVERGED;
+  return conv;
+}
+
+template <class T>
+void NoBinning<T>::operator<<(const T& x) 
 {
   if(count_==0 && thermal_count_==0)
   {
@@ -158,8 +171,8 @@ inline void NoBinning<T>::operator<<(const T& x)
   sum_+=x;
   sum2_+=y;
 
-  obs_value_traits<T>::check_for_max(x,max_);
-  obs_value_traits<T>::check_for_min(x,min_);
+  obs_value_traits<T>::check_for_max(max_,x);
+  obs_value_traits<T>::check_for_min(min_,x);
 
   count_++;
 }

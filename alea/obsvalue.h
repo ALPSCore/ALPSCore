@@ -47,6 +47,13 @@
 
 namespace alps {
 
+enum error_convergence {CONVERGED, MAYBE_CONVERGED, NOT_CONVERGED};
+
+inline std::string convergence_to_text(int c)
+{
+  return (c==CONVERGED ? "yes" : c==MAYBE_CONVERGED ? "maybe" : c==NOT_CONVERGED ? "no" : "");
+}
+
 template <class T>
 struct obs_value_traits
 {
@@ -57,13 +64,16 @@ struct obs_value_traits
   typedef double time_type;
   typedef time_type time_element_type;
   typedef typename TypeTraits<T>::average_t result_type;
+  typedef int convergence_type;
+  typedef int slice_iterator;
   BOOST_STATIC_CONSTANT( uint32_t, magic_id = TypeTraits<T>::type_tag);
   typedef uint32_t size_type;
-  typedef uint32_t slice_iterator;
   BOOST_STATIC_CONSTANT( bool, array_valued = false);
 
-  static inline void check_for_max(const T a,T& b) { if (a>b) b=a;}
-  static inline void check_for_min(const T a,T& b) { if (a<b) b=a;}
+  template <class X>
+  static inline void check_for_max(T& a,const X& b) { if (b>a) a=b;}
+  template <class X>
+  static inline void check_for_min(T& a,const X& b) { if (b<a) a=b;}
 
   static T max() {return std::numeric_limits<T>::max();}
   static T min() {return -std::numeric_limits<T>::max();}
@@ -84,7 +94,11 @@ struct obs_value_traits
   template <class X> static std::size_t size(const X&) { return 1;}
   
   template <class X> static T convert(X x) { return static_cast<T>(x);}
+  static slice_iterator slice_begin(const value_type&) { return 0;}
+  static slice_iterator slice_end(const value_type&) { return 1;}
+  static std::string slice_name(const value_type& ,slice_iterator) { return ""; }
   static element_type slice_value(const value_type& x, int) { return x;}
+  static element_type& slice_value(value_type& x, int) { return x;}
 
 };
 
@@ -103,13 +117,14 @@ struct obs_value_traits<std::complex<T> >
   typedef double time_type;
   typedef time_type time_element_type;
   typedef uint32_t size_type;
-  typedef uint32_t slice_iterator;
   typedef typename TypeTraits<T>::average_t result_type;
+  typedef int convergence_type;
+  typedef int slice_iterator;
   BOOST_STATIC_CONSTANT(uint32_t, magic_id = TypeTraits<T>::type_tag);
   BOOST_STATIC_CONSTANT(bool, array_valued=false);
 
-  static inline void check_for_max(const std::complex<T>& a,std::complex<T>& b) {}
-  static inline void check_for_min(const std::complex<T>& a,std::complex<T>& b) {}
+  template <class X> static inline void check_for_max(std::complex<T>&,const X&) {}
+  template <class X> static inline void check_for_min(std::complex<T>&,const X& b) {}
 
   static std::complex<T> max() { return  (std::numeric_limits<T>::max(),std::numeric_limits<T>::max());}
   static std::complex<T> min() { return  -max();}
@@ -128,9 +143,12 @@ struct obs_value_traits<std::complex<T> >
   template <class X, class Y> static void resize_same_as(X&,const Y&) {}
   template <class X, class Y> static void copy(X& x,const Y& y) {x=y;}
   template <class X> static std::size_t size(const X&) { return 1;}
-  template <class X> static const typename X::value_type& get(const X& x, uint32_t i) 
-  { return x;}
   template <class X> static T convert(X x) { return static_cast<T>(x);}
+  static slice_iterator slice_begin(const value_type&) { return 0;}
+  static slice_iterator slice_end(const value_type&) { return 1;}
+  static std::string slice_name(const value_type& ,slice_iterator) { return ""; }
+  static element_type slice_value(const value_type& x, int) { return x;}
+  static element_type& slice_value(value_type& x, int) { return x;}
 };
 
 #ifdef ALPS_HAVE_VALARRAY
@@ -147,19 +165,33 @@ struct obs_value_traits<std::valarray<T> >
   BOOST_STATIC_CONSTANT(bool, array_valued = true);
   
   typedef std::valarray<typename TypeTraits<T>::average_t> result_type;
+  typedef std::valarray<int> convergence_type;
   BOOST_STATIC_CONSTANT(uint32_t, magic_id = 256+TypeTraits<T>::type_tag);
 
-  static inline void check_for_max(const std::valarray<T>& a,std::valarray<T>& b) 
+  template <class X> static inline void check_for_max(std::valarray<T>& a,const std::valarray<X>& b) 
   {
     for(int32_t i=0;i!=a.size();++i)
       obs_value_traits<T>::check_for_max(a[i],b[i]);
   }   
+
+  template <class X> static inline void check_for_max(std::valarray<T>& a,const X& b) 
+  {
+    for(int32_t i=0;i!=a.size();++i)
+      obs_value_traits<T>::check_for_max(a[i],b);
+  }   
  
-  static inline void check_for_min(const std::valarray<T>& a,std::valarray<T>& b) 
+  template <class X> static inline void check_for_min(std::valarray<T>& a,const std::valarray<X>& b) 
   {
     for(int32_t i=0;i!=a.size();++i)
       obs_value_traits<T>::check_for_min(a[i],b[i]);
   }    
+
+  template <class X> static inline void check_for_min(std::valarray<T>& a,const X& b) 
+  {
+    for(int32_t i=0;i!=a.size();++i)
+      obs_value_traits<T>::check_for_min(a[i],b);
+  }    
+
   static void fix_negative(value_type& a) 
   {
     for(int32_t i=0;i!=a.size();++i)
@@ -192,6 +224,7 @@ struct obs_value_traits<std::valarray<T> >
   static std::string slice_name(const value_type& ,slice_iterator i) 
     { return boost::lexical_cast<std::string,int>(i); }
   static element_type slice_value(const value_type& x, slice_iterator i) { return x[i];}
+  static element_type& slice_value(value_type& x, slice_iterator i) { return x[i];}
  
   template <class X> static std::valarray<T> convert(const std::valarray<X>& x) 
   { 
@@ -217,26 +250,39 @@ template<typename T, std::size_t NumDims, typename Allocator>
   BOOST_STATIC_CONSTANT(bool, array_valued = true);
   
   typedef alps::multi_array<typename TypeTraits<T>::average_t,NumDims> result_type;
+  typedef alps::multi_array<int,NumDims> convergence_type;
   BOOST_STATIC_CONSTANT(uint32_t, magic_id = (1+NumDims)*256+TypeTraits<T>::type_tag);
 
-  static inline void check_for_max(const value_type& a,value_type& b) 
+  template <class X, class A> static inline void check_for_max(value_type& a,const alps::multi_array<X,NumDims,A>& b) 
   {
-    typename value_type::const_iterator ait=a.begin();
-    typename value_type::iterator bit=b.begin();
+    typename value_type::iterator ait=a.begin();
+    typename value_type::const_iterator bit=b.begin();
     for(;ait!=a.end() && bit!=b.end();++ait,++bit)
       obs_value_traits<T>::check_for_max(*ait,*bit);
     if (ait!=a.end() || bit!=b.end())
       boost::throw_exception(std::runtime_error("multi_arrays not of identical size in obs_value_traits::check_for_max"));
   }   
  
-  static inline void check_for_min(const value_type& a, value_type& b) 
+  template <class X, class A> static inline void check_for_min(value_type& a,const alps::multi_array<X,NumDims,A>& b) 
   {
-    typename value_type::const_iterator ait=a.begin();
-    typename value_type::iterator bit=b.begin();
+    typename value_type::iterator ait=a.begin();
+    typename value_type::const_iterator bit=b.begin();
     for(;ait!=a.end() && bit!=b.end();++ait,++bit)
       obs_value_traits<T>::check_for_min(*ait,*bit);
     if (ait!=a.end() || bit!=b.end())
       boost::throw_exception(std::runtime_error("multi_arrays not of identical size in obs_value_traits::check_for_min"));
+  }    
+
+  template <class X> static inline void check_for_max(value_type& a,const X& b) 
+  {
+    for(typename value_type::iterator ait=a.begin() ;ait!=a.end() ;++ait)
+      obs_value_traits<T>::check_for_max(*ait,b);
+  }   
+ 
+  template <class X> static inline void check_for_min(value_type& a,const X& b) 
+  {
+    for(typename value_type::iterator ait=a.begin() ;ait!=a.end() ;++ait)
+      obs_value_traits<T>::check_for_min(*ait,b);
   }    
 
   static element_type min() {return obs_value_traits<T>::min();}
@@ -347,6 +393,7 @@ template<typename T, std::size_t NumDims, typename Allocator>
   static slice_iterator slice_end(const value_type& x) { return slice_iterator(x,false);}
   static std::string slice_name(const value_type& ,slice_iterator i) { return i.name(); }
   static element_type slice_value(const value_type& x, slice_iterator i) { return x(i.index());}
+  static element_type& slice_value(value_type& x, slice_iterator i) { return x(i.index());}
 
   template <class X, class A> 
   static alps::multi_array<T,NumDims,Allocator> convert(const alps::multi_array<X,NumDims,A>& x) 

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2004 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Beat Ammon <beat.ammon@bluewin.ch>,
 *                            Andreas Laeuchli <laeuchli@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>,
@@ -76,6 +76,7 @@ public:
   typedef typename obs_value_traits<T>::size_type size_type;
   typedef typename obs_value_traits<T>::count_type count_type;
   typedef typename obs_value_traits<T>::result_type result_type;
+  typedef typename obs_value_traits<T>::convergence_type convergence_type;
 
   // constructors
   SimpleObservableData();
@@ -83,9 +84,6 @@ public:
   SimpleObservableData(const SimpleObservableData<U>& x, S s);
   SimpleObservableData(const AbstractSimpleObservable<value_type>& obs);
   SimpleObservableData(std::istream&, const XMLTag&);
-
-  // friend SimpleObservableData<typename obs_value_slice<T,typename obs_value_traits<T>::index_type> >;
-  // friend SimpleObservableData<double>::SimpleObservableData<double>(SimpleObservableData&,int);
 
   template <class S>
   SimpleObservableData<typename obs_value_slice<T,S>::value_type> slice(S s) {
@@ -96,17 +94,19 @@ public:
   void read_xml_scalar(std::istream&, const XMLTag&);
   void read_xml_vector(std::istream&, const XMLTag&);
   
-  ALPS_DUMMY_VOID set_thermalization(uint32_t todiscard);
-  uint32_t get_thermalization() const;
-  bool can_set_thermalization() const { return can_set_thermal_ && !nonlinear_operations_;}
+  inline ALPS_DUMMY_VOID set_thermalization(uint32_t todiscard);
+  inline uint32_t get_thermalization() const;
+  inline bool can_set_thermalization() const { return can_set_thermal_ && !nonlinear_operations_;}
 
   uint32_t count() const { return changed_ ? (bin_size()*bin_number() == 0 ? count_ : bin_size()*bin_number()) : count_;}
-  const result_type& mean() const;
-  const result_type& error() const;
-  const result_type& variance() const;
-  const time_type& tau() const;
-  const value_type& min() const;
-  const value_type& max() const;
+  inline const result_type& mean() const;
+  inline const result_type& error() const;
+  inline const convergence_type& converged_errors() const;
+  inline const convergence_type& any_converged_errors() const;
+  inline const result_type& variance() const;
+  inline const time_type& tau() const;
+  inline const value_type& min() const;
+  inline const value_type& max() const;
   
   bool has_variance() const { return has_variance_;}
   bool has_tau() const { return has_tau_;}
@@ -136,8 +136,8 @@ public:
   void load(IDump& dump);
 #endif
  
-  void set_bin_size(uint32_t);
-  void set_bin_number(uint32_t);
+  inline void set_bin_size(uint32_t);
+  inline void set_bin_number(uint32_t);
  
   // collect information from many data objects
   void collect_from(const std::vector<SimpleObservableData<T> >& runs);
@@ -204,12 +204,14 @@ private:
   mutable std::vector<value_type> values2_;
   mutable std::vector<result_type> jack_;
 
+  mutable convergence_type converged_errors_;
+  mutable convergence_type any_converged_errors_;
   std::string eval_method_;
 };
 
 
 template <class T>
-inline SimpleObservableData<T>::SimpleObservableData()
+SimpleObservableData<T>::SimpleObservableData()
  : count_(0),
    has_variance_(false),
    has_tau_(false),
@@ -224,7 +226,7 @@ inline SimpleObservableData<T>::SimpleObservableData()
    jack_valid_(true),
    nonlinear_operations_(false),
    mean_(), error_(), variance_(), tau_(), min_(), max_(),
-   values_(), values2_(), jack_()
+   values_(), values2_(), jack_(), converged_errors_(), any_converged_errors_()
 {}
 
 template <class T>
@@ -244,22 +246,18 @@ SimpleObservableData<T>::SimpleObservableData(const SimpleObservableData<U>& x, 
    valid_(x.valid_),
    jack_valid_(x.jack_valid_),
    nonlinear_operations_(x.nonlinear_operations_),
-   mean_(), error_(), variance_(), tau_(), min_(), max_(),
-   values_(), values2_(), jack_()
+   mean_(obs_value_slice<typename obs_value_traits<U>::result_type,S>()(x.mean_, s)),
+   error_(obs_value_slice<typename obs_value_traits<U>::result_type,S>()(x.error_, s)),
+   variance_(has_variance_ ? obs_value_slice<typename obs_value_traits<U>::result_type,S>()(x.variance_, s) : result_type()),
+   tau_(has_tau_ ? obs_value_slice<typename obs_value_traits<U>::time_type,S>()(x.tau_, s) : time_type()),
+   min_(has_minmax_ ? obs_value_slice<U,S>()(x.min_, s) : result_type()), 
+   max_(has_minmax_ ? obs_value_slice<U,S>()(x.max_, s) : result_type()),
+   values_(), 
+   values2_(), 
+   jack_(),
+   converged_errors_(obs_value_slice<typename obs_value_traits<U>::convergence_type,S>()(x.converged_errors_,s)),
+   any_converged_errors_(obs_value_slice<typename obs_value_traits<U>::convergence_type,S>()(x.any_converged_errors_,s))
 {
-  if (valid_) {
-    mean_ = obs_value_slice<typename obs_value_traits<U>::result_type,S>()(x.mean_, s);
-    error_ = obs_value_slice<typename obs_value_traits<U>::result_type,S>()(x.error_, s);
-    if (has_variance_)
-      variance_ = obs_value_slice<typename obs_value_traits<U>::result_type,S>()(x.error_, s);
-    if (has_tau_)
-      tau_ = obs_value_slice<typename obs_value_traits<U>::time_type,S>()(x.tau_, s);
-  }
-  if(has_minmax_) {
-    min_ = obs_value_slice<U,S>()(x.min_, s);
-    max_ = obs_value_slice<U,S>()(x.max_, s);
-  }
-  
   std::transform(x.values_.begin(), x.values_.end(), values_.begin(),
                  boost::bind2nd(obs_value_slice<U,S>(),s));
   std::transform(x.values2_.begin(), x.values2_.end(), values2_.begin(),
@@ -270,7 +268,7 @@ SimpleObservableData<T>::SimpleObservableData(const SimpleObservableData<U>& x, 
 }
 
 template <class T>
-inline SimpleObservableData<T>::SimpleObservableData(const AbstractSimpleObservable<T>& obs)
+SimpleObservableData<T>::SimpleObservableData(const AbstractSimpleObservable<T>& obs)
  : count_(obs.count()),
    has_variance_(obs.has_variance()),
    has_tau_(obs.has_tau()),
@@ -303,13 +301,15 @@ inline SimpleObservableData<T>::SimpleObservableData(const AbstractSimpleObserva
       values_.push_back(obs.bin_value(i));
     for (int i = 0; i < obs.bin_number2(); ++i)
       values2_.push_back(obs.bin_value2(i));
+    obs_value_traits<convergence_type>::copy(converged_errors_, obs.converged_errors());
+    obs_value_traits<convergence_type>::copy(any_converged_errors_, obs.converged_errors());
     
     if (bin_size() != 1 && bin_number() > 128) set_bin_number(128);
   }
 }
 
 template <class T>
-inline SimpleObservableData<T>::SimpleObservableData(std::istream& infile, const XMLTag& intag)
+SimpleObservableData<T>::SimpleObservableData(std::istream& infile, const XMLTag& intag)
   : count_(0),
     has_variance_(false),
     has_tau_(false),
@@ -335,7 +335,7 @@ inline double text_to_double(const std::string& val)
 }
 
 template <class T>
-inline void SimpleObservableData<T>::read_xml_scalar(std::istream& infile, const XMLTag& intag)
+void SimpleObservableData<T>::read_xml_scalar(std::istream& infile, const XMLTag& intag)
 {
   if (intag.name != "SCALAR_AVERAGE")
     boost::throw_exception(std::runtime_error ("Encountered tag <" +intag.name +
@@ -361,6 +361,9 @@ inline void SimpleObservableData<T>::read_xml_scalar(std::istream& infile, const
       if (tag.type !=XMLTag::SINGLE) {
         error_=text_to_double(parse_content(infile));
         eval_method_=tag.attributes["method"]; 
+        converged_errors_=(tag.attributes["converged"]=="no" ? NOT_CONVERGED : 
+                           tag.attributes["converged"]=="maybe" ? MAYBE_CONVERGED : CONVERGED);
+        converged_errors_ = any_converged_errors_;
         check_tag(infile,"/ERROR");
       }
     }
@@ -385,7 +388,7 @@ inline void SimpleObservableData<T>::read_xml_scalar(std::istream& infile, const
 }
 
 template <class T>
-inline void SimpleObservableData<T>::read_xml_vector(std::istream& infile, const XMLTag& intag)
+void SimpleObservableData<T>::read_xml_vector(std::istream& infile, const XMLTag& intag)
 {
   if (intag.name != "VECTOR_AVERAGE")
     boost::throw_exception(std::runtime_error ("Encountered tag <" + intag.name + "> instead of <VECTOR_AVERAGE>"));
@@ -397,6 +400,8 @@ inline void SimpleObservableData<T>::read_xml_vector(std::istream& infile, const
   obs_value_traits<result_type>::resize(error_,s);
   obs_value_traits<result_type>::resize(variance_,s);
   obs_value_traits<time_type>::resize(tau_,s);
+  obs_value_traits<convergence_type>::resize(converged_errors_,s);
+  obs_value_traits<convergence_type>::resize(any_converged_errors_,s);
   
   tag = parse_tag(infile);
   int i=0;
@@ -418,6 +423,9 @@ inline void SimpleObservableData<T>::read_xml_vector(std::istream& infile, const
       else if (tag.name=="ERROR") {
         if (tag.type != XMLTag::SINGLE) {
           error_[i]=text_to_double(parse_content(infile));
+          converged_errors_[i] =(tag.attributes["converged"]=="no" ? NOT_CONVERGED : 
+                                 tag.attributes["converged"]=="maybe" ? MAYBE_CONVERGED : CONVERGED);
+          any_converged_errors_[i] = converged_errors_[i];
           eval_method_=tag.attributes["method"]; 
           check_tag(infile,"/ERROR");
         }
@@ -476,7 +484,7 @@ inline void SimpleObservableData<T>::read_xml(std::istream& infile, const XMLTag
 }
 
 template <class T> 
-inline std::string SimpleObservableData<T>::evaluation_method(Target t) const
+std::string SimpleObservableData<T>::evaluation_method(Target t) const
 {
   if (t==Variance)
     return "simple";
@@ -491,7 +499,7 @@ inline std::string SimpleObservableData<T>::evaluation_method(Target t) const
 }
 
 template <class T> 
-inline SimpleObservableData<T>& SimpleObservableData<T>::operator+=(const SimpleObservableData<T>& x)
+SimpleObservableData<T>& SimpleObservableData<T>::operator+=(const SimpleObservableData<T>& x)
 {
   using std::sqrt;
   using alps::sqrt;
@@ -507,7 +515,7 @@ inline SimpleObservableData<T>& SimpleObservableData<T>::operator+=(const Simple
 }
 
 template <class T>
-inline SimpleObservableData<T>& SimpleObservableData<T>::operator-=(const SimpleObservableData<T>& x)
+SimpleObservableData<T>& SimpleObservableData<T>::operator-=(const SimpleObservableData<T>& x)
 {
   using std::sqrt;
   using alps::sqrt;
@@ -524,7 +532,7 @@ inline SimpleObservableData<T>& SimpleObservableData<T>::operator-=(const Simple
 
 template <class T>
 template<class X>
-inline SimpleObservableData<T>& SimpleObservableData<T>::operator*=(const SimpleObservableData<X>& x)
+SimpleObservableData<T>& SimpleObservableData<T>::operator*=(const SimpleObservableData<X>& x)
 {
   using std::sqrt;
   using alps::sqrt;
@@ -548,7 +556,7 @@ inline SimpleObservableData<T>& SimpleObservableData<T>::operator*=(const Simple
 
 template <class T>
 template<class X>
-inline SimpleObservableData<T>& SimpleObservableData<T>::operator/=(const SimpleObservableData<X>& x)
+SimpleObservableData<T>& SimpleObservableData<T>::operator/=(const SimpleObservableData<X>& x)
 {
   using std::sqrt;
   using alps::sqrt;
@@ -572,7 +580,6 @@ inline SimpleObservableData<T>& SimpleObservableData<T>::operator/=(const Simple
 
 template <class T>
 template <class OPV, class OPR, class X>
-inline
 void SimpleObservableData<T>::transform(const SimpleObservableData<X>& x,
                                         OPV opv, OPR opr)
 {
@@ -601,10 +608,14 @@ void SimpleObservableData<T>::transform(const SimpleObservableData<X>& x,
     for (int i = 0; i < jack_.size(); ++i)
       jack_[i] = opr(jack_[i], x.jack_[i]);
   }
+  
+  obs_value_traits<convergence_type>::check_for_max(converged_errors_, x.converged_errors());
+  obs_value_traits<convergence_type>::check_for_min(any_converged_errors_, x.any_converged_errors());
+   
 }
 
 template <class T>
-inline ALPS_DUMMY_VOID SimpleObservableData<T>::compact()
+ALPS_DUMMY_VOID SimpleObservableData<T>::compact()
 {
   analyze();
   count_=count();
@@ -615,7 +626,7 @@ inline ALPS_DUMMY_VOID SimpleObservableData<T>::compact()
 }
 
 template <class T> template <class OPV, class OPR>
-inline void SimpleObservableData<T>::transform_linear(OPV opv, OPR opr)
+void SimpleObservableData<T>::transform_linear(OPV opv, OPR opr)
 {
   mean_ = opv(mean_);
   std::transform(values_.begin(), values_.end(), values_.begin(), opv);
@@ -624,7 +635,7 @@ inline void SimpleObservableData<T>::transform_linear(OPV opv, OPR opr)
 }
 
 template <class T> template <class OPV, class OPR>
-inline void SimpleObservableData<T>::transform(OPV opv, OPR opr)
+void SimpleObservableData<T>::transform(OPV opv, OPR opr)
 {
   valid_ = false;
   nonlinear_operations_ = true;
@@ -639,7 +650,7 @@ inline void SimpleObservableData<T>::transform(OPV opv, OPR opr)
 }
 
 template <class T>
-inline void SimpleObservableData<T>::negate()
+void SimpleObservableData<T>::negate()
 {
   if (count()) {
     if (has_minmax_) {
@@ -652,7 +663,7 @@ inline void SimpleObservableData<T>::negate()
 }
 
 template <class T> template <class X>
-inline SimpleObservableData<T>& SimpleObservableData<T>::operator+=(X x)
+SimpleObservableData<T>& SimpleObservableData<T>::operator+=(X x)
 {
   if (count()) {
     if (has_minmax_) {
@@ -667,7 +678,7 @@ inline SimpleObservableData<T>& SimpleObservableData<T>::operator+=(X x)
 }
 
 template <class T> template <class X>
-inline SimpleObservableData<T>& SimpleObservableData<T>::operator-=(X x)
+SimpleObservableData<T>& SimpleObservableData<T>::operator-=(X x)
 {
   if(count()) {
     if (has_minmax_) {
@@ -682,7 +693,7 @@ inline SimpleObservableData<T>& SimpleObservableData<T>::operator-=(X x)
 }
 
 template <class T> template <class X>
-inline void SimpleObservableData<T>::subtract_from(const X& x)
+void SimpleObservableData<T>::subtract_from(const X& x)
 {
   if (count()) {
     if(has_minmax_) {
@@ -696,7 +707,7 @@ inline void SimpleObservableData<T>::subtract_from(const X& x)
 }
 
 template <class T> template <class X>
-inline SimpleObservableData<T>& SimpleObservableData<T>::operator*=(X x)
+SimpleObservableData<T>& SimpleObservableData<T>::operator*=(X x)
 {
   if (count()) {
     error_ *= x;
@@ -712,7 +723,7 @@ inline SimpleObservableData<T>& SimpleObservableData<T>::operator*=(X x)
 }
 
 template <class T> template <class X>
-inline SimpleObservableData<T>& SimpleObservableData<T>::operator/=(X x)
+SimpleObservableData<T>& SimpleObservableData<T>::operator/=(X x)
 {
   if (count()) {
     error_ /= x;
@@ -728,7 +739,7 @@ inline SimpleObservableData<T>& SimpleObservableData<T>::operator/=(X x)
 }
 
 template <class T> template <class X>
-inline void SimpleObservableData<T>::divide(const X& x)
+void SimpleObservableData<T>::divide(const X& x)
 {
   if (count()) {
     error_ = x *error_/mean_/mean_;
@@ -743,7 +754,7 @@ inline void SimpleObservableData<T>::divide(const X& x)
 }
 
 template <class T>
-inline void SimpleObservableData<T>::collect_from(const std::vector<SimpleObservableData<T> >& runs)
+void SimpleObservableData<T>::collect_from(const std::vector<SimpleObservableData<T> >& runs)
 {
   bool got_data = false;
 
@@ -792,6 +803,8 @@ inline void SimpleObservableData<T>::collect_from(const std::vector<SimpleObserv
         changed_ = r->changed_;
         obs_value_traits<result_type>::copy(mean_,r->mean_);
         obs_value_traits<result_type>::copy(error_,r->error_);
+        obs_value_traits<convergence_type>::copy(converged_errors_,r->converged_errors_);
+        obs_value_traits<convergence_type>::copy(any_converged_errors_,r->any_converged_errors_);
         if (has_minmax_) {
           obs_value_traits<value_type>::copy(min_, r->min_);
           obs_value_traits<value_type>::copy(max_, r->max_);
@@ -832,6 +845,8 @@ inline void SimpleObservableData<T>::collect_from(const std::vector<SimpleObserv
           obs_value_traits<value_type>::check_for_min(min_, r->min_);
           obs_value_traits<value_type>::check_for_max(max_, r->max_);
         }
+        obs_value_traits<convergence_type>::check_for_max(converged_errors_, r->converged_errors_);
+        obs_value_traits<convergence_type>::check_for_min(any_converged_errors_, r->any_converged_errors_);
 
         mean_ *= double(count_);
         mean_ += double(r->count_)*r->mean_;
@@ -864,10 +879,6 @@ inline void SimpleObservableData<T>::collect_from(const std::vector<SimpleObserv
           //tau_ = (double(count_)*tau_+double(r->count_)*r->tau_)
           //  / double(count_ + r->count_);
         }
-        if(has_minmax_) {
-          obs_value_traits<value_type>::check_for_min(min_,r->min_);
-          obs_value_traits<value_type>::check_for_max(max_,r->max_);
-        }
 
         thermalcount_ = std::min(thermalcount_, r->thermalcount_);
         discardedmeas_ = std::min(discardedmeas_, r->discardedmeas_);
@@ -896,27 +907,29 @@ inline void SimpleObservableData<T>::collect_from(const std::vector<SimpleObserv
 #ifndef ALPS_WITHOUT_OSIRIS
 
 template <class T>
-inline void SimpleObservableData<T>::extract_timeseries(ODump& dump) const
+void SimpleObservableData<T>::extract_timeseries(ODump& dump) const
 {
   dump << binsize_ << uint32_t(values_.size()) << binsize_ << values_;
 }
 
 template <class T>
-inline void SimpleObservableData<T>::save(ODump& dump) const
+void SimpleObservableData<T>::save(ODump& dump) const
 {
   dump << count_ << mean_ << error_ << variance_ << tau_ << has_variance_
        << has_tau_ << has_minmax_ << thermalcount_ << can_set_thermal_ << min_ << max_
        << binsize_ << discardedmeas_ << discardedbins_ << valid_ << jack_valid_ << changed_
-       << nonlinear_operations_ << values_ << values2_ << jack_;
+       << nonlinear_operations_ << values_ << values2_ << jack_ << converged_errors_ << any_converged_errors_;
 }
 
 template <class T>
-inline void SimpleObservableData<T>::load(IDump& dump)
+void SimpleObservableData<T>::load(IDump& dump)
 {
   dump >> count_ >> mean_ >> error_ >> variance_ >> tau_ >> has_variance_
        >> has_tau_ >> has_minmax_ >> thermalcount_ >> can_set_thermal_ >> min_ >> max_
        >> binsize_ >> discardedmeas_ >> discardedbins_ >> valid_ >> jack_valid_ >> changed_
        >> nonlinear_operations_ >> values_ >> values2_ >> jack_;
+  if (dump.version()!=300 )
+    dump >> converged_errors_ >> any_converged_errors_;
 }
 
 #endif
@@ -1003,11 +1016,15 @@ void SimpleObservableData<T>::analyze() const
 }
 
 template <class T>
-inline void SimpleObservableData<T>::jackknife() const
+void SimpleObservableData<T>::jackknife() const
 {
   fill_jack();
 
   if (jack_.size()) {
+  
+    // if any run is converged the errors will be OK
+    converged_errors_=any_converged_errors_;
+    
     result_type rav;
     obs_value_traits<result_type>::resize_same_as(mean_, jack_[0]);  
     obs_value_traits<result_type>::resize_same_as(error_, jack_[0]);  
@@ -1040,14 +1057,13 @@ inline void SimpleObservableData<T>::jackknife() const
 
 
 template <class T>
-inline uint32_t SimpleObservableData<T>::get_thermalization() const
+uint32_t SimpleObservableData<T>::get_thermalization() const
 {
   return thermalcount_ + discardedmeas_;
 }
 
 template <class T>
-inline ALPS_DUMMY_VOID
-SimpleObservableData<T>::set_thermalization(uint32_t thermal)
+ALPS_DUMMY_VOID SimpleObservableData<T>::set_thermalization(uint32_t thermal)
 {
   if (nonlinear_operations_)
     boost::throw_exception(std::runtime_error("cannot set thermalization after nonlinear operations"));
@@ -1064,7 +1080,7 @@ SimpleObservableData<T>::set_thermalization(uint32_t thermal)
 }
 
 template <class T>
-inline void SimpleObservableData<T>::collect_bins(uint32_t howmany)
+void SimpleObservableData<T>::collect_bins(uint32_t howmany)
 {
   if (nonlinear_operations_)
     boost::throw_exception(std::runtime_error("cannot change bins after nonlinear operations"));
@@ -1094,20 +1110,19 @@ inline void SimpleObservableData<T>::collect_bins(uint32_t howmany)
 }
 
 template <class T>
-inline void SimpleObservableData<T>::set_bin_size(uint32_t s)
+void SimpleObservableData<T>::set_bin_size(uint32_t s)
 {
   collect_bins((s-1)/binsize_+1);
   binsize_=s;
 }
 
 template <class T>
-inline void SimpleObservableData<T>::set_bin_number(uint32_t binnum)
+void SimpleObservableData<T>::set_bin_number(uint32_t binnum)
 {
   collect_bins((values_.size()-1)/binnum+1);
 }
 
 template <class T>
-inline
 const typename SimpleObservableData<T>::result_type& SimpleObservableData<T>::mean() const
 {
   if (count() == 0) boost::throw_exception(NoMeasurementsError());
@@ -1116,7 +1131,6 @@ const typename SimpleObservableData<T>::result_type& SimpleObservableData<T>::me
 }
 
 template <class T>
-inline
 const typename SimpleObservableData<T>::result_type& SimpleObservableData<T>::error() const
 {
   if (count() == 0) boost::throw_exception(NoMeasurementsError());
@@ -1125,7 +1139,23 @@ const typename SimpleObservableData<T>::result_type& SimpleObservableData<T>::er
 }
 
 template <class T>
-inline const typename SimpleObservableData<T>::result_type& SimpleObservableData<T>::variance() const
+const typename SimpleObservableData<T>::convergence_type& SimpleObservableData<T>::converged_errors() const
+{
+  if (count() == 0) boost::throw_exception(NoMeasurementsError());
+  analyze();
+  return converged_errors_;
+}
+
+template <class T>
+const typename SimpleObservableData<T>::convergence_type& SimpleObservableData<T>::any_converged_errors() const
+{
+  if (count() == 0) boost::throw_exception(NoMeasurementsError());
+  analyze();
+  return any_converged_errors_;
+}
+
+template <class T>
+const typename SimpleObservableData<T>::result_type& SimpleObservableData<T>::variance() const
 {
   if (count() == 0) boost::throw_exception(NoMeasurementsError());
   if (!has_variance_)

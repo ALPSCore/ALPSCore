@@ -34,6 +34,7 @@
 #define ALPS_ALEA_ABSTRACTSIMPLEOBSERVABLE_H
 
 #include <alps/alea/observable.h>
+#include <alps/alea/abstractbinning.h>
 #include <alps/alea/recordableobservable.h>
 #include <alps/alea/output_helper.h>
 #include <alps/alea/hdf5.h>
@@ -67,6 +68,8 @@ public:
 
   /// the data type for autocorrelation times
   typedef typename obs_value_traits<T>::time_type time_type;
+  
+  typedef typename obs_value_traits<T>::convergence_type convergence_type;
   //@}
   
   AbstractSimpleObservable(const std::string& name="") : Observable(name) {}
@@ -86,6 +89,7 @@ public:
   
   /// the error
   virtual result_type error() const =0;
+  virtual convergence_type converged_errors() const =0;
 
   /// is information about the minimum and maximum value available?
   
@@ -198,13 +202,16 @@ void AbstractSimpleObservable<T>::write_xml_scalar(oxstream& oxs, const boost::f
     oxs << start_tag("COUNT") << no_linebreak << count() << end_tag("COUNT");
 
     oxs << start_tag("MEAN") << no_linebreak;
-    if (mm != "") oxs << attribute("method", mm);
+    if (mm != "") 
+      oxs << attribute("method", mm);
+ 
     int prec=int(4-std::log10(std::abs(error()/mean())));
     prec = (prec>=3 && prec<20 ? prec : 8);
     oxs << precision(mean(),prec) << end_tag("MEAN");
 
-    oxs << start_tag("ERROR") << no_linebreak;
-    if (em != "") oxs << attribute("method", em);
+    oxs << start_tag("ERROR") << attribute("converged", convergence_to_text(converged_errors())) << no_linebreak;
+    if (em != "") 
+      oxs << attribute("method", em);
     oxs << precision(error(), 3) << end_tag("ERROR");
 
     if (has_variance()) {
@@ -257,6 +264,7 @@ void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, const boost::f
     std::string tm = evaluation_method(Tau);
     result_type mean_(mean());
     result_type error_(error());
+    convergence_type conv_(converged_errors());
     result_type variance_;
     result_type tau_;
     if(has_tau())
@@ -289,7 +297,7 @@ void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, const boost::f
       oxs << precision(obs_value_traits<result_type>::slice_value(mean_, it), prec)
           << end_tag("MEAN");
       
-      oxs << start_tag("ERROR") << no_linebreak;
+      oxs << start_tag("ERROR") << attribute("converged", convergence_to_text(obs_value_traits<convergence_type>::slice_value(conv_,it))) << no_linebreak;
       if (em != "") oxs << attribute("method", em);
       oxs << precision(obs_value_traits<result_type>::slice_value(error_, it), 3)
           << end_tag("ERROR");

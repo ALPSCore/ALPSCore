@@ -34,8 +34,7 @@
 #define ALPS_ALEA_SIMPLEBINNING_H
 
 #include <alps/config.h>
-#include <alps/alea/observable.h>
-#include <alps/alea/simpleobservable.h>
+#include <alps/alea/obsvalue.h>
 #include <alps/alea/abstractbinning.h>
 #include <alps/alea/nan.h>
 #include <alps/xml.h>
@@ -58,6 +57,7 @@ class SimpleBinning : public AbstractBinning<T>
   typedef typename obs_value_traits<T>::size_type size_type;
   typedef typename obs_value_traits<T>::count_type count_type;
   typedef typename obs_value_traits<T>::result_type result_type;
+  typedef typename obs_value_traits<T>::convergence_type convergence_type;
 
   BOOST_STATIC_CONSTANT(bool, has_tau=true);
   BOOST_STATIC_CONSTANT(int, magic_id=2);
@@ -72,6 +72,7 @@ class SimpleBinning : public AbstractBinning<T>
   result_type mean() const;
   result_type variance() const;
   result_type error(uint32_t bin_used=std::numeric_limits<uint32_t>::max()) const;
+  convergence_type converged_errors() const;
   time_type tau() const; // autocorrelation time
     
   uint32_t binning_depth() const; 
@@ -171,8 +172,8 @@ inline void SimpleBinning<T>::operator<<(const T& x)
   last_bin_[0]=obs_value_cast<result_type,value_type>(x);
   sum_[0]+=obs_value_cast<result_type,value_type>(x);
   sum2_[0]+=obs_value_cast<result_type,value_type>(x)*obs_value_cast<result_type,value_type>(x);
-  obs_value_traits<T>::check_for_max(x,max_);
-  obs_value_traits<T>::check_for_min(x,min_);
+  obs_value_traits<T>::check_for_max(max_,x);
+  obs_value_traits<T>::check_for_min(min_,x);
 
   uint32_t i=count_;
   count_++;
@@ -220,6 +221,48 @@ template <class T>
 inline uint32_t SimpleBinning<T>::binning_depth() const
 {
   return ( int(sum_.size())-7 < 1 ) ? 1 : int(sum_.size())-7;
+}
+
+
+template <class T>
+typename SimpleBinning<T>::convergence_type SimpleBinning<T>::converged_errors() const
+{
+  convergence_type conv;
+  result_type err=error();
+  obs_value_traits<T>::resize_same_as(conv,err);
+  const int range=3;
+  typename obs_value_traits<convergence_type>::slice_iterator it;
+  if (binning_depth()<range) {
+    for (it= obs_value_traits<convergence_type>::slice_begin(conv); 
+       it!= obs_value_traits<convergence_type>::slice_end(conv); ++it)
+      obs_value_traits<convergence_type>::slice_value(conv,it) = MAYBE_CONVERGED;
+  }
+  else {
+    for (it= obs_value_traits<convergence_type>::slice_begin(conv); 
+       it!= obs_value_traits<convergence_type>::slice_end(conv); ++it)
+      obs_value_traits<convergence_type>::slice_value(conv,it) = CONVERGED;
+    
+    for (int i=binning_depth()-range;i<binning_depth()-1;++i) {
+      result_type this_err(error(i));
+      for (it= obs_value_traits<convergence_type>::slice_begin(conv); 
+           it!= obs_value_traits<convergence_type>::slice_end(conv); ++it) {
+        if (obs_value_traits<result_type>::slice_value(this_err,it) >= 
+            obs_value_traits<result_type>::slice_value(err,it))
+          obs_value_traits<convergence_type>::slice_value(conv,it)=CONVERGED;
+        else if (obs_value_traits<result_type>::slice_value(this_err,it) <0.9* 
+            obs_value_traits<result_type>::slice_value(err,it))
+          obs_value_traits<convergence_type>::slice_value(conv,it)=NOT_CONVERGED;
+        else if (obs_value_traits<result_type>::slice_value(this_err,it) <0.9* 
+            obs_value_traits<result_type>::slice_value(err,it))
+          obs_value_traits<convergence_type>::slice_value(conv,it)=NOT_CONVERGED;
+        else if (obs_value_traits<result_type>::slice_value(this_err,it) <0.95* 
+            obs_value_traits<result_type>::slice_value(err,it)  &&
+            obs_value_traits<convergence_type>::slice_value(conv,it)!=NOT_CONVERGED)
+          obs_value_traits<convergence_type>::slice_value(conv,it)=MAYBE_CONVERGED;
+      }
+    }
+  }
+  return conv;
 }
 
 
@@ -343,6 +386,10 @@ void SimpleBinning<T>::output_scalar(std::ostream& out) const
   {
     out << ": " << std::setprecision(6) << mean() << " +/- " << std::setprecision(3) << error() << "; tau = " << std::setprecision(3)
         << tau() << std::setprecision(6) << std::endl;
+    if (converged_errors()==MAYBE_CONVERGED)
+      out << " WARNING: check error convergence";
+    if (converged_errors()==NOT_CONVERGED)
+      out << " WARNING: ERRORS NOT CONVERGED!!!";
     if (binning_depth()>1)
     { 
       // detailed errors
@@ -364,7 +411,8 @@ void SimpleBinning<T>::write_scalar_xml(oxstream& oxs) const {
     oxs << start_tag("BINNED") << attribute("size",boost::lexical_cast<std::string,int>(1<<i))
         << no_linebreak << start_tag("COUNT") << count()/(1<<i) << end_tag("COUNT")
         << start_tag("MEAN") << attribute("method", "simple") << no_linebreak << precision(binmean(i), prec) << end_tag("MEAN")
-        << start_tag("ERROR") << attribute("method", "simple") << no_linebreak << precision(error(i), 3) << end_tag("ERROR")
+        << start_tag("ERROR") << attribute("method", "simple") << attribute("converged", convergence_to_text(converged_errors())) 
+        << no_linebreak << precision(error(i), 3) << end_tag("ERROR")
         << end_tag("BINNED");
   }
 }
@@ -377,8 +425,10 @@ void SimpleBinning<T>::write_vector_xml(oxstream& oxs, IT it) const {
     prec = (prec>=3 && prec<20 ? prec : 16);
     oxs << start_tag("BINNED") << attribute("size",boost::lexical_cast<std::string,int>(1<<i))
               << no_linebreak << start_tag("COUNT") << count()/(1<<i) << end_tag("COUNT")
-        << start_tag("MEAN") << attribute("method", "simple") << no_linebreak << precision(obs_value_traits<result_type>::slice_value(binmean(i),it), 8) << end_tag("MEAN")
-        << start_tag("ERROR") << attribute("method", "simple") << no_linebreak << precision(obs_value_traits<result_type>::slice_value(error(i),it), 3) << end_tag("ERROR")
+        << start_tag("MEAN") << attribute("method", "simple") 
+        << no_linebreak << precision(obs_value_traits<result_type>::slice_value(binmean(i),it), 8) << end_tag("MEAN")
+        << start_tag("ERROR") << attribute("method", "simple") << attribute("converged", convergence_to_text(obs_value_traits<convergence_type>::slice_value(converged_errors(),it)))
+        << no_linebreak << precision(obs_value_traits<result_type>::slice_value(error(i),it), 3) << end_tag("ERROR")
         << end_tag("BINNED");
   }
 }
@@ -392,6 +442,7 @@ inline void SimpleBinning<T>::output_vector(std::ostream& out) const
     result_type mean_(mean());
     result_type error_(error());
     time_type tau_(tau());
+    convergence_type conv_(converged_errors());
     std::vector<result_type> errs_(binning_depth(),error_);
     for (int i=0;i<binning_depth();++i)
       errs_[i]=error(i);
@@ -404,7 +455,12 @@ inline void SimpleBinning<T>::output_vector(std::ostream& out) const
       out << "Entry[" << obs_value_traits<result_type>::slice_name(mean_,sit) << "]: " 
           << obs_value_traits<result_type>::slice_value(mean_,sit) << " +/- " 
           << obs_value_traits<result_type>::slice_value(error_,sit) << "; tau = "
-          << obs_value_traits<time_type>::slice_value(tau_,sit) << std::endl;
+          << obs_value_traits<time_type>::slice_value(tau_,sit);
+      if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==MAYBE_CONVERGED)
+        out << " WARNING: check error convergence";
+      if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==NOT_CONVERGED)
+        out << " WARNING: ERRORS NOT CONVERGED!!!";
+      out << std::endl;
       if (binning_depth()>1)
         {
           // detailed errors

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2004 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
@@ -66,6 +66,7 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
   typedef T value_type;
   typedef typename obs_value_traits<T>::time_type time_type;
   typedef typename AbstractSimpleObservable<T>::result_type result_type;
+  typedef typename obs_value_traits<T>::convergence_type convergence_type;
   typedef std::size_t count_type;
   
   enum { version = obs_value_traits<T>::magic_id + (6 << 16) };
@@ -116,6 +117,7 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
   result_type mean() const { return value(); }
   result_type variance() const { collect(); return all_.variance(); }
   result_type error() const { collect(); return all_.error(); }
+  convergence_type converged_errors() const { collect(); return all_.converged_errors(); }
   time_type tau() const { collect(); return all_.tau(); }; 
   
   count_type bin_number() const { collect(); return all_.bin_number(); }
@@ -463,6 +465,10 @@ void SimpleObservableEvaluator<T>::output_scalar(std::ostream& out) const
     out << ": " << std::setprecision(6) << mean() << " +/- " << std::setprecision(3) << error();
     if(has_tau())
       out << std::setprecision(3) <<  "; tau = " << tau();
+    if (converged_errors()==MAYBE_CONVERGED)
+      out << " WARNING: check error convergence";
+    if (converged_errors()==NOT_CONVERGED)
+      out << " WARNING: ERRORS NOT CONVERGED!!!";
     out << std::setprecision(6) << std::endl;
   }
 }
@@ -476,6 +482,7 @@ void SimpleObservableEvaluator<T>::output_vector(std::ostream& out) const
     out << std::endl;
     result_type value_(mean());
     result_type error_(error());
+    convergence_type conv_(converged_errors());
     time_type tau_;
     if (has_tau())
       obs_value_traits<value_type>::copy(tau_,tau());
@@ -489,6 +496,10 @@ void SimpleObservableEvaluator<T>::output_vector(std::ostream& out) const
           << obs_value_traits<result_type>::slice_value(error_,sit);
       if(has_tau())
         out << "; tau = " << obs_value_traits<time_type>::slice_value(tau_,sit);
+      if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==MAYBE_CONVERGED)
+        out << " WARNING: check error convergence";
+      if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==NOT_CONVERGED)
+        out << " WARNING: ERRORS NOT CONVERGED!!!";
       out << std::endl;
     }
   }

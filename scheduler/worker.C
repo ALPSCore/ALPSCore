@@ -102,6 +102,8 @@ void Worker::load_worker(IDump& dump)
     boost::throw_exception(std::runtime_error("dump does not contain a run"));
   int32_t u;
   dump >> u >> version;
+  dump.set_version(version);
+
   if(version>MCDump_worker_version) {
     std::string msg = "The run on dump is version " 
         + boost::lexical_cast<std::string,int32_t>(version) + 

@@ -35,6 +35,7 @@
 
 #include <alps/config.h>
 #include <alps/alea/observable.h>
+#include <alps/alea/simpleobservable.h>
 #include <alps/alea/simplebinning.h>
 
 #ifdef ALPS_HAVE_VALARRAY
