@@ -1,6 +1,7 @@
 Makefile
 detailedbinning
 simpleobseval
+signed
 testobservableset
 *.ok
 .DS_Store
