@@ -5,7 +5,7 @@
 *
 * $Id$
 *
-* Copyright (C) 2003 by Matthias Troyer <wistaria@comp-phys.org>
+* Copyright (C) 2003 by Matthias Troyer <troyer@comp-phys.org>
 *
 * This software is part of the ALPS library, published under the 
 * ALPS Library License; you can use, redistribute it and/or modify 
