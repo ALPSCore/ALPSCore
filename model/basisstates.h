@@ -217,7 +217,7 @@ inline std::ostream& operator<<(std::ostream& out, const alps::basis_states<I,S,
     //out << *it;
     unsigned int n=it->size();
     for (unsigned int i=0; i!=n;++i)
-      out << q.get_basis()[i][(*it)[i]] << " ";
+      out << q.basis()[i][(*it)[i]] << " ";
 //      out << (*it)[i] << " ";
     out << " ]\n";
   }
