@@ -66,7 +66,6 @@ public:
 private:
   static random_type rng_;
 public:
-  typedef boost::mt19937 random_type;
   static boost::variate_generator<random_type&,boost::uniform_real<> > random;
   static boost::variate_generator<random_type&,boost::normal_distribution<> > gaussian_random;
   static void seed();
