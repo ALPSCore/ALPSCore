@@ -120,9 +120,11 @@ protected:
   double random_real(double a=0., double b=1.) 
   { return boost::variate_generator<random_type&,boost::uniform_real<> >(random,boost::uniform_real<>(a,b))();}
   int random_int(int a, int b) 
-  { return boost::variate_generator<random_type&,boost::uniform_int<> >(random,boost::uniform_int<>(a,b))();}
+  { return a+int((b-a+1)*random());}
+  //{ return boost::variate_generator<random_type&,boost::uniform_int<> >(random,boost::uniform_int<>(a,b))();}
   int random_int(int n) 
-  { return boost::variate_generator<random_type&,boost::uniform_int<> >(random,boost::uniform_int<>(0,n-1))();}
+  { return int(n*random());}
+  //{ return random_int(0,n-1);}
 
   
   int node;
