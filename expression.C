@@ -294,6 +294,10 @@ bool Term::can_evaluate(const Evaluator& p) const
 
 void Term::output(std::ostream& out) const
 {
+  if (terms_.empty()) {
+    out << "0";
+    return;    
+  }
   if(is_negative())
     out << " - ";
   terms_[0].output(out);

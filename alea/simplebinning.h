@@ -356,7 +356,7 @@ void SimpleBinning<T>::output_scalar(std::ostream& out) const
 template <class T>
 void SimpleBinning<T>::write_scalar_xml(oxstream& oxs) const { 
   for (int i = 0; i < binning_depth(); ++i) {
-    double prec=4-std::log10(std::abs(error(i)/binmean(i)));
+    int prec=int(4-std::log10(std::abs(error(i)/binmean(i))));
     prec = (prec>=3 && prec<20 ? prec : 16);
     oxs << start_tag("BINNED") << attribute("size",boost::lexical_cast<std::string,int>(1<<i))
         << no_linebreak << start_tag("COUNT") << count()/(1<<i) << end_tag
@@ -369,8 +369,8 @@ void SimpleBinning<T>::write_scalar_xml(oxstream& oxs) const {
 template <class T> template <class IT> 
 void SimpleBinning<T>::write_vector_xml(oxstream& oxs, IT it) const {
   for (int i = 0; i < binning_depth() ; ++i) {
-    double prec=4-std::log10(std::abs(obs_value_traits<result_type>::slice_value(error(i),it)
-                            /obs_value_traits<result_type>::slice_value(binmean(i),it)));
+    int prec=int(4-std::log10(std::abs(obs_value_traits<result_type>::slice_value(error(i),it)
+                            /obs_value_traits<result_type>::slice_value(binmean(i),it))));
     prec = (prec>=3 && prec<20 ? prec : 16);
     oxs << start_tag("BINNED") << attribute("size",boost::lexical_cast<std::string,int>(1<<i))
 	      << no_linebreak << start_tag("COUNT") << count()/(1<<i) << end_tag
