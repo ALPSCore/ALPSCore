@@ -73,7 +73,7 @@ public:
   }
   void examine_edge(edge_descriptor, const Graph&) {}
   void tree_edge(edge_descriptor e, const Graph& g) {
-    map_[boost::target(e,g)]=map_[boost::source(e,g)]*bond_sign_[e];
+    map_[boost::target(e,g)]=int(map_[boost::source(e,g)]*bond_sign_[e]);
   }
   void back_edge(edge_descriptor e, const Graph& g) { check(e, g); }
   void forward_or_cross_edge(edge_descriptor e, const Graph& g) {
