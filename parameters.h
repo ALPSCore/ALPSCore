@@ -148,7 +148,7 @@ public:
   Parameters& operator<<(const Parameters& params);
   void copy_undefined(const Parameters& p);
   
-  void read_xml(XMLTag tag, std::istream& xml);
+  void read_xml(XMLTag tag, std::istream& xml,bool ignore_duplicates=false);
   void extract_from_xml(std::istream& xml);
 
 private:

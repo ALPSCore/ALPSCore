@@ -159,7 +159,7 @@ protected:
   bool finished_;
 
 private:
-  void parse_task_file();
+  void parse_task_file(bool=false);
   
   boost::filesystem::path infilename;
   bool started_; // is the task running?

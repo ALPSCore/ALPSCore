@@ -80,7 +80,7 @@ void Parameters::copy_undefined(const Parameters& p)
 }
 
 
-void Parameters::read_xml(XMLTag tag, std::istream& xml)
+void Parameters::read_xml(XMLTag tag, std::istream& xml,bool ignore_duplicates)
 {
     if (tag.name!="PARAMETERS")
       boost::throw_exception(std::runtime_error("<PARAMETERS> element expected"));
@@ -93,7 +93,7 @@ void Parameters::read_xml(XMLTag tag, std::istream& xml)
       std::string name = tag.attributes["name"];
       if(name=="")
 	boost::throw_exception(std::runtime_error("nonempty name attribute expected in <PARAMETER>"));
-      push_back(name, parse_content(xml));
+      push_back(name, parse_content(xml),ignore_duplicates);
       tag = parse_tag(xml);
       if(tag.name!="/PARAMETER")
 	boost::throw_exception(std::runtime_error("</PARAMETER> expected at end of <PARAMETER> element"));

@@ -63,13 +63,14 @@ Task::Task(const ProcessList& w,const boost::filesystem::path& filename)
     started_(false),
     finished_(false)
 {
+  parse_task_file(true);
 }
 
 Task::~Task()
 {
 }
 
-void Task::parse_task_file()
+void Task::parse_task_file(bool read_parms_only)
 {
   boost::filesystem::ifstream infile(infilename);
   
@@ -83,15 +84,16 @@ void Task::parse_task_file()
     skip_element(infile,tag);
     tag=parse_tag(infile,true);
   }
-  parms.read_xml(tag,infile);
+  parms.read_xml(tag,infile,true);
   if (!parms.defined("SEED"))
     parms["SEED"]=0;
-    
-  // scan for first worker element (e.g. <MCRUN> or <REALIZATION>)
-  tag=parse_tag(infile,true);
-  while (tag.name != closingtag) {
-    handle_tag(infile,tag);
+  if (!read_parms_only) {
+    // scan for first worker element (e.g. <MCRUN> or <REALIZATION>)
     tag=parse_tag(infile,true);
+    while (tag.name != closingtag) {
+      handle_tag(infile,tag);
+      tag=parse_tag(infile,true);
+    }
   }
 }
 
