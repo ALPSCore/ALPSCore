@@ -184,13 +184,15 @@ void GraphUnitCell::write_xml(oxstream& xml) const
   typedef boost::graph_traits<graph_type>::edge_iterator edge_iterator;
   for (edge_iterator it=boost::edges(graph_).first;
                      it!=boost::edges(graph_).second;++it) {
-    xml << start_tag("EDGE") << attribute("type", boost::get(edge_type_t(),graph_,*it));
-    xml << start_tag("SOURCE") << no_linebreak
+    xml << start_tag("EDGE")
+	<< attribute("type", boost::get(edge_type_t(),graph_,*it))
+	<< no_linebreak;
+    xml << start_tag("SOURCE")
 	<< attribute("vertex",boost::source(*it,graph_)+1);
     if (boost::get(source_offset_t(),graph_,*it).size())
       xml << attribute("offset", vector_writer(boost::get(source_offset_t(),graph_,*it)));
     xml << end_tag("SOURCE");
-    xml << start_tag("TARGET") << no_linebreak
+    xml << start_tag("TARGET")
 	<< attribute("vertex", boost::target(*it,graph_)+1);
     if (boost::get(target_offset_t(),graph_,*it).size())
       xml << attribute("offset", vector_writer(boost::get(target_offset_t(),graph_,*it)));
