@@ -42,8 +42,6 @@ template<class I>
 class SiteTermDescriptor
 {
 public:
-  typedef std::map<std::string,OperatorDescriptor<I> > operator_map;
-
   SiteTermDescriptor() : type_(-2) {}
   SiteTermDescriptor(const std::string& t) : type_(-2), term_(t) {}
   SiteTermDescriptor(const Term& t) : type_(-2),
@@ -55,7 +53,7 @@ public:
   bool match_type(int type) const { return type_==-1 || type==type_;}
   const std::string& term() const { return term_;}
   template <class T>
-  boost::multi_array<std::pair<T,bool>,2> matrix(const SiteBasisDescriptor<I>&, const operator_map&,
+  boost::multi_array<std::pair<T,bool>,2> matrix(const SiteBasisDescriptor<I>&,
                                           const Parameters& =Parameters()) const;
 private:
   int type_;
@@ -71,20 +69,16 @@ private:
   typedef SiteOperatorEvaluator<I, STATE> SELF_;
 
 public:
-  typedef typename super_type::operator_map operator_map;
-  typedef typename super_type::operator_iterator operator_iterator;
   typedef STATE state_type;
 
   SiteOperatorEvaluator(const state_type& s, const SiteBasisDescriptor<I>& b,
-                        const Parameters& p, const operator_map& o)
+                        const Parameters& p)
     : super_type(p,o), state_(s), basis_(b), fermionic_(false) {}
   bool can_evaluate(const std::string&) const;
   Expression partial_evaluate(const std::string& name) const;
   const state_type& state() const { return state_;}
   bool fermionic() const { return fermionic_;}
   
-  bool has_operator(const std::string& name) const
-  { return basis_.has_operator(name) || super_type::has_operator(name); }
 private:
   mutable state_type state_;
   const SiteBasisDescriptor<I>& basis_;
@@ -95,7 +89,7 @@ private:
 template <class I, class STATE>
 bool SiteOperatorEvaluator<I, STATE>::can_evaluate(const std::string& name) const
 {
-  if (has_operator(name)) {
+  if (basis_.has_operator(name)) {
     SELF_ eval(*this);
     return eval.partial_evaluate(name).can_evaluate(ParameterEvaluator(*this));
   }
@@ -105,10 +99,10 @@ bool SiteOperatorEvaluator<I, STATE>::can_evaluate(const std::string& name) cons
 template <class I, class STATE>
 Expression SiteOperatorEvaluator<I, STATE>::partial_evaluate(const std::string& name) const
 {
-  if (has_operator(name)) {  // evaluate operator
+  if (basis_.has_operator(name)) {  // evaluate operator
     Expression e;
     bool fermionic;
-    boost::tie(state_,e,fermionic) = basis_.apply(name,state_, ParameterEvaluator(*this),super_type::ops_);
+    boost::tie(state_,e,fermionic) = basis_.apply(name,state_, ParameterEvaluator(*this));
     if (fermionic)
       fermionic_=!fermionic_;
     return e;
@@ -118,9 +112,9 @@ Expression SiteOperatorEvaluator<I, STATE>::partial_evaluate(const std::string& 
 
 
 template <class I, class T>
-boost::multi_array<T,2> get_matrix(T,const SiteTermDescriptor<I>& m, const SiteBasisDescriptor<I>& basis1, const typename SiteTermDescriptor<I>::operator_map& ops, const Parameters& p=Parameters())
+boost::multi_array<T,2> get_matrix(T,const SiteTermDescriptor<I>& m, const SiteBasisDescriptor<I>& basis1, const Parameters& p=Parameters())
 {
-  boost::multi_array<std::pair<T,bool>,2> f_matrix = m.template matrix<T>(basis1,ops,p);
+  boost::multi_array<std::pair<T,bool>,2> f_matrix = m.template matrix<T>(basis1,p);
   boost::multi_array<T,2> matrix(boost::extents[f_matrix.shape()[0]][f_matrix.shape()[1]]);
   for (int i=0;i<f_matrix.shape()[0];++i)
     for (int j=0;j<f_matrix.shape()[1];++j)
@@ -132,16 +126,14 @@ boost::multi_array<T,2> get_matrix(T,const SiteTermDescriptor<I>& m, const SiteB
 }
 
 template <class I, class T>
-boost::multi_array<std::pair<T,bool>,2> get_fermionic_matrix(T,const SiteTermDescriptor<I>& m, const SiteBasisDescriptor<I>& basis1, const typename SiteTermDescriptor<I>::operator_map& ops, const Parameters& p=Parameters())
+boost::multi_array<std::pair<T,bool>,2> get_fermionic_matrix(T,const SiteTermDescriptor<I>& m, const SiteBasisDescriptor<I>& basis1, const Parameters& p=Parameters())
 {
-  return m.template matrix<T>(basis1,ops,p);
+  return m.template matrix<T>(basis1,p);
 }
 
 
 template <class I> template <class T> boost::multi_array<std::pair<T,bool>,2>
-SiteTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b,
-                              const operator_map& ops,
-                              const Parameters& p) const
+SiteTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b, const Parameters& p) const
 {
   SiteBasisDescriptor<I> basis(b);
   basis.set_parameters(p);
@@ -161,7 +153,7 @@ SiteTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b,
     for (int i=0;i<states.size();++i) {
     //calculate expression applied to state *it and store it into matrix
       for (typename Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
-            SiteOperatorEvaluator<I> evaluator(states[i], basis,parms,ops);
+            SiteOperatorEvaluator<I> evaluator(states[i], basis,parms);
         Term term(*tit);
         term.partial_evaluate(evaluator);
         unsigned int j = states.index(evaluator.state());

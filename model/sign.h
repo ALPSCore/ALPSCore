@@ -149,7 +149,7 @@ bool is_frustrated(const G& graph, M bond_map)
 }
                                  
 template <class I, class G>
-bool has_sign_problem(const HamiltonianDescriptor<I>& ham, const graph_helper<G>& lattice, const std::map<std::string,OperatorDescriptor<I> >& ops, const Parameters& p) {
+bool has_sign_problem(const HamiltonianDescriptor<I>& ham, const graph_helper<G>& lattice, const Parameters& p) {
   typedef G graph_type;
   const graph_type& graph(lattice.graph());
   
@@ -165,7 +165,7 @@ bool has_sign_problem(const HamiltonianDescriptor<I>& ham, const graph_helper<G>
     int stype2 = lattice.site_type(lattice.target(*it));
     if (bond_sign[boost::make_tuple(btype,stype1,stype2)]==0) {
       boost::multi_array<double,4> mat = get_matrix(0.,ham.bond_term(btype),ham.basis().site_basis(stype1),
-                                        ham.basis().site_basis(stype2),ops,p);
+                                        ham.basis().site_basis(stype2),p);
       int dim1 = mat.shape()[0];
       int dim2 = mat.shape()[1];
       int sign=0;

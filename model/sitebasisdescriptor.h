@@ -55,8 +55,9 @@ public:
 
   SiteBasisDescriptor() : num_states_(0) { }
   SiteBasisDescriptor(const std::string& name,
-                      const Parameters& parms = Parameters())
-    : parms_(parms), read_parms_(parms), name_(name), num_states_(0) { }
+                      const Parameters& parms = Parameters(),
+                      const operator_map& ops = operator_map())
+    : parms_(parms), read_parms_(parms), name_(name), num_states_(0),operators_(ops) { }
   SiteBasisDescriptor(const XMLTag&, std::istream&);
   void write_xml(oxstream&) const;
 
@@ -76,8 +77,8 @@ public:
   { return operators_.find(name) != operators_.end(); }
   
   template <class STATE>
-  boost::tuple<STATE, Expression,bool> apply(const std::string& name, STATE state, const ParameterEvaluator& eval, const operator_map& operators) const;
-  bool is_fermionic(const std::string& name,const operator_map& operators) const;
+  boost::tuple<STATE, Expression,bool> apply(const std::string& name, STATE state, const ParameterEvaluator& eval) const;
+  bool is_fermionic(const std::string& name) const;
 private:
   mutable bool valid_;
   bool evaluate() const;
@@ -92,29 +93,22 @@ private:
 // ------------------------------- implementation ----------------------------------
 
 template <class I>
-bool SiteBasisDescriptor<I>::is_fermionic(const std::string& name, const operator_map& ops) const 
+bool SiteBasisDescriptor<I>::is_fermionic(const std::string& name) const 
 {
   operator_iterator op=operators_.find(name);
-  if(op==operators_.end()) {
-    Expression e;
-    op = ops.find(name);
-    if (op==ops.end())
+  if(op==operators_.end())
       return false;
-  }
   return op->second.is_fermionic(*this);
 }
 
 template <class I>
 template <class STATE>
 boost::tuple<STATE, Expression,bool> 
-SiteBasisDescriptor<I>::apply(const std::string& name, STATE state, const ParameterEvaluator& eval, const operator_map& ops) const 
+SiteBasisDescriptor<I>::apply(const std::string& name, STATE state, const ParameterEvaluator& eval) const 
 {
   operator_iterator op=operators_.find(name);
-  if(op==operators_.end()) {
-    op = ops.find(name);
-    if (op==ops.end())
-      return boost::make_tuple(state,Expression(),false);
-  }
+  if(op==operators_.end())
+    return boost::make_tuple(state,Expression(),false);
   return op->second.apply(state,*this,eval);
 }
 

@@ -59,14 +59,11 @@ public:
   
   bool has_basis(const std::string& name) const;
   bool has_site_basis(const std::string& name) const;
-  bool has_operator(const std::string& name) const;
   bool has_hamiltonian(const std::string& name) const;
   
   const SiteBasisDescriptor<short>& get_site_basis(const std::string& name) const;
   const BasisDescriptor<short>& get_basis(const std::string& name) const;
-  const OperatorDescriptor<short>& get_operator(const std::string& name) const;
   const HamiltonianDescriptor<short>& get_hamiltonian(const std::string& name) const;
-  const OperatorDescriptorMap& operators() const { return operators_;}
 
 private:
   typedef std::map<std::string,SiteBasisDescriptor<short> > SiteBasisDescriptorMap;
@@ -75,7 +72,6 @@ private:
 
   SiteBasisDescriptorMap sitebases_;
   BasisDescriptorMap bases_;
-  OperatorDescriptorMap operators_;
   HamiltonianDescriptorMap hamiltonians_;
 };
 

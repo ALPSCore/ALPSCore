@@ -31,11 +31,8 @@
 #ifndef ALPS_MODEL_OPERATOR_H
 #define ALPS_MODEL_OPERATOR_H
 
-#include <alps/model/operatordescriptor.h>
 #include <alps/expression.h>
 #include <alps/parameters.h>
-#include <alps/evaluator.h>
-#include <vector>
 
 namespace alps {
 
@@ -43,26 +40,18 @@ template <class I>
 class OperatorEvaluator : public ParameterEvaluator
 {
 public:
-  typedef typename OperatorDescriptor<I>::operator_map operator_map;
-  typedef typename operator_map::const_iterator operator_iterator;
   typedef ParameterEvaluator super_type;
   typedef super_type::value_type value_type;
   
-  OperatorEvaluator(const Parameters& p, const operator_map& o)
-    : ParameterEvaluator(p), ops_(o) {}
+  OperatorEvaluator(const Parameters& p)
+    : ParameterEvaluator(p) {}
   Direction direction() const { return right_to_left; }
-
-  bool has_operator(const std::string& name) const
-  { return ops_.find(name) != ops_.end();}
 
   value_type evaluate(const std::string& name) const
   { return partial_evaluate(name).value();}
 
   value_type evaluate_function(const std::string& name, const Expression& arg) const
   { return partial_evaluate_function(name,arg).value();}
-  
-protected:
-  const operator_map& ops_;
 };
 
 } // namespace alps

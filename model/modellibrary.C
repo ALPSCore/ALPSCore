@@ -63,7 +63,7 @@ void ModelLibrary::read_xml(const XMLTag& intag, std::istream& p)
      else if (tag.name=="BASIS")
       bases_[tag.attributes["name"]]=BasisDescriptor<short>(tag,p,sitebases_);
     else if (tag.name=="OPERATOR")
-      operators_[tag.attributes["name"]]=OperatorDescriptor<short>(tag,p);
+      boost::throw_exception(std::runtime_error("Global operator descriptions were removed after ALPS 1.2"));
     else if (tag.name=="HAMILTONIAN")
       hamiltonians_[tag.attributes["name"]]=HamiltonianDescriptor<short>(tag,p,bases_);
     else
@@ -78,8 +78,6 @@ void ModelLibrary::write_xml(oxstream& out) const
   for (SiteBasisDescriptorMap::const_iterator it=sitebases_.begin();it!=sitebases_.end();++it)
     out << it->second;
   for (BasisDescriptorMap::const_iterator it=bases_.begin();it!=bases_.end();++it)
-    out << it->second;
-  for (OperatorDescriptorMap::const_iterator it=operators_.begin();it!=operators_.end();++it)
     out << it->second;
   for (HamiltonianDescriptorMap::const_iterator it=hamiltonians_.begin();it!=hamiltonians_.end();++it)
     out << it->second;
@@ -102,11 +100,6 @@ bool ModelLibrary::has_site_basis(const std::string& name) const
 }
 
 
-bool ModelLibrary::has_operator(const std::string& name) const
-{
-  return (operators_.find(name)!=operators_.end());
-}
-
 const BasisDescriptor<short>& ModelLibrary::get_basis(const std::string& name) const
 {
   if (!has_basis(name))
@@ -126,13 +119,6 @@ const SiteBasisDescriptor<short>& ModelLibrary::get_site_basis(const std::string
   if (!has_site_basis(name))
     boost::throw_exception(std::runtime_error("No site basis named '" +name+"' found in model library"));
   return sitebases_.find(name)->second;
-}
-
-const OperatorDescriptor<short>& ModelLibrary::get_operator(const std::string& name) const
-{
-  if (!has_operator(name))
-    boost::throw_exception(std::runtime_error("No operator named '" +name+"' found in model library"));
-  return operators_.find(name)->second;
 }
 
 } // namespace alps

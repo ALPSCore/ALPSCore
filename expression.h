@@ -814,6 +814,6 @@ bool is_zero(const expression::Term<T>& x)
 
 } // end namespace alps
 
-#include <alps/expression2_impl.h>
+#include <alps/expression_impl.h>
 
-#endif // ! ALPS_EXPRESSION2_H
+#endif // ! ALPS_EXPRESSION_H

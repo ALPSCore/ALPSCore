@@ -51,10 +51,6 @@ public:
     model_.set_parameters(p);
   }
   
-  const ModelLibrary::OperatorDescriptorMap& operators() const { 
-    return model_library_.operators();
-  }
-  
   HamiltonianDescriptor<I>& model() { return model_;}
   const HamiltonianDescriptor<I>& model() const { return model_;}
   basis_descriptor_type& basis() { return model().basis();}

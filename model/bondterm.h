@@ -42,8 +42,6 @@ template<class I>
 class BondTermDescriptor
 {
 public:
-  typedef std::map<std::string,OperatorDescriptor<I> > operator_map;
-
   BondTermDescriptor() : type_(-2) {}
   BondTermDescriptor(const std::string& term)
     : type_(-2), term_(term), source_("i"), target_("j") {}
@@ -66,8 +64,8 @@ public:
   const std::string& target () const { return target_;}
 
   template <class T>
-  boost::multi_array<std::pair<T,std::pair<bool,bool> >,4> matrix(const SiteBasisDescriptor<I>&, const SiteBasisDescriptor<I>&, const operator_map&, const Parameters& =Parameters()) const;
-  std::set<Term> split(const operator_map&, const Parameters& = Parameters()) const;
+  boost::multi_array<std::pair<T,std::pair<bool,bool> >,4> matrix(const SiteBasisDescriptor<I>&, const SiteBasisDescriptor<I>&, const Parameters& =Parameters()) const;
+  std::set<Term> split(const Parameters& = Parameters()) const;
 
 private:
   int type_;
@@ -85,14 +83,13 @@ private:
   typedef BondOperatorEvaluator<I, STATE1, STATE2> SELF_;
 
 public:
-  typedef typename super_type::operator_map operator_map;
   typedef typename super_type::operator_iterator operator_iterator;
 
   BondOperatorEvaluator(const STATE1& s1, const STATE2& s2,
                         const SiteBasisDescriptor<I>& b1,
                                     const SiteBasisDescriptor<I>& b2,
                         const std::string& site1, const std::string& site2,
-                        const Parameters& p, const operator_map& o)
+                        const Parameters& p)
     : super_type(p,o), state_(s1,s2), basis1_(b1), basis2_(b2),
       sites_(site1,site2), fermionic_(false,false) {}
   bool can_evaluate_function(const std::string& name,
@@ -105,8 +102,7 @@ public:
   bool has_operator(const std::string& name, const Expression& arg) const
   { 
     return (arg==sites_.first && basis1_.has_operator(name)) || 
-           (arg==sites_.second && basis2_.has_operator(name)) || 
-           super_type::has_operator(name); 
+           (arg==sites_.second && basis2_.has_operator(name)); 
   }
   
 private:
@@ -125,14 +121,11 @@ private:
   typedef BondOperatorSplitter<I> SELF_;
 
 public:
-  typedef typename super_type::operator_map operator_map;
-  typedef typename super_type::operator_iterator operator_iterator;
-
   BondOperatorSplitter(const SiteBasisDescriptor<I>& b1,
                        const SiteBasisDescriptor<I>& b2,
                        const std::string& site1, const std::string& site2,
-                       const Parameters& p, const operator_map& o)
-    : super_type(p,o), basis1_(b1), basis2_(b2), sites_(site1,site2), second_site_fermionic_(false) {}
+                       const Parameters& p)
+    : super_type(p), basis1_(b1), basis2_(b2), sites_(site1,site2), second_site_fermionic_(false) {}
 
   bool can_evaluate_function(const std::string& name, const Expression& argument) const;
   Expression partial_evaluate_function(const std::string& name, const Expression& argument) const;
@@ -140,8 +133,7 @@ public:
   bool has_operator(const std::string& name, const Expression& arg) const
   { 
     return (arg==sites_.first && basis1_.has_operator(name)) || 
-           (arg==sites_.second && basis2_.has_operator(name)) || 
-           ( (arg==sites_.first || arg==sites_.second) && super_type::has_operator(name)); 
+           (arg==sites_.second && basis2_.has_operator(name)); 
   }
   
 private:
@@ -176,7 +168,7 @@ Expression BondOperatorEvaluator<I, STATE1, STATE2>::partial_evaluate_function(c
   if (has_operator(name,arg)) {  // evaluate operator
     bool f;
     if (arg==sites_.first) {
-      boost::tie(state_.first,e,f) =  basis1_.apply(name,state_.first,*this,super_type::ops_);
+      boost::tie(state_.first,e,f) =  basis1_.apply(name,state_.first,*this);
       if (f && is_nonzero(e)) {
         fermionic_.first=!fermionic_.first;
         if (fermionic_.second) // for normal ordering
@@ -184,7 +176,7 @@ Expression BondOperatorEvaluator<I, STATE1, STATE2>::partial_evaluate_function(c
       }
     }
     else  if (arg==sites_.second) {
-      boost::tie(state_.second,e,f) =  basis2_.apply(name,state_.second,*this,super_type::ops_);
+      boost::tie(state_.second,e,f) =  basis2_.apply(name,state_.second,*this);
       if (f)
         fermionic_.second=!fermionic_.second;
     }
@@ -201,11 +193,11 @@ Expression BondOperatorSplitter<I>::partial_evaluate_function(const std::string&
 {
   if (arg==sites_.first) {
     site_ops_.first *= name;
-    return Expression(second_site_fermionic_ && basis1_.is_fermionic(name,super_type::ops_) ? -1. : 1.);
+    return Expression(second_site_fermionic_ && basis1_.is_fermionic(name) ? -1. : 1.);
   }
   else  if (arg==sites_.second) {
     site_ops_.second *= name;
-    if (basis2_.is_fermionic(name,super_type::ops_))
+    if (basis2_.is_fermionic(name))
         second_site_fermionic_ = !second_site_fermionic_;
     return Expression(1.);
   }
@@ -213,15 +205,15 @@ Expression BondOperatorSplitter<I>::partial_evaluate_function(const std::string&
 }
 
 template <class I, class T>
-boost::multi_array<std::pair<T,std::pair<bool,bool> >,4> get_fermionic_matrix(T,const BondTermDescriptor<I>& m, const SiteBasisDescriptor<I>& basis1, const SiteBasisDescriptor<I>& basis2, const  typename BondTermDescriptor<I>::operator_map& ops, const Parameters& p=Parameters())
+boost::multi_array<std::pair<T,std::pair<bool,bool> >,4> get_fermionic_matrix(T,const BondTermDescriptor<I>& m, const SiteBasisDescriptor<I>& basis1, const SiteBasisDescriptor<I>& basis2, const Parameters& p=Parameters())
 {
-  return m.template matrix<T>(basis1,basis2,ops,p);
+  return m.template matrix<T>(basis1,basis2,p);
 }
 
 template <class I, class T>
-boost::multi_array<T,4> get_matrix(T,const BondTermDescriptor<I>& m, const SiteBasisDescriptor<I>& basis1, const SiteBasisDescriptor<I>& basis2, const  typename BondTermDescriptor<I>::operator_map& ops, const Parameters& p=Parameters())
+boost::multi_array<T,4> get_matrix(T,const BondTermDescriptor<I>& m, const SiteBasisDescriptor<I>& basis1, const SiteBasisDescriptor<I>& basis2, const Parameters& p=Parameters())
 {
-  boost::multi_array<std::pair<T,std::pair<bool,bool> >,4> f_matrix = m.template matrix<T>(basis1,basis2,ops,p);
+  boost::multi_array<std::pair<T,std::pair<bool,bool> >,4> f_matrix = m.template matrix<T>(basis1,basis2,p);
   boost::multi_array<T,4> matrix(boost::extents[f_matrix.shape()[0]][f_matrix.shape()[1]][f_matrix.shape()[2]][f_matrix.shape()[3]]);
   for (int i=0;i<f_matrix.shape()[0];++i)
     for (int j=0;j<f_matrix.shape()[1];++j)
@@ -237,7 +229,6 @@ boost::multi_array<T,4> get_matrix(T,const BondTermDescriptor<I>& m, const SiteB
 template <class I> template <class T> boost::multi_array<std::pair<T,std::pair<bool,bool> >,4>
 BondTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b1,
                               const SiteBasisDescriptor<I>& b2,
-                              const operator_map& ops,
                               const Parameters& p) const
 {
   SiteBasisDescriptor<I> basis1(b1);
@@ -266,7 +257,7 @@ BondTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b1,
       for (int i2=0;i2<states2.size();++i2) {
       //calculate expression applied to state *it and store it into matrix
         for (typename Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
-          BondOperatorEvaluator<I> evaluator(states1[i1], states2[i2], basis1, basis2, source(), target(), parms, ops);
+          BondOperatorEvaluator<I> evaluator(states1[i1], states2[i2], basis1, basis2, source(), target(), parms);
           Term term(*tit);
           term.partial_evaluate(evaluator);
           unsigned int j1=states1.index(evaluator.state().first);
@@ -293,7 +284,7 @@ BondTermDescriptor<I>::matrix(const SiteBasisDescriptor<I>& b1,
 }
 
 template <class I>
-std::set<Term> BondTermDescriptor<I>::split(const operator_map& ops, const Parameters& p) const
+std::set<Term> BondTermDescriptor<I>::split(const Parameters& p) const
 {
   std::set<Term> terms;
   Expression ex(term());
@@ -301,7 +292,7 @@ std::set<Term> BondTermDescriptor<I>::split(const operator_map& ops, const Param
   ex.simplify();
   SiteBasisDescriptor<I> b;
   for (typename Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
-    BondOperatorSplitter<I> evaluator(b,b,source(),target(),p,ops);
+    BondOperatorSplitter<I> evaluator(b,b,source(),target(),p);
     Term term(*tit);
     term.partial_evaluate(evaluator);
     terms.insert(evaluator.site_operators().first);
