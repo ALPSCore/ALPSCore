@@ -48,8 +48,10 @@
 #endif
 
 #include <boost/lexical_cast.hpp>
-#include <string>
+
+#include <set>
 #include <stdexcept>
+#include <string>
 #include <cassert>
 
 namespace alps {
@@ -175,6 +177,9 @@ public:
 #endif
   bool fermionic() const { return _fermionic;}
   bool set_parameters(const Parameters&); // returns true if it can be evaluated
+  bool depends_on(const Parameters::key_type& s) const;
+  bool depends_on(const QuantumNumber& qn) const { return (dependency_.find(qn)!=dependency_.end()); }
+  bool add_dependency(const QuantumNumber& qn) { dependency_.insert(qn); }
 private:
   std::string _name;
   std::string min_string_;
@@ -184,7 +189,13 @@ private:
   bool _fermionic;
   mutable bool valid_;
   bool evaluate(const Parameters& =Parameters()) const;
+  mutable std::set<QuantumNumber> dependency_;
 };
+
+template<class I>
+inline bool operator< (const QuantumNumber<I>& q1,const QuantumNumber<I>& q2) {
+  return q1.name()<q2.name();
+}
 
 template <class I>
 QuantumNumber<I>:: QuantumNumber(const std::string& n, value_type minVal, value_type maxVal, bool f)
@@ -201,9 +212,21 @@ QuantumNumber<I>:: QuantumNumber(const std::string& n, value_type minVal, value_
 template <class I>
 const QuantumNumber<I>& QuantumNumber<I>::operator+=(const QuantumNumber<I>& rhs)
 {
-  valid_ = valid_ && rhs.valid_;
-  min_string_ = Expression(min_string_)+Expression(rhs.min_string_);
-  max_string_ = Expression(max_string_)+Expression(rhs.max_string_);
+  Parameters p; 
+  if(dependency_.size()!=rhs.dependency_.size())
+    boost::throw_exception(std::runtime_error("Adding quantum numbers that do not depend on the same quantum numbers: " + name() + " + " + rhs.name()));
+  for(typename std::set<QuantumNumber<I> >::const_iterator it=dependency_.begin();it!=dependency_.end();++it) {
+    if(!rhs.depends_on(*it)) boost::throw_exception(std::runtime_error("Adding quantum numbers that do not both depend on quantum number " + it->name() + ": " + name() + " + " + rhs.name()));
+    p[it->name()]=0;
+  }
+  
+  ParameterEvaluator eval(p);
+  Expression min_exp = Expression(min_string_);
+  Expression max_exp = Expression(max_string_);
+  min_exp.partial_evaluate(eval);
+  max_exp.partial_evaluate(eval);
+  min_string_ = min_exp+Expression(rhs.min_string_);
+  max_string_ = max_exp+Expression(rhs.max_string_);
   if (valid_) {
     if (min()!=value_type::min() && rhs.min()!=value_type::min())
       _min += rhs._min;
@@ -246,6 +269,14 @@ bool QuantumNumber<I>::set_parameters(const Parameters& p)
   return evaluate(p);
 }
 
+template<class I >
+bool QuantumNumber<I>::depends_on(const Parameters::key_type& s) const
+{
+  Expression min_exp_(min_string_);
+  Expression max_exp_(max_string_);
+  return (min_exp_.depends_on(s) || max_exp_.depends_on(s));
+}
+
 template <class I>
 bool QuantumNumber<I>::evaluate(const Parameters& p) const
 {
@@ -276,7 +307,7 @@ template <class I>
 void QuantumNumber<I>::write_xml(std::ostream& os,  const std::string& prefix) const
 {
   os << prefix << "<QUANTUMNUMBER name=\"" << name() 
-    << "\" min=\"" << min_expression() <<  "\" max=\"" << max_expression() << "\"";
+     << "\" min=\"" << min_expression() <<  "\" max=\"" << max_expression() << "\"";
   if (fermionic())
     os << " type=\"fermionic\"";
    os << "/>\n";

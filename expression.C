@@ -92,6 +92,10 @@ bool Evaluatable::can_evaluate() const
   return can_evaluate(Evaluator());
 }
 
+bool Evaluatable::depends_on(const std::string& s) const {
+  return false;
+}
+
 } // namespace detail
 
 Expression::Expression(const std::string& expression )
@@ -139,6 +143,12 @@ const Expression& Expression::operator+=(const Expression& e)
   std::copy(e.terms_.begin(),e.terms_.end(),std::back_inserter(terms_));
   partial_evaluate();
   return *this;
+}
+
+Expression operator+(const Expression& ex1,const Expression& ex2) {
+  Expression ex=ex1;
+  ex+=ex2;
+  return ex;
 }
 
 double Expression::value(const Evaluator& p) const
@@ -465,6 +475,10 @@ detail::Evaluatable* detail::Symbol::clone() const
   return new Symbol(*this);
 }
 
+bool detail::Symbol::depends_on(const std::string& s) const {
+  return (name_==s);
+}
+
 detail::Function::Function(std::istream& in,const std::string& name)
  :  name_(name), arg_(in)
 {
@@ -501,6 +515,10 @@ detail::Evaluatable* detail::Function::clone() const
   return new Function(*this);
 }
 
+bool detail::Function::depends_on(const std::string& s) const {
+  if(name_==s) return true;
+  return arg_.depends_on(s);
+}
 
 Parameters evaluate(const Parameters& in) 
 {
@@ -598,11 +616,25 @@ void Term::simplify()
   terms_=s;
 }
 
+bool Term::depends_on(const std::string& s) const {
+  for(factor_iterator it=factors().first;it!=factors().second;++it)
+    if(it->depends_on(s)) 
+      return true;
+  return false;
+}
+
 void Expression::simplify()
 {
   partial_evaluate();
   for (std::vector<Term>::iterator it=terms_.begin();it!=terms_.end();++it)
     it->simplify();
+}
+
+bool Expression::depends_on(const std::string& s) const {
+  for(term_iterator it=terms().first;it!=terms().second;++it)
+    if(it->depends_on(s))
+      return true;
+  return false;
 }
 
 bool detail::Evaluatable::is_single_term() const
@@ -625,6 +657,10 @@ Term Expression::term() const
 bool Expression::is_single_term() const
 {
   return terms_.size()==1;
+}
+
+bool Factor::depends_on(const std::string& s) const {
+  return term_ ? term_->depends_on(s) : false;
 }
 
 bool Factor::is_single_term() const

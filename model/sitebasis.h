@@ -64,13 +64,14 @@ public:
   bool valid(const std::vector<half_integer<I> >&) const;
   std::size_t num_states() const { if (!valid_ && !evaluate()) boost::throw_exception(std::runtime_error("Cannot evaluate quantum numbers in site basis " +name()));  return num_states_;}
   bool set_parameters(const Parameters&);
-  const Parameters& get_parameters() const {  return parms_;}
+  const Parameters& get_parameters() const { return parms_;}
 private:
   mutable bool valid_;
   bool evaluate() const;
   Parameters parms_;
   std::string name_;
   mutable std::size_t num_states_;
+  void init_dependencies() const;
 };
 
 template <class I>
@@ -216,13 +217,12 @@ SiteBasisStates<I>::SiteBasisStates(const SiteBasisDescriptor<I>& b)
 {
   if (b.num_states()==std::numeric_limits<I>::max())
     boost::throw_exception(std::runtime_error("Cannot build infinite set of basis states\n"));
-  typedef std::pair<typename SiteBasisDescriptor<I>::const_iterator,half_integer<I> > q_pair;
-  std::stack<q_pair> s;
+  std::stack<std::pair<typename SiteBasisDescriptor<I>::const_iterator,half_integer<I> > > s;
   typename SiteBasisDescriptor<I>::const_iterator it=b.begin();
   std::vector<half_integer<I> > quantumnumbers(basis_.size());
   const_cast<QuantumNumber<I>&>(*it).set_parameters(b.get_parameters());
   for(half_integer<I> q=it->max();q>=it->min();--q) 
-    s.push(q_pair(it,q));
+    s.push(std::make_pair(it,q));
   while(!s.empty()) {
     it=s.top().first;
     quantumnumbers[it-b.begin()]=s.top().second;
@@ -236,7 +236,7 @@ SiteBasisStates<I>::SiteBasisStates(const SiteBasisDescriptor<I>& b)
 	p[qit->name()]=quantumnumbers[qit-b.begin()];
       const_cast<QuantumNumber<I>&>(*it).set_parameters(p);
       for(half_integer<I> q=it->max();q>=it->min();--q)
-	s.push(q_pair(it,q));
+	s.push(std::make_pair(it,q));
     }
   }
   if(!check_sort())
@@ -289,7 +289,19 @@ SiteBasisDescriptor<I>::SiteBasisDescriptor(const XMLTag& intag, std::istream& i
     }
     if (tag.name !="/SITEBASIS")
       boost::throw_exception(std::runtime_error("Illegal tag <" + tag.name + "> in <SITEBASIS> element"));
-  }
+  } 
+  init_dependencies();
+
+  // I need this line, otherwise the expressions in quantumnumbers cannot be evaluated. Dirty patch. Looks like a bug. To be looked at again. Axel Grzesik, 07/08/03
+  evaluate();
+}
+
+template<class I>
+void SiteBasisDescriptor<I>::init_dependencies() const {
+  for(const_iterator it=begin();it!=end();++it) 
+    for(const_iterator jt=begin();jt!=it;++jt) 
+      if(const_cast<QuantumNumber<I>&>(*it).depends_on(jt->name())) 
+	const_cast<QuantumNumber<I>&>(*it).add_dependency(*jt);
 }
 
 template <class I>

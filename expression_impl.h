@@ -66,6 +66,7 @@ public:
   void output(std::ostream&) const;
   Evaluatable* clone() const;
   Evaluatable* partial_evaluate_replace(const Evaluator& p);
+  bool depends_on(const std::string& s) const;
 private:
   std::string name_;
 };
@@ -80,6 +81,7 @@ public:
   Evaluatable* clone() const;
   boost::shared_ptr<Evaluatable> flatten_one();
   Evaluatable* partial_evaluate_replace(const Evaluator& p);
+  bool depends_on(const std::string& s) const;
 private:
  std::string name_;
  Expression arg_;

@@ -67,6 +67,7 @@ public:
   virtual Evaluatable* partial_evaluate_replace(const Evaluator& p);
   virtual bool is_single_term() const;
   virtual Term term() const;
+  virtual bool depends_on(const std::string&) const;
 };
 
 } // end namespace detail
@@ -88,6 +89,7 @@ public:
   void partial_evaluate(const Evaluator& p);
   bool is_single_term() const;
   Term term() const;
+  bool depends_on(const std::string&) const;
 private:
   boost::shared_ptr<detail::Evaluatable> term_;
   bool is_inverse_;
@@ -114,6 +116,7 @@ public:
   void simplify();
   typedef std::vector<Factor>::const_iterator factor_iterator;
   virtual std::pair<factor_iterator,factor_iterator> factors() const;
+  bool depends_on(const std::string&) const;
 private:
   void negate() { is_negative_ = !is_negative_;}
   bool is_negative_;
@@ -145,6 +148,7 @@ public:
   void simplify();
   bool is_single_term() const;
   Term term() const;
+  bool depends_on(const std::string&) const;
 private:
   std::vector<Term> terms_;
 };
@@ -172,6 +176,7 @@ inline double evaluate(const StringValue& v, const Parameters& p)
   return evaluate(v,ParameterEvaluator(p));
 }
 
+Expression operator+(const Expression& ex1,const Expression& ex2);
 } // end namespace alps
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
