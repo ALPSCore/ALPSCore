@@ -5,7 +5,7 @@
 *
 * $Id$
 *
-* Copyright (C) 2001-2003 by Synge Todo <wistaria@comp-phys.org>,
+* Copyright (C) 2001-2004 by Synge Todo <wistaria@comp-phys.org>,
 *
 * This software is part of the ALPS library, published under the 
 * ALPS Library License; you can use, redistribute it and/or modify 
@@ -37,12 +37,15 @@
 
 namespace alps {
 
-oxstream::oxstream(std::ostream& os, uint32_t incl)
+oxstream::oxstream()
+  : of_(), os_(std::cout), stack_(), attr_(), context_(NotSpecified),
+    linebreak_(true), offset_(0), offset_incr_(2) {}
+oxstream::oxstream(std::ostream& os, uint32_t incr)
   : of_(), os_(os), stack_(), attr_(), context_(NotSpecified),
-    linebreak_(true), offset_(0), offset_incl_(incl) {}
-oxstream::oxstream(const boost::filesystem::path& file, uint32_t incl)
+    linebreak_(true), offset_(0), offset_incr_(incr) {}
+oxstream::oxstream(const boost::filesystem::path& file, uint32_t incr)
   : of_(file), os_(of_), stack_(), attr_(), context_(NotSpecified),
-    linebreak_(true), offset_(0), offset_incl_(incl) {}
+    linebreak_(true), offset_(0), offset_incr_(incr) {}
 oxstream::~oxstream() {
   output();
   if (stack_.size() != 0)
@@ -189,7 +192,7 @@ void oxstream::output(bool close)
 	os_ << "/>";
       } else {
 	os_ << ">";
-	offset_ += offset_incl_;
+	offset_ += offset_incr_;
       }
     }
     if (context_ == PI || close) {
@@ -204,7 +207,7 @@ void oxstream::output(bool close)
       context_ = NotSpecified;
     }
     if (close) {
-      offset_ -= offset_incl_;
+      offset_ -= offset_incr_;
       if (linebreak_) for (uint32_t i = 0; i < offset_; ++i) os_ << ' ';
       os_ << "</" << stack_.top().first << ">";
       linebreak_ = stack_.top().second;
@@ -234,7 +237,7 @@ std::string convert(const std::string& str)
 oxstream& oxstream::operator<<(const detail::stylesheet_t& c)
 {
   (*this) << processing_instruction("xml-stylesheet") << attribute("type","text/xsl")
-    << attribute("href",c.name);
+    << attribute("href",c.url);
   return *this;
 }
 

@@ -31,7 +31,7 @@
 #ifndef PALM_XML_XMLHANDLER_H
 #define PALM_XML_XMLHANDLER_H
 
-#include <alps/parser/attributes.h>
+#include <alps/parser/xmlattributes.h>
 #include <alps/parser/xmlstream.h>
 
 #include <boost/throw_exception.hpp>

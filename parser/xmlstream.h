@@ -5,7 +5,7 @@
 *
 * $Id$
 *
-* Copyright (C) 2001-2003 by Synge Todo <wistaria@comp-phys.org>,
+* Copyright (C) 2001-2004 by Synge Todo <wistaria@comp-phys.org>,
 *
 * This software is part of the ALPS library, published under the 
 * ALPS Library License; you can use, redistribute it and/or modify 
@@ -31,7 +31,7 @@
 #define ALPS_PARSER_XMLSTREAM_H
 
 #include <alps/config.h>
-#include <alps/parser/attributes.h>
+#include <alps/parser/xmlattributes.h>
 
 #include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem/path.hpp>
@@ -75,8 +75,8 @@ struct attribute_t
 
 struct stylesheet_t
 {
-  stylesheet_t(const std::string& n) : name(n) {}
-  std::string name;
+  stylesheet_t(const std::string& n) : url(n) {}
+  std::string url;
 };
 
 struct pi_t : public start_tag_t
@@ -89,16 +89,15 @@ struct pi_t : public start_tag_t
 class oxstream
 {
 public:
-  oxstream(std::ostream& os = std::cout, uint32_t incl = 2);
-  oxstream(const boost::filesystem::path& file, uint32_t incl = 2);
+  oxstream();
+  oxstream(std::ostream& os, uint32_t incr = 2);
+  oxstream(const boost::filesystem::path& file, uint32_t incr = 2);
   ~oxstream();
 
   oxstream& operator<<(const detail::header_t& c);
   oxstream& operator<<(const detail::start_tag_t& c);
   oxstream& operator<<(const detail::end_tag_t& c);
   oxstream& operator<<(const detail::stylesheet_t& c);
-  oxstream& operator<<(const XMLAttribute& c);
-  oxstream& operator<<(const XMLAttributes& c);
   oxstream& operator<<(const detail::attribute_t& c);
   oxstream& operator<<(const detail::pi_t& c);
   oxstream& start_comment();
@@ -107,6 +106,9 @@ public:
   oxstream& end_cdata();
   oxstream& no_linebreak();
   oxstream& endl() { *this << "\n"; return *this; }
+
+  oxstream& operator<<(const XMLAttribute& c);
+  oxstream& operator<<(const XMLAttributes& c);
 
   oxstream& operator<<(const std::string& t) {
     return text_str(t);
@@ -167,7 +169,7 @@ private:
   Context context_;
   bool linebreak_;
   uint32_t offset_;
-  uint32_t offset_incl_;
+  uint32_t offset_incr_;
 };
 
 // manipulators
@@ -176,12 +178,16 @@ inline detail::header_t header(const std::string& enc) {
   return detail::header_t(enc);
 }
 
-inline detail::start_tag_t start_tag(const std::string& name) {
-  return detail::start_tag_t(name);
+inline detail::stylesheet_t stylesheet(const std::string& url) {
+  return detail::stylesheet_t(url);
 }
 
-inline detail::stylesheet_t stylesheet(const std::string& name) {
-  return detail::stylesheet_t(name);
+inline detail::pi_t processing_instruction(const std::string& name) {
+  return detail::pi_t(name);
+}
+
+inline detail::start_tag_t start_tag(const std::string& name) {
+  return detail::start_tag_t(name);
 }
 
 inline detail::end_tag_t end_tag(const std::string& name = "") {
@@ -191,10 +197,6 @@ inline detail::end_tag_t end_tag(const std::string& name = "") {
 template<class T>
 inline detail::attribute_t attribute(const std::string& name, const T& value) {
   return detail::attribute_t(name, value);
-}
-
-inline detail::pi_t processing_instruction(const std::string& name) {
-  return detail::pi_t(name);
 }
 
 inline detail::attribute_t xml_namespace(const std::string& name,

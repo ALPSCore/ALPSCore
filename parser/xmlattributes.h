@@ -1,11 +1,11 @@
 /***************************************************************************
-* ALPS++ library
+* ALPS library
 *
-* parser/attributes.h
+* parser/xmlattributes.h
 *
 * $Id$
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>,
 *
 * This software is part of the ALPS library, published under the 
@@ -16,7 +16,6 @@
 * You should have received a copy of the ALPS Library License along with 
 * the ALPS Library; see the file License.txt. If not, the license is also 
 * available from http://alps.comp-phys.org/. 
-
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -28,8 +27,8 @@
 *
 **************************************************************************/
 
-#ifndef ALPS_PARSER_ATTRIBUTES_H
-#define ALPS_PARSER_ATTRIBUTES_H
+#ifndef ALPS_PARSER_XMLATTRIBUTES_H
+#define ALPS_PARSER_XMLATTRIBUTES_H
 
 #include <boost/lexical_cast.hpp>
 #include <boost/throw_exception.hpp>
@@ -74,16 +73,10 @@ public:
 
   typedef std::vector<XMLAttribute> list_type;
   typedef list_type::size_type      size_type;
-
-  typedef std::map<key_type, size_type> map_type;
-
-  typedef XMLAttribute *            pointer_type;
-  typedef const XMLAttribute *      const_pointer_type;
-  typedef XMLAttribute &            reference_type;
-  typedef const XMLAttribute &      const_reference_type;
   typedef list_type::iterator       iterator;
   typedef list_type::const_iterator const_iterator;
 
+public:
   XMLAttributes() {}
 
   void clear() { list_.clear(); map_.clear(); }
@@ -136,10 +129,12 @@ public:
   }
 
 private:
+  typedef std::map<key_type, size_type> map_type;
+
   list_type list_;
   map_type map_;
 };
 
 } // namespace alps
 
-#endif // ALPS_PARSER_ATTRIBUTE_H
+#endif // ALPS_PARSER_XMLATTRIBUTE_H
