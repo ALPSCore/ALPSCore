@@ -36,22 +36,29 @@ int main()
 #ifndef BOOST_NO_EXCEPTIONS
   try {
 #endif
+
+#ifndef ALPS_WITH_NEW_EXPRESSION
+    typedef alps::Expression Expression_;
+#else
+    typedef alps::Expression<double> Expression_;
+#endif
+
     // create the library from an XML file
     alps::ModelLibrary lib(std::cin);
 
      // write site term matrices
      std::cout << "HHardcoreBosonSite =\n" 
-               << alps::get_matrix(alps::Expression(),lib.get_hamiltonian("hardcore boson").site_term(),
+               << alps::get_matrix(Expression_(),lib.get_hamiltonian("hardcore boson").site_term(),
                   lib.get_hamiltonian("hardcore boson").basis().site_basis(),lib.operators()) << "\n";
-    std::cout << "HSpinSite =\n" << alps::get_matrix(alps::Expression(),lib.get_hamiltonian("spin").site_term(),
+    std::cout << "HSpinSite =\n" << alps::get_matrix(Expression_(),lib.get_hamiltonian("spin").site_term(),
                   lib.get_hamiltonian("spin").basis().site_basis(),lib.operators()) << "\n";
     
     // write bond term matrices
     std::cout << "HHardcoreBosonBond =\n" 
-              << alps::get_matrix(alps::Expression(),lib.get_hamiltonian("hardcore boson").bond_term(),
+              << alps::get_matrix(Expression_(),lib.get_hamiltonian("hardcore boson").bond_term(),
                  lib.get_hamiltonian("hardcore boson").basis().site_basis(),
                  lib.get_hamiltonian("hardcore boson").basis().site_basis(),lib.operators()) << "\n";
-    std::cout << "HSpinBond =\n" << alps::get_matrix(alps::Expression(),lib.get_hamiltonian("spin").bond_term(),                 
+    std::cout << "HSpinBond =\n" << alps::get_matrix(Expression_(),lib.get_hamiltonian("spin").bond_term(),                 
                  lib.get_hamiltonian("spin").basis().site_basis(),lib.get_hamiltonian("spin").basis().site_basis(),
                        lib.operators()) << "\n";
 
@@ -60,10 +67,10 @@ int main()
      alps::HamiltonianDescriptor<short> ham = lib.get_hamiltonian("boson");
      ham.set_parameters(parms);
      std::cout << "HBosonSite =\n" 
-               << alps::get_matrix(alps::Expression(),ham.site_term(),
+               << alps::get_matrix(Expression_(),ham.site_term(),
                   ham.basis().site_basis(),lib.operators()) << "\n";
      std::cout << "HBosonBond =\n" 
-               << alps::get_matrix(alps::Expression(),ham.bond_term(),
+               << alps::get_matrix(Expression_(),ham.bond_term(),
                   ham.basis().site_basis(),ham.basis().site_basis(),lib.operators()) << "\n";
 
 #ifndef BOOST_NO_EXCEPTIONS

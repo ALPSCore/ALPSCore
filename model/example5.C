@@ -39,10 +39,12 @@ int main()
     // create the library from an XML file
     alps::ModelLibrary lib(std::cin);
 
+    std::cerr << "here\n";
+
     // get operators in one bond term 
-    std::set<alps::Term> ops = lib.get_hamiltonian("hardcore boson").bond_term().split(lib.operators());
+    std::set<std::string> ops = lib.get_hamiltonian("hardcore boson").bond_term().split(lib.operators());
    
-    std::copy(ops.begin(),ops.end(),std::ostream_iterator<alps::Term>(std::cout,"\n"));
+    std::copy(ops.begin(),ops.end(),std::ostream_iterator<std::string>(std::cout,"\n"));
 
 #ifndef BOOST_NO_EXCEPTIONS
 }

@@ -30,18 +30,23 @@
 #include <alps/model.h>
 #include <iostream>
 
-boost::multi_array<alps::Expression,2> bondmatrix(const alps::ModelLibrary lib, const std::string& name, 
-                                                  const alps::Parameters& p=alps::Parameters())
+#ifndef ALPS_WITH_NEW_EXPRESSION
+    typedef alps::Expression Expression_;
+#else
+    typedef alps::Expression<double> Expression_;
+#endif
+
+boost::multi_array<Expression_,2> bondmatrix(const alps::ModelLibrary lib, const std::string& name, const alps::Parameters& p=alps::Parameters())
 {
   alps::HamiltonianDescriptor<short> ham=lib.get_hamiltonian(name);
   ham.set_parameters(p);
   int dim=ham.basis().site_basis().num_states();
   
   // get site and bond terms
-  boost::multi_array<alps::Expression,2> sitematrix = 
-    alps::get_matrix(alps::Expression(),ham.site_term(),ham.basis().site_basis(),lib.operators());
-  boost::multi_array<alps::Expression,4> bondtensor = 
-    alps::get_matrix(alps::Expression(),ham.bond_term(),ham.basis().site_basis(), ham.basis().site_basis(),lib.operators());
+  boost::multi_array<Expression_,2> sitematrix = 
+    alps::get_matrix(Expression_(),ham.site_term(),ham.basis().site_basis(),lib.operators());
+  boost::multi_array<Expression_,4> bondtensor = 
+    alps::get_matrix(Expression_(),ham.bond_term(),ham.basis().site_basis(), ham.basis().site_basis(),lib.operators());
     
   // add site terms to bond terms
   for (int i=0;i<dim;++i)
@@ -52,7 +57,7 @@ boost::multi_array<alps::Expression,2> bondmatrix(const alps::ModelLibrary lib, 
       }
       
   //convert tensor into matrix
-  boost::multi_array<alps::Expression,2> bondmatrix(boost::extents[dim*dim][dim*dim]);
+  boost::multi_array<Expression_,2> bondmatrix(boost::extents[dim*dim][dim*dim]);
   for (int i=0;i<dim;++i)
     for (int j=0;j<dim;++j)
       for (int k=0;k<dim;++k)

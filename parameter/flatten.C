@@ -40,7 +40,11 @@ int main()
   try {
 #endif
   while (std::cin) {
+#ifndef ALPS_WITH_NEW_EXPRESSION
     alps::Expression expr(std::cin);
+#else
+    alps::Expression<double> expr(std::cin);
+#endif
     std::cout << "The flattened expression [" << expr << "] is \n";
     expr.flatten();
     std::cout << expr << std::endl;
