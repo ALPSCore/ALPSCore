@@ -48,6 +48,7 @@ int main()
 #endif
 
   alps::Parameters parms;
+  std::cin >> std::skipws;
   std::cin >> parms;
   std::cout << "Parameters:\n" << parms << std::endl;
   alps::check_character(std::cin,'%',"Expected a %-sign separating parameters from expressions");
