@@ -33,6 +33,7 @@
 
 #include <alps/config.h>
 #include <alps/lattice/propertymap.h>
+#include <alps/osiris/dump.h>
 #include <boost/limits.hpp>
 #include <boost/pending/property.hpp>
 #include <boost/graph/adjacency_list.hpp>
@@ -73,6 +74,8 @@ struct boundary_crossing {
     return *this;
   }
   
+  void save (ODump& dump) const { dump << bc;}
+  void load (IDump& dump) { dump >> bc;}
 private:  
   typedef uint8_t integer_type;
   integer_type bc;
@@ -85,5 +88,19 @@ private:
 };
 
 } // end namespace alps
+
+#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
+namespace alps {
+#endif
+
+inline alps::ODump& operator<<(alps::ODump& dump, const alps::boundary_crossing& b)
+{ b.save(dump);}
+
+inline alps::IDump& operator>>(alps::IDump& dump, alps::boundary_crossing& b)
+{ b.load(dump);}
+
+#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
+}
+#endif
 
 #endif // ALPS_LATTICE_GRAPH_PROPERTIES_H
