@@ -121,7 +121,7 @@ public:
   Factor(std::istream&, bool inverse = false);
   Factor(value_type x);
   Factor(const std::string& s);
-  Factor(const Factor& v) 
+  Factor(const Factor& v)
     : detail::Evaluatable<T>(v), term_(), is_inverse_(v.is_inverse_)
   {
     if (v.term_) term_.reset(v.term_->clone());
@@ -150,7 +150,7 @@ public:
   {
     return term_ ? term_->depends_on(s) : false;
   }
-    
+
 private:
   boost::shared_ptr<detail::Evaluatable<T> > term_;
   bool is_inverse_;
@@ -236,14 +236,14 @@ public:
   void output(std::ostream& os) const;
 
   detail::Evaluatable<T>* clone() const { return new Expression<T>(*this); }
-  std::pair<term_iterator,term_iterator> terms() const 
+  std::pair<term_iterator,term_iterator> terms() const
   {
     return std::make_pair(terms_.begin(),terms_.end());
   }
   void flatten(); // multiply out all blocks
   boost::shared_ptr<Expression> flatten_one_expression();
   const Expression& operator+=(const Term<T>& term)
-  { 
+  {
     terms_.push_back(term);
     return *this;
   }
@@ -254,14 +254,14 @@ public:
     return *this;
   }
   void simplify();
-  
+
   bool is_single_term() const { return terms_.size() == 1; }
   Term<T> term() const;
   bool depends_on(const std::string&) const;
-  
+
   void parse(const std::string& str);
   void parse(std::istream& is);
-  
+
 private:
   std::vector<Term<T> > terms_;
 };
@@ -664,7 +664,7 @@ template<class T>
 inline bool operator==(const alps::Expression<T>& ex1, const alps::Expression<T>& ex2)
 {
   return (boost::lexical_cast<std::string>(ex1) ==
-	  boost::lexical_cast<std::string>(ex2));
+          boost::lexical_cast<std::string>(ex2));
 }
 
 template<class T>
@@ -683,7 +683,7 @@ template<class T>
 inline bool operator==(const alps::Factor<T>& ex1, const alps::Factor<T>& ex2)
 {
   return (boost::lexical_cast<std::string>(ex1) ==
-	  boost::lexical_cast<std::string>(ex2));
+          boost::lexical_cast<std::string>(ex2));
 }
 
 template<class T>
@@ -702,7 +702,7 @@ template<class T>
 inline bool operator==(const alps::Term<T>& ex1, const alps::Term<T>& ex2)
 {
   return (boost::lexical_cast<std::string>(ex1) ==
-	  boost::lexical_cast<std::string>(ex2));
+          boost::lexical_cast<std::string>(ex2));
 }
 
 template<class T>
@@ -721,7 +721,7 @@ template<class T>
 inline bool operator<(const alps::Expression<T>& ex1, const alps::Expression<T>& ex2)
 {
   return (boost::lexical_cast<std::string>(ex1) <
-	  boost::lexical_cast<std::string>(ex2));
+          boost::lexical_cast<std::string>(ex2));
 }
 
 template<class T>
@@ -740,7 +740,7 @@ template<class T>
 inline bool operator<(const alps::Factor<T>& ex1, const alps::Factor<T>& ex2)
 {
   return (boost::lexical_cast<std::string>(ex1) <
-	  boost::lexical_cast<std::string>(ex2));
+          boost::lexical_cast<std::string>(ex2));
 }
 
 template<class T>
@@ -759,7 +759,7 @@ template<class T>
 inline bool operator<(const alps::Term<T>& ex1, const alps::Term<T>& ex2)
 {
   return (boost::lexical_cast<std::string>(ex1) <
-	  boost::lexical_cast<std::string>(ex2));
+          boost::lexical_cast<std::string>(ex2));
 }
 
 template<class T>

@@ -54,46 +54,47 @@ namespace alps {
 //
 
 template<class T>
-bool Evaluator<T>::can_evaluate(const std::string&) const 
-{ 
+bool Evaluator<T>::can_evaluate(const std::string&) const
+{
   return false;
 }
 
 template<class T>
-bool Evaluator<T>::can_evaluate_function(const std::string& name, const Expression<T>& arg) const 
-{ 
+bool Evaluator<T>::can_evaluate_function(const std::string& name, const Expression<T>& arg) const
+{
   return arg.can_evaluate(*this) &&
-         (name=="sin" || name=="cos" || name=="tan" ||
-          name=="log" || name=="exp" || name=="sqrt");
+         (name=="sqrt" || name=="abs" ||
+          name=="sin" || name=="cos" || name=="tan" ||
+          name=="log" || name=="exp");
 }
 
 template<class T>
-typename Evaluator<T>::Direction Evaluator<T>::direction() const 
-{ 
+typename Evaluator<T>::Direction Evaluator<T>::direction() const
+{
   return Evaluator<T>::left_to_right;
 }
 
 template<class T>
-typename Evaluator<T>::value_type Evaluator<T>::evaluate(const std::string& name) const 
-{ 
+typename Evaluator<T>::value_type Evaluator<T>::evaluate(const std::string& name) const
+{
   return partial_evaluate(name).value();
 }
 
 template<class T>
-typename Evaluator<T>::value_type Evaluator<T>::evaluate_function(const std::string& name, const Expression<T>& arg) const 
-{ 
+typename Evaluator<T>::value_type Evaluator<T>::evaluate_function(const std::string& name, const Expression<T>& arg) const
+{
   return partial_evaluate_function(name,arg).value();
 }
 
 template<class T>
-Expression<T> Evaluator<T>::partial_evaluate(const std::string& name) const 
-{ 
+Expression<T> Evaluator<T>::partial_evaluate(const std::string& name) const
+{
   return Expression<T>(name);
 }
 
 template<class T>
-Expression<T> Evaluator<T>::partial_evaluate_function(const std::string& name, const Expression<T>& arg) const 
-{ 
+Expression<T> Evaluator<T>::partial_evaluate_function(const std::string& name, const Expression<T>& arg) const
+{
   if(!arg.can_evaluate(*this)) {
     Expression<T> e(arg);
     e.partial_evaluate(*this);
@@ -102,6 +103,8 @@ Expression<T> Evaluator<T>::partial_evaluate_function(const std::string& name, c
   value_type val=arg.value(*this);
   if (name=="sqrt")
     val = std::sqrt(val);
+  else if (name=="abs")
+    val = std::abs(val);
   else if (name=="sin")
     val = std::sin(val);
   else if (name=="cos")
@@ -134,7 +137,7 @@ bool ParameterEvaluator<T>::can_evaluate(const std::string& name) const
 template<class T>
 Expression<T> ParameterEvaluator<T>::partial_evaluate(const std::string& name) const
 {
-  if (ParameterEvaluator<T>::can_evaluate(name)) 
+  if (ParameterEvaluator<T>::can_evaluate(name))
     return Expression<T>(ParameterEvaluator<T>::evaluate(name));
   if(!parms_.defined(name))
     return Expression<T>(name);
@@ -227,7 +230,7 @@ void Factor<T>::partial_evaluate(const Evaluator<T>& p)
 template<class T>
 bool Term<T>::depends_on(const std::string& s) const {
   for (factor_iterator it=factors().first; it!=factors().second; ++it)
-    if(it->depends_on(s)) 
+    if(it->depends_on(s))
       return true;
   return false;
 }
@@ -242,7 +245,7 @@ void Term<T>::simplify()
       Term<T> t = it->term();
       if (t.is_negative()) negate();
       std::copy(t.factors().first, t.factors().second,
-		std::back_inserter(s));
+                std::back_inserter(s));
     } else {
       s.push_back(*it);
     }
@@ -299,7 +302,7 @@ void Expression<T>::parse(std::istream& is)
   is >> c;
   if (!is)
     return;
-  if (c=='-') 
+  if (c=='-')
     negate=true;
   else if (c=='+')
     negate=false;
@@ -310,7 +313,7 @@ void Expression<T>::parse(std::istream& is)
     is >> c;
     if (!is)
       return;
-    if (c=='-') 
+    if (c=='-')
       negate=true;
     else if (c=='+')
       negate=false;
@@ -503,33 +506,33 @@ void Term<T>::partial_evaluate(const Evaluator<T>& p)
     value_type val(1);
     if (p.direction() == Evaluator<T>::left_to_right) {
       for (int i=0; i<terms_.size(); ++i) {
-	if (terms_[i].can_evaluate(p)) {
-	  val *= terms_[i].value(p);
-	  terms_.erase(terms_.begin()+i);
-	  --i;
-	} else {
-	  terms_[i].partial_evaluate(p);
-	}
+        if (terms_[i].can_evaluate(p)) {
+          val *= terms_[i].value(p);
+          terms_.erase(terms_.begin()+i);
+          --i;
+        } else {
+          terms_[i].partial_evaluate(p);
+        }
       }
     } else {
       for (int i = terms_.size()-1; i >= 0; --i) {
-	if (terms_[i].can_evaluate(p)) {
-	  val *= terms_[i].value(p);
-	  terms_.erase(terms_.begin()+i);
-	} else {
-	  terms_[i].partial_evaluate(p);
-	}
+        if (terms_[i].can_evaluate(p)) {
+          val *= terms_[i].value(p);
+          terms_.erase(terms_.begin()+i);
+        } else {
+          terms_[i].partial_evaluate(p);
+        }
       }
     }
     if (val == value_type(0.)) {
       (*this) = Term<T>(value_type(0.));
     } else {
       if (detail::evaluate_helper<T>::real(val) < 0.) {
-	is_negative_=!is_negative_;
-	val=-val;
+        is_negative_=!is_negative_;
+        val=-val;
       }
       if (val != value_type(1.))
-	terms_.insert(terms_.begin(), Factor<T>(val));
+        terms_.insert(terms_.begin(), Factor<T>(val));
     }
   }
 }
@@ -548,7 +551,7 @@ void Term<T>::output(std::ostream& os) const
 {
   if (terms_.empty()) {
     os << "0";
-    return;    
+    return;
   }
   if(is_negative())
     os << " - ";
@@ -586,7 +589,7 @@ template<class T>
 void Factor<T>::output(std::ostream& os) const
 {
   if (!term_)
-    boost::throw_exception(std::runtime_error("Empty value in expression"));  
+    boost::throw_exception(std::runtime_error("Empty value in expression"));
   term_->output(os);
 }
 
@@ -614,7 +617,7 @@ typename detail::Number<T>::value_type detail::Number<T>::value(const Evaluator<
 template<class T>
 void detail::Number<T>::output(std::ostream& os) const
 {
-  if (alps::detail::evaluate_helper<T>::imag(val_) == 0) 
+  if (alps::detail::evaluate_helper<T>::imag(val_) == 0)
     os << alps::detail::evaluate_helper<T>::real(val_);
   else
     os << val_;
@@ -665,7 +668,7 @@ void detail::Function<T>::output(std::ostream& os) const
   os << name_ << "(" << arg_ << ")";
 }
 
-// Parameters evaluate(const Parameters& in) 
+// Parameters evaluate(const Parameters& in)
 // {
 //   Parameters out;
 //   ParameterEvaluator eval(in);
@@ -685,7 +688,7 @@ void detail::Function<T>::output(std::ostream& os) const
 // }
 
 template<class T>
-void Expression<T>::flatten() 
+void Expression<T>::flatten()
 {
   int i=0;
   while (i<terms_.size()) {
@@ -700,7 +703,7 @@ void Expression<T>::flatten()
 template<class T>
 boost::shared_ptr<Term<T> > Term<T>::flatten_one_term()
 {
-  for (int i=0;i<terms_.size();++i) 
+  for (int i=0;i<terms_.size();++i)
     if (!terms_[i].is_inverse()) {
       boost::shared_ptr<Factor<T> > val = terms_[i].flatten_one_value();
       if (val) {
@@ -731,7 +734,7 @@ boost::shared_ptr<Expression<T> > Expression<T>::flatten_one_expression()
     terms_.erase(terms_.begin());
     return term;
   }
-  else 
+  else
     return boost::shared_ptr<Expression<T> >();
 }
 
