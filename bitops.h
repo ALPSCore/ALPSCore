@@ -39,7 +39,7 @@
 #ifndef ALPS_SRC_ALPS_BITOPS_H
 #define ALPS_SRC_ALPS_BITOPS_H
  
-#include <palm/config.h>
+#include <alps/config.h>
 
 #ifdef cray
 # include <intrinsics.h>
