@@ -154,9 +154,10 @@ bool BondOperatorSplitter<I>::can_evaluate_function(const std::string& name, con
 template <class I, class STATE1, class STATE2>
 Expression BondOperatorEvaluator<I, STATE1, STATE2>::partial_evaluate_function(const std::string& name, const Expression& arg) const
 {
+  //std::cerr << "BondOperatorEvaluator<I, STATE1, STATE2>::partial_evaluate_function(" << name << ")\n";
   typename operator_map::const_iterator op = super_type::ops_.find(name);
+  Expression e;
   if (op!=super_type::ops_.end()) {  // evaluate operator
-    Expression e;
     bool f;
     if (arg==sites_.first) {
       boost::tie(state_.first,e,f) = op->second.apply(state_.first,basis1_,*this);
@@ -172,11 +173,12 @@ Expression BondOperatorEvaluator<I, STATE1, STATE2>::partial_evaluate_function(c
         fermionic_.second=!fermionic_.second;
     }
     else
-      return ParameterEvaluator(*this).partial_evaluate_function(name,arg);
-    return e;
+      e=ParameterEvaluator(*this).partial_evaluate_function(name,arg);
   }
   else
-    return ParameterEvaluator(*this).partial_evaluate_function(name,arg);
+    e=ParameterEvaluator(*this).partial_evaluate_function(name,arg);
+  //std::cerr << "BondOperatorEvaluator<I, STATE1, STATE2>::partial_evaluate_function(" << name << ") returns " << e << "\n";
+  return e;
 }
 
 template <class I>
