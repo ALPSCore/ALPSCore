@@ -108,7 +108,7 @@ Expression SiteOperatorEvaluator<I, STATE>::partial_evaluate(const std::string& 
   if (has_operator(name)) {  // evaluate operator
     Expression e;
     bool fermionic;
-    boost::tie(state_,e,fermionic) = basis_.apply(name,state_, ParameterEvaluator(*this),ops_);
+    boost::tie(state_,e,fermionic) = basis_.apply(name,state_, ParameterEvaluator(*this),super_type::ops_);
     if (fermionic)
       fermionic_=!fermionic_;
     return e;

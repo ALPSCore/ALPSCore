@@ -164,10 +164,9 @@ bool BondOperatorEvaluator<I, STATE1, STATE2>::can_evaluate_function(const std::
 }
 
 template <class I>
-bool BondOperatorSplitter<I>::can_evaluate_function(const std::string& name, const Expression& arg) const
+bool BondOperatorSplitter<I>::can_evaluate_function(const std::string&, const Expression& arg) const
 {
-  return (has_operator(name,arg)) ||
-         ParameterEvaluator::can_evaluate_function(name,arg);
+  return (arg==sites_.first || arg==sites_.second);
 }
 
 template <class I, class STATE1, class STATE2>
@@ -177,7 +176,7 @@ Expression BondOperatorEvaluator<I, STATE1, STATE2>::partial_evaluate_function(c
   if (has_operator(name,arg)) {  // evaluate operator
     bool f;
     if (arg==sites_.first) {
-      boost::tie(state_.first,e,f) =  basis1_.apply(name,state_.first,*this,ops_);
+      boost::tie(state_.first,e,f) =  basis1_.apply(name,state_.first,*this,super_type::ops_);
       if (f && is_nonzero(e)) {
         fermionic_.first=!fermionic_.first;
         if (fermionic_.second) // for normal ordering
@@ -185,7 +184,7 @@ Expression BondOperatorEvaluator<I, STATE1, STATE2>::partial_evaluate_function(c
       }
     }
     else  if (arg==sites_.second) {
-      boost::tie(state_.second,e,f) =  basis2_.apply(name,state_.second,*this,ops_);
+      boost::tie(state_.second,e,f) =  basis2_.apply(name,state_.second,*this,super_type::ops_);
       if (f)
         fermionic_.second=!fermionic_.second;
     }
@@ -200,18 +199,15 @@ Expression BondOperatorEvaluator<I, STATE1, STATE2>::partial_evaluate_function(c
 template <class I>
 Expression BondOperatorSplitter<I>::partial_evaluate_function(const std::string& name, const Expression& arg) const
 {
-  if (has_operator(name,arg)) {  // evaluate operator
-    Expression e;
-    if (arg==sites_.first) {
-      site_ops_.first *= name;
-      return Expression(second_site_fermionic_ && basis1_.is_fermionic(name,ops_) ? -1. : 1.);
-    }
-    else  if (arg==sites_.second) {
-      site_ops_.second *= name;
-      if (basis2_.is_fermionic(name,ops_))
-         second_site_fermionic_ = !second_site_fermionic_;
-      return Expression(1.);
-    }
+  if (arg==sites_.first) {
+    site_ops_.first *= name;
+    return Expression(second_site_fermionic_ && basis1_.is_fermionic(name,super_type::ops_) ? -1. : 1.);
+  }
+  else  if (arg==sites_.second) {
+    site_ops_.second *= name;
+    if (basis2_.is_fermionic(name,super_type::ops_))
+        second_site_fermionic_ = !second_site_fermionic_;
+    return Expression(1.);
   }
   return ParameterEvaluator(*this).partial_evaluate_function(name,arg);
 }
