@@ -74,7 +74,7 @@ public:
 
   template <class OBS2>
   AbstractSignedObservable(const AbstractSignedObservable<OBS2,SIGN>& o) 
-   : base_type(o.name(),o.super_type::label()), obs_(o.obs_), sign_name_(o.sign_name_), sign_(o.sign_) {}  
+   : base_type(o.name(),o.label()), obs_(o.obs_), sign_name_(o.sign_name_), sign_(o.sign_) {}  
 
   template <class ARG>
   AbstractSignedObservable(const std::string& name,const ARG& arg, const label_type& l=label_type()) 
