@@ -228,7 +228,6 @@ public:
   vector_type momentum(const vector_type& m) const { return alps::momentum(m,lattice());}  
   
 private:
-  typedef lattice_graph<hypercubic_lattice<coordinate_lattice<simple_lattice<GraphUnitCell> > >,graph_type> lattice_type;
   graph_type* make_graph(const Parameters& p);
   const graph_type& const_graph() const { return *g_;}
 
