@@ -1,3 +1,4 @@
+MODEL_LIBRARY = "../../lib/xml/models.xml"
 MODEL = "spin"
 J = 1
 L=4
