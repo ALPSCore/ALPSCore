@@ -242,6 +242,7 @@ oxstream& oxstream::operator<<(const detail::stylesheet_t& c)
 {
   (*this) << processing_instruction("xml-stylesheet") << attribute("type","text/xsl")
     << attribute("href",c.name);
+  return *this;
 }
 
 } // end namespace alps
