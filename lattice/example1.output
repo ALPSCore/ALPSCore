@@ -84,7 +84,7 @@
   </FINITELATTICE>
   <UNITCELL ref="simple2d"/>
 </LATTICEGRAPH>
-<GRAPH name="5-site dimerized" dimension="134918288" vertices="5" edges="4">
+<GRAPH name="5-site dimerized" vertices="5" edges="4">
   <VERTEX id="1" type="0"></VERTEX>
   <VERTEX id="2" type="0"></VERTEX>
   <VERTEX id="3" type="1"><COORDINATE>1 2 3 4 5</COORDINATE></VERTEX>
