@@ -260,7 +260,7 @@ private:
 };
 
 } // end namespace alps
-
+/*
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 namespace alps {
 #endif
@@ -286,6 +286,6 @@ inline alps::IDump& operator>>(alps::IDump& dump, T& x)
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // end namespace alps
 #endif
-
+*/
 
 #endif // ALPS_OSIRIS_DUMPARCHIVE_H
