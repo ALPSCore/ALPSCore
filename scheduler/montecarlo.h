@@ -158,6 +158,7 @@ public:
      model_library_(parms), 
      model_(model_library_.hamiltonian(parms["MODEL"])) 
   {
+    parms.copy_undefined(model_.default_parameters());
     model_.set_parameters(parms);
   }
   
