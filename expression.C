@@ -38,11 +38,19 @@
 
 namespace alps {
 
+Expression::operator bool() const 
+{
+  std::string s = boost::lexical_cast<std::string,Expression>(*this);
+  return s=="" || s=="0" || s=="0.";
+}
+
 namespace detail {
 
 Evaluatable::operator double() const {
   if (!can_evaluate()) {
     std::cerr << "Was trying to evaluate " << *this << "\n";
+    int* x=0;
+    std::cerr << *x;
     boost::throw_exception(std::runtime_error("Cannot evaluate expression"));
   }
   return value();

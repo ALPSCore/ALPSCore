@@ -98,6 +98,7 @@ public:
   Expression(std::istream&);
   Expression(double val) : terms_(1,Term(val)) {}
   Expression(const detail::Evaluatable& e) : terms_(1,Term(e)) {}
+  operator bool() const;
   double value(const Evaluator& p=Evaluator()) const;
   bool can_evaluate(const Evaluator& p=Evaluator()) const;
   void partial_evaluate(const Evaluator& p=Evaluator());
@@ -135,29 +136,6 @@ inline bool can_evaluate(const StringValue& v, const Parameters& p)
 inline double evaluate(const StringValue& v, const Parameters& p)
 {
   return evaluate(v,ParameterEvaluator(p));
-}
-
-template <class T>
-inline bool is_non_zero(const T& x)
-{
-  return !is_zero(x);
-}
-
-template <class T>
-inline bool is_zero(const T& x)
-{
-  return x==0;
-}
-
-template<>
-inline bool is_zero (const Expression& x)
-{
-  if (x.can_evaluate())
-    return is_zero(x.value());
-  else {
-    std::string s = boost::lexical_cast<std::string,Expression>(x);
-    return s=="" || s=="0" || s=="0.";
-  }
 }
 
 } // end namespace alps
