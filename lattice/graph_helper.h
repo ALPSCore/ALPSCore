@@ -146,7 +146,7 @@ public:
   bool disordered_edges() const { return d_.disordered_edges();}
   const std::vector<double>& coordinate(const site_descriptor& s) const { return coordinate_map_[s];}
 
-  void throw_if_xyz_defined(const Parameters& p, const vertex_descriptor& v)	
+  void throw_if_xyz_defined(const Parameters& p, const vertex_descriptor& v) const
   {   
    // check whether x, y, or z is set
     unsigned int dim=alps::dimension(coordinate(v));
@@ -156,14 +156,14 @@ public:
       boost::throw_exception(std::runtime_error("x, y or z is predefined as parameter and used as coordinate"));
   }
   
-  void throw_if_xyz_defined(const Parameters& p, const edge_descriptor& e)	
+  void throw_if_xyz_defined(const Parameters& p, const edge_descriptor& e)	 const
   {
     throw_if_xyz_defined(p,source(e));
     throw_if_xyz_defined(p,target(e));
   }
   
   
-  Parameters coordinate_as_parameter(const edge_descriptor& e) {
+  Parameters coordinate_as_parameter(const edge_descriptor& e) const {
     // check whether x, y, or z is set
     Parameters parms;
     unsigned int dim=alps::dimension(coordinate(source(e)));
@@ -179,7 +179,7 @@ public:
     return parms;
   }
   
-  Parameters coordinate_as_parameter(const vertex_descriptor& v) {
+  Parameters coordinate_as_parameter(const vertex_descriptor& v) const {
     // check whether x, y, or z is set
     Parameters parms;
     unsigned int dim=alps::dimension(coordinate(v));
