@@ -14,19 +14,19 @@
   </LATTICE>
   <UNITCELL name="anisotropic2d" dimension="2" vertices="1">
     <VERTEX id="1" type="0"/>
-    <EDGE type="0"><SOURCE vertex="1" offset="0 0"/><TARGET vertex="1" offset="0 1"/></EDGE>
-    <EDGE type="1"><SOURCE vertex="1" offset="0 0"/><TARGET vertex="1" offset="1 0"/></EDGE>
+    <EDGE type="0" vector="0 1"><SOURCE vertex="1" offset="0 0"/><TARGET vertex="1" offset="0 1"/></EDGE>
+    <EDGE type="1" vector="1 0"><SOURCE vertex="1" offset="0 0"/><TARGET vertex="1" offset="1 0"/></EDGE>
   </UNITCELL>
   <UNITCELL name="simple2d" dimension="2" vertices="1">
     <VERTEX id="1" type="0"/>
-    <EDGE type="0"><SOURCE vertex="1" offset="0 0"/><TARGET vertex="1" offset="0 1"/></EDGE>
-    <EDGE type="0"><SOURCE vertex="1" offset="0 0"/><TARGET vertex="1" offset="1 0"/></EDGE>
+    <EDGE type="0" vector="0 1"><SOURCE vertex="1" offset="0 0"/><TARGET vertex="1" offset="0 1"/></EDGE>
+    <EDGE type="0" vector="1 0"><SOURCE vertex="1" offset="0 0"/><TARGET vertex="1" offset="1 0"/></EDGE>
   </UNITCELL>
   <UNITCELL name="simple3d" dimension="3" vertices="1">
     <VERTEX id="1" type="0"/>
-    <EDGE type="0"><SOURCE vertex="1" offset="0 0 0"/><TARGET vertex="1" offset="1 0 0"/></EDGE>
-    <EDGE type="0"><SOURCE vertex="1" offset="0 0 0"/><TARGET vertex="1" offset="0 1 0"/></EDGE>
-    <EDGE type="0"><SOURCE vertex="1" offset="0 0 0"/><TARGET vertex="1" offset="0 0 1"/></EDGE>
+    <EDGE type="0" vector="1 0 0"><SOURCE vertex="1" offset="0 0 0"/><TARGET vertex="1" offset="1 0 0"/></EDGE>
+    <EDGE type="0" vector="0 1 0"><SOURCE vertex="1" offset="0 0 0"/><TARGET vertex="1" offset="0 1 0"/></EDGE>
+    <EDGE type="0" vector="0 0 1"><SOURCE vertex="1" offset="0 0 0"/><TARGET vertex="1" offset="0 0 1"/></EDGE>
   </UNITCELL>
   <LATTICEGRAPH name="anisotropic square lattice">
     <FINITELATTICE>
