@@ -28,6 +28,7 @@
 #include <alps/config.h>
 #include <alps/alea/observable.h>
 #include <alps/alea/simpleobservable.h>
+#include <alps/xml.h>
 
 //=======================================================================
 // SimpleBinning
@@ -83,6 +84,9 @@ class SimpleBinning : public AbstractBinning<T>
 
   void write_scalar_xml(std::ostream& xml) const;
   template <class IT> void write_vector_xml(std::ostream& xml, IT) const;
+
+  void write_scalar_xml(oxstream& oxs) const;
+  template <class IT> void write_vector_xml(oxstream& oxs, IT) const;
   
 private:
   std::vector<result_type> sum_; // sum of measurements in the bin
@@ -349,6 +353,36 @@ void SimpleBinning<T>::write_vector_xml(std::ostream& xml, IT it) const {
         << "<COUNT>" << count()/(1<<i) << "</COUNT>"
         << "<MEAN method=\"simple\">" << obs_value_traits<result_type>::slice_value(binmean(i),it) << "</MEAN>"
         << "<ERROR method=\"simple\">" << obs_value_traits<result_type>::slice_value(error(i),it) << "</ERROR></BINNED>";
+}
+
+template <class T>
+void SimpleBinning<T>::write_scalar_xml(oxstream& oxs) const { 
+  for (int i = 0; i < binning_depth(); ++i) {
+    oxs << alps::start_tag("BINNED")
+	<< alps::no_linebreak
+	<< alps::start_tag("COUNT") << count()/(1<<i) << alps::end_tag
+        << alps::start_tag("MEAN") << alps::attribute("method", "simple")
+	<< binmean(i) << alps::end_tag
+        << alps::start_tag("ERROR") << alps::attribute("method", "simple")
+	<< error(i) << alps::end_tag
+	<< alps::end_tag("BINNED");
+  }
+}
+
+template <class T> template <class IT> 
+void SimpleBinning<T>::write_vector_xml(oxstream& oxs, IT it) const {
+  for (int i = 0; i < binning_depth() ; ++i) {
+    oxs << alps::start_tag("BINNED")
+	<< alps::no_linebreak
+	<< alps::start_tag("COUNT") << count()/(1<<i) << alps::end_tag
+        << alps::start_tag("MEAN") << alps::attribute("method", "simple")
+	<< obs_value_traits<result_type>::slice_value(binmean(i),it)
+	<< alps::end_tag
+        << alps::start_tag("ERROR") << alps::attribute("method", "simple")
+	<< obs_value_traits<result_type>::slice_value(error(i),it)
+	<< alps::end_tag
+	<< alps::end_tag("BINNED");
+  }
 }
 
 

@@ -28,6 +28,7 @@
 #include <alps/config.h>
 #include <alps/alea/observable.h>
 #include <alps/parser/parser.h>
+#include <alps/xml.h>
 
 #ifndef BOOST_NO_VOID_RETURNS
 # include <boost/functional.hpp>
@@ -235,6 +236,7 @@ class ObservableSet: public std::map<std::string,Observable*>
   void compact();
 
   void write_xml(std::ostream& xml, const boost::filesystem::path& =boost::filesystem::path()) const;
+  void write_xml(oxstream& oxs, const boost::filesystem::path& =boost::filesystem::path()) const;
 
   void read_xml(std::istream& infile, const XMLTag& tag);
 

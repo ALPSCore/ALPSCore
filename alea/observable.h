@@ -33,6 +33,7 @@
 
 #include <alps/config.h>
 #include <alps/alea/obsvalue.h>
+#include <alps/xml.h>
 
 #include <boost/filesystem/path.hpp>
 
@@ -111,6 +112,7 @@ class Observable
   virtual void output(std::ostream&) const = 0;
   /** output the result */
   virtual void write_xml(std::ostream&,const boost::filesystem::path& fn_hdf5=boost::filesystem::path()) const;
+  virtual void write_xml(oxstream& oxs, const boost::filesystem::path& fn_hdf5=boost::filesystem::path()) const;
 #ifndef ALPS_WITHOUT_OSIRIS
   /// return a version ID uniquely identifying the class
   virtual uint32_t version_id() const =0;

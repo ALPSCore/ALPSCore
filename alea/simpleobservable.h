@@ -27,6 +27,7 @@
 
 #include <alps/config.h>
 #include <alps/alea/observable.h>
+#include <alps/xml.h>
 
 #ifdef ALPS_HAVE_HDF5
 # include <H5Cpp.h>
@@ -138,9 +139,16 @@ public:
   void write_xml(std::ostream&, const boost::filesystem::path& =boost::filesystem::path()) const;
   void write_xml_scalar(std::ostream&, const boost::filesystem::path&) const;
   void write_xml_vector(std::ostream&, const boost::filesystem::path&) const;
+
+  void write_xml(oxstream&, const boost::filesystem::path& = boost::filesystem::path()) const;
+  void write_xml_scalar(oxstream&, const boost::filesystem::path&) const;
+  void write_xml_vector(oxstream&, const boost::filesystem::path&) const;
+
   virtual std::string evaluation_method(Target) const { return "";}
+
 private:
   virtual void write_more_xml(std::ostream&,slice_iterator=slice_iterator()) const {}
+  virtual void write_more_xml(oxstream&, slice_iterator = slice_iterator()) const {}
 };
 
 
@@ -266,6 +274,7 @@ public:
 
 private:
   void write_more_xml(std::ostream& xml, slice_iterator it) const;
+  void write_more_xml(oxstream& oxs, slice_iterator it) const;
   binning_type b_;
 };
 
@@ -311,6 +320,10 @@ class AbstractBinning
   void compact() {}
   void write_scalar_xml(std::ostream&) const {}
   template <class IT> void write_vector_xml(std::ostream&, IT) const {}
+
+  void write_scalar_xml(oxstream&) const {}
+  template <class IT> void write_vector_xml(oxstream&, IT) const {}
+
 #ifndef ALPS_WITHOUT_OSIRIS
   virtual void save(ODump& dump) const;
   virtual void load(IDump& dump);
@@ -331,6 +344,7 @@ struct output_helper
   {
     b.output_scalar(out);
   }
+
   template <class X> static void write_xml(const X& b, std::ostream& out, const boost::filesystem::path& fn_hdf5)
   {
     b.write_xml_scalar(out,fn_hdf5);
@@ -340,6 +354,14 @@ struct output_helper
     b.write_scalar_xml(out);
   }
 
+  template <class X> static void write_xml(const X& b, oxstream& oxs, const boost::filesystem::path& fn_hdf5)
+  {
+    b.write_xml_scalar(oxs, fn_hdf5);
+  }
+  template <class X, class IT> static void write_more_xml(const X& b, oxstream& oxs, IT)
+  {
+    b.write_scalar_xml(oxs);
+  }
 };
 
 template <>
@@ -354,12 +376,19 @@ struct output_helper<true>
   {
     b.write_xml_vector(out,fn_hdf5);
   }
-
   template <class X, class IT> static void write_more_xml(const X& b, std::ostream& out, IT i)
   {
     b.write_vector_xml(out,i);
   }
 
+  template <class T> static void write_xml(const T& b, oxstream& oxs, const boost::filesystem::path& fn_hdf5)
+  {
+    b.write_xml_vector(oxs, fn_hdf5);
+  }
+  template <class X, class IT> static void write_more_xml(const X& b, oxstream& oxs, IT i)
+  {
+    b.write_vector_xml(oxs, i);
+  }
 };
 
 } // end namespace alps
@@ -394,6 +423,12 @@ template <class T,class BINNING>
 void BasicSimpleObservable<T,BINNING>::write_more_xml(std::ostream& xml, slice_iterator it) const 
 { 
   output_helper<obs_value_traits<T>::array_valued>::write_more_xml(b_,xml,it);
+}
+
+template <class T,class BINNING>
+void BasicSimpleObservable<T,BINNING>::write_more_xml(oxstream& oxs, slice_iterator it) const 
+{ 
+  output_helper<obs_value_traits<T>::array_valued>::write_more_xml(b_, oxs, it);
 }
 
 #ifndef ALPS_WITHOUT_OSIRIS
@@ -440,6 +475,12 @@ template <class T>
 void AbstractSimpleObservable<T>::write_xml(std::ostream& xml, const boost::filesystem::path& fn_hdf5) const
 {
   output_helper<obs_value_traits<T>::array_valued>::write_xml(*this,xml,fn_hdf5);
+}
+
+template <class T>
+void AbstractSimpleObservable<T>::write_xml(oxstream& oxs, const boost::filesystem::path& fn_hdf5) const
+{
+  output_helper<obs_value_traits<T>::array_valued>::write_xml(*this, oxs, fn_hdf5);
 }
 
 #ifdef ALPS_HAVE_HDF5
@@ -610,6 +651,168 @@ void AbstractSimpleObservable<T>::write_xml_vector(std::ostream& xml, const boos
       xml << "</SCALAR_AVERAGE>\n";
     }
     xml << "</VECTOR_AVERAGE>\n";
+  }
+}
+
+template <class T>
+#ifdef ALPS_HAVE_HDF5
+void AbstractSimpleObservable<T>::write_xml_scalar(oxstream& oxs, const boost::filesystem::path& fn_hdf5) const
+#else
+void AbstractSimpleObservable<T>::write_xml_scalar(oxstream& oxs, const boost::filesystem::path&) const
+#endif
+{
+  if (count()>1)
+  {
+    std::string mm = evaluation_method(Mean);
+    std::string em = evaluation_method(Error);
+    std::string vm = evaluation_method(Variance);
+    std::string tm = evaluation_method(Tau);
+
+    oxs << alps::start_tag("SCALAR_AVERAGE")
+	<< alps::attribute("name", name());
+
+    oxs << alps::start_tag("COUNT") << alps::no_linebreak << count()
+	<< alps::end_tag;
+
+    oxs << alps::start_tag("MEAN") << alps::no_linebreak;
+    if (mm != "") oxs << alps::attribute("method", mm);
+    oxs.stream() << std::setprecision(16);
+    oxs << mean() << alps::end_tag;
+
+    oxs << alps::start_tag("ERROR") << alps::no_linebreak;
+    if (em != "") oxs << alps::attribute("method", em);
+    oxs.stream() << std::setprecision(3);
+    oxs << error() << alps::end_tag;
+
+    if (has_variance()) {
+      oxs << alps::start_tag("VARIANCE") << alps::no_linebreak
+	  << alps::attribute("method", vm) << variance() << alps::end_tag;
+    }
+    if (has_tau()) {
+      oxs << alps::start_tag("AUTOCORR") << alps::no_linebreak
+	  << alps::attribute("method", tm);
+      oxs.stream() << std::setprecision(3);
+      oxs << tau() << alps::end_tag;
+    }
+
+#ifdef ALPS_HAVE_HDF5
+    if (!fn_hdf5.empty() && bin_size() == 1) {
+      //write tag for timeseries and the hdf5-file
+      oxs << alps::start_tag("TIMESERIES")
+	  << alps::attribute("format", "HDF5")
+	  << alps::attribute("file", fn_hdf5.leaf())
+	  << alps::attribute("set", name())
+	  << alps::end_tag;
+
+      //open the hdf5 file and write data
+      H5File hdf5(fn_hdf5.native_file_string().c_str(),H5F_ACC_CREAT | H5F_ACC_RDWR);
+      hsize_t dims[1];
+      dims[0]=bin_number();
+      DataSpace dataspace(1,dims);
+      IntType datatype(HDF5Traits<T>::pred_type());
+      DataSet dataset=hdf5.createDataSet(name().c_str(),datatype,dataspace);
+      vector<T> data(bin_number());
+      for(int j=0;j<bin_number();j++) data[j]=bin_value(j);
+      dataset.write(&(data[0]),HDF5Traits<T>::pred_type());
+    }
+#endif
+    write_more_xml(oxs);
+    oxs << alps::end_tag("SCALAR_AVERAGE");
+  }
+}
+
+template <class T>
+#ifdef ALPS_HAVE_HDF5
+void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, const boost::filesystem::path& fn_hdf5) const
+#else
+void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, const boost::filesystem::path&) const
+#endif
+{
+  if(count()>1)
+  {
+    std::string mm = evaluation_method(Mean);
+    std::string em = evaluation_method(Error);
+    std::string vm = evaluation_method(Variance);
+    std::string tm = evaluation_method(Tau);
+    result_type mean_(mean());
+    result_type error_(error());
+    result_type variance_;
+    result_type tau_;
+    if(has_tau())
+    {
+      obs_value_traits<T>::resize_same_as(tau_,mean_);
+      obs_value_traits<T>::copy(tau_,tau());
+    }
+    if(has_variance())
+    {
+      obs_value_traits<T>::resize_same_as(variance_,mean_);
+      obs_value_traits<T>::copy(variance_,variance());
+    }
+
+    oxs << alps::start_tag("VECTOR_AVERAGE")
+	<< alps::attribute("name", name())
+	<< alps::attribute("nvalues", obs_value_traits<T>::size(mean()));
+
+    typename obs_value_traits<result_type>::slice_iterator it=obs_value_traits<result_type>::slice_begin(mean_);
+    typename obs_value_traits<result_type>::slice_iterator end=obs_value_traits<result_type>::slice_end(mean_);
+    while (it!=end)
+    {
+      oxs << alps::start_tag("SCALAR_AVERAGE")
+	  << alps::attribute("indexvalue", obs_value_traits<result_type>::slice_name(mean_,it));
+      
+      oxs << alps::start_tag("COUNT") << count() << alps::end_tag;
+      
+      oxs << alps::start_tag("MEAN");
+      if (mm != "") oxs << alps::attribute("method", mm);
+      oxs.stream() << std::setprecision(16);
+      oxs << obs_value_traits<result_type>::slice_value(mean_, it)
+	  << alps::end_tag;
+      
+      oxs << alps::start_tag("ERROR");
+      if (em != "") oxs << alps::attribute("method", em);
+      oxs.stream() << std::setprecision(3);
+      oxs << obs_value_traits<result_type>::slice_value(error_, it)
+	  << alps::end_tag;
+      
+      if (has_variance()) {
+	oxs << alps::start_tag("VARIANCE") << alps::attribute("method", vm)
+	    << obs_value_traits<result_type>::slice_value(variance_, it)
+	    << alps::end_tag;
+      }
+      if (has_tau()) {
+	oxs << alps::start_tag("AUTOCORR") << alps::attribute("method", tm);
+	oxs.stream() << std::setprecision(3);
+	oxs << obs_value_traits<time_type>::slice_value(tau_, it)
+	    << alps::end_tag;
+      }
+      
+#ifdef ALPS_HAVE_HDF5
+      if(!fn_hdf5.empty() && bin_size() == 1) {
+        //write tag for timeseries and the hdf5-file
+	oxs << alps::start_tag("TIMESERIES")
+	    << alps::attribute("format", "HDF5")
+	    << alps::attribute("file", fn_hdf5.leaf())
+	    << alps::attribute("set", name())
+	    << alps::end_tag;
+
+        //open the hdf5 file and write data
+        H5File hdf5(fn_hdf5.native_file_string().c_str(),H5F_ACC_CREAT | H5F_ACC_RDWR);
+        hsize_t dims[1];
+        dims[0]=bin_number();
+        DataSpace dataspace(1,dims);
+        IntType datatype(HDF5Traits<T>::pred_type());
+        DataSet dataset=hdf5.createDataSet(name().c_str(),datatype,dataspace);
+        vector<T> data(bin_number());
+        for(int j=0;j<bin_number();j++) data[j]=bin_value(j)[it];
+        dataset.write(&(data[0]),HDF5Traits<T>::pred_type());
+      }
+#endif
+      write_more_xml(oxs,it);
+
+      ++it;
+      oxs << alps::end_tag("SCALAR_AVERAGE");
+    }
+    oxs << alps::end_tag("VECTOR_AVERAGE");
   }
 }
 
