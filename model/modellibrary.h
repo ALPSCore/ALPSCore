@@ -84,8 +84,6 @@ private:
   typedef std::map<std::string,SiteBasisDescriptor<short> > SiteBasisDescriptorMap;
   typedef std::map<std::string,BasisDescriptor<short> > BasisDescriptorMap;
   typedef std::map<std::string,HamiltonianDescriptor<short> > HamiltonianDescriptorMap;
-  typedef std::map<std::string,SiteOperator> SiteOperatorMap;
-  typedef std::map<std::string,BondOperator> BondOperatorMap;
 
   SiteBasisDescriptorMap sitebases_;
   BasisDescriptorMap bases_;
