@@ -1,7 +1,7 @@
 /***************************************************************************
 * ALPS++ library
 *
-* test/osiris/xdrdump.C   test program for xdrdump
+* test/osiris/xdrdump2.C   test program for xdrdump
 *
 * $Id$
 *
@@ -30,24 +30,10 @@ int main()
 try {
 #endif
 
-  bool o1 = false;
-  int8_t o2 = 63;
-  uint8_t o3 = 201;
-  int16_t o4 = -699;
-  uint16_t o5 = 43299;
-  int32_t o6 = 847229;
-  uint32_t o7 = 4294967295u;
-  int64_t o8 = -1152921504606846976;
-  uint64_t o9 = 18446744073709551614u;
-  double o10 = 3.14159265358979323846;
-  std::string o11 = "test string";
+  std::string file;
+  std::cin >> file;
 
-  {
-    alps::OXDRFileDump od("xdrdump.dump");
-    od << o1 << o2 << o3 << o4 << o5 << o6 << o7 << o8 << o9 << o10 << o11;
-  }
-  
-  alps::IXDRFileDump id("xdrdump.dump");
+  alps::IXDRFileDump id(file);
   std::cout << id.get<bool>() << ' ';
   std::cout << static_cast<int32_t>(id.get<int8_t>()) << ' ';
   std::cout << static_cast<int32_t>(id.get<uint8_t>()) << ' ';

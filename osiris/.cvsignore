@@ -1,4 +1,7 @@
 Makefile
+sizeof
 xdrdump
-*.dump
+xdrdump2
+xdrdump.dump
+xdrdump2.input
 *.ok
