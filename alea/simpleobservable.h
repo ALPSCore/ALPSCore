@@ -85,29 +85,29 @@ public:
   virtual result_type mean() const =0;
   
   /// the variance
-  virtual result_type variance() const =0;
+  virtual result_type variance() const { return result_type();}
   
   /// the error
   virtual result_type error() const =0;
 
   /// is information about the minimum and maximum value available?
   
-  virtual bool has_minmax() const = 0;
+  virtual bool has_minmax() const { return false;}
   
   /// the minimum value
-  virtual value_type min() const =0;
+  virtual value_type min() const { return value_type();}
   
   /// the maximum value
-  virtual value_type max() const =0;
+  virtual value_type max() const { return value_type();}
   
   /// is autocorrelation information available ? 
-  virtual bool has_tau() const =0;
+  virtual bool has_tau() const { return false;}
     
   /// the autocorrelation time, throws an exception if not available
-  virtual time_type tau() const =0;
+  virtual time_type tau() const { return time_type();}
 
   /// is variance  available ? 
-  virtual bool has_variance() const =0;
+  virtual bool has_variance() const { return false;}
 
   //@}
 
@@ -118,11 +118,18 @@ public:
   //@{
   //@name binning information
   /// the number of bins
-  virtual count_type bin_number() const =0;
-  /// tthe number of measurements per bin
-  virtual count_type bin_size() const =0;
+  virtual count_type bin_number() const { return 0;}
+  /// the number of measurements per bin
+  virtual count_type bin_size() const { return 0;}
   /// the value of a bin
-  virtual const value_type& bin_value(count_type n) const =0;
+  virtual const value_type& bin_value(count_type) const 
+  { boost::throw_exception(std::logic_error("bin_value called but no bins present")); return *(new value_type());}
+  /// the number of bins with squared values
+  virtual count_type bin_number2() const { return 0;}
+  /// the squared value of a bin
+  virtual const value_type& bin_value2(count_type) const 
+  { boost::throw_exception(std::logic_error("bin_value2 called but no bins present")); return *(new value_type());}
+
   //@}
   
   
@@ -158,15 +165,47 @@ private:
   virtual void write_more_xml(oxstream&, slice_iterator = slice_iterator()) const {}
 };
 
+//=======================================================================
+// RecordableObservable
+//
+// an observable that can store new measurements
+//-----------------------------------------------------------------------
+
+template <class T=double, class SIGN=int32_t>
+class RecordableObservable
+{
+public:
+  typedef T value_type;
+  typedef SIGN sign_type;
+
+  /// just a default constructor  
+  RecordableObservable() {}
+
+  /// add another measurement to the observable
+  virtual void operator<<(const value_type& x) =0;
+  /// add another measurement to the observable
+  virtual void add(const value_type& x) { operator<<(x);}
+  /// add an explcitly signed measurement to the observable
+  virtual void add(const value_type& x, sign_type s) { 
+    if (s==1)
+      add(x);
+    else
+      boost::throw_exception(std::logic_error("Called add of unsigned dobservable with a sign that is not 1"));
+  }
+ 
+  /// is it thermalized ? 
+  virtual bool is_thermalized() const =0;
+ 
+ };
 
 //=======================================================================
 // SimpleObservable
 //
-// Observable class interface
+// Observable class with variable autocorrelation analysis and binning
 //-----------------------------------------------------------------------
 
-template <class T=double>
-class SimpleObservable: public AbstractSimpleObservable<T>
+template <class T,class BINNING>
+class SimpleObservable: public AbstractSimpleObservable<T>, public RecordableObservable<T>
 {
 public:
   typedef typename AbstractSimpleObservable<T>::value_type value_type;
@@ -174,53 +213,19 @@ public:
   typedef typename AbstractSimpleObservable<T>::count_type count_type;
   typedef typename AbstractSimpleObservable<T>::result_type result_type;
   typedef typename AbstractSimpleObservable<T>::slice_iterator slice_iterator;
-  
-  /// the constructor needs a name
-  SimpleObservable(const std::string& name="") : AbstractSimpleObservable<T>(name) {}
-  virtual ~SimpleObservable() {}
-  /// add another measurement to the observable
-  virtual SimpleObservable<T>& operator<<(const T& x) =0;
- 
-  /// is it thermalized ? 
-  virtual bool is_thermalized() const =0;
-  
- 
-  virtual count_type bin_number2() const =0;
-  virtual const value_type& bin_value2(count_type n) const =0;
-
-protected:
-  Observable* convert_mergeable() const;
- };
-
-
-//=======================================================================
-// BasicSimpleObservable
-//
-// Observable class with variable autocorrelation analysis and binning
-//-----------------------------------------------------------------------
-
-template <class T,class BINNING>
-class BasicSimpleObservable: public SimpleObservable<T>
-{
-public:
-  typedef typename SimpleObservable<T>::value_type value_type;
-  typedef typename SimpleObservable<T>::time_type time_type;
-  typedef typename SimpleObservable<T>::count_type count_type;
-  typedef typename SimpleObservable<T>::result_type result_type;
-  typedef typename SimpleObservable<T>::slice_iterator slice_iterator;
   typedef BINNING binning_type;
 
   BOOST_STATIC_CONSTANT(int,version=(obs_value_traits<T>::magic_id+ (binning_type::magic_id << 16)));
   /// the constructor needs a name and optionally specifications for the binning strategy
-  BasicSimpleObservable(const std::string& name,const binning_type&)
-   : SimpleObservable<T>(name), b_(b) {}
+  SimpleObservable(const std::string& name,const binning_type& b)
+   : AbstractSimpleObservable<T>(name), b_(b) {}
 
-  BasicSimpleObservable(const std::string& name="" ,uint32_t s=0)
-   : SimpleObservable<T>(name), b_(s) {}
+  SimpleObservable(const std::string& name="" ,uint32_t s=0)
+   : AbstractSimpleObservable<T>(name), b_(s) {}
    
   uint32_t version_id() const { return version;}
   
-  Observable* clone() const {return new BasicSimpleObservable<T,BINNING>(*this);}
+  Observable* clone() const {return new SimpleObservable<T,BINNING>(*this);}
 
   ALPS_DUMMY_VOID output(std::ostream&) const;
 
@@ -245,7 +250,7 @@ public:
   uint32_t get_thermalization() const { return b_.get_thermalization();}
   bool can_set_thermalization() const { return b_.can_set_thermalization();}
   
-  virtual SimpleObservable<T>& operator<<(const T& x) { b_ << x; return *this;}
+  void operator<<(const T& x) { b_ << x;}
  
 
   //@{
@@ -279,12 +284,13 @@ public:
   { return (t==Mean || t== Variance) ? std::string("simple") : b_.evaluation_method();}
 
 private:
+  Observable* convert_mergeable() const;
   void write_more_xml(oxstream& oxs, slice_iterator it) const;
   binning_type b_;
 };
 
 #ifndef BOOST_NO_INCLASS_MEMBER_INITIALIZATION
-template <class T, class BINNING> const int BasicSimpleObservable<T,BINNING>::version;
+template <class T, class BINNING> const int SimpleObservable<T,BINNING>::version;
 #endif
 
 
@@ -386,8 +392,8 @@ struct output_helper<true>
 
 namespace alps {
 
-template <class T>
-inline Observable* SimpleObservable<T>::convert_mergeable() const
+template <class T, class BINNING>
+inline Observable* SimpleObservable<T,BINNING>::convert_mergeable() const
 {
   return new SimpleObservableEvaluator<T>(*this);
 }
@@ -395,7 +401,7 @@ inline Observable* SimpleObservable<T>::convert_mergeable() const
 
 template <class T,class BINNING>
 ALPS_DUMMY_VOID
-BasicSimpleObservable<T,BINNING>::output(std::ostream& o) const 
+SimpleObservable<T,BINNING>::output(std::ostream& o) const 
 { 
   if(count()==0)
   {
@@ -411,7 +417,7 @@ BasicSimpleObservable<T,BINNING>::output(std::ostream& o) const
 }
 
 template <class T,class BINNING>
-void BasicSimpleObservable<T,BINNING>::write_more_xml(oxstream& oxs, slice_iterator it) const 
+void SimpleObservable<T,BINNING>::write_more_xml(oxstream& oxs, slice_iterator it) const 
 { 
   output_helper<obs_value_traits<T>::array_valued>::write_more_xml(b_, oxs, it);
 }
@@ -419,14 +425,14 @@ void BasicSimpleObservable<T,BINNING>::write_more_xml(oxstream& oxs, slice_itera
 #ifndef ALPS_WITHOUT_OSIRIS
 
 template <class T,class BINNING>
-inline void BasicSimpleObservable<T,BINNING>::save(ODump& dump) const
+inline void SimpleObservable<T,BINNING>::save(ODump& dump) const
 {
   Observable::save(dump);
   dump << b_;
 }
 
 template <class T,class BINNING>
-inline void BasicSimpleObservable<T,BINNING>::load(IDump& dump) 
+inline void SimpleObservable<T,BINNING>::load(IDump& dump) 
 {
   Observable::load(dump);
   dump >> b_;
@@ -512,6 +518,8 @@ void AbstractSimpleObservable<T>::write_xml_scalar(oxstream& oxs, const boost::f
     std::string tm = evaluation_method(Tau);
 
     oxs << start_tag("SCALAR_AVERAGE") << attribute("name", name());
+    if (is_signed())
+      oxs << attribute("signed","true");     
 
     oxs << start_tag("COUNT") << no_linebreak << count() << end_tag;
 
@@ -590,6 +598,8 @@ void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, const boost::f
 
     oxs << start_tag("VECTOR_AVERAGE")<< attribute("name", name())
         << attribute("nvalues", obs_value_traits<T>::size(mean()));
+    if (is_signed())
+      oxs << attribute("signed","true");     
 
     typename obs_value_traits<result_type>::slice_iterator it=obs_value_traits<result_type>::slice_begin(mean_);
     typename obs_value_traits<result_type>::slice_iterator end=obs_value_traits<result_type>::slice_end(mean_);

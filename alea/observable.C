@@ -98,6 +98,15 @@ const Observable& Observable::sign() const
   return (*reinterpret_cast<Observable*>(1));
 }
 
+const Observable& Observable::signed_observable() const
+{
+  if(signed()) 
+    boost::throw_exception(std::logic_error("alps::Observable::signed_observable not implemented."));
+  else
+    boost::throw_exception(std::logic_error("alps::Observable::signed_observable called for unsigned Observable"));
+  return (*reinterpret_cast<Observable*>(1));
+}
+
 uint32_t Observable::number_of_runs() const 
 {
   return 1;

@@ -152,6 +152,7 @@ class Observable
   virtual void clear_sign();
   /// get a reference to the sign observable
   virtual const Observable& sign() const;
+  virtual const Observable& signed_observable() const;
   /// get the name of the observable containing the sign
   virtual const std::string sign_name() const;
 //@}
@@ -167,7 +168,6 @@ class Observable
 /// compact the data, useful e.g. for time series when I just need th result
   virtual ALPS_DUMMY_VOID compact();
 
-protected:
   virtual void merge(const Observable&);
   /// can this observable be merged with one of the same type  
   virtual bool can_merge() const; 

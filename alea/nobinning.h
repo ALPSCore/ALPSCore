@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
@@ -102,18 +102,18 @@ class NoBinning : public AbstractBinning<T>
 template <class T> const bool NoBinning<T>::has_tau;
 #endif
 
-typedef BasicSimpleObservable<int32_t,NoBinning<int32_t> > SimpleIntObservable;
-typedef BasicSimpleObservable<double,NoBinning<double> > SimpleRealObservable;
-typedef BasicSimpleObservable<std::complex<double>,NoBinning<std::complex<double> > > SimpleComplexObservable;
+typedef SimpleObservable<int32_t,NoBinning<int32_t> > SimpleIntObservable;
+typedef SimpleObservable<double,NoBinning<double> > SimpleRealObservable;
+typedef SimpleObservable<std::complex<double>,NoBinning<std::complex<double> > > SimpleComplexObservable;
 #ifdef ALPS_HAVE_VALARRAY
-typedef BasicSimpleObservable< std::valarray<int32_t> , NoBinning<std::valarray<int32_t> > > SimpleIntVectorObservable;
-typedef BasicSimpleObservable< std::valarray<double> , NoBinning<std::valarray<double> > > SimpleRealVectorObservable;
-typedef BasicSimpleObservable< std::valarray<std::complex<double> > , 
+typedef SimpleObservable< std::valarray<int32_t> , NoBinning<std::valarray<int32_t> > > SimpleIntVectorObservable;
+typedef SimpleObservable< std::valarray<double> , NoBinning<std::valarray<double> > > SimpleRealVectorObservable;
+typedef SimpleObservable< std::valarray<std::complex<double> > , 
                          NoBinning<std::valarray<std::complex<double> > > > SimpleComplexVectorObservable;
 #endif
-typedef BasicSimpleObservable< alps::multi_array<int32_t,2> , NoBinning<alps::multi_array<int32_t,2> > > SimpleInt2DArrayObservable;
-typedef BasicSimpleObservable< alps::multi_array<double,2> , NoBinning<alps::multi_array<double,2> > > SimpleReal2DArrayObservable;
-typedef BasicSimpleObservable< alps::multi_array<std::complex<double>,2> , NoBinning<alps::multi_array<std::complex<double>,2> > > SimpleComplex2DArrayObservable;
+typedef SimpleObservable< alps::multi_array<int32_t,2> , NoBinning<alps::multi_array<int32_t,2> > > SimpleInt2DArrayObservable;
+typedef SimpleObservable< alps::multi_array<double,2> , NoBinning<alps::multi_array<double,2> > > SimpleReal2DArrayObservable;
+typedef SimpleObservable< alps::multi_array<std::complex<double>,2> , NoBinning<alps::multi_array<std::complex<double>,2> > > SimpleComplex2DArrayObservable;
 
 //=======================================================================
 

@@ -29,7 +29,7 @@
 /* $Id$ */
 
 #include <alps/alea/observableset.h>
-#include <alps/alea/simpleobservable.h>
+#include <alps/alea/signedobservable.h>
 #include <alps/alea/nobinning.h>
 #include <alps/alea/detailedbinning.h>
 #include <alps/alea/simpleobseval.h>
@@ -53,25 +53,43 @@ inline void deleteit(Observable& obs)
 ObservableFactory::ObservableFactory()
 {
   register_observable<IntObsevaluator>();
+  register_observable<RealObsevaluator>();
+  register_observable<SimpleIntObservable>();
   register_observable<IntObservable>();
   register_observable<IntTimeSeriesObservable>();
-  register_observable<SimpleIntObservable>();
-  register_observable<RealObsevaluator>();
+  register_observable<SimpleRealObservable>();
   register_observable<RealObservable>();
   register_observable<RealTimeSeriesObservable>();
-  register_observable<SimpleRealObservable>();
+  register_observable<AbstractSignedObservable<IntObsevaluator> >();
+  register_observable<AbstractSignedObservable<RealObsevaluator> >();
+  register_observable<SignedObservable<SimpleIntObservable> >();
+  register_observable<SignedObservable<IntObservable> >();
+  register_observable<SignedObservable<IntTimeSeriesObservable> >();
+  register_observable<SignedObservable<SimpleRealObservable> >();
+  register_observable<SignedObservable<RealObservable> >();
+  register_observable<SignedObservable<RealTimeSeriesObservable> >();
 #ifdef ALPS_HAVE_VALARRAY
   register_observable<RealVectorObsevaluator>();
-  register_observable<RealVectorObservable>();
-  register_observable<RealVectorTimeSeriesObservable>();
-  register_observable<SimpleRealVectorObservable>();
   register_observable<IntVectorObsevaluator>();
+  register_observable<RealVectorObservable>();
+  register_observable<SimpleRealVectorObservable>();
+  register_observable<RealVectorTimeSeriesObservable>();
+  register_observable<SimpleIntVectorObservable>();
   register_observable<IntVectorObservable>();
   register_observable<IntVectorTimeSeriesObservable>();
-  register_observable<SimpleIntVectorObservable>();
+  register_observable<AbstractSignedObservable<RealVectorObsevaluator> >();
+  register_observable<AbstractSignedObservable<IntVectorObsevaluator> >();
+  register_observable<SignedObservable<RealVectorObservable> >();
+  register_observable<SignedObservable<SimpleRealVectorObservable> >();
+  register_observable<SignedObservable<RealVectorTimeSeriesObservable> >();
+  register_observable<SignedObservable<SimpleIntVectorObservable> >();
+  register_observable<SignedObservable<IntVectorObservable> >();
+  register_observable<SignedObservable<IntVectorTimeSeriesObservable> >();
 #endif
   register_observable<Real2DArrayObservable>();
   register_observable<SimpleReal2DArrayObservable>();
+  register_observable<SignedObservable<Real2DArrayObservable> >();
+  register_observable<SignedObservable<SimpleReal2DArrayObservable> >();
   register_observable<HistogramObservable<int32_t> >();
   register_observable<HistogramObservable<int32_t,double> >();
 }
@@ -103,10 +121,23 @@ void ObservableSet::load(IDump& dump)
 
 void ObservableSet::update_signs()
 {
+  signs_.clear();
   for (iterator it = begin(); it != end(); ++it)
-    if(it->second->is_signed() && has(it->second->sign_name()))
-      it->second->set_sign((*this)[it->second->sign_name()]);
+    if(it->second->is_signed()) {
+      signs_.insert(std::make_pair(it->second->sign_name(),it->second->name()));
+      if (has(it->second->sign_name()))
+        it->second->set_sign((*this)[it->second->sign_name()]);
+    }
 }
+
+void ObservableSet::set_sign(const std::string& sign)
+{
+  for (iterator it = begin(); it != end(); ++it)
+    if(it->second->is_signed())
+      it->second->set_sign_name(sign);
+  update_signs();
+}
+
 
 ObservableSet::ObservableSet(const ObservableSet& m)
   : std::map<std::string,Observable*>()
@@ -169,7 +200,7 @@ void ObservableSet::addObservable(Observable* obs)
   // insert into sign list if signed and set sign if possible
   if(obs->is_signed())
   {
-          signs_.insert(std::make_pair(obs->sign_name(),obs->name()));
+    signs_.insert(std::make_pair(obs->sign_name(),obs->name()));
           
     // set sign if possible
     if(has(obs->sign_name()))

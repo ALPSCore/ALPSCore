@@ -118,6 +118,8 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
   
   count_type bin_number() const { collect(); return all_.bin_number(); }
   const value_type& bin_value(count_type i) const { collect(); return all_.bin_value(i); }
+  count_type bin_number2() const { collect(); return all_.bin_number2(); }
+  const value_type& bin_value2(count_type i) const { collect(); return all_.bin_value2(i); }
   count_type bin_size() const { collect(); return all_.bin_size(); }
   count_type count() const { collect(); return all_.count(); }
 
@@ -187,15 +189,16 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
   template<class X> void divide(const X& x);
 
   std::string evaluation_method(Target t) const { return all_.evaluation_method(t);}
- private:
-  typedef typename std::vector<SimpleObservableData<T> >::iterator iterator;
-  typedef typename std::vector<SimpleObservableData<T> >::const_iterator const_iterator;
-  void collect() const;
 
   void merge(const Observable&);
   bool can_merge() const {return true;} 
   bool can_merge(const Observable&) const;
   Observable* convert_mergeable() const {return clone();}
+ private:
+  typedef typename std::vector<SimpleObservableData<T> >::iterator iterator;
+  typedef typename std::vector<SimpleObservableData<T> >::const_iterator const_iterator;
+  void collect() const;
+
 
   mutable bool valid_;
   bool automatic_naming_; // true if explicit name was not given through
@@ -380,10 +383,10 @@ template <class T>
 inline void SimpleObservableEvaluator<T>::merge(const Observable& o)
 {
   if (automatic_naming_ && name()=="") Observable::rename(o.name());
-  if (dynamic_cast<const SimpleObservableEvaluator<T>*>(&o)==0) {
-    if(dynamic_cast<const SimpleObservable<T>&>(o).is_thermalized())
+  if (dynamic_cast<const RecordableObservable<T>*>(&o)!=0) {
+    if(dynamic_cast<const RecordableObservable<T>&>(o).is_thermalized())
       (*this) <<
-        SimpleObservableData<T>(dynamic_cast<const SimpleObservable<T>&>(o));
+        SimpleObservableData<T>(dynamic_cast<const AbstractSimpleObservable<T>&>(o));
   } else {
     const SimpleObservableEvaluator<T>& eval =
       dynamic_cast<const SimpleObservableEvaluator<T>&>(o);

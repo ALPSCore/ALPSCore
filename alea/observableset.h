@@ -208,6 +208,7 @@ class ObservableSet: public std::map<std::string,Observable*>
 
   // sign support
   void update_signs();
+  void set_sign(const std::string&);
   
   /// compact the observables to save space, discarding e.g. time series information
   void compact();

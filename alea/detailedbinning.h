@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2004 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
@@ -121,32 +121,32 @@ public:
   : BasicDetailedBinning<T>(binsize,std::numeric_limits<uint32_t>::max()) {}
 };
 
-typedef BasicSimpleObservable<int32_t,DetailedBinning<int32_t> > IntObservable;
-typedef BasicSimpleObservable<double,DetailedBinning<double> > RealObservable;
-typedef BasicSimpleObservable<std::complex<double>,DetailedBinning<std::complex<double> > > ComplexObservable;
-typedef BasicSimpleObservable<double,FixedBinning<double> > RealTimeSeriesObservable;
-typedef BasicSimpleObservable<int32_t,FixedBinning<int32_t> > IntTimeSeriesObservable;
+typedef SimpleObservable<int32_t,DetailedBinning<int32_t> > IntObservable;
+typedef SimpleObservable<double,DetailedBinning<double> > RealObservable;
+typedef SimpleObservable<std::complex<double>,DetailedBinning<std::complex<double> > > ComplexObservable;
+typedef SimpleObservable<double,FixedBinning<double> > RealTimeSeriesObservable;
+typedef SimpleObservable<int32_t,FixedBinning<int32_t> > IntTimeSeriesObservable;
 
 #ifdef ALPS_HAVE_VALARRAY
-typedef BasicSimpleObservable< std::valarray<int32_t> , 
+typedef SimpleObservable< std::valarray<int32_t> , 
                          DetailedBinning<std::valarray<int32_t> > > IntVectorObservable;
-typedef BasicSimpleObservable< std::valarray<double> , 
+typedef SimpleObservable< std::valarray<double> , 
                          DetailedBinning<std::valarray<double> > > RealVectorObservable;
-typedef BasicSimpleObservable< std::valarray<std::complex<double> > , 
+typedef SimpleObservable< std::valarray<std::complex<double> > , 
                          DetailedBinning<std::valarray<std::complex<double> > > > ComplexVectorObservable;
-typedef BasicSimpleObservable< std::valarray<int32_t> , 
+typedef SimpleObservable< std::valarray<int32_t> , 
                          FixedBinning<std::valarray<int32_t> > > IntVectorTimeSeriesObservable;
-typedef BasicSimpleObservable< std::valarray<double> , 
+typedef SimpleObservable< std::valarray<double> , 
                          FixedBinning<std::valarray<double> > > RealVectorTimeSeriesObservable;
-typedef BasicSimpleObservable< std::valarray<std::complex<double> > , 
+typedef SimpleObservable< std::valarray<std::complex<double> > , 
                          FixedBinning<std::valarray<std::complex<double> > > > ComplexVectorTimeSeriesObservable;
 #endif
-typedef BasicSimpleObservable< alps::multi_array<int32_t,2> , DetailedBinning<alps::multi_array<int32_t,2> > > Int2DArrayObservable;
-typedef BasicSimpleObservable< alps::multi_array<double,2> , DetailedBinning<alps::multi_array<double,2> > > Real2DArrayObservable;
-typedef BasicSimpleObservable< alps::multi_array<std::complex<double>,2> , DetailedBinning<alps::multi_array<std::complex<double>,2> > > Complex2DArrayObservable;
-typedef BasicSimpleObservable< alps::multi_array<int32_t,2> , FixedBinning<alps::multi_array<int32_t,2> > > Int2DArrayTimeSeriesObservable;
-typedef BasicSimpleObservable< alps::multi_array<double,2> , FixedBinning<alps::multi_array<double,2> > > Real2DArrayTimeSeriesObservable;
-typedef BasicSimpleObservable< alps::multi_array<std::complex<double>,2> , FixedBinning<alps::multi_array<std::complex<double>,2> > > Complex2DArrayTimeSeriesObservable;
+typedef SimpleObservable< alps::multi_array<int32_t,2> , DetailedBinning<alps::multi_array<int32_t,2> > > Int2DArrayObservable;
+typedef SimpleObservable< alps::multi_array<double,2> , DetailedBinning<alps::multi_array<double,2> > > Real2DArrayObservable;
+typedef SimpleObservable< alps::multi_array<std::complex<double>,2> , DetailedBinning<alps::multi_array<std::complex<double>,2> > > Complex2DArrayObservable;
+typedef SimpleObservable< alps::multi_array<int32_t,2> , FixedBinning<alps::multi_array<int32_t,2> > > Int2DArrayTimeSeriesObservable;
+typedef SimpleObservable< alps::multi_array<double,2> , FixedBinning<alps::multi_array<double,2> > > Real2DArrayTimeSeriesObservable;
+typedef SimpleObservable< alps::multi_array<std::complex<double>,2> , FixedBinning<alps::multi_array<std::complex<double>,2> > > Complex2DArrayTimeSeriesObservable;
 
 
 template <class T>

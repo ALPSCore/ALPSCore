@@ -81,7 +81,7 @@ public:
   SimpleObservableData();
   template <class U, class S>
   SimpleObservableData(const SimpleObservableData<U>& x, S s);
-  SimpleObservableData(const SimpleObservable<value_type>& obs);
+  SimpleObservableData(const AbstractSimpleObservable<value_type>& obs);
   SimpleObservableData(std::istream&, const XMLTag&);
 
   // friend SimpleObservableData<typename obs_value_slice<T,typename obs_value_traits<T>::index_type> >;
@@ -270,7 +270,7 @@ SimpleObservableData<T>::SimpleObservableData(const SimpleObservableData<U>& x, 
 }
 
 template <class T>
-inline SimpleObservableData<T>::SimpleObservableData(const SimpleObservable<T>& obs)
+inline SimpleObservableData<T>::SimpleObservableData(const AbstractSimpleObservable<T>& obs)
  : count_(obs.count()),
    has_variance_(obs.has_variance()),
    has_tau_(obs.has_tau()),
