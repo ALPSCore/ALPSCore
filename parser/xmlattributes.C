@@ -35,8 +35,6 @@ namespace alps {
   
 namespace {
     
-using namespace boost::spirit;
-
 struct assign_string {
   assign_string(const std::string& name)
     : ptr_(const_cast<std::string*>(&name)) {}
@@ -56,19 +54,23 @@ struct append_attr {
   const std::string& value_;
 };
 
-struct attr_parser : public grammar<attr_parser> {
+struct attr_parser : public boost::spirit::grammar<attr_parser> {
   attr_parser(XMLAttributes& a) : attr(a) {}
 
   template<typename ScannerT>
   struct definition {
-    rule<ScannerT> name_p, value_p, attribute_p, attributes_p;
+    boost::spirit::rule<ScannerT> name_p, value_p, attribute_p, attributes_p;
     definition(const attr_parser& self)
     {
+      using boost::spirit::alpha_p;
+      using boost::spirit::alnum_p;
+      using boost::spirit::anychar_p;
+      using boost::spirit::ch_p;
       name_p = ((alpha_p | ch_p('_')) >> *(alnum_p | ch_p('_')))[assign_string(self.name)];
       value_p = ch_p('\"') >> (*(anychar_p - ch_p('\"')))[assign_string(self.value)] >> ch_p('\"');
       attributes_p = *(name_p >> ch_p('=') >> value_p)[append_attr(self.attr, self.name, self.value)];
     }
-    const rule<ScannerT>& start() const { return attributes_p; }
+    const boost::spirit::rule<ScannerT>& start() const { return attributes_p; }
   };
 
   XMLAttributes& attr;
@@ -79,8 +81,9 @@ struct attr_parser : public grammar<attr_parser> {
 
 XMLAttributes::XMLAttributes(const std::string& str)
 {
-  if (!boost::spirit::parse(str.c_str(), attr_parser(*this), space_p).full)
-    boost::throw_exception(std::runtime_error("parse failed"));
+  if (!boost::spirit::parse(str.c_str(), attr_parser(*this),
+    boost::spirit::space_p).full)
+      boost::throw_exception(std::runtime_error("parse failed"));
 }
 
 void XMLAttributes::push_back(const XMLAttribute& attr)
