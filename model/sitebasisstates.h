@@ -65,7 +65,7 @@ template <class I, class STATE>
 typename site_basis<I,STATE>::size_type site_basis<I,STATE>::index(const value_type& x) const
 {
   const_iterator it = std::lower_bound(super_type::begin(),super_type::end(),x);
-  return (*it==x ? it-super_type::begin() : super_type::size());
+  return (it != super_type::end() && *it==x ? it-super_type::begin() : super_type::size());
 }
 
 template <class I, class STATE>
