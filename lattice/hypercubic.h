@@ -266,8 +266,8 @@ public:
   std::vector<std::string> distance_labels() const
   {
     std::vector<std::string> label(num_distances());
-    for (cell_iterator it1=cells().begin; it1 != cells().end();++it1) {
-      for (cell_iterator it2=cells().begin; it2 != cells().end();++it2) {
+    for (cell_iterator it1=cells().first; it1 != cells().second;++it1) {
+      for (cell_iterator it2=cells().first; it2 != cells().second;++it2) {
         offset_type x=alps::offset(*it1,*this);
         offset_type y=alps::offset(*it2,*this);
         std::size_t d=distance(alps::offset(*it1,*this),alps::offset(*it2,*this));
@@ -276,6 +276,14 @@ public:
                       alps::coordinate_to_string(alps::offset(*it2,*this));
       }
     }
+    return label;
+  }
+
+  std::vector<std::string> momenta_labels() const
+  {
+    std::vector<std::string> label;
+    for (momentum_iterator it=momenta().first; it1 != moments().second;++it)
+      label.push_back(alps::coordinate_to_string(*this)); 
     return label;
   }
   

@@ -350,6 +350,11 @@ public:
     std::vector<unsigned int> m(num_distances(),1u);
     return m;
   }
+
+  std::vector<std::string> momenta_labels() const
+  {
+      return l_.momenta_labels();
+  }
   
   std::vector<std::string> distance_labels() const
   {
