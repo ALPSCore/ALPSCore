@@ -294,6 +294,10 @@ public:
     momentum_iterator(cell_iterator it=cell_iterator()) : cell_iterator(it) {}
     const vector_type& operator*() const { set_k(); return k_; }
     const vector_type* operator->() const { set_k(); return &k_; }
+    std::complex<double> phase(const vector_type& pos) const {
+      double phase=vectorops::scalar_product(k_,pos);
+      return std::complex<double>(std::cos(phase),std::sin(phase));
+    }
   private:
     mutable vector_type k_;
     void set_k() const

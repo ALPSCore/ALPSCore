@@ -88,9 +88,9 @@ public:
   typedef typename lattice_traits<lattice_type>::vector_type vector_type;
   typedef typename lattice_traits<lattice_type>::size_type size_type;
   typedef typename lattice_traits<lattice_type>::cell_iterator cell_iterator;
-  typedef typename lattice_traits<lattice_type>::cell_iterator momentum_iterator;
-  typedef typename lattice_traits<lattice_type>::cell_iterator basis_vector_iterator;
-  typedef typename lattice_traits<lattice_type>::cell_iterator boundary_crossing_type;
+  typedef typename lattice_traits<lattice_type>::momentum_iterator momentum_iterator;
+  typedef typename lattice_traits<lattice_type>::basis_vector_iterator basis_vector_iterator;
+  typedef typename lattice_traits<lattice_type>::boundary_crossing_type boundary_crossing_type;
   
   typedef typename property_map<edge_type_t,graph_type,type_type>::const_type edge_type_map_type;
   typedef edge_type_map_type bond_type_map_type;
@@ -198,10 +198,11 @@ public:
   bool disordered_vertices() const { return d_.disordered_vertices();}
   bool disordered_edges() const { return d_.disordered_edges();}
   const vector_type& coordinate(const site_descriptor& s) const { return coordinate_map_[s];}
+  std::string coordinate_string(const site_descriptor& s) const { return coordinate_to_string(coordinate(s));}
   const vector_type& bond_vector(const bond_descriptor& b) const { return bond_vector_map_[b];}
   const vector_type& bond_vector_relative(const bond_descriptor& b) const { return bond_vector_relative_map_[b];}
   std::size_t dimension() const { return detail::graph_dimension_helper<has_property<dimension_t,G>::graph_property>::dimension(graph());}
-
+  std::pair<momentum_iterator,momentum_iterator> momenta() const { return alps::momenta(lattice());}
   void throw_if_xyz_defined(const Parameters& p, const vertex_descriptor& v) const
   {   
    // check whether x, y, or z is set

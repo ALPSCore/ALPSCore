@@ -61,13 +61,6 @@ coordinates(C& c)
   return std::make_pair(c.begin(),c.end());
 }
 
-// template <class C>
-// inline std::pair<typename coordinate_traits<C>::const_iterator, typename coordinate_traits<C>::const_iterator>
-// coordinates(const C& c)
-// {
-//   return std::make_pair(c.begin(),c.end());
-// }
-
 template <class T, int sz>
 struct coordinate_traits<T[sz]> {
   typedef T value_type;
@@ -115,6 +108,24 @@ coordinates(const std::valarray<T>& c)
     &(const_cast<std::valarray<T>&>(c)[0])+c.size());
 }
 #endif
+
+
+template <class C>
+std::string coordinate_to_string(const C& c)
+{
+  typename coordinate_traits<C>::const_iterator first,last;
+  boost::tie(first,last)=coordinates(c);
+  int n=0;
+  std::string s;
+  while (first!=last) {
+    if (n)
+      s+=", ";
+    s+=boost::lexical_cast<std::string>(*first++);
+  }
+  if (n>1)
+    s="( "+s+" )";
+  return s;
+} 
 
 } // end namespace alps
 
