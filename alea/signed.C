@@ -64,9 +64,9 @@ try {
   //----------------------------------- 
   for(uint i = 0; i < thermalization_steps; ++i){ 
     double sign = (random() < 0.4 ? -1. : 1.);
-    measurement.get<alps::RecordableObservable<double> >("sign") << sign;  
-    measurement.get<alps::RecordableObservable<double> >("observable a") << sign*random();
-    measurement.get<alps::RecordableObservable<double> >("observable b") << sign*(random()+1.);
+    measurement["sign"] << sign;  
+    measurement["observable a"] << sign*random();
+    measurement["observable b"] << sign*(random()+1.);
   }
 
   //RESET OBSERVABLES (THERMALIZATION FINISHED)
@@ -77,9 +77,9 @@ try {
   //-----------------------------------
   for(uint32_t i = 0; i < number_of_steps; ++i){
     double sign = (random() < 0.4 ? -1. : 1.);
-    measurement.get<alps::RecordableObservable<double> >("sign") << sign;  
-    measurement.get<alps::RecordableObservable<double> >("observable a") << sign*random();
-    measurement.get<alps::RecordableObservable<double> >("observable b") << sign*(random()+1.);
+    measurement["sign"] << sign;
+    measurement["observable a"] << sign*random();
+    measurement["observable b"] << sign*(random()+1.);
   }
 
   // SAVE and LOAD
