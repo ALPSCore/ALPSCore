@@ -39,6 +39,7 @@
 #define ALPS_MODEL_BASISSTATES_H
 
 #include <alps/model/basis.h>
+#include <algorithm>
 #include <vector>
 
 namespace alps {
@@ -117,7 +118,7 @@ public:
   BasisStates(const BasisStatesDescriptor<I,SS>& b);
   inline size_type index(const value_type& x) const
   {
-    const_iterator it=lower_bound(begin(),end(),x);
+    const_iterator it = std::lower_bound(begin(), end(), x);
     return (*it==x ? it-begin() : size());
   }
 
