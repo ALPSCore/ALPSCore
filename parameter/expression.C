@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -57,7 +57,7 @@ int main()
                 << std::endl;
 #else
       std::cout << "The value of [" << expr << "] is "
-		<< alps::evaluate<double>(expr, eval) << std::endl;
+                << alps::evaluate<double>(expr, eval) << std::endl;
 #endif
     char c;
     std::cin >> c;
@@ -74,10 +74,10 @@ int main()
     else 
 #ifndef ALPS_WITH_NEW_EXPRESSION
       std::cout << "The value of [" << v << "] is "
-		<< alps::evaluate(v, parms) << std::endl;
+                << alps::evaluate(v, parms) << std::endl;
 #else
       std::cout << "The value of [" << v << "] is "
-		<< alps::evaluate<double>(v, parms) << std::endl;
+                << alps::evaluate<double>(v, parms) << std::endl;
 #endif
   }
 
