@@ -246,6 +246,9 @@ oxstream& oxstream::operator<<(const detail::stylesheet_t& c)
 
 } // end namespace alps
 
-#if defined(__GNUC__) && !defined(__ICC) && !defined(__ECC) && __GNUC__ == 3 && __GNUC_MINOR__ < 3// ICC 8.0 defines __GNUC__!
+// workaround for boost 1_32_0
+#if !defined(BOOST_REGEX_WORKAROUND_HPP)
+# if defined(__GNUC__) && !defined(__ICC) && !defined(__ECC) && __GNUC__ == 3 && __GNUC_MINOR__ < 3 // ICC 8.0 defines __GNUC__!
 template boost::re_detail::perl_matcher<__gnu_cxx::__normal_iterator<char const*, std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<boost::sub_match<__gnu_cxx::__normal_iterator<char const*, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, boost::regex_traits<char>, std::allocator<char> >;
+# endif
 #endif
