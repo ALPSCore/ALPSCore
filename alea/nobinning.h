@@ -104,6 +104,10 @@ class NoBinning : public AbstractBinning<T>
     value_type min_,max_;  // minimum and maximum value
 };
 
+#ifndef BOOST_NO_INCLASS_MEMBER_INITIALIZATION
+template <class T> const bool NoBinning<T>::has_tau;
+#endif
+
 typedef BasicSimpleObservable<int32_t,NoBinning<int32_t> > SimpleIntObservable;
 typedef BasicSimpleObservable<double,NoBinning<double> > SimpleRealObservable;
 typedef BasicSimpleObservable<std::complex<double>,NoBinning<std::complex<double> > > SimpleComplexObservable;

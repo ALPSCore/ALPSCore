@@ -106,6 +106,10 @@ private:
   std::vector<value_type> values2_; // bin values of squares
 };
 
+#ifndef BOOST_NO_INCLASS_MEMBER_INITIALIZATION
+template <class T> const bool BasicDetailedBinning<T>::has_tau;
+#endif
+
 template<class T> class DetailedBinning : public BasicDetailedBinning<T>
 {
 public:

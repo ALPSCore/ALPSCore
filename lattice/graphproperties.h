@@ -120,8 +120,7 @@ struct has_property<P, boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>, D>
   BOOST_STATIC_CONSTANT(bool, edge_property = (detail::existing_property<typename boost::property_value<EP,P>::type,D>::result));
   BOOST_STATIC_CONSTANT(bool, vertex_property = (detail::existing_property<typename boost::property_value<VP,P>::type,D>::result));
   BOOST_STATIC_CONSTANT(bool, graph_property = (detail::existing_property<typename boost::property_value<GP,P>::type,D>::result));
-  //BOOST_STATIC_CONSTANT(bool, any_property = (edge_property || vertex_property || graph_property));
-  static const bool any_property = (edge_property || vertex_property || graph_property);
+  BOOST_STATIC_CONSTANT(bool, any_property = (edge_property || vertex_property || graph_property));
   typedef typename detail::existing_property<
     typename boost::property_value<EP,P>::type,D>::type edge_property_type;
   typedef typename detail::existing_property<
@@ -133,6 +132,17 @@ struct has_property<P, boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>, D>
     graph_property_type>::type>::type property_type;
   typedef property_type type;
 };
+
+#ifndef BOOST_NO_INCLASS_MEMBER_INITIALIZATION
+template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, class P, class D>
+const bool has_property<P, boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>,D>::edge_property;
+template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, class P, class D>
+const bool has_property<P, boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>,D>::vertex_property;
+template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, class P, class D>
+const bool has_property<P, boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>,D>::graph_property;
+template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, class P, class D>
+const bool has_property<P, boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>,D>::any_property;
+#endif
 
 #ifndef __IBMCPP__
 
@@ -159,6 +169,17 @@ struct has_property<P, const boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>, D>
     graph_property_type>::type>::type property_type;
   typedef property_type type;
 };
+
+#ifndef BOOST_NO_INCLASS_MEMBER_INITIALIZATION
+template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, class P, class D>
+const bool has_property<P, const boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>,D>::edge_property;
+template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, class P, class D>
+const bool has_property<P, const boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>,D>::vertex_property;
+template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, class P, class D>
+const bool has_property<P, const boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>,D>::graph_property;
+template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, class P, class D>
+const bool has_property<P, const boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>,D>::any_property;
+#endif
 
 #endif __IBMCPP__
 

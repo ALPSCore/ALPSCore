@@ -89,5 +89,8 @@ void Buffer::read_buffer(void* p, size_type n)
   read_pos+=n;
 }
 
+#ifndef BOOST_NO_INCLASS_MEMBER_INITIALIZATION
+const Buffer::size_type Buffer::buffer_grow_steps;
+#endif
 } // end namespace detail
 } // end namespace alps

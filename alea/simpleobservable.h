@@ -214,7 +214,7 @@ public:
   typedef typename SimpleObservable<T>::slice_iterator slice_iterator;
   typedef BINNING binning_type;
 
-  BOOST_STATIC_CONSTANT(version_type,version=(obs_value_traits<T>::magic_id+ (binning_type::magic_id << 16)));
+  BOOST_STATIC_CONSTANT(int,version=(obs_value_traits<T>::magic_id+ (binning_type::magic_id << 16)));
   /// the constructor needs a name and optionally specifications for the binning strategy
   BasicSimpleObservable(const std::string& name ,const binning_type&)
    : SimpleObservable<T>(name), b_(b) {}
@@ -286,6 +286,11 @@ private:
   void write_more_xml(oxstream& oxs, slice_iterator it) const;
   binning_type b_;
 };
+
+#ifndef BOOST_NO_INCLASS_MEMBER_INITIALIZATION
+template <class T, class BINNING> const int BasicSimpleObservable<T,BINNING>::version;
+#endif
+
 
 //=======================================================================
 // AbstractBinning
@@ -650,8 +655,7 @@ void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, const boost::f
     oxs << end_tag("VECTOR_AVERAGE");
   }
 }
-template <class T, class BINNING>
-const BasicSimpleObservable<T,BINNING>::version_type BasicSimpleObservable<T,BINNING>::version;
+
 } // end namespace alps
 
 
