@@ -77,19 +77,19 @@ ObservableFactory::ObservableFactory()
   register_observable<SimpleIntVectorObservable>();
   register_observable<IntVectorObservable>();
   register_observable<IntVectorTimeSeriesObservable>();
-  // register_observable<AbstractSignedObservable<RealVectorObsevaluator> >();
+  register_observable<AbstractSignedObservable<RealVectorObsevaluator> >();
   register_observable<AbstractSignedObservable<IntVectorObsevaluator> >();
-  // register_observable<SignedObservable<RealVectorObservable> >();
-  // register_observable<SignedObservable<SimpleRealVectorObservable> >();
-  // register_observable<SignedObservable<RealVectorTimeSeriesObservable> >();
+  register_observable<SignedObservable<RealVectorObservable> >();
+  register_observable<SignedObservable<SimpleRealVectorObservable> >();
+  register_observable<SignedObservable<RealVectorTimeSeriesObservable> >();
   register_observable<SignedObservable<SimpleIntVectorObservable> >();
   register_observable<SignedObservable<IntVectorObservable> >();
   register_observable<SignedObservable<IntVectorTimeSeriesObservable> >();
 #endif
   register_observable<Real2DArrayObservable>();
   register_observable<SimpleReal2DArrayObservable>();
-  // register_observable<SignedObservable<Real2DArrayObservable> >();
-  // register_observable<SignedObservable<SimpleReal2DArrayObservable> >();
+  register_observable<SignedObservable<Real2DArrayObservable> >();
+  register_observable<SignedObservable<SimpleReal2DArrayObservable> >();
   register_observable<HistogramObservable<int32_t> >();
   register_observable<HistogramObservable<int32_t,double> >();
 }
