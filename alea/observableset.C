@@ -44,6 +44,7 @@ try {
   alps::ObservableSet measurement;
   measurement << alps::RealObservable("observable a");
   measurement << alps::RealObservable("observable b");
+  measurement << alps::RealObsevaluator("a/b");
 
   //READ PARAMETERS
   //---------------
@@ -68,6 +69,21 @@ try {
     measurement.get<alps::RealObservable>("observable a") << random();
     measurement.get<alps::RealObservable>("observable b") << random()+1;
   }
+
+  // SAVE and LOAD
+  {
+    alps::OXDRFileDump dump("observableset.dump");
+    dump << measurement;
+  }
+  measurement.clear();
+  {
+    alps::IXDRFileDump dump("observableset.dump");
+    dump >> measurement;
+  }
+
+  alps::RealObsevaluator obse_a = measurement.get<alps::RealObservable>("observable a");
+  alps::RealObsevaluator obse_b = measurement.get<alps::RealObservable>("observable b");
+  measurement.get<alps::RealObsevaluator>("a/b") = obse_a / obse_b;
 
   // SAVE and LOAD
   {
