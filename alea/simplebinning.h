@@ -222,7 +222,7 @@ inline void SimpleBinning<T>::operator<<(const T& x)
 template <class T>
 inline uint32_t SimpleBinning<T>::binning_depth() const
 {
-  return ( int(sum_.size())-5 < 1 ) ? 1 : int(sum_.size())-5;
+  return ( int(sum_.size())-7 < 1 ) ? 1 : int(sum_.size())-7;
 }
 
 
