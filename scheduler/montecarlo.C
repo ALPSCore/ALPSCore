@@ -99,20 +99,23 @@ std::string MCSimulation::worker_tag() const
   return "MCRUN";
 }
 
-void MCSimulation::write_xml_header(std::ostream& out) const
+void MCSimulation::write_xml_header(oxstream& out) const
 {
-  out <<"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-      << "<?xml-stylesheet type=\"text/xsl\" href=\"http://xml.comp-phys.org/2002/10/QMCXML.xsl\"?>\n"
-      << "<SIMULATION xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-      << "xsi:noNamespaceSchemaLocation=\"http://xml.comp-phys.org/2002/10/QMCXML.xsd\">\n";
+  out << header("UTF-8")
+      << processing_instruction("xml-stylesheet") << attribute("type","text/xsl") 
+        << attribute("href","http://xml.comp-phys.org/2002/10/job.xsl")
+      << start_tag("SIMULATION") << xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
+        << attribute("xsi:noNamespaceSchemaLocation","http://xml.comp-phys.org/2002/10/QMCXML.xsd");
 }
 
-void MCSimulation::write_xml_trailer(std::ostream& out) const
+
+void MCSimulation::write_xml_trailer(oxstream& out) const
 {
-  out << "</SIMULATION>\n";
+  out << end_tag("SIMULATION");
 }
 
-void MCSimulation::write_xml_body(std::ostream& out, const boost::filesystem::path& name) const
+
+void MCSimulation::write_xml_body(oxstream& out, const boost::filesystem::path& name) const
 {
   boost::filesystem::path fn_hdf5;
   if(!name.empty())
@@ -120,7 +123,7 @@ void MCSimulation::write_xml_body(std::ostream& out, const boost::filesystem::pa
   get_measurements(true).write_xml(out,fn_hdf5); // write compacted measurements
 }
 
-MCRun::MCRun(const ProcessList& w,const alps::Parameters&  myparms,int n)
+MCRun::MCRun(const ProcessList& w,const Parameters&  myparms,int n)
   : Worker(w,myparms,n)
 {
 }
@@ -181,21 +184,24 @@ bool MCRun::is_thermalized() const
 
 void MCRun::write_xml(const boost::filesystem::path& name, const boost::filesystem::path& osirisname) const
 {
-  boost::filesystem::ofstream xml(name.branch_path()/(name.leaf()+".xml"));
+  oxstream xml(name.branch_path()/(name.leaf()+".xml"));
   boost::filesystem::path fn_hdf5(name.branch_path()/(name.leaf()+".hdf"));
 
-  xml << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-  xml << "<?xml-stylesheet type=\"text/xsl\" href=\"http://xml.comp-phys.org/2002/10/QMCXML.xsl\"?>\n";
-  xml << "<SIMULATION xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
-  xml << "xsi:noNamespaceSchemaLocation=\"http://xml.comp-phys.org/2002/4/QMCXML.xsd\">\n";
-  parms.write_xml(xml);
+  xml << header("UTF-8")
+      << processing_instruction("xml-stylesheet") << attribute("type","text/xsl") 
+        << attribute("href","http://xml.comp-phys.org/2002/10/job.xsl")
+      << start_tag("SIMULATION") << xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
+        << attribute("xsi:noNamespaceSchemaLocation","http://xml.comp-phys.org/2002/10/QMCXML.xsd");
+  xml << parms;
   measurements.write_xml(xml);
-  xml << "<MCRUN>\n";
+  xml << start_tag("MCRUN");
   if(!osirisname.empty())
-    xml << "<CHECKPOINT format=\"osiris\" file=\"" << osirisname.native_file_string() << "\"/>";
+    xml << start_tag("CHECKPOINT") << attribute("format","osiris")
+        << attribute("file", osirisname.native_file_string())
+        << end_tag("CHECKPOINT");
   xml << get_info();
   measurements.write_xml(xml,fn_hdf5);
-  xml << "</MCRUN>\n</SIMULATION>\n";
+  xml << end_tag("MCRUN") << end_tag("SIMULATION");
 }
 
 
@@ -255,11 +261,11 @@ MCSimulation& MCSimulation::operator<<(const Observable& obs)
 }
 
 DummyMCRun::DummyMCRun()
-  : MCRun(ProcessList(),alps::Parameters(),0) 
+  : MCRun(ProcessList(),Parameters(),0) 
 {
 }
 
-DummyMCRun::DummyMCRun(const ProcessList& w,const alps::Parameters& p,int n)
+DummyMCRun::DummyMCRun(const ProcessList& w,const Parameters& p,int n)
 : MCRun(w,p,n) 
 {
 }

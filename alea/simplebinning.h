@@ -97,9 +97,6 @@ class SimpleBinning : public AbstractBinning<T>
 
   std::string evaluation_method() const { return "binning";}
 
-  void write_scalar_xml(std::ostream& xml) const;
-  template <class IT> void write_vector_xml(std::ostream& xml, IT) const;
-
   void write_scalar_xml(oxstream& oxs) const;
   template <class IT> void write_vector_xml(oxstream& oxs, IT) const;
   
@@ -353,29 +350,13 @@ void SimpleBinning<T>::output_scalar(std::ostream& out) const
 }
 
 template <class T>
-void SimpleBinning<T>::write_scalar_xml(std::ostream& xml) const { 
-  for(int i=0;i<binning_depth();i++)
-    xml << "\n<BINNED>"
-        << "<COUNT>" << count()/(1<<i) << "</COUNT>"
-        << "<MEAN method=\"simple\">" << binmean(i) << "</MEAN>"
-        << "<ERROR method=\"simple\">" << error(i) << "</ERROR></BINNED>";
-}
-
-template <class T> template <class IT> 
-void SimpleBinning<T>::write_vector_xml(std::ostream& xml, IT it) const {
-  for(int i=0;i<binning_depth();i++)
-    xml << "\n<BINNED>"
-        << "<COUNT>" << count()/(1<<i) << "</COUNT>"
-        << "<MEAN method=\"simple\">" << obs_value_traits<result_type>::slice_value(binmean(i),it) << "</MEAN>"
-        << "<ERROR method=\"simple\">" << obs_value_traits<result_type>::slice_value(error(i),it) << "</ERROR></BINNED>";
-}
-
-template <class T>
 void SimpleBinning<T>::write_scalar_xml(oxstream& oxs) const { 
   for (int i = 0; i < binning_depth(); ++i) {
-    oxs << start_tag("BINNED")<< no_linebreak
-	<< start_tag("COUNT") << count()/(1<<i) << end_tag
-        << start_tag("MEAN") << attribute("method", "simple") << precision(binmean(i), 8) << end_tag
+    double prec=4-std::log10(std::abs(error(i)/binmean(i)));
+    prec = (prec>=3 && prec<20 ? prec : 16);
+    oxs << start_tag("BINNED") << attribute("size",boost::lexical_cast<std::string,int>(1<<i))
+        << no_linebreak << start_tag("COUNT") << count()/(1<<i) << end_tag
+        << start_tag("MEAN") << attribute("method", "simple") << precision(binmean(i), prec) << end_tag
         << start_tag("ERROR") << attribute("method", "simple") << precision(error(i), 3) << end_tag
 	<< end_tag("BINNED");
   }
@@ -384,8 +365,11 @@ void SimpleBinning<T>::write_scalar_xml(oxstream& oxs) const {
 template <class T> template <class IT> 
 void SimpleBinning<T>::write_vector_xml(oxstream& oxs, IT it) const {
   for (int i = 0; i < binning_depth() ; ++i) {
-    oxs << start_tag("BINNED")<< no_linebreak
-	<< start_tag("COUNT") << count()/(1<<i) << end_tag
+    double prec=4-std::log10(std::abs(obs_value_traits<result_type>::slice_value(error(i),it)
+                            /obs_value_traits<result_type>::slice_value(binmean(i),it)));
+    prec = (prec>=3 && prec<20 ? prec : 16);
+    oxs << start_tag("BINNED") << attribute("size",boost::lexical_cast<std::string,int>(1<<i))
+	      << no_linebreak << start_tag("COUNT") << count()/(1<<i) << end_tag
         << start_tag("MEAN") << attribute("method", "simple") << precision(obs_value_traits<result_type>::slice_value(binmean(i),it), 8) << end_tag
         << start_tag("ERROR") << attribute("method", "simple") << precision(obs_value_traits<result_type>::slice_value(error(i),it), 3)	<< end_tag
 	<< end_tag("BINNED");

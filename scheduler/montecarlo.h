@@ -92,9 +92,9 @@ public:
   MCSimulation& operator<<(const Observable& obs);
 private:
   std::string worker_tag() const;
-  void write_xml_header(std::ostream&) const;
-  void write_xml_trailer(std::ostream&) const;
-  void write_xml_body(std::ostream&, const boost::filesystem::path&) const;
+  void write_xml_header(alps::oxstream&) const;
+  void write_xml_trailer(alps::oxstream&) const;
+  void write_xml_body(alps::oxstream&, const boost::filesystem::path&) const;
   virtual void handle_tag(std::istream&, const XMLTag&);
   ObservableSet measurements;
 };

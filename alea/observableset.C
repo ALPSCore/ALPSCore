@@ -311,13 +311,6 @@ void ObservableSet::compact()
   do_for_all(boost::mem_fun_ref(&Observable::compact));
 }
 
-void ObservableSet::write_xml(std::ostream& xml, const boost::filesystem::path& fn_hdf5) const
-{
-  xml << "<AVERAGES>\n";
-  for(const_iterator i=begin();i!=end();i++) 
-    i->second->write_xml(xml,fn_hdf5);
-  xml << "</AVERAGES>\n";
-}
 
 void ObservableSet::write_xml(oxstream& oxs, const boost::filesystem::path& fn_hdf5) const
 {

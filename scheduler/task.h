@@ -153,9 +153,9 @@ public:
 
 protected:
   virtual std::string worker_tag() const=0;
-  virtual void write_xml_header(std::ostream&) const=0;
-  virtual void write_xml_trailer(std::ostream&) const=0;
-  virtual void write_xml_body(std::ostream&, const boost::filesystem::path&) const=0;
+  virtual void write_xml_header(alps::oxstream&) const=0;
+  virtual void write_xml_trailer(alps::oxstream&) const=0;
+  virtual void write_xml_body(alps::oxstream&, const boost::filesystem::path&) const=0;
   virtual void handle_tag(std::istream&, const XMLTag&);
 
   alps::Parameters parms;

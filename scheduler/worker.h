@@ -113,12 +113,16 @@ public:
 protected:
   int32_t version;
   int32_t user_version;
-  //typedef boost::lagged_fibonacci607 random_type;
-  typedef boost::mt19937 random_base_type;
+  typedef boost::lagged_fibonacci607 random_base_type;
+  //typedef boost::mt19937 random_base_type;
   typedef boost::uniform_01<random_base_type> random_type;
-  random_type random_01;
-  double random_real(double a=0., double b=1.) { return boost::uniform_real<>(a,b)(random_01);}
-  int random_int(int a, int b) { return boost::uniform_int<int>(a,b)(random_01.base());}
+  random_base_type random;
+  boost::variate_generator<random_base_type&,boost::uniform_real<> > random_01;
+  double random_real(double a=0., double b=1.) 
+  { return boost::variate_generator<random_base_type&,boost::uniform_real<> >(random,boost::uniform_real<>(a,b))();}
+  int random_int(int a, int b) 
+  { return boost::variate_generator<random_base_type&,boost::uniform_int<> >(random,boost::uniform_int<>(a,b))();}
+
   
   int node;
   Parameters parms;

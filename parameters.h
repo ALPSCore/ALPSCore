@@ -168,17 +168,7 @@ public:
         push_back(*it);
   }
   
-  void write_xml(std::ostream& xml) const
-  {
-    xml << "<PARAMETERS>\n";
-    for (const_iterator it = begin(); it != end(); ++it) {
-      if (it->value().valid())
-	xml << "<PARAMETER name=\"" << it->key() << "\">" << it->value()
-	    << "</PARAMETER>\n";
-    }
-    xml << "</PARAMETERS>\n";
-  }
-
+  
   void read_xml(XMLTag tag, std::istream& xml)
   {
     if (tag.name!="PARAMETERS")

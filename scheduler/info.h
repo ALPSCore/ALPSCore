@@ -38,6 +38,7 @@
 #define ALPS_SCHEDULER_INFO_H
 
 #include <alps/scheduler/types.h>
+#include <alps/parser/xmlstream.h>
 #include <alps/osiris.h>
 #include <iterator>
 #include <ctime>
@@ -64,7 +65,7 @@ public:
   
   // write the info
   void save (ODump&) const;
-  ALPS_DUMMY_VOID write_xml(std::ostream&) const;
+  ALPS_DUMMY_VOID write_xml(alps::oxstream&) const;
   void load (IDump& dump,int version=MCDump_task_version);
 private:
    // how was it stopped? ... for historic reasons
@@ -86,7 +87,7 @@ public:
   
   void save (ODump& dump) const;
   void load (IDump& dump,int version=MCDump_task_version);
-  void write_xml(std::ostream&) const;
+  void write_xml(alps::oxstream&) const;
 };
 
 } // end namespace scheduler
@@ -97,7 +98,7 @@ namespace alps {
 namespace scheduler {
 #endif
 
-inline std::ostream& operator<<(std::ostream& o,const alps::scheduler::Info& i)
+inline alps::oxstream& operator<<(alps::oxstream& o,const alps::scheduler::Info& i)
 {
   i.write_xml(o);
   return o;
@@ -115,11 +116,13 @@ inline alps::ODump& operator<< (alps::ODump& dump, const alps::scheduler::Info& 
   return dump;
 }
 
-inline std::ostream& operator<<(std::ostream& o,const alps::scheduler::TaskInfo& i)
+
+inline alps::oxstream& operator<<(alps::oxstream& o,const alps::scheduler::TaskInfo& i)
 {
   i.write_xml(o);
   return o;
 }
+
 
 inline alps::IDump& operator>>(alps::IDump& dump, alps::scheduler::TaskInfo& i)
 {

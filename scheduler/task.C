@@ -396,10 +396,9 @@ void Task::checkpoint(const boost::filesystem::path& fn) const
   bool make_backup = boost::filesystem::exists(fn);
   boost::filesystem::path filename = (make_backup ? dir/(fn.leaf()+".bak") : fn);
   {
-  boost::filesystem::ofstream out (filename);
-  
+  alps::oxstream out (filename);
   write_xml_header(out);
-  parms.write_xml(out);
+  out << parms;
   write_xml_body(out,fn);
   for (int i=0;i<runs.size();++i) {
     if(workerstatus[i] == RunNotExisting) {
@@ -438,13 +437,15 @@ void Task::checkpoint(const boost::filesystem::path& fn) const
       }
       else 
 	boost::throw_exception(std::logic_error("incorrect status of run"));
-      out << "  <" << worker_tag() << ">\n";
+      out << alps::start_tag(worker_tag());
       out << runs[i]->get_info();
-      out << "    <CHECKPOINT file=\"" << runfiles[i].out.native_file_string() << "\"/>\n";
-      out << "  </" << worker_tag() << ">\n";
+      out << alps::start_tag("CHECKPOINT") << alps::attribute("format","osiris")
+          << alps::attribute("file",runfiles[i].out.native_file_string());
+      out << alps::end_tag("CHECKPOINT") << alps::end_tag(worker_tag());
       runfiles[i].in=boost::filesystem::complete(runfiles[i].out,dir);
     }
   }
+
   write_xml_trailer(out);
   } // close file
   if(make_backup) {

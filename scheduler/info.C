@@ -103,21 +103,21 @@ void Info::checkpoint()
 }
 
 
-ALPS_DUMMY_VOID Info::write_xml(std::ostream& xml) const
+ALPS_DUMMY_VOID Info::write_xml(alps::oxstream& xml) const
 {
   std::string time1=ctime(&startt);
   time1.erase(time1.size()-1,1);
   
   std::string time2=ctime(&stopt);
   time2.erase(time2.size()-1,1);
-  if (phase=="")
-    xml << "<EXECUTED>\n";
-  else
-    xml << "<EXECUTED phase=\"" << phase << "\">\n";
-  xml << "<FROM>" << time1 << "</FROM>\n";
-  xml << "<TO>" << time2 << "</TO>\n";
-  xml << "<MACHINE><NAME>" << host << "</NAME></MACHINE>\n";
-  xml << "</EXECUTED>\n";
+  xml << start_tag("EXECUTED");
+  if (phase!="")
+    xml << attribute("phase",phase);
+  xml << start_tag("FROM") << no_linebreak << time1 << end_tag("FROM");
+  xml << start_tag("TO") << no_linebreak << time2 << end_tag("TO");
+  xml << start_tag("MACHINE") << no_linebreak << start_tag("NAME") << host 
+      << end_tag("NAME") << end_tag("MACHINE");
+  xml << end_tag("EXECUTED");
   ALPS_RETURN_VOID
 }
 
@@ -169,7 +169,7 @@ void TaskInfo::halt()
 }
 
 
-void TaskInfo::write_xml(std::ostream& xml) const
+void TaskInfo::write_xml(alps::oxstream& xml) const
 {
   std::for_each(begin(),end(),boost::bind2nd(boost::mem_fun_ref(&Info::write_xml),xml));
 }

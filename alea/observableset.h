@@ -246,7 +246,6 @@ class ObservableSet: public std::map<std::string,Observable*>
   /// compact the observables to save space, discarding e.g. time series information
   void compact();
 
-  void write_xml(std::ostream& xml, const boost::filesystem::path& =boost::filesystem::path()) const;
   void write_xml(oxstream& oxs, const boost::filesystem::path& =boost::filesystem::path()) const;
 
   void read_xml(std::istream& infile, const XMLTag& tag);

@@ -6,6 +6,7 @@
 * $Id$
 *
 * Copyright (C) 2003 by Simon Trebst <trebst@itp.phys.ethz.ch>
+*                    and Matthias Troyer <troyer@comp-phys.org>
 *
 * Permission is hereby granted, free of charge, to any person or organization 
 * obtaining a copy of the software covered by this license (the "Software") 
@@ -34,11 +35,12 @@
 *
 **************************************************************************/
 
+#include <alps/parser/xmlstream.h>
+#include <boost/tuple/tuple.hpp>
+
 #include <vector>
 #include <string>
 #include <iostream>
-
-#include <boost/tuple/tuple.hpp>
 
 namespace alps {
 namespace plot {
@@ -48,56 +50,55 @@ enum SetType {xy, xdxy, xydy, xdxydy};
 //- Points --------------------------------------------------------------------------------------------------------
 
 template<class C>
-class Point : std::vector<C> {
-  public:
+class Point {
+public:
   Point() {}
-  Point(C x, C y) {
-    resize(2);
-    (*this)[0] = x;
-    (*this)[1] = y;
+  Point(C x, C y) : storage_(2) {
+    storage_[0] = x;
+    storage_[1] = y;
   }
 
-  int size() const { return std::vector<C>::size(); }
-
-  C operator[](int i) const { return std::vector<C>::operator[](i); }
-  void push_back(C data) { std::vector<C>::push_back(data); }
-  void clear() { std::vector<C>::clear(); }
-  void output(std::ostream&, SetType);
-
+  int size() const { return storage_.size(); }
+  const C& operator[](int i) const { return storage_[i]; }
+  void push_back(C data) { storage_.push_back(data); }
+  void clear() { storage_.clear(); }
+  void output(oxstream&, SetType);
+private:
+  std::vector<C> storage_;
 };   // xmlPlot::Point
 
 template<class C>
-void Point<C>::output(std::ostream& out, SetType Type) {
-  out << "<point>";
-    out << "<x>"<<(*this)[0]<<"</x> ";
-    if((Type==xdxy) || (Type==xdxydy)) out << "<dx>"<<(*this)[2]<<"</dx> ";
-    out << "<y>"<<(*this)[1]<<"</y> ";
-    if((Type==xydy) || (Type==xdxydy)) out << "<dy>"<<(*this)[3]<<"</dy> ";
-  out << "</point>";
+void Point<C>::output(oxstream& out, SetType Type) {
+  out << start_tag("point") << no_linebreak << start_tag("x") << no_linebreak << storage_[0]<< end_tag("x");
+  if((Type==xdxy) || (Type==xdxydy)) 
+    out << start_tag("dx") << no_linebreak << storage_[2]<< end_tag("dx");
+  out << start_tag("y") << no_linebreak << storage_[1]<< end_tag("y");
+  if((Type==xydy) || (Type==xdxydy)) 
+    out << start_tag("dy") << no_linebreak << storage_[3]<< end_tag("dy");
+  out << end_tag("point");
 }   // operator <<
 
 //- Sets ----------------------------------------------------------------------------------------------------------
 
 template<class C>
 class Set : public std::vector<Point<C> > {
-  public:
+public:
   Set(SetType st=xy) : type_(st), show_legend_(true) {}
 
   Set<C>& operator<<(C p);
   Set<C>& operator<<(const boost::tuples::tuple<C, C>);
   Set<C>& operator<<(const boost::tuples::tuple<C,C,C>);
   Set<C>& operator<<(const boost::tuples::tuple<C,C,C,C>);
-  Set<C>& operator<<(std::string label);
+  Set<C>& operator<<(std::string label) { label_ = label;}
+
     
   std::string label() const { return label_; }
   bool show_legend() const { return show_legend_; }
-  int size() const { return std::vector<Point<C> >::size(); }
   SetType type() const { return type_; }
 
-  Point<C> operator[](int i) const { return std::vector<Point<C> >::operator[](i); }
   void push_back(Point<C> NewPoint) { std::vector<Point<C> >::push_back(NewPoint); }
 
-  private:
+private:
   SetType type_;
   std::string label_;
   bool show_legend_;
@@ -106,7 +107,8 @@ class Set : public std::vector<Point<C> > {
 
 template<class C>
 inline Set<C>& Set<C>::operator<<(C p) {
-  if(type_==xydy && NewPoint.size()==2) { NewPoint.push_back(C(0)); }
+  if(type_==xydy && NewPoint.size()==2) 
+    NewPoint.push_back(C(0));
   NewPoint.push_back(p);
   switch(type_) {
     case xy: 
@@ -128,6 +130,8 @@ inline Set<C>& Set<C>::operator<<(C p) {
         NewPoint.clear();
       }
       break;
+    default:
+      boost::throw_exception(std::logic_error("Default reached in Set<C>& Set<C>::operator<<(C p)"));
   }
   return *this;   
 }   // operator<<
@@ -172,21 +176,16 @@ inline Set<C>& Set<C>::operator<<(boost::tuples::tuple<C,C,C,C> t) {
   return *this;   
 }   // operator<<
 
-template<class C>
-inline Set<C>& Set<C>::operator<<(std::string label) {
-  label_ = label;
-  return *this;   
-}   // operator<<
 
 template<class C>
-inline std::ostream& operator<<(std::ostream& out, const Set<C> S) {
-  out << "<set"; 
-    out << " label = \"" << S.label() << "\"";
-    out << " show_legend = \""; if(S.show_legend()) out << "true\">"; else out << "false\">";
-    for(int i=0; i<S.size(); ++i) { S[i].output(out, S.type()); out << std::endl; }
-  out << "</set>" << std::endl;
+inline oxstream& operator<<(oxstream& out, const Set<C> S) {
+  out << start_tag("set") << attribute("label",S.label()) 
+      << attribute("show_legend", S.show_legend() ? "true" : "false");
+  for(int i=0; i<S.size(); ++i) 
+    S[i].output(out)
+  out << end_tag("set");
   return out;
-}   // operator <<
+}   
 
 //- Plot ----------------------------------------------------------------------------------------------------------
 
@@ -196,8 +195,8 @@ class Plot : std::vector<Set<C> > {
 public:
   Plot(std::string name="No name", bool show_legend=true) : name_(name), show_legend_(show_legend) {};
   
-  Plot<C>& operator<<(Set<C>);
-  Plot<C>& operator<<(std::string name);
+  Plot<C>& operator<<(const Set<C>& s ) { push_back(s); return *this;}
+  Plot<C>& operator<<(std::string name) { name_=name; return *this;} 
   
   const std::string& name() const { return name_; }
   const std::string& xaxis() const { return xaxis_; }
@@ -216,30 +215,21 @@ private:
   bool show_legend_;
 };   // xmlPlot::Plot
 
-template<class C>
-Plot<C>& Plot<C>::operator<<(Set<C> S) {
-  push_back(S);
-  return *this;
-}   // operator<<  
 
 template<class C>
-Plot<C>& Plot<C>::operator<<(std::string name) {
-  name_ = name;
-  return *this;
-}   // operator<<  
-
-template<class C>
-inline std::ostream& operator<<(std::ostream& out, Plot<C> P) {
-  // xml header
-  out << "<?xml version=\"1.0\"?>" << std::endl	
-      << "<?xml-stylesheet type=\"text/xsl\" href=\"http://xml.comp-phys.org/2003/4/plot2html.xsl\"?>" << std::endl;
-  // plot  
-  out << "<plot name = \"" << P.name() << "\">" << std::endl;
-    out << "<legend show = \""; if(P.show_legend()) out << "true\""; else out << "false\""; out << "/>" << std::endl;
-    out << "<xaxis label = \"" << P.xaxis() << "\"/>" << std::endl;
-    out << "<yaxis label = \"" << P.yaxis() << "\"/>" << std::endl;
-    for(int i=0; i<P.size(); ++i) { out << P[i] << std::endl; }
-  out << "</plot>" << std::endl;
+inline oxstream& operator<<(oxstream& out, Plot<C> P) {
+  out << header("UTF-8")
+      << processing_instruction("xml-stylesheet") << alps::attribute("type","text/xsl") 
+      << attribute("href","http://xml.comp-phys.org/2003/4/plot2html.xsl");
+  out << start_tag("plot") << alps::xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
+      << attribute("xsi:noNamespaceSchemaLocation","http://xml.comp-phys.org/2003/4/plot.xsd")
+      << attribute("name",P.name());
+  out << start_tag("legend") << attribute("show", P.show_legend() ? "true" : "false") << end_tag("legend");
+  out << start_tag("xaxis") << attribute("label", P.xaxis()) << end_tag("xaxis");
+  out << start_tag("yaxis") << attribute("label", P.yaxis()) << end_tag("yaxis");
+  for(int i=0; i<P.size(); ++i) 
+    out << P[i];
+  out << end_tag("plot");
   return out;
 }   // operator <<
 
