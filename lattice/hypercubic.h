@@ -63,7 +63,7 @@ public:
   template <class BASE2, class EX2>
   hypercubic_lattice(const hypercubic_lattice<BASE2,EX2>& l)
    : parent_lattice_type(l), extent_(l.extent().begin(),l.extent().end()),bc_(l.boundary()) 
-   {}
+   { fill_extent();}
   
   hypercubic_lattice(const parent_lattice_type& p, size_type length, std::string bc="periodic") 
    : parent_lattice_type(p), extent_(dimension(p),length), bc_(dimension(p),bc) {}
@@ -73,14 +73,14 @@ public:
    : parent_lattice_type(p), 
      extent_(first,last), 
      bc_(dimension(p),bc) 
-  {}
+  {fill_extent();}
 
   template <class InputIterator2>
   hypercubic_lattice(const parent_lattice_type& p, size_type length, InputIterator2 first2, InputIterator2 last2) 
    : parent_lattice_type(p), 
      extent_(dimension(p),length), 
      bc_(first2,last2) 
-     {}
+     {fill_extent();}
 
      template <class InputIterator, class InputIterator2>
   hypercubic_lattice(const parent_lattice_type& p, InputIterator first, InputIterator last, 
@@ -88,7 +88,7 @@ public:
    : parent_lattice_type(p), 
      extent_(first,last), 
      bc_(first2,last2) 
-     {}
+     {fill_extent();}
 
   
   template <class BASE2, class EX2>
@@ -300,6 +300,11 @@ public:
 protected:
   extent_type extent_;
   std::vector<std::string> bc_;
+private:
+  void fill_extent() {
+    extent_.resize(dimension(),1);
+    bc_.resize(dimension(),"open");
+  }
 };
 
 template <class BASE, class EX>

@@ -172,6 +172,9 @@ FiniteLatticeDescriptor::FiniteLatticeDescriptor(const XMLTag& intag, std::istre
     dim_ = alps::dimension(lattice_);
   else if (alps::dimension(lattice_)!=0 && (alps::dimension(lattice_) !=dim_))
     boost::throw_exception(std::runtime_error("inconsistent lattice dimension between <LATTICE> and enclosing <FINITELATTICE>"));
+
+  extent_.resize(dimension(),1);
+  bc_.resize(dimension(),"open");
   while(true)  {
     tag=parse_tag(p);
     if(tag.name=="/FINITELATTICE") break;
@@ -185,29 +188,31 @@ FiniteLatticeDescriptor::FiniteLatticeDescriptor(const XMLTag& intag, std::istre
     }
     else if (tag.name=="BOUNDARY")  {
       std::string bc = tag.attributes["type"];
-      uint32_t dim=tag.attributes["dimension"]=="" ? 
-        0 : boost::lexical_cast<uint32_t,std::string>(tag.attributes["dimension"]);
-      bc_.resize(dimension());
+      uint32_t dim=0;
+	  if (tag.attributes["dimension"]!="") {
+        dim = boost::lexical_cast<uint32_t,std::string>(tag.attributes["dimension"]);
+		if (dim==0 || dim>dimension())
+          boost::throw_exception(std::runtime_error("incorrect dimension attribute in <BOUNDARY>"));
+	  }
       if (bc=="")
         boost::throw_exception(std::runtime_error("missing type attribute in <BOUNDARY>"));
       if (dim==0)
         std::fill(bc_.begin(),bc_.end(),bc);
-      else if (dim>dimension())
-        boost::throw_exception(std::runtime_error("incorrect dimension attribute in <BOUNDARY>"));
       else
         bc_[dim-1]=bc;
     }
     else if(tag.name=="EXTENT")  {
-      uint32_t dim=tag.attributes["dimension"]=="" ? 
-        0 : boost::lexical_cast<uint32_t,std::string>(tag.attributes["dimension"]);
+      uint32_t dim=0;
+	  if (tag.attributes["dimension"]!="") {
+	    dim =  boost::lexical_cast<uint32_t,std::string>(tag.attributes["dimension"]);
+		if (dim==0 || dim >dimension())
+          boost::throw_exception(std::runtime_error("incorrect dimension attribute in <BOUNDARY>"));
+	  }
       std::string ex =  tag.attributes["size"];
-      extent_.resize(dimension());
       if (ex=="")
         boost::throw_exception(std::runtime_error("missing size attribute in <EXTENT>"));
       if (dim==0)
         std::fill(extent_.begin(),extent_.end(),ex);
-      else if (dim>dimension())
-        boost::throw_exception(std::runtime_error("incorrect dimension attribute in <BOUNDARY>"));
       else
         extent_[dim-1]=ex;
     }
