@@ -41,13 +41,7 @@
 
 namespace alps {
 
-template <class T>
-T abs (T x) { return std::fabs(x);}
-
-template <class T>
-T abs (std::complex<T> x) { return std::abs(x);}
-
-inline std::size_t binomial(std::size_t l,std::size_t n)
+inline std::size_t binomial(std::size_t l, std::size_t n)
 {
   double nominator=1;
   double denominator=1;
@@ -61,12 +55,12 @@ inline std::size_t binomial(std::size_t l,std::size_t n)
 }
 
 template <class T>
-typename TypeTraits<T>::norm_t abs2(T x) {
-  return alps::abs(x)*alps::abs(x);        
+inline typename TypeTraits<T>::norm_t abs2(T x) {
+  return std::abs(x)*std::abs(x);        
 }
 
 template <class T>
-T abs2(std::complex<T> x) {
+inline T abs2(const std::complex<T>& x) {
   return x.real()*x.real()+x.imag()*x.imag();
 }
 

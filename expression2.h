@@ -376,10 +376,10 @@ template<class U>
 struct evaluate_helper
 {
   typedef U value_type;
-  template<class T>
-  static U value(const Term<T>& ex, const Evaluator<T>&) { return ex; }
-  template<class T>
-  static U value(const Expression<T>& ex, const Evaluator<T>&) { return ex; }
+  template<class R>
+  static U value(const Term<R>& ex, const Evaluator<R>&) { return ex; }
+  template<class R>
+  static U value(const Expression<R>& ex, const Evaluator<R>&) { return ex; }
   static U real(U u) { return u; }
 };
 
@@ -403,15 +403,15 @@ template<>
 struct evaluate_helper<double>
 {
   typedef double value_type;
-  template<class T>
-  static double value(const Term<T>& ex, const Evaluator<T>& ev)
+  template<class R>
+  static double value(const Term<R>& ex, const Evaluator<R>& ev)
   {
-    return numeric_cast<double, T>::value(ex.value(ev));
+    return numeric_cast<double, R>::value(ex.value(ev));
   }
-  template<class T>
-  static double value(const Expression<T>& ex, const Evaluator<T>& ev)
+  template<class R>
+  static double value(const Expression<R>& ex, const Evaluator<R>& ev)
   {
-    return numeric_cast<double, T>::value(ex.value(ev));
+    return numeric_cast<double, R>::value(ex.value(ev));
   }
   static double real(double u) { return u; }
   static double imag(double) { return 0; }
@@ -431,15 +431,15 @@ template<>
 struct evaluate_helper<float>
 {
   typedef float value_type;
-  template<class T>
-  static float value(const Term<T>& ex, const Evaluator<T>& ev)
+  template<class R>
+  static float value(const Term<R>& ex, const Evaluator<R>& ev)
   {
-    return numeric_cast<float, T>::value(ex.value(ev));
+    return numeric_cast<float, R>::value(ex.value(ev));
   }
-  template<class T>
-  static float value(const Expression<T>& ex, const Evaluator<T>& ev)
+  template<class R>
+  static float value(const Expression<R>& ex, const Evaluator<R>& ev)
   {
-    return numeric_cast<float, T>::value(ex.value(ev));
+    return numeric_cast<float, R>::value(ex.value(ev));
   }
   static float real(float u) { return u; }
   static float imag(float) { return 0; }
@@ -459,15 +459,15 @@ template<>
 struct evaluate_helper<long double>
 {
   typedef long double value_type;
-  template<class T>
-  static long double value(const Term<T>& ex, const Evaluator<T>& ev)
+  template<class R>
+  static long double value(const Term<R>& ex, const Evaluator<R>& ev)
   {
-    return numeric_cast<long double, T>::value(ex.value(ev));
+    return numeric_cast<long double, R>::value(ex.value(ev));
   }
-  template<class T>
-  static long double value(const Expression<T>& ex, const Evaluator<T>& ev)
+  template<class R>
+  static long double value(const Expression<R>& ex, const Evaluator<R>& ev)
   {
-    return numeric_cast<long double, T>::value(ex.value(ev));
+    return numeric_cast<long double, R>::value(ex.value(ev));
   }
   static long double real(long double u) { return u; }
   static long double imag(long double) { return 0; }
@@ -487,13 +487,13 @@ template<class U>
 struct evaluate_helper<std::complex<U> >
 {
   typedef std::complex<U> value_type;
-  template<class T>
-  static std::complex<U> value(const Term<T>& ex, const Evaluator<T>& ev)
+  template<class R>
+  static std::complex<U> value(const Term<R>& ex, const Evaluator<R>& ev)
   {
     return ex.value(ev);
   }
-  template<class T>
-  static std::complex<U> value(const Expression<T>& ex, const Evaluator<T>& ev)
+  template<class R>
+  static std::complex<U> value(const Expression<R>& ex, const Evaluator<R>& ev)
   {
     return ex.value(ev);
   }
