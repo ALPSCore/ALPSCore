@@ -32,6 +32,9 @@
 
 namespace alps {
 
+class Factor;
+class Term;
+
 namespace detail {
 
 class Evaluatable {
@@ -47,6 +50,8 @@ public:
   virtual Evaluatable* clone() const=0;
   virtual boost::shared_ptr<Evaluatable> flatten_one();
   virtual Evaluatable* partial_evaluate_replace(const Evaluator& p);
+  virtual bool is_single_term() const;
+  virtual Term term() const;
 };
 
 } // end namespace detail
@@ -66,6 +71,8 @@ public:
   boost::shared_ptr<Factor> flatten_one_value();
   bool is_inverse() const { return is_inverse_;}
   void partial_evaluate(const Evaluator& p);
+  bool is_single_term() const;
+  Term term() const;
 private:
   boost::shared_ptr<detail::Evaluatable> term_;
   bool is_inverse_;
@@ -89,7 +96,11 @@ public:
   inline operator std::string () const;
   const Term& operator*=(const Factor& v) { terms_.push_back(v); return *this;}
   const Term& operator*=(const std::string& s) { return operator*=(Factor(s));}
+  void simplify();
+  typedef std::vector<Factor>::const_iterator factor_iterator;
+  virtual std::pair<factor_iterator,factor_iterator> factors() const;
 private:
+  void negate() { is_negative_ = !is_negative_;}
   bool is_negative_;
   std::vector<Factor> terms_;
 };
@@ -116,6 +127,9 @@ public:
   const Expression& operator +=(const Term& term) { terms_.push_back(term); return *this;}
   const Expression& operator +=(const Expression& e);
   inline operator std::string () const;
+  void simplify();
+  bool is_single_term() const;
+  Term term() const;
 private:
   std::vector<Term> terms_;
 };

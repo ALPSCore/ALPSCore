@@ -223,10 +223,8 @@ double Term::value(const Evaluator& p) const
 
 void Term::partial_evaluate(const Evaluator& p)
 {
-  if (can_evaluate(p)) {
-    //std::cerr << "Evaluator claims that " << *this << "can be evaluated\n";
+  if (can_evaluate(p))
     (*this) = Term(value(p));
-  }
   else {
     double val=1.;
     if (p.direction()==Evaluator::left_to_right) {
@@ -568,6 +566,65 @@ boost::shared_ptr<detail::Evaluatable> detail::Block::flatten_one()
     return boost::shared_ptr<Evaluatable>(new Block(*ex));
   else
     return boost::shared_ptr<Evaluatable>();
+}
+
+void Term::simplify()
+{
+  std::vector<Factor> s;
+  for (std::vector<Factor>::iterator it=terms_.begin();it!=terms_.end();++it)
+    if (it->is_single_term()) {
+      Term t = it->term();
+      if (t.is_negative())
+        negate();
+      std::copy(t.factors().first,t.factors().second,std::back_inserter(s));
+    }
+    else
+      s.push_back(*it);
+  terms_=s;
+}
+
+void Expression::simplify()
+{
+  partial_evaluate();
+  for (term_iterator it=terms_.begin();it!=terms_.end();++it)
+    it->simplify();
+}
+
+bool detail::Evaluatable::is_single_term() const
+{
+  return false;
+}
+
+Term detail::Evaluatable::term() const
+{
+  return Term();
+}
+
+Term Expression::term() const
+{
+  if (!is_single_term())
+    boost::throw_exception(std::logic_error("Called term() for multi-term expression"));
+  return terms_[0];
+}
+
+bool Expression::is_single_term() const
+{
+  return terms_.size()==1;
+}
+
+bool Factor::is_single_term() const
+{
+  return term_ ? term_->is_single_term() : false;
+}
+
+Term Factor::term() const
+{
+  return term_ ? term_->term() : Term();
+}
+
+std::pair<Term::factor_iterator,Term::factor_iterator> Term::factors() const
+{
+  return std::make_pair(terms_.begin(),terms_.end());
 }
 
 } // namespace alps
