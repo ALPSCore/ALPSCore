@@ -234,15 +234,19 @@ int start(int argc, char** argv, const Factory& p)
   }
   
   Options opt(argc,argv);
-  if(!runs_parallel())
-    theScheduler = new SingleScheduler(opt,p);
-  else if (is_master()) 
-    theScheduler = new MPPScheduler(opt,p);
-  else
-    theScheduler = new Scheduler(opt,p);
-  int res = theScheduler->run();
-  delete theScheduler; 
-
+  int res=0;
+  
+  if (opt.valid) {
+    if(!runs_parallel())
+      theScheduler = new SingleScheduler(opt,p);
+    else if (is_master()) 
+      theScheduler = new MPPScheduler(opt,p);
+    else
+      theScheduler = new Scheduler(opt,p);
+    res = theScheduler->run();
+    delete theScheduler; 
+  }
+  
   comm_exit();
   return res;
 }

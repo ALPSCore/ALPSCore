@@ -28,8 +28,8 @@
 
 /* $Id$ */
 
-#ifndef ALPS_PARSER_XSLT_H
-#define ALPS_PARSER_XSLT_H
+#ifndef ALPS_PARSER_PATH_H
+#define ALPS_PARSER_PATH_H
 
 #include <cstdlib>
 #include <string>
@@ -37,6 +37,7 @@
 namespace alps {
 
 extern std::string xslt_path(const std::string& stylefile);
+extern std::string xml_library_path(const std::string& file);
   
 } // end namespace alps
 

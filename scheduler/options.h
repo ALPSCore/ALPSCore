@@ -55,6 +55,7 @@ public:
   int min_cpus;               // minimum number of runs per simulation
   int max_cpus;               // maximum number of runs per simulation
   double time_limit;          // time limit for the simulation
+  bool valid;                 // shall we really run?
 
   Options(int argc=0, char** argv=0);
 };

@@ -31,7 +31,7 @@
 #include <alps/scheduler/montecarlo.h>
 #include <alps/scheduler/types.h>
 #include <alps/scheduler/scheduler.h>
-#include <alps/parser/xslt.h>
+#include <alps/parser/path.h>
 #include <boost/filesystem/fstream.hpp>
 
 namespace alps {

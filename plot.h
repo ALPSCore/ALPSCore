@@ -29,7 +29,7 @@
 /* $Id$ */
 
 #include <alps/parser/xmlstream.h>
-#include <alps/parser/xslt.h>
+#include <alps/parser/path.h>
 #include <boost/tuple/tuple.hpp>
 
 #include <vector>

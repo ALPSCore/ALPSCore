@@ -31,89 +31,58 @@
 #include <alps/copyright.h>
 #include <boost/limits.hpp>
 #include <boost/throw_exception.hpp>
-#include <cstdio>
+#include <boost/program_options.hpp>
 #include <stdexcept>
 
 namespace alps {
 namespace scheduler {
 
+namespace po = boost::program_options;
+
 Options::Options(int argc, char** argv) 
-  : min_check_time(60.), // don't check more often than once a minute
-    max_check_time(900.), // check at least every 15 minutes
-    checkpoint_time(1800.), // make checkpoints every 30 minutes
-    min_cpus(1), // min # of CPUs per task: default 1
-    max_cpus(std::numeric_limits<int>::max()), // max # of CPUs per task: default unlimted
-    time_limit(0.) // time limit: unlimited/automatic
+  : programname(argv[0]),
+    valid(true) // shall we really run?
 {
-  // parse all arguments
-  if(argc) {
-  int i=1;
-  while (i < argc) {
-    if(argv[i][0]!='-') {
-      if (jobfilename.empty())
-        jobfilename=boost::filesystem::path(argv[i],boost::filesystem::native);
-      else
-        boost::throw_exception(std::runtime_error( "Illegal option: " + std::string(argv[i])));
-    }
-    else {
-      if(argv[i][1]=='l')
-        print_license(std::cout);
-      else if(argv[i][1]=='T') {
-        if(i+1<argc) {
-          if(!strcmp(argv[i]+2,"c")) {
-            if(std::sscanf(argv[++i],"%lf",&checkpoint_time)==EOF)
-              boost::throw_exception(std::runtime_error( "illegal checkpoint time"));
-          }
-          else if(!strcmp(argv[i]+2,"min")) {
-            if(std::sscanf(argv[++i],"%lf",&min_check_time)==EOF)
-              boost::throw_exception(std::runtime_error( "illegal minimum time"));
-          }
-          else if(!strcmp(argv[i]+2,"max")) {
-            if(std::sscanf(argv[++i],"%lf",&max_check_time)==EOF)
-              boost::throw_exception(std::runtime_error( "illegal maximum time"));
-          }
-          else if(argv[i][2]=='\0') {
-            if(std::sscanf(argv[++i],"%lf",&time_limit)==EOF)
-              boost::throw_exception(std::runtime_error( "illegal time limit"));
-          }
-          else
-            boost::throw_exception(std::runtime_error("Illegal option"+std::string (argv[i])));
-        }
-        else
-          boost::throw_exception(std::runtime_error( "argument to last option missing"));
-        }
-      else if(argv[i][1]=='N') {
-        if(i+1<argc) {
-          if(!strcmp(argv[i]+2,"min")) {
-            if(std::sscanf(argv[++i],"%d",&min_cpus)==EOF)
-              boost::throw_exception(std::runtime_error( "illegal CPU number"));
-           }
-          else if(!strcmp(argv[i]+2,"max")) {
-            if(std::sscanf(argv[++i],"%d",&max_cpus)==EOF)
-              boost::throw_exception(std::runtime_error( "illegal CPU number"));
-          }
-          else 
-            boost::throw_exception(std::runtime_error( "Illegal option: " + std::string(argv[i])));
-        }
-        else
-          boost::throw_exception(std::runtime_error( "argument to last option missing"));
-      }
-      else
-        boost::throw_exception(std::runtime_error( "Illegal option: " + std::string(argv[i])));
-    }      
-      i++; // next option
+  std::string filename;
+  
+  po::options_description desc("Allowed options");
+  desc.add_options()
+    ("help", "produce help message")
+    ("license,l", "print license conditions") 
+    ("checkpoint-time", po::value<double>(&checkpoint_time)->default_value(1800),"time between checkpoints")
+    ("Tmin", po::value<double>(&min_check_time)->default_value(60),"minimum time between checks whether a simulation is finished")
+    ("Tmax", po::value<double>(&max_check_time)->default_value(900),"maximum time between checks whether a simulation is finished")
+    ("time-limit,T", po::value<double>(&time_limit)->default_value(0),"time limit for the simulation")
+    ("Nmin", po::value<int>(&min_cpus)->default_value(1),"minimum number of CPUs per simulation")
+    ("Nmax", po::value<int>(&max_cpus)->default_value(std::numeric_limits<int>::max()),"maximum number of CPUs per simulation")
+    ("input-file", po::value<std::string>(&filename), "input file");
+  po::positional_options_description p;
+  p.add("input-file", 1);
+  
+  po::variables_map vm;
+  po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
+  po::notify(vm);    
+
+  if (vm.count("help")) {
+    std::cout << desc << "\n";
+    valid=false;
   }
+  if (vm.count("license")) {
+    print_license(std::cout);
+    valid=false;
+  }
+  if (!valid)
+    return;
   
-  // store the program name:
-  
-  programname = argv[0];
+  if (!filename.empty())
+    jobfilename=boost::filesystem::path(filename,boost::filesystem::native);
+  else
+    boost::throw_exception(std::runtime_error("No job file specified"));
+    
   if(min_cpus>max_cpus)
     boost::throw_exception(std::runtime_error("Minimum number of CPUs larger than maximum number of CPU"));
   if(min_check_time>max_check_time)
-    boost::throw_exception(std::runtime_error("Minimum time between checke larger than maximum time"));
-  if(jobfilename.empty())
-    boost::throw_exception(std::runtime_error("No job file specified"));
-  }
+    boost::throw_exception(std::runtime_error("Minimum time between checks larger than maximum time"));
 }
 
 } // namespace scheduler

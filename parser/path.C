@@ -28,7 +28,7 @@
 
 /* $Id$ */
 
-#include <alps/parser/xslt.h>
+#include <alps/parser/path.h>
 #include <alps/config.h>
 
 std::string alps::xslt_path(const std::string& stylefile) {
@@ -49,3 +49,7 @@ std::string alps::xslt_path(const std::string& stylefile) {
     return "http://xml.comp-phys.org/"+stylefile;
 }
   
+std::string xml_library_path(const std::string& file) 
+{
+  return std::string(ALPS_XML_DIR)+"/"+file;
+}
