@@ -178,7 +178,11 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
   
   template <class S>
   SimpleObservableEvaluator<typename obs_value_slice<T,S>::value_type>
-    slice(S ,const std::string="") const;
+    slice(const S& ,const std::string&) const;
+
+  template <class S>
+  SimpleObservableEvaluator<typename obs_value_slice<T,S>::value_type>
+    slice(const S&) const;
   
   void operator<<(const SimpleObservableData<T>& obs);
 
@@ -411,10 +415,24 @@ inline uint32_t SimpleObservableEvaluator<T>::number_of_runs() const
 template <class T>
 template <class S>
 inline SimpleObservableEvaluator<typename obs_value_slice<T,S>::value_type>
-SimpleObservableEvaluator<T>::slice(S sl, const std::string n) const
+SimpleObservableEvaluator<T>::slice(const S& sl, const std::string& n) const
 {
   SimpleObservableEvaluator<typename obs_value_slice<T,S>::value_type> 
      res(n.length()==0 ? super_type::name()+boost::lexical_cast<std::string,S>(sl) : n);
+
+  for (typename std::vector<SimpleObservableData<T> >::const_iterator it=runs_.begin();
+       it !=runs_.end();++it)
+    res << it->slice(sl);
+  return res;
+}
+
+template <class T>
+template <class S>
+inline SimpleObservableEvaluator<typename obs_value_slice<T,S>::value_type>
+SimpleObservableEvaluator<T>::slice(const S& sl) const
+{
+  SimpleObservableEvaluator<typename obs_value_slice<T,S>::value_type> 
+     res(super_type::name()+boost::lexical_cast<std::string,S>(sl));
 
   for (typename std::vector<SimpleObservableData<T> >::const_iterator it=runs_.begin();
        it !=runs_.end();++it)
