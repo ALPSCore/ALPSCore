@@ -58,7 +58,7 @@ namespace scheduler {
 Worker::Worker(const ProcessList& w,const alps::Parameters&  myparms,int32_t n)
   : AbstractWorker(),
     version(MCDump_run_version),
-    random_01(random),
+    random_01(random_base_type()),
     node(n),
     parms(myparms),
     where(w),
@@ -74,7 +74,7 @@ Worker::Worker(const ProcessList& w,const alps::Parameters&  myparms,int32_t n)
   // TODO: replace by generic seeding scheme
   // boost::minstd_rand0 gen(331);
   if (where.size())
-    seed_with_sequence(random,parms["SEED"]);
+    seed_with_sequence(random_01.base(),parms["SEED"]);
 }
 
 
@@ -102,7 +102,7 @@ void Worker::load_worker(IDump& dump)
   dump >> parms;
   std::string state;
   dump >> state;
-  random = boost::lexical_cast<random_type,std::string>(state);
+  random_01.base() = boost::lexical_cast<random_base_type,std::string>(state);
   if(node==0) {
     int32_t dummy;
     info.load(dump,version);
@@ -115,7 +115,7 @@ void Worker::load_worker(IDump& dump)
 void Worker::save_worker(ODump& dump) const
 {
   dump << int32_t(MCDump_run) << int32_t(0) << version << parms;
-  dump << boost::lexical_cast<std::string,random_type>(random);
+  dump << boost::lexical_cast<std::string,random_base_type>(random_01.base());
   if(node==0)
     dump << info;
   // TODO: save slave runs
