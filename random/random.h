@@ -60,6 +60,8 @@ class BufferedRandomNumberGeneratorBase
 {
 public:
   typedef double result_type;
+  typedef std::vector<result_type> buffer_type;
+  
   BOOST_STATIC_CONSTANT(bool, has_fixed_range = false);
 
   BufferedRandomNumberGeneratorBase(std::size_t b=10240) 
@@ -68,7 +70,7 @@ public:
   BufferedRandomNumberGeneratorBase(const BufferedRandomNumberGeneratorBase& gen)
   {
     buf_ = gen.buf_;
-    ptr_ = buf_.begin()+(gen.ptr_-gen.buf_.begin());
+    ptr_ = buf_.begin()+(gen.ptr_-const_cast<buffer_type&>(gen.buf_).begin());
   }
 
   virtual ~BufferedRandomNumberGeneratorBase() {}
