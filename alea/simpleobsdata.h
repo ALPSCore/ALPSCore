@@ -337,7 +337,8 @@ inline void SimpleObservableData<T>::read_xml_scalar(std::istream& infile, const
     }
     else if (tag.name=="MEAN") {
       if (tag.type !=XMLTag::SINGLE) {
-        mean_ = boost::lexical_cast<double,std::string>(parse_content(infile));
+        std::string val=parse_content(infile);
+        mean_=((val=="NaN" || val=="nan") ? sqrt(-1.) : boost::lexical_cast<double,std::string>(val));
         check_tag(infile,"/MEAN");
       }
     }
@@ -352,8 +353,8 @@ inline void SimpleObservableData<T>::read_xml_scalar(std::istream& infile, const
     else if (tag.name=="VARIANE") {
       if (tag.type !=XMLTag::SINGLE) {
         has_variance_=true;
-        variance_ = boost::lexical_cast<double,std::string>(parse_content(infile
-));
+        std::string val=parse_content(infile);
+        variance_=((val=="NaN" || val=="nan") ? sqrt(-1.) : boost::lexical_cast<double,std::string>(val));
         check_tag(infile,"/VARIANCE");
       }
     }
@@ -398,7 +399,8 @@ inline void SimpleObservableData<T>::read_xml_vector(std::istream& infile, const
       }
       else if (tag.name=="MEAN") {
         if (tag.type !=XMLTag::SINGLE) {
-          mean_[i]=boost::lexical_cast<double,std::string>(parse_content(infile));
+          std::string val=parse_content(infile);
+          mean_[i]=((val=="NaN" || val=="nan") ? sqrt(-1.) : boost::lexical_cast<double,std::string>(val));
           check_tag(infile,"/MEAN");
         }
       }
@@ -413,7 +415,8 @@ inline void SimpleObservableData<T>::read_xml_vector(std::istream& infile, const
       else if (tag.name=="VARIANE") {
         if (tag.type !=XMLTag::SINGLE) {
           has_variance_=true;
-          variance_[i]=boost::lexical_cast<double,std::string>(parse_content(infile));
+          std::string val=parse_content(infile);
+          variance_[i]=((val=="NaN" || val=="nan") ? sqrt(-1.) : boost::lexical_cast<double,std::string>(val));
           check_tag(infile,"/VARIANCE");
         }
       }

@@ -29,6 +29,7 @@
 #include <complex>
 #include <iostream>
 #include <string>
+#include <stdexcept>
 
 namespace alps {
 
@@ -55,7 +56,15 @@ public:
     return value_ == "true" ? true : (value_ == "false" ? false : boost::lexical_cast<bool,std::string>(value_));
   }
 
+#ifdef BOOST_NO_EXCEPTIONS
 #define CONVERTIT(A) operator A() const { return boost::lexical_cast<A, std::string>(value_); }
+#else
+#define CONVERTIT(A) operator A() const { \
+  try { return boost::lexical_cast<A, std::string>(value_);} \
+  catch (...) { boost::throw_exception(std::runtime_error(\
+  "Could not convert string '"+value_+"to type "#A));}\
+  return boost::lexical_cast<A, std::string>(value_);}
+#endif
   CONVERTIT(int8_t)
   CONVERTIT(uint8_t)
   CONVERTIT(int16_t)

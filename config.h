@@ -109,4 +109,14 @@ using boost::uint64_t;
 
 } // end namespace alps
 
+#include <boost/config.hpp>
+
+#ifndef BOOST_NO_VOID_RETURNS
+# define ALPS_DUMMY_VOID void
+# define ALPS_RETURN_VOID
+#else
+# define ALPS_DUMMY_VOID bool
+# define ALPS_RETURN_VOID return true;
+#endif
+
 #endif // ALPS_CONFIG_H

@@ -121,8 +121,7 @@ void Task::construct() // delayed until child class is fully constructed
   ProcessList here(cpus());
   int j=-1; // count existing runs
   int in=0; // first available node
-  for (int i=0;i<runs.size();i++)
-  {
+  for (int i=0;i<runs.size();i++) {
     j++;
     // load as many runs as possible
     if(in+cpus()<=where.size()) {// a process is available
@@ -151,7 +150,7 @@ void Task::construct() // delayed until child class is fully constructed
     }
     else { // no node available: load information only
 #ifdef OSIRIS_TRACE
-      std::cerr  << "Loading information about run " << j+1 << " from file " << runfiles[i].in << ".\n";
+      std::cerr  << "Loading information about run " << j+1 << " from file " << runfiles[i].in.string() << ".\n";
 #endif
       runs[j]=theScheduler->make_worker(parms);
       runs[j]->load_from_file(runfiles[i].in);
