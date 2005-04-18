@@ -95,7 +95,7 @@ public:
   void substitute_operators(const ModelLibrary& m, const Parameters& p=Parameters());
 
   template <class I, class T>
-  boost::multi_array<std::pair<T,std::pair<bool,bool> >,4> matrix(const SiteBasisDescriptor<I>&, const SiteBasisDescriptor<I>&, const Parameters& =Parameters()) const;
+  boost::multi_array<std::pair<T,bool>,4> matrix(const SiteBasisDescriptor<I>&, const SiteBasisDescriptor<I>&, const Parameters& =Parameters()) const;
 template <class T>
   std::set<expression::Term<T> > templated_split(const Parameters& = Parameters()) const;
   std::set<Term> split(const Parameters& p= Parameters()) { return templated_split<std::complex<double> >(p);}
@@ -134,7 +134,7 @@ expression::Expression<T> BondOperatorSplitter<I,T>::partial_evaluate_function(c
 
 
 template <class I, class T>
-boost::multi_array<std::pair<T,std::pair<bool,bool> >,4> get_fermionic_matrix(T,const BondOperator& m, const SiteBasisDescriptor<I>& basis1, const SiteBasisDescriptor<I>& basis2, const Parameters& p=Parameters())
+boost::multi_array<std::pair<T,bool>,4> get_fermionic_matrix(T,const BondOperator& m, const SiteBasisDescriptor<I>& basis1, const SiteBasisDescriptor<I>& basis2, const Parameters& p=Parameters())
 {
   return m.template matrix<I,T>(basis1,basis2,p);
 }
@@ -142,20 +142,20 @@ boost::multi_array<std::pair<T,std::pair<bool,bool> >,4> get_fermionic_matrix(T,
 template <class I, class T>
 boost::multi_array<T,4> get_matrix(T,const BondOperator& m, const SiteBasisDescriptor<I>& basis1, const SiteBasisDescriptor<I>& basis2, const Parameters& p=Parameters())
 {
-  boost::multi_array<std::pair<T,std::pair<bool,bool> >,4> f_matrix = m.template matrix<I,T>(basis1,basis2,p);
+  boost::multi_array<std::pair<T,bool>,4> f_matrix = m.template matrix<I,T>(basis1,basis2,p);
   boost::multi_array<T,4> matrix(boost::extents[f_matrix.shape()[0]][f_matrix.shape()[1]][f_matrix.shape()[2]][f_matrix.shape()[3]]);
   for (int i=0;i<f_matrix.shape()[0];++i)
     for (int j=0;j<f_matrix.shape()[1];++j)
       for (int k=0;k<f_matrix.shape()[2];++k)
         for (int l=0;l<f_matrix.shape()[3];++l)
-          if (f_matrix[i][j][k][l].second.first || f_matrix[i][j][k][l].second.second)
+          if (f_matrix[i][j][k][l].second)
             boost::throw_exception(std::runtime_error("Cannot convert fermionic operator to a bosonic matrix"));
           else
            matrix[i][j][k][l]=f_matrix[i][j][k][l].first;
   return matrix;
 }
 
-template <class I, class T> boost::multi_array<std::pair<T,std::pair<bool,bool> >,4>
+template <class I, class T> boost::multi_array<std::pair<T,bool>,4>
 BondOperator::matrix(const SiteBasisDescriptor<I>& b1,
                               const SiteBasisDescriptor<I>& b2,
                               const Parameters& p) const
@@ -171,7 +171,7 @@ BondOperator::matrix(const SiteBasisDescriptor<I>& b1,
   parms.copy_undefined(basis2.get_parameters());
   std::size_t dim1=basis1.num_states();
   std::size_t dim2=basis2.num_states();
-  boost::multi_array<std::pair<T,std::pair<bool,bool> >,4> mat(boost::extents[dim1][dim2][dim1][dim2]);
+  boost::multi_array<std::pair<T,bool>,4> mat(boost::extents[dim1][dim2][dim1][dim2]);
   // parse expression and store it as sum of terms
   expression::Expression<value_type> ex(term());
   ex.flatten();
@@ -183,7 +183,7 @@ BondOperator::matrix(const SiteBasisDescriptor<I>& b1,
       for (int j=0;j<mat.shape()[1];++j)
         for (int k=0;k<mat.shape()[2];++k)
           for (int l=0;l<mat.shape()[3];++l)
-            mat[i][j][k][l].second=std::make_pair(false,false);
+            mat[i][j][k][l].second=false;
     for (int i1=0;i1<states1.size();++i1)
       for (int i2=0;i2<states2.size();++i2) {
       //calculate expression applied to state *it and store it into matrix
@@ -195,8 +195,7 @@ BondOperator::matrix(const SiteBasisDescriptor<I>& b1,
           unsigned int j2=states2.index(evaluator.state().second);
           if (is_nonzero(term) && j1<dim1 && j2<dim2) {
             if (is_nonzero(mat[i1][i2][j1][j2].first)) {
-              if (mat[i1][i2][j1][j2].second.first != evaluator.fermionic().first || 
-                  mat[i1][i2][j1][j2].second.second != evaluator.fermionic().second) 
+              if (mat[i1][i2][j1][j2].second != evaluator.fermionic()) 
               boost::throw_exception(std::runtime_error("Inconsistent fermionic nature of a matrix element: "
                                     + boost::lexical_cast<std::string>(*tit) + " is inconsistent with "
                                     + boost::lexical_cast<std::string>(mat[i1][i2][j1][j2].first) + 

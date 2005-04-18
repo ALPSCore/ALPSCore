@@ -62,7 +62,7 @@ public:
   const std::string& term() const { return term_;}
   const std::string& name() const { return name_;}
   template <class I, class T>
-  boost::multi_array<std::pair<T,bool>,2> matrix(const SiteBasisDescriptor<I>&,
+  boost::multi_array<T,2> matrix(const SiteBasisDescriptor<I>&,
                                           const Parameters& p=Parameters()) const;
 
   void substitute_operators(const ModelLibrary& m, const Parameters& p=Parameters());
@@ -73,28 +73,15 @@ private:
   std::string name_;
 };
 
-template <class I, class T>
-boost::multi_array<T,2> get_matrix(T,const SiteOperator& m, const SiteBasisDescriptor<I>& basis1, const Parameters& p=Parameters())
-{
-  boost::multi_array<std::pair<T,bool>,2> f_matrix = m.template matrix<I,T>(basis1,p);
-  boost::multi_array<T,2> matrix(boost::extents[f_matrix.shape()[0]][f_matrix.shape()[1]]);
-  for (int i=0;i<f_matrix.shape()[0];++i)
-    for (int j=0;j<f_matrix.shape()[1];++j)
-      if (f_matrix[i][j].second)
-        boost::throw_exception(std::runtime_error("Cannot convert fermionic operator to a bosonic matrix"));
-      else
-        matrix[i][j]=f_matrix[i][j].first;
-  return matrix;
-}
 
 template <class I, class T>
-inline boost::multi_array<std::pair<T,bool>,2> get_fermionic_matrix(T,const SiteOperator& m, const SiteBasisDescriptor<I>& basis1,  const Parameters& p=Parameters())
+inline boost::multi_array<T,2> get_matrix(T,const SiteOperator& m, const SiteBasisDescriptor<I>& basis1,  const Parameters& p=Parameters())
 {
   return m.template matrix<I,T>(basis1,p);
 }
 
 
-template <class I, class T> boost::multi_array<std::pair<T,bool>,2>
+template <class I, class T> boost::multi_array<T,2>
 SiteOperator::matrix(const SiteBasisDescriptor<I>& b,  const Parameters& p) const
 {
   typedef typename expression_value_type_traits<T>::value_type value_type;
@@ -104,7 +91,7 @@ SiteOperator::matrix(const SiteBasisDescriptor<I>& b,  const Parameters& p) cons
   Parameters parms(p);
   parms.copy_undefined(basis.get_parameters());
   std::size_t dim=basis.num_states();
-  boost::multi_array<std::pair<T,bool>,2> mat(boost::extents[dim][dim]);
+  boost::multi_array<T,2> mat(boost::extents[dim][dim]);
   // parse expression and store it as sum of terms
   expression::Expression<value_type> ex(term());
   ex.flatten();
@@ -112,9 +99,6 @@ SiteOperator::matrix(const SiteBasisDescriptor<I>& b,  const Parameters& p) cons
 
   // fill the matrix
     site_basis<I> states(basis);
-    for (int i=0;i<states.size();++i)
-      for (int j=0;j<states.size();++j)
-        mat[i][j].second=false;
     for (int i=0;i<states.size();++i) {
     //calculate expression applied to state *it and store it into matrix
       for (typename expression::Expression<value_type>::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
@@ -122,22 +106,14 @@ SiteOperator::matrix(const SiteBasisDescriptor<I>& b,  const Parameters& p) cons
         expression::Term<value_type> term(*tit);
         term.partial_evaluate(evaluator);
         unsigned int j = states.index(evaluator.state());
-            if (is_nonzero(term)) {
-          if (is_nonzero(mat[i][j].first) && j<states.size()) {
-            if (mat[i][j].second != evaluator.fermionic())
-              boost::throw_exception(std::runtime_error("Inconsistent fermionic nature of a matrix element: "
-                                    + boost::lexical_cast<std::string>(*tit) + " is inconsistent with "
-                                    + boost::lexical_cast<std::string>(mat[i][j].first) + 
-                                    ". Please contact the library authors for an extension to the ALPS model library."));
-          }
-          else
-            mat[i][j].second=evaluator.fermionic();
-            if (boost::is_arithmetic<T>::value || TypeTraits<T>::is_complex)
-              if (!can_evaluate(boost::lexical_cast<std::string>(term)))
-                boost::throw_exception(std::runtime_error("Cannot evaluate expression " + boost::lexical_cast<std::string>(term)));
-
-          mat[i][j].first += evaluate<T>(term);
-          simplify(mat[i][j].first);
+        if (is_nonzero(term)) {
+          if (evaluator.fermionic())
+            boost::throw_exception(std::runtime_error("Fermionic number changing site operator is unphysical."));
+          if (boost::is_arithmetic<T>::value || TypeTraits<T>::is_complex)
+            if (!can_evaluate(boost::lexical_cast<std::string>(term)))
+              boost::throw_exception(std::runtime_error("Cannot evaluate expression " + boost::lexical_cast<std::string>(term)));
+          mat[i][j] += evaluate<T>(term);
+          simplify(mat[i][j]);
         }
       }
     }

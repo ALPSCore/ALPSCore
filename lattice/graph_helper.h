@@ -35,7 +35,7 @@
 #include <alps/lattice/disorder.h>
 #include <alps/lattice/propertymap.h>
 #include <boost/vector_property_map.hpp>
-#include <boost/multi_array.hpp>
+#include <alps/multi_array.hpp>
 
 namespace alps {
 

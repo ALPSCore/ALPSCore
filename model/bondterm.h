@@ -77,8 +77,12 @@ public:
   expression::Expression<T> partial_evaluate_function(const std::string& name,
                                         const expression::Expression<T>& argument,bool=false) const;
   std::pair<STATE1,STATE2> state() const { return std::make_pair(site1_.state(),site2_.state());}
-  std::pair<bool,bool> fermionic() const { return std::make_pair(site1_.fermionic(),site2_.fermionic());}
-
+  bool fermionic() const { 
+    if (site1_.fermionic()!=site2_.fermionic())
+      boost::throw_exception(std::runtime_error("Bond term contains unphysical single fermion creation operator"));
+    return site1_.fermionic();
+  }
+  
   bool has_operator(const std::string& name, const expression::Expression<T>& arg) const
   { 
     return (arg==site1_.site() && site1_.has_operator(name)) || 
