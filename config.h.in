@@ -94,6 +94,9 @@
 // Define to 1 if you have the PVM library
 #undef ALPS_HAVE_PVM
 
+// Define to 1 if you have the LAPACK library
+#undef ALPS_HAVE_LAPACK
+
 // Define to 1 if you have the HDF5 library
 #undef ALPS_HAVE_HDF5
 
