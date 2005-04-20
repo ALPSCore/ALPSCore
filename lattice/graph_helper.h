@@ -406,8 +406,27 @@ public:
       return std::vector<vector_type>();
   }
 
+  
 private:
-  graph_type* make_graph(const Parameters& p);
+  graph_helper(const graph_helper& o)
+   : LatticeLibrary(o),
+     to_delete_(o.to_delete_),
+     g_(to_delete_ ? new graph_type(*g) : g),
+     is_bipartite_(set_parity(graph())),
+     parity_map_(get_or_default(parity_t(),const_graph(),0.)),
+     edge_type_map_(get_or_default(edge_type_t(),const_graph(),0)),
+     vertex_type_map_(get_or_default(vertex_type_t(),const_graph(),0)),
+     coordinate_map_(get_or_default(coordinate_t(),const_graph(),std::vector<double>())),
+     inhomogeneous_vertex_type_map_(),
+     inhomogeneous_edge_type_map_(get_or_default(edge_index_t(),const_graph(),0)),
+     distances_calculated_(false)
+  {
+    d_.disorder_vertices(graph(),inhomogeneous_vertex_type_map_);
+    d_.disorder_edges(graph(),inhomogeneous_edge_type_map_);
+  }
+     
+  const graph_helper& operator=(const graph_helper&) {}
+    graph_type* make_graph(const Parameters& p);
   const graph_type& const_graph() const { return *g_;}
 
   lattice_type l_;

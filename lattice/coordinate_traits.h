@@ -119,11 +119,11 @@ std::string coordinate_to_string(const C& c)
   std::string s;
   while (first!=last) {
     if (n)
-      s+=", ";
+      s+=",";
     s+=boost::lexical_cast<std::string>(*first++);
     ++n;
   }
-  if (n>1)
+//  if (n>1)
     s="( "+s+" )";
   return s;
 } 

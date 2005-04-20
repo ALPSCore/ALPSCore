@@ -304,9 +304,9 @@ void IXDRDump::setPosition(uint32_t pos)
 //-----------------------------------------------------------------------
 
 // reopen a file
-void OXDRFileDump::open_file(const std::string& fn)
+void OXDRFileDump::open_file(const std::string& fn,bool append)
 {
-  file_ = std::fopen(fn.c_str(),"w");
+  file_ = std::fopen(fn.c_str(),(append ? "w" : "a"));
   if(file_)
       xdrstdio_create(&xdr_,file_,XDR_ENCODE);
   else  {
@@ -320,9 +320,9 @@ void OXDRFileDump::open_file(const std::string& fn)
 
 
 // create a new dump file
-OXDRFileDump::OXDRFileDump(const boost::filesystem::path& fn)
+OXDRFileDump::OXDRFileDump(const boost::filesystem::path& fn, bool append)
 {
-  open_file(fn.native_file_string());
+  open_file(fn.native_file_string(),append);
 }
 
 // destructor closes the stream and file

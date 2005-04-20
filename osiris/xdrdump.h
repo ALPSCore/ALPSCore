@@ -148,7 +148,7 @@ class OXDRFileDump: public OXDRDump
 public:
   /// open a new dump file with the given name
   // OXDRFileDump(const std::string& n);
-  OXDRFileDump(const boost::filesystem::path& name);
+  OXDRFileDump(const boost::filesystem::path& name, bool append=false);
   virtual ~OXDRFileDump();
 
   void flush();
@@ -158,7 +158,7 @@ private:
   std::FILE* file_;
 
   /// open a file
-  void open_file(const std::string&);
+  void open_file(const std::string&, bool=false);
 };
 
 
