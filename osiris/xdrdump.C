@@ -306,7 +306,7 @@ void IXDRDump::setPosition(uint32_t pos)
 // reopen a file
 void OXDRFileDump::open_file(const std::string& fn,bool append)
 {
-  file_ = std::fopen(fn.c_str(),(append ? "w" : "a"));
+  file_ = std::fopen(fn.c_str(),(append ? "a" : "w"));
   if(file_)
       xdrstdio_create(&xdr_,file_,XDR_ENCODE);
   else  {
