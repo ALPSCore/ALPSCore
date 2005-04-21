@@ -411,7 +411,7 @@ private:
   graph_helper(const graph_helper& o)
    : LatticeLibrary(o),
      to_delete_(o.to_delete_),
-     g_(to_delete_ ? new graph_type(*g) : g),
+     g_(to_delete_ ? new graph_type(*g_) : g_),
      is_bipartite_(set_parity(graph())),
      parity_map_(get_or_default(parity_t(),const_graph(),0.)),
      edge_type_map_(get_or_default(edge_type_t(),const_graph(),0)),
