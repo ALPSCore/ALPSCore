@@ -61,7 +61,7 @@ public:
   const std::string& site() const { return site_;}
   const std::string& term() const { return term_;}
   const std::string& name() const { return name_;}
-  template <class I, class T>
+  template <class T, class I>
   boost::multi_array<T,2> matrix(const SiteBasisDescriptor<I>&,
                                           const Parameters& p=Parameters()) const;
 
@@ -77,11 +77,11 @@ private:
 template <class I, class T>
 inline boost::multi_array<T,2> get_matrix(T,const SiteOperator& m, const SiteBasisDescriptor<I>& basis1,  const Parameters& p=Parameters())
 {
-  return m.template matrix<I,T>(basis1,p);
+  return m.template matrix<T,I>(basis1,p);
 }
 
 
-template <class I, class T> boost::multi_array<T,2>
+template <class T, class I> boost::multi_array<T,2>
 SiteOperator::matrix(const SiteBasisDescriptor<I>& b,  const Parameters& p) const
 {
   typedef typename expression_value_type_traits<T>::value_type value_type;

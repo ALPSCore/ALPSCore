@@ -94,7 +94,7 @@ public:
   const std::string& target () const { return target_;}
   void substitute_operators(const ModelLibrary& m, const Parameters& p=Parameters());
 
-  template <class I, class T>
+  template <class T, class I>
   boost::multi_array<std::pair<T,bool>,4> matrix(const SiteBasisDescriptor<I>&, const SiteBasisDescriptor<I>&, const Parameters& =Parameters()) const;
 template <class T>
   std::set<expression::Term<T> > templated_split(const Parameters& = Parameters()) const;
@@ -136,13 +136,13 @@ expression::Expression<T> BondOperatorSplitter<I,T>::partial_evaluate_function(c
 template <class I, class T>
 boost::multi_array<std::pair<T,bool>,4> get_fermionic_matrix(T,const BondOperator& m, const SiteBasisDescriptor<I>& basis1, const SiteBasisDescriptor<I>& basis2, const Parameters& p=Parameters())
 {
-  return m.template matrix<I,T>(basis1,basis2,p);
+  return m.template matrix<T,I>(basis1,basis2,p);
 }
 
-template <class I, class T>
+template <class T, class I>
 boost::multi_array<T,4> get_matrix(T,const BondOperator& m, const SiteBasisDescriptor<I>& basis1, const SiteBasisDescriptor<I>& basis2, const Parameters& p=Parameters())
 {
-  boost::multi_array<std::pair<T,bool>,4> f_matrix = m.template matrix<I,T>(basis1,basis2,p);
+  boost::multi_array<std::pair<T,bool>,4> f_matrix = m.template matrix<T,I>(basis1,basis2,p);
   boost::multi_array<T,4> matrix(boost::extents[f_matrix.shape()[0]][f_matrix.shape()[1]][f_matrix.shape()[2]][f_matrix.shape()[3]]);
   for (int i=0;i<f_matrix.shape()[0];++i)
     for (int j=0;j<f_matrix.shape()[1];++j)
@@ -155,7 +155,7 @@ boost::multi_array<T,4> get_matrix(T,const BondOperator& m, const SiteBasisDescr
   return matrix;
 }
 
-template <class I, class T> boost::multi_array<std::pair<T,bool>,4>
+template <class T, class I> boost::multi_array<std::pair<T,bool>,4>
 BondOperator::matrix(const SiteBasisDescriptor<I>& b1,
                               const SiteBasisDescriptor<I>& b2,
                               const Parameters& p) const
