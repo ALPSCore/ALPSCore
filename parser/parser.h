@@ -66,7 +66,7 @@ struct XMLTag
   bool is_element() { return !is_comment() && !is_processing();}
 };
 
-XMLTag parse_tag(std::istream& p, bool skip_comments = false);
+XMLTag parse_tag(std::istream& p, bool skip_comments = true);
 
 std::string parse_content(std::istream& in);
 
