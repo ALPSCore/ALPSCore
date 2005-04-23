@@ -39,7 +39,14 @@ void alps::SiteOperator::read_xml(const XMLTag& intag, std::istream& is)
   name_ = tag.attributes["name"];
   if (tag.type!=XMLTag::SINGLE) {
     term_=parse_content(is);
-    tag = parse_tag(is);
+    tag = parse_tag(is,false);
+    while (tag.type==XMLTag::COMMENT) {
+      std::string next_part = parse_content(is);
+      if (!term_.empty() && !next_part.empty())
+        term_ += " ";
+      term_ +=next_part;
+      tag = parse_tag(is,false);
+    }
     if (tag.name !="/"+intag.name)
       boost::throw_exception(std::runtime_error("Illegal tag <" + tag.name + "> in <" +intag.name+ "> element"));
   }
