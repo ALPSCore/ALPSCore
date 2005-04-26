@@ -36,6 +36,7 @@
 #include <boost/archive/detail/common_iarchive.hpp>
 #include <boost/archive/archive_exception.hpp>
 #include <boost/serialization/string.hpp>
+#include <boost/version.hpp>
 #include <iostream>
 
 namespace alps {
@@ -49,7 +50,11 @@ class odump_archive
  : public boost::archive::detail::common_oarchive<odump_archive>
 {
 public:
-  odump_archive(ODump& d, bool c=true) : dump_(d), compatible_(c) {}
+  odump_archive(ODump& d, bool c=true) : 
+#if (BOOST_VERSION >= 103300)
+    boost::archive::detail::common_oarchive<odump_archive>(0),
+#endif
+    dump_(d), compatible_(c) {}
 //  template<class T>
 //  odump_archive& operator<<(const T & t) 
 //  { boost::serialization::save(* This(), t); return * This(); }
@@ -131,7 +136,11 @@ public:
     // explicitly convert to char * to avoid compile ambiguities
     void save_override(const boost::archive::class_name_type & t, int){
       if (!compatible_)
+#if (BOOST_VERSION == 103300)
+        boost::throw_exception(std::logic_error("dump not finally implemented"));
+#else
         * this->This() << std::string(static_cast<const char *>(t));
+#endif
     }
 
 private:    
@@ -145,7 +154,11 @@ class idump_archive
  : public boost::archive::detail::common_iarchive<idump_archive>
 {
 public:
-  idump_archive(IDump& d, bool c=true) : dump_(d), compatible_(c) {}
+  idump_archive(IDump& d, bool c=true) : 
+#if (BOOST_VERSION >= 103300)
+    boost::archive::detail::common_iarchive<idump_archive>(0), 
+#endif
+    dump_(d), compatible_(c) {}
   
 //  template<class T>
 //  idump_archive& operator>>(T & t) 
