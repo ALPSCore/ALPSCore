@@ -65,8 +65,8 @@ public:
 # undef ALPS_DUMP_DO_TYPE
     
   // write a C-style string
-  void write_string(std::size_t, const char * x) { archive_ << std::string(x);}
-  void write_string(const std::string& s) { archive_ << s;}
+  void write_string(std::size_t, const char * x) { write_string(std::string(x));}
+  void write_string(const std::string& s) { archive_.operator<<(s);}
 
 private:
   ARCHIVE& archive_; // the Boost archive

@@ -135,9 +135,8 @@ public:
 
     // explicitly convert to char * to avoid compile ambiguities
     void save_override(const boost::archive::class_name_type & t, int){
-      if (!compatible_)
 #if (BOOST_VERSION == 103300)
-        boost::throw_exception(std::logic_error("dump not finally implemented"));
+        this->This()->save(std::string(static_cast<const char *>(t)));
 #else
         * this->This() << std::string(static_cast<const char *>(t));
 #endif

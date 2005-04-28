@@ -209,6 +209,7 @@ void InhomogeneityDescriptor::write_xml(oxstream& xml) const
 }
 
   Disorder::random_type Disorder::rng_;
+  int Disorder::last_seed_;
   
   boost::variate_generator<Disorder::random_type&,boost::uniform_real<> > 
     Disorder::random(Disorder::rng_,boost::uniform_real<>());
@@ -216,14 +217,16 @@ void InhomogeneityDescriptor::write_xml(oxstream& xml) const
   boost::variate_generator<Disorder::random_type&,boost::normal_distribution<> > 
     Disorder::gaussian_random(Disorder::rng_,boost::normal_distribution<>());;
 
-  void Disorder::seed() 
-  { 
-    rng_.seed();
+  void Disorder::seed_if_unseeded(const alps::Parameters& p) 
+  {
+    if (static_cast<int>(p.value_or_default("DISORDERSEED",0))!=last_seed_)
+      seed(p.value_or_default("DISORDERSEED",0));
   }
-  
+
   void Disorder::seed(unsigned int i) 
   { 
     seed_with_sequence(rng_,i);
+    last_seed_=i;
   }
 
 

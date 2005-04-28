@@ -65,11 +65,12 @@ public:
   typedef boost::mt19937 random_type;
 private:
   static random_type rng_;
+  static int last_seed_;
 public:
   static boost::variate_generator<random_type&,boost::uniform_real<> > random;
   static boost::variate_generator<random_type&,boost::normal_distribution<> > gaussian_random;
-  static void seed();
-  static void seed(unsigned int); 
+  static void seed(unsigned int =0);
+  static void seed_if_unseeded(const alps::Parameters&);
 };
 
 namespace expression {
@@ -110,7 +111,7 @@ class ParameterEvaluator : public Evaluator<T> {
 public:
   typedef Evaluator<T> super_type;
   typedef T value_type;
-  ParameterEvaluator(const Parameters& p) : parms_(p) {}
+  ParameterEvaluator(const Parameters& p) : parms_(p) { Disorder::seed_if_unseeded(p);}
   virtual ~ParameterEvaluator() {}
 
   bool can_evaluate(const std::string&, bool=false) const;
