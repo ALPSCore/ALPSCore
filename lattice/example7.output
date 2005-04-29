@@ -1,0 +1,22 @@
+The unit cell has 2 sites.
+The sites in the unit cell are:
+Site 0 has type 0 and coordinates ()
+Site 1 has type 1 and coordinates ()
+The bonds in the unit cell are:
+The bond between site 0 offset (0) and site 1 offset (0) has type 0
+The bond between site 0 offset (0) and site 0 offset (1) has type 1
+The bond between site 1 offset (0) and site 1 offset (1) has type 2
+
+The number of cells in the lattice is 10
+The cells in the lattice are:
+index=0, offset=(0), coordinates_of_center_of_cell=(0)
+index=1, offset=(1), coordinates_of_center_of_cell=(1)
+index=2, offset=(2), coordinates_of_center_of_cell=(2)
+index=3, offset=(3), coordinates_of_center_of_cell=(3)
+index=4, offset=(4), coordinates_of_center_of_cell=(4)
+index=5, offset=(5), coordinates_of_center_of_cell=(5)
+index=6, offset=(6), coordinates_of_center_of_cell=(6)
+index=7, offset=(7), coordinates_of_center_of_cell=(7)
+index=8, offset=(8), coordinates_of_center_of_cell=(8)
+index=9, offset=(9), coordinates_of_center_of_cell=(9)
+
