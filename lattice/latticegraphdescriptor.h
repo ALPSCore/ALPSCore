@@ -61,6 +61,8 @@ public:
   typedef lattice_traits<base_type>::boundary_crossing_type boundary_crossing_type;
 
   LatticeGraphDescriptor() {}
+
+  LatticeGraphDescriptor(const std::string& unitcell, const UnitCellMap&);
   
   LatticeGraphDescriptor(const XMLTag&, std::istream&, 
        const LatticeMap& = LatticeMap(), 

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -50,8 +50,9 @@ GraphUnitCell::GraphUnitCell(const XMLTag& intag, std::istream& p)
   bool fixed_nvertices=false;
   uint32_t vertex_number=0;
   name_ = tag.attributes["name"];
-  dim_ = tag.attributes["dimension"]=="" ? 0 
-    : boost::lexical_cast<uint32_t,std::string>(tag.attributes["dimension"]);
+  dim_ = boost::lexical_cast<uint32_t,std::string>(tag.attributes["dimension"]);
+  if (dim_<1)
+    boost::throw_exception(std::runtime_error("Illegal dimension "+tag.attributes["dimension"]+ " in unit cell"));
   if (tag.attributes["vertices"]!="") {
       uint32_t nvert=boost::lexical_cast<uint32_t,std::string>(tag.attributes["vertices"]);
       graph_ = graph_type(nvert);

@@ -478,7 +478,18 @@ G* graph_helper<G>::make_graph(const Parameters& parms)
     to_delete_=true;
     have_lattice_=false;
   }
-  else
+  else if (parms.defined("UNITCELL")) {
+    // check for unit cell
+    name = static_cast<std::string>(parms["UNITCELL"]);
+    LatticeGraphDescriptor desc(name,unitcells_);
+    desc.set_parameters(parms);
+    l_ = lattice_type(desc);
+    d_ = desc.inhomogeneity();
+    g = &(l_.graph());
+    to_delete_=false;
+    have_lattice_=true;
+  }
+  else 
     boost::throw_exception(std::runtime_error("could not find graph/lattice specified in parameters"));
   return g;
 }

@@ -165,7 +165,10 @@ public:
     offset_type begin(extent_);
     offset_type end(extent_);
     std::fill(coordinates(begin).first,coordinates(begin).second,0);
-    std::fill(coordinates(end).first,coordinates(end).second-1,0);
+    if (coordinates(end).first != coordinates(end).second)
+      std::fill(coordinates(end).first,coordinates(end).second-1,0);
+    else
+      std::cerr << "Strange extent: " << vector_writer(extent_) << " dim=" << dimension() << "\n";
     return std::make_pair(cell_iterator(*this,begin),cell_iterator(*this,end));
   }
 

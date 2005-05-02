@@ -39,6 +39,18 @@
 
 namespace alps {
 
+
+LatticeGraphDescriptor::LatticeGraphDescriptor(const std::string& u, const UnitCellMap& um)
+   : unitcell_name_(u), lattice_is_finite_(true)
+{
+  static_cast<base_type&>(*this) = FiniteLatticeDescriptor();
+  
+  if(um.find(unitcell_name_)==um.end())
+    boost::throw_exception(std::runtime_error("unknown unit cell: " + unitcell_name_));
+  unit_cell() = const_cast<UnitCellMap&>(um)[unitcell_name_];
+}
+
+
 LatticeGraphDescriptor::LatticeGraphDescriptor(const XMLTag& intag,
   std::istream& p, const LatticeMap& lm, const FiniteLatticeMap& flm,
   const UnitCellMap& um)

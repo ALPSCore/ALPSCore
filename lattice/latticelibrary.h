@@ -58,6 +58,7 @@ public:
   
   bool has_graph(const std::string& name) const;
   bool has_lattice(const std::string& name) const;
+  bool has_unitcell(const std::string& name) const;
   
   const LatticeGraphDescriptor& lattice_descriptor(const std::string& name) const;
   lattice_type lattice(const std::string& name) const;
@@ -68,7 +69,7 @@ public:
   
   void make_all_graphs();
 
-private:
+protected:
   typedef std::map<std::string,LatticeGraphDescriptor> LatticeGraphMap;
   typedef std::map<std::string,coordinate_graph_type> GraphMap;
 

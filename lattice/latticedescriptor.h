@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2004 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2001-2005 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -88,8 +88,9 @@ public:
   typedef lattice_traits<base_type>::cell_iterator cell_iterator;
   typedef lattice_traits<base_type>::size_type size_type;
   
-  FiniteLatticeDescriptor() : dim_(0) {}
+  FiniteLatticeDescriptor();
   
+
   FiniteLatticeDescriptor(const alps::XMLTag&, std::istream&, 
                           const LatticeMap& = LatticeMap());
 

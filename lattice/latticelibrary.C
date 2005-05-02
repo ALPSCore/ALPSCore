@@ -119,6 +119,11 @@ bool LatticeLibrary::has_lattice(const std::string& name) const
   return (latticegraphs_.find(name)!=latticegraphs_.end());
 }
 
+bool LatticeLibrary::has_unitcell(const std::string& name) const
+{
+  return (unitcells_.find(name)!=unitcells_.end());
+}
+
 const LatticeGraphDescriptor& LatticeLibrary::lattice_descriptor(const std::string& name) const
 {
   if (!has_lattice(name))

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2004 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2001-2005 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -131,6 +131,16 @@ void LatticeDescriptor::write_xml(oxstream& xml) const
     xml << end_tag("RECIPROCALBASIS");        
   }
   xml << end_tag("LATTICE");
+}
+
+
+FiniteLatticeDescriptor::FiniteLatticeDescriptor() 
+  : name_("open chain"), 
+    lattice_name_("open chain"), 
+    dim_(1)
+{
+  extent_.resize(dimension(),"L");
+  bc_.resize(dimension(),"open");
 }
 
 
