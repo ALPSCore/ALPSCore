@@ -42,7 +42,7 @@ int main()
     alps::ModelLibrary lib(in);
 
     // get operators in one bond term 
-    std::set<alps::Term> ops = lib.get_hamiltonian("hardcore boson").bond_term().split();
+    std::set<alps::Term> ops = lib.get_hamiltonian("spin",alps::Parameters()).bond_term().split();
     std::copy(ops.begin(),ops.end(),std::ostream_iterator<alps::Term>(std::cout,"\n"));
 
 #ifndef BOOST_NO_EXCEPTIONS
