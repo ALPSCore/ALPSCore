@@ -49,7 +49,7 @@ public:
   SiteTermDescriptor(const XMLTag&, std::istream&);
 
   void write_xml(oxstream&) const;
-
+  const SiteOperator& site_operator() const { return static_cast<const SiteOperator&>(*this);}
   bool match_type(int type) const { return type_==-1 || type==type_;}
 
 private:

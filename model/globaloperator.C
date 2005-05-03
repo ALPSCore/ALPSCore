@@ -38,20 +38,20 @@ void alps::GlobalOperator::substitute_operators(const ModelLibrary& m, const Par
     it->substitute_operators(m,p);
 }
 
-alps::SiteTermDescriptor alps::GlobalOperator::site_term(int type) const
+alps::SiteOperator alps::GlobalOperator::site_term(int type) const
 {
   for (std::vector<SiteTermDescriptor>::const_iterator it =siteterms_.begin();it!=siteterms_.end();++it)
     if (it->match_type(type))
-      return *it;
-  return SiteTermDescriptor();
+      return it->site_operator();
+  return SiteOperator();
 }
 
-alps::BondTermDescriptor alps::GlobalOperator::bond_term(int type) const
+alps::BondOperator alps::GlobalOperator::bond_term(int type) const
 {
   for (std::vector<BondTermDescriptor>::const_iterator it =bondterms_.begin();it!=bondterms_.end();++it)
     if (it->match_type(type))
-      return *it;
-  return BondTermDescriptor();
+      return it->bond_operator();
+  return BondOperator();
 }
 
 

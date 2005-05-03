@@ -50,8 +50,8 @@ public:
   const std::string& name() const { return name_;}
   const std::vector<SiteTermDescriptor>& site_terms() const { return siteterms_;}
   const std::vector<BondTermDescriptor>& bond_terms() const { return bondterms_;}
-  SiteTermDescriptor site_term(int type=0) const;
-  BondTermDescriptor bond_term(int type=0) const;
+  SiteOperator site_term(int type=0) const;
+  BondOperator bond_term(int type=0) const;
   void substitute_operators(const ModelLibrary& m, const Parameters& p);
 protected:
   void write_operators_xml(oxstream&) const;
