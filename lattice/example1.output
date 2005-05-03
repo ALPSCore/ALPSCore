@@ -150,12 +150,19 @@
       <VECTOR>2*pi/a -2*pi/a/sqrt(3)</VECTOR>
     </RECIPROCALBASIS>
   </LATTICE>
+  <UNITCELL name="2band1d" dimension="1" vertices="2">
+    <VERTEX id="1" type="0"/>
+    <VERTEX id="2" type="1"/>
+    <EDGE type="0" vector="0"><SOURCE vertex="1" offset="0"/><TARGET vertex="2" offset="0"/></EDGE>
+    <EDGE type="1" vector="1"><SOURCE vertex="1" offset="0"/><TARGET vertex="1" offset="1"/></EDGE>
+    <EDGE type="2" vector="1"><SOURCE vertex="2" offset="0"/><TARGET vertex="2" offset="1"/></EDGE>
+  </UNITCELL>
   <UNITCELL name="anisotropic2d" dimension="2" vertices="1">
     <VERTEX id="1" type="0"/>
     <EDGE type="0" vector="0 1"><SOURCE vertex="1" offset="0 0"/><TARGET vertex="1" offset="0 1"/></EDGE>
     <EDGE type="1" vector="1 0"><SOURCE vertex="1" offset="0 0"/><TARGET vertex="1" offset="1 0"/></EDGE>
   </UNITCELL>
-  <UNITCELL name="isolated" dimension="0" vertices="1">
+  <UNITCELL name="isolated" dimension="1" vertices="1">
     <VERTEX id="1" type="0"/>
   </UNITCELL>
   <UNITCELL name="nnn2d" dimension="2" vertices="1">
@@ -186,6 +193,22 @@
     <EDGE type="0" vector="1 0"><SOURCE vertex="1" offset="0 0"/><TARGET vertex="1" offset="1 0"/></EDGE>
     <EDGE type="0" vector="-1 1"><SOURCE vertex="1" offset="0 0"/><TARGET vertex="1" offset="-1 1"/></EDGE>
   </UNITCELL>
+  <LATTICEGRAPH name="2 band chain lattice">
+    <FINITELATTICE>
+      <LATTICE ref="chain lattice"/>
+      <EXTENT dimension="1" size="L"/>
+      <BOUNDARY dimension="1" type="periodic"/>
+    </FINITELATTICE>
+    <UNITCELL ref="2band1d"/>
+  </LATTICEGRAPH>
+  <LATTICEGRAPH name="2 band open chain lattice">
+    <FINITELATTICE>
+      <LATTICE ref="chain lattice"/>
+      <EXTENT dimension="1" size="L"/>
+      <BOUNDARY dimension="1" type="open"/>
+    </FINITELATTICE>
+    <UNITCELL ref="2band1d"/>
+  </LATTICEGRAPH>
   <LATTICEGRAPH name="anisotropic square lattice">
     <FINITELATTICE>
       <LATTICE ref="rectangular lattice"/>
@@ -248,6 +271,14 @@
       <BOUNDARY dimension="2" type="open"/>
     </FINITELATTICE>
     <UNITCELL ref="anisotropic2d"/>
+  </LATTICEGRAPH>
+  <LATTICEGRAPH name="open chain lattice">
+    <FINITELATTICE>
+      <LATTICE ref="chain lattice"/>
+      <EXTENT dimension="1" size="L"/>
+      <BOUNDARY dimension="1" type="open"/>
+    </FINITELATTICE>
+    <UNITCELL ref="simple1d"/>
   </LATTICEGRAPH>
   <LATTICEGRAPH name="simple cubic lattice">
     <FINITELATTICE>
