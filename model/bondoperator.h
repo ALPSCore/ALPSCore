@@ -32,6 +32,7 @@
 #define ALPS_MODEL_BONDOPERATOR_H
 
 #include <alps/model/operator.h>
+#include <alps/model/siteoperator.h>
 #include <alps/model/sitestate.h>
 #include <alps/model/sitebasisstates.h>
 #include <alps/expression.h>
@@ -59,7 +60,7 @@ public:
 
   bool can_evaluate_function(const std::string& name, const expression::Expression<T>& argument,bool=false) const;
   expression::Expression<T> partial_evaluate_function(const std::string& name, const expression::Expression<T>& argument,bool=false) const;
-  const std::pair<Term, Term>& site_operators() const { return site_ops_; }
+  const std::pair<expression::Term<T>, expression::Term<T> >& site_operators() const { return site_ops_; }
   bool has_operator(const std::string& name, const expression::Expression<T>& arg) const
   { 
     return (arg==sites_.first && basis1_.has_operator(name)) || 
@@ -69,7 +70,7 @@ public:
 private:
   const SiteBasisDescriptor<I>& basis1_;
   const SiteBasisDescriptor<I>& basis2_;
-  mutable std::pair<Term, Term> site_ops_;
+  mutable std::pair<expression::Term<T>, expression::Term<T> > site_ops_;
   std::pair<std::string, std::string> sites_;
   mutable bool second_site_fermionic_;
 };
@@ -97,9 +98,10 @@ public:
   template <class T, class I>
   boost::multi_array<std::pair<T,bool>,4> matrix(const SiteBasisDescriptor<I>&, const SiteBasisDescriptor<I>&, const Parameters& =Parameters()) const;
 template <class T>
-  std::set<expression::Term<T> > templated_split(const Parameters& = Parameters()) const;
-  std::set<Term> split(const Parameters& p= Parameters()) { return templated_split<std::complex<double> >(p);}
-
+  std::vector<boost::tuple<expression::Term<T>,SiteOperator,SiteOperator> > templated_split(const Parameters& = Parameters()) const;
+  std::vector<boost::tuple<Term,SiteOperator,SiteOperator> > split(const Parameters& p= Parameters()) const 
+  { return templated_split<std::complex<double> >(p);}
+  std::set<std::string> operator_names(const Parameters& = Parameters()) const;
 private:
   std::string name_;
   std::string term_;
@@ -120,11 +122,11 @@ template <class I, class T>
 expression::Expression<T> BondOperatorSplitter<I,T>::partial_evaluate_function(const std::string& name, const expression::Expression<T>& arg, bool isarg) const
 {
   if (arg==sites_.first) {
-    site_ops_.first *= name;
+    site_ops_.first *= expression::Function<T>(name,arg);
     return expression::Expression<T>(second_site_fermionic_ && basis1_.is_fermionic(name) ? -1. : 1.);
   }
   else  if (arg==sites_.second) {
-    site_ops_.second *= name;
+    site_ops_.second *= expression::Function<T>(name,arg);
     if (basis2_.is_fermionic(name))
         second_site_fermionic_ = !second_site_fermionic_;
     return expression::Expression<T>(1.);
@@ -215,19 +217,21 @@ BondOperator::matrix(const SiteBasisDescriptor<I>& b1,
 }
 
 template <class T>
-std::set<alps::expression::Term<T> > alps::BondOperator::templated_split(const Parameters& p) const
+std::vector<boost::tuple<expression::Term<T>,SiteOperator,SiteOperator> > alps::BondOperator::templated_split(const Parameters& p) const
 {
-  std::set<expression::Term<T> > terms;
+  std::vector<boost::tuple<expression::Term<T>,SiteOperator,SiteOperator> > terms;
   Expression ex(term());
   ex.flatten();
   ex.simplify();
   SiteBasisDescriptor<short> b;
   for (typename Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
     BondOperatorSplitter<short> evaluator(b,b,source(),target(),p);
-    Term term(*tit);
+    expression::Term<T> term(*tit);
     term.partial_evaluate(evaluator);
-    terms.insert(evaluator.site_operators().first);
-    terms.insert(evaluator.site_operators().second);
+    term.simplify();
+    terms.push_back(boost::make_tuple(term,
+        SiteOperator(boost::lexical_cast<std::string>(evaluator.site_operators().first),source()),
+        SiteOperator(boost::lexical_cast<std::string>(evaluator.site_operators().second),target())));
   }
   return terms;
 }

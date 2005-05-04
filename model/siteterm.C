@@ -29,6 +29,7 @@
 
 #include <alps/model/siteterm.h>
 #include <alps/model/operatorsubstitution.h>
+#include <boost/regex.hpp> 
 
 #ifndef ALPS_WITHOUT_XML
 
@@ -62,6 +63,7 @@ void alps::SiteOperator::substitute_operators(const ModelLibrary& m, const Param
   term_=boost::lexical_cast<std::string>(e);
 }
 
+
 alps::SiteTermDescriptor::SiteTermDescriptor(const XMLTag& intag, std::istream& is)
 {
   XMLTag tag(intag);
@@ -89,4 +91,21 @@ void alps::SiteTermDescriptor::write_xml(oxstream& os) const
   os << term() << end_tag("SITETERM");
 }
 
+std::set<std::string> alps::SiteOperator::operator_names() const
+{
+  std::set<std::string> names;
+  boost::regex expression("^(.*)\\(.*\\)$");
+  boost::cmatch what;
+  alps::Expression ex(term_);
+  ex.flatten();
+  ex.simplify();
+  for (Expression::term_iterator tit=ex.terms().first ; tit!=ex.terms().second;++tit)
+    for (Term::factor_iterator fit=tit->factors().first ; fit!=tit->factors().second;++fit)
+      if (boost::regex_match(boost::lexical_cast<std::string>(*fit).c_str(), what, expression))
+        names.insert(std::string(what[1].first,what[1].second));
+  return names;
+}
+
+ 
+ 
 #endif

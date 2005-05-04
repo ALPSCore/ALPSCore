@@ -66,6 +66,7 @@ public:
                                           const Parameters& p=Parameters()) const;
 
   void substitute_operators(const ModelLibrary& m, const Parameters& p=Parameters());
+  std::set<std::string> operator_names() const;
 
 private:
   std::string term_;

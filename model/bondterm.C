@@ -92,5 +92,18 @@ void alps::BondTermDescriptor::write_xml(oxstream& os) const
   os << end_tag("BONDTERM");
 }
 
-
+std::set<std::string> alps::BondOperator::operator_names(const Parameters& p) const
+{
+  std::set<std::string> names;
+  typedef std::vector<boost::tuple<Term,SiteOperator,SiteOperator> > V;
+  V vec=split(p);
+  for (V::const_iterator it=vec.begin();it!=vec.end();++it) {
+    std::set<std::string> newnames = boost::tuples::get<1>(*it).operator_names();
+    names.insert(newnames.begin(),newnames.end());
+    newnames = boost::tuples::get<2>(*it).operator_names();
+    names.insert(newnames.begin(),newnames.end());
+  }
+  return names;
+}
+ 
 #endif
