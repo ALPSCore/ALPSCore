@@ -1,0 +1,3 @@
+LATTICE_LIBRARY = "../../lib/xml/lattices.xml"
+UNITCELL = "2band1d"
+L = 5
