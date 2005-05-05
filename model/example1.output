@@ -155,8 +155,8 @@
   </BASIS>
   <BASIS name="alternative t-J">
     <SITEBASIS ref="alternative t-J"/>
-    <CONSTRAINT quantumnumber="Nup" value="N_total / 2 + Sz_total"/>
-    <CONSTRAINT quantumnumber="Ndown" value="N_total / 2 - Sz_total"/>
+    <CONSTRAINT quantumnumber="Nup" value="Nup_total"/>
+    <CONSTRAINT quantumnumber="Ndown" value="Ndown_total"/>
   </BASIS>
   <BASIS name="boson">
     <SITEBASIS ref="boson"/>
@@ -164,8 +164,8 @@
   </BASIS>
   <BASIS name="fermion">
     <SITEBASIS ref="fermion"/>
-    <CONSTRAINT quantumnumber="Nup" value="N_total / 2 + Sz_total"/>
-    <CONSTRAINT quantumnumber="Ndown" value="N_total / 2 - Sz_total"/>
+    <CONSTRAINT quantumnumber="Nup" value="Nup_total"/>
+    <CONSTRAINT quantumnumber="Ndown" value="Ndown_total"/>
   </BASIS>
   <BASIS name="hardcore boson">
     <SITEBASIS ref="hardcore boson"/>
