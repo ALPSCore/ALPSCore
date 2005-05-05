@@ -1,3 +1,19 @@
+Operator names:
 Sminus
 Splus
 Sz
+
+Split terms:
+
+Prefactor: 0.5 * Jxy
+Site 1: Sminus(i)
+Site 2: Splus(j)
+
+Prefactor: 0.5 * Jxy
+Site 1: Splus(i)
+Site 2: Sminus(j)
+
+Prefactor: Jz
+Site 1: Sz(i)
+Site 2: Sz(j)
+
