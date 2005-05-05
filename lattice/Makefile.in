@@ -14,7 +14,7 @@
 
 @SET_MAKE@
 
-SOURCES = $(example1_SOURCES) $(example2_SOURCES) $(example3_SOURCES) $(example4_SOURCES) $(example5_SOURCES) $(example6_SOURCES) $(example7_SOURCES) $(parity_SOURCES)
+SOURCES = $(example1_SOURCES) $(example2_SOURCES) $(example3_SOURCES) $(example4_SOURCES) $(example5_SOURCES) $(example6_SOURCES) $(example7_SOURCES) $(example8_SOURCES) $(parity_SOURCES)
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -40,7 +40,7 @@ build_triplet = @build@
 host_triplet = @host@
 check_PROGRAMS = example1$(EXEEXT) example2$(EXEEXT) example3$(EXEEXT) \
 	example4$(EXEEXT) example5$(EXEEXT) example6$(EXEEXT) \
-	example7$(EXEEXT) parity$(EXEEXT)
+	example7$(EXEEXT) example8$(EXEEXT) parity$(EXEEXT)
 subdir = test/lattice
 DIST_COMMON = $(dist_noinst_DATA) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/parameters.in \
@@ -112,6 +112,13 @@ example7_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
 	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+am_example8_OBJECTS = example8.$(OBJEXT)
+example8_OBJECTS = $(am_example8_OBJECTS)
+example8_LDADD = $(LDADD)
+example8_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_parity_OBJECTS = parity.$(OBJEXT)
 parity_OBJECTS = $(am_parity_OBJECTS)
 parity_LDADD = $(LDADD)
@@ -131,10 +138,11 @@ CXXLINK = $(LIBTOOL) --tag=CXX --mode=link $(CXXLD) $(AM_CXXFLAGS) \
 	$(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = $(example1_SOURCES) $(example2_SOURCES) $(example3_SOURCES) \
 	$(example4_SOURCES) $(example5_SOURCES) $(example6_SOURCES) \
-	$(example7_SOURCES) $(parity_SOURCES)
+	$(example7_SOURCES) $(example8_SOURCES) $(parity_SOURCES)
 DIST_SOURCES = $(example1_SOURCES) $(example2_SOURCES) \
 	$(example3_SOURCES) $(example4_SOURCES) $(example5_SOURCES) \
-	$(example6_SOURCES) $(example7_SOURCES) $(parity_SOURCES)
+	$(example6_SOURCES) $(example7_SOURCES) $(example8_SOURCES) \
+	$(parity_SOURCES)
 DATA = $(dist_noinst_DATA)
 ETAGS = etags
 CTAGS = ctags
@@ -306,8 +314,9 @@ example4_SOURCES = example4.C
 example5_SOURCES = example5.C
 example6_SOURCES = example6.C
 example7_SOURCES = example7.C
+example8_SOURCES = example8.C
 parity_SOURCES = parity.C
-dist_noinst_DATA = example1.output example2.output example3.output example4.output example5.output example6.output example7.output parity.output
+dist_noinst_DATA = example1.output example2.output example3.output example4.output example5.output example6.output example7.output parity.output example8.output
 all: all-am
 
 .SUFFIXES:
@@ -373,6 +382,9 @@ example6$(EXEEXT): $(example6_OBJECTS) $(example6_DEPENDENCIES)
 example7$(EXEEXT): $(example7_OBJECTS) $(example7_DEPENDENCIES) 
 	@rm -f example7$(EXEEXT)
 	$(CXXLINK) $(example7_LDFLAGS) $(example7_OBJECTS) $(example7_LDADD) $(LIBS)
+example8$(EXEEXT): $(example8_OBJECTS) $(example8_DEPENDENCIES) 
+	@rm -f example8$(EXEEXT)
+	$(CXXLINK) $(example8_LDFLAGS) $(example8_OBJECTS) $(example8_LDADD) $(LIBS)
 parity$(EXEEXT): $(parity_OBJECTS) $(parity_DEPENDENCIES) 
 	@rm -f parity$(EXEEXT)
 	$(CXXLINK) $(parity_LDFLAGS) $(parity_OBJECTS) $(parity_LDADD) $(LIBS)
@@ -390,6 +402,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/example5.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/example6.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/example7.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/example8.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parity.Po@am__quote@
 
 .C.o:
