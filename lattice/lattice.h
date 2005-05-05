@@ -128,8 +128,8 @@ coordinate(const typename lattice_traits<Lattice>::cell_descriptor& c,
   typedef typename coordinate_traits<typename lattice_traits<Lattice>::offset_type
     >::const_iterator offset_iterator;
   boost::tie(first,last) = basis_vectors(l);
-  offset_iterator off = coordinates(offset(c,l)).first; 
-  typename lattice_traits<Lattice>::vector_type v(alps::dimension(*first));
+  offset_iterator off = coordinates(offset(c,l)).first;
+  typename lattice_traits<Lattice>::vector_type v(alps::dimension(l));
   for (int i=0; first!=last; ++first, ++off,++i)
     v = v + (*first) * ((*off)+(p.size() ? p[i] : 0));
   return v;

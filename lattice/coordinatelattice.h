@@ -55,7 +55,10 @@ public:
   typedef typename std::vector<vector_type>::const_iterator
                  basis_vector_iterator;
   
-  coordinate_lattice() {}
+  coordinate_lattice() 
+    : basis_vectors_(1,Vector(1,boost::lexical_cast<typename Vector::value_type>(1))),
+      reciprocal_basis_vectors_(1,Vector(1,boost::lexical_cast<typename Vector::value_type>(1)))  
+  {}
   
   template <class B2,class V2>
   coordinate_lattice(const coordinate_lattice<B2,V2>& l)
@@ -98,6 +101,8 @@ public:
     BASE::unit_cell() = l.unit_cell();
     basis_vectors_ = std::vector<vector_type>(
       alps::basis_vectors(l).first, alps::basis_vectors(l).second);
+    reciprocal_basis_vectors_ = std::vector<vector_type>(
+      alps::reciprocal_basis_vectors(l).first, alps::reciprocal_basis_vectors(l).second);
     return *this;
   }
 
