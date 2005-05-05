@@ -48,6 +48,8 @@ LatticeGraphDescriptor::LatticeGraphDescriptor(const std::string& u, const UnitC
   if(um.find(unitcell_name_)==um.end())
     boost::throw_exception(std::runtime_error("unknown unit cell: " + unitcell_name_));
   unit_cell() = const_cast<UnitCellMap&>(um)[unitcell_name_];
+  add_basis_vector(vector_type(1,"1"));
+  add_reciprocal_basis_vector(vector_type(1,"1"));
 }
 
 

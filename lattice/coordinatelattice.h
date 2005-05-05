@@ -56,8 +56,8 @@ public:
                  basis_vector_iterator;
   
   coordinate_lattice() 
-    : basis_vectors_(1,Vector(1,boost::lexical_cast<typename Vector::value_type>(1))),
-      reciprocal_basis_vectors_(1,Vector(1,boost::lexical_cast<typename Vector::value_type>(1)))  
+//    : basis_vectors_(1,Vector(1,boost::lexical_cast<typename Vector::value_type>(1))),
+//      reciprocal_basis_vectors_(1,Vector(1,boost::lexical_cast<typename Vector::value_type>(1)))  
   {}
   
   template <class B2,class V2>
