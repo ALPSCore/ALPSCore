@@ -104,12 +104,12 @@ public:
   /// - the first value will be printed as contents of an <x> tag
   /// - the second value will be printed as contents of a <dx> tag
   /// - the third value will be printed as contents of a <y> tag
-  void output(oxstream&, SetType) {
+  void output(oxstream& out , SetType type) {
   out << start_tag("point") << no_linebreak << start_tag("x") << no_linebreak << storage_[0]<< end_tag("x");
-  if((Type==xdxy) || (Type==xdxydy)) 
+  if((type==xdxy) || (type==xdxydy)) 
     out << start_tag("dx") << no_linebreak << storage_[2]<< end_tag("dx");
   out << start_tag("y") << no_linebreak << storage_[1]<< end_tag("y");
-  if((Type==xydy) || (Type==xdxydy)) 
+  if((type==xydy) || (type==xdxydy)) 
     out << start_tag("dy") << no_linebreak << storage_[3]<< end_tag("dy");
   out << end_tag("point");
 } 
