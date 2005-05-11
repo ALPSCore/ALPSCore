@@ -146,8 +146,6 @@ public:
 
   /// returns the label (legend) for the set
   std::string label() const { return label_; }
-  /// whether the legend for this set should be shown
-  bool show_legend() const { return show_legend_; }
   /// returns the type of set, if it is an XY, XDXY, XYDY or XDXDY plot
   SetType type() const { return type_; }
 
@@ -300,8 +298,7 @@ inline Set<C>& Set<C>::operator<<(boost::tuples::tuple<C,C,C,C> t) {
 
 template<class C>
 inline oxstream& operator<<(oxstream& o,  Set<C> S) {
-  o << start_tag("set") << attribute("label",S.label()) 
-      << attribute("show_legend", S.show_legend() ? "true" : "false");
+  o << start_tag("set") << attribute("label",S.label());
   for(int i=0; i<S.size(); ++i) 
     S[i].output(o,S.type());
   o << end_tag("set");  
