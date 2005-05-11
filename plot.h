@@ -70,7 +70,7 @@ public:
 /// the type for a coordinate
   typedef C value_type;
 /// the type to store the number of coordinates
-  typedef std::vector<C>::size_type size_type;
+  typedef typename std::vector<C>::size_type size_type;
 /// the default constructor stores no coordinate
   Point() {}
 /// a constructor storing x and y coordinates of a point

@@ -151,7 +151,7 @@ template <class T, class X>
 struct plus_scaled : std::binary_function<T, T, T> {
 /// the scale factor is set in the constructor
 /// \param a the value of the scale factor
-    plus_scaled(X a) : val(x) {}
+    plus_scaled(X a) : val(a) {}
 /// brief returns x+a*y
 /// \return the result of  \a x + \a * \a y, where the scale factor \a a is set in the constructor
     T operator () (const T& x, const T& y) const { return x + val*y; }
@@ -167,7 +167,7 @@ template <class T, class X>
 struct minus_scaled : public std::binary_function<T, T, T> {
 /// the scale factor is set in the constructor
 /// \param a the value of the scale factor
-    minus_scaled(X a) : val(x) {}
+    minus_scaled(X a) : val(a) {}
 /// brief returns x-a*y
 /// \return the result of  \a x - \a * \a y, where the scale factor \a a is set in the constructor
     T operator () (const T& x, const T& y) const { return x - val*y; }
@@ -214,7 +214,7 @@ template<class T>
 struct add_abs : public std::binary_function<T,typename type_traits<T>::norm_t,typename type_traits<T>::norm_t> {
 /// \brief returns x+|y|
 /// \return the value of x+std::abs(y)
-typename type_traits<T>::norm_t operator()(typename type_traits<T>::norm_t x, T y) const { return sum+std::abs(val);}
+typename type_traits<T>::norm_t operator()(typename type_traits<T>::norm_t x, T y) const { return x+std::abs(y);}
 };
 
 /// \brief a function object for x + |y|^2
@@ -223,7 +223,7 @@ typename type_traits<T>::norm_t operator()(typename type_traits<T>::norm_t x, T 
 template<class T> 
 struct add_abs2 : public std::binary_function<T,typename type_traits<T>::norm_t,typename type_traits<T>::norm_t> {
 /// \brief returns x+|y|^2
-typename type_traits<T>::norm_t operator()(typename type_traits<T>::norm_t sum, T val) const { return sum+abs2(val);}
+typename type_traits<T>::norm_t operator()(typename type_traits<T>::norm_t x, T y) const { return x+abs2(y);}
 };
 
 /// @}

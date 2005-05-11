@@ -119,6 +119,7 @@ reciprocal_basis_vectors(const Lattice& l)
   return l.reciprocal_basis_vectors();
 }
 
+
 template <class Lattice>
 inline typename lattice_traits<Lattice>::vector_type
 coordinate(const typename lattice_traits<Lattice>::cell_descriptor& c, 
@@ -129,7 +130,7 @@ coordinate(const typename lattice_traits<Lattice>::cell_descriptor& c,
     >::const_iterator offset_iterator;
   boost::tie(first,last) = basis_vectors(l);
   offset_iterator off = coordinates(offset(c,l)).first;
-  typename lattice_traits<Lattice>::vector_type v(alps::dimension(l));
+  typename lattice_traits<Lattice>::vector_type v(l.dimension());
   for (int i=0; first!=last; ++first, ++off,++i)
     v = v + (*first) * ((*off)+(p.size() ? p[i] : 0));
   return v;

@@ -41,6 +41,7 @@
 #include <alps/parser/parser.h>
 
 #include <boost/bind.hpp>
+#include <boost/functional.hpp>
 #include <iostream>
 #include <numeric>
 #include <vector>
