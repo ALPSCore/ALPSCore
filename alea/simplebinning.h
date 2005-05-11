@@ -343,7 +343,6 @@ inline typename SimpleBinning<T>::result_type SimpleBinning<T>::error(uint32_t i
   
   result_type correction = obs_value_traits<result_type>::check_divide(binvariance(i),binvariance(0));
   using std::sqrt;
-  using alps::sqrt;
   correction *=(variance()/count_type(binsize_-1));
   return sqrt(correction);
 }

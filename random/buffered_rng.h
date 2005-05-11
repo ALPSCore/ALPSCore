@@ -35,6 +35,7 @@
 #include <cmath>
 #include <alps/config.h>
 #include <alps/random/pseudo_des.h>
+#include <alps/random/seed.h>
 
 #include <boost/random.hpp>
 #include <boost/utility.hpp>
@@ -45,37 +46,48 @@
 
 namespace alps {
 
-template <class RNG>
-void seed_with_sequence(RNG& rng, uint32_t seed)
-{
-  pseudo_des start(seed);
-  pseudo_des end(seed);
-  start(); // make start!=end
-  typedef boost::generator_iterator_generator<pseudo_des>::type iterator_type;
-  iterator_type start_it(boost::make_generator_iterator(start));
-  iterator_type end_it(boost::make_generator_iterator(end));
-  rng.seed(start_it,end_it);
-}
+/// \addtogroup random
+/// @{
 
-class BufferedRandomNumberGeneratorBase
+/// \file buffered_rng.h
+/// \brief contains an efficient buffered implementation of a runtime-polymorphic random number generator 
+
+
+
+/// \brief abstract base class of a runtime-polymorphic random number generator 
+/// 
+/// In order to mask the abstraction penalty, the derived generators do not produce single random numbers at each call, 
+/// but instead a large buffer is filled in a virtual function call, and then numbers from this buffer
+/// used when operator() is called.
+class buffered_rng_base
 {
 public:
+  /// we create random numbers of type double
   typedef double result_type;
   typedef std::vector<result_type> buffer_type;
   
+  /// \brief no fixed range members
+  /// 
+  /// while the range is essentially fixed, since the limits are floating point constantds there is no use in specifying them
+  /// as using the functions for the range will give the same optimization
   BOOST_STATIC_CONSTANT(bool, has_fixed_range = false);
 
-  BufferedRandomNumberGeneratorBase(std::size_t b=10240) 
+  /// \brief the constructor
+  /// \param b the size of the buffer
+  buffered_rng_base(std::size_t b=10240) 
    : buf_(b), ptr_(buf_.end()) {}
 
-  BufferedRandomNumberGeneratorBase(const BufferedRandomNumberGeneratorBase& gen)
+  buffered_rng_base(const buffered_rng_base& gen)
   {
     buf_ = gen.buf_;
     ptr_ = buf_.begin()+(gen.ptr_-const_cast<buffer_type&>(gen.buf_).begin());
   }
 
-  virtual ~BufferedRandomNumberGeneratorBase() {}
+  virtual ~buffered_rng_base() {}
 
+  /// \brief returns the next random number 
+  ///
+  /// numbers are taken from the buffer, which is refilled by a call to fill_buffer when it gets empty
   result_type operator()() {
     if(ptr_==buf_.end()) {
       fill_buffer();
@@ -83,69 +95,79 @@ public:
     }
     return *ptr_++;
   }
+  
+  /// seed with an unsigned integer
   virtual void seed(uint32_t) = 0;
+  /// seed with the default value
   virtual void seed() =0;
+  /// write the state to a std::ostream
   virtual void write(std::ostream&) const =0;
+  /// read the state from a std::istream
   virtual void read(std::istream&)=0;
 
+  /// the minimum is 0.
   result_type min() const { return result_type(0); }
+  /// the maximum is 1.
   result_type max() const { return result_type(1); }
 
 protected:
   std::vector<result_type> buf_;
   std::vector<result_type>::iterator ptr_;
 private:
+  /// refills the buffer
   virtual void fill_buffer() = 0;
 };
 
-
-template <class RNG> class BufferedRandomNumberGenerator
- : public BufferedRandomNumberGeneratorBase
+/// a concrete implementation of a buffered random number generator
+/// \param RNG the type of random number generator
+template <class RNG> class buffered_rng
+ : public buffered_rng_base
 {
 public:
-  BufferedRandomNumberGenerator() : rng_(), gen_(rng_,boost::uniform_real<>()) {}
-  BufferedRandomNumberGenerator(RNG rng) : rng_(rng), gen_(rng_,boost::uniform_real<>()) {}
+  /// constructs a default-seeded generator
+  buffered_rng() : rng_(), gen_(rng_,boost::uniform_real<>()) {}
+  /// constructs a generator by copying the argument
+  /// \param rng generator to be copied
+  buffered_rng(RNG rng) : rng_(rng), gen_(rng_,boost::uniform_real<>()) {}
 
-  void fill_buffer();
   template <class IT>
   void seed(IT start, IT end) { rng_.seed(start,end);}
-  void seed(uint32_t);
+  /// seed from an integer using seed_with_sequence
+  /// \sa seed_with_sequence()
+  void seed(uint32_t s) {seed_with_sequence(rng_,s); }
+
   void seed();
   virtual void write(std::ostream&) const;
   virtual void read(std::istream&);
 protected:
+  void fill_buffer();
   RNG rng_;
   boost::variate_generator<RNG&,boost::uniform_real<> > gen_;
 };
 
+/// @}
 
 
 template <class RNG>
-void BufferedRandomNumberGenerator<RNG>::seed(uint32_t s)
-{
-  seed_with_sequence(rng_,s);
-}
-
-template <class RNG>
-void BufferedRandomNumberGenerator<RNG>::seed()
+void buffered_rng<RNG>::seed()
 {
   rng_.seed();
 }
 
 template <class RNG>
-void BufferedRandomNumberGenerator<RNG>::read(std::istream& is)
+void buffered_rng<RNG>::read(std::istream& is)
 {
   is >> rng_;
 }
 
 template <class RNG>
-void BufferedRandomNumberGenerator<RNG>::write(std::ostream& os) const
+void buffered_rng<RNG>::write(std::ostream& os) const
 {
   os << rng_;
 }
 
 template <class RNG>
-void BufferedRandomNumberGenerator<RNG>::fill_buffer()
+void buffered_rng<RNG>::fill_buffer()
 {
 //  std::generate(buf_.begin(),buf_.end(),gen_);
   std::vector<result_type>::iterator xx = buf_.begin();
@@ -162,15 +184,24 @@ void BufferedRandomNumberGenerator<RNG>::fill_buffer()
 namespace alps {
 #endif
 
-inline std::ostream& operator<<(std::ostream& os, const BufferedRandomNumberGeneratorBase& r) {
+/// \addtogroup random
+/// @{
+
+/// writes the state of the generator to a std::ostream
+/// \sa buffered_rng_base
+inline std::ostream& operator<<(std::ostream& os, const buffered_rng_base& r) {
   r.write(os);
   return os;
 }
 
-inline std::istream& operator>>(std::istream& is, BufferedRandomNumberGeneratorBase& r) {
+/// reads the state of the generator from a std::istream
+/// \sa buffered_rng_base
+inline std::istream& operator>>(std::istream& is, buffered_rng_base& r) {
   r.read(is);
   return is;
 }
+
+/// @}
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // end namespace alps

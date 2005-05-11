@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
@@ -37,7 +37,6 @@
 #include <alps/alea/simpleobservable.h>
 #include <alps/alea/abstractbinning.h>
 #include <alps/alea/nan.h>
-#include <alps/multi_array.hpp>
 
 #ifdef ALPS_HAVE_VALARRAY
 # include <valarray>
@@ -112,9 +111,6 @@ typedef SimpleObservable< std::valarray<double> , NoBinning<std::valarray<double
 typedef SimpleObservable< std::valarray<std::complex<double> > , 
                          NoBinning<std::valarray<std::complex<double> > > > SimpleComplexVectorObservable;
 #endif
-typedef SimpleObservable< alps::multi_array<int32_t,2> , NoBinning<alps::multi_array<int32_t,2> > > SimpleInt2DArrayObservable;
-typedef SimpleObservable< alps::multi_array<double,2> , NoBinning<alps::multi_array<double,2> > > SimpleReal2DArrayObservable;
-typedef SimpleObservable< alps::multi_array<std::complex<double>,2> , NoBinning<alps::multi_array<std::complex<double>,2> > > SimpleComplex2DArrayObservable;
 
 //=======================================================================
 
@@ -214,7 +210,6 @@ template <class T>
 inline typename NoBinning<T>::result_type NoBinning<T>::error() const
 {
   using std::sqrt;
-  using alps::sqrt;
   result_type tmp(variance());
   tmp /= count_type(count());
   

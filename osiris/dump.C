@@ -34,7 +34,7 @@
 
 namespace alps {
 
-ODump::ODump(uint32_t v) : version_(v), highestNumber_(0) {}
+ODump::ODump(uint32_t v) : version_(v) {}
 
 #define ALPS_DUMP_DO_TYPE(A, B) \
 void ODump::write_simple(A x) \
@@ -95,23 +95,6 @@ void ODump::write_string(const std::string& s)
   (*this) << uint32_t(s.size());
   if(s.size())
     write_string(s.size()+1,s.c_str());
-}
-
-// pointers are stored in an assocatiove array and assigned numbers
-void ODump::registerObjectAddress(void* p) 
-{
-  numberOfPointer_[p]=++highestNumber_;
-}
-
-// instead of a pointer its number is writen.
-void ODump::writePointer(void* p)
-{ 
-  uint32_t n = numberOfPointer_[p];
-  if (n == 0) {
-    boost::throw_exception(std::runtime_error("pointer not registered"));
-  } else {
-    *this << n;
-  }
 }
 
 IDump::IDump(uint32_t v) : version_(v) {}
@@ -193,18 +176,6 @@ void IDump::read_string(std::string& s)
   } 
   else
     s="";
-}
-
-
-void IDump::registerObjectAddress(void* p)
-{ pointerVector_.push_back(p); }
-
-void* IDump::readPointer()
-{
-  int32_t n(*this);
-  if (n >= pointerVector_.size())
-    boost::throw_exception(std::runtime_error("pointer not registered"));
-  return pointerVector_[n];
 }
 
 } // end namespace

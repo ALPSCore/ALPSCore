@@ -40,46 +40,74 @@
 
 namespace alps {
 
+/// \addtogroup random
+/// @{
+
+/// \file pseudo_des.h
+/// \brief a random number generator using the pseudo-DES algorithm
+
+
+/// \brief A random number generator using the pseudo-DES algorithm
+/// 
+/// The random number generator follows the BOOST (standard C++) specifications
+
 class pseudo_des
 {
 public:
+  /// type of the random numbers
   typedef uint32_t result_type;
   
 #ifndef BOOST_NO_INCLASS_MEMBER_INITIALIZATION
+  /// the range is fixed
   static const bool has_fixed_range = true;
+  /// minimum value is 0
   static const result_type min_value = boost::integer_traits<result_type>::const_min;
+  /// maximum value is 2^32-1
   static const result_type max_value = boost::integer_traits<result_type>::const_max;
 #else
   BOOST_STATIC_CONSTANT(bool, has_fixed_range = false);
 #endif
 
+  /// the default seed is 4357
   BOOST_STATIC_CONSTANT(uint32_t, default_seed = 4357);
 
+  /// minim value is 0
   result_type min() const { return std::numeric_limits<result_type>::min(); }
+  /// maximum value is 2^32-1
   result_type max() const { return std::numeric_limits<result_type>::max(); }
 
+  /// the default constructor
   pseudo_des() : seed_(default_seed), state_(1) {}
+  /// construct with specified seed
   explicit pseudo_des(uint32_t s) : seed_(s), state_(1) {}
 
   // compiler-generated copy ctor and assignment operator are fine
-
+  
+  /// seed the generator
   void seed(uint32_t s=default_seed) {
     seed_ = s;
     state_ = 1;
   }
 
+  /// get the next value
   result_type operator()() {
     return hash(seed_, state_++);
   }
 
+  /// skip forward by \a skip numbers
   void operator+=(uint32_t skip) { state_ += skip; }
 
+  /// write the state to a std::ostream
   std::ostream& write(std::ostream& os) const {
     return os << seed_ << ' ' << state_;
   }
+  
+  /// read the state from a std::istream
   std::istream& read(std::istream& is) {
     return is >> seed_ >> state_;
   }
+  
+  /// check whether the initial seed and current state of two generators is the same
   bool operator==(const pseudo_des& rhs) const {
     return seed_ == rhs.seed_ && state_ == rhs.state_;
   }
@@ -117,6 +145,8 @@ private:
   uint32_t seed_;
   uint32_t state_;
 };
+
+/// @}
 
 } // end namespace alps
 

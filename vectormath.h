@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2002 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -38,6 +38,19 @@
 
 namespace alps {
 
+/// \addtogroup alps
+/// @{
+
+/// \file vectormath.h
+/// \brief basic arithmetic operations on std::vectors
+/// 
+/// This header contains slow but simple implementations of basic arithmetic operations on std::vectors 
+
+/// \brief apply a binary function object to two vectors
+/// \param op the binary function object
+/// \param x the first argument
+/// \param y the second argument
+/// the resulting vector is calculated by element-wise calculating op(x[i],y[i]). The two vectors should be of the same size.
 template <class T, class OP>
 std::vector<T> vector_vector_apply(OP op, const std::vector<T>& x, const std::vector<T>& y)
 {
@@ -53,6 +66,11 @@ std::vector<T> vector_vector_apply(OP op, const std::vector<T>& x, const std::ve
   return res;
 }
 
+/// \brief apply a binary function object to a scalar and a vector
+/// \param op the binary function object
+/// \param x the scalar argument
+/// \param y the vector argument
+/// the resulting vector is calculated by element-wise calculating op(x,y[i])
 template <class T, class S, class OP>
 std::vector<T> scalar_vector_apply(OP op, S x, const std::vector<T>& y)
 {
@@ -62,24 +80,31 @@ std::vector<T> scalar_vector_apply(OP op, S x, const std::vector<T>& y)
   return res;
 }
 
+/// @}
 } // namespace alps
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 namespace std {
 #endif
 
+/// \addtogroup alps
+/// @{
+
+/// returns the sum of two vectors
 template <class T>
 std::vector<T> operator+(const std::vector<T>& x, const std::vector<T>& y)
 {
   return alps::vector_vector_apply(std::plus<T>(),x,y);
 }
 
+/// returns the difference of two vectors
 template <class T>
 std::vector<T> operator-(const std::vector<T>& x, const std::vector<T>& y)
 {
   return alps::vector_vector_apply(std::minus<T>(),x,y);
 }
 
+/// returns the negated vector
 template <class T>
 std::vector<T> operator-(const std::vector<T>& x)
 {
@@ -88,18 +113,25 @@ std::vector<T> operator-(const std::vector<T>& x)
   return res;
 }
 
+/// returns the vector scaled by a factor
+/// \param s the scalar factor
+/// \param v the vector
 template <class T, class S>
-std::vector<T> operator*(S x, const std::vector<T>& y)
+std::vector<T> operator*(S s, const std::vector<T>& v)
 {
-  return alps::scalar_vector_apply(alps::multiplies<S,T,T>(),x,y);
+  return alps::scalar_vector_apply(alps::multiplies<S,T,T>(),s,v);
 }
 
+/// returns the vector scaled by a factor
+/// \param s the scalar factor
+/// \param v the vector
 template <class T, class S>
-std::vector<T> operator*(const std::vector<T>& y, S x)
+std::vector<T> operator*(const std::vector<T>& v, S s)
 {
-  return alps::scalar_vector_apply(alps::multiplies<S,T,T>(),x,y);
+  return alps::scalar_vector_apply(alps::multiplies<S,T,T>(),s,v);
 }
 
+/// @}
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // end namespace std
 #endif

@@ -110,7 +110,7 @@ SiteOperator::matrix(const SiteBasisDescriptor<I>& b,  const Parameters& p) cons
         if (is_nonzero(term)) {
           if (evaluator.fermionic())
             boost::throw_exception(std::runtime_error("Fermionic number changing site operator is unphysical."));
-          if (boost::is_arithmetic<T>::value || TypeTraits<T>::is_complex)
+          if (boost::is_arithmetic<T>::value || type_traits<T>::is_complex)
             if (!can_evaluate(boost::lexical_cast<std::string>(term)))
               boost::throw_exception(std::runtime_error("Cannot evaluate expression " + boost::lexical_cast<std::string>(term)));
           mat[i][j] += evaluate<T>(term);

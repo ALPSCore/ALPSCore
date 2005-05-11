@@ -118,7 +118,7 @@ void LatticeDescriptor::write_xml(oxstream& xml) const
     xml << start_tag("BASIS");
     basis_vector_iterator v, v_end;
     for (boost::tie(v, v_end) = basis_vectors(); v != v_end; ++v)
-      xml << start_tag("VECTOR") << no_linebreak << vector_writer(*v)
+      xml << start_tag("VECTOR") << no_linebreak << write_vector(*v)
           << end_tag("VECTOR");
     xml << end_tag("BASIS");        
   }
@@ -126,7 +126,7 @@ void LatticeDescriptor::write_xml(oxstream& xml) const
     xml << start_tag("RECIPROCALBASIS");
     basis_vector_iterator v, v_end;
     for (boost::tie(v, v_end) = reciprocal_basis_vectors(); v != v_end; ++v)
-      xml << start_tag("VECTOR") << no_linebreak << vector_writer(*v)
+      xml << start_tag("VECTOR") << no_linebreak << write_vector(*v)
           << end_tag("VECTOR");
     xml << end_tag("RECIPROCALBASIS");        
   }

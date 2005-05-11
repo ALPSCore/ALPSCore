@@ -205,7 +205,7 @@ BondOperator::matrix(const SiteBasisDescriptor<I>& b1,
             }
             else
               mat[i1][i2][j1][j2].second=evaluator.fermionic();
-            if (boost::is_arithmetic<T>::value || TypeTraits<T>::is_complex)
+            if (boost::is_arithmetic<T>::value || type_traits<T>::is_complex)
               if (!can_evaluate(boost::lexical_cast<std::string>(term)))
                 boost::throw_exception(std::runtime_error("Cannot evaluate expression " + boost::lexical_cast<std::string>(term)));
             mat[i1][i2][j1][j2].first += evaluate<T>(term);

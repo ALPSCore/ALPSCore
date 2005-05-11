@@ -107,7 +107,7 @@ public:
 protected:
   int32_t version;
   int32_t user_version;
-  typedef BufferedRandomNumberGeneratorBase random_type;
+  typedef buffered_rng_base random_type;
   boost::shared_ptr<random_type> random_ptr;
   random_type& random;
   random_type& random_01;

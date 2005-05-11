@@ -107,7 +107,7 @@ inline void write_graph_xml(oxstream& out, const GRAPH& g, const std::string& n=
          alps::coordinates(vertexcoordinate[*it]).second) {
         out << no_linebreak
             << start_tag("COORDINATE")
-            << vector_writer(vertexcoordinate[*it])
+            << write_vector(vertexcoordinate[*it])
             << end_tag("COORDINATE");
       }
     out << end_tag("VERTEX");
@@ -123,7 +123,7 @@ inline void write_graph_xml(oxstream& out, const GRAPH& g, const std::string& n=
       out << attribute("type", edgetype[*it]);
     if (has_property<edge_vector_t,graph_type>::edge_property &&
         alps::dimension(edgevector[*it]))
-      out << attribute("vector", vector_writer(edgevector[*it]));
+      out << attribute("vector", write_vector(edgevector[*it]));
     out << end_tag("EDGE");
   }
   out << end_tag("GRAPH");

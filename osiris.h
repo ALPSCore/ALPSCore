@@ -45,3 +45,11 @@
 #include <alps/osiris/std/set.h>
 #include <alps/osiris/dump.h>
 #include <alps/osiris/std/string.h>
+
+/// \defgroup osiris The ALPS serialization library "osiris"
+/// @{
+
+/// \file osiris.h
+/// \brief includes all headers in the alps/osiris directory
+
+/// @}

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 2003-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -32,8 +32,8 @@
 
 alps::RNGFactory::RNGFactory()
 {
-  register_type<BufferedRandomNumberGenerator<boost::lagged_fibonacci607> >("lagged_fibonacci607");
-  register_type<BufferedRandomNumberGenerator<boost::mt19937> >("mt19937");
+  register_type<buffered_rng<boost::lagged_fibonacci607> >("lagged_fibonacci607");
+  register_type<buffered_rng<boost::mt19937> >("mt19937");
 }
 
 alps::RNGFactory alps::rng_factory;

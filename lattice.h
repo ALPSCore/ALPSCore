@@ -30,3 +30,11 @@
 
 #include <alps/lattice/graph_helper.h>
 #include <alps/lattice/parity.h>
+
+/// \defgroup lattice The ALPS lattice library for lattices and graphs
+/// @{
+
+/// \file lattice.h
+/// \brief includes all headers in the alps/lattice directory
+
+/// @}

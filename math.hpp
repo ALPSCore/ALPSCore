@@ -43,7 +43,36 @@
 #include <limits>
 
 namespace alps {
+namespace detail {
+/// implementation detail to test whether a number is close enough to zero to truncate it, version for floating point numbers
+template <bool F>
+struct is_zero_float
+{
+  template <class T>
+  static bool is_zero(T x) { return std::abs(x) < 1e-50//std::sqrt(std::numeric_limits<T>::min())
+  ; }
+};
 
+/// implementation class to test whether a number is close enough to zero to truncate it, version for integers
+template <>
+struct is_zero_float<false>
+{
+  template <class T>
+  static bool is_zero(T x) { return x == T(0.); }
+};
+}
+
+/// \addtogroup alps
+/// @{
+
+/// \file math.hpp
+/// \brief basic math functions
+///
+/// This header contains mathematical functions not present in the standard
+/// or boost libraries.
+
+/// \brief calculate the binomial coefficient
+/// \return the binomial coefficient l over n
 inline std::size_t binomial(std::size_t l, std::size_t n)
 {
   double nominator=1;
@@ -57,8 +86,12 @@ inline std::size_t binomial(std::size_t l, std::size_t n)
   return std::size_t(nominator/denominator+0.1);
 }
 
+/// \brief calculate the square of the absolute value. 
+/// It is optimized by specialization for complex numbers.
+/// \return the square of the absolute value of the argument
+
 template <class T>
-inline typename TypeTraits<T>::norm_t abs2(T x) {
+inline typename type_traits<T>::norm_t abs2(T x) {
   return std::abs(x)*std::abs(x);        
 }
 
@@ -68,47 +101,36 @@ inline T abs2(const std::complex<T>& x) {
 }
 
 
-namespace detail {
-template <bool F>
-struct is_zero_float
-{
-  template <class T>
-  static bool is_zero(T x) { return std::abs(x) < 1e-50//std::sqrt(std::numeric_limits<T>::min())
-  ; }
-};
-
-template <>
-struct is_zero_float<false>
-{
-  template <class T>
-  static bool is_zero(T x) { return x == T(0.); }
-};
-}
+/// \brief checks if a number is zero
+/// in case of a floating point number, absolute values less than 1e-50 count as zero
+/// \return returns true if the value is zero
+template<class T>
+inline bool is_zero(T x) { return detail::is_zero_float<boost::is_float<T>::value>::is_zero(x); }
 
 template<class T>
-bool is_zero(T x) { return detail::is_zero_float<boost::is_float<T>::value>::is_zero(x); }
+inline bool is_zero(std::complex<T> x) { return is_zero(std::abs(x)); }
 
-/*
-template <class T>
-bool is_zero(T x) { return x == T(0.); }
-
-inline bool is_zero(double x) { return std::abs(x)<1e-50;}
-*/
-
+ 
+/// \brief checks if a number is not zero
+/// in case of a floating point number, absolute values less than 1e-50 count as zero
+/// \return returns true if the value is not zero
 template<class T>
-bool is_zero(std::complex<T> x) { return is_zero(std::abs(x)); }
-
-template<class T>
-bool is_nonzero(T x) { return !is_zero(x); }
+inline bool is_nonzero(T x) { return !is_zero(x); }
 
 //
 // round
 //
 
+/// \brief rounds a floating point value to be exactly zero if it is nearly zero
+///
+/// the function is specialized for floating point and complex types and does nothing for other types
+/// \return 0. if the floating point value of the argument is less than 1e-12, and the argument itself otherwise
 template<class T>
 inline T round(T x, typename boost::enable_if<boost::is_float<T> >::type* = 0)
 { return (std::abs(x) < 1.0e-12) ? T(0.) : x; }
 
+/// \brief rounding of non-floating point numbers is a no-op
+/// \return the unmodified argument
 template<class T>
 inline T round(T x, typename boost::disable_if<boost::is_float<T> >::type* = 0)
 { return x; }
@@ -117,6 +139,7 @@ template<class T>
 inline std::complex<T> round(const std::complex<T>& x)
 { return std::complex<T>(round(x.real()), round(x.imag())); }
 
+/// @}
 } // end namespace
 
 #endif // ALPS_MATH_HPP

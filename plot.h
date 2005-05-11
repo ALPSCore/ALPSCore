@@ -37,32 +37,74 @@
 #include <iostream>
 
 namespace alps {
+
 namespace plot {
 
+/// \addtogroup alps
+/// @{
+
+/// \file plot.h
+/// \brief classes to create plots in XML format
+/// 
+/// This header contains classes to create plots in XML format, compatible with the ALPS XML schema for
+/// plot files on the http://xml.comp-phys.org/ web page
+
+/// \brief An enum to distinguish various plot types
+///
+/// The types of plot are
+/// - \c xy is a plot of pairs (x,y) of data points without any error bars
+/// - \c xdxy is a plot of pairs (x,y) of data points with error bars on the x values
+/// - \c xydy is a plot of pairs (x,y) of data points with error bars on the y values
+/// - \c xdxydy is a plot of pairs (x,y) of data points with error bars on the x and y values
 enum SetType {xy, xdxy, xydy, xdxydy};
 
 //- Points --------------------------------------------------------------------------------------------------------
 
+/// \brief a class to store a single point in the plot
+/// \param C the type to store a coordinate
+/// the Point can store an arbitrary number of values, but only up to four are used normally. 
+/// These will be the x and y values and the respective errors. 
 template<class C>
 class Point {
 public:
+/// the type for a coordinate
+  typedef C value_type;
+/// the type to store the number of coordinates
+  typedef std::vector<C>::size_type size_type;
+/// the default constructor stores no coordinate
   Point() {}
+/// a constructor storing x and y coordinates of a point
   Point(C x, C y) : storage_(2) {
     storage_[0] = x;
     storage_[1] = y;
   }
 
-  int size() const { return storage_.size(); }
+  /// \brief The number of values stored
+  ///
+  /// Error bars in the x and y direction will be stored as additional coordinates, such that the size
+  /// of a Point with error bars in both directions will be 4 and with error bars in only x or y direction
+  /// will be 3.
+  size_type size() const { return storage_.size(); }
+  
+  /// \brief returns the \a i -th coordinate.
+  ///
+  /// The mapping from coordinate number to meaning is specified by the values of the enum \c SetType
+  /// but not stored in each point. For eaxmple a \c SetType of \c xdxy means that 
+  /// - index 0 is the x-coordinate
+  /// - index 1 is the error on the x-coordinate
+  /// - index 2 is the y-coordinate
   const C& operator[](int i) const { return storage_[i]; }
+  
+  /// adds another value to the point.
   void push_back(C data) { storage_.push_back(data); }
+  /// clears the contents, erasing all values
   void clear() { storage_.clear(); }
-  void output(oxstream&, SetType);
-private:
-  std::vector<C> storage_;
-};   // xmlPlot::Point
-
-template<class C>
-void Point<C>::output(oxstream& out, SetType Type) {
+  
+  /// outputs the Point in XML format, where the mapping to tags is specified by the \c SetType. E.g. a \c SetType of \c xdxy means that 
+  /// - the first value will be printed as contents of an <x> tag
+  /// - the second value will be printed as contents of a <dx> tag
+  /// - the third value will be printed as contents of a <y> tag
+  void output(oxstream&, SetType) {
   out << start_tag("point") << no_linebreak << start_tag("x") << no_linebreak << storage_[0]<< end_tag("x");
   if((Type==xdxy) || (Type==xdxydy)) 
     out << start_tag("dx") << no_linebreak << storage_[2]<< end_tag("dx");
@@ -70,37 +112,122 @@ void Point<C>::output(oxstream& out, SetType Type) {
   if((Type==xydy) || (Type==xdxydy)) 
     out << start_tag("dy") << no_linebreak << storage_[3]<< end_tag("dy");
   out << end_tag("point");
-}   // operator <<
+} 
+
+private:
+  std::vector<C> storage_;
+};   // xmlPlot::Point
 
 //- Sets ----------------------------------------------------------------------------------------------------------
 
+/// \brief a dataset is a vector of points
+/// \param C the type to store the coordinate of a data point in the plot set
+/// stores a data set as a vector of Points
+/// \sa alps::plot::Point
 template<class C>
 class Set : public std::vector<Point<C> > {
 public:
-  Set(SetType st=xy) : type_(st), show_legend_(true) {}
+  /// the default set type is \c xy, i.e. no error bars
+  Set(SetType st=xy) : type_(st) {}
 
+  /// \brief add another value, building points step by step
+  ///
+  /// depending on the plot type, 2, 3 or four values are collected to build a Point, which
+  /// is then added to the set.
   Set<C>& operator<<(C p);
+  /// adds a new point with two coordinates, if the plot type is XY
   Set<C>& operator<<(const boost::tuples::tuple<C, C>);
+  /// adds a new point with three coordinates, if the plot type is XDXY or XYDY
   Set<C>& operator<<(const boost::tuples::tuple<C,C,C>);
+  /// adds a new point with four coordinates, if the plot type is XDXYDY
   Set<C>& operator<<(const boost::tuples::tuple<C,C,C,C>);
+  /// set the label (legend) for the set
   Set<C>& operator<<(std::string label) { label_ = label; return *this;}
 
-    
+  /// returns the label (legend) for the set
   std::string label() const { return label_; }
+  /// whether the legend for this set should be shown
   bool show_legend() const { return show_legend_; }
+  /// returns the type of set, if it is an XY, XDXY, XYDY or XDXDY plot
   SetType type() const { return type_; }
 
+  /// adds a new point
   void push_back(Point<C> NewPoint) { std::vector<Point<C> >::push_back(NewPoint); }
 
 private:
   SetType type_;
   std::string label_;
-  bool show_legend_;
   Point<C> NewPoint;
 };   // xmlPlot::Set
 
+
+
+//- Plot ----------------------------------------------------------------------------------------------------------
+
+/// \brief a class describing a plot, consisting of a number of data sets
+/// \param C the data type for the coordinate of a point
+/// a plot is a vector of data sets, with additional information about titles and axis labels
 template<class C>
-inline Set<C>& Set<C>::operator<<(C p) {
+class Plot : public std::vector<Set<C> > {
+
+public:
+  /// \brief Constructor of a plot
+  /// \param name the title of the plot
+  /// \param show_legend indicates whether a legend should be shown
+  Plot(std::string name="", bool show_legend=true) : name_(name), show_legend_(show_legend) {};
+  
+  /// add a set to the plot
+  Plot<C>& operator<<(const Set<C>& s ) { push_back(s); return *this;}
+  /// set the title
+  Plot<C>& operator<<(std::string name) { name_=name; return *this;} 
+  
+  /// get the title
+  const std::string& name() const { return name_; }
+  /// get the x-axis label
+  const std::string& xaxis() const { return xaxis_; }
+  /// get the y-axis label
+  const std::string& yaxis() const { return yaxis_; }
+  /// will the legend be shown?
+  bool show_legend() const { return show_legend_; }
+  
+  /// set the name
+  void set_name(const std::string& name) { name_ = name; }
+  /// set the x- and y-axis labels
+  void set_labels(const std::string& xaxis, const std::string& yaxis) { xaxis_ = xaxis; yaxis_ = yaxis; }
+  /// set whether the legend should be shown
+  void show_legend(const bool& show) { show_legend_ = show; }
+  
+  /// get the number of sets
+  int size() const { return std::vector<Set<C> >::size(); }
+  /// get the i-th set
+  Set<C> operator[](int i) const { return std::vector<Set<C> >::operator[](i); }
+
+private:
+  std::string name_, xaxis_, yaxis_;
+  bool show_legend_;
+};   // xmlPlot::Plot
+
+
+/// write a plot to an XML file following the ALPS XML schema for plots on http://xml.comp-phys.org/
+template<class C>
+inline oxstream& operator<<(oxstream& out, Plot<C> P) {
+  out << header("UTF-8") << stylesheet(xslt_path("plot2html.xsl"))
+      << start_tag("plot") << alps::xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
+      << attribute("xsi:noNamespaceSchemaLocation","http://xml.comp-phys.org/2003/4/plot.xsd")
+      << attribute("name",P.name());
+  out << start_tag("legend") << attribute("show", P.show_legend() ? "true" : "false") << end_tag("legend");
+  out << start_tag("xaxis") << attribute("label", P.xaxis()) << end_tag("xaxis");
+  out << start_tag("yaxis") << attribute("label", P.yaxis()) << end_tag("yaxis");
+  for(int i=0; i<P.size(); ++i) 
+    out << P[i];
+  out << end_tag("plot");
+  return out;
+}   // operator <<
+
+/// @}
+
+template<class C>
+Set<C>& Set<C>::operator<<(C p) {
   if(type_==xydy && NewPoint.size()==2) 
     NewPoint.push_back(C(0));
   NewPoint.push_back(p);
@@ -180,50 +307,6 @@ inline oxstream& operator<<(oxstream& o,  Set<C> S) {
   o << end_tag("set");  
   return o;
 }   
-
-//- Plot ----------------------------------------------------------------------------------------------------------
-
-template<class C>
-class Plot : public std::vector<Set<C> > {
-
-public:
-  Plot(std::string name="No name", bool show_legend=true) : name_(name), show_legend_(show_legend) {};
-  
-  Plot<C>& operator<<(const Set<C>& s ) { push_back(s); return *this;}
-  Plot<C>& operator<<(std::string name) { name_=name; return *this;} 
-  
-  const std::string& name() const { return name_; }
-  const std::string& xaxis() const { return xaxis_; }
-  const std::string& yaxis() const { return yaxis_; }
-  bool show_legend() const { return show_legend_; }
-  
-  void set_name(const std::string& name) { name_ = name; }
-  void set_labels(const std::string& xaxis, const std::string& yaxis) { xaxis_ = xaxis; yaxis_ = yaxis; }
-  void show_legend(const bool& show) { show_legend_ = show; }
-  
-  int size() const { return std::vector<Set<C> >::size(); }
-  Set<C> operator[](int i) const { return std::vector<Set<C> >::operator[](i); }
-
-private:
-  std::string name_, xaxis_, yaxis_;
-  bool show_legend_;
-};   // xmlPlot::Plot
-
-
-template<class C>
-inline oxstream& operator<<(oxstream& out, Plot<C> P) {
-  out << header("UTF-8") << stylesheet(xslt_path("plot2html.xsl"))
-      << start_tag("plot") << alps::xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
-      << attribute("xsi:noNamespaceSchemaLocation","http://xml.comp-phys.org/2003/4/plot.xsd")
-      << attribute("name",P.name());
-  out << start_tag("legend") << attribute("show", P.show_legend() ? "true" : "false") << end_tag("legend");
-  out << start_tag("xaxis") << attribute("label", P.xaxis()) << end_tag("xaxis");
-  out << start_tag("yaxis") << attribute("label", P.yaxis()) << end_tag("yaxis");
-  for(int i=0; i<P.size(); ++i) 
-    out << P[i];
-  out << end_tag("plot");
-  return out;
-}   // operator <<
 
 }   // namespace plot
 }   // namespace alps

@@ -88,10 +88,6 @@ ObservableFactory::ObservableFactory()
   //register_observable<SignedObservable<IntVectorTimeSeriesObservable> >();
 #endif
 /*
-  register_observable<Real2DArrayObservable>();
-  register_observable<SimpleReal2DArrayObservable>();
-  register_observable<SignedObservable<Real2DArrayObservable> >();
-  register_observable<SignedObservable<SimpleReal2DArrayObservable> >();
   register_observable<HistogramObservable<int32_t> >();
   register_observable<HistogramObservable<int32_t,double> >();
 */

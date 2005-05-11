@@ -29,3 +29,11 @@
 /* $Id$ */
 
 #include <alps/scheduler/montecarlo.h>
+
+/// \defgroup scheduler The ALPS scheduler library
+/// @{
+
+/// \file scheduler.h
+/// \brief includes all headers in the alps/scheduler directory
+
+/// @}

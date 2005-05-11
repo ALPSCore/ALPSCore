@@ -33,11 +33,33 @@
 
 #include <iostream>
 
+/// The namespace for all ALPS libraries
 namespace alps {
 
+/// The namespace for implementation details of the ALPS libraries
+namespace detail {}
+
+/// \defgroup alps Basic ALPS libraries
+/// These functions and classes are the foundation of all the ALPS libraries
+/// and provide functionality that can be of use in other projects as well.
+/// @{
+
+/// \file copyright.h
+/// \brief prints copyright and license information
+///
+/// contains functions to print the license and copyright statements
+
+/// print the ALPS library copyright statement 
+/// \param out the output stream to which the copyright statement should be written  
+
+
 void print_copyright(std::ostream& out);
+
+/// print the ALPS license
+/// \param out the output stream to which the license should be written
 void print_license(std::ostream& out);
 
+/// @}
 }
 
 #endif

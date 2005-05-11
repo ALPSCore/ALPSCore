@@ -47,26 +47,59 @@
 
 namespace alps {
 
+/// \addtogroup alps
+/// @{
+
+/// \file parameterlist.h
+/// \brief reading a set o parameters
+/// 
+/// This header contains a class to store a vector of parameters, read from a textual input file, using the old
+/// syntax of the 1994 version of these libraries.
+///
+/// Parameters are specified by single lines containing statements like 
+/// \c name \c = \c value
+/// where the value needs to be enclosed in double quotes "...." if it contains spaces.
+/// The name has to start with a letter, and the next characters can also be numbers or any of the following characters: _'[] .
+/// More than one parameter assignment, separated by , or ; can be placed on a single.
+///
+/// Each set of parameters is enclosed by curly braces {....}. Parameters defined outside of curly braces are global parameters, used for all
+/// of the following parameter sets.
+
+
+/// \brief a vector of Parameters
+///
+/// each element usually describes the parameters for a single simulation.
+/// 
+/// The class is derived from a std::vector
 class ParameterList : public std::vector<Parameters>
 {
 public:
   typedef std::vector<Parameters> super_type;
+  /// creates an empty vector
   ParameterList() {}
+  /// reads Parameters from a std::istream
   ParameterList(std::istream& is) { parse(is); }
+  /// reads Parameters from a std::istream
   void parse(std::istream& is);
-  
+  /// support for Boost serialization
   template <class ARCHIVE>
   void serialize(ARCHIVE & ar, const unsigned int)
   { ar & static_cast<super_type&>(*this); }
 
 };
-
+/// @}
 } // end namespace
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 namespace alps {
 #endif
+/// \addtogroup alps
+/// @{
+/// \file parameterlist.h
 
+/// \brief write the parameters to a std::ostream
+///
+/// follows the short text-based format and not the XML format
 inline std::ostream& operator<<(std::ostream& os,
                                 const alps::ParameterList& params)
 {
@@ -75,12 +108,15 @@ inline std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-inline
-std::istream& operator>>(std::istream& is, alps::ParameterList& params) {
+/// \brief read the parameters from a std::istream
+///
+/// follows the short text-based format and not the XML format
+inline std::istream& operator>>(std::istream& is, alps::ParameterList& params) {
   params.parse(is);
   return is;
 }
 
+/// @}
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // end namespace alps
 #endif
@@ -95,15 +131,21 @@ std::istream& operator>>(std::istream& is, alps::ParameterList& params) {
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 namespace alps {
 #endif
+/// \addtogroup alps
+/// @{
+/// \file parameterlist.h
 
+/// support for ALPS serialization
 inline alps::ODump& operator<<(alps::ODump& od,
                                const alps::ParameterList& p)
 { return od << static_cast<std::vector<alps::Parameters> >(p); }
 
+/// support for ALPS deserialization
 inline alps::IDump& operator>>(alps::IDump& id,
                                alps::ParameterList& p)
 { return id >> reinterpret_cast<std::vector<alps::Parameters>&>(p); }
 
+/// @}
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // end namespace alps
 #endif
@@ -118,7 +160,10 @@ inline alps::IDump& operator>>(alps::IDump& id,
 #ifndef ALPS_WITHOUT_XML
 
 namespace alps {
+/// \addtogroup alps
+/// @{
 
+/// \brief Implementation handler of the ALPS XML parser for the ParameterList class  
 class ParameterListXMLHandler : public CompositeXMLHandler
 {
 public:
@@ -137,13 +182,18 @@ private:
   ParameterXMLHandler parameter_handler_;
   ParametersXMLHandler current_handler_;
 };
-
+/// @}
 } // namespace alps
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 namespace alps {
 #endif
+/// \addtogroup alps
+/// @{
 
+/// \brief XML output of a ParameterList 
+///
+/// follows the schema on http://xml.comp-phys.org/
 inline alps::oxstream& operator<<(alps::oxstream& oxs,
                                   const alps::ParameterList& parameterlist)
 {
@@ -154,11 +204,11 @@ inline alps::oxstream& operator<<(alps::oxstream& oxs,
   oxs << alps::end_tag("PARAMETERLIST");
   return oxs;
 }
-
+///@}
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // end namespace alps
 #endif
 
 #endif // !ALPS_WITHOUT_XML
-
+/// @}
 #endif // ALPS_PARSER_PARAMETERLIST_H

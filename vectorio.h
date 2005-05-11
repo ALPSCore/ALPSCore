@@ -49,54 +49,58 @@
 
 namespace alps {
 
+/// \addtogroup alps
+/// @{
+
+/// \file vectorio.h
+/// \brief I/O helpers for vectors
+/// 
+/// This header contains helper functions to write and read vectors. 
+/// They are implemented based on the traits classes and functions in vectortraits.h
+
+
+/// \brief reads a vector from a std::istream, until the end of the stream is reached.
+/// \param in the stream
+/// \param v the vector to be read
 template <class CONTAINER>
 inline void read_vector_resize (std::istream& in, CONTAINER& v)
 {
-  typedef typename VectorTraits<CONTAINER>::value_type value_type;
+  typedef typename vector_traits<CONTAINER>::value_type value_type;
   std::vector<value_type> tmp;
-  while(true) {
-    value_type x;
-    in >> x;
-    if (!in)
-      break;
-    tmp.push_back(x);
-  }
+  std::copy(std::istream_iterator<value_type>(in),std::istream_iterator<value_type>(),std::back_inserter(v));
   vectorops::resize(v,tmp.size());
   for (int i=0;i<vectorops::size(v);++i)
     v[i]=tmp[i];
 }
 
+/// \brief reads a vector from a std::istream
+/// \param in the stream
+/// \param v the vector to be read
+/// the number of elements to be read is taken from the size of the vector.
 template <class CONTAINER>
 inline void read_vector (std::istream& in, CONTAINER& v)
 {
-  typename VectorTraits<CONTAINER>::size_type i=0;
+  typename vector_traits<CONTAINER>::size_type i=0;
   while (i!=vectorops::size(v))
     in >> v[i++];
 }
 
+/// \brief reads a vector from a std::istream
+/// \param in the stream
+/// \param v the vector to be read
+/// \param n the number of elements to be read
 template <class CONTAINER>
 inline void read_vector (std::istream& in, CONTAINER& v, 
-         typename VectorTraits<CONTAINER>::size_type dim)
+         typename vector_traits<CONTAINER>::size_type n)
 {
-  vectorops::resize(v,dim);
+  vectorops::resize(v,n);
   read_vector(in,v);
 }
 
-template <class CONTAINER>
-inline void read_vector (const std::string& s, CONTAINER& v,
-         typename VectorTraits<CONTAINER>::size_type dim)
-{
-  std::istringstream in(s.c_str());
-  read_vector(in,v,dim);
-}
 
-template <class CONTAINER>
-inline void read_vector (const std::string& s, CONTAINER& v)
-{
-  std::istringstream in(s.c_str());
-  read_vector(in,v);
-}
-
+/// \brief reads a vector from a std::string, until the end of the string is reached.
+/// \param s the string
+/// \param v the vector to be read
 template <class CONTAINER>
 inline void read_vector_resize (const std::string& s, CONTAINER& v)
 {
@@ -104,59 +108,94 @@ inline void read_vector_resize (const std::string& s, CONTAINER& v)
   read_vector_resize(in,v);
 }
 
+/// \brief reads a vector from a std::string, until the end of the string is reached.
+/// \param s the string
+/// \param v the vector to be read
+/// the number of elements to be read is taken from the size of the vector.
 template <class CONTAINER>
-inline CONTAINER read_vector (const std::string& s,
-         typename VectorTraits<CONTAINER>::size_type dim)
+inline void read_vector (const std::string& s, CONTAINER& v)
+{
+  std::istringstream in(s.c_str());
+  read_vector(in,v);
+}
+
+/// \brief reads a vector from a std::string
+/// \param s the string
+/// \param v the vector to be read
+/// \param n the number of elements to be read
+template <class CONTAINER>
+inline void read_vector (const std::string& s, CONTAINER& v,
+         typename vector_traits<CONTAINER>::size_type n)
+{
+  std::istringstream in(s.c_str());
+  read_vector(in,v,n);
+}
+
+
+/// \brief reads a vector from a std::istream
+/// \param in the stream
+/// \param n the number of elements to be read
+/// \return the vector to be read
+template <class CONTAINER>
+inline CONTAINER read_vector (std::istream& in,
+         typename vector_traits<CONTAINER>::size_type n)
 {
   CONTAINER v;
-  read_vector(s,v,dim);
+  read_vector(in,v,n);
   return v;
 }
 
+/// \brief reads a vector from a std::string, until the end of the string is reached.
+/// \param s the string
+/// \return the vector read from the string
 template <class CONTAINER>
 inline CONTAINER read_vector (const std::string& s)
 {
   CONTAINER v;
-  read_vector(s,v);
+  read_vector_resize(s,v);
   return v;
 }
 
-template <class CONTAINER>
-inline CONTAINER read_vector (std::istream& in,
-         typename VectorTraits<CONTAINER>::size_type dim)
-{
-  CONTAINER v;
-  read_vector(in,v,dim);
-  return v;
-}
-
+/// \brief reads a vector from a std::istream, until the end of the stream is reached.
+/// \param in the stream
+/// \return the vector read from the stream
 template <class CONTAINER>
 inline CONTAINER read_vector (std::istream& in)
 {
   CONTAINER v;
-  read_vector(in,v);
+  read_vector_resize(in,v);
   return v;
 }
 
+/// \brief reads a vector from a std::string
+/// \param s the string
+/// \param n the number of elements to be read
+/// \return the vector read from the string
 template <class CONTAINER>
-inline void write_vector(std::ostream& out, const CONTAINER& v, const std::string& delim=" ")
+inline CONTAINER read_vector (const std::string& s,
+         typename vector_traits<CONTAINER>::size_type n)
 {
-  for (std::size_t i=0;i<vectorops::size(v);++i) {
-    out << v[i];
-    if (i!=vectorops::size(v)-1)
-      out << delim;
-  }
+  CONTAINER v;
+  read_vector(s,v,n);
+  return v;
 }
 
+
+/// \brief writes a vector to a std::string
 template <class CONTAINER>
-inline std::string vector_writer(const CONTAINER& c, const std::string& delim=" ")
+inline std::string write_vector(const CONTAINER& v, const std::string& delim=" ")
 {
   std::ostringstream str;
   str << std::setprecision(20);
-  write_vector(str,c,delim);
+  for (std::size_t i=0;i<vectorops::size(v);++i) {
+    str << v[i];
+    if (i!=vectorops::size(v)-1)
+      str << delim;
+  }
   return str.str();
 }
 
+/// @}
 } // end namespace alps
 
 #endif // ALPS_VECTORIO_H

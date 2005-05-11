@@ -149,7 +149,7 @@ template<class T>
 class SimpleFactor : public Evaluatable<T> {
 public:
   typedef T value_type;
-  typedef typename TypeTraits<T>::norm_t norm_type;
+  typedef typename type_traits<T>::norm_t norm_type;
   
   SimpleFactor(std::istream&);
   SimpleFactor(value_type x) : term_(new Number<T>(x)) {}
@@ -187,7 +187,7 @@ class Factor : public SimpleFactor<T> {
 public:
   typedef T value_type;
   typedef SimpleFactor<T> super_type;
-  typedef typename TypeTraits<T>::norm_t norm_type;
+  typedef typename type_traits<T>::norm_t norm_type;
   
   Factor(std::istream&, bool inverse = false);
   Factor(value_type x) : super_type(x), is_inverse_(false), power_(1.) {}
@@ -401,7 +401,7 @@ template<class T>
 class Number : public Evaluatable<T> {
 public:
   typedef T value_type;
-  typedef typename alps::TypeTraits<T>::real_t real_type;
+  typedef typename alps::type_traits<T>::real_t real_type;
 
   Number(value_type x) : val_(x) {}
   value_type value(const Evaluator<T>& =Evaluator<T>(), bool=false) const;

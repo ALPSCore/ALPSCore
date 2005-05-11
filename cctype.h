@@ -33,10 +33,15 @@
 
 #include <cctype>
 
-//
-// Some <cctype> header does not undefine harmful macros, so undefine
-// them.
-//
+/// \addtogroup alps
+/// @{
+
+/// \file cctype.h
+/// \brief A safe version of the standard cctype header
+///
+///  Some cctype headers do not undefine harmful macros, so undefine them here.
+
+/// @}
 
 #ifdef isspace 
 # undef isspace

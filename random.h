@@ -28,3 +28,12 @@
 /* $Id$ */
 
 #include <alps/random/rngfactory.h>
+
+/// \defgroup random The ALPS random library
+/// contains extensions to the Boost random library
+/// @{
+
+/// \file random.h
+/// \brief includes all headers in the alps/random directory
+
+/// @}

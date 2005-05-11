@@ -39,113 +39,10 @@
 #include <string>
 #include <stdexcept>
 
-#define NEW_STRINGVALUE_IMPL 1
-
-#ifndef NEW_STRINGVALUE_IMPL
 
 namespace alps {
 
-class StringValue
-{
-public:
-  StringValue() {}
-  StringValue(const std::string& x) : value_(x) {}
-  StringValue(const char * x) : value_(x) {}
-
-  template <class T>
-  StringValue(const T& x) : value_(boost::lexical_cast<std::string, T>(x)) {}
-  // we "recast" errors below to std::runtime_error, but here we
-  // leave it as a boost::bad_lexical_cast?! (mkoerner)
-
-  operator std::string () const { return value_;}
-
-  bool operator==(const StringValue& x) const {return value_==x.value_; }
-  bool operator!=(const StringValue& x) const {return value_!=x.value_; }
-
-  template <class T>
-  T get() const { return operator T(); }
-
-  operator bool() const {
-    return value_ == "true" ? true : (value_ == "false" ? false : boost::lexical_cast<bool,std::string>(value_));
-  }
-
-#ifdef BOOST_NO_EXCEPTIONS
-#define CONVERTIT(A) operator A() const { return boost::lexical_cast<A, std::string>(value_); }
-#else
-#define CONVERTIT(A) operator A() const { \
-  try { return boost::lexical_cast<A, std::string>(value_);} \
-  catch (...) { boost::throw_exception(std::runtime_error(\
-  "Could not convert string '"+value_+"to type "#A));}\
-  return boost::lexical_cast<A, std::string>(value_);}
-#endif
-  CONVERTIT(int8_t)
-  CONVERTIT(uint8_t)
-  CONVERTIT(int16_t)
-  CONVERTIT(uint16_t)
-  CONVERTIT(int32_t)
-  CONVERTIT(uint32_t)
-#ifndef BOOST_NO_INT64_T
-  CONVERTIT(int64_t)
-  CONVERTIT(uint64_t)
-#endif
-  CONVERTIT(float)
-  CONVERTIT(double)
-  CONVERTIT(long double)
-  CONVERTIT(std::complex<float>)
-  CONVERTIT(std::complex<double>)
-  CONVERTIT(std::complex<long double>)
-#undef CONVERTIT
-
-  const char* c_str() const { return value_.c_str();}
-
-  const StringValue& operator=(const std::string& x) {
-    value_ = x;
-    return *this;
-  }
-  const StringValue& operator=(const char* x) {
-    value_ = x;
-    return *this;
-  }
-  template <class T>
-  const StringValue& operator=(const T& x) {
-    value_ = boost::lexical_cast<std::string, T>(x);
-    return *this;
-  }
-
-  bool valid() const {return !value_.empty(); }
-
-private:
-  std::string value_;
-};
-
-} // end namespace alps
-
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-namespace alps {
-#endif
-
-inline std::ostream& operator << (std::ostream& os, const alps::StringValue& v)
-{
-  return os << static_cast<std::string>(v);
-}
-
-inline std::istream& operator >> (std::istream& is, alps::StringValue& v)
-{
-  std::string s;
-  is >> s;
-  v = s;
-  return is;
-}
-
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-} // end namespace alps
-#endif
-
-#else // NEW_STRINGVALUE_IMPL
-
-namespace alps {
-
-// New implementation for the ValueString class. By deriving from
+// New implementation for the StringValue class. By deriving from
 // std::string, we keep the complete functionality of std::string
 // such as input and output, comparison, concatenation, while
 // adding the conversion operators.
@@ -159,10 +56,10 @@ namespace alps {
 // propagate.
 
 template < class StringBase = std::string > class lexical_cast_string;
-typedef lexical_cast_string<> StringValue;
 
 namespace detail {
 
+/// a helper class to call lexical cast
 template<class S, class T>
 struct lexical_cast_string_helper
 {
@@ -170,6 +67,9 @@ struct lexical_cast_string_helper
   { return boost::lexical_cast<T>(s); }
 };
 
+/// \brief a helper class to call lexical cast, spexialized for std::string
+///
+/// it is a no-op for std::string
 template<class S>
 struct lexical_cast_string_helper<S, S>
 {
@@ -178,55 +78,91 @@ struct lexical_cast_string_helper<S, S>
 
 } // end namespace detail
 
+/// \addtogroup alps
+/// @{
+
+/// \file stringvalue.h
+/// \brief implements a string class that can easily be assigned to and converted to any type
+
+/// \brief a string class with built-in conversion to other types using lexical_cast
+///
+/// This class, derived from a std::string or similar implements additional
+/// conversion operations and constructors implemented using boost::lexical_cast
+/// \param StringBase the string class from which it is derived
 template<class StringBase>
 class lexical_cast_string : public StringBase
 {
 public:
-  typedef StringBase base_type;
+  /// the underlying string class
+  typedef StringBase string_type;
 
-  lexical_cast_string(const base_type& s = base_type()) : base_type(s) {}
-  lexical_cast_string(const lexical_cast_string& s) : base_type(s) {}
-  lexical_cast_string(const char* s) : base_type(s) {}
+  /// constructor from a string
+  lexical_cast_string(const string_type& s = string_type()) : string_type(s) {}
+  /// copy-contructor
+  lexical_cast_string(const lexical_cast_string& s) : string_type(s) {}
+  /// constructor froma  C-style string
+  lexical_cast_string(const char* s) : string_type(s) {}
+  /// constructor from arbitrary types implemented using boost::lexical_cast
   template <class T>
   lexical_cast_string(const T& x)
-    : base_type(boost::lexical_cast<base_type>(x)) {}
+    : string_type(boost::lexical_cast<string_type>(x)) {}
 
+  /// check whether the string is not empty
   bool valid() const { return !StringBase::empty(); }
 
+  /// convert the string to type T using boost::lexical_cast
   template <class T> T get() const
-  { return detail::lexical_cast_string_helper<base_type, T>::get(*this); }
+  { return detail::lexical_cast_string_helper<string_type, T>::get(*this); }
 
+  /// \brief convert the string to bool
+  /// 
+  /// the strings "true" and "false" are valid ways to specify tryue or false boolean values. Any other
+  /// value will be converted to bool using boost::lexical_cast
   operator bool() const {
     if ( *this == "true" ) return true;
     if ( *this == "false" ) return false;
     return boost::lexical_cast<bool>(*this);
   }
 
-#define CONVERTIT(T) operator T() const { \
-  return boost::lexical_cast<T>(*this); \
-}
+#define CONVERTIT(T) operator T() const {return boost::lexical_cast<T>(*this); }
+  /// convert the string to int8_t
   CONVERTIT(int8_t)
+  /// convert the string to uint8_t
   CONVERTIT(uint8_t)
+  /// convert the string to int16_t
   CONVERTIT(int16_t)
+  /// convert the string to uint16_t
   CONVERTIT(uint16_t)
+  /// convert the string to int32_t
   CONVERTIT(int32_t)
+  /// convert the string to uint32_t
   CONVERTIT(uint32_t)
 #ifndef BOOST_NO_INT64_T
+  /// convert the string to int64_t
   CONVERTIT(int64_t)
+  /// convert the string to uint64_t
   CONVERTIT(uint64_t)
 #endif
+  /// convert the string to float
   CONVERTIT(float)
+  /// convert the string to double
   CONVERTIT(double)
+  /// convert the string to long double
   CONVERTIT(long double)
+  /// convert the string to std::complex<float>
   CONVERTIT(std::complex<float>)
+  /// convert the string to std::complex<double>
   CONVERTIT(std::complex<double>)
+  /// convert the string to std::complex<long double>
   CONVERTIT(std::complex<long double>)
 #undef CONVERTIT
 
 };
 
-} // end namespace alps
+/// StringValue is now implemented using lexical_cast_string
+typedef lexical_cast_string<> StringValue;
+/// @}
 
-#endif // NEW_STRINGVALUE_IMPL
+} // end namespace alps
 
 #endif // ALPS_PARSER_STRINGVALUE_H

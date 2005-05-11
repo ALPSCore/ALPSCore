@@ -36,3 +36,12 @@
 #include <alps/parser/xmlparser.h>
 #include <alps/parser/xmlstream.h>
 #include <alps/parser/path.h>
+
+/// \defgroup xml The ALPS XML library
+/// \brief contains functions and classes to parse and write XML files
+/// @{
+
+/// \file xml.h
+/// \brief includes all headers in the alps/parser directory
+
+/// @}

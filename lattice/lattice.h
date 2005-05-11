@@ -193,7 +193,7 @@ extent(const Lattice& l)
 }
 
 template <class Lattice>
-inline typename VectorTraits<typename lattice_traits<Lattice>::extent_type>::value_type
+inline typename vector_traits<typename lattice_traits<Lattice>::extent_type>::value_type
 extent(const Lattice& l, unsigned int d)
 {
   return l.extent(d);

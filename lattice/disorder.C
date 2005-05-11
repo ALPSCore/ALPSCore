@@ -29,7 +29,6 @@
 
 #include <alps/lattice/disorder.h>
 #include <alps/expression.h>
-#include <alps/random/random.h>
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 namespace alps {
@@ -40,9 +39,9 @@ alps::oxstream& operator<<(alps::oxstream& out,
                            const alps::detail::BasicVertexReference& d)
 {
   if (d.cell_offset().size())
-    out << attribute("cell", vector_writer(d.cell_offset()));
+    out << attribute("cell", write_vector(d.cell_offset()));
   if (d.offset().size())
-    out << attribute("offset", vector_writer(d.offset()));
+    out << attribute("offset", write_vector(d.offset()));
   out << attribute("vertex", d.vertex());
   return out;
 }

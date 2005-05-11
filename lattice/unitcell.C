@@ -205,7 +205,7 @@ void GraphUnitCell::write_xml(oxstream& xml) const
         << attribute("id", boost::get(vertex_index_t(),graph_,*it)+1) 
         << attribute("type", boost::get(vertex_type_t(),graph_,*it));
     if (alps::dimension(boost::get(coordinate_t(),graph_,*it)))
-      xml << attribute("coordinate", vector_writer(boost::get(coordinate_t(),graph_,*it)));
+      xml << attribute("coordinate", write_vector(boost::get(coordinate_t(),graph_,*it)));
     xml << end_tag("VERTEX");
   }
   typedef boost::graph_traits<graph_type>::edge_iterator edge_iterator;
@@ -213,17 +213,17 @@ void GraphUnitCell::write_xml(oxstream& xml) const
                      it!=boost::edges(graph_).second;++it) {
     xml << start_tag("EDGE")
         << attribute("type", boost::get(edge_type_t(),graph_,*it))
-        << attribute("vector", vector_writer(boost::get(bond_vector_t(),graph_,*it)))
+        << attribute("vector", write_vector(boost::get(bond_vector_t(),graph_,*it)))
         << no_linebreak;
     xml << start_tag("SOURCE")
         << attribute("vertex",boost::source(*it,graph_)+1);
     if (boost::get(source_offset_t(),graph_,*it).size())
-      xml << attribute("offset", vector_writer(boost::get(source_offset_t(),graph_,*it)));
+      xml << attribute("offset", write_vector(boost::get(source_offset_t(),graph_,*it)));
     xml << end_tag("SOURCE");
     xml << start_tag("TARGET")
         << attribute("vertex", boost::target(*it,graph_)+1);
     if (boost::get(target_offset_t(),graph_,*it).size())
-      xml << attribute("offset", vector_writer(boost::get(target_offset_t(),graph_,*it)));
+      xml << attribute("offset", write_vector(boost::get(target_offset_t(),graph_,*it)));
     xml << end_tag("TARGET");
     xml << end_tag("EDGE");
   }

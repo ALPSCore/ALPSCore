@@ -37,24 +37,59 @@ namespace alps {
 
 namespace detail {
 
+/// \addtogroup alps
+/// @{
+
+/// \file matrix_as_vector.h
+/// \brief using matrices as vectors in generic algorithms
+/// 
+/// This header contains a wrapper class that allows to use a matrix instead of a vector in a generic algorithm. 
+/// As long as the algorithm does nothing more than to get a vector element, multiply it with a factor and add 
+/// it to another vector element, the \c matrix_as_vector class can record these actions into a matrix.
+
+/// a vector element, scaled by an arbitrary factor
+///
+/// used as \c value_type of the \c matrix_as_vector class
+/// \param M the matrix type
 template <class M>
 class element_proxy {
 public:
+/// the matrix type
   typedef M matrix_type;
+/// the scalar type, to store scale factors
   typedef typename matrix_type::value_type value_type;
+/// the type used to store indices
   typedef std::size_t size_type;
 
+/// creates a proxy refering to a vector element
+///
+/// the scale factor is initialized to 1 and the proxy refers to the \a i -th element of the vector
+/// \param m the matrix
+/// \param i the index of the vector element
   element_proxy(matrix_type& m, size_type i) : matrix_(m), index_(i), val_(1.) {}
+/// the index of the vector element the object refers to
   size_type index() const { return index_;}
+/// the scalar by which the matrix element has been multiplied
   value_type value() const { return val_;}
+/// multiplies the scale factor by the argument \a x
   const element_proxy<M>& operator*=(value_type x) { val_*=x; return *this;}
-  
+/// \brief stores a vector operation in matrix form
+///
+/// this allows operations like a[i] = b*c[j] to be recorded in matrix form. 
+/// The \c value() is stored at location (i,j) into the matrix.
   template <class MM>
   void operator=(const element_proxy<MM>& x) { matrix_(index(),x.index())=x.value();}
-  
+/// \brief adds a vector operation in matrix form
+///
+/// this allows operations like a[i] += b*c[j] to be recorded in matrix form. 
+/// The \c value() is added to the location (i,j) into the matrix.
   template <class MM>
   void operator+=(const element_proxy<MM>& x) { matrix_(index(),x.index())+=x.value();}
 
+/// \brief subtracts a vector operation in matrix form
+///
+/// this allows operations like a[i] -= b*c[j] to be recorded in matrix form. 
+/// The \c value() is subtracted from the location (i,j) into the matrix.
   template <class MM>
   void operator-=(const element_proxy<MM>& x) { matrix_(index(),x.index())-=x.value();}
 private:
@@ -66,17 +101,33 @@ private:
 
 }
 
+/// a vector that stores the result of simple operations in matrix form
+///
+/// This class allows to use a matrix instead of a vector in some generic algorithms. 
+/// For example, vector operations such as a[j] = b * c[i] result in the value b being stored
+/// at location (i,j) in the matrix
+/// @param M the matrix type. It needs to support element access in the form  m(i,j), for objects m of type M.
 template <class M>
 class matrix_as_vector {
 public:
+/// the matrix type
   typedef M matrix_type;
+/// the value type of the matrix
   typedef typename matrix_type::value_type value_type;
+/// the type to store vector and matrix inidices
   typedef std::size_t size_type;
 
+/// @param m the matrix that will be written into. It is stored by reference.
   matrix_as_vector(matrix_type& m) : matrix_(m) {}
+/// returns the underlying matrix
   matrix_type& matrix() { return matrix_;}
+/// returns the underlying matrix
   const matrix_type& matrix() const { return matrix_;}
+/// \param i the index into the vector
+/// \returns an element_proxy referring to the \a i -th vector element
   detail::element_proxy<M> operator[](size_type i) { return detail::element_proxy<M>(matrix(),i);}
+/// \param i the index into the vector
+/// \returns an element_proxy referring to the \a i -th vector element
   detail::element_proxy<const M> operator[](size_type i) const { return detail::element_proxy<const M>(matrix(),i);}
 private:
   matrix_type& matrix_;
@@ -88,12 +139,22 @@ private:
 namespace alps { namespace detail {
 #endif
 
+/// \brief multiplication of an element_proxy with a scalar
+///
+/// \param x the vector element proxy
+/// \param y the scalar
+/// \returns the result of x *= y
 template <class M, class T>
 alps::detail::element_proxy<M> operator*(alps::detail::element_proxy<M> x, T y)
 {
   return x *= y;
 }
 
+/// \brief multiplication of an element_proxy with a scalar
+///
+/// \param x the scalar
+/// \param y the vector element proxy
+/// \returns the result of y *= x
 template <class M, class T>
 alps::detail::element_proxy<M> operator*(T x, alps::detail::element_proxy<M> y)
 {
@@ -103,5 +164,5 @@ alps::detail::element_proxy<M> operator*(T x, alps::detail::element_proxy<M> y)
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } }
 #endif
-
+/// @}
 #endif // ALPS_MATRIX_AS_VECTOR_H

@@ -115,23 +115,8 @@ public:
   virtual void write_string(std::size_t n, const char* s);
   virtual void write_string(const std::string&);
 
-  /** register an object to prepare serializing a pointer to it.
-      after writing an object it has to be registered with the dump to
-      allow writing a pointer to the object. */
-
-  void registerObjectAddress(void* p);
-
-  /** serialize a pointer.
-      after registering an object's address a pointer to it can be serialized.
-      This is done by writing an integer number associated with the object
-      when its address is registered. */
-      
-  void writePointer(void* p);
-  
 private: 
   uint32_t version_;
-  uint32_t highestNumber_;
-  std::map<void *, uint32_t> numberOfPointer_;
 };
 
 
@@ -220,28 +205,8 @@ public:
   // read the next boolean value from the dump and return its value.
   bool test() { return get<bool>(); }
 
-  /** register an object to prepare deserializing a pointer to it.
-      after reading an object it has to be registered with the dump to
-      allow reading a pointer to the object. */
-  void registerObjectAddress(void* p);
-
-  /** deserialize a pointer.
-      After registering an object's address a pointer to it can be deserialized.
-      This is done by reading an integer number associated with the object
-      when its address is registered. */
-  void* readPointer();
-  
-  /** deserialize a pointer to T.
-      After registering an object's address a pointer to it can be deserialized.
-      This is done by reading an integer number associated with the object
-      when its address is registered. This function just calls readPointer()
-      and type casts the pointer. It is a more convenient way of reading pointer.*/
-  template <class T>
-  T* readAPointer() {return static_cast<T*>(readPointer());}
- 
 private:
   uint32_t version_;
-  std::vector<void*> pointerVector_;
 };
 
 } // end namespace

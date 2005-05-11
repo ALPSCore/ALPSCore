@@ -38,7 +38,17 @@
 # include <intrinsics.h>
 #endif
 
+
 namespace alps {
+/// \addtogroup alps
+/// @{
+
+/// \file bitops.h
+/// \brief bit manipulation functions
+/// 
+/// This header contains bit operations modeled after Cray and Fortran intrinsics.
+/// On Cray machines they are replaced by the intrinsic functions
+/// with the same name.
 
 //
 // Cray intrinsic bit operations : gbit, gbits, maskr, popcnt
@@ -51,23 +61,22 @@ namespace alps {
 # define popcnt _popcnt
 #else
 
-/** extract a bit from a word.
+/** \brief extract a bit from a word.
     @param x the word
     @param n position of the bit to be extracted
     @return the n-th bit of the word x */
 template <class T, class N>
 inline T gbit(T x, N n) { return (x>>n)&1; }
 
-/** extract bits from a word.
+/** \brief extract bits from a word.
     @param x the word
     @param m the number of bits to be extracted
-    @param n position of the bit to be extracted
+    @param n position of the first bit to be extracted
     @return the m bits starting at bit n  */
 template <class T, class N>
 inline T gbits(T x, N m, long n) { return (x>>n)&((1<<m)-1); }
 
-/** create a right-justified N
-    creates a bitpattern with the rightmost i bits set
+/** \brief create a right-justified N
     @param i the number of bits to be set to 1
     @return a word with the rightmost bits set to 1 */
 inline uint32_t maskr(uint16_t i) {return (1u<<i)-1;}
@@ -75,7 +84,9 @@ inline static int BX_(long x) { return ((x) - (((x)>>1)&0x77777777)
                              - (((x)>>2)&0x33333333)
                              - (((x)>>3)&0x11111111)); }
 
-/// count the 1-bits in a word
+/// \brief count the 1-bits in a word
+/// @param x the 32-biit word of whhich 1-bits should be counted
+/// @return the number of 1-bits in the word
 inline long popcnt(uint32_t x) 
 { return (((BX_(x)+(BX_(x)>>4)) & 0x0F0F0F0F) % 255); }
 
@@ -86,29 +97,51 @@ inline long popcnt(uint32_t x)
 //
 
 // btest : check p-th bit of i (return value : true for 1 and false for 0)
+
+/// \brief test if a bit is set
+/// \param i the integer to be tested
+/// \param p the position of the bit to be tested
+/// \return true if the p-th bit of i is set, false otherwise
 template <class T, class U>
 inline bool btest(T i, U p) { return gbit(i, p) == 1; }
 
-// ibits : extract p-th bit from i
+/// brief extract a bit from an integer
+/// \param i the integer from which a bit will be extracted
+/// \param p the position of the bit to be extracted
+/// \return 1 if the p-th bit of i is set, 0 otherwise
 template <class T, class U>
 inline T ibits(T i, U p) { return gbit(i, p); }
 
-// ibits : extract n bits [p,p+n-1] from i
+/// \brief extract several bits from an integer
+/// \param i the integer from which bits will be extracted
+/// \param p the position of the first bit to be extracted
+/// \param n the number of bits to be extracted
+/// \return the bits at positions [p,p+n-1]
 template <class T, class U, class V>
 inline T ibits(T i, U p, V n) { return gbits(i, p, n); }
 
-// ibclr : clear p-th bit of i to 0
+/// brief brief clear a bit in an integer
+/// \param i the integer of which a bit will be cleared
+/// \param p the position of the bit to be cleared
+/// \return the integer i with the bit at position p set to zero
 template <class T, class U>
 inline T ibclr(T i, U p) { return i & (~(1 << p)); }
 
-// ibset : set p-th bit of i to 1
+/// brief set a bit in an integer
+/// \param i the integer of which a bit will be set
+/// \param p the position of the bit to be set
+/// \return the integer i with the bit at position p set to one
 template <class T, class U>
 inline T ibset(T i, U p) { return i | (1 << p); }
 
-// ibset : set p-th bit of i to b (0 or 1)
+/// brief set a bit in an integer to a specified valus
+/// \param i the integer of which a bit will be set
+/// \param p the position of the bit to be set
+/// \param b the value of the bit to be set
+/// \return the integer i with the bit at position p set to to the specified value
 template <class T, class U, class V>
 inline T ibset(T i, U p, V b) { return i & (~(1 << p)) | ((b & 1) << p); }
 
 } // end namespace alps
-
+/// @}
 #endif // ALPS_SRC_ALPS_BITOPS_H

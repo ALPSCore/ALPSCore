@@ -882,7 +882,7 @@ bool Function<T>::can_evaluate(const Evaluator<T>& p, bool isarg) const
 template<class T>
 void Function<T>::output(std::ostream& os) const
 {
-  os << name_ << "(" << vector_writer(args_,", ") << ")";
+  os << name_ << "(" << write_vector(args_,", ") << ")";
 }
 
 // Parameters evaluate(const Parameters& in)

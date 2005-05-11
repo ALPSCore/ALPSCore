@@ -505,7 +505,6 @@ template <class T>
 SimpleObservableData<T>& SimpleObservableData<T>::operator+=(const SimpleObservableData<T>& x)
 {
   using std::sqrt;
-  using alps::sqrt;
   if(count() && x.count()) {
     mean_ += x.mean();
     error_ *= error_;
@@ -521,7 +520,6 @@ template <class T>
 SimpleObservableData<T>& SimpleObservableData<T>::operator-=(const SimpleObservableData<T>& x)
 {
   using std::sqrt;
-  using alps::sqrt;
   if(count() && x.count()) {
     mean_ -= x.mean();
     error_ *= error_;
@@ -538,7 +536,6 @@ template<class X>
 SimpleObservableData<T>& SimpleObservableData<T>::operator*=(const SimpleObservableData<X>& x)
 {
   using std::sqrt;
-  using alps::sqrt;
   if(count() && x.count()) {
     error_=error()*error();
     error_*=x.mean()*x.mean();
@@ -562,7 +559,6 @@ template<class X>
 SimpleObservableData<T>& SimpleObservableData<T>::operator/=(const SimpleObservableData<X>& x)
 {
   using std::sqrt;
-  using alps::sqrt;
   if(count() && x.count()) {
     error_=error()*error();
     typename SimpleObservableData<X>::result_type m(x.mean());
@@ -857,7 +853,6 @@ void SimpleObservableData<T>::collect_from(const std::vector<SimpleObservableDat
         //mean_ = (double(count_)*mean_+double(r->count_)*r->mean_)
         //        / double(count_ + r->count_);
         using std::sqrt;
-        using alps::sqrt;
         result_type tmp = error_;
         tmp *= error_*(double(count_)*double(count_));
         result_type tmp2 = r->error_;
@@ -1039,7 +1034,6 @@ void SimpleObservableData<T>::jackknife() const
     //error_ = (error_ / count_type(k) - rav * rav);
     error_ *= count_type(k - 1);
     using std::sqrt;
-    using alps::sqrt;
     error_ = sqrt(error_);
   }
 }

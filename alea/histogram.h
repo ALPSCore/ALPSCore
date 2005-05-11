@@ -54,7 +54,7 @@ class HistogramObservable : public Observable
 {
 typedef uint32_t integer_type;
 public:
-  enum { version=TypeTraits<T>::type_tag+(TypeTraits<integer_type>::type_tag << 8) + (2<<16)};
+  enum { version=type_traits<T>::type_tag+(type_traits<integer_type>::type_tag << 8) + (2<<16)};
   HistogramObservable(const std::string& n="");
   HistogramObservable(const std::string& n, T min, T max, T stepsize=1);
   void set_range(T min, T max, T stepsize=1);

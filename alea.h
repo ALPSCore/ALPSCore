@@ -33,3 +33,11 @@
 #include <alps/alea/nobinning.h>
 #include <alps/alea/observableset.h>
 #include <alps/alea/signedobservable.h>
+
+/// \defgroup alea The ALPS alea library for Monte Carlo measurements and evaluation
+/// @{
+
+/// \file alea.h
+/// \brief includes all headers in the alps/alea directory
+
+/// @}

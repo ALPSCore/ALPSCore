@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003 by Matthias Troyer <troyer@comp-phys.org>
+* Copyright (C) 2003-2005 by Matthias Troyer <troyer@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -34,6 +34,7 @@
 // This file defines extensions to boost::multi_array
 //=======================================================================
 
+
 #include <alps/config.h>
 #define access alps_multiarray_access
 #include <boost/multi_array.hpp>
@@ -46,257 +47,6 @@
 # include <alps/osiris.h>
 #endif
 
-namespace alps {
-
-template <class T, std::size_t NumDims, class Allocator= std::allocator<T> >
-class multi_array : public boost::multi_array<T,NumDims,Allocator>
-{
-public:
-  typedef boost::multi_array<T,NumDims,Allocator> super_type;
-
-  typedef typename super_type::value_type value_type;
-  typedef typename super_type::reference reference;
-  typedef typename super_type::const_reference const_reference;
-  typedef typename super_type::reverse_iterator reverse_iterator;
-  typedef typename super_type::const_reverse_iterator const_reverse_iterator;
-  typedef typename super_type::element element;
-  typedef typename super_type::size_type size_type;
-  typedef typename super_type::difference_type difference_type;
-  typedef typename super_type::index index;
-  typedef typename super_type::extent_range extent_range;
-
-  multi_array(const super_type& rhs) : super_type(rhs) {}
-  
-  // Duplicating constructors
-  
-  template <class ExtentList>
-  explicit multi_array(ExtentList const& extents) 
-   : super_type(extents) {}
-
-  template <class ExtentList>
-  explicit multi_array(ExtentList const& extents,const boost::general_storage_order<NumDims>& so) 
-   : super_type(extents,so) {}
-
-  template <class ExtentList>
-  explicit multi_array(ExtentList const& extents,
-                       const boost::general_storage_order<NumDims>& so,
-                       Allocator const& alloc) 
-   : super_type(extents,so,alloc) {}
-
-
-  explicit multi_array(const boost::detail::multi_array::extent_gen<NumDims>& ranges) 
-   : super_type(ranges) {}
-
-
-  explicit multi_array(const boost::detail::multi_array::extent_gen<NumDims>& ranges,
-                       const boost::general_storage_order<NumDims>& so) 
-   : super_type(ranges,so) {}
-
-
-  explicit multi_array(const boost::detail::multi_array::extent_gen<NumDims>& ranges,
-                       const boost::general_storage_order<NumDims>& so, Allocator const& alloc) 
-   : super_type(ranges,so,alloc) {}
-
-  template <typename OPtr>
-  multi_array(const boost::detail::multi_array::const_sub_array<T,NumDims,OPtr>& rhs) 
-   : super_type(rhs) {}
-
-  // For some reason, gcc 2.95.2 doesn't pick the above template
-  // member function when passed a subarray, so i was forced to
-  // duplicate the functionality here...
-  multi_array(const boost::detail::multi_array::sub_array<T,NumDims>& rhs) 
-   : super_type(rhs) {}
-   
-   
-  // my extensions
-
-  multi_array() {}
-  
-  typedef T* iterator;
-  typedef const T* const_iterator;
-  
-  iterator begin() { return super_type::data();}
-  const_iterator begin() const { return super_type::data();}
-  iterator end() { return super_type::data()+super_type::num_elements();}
-  const_iterator end() const { return super_type::data()+super_type::num_elements();}
-
-  template <class X, class Alloc>
-  const multi_array& operator=(const alps::multi_array<X,NumDims,Alloc>& x) 
-  {
-    super_type::operator=(x);
-    return *this;
-  }
-
-  const multi_array& operator=(T x) 
-  {
-    std::fill(begin(),end(),x);
-    return *this;
-  }
-  
-  multi_array operator-() const {
-    multi_array res(*this);
-    std::transform(res.begin(),res.end(),res.begin(),std::negate<T>());
-    return res;
-  }
- 
-const multi_array& operator+=(const multi_array& x)
-{
-  std::transform(begin(),end(),x.begin(),begin(),std::plus<T>());
-  return *this;
-}
-
-const multi_array& operator-=(const multi_array& x)
-{
-  std::transform(begin(),end(),x.begin(),begin(),std::minus<T>());
-  return *this;
-}
-
-const multi_array& operator*=(const multi_array& x)
-{
-  std::transform(begin(),end(),x.begin(),begin(),std::multiplies<T>());
-  return *this;
-}
-
-const multi_array& operator/=(const multi_array& x)
-{
-  std::transform(begin(),end(),x.begin(),begin(),std::divides<T>());
-  return *this;
-}
-
-const multi_array& operator+=(const T& x)
-{
-  std::transform(begin(),end(),begin(),boost::bind2nd(std::plus<T>(),x));
-  return *this;
-}
-
-const multi_array& operator-=(const T& x)
-{
-  std::transform(begin(),end(),begin(),boost::bind2nd(std::minus<T>(),x));
-  return *this;
-}
-
-const multi_array& operator*=(const T& x)
-{
-  std::transform(begin(),end(),begin(),boost::bind2nd(std::multiplies<T>(),x));
-  return *this;
-}
-
-const multi_array& operator/=(const T& x)
-{
-  std::transform(begin(),end(),begin(),boost::bind2nd(std::divides<T>(),x));
-  return *this;
-}
-
-};
-
-template <class T, std::size_t NumDims, class Allocator>
-multi_array<T,NumDims,Allocator> operator/(const multi_array<T,NumDims,Allocator>& x, T y)
-{
-  multi_array<T,NumDims,Allocator> res(x);
-  std::transform(res.begin(),res.end(),res.begin(),boost::bind2nd(std::divides<T>(),y));
-  return res;
-}
-
-template <class T, std::size_t NumDims, class Allocator>
-multi_array<T,NumDims,Allocator> operator-(const multi_array<T,NumDims,Allocator>& x, T y)
-{
-  multi_array<T,NumDims,Allocator> res(x);
-  std::transform(res.begin(),res.end(),res.begin(),boost::bind2nd(std::minus<T>(),y));
-  return res;
-}
-
-template <class T, std::size_t NumDims, class Allocator>
-multi_array<T,NumDims,Allocator> operator+(const multi_array<T,NumDims,Allocator>& x, T y)
-{
-  multi_array<T,NumDims,Allocator> res(x);
-  std::transform(res.begin(),res.end(),res.begin(),boost::bind2nd(std::plus<T>(),y));
-  return res;
-}
-
-template <class T, std::size_t NumDims, class Allocator>
-multi_array<T,NumDims,Allocator> operator-(T y, const multi_array<T,NumDims,Allocator>& x)
-{
-  multi_array<T,NumDims,Allocator> res(x);
-  std::transform(res.begin(),res.end(),res.begin(),boost::bind1st(std::minus<T>(),y));
-  return res;
-}
-
-template <class T, std::size_t NumDims, class Allocator>
-multi_array<T,NumDims,Allocator> operator+(T y, const multi_array<T,NumDims,Allocator>& x)
-{
-  multi_array<T,NumDims,Allocator> res(x);
-  std::transform(res.begin(),res.end(),res.begin(),boost::bind1st(std::plus<T>(),y));
-  return res;
-}
-
-template <class T, std::size_t NumDims, class Allocator>
-multi_array<T,NumDims,Allocator> operator*(const multi_array<T,NumDims,Allocator>& x, T y)
-{
-  multi_array<T,NumDims,Allocator> res(x);
-  std::transform(res.begin(),res.end(),res.begin(),boost::bind2nd(std::multiplies<T>(),y));
-  return res;
-}
-  
-template <class T, std::size_t NumDims, class Allocator>
-multi_array<T,NumDims,Allocator> operator*(T x, const multi_array<T,NumDims,Allocator>& y)
-{
-  multi_array<T,NumDims,Allocator> res(y);
-  std::transform(res.begin(),res.end(),res.begin(),boost::bind1st(std::multiplies<T>(),x));
-  return res;
-}
-
-
-template <class T, std::size_t NumDims, class Allocator>
-multi_array<T,NumDims,Allocator> operator*(const multi_array<T,NumDims,Allocator>& x, const multi_array<T,NumDims,Allocator>& y)
-{
-  multi_array<T,NumDims,Allocator> res(x);
-  std::transform(res.begin(),res.end(),y.begin(),res.begin(),std::multiplies<T>());
-  return res;
-}
-
-template <class T, std::size_t NumDims, class Allocator>
-multi_array<T,NumDims,Allocator> operator/(const multi_array<T,NumDims,Allocator>& x, const multi_array<T,NumDims,Allocator>& y)
-{
-  multi_array<T,NumDims,Allocator> res(x);
-  std::transform(res.begin(),res.end(),y.begin(),res.begin(),std::divides<T>());
-  return res;
-}
-
-template <class T, std::size_t NumDims, class Allocator>
-multi_array<T,NumDims,Allocator> operator-(const multi_array<T,NumDims,Allocator>& x, const multi_array<T,NumDims,Allocator>& y)
-{
-  multi_array<T,NumDims,Allocator> res(x);
-  std::transform(res.begin(),res.end(),y.begin(),res.begin(),std::minus<T>());
-  return res;
-}
-
-template <class T, std::size_t NumDims, class Allocator>
-multi_array<T,NumDims,Allocator> operator+(const multi_array<T,NumDims,Allocator>& x, const multi_array<T,NumDims,Allocator>& y)
-{
-  multi_array<T,NumDims,Allocator> res(x);
-  std::transform(res.begin(),res.end(),y.begin(),res.begin(),std::plus<T>());
-  return res;
-}
-
-namespace {
-   template <class T> struct do_sqrt {
-    T operator()(const T& x) const { using std::sqrt; return sqrt(x);}
-  };
-}
-
-using std::sqrt;
-
-template <class T, std::size_t NumDims, class Allocator>
-alps::multi_array<T,NumDims,Allocator> sqrt(const alps::multi_array<T,NumDims,Allocator>& x)
-{
-  multi_array<T,NumDims,Allocator> res(x);
-  std::transform(res.begin(),res.end(),res.begin(),do_sqrt<T>());
-  return res;
-}
-
-} // end namespace
-
-
 //
 // OSIRIS support
 //
@@ -307,16 +57,25 @@ namespace alps {
 
 namespace detail {
 
+/// a helper class to (de)serialize a multi_array
 template <bool OPTIMIZED> struct MultiArrayHelper {};
 
+/// a helper class to (de)serialize a multi_array of non-POD types
 template <> struct MultiArrayHelper<false>
 {
+  /// \brief read the mutli-array from a dump
+  ///
+  /// implemented for non-POD data by iterating over the multi_array elements
   template <class T, std::size_t NumDims, class ALLOCATOR>
   static void read(IDump& dump, boost::multi_array<T, NumDims, ALLOCATOR>& x) 
   {
     for (T* p = x.data(); p != x.data() + x.num_elements(); ++p)
       dump >> *p;
   }
+
+  /// \brief write the mutli-array to a dump
+  ///
+  /// implemented for non-POD data by iterating over the multi_array elements
   template <class T, std::size_t NumDims, class ALLOCATOR>
   static void write(ODump& dump,
                     const boost::multi_array<T, NumDims, ALLOCATOR>& x) 
@@ -326,14 +85,21 @@ template <> struct MultiArrayHelper<false>
   }
 };
 
+/// a helper class to (de)serialize a multi_array of POD types
 template <> struct MultiArrayHelper<true>
 {
+  /// \brief read the mutli-array from a dump
+  ///
+  /// implemented for POD data by calling read_array
   template <class T, std::size_t NumDims, class ALLOCATOR>
   static void read(IDump& dump, boost::multi_array<T, NumDims, ALLOCATOR>& x) 
   {
     dump.read_array(x.num_elements(), x.data());
   }
   
+  /// \brief write the mutli-array to a dump
+  ///
+  /// implemented for non-POD data by calling write_array
   template <class T, std::size_t NumDims, class ALLOCATOR>
   static void write(ODump& dump,
                     const boost::multi_array<T, NumDims, ALLOCATOR>& x) 
@@ -346,12 +112,27 @@ template <> struct MultiArrayHelper<true>
 
 } // namespace alps
 
+#endif
+
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 namespace alps {
 #endif
 
+/// \addtogroup alps
+/// @{
+
+/// \file multi_array.hpp
+/// \brief extensions to boost::multi_array
+///
+/// This header defines some I/O extensions to boost::multi_array and fixes a problem with gcc-3.1 when
+/// alps::multi_array and alps::serialization are used together
+
+
+#ifndef ALPS_WITHOUT_OSIRIS
+
+/// \brief ALPS de-serialization support for boost::multi_array
 template <class T, std::size_t NumDims, class Allocator>
-inline alps::IDump& operator>>(alps::IDump& dump, boost::multi_array<T, NumDims, Allocator>& x)
+alps::IDump& operator>>(alps::IDump& dump, boost::multi_array<T, NumDims, Allocator>& x)
 {
   std::vector<uint32_t> ex;
   dump >> ex;
@@ -362,9 +143,9 @@ inline alps::IDump& operator>>(alps::IDump& dump, boost::multi_array<T, NumDims,
   return dump;
 }
 
-/// serialize a std::vector container
+/// \brief ALPS serialization support for boost::multi_array
 template <class T, std::size_t NumDims, class Allocator>
-inline alps::ODump& operator<<(alps::ODump& dump, const boost::multi_array<T, NumDims, Allocator>& x)
+alps::ODump& operator<<(alps::ODump& dump, const boost::multi_array<T, NumDims, Allocator>& x)
 {
   std::vector<uint32_t> ex(x.shape(), x.shape() + x.num_dimensions());
   dump << ex;
@@ -372,19 +153,15 @@ inline alps::ODump& operator<<(alps::ODump& dump, const boost::multi_array<T, Nu
   return dump;
 }          
 
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-} // end namespace alps
-#endif
-
 #endif // !ALPS_WITHOUT_OSIRIS
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-namespace boost {
+} // end namespace boost
 #endif
 
-/// write a boost::multi_array 2-d array
+/// \brief writes a two-dimensional boost::multi_array to an output stream
 template <class T, class Allocator>
-inline std::ostream& operator<<(std::ostream& out, const boost::multi_array<T, 2, Allocator>& x)
+std::ostream& operator<<(std::ostream& out, const boost::multi_array<T, 2, Allocator>& x)
 {
   std::vector<uint32_t> ex(x.shape(), x.shape() + x.num_dimensions());
   out << "{";
@@ -403,9 +180,9 @@ inline std::ostream& operator<<(std::ostream& out, const boost::multi_array<T, 2
   return out;
 }          
 
-/// write a boost::multi_array 4-d array
+/// \brief writes a four-dimensional boost::multi_array to an output stream
 template <class T, class Allocator>
-inline std::ostream& operator<<(std::ostream& out, const boost::multi_array<T, 4, Allocator>& x)
+std::ostream& operator<<(std::ostream& out, const boost::multi_array<T, 4, Allocator>& x)
 {
   std::vector<uint32_t> ex(x.shape(), x.shape() + x.num_dimensions());
   out << "{";
@@ -436,8 +213,6 @@ inline std::ostream& operator<<(std::ostream& out, const boost::multi_array<T, 4
   return out;
 }          
 
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-} // end namespace boost
-#endif
+/// @}
 
 #endif // ALPS_MULTI_ARRAY_H
