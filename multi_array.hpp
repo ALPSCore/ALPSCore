@@ -27,8 +27,19 @@
 
 /* $Id$ */
 
+/// \addtogroup alps
+/// @{
+
+/// \file multi_array.hpp
+/// \brief extensions to boost::multi_array
+///
+/// This header defines some I/O extensions to boost::multi_array and fixes a problem with gcc-3.1 when
+/// alps::multi_array and alps::serialization are used together
+
 #ifndef ALPS_MULTI_ARRAY_H
 #define ALPS_MULTI_ARRAY_H
+/// @}
+
 
 //=======================================================================
 // This file defines extensions to boost::multi_array
@@ -118,14 +129,6 @@ template <> struct MultiArrayHelper<true>
 namespace alps {
 #endif
 
-/// \addtogroup alps
-/// @{
-
-/// \file multi_array.hpp
-/// \brief extensions to boost::multi_array
-///
-/// This header defines some I/O extensions to boost::multi_array and fixes a problem with gcc-3.1 when
-/// alps::multi_array and alps::serialization are used together
 
 
 #ifndef ALPS_WITHOUT_OSIRIS
@@ -152,6 +155,7 @@ alps::ODump& operator<<(alps::ODump& dump, const boost::multi_array<T, NumDims, 
   alps::detail::MultiArrayHelper<alps::detail::TypeDumpTraits<T>::hasArrayFunction>::write(dump, x);
   return dump;
 }          
+
 
 #endif // !ALPS_WITHOUT_OSIRIS
 
@@ -212,7 +216,5 @@ std::ostream& operator<<(std::ostream& out, const boost::multi_array<T, 4, Alloc
   out << "};";
   return out;
 }          
-
-/// @}
 
 #endif // ALPS_MULTI_ARRAY_H

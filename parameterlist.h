@@ -93,9 +93,6 @@ public:
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 namespace alps {
 #endif
-/// \addtogroup alps
-/// @{
-/// \file parameterlist.h
 
 /// \brief write the parameters to a std::ostream
 ///
@@ -116,42 +113,27 @@ inline std::istream& operator>>(std::istream& is, alps::ParameterList& params) {
   return is;
 }
 
-/// @}
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-} // end namespace alps
-#endif
-
-
 //
 // OSIRIS support
 //
 
 #ifndef ALPS_WITHOUT_OSIRIS
 
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-namespace alps {
-#endif
-/// \addtogroup alps
-/// @{
-/// \file parameterlist.h
-
-/// support for ALPS serialization
+/// \brief support for ALPS serialization
 inline alps::ODump& operator<<(alps::ODump& od,
                                const alps::ParameterList& p)
 { return od << static_cast<std::vector<alps::Parameters> >(p); }
 
-/// support for ALPS deserialization
+/// \brief support for ALPS deserialization
 inline alps::IDump& operator>>(alps::IDump& id,
                                alps::ParameterList& p)
 { return id >> reinterpret_cast<std::vector<alps::Parameters>&>(p); }
 
-/// @}
+#endif // !ALPS_WITHOUT_OSIRIS
+
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // end namespace alps
 #endif
-
-#endif // !ALPS_WITHOUT_OSIRIS
-
 
 //
 // XML support
@@ -183,13 +165,12 @@ private:
   ParametersXMLHandler current_handler_;
 };
 /// @}
+
 } // namespace alps
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 namespace alps {
 #endif
-/// \addtogroup alps
-/// @{
 
 /// \brief XML output of a ParameterList 
 ///
@@ -204,11 +185,10 @@ inline alps::oxstream& operator<<(alps::oxstream& oxs,
   oxs << alps::end_tag("PARAMETERLIST");
   return oxs;
 }
-///@}
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // end namespace alps
 #endif
 
 #endif // !ALPS_WITHOUT_XML
-/// @}
+
 #endif // ALPS_PARSER_PARAMETERLIST_H

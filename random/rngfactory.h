@@ -52,12 +52,14 @@ public:
   { register_type<buffered_rng<RNG> >(name);}
 };
 
+
 /// \brief a factory to create random number generators from their name
 /// 
 /// currently the folloowing two boost generators can be created from their name
 /// - lagged_fibonacci607
 /// - mt19937
 extern RNGFactory rng_factory;
+/// @}
 
 } // end namespace
 

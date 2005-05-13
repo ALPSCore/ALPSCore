@@ -28,20 +28,46 @@
 
 /* $Id$ */
 
-#ifndef ALPS_EXPRESSION_H
-#define ALPS_EXPRESSION_H
+#ifndef ALPS_EXPRESSION_NUMBER_H
+#define ALPS_EXPRESSION_NUMBER_H
 
-#include <alps/expression/expression.h>
-#include <alps/expression/parameterevaluator.h>
-#include <alps/expression/evaluate.h>
+#include <alps/expression/expression_fwd.h>
+#include <alps/expression/evaluate_helper.h>
 
-/// \defgroup expression The ALPS expression library
-/// manipulates and evaluates symbolic expressions
-/// @{
+namespace alps {
+namespace expression {
 
-/// \file alps/expression.h
-/// \brief includes all headers in the alps/expression directory
+template<class T>
+class Number : public Evaluatable<T> {
+public:
+  typedef T value_type;
+  typedef typename alps::type_traits<T>::real_t real_type;
 
-/// @}
+  Number(value_type x) : val_(x) {}
+  value_type value(const Evaluator<T>& =Evaluator<T>(), bool=false) const;
+  bool can_evaluate(const Evaluator<T>& =Evaluator<T>(), bool=false) const { return true; }
+  void output(std::ostream&) const;
+  Evaluatable<T>* clone() const { return new Number<T>(*this); }
+private:
+  value_type val_;
+};
 
-#endif // ! ALPS_EXPRESSION_H
+template<class T>
+typename Number<T>::value_type Number<T>::value(const Evaluator<T>&, bool) const
+{
+  return val_;
+}
+
+template<class T>
+void Number<T>::output(std::ostream& os) const
+{
+  if (evaluate_helper<T>::imag(val_) == 0)
+    os << evaluate_helper<T>::real(val_);
+  else
+    os << val_;
+}
+
+} // end namespace expression
+} // end namespace alps
+
+#endif // ! ALPS_EXPRESSION_IMPL_H

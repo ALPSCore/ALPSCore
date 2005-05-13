@@ -184,9 +184,6 @@ void buffered_rng<RNG>::fill_buffer()
 namespace alps {
 #endif
 
-/// \addtogroup random
-/// @{
-
 /// writes the state of the generator to a std::ostream
 /// \sa buffered_rng_base
 inline std::ostream& operator<<(std::ostream& os, const buffered_rng_base& r) {
@@ -200,8 +197,6 @@ inline std::istream& operator>>(std::istream& is, buffered_rng_base& r) {
   r.read(is);
   return is;
 }
-
-/// @}
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // end namespace alps

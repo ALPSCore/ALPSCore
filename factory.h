@@ -27,8 +27,17 @@
 
 /* $Id$ */
 
+/// \addtogroup alps
+/// @{
+
+/// \file factory.h
+/// \brief object factories
+/// 
+/// This header contains an implementation of an object factory
+
 #ifndef ALPS_FACTORY_H
 #define ALPS_FACTORY_H
+/// @}
 
 #include <alps/config.h>
 #include <boost/shared_ptr.hpp>
@@ -37,33 +46,37 @@
 #include <stdexcept>
 
 namespace alps {
+/// \addtogroup alps
+/// @{
 
 namespace detail {
 
+/// a class to construct objects derived from a given type
+/// \param BASE the abse class for the objects created
 template <class BASE>
 class abstract_creator {
 public:
+/// the type of the abse class
   typedef BASE base_type;
+  /// a virtual function to create an object derived from \c base_type
   virtual base_type* create() const =0;
 };
 
+/// a class to default-onstruct an object
+/// \param T the type of object to be constructed
+/// \param BASE the base class of the object
 template <class BASE, class T>
 class creator : public abstract_creator<BASE>
 {
 public:
+/// the type of the abse class
   typedef BASE base_type;
+  /// create and default-construct an object of type T
   base_type* create() const { return new T();}
 };
 
 }
 
-/// \addtogroup alps
-/// @{
-
-/// \file factory.h
-/// \brief object factories
-/// 
-/// This header contains an implementation of an object factory
 
 /// a factory class
 /// \param KEY the key type used to identify concrete derived types
@@ -134,7 +147,6 @@ private:
 };
 
 /// @}
-
 
 } // end namespace alps
 

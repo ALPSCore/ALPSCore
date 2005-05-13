@@ -29,8 +29,16 @@
 
 /* $Id$ */
 
+/// \addtogroup random
+/// @{
+
+/// \file seed.h
+/// \brief a generic seeding function for random number generators 
+
 #ifndef ALPS_RANDOM_SEED_H
 #define ALPS_RANDOM_SEED_H
+
+// @}
 
 #include <cmath>
 #include <alps/config.h>
@@ -44,11 +52,6 @@
 
 namespace alps {
 
-/// \addtogroup random
-/// @{
-
-/// \file seed.h
-/// \brief a generic seeding function for random number generators 
 
 
 /// \brief a generic seeding function for random number generators

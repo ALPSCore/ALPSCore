@@ -29,17 +29,7 @@
 
 /* $Id$ */
 
-#ifndef ALPS_SRC_ALPS_BITOPS_H
-#define ALPS_SRC_ALPS_BITOPS_H
- 
-#include <alps/config.h>
 
-#ifdef cray
-# include <intrinsics.h>
-#endif
-
-
-namespace alps {
 /// \addtogroup alps
 /// @{
 
@@ -49,6 +39,21 @@ namespace alps {
 /// This header contains bit operations modeled after Cray and Fortran intrinsics.
 /// On Cray machines they are replaced by the intrinsic functions
 /// with the same name.
+
+#ifndef ALPS_SRC_ALPS_BITOPS_H
+#define ALPS_SRC_ALPS_BITOPS_H
+
+/// @}
+
+ 
+#include <alps/config.h>
+
+#ifdef cray
+# include <intrinsics.h>
+#endif
+
+
+namespace alps {
 
 //
 // Cray intrinsic bit operations : gbit, gbits, maskr, popcnt
@@ -141,7 +146,7 @@ inline T ibset(T i, U p) { return i | (1 << p); }
 /// \return the integer i with the bit at position p set to to the specified value
 template <class T, class U, class V>
 inline T ibset(T i, U p, V b) { return i & (~(1 << p)) | ((b & 1) << p); }
+/// @}
 
 } // end namespace alps
-/// @}
 #endif // ALPS_SRC_ALPS_BITOPS_H

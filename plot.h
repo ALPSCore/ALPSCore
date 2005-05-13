@@ -38,8 +38,6 @@
 
 namespace alps {
 
-namespace plot {
-
 /// \addtogroup alps
 /// @{
 
@@ -48,6 +46,10 @@ namespace plot {
 /// 
 /// This header contains classes to create plots in XML format, compatible with the ALPS XML schema for
 /// plot files on the http://xml.comp-phys.org/ web page
+
+/// namespace for plots
+
+namespace plot {
 
 /// \brief An enum to distinguish various plot types
 ///
@@ -205,6 +207,7 @@ private:
   bool show_legend_;
 };   // xmlPlot::Plot
 
+/// @}
 
 /// write a plot to an XML file following the ALPS XML schema for plots on http://xml.comp-phys.org/
 template<class C>

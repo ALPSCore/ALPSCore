@@ -28,16 +28,6 @@
 
 /* $Id$ */
 
-#ifndef ALPS_VECTORMATH_H
-#define ALPS_VECTORMATH_H
-
-#include <alps/config.h>
-#include <alps/functional.h>
-#include <alps/typetraits.h>
-#include <vector>
-
-namespace alps {
-
 /// \addtogroup alps
 /// @{
 
@@ -45,6 +35,20 @@ namespace alps {
 /// \brief basic arithmetic operations on std::vectors
 /// 
 /// This header contains slow but simple implementations of basic arithmetic operations on std::vectors 
+
+#ifndef ALPS_VECTORMATH_H
+#define ALPS_VECTORMATH_H
+
+
+/// @}
+
+#include <alps/config.h>
+#include <alps/functional.h>
+#include <alps/typetraits.h>
+#include <vector>
+
+namespace alps {
+namespace detail {
 
 /// \brief apply a binary function object to two vectors
 /// \param op the binary function object
@@ -80,28 +84,21 @@ std::vector<T> scalar_vector_apply(OP op, S x, const std::vector<T>& y)
   return res;
 }
 
-/// @}
+} // namespace detail
 } // namespace alps
-
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-namespace std {
-#endif
-
-/// \addtogroup alps
-/// @{
 
 /// returns the sum of two vectors
 template <class T>
 std::vector<T> operator+(const std::vector<T>& x, const std::vector<T>& y)
 {
-  return alps::vector_vector_apply(std::plus<T>(),x,y);
+  return alps::detail::vector_vector_apply(std::plus<T>(),x,y);
 }
 
 /// returns the difference of two vectors
 template <class T>
 std::vector<T> operator-(const std::vector<T>& x, const std::vector<T>& y)
 {
-  return alps::vector_vector_apply(std::minus<T>(),x,y);
+  return alps::detail::vector_vector_apply(std::minus<T>(),x,y);
 }
 
 /// returns the negated vector
@@ -119,7 +116,7 @@ std::vector<T> operator-(const std::vector<T>& x)
 template <class T, class S>
 std::vector<T> operator*(S s, const std::vector<T>& v)
 {
-  return alps::scalar_vector_apply(alps::multiplies<S,T,T>(),s,v);
+  return alps::detail::scalar_vector_apply(alps::multiplies<S,T,T>(),s,v);
 }
 
 /// returns the vector scaled by a factor
@@ -128,12 +125,7 @@ std::vector<T> operator*(S s, const std::vector<T>& v)
 template <class T, class S>
 std::vector<T> operator*(const std::vector<T>& v, S s)
 {
-  return alps::scalar_vector_apply(alps::multiplies<S,T,T>(),s,v);
+  return alps::detail::scalar_vector_apply(alps::multiplies<S,T,T>(),s,v);
 }
-
-/// @}
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-} // end namespace std
-#endif
 
 #endif // ALPS_VECTORMATH_H

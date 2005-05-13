@@ -74,11 +74,12 @@ struct vector_traits<std::valarray<T> > {
   typedef const T* const_iterator; 
   typedef std::size_t size_type;
 };
-/// @}
 
+/// \brief the namespace for vector operations.
+///  
+/// This will hopefully soon be replaced by a nice Boost library
 namespace vectorops {
-/// \addtogroup alps
-/// @{
+/// @}
 
 /// returns the size of a vector
 template <class C>
@@ -114,7 +115,6 @@ inline T scalar_product(const std::valarray<T>& c1, const std::valarray<T>& c2)
 {
   return std::inner_product(data(c1),data(c1)+c1.size(),data(c2),T(), std::plus<T>(),conj_mult<T>());
 }
- /// @}
 
 } // namespace vectorops
 } // namespace alps

@@ -27,9 +27,20 @@
 *****************************************************************************/
 
 /* $Id$ */
+/// \addtogroup alps
+/// @{
+
+/// \file math.hpp
+/// \brief basic math functions
+///
+/// This header contains mathematical functions not present in the standard
+/// or boost libraries.
+
 
 #ifndef ALPS_MATH_HPP
 #define ALPS_MATH_HPP
+
+/// @}
 
 #include <alps/config.h>
 #include <alps/typetraits.h>
@@ -61,15 +72,6 @@ struct is_zero_float<false>
   static bool is_zero(T x) { return x == T(0.); }
 };
 }
-
-/// \addtogroup alps
-/// @{
-
-/// \file math.hpp
-/// \brief basic math functions
-///
-/// This header contains mathematical functions not present in the standard
-/// or boost libraries.
 
 /// \brief calculate the binomial coefficient
 /// \return the binomial coefficient l over n
@@ -139,7 +141,6 @@ template<class T>
 inline std::complex<T> round(const std::complex<T>& x)
 { return std::complex<T>(round(x.real()), round(x.imag())); }
 
-/// @}
 } // end namespace
 
 #endif // ALPS_MATH_HPP

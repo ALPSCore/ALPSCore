@@ -28,20 +28,52 @@
 
 /* $Id$ */
 
-#ifndef ALPS_EXPRESSION_H
-#define ALPS_EXPRESSION_H
+#ifndef ALPS_EXPRESSION_EXPRESSION_FWD_H
+#define ALPS_EXPRESSION_EXPRESSION_FWD_H
 
-#include <alps/expression/expression.h>
-#include <alps/expression/parameterevaluator.h>
-#include <alps/expression/evaluate.h>
+#include <alps/config.h>
 
-/// \defgroup expression The ALPS expression library
-/// manipulates and evaluates symbolic expressions
-/// @{
+#include <alps/cctype.h>
+#include <alps/math.hpp>
+#include <alps/parameters.h>
+#include <alps/random.h>
+#include <alps/parser/parser.h>
+#include <alps/typetraits.h>
+#include <alps/vectorio.h>
 
-/// \file alps/expression.h
-/// \brief includes all headers in the alps/expression directory
+#include <boost/call_traits.hpp>
+#include <boost/smart_ptr.hpp>
+#include <boost/throw_exception.hpp>
+#include <boost/type_traits/is_arithmetic.hpp>
+#include <boost/utility/enable_if.hpp>
+#include <boost/random.hpp>
 
-/// @}
+#include <cmath>
+#include <complex>
+#include <string>
+#include <vector>
+#include <stdexcept>
 
-#endif // ! ALPS_EXPRESSION_H
+namespace alps {
+namespace expression {
+
+template<class T = std::complex<double> > class Expression;
+template<class T = std::complex<double> > class Term;
+template<class T = std::complex<double> > class Factor;
+template<class T = std::complex<double> > class Evaluator;
+template<class T = std::complex<double> > class ParameterEvaluator;
+template <class T> class Number;
+template <class T> class Symbol;
+template <class T> class Block;
+
+}
+
+typedef expression::Expression<> Expression;
+typedef expression::Term<> Term;
+typedef expression::Factor<> Factor;
+typedef expression::Evaluator<> Evaluator;
+typedef expression::ParameterEvaluator<> ParameterEvaluator;
+
+}
+
+#endif

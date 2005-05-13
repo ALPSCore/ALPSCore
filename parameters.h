@@ -170,7 +170,7 @@ public:
   /// \brief returns the value or a default
   /// \param k the key (name) of the parameter
   /// \param v the default value
-  /// \return if a parameter with the given name \a k exists, its value is returned, otherwise the default \v
+  /// \return if a parameter with the given name \a k exists, its value is returned, otherwise the default v
   value_type value_or_default(const key_type& k, const value_type& v) const {
     return defined(k) ? (*this)[k] : v;
   }
@@ -245,8 +245,6 @@ private:
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 namespace alps {
 #endif
-/// \addtogroup alps
-/// @{
 
 /// write parameters in text-form to a std::ostream
 std::ostream& operator<<(std::ostream& os, const alps::Parameters& p);
@@ -257,21 +255,12 @@ inline std::istream& operator>>(std::istream& is, alps::Parameters& p)
   p.parse(is);
   return is;
 }
-/// @}
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-} // end namespace alps
-#endif
 
+#ifndef ALPS_WITHOUT_OSIRIS
 
 //
 // OSIRIS support
 //
-
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-namespace alps {
-#endif
-/// \addtogroup alps
-/// @{
 
 /// ALPS serialization of a parameter value
 inline alps::ODump& operator<<(alps::ODump& od, const alps::Parameter& p)
@@ -307,7 +296,9 @@ inline alps::IDump& operator>>(alps::IDump& id, alps::Parameters& p)
   }
   return id;
 }
-/// @}
+
+#endif
+
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // end namespace alps
 #endif
@@ -361,9 +352,6 @@ private:
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 namespace alps {
 #endif
-/// \addtogroup alps
-/// @{
-
 /// \brief XML output of a parameter value 
 ///
 /// follows the schema on http://xml.comp-phys.org/
@@ -390,7 +378,6 @@ inline alps::oxstream& operator<<(alps::oxstream& oxs,
   oxs << alps::end_tag("PARAMETERS");
   return oxs;
 }
-/// @}
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // end namespace alps
 #endif
