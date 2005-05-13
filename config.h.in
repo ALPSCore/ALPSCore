@@ -85,6 +85,9 @@
 // Libraries
 //
 
+// Boost C++ version
+#undef ALPS_BOOST_VERSION
+
 // Define to 1 if you have the PTHREAD library
 #undef ALPS_HAVE_PTHREAD
 

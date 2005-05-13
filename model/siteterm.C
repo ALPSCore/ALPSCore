@@ -95,17 +95,19 @@ std::set<std::string> alps::SiteOperator::operator_names() const
 {
   std::set<std::string> names;
   boost::regex expression("^(.*)\\(.*\\)$");
-  boost::cmatch what;
+  boost::smatch what;
   alps::Expression ex(term_);
   ex.flatten();
   ex.simplify();
-  for (Expression::term_iterator tit=ex.terms().first ; tit!=ex.terms().second;++tit)
-    for (Term::factor_iterator fit=tit->factors().first ; fit!=tit->factors().second;++fit)
-      if (boost::regex_match(boost::lexical_cast<std::string>(*fit).c_str(), what, expression))
-        names.insert(std::string(what[1].first,what[1].second));
+  for (Expression::term_iterator tit = ex.terms().first;
+       tit != ex.terms().second; ++tit)
+    for (Term::factor_iterator fit = tit->factors().first;
+         fit != tit->factors().second; ++fit) {
+      std::string name = boost::lexical_cast<std::string>(*fit);
+      if (boost::regex_match(name, what, expression))
+        names.insert(std::string(what[1].first, what[1].second));
+    }
   return names;
 }
-
- 
  
 #endif
