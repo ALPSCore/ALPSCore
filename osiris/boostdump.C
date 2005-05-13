@@ -31,13 +31,16 @@
 #include <alps/osiris.h>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/impl/basic_text_iarchive.ipp>
-#include <boost/archive/impl/text_iarchive_impl.ipp>
-#include <boost/archive/impl/basic_text_oarchive.ipp>
-#include <boost/archive/impl/text_oarchive_impl.ipp>
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
+
+#if (ALPS_BOOST_VERSION >= 133)
+# include <boost/archive/impl/text_iarchive_impl.ipp>
+# include <boost/archive/impl/basic_text_iarchive.ipp>
+# include <boost/archive/impl/text_oarchive_impl.ipp>
+# include <boost/archive/impl/basic_text_oarchive.ipp>
+#endif
 
 int main()
 {
