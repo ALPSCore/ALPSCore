@@ -187,8 +187,8 @@ public:
      inhomogeneous_edge_type_map_(get_or_default(edge_index_t(),const_graph(),0)),
      distances_calculated_(false)
   {
-    d_.inhomogeneous_vertices(graph(),inhomogeneous_vertex_type_map_);
-    d_.inhomogeneous_edges(graph(),inhomogeneous_edge_type_map_);
+    d_.disorder_vertices(graph(),inhomogeneous_vertex_type_map_);
+    d_.disorder_edges(graph(),inhomogeneous_edge_type_map_);
   }
   
   
