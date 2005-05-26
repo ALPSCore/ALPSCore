@@ -113,7 +113,6 @@ double RemoteWorker::work_done() const
   return ww;
 }
 
-
 TaskInfo RemoteWorker::get_info() const
 {
   // send message to remote process

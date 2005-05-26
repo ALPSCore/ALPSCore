@@ -95,6 +95,9 @@ public:
   virtual void run() = 0; // run for some time (in seconds)
   virtual void halt() = 0; // halt all runs, simulation is finished        
 
+  /* astreich, 05/16 */
+  virtual void setErrorLimit(std::string name, double value);
+      
   virtual double work() const {return 1.;}; // return amount of work needed
   virtual bool finished(double&) const = 0; // check if task is finished
   virtual bool handle_message(const Process& master,int tag); // deal with messages
@@ -110,15 +113,22 @@ public:
 protected:
   AbstractWorker* theWorker; // the run running on this CPU
   ProcessList where; // the list of work processes for this simulation
+  
+  /* astreich, 05/16 */
+  bool use_error_limit;
+  std::string obs_name_for_limit;
+  double error_limit;
+  
 };
-
 
 class Task : public AbstractTask
 {
 public:
   static void print_copyright(std::ostream&);
   
-  Task(const ProcessList&, const boost::filesystem::path&);        
+  Task(const ProcessList&, const boost::filesystem::path&);    
+  Task(const ProcessList&, const alps::Parameters&);
+    
   ~Task();
   
   virtual void construct(); // needs to be called to finish construction
@@ -142,6 +152,8 @@ public:
   void halt();
   double work() const; // return amount of work needed
 
+//  void setErrorLimit(std::string, double);
+  
 protected:
   virtual void write_xml_header(alps::oxstream&) const;
   virtual void write_xml_trailer(alps::oxstream&) const;
@@ -170,10 +182,15 @@ protected:
   };
 
 public:
-  WorkerTask(const ProcessList&, const boost::filesystem::path&);        
+  WorkerTask(const ProcessList&, const boost::filesystem::path&);      
+//  /* astreich 04/25 */
+//  WorkerTask(const ProcessList&, const alps::Parameters&);
+    
   ~WorkerTask();
   
   void construct(); // needs to be called to finish construction
+  /* astreich 04/27 */
+//  void construct_NF(); // needs to be called to finish construction
 
   void add_process(const Process&);
   void delete_process(const Process&);
@@ -183,7 +200,22 @@ public:
   bool finished(double&) const; // check if simulation is finished
   void halt();
   double work() const; // return amount of work needed
+  /* astreich, 05/13 */
+//  double work(const char[],const double);
   double work_done() const; // return amount of work done
+//  /* astreich, 05/13 */
+//  double work_done(const char[], const double);
+  
+  /* astreich, 05/16 */
+  virtual void setErrorLimit(std::string name, double value) {
+    obs_name_for_limit = name;
+    error_limit = value;
+    use_error_limit = true;
+    // set error limit to workers
+    for (int i=0; i<runs.size();i++)
+      runs[i]->setErrorLimit(name,value);
+  }
+  
   std::vector<AbstractWorker*> runs; // the list of all runs
 
 protected:

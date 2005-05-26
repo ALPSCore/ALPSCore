@@ -97,6 +97,6 @@ Options::Options(int argc, char** argv)
     boost::throw_exception(std::runtime_error("Minimum time between checks larger than maximum time"));
   }
 }
-
+    
 } // namespace scheduler
 } // namespace alps

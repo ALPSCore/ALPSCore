@@ -40,6 +40,9 @@
 #include <fstream>
 #include <stdexcept>
 
+/* astreich */
+#define ALPS_TRACE
+
 namespace alps {
 namespace scheduler {
 
@@ -170,15 +173,18 @@ void WorkerTask::construct() // delayed until child class is fully constructed
     runs[i]->set_parameters(parms);
 }
         
-        
 // start all runs which are active
 void WorkerTask::start()
 {
   if(!started()) {
     Task::start();
     for (int i=0; i<runs.size();i++)
-      if(runs[i] && workerstatus[i] > RunNotExisting && workerstatus[i] < RunOnDump)
+      if(runs[i] && workerstatus[i] > RunNotExisting && workerstatus[i] < RunOnDump) {
+        /* astreich, 05/18 */
+        if (use_error_limit) 
+          runs[i]->setErrorLimit(obs_name_for_limit, error_limit);
         runs[i]->start_worker();
+      }
   }
 }
 
@@ -228,7 +234,6 @@ void WorkerTask::add_process(const Process& p)
     workerstatus[j] = RemoteRun;
   }
 }
-
 
 // remove one run : hope that a checkpoint was created before!!!
 void WorkerTask::delete_process(const Process& p)
@@ -294,14 +299,12 @@ bool WorkerTask::finished(double& more_time) const
   return false;
 }
 
-
 // do some work on the local run
 void WorkerTask::dostep()
 {
   if(theWorker)
     dynamic_cast<Worker&>(*theWorker).run();
 }
-
 
 // halt all active runs
 void WorkerTask::halt()
@@ -318,7 +321,7 @@ double WorkerTask::work_done()  const
 {
   double w=0.;
   ProcessList where_master;
-
+  
   // add runs stored locally
   if(runs.size()) {
     for (int i=0;i<runs.size();i++) {
@@ -349,7 +352,7 @@ double WorkerTask::work_done()  const
   return w;
 }
 
-
+/* changed by astreich, 05/16 */
 double WorkerTask::work() const
 {
   if (finished_)

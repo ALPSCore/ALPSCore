@@ -83,7 +83,11 @@ public:
 class MCSimulation : public WorkerTask
 {        
 public:
-  MCSimulation(const ProcessList& w,const boost::filesystem::path& p) : WorkerTask(w,p) { construct();}        
+  MCSimulation(const ProcessList& w, const boost::filesystem::path& p) 
+      : WorkerTask(w,p) { 
+    construct();
+  }
+  
   ObservableSet get_measurements(bool compact=false) const;
   MCSimulation& operator<<(const Observable& obs);
 private:

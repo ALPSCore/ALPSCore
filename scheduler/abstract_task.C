@@ -44,6 +44,14 @@ AbstractTask::AbstractTask(const ProcessList& w)
 AbstractTask::AbstractTask()
 {
 }
+void AbstractTask::setErrorLimit(std::string name, double value) {
+  obs_name_for_limit = name;
+  error_limit = value;
+  use_error_limit = true;
+  // set error limit to worker
+  if (theWorker)    
+    theWorker->setErrorLimit(name,value);
+}
 
 void AbstractTask::add_processes(const ProcessList& p)
 {

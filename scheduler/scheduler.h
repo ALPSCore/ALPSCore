@@ -59,14 +59,25 @@ void print_copyright(std::ostream& out);
 class Scheduler
 {
 public:  
-  Scheduler(const Options&, const Factory&);                
+  Scheduler(const Options&, const Factory&);    
+
   virtual ~Scheduler() {};
 
   virtual int run(); // start the scheduler
 
+  /* astreich, 05/13 */
+  virtual void setErrorLimit(std::string name, double limit) {
+    obs_name_for_limit = name;
+    error_limit = limit;
+    use_error_limit = true;
+    if (theTask)
+      theTask->setErrorLimit(name,limit);
+  }
+  
   // USER OBJECT CREATION functions
   AbstractTask* make_task(const ProcessList&,const boost::filesystem::path&);
   AbstractTask* make_task(const boost::filesystem::path&);
+  
   AbstractWorker* make_worker(const ProcessList&,const Parameters&,int=0);
   AbstractWorker* make_worker(const Parameters&);
 
@@ -80,6 +91,11 @@ public:
 protected:
   AbstractTask* theTask; //the simulation running on this node
   boost::filesystem::path defaultpath;
+  
+  /* astreich, 05/13 */
+  bool use_error_limit;
+  std::string obs_name_for_limit;
+  double error_limit;
 };
 
 //=======================================================================
@@ -101,8 +117,12 @@ public:
   };
 
   MasterScheduler(const Options&,const Factory&);
+
   ~MasterScheduler();
   virtual int run()=0; // start the scheduler
+
+  /* astreich, 05/16 */
+  virtual void setErrorLimit(std::string name, double limit);
 
 protected: 
   ProcessList processes;          // all available processes
@@ -149,6 +169,8 @@ class SingleScheduler : public MasterScheduler
 {
 public:
   SingleScheduler(const Options&,const Factory&);
+  
+  //  virtual void setErrorLimit(std::string name,double value);
   int run(); // start scheduler
 };
 
@@ -178,7 +200,6 @@ class MPPScheduler : public MasterScheduler
   public:
 
   MPPScheduler(const Options&,const Factory&);
-  
   int run(); // start scheduler
 };
 
@@ -188,6 +209,9 @@ class MPPScheduler : public MasterScheduler
 
 // create a scheduler, I want to do some simulations
 int start(int,char**,const Factory&);
+
+/* astreich, 05/12 */
+int start(int,char**,const Factory&, std::string, double);
 
 // create a scheduler, I just want to evaluate some simulations
 void init(const Factory&);

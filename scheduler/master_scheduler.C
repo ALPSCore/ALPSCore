@@ -92,6 +92,18 @@ MasterScheduler::MasterScheduler(const Options& opt,const Factory& p)
   }
 }
 
+void MasterScheduler::setErrorLimit(std::string name, double limit) {
+    Scheduler::setErrorLimit(name,limit);
+    obs_name_for_limit = name;
+    error_limit = limit;
+    use_error_limit = true;
+    // set Error Limit in all tasks, too
+    for (int i=0; i<tasks.size();i++) {
+      if (tasks[i] != 0)
+        tasks[i]->setErrorLimit(name,limit);
+    }    
+}
+        
 void MasterScheduler::parse_job_file(const boost::filesystem::path& filename)
 {
   boost::filesystem::ifstream infile(filename);
@@ -176,6 +188,7 @@ void MasterScheduler::checkpoint()
   bool make_backup=boost::filesystem::exists(outfilepath);
   boost::filesystem::path filename=outfilepath;
   boost::filesystem::path dir=outfilepath.branch_path();
+  
   if (make_backup)
     filename=dir/(filename.leaf()+".bak");
   { // scope for out

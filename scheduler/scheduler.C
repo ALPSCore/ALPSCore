@@ -32,6 +32,7 @@
 
 #include <alps/scheduler/scheduler.h>
 #include <alps/scheduler/types.h>
+#include <alps/parameters.h>
 #include <alps/config.h>
 #include <alps/osiris.h>
 #include <alps/copyright.h>
@@ -67,6 +68,7 @@ int Scheduler::run() // a slave scheduler
   std::string filename;
   ProcessList where;
   IMPDump message;
+  Parameters param;
   
   do {
     /*switch(sig()) {
@@ -123,7 +125,7 @@ int Scheduler::run() // a slave scheduler
             message >> where >> filename;
             theTask = make_task(where,boost::filesystem::path(filename,boost::filesystem::native));
             break;
-                  
+          
           default:
             boost::throw_exception( std::logic_error("received invalid message in Scheduler::run()"));
         }                
@@ -158,12 +160,12 @@ int Scheduler::run() // a slave scheduler
   } while(true) ;// forever
 }
 
-Scheduler::Scheduler (const Options& opt, const Factory& p)
+Scheduler::Scheduler(const Options& opt, const Factory& p)
   : proc(p), programname(opt.programname), theTask(0)
 {
   theScheduler=this;
+  use_error_limit = false;
 }
-
 
 // load/create tasks and runs
 
@@ -247,6 +249,44 @@ int start(int argc, char** argv, const Factory& p)
     delete theScheduler; 
   }
   
+  comm_exit();
+  return res;
+}
+
+/* astreich, 05/12 */
+/* initialize a scheduler for real work, parsing the command line.
+ * "limit" denotes the maximal tolerated error for the observable "name".
+ */
+int start(int argc, char** argv, const Factory& p, std::string name, double limit)
+{
+  comm_init(&argc,&argv);
+  if (is_master() || !runs_parallel()) {
+    p.print_copyright(std::cout);
+    alps::scheduler::print_copyright(std::cout);
+    alps::print_copyright(std::cout);
+  }
+  
+  if (limit <=0) {
+    std::cerr << "Error limit of " << limit << " for observable " << name
+              << " will never be reached, aborting.\n";
+    return -1;
+  }
+    
+  Options opt(argc, argv);
+  int res = 0;
+  
+  if (opt.valid) {
+    if (!runs_parallel())
+      theScheduler = new SingleScheduler(opt,p);
+    else if (is_master())
+      theScheduler = new MPPScheduler(opt,p);
+    else
+      theScheduler = new Scheduler(opt,p);
+    std::cerr << "\nError limit for observable " << name << " is set to " << limit << "\n";
+    theScheduler->setErrorLimit(name,limit);
+    res = theScheduler->run();
+    delete theScheduler;
+  }
   comm_exit();
   return res;
 }

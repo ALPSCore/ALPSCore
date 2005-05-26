@@ -59,7 +59,7 @@ namespace {
 class AbstractWorker
 {
 public:                
-  AbstractWorker() {};
+  AbstractWorker() { use_error_limit = false; };
   virtual ~AbstractWorker() {};
   virtual void save_to_file(const boost::filesystem::path&) const=0;
   virtual void load_from_file(const boost::filesystem::path&)=0;
@@ -69,6 +69,19 @@ public:
   virtual void start_worker() = 0;
   virtual void halt_worker() = 0;
   virtual bool handle_message(const Process& runmaster,int32_t tag) =0;
+ 
+  /* astreich, 05/17 */
+void setErrorLimit(std::string name, double value) {
+    obs_name_for_limit = name;
+    error_limit = value;
+    use_error_limit = true;
+  }
+
+protected:
+  bool use_error_limit;
+  std::string obs_name_for_limit;
+  double error_limit;
+ 
 };
 
 //=======================================================================
@@ -104,6 +117,7 @@ public:
   bool handle_message(const Process& runmaster,int32_t tag);
   virtual void dostep();
   double work_done() const;
+    
 protected:
   int32_t version;
   int32_t user_version;
