@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -39,6 +39,9 @@
 
 /// \defgroup xml The ALPS XML library
 /// \brief contains functions and classes to parse and write XML files
+/// 
+/// The parser library contains simple helper functions for a very primitive XML parser. 
+/// We aim to replace it with a good C++ XML parser as soon as one is available.
 /// @{
 
 /// \file xml.h

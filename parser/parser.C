@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>,
 *                            Prakash Dayal <prakash@comp-phys.org>
 *
@@ -58,7 +58,7 @@ std::string parse_parameter_name(std::istream& in)
   char c;
   in >> c;
   std::string name;
-  while (detail::is_identifier_char(c) || c=='[') {
+  while (detail::is_identifier_char(c) || c=='\''  || c=='[') {
     name+=c;
         if (c=='[') 
           do {
@@ -97,12 +97,14 @@ void check_character(std::istream& in, char test, const std::string& error)
 // private functions
 namespace detail {
 
+/// reads a string, enclosed in double quotes "
 std::string parse_string(std::istream& in)
 {
   check_character(in,'"',"string expected as attribute value");
   return read_until(in,'"');
 }
 
+/// reads any legal XML tag or atrribute name
 std::string xml_parse_name(std::istream& in)
 {
  std::string the_string;
@@ -123,6 +125,7 @@ std::string xml_parse_name(std::istream& in)
   return the_string;
 }
 
+/// parses an XML attribute 
 void xml_read_attribute(std::istream& in, std::string& name, std::string& value)
 {
   name=xml_parse_name(in);
@@ -132,23 +135,27 @@ void xml_read_attribute(std::istream& in, std::string& name, std::string& value)
   value=parse_string(in);
 }
 
+/// parses the opening < and the name of a tag
 std::string xml_read_tag(std::istream& in)
 {
   check_character(in,'<',"XML tag expected");
   return xml_parse_name(in);
 }
 
+/// checks for a closing > of a tag
 void xml_close_tag(std::istream& in)
 {
   check_character(in,'>',"closing > of tag expected");
 }
 
+/// checks for a closing /> of a tag
 void xml_close_single_tag(std::istream& in)
 {
   check_character(in,'/',"closing /> of tag expected");
   check_character(in,'>',"closing /> of tag expected");
 }
 
+/// skips over an XML comment or processing instruction
 void skip_comment(std::istream& in)
 {
   char c;
