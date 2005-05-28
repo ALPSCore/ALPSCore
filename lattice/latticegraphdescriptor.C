@@ -59,13 +59,8 @@ LatticeGraphDescriptor::LatticeGraphDescriptor(const XMLTag& intag,
 {
   XMLTag tag(intag);
 
-  for (XMLTag::AttributeMap::const_iterator it=tag.attributes.begin();
-       it!=tag.attributes.end(); ++it) {
-    if(it->first=="name")
-      name_=it->second;
-    else
-      boost::throw_exception(std::runtime_error("illegal attribute " + it->first + " in <LATTICEGRAPH> element"));
-  }      
+  name_ = tag.attributes["name"];
+
   if (tag.type ==XMLTag::SINGLE) 
     boost::throw_exception(std::runtime_error("no lattice specified in <LATTICEGRAPH> element"));
   tag=parse_tag(p);
