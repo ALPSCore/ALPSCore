@@ -299,12 +299,7 @@ void XMLParser::parse(std::istream& in)
       XMLTag tag = parse_tag(in);
       if (tag.type == XMLTag::OPENING || tag.type== XMLTag::SINGLE) {
         // start tag
-        // map to attribute list
-        XMLAttributes attributes;
-        for (XMLTag::AttributeMap::const_iterator it = tag.attributes.begin();
-             it != tag.attributes.end(); ++it)
-          attributes.push_back(XMLAttribute(it->first, it->second));
-        handler_.start_element(tag.name, attributes, xml::element);
+        handler_.start_element(tag.name, tag.attributes, xml::element);
       }
       if (tag.type == XMLTag::CLOSING || tag.type== XMLTag::SINGLE) {
         // end tag
@@ -314,15 +309,11 @@ void XMLParser::parse(std::istream& in)
       }
       if (tag.type == XMLTag::PROCESSING) {
         // processing instruction
-        XMLAttributes attributes;
-        for (XMLTag::AttributeMap::const_iterator it = tag.attributes.begin();
-             it != tag.attributes.end(); ++it)
-          attributes.push_back(XMLAttribute(it->first, it->second));
         if (tag.name == "xml-stylesheet") {
-          handler_.start_element(tag.name, attributes, xml::stylesheet);
+          handler_.start_element(tag.name, tag.attributes, xml::stylesheet);
           handler_.end_element(tag.name, xml::stylesheet);
         } else {
-          handler_.start_element(tag.name, attributes,
+          handler_.start_element(tag.name, tag.attributes,
                                  xml::processing_instruction);
           handler_.end_element(tag.name, xml::processing_instruction);
         }
