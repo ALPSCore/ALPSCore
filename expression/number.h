@@ -33,6 +33,7 @@
 
 #include <alps/expression/expression_fwd.h>
 #include <alps/expression/evaluate_helper.h>
+#include <boost/call_traits.hpp>
 
 namespace alps {
 namespace expression {
@@ -43,7 +44,7 @@ public:
   typedef T value_type;
   typedef typename alps::type_traits<T>::real_t real_type;
 
-  Number(value_type x) : val_(x) {}
+  Number(typename boost::call_traits<value_type>::param_type x) : val_(x) {}
   value_type value(const Evaluator<T>& =Evaluator<T>(), bool=false) const;
   bool can_evaluate(const Evaluator<T>& =Evaluator<T>(), bool=false) const { return true; }
   void output(std::ostream&) const;

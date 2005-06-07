@@ -27,6 +27,7 @@
 *****************************************************************************/
 
 /* $Id$ */
+
 /// \addtogroup alps
 /// @{
 
@@ -55,13 +56,21 @@
 
 namespace alps {
 namespace detail {
+
 /// implementation detail to test whether a number is close enough to zero to truncate it, version for floating point numbers
 template <bool F>
 struct is_zero_float
 {
   template <class T>
-  static bool is_zero(T x) { return std::abs(x) < 1e-50//std::sqrt(std::numeric_limits<T>::min())
-  ; }
+  static bool is_zero(T x, typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0)
+  {
+    return std::abs(x) < 1e-50; // std::sqrt(std::numeric_limits<T>::min())
+  }
+  template <class T>
+  static bool is_zero(const T& x, typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0)
+  {
+    return std::abs(x) < 1e-50; // std::sqrt(std::numeric_limits<T>::min())
+  }
 };
 
 /// implementation class to test whether a number is close enough to zero to truncate it, version for integers
@@ -69,9 +78,14 @@ template <>
 struct is_zero_float<false>
 {
   template <class T>
-  static bool is_zero(T x) { return x == T(0.); }
+  static bool is_zero(T x, typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0)
+  { return x == T(0.); }
+  template <class T>
+  static bool is_zero(const T& x, typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0)
+  { return x == T(0.); }
 };
-}
+
+} // end namespace detail
 
 /// \brief calculate the binomial coefficient
 /// \return the binomial coefficient l over n
@@ -93,7 +107,11 @@ inline std::size_t binomial(std::size_t l, std::size_t n)
 /// \return the square of the absolute value of the argument
 
 template <class T>
-inline typename type_traits<T>::norm_t abs2(T x) {
+inline typename type_traits<T>::norm_t abs2(T x, typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0) {
+  return std::abs(x)*std::abs(x);        
+}
+template <class T>
+inline typename type_traits<T>::norm_t abs2(const T& x, typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0) {
   return std::abs(x)*std::abs(x);        
 }
 
@@ -102,22 +120,28 @@ inline T abs2(const std::complex<T>& x) {
   return x.real()*x.real()+x.imag()*x.imag();
 }
 
-
 /// \brief checks if a number is zero
 /// in case of a floating point number, absolute values less than 1e-50 count as zero
 /// \return returns true if the value is zero
 template<class T>
-inline bool is_zero(T x) { return detail::is_zero_float<boost::is_float<T>::value>::is_zero(x); }
+inline bool is_zero(T x, typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0)
+{ return detail::is_zero_float<boost::is_float<T>::value>::is_zero(x); }
 
 template<class T>
-inline bool is_zero(std::complex<T> x) { return is_zero(std::abs(x)); }
+inline bool is_zero(const T& x, typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0)
+{ return detail::is_zero_float<boost::is_float<T>::value>::is_zero(x); }
 
+template<class T>
+inline bool is_zero(const std::complex<T>& x) { return is_zero(std::abs(x)); }
  
 /// \brief checks if a number is not zero
 /// in case of a floating point number, absolute values less than 1e-50 count as zero
 /// \return returns true if the value is not zero
 template<class T>
-inline bool is_nonzero(T x) { return !is_zero(x); }
+inline bool is_nonzero(T x, typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0) { return !is_zero(x); }
+
+template<class T>
+inline bool is_nonzero(const T& x, typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0) { return !is_zero(x); }
 
 //
 // round
@@ -134,7 +158,11 @@ inline T round(T x, typename boost::enable_if<boost::is_float<T> >::type* = 0)
 /// \brief rounding of non-floating point numbers is a no-op
 /// \return the unmodified argument
 template<class T>
-inline T round(T x, typename boost::disable_if<boost::is_float<T> >::type* = 0)
+inline T round(T x, typename boost::disable_if<boost::is_float<T> >::type* = 0, typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0)
+{ return x; }
+
+template<class T>
+inline T round(const T& x, typename boost::disable_if<boost::is_float<T> >::type* = 0, typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0)
 { return x; }
 
 template<class T>

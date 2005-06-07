@@ -33,6 +33,7 @@
 
 #include <alps/expression/expression_fwd.h>
 #include <alps/expression/term.h>
+#include <boost/call_traits.hpp>
 
 namespace alps {
 namespace expression {
@@ -47,7 +48,8 @@ public:
   Expression() {}
   Expression(const std::string& str) { parse(str); }
   Expression(std::istream& in) { parse(in); }
-  Expression(value_type val) : terms_(1,Term<T>(val)) {}
+  Expression(typename boost::call_traits<value_type>::param_type val)
+    : terms_(1,Term<T>(val)) {}
 #ifndef BOOST_NO_SFINAE
   template<class U>
   Expression(U val, typename boost::enable_if<boost::is_arithmetic<U> >::type* = 0) : terms_(1,Term<T>(value_type(val))) {}

@@ -60,7 +60,6 @@ U numeric_cast(T x, typename boost::enable_if<boost::is_arithmetic<T> >::type* =
 {
   return numeric_cast_helper<U,T>::value(x);
 }
-
 template<typename U, typename T>
 U numeric_cast(const T& x, typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0)
 {
@@ -89,7 +88,7 @@ template<class U>
 struct evaluate_helper<Expression<U> >
 {
   typedef U value_type;
-  static Expression<U> value(const Term<U> ex, const Evaluator<U>& ev=Evaluator<U>(), bool isarg=false) {
+  static Expression<U> value(const Term<U>& ex, const Evaluator<U>& ev=Evaluator<U>(), bool isarg=false) {
     Term<U> t(ex);
     t.partial_evaluate(ev,isarg);
     return t;

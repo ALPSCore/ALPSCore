@@ -31,7 +31,9 @@
 #ifndef ALPS_VECTORTRAITS_H
 #define ALPS_VECTORTRAITS_H
 
-#include <alps/config.h>
+#ifdef HAVE_CONFIG_H
+# include <alps/config.h>
+#endif
 #include <alps/typetraits.h>
 #include <alps/functional.h>
 
@@ -66,6 +68,8 @@ struct vector_traits
   typedef typename CONTAINER::size_type size_type;
 };
 
+#ifdef ALPS_HAVE_VALARRAY
+
 /// specialization of vector_traits to std::valarray<T>
 template <class T> 
 struct vector_traits<std::valarray<T> > {
@@ -74,6 +78,8 @@ struct vector_traits<std::valarray<T> > {
   typedef const T* const_iterator; 
   typedef std::size_t size_type;
 };
+
+#endif
 
 /// \brief the namespace for vector operations.
 ///  
@@ -109,12 +115,16 @@ inline typename vector_traits<C>::value_type scalar_product(const C& c1, const C
                                std::plus<typename C::value_type>(),conj_mult<typename C::value_type>());
 }
 
+#ifdef ALPS_HAVE_VALARRAY
+
 /// \overload
 template <class T>
 inline T scalar_product(const std::valarray<T>& c1, const std::valarray<T>& c2) 
 {
   return std::inner_product(data(c1),data(c1)+c1.size(),data(c2),T(), std::plus<T>(),conj_mult<T>());
 }
+
+#endif
 
 } // namespace vectorops
 } // namespace alps

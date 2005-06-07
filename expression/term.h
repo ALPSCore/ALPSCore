@@ -33,6 +33,7 @@
 
 #include <alps/expression/expression_fwd.h>
 #include <alps/expression/factor.h>
+#include <boost/call_traits.hpp>
 
 namespace alps {
 namespace expression {
@@ -45,7 +46,8 @@ public:
 
   Term(std::istream& is, bool negate = false);
   Term() : is_negative_(false) {}
-  Term(value_type x) : is_negative_(false), terms_(1,Factor<T>(x)) {}
+  Term(typename boost::call_traits<value_type>::param_type x)
+    : is_negative_(false), terms_(1,Factor<T>(x)) {}
   Term(const Evaluatable<T>& e)
     : is_negative_(false), terms_(1,Factor<T>(e)) {}
   Term(const std::pair<T,Term<T> >&);
@@ -61,7 +63,6 @@ public:
   void partial_evaluate(const Evaluator<T>& =Evaluator<T>(), bool=false);
   std::pair<T,Term<T> > split() const;
   
-
   const Term& operator*=(const Factor<T>& v)
   {
     terms_.push_back(v);
@@ -84,6 +85,7 @@ public:
 
   int num_factors() const {return terms_.size(); }
   void negate() { is_negative_ = !is_negative_;}
+
 private:
   bool is_negative_;
   std::vector<Factor<T> > terms_;
@@ -95,7 +97,6 @@ struct term_less {
     return x.split().second < y.split().second;
   }
 };
-
 
 template<class T>
 bool Term<T>::depends_on(const std::string& s) const {

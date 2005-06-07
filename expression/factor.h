@@ -36,6 +36,7 @@
 #include <alps/expression/number.h>
 #include <alps/expression/block.h>
 #include <alps/expression/function.h>
+#include <boost/call_traits.hpp>
 
 namespace alps {
 namespace expression {
@@ -47,7 +48,8 @@ public:
   typedef typename type_traits<T>::norm_t norm_type;
   
   SimpleFactor(std::istream&);
-  SimpleFactor(value_type x) : term_(new Number<T>(x)) {}
+  SimpleFactor(typename boost::call_traits<value_type>::param_type x)
+    : term_(new Number<T>(x)) {}
   SimpleFactor(const std::string& s) : term_(new Symbol<T>(s)) {}
 
   SimpleFactor(const SimpleFactor& v)
@@ -85,7 +87,8 @@ public:
   typedef typename type_traits<T>::norm_t norm_type;
   
   Factor(std::istream&, bool inverse = false);
-  Factor(value_type x) : super_type(x), is_inverse_(false), power_(1.) {}
+  Factor(typename boost::call_traits<value_type>::param_type x)
+    : super_type(x), is_inverse_(false), power_(1.) {}
   Factor(const std::string& s) : super_type(s), is_inverse_(false), power_(1.) {}
   Factor(const Evaluatable<T>& v) : super_type(v), is_inverse_(false), power_(1.) {}
   Factor(const super_type& v) : super_type(v), is_inverse_(false), power_(1.) {}
