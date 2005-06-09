@@ -37,9 +37,11 @@
 #include <alps/random/pseudo_des.h>
 #include <alps/random/seed.h>
 
+#include <boost/integer_traits.hpp>
 #include <boost/random.hpp>
 #include <boost/utility.hpp>
 #include <boost/throw_exception.hpp>
+#include <boost/type_traits.hpp>
 #include <boost/generator_iterator.hpp>
 
 #include <iostream>
@@ -62,14 +64,10 @@ namespace alps {
 class buffered_rng_base
 {
 public:
-  /// we create random numbers of type double
-  typedef double result_type;
+  /// we create random numbers of type uint32_t
+  typedef uint32_t result_type;
   typedef std::vector<result_type> buffer_type;
   
-  /// \brief no fixed range members
-  /// 
-  /// while the range is essentially fixed, since the limits are floating point constantds there is no use in specifying them
-  /// as using the functions for the range will give the same optimization
   BOOST_STATIC_CONSTANT(bool, has_fixed_range = false);
 
   /// \brief the constructor
@@ -105,14 +103,13 @@ public:
   /// read the state from a std::istream
   virtual void read(std::istream&)=0;
 
-  /// the minimum is 0.
-  result_type min() const { return result_type(0); }
-  /// the maximum is 1.
-  result_type max() const { return result_type(1); }
+  virtual result_type min() const = 0;
+  virtual result_type max() const = 0;
 
 protected:
   std::vector<result_type> buf_;
   std::vector<result_type>::iterator ptr_;
+
 private:
   /// refills the buffer
   virtual void fill_buffer() = 0;
@@ -120,33 +117,37 @@ private:
 
 /// a concrete implementation of a buffered random number generator
 /// \param RNG the type of random number generator
-template <class RNG> class buffered_rng
- : public buffered_rng_base
+template <class RNG> class buffered_rng : public buffered_rng_base
 {
+private:
+  BOOST_STATIC_ASSERT( (::boost::is_same<typename RNG::result_type, uint32_t>::value) );
+
 public:
   /// constructs a default-seeded generator
-  buffered_rng() : rng_(), gen_(rng_,boost::uniform_real<>()) {}
+  buffered_rng() : rng_() {}
   /// constructs a generator by copying the argument
   /// \param rng generator to be copied
-  buffered_rng(RNG rng) : rng_(rng), gen_(rng_,boost::uniform_real<>()) {}
+  buffered_rng(RNG rng) : rng_(rng) {}
 
   template <class IT>
-  void seed(IT start, IT end) { rng_.seed(start,end);}
+  void seed(IT start, IT end) { rng_.seed(start, end); }
   /// seed from an integer using seed_with_sequence
   /// \sa seed_with_sequence()
-  void seed(uint32_t s) {seed_with_sequence(rng_,s); }
-
+  void seed(uint32_t s) { seed_with_sequence(rng_,s); }
   void seed();
+
+  result_type min() const { return rng_.min(); }
+  result_type max() const { return rng_.max(); }
+
   virtual void write(std::ostream&) const;
   virtual void read(std::istream&);
+
 protected:
   void fill_buffer();
   RNG rng_;
-  boost::variate_generator<RNG&,boost::uniform_real<> > gen_;
 };
 
 /// @}
-
 
 template <class RNG>
 void buffered_rng<RNG>::seed()
@@ -169,11 +170,11 @@ void buffered_rng<RNG>::write(std::ostream& os) const
 template <class RNG>
 void buffered_rng<RNG>::fill_buffer()
 {
-//  std::generate(buf_.begin(),buf_.end(),gen_);
+  // std::generate(buf_.begin(),buf_.end(),gen_);
   std::vector<result_type>::iterator xx = buf_.begin();
   while (xx != buf_.end())
   {
-    *xx = gen_();
+    *xx = rng_();
     ++xx;
   }
 }

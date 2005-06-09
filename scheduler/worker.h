@@ -121,12 +121,10 @@ public:
 protected:
   int32_t version;
   int32_t user_version;
-// astreich, 05/31 -- I need this definition for my local compiler (rifpc's)
-//  typedef BufferedRandomNumberGeneratorBase random_type;
-  typedef buffered_rng_base random_type; // for hreidar
-  boost::shared_ptr<random_type> random_ptr;
-  random_type& random;
-  random_type& random_01;
+  typedef buffered_rng_base engine_type;
+  boost::shared_ptr<engine_type> engine_ptr;
+  boost::variate_generator<engine_type&, boost::uniform_real<> > random;
+  boost::variate_generator<engine_type&, boost::uniform_real<> > random_01;
   double random_real(double a=0., double b=1.) { return a+b*random();}
   //return boost::variate_generator<random_type&,boost::uniform_real<> >(random,boost::uniform_real<>(a,b))();
   int random_int(int a, int b) 
@@ -136,7 +134,6 @@ protected:
   { return int(n*random());}
   //{ return random_int(0,n-1);}
 
-  
   int node;
   Parameters parms;
   ProcessList where;

@@ -32,7 +32,9 @@
 
 alps::RNGFactory::RNGFactory()
 {
-  register_type<buffered_rng<boost::lagged_fibonacci607> >("lagged_fibonacci607");
+  register_type<buffered_rng<
+    boost::random::lagged_fibonacci<uint32_t, 48, 607, 273>  > >
+    ("lagged_fibonacci607");
   register_type<buffered_rng<boost::mt19937> >("mt19937");
 }
 

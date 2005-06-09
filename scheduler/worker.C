@@ -52,9 +52,9 @@ namespace scheduler {
 Worker::Worker(const ProcessList& w,const alps::Parameters&  myparms,int32_t n)
   : AbstractWorker(),
     version(MCDump_worker_version),
-    random_ptr(rng_factory.create(myparms.value_or_default("RNG","lagged_fibonacci607"))),
-    random(*random_ptr),
-    random_01(*random_ptr),
+    engine_ptr(rng_factory.create(myparms.value_or_default("RNG","lagged_fibonacci607"))),
+    random(*engine_ptr, boost::uniform_real<>()),
+    random_01(*engine_ptr, boost::uniform_real<>()),
     node(n),
     parms(myparms),
     where(w),
@@ -65,17 +65,16 @@ Worker::Worker(const ProcessList& w,const alps::Parameters&  myparms,int32_t n)
   
   // TODO: create slave runs
 
-  if (where.size())
-    random.seed(parms["SEED"]);
+  if (where.size()) engine_ptr->seed(parms["SEED"]);
   Disorder::seed(parms.value_or_default("DISORDER_SEED",0));
 }
 
 Worker::Worker(const alps::Parameters&  myparms,int32_t n)
   : AbstractWorker(),
     version(MCDump_worker_version),
-    random_ptr(rng_factory.create(myparms.value_or_default("RNG","lagged_fibonacci607"))),
-    random(*random_ptr),
-    random_01(*random_ptr),
+    engine_ptr(rng_factory.create(myparms.value_or_default("RNG","lagged_fibonacci607"))),
+    random(*engine_ptr, boost::uniform_real<>()),
+    random_01(*engine_ptr, boost::uniform_real<>()),
     node(n),
     parms(myparms),
     where(1),
@@ -86,8 +85,7 @@ Worker::Worker(const alps::Parameters&  myparms,int32_t n)
   
   // TODO: create slave runs
 
-  if (where.size())
-   random.seed(parms["SEED"]);
+  if (where.size()) engine_ptr->seed(parms["SEED"]);
   Disorder::seed(parms.value_or_default("DISORDER_SEED",0));
 }
 
@@ -119,7 +117,7 @@ void Worker::load_worker(IDump& dump)
   std::string state;
   dump >> state;
   std::stringstream rngstream(state);
-  random.read(rngstream);
+  engine_ptr->read(rngstream);
   if(node==0) {
     int32_t dummy;
     info.load(dump,version);
@@ -134,7 +132,7 @@ void Worker::save_worker(ODump& dump) const
 {
   dump << int32_t(MCDump_run) << int32_t(0) << int32_t(MCDump_worker_version) << parms;
   std::ostringstream rngstream;
-  rngstream << random;
+  rngstream << *engine_ptr;
   dump << rngstream.str();
   if(node==0)
     dump << info;

@@ -54,6 +54,7 @@ public:
 
   /// just a default constructor  
   RecordableObservable() {}
+  virtual ~RecordableObservable() {}
 
   /// add another measurement to the observable
   virtual void operator<<(const value_type& x) =0;

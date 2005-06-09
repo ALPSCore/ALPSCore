@@ -58,6 +58,7 @@ class abstract_creator {
 public:
 /// the type of the abse class
   typedef BASE base_type;
+  virtual ~abstract_creator() {}
   /// a virtual function to create an object derived from \c base_type
   virtual base_type* create() const =0;
 };
@@ -69,8 +70,9 @@ template <class BASE, class T>
 class creator : public abstract_creator<BASE>
 {
 public:
-/// the type of the abse class
+  /// the type of the abse class
   typedef BASE base_type;
+  virtual ~creator() {}
   /// create and default-construct an object of type T
   base_type* create() const { return new T();}
 };
@@ -97,6 +99,7 @@ public:
   
   /// there is only a default constructor
   factory() {}
+  virtual ~factory() {}
 
   /// \brief register a type
   ///
