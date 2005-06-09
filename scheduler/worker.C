@@ -243,17 +243,6 @@ bool Worker::handle_message(const Process& master,int32_t tag) {
       dump << work_done();
       dump.send(master,MCMP_run_work);
       return true;
-// TO_DELETE
-//    case MCMP_get_run_work_limit:
-//      message.receive(master,MCMP_get_run_work_limit);
-//      char[] name;
-//      double limit;
-//      message >> name;
-//      message >> limit;
-//      dump << work_done(name,limit);
-//      // the answer message has exactly the same structure
-//      dump.send(master,MCMP_run_work);
-//      return true;
 
     case MCMP_get_run_info:
       message.receive(master,MCMP_get_run_info);
@@ -303,13 +292,6 @@ double Worker::work_done() const
 {
   return 0.;
 }
-
-///* astreich, 05/13 */
-//// to be overwritten by subclass
-//double Worker::work_done(const char[] name, const double limit)
-//{
-//  return 0.0;
-//}
 
 } // namespace scheduler
 } // namespace alps

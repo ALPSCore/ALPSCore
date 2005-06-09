@@ -41,8 +41,8 @@ namespace scheduler {
 
 enum MCDumpType {
     // dump magic numbers
-    MCDump_scheduler                =1,
-    MCDump_task              =2,
+    MCDump_scheduler               =1,
+    MCDump_task                    =2,
     MCDump_run                     =3,
     MCDump_measurements            =4,
 
@@ -72,8 +72,6 @@ enum MCMP_Tags {
   MCMP_checkpoint                  = 118,
   MCMP_get_work                    = 119,
   MCMP_nodes                       = 122,
-//  /* astreich */
-//  MCMP_make_opt_task               = 130,
 
 // messages sent to the slave task by the task
   MCMP_make_run                    = 201,
@@ -86,10 +84,6 @@ enum MCMP_Tags {
   MCMP_load_run_from_file          = 212,
   MCMP_get_run_work                = 215,
   MCMP_set_parameters              = 216,
-  
-  /* astreich, 05/13 */
-//  TO_DELETE
-//  MCMP_get_run_work_limit          = 217,
 
 // messages returned to the scheduler or task
   MCMP_void                        = 300,

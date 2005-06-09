@@ -55,22 +55,10 @@ Task::Task(const ProcessList& w,const boost::filesystem::path& filename)
   : AbstractTask(w),
     finished_(false),
     infilename(filename),
-    started_(false)
+    started_(false)//,
 {
   parse_task_file(true);
 }
-
-///* astreich, 04/25 */
-// TO_DELETE
-//Task::Task(const ProcessList& w,const alps::Parameters& param)
-//  : AbstractTask(w),
-//    finished_(false),
-////    infilename(filename),
-//    started_(false)
-//{
-////  parse_task_file(true);
-//  parms = param;
-//}
 
 Task::~Task()
 {
@@ -113,15 +101,6 @@ void Task::construct() // delayed until child class is fully constructed
   parse_task_file();
 }
 
-///* astreich, 05/17 */        
-//void Task::setErrorLimit(std::string name, double value) {
-//  obs_name_for_limit = name;
-//  error_limit = value;
-//  use_error_limit = true;
-//  if (theWorker)
-//    theWorker->setErrorLimit(name,value);
-//}
-       
 // start all runs which are active
 void Task::start()
 {

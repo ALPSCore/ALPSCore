@@ -52,12 +52,6 @@ public:
   virtual Task* make_task(const ProcessList&,const boost::filesystem::path&,const Parameters&) const;
   virtual Worker* make_worker(const ProcessList&,const Parameters&,int) const;
   virtual void print_copyright(std::ostream&) const=0;
-
-// TO_DELETE
-//  /* astreich 2005/04/25 */
-//  virtual Task* make_task(const ProcessList&,const Parameters&) const;
-///* ??  virtual Task* make_task(const ProcessList&,const boost::filesystem::path&,const alps::Parameters&) const;  */
-
 };
 
 template <class TASK>

@@ -40,7 +40,6 @@
 #include <fstream>
 #include <stdexcept>
 
-/* astreich */
 #define ALPS_TRACE
 
 namespace alps {
@@ -352,7 +351,6 @@ double WorkerTask::work_done()  const
   return w;
 }
 
-/* changed by astreich, 05/16 */
 double WorkerTask::work() const
 {
   if (finished_)

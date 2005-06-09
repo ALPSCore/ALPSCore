@@ -38,11 +38,15 @@ namespace scheduler {
 
 AbstractTask::AbstractTask(const ProcessList& w)
  : where(w)
-{
+{ 
+  /* astreich, 05/25 */
+  use_error_limit=false;
 }
 
 AbstractTask::AbstractTask()
 {
+  /* astreich, 05/25 */
+  use_error_limit=false;
 }
 void AbstractTask::setErrorLimit(std::string name, double value) {
   obs_name_for_limit = name;

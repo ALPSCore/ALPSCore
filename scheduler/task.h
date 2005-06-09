@@ -127,7 +127,6 @@ public:
   static void print_copyright(std::ostream&);
   
   Task(const ProcessList&, const boost::filesystem::path&);    
-  Task(const ProcessList&, const alps::Parameters&);
     
   ~Task();
   
@@ -152,8 +151,6 @@ public:
   void halt();
   double work() const; // return amount of work needed
 
-//  void setErrorLimit(std::string, double);
-  
 protected:
   virtual void write_xml_header(alps::oxstream&) const;
   virtual void write_xml_trailer(alps::oxstream&) const;
@@ -183,14 +180,10 @@ protected:
 
 public:
   WorkerTask(const ProcessList&, const boost::filesystem::path&);      
-//  /* astreich 04/25 */
-//  WorkerTask(const ProcessList&, const alps::Parameters&);
     
   ~WorkerTask();
   
   void construct(); // needs to be called to finish construction
-  /* astreich 04/27 */
-//  void construct_NF(); // needs to be called to finish construction
 
   void add_process(const Process&);
   void delete_process(const Process&);
@@ -200,11 +193,7 @@ public:
   bool finished(double&) const; // check if simulation is finished
   void halt();
   double work() const; // return amount of work needed
-  /* astreich, 05/13 */
-//  double work(const char[],const double);
   double work_done() const; // return amount of work done
-//  /* astreich, 05/13 */
-//  double work_done(const char[], const double);
   
   /* astreich, 05/16 */
   virtual void setErrorLimit(std::string name, double value) {

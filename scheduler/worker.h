@@ -121,7 +121,9 @@ public:
 protected:
   int32_t version;
   int32_t user_version;
-  typedef buffered_rng_base random_type;
+// astreich, 05/31 -- I need this definition for my local compiler (rifpc's)
+//  typedef BufferedRandomNumberGeneratorBase random_type;
+  typedef buffered_rng_base random_type; // for hreidar
   boost::shared_ptr<random_type> random_ptr;
   random_type& random;
   random_type& random_01;
