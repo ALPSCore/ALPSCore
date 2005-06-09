@@ -81,7 +81,7 @@ struct evaluate_helper
   static U value(const Term<R>& ex, const Evaluator<R>& =Evaluator<R>(), bool=false) { return ex; }
   template<class R>
   static U value(const Expression<R>& ex, const Evaluator<R>& =Evaluator<R>(), bool=false) { return ex; }
-  static U real(U u) { return u; }
+  static U real(typename boost::call_traits<U>::param_type u) { return u; }
 };
 
 template<class U>
