@@ -108,7 +108,7 @@ inline std::size_t binomial(std::size_t l, std::size_t n)
 
 template <class T>
 inline typename type_traits<T>::norm_t abs2(T x, typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0) {
-  return std::abs(x)*std::abs(x);        
+  return x * x;        
 }
 template <class T>
 inline typename type_traits<T>::norm_t abs2(const T& x, typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0) {
