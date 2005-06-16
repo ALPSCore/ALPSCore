@@ -75,13 +75,13 @@ struct XMLTag
   /// \latexonly
   /// \begin{tabulate}[|c|c|c|]
   /// \hline
-  /// type & name & example \\
+  /// type & name & example \\ 
   /// \hline
-  /// {\tt OPENING}    & {\tt TAG}  & {\tt <TAG>} \\
-  /// {\tt CLOSING}    & {\tt /TAG} & {\tt </TAG>} \\
-  /// {\tt SINGLE}     & {\tt TAG}  & {\tt <TAG/>} \\
-  /// {\tt COMMENT}    & {\tt !}    & {\tt <!-- comment --!/>} \\
-  /// {\tt PROCESSING} & {\tt !}    & {\tt <? processing instruction ?/>} \\
+  /// {\tt OPENING}    & {\tt TAG}  & {\tt <TAG>} \\ 
+  /// {\tt CLOSING}    & {\tt /TAG} & {\tt </TAG>} \\ 
+  /// {\tt SINGLE}     & {\tt TAG}  & {\tt <TAG/>} \\ 
+  /// {\tt COMMENT}    & {\tt !}    & {\tt <!-- comment --!/>} \\ 
+  /// {\tt PROCESSING} & {\tt !}    & {\tt <? processing instruction ?/>} \\ 
   /// \hline
   /// \end{tabulate}  
   /// \endlatexonly
