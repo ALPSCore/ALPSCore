@@ -122,9 +122,9 @@ protected:
   int32_t version;
   int32_t user_version;
   typedef buffered_rng_base engine_type;
-  boost::shared_ptr<engine_type> engine_ptr;
-  boost::variate_generator<engine_type&, boost::uniform_real<> > random;
-  boost::variate_generator<engine_type&, boost::uniform_real<> > random_01;
+  mutable boost::shared_ptr<engine_type> engine_ptr;
+  mutable boost::variate_generator<engine_type&, boost::uniform_real<> > random;
+  mutable boost::variate_generator<engine_type&, boost::uniform_real<> > random_01;
   double random_real(double a=0., double b=1.) { return a+b*random();}
   //return boost::variate_generator<random_type&,boost::uniform_real<> >(random,boost::uniform_real<>(a,b))();
   int random_int(int a, int b) 
