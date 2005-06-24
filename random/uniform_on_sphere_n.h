@@ -64,7 +64,7 @@ public:
   friend std::basic_ostream<CharT,Traits>&
   operator<<(std::basic_ostream<CharT,Traits>& os, const uniform_on_sphere_n& sd)
   {
-    os << base_;
+    os << sd.base_;
     return os;
   }
 
@@ -72,7 +72,7 @@ public:
   friend std::basic_istream<CharT,Traits>&
   operator>>(std::basic_istream<CharT,Traits>& is, uniform_on_sphere_n& sd)
   {
-    is >> base_;
+    is >> sd.base_;
     return is;
   }
 #endif
