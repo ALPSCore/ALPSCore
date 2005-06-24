@@ -43,9 +43,9 @@ public:
   typedef half_integer<I> half_integer_type;
   typedef QuantumNumberDescriptor<I> quantum_number_type;
   
-  model_helper(alps::Parameters& p) // it updates the parameter object passed to it!
+  model_helper(alps::Parameters& p, bool issymbolic=false) // it updates the parameter object passed to it!
    : model_library_(p), 
-     model_(model_library_.get_hamiltonian(p)),
+     model_(model_library_.get_hamiltonian(p,issymbolic)),
      parms_(p) 
   {
   }

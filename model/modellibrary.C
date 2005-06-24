@@ -150,7 +150,7 @@ HamiltonianDescriptor<short> ModelLibrary::get_hamiltonian(const std::string& na
   if (!issymbolic)
     p.copy_undefined(ham.default_parameters());
   ham.set_parameters(p);
-  ham.substitute_operators(*this,p);
+  ham.substitute_operators(*this,issymbolic ? Parameters() : p);
   return ham;
 }
 
