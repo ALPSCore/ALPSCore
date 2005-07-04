@@ -213,6 +213,7 @@ bool Worker::handle_message(const Process& master,int32_t tag) {
   OMPDump dump;
   std::string name;
   alps::Parameters parms;
+  ResultType res;
   switch (tag) {
     case MCMP_startRun:
       message.receive(master,MCMP_startRun);
@@ -240,6 +241,14 @@ bool Worker::handle_message(const Process& master,int32_t tag) {
       message.receive(master,MCMP_get_run_work);
       dump << work_done();
       dump.send(master,MCMP_run_work);
+      return true;
+
+    case MCMP_get_summary:
+      // return the summary of this task to the master
+      message.receive(master,MCMP_get_summary);
+      res = get_summary();
+      dump << res.name << res.T << res.mean << res.error << res.count;
+      dump.send(master,MCMP_summary);
       return true;
 
     case MCMP_get_run_info:
@@ -291,6 +300,13 @@ double Worker::work_done() const
   return 0.;
 }
 
+// astreich, 06/23
+ResultType Worker::get_summary() const
+{
+  ResultType res;
+  std::cerr << "\nWorker:;get_summary() called - this should not happen!!\n";
+  return res;
+}
 } // namespace scheduler
 } // namespace alps
 

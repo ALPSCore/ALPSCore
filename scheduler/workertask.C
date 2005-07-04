@@ -168,8 +168,9 @@ void WorkerTask::construct() // delayed until child class is fully constructed
       }
     }
   }
-  for (int i=0;i<runs.size();++i)
+  for (int i=0;i<runs.size();++i) {
     runs[i]->set_parameters(parms);
+  }
 }
         
 // start all runs which are active
@@ -179,9 +180,6 @@ void WorkerTask::start()
     Task::start();
     for (int i=0; i<runs.size();i++)
       if(runs[i] && workerstatus[i] > RunNotExisting && workerstatus[i] < RunOnDump) {
-        /* astreich, 05/18 */
-        if (use_error_limit) 
-          runs[i]->setErrorLimit(obs_name_for_limit, error_limit);
         runs[i]->start_worker();
       }
   }
@@ -314,6 +312,45 @@ void WorkerTask::halt()
       if(runs[i] && workerstatus[i] > RunNotExisting && workerstatus[i] < RunOnDump)
         runs[i]->halt_worker();
   }
+}
+
+ResultType WorkerTask::get_summary() const
+{
+  ResultType res;
+  res.mean=0.;
+  res.error=0.;
+  res.count=0.;
+  
+  ProcessList where_master;
+
+  // add runs stored locally
+  if (runs.size()) {
+    for (int i=0; i<runs.size(); i++) {
+      if (workerstatus[i]==RemoteRun) {
+        if (!runs[i])
+          boost::throw_exception(std::runtime_error("Run does not exist in Task::get_measurements"));
+        where_master.push_back(dynamic_cast<RemoteWorker*>(runs[i])->process());
+      }
+      else if (runs[i])
+        res += runs[i]->get_summary();
+    }
+  }
+
+  if (where_master.size()) {
+    // broadcast request to all slaves
+    OMPDump send;
+    send.send(where_master,MCMP_get_summary);
+    
+    // collect results
+    for (int i=0; i<where_master.size(); i++) {
+      // receive dump
+      IMPDump receive(MCMP_summary);
+      ResultType s_res;
+      receive >> s_res.name >> s_res.T >> s_res.mean >> s_res.error >> s_res.count;
+      res += s_res;
+    }
+  }
+  return res;
 }
 
 double WorkerTask::work_done()  const

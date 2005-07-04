@@ -102,21 +102,23 @@ int MPPScheduler::run()
     int simfinished = check_tasks(free);
     
     // make checkpoint if necessary
-    if((!simfinished)&&(second_clock::local_time()>last_checkpoint+seconds(long(checkpoint_time)))&&
+    if((!simfinished)&&(second_clock::local_time()>
+	last_checkpoint+seconds(long(checkpoint_time)))&&
        ((time_limit<=0)||(second_clock::local_time()<end_time))) {
         // make regular checkpoints if not yet finished
       std::cout  << "Making regular checkpoint.\n" ;
       last_checkpoint = second_clock::local_time();
       checkpoint();
       std::cout  << "Done with checkpoint.\n" ;
+      std::cerr  << "Done with checkpoint.\n" ;
     }
   }
   
   checkpoint();
   if(active.size()) {
     if(all_done)
-      std::cout  << "Remaining " << active.size() << " tasks need more than " << free.size()
-                 << " processes.\n";
+      std::cout  << "Remaining " << active.size() << " tasks need more than " 
+		 << free.size() << " processes.\n";
     else
       std::cout  << "Reached time limit.\n" ;
     return 1;
@@ -423,7 +425,7 @@ void MPPScheduler::determine_active()
         active[j].cpus= tasks[i]->cpus();
         j++;
       }
-    else if (tasks[i]->finished_notime())
+    else if (tasks[i]->finished_notime()) 
       finish_task(i);
     else
       boost::throw_exception( std::logic_error( " default reached in MPPScheduler::determine_active()"));

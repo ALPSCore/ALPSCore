@@ -85,9 +85,6 @@ int SingleScheduler::run()
       // do work with this Task
       taskstatus[i] = TaskRunning;
       std::cout  << "Starting task " << i+1 << ".\n";
-      /* astreich, 05/18 */
-      if (use_error_limit)
-        tasks[i]->setErrorLimit(obs_name_for_limit,error_limit);
       tasks[i]->start();
 
       task_time = second_clock::local_time();

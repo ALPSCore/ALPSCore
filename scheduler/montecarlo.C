@@ -37,6 +37,44 @@
 namespace alps {
 namespace scheduler {
 
+/**
+ * Returns the summary of the MCSimulation for the Observable given by the
+ * name
+ *
+ * @params name the name of the observable
+ */
+ResultType MCSimulation::get_summary(const std::string name) const
+{
+  ResultType res;
+  ObservableSet mySet = get_measurements(true);
+  RealObservable* myObs = ((RealObservable*)&mySet[name]);
+  res.name = name;
+  res.T = parms["T"];
+  res.mean = myObs->mean();
+  res.error = myObs->error();
+  res.count = myObs->count();
+  return res;
+}
+
+/**
+ * Returns the summary, the name of the Observable is specified in the job file
+ */
+ResultType MCSimulation::get_summary() const
+{
+  std::string theName;
+    if (parms.defined("SUMMARY_VARIABLE"))
+      theName = parms["SUMMARY_VARIABLE"];
+    else
+      theName = parms["ERROR_VARIABLE"];
+  std::cerr << "\nMaking summary for the observable " << theName << "\n";
+  if (theName.length() == 0) {
+    std::cerr << "cannot find the tag ERROR_VARIABLE in the parameter set\n"
+              << "so summary can be made\n";
+    boost::throw_exception(std::runtime_error("no variable name to make summary after"));
+  }
+  return get_summary(theName);
+}
+
 // collect all measurements
 ObservableSet MCSimulation::get_measurements(bool compactit) const
 {
@@ -231,6 +269,15 @@ double DummyMCRun::work_done() const
 {
   boost::throw_exception(std::logic_error("User-level checkpointing needs to be implemented for restarting from a checkpoint\n"));
   return 0.;
+}
+
+// astreich, 06/23
+ResultType DummyMCRun::get_summary() const
+{
+  boost::throw_exception(std::logic_error("User-level checkpointing needs to be implemented for restarting from a checkpoint\n"));
+  ResultType res;
+  res.count = 0;
+  return res;
 }
 
 void MCSimulation::handle_tag(std::istream& infile, const XMLTag& tag) 

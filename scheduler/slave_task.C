@@ -134,6 +134,14 @@ double SlaveTask::work() const
   return 0.;
 }
 
+ResultType SlaveTask::get_summary() const
+{
+  std::cerr << "\nshould never obtain work of a slave simulation\n\n";
+  ResultType res;
+  res.count = 0;
+  return res;
+}
+  
 bool SlaveTask::finished(double&) const
 {
   boost::throw_exception(std::logic_error("should never ask finished? of a slave simulation"));

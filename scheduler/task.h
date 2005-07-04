@@ -96,8 +96,8 @@ public:
   virtual void halt() = 0; // halt all runs, simulation is finished        
 
   /* astreich, 05/16 */
-  virtual void setErrorLimit(std::string name, double value);
-      
+  virtual ResultType get_summary() const =0; 
+
   virtual double work() const {return 1.;}; // return amount of work needed
   virtual bool finished(double&) const = 0; // check if task is finished
   virtual bool handle_message(const Process& master,int tag); // deal with messages
@@ -114,11 +114,7 @@ protected:
   AbstractWorker* theWorker; // the run running on this CPU
   ProcessList where; // the list of work processes for this simulation
   
-  /* astreich, 05/16 */
   bool use_error_limit;
-  std::string obs_name_for_limit;
-  double error_limit;
-  
 };
 
 class Task : public AbstractTask
@@ -150,6 +146,9 @@ public:
   bool started() const { return started_;}
   void halt();
   double work() const; // return amount of work needed
+  
+  virtual ResultType get_summary() const; 
+  static Parameters parse_ext_task_file(std::string);
 
 protected:
   virtual void write_xml_header(alps::oxstream&) const;
@@ -194,16 +193,8 @@ public:
   void halt();
   double work() const; // return amount of work needed
   double work_done() const; // return amount of work done
-  
-  /* astreich, 05/16 */
-  virtual void setErrorLimit(std::string name, double value) {
-    obs_name_for_limit = name;
-    error_limit = value;
-    use_error_limit = true;
-    // set error limit to workers
-    for (int i=0; i<runs.size();i++)
-      runs[i]->setErrorLimit(name,value);
-  }
+ 
+  virtual ResultType get_summary() const; 
   
   std::vector<AbstractWorker*> runs; // the list of all runs
 
@@ -219,7 +210,6 @@ private:
   mutable double old_work;
   mutable std::vector<CheckpointFiles> runfiles; 
 };
-
 
 class RemoteTask : public AbstractTask
 {
@@ -242,6 +232,8 @@ public:
   void run(); // should not be called
   void halt(); // halt remote simulation
   bool handle_message(const Process& master,int tag);
+  
+  virtual ResultType get_summary() const;
 };
 
 
@@ -259,6 +251,9 @@ public:
   virtual bool finished(double& x) const;
   virtual void halt();
   virtual uint32_t cpus() const;
+
+  virtual ResultType get_summary() const;
+
 private:
   bool started;
   Process runmaster;

@@ -72,6 +72,8 @@ enum MCMP_Tags {
   MCMP_checkpoint                  = 118,
   MCMP_get_work                    = 119,
   MCMP_nodes                       = 122,
+// astreich, inserted for sychronisation
+  MCMP_ready                       = 150,
 
 // messages sent to the slave task by the task
   MCMP_make_run                    = 201,
@@ -84,6 +86,8 @@ enum MCMP_Tags {
   MCMP_load_run_from_file          = 212,
   MCMP_get_run_work                = 215,
   MCMP_set_parameters              = 216,
+// astreich, 06/22
+  MCMP_get_summary                 = 220,
 
 // messages returned to the scheduler or task
   MCMP_void                        = 300,
@@ -93,6 +97,7 @@ enum MCMP_Tags {
   MCMP_task_finished               = 304,
   MCMP_work                        = 311,
   MCMP_run_work                    = 315,
+  MCMP_summary                     = 320,
 
 // messages between main and slave runs
   MCMP_do_steps                    = 500

@@ -121,6 +121,23 @@ double RemoteTask::work() const
   return static_cast<double>(receive);
 }
 
+/**
+ * Sends the summary for this remote task to the master
+ */
+ResultType RemoteTask::get_summary() const
+{
+  OMPDump send;
+  send.send(where[0],MCMP_get_summary);
+  IMPDump receive(where[0],MCMP_summary);
+  ResultType res;
+  receive >> res.name;
+  receive >> res.T;
+  receive >> res.mean;
+  receive >> res.error;
+  receive >> res.count;
+  return res;
+}
+
 void RemoteTask::run()
 {
   boost::throw_exception(std::logic_error("RemoteTask::run should never be called"));

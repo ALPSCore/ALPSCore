@@ -39,6 +39,7 @@
 #include <fstream>
 
 namespace alps {
+
 namespace scheduler {
 
 MasterScheduler::MasterScheduler(const Options& opt,const Factory& p)
@@ -56,24 +57,51 @@ MasterScheduler::MasterScheduler(const Options& opt,const Factory& p)
   if(opt.programname.size()!=0)
     processes=start_all_processes(programname);
 
+  // the rest of the initialisation is done by the set_new_jobfile - function
+  // this function can also be used to re-start the scheduler with a new
+  // job file.
+  set_new_jobfile(opt.jobfilename);
+}
+
+/**
+ * Registers a new job file and updates everything that is related to the job
+ * files - namely the task files are parsed and the tasks are created
+ * accordingly.
+ * This function is used for the fitting and allows to start another simulation
+ * based on newly created files. Deleting and re-creating the schedulers yields
+ * to problems with syncronisation and integrity of the message space.
+ *
+ * @params jobfilename The name of the new job file
+ */
+// astreich, 06/30
+void MasterScheduler::set_new_jobfile(boost::filesystem::path jobfilename)
+{
+  // clean the 'traces' of the previous simulation
+  taskfiles.clear();
+  tasks.clear();
+  taskstatus.clear();
+  sim_results.clear();
+
+  outfilepath = jobfilename;
+  infilepath = jobfilename;
+  
   infilepath=boost::filesystem::complete(infilepath);
   outfilepath=boost::filesystem::complete(outfilepath);
 
-  if (!opt.jobfilename.empty())
+  if (!jobfilename.empty())
     parse_job_file(infilepath);
       
-  //CommRegisterSignal(mpsig);
-  //mpsig.update();
-
   tasks.resize(taskfiles.size());
+  sim_results.resize(taskfiles.size());
 
-  // create simulation objects
+  std::cerr << "parsing task files ... \n";
   for (int i=0; i<taskfiles.size(); i++) {
 #ifndef BOOST_NO_EXCEPTIONS
     try {
 #endif
       tasks[i]=make_task(taskfiles[i].in);
-      if (tasks[i] && taskstatus[i]!= TaskFinished && tasks[i]->finished_notime())  {
+      if (tasks[i] && 
+          taskstatus[i]!= TaskFinished && tasks[i]->finished_notime())  {
         tasks[i]->start();
         std::cout << "Task " << i+1 << " is actually finished.\n";
         finish_task(i);
@@ -84,7 +112,8 @@ MasterScheduler::MasterScheduler(const Options& opt,const Factory& p)
     catch (const std::runtime_error& err) // file does not exist
     {
       std::cerr << err.what() << "\n";
-      std::cerr  << "Cannot open simulation file " << taskfiles[i].in.string() << ".\n";
+      std::cerr  << "Cannot open simulation file " << taskfiles[i].in.string() 
+                 << ".\n";
       tasks[i]=0;
       taskstatus[i] = TaskNotExisting;
     }
@@ -92,18 +121,6 @@ MasterScheduler::MasterScheduler(const Options& opt,const Factory& p)
   }
 }
 
-void MasterScheduler::setErrorLimit(std::string name, double limit) {
-    Scheduler::setErrorLimit(name,limit);
-    obs_name_for_limit = name;
-    error_limit = limit;
-    use_error_limit = true;
-    // set Error Limit in all tasks, too
-    for (int i=0; i<tasks.size();i++) {
-      if (tasks[i] != 0)
-        tasks[i]->setErrorLimit(name,limit);
-    }    
-}
-        
 void MasterScheduler::parse_job_file(const boost::filesystem::path& filename)
 {
   boost::filesystem::ifstream infile(filename);
@@ -114,9 +131,11 @@ void MasterScheduler::parse_job_file(const boost::filesystem::path& filename)
   if (tag.name=="OUTPUT") {
     if(tag.attributes["file"]!="")
       outfilepath=boost::filesystem::complete(
-        boost::filesystem::path(tag.attributes["file"],boost::filesystem::native),filename.branch_path());
+               boost::filesystem::path(tag.attributes["file"],
+               boost::filesystem::native),filename.branch_path());
     else
-        boost::throw_exception(std::runtime_error("missing 'file' attribute in <OUTPUT> element in jobfile"));
+      boost::throw_exception(std::runtime_error(
+               "missing 'file' attribute in <OUTPUT> element in jobfile"));
     tag=parse_tag(infile);
     if (tag.name=="/OUTPUT")
       tag=parse_tag(infile);
@@ -130,23 +149,29 @@ void MasterScheduler::parse_job_file(const boost::filesystem::path& filename)
     else if (tag.attributes["status"]=="finished")
       taskstatus.push_back(TaskFinished);
     else
-      boost::throw_exception(std::runtime_error("illegal status attribute in <TASK> element in jobfile"));
+      boost::throw_exception(std::runtime_error(
+               "illegal status attribute in <TASK> element in jobfile"));
     tag=parse_tag(infile);
     CheckpointFiles files;
     if (tag.name=="INPUT") {
-      files.in=boost::filesystem::path(tag.attributes["file"],boost::filesystem::native);
+      files.in=boost::filesystem::path(tag.attributes["file"],
+               boost::filesystem::native);
       if (files.in.empty())
-        boost::throw_exception(std::runtime_error("missing 'file' attribute in <INPUT> element in jobfile"));
+        boost::throw_exception(std::runtime_error(
+               "missing 'file' attribute in <INPUT> element in jobfile"));
       tag=parse_tag(infile);
       if (tag.name=="/INPUT")
         tag=parse_tag(infile);
     }
     else
-      boost::throw_exception(std::runtime_error("missing <INPUT> element in jobfile"));
+      boost::throw_exception(std::runtime_error(
+               "missing <INPUT> element in jobfile"));
     if (tag.name=="OUTPUT") {
-      files.out=boost::filesystem::path(tag.attributes["file"],boost::filesystem::native);
+      files.out=boost::filesystem::path(tag.attributes["file"],
+               boost::filesystem::native);
       if (files.out.empty())
-        boost::throw_exception(std::runtime_error("missing 'file' attribute in <OUTPUT> element in jobfile"));
+        boost::throw_exception(std::runtime_error(
+               "missing 'file' attribute in <OUTPUT> element in jobfile"));
       tag=parse_tag(infile);
       if (tag.name=="/OUTPUT")
         tag=parse_tag(infile);
@@ -155,7 +180,8 @@ void MasterScheduler::parse_job_file(const boost::filesystem::path& filename)
       files.out=files.in;
     files.in=boost::filesystem::complete(files.in,filename.branch_path());
     if (tag.name!="/TASK")
-      boost::throw_exception(std::runtime_error("missing </TASK> tag in jobfile"));
+      boost::throw_exception(std::runtime_error(
+               "missing </TASK> tag in jobfile"));
     tag = parse_tag(infile);
     taskfiles.push_back(files);
   }
@@ -167,7 +193,8 @@ void MasterScheduler::parse_job_file(const boost::filesystem::path& filename)
 void  MasterScheduler::remake_task(ProcessList& where, const int i)
 {
   if(tasks[i]==0)
-    boost::throw_exception(std::logic_error( "cannot remake a simulation that does not exist"));
+    boost::throw_exception(std::logic_error(
+               "cannot remake a simulation that does not exist"));
   delete tasks[i];
   tasks[i]=make_task(where,taskfiles[i].in);
 }
@@ -195,21 +222,24 @@ void MasterScheduler::checkpoint()
     oxstream out(filename);
 
     out << header("UTF-8") << stylesheet(xslt_path("job.xsl"));
-    out << start_tag("JOB") << xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
-              << attribute("xsi:noNamespaceSchemaLocation","http://xml.comp-phys.org/2003/8/job.xsd");
+    out << start_tag("JOB") 
+        << xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
+        << attribute("xsi:noNamespaceSchemaLocation",
+               "http://xml.comp-phys.org/2003/8/job.xsd");
     int local_sim=-1;
     
     for (int i=0; i<tasks.size();i++) {
       if (taskstatus[i]==TaskFinished) {
         out << start_tag("TASK") << attribute("status","finished")
-            << start_tag("INPUT") << attribute("file",taskfiles[i].out.native_file_string())
+            << start_tag("INPUT") 
+            << attribute("file",taskfiles[i].out.native_file_string())
             << end_tag() << end_tag();
         std::cout  << "Checkpointing task# " << i+1 << "\n";
         if (tasks[i]!=0 && boost::filesystem::complete(taskfiles[i].out,dir).string()!=taskfiles[i].in.string()) {          
           tasks[i]->checkpoint(boost::filesystem::complete(taskfiles[i].out,dir));
           taskfiles[i].in=boost::filesystem::complete(taskfiles[i].out,dir);
         }
-        if (tasks[i]!=0)
+        if (tasks[i]!=0) 
           delete tasks[i];
         tasks[i]=0;
       }
@@ -291,10 +321,19 @@ int MasterScheduler::check_signals()
 
 // store the results and delete the simulation
 void MasterScheduler::finish_task(int i)
-{
+{ 
+  if (tasks[i] == 0)
+    return;
   std::cout  << "Halting Task " << i+1 << ".\n";
   tasks[i]->halt();
   taskstatus[i] = TaskHalted;
+  if (make_summary) {
+//    if (obs_name_for_limit.length() == 0)
+      sim_results[i] = tasks[i]->get_summary();
+ //   else
+ //     sim_results[i] = tasks[i]->get_summary(obs_name_for_limit);
+  }
+  std::cerr << "got summary\n"; 
   tasks[i]->checkpoint(boost::filesystem::complete(taskfiles[i].out,outfilepath.branch_path()));
   delete tasks[i];
   tasks[i]=0;

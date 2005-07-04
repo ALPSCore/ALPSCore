@@ -89,6 +89,38 @@ void Task::parse_task_file(bool read_parms_only)
       tag=parse_tag(infile,true); 
     }
   }
+  // astreich, 06/20
+  if (!parms.defined("ERROR_VARIABLE"))
+    use_error_limit = false;
+  else if (!parms.defined("ERROR_LIMIT")) {
+    std::cerr << "Invalid input file: Error variable given without error limit\n";
+    std::cerr << "Running simulation without error limit!\n";
+    use_error_limit = false;
+  } else
+    use_error_limit = true;
+}
+
+/* astreich, 06/17 */
+Parameters Task::parse_ext_task_file(std::string infilename)
+{
+  Parameters res;
+  boost::filesystem::ifstream infile(infilename);
+  
+  // read outermost tag (e.g. <SIMULATION>)
+  XMLTag tag=parse_tag(infile,true);
+  std::string closingtag = "/"+tag.name;
+  
+  // scan for <PARAMETERS> and read them
+  tag=parse_tag(infile,true);
+  while (tag.name!="PARAMETERS" && tag.name != closingtag) {
+    std::cerr << "skipping tag with name " << tag.name << "\n";
+    skip_element(infile,tag);
+    tag=parse_tag(infile,true);
+  }
+  res.read_xml(tag,infile,true);
+  if (!res.defined("SEED"))
+    res["SEED"]=0;
+  return res;
 }
 
 void Task::handle_tag(std::istream& infile, const XMLTag& tag) 
@@ -148,6 +180,15 @@ void Task::halt()
 double Task::work() const
 {
   return (finished_ ? 0. : (parms.defined("WORK_FACTOR") ? alps::evaluate<double>(parms["WORK_FACTOR"], parms) : 1. ));
+}
+
+// astreich, 06/23
+ResultType Task::get_summary() const
+{
+  std::cerr << "should not call get_summary from Task ... \n";
+  ResultType res;
+  res.count = 0;
+  return res;
 }
 
 void Task::write_xml_header(oxstream& out) const

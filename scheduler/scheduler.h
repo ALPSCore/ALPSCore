@@ -38,6 +38,7 @@
 
 #include <alps/scheduler/factory.h>
 #include <alps/scheduler/options.h>
+#include <alps/scheduler/task.h>
 #include <alps/scheduler/types.h>
 #include <alps/scheduler/signal.hpp>
 #include <alps/parameterlist.h>
@@ -50,6 +51,7 @@ namespace scheduler {
 
 void print_copyright(std::ostream& out);
 
+
 //=======================================================================
 // Scheduler
 //
@@ -58,22 +60,36 @@ void print_copyright(std::ostream& out);
 
 class Scheduler
 {
-public:  
+public: 
   Scheduler(const Options&, const Factory&);    
 
   virtual ~Scheduler() {};
 
-  virtual int run(); // start the scheduler
+  virtual void set_new_jobfile(boost::filesystem::path jobfilename) {};
 
-  /* astreich, 05/13 */
-  virtual void setErrorLimit(std::string name, double limit) {
+  virtual int run(); // start the scheduler
+/*
+  void makeSummary(std::string name) {
     obs_name_for_limit = name;
-    error_limit = limit;
-    use_error_limit = true;
-    if (theTask)
-      theTask->setErrorLimit(name,limit);
+    make_summary = true;
+    std::cout << "a summary will be made\n";
   }
-  
+  */
+  void makeSummary() {
+ //   obs_name_for_limit.clear();
+    make_summary = true;
+    std::cout << "a summary will be made\n";
+  } 
+
+  ResultsType getSummary() const {
+    if (make_summary) 
+      return sim_results;
+    else {
+      std::cerr << "no summary has been made.\n";
+      boost::throw_exception(std::runtime_error("No summary has been made"));
+    }
+  }
+       
   // USER OBJECT CREATION functions
   AbstractTask* make_task(const ProcessList&,const boost::filesystem::path&);
   AbstractTask* make_task(const boost::filesystem::path&);
@@ -92,10 +108,14 @@ protected:
   AbstractTask* theTask; //the simulation running on this node
   boost::filesystem::path defaultpath;
   
-  /* astreich, 05/13 */
   bool use_error_limit;
-  std::string obs_name_for_limit;
-  double error_limit;
+//  std::string obs_name_for_limit;
+//  double error_limit;
+ 
+  ErrorLimitsType error_limits;
+  ResultsType sim_results;
+  
+  bool make_summary;
 };
 
 //=======================================================================
@@ -119,10 +139,10 @@ public:
   MasterScheduler(const Options&,const Factory&);
 
   ~MasterScheduler();
-  virtual int run()=0; // start the scheduler
 
-  /* astreich, 05/16 */
-  virtual void setErrorLimit(std::string name, double limit);
+  virtual void set_new_jobfile(boost::filesystem::path jobilename);
+
+  virtual int run()=0; // start the scheduler
 
 protected: 
   ProcessList processes;          // all available processes
@@ -150,6 +170,7 @@ protected:
   int min_cpus;                        // min number of runs of one simulation
   int max_cpus;                        // max number of runs of one simulation
   double time_limit;                   // time limit for the simulation
+
 private:
   std::vector<CheckpointFiles> taskfiles;
   boost::filesystem::path outfilepath;
@@ -211,7 +232,10 @@ class MPPScheduler : public MasterScheduler
 int start(int,char**,const Factory&);
 
 /* astreich, 05/12 */
-int start(int,char**,const Factory&, std::string, double);
+//int start(int,char**,const Factory&, std::string, double);
+
+/* astreich, 06/13 */
+//int start(int, char**,const Factory&, std::string, double, ResultsType*);
 
 // create a scheduler, I just want to evaluate some simulations
 void init(const Factory&);

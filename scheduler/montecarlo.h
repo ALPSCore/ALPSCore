@@ -77,6 +77,8 @@ public:
   DummyMCRun();
   void dostep();
   double work_done() const;
+// astreich, 06.23
+  ResultType get_summary() const;
 };
 
 
@@ -90,6 +92,11 @@ public:
   
   ObservableSet get_measurements(bool compact=false) const;
   MCSimulation& operator<<(const Observable& obs);
+
+//protected:
+  virtual ResultType get_summary() const;
+  virtual ResultType get_summary(const std::string) const;
+
 private:
   std::string worker_tag() const;
   void write_xml_body(alps::oxstream&, const boost::filesystem::path&) const;

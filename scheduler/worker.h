@@ -37,6 +37,7 @@
 #include <boost/random.hpp>
 #include <boost/filesystem/path.hpp>
 #include <alps/osiris.h>
+#include <iostream>
 
 namespace alps {
 
@@ -46,6 +47,38 @@ namespace {
   const float MCTimeFactor = 0.05;
 }
 
+typedef struct rt {
+  std::string name;
+  double T;
+  double mean;
+  double error;
+  double count;
+
+  rt operator+=(const rt c) {
+    if ((T != c.T) || (name != c.name))
+      std::cerr << "\nname or temperature of summaries to add don't match!!\n";
+    if (count == 0)
+      return c;
+    if (c.count == 0)
+      return (*this);
+    double newCount = count+c.count;
+    mean = (mean*count+c.mean*c.count)/newCount;
+    double tmp1 = error*count;
+    double tmp2 = c.error*c.count;
+    error = sqrt(tmp1*tmp1 + tmp2*tmp2)/newCount;
+    count = newCount;
+    return (*this);
+  }
+} ResultType;
+
+typedef std::vector<ResultType> ResultsType;
+
+typedef struct {
+  std::string name;
+  double limit;
+} ErrorLimit;
+
+typedef std::vector<ErrorLimit> ErrorLimitsType;
 
 //=======================================================================
 // AbstractWorker
@@ -59,7 +92,7 @@ namespace {
 class AbstractWorker
 {
 public:                
-  AbstractWorker() { use_error_limit = false; };
+  AbstractWorker() {};
   virtual ~AbstractWorker() {};
   virtual void save_to_file(const boost::filesystem::path&) const=0;
   virtual void load_from_file(const boost::filesystem::path&)=0;
@@ -69,19 +102,7 @@ public:
   virtual void start_worker() = 0;
   virtual void halt_worker() = 0;
   virtual bool handle_message(const Process& runmaster,int32_t tag) =0;
- 
-  /* astreich, 05/17 */
-void setErrorLimit(std::string name, double value) {
-    obs_name_for_limit = name;
-    error_limit = value;
-    use_error_limit = true;
-  }
-
-protected:
-  bool use_error_limit;
-  std::string obs_name_for_limit;
-  double error_limit;
- 
+  virtual ResultType get_summary() const = 0;
 };
 
 //=======================================================================
@@ -117,7 +138,8 @@ public:
   bool handle_message(const Process& runmaster,int32_t tag);
   virtual void dostep();
   double work_done() const;
-    
+  virtual ResultType get_summary() const;  
+
 protected:
   int32_t version;
   int32_t user_version;
@@ -169,6 +191,9 @@ public:
   
   virtual TaskInfo get_info() const;
   double work_done() const;
+  
+  virtual ResultType get_summary() const;
+
   const Process& process() const {return where;}
   bool handle_message(const Process& runmaster,int32_t tag);
 private:

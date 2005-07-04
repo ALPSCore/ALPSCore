@@ -39,22 +39,12 @@ namespace scheduler {
 AbstractTask::AbstractTask(const ProcessList& w)
  : where(w)
 { 
-  /* astreich, 05/25 */
   use_error_limit=false;
 }
 
 AbstractTask::AbstractTask()
 {
-  /* astreich, 05/25 */
   use_error_limit=false;
-}
-void AbstractTask::setErrorLimit(std::string name, double value) {
-  obs_name_for_limit = name;
-  error_limit = value;
-  use_error_limit = true;
-  // set error limit to worker
-  if (theWorker)    
-    theWorker->setErrorLimit(name,value);
 }
 
 void AbstractTask::add_processes(const ProcessList& p)
@@ -81,10 +71,11 @@ bool AbstractTask::handle_message(const Process& master,int tag)
   int32_t n;
   double w;
   std::string filename;
+  ResultType res;
   switch(tag) {
     case MCMP_start_task:
       message.receive(master,MCMP_start_task);
-     start();
+      start();
       return true;
                   
     case MCMP_halt_task:
@@ -110,7 +101,15 @@ bool AbstractTask::handle_message(const Process& master,int tag)
       dump << work();
       dump.send(master,MCMP_work);
       return true;
-                
+
+    case MCMP_get_summary:
+      // return a summary to the master
+      message.receive(master,MCMP_get_summary);
+      res = get_summary();
+      dump << res.name << res.T << res.mean << res.error << res.count;
+      dump.send(master, MCMP_summary);
+      break;
+
     case MCMP_add_processes:
       message.receive(master,MCMP_add_processes);
       message >> pl;
