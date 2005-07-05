@@ -62,21 +62,15 @@ class Scheduler
 {
 public: 
   Scheduler(const Options&, const Factory&);    
+  Scheduler(const NoJobfileOptions&, const Factory&);    
 
   virtual ~Scheduler() {};
 
   virtual void set_new_jobfile(boost::filesystem::path jobfilename) {};
 
   virtual int run(); // start the scheduler
-/*
-  void makeSummary(std::string name) {
-    obs_name_for_limit = name;
-    make_summary = true;
-    std::cout << "a summary will be made\n";
-  }
-  */
+  
   void makeSummary() {
- //   obs_name_for_limit.clear();
     make_summary = true;
     std::cout << "a summary will be made\n";
   } 
@@ -109,8 +103,6 @@ protected:
   boost::filesystem::path defaultpath;
   
   bool use_error_limit;
-//  std::string obs_name_for_limit;
-//  double error_limit;
  
   ErrorLimitsType error_limits;
   ResultsType sim_results;
@@ -137,6 +129,7 @@ public:
   };
 
   MasterScheduler(const Options&,const Factory&);
+  MasterScheduler(const NoJobfileOptions&,const Factory&);
 
   ~MasterScheduler();
 
@@ -190,6 +183,7 @@ class SingleScheduler : public MasterScheduler
 {
 public:
   SingleScheduler(const Options&,const Factory&);
+  SingleScheduler(const NoJobfileOptions&,const Factory&);
   
   //  virtual void setErrorLimit(std::string name,double value);
   int run(); // start scheduler
@@ -221,6 +215,7 @@ class MPPScheduler : public MasterScheduler
   public:
 
   MPPScheduler(const Options&,const Factory&);
+  MPPScheduler(const NoJobfileOptions&,const Factory&);
   int run(); // start scheduler
 };
 
@@ -230,12 +225,6 @@ class MPPScheduler : public MasterScheduler
 
 // create a scheduler, I want to do some simulations
 int start(int,char**,const Factory&);
-
-/* astreich, 05/12 */
-//int start(int,char**,const Factory&, std::string, double);
-
-/* astreich, 06/13 */
-//int start(int, char**,const Factory&, std::string, double, ResultsType*);
 
 // create a scheduler, I just want to evaluate some simulations
 void init(const Factory&);

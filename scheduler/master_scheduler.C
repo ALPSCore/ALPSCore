@@ -42,6 +42,22 @@ namespace alps {
 
 namespace scheduler {
 
+// astreich, 07/05
+MasterScheduler::MasterScheduler(const NoJobfileOptions& opt,const Factory& p)
+  : Scheduler(opt,p),
+    min_check_time(opt.min_check_time),
+    max_check_time(opt.max_check_time),
+    checkpoint_time(opt.checkpoint_time),
+    min_cpus(opt.min_cpus),
+    max_cpus(opt.max_cpus),
+    time_limit(opt.time_limit)
+{
+  // register all processes and hosts with the MP signal handler
+  if(opt.programname.size()!=0)
+    processes=start_all_processes(programname);
+}
+
+
 MasterScheduler::MasterScheduler(const Options& opt,const Factory& p)
   : Scheduler(opt,p),
     min_check_time(opt.min_check_time),
@@ -49,9 +65,7 @@ MasterScheduler::MasterScheduler(const Options& opt,const Factory& p)
     checkpoint_time(opt.checkpoint_time),
     min_cpus(opt.min_cpus),
     max_cpus(opt.max_cpus),
-    time_limit(opt.time_limit),
-    outfilepath(opt.jobfilename),
-    infilepath(opt.jobfilename)
+    time_limit(opt.time_limit)
 {
   // register all processes and hosts with the MP signal handler
   if(opt.programname.size()!=0)
@@ -328,10 +342,7 @@ void MasterScheduler::finish_task(int i)
   tasks[i]->halt();
   taskstatus[i] = TaskHalted;
   if (make_summary) {
-//    if (obs_name_for_limit.length() == 0)
-      sim_results[i] = tasks[i]->get_summary();
- //   else
- //     sim_results[i] = tasks[i]->get_summary(obs_name_for_limit);
+    sim_results[i] = tasks[i]->get_summary();
   }
   std::cerr << "got summary\n"; 
   tasks[i]->checkpoint(boost::filesystem::complete(taskfiles[i].out,outfilepath.branch_path()));

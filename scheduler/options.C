@@ -39,7 +39,7 @@ namespace scheduler {
 
 namespace po = boost::program_options;
 
-Options::Options()
+NoJobfileOptions::NoJobfileOptions()
   : min_check_time(60),
     max_check_time(900),
     checkpoint_time(1800),
@@ -47,6 +47,52 @@ Options::Options()
     max_cpus(1),
     time_limit(0.),
     valid(true) // shall we really run?
+{
+}
+
+NoJobfileOptions::NoJobfileOptions(int argc, char** argv) 
+  : programname(std::string(argv[0])),
+    valid(true) // shall we really run?
+{
+  if (argc) {
+  
+  po::options_description desc("Allowed options");
+  desc.add_options()
+    ("help", "produce help message")
+    ("license,l", "print license conditions") 
+    ("checkpoint-time", po::value<double>(&checkpoint_time)->default_value(1800),"time between checkpoints")
+    ("Tmin", po::value<double>(&min_check_time)->default_value(60),"minimum time between checks whether a simulation is finished")
+    ("Tmax", po::value<double>(&max_check_time)->default_value(900),"maximum time between checks whether a simulation is finished")
+    ("time-limit,T", po::value<double>(&time_limit)->default_value(0),"time limit for the simulation")
+    ("Nmin", po::value<int>(&min_cpus)->default_value(1),"minimum number of CPUs per simulation")
+    ("Nmax", po::value<int>(&max_cpus)->default_value(std::numeric_limits<int>::max()),"maximum number of CPUs per simulation");
+  po::positional_options_description p;
+  p.add("input-file", 1);
+  
+  po::variables_map vm;
+  po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
+  po::notify(vm);    
+
+  if (vm.count("help")) {
+    std::cout << desc << "\n";
+    valid=false;
+  }
+  if (vm.count("license")) {
+    print_license(std::cout);
+    valid=false;
+  }
+  if (!valid)
+    return;
+    
+  if(min_cpus>max_cpus)
+    boost::throw_exception(std::runtime_error("Minimum number of CPUs larger than maximum number of CPU"));
+  if(min_check_time>max_check_time)
+    boost::throw_exception(std::runtime_error("Minimum time between checks larger than maximum time"));
+  }
+}
+
+Options::Options()
+  : NoJobfileOptions()
 {
 }
 

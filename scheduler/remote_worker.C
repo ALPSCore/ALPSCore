@@ -113,6 +113,18 @@ double RemoteWorker::work_done() const
   return ww;
 }
 
+// astreich, 06/23
+ResultType RemoteWorker::get_summary() const
+{
+  OMPDump send;
+  send.send(where,MCMP_get_summary);
+  IMPDump receive(where,MCMP_summary);
+
+  ResultType res;
+  receive >> res.name >> res.T >> res.mean >> res.error >> res.count;
+  return res;
+}
+
 TaskInfo RemoteWorker::get_info() const
 {
   // send message to remote process

@@ -40,6 +40,15 @@ using namespace boost::posix_time;
 namespace alps {
 namespace scheduler {
 
+// astreich, 07/05
+MPPScheduler::MPPScheduler(const NoJobfileOptions& opt,const Factory& p)
+  : MasterScheduler(opt,p)
+{
+  if(min_cpus>processes.size())
+    boost::throw_exception(std::logic_error("did not get enough processes in MPPScheduler::MPPScheduler"));
+}
+
+
 MPPScheduler::MPPScheduler(const Options& opt,const Factory& p)
   : MasterScheduler(opt,p)
 {

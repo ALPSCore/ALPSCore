@@ -43,6 +43,15 @@ namespace scheduler {
 
 using namespace boost::posix_time;
 
+SingleScheduler::SingleScheduler(const NoJobfileOptions& opt,const Factory& p)
+  : MasterScheduler(opt,p)
+{
+  if(min_cpus!=1)
+    boost::throw_exception(std::invalid_argument("cannot do more than one run on a single process"
+));
+}
+
+
 SingleScheduler::SingleScheduler(const Options& opt,const Factory& p)
   : MasterScheduler(opt,p)
 {
