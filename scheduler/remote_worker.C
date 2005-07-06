@@ -121,7 +121,7 @@ ResultType RemoteWorker::get_summary() const
   IMPDump receive(where,MCMP_summary);
 
   ResultType res;
-  receive >> res.name >> res.T >> res.mean >> res.error >> res.count;
+  receive >> res.T >> res.mean >> res.error >> res.count;
   return res;
 }
 
