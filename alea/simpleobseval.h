@@ -402,7 +402,7 @@ inline void SimpleObservableEvaluator<T>::merge(const Observable& o)
     const SimpleObservableEvaluator<T>& eval =
       dynamic_cast<const SimpleObservableEvaluator<T>&>(o);
     if (automatic_naming_ && !eval.automatic_naming_) automatic_naming_ = false;
-    for (int i = 0; i < eval.runs_.size(); ++i) (*this) << eval.runs_[i];
+    for (unsigned int i = 0; i < eval.runs_.size(); ++i) (*this) << eval.runs_[i];
   }
 }
 
@@ -612,7 +612,7 @@ inline const SimpleObservableEvaluator<T>& SimpleObservableEvaluator<T>::operato
   collect();
   rh.collect();
   all_ *= rh.all_;
-  for (int i = 0; i < runs_.size(); ++i)
+  for (unsigned int i = 0; i < runs_.size(); ++i)
     runs_[i] *= rh.runs_[i];
   if (automatic_naming_)
     Observable::rename("(" + super_type::name() + ") * (" + rh.name() + ")");
@@ -627,7 +627,7 @@ inline const SimpleObservableEvaluator<T>& SimpleObservableEvaluator<T>::operato
   collect();
   rh.collect();
   all_ /= rh.all_;
-  for (int i = 0; i < runs_.size(); ++i)
+  for (unsigned int i = 0; i < runs_.size(); ++i)
     runs_[i] /= rh.runs_[i];
   if (automatic_naming_)
     Observable::rename("(" + super_type::name() + ") / (" + rh.name() + ")");

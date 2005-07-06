@@ -230,7 +230,7 @@ typename SimpleBinning<T>::convergence_type SimpleBinning<T>::converged_errors()
   convergence_type conv;
   result_type err=error();
   obs_value_traits<T>::resize_same_as(conv,err);
-  const int range=4;
+  const unsigned int range=4;
   typename obs_value_traits<convergence_type>::slice_iterator it;
   if (binning_depth()<range) {
     for (it= obs_value_traits<convergence_type>::slice_begin(conv); 
@@ -242,7 +242,7 @@ typename SimpleBinning<T>::convergence_type SimpleBinning<T>::converged_errors()
        it!= obs_value_traits<convergence_type>::slice_end(conv); ++it)
       obs_value_traits<convergence_type>::slice_value(conv,it) = CONVERGED;
     
-    for (int i=binning_depth()-range;i<binning_depth()-1;++i) {
+    for (unsigned int i=binning_depth()-range;i<binning_depth()-1;++i) {
       result_type this_err(error(i));
       for (it= obs_value_traits<convergence_type>::slice_begin(conv); 
            it!= obs_value_traits<convergence_type>::slice_end(conv); ++it) {
@@ -391,7 +391,7 @@ void SimpleBinning<T>::output_scalar(std::ostream& out) const
     { 
       // detailed errors
       std::ios::fmtflags oldflags = out.setf(std::ios::left,std::ios::adjustfield);
-      for(int i=0;i<binning_depth();i++)
+      for(unsigned int i=0;i<binning_depth();i++)
         out << "    bin #" << std::setw(3) <<  i+1 
             << " : " << std::setw(8) << count()/(1<<i)
             << " entries: error = " << error(i) << std::endl;
@@ -402,7 +402,7 @@ void SimpleBinning<T>::output_scalar(std::ostream& out) const
 
 template <class T>
 void SimpleBinning<T>::write_scalar_xml(oxstream& oxs) const { 
-  for (int i = 0; i < binning_depth(); ++i) {
+  for (unsigned int i = 0; i < binning_depth(); ++i) {
     int prec=int(4-std::log10(std::abs(error(i)/binmean(i))));
     prec = (prec>=3 && prec<20 ? prec : 16);
     oxs << start_tag("BINNED") << attribute("size",boost::lexical_cast<std::string,int>(1<<i))

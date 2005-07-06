@@ -215,7 +215,7 @@ inline void HistogramObservableEvaluator<T>::merge(const Observable& o)
     const HistogramObservableEvaluator<T>& eval =
       dynamic_cast<const HistogramObservableEvaluator<T>&>(o);
     if (automatic_naming_ && !eval.automatic_naming_) automatic_naming_ = false;
-    for (int i = 0; i < eval.runs_.size(); ++i) 
+    for (unsigned int i = 0; i < eval.runs_.size(); ++i) 
     (*this) << eval.runs_[i];
     (*this).collect();
   }

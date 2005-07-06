@@ -158,11 +158,11 @@ inline void make_graph_from_lattice(GRAPH& g,const LATTICE& l)
           basis_vector_iterator first, last;
           boost::tie(first,last) = basis_vectors(l);
           for (typename vector_type::iterator rit = coordinates(bondvector_relative).first; first!=last; ++first, ++rit)
-            for (int i=0;i<alps::dimension(*first);++i)
+            for (unsigned int i=0;i<alps::dimension(*first);++i)
               bondvector_absolute[i] += *rit * (*first)[i];
           bondvector[edge]=bondvector_absolute;
           // divide relative bond vector by lattice extent
-          for (int i=0; i<dimension(l) && i<bondvector_relative.size() ; ++i)
+          for (unsigned int i=0; i<dimension(l) && i<bondvector_relative.size() ; ++i)
             bondvector_relative[i]/=alps::extent(l,i);
           bondvectorrelative[edge]=bondvector_relative;
         }

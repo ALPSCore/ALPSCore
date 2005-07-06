@@ -242,7 +242,7 @@ typename Expression<T>::value_type Expression<T>::value(const Evaluator<T>& p, b
   if (terms_.size()==0)
     return value_type(0.);
   value_type val=terms_[0].value(p);
-  for (int i=1;i<terms_.size();++i)
+  for (unsigned int i=1;i<terms_.size();++i)
     val += terms_[i].value(p,isarg);
   return val;
 }
@@ -253,7 +253,7 @@ bool Expression<T>::can_evaluate(const Evaluator<T>& p, bool isarg) const
   if (terms_.size()==0)
     return true;
   bool can=true;
-  for (int i=0;i<terms_.size();++i)
+  for (unsigned int i=0;i<terms_.size();++i)
     can = can && terms_[i].can_evaluate(p,isarg);
   return can;
 }
@@ -265,7 +265,7 @@ void Expression<T>::partial_evaluate(const Evaluator<T>& p, bool isarg)
     (*this) = Expression<T>(value(p,isarg));
   else {
     value_type val(0);
-    for (int i=0; i<terms_.size(); ++i) {
+    for (unsigned int i=0; i<terms_.size(); ++i) {
       if (terms_[i].can_evaluate(p,isarg)) {
         val += terms_[i].value(p,isarg);
         terms_.erase(terms_.begin()+i);
@@ -285,7 +285,7 @@ void Expression<T>::output(std::ostream& os) const
     os <<"0";
   else {
     terms_[0].output(os);
-    for (int i=1;i<terms_.size();++i) {
+    for (unsigned int i=1;i<terms_.size();++i) {
       if(!terms_[i].is_negative())
         os << " + ";
       terms_[i].output(os);
@@ -296,7 +296,7 @@ void Expression<T>::output(std::ostream& os) const
 template<class T>
 void Expression<T>::flatten()
 {
-  int i=0;
+  unsigned int i=0;
   while (i<terms_.size()) {
     boost::shared_ptr<Term<T> > term = terms_[i].flatten_one_term();
     if (term)

@@ -221,7 +221,7 @@ template <class T>
      stepsize_(obs.stepsize())
 {
   if(count())
-    for (int i=0;i<obs.size();++i) 
+    for (unsigned int i=0;i<obs.size();++i) 
       histogram_[i]=obs[i];
 }
 

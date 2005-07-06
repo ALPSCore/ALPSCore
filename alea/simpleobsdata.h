@@ -299,9 +299,9 @@ SimpleObservableData<T>::SimpleObservableData(const AbstractSimpleObservable<T>&
       obs_value_traits<result_type>::copy(max_, obs.max());
     }
 
-    for (int i = 0; i < obs.bin_number(); ++i)
+    for (unsigned int i = 0; i < obs.bin_number(); ++i)
       values_.push_back(obs.bin_value(i));
-    for (int i = 0; i < obs.bin_number2(); ++i)
+    for (unsigned int i = 0; i < obs.bin_number2(); ++i)
       values2_.push_back(obs.bin_value2(i));
     obs_value_traits<convergence_type>::copy(converged_errors_, obs.converged_errors());
     obs_value_traits<convergence_type>::copy(any_converged_errors_, obs.converged_errors());
@@ -603,9 +603,9 @@ void SimpleObservableData<T>::transform(const SimpleObservableData<X>& x,
     values_.clear();
     jack_.clear();
   } else {
-    for (int i = 0; i < bin_number(); ++i)
+    for (unsigned int i = 0; i < bin_number(); ++i)
       values_[i] = opv(values_[i], x.values_[i]);
-    for (int i = 0; i < jack_.size(); ++i)
+    for (unsigned int i = 0; i < jack_.size(); ++i)
       jack_[i] = opr(jack_[i], x.jack_[i]);
   }
   
@@ -979,7 +979,7 @@ void SimpleObservableData<T>::analyze() const
       has_tau_ = true;
       obs_value_traits<result_type>::resize_same_as(variance_, bin_value2(0));
       variance_ = 0.;
-      for (int i=0;i<values2_.size();++i)
+      for (unsigned int i=0;i<values2_.size();++i)
         variance_+=obs_value_cast<result_type,value_type>(values2_[i]);
       // was: variance_ = std::accumulate(values2_.begin(), values2_.end(), variance_);
       result_type mean2(mean_);

@@ -159,11 +159,11 @@ typename Term<T>::value_type Term<T>::value(const Evaluator<T>& p, bool isarg) c
 {
   value_type val(1.);
   if (p.direction() == Evaluator<T>::left_to_right)  {
-    for (int i = 0; i < terms_.size() && is_nonzero(val); ++i)
+    for (unsigned int i = 0; i < terms_.size() && is_nonzero(val); ++i)
       val *= terms_[i].value(p,isarg);
 }
   else {
-    for (int i = terms_.size()-1; i >= 0 && is_nonzero(val); --i) {
+    for (unsigned int i = terms_.size()-1; i >= 0 && is_nonzero(val); --i) {
       value_type tmp=terms_[i].value(p,isarg);
       val *=tmp;
     }
@@ -181,7 +181,7 @@ void Term<T>::partial_evaluate(const Evaluator<T>& p, bool isarg)
   } else {
     value_type val(1);
     if (p.direction() == Evaluator<T>::left_to_right) {
-      for (int i=0; i<terms_.size(); ++i) {
+      for (unsigned int i=0; i<terms_.size(); ++i) {
         if (terms_[i].can_evaluate(p,isarg)) {
           val *= terms_[i].value(p,isarg);
           if (is_zero(val))
@@ -193,7 +193,7 @@ void Term<T>::partial_evaluate(const Evaluator<T>& p, bool isarg)
         }
       }
     } else {
-      for (int i = terms_.size()-1; i >= 0; --i) {
+      for (unsigned int i = terms_.size()-1; i >= 0; --i) {
         if (terms_[i].can_evaluate(p,isarg)) {
           val *= terms_[i].value(p,isarg);
           if (is_zero(val))
@@ -221,7 +221,7 @@ template<class T>
 bool Term<T>::can_evaluate(const Evaluator<T>& p, bool isarg) const
 {
   bool can=true;
-  for (int i=0;i<terms_.size();++i)
+  for (unsigned int i=0;i<terms_.size();++i)
     can = can && terms_[i].can_evaluate(p,isarg);
   return can;
 }
@@ -236,7 +236,7 @@ void Term<T>::output(std::ostream& os) const
   if(is_negative())
     os << " - ";
   terms_[0].output(os);
-  for (int i=1;i<terms_.size();++i) {
+  for (unsigned int i=1;i<terms_.size();++i) {
     os << " " << (terms_[i].is_inverse() ? "/" : "*") << " ";
     terms_[i].output(os);
   }
@@ -273,7 +273,7 @@ std::pair<T,Term<T> > Term<T>::split() const
 template<class T>
 boost::shared_ptr<Term<T> > Term<T>::flatten_one_term()
 {
-  for (int i=0;i<terms_.size();++i)
+  for (unsigned int i=0;i<terms_.size();++i)
     if (!terms_[i].is_inverse()) {
       boost::shared_ptr<Factor<T> > val = terms_[i].flatten_one_value();
       if (val) {

@@ -302,7 +302,7 @@ public:
   std::size_t num_distances() const
   {
     std::size_t d=1;
-    for (int i=0;i<BASE::dimension();++i) {
+    for (unsigned int i=0;i<BASE::dimension();++i) {
       if(boundary(i)=="periodic")
         d*=extent(i);
       else
@@ -314,7 +314,7 @@ public:
   std::size_t distance(const offset_type& x, const offset_type& y) const
   {
     std::size_t d=0;
-    for (int i=0;i<BASE::dimension();++i) {
+    for (unsigned int i=0;i<BASE::dimension();++i) {
       if(boundary(i)=="periodic")
         d = d*extent(i) + (x[i] <= y[i] ? y[i]-x[i] : extent(i)+y[i]-x[i]);
       else

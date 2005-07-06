@@ -489,8 +489,10 @@ G* graph_helper<G>::make_graph(const Parameters& parms)
     to_delete_=false;
     have_lattice_=true;
   }
-  else 
+  else{ 
     boost::throw_exception(std::runtime_error("could not find graph/lattice specified in parameters"));
+    g=NULL;
+  }
   return g;
 }
 
