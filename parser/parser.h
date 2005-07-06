@@ -59,7 +59,7 @@ struct XMLTag
   std::string name;
   /// the attributes
   XMLAttributes attributes;
-  /// \brief the type of tag
+/*/// \brief the type of tag
   ///
   /// The meaning of the values, and what is stored in the \c name member can be seen in the following table
   /// \htmlonly
@@ -85,7 +85,7 @@ struct XMLTag
   /// \hline
   /// \end{tabulate}  
   /// \endlatexonly
-  enum {OPENING, CLOSING, SINGLE, COMMENT, PROCESSING} type;
+*/enum {OPENING, CLOSING, SINGLE, COMMENT, PROCESSING} type;
   /// returns true if the tag is a comment
   bool is_comment() { return type==COMMENT;}
   /// returns true if the tag is a processing instruction
