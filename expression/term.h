@@ -163,7 +163,7 @@ typename Term<T>::value_type Term<T>::value(const Evaluator<T>& p, bool isarg) c
       val *= terms_[i].value(p,isarg);
 }
   else {
-    for (unsigned int i = terms_.size()-1; i >= 0 && is_nonzero(val); --i) {
+    for (int i = int(terms_.size())-1; i >= 0 && is_nonzero(val); --i) {
       value_type tmp=terms_[i].value(p,isarg);
       val *=tmp;
     }
@@ -193,7 +193,7 @@ void Term<T>::partial_evaluate(const Evaluator<T>& p, bool isarg)
         }
       }
     } else {
-      for (unsigned int i = terms_.size()-1; i >= 0; --i) {
+      for (int i = int(terms_.size())-1; i >= 0; --i) {
         if (terms_[i].can_evaluate(p,isarg)) {
           val *= terms_[i].value(p,isarg);
           if (is_zero(val))

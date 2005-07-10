@@ -66,7 +66,7 @@ public:
 
   virtual ~Scheduler() {};
 
-  virtual void set_new_jobfile(boost::filesystem::path jobfilename) {};
+  virtual void set_new_jobfile(boost::filesystem::path) {};
 
   virtual int run(); // start the scheduler
   
@@ -76,12 +76,9 @@ public:
   } 
 
   ResultsType getSummary() const {
-    if (make_summary) 
-      return sim_results;
-    else {
-      std::cerr << "no summary has been made.\n";
+    if (!make_summary)
       boost::throw_exception(std::runtime_error("No summary has been made"));
-    }
+    return sim_results;
   }
        
   // USER OBJECT CREATION functions
