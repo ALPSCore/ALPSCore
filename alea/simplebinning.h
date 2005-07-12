@@ -165,9 +165,11 @@ inline void SimpleBinning<T>::operator<<(const T& x)
     obs_value_traits<result_type>::resize_same_as(min_,x);
   }
   
-  if(obs_value_traits<T>::size(x)!=size())
+  if(obs_value_traits<T>::size(x)!=size()) {
+    std::cerr << "Size is " << size() << " while new size is " << obs_value_traits<T>::size(x) << "\n";
     boost::throw_exception(std::runtime_error("Size of argument does not match in SimpleBinning<T>::add"));
-
+  }
+  
   // store x, x^2 and the minimum and maximum value
   last_bin_[0]=obs_value_cast<result_type,value_type>(x);
   sum_[0]+=obs_value_cast<result_type,value_type>(x);
