@@ -48,7 +48,6 @@ ResultType MCSimulation::get_summary(const std::string name) const
   ResultType res;
   ObservableSet mySet = get_measurements(true);
   RealObservable* myObs = ((RealObservable*)&mySet[name]);
-  res.name = name;
   res.T = parms["T"];
   res.mean = myObs->mean();
   res.error = myObs->error();

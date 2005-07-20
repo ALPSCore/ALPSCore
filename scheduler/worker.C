@@ -52,9 +52,11 @@ namespace scheduler {
 Worker::Worker(const ProcessList& w,const alps::Parameters&  myparms,int32_t n)
   : AbstractWorker(),
     version(MCDump_worker_version),
+
     engine_ptr(rng_factory.create(myparms.value_or_default("RNG","lagged_fibonacci607"))),
     random(*engine_ptr, boost::uniform_real<>()),
     random_01(*engine_ptr, boost::uniform_real<>()),
+
     node(n),
     parms(myparms),
     where(w),
@@ -66,15 +68,18 @@ Worker::Worker(const ProcessList& w,const alps::Parameters&  myparms,int32_t n)
   // TODO: create slave runs
 
   if (where.size()) engine_ptr->seed(parms["SEED"]);
+
   Disorder::seed(parms.value_or_default("DISORDER_SEED",0));
 }
 
 Worker::Worker(const alps::Parameters&  myparms,int32_t n)
   : AbstractWorker(),
     version(MCDump_worker_version),
+
     engine_ptr(rng_factory.create(myparms.value_or_default("RNG","lagged_fibonacci607"))),
     random(*engine_ptr, boost::uniform_real<>()),
     random_01(*engine_ptr, boost::uniform_real<>()),
+
     node(n),
     parms(myparms),
     where(1),
@@ -86,6 +91,7 @@ Worker::Worker(const alps::Parameters&  myparms,int32_t n)
   // TODO: create slave runs
 
   if (where.size()) engine_ptr->seed(parms["SEED"]);
+
   Disorder::seed(parms.value_or_default("DISORDER_SEED",0));
 }
 
@@ -117,7 +123,9 @@ void Worker::load_worker(IDump& dump)
   std::string state;
   dump >> state;
   std::stringstream rngstream(state);
+
   engine_ptr->read(rngstream);
+
   if(node==0) {
     int32_t dummy;
     info.load(dump,version);
@@ -132,7 +140,9 @@ void Worker::save_worker(ODump& dump) const
 {
   dump << int32_t(MCDump_run) << int32_t(0) << int32_t(MCDump_worker_version) << parms;
   std::ostringstream rngstream;
+
   rngstream << *engine_ptr;
+
   dump << rngstream.str();
   if(node==0)
     dump << info;
@@ -247,7 +257,7 @@ bool Worker::handle_message(const Process& master,int32_t tag) {
       // return the summary of this task to the master
       message.receive(master,MCMP_get_summary);
       res = get_summary();
-      dump << res.name << res.T << res.mean << res.error << res.count;
+      dump << res.T << res.mean << res.error << res.count;
       dump.send(master,MCMP_summary);
       return true;
 
@@ -300,7 +310,6 @@ double Worker::work_done() const
   return 0.;
 }
 
-// astreich, 06/23
 ResultType Worker::get_summary() const
 {
   ResultType res;

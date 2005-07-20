@@ -130,7 +130,6 @@ ResultType RemoteTask::get_summary() const
   send.send(where[0],MCMP_get_summary);
   IMPDump receive(where[0],MCMP_summary);
   ResultType res;
-  receive >> res.name;
   receive >> res.T;
   receive >> res.mean;
   receive >> res.error;

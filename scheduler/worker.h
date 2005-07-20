@@ -48,14 +48,13 @@ namespace {
 }
 
 typedef struct rt {
-  std::string name;
   double T;
   double mean;
   double error;
   double count;
 
   rt operator+=(const rt c) {
-    if ((T != c.T) || (name != c.name))
+    if (T != c.T) 
       std::cerr << "\nname or temperature of summaries to add don't match!!\n";
     if (count == 0)
       return c;
@@ -72,13 +71,6 @@ typedef struct rt {
 } ResultType;
 
 typedef std::vector<ResultType> ResultsType;
-
-typedef struct {
-  std::string name;
-  double limit;
-} ErrorLimit;
-
-typedef std::vector<ErrorLimit> ErrorLimitsType;
 
 //=======================================================================
 // AbstractWorker
@@ -143,10 +135,12 @@ public:
 protected:
   int32_t version;
   int32_t user_version;
+
   typedef buffered_rng_base engine_type;
   mutable boost::shared_ptr<engine_type> engine_ptr;
   mutable boost::variate_generator<engine_type&, boost::uniform_real<> > random;
   mutable boost::variate_generator<engine_type&, boost::uniform_real<> > random_01;
+
   double random_real(double a=0., double b=1.) { return a+b*random();}
   //return boost::variate_generator<random_type&,boost::uniform_real<> >(random,boost::uniform_real<>(a,b))();
   int random_int(int a, int b) 

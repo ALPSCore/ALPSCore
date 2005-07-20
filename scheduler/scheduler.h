@@ -101,7 +101,7 @@ protected:
   
   bool use_error_limit;
  
-  ErrorLimitsType error_limits;
+  //ErrorLimitsType error_limits;
   ResultsType sim_results;
   
   bool make_summary;

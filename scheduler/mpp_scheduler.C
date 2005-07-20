@@ -40,7 +40,6 @@ using namespace boost::posix_time;
 namespace alps {
 namespace scheduler {
 
-// astreich, 07/05
 MPPScheduler::MPPScheduler(const NoJobfileOptions& opt,const Factory& p)
   : MasterScheduler(opt,p)
 {
@@ -119,7 +118,6 @@ int MPPScheduler::run()
       last_checkpoint = second_clock::local_time();
       checkpoint();
       std::cout  << "Done with checkpoint.\n" ;
-      std::cerr  << "Done with checkpoint.\n" ;
     }
   }
   

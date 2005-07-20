@@ -346,7 +346,7 @@ ResultType WorkerTask::get_summary() const
       // receive dump
       IMPDump receive(MCMP_summary);
       ResultType s_res;
-      receive >> s_res.name >> s_res.T >> s_res.mean >> s_res.error >> s_res.count;
+      receive >> s_res.T >> s_res.mean >> s_res.error >> s_res.count;
       res += s_res;
     }
   }
