@@ -106,7 +106,7 @@ bool AbstractTask::handle_message(const Process& master,int tag)
       // return a summary to the master
       message.receive(master,MCMP_get_summary);
       res = get_summary();
-      dump << res.name << res.T << res.mean << res.error << res.count;
+      dump << res.T << res.mean << res.error << res.count;
       dump.send(master, MCMP_summary);
       break;
 
