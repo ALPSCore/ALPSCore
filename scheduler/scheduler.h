@@ -38,7 +38,8 @@
 
 #include <alps/scheduler/factory.h>
 #include <alps/scheduler/options.h>
-#include <alps/scheduler/task.h>
+// I get a linker error if i include the task.h file ... (astreich, 07/21)
+// #include <alps/scheduler/task.h> 
 #include <alps/scheduler/types.h>
 #include <alps/scheduler/signal.hpp>
 #include <alps/parameterlist.h>
