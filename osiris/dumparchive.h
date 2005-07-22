@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -32,9 +32,13 @@
 
 #include <alps/osiris/dump.h>
 #include <alps/osiris/std/string.h>
-#include <boost/archive/detail/common_oarchive.hpp>
-#include <boost/archive/detail/common_iarchive.hpp>
 #include <boost/archive/archive_exception.hpp>
+#include <boost/archive/detail/iserializer.hpp>
+#include <boost/archive/detail/interface_iarchive.hpp>
+#include <boost/archive/detail/common_iarchive.hpp>
+#include <boost/archive/detail/oserializer.hpp>
+#include <boost/archive/detail/interface_oarchive.hpp>
+#include <boost/archive/detail/common_oarchive.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/version.hpp>
 #include <iostream>
@@ -135,7 +139,7 @@ public:
 
     // explicitly convert to char * to avoid compile ambiguities
     void save_override(const boost::archive::class_name_type & t, int){
-#if (BOOST_VERSION == 103300)
+#if (BOOST_VERSION >= 103300)
         this->This()->save(std::string(static_cast<const char *>(t)));
 #else
         * this->This() << std::string(static_cast<const char *>(t));
