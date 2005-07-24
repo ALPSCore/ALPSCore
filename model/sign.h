@@ -31,8 +31,9 @@
 #ifndef ALPS_MODEL_SIGN_H
 #define ALPS_MODEL_SIGN_H
 
-#include <alps/lattice.h>
+
 #include <alps/model/modellibrary.h>
+#include <alps/lattice/graph_helper.h>
 
 #include <boost/graph/filtered_graph.hpp>
 #include <boost/graph/undirected_dfs.hpp>

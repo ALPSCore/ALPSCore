@@ -34,8 +34,10 @@
 #include <alps/scheduler/types.h>
 #include <alps/parameters.h>
 #include <alps/config.h>
-#include <alps/osiris.h>
 #include <alps/copyright.h>
+#include <alps/osiris/comm.h>
+#include <alps/osiris/mpdump.h>
+
 #ifdef ALPS_HAVE_UNISTD_H
 # include <unistd.h>
 #endif

@@ -33,13 +33,8 @@
 
 #include <alps/alea/histogram.h>
 #include <alps/parser/parser.h>
-#include <alps/osiris.h>
 #include <iostream>
 #include <vector>
-
-#ifndef ALPS_WITHOUT_OSIRIS
-# include <alps/osiris.h>
-#endif
 
 namespace alps {
 

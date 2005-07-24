@@ -32,6 +32,8 @@
 #include <alps/scheduler/types.h>
 #include <alps/scheduler/scheduler.h>
 #include <alps/parser/path.h>
+#include <alps/osiris/mpdump.h>
+#include <alps/alea/detailedbinning.h>
 #include <boost/filesystem/fstream.hpp>
 
 namespace alps {

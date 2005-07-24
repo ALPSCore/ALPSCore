@@ -30,7 +30,8 @@
 #include <boost/iterator/iterator_adaptor.hpp>
 #include <alps/scheduler/task.h>
 #include <alps/scheduler/types.h>
-#include <alps/osiris.h>
+#include <alps/osiris/mpdump.h>
+#include <alps/osiris/std/string.h>
 
 namespace alps {
 

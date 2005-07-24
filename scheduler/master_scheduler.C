@@ -30,7 +30,8 @@
 #include <alps/scheduler/scheduler.h>
 #include <alps/scheduler/signal.hpp>
 #include <alps/scheduler/types.h>
-#include <alps/osiris.h>
+#include <alps/osiris/mpdump.h>
+#include <alps/osiris/comm.h>
 #include <alps/parser/parser.h>
 #include <alps/parser/xmlstream.h>
 #include <boost/filesystem/operations.hpp>

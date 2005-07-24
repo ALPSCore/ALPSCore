@@ -32,7 +32,6 @@
 #include <alps/scheduler/types.h>
 #include <alps/scheduler/scheduler.h>
 #include <alps/expression.h>
-#include <alps/osiris.h>
 #include <alps/parser/parser.h>
 
 #include <boost/filesystem/operations.hpp>

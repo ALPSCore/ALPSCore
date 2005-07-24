@@ -31,7 +31,6 @@
 #define ALPS_SCHEDULER_FACTORY_H
 
 #include <alps/scheduler/task.h>
-#include <alps/osiris.h>
 #include <boost/filesystem/path.hpp>
 #include <iostream>
 

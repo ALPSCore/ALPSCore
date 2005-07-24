@@ -50,7 +50,7 @@
 #endif
 
 #ifndef ALPS_WITHOUT_OSIRIS
-# include <alps/osiris.h>
+# include <alps/osiris/std/valarray.h>
 #endif
 
 #ifdef ALPS_HAVE_VALARRAY

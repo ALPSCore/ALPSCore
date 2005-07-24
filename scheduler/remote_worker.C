@@ -30,7 +30,8 @@
 #include <alps/scheduler/worker.h>
 #include <alps/scheduler/types.h>
 #include <alps/scheduler/scheduler.h>
-#include <alps/osiris.h>
+#include <alps/osiris/comm.h>
+#include <alps/osiris/mpdump.h>
 
 namespace alps {
 namespace scheduler {

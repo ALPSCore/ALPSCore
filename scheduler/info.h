@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 1994-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -32,7 +32,7 @@
 
 #include <alps/scheduler/types.h>
 #include <alps/parser/xmlstream.h>
-#include <alps/osiris.h>
+#include <alps/osiris/dump.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <iterator>
 #include <ctime>

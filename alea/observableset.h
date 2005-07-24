@@ -43,10 +43,6 @@
 #include <boost/filesystem/path.hpp>
 #include <map>
 
-#ifndef ALPS_WITHOUT_OSIRIS
-# include <alps/osiris.h>
-#endif
-
 namespace alps {
 
 /** A class to collect the various measurements performed in a simulation

@@ -33,6 +33,7 @@
 
 #include <alps/config.h>
 #include <alps/osiris/std/vector.h>
+#include <alps/osiris/dump.h>
 
 #include <cstdlib>
 #include <string>

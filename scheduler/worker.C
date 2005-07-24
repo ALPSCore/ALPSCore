@@ -30,7 +30,10 @@
 #include <alps/random.h>
 #include <alps/scheduler/scheduler.h>
 #include <alps/expression.h>
-#include <alps/osiris.h>
+#include <alps/osiris/std/string.h>
+#include <alps/osiris/comm.h>
+#include <alps/osiris/xdrdump.h>
+#include <alps/osiris/mpdump.h>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem/operations.hpp>

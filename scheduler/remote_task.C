@@ -28,7 +28,8 @@
 /* $Id$ */
 
 #include <alps/scheduler/scheduler.h>
-#include <alps/osiris.h>
+#include <alps/osiris/mpdump.h>
+#include <alps/osiris/std/string.h>
 
 namespace alps {
 namespace scheduler {

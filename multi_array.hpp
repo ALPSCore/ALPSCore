@@ -55,7 +55,8 @@
 #include <stdexcept>
 
 #ifndef ALPS_WITHOUT_OSIRIS
-# include <alps/osiris.h>
+# include <alps/osiris/dump.h>
+# include <alps/osiris/std/vector.h>
 #endif
 
 //

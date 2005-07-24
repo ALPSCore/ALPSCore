@@ -28,7 +28,8 @@
 /* $Id$ */
 
 #include <alps/scheduler/info.h>
-#include <alps/osiris.h>
+#include <alps/osiris/std/vector.h>
+#include <alps/osiris/os.h>
 
 #include <algorithm>
 #include <boost/functional.hpp>

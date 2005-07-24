@@ -29,7 +29,6 @@
 
 #include <alps/scheduler/scheduler.h>
 #include <alps/config.h>
-#include <alps/osiris.h>
 #include <cstdio>
 #ifdef ALPS_HAVE_UNISTD_H
 # include <unistd.h>

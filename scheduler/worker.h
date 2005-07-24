@@ -36,7 +36,8 @@
 #include <boost/smart_ptr.hpp>
 #include <boost/random.hpp>
 #include <boost/filesystem/path.hpp>
-#include <alps/osiris.h>
+#include <alps/osiris/process.h>
+#include <alps/osiris/dump.h>
 #include <iostream>
 
 namespace alps {

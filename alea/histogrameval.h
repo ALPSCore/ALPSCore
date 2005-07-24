@@ -41,10 +41,6 @@
 
 #include <iostream>
 
-#ifndef ALPS_WITHOUT_OSIRIS
-# include <alps/osiris.h>
-#endif
-
 //======================================================
 //HistogramObservableEvaluator
 //

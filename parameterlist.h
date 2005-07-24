@@ -36,7 +36,8 @@
 #include <boost/serialization/vector.hpp>
 
 #ifndef ALPS_WITHOUT_OSIRIS
-# include <alps/osiris.h>
+# include <alps/osiris/dump.h>
+# include <alps/osiris/std/vector.h>
 #endif
 #ifndef ALPS_WITHOUT_XML
 # include <alps/xml.h>

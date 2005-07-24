@@ -31,7 +31,8 @@
 #ifndef ALPS_PARSER_PARAMETERS_H
 #define ALPS_PARSER_PARAMETERS_H
 
-#include <alps/osiris.h>
+#include <alps/osiris/dump.h>
+#include <alps/osiris/std/string.h>
 #include <alps/parser/parser.h>
 #include <alps/stringvalue.h>
 #include <alps/xml.h>

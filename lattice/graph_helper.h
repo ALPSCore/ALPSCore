@@ -33,6 +33,7 @@
 
 #include <alps/lattice/latticelibrary.h>
 #include <alps/lattice/disorder.h>
+#include <alps/lattice/parity.h>
 #include <alps/lattice/propertymap.h>
 #include <boost/vector_property_map.hpp>
 #include <alps/multi_array.hpp>

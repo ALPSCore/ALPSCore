@@ -30,6 +30,8 @@
 #ifndef ALPS_OSIRIS_DUMPARCHIVE_H
 #define ALPS_OSIRIS_DUMPARCHIVE_H
 
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 #include <alps/osiris/dump.h>
 #include <alps/osiris/std/string.h>
 #include <boost/archive/archive_exception.hpp>

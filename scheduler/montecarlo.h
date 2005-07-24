@@ -36,10 +36,7 @@
 #include <alps/model/model_helper.h>
 #include <alps/model/sign.h>
 #include <alps/lattice/graph_helper.h>
-#include <alps/lattice.h>
-#include <alps/model.h>
-#include <alps/alea.h>
-#include <alps/osiris.h>
+#include <alps/alea/observableset.h>
 #include <boost/smart_ptr.hpp>
 
 namespace alps {
