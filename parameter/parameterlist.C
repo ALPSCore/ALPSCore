@@ -29,6 +29,7 @@
 /* $Id$ */
 
 #include <alps/parameterlist.h>
+#include <alps/osiris/xdrdump.h>
 #include <boost/throw_exception.hpp>
 #include <iostream>
 #include <stdexcept>

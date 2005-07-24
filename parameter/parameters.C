@@ -29,6 +29,7 @@
 /* $Id$ */
 
 #include <alps/parameters.h>
+#include <alps/osiris/xdrdump.h>
 #include <iostream>
 #include <cstdlib>
 
