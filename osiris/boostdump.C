@@ -35,7 +35,7 @@
 #include <cstdlib>
 #include <fstream>
 
-#if (ALPS_BOOST_VERSION >= 133)
+#if (BOOST_VERSION >= 103300)
 # include <boost/archive/impl/text_iarchive_impl.ipp>
 # include <boost/archive/impl/basic_text_iarchive.ipp>
 # include <boost/archive/impl/text_oarchive_impl.ipp>
