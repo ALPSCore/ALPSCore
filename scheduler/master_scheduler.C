@@ -247,10 +247,6 @@ void MasterScheduler::checkpoint()
     int local_sim=-1;
     
     for (int i=0; i<tasks.size();i++) {
-      if (tasks[i] != 0)
-        if (make_summary)
-          sim_results[i] = tasks[i]->get_summary();
-
       if (taskstatus[i]==TaskFinished) {
         out << start_tag("TASK") << attribute("status","finished")
             << start_tag("INPUT") 
