@@ -296,7 +296,7 @@ void XMLParser::parse(std::istream& in)
       break;
     in.putback(c);
     if (c=='<') {
-      XMLTag tag = parse_tag(in);
+      XMLTag tag = parse_tag(in, false);
       if (tag.type == XMLTag::OPENING || tag.type== XMLTag::SINGLE) {
         // start tag
         handler_.start_element(tag.name, tag.attributes, xml::element);

@@ -35,7 +35,7 @@
 #include <stdexcept>
 
 std::string alps::xslt_path(const std::string& stylefile) {
-  std::string path("file:");
+  std::string path("file://");
   path += ALPS_XML_DIR;
   char* p = getenv("ALPS_XSLT_PATH");
   if (p!=0)

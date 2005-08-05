@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -52,13 +52,15 @@ class XMLHandlerBase
 public:
   XMLHandlerBase(const std::string& basename) : basename_(basename) {
     if (basename_.empty())
-      boost::throw_exception(std::invalid_argument("XMLHandlerBase: empty basename"));
+      boost::throw_exception(
+        std::invalid_argument("XMLHandlerBase: empty basename"));
   }
   virtual ~XMLHandlerBase() {}
 
   void set_basename(const std::string&) {
     if (basename_.empty())
-      boost::throw_exception(std::invalid_argument("XMLHandlerBase: empty basename"));
+      boost::throw_exception(
+        std::invalid_argument("XMLHandlerBase: empty basename"));
   }
   std::string basename() const { return basename_; }
 
@@ -269,6 +271,23 @@ public:
 private:
   oxstream oxs_;
   bool in_text_;
+};
+
+
+class StylesheetXMLHandler : public XMLHandlerBase
+{
+public:
+  StylesheetXMLHandler(std::string& style) 
+    : XMLHandlerBase("style"), style_(style) {}
+  void start_element(const std::string&,
+		     const XMLAttributes& attributes,
+		     xml::tag_type type) {
+    if (type == xml::stylesheet) style_ = attributes["href"];
+  }
+  void end_element(const std::string&, xml::tag_type) {}
+  void text(const std::string&) {}
+private:
+  std::string& style_;
 };
 
 } // namespace alps
