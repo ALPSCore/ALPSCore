@@ -43,7 +43,6 @@ namespace alps {
 
 namespace scheduler {
 
-// astreich, 07/05
 MasterScheduler::MasterScheduler(const NoJobfileOptions& opt,const Factory& p)
   : Scheduler(opt,p),
     min_check_time(opt.min_check_time),
@@ -78,6 +77,11 @@ MasterScheduler::MasterScheduler(const Options& opt,const Factory& p)
   set_new_jobfile(opt.jobfilename);
 }
 
+void MasterScheduler::set_time_limit(double limit)
+{
+  time_limit = limit;
+}
+
 /**
  * Registers a new job file and updates everything that is related to the job
  * files - namely the task files are parsed and the tasks are created
@@ -88,7 +92,6 @@ MasterScheduler::MasterScheduler(const Options& opt,const Factory& p)
  *
  * @params jobfilename The name of the new job file
  */
-// astreich, 06/30
 void MasterScheduler::set_new_jobfile(boost::filesystem::path jobfilename)
 {
   // clean the 'traces' of the previous simulation
@@ -244,6 +247,10 @@ void MasterScheduler::checkpoint()
     int local_sim=-1;
     
     for (int i=0; i<tasks.size();i++) {
+      if (tasks[i] != 0)
+        if (make_summary)
+          sim_results[i] = tasks[i]->get_summary();
+
       if (taskstatus[i]==TaskFinished) {
         out << start_tag("TASK") << attribute("status","finished")
             << start_tag("INPUT") 

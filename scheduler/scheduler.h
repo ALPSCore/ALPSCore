@@ -38,8 +38,9 @@
 
 #include <alps/scheduler/factory.h>
 #include <alps/scheduler/options.h>
+
 // I get a linker error if i include the task.h file ... (astreich, 07/21)
-// #include <alps/scheduler/task.h> 
+#include <alps/scheduler/task.h> 
 #include <alps/scheduler/types.h>
 #include <alps/scheduler/signal.hpp>
 #include <alps/parameterlist.h>
@@ -68,6 +69,7 @@ public:
   virtual ~Scheduler() {};
 
   virtual void set_new_jobfile(boost::filesystem::path) {};
+  virtual void set_time_limit(double limit) {};
 
   virtual int run(); // start the scheduler
   
@@ -132,6 +134,7 @@ public:
   ~MasterScheduler();
 
   virtual void set_new_jobfile(boost::filesystem::path jobilename);
+  virtual void set_time_limit(double limit);
 
   virtual int run()=0; // start the scheduler
 
