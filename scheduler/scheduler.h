@@ -69,7 +69,7 @@ public:
   virtual ~Scheduler() {};
 
   virtual void set_new_jobfile(boost::filesystem::path) {};
-  virtual void set_time_limit(double limit) {};
+  virtual void set_time_limit(double ) {};
 
   virtual int run(); // start the scheduler
   

@@ -228,36 +228,32 @@ public:
   std::pair<bool,boundary_crossing_type> shift(offset_type& o,const offset_type& s) const
   {
     o=o+s;
-    bool ison=true;
     typedef typename coordinate_traits<offset_type>::iterator IT;
     typedef typename coordinate_traits<offset_type>::const_iterator CIT;
     IT offit=alps::coordinates(o).first;
     CIT exit=alps::coordinates(extent_).first;
     std::vector<std::string>::const_iterator bit=bc_.begin();
     boundary_crossing_type crossing;
-    for (int dim=0; exit!=alps::coordinates(extent_).second;++dim, ++bit, ++offit, ++exit)
-    {
+    for (int dim=0; exit!=alps::coordinates(extent_).second;++dim, ++bit, ++offit, ++exit) {
       if (*offit<0)
-      while (*offit<0)
-      {
-              if (*bit=="periodic") {
-                *offit+=*exit; // need to check % for negative numbers
-          crossing.set_crossing(dim,-1);
+        while (*offit<0) {
+		  if (*bit=="periodic") {
+		    *offit+=*exit; // need to check % for negative numbers
+            crossing.set_crossing(dim,-1);
+          }
+		  else
+		    return std::make_pair(false,boundary_crossing_type());
         }
-              else
-                ison=false;
-      }
-      else if (*offit >= *exit)
-      {
-              if (*bit=="periodic") {
-                *offit %= *exit;
+      else if (*offit >= *exit) {
+		if (*bit=="periodic") {
+		  *offit %= *exit;
           crossing.set_crossing(dim,1);
         }
-              else
-                ison=false;
+		else
+		  return std::make_pair(false,boundary_crossing_type());
       }
     }
-    return std::make_pair(ison,crossing);
+    return std::make_pair(true,crossing);
   }
 
   const std::string& boundary(unsigned int dim) const{ return bc_[dim];}

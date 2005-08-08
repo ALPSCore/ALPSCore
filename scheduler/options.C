@@ -97,9 +97,9 @@ Options::Options()
 }
 
 Options::Options(int argc, char** argv) 
-  : programname(std::string(argv[0])),
-    valid(true) // shall we really run?
 {
+  programname = std::string(argv[0]);
+  valid = true;
   if (argc) {
   std::string filename;
   
@@ -120,6 +120,7 @@ Options::Options(int argc, char** argv)
   po::variables_map vm;
   po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
   po::notify(vm);    
+
 
   if (vm.count("help")) {
     std::cout << desc << "\n";
