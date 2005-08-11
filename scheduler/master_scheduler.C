@@ -348,7 +348,6 @@ void MasterScheduler::finish_task(int i)
   if (make_summary) {
     sim_results[i] = tasks[i]->get_summary();
   }
-  std::cerr << "got summary\n"; 
   tasks[i]->checkpoint(boost::filesystem::complete(taskfiles[i].out,outfilepath.branch_path()));
   delete tasks[i];
   tasks[i]=0;
