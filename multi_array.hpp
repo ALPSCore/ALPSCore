@@ -27,24 +27,15 @@
 
 /* $Id$ */
 
-/// \addtogroup alps
-/// @{
-
 /// \file multi_array.hpp
 /// \brief extensions to boost::multi_array
 ///
-/// This header defines some I/O extensions to boost::multi_array and fixes a problem with gcc-3.1 when
-/// alps::multi_array and alps::serialization are used together
+/// This header defines some I/O extensions to boost::multi_array and
+/// fixes a problem with gcc-3.1 when alps::multi_array and
+/// alps::serialization are used together
 
 #ifndef ALPS_MULTI_ARRAY_H
 #define ALPS_MULTI_ARRAY_H
-/// @}
-
-
-//=======================================================================
-// This file defines extensions to boost::multi_array
-//=======================================================================
-
 
 #include <alps/config.h>
 #define access alps_multiarray_access

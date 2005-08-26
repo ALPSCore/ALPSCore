@@ -28,6 +28,16 @@
 
 /* $Id$ */
 
+/// \file matrix_as_vector.h
+/// \brief using matrices as vectors in generic algorithms
+/// 
+/// This header contains a wrapper class that allows to use a matrix
+/// instead of a vector in a generic algorithm.  As long as the
+/// algorithm does nothing more than to get a vector element, multiply
+/// it with a factor and add it to another vector element, the \c
+/// matrix_as_vector class can record these actions into a matrix.
+
+
 #ifndef ALPS_MATRIX_AS_VECTOR_H
 #define ALPS_MATRIX_AS_VECTOR_H
 
@@ -36,16 +46,6 @@
 namespace alps {
 
 namespace detail {
-
-/// \addtogroup alps
-/// @{
-
-/// \file matrix_as_vector.h
-/// \brief using matrices as vectors in generic algorithms
-/// 
-/// This header contains a wrapper class that allows to use a matrix instead of a vector in a generic algorithm. 
-/// As long as the algorithm does nothing more than to get a vector element, multiply it with a factor and add 
-/// it to another vector element, the \c matrix_as_vector class can record these actions into a matrix.
 
 /// a vector element, scaled by an arbitrary factor
 ///
@@ -164,5 +164,5 @@ alps::detail::element_proxy<M> operator*(T x, alps::detail::element_proxy<M> y)
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } }
 #endif
-/// @}
+
 #endif // ALPS_MATRIX_AS_VECTOR_H

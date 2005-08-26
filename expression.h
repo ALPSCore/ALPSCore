@@ -28,20 +28,9 @@
 
 /* $Id$ */
 
-#ifndef ALPS_EXPRESSION_H
-#define ALPS_EXPRESSION_H
+/// \file alps/expression.h
+/// \brief includes all headers in the alps/expression directory
 
 #include <alps/expression/expression.h>
 #include <alps/expression/parameterevaluator.h>
 #include <alps/expression/evaluate.h>
-
-/// \defgroup expression The ALPS expression library
-/// manipulates and evaluates symbolic expressions
-/// @{
-
-/// \file alps/expression.h
-/// \brief includes all headers in the alps/expression directory
-
-/// @}
-
-#endif // ! ALPS_EXPRESSION_H

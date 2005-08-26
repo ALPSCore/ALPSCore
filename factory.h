@@ -27,9 +27,6 @@
 
 /* $Id$ */
 
-/// \addtogroup alps
-/// @{
-
 /// \file factory.h
 /// \brief object factories
 /// 
@@ -37,7 +34,6 @@
 
 #ifndef ALPS_FACTORY_H
 #define ALPS_FACTORY_H
-/// @}
 
 #include <alps/config.h>
 #include <boost/shared_ptr.hpp>
@@ -46,8 +42,6 @@
 #include <stdexcept>
 
 namespace alps {
-/// \addtogroup alps
-/// @{
 
 namespace detail {
 
@@ -148,8 +142,6 @@ private:
   typedef typename map_type::const_iterator const_iterator;
   map_type creators_;
 };
-
-/// @}
 
 } // end namespace alps
 

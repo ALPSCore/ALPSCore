@@ -29,6 +29,9 @@
 
 /* $Id$ */
 
+/// \file stringvalue.h
+/// \brief implements a string class that can easily be assigned to and converted to any type
+
 #ifndef ALPS_STRINGVALUE_H
 #define ALPS_STRINGVALUE_H
 
@@ -77,12 +80,6 @@ struct lexical_cast_string_helper<S, S>
 };
 
 } // end namespace detail
-
-/// \addtogroup alps
-/// @{
-
-/// \file stringvalue.h
-/// \brief implements a string class that can easily be assigned to and converted to any type
 
 /// \brief a string class with built-in conversion to other types using lexical_cast
 ///
@@ -161,7 +158,6 @@ public:
 
 /// StringValue is now implemented using lexical_cast_string
 typedef lexical_cast_string<> StringValue;
-/// @}
 
 } // end namespace alps
 

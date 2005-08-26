@@ -53,9 +53,6 @@ template <class T>
 class AbstractSimpleObservable: public Observable
 {
 public:
-  //@{
-  //@name Type members
-        
   /// the data type of the observable
   typedef T value_type;
 
@@ -70,7 +67,6 @@ public:
   typedef typename obs_value_traits<T>::time_type time_type;
   
   typedef typename obs_value_traits<T>::convergence_type convergence_type;
-  //@}
 
   typedef typename obs_value_traits<value_type>::label_type label_type;
   
@@ -78,8 +74,6 @@ public:
    : Observable(name), label_(l) {}
   
   virtual ~AbstractSimpleObservable() {}
-  //@{
-  //@name Properties of the observable
                   
   /// the number of measurements
   virtual count_type count() const =0;
@@ -95,7 +89,6 @@ public:
   virtual convergence_type converged_errors() const =0;
 
   /// is information about the minimum and maximum value available?
-  
   virtual bool has_minmax() const { return false;}
   
   /// the minimum value
@@ -113,13 +106,9 @@ public:
   /// is variance  available ? 
   virtual bool has_variance() const { return false;}
 
-  //@}
-
-
   // virtual void set_thermalization(uint32_t todiscard) = 0;
   // virtual uint32_t get_thermalization() = 0;
   
-  //@{
   //@name binning information
   /// the number of bins
   virtual count_type bin_number() const { return 0;}
@@ -135,14 +124,12 @@ public:
   { boost::throw_exception(std::logic_error("bin_value2 called but no bins present")); return *(new value_type());}
 
   //@name Slicing of observables
-          
   /** slice the data type using a single argument.
       This can easily be extended when needed to more data types. 
       @param s the slice
       @param newname optionally a new name for the slice. Default is the
                      same name as the original observable
       */
-       
   template <class S>
   SimpleObservableEvaluator<typename obs_value_slice<T,S>::value_type>
     slice(S s, const std::string& newname="") const;
@@ -150,7 +137,7 @@ public:
   template <class S>
   SimpleObservableEvaluator<typename obs_value_slice<T,S>::value_type>
     operator[](S s) const { return slice(s);}
-  //@}
+
 #ifndef ALPS_WITHOUT_OSIRIS
   void extract_timeseries(ODump& dump) const;
 #endif

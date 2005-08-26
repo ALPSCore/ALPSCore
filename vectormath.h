@@ -28,19 +28,15 @@
 
 /* $Id$ */
 
-/// \addtogroup alps
-/// @{
-
 /// \file vectormath.h
 /// \brief basic arithmetic operations on std::vectors
 /// 
-/// This header contains slow but simple implementations of basic arithmetic operations on std::vectors 
+/// This header contains slow but simple implementations of basic
+/// arithmetic operations on std::vectors
 
 #ifndef ALPS_VECTORMATH_H
 #define ALPS_VECTORMATH_H
 
-
-/// @}
 
 #include <alps/config.h>
 #include <alps/functional.h>
@@ -90,8 +86,6 @@ std::vector<T> scalar_vector_apply(OP op, S x, const std::vector<T>& y)
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 namespace std{
 #endif
-/// \addtogroup alps
-/// @{
 
 /// returns the sum of two vectors
 template <class T>
@@ -133,9 +127,9 @@ std::vector<T> operator*(const std::vector<T>& v, S s)
 {
   return alps::detail::scalar_vector_apply(alps::multiplies<S,T,T>(),s,v);
 }
-/// @}
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 }
 #endif
+
 #endif // ALPS_VECTORMATH_H

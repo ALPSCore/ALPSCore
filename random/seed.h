@@ -29,16 +29,11 @@
 
 /* $Id$ */
 
-/// \addtogroup random
-/// @{
-
 /// \file seed.h
 /// \brief a generic seeding function for random number generators 
 
 #ifndef ALPS_RANDOM_SEED_H
 #define ALPS_RANDOM_SEED_H
-
-// @}
 
 #include <cmath>
 #include <alps/config.h>
@@ -52,14 +47,15 @@
 
 namespace alps {
 
-
-
 /// \brief a generic seeding function for random number generators
 /// \param rng the random number generator to be seeded 
 /// \param seed the seed block number
-/// seeds a random number generator following the Boost specifications for such generators with a unique
-/// sequence of random numbers obtained from the specified seed with the pseudo_des generator. This function
-/// is useful to prepare seed blocks for Monte Carlo simulations or similar applications.
+///
+/// seeds a random number generator following the Boost specifications
+/// for such generators with a unique sequence of random numbers
+/// obtained from the specified seed with the pseudo_des
+/// generator. This function is useful to prepare seed blocks for
+/// Monte Carlo simulations or similar applications.
 template <class RNG>
 void seed_with_sequence(RNG& rng, uint32_t seed)
 {

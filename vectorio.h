@@ -27,19 +27,16 @@
 *****************************************************************************/
 
 /* $Id$ */
-/// \addtogroup alps
-/// @{
 
 /// \file vectorio.h
 /// \brief I/O helpers for vectors
 /// 
-/// This header contains helper functions to write and read vectors. 
-/// They are implemented based on the traits classes and functions in vectortraits.h
+/// This header contains helper functions to write and read vectors.
+/// They are implemented based on the traits classes and functions in
+/// vectortraits.h
 
 #ifndef ALPS_VECTORIO_H
 #define ALPS_VECTORIO_H
-
-/// @}
 
 #include <alps/config.h>
 #include <alps/parser/parser.h>
@@ -58,8 +55,6 @@
 #include <stdexcept>
 
 namespace alps {
-
-
 
 /// \brief reads a vector from a std::istream, until the end of the stream is reached.
 /// \param in the stream

@@ -28,6 +28,9 @@
 
 /* $Id$ */
 
+/// \file parser/parser.h
+/// \brief a very simple XML parser
+
 #ifndef ALPS_PARSER_PARSER_H
 #define ALPS_PARSER_PARSER_H
 #include <alps/cctype.h>
@@ -44,13 +47,8 @@ inline bool is_identifier_char(char c)
 { 
   return std::isalnum(c) || c=='_' || c==':';
 }
-}
 
-/// \addtogroup xml
-/// @{
-
-/// \file parser/parser.h
-/// \brief a very simple XML parser
+} // end namespace detail
 
 /// \brief a struct to store the contents of an XML tag
 struct XMLTag
@@ -94,7 +92,6 @@ struct XMLTag
   bool is_element() { return !is_comment() && !is_processing();}
 };
 
-/// @}
 
 /// reads an XML tag or attribute name from a \c std::istream
 extern std::string parse_identifier(std::istream& in);
@@ -143,7 +140,6 @@ void skip_element(std::istream& in,const XMLTag& tag);
 /// \param name the name of the expected tag
 /// \throw \c std::runtime_error if the next tag read from the stream \a in does not have the name given by the argument \a name.
 void check_tag(std::istream& in, const std::string& name);
-/// @}
 
 } // end namespace alps
 

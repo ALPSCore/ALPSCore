@@ -134,18 +134,17 @@ class Observable
   virtual void load(IDump& dump);
 #endif
 
-/**@name Thermalization support */
-//@{
+  // Thermalization support
+
   /// can the thermalization be changed?
   virtual bool can_set_thermalization() const;
   /// set the number of measurements to be discarded for thermalization
   virtual void set_thermalization(uint32_t todiscard);
   /// get the number of measurements discarded for thermalization
   virtual uint32_t get_thermalization() const=0;
-//@}
 
-/**@name Sign problem support */
-//@{
+  // Sign problem support
+
   /// is the observable signed?
   virtual bool is_signed() const;
   /// set the name of the observable containing the sign for this observable
@@ -159,17 +158,16 @@ class Observable
   virtual const Observable& signed_observable() const;
   /// get the name of the observable containing the sign
   virtual const std::string sign_name() const;
-//@}
     
-/**@name Support for multiple runs */
-//@{
+  // Support for multiple runs
+
   /// get the number of runs which performed measurements for this observable
   virtual uint32_t number_of_runs() const;
   /// extract an observable from a specific run only
   virtual Observable* get_run(uint32_t) const;
-//@}
 
-/// compact the data, useful e.g. for time series when I just need th result
+
+  /// compact the data, useful e.g. for time series when I just need th result
   virtual ALPS_DUMMY_VOID compact();
 
   virtual void merge(const Observable&);

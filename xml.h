@@ -28,6 +28,9 @@
 
 /* $Id$ */
 
+/// \file xml.h
+/// \brief includes all headers in the alps/parser directory
+
 #ifdef ALPS_WITHOUT_XML
 # error "XML not supported"
 #endif
@@ -37,14 +40,3 @@
 #include <alps/parser/xmlstream.h>
 #include <alps/parser/path.h>
 
-/// \defgroup xml The ALPS XML library
-/// \brief contains functions and classes to parse and write XML files
-/// 
-/// The parser library contains simple helper functions for a very primitive XML parser. 
-/// We aim to replace it with a good C++ XML parser as soon as one is available.
-/// @{
-
-/// \file xml.h
-/// \brief includes all headers in the alps/parser directory
-
-/// @}

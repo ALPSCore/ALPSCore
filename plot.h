@@ -28,6 +28,13 @@
 
 /* $Id$ */
 
+/// \file plot.h
+/// \brief classes to create plots in XML format
+/// 
+/// This header contains classes to create plots in XML format,
+/// compatible with the ALPS XML schema for plot files on the
+/// http://xml.comp-phys.org/ web page
+
 #include <alps/parser/xmlstream.h>
 #include <alps/parser/path.h>
 #include <boost/tuple/tuple.hpp>
@@ -38,17 +45,8 @@
 
 namespace alps {
 
-/// \addtogroup alps
-/// @{
-
-/// \file plot.h
-/// \brief classes to create plots in XML format
-/// 
-/// This header contains classes to create plots in XML format, compatible with the ALPS XML schema for
-/// plot files on the http://xml.comp-phys.org/ web page
 
 /// namespace for plots
-
 namespace plot {
 
 /// \brief An enum to distinguish various plot types
@@ -59,8 +57,6 @@ namespace plot {
 /// - \c xydy is a plot of pairs (x,y) of data points with error bars on the y values
 /// - \c xdxydy is a plot of pairs (x,y) of data points with error bars on the x and y values
 enum SetType {xy, xdxy, xydy, xdxydy};
-
-//- Points --------------------------------------------------------------------------------------------------------
 
 /// \brief a class to store a single point in the plot
 /// \param C the type to store a coordinate
@@ -207,8 +203,6 @@ private:
   bool show_legend_;
 };   // xmlPlot::Plot
 
-/// @}
-
 /// write a plot to an XML file following the ALPS XML schema for plots on http://xml.comp-phys.org/
 template<class C>
 inline oxstream& operator<<(oxstream& out, Plot<C> P) {
@@ -225,7 +219,6 @@ inline oxstream& operator<<(oxstream& out, Plot<C> P) {
   return out;
 }   // operator <<
 
-/// @}
 
 template<class C>
 Set<C>& Set<C>::operator<<(C p) {

@@ -47,13 +47,10 @@
 #include <string>
 #include <vector>
 
-namespace alps {
-
-/// \addtogroup alps
-/// @{
-
 /// \file parameters.h
 /// \brief classes to store simulation parameters
+
+namespace alps {
 
 /// \brief a class to store a single parameter value
 ///
@@ -240,7 +237,6 @@ private:
   map_type map_;
 };
 
-/// @}
 } // namespace alps
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
@@ -310,8 +306,6 @@ inline alps::IDump& operator>>(alps::IDump& id, alps::Parameters& p)
 //
 
 namespace alps {
-/// \addtogroup alps
-/// @{
 
 /// \brief Implementation handler of the ALPS XML parser for the Parameter class  
 class ParameterXMLHandler : public XMLHandlerBase
@@ -346,13 +340,14 @@ private:
   Parameter parameter_;
   ParameterXMLHandler handler_;
 };
-/// @}
+
 } // namespace alps
 
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 namespace alps {
 #endif
+
 /// \brief XML output of a parameter value 
 ///
 /// follows the schema on http://xml.comp-phys.org/

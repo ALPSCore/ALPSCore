@@ -28,6 +28,24 @@
 
 /* $Id$ */
 
+/// \file parameterlist.h
+/// \brief reading a set o parameters
+/// 
+/// This header contains a class to store a vector of parameters, read
+/// from a textual input file, using the old syntax of the 1994
+/// version of these libraries.
+///
+/// Parameters are specified by single lines containing statements
+/// like \c name \c = \c value where the value needs to be enclosed in
+/// double quotes "...." if it contains spaces.  The name has to start
+/// with a letter, and the next characters can also be numbers or any
+/// of the following characters: _'[] .  More than one parameter
+/// assignment, separated by , or ; can be placed on a single.
+///
+/// Each set of parameters is enclosed by curly braces
+/// {....}. Parameters defined outside of curly braces are global
+/// parameters, used for all of the following parameter sets.
+
 #ifndef ALPS_PARSER_PARAMETERLIST_H
 #define ALPS_PARSER_PARAMETERLIST_H
 
@@ -47,25 +65,6 @@
 #include <vector>
 
 namespace alps {
-
-/// \addtogroup alps
-/// @{
-
-/// \file parameterlist.h
-/// \brief reading a set o parameters
-/// 
-/// This header contains a class to store a vector of parameters, read from a textual input file, using the old
-/// syntax of the 1994 version of these libraries.
-///
-/// Parameters are specified by single lines containing statements like 
-/// \c name \c = \c value
-/// where the value needs to be enclosed in double quotes "...." if it contains spaces.
-/// The name has to start with a letter, and the next characters can also be numbers or any of the following characters: _'[] .
-/// More than one parameter assignment, separated by , or ; can be placed on a single.
-///
-/// Each set of parameters is enclosed by curly braces {....}. Parameters defined outside of curly braces are global parameters, used for all
-/// of the following parameter sets.
-
 
 /// \brief a vector of Parameters
 ///
@@ -88,7 +87,7 @@ public:
   { ar & static_cast<super_type&>(*this); }
 
 };
-/// @}
+
 } // end namespace
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
@@ -143,8 +142,6 @@ inline alps::IDump& operator>>(alps::IDump& id,
 #ifndef ALPS_WITHOUT_XML
 
 namespace alps {
-/// \addtogroup alps
-/// @{
 
 /// \brief Implementation handler of the ALPS XML parser for the ParameterList class  
 class ParameterListXMLHandler : public CompositeXMLHandler
@@ -165,7 +162,6 @@ private:
   ParameterXMLHandler parameter_handler_;
   ParametersXMLHandler current_handler_;
 };
-/// @}
 
 } // namespace alps
 

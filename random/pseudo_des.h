@@ -28,6 +28,9 @@
 
 /* $Id$ */
 
+/// \file pseudo_des.h
+/// \brief a random number generator using the pseudo-DES algorithm
+
 #ifndef ALPS_RANDOM_PSEUDO_DES_HPP
 #define ALPS_RANDOM_PSEUDO_DES_HPP
 
@@ -40,16 +43,10 @@
 
 namespace alps {
 
-/// \addtogroup random
-/// @{
-
-/// \file pseudo_des.h
-/// \brief a random number generator using the pseudo-DES algorithm
-
-
 /// \brief A random number generator using the pseudo-DES algorithm
 /// 
-/// The random number generator follows the BOOST (standard C++) specifications
+/// The random number generator follows the BOOST (standard C++)
+/// specifications
 
 class pseudo_des
 {
@@ -145,8 +142,6 @@ private:
   uint32_t seed_;
   uint32_t state_;
 };
-
-/// @}
 
 } // end namespace alps
 

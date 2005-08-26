@@ -139,8 +139,7 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
   
   ALPS_DUMMY_VOID compact();
   
-  //@{
-  //@name Transformations
+  // Transformations
   
   /// negate
   SimpleObservableEvaluator<T> operator-() const;
@@ -170,7 +169,6 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
   /// divide by another observable
   template <class X>
   const SimpleObservableEvaluator<T>& operator/=(const SimpleObservableEvaluator<X>&);
-  //@}
   
   ALPS_DUMMY_VOID output(std::ostream&) const;
   void output_scalar(std::ostream&) const;

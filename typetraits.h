@@ -28,6 +28,11 @@
 
 /* $Id$ */
 
+/// \file typetraits.h
+/// \brief useful type traits
+/// 
+/// This header contains type traits, mainly for numeric types
+
 #ifndef ALPS_TYPETRAITS_H
 #define ALPS_TYPETRAITS_H
 
@@ -38,18 +43,8 @@
 
 namespace alps {
 
-/// \addtogroup alps
-/// @{
-
-/// \file typetraits.h
-/// \brief useful type traits
-/// 
-/// This header contains type traits, mainly for numeric types
-
-
 /// the type to store a tag number for each type
 typedef int32_t type_tag_t;
-
 
 /// \brief A class to store useful traits for common types.  
 ///
@@ -60,7 +55,6 @@ typedef int32_t type_tag_t;
 ///    - float, double, long double,
 ///    - std::complex<float>, std::complex<double>, std::complex<long double>
 ///    - std::string.
-
 template <class T>
 struct type_traits
 {
@@ -85,8 +79,6 @@ struct type_traits
   /// machine epsilon for the norm type
   static norm_t epsilon() { return std::numeric_limits<norm_t>::epsilon(); }
 };
-
-/// @}
 
 #define DEFINE_NUMERIC_TYPE_TRAITS(TYPE,TAG,NORMT,SIGNT,UNSIGNT,REALT,AVT) \
 template<> struct type_traits< TYPE > {                               \

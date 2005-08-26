@@ -27,6 +27,9 @@
 
 /* $Id$ */
 
+/// \file rngfactory.h
+/// \brief a factory to create random number generators from their name
+
 #ifndef ALPS_RANDOMFACTORY_H
 #define ALPS_RANDOMFACTORY_H
 
@@ -35,12 +38,6 @@
 #include <string>
 
 namespace alps {
-
-/// \addtogroup random
-/// @{
-
-/// \file rngfactory.h
-/// \brief a factory to create random number generators from their name
 
 /// a factory to create random number generators from their name
 /// \sa rng_factory
@@ -59,7 +56,6 @@ public:
 /// - lagged_fibonacci607
 /// - mt19937
 extern RNGFactory rng_factory;
-/// @}
 
 } // end namespace
 

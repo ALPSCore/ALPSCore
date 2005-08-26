@@ -28,6 +28,12 @@
 
 /* $Id$ */
 
+/// \file functional.h
+/// \brief extensions to the standard functional header
+///
+/// This header contains mathematical function objects not present in
+/// the standard or boost libraries.
+
 #ifndef ALPS_FUNCTIONAL_H
 #define ALPS_FUNCTIONAL_H
 
@@ -37,15 +43,6 @@
 #include <functional>
 
 namespace alps {
-
-/// \addtogroup alps
-/// @{
-
-/// \file functional.h
-/// \brief extensions to the standard functional header
-///
-/// This header contains mathematical function objects not present in the standard
-/// or boost libraries.
 
 /// \brief extension of std::plus
 ///
@@ -225,8 +222,6 @@ struct add_abs2 : public std::binary_function<T,typename type_traits<T>::norm_t,
 /// \brief returns x+|y|^2
 typename type_traits<T>::norm_t operator()(typename type_traits<T>::norm_t x, T y) const { return x+abs2(y);}
 };
-
-/// @}
 
 }
 

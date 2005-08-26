@@ -28,6 +28,12 @@
 
 /* $Id$ */
 
+/// \file vectortraits.h
+/// \brief traits classes and generic programming support for 1D container
+/// 
+/// This header contains traits and generic algorithms for containers.
+/// It should be replaced by an extended version of boost collection traits or something similar at some time.
+
 #ifndef ALPS_VECTORTRAITS_H
 #define ALPS_VECTORTRAITS_H
 
@@ -47,15 +53,6 @@
 #endif
 
 namespace alps {
-
-/// \addtogroup alps
-/// @{
-
-/// \file vectortraits.h
-/// \brief traits classes and generic programming support for 1D container
-/// 
-/// This header contains traits and generic algorithms for containers.
-/// It should be replaced by an extended version of boost collection traits or something similar at some time.
 
 /// \brief traits for containers
 /// @param CONTAINER the type of container
@@ -85,7 +82,6 @@ struct vector_traits<std::valarray<T> > {
 ///  
 /// This will hopefully soon be replaced by a nice Boost library
 namespace vectorops {
-/// @}
 
 /// returns the size of a vector
 template <class C>

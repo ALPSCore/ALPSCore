@@ -29,6 +29,9 @@
 
 /* $Id$ */
 
+/// \file buffered_rng.h
+/// \brief contains an efficient buffered implementation of a runtime-polymorphic random number generator 
+
 #ifndef ALPS_RANDOM_H
 #define ALPS_RANDOM_H
 
@@ -48,19 +51,12 @@
 
 namespace alps {
 
-/// \addtogroup random
-/// @{
-
-/// \file buffered_rng.h
-/// \brief contains an efficient buffered implementation of a runtime-polymorphic random number generator 
-
-
-
 /// \brief abstract base class of a runtime-polymorphic random number generator 
 /// 
-/// In order to mask the abstraction penalty, the derived generators do not produce single random numbers at each call, 
-/// but instead a large buffer is filled in a virtual function call, and then numbers from this buffer
-/// used when operator() is called.
+/// In order to mask the abstraction penalty, the derived generators
+/// do not produce single random numbers at each call, but instead a
+/// large buffer is filled in a virtual function call, and then
+/// numbers from this buffer used when operator() is called.
 class buffered_rng_base
 {
 public:
@@ -85,7 +81,8 @@ public:
 
   /// \brief returns the next random number 
   ///
-  /// numbers are taken from the buffer, which is refilled by a call to fill_buffer when it gets empty
+  /// numbers are taken from the buffer, which is refilled by a call
+  /// to fill_buffer when it gets empty
   result_type operator()() {
     if(ptr_==buf_.end()) {
       fill_buffer();
@@ -146,8 +143,6 @@ protected:
   void fill_buffer();
   RNG rng_;
 };
-
-/// @}
 
 template <class RNG>
 void buffered_rng<RNG>::seed()

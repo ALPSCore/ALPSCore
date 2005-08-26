@@ -28,20 +28,14 @@
 
 /* $Id$ */
 
-/// \addtogroup alps
-/// @{
-
 /// \file math.hpp
 /// \brief basic math functions
 ///
-/// This header contains mathematical functions not present in the standard
-/// or boost libraries.
-
+/// This header contains mathematical functions not present in the
+/// standard or boost libraries.
 
 #ifndef ALPS_MATH_HPP
 #define ALPS_MATH_HPP
-
-/// @}
 
 #include <alps/config.h>
 #include <alps/typetraits.h>

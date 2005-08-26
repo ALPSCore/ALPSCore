@@ -101,8 +101,7 @@ public:
   void operator<<(const T& x) { b_ << x;}
  
 
-  //@{
-  //@name Additional binning member functions
+  // Additional binning member functions
  
   count_type bin_size() const { return b_.bin_size();}
   /// resize bins to contain at least the given number of entries 
@@ -119,8 +118,6 @@ public:
   const value_type& bin_value(count_type n) const {return b_.bin_value(n);}
   const value_type& bin_value2(count_type n) const {return b_.bin_value2(n);}
   
-  //@}
-    
 #ifndef ALPS_WITHOUT_OSIRIS
   virtual void save(ODump& dump) const;
   virtual void load(IDump& dump);

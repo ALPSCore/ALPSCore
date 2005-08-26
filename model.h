@@ -28,14 +28,9 @@
 
 /* $Id$ */
 
-#include <alps/model/model_helper.h>
-#include <alps/model/blochbasisstates.h>
-#include <alps/model/sign.h>
-
-/// \defgroup model The ALPS model library for quantum lattice models
-/// @{
-
 /// \file model.h
 /// \brief includes all headers in the alps/model directory
 
-/// @}
+#include <alps/model/model_helper.h>
+#include <alps/model/blochbasisstates.h>
+#include <alps/model/sign.h>

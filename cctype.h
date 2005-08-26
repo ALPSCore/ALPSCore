@@ -28,20 +28,16 @@
 
 /* $Id$ */
 
+/// \file cctype.h
+/// \brief A safe version of the standard cctype header
+///
+///  Some cctype headers do not undefine harmful macros, so undefine
+///  them here.
+
 #ifndef ALPS_CCTYPE_H
 #define ALPS_CCTYPE_H
 
 #include <cctype>
-
-/// \addtogroup alps
-/// @{
-
-/// \file cctype.h
-/// \brief A safe version of the standard cctype header
-///
-///  Some cctype headers do not undefine harmful macros, so undefine them here.
-
-/// @}
 
 #ifdef isspace 
 # undef isspace
