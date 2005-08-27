@@ -37,7 +37,7 @@ void alps::print_copyright(std::ostream& out) {
   out << "  copyright (c) 1994-" << ALPS_YEAR
       << " by the ALPS collaboration.\n";
   out << " Consult the web page  for license details.\n";
-  out << " For details see the publication: F. Alet et al., Report cond-mat/0410407.\n\n";
+  out << " For details see the publication:\nF. Alet et al., J. Phys. Soc. Jpn. Suppl., Vol. 74, 30 (2005)\n\n";
 }
 
 void alps::print_license(std::ostream& out) {

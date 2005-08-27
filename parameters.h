@@ -211,7 +211,7 @@ public:
 
   /// read from an XML file, using the ALPS XML parser
   void read_xml(XMLTag tag, std::istream& xml,bool ignore_duplicates=false);
-  /// extractthe contents from the first <PARAMETERS> element in the XML stream
+  /// extract the contents from the first <PARAMETERS> element in the XML stream
   void extract_from_xml(std::istream& xml);
 
   BOOST_SERIALIZATION_SPLIT_MEMBER();
