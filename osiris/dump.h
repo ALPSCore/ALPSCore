@@ -53,7 +53,8 @@ public:
   virtual ~ODump() {}
 
   uint32_t version() const { return version_; } 
-  
+
+/// INTERNAL ONLY
 # define ALPS_DUMP_DO_TYPE(T) \
   virtual void write_simple(T x);
   ALPS_DUMP_DO_TYPE(bool)
@@ -86,7 +87,8 @@ public:
   ODump& operator<<(const std::complex<T>& x) { write_complex(x); return *this; }
 
 
-# define ALPS_DUMP_DO_TYPE(T) \
+/// INTERNAL ONLY
+# define ALPS_DUMP_DO_TYPE(T)			\
   virtual void write_array(std::size_t n, const T * p); \
   ODump& operator<<( T x) { write_simple(x); return *this; }
   ALPS_DUMP_DO_TYPE(bool)
@@ -128,7 +130,8 @@ public:
 
   uint32_t version() const { return version_;} 
   void set_version(uint32_t v) { version_=v;} 
-  
+
+/// INTERNAL ONLY  
 # define ALPS_DUMP_DO_TYPE(T) \
   virtual void read_simple(T& x);
 
@@ -157,6 +160,7 @@ public:
   template<class T>
   IDump& operator>>(std::complex<T>& x) { read_complex(x); return *this; }
 
+/// INTERNAL ONLY  
 # define ALPS_DUMP_DO_TYPE(T) \
   virtual void read_array(std::size_t n, T * p); \
   IDump& operator>>(T& x) { read_simple(x); return *this; } \

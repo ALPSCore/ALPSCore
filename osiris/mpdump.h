@@ -65,6 +65,7 @@ public:
   void send(const Process&,int32_t tag); // send to a single process
   void send(const ProcessList&,int32_t); // broadcast to a whole group
 
+/// INTERNAL ONLY
 # define ALPS_DUMP_DO_TYPE(T) \
   void write_simple(T x); \
   void write_array(std::size_t, const T *);
@@ -122,6 +123,7 @@ public:
   void receive(const Process& w,int32_t t); // receive a message from a specific process
   void receive(int32_t t); // receive a mesage from anywhere
 
+/// INTERNAL ONLY
 # define ALPS_DUMP_DO_TYPE(T) \
   void read_simple(T& x); \
   void read_array(std::size_t, T *);

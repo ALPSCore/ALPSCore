@@ -61,6 +61,7 @@ public:
   OXDRDump () : ODump(0) {}    
   virtual ~OXDRDump() {}
 
+/// INTERNAL ONLY
 # define ALPS_DUMP_DO_TYPE(T) \
   void write_simple(T x); \
   void write_array(std::size_t, const T *);
@@ -106,6 +107,7 @@ public:
   IXDRDump() : IDump(0) {}
   virtual ~IXDRDump() {}
 
+/// INTERNAL ONLY
 # define ALPS_DUMP_DO_TYPE(T) \
   void read_simple(T& x); \
   void read_array(std::size_t, T *);

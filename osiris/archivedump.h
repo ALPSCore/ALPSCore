@@ -44,6 +44,7 @@ public:
   archive_odump (ARCHIVE& a) : archive_(a) {}    
   ~archive_odump() {}
 
+/// INTERNAL ONLY
 # define ALPS_DUMP_DO_TYPE(T) void write_simple(T x) { archive_ << x;}
   ALPS_DUMP_DO_TYPE(bool)
   ALPS_DUMP_DO_TYPE(char)
@@ -82,6 +83,7 @@ public:
   archive_idump (ARCHIVE& a) : archive_(a) {}    
   ~archive_idump() {}
 
+/// INTERNAL ONLY
 # define ALPS_DUMP_DO_TYPE(T) void read_simple(T& x) { archive_ >> x;}
   ALPS_DUMP_DO_TYPE(bool)
   ALPS_DUMP_DO_TYPE(char)

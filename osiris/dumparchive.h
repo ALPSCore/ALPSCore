@@ -72,6 +72,7 @@ public:
   friend class boost::archive::save_access;
   template<class T> void save(const T & t);
 
+/// INTERNAL ONLY
 # define ALPS_DUMP_DO_TYPE(T) void save(T x) { dump_ << x;}
   ALPS_DUMP_DO_TYPE(bool)
   ALPS_DUMP_DO_TYPE(char)
@@ -176,6 +177,7 @@ public:
   friend class boost::archive::load_access;
   template<class T> void load(T & t);
 
+/// INTERNAL ONLY
 # define ALPS_DUMP_DO_TYPE(T) void load(T& x) { dump_ >> x;}
   ALPS_DUMP_DO_TYPE(bool)
   ALPS_DUMP_DO_TYPE(char)

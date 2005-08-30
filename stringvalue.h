@@ -121,6 +121,7 @@ public:
     return boost::lexical_cast<bool>(*this);
   }
 
+/// INTERNAL ONLY
 #define CONVERTIT(T) operator T() const {return boost::lexical_cast<T>(*this); }
   /// convert the string to int8_t
   CONVERTIT(int8_t)
