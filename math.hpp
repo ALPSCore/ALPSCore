@@ -51,31 +51,37 @@
 namespace alps {
 namespace detail {
 
-/// implementation detail to test whether a number is close enough to zero to truncate it, version for floating point numbers
+/// implementation detail to test whether a number is close enough to
+/// zero to truncate it, version for floating point numbers
 template <bool F>
 struct is_zero_float
 {
   template <class T>
-  static bool is_zero(T x, typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0)
+  static bool is_zero(T x,
+    typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0)
   {
     return std::abs(x) < 1e-50; // std::sqrt(std::numeric_limits<T>::min())
   }
   template <class T>
-  static bool is_zero(const T& x, typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0)
+  static bool is_zero(const T& x,
+    typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0)
   {
     return std::abs(x) < 1e-50; // std::sqrt(std::numeric_limits<T>::min())
   }
 };
 
-/// implementation class to test whether a number is close enough to zero to truncate it, version for integers
+/// implementation class to test whether a number is close enough to
+/// zero to truncate it, version for integers
 template <>
 struct is_zero_float<false>
 {
   template <class T>
-  static bool is_zero(T x, typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0)
+  static bool is_zero(T x,
+    typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0)
   { return x == T(0.); }
   template <class T>
-  static bool is_zero(const T& x, typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0)
+  static bool is_zero(const T& x,
+    typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0)
   { return x == T(0.); }
 };
 
@@ -99,7 +105,6 @@ inline std::size_t binomial(std::size_t l, std::size_t n)
 /// \brief calculate the square of the absolute value. 
 /// It is optimized by specialization for complex numbers.
 /// \return the square of the absolute value of the argument
-
 template <class T>
 inline typename type_traits<T>::norm_t abs2(T x, typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0) {
   return x * x;        
@@ -115,7 +120,8 @@ inline T abs2(const std::complex<T>& x) {
 }
 
 /// \brief checks if a number is zero
-/// in case of a floating point number, absolute values less than 1e-50 count as zero
+/// in case of a floating point number, absolute values less than
+/// 1e-50 count as zero
 /// \return returns true if the value is zero
 template<class T>
 inline bool is_zero(T x, typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0)
@@ -129,7 +135,8 @@ template<class T>
 inline bool is_zero(const std::complex<T>& x) { return is_zero(std::abs(x)); }
  
 /// \brief checks if a number is not zero
-/// in case of a floating point number, absolute values less than 1e-50 count as zero
+/// in case of a floating point number, absolute values less than
+/// 1e-50 count as zero
 /// \return returns true if the value is not zero
 template<class T>
 inline bool is_nonzero(T x, typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0) { return !is_zero(x); }
@@ -138,13 +145,79 @@ template<class T>
 inline bool is_nonzero(const T& x, typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0) { return !is_zero(x); }
 
 //
+// is_equal
+//
+
+template<class T, class U>
+inline bool is_equal(const T& x, const U& y,
+  typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0,
+  typename boost::disable_if<boost::is_arithmetic<U> >::type* = 0)
+{ return x == y; }
+
+template<class T, class U>
+inline bool is_equal(T x, U y,
+  typename boost::enable_if<boost::is_integral<T> >::type* = 0,
+  typename boost::enable_if<boost::is_integral<U> >::type* = 0)
+{ return x == y; }
+
+template<class T, class U>
+inline bool is_equal(T x, U y,
+  typename boost::enable_if<boost::is_float<T> >::type* = 0,
+  typename boost::enable_if<boost::is_float<U> >::type* = 0)
+{
+  if (is_zero(x))
+    return is_zero(y);
+  else
+    return is_zero(x-y)/x;
+}
+
+template<class T, class U>
+inline bool is_equal(const std::complex<T>& x, const std::complex<U>& y,
+  typename boost::enable_if<boost::is_float<T> >::type* = 0,
+  typename boost::enable_if<boost::is_float<U> >::type* = 0)
+{ return is_equal(x.real(), y.real()) && is_equal(x.imag(), y.imag()); }
+
+template<class T, class U>
+inline bool is_equal(const std::complex<T>& x, U y,
+  typename boost::enable_if<boost::is_float<T> >::type* = 0,
+  typename boost::enable_if<boost::is_float<U> >::type* = 0)
+{ return is_equal(x.real(), y) && is_equal(x.imag(), 0.); }
+
+template<class T, class U>
+inline bool is_equal(T x, const std::complex<U>& y,
+  typename boost::enable_if<boost::is_float<T> >::type* = 0,
+  typename boost::enable_if<boost::is_float<U> >::type* = 0)
+{ return is_equal(y, x); }
+
+
+//
+// is_negative
+//
+
+template<class T>
+inline bool is_negative(const T& x,
+  typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0)
+{ return x < 0; }
+template<class T>
+inline bool is_negative(T x,
+  typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0)
+{ return x < 0; }
+inline bool is_negative(unsigned char) { return false; }
+inline bool is_negative(unsigned short) { return false; }
+inline bool is_negative(unsigned int) { return false; }
+inline bool is_negative(unsigned long) { return false; }
+
+
+//
 // round
 //
 
 /// \brief rounds a floating point value to be exactly zero if it is nearly zero
 ///
-/// the function is specialized for floating point and complex types and does nothing for other types
-/// \return 0. if the floating point value of the argument is less than 1e-12, and the argument itself otherwise
+/// the function is specialized for floating point and complex types
+/// and does nothing for other types
+/// \return 0. if the floating point value of the argument is less
+/// than 1e-12, and the argument itself otherwise
 template<class T>
 inline T round(T x, typename boost::enable_if<boost::is_float<T> >::type* = 0)
 { return (std::abs(x) < 1.0e-12) ? T(0.) : x; }
