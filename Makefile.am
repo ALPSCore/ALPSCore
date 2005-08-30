@@ -3,6 +3,7 @@ if ALPS_FULL
 SUBDIRS += alea lattice model
 endif
 SUBDIRS += .
+DIST_SUBDIRS = $(SUBDIRS)
 
 TESTS_ENVIRONMENT = $(top_srcdir)/config/run-test $(srcdir)
 
