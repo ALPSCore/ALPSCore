@@ -62,9 +62,10 @@ template<class T = std::complex<double> > class Term;
 template<class T = std::complex<double> > class Factor;
 template<class T = std::complex<double> > class Evaluator;
 template<class T = std::complex<double> > class ParameterEvaluator;
+template <class T> class Block;
+template <class T> class Function;
 template <class T> class Number;
 template <class T> class Symbol;
-template <class T> class Block;
 
 }
 

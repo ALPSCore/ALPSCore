@@ -32,6 +32,7 @@
 #define ALPS_EXPRESSION_EVALUATOR_H
 
 #include <alps/expression/expression_fwd.h>
+#include <alps/expression/evaluate_helper.h>
 
 namespace alps {
 
@@ -239,4 +240,4 @@ Expression<T> Evaluator<T>::partial_evaluate_function(const std::string& name, c
 }
 }
 
-#endif // ! ALPS_EXPRESSION_IMPL_H
+#endif // ! ALPS_EXPRESSION_EVALUATOR_H
