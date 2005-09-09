@@ -40,25 +40,26 @@ int main() {
 #ifndef BOOST_NO_EXCEPTIONS
   try {
 #endif
-    typedef alps::coordinate_graph_type graph_type;
+    typedef alps::coordinate_graph_type graph_t;
+    typedef alps::parity_t parity_t;
 
     // create the library from an XML file
     alps::Parameters params;
     params["LATTICE_LIBRARY"] = "../../lib/xml/lattices.xml";
     params["LATTICE"] = "square lattice 4x4";
     alps::graph_helper<> lattice(params);
-    const graph_type& graph = lattice.graph();
+    const graph_t& graph = lattice.graph();
 
     std::cout << graph;
 
-    for (graph_type::vertex_iterator vi = boost::vertices(graph).first;
+    for (graph_t::vertex_iterator vi = boost::vertices(graph).first;
          vi != boost::vertices(graph).second; ++vi) {
       std::cout << "vertex " << *vi << "'s parity is ";
-      if (boost::get(alps::parity_t(), graph, *vi)
-          == alps::parity::white) {
+      if (boost::get(parity_t(), graph, *vi)
+          == alps::parity_traits<parity_t, graph_t>::white) {
         std::cout << "white\n";
       } else if (boost::get(alps::parity_t(), graph, *vi)
-                 == alps::parity::black) {
+                 == alps::parity_traits<parity_t, graph_t>::black) {
         std::cout << "black\n";
       } else {
         std::cout << "undefined\n";
