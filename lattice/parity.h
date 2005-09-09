@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -32,6 +32,7 @@
 #define ALPS_LATTICE_PARITY_H
 
 #include <alps/config.h>
+#include <alps/math.hpp>
 #include <alps/lattice/graphproperties.h>
 
 #include <boost/graph/undirected_dfs.hpp>
@@ -42,14 +43,20 @@
 
 namespace alps {
 
-namespace parity {
+template<class Parity, class Graph>
+struct parity_traits;
 
-typedef int8_t parity_type;
-BOOST_STATIC_CONSTANT(parity_type, white = 0);
-BOOST_STATIC_CONSTANT(parity_type, black = 1);
-BOOST_STATIC_CONSTANT(parity_type, undefined = 2);
+template<class Graph>
+struct parity_traits<parity_t, Graph> {
+  typedef typename has_property<parity_t, Graph>::type value_type;
+  static const value_type white = 0;
+  static const value_type black = 1;
+  static const value_type undefined = 2;
+};
 
-template<class Graph, class PropertyMap>
+namespace detail {
+
+template<class Graph, class Parity, class PropertyMap>
 class ParityVisitor : public boost::dfs_visitor<>
 {
 public:
@@ -59,7 +66,8 @@ public:
     edge_descriptor;
 
   ParityVisitor(PropertyMap& map, bool* check) :
-    p_(white), map_(map), check_(check) { *check_ = true; }
+    p_(parity_traits<Parity, Graph>::white), map_(map), check_(check)
+  { *check_ = true; }
 
   void discover_vertex(vertex_descriptor s, const Graph&)
   {
@@ -70,24 +78,29 @@ public:
   void finish_vertex(vertex_descriptor, const Graph&) { flip(); }
 
 protected:
-  void flip() { p_ = (p_ == white ? black : white); }
+  void flip()
+  {
+    p_ = is_equal(p_, parity_traits<Parity, Graph>::white) ?
+      parity_traits<Parity, Graph>::black :
+      parity_traits<Parity, Graph>::white;
+  }
   void check(edge_descriptor e, const Graph& g) {
-    if (map_[boost::source(e, g)] == map_[boost::target(e, g)]) 
+    if (is_equal(map_[boost::source(e, g)], map_[boost::target(e, g)])) 
       *check_ = false;
   }
 
 private:
-  parity_type p_;
+  typename parity_traits<Parity, Graph>::value_type p_;
   PropertyMap map_;
   bool* check_;
 };
 
-} // end namespace parity
+} // end namespace detail
 
-template <class Graph, class Map>
-bool set_parity(Map map, const Graph& g)
+template <class Graph, class Parity, class Map>
+bool set_parity(const Graph& g, Parity, Map map)
 {
-  typedef typename parity::ParityVisitor<Graph, Map> visitor_type;
+  typedef typename detail::ParityVisitor<Graph, Parity, Map> visitor_type;
 
   bool check = true;
 
@@ -102,40 +115,47 @@ bool set_parity(Map map, const Graph& g)
   if (!check) {
     typename boost::graph_traits<Graph>::vertex_iterator vi, vi_end;
     for (boost::tie(vi, vi_end) = boost::vertices(g); vi != vi_end; ++vi)
-      map[*vi]=parity::undefined;
+      map[*vi] = parity_traits<Parity, Graph>::undefined;
   }
   return check;
 }
 
-namespace parity {
+namespace detail {
 
 template<bool HasParity>
 struct helper
 {
-  template<class Graph>
-  static bool set_parity(Graph&) { return false; }
+  template<class Graph, class Parity>
+  static bool set_parity(Graph&, Parity) { return false; }
 };
 
 template<>
 struct helper<true>
 {
-  template<class Graph>
-  static bool set_parity(Graph& g)
+  template<class Graph, class Parity>
+  static bool set_parity(Graph& g, Parity)
   {
-    typedef typename property_map<parity_t, Graph, int>::type map_type;
-    map_type map = boost::get(parity_t(), g);
-    return alps::set_parity(map, g);
+    typename property_map<Parity, Graph,
+      typename has_property<Parity, Graph>::type>::type
+      map = boost::get(Parity(), g);
+    return alps::set_parity(g, Parity(), map);
   }
 };
 
-} // end namespace parity
+} // end namespace detail
 
+
+template<class Graph, class Parity>
+inline bool set_parity(Graph& g, Parity)
+{
+  return detail::helper<has_property<Parity, Graph>::vertex_property>
+    ::set_parity(g, Parity());
+}
 
 template<class Graph>
-bool set_parity(Graph& g)
+inline bool set_parity(Graph& g)
 {
-  return parity::helper<has_property<parity_t, Graph>::vertex_property>
-    ::set_parity(g);
+  return set_parity(g, parity_t());
 }
 
 } // end namespace alps

@@ -56,11 +56,14 @@ struct edge_vector_t { typedef boost::edge_property_tag kind; };
 typedef edge_vector_t bond_vector_t;
 struct edge_vector_relative_t { typedef boost::edge_property_tag kind; };
 typedef edge_vector_relative_t bond_vector_relative_t;
+
 struct graph_name_t { typedef boost::graph_property_tag kind; };
 struct dimension_t { typedef boost::graph_property_tag kind; };
 
 using boost::vertex_index_t;
+typedef vertex_index_t site_index_t;
 using boost::edge_index_t;
+typedef edge_index_t bond_index_t;
 
 // the default graph class
 
