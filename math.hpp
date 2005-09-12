@@ -39,6 +39,7 @@
 
 #include <alps/config.h>
 #include <alps/typetraits.h>
+#include <boost/call_traits.hpp>
 #include <boost/type_traits.hpp>
 #include <boost/utility/enable_if.hpp>
 
@@ -129,13 +130,27 @@ inline bool is_zero(T x,
   typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0,
   typename boost::enable_if<boost::is_integral<T> >::type* = 0)
 { return x == T(0); }
+
+namespace detail {
+
+template<unsigned int N, class T>
+struct is_zero_helper
+{
+  static bool result(const T& x) { return x == T(0); }
+};
+template<unsigned int N, class T>
+struct is_zero_helper<N, std::complex<T> >
+{
+  static bool result(const std::complex<T>& x)
+  { return is_zero<N>(std::abs(x)); }
+};
+
+} // end namespace detail
+
 template<unsigned int N, class T>
 inline bool is_zero(const T& x,
   typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0)
-{ return x == T(0); }
-template<unsigned int N, class T>
-inline bool is_zero(const std::complex<T>& x)
-{ return is_zero<N>(std::abs(x)); }
+{ return detail::is_zero_helper<N, T>::result(x); }
 
 template<class T>
 inline bool is_zero(T x,
@@ -188,11 +203,6 @@ inline bool is_nonzero(const T& x,
 //
 
 template<unsigned int N, class T, class U>
-inline bool is_equal(const T& x, const U& y,
-  typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0,
-  typename boost::disable_if<boost::is_arithmetic<U> >::type* = 0)
-{ return x == y; }
-template<unsigned int N, class T, class U>
 inline bool is_equal(T x, U y,
   typename boost::enable_if<boost::is_integral<T> >::type* = 0,
   typename boost::enable_if<boost::is_integral<U> >::type* = 0)
@@ -212,23 +222,54 @@ inline bool is_equal(T x, U y,
   typename boost::enable_if<boost::is_integral<T> >::type* = 0,
   typename boost::enable_if<boost::is_float<U> >::type* = 0)
 { return is_equal<N>(y, x); }
-template<unsigned int N, class T, class U>
-inline bool is_equal(const std::complex<T>& x, const std::complex<U>& y)
-{ return is_equal<N>(x.real(), y.real()) && is_equal<N>(x.imag(), y.imag()); }
-template<unsigned int N, class T, class U>
-inline bool is_equal(const std::complex<T>& x, U y,
-  typename boost::enable_if<boost::is_arithmetic<U> >::type* = 0)
-{ return is_equal<N>(x.real(), y) && is_zero<N>(x.imag()); }
-template<unsigned int N, class T, class U>
-inline bool is_equal(T x, const std::complex<U>& y,
-  typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0)
-{ return is_equal<N>(y, x); }
 
-template<class T, class U>
+namespace detail {
+
+template<unsigned int N, class T, class U>
+struct is_equal_helper
+{
+  static bool result(const T& x, const U& y,
+    typename boost::disable_if<boost::is_arithmetic<U> >::type* = 0)
+  { return x == y; }
+  static bool result(const T& x, U y,
+    typename boost::enable_if<boost::is_arithmetic<U> >::type* = 0)
+  { return x == y; }
+};
+template<unsigned int N, class T, class U>
+struct is_equal_helper<N, std::complex<T>, std::complex<U> >
+{
+  static bool result(const std::complex<T>& x, const std::complex<U>& y)
+  { return is_equal<N>(x.real(), y.real()) && is_equal<N>(x.imag(), y.imag()); }
+};
+template<unsigned int N, class T, class U>
+struct is_equal_helper<N, std::complex<T>, U>
+{
+  static bool result(const std::complex<T>& x, const U& y,
+    typename boost::disable_if<boost::is_arithmetic<U> >::type* = 0)
+  { return x == y; }
+  static bool result(const std::complex<T>& x, U y,
+    typename boost::enable_if<boost::is_arithmetic<U> >::type* = 0)
+  { return is_equal<N>(x.real(), y) && is_zero<N>(x.imag()); }
+};
+
+} // end namespace detail
+
+template<unsigned int N, class T, class U>
 inline bool is_equal(const T& x, const U& y,
   typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0,
   typename boost::disable_if<boost::is_arithmetic<U> >::type* = 0)
-{ return x == y; }
+{ return detail::is_equal_helper<N, T, U>::result(x, y); }
+template<unsigned int N, class T, class U>
+inline bool is_equal(const T& x, U y,
+  typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0,
+  typename boost::enable_if<boost::is_arithmetic<U> >::type* = 0)
+{ return detail::is_equal_helper<N, T, U>::result(x, y); }
+template<unsigned int N, class T, class U>
+inline bool is_equal(T x, const U& y,
+  typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0,
+  typename boost::disable_if<boost::is_arithmetic<U> >::type* = 0)
+{ return detail::is_equal_helper<N, U, T>::result(y, x); }
+
 template<class T, class U>
 inline bool is_equal(T x, U y,
   typename boost::enable_if<boost::is_integral<T> >::type* = 0,
@@ -249,6 +290,21 @@ inline bool is_equal(T x, U y,
   typename boost::enable_if<boost::is_integral<T> >::type* = 0,
   typename boost::enable_if<boost::is_float<U> >::type* = 0)
 { return is_equal(U(x), y); }
+template<class T, class U>
+inline bool is_equal(const T& x, const U& y,
+  typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0,
+  typename boost::disable_if<boost::is_arithmetic<U> >::type* = 0)
+{ return x == y; }
+template<class T, class U>
+inline bool is_equal(const T& x, U y,
+  typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0,
+  typename boost::enable_if<boost::is_arithmetic<U> >::type* = 0)
+{ return x == y; }
+template<class T, class U>
+inline bool is_equal(T x, const U& y,
+  typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0,
+  typename boost::disable_if<boost::is_arithmetic<U> >::type* = 0)
+{ return x == y; }
 template<class T, class U>
 inline bool is_equal(const std::complex<T>& x, const std::complex<U>& y)
 { return is_equal(x.real(), y.real()) && is_equal(x.imag(), y.imag()); }
@@ -276,13 +332,27 @@ template<unsigned int N, class T>
 inline T round(T x,
   typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0)
 { return is_zero<N>(x) ? T(0) : x; }
-template<unsigned int, class T>
+
+namespace detail {
+
+template<unsigned int N, class T>
+struct round_helper
+{
+  static T result(const T& x) { return x; }
+};
+template<unsigned int N, class T>
+struct round_helper<N, std::complex<T> >
+{
+  static std::complex<T> result(const std::complex<T>& x)
+  { return std::complex<double>(round<N>(x.real()), round<N>(x.imag())); }
+};
+
+} // end namespace detail
+
+template<unsigned int N, class T>
 inline T round(const T& x, 
   typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0)
-{ return x; }
-template<unsigned int N, class T>
-inline std::complex<T> round(const std::complex<T>& x)
-{ return std::complex<T>(round<N>(x.real()), round<N>(x.imag())); }
+{ return detail::round_helper<N, T>::result(x); }
 
 template<class T>
 inline T round(T x,
