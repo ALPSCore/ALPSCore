@@ -50,7 +50,7 @@ int main()
       std::vector<std::pair<std::complex<double>,std::vector<std::size_t> > > trans = lattices.translations(k);
       for (int i=0;i<trans.size();++i) {
         std::cout << "Translation " << i << " with phase "
-                  << alps::round(trans[i].first) << " maps ";
+                  << alps::round<1>(trans[i].first) << " maps ";
         for (int j=0;j<trans[i].second.size();++j)
           std::cout << j << "->" << trans[i].second[j] << " "; 
         std::cout << "\n";
