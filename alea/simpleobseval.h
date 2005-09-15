@@ -67,7 +67,10 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
   typedef typename obs_value_traits<T>::time_type time_type;
   typedef typename AbstractSimpleObservable<T>::result_type result_type;
   typedef typename obs_value_traits<T>::convergence_type convergence_type;
-  typedef std::size_t count_type;
+  // typedef std::size_t count_type;
+  // *** we may need more than 32 Bit
+  typedef uintmax_t count_type;
+
   typedef typename AbstractSimpleObservable<T>::label_type label_type;
   
   enum { version = obs_value_traits<T>::magic_id + (6 << 16) };

@@ -100,7 +100,7 @@ public:
   inline uint32_t get_thermalization() const;
   inline bool can_set_thermalization() const { return can_set_thermal_ && !nonlinear_operations_;}
 
-  uint32_t count() const { return changed_ ? (bin_size()*bin_number() == 0 ? count_ : bin_size()*bin_number()) : count_;}
+  uintmax_t count() const { return changed_ ? (bin_size()*bin_number() == 0 ? count_ : bin_size()*bin_number()) : count_;}
   inline const result_type& mean() const;
   inline const result_type& error() const;
   inline const convergence_type& converged_errors() const;
@@ -179,14 +179,14 @@ protected:
   template <class OPV, class OPR> void transform_linear(OPV opv, OPR opr);
 
 private:  
-  mutable uint32_t count_;          
+  mutable uintmax_t count_;          
 
   mutable bool has_variance_;
   mutable bool has_tau_;
   mutable bool has_minmax_;
   mutable bool can_set_thermal_;
 
-  mutable uint32_t binsize_;
+  mutable uintmax_t binsize_;
   mutable uint32_t thermalcount_; 
   mutable uint32_t discardedmeas_;
   mutable uint32_t discardedbins_;
@@ -349,7 +349,7 @@ void SimpleObservableData<T>::read_xml_scalar(std::istream& infile, const XMLTag
   while (tag.name !="/SCALAR_AVERAGE") {
     if (tag.name=="COUNT") {
       if (tag.type !=XMLTag::SINGLE) {
-        count_ = boost::lexical_cast<std::size_t,std::string>(parse_content(infile));
+        count_ = boost::lexical_cast<uintmax_t,std::string>(parse_content(infile));
         check_tag(infile,"/COUNT");
       }
     }
@@ -414,7 +414,7 @@ void SimpleObservableData<T>::read_xml_vector(std::istream& infile, const XMLTag
     while (tag.name !="/SCALAR_AVERAGE") {
       if (tag.name=="COUNT") {
         if (tag.type != XMLTag::SINGLE) {
-          count_=boost::lexical_cast<std::size_t,std::string>(parse_content(infile));
+          count_=boost::lexical_cast<uintmax_t,std::string>(parse_content(infile));
           check_tag(infile,"/COUNT");
         }
       }

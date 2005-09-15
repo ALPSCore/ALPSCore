@@ -68,10 +68,10 @@ class SimpleBinning : public AbstractBinning<T>
   void reset(bool forthermalization=false);
   void operator<<(const T& x);
   
-  uint32_t count() const {return super_type::is_thermalized() ? count_ : 0;} // number of measurements performed
+  uintmax_t count() const {return super_type::is_thermalized() ? count_ : 0;} // number of measurements performed
   result_type mean() const;
   result_type variance() const;
-  result_type error(uint32_t bin_used=std::numeric_limits<uint32_t>::max()) const;
+  result_type error(uintmax_t bin_used=std::numeric_limits<uintmax_t>::max()) const;
   convergence_type converged_errors() const;
   time_type tau() const; // autocorrelation time
     
@@ -81,9 +81,9 @@ class SimpleBinning : public AbstractBinning<T>
   value_type min() const {return min_;}
   value_type max() const {return max_;}
 
-  uint32_t get_thermalization() const { return super_type::is_thermalized() ? thermal_count_ : count_;}
+  uintmax_t get_thermalization() const { return super_type::is_thermalized() ? thermal_count_ : count_;}
 
-  uint32_t size() const { return obs_value_traits<T>::size(min_);}
+  uintmax_t size() const { return obs_value_traits<T>::size(min_);}
   
   void output_scalar(std::ostream& out) const;
   template <class L> void output_vector(std::ostream& out, const L&) const;
@@ -100,16 +100,16 @@ class SimpleBinning : public AbstractBinning<T>
 private:
   std::vector<result_type> sum_; // sum of measurements in the bin
   std::vector<result_type> sum2_; // sum of the squares
-  std::vector<uint32_t> bin_entries_; // number of measurements
+  std::vector<uintmax_t> bin_entries_; // number of measurements
   std::vector<result_type> last_bin_; // the last value measured
   
-  uint32_t count_; // total number of measurements (=bin_entries_[0])
+  uintmax_t count_; // total number of measurements (=bin_entries_[0])
   uint32_t thermal_count_; // meaurements performed during thermalization
   value_type min_,max_; // minimum and maximum value
   
   // some fast inlined functions without any range checks
-  result_type binmean(uint32_t i) const ;
-  result_type binvariance(uint32_t i) const;
+  result_type binmean(uintmax_t i) const ;
+  result_type binvariance(uintmax_t i) const;
 };
 
 #ifndef BOOST_NO_INCLASS_MEMBER_INITIALIZATION
@@ -177,10 +177,10 @@ inline void SimpleBinning<T>::operator<<(const T& x)
   obs_value_traits<T>::check_for_max(max_,x);
   obs_value_traits<T>::check_for_min(min_,x);
 
-  uint32_t i=count_;
+  uintmax_t i=count_;
   count_++;
   bin_entries_[0]++;
-  uint32_t binlen=1;
+  uintmax_t binlen=1;
   std::size_t bin=0;
 
   // binning
@@ -266,7 +266,7 @@ typename SimpleBinning<T>::convergence_type SimpleBinning<T>::converged_errors()
 
 
 template <class T>
-inline typename SimpleBinning<T>::result_type SimpleBinning<T>::binmean(uint32_t i) const 
+inline typename SimpleBinning<T>::result_type SimpleBinning<T>::binmean(uintmax_t i) const 
 {
   typedef typename obs_value_traits<T>::count_type count_type;
 
@@ -275,7 +275,7 @@ inline typename SimpleBinning<T>::result_type SimpleBinning<T>::binmean(uint32_t
 
 
 template <class T>
-inline typename SimpleBinning<T>::result_type SimpleBinning<T>::binvariance(uint32_t i) const 
+inline typename SimpleBinning<T>::result_type SimpleBinning<T>::binvariance(uintmax_t i) const 
 {
   typedef typename obs_value_traits<T>::count_type count_type;
 
@@ -328,21 +328,21 @@ inline typename SimpleBinning<T>::result_type SimpleBinning<T>::variance() const
 
 // error estimated from bin i, or from default bin if <0
 template <class T>
-inline typename SimpleBinning<T>::result_type SimpleBinning<T>::error(uint32_t i) const
+inline typename SimpleBinning<T>::result_type SimpleBinning<T>::error(uintmax_t i) const
 {
   typedef typename obs_value_traits<T>::count_type count_type;
 
   if (count()==0)
      boost::throw_exception(NoMeasurementsError());
  
-  if (i==std::numeric_limits<uint32_t>::max()) 
+  if (i==std::numeric_limits<uintmax_t>::max()) 
     i=binning_depth()-1;
 
   if (i > binning_depth()-1)
    boost::throw_exception(std::invalid_argument("invalid bin  in SimpleBinning<T>::error"));
   
-  uint32_t binsize_ = bin_entries_[i];
-  
+  uintmax_t binsize_ = bin_entries_[i];
+
   result_type correction = obs_value_traits<result_type>::check_divide(binvariance(i),binvariance(0));
   using std::sqrt;
   correction *=(variance()/count_type(binsize_-1));

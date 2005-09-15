@@ -67,7 +67,7 @@ struct obs_value_traits
   typedef int convergence_type;
   typedef int slice_iterator;
   BOOST_STATIC_CONSTANT( uint32_t, magic_id = type_traits<T>::type_tag);
-  typedef uint32_t size_type;
+  typedef uintmax_t size_type;
   BOOST_STATIC_CONSTANT( bool, array_valued = false);
   typedef std::string label_type;
 

@@ -56,7 +56,9 @@ public:
   typedef obs_value_type value_type;
   typedef AbstractSimpleObservable<obs_value_type> base_type;
   typedef typename obs_value_traits<result_type>::slice_iterator slice_iterator;
-  typedef std::size_t count_type;
+  // typedef std::size_t count_type;
+  // *** we may need more than 32 Bit
+  typedef uintmax_t count_type;
   typedef typename obs_value_traits<value_type>::time_type time_type;
   typedef typename obs_value_traits<value_type>::convergence_type convergence_type;
   typedef typename super_type::label_type label_type;
