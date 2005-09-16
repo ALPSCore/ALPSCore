@@ -69,7 +69,7 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
   typedef typename obs_value_traits<T>::convergence_type convergence_type;
   // typedef std::size_t count_type;
   // *** we may need more than 32 Bit
-  typedef uintmax_t count_type;
+  typedef uint64_t count_type;
 
   typedef typename AbstractSimpleObservable<T>::label_type label_type;
   

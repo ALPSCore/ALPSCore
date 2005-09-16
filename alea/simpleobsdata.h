@@ -100,7 +100,7 @@ public:
   inline uint32_t get_thermalization() const;
   inline bool can_set_thermalization() const { return can_set_thermal_ && !nonlinear_operations_;}
 
-  uintmax_t count() const { return changed_ ? (bin_size()*bin_number() == 0 ? count_ : bin_size()*bin_number()) : count_;}
+  uint64_t count() const { return changed_ ? (bin_size()*bin_number() == 0 ? count_ : bin_size()*bin_number()) : count_;}
   inline const result_type& mean() const;
   inline const result_type& error() const;
   inline const convergence_type& converged_errors() const;
@@ -179,14 +179,14 @@ protected:
   template <class OPV, class OPR> void transform_linear(OPV opv, OPR opr);
 
 private:  
-  mutable uintmax_t count_;          
+  mutable uint64_t count_;          
 
   mutable bool has_variance_;
   mutable bool has_tau_;
   mutable bool has_minmax_;
   mutable bool can_set_thermal_;
 
-  mutable uintmax_t binsize_;
+  mutable uint64_t binsize_;
   mutable uint32_t thermalcount_; 
   mutable uint32_t discardedmeas_;
   mutable uint32_t discardedbins_;
@@ -349,7 +349,7 @@ void SimpleObservableData<T>::read_xml_scalar(std::istream& infile, const XMLTag
   while (tag.name !="/SCALAR_AVERAGE") {
     if (tag.name=="COUNT") {
       if (tag.type !=XMLTag::SINGLE) {
-        count_ = boost::lexical_cast<uintmax_t,std::string>(parse_content(infile));
+        count_ = boost::lexical_cast<uint64_t,std::string>(parse_content(infile));
         check_tag(infile,"/COUNT");
       }
     }
@@ -414,7 +414,7 @@ void SimpleObservableData<T>::read_xml_vector(std::istream& infile, const XMLTag
     while (tag.name !="/SCALAR_AVERAGE") {
       if (tag.name=="COUNT") {
         if (tag.type != XMLTag::SINGLE) {
-          count_=boost::lexical_cast<uintmax_t,std::string>(parse_content(infile));
+          count_=boost::lexical_cast<uint64_t,std::string>(parse_content(infile));
           check_tag(infile,"/COUNT");
         }
       }
@@ -923,10 +923,22 @@ void SimpleObservableData<T>::save(ODump& dump) const
 template <class T>
 void SimpleObservableData<T>::load(IDump& dump)
 {
-  dump >> count_ >> mean_ >> error_ >> variance_ >> tau_ >> has_variance_
-       >> has_tau_ >> has_minmax_ >> thermalcount_ >> can_set_thermal_ >> min_ >> max_
-       >> binsize_ >> discardedmeas_ >> discardedbins_ >> valid_ >> jack_valid_ >> changed_
-       >> nonlinear_operations_ >> values_ >> values2_ >> jack_;
+  if(dump.version() >= 302)
+    dump >> count_ >> mean_ >> error_ >> variance_ >> tau_ >> has_variance_
+         >> has_tau_ >> has_minmax_ >> thermalcount_ >> can_set_thermal_ >> min_ >> max_
+         >> binsize_ >> discardedmeas_ >> discardedbins_ >> valid_ >> jack_valid_ >> changed_
+         >> nonlinear_operations_ >> values_ >> values2_ >> jack_;
+  else {
+    // some data types have changed from 32 to 64 Bit between version 301 and 302
+    uint32_t count_tmp, binsize_tmp;
+    dump >> count_tmp >> mean_ >> error_ >> variance_ >> tau_ >> has_variance_
+         >> has_tau_ >> has_minmax_ >> thermalcount_ >> can_set_thermal_ >> min_ >> max_
+         >> binsize_tmp >> discardedmeas_ >> discardedbins_ >> valid_ >> jack_valid_ >> changed_
+         >> nonlinear_operations_ >> values_ >> values2_ >> jack_;
+    // perform the conversions which may be necessary
+    count_ = count_tmp;
+    binsize_ = binsize_tmp;
+   }
   if (dump.version()!=300 )
     dump >> converged_errors_ >> any_converged_errors_;
 }

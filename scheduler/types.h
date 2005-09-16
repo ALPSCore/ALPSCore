@@ -47,7 +47,8 @@ enum MCDumpType {
     MCDump_measurements            =4,
 
     // dump version numbers
-    MCDump_worker_version          =301
+    MCDump_worker_version          =302
+    // Some data types changed from 32 to 64 Bit between version 301 and 302
 };
 
 
