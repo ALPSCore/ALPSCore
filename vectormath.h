@@ -28,6 +28,7 @@
 
 /* $Id$ */
 
+
 /// \file vectormath.h
 /// \brief basic arithmetic operations on std::vectors
 /// 
@@ -39,11 +40,14 @@
 
 
 #include <alps/config.h>
-#include <alps/functional.h>
 #include <alps/typetraits.h>
+#include <boost/lambda/lambda.hpp>
+#include <boost/lambda/bind.hpp>
+#include <cassert>
 #include <vector>
 
 namespace alps {
+
 namespace detail {
 
 /// \brief apply a binary function object to two vectors
@@ -54,15 +58,9 @@ namespace detail {
 template <class T, class OP>
 std::vector<T> vector_vector_apply(OP op, const std::vector<T>& x, const std::vector<T>& y)
 {
-  typedef typename std::vector<T>::size_type size_type;
-  size_type end=std::min(x.size(),y.size());
-  std::vector<T> res(std::max(x.size(),y.size()));
-  for (size_type i=0;i<end;++i)
-    res[i]=op(x[i],y[i]);
-  for (size_type i=end;i<x.size();++i)
-    res[i]=op(x[i],T());
-  for (size_type i=end;i<y.size();++i)
-    res[i]=op(T(),y[i]);
+  assert(x.size()==y.size());
+  std::vector<T> res;
+  std::transform(x.begin(),x.end(),y.begin(),std::back_inserter(res),op);
   return res;
 }
 
@@ -74,9 +72,11 @@ std::vector<T> vector_vector_apply(OP op, const std::vector<T>& x, const std::ve
 template <class T, class S, class OP>
 std::vector<T> scalar_vector_apply(OP op, S x, const std::vector<T>& y)
 {
-  typedef typename std::vector<T>::size_type size_type;
+  using namespace boost::lambda;
   std::vector<T> res(y.size());
-  std::transform(y.begin(),y.end(),res.begin(),std::bind1st(op,x));
+  for (int i=0;i<y.size();++i)
+    res[i] = op(x,y[i]);
+  //std::transform(y.begin(),y.end(),std::back_inserter(res),bind(op,x,_1));
   return res;
 }
 
@@ -91,22 +91,25 @@ namespace std{
 template <class T>
 std::vector<T> operator+(const std::vector<T>& x, const std::vector<T>& y)
 {
-  return alps::detail::vector_vector_apply(std::plus<T>(),x,y);
+  using namespace boost::lambda;
+  return alps::detail::vector_vector_apply(_1 + _2,x,y);
 }
 
 /// returns the difference of two vectors
 template <class T>
 std::vector<T> operator-(const std::vector<T>& x, const std::vector<T>& y)
 {
-  return alps::detail::vector_vector_apply(std::minus<T>(),x,y);
+  using namespace boost::lambda;
+  return alps::detail::vector_vector_apply(_1 - _2,x,y);
 }
 
 /// returns the negated vector
 template <class T>
 std::vector<T> operator-(const std::vector<T>& x)
 {
+  using namespace boost::lambda;
   std::vector<T> res(x.size());
-  std::transform(x.begin().x.end(),res.begin(),std::negate<T>());
+  std::transform(x.begin().x.end(),res.begin(),-_1);
   return res;
 }
 
@@ -116,7 +119,8 @@ std::vector<T> operator-(const std::vector<T>& x)
 template <class T, class S>
 std::vector<T> operator*(S s, const std::vector<T>& v)
 {
-  return alps::detail::scalar_vector_apply(alps::multiplies<S,T,T>(),s,v);
+  using namespace boost::lambda;
+  return alps::detail::scalar_vector_apply(_1 * _2,s,v);
 }
 
 /// returns the vector scaled by a factor
@@ -125,7 +129,8 @@ std::vector<T> operator*(S s, const std::vector<T>& v)
 template <class T, class S>
 std::vector<T> operator*(const std::vector<T>& v, S s)
 {
-  return alps::detail::scalar_vector_apply(alps::multiplies<S,T,T>(),s,v);
+  using namespace boost::lambda;
+  return alps::detail::scalar_vector_apply(_1 * _2,s,v);
 }
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE

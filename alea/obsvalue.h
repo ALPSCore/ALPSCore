@@ -37,13 +37,27 @@
 #include <alps/typetraits.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/limits.hpp>
+#include <boost/lambda/lambda.hpp>
 #include <cstddef>
 #include <vector>
 #include <complex>
-
-#ifdef ALPS_HAVE_VALARRAY
 # include <valarray>
-#endif
+
+namespace boost { 
+namespace lambda {
+  
+template<class Act, class T, class U> 
+struct plain_return_type_2<arithmetic_action<Act>, std::valarray<T>, U> {
+  typedef std::valarray<T> type;
+};
+
+template<class Act, class T, class U> 
+struct plain_return_type_2<arithmetic_action<Act>, U, std::valarray<T> > {
+  typedef std::valarray<T> type;
+};
+
+}
+}
 
 namespace alps {
 

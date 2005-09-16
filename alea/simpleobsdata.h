@@ -35,12 +35,11 @@
 #define ALPS_ALEA_SIMPLEOBSDATA_H
 
 #include <alps/config.h>
-#include <alps/functional.h>
 #include <alps/alea/nan.h>
 #include <alps/alea/simpleobservable.h>
 #include <alps/parser/parser.h>
 
-#include <boost/bind.hpp>
+#include <boost/lambda/lambda.hpp>
 #include <boost/functional.hpp>
 #include <iostream>
 #include <numeric>
@@ -58,6 +57,8 @@ template <class T> std::ostream& operator<<(std::ostream& o, const std::valarray
 #endif
 
 namespace alps {
+
+using namespace boost::lambda;
 
 //=======================================================================
 // SimpleObservableData
@@ -164,7 +165,7 @@ public:
   template <class X>
   SimpleObservableData<T>& operator/=(const SimpleObservableData<X>&);
 
-  template <class OPV, class OPR> void transform(OPV opv, OPR opr);
+  template <class OP> void transform(OP op);
 
   std::string evaluation_method(Target t) const;
 
@@ -174,9 +175,9 @@ protected:
   void jackknife() const;
   void fill_jack() const;
 
-  template <class OPV, class OPR, class X>
-  void transform(const SimpleObservableData<X>& x, OPV opv, OPR opr);
-  template <class OPV, class OPR> void transform_linear(OPV opv, OPR opr);
+  template <class X, class OP>
+  void transform(const SimpleObservableData<X>& x, OP op);
+  template <class OP> void transform_linear(OP op);
 
 private:  
   mutable uint64_t count_;          
@@ -513,7 +514,7 @@ SimpleObservableData<T>& SimpleObservableData<T>::operator+=(const SimpleObserva
     error_ = sqrt(error_);
     // error_=sqrt(error_*error_+x.error()*x.error());
   }
-  transform(x,std::plus<value_type>(),std::plus<result_type>());
+  transform(x, _1+_2);
   return (*this);
 }
 
@@ -528,7 +529,7 @@ SimpleObservableData<T>& SimpleObservableData<T>::operator-=(const SimpleObserva
     error_ = sqrt(error_);
     //error_=sqrt(error_*error_+x.error()*x.error());
   }
-  transform(x,std::minus<value_type>(),std::minus<result_type>());
+  transform(x,_1-_2);
   return (*this);
 }
 
@@ -549,9 +550,7 @@ SimpleObservableData<T>& SimpleObservableData<T>::operator*=(const SimpleObserva
     mean_ *= x.mean();
     //error_=sqrt(error()*error()*x.mean()*x.mean()+mean()*mean()*x.error()*x.error());
   }
-  transform(x,alps::multiplies<value_type,X,value_type>(), alps::multiplies<
-            result_type, typename SimpleObservableData<X>::result_type,
-            result_type>());
+  transform(x,_1*_2);
   return (*this);
 }
 
@@ -573,15 +572,13 @@ SimpleObservableData<T>& SimpleObservableData<T>::operator/=(const SimpleObserva
     mean_ /= x.mean();
     //error_ = sqrt((error()*error()+mean()*mean()*x.error()*x.error()/x.mean()/x.mean())/x.mean()/x.mean());
   }
-  transform(x,alps::divides<value_type,X,value_type>(),alps::divides<
-  result_type,typename SimpleObservableData<X>::result_type,result_type>());
+  transform(x,_1/_2);
   return (*this);
 }
 
 template <class T>
-template <class OPV, class OPR, class X>
-void SimpleObservableData<T>::transform(const SimpleObservableData<X>& x,
-                                        OPV opv, OPR opr)
+template <class X, class OP>
+void SimpleObservableData<T>::transform(const SimpleObservableData<X>& x, OP op)
 {
   if ((count()==0) || (x.count()==0))
     boost::throw_exception(std::runtime_error("both observables need measurements"));
@@ -604,9 +601,9 @@ void SimpleObservableData<T>::transform(const SimpleObservableData<X>& x,
     jack_.clear();
   } else {
     for (unsigned int i = 0; i < bin_number(); ++i)
-      values_[i] = opv(values_[i], x.values_[i]);
+      values_[i] = op(values_[i], x.values_[i]);
     for (unsigned int i = 0; i < jack_.size(); ++i)
-      jack_[i] = opr(jack_[i], x.jack_[i]);
+      jack_[i] = op(jack_[i], x.jack_[i]);
   }
   
   obs_value_traits<convergence_type>::check_for_max(converged_errors_, x.converged_errors());
@@ -625,17 +622,19 @@ ALPS_DUMMY_VOID SimpleObservableData<T>::compact()
   ALPS_RETURN_VOID
 }
 
-template <class T> template <class OPV, class OPR>
-void SimpleObservableData<T>::transform_linear(OPV opv, OPR opr)
+template <class T> 
+template <class OP>
+void SimpleObservableData<T>::transform_linear(OP op)
 {
-  mean_ = opv(mean_);
-  std::transform(values_.begin(), values_.end(), values_.begin(), opv);
+  mean_ = op(mean_);
+  std::transform(values_.begin(), values_.end(), values_.begin(), op);
   fill_jack();
-  std::transform(jack_.begin(), jack_.end(), jack_.begin(), opr);
+  std::transform(jack_.begin(), jack_.end(), jack_.begin(), op);
 }
 
-template <class T> template <class OPV, class OPR>
-void SimpleObservableData<T>::transform(OPV opv, OPR opr)
+template <class T> 
+template <class OP>
+void SimpleObservableData<T>::transform(OP op)
 {
   valid_ = false;
   nonlinear_operations_ = true;
@@ -644,9 +643,9 @@ void SimpleObservableData<T>::transform(OPV opv, OPR opr)
   has_tau_ = false;
   values2_.clear();
   has_minmax_ = false;
-  std::transform(values_.begin(), values_.end(), values_.begin(), opv);
+  std::transform(values_.begin(), values_.end(), values_.begin(), op);
   fill_jack();
-  std::transform(jack_.begin(), jack_.end(), jack_.begin(), opr);
+  std::transform(jack_.begin(), jack_.end(), jack_.begin(), op);
 }
 
 template <class T>
@@ -658,7 +657,7 @@ void SimpleObservableData<T>::negate()
       min_ = -max_;
       max_ = -tmp;
     }
-    transform_linear(std::negate<value_type>(),std::negate<result_type>());
+    transform_linear(-_1);
   }
 }
 
@@ -670,7 +669,7 @@ SimpleObservableData<T>& SimpleObservableData<T>::operator+=(X x)
       min_ += x;
       max_ += x;
     }
-    transform_linear(std::bind2nd(alps::plus<value_type,X,value_type>(),x),std::bind2nd(alps::plus<result_type,X,result_type>(),x));
+    transform_linear(_1 + x);
     for (int i=0;i<values2_.size();++i)
       values2_[i] += 2.*values_[i]*x+x*x;
   }
@@ -685,7 +684,7 @@ SimpleObservableData<T>& SimpleObservableData<T>::operator-=(X x)
       min_ -= x;
       max_ -= x;
     }
-    transform_linear(std::bind2nd(alps::minus<value_type,X,value_type>(),x),std::bind2nd(alps::minus<result_type,X,result_type>(),x));
+    transform_linear(_1-x);
     for (int i=0;i<values2_.size();++i)
       values2_[i] += -2.*values_[i]*x+x*x;
   }
@@ -700,7 +699,7 @@ void SimpleObservableData<T>::subtract_from(const X& x)
       min_ = x-max_;
       max_ = x-min_;
     }
-    transform_linear(std::bind1st(alps::minus<X,value_type,value_type>(),x),std::bind1st(alps::minus<X,result_type,result_type>(),x));
+    transform_linear(x-_1);
     for (int i=0;i<values2_.size();++i)
       values2_[i] += -2.*values_[i]*x+x*x;
   }
@@ -715,9 +714,8 @@ SimpleObservableData<T>& SimpleObservableData<T>::operator*=(X x)
       variance_ *= x*x;
     has_minmax_ = false;
     
-    transform_linear(std::bind2nd(alps::multiplies<value_type,X,value_type>(),x),std::bind2nd(alps::multiplies<result_type,X,result_type>(),x));
-    std::transform(values2_.begin(),values2_.end(),values2_.begin(),
-                   std::bind2nd(alps::multiplies<value_type,X,value_type>(),x*x));
+    transform_linear(_1*x);
+    std::transform(values2_.begin(),values2_.end(),values2_.begin(),_1*(x*x));
   }
   return (*this);
 }
@@ -731,9 +729,8 @@ SimpleObservableData<T>& SimpleObservableData<T>::operator/=(X x)
       variance_ /= x*x;
     has_minmax_ = false;
     
-    transform_linear(std::bind2nd(alps::divides<value_type,X,value_type>(),x),std::bind2nd(alps::divides<result_type,X,result_type>(),x));
-    std::transform(values2_.begin(),values2_.end(),values2_.begin(),
-                   std::bind2nd(alps::divides<value_type,X,value_type>(),x*x));
+    transform_linear(_1/x);
+    std::transform(values2_.begin(),values2_.end(),values2_.begin(),_1/(x*x));
   }
   return (*this);
 }
@@ -749,7 +746,7 @@ void SimpleObservableData<T>::divide(const X& x)
     has_tau_ = false;
     nonlinear_operations_ = true;
     changed_ = true;
-    transform_linear(std::bind1st(alps::divides<X,value_type,value_type>(),x),std::bind1st(alps::divides<X,result_type,result_type>(),x));
+    transform_linear(x/_1);
   }
 }
 
@@ -939,7 +936,7 @@ void SimpleObservableData<T>::load(IDump& dump)
     count_ = count_tmp;
     binsize_ = binsize_tmp;
    }
-  if (dump.version()!=300 )
+  if (dump.version()>300 )
     dump >> converged_errors_ >> any_converged_errors_;
 }
 
