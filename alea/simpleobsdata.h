@@ -920,7 +920,7 @@ void SimpleObservableData<T>::save(ODump& dump) const
 template <class T>
 void SimpleObservableData<T>::load(IDump& dump)
 {
-  if(dump.version() >= 302)
+  if(dump.version() >= 302 || dump.version() == 0 /* version is not set */)
     dump >> count_ >> mean_ >> error_ >> variance_ >> tau_ >> has_variance_
          >> has_tau_ >> has_minmax_ >> thermalcount_ >> can_set_thermal_ >> min_ >> max_
          >> binsize_ >> discardedmeas_ >> discardedbins_ >> valid_ >> jack_valid_ >> changed_
@@ -936,7 +936,7 @@ void SimpleObservableData<T>::load(IDump& dump)
     count_ = count_tmp;
     binsize_ = binsize_tmp;
    }
-  if (dump.version()>300 )
+  if (dump.version() > 300 || dump.version() == 0 /* version is not set */)
     dump >> converged_errors_ >> any_converged_errors_;
 }
 

@@ -494,7 +494,7 @@ template <class T>
 inline void SimpleBinning<T>::load(IDump& dump) 
 {
   AbstractBinning<T>::load(dump);
-  if(dump.version() >= 302)
+  if(dump.version() >= 302 || dump.version() == 0 /* version is not set */)
     dump >> sum_ >> sum2_ >> bin_entries_ >> last_bin_ >> count_ >> thermal_count_
          >> min_ >> max_;
   else {
