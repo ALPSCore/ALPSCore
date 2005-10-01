@@ -49,22 +49,10 @@ struct parity_traits;
 template<class Graph>
 struct parity_traits<parity_t, Graph> {
   typedef typename has_property<parity_t, Graph>::type value_type;
-  static const value_type white = 0;
-  static const value_type black = 1;
-  static const value_type undefined = 2;
+  BOOST_STATIC_CONSTANT(value_type, white = 0);
+  BOOST_STATIC_CONSTANT(value_type, black = 1);
+  BOOST_STATIC_CONSTANT(value_type, undefined = 2);
 };
-
-#ifndef BOOST_NO_INCLASS_MEMBER_INITIALIZATION
-template<class Graph>
-const typename parity_traits<parity_t, Graph>::value_type 
-  parity_traits<parity_t, Graph>::white;
-template<class Graph>
-const typename parity_traits<parity_t, Graph>::value_type 
-  parity_traits<parity_t, Graph>::black;
-template<class Graph>
-const typename parity_traits<parity_t, Graph>::value_type 
-  parity_traits<parity_t, Graph>::undefined;
-#endif
 
 namespace detail {
 
