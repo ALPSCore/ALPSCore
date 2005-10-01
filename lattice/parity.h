@@ -54,6 +54,18 @@ struct parity_traits<parity_t, Graph> {
   static const value_type undefined = 2;
 };
 
+#ifndef BOOST_NO_INCLASS_MEMBER_INITIALIZATION
+template<class Graph>
+const typename parity_traits<parity_t, Graph>::value_type 
+  parity_traits<parity_t, Graph>::white;
+template<class Graph>
+const typename parity_traits<parity_t, Graph>::value_type 
+  parity_traits<parity_t, Graph>::black;
+template<class Graph>
+const typename parity_traits<parity_t, Graph>::value_type 
+  parity_traits<parity_t, Graph>::undefined;
+#endif
+
 namespace detail {
 
 template<class Graph, class Parity, class PropertyMap>
