@@ -46,6 +46,11 @@
 namespace boost { 
 namespace lambda {
   
+template<class Act, class T> 
+struct plain_return_type_2<arithmetic_action<Act>, std::valarray<T>, std::valarray<T> > {
+  typedef std::valarray<T> type;
+};
+
 template<class Act, class T, class U> 
 struct plain_return_type_2<arithmetic_action<Act>, std::valarray<T>, U> {
   typedef std::valarray<T> type;
