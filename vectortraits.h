@@ -43,10 +43,11 @@
 #include <alps/typetraits.h>
 #include <alps/functional.h>
 
-#include <boost/lambda/lambda.hpp>
+// #include <boost/lambda/lambda.hpp>
 
 #include <algorithm>
 #include <cassert>
+#include <functional>
 #include <iostream>
 #include <numeric>
 #include <vector>
@@ -54,7 +55,7 @@
 
 namespace alps {
 
-using namespace boost::lambda;
+// using namespace boost::lambda;
 
 /// \brief traits for containers
 /// @param CONTAINER the type of container
@@ -107,8 +108,11 @@ inline void resize(C& c, std::size_t n)
 template <class C>
 inline typename vector_traits<C>::value_type scalar_product(const C& c1, const C& c2) 
 {
-  return std::inner_product(c1.begin(),c1.end(),c2.begin(),typename C::value_type(),
-                              _1+_2 ,conj_mult<typename C::value_type>());
+  // return std::inner_product(c1.begin(), c1.end(), c2.begin(),
+  //   typename C::value_type(), _1+_2 ,conj_mult<typename C::value_type>());
+  return std::inner_product(c1.begin(), c1.end(), c2.begin(),
+    typename C::value_type(), std::plus<typename C::value_type>(),
+    alps::conj_mult<typename C::value_type>());
 }
 
 
@@ -116,7 +120,10 @@ inline typename vector_traits<C>::value_type scalar_product(const C& c1, const C
 template <class T>
 inline T scalar_product(const std::valarray<T>& c1, const std::valarray<T>& c2) 
 {
-  return std::inner_product(data(c1),data(c1)+c1.size(),data(c2),T(), _1+_2 ,conj_mult<T>());
+  // return std::inner_product(data(c1), data(c1)+c1.size(), data(c2), T(),
+  //   _1+_2 ,conj_mult<T>());
+  return std::inner_product(data(c1), data(c1)+c1.size(), data(c2), T(),
+    std::plus<T>(), alps::conj_mult<T>());
 }
 
 

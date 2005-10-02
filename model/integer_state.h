@@ -40,8 +40,8 @@ template <class I, int N=1> class integer_state;
 template <class I, int N>
 class integer_state {
 public:
-  static const int bits = boost::static_log2<N>::value+1;
-  static const int mask = (1<<bits)-1;
+  BOOST_STATIC_CONSTANT(int, bits = boost::static_log2<N>::value+1);
+  BOOST_STATIC_CONSTANT(int, mask = (1<<bits)-1);
   typedef I representation_type;
   
   class reference {
@@ -116,7 +116,6 @@ private:
   representation_type state_;
 };
 
-
 template <class I, int N>
 bool operator == (integer_state<I,N> x, integer_state<I,N> y)
 { return x.state() == y.state(); }
@@ -126,6 +125,5 @@ bool operator < (integer_state<I,N> x, integer_state<I,N> y)
 { return x.state() < y.state(); }
 
 } // namespace alps
-
 
 #endif
