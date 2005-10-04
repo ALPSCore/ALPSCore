@@ -52,6 +52,7 @@ am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
 	$(top_srcdir)/config/ac_lapack.m4 \
 	$(top_srcdir)/config/ac_pthread.m4 \
 	$(top_srcdir)/config/ac_pvm.m4 \
+	$(top_srcdir)/config/ac_sqlite.m4 \
 	$(top_srcdir)/config/ac_xmlparser.m4 \
 	$(top_srcdir)/config/ac_xsltp.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -130,6 +131,8 @@ BOOST_LDFLAGS = @BOOST_LDFLAGS@
 BOOST_LIBS = @BOOST_LIBS@
 BOOST_SRCDIR = @BOOST_SRCDIR@
 BOOST_USER_CONFIG_H = @BOOST_USER_CONFIG_H@
+BUILD_ARCHIVE_FALSE = @BUILD_ARCHIVE_FALSE@
+BUILD_ARCHIVE_TRUE = @BUILD_ARCHIVE_TRUE@
 BUILD_BOOST_FALSE = @BUILD_BOOST_FALSE@
 BUILD_BOOST_SIGNALS_FALSE = @BUILD_BOOST_SIGNALS_FALSE@
 BUILD_BOOST_SIGNALS_TRUE = @BUILD_BOOST_SIGNALS_TRUE@
@@ -219,6 +222,9 @@ PVM_LIBS = @PVM_LIBS@
 RANLIB = @RANLIB@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
+SQLITE_CPPFLAGS = @SQLITE_CPPFLAGS@
+SQLITE_LDFLAGS = @SQLITE_LDFLAGS@
+SQLITE_LIBS = @SQLITE_LIBS@
 SRC_DIR = @SRC_DIR@
 STRIP = @STRIP@
 VERSION = @VERSION@
