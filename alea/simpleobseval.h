@@ -187,8 +187,8 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
   
   void operator<<(const SimpleObservableData<T>& obs);
 
-  template <class OPV, class OPR>
-  const SimpleObservableEvaluator<T>& transform(OPV opv, OPR opr, const std::string&);
+  template <class OPV /* , class OPR */>
+  const SimpleObservableEvaluator<T>& transform(OPV opv /* , OPR opr */, const std::string&);
   
 #ifndef ALPS_WITHOUT_OSIRIS
   void extract_timeseries(ODump& dump) const;
@@ -228,13 +228,13 @@ typedef SimpleObservableEvaluator<std::valarray<double> > RealVectorObsevaluator
 #endif
 
 
-template <class T> template <class OPV, class OPR>
-inline const SimpleObservableEvaluator<T>& SimpleObservableEvaluator<T>::transform(OPV opv, OPR opr, const std::string& n)
+template <class T> template <class OPV /* , class OPR */>
+inline const SimpleObservableEvaluator<T>& SimpleObservableEvaluator<T>::transform(OPV opv, /* OPR opr, */ const std::string& n)
 {
   collect();
-  all_.transform(opv,opr);
+  all_.transform(opv /* ,opr */);
   for (iterator r = runs_.begin(); r != runs_.end(); ++r)
-    r->transform(opv,opr);
+    r->transform(opv /* ,opr */);
   if (automatic_naming_) Observable::rename(n);
   return (*this);
 }
@@ -735,8 +735,7 @@ template <class T> struct function_##F : public std::unary_function<T,T> \
 }} \
 template <class T> alps::SimpleObservableEvaluator<T> \
 F(const alps::SimpleObservableEvaluator<T>& x) \
-{ return alps::SimpleObservableEvaluator<T>(x).transform(alps::detail::function_##F<T>(), \
-  alps::detail::function_##F<typename alps::obs_value_traits<T>::result_type>(),#F"("+x.name()+")"); }
+{ return alps::SimpleObservableEvaluator<T>(x).transform(alps::detail::function_##F<T>(), /* alps::detail::function_##F<typename alps::obs_value_traits<T>::result_type>(), */ #F"("+x.name()+")"); }
 
 OBSERVABLE_FUNCTION(exp)
 OBSERVABLE_FUNCTION(log)
