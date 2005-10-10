@@ -117,7 +117,7 @@ void Parameters::parse(std::istream& is)
       std::string value;
 
       check_character(is, '=',
-        "= expected in assignment while parsing Parameters");
+        "= expected in assignment while parsing Parameter "+key);
 
       is >> c;
       switch (c) {

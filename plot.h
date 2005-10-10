@@ -28,6 +28,9 @@
 
 /* $Id$ */
 
+#ifndef ALPS_PLOT_H
+#define ALPS_PLOT_H
+
 /// \file plot.h
 /// \brief classes to create plots in XML format
 /// 
@@ -303,3 +306,5 @@ inline oxstream& operator<<(oxstream& o,  Set<C> S) {
 
 }   // namespace plot
 }   // namespace alps
+
+#endif
