@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2004 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2001-2005 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -101,81 +101,101 @@ struct existing_property<boost::detail::error_property_not_found,DEFAULT> {
 
 template <class Property, class Graph, class Default=int>
 struct has_property {
-  BOOST_STATIC_CONSTANT(bool, edge_property=false);
   BOOST_STATIC_CONSTANT(bool, vertex_property=false);
+  BOOST_STATIC_CONSTANT(bool, edge_property=false);
   BOOST_STATIC_CONSTANT(bool, graph_property=false);
   BOOST_STATIC_CONSTANT(bool, any_property=false);
+  BOOST_STATIC_CONSTANT(bool, site_property = vertex_property);
+  BOOST_STATIC_CONSTANT(bool, bond_property = edge_property);
   typedef Default vertex_property_type;
   typedef Default edge_property_type;
   typedef Default graph_property_type;
   typedef Default property_type;
   typedef property_type type;
+  typedef vertex_property_type site_property_type;
+  typedef edge_property_type bond_property_type;
 };
 
 template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, class P, class D>
 struct has_property<P, boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>, D>
 {
   typedef boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4> Graph;
-  BOOST_STATIC_CONSTANT(bool, edge_property = (detail::existing_property<typename boost::property_value<EP,P>::type,D>::result));
   BOOST_STATIC_CONSTANT(bool, vertex_property = (detail::existing_property<typename boost::property_value<VP,P>::type,D>::result));
+  BOOST_STATIC_CONSTANT(bool, edge_property = (detail::existing_property<typename boost::property_value<EP,P>::type,D>::result));
   BOOST_STATIC_CONSTANT(bool, graph_property = (detail::existing_property<typename boost::property_value<GP,P>::type,D>::result));
   BOOST_STATIC_CONSTANT(bool, any_property = (edge_property || vertex_property || graph_property));
-  typedef typename detail::existing_property<
-    typename boost::property_value<EP,P>::type,D>::type edge_property_type;
+  BOOST_STATIC_CONSTANT(bool, site_property = vertex_property);
+  BOOST_STATIC_CONSTANT(bool, bond_property = edge_property);
   typedef typename detail::existing_property<
     typename boost::property_value<VP,P>::type,D>::type vertex_property_type;
+  typedef typename detail::existing_property<
+    typename boost::property_value<EP,P>::type,D>::type edge_property_type;
   typedef typename detail::existing_property<
     typename boost::property_value<GP,P>::type,D>::type graph_property_type;
   typedef typename boost::mpl::if_c<edge_property,edge_property_type,
     typename boost::mpl::if_c<vertex_property,vertex_property_type,
     graph_property_type>::type>::type property_type;
   typedef property_type type;
+  typedef vertex_property_type site_property_type;
+  typedef edge_property_type bond_property_type;
 };
 
 #ifndef BOOST_NO_INCLASS_MEMBER_INITIALIZATION
 template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, class P, class D>
-const bool has_property<P, boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>,D>::edge_property;
-template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, class P, class D>
 const bool has_property<P, boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>,D>::vertex_property;
+template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, class P, class D>
+const bool has_property<P, boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>,D>::edge_property;
 template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, class P, class D>
 const bool has_property<P, boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>,D>::graph_property;
 template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, class P, class D>
 const bool has_property<P, boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>,D>::any_property;
+template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, class P, class D>
+const bool has_property<P, boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>,D>::site_property;
+template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, class P, class D>
+const bool has_property<P, boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>,D>::bond_property;
 #endif
 
 template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, class P, class D>
 struct has_property<P, const boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>, D>
 {
-  typedef boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>  Graph;
-  BOOST_STATIC_CONSTANT(bool, edge_property = (detail::existing_property<
-    typename boost::property_value<EP,P>::type,D>::result));
+  typedef boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4> Graph;
   BOOST_STATIC_CONSTANT(bool, vertex_property = (detail::existing_property<
     typename boost::property_value<VP,P>::type,D>::result));
+  BOOST_STATIC_CONSTANT(bool, edge_property = (detail::existing_property<
+    typename boost::property_value<EP,P>::type,D>::result));
   BOOST_STATIC_CONSTANT(bool, graph_property = (detail::existing_property<
     typename boost::property_value<GP,P>::type,D>::result));
   BOOST_STATIC_CONSTANT(bool, any_property =
     (edge_property || vertex_property || graph_property));
-  typedef typename detail::existing_property<
-    typename boost::property_value<EP,P>::type,D>::type edge_property_type;
+  BOOST_STATIC_CONSTANT(bool, site_property = vertex_property);
+  BOOST_STATIC_CONSTANT(bool, bond_property = edge_property);
   typedef typename detail::existing_property<
     typename boost::property_value<VP,P>::type,D>::type vertex_property_type;
+  typedef typename detail::existing_property<
+    typename boost::property_value<EP,P>::type,D>::type edge_property_type;
   typedef typename detail::existing_property<
     typename boost::property_value<GP,P>::type,D>::type graph_property_type;
   typedef typename boost::mpl::if_c<edge_property,edge_property_type,
     typename boost::mpl::if_c<vertex_property,vertex_property_type,
     graph_property_type>::type>::type property_type;
   typedef property_type type;
+  typedef vertex_property_type site_property_type;
+  typedef edge_property_type bond_property_type;
 };
 
 #ifndef BOOST_NO_INCLASS_MEMBER_INITIALIZATION
 template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, class P, class D>
-const bool has_property<P, const boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>,D>::edge_property;
-template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, class P, class D>
 const bool has_property<P, const boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>,D>::vertex_property;
+template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, class P, class D>
+const bool has_property<P, const boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>,D>::edge_property;
 template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, class P, class D>
 const bool has_property<P, const boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>,D>::graph_property;
 template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, class P, class D>
 const bool has_property<P, const boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>,D>::any_property;
+template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, class P, class D>
+const bool has_property<P, const boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>,D>::site_property;
+template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, class P, class D>
+const bool has_property<P, const boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>,D>::bond_property;
 #endif
 
 template <class P, class G, class Default>
