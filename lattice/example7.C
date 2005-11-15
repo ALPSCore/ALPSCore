@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2004-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2004-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>,
 *                            Ian McCulloch <ianmcc@physik.rwth-aachen.de>
 *
@@ -100,11 +100,12 @@ void ShowUnitCell(alps::GraphUnitCell const& unitcell)
     target_offset(alps::get_or_default(alps::target_offset_t(), graph, offset_type()));
 
   // determine the total number of sites in the unit cell
-  std::cout << "The unit cell has " << alps::num_sites(graph) << " sites.\n";
+  std::cout << "The unit cell has " << num_sites(graph) << " sites.\n";
 
   std::cout << "The sites in the unit cell are:\n";
   site_iterator site_it, site_end;
-  for (boost::tie(site_it, site_end) = alps::sites(graph); site_it != site_end; ++site_it) 
+  for (boost::tie(site_it, site_end) = sites(graph); site_it != site_end;
+       ++site_it) 
   {
     site_descriptor site = *site_it;
     type_type type = site_type[site];
@@ -116,7 +117,8 @@ void ShowUnitCell(alps::GraphUnitCell const& unitcell)
 
   std::cout << "The bonds in the unit cell are:\n";
   bond_iterator bond_it, bond_end;
-  for (boost::tie(bond_it, bond_end) = alps::bonds(graph); bond_it != bond_end; ++bond_it) 
+  for (boost::tie(bond_it, bond_end) = bonds(graph); bond_it != bond_end;
+       ++bond_it) 
   {
     bond_descriptor bond = *bond_it;
     site_descriptor source = boost::source(bond, graph);
@@ -149,32 +151,35 @@ void IterateOverCells(const LatticeType& lattice)
   //    bond_type(get_or_default(alps::bond_type_t(), lattice, 0));
 
   // determine the total number of cells in the lattice
-  //  std::cout << "The lattice comprises " << alps::num_bonds(lattice) << " bonds.\n";
+  //  std::cout << "The lattice comprises " << num_bonds(lattice) << " bonds.\n";
 
   typedef typename alps::lattice_traits<LatticeType>::offset_type offset_type; // a vector of integers
   typedef typename alps::lattice_traits<LatticeType>::vector_type vector_type; // a vector of reals
   typedef typename alps::lattice_traits<LatticeType>::size_type size_type; // size_type-me-harder
 
-  std::cout << "The number of cells in the lattice is " << alps::volume(lattice) << '\n';
+  std::cout << "The number of cells in the lattice is "
+            << volume(lattice) << '\n';
   std::cout << "The cells in the lattice are:\n";
 
-  // alps::cells(lattice) returns a [begin, end) pair of iterators over all cells
+  // cells(lattice) returns a [begin, end) pair of iterators over all cells
   cell_iterator cell_it, cell_end;
-  for (boost::tie(cell_it, cell_end) = alps::cells(lattice); cell_it != cell_end; ++cell_it) 
+  for (boost::tie(cell_it, cell_end) = cells(lattice); cell_it != cell_end;
+       ++cell_it) 
   {
      // the cell index
-     size_type Index = alps::index(*cell_it, lattice);
+     size_type Index = index(*cell_it, lattice);
      std::cout << "index=" << Index;
 
      // the cell offset, as a function of the basis vectors
-     offset_type Offset = alps::offset(*cell_it, lattice);
+     offset_type Offset = offset(*cell_it, lattice);
      std::cout << ", offset=" << PrintVector(Offset);
 
      // We can also obtain the cell_descriptor corresponding to an offset
-     assert(Offset == alps::offset(alps::cell(Offset, lattice), lattice));
+     assert(Offset == offset(cell(Offset, lattice), lattice));
 
      // the coordinates of the center of the unit cell
-     vector_type CellOrigin(alps::unit_cell(lattice).dimension(), 0);  // the zero-vector
+     vector_type CellOrigin(unit_cell(lattice).dimension(), 0);
+       // the zero-vector
      vector_type Coordinates = alps::coordinate(*cell_it, CellOrigin, lattice);
      std::cout << ", coordinates_of_center_of_cell=" << PrintVector(Coordinates);
 

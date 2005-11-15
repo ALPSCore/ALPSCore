@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2004-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2004-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>,
 *                            Ian McCulloch <ianmcc@physik.rwth-aachen.de>
 *
@@ -59,11 +59,12 @@ void IterateOverBonds(const GraphType& graph)
     bond_type(get_or_default(alps::bond_type_t(), graph, 0));
 
   // determine the total number of bonds in the graph
-  std::cout << "The graph has " << alps::num_bonds(graph) << " bonds.\n";
+  std::cout << "The graph has " << num_bonds(graph) << " bonds.\n";
 
-  // alps::bonds(graph) returns a [begin, end) pair of iterators over all bonds
+  // bonds(graph) returns a [begin, end) pair of iterators over all bonds
   bond_iterator bond_it, bond_end;
-  for (boost::tie(bond_it, bond_end) = alps::bonds(graph); bond_it != bond_end; ++bond_it) 
+  for (boost::tie(bond_it, bond_end) = bonds(graph); bond_it != bond_end;
+       ++bond_it) 
   {
     // determine the source and target sites of the bond.
     site_descriptor source = boost::source(*bond_it, graph);

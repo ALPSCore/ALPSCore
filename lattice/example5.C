@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2004-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2004-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>,
 *                            Ian McCulloch <ianmcc@physik.rwth-aachen.de>
 *
@@ -69,11 +69,12 @@ void IterateOverSites(const GraphType& graph)
     site_coordinate(alps::get_or_default(alps::coordinate_t(), graph, std::vector<double>()));
 
   // determine the total number of sites in the graph
-  std::cout << "The graph has " << alps::num_sites(graph) << " sites.\n";
+  std::cout << "The graph has " << num_sites(graph) << " sites.\n";
 
-  // alps::sites(graph) returns a [begin, end) pair of iterators over all sites
+  // sites(graph) returns a [begin, end) pair of iterators over all sites
   site_iterator site_it, site_end;
-  for (boost::tie(site_it, site_end) = alps::sites(graph); site_it != site_end; ++site_it) 
+  for (boost::tie(site_it, site_end) = sites(graph); site_it != site_end;
+       ++site_it) 
   {
     site_descriptor site = *site_it;
 
