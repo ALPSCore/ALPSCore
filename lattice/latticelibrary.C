@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2001-2005 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -140,8 +140,10 @@ const coordinate_graph_type& LatticeLibrary::graph(const std::string& name) cons
 
 void LatticeLibrary::make_all_graphs()
 {
-  for (LatticeGraphMap::const_iterator it=latticegraphs_.begin(); it !=latticegraphs_.end();++it)
-    graphs_["Graph created from " + it->first]=alps::graph(HypercubicLatticeGraph(it->second));
+  for (LatticeGraphMap::const_iterator it=latticegraphs_.begin();
+       it !=latticegraphs_.end();++it)
+    graphs_["Graph created from " + it->first] =
+      detail::graph_wrap(HypercubicLatticeGraph(it->second));
 }
 
 } // end namespace alps

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2004 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2001-2005 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -94,16 +94,15 @@ private:
   std::string name_;
 };
 
-template<>
-struct graph_traits<GraphUnitCell> {
-  typedef GraphUnitCell::graph_type graph_type;
-};
-
 inline dimensional_traits<GraphUnitCell>::dimension_type
 dimension(const GraphUnitCell& c)
-{
-  return c.dimension();
-}
+{ return c.dimension(); }
+
+inline GraphUnitCell::graph_type&
+graph(GraphUnitCell& c) { return c.graph(); }
+
+inline const GraphUnitCell::graph_type&
+graph(const GraphUnitCell& c) { return c.graph(); }
 
 typedef std::map<std::string,GraphUnitCell> UnitCellMap;
 

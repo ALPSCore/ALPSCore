@@ -33,6 +33,7 @@
 
 #include <alps/lattice/latticelibrary.h>
 #include <alps/lattice/disorder.h>
+#include <alps/lattice/graph_traits.h>
 #include <alps/lattice/parity.h>
 #include <alps/lattice/propertymap.h>
 #include <boost/vector_property_map.hpp>
@@ -210,43 +211,183 @@ public:
     d_.disorder_edges(graph(),inhomogeneous_edge_type_map_);
   }
 
-  ~graph_helper() { if (to_delete_) delete g_;}
+  ~graph_helper() { if (to_delete_) delete g_; }
 
-  graph_type& graph() { return *g_;}
-  const graph_type& graph() const { return *g_;}
+  graph_type& graph() { return *g_; }
+  const graph_type& graph() const { return *g_; }
 
-  lattice_type& lattice() { return l_;}
-  const lattice_type& lattice() const { return l_;}
+  template<class H>
+  typename graph_traits<H>::graph_type& graph(H& g) const
+  { return detail::graph_wrap(g); }
+  template<class H>
+  const typename graph_traits<H>::graph_type& graph(const H& g) const
+  { return detail::graph_wrap(g); }
 
-  sites_size_type num_sites() const { return alps::num_sites(graph());}
-  bonds_size_type num_bonds() const { return alps::num_bonds(graph());}
-  std::pair<site_iterator,site_iterator> sites() const { return alps::sites(graph());}
-  std::pair<bond_iterator,bond_iterator> bonds() const { return alps::bonds(graph());}
-  bond_descriptor bond(bonds_size_type i) const { return *(bonds().first+i);}
-  neighbors_size_type num_neighbors (const site_descriptor& v) const { return alps::num_neighbors(v,graph());}
-  std::pair<neighbor_bond_iterator,neighbor_bond_iterator> neighbor_bonds (const site_descriptor& v) const 
-    { return alps::neighbor_bonds(v,graph());}
-  std::pair<neighbor_iterator,neighbor_iterator> neighbors (const site_descriptor& v) const 
-    { return alps::neighbors(v,graph());}
-  site_descriptor neighbor (const site_descriptor& v, neighbors_size_type i) const { return alps::neighbor(v,i,graph());} 
-  site_descriptor site(sites_size_type i) const { return alps::site(i,graph());}
-  site_descriptor source(const bond_descriptor& b) const { return alps::source_impl(b,graph());}  
-  site_descriptor target(const bond_descriptor& b) const { return alps::target_impl(b,graph());}  
-  
-  vertices_size_type num_vertices() const { return boost::num_vertices(graph());}
-  edges_size_type num_edges() const { return boost::num_edges(graph());}
-  std::pair<vertex_iterator,vertex_iterator> vertices() const { return boost::vertices(graph());}
-  std::pair<edge_iterator,edge_iterator> edges() const { return boost::edges(graph());}
-  degree_size_type out_degree (const vertex_descriptor& v) const { return boost::out_degree(v,graph());}
-  degree_size_type in_degree (const vertex_descriptor& v) const { return boost::in_degree(v,graph());}
-  degree_size_type degree (const vertex_descriptor& v) const { return boost::degree(v,graph());}
-  std::pair<out_edge_iterator,out_edge_iterator> out_edges (const vertex_descriptor& v) const { return boost::out_edges(v,graph());}
-  std::pair<in_edge_iterator,in_edge_iterator> in_edges (const vertex_descriptor& v) const { return boost::in_edges(v,graph());}
-  std::pair<adjacency_iterator,adjacency_iterator> adjacent_vertices (const site_descriptor& v) const 
-  { return boost::adjacent_vertices(v,graph());}
-  vertex_descriptor vertex(vertices_size_type i) const { return boost::vertex(i,graph());}
-  double parity(const site_descriptor& v) const { return parity_map_[v]==0 ? 1. :  parity_map_[v]==1 ? -1. : 0.;}
-  bool is_bipartite() const { return is_bipartite_;}
+  lattice_type& lattice() { return l_; }
+  const lattice_type& lattice() const { return l_; }
+
+  vertices_size_type num_vertices() const
+  { return detail::num_vertices_wrap(graph()); }
+  edges_size_type num_edges() const
+  { return detail::num_edges_wrap(graph()); }
+  std::pair<vertex_iterator, vertex_iterator> vertices() const
+  { return detail::vertices_wrap(graph());}
+  std::pair<edge_iterator, edge_iterator> edges() const
+  { return detail::edges_wrap(graph()); }
+  degree_size_type out_degree (const vertex_descriptor& v) const
+  { return detail::out_degree_wrap(v, graph()); }
+  degree_size_type in_degree (const vertex_descriptor& v) const
+  { return detail::in_degree_wrap(v, graph()); }
+  degree_size_type degree(const vertex_descriptor& v) const
+  { return detail::degree_wrap(v, graph()); }
+  std::pair<out_edge_iterator, out_edge_iterator>
+  out_edges(const vertex_descriptor& v) const
+  { return detail::out_edges_wrap(v, graph()); }
+  std::pair<in_edge_iterator, in_edge_iterator>
+  in_edges(const vertex_descriptor& v) const
+  { return detail::in_edges_wrap(v, graph()); }
+  std::pair<adjacency_iterator, adjacency_iterator>
+  adjacent_vertices(const vertex_descriptor& v) const 
+  { return detail::adjacent_vertices_wrap(v, graph()); }
+  vertex_descriptor vertex(vertices_size_type i) const
+  { return detail::vertex_wrap(i, graph()); }
+  site_descriptor source(const bond_descriptor& b) const
+  { return detail::source_wrap(b, graph()); }  
+  site_descriptor target(const bond_descriptor& b) const
+  { return detail::target_wrap(b, graph()); }  
+
+  template<class H>
+  typename graph_traits<H>::vertices_size_type num_vertices(const H& g) const
+  { return detail::num_vertices_wrap(g); }
+  template<class H>
+  typename graph_traits<H>::edges_size_type num_edges(const H& g) const
+  { return detail::num_edges_wrap(g); }
+  template<class H>
+  std::pair<typename graph_traits<H>::vertex_iterator,
+            typename graph_traits<H>::vertex_iterator>
+  vertices(const H& g) const
+  { return detail::vertices_wrap(g);}
+  template<class H>
+  std::pair<typename graph_traits<H>::edge_iterator,
+            typename graph_traits<H>::edge_iterator>
+  edges(const H& g) const
+  { return detail::edges_wrap(g); }
+  template<class H>
+  typename graph_traits<H>::degree_size_type
+  out_degree(const typename graph_traits<H>::vertex_descriptor& v,
+             const H& g) const
+  { return detail::out_degree_wrap(v, g); }
+  template<class H>
+  typename graph_traits<H>::degree_size_type
+  in_degree(const typename graph_traits<H>::vertex_descriptor& v,
+            const H& g) const
+  { return detail::in_degree_wrap(v, g); }
+  template<class H>
+  typename graph_traits<H>::degree_size_type
+  degree(const typename graph_traits<H>::vertex_descriptor& v,
+         const H& g) const
+  { return detail::degree_wrap(v, g); }
+  template<class H>
+  std::pair<typename graph_traits<H>::out_edge_iterator,
+            typename graph_traits<H>::out_edge_iterator>
+  out_edges(const typename graph_traits<H>::vertex_descriptor& v,
+            const H& g) const
+  { return detail::out_edges_wrap(v, g); }
+  template<class H>
+  std::pair<typename graph_traits<H>::in_edge_iterator,
+            typename graph_traits<H>::in_edge_iterator>
+  in_edges(const typename graph_traits<H>::vertex_descriptor& v,
+           const H& g) const
+  { return detail::in_edges_wrap(v, g); }
+  template<class H>
+  std::pair<typename graph_traits<H>::adjacency_iterator,
+            typename graph_traits<H>::adjacency_iterator>
+  adjacent_vertices(const typename graph_traits<H>::vertex_descriptor& v,
+                    const H& g) const 
+  { return detail::adjacent_vertices_wrap(v, g); }
+  template<class H>
+  typename graph_traits<H>::vertex_descriptor
+  vertex(typename graph_traits<H>::vertices_size_type i, const H& g) const
+  { return detail::vertex_wrap(i, g); }
+  template<class H>
+  typename graph_traits<H>::site_descriptor
+  source(const typename graph_traits<H>::bond_descriptor& b, const H& g) const
+  { return detail::source_wrap(b, g); }  
+  template<class H>
+  typename graph_traits<H>::site_descriptor
+  target(const typename graph_traits<H>::bond_descriptor& b, const H& g) const
+  { return detail::target_wrap(b, g); }  
+
+  sites_size_type num_sites() const { return detail::num_sites_wrap(graph()); }
+  bonds_size_type num_bonds() const { return detail::num_bonds_wrap(graph()); }
+  std::pair<site_iterator, site_iterator>
+  sites() const { return detail::sites_wrap(graph()); }
+  site_descriptor site(sites_size_type i) const
+  { return detail::site_wrap(i, graph()); }
+  std::pair<bond_iterator, bond_iterator>
+  bonds() const { return detail::bonds_wrap(graph()); }
+  bond_descriptor bond(bonds_size_type i) const
+  { return detail::bond_wrap(i, graph()); }
+  neighbors_size_type num_neighbors (const site_descriptor& v) const
+  { return detail::num_neighbors_wrap(v, graph()); }
+  std::pair<neighbor_bond_iterator, neighbor_bond_iterator>
+  neighbor_bonds(const site_descriptor& v) const 
+  { return detail::neighbor_bonds_wrap(v, graph()); }
+  std::pair<neighbor_iterator, neighbor_iterator>
+  neighbors(const site_descriptor& v) const
+  { return detail::neighbors_wrap(v, graph()); }
+  site_descriptor
+  neighbor(const site_descriptor& v, neighbors_size_type i) const
+  { return detail::neighbor_wrap(v, i, graph()); } 
+
+  template<class H>
+  typename graph_traits<H>::sites_size_type num_sites(const H& g) const
+  { return detail::num_sites_wrap(g); }
+  template<class H>
+  typename graph_traits<H>::bonds_size_type num_bonds(const H& g) const
+  { return detail::num_bonds_wrap(g); }
+  template<class H>
+  std::pair<typename graph_traits<H>::site_iterator,
+            typename graph_traits<H>::site_iterator>
+  sites(const H& g) const { return detail::sites_wrap(g); }
+  template<class H>
+  typename graph_traits<H>::site_descriptor
+  site(typename graph_traits<H>::sites_size_type i, const H& g) const
+  { return detail::site_wrap(i, g); }
+  template<class H>
+  std::pair<typename graph_traits<H>::bond_iterator,
+            typename graph_traits<H>::bond_iterator>
+  bonds(const H& g) const { return detail::bonds_wrap(g); }
+  template<class H>
+  typename graph_traits<H>::bond_descriptor
+  bond(typename graph_traits<H>::bonds_size_type i, const H& g) const
+  { return detail::bond_wrap(i, g); }
+  template<class H>
+  typename graph_traits<H>::neighbors_size_type
+  num_neighbors(const typename graph_traits<H>::site_descriptor& v,
+                const H& g) const
+  { return detail::num_neighbors_wrap(v, g); }
+  template<class H>
+  std::pair<typename graph_traits<H>::neighbor_bond_iterator,
+            typename graph_traits<H>::neighbor_bond_iterator>
+  neighbor_bonds(const typename graph_traits<H>::site_descriptor& v,
+                 const H& g) const 
+  { return detail::neighbor_bonds_wrap(v, g); }
+  template<class H>
+  std::pair<typename graph_traits<H>::neighbor_iterator,
+            typename graph_traits<H>::neighbor_iterator>
+  neighbors(const typename graph_traits<H>::site_descriptor& v,
+            const H& g) const
+  { return detail::neighbors_wrap(v, g); }
+  template<class H>
+  typename graph_traits<H>::site_descriptor
+  neighbor(const typename graph_traits<H>::site_descriptor& v,
+           typename graph_traits<H>::neighbors_size_type i, const H& g) const
+  { return detail::neighbor_wrap(v, i, g); } 
+
+  double parity(const site_descriptor& v) const
+  { return parity_map_[v]==0 ? 1. :  parity_map_[v]==1 ? -1. : 0.; }
+  bool is_bipartite() const { return is_bipartite_; }
 
   vertex_type_map_type vertex_type_map() const { return vertex_type_map_; }
   site_type_map_type site_type_map() const { return vertex_type_map_; }

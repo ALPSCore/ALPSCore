@@ -42,14 +42,7 @@
 
 namespace alps {
 
-template <class L, class G> class lattice_graph;
-
-template  <class L, class G>
-inline std::size_t dimension(const lattice_graph<L,G>& l)
-{
-  return l.dimension();
-}
-
+template<class L, class G> class lattice_graph;
 
 template <class LATTICE, class GRAPH>
 inline void make_graph_from_lattice(GRAPH& g,const LATTICE& l)
@@ -57,7 +50,7 @@ inline void make_graph_from_lattice(GRAPH& g,const LATTICE& l)
   typedef GRAPH graph_type;
   typedef LATTICE lattice_type;
   typedef typename lattice_traits<lattice_type>::unit_cell_type unit_cell_type;
-  typedef typename graph_traits<unit_cell_type>::graph_type unit_graph_type;
+  typedef typename unit_cell_type::graph_type unit_graph_type;
   typedef typename boost::graph_traits<unit_graph_type>::vertex_iterator unitcell_vertexiterator;
   typedef typename boost::graph_traits<graph_type>::vertex_iterator cell_vertexiterator;
   typedef typename boost::graph_traits<unit_graph_type>::edge_iterator edge_iterator;
@@ -69,9 +62,9 @@ inline void make_graph_from_lattice(GRAPH& g,const LATTICE& l)
   typedef typename lattice_traits<lattice_type>::boundary_crossing_type boundary_crossing_type;
   typedef typename lattice_traits<lattice_type>::basis_vector_iterator basis_vector_iterator;
 
-  int num = alps::volume(l)*boost::num_vertices(alps::graph(alps::unit_cell(l)));
-  const unit_graph_type& ug(alps::graph(alps::unit_cell(l)));
-  uint32_t unit_cell_vertices = boost::num_vertices(ug);
+  int num = volume(l) * num_vertices(graph(unit_cell(l)));
+  const unit_graph_type& ug(graph(unit_cell(l)));
+  uint32_t unit_cell_vertices = num_vertices(ug);
 
   typename property_map<vertex_type_t,graph_type,int>::type
     vertextype = get_or_default(vertex_type_t(),g,0);
@@ -199,12 +192,22 @@ public:
   const graph_type& graph() const { return graph_;}
   graph_type& graph() { return graph_;}
 
+  template<class H>
+  typename H::graph_type& graph(H& g) const
+  { return detail::graph_wrap(g); }
+  template<class H>
+  const typename H::graph_type& graph(const H& g) const
+  { return detail::graph_wrap(g); }
+
   std::vector<std::string> distance_labels() const
   {
-    typename property_map<coordinate_t,graph_type,vector_type>::const_type coordinate_map=get_or_default(coordinate_t(),graph(),0);
+    typename property_map<coordinate_t,graph_type,vector_type>::const_type
+      coordinate_map = get_or_default(coordinate_t(),graph(),0);
     std::vector<std::string> label(num_distances());
-    for (vertex_iterator it1=boost::vertices(graph()).first; it1 != boost::vertices(graph()).second;++it1) {
-      for (vertex_iterator it2=boost::vertices(graph()).first; it2 != boost::vertices(graph()).second;++it2) {
+    for (vertex_iterator it1 = vertices(graph()).first;
+         it1 != vertices(graph()).second; ++it1) {
+      for (vertex_iterator it2 = vertices(graph()).first;
+           it2 != vertices(graph()).second; ++it2) {
         std::size_t d=distance(*it1,*it2);
         if (label[d].empty())
           label[d] = alps::coordinate_to_string(coordinate_map[*it1])+" -- " + 
@@ -226,13 +229,13 @@ public:
 
   size_type num_distances() const
   {
-    size_type vertices_in_cell = boost::num_vertices(alps::graph(alps::unit_cell(*this)));
+    size_type vertices_in_cell = num_vertices(graph(super_type::unit_cell()));
     return super_type::num_distances()*vertices_in_cell*vertices_in_cell;
   }
   
  size_type distance(vertex_descriptor x, vertex_descriptor y) const
   {
-    int vertices_in_cell = boost::num_vertices(alps::graph(alps::unit_cell(*this)));
+    int vertices_in_cell = num_vertices(graph(super_type::unit_cell()));
     int cell_num_x = int(x) / vertices_in_cell;
     int cell_num_y = int(y) / vertices_in_cell;
     int vert_num_x = int(x) % vertices_in_cell;
@@ -245,15 +248,18 @@ public:
 
   std::vector<std::pair<std::complex<double>,std::vector<std::size_t> > > translations(const vector_type& k) const
   {
-    typedef std::vector<std::pair<std::complex<double>,std::vector<std::size_t> > > translation_type;
+    typedef std::vector<std::pair<std::complex<double>, 
+      std::vector<std::size_t> > > translation_type;
     translation_type trans = super_type::translations(k);
     translation_type graph_trans;
 
-    int vertices_in_cell = boost::num_vertices(alps::graph(alps::unit_cell(*this)));
-    for (typename translation_type::const_iterator it=trans.begin();it!=trans.end();++it) {
+    int vertices_in_cell = num_vertices(graph(super_type::unit_cell()));
+    for (typename translation_type::const_iterator it=trans.begin();
+         it!=trans.end(); ++it) {
       std::vector<std::size_t> shifted_vertices;
-      for (typename std::vector<std::size_t>::const_iterator sit = it->second.begin();sit != it->second.end();++sit)
-        for (int i=0;i<vertices_in_cell;++i)
+      for (typename std::vector<std::size_t>::const_iterator
+             sit = it->second.begin(); sit != it->second.end(); ++sit)
+        for (int i=0; i<vertices_in_cell; ++i)
           shifted_vertices.push_back(*sit*vertices_in_cell+i);
       graph_trans.push_back(std::make_pair(it->first,shifted_vertices));
     }
@@ -292,6 +298,17 @@ struct graph_traits<lattice_graph<L,G> >
 {
   typedef G graph_type;
 };
+
+template<class L, class G>
+std::size_t dimension(const lattice_graph<L,G>& l) { return l.dimension(); }
+
+template<class L, class G>
+typename lattice_graph<L, G>::graph_type&
+graph(lattice_graph<L, G>& l) { return l.graph(); }
+
+template<class L, class G>
+const typename lattice_graph<L, G>::graph_type&
+graph(const lattice_graph<L, G>& l) { return l.graph(); }
 
 } // end namespace alps
 

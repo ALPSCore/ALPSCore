@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2004 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2001-2005 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -40,7 +40,7 @@
 
 namespace alps {
 
-template <class UnitCell = EmptyUnitCell, class Cell = simple_cell<UnitCell> >
+template<class UnitCell = EmptyUnitCell, class Cell = simple_cell<UnitCell> >
 class simple_lattice
 {
 public:
@@ -54,13 +54,13 @@ public:
   simple_lattice() {}
   template <class U2, class C2>
   simple_lattice(const simple_lattice<U2,C2>& l)
-    : unit_cell_(alps::unit_cell(l)) {}
+    : unit_cell_(l.unit_cell()) {}
   simple_lattice(const unit_cell_type& c) : unit_cell_(c) {}
   
   template <class U2, class C2>
   const simple_lattice& operator=(const simple_lattice<U2,C2>& l)
   {
-    unit_cell_ = alps::unit_cell(l);
+    unit_cell_ = l.unit_cell();
     return *this;
   }
 
@@ -77,19 +77,25 @@ protected:
 };
 
 template <class U, class C>
-inline typename dimensional_traits<simple_lattice<U,C> >::dimension_type
-dimension (const simple_lattice<U,C>& l)
-{
-  return l.dimension(); 
-}
-
-template <class U, class C>
 struct lattice_traits<simple_lattice<U,C> >
 {
   typedef typename simple_lattice<U,C>::unit_cell_type  unit_cell_type;
   typedef typename simple_lattice<U,C>::cell_descriptor cell_descriptor;
   typedef typename simple_lattice<U,C>::offset_type     offset_type;
 };
+
+template <class U, class C>
+inline typename dimensional_traits<simple_lattice<U,C> >::dimension_type
+dimension (const simple_lattice<U,C>& l)
+{ return l.dimension(); }
+
+template<class UnitCell, class Cell>
+typename simple_lattice<UnitCell, Cell>::unit_cell_type&
+unit_cell(simple_lattice<UnitCell, Cell>& l) { return l.unit_cell(); }
+
+template<class UnitCell, class Cell>
+const typename simple_lattice<UnitCell, Cell>::unit_cell_type&
+unit_cell(const simple_lattice<UnitCell, Cell>& l) { return l.unit_cell(); }
 
 } // end namespace alps
 
