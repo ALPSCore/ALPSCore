@@ -368,17 +368,58 @@ inline std::complex<T> round(const std::complex<T>& x)
 
 
 //
+// is_positive
+//
+
+template<unsigned int N, class T>
+inline bool is_positive(T x,
+  typename boost::enable_if<boost::is_float<T> >::type* = 0)
+{ return is_nonzero<N>(x) && x > T(0); }
+template<unsigned int N, class T>
+inline bool is_positive(T x,
+  typename boost::enable_if<boost::is_integral<T> >::type* = 0)
+{ return x > T(0); }
+template<unsigned int N, class T>
+inline bool is_positive(const T& x,
+  typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0)
+{ return is_nonzero<N>(x) && x > T(0); }
+
+template<class T>
+inline bool is_positive(T x,
+  typename boost::enable_if<boost::is_float<T> >::type* = 0)
+{ return is_nonzero(x) && x > T(0); }
+template<class T>
+inline bool is_positive(T x,
+  typename boost::enable_if<boost::is_integral<T> >::type* = 0)
+{ return x > T(0); }
+template<class T>
+inline bool is_positive(const T& x,
+  typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0)
+{ return is_nonzero(x) && x > T(0); }
+
+
+//
 // is_negative
 //
+
+template<unsigned int N, class T>
+inline bool is_negative(T x,
+  typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0)
+{ return is_nonzero<N>(x) && x < T(0); }
+template<unsigned int N, class T>
+inline bool is_negative(const T& x,
+  typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0)
+{ return is_nonzero<N>(x) && x < T(0); }
 
 template<class T>
 inline bool is_negative(T x,
   typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0)
-{ return x < 0; }
+{ return is_nonzero(x) && x < T(0); }
 template<class T>
 inline bool is_negative(const T& x,
   typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0)
-{ return x < 0; }
+{ return is_nonzero(x) && x < T(0); }
+
 inline bool is_negative(unsigned char) { return false; }
 inline bool is_negative(unsigned short) { return false; }
 inline bool is_negative(unsigned int) { return false; }
