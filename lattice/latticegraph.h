@@ -253,7 +253,7 @@ public:
     translation_type trans = super_type::translations(k);
     translation_type graph_trans;
 
-    int vertices_in_cell = num_vertices(graph(super_type::unit_cell()));
+    int vertices_in_cell = num_vertices(alps::graph(super_type::unit_cell()));
     for (typename translation_type::const_iterator it=trans.begin();
          it!=trans.end(); ++it) {
       std::vector<std::size_t> shifted_vertices;
