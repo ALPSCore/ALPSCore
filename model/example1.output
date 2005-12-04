@@ -380,9 +380,10 @@
     <PARAMETER name="J'" default="0"/>
     <PARAMETER name="h" default="0"/>
     <PARAMETER name="Gamma" default="0"/>
+    <PARAMETER name="D" default="0"/>
     <BASIS ref="spin"/>
     <SITETERM site="i">
-      -h*Sz(i)-Gamma*Sx(i)
+      -h*Sz(i)-Gamma*Sx(i)+D*Sz(i)*Sz(i)
     </SITETERM>
     <BONDTERM type="0" source="i" target="j">
       Jz*Sz(i)*Sz(j)+Jxy*exchange_xy(i,j)

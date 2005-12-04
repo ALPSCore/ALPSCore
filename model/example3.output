@@ -2,8 +2,8 @@ HHardcoreBosonSite =
 {{0, 0},
 {0,  - mu}};
 HSpinSite =
-{{0.5 * h,  - 0.5 * Gamma},
-{ - 0.5 * Gamma,  - 0.5 * h}};
+{{0.25 * D + 0.5 * h,  - 0.5 * Gamma},
+{ - 0.5 * Gamma, 0.25 * D - 0.5 * h}};
 HHardcoreBosonBond =
 {{{{0, 0}, {0, 0}},
 {{0, 0}, { - t, 0}}},
