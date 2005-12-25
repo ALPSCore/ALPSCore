@@ -91,6 +91,9 @@ public:
     return *ptr_++;
   }
   
+  template <class OutputIterator>
+  OutputIterator generate_n(std::size_t n, OutputIterator it);
+  
   /// seed with an unsigned integer
   virtual void seed(uint32_t) = 0;
   /// seed with the default value
