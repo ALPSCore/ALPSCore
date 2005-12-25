@@ -28,7 +28,7 @@
 
 /* $Id$ */
 
-#include <alps/parser/path.h>
+#include <alps/parser/xslt_path.h>
 #include <alps/config.h>
 #include <boost/throw_exception.hpp>
 #include <boost/filesystem/operations.hpp>

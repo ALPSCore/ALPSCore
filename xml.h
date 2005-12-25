@@ -38,5 +38,5 @@
 #include <alps/parser/xmlhandler.h>
 #include <alps/parser/xmlparser.h>
 #include <alps/parser/xmlstream.h>
-#include <alps/parser/path.h>
+#include <alps/parser/xslt_path.h>
 

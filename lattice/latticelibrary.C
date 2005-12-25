@@ -33,7 +33,7 @@
 #ifndef ALPS_WITHOUT_XML
 
 #include <alps/parser/parser.h>
-#include <alps/parser/path.h>
+#include <alps/parser/xslt_path.h>
 
 namespace alps {
 

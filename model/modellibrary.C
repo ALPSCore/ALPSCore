@@ -32,7 +32,7 @@
 #ifndef ALPS_WITHOUT_XML
 
 #include <alps/parser/parser.h>
-#include <alps/parser/path.h>
+#include <alps/parser/xslt_path.h>
 #include <boost/throw_exception.hpp>
 #include <stdexcept>
 
