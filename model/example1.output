@@ -118,10 +118,10 @@
     <QUANTUMNUMBER name="N" min="0" max="1" type="fermionic"/>
     <QUANTUMNUMBER name="Sz" min="-N/2" max="N/2"/>
     <QUANTUMNUMBER name="S" min="N/2" max="N/2"/>
-    <OPERATOR name="Sminus" matrixelement="1/2">
+    <OPERATOR name="Sminus" matrixelement="1">
       <CHANGE quantumnumber="Sz" change="-1"/>
     </OPERATOR>
-    <OPERATOR name="Splus" matrixelement="1/2">
+    <OPERATOR name="Splus" matrixelement="1">
       <CHANGE quantumnumber="Sz" change="1"/>
     </OPERATOR>
     <OPERATOR name="Sz" matrixelement="Sz"/>
@@ -131,23 +131,23 @@
       <CHANGE quantumnumber="Sz" change="1/2"/>
     </OPERATOR>
     <OPERATOR name="c_up" matrixelement="1">
-      <CHANGE quantumnumber="Nup" change="-1"/>
+      <CHANGE quantumnumber="N" change="-1"/>
       <CHANGE quantumnumber="S" change="-1/2"/>
       <CHANGE quantumnumber="Sz" change="-1/2"/>
     </OPERATOR>
     <OPERATOR name="cdag_down" matrixelement="1">
-      <CHANGE quantumnumber="Ndown" change="1"/>
+      <CHANGE quantumnumber="N" change="1"/>
       <CHANGE quantumnumber="S" change="1/2"/>
       <CHANGE quantumnumber="Sz" change="-1/2"/>
     </OPERATOR>
-    <OPERATOR name="cdag_u" matrixelement="1">
-      <CHANGE quantumnumber="Nup" change="1"/>
+    <OPERATOR name="cdag_up" matrixelement="1">
+      <CHANGE quantumnumber="N" change="1"/>
       <CHANGE quantumnumber="S" change="1/2"/>
       <CHANGE quantumnumber="Sz" change="1/2"/>
     </OPERATOR>
     <OPERATOR name="n" matrixelement="N"/>
-    <OPERATOR name="n_down" matrixelement="S*(1/2-Sz)"/>
-    <OPERATOR name="n_up" matrixelement="S*(Sz+1/2)"/>
+    <OPERATOR name="n_down" matrixelement="N*(1/2-Sz)"/>
+    <OPERATOR name="n_up" matrixelement="N*(Sz+1/2)"/>
   </SITEBASIS>
   <BASIS name="Kondo lattice">
     <SITEBASIS type="0" ref="fermion"/>
@@ -280,10 +280,10 @@
     <PARAMETER name="mu" default="0"/>
     <PARAMETER name="t" default="1"/>
     <PARAMETER name="J" default="1"/>
-    <PARAMETER name="t'" default="t"/>
-    <PARAMETER name="J'" default="J"/>
-    <PARAMETER name="t''" default="t"/>
-    <PARAMETER name="J''" default="J"/>
+    <PARAMETER name="t'" default="0"/>
+    <PARAMETER name="J'" default="0"/>
+    <PARAMETER name="t''" default="0"/>
+    <PARAMETER name="J''" default="0"/>
     <BASIS ref="alternative t-J"/>
     <SITETERM type="0" site="i">
       -mu*n(i)
@@ -413,10 +413,10 @@
     <PARAMETER name="mu" default="0"/>
     <PARAMETER name="t" default="1"/>
     <PARAMETER name="J" default="1"/>
-    <PARAMETER name="t'" default="t"/>
-    <PARAMETER name="J'" default="J"/>
-    <PARAMETER name="t''" default="t"/>
-    <PARAMETER name="J''" default="J"/>
+    <PARAMETER name="t'" default="0"/>
+    <PARAMETER name="J'" default="0"/>
+    <PARAMETER name="t''" default="0"/>
+    <PARAMETER name="J''" default="0"/>
     <BASIS ref="t-J"/>
     <SITETERM type="0" site="i">
       -mu*n(i)
