@@ -39,7 +39,7 @@
 /// http://xml.comp-phys.org/ web page
 
 #include <alps/parser/xmlstream.h>
-#include <alps/parser/path.h>
+#include <alps/parser/xslt_path.h>
 #include <boost/tuple/tuple.hpp>
 
 #include <vector>
