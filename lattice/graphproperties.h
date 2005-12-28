@@ -75,14 +75,17 @@ typedef unsigned int type_type;
 typedef boost::adjacency_list<boost::vecS,boost::vecS,boost::undirectedS,
                               // vertex property
                               boost::property<coordinate_t,coordinate_type,
-                                boost::property<parity_t,int8_t,
-                                   boost::property<vertex_type_t,type_type> > >,
+                                 boost::property<parity_t,int8_t,
+                                   boost::property<vertex_type_t,type_type> >  >,
                               // edge property
                               boost::property<edge_type_t,type_type,
                                 boost::property<boost::edge_index_t,unsigned int,
-                                  boost::property<boundary_crossing_t,boundary_crossing,
-                                    boost::property<bond_vector_t,coordinate_type,
-                                       boost::property<bond_vector_relative_t,coordinate_type> > > > >,
+                                   boost::property<boundary_crossing_t,boundary_crossing,
+                                    boost::property<bond_vector_t,coordinate_type
+#if !BOOST_WORKAROUND(__IBMCPP__, <= 700)
+                                       , boost::property<bond_vector_relative_t,coordinate_type> 
+#endif
+                              > > > >,
                               // graph property
                               boost::property<dimension_t,std::size_t,
                                 boost::property<graph_name_t,std::string > >
