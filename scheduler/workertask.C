@@ -117,7 +117,7 @@ void WorkerTask::construct() // delayed until child class is fully constructed
       if(j==0&&where[in].local()) {
         // one run runs locally
 #ifdef ALPS_TRACE
-        std::cerr  << "Loading run 1 locally on " << where[0].name() << ".\n";
+        std::cerr  << "Loading run 1 locally on " << where[0] << ".\n";
 #endif
         std::copy(where.begin()+in,where.begin()+in+cpus(),here.begin());
         runs[0]=theScheduler->make_worker(here,parms);
@@ -128,7 +128,7 @@ void WorkerTask::construct() // delayed until child class is fully constructed
       }
       else { // load other runs onto remote nodes
 #ifdef ALPS_TRACE
-        std::cerr  << "Loading run " << j+1 << " remote on " << where[j].name() << ".\n";
+        std::cerr  << "Loading run " << j+1 << " remote on " << where[j] << ".\n";
 #endif
         std::copy(where.begin()+in,where.begin()+in+cpus(),here.begin());
         runs[j]=new RemoteWorker(here,parms);
@@ -221,7 +221,7 @@ void WorkerTask::add_process(const Process& p)
     workerstatus.resize(j+1);
     runfiles.resize(j+1);
 #ifdef ALPS_TRACE
-    std::cerr  << "Creating additional run " << j+1 << " remote on Host: " << p.name() << ".\n";
+    std::cerr  << "Creating additional run " << j+1 << " remote on Host: " << p << ".\n";
 #endif
     runs[j]=new RemoteWorker(here,parms);
     parms["SEED"] = static_cast<int32_t>(parms["SEED"])+cpus();
@@ -231,7 +231,7 @@ void WorkerTask::add_process(const Process& p)
   }
   else {// continue old run
 #ifdef ALPS_TRACE
-    std::cerr  << "Loading additional run " << j << " remote on Host: " << p.name() << ".\n";
+    std::cerr  << "Loading additional run " << j << " remote on Host: " << p << ".\n";
 #endif
     runs[j]=new RemoteWorker(here,parms);
     runs[j]->load_from_file(runfiles[j].in);
@@ -239,32 +239,6 @@ void WorkerTask::add_process(const Process& p)
   }
 }
 
-// remove one run : hope that a checkpoint was created before!!!
-void WorkerTask::delete_process(const Process& p)
-{
-  ProcessList::iterator found = std::find(where.begin(),where.end(),p);
-  if( found==where.end())
-    return;
-  // delete process from list
-  *found = Process();
-  ProcessList nowhere;
-  
-  std::cerr << "Deleting run on " << p.name() << ".\n";
-  // change status of run, eventually reload it from dump
-  int found_run=(found-where.begin()) / cpus();
-  if(workerstatus[found_run] == LocalRun || workerstatus[found_run] == RemoteRun)
-    if(!runfiles[found_run].in.empty()) { // reload info from file
-      workerstatus[found_run] = RunOnDump;
-      if (runs[found_run])
-        delete runs[found_run];
-      runs[found_run]=theScheduler->make_worker(parms);
-      runs[found_run]->load_from_file(runfiles[found_run].in);
-    }
-    else {
-      workerstatus[found_run] = RunNotExisting;
-      runs[found_run]=0;
-    }
-}
 
 
 // is it finished???

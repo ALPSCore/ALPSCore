@@ -63,13 +63,11 @@ void print_copyright(std::ostream& out);
 class Scheduler
 {
 public: 
-  Scheduler(const Options&, const Factory&);    
   Scheduler(const NoJobfileOptions&, const Factory&);    
 
   virtual ~Scheduler() {};
 
   virtual void set_new_jobfile(boost::filesystem::path) {};
-  virtual void set_time_limit(double ) {};
 
   virtual int run(); // start the scheduler
   
@@ -98,16 +96,28 @@ public:
   const Factory& proc;             // user functions to create objects
   SignalHandler sig;                          // the signal handler
   const std::string programname;            // name of the exceutable
+  virtual void set_time_limit(double limit);
+
 protected:
+
   AbstractTask* theTask; //the simulation running on this node
   boost::filesystem::path defaultpath;
   
   bool use_error_limit;
  
-  //ErrorLimitsType error_limits;
   ResultsType sim_results;
   
   bool make_summary;
+
+  ProcessList processes;          // all available processes
+
+  double min_check_time;           // minimum time between checks
+  double max_check_time;           // maximum time between cehcks
+  double checkpoint_time;          // time between cehckpoints
+
+  int min_cpus;                        // min number of runs of one simulation
+  int max_cpus;                        // max number of runs of one simulation
+  double time_limit;                   // time limit for the simulation
 };
 
 //=======================================================================
@@ -134,38 +144,23 @@ public:
   ~MasterScheduler();
 
   virtual void set_new_jobfile(boost::filesystem::path jobilename);
-  virtual void set_time_limit(double limit);
-
-  virtual int run()=0; // start the scheduler
 
 protected: 
-  ProcessList processes;          // all available processes
   std::vector<AbstractTask*> tasks;   // all simulations
   std::vector<int> taskstatus;    // status of the simulations
 
-  double min_check_time;           // minimum time between checks
-  double max_check_time;           // maximum time between cehcks
-  double checkpoint_time;          // time between cehckpoints
-
   // remake a task and let it run on some nodes
   void remake_task(ProcessList&, const int);
-
-  // initialize checking for signals
-  int check_comm_signals();
-  int check_comm_signals(ProcessList&);
-  int check_signals();
 
   // the simulation is finished, do any cleanup work necessary
   void finish_task(int);
 
   // do a checkpoint
   virtual void checkpoint();
-
-  int min_cpus;                        // min number of runs of one simulation
-  int max_cpus;                        // max number of runs of one simulation
-  double time_limit;                   // time limit for the simulation
+  int check_signals();
 
 private:
+
   std::vector<CheckpointFiles> taskfiles;
   boost::filesystem::path outfilepath;
   boost::filesystem::path infilepath;
@@ -173,20 +168,38 @@ private:
   void parse_job_file(const boost::filesystem::path&);
 };
 
-
 //=======================================================================
 // SingleScheduler
+//
+// a scheduler for a single task
+//-----------------------------------------------------------------------
+
+class SingleScheduler : public Scheduler 
+{
+public:
+  SingleScheduler(const NoJobfileOptions&,const Factory&);
+  int run(); // run scheduler
+  void create_task(Parameters const& p);
+  void destroy_task();
+  void checkpoint() {}; // no checkpoint yet
+private:
+  int check_signals();
+  boost::posix_time::ptime end_time;
+};
+
+
+
+//=======================================================================
+// SerialScheduler
 //
 // a scheduler for a single CPU, finishes one simulation after the other
 //-----------------------------------------------------------------------
 
-class SingleScheduler : public MasterScheduler 
+class SerialScheduler : public MasterScheduler 
 {
 public:
-  SingleScheduler(const Options&,const Factory&);
-  SingleScheduler(const NoJobfileOptions&,const Factory&);
-  
-  //  virtual void setErrorLimit(std::string name,double value);
+  SerialScheduler(const Options&,const Factory&);
+  SerialScheduler(const NoJobfileOptions&,const Factory&);
   int run(); // start scheduler
 };
 
@@ -207,7 +220,6 @@ class MPPScheduler : public MasterScheduler
   // status of the active simulations
   std::vector<TaskStatus> active; 
   int running_tasks;
-  void check_system(ProcessList&);
   int check_tasks(ProcessList&);
   int create_task(int,ProcessList&);
   void determine_active();

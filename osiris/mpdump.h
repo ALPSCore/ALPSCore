@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -93,8 +93,6 @@ public:
 
 private:
   bool valid_; // flag to indicate the state of the message buffers
-  int bufid_; // the PVM buffer id
-  int oldbufid_; //the previously used buffer
   detail::Buffer buf_; // the message buffer for other message passing systems
 };
 
@@ -151,7 +149,6 @@ public:
 
 private:
   bool valid_; // state of the message buffer
-  int bufid_; // the PVM buffer id
   detail::Buffer buf_; // the message buffer
   Process theSender_; // the process that sent the message
   void receive(const Process*,int32_t);   // receive a message

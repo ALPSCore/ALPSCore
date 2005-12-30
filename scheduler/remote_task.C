@@ -63,44 +63,6 @@ void RemoteTask::add_process(const Process& p)
       send.send(where[0],MCMP_add_process);
 }
 
-void RemoteTask::delete_processes(const ProcessList& p)
-{
-  ProcessList::iterator found;
-  
-  bool found_one=false;
-  bool found_master=false;
-  for (int i=0;i<p.size();i++)
-      {
-        found=std::find(where.begin(),where.end(),p[i]);
-        if(found==where.begin())
-          found_master=true;
-        if(found != where.end()) {
-          where.erase(found);
-          found_one=true;
-        }
-      }
-  if(found_one && ! found_master)
-    {
-      OMPDump send;
-      send << p;
-      send.send(where[0],MCMP_delete_processes);
-    }
-}
-
-void RemoteTask::delete_process(const Process& p)
-{
-  ProcessList::iterator found = std::find(where.begin(),where.end(),p);
-  if(found != where.end()) {
-    bool is_start = (found == where.begin());
-    where.erase(found);
-    if(!is_start) {
-      OMPDump send;
-      send << p;
-      send.send(where[0],MCMP_delete_process);
-    }
-  }
-}
-
 bool RemoteTask::finished(double& more_time) const
 {
   OMPDump send;

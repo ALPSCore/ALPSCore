@@ -31,8 +31,6 @@
 #include <alps/osiris/comm.h>
 #include <alps/osiris/process.h>
 #include <alps/osiris/dump.h>
-#include <alps/osiris/std/string.h>
-#include <alps/osiris/std/vector.h>
 
 #include <string>
 #include <algorithm>
@@ -44,93 +42,29 @@
 
 namespace alps {
 
-//=======================================================================
-// Host
-//
-// derived from Osiris
-//
-// is used to reference a Host computer
-//-----------------------------------------------------------------------
-  
-Host::Host()
-  : name_(),
-    speed_(1.),
-    id_(-1)
-{
-}
-
-Host::Host(int32_t i, const std::string& n, double s)
-  : name_(n), 
-    speed_(s), 
-    id_(i)
-{
-}
-
-void Host::save(ODump& dump) const
-{
-  dump << name_ << speed_ << id_;
-}
-
-void Host::load(IDump& dump)
-{
-  dump >> name_ >> speed_ >> id_;
-}
-
-bool Host::valid() const
-{
-  return (id_ >= 0);
-}
-
-
-//=======================================================================
-// Process
-//
-// derived from Host
-//
-// describes a Process on a specified Host
-//-----------------------------------------------------------------------
-
-
-Process::Process(const Host& h, int32_t i)
-  : Host(h),
-    tid(i)
-{
-}
-
-
-Process::Process(int32_t i)
-  : Host(detail::invalid_id()),
-    tid(i)
+Process::Process(int i)
 {
 }
 
 void Process::save(ODump& dump) const
 {
-  Host::save(dump);
   dump << tid;
 }
 
 
 void Process::load(IDump& dump)
 {
-  Host::load(dump);
   dump >> tid;
 }
 
 
 bool Process::local() const
 {
-  // is it the currently running Process ?
   return (tid==detail::local_id());
 }
 
 bool Process::valid() const
 {
-#ifdef ALPS_PVM
-
-  return (tid >= 0);
-
-#else
 #ifdef ALPS_MPI
 
   int total;
@@ -141,7 +75,6 @@ bool Process::valid() const
 
   return (tid==0);
   
-#endif
 #endif
 }
 

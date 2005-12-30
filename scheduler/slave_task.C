@@ -123,11 +123,6 @@ void SlaveTask::add_process(const Process& )
   boost::throw_exception(std::logic_error("should never add a process to a slave simulation"));
 }
 
-void SlaveTask::delete_process(const Process&)
-{
-  boost::throw_exception(std::logic_error("should never delete a process from a slave simulation"));
-}
-
 double SlaveTask::work() const
 {
   boost::throw_exception(std::logic_error("should never obtain work of a slave simulation"));

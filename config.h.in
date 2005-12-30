@@ -91,9 +91,6 @@
 // Define to 1 if you have the MPI library
 #undef ALPS_HAVE_MPI
 
-// Define to 1 if you have the PVM library
-#undef ALPS_HAVE_PVM
-
 // Define to 1 if you have the LAPACK library
 #undef ALPS_HAVE_LAPACK
 

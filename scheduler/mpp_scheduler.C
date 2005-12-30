@@ -61,7 +61,6 @@ int MPPScheduler::run()
   ProcessList free(processes);
   running_tasks=0;
 
-  check_comm_signals();
   int all_done=0;
 
   ptime last_checkpoint=second_clock::local_time();
@@ -82,7 +81,6 @@ int MPPScheduler::run()
       return -1;
     }              
     
-    check_system(free);
     int freen=0;
     if(free.size()!=total_free) {
       while(freen!=free.size()) { 
@@ -257,76 +255,6 @@ void MPPScheduler::assign_processes(ProcessList& free)
       }
     } 
   std::cout << "All processes have been assigned\n";
-}
-
-
-// check for signals and other events
-void MPPScheduler::check_system(ProcessList& /*free*/)
-{
-/*
-  int messageswaiting=1;
-  ProcessList changed;
-  OMPDump dump;
-  int i;
-  
-  do
-    switch(check_comm_signals(changed)) {
-      case CommSignal::nosignal:
-        messageswaiting=0;
-        break;
-        
-      case CommSignal::host_failed:
-      case CommSignal::process_failed:
-        // first try to save as much as possible
-        if(messageswaiting==1) {
-            checkpoint();
-            messageswaiting = -1;
-          }
-        
-        // delete all failed processes
-        for(i=0;i<active.size();i++)  {
-            int k;
-            for (k=0;k<changed.size();k++) {
-                  Process& p = changed[k];
-                  ProcessList::iterator found=
-                  std::find(active[i].where.begin(),active[i].where.end(),p);
-                  if(found!=active[i].where.end()) {
-                      // delete from active list
-                      std::cout << "Process " << k << " on sim "
-                           << active[i].number << " : " << found << "\n";
-                      active[i].where.erase(found);
-                      // delete run
-                      tasks[active[i].number]->delete_process(p);
-                    }
-                }
-          }
-
-        for (i=0;i<active.size();i++) {
-            int k=active[i].number;
-            if((active[i].where.size()==0)&&(taskstatus[k]==TaskRunning)) {
-                std::cout << "Stopping simulation " << k+1 << "\n";
-                taskstatus[k] = TaskHalted;
-              }
-          }
-
-        // rebalance the workload
-        std::cout << "REBALANCING NOT YET IMPLEMENTED\n";
-        break;
-        
-      case CommSignal::host_added:
-        if(runs_parallel()) {
-          TO CHANGE
-          dump << dumpname;
-          dump.send(changed,MCMP_dump_name);
-        }
-        free.insert(free.end(), changed.begin(),changed.end());
-        break;
-        
-      default: 
-        boost::throw_exception( std::logic_error("default reached in MPPScheduler::check_system()"));
-      }
-  while (messageswaiting);
-  */
 }
 
 

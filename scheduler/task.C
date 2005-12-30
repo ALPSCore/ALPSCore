@@ -159,12 +159,6 @@ void Task::add_process(const Process& /* p */)
 }
 
 
-// remove one run : hope that a checkpoint was created before!!!
-void Task::delete_process(const Process& /* p */)
-{
-  boost::throw_exception(std::runtime_error("Cannot delete a process from a single process task"));
-}
-
 
 // is it finished???
 bool Task::finished(double& /* more_time */) const

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -40,64 +40,17 @@
 
 namespace alps {
 
-/** a host descriptor.
-    the Host class describes a host computer. */
-class Host
-{
-public:        
-  /// construct an invalid hosts
-  Host(); 
-  
-  /** construct a Host object.
-      @param id the host id
-      @param name the host name
-      @param speed relative speed of the host */
-  Host(int32_t id, const std::string& name="", double speed=1.0); // new Host
-
-  /// deserialize a host descriptor.
-  void load(IDump&); // load from the dump
-  /// serialize a host descriptor.
-  void save(ODump&) const; // save to the dump
-  
-  /// are two hosts the same? 
-  bool operator==(const Host& h) const {return id_==h.id_;}
-  /// are two hosts different? 
-  bool operator!=(const Host& h) const {return id_!=h.id_;}
-  
-  /// does this object refer to a valid host?
-  bool valid() const; // is this a valid Host descriptor ?
-  
-  /// the host name
-  const std::string& name() const {return name_;}
-  
-  /// the host id
-  operator int32_t () const {return id_;}
-
-  /// relative host speed
-  double speed() const {return speed_;}
  
-protected:
-  std::string name_; // name of the Host
-  double speed_; // relative speed of the Host
-  int32_t id_; // integral unique identification number
-
-private:
- };
- 
- 
-/** a process descriptor.
-    Describes a process. Is derived from a Host class, refering to the
-    host on which the process is executed. */
+/** a process descriptor. */
     
-class Process : public Host
+class Process
 {
 public:
   
   // CONSTRUCTORS
   
-  Process(const Host&, int32_t); // constructor for existing processes
-  explicit Process(int32_t); // constructor for process on unknown host
-  Process() : Host() {} // invalid Process
+  explicit Process(int); // constructor for process on unknown host
+  Process() : tid(-1) {} // invalid Process
   
   // MEMBER FUNCTIONS
   
@@ -105,12 +58,9 @@ public:
   void save(ODump&) const; // save into a dump
 
   bool valid() const; // is this a valid Process descriptor ?
-
-  inline bool on_host(const Host& h) const {return h==*this;}
-
   bool local() const; // is this the current Process?
   
-  inline operator int32_t () const {return tid;}
+  inline operator int () const {return tid;}
   
   bool operator==(const Process& p) const
   { return (tid==p.tid);}
@@ -123,31 +73,9 @@ public:
   { return (tid<p.tid);}
 
 private:
-  int32_t tid; // the unique Process id
+  int tid; // the unique Process id
 };
 
-//=======================================================================
-// is_on_host and hosts_process
-//
-// predicates to find processes on a certain hosts and vice versa
-//-----------------------------------------------------------------------
-
-class is_on_host {
-  const Host& the_host_;
-public:
-  is_on_host(const Host& h) : the_host_(h) {}
-  bool operator()(const Process& p) const {return p.on_host(the_host_);}
-};
-
-class hosts_process {
-  const Process& the_process_;
-public:
-  hosts_process(const Process& p) : the_process_(p) {}
-  bool operator()(const Host& h) const {return the_process_.on_host(h);}
-};
-
-
-typedef std::vector<Host> HostList;
 typedef std::vector<Process> ProcessList;
 }
 
@@ -156,17 +84,9 @@ typedef std::vector<Process> ProcessList;
 namespace alps {
 #endif
 
-inline std::ostream& operator<<(std::ostream& out, const alps::Host& h)
-{
-  out << h.name();
-  return out;
-}
-
 inline std::ostream& operator<<(std::ostream& out, const alps::Process& p)
 {
-  out << "#" << int32_t(p);
-  if(p.name().size()!=0)
-  out << " on Host " << p.name();
+  out << int(p);
   return out;
 }
 

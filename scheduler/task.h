@@ -88,8 +88,6 @@ public:
   
   virtual void add_processes(const ProcessList&);
   virtual void add_process(const Process&) = 0;
-  virtual void delete_processes(const ProcessList&);
-  virtual void delete_process(const Process&) = 0;
   
   virtual void start() = 0; // start all runs
   virtual void run() = 0; // run for some time (in seconds)
@@ -132,7 +130,6 @@ public:
   void checkpoint(const boost::filesystem::path&) const; // write into a file
 
   void add_process(const Process&);
-  void delete_process(const Process&);
 
   uint32_t cpus() const {return 1;}
   bool local() {return (where.size() ? 1 : 0);} 
@@ -186,7 +183,6 @@ public:
   void construct(); // needs to be called to finish construction
 
   void add_process(const Process&);
-  void delete_process(const Process&);
 
   void start(); // start simulation
   void dostep(); // run a few steps and return control
@@ -221,8 +217,6 @@ public:
 
   void add_processes(const ProcessList&);
   void add_process(const Process&);
-  void delete_processes(const ProcessList&);
-  void delete_process(const Process&);
 
   uint32_t cpus() const;
   bool local() {return false;} // no, remote
@@ -246,7 +240,6 @@ public:
   virtual void run(); // run a few steps and return control
   virtual void checkpoint(const boost::filesystem::path& fn) const;
   virtual void add_process(const Process& p);
-  virtual void delete_process(const Process& p);
   virtual void start();
   virtual double work() const;
   virtual bool finished(double& x) const;

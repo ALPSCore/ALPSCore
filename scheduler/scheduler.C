@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2005 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -73,31 +73,6 @@ int Scheduler::run() // a slave scheduler
   Parameters param;
   
   do {
-    /*switch(sig()) {
-      case palm::SignalHandler::NOSIGNAL:
-      case palm::SignalHandler::USER1:
-      case palm::SignalHandler::USER2:
-        break;
-          
-      case palm::SignalHandler::STOP:
-        std::cerr  << "stopping slave...\n";
-        sig.stopprocess(); // stop the process
-        break;
-
-      case palm::SignalHandler::TERMINATE:
-        std::cerr  << "exiting slave...\n";
-        if(theTask) {
-          theTask->halt();
-          delete theTask;
-          theTask=0;
-        }
-        return -1; 
-        break;
-          
-      default:
-        boost::throw_exception(std::logic_error("invalid signal"));
-    }*/
-      
       // check true
       messageswaiting=true;
       do {
@@ -167,20 +142,22 @@ int Scheduler::run() // a slave scheduler
 }
 
 Scheduler::Scheduler(const NoJobfileOptions& opt, const Factory& p)
-  : proc(p), programname(opt.programname), theTask(0)
+  : proc(p), 
+    programname(opt.programname), 
+    theTask(0),
+    min_check_time(opt.min_check_time),
+    max_check_time(opt.max_check_time),
+    checkpoint_time(opt.checkpoint_time),
+    min_cpus(opt.min_cpus),
+    max_cpus(opt.max_cpus),
+    time_limit(opt.time_limit)
 {
+  processes = all_processes();
   theScheduler=this;
   use_error_limit = false;
   make_summary = false;
 }
 
-Scheduler::Scheduler(const Options& opt, const Factory& p)
-  : proc(p), programname(opt.programname), theTask(0)
-{
-  theScheduler=this;
-  use_error_limit = false;
-  make_summary = false;
-}
 
 // load/create tasks and runs
 
@@ -238,7 +215,7 @@ AbstractWorker* Scheduler::make_worker(const alps::Parameters& p)
 
 void init(const Factory& p)
 {
-  theScheduler = new SingleScheduler(Options(),p);
+  theScheduler = new SerialScheduler(Options(),p);
 }
 
 // initialize a scheduler for real work, parsing the command line
@@ -256,7 +233,7 @@ int start(int argc, char** argv, const Factory& p)
   
   if (opt.valid) {
     if(!runs_parallel())
-      theScheduler = new SingleScheduler(opt,p);
+      theScheduler = new SerialScheduler(opt,p);
     else if (is_master()) 
       theScheduler = new MPPScheduler(opt,p);
     else
@@ -268,6 +245,12 @@ int start(int argc, char** argv, const Factory& p)
   comm_exit();
   return res;
 }
+
+void Scheduler::set_time_limit(double limit)
+{
+  time_limit = limit;
+}
+
 
 } // namespace scheduler
 } // namespace alps

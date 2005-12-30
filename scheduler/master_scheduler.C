@@ -44,42 +44,18 @@ namespace alps {
 namespace scheduler {
 
 MasterScheduler::MasterScheduler(const NoJobfileOptions& opt,const Factory& p)
-  : Scheduler(opt,p),
-    min_check_time(opt.min_check_time),
-    max_check_time(opt.max_check_time),
-    checkpoint_time(opt.checkpoint_time),
-    min_cpus(opt.min_cpus),
-    max_cpus(opt.max_cpus),
-    time_limit(opt.time_limit)
+  : Scheduler(opt,p)
 {
-  // register all processes and hosts with the MP signal handler
-  if(opt.programname.size()!=0)
-    processes=start_all_processes(programname);
 }
 
 
 MasterScheduler::MasterScheduler(const Options& opt,const Factory& p)
-  : Scheduler(opt,p),
-    min_check_time(opt.min_check_time),
-    max_check_time(opt.max_check_time),
-    checkpoint_time(opt.checkpoint_time),
-    min_cpus(opt.min_cpus),
-    max_cpus(opt.max_cpus),
-    time_limit(opt.time_limit)
+  : Scheduler(opt,p)
 {
-  // register all processes and hosts with the MP signal handler
-  if(opt.programname.size()!=0)
-    processes=start_all_processes(programname);
-
   // the rest of the initialisation is done by the set_new_jobfile - function
   // this function can also be used to re-start the scheduler with a new
   // job file.
   set_new_jobfile(opt.jobfilename);
-}
-
-void MasterScheduler::set_time_limit(double limit)
-{
-  time_limit = limit;
 }
 
 /**
@@ -295,18 +271,22 @@ void MasterScheduler::checkpoint()
 }
 
 
-int MasterScheduler::check_comm_signals(ProcessList& )
-{  
-  return 0;
+// store the results and delete the simulation
+void MasterScheduler::finish_task(int i)
+{ 
+  if (tasks[i] == 0)
+    return;
+  std::cout  << "Halting Task " << i+1 << ".\n";
+  tasks[i]->halt();
+  taskstatus[i] = TaskHalted;
+  if (make_summary) {
+    sim_results[i] = tasks[i]->get_summary();
+  }
+  tasks[i]->checkpoint(boost::filesystem::complete(taskfiles[i].out,outfilepath.branch_path()));
+  delete tasks[i];
+  tasks[i]=0;
+  taskstatus[i] = TaskFinished;      
 }
-
-
-int MasterScheduler::check_comm_signals()
-{
-  ProcessList p;
-  return check_comm_signals(p);
-}
-
 
 int MasterScheduler::check_signals()
 {
@@ -335,23 +315,6 @@ int MasterScheduler::check_signals()
       boost::throw_exception ( std::logic_error( "default on switch reached in MasterScheduler::check_signals()"));
     }
   return SignalHandler::NOSIGNAL;
-}
-
-// store the results and delete the simulation
-void MasterScheduler::finish_task(int i)
-{ 
-  if (tasks[i] == 0)
-    return;
-  std::cout  << "Halting Task " << i+1 << ".\n";
-  tasks[i]->halt();
-  taskstatus[i] = TaskHalted;
-  if (make_summary) {
-    sim_results[i] = tasks[i]->get_summary();
-  }
-  tasks[i]->checkpoint(boost::filesystem::complete(taskfiles[i].out,outfilepath.branch_path()));
-  delete tasks[i];
-  tasks[i]=0;
-  taskstatus[i] = TaskFinished;      
 }
 
 } // namespace scheduler

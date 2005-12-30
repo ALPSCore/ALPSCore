@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2005 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -29,30 +29,11 @@
 /* $Id$ */
 
 #include <alps/osiris/comm.h>
-#include <alps/osiris/os.h>
 #include <alps/osiris/process.h>
 
-#include <boost/lexical_cast.hpp>
-#include <boost/throw_exception.hpp>
-#include <stdexcept>
-
-#ifdef ALPS_PVM
-#include <cstdio>
-#include <pvm3.h>
-#endif
 
 #ifdef ALPS_MPI
 #include <mpi.h>
-#endif
-
-//=======================================================================
-// GLOBAL VARIABLES
-//-----------------------------------------------------------------------
-
-// the current communication signal handler
-
-#ifdef ALPS_PVM
-static bool is_master_;
 #endif
 
 //=======================================================================
@@ -60,24 +41,6 @@ static bool is_master_;
 //
 // initialize or stop the message passing library 
 //-----------------------------------------------------------------------
-
-#ifdef ALPS_PVM
-
-void alps::comm_init(int*, char***, bool flag)
-{
-  pvm_mytid(); // register with pvm if not yet done
-  if(flag)
-    {
-#if !defined(CRAY) && !defined(__sgi) && !defined(__DECCXX)
-      pvm_catchout(stderr);
-#endif
-      is_master_=flag;
-    }
-  else
-    is_master_=false;
-}
-
-#else
 
 #ifdef ALPS_MPI
 
@@ -91,34 +54,9 @@ void alps::comm_init(int* argcp, char*** argvp, bool)
 void alps::comm_init(int*, char***, bool) {}
 
 #endif
-#endif
 
 
 // clean up everything
-#ifdef ALPS_PVM
-void alps::comm_exit(bool kill_all)
-{
-  int info;
-  if(kill_all)
-    {
-      int ntask=0;
-      struct pvmtaskinfo* taskp;
-      
-      info = pvm_tasks(ntask,&ntask,&taskp);
-      if(info<0) 
-        boost::throw_exception( std::runtime_error( ("Error code " + boost::lexical_cast<std::string,int>(info) + " from pvm_tasks")));
-      for(int j=0;j<ntask;j++)
-        if(taskp[j].ti_ptid ==pvm_mytid()) // only my children
-          {
-            pvm_sendsig(taskp[j].ti_tid,SIGKILL);
-          }
-    }
-  
-  info = pvm_exit(); // ignore error return code
-  if(info<0) 
-    boost::throw_exception( std::runtime_error( ("Error code " + boost::lexical_cast<std::string,int>(info) + " from pvm_exit")));
-}
-#else
 #ifdef ALPS_MPI
 void alps::comm_exit(bool kill_all)
 {
@@ -129,7 +67,6 @@ void alps::comm_exit(bool kill_all)
 }
 #else
 void alps::comm_exit(bool ) {}
-#endif
 #endif
 
 //=======================================================================
@@ -142,9 +79,6 @@ void alps::comm_exit(bool ) {}
 
 bool alps::is_master()
 {
-#ifdef ALPS_PVM
-  return (is_master_||pvm_parent()==PvmNoParent);
-#else
 #ifdef ALPS_MPI
 
   int num;
@@ -154,7 +88,6 @@ bool alps::is_master()
 #else
     return true; // only one CPU, always Master
 #endif
-#endif
 }
 
 
@@ -162,11 +95,7 @@ bool alps::is_master()
 
 int alps::detail::invalid_id()
 {
-#ifdef ALPS_PVM
-  return PvmNoParent;
-#else 
   return -1; // only one Process;
-#endif
 }
 
 
@@ -175,9 +104,6 @@ int alps::detail::invalid_id()
 
 int alps::detail::local_id()
 {
-#ifdef ALPS_PVM
-  return pvm_mytid();
-#else
 #ifdef ALPS_MPI
 
   int num;
@@ -187,99 +113,24 @@ int alps::detail::local_id()
 #else
         return 0; // only one CPU, ID=0
 #endif
-#endif
 }
-
-
-// get the local host
-
-alps::Host alps::local_host()
-{
-#ifdef ALPS_PVM
-  return process_from_id(pvm_mytid());
-#else
-  std::string hostname;
-  return Host(0, alps::hostname(),1.);
-#endif
-}
-
 
 // get a descriptor of this process
 
 alps::Process alps::local_process()
 {
-#ifdef ALPS_PVM  
-
-  int ntask;
-  struct pvmtaskinfo* taskp;
-  
-  int info = pvm_tasks(pvm_mytid(),&ntask,&taskp);
-  if(info<0) 
-    boost::throw_exception( std::runtime_error( ("Error code " + boost::lexical_cast<std::string,int>(info) + " from pvm_tasks")));
-  if(ntask!=1)
-    boost::throw_exception ( std::logic_error( "PVM: more than one task with local tid")  );
-
-  return Process(local_host(),taskp[1].ti_tid);
-#else
 #ifdef ALPS_MPI
 
   int num;
   MPI_Comm_rank(MPI_COMM_WORLD,&num);
-  return Process(local_host(),num);
+  return Process(num);
 #else
 
   // single CPU case
-  return Process(local_host(),0);
+  return Process(0);
   
 #endif
-#endif
 }
-
-
-// get the process with a specified id
-
-alps::Process alps::process_from_id(const int tid)
-{
-#ifdef ALPS_PVM
-  int nhost,narch;
-  struct pvmhostinfo* hostp;
-
-  // get all hosts
-    
-  int info = pvm_config(&nhost,&narch,&hostp);
-  if(info<0) 
-    boost::throw_exception( std::runtime_error( ("Error code " + boost::lexical_cast<std::string,int>(info) + " from pvm_config")));
-  
-  for(int i=0;i<nhost;i++)
-      // look for this host;
-    if(pvm_tidtohost(tid)==hostp[i].hi_tid)
-      return Process(Host(hostp[i].hi_tid,hostp[i].hi_name,hostp[i].hi_speed/1000.),tid);    
-
-  return Process();
-#else
-#ifdef ALPS_MPI
-
-    int num;
-    MPI_Comm_size(MPI_COMM_WORLD,&num);
-
-  if(tid < 0 || tid >= num)
-      return Process();
-  else if(Process(tid).local())
-    return Process(local_host(),tid);
-  else
-    return Process(tid);
-
-#else
-  if(tid!=0)
-    return Process();
-  else
-    return local_process();
-
-#endif
-#endif
-}
-
-
 
 
 // get a list of all processes running
@@ -287,36 +138,6 @@ alps::Process alps::process_from_id(const int tid)
 alps::ProcessList alps::all_processes()
 {
   ProcessList p;
-#ifdef ALPS_PVM
-
-  int nhost,narch;
-  struct pvmhostinfo* hostp;
-  
-  int ntask;
-  struct pvmtaskinfo* taskp;
-
-  // get all hosts
-  int info = pvm_config(&nhost,&narch,&hostp);
-  if(info<0) 
-    boost::throw_exception( std::runtime_error( ("Error code " + boost::lexical_cast<std::string,int>(info) + " from pvm_config")));
-  
-// for every host
-  for (int i=0;i<nhost;i++)
-    {
-      // get all processes
-      info = pvm_tasks(hostp[i].hi_tid,&ntask,&taskp);
-      if(info<0) 
-    boost::throw_exception( std::runtime_error( ("Error code " + boost::lexical_cast<std::string,int>(info) + " from pvm_tasks")));
-    
-      for(int j=0;j<ntask;j++)
-        if ( taskp[j].ti_tid == pvm_mytid() 
-             || taskp[j].ti_ptid ==pvm_mytid() )
-            p.push_back(Process(
-                Host(hostp[i].hi_tid,hostp[i].hi_name,hostp[i].hi_speed/1000.),
-                taskp[j].ti_tid));
-    }   
-    
-#else
 #ifdef ALPS_MPI
 
   int num;
@@ -334,7 +155,6 @@ alps::ProcessList alps::all_processes()
   p[0]=local_process();
   
 #endif
-#endif
 
   return p;
 }
@@ -344,110 +164,13 @@ alps::ProcessList alps::all_processes()
 
 alps::Process alps::master_process()
 {
-#ifdef ALPS_PVM
-  return process_from_id(pvm_parent());
-#else
-  return process_from_id(0);
-#endif
+  return Process(0);
 }
 
-
-//=======================================================================
-// START PROCESSES
-//-----------------------------------------------------------------------
-
-// start a process on the given host
-
-#ifdef ALPS_PVM
-alps::Process alps::start_process(const Host& h, const std::string& name)
-{
-#ifdef OSIRIS_TRACE
-  cerr << "\n.Starting process " << name << " on host " << h.name << ".\n";
-#endif
-
-  
-  int tid;
-  int info = pvm_spawn(const_cast<char*>(name.c_str()),0,
-                       PvmTaskHost+PvmTaskTrace,
-                       const_cast<char*>(h.name().c_str()),1,&tid);
-  if(info<1)    
-    {
-#ifdef OSIRIS_TRACE
-      cerr << "Failed to start process on " << h.name << ".\n";
-#endif
-      return Process();
-    }
-
-#ifdef OSIRIS_TRACE
-else
-    cerr << "Started as process # " << p.tid << ".\n";
-#endif
-
-  return Process(h,tid);
-}
-
-#else
-alps::Process alps::start_process(const Host& , const std::string& )
-{
-  boost::throw_exception(std::logic_error("Cannot start a new process"));
-  return Process();
-}
-#endif
-
-
-// start processes on multiple hosts
-
-alps::ProcessList alps::start_processes(const HostList& h, const std::string& name)
-{
-  ProcessList l;
-  for (int i=0;i<h.size();i++)
-    {
-      // start process on all hosts in list
-      Process p=start_process(h[i],name);
-      if(p.valid())
-        l.push_back(p);
-    }
-  return l;
-}
-
-
-// start processe on every CPU of each available host
-
-#ifdef ALPS_PVM
-alps::ProcessList alps::start_all_processes(const std::string& name, unsigned short procs_per_node)
-#else
-alps::ProcessList alps::start_all_processes(const std::string&, unsigned short)
-#endif
-{
-  std::cerr << "Starting all processes\n";
-
-#ifdef ALPS_PVM
-  // get a list of all hosts
-  int nhost,narch,hid;
-  struct pvmhostinfo* hostp;
-  
-  int info = pvm_config(&nhost,&narch,&hostp);
-  if(info<0) 
-    boost::throw_exception( std::runtime_error( ("Error code " + boost::lexical_cast<std::string,int>(info) + " from pvm_config")));
-    
-  hid = pvm_tidtohost(pvm_mytid());
-  
-  HostList h;
-  // start one less on current host
-  for(int i=0;i<nhost;i++)
-    for (int j= (hid==hostp[i].hi_tid ? 1 : 0);j<procs_per_node;++j)
-
-  // start missing processes
-  alps::start_processes(h,name);
-#endif
-  
-  // return all processes
-  return all_processes();
-}
 
 bool alps::runs_parallel()
 {
-#if defined(ALPS_PVM) || defined(ALPS_MPI)
+#if defined(ALPS_MPI)
   return true;
 #else
   return false;

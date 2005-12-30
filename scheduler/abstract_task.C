@@ -57,12 +57,6 @@ void AbstractTask::add_processes(const ProcessList& p)
     boost::throw_exception(std::logic_error("adding processes to multiple-cpu tasks not yet implemented"));
 }
 
-void AbstractTask::delete_processes(const ProcessList& p)
-{
-  for (int i=0;i<p.size();i++)
-      delete_process(p[i]);
-}
-
 bool AbstractTask::handle_message(const Process& master,int tag)
 {
   IMPDump message;
@@ -122,18 +116,6 @@ bool AbstractTask::handle_message(const Process& master,int tag)
       message >> p;
       return true;
                     
-    case MCMP_delete_processes:
-      message.receive(master,MCMP_delete_processes);
-      message >> pl;
-      delete_processes(pl);
-      return true;
-  
-    case MCMP_delete_process:
-      message.receive(master,MCMP_delete_process);
-      message >> p;
-      delete_process(p);
-      return true;
-  
     case MCMP_checkpoint:
       message.receive(master,MCMP_checkpoint);
       message >> filename;

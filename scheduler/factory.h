@@ -50,6 +50,7 @@ public:
   virtual ~Factory() {}
   virtual Task* make_task(const ProcessList&,const boost::filesystem::path&) const;
   virtual Task* make_task(const ProcessList&,const boost::filesystem::path&,const Parameters&) const;
+  virtual Task* make_task(const ProcessList&,const Parameters&) const;
   virtual Worker* make_worker(const ProcessList&,const Parameters&,int) const;
   virtual void print_copyright(std::ostream&) const=0;
 };
