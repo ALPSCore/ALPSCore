@@ -123,6 +123,7 @@ public:
   static void print_copyright(std::ostream&);
   
   Task(const ProcessList&, const boost::filesystem::path&);    
+  Task(const ProcessList&, const Parameters&);    
     
   ~Task();
   
@@ -179,7 +180,7 @@ protected:
 
 public:
   WorkerTask(const ProcessList&, const boost::filesystem::path&);      
-    
+  WorkerTask(const ProcessList&, const Parameters&);     
   ~WorkerTask();
   
   void construct(); // needs to be called to finish construction

@@ -86,6 +86,11 @@ public:
       : WorkerTask(w,p) { 
     construct();
   }
+
+  MCSimulation(const ProcessList& w, const Parameters& p) 
+      : WorkerTask(w,p) { 
+    construct();
+  }
   
   ObservableSet get_measurements(bool compact=false) const;
   MCSimulation& operator<<(const Observable& obs);

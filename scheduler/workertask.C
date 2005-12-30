@@ -52,6 +52,13 @@ WorkerTask::WorkerTask(const ProcessList& w,const boost::filesystem::path& filen
 {
 }
 
+WorkerTask::WorkerTask(const ProcessList& w,const Parameters& p)
+  : Task(w,p),
+    start_time(0),
+    start_work(0.)
+{
+}
+
 WorkerTask::~WorkerTask()
 {
   for (int i=0;i<runs.size();++i)
