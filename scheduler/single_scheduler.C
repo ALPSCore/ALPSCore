@@ -72,20 +72,15 @@ int SingleScheduler::run()
   ptime next_check=second_clock::local_time();
   ptime last_checkpoint=second_clock::local_time();
        
-  bool is_done = true;
   bool task_finished = false;
   do {
-    if (check_signals() == SignalHandler::TERMINATE) {
-      theTask->halt();
-      checkpoint();
-      return -1;
-    }              
+    if (check_signals() == SignalHandler::TERMINATE)
+      break;
          
     theTask->run();
           
     if(time_limit >0. && second_clock::local_time()>end_time) {
       std::cout << "Time limit exceeded\n";
-      is_done=false;
       break;
     }
           
@@ -112,7 +107,7 @@ int SingleScheduler::run()
             
   theTask->halt();
   std::cout  << "This task took " << (second_clock::local_time()-task_time).total_seconds() << " seconds.\n";
-  return is_done ? 0 : 1;
+  return task_finished ? 0 : -1;
 }
 
 } // namespace scheduler

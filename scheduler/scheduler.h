@@ -98,6 +98,10 @@ public:
   const std::string programname;            // name of the exceutable
   virtual void set_time_limit(double limit);
 
+  // do a checkpoint
+  virtual void checkpoint();
+  int check_signals();
+
 protected:
 
   AbstractTask* theTask; //the simulation running on this node
@@ -156,8 +160,8 @@ protected:
   void finish_task(int);
 
   // do a checkpoint
-  virtual void checkpoint();
-  int check_signals();
+  void checkpoint();
+
 
 private:
 

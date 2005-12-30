@@ -43,7 +43,7 @@ namespace alps {
 
 // initialize everything
 
-void comm_init(int* argcp, char*** argvp, bool force_master=false);
+void comm_init(int* argcp, char*** argvp);
 
 
 // stop message passing

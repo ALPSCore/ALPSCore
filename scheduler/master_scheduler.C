@@ -288,34 +288,5 @@ void MasterScheduler::finish_task(int i)
   taskstatus[i] = TaskFinished;      
 }
 
-int MasterScheduler::check_signals()
-{
-  switch(sig())
-    {
-    case SignalHandler::NOSIGNAL:
-        break;
-      
-    case SignalHandler::USER1:
-    case SignalHandler::USER2:
-      std::cerr << "Checkpointing...\n";
-      checkpoint();
-      break;
-      
-    case SignalHandler::STOP:
-      std::cerr  << "Checkpointing and stopping...\n";
-      checkpoint();
-      sig.stopprocess(); // stop the process
-      break;
-
-    case SignalHandler::TERMINATE:
-      std::cerr  << "Checkpointing and exiting...\n";
-      return SignalHandler::TERMINATE;
-      
-    default:
-      boost::throw_exception ( std::logic_error( "default on switch reached in MasterScheduler::check_signals()"));
-    }
-  return SignalHandler::NOSIGNAL;
-}
-
 } // namespace scheduler
 } // namespace alps
