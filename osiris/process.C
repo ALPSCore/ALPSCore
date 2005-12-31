@@ -43,6 +43,7 @@
 namespace alps {
 
 Process::Process(int i)
+ : tid(i)
 {
 }
 

@@ -170,7 +170,7 @@ alps::Process alps::master_process()
 
 bool alps::runs_parallel()
 {
-#if defined(ALPS_MPI)
+#ifdef ALPS_MPI
   return true;
 #else
   return false;

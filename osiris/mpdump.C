@@ -126,7 +126,7 @@ void OMPDump::send(const ProcessList& where,int32_t t)
 // WRITE AND READ TYPES
 //-----------------------------------------------------------------------
 
-#if defined(ALPS_MPI)
+#ifdef ALPS_MPI
 
 #define ALPS_DUMP_DO_TYPE(T) \
 void OMPDump::write_simple(T x) { buf_.write(x);} \
