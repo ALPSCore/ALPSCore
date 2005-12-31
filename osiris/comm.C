@@ -44,14 +44,14 @@
 
 #ifdef ALPS_MPI
 
-void alps::comm_init(int* argcp, char*** argvp)
+void alps::comm_init(int& argc, char**& argv)
 {
-  MPI_Init(argcp,argvp);
+  MPI_Init(&argc,&argv);
 }
 
 #else
 
-void alps::comm_init(int*, char***) {}
+void alps::comm_init(int&, char**&) {}
 
 #endif
 

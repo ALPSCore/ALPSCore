@@ -221,7 +221,7 @@ void init(const Factory& p)
 // initialize a scheduler for real work, parsing the command line
 int start(int argc, char** argv, const Factory& p)
 {
-  comm_init(&argc,&argv);
+  comm_init(argc,argv);
   if (is_master() || !runs_parallel()) {
     p.print_copyright(std::cout);
     alps::scheduler::print_copyright(std::cout);
@@ -285,6 +285,15 @@ int Scheduler::check_signals()
       boost::throw_exception ( std::logic_error( "default on switch reached in MasterScheduler::check_signals()"));
     }
   return SignalHandler::NOSIGNAL;
+}
+
+Scheduler::~Scheduler()
+{
+  if(is_master() && processes.size()>1) 
+  {
+    OMPDump dump;
+    dump.send(processes,MCMP_stop_slave_scheduler);
+  }
 }
 
 } // namespace scheduler

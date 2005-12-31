@@ -157,6 +157,7 @@ protected:
   alps::Parameters parms;
   bool finished_;
   boost::filesystem::path infilename;
+  bool from_file;
 
 
 private:

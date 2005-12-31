@@ -50,13 +50,13 @@ Task* Factory::make_task(const ProcessList& w,const boost::filesystem::path& fn)
 
 Task* Factory::make_task(const ProcessList&,const boost::filesystem::path&,const Parameters&) const
 {
-  boost::throw_exception(std::logic_error("Factory::make_task() needs to be implemented"));
+  boost::throw_exception(std::logic_error("Factory::make_task(const ProcessList&,const boost::filesystem::path&,const Parameters&) needs to be implemented"));
   return 0;
 }
 
 Task* Factory::make_task(const ProcessList&,const Parameters&) const
 {
-  boost::throw_exception(std::logic_error("Factory::make_task() needs to be implemented"));
+  boost::throw_exception(std::logic_error("Factory::make_task(const ProcessList&,const Parameters&) needs to be implemented"));
   return 0;
 }
 

@@ -88,7 +88,8 @@ public:
   }
 
   MCSimulation(const ProcessList& w, const Parameters& p) 
-      : WorkerTask(w,p) { 
+      : WorkerTask(w,p) 
+  {
     construct();
   }
   

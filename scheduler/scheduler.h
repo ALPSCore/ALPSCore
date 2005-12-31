@@ -45,6 +45,7 @@
 #include <alps/scheduler/signal.hpp>
 #include <alps/parameterlist.h>
 #include <boost/smart_ptr.hpp>
+#include <boost/noncopyable.hpp>
 
 #include <iostream>
 
@@ -60,12 +61,12 @@ void print_copyright(std::ostream& out);
 // the base class for schedulers, defining common functions
 //-----------------------------------------------------------------------
 
-class Scheduler
+class Scheduler : public boost::noncopyable
 {
 public: 
   Scheduler(const NoJobfileOptions&, const Factory&);    
 
-  virtual ~Scheduler() {};
+  virtual ~Scheduler();
 
   virtual void set_new_jobfile(boost::filesystem::path) {};
 
@@ -182,12 +183,14 @@ class SingleScheduler : public Scheduler
 {
 public:
   SingleScheduler(const NoJobfileOptions&,const Factory&);
+  ~SingleScheduler();
   int run(); // run scheduler
   void create_task(Parameters const& p);
   void destroy_task();
   void checkpoint() {}; // no checkpoint yet
+  AbstractTask* get_task() { return theTask;}
+
 private:
-  int check_signals();
   boost::posix_time::ptime end_time;
 };
 
@@ -245,6 +248,11 @@ int start(int,char**,const Factory&);
 
 // create a scheduler, I just want to evaluate some simulations
 void init(const Factory&);
+
+// initialize a scheduler for real work, parsing the command line
+SingleScheduler* start_single(const Factory& p, int argc=0, char** argv=0);
+void stop_single();
+
 
 // the scheduler on this node
 extern Scheduler* theScheduler;

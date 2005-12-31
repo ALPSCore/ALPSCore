@@ -54,7 +54,8 @@ Task::Task(const ProcessList& w,const boost::filesystem::path& filename)
   : AbstractTask(w),
     finished_(false),
     infilename(filename),
-    started_(false)
+    started_(false),
+    from_file(true)
 {
   parse_task_file(true);
 }
@@ -63,7 +64,8 @@ Task::Task(const ProcessList& w,const Parameters& p)
   : AbstractTask(w),
     finished_(false),
     parms(p),
-    started_(false)
+    started_(false),
+    from_file(false)
 {
 }
 
@@ -86,8 +88,6 @@ void Task::parse_task_file(bool read_parms_only)
     tag=parse_tag(infile,true);
   }
   parms.read_xml(tag,infile,true);
-  if (!parms.defined("SEED"))
-    parms["SEED"]=0;
   if (!read_parms_only) {
     // scan for first worker element (e.g. <MCRUN> or <REALIZATION>)
     tag=parse_tag(infile,true);
@@ -105,6 +105,8 @@ void Task::parse_task_file(bool read_parms_only)
     use_error_limit = false;
   } else
     use_error_limit = true;
+  if (!parms.defined("SEED"))
+    parms["SEED"]=0;
 }
 
 /* astreich, 06/17 */
@@ -137,7 +139,10 @@ void Task::handle_tag(std::istream& infile, const XMLTag& tag)
 
 void Task::construct() // delayed until child class is fully constructed
 {
-  parse_task_file();
+  if(from_file)
+    parse_task_file();
+  if (!parms.defined("SEED"))
+    parms["SEED"]=0;
 }
 
 // start all runs which are active

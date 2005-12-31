@@ -28,6 +28,9 @@
 /* $Id$ */
 
 #include <alps/scheduler/scheduler.h>
+#include <boost/assert.hpp>
+#include <alps/copyright.h>
+#include <alps/osiris/comm.h>
 
 namespace alps {
 namespace scheduler {
@@ -49,9 +52,9 @@ SingleScheduler::SingleScheduler(const NoJobfileOptions& opt,const Factory& f)
 void SingleScheduler::create_task(Parameters const& p)
 {
   destroy_task();
+  theTask = proc.make_task(processes,p);
   if(theTask->cpus()>processes.size()) 
     boost::throw_exception(std::runtime_error("Task needs more CPUs than available"));
-  theTask = proc.make_task(processes,p);
 }
 
 void SingleScheduler::destroy_task()
@@ -61,9 +64,14 @@ void SingleScheduler::destroy_task()
   theTask=0;
 }
 
+SingleScheduler::~SingleScheduler()
+{
+  destroy_task();
+}
 
 int SingleScheduler::run()
 {
+  BOOST_ASSERT(theTask != 0);
   ptime task_time(second_clock::local_time());
   std::cout << "Starting task.\n";
   
@@ -98,10 +106,10 @@ int SingleScheduler::run()
     }
     if((!task_finished)&&(second_clock::local_time()>last_checkpoint+seconds(int(checkpoint_time)))) {
       // make regular checkpoints if not yet finished
-      std::cout  << "Making regular checkpoint.\n";
+      //std::cout  << "Making regular checkpoint.\n";
       checkpoint();
       last_checkpoint=second_clock::local_time();
-      std::cout  << "Done with checkpoint.\n";
+      //std::cout  << "Done with checkpoint.\n";
     }
   } while (!task_finished);
             
@@ -109,6 +117,43 @@ int SingleScheduler::run()
   std::cout  << "This task took " << (second_clock::local_time()-task_time).total_seconds() << " seconds.\n";
   return task_finished ? 0 : -1;
 }
+
+// initialize a scheduler for real work, parsing the command line
+SingleScheduler* start_single(const Factory& p, int argc, char** argv)
+{
+  alps::comm_init(argc,argv);
+  if (is_master()) {
+    p.print_copyright(std::cout);
+    alps::scheduler::print_copyright(std::cout);
+    alps::print_copyright(std::cout);
+  }
+  
+  NoJobfileOptions opt;
+  if (argc)
+    opt = NoJobfileOptions(argc,argv);
+  
+  if (!opt.valid)
+    return 0; // do not actually run
+  
+  if (is_master()) {
+    SingleScheduler* s=new SingleScheduler(opt,p);
+    theScheduler = s;
+    return s;
+  }
+  else {
+    theScheduler = new Scheduler(opt,p);
+    theScheduler->run();
+    return 0;
+  }
+}
+
+
+void stop_single()
+{  
+  delete theScheduler; 
+  alps::comm_exit();
+}
+
 
 } // namespace scheduler
 } // namespace alps

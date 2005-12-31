@@ -198,10 +198,6 @@ MasterScheduler::~MasterScheduler()
   for (int i=0;i<tasks.size();++i)
     if(tasks[i])
       delete tasks[i];
-  if(processes.size()>1) {
-    OMPDump dump;
-    dump.send(processes,MCMP_stop_slave_scheduler);
-  }
 }
 
 void MasterScheduler::checkpoint()

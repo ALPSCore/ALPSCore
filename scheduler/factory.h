@@ -65,6 +65,11 @@ public:
   {
     return new TASK(w,fn);
   }
+
+  Task* make_task(const ProcessList& w,const Parameters& p) const
+  {
+    return new TASK(w,p);
+  }
   
   void print_copyright(std::ostream& out) const
   {
