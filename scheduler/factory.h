@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 1994-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -74,6 +74,24 @@ public:
   void print_copyright(std::ostream& out) const
   {
     TASK::print_copyright(out);
+  }
+};
+
+template <class TASK, class WORKER>
+class BasicFactory : public SimpleFactory<TASK>
+{
+public:
+  BasicFactory() {}
+  
+  Worker* make_worker(const ProcessList& where ,const Parameters& parms,int node) const
+  {
+    return new WORKER(where,parms,node);
+  }
+
+  void print_copyright(std::ostream& out) const
+  {
+    SimpleFactory<TASK>::print_copyright(out);
+    WORKER::print_copyright(out);
   }
 };
 
