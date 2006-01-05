@@ -56,7 +56,9 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/src/alps/config.h \
-	$(top_builddir)/src/boost/po_utf8_codecvt_facet.cpp
+	$(top_builddir)/src/boost/po_utf8_codecvt_facet.cpp \
+	$(top_builddir)/src/boost/sr_utf8_codecvt_facet.cpp \
+	$(top_builddir)/src/boost/fs_utf8_codecvt_facet.cpp
 CONFIG_CLEAN_FILES =
 SOURCES =
 DIST_SOURCES =
