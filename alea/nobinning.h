@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
@@ -37,6 +37,7 @@
 #include <alps/alea/simpleobservable.h>
 #include <alps/alea/abstractbinning.h>
 #include <alps/alea/nan.h>
+#include <alps/math.hpp>
 
 #ifdef ALPS_HAVE_VALARRAY
 # include <valarray>
@@ -220,7 +221,7 @@ template <class T>
 inline void NoBinning<T>::output_scalar(std::ostream& out) const
 {
   if(count()) 
-      out << ": " << mean() << " +/- " << error() << std::endl;
+    out << ": " << mean() << " +/- " << round(error()) << std::endl;
 }
 
 template <class T> template <class L>
@@ -240,7 +241,8 @@ inline void NoBinning<T>::output_vector(std::ostream& out, const L& label) const
         lab=obs_value_traits<result_type>::slice_name(mean_,sit);
       out << "Entry[" << lab << "]: "
           << obs_value_traits<result_type>::slice_value(mean_,sit) << " +/- " 
-          << obs_value_traits<result_type>::slice_value(error_,sit) << std::endl;
+          << round(obs_value_traits<result_type>::slice_value(error_,sit))
+          << std::endl;
     }
   }
 }

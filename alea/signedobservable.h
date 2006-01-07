@@ -4,7 +4,8 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 1994-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -31,7 +32,7 @@
 #define ALPS_ALEA_SIGNEDOBSERVABLE_H
 
 #include <alps/alea/simpleobseval.h>
-
+#include <alps/math.hpp>
 
 namespace alps {
 
@@ -316,7 +317,7 @@ void AbstractSignedObservable<OBS,SIGN>::output_scalar(std::ostream& out) const
   if(count()==0)
     out << " no measurements.\n";
   else {
-    out << ": " << mean() << " +/- " << error();
+    out << ": " << mean() << " +/- " << round(error());
     if (!sign_name_.empty())
       out << "; sign in observable \"" << sign_name_ << "\"";
     if (converged_errors()==MAYBE_CONVERGED)
@@ -350,7 +351,7 @@ void AbstractSignedObservable<OBS,SIGN>::output_vector(std::ostream& out) const
         lab=obs_value_traits<result_type>::slice_name(value_,sit);
       out << "Entry[" <<lab << "]: " 
           << obs_value_traits<result_type>::slice_value(value_,sit) << " +/- " 
-          << obs_value_traits<result_type>::slice_value(error_,sit);
+          << round(obs_value_traits<result_type>::slice_value(error_,sit));
       if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==MAYBE_CONVERGED)
         out << " WARNING: check error convergence";
       if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==NOT_CONVERGED)

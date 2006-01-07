@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
@@ -37,6 +37,7 @@
 #include <alps/alea/obsvalue.h>
 #include <alps/alea/abstractbinning.h>
 #include <alps/alea/nan.h>
+#include <alps/math.hpp>
 #include <alps/xml.h>
 
 //=======================================================================
@@ -382,8 +383,9 @@ void SimpleBinning<T>::output_scalar(std::ostream& out) const
 {
   if(count())
   {
-    out << ": " << std::setprecision(6) << mean() << " +/- " << std::setprecision(3) << error() << "; tau = " << std::setprecision(3)
-        << tau() << std::setprecision(6);
+    out << ": " << std::setprecision(6) << mean() << " +/- "
+        << std::setprecision(3) << round(error()) << "; tau = "
+        << std::setprecision(3) << tau() << std::setprecision(6);
     if (converged_errors()==MAYBE_CONVERGED)
       out << " WARNING: check error convergence";
     if (converged_errors()==NOT_CONVERGED)
@@ -396,7 +398,7 @@ void SimpleBinning<T>::output_scalar(std::ostream& out) const
       for(unsigned int i=0;i<binning_depth();i++)
         out << "    bin #" << std::setw(3) <<  i+1 
             << " : " << std::setw(8) << count()/(1<<i)
-            << " entries: error = " << error(i) << std::endl;
+            << " entries: error = " << round(error(i)) << std::endl;
       out.setf(oldflags);
     }
   }
@@ -457,8 +459,8 @@ inline void SimpleBinning<T>::output_vector(std::ostream& out, const L& label) c
         lab=obs_value_traits<result_type>::slice_name(mean_,sit);
       out << "Entry[" << lab << "]: "
           << obs_value_traits<result_type>::slice_value(mean_,sit) << " +/- " 
-          << obs_value_traits<result_type>::slice_value(error_,sit) << "; tau = "
-          << obs_value_traits<time_type>::slice_value(tau_,sit);
+          << round(obs_value_traits<result_type>::slice_value(error_,sit))
+          << "; tau = " << obs_value_traits<time_type>::slice_value(tau_,sit);
       if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==MAYBE_CONVERGED)
         out << " WARNING: check error convergence";
       if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==NOT_CONVERGED)

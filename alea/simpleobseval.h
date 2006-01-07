@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2004 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2006 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
@@ -37,6 +37,7 @@
 #include <alps/alea/simpleobservable.h>
 #include <alps/alea/simpleobsdata.h>
 #include <alps/parser/parser.h>
+#include <alps/math.hpp>
 
 #include <algorithm>
 #include <boost/functional.hpp>
@@ -482,7 +483,8 @@ void SimpleObservableEvaluator<T>::output_scalar(std::ostream& out) const
     out << " no measurements.\n";
   else 
   {
-    out << ": " << std::setprecision(6) << mean() << " +/- " << std::setprecision(3) << error();
+    out << ": " << std::setprecision(6) << mean() << " +/- "
+        << std::setprecision(3) << round(error());
     if(has_tau())
       out << std::setprecision(3) <<  "; tau = " << tau();
     if (converged_errors()==MAYBE_CONVERGED)
@@ -516,7 +518,7 @@ void SimpleObservableEvaluator<T>::output_vector(std::ostream& out) const
         lab=obs_value_traits<result_type>::slice_name(value_,sit);
       out << "Entry[" << lab << "]: "
           << obs_value_traits<result_type>::slice_value(value_,sit) << " +/- " 
-          << obs_value_traits<result_type>::slice_value(error_,sit);
+          << round(obs_value_traits<result_type>::slice_value(error_,sit));
       if(has_tau())
         out << "; tau = " << obs_value_traits<time_type>::slice_value(tau_,sit);
       if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==MAYBE_CONVERGED)
