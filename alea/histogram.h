@@ -51,7 +51,7 @@ template <class T> class HistogramObservableEvaluator;
 
 
 template <class T>
-class HistogramObservable : public Observable
+class HistogramObservable : public Observable, public RecordableObservable<T>
 {
 typedef uint32_t integer_type;
 public:
@@ -76,7 +76,7 @@ public:
   virtual void set_thermalization(uint32_t) {}
   virtual uint32_t get_thermalization() const {return thermalcount_;}
   virtual bool can_set_thermalization() const {return false;}
-  virtual bool is_thermalized(){return true;}
+  virtual bool is_thermalized() const {return true;}
   
   /** add a simple T-value to the Observable */
   void add(const T& x); // { b_.add(x); }
@@ -99,7 +99,8 @@ public:
   value_type at(size_type i) const { return histogram_.at(i);}
 
   
-  bool can_merge() const {return false;}
+  bool can_merge() const {return false;} 
+  bool can_merge(const alps::Observable&) const {return false;}
 
   value_type& operator[](size_type i) { return histogram_[i]; }
 
