@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2005 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2001-2006 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -106,38 +106,56 @@ inline U evaluate(const StringValue& v, const expression::Evaluator<T>& ev, bool
 template<class U>
 inline U evaluate(const char* v)
 {
-  return evaluate<U,U>(v, expression::Evaluator<typename expression::evaluate_helper<U>::value_type>());
+  return evaluate<U,U>(v, expression::Evaluator<
+    typename expression::evaluate_helper<U>::value_type>());
 }
+inline double evaluate(const char* v) { return evaluate<double>(v); }
 
 template<class U>
 inline U evaluate(const std::string& v)
 {
-  return evaluate<U,U>(v, expression::Evaluator<typename expression::evaluate_helper<U>::value_type>());
+  return evaluate<U,U>(v, expression::Evaluator<
+    typename expression::evaluate_helper<U>::value_type>());
 }
+inline double evaluate(const std::string& v) { return evaluate<double>(v); }
 
 template<class U>
 inline U evaluate(const StringValue& v)
 {
-  return evaluate<U,U>(v, expression::Evaluator<typename expression::evaluate_helper<U>::value_type>());
+  return evaluate<U,U>(v, expression::Evaluator<
+    typename expression::evaluate_helper<U>::value_type>());
 }
+inline double evaluate(const StringValue& v) { return evaluate<double>(v); }
 
 template<class U>
 inline U evaluate(const char* v, const Parameters& p)
 {
-  return evaluate<U,typename expression::evaluate_helper<U>::value_type>(v, expression::ParameterEvaluator<typename expression::evaluate_helper<U>::value_type>(p));
+  return evaluate<U, typename expression::evaluate_helper<U>::value_type>(v,
+    expression::ParameterEvaluator<
+    typename expression::evaluate_helper<U>::value_type>(p));
 }
+inline double evaluate(const char* v, const Parameters& p)
+{ return evaluate<double>(v, p); }
 
 template<class U>
 inline U evaluate(const std::string& v, const Parameters& p)
 {
-  return evaluate<U,typename expression::evaluate_helper<U>::value_type>(v, expression::ParameterEvaluator<typename expression::evaluate_helper<U>::value_type>(p));
+  return evaluate<U,typename expression::evaluate_helper<U>::value_type>(v,
+    expression::ParameterEvaluator<
+    typename expression::evaluate_helper<U>::value_type>(p));
 }
+inline double evaluate(const std::string& v, const Parameters& p)
+{ return evaluate<double>(v, p); }
 
 template<class U>
 inline U evaluate(const StringValue& v, const Parameters& p)
 {
-  return evaluate<U,typename expression::evaluate_helper<U>::value_type>(v, expression::ParameterEvaluator<typename expression::evaluate_helper<U>::value_type>(p));
+  return evaluate<U,typename expression::evaluate_helper<U>::value_type>(v,
+    expression::ParameterEvaluator<
+    typename expression::evaluate_helper<U>::value_type>(p));
 }
+inline double evaluate(const StringValue& v, const Parameters& p)
+{ return evaluate<double>(v, p); }
 
 template<class T>
 void simplify(T) {}
