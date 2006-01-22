@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
@@ -99,6 +99,7 @@ class ObservableSet: public std::map<std::string,Observable*>
       different behavior than operator<<.
   */
   void addObservable(Observable *obs);
+  void addObservable(const Observable& obs);
   
   /// remove an observable with a given name
   void removeObservable(const std::string& name);

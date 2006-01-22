@@ -95,6 +95,7 @@ public:
   
   ObservableSet get_measurements(bool compact=false) const;
   MCSimulation& operator<<(const Observable& obs);
+  void addObservable(const Observable& obs);
 
 //protected:
   virtual ResultType get_summary() const;

@@ -291,8 +291,13 @@ void MCSimulation::handle_tag(std::istream& infile, const XMLTag& tag)
 
 MCSimulation& MCSimulation::operator<<(const Observable& obs)
 {
-  measurements<<obs;
+  measurements << obs;
   return *this;
+}
+
+void MCSimulation::addObservable(const Observable& obs)
+{
+  measurements.addObservable(obs);
 }
 
 DummyMCRun::DummyMCRun()

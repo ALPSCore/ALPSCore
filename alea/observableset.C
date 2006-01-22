@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -212,6 +212,11 @@ void ObservableSet::addObservable(Observable* obs)
   }
 }
 
+void ObservableSet::addObservable(const Observable& obs)
+{
+  addObservable(obs.clone());
+}
+
 void ObservableSet::removeObservable(const std::string& name) 
 {
   base_type::iterator it=base_type::find(name);
@@ -312,7 +317,7 @@ ObservableSet& ObservableSet::operator<<(const Observable& obs)
     (*this)[obs.name()].merge(obs);
   }
   else
-    addObservable(obs.clone());
+    addObservable(obs);
   return *this;
 }
 
