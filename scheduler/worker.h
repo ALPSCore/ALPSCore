@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 1994-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -38,6 +38,7 @@
 #include <boost/filesystem/path.hpp>
 #include <alps/osiris/process.h>
 #include <alps/osiris/dump.h>
+#include <cmath>
 #include <iostream>
 
 namespace alps {
@@ -55,6 +56,7 @@ typedef struct rt {
   double count;
 
   rt operator+=(const rt c) {
+    using std::sqrt;
     if (T != c.T) 
       std::cerr << "\nname or temperature of summaries to add don't match!!\n";
     if (count == 0)

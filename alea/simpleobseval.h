@@ -639,10 +639,15 @@ inline const SimpleObservableEvaluator<T>& SimpleObservableEvaluator<T>::operato
 
 } // end namespace alps
 
+
 //
 // Basic Arithmetic operations with signature SimpleObservableEvaluator
 // # SimpleObservableEvaluator
 //
+
+#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
+namespace alps {
+#endif
 
 /// sum of two observables or of observable and number
 template <class T, class Y>
@@ -730,11 +735,17 @@ inline alps::SimpleObservableEvaluator<T> operator/(const T& x, const alps::Simp
   return tmp;
 }
 
+#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
+} // end namespace alps
+#endif
+
+namespace alps {
+
 #define OBSERVABLE_FUNCTION(F) \
-namespace alps { namespace detail { \
+namespace detail { \
 template <class T> struct function_##F : public std::unary_function<T,T> \
-{ T operator()(const T& x) { return F(x); } }; \
-}} \
+{ T operator()(T x) const { using std:: F ; return F(x); } }; \
+} \
 template <class T> alps::SimpleObservableEvaluator<T> \
 F(const alps::SimpleObservableEvaluator<T>& x) \
 { return alps::SimpleObservableEvaluator<T>(x).transform(alps::detail::function_##F<T>(), /* alps::detail::function_##F<typename alps::obs_value_traits<T>::result_type>(), */ #F"("+x.name()+")"); }
@@ -747,5 +758,38 @@ OBSERVABLE_FUNCTION(cos)
 OBSERVABLE_FUNCTION(tan)
 
 #undef OBSERVABLE_FUNCTION
+
+namespace detail {
+
+template <class T> struct function_pow : public std::unary_function<T,T>
+{
+  function_pow(T p) : pow_(p) {}
+  T operator()(T x) const { using std::pow; return pow(x, pow_); }
+  T pow_;
+};
+
+}
+
+template <class T>
+alps::SimpleObservableEvaluator<T>
+pow(const alps::SimpleObservableEvaluator<T>& x, double p)
+{
+  return alps::SimpleObservableEvaluator<T>(x).
+    transform(alps::detail::function_pow<T>(T(p)), 
+              "pow(" + x.name() + "," + boost::lexical_cast<std::string>(p)
+              + ")");
+}
+
+template <class T>
+alps::SimpleObservableEvaluator<T>
+pow(const alps::SimpleObservableEvaluator<T>& x, int p)
+{
+  return alps::SimpleObservableEvaluator<T>(x).
+    transform(alps::detail::function_pow<T>(T(p)), 
+              "pow(" + x.name() + ", " + boost::lexical_cast<std::string>(p)
+              + ")");
+}
+
+} // end namespace alps
 
 #endif // ALPS_ALEA_SIMPLEOBSEVAL_H
