@@ -39,3 +39,4 @@ merging observables b and c
   count = 16384, bin size = 128, number of bins = 128
 1 / (observable a): 2.01122 +/- 0.0196
 1 / (observable b): 0.664652 +/- 0.00208
+pow(observable a,3.3): 0.0996385 +/- 0.00321

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -132,6 +132,9 @@ try {
 
   alps::RealObsevaluator obseval_i = 1.0 / obseval_b;
   std::cout << obseval_i;
+
+  alps::RealObsevaluator obseval_j = pow(obseval_a, 3.3);
+  std::cout << obseval_j;
 
   alps::RealVectorObsevaluator obseval_v = obs_d;
   obseval_v /= obseval_i;
