@@ -349,7 +349,7 @@ inline int constant_degree(const G& g)
 }
 
 template <class G>
-inline int32_t maximum_edge_type(const G& g)
+inline std::size_t maximum_edge_type(const G& g)
 {
   if(!has_property<edge_type_t,G>::edge_property)
     return 0;
@@ -360,15 +360,15 @@ inline int32_t maximum_edge_type(const G& g)
   typename boost::graph_traits<G>::edge_iterator it,end;
   boost::tie(it,end)=boost::edges(g);
 
-  int num=0;
+  std::size_t num=0;
   for (; it!=end;++it)
-    num = std::max(num,edge_type_map[*it]);
+    num = std::max(num,static_cast<std::size_t>(edge_type_map[*it]));
 
   return num;
 }
 
 template <class G>
-inline unsigned int maximum_vertex_type(const G& g)
+inline std::size_t maximum_vertex_type(const G& g)
 {
   if(!has_property<vertex_type_t,G>::vertex_property)
     return 0;
@@ -378,9 +378,9 @@ inline unsigned int maximum_vertex_type(const G& g)
   typename property_map<vertex_type_t, const G, unsigned int>::type
   vertex_type_map = get_or_default(vertex_type_t(),g,0u);
 
-  unsigned int num=0;
+  std::size_t num=0;
   for (boost::tie(it,end)=boost::vertices(g); it!=end;++it)
-    num = std::max(num,static_cast<unsigned int>(vertex_type_map[*it]));
+    num = std::max(num,static_cast<std::size_t>(vertex_type_map[*it]));
 
   return num;
 }
