@@ -117,9 +117,8 @@ ObservableSet MCSimulation::get_measurements(bool compactit) const
     }
   }
   for (ObservableSet::const_iterator it=measurements.begin();it!=measurements.end();++it)
-    if (!all_measurements.has(it->first)) {
+    if (!all_measurements.has(it->first))
       all_measurements << *(it->second);
-    }
   if (compactit)
     all_measurements.compact();
   return all_measurements;
@@ -291,7 +290,7 @@ void MCSimulation::handle_tag(std::istream& infile, const XMLTag& tag)
 
 MCSimulation& MCSimulation::operator<<(const Observable& obs)
 {
-  measurements << obs;
+  addObservable(obs);
   return *this;
 }
 

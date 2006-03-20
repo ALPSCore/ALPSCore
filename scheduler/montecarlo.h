@@ -92,6 +92,8 @@ public:
   {
     construct();
   }
+
+  static void print_copyright(std::ostream&) {}
   
   ObservableSet get_measurements(bool compact=false) const;
   MCSimulation& operator<<(const Observable& obs);
