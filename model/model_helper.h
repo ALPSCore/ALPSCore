@@ -40,6 +40,7 @@ class model_helper
 public:  
 
   typedef BasisDescriptor<I> basis_descriptor_type;
+  typedef SiteBasisDescriptor<I> site_basis_descriptor_type;
   typedef half_integer<I> half_integer_type;
   typedef QuantumNumberDescriptor<I> quantum_number_type;
   
@@ -54,7 +55,10 @@ public:
   const HamiltonianDescriptor<I>& model() const { return model_;}
   basis_descriptor_type& basis() { return model().basis();}
   const basis_descriptor_type& basis() const { return model().basis();}
-
+  const site_basis_descriptor_type& site_basis(int type=0) const { return basis().site_basis(type);}
+  SiteOperator site_term(int type=0) const { return model().site_term(type);}
+  BondOperator bond_term(int type=0) const { return model().bond_term(type);};
+  
   bool has_site_operator(const std::string& name) const { return model_library_.has_site_operator(name);}
   bool has_bond_operator(const std::string& name) const { return model_library_.has_bond_operator(name);}
   bool has_global_operator(const std::string& name) const { return model_library_.has_global_operator(name);}
