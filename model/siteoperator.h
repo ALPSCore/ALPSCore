@@ -43,6 +43,33 @@ namespace alps {
 template <class I, class T=std::complex<double>, class STATE = site_state<I> > class SiteOperatorEvaluator;
 class ModelLibrary;
 
+template <class I, class T=std::complex<double> >
+class SiteOperatorSplitter : public OperatorEvaluator<T>
+{
+private:
+  typedef OperatorEvaluator<T> super_type;
+  typedef SiteOperatorSplitter<I,T> SELF_;
+
+public:
+  SiteOperatorSplitter(const SiteBasisDescriptor<I>& b,
+                       const std::string& site,
+                       const Parameters& p)
+    : super_type(p), basis_(b), site_(site) {}
+
+  bool can_evaluate_function(const std::string& name, const expression::Expression<T>& argument,bool=false) const;
+  expression::Expression<T> partial_evaluate_function(const std::string& name, const expression::Expression<T>& argument,bool=false) const;
+  const expression::Term<T>& site_operators() const { return site_ops_; }
+  bool has_operator(const std::string& name, const expression::Expression<T>& arg) const
+  { 
+    return (arg==site_ && basis_.has_operator(name)); 
+  }
+  
+private:
+  const SiteBasisDescriptor<I>& basis_;
+  mutable expression::Term<T> site_ops_;
+  std::string site_;
+};
+
 class SiteOperator
 {
 public:
@@ -68,6 +95,10 @@ public:
   void substitute_operators(const ModelLibrary& m, const Parameters& p=Parameters());
   std::set<std::string> operator_names() const;
 
+template <class T>
+  std::vector<boost::tuple<expression::Term<T>,SiteOperator> > templated_split(const Parameters& = Parameters()) const;
+  std::vector<boost::tuple<Term,SiteOperator> > split(const Parameters& p= Parameters()) const 
+  { return templated_split<std::complex<double> >(p);}
 private:
   std::string term_;
   std::string site_;
@@ -79,6 +110,24 @@ template <class I, class T>
 inline boost::multi_array<T,2> get_matrix(T,const SiteOperator& m, const SiteBasisDescriptor<I>& basis1,  const Parameters& p=Parameters())
 {
   return m.template matrix<T,I>(basis1,p);
+}
+
+
+template <class I, class T>
+bool SiteOperatorSplitter<I,T>::can_evaluate_function(const std::string&name , const expression::Expression<T>& arg,bool isarg) const
+{
+  return (arg==site_ || expression::ParameterEvaluator<T>::can_evaluate_function(name,arg,isarg));
+}
+
+
+template <class I, class T>
+expression::Expression<T> SiteOperatorSplitter<I,T>::partial_evaluate_function(const std::string& name, const expression::Expression<T>& arg, bool isarg) const
+{
+  if (arg==site_) {
+    site_ops_ *= expression::Function<T>(name,arg);
+    return  1.;
+  }
+  return expression::ParameterEvaluator<T>(*this).partial_evaluate_function(name,arg,isarg);
 }
 
 
@@ -120,6 +169,28 @@ SiteOperator::matrix(const SiteBasisDescriptor<I>& b,  const Parameters& p) cons
     }
   return mat;
 }
+
+
+template <class T>
+std::vector<boost::tuple<expression::Term<T>,SiteOperator> > alps::SiteOperator::templated_split(const Parameters& p) const
+{
+  std::vector<boost::tuple<expression::Term<T>,SiteOperator> > terms;
+  Expression ex(term());
+  ex.flatten();
+  ex.simplify();
+  SiteBasisDescriptor<short> b;
+  for (typename Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
+    SiteOperatorSplitter<short> evaluator(b,site(),p);
+    expression::Term<T> term(*tit);
+    term.partial_evaluate(evaluator);
+    term.simplify();
+    terms.push_back(boost::make_tuple(term,
+        SiteOperator(boost::lexical_cast<std::string>(evaluator.site_operators()),site())));
+  }
+  return terms;
+}
+
+
 
 } // namespace alps
 
