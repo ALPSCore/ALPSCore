@@ -115,13 +115,13 @@ public:
   bool has_tau() const { return has_tau_;}
   bool has_minmax() const { return has_minmax_;}
 
-  uint32_t bin_size() const { return binsize_;}
-  uint32_t bin_number() const { return values_.size()-discardedbins_;}
-  uint32_t bin_number2() const { return discardedbins_ ? 0 : values2_.size();}
-  const value_type& bin_value(uint32_t i) const {
+  uint64_t bin_size() const { return binsize_;}
+  uint64_t bin_number() const { return values_.size()-discardedbins_;}
+  uint64_t bin_number2() const { return discardedbins_ ? 0 : values2_.size();}
+  const value_type& bin_value(uint64_t i) const {
     return values_[i+discardedbins_];
   }
-  const value_type& bin_value2(uint32_t i) const {
+  const value_type& bin_value2(uint64_t i) const {
     return values2_[i+discardedbins_];
   }
   
@@ -139,8 +139,8 @@ public:
   void load(IDump& dump);
 #endif
  
-  inline void set_bin_size(uint32_t);
-  inline void set_bin_number(uint32_t);
+  inline void set_bin_size(uint64_t);
+  inline void set_bin_number(uint64_t);
  
   // collect information from many data objects
   void collect_from(const std::vector<SimpleObservableData<T> >& runs);
@@ -170,7 +170,7 @@ public:
   std::string evaluation_method(Target t) const;
 
 protected:
-  void collect_bins(uint32_t howmany);
+  void collect_bins(uint64_t howmany);
   void analyze() const;
   void jackknife() const;
   void fill_jack() const;
@@ -300,9 +300,9 @@ SimpleObservableData<T>::SimpleObservableData(const AbstractSimpleObservable<T>&
       obs_value_traits<result_type>::copy(max_, obs.max());
     }
 
-    for (unsigned int i = 0; i < obs.bin_number(); ++i)
+    for (uint64_t i = 0; i < obs.bin_number(); ++i)
       values_.push_back(obs.bin_value(i));
-    for (unsigned int i = 0; i < obs.bin_number2(); ++i)
+    for (uint64_t i = 0; i < obs.bin_number2(); ++i)
       values2_.push_back(obs.bin_value2(i));
     obs_value_traits<convergence_type>::copy(converged_errors_, obs.converged_errors());
     obs_value_traits<convergence_type>::copy(any_converged_errors_, obs.converged_errors());
@@ -600,9 +600,9 @@ void SimpleObservableData<T>::transform(const SimpleObservableData<X>& x, OP op)
     values_.clear();
     jack_.clear();
   } else {
-    for (unsigned int i = 0; i < bin_number(); ++i)
+    for (uint64_t i = 0; i < bin_number(); ++i)
       values_[i] = op(values_[i], x.values_[i]);
-    for (unsigned int i = 0; i < jack_.size(); ++i)
+    for (uint64_t i = 0; i < jack_.size(); ++i)
       jack_[i] = op(jack_[i], x.jack_[i]);
   }
   
@@ -773,8 +773,8 @@ void SimpleObservableData<T>::collect_from(const std::vector<SimpleObservableDat
   jack_.clear();
 
   // find smallest and largest bin sizes
-  uint32_t minsize = std::numeric_limits<uint32_t>::max();
-  uint32_t maxsize = 0;
+  uint64_t minsize = std::numeric_limits<uint64_t>::max();
+  uint64_t maxsize = 0;
   for (typename std::vector<SimpleObservableData<T> >::const_iterator
          r = runs.begin(); r != runs.end(); ++r) {
     if (r->count()) {
@@ -905,7 +905,7 @@ void SimpleObservableData<T>::collect_from(const std::vector<SimpleObservableDat
 template <class T>
 void SimpleObservableData<T>::extract_timeseries(ODump& dump) const
 {
-  dump << binsize_ << uint32_t(values_.size()) << binsize_ << values_;
+  dump << binsize_ << uint64_t(values_.size()) << binsize_ << values_;
 }
 
 template <class T>
@@ -954,9 +954,9 @@ void SimpleObservableData<T>::fill_jack() const
 
     // Order-N initialization of jackknife data structure
     obs_value_traits<result_type>::resize_same_as(jack_[0], bin_value(0));
-    for(uint32_t i = 0; i < bin_number(); ++i)
+    for(uint64_t i = 0; i < bin_number(); ++i)
       jack_[0] += obs_value_cast<result_type,value_type>(bin_value(i)) / count_type(bin_size());
-    for(uint32_t i = 0; i < bin_number(); ++i) {
+    for(uint64_t i = 0; i < bin_number(); ++i) {
       obs_value_traits<result_type>::resize_same_as(jack_[i+1], jack_[0]);
       result_type tmp(obs_value_cast<result_type,value_type>(bin_value(i)));
       tmp /= count_type(bin_size());
@@ -988,7 +988,7 @@ void SimpleObservableData<T>::analyze() const
       has_tau_ = true;
       obs_value_traits<result_type>::resize_same_as(variance_, bin_value2(0));
       variance_ = 0.;
-      for (unsigned int i=0;i<values2_.size();++i)
+      for (uint64_t i=0;i<values2_.size();++i)
         variance_+=obs_value_cast<result_type,value_type>(values2_[i]);
       // was: variance_ = std::accumulate(values2_.begin(), values2_.end(), variance_);
       result_type mean2(mean_);
@@ -1023,7 +1023,7 @@ void SimpleObservableData<T>::jackknife() const
     obs_value_traits<result_type>::resize_same_as(mean_, jack_[0]);  
     obs_value_traits<result_type>::resize_same_as(error_, jack_[0]);  
     obs_value_traits<result_type>::resize_same_as(rav, jack_[0]);  
-    uint32_t k = jack_.size()-1;
+    unsigned int k = jack_.size()-1;
 
     rav = 0;
     rav = std::accumulate(jack_.begin()+1, jack_.end(), rav);
@@ -1036,7 +1036,7 @@ void SimpleObservableData<T>::jackknife() const
     //mean_ = jack_[0] - (rav - jack_[0]) * count_type(k - 1);
 
     error_ = 0.0;
-    for (uint32_t i = 1; i < jack_.size(); ++i)
+    for (unsigned int i = 1; i < jack_.size(); ++i)
       error_ += jack_[i] * jack_[i];
     
     error_/=count_type(k);
@@ -1073,19 +1073,19 @@ ALPS_DUMMY_VOID SimpleObservableData<T>::set_thermalization(uint32_t thermal)
 }
 
 template <class T>
-void SimpleObservableData<T>::collect_bins(uint32_t howmany)
+void SimpleObservableData<T>::collect_bins(uint64_t howmany)
 {
   if (nonlinear_operations_)
     boost::throw_exception(std::runtime_error("cannot change bins after nonlinear operations"));
   if (values_.empty() || howmany <= 1) return;
     
-  uint32_t newbins = values_.size() / howmany;
+  uint64_t newbins = values_.size() / howmany;
   
   // fill bins
-  for (uint32_t i = 0; i < newbins; ++i) {
+  for (uint64_t i = 0; i < newbins; ++i) {
     values_[i] = values_[howmany * i];
     if (!values2_.empty()) values2_[i] = values2_[howmany * i];
-    for (uint32_t j = 1; j < howmany; ++j) {
+    for (uint64_t j = 1; j < howmany; ++j) {
       values_[i] += values_[howmany * i + j];
       if (!values2_.empty()) values2_[i] += values2_[howmany * i + j];
     }
@@ -1103,14 +1103,14 @@ void SimpleObservableData<T>::collect_bins(uint32_t howmany)
 }
 
 template <class T>
-void SimpleObservableData<T>::set_bin_size(uint32_t s)
+void SimpleObservableData<T>::set_bin_size(uint64_t s)
 {
   collect_bins((s-1)/binsize_+1);
   binsize_=s;
 }
 
 template <class T>
-void SimpleObservableData<T>::set_bin_number(uint32_t binnum)
+void SimpleObservableData<T>::set_bin_number(uint64_t binnum)
 {
   collect_bins((values_.size()-1)/binnum+1);
 }
