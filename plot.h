@@ -4,8 +4,9 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003 by Simon Trebst <trebst@itp.phys.ethz.ch>,
-*                       and Matthias Troyer <troyer@comp-phys.org>
+* Copyright (C) 2003-2006 by Simon Trebst <trebst@itp.phys.ethz.ch>,
+*                            Matthias Troyer <troyer@comp-phys.org>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -47,7 +48,6 @@
 #include <iostream>
 
 namespace alps {
-
 
 /// namespace for plots
 namespace plot {
@@ -105,15 +105,17 @@ public:
   /// - the first value will be printed as contents of an <x> tag
   /// - the second value will be printed as contents of a <dx> tag
   /// - the third value will be printed as contents of a <y> tag
-  void output(oxstream& out , SetType type) {
-  out << start_tag("point") << no_linebreak << start_tag("x") << no_linebreak << storage_[0]<< end_tag("x");
-  if((type==xdxy) || (type==xdxydy)) 
-    out << start_tag("dx") << no_linebreak << storage_[2]<< end_tag("dx");
-  out << start_tag("y") << no_linebreak << storage_[1]<< end_tag("y");
-  if((type==xydy) || (type==xdxydy)) 
-    out << start_tag("dy") << no_linebreak << storage_[3]<< end_tag("dy");
-  out << end_tag("point");
-} 
+  void output(oxstream& out, SetType type) const
+  {
+    out << start_tag("point") << no_linebreak << start_tag("x") << no_linebreak
+        << storage_[0]<< end_tag("x");
+    if ((type==xdxy) || (type==xdxydy)) 
+      out << start_tag("dx") << no_linebreak << storage_[2] << end_tag("dx");
+    out << start_tag("y") << no_linebreak << storage_[1] << end_tag("y");
+    if ((type==xydy) || (type==xdxydy)) 
+      out << start_tag("dy") << no_linebreak << storage_[3] << end_tag("dy");
+    out << end_tag("point");
+  }
 
 private:
   std::vector<C> storage_;
@@ -137,13 +139,13 @@ public:
   /// is then added to the set.
   Set<C>& operator<<(C p);
   /// adds a new point with two coordinates, if the plot type is XY
-  Set<C>& operator<<(const boost::tuples::tuple<C, C>);
+  Set<C>& operator<<(const boost::tuples::tuple<C, C>&);
   /// adds a new point with three coordinates, if the plot type is XDXY or XYDY
-  Set<C>& operator<<(const boost::tuples::tuple<C,C,C>);
+  Set<C>& operator<<(const boost::tuples::tuple<C,C,C>&);
   /// adds a new point with four coordinates, if the plot type is XDXYDY
-  Set<C>& operator<<(const boost::tuples::tuple<C,C,C,C>);
+  Set<C>& operator<<(const boost::tuples::tuple<C,C,C,C>&);
   /// set the label (legend) for the set
-  Set<C>& operator<<(std::string label) { label_ = label; return *this;}
+  Set<C>& operator<<(const std::string& label) { label_ = label; return *this;}
 
   /// returns the label (legend) for the set
   std::string label() const { return label_; }
@@ -151,7 +153,8 @@ public:
   SetType type() const { return type_; }
 
   /// adds a new point
-  void push_back(Point<C> NewPoint) { std::vector<Point<C> >::push_back(NewPoint); }
+  void push_back(const Point<C>& NewPoint)
+  { std::vector<Point<C> >::push_back(NewPoint); }
 
 private:
   SetType type_;
@@ -173,12 +176,13 @@ public:
   /// \brief Constructor of a plot
   /// \param name the title of the plot
   /// \param show_legend indicates whether a legend should be shown
-  Plot(std::string name="", bool show_legend=true) : name_(name), show_legend_(show_legend) {};
+  Plot(std::string name="", bool show_legend=true)
+    : name_(name), show_legend_(show_legend) {};
   
   /// add a set to the plot
-  Plot<C>& operator<<(const Set<C>& s ) { push_back(s); return *this;}
+  Plot<C>& operator<<(const Set<C>& s) { push_back(s); return *this; }
   /// set the title
-  Plot<C>& operator<<(std::string name) { name_=name; return *this;} 
+  Plot<C>& operator<<(const std::string& name) { name_=name; return *this; } 
   
   /// get the title
   const std::string& name() const { return name_; }
@@ -192,14 +196,16 @@ public:
   /// set the name
   void set_name(const std::string& name) { name_ = name; }
   /// set the x- and y-axis labels
-  void set_labels(const std::string& xaxis, const std::string& yaxis) { xaxis_ = xaxis; yaxis_ = yaxis; }
+  void set_labels(const std::string& xaxis, const std::string& yaxis)
+  { xaxis_ = xaxis; yaxis_ = yaxis; }
   /// set whether the legend should be shown
-  void show_legend(const bool& show) { show_legend_ = show; }
+  void show_legend(bool show) { show_legend_ = show; }
   
   /// get the number of sets
   int size() const { return std::vector<Set<C> >::size(); }
   /// get the i-th set
-  Set<C> operator[](int i) const { return std::vector<Set<C> >::operator[](i); }
+  const Set<C>& operator[](int i) const
+  { return std::vector<Set<C> >::operator[](i); }
 
 private:
   std::string name_, xaxis_, yaxis_;
@@ -208,16 +214,20 @@ private:
 
 /// write a plot to an XML file following the ALPS XML schema for plots on http://xml.comp-phys.org/
 template<class C>
-inline oxstream& operator<<(oxstream& out, Plot<C> P) {
+inline oxstream& operator<<(oxstream& out, const Plot<C>& p)
+{
   out << header("UTF-8") << stylesheet(xslt_path("plot2html.xsl"))
       << start_tag("plot") << alps::xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
       << attribute("xsi:noNamespaceSchemaLocation","http://xml.comp-phys.org/2003/4/plot.xsd")
-      << attribute("name",P.name());
-  out << start_tag("legend") << attribute("show", P.show_legend() ? "true" : "false") << end_tag("legend");
-  out << start_tag("xaxis") << attribute("label", P.xaxis()) << end_tag("xaxis");
-  out << start_tag("yaxis") << attribute("label", P.yaxis()) << end_tag("yaxis");
-  for(int i=0; i<P.size(); ++i) 
-    out << P[i];
+      << attribute("name", p.name());
+  out << start_tag("legend")
+      << attribute("show", p.show_legend() ? "true" : "false")
+      << end_tag("legend");
+  out << start_tag("xaxis") << attribute("label", p.xaxis())
+      << end_tag("xaxis");
+  out << start_tag("yaxis") << attribute("label", p.yaxis())
+      << end_tag("yaxis");
+  for(int i=0; i < p.size(); ++i) out << p[i];
   out << end_tag("plot");
   return out;
 }   // operator <<
@@ -255,7 +265,7 @@ Set<C>& Set<C>::operator<<(C p) {
 }   // operator<<
 
 template<class C>
-inline Set<C>& Set<C>::operator<<(boost::tuples::tuple<C,C> t) {
+inline Set<C>& Set<C>::operator<<(const boost::tuples::tuple<C,C>& t) {
   NewPoint.clear();
   NewPoint.push_back(boost::tuples::get<0>(t));
   NewPoint.push_back(boost::tuples::get<1>(t));
@@ -264,7 +274,7 @@ inline Set<C>& Set<C>::operator<<(boost::tuples::tuple<C,C> t) {
 }   // operator<<
 
 template<class C>
-inline Set<C>& Set<C>::operator<<(boost::tuples::tuple<C,C,C> t) {
+inline Set<C>& Set<C>::operator<<(const boost::tuples::tuple<C,C,C>& t) {
   NewPoint.clear();
   NewPoint.push_back(boost::tuples::get<0>(t));
   NewPoint.push_back(boost::tuples::get<1>(t));
@@ -284,7 +294,7 @@ inline Set<C>& Set<C>::operator<<(boost::tuples::tuple<C,C,C> t) {
 }   // operator<<
 
 template<class C>
-inline Set<C>& Set<C>::operator<<(boost::tuples::tuple<C,C,C,C> t) {
+inline Set<C>& Set<C>::operator<<(const boost::tuples::tuple<C,C,C,C>& t) {
   NewPoint.clear();
   NewPoint.push_back(boost::tuples::get<0>(t));
   NewPoint.push_back(boost::tuples::get<1>(t));
@@ -296,7 +306,7 @@ inline Set<C>& Set<C>::operator<<(boost::tuples::tuple<C,C,C,C> t) {
 
 
 template<class C>
-inline oxstream& operator<<(oxstream& o,  Set<C> S) {
+inline oxstream& operator<<(oxstream& o,  const Set<C>& S) {
   o << start_tag("set") << attribute("label",S.label());
   for(int i=0; i<S.size(); ++i) 
     S[i].output(o,S.type());
