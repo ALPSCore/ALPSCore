@@ -332,7 +332,7 @@ example6_SOURCES = example6.C
 example7_SOURCES = example7.C
 example8_SOURCES = example8.C
 parity_SOURCES = parity.C
-dist_noinst_DATA = example1.output example2.output example3.output example4.output example5.output example6.output example7.output parity.output example8.output
+dist_noinst_DATA = example1.output example2.output example3.output example4.output example5.output example6.output example7.output parity.output example8.input example8.output
 all: all-am
 
 .SUFFIXES:
