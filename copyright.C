@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2004 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2003-2006 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -36,8 +36,8 @@ void alps::print_copyright(std::ostream& out) {
   out << "  available from http://alps.comp-phys.org/\n";
   out << "  copyright (c) 1994-" << ALPS_YEAR
       << " by the ALPS collaboration.\n";
-  out << " Consult the web page  for license details.\n";
-  out << " For details see the publication:\nF. Alet et al., J. Phys. Soc. Jpn. Suppl., Vol. 74, 30 (2005)\n\n";
+  out << "  Consult the web page for license details.\n";
+  out << "  For details see the publication:\n    F. Alet et al., J. Phys. Soc. Jpn. Suppl., Vol. 74, 30 (2005).\n\n";
 }
 
 void alps::print_license(std::ostream& out) {

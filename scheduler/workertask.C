@@ -4,7 +4,8 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@comp-phys.org>
+* Copyright (C) 1994-2006 by Matthias Troyer <troyer@comp-phys.org>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -117,7 +118,7 @@ void WorkerTask::construct() // delayed until child class is fully constructed
       if(j==0&&where[in].local()) {
         // one run runs locally
 #ifdef ALPS_TRACE
-        std::cerr  << "Loading run 1 locally on " << where[0] << ".\n";
+        std::cerr  << "Loading run 1 locally on " << where[0] << "\n";
 #endif
         std::copy(where.begin()+in,where.begin()+in+cpus(),here.begin());
         runs[0]=theScheduler->make_worker(here,parms);
@@ -128,7 +129,7 @@ void WorkerTask::construct() // delayed until child class is fully constructed
       }
       else { // load other runs onto remote nodes
 #ifdef ALPS_TRACE
-        std::cerr  << "Loading run " << j+1 << " remote on " << where[j] << ".\n";
+        std::cerr  << "Loading run " << j+1 << " remote on " << where[j] << "\n";
 #endif
         std::copy(where.begin()+in,where.begin()+in+cpus(),here.begin());
         runs[j]=new RemoteWorker(here,parms);
@@ -139,7 +140,8 @@ void WorkerTask::construct() // delayed until child class is fully constructed
     }
     else { // no node available: load information only
 #ifdef ALPS_TRACE
-      std::cerr  << "Loading information about run " << j+1 << " from file " << runfiles[i].in.string() << ".\n";
+      std::cerr  << "Loading information about run " << j+1 << " from file "
+                 << runfiles[i].in.string() << "\n";
 #endif
       runs[j]=theScheduler->make_worker(parms);
       runs[j]->load_from_file(runfiles[i].in);
@@ -155,23 +157,24 @@ void WorkerTask::construct() // delayed until child class is fully constructed
     {
       std::copy(where.begin()+in,where.begin()+in+cpus(),here.begin());
       if(in==0&&here[0].local()) { // one on the local node
-#ifdef ALPS_TRACE
-        std::cerr  << "Creating run 1 locally .\n";
-#endif
         runs[0]=theScheduler->make_worker(here,parms);
         theWorker = runs[0];
         parms["SEED"] = static_cast<int32_t>(parms["SEED"])+cpus();
         in +=cpus();
         workerstatus[0] = LocalRun;
+#ifdef ALPS_TRACE
+        std::cerr  << "Created run 1 locally\n";
+#endif
       }
       else { // other runs on remote nodes
-#ifdef ALPS_TRACE
-        std::cerr  << "Creating run " << i+1 << " remote on Host ID: " << where[i]<< ".\n";
-#endif
         runs[i]=new RemoteWorker(here,parms);
         parms["SEED"] = static_cast<int32_t>(parms["SEED"])+cpus();
         in +=cpus();
         workerstatus[i] = RemoteRun;
+#ifdef ALPS_TRACE
+        std::cerr  << "Created run " << i+1 << " remote on Host ID: "
+                   << where[i]<< "\n";
+#endif
       }
     }
   }
@@ -221,7 +224,7 @@ void WorkerTask::add_process(const Process& p)
     workerstatus.resize(j+1);
     runfiles.resize(j+1);
 #ifdef ALPS_TRACE
-    std::cerr  << "Creating additional run " << j+1 << " remote on Host: " << p << ".\n";
+    std::cerr  << "Creating additional run " << j+1 << " remote on Host: " << p << "\n";
 #endif
     runs[j]=new RemoteWorker(here,parms);
     parms["SEED"] = static_cast<int32_t>(parms["SEED"])+cpus();
@@ -231,7 +234,7 @@ void WorkerTask::add_process(const Process& p)
   }
   else {// continue old run
 #ifdef ALPS_TRACE
-    std::cerr  << "Loading additional run " << j << " remote on Host: " << p << ".\n";
+    std::cerr  << "Loading additional run " << j << " remote on Host: " << p << "\n";
 #endif
     runs[j]=new RemoteWorker(here,parms);
     runs[j]->load_from_file(runfiles[j].in);

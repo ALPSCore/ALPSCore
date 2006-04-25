@@ -4,7 +4,8 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 1994-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -73,7 +74,7 @@ int SingleScheduler::run()
 {
   BOOST_ASSERT(theTask != 0);
   ptime task_time(second_clock::local_time());
-  std::cout << "Starting task.\n";
+  std::cerr << "Starting task.\n";
   
   theTask->start();
 
@@ -88,12 +89,12 @@ int SingleScheduler::run()
     theTask->run();
           
     if(time_limit >0. && second_clock::local_time()>end_time) {
-      std::cout << "Time limit exceeded\n";
+      std::cerr << "Time limit exceeded\n";
       break;
     }
           
     if(second_clock::local_time()>next_check) {
-      std::cout  << "Checking if it is finished: " << std::flush;
+      std::cerr  << "Checking if it is finished: " << std::flush;
       double more_time=0;
       task_finished=theTask->finished(more_time);
               
@@ -102,19 +103,19 @@ int SingleScheduler::run()
                   (more_time > max_check_time ? max_check_time : more_time));
       next_check=second_clock::local_time()+seconds(int(more_time));
       if(!task_finished)
-        std::cout  << "not yet, next check in " << int(more_time) << " seconds.\n";
+        std::cerr  << "not yet, next check in " << int(more_time) << " seconds.\n";
     }
     if((!task_finished)&&(second_clock::local_time()>last_checkpoint+seconds(int(checkpoint_time)))) {
       // make regular checkpoints if not yet finished
-      //std::cout  << "Making regular checkpoint.\n";
+      //std::cerr  << "Making regular checkpoint.\n";
       checkpoint();
       last_checkpoint=second_clock::local_time();
-      //std::cout  << "Done with checkpoint.\n";
+      //std::cerr  << "Done with checkpoint.\n";
     }
   } while (!task_finished);
             
   theTask->halt();
-  std::cout  << "This task took " << (second_clock::local_time()-task_time).total_seconds() << " seconds.\n";
+  std::cerr  << "This task took " << (second_clock::local_time()-task_time).total_seconds() << " seconds.\n";
   return task_finished ? 0 : -1;
 }
 
@@ -123,9 +124,9 @@ SingleScheduler* start_single(const Factory& p, int argc, char** argv)
 {
   alps::comm_init(argc,argv);
   if (is_master()) {
-    p.print_copyright(std::cout);
-    alps::scheduler::print_copyright(std::cout);
-    alps::print_copyright(std::cout);
+    p.print_copyright(std::cerr);
+    alps::scheduler::print_copyright(std::cerr);
+    alps::print_copyright(std::cerr);
   }
   
   NoJobfileOptions opt;

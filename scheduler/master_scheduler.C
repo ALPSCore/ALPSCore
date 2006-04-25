@@ -4,7 +4,8 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@comp-phys.org>
+* Copyright (C) 1994-2006 by Matthias Troyer <troyer@comp-phys.org>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -97,7 +98,7 @@ void MasterScheduler::set_new_jobfile(boost::filesystem::path jobfilename)
       if (tasks[i] && 
           taskstatus[i]!= TaskFinished && tasks[i]->finished_notime())  {
         tasks[i]->start();
-        std::cout << "Task " << i+1 << " is actually finished.\n";
+        std::cerr << "Task " << i+1 << " is actually finished.\n";
         finish_task(i);
       }
 
@@ -224,7 +225,7 @@ void MasterScheduler::checkpoint()
             << start_tag("INPUT") 
             << attribute("file",taskfiles[i].out.native_file_string())
             << end_tag() << end_tag();
-        std::cout  << "Checkpointing task# " << i+1 << "\n";
+        std::cerr  << "Checkpointing Simulation " << i+1 << "\n";
         if (tasks[i]!=0 && boost::filesystem::complete(taskfiles[i].out,dir).string()!=taskfiles[i].in.string()) {          
           tasks[i]->checkpoint(boost::filesystem::complete(taskfiles[i].out,dir));
           taskfiles[i].in=boost::filesystem::complete(taskfiles[i].out,dir);
@@ -237,7 +238,7 @@ void MasterScheduler::checkpoint()
         out << start_tag("TASK") << attribute("status","finished")
             << start_tag("INPUT") << attribute("file",taskfiles[i].in.native_file_string())
             << end_tag() << end_tag();
-        std::cout  << "Task# " << i+1 << " does not exist\n";
+        std::cerr  << "Task# " << i+1 << " does not exist\n";
       } 
       else {
         out << start_tag("TASK") 
@@ -247,7 +248,7 @@ void MasterScheduler::checkpoint()
         if(theTask != tasks[i]) {
           tasks[i]->checkpoint(boost::filesystem::complete(taskfiles[i].out,dir));
                 taskfiles[i].in=boost::filesystem::complete(taskfiles[i].out,dir);
-                std::cout  << "Checkpointing task# " << i+1 << "\n";
+                std::cerr  << "Checkpointing Simulation " << i+1 << "\n";
         }
         else
           local_sim=i;
@@ -256,7 +257,7 @@ void MasterScheduler::checkpoint()
     if(local_sim>=0) {
       tasks[local_sim]->checkpoint(boost::filesystem::complete(taskfiles[local_sim].out,dir));
       taskfiles[local_sim].in=boost::filesystem::complete(taskfiles[local_sim].out,dir);
-      std::cout  << "Checkpointing local task# " << local_sim+1 << "\n";
+      std::cerr  << "Checkpointing Simulation " << local_sim+1 << "\n";
     }
     out << end_tag("JOB");
   }
@@ -272,9 +273,9 @@ void MasterScheduler::finish_task(int i)
 { 
   if (tasks[i] == 0)
     return;
-  std::cout  << "Halting Task " << i+1 << ".\n";
   tasks[i]->halt();
   taskstatus[i] = TaskHalted;
+  std::cerr  << "Halted Simulation " << i+1 << "\n";
   if (make_summary) {
     sim_results[i] = tasks[i]->get_summary();
   }

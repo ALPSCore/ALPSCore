@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2005 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2006 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -223,9 +223,9 @@ int start(int argc, char** argv, const Factory& p)
 {
   comm_init(argc,argv);
   if (is_master() || !runs_parallel()) {
-    p.print_copyright(std::cout);
-    alps::scheduler::print_copyright(std::cout);
-    alps::print_copyright(std::cout);
+    p.print_copyright(std::cerr);
+    alps::scheduler::print_copyright(std::cerr);
+    alps::print_copyright(std::cerr);
   }
   
   Options opt(argc,argv);
