@@ -273,34 +273,38 @@ int MPPScheduler::check_tasks(ProcessList& free)
     */
   int i=last_check;    
   if(i<active.size()) {
-      if(active[i].where.size() && second_clock::local_time() >active[i].next_check) {
-          double more_time=0.;
-         // if(active[i].next_check==0.)
-         //   more_time=-1.;
-          std::cerr  << "Checking if Simulation " << active[i].number+1 << " is finished: ";
-          
-          int simfinished=tasks[active[i].number]->finished(more_time);
-          // next check after at more_time, restrained to min. and max. times
-          more_time=
-            (more_time < min_check_time ? min_check_time :
-             (more_time > max_check_time ? max_check_time : more_time));
-          active[i].next_check=second_clock::local_time()+seconds(long(more_time));
-          if(!simfinished)
-              std::cerr  << "Not yet, next check in " << int(more_time) << " seconds\n";
-          else { 
-              std::cerr << "Finished\n";
-              running_tasks--;
-              one_finished=1;
-              int j=active[i].number;
-              if(theTask == tasks[j])
-                theTask=0;
-              finish_task(j);
-              free.insert(free.end(),active[i].where.begin(),active[i].where.end());
-              active.erase(active.begin()+i);
-            }
-        }
+    if(active[i].where.size() &&
+       second_clock::local_time() > active[i].next_check) {
+      double more_time=0.;
+      // if(active[i].next_check==0.)
+      //   more_time=-1.;
+      int simfinished=tasks[active[i].number]->finished(more_time);
+      // next check after at more_time, restrained to min. and max. times
+      more_time=
+        (more_time < min_check_time ? min_check_time :
+         (more_time > max_check_time ? max_check_time : more_time));
+      active[i].next_check=second_clock::local_time()+seconds(long(more_time));
+      if(!simfinished)
+        std::cerr  << "Checking if Simulation " << active[i].number+1
+                   << " is finished: "
+                   << "Not yet, next check in " << int(more_time)
+                   << " seconds\n";
+      else { 
+        std::cerr  << "Checking if Simulation " << active[i].number+1
+                   << " is finished: "
+                   << "Finished\n";
+        running_tasks--;
+        one_finished=1;
+        int j=active[i].number;
+        if(theTask == tasks[j])
+          theTask=0;
+        finish_task(j);
+        free.insert(free.end(),active[i].where.begin(),active[i].where.end());
+        active.erase(active.begin()+i);
+      }
     }
-
+  }
+  
   if(!one_finished)
     last_check++;
   if(last_check>=active.size())
