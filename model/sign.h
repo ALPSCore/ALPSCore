@@ -55,6 +55,8 @@ public:
   typedef typename boost::graph_traits<Graph>::edge_descriptor
     edge_descriptor;
 
+  SignVisitor() {}
+  
   SignVisitor(PropertyMap& map, bool* check, BondPropertyMap bondsign) :
     map_(map), check_(check), bond_sign_(bondsign) { *check_ = false; }
 

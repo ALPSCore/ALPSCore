@@ -62,7 +62,6 @@ public:
   typedef typename obs_value_traits<result_type>::slice_iterator slice_iterator;
   /// the count data type: an integral type
   // typedef std::size_t count_type;
-  // *** we may need more than 32 Bit
   typedef uint64_t count_type;
 
   /// the data type for autocorrelation times

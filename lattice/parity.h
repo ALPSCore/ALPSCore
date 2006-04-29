@@ -83,6 +83,8 @@ public:
   typedef typename boost::graph_traits<Graph>::edge_descriptor
     edge_descriptor;
 
+  ParityVisitor() {}
+  
   ParityVisitor(PropertyMap& map, bool* check) :
     p_(parity_traits<Parity, Graph>::white), map_(map), check_(check)
   { *check_ = true; }
