@@ -113,18 +113,19 @@ inline boost::multi_array<std::pair<T,bool>,2> get_fermionic_matrix(T,const Site
 }
 
 template <class T, class I>
-boost::multi_array<T,2> get_matrix(T,const SiteOperator& m, const SiteBasisDescriptor<I>& basis1,  const Parameters& p=Parameters())
+boost::multi_array<T,2> get_matrix(T,const SiteOperator& m, const SiteBasisDescriptor<I>& basis1,  const Parameters& p=Parameters(), bool ignore_fermion=false)
 {
   boost::multi_array<std::pair<T,bool>,2> f_matrix = m.template matrix<T,I>(basis1,p);
   boost::multi_array<T,2> matrix(boost::extents[f_matrix.shape()[0]][f_matrix.shape()[1]]);
   for (int i=0;i<f_matrix.shape()[0];++i)
     for (int j=0;j<f_matrix.shape()[1];++j)
-      if (f_matrix[i][j].second)
+      if (!ignore_fermion && f_matrix[i][j].second)
         boost::throw_exception(std::runtime_error("Cannot convert fermionic operator to a bosonic matrix"));
       else
         matrix[i][j]=f_matrix[i][j].first;
   return matrix;
 }
+
 
 
 template <class I, class T>
