@@ -77,7 +77,7 @@ bool OperatorDescriptor<I>::is_fermionic(const SiteBasisDescriptor<I>& basis) co
   // note: we do not check if all QNs changed by the operator are present in the basis since this will
   // anyways be checked for when applyingh the operator later.
   bool fermionic=false;
-  for (int i=0;i<basis.size();++i) {
+  for (int i=0;i<(int)basis.size();++i) {
     typename super_type::const_iterator it=super_type::find(basis[i].name());
     if (it!=super_type::end() && basis[i].fermionic() && is_odd(it->second))
       fermionic=!fermionic;
