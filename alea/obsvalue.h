@@ -192,31 +192,31 @@ struct obs_value_traits<std::valarray<T> >
 
   template <class X> static inline void check_for_max(std::valarray<T>& a,const std::valarray<X>& b) 
   {
-    for(int32_t i=0;i!=a.size();++i)
+    for(int32_t i=0;i!=(int32_t)a.size();++i)
       obs_value_traits<T>::check_for_max(a[i],b[i]);
   }   
 
   template <class X> static inline void check_for_max(std::valarray<T>& a,const X& b) 
   {
-    for(int32_t i=0;i!=a.size();++i)
+    for(int32_t i=0;i!=(int32_t)a.size();++i)
       obs_value_traits<T>::check_for_max(a[i],b);
   }   
  
   template <class X> static inline void check_for_min(std::valarray<T>& a,const std::valarray<X>& b) 
   {
-    for(int32_t i=0;i!=a.size();++i)
+    for(int32_t i=0;i!=(int32_t)a.size();++i)
       obs_value_traits<T>::check_for_min(a[i],b[i]);
   }    
 
   template <class X> static inline void check_for_min(std::valarray<T>& a,const X& b) 
   {
-    for(int32_t i=0;i!=a.size();++i)
+    for(int32_t i=0;i!=(int32_t)a.size();++i)
       obs_value_traits<T>::check_for_min(a[i],b);
   }    
 
   static void fix_negative(value_type& a) 
   {
-    for(int32_t i=0;i!=a.size();++i)
+    for(int32_t i=0;i!=(int32_t)a.size();++i)
       obs_value_traits<element_type>::fix_negative(a[i]);
   }
   static element_type min() {return obs_value_traits<T>::min();}
@@ -229,14 +229,14 @@ struct obs_value_traits<std::valarray<T> >
   {
     time_type retval;
     resize_same_as(retval,b);
-    for(int32_t i(0);i<b.size();++i)
+    for(int32_t i(0);i<(int32_t)b.size();++i)
       retval[i] = obs_value_traits<element_type>::check_divide(a[i],b[i]);
     return retval;
   }
 
   /** resize a to given size */
   template <class X, class Y> static void resize_same_as(X& a, const Y& y) {a.resize(y.size());}
-  template <class X, class Y> static void copy(X& x,const Y& y) {x.resize(y.size()); for (int i=0;i<y.size();++i) x[i]=y[i];}
+  template <class X, class Y> static void copy(X& x,const Y& y) {x.resize(y.size()); for (int i=0;i<(int)y.size();++i) x[i]=y[i];}
   template <class X> static std::size_t size(const X& a) { return a.size();}
   template <class X> static void resize(X& a, std::size_t s) {a.resize(s);}
 
