@@ -420,7 +420,7 @@ void SimpleBinning<T>::write_scalar_xml(oxstream& oxs) const {
 
 template <class T> template <class IT> 
 void SimpleBinning<T>::write_vector_xml(oxstream& oxs, IT it) const {
-  for (int i = 0; i < binning_depth() ; ++i) {
+  for (int i = 0; i < (int)binning_depth() ; ++i) {
     int prec=int(4-std::log10(std::abs(obs_value_traits<result_type>::slice_value(error(i),it)
                             /obs_value_traits<result_type>::slice_value(binmean(i),it))));
     prec = (prec>=3 && prec<20 ? prec : 16);
@@ -445,7 +445,7 @@ inline void SimpleBinning<T>::output_vector(std::ostream& out, const L& label) c
     time_type tau_(tau());
     convergence_type conv_(converged_errors());
     std::vector<result_type> errs_(binning_depth(),error_);
-    for (int i=0;i<binning_depth();++i)
+    for (int i=0;i<(int)binning_depth();++i)
       errs_[i]=error(i);
       
     out << "\n";
@@ -470,7 +470,7 @@ inline void SimpleBinning<T>::output_vector(std::ostream& out, const L& label) c
         {
           // detailed errors
           std::ios::fmtflags oldflags = out.setf(std::ios::left,std::ios::adjustfield);
-          for(int i=0;i<binning_depth();i++)
+          for(int i=0;i<(int)binning_depth();i++)
             out << "    bin #" << std::setw(3) <<  i+1 
                 << " : " << std::setw(8) << count()/(1<<i)
                 << " entries: error = "
