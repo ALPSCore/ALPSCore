@@ -8,3 +8,6 @@ LATTICE_LIBRARY = "../../lib/xml/lattices.xml"
 { J'=1, LATTICE = "frustrated square lattice" }
 { J'=-1, LATTICE = "frustrated square lattice" }
 { LATTICE = "triangular lattice" }
+{ LATTICE = "chain lattice" }
+{ Gamma = 1, LATTICE = "chain lattice" }
+{ J = -1, Gamma = 1, LATTICE = "chain lattice" }
