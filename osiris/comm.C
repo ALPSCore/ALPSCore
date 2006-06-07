@@ -28,13 +28,12 @@
 
 /* $Id$ */
 
-#include <alps/osiris/comm.h>
-#include <alps/osiris/process.h>
-
-
 #ifdef ALPS_MPI
 #include <mpi.h>
 #endif
+
+#include <alps/osiris/comm.h>
+#include <alps/osiris/process.h>
 
 //=======================================================================
 // INITIALIZATION AND CLEANUP

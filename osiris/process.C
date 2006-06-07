@@ -28,6 +28,10 @@
 
 /* $Id$ */
 
+#ifdef ALPS_MPI
+#include <mpi.h>
+#endif
+
 #include <alps/osiris/comm.h>
 #include <alps/osiris/process.h>
 #include <alps/osiris/dump.h>
@@ -35,10 +39,6 @@
 #include <string>
 #include <algorithm>
 #include <functional>
-
-#ifdef ALPS_MPI
-#include <mpi.h>
-#endif
 
 namespace alps {
 

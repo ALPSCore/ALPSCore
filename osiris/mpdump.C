@@ -30,6 +30,10 @@
 
 // TODO: bool, uint64_t, int64_t
 
+#ifdef ALPS_MPI
+# include <mpi.h>
+#endif
+
 #include <alps/osiris/comm.h>
 #include <alps/osiris/mpdump.h>
 #include <alps/osiris/process.h>
@@ -37,10 +41,6 @@
 #include <boost/throw_exception.hpp>
 #include <cstdio>
 #include <stdexcept>
-
-#ifdef ALPS_MPI
-# include <mpi.h>
-#endif
 
 namespace alps {
 
