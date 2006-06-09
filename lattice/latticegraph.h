@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2005 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2001-2006 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -33,6 +33,7 @@
 
 #include <alps/config.h>
 #include <alps/parameters.h>
+#include <alps/lattice/disorder.h>
 #include <alps/parser/parser.h>
 #include <alps/lattice/graph.h>
 #include <alps/lattice/lattice.h>
@@ -45,7 +46,8 @@ namespace alps {
 template<class L, class G> class lattice_graph;
 
 template <class LATTICE, class GRAPH>
-inline void make_graph_from_lattice(GRAPH& g,const LATTICE& l)
+inline void make_graph_from_lattice(GRAPH& g,const LATTICE& l, 
+    DepletionDescriptor depl_desc = DepletionDescriptor ())
 {
   typedef GRAPH graph_type;
   typedef LATTICE lattice_type;
@@ -62,9 +64,14 @@ inline void make_graph_from_lattice(GRAPH& g,const LATTICE& l)
   typedef typename lattice_traits<lattice_type>::boundary_crossing_type boundary_crossing_type;
   typedef typename lattice_traits<lattice_type>::basis_vector_iterator basis_vector_iterator;
 
-  int num = volume(l) * num_vertices(graph(unit_cell(l)));
+  Depletion depletion(depl_desc,volume(l) * num_vertices(graph(unit_cell(l))));
+  
+  int num  = depletion.num_sites();
+  
   const unit_graph_type& ug(graph(unit_cell(l)));
   uint32_t unit_cell_vertices = num_vertices(ug);
+  
+  
 
   typename property_map<vertex_type_t,graph_type,int>::type
     vertextype = get_or_default(vertex_type_t(),g,0);
@@ -101,16 +108,20 @@ inline void make_graph_from_lattice(GRAPH& g,const LATTICE& l)
   size_type edge_index=0;
   
   prevent_optimization(); 
-  for ( boost::tie(cit,cend)=cells(l); cit != cend ; ++cit)
+  int original_vertex_number=0;
+  for ( boost::tie(cit,cend)=cells(l); cit != cend ; ++cit,++original_vertex_number)
   {
     // vertex properties
-    for ( boost::tie(uvit,uvend)=boost::vertices(ug); uvit!=uvend;++uvit,++vit)
+    for ( boost::tie(uvit,uvend)=boost::vertices(ug); uvit!=uvend;++uvit)
     {
-  //std::cerr << "Setting vertex properties\n";
-      // vertex kind
-      vertextype[*vit]=boost::get(vertex_type_t(),ug,*uvit);
-      // vertex coordinate
-      vertexcoordinate[*vit] = alps::coordinate(*cit,boost::get(coordinate_t(),ug,*uvit),l);
+      // verrtex is not depleted
+      if (depletion.exists(original_vertex_number)) {
+        // vertex kind
+        vertextype[*vit]=boost::get(vertex_type_t(),ug,*uvit);
+        // vertex coordinate
+        vertexcoordinate[*vit] = alps::coordinate(*cit,boost::get(coordinate_t(),ug,*uvit),l);
+        ++vit;
+      }
     }
 
     // edge properties
@@ -130,7 +141,9 @@ inline void make_graph_from_lattice(GRAPH& g,const LATTICE& l)
         int target_index=alps::index(alps::cell(off_target,l),l)*unit_cell_vertices
                   +boost::get(boost::vertex_index_t(),ug,boost::target(*first_edge,ug));
 
-        if(source_index!=target_index) {
+        if(source_index!=target_index && depletion.exists(source_index) && depletion.exists(target_index)) {
+          source_index = depletion.mapped_site(source_index);
+          target_index = depletion.mapped_site(target_index);
           edge_descriptor edge=boost::add_edge(source_index,target_index,g).first;
           
           // store bond kind and index
@@ -275,7 +288,7 @@ template <class L2>
 inline lattice_graph<LATTICE,GRAPH>::lattice_graph(const L2& d)
  : LATTICE(d)
 {
-  make_graph_from_lattice(graph_,*this);
+  make_graph_from_lattice(graph_,*this,d.depletion());
 }
 
 template <class L, class G>

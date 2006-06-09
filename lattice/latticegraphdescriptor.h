@@ -73,10 +73,12 @@ public:
   const std::string& name() const { return name_;}
   void set_parameters(const Parameters&);
   const InhomogeneityDescriptor& inhomogeneity() const { return inhomogeneity_;}
+  const DepletionDescriptor& depletion() const { return depletion_;}
 private:
   std::string name_, lattice_name_, unitcell_name_;
   bool lattice_is_finite_;
   InhomogeneityDescriptor inhomogeneity_;
+  DepletionDescriptor depletion_;
   FiniteLatticeDescriptor finitelattice_; 
   LatticeDescriptor lattice_; // for printing only
 };

@@ -31,10 +31,14 @@
 #define ALPS_LATTICE_DISORDER_H
 
 #include <alps/parser/parser.h>
+#include <alps/parameters.h>
+#include <alps/expression.h>
 #include <alps/lattice/unitcell.h>
 #include <alps/lattice/graph.h>
 #include <alps/parser/xmlstream.h>
 #include <boost/random.hpp>
+#include <boost/optional.hpp>
+#include <memory>
 
 namespace alps {
 
@@ -181,6 +185,33 @@ private:
   std::vector<type_type> inhomogeneous_edges_;
 };
 
+class DepletionDescriptor 
+{
+public:
+  DepletionDescriptor() {}
+  DepletionDescriptor(XMLTag&, std::istream&);
+  void write_xml(oxstream&) const;
+  double probability() const { return prob ? prob.get().value().real() : 0.;}
+  void set_parameters(const Parameters& p);
+  int seed() const { return seed_;}
+public:
+  boost::optional<Expression> prob;
+  int seed_;
+};
+
+class Depletion : public DepletionDescriptor
+{
+public:
+  Depletion(DepletionDescriptor const& depl, std::size_t num_sites);
+  bool exists(std::size_t site) const { return mapping[site];}
+  std::size_t mapped_site(std::size_t site) const { return mapping[site].get();}
+  std::size_t num_sites() { return num;}
+private:
+  std::vector<boost::optional<std::size_t> > mapping;
+  std::size_t num;
+};
+
+
 } // end namespace alps
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
@@ -188,17 +219,32 @@ namespace alps {
 #endif
 
 inline alps::oxstream& operator<< (alps::oxstream& out, const alps::InhomogeneityDescriptor& l)
-  {
+{
     l.write_xml(out);
     return out;
-  }
+}
 
 inline std::ostream& operator<< (std::ostream& out, const alps::InhomogeneityDescriptor& l)
-  {
+{
     alps::oxstream xml(out);
     xml << l;
     return out;
-  }
+}
+
+
+inline alps::oxstream& operator<< (alps::oxstream& out, const alps::DepletionDescriptor& l)
+{
+    l.write_xml(out);
+    return out;
+}
+
+inline std::ostream& operator<< (std::ostream& out, const alps::DepletionDescriptor& l)
+{
+    alps::oxstream xml(out);
+    xml << l;
+    return out;
+}
+
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 namespace detail {

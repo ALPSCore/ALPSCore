@@ -29,6 +29,8 @@
 
 #include <alps/lattice/disorder.h>
 #include <alps/expression.h>
+#include <boost/assert.hpp>
+#include <boost/random.hpp>
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 namespace alps {
@@ -206,5 +208,68 @@ void InhomogeneityDescriptor::write_xml(oxstream& xml) const
     xml << end_tag("DISORDER");
   }
 }
+
+
+DepletionDescriptor::DepletionDescriptor(XMLTag& tag, std::istream& is)
+{
+  if (tag.name=="DEPLETION") {
+    if (tag.attributes["type"] != "" && tag.attributes["type"]!= "site")
+      boost::throw_exception(std::runtime_error("Illegal depletion type: " + tag.attributes["type"]));
+    
+    if (tag.attributes["probability"]!="")
+      prob = Expression(tag.attributes["probability"]);
+    if (tag.type !=XMLTag::SINGLE) {
+      tag=parse_tag(is); 
+        if (tag.name!="/DEPLETION")
+          boost::throw_exception(std::runtime_error("Illegal element: " + tag.name + "in <DEPLETION>"));
+    }
+  }
+  tag=parse_tag(is); 
+}
+
+void DepletionDescriptor::write_xml(oxstream& xml) const
+{
+  if (prob)
+    xml << start_tag("DEPLETION") << attribute("type","site")
+        << attribute("probability",prob.get()) << end_tag("DEPLETION");
+}
+
+void DepletionDescriptor::set_parameters(const Parameters& p)
+{
+  if (p.defined("DEPLETION_SEED"))
+    seed_ = static_cast<int>(p["DEPLETION_SEED"]);
+  if (prob)
+    prob.get().partial_evaluate(ParameterEvaluator(p));
+}
+
+
+
+Depletion::Depletion(DepletionDescriptor const& depl, std::size_t num_sites)
+ : DepletionDescriptor(depl), num(num_sites)
+{
+  double p = probability();
+  BOOST_ASSERT(p>=0. && p<1.);
+  if (p!=0.) {
+    std::cerr << " The seed is " << depl.seed() << "\n";
+    boost::mt11213b eng(depl.seed());
+    boost::variate_generator<boost::mt11213b&,boost::uniform_real<double> > 
+      rng(eng,boost::uniform_real<double>(0.,1.));
+    num=0;
+    for (std::size_t i=0;i<num_sites;++i) {
+      if (rng()<p)
+        mapping.push_back(boost::optional<std::size_t>());
+      else
+        mapping.push_back(boost::optional<std::size_t>(num++));
+    }
+  }
+  else
+    for (std::size_t i=0;i<num_sites;++i)
+      mapping.push_back(boost::optional<std::size_t>(i));
+}
+
+
+
+
+
 
 } // end namespace alps

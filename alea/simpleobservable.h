@@ -86,6 +86,7 @@ public:
   bool has_variance() const { return b_.has_variance();}
   result_type variance() const {return b_.variance();}
   result_type error() const {return b_.error();}
+  result_type error(unsigned bin_used) const {return b_.error(bin_used);}
   convergence_type converged_errors() const {return b_.converged_errors();}
   count_type count() const {return b_.count();}
   bool has_minmax() const { return b_.has_minmax();}

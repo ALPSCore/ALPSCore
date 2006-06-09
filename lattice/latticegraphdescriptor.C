@@ -118,10 +118,15 @@ LatticeGraphDescriptor::LatticeGraphDescriptor(const XMLTag& intag,
     unit_cell() = GraphUnitCell(tag,p);
 
   tag=parse_tag(p);
-  if(tag.name!="/LATTICEGRAPH")
-    inhomogeneity_=InhomogeneityDescriptor(tag,p);
-  if(tag.name!="/LATTICEGRAPH")
-    boost::throw_exception(std::runtime_error("illegal element <" + tag.name + "> in LATTICEGRAPH"));
+  while (tag.name != "/LATTICEGRAPH") {
+    if(tag.name=="DISORDER")
+      inhomogeneity_=InhomogeneityDescriptor(tag,p);
+    else if (tag.name=="DEPLETION")
+      depletion_=DepletionDescriptor(tag,p);
+    else
+      boost::throw_exception(std::runtime_error("illegal element <" + tag.name + "> in LATTICEGRAPH"));
+    
+  }
 }
 
 void LatticeGraphDescriptor::set_parameters(const Parameters& p)
@@ -129,6 +134,7 @@ void LatticeGraphDescriptor::set_parameters(const Parameters& p)
   if(lattice_is_finite_)
     finitelattice_.set_parameters(p);
   static_cast<base_type&>(*this) = finitelattice_;
+  depletion_.set_parameters(p);
 }
 
 void LatticeGraphDescriptor::write_xml(oxstream& xml) const
@@ -152,7 +158,7 @@ void LatticeGraphDescriptor::write_xml(oxstream& xml) const
     xml << unit_cell();
   else
     xml << start_tag("UNITCELL") << attribute("ref", unitcell_name_) << end_tag("UNITCELL");
-  xml << inhomogeneity_;
+  xml << inhomogeneity_ << depletion_;
   xml << end_tag("LATTICEGRAPH");
 }
 
