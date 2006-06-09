@@ -1,0 +1,6 @@
+LATTICE_LIBRARY = "../../lib/xml/lattices.xml"
+LATTICE = "depleted square lattice"
+L = 6
+W = 6
+DEPLETION_SEED=423756
+DEPLETION=0.2
