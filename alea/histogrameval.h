@@ -4,8 +4,9 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2004 by Matthias Troyer <troyer@comp-phys.org>,
-*                            Fabian Stoeckli <fabstoec@phys.ethz.ch>
+* Copyright (C) 1994-2006 by Matthias Troyer <troyer@comp-phys.org>,
+*                            Fabian Stoeckli <fabstoec@phys.ethz.ch>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -92,14 +93,15 @@ class HistogramObservableEvaluator:public HistogramObservable<T>
 
      value_type max() const {collect(); return all_.max(); }
      value_type min() const {collect(); return all_.min(); }
-     value_type operator[](int i) const {collect(); return all_.histogram[i]; }
+     value_type operator[](int i) const { collect(); return all_[i]; }
 
      count_type count() const {collect(); return all_.count(); }
 
      Observable* clone() const { 
-HistogramObservableEvaluator<T>* my_eval = new HistogramObservableEvaluator<T>(*this); 
-return my_eval;
-}
+       HistogramObservableEvaluator<T>* my_eval =
+         new HistogramObservableEvaluator<T>(*this); 
+       return my_eval;
+     }
      
      void set_thermalization(uint32_t todiscard);
      uint32_t get_thermalization() const { collect(); return all_.get_thermalization(); }
