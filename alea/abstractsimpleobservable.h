@@ -154,6 +154,19 @@ public:
   void set_label(const label_type& l) { label_=l;}
   const label_type& label() const { return label_;}
 
+  void save(ODump& dump) const
+  {
+    Observable::save(dump);
+    dump << label_;
+  }
+
+  void load(IDump& dump) 
+  {
+    Observable::load(dump);
+    if (dump.version() >= 303 || dump.version()==0)
+      dump >> label_;
+  }
+
 private:
   virtual SimpleObservableEvaluator<value_type> make_evaluator() const
   { 

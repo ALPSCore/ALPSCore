@@ -179,14 +179,14 @@ void SimpleObservable<T,BINNING>::write_more_xml(oxstream& oxs, slice_iterator i
 template <class T,class BINNING>
 inline void SimpleObservable<T,BINNING>::save(ODump& dump) const
 {
-  Observable::save(dump);
+  AbstractSimpleObservable<T>::save(dump);
   dump << b_;
 }
 
 template <class T,class BINNING>
 inline void SimpleObservable<T,BINNING>::load(IDump& dump) 
 {
-  Observable::load(dump);
+  AbstractSimpleObservable<T>::load(dump);
   dump >> b_;
 }
 

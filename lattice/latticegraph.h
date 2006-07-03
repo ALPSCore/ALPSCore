@@ -152,6 +152,9 @@ inline void make_graph_from_lattice(GRAPH& g,const LATTICE& l,
           
           // store boundary crossing
           if (source_cross.second && target_cross.second)
+            // std::cout << "Offsets:\n";
+            // << write_vector(boost::get(source_offset_t(),ug,*first_edge))
+            // << " - " << write_vector(boost::get(target_offset_t(),ug,*first_edge)) << "\n";
             boost::throw_exception(
               std::logic_error("ALPS++::lattice: Cannot calculate boundary crossing if neither vertex is in the original cell"));
           boundary_crossing_type bt( source_cross.second ? source_cross.second.invert() : target_cross.second);

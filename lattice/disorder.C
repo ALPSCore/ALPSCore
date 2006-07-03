@@ -149,9 +149,9 @@ InhomogeneityDescriptor::InhomogeneityDescriptor(XMLTag& tag, std::istream& p)
     }
     tag=parse_tag(p);  
   }
-  if (tag.name=="DISORDER") {
+  if (tag.name=="INHOMOGENEOUS") {
     tag=parse_tag(p); 
-    while (tag.name!="/DISORDER") {
+    while (tag.name!="/INHOMOGENEOUS") {
       if (tag.name=="VERTEX") {
         if (tag.attributes["type"]=="")
           disorder_all_vertices_=true;
@@ -175,7 +175,7 @@ InhomogeneityDescriptor::InhomogeneityDescriptor(XMLTag& tag, std::istream& p)
         }
       }
       else
-        boost::throw_exception(std::runtime_error("Illegal element: " + tag.name + "in <DISORDER>"));
+        boost::throw_exception(std::runtime_error("Illegal element: " + tag.name + "in <INHOMOGENEOUS>"));
       tag=parse_tag(p); 
     }
     tag=parse_tag(p);  
@@ -194,7 +194,7 @@ void InhomogeneityDescriptor::write_xml(oxstream& xml) const
   }
   if (!inhomogeneous_vertices_.empty() || !inhomogeneous_edges_.empty() || 
        disorder_all_vertices_ || disorder_all_edges_) {
-    xml << start_tag("DISORDER");
+    xml << start_tag("INHOMOGENEOUS");
     if (disorder_all_vertices_)
       xml << start_tag("VERTEX") << end_tag("VERTEX");
     else
@@ -205,24 +205,31 @@ void InhomogeneityDescriptor::write_xml(oxstream& xml) const
     else
       for (unsigned int i=0;i<inhomogeneous_edges_.size();++i)
         xml << start_tag("EDGE") << attribute("type",inhomogeneous_edges_[i]) << end_tag("EDGE");
-    xml << end_tag("DISORDER");
+    xml << end_tag("INHOMOGENEOUS");
   }
 }
 
 
 DepletionDescriptor::DepletionDescriptor(XMLTag& tag, std::istream& is)
 {
-  if (tag.name=="DEPLETION") {
-    if (tag.attributes["type"] != "" && tag.attributes["type"]!= "site")
-      boost::throw_exception(std::runtime_error("Illegal depletion type: " + tag.attributes["type"]));
-    
-    if (tag.attributes["probability"]!="")
-      prob = Expression(tag.attributes["probability"]);
-    if (tag.type !=XMLTag::SINGLE) {
-      tag=parse_tag(is); 
-        if (tag.name!="/DEPLETION")
+  if (tag.name=="DEPLETION" && tag.type != XMLTag::SINGLE) {
+    tag=parse_tag(is);
+    if (tag.name =="VERTEX") {
+      if (tag.attributes["seed"] != "")
+        seed_name=tag.attributes["seed"];
+      else
+        seed_name="DEPLETION_SEED";
+      if (tag.attributes["probability"]!="")
+        prob = Expression(tag.attributes["probability"]);
+      if (tag.type !=XMLTag::SINGLE) {
+        tag=parse_tag(is); 
+        if (tag.name!="/VERTEX")
           boost::throw_exception(std::runtime_error("Illegal element: " + tag.name + "in <DEPLETION>"));
+      }
+      tag=parse_tag(is); 
     }
+    if (tag.name!="/DEPLETION")
+      boost::throw_exception(std::runtime_error("Illegal element: " + tag.name + "in <DEPLETION>"));
   }
   tag=parse_tag(is); 
 }
@@ -230,14 +237,17 @@ DepletionDescriptor::DepletionDescriptor(XMLTag& tag, std::istream& is)
 void DepletionDescriptor::write_xml(oxstream& xml) const
 {
   if (prob)
-    xml << start_tag("DEPLETION") << attribute("type","site")
-        << attribute("probability",prob.get()) << end_tag("DEPLETION");
+    xml << start_tag("DEPLETION") 
+        << start_tag("VERTEX") 
+          << attribute("probability",prob.get()) 
+          << attribute("seed",seed_name) 
+        << end_tag("VERTEX") << end_tag("DEPLETION");
 }
 
 void DepletionDescriptor::set_parameters(const Parameters& p)
 {
-  if (p.defined("DEPLETION_SEED"))
-    seed_ = static_cast<int>(p["DEPLETION_SEED"]);
+  if (p.defined(seed_name))
+    seed_ = static_cast<int>(evaluate(seed_name,p));
   if (prob)
     prob.get().partial_evaluate(ParameterEvaluator(p));
 }
@@ -250,7 +260,6 @@ Depletion::Depletion(DepletionDescriptor const& depl, std::size_t num_sites)
   double p = probability();
   BOOST_ASSERT(p>=0. && p<1.);
   if (p!=0.) {
-    std::cerr << " The seed is " << depl.seed() << "\n";
     boost::mt11213b eng(depl.seed());
     boost::variate_generator<boost::mt11213b&,boost::uniform_real<double> > 
       rng(eng,boost::uniform_real<double>(0.,1.));

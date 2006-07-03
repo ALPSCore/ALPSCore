@@ -119,13 +119,12 @@ LatticeGraphDescriptor::LatticeGraphDescriptor(const XMLTag& intag,
 
   tag=parse_tag(p);
   while (tag.name != "/LATTICEGRAPH") {
-    if(tag.name=="DISORDER")
+    if(tag.name=="INHOMOGENEOUS")
       inhomogeneity_=InhomogeneityDescriptor(tag,p);
     else if (tag.name=="DEPLETION")
       depletion_=DepletionDescriptor(tag,p);
     else
       boost::throw_exception(std::runtime_error("illegal element <" + tag.name + "> in LATTICEGRAPH"));
-    
   }
 }
 

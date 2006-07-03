@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2005 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2001-2006 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -125,17 +125,20 @@ public:
       offset_iterator offit, offend;
       boost::tie(offit,offend)=coordinates(offset_);
       int d=0;
+      while ((offit+1)!=offend) {
+        ++d;
+        ++offit;
+      }
       (*offit)++;
-      while (*offit == lattice_->extent(d) && (offit+1) != offend)
+      while (*offit == lattice_->extent(d) && d > 0)
         {
           *offit =0;
-          ++d;
-          ++offit;
+          --d;
+          --offit;
           (*offit)++;
         }
       return *this;
     }
-
     cell_iterator operator++(int) {
       cell_iterator tmp(*this);
       operator++();
@@ -166,7 +169,7 @@ public:
     offset_type end(extent_);
     std::fill(coordinates(begin).first,coordinates(begin).second,0);
     if (coordinates(end).first != coordinates(end).second)
-      std::fill(coordinates(end).first,coordinates(end).second-1,0);
+      std::fill(coordinates(end).first+1,coordinates(end).second,0);
     else
       std::cerr << "Strange extent: " << write_vector(extent_) << "\n";
     return std::make_pair(cell_iterator(*this,begin),cell_iterator(*this,end));
@@ -185,9 +188,17 @@ public:
     typedef typename coordinate_traits<offset_type>::const_iterator CI;
     CI exit = coordinates(extent_).first;
     CI offit = coordinates(o).first;
+    if (exit == coordinates(extent_).second)
+      return 0;
+    int d=1;
+    while(exit+1 != coordinates(extent_).second 
+      && offit+1 != coordinates(o).second) {
+      ++d;
+      ++exit;
+      ++offit;
+    }
 
-    for (;exit!=coordinates(extent_).second;++exit,++offit)
-    {
+    for (;d!=0;--exit,--offit,--d) {
       ind += factor* (*offit);
       factor *= (*exit);
     }

@@ -335,14 +335,14 @@ inline void SimpleObservableEvaluator<T>::extract_timeseries(ODump& dump) const
 template <class T>
 inline void SimpleObservableEvaluator<T>::save(ODump& dump) const
 {
-  Observable::save(dump);
+  AbstractSimpleObservable<T>::save(dump);
   dump << valid_ << runs_ << all_;
 }
 
 template <class T>
 inline void SimpleObservableEvaluator<T>::load(IDump& dump) 
 {
-  Observable::load(dump);
+  AbstractSimpleObservable<T>::load(dump);
   dump >> valid_ >> runs_ >> all_;
 }
 #endif

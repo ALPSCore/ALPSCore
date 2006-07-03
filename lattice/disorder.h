@@ -196,6 +196,7 @@ public:
   int seed() const { return seed_;}
 public:
   boost::optional<Expression> prob;
+  std::string seed_name;
   int seed_;
 };
 
