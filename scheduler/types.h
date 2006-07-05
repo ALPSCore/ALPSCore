@@ -4,7 +4,8 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 1994-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -27,8 +28,8 @@
 
 /* $Id$ */
 
-#ifndef ALPS_SCHEDULER_FORWARD_H___
-#define ALPS_SCHEDULER_FORWARD_H___
+#ifndef ALPS_SCHEDULER_TYPES_H
+#define ALPS_SCHEDULER_TYPES_H
 
 //=======================================================================
 // This file constants such as magic ids for dumps and message ids
@@ -45,6 +46,10 @@ enum MCDumpType {
     MCDump_task                    =2,
     MCDump_run                     =3,
     MCDump_measurements            =4,
+
+    // for parallelized runs
+    MCDump_run_master              =5,
+    MCDump_run_slave               =6,
 
     // dump version numbers
     MCDump_worker_version          =303
@@ -108,4 +113,4 @@ enum MCMP_Tags {
 } // namespace scheduler
 } // namespace alps
 
-#endif
+#endif // ALPS_SCHEDULER_TYPES_H

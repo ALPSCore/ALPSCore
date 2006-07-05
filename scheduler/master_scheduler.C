@@ -69,7 +69,7 @@ MasterScheduler::MasterScheduler(const Options& opt,const Factory& p)
  *
  * @params jobfilename The name of the new job file
  */
-void MasterScheduler::set_new_jobfile(boost::filesystem::path jobfilename)
+void MasterScheduler::set_new_jobfile(const boost::filesystem::path& jobfilename)
 {
   // clean the 'traces' of the previous simulation
   taskfiles.clear();

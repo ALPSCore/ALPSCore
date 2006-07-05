@@ -68,7 +68,7 @@ public:
 
   virtual ~Scheduler();
 
-  virtual void set_new_jobfile(boost::filesystem::path) {};
+  virtual void set_new_jobfile(const boost::filesystem::path&) {};
 
   virtual int run(); // start the scheduler
   
@@ -148,7 +148,7 @@ public:
 
   ~MasterScheduler();
 
-  virtual void set_new_jobfile(boost::filesystem::path jobilename);
+  virtual void set_new_jobfile(const boost::filesystem::path& jobilename);
 
 protected: 
   std::vector<AbstractTask*> tasks;   // all simulations
