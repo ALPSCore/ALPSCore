@@ -4,7 +4,8 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2002-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 2002-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -168,7 +169,7 @@ private:
 
 class WorkerTask : public Task
 {
-protected:        
+public:        
   enum RunStatus {
     RunNotExisting = 0,
     LocalRun = 1,
