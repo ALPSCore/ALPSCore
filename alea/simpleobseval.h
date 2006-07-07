@@ -491,6 +491,8 @@ void SimpleObservableEvaluator<T>::output_scalar(std::ostream& out) const
       out << " WARNING: check error convergence";
     if (converged_errors()==NOT_CONVERGED)
       out << " WARNING: ERRORS NOT CONVERGED!!!";
+    if (error_underflow(mean(),error()))
+      out << " Warning: potential error underflow. Errors might be smaller";
     out << std::setprecision(6) << std::endl;
   }
 }
@@ -525,6 +527,9 @@ void SimpleObservableEvaluator<T>::output_vector(std::ostream& out) const
         out << " WARNING: check error convergence";
       if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==NOT_CONVERGED)
         out << " WARNING: ERRORS NOT CONVERGED!!!";
+      if (error_underflow(obs_value_traits<result_type>::slice_value(value_,sit),
+                          obs_value_traits<result_type>::slice_value(error_,sit)))
+        out << " Warning: potential error underflow. Errors might be smaller";
       out << std::endl;
     }
   }

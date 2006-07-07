@@ -41,6 +41,14 @@
 
 namespace alps {
 
+template <class T>
+inline bool error_underflow(T mean, T error)
+{
+  return ((error!= 0. && mean != 0.)  && (std::abs(mean) * 10.
+             *std::sqrt(std::numeric_limits<T>::epsilon()) > error));
+}
+
+
 //=======================================================================
 // AbstractSimpleObservable
 //
@@ -218,9 +226,12 @@ void AbstractSimpleObservable<T>::write_xml_scalar(oxstream& oxs, const boost::f
     prec = (prec>=3 && prec<20 ? prec : 8);
     oxs << precision(mean(),prec) << end_tag("MEAN");
 
-    oxs << start_tag("ERROR") << attribute("converged", convergence_to_text(converged_errors())) << no_linebreak;
+    oxs << start_tag("ERROR") << attribute("converged", convergence_to_text(converged_errors())) ;
+    if (error_underflow(mean(),error()))
+      oxs << attribute("underflow","true");
     if (em != "") 
       oxs << attribute("method", em);
+    oxs << no_linebreak;
     oxs << precision(error(), 3) << end_tag("ERROR");
 
     if (has_variance()) {
@@ -311,6 +322,8 @@ void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, const boost::f
           << end_tag("MEAN");
       
       oxs << start_tag("ERROR") << attribute("converged", convergence_to_text(obs_value_traits<convergence_type>::slice_value(conv_,it))) << no_linebreak;
+      if (error_underflow( obs_value_traits<result_type>::slice_value(mean_, it), obs_value_traits<result_type>::slice_value(error_, it)))
+        oxs << attribute("underflow","true");
       if (em != "") oxs << attribute("method", em);
       oxs << precision(obs_value_traits<result_type>::slice_value(error_, it), 3)
           << end_tag("ERROR");

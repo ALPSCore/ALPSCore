@@ -220,8 +220,12 @@ inline typename NoBinning<T>::result_type NoBinning<T>::error() const
 template <class T>
 inline void NoBinning<T>::output_scalar(std::ostream& out) const
 {
-  if(count()) 
-    out << ": " << mean() << " +/- " << round(error()) << std::endl;
+  if(count()) {
+    out << ": " << mean() << " +/- " << round(error());
+    if (error_underflow(mean(),error()))
+      out << " Warning: potential error underflow. Errors might be smaller";
+    out << std::endl;
+  }
 }
 
 template <class T> template <class L>
@@ -241,8 +245,11 @@ inline void NoBinning<T>::output_vector(std::ostream& out, const L& label) const
         lab=obs_value_traits<result_type>::slice_name(mean_,sit);
       out << "Entry[" << lab << "]: "
           << obs_value_traits<result_type>::slice_value(mean_,sit) << " +/- " 
-          << round(obs_value_traits<result_type>::slice_value(error_,sit))
-          << std::endl;
+          << round(obs_value_traits<result_type>::slice_value(error_,sit));
+      if (error_underflow(obs_value_traits<result_type>::slice_value(mean_,sit),
+                          obs_value_traits<result_type>::slice_value(error_,sit)))
+      out << " Warning: potential error underflow. Errors might be smaller";
+      out << std::endl;
     }
   }
 }
