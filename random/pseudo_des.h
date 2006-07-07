@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -87,9 +87,7 @@ public:
   }
 
   /// get the next value
-  result_type operator()() {
-    return hash(seed_, state_++);
-  }
+  result_type operator()() { return hash(seed_, state_++); }
 
   /// skip forward by \a skip numbers
   void operator+=(uint32_t skip) { state_ += skip; }
@@ -109,18 +107,7 @@ public:
     return seed_ == rhs.seed_ && state_ == rhs.state_;
   }
 
-protected:
-  uint32_t low_bits(uint32_t d) const {
-    return d & 0xffff;
-  }
-  uint32_t high_bits(uint32_t d) const {
-    return d >> 16;
-  }
-  uint32_t swap_bits(uint32_t d) const {
-    return high_bits(d) | (low_bits(d) << 16);
-  }
-
-  uint32_t hash(uint32_t w0, uint32_t w1) const {
+  static uint32_t hash(uint32_t w0, uint32_t w1) {
     const int num_iter = 4;
     const uint32_t g0[num_iter] = {
       0xbaa96887L, 0x1e17d32cL, 0x03bcdc3cL, 0x0f33d1b2L
@@ -137,6 +124,12 @@ protected:
     }
     return w1;
   }
+
+protected:
+  static uint32_t low_bits(uint32_t d) { return d & 0xffff; }
+  static uint32_t high_bits(uint32_t d) { return d >> 16; }
+  static uint32_t swap_bits(uint32_t d)
+  { return high_bits(d) | (low_bits(d) << 16); }
 
 private:
   uint32_t seed_;

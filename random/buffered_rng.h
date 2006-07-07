@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>,
 *                            Mario Ruetti <mruetti@gmx.net>
 *
@@ -103,6 +103,11 @@ public:
   /// read the state from a std::istream
   virtual void read(std::istream&)=0;
 
+  /// write the full state (including buffer) to a std::ostream
+  virtual void write_all(std::ostream& os) const = 0;
+  /// read the full state (including buffer) from a std::istream
+  virtual void read_all(std::istream&) = 0;
+
   virtual result_type min() const = 0;
   virtual result_type max() const = 0;
 
@@ -141,6 +146,8 @@ public:
 
   virtual void write(std::ostream&) const;
   virtual void read(std::istream&);
+  virtual void write_all(std::ostream&) const;
+  virtual void read_all(std::istream&);
 
 protected:
   void fill_buffer();
@@ -162,6 +169,27 @@ void buffered_rng<RNG>::read(std::istream& is)
 template <class RNG>
 void buffered_rng<RNG>::write(std::ostream& os) const
 {
+  os << rng_;
+}
+
+template <class RNG>
+void buffered_rng<RNG>::read_all(std::istream& is)
+{
+  int32_t n;
+  is >> n;
+  ptr_ = buf_.end() - n;
+  for (std::vector<result_type>::iterator itr = ptr_; itr != buf_.end(); ++itr)
+    is >> *itr;
+  is >> rng_;
+}
+
+template <class RNG>
+void buffered_rng<RNG>::write_all(std::ostream& os) const
+{
+  int32_t n = buf_.end() - ptr_;
+  os << n << ' ';
+  for (std::vector<result_type>::iterator itr = ptr_; itr != buf_.end(); ++itr)
+    os << *itr << ' ';
   os << rng_;
 }
 
