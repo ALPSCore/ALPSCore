@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -47,7 +47,7 @@ bool CompositeXMLHandler::has_handler(const std::string& name) const {
 void CompositeXMLHandler::start_element(const std::string& name,
   const XMLAttributes& attributes, xml::tag_type type) {
   if (level_ == 0) {
-    if (name != basename())
+    if (type == xml::element && name != basename())
       boost::throw_exception(std::runtime_error(
         "XMLCompositeHandler: unknown start tag : " + name));
     start_top(name, attributes, type);
