@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 1994-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -61,13 +61,19 @@ public:
   void save (ODump&) const;
   ALPS_DUMMY_VOID write_xml(alps::oxstream&) const;
   void load (IDump& dump,int version=MCDump_worker_version);
+
+  const boost::posix_time::ptime& start_time() const;
+  const boost::posix_time::ptime& stop_time() const;
+  const std::string& phase() const;
+  const std::string& host() const;
+
 private:
    // how was it stopped? ... for historic reasons
   enum { HALTED=1, INTERRUPTED=2, THERMALIZED=3, NOTSTARTED=4 };
-  boost::posix_time::ptime startt; // start time
-  boost::posix_time::ptime stopt; // stop time
-  std::string phase; // what was  done?
-  std::string host; // which host is it running on?
+  boost::posix_time::ptime startt_; // start time
+  boost::posix_time::ptime stopt_; // stop time
+  std::string phase_; // what was  done?
+  std::string host_; // which host is it running on?
 };
 
 
