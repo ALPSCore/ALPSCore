@@ -38,6 +38,7 @@
 #include <alps/parameters.h>
 #include <alps/expression.h>
 #include <boost/lexical_cast.hpp>
+#include <boost/optional.hpp>
 #include <set>
 #include <stdexcept>
 #include <string>
@@ -59,25 +60,40 @@ public:
 
   const std::string min_expression() const { return min_string_; }
   const std::string max_expression() const { return max_string_; }
+  
   value_type min() const
   {
     if (!valid_ && !evaluate())
       boost::throw_exception(std::runtime_error("Cannot evaluate expression " +
-                                                min_string_ ));
+                                                min_string_ + "in QuantumNumberDescriptor::min()"));
     return min_;
   }
+  
   value_type max() const
   {
     if (!valid_ && !evaluate())
       boost::throw_exception(std::runtime_error("Cannot evaluate expression " +
-                                                max_string_ ));
+                                                max_string_  + "in QuantumNumberDescriptor::max()"));
     return max_;
   }
+  
+  value_type global_max() const 
+  {
+    return global_max_ ? global_max_.get() : max();
+  }
+
+  value_type global_min() const 
+  {
+    return global_min_ ? global_min_.get() : min();
+  }
+  
+  
   I levels() const
   {
     return (max().distance(min())==std::numeric_limits<I>::max()) ?
       std::numeric_limits<I>::max() : (max().distance(min()) + 1);
   }
+  
   const std::string& name() const { return name_; }
 
   const QuantumNumberDescriptor& operator+=(const QuantumNumberDescriptor& rhs);
@@ -93,6 +109,18 @@ public:
   { return (dependency_.find(qn)!=dependency_.end()); }
   void add_dependency(const QuantumNumberDescriptor& qn) { dependency_.insert(qn); }
 
+  void reset_limits()
+  {
+    global_min_.reset();
+    global_max_.reset();
+  }
+
+  void update_limits()
+  {
+      global_min_ = (global_min_ ? std::min(global_min_.get(),min()) : min());
+      global_max_ = (global_max_ ? std::max(global_max_.get(),max()) : max());
+  }
+
 private:
   std::string name_;
   std::string min_string_;
@@ -103,6 +131,8 @@ private:
   mutable bool valid_;
   bool evaluate(const Parameters& =Parameters()) const;
   mutable std::set<QuantumNumberDescriptor> dependency_;
+  boost::optional<value_type> global_min_;
+  boost::optional<value_type> global_max_;
 };
 
 template<class I>
@@ -192,7 +222,12 @@ QuantumNumberDescriptor<I>::QuantumNumberDescriptor(const XMLTag& intag, std::is
 template <class I>
 bool QuantumNumberDescriptor<I>::set_parameters(const Parameters& p)
 {
-  return evaluate(p);
+  bool could_evaluate = evaluate(p);
+  if (could_evaluate)
+    update_limits();
+  else
+    reset_limits();
+  return could_evaluate;
 }
 
 template<class I >

@@ -50,6 +50,8 @@ class SiteBasisDescriptor : public std::vector<QuantumNumberDescriptor<I> >
 public:
   typedef typename std::vector<QuantumNumberDescriptor<I> >::const_iterator
     const_iterator;
+  typedef typename std::vector<QuantumNumberDescriptor<I> >::iterator
+    iterator;
   typedef typename OperatorDescriptor<I>::operator_map operator_map;
   typedef typename operator_map::const_iterator operator_iterator;
 
@@ -65,7 +67,7 @@ public:
   bool valid(const std::vector<half_integer<I> >&) const;
   std::size_t num_states() const
   {
-    if (!valid_ && !evaluate())
+    if (!valid_ && !const_cast<SiteBasisDescriptor*>(this)->evaluate())
       boost::throw_exception(std::runtime_error("Cannot evaluate quantum"
         " numbers in site basis " + name()));
     return num_states_;
@@ -81,12 +83,12 @@ public:
   bool is_fermionic(const std::string& name) const;
 private:
   mutable bool valid_;
-  bool evaluate() const;
+  bool evaluate();
   Parameters parms_;
   Parameters read_parms_;
   std::string name_;
   mutable std::size_t num_states_;
-  void init_dependencies() const;
+  void init_dependencies();
   operator_map operators_;
 };
 
@@ -116,11 +118,11 @@ template <class I>
 bool SiteBasisDescriptor<I>::valid(const std::vector<half_integer<I> >& x) const
 {
   alps::Parameters p(parms_);
-  if(!valid_ && !evaluate())
+  if(!valid_ && !const_cast<SiteBasisDescriptor*>(this)->evaluate())
     boost::throw_exception(std::runtime_error("Cannot evaluate quantum numbers in site basis " +name()));
-  if (super_type::size() != x.size())
+  if (this->size() != x.size())
     return false;
-  for (int i=0;i<super_type::size();++i) {
+  for (int i=0;i<this->size();++i) {
     const_cast<SiteBasisDescriptor<I>&>(*this)[i].set_parameters(p);
     if (!(*this)[i].valid(x[i]))
       return false;
@@ -144,34 +146,37 @@ bool SiteBasisDescriptor<I>::set_parameters(const Parameters& p, bool override)
 }
 
 template <class I>
-bool SiteBasisDescriptor<I>::evaluate() const
+bool SiteBasisDescriptor<I>::evaluate()
 {
   valid_=true;
   Parameters q_parms_(parms_);
-  for (const_iterator it=super_type::begin();it!=super_type::end();++it) {
-    valid_ = valid_ && const_cast<QuantumNumberDescriptor<I>&>(*it).set_parameters(q_parms_);
+  for (iterator it=this->begin();it!=this->end();++it) {
+    it->reset_limits();
+    valid_ = valid_ && it->set_parameters(q_parms_);
     if(!valid_) break;
     q_parms_[it->name()]=it->min();
   }
-  if (valid_ && super_type::begin()!=super_type::end()) {
+  if (valid_ && this->begin()!=this->end()) {
     num_states_=1;
-    const_iterator rit=super_type::end()-1;
-    while(const_cast<QuantumNumberDescriptor<I>&>(*rit).set_parameters(parms_)) {
+    iterator rit=this->end()-1;
+    // no dependencies
+    while(rit->set_parameters(parms_)) {
       if(rit->levels()>=half_integer<I>::max().to_double()) {
         num_states_=std::numeric_limits<I>::max();
         return true;
       }
       num_states_ *= rit->levels();
-      if(rit==super_type::begin()) break;
+      if(rit==this->begin()) break;
       --rit;
     }
-    if( rit!=super_type::begin() ) {
+    // there are dependencies!
+    if( rit!=this->begin() ) {
       unsigned int n=0;
-      typedef std::pair<const_iterator,Parameters> q_pair;
+      typedef std::pair<iterator,Parameters> q_pair;
       std::stack<q_pair> s;
-      const_iterator it=super_type::begin();
+      iterator it=this->begin();
       Parameters p=q_parms_;
-      const_cast<QuantumNumberDescriptor<I>&>(*it).set_parameters(p);
+      it->set_parameters(p);
       if(it->levels()==std::numeric_limits<I>::max()) {
         num_states_=std::numeric_limits<I>::max();
         return true;
@@ -181,12 +186,12 @@ bool SiteBasisDescriptor<I>::evaluate() const
         s.push(q_pair(it,p));
       }
       while(!s.empty()) {
-        const_iterator it=s.top().first;
+        iterator it=s.top().first;
         Parameters      p=s.top().second;
         s.pop();
-        const_iterator itt=it+1;
+        iterator itt=it+1;
         if(itt==rit) {
-          const_cast<QuantumNumberDescriptor<I>&>(*itt).set_parameters(p);
+          itt->set_parameters(p);
           if(itt->levels()==std::numeric_limits<I>::max()) {
             num_states_=std::numeric_limits<I>::max();
             return true;
@@ -195,7 +200,7 @@ bool SiteBasisDescriptor<I>::evaluate() const
         }
         else {
           ++it;
-          const_cast<QuantumNumberDescriptor<I>&>(*it).set_parameters(p);
+          it->set_parameters(p);
           if(it->levels()==std::numeric_limits<I>::max()) {
             num_states_=std::numeric_limits<I>::max();
             return true;
@@ -248,11 +253,11 @@ SiteBasisDescriptor<I>::SiteBasisDescriptor(const XMLTag& intag, std::istream& i
 }
 
 template<class I>
-void SiteBasisDescriptor<I>::init_dependencies() const {
-  for(const_iterator it=super_type::begin();it!=super_type::end();++it)
-    for(const_iterator jt=super_type::begin();jt!=it;++jt)
-      if(const_cast<QuantumNumberDescriptor<I>&>(*it).depends_on(jt->name()))
-        const_cast<QuantumNumberDescriptor<I>&>(*it).add_dependency(*jt);
+void SiteBasisDescriptor<I>::init_dependencies() {
+  for(iterator it=this->begin();it!=this->end();++it)
+    for(iterator jt=this->begin();jt!=it;++jt)
+      if(it->depends_on(jt->name()))
+        it->add_dependency(*jt);
 }
 
 template <class I>
@@ -262,7 +267,7 @@ void SiteBasisDescriptor<I>::write_xml(oxstream& os) const
   for (Parameters::const_iterator it=read_parms_.begin();it!=read_parms_.end();++it)
     os << start_tag("PARAMETER") << attribute("name", it->key())
        << attribute("default", it->value()) << end_tag("PARAMETER");
-  for (const_iterator it=super_type::begin();it!=super_type::end();++it)
+  for (const_iterator it=this->begin();it!=this->end();++it)
     os << *it;
   for (typename operator_map::const_iterator it=operators_.begin();it!=operators_.end();++it)
     os << it->second;
