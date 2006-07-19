@@ -276,7 +276,17 @@ Depletion::Depletion(DepletionDescriptor const& depl, std::size_t num_sites)
       mapping.push_back(boost::optional<std::size_t>(i));
 }
 
-
+void Depletion::check(int site) const 
+{
+  if (site>=mapping.size())
+    std::cerr << "Site out of range : " << site << " " << mapping.size() << "\n";
+int n=0;
+  for (int i=0;i<mapping.size();++i)
+    if (mapping[i])
+      n++;
+  if (n != num)
+    std::cerr << "Count mismatch " << n << " " << num << "\n";
+}
 
 
 

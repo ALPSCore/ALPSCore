@@ -109,10 +109,10 @@ inline void make_graph_from_lattice(GRAPH& g,const LATTICE& l,
   
   prevent_optimization(); 
   int original_vertex_number=0;
-  for ( boost::tie(cit,cend)=cells(l); cit != cend ; ++cit,++original_vertex_number)
+  for ( boost::tie(cit,cend)=cells(l); cit != cend ; ++cit)
   {
     // vertex properties
-    for ( boost::tie(uvit,uvend)=boost::vertices(ug); uvit!=uvend;++uvit)
+    for ( boost::tie(uvit,uvend)=boost::vertices(ug); uvit!=uvend;++uvit,++original_vertex_number)
     {
       // verrtex is not depleted
       if (depletion.exists(original_vertex_number)) {
