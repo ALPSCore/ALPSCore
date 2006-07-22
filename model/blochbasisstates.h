@@ -165,7 +165,7 @@ void bloch_basis_states<I,S,SS>::build(const translation_type& trans, const std:
           if (is) {
             fermionic[it->second[i]]=is;
             if (std::accumulate(fermionic.begin(),fermionic.begin()+it->second[i],0) %2) 
-              fermion_exchange=true;
+              fermion_exchange=!fermion_exchange;
           }
         }
         
