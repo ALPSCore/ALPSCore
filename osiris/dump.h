@@ -155,7 +155,12 @@ public:
 # undef ALPS_DUMP_DO_TYPE
 
   template <class T>
-  void read_complex(std::complex<T>& x) { x = std::complex<T>(get<T>(), get<T>());}
+  void read_complex(std::complex<T>& x) 
+  { 
+    T re = get<T>();
+    T im = get<T>();
+    x = std::complex<T>(re,im);
+  }
   
   template<class T>
   IDump& operator>>(std::complex<T>& x) { read_complex(x); return *this; }
