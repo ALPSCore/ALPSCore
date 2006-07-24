@@ -283,10 +283,10 @@ bool has_sign_problem(const HamiltonianDescriptor<I>& ham,
   typedef G graph_type;
   const graph_type& graph(lattice.graph());
   
-  if (lattice.inhomogeneous_bonds())
-    boost::throw_exception(std::runtime_error("Disordered bonds on lattice "
-      "not currently supported by the sign check program. Please contact the "
-      "ALPS developers for assistance.\n"));
+  if (lattice.inhomogeneous_bonds()) {
+    std::cerr << "Warning: inhomogeneous bonds on lattice not currently supported by the sign check program. Please contact the ALPS developers for assistance.\n";
+    return true; // we might have a sign problem
+  }
 
   // build and check bond matrices for all bond types
   std::map<boost::tuple<int,int,int>,int> bond_sign;
