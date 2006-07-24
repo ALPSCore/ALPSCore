@@ -49,10 +49,11 @@ try {
   uint64_t o9 = 18446744073709551614ull;
   double o10 = 3.14159265358979323846;
   std::string o11 = "test string";
+  std::complex<double> o12(1,2);
 
   {
     alps::OXDRFileDump od(boost::filesystem::path("xdrdump.dump",boost::filesystem::native));
-    od << o1 << o2 << o3 << o4 << o5 << o6 << o7 << o8 << o9 << o10 << o11;
+    od << o1 << o2 << o3 << o4 << o5 << o6 << o7 << o8 << o9 << o10 << o11 << o12;
   }
   
   alps::IXDRFileDump id(boost::filesystem::path("xdrdump.dump",boost::filesystem::native));
@@ -70,7 +71,10 @@ try {
   std::cout << i10 << ' ';
   std::string str;
   id >> str;
-  std::cout << str << std::endl;
+  std::cout << str << ' ';
+  std::complex<double> i11;
+  id >> i11;
+  std::cout << i11 << std::endl;
   
 #ifndef BOOST_NO_EXCEPTIONS
 }
