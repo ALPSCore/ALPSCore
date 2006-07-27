@@ -513,6 +513,24 @@ public:
                       boost::lexical_cast<std::string>(int(*it2));
     return label;
   }
+  
+  std::vector<std::string> site_labels() const
+  {
+    std::vector<std::string> label;
+    for (vertex_iterator it=vertices().first; it != vertices().second;++it)
+      label.push_back(alps::coordinate_to_string(coordinate(*it)));
+    return label;
+  }
+
+  std::vector<std::string> bond_labels() const
+  {
+    std::vector<std::string> label;
+    for (bond_iterator it=bonds().first; it != bonds().second;++it)
+      label.push_back(alps::coordinate_to_string(coordinate(source(*it))) 
+           + " -- " + alps::coordinate_to_string(coordinate(target(*it))));
+    return label;
+  }
+
 
   size_type distance(vertex_descriptor x, vertex_descriptor y) const
   {

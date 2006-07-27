@@ -29,5 +29,7 @@
 /* $Id$ */
 
 #include <alps/scheduler/montecarlo.h>
+#include <alps/scheduler/measurement_operators.h>
+
 
 /// \brief includes all headers in the alps/scheduler directory
