@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -91,11 +91,36 @@
 // Define to 1 if you have the MPI library
 #undef ALPS_HAVE_MPI
 
-// Define to 1 if you have the LAPACK library
-#undef ALPS_HAVE_LAPACK
-
 // Define to 1 if you have the HDF5 library
 #undef ALPS_HAVE_HDF5
+
+//
+// BLAS and LAPACK
+//
+
+// Define if you have BLAS library
+#undef ALPS_HAVE_BLAS
+
+// Define if you have LAPACK library
+#undef ALPS_HAVE_LAPACK
+
+// Define if you have Intel Math Kernel Library
+#undef ALPS_HAVE_MKL
+
+// Define if you have the Digital Extended Math Library
+#undef ALPS_HAVE_DXML
+
+// Define if you have SGI SCSL Library
+#undef ALPS_HAVE_SCSL
+
+// Define if you have Mac OS X vecLib framework
+#undef ALPS_HAVE_VECLIB
+
+// Define if you have IBM ESSL Library
+#undef ALPS_HAVE_ESSL
+
+// Define if you have ATLAS library
+#undef ALPS_HAVE_ATLAS
 
 //
 // XML parser
