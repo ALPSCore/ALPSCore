@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2004 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2001-2006 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -388,7 +388,7 @@ inline std::size_t maximum_vertex_type(const G& g)
 } // end namespace alps
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-namespace alps {
+namespace boost {
 #endif
 
 template<class T0, class T1, class T2, class T3, class T4, class T5, class T6>
@@ -409,7 +409,7 @@ inline alps::oxstream& operator<<(alps::oxstream& oxs,
 }
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-} // end namespace alps
+} // end namespace boost
 #endif
 
 #endif // ALPS_LATTICE_GRAPH_H
