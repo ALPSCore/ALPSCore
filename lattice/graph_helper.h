@@ -585,7 +585,7 @@ private:
     d_.disorder_edges(graph(),inhomogeneous_edge_type_map_);
   }
      
-  const graph_helper& operator=(const graph_helper&) {return *this}
+  const graph_helper& operator=(const graph_helper&) {return *this;}
     graph_type* make_graph(const Parameters& p);
   const graph_type& const_graph() const { return *g_;}
 
