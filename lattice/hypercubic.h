@@ -130,7 +130,7 @@ public:
         ++offit;
       }
       (*offit)++;
-      while (*offit == lattice_->extent(d) && d > 0)
+      while (*offit == lattice_->extent(d) && d > 0) //go backwards
         {
           *offit =0;
           --d;
@@ -180,6 +180,7 @@ public:
            std::multiplies<size_type>());
   }
 
+
   size_type index(const cell_descriptor& c) const
   {
     size_type ind=0;
@@ -223,11 +224,22 @@ public:
     typedef typename coordinate_traits<offset_type>::iterator IT;
     CIT ex = coordinates(extent_).first;
     IT offit = coordinates(o).first;
-
-    for (;ex!=coordinates(extent_).second;++ex,++offit) {
+    
+    //changed order of dimensions
+    for (;ex!=coordinates(extent_).second;++ex,++offit) {};
+    
+    do {
+      --ex; 
+      --offit;
       *offit=i%(*ex);
-      i/=(*ex);
-    }
+      i/=(*ex); }    
+    while ( ex!=coordinates(extent_).first);
+    
+    //replaced this code:    
+    //for (;ex!=coordinates(extent_).first;--ex,--offit) {
+    //  *offit=i%(*ex);
+    //  i/=(*ex);
+    // }
     return cell(o);
   }
 
@@ -317,18 +329,19 @@ public:
     }
     return d;
   }
-  
+
+
   std::size_t distance(const offset_type& x, const offset_type& y) const
-  {
-    std::size_t d=0;
-    for (unsigned int i=0;i<BASE::dimension();++i) {
-      if(boundary(i)=="periodic")
-        d = d*extent(i) + (x[i] <= y[i] ? y[i]-x[i] : extent(i)+y[i]-x[i]);
-      else
-        d = extent(i)*(d*extent(i) +x[i])+y[i];
+    {
+      std::size_t d=0;
+      for (unsigned int i=0;i<BASE::dimension();++i) {
+	if(boundary(i)=="periodic")
+	  d = d*extent(i) + (x[i] <= y[i] ? y[i]-x[i] : extent(i)+y[i]-x[i]);
+	else
+	  d = extent(i)*(d*extent(i) +x[i])+y[i];
+      }
+      return d;
     }
-    return d;
-  }
 
 
   class momentum_iterator : public cell_iterator {
