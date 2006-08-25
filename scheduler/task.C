@@ -54,18 +54,18 @@ Task::Task(const ProcessList& w,const boost::filesystem::path& filename)
   : AbstractTask(w),
     finished_(false),
     infilename(filename),
-    started_(false),
-    from_file(true)
+    from_file(true),
+    started_(false)
 {
   parse_task_file(true);
 }
 
 Task::Task(const ProcessList& w,const Parameters& p)
   : AbstractTask(w),
-    finished_(false),
     parms(p),
-    started_(false),
-    from_file(false)
+    finished_(false),
+    from_file(false),
+    started_(false)
 {
 }
 
