@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2000-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2000-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -144,8 +144,8 @@ std::vector<std::string> bond_labels(G const& g)
   typename alps::graph_traits<G>::edge_iterator itr, itr_end;
   for (boost::tie(itr, itr_end) = edges(g); itr != itr_end; ++itr)
     label.push_back(
-      coordinate_to_string(get(coordinate_t(), g, source(*itr))) + " -- " +
-      coordinate_to_string(get(coordinate_t(), g, target(*itr))));
+      coordinate_to_string(get(coordinate_t(), g, source(*itr, g))) + " -- " +
+      coordinate_to_string(get(coordinate_t(), g, target(*itr, g))));
   return label;
 }
 
