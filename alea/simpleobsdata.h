@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2004 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2006 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Beat Ammon <beat.ammon@bluewin.ch>,
 *                            Andreas Laeuchli <laeuchli@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>,
@@ -261,13 +261,17 @@ SimpleObservableData<T>::SimpleObservableData(const SimpleObservableData<U>& x, 
    converged_errors_(obs_value_slice<typename obs_value_traits<U>::convergence_type,S>()(x.converged_errors_,s)),
    any_converged_errors_(obs_value_slice<typename obs_value_traits<U>::convergence_type,S>()(x.any_converged_errors_,s))
 {
+  values_.resize(x.values_.size());
   std::transform(x.values_.begin(), x.values_.end(), values_.begin(),
                  boost::bind2nd(obs_value_slice<U,S>(),s));
+  values2_.resize(x.values2_.size());
   std::transform(x.values2_.begin(), x.values2_.end(), values2_.begin(),
                  boost::bind2nd(obs_value_slice<U,S>(),s));
-  if (jack_valid_)
+  if (jack_valid_) {
+    jack_.resize(x.jack_.size());
     std::transform(x.jack_.begin(), x.jack_.end(), jack_.begin(),
                    boost::bind2nd(obs_value_slice<U,S>(),s));
+  }
 }
 
 template <class T>

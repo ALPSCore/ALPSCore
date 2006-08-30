@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2005 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2006 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
@@ -293,7 +293,7 @@ struct obs_value_slice<std::valarray<T>,I>
   typedef T result_type;                
   typedef const std::valarray<T>& first_argument_type;
   typedef I second_argument_type;            
-  double operator()(const std::valarray<T>& x, const I i) const { return x[i];}
+  T operator()(const std::valarray<T>& x, const I i) const { return x[i];}
 };                                             
 #endif
 
