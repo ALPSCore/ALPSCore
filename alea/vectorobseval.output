@@ -1,0 +1,21 @@
+observable
+Entry[0]: 0.502618 +/- 0.0045331; tau = 0.00800212
+    bin #1   : 4096     entries: error = 0.00449726
+    bin #2   : 2048     entries: error = 0.00447824
+    bin #3   : 1024     entries: error = 0.00442771
+    bin #4   : 512      entries: error = 0.0043568
+    bin #5   : 256      entries: error = 0.00432941
+    bin #6   : 128      entries: error = 0.0045331
+Entry[1]: 1.50074 +/- 0.00438853; tau = -0.0309996
+    bin #1   : 4096     entries: error = 0.00453124
+    bin #2   : 2048     entries: error = 0.00446591
+    bin #3   : 1024     entries: error = 0.00441569
+    bin #4   : 512      entries: error = 0.00425621
+    bin #5   : 256      entries: error = 0.00434305
+    bin #6   : 128      entries: error = 0.00438853
+observable
+Entry[0]: 0.502618 +/- 0.00453255; tau = 0.00800212
+Entry[1]: 1.50074 +/- 0.00438799; tau = -0.0309996
+observable0: 0.502618 +/- 0.00453; tau = 0.008
+observable1: 1.50074 +/- 0.00439; tau = -0.031
+(observable0) * (observable1): 0.7543 +/- 0.00727
