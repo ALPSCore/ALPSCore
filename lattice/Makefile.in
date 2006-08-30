@@ -39,7 +39,7 @@ host_triplet = @host@
 check_PROGRAMS = example1$(EXEEXT) example2$(EXEEXT) example3$(EXEEXT) \
 	example4$(EXEEXT) example5$(EXEEXT) example6$(EXEEXT) \
 	example7$(EXEEXT) example8$(EXEEXT) example9$(EXEEXT) \
-	example10$(EXEEXT) parity$(EXEEXT)
+	example10$(EXEEXT) label$(EXEEXT) parity$(EXEEXT)
 subdir = test/lattice
 DIST_COMMON = $(dist_noinst_DATA) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/parameters.in \
@@ -136,6 +136,13 @@ example9_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
 	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+am_label_OBJECTS = label.$(OBJEXT)
+label_OBJECTS = $(am_label_OBJECTS)
+label_LDADD = $(LDADD)
+label_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_parity_OBJECTS = parity.$(OBJEXT)
 parity_OBJECTS = $(am_parity_OBJECTS)
 parity_LDADD = $(LDADD)
@@ -156,11 +163,12 @@ CXXLINK = $(LIBTOOL) --tag=CXX --mode=link $(CXXLD) $(AM_CXXFLAGS) \
 SOURCES = $(example1_SOURCES) $(example10_SOURCES) $(example2_SOURCES) \
 	$(example3_SOURCES) $(example4_SOURCES) $(example5_SOURCES) \
 	$(example6_SOURCES) $(example7_SOURCES) $(example8_SOURCES) \
-	$(example9_SOURCES) $(parity_SOURCES)
+	$(example9_SOURCES) $(label_SOURCES) $(parity_SOURCES)
 DIST_SOURCES = $(example1_SOURCES) $(example10_SOURCES) \
 	$(example2_SOURCES) $(example3_SOURCES) $(example4_SOURCES) \
 	$(example5_SOURCES) $(example6_SOURCES) $(example7_SOURCES) \
-	$(example8_SOURCES) $(example9_SOURCES) $(parity_SOURCES)
+	$(example8_SOURCES) $(example9_SOURCES) $(label_SOURCES) \
+	$(parity_SOURCES)
 DATA = $(dist_noinst_DATA)
 ETAGS = etags
 CTAGS = ctags
@@ -355,8 +363,12 @@ example7_SOURCES = example7.C
 example8_SOURCES = example8.C
 example9_SOURCES = example9.C
 example10_SOURCES = example10.C
+label_SOURCES = label.C
 parity_SOURCES = parity.C
-dist_noinst_DATA = example1.output example2.output example3.output example4.output example5.output example6.output example7.output parity.output example8.input example8.output example9.input example9.output example10.output
+dist_noinst_DATA = example1.output example2.output example3.output example4.output example5.output example6.output example7.output example8.input example8.output example9.input example9.output example10.output \
+	label.output \
+	parity.output
+
 all: all-am
 
 .SUFFIXES:
@@ -431,6 +443,9 @@ example8$(EXEEXT): $(example8_OBJECTS) $(example8_DEPENDENCIES)
 example9$(EXEEXT): $(example9_OBJECTS) $(example9_DEPENDENCIES) 
 	@rm -f example9$(EXEEXT)
 	$(CXXLINK) $(example9_LDFLAGS) $(example9_OBJECTS) $(example9_LDADD) $(LIBS)
+label$(EXEEXT): $(label_OBJECTS) $(label_DEPENDENCIES) 
+	@rm -f label$(EXEEXT)
+	$(CXXLINK) $(label_LDFLAGS) $(label_OBJECTS) $(label_LDADD) $(LIBS)
 parity$(EXEEXT): $(parity_OBJECTS) $(parity_DEPENDENCIES) 
 	@rm -f parity$(EXEEXT)
 	$(CXXLINK) $(parity_LDFLAGS) $(parity_OBJECTS) $(parity_LDADD) $(LIBS)
@@ -451,6 +466,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/example7.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/example8.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/example9.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/label.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parity.Po@am__quote@
 
 .C.o:
