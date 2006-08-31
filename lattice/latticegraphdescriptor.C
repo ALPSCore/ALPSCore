@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2005 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2001-2006 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -118,13 +118,22 @@ LatticeGraphDescriptor::LatticeGraphDescriptor(const XMLTag& intag,
     unit_cell() = GraphUnitCell(tag,p);
 
   tag=parse_tag(p);
+  bool found_inhomogeneity = false;
+  bool found_depletion = false;
   while (tag.name != "/LATTICEGRAPH") {
-    if(tag.name=="INHOMOGENEOUS")
+    if(tag.name=="INHOMOGENEOUS") {
+      if (found_inhomogeneity)
+        boost::throw_exception(std::runtime_error("duplicated <" + tag.name + "> tag in LATTICEGRAPH"));
+      found_inhomogeneity = true;
       inhomogeneity_=InhomogeneityDescriptor(tag,p);
-    else if (tag.name=="DEPLETION")
+    } else if (tag.name=="DEPLETION") {
+      if (found_depletion)
+        boost::throw_exception(std::runtime_error("duplicated <" + tag.name + "> tag in LATTICEGRAPH"));
+      found_depletion = true;
       depletion_=DepletionDescriptor(tag,p);
-    else
+    } else {
       boost::throw_exception(std::runtime_error("illegal element <" + tag.name + "> in LATTICEGRAPH"));
+    }
   }
 }
 
