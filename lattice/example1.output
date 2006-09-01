@@ -159,8 +159,8 @@
   </UNITCELL>
   <UNITCELL name="anisotropic2d" dimension="2" vertices="1">
     <VERTEX id="1" type="0"/>
-    <EDGE type="0" vector="0 1"><SOURCE vertex="1" offset="0 0"/><TARGET vertex="1" offset="0 1"/></EDGE>
-    <EDGE type="1" vector="1 0"><SOURCE vertex="1" offset="0 0"/><TARGET vertex="1" offset="1 0"/></EDGE>
+    <EDGE type="0" vector="1 0"><SOURCE vertex="1" offset="0 0"/><TARGET vertex="1" offset="1 0"/></EDGE>
+    <EDGE type="1" vector="0 1"><SOURCE vertex="1" offset="0 0"/><TARGET vertex="1" offset="0 1"/></EDGE>
   </UNITCELL>
   <UNITCELL name="isolated" dimension="1" vertices="1">
     <VERTEX id="1" type="0"/>
