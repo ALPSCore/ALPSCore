@@ -48,13 +48,14 @@ public:
   bool calc_averages() const 
   { 
     return !(average_expressions.empty() && local_expressions.empty()
-                            && correlation_expressions.empty());
+              && correlation_expressions.empty() && structurefactor_expressions.empty() );
   }
   
 protected:
   std::map<std::string,std::string> average_expressions;
   std::map<std::string,std::string> local_expressions;
   std::map<std::string,std::pair<std::string,std::string> > correlation_expressions;
+  std::map<std::string,std::pair<std::string,std::string> > structurefactor_expressions;
 };
 
 template <class ValueType>
@@ -72,9 +73,11 @@ public:
   std::map<std::string,std::vector<value_type> > average_values;
   std::map<std::string,std::vector<std::vector<value_type> > > local_values;
   std::map<std::string,std::vector<std::vector<value_type> > > correlation_values;
+  std::map<std::string,std::vector<std::vector<value_type> > > structurefactor_values;
 
 private:
   std::vector<std::string> distlabel_;
+  std::vector<std::string> momentumlabel_;
   std::vector<std::string> bondlabel_;
   std::vector<std::string> sitelabel_;
   mutable std::map<std::string,bool> bond_operator_;
@@ -88,6 +91,7 @@ EigenvectorMeasurements<ValueType>::EigenvectorMeasurements(LatticeModel const& 
 {
   if (calc_averages()) {
     distlabel_ = lattice_model.distance_labels();
+    momentumlabel_ = lattice_model.momenta_labels();
     bondlabel_ = lattice_model.bond_labels();
     sitelabel_ = lattice_model.site_labels();
     typedef std::pair<std::string,std::string> string_pair;
@@ -142,6 +146,20 @@ void EigenvectorMeasurements<ValueType>::write_xml_one_vector(
             << end_tag("SCALAR_AVERAGE");
       out << end_tag("VECTOR_AVERAGE");
     }
+
+  for (typename std::map<std::string,std::vector<std::vector<value_type> > >::const_iterator 
+        it=structurefactor_values.begin();it!=structurefactor_values.end();++it)
+    if (j<it->second.size()) {
+      out << start_tag("VECTOR_AVERAGE") <<  attribute("name",it->first);
+      typename std::vector<value_type> ::const_iterator vit = it->second[j].begin();
+      for (int d=0;d<momentumlabel_.size() && vit != it->second[j].end();++d,++vit)
+        out << start_tag("SCALAR_AVERAGE") 
+            << attribute("indexvalue",distlabel_[d]) << no_linebreak
+            << start_tag("MEAN") << no_linebreak <<  *vit << end_tag("MEAN")
+            << end_tag("SCALAR_AVERAGE");
+      out << end_tag("VECTOR_AVERAGE");
+    }
+
 }
 
 template <class ValueType>
@@ -191,6 +209,8 @@ XMLTag EigenvectorMeasurements<ValueType>::handle_tag(std::istream& infile, cons
         local_values[name].push_back(vals);
       else if (correlation_expressions.find(name) != correlation_expressions.end())
         correlation_values[name].push_back(vals);
+      else if (structurefactor_expressions.find(name) != structurefactor_expressions.end())
+        structurefactor_values[name].push_back(vals);
       else
         boost::throw_exception(std::runtime_error("cannot decide whether " + name + " is local or correlation measurement "));
     }

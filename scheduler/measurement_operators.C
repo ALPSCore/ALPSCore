@@ -52,5 +52,17 @@ alps::MeasurementOperators::MeasurementOperators (Parameters const& parms)
       else
         correlation_expressions[key]=std::make_pair(std::string(it->value()),std::string(it->value()));
     }
-  }
+
+  expression = boost::regex("^MEASURE_STRUCTURE_FACTOR\\[(.*)]$");
+  for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it)
+    if (boost::regex_match(static_cast<std::string>(it->key()).c_str(), what, expression)) {
+      std::string key(what[1].first,what[1].second);
+      boost::regex expression2("^(.*):(.*)$");
+      if (boost::regex_match(static_cast<std::string>(it->value()).c_str(), what, expression2))
+        structurefactor_expressions[key]=std::make_pair(std::string(what[1].first,what[1].second),std::string(what[2].first,what[2].second));
+      else
+        structurefactor_expressions[key]=std::make_pair(std::string(it->value()),std::string(it->value()));
+    }
+
+}
 
