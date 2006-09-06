@@ -155,7 +155,7 @@ void EigenvectorMeasurements<ValueType>::write_xml_one_vector(
       typename std::vector<value_type> ::const_iterator vit = it->second[j].begin();
       for (int d=0;d<momentumlabel_.size() && vit != it->second[j].end();++d,++vit)
         out << start_tag("SCALAR_AVERAGE") 
-            << attribute("indexvalue",distlabel_[d]) << no_linebreak
+            << attribute("indexvalue",momentumlabel_[d]) << no_linebreak
             << start_tag("MEAN") << no_linebreak <<  alps::real(*vit) << end_tag("MEAN")
             << end_tag("SCALAR_AVERAGE");
       out << end_tag("VECTOR_AVERAGE");
