@@ -280,8 +280,8 @@ public:
   StylesheetXMLHandler(std::string& style) 
     : XMLHandlerBase("style"), style_(style) {}
   void start_element(const std::string&,
-		     const XMLAttributes& attributes,
-		     xml::tag_type type) {
+                     const XMLAttributes& attributes,
+                     xml::tag_type type) {
     if (type == xml::stylesheet) style_ = attributes["href"];
   }
   void end_element(const std::string&, xml::tag_type) {}

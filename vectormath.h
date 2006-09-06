@@ -28,7 +28,6 @@
 
 /* $Id$ */
 
-
 /// \file vectormath.h
 /// \brief basic arithmetic operations on std::vectors
 /// 

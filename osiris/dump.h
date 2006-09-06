@@ -88,7 +88,7 @@ public:
 
 
 /// INTERNAL ONLY
-# define ALPS_DUMP_DO_TYPE(T)			\
+# define ALPS_DUMP_DO_TYPE(T)                        \
   virtual void write_array(std::size_t n, const T * p); \
   ODump& operator<<( T x) { write_simple(x); return *this; }
   ALPS_DUMP_DO_TYPE(bool)

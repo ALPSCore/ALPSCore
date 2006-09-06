@@ -170,7 +170,7 @@ class IXDRFileDump: public IXDRDump
 {
 public:
   /** open a file.
-      @throws palm::FileOpenError if the file could not be openend. */
+      @throws std::runtime_error if the file could not be openend. */
   // IXDRFileDump(const std::string& name);
   IXDRFileDump(const boost::filesystem::path& name);
   bool couldOpen() { return valid_;}

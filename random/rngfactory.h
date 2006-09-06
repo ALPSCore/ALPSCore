@@ -40,7 +40,7 @@
 namespace alps {
 
 /// a factory to create random number generators from their name
-/// \sa rng_factory
+// \sa rng_factory
 class RNGFactory : public factory<std::string,buffered_rng_base>
 {
 public:

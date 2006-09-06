@@ -260,20 +260,20 @@ public:
     for (int dim=0; exit!=alps::coordinates(extent_).second;++dim, ++bit, ++offit, ++exit) {
       if (*offit<0)
         while (*offit<0) {
-		  if (*bit=="periodic") {
-		    *offit+=*exit; // need to check % for negative numbers
+                  if (*bit=="periodic") {
+                    *offit+=*exit; // need to check % for negative numbers
             crossing.set_crossing(dim,-1);
           }
-		  else
-		    return std::make_pair(false,boundary_crossing_type());
+                  else
+                    return std::make_pair(false,boundary_crossing_type());
         }
       else if (*offit >= *exit) {
-		if (*bit=="periodic") {
-		  *offit %= *exit;
+                if (*bit=="periodic") {
+                  *offit %= *exit;
           crossing.set_crossing(dim,1);
         }
-		else
-		  return std::make_pair(false,boundary_crossing_type());
+                else
+                  return std::make_pair(false,boundary_crossing_type());
       }
     }
     return std::make_pair(true,crossing);
@@ -335,10 +335,10 @@ public:
     {
       std::size_t d=0;
       for (unsigned int i=0;i<BASE::dimension();++i) {
-	if(boundary(i)=="periodic")
-	  d = d*extent(i) + (x[i] <= y[i] ? y[i]-x[i] : extent(i)+y[i]-x[i]);
-	else
-	  d = extent(i)*(d*extent(i) +x[i])+y[i];
+        if(boundary(i)=="periodic")
+          d = d*extent(i) + (x[i] <= y[i] ? y[i]-x[i] : extent(i)+y[i]-x[i]);
+        else
+          d = extent(i)*(d*extent(i) +x[i])+y[i];
       }
       return d;
     }
