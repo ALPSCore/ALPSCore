@@ -32,6 +32,7 @@
 
 #include <alps/parameters.h>
 #include <alps/xml.h>
+#include <alps/math.hpp>
 #include <boost/regex.hpp> 
 #include <boost/foreach.hpp>
 #include <vector>
