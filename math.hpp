@@ -51,6 +51,14 @@
 
 namespace alps {
 
+
+template <class T>
+inline T real(T x) { return x;}
+
+template <class T>
+inline T real(std::complex<T> x) { return std::real(x);}
+
+
 /// \brief calculate the binomial coefficient
 /// \return the binomial coefficient l over n
 inline std::size_t binomial(std::size_t l, std::size_t n)
