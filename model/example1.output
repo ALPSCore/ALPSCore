@@ -282,15 +282,20 @@
     <PARAMETER name="t'" default="0"/>
     <PARAMETER name="V'" default="0"/>
     <PARAMETER name="U" default="0"/>
+    <PARAMETER name="t0" default="t"/>
+    <PARAMETER name="t1" default="t'"/>
+    <PARAMETER name="V0" default="V"/>
+    <PARAMETER name="V1" default="V'"/>
     <BASIS ref="fermion"/>
     <SITETERM site="i">
-      -mu*n(i)+U*(n_up(i)-1/2)*(n_down(i)-1/2)
+      <PARAMETER name="mu#" default="mu"/>
+      <PARAMETER name="U#" default="U"/>
+      -mu#*n(i)+U#*(n_up(i)-1/2)*(n_down(i)-1/2)
     </SITETERM>
-    <BONDTERM type="0" source="i" target="j">
-      -t*fermion_hop(i,j) + V*n(i)*n(j)
-    </BONDTERM>
-    <BONDTERM type="1" source="i" target="j">
-      -t'*fermion_hop(i,j) + V'*n(i)*n(j)
+    <BONDTERM source="i" target="j">
+      <PARAMETER name="t#" default="0"/>
+      <PARAMETER name="V#" default="0"/>
+      -t#*fermion_hop(i,j) + V#*n(i)*n(j)
     </BONDTERM>
   </HAMILTONIAN>
   <HAMILTONIAN name="Kondo lattice">
@@ -315,22 +320,32 @@
     <PARAMETER name="mu" default="0"/>
     <PARAMETER name="t" default="1"/>
     <PARAMETER name="J" default="1"/>
+    <PARAMETER name="V" default="0"/>
     <PARAMETER name="t'" default="0"/>
     <PARAMETER name="J'" default="0"/>
+    <PARAMETER name="V'" default="0"/>
     <PARAMETER name="t''" default="0"/>
     <PARAMETER name="J''" default="0"/>
+    <PARAMETER name="V''" default="0"/>
+    <PARAMETER name="t0" default="t"/>
+    <PARAMETER name="t1" default="t'"/>
+    <PARAMETER name="t2" default="t-'"/>
+    <PARAMETER name="V0" default="V"/>
+    <PARAMETER name="V1" default="V'"/>
+    <PARAMETER name="V2" default="V''"/>
+    <PARAMETER name="VJ" default="J"/>
+    <PARAMETER name="J1" default="J'"/>
+    <PARAMETER name="J2" default="J''"/>
     <BASIS ref="alternative t-J"/>
-    <SITETERM type="0" site="i">
-      -mu*n(i)
+    <SITETERM site="i">
+      <PARAMETER name="mu#" default="mu"/>
+      -mu#*n(i)
     </SITETERM>
     <BONDTERM type="0" source="i" target="j">
-      -t*fermion_hop(i,j) + J*exchange(i,j)-J/4*n(i)*n(j)
-    </BONDTERM>
-    <BONDTERM type="1" source="i" target="j">
-      -t'*fermion_hop(i,j) + J'*exchange(i,j)-J'/4*n(i)*n(j)
-    </BONDTERM>
-    <BONDTERM type="2" source="i" target="j">
-      -t''*fermion_hop(i,j) + J''*exchange(i,j)-J''/4*n(i)*n(j)
+      <PARAMETER name="t#" default="0"/>
+      <PARAMETER name="V#" default="0"/>
+      <PARAMETER name="J#" default="0"/>
+      -t#*fermion_hop(i,j) + J#*exchange(i,j)+(V#-J#/4)*n(i)*n(j)
     </BONDTERM>
   </HAMILTONIAN>
   <HAMILTONIAN name="boson Hubbard">
@@ -340,15 +355,20 @@
     <PARAMETER name="t'" default="0"/>
     <PARAMETER name="V'" default="0"/>
     <PARAMETER name="U" default="0"/>
+    <PARAMETER name="t0" default="t"/>
+    <PARAMETER name="t1" default="t'"/>
+    <PARAMETER name="V0" default="V"/>
+    <PARAMETER name="V1" default="V'"/>
     <BASIS ref="boson"/>
     <SITETERM site="i">
-      -mu*n(i)+U*n(i)*(n(i)-1)/2
+      <PARAMETER name="mu#" default="mu"/>
+      <PARAMETER name="U#" default="U"/>
+      -mu#*n(i)+U#*n(i)*(n(i)-1)/2
     </SITETERM>
-    <BONDTERM type="0" source="i" target="j">
-      -t*(bdag(i)*b(j)+bdag(j)*b(i)) + V*n(i)*n(j)
-    </BONDTERM>
-    <BONDTERM type="1" source="i" target="j">
-      -t'*(bdag(i)*b(j)+bdag(j)*b(i)) + V'*n(i)*n(j)
+    <BONDTERM source="i" target="j">
+      <PARAMETER name="t#" default="0"/>
+      <PARAMETER name="V#" default="0"/>
+      -t#*(bdag(i)*b(j)+bdag(j)*b(i)) + V#*n(i)*n(j)
     </BONDTERM>
   </HAMILTONIAN>
   <HAMILTONIAN name="fermion Hubbard">
@@ -358,15 +378,20 @@
     <PARAMETER name="t'" default="0"/>
     <PARAMETER name="V'" default="0"/>
     <PARAMETER name="U" default="0"/>
+    <PARAMETER name="t0" default="t"/>
+    <PARAMETER name="t1" default="t'"/>
+    <PARAMETER name="V0" default="V"/>
+    <PARAMETER name="V1" default="V'"/>
     <BASIS ref="fermion"/>
     <SITETERM site="i">
-      -mu*n(i)+U*n_up(i)*n_down(i)
+      <PARAMETER name="mu#" default="mu"/>
+      <PARAMETER name="U#" default="U"/>
+      -mu#*n(i)+U#*n_up(i)*n_down(i)
     </SITETERM>
-    <BONDTERM type="0" source="i" target="j">
-      -t*fermion_hop(i,j) + V*n(i)*n(j)
-    </BONDTERM>
-    <BONDTERM type="1" source="i" target="j">
-      -t'*fermion_hop(i,j) + V'*n(i)*n(j)
+    <BONDTERM source="i" target="j">
+      <PARAMETER name="t#" default="0"/>
+      <PARAMETER name="V#" default="0"/>
+      -t#*fermion_hop(i,j) + V#*n(i)*n(j)
     </BONDTERM>
   </HAMILTONIAN>
   <HAMILTONIAN name="hardcore boson">
@@ -375,15 +400,19 @@
     <PARAMETER name="V" default="0"/>
     <PARAMETER name="t'" default="0"/>
     <PARAMETER name="V'" default="0"/>
+    <PARAMETER name="t0" default="t"/>
+    <PARAMETER name="t1" default="t'"/>
+    <PARAMETER name="V0" default="V"/>
+    <PARAMETER name="V1" default="V'"/>
     <BASIS ref="hardcore boson"/>
     <SITETERM site="i">
-      -mu*n(i)
+      <PARAMETER name="mu#" default="mu"/>
+      -mu#*n(i)
     </SITETERM>
-    <BONDTERM type="0" source="i" target="j">
-      -t*(bdag(i)*b(j)+bdag(j)*b(i)) + V*n(i)*n(j)
-    </BONDTERM>
-    <BONDTERM type="1" source="i" target="j">
-      -t'*(bdag(i)*b(j)+bdag(j)*b(i)) + V'*n(i)*n(j)
+    <BONDTERM source="i" target="j">
+      <PARAMETER name="t#" default="0"/>
+      <PARAMETER name="V#" default="0"/>
+      -t#*(bdag(i)*b(j)+bdag(j)*b(i)) + V#*n(i)*n(j)
     </BONDTERM>
   </HAMILTONIAN>
   <HAMILTONIAN name="mixed spin">
@@ -393,24 +422,24 @@
     <PARAMETER name="Jz'" default="J'"/>
     <PARAMETER name="Jxy'" default="J'"/>
     <PARAMETER name="J'" default="0"/>
+    <PARAMETER name="Jz0" default="Jz"/>
+    <PARAMETER name="Jxy0" default="Jxy"/>
+    <PARAMETER name="Jz1" default="Jz'"/>
+    <PARAMETER name="Jxy1" default="Jxy'"/>
     <PARAMETER name="h" default="0"/>
     <PARAMETER name="Gamma" default="0"/>
     <PARAMETER name="D" default="0"/>
-    <PARAMETER name="h'" default="0"/>
-    <PARAMETER name="Gamma'" default="0"/>
-    <PARAMETER name="D'" default="0"/>
     <BASIS ref="mixed spin"/>
-    <SITETERM type="0" site="i">
-      -h*Sz(i)-Gamma*Sx(i)+D*Sz(i)*Sz(i)
+    <SITETERM site="i">
+      <PARAMETER name="h#" default="h"/>
+      <PARAMETER name="Gamma#" default="Gamma"/>
+      <PARAMETER name="D#" default="D"/>
+      -h#*Sz(i)-Gamma#*Sx(i)+D#*Sz(i)*Sz(i)
     </SITETERM>
-    <SITETERM type="1" site="i">
-      -h'*Sz(i)-Gamma'*Sx(i)+D'*Sz(i)*Sz(i)
-    </SITETERM>
-    <BONDTERM type="0" source="i" target="j">
-      Jz*Sz(i)*Sz(j)+Jxy/2*(Splus(i)*Sminus(j)+Sminus(i)*Splus(j))
-    </BONDTERM>
-    <BONDTERM type="1" source="i" target="j">
-      Jz'*Sz(i)*Sz(j)+Jxy'/2*(Splus(i)*Sminus(j)+Sminus(i)*Splus(j))
+    <BONDTERM source="i" target="j">
+      <PARAMETER name="Jz#" default="0"/>
+      <PARAMETER name="Jxy#" default="0"/>
+      Jz#*Sz(i)*Sz(j)+Jxy#*exchange_xy(i,j)
     </BONDTERM>
   </HAMILTONIAN>
   <HAMILTONIAN name="spin">
@@ -420,24 +449,24 @@
     <PARAMETER name="Jz'" default="J'"/>
     <PARAMETER name="Jxy'" default="J'"/>
     <PARAMETER name="J'" default="0"/>
+    <PARAMETER name="Jz0" default="Jz"/>
+    <PARAMETER name="Jxy0" default="Jxy"/>
+    <PARAMETER name="Jz1" default="Jz'"/>
+    <PARAMETER name="Jxy1" default="Jxy'"/>
     <PARAMETER name="h" default="0"/>
     <PARAMETER name="Gamma" default="0"/>
     <PARAMETER name="D" default="0"/>
-    <PARAMETER name="h'" default="0"/>
-    <PARAMETER name="Gamma'" default="0"/>
-    <PARAMETER name="D'" default="0"/>
     <BASIS ref="spin"/>
-    <SITETERM type="0" site="i">
-      -h*Sz(i)-Gamma*Sx(i)+D*Sz(i)*Sz(i)
+    <SITETERM site="i">
+      <PARAMETER name="h#" default="h"/>
+      <PARAMETER name="Gamma#" default="Gamma"/>
+      <PARAMETER name="D#" default="D"/>
+      -h#*Sz(i)-Gamma#*Sx(i)+D#*Sz(i)*Sz(i)
     </SITETERM>
-    <SITETERM type="1" site="i">
-      -h'*Sz(i)-Gamma'*Sx(i)+D'*Sz(i)*Sz(i)
-    </SITETERM>
-    <BONDTERM type="0" source="i" target="j">
-      Jz*Sz(i)*Sz(j)+Jxy*exchange_xy(i,j)
-    </BONDTERM>
-    <BONDTERM type="1" source="i" target="j">
-      Jz'*Sz(i)*Sz(j)+Jxy'*exchange_xy(i,j)
+    <BONDTERM source="i" target="j">
+      <PARAMETER name="Jz#" default="0"/>
+      <PARAMETER name="Jxy#" default="0"/>
+      Jz#*Sz(i)*Sz(j)+Jxy#*exchange_xy(i,j)
     </BONDTERM>
   </HAMILTONIAN>
   <HAMILTONIAN name="spinless fermions">
@@ -446,37 +475,51 @@
     <PARAMETER name="V" default="0"/>
     <PARAMETER name="t'" default="0"/>
     <PARAMETER name="V'" default="0"/>
+    <PARAMETER name="t0" default="t"/>
+    <PARAMETER name="t1" default="t'"/>
+    <PARAMETER name="V0" default="V"/>
+    <PARAMETER name="V1" default="V'"/>
     <BASIS ref="spinless fermion"/>
     <SITETERM site="i">
-      -mu*n(i)
+      <PARAMETER name="mu#" default="mu"/>
+      -mu#*n(i)
     </SITETERM>
-    <BONDTERM type="0" source="i" target="j">
-      -t*(cdag(i)*c(j)+cdag(j)*c(i)) + V*n(i)*n(j)
-    </BONDTERM>
-    <BONDTERM type="1" source="i" target="j">
-      -t'*(cdag(i)*c(j)+cdag(j)*c(i)) + V'*n(i)*n(j)
+    <BONDTERM source="i" target="j">
+      <PARAMETER name="t#" default="0"/>
+      <PARAMETER name="V#" default="0"/>
+      -t#*(cdag(i)*c(j)+cdag(j)*c(i)) + V#*n(i)*n(j)
     </BONDTERM>
   </HAMILTONIAN>
   <HAMILTONIAN name="t-J">
     <PARAMETER name="mu" default="0"/>
     <PARAMETER name="t" default="1"/>
     <PARAMETER name="J" default="1"/>
+    <PARAMETER name="V" default="0"/>
     <PARAMETER name="t'" default="0"/>
     <PARAMETER name="J'" default="0"/>
+    <PARAMETER name="V'" default="0"/>
     <PARAMETER name="t''" default="0"/>
     <PARAMETER name="J''" default="0"/>
+    <PARAMETER name="V''" default="0"/>
+    <PARAMETER name="t0" default="t"/>
+    <PARAMETER name="t1" default="t'"/>
+    <PARAMETER name="t2" default="t-'"/>
+    <PARAMETER name="V0" default="V"/>
+    <PARAMETER name="V1" default="V'"/>
+    <PARAMETER name="V2" default="V''"/>
+    <PARAMETER name="VJ" default="J"/>
+    <PARAMETER name="J1" default="J'"/>
+    <PARAMETER name="J2" default="J''"/>
     <BASIS ref="t-J"/>
-    <SITETERM type="0" site="i">
-      -mu*n(i)
+    <SITETERM site="i">
+      <PARAMETER name="mu#" default="mu"/>
+      -mu#*n(i)
     </SITETERM>
     <BONDTERM type="0" source="i" target="j">
-      -t*fermion_hop(i,j) + J*exchange(i,j)-J/4*n(i)*n(j)
-    </BONDTERM>
-    <BONDTERM type="1" source="i" target="j">
-      -t'*fermion_hop(i,j) + J'exchange(i,j)-J'/4*n(i)*n(j)
-    </BONDTERM>
-    <BONDTERM type="2" source="i" target="j">
-      -t''*fermion_hop(i,j) + J''*exchange(i,j)-J''/4*n(i)*n(j)
+      <PARAMETER name="t#" default="0"/>
+      <PARAMETER name="V#" default="0"/>
+      <PARAMETER name="J#" default="0"/>
+      -t#*fermion_hop(i,j) + J#*exchange(i,j)+(V#-J#/4)*n(i)*n(j)
     </BONDTERM>
   </HAMILTONIAN>
 </MODELS>

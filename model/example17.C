@@ -48,13 +48,8 @@ int main()
     for (int i=0;i<parms.size();++i) {
       alps::ModelLibrary models(parms[i]);
       alps::graph_helper<> lattice(parms[i]);
-      alps::HamiltonianDescriptor<short> ham(models.get_hamiltonian(lattice,parms[i]));
-      parms[i].copy_undefined(ham.default_parameters());
-      ham.set_parameters(parms[i]);
-      if (has_sign_problem(ham,lattice,parms[i]))
-        std::cout << "Model " << i+1 << " has a sign problem.\n";
-      else
-        std::cout << "Model " << i+1 << " has no sign problem.\n";
+      alps::HamiltonianDescriptor<short> ham(models.get_hamiltonian(lattice,parms[i],true));
+      std::cout << ham;
     }
 
 #ifndef BOOST_NO_EXCEPTIONS

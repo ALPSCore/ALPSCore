@@ -5,15 +5,15 @@ Sz
 
 Split terms:
 
-Prefactor: 0.5 * Jxy
+Prefactor: 0.5 * Jxy0
 Site 1: Sminus(i)
 Site 2: Splus(j)
 
-Prefactor: 0.5 * Jxy
+Prefactor: 0.5 * Jxy0
 Site 1: Splus(i)
 Site 2: Sminus(j)
 
-Prefactor: Jz
+Prefactor: Jz0
 Site 1: Sz(i)
 Site 2: Sz(j)
 
