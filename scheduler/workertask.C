@@ -245,7 +245,7 @@ void WorkerTask::add_process(const Process& p)
 
 
 // is it finished???
-bool WorkerTask::finished(double& more_time) const
+bool WorkerTask::finished(double& more_time, double& percentage) const
 {
   if (finished_)
     return true;
@@ -255,6 +255,11 @@ bool WorkerTask::finished(double& more_time) const
   if(w<=0.)
     return true;
 
+  percentage = 1.-w;
+  if (percentage < 0.) 
+    percentage=0.;
+  else if (percentage>1.)
+    percentage=1.;
   // estinate remaining time
   if(more_time<0)
     start_time=0; // new estimate

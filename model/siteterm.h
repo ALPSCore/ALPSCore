@@ -47,10 +47,12 @@ public:
  SiteTermDescriptor(const T& t, const std::string& s="") 
    : super_type(t,s), type_(-2) {}
   SiteTermDescriptor(const XMLTag&, std::istream&);
+  SiteTermDescriptor(SiteTermDescriptor const& t, std::string const& term, Parameters const& p, unsigned int type) 
+   : super_type(t,term,p), type_(type) {}
 
   void write_xml(oxstream&) const;
   const SiteOperator& site_operator() const { return static_cast<const SiteOperator&>(*this);}
-  bool match_type(int type) const { return type_==-1 || type==type_;}
+  bool match_type(int type) const { return type==type_;}
 
 private:
   int type_;

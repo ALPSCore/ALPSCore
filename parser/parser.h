@@ -45,7 +45,7 @@ namespace detail {
 // \brief returns true if the character is a XML tag name
 inline bool is_identifier_char(char c) 
 { 
-  return std::isalnum(c) || c=='_' || c==':';
+  return std::isalnum(c) || c=='_' || c==':' || c=='#';
 }
 
 } // end namespace detail

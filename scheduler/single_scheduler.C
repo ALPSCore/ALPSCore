@@ -96,14 +96,16 @@ int SingleScheduler::run()
     if(second_clock::local_time()>next_check) {
       std::cerr  << "Checking if it is finished: " << std::flush;
       double more_time=0;
-      task_finished=theTask->finished(more_time);
+      double percentage=0.;
+      task_finished=theTask->finished(more_time,percentage);
               
       // next check after at more_time, restrained to min. and max. times
       more_time= (more_time < min_check_time ? min_check_time :
                   (more_time > max_check_time ? max_check_time : more_time));
       next_check=second_clock::local_time()+seconds(int(more_time));
       if(!task_finished)
-        std::cerr  << "not yet, next check in " << int(more_time) << " seconds.\n";
+        std::cerr  << "not yet, next check in " << int(more_time) << " seconds ( "
+        << static_cast<int>(100.*percentage) << "% done).\n";
     }
     if((!task_finished)&&(second_clock::local_time()>last_checkpoint+seconds(int(checkpoint_time)))) {
       // make regular checkpoints if not yet finished

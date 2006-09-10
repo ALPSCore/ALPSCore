@@ -54,8 +54,16 @@ public:
   const std::string& name() const { return name_;}
   const BasisDescriptor<I>& basis() const { return basis_;}
   BasisDescriptor<I>& basis() { return basis_;}
+  
   const Parameters& default_parameters() const { return parms_;}
   bool set_parameters(Parameters p);
+    template <class G>
+    
+  void create_terms(graph_helper<G> const& l)
+  {
+    parms_.copy_undefined(GlobalOperator::create_terms(l));
+  }
+
 private:
   std::string name_;
   std::string operator_name_;

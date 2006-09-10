@@ -166,7 +166,7 @@ void Task::add_process(const Process& /* p */)
 
 
 // is it finished???
-bool Task::finished(double& /* more_time */) const
+bool Task::finished(double& /* more_time */, double& /* percentage */ ) const
 {
   return finished_;
 }

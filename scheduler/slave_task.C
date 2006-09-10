@@ -137,7 +137,7 @@ ResultType SlaveTask::get_summary() const
   return res;
 }
   
-bool SlaveTask::finished(double&) const
+bool SlaveTask::finished(double&, double& ) const
 {
   boost::throw_exception(std::logic_error("should never ask finished? of a slave simulation"));
   return 0.;

@@ -276,9 +276,10 @@ int MPPScheduler::check_tasks(ProcessList& free)
     if(active[i].where.size() &&
        second_clock::local_time() > active[i].next_check) {
       double more_time=0.;
+      double percentage=0.;
       // if(active[i].next_check==0.)
       //   more_time=-1.;
-      int simfinished=tasks[active[i].number]->finished(more_time);
+      int simfinished=tasks[active[i].number]->finished(more_time,percentage);
       // next check after at more_time, restrained to min. and max. times
       more_time=
         (more_time < min_check_time ? min_check_time :
@@ -287,8 +288,9 @@ int MPPScheduler::check_tasks(ProcessList& free)
       if(!simfinished)
         std::cerr  << "Checking if Simulation " << active[i].number+1
                    << " is finished: "
-                   << "Not yet, next check in " << int(more_time)
-                   << " seconds\n";
+                   << "not yet, next check in " << int(more_time)
+                   << " seconds ( "
+                   << static_cast<int>(100.*percentage) << "% done).\n";
       else { 
         std::cerr  << "Checking if Simulation " << active[i].number+1
                    << " is finished: "

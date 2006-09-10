@@ -40,16 +40,25 @@ void alps::SiteOperator::read_xml(const XMLTag& intag, std::istream& is)
   name_ = tag.attributes["name"];
   if (tag.type!=XMLTag::SINGLE) {
     term_=parse_content(is);
-    tag = parse_tag(is,false);
-    while (tag.type==XMLTag::COMMENT) {
+    while (true) {
+      tag = parse_tag(is,false);
+      if (tag.name == "/"+intag.name)
+        return;
+      if (tag.name == "PARAMETER") {
+        parms_[tag.attributes["name"]]=tag.attributes["default"];
+        if (tag.type!=XMLTag::SINGLE) {
+          tag=parse_tag(is);
+          if (tag.name!="/PARAMETER")
+            boost::throw_exception(std::runtime_error("End tag </PARAMETER> missing while parsing " + name() + " Hamiltonian"));
+        }
+      }
+      else if (tag.type!=XMLTag::COMMENT)
+        boost::throw_exception(std::runtime_error("Illegal tag <" + tag.name + "> in <" +intag.name+ "> element"));
       std::string next_part = parse_content(is);
       if (!term_.empty() && !next_part.empty())
         term_ += " ";
       term_ +=next_part;
-      tag = parse_tag(is,false);
     }
-    if (tag.name !="/"+intag.name)
-      boost::throw_exception(std::runtime_error("Illegal tag <" + tag.name + "> in <" +intag.name+ "> element"));
   }
 }
 
@@ -78,6 +87,9 @@ void alps::SiteOperator::write_xml(oxstream& os) const
     os << attribute("name", name());
   if (!site().empty())
     os << attribute("site", site());
+  for (Parameters::const_iterator it=parms().begin();it!=parms().end();++it)
+    os << start_tag("PARAMETER") << attribute("name", it->key())
+       << attribute("default", it->value()) << end_tag("PARAMETER");
   os << term() << end_tag("SITEOPERATOR");
 }
 
@@ -88,6 +100,9 @@ void alps::SiteTermDescriptor::write_xml(oxstream& os) const
     os << attribute("type", type_);
   if (!site().empty())
     os << attribute("site", site());
+  for (Parameters::const_iterator it=parms().begin();it!=parms().end();++it)
+    os << start_tag("PARAMETER") << attribute("name", it->key())
+       << attribute("default", it->value()) << end_tag("PARAMETER");
   os << term() << end_tag("SITETERM");
 }
 

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 1994-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -64,7 +64,8 @@ bool AbstractTask::handle_message(const Process& master,int tag)
   ProcessList pl;
   Process p;
   int32_t n;
-  double w;
+  double w=0.;
+  double percentage=0.;
   std::string filename;
   ResultType res;
   switch(tag) {
@@ -86,8 +87,8 @@ bool AbstractTask::handle_message(const Process& master,int tag)
       
     case MCMP_get_task_finished:
       message.receive(master,MCMP_get_task_finished);
-      n = finished(w);
-      dump << n << w;
+      n = finished(w,percentage);
+      dump << n << w << percentage;
       dump.send(master,MCMP_task_finished);
       return true;
       

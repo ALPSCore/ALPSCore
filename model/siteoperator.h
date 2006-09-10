@@ -75,6 +75,13 @@ class SiteOperator
 public:
   SiteOperator() {}
   SiteOperator(const std::string& t, const std::string& s) : term_(t), site_(s) {}
+  SiteOperator(SiteOperator const& op, std::string const& t, Parameters const& p) 
+   : term_(t)
+   , site_(op.site_)
+   , name_(op.name_)
+   , parms_(p)
+  {}
+    
   template <class T>
   SiteOperator(const T& t, const std::string& s)
     : term_(boost::lexical_cast<std::string>(t)), site_(s) {}
@@ -86,6 +93,7 @@ public:
   void write_xml(oxstream&) const;
 
   const std::string& site() const { return site_;}
+  std::string& term() { return term_;}
   const std::string& term() const { return term_;}
   const std::string& name() const { return name_;}
   template <class T, class I>
@@ -99,10 +107,13 @@ template <class T>
   std::vector<boost::tuple<expression::Term<T>,SiteOperator> > templated_split(const Parameters& = Parameters()) const;
   std::vector<boost::tuple<Term,SiteOperator> > split(const Parameters& p= Parameters()) const 
   { return templated_split<std::complex<double> >(p);}
+
+  Parameters const& parms() const { return parms_;}
 private:
   std::string term_;
   std::string site_;
   std::string name_;
+  Parameters parms_;
 };
 
 

@@ -47,11 +47,14 @@ public:
     : BondOperator(term,s,t), type_(-2) {}
 
   BondTermDescriptor(const XMLTag&, std::istream&);
+
+  BondTermDescriptor(BondTermDescriptor const& t, std::string const& term, Parameters const& p, unsigned int type) 
+   : BondOperator(t,term,p), type_(type) {}
+
   const BondOperator& bond_operator() const { return static_cast<const BondOperator&>(*this);}
   void write_xml(oxstream&) const;
 
   bool match_type(int type) const { return type_==-1 || type==type_;}
-
 private:
   int type_;
 };

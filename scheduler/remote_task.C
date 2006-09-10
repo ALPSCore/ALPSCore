@@ -63,7 +63,7 @@ void RemoteTask::add_process(const Process& p)
       send.send(where[0],MCMP_add_process);
 }
 
-bool RemoteTask::finished(double& more_time) const
+bool RemoteTask::finished(double& more_time, double& percentage) const
 {
   OMPDump send;
   send.send(where[0],MCMP_get_task_finished);
@@ -71,8 +71,7 @@ bool RemoteTask::finished(double& more_time) const
   IMPDump receive(where[0],MCMP_task_finished);
       
   int32_t flag;
-  receive >> flag;
-  receive >> more_time;
+  receive >> flag >> more_time >> percentage;
   return flag;
 }
 

@@ -98,13 +98,13 @@ public:
   virtual ResultType get_summary() const =0; 
 
   virtual double work() const {return 1.;}; // return amount of work needed
-  virtual bool finished(double&) const = 0; // check if task is finished
+  virtual bool finished(double&,double&) const = 0; // check if task is finished
   virtual bool handle_message(const Process& master,int tag); // deal with messages
 
   int finished_notime() const // no time estimate needed
   { 
     double dummy; 
-    return finished(dummy);
+    return finished(dummy,dummy);
   }
 
   // how much work is left?
@@ -140,8 +140,8 @@ public:
   void run(); // run a few steps and return control
   virtual void dostep()=0; // do a step
   void finish(); // mark as finished
-  bool finished() const { double dummy ; return finished(dummy);}
-  bool finished(double&) const; // check if simulation is finished
+  bool finished() const { double dummy ; return finished(dummy,dummy);}
+  bool finished(double&,double&) const; // check if simulation is finished
   bool started() const { return started_;}
   void halt();
   double work() const; // return amount of work needed
@@ -188,7 +188,7 @@ public:
 
   void start(); // start simulation
   void dostep(); // run a few steps and return control
-  bool finished(double&) const; // check if simulation is finished
+  bool finished(double&,double&) const; // check if simulation is finished
   void halt();
   double work() const; // return amount of work needed
   double work_done() const; // return amount of work done
@@ -224,7 +224,7 @@ public:
   bool local() {return false;} // no, remote
 
   void start(); // run a few steps and return control
-  bool finished(double&) const; // check if simulation is finished
+  bool finished(double&,double&) const; // check if simulation is finished
   double work() const; // ask for work needed
   void run(); // should not be called
   void halt(); // halt remote simulation
@@ -244,7 +244,7 @@ public:
   virtual void add_process(const Process& p);
   virtual void start();
   virtual double work() const;
-  virtual bool finished(double& x) const;
+  virtual bool finished(double& x,double& ) const;
   virtual void halt();
   virtual uint32_t cpus() const;
 

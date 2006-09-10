@@ -38,6 +38,7 @@
 #include <alps/model/hamiltonian.h>
 #include <alps/model/basisstates.h>
 #include <alps/parser/parser.h>
+#include <alps/lattice/graph_helper.h>
 
 #include <string>
 
@@ -75,7 +76,22 @@ public:
   HamiltonianDescriptor<short> get_hamiltonian(const std::string& name, Parameters p, bool issymbolic=false) const;
   HamiltonianDescriptor<short> get_hamiltonian(Parameters p, bool issymbolic=false) const 
   { return get_hamiltonian(p["MODEL"],p,issymbolic);}
-  
+  template <class G>
+  HamiltonianDescriptor<short> get_hamiltonian(alps::graph_helper<G> const& g, Parameters p, bool issymbolic=false) const 
+  { return get_hamiltonian(g,p["MODEL"],p,issymbolic);}
+  template <class G>
+  HamiltonianDescriptor<short> get_hamiltonian(alps::graph_helper<G> const& g, const std::string& name, Parameters p, bool issymbolic=false) const
+  {
+    alps::HamiltonianDescriptor<short> ham(get_hamiltonian(name));
+    ham.create_terms(g);
+    if (!issymbolic)
+      p.copy_undefined(ham.default_parameters());
+    ham.set_parameters(p);
+    ham.substitute_operators(*this,issymbolic ? Parameters() : p);
+    return ham;
+  }
+
+
   const SiteOperatorMap& site_operators() const { return site_operators_;}
   const BondOperatorMap& bond_operators() const { return bond_operators_;}
   const GlobalOperatorMap& global_operators() const { return global_operators_;}

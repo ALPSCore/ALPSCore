@@ -80,17 +80,26 @@ class BondOperator
 public:
   BondOperator() : source_("i"), target_("j") {}
   BondOperator(const std::string& s, const std::string& t) : source_(s), target_(t) {}
-  BondOperator(const BondOperator& op) : name_(op.name_), term_(op.term_), source_(op.source_), target_(op.target_) {}
+  //BondOperator(const BondOperator& op) : name_(op.name_), term_(op.term_), source_(op.source_), target_(op.target_) {}
   template <class T>
   BondOperator(const T& term, const std::string& s="i", const std::string& t="j")
     : term_(boost::lexical_cast<std::string>(term)), source_(s), target_(t) {}
   BondOperator(const XMLTag& tag, std::istream& in) { read_xml(tag,in);}
+
+  BondOperator(BondOperator const& op, std::string const& t, Parameters const& p) 
+   : term_(t)
+   , name_(op.name_)
+   , source_(op.source_)
+   , target_(op.target_)  
+   , parms_(p)
+  {}
 
   void read_xml(const XMLTag&, std::istream&);
   void write_xml(oxstream&) const;
 
   const std::string& name() const { return name_;}
   const std::string& term () const { return term_;}
+  std::string& term () { return term_;}
   const std::string& source () const { return source_;}
   const std::string& target () const { return target_;}
   void substitute_operators(const ModelLibrary& m, const Parameters& p=Parameters());
@@ -102,11 +111,14 @@ template <class T>
   std::vector<boost::tuple<Term,SiteOperator,SiteOperator> > split(const Parameters& p= Parameters()) const 
   { return templated_split<std::complex<double> >(p);}
   std::set<std::string> operator_names(const Parameters& = Parameters()) const;
+
+  Parameters const& parms() const { return parms_;}
 private:
   std::string name_;
   std::string term_;
   std::string source_;
   std::string target_;
+  Parameters parms_;
 };
 
 

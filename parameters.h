@@ -231,6 +231,8 @@ public:
       boost::serialization::stl::archive_input_seq<Archive,Parameters>,
         boost::serialization::stl::no_reserve_imp<Parameters> >(ar, *this);
   }
+  
+  bool empty() const { return map_.empty();}
 
 private:
   list_type list_;

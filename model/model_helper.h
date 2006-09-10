@@ -31,6 +31,7 @@
 #define ALPS_MODEL_MODEL_HELPER_H
 
 #include <alps/model/modellibrary.h>
+#include <alps/lattice/graph_helper.h>
 
 namespace alps {
 
@@ -46,9 +47,17 @@ public:
   
   model_helper(alps::Parameters& p, bool issymbolic=false) // it updates the parameter object passed to it!
    : model_library_(p), 
-     model_(model_library_.get_hamiltonian(p,issymbolic)),
      parms_(p) 
   {
+    model_ = model_library_.get_hamiltonian(p,issymbolic);
+  }
+
+  template <class G>
+  model_helper(alps::graph_helper<G> const& g, alps::Parameters& p, bool issymbolic=false) // it updates the parameter object passed to it!
+   : model_library_(p), 
+     parms_(p) 
+  {
+    model_ = model_library_.get_hamiltonian(g,p,issymbolic);
   }
   
   HamiltonianDescriptor<I>& model() { return model_;}
