@@ -125,13 +125,16 @@ template <class G=graph_helper<>::graph_type, class I=short>
 class LatticeModelMCRun : public LatticeMCRun<G>, public model_helper<I>
 {
 public:  
-  LatticeModelMCRun(const ProcessList& w,const alps::Parameters& p,int n,bool issymbolic=false)
-   : LatticeMCRun<G>(w,p,n), model_helper<I>(LatticeMCRun<G>::parms,issymbolic)
+  LatticeModelMCRun(const ProcessList& w, const alps::Parameters& p, int n,
+                    bool issymbolic = false)
+    : LatticeMCRun<G>(w, p, n),
+      model_helper<I>(*this, LatticeMCRun<G>::parms, issymbolic)
   {}
   
   bool has_sign_problem() const 
   {
-    return alps::has_sign_problem(model_helper<I>::model(),*this,LatticeMCRun<G>::parms);
+    return alps::has_sign_problem(model_helper<I>::model(), *this,
+                                  LatticeMCRun<G>::parms);
   }
 };
 
