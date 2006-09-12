@@ -87,8 +87,8 @@ public:
   BondOperator(const XMLTag& tag, std::istream& in) { read_xml(tag,in);}
 
   BondOperator(BondOperator const& op, std::string const& t, Parameters const& p) 
-   : term_(t)
-   , name_(op.name_)
+   : name_(op.name_)
+   , term_(t)
    , source_(op.source_)
    , target_(op.target_)  
    , parms_(p)
