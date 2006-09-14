@@ -46,14 +46,15 @@ try {
   int32_t o6 = 847229;
   uint32_t o7 = 4294967295u;
   int64_t o8 = -1152921504606846976ll;
-  uint64_t o9 = 18446744073709551614ull;
-  double o10 = 3.14159265358979323846;
-  std::string o11 = "test string";
-  std::complex<double> o12(1,2);
+  int64_t o9 = 343434545665ll;
+  uint64_t o10 = 18446744073709551614ull;
+  double o11 = 3.14159265358979323846;
+  std::string o12 = "test string";
+  std::complex<double> o13(1,2);
 
   {
     alps::OXDRFileDump od(boost::filesystem::path("xdrdump.dump",boost::filesystem::native));
-    od << o1 << o2 << o3 << o4 << o5 << o6 << o7 << o8 << o9 << o10 << o11 << o12;
+    od << o1 << o2 << o3 << o4 << o5 << o6 << o7 << o8 << o9 << o10 << o11 << o12 <<o13;
   }
   
   alps::IXDRFileDump id(boost::filesystem::path("xdrdump.dump",boost::filesystem::native));
@@ -65,16 +66,17 @@ try {
   std::cout << static_cast<int32_t>(id) << ' ';
   std::cout << static_cast<uint32_t>(id) << ' ';
   int64_t i8 = id;
-  uint64_t i9(id);
-  std::cout << i8 << ' '  << i9  << ' ';
-  double i10 = static_cast<double>(id);
-  std::cout << i10 << ' ';
+  int64_t i9 = id;
+  uint64_t i10(id);
+  std::cout << i8 << ' '  << i9  << ' ' << i10 << ' ';
+  double i11 = static_cast<double>(id);
+  std::cout << i11 << ' ';
   std::string str;
   id >> str;
   std::cout << str << ' ';
-  std::complex<double> i11;
-  id >> i11;
-  std::cout << i11 << std::endl;
+  std::complex<double> i13;
+  id >> i13;
+  std::cout << i13 << std::endl;
   
 #ifndef BOOST_NO_EXCEPTIONS
 }
