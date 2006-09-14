@@ -38,7 +38,12 @@
 #include <cstdio>
 #include <string>
 #include <stdio.h>
+
+#ifdef ALPS_HAVE_RPC_XDR_H
 #include <rpc/rpc.h>
+#else
+#include <alps/osiris/xdrcore.h>
+#endif
 
 #ifdef BOOST_NO_STDC_NAMESPACE
   namespace std {
