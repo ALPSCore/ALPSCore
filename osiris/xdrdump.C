@@ -88,13 +88,13 @@ static bool xdr_s_char(XDR *xdrs, signed char *scp)
 bool xdr_hyper(XDR *xdrs, long long *llp)
 {
   long t1;
-  long t2;
+  unsigned long t2;
   if (xdrs->x_op == XDR_ENCODE) {
     t1 = (long)((*llp) >> 32);
-    t2 = (long)(*llp - (((long long) t1) << 32));
-    return (::xdr_long(xdrs, &t1) && ::xdr_long(xdrs, &t2));
+    t2 = (unsigned long)(*llp - (((long long) t1) << 32));
+    return (::xdr_long(xdrs, &t1) && ::xdr_u_long(xdrs, &t2));
   } else if (xdrs->x_op == XDR_DECODE) {
-    if (!::xdr_long(xdrs, &t1) || !::xdr_long(xdrs, &t2)) return false;
+    if (!::xdr_long(xdrs, &t1) || !::xdr_u_long(xdrs, &t2)) return false;
     *llp = ((long long) t1) << 32;
     *llp |= t2;
     return true;
