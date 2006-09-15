@@ -81,6 +81,9 @@
 // Define to 1 if you have valarray<T>.
 #undef ALPS_HAVE_VALARRAY
 
+// Define to 1 if you have rpc/rpc.h and rpc/xdr.h
+#undef ALPS_HAVE_RPC_XDR_H
+
 //
 // Libraries
 //
