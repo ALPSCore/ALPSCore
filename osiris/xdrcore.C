@@ -106,7 +106,22 @@ ntohl(unsigned long a)
 
 #else 
 #if __BYTE_ORDER == __LITTLE_ENDIAN 
-#error clarify htonl and ntohl
+unsigned long
+htonl(unsigned long a)
+{
+ return ((((unsigned long)(a) & 0xff000000) >> 24) | \
+         (((unsigned long)(a) & 0x00ff0000) >> 8)  | \
+         (((unsigned long)(a) & 0x0000ff00) << 8)  | \
+         (((unsigned long)(a) & 0x000000ff) << 24));
+}
+unsigned long
+ntohl(unsigned long a)
+{
+ return ((((unsigned long)(a) & 0xff000000) >> 24) | \
+         (((unsigned long)(a) & 0x00ff0000) >> 8)  | \
+         (((unsigned long)(a) & 0x0000ff00) << 8)  | \
+         (((unsigned long)(a) & 0x000000ff) << 24));
+}
 #endif
 #endif
 
