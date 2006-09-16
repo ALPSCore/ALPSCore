@@ -60,7 +60,7 @@ struct parity_traits<parity_t, Graph> {
 };
 
 
-#if !BOOST_WORKAROUND(__IBMCPP__, <= 700) && !defined(BOOST_NO_INCLASS_MEMBER_INITIALIZATION)
+#if !BOOST_WORKAROUND(__IBMCPP__, <= 800) && !defined(BOOST_NO_INCLASS_MEMBER_INITIALIZATION)
 template<class Graph>
 const typename parity_traits<parity_t, Graph>::value_type 
   parity_traits<parity_t, Graph>::white;
