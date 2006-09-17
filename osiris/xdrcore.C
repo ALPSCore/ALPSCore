@@ -498,6 +498,10 @@ bool_t xdr_string (XDR *xdrs,char ** cpp,u_int maxsize)
   return FALSE;
 }
 
+#ifndef __FLOAT_WORD_ORDER
+#define __FLOAT_WORD_ORDER __BYTE_ORDER
+#endif
+
 #define LSW     (__FLOAT_WORD_ORDER == __BIG_ENDIAN)
 
 #ifdef vax
