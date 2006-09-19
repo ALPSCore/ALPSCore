@@ -144,8 +144,9 @@ const HamiltonianDescriptor<short>& ModelLibrary::get_hamiltonian(const std::str
   return hamiltonians_.find(name)->second;
 }
 
-HamiltonianDescriptor<short> ModelLibrary::get_hamiltonian(const std::string& name, Parameters p, bool issymbolic) const
+HamiltonianDescriptor<short> ModelLibrary::get_hamiltonian(const std::string& name, Parameters const& parms, bool issymbolic) const
 {
+  Parameters p(parms);
   alps::HamiltonianDescriptor<short> ham(get_hamiltonian(name));
   if (!issymbolic)
     p.copy_undefined(ham.default_parameters());
@@ -161,7 +162,7 @@ const SiteBasisDescriptor<short>& ModelLibrary::get_site_basis(const std::string
   return sitebases_.find(name)->second;
 }
 
-SiteOperator ModelLibrary::get_site_operator(const std::string& name,Parameters p) const
+SiteOperator ModelLibrary::get_site_operator(const std::string& name,Parameters const& p) const
 {
   if (!has_site_operator(name))
     boost::throw_exception(std::runtime_error("No site operator named '" +name+"' found in model library"));
@@ -170,7 +171,7 @@ SiteOperator ModelLibrary::get_site_operator(const std::string& name,Parameters 
   return op;
 }
 
-BondOperator ModelLibrary::get_bond_operator(const std::string& name,Parameters p) const
+BondOperator ModelLibrary::get_bond_operator(const std::string& name,Parameters const& p) const
 {
   if (!has_bond_operator(name))
     boost::throw_exception(std::runtime_error("No bond operator named '" +name+"' found in model library"));
@@ -179,7 +180,7 @@ BondOperator ModelLibrary::get_bond_operator(const std::string& name,Parameters 
   return op;
 }
 
-GlobalOperator ModelLibrary::get_global_operator(const std::string& name,Parameters p) const
+GlobalOperator ModelLibrary::get_global_operator(const std::string& name,Parameters const& p) const
 {
   if (!has_global_operator(name))
     boost::throw_exception(std::runtime_error("No bond operator named '" +name+"' found in model library"));

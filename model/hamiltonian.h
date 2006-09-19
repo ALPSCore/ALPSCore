@@ -57,8 +57,8 @@ public:
   
   const Parameters& default_parameters() const { return parms_;}
   bool set_parameters(Parameters p);
-    template <class G>
-    
+
+  template <class G>
   void create_terms(graph_helper<G> const& l)
   {
     parms_.copy_undefined(GlobalOperator::create_terms(l));

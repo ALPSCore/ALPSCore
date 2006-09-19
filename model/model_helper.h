@@ -45,7 +45,7 @@ public:
   typedef half_integer<I> half_integer_type;
   typedef QuantumNumberDescriptor<I> quantum_number_type;
   
-  model_helper(alps::Parameters& p, bool issymbolic=false) // it updates the parameter object passed to it!
+  model_helper(alps::Parameters const& p, bool issymbolic=false)
    : model_library_(p), 
      parms_(p) 
   {
@@ -53,7 +53,7 @@ public:
   }
 
   template <class G>
-  model_helper(alps::graph_helper<G> const& g, alps::Parameters& p, bool issymbolic=false) // it updates the parameter object passed to it!
+  model_helper(alps::graph_helper<G> const& g, alps::Parameters const& p, bool issymbolic=false)
    : model_library_(p), 
      parms_(p) 
   {

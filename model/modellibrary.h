@@ -73,15 +73,16 @@ public:
   const SiteBasisDescriptor<short>& get_site_basis(const std::string& name) const;
   const BasisDescriptor<short>& get_basis(const std::string& name) const;
   const HamiltonianDescriptor<short>& get_hamiltonian(const std::string& name) const;
-  HamiltonianDescriptor<short> get_hamiltonian(const std::string& name, Parameters p, bool issymbolic=false) const;
-  HamiltonianDescriptor<short> get_hamiltonian(Parameters p, bool issymbolic=false) const 
-  { return get_hamiltonian(p["MODEL"],p,issymbolic);}
+  HamiltonianDescriptor<short> get_hamiltonian(const std::string& name, Parameters const& parms, bool issymbolic=false) const;
+  HamiltonianDescriptor<short> get_hamiltonian(Parameters const& parms, bool issymbolic=false) const 
+  { return get_hamiltonian(parms["MODEL"],parms,issymbolic);}
   template <class G>
-  HamiltonianDescriptor<short> get_hamiltonian(alps::graph_helper<G> const& g, Parameters p, bool issymbolic=false) const 
-  { return get_hamiltonian(g,p["MODEL"],p,issymbolic);}
+  HamiltonianDescriptor<short> get_hamiltonian(alps::graph_helper<G> const& g, Parameters const& parms, bool issymbolic=false) const 
+  { return get_hamiltonian(g,parms["MODEL"],parms,issymbolic);}
   template <class G>
-  HamiltonianDescriptor<short> get_hamiltonian(alps::graph_helper<G> const& g, const std::string& name, Parameters p, bool issymbolic=false) const
+  HamiltonianDescriptor<short> get_hamiltonian(alps::graph_helper<G> const& g, const std::string& name, Parameters const& parms, bool issymbolic=false) const
   {
+    Parameters p(parms);
     alps::HamiltonianDescriptor<short> ham(get_hamiltonian(name));
     ham.create_terms(g);
     if (!issymbolic)
@@ -91,14 +92,13 @@ public:
     return ham;
   }
 
-
   const SiteOperatorMap& site_operators() const { return site_operators_;}
   const BondOperatorMap& bond_operators() const { return bond_operators_;}
   const GlobalOperatorMap& global_operators() const { return global_operators_;}
   
-  SiteOperator get_site_operator(const std::string& name,Parameters p=Parameters()) const;
-  BondOperator get_bond_operator(const std::string& name,Parameters p=Parameters()) const;
-  GlobalOperator get_global_operator(const std::string& name,Parameters p=Parameters()) const;
+  SiteOperator get_site_operator(const std::string& name, Parameters const& p = Parameters()) const;
+  BondOperator get_bond_operator(const std::string& name, Parameters const& p = Parameters()) const;
+  GlobalOperator get_global_operator(const std::string& name, Parameters const& p = Parameters()) const;
   
 private:
   typedef std::map<std::string,SiteBasisDescriptor<short> > SiteBasisDescriptorMap;
