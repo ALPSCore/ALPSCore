@@ -335,11 +335,12 @@ void AbstractSignedObservable<OBS,SIGN>::output_vector(std::ostream& out) const
 {
   out << super_type::name();
   if (!sign_name_.empty())
-    out << "; sign in observable \"" << sign_name_;
+    out << "; sign in observable \"" << sign_name_ << "\"";
 
   if(count()==0)
     out << ": no measurements.\n";
   else {
+    out << std::endl;
     result_type value_(mean());
     result_type error_(error());
     convergence_type conv_(converged_errors());
