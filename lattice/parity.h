@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -35,8 +35,11 @@
 #include <alps/math.hpp>
 #include <alps/lattice/graphproperties.h>
 
+#include <boost/graph/filtered_graph.hpp>
 #include <boost/graph/undirected_dfs.hpp>
 #include <boost/graph/visitors.hpp>
+#include <boost/spirit/core.hpp>
+#include <boost/spirit/actor.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/vector_property_map.hpp>
 #include <boost/detail/workaround.hpp>
@@ -59,7 +62,6 @@ struct parity_traits<parity_t, Graph> {
 #endif
 };
 
-
 #if !BOOST_WORKAROUND(__IBMCPP__, <= 800) && !defined(BOOST_NO_INCLASS_MEMBER_INITIALIZATION)
 template<class Graph>
 const typename parity_traits<parity_t, Graph>::value_type 
@@ -72,6 +74,7 @@ const typename parity_traits<parity_t, Graph>::value_type
   parity_traits<parity_t, Graph>::undefined;
 #endif
 
+
 namespace detail {
 
 template<class Graph, class Parity, class PropertyMap>
@@ -83,103 +86,122 @@ public:
   typedef typename boost::graph_traits<Graph>::edge_descriptor
     edge_descriptor;
 
-  ParityVisitor() {}
+  ParityVisitor(PropertyMap& map, bool* bipartite) :
+    map_(map), bipartite_(bipartite) {
+    *bipartite_ = true;
+  }
+
+  void initialize_vertex(vertex_descriptor s, Graph const&) {
+    map_[s] = parity_traits<Parity, Graph>::undefined;
+  }
+
+  void start_vertex(vertex_descriptor s, Graph const&) {
+    map_[s] = parity_traits<Parity, Graph>::black;
+  }
   
-  ParityVisitor(PropertyMap& map, bool* check) :
-    p_(parity_traits<Parity, Graph>::white), map_(map), check_(check)
-  { *check_ = true; }
-
-  void discover_vertex(vertex_descriptor s, const Graph&)
-  {
-    flip();
-    map_[s] = p_;
+  void tree_edge(edge_descriptor e, Graph const& g) {
+    map_[target(e, g)] =
+      (map_[source(e, g)] == parity_traits<Parity, Graph>::black ?
+       parity_traits<Parity, Graph>::white :
+       parity_traits<Parity, Graph>::black);
   }
-  void back_edge(edge_descriptor e, const Graph& g) { check(e, g); }
-  void finish_vertex(vertex_descriptor, const Graph&) { flip(); }
-
-protected:
-  void flip()
-  {
-#if BOOST_WORKAROUND(__IBMCPP__, <= 700)
-    p_ = (p_ == parity_traits<Parity, Graph>::white) ?
-#else
-    p_ = is_equal(p_, parity_traits<Parity, Graph>::white) ?
-#endif
-      parity_traits<Parity, Graph>::black :
-      parity_traits<Parity, Graph>::white;
-  }
-  void check(edge_descriptor e, const Graph& g) {
-    if (is_equal(map_[boost::source(e, g)], map_[boost::target(e, g)])) 
-      *check_ = false;
+  
+  void back_edge(edge_descriptor e, const Graph& g) const {
+    if (map_[source(e, g)] == map_[target(e, g)])
+      *bipartite_ = false;
   }
 
 private:
-  typename parity_traits<Parity, Graph>::value_type p_;
   PropertyMap map_;
-  bool* check_;
+  bool* bipartite_;
 };
 
-} // end namespace detail
 
-template <class Graph, class Parity, class Map>
-bool set_parity(const Graph& g, Parity, Map map)
-{
-  typedef typename detail::ParityVisitor<Graph, Parity, Map> visitor_type;
-
-  bool check = true;
-
-  std::vector<boost::default_color_type> vcolor_map(boost::num_vertices(g));
-  std::vector<boost::default_color_type> ecolor_map(boost::num_edges(g));
-  boost::undirected_dfs(g, visitor_type(map, &check),
-    boost::make_iterator_property_map(vcolor_map.begin(),
-      boost::get(vertex_index_t(), g)),
-    boost::make_iterator_property_map(ecolor_map.begin(),
-      boost::get(edge_index_t(), g)));
-
-  if (!check) {
-    typename boost::graph_traits<Graph>::vertex_iterator vi, vi_end;
-    for (boost::tie(vi, vi_end) = boost::vertices(g); vi != vi_end; ++vi)
-      map[*vi] = parity_traits<Parity, Graph>::undefined;
+template<typename Graph>
+struct backbone_edges {
+  typedef typename boost::graph_traits<Graph>::edge_descriptor edge_descriptor;
+  backbone_edges() {}
+  backbone_edges(Graph const& g, std::set<int> const& bb) :
+    graph(&g), backbone(&bb) {}
+  bool operator()(edge_descriptor e) const {
+    return backbone->find(get(edge_type_t(), *graph, e)) != backbone->end();
   }
-  return check;
-}
-
-namespace detail {
-
-template<bool HasParity>
-struct helper
-{
-  template<class Graph, class Parity>
-  static bool set_parity(Graph&, Parity) { return false; }
+  const Graph* graph;                       
+  const std::set<int>* backbone;
 };
 
-template<>
-struct helper<true>
+
+template<typename Graph, typename Parity, bool HasParity>
+struct parity_helper
 {
-  template<class Graph, class Parity>
-  static bool set_parity(Graph& g, Parity)
+  template<typename G>
+  static bool set_parity(G const&) { return false; }
+};
+
+template<typename Graph, typename Parity>
+struct parity_helper<Graph, Parity, true>
+{
+  typedef typename property_map<Parity, Graph, 
+    typename has_property<Parity, Graph>::type>::type map_type;
+
+  template<typename G>
+  static bool set_parity(G& g)
   {
-    typename property_map<Parity, Graph,
-      typename has_property<Parity, Graph>::type>::type
-      map = boost::get(Parity(), g);
-    return alps::set_parity(g, Parity(), map);
+    typedef typename boost::graph_traits<G>::vertex_iterator vertex_iterator;
+    typedef ParityVisitor<G, Parity, map_type> visitor_type;
+    
+    bool bipartite = true;
+    map_type map = boost::get(Parity(), g);
+
+    std::vector<boost::default_color_type> vcolor_map(num_vertices(g));
+    std::vector<boost::default_color_type> ecolor_map(num_edges(g));
+    undirected_dfs(g, visitor_type(map, &bipartite),
+      boost::make_iterator_property_map(vcolor_map.begin(),
+        get(vertex_index_t(), g)),
+      boost::make_iterator_property_map(ecolor_map.begin(),
+        get(edge_index_t(), g)));
+
+    if (!bipartite) {
+      vertex_iterator vi, vi_end;
+      for (boost::tie(vi, vi_end) = vertices(g); vi != vi_end; ++vi)
+        map[*vi] = parity_traits<Parity, Graph>::undefined;
+    }
+    return bipartite;
   }
 };
 
 } // end namespace detail
 
 
-template<class Graph, class Parity>
-inline bool set_parity(Graph& g, Parity)
-{
-  return detail::helper<has_property<Parity, Graph>::vertex_property>
-    ::set_parity(g, Parity());
+template<typename Graph, typename Parity>
+bool set_parity(Graph& g, alps::Parameters const& p, Parity) {
+  using namespace boost::spirit;
+  typedef detail::parity_helper<Graph, Parity,
+    has_property<Parity, Graph>::vertex_property> parity_helper;
+
+  if (p.defined("BACKBONE_TYPES")) {
+    std::vector<int> t;
+    rule<> r = *space_p >> *(int_p[push_back_a(t)] >> *space_p);
+    if (!parse(p["BACKBONE_TYPES"].c_str(), r).full)
+      boost::throw_exception(
+        std::invalid_argument("parsing BACKBONE_TYPES failed"));
+    std::set<int> v(t.begin(), t.end());
+    boost::filtered_graph<Graph, detail::backbone_edges<Graph> >
+      fg(g, detail::backbone_edges<Graph>(g, v));
+    return parity_helper::set_parity(fg);
+  } else {
+    return parity_helper::set_parity(g);
+  }
 }
 
-template<class Graph>
-inline bool set_parity(Graph& g)
-{
-  return set_parity(g, parity_t());
+template<typename Graph>
+bool set_parity(Graph& g, alps::Parameters const& p) {
+  return set_parity(g, p, parity_t());
+}
+
+template<typename Graph>
+bool set_parity(Graph& g) {
+  return set_parity(g, Parameters(), parity_t());
 }
 
 } // end namespace alps
