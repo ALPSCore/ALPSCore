@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -29,6 +29,7 @@
 /* $Id$ */
 
 #include <alps/lattice.h>
+#include <alps/parameterlist.h>
 #include <fstream>
 #include <iostream>
 
@@ -43,27 +44,32 @@ int main() {
     typedef alps::coordinate_graph_type graph_t;
     typedef alps::parity_t parity_t;
 
-    // create the library from an XML file
-    alps::Parameters params;
-    params["LATTICE_LIBRARY"] = "../../lib/xml/lattices.xml";
-    params["LATTICE"] = "square lattice 4x4";
-    alps::graph_helper<> lattice(params);
-    const graph_t& graph = lattice.graph();
+    // read parameters
+    alps::ParameterList parms;
+    std::cin >> parms;
+    
+    for (alps::ParameterList::const_iterator p = parms.begin();
+         p != parms.end(); ++p) {
+      // create the lattice
 
-    std::cout << graph;
-
-    for (graph_t::vertex_iterator vi = boost::vertices(graph).first;
-         vi != boost::vertices(graph).second; ++vi) {
-      std::cout << "vertex " << *vi << "'s parity is ";
-      if (boost::get(parity_t(), graph, *vi)
-          == alps::parity_traits<parity_t, graph_t>::white) {
-        std::cout << "white\n";
-      } else if (boost::get(alps::parity_t(), graph, *vi)
-                 == alps::parity_traits<parity_t, graph_t>::black) {
-        std::cout << "black\n";
-      } else {
-        std::cout << "undefined\n";
-      }        
+      alps::graph_helper<> lattice(*p);
+      const graph_t& graph = lattice.graph();
+      
+      std::cout << graph;
+      
+      for (graph_t::vertex_iterator vi = boost::vertices(graph).first;
+           vi != boost::vertices(graph).second; ++vi) {
+        std::cout << "vertex " << *vi << "'s parity is ";
+        if (boost::get(parity_t(), graph, *vi)
+            == alps::parity_traits<parity_t, graph_t>::white) {
+          std::cout << "white\n";
+        } else if (boost::get(alps::parity_t(), graph, *vi)
+                   == alps::parity_traits<parity_t, graph_t>::black) {
+          std::cout << "black\n";
+        } else {
+          std::cout << "undefined\n";
+        }        
+      }
     }
          
 #ifndef BOOST_NO_EXCEPTIONS
