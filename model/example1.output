@@ -37,15 +37,15 @@
   <SITEBASIS name="alternative t-J">
     <QUANTUMNUMBER name="Nup" min="0" max="1" type="fermionic"/>
     <QUANTUMNUMBER name="Ndown" min="0" max="1-Nup" type="fermionic"/>
-    <OPERATOR name="Sminus" matrixelement="1/2">
+    <OPERATOR name="Sminus" matrixelement="1">
       <CHANGE quantumnumber="Ndown" change="1"/>
       <CHANGE quantumnumber="Nup" change="-1"/>
     </OPERATOR>
-    <OPERATOR name="Splus" matrixelement="1/2">
+    <OPERATOR name="Splus" matrixelement="1">
       <CHANGE quantumnumber="Ndown" change="-1"/>
       <CHANGE quantumnumber="Nup" change="1"/>
     </OPERATOR>
-    <OPERATOR name="Sz" matrixelement="(Nup+Ndown)/2"/>
+    <OPERATOR name="Sz" matrixelement="(Nup-Ndown)/2"/>
     <OPERATOR name="c_down" matrixelement="1">
       <CHANGE quantumnumber="Ndown" change="-1"/>
     </OPERATOR>
@@ -329,11 +329,11 @@
     <PARAMETER name="V''" default="0"/>
     <PARAMETER name="t0" default="t"/>
     <PARAMETER name="t1" default="t'"/>
-    <PARAMETER name="t2" default="t-'"/>
+    <PARAMETER name="t2" default="t''"/>
     <PARAMETER name="V0" default="V"/>
     <PARAMETER name="V1" default="V'"/>
     <PARAMETER name="V2" default="V''"/>
-    <PARAMETER name="VJ" default="J"/>
+    <PARAMETER name="J0" default="J"/>
     <PARAMETER name="J1" default="J'"/>
     <PARAMETER name="J2" default="J''"/>
     <BASIS ref="alternative t-J"/>
@@ -341,7 +341,7 @@
       <PARAMETER name="mu#" default="mu"/>
       -mu#*n(i)
     </SITETERM>
-    <BONDTERM type="0" source="i" target="j">
+    <BONDTERM source="i" target="j">
       <PARAMETER name="t#" default="0"/>
       <PARAMETER name="V#" default="0"/>
       <PARAMETER name="J#" default="0"/>
@@ -503,11 +503,11 @@
     <PARAMETER name="V''" default="0"/>
     <PARAMETER name="t0" default="t"/>
     <PARAMETER name="t1" default="t'"/>
-    <PARAMETER name="t2" default="t-'"/>
+    <PARAMETER name="t2" default="t''"/>
     <PARAMETER name="V0" default="V"/>
     <PARAMETER name="V1" default="V'"/>
     <PARAMETER name="V2" default="V''"/>
-    <PARAMETER name="VJ" default="J"/>
+    <PARAMETER name="J0" default="J"/>
     <PARAMETER name="J1" default="J'"/>
     <PARAMETER name="J2" default="J''"/>
     <BASIS ref="t-J"/>
@@ -515,7 +515,7 @@
       <PARAMETER name="mu#" default="mu"/>
       -mu#*n(i)
     </SITETERM>
-    <BONDTERM type="0" source="i" target="j">
+    <BONDTERM source="i" target="j">
       <PARAMETER name="t#" default="0"/>
       <PARAMETER name="V#" default="0"/>
       <PARAMETER name="J#" default="0"/>
