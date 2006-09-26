@@ -89,6 +89,8 @@ public:
 
   void set_half(integer_type x) { val_=x; }
   integer_type get_twice() const { return val_; }
+  bool is_odd() const { return (val_ % 2) != 0;}
+  bool is_even() const { return (val_ % 2) == 0;}
 
   template <class J> bool operator==(const half_integer<J>& rhs) const
   { return val_ == rhs.get_twice(); }

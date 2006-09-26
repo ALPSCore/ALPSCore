@@ -39,6 +39,7 @@
 #include <alps/expression.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
+#include <boost/tuple/tuple.hpp>
 #include <set>
 #include <stdexcept>
 #include <string>
@@ -86,7 +87,17 @@ public:
   {
     return global_min_ ? global_min_.get() : min();
   }
+
+  value_type global_increment() const 
+  {
+    return increment_;
+  }
   
+  typedef boost::tuple<value_type,value_type,value_type> range_type;
+  range_type global_range() const 
+  { 
+    return boost::make_tuple(global_min(),global_max(),global_increment());
+  }
   
   I levels() const
   {
@@ -113,12 +124,29 @@ public:
   {
     global_min_.reset();
     global_max_.reset();
+    increment_=1;
   }
 
   void update_limits()
   {
-      global_min_ = (global_min_ ? std::min(global_min_.get(),min()) : min());
-      global_max_ = (global_max_ ? std::max(global_max_.get(),max()) : max());
+    value_type m = min();
+    if (global_min_) {
+      if (global_min_.get().is_even() != m.is_even())
+        increment_=0.5;
+      if (m < global_min_.get())
+        global_min_ = m;
+    }
+    else
+      global_min_ = m;
+    m = max();
+    if (global_max_) {
+      if (global_max_.get().is_even() != m.is_even())
+        increment_=0.5;
+      if (m > global_max_.get())
+      global_max_ = m;
+    }
+    else
+      global_max_ = m;
   }
 
 private:
@@ -133,6 +161,7 @@ private:
   mutable std::set<QuantumNumberDescriptor> dependency_;
   boost::optional<value_type> global_min_;
   boost::optional<value_type> global_max_;
+  value_type increment_;
 };
 
 template<class I>
@@ -149,7 +178,9 @@ QuantumNumberDescriptor<I>:: QuantumNumberDescriptor(const std::string& n, value
      max_(maxVal),
      fermionic_(f),
      valid_(true)
-{}
+{
+  reset_limits();
+}
 
 template <class I>
 QuantumNumberDescriptor<I>:: QuantumNumberDescriptor(const std::string& n,
@@ -163,7 +194,9 @@ QuantumNumberDescriptor<I>:: QuantumNumberDescriptor(const std::string& n,
      max_(),
      fermionic_(f),
      valid_(true)
-{}
+{
+  reset_limits();
+}
 
 
 template <class I>
@@ -194,6 +227,7 @@ const QuantumNumberDescriptor<I>& QuantumNumberDescriptor<I>::operator+=(const Q
   if (fermionic() != rhs.fermionic())
     boost::throw_exception(std::runtime_error("Adding fermionic and bosonic quantum numbers: " + name() + " + " + rhs.name()));
 return *this;
+  reset_limits();
 }
 
 template <class I>
@@ -217,6 +251,7 @@ QuantumNumberDescriptor<I>::QuantumNumberDescriptor(const XMLTag& intag, std::is
   max_string_=tag.attributes["max"];
   if (max_string_=="")
     boost::throw_exception(std::runtime_error("max attribute missing in QUANTUMNUMBER element"));
+  reset_limits();
 }
 
 template <class I>
