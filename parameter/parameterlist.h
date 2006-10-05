@@ -35,16 +35,22 @@
 /// from a textual input file, using the old syntax of the 1994
 /// version of these libraries.
 ///
+
 /// Parameters are specified by single lines containing statements
 /// like \c name \c = \c value where the value needs to be enclosed in
-/// double quotes "...." if it contains spaces.  The name has to start
-/// with a letter, and the next characters can also be numbers or any
-/// of the following characters: _'[] .  More than one parameter
-/// assignment, separated by , or ; can be placed on a single.
+/// double quotes "....", single quotes '....', or brackets [....] if
+/// it contains spaces.  The name has to start with a letter, and the
+/// next characters can also be numbers or any of the following
+/// characters: _'[] .  More than one parameter assignment, separated
+/// by , or ; can be placed on a single line.
 ///
 /// Each set of parameters is enclosed by curly braces
 /// {....}. Parameters defined outside of curly braces are global
 /// parameters, used for all of the following parameter sets.
+///
+/// Two special directives are allowed in a parameter list: "#clear",
+/// which clears all the global parameters, "#stop" stops reading
+/// parameters.
 
 #ifndef ALPS_PARAMETER_PARAMETERLIST_H
 #define ALPS_PARAMETER_PARAMETERLIST_H
