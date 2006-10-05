@@ -32,7 +32,7 @@
 #define ALPS_LATTICE_LATTICEGRAPH_H
 
 #include <alps/config.h>
-#include <alps/parameters.h>
+#include <alps/parameter.h>
 #include <alps/lattice/disorder.h>
 #include <alps/parser/parser.h>
 #include <alps/lattice/graph.h>

@@ -32,7 +32,7 @@
 
 #include <alps/scheduler/scheduler.h>
 #include <alps/scheduler/types.h>
-#include <alps/parameters.h>
+#include <alps/parameter.h>
 #include <alps/config.h>
 #include <alps/copyright.h>
 #include <alps/osiris/comm.h>

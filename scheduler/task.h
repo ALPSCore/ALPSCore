@@ -32,7 +32,7 @@
 #define ALPS_SCHEDULER_TASK_H
 
 #include <alps/scheduler/worker.h>
-#include <alps/parameters.h>
+#include <alps/parameter.h>
 #include <boost/smart_ptr.hpp>
 
 namespace alps {

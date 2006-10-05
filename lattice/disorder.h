@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2005 by Matthias Troyer <troyer@comp-phys.orgh>
+* Copyright (C) 2001-2006 by Matthias Troyer <troyer@comp-phys.orgh>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -31,7 +31,7 @@
 #define ALPS_LATTICE_DISORDER_H
 
 #include <alps/parser/parser.h>
-#include <alps/parameters.h>
+#include <alps/parameter.h>
 #include <alps/expression.h>
 #include <alps/lattice/unitcell.h>
 #include <alps/lattice/graph.h>

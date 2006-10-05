@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2005 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2003-2006 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -33,7 +33,7 @@
 
 #include <alps/expression.h>
 #include <alps/model/half_integer.h>
-#include <alps/parameters.h>
+#include <alps/parameter.h>
 #include <boost/tuple/tuple.hpp>
 #include <vector>
 #include <map>

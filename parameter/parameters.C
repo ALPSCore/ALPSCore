@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2004 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2006 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -28,15 +28,18 @@
 
 /* $Id$ */
 
-#include <alps/parameters.h>
-#include <alps/cctype.h>
-#include <alps/parser/parser.h>
-
+#include "parameters.h"
+#include "parameters_p.h"
+#include <boost/foreach.hpp>
+#include <boost/spirit/iterator/multi_pass.hpp>
 #include <boost/throw_exception.hpp>
-#include <algorithm>
 #include <iostream>
 #include <stdexcept>
-#include <stdlib.h>
+#include <streambuf>
+#include <string>
+#include <cstdlib>
+
+namespace bs = boost::spirit;
 
 namespace alps {
 
@@ -103,87 +106,89 @@ void Parameters::extract_from_xml(std::istream& infile)
   read_xml(tag,infile);
 }
 
-void Parameters::parse(std::istream& is)
-{
-  char c;
-  do {
-    is >> c;
-    while (is && (c==';' || c==',')) is >> c;  // ignore extra semi-colons
-    if (!is) break;
-    if (std::isalpha(c)) {
-      is.putback(c);
-      std::string key = parse_parameter_name(is);
-      std::string value;
+void Parameters::parse(std::istream& is, bool replace_env) {
+  typedef bs::multi_pass<std::istreambuf_iterator<char> > iterator_t;
+  iterator_t first = bs::make_multi_pass(std::istreambuf_iterator<char>(is));
+  iterator_t last = bs::make_multi_pass(std::istreambuf_iterator<char>());
+  bs::parse_info<iterator_t> info = bs::parse(
+    first, last,
+    ParametersParser(*this) >> bs::end_p,
+    bs::comment_p("//") | bs::comment_p("/*", "*/"));
+  if (!info.full) {
+    first = info.stop;
+    std::string err = "parse error at \"";
+    for (int i = 0; first != last && i < 32; ++first, ++i)
+      err += (*first != '\n' ? *first : ' ');
+    boost::throw_exception(std::runtime_error(err + "\""));
+  }
+  if (replace_env) replace_envvar();
+}
 
-      check_character(is, '=',
-        "= expected in assignment while parsing Parameter "+key);
+// old implementation based on ALPS parser
 
-      is >> c;
-      switch (c) {
-      case '[':
-        value = read_until(is, ']');
-        break;
-      case '"':
-        value = read_until(is, '"');
-        break;
-      case '\'':
-        value = read_until(is, '\'');
-        break;
-      case '$':
-        check_character(is, '{', "{ expected in Parameter environment variable expansion");
-        value = read_until(is, '}');
-        {
-          char const* EnvStr = getenv(value.c_str());
-          if (EnvStr)
-            value = EnvStr;  // if the environment string exists, then substitute its value
-          else
-            value = "${" + value + '}'; // pass through unchanged if the environment string doesnt exist
-        }
-        break;
+// void Parameters::parse(std::istream& is)
+// {
+//   char c;
+//   do {
+//     is >> c;
+//     while (is && (c==';' || c==',')) is >> c;  // ignore extra semi-colons
+//     if (!is) break;
+//     if (std::isalpha(c)) {
+//       is.putback(c);
+//       std::string key = parse_parameter_name(is);
+//       std::string value;
 
-      default:
-        while(c!=';' && c!=',' && c!='}' && c!= '{' &&
-              c!='\r' && c!='\n' && is) {
-          value+=c;
-          c = is.get();
-        }
-        if (c=='{' || c=='}')
-          is.putback(c);
-      }
-      push_back(key, value, true);
-    } else {
-      is.putback(c);
-      break;
-    }
-  } while (true);
+//       check_character(is, '=',
+//         "= expected in assignment while parsing Parameter "+key);
+
+//       is >> c;
+//       switch (c) {
+//       case '[':
+//         value = read_until(is, ']');
+//         break;
+//       case '"':
+//         value = read_until(is, '"');
+//         break;
+//       case '\'':
+//         value = read_until(is, '\'');
+//         break;
+//       case '$':
+//         check_character(is, '{', "{ expected in Parameter environment variable expansion");
+//         value = read_until(is, '}');
+//         {
+//           char const* EnvStr = getenv(value.c_str());
+//           if (EnvStr)
+//             value = EnvStr;  // if the environment string exists, then substitute its value
+//           else
+//             value = "${" + value + '}'; // pass through unchanged if the environment string doesnt exist
+//         }
+//         break;
+
+//       default:
+//         while(c!=';' && c!=',' && c!='}' && c!= '{' &&
+//               c!='\r' && c!='\n' && is) {
+//           value+=c;
+//           c = is.get();
+//         }
+//         if (c=='{' || c=='}')
+//           is.putback(c);
+//       }
+//       push_back(key, value, true);
+//     } else {
+//       is.putback(c);
+//       break;
+//     }
+//   } while (true);
+// }
+
+void Parameters::replace_envvar() {
+  BOOST_FOREACH(Parameter& p, list_) p.replace_envvar();
 }
 
 
 //
 // XML support
 //
-
-ParameterXMLHandler::ParameterXMLHandler(Parameter& p)
-  : XMLHandlerBase("PARAMETER"), parameter_(p) {}
-
-void ParameterXMLHandler::start_element(const std::string& name,
-                                        const XMLAttributes& attributes,
-                                        xml::tag_type type)
-{
-  if (type == xml::element) {
-    if (name != "PARAMETER")
-      boost::throw_exception(std::runtime_error("ParameterXMLHandler: unknown tag name : " + name));
-    if (!attributes.defined("name"))
-      boost::throw_exception(std::runtime_error("ParameterXMLHandler: name attribute not found in PARAMETER tag"));
-    parameter_.key() = attributes["name"];
-  }
-}
-
-void ParameterXMLHandler::end_element(const std::string&, xml::tag_type) {}
-
-void ParameterXMLHandler::text(const std::string& text) {
-  parameter_.value() = text;
-}
 
 ParametersXMLHandler::ParametersXMLHandler(Parameters& p)
   : CompositeXMLHandler("PARAMETERS"), parameters_(p), parameter_(),

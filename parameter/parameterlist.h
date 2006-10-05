@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2005 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2006 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -46,11 +46,11 @@
 /// {....}. Parameters defined outside of curly braces are global
 /// parameters, used for all of the following parameter sets.
 
-#ifndef ALPS_PARSER_PARAMETERLIST_H
-#define ALPS_PARSER_PARAMETERLIST_H
+#ifndef ALPS_PARAMETER_PARAMETERLIST_H
+#define ALPS_PARAMETER_PARAMETERLIST_H
 
 #include <alps/config.h>
-#include <alps/parameters.h>
+#include "parameters.h"
 #include <boost/serialization/vector.hpp>
 
 #ifndef ALPS_WITHOUT_OSIRIS
@@ -79,13 +79,17 @@ public:
   ParameterList() {}
   /// reads Parameters from a std::istream
   ParameterList(std::istream& is) { parse(is); }
+
   /// reads Parameters from a std::istream
-  void parse(std::istream& is);
+  void parse(std::istream& is, bool replace_env = true);
+
+  /// replace '${FOO}' with the the content of environment variable FOO
+  void replace_envvar();
+
   /// support for Boost serialization
   template <class ARCHIVE>
   void serialize(ARCHIVE & ar, const unsigned int)
   { ar & static_cast<super_type&>(*this); }
-
 };
 
 } // end namespace
@@ -117,8 +121,6 @@ inline std::istream& operator>>(std::istream& is, alps::ParameterList& params) {
 // OSIRIS support
 //
 
-#ifndef ALPS_WITHOUT_OSIRIS
-
 /// \brief support for ALPS serialization
 inline alps::ODump& operator<<(alps::ODump& od,
                                const alps::ParameterList& p)
@@ -129,45 +131,6 @@ inline alps::IDump& operator>>(alps::IDump& id,
                                alps::ParameterList& p)
 { return id >> reinterpret_cast<std::vector<alps::Parameters>&>(p); }
 
-#endif // !ALPS_WITHOUT_OSIRIS
-
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-} // end namespace alps
-#endif
-
-//
-// XML support
-//
-
-#ifndef ALPS_WITHOUT_XML
-
-namespace alps {
-
-/// \brief Implementation handler of the ALPS XML parser for the ParameterList class  
-class ParameterListXMLHandler : public CompositeXMLHandler
-{
-public:
-  ParameterListXMLHandler(ParameterList& list);
-
-protected:  
-  void start_child(const std::string& name,
-                   const XMLAttributes& attributes,
-                   xml::tag_type type);
-  void end_child(const std::string& name, xml::tag_type type);
-
-private:
-  ParameterList& list_;
-  Parameter parameter_;
-  Parameters default_, current_;
-  ParameterXMLHandler parameter_handler_;
-  ParametersXMLHandler current_handler_;
-};
-
-} // namespace alps
-
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-namespace alps {
-#endif
 
 /// \brief XML output of a ParameterList 
 ///
@@ -186,6 +149,4 @@ inline alps::oxstream& operator<<(alps::oxstream& oxs,
 } // end namespace alps
 #endif
 
-#endif // !ALPS_WITHOUT_XML
-
-#endif // ALPS_PARSER_PARAMETERLIST_H
+#endif // ALPS_PARAMETER_PARAMETERLIST_H

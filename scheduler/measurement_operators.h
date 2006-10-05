@@ -30,7 +30,7 @@
 #ifndef ALPS_MODEL_MEASUREMENT_OPERATORS_H
 #define ALPS_MODEL_MEASUREMENT_OPERATORS_H
 
-#include <alps/parameters.h>
+#include <alps/parameter.h>
 #include <alps/xml.h>
 #include <alps/math.hpp>
 #include <boost/regex.hpp> 

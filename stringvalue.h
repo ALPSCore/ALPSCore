@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>,
 *                            Mathias Koerner <mkoerner@itp.phys.ethz.ch>
 *
@@ -97,8 +97,11 @@ public:
   lexical_cast_string(const string_type& s = string_type()) : string_type(s) {}
   /// copy-contructor
   lexical_cast_string(const lexical_cast_string& s) : string_type(s) {}
-  /// constructor froma  C-style string
+  /// constructor from a C-style string
   lexical_cast_string(const char* s) : string_type(s) {}
+  /// constructor from a character sequence
+  template<class InputItr>
+  lexical_cast_string(InputItr first, InputItr last) : string_type(first, last) {}
   /// constructor from arbitrary types implemented using boost::lexical_cast
   template <class T>
   lexical_cast_string(const T& x)

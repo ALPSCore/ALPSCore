@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2005 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2001-2006 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -31,7 +31,7 @@
 #ifndef ALPS_LATTICE_LATTICEDESCRIPTOR_H
 #define ALPS_LATTICE_LATTICEDESCRIPTOR_H
 
-#include <alps/parameters.h>
+#include <alps/parameter.h>
 #include <alps/parser/parser.h>
 #include <alps/parser/xmlstream.h>
 #include <alps/lattice/coordinatelattice.h>

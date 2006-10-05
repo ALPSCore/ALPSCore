@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -28,15 +28,14 @@
 
 /* $Id$ */
 
-#ifndef ALPS_PARSER_PARAMETERS_H
-#define ALPS_PARSER_PARAMETERS_H
+#ifndef ALPS_PARAMETER_PARAMETERS_H
+#define ALPS_PARAMETER_PARAMETERS_H
 
+#include "parameter.h"
 #include <alps/osiris/dump.h>
-#include <alps/osiris/std/string.h>
 #include <alps/parser/parser.h>
-#include <alps/stringvalue.h>
 #include <alps/xml.h>
-
+#include <boost/foreach.hpp>
 #include <boost/serialization/collections_save_imp.hpp>
 #include <boost/serialization/collections_load_imp.hpp>
 #include <boost/serialization/split_member.hpp>
@@ -51,48 +50,6 @@
 /// \brief classes to store simulation parameters
 
 namespace alps {
-
-/// \brief a class to store a single parameter value
-///
-/// the parameter name (key) is stored as a std::string
-/// the parameter value is stores as a StringValue.
-class Parameter
-{
-public:
-  /// the parameter name (key) is stored as a std::string
-  typedef std::string key_type;
-  /// the parameter value is stores as a StringValue.
-  typedef StringValue value_type;
-
-  /// deault constructor: no name and no value
-  Parameter() : key_(), value_() {}
-  /// a parameter with a name but no value
-  Parameter(const key_type& k) : key_(k), value_() {}
-  /// \brief a parameter with a name and value.
-  ///
-  /// Arbitrary types can be stored. The StringValue constructor will convert 
-  /// them to a string using boost::lexical_cast
-  template<class U>
-  Parameter(const key_type& k, const U& v) : key_(k), value_(v) {}
-
-  /// returns the key (parameter name)
-  key_type& key() { return key_; }
-  /// returns the key (parameter name)
-  const key_type& key() const { return key_; }
-  /// returns the value
-  value_type& value() { return value_; }
-  /// returns the value
-  const value_type& value() const { return value_; }
-
-  /// support for Boost serialization
-  template<class Archive>
-  void serialize(Archive & ar, const unsigned int)
-  { ar & key_ & value_; }
-  
-private:
-  key_type key_;
-  value_type value_;
-};
 
 /// \brief a class storing a set of parameters
 ///
@@ -138,7 +95,10 @@ public:
   Parameters(std::istream& is) { parse(is); }
 
   /// read parameters from a text file
-  void parse(std::istream& is);
+  void parse(std::istream& is, bool replace_env = true);
+
+  /// replace '${FOO}' in each parameter with the the content of environment variable FOO
+  void replace_envvar();
 
   /// erase all parameters
   void clear() { list_.clear(); map_.clear(); }
@@ -165,6 +125,13 @@ public:
     return list_[map_.find(k)->second].value();
   }
 
+  /// \brief erase a parameter with a specific key
+  /// \param k the parameter key (name)
+  void erase(key_type const& k) {
+    map_type::iterator itr = map_.find(k);
+    if (itr != map_.end()) map_.erase(itr);
+  }
+  
   /// \brief returns the value or a default
   /// \param k the key (name) of the parameter
   /// \param v the default value
@@ -186,16 +153,15 @@ public:
   /// \param p the parameter
   /// \param allow_overwrite indicates whether existing parameters may be overwritten
   /// \throw a std::runtime_error if the parameter key is empty or if it exists already and \a allow_overwrite is false
-  void push_back(const parameter_type& p, bool allow_overwrite=false);
+  void push_back(const parameter_type& p, bool allow_overwrite = false);
 
   /// \brief appends a new parameter to the container
   /// \param k the parameter key (name)
   /// \param v the parameter value
   /// \param allow_overwrite indicates whether existing parameters may be overwritten
   /// \throw a std::runtime_error if the parameter key \a k is empty or if it exists already and \a allow_overwrite is false
-  void push_back(const key_type& k, const value_type& v,
-                 bool allow_overwrite=false) {
-    push_back(Parameter(k, v),allow_overwrite);
+  void push_back(const key_type& k, const value_type& v, bool allow_overwrite = false) {
+    push_back(Parameter(k, v), allow_overwrite);
   }
 
   /// \brief set a parameter value, overwriting any existing value
@@ -206,6 +172,7 @@ public:
 
   /// \brief set parameter values, overwriting any existing value
   Parameters& operator<<(const Parameters& params);
+
   /// \brief set parameter values, without overwriting existing value
   void copy_undefined(const Parameters& p);
 
@@ -218,15 +185,13 @@ public:
   
   /// support for Boost serialization
   template<class Archive>
-  inline void save(Archive & ar, const unsigned int)
-  {
+  inline void save(Archive & ar, const unsigned int) {
     boost::serialization::stl::save_collection<Archive,Parameters>(ar,*this); 
   }
 
   /// support for Boost serialization
   template<class Archive>
-  inline void load(Archive & ar, const unsigned int)
-  {
+  inline void load(Archive & ar, const unsigned int) {
     boost::serialization::stl::load_collection<Archive,Parameters,
       boost::serialization::stl::archive_input_seq<Archive,Parameters>,
         boost::serialization::stl::no_reserve_imp<Parameters> >(ar, *this);
@@ -255,31 +220,10 @@ inline std::istream& operator>>(std::istream& is, alps::Parameters& p)
   return is;
 }
 
-#ifndef ALPS_WITHOUT_OSIRIS
-
-//
-// OSIRIS support
-//
-
-/// ALPS serialization of a parameter value
-inline alps::ODump& operator<<(alps::ODump& od, const alps::Parameter& p)
-{ return od << p.key() << static_cast<std::string>(p.value()); }
-
-/// ALPS de-serialization of a parameter value
-inline alps::IDump& operator>>(alps::IDump& id, alps::Parameter& p)
-{
-  std::string k, v;
-  id >> k >> v;
-  p = alps::Parameter(k, v);
-  return id;
-}
-
 /// ALPS serialization of parameters
-inline alps::ODump& operator<<(alps::ODump& od, const alps::Parameters& p)
-{
-  od << uint32_t(p.size());
-  for (alps::Parameters::const_iterator it = p.begin(); it != p.end(); ++it)
-    od << *it;
+inline alps::ODump& operator<<(alps::ODump& od, const alps::Parameters& params) {
+  od << uint32_t(params.size());
+  BOOST_FOREACH(alps::Parameter const& p, params) od << p;
   return od;
 }
 
@@ -296,72 +240,6 @@ inline alps::IDump& operator>>(alps::IDump& id, alps::Parameters& p)
   return id;
 }
 
-#endif
-
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-} // end namespace alps
-#endif
-
-
-//
-// XML support
-//
-
-namespace alps {
-
-/// \brief Implementation handler of the ALPS XML parser for the Parameter class  
-class ParameterXMLHandler : public XMLHandlerBase
-{
-public:
-  ParameterXMLHandler(Parameter& p);
-
-  void start_element(const std::string& name,
-                     const XMLAttributes& attributes,
-                     xml::tag_type type);
-  void end_element(const std::string& name, xml::tag_type type);
-  void text(const std::string& text);
-
-private:
-  Parameter& parameter_;
-};
-
-/// \brief Implementation handler of the ALPS XML parser for the Parameters class  
-class ParametersXMLHandler : public CompositeXMLHandler
-{
-public:
-  ParametersXMLHandler(Parameters& p);
-
-protected:
-  void start_child(const std::string& name,
-                   const XMLAttributes& attributes,
-                   xml::tag_type type);
-  void end_child(const std::string& name, xml::tag_type type);
-
-private:
-  Parameters& parameters_;
-  Parameter parameter_;
-  ParameterXMLHandler handler_;
-};
-
-} // namespace alps
-
-
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-namespace alps {
-#endif
-
-/// \brief XML output of a parameter value 
-///
-/// follows the schema on http://xml.comp-phys.org/
-inline alps::oxstream& operator<<(alps::oxstream& oxs,
-                                  const alps::Parameter& parameter)
-{
-  oxs << alps::start_tag("PARAMETER")
-      << alps::attribute("name", parameter.key()) << alps::no_linebreak
-      << parameter.value().c_str()
-      << alps::end_tag("PARAMETER");
-  return oxs;
-}
 
 /// \brief XML output of parameters 
 ///
@@ -376,8 +254,9 @@ inline alps::oxstream& operator<<(alps::oxstream& oxs,
   oxs << alps::end_tag("PARAMETERS");
   return oxs;
 }
+
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // end namespace alps
 #endif
 
-#endif // ALPS_PARSER_PARAMETERS_H
+#endif // ALPS_PARAMETER_PARAMETERS_H

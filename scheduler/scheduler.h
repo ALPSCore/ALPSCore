@@ -43,7 +43,7 @@
 #include <alps/scheduler/task.h> 
 #include <alps/scheduler/types.h>
 #include <alps/scheduler/signal.hpp>
-#include <alps/parameterlist.h>
+#include <alps/parameter.h>
 #include <boost/smart_ptr.hpp>
 #include <boost/noncopyable.hpp>
 

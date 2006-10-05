@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -28,46 +28,72 @@
 
 /* $Id$ */
 
-#include <alps/parameterlist.h>
+#include "parameterlist.h"
+#include "parameterlist_p.h"
 #include <alps/parser/parser.h>
-
+#include <boost/foreach.hpp>
+#include <boost/spirit/core.hpp>
+#include <boost/spirit/actor.hpp>
+#include <boost/spirit/iterator/multi_pass.hpp>
 #include <boost/throw_exception.hpp>
 #include <algorithm>
 #include <iostream>
 #include <stdexcept>
 
+namespace bs = boost::spirit;
+
 namespace alps {
 
-void ParameterList::parse(std::istream& is)
-{
-  Parameters global;
-  char c;
-  while (true) {
-    is >> global;
-    is >> c;
-    if (!is) break;
-    if(c=='{') {
-      // new block starts with {
-      // make new Parameters as clone of global
-      push_back(global);
-      is >> *rbegin();
-      check_character(is,'}',"} expected in parameter list");
-    } else {
-      is.putback(c);
-      break;
-    }
+void ParameterList::parse(std::istream& is, bool replace_env) {
+  typedef bs::multi_pass<std::istreambuf_iterator<char> > iterator_t;
+  iterator_t first = bs::make_multi_pass(std::istreambuf_iterator<char>(is));
+  iterator_t last = bs::make_multi_pass(std::istreambuf_iterator<char>());
+  ParameterListParser plist_p(*this);
+  bs::parse_info<bs::multi_pass<std::istreambuf_iterator<char> > > info = bs::parse(
+    first, last,
+    plist_p >> !bs::end_p,
+    bs::comment_p("//") | bs::comment_p("/*", "*/"));
+  if (!(info.full || plist_p.stop)) {
+    first = info.stop;
+    std::string err = "parse error at \"";
+    for (int i = 0; first != last && i < 32; ++first, ++i)
+      err += (*first != '\n' ? *first : ' ');
+    boost::throw_exception(std::runtime_error(err + "\""));
   }
+  if (replace_env) replace_envvar();
 }
 
-} // namespace alps
+// old implementation based on ALPS parser
+
+// void ParameterList::parse(std::istream& is)
+// {
+//   Parameters global;
+//   char c;
+//   while (true) {
+//     is >> global;
+//     is >> c;
+//     if (!is) break;
+//     if(c=='{') {
+//       // new block starts with {
+//       // make new Parameters as clone of global
+//       push_back(global);
+//       is >> *rbegin();
+//       check_character(is,'}',"} expected in parameter list");
+//     } else {
+//       is.putback(c);
+//       break;
+//     }
+//   }
+// }
+
+void ParameterList::replace_envvar() {
+  BOOST_FOREACH(Parameters& p, *this) p.replace_envvar();
+}
+  
 
 //
 // XML support
 //
-
-#ifndef ALPS_WITHOUT_XML
-
-namespace alps {
 
 ParameterListXMLHandler::ParameterListXMLHandler(ParameterList& list)
   : CompositeXMLHandler("PARAMETERLIST"), list_(list),
@@ -98,6 +124,4 @@ void ParameterListXMLHandler::end_child(const std::string& name,
   }
 }
 
-} // namespace alps
-
-#endif
+}

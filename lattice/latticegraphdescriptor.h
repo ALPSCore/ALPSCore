@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2005 by Matthias Troyer <troyer@comp-phys.orgh>,
+* Copyright (C) 2001-2006 by Matthias Troyer <troyer@comp-phys.orgh>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -32,7 +32,7 @@
 #define ALPS_LATTICE_LATTICEGRAPHDESCRIPTOR_H
 
 #include <alps/config.h>
-#include <alps/parameters.h>
+#include <alps/parameter.h>
 #include <alps/lattice/disorder.h>
 #include <alps/lattice/lattice.h>
 #include <alps/lattice/latticegraph.h>

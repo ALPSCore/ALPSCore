@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2004 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2003-2006 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Axel Grzesik <axel@th.physik.uni-bonn.de>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
@@ -35,7 +35,7 @@
 #include <alps/model/half_integer.h>
 #include <alps/parser/xmlstream.h>
 #include <alps/parser/parser.h>
-#include <alps/parameters.h>
+#include <alps/parameter.h>
 #include <alps/expression.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>

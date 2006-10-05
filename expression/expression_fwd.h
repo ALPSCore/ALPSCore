@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2005 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2001-2006 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -35,7 +35,7 @@
 
 #include <alps/cctype.h>
 #include <alps/math.hpp>
-#include <alps/parameters.h>
+#include <alps/parameter.h>
 #include <alps/random.h>
 #include <alps/parser/parser.h>
 #include <alps/typetraits.h>
