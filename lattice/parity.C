@@ -29,7 +29,7 @@
 /* $Id$ */
 
 #include <alps/lattice.h>
-#include <alps/parameterlist.h>
+#include <alps/parameter.h>
 #include <fstream>
 #include <iostream>
 

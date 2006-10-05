@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -28,9 +28,10 @@
 
 /* $Id$ */
 
-#include <alps/parameterlist.h>
+#include <alps/parameter/parameterlist.h>
 #include <alps/osiris/xdrdump.h>
 #include <boost/throw_exception.hpp>
+#include <stdlib.h>
 #include <iostream>
 #include <stdexcept>
 
@@ -40,23 +41,25 @@ int main()
   try {
 #endif
 
-    alps::ParameterList params(std::cin);
-    std::cout << params;
+  setenv("DIR", "/home/alps", 1);
+  
+  alps::ParameterList params(std::cin);
+  std::cout << params;
 
-    {
-      alps::OXDRFileDump od(boost::filesystem::path("parameterlist.dump",boost::filesystem::native));
-      od << params;
-    }
-
-    params.clear();
-
-    {
-      alps::IXDRFileDump id(boost::filesystem::path("parameterlist.dump",boost::filesystem::native));
-      id >> params;
-    }
-
-    std::cout << params;
-    
+  {
+    alps::OXDRFileDump od(boost::filesystem::path("parameterlist.dump",boost::filesystem::native));
+    od << params;
+  }
+  
+  params.clear();
+  
+  {
+    alps::IXDRFileDump id(boost::filesystem::path("parameterlist.dump",boost::filesystem::native));
+    id >> params;
+  }
+  
+  std::cout << params;
+  
 #ifndef BOOST_NO_EXCEPTIONS
 }
 catch (std::exception& e)

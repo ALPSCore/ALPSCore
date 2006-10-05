@@ -4,8 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
-*                            Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 2006 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -28,47 +27,33 @@
 
 /* $Id$ */
 
-#include <alps/parameters.h>
-#include <alps/osiris/xdrdump.h>
+#include <alps/parameter/parameters.h>
+#include <boost/throw_exception.hpp>
+#include <stdlib.h>
 #include <iostream>
-#include <cstdlib>
+#include <stdexcept>
+#include <string>
 
 int main()
 {
 #ifndef BOOST_NO_EXCEPTIONS
-try {
+  try {
 #endif
 
-  alps::Parameters parameters;
-  alps::ParametersXMLHandler handler(parameters);
+  setenv("DIR", "/home/alps", 1);
+
+  alps::Parameters params(std::cin);
+  std::cout << params;
   
-  alps::XMLParser parser(handler);
-  parser.parse(std::cin);
-  
-  std::cout << parameters;
-
-  {
-    alps::OXDRFileDump od(boost::filesystem::path("parameters.dump",boost::filesystem::native));
-    od << parameters;
-  }
-
-  parameters.clear();
-  
-  {
-    alps::IXDRFileDump id(boost::filesystem::path("parameters.dump",boost::filesystem::native));
-    id >> parameters;
-  }
-
-  std::cout << parameters;
-
-  alps::oxstream oxs;
-  oxs << parameters;
-
 #ifndef BOOST_NO_EXCEPTIONS
 }
-catch (std::exception& exp) {
-  std::cerr << exp.what() << std::endl;
-  std::abort();
+catch (std::exception& e) {
+  std::cerr << "Caught exception: " << e.what() << "\n";
+  exit(-1);
+}
+catch (...) {
+  std::cerr << "Caught unknown exception\n";
+  exit(-2);
 }
 #endif
 }

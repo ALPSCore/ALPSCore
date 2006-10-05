@@ -1,0 +1,8 @@
+J = 1.0;
+L = 16;
+J = 1.0;
+L = 16;
+<PARAMETERS>
+  <PARAMETER name="J">1.0</PARAMETER>
+  <PARAMETER name="L">16</PARAMETER>
+</PARAMETERS>

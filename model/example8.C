@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 2003-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -29,7 +29,7 @@
 
 #include <alps/model.h>
 #include <alps/lattice.h>
-#include <alps/parameterlist.h>
+#include <alps/parameter.h>
 #include <iostream>
 #include <string>
 

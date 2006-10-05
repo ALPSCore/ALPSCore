@@ -9,7 +9,7 @@ TESTS_ENVIRONMENT = $(top_srcdir)/config/run-test $(srcdir)
 
 TESTS_FC = fixed_capacity/fixed_capacity_deque fixed_capacity/fixed_capacity_traits fixed_capacity/fixed_capacity_vector fixed_capacity/test_deque fixed_capacity/test_vector
 TESTS_OSIRIS = osiris/sizeof osiris/xdrdump osiris/xdrdump2 osiris/boostdump osiris/boostdump2 osiris/boostdump3 osiris/boostdump4
-TESTS_PARAMETER = parameter/expression parameter/expression2 parameter/flatten parameter/parameterlist parameter/parameterlist_xml parameter/parameters
+TESTS_PARAMETER = parameter/expression parameter/expression2 parameter/flatten parameter/parameter parameter/parameterlist parameter/parameterlist_xml parameter/parameters parameter/parameters_xml
 TESTS_PARSER = parser/xmlhandler parser/xmlparser parser/xmlstream
 TESTS_ALEA = alea/detailedbinning alea/signed alea/simpleobseval alea/testobservableset alea/vectorobseval
 TESTS_LATTICE = lattice/example1 lattice/example2 lattice/example3 lattice/example4 lattice/example5 lattice/example6 lattice/example7 lattice/example8 lattice/example9 lattice/example10 \

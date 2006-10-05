@@ -37,8 +37,9 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 check_PROGRAMS = expression$(EXEEXT) expression2$(EXEEXT) \
-	flatten$(EXEEXT) parameterlist$(EXEEXT) \
-	parameterlist_xml$(EXEEXT) parameters$(EXEEXT)
+	flatten$(EXEEXT) parameter$(EXEEXT) parameterlist$(EXEEXT) \
+	parameterlist_xml$(EXEEXT) parameters$(EXEEXT) \
+	parameters_xml$(EXEEXT)
 subdir = test/parameter
 DIST_COMMON = $(dist_noinst_DATA) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in
@@ -85,6 +86,13 @@ flatten_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
 	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+am_parameter_OBJECTS = parameter.$(OBJEXT)
+parameter_OBJECTS = $(am_parameter_OBJECTS)
+parameter_LDADD = $(LDADD)
+parameter_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_parameterlist_OBJECTS = parameterlist.$(OBJEXT)
 parameterlist_OBJECTS = $(am_parameterlist_OBJECTS)
 parameterlist_LDADD = $(LDADD)
@@ -106,6 +114,13 @@ parameters_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
 	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+am_parameters_xml_OBJECTS = parameters_xml.$(OBJEXT)
+parameters_xml_OBJECTS = $(am_parameters_xml_OBJECTS)
+parameters_xml_LDADD = $(LDADD)
+parameters_xml_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 depcomp = $(SHELL) $(top_srcdir)/config/depcomp
 am__depfiles_maybe = depfiles
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
@@ -117,11 +132,13 @@ CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --tag=CXX --mode=link $(CXXLD) $(AM_CXXFLAGS) \
 	$(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = $(expression_SOURCES) $(expression2_SOURCES) \
-	$(flatten_SOURCES) $(parameterlist_SOURCES) \
-	$(parameterlist_xml_SOURCES) $(parameters_SOURCES)
+	$(flatten_SOURCES) $(parameter_SOURCES) \
+	$(parameterlist_SOURCES) $(parameterlist_xml_SOURCES) \
+	$(parameters_SOURCES) $(parameters_xml_SOURCES)
 DIST_SOURCES = $(expression_SOURCES) $(expression2_SOURCES) \
-	$(flatten_SOURCES) $(parameterlist_SOURCES) \
-	$(parameterlist_xml_SOURCES) $(parameters_SOURCES)
+	$(flatten_SOURCES) $(parameter_SOURCES) \
+	$(parameterlist_SOURCES) $(parameterlist_xml_SOURCES) \
+	$(parameters_SOURCES) $(parameters_xml_SOURCES)
 DATA = $(dist_noinst_DATA)
 ETAGS = etags
 CTAGS = ctags
@@ -309,10 +326,12 @@ LDADD = $(top_builddir)/lib/alps/libalps.la $(top_builddir)/lib/comm-sgl/libcomm
 expression_SOURCES = expression.C
 expression2_SOURCES = expression2.C
 flatten_SOURCES = flatten.C
+parameter_SOURCES = parameter.C
 parameterlist_SOURCES = parameterlist.C
 parameterlist_xml_SOURCES = parameterlist_xml.C
 parameters_SOURCES = parameters.C
-dist_noinst_DATA = expression.input expression.output expression2.output flatten.input flatten.output parameterlist.input parameterlist.output parameterlist_xml.input parameterlist_xml.output parameters.input parameters.output
+parameters_xml_SOURCES = parameters_xml.C
+dist_noinst_DATA = expression.input expression.output expression2.output flatten.input flatten.output parameter.input parameter.output parameterlist.input parameterlist.output parameterlist_xml.input parameterlist_xml.output parameters.input parameters.output parameters_xml.input parameters_xml.output
 all: all-am
 
 .SUFFIXES:
@@ -362,6 +381,9 @@ expression2$(EXEEXT): $(expression2_OBJECTS) $(expression2_DEPENDENCIES)
 flatten$(EXEEXT): $(flatten_OBJECTS) $(flatten_DEPENDENCIES) 
 	@rm -f flatten$(EXEEXT)
 	$(CXXLINK) $(flatten_LDFLAGS) $(flatten_OBJECTS) $(flatten_LDADD) $(LIBS)
+parameter$(EXEEXT): $(parameter_OBJECTS) $(parameter_DEPENDENCIES) 
+	@rm -f parameter$(EXEEXT)
+	$(CXXLINK) $(parameter_LDFLAGS) $(parameter_OBJECTS) $(parameter_LDADD) $(LIBS)
 parameterlist$(EXEEXT): $(parameterlist_OBJECTS) $(parameterlist_DEPENDENCIES) 
 	@rm -f parameterlist$(EXEEXT)
 	$(CXXLINK) $(parameterlist_LDFLAGS) $(parameterlist_OBJECTS) $(parameterlist_LDADD) $(LIBS)
@@ -371,6 +393,9 @@ parameterlist_xml$(EXEEXT): $(parameterlist_xml_OBJECTS) $(parameterlist_xml_DEP
 parameters$(EXEEXT): $(parameters_OBJECTS) $(parameters_DEPENDENCIES) 
 	@rm -f parameters$(EXEEXT)
 	$(CXXLINK) $(parameters_LDFLAGS) $(parameters_OBJECTS) $(parameters_LDADD) $(LIBS)
+parameters_xml$(EXEEXT): $(parameters_xml_OBJECTS) $(parameters_xml_DEPENDENCIES) 
+	@rm -f parameters_xml$(EXEEXT)
+	$(CXXLINK) $(parameters_xml_LDFLAGS) $(parameters_xml_OBJECTS) $(parameters_xml_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -381,9 +406,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/expression.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/expression2.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/flatten.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parameter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parameterlist.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parameterlist_xml.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parameters.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parameters_xml.Po@am__quote@
 
 .C.o:
 @am__fastdepCXX_TRUE@	if $(CXXCOMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \

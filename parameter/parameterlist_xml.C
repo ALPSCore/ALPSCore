@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -28,7 +28,7 @@
 
 /* $Id$ */
 
-#include <alps/parameterlist.h>
+#include <alps/parameter/parameterlist_p.h>
 #include <iostream>
 #include <cstdlib>
 

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2006 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -30,7 +30,7 @@
 
 #include <iostream>
 #include <alps/alea.h>
-#include <alps/parameters.h> 
+#include <alps/parameter.h> 
 #include <boost/random.hpp> 
 
 int main()

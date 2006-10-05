@@ -6,13 +6,22 @@ C = 200;
 {
 A = 0.1;
 D = 0.2;
+dir = /home/alps/lib/xml;
 E = 0.2;
 F = 100;
 }
 {
 A = 0.1;
 D = 0.2;
+dir = /home/alps/lib/xml;
 G = 0.5;
+H = 100;
+}
+{
+G = 0.4;
+H = 200;
+}
+{
 H = 300;
 }
 {
@@ -23,12 +32,21 @@ C = 200;
 {
 A = 0.1;
 D = 0.2;
+dir = /home/alps/lib/xml;
 E = 0.2;
 F = 100;
 }
 {
 A = 0.1;
 D = 0.2;
+dir = /home/alps/lib/xml;
 G = 0.5;
+H = 100;
+}
+{
+G = 0.4;
+H = 200;
+}
+{
 H = 300;
 }
