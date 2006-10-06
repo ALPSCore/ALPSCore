@@ -20,7 +20,7 @@ example10_SOURCES = example10.C
 label_SOURCES = label.C
 parity_SOURCES = parity.C
 
-dist_noinst_DATA = example1.output example2.output example3.output example4.output example5.output example6.output example7.output example8.input example8.output example9.input example9.output example10.output \
+dist_noinst_DATA = example1.output example2.output example3.output example4.output example5.output example6.output example7.input example7.output example8.input example8.output example9.input example9.output example10.output \
 	label.input label.output \
 	parity.input parity.output
 

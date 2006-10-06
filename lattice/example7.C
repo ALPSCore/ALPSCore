@@ -31,6 +31,7 @@
 
 #include <alps/lattice.h>
 #include <alps/lattice/unitcell.h>
+#include <boost/foreach.hpp>
 #include <iostream>
 #include <fstream>
 
@@ -157,6 +158,24 @@ void IterateOverCells(const LatticeType& lattice)
   typedef typename alps::lattice_traits<LatticeType>::vector_type vector_type; // a vector of reals
   typedef typename alps::lattice_traits<LatticeType>::size_type size_type; // size_type-me-harder
 
+  std::cout << "The basis vectors are: ";
+  BOOST_FOREACH(vector_type const& v, basis_vectors(lattice))
+    std::cout << PrintVector(v) << ' ';
+  std::cout << std::endl;
+
+  std::cout << "The extent of the lattice is: "
+            << PrintVector(lattice.extent()) << '\n';
+
+  std::cout << "The lattice spanning vectors are: ";
+  int i = 0;
+  BOOST_FOREACH(vector_type const& v, basis_vectors(lattice)) {
+    vector_type sv(v);
+    BOOST_FOREACH(double& x, sv) x *= lattice.extent(i);
+    std::cout << PrintVector(sv) << ' ';
+    ++i;
+  }
+  std::cout << std::endl;
+  
   std::cout << "The number of cells in the lattice is "
             << volume(lattice) << '\n';
   std::cout << "The cells in the lattice are:\n";
@@ -195,16 +214,16 @@ int main()
   try {
 #endif
 
-    // read parameters
-    alps::Parameters parameters;
-    std::ifstream parmfile("parameters_complex");
-    parmfile >> parameters;
+  // read parameters
+  alps::ParameterList plist(std::cin);
+  BOOST_FOREACH(alps::Parameters p, plist) {
     // create a graph factory with default graph type
-    alps::graph_helper<> lattice(parameters);
+    alps::graph_helper<> lattice(p);
 
     ShowUnitCell(lattice.unit_cell());
 
     IterateOverCells(lattice.lattice());
+  }
 
 #ifndef BOOST_NO_EXCEPTIONS
   }
