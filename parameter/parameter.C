@@ -69,7 +69,7 @@ struct replace_helper {
 
 void Parameter::parse(std::string const& str, bool replace_env) {
   if (!bs::parse(str.c_str(),
-    ParameterParser(*this) >> !bs::ch_p(';') >> *bs::blank_p >> bs::end_p).full)
+    ParameterParser(*this) >> !bs::ch_p(';') >> !bs::end_p, bs::blank_p).full)
     boost::throw_exception(std::runtime_error("can not parse '" + str + "'"));
   if (replace_env) replace_envvar();
 }

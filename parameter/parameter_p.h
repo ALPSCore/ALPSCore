@@ -51,27 +51,22 @@ struct ParameterParser : public bs::grammar<ParameterParser> {
     bs::rule<ScannerT> value;
 
     definition(ParameterParser const& self) {
-      parameter = key >> *bs::blank_p >> '=' >> *bs::blank_p >> value >> *bs::blank_p;
+      parameter = key >> '=' >> value;
       key =
         ( bs::alpha_p
-          >> *( bs::alnum_p
-              | '_' | '\'' | '#'
-              | bs::confix_p('[', *bs::print_p, ']')
-              )
-      )[bs::assign_a(self.param.key())],
+          >> *( bs::alnum_p | '_' | '\'' | '#' | bs::confix_p('[', *bs::print_p, ']') )
+        )[bs::assign_a(self.param.key())],
       value =
-        ( bs::confix_p('"', (*bs::print_p)[bs::assign_a(self.param.value())], '"')
-        | bs::confix_p('\'', (*bs::print_p)[bs::assign_a(self.param.value())], '\'')
-        | bs::confix_p('[', (*bs::print_p)[bs::assign_a(self.param.value())], ']')
-        | ( *( bs::alnum_p
-             | '#'
-             | bs::range_p('\'', '+')
-             | bs::range_p('-', '/')
-             | bs::range_p('^', '_')
-             )
-            % ( bs::ch_p('$') >> bs::confix_p('{', *bs::graph_p, '}') )
-          )[bs::assign_a(self.param.value())]
-        );
+        bs::lexeme_d
+          [ bs::confix_p('"', (*bs::print_p)[bs::assign_a(self.param.value())], '"')
+          | bs::confix_p('\'', (*bs::print_p)[bs::assign_a(self.param.value())], '\'')
+          | bs::confix_p('[', (*bs::print_p)[bs::assign_a(self.param.value())], ']')
+          | ( *( bs::alnum_p | '#' | bs::range_p('\'', '+') | bs::range_p('-', '/')
+               | bs::range_p('^', '_')
+               )
+              % ( bs::ch_p('$') >> bs::confix_p('{', *bs::graph_p, '}') )
+            )[bs::assign_a(self.param.value())]
+          ];
     }
  
     bs::rule<ScannerT> const& start() const { 

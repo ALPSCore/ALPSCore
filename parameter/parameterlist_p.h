@@ -54,23 +54,12 @@ struct ParameterListParser : public bs::grammar<ParameterListParser> {
       parameterlist =
         *bs::eol_p
         >> +( self.global_p
-            | ( bs::ch_p('{')[bs::assign_a(self.local, self.global)]
-                >> *bs::space_p
-                >> self.local_p
-                >> bs::ch_p('}')
-                >> *bs::space_p
+            | ( bs::ch_p('{')[bs::assign_a(self.local, self.global)] >> *bs::eol_p
+                >> self.local_p >> bs::ch_p('}') >> *bs::eol_p
               )[bs::push_back_a(self.plist, self.local)]
-            | ( bs::str_p("#clear")
-                >> *bs::space_p
-                >> !bs::ch_p(";")
-                >> *bs::space_p
-              )[bs::clear_a(self.global)]
+            | ( bs::str_p("#clear") >> !bs::ch_p(";") >> *bs::eol_p )[bs::clear_a(self.global)]
             )
-        >> !( bs::str_p("#stop")
-              >> *bs::space_p
-              >> !bs::ch_p(";")
-              >> *bs::space_p
-            )[bs::increment_a(self.stop)];
+        >> !( bs::str_p("#stop") >> !bs::ch_p(";") >> *bs::eol_p )[bs::increment_a(self.stop)];
     }
     
     bs::rule<ScannerT> const& start() const { 

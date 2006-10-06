@@ -31,13 +31,13 @@
 #include "parameters.h"
 #include "parameters_p.h"
 #include <boost/foreach.hpp>
-#include <boost/spirit/iterator/multi_pass.hpp>
 #include <boost/throw_exception.hpp>
+#include <cstdlib>
+#include <deque>
 #include <iostream>
 #include <stdexcept>
 #include <streambuf>
 #include <string>
-#include <cstdlib>
 
 namespace bs = boost::spirit;
 
@@ -107,22 +107,33 @@ void Parameters::extract_from_xml(std::istream& infile)
 }
 
 void Parameters::parse(std::istream& is, bool replace_env) {
+  std::deque<char> buff;
+  std::copy(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>(),
+    std::back_inserter(buff));
+  bs::parse_info<std::deque<char>::iterator> info = bs::parse(
+    buff.begin(), buff.end(),
+    ParametersParser(*this) >> bs::end_p,
+    bs::blank_p | bs::comment_p("//") | bs::comment_p("/*", "*/"));
+
+  /* // ST 2006.10.06: following in-situ version does not work with Intel C++ on IA64
   typedef bs::multi_pass<std::istreambuf_iterator<char> > iterator_t;
   iterator_t first = bs::make_multi_pass(std::istreambuf_iterator<char>(is));
   iterator_t last = bs::make_multi_pass(std::istreambuf_iterator<char>());
   bs::parse_info<iterator_t> info = bs::parse(
     first, last,
-    ParametersParser(*this) >> bs::end_p,
-    bs::comment_p("//") | bs::comment_p("/*", "*/"));
+    ...
+  */
+
   if (!info.full) {
-    first = info.stop;
-    std::string err = "parse error at \"";
-    for (int i = 0; first != last && i < 32; ++first, ++i)
-      err += (*first != '\n' ? *first : ' ');
+    std::deque<char>::iterator itr = info.stop;
+    std::string err = "parameter parse error at \"";
+    for (int i = 0; itr != buff.end() && i < 32; ++itr, ++i)
+      err += (*itr != '\n' ? *itr : ' ');
     boost::throw_exception(std::runtime_error(err + "\""));
   }
   if (replace_env) replace_envvar();
 }
+
 
 // old implementation based on ALPS parser
 
