@@ -569,6 +569,14 @@ public:
       return std::vector<std::pair<std::complex<double>,std::vector<std::size_t> > >();
   }
 
+  std::vector<int> translation_directions() const 
+  {
+    if (have_lattice_ && !inhomogeneous())
+      return l_.translation_directions();
+    else
+      return std::vector<int>();
+  }
+
   std::vector<vector_type> translation_momenta() const 
   {
     if (have_lattice_ && !inhomogeneous())
