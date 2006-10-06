@@ -1,3 +1,7 @@
+Volume of the lattice is: 36
+Number of sites in a unit cell is: 1
+Number of sites is: 23
+Number of bonds is: 29
 <GRAPH dimension="2" vertices="23" edges="29">
   <VERTEX id="1" type="0"><COORDINATE>0 0</COORDINATE></VERTEX>
   <VERTEX id="2" type="0"><COORDINATE>0 1</COORDINATE></VERTEX>

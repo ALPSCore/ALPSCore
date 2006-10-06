@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -48,6 +48,13 @@ int main()
     std::cin >> parameters;
     // create a graph factory with default graph type
     alps::graph_helper<> lattice(parameters);
+
+    std::cout << "Volume of the lattice is: " << volume(lattice.lattice()) << std::endl
+              << "Number of sites in a unit cell is: "
+              << num_sites(lattice.unit_cell().graph()) << std::endl
+              << "Number of sites is: " << num_sites(lattice.graph()) << std::endl
+              << "Number of bonds is: " << num_bonds(lattice.graph()) << std::endl;
+
     // write the graph created from the input in XML
     std::cout << lattice.graph();
 
