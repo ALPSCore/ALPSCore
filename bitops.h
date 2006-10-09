@@ -82,10 +82,16 @@ inline static int BX_(long x) { return ((x) - (((x)>>1)&0x77777777)
                              - (((x)>>3)&0x11111111)); }
 
 /// \brief count the 1-bits in a word
-/// @param x the 32-biit word of whhich 1-bits should be counted
+/// @param x the 32-bit word of which 1-bits should be counted
 /// @return the number of 1-bits in the word
 inline long popcnt(uint32_t x) 
 { return (((BX_(x)+(BX_(x)>>4)) & 0x0F0F0F0F) % 255); }
+
+/// \brief count the 1-bits in a word
+/// @param x the 64-bit word of which 1-bits should be counted
+/// @return the number of 1-bits in the word
+inline long popcnt(uint64_t x) 
+{ return popcnt(static_cast<uint32_t>(x)) + popcnt(static_cast<uint32_t>(x>>32)); }
 
 #endif
 

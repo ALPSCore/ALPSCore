@@ -43,11 +43,11 @@ namespace alps {
 template <class I> class SiteBasisDescriptor;
 
 template <class I>
-class OperatorDescriptor : public std::map<std::string,half_integer<I> >
+class OperatorDescriptor : private std::vector<std::pair<std::string,half_integer<I> > >
 {
-  typedef std::map<std::string,half_integer<I> > super_type;
+  typedef std::vector<std::pair<std::string,half_integer<I> > > super_type;
 public:
-  typedef typename std::map<std::string,half_integer<I> >::const_iterator const_iterator;
+  typedef typename super_type::const_iterator const_iterator;
   typedef std::map<std::string, OperatorDescriptor<I> > operator_map;
 
   OperatorDescriptor() {}
@@ -78,9 +78,13 @@ bool OperatorDescriptor<I>::is_fermionic(const SiteBasisDescriptor<I>& basis) co
   // anyways be checked for when applyingh the operator later.
   bool fermionic=false;
   for (int i=0;i<(int)basis.size();++i) {
-    typename super_type::const_iterator it=super_type::find(basis[i].name());
-    if (it!=super_type::end() && basis[i].fermionic() && is_odd(it->second))
-      fermionic=!fermionic;
+    for (const_iterator it=this->begin(); it !=this->end();++it) {
+      if (it->first == basis[i].name()) {
+        if (basis[i].fermionic() && is_odd(it->second))
+          fermionic=!fermionic;
+        break;
+      }
+    }
   }
   return fermionic;
 }
@@ -103,29 +107,30 @@ OperatorDescriptor<I>::apply(STATE state, const SiteBasisDescriptor<I>& basis, c
   expression::Expression<T> e(matrixelement());
   e.partial_evaluate(expression::ParameterEvaluator<T>(p));
   // apply operators
-  bool fermion_count=false;
   bool fermionic=false;
-  int count=0;
-  for (int i=0;i<basis.size();++i) {
-    const_iterator it=this->find(basis[i].name());
-    if (it!=super_type::end()) {
-      ++count;
-      if (basis[i].fermionic() && is_odd(it->second)) {
-        fermionic=!fermionic;
-        if (fermion_count)
-          e.negate();
+  for (const_iterator it=this->begin(); it !=this->end();++it) {
+    bool fermion_count=false;
+    int i;
+    for (i=0;i<basis.size();++i) {
+      if (it->first == basis[i].name()) {
+        if (basis[i].fermionic() && is_odd(it->second)) {
+          fermionic=!fermionic;
+          if (fermion_count)
+            e.negate();
+        }
+        if (isarg && (it->second!=0))
+          boost::throw_exception(std::runtime_error("Cannot apply offdiagonal operator inside function argument or power"));
+        get_quantumnumber(state,i)+=it->second; // apply change to QN
+        break;
       }
-      if (isarg && (it->second!=0))
-        boost::throw_exception(std::runtime_error("Cannot apply offdiagonal operator inside function argument or power"));
-      get_quantumnumber(state,i)+=it->second; // apply change to QN
+      else if (basis[i].fermionic() && is_odd(get_quantumnumber(state,i)))
+        fermion_count=!fermion_count;
     }
-    if (basis[i].fermionic() && is_odd(get_quantumnumber(state,i)))
-      fermion_count=!fermion_count;
+    if (i>=basis.size())
+      boost::throw_exception(std::runtime_error("Not all quantum numbers exist when applying operator " +name()));
   }
-  if (count != super_type::size())
-    boost::throw_exception(std::runtime_error("Not all quantum numbers exist when applying operator " +name()));
   if (!basis.valid(state))
-    e=expression::Expression<T>();
+    return boost::make_tuple(state,expression::Expression<T>(),false);
   return boost::make_tuple(state,e,fermionic);
 }
 
@@ -142,8 +147,8 @@ OperatorDescriptor<I>::OperatorDescriptor(const XMLTag& intag, std::istream& is)
   if (tag.type!=XMLTag::SINGLE) {
     tag = parse_tag(is);
     while (tag.name=="CHANGE") {
-      (*this)[tag.attributes["quantumnumber"]]=
-        boost::lexical_cast<half_integer<I>,std::string>(tag.attributes["change"]);
+      this->push_back(std::make_pair(tag.attributes["quantumnumber"],
+        boost::lexical_cast<half_integer<I>,std::string>(tag.attributes["change"])));
       if (tag.type!=XMLTag::SINGLE) {
         tag = parse_tag(is);
         if (tag.name !="/CHANGE")
@@ -160,7 +165,7 @@ template <class I>
 void OperatorDescriptor<I>::write_xml(oxstream& os) const
 {
   os << start_tag("OPERATOR") << attribute("name", name()) << attribute("matrixelement", matrixelement());
-  for (const_iterator it=super_type::begin();it!=super_type::end();++it)
+  for (const_iterator it=this->begin();it!=this->end();++it)
     os << start_tag("CHANGE") << attribute("quantumnumber", it->first)
        << attribute("change", it->second) << end_tag("CHANGE");
   os << end_tag("OPERATOR");
