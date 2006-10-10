@@ -61,6 +61,7 @@ public:
   template <class G>
   void create_terms(graph_helper<G> const& l)
   {
+    basis_.create_site_bases(l);
     parms_.copy_undefined(GlobalOperator::create_terms(l));
   }
 

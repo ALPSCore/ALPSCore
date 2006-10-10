@@ -33,15 +33,9 @@
 
 #include <alps/model/siteterm.h>
 #include <alps/model/bondterm.h>
-#include <boost/algorithm/string/replace.hpp>
+#include <alps/model/substitute.h>
 
 namespace alps {
-namespace detail {
-  inline std::string substitute(std::string const& text, unsigned int type)
-  {
-    return boost::algorithm::replace_all_copy(text,"#",boost::lexical_cast<std::string>(type));
-  }
-}
 
 template <class TERM>
 class DefaultTermDescriptor : public TERM
@@ -52,22 +46,13 @@ public:
   DefaultTermDescriptor(const XMLTag& tag, std::istream& in) : term_type(tag,in) {}
   operator term_type() const { return static_cast<term_type const&>(*this);}
   term_type get(unsigned int type) const;
-  Parameters parms(unsigned int type) const;
+  Parameters parms(unsigned int type) const { return substitute(TERM::parms(),type); }
 };
-
-template <class TERM>
-Parameters DefaultTermDescriptor<TERM>::parms(unsigned int type) const
-{
-  Parameters p;
-  for (Parameters::const_iterator it = TERM::parms().begin() ; it != TERM::parms().end(); ++it)
-    p[detail::substitute(it->key(),type)] = detail::substitute(it->value(),type);
-  return p;
-}
 
 template <class TERM>
 TERM DefaultTermDescriptor<TERM>::get(unsigned int type) const
 {
-  return term_type(*this,detail::substitute(this->term(),type),Parameters(),type);
+  return term_type(*this,substitute(this->term(),type),Parameters(),type);
 }
 
 typedef DefaultTermDescriptor<SiteTermDescriptor> DefaultSiteTermDescriptor;

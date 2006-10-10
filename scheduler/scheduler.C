@@ -47,7 +47,7 @@ namespace scheduler {
 
 void print_copyright(std::ostream& out) {
   out << "using the ALPS parallelizing scheduler\n";
-  out << "  copyright (c) 1994-2004 by Matthias Troyer <troyer@comp-phys.org>.\n";
+  out << "  copyright (c) 1994-2006 by Matthias Troyer <troyer@comp-phys.org>.\n";
   out << "  see Lecture Notes in Computer Science, Vol. 1505, p. 191 (1998).\n\n";
 }
 
