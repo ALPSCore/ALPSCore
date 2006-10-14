@@ -54,6 +54,8 @@ struct ParameterListParser : public bs::grammar<ParameterListParser> {
       parameterlist =
         *bs::eol_p
         >> +( self.global_p
+            | ( bs::ch_p('{') >> *bs::eol_p >> bs::ch_p('}') >> *bs::eol_p
+              )[bs::push_back_a(self.plist, self.global)]
             | ( bs::ch_p('{')[bs::assign_a(self.local, self.global)] >> *bs::eol_p
                 >> self.local_p >> bs::ch_p('}') >> *bs::eol_p
               )[bs::push_back_a(self.plist, self.local)]

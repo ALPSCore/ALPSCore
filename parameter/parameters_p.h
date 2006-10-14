@@ -51,7 +51,7 @@ struct ParametersParser : public bs::grammar<ParametersParser> {
     definition(ParametersParser const& self) {
       parameters =
         self.parameter_p[bs::assign_key_a(self.params, self.param.value(), self.param.key())]
-        % ( ( bs::ch_p(";") | bs::ch_p(",") | bs::eol_p ) >> *bs::eol_p )
+           % ( ( bs::ch_p(";") | bs::ch_p(",") | bs::eol_p ) >> *bs::eol_p )
         >> !bs::ch_p(";") >> *bs::eol_p;
     }
  
