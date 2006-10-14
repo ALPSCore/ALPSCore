@@ -42,23 +42,26 @@ int main()
 #endif
 
   setenv("DIR", "/home/alps", 1);
-  
+
+  boost::filesystem::path path("parameterlist.dump", boost::filesystem::native);
+
   alps::ParameterList params(std::cin);
   std::cout << params;
 
   {
-    alps::OXDRFileDump od(boost::filesystem::path("parameterlist.dump",boost::filesystem::native));
+    alps::OXDRFileDump od(path);
     od << params;
   }
   
   params.clear();
   
   {
-    alps::IXDRFileDump id(boost::filesystem::path("parameterlist.dump",boost::filesystem::native));
+    alps::IXDRFileDump id(path);
     id >> params;
   }
   
   std::cout << params;
+  remove(path);
   
 #ifndef BOOST_NO_EXCEPTIONS
 }

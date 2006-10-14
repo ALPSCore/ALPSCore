@@ -18,6 +18,11 @@ G = 0.5;
 H = 100;
 }
 {
+A = 0.1;
+D = 0.2;
+dir = /home/alps/lib/xml;
+}
+{
 G = 0.4;
 H = 200;
 }
@@ -42,6 +47,11 @@ D = 0.2;
 dir = /home/alps/lib/xml;
 G = 0.5;
 H = 100;
+}
+{
+A = 0.1;
+D = 0.2;
+dir = /home/alps/lib/xml;
 }
 {
 G = 0.4;
