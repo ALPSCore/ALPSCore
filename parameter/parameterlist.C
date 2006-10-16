@@ -30,6 +30,7 @@
 
 #include <alps/parameter/parameterlist.h>
 #include <alps/osiris/xdrdump.h>
+#include <boost/filesystem/operations.hpp>
 #include <boost/throw_exception.hpp>
 #include <stdlib.h>
 #include <iostream>
@@ -61,7 +62,7 @@ int main()
   }
   
   std::cout << params;
-  remove(path);
+  boost::filesystem::remove(path);
   
 #ifndef BOOST_NO_EXCEPTIONS
 }
