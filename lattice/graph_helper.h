@@ -128,24 +128,24 @@ Parameters coordinate_as_parameter(const G& graph,
 
 
 template<typename G>
-std::vector<std::string> site_labels(G const& g)
+std::vector<std::string> site_labels(G const& g, int precision = 0)
 {
   std::vector<std::string> label;
   typename alps::graph_traits<G>::vertex_iterator itr, itr_end;
   for (boost::tie(itr, itr_end) = vertices(g); itr != itr_end; ++itr)
-    label.push_back(coordinate_to_string(get(coordinate_t(), g, *itr)));
+    label.push_back(coordinate_to_string(get(coordinate_t(), g, *itr), precision));
   return label;
 }
 
 template<typename G>
-std::vector<std::string> bond_labels(G const& g)
+std::vector<std::string> bond_labels(G const& g, int precision = 0)
 {
   std::vector<std::string> label;
   typename alps::graph_traits<G>::edge_iterator itr, itr_end;
   for (boost::tie(itr, itr_end) = edges(g); itr != itr_end; ++itr)
     label.push_back(
-      coordinate_to_string(get(coordinate_t(), g, source(*itr, g))) + " -- " +
-      coordinate_to_string(get(coordinate_t(), g, target(*itr, g))));
+      coordinate_to_string(get(coordinate_t(), g, source(*itr, g)), precision) + " -- " +
+      coordinate_to_string(get(coordinate_t(), g, target(*itr, g)), precision));
   return label;
 }
 
@@ -461,7 +461,9 @@ public:
   { return inhomogeneous_edge_type(b); }
 
   const vector_type& coordinate(const site_descriptor& s) const { return coordinate_map_[s];}
-  std::string coordinate_string(const site_descriptor& s) const { return coordinate_to_string(coordinate(s));}
+  std::string coordinate_string(const site_descriptor& s, int precision = 0) const {
+    return coordinate_to_string(coordinate(s), precision);
+  }
   const vector_type& bond_vector(const bond_descriptor& b) const { return bond_vector_map_[b];}
   const vector_type& bond_vector_relative(const bond_descriptor& b) const { return bond_vector_relative_map_[b];}
   std::size_t dimension() const { return detail::graph_dimension_helper<has_property<dimension_t,G>::graph_property>::dimension(graph());}
@@ -516,32 +518,36 @@ public:
     return m;
   }
 
-  std::vector<std::string> momenta_labels() const
+  std::vector<std::string> momenta_labels(int precision = 0) const
   {
-      return l_.momenta_labels();
+      return l_.momenta_labels(precision);
   }
   
-  std::vector<std::string> distance_labels() const
+  std::vector<std::string> distance_labels(int precision = 0) const
   {
     if (have_lattice_ && !inhomogeneous())
-      return l_.distance_labels();
+      return l_.distance_labels(precision);
     std::vector<std::string> label(num_distances());
     for (vertex_iterator it1=vertices().first; it1 != vertices().second;++it1)
       for (vertex_iterator it2=vertices().first; it2 != vertices().second;++it2)
         if (have_lattice_)
-          label[int(*it1)*num_vertices()+int(*it2)]=alps::coordinate_to_string(coordinate(*it1))+" -- " + 
-                      alps::coordinate_to_string(coordinate(*it2));
+          label[int(*it1)*num_vertices()+int(*it2)] = 
+            alps::coordinate_to_string(coordinate(*it1), precision)+" -- " + 
+            alps::coordinate_to_string(coordinate(*it2), precision);
         else
-          label[int(*it1)*num_vertices()+int(*it2)]=boost::lexical_cast<std::string>(int(*it1)) + " -- " + 
-                      boost::lexical_cast<std::string>(int(*it2));
+          label[int(*it1)*num_vertices()+int(*it2)] =
+            boost::lexical_cast<std::string>(int(*it1)) + " -- " + 
+            boost::lexical_cast<std::string>(int(*it2));
     return label;
   }
   
-  std::vector<std::string> site_labels() const
-  { return alps::site_labels(graph()); }
+  std::vector<std::string> site_labels(int precision = 0) const {
+    return alps::site_labels(graph(), precision);
+  }
 
-  std::vector<std::string> bond_labels() const
-  { return alps::bond_labels(graph()); }
+  std::vector<std::string> bond_labels(int precision = 0) const {
+    return alps::bond_labels(graph(), precision);
+  }
 
   size_type distance(vertex_descriptor x, vertex_descriptor y) const
   {

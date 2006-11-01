@@ -285,7 +285,7 @@ public:
   const extent_type& extent() const { return extent_;}
 
 
-  std::vector<std::string> distance_labels() const
+  std::vector<std::string> distance_labels(int precision = 0) const
   {
     std::vector<std::string> label(num_distances());
     for (cell_iterator it1=cells().first; it1 != cells().second;++it1) {
@@ -294,18 +294,19 @@ public:
         offset_type y=alps::offset(*it2,*this);
         std::size_t d=distance(alps::offset(*it1,*this),alps::offset(*it2,*this));
         if (label[d].empty())
-          label[d] = alps::coordinate_to_string(alps::offset(*it1,*this))+" -- " + 
-                      alps::coordinate_to_string(alps::offset(*it2,*this));
+          label[d] =
+            alps::coordinate_to_string(alps::offset(*it1,*this), precision)+" -- " + 
+            alps::coordinate_to_string(alps::offset(*it2,*this), precision);
       }
     }
     return label;
   }
 
-  std::vector<std::string> momenta_labels() const
+  std::vector<std::string> momenta_labels(int precision = 0) const
   {
     std::vector<std::string> label;
     for (momentum_iterator it=momenta().first; it != momenta().second;++it)
-      label.push_back(alps::coordinate_to_string(*it)); 
+      label.push_back(alps::coordinate_to_string(*it, precision)); 
     return label;
   }
   

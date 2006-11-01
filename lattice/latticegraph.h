@@ -215,7 +215,7 @@ public:
   const typename H::graph_type& graph(const H& g) const
   { return detail::graph_wrap(g); }
 
-  std::vector<std::string> distance_labels() const
+  std::vector<std::string> distance_labels(int precision = 0) const
   {
     typename property_map<coordinate_t,graph_type,vector_type>::const_type
       coordinate_map = get_or_default(coordinate_t(),graph(),0);
@@ -226,8 +226,9 @@ public:
            it2 != vertices(graph()).second; ++it2) {
         std::size_t d=distance(*it1,*it2);
         if (label[d].empty())
-          label[d] = alps::coordinate_to_string(coordinate_map[*it1])+" -- " + 
-                      alps::coordinate_to_string(coordinate_map[*it2]);
+          label[d] =
+            alps::coordinate_to_string(coordinate_map[*it1], precision) + " -- " + 
+            alps::coordinate_to_string(coordinate_map[*it2], precision);
       }
     }
     return label;

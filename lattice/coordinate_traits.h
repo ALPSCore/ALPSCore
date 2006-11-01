@@ -33,6 +33,8 @@
 
 #include <alps/config.h>
 #include <algorithm>
+#include <iomanip>
+#include <sstream>
 
 #ifdef ALPS_HAVE_VALARRAY
 # include <valarray>
@@ -111,21 +113,19 @@ coordinates(const std::valarray<T>& c)
 
 
 template <class C>
-std::string coordinate_to_string(const C& c)
+std::string coordinate_to_string(const C& c, int precision = 0)
 {
-  typename coordinate_traits<C>::const_iterator first,last;
-  boost::tie(first,last)=coordinates(c);
+  std::ostringstream str;
+  str << "( ";
+  if (precision > 0) str << std::setprecision(precision);
   int n=0;
-  std::string s;
-  while (first!=last) {
-    if (n)
-      s+=",";
-    s+=boost::lexical_cast<std::string>(*first++);
-    ++n;
+  typename coordinate_traits<C>::const_iterator first, last;
+  for (boost::tie(first,last) = coordinates(c); first != last; ++first, ++n) {
+    if (n) str << ',';
+    str << *first;
   }
-//  if (n>1)
-    s="( "+s+" )";
-  return s;
+  str << " )";
+  return str.str();
 } 
 
 } // end namespace alps
