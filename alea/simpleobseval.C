@@ -133,7 +133,8 @@ try {
   alps::RealObsevaluator obseval_i = 1.0 / obseval_b;
   std::cout << obseval_i;
 
-  alps::RealObsevaluator obseval_j = pow(obseval_a, 3.3);
+  alps::RealObsevaluator obseval_j("pow(observable a,3.3)");
+  obseval_j = pow(obseval_a, 3.3);
   std::cout << obseval_j;
 
   // alps::RealVectorObsevaluator obseval_v = obs_d;

@@ -65,7 +65,7 @@ int main()
 
     // momenta label
     std::cout << "Momenta labels:\n";
-    label = lattice.momenta_labels();
+    label = lattice.momenta_labels(6);
     for (std::vector<std::string>::const_iterator itr = label.begin();
          itr != label.end(); ++itr)
       std::cout << *itr << std::endl;

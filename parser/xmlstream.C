@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 2001-2006 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -66,7 +66,7 @@ try {
       << alps::start_tag("tag3")
       << alps::end_tag
 
-      << x
+      << alps::precision(x, 6)
 
       << alps::start_tag("tag4") << alps::no_linebreak
       << "no linebreak"
