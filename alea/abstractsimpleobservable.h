@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
@@ -48,6 +48,8 @@ inline bool error_underflow(T mean, T error)
              *std::sqrt(std::numeric_limits<T>::epsilon()) > error));
 }
 
+class RealVectorObsevaluatorXMLHandler;
+
 
 //=======================================================================
 // AbstractSimpleObservable
@@ -61,6 +63,8 @@ template <class T>
 class AbstractSimpleObservable: public Observable
 {
 public:
+  friend class RealVectorObsevaluatorXMLHandler;
+
   /// the data type of the observable
   typedef T value_type;
 

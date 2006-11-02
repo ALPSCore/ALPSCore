@@ -58,6 +58,9 @@ template <class T> std::ostream& operator<<(std::ostream& o, const std::valarray
 
 namespace alps {
 
+class RealObsevaluatorXMLHandler;
+class RealVectorObsevaluatorXMLHandler;
+
 using namespace boost::lambda;
 
 //=======================================================================
@@ -73,6 +76,10 @@ class SimpleObservableData
 public:
   template <class X>
   friend class SimpleObservableData;
+
+  friend class RealObsevaluatorXMLHandler;
+  friend class RealVectorObsevaluatorXMLHandler;
+
   typedef T value_type;
   typedef typename obs_value_traits<T>::time_type time_type;
   typedef typename obs_value_traits<T>::size_type size_type;
@@ -370,7 +377,7 @@ void SimpleObservableData<T>::read_xml_scalar(std::istream& infile, const XMLTag
         eval_method_=tag.attributes["method"]; 
         converged_errors_=(tag.attributes["converged"]=="no" ? NOT_CONVERGED : 
                            tag.attributes["converged"]=="maybe" ? MAYBE_CONVERGED : CONVERGED);
-        converged_errors_ = any_converged_errors_;
+        any_converged_errors_ = converged_errors_;
         check_tag(infile,"/ERROR");
       }
     }

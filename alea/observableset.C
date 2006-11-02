@@ -28,12 +28,14 @@
 
 /* $Id$ */
 
-#include <alps/alea/observableset.h>
-#include <alps/alea/signedobservable.h>
-#include <alps/alea/nobinning.h>
-#include <alps/alea/detailedbinning.h>
-#include <alps/alea/simpleobseval.h>
-#include <alps/alea/histogrameval.h>
+#include "observableset.h"
+#include "signedobservable.h"
+#include "nobinning.h"
+#include "detailedbinning.h"
+#include "simpleobseval.h"
+#include "histogrameval.h"
+#include "observableset_p.h"
+
 #include <alps/multi_array.hpp>
 #include <boost/lexical_cast.hpp>
 
@@ -361,5 +363,143 @@ void ObservableSet::clear()
   signs_.clear();
 }
 
+
+//
+// RealObsevaluatorValueXMLHandler
+//
+
+RealObsevaluatorValueXMLHandler::RealObsevaluatorValueXMLHandler(std::string const& name,
+  double& value, std::string& method, int& conv) :
+  XMLHandlerBase(name), value_(value), method_(method), conv_(conv) {}
+
+void RealObsevaluatorValueXMLHandler::start_element(std::string const& /* name */,
+  XMLAttributes const& attributes, xml::tag_type /* type */) {
+  method_ = attributes["method"];
+  conv_ = (attributes["converged"] == "no" ? NOT_CONVERGED : 
+           attributes["converged"] == "maybe" ? MAYBE_CONVERGED : CONVERGED);
+  found_value_ = false;
+}
+
+void RealObsevaluatorValueXMLHandler::end_element(std::string const& /* name */,
+  xml::tag_type /* type */) {
+  if (!found_value_)
+    boost::throw_exception(std::runtime_error("value not found"));
+}
+
+void RealObsevaluatorValueXMLHandler::text(std::string const& text) {
+  value_ = boost::lexical_cast<double>(text);
+  found_value_ = true;
+}
+
+
+//
+// RealObsevaluatorXMLHandler
+//
+
+RealObsevaluatorXMLHandler::RealObsevaluatorXMLHandler(RealObsevaluator& obs, std::string& index) :
+  CompositeXMLHandler("SCALAR_AVERAGE"), obs_(obs), index_(index),
+  count_handler_("COUNT", obs_.all_.count_), mean_handler_("MEAN", obs_.all_.mean_),
+  error_handler_("ERROR", obs_.all_.error_, obs_.all_.eval_method_, obs_.all_.converged_errors_),
+  variance_handler_("VARIANCE", obs_.all_.variance_), tau_handler_("AUTOCORR", obs.all_.tau_),
+  binned_handler_("BINNED") {
+  add_handler(count_handler_);
+  add_handler(mean_handler_);
+  add_handler(error_handler_);
+  add_handler(variance_handler_);
+  add_handler(tau_handler_);
+  add_handler(binned_handler_);
+}
+
+void RealObsevaluatorXMLHandler::start_top(const std::string& /* name */,
+  const XMLAttributes& attributes, xml::tag_type /* type */) {
+  obs_.reset();
+  if (attributes.defined("name"))
+    obs_.rename(attributes["name"]);
+  else
+    obs_.rename("unknown");
+  if (attributes.defined("indexvalue"))
+    index_ = attributes["indexvalue"];
+  else
+    index_ = "";
+  obs_.valid_ = true;
+  obs_.automatic_naming_ = false;
+}
+
+void RealObsevaluatorXMLHandler::end_child(std::string const& name, xml::tag_type type) {
+  if (type == xml::element) {
+    if (name == "ERROR")
+      obs_.all_.any_converged_errors_ = obs_.all_.converged_errors_;
+    else if (name == "VARIANCE")
+      obs_.all_.has_variance_ = true;
+    else if (name == "AUTOCORR")
+      obs_.all_.has_tau_ = true;
+  }
+}
+
+//
+// RealVectorObsevaluatorXMLHandler
+//
+
+RealVectorObsevaluatorXMLHandler::RealVectorObsevaluatorXMLHandler(RealVectorObsevaluator& obs) :
+  CompositeXMLHandler("VECTOR_AVERAGE"), obs_(obs), robs_(), robs_handler_(robs_, index_) {
+  add_handler(robs_handler_);
+}
+
+void RealVectorObsevaluatorXMLHandler::start_top(const std::string& /* name */,
+  const XMLAttributes& attributes, xml::tag_type /* type */) {
+  obs_.reset();
+  obs_.rename(attributes["name"]);
+  obs_.valid_ = true;
+  obs_.automatic_naming_ = false;
+
+  pos_ = 0;
+  int s = boost::lexical_cast<int>(attributes["nvalues"]);
+  obs_.label_.resize(s);
+  obs_.all_.mean_.resize(s);
+  obs_.all_.error_.resize(s);
+  obs_.all_.variance_.resize(s);
+  obs_.all_.tau_.resize(s);
+  obs_.all_.converged_errors_.resize(s);
+  obs_.all_.any_converged_errors_.resize(s);
+}
+
+void RealVectorObsevaluatorXMLHandler::end_child(std::string const& name, xml::tag_type type) {
+  if (type == xml::element) {
+    if (name == "SCALAR_AVERAGE") {
+      obs_.label_[pos_] = index_;
+      obs_.all_.count_ = robs_.all_.count_;
+      obs_.all_.mean_[pos_] = robs_.all_.mean_;
+      obs_.all_.error_[pos_] = robs_.all_.error_;
+      obs_.all_.has_variance_ = robs_.all_.has_variance_;
+      obs_.all_.variance_[pos_] = robs_.all_.variance_;
+      obs_.all_.has_tau_ = robs_.all_.has_tau_;
+      obs_.all_.tau_[pos_] = robs_.all_.tau_;
+      obs_.all_.converged_errors_[pos_] = robs_.all_.converged_errors_;
+      obs_.all_.any_converged_errors_[pos_] = robs_.all_.any_converged_errors_;
+      ++pos_;
+    }
+  }
+}
+
+//
+// ObservableSetXMLHandler
+//
+
+ObservableSetXMLHandler::ObservableSetXMLHandler(ObservableSet& obs) :
+  CompositeXMLHandler("AVERAGES"), obs_(obs), robs_(), rhandler_(robs_, dummy_index_),
+  vobs_(), vhandler_(vobs_) {
+  add_handler(rhandler_);
+  add_handler(vhandler_);
+}
+
+void ObservableSetXMLHandler::end_child(std::string const& name,
+  xml::tag_type type) {
+  if (type == xml::element) {
+    if (name == "SCALAR_AVERAGE")
+      obs_ << robs_;
+    else if (name == "VECTOR_AVERAGE")
+      obs_ << vobs_;
+  }
+}
 
 } // namespace alps

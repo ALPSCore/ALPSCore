@@ -50,6 +50,9 @@
 
 namespace alps {
 
+class RealObsevaluatorXMLHandler;
+class RealVectorObsevaluatorXMLHandler;
+  
 //=======================================================================
 // SimpleObservableEvaluator
 //
@@ -64,6 +67,9 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
   template <class X>
   friend class SimpleObservableEvaluator;  
   
+  friend class RealObsevaluatorXMLHandler;
+  friend class RealVectorObsevaluatorXMLHandler;
+
   typedef T value_type;
   typedef typename obs_value_traits<T>::time_type time_type;
   typedef typename AbstractSimpleObservable<T>::result_type result_type;
