@@ -60,7 +60,7 @@ struct ParameterParser : public bs::grammar<ParameterParser> {
         bs::lexeme_d
           [ bs::confix_p('"', (*bs::print_p)[bs::assign_a(self.param.value())], '"')
           | bs::confix_p('\'', (*bs::print_p)[bs::assign_a(self.param.value())], '\'')
-          | bs::confix_p('[', (*bs::print_p)[bs::assign_a(self.param.value())], ']')
+          /* | bs::confix_p('[', (*bs::print_p)[bs::assign_a(self.param.value())], ']') */
           | ( *( bs::alnum_p | '#' | bs::range_p('\'', '+') | bs::range_p('-', '/')
                | bs::range_p('^', '_')
                )
