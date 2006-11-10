@@ -111,7 +111,6 @@ public:
         boost::throw_exception(std::runtime_error(
           "SimpleXMLHandler::start_element: encountered nested start tags <" +
           name + ">"));
-      started_ = true;
       if (!attr_.empty()) {
         if (!attributes.defined(attr_))
           boost::throw_exception(std::runtime_error(
