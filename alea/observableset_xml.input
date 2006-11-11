@@ -23,7 +23,7 @@
     <MEAN method="simple">1.49968</MEAN>
     <ERROR converged="yes" method="binning">0.00275</ERROR>
     <VARIANCE method="simple">0.0833</VARIANCE>
-    <AUTOCORR method="binning">-0.0468</AUTOCORR>
+    <AUTOCORR method="binning">nan</AUTOCORR>
     <BINNED size="1"><COUNT>10000</COUNT><MEAN method="simple">1.49968</MEAN><ERROR method="simple">0.00289</ERROR></BINNED>
     <BINNED size="2"><COUNT>5000</COUNT><MEAN method="simple">1.49968</MEAN><ERROR method="simple">0.00288</ERROR></BINNED>
     <BINNED size="4"><COUNT>2500</COUNT><MEAN method="simple">1.49968</MEAN><ERROR method="simple">0.00288</ERROR></BINNED>
