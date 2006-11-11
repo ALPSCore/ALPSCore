@@ -365,6 +365,55 @@ void ObservableSet::clear()
 
 
 //
+// ObsValueXMLHandler
+//
+
+ObsValueXMLHandler::ObsValueXMLHandler(const std::string& basename, double& val,
+   const std::string& attr) :
+  XMLHandlerBase(basename), value_(val), attr_(attr), started_(false) {}
+    
+void ObsValueXMLHandler::start_element(const std::string& name, const XMLAttributes& attributes, 
+  xml::tag_type type) {
+  if (type == xml::element) {
+    if (name != basename())
+      boost::throw_exception(std::runtime_error(
+        "ObsValueXMLHandler::start_element: unknown start tag <" + name + ">"));
+    if (started_)
+      boost::throw_exception(std::runtime_error(
+        "ObsValueXMLHandler::start_element: encountered nested start tags <" + name + ">"));
+    if (!attr_.empty()) {
+      if (!attributes.defined(attr_))
+        boost::throw_exception(std::runtime_error(
+          "ObsValueXMLHandler::start_element: attribute \"" + attr_ + 
+          "\" not defined in <" + name + "> tag"));
+      value_ = text_to_double(attributes[attr_]);
+    }
+    started_ = true;
+  }
+}
+
+void ObsValueXMLHandler::end_element(const std::string& name, xml::tag_type type) {
+  if (type == xml::element) {
+    if (name != "" && name != basename())
+      boost::throw_exception(std::runtime_error(
+        "ObsValueXMLHandler::end_element: unknown end tag </" + name + ">"));
+    if (!started_)
+      boost::throw_exception(std::runtime_error(
+        "ObsValueXMLHandler::end_element: unbalanced end tag </" + basename() + ">"));
+    if (attr_.empty()) {
+      value_ = text_to_double(buffer_);
+      buffer_.clear();
+    }
+    started_ = false;
+  }
+}
+    
+void ObsValueXMLHandler::text(const std::string& text) {
+  if (attr_.empty()) buffer_ += text;
+}
+
+
+//
 // RealObsevaluatorValueXMLHandler
 //
 
@@ -387,7 +436,7 @@ void RealObsevaluatorValueXMLHandler::end_element(std::string const& /* name */,
 }
 
 void RealObsevaluatorValueXMLHandler::text(std::string const& text) {
-  value_ = boost::lexical_cast<double>(text);
+  value_ = text_to_double(text);
   found_value_ = true;
 }
 

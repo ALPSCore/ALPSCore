@@ -32,9 +32,28 @@
 
 #include "observableset.h"
 #include "simpleobseval.h"
+#include "simpleobsdata.h"
 #include <alps/parser/xmlhandler.h>
 
 namespace alps {
+
+class ObsValueXMLHandler : public XMLHandlerBase {
+public:
+  ObsValueXMLHandler(const std::string& basename, double& val, const std::string& attr = "");
+  virtual ~ObsValueXMLHandler() {}
+    
+  virtual void start_element(const std::string& name, const XMLAttributes& attributes, 
+    xml::tag_type type);
+  virtual void end_element(const std::string& name, xml::tag_type type);
+  virtual void text(const std::string& text);
+
+private:
+  double& value_;
+  std::string attr_;
+  bool started_;
+  std::string buffer_;
+};
+
 
 /// \brief XML parser for the elements for RealObsevaluator class
 class RealObsevaluatorValueXMLHandler : public XMLHandlerBase {
@@ -70,10 +89,10 @@ private:
   RealObsevaluator& obs_;
   std::string& index_;
   SimpleXMLHandler<uint64_t> count_handler_;
-  SimpleXMLHandler<double> mean_handler_;
+  ObsValueXMLHandler mean_handler_;
   RealObsevaluatorValueXMLHandler error_handler_;
-  SimpleXMLHandler<double> variance_handler_;
-  SimpleXMLHandler<double> tau_handler_;
+  ObsValueXMLHandler variance_handler_;
+  ObsValueXMLHandler tau_handler_;
   DummyXMLHandler binned_handler_;
 };
   
