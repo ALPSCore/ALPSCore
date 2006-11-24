@@ -140,7 +140,10 @@ public:
   }
     
   virtual void text(const std::string& text) {
-    if (attr_.empty()) buffer_ += text;
+    if (attr_.empty()) {
+      if (!buffer_.empty()) buffer_ += ' ';
+      buffer_ += text;
+    }
   }
 
 private:
