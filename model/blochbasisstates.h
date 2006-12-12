@@ -81,6 +81,7 @@ public:
         return false;
     return true;
   }
+  std::vector<S> &full_list(){return full_list_;}
   
 private:
   template <class J>
@@ -107,7 +108,7 @@ template <class I, class S, class SS> template <class J>
 bool bloch_basis_states<I,S,SS>::satisfies_quantumnumbers(const std::vector<I>& idx, const std::pair<std::string, half_integer<J> >& constraint )
 {
   half_integer<J> val;
-  for (int i=0;i<basis_descriptor_.size();++i)
+  for (int i=0;i<(int)basis_descriptor_.size();++i)
     val += get_quantumnumber(basis_descriptor_[i][idx[i]],constraint.first,basis_descriptor_.get_site_basis(i));
   return val==constraint.second;
 }
@@ -123,18 +124,18 @@ void bloch_basis_states<I,S,SS>::build(const translation_type& trans, const std:
   unsigned int last=idx.size()-1;
   while (true) {
     unsigned int k=last;
-    while (idx[k]>=basis_descriptor_[k].size() && k) {
+    while (idx[k]>=(int)basis_descriptor_[k].size() && k) {
       idx[k]=0;
       if (k==0)
         break;
       --k;
       ++idx[k];
     }
-    if (k==0 && idx[k]>=basis_descriptor_[k].size())
+    if (k==0 && idx[k]>=(int)basis_descriptor_[k].size())
       break;
       
     bool satisfies=true;
-    for (int i=0;i<constraints.size();++i)
+    for (int i=0;i<(int)constraints.size();++i)
       satisfies = satisfies && satisfies_quantumnumbers(idx,constraints[i]);
 
     if (satisfies) {
@@ -150,13 +151,12 @@ void bloch_basis_states<I,S,SS>::build(const translation_type& trans, const std:
       for (;it !=trans.end();++it) {
       // apply translation to state
         std::vector<I> translated_state(idx.size());
-        for (int i=0;i<it->second.size();++i)
+        for (int i=0;i<(int)it->second.size();++i)
           translated_state[it->second[i]]=idx[i];
 
         // if translated state is not smaller: next translation
         if (translated_state>idx)
           continue;
-        
         // count fermion signs
         bool fermion_exchange=false;
         std::fill(fermionic.begin(),fermionic.end(),false);
@@ -212,7 +212,7 @@ void bloch_basis_states<I,S,SS>::build(const translation_type& trans, const std:
   }
 
   if (super_type::size())
-    for (int i=0;i<super_type::size()-1;++i)
+    for (int i=0;i<(int)super_type::size()-1;++i)
       if (!((*this)[i]<(*this)[i+1]))
         boost::throw_exception(std::logic_error("Bloch basis not sorted correctly"));
 }
@@ -227,7 +227,7 @@ template <class I, class S, class SS>
 inline std::ostream& operator<<(std::ostream& out, const alps::bloch_basis_states<I,S,SS>& q)
 {
   out << "{\n";
-  for (int i=0;i<q.size();++i) {
+  for (int i=0;i<(int)q.size();++i) {
     out << q.normalization(i) << "*[ ";
     unsigned int n=q[i].size();
     for (unsigned int j=0; j!=n;++j)
