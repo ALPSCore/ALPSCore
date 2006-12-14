@@ -69,7 +69,6 @@ public:
     return std::make_pair(representative_[idx],phase_[idx]);
   }
 
-  bool check_sort() const;
   const basis_type& basis() const { return basis_descriptor_;}
   
   double normalization(size_type i) const { return normalization_[i];}

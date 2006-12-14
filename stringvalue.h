@@ -126,23 +126,15 @@ public:
 
 /// INTERNAL ONLY
 #define CONVERTIT(T) operator T() const {return boost::lexical_cast<T>(*this); }
-  /// convert the string to int8_t
-  CONVERTIT(int8_t)
-  /// convert the string to uint8_t
-  CONVERTIT(uint8_t)
-  /// convert the string to int16_t
-  CONVERTIT(int16_t)
-  /// convert the string to uint16_t
-  CONVERTIT(uint16_t)
-  /// convert the string to int32_t
-  CONVERTIT(int32_t)
-  /// convert the string to uint32_t
-  CONVERTIT(uint32_t)
-#ifndef BOOST_NO_INT64_T
-  /// convert the string to int64_t
-  CONVERTIT(int64_t)
-  /// convert the string to uint64_t
-  CONVERTIT(uint64_t)
+  CONVERTIT(short)
+  CONVERTIT(unsigned short)
+  CONVERTIT(int)
+  CONVERTIT(unsigned int)
+  CONVERTIT(long)
+  CONVERTIT(unsigned long)
+#ifndef BOOST_NO_LONG_LONG
+  CONVERTIT(long long)
+  CONVERTIT(unsigned long long)
 #endif
   /// convert the string to float
   CONVERTIT(float)
