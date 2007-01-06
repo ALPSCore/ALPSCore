@@ -52,11 +52,11 @@
     <PARAMETER name="c" default="1"/>
     <BASIS>
       <VECTOR>a 0</VECTOR>
-      <VECTOR>a*sqrt(3)/2 a/2</VECTOR>
+      <VECTOR>a/2 a*sqrt(3)/2</VECTOR>
       <VECTOR>0 0</VECTOR>
     </BASIS>
     <RECIPROCALBASIS>
-      <VECTOR>2*pi/a 2*pi/a/sqrt(3)</VECTOR>
+      <VECTOR>2*pi/a -2*pi/a/sqrt(3)</VECTOR>
       <VECTOR>0 4*pi/a/sqrt(3)</VECTOR>
       <VECTOR>0 0</VECTOR>
     </RECIPROCALBASIS>
@@ -143,11 +143,11 @@
     <PARAMETER name="a" default="1"/>
     <BASIS>
       <VECTOR>a 0</VECTOR>
-      <VECTOR>a*sqrt(3)/2 a/2</VECTOR>
+      <VECTOR>a/2 a*sqrt(3)/2</VECTOR>
     </BASIS>
     <RECIPROCALBASIS>
-      <VECTOR>0 4*pi/a/sqrt(3)</VECTOR>
       <VECTOR>2*pi/a -2*pi/a/sqrt(3)</VECTOR>
+      <VECTOR>0 4*pi/a/sqrt(3)</VECTOR>
     </RECIPROCALBASIS>
   </LATTICE>
   <UNITCELL name="2band1d" dimension="1" vertices="2">
