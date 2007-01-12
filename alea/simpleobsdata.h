@@ -100,6 +100,8 @@ public:
     return SimpleObservableData<typename obs_value_slice<T,S>::value_type>(*this, s);
   }
 
+  SimpleObservableData const& operator=(const SimpleObservableData& x);
+
   void read_xml(std::istream&, const XMLTag&, label_type& label);
   void read_xml_scalar(std::istream&, const XMLTag&);
   void read_xml_vector(std::istream&, const XMLTag&, label_type& label);
@@ -280,6 +282,41 @@ SimpleObservableData<T>::SimpleObservableData(const SimpleObservableData<U>& x, 
                    boost::bind2nd(obs_value_slice<U,S>(),s));
   }
 }
+
+
+template <class T>
+inline
+SimpleObservableData<T> const& SimpleObservableData<T>::operator=(const SimpleObservableData<T>& x)
+ {
+   count_=x.count_;        
+   has_variance_=x.has_variance_;
+   has_tau_=x.has_tau_;
+   has_minmax_=x.has_minmax_;
+   can_set_thermal_=x.can_set_thermal_;
+   binsize_=x.binsize_;
+   thermalcount_=x.thermalcount_;
+   discardedmeas_=x.discardedmeas_;
+   discardedbins_=x.discardedbins_;
+   changed_=x.changed_;
+   valid_=x.valid_;
+   jack_valid_=x.jack_valid_;
+   nonlinear_operations_=x.nonlinear_operations_;
+   obs_value_traits<result_type>::copy(mean_,x.mean_);
+   obs_value_traits<result_type>::copy(error_,x.error_);
+   obs_value_traits<result_type>::copy(variance_,x.variance_);
+   obs_value_traits<time_type>::copy(tau_,x.tau_);
+   obs_value_traits<value_type>::copy(min_,x.min_);
+   obs_value_traits<value_type>::copy(max_,x.max_);
+   values_=x.values_; 
+   values2_=x.values2_; 
+   jack_=x.jack_;
+   
+   obs_value_traits<convergence_type>::copy(converged_errors_,x.converged_errors_);
+   obs_value_traits<convergence_type>::copy(any_converged_errors_,x.any_converged_errors_);
+   
+  return *this;
+}
+
 
 template <class T>
 SimpleObservableData<T>::SimpleObservableData(const AbstractSimpleObservable<T>& obs)
