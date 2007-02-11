@@ -37,7 +37,6 @@ namespace alps {
   
 inline std::string substitute(std::string const& text, unsigned int type)
 {
-  //std::string n =  boost::algorithm::replace_all_copy(text,"#",boost::lexical_cast<std::string>(type));
   std::string n;
   for (int i=0;i<text.size();++i)
   if (text[i]=='#')
@@ -45,7 +44,8 @@ inline std::string substitute(std::string const& text, unsigned int type)
   else
     n += text[i];
   // std::cerr << "Replaced " << text << " to " << n << " by substituting " << boost::lexical_cast<std::string>(type) << "\n";
-  return n; // boost::algorithm::replace_all_copy(text,"#",boost::lexical_cast<std::string>(type));
+  return n;
+//  return boost::algorithm::replace_all_copy(text,"#",boost::lexical_cast<std::string>(type));
 }
   
 inline Parameters substitute(Parameters const& parms, unsigned int type)
