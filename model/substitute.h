@@ -38,7 +38,7 @@ namespace alps {
 inline std::string substitute(std::string const& text, unsigned int type)
 {
   std::string n;
-  for (int i=0;i<text.size();++i)
+  for (unsigned int i=0;i<text.size();++i)
   if (text[i]=='#')
     n += boost::lexical_cast<std::string>(type);
   else
