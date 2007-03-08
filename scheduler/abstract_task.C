@@ -48,6 +48,11 @@ AbstractTask::AbstractTask()
   use_error_limit=false;
 }
 
+AbstractTask::~AbstractTask()
+{
+}
+
+
 void AbstractTask::add_processes(const ProcessList& p)
 {
   if(cpus()==1)

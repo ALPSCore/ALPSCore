@@ -4,8 +4,8 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2005 by Synge Todo <wistaria@comp-phys.org>,
-*                            Matthias Troyer <troyer@comp-phys.org>
+* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -28,25 +28,34 @@
 
 /* $Id$ */
 
-/// \file osiris.h
-/// \brief includes all headers in the alps/osiris directory
+#ifndef OSIRIS_BOOST_ARRAY_HPP
+#define OSIRIS_BOOST_ARRAY_HPP
 
-#include <alps/osiris/comm.h>
+#include <alps/config.h>
 #include <alps/osiris/dump.h>
-#include <alps/osiris/archivedump.h>
-#include <alps/osiris/dumparchive.h>
-#include <alps/osiris/mpdump.h>
-#include <alps/osiris/os.h>
-#include <alps/osiris/process.h>
-#include <alps/osiris/xdrdump.h>
-#include <alps/osiris/std/list.h>
-#include <alps/osiris/std/map.h>
-#include <alps/osiris/std/pair.h>
-#include <alps/osiris/std/string.h>
-#include <alps/osiris/std/valarray.h>
-#include <alps/osiris/std/vector.h>
-#include <alps/osiris/std/set.h>
-#include <alps/osiris/dump.h>
-#include <alps/osiris/std/string.h>
-#include <alps/osiris/std/deque.h>
-#include <alps/osiris/boost/array.h>
+
+#include <boost/array.hpp>
+
+#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
+namespace alps {
+#endif
+
+template<class T, std::size_t N> 
+inline alps::IDump& operator>>(alps::IDump& dump, boost::array<T, N>& x)
+{
+  dump.read_array(N,&(x[0]));
+  return dump;
+}
+
+template<class T, std::size_t N> 
+inline alps::ODump& operator<<(alps::ODump& dump, const boost::array<T,N>& x)
+{
+  dump.write_array(N,&(x[0]));
+  return dump;	
+}
+
+#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
+} // end namespace alps
+#endif
+
+#endif // OSIRIS_BOOST_ARRAY_HPP

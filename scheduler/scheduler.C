@@ -230,7 +230,6 @@ int start(int argc, char** argv, const Factory& p)
   
   Options opt(argc,argv);
   int res=0;
-  
   if (opt.valid) {
     if(!runs_parallel())
       theScheduler = new SerialScheduler(opt,p);

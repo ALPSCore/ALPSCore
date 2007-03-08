@@ -63,7 +63,6 @@ int SerialScheduler::run()
 {
   ptime end_time=second_clock::local_time()+seconds(long(time_limit));
   ptime task_time(second_clock::local_time());
-  std::cerr << "Scheduling " << tasks.size() << " tasks.\n";
   // do all Tasks
   for(int i=0;i<tasks.size();i++) {
     if(time_limit>0. && second_clock::local_time()>end_time)
@@ -81,7 +80,6 @@ int SerialScheduler::run()
         std::cerr  << "Task " << i+1 << " needs more nodes than available and will not run.\n";
       else {
         // create new Task in memory (new start)
-        std::cerr  << "Creating task " << i+1 << ".\n";
         remake_task(processes,i);
         theTask=tasks[i];
       }

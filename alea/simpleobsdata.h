@@ -1063,7 +1063,6 @@ void SimpleObservableData<T>::jackknife() const
   fill_jack();
 
   if (jack_.size()) {
-  
     // if any run is converged the errors will be OK
     converged_errors_=any_converged_errors_;
     

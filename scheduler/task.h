@@ -80,7 +80,7 @@ class AbstractTask
 public:
   AbstractTask();
   AbstractTask(const ProcessList&);
-  virtual ~AbstractTask() {}
+  virtual ~AbstractTask();
 
   virtual void checkpoint(const boost::filesystem::path&) const = 0; 
 

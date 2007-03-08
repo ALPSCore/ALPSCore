@@ -114,6 +114,7 @@ void MasterScheduler::set_new_jobfile(const boost::filesystem::path& jobfilename
     }
 #endif
   }
+  
 }
 
 void MasterScheduler::parse_job_file(const boost::filesystem::path& filename)
