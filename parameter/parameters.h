@@ -181,7 +181,7 @@ public:
   /// extract the contents from the first <PARAMETERS> element in the XML stream
   void extract_from_xml(std::istream& xml);
 
-  BOOST_SERIALIZATION_SPLIT_MEMBER();
+  BOOST_SERIALIZATION_SPLIT_MEMBER()
   
   /// support for Boost serialization
   template<class Archive>

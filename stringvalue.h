@@ -101,7 +101,16 @@ public:
   lexical_cast_string(const char* s) : string_type(s) {}
   /// constructor from a character sequence
   template<class InputItr>
-  lexical_cast_string(InputItr first, InputItr last) : string_type(first, last) {}
+  lexical_cast_string(InputItr first, InputItr last) 
+#if BOOST_WORKAROUND(__IBMCPP__, <= 800)
+  {
+    while (first!=last)
+      (*this) += *first++;
+  }
+#else
+  : string_type(first, last) {}
+#endif
+
   /// constructor from arbitrary types implemented using boost::lexical_cast
   template <class T>
   lexical_cast_string(const T& x)
