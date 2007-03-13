@@ -87,6 +87,7 @@ public:
   typedef typename obs_value_traits<T>::result_type result_type;
   typedef typename obs_value_traits<T>::convergence_type convergence_type;
   typedef typename obs_value_traits<T>::label_type label_type;
+  typedef typename obs_value_traits<T>::covariance_type covariance_type;
 
   // constructors
   SimpleObservableData();
@@ -120,6 +121,8 @@ public:
   inline const value_type& min() const;
   inline const value_type& max() const;
   
+  covariance_type covariance(const SimpleObservableData<T>) const;
+
   bool has_variance() const { return has_variance_;}
   bool has_tau() const { return has_tau_;}
   bool has_minmax() const { return has_minmax_;}
@@ -264,9 +267,9 @@ SimpleObservableData<T>::SimpleObservableData(const SimpleObservableData<U>& x, 
    tau_(has_tau_ ? obs_value_slice<typename obs_value_traits<U>::time_type,S>()(x.tau_, s) : time_type()),
    min_(has_minmax_ ? obs_value_slice<U,S>()(x.min_, s) : result_type()), 
    max_(has_minmax_ ? obs_value_slice<U,S>()(x.max_, s) : result_type()),
-   values_(), 
-   values2_(), 
-   jack_(),
+   values_(x.values_.size()), 
+   values2_(x.values2_.size()), 
+   jack_(x.jack_.size()),
    converged_errors_(obs_value_slice<typename obs_value_traits<U>::convergence_type,S>()(x.converged_errors_,s)),
    any_converged_errors_(obs_value_slice<typename obs_value_traits<U>::convergence_type,S>()(x.any_converged_errors_,s))
 {
@@ -1093,6 +1096,40 @@ void SimpleObservableData<T>::jackknife() const
     using std::sqrt;
     error_ = sqrt(error_);
   }
+}
+
+
+template<class T>
+typename SimpleObservableData<T>::covariance_type 
+SimpleObservableData<T>::covariance(const SimpleObservableData<T> obs2) const
+{
+  fill_jack();
+  obs2.fill_jack();
+  if (jack_.size() && obs2.jack_.size()) {
+    result_type rav1;
+    result_type rav2;
+    obs_value_traits<result_type>::resize_same_as(rav1, jack_[0]);  
+    obs_value_traits<result_type>::resize_same_as(rav2, obs2.jack_[0]);  
+    if (jack_.size() != obs2.jack_.size()) 
+      boost::throw_exception(std::runtime_error("unequal number of bins in calculation of covariance matrix"));
+    uint32_t k = jack_.size()-1;
+
+    rav1 = 0;
+    rav2 = 0;
+    rav1 = std::accumulate(jack_.begin()+1, jack_.end(), rav1);
+    rav2 = std::accumulate(obs2.jack_.begin()+1, obs2.jack_.end(), rav2);
+    rav1 /= count_type(k);
+    rav2 /= count_type(k);
+    
+    covariance_type cov = obs_value_traits<T>::outer_product(jack_[1],obs2.jack_[1]);
+    for (uint32_t i = 2; i < jack_.size(); ++i)
+      cov += obs_value_traits<T>::outer_product(jack_[i],obs2.jack_[i]);
+    
+    cov/=count_type(k);
+    cov-= obs_value_traits<T>::outer_product(rav1, rav2);
+    cov *= count_type(k - 1);
+    return cov;
+  }  
 }
 
 

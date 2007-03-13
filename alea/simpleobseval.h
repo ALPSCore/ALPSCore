@@ -77,6 +77,7 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
   // typedef std::size_t count_type;
   // *** we may need more than 32 Bit
   typedef uint64_t count_type;
+  typedef typename SimpleObservableData<T>::covariance_type covariance_type;
 
   typedef typename AbstractSimpleObservable<T>::label_type label_type;
   
@@ -131,6 +132,12 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
   convergence_type converged_errors() const { collect(); return all_.converged_errors(); }
   time_type tau() const { collect(); return all_.tau(); }; 
   
+  covariance_type covariance(SimpleObservableEvaluator& obs2) const { 
+    collect(); 
+    obs2.collect();
+    return all_.covariance(obs2.all_); 
+  }
+
   count_type bin_number() const { collect(); return all_.bin_number(); }
   const value_type& bin_value(count_type i) const { collect(); return all_.bin_value(i); }
   count_type bin_number2() const { collect(); return all_.bin_number2(); }
