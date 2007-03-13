@@ -41,7 +41,8 @@
 #include <cstddef>
 #include <vector>
 #include <complex>
-# include <valarray>
+#include <valarray>
+#include <boost/numeric/ublas/matrix.hpp>
 
 namespace boost { 
 namespace lambda {
@@ -84,6 +85,7 @@ struct obs_value_traits
   typedef time_type time_element_type;
   typedef typename type_traits<T>::average_t result_type;
   typedef int convergence_type;
+  typedef typename type_traits<T>::average_t covariance_type;
   typedef int slice_iterator;
   BOOST_STATIC_CONSTANT( uint32_t, magic_id = type_traits<T>::type_tag);
   typedef uint64_t size_type;
@@ -113,6 +115,10 @@ struct obs_value_traits
   template <class X, class Y> static void copy(X& x,const Y& y) {x=y;}
   template <class X> static std::size_t size(const X&) { return 1;}
   
+  static inline covariance_type outer_product(result_type a, result_type b) {
+    return a*b;
+  }
+
   template <class X> static T convert(X x) { return static_cast<T>(x);}
   static slice_iterator slice_begin(const value_type&) { return 0;}
   static slice_iterator slice_end(const value_type&) { return 1;}
@@ -139,6 +145,7 @@ struct obs_value_traits<std::complex<T> >
   typedef uint32_t size_type;
   typedef typename type_traits<T>::average_t result_type;
   typedef int convergence_type;
+  typedef typename type_traits<T>::average_t covariance_type;  
   typedef int slice_iterator;
   BOOST_STATIC_CONSTANT(uint32_t, magic_id = type_traits<T>::type_tag);
   BOOST_STATIC_CONSTANT(bool, array_valued=false);
@@ -164,6 +171,11 @@ struct obs_value_traits<std::complex<T> >
   template <class X, class Y> static void resize_same_as(X&,const Y&) {}
   template <class X, class Y> static void copy(X& x,const Y& y) {x=y;}
   template <class X> static std::size_t size(const X&) { return 1;}
+
+  static inline covariance_type outer_product(result_type a, result_type b) {
+    return std::conj(a)*b;
+  }
+
   template <class X> static T convert(X x) { return static_cast<T>(x);}
   static slice_iterator slice_begin(const value_type&) { return 0;}
   static slice_iterator slice_end(const value_type&) { return 1;}
@@ -187,6 +199,7 @@ struct obs_value_traits<std::valarray<T> >
   
   typedef std::valarray<typename type_traits<T>::average_t> result_type;
   typedef std::valarray<int> convergence_type;
+  typedef typename boost::numeric::ublas::matrix<typename type_traits<T>::average_t> covariance_type;  
   BOOST_STATIC_CONSTANT(uint32_t, magic_id = 256+type_traits<T>::type_tag);
   typedef std::vector<std::string> label_type;
 
@@ -239,6 +252,17 @@ struct obs_value_traits<std::valarray<T> >
   template <class X, class Y> static void copy(X& x,const Y& y) {x.resize(y.size()); for (int i=0;i<(int)y.size();++i) x[i]=y[i];}
   template <class X> static std::size_t size(const X& a) { return a.size();}
   template <class X> static void resize(X& a, std::size_t s) {a.resize(s);}
+
+  static covariance_type outer_product(result_type a, result_type b) 
+  {
+    boost::numeric::ublas::vector<typename type_traits<T>::average_t> vec1(a.size()), vec2(b.size());
+    for (int i=0; i<a.size(); ++i)
+      vec1[i] = a[i];
+    for (int i=0; i<b.size(); ++i)
+      vec2[i] = b[i];
+    return boost::numeric::ublas::outer_prod(vec1, vec2);
+
+  }
 
   typedef uint32_t slice_iterator;
   static slice_iterator slice_begin(const value_type&) { return 0;}
