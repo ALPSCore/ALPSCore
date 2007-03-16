@@ -377,7 +377,7 @@ public:
       valid_=true;
       k_=*alps::basis_vectors(*cell_iterator::lattice_).first;
       for (int i=0;i<alps::dimension(*cell_iterator::lattice_);++i)
-        k_[i]=cell_iterator::offset_[i]*2.*M_PI/double(cell_iterator::lattice_->extent()[i]);
+        k_[i]=cell_iterator::offset_[i]*2.*M_PI/double(cell_iterator::lattice_->extent()[i])-M_PI;
     }
   };
 
