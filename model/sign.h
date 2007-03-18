@@ -323,6 +323,10 @@ bool has_sign_problem(const HamiltonianDescriptor<I>& ham,
     }
   }
 
+  Parameters parms(p);
+  if (!parms.defined("x")) parms["x"] = 1;
+  if (!parms.defined("y")) parms["y"] = 1;
+  if (!parms.defined("z")) parms["z"] = 1;
   // build and check site matrices for all site types
   std::map<int, int> site_sign;
   for (typename boost::graph_traits<graph_type>::vertex_iterator
@@ -331,7 +335,7 @@ bool has_sign_problem(const HamiltonianDescriptor<I>& ham,
     int stype = lattice.site_type(*it);
     if (site_sign.find(stype) == site_sign.end()) {
       boost::multi_array<double,2> mat =
-        get_matrix(0., ham.site_term(stype), ham.basis().site_basis(stype), p);
+        get_matrix(0., ham.site_term(stype), ham.basis().site_basis(stype), parms);
       int dim = mat.shape()[0];
       int sign = 0;
       for (int i = 0; i < dim; ++i)
