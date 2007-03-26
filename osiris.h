@@ -49,4 +49,4 @@
 #include <alps/osiris/dump.h>
 #include <alps/osiris/std/string.h>
 #include <alps/osiris/std/deque.h>
-#include <alps/osiris/boost/array.h>
+#include <alps/osiris/std/stack.h>
