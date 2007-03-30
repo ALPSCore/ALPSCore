@@ -1006,14 +1006,14 @@ void SimpleObservableData<T>::fill_jack() const
     // Order-N initialization of jackknife data structure
     obs_value_traits<result_type>::resize_same_as(jack_[0], bin_value(0));
     for(uint64_t i = 0; i < bin_number(); ++i)
-      jack_[0] += obs_value_cast<result_type,value_type>(bin_value(i)) / count_type(bin_size());
+      jack_[0] += obs_value_traits<result_type>::convert(bin_value(i)) / count_type(bin_size());
     for(uint64_t i = 0; i < bin_number(); ++i) {
       obs_value_traits<result_type>::resize_same_as(jack_[i+1], jack_[0]);
-      result_type tmp(obs_value_cast<result_type,value_type>(bin_value(i)));
+      result_type tmp(obs_value_traits<result_type>::convert(bin_value(i)));
       tmp /= count_type(bin_size());
       jack_[i+1] = jack_[0]
           - tmp;
-//        - (obs_value_cast<result_type,value_type>(bin_value(i)) / count_type(bin_size()));
+//        - (obs_value_traits<result_type>::convert(bin_value(i)) / count_type(bin_size()));
       jack_[i+1] /= count_type(bin_number() - 1);
     }
     jack_[0] /= count_type(bin_number());
@@ -1040,7 +1040,7 @@ void SimpleObservableData<T>::analyze() const
       obs_value_traits<result_type>::resize_same_as(variance_, bin_value2(0));
       variance_ = 0.;
       for (uint64_t i=0;i<values2_.size();++i)
-        variance_+=obs_value_cast<result_type,value_type>(values2_[i]);
+        variance_+=obs_value_traits<result_type>::convert(values2_[i]);
       // was: variance_ = std::accumulate(values2_.begin(), values2_.end(), variance_);
       result_type mean2(mean_);
       mean2*=mean_*count_type(count());

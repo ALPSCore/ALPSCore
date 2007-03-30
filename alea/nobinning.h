@@ -180,7 +180,7 @@ inline typename NoBinning<T>::result_type NoBinning<T>::mean() const
   typedef typename obs_value_traits<T>::count_type count_type;
 
   if (count())
-    return obs_value_cast<result_type,value_type>(sum_)/count_type(count());
+    return obs_value_traits<result_type>::convert(sum_)/count_type(count());
   else
     boost::throw_exception(NoMeasurementsError());
   return result_type();
@@ -201,9 +201,9 @@ inline typename NoBinning<T>::result_type NoBinning<T>::variance() const
       retval=inf();
       return retval;
     } // no data collected
-  result_type tmp(obs_value_cast<result_type,value_type>(sum_));
+  result_type tmp(obs_value_traits<result_type>::convert(sum_));
   tmp *=tmp/ count_type(count_);
-  tmp=obs_value_cast<result_type,value_type>(sum2_) - tmp;
+  tmp=obs_value_traits<result_type>::convert(sum2_) - tmp;
   return tmp/ count_type(count_-1);
 }
 

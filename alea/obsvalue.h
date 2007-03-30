@@ -128,10 +128,25 @@ struct obs_value_traits
 
 };
 
-template <class DST,class SRC> DST obs_value_cast(const SRC& s) 
+/*
+template <class DST> struct obs_value_cast
 {
-  return obs_value_traits<DST>::convert(s);
+  DST const& operator()(DST const& x) { return x;}
+
+  template <class SRC> 
+  DST operator()(const SRC& s) 
+  {
+    return obs_value_traits<DST>::convert(s);
+  }
+
+template <class T> T const& obs_value_cast(const T& s, constT&=T()) 
+{
+  return s;
 }
+
+
+};
+*/
 
 template <class T>
 struct obs_value_traits<std::complex<T> >
@@ -272,6 +287,11 @@ struct obs_value_traits<std::valarray<T> >
   static element_type slice_value(const value_type& x, slice_iterator i) { return x[i];}
   static element_type& slice_value(value_type& x, slice_iterator i) { return  x[i];}
  
+  static std::valarray<T> const& convert(const std::valarray<T>& x)
+  {
+    return x;
+  } 
+  
   template <class X> static std::valarray<T> convert(const std::valarray<X>& x) 
   { 
     std::valarray<T> res;
@@ -300,6 +320,20 @@ struct obs_value_traits<std::vector<T> >
     { return boost::lexical_cast<std::string,int>(i); }
   static element_type slice_value(const value_type& x, slice_iterator i) { return (i<x.size()) ? x[i] : element_type();}
   static element_type& slice_value(value_type& x, slice_iterator i) { return (i<x.size()) ? x[i] : element_type();}
+
+  static std::vector<T> const& convert(const std::vector<T>& x)
+  {
+    return x;
+  } 
+  
+  template <class X> static std::vector<T> convert(const std::vector<X>& x) 
+  { 
+    std::vector<T> res;
+    copy(res,x);
+    return res;
+  }
+
+
 };
 
 template <class T,class I>

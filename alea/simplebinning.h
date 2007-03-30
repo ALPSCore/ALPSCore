@@ -172,9 +172,9 @@ inline void SimpleBinning<T>::operator<<(const T& x)
   }
   
   // store x, x^2 and the minimum and maximum value
-  last_bin_[0]=obs_value_cast<result_type,value_type>(x);
-  sum_[0]+=obs_value_cast<result_type,value_type>(x);
-  sum2_[0]+=obs_value_cast<result_type,value_type>(x)*obs_value_cast<result_type,value_type>(x);
+  last_bin_[0]=obs_value_traits<result_type>::convert(x);
+  sum_[0]+=obs_value_traits<result_type>::convert(x);
+  sum2_[0]+=obs_value_traits<result_type>::convert(x)*obs_value_traits<result_type>::convert(x);
   obs_value_traits<T>::check_for_max(max_,x);
   obs_value_traits<T>::check_for_min(min_,x);
 
