@@ -55,7 +55,7 @@ inline std::size_t dimension(const hypercubic_lattice<BASE,EX>& l)
 template <class BASE, class EX>
 class hypercubic_lattice : public BASE {
 public:
-  typedef hypercubic_lattice<BASE> lattice_type;
+  typedef hypercubic_lattice<BASE,EX> lattice_type;
   typedef BASE parent_lattice_type;
 
   typedef typename lattice_traits<parent_lattice_type>::unit_cell_type unit_cell_type;
