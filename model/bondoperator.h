@@ -106,10 +106,16 @@ public:
 
   template <class T, class I>
   boost::multi_array<std::pair<T,bool>,4> matrix(const SiteBasisDescriptor<I>&, const SiteBasisDescriptor<I>&, const Parameters& =Parameters()) const;
-template <class T>
-  std::vector<boost::tuple<expression::Term<T>,SiteOperator,SiteOperator> > templated_split(const Parameters& = Parameters()) const;
+
+  template <class T, class I>
+  std::vector<boost::tuple<expression::Term<T>,SiteOperator,SiteOperator> > templated_split(SiteBasisDescriptor<I> const&, SiteBasisDescriptor<I> const&, const Parameters& = Parameters()) const;
+
+  template <class I>
+  std::vector<boost::tuple<Term,SiteOperator,SiteOperator> > split(SiteBasisDescriptor<I> const& b1 ,SiteBasisDescriptor<I> const& b2,const Parameters& p= Parameters()) const 
+  { return templated_split<std::complex<double> >(b1,b2,p);}
+
   std::vector<boost::tuple<Term,SiteOperator,SiteOperator> > split(const Parameters& p= Parameters()) const 
-  { return templated_split<std::complex<double> >(p);}
+  { return templated_split<std::complex<double> >(SiteBasisDescriptor<short>(),SiteBasisDescriptor<short>(),p);}
   std::set<std::string> operator_names(const Parameters& = Parameters()) const;
 
   Parameters const& parms() const { return parms_;}
@@ -133,13 +139,14 @@ bool BondOperatorSplitter<I,T>::can_evaluate_function(const std::string&name , c
 template <class I, class T>
 expression::Expression<T> BondOperatorSplitter<I,T>::partial_evaluate_function(const std::string& name, const expression::Expression<T>& arg, bool isarg) const
 {
-  if (arg==sites_.first) {
-    site_ops_.first *= expression::Function<T>(name,arg);
-    return expression::Expression<T>(second_site_fermionic_ && basis1_.is_fermionic(name) ? -1. : 1.);
-  }
-  else  if (arg==sites_.second) {
+  if (arg==sites_.second) {
     site_ops_.second *= expression::Function<T>(name,arg);
-    if (basis2_.is_fermionic(name))
+    expression::Expression<T> e(second_site_fermionic_ && basis2_.is_fermionic(name) ? -1. : 1.);
+    return e;
+  }
+  else  if (arg==sites_.first) {
+    site_ops_.first *= expression::Function<T>(name,arg);
+    if (basis1_.is_fermionic(name))
         second_site_fermionic_ = !second_site_fermionic_;
     return expression::Expression<T>(1.);
   }
@@ -228,16 +235,16 @@ BondOperator::matrix(const SiteBasisDescriptor<I>& b1,
   return mat;
 }
 
-template <class T>
-std::vector<boost::tuple<expression::Term<T>,SiteOperator,SiteOperator> > alps::BondOperator::templated_split(const Parameters& p) const
+template <class T, class I>
+std::vector<boost::tuple<expression::Term<T>,SiteOperator,SiteOperator> > alps::BondOperator::templated_split(SiteBasisDescriptor<I> const& b1, SiteBasisDescriptor<I> const& b2,const Parameters& p) const
 {
   std::vector<boost::tuple<expression::Term<T>,SiteOperator,SiteOperator> > terms;
   Expression ex(term());
   ex.flatten();
   ex.simplify();
-  SiteBasisDescriptor<short> b;
+
   for (typename Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
-    BondOperatorSplitter<short> evaluator(b,b,source(),target(),p);
+    BondOperatorSplitter<short> evaluator(b1,b2,source(),target(),p);
     expression::Term<T> term(*tit);
     term.partial_evaluate(evaluator);
     term.simplify();
