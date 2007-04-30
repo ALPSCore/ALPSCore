@@ -261,7 +261,7 @@ TESTS_LATTICE = lattice/example1 lattice/example2 lattice/example3 lattice/examp
 	lattice/label \
 	lattice/parity
 
-TESTS_MODEL = model/example1 model/example2 model/example3 model/example4 model/example5 model/example6 model/example7 model/example8 model/example9 model/example10 model/example11 model/example12 model/example13 model/example14 model/example15 model/example16 model/example17
+TESTS_MODEL = model/example1 model/example2 model/example3 model/example4 model/example5 model/example6 model/example7 model/example8 model/example9 model/example10 model/example11 model/example12 model/example13 model/example14 model/example15 model/example16 model/example17 model/example18
 TESTS = $(TESTS_FC) $(TESTS_OSIRIS) $(TESTS_PARAMETER) $(TESTS_PARSER) \
 	$(am__append_2)
 all: all-recursive

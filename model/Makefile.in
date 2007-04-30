@@ -41,7 +41,7 @@ check_PROGRAMS = example1$(EXEEXT) example2$(EXEEXT) example3$(EXEEXT) \
 	example7$(EXEEXT) example8$(EXEEXT) example9$(EXEEXT) \
 	example10$(EXEEXT) example11$(EXEEXT) example12$(EXEEXT) \
 	example13$(EXEEXT) example14$(EXEEXT) example15$(EXEEXT) \
-	example16$(EXEEXT) example17$(EXEEXT)
+	example16$(EXEEXT) example17$(EXEEXT) example18$(EXEEXT)
 subdir = test/model
 DIST_COMMON = $(dist_noinst_DATA) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in
@@ -130,6 +130,13 @@ example17_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
 	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+am_example18_OBJECTS = example18.$(OBJEXT)
+example18_OBJECTS = $(am_example18_OBJECTS)
+example18_LDADD = $(LDADD)
+example18_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_example2_OBJECTS = example2.$(OBJEXT)
 example2_OBJECTS = $(am_example2_OBJECTS)
 example2_LDADD = $(LDADD)
@@ -199,15 +206,17 @@ CXXLINK = $(LIBTOOL) --tag=CXX --mode=link $(CXXLD) $(AM_CXXFLAGS) \
 SOURCES = $(example1_SOURCES) $(example10_SOURCES) \
 	$(example11_SOURCES) $(example12_SOURCES) $(example13_SOURCES) \
 	$(example14_SOURCES) $(example15_SOURCES) $(example16_SOURCES) \
-	$(example17_SOURCES) $(example2_SOURCES) $(example3_SOURCES) \
-	$(example4_SOURCES) $(example5_SOURCES) $(example6_SOURCES) \
-	$(example7_SOURCES) $(example8_SOURCES) $(example9_SOURCES)
+	$(example17_SOURCES) $(example18_SOURCES) $(example2_SOURCES) \
+	$(example3_SOURCES) $(example4_SOURCES) $(example5_SOURCES) \
+	$(example6_SOURCES) $(example7_SOURCES) $(example8_SOURCES) \
+	$(example9_SOURCES)
 DIST_SOURCES = $(example1_SOURCES) $(example10_SOURCES) \
 	$(example11_SOURCES) $(example12_SOURCES) $(example13_SOURCES) \
 	$(example14_SOURCES) $(example15_SOURCES) $(example16_SOURCES) \
-	$(example17_SOURCES) $(example2_SOURCES) $(example3_SOURCES) \
-	$(example4_SOURCES) $(example5_SOURCES) $(example6_SOURCES) \
-	$(example7_SOURCES) $(example8_SOURCES) $(example9_SOURCES)
+	$(example17_SOURCES) $(example18_SOURCES) $(example2_SOURCES) \
+	$(example3_SOURCES) $(example4_SOURCES) $(example5_SOURCES) \
+	$(example6_SOURCES) $(example7_SOURCES) $(example8_SOURCES) \
+	$(example9_SOURCES)
 DATA = $(dist_noinst_DATA)
 ETAGS = etags
 CTAGS = ctags
@@ -411,7 +420,8 @@ example14_SOURCES = example14.C
 example15_SOURCES = example15.C
 example16_SOURCES = example16.C
 example17_SOURCES = example17.C
-dist_noinst_DATA = example1.output example2.output example3.output example4.output example5.output example6.output example7.output example8.input example8.output example9.output example10.input example10.output example11.input example11.output example12.input example12.output example13.input example13.output example14.input example14.output example15.input example15.output example16.input example16.output example17.input example17.output
+example18_SOURCES = example18.C
+dist_noinst_DATA = example1.output example2.output example3.output example4.output example5.output example6.output example7.output example8.input example8.output example9.output example10.input example10.output example11.input example11.output example12.input example12.output example13.input example13.output example14.input example14.output example15.input example15.output example16.input example16.output example17.input example17.output example18.output
 all: all-am
 
 .SUFFIXES:
@@ -479,6 +489,9 @@ example16$(EXEEXT): $(example16_OBJECTS) $(example16_DEPENDENCIES)
 example17$(EXEEXT): $(example17_OBJECTS) $(example17_DEPENDENCIES) 
 	@rm -f example17$(EXEEXT)
 	$(CXXLINK) $(example17_LDFLAGS) $(example17_OBJECTS) $(example17_LDADD) $(LIBS)
+example18$(EXEEXT): $(example18_OBJECTS) $(example18_DEPENDENCIES) 
+	@rm -f example18$(EXEEXT)
+	$(CXXLINK) $(example18_LDFLAGS) $(example18_OBJECTS) $(example18_LDADD) $(LIBS)
 example2$(EXEEXT): $(example2_OBJECTS) $(example2_DEPENDENCIES) 
 	@rm -f example2$(EXEEXT)
 	$(CXXLINK) $(example2_LDFLAGS) $(example2_OBJECTS) $(example2_LDADD) $(LIBS)
@@ -519,6 +532,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/example15.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/example16.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/example17.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/example18.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/example2.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/example3.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/example4.Po@am__quote@
