@@ -74,7 +74,7 @@ SignalHandler::SignalHandler()
       signal(SIGQUIT, reinterpret_cast<signal_handle_ptr>(&kill));
       signal(SIGTSTP, reinterpret_cast<signal_handle_ptr>(&tstp));
       signal(SIGUSR1, reinterpret_cast<signal_handle_ptr>(&usr1));
-      signal(SIGUSR1, reinterpret_cast<signal_handle_ptr>(&usr2));
+      signal(SIGUSR2, reinterpret_cast<signal_handle_ptr>(&usr2));
     }
 }
 
