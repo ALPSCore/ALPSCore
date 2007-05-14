@@ -67,14 +67,23 @@ SignalHandler::SignalHandler()
     {
       initialized=true;
       u1=u2=k=s=count=0;
-          
+
       // register the signal handlers
-      signal(SIGINT, reinterpret_cast<signal_handle_ptr>(&kill));
-      signal(SIGTERM, reinterpret_cast<signal_handle_ptr>(&kill));
-      signal(SIGQUIT, reinterpret_cast<signal_handle_ptr>(&kill));
-      signal(SIGTSTP, reinterpret_cast<signal_handle_ptr>(&tstp));
-      signal(SIGUSR1, reinterpret_cast<signal_handle_ptr>(&usr1));
-      signal(SIGUSR2, reinterpret_cast<signal_handle_ptr>(&usr2));
+      struct sigaction Action;
+      Action.sa_handler = reinterpret_cast<signal_handle_ptr>(&kill);
+      sigemptyset(&Action.sa_mask);
+      // restart interrupted system calls, and make the signals one-shot
+      Action.sa_flags = SA_RESTART | SA_RESETHAND; 
+          
+      sigaction(SIGINT, &Action, NULL);
+      sigaction(SIGTERM, &Action, NULL);
+      sigaction(SIGQUIT, &Action, NULL);
+      Action.sa_handler = reinterpret_cast<signal_handle_ptr>(&tstp);
+      sigaction(SIGTSTP, &Action, NULL);
+      Action.sa_handler = reinterpret_cast<signal_handle_ptr>(&usr1);
+      sigaction(SIGUSR1, &Action, NULL);
+      Action.sa_handler = reinterpret_cast<signal_handle_ptr>(&usr2);
+      sigaction(SIGUSR2, &Action, NULL);
     }
 }
 
