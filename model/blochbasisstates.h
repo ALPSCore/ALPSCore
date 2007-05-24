@@ -114,13 +114,53 @@ bool bloch_basis_states<I,S,SS>::satisfies_quantumnumbers(const std::vector<I>& 
 
 template <class I, class S, class SS> template<class J>
 void bloch_basis_states<I,S,SS>::build(const translation_type& trans, const std::vector<std::pair<std::string,half_integer<J> > >& constraints)
-{
+{	
   double l=std::sqrt(double(basis().size()));
   if (basis_descriptor_.empty())
     return;
   std::vector<I> idx(basis_descriptor_.size(),0);
   std::vector<int> fermionic(basis_descriptor_.size());
   unsigned int last=idx.size()-1;
+    
+  //
+  // AML/AH: prepare a list of partial maxima and minima for each
+  // constraint
+  //
+  boost::multi_array<half_integer<J>,2> local_max(boost::extents[constraints.size()][idx.size()]);
+  boost::multi_array<half_integer<J>,2> local_min(boost::extents[constraints.size()][idx.size()]);
+  
+  boost::multi_array<half_integer<J>,2> max_partial_qn_value(boost::extents[constraints.size()][idx.size()-1]);
+  boost::multi_array<half_integer<J>,2>	min_partial_qn_value(boost::extents[constraints.size()][idx.size()-1]);
+  
+  for (int ic=0;ic<constraints.size();++ic) {
+	  for(int is=0;is<idx.size();++is) {
+		  half_integer<J>& lmax=local_max[ic][is];
+		  half_integer<J>& lmin=local_min[ic][is];
+		  
+		  lmax=lmin=get_quantumnumber(basis_descriptor_[is][0],constraints[ic].first,basis_descriptor_.get_site_basis(is));
+		  
+		  for (int ib=1;ib<basis_descriptor_[is].size();++ib) {
+			  half_integer<J> val=get_quantumnumber(basis_descriptor_[is][ib],
+													constraints[ic].first,
+													basis_descriptor_.get_site_basis(is));
+			  if(lmax<val) lmax=val;
+			  if(lmin>val) lmin=val;
+		  }
+	  }
+  }
+  
+  for (int ic=0;ic<constraints.size();++ic) {
+	  for(int ik=0;ik<last;++ik) {
+		  half_integer<J> max_val,min_val;
+		  for(int is=ik+1;is<idx.size();++is) {
+			  max_val+=local_max[ic][is];
+			  min_val+=local_min[ic][is];
+		  }
+		  max_partial_qn_value[ic][ik]=max_val;
+		  min_partial_qn_value[ic][ik]=min_val;
+	  }
+  }  
+  
   while (true) {
     unsigned int k=last;
     while (idx[k]>=(int)basis_descriptor_[k].size() && k) {
@@ -129,6 +169,34 @@ void bloch_basis_states<I,S,SS>::build(const translation_type& trans, const std:
         break;
       --k;
       ++idx[k];
+	  
+	  //
+	  // AML/AH: truncates search tree if it is obvious that no new
+	  //         states can be found.
+	  // 
+	  bool breaked=false;
+	  if( idx[k]<basis_descriptor_[k].size() ) {
+		  // let us see now if the new partial state
+		  // idx[0,k] is compatible with any of the partial
+		  // states idx[k+1,last]
+		  for (int ic=0;ic<constraints.size();++ic) {
+			  half_integer<J> val;
+			  for (int is=0;is<=k;++is)
+				  val += get_quantumnumber(basis_descriptor_[is][idx[is]],
+										   constraints[ic].first,
+										   basis_descriptor_.get_site_basis(is));
+			  if (val+max_partial_qn_value[ic][k]<constraints[ic].second ||
+				  val+min_partial_qn_value[ic][k]>constraints[ic].second) {
+				  //impossible to satisfy constraint
+				  breaked=true;
+				  break;
+			  }
+		  }
+		  if(breaked)
+			  ++idx[k];
+	  }
+	  // end of new part
+	  
     }
     if (k==0 && idx[k]>=(int)basis_descriptor_[k].size())
       break;
@@ -136,8 +204,8 @@ void bloch_basis_states<I,S,SS>::build(const translation_type& trans, const std:
     bool satisfies=true;
     for (int i=0;i<(int)constraints.size();++i)
       satisfies = satisfies && satisfies_quantumnumbers(idx,constraints[i]);
-
-    if (satisfies) {
+	
+    if (satisfies) {		
       std::size_t representative_number = super_type::size(); 
       std::complex<double> ph=1.;
       std::complex<double> phase_sum=1.;
