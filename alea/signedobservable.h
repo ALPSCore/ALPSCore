@@ -109,9 +109,9 @@ public:
 
 
   count_type count() const { return obs_.count();}
-  result_type mean() const { return make_evaluator().mean();}
-  result_type error() const { return make_evaluator().error();}
-  convergence_type converged_errors() const { return make_evaluator().converged_errors();}
+  result_type const& mean() const { return make_evaluator().mean();}
+  result_type const& error() const { return make_evaluator().error();}
+  convergence_type const& converged_errors() const { return make_evaluator().converged_errors();}
   
   bool can_set_thermalization() const { return  obs_.can_set_thermalization();}
   void set_thermalization(uint32_t todiscard) { obs_.set_thermalization(todiscard);}

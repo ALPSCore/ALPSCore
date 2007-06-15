@@ -122,17 +122,17 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
   bool has_tau() const { collect(); return all_.has_tau(); }
   bool has_variance() const { collect(); return all_.has_variance(); }
   bool has_minmax() const { collect() ; return all_.has_minmax(); }
-  value_type max() const { collect(); return all_.max(); }
-  value_type min() const { collect(); return all_.min(); }
+  value_type const& max() const { collect(); return all_.max(); }
+  value_type const& min() const { collect(); return all_.min(); }
   
-  result_type value() const { collect(); return all_.mean(); }
-  result_type mean() const { return value(); }
-  result_type variance() const { collect(); return all_.variance(); }
-  result_type error() const { collect(); return all_.error(); }
-  convergence_type converged_errors() const { collect(); return all_.converged_errors(); }
+  result_type const& value() const { collect(); return all_.mean(); }
+  result_type const& mean() const { return value(); }
+  result_type const& variance() const { collect(); return all_.variance(); }
+  result_type const& error() const { collect(); return all_.error(); }
+  convergence_type  const& converged_errors() const { collect(); return all_.converged_errors(); }
   time_type tau() const { collect(); return all_.tau(); }; 
   
-  covariance_type covariance(SimpleObservableEvaluator& obs2) const { 
+  covariance_type const& covariance(SimpleObservableEvaluator& obs2) const { 
     collect(); 
     obs2.collect();
     return all_.covariance(obs2.all_); 
