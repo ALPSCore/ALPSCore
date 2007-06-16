@@ -82,16 +82,16 @@ public:
     ALPS_RETURN_VOID
   }
 
-  result_type const& mean() const {return b_.mean();}
+  result_type mean() const {return b_.mean();}
   bool has_variance() const { return b_.has_variance();}
-  result_type const& variance() const {return b_.variance();}
-  result_type const& error() const {return b_.error();}
-  result_type const& error(unsigned bin_used) const {return b_.error(bin_used);}
-  convergence_type const& converged_errors() const {return b_.converged_errors();}
+  result_type variance() const {return b_.variance();}
+  result_type error() const {return b_.error();}
+  result_type error(unsigned bin_used) const {return b_.error(bin_used);}
+  convergence_type converged_errors() const {return b_.converged_errors();}
   count_type count() const {return b_.count();}
   bool has_minmax() const { return b_.has_minmax();}
-  value_type const& min() const {return b_.min();}
-  value_type const& max() const {return b_.max();}
+  value_type min() const {return b_.min();}
+  value_type max() const {return b_.max();}
   bool has_tau() const { return b_.has_tau;}
   time_type tau() const  { return b_.tau();}
   
