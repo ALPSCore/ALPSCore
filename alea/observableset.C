@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2007 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -337,6 +337,15 @@ void ObservableSet::write_xml(oxstream& oxs, const boost::filesystem::path& fn_h
     i->second->write_xml(oxs, fn_hdf5);
   oxs << end_tag("AVERAGES");
 }
+
+void ObservableSet::write_xml_with_id(oxstream& oxs, int id,
+  const boost::filesystem::path& fn_hdf5) const {
+  oxs << start_tag("AVERAGES") << attribute("id", id);
+  for(const_iterator i = begin(); i != end(); ++i)
+    i->second->write_xml(oxs, fn_hdf5);
+  oxs << end_tag("AVERAGES");
+}
+
 
 void ObservableSet::read_xml(std::istream& infile, const XMLTag& intag)
 {
