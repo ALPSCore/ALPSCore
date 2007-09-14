@@ -11,7 +11,7 @@ TESTS_FC = fixed_capacity/fixed_capacity_deque fixed_capacity/fixed_capacity_tra
 TESTS_OSIRIS = osiris/sizeof osiris/xdrdump osiris/xdrdump2 osiris/boostdump osiris/boostdump2 osiris/boostdump3 osiris/boostdump4
 TESTS_PARAMETER = parameter/expression parameter/expression2 parameter/flatten parameter/parameter parameter/parameterlist parameter/parameterlist_xml parameter/parameters parameter/parameters_xml
 TESTS_PARSER = parser/xmlhandler parser/xmlparser parser/xmlstream
-TESTS_ALEA = alea/detailedbinning alea/observableset_xml alea/signed alea/simpleobseval alea/testobservableset alea/vectorobseval
+TESTS_ALEA = alea/detailedbinning alea/histogram alea/observableset_xml alea/signed alea/simpleobseval alea/testobservableset alea/vectorobseval
 TESTS_LATTICE = lattice/example1 lattice/example2 lattice/example3 lattice/example4 lattice/example5 lattice/example6 lattice/example7 lattice/example8 lattice/example9 lattice/example10 \
 	lattice/label \
 	lattice/parity

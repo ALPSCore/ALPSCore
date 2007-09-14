@@ -36,9 +36,10 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-check_PROGRAMS = detailedbinning$(EXEEXT) signed$(EXEEXT) \
-	simpleobseval$(EXEEXT) testobservableset$(EXEEXT) \
-	observableset_xml$(EXEEXT) vectorobseval$(EXEEXT)
+check_PROGRAMS = detailedbinning$(EXEEXT) histogram$(EXEEXT) \
+	signed$(EXEEXT) simpleobseval$(EXEEXT) \
+	testobservableset$(EXEEXT) observableset_xml$(EXEEXT) \
+	vectorobseval$(EXEEXT)
 subdir = test/alea
 DIST_COMMON = $(dist_noinst_DATA) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in
@@ -68,6 +69,13 @@ detailedbinning_OBJECTS = $(am_detailedbinning_OBJECTS)
 detailedbinning_LDADD = $(LDADD)
 am__DEPENDENCIES_1 =
 detailedbinning_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+am_histogram_OBJECTS = histogram.$(OBJEXT)
+histogram_OBJECTS = $(am_histogram_OBJECTS)
+histogram_LDADD = $(LDADD)
+histogram_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
 	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
@@ -116,12 +124,14 @@ LTCXXCOMPILE = $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) \
 CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --tag=CXX --mode=link $(CXXLD) $(AM_CXXFLAGS) \
 	$(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(detailedbinning_SOURCES) $(observableset_xml_SOURCES) \
-	$(signed_SOURCES) $(simpleobseval_SOURCES) \
-	$(testobservableset_SOURCES) $(vectorobseval_SOURCES)
-DIST_SOURCES = $(detailedbinning_SOURCES) $(observableset_xml_SOURCES) \
-	$(signed_SOURCES) $(simpleobseval_SOURCES) \
-	$(testobservableset_SOURCES) $(vectorobseval_SOURCES)
+SOURCES = $(detailedbinning_SOURCES) $(histogram_SOURCES) \
+	$(observableset_xml_SOURCES) $(signed_SOURCES) \
+	$(simpleobseval_SOURCES) $(testobservableset_SOURCES) \
+	$(vectorobseval_SOURCES)
+DIST_SOURCES = $(detailedbinning_SOURCES) $(histogram_SOURCES) \
+	$(observableset_xml_SOURCES) $(signed_SOURCES) \
+	$(simpleobseval_SOURCES) $(testobservableset_SOURCES) \
+	$(vectorobseval_SOURCES)
 DATA = $(dist_noinst_DATA)
 ETAGS = etags
 CTAGS = ctags
@@ -309,12 +319,13 @@ AM_CPPFLAGS = $(BASE_CPPFLAGS) $(BOOST_CPPFLAGS) $(XML_CPPFLAGS) $(HDF5_CPPFLAGS
 AM_LDFLAGS = $(BASE_LDFLAGS) $(BOOST_LDFLAGS) $(HDF5_LDFLAGS) $(XML_LDFLAGS)
 LDADD = $(top_builddir)/lib/alps/libalps.la $(top_builddir)/lib/comm-sgl/libcomm-sgl.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(BASE_LIBS)
 detailedbinning_SOURCES = detailedbinning.C
+histogram_SOURCES = histogram.C
 observableset_xml_SOURCES = observableset_xml.C
 signed_SOURCES = signed.C
 simpleobseval_SOURCES = simpleobseval.C
 testobservableset_SOURCES = testobservableset.C
 vectorobseval_SOURCES = vectorobseval.C
-dist_noinst_DATA = detailedbinning.input detailedbinning.output observableset_xml.input observableset_xml.output signed.input signed.output simpleobseval.output testobservableset.input testobservableset.output vectorobseval.output
+dist_noinst_DATA = detailedbinning.input detailedbinning.output histogram.output observableset_xml.input observableset_xml.output signed.input signed.output simpleobseval.output testobservableset.input testobservableset.output vectorobseval.output
 all: all-am
 
 .SUFFIXES:
@@ -358,6 +369,9 @@ clean-checkPROGRAMS:
 detailedbinning$(EXEEXT): $(detailedbinning_OBJECTS) $(detailedbinning_DEPENDENCIES) 
 	@rm -f detailedbinning$(EXEEXT)
 	$(CXXLINK) $(detailedbinning_LDFLAGS) $(detailedbinning_OBJECTS) $(detailedbinning_LDADD) $(LIBS)
+histogram$(EXEEXT): $(histogram_OBJECTS) $(histogram_DEPENDENCIES) 
+	@rm -f histogram$(EXEEXT)
+	$(CXXLINK) $(histogram_LDFLAGS) $(histogram_OBJECTS) $(histogram_LDADD) $(LIBS)
 observableset_xml$(EXEEXT): $(observableset_xml_OBJECTS) $(observableset_xml_DEPENDENCIES) 
 	@rm -f observableset_xml$(EXEEXT)
 	$(CXXLINK) $(observableset_xml_LDFLAGS) $(observableset_xml_OBJECTS) $(observableset_xml_LDADD) $(LIBS)
@@ -381,6 +395,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/detailedbinning.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/histogram.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/observableset_xml.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/signed.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/simpleobseval.Po@am__quote@
