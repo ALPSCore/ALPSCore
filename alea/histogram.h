@@ -49,7 +49,6 @@ namespace alps {
 
 template <class T> class HistogramObservableEvaluator;
 
-
 template <class T>
 class HistogramObservable : public Observable, public RecordableObservable<T>
 {
@@ -140,6 +139,9 @@ protected:
 };
 
 
+typedef HistogramObservable<int32_t> IntHistogramObservable;
+typedef HistogramObservable<double> RealHistogramObservable;
+  
 template <class T>
 inline Observable* HistogramObservable<T>::convert_mergeable() const
 {

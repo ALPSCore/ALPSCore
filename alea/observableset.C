@@ -84,7 +84,8 @@ ObservableFactory::ObservableFactory()
   //register_observable<AbstractSignedObservable<IntVectorObsevaluator> >();
   register_observable<SignedObservable<SimpleRealVectorObservable> >();
   register_observable<SignedObservable<RealVectorTimeSeriesObservable> >();
-  register_observable<HistogramObservable<double> >();
+  register_observable<IntHistogramObservable>();
+  register_observable<RealHistogramObservable>();
   //register_observable<SignedObservable<SimpleIntVectorObservable> >();
   //register_observable<SignedObservable<IntVectorObservable> >();
   //register_observable<SignedObservable<IntVectorTimeSeriesObservable> >();
