@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2007 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -43,6 +43,7 @@
 #include <alps/vectortraits.h>
 
 #include <boost/throw_exception.hpp>
+#include <iomanip>
 #include <iostream>
 #include <string>
 #ifndef BOOST_NO_STRINGSTREAM
