@@ -42,8 +42,8 @@ try {
 
   alps::ObservableSet obs;
   obs << alps::SimpleRealObservable("scalar 1");
-  obs << alps::HistogramObservable<int>("histogram 1", 0, 10, 1, true);
-  obs << alps::HistogramObservable<double>("histogram 2", 0, 1, 0.1, true);
+  obs << alps::HistogramObservable<int>("histogram 1", 0, 10);
+  obs << alps::HistogramObservable<double>("histogram 2", 0, 1, 0.1);
   obs.reset(true);
 
   for (int i=0; i < (1<<12); ++i) {

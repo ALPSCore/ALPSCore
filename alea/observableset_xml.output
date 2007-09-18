@@ -4,6 +4,48 @@
     <MEAN method="jackknife">0.333011</MEAN>
     <ERROR converged="yes" method="jackknife">0.00174</ERROR>
   </SCALAR_AVERAGE>
+  <HISTOGRAM name="histogram 1" nvalues="10">
+    <ENTRY indexvalue="0">
+      <COUNT>4096</COUNT>
+      <VALUE>384</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="1">
+      <COUNT>4096</COUNT>
+      <VALUE>440</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="2">
+      <COUNT>4096</COUNT>
+      <VALUE>413</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="3">
+      <COUNT>4096</COUNT>
+      <VALUE>389</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="4">
+      <COUNT>4096</COUNT>
+      <VALUE>431</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="5">
+      <COUNT>4096</COUNT>
+      <VALUE>443</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="6">
+      <COUNT>4096</COUNT>
+      <VALUE>406</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="7">
+      <COUNT>4096</COUNT>
+      <VALUE>387</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="8">
+      <COUNT>4096</COUNT>
+      <VALUE>403</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="9">
+      <COUNT>4096</COUNT>
+      <VALUE>400</VALUE>
+    </ENTRY>
+  </HISTOGRAM>
   <SCALAR_AVERAGE name="observable a">
     <COUNT>10000</COUNT>
     <MEAN method="binning">0.499479</MEAN>

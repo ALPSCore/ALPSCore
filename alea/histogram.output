@@ -1,128 +1,88 @@
 <AVERAGES>
-  <VECTOR_AVERAGE name="histogram 1" nvalues="10">
-    <SCALAR_AVERAGE indexvalue="0">
+  <HISTOGRAM name="histogram 1" nvalues="10">
+    <ENTRY indexvalue="0">
       <COUNT>4096</COUNT>
-      <HISTOGRAM_COUNT>384</HISTOGRAM_COUNT>
-      <MEAN method="simple">0.09375</MEAN>
-      <ERROR method="simple">0.00478</ERROR>
-    </SCALAR_AVERAGE>
-    <SCALAR_AVERAGE indexvalue="1">
+      <VALUE>384</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="1">
       <COUNT>4096</COUNT>
-      <HISTOGRAM_COUNT>440</HISTOGRAM_COUNT>
-      <MEAN method="simple">0.107422</MEAN>
-      <ERROR method="simple">0.00512</ERROR>
-    </SCALAR_AVERAGE>
-    <SCALAR_AVERAGE indexvalue="2">
+      <VALUE>440</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="2">
       <COUNT>4096</COUNT>
-      <HISTOGRAM_COUNT>413</HISTOGRAM_COUNT>
-      <MEAN method="simple">0.10083</MEAN>
-      <ERROR method="simple">0.00496</ERROR>
-    </SCALAR_AVERAGE>
-    <SCALAR_AVERAGE indexvalue="3">
+      <VALUE>413</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="3">
       <COUNT>4096</COUNT>
-      <HISTOGRAM_COUNT>389</HISTOGRAM_COUNT>
-      <MEAN method="simple">0.0949707</MEAN>
-      <ERROR method="simple">0.00482</ERROR>
-    </SCALAR_AVERAGE>
-    <SCALAR_AVERAGE indexvalue="4">
+      <VALUE>389</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="4">
       <COUNT>4096</COUNT>
-      <HISTOGRAM_COUNT>431</HISTOGRAM_COUNT>
-      <MEAN method="simple">0.105225</MEAN>
-      <ERROR method="simple">0.00507</ERROR>
-    </SCALAR_AVERAGE>
-    <SCALAR_AVERAGE indexvalue="5">
+      <VALUE>431</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="5">
       <COUNT>4096</COUNT>
-      <HISTOGRAM_COUNT>443</HISTOGRAM_COUNT>
-      <MEAN method="simple">0.108154</MEAN>
-      <ERROR method="simple">0.00514</ERROR>
-    </SCALAR_AVERAGE>
-    <SCALAR_AVERAGE indexvalue="6">
+      <VALUE>443</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="6">
       <COUNT>4096</COUNT>
-      <HISTOGRAM_COUNT>406</HISTOGRAM_COUNT>
-      <MEAN method="simple">0.0991211</MEAN>
-      <ERROR method="simple">0.00492</ERROR>
-    </SCALAR_AVERAGE>
-    <SCALAR_AVERAGE indexvalue="7">
+      <VALUE>406</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="7">
       <COUNT>4096</COUNT>
-      <HISTOGRAM_COUNT>387</HISTOGRAM_COUNT>
-      <MEAN method="simple">0.0944824</MEAN>
-      <ERROR method="simple">0.0048</ERROR>
-    </SCALAR_AVERAGE>
-    <SCALAR_AVERAGE indexvalue="8">
+      <VALUE>387</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="8">
       <COUNT>4096</COUNT>
-      <HISTOGRAM_COUNT>403</HISTOGRAM_COUNT>
-      <MEAN method="simple">0.0983887</MEAN>
-      <ERROR method="simple">0.0049</ERROR>
-    </SCALAR_AVERAGE>
-    <SCALAR_AVERAGE indexvalue="9">
+      <VALUE>403</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="9">
       <COUNT>4096</COUNT>
-      <HISTOGRAM_COUNT>400</HISTOGRAM_COUNT>
-      <MEAN method="simple">0.0976562</MEAN>
-      <ERROR method="simple">0.00488</ERROR>
-    </SCALAR_AVERAGE>
-  </VECTOR_AVERAGE>
-  <VECTOR_AVERAGE name="histogram 2" nvalues="10">
-    <SCALAR_AVERAGE indexvalue="0.05">
+      <VALUE>400</VALUE>
+    </ENTRY>
+  </HISTOGRAM>
+  <HISTOGRAM name="histogram 2" nvalues="10">
+    <ENTRY indexvalue="0">
       <COUNT>4096</COUNT>
-      <HISTOGRAM_COUNT>1289</HISTOGRAM_COUNT>
-      <MEAN method="simple">0.314697</MEAN>
-      <ERROR method="simple">0.00877</ERROR>
-    </SCALAR_AVERAGE>
-    <SCALAR_AVERAGE indexvalue="0.15">
+      <VALUE>1289</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="1">
       <COUNT>4096</COUNT>
-      <HISTOGRAM_COUNT>548</HISTOGRAM_COUNT>
-      <MEAN method="simple">0.133789</MEAN>
-      <ERROR method="simple">0.00572</ERROR>
-    </SCALAR_AVERAGE>
-    <SCALAR_AVERAGE indexvalue="0.25">
+      <VALUE>548</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="2">
       <COUNT>4096</COUNT>
-      <HISTOGRAM_COUNT>435</HISTOGRAM_COUNT>
-      <MEAN method="simple">0.106201</MEAN>
-      <ERROR method="simple">0.00509</ERROR>
-    </SCALAR_AVERAGE>
-    <SCALAR_AVERAGE indexvalue="0.35">
+      <VALUE>435</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="3">
       <COUNT>4096</COUNT>
-      <HISTOGRAM_COUNT>350</HISTOGRAM_COUNT>
-      <MEAN method="simple">0.0854492</MEAN>
-      <ERROR method="simple">0.00457</ERROR>
-    </SCALAR_AVERAGE>
-    <SCALAR_AVERAGE indexvalue="0.45">
+      <VALUE>350</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="4">
       <COUNT>4096</COUNT>
-      <HISTOGRAM_COUNT>311</HISTOGRAM_COUNT>
-      <MEAN method="simple">0.0759277</MEAN>
-      <ERROR method="simple">0.00431</ERROR>
-    </SCALAR_AVERAGE>
-    <SCALAR_AVERAGE indexvalue="0.55">
+      <VALUE>311</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="5">
       <COUNT>4096</COUNT>
-      <HISTOGRAM_COUNT>258</HISTOGRAM_COUNT>
-      <MEAN method="simple">0.0629883</MEAN>
-      <ERROR method="simple">0.00392</ERROR>
-    </SCALAR_AVERAGE>
-    <SCALAR_AVERAGE indexvalue="0.65">
+      <VALUE>258</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="6">
       <COUNT>4096</COUNT>
-      <HISTOGRAM_COUNT>271</HISTOGRAM_COUNT>
-      <MEAN method="simple">0.0661621</MEAN>
-      <ERROR method="simple">0.00402</ERROR>
-    </SCALAR_AVERAGE>
-    <SCALAR_AVERAGE indexvalue="0.75">
+      <VALUE>271</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="7">
       <COUNT>4096</COUNT>
-      <HISTOGRAM_COUNT>209</HISTOGRAM_COUNT>
-      <MEAN method="simple">0.0510254</MEAN>
-      <ERROR method="simple">0.00353</ERROR>
-    </SCALAR_AVERAGE>
-    <SCALAR_AVERAGE indexvalue="0.85">
+      <VALUE>209</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="8">
       <COUNT>4096</COUNT>
-      <HISTOGRAM_COUNT>219</HISTOGRAM_COUNT>
-      <MEAN method="simple">0.0534668</MEAN>
-      <ERROR method="simple">0.00361</ERROR>
-    </SCALAR_AVERAGE>
-    <SCALAR_AVERAGE indexvalue="0.95">
+      <VALUE>219</VALUE>
+    </ENTRY>
+    <ENTRY indexvalue="9">
       <COUNT>4096</COUNT>
-      <HISTOGRAM_COUNT>206</HISTOGRAM_COUNT>
-      <MEAN method="simple">0.050293</MEAN>
-      <ERROR method="simple">0.0035</ERROR>
-    </SCALAR_AVERAGE>
-  </VECTOR_AVERAGE>
+      <VALUE>206</VALUE>
+    </ENTRY>
+  </HISTOGRAM>
   <SCALAR_AVERAGE name="scalar 1">
     <COUNT>4096</COUNT>
     <MEAN method="simple">0.33008</MEAN>
