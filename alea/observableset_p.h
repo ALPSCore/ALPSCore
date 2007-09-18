@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2006 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 2006-2007 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -33,6 +33,7 @@
 #include "observableset.h"
 #include "simpleobseval.h"
 #include "simpleobsdata.h"
+#include "histogram.h"
 #include <alps/parser/xmlhandler.h>
 
 namespace alps {
@@ -114,6 +115,35 @@ private:
   std::string index_;
   RealObsevaluatorXMLHandler robs_handler_;
 };
+
+/// \brief XML parser for the entries for RealHistogramObservable class
+class RealHistogramEntryXMLHandler : public CompositeXMLHandler {
+public:
+  RealHistogramEntryXMLHandler(uint64_t& count, uint64_t& value);
+  virtual ~RealHistogramEntryXMLHandler() {}
+
+private:
+  SimpleXMLHandler<uint64_t> count_handler_;
+  SimpleXMLHandler<uint64_t> value_handler_;
+};
+  
+/// \brief XML parser for the RealHistogramObservable class
+class RealHistogramObservableXMLHandler : public CompositeXMLHandler {
+public:
+  RealHistogramObservableXMLHandler(RealHistogramObservable& obs);
+  virtual ~RealHistogramObservableXMLHandler() {}
+
+protected:
+  void start_top(const std::string& /* name */, const XMLAttributes& /* attributes */,
+    xml::tag_type /* type */);
+  void end_child(const std::string& name, xml::tag_type type);
+
+private:  
+  RealHistogramObservable& obs_;
+  uint64_t count_;
+  uint64_t value_;
+  RealHistogramEntryXMLHandler entry_handler_;
+};
   
 
 /// \brief XML parser for the ObservableSet class
@@ -131,6 +161,8 @@ private:
   RealObsevaluatorXMLHandler rhandler_;
   RealVectorObsevaluator vobs_;
   RealVectorObsevaluatorXMLHandler vhandler_;
+  RealHistogramObservable hobs_;
+  RealHistogramObservableXMLHandler hhandler_;
 };
   
     

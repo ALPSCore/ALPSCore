@@ -48,15 +48,17 @@
 namespace alps {
 
 template <class T> class HistogramObservableEvaluator;
+class RealHistogramObservableXMLHandler;
 
 template <class T>
 class HistogramObservable : public Observable, public RecordableObservable<T>
 {
 typedef uint32_t integer_type;
 public:
+  friend class RealHistogramObservableXMLHandler;
   enum { version=type_traits<T>::type_tag+(type_traits<integer_type>::type_tag << 8) + (2<<16)};
   HistogramObservable(const std::string& n="");
-  HistogramObservable(const std::string& n, T min, T max, T stepsize=1, bool newxmlformat = false);
+  HistogramObservable(const std::string& n, T min, T max, T stepsize=1);
   void set_range(T min, T max, T stepsize=1);
   virtual Observable* clone() const {return new HistogramObservable<T>(*this);}
   virtual ALPS_DUMMY_VOID reset(bool forthermalization=false);
@@ -130,7 +132,6 @@ private:
   range_type min_;
   range_type max_;
   range_type stepsize_;
-  bool newxmlformat_;
   
 protected:  
   mutable std::vector<value_type> histogram_;
@@ -158,19 +159,16 @@ HistogramObservable<T>::HistogramObservable(const std::string& n)
    min_(std::numeric_limits<T>::max()),
    max_(std::numeric_limits<T>::min()),
    stepsize_(0),
-   newxmlformat_(false),
    count_(0)
  {
  }
 
 template <class T>
-inline HistogramObservable<T>::HistogramObservable(const std::string& n, T min, T max, T stepsize,
-  bool newxmlformat) 
+inline HistogramObservable<T>::HistogramObservable(const std::string& n, T min, T max, T stepsize)
  : Observable(n),
    thermalized_(false),
    size_(0),
    thermalcount_(0),
-   newxmlformat_(newxmlformat),
    count_(0)
 {
   //std::cout<<"calling set_range"<<std::endl;
@@ -182,37 +180,15 @@ template <class T>
 void HistogramObservable<T>::write_xml(oxstream& oxs, const boost::filesystem::path&) const
 { 
   if (count()) {
-    if (!newxmlformat_) {
-      oxs << start_tag("HISTOGRAM") << attribute("name",name())
-          << attribute("nvalues",histogram_.size());
-      for(unsigned int i=0;i<histogram_.size();++i) {
-        oxs << start_tag("ENTRY") << attribute("indexvalue", i);
-        oxs << start_tag("COUNT") << no_linebreak << count() <<end_tag;
-        oxs << start_tag("VALUE") << no_linebreak << histogram_[i] <<end_tag;
-        oxs << end_tag;
-      }
-      oxs << end_tag;
-    } else {
-      oxs << start_tag("VECTOR_AVERAGE")
-          << attribute("name", name())
-          << attribute("nvalues", histogram_.size());
-      for (unsigned int i=0; i < histogram_.size(); ++i) {
-        oxs << start_tag("SCALAR_AVERAGE");
-        if (stepsize_ == 1)
-          oxs << attribute("indexvalue", precision(min_+i*stepsize_, 6));
-        else
-          oxs << attribute("indexvalue", precision(min_+(i+0.5)*stepsize_, 6));
-        oxs << start_tag("COUNT") << no_linebreak << count() <<end_tag;
-        double val = histogram_[i];
-        oxs << start_tag("HISTOGRAM_COUNT") << no_linebreak << val <<end_tag;
-        oxs << start_tag("MEAN") << attribute("method", "simple") << no_linebreak
-            << precision(val/count(), 6) <<end_tag;
-        oxs << start_tag("ERROR") << attribute("method", "simple") << no_linebreak
-            << precision(std::sqrt(val)/count(), 3) <<end_tag;
-        oxs << end_tag;
-      }
+    oxs << start_tag("HISTOGRAM") << attribute("name",name())
+        << attribute("nvalues",histogram_.size());
+    for(unsigned int i=0;i<histogram_.size();++i) {
+      oxs << start_tag("ENTRY") << attribute("indexvalue", i);
+      oxs << start_tag("COUNT") << no_linebreak << count() <<end_tag;
+      oxs << start_tag("VALUE") << no_linebreak << histogram_[i] <<end_tag;
       oxs << end_tag;
     }
+    oxs << end_tag;
   }
 }
 

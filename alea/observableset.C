@@ -495,6 +495,7 @@ void RealObsevaluatorXMLHandler::end_child(std::string const& name, xml::tag_typ
   }
 }
 
+
 //
 // RealVectorObsevaluatorXMLHandler
 //
@@ -540,15 +541,56 @@ void RealVectorObsevaluatorXMLHandler::end_child(std::string const& name, xml::t
   }
 }
 
+
+//
+// RealHistogramEntryXMLHandler
+//
+
+RealHistogramEntryXMLHandler::RealHistogramEntryXMLHandler(uint64_t& count, uint64_t& value) :
+  CompositeXMLHandler("ENTRY"), count_handler_("COUNT", count), value_handler_("VALUE", value) {
+  add_handler(count_handler_);
+  add_handler(value_handler_);
+}
+
+
+//
+// RealHistogramObsevaluatorXMLHandler
+//
+
+RealHistogramObservableXMLHandler::RealHistogramObservableXMLHandler(RealHistogramObservable& obs) :
+  CompositeXMLHandler("HISTOGRAM"), obs_(obs), entry_handler_(count_, value_) {
+  add_handler(entry_handler_);
+}
+
+void RealHistogramObservableXMLHandler::start_top(const std::string& /* name */,
+  const XMLAttributes& attributes, xml::tag_type /* type */) {
+  obs_.reset();
+  if (attributes.defined("name")) obs_.rename(attributes["name"]);
+  obs_.thermalized_ = true;
+}
+
+void RealHistogramObservableXMLHandler::end_child(std::string const& name, xml::tag_type type) {
+  if (type == xml::element && name == "ENTRY") {
+    if (obs_.size()) {
+      if (obs_.count_ != count_)
+        boost::throw_exception(std::runtime_error("RealHistogramObservableXMLHandler::end_child"));
+    } else {
+      obs_.count_ = count_;
+    }
+    obs_.histogram_.push_back(value_);
+  }
+}
+
 //
 // ObservableSetXMLHandler
 //
 
 ObservableSetXMLHandler::ObservableSetXMLHandler(ObservableSet& obs) :
   CompositeXMLHandler("AVERAGES"), obs_(obs), robs_(), rhandler_(robs_, dummy_index_),
-  vobs_(), vhandler_(vobs_) {
+  vobs_(), vhandler_(vobs_), hobs_(), hhandler_(hobs_) {
   add_handler(rhandler_);
   add_handler(vhandler_);
+  add_handler(hhandler_);
 }
 
 void ObservableSetXMLHandler::end_child(std::string const& name,
@@ -558,6 +600,8 @@ void ObservableSetXMLHandler::end_child(std::string const& name,
       obs_ << robs_;
     else if (name == "VECTOR_AVERAGE")
       obs_ << vobs_;
+    else if (name == "HISTOGRAM")
+      obs_ << hobs_;
   }
 }
 
