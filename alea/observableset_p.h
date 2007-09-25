@@ -95,6 +95,7 @@ private:
   ObsValueXMLHandler variance_handler_;
   ObsValueXMLHandler tau_handler_;
   DummyXMLHandler binned_handler_;
+  DummyXMLHandler sign_handler_;
 };
   
 /// \brief XML parser for the RealVectorObsevaluator class

@@ -433,7 +433,10 @@ RealObsevaluatorValueXMLHandler::RealObsevaluatorValueXMLHandler(std::string con
 
 void RealObsevaluatorValueXMLHandler::start_element(std::string const& /* name */,
   XMLAttributes const& attributes, xml::tag_type /* type */) {
-  method_ = attributes["method"];
+  if (attributes.defined("method"))
+    method_ = attributes["method"];
+  else
+    method_ = "";
   conv_ = (attributes["converged"] == "no" ? NOT_CONVERGED : 
            attributes["converged"] == "maybe" ? MAYBE_CONVERGED : CONVERGED);
   found_value_ = false;
@@ -460,13 +463,14 @@ RealObsevaluatorXMLHandler::RealObsevaluatorXMLHandler(RealObsevaluator& obs, st
   count_handler_("COUNT", obs_.all_.count_), mean_handler_("MEAN", obs_.all_.mean_),
   error_handler_("ERROR", obs_.all_.error_, obs_.all_.eval_method_, obs_.all_.converged_errors_),
   variance_handler_("VARIANCE", obs_.all_.variance_), tau_handler_("AUTOCORR", obs.all_.tau_),
-  binned_handler_("BINNED") {
+  binned_handler_("BINNED"), sign_handler_("SIGN") {
   add_handler(count_handler_);
   add_handler(mean_handler_);
   add_handler(error_handler_);
   add_handler(variance_handler_);
   add_handler(tau_handler_);
   add_handler(binned_handler_);
+  add_handler(sign_handler_);
 }
 
 void RealObsevaluatorXMLHandler::start_top(const std::string& /* name */,
