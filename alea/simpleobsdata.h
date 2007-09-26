@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2006 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2007 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Beat Ammon <beat.ammon@bluewin.ch>,
 *                            Andreas Laeuchli <laeuchli@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>,
@@ -385,7 +385,10 @@ SimpleObservableData<T>::SimpleObservableData(std::istream& infile, const XMLTag
 
 inline double text_to_double(const std::string& val) 
 {
-  return  ((val=="NaN" || val=="nan" || val=="NaNQ") ? alps::nan() : ( (val=="INF" || val=="Inf" || val == "inf") ? alps::inf() : boost::lexical_cast<double,std::string>(val)));
+  return ((val=="NaN" || val=="nan" || val=="NaNQ") ? alps::nan() :
+          ((val=="INF" || val=="Inf" || val == "inf") ? alps::inf() :
+           ((val=="-INF" || val=="-Inf" || val == "-inf") ? alps::ninf() :
+            boost::lexical_cast<double, std::string>(val))));
 }
 
 template <class T>

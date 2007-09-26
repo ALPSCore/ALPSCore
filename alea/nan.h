@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1994-2007 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -35,6 +35,8 @@ namespace alps {
 double nan();
 
 double inf();
+
+double ninf();
 
 } // namespace alps
 
