@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2006 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2007 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Fabian Stoeckli <fabstoec@phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
@@ -168,6 +168,7 @@ inline void HistogramObservableEvaluator<T>::collect() const
   supertype::histogram_.resize(all_.size());
   for (std::size_t i=0;i<all_.size();++i)
     supertype::histogram_[i] = all_[i];
+  supertype::thermalized_ = (supertype::count_ > 0);
 }
 
 template <class T>
@@ -207,16 +208,16 @@ inline void HistogramObservableEvaluator<T>::merge(const Observable& o)
 {
   if (automatic_naming_ && supertype::name()=="") Observable::rename(o.name());
   if (dynamic_cast<const HistogramObservable<T>*>(&o)!=0) {
-        (*this) <<
-        HistogramObservableData<T>(dynamic_cast<const HistogramObservable<T>&>(o));
+    if (dynamic_cast<const HistogramObservable<T>&>(o).is_thermalized())
+      (*this) << HistogramObservableData<T>(dynamic_cast<const HistogramObservable<T>&>(o));
   } else {
     const HistogramObservableEvaluator<T>& eval =
       dynamic_cast<const HistogramObservableEvaluator<T>&>(o);
     if (automatic_naming_ && !eval.automatic_naming_) automatic_naming_ = false;
     for (unsigned int i = 0; i < eval.runs_.size(); ++i) 
-    (*this) << eval.runs_[i];
-    (*this).collect();
+      (*this) << eval.runs_[i];
   }
+  this->collect();
 }
 
 
@@ -261,7 +262,7 @@ ALPS_DUMMY_VOID HistogramObservableEvaluator<T>::output(std::ostream& out) const
 template<class T>
 void HistogramObservableEvaluator<T>::output_histogram(std::ostream& out) const
 {
-  out << supertype::name();
+  out << supertype::name() << ":\n";
   if(count()==0)
     out << " no measurements.\n";
   else

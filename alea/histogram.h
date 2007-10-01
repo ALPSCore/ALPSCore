@@ -126,7 +126,6 @@ private:
     
   friend class HistogramObservableEvaluator<T>;
 
-  bool thermalized_;
   uint32_t size_;
   uint32_t thermalcount_;
   range_type min_;
@@ -136,7 +135,7 @@ private:
 protected:  
   mutable std::vector<value_type> histogram_;
   mutable uint32_t count_;
-
+  mutable bool thermalized_;
 };
 
 
@@ -153,23 +152,23 @@ inline Observable* HistogramObservable<T>::convert_mergeable() const
 template <class T>
 HistogramObservable<T>::HistogramObservable(const std::string& n) 
  : Observable(n),
-   thermalized_(false),
    size_(0),
    thermalcount_(0),
    min_(std::numeric_limits<T>::max()),
    max_(std::numeric_limits<T>::min()),
    stepsize_(0),
-   count_(0)
+   count_(0),
+   thermalized_(false)
  {
  }
 
 template <class T>
 inline HistogramObservable<T>::HistogramObservable(const std::string& n, T min, T max, T stepsize)
  : Observable(n),
-   thermalized_(false),
    size_(0),
    thermalcount_(0),
-   count_(0)
+   count_(0),
+   thermalized_(false)
 {
   //std::cout<<"calling set_range"<<std::endl;
   set_range(min,max,stepsize);  
