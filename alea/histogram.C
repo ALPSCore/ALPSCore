@@ -40,21 +40,39 @@ try {
   random_base_type random_int;
   random_type random(random_int); 
 
-  alps::ObservableSet obs;
-  obs << alps::SimpleRealObservable("scalar 1");
-  obs << alps::HistogramObservable<int>("histogram 1", 0, 10);
-  obs << alps::HistogramObservable<double>("histogram 2", 0, 1, 0.1);
-  obs.reset(true);
+  alps::ObservableSet obs1;
+  obs1 << alps::SimpleRealObservable("scalar 1");
+  obs1 << alps::HistogramObservable<int>("histogram 1", 0, 10);
+  obs1 << alps::HistogramObservable<double>("histogram 2", 0, 1, 0.1);
+  obs1.reset(true);
 
   for (int i=0; i < (1<<12); ++i) {
     double r = random();
-    obs["scalar 1"] << r*r;
-    obs["histogram 1"] << static_cast<int>(10*r);
-    obs["histogram 2"] << r*r;
+    obs1["scalar 1"] << r*r;
+    obs1["histogram 1"] << static_cast<int>(10*r);
+    obs1["histogram 2"] << r*r;
   }
   
   alps::oxstream oxs;
-  obs.write_xml(oxs);
+  obs1.write_xml(oxs);
+
+  alps::ObservableSet obs2;
+  obs2 << alps::SimpleRealObservable("scalar 1");
+  obs2 << alps::HistogramObservable<int>("histogram 1", 0, 10);
+  obs2 << alps::HistogramObservable<double>("histogram 2", 0, 1, 0.1);
+  obs2.reset(true);
+
+  for (int i=0; i < (1<<10); ++i) {
+    double r = random();
+    obs2["scalar 1"] << r*r;
+    obs2["histogram 1"] << static_cast<int>(10*r);
+    obs2["histogram 2"] << r*r;
+  }
+  
+  obs2.write_xml(oxs);
+
+  obs1 << obs2;
+  obs1.write_xml(oxs);
 
 #ifndef BOOST_NO_EXCEPTIONS
 }
