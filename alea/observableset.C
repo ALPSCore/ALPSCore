@@ -571,6 +571,7 @@ void RealHistogramObservableXMLHandler::start_top(const std::string& /* name */,
   obs_.reset();
   if (attributes.defined("name")) obs_.rename(attributes["name"]);
   obs_.thermalized_ = true;
+  obs_.histogram_.clear();
 }
 
 void RealHistogramObservableXMLHandler::end_child(std::string const& name, xml::tag_type type) {
