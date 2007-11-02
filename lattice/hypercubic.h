@@ -375,14 +375,14 @@ public:
       if (valid_)
         return;
       valid_=true;
-      k_=*alps::reciprocal_basis_vectors(*cell_iterator::lattice_).first;
-      k_=0.*k_;
+      k_.resize(alps::dimension(*cell_iterator::lattice_));
       for (int i=0;i<alps::dimension(*cell_iterator::lattice_);++i) {
+	k_[i] = 0.;
         int l=cell_iterator::lattice_->extent()[i];
         int x=cell_iterator::offset_[i];
         if (x>l/2)
           x-=l;
-        k_=k_+*(alps::reciprocal_basis_vectors(*cell_iterator::lattice_).first+i)*(double(x)/double(l));
+        k_[i] = 2*M_PI*double(x)/double(l);
       }
     }
   };
