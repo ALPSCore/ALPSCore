@@ -147,15 +147,17 @@ origin(const typename lattice_traits<Lattice>::cell_descriptor& c, const Lattice
   offset_iterator off = coordinates(offset(c,l)).first; 
   if (first!=last) {
     typename lattice_traits<Lattice>::vector_type v(*first);
-    v*=*off;
+    for (int d=0; d<v.size(); ++d)
+      v[d]*=*off;
     ++first;
     ++off;
     for (; first!=last; ++first, ++off)
-      v = v + (*first) * (*off);
+      for (int d=0; d<v.size(); ++d)
+	v[d] += (*first)[d] * (*off);
     return v;
   }
   else
-    return lattice_traits<Lattice>::vector_type();
+    return typename lattice_traits<Lattice>::vector_type();
 }
 
 void prevent_optimization();
