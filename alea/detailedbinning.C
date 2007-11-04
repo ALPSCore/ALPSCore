@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2006 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2007 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -59,7 +59,7 @@ try {
 
   //ADD MEASUREMENTS TO THE OBSERVABLES
   //----------------------------------- 
-  for(uint i = 0; i < thermalization_steps; ++i){ 
+  for(uint32_t i = 0; i < thermalization_steps; ++i){ 
     obs_a << random();
     obs_b << random()+1;
   }
