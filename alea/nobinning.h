@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2007 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
@@ -61,16 +61,16 @@ class NoBinning : public AbstractBinning<T>
   typedef typename obs_value_traits<T>::count_type count_type;
   typedef typename obs_value_traits<T>::result_type result_type;
   typedef typename obs_value_traits<T>::convergence_type convergence_type;
-  
+
   BOOST_STATIC_CONSTANT(bool, has_tau=false);
   BOOST_STATIC_CONSTANT(int, magic_id=1);
-  
+
   NoBinning(uint32_t=0);
   virtual ~NoBinning() {}
- 
+
   void reset(bool=false);
   inline void operator<<(const value_type& x);
-  
+
   result_type mean() const;
   result_type variance() const;
   result_type error() const;
@@ -81,9 +81,9 @@ class NoBinning : public AbstractBinning<T>
   bool has_minmax() const { return true;}
   value_type min() const {return min_;}
   value_type max() const {return max_;}
-  
+
   uint32_t get_thermalization() const { return super_type::is_thermalized() ? thermal_count_ : count_;}
-    
+
   void output_scalar(std::ostream& out) const;
   template <class L> void output_vector(std::ostream& out, const L& l) const;
 #ifndef ALPS_WITHOUT_OSIRIS
@@ -109,7 +109,7 @@ typedef SimpleObservable<std::complex<double>,NoBinning<std::complex<double> > >
 #ifdef ALPS_HAVE_VALARRAY
 typedef SimpleObservable< std::valarray<int32_t> , NoBinning<std::valarray<int32_t> > > SimpleIntVectorObservable;
 typedef SimpleObservable< std::valarray<double> , NoBinning<std::valarray<double> > > SimpleRealVectorObservable;
-typedef SimpleObservable< std::valarray<std::complex<double> > , 
+typedef SimpleObservable< std::valarray<std::complex<double> > ,
                          NoBinning<std::valarray<std::complex<double> > > > SimpleComplexVectorObservable;
 #endif
 
@@ -127,11 +127,11 @@ inline void NoBinning<T>::reset(bool forthermalization)
 {
   AbstractBinning<T>::reset(forthermalization);
   thermal_count_= (forthermalization ? count_ : 0);
-    
+
   sum_=0;
   sum2_=0;
   count_=0;
-  
+
   min_ = obs_value_traits<T>::max();
   max_ = -obs_value_traits<T>::max();
 }
@@ -143,15 +143,15 @@ typename NoBinning<T>::convergence_type NoBinning<T>::converged_errors() const
   convergence_type conv;
   obs_value_traits<T>::resize_same_as(conv,sum_);
   typename obs_value_traits<convergence_type>::slice_iterator it;
-  
-  for (it= obs_value_traits<convergence_type>::slice_begin(conv); 
+
+  for (it= obs_value_traits<convergence_type>::slice_begin(conv);
        it!= obs_value_traits<convergence_type>::slice_end(conv); ++it)
     obs_value_traits<convergence_type>::slice_value(conv,it) = CONVERGED;
   return conv;
 }
 
 template <class T>
-void NoBinning<T>::operator<<(const T& x) 
+void NoBinning<T>::operator<<(const T& x)
 {
   if(count_==0 && thermal_count_==0)
   {
@@ -160,7 +160,7 @@ void NoBinning<T>::operator<<(const T& x)
     obs_value_traits<T>::resize_same_as(max_,x);
     obs_value_traits<T>::resize_same_as(min_,x);
   }
-  
+
   if(obs_value_traits<T>::size(x)!=obs_value_traits<T>::size(sum_))
     boost::throw_exception(std::runtime_error("Size of argument does not match in SimpleBinning<T>::add"));
 
@@ -174,8 +174,8 @@ void NoBinning<T>::operator<<(const T& x)
   count_++;
 }
 
-template <class T>  
-inline typename NoBinning<T>::result_type NoBinning<T>::mean() const 
+template <class T>
+inline typename NoBinning<T>::result_type NoBinning<T>::mean() const
 {
   typedef typename obs_value_traits<T>::count_type count_type;
 
@@ -189,12 +189,13 @@ inline typename NoBinning<T>::result_type NoBinning<T>::mean() const
 template <class T>
 inline typename NoBinning<T>::result_type NoBinning<T>::variance() const
 {
+  using std::abs;
   typedef typename obs_value_traits<T>::count_type count_type;
 
   if(count()==0)
     boost::throw_exception(NoMeasurementsError());
-    
-  if(count_<2) 
+
+  if(count_<2)
     {
       result_type retval;
       obs_value_traits<T>::resize_same_as(retval,sum_);
@@ -202,9 +203,10 @@ inline typename NoBinning<T>::result_type NoBinning<T>::variance() const
       return retval;
     } // no data collected
   result_type tmp(obs_value_traits<result_type>::convert(sum_));
-  tmp *=tmp/ count_type(count_);
-  tmp=obs_value_traits<result_type>::convert(sum2_) - tmp;
-  return tmp/ count_type(count_-1);
+  tmp *= tmp/ count_type(count_);
+  tmp = obs_value_traits<result_type>::convert(sum2_) - tmp;
+  obs_value_traits<result_type>::fix_negative(tmp);
+  return tmp / count_type(count_-1);
 }
 
 template <class T>
@@ -213,7 +215,7 @@ inline typename NoBinning<T>::result_type NoBinning<T>::error() const
   using std::sqrt;
   result_type tmp(variance());
   tmp /= count_type(count());
-  
+
   return sqrt(tmp);
 }
 
@@ -234,7 +236,7 @@ inline void NoBinning<T>::output_vector(std::ostream& out, const L& label) const
   if(count()) {
     result_type mean_(mean());
     result_type error_(error());
-        
+
     out << ":\n";
     typename obs_value_traits<L>::slice_iterator it2=obs_value_traits<L>::slice_begin(label);
     for (typename obs_value_traits<result_type>::slice_iterator sit=
@@ -244,7 +246,7 @@ inline void NoBinning<T>::output_vector(std::ostream& out, const L& label) const
       if (lab=="")
         lab=obs_value_traits<result_type>::slice_name(mean_,sit);
       out << "Entry[" << lab << "]: "
-          << obs_value_traits<result_type>::slice_value(mean_,sit) << " +/- " 
+          << obs_value_traits<result_type>::slice_value(mean_,sit) << " +/- "
           << round(obs_value_traits<result_type>::slice_value(error_,sit));
       if (error_underflow(obs_value_traits<result_type>::slice_value(mean_,sit),
                           obs_value_traits<result_type>::slice_value(error_,sit)))
@@ -264,7 +266,7 @@ inline void NoBinning<T>::save(ODump& dump) const
 }
 
 template <class T>
-inline void NoBinning<T>::load(IDump& dump) 
+inline void NoBinning<T>::load(IDump& dump)
 {
   AbstractBinning<T>::load(dump);
   dump >> sum_ >> sum2_ >> count_ >> thermal_count_ >> min_ >> max_;
