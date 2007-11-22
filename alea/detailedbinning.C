@@ -30,8 +30,8 @@
 
 #include <iostream>
 #include <alps/alea.h>
-#include <alps/parameter.h> 
-#include <boost/random.hpp> 
+#include <alps/parameter.h>
+#include <boost/random.hpp>
 
 int main()
 {
@@ -50,6 +50,8 @@ try {
   //------------------
   alps::RealObservable obs_a("observable a");
   alps::RealObservable obs_b("observable b");
+  alps::SimpleRealObservable obs_c("observable c");
+  alps::RealObservable obs_d("observable d");
 
   //READ PARAMETERS
   //---------------
@@ -58,8 +60,8 @@ try {
   uint32_t number_of_steps=parms.value_or_default("STEPS",10000);
 
   //ADD MEASUREMENTS TO THE OBSERVABLES
-  //----------------------------------- 
-  for(uint32_t i = 0; i < thermalization_steps; ++i){ 
+  //-----------------------------------
+  for(uint32_t i = 0; i < thermalization_steps; ++i){
     obs_a << random();
     obs_b << random()+1;
   }
@@ -68,21 +70,24 @@ try {
   //-------------------------------------------
   obs_a.reset(true);
   obs_b.reset(true);
+  obs_c.reset(true);
+  obs_d.reset(true);
 
   //ADD MEASUREMENTS TO THE OBSERVABLES
   //-----------------------------------
   for(uint32_t i = 0; i < number_of_steps; ++i){
     obs_a << random();
     obs_b << random()+1;
+    obs_c << 1.2;
+    obs_d << 1.2;
   }
 
   //OUTPUT OBSERVABLES
   //---------------------
-  std::cout << "\n";
-  std::cout << obs_a;       
-  std::cout << "\n";
-  std::cout << obs_b;
-  std::cout << "\n";
+  std::cout << obs_a << "\n"
+            << obs_b << "\n"
+            << obs_c << "\n"
+            << obs_d << "\n";
 
   //JACKKNIVE ANALYSIS
   //------------------
