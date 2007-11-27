@@ -1,6 +1,6 @@
-SUBDIRS = fixed_capacity osiris parameter parser
+SUBDIRS = fixed_capacity osiris parameter parser alea
 if ALPS_FULL
-SUBDIRS += alea lattice model
+SUBDIRS += lattice model
 endif
 SUBDIRS += .
 DIST_SUBDIRS = $(SUBDIRS)
@@ -17,9 +17,9 @@ TESTS_LATTICE = lattice/example1 lattice/example2 lattice/example3 lattice/examp
 	lattice/parity
 TESTS_MODEL = model/example1 model/example2 model/example3 model/example4 model/example5 model/example6 model/example7 model/example8 model/example9 model/example10 model/example11 model/example12 model/example13 model/example14 model/example15 model/example16 model/example17 model/example18
 
-TESTS = $(TESTS_FC) $(TESTS_OSIRIS) $(TESTS_PARAMETER) $(TESTS_PARSER)
+TESTS = $(TESTS_FC) $(TESTS_OSIRIS) $(TESTS_PARAMETER) $(TESTS_PARSER) $(TESTS_ALEA)
 if ALPS_FULL
-TESTS += $(TESTS_ALEA) $(TESTS_LATTICE) $(TESTS_MODEL)
+TESTS += $(TESTS_LATTICE) $(TESTS_MODEL)
 endif
 
 .PHONY : test tests example examples
