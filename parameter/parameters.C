@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2006 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 2006-2007 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -44,7 +44,12 @@ int main()
 
   alps::Parameters params(std::cin);
   std::cout << params;
-  
+
+  // test of copy constructor
+  alps::Parameters params2(params);
+  params2["N"] = params2["L"];
+  std::cout << "N = " << params2["N"] << std::endl;
+
 #ifndef BOOST_NO_EXCEPTIONS
 }
 catch (std::exception& e) {

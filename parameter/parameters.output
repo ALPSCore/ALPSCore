@@ -7,3 +7,4 @@ a0 = "abc def ";
 a[test 2] = 3;
 a[ test 3 ] = 3;
 b = sqrt(4)+2*Pi/L-X^5;
+N = 10
