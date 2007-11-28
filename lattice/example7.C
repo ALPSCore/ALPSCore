@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2004-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2004-2007 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>,
 *                            Ian McCulloch <ianmcc@physik.rwth-aachen.de>
 *
@@ -44,7 +44,7 @@ std::string PrintVector(FwdIter start, FwdIter finish)
 {
    std::ostringstream out;
    out << '(';
-   if (start != finish) 
+   if (start != finish)
    {
       out << *start;
       ++start;
@@ -106,7 +106,7 @@ void ShowUnitCell(alps::GraphUnitCell const& unitcell)
   std::cout << "The sites in the unit cell are:\n";
   site_iterator site_it, site_end;
   for (boost::tie(site_it, site_end) = sites(graph); site_it != site_end;
-       ++site_it) 
+       ++site_it)
   {
     site_descriptor site = *site_it;
     type_type type = site_type[site];
@@ -119,7 +119,7 @@ void ShowUnitCell(alps::GraphUnitCell const& unitcell)
   std::cout << "The bonds in the unit cell are:\n";
   bond_iterator bond_it, bond_end;
   for (boost::tie(bond_it, bond_end) = bonds(graph); bond_it != bond_end;
-       ++bond_it) 
+       ++bond_it)
   {
     bond_descriptor bond = *bond_it;
     site_descriptor source = boost::source(bond, graph);
@@ -128,7 +128,7 @@ void ShowUnitCell(alps::GraphUnitCell const& unitcell)
     offset_type soffset = source_offset[bond];
     offset_type toffset = target_offset[bond];
     type_type type = bond_type[bond];
-    
+
     std::cout << "The bond between site " << source << " offset " << PrintVector(soffset)
               << " and site " << target << " offset " << PrintVector(toffset)
               << " has type " << type << std::endl;
@@ -175,7 +175,7 @@ void IterateOverCells(const LatticeType& lattice)
     ++i;
   }
   std::cout << std::endl;
-  
+
   std::cout << "The number of cells in the lattice is "
             << volume(lattice) << '\n';
   std::cout << "The cells in the lattice are:\n";
@@ -183,7 +183,7 @@ void IterateOverCells(const LatticeType& lattice)
   // cells(lattice) returns a [begin, end) pair of iterators over all cells
   cell_iterator cell_it, cell_end;
   for (boost::tie(cell_it, cell_end) = cells(lattice); cell_it != cell_end;
-       ++cell_it) 
+       ++cell_it)
   {
      // the cell index
      size_type Index = index(*cell_it, lattice);
@@ -216,7 +216,7 @@ int main()
 
   // read parameters
   alps::ParameterList plist(std::cin);
-  BOOST_FOREACH(alps::Parameters p, plist) {
+  BOOST_FOREACH(alps::Parameters const& p, plist) {
     // create a graph factory with default graph type
     alps::graph_helper<> lattice(p);
 
