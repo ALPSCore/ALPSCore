@@ -78,14 +78,14 @@ public:
   virtual uint32_t get_thermalization() const {return is_thermalized() ? thermalcount_ : count_; }
   virtual bool can_set_thermalization() const {return false;}
   virtual bool is_thermalized() const { return thermalized_; }
-  
+
   /** add a simple T-value to the Observable */
   void add(const T& x); // { b_.add(x); }
   /** add a simple T-value to the Observable */
   void operator<<(const T& x) { add(x); }
 
   // forward a few things from container
-  
+
   typedef integer_type value_type;
   typedef T range_type;
   typedef typename std::vector<integer_type>::const_iterator const_iterator;
@@ -99,31 +99,31 @@ public:
   value_type operator[](size_type i) const { return histogram_[i];}
   value_type at(size_type i) const { return histogram_.at(i);}
 
-  
-  bool can_merge() const {return false;} 
+
+  bool can_merge() const {return false;}
   bool can_merge(const alps::Observable&) const {return false;}
 
   value_type& operator[](size_type i) { return histogram_[i]; }
 
   void write_xml(oxstream&, const boost::filesystem::path& = boost::filesystem::path()) const;
-  
- 
+
+
   ALPS_DUMMY_VOID compact () {};
 
-  inline uint32_t count() const { return is_thermalized() ? count_ : 0;}
+  inline uint64_t count() const { return is_thermalized() ? count_ : 0;}
   // inline void set_count(uint32_t h) {count_=h;}
   inline range_type stepsize() const {return stepsize_;}
   inline range_type max() const {return max_;}
   inline range_type min() const {return min_;}
-  
+
   operator HistogramObservableEvaluator<T> () const { return make_evaluator();}
 
 
 private:
   Observable* convert_mergeable() const;
-  
+
   virtual HistogramObservableEvaluator<T> make_evaluator() const;
-    
+
   friend class HistogramObservableEvaluator<T>;
 
   uint32_t size_;
@@ -131,26 +131,26 @@ private:
   range_type min_;
   range_type max_;
   range_type stepsize_;
-  
-protected:  
+
+protected:
   mutable std::vector<value_type> histogram_;
-  mutable uint32_t count_;
+  mutable uint64_t count_;
   mutable bool thermalized_;
 };
 
 
 typedef HistogramObservable<int32_t> IntHistogramObservable;
 typedef HistogramObservable<double> RealHistogramObservable;
-  
+
 template <class T>
 inline Observable* HistogramObservable<T>::convert_mergeable() const
 {
   HistogramObservableEvaluator<T>* my_eval= new HistogramObservableEvaluator<T>(*this);
   return my_eval;
-}   
+}
 
 template <class T>
-HistogramObservable<T>::HistogramObservable(const std::string& n) 
+HistogramObservable<T>::HistogramObservable(const std::string& n)
  : Observable(n),
    size_(0),
    thermalcount_(0),
@@ -171,13 +171,13 @@ inline HistogramObservable<T>::HistogramObservable(const std::string& n, T min, 
    thermalized_(false)
 {
   //std::cout<<"calling set_range"<<std::endl;
-  set_range(min,max,stepsize);  
+  set_range(min,max,stepsize);
 }
 
 
 template <class T>
 void HistogramObservable<T>::write_xml(oxstream& oxs, const boost::filesystem::path&) const
-{ 
+{
   if (count()) {
     oxs << start_tag("HISTOGRAM") << attribute("name",name())
         << attribute("nvalues",histogram_.size());
@@ -197,9 +197,9 @@ void HistogramObservable<T>::my_output() const
         std::cout<<"*** DEBUG: "<<name()<<std::endl;
         std::cout<<"***      : "<<count()<<std::endl;
 }
- 
+
 template <class T>
-inline void HistogramObservable<T>::set_range(T min, T max, T stepsize) 
+inline void HistogramObservable<T>::set_range(T min, T max, T stepsize)
 {
   if (count_!=0)
     boost::throw_exception(std::runtime_error("cannot change range of HistogramObservable after performing measurements"));
@@ -277,7 +277,7 @@ template <class T>
 HistogramObservableEvaluator<T> HistogramObservable<T>::make_evaluator() const
 {
   return HistogramObservableEvaluator<T>(*this, name());
-}  
+}
 
 } // end namespace alps
 

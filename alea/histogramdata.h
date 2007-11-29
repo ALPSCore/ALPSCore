@@ -4,8 +4,9 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2004 by Matthias Troyer <troyer@comp-phys.org>,
-*                            Fabian Stoeckli <fabstoec@phys.ethz.ch>
+* Copyright (C) 1994-2007 by Matthias Troyer <troyer@comp-phys.org>,
+*                            Fabian Stoeckli <fabstoec@phys.ethz.ch>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -51,7 +52,7 @@ public:
   typedef uint32_t integer_type;
   typedef integer_type value_type;
   typedef integer_type size_type;
-  typedef integer_type count_type;
+  typedef uint64_t count_type;
   typedef T range_type;
 
     //constructors
@@ -65,10 +66,10 @@ public:
   void read_xml_histogram(std::istream& infile, const XMLTag& intag);
 
   ALPS_DUMMY_VOID set_thermalization(uint32_t) {boost::throw_exception(std::runtime_error("no set_thermalization() for HistogramObservableData"));}
-  size_type get_thermalization() const { return thermalcount_;} 
+  integer_type get_thermalization() const { return thermalcount_;}
   bool can_set_thermalization() const { return false;}
 
-  size_type count() const {return count_;}
+  count_type count() const {return count_;}
   size_type value(uint32_t) const;
   range_type min() const { return min_;}
   range_type max() const { return max_;}
@@ -77,7 +78,7 @@ public:
   ALPS_DUMMY_VOID compact() {
     count_=count();
     ALPS_RETURN_VOID;
-  }        
+  }
 
 #ifndef ALPS_WITHOUT_OSIRIS
     void save(ODump& dump) const;
@@ -86,12 +87,12 @@ public:
 
   //collect many data objects
   void collect_from(const std::vector<HistogramObservableData<T> >& runs);
-  value_type operator[](size_type i) const {return histogram_[i];}   
+  value_type operator[](size_type i) const {return histogram_[i];}
 
   //std::string evaluation_method(Target t) const;
-    
+
 private:
-  mutable uint32_t count_;
+  mutable count_type count_;
   mutable bool can_set_thermal_;
   mutable uint32_t thermalcount_;
   //mutable uint32_t discardemeas_;
@@ -124,7 +125,7 @@ inline void HistogramObservableData<T>::collect_from(const std::vector<Histogram
   bool got_data=false;
   count_=0;
 
-  for(typename std::vector<HistogramObservableData<T> >::const_iterator r = runs.begin(); r!=runs.end();++r) { 
+  for(typename std::vector<HistogramObservableData<T> >::const_iterator r = runs.begin(); r!=runs.end();++r) {
         if(r->count()) {
           if(!got_data) {
             can_set_thermal_=r->can_set_thermal_;
@@ -140,13 +141,13 @@ inline void HistogramObservableData<T>::collect_from(const std::vector<Histogram
       }
           else {
             size_type loc_size=histogram_.size();
-        if(min_!=r->min_) 
+        if(min_!=r->min_)
           boost::throw_exception(std::runtime_error("Cannot collect data from histograms with different min_."));
-            if(max_!=r->max_) 
+            if(max_!=r->max_)
           boost::throw_exception(std::runtime_error("Cannot collect data from histograms with different max_."));
-            if(stepsize_!=r->stepsize_) 
+            if(stepsize_!=r->stepsize_)
           boost::throw_exception(std::runtime_error("Cannot collect data from histograms with different stepsize_."));
-            if(loc_size!=r->histogram_.size()) 
+            if(loc_size!=r->histogram_.size())
           boost::throw_exception(std::runtime_error("Cannot collect data from histograms with different size_."));
             count_+=r->count_;
         std::transform(histogram_.begin(),histogram_.end(),r->histogram_.begin(),histogram_.begin(),std::plus<value_type>());
@@ -154,7 +155,7 @@ inline void HistogramObservableData<T>::collect_from(const std::vector<Histogram
         }
   }
 }
- 
+
 
 template <class T>
   inline HistogramObservableData<T>::HistogramObservableData(std::istream& infile, const XMLTag& intag)
@@ -172,9 +173,9 @@ template <class T>
 template <class T>
   inline void HistogramObservableData<T>::read_xml_histogram(std::istream& infile, const XMLTag& intag)
 {
-  if (intag.name != "HISTOGRAM") 
+  if (intag.name != "HISTOGRAM")
     boost::throw_exception(std::runtime_error ("Encountered tag <"+intag.name+"> instead of <HISTOGRAM>"));
-  if (intag.type ==XMLTag::SINGLE) 
+  if (intag.type ==XMLTag::SINGLE)
     return;
   XMLTag tag(intag);
   std::size_t s = boost::lexical_cast<std::size_t,std::string>(tag.attributes["nvalues"]);
@@ -186,7 +187,7 @@ template <class T>
     while (tag.name !="/ENTRY") {
           if (tag.name=="COUNT") {
         if (tag.type !=XMLTag::SINGLE) {
-                  count_=boost::lexical_cast<integer_type, std::string>(parse_content(infile));
+                  count_=boost::lexical_cast<count_type, std::string>(parse_content(infile));
                   check_tag(infile,"/COUNT");
         }
       }
@@ -216,7 +217,7 @@ template <class T>
      stepsize_(obs.stepsize())
 {
   if(count())
-    for (unsigned int i=0;i<obs.size();++i) 
+    for (unsigned int i=0;i<obs.size();++i)
       histogram_[i]=obs[i];
 }
 
@@ -237,7 +238,7 @@ template<class T>
 }
 
 template <class T>
-inline void HistogramObservableData<T>::load(IDump& dump) 
+inline void HistogramObservableData<T>::load(IDump& dump)
 {
 dump >>count_>>histogram_>>min_>>max_>>stepsize_>>thermalcount_>>can_set_thermal_;
 }

@@ -60,7 +60,7 @@ class HistogramObservableEvaluator:public HistogramObservable<T>
      friend class HistogramObservableEvaluator;
      typedef integer_type value_type;
      typedef T range_type;
-     typedef std::size_t count_type;
+     typedef uint64_t count_type;
 
      //constructors
      HistogramObservableEvaluator(const std::string& n="");
@@ -97,21 +97,21 @@ class HistogramObservableEvaluator:public HistogramObservable<T>
 
      count_type count() const {collect(); return all_.count(); }
 
-     Observable* clone() const { 
+     Observable* clone() const {
        HistogramObservableEvaluator<T>* my_eval =
-         new HistogramObservableEvaluator<T>(*this); 
+         new HistogramObservableEvaluator<T>(*this);
        return my_eval;
      }
-     
+
      void set_thermalization(uint32_t todiscard);
      uint32_t get_thermalization() const { collect(); return all_.get_thermalization(); }
      bool can_set_thermalization() const { collect(); return all_.can_set_thermalization(); }
-     
+
      uint32_t number_of_runs() const;
      Observable* get_run(uint32_t) const;
-     
+
      ALPS_DUMMY_VOID compact();
- 
+
      ALPS_DUMMY_VOID output(std::ostream&) const;
      void output_histogram(std::ostream&) const;
 
@@ -123,7 +123,7 @@ class HistogramObservableEvaluator:public HistogramObservable<T>
 #endif
 
      void merge(const Observable&);
-     bool can_merge() const {return true;} 
+     bool can_merge() const {return true;}
      bool can_merge(const Observable&) const;
      Observable* convert_mergeable() const {return clone();}
      HistogramObservableEvaluator<T> make_evaluator() const { return *this;}
@@ -214,7 +214,7 @@ inline void HistogramObservableEvaluator<T>::merge(const Observable& o)
     const HistogramObservableEvaluator<T>& eval =
       dynamic_cast<const HistogramObservableEvaluator<T>&>(o);
     if (automatic_naming_ && !eval.automatic_naming_) automatic_naming_ = false;
-    for (unsigned int i = 0; i < eval.runs_.size(); ++i) 
+    for (unsigned int i = 0; i < eval.runs_.size(); ++i)
       (*this) << eval.runs_[i];
   }
   this->collect();
@@ -246,7 +246,7 @@ inline ALPS_DUMMY_VOID HistogramObservableEvaluator<T>::reset(bool)
 template <class T>
 inline ALPS_DUMMY_VOID HistogramObservableEvaluator<T>::compact()
 {
-  collect(); 
+  collect();
   std::for_each(runs_.begin(), runs_.end(), boost::mem_fun_ref(&HistogramObservableData<T>::compact));
   all_.compact();
   ALPS_RETURN_VOID
@@ -309,7 +309,7 @@ inline HistogramObservableEvaluator<T>::HistogramObservableEvaluator(const Obser
 template <class T>
 inline HistogramObservableEvaluator<T>::HistogramObservableEvaluator(const std::string& n, std::istream& infile, const XMLTag& intag)
   : HistogramObservable<T>(n),
-    automatic_naming_(false), 
+    automatic_naming_(false),
     all_(infile,intag)
 {}
 
