@@ -219,6 +219,78 @@ inline void SimpleBinning<T>::operator<<(const T& x)
     } while ( i>>=1);
 }
 
+template <> inline void SimpleBinning<std::valarray<double> >::operator<<(const std::valarray<double> & x) 
+{
+  typedef obs_value_traits<std::valarray<double> >::count_type count_type;
+
+  // set sizes if starting additions
+  if(count_==0)
+  {
+    last_bin_.resize(1);
+    sum_.resize(1);
+    sum2_.resize(1);
+    bin_entries_.resize(1);
+    obs_value_traits<result_type>::resize_same_as(last_bin_[0],x);
+    obs_value_traits<result_type>::resize_same_as(sum_[0],x);
+    obs_value_traits<result_type>::resize_same_as(sum2_[0],x);
+    obs_value_traits<result_type>::resize_same_as(max_,x);
+    obs_value_traits<result_type>::resize_same_as(min_,x);
+  }
+  
+  if(obs_value_traits<std::valarray<double> >::size(x)!=size()) {
+    std::cerr << "Size is " << size() << " while new size is " << obs_value_traits<std::valarray<double> >::size(x) << "\n";
+    boost::throw_exception(std::runtime_error("Size of argument does not match in SimpleBinning<T>::add"));
+  }
+  
+  // store x, x^2 and the minimum and maximum value
+  for(int i=0;i<size();++i){
+    last_bin_[0][i]=x[i];
+    sum_[0][i]+=x[i];
+    sum2_[0][i]+=x[i]*x[i];
+  }
+  obs_value_traits<std::valarray<double> >::check_for_max(max_,x);
+  obs_value_traits<std::valarray<double> >::check_for_min(min_,x);
+
+  uint64_t i=count_;
+  count_++;
+  bin_entries_[0]++;
+  uint64_t binlen=1;
+  std::size_t bin=0;
+
+  // binning
+  do 
+    {
+      if(i&1) 
+        { 
+          // a bin is filled
+          binlen*=2;
+          bin++;
+          if(bin>=last_bin_.size())
+          {
+            last_bin_.resize(std::max(bin+1,last_bin_.size()));
+            sum_.resize(std::max(bin+1, sum_.size()));
+            sum2_.resize(std::max(bin+1,sum2_.size()));
+            bin_entries_.resize(std::max(bin+1,bin_entries_.size()));
+
+            obs_value_traits<result_type>::resize_same_as(last_bin_[bin],x);
+            obs_value_traits<result_type>::resize_same_as(sum_[bin],x);
+            obs_value_traits<result_type>::resize_same_as(sum2_[bin],x);
+          }
+
+          result_type x1=(sum_[0]-sum_[bin]);
+          x1/=count_type(binlen);
+
+          result_type y1 = x1*x1;
+
+          last_bin_[bin]=x1;
+          sum2_[bin] += y1;
+          sum_[bin] = sum_[0];
+          bin_entries_[bin]++;
+        }
+      else
+        break;
+    } while ( i>>=1);
+}
 
 template <class T>
 inline uint32_t SimpleBinning<T>::binning_depth() const
