@@ -45,7 +45,7 @@ int main()
   alps::Parameters params(std::cin);
   std::cout << params;
 
-  // test of copy constructor
+  // test of copy constructor and copying a parameter from itself
   alps::Parameters params2(params);
   params2["N"] = params2["L"];
   std::cout << "N = " << params2["N"] << std::endl;
