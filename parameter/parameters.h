@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2007 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -41,10 +41,10 @@
 #include <boost/serialization/split_member.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/throw_exception.hpp>
+#include <deque>
 #include <map>
 #include <stdexcept>
 #include <string>
-#include <vector>
 
 /// \file parameters.h
 /// \brief classes to store simulation parameters
@@ -57,7 +57,7 @@ namespace alps {
 class Parameters
 {
 public:
-  /// the key (parameter name) is a string 
+  /// the key (parameter name) is a string
   typedef std::string                     key_type;
   /// the parameter value is a String Value, able to store any type in a text representation
   typedef StringValue                     value_type;
@@ -65,7 +65,7 @@ public:
   typedef Parameter                       parameter_type;
 
   /// the type of container used internally to store the sequential order
-  typedef std::vector<parameter_type>     list_type;
+  typedef std::deque<parameter_type>      list_type;
   /// an integral type to store the number oif elements
   typedef list_type::size_type            size_type;
   /// the type of container used internally to implment the associative array access
@@ -131,7 +131,7 @@ public:
     map_type::iterator itr = map_.find(k);
     if (itr != map_.end()) map_.erase(itr);
   }
-  
+
   /// \brief returns the value or a default
   /// \param k the key (name) of the parameter
   /// \param v the default value
@@ -182,11 +182,11 @@ public:
   void extract_from_xml(std::istream& xml);
 
   BOOST_SERIALIZATION_SPLIT_MEMBER()
-  
+
   /// support for Boost serialization
   template<class Archive>
   inline void save(Archive & ar, const unsigned int) {
-    boost::serialization::stl::save_collection<Archive,Parameters>(ar,*this); 
+    boost::serialization::stl::save_collection<Archive,Parameters>(ar,*this);
   }
 
   /// support for Boost serialization
@@ -196,7 +196,7 @@ public:
       boost::serialization::stl::archive_input_seq<Archive,Parameters>,
         boost::serialization::stl::no_reserve_imp<Parameters> >(ar, *this);
   }
-  
+
   bool empty() const { return map_.empty();}
 
 private:
@@ -241,7 +241,7 @@ inline alps::IDump& operator>>(alps::IDump& id, alps::Parameters& p)
 }
 
 
-/// \brief XML output of parameters 
+/// \brief XML output of parameters
 ///
 /// follows the schema on http://xml.comp-phys.org/
 inline alps::oxstream& operator<<(alps::oxstream& oxs,
