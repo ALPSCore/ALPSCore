@@ -30,7 +30,7 @@
 
 /// \file vectorio.h
 /// \brief I/O helpers for vectors
-/// 
+///
 /// This header contains helper functions to write and read vectors.
 /// They are implemented based on the traits classes and functions in
 /// vectortraits.h
@@ -88,7 +88,7 @@ inline void read_vector (std::istream& in, CONTAINER& v)
 /// \param v the vector to be read
 /// \param n the number of elements to be read
 template <class CONTAINER>
-inline void read_vector (std::istream& in, CONTAINER& v, 
+inline void read_vector (std::istream& in, CONTAINER& v,
          typename vector_traits<CONTAINER>::size_type n)
 {
   vectorops::resize(v,n);
@@ -178,13 +178,15 @@ inline CONTAINER read_vector (const std::string& s,
   return v;
 }
 
-
 /// \brief writes a vector to a std::string
+/// \param v the vector to be written
+/// \param delim delimitar between the elements of the vector
+/// \param prec output precision of floating point elements
 template <class CONTAINER>
-inline std::string write_vector(const CONTAINER& v, const std::string& delim=" ")
+inline std::string write_vector(const CONTAINER& v, const std::string& delim=" ", int prec = 20)
 {
   std::ostringstream str;
-  str << std::setprecision(20);
+  str << std::setprecision(prec);
   for (std::size_t i=0;i<vectorops::size(v);++i) {
     str << v[i];
     if (i!=vectorops::size(v)-1)
