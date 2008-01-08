@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2008 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -30,7 +30,7 @@
 
 /// \file vectormath.h
 /// \brief basic arithmetic operations on std::vectors
-/// 
+///
 /// This header contains slow but simple implementations of basic
 /// arithmetic operations on std::vectors
 
@@ -108,7 +108,7 @@ std::vector<T> operator-(const std::vector<T>& x)
 {
   using namespace boost::lambda;
   std::vector<T> res(x.size());
-  std::transform(x.begin().x.end(),res.begin(),-_1);
+  std::transform(x.begin(),x.end(),res.begin(),-_1);
   return res;
 }
 
