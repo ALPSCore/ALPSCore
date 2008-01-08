@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2008 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -34,11 +34,26 @@
 // ALPS version
 #undef ALPS_VERSION
 
+// ALPS version (full string)
+#undef ALPS_VERSION_STRING
+
 // latest publish year of ALPS
 #undef ALPS_YEAR
 
+// install path of ALPS
+#undef ALPS_PREFIX
+
+// source directory of ALPS
+#undef ALPS_SRCDIR
+
 // XSLT PATH
 #undef ALPS_XML_DIR
+
+// hostname where configure script was executed
+#undef ALPS_CONFIG_HOST
+
+// username who executed configure script
+#undef ALPS_CONFIG_USER
 
 //
 // Experimental Features
@@ -51,20 +66,26 @@
 // C/C++ headers
 //
 
+// Define to 1 if you have the <inttypes.h> header file.
+#undef ALPS_HAVE_INTTYPES_H
+
+// Define to 1 if you have the <pwd.h> header file.
+#undef ALPS_HAVE_PWD_H
+
 // Define to 1 if you have the <stdarg.h> header file.
 #undef ALPS_HAVE_STDARG_H
 
 // Define to 1 if you have the <stdint.h> header file.
 #undef ALPS_HAVE_STDINT_H
 
-// Define to 1 if you have the <inttypes.h> header file.
-#undef ALPS_HAVE_INTTYPES_H
-
 // Define to 1 if you have the <unistd.h> header file.
 #undef ALPS_HAVE_UNISTD_H
 
 // Define to 1 if you have the <bind/bitypes.h> header file.
 #undef ALPS_HAVE_BIND_BITYPES_H
+
+// Define to 1 if you have rpc/rpc.h and rpc/xdr.h
+#undef ALPS_HAVE_RPC_XDR_H
 
 // Define to 1 if you have the <sys/int_types.h> header file.
 #undef ALPS_HAVE_SYS_INT_TYPES_H
@@ -80,9 +101,6 @@
 
 // Define to 1 if you have valarray<T>.
 #undef ALPS_HAVE_VALARRAY
-
-// Define to 1 if you have rpc/rpc.h and rpc/xdr.h
-#undef ALPS_HAVE_RPC_XDR_H
 
 //
 // Libraries
