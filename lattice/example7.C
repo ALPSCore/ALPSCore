@@ -4,9 +4,9 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2004-2007 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2004-2008 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>,
-*                            Ian McCulloch <ianmcc@physik.rwth-aachen.de>
+*                            Ian McCulloch <ianmcc@physics.uq.edu.au>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -142,7 +142,8 @@ void IterateOverCells(const LatticeType& lattice)
   // iterate over all cells in the lattice.
 
   // In the previous examples for the sites and bonds, the iterator types
-  // are properties of the lattice.  But the cell is a property of the lattice.
+  // are properties of the graph, accessed through alps::graph_traits.
+  // But the cell is a property of the lattice and is accessed through alps::lattice_traits.
   typedef typename alps::lattice_traits<LatticeType>::cell_iterator cell_iterator;
 
   // Each cell as an associated integer 'unit_cell_type', acessed through
