@@ -124,7 +124,7 @@ public:
   // creates a new information object containing information about this run
   TaskInfo get_info() const;
   void start_worker();
-  void halt_worker();
+  virtual void halt_worker();
   virtual void start() {}
   virtual void halt() {}
   virtual std::string work_phase();
@@ -184,7 +184,7 @@ public:
   void save_to_file(const boost::filesystem::path&) const;
   void load_from_file(const boost::filesystem::path&);
   void start_worker();
-  void halt_worker();
+  virtual void halt_worker();
   
   virtual TaskInfo get_info() const;
   double work_done() const;
