@@ -73,6 +73,13 @@ class SimpleBinning : public AbstractBinning<T>
   result_type mean() const;
   result_type variance() const;
   result_type error(uint64_t bin_used=std::numeric_limits<uint64_t>::max()) const;
+  
+  //valarray specializations
+  double error_element( uint64_t element, uint64_t bin_used=std::numeric_limits<uint64_t>::max()) const;
+  double binmean_element(uint64_t element, uint64_t i) const ;
+  double binvariance_element(uint64_t element, uint64_t i) const;
+  double variance_element(uint64_t element) const;
+
   convergence_type converged_errors() const;
   time_type tau() const; // autocorrelation time
     
@@ -345,6 +352,20 @@ inline typename SimpleBinning<T>::result_type SimpleBinning<T>::binmean(uint64_t
 
   return sum_[i]/(count_type(bin_entries_[i]) * count_type(1<<i));
 }
+template <class T>
+inline double SimpleBinning<T>::binmean_element(uint64_t element, uint64_t i) const 
+{
+  boost::throw_exception(std::invalid_argument("binmean_element only defined for std::valarray<double>"));
+  abort();
+  return 0;
+}
+template <>
+inline double SimpleBinning<std::valarray<double> >::binmean_element(uint64_t element, uint64_t i) const 
+{
+  typedef obs_value_traits<std::valarray<double> >::count_type count_type;
+
+  return sum_[i][element]/(count_type(bin_entries_[i]) * count_type(1<<i));
+}
 
 
 template <class T>
@@ -358,6 +379,22 @@ inline typename SimpleBinning<T>::result_type SimpleBinning<T>::binvariance(uint
   return retval;
 }
 
+template <class T>
+inline double SimpleBinning<T>::binvariance_element(uint64_t element, uint64_t i) const 
+{
+  boost::throw_exception(std::invalid_argument("binmean_element only defined for std::valarray<double>"));
+  abort();
+  return 0;
+}
+template <>inline double SimpleBinning<std::valarray<double> >::binvariance_element(uint64_t element, uint64_t i) const 
+{
+  typedef  obs_value_traits<std::valarray<double> >::count_type count_type;
+
+  double retval(sum2_[i][element]);
+  retval/=count_type(bin_entries_[i]);
+  retval-=binmean_element(element,i)*binmean_element(element,i);
+  return retval;
+}
 
 
 
@@ -397,14 +434,39 @@ inline typename SimpleBinning<T>::result_type SimpleBinning<T>::variance() const
   obs_value_traits<result_type>::fix_negative(tmp);
   return tmp/count_type(count()-1);
 }
+// VARIANCE for an element of a vector
+template <class T>
+inline double SimpleBinning<T>::variance_element(uint64_t element) const
+{
+  boost::throw_exception(std::invalid_argument("variance_element only defined for std::valarray<double>"));
+  abort();
+  return 0;
+}
+template <>
+inline double SimpleBinning<std::valarray<double> >::variance_element(uint64_t element) const
+{
+  typedef obs_value_traits<std::valarray<double> >::count_type count_type;
 
+  if (count()==0)
+     boost::throw_exception(NoMeasurementsError());
+
+  if(count()<2) 
+    {
+      return std::numeric_limits<double>::infinity();
+
+    }
+  double tmp(sum_[0][element]);
+  tmp *= tmp/count_type(count());
+  tmp = sum2_[0][element] -tmp;
+  obs_value_traits<double>::fix_negative(tmp);
+  return tmp/count_type(count()-1);
+}
 
 // error estimated from bin i, or from default bin if <0
 template <class T>
 inline typename SimpleBinning<T>::result_type SimpleBinning<T>::error(uint64_t i) const
 {
   typedef typename obs_value_traits<T>::count_type count_type;
-
   if (count()==0)
      boost::throw_exception(NoMeasurementsError());
  
@@ -422,6 +484,31 @@ inline typename SimpleBinning<T>::result_type SimpleBinning<T>::error(uint64_t i
   return sqrt(correction);
 }
 
+template <class T>
+inline double SimpleBinning<T>::error_element(uint64_t element,uint64_t i) const
+{
+  boost::throw_exception(std::invalid_argument("error_element only defined for std::valarray<double>"));
+  abort();
+}
+// error estimated from bin i, or from default bin if <0
+template <> inline double SimpleBinning<class std::valarray<double> >::error_element( uint64_t element,uint64_t i) const
+{
+  typedef obs_value_traits<class std::valarray<double> >::count_type count_type;
+  if (count()==0)
+     boost::throw_exception(NoMeasurementsError());
+ 
+  if (i==std::numeric_limits<uint64_t>::max()) 
+    i=binning_depth()-1;
+
+  if (i > binning_depth()-1)
+   boost::throw_exception(std::invalid_argument("invalid bin  in SimpleBinning<T>::error"));
+  
+  uint64_t binsize_ = bin_entries_[i];
+
+  double correction = binvariance_element(element,i)/binvariance_element(element,0);
+  correction *=(variance_element(element)/count_type(binsize_-1));
+  return std::sqrt(correction);
+}
 
 template <class T>
 inline typename obs_value_traits<T>::time_type SimpleBinning<T>::tau() const
@@ -504,6 +591,22 @@ void SimpleBinning<T>::write_vector_xml(oxstream& oxs, IT it) const {
         << no_linebreak << precision(obs_value_traits<result_type>::slice_value(binmean(i),it), 8) << end_tag("MEAN")
         << start_tag("ERROR") << attribute("method", "simple")
         << no_linebreak << precision(obs_value_traits<result_type>::slice_value(error(i),it), 3) << end_tag("ERROR")
+        << end_tag("BINNED");
+  }
+}
+
+template <> template <class IT> 
+void SimpleBinning<std::valarray<double> >::write_vector_xml(oxstream& oxs, IT it) const {
+  for (int i = 0; i < (int)binning_depth() ; ++i) {
+    int prec=int(4-std::log10(std::abs(error_element(it,i)
+                            /binmean_element(it,i))));
+    prec = (prec>=3 && prec<20 ? prec : 16);
+    oxs << start_tag("BINNED") << attribute("size",boost::lexical_cast<std::string,int>(1<<i))
+              << no_linebreak << start_tag("COUNT") << count()/(1<<i) << end_tag("COUNT")
+        << start_tag("MEAN") << attribute("method", "simple") 
+        << no_linebreak << precision(binmean_element(it,i), 8) << end_tag("MEAN")
+        << start_tag("ERROR") << attribute("method", "simple")
+        << no_linebreak << precision(error_element(it,i), 3) << end_tag("ERROR")
         << end_tag("BINNED");
   }
 }
