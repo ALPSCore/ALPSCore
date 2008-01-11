@@ -129,7 +129,10 @@ public:
   /// \param k the parameter key (name)
   void erase(key_type const& k) {
     map_type::iterator itr = map_.find(k);
-    if (itr != map_.end()) map_.erase(itr);
+    if (itr != map_.end())
+      map_.erase(itr);
+    else
+      std::cerr<<"key not found!"<<std::endl;
   }
 
   /// \brief returns the value or a default
