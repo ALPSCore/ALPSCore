@@ -27,6 +27,8 @@ observable b: 1.50455 +/- 0.0047; tau = 0.049
   count = 4096, bin size = 32, number of bins = 128
 observable c: 1.49876 +/- 0.0027; tau = 0.0381
   count = 12288, bin size = 128, number of bins = 96
+observable d no measurements.
+  count = 0, bin size = 0, number of bins = 0
 five different methods to construct RealObsevaluator
   (observable b) / (observable a): 3.02568 +/- 0.031
   (observable b) / (observable a): 3.02568 +/- 0.031
@@ -37,6 +39,10 @@ five different methods to construct RealObsevaluator
 merging observables b and c
   obseval_5: 1.50021 +/- 0.00247; tau = 0.101
   count = 16384, bin size = 128, number of bins = 128
+merging observables b and d
+  obseval_6: 1.50455 +/- 0.0047; tau = 0.049
+  count = 4096, bin size = 32, number of bins = 128
 1 / (observable a): 2.01122 +/- 0.0196
 1 / (observable b): 0.664652 +/- 0.00208
 pow(observable a,3.3): 0.0996385 +/- 0.00321
+(obseval_6) / (obseval_6): 1 +/- 0

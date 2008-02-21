@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2008 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -29,7 +29,7 @@
 /* $Id$ */
 
 #include <alps/alea.h>
-#include <boost/random.hpp> 
+#include <boost/random.hpp>
 #include <iostream>
 #include <iomanip>
 
@@ -43,19 +43,20 @@ try {
   //DEFINE RANDOM NUMBER GENERATOR
   //------------------------------
   typedef boost::minstd_rand0 random_base_type;
-  typedef boost::uniform_01<random_base_type> random_type; 
+  typedef boost::uniform_01<random_base_type> random_type;
   random_base_type random_int;
-  random_type random(random_int); 
+  random_type random(random_int);
 
   //DEFINE OBSERVABLES
   //------------------
   alps::RealObservable obs_a("observable a");
   alps::RealObservable obs_b("observable b");
   alps::RealObservable obs_c("observable c");
-  // alps::RealVectorObservable obs_d("observable d");
+  alps::RealObservable obs_d("observable d");
   obs_a.reset(true);
   obs_b.reset(true);
   obs_c.reset(true);
+  obs_d.reset(true);
 
   for(int i=0; i < (1<<12); ++i) {
     obs_a << random();
@@ -64,10 +65,14 @@ try {
     obs_c << random()+1;
     obs_c << random()+1;
   }
+  for(int i=0; i < 4; ++i) {
+    // obs_d << random();
+  }
 
   std::cout << obs_a;
   std::cout << obs_b;
   std::cout << obs_c;
+  std::cout << obs_d;
 
   //JACKKNIVE ANALYSIS
   //------------------
@@ -92,6 +97,12 @@ try {
   std::cout << "  count = " << obseval_c.count()
             << ", bin size = " << obseval_c.bin_size()
             << ", number of bins = " << obseval_c.bin_number()
+            << std::endl;
+  alps::RealObsevaluator obseval_d(obs_d);
+  std::cout << obseval_d;
+  std::cout << "  count = " << obseval_d.count()
+            << ", bin size = " << obseval_d.bin_size()
+            << ", number of bins = " << obseval_d.bin_number()
             << std::endl;
 
   std::cout << "five different methods to construct RealObsevaluator\n";
@@ -126,7 +137,16 @@ try {
             << ", bin size = " << obseval_5.bin_size()
             << ", number of bins = " << obseval_5.bin_number()
             << std::endl;
-  
+
+  std::cout << "merging observables b and d\n";
+  alps::RealObsevaluator obseval_6("obseval_6");
+  obseval_6 << obseval_b << obseval_d;
+  std::cout << "  " << obseval_6;
+  std::cout << "  count = " << obseval_6.count()
+            << ", bin size = " << obseval_6.bin_size()
+            << ", number of bins = " << obseval_6.bin_number()
+            << std::endl;
+
   alps::RealObsevaluator obseval_h = 1.0 / obseval_a;
   std::cout << obseval_h;
 
@@ -136,6 +156,9 @@ try {
   alps::RealObsevaluator obseval_j("pow(observable a,3.3)");
   obseval_j = pow(obseval_a, 3.3);
   std::cout << obseval_j;
+
+  alps::RealObsevaluator obseval_k = obseval_6 / obseval_6;
+  std::cout << obseval_k;
 
   // alps::RealVectorObsevaluator obseval_v = obs_d;
   // obseval_v /= obseval_i;
