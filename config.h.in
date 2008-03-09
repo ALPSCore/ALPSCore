@@ -56,13 +56,6 @@
 #undef ALPS_CONFIG_USER
 
 //
-// Experimental Features
-//
-
-// Define to 1 if you want use newer Expression class
-#define ALPS_WITH_NEW_EXPRESSION
-
-//
 // C/C++ headers
 //
 

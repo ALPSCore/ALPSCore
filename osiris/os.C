@@ -41,7 +41,7 @@
 #if defined(ALPS_HAVE_SYS_SYSTEMINFO_H)
 # include <sys/systeminfo.h> // for sysinfo()
 #elif defined(ALPS_HAVE_UNISTD_H)
-# include <unistd.h>      // for gethostname()
+# include <unistd.h>      // for gethostname() and getlogin()
 # ifndef MAXHOSTNAMELEN
 #   define MAXHOSTNAMELEN 256
 # endif
@@ -54,8 +54,8 @@
 namespace alps {
 
 //=======================================================================
-// get_host_name
-// 
+// hostname
+//
 // returns the host name
 //-----------------------------------------------------------------------
 
@@ -76,6 +76,20 @@ std::string hostname()
 #else
   // the default version
   return "unnamed";
+#endif
+}
+
+//=======================================================================
+// username
+//
+// returns the username
+//-----------------------------------------------------------------------
+
+std::string username() {
+#if defined(ALPS_HAVE_UNISTD_H)
+  return std::string(getlogin());
+#else
+  return std::string("unknown");
 #endif
 }
 

@@ -40,8 +40,11 @@
 
 namespace alps {
 
-/// set the string to contain the name of the host
+/// returns the hostname
 std::string hostname();
+
+/// returns the username
+std::string username();
 
 } // end namespace
 
