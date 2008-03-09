@@ -36,9 +36,9 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-check_PROGRAMS = sizeof$(EXEEXT) xdrdump$(EXEEXT) xdrdump2$(EXEEXT) \
-	boostdump$(EXEEXT) boostdump2$(EXEEXT) boostdump3$(EXEEXT) \
-	boostdump4$(EXEEXT)
+check_PROGRAMS = os$(EXEEXT) sizeof$(EXEEXT) xdrdump$(EXEEXT) \
+	xdrdump2$(EXEEXT) boostdump$(EXEEXT) boostdump2$(EXEEXT) \
+	boostdump3$(EXEEXT) boostdump4$(EXEEXT)
 subdir = test/osiris
 DIST_COMMON = $(dist_noinst_DATA) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/boostdump2.input.in \
@@ -93,6 +93,13 @@ boostdump4_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
 	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+am_os_OBJECTS = os.$(OBJEXT)
+os_OBJECTS = $(am_os_OBJECTS)
+os_LDADD = $(LDADD)
+os_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_sizeof_OBJECTS = sizeof.$(OBJEXT)
 sizeof_OBJECTS = $(am_sizeof_OBJECTS)
 sizeof_LDADD = $(LDADD)
@@ -125,11 +132,11 @@ CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --tag=CXX --mode=link $(CXXLD) $(AM_CXXFLAGS) \
 	$(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = $(boostdump_SOURCES) $(boostdump2_SOURCES) \
-	$(boostdump3_SOURCES) $(boostdump4_SOURCES) $(sizeof_SOURCES) \
-	$(xdrdump_SOURCES) $(xdrdump2_SOURCES)
+	$(boostdump3_SOURCES) $(boostdump4_SOURCES) $(os_SOURCES) \
+	$(sizeof_SOURCES) $(xdrdump_SOURCES) $(xdrdump2_SOURCES)
 DIST_SOURCES = $(boostdump_SOURCES) $(boostdump2_SOURCES) \
-	$(boostdump3_SOURCES) $(boostdump4_SOURCES) $(sizeof_SOURCES) \
-	$(xdrdump_SOURCES) $(xdrdump2_SOURCES)
+	$(boostdump3_SOURCES) $(boostdump4_SOURCES) $(os_SOURCES) \
+	$(sizeof_SOURCES) $(xdrdump_SOURCES) $(xdrdump2_SOURCES)
 DATA = $(dist_noinst_DATA)
 ETAGS = etags
 CTAGS = ctags
@@ -316,6 +323,7 @@ DEFAULT_INCLUDES = -I$(top_builddir)/src -I$(top_srcdir)/src
 AM_CPPFLAGS = $(BASE_CPPFLAGS) $(BOOST_CPPFLAGS) $(XML_CPPFLAGS) $(HDF5_CPPFLAGS)
 AM_LDFLAGS = $(BASE_LDFLAGS) $(BOOST_LDFLAGS) $(HDF5_LDFLAGS) $(XML_LDFLAGS)
 LDADD = $(top_builddir)/lib/alps/libalps.la $(top_builddir)/lib/comm-sgl/libcomm-sgl.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(BASE_LIBS)
+os_SOURCES = os.C
 sizeof_SOURCES = sizeof.C
 xdrdump_SOURCES = xdrdump.C
 xdrdump2_SOURCES = xdrdump2.C
@@ -380,6 +388,9 @@ boostdump3$(EXEEXT): $(boostdump3_OBJECTS) $(boostdump3_DEPENDENCIES)
 boostdump4$(EXEEXT): $(boostdump4_OBJECTS) $(boostdump4_DEPENDENCIES) 
 	@rm -f boostdump4$(EXEEXT)
 	$(CXXLINK) $(boostdump4_LDFLAGS) $(boostdump4_OBJECTS) $(boostdump4_LDADD) $(LIBS)
+os$(EXEEXT): $(os_OBJECTS) $(os_DEPENDENCIES) 
+	@rm -f os$(EXEEXT)
+	$(CXXLINK) $(os_LDFLAGS) $(os_OBJECTS) $(os_LDADD) $(LIBS)
 sizeof$(EXEEXT): $(sizeof_OBJECTS) $(sizeof_DEPENDENCIES) 
 	@rm -f sizeof$(EXEEXT)
 	$(CXXLINK) $(sizeof_LDFLAGS) $(sizeof_OBJECTS) $(sizeof_LDADD) $(LIBS)
@@ -400,6 +411,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/boostdump2.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/boostdump3.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/boostdump4.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/os.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sizeof.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xdrdump.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xdrdump2.Po@am__quote@
