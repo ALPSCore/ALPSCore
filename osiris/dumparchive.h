@@ -44,6 +44,7 @@
 #include <boost/serialization/string.hpp>
 #include <boost/version.hpp>
 #include <iostream>
+#include <cstring>
 
 namespace alps {
 
@@ -267,7 +268,7 @@ public:
             boost::throw_exception(
                 boost::archive::archive_exception(boost::archive::archive_exception::invalid_class_name)
            );
-        std::memcpy(t, cn.data(), cn.size());
+        memcpy(t, cn.data(), cn.size()); 
         // .t is a borland tweak
         t.t[cn.size()] = '\0';
       }
