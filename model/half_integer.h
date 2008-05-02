@@ -42,6 +42,7 @@
 #include <boost/cast.hpp>
 #include <cassert>
 #include <cmath>
+#include <cstdlib>
 #include <iostream>
 #include <limits>
 #include <stdexcept>
