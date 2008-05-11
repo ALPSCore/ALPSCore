@@ -114,6 +114,11 @@ public:
 
   class cell_iterator {
   public:
+      typedef std::ptrdiff_t difference_type;
+      typedef cell_descriptor value_type;
+      typedef cell_descriptor* pointer;
+      typedef cell_descriptor& reference;
+      typedef std::forward_iterator_tag iterator_category;
 
     cell_iterator() {}
     cell_iterator(const lattice_type& l, const offset_type& o)
