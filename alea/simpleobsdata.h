@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2007 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2008 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Beat Ammon <beat.ammon@bluewin.ch>,
 *                            Andreas Laeuchli <laeuchli@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>,
@@ -188,7 +188,7 @@ protected:
   void fill_jack() const;
 
   template <class X, class OP>
-  void transform(const SimpleObservableData<X>& x, OP op);
+  void transform(const SimpleObservableData<X>& x, OP op, double factor=1.);
   template <class OP> void transform_linear(OP op);
 
 private:  
@@ -604,7 +604,7 @@ SimpleObservableData<T>& SimpleObservableData<T>::operator*=(const SimpleObserva
     mean_ *= x.mean();
     //error_=sqrt(error()*error()*x.mean()*x.mean()+mean()*mean()*x.error()*x.error());
   }
-  transform(x,_1*_2);
+  transform(x,_1*_2,1./x.bin_size());
   return (*this);
 }
 
@@ -626,13 +626,13 @@ SimpleObservableData<T>& SimpleObservableData<T>::operator/=(const SimpleObserva
     mean_ /= x.mean();
     //error_ = sqrt((error()*error()+mean()*mean()*x.error()*x.error()/x.mean()/x.mean())/x.mean()/x.mean());
   }
-  transform(x,_1/_2);
+  transform(x,_1/_2,x.bin_size());
   return (*this);
 }
 
 template <class T>
 template <class X, class OP>
-void SimpleObservableData<T>::transform(const SimpleObservableData<X>& x, OP op)
+void SimpleObservableData<T>::transform(const SimpleObservableData<X>& x, OP op, double factor)
 {
   if ((count()==0) || (x.count()==0))
     boost::throw_exception(std::runtime_error("both observables need measurements"));
@@ -655,7 +655,7 @@ void SimpleObservableData<T>::transform(const SimpleObservableData<X>& x, OP op)
     jack_.clear();
   } else {
     for (uint64_t i = 0; i < bin_number(); ++i)
-      values_[i] = op(values_[i], x.values_[i]);
+      values_[i] = op(values_[i], x.values_[i])*factor;
     for (uint64_t i = 0; i < jack_.size(); ++i)
       jack_[i] = op(jack_[i], x.jack_[i]);
   }
@@ -697,7 +697,9 @@ void SimpleObservableData<T>::transform(OP op)
   has_tau_ = false;
   values2_.clear();
   has_minmax_ = false;
+  std::transform(values_.begin(), values_.end(), values_.begin(),_1/double(bin_size()));
   std::transform(values_.begin(), values_.end(), values_.begin(), op);
+  std::transform(values_.begin(), values_.end(), values_.begin(),_1*double(bin_size()));
   fill_jack();
   std::transform(jack_.begin(), jack_.end(), jack_.begin(), op);
 }
@@ -800,7 +802,10 @@ void SimpleObservableData<T>::divide(const X& x)
     has_tau_ = false;
     nonlinear_operations_ = true;
     changed_ = true;
-    transform_linear(x/_1);
+	mean_ = x/mean_;
+    std::transform(values_.begin(), values_.end(), values_.begin(), (x*bin_size()*bin_size())/_1);
+    fill_jack();
+    std::transform(jack_.begin(), jack_.end(), jack_.begin(), x/_1);
   }
 }
 
@@ -1090,10 +1095,11 @@ void SimpleObservableData<T>::jackknife() const
 
     error_ = 0.0;
     for (unsigned int i = 1; i < jack_.size(); ++i)
-      error_ += jack_[i] * jack_[i];
+      error_ += (jack_[i] - rav) * (jack_[i]-rav);
+      //error_ += jack_[i] * jack_[i];
     
     error_/=count_type(k);
-    error_-= rav * rav;
+    //error_-= rav * rav;
     //error_ = (error_ / count_type(k) - rav * rav);
     error_ *= count_type(k - 1);
     using std::sqrt;

@@ -56,7 +56,7 @@ Worker::Worker(const ProcessList& w,const alps::Parameters&  myparms,int32_t n)
   : AbstractWorker(),
     version(MCDump_worker_version),
 
-    engine_ptr(rng_factory.create(myparms.value_or_default("RNG","lagged_fibonacci607"))),
+    engine_ptr(rng_factory.create(myparms.value_or_default("RNG","mt19937"))),
     random(*engine_ptr, boost::uniform_real<>()),
     random_01(*engine_ptr, boost::uniform_real<>()),
 
@@ -79,7 +79,7 @@ Worker::Worker(const alps::Parameters&  myparms,int32_t n)
   : AbstractWorker(),
     version(MCDump_worker_version),
 
-    engine_ptr(rng_factory.create(myparms.value_or_default("RNG","lagged_fibonacci607"))),
+    engine_ptr(rng_factory.create(myparms.value_or_default("RNG","mt19937"))),
     random(*engine_ptr, boost::uniform_real<>()),
     random_01(*engine_ptr, boost::uniform_real<>()),
 
@@ -122,12 +122,16 @@ void Worker::load_worker(IDump& dump)
     boost::throw_exception(std::runtime_error(msg));
   }
 
+
   dump >> parms;
   std::string state;
   dump >> state;
   std::stringstream rngstream(state);
 
-  engine_ptr->read(rngstream);
+  if (version < 304 && !parms.defined("RNG"))
+    std::clog << "Re-seeding the random number generator since its type has changed from the old version. Please define RNG to the old value of \"lagged_fibonacci607\" to continue with the old generator." << std::endl;
+  else
+    engine_ptr->read(rngstream);
 
   if(node==0) {
     int32_t dummy;

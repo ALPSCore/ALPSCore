@@ -52,9 +52,10 @@ enum MCDumpType {
     MCDump_run_slave               =6,
 
     // dump version numbers
-    MCDump_worker_version          =303
+    MCDump_worker_version          =304
     // Some data types changed from 32 to 64 Bit between version 301 and 302
     // vector observable labels stored from 303
+	// RNG changed to Mersenne twister from 304
 };
 
 

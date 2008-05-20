@@ -87,8 +87,13 @@ static bool xdr_s_char(XDR *xdrs, signed char *scp)
 
 bool xdr_hyper(XDR *xdrs, long long *llp)
 {
+#ifdef __LP64__
+  int t1;
+  unsigned int t2;
+#else
   long t1;
   unsigned long t2;
+#endif
   if (xdrs->x_op == XDR_ENCODE) {
     t1 = (long)((*llp) >> 32);
     t2 = (unsigned long)(*llp - (((long long) t1) << 32));
@@ -106,8 +111,13 @@ bool xdr_hyper(XDR *xdrs, long long *llp)
 
 bool xdr_u_hyper(XDR *xdrs, unsigned long long *llp)
 {
+#ifdef __LP64__
+  unsigned int t1;
+  unsigned int t2;
+#else
   unsigned long t1;
   unsigned long t2;
+#endif
   if (xdrs->x_op == XDR_ENCODE) {
     t1 = (unsigned long)((*llp) >> 32);
     t2 = (unsigned long)(*llp - (((unsigned long long) t1) << 32));
@@ -192,9 +202,14 @@ ALPS_DUMP_DO_TYPE(short, xdr_short)
 ALPS_DUMP_DO_TYPE(unsigned short, xdr_u_short)
 ALPS_DUMP_DO_TYPE(int, xdr_int)
 ALPS_DUMP_DO_TYPE(unsigned int, xdr_u_int)
+#ifdef __LP64__
+ALPS_DUMP_DO_TYPE_N(int, 4, xdr_long)
+ALPS_DUMP_DO_TYPE_N(unsigned int, 4, xdr_u_long)
+#else
 ALPS_DUMP_DO_TYPE_N(long, 4, xdr_long)
-ALPS_DUMP_DO_TYPE_N(long, 8, xdr_long_8)
 ALPS_DUMP_DO_TYPE_N(unsigned long, 4, xdr_u_long)
+#endif
+ALPS_DUMP_DO_TYPE_N(long, 8, xdr_long_8)
 ALPS_DUMP_DO_TYPE_N(unsigned long, 8, xdr_u_long_8)
 #ifdef BOOST_HAS_LONG_LONG
 ALPS_DUMP_DO_TYPE(long long, alps::detail::xdr_hyper)
