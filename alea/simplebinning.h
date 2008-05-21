@@ -154,6 +154,7 @@ inline void SimpleBinning<T>::reset(bool forthermalization)
 
 
 // add a new measurement
+template <> void SimpleBinning<std::valarray<double> >::operator<<(const std::valarray<double>& x);
 template <class T>
 inline void SimpleBinning<T>::operator<<(const T& x) 
 {
