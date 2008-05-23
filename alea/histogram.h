@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2007 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1997-2008 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -207,7 +207,7 @@ inline void HistogramObservable<T>::set_range(T min, T max, T stepsize)
   max_=max;
   stepsize_=stepsize;
   //std::cout<<"*** "<<(max-min)/stepsize<<std::endl;
-  histogram_.resize(static_cast<size_type>((max-min)/stepsize)+0.5);
+  histogram_.resize(static_cast<size_type>((max-min)/stepsize+0.5));
 }
 
 template <class T>
