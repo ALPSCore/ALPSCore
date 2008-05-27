@@ -400,7 +400,7 @@ public:
   std::vector<int> translation_directions() const 
   {
     std::vector<int> dirs;
-    for (int i=0;i<bc_.size();++i)
+    for (std::size_t i=0;i<bc_.size();++i)
       if (bc_[i]=="periodic")
         dirs.push_back(i);
     return dirs;
@@ -409,14 +409,14 @@ public:
   std::vector<vector_type> translation_momenta() const 
   {
     std::vector<vector_type> ks;
-    for (int i=0;i<bc_.size();++i)
+    for (std::size_t i=0;i<bc_.size();++i)
       if (bc_[i]=="periodic") {
         if (ks.empty())
           for (int j=0;j<extent_[i];++j)
             ks.push_back(vector_type(1,2.*j*M_PI/extent_[i]));
         else {
           std::vector<vector_type> newks;
-          for (int l=0;l<ks.size();++l) 
+          for (std::size_t l=0;l<ks.size();++l) 
             for (int j=0;j<extent_[i];++j) {
               vector_type k=ks[l];
               k.push_back(2.*j*M_PI/extent_[i]);
@@ -437,13 +437,13 @@ public:
     
     std::vector<int> theshift(dirs.size());
     offset_type off(extent_);
-    for (int i=0;i<alps::dimension(off);++i)
+    for (std::size_t i=0;i<alps::dimension(off);++i)
       off[i]=0;
     
     bool done=false;
     while (!done) {
       double phase=0.;
-      for (int i=0;i<dirs.size();++i) {
+      for (std::size_t i=0;i<dirs.size();++i) {
         off[dirs[i]]=theshift[i];
         phase += theshift[i]*k[i];
       }
@@ -456,7 +456,7 @@ public:
       }
       trans.push_back(std::make_pair(std::exp(std::complex<double>(0.,phase)),shifted_index));
       done=true;
-      for (int i=0; i<theshift.size() && done;++i) {
+      for (std::size_t i=0; i<theshift.size() && done;++i) {
         if (++theshift[i]>=extent_[dirs[i]]) 
           theshift[i]=0;
          else

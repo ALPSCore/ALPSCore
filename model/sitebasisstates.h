@@ -78,7 +78,7 @@ typename site_basis<I,STATE>::size_type site_basis<I,STATE>::index(const value_t
 template <class I, class STATE>
 bool site_basis<I,STATE>::check_sort() const
 {
-  for (int i=0;i<super_type::size()-1;++i)
+  for (std::size_t i=0;i<super_type::size()-1;++i)
     if ((*this)[i]>=(*this)[i+1])
       return false;
   return true;
@@ -88,7 +88,7 @@ template <class I, class STATE>
 site_basis<I,STATE>::site_basis(const SiteBasisDescriptor<I>& b)
  : basis_(b)
 {
-  if (b.num_states()==std::numeric_limits<I>::max())
+  if ((I)(b.num_states())==std::numeric_limits<I>::max())
     boost::throw_exception(std::runtime_error("Cannot build infinite set of basis states\n"));
   std::stack<std::pair<typename SiteBasisDescriptor<I>::const_iterator,half_integer<I> > > s;
   typename SiteBasisDescriptor<I>::const_iterator it=b.begin();

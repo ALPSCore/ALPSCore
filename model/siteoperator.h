@@ -128,8 +128,8 @@ boost::multi_array<T,2> get_matrix(T,const SiteOperator& m, const SiteBasisDescr
 {
   boost::multi_array<std::pair<T,bool>,2> f_matrix = m.template matrix<T,I>(basis1,p);
   boost::multi_array<T,2> matrix(boost::extents[f_matrix.shape()[0]][f_matrix.shape()[1]]);
-  for (int i=0;i<f_matrix.shape()[0];++i)
-    for (int j=0;j<f_matrix.shape()[1];++j)
+  for (std::size_t i=0;i<f_matrix.shape()[0];++i)
+    for (std::size_t j=0;j<f_matrix.shape()[1];++j)
       if (!ignore_fermion && f_matrix[i][j].second)
         boost::throw_exception(std::runtime_error("Cannot convert fermionic operator to a bosonic matrix"));
       else
@@ -175,10 +175,10 @@ SiteOperator::matrix(const SiteBasisDescriptor<I>& b,  const Parameters& p) cons
 
   // fill the matrix
     site_basis<I> states(basis);
-    for (int i=0;i<mat.shape()[0];++i)
-      for (int j=0;j<mat.shape()[1];++j)
+    for (std::size_t i=0;i<mat.shape()[0];++i)
+      for (std::size_t  j=0;j<mat.shape()[1];++j)
         mat[i][j].second=false;
-    for (int i=0;i<states.size();++i) {
+    for (std::size_t i=0;i<states.size();++i) {
     //calculate expression applied to state *it and store it into matrix
       for (typename expression::Expression<value_type>::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
             SiteOperatorEvaluator<I,value_type> evaluator(states[i],basis,parms,site());

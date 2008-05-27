@@ -122,7 +122,7 @@ bool SiteBasisDescriptor<I>::valid(const std::vector<half_integer<I> >& x) const
     boost::throw_exception(std::runtime_error("Cannot evaluate quantum numbers in site basis " +name()));
   if (this->size() != x.size())
     return false;
-  for (int i=0;i<this->size();++i) {
+  for (std::size_t i=0;i<this->size();++i) {
     const_cast<SiteBasisDescriptor<I>&>(*this)[i].set_parameters(p);
     if (!(*this)[i].valid(x[i]))
       return false;

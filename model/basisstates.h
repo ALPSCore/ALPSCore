@@ -171,7 +171,7 @@ template <class I, class S, class SS>
 bool basis_states<I,S,SS>::check_sort() const
 {
   if (!super_type::empty())
-    for (int i=0;i<super_type::size()-1;++i)
+    for (std::size_t i=0;i<super_type::size()-1;++i)
       if (!((*this)[i]<(*this)[i+1]))
         return false;
   return true;
@@ -181,7 +181,7 @@ template <class I, class S, class SS> template <class J>
 bool basis_states<I,S,SS>::satisfies_quantumnumbers(const std::vector<I>& idx, const std::pair<std::string, half_integer<J> >& constraint )
 {
   half_integer<J> val;
-  for (int i=0;i<basis_descriptor_.size();++i)
+  for (std::size_t i=0;i<basis_descriptor_.size();++i)
     val += get_quantumnumber(basis_descriptor_[i][idx[i]],constraint.first,basis_descriptor_.get_site_basis(i));
   return val==constraint.second;
 }
@@ -205,14 +205,14 @@ void basis_states<I,S,SS>::build(const std::vector<std::pair<std::string,half_in
   boost::multi_array<half_integer<J>,2>	min_partial_qn_value(boost::extents[constraints.size()][idx.size()-1]);
   
   // first get the local maxima for each site
-  for (int ic=0;ic<constraints.size();++ic) {
-	  for(int is=0;is<idx.size();++is) {
+  for (std::size_t ic=0;ic<constraints.size();++ic) {
+	  for(std::size_t is=0;is<idx.size();++is) {
 		  half_integer<J>& lmax=local_max[ic][is];
 		  half_integer<J>& lmin=local_min[ic][is];
 		  
 		  lmax=lmin=get_quantumnumber(basis_descriptor_[is][0],constraints[ic].first,basis_descriptor_.get_site_basis(is));
 
-		  for (int ib=1;ib<basis_descriptor_[is].size();++ib) {
+		  for (std::size_t ib=1;ib<basis_descriptor_[is].size();++ib) {
 			  half_integer<J> val=get_quantumnumber(basis_descriptor_[is][ib],
 													constraints[ic].first,
 													basis_descriptor_.get_site_basis(is));
@@ -222,10 +222,10 @@ void basis_states<I,S,SS>::build(const std::vector<std::pair<std::string,half_in
 	  }
   }
   
-  for (int ic=0;ic<constraints.size();++ic) {
-	  for(int ik=0;ik<last;++ik) {
+  for (std::size_t ic=0;ic<constraints.size();++ic) {
+	  for(std::size_t ik=0;ik<last;++ik) {
 		  half_integer<J> max_val,min_val;
-		  for(int is=ik+1;is<idx.size();++is) {
+		  for(std::size_t is=ik+1;is<idx.size();++is) {
 			  max_val+=local_max[ic][is];
 			  min_val+=local_min[ic][is];
 		  }
@@ -237,7 +237,7 @@ void basis_states<I,S,SS>::build(const std::vector<std::pair<std::string,half_in
   while (true) {
     unsigned int k=last;
 	
-    while (idx[k]>=basis_descriptor_[k].size() && k) {
+    while (idx[k]>=(int)(basis_descriptor_[k].size() && k)) {
       idx[k]=0;
       if (k==0)
         break;
@@ -249,14 +249,14 @@ void basis_states<I,S,SS>::build(const std::vector<std::pair<std::string,half_in
 	  //         states can be found.
 	  // 
 	  bool breaked=false;
-	  if( idx[k]<basis_descriptor_[k].size() ) {
+	  if( idx[k]<(int)(basis_descriptor_[k].size() ) ){
 		  // if this condition is true I will quit this loop
 		  // principle, let us see now if the new partial state
 		  // idx[0,k] is compatible with any of the partial
 		  // states idx[k+1,last]
-		  for (int ic=0;ic<constraints.size();++ic) {
+		  for (std::size_t ic=0;ic<constraints.size();++ic) {
 			  half_integer<J> val;
-			  for (int is=0;is<=k;++is)
+			  for (std::size_t is=0;is<=k;++is)
 				  val += get_quantumnumber(basis_descriptor_[is][idx[is]],
 										   constraints[ic].first,
 										   basis_descriptor_.get_site_basis(is));
@@ -272,11 +272,11 @@ void basis_states<I,S,SS>::build(const std::vector<std::pair<std::string,half_in
 	  }
 	  // end of new part
     }
-    if (k==0 && idx[k]>=basis_descriptor_[k].size())
+    if (k==0 && idx[k]>=(int)(basis_descriptor_[k].size()))
       break;
 	
     bool satisfies=true;
-    for (int i=0;i<constraints.size();++i)
+    for (std::size_t i=0;i<constraints.size();++i)
       satisfies = satisfies && satisfies_quantumnumbers(idx,constraints[i]);
 	
     if (satisfies) {

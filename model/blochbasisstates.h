@@ -132,14 +132,14 @@ void bloch_basis_states<I,S,SS>::build(const translation_type& trans, const std:
   boost::multi_array<half_integer<J>,2> max_partial_qn_value(boost::extents[constraints.size()][idx.size()-1]);
   boost::multi_array<half_integer<J>,2>	min_partial_qn_value(boost::extents[constraints.size()][idx.size()-1]);
   
-  for (int ic=0;ic<constraints.size();++ic) {
-	  for(int is=0;is<idx.size();++is) {
+  for (std::size_t ic=0;ic<constraints.size();++ic) {
+	  for(std::size_t is=0;is<idx.size();++is) {
 		  half_integer<J>& lmax=local_max[ic][is];
 		  half_integer<J>& lmin=local_min[ic][is];
 		  
 		  lmax=lmin=get_quantumnumber(basis_descriptor_[is][0],constraints[ic].first,basis_descriptor_.get_site_basis(is));
 		  
-		  for (int ib=1;ib<basis_descriptor_[is].size();++ib) {
+		  for (std::size_t ib=1;ib<basis_descriptor_[is].size();++ib) {
 			  half_integer<J> val=get_quantumnumber(basis_descriptor_[is][ib],
 													constraints[ic].first,
 													basis_descriptor_.get_site_basis(is));
@@ -149,10 +149,10 @@ void bloch_basis_states<I,S,SS>::build(const translation_type& trans, const std:
 	  }
   }
   
-  for (int ic=0;ic<constraints.size();++ic) {
-	  for(int ik=0;ik<last;++ik) {
+  for (std::size_t ic=0;ic<constraints.size();++ic) {
+	  for(std::size_t ik=0;ik<last;++ik) {
 		  half_integer<J> max_val,min_val;
-		  for(int is=ik+1;is<idx.size();++is) {
+		  for(std::size_t is=ik+1;is<idx.size();++is) {
 			  max_val+=local_max[ic][is];
 			  min_val+=local_min[ic][is];
 		  }
@@ -175,13 +175,13 @@ void bloch_basis_states<I,S,SS>::build(const translation_type& trans, const std:
 	  //         states can be found.
 	  // 
 	  bool breaked=false;
-	  if( idx[k]<basis_descriptor_[k].size() ) {
+	  if( idx[k]<(int)(basis_descriptor_[k].size() ) ){
 		  // let us see now if the new partial state
 		  // idx[0,k] is compatible with any of the partial
 		  // states idx[k+1,last]
-		  for (int ic=0;ic<constraints.size();++ic) {
+		  for (std::size_t ic=0;ic<constraints.size();++ic) {
 			  half_integer<J> val;
-			  for (int is=0;is<=k;++is)
+			  for (std::size_t is=0;is<=k;++is)
 				  val += get_quantumnumber(basis_descriptor_[is][idx[is]],
 										   constraints[ic].first,
 										   basis_descriptor_.get_site_basis(is));

@@ -200,13 +200,13 @@ BondOperator::matrix(const SiteBasisDescriptor<I>& b1,
   // fill the matrix
     site_basis<I> states1(basis1);
     site_basis<I> states2(basis2);
-    for (int i=0;i<mat.shape()[0];++i)
-      for (int j=0;j<mat.shape()[1];++j)
-        for (int k=0;k<mat.shape()[2];++k)
-          for (int l=0;l<mat.shape()[3];++l)
+    for (std::size_t i=0;i<mat.shape()[0];++i)
+      for (std::size_t j=0;j<mat.shape()[1];++j)
+        for (std::size_t k=0;k<mat.shape()[2];++k)
+          for (std::size_t l=0;l<mat.shape()[3];++l)
             mat[i][j][k][l].second=false;
-    for (int i1=0;i1<states1.size();++i1)
-      for (int i2=0;i2<states2.size();++i2) {
+    for (std::size_t i1=0;i1<states1.size();++i1)
+      for (std::size_t i2=0;i2<states2.size();++i2) {
       //calculate expression applied to state *it and store it into matrix
         for (typename expression::Expression<value_type>::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
           BondOperatorEvaluator<I,value_type> evaluator(states1[i1], states2[i2], basis1, basis2, source(), target(), parms);

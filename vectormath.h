@@ -73,7 +73,7 @@ std::vector<T> scalar_vector_apply(OP op, S x, const std::vector<T>& y)
 {
   using namespace boost::lambda;
   std::vector<T> res(y.size());
-  for (int i=0;i<y.size();++i)
+  for (std::size_t i=0;i<y.size();++i)
     res[i] = op(x,y[i]);
   //std::transform(y.begin(),y.end(),std::back_inserter(res),bind(op,x,_1));
   return res;

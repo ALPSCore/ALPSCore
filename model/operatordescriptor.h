@@ -97,7 +97,7 @@ OperatorDescriptor<I>::apply(STATE state, const SiteBasisDescriptor<I>& basis, c
   // set quantum numbers as parameters
   Parameters p=eval.parameters();
   p.copy_undefined(basis.get_parameters());
-  for (int i=0;i<basis.size();++i) {
+  for (std::size_t i=0;i<basis.size();++i) {
     if (p.defined(basis[i].name()))
       boost::throw_exception(std::runtime_error(basis[i].name()+" exists as quantum number and as parameter"));
     else
@@ -110,7 +110,7 @@ OperatorDescriptor<I>::apply(STATE state, const SiteBasisDescriptor<I>& basis, c
   bool fermionic=false;
   for (const_iterator it=this->begin(); it !=this->end();++it) {
     bool fermion_count=false;
-    int i;
+    std::size_t i;
     for (i=0;i<basis.size();++i) {
       if (it->first == basis[i].name()) {
         if (basis[i].fermionic() && is_odd(it->second)) {
