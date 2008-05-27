@@ -251,7 +251,7 @@ template <> inline void SimpleBinning<std::valarray<double> >::operator<<(const 
   }
   
   // store x, x^2 and the minimum and maximum value
-  for(int i=0;i<size();++i){
+  for(std::size_t i=0;i<size();++i){
     last_bin_[0][i]=x[i];
     sum_[0][i]+=x[i];
     sum2_[0][i]+=x[i]*x[i];
