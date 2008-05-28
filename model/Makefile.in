@@ -60,7 +60,9 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/src/alps/config.h \
 	$(top_builddir)/src/boost/po_utf8_codecvt_facet.cpp \
 	$(top_builddir)/src/boost/sr_utf8_codecvt_facet.cpp \
-	$(top_builddir)/src/boost/fs_utf8_codecvt_facet.cpp
+	$(top_builddir)/src/boost/fs_utf8_codecvt_facet.cpp \
+	$(top_builddir)/src/boost/fs_exception.cpp \
+	$(top_builddir)/src/boost/mp_exception.cpp
 CONFIG_CLEAN_FILES =
 am_example1_OBJECTS = example1.$(OBJEXT)
 example1_OBJECTS = $(am_example1_OBJECTS)
