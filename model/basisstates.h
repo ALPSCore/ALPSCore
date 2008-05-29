@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2005 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2003-2008 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -67,18 +67,18 @@ public:
 
   basis_states() {}
   template <class J>
-  basis_states(const basis_states_descriptor<I,SS>& b, 
+  basis_states(const basis_states_descriptor<I,SS>& b,
               const std::vector<std::pair<std::string,half_integer<J> > >& c)
     : basis_descriptor_(b)
   { build(c);}
 
   basis_states(const basis_states_descriptor<I,SS>& b)
     : basis_descriptor_(b)
-  { 
+  {
     build(b.get_basis().constraints());
   }
-                    
-                
+
+
   inline std::size_t index(const value_type& x) const
   {
     const_iterator it = std::lower_bound(super_type::begin(), super_type::end(), x);
@@ -93,18 +93,18 @@ public:
   }
 
   double normalization(size_type) const { return 1.;}
-  
+
   bool is_real() const { return true;}
 
   bool check_sort() const;
   const basis_type& basis() const { return basis_descriptor_;}
 private:
   template <class J>
-  bool satisfies_quantumnumbers(const std::vector<I>& idx, 
+  bool satisfies_quantumnumbers(const std::vector<I>& idx,
                                 const std::pair<std::string,half_integer<J> >&);
   template <class J>
   void build(const std::vector<std::pair<std::string,half_integer<J> > >&);
-                    
+
 
   basis_states_descriptor<I,SS> basis_descriptor_;
 };
@@ -120,17 +120,17 @@ public:
   typedef typename super_type::size_type size_type;
   typedef typename super_type::basis_type basis_type;
 
-  lookup_basis_states(const basis_states_descriptor<J,SS>& b) 
-    : basis_states<J,S,SS>(b), use_lookup_(false) 
+  lookup_basis_states(const basis_states_descriptor<J,SS>& b)
+    : basis_states<J,S,SS>(b), use_lookup_(false)
   {
     if (b.size()<=24) {
       use_lookup_=true;
       lookup_.resize(1<<b.size(),super_type::size());
-      for (int i=0;i<super_type::size();++i)
+      for (std::size_t i=0;i<super_type::size();++i)
         lookup_[super_type::operator[](i)]=i;
     }
   }
-  
+
   inline size_type index(const value_type& x) const
   {
     if (use_lookup_)
@@ -188,100 +188,100 @@ bool basis_states<I,S,SS>::satisfies_quantumnumbers(const std::vector<I>& idx, c
 
 template <class I, class S, class SS> template<class J>
 void basis_states<I,S,SS>::build(const std::vector<std::pair<std::string,half_integer<J> > >& constraints)
-{	
+{
   if (basis_descriptor_.empty())
     return;
   std::vector<I> idx(basis_descriptor_.size(),0);
   unsigned int last=idx.size()-1;
-  
+
   //
   // AML/AH: prepare a list of partial maxima and minima for each
   // constraint
   //
   boost::multi_array<half_integer<J>,2> local_max(boost::extents[constraints.size()][idx.size()]);
   boost::multi_array<half_integer<J>,2> local_min(boost::extents[constraints.size()][idx.size()]);
-  
+
   boost::multi_array<half_integer<J>,2> max_partial_qn_value(boost::extents[constraints.size()][idx.size()-1]);
-  boost::multi_array<half_integer<J>,2>	min_partial_qn_value(boost::extents[constraints.size()][idx.size()-1]);
-  
+  boost::multi_array<half_integer<J>,2>        min_partial_qn_value(boost::extents[constraints.size()][idx.size()-1]);
+
   // first get the local maxima for each site
   for (std::size_t ic=0;ic<constraints.size();++ic) {
-	  for(std::size_t is=0;is<idx.size();++is) {
-		  half_integer<J>& lmax=local_max[ic][is];
-		  half_integer<J>& lmin=local_min[ic][is];
-		  
-		  lmax=lmin=get_quantumnumber(basis_descriptor_[is][0],constraints[ic].first,basis_descriptor_.get_site_basis(is));
+          for(std::size_t is=0;is<idx.size();++is) {
+                  half_integer<J>& lmax=local_max[ic][is];
+                  half_integer<J>& lmin=local_min[ic][is];
 
-		  for (std::size_t ib=1;ib<basis_descriptor_[is].size();++ib) {
-			  half_integer<J> val=get_quantumnumber(basis_descriptor_[is][ib],
-													constraints[ic].first,
-													basis_descriptor_.get_site_basis(is));
-			  if(lmax<val) lmax=val;
-			  if(lmin>val) lmin=val;
-		  }
-	  }
+                  lmax=lmin=get_quantumnumber(basis_descriptor_[is][0],constraints[ic].first,basis_descriptor_.get_site_basis(is));
+
+                  for (std::size_t ib=1;ib<basis_descriptor_[is].size();++ib) {
+                          half_integer<J> val=get_quantumnumber(basis_descriptor_[is][ib],
+                                                                                                        constraints[ic].first,
+                                                                                                        basis_descriptor_.get_site_basis(is));
+                          if(lmax<val) lmax=val;
+                          if(lmin>val) lmin=val;
+                  }
+          }
   }
-  
+
   for (std::size_t ic=0;ic<constraints.size();++ic) {
-	  for(std::size_t ik=0;ik<last;++ik) {
-		  half_integer<J> max_val,min_val;
-		  for(std::size_t is=ik+1;is<idx.size();++is) {
-			  max_val+=local_max[ic][is];
-			  min_val+=local_min[ic][is];
-		  }
-		  max_partial_qn_value[ic][ik]=max_val;
-		  min_partial_qn_value[ic][ik]=min_val;
-	  }
+          for(std::size_t ik=0;ik<last;++ik) {
+                  half_integer<J> max_val,min_val;
+                  for(std::size_t is=ik+1;is<idx.size();++is) {
+                          max_val+=local_max[ic][is];
+                          min_val+=local_min[ic][is];
+                  }
+                  max_partial_qn_value[ic][ik]=max_val;
+                  min_partial_qn_value[ic][ik]=min_val;
+          }
   }
-  
+
   while (true) {
     unsigned int k=last;
-	
-    while (idx[k]>=(int)(basis_descriptor_[k].size() && k)) {
+
+    while ((idx[k]>=basis_descriptor_[k].size()) && k) {
       idx[k]=0;
       if (k==0)
         break;
       --k;
       ++idx[k];
 
-	  //
-	  // AML/AH: truncates search tree if it is obvious that no new
-	  //         states can be found.
-	  // 
-	  bool breaked=false;
-	  if( idx[k]<(int)(basis_descriptor_[k].size() ) ){
-		  // if this condition is true I will quit this loop
-		  // principle, let us see now if the new partial state
-		  // idx[0,k] is compatible with any of the partial
-		  // states idx[k+1,last]
-		  for (std::size_t ic=0;ic<constraints.size();++ic) {
-			  half_integer<J> val;
-			  for (std::size_t is=0;is<=k;++is)
-				  val += get_quantumnumber(basis_descriptor_[is][idx[is]],
-										   constraints[ic].first,
-										   basis_descriptor_.get_site_basis(is));
-			  if (val+max_partial_qn_value[ic][k]<constraints[ic].second ||
-				  val+min_partial_qn_value[ic][k]>constraints[ic].second) {
-				  //impossible to satisfy constraint
-				  breaked=true;
-				  break;
-			  }
-		  }
-		  if(breaked)
-			++idx[k];
-	  }
-	  // end of new part
+          //
+          // AML/AH: truncates search tree if it is obvious that no new
+          //         states can be found.
+          //
+          bool breaked=false;
+          if(idx[k]<basis_descriptor_[k].size()){
+                  // if this condition is true I will quit this loop
+                  // principle, let us see now if the new partial state
+                  // idx[0,k] is compatible with any of the partial
+                  // states idx[k+1,last]
+                  for (std::size_t ic=0;ic<constraints.size();++ic) {
+                          half_integer<J> val;
+                          for (std::size_t is=0;is<=k;++is)
+                                  val += get_quantumnumber(basis_descriptor_[is][idx[is]],
+                                                                                   constraints[ic].first,
+                                                                                   basis_descriptor_.get_site_basis(is));
+                          if (val+max_partial_qn_value[ic][k]<constraints[ic].second ||
+                                  val+min_partial_qn_value[ic][k]>constraints[ic].second) {
+                                  //impossible to satisfy constraint
+                                  breaked=true;
+                                  break;
+                          }
+                  }
+                  if(breaked)
+                        ++idx[k];
+          }
+          // end of new part
     }
-    if (k==0 && idx[k]>=(int)(basis_descriptor_[k].size()))
+    if (k==0 && (idx[k]>=basis_descriptor_[k].size()))
       break;
-	
+
     bool satisfies=true;
     for (std::size_t i=0;i<constraints.size();++i)
       satisfies = satisfies && satisfies_quantumnumbers(idx,constraints[i]);
-	
+
     if (satisfies) {
       push_back(idx);
-	}
+        }
     ++idx[last];
   }
   if (!check_sort()) {
@@ -311,7 +311,7 @@ inline std::ostream& operator<<(std::ostream& out, const alps::basis_states<I,S,
     out << " ]\n";
   }
   out << "}\n";
-  return out;        
+  return out;
 }
 
 template <class I, class J, class S, class SS>
@@ -321,7 +321,7 @@ inline std::ostream& operator<<(std::ostream& out, const alps::lookup_basis_stat
   for (typename alps::basis_states<I,S>::const_iterator it=q.begin();it!=q.end();++it)
     out << "[ " << *it << " ]\n";
   out << "}\n";
-  return out;        
+  return out;
 }
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
