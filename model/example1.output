@@ -84,7 +84,7 @@
       <CHANGE quantumnumber="Nup" change="1"/>
       <CHANGE quantumnumber="Ndown" change="-1"/>
     </OPERATOR>
-    <OPERATOR name="Sz" matrixelement="(Nup+Ndown)/2"/>
+    <OPERATOR name="Sz" matrixelement="(Nup-Ndown)/2"/>
     <OPERATOR name="c_down" matrixelement="1">
       <CHANGE quantumnumber="Ndown" change="-1"/>
     </OPERATOR>
