@@ -72,7 +72,7 @@ Worker::Worker(const ProcessList& w,const alps::Parameters&  myparms,int32_t n)
 
   if (where.size()) engine_ptr->seed(parms["SEED"]);
 
-  Disorder::seed(parms.value_or_default("DISORDER_SEED",0));
+  Disorder::seed(parms.value_or_default("DISORDERSEED",0));
 }
 
 Worker::Worker(const alps::Parameters&  myparms,int32_t n)
@@ -95,7 +95,7 @@ Worker::Worker(const alps::Parameters&  myparms,int32_t n)
 
   if (where.size()) engine_ptr->seed(parms["SEED"]);
 
-  Disorder::seed(parms.value_or_default("DISORDER_SEED",0));
+  Disorder::seed(parms.value_or_default("DISORDERSEED",0));
 }
 
 
@@ -139,7 +139,7 @@ void Worker::load_worker(IDump& dump)
     if(version<200) 
       dump >> dummy >> dummy >> dummy;
   }
-  Disorder::seed(parms.value_or_default("DISORDER_SEED",0));
+  Disorder::seed(parms.value_or_default("DISORDERSEED",0));
   // TODO: load slave runs
 }
 
