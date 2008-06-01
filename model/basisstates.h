@@ -237,7 +237,7 @@ void basis_states<I,S,SS>::build(const std::vector<std::pair<std::string,half_in
   while (true) {
     unsigned int k=last;
 
-    while ((idx[k]>=basis_descriptor_[k].size()) && k) {
+    while ((idx[k]>=(int)(basis_descriptor_[k].size())) && k) {
       idx[k]=0;
       if (k==0)
         break;
@@ -249,7 +249,7 @@ void basis_states<I,S,SS>::build(const std::vector<std::pair<std::string,half_in
           //         states can be found.
           //
           bool breaked=false;
-          if(idx[k]<basis_descriptor_[k].size()){
+          if(idx[k]<(int)(basis_descriptor_[k].size())){
                   // if this condition is true I will quit this loop
                   // principle, let us see now if the new partial state
                   // idx[0,k] is compatible with any of the partial
@@ -272,7 +272,7 @@ void basis_states<I,S,SS>::build(const std::vector<std::pair<std::string,half_in
           }
           // end of new part
     }
-    if (k==0 && (idx[k]>=basis_descriptor_[k].size()))
+    if (k==0 && (idx[k]>=(int)(basis_descriptor_[k].size())))
       break;
 
     bool satisfies=true;
