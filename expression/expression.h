@@ -93,7 +93,7 @@ public:
   const Expression& operator+=(const Expression& e)
   {
     std::copy(e.terms_.begin(),e.terms_.end(),std::back_inserter(terms_));
-    partial_evaluate();
+    partial_evaluate(Evaluator<T>(false));
     return *this;
   }
   void simplify();
@@ -140,12 +140,12 @@ void Expression<T>::remove_spurious_parentheses()
 template<class T>
 void Expression<T>::simplify()
 {
-  partial_evaluate();
+  partial_evaluate(Evaluator<T>(false));
   for (typename std::vector<Term<T> >::iterator it=terms_.begin();
        it!=terms_.end(); ++it)
     it->simplify();
   sort();
-  partial_evaluate();
+  partial_evaluate(Evaluator<T>(false));
 }
 
 template<class T>
@@ -202,7 +202,7 @@ void Expression<T>::parse(std::istream& is)
 template <class T>
 void Expression<T>::sort()
 {
-  partial_evaluate();
+  partial_evaluate(Evaluator<T>(false));
   std::sort(terms_.begin(),terms_.end(),term_less<T>());
   typename std::vector<Term<T> >::iterator prev,it;
   prev=terms_.begin();
@@ -253,6 +253,7 @@ bool Expression<T>::can_evaluate(const Evaluator<T>& p, bool isarg) const
   if (terms_.size()==0)
     return true;
   bool can=true;
+
   for (unsigned int i=0;i<terms_.size();++i)
     can = can && terms_[i].can_evaluate(p,isarg);
   return can;

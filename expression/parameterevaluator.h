@@ -48,7 +48,8 @@ bool ParameterEvaluator<T>::can_evaluate(const std::string& name, bool isarg) co
   if (!parms_.defined(name) || !parms_[name].valid()) return false;
   Parameters parms(parms_);
   parms[name] = ""; // set illegal to avoid infinite recursion
-  return Expression<T>(parms_[name]).can_evaluate(ParameterEvaluator<T>(parms),isarg);
+  bool can = Expression<T>(parms_[name]).can_evaluate(ParameterEvaluator<T>(parms,this->evaluate_random()),isarg);
+  return can;
 }
 
 template<class T>
@@ -63,7 +64,7 @@ Expression<T> ParameterEvaluator<T>::partial_evaluate(const std::string& name, b
     Parameters p(parms_);
     p[name]="";
     e=Expression<T>(static_cast<std::string>(parms_[name]));
-    e.partial_evaluate(ParameterEvaluator<T>(p),isarg);
+    e.partial_evaluate(ParameterEvaluator<T>(p,this->evaluate_random()),isarg);
   }
   return e;
 }
@@ -77,7 +78,8 @@ typename ParameterEvaluator<T>::value_type ParameterEvaluator<T>::evaluate(const
     boost::throw_exception(std::runtime_error("Infinite recursion when evaluating " + name));
   Parameters parms(parms_);
   parms[name] = "Infinite recursion check";
-  return alps::evaluate<value_type>(parms_[name], ParameterEvaluator<T>(parms), isarg);
+ typename ParameterEvaluator<T>::value_type res = alps::evaluate<value_type>(parms_[name], ParameterEvaluator<T>(parms,this->evaluate_random()), isarg);
+  return res;
 }
 
 }

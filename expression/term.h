@@ -109,7 +109,7 @@ bool Term<T>::depends_on(const std::string& s) const {
 template<class T>
 void Term<T>::simplify()
 {
-  partial_evaluate();
+  partial_evaluate(Evaluator<T>(false));
 }
 
 template<class T>
@@ -247,14 +247,14 @@ Term<T>::Term(const std::pair<T,Term<T> >& t)
  :  is_negative_(false),terms_(t.second.terms_)
 {
   terms_.insert(terms_.begin(), Factor<T>(t.first));
-  partial_evaluate();
+  partial_evaluate(Evaluator<T>(false));
 }
 
 template<class T>
 std::pair<T,Term<T> > Term<T>::split() const
 {
   Term<T> t(*this);
-  t.partial_evaluate();
+  t.partial_evaluate(Evaluator<T>(false));
   T val=1.;
   if (t.terms_.empty())
     val=0.;

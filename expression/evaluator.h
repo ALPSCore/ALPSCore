@@ -57,7 +57,7 @@ class Evaluator {
 public:
   typedef T value_type;
   enum Direction { left_to_right, right_to_left };
-  Evaluator() {}
+  Evaluator(bool rand=true) : evaluate_random_(rand) {}
   virtual ~Evaluator() {}
 
   virtual bool can_evaluate(const std::string&, bool=false) const;
@@ -73,6 +73,10 @@ public:
 
   bool can_evaluate_expressions(const std::vector<Expression<T> >&, bool=false) const;
   void partial_evaluate_expressions(std::vector<Expression<T> >&, bool=false) const;
+  bool evaluate_random() const { return evaluate_random_;}
+
+private:
+  bool evaluate_random_;
 };
 
 
@@ -81,7 +85,8 @@ class ParameterEvaluator : public Evaluator<T> {
 public:
   typedef Evaluator<T> super_type;
   typedef T value_type;
-  ParameterEvaluator(const Parameters& p) : parms_(p) { Disorder::seed_if_unseeded(p);}
+  ParameterEvaluator(const Parameters& p, bool rand=true) 
+  : Evaluator<T>(rand), parms_(p) { Disorder::seed_if_unseeded(p);}
   virtual ~ParameterEvaluator() {}
 
   bool can_evaluate(const std::string&, bool=false) const;
@@ -107,7 +112,7 @@ bool Evaluator<T>::can_evaluate_function(const std::string& name, const Expressi
          (name=="sqrt" || name=="abs" ||
           name=="sin" || name=="cos" || name=="tan" ||
           name=="asin" || name=="acos" || name=="atan" ||
-          name=="log" || name=="exp" || name=="integer_random");
+          name=="log" || name=="exp" || (evaluate_random_ && name=="integer_random"));
 }
 
 
@@ -133,10 +138,11 @@ void Evaluator<T>::partial_evaluate_expressions(std::vector<Expression<T> >& arg
 template<class T>
 bool Evaluator<T>::can_evaluate_function(const std::string& name, const std::vector<Expression<T> >& arg, bool f) const
 {
-  return can_evaluate_expressions(arg,true) &&
-       ((arg.size()==0 && (name == "random" || name=="gaussian_random" || name == "normal_random")) ||
+  bool can= can_evaluate_expressions(arg,true) &&
+       ((arg.size()==0 && evaluate_random_ && (name == "random" || name=="gaussian_random" || name == "normal_random")) ||
         (arg.size()==1 && can_evaluate_function(name,arg[0],f)) || 
-        (arg.size()==2 && (name=="gaussian_random" || name=="atan2")));
+        (arg.size()==2 && (evaluate_random_ && (name=="gaussian_random" || name=="atan2"))));
+  return can;
 }
 
 
@@ -200,7 +206,7 @@ Expression<T> Evaluator<T>::partial_evaluate_function(const std::string& name, c
     val = std::exp(val);
   else if (name=="log")
     val = std::log(val);
-  else if (name=="integer_random")
+  else if (name=="integer_random" && evaluate_random_)
     val=static_cast<int>(evaluate_helper<T>::real(val)*Disorder::random());
   else
     return Expression<T>(Function<T>(name,Expression<T>(val)));
@@ -225,13 +231,13 @@ Expression<T> Evaluator<T>::partial_evaluate_function(const std::string& name, c
     double arg2=evaluate_helper<T>::real(evaluated[1].value());
     if (name=="atan2")
       return Expression<T>(static_cast<T>(std::atan2(arg1,arg2)));
-    else if (name=="gaussian_random" || name=="normal_random")
+    else if (evaluate_random_ && (name=="gaussian_random" || name=="normal_random"))
       return Expression<T>(arg1+arg2*Disorder::gaussian_random());
   }
   else if (evaluated.size()==0) {
-    if (name=="random")
+    if (evaluate_random_ && name=="random")
       return Expression<T>(Disorder::random());
-    else if (name=="gaussian_random" || name=="normal_random")
+    else if (evaluate_random_ && (name=="gaussian_random" || name=="normal_random"))
       return Expression<T>(Disorder::gaussian_random());
   }
   return Expression<T>(Function<T>(name,evaluated));

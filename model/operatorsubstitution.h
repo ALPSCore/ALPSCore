@@ -49,7 +49,7 @@ public:
   typedef std::map<std::string,BondOperator> BondOperatorMap;
   
   OperatorSubstitution(const ModelLibrary& lib, const Parameters& p, const std::vector<std::string>& s) 
-   : super_type(p), sitemap_(lib.site_operators()), bondmap_(lib.bond_operators()), sites_(s) {}
+   : super_type(p,false), sitemap_(lib.site_operators()), bondmap_(lib.bond_operators()), sites_(s) {}
   expression::Expression<T> partial_evaluate(const std::string& name, bool=false) const;
   bool can_evaluate_function(const std::string&, const std::vector<expression::Expression<T> >&, bool=false) const;
   expression::Expression<T> partial_evaluate_function(const std::string&, const std::vector<expression::Expression<T> >&, bool=false) const;
