@@ -430,8 +430,9 @@
       -h#*Sz(i)-Gamma#*Sx(i)+D#*Sz(i)*Sz(i)
     </SITETERM>
     <BONDTERM source="i" target="j">
-      <PARAMETER name="Jz#" default="0"/>
-      <PARAMETER name="Jxy#" default="0"/>
+      <PARAMETER name="J#" default="0"/>
+      <PARAMETER name="Jz#" default="J#"/>
+      <PARAMETER name="Jxy#" default="J#"/>
       Jz#*Sz(i)*Sz(j)+Jxy#*exchange_xy(i,j)
     </BONDTERM>
   </HAMILTONIAN>
