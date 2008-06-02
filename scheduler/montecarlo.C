@@ -136,10 +136,10 @@ void MCSimulation::write_xml_body(oxstream& out, const boost::filesystem::path& 
   boost::filesystem::path fn_hdf5;
   // commented out by astreich, 05/31
   // produced permament crashes.
-//  if(!name.empty())
-//    fn_hdf5=name.branch_path()/(name.leaf()+".hdf");
-  get_measurements(false).write_xml(out,name); // write non-compacted measurements
-//  get_measurements(false).write_xml(out,fn_hdf5); // write non-compacted measurements
+  if(!name.empty())
+    fn_hdf5=name.branch_path()/(name.leaf()+".hdf");
+  // get_measurements(false).write_xml(out,name); // write non-compacted measurements
+  get_measurements(false).write_xml(out,fn_hdf5); // write non-compacted measurements
   WorkerTask::write_xml_body(out,name);
 }
 

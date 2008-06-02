@@ -69,11 +69,17 @@ NoJobfileOptions::NoJobfileOptions(int argc, char** argv)
   po::positional_options_description p;
   p.add("input-file", 1);
   
+  bool error=false;
   po::variables_map vm;
-  po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
-  po::notify(vm);    
+  try {
+	  po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
+	  po::notify(vm);  
+  }
+  catch (...) {
+  error = true;
+  }
 
-  if (vm.count("help")) {
+  if (error || vm.count("help")) {
     std::cout << desc << "\n";
     valid=false;
   }
