@@ -49,8 +49,9 @@ void Disorder::seed(unsigned int i)
 
 void Disorder::seed_if_unseeded(const alps::Parameters& p) 
 {
-  if (static_cast<int>(p.value_or_default("DISORDERSEED",0)) != last_seed_)
-    seed(p.value_or_default("DISORDERSEED",0));
+  int s = p.value_or_default("DISORDERSEED",0);
+  if (s && s != last_seed_)
+    seed(s);
 }
 
 } // end namespace alps
