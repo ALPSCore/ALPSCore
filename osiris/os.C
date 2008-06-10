@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2002 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2008 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -87,7 +87,8 @@ std::string hostname()
 
 std::string username() {
 #if defined(ALPS_HAVE_UNISTD_H)
-  return std::string(getlogin());
+  const char* login = getlogin();
+  return (login ? std::string(getlogin()) : std::string("unknown"));
 #else
   return std::string("unknown");
 #endif
