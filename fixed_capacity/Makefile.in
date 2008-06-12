@@ -42,6 +42,7 @@ DIST_COMMON = $(dist_noinst_DATA) $(noinst_HEADERS) \
 	$(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
+	$(top_srcdir)/config/ac_boost.m4 \
 	$(top_srcdir)/config/ac_compiler.m4 \
 	$(top_srcdir)/config/ac_cxx_have_valarray.m4 \
 	$(top_srcdir)/config/ac_cxx_namespaces.m4 \
