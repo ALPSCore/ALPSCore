@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2008 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -32,9 +32,6 @@
 #include "parameterlist_p.h"
 #include <alps/parser/parser.h>
 #include <boost/foreach.hpp>
-#include <boost/spirit/core.hpp>
-#include <boost/spirit/actor.hpp>
-#include <boost/spirit/iterator/multi_pass.hpp>
 #include <boost/throw_exception.hpp>
 #include <algorithm>
 #include <iostream>
@@ -73,33 +70,10 @@ void ParameterList::parse(std::istream& is, bool replace_env) {
   if (replace_env) replace_envvar();
 }
 
-// old implementation based on ALPS parser
-
-// void ParameterList::parse(std::istream& is)
-// {
-//   Parameters global;
-//   char c;
-//   while (true) {
-//     is >> global;
-//     is >> c;
-//     if (!is) break;
-//     if(c=='{') {
-//       // new block starts with {
-//       // make new Parameters as clone of global
-//       push_back(global);
-//       is >> *rbegin();
-//       check_character(is,'}',"} expected in parameter list");
-//     } else {
-//       is.putback(c);
-//       break;
-//     }
-//   }
-// }
-
 void ParameterList::replace_envvar() {
   BOOST_FOREACH(Parameters& p, *this) p.replace_envvar();
 }
-  
+
 
 //
 // XML support
@@ -107,7 +81,7 @@ void ParameterList::replace_envvar() {
 
 ParameterListXMLHandler::ParameterListXMLHandler(ParameterList& list)
   : CompositeXMLHandler("PARAMETERLIST"), list_(list),
-    parameter_(), default_(), current_(), parameter_handler_(parameter_), 
+    parameter_(), default_(), current_(), parameter_handler_(parameter_),
     current_handler_(current_) {
   add_handler(parameter_handler_);
   add_handler(current_handler_);

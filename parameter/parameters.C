@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2006 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2008 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -31,13 +31,9 @@
 #include "parameters.h"
 #include "parameters_p.h"
 #include <boost/foreach.hpp>
-#include <boost/throw_exception.hpp>
 #include <cstdlib>
-#include <deque>
 #include <iostream>
-#include <stdexcept>
 #include <streambuf>
-#include <string>
 
 namespace bs = boost::spirit;
 
@@ -49,13 +45,12 @@ void Parameters::push_back(const parameter_type& p, bool allow_overwrite)
     boost::throw_exception(std::runtime_error("empty key"));
   if (defined(p.key())) {
     if (allow_overwrite)
-      list_[map_.find(p.key())->second].value()=p.value();
+      map_.find(p.key())->second->value() = p.value();
     else
       boost::throw_exception(std::runtime_error("duplicated parameter: " + p.key()));
-  }
-  else {
-    map_[p.key()] = list_.size();
+  } else {
     list_.push_back(p);
+    map_[p.key()] = --list_.end();
   }
 }
 
@@ -134,64 +129,6 @@ void Parameters::parse(std::istream& is, bool replace_env) {
   if (replace_env) replace_envvar();
 }
 
-
-// old implementation based on ALPS parser
-
-// void Parameters::parse(std::istream& is)
-// {
-//   char c;
-//   do {
-//     is >> c;
-//     while (is && (c==';' || c==',')) is >> c;  // ignore extra semi-colons
-//     if (!is) break;
-//     if (std::isalpha(c)) {
-//       is.putback(c);
-//       std::string key = parse_parameter_name(is);
-//       std::string value;
-
-//       check_character(is, '=',
-//         "= expected in assignment while parsing Parameter "+key);
-
-//       is >> c;
-//       switch (c) {
-//       case '[':
-//         value = read_until(is, ']');
-//         break;
-//       case '"':
-//         value = read_until(is, '"');
-//         break;
-//       case '\'':
-//         value = read_until(is, '\'');
-//         break;
-//       case '$':
-//         check_character(is, '{', "{ expected in Parameter environment variable expansion");
-//         value = read_until(is, '}');
-//         {
-//           char const* EnvStr = getenv(value.c_str());
-//           if (EnvStr)
-//             value = EnvStr;  // if the environment string exists, then substitute its value
-//           else
-//             value = "${" + value + '}'; // pass through unchanged if the environment string doesnt exist
-//         }
-//         break;
-
-//       default:
-//         while(c!=';' && c!=',' && c!='}' && c!= '{' &&
-//               c!='\r' && c!='\n' && is) {
-//           value+=c;
-//           c = is.get();
-//         }
-//         if (c=='{' || c=='}')
-//           is.putback(c);
-//       }
-//       push_back(key, value, true);
-//     } else {
-//       is.putback(c);
-//       break;
-//     }
-//   } while (true);
-// }
-
 void Parameters::replace_envvar() {
   BOOST_FOREACH(Parameter& p, list_) p.replace_envvar();
 }
@@ -215,7 +152,7 @@ void ParametersXMLHandler::start_child(const std::string&,
 
 void ParametersXMLHandler::end_child(const std::string&, xml::tag_type type)
 {
-  if (type == xml::element) 
+  if (type == xml::element)
     parameters_.operator[](parameter_.key()) = parameter_.value();
 }
 

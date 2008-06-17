@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2007 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2008 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -41,7 +41,7 @@
 #include <boost/serialization/split_member.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/throw_exception.hpp>
-#include <deque>
+#include <list>
 #include <map>
 #include <stdexcept>
 #include <string>
@@ -65,12 +65,9 @@ public:
   typedef Parameter                       parameter_type;
 
   /// the type of container used internally to store the sequential order
-  typedef std::deque<parameter_type>      list_type;
+  typedef std::list<parameter_type>       list_type;
   /// an integral type to store the number oif elements
   typedef list_type::size_type            size_type;
-  /// the type of container used internally to implment the associative array access
-  typedef std::map<key_type, size_type>   map_type;
-
 
   /// the pointer type
   typedef parameter_type *            pointer_type;
@@ -89,10 +86,26 @@ public:
   /// iteration goes in the order of insertion into the class, not alphabetically like in a std::map
   typedef list_type::const_iterator   const_iterator;
 
+  /// the type of container used internally to implment the associative array access
+  typedef std::map<key_type, iterator>    map_type;
+
   /// an empty container of parameters
   Parameters() {}
   /// parameters read from a text file
   Parameters(std::istream& is) { parse(is); }
+
+  /// copy constructor
+  Parameters(Parameters const& params) : list_(params.list_), map_() {
+    for (iterator itr = list_.begin(); itr != list_.end(); ++itr) map_[itr->key()] = itr;
+  }
+
+  /// assignment operator
+  Parameters& operator=(Parameters const& rhs) {
+    list_ = rhs.list_;
+    map_.clear();
+    for (iterator itr = list_.begin(); itr != list_.end(); ++itr) map_[itr->key()] = itr;
+    return *this;
+  }
 
   /// read parameters from a text file
   void parse(std::istream& is, bool replace_env = true);
@@ -111,7 +124,7 @@ public:
   /// accessing parameters by key (name)
   value_type& operator[](const key_type& k) {
     if (defined(k)) {
-      return list_[map_.find(k)->second].value();
+      return map_.find(k)->second->value();
     } else {
       push_back(k, value_type());
       return list_.rbegin()->value();
@@ -122,17 +135,19 @@ public:
   const value_type& operator[](const key_type& k) const {
     if (!defined(k))
       boost::throw_exception(std::runtime_error("parameter " + k + " not defined"));
-    return list_[map_.find(k)->second].value();
+    return map_.find(k)->second->value();
   }
 
-  /// \brief erase a parameter with a specific key
+  /// \brief erase a parameter with a specific key (this takes O(N) time)
   /// \param k the parameter key (name)
   void erase(key_type const& k) {
     map_type::iterator itr = map_.find(k);
-    if (itr != map_.end())
+    if (itr != map_.end()) {
+      list_.erase(itr->second);
       map_.erase(itr);
-    else
+    } else {
       std::cerr<<"key not found!"<<std::endl;
+    }
   }
 
   /// \brief returns the value or a default
