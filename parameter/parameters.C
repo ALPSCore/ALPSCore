@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2006-2007 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 2006-2008 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -43,6 +43,14 @@ int main()
   setenv("DIR", "/home/alps", 1);
 
   alps::Parameters params(std::cin);
+  std::cout << params;
+
+  // replace test
+  params["L"] = 3;
+  std::cout << "L = " << params["L"] << std::endl;
+
+  // erase test
+  params.erase("a0");
   std::cout << params;
 
   // test of copy constructor and copying a parameter from itself
