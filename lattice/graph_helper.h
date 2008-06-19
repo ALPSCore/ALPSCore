@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2000-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2000-2008 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -46,18 +46,18 @@ namespace detail {
 template <bool F>
 struct graph_dimension_helper {
   template <class G>
-  static std::size_t dimension(const G&) { return 0; } 
+  static std::size_t dimension(const G&) { return 0; }
 };
 
 template <>
 struct graph_dimension_helper<true> {
   template <class G>
   static  std::size_t dimension(const G& g)
-  { return boost::get_property(g,dimension_t()); } 
+  { return boost::get_property(g,dimension_t()); }
 };
 
-}  
-  
+}
+
 // helper functions
 
 template <class G>
@@ -68,11 +68,11 @@ void throw_if_xyz_defined(const Parameters& p, const G& graph)
     has_property<dimension_t, G>::graph_property>::dimension(graph);
   if (dim >= 1 && p.defined("x") ||
       dim >= 2 && p.defined("y") ||
-      dim >= 3 && p.defined("z")) 
+      dim >= 3 && p.defined("z"))
     boost::throw_exception(std::runtime_error(
       "x, y or z is predefined as parameter and used as coordinate"));
 }
-  
+
 template <class G>
 Parameters coordinate_as_parameter(const G& graph,
   const typename boost::graph_traits<G>::edge_descriptor& edge)
@@ -83,19 +83,19 @@ Parameters coordinate_as_parameter(const G& graph,
   switch (dim) {
   case 3 :
     parms["z"] = 0.5 * (boost::get(coordinate_t(), graph,
-                                   boost::source(edge, graph))[2] + 
+                                   boost::source(edge, graph))[2] +
                         boost::get(coordinate_t(), graph,
                                    boost::target(edge, graph))[2]);
     // continue
   case 2 :
     parms["y"] = 0.5 * (boost::get(coordinate_t(), graph,
-                                   boost::source(edge, graph))[1] + 
+                                   boost::source(edge, graph))[1] +
                         boost::get(coordinate_t(), graph,
                                    boost::target(edge, graph))[1]);
     // continue
   case 1 :
     parms["x"] = 0.5 * (boost::get(coordinate_t(), graph,
-                                   boost::source(edge, graph))[0] + 
+                                   boost::source(edge, graph))[0] +
                         boost::get(coordinate_t(), graph,
                                    boost::target(edge, graph))[0]);
   default :
@@ -167,7 +167,7 @@ public:
   typedef typename graph_traits<graph_type>::edges_size_type edges_size_type;
   typedef typename graph_traits<graph_type>::degree_size_type degree_size_type;
   typedef typename graph_traits<graph_type>::adjacency_iterator adjacency_iterator;
-  
+
   typedef typename graph_traits<graph_type>::site_iterator site_iterator;
   typedef typename graph_traits<graph_type>::bond_iterator bond_iterator;
   typedef typename graph_traits<graph_type>::neighbor_bond_iterator neighbor_bond_iterator;
@@ -177,7 +177,7 @@ public:
   typedef typename graph_traits<graph_type>::bonds_size_type bonds_size_type;
   typedef typename graph_traits<graph_type>::neighbors_size_type neighbors_size_type;
   typedef typename graph_traits<graph_type>::neighbor_iterator neighbor_iterator;
-  
+
   typedef typename lattice_traits<lattice_type>::unit_cell_type unit_cell_type;
   typedef typename lattice_traits<lattice_type>::cell_descriptor cell_descriptor;
   typedef typename lattice_traits<lattice_type>::offset_type offset_type;
@@ -187,7 +187,7 @@ public:
   typedef typename lattice_traits<lattice_type>::momentum_iterator momentum_iterator;
   typedef typename lattice_traits<lattice_type>::basis_vector_iterator basis_vector_iterator;
   typedef typename lattice_traits<lattice_type>::boundary_crossing_type boundary_crossing_type;
-  
+
   typedef typename property_map<edge_type_t,graph_type,type_type>::const_type edge_type_map_type;
   typedef edge_type_map_type bond_type_map_type;
   typedef typename property_map<vertex_type_t,graph_type,type_type>::const_type vertex_type_map_type;
@@ -198,8 +198,8 @@ public:
   typedef inhomogeneous_edge_type_map_type inhomogeneous_bond_type_map_type;
 
  graph_helper(std::istream& in, const Parameters& p)
-   : LatticeLibrary(in), 
-         to_delete_(false), 
+   : LatticeLibrary(in),
+         to_delete_(false),
      g_(make_graph(p)),
      is_bipartite_(set_parity(graph(), p)),
      parity_map_(get_or_default(parity_t(),const_graph(),0.)),
@@ -215,11 +215,11 @@ public:
     d_.disorder_vertices(graph(),inhomogeneous_vertex_type_map_);
     d_.disorder_edges(graph(),inhomogeneous_edge_type_map_);
   }
-  
-  
+
+
   graph_helper(const alps::Parameters& p)
-   : LatticeLibrary(p), 
-         to_delete_(false), 
+   : LatticeLibrary(p),
+         to_delete_(false),
      g_(make_graph(p)),
      is_bipartite_(set_parity(graph(), p)),
      parity_map_(get_or_default(parity_t(),const_graph(),0.)),
@@ -270,14 +270,14 @@ public:
   in_edges(const vertex_descriptor& v) const
   { return detail::in_edges_wrap(v, graph()); }
   std::pair<adjacency_iterator, adjacency_iterator>
-  adjacent_vertices(const vertex_descriptor& v) const 
+  adjacent_vertices(const vertex_descriptor& v) const
   { return detail::adjacent_vertices_wrap(v, graph()); }
   vertex_descriptor vertex(vertices_size_type i) const
   { return detail::vertex_wrap(i, graph()); }
   site_descriptor source(const bond_descriptor& b) const
-  { return detail::source_wrap(b, graph()); }  
+  { return detail::source_wrap(b, graph()); }
   site_descriptor target(const bond_descriptor& b) const
-  { return detail::target_wrap(b, graph()); }  
+  { return detail::target_wrap(b, graph()); }
 
   template<class H>
   typename graph_traits<H>::vertices_size_type num_vertices(const H& g) const
@@ -326,7 +326,7 @@ public:
   std::pair<typename graph_traits<H>::adjacency_iterator,
             typename graph_traits<H>::adjacency_iterator>
   adjacent_vertices(const typename graph_traits<H>::vertex_descriptor& v,
-                    const H& g) const 
+                    const H& g) const
   { return detail::adjacent_vertices_wrap(v, g); }
   template<class H>
   typename graph_traits<H>::vertex_descriptor
@@ -335,11 +335,11 @@ public:
   template<class H>
   typename graph_traits<H>::site_descriptor
   source(const typename graph_traits<H>::bond_descriptor& b, const H& g) const
-  { return detail::source_wrap(b, g); }  
+  { return detail::source_wrap(b, g); }
   template<class H>
   typename graph_traits<H>::site_descriptor
   target(const typename graph_traits<H>::bond_descriptor& b, const H& g) const
-  { return detail::target_wrap(b, g); }  
+  { return detail::target_wrap(b, g); }
 
   sites_size_type num_sites() const { return detail::num_sites_wrap(graph()); }
   bonds_size_type num_bonds() const { return detail::num_bonds_wrap(graph()); }
@@ -354,14 +354,14 @@ public:
   neighbors_size_type num_neighbors (const site_descriptor& v) const
   { return detail::num_neighbors_wrap(v, graph()); }
   std::pair<neighbor_bond_iterator, neighbor_bond_iterator>
-  neighbor_bonds(const site_descriptor& v) const 
+  neighbor_bonds(const site_descriptor& v) const
   { return detail::neighbor_bonds_wrap(v, graph()); }
   std::pair<neighbor_iterator, neighbor_iterator>
   neighbors(const site_descriptor& v) const
   { return detail::neighbors_wrap(v, graph()); }
   site_descriptor
   neighbor(const site_descriptor& v, neighbors_size_type i) const
-  { return detail::neighbor_wrap(v, i, graph()); } 
+  { return detail::neighbor_wrap(v, i, graph()); }
 
   template<class H>
   typename graph_traits<H>::sites_size_type num_sites(const H& g) const
@@ -394,7 +394,7 @@ public:
   std::pair<typename graph_traits<H>::neighbor_bond_iterator,
             typename graph_traits<H>::neighbor_bond_iterator>
   neighbor_bonds(const typename graph_traits<H>::site_descriptor& v,
-                 const H& g) const 
+                 const H& g) const
   { return detail::neighbor_bonds_wrap(v, g); }
   template<class H>
   std::pair<typename graph_traits<H>::neighbor_iterator,
@@ -406,7 +406,7 @@ public:
   typename graph_traits<H>::site_descriptor
   neighbor(const typename graph_traits<H>::site_descriptor& v,
            typename graph_traits<H>::neighbors_size_type i, const H& g) const
-  { return detail::neighbor_wrap(v, i, g); } 
+  { return detail::neighbor_wrap(v, i, g); }
 
   double parity(const site_descriptor& v) const
   { return parity_map_[v]==0 ? 1. :  parity_map_[v]==1 ? -1. : 0.; }
@@ -428,7 +428,7 @@ public:
 
   //
   // inhomogeneous
-  // 
+  //
 
   bool inhomogeneous() const { return d_.inhomogeneous(); }
   bool inhomogeneous_vertices() const { return d_.inhomogeneous_vertices(); }
@@ -445,14 +445,14 @@ public:
   inhomogeneous_bond_type_map_type inhomogeneous_bond_type_map() const
   { return inhomogeneous_edge_type_map_; }
 
-  type_type inhomogeneous_vertex_type(const vertex_descriptor& v) const 
-  { 
+  type_type inhomogeneous_vertex_type(const vertex_descriptor& v) const
+  {
     return d_.inhomogeneous_vertices() ?
       inhomogeneous_vertex_type_map_[v] : vertex_type_map_[v];
   }
   type_type inhomogeneous_site_type(const site_descriptor& s) const
   { return inhomogeneous_vertex_type(s); }
-  type_type inhomogeneous_edge_type(const edge_descriptor& e) const 
+  type_type inhomogeneous_edge_type(const edge_descriptor& e) const
   {
     return d_.inhomogeneous_edges() ?
       inhomogeneous_edge_type_map_[e] : edge_type_map_[e];
@@ -472,17 +472,17 @@ public:
   void throw_if_xyz_defined(const Parameters& p,
                             const vertex_descriptor&) const
   { alps::throw_if_xyz_defined(p, graph()); }
-  
+
   void throw_if_xyz_defined(const Parameters& p,
                             const edge_descriptor&) const
   { alps::throw_if_xyz_defined(p, graph()); }
-  
+
   Parameters coordinate_as_parameter(const edge_descriptor& e) const
   { return alps::coordinate_as_parameter(graph(), e); }
-  
+
   Parameters coordinate_as_parameter(const vertex_descriptor& v) const
   { return alps::coordinate_as_parameter(graph(), v); }
-  
+
   size_type volume() const { return alps::volume(lattice());}
   const unit_cell_type& unit_cell() const { return alps::unit_cell(lattice());}
   cell_descriptor cell(const offset_type& o) const { return alps::cell(o,lattice());}
@@ -506,11 +506,11 @@ public:
   std::pair<basis_vector_iterator,basis_vector_iterator> reciprocal_basis_vectors() const { return alps::reciprocal_basis_vectors(lattice());}
   vector_type origin(const cell_descriptor& c) const { return alps::origin(c,lattice());}
   vector_type coordinate(const cell_descriptor& c, const vector_type& p) const { return alps::coordinate(c,p,lattice());}
-  vector_type momentum(const vector_type& m) const { return alps::momentum(m,lattice());}  
-  
+  vector_type momentum(const vector_type& m) const { return alps::momentum(m,lattice());}
+
   size_type num_distances() const { return have_lattice_ && !inhomogeneous() ? l_.num_distances() : num_sites()*num_sites(); }
-  
-  std::vector<unsigned int> distance_multiplicities() const 
+
+  std::vector<unsigned int> distance_multiplicities() const
   {
     if (have_lattice_ && !inhomogeneous())
       return l_.distance_multiplicities();
@@ -522,7 +522,7 @@ public:
   {
       return l_.momenta_labels(precision);
   }
-  
+
   std::vector<std::string> distance_labels(int precision = 0) const
   {
     if (have_lattice_ && !inhomogeneous())
@@ -531,16 +531,16 @@ public:
     for (vertex_iterator it1=vertices().first; it1 != vertices().second;++it1)
       for (vertex_iterator it2=vertices().first; it2 != vertices().second;++it2)
         if (have_lattice_)
-          label[int(*it1)*num_vertices()+int(*it2)] = 
-            alps::coordinate_to_string(coordinate(*it1), precision)+" -- " + 
+          label[int(*it1)*num_vertices()+int(*it2)] =
+            alps::coordinate_to_string(coordinate(*it1), precision)+" -- " +
             alps::coordinate_to_string(coordinate(*it2), precision);
         else
           label[int(*it1)*num_vertices()+int(*it2)] =
-            boost::lexical_cast<std::string>(int(*it1)) + " -- " + 
+            boost::lexical_cast<std::string>(int(*it1)) + " -- " +
             boost::lexical_cast<std::string>(int(*it2));
     return label;
   }
-  
+
   std::vector<std::string> site_labels(int precision = 0) const {
     return alps::site_labels(graph(), precision);
   }
@@ -558,7 +558,7 @@ public:
     return distance_lookup_[int(x)][int(y)];
   }
 
-  void calculate_distances() const 
+  void calculate_distances() const
   {
     distance_lookup_.resize(boost::extents[num_sites()][num_sites()]);
     for (vertex_iterator it1=vertices().first; it1 != vertices().second;++it1)
@@ -566,7 +566,7 @@ public:
         distance_lookup_[int(*it1)][int(*it2)]=(have_lattice_ && !inhomogeneous() ? l_.distance(*it1,*it2) : (*it1)*num_sites()+(*it2));
     distances_calculated_=true;
   }
-  
+
   std::vector<std::pair<std::complex<double>,std::vector<std::size_t> > > translations(const vector_type& k) const
   {
     if (have_lattice_&& !inhomogeneous())
@@ -575,7 +575,7 @@ public:
       return std::vector<std::pair<std::complex<double>,std::vector<std::size_t> > >();
   }
 
-  std::vector<int> translation_directions() const 
+  std::vector<int> translation_directions() const
   {
     if (have_lattice_ && !inhomogeneous())
       return l_.translation_directions();
@@ -583,7 +583,7 @@ public:
       return std::vector<int>();
   }
 
-  std::vector<vector_type> translation_momenta() const 
+  std::vector<vector_type> translation_momenta() const
   {
     if (have_lattice_ && !inhomogeneous())
       return l_.translation_momenta();
@@ -591,7 +591,7 @@ public:
       return std::vector<vector_type>();
   }
 
-  
+
 private:
   graph_helper(const graph_helper& o)
    : LatticeLibrary(o),
@@ -609,7 +609,7 @@ private:
     d_.disorder_vertices(graph(),inhomogeneous_vertex_type_map_);
     d_.disorder_edges(graph(),inhomogeneous_edge_type_map_);
   }
-     
+
   const graph_helper& operator=(const graph_helper&) {return *this;}
     graph_type* make_graph(const Parameters& p);
   const graph_type& const_graph() const { return *g_;}
@@ -638,16 +638,16 @@ template <class G>
 G* graph_helper<G>::make_graph(const Parameters& parms)
 {
   std::string name;
-  bool have_graph=false;
-  bool have_lattice=false;
+  bool have_graph = parms.defined("GRAPH");
+  bool have_lattice = parms.defined("LATTICE");
   graph_type* g;
-  
-  if (have_graph = parms.defined("GRAPH"))
-    name = static_cast<std::string>(parms["GRAPH"]);
-  if (have_lattice = parms.defined("LATTICE"))
-    name = static_cast<std::string>(parms["LATTICE"]);
+
   if (have_lattice && have_graph)
     boost::throw_exception(std::runtime_error("both GRAPH and LATTICE were specified"));
+  if (have_graph)
+    name = static_cast<std::string>(parms["GRAPH"]);
+  if (have_lattice)
+    name = static_cast<std::string>(parms["LATTICE"]);
   if (have_lattice && has_lattice(name)) {
     LatticeGraphDescriptor desc(lattice_descriptor(name));
     desc.set_parameters(parms);
@@ -674,7 +674,7 @@ G* graph_helper<G>::make_graph(const Parameters& parms)
     to_delete_=false;
     have_lattice_=true;
   }
-  else{ 
+  else{
     boost::throw_exception(std::runtime_error("could not find graph/lattice specified in parameters"));
     g=NULL;
   }
