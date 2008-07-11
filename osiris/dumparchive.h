@@ -4,7 +4,8 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 1994-2008 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -43,8 +44,9 @@
 #include <boost/archive/detail/common_oarchive.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/version.hpp>
-#include <iostream>
 #include <cstring>
+#include <iostream>
+#include <stdint.h>
 
 namespace alps {
 
@@ -53,17 +55,17 @@ T get(ARCHIVE& ar) { T x; ar >> x; return x;}
 
 // A class to use an Osiris dump as Boost output archive
 
-class odump_archive 
+class odump_archive
  : public boost::archive::detail::common_oarchive<odump_archive>
 {
 public:
-  odump_archive(ODump& d, bool c=true) : 
+  odump_archive(ODump& d, bool c=true) :
 #if (BOOST_VERSION >= 103300)
     boost::archive::detail::common_oarchive<odump_archive>(0),
 #endif
     dump_(d), compatible_(c) {}
 //  template<class T>
-//  odump_archive& operator<<(const T & t) 
+//  odump_archive& operator<<(const T & t)
 //  { boost::serialization::save(* This(), t); return * This(); }
 
   // archives are expected to support this function
@@ -101,7 +103,7 @@ public:
     {
         boost::archive::save(* this->This(), t);
     }
-    // binary files don't include the optional information 
+    // binary files don't include the optional information
     void save_override(const boost::archive::class_id_optional_type & /* t */, int){}
 
     void save_override(const boost::archive::version_type & t, int){
@@ -150,25 +152,25 @@ public:
 #endif
     }
 
-private:    
+private:
   ODump& dump_;
   bool compatible_;
 };
 
-// A class to use an Osiris dump as Boost input archive 
+// A class to use an Osiris dump as Boost input archive
 
-class idump_archive 
+class idump_archive
  : public boost::archive::detail::common_iarchive<idump_archive>
 {
 public:
-  idump_archive(IDump& d, bool c=true) : 
+  idump_archive(IDump& d, bool c=true) :
 #if (BOOST_VERSION >= 103300)
-    boost::archive::detail::common_iarchive<idump_archive>(0), 
+    boost::archive::detail::common_iarchive<idump_archive>(0),
 #endif
     dump_(d), compatible_(c) {}
-  
+
 //  template<class T>
-//  idump_archive& operator>>(T & t) 
+//  idump_archive& operator>>(T & t)
 //  { boost::serialization::load(* This(), t); return * This(); }
 
   // archives are expected to support this function
@@ -201,7 +203,7 @@ public:
   void load (std::string& s) { dump_.read_string(s);}
 
     // intermediate level to support override of operators
-    // fot templates in the absence of partial function 
+    // fot templates in the absence of partial function
     // template ordering
     template<class T>
     void load_override(T & t, BOOST_PFTO int)
@@ -209,12 +211,12 @@ public:
         boost::archive::load(* this->This(), t);
     }
 
-    // binary files don't include the optional information 
+    // binary files don't include the optional information
     void load_override(boost::archive::class_id_optional_type &, int){}
 
     // the following have been overridden to provide specific sizes
     // for these pseudo prmitive types.
-    void load_override(boost::archive::version_type & t, int){ 
+    void load_override(boost::archive::version_type & t, int){
       if (!compatible_) { // upto 255 versions
         uint16_t x;
         * this->This() >> x;
@@ -252,7 +254,7 @@ public:
       }
     }
     void load_override(boost::archive::tracking_type & t, int){
-      if (!compatible_) { 
+      if (!compatible_) {
         char x;
         * this->This() >> x;
         t = (0 != x);
@@ -260,7 +262,7 @@ public:
     }
 
     void load_override(boost::archive::class_name_type & t, int){
-      if (!compatible_) { 
+      if (!compatible_) {
         std::string cn;
         cn.reserve(BOOST_SERIALIZATION_MAX_KEY_SIZE);
         load_override(cn, 0);
@@ -268,13 +270,13 @@ public:
             boost::throw_exception(
                 boost::archive::archive_exception(boost::archive::archive_exception::invalid_class_name)
            );
-        memcpy(t, cn.data(), cn.size()); 
+        memcpy(t, cn.data(), cn.size());
         // .t is a borland tweak
         t.t[cn.size()] = '\0';
       }
     }
 
-private:    
+private:
 
   IDump& dump_;
   bool compatible_;
