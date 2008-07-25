@@ -64,6 +64,8 @@ public:
     return (arg==site_ && basis_.has_operator(name)); 
   }
   
+  typename expression::ParameterEvaluator<T>::Direction direction() const { return super_type::left_to_right; }
+
 private:
   const SiteBasisDescriptor<I>& basis_;
   mutable expression::Term<T> site_ops_;
