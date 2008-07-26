@@ -187,7 +187,7 @@ SiteOperator::matrix(const SiteBasisDescriptor<I>& b,  const Parameters& p) cons
         expression::Term<value_type> term(*tit);
         term.partial_evaluate(evaluator);
         unsigned int j = states.index(evaluator.state());
-        if (is_nonzero(term)) {
+        if (is_nonzero(term) && j < states.size()) {
           if (is_nonzero(mat[i][j].first)) {
             if (mat[i][j].second != evaluator.fermionic()) 
               boost::throw_exception(std::runtime_error("Inconsistent fermionic nature of a matrix element: "
