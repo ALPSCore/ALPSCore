@@ -410,7 +410,7 @@
     <PARAMETER name="t1" default="t'"/>
     <PARAMETER name="V0" default="V"/>
     <PARAMETER name="V1" default="V'"/>
-    <BASIS ref="alternative fermion"/>
+    <BASIS ref="fermion"/>
     <SITETERM site="i">
       <PARAMETER name="mu#" default="mu"/>
       <PARAMETER name="U#" default="U"/>
