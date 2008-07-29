@@ -497,7 +497,7 @@ void SimpleObservableEvaluator<T>::output_scalar(std::ostream& out) const
   else
   {
     out << ": " << std::setprecision(6) << mean() << " +/- "
-        << std::setprecision(3) << round(error());
+        << std::setprecision(3) << alps::round(error());
     if(has_tau())
       out << std::setprecision(3) <<  "; tau = " << tau();
     if (converged_errors()==MAYBE_CONVERGED)
@@ -533,7 +533,7 @@ void SimpleObservableEvaluator<T>::output_vector(std::ostream& out) const
         lab=obs_value_traits<result_type>::slice_name(value_,sit);
       out << "Entry[" << lab << "]: "
           << obs_value_traits<result_type>::slice_value(value_,sit) << " +/- "
-          << round(obs_value_traits<result_type>::slice_value(error_,sit));
+          << alps::round(obs_value_traits<result_type>::slice_value(error_,sit));
       if(has_tau())
         out << "; tau = " << obs_value_traits<time_type>::slice_value(tau_,sit);
       if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==MAYBE_CONVERGED)

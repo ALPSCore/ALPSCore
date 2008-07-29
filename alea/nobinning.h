@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2007 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2008 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
@@ -223,7 +223,7 @@ template <class T>
 inline void NoBinning<T>::output_scalar(std::ostream& out) const
 {
   if(count()) {
-    out << ": " << mean() << " +/- " << round(error());
+    out << ": " << mean() << " +/- " << alps::round(error());
     if (error_underflow(mean(),error()))
       out << " Warning: potential error underflow. Errors might be smaller";
     out << std::endl;
@@ -247,7 +247,7 @@ inline void NoBinning<T>::output_vector(std::ostream& out, const L& label) const
         lab=obs_value_traits<result_type>::slice_name(mean_,sit);
       out << "Entry[" << lab << "]: "
           << obs_value_traits<result_type>::slice_value(mean_,sit) << " +/- "
-          << round(obs_value_traits<result_type>::slice_value(error_,sit));
+          << alps::round(obs_value_traits<result_type>::slice_value(error_,sit));
       if (error_underflow(obs_value_traits<result_type>::slice_value(mean_,sit),
                           obs_value_traits<result_type>::slice_value(error_,sit)))
       out << " Warning: potential error underflow. Errors might be smaller";

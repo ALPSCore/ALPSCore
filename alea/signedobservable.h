@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2008 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -44,8 +44,8 @@ namespace alps {
 //-----------------------------------------------------------------------
 
 template <class OBS, class SIGN=double>
-class AbstractSignedObservable 
- : public AbstractSimpleObservable<typename OBS::value_type> 
+class AbstractSignedObservable
+ : public AbstractSimpleObservable<typename OBS::value_type>
 {
   typedef AbstractSimpleObservable<typename OBS::value_type> super_type;
 public:
@@ -63,30 +63,30 @@ public:
   typedef typename obs_value_traits<value_type>::time_type time_type;
   typedef typename obs_value_traits<value_type>::convergence_type convergence_type;
   typedef typename super_type::label_type label_type;
-  
+
   template <class X, class Y> friend class AbstractSignedObservable;
 
   BOOST_STATIC_CONSTANT(int,version=observable_type::version+(1<<24));
 
-  AbstractSignedObservable(const OBS& obs, const std::string& s="Sign") 
-    : base_type(obs), obs_(obs), sign_name_(s), sign_(0) 
+  AbstractSignedObservable(const OBS& obs, const std::string& s="Sign")
+    : base_type(obs), obs_(obs), sign_name_(s), sign_(0)
   {  obs_.rename(s + " * "+super_type::name()); }
 
-  AbstractSignedObservable(const std::string& name="", const std::string& s="Sign", const label_type& l=label_type()) 
+  AbstractSignedObservable(const std::string& name="", const std::string& s="Sign", const label_type& l=label_type())
    : base_type(name,l), obs_(s +" * "+name), sign_name_(s), sign_(0) {}
 
   template <class OBS2>
-  AbstractSignedObservable(const AbstractSignedObservable<OBS2,SIGN>& o) 
-   : base_type(o.name(),o.label()), obs_(o.obs_), sign_name_(o.sign_name_), sign_(o.sign_) {}  
+  AbstractSignedObservable(const AbstractSignedObservable<OBS2,SIGN>& o)
+   : base_type(o.name(),o.label()), obs_(o.obs_), sign_name_(o.sign_name_), sign_(o.sign_) {}
 
   template <class ARG>
-  AbstractSignedObservable(const std::string& name,const ARG& arg, const label_type& l=label_type()) 
+  AbstractSignedObservable(const std::string& name,const ARG& arg, const label_type& l=label_type())
    : base_type(name,l), obs_("Sign * "+name,arg), sign_name_("Sign"), sign_(0) {}
-  
+
   template <class ARG>
-  AbstractSignedObservable(const std::string& name,std::string& s, const ARG& arg, const label_type& l=label_type()) 
+  AbstractSignedObservable(const std::string& name,std::string& s, const ARG& arg, const label_type& l=label_type())
    : base_type(name,l), obs_(s + " * "+name,arg), sign_name_(s), sign_(0) {}
-   
+
   ~AbstractSignedObservable() {}
 
   uint32_t version_id() const { return version;}
@@ -94,9 +94,9 @@ public:
   ALPS_DUMMY_VOID compact() { obs_.compact(); ALPS_RETURN_VOID; }
   void rename(const std::string& newname) { rename(newname); obs_.rename(sign_name_ + " * "+newname);}
   ALPS_DUMMY_VOID reset(bool forthermalization) { obs_.reset(forthermalization); ALPS_RETURN_VOID; }
-  ALPS_DUMMY_VOID output(std::ostream& out) const 
-  { 
-    output_helper<obs_value_traits<value_type>::array_valued>::output(*this,out); 
+  ALPS_DUMMY_VOID output(std::ostream& out) const
+  {
+    output_helper<obs_value_traits<value_type>::array_valued>::output(*this,out);
     obs_.output(out); ALPS_RETURN_VOID;
   }
   void output_scalar(std::ostream&) const;
@@ -112,7 +112,7 @@ public:
   result_type mean() const { return make_evaluator().mean();}
   result_type error() const { return make_evaluator().error();}
   convergence_type converged_errors() const { return make_evaluator().converged_errors();}
-  
+
   bool can_set_thermalization() const { return  obs_.can_set_thermalization();}
   void set_thermalization(uint32_t todiscard) { obs_.set_thermalization(todiscard);}
   uint32_t get_thermalization() const { return obs_.get_thermalization();}
@@ -125,10 +125,10 @@ public:
     result.rename(super_type::name());
     return result;
   }
-   
+
   template <class S>
   AbstractSignedObservable<SimpleObservableEvaluator<typename obs_value_slice<value_type,S>::value_type>,SIGN>
-    slice(S s, const std::string& newname="") const 
+    slice(S s, const std::string& newname="") const
   {
     AbstractSignedObservable<SimpleObservableEvaluator<typename obs_value_slice<value_type,S>::value_type>,SIGN> result(super_type::name());
     result.sign_=sign_;
@@ -148,7 +148,7 @@ public:
   void save(ODump& dump) const;
   void load(IDump& dump);
 #endif
-  
+
   Observable* clone() const {return new AbstractSignedObservable<OBS,SIGN>(*this);}
 
   bool is_signed() const { return true;}
@@ -158,20 +158,20 @@ public:
   const Observable& sign() const;
   const std::string sign_name() const { return sign_name_;}
   const Observable& signed_observable() const { return obs_;}
-  
+
   uint32_t number_of_runs() const { return obs_.number_of_runs();}
   Observable* get_run(uint32_t) const;
 
 protected:
-  Observable* convert_mergeable() const 
+  Observable* convert_mergeable() const
   { return new AbstractSignedObservable<SimpleObservableEvaluator<value_type>,SIGN>(*this);}
-  
+
   void write_more_xml(oxstream& oxs, slice_iterator it) const;
 
   void merge(const Observable& o) { obs_.merge(o.signed_observable());}
   bool can_merge() const { return obs_.can_merge();}
   bool can_merge(const Observable& o) const { return obs_.can_merge(o.signed_observable());}
-  
+
   observable_type obs_;
   std::string sign_name_;
   const Observable* sign_;
@@ -186,8 +186,8 @@ protected:
 //-----------------------------------------------------------------------
 
 template <class OBS, class SIGN=double>
-class SignedObservable 
- : public AbstractSignedObservable<OBS,SIGN>, 
+class SignedObservable
+ : public AbstractSignedObservable<OBS,SIGN>,
    public RecordableObservable<typename OBS::value_type,SIGN>
 {
   typedef AbstractSignedObservable<OBS,SIGN> super_type;
@@ -203,18 +203,18 @@ public:
   typedef typename super_type::label_type label_type;
 
   SignedObservable(const OBS& obs, const std::string& s="Sign") : base_type(obs,s) {}
-  SignedObservable(const std::string& name="", const std::string& s="Sign", const label_type& l=label_type()) 
+  SignedObservable(const std::string& name="", const std::string& s="Sign", const label_type& l=label_type())
    : base_type(name,s,l) {}
   template <class ARG>
-  SignedObservable(const std::string& name,const ARG& arg, const label_type& l=label_type()) 
+  SignedObservable(const std::string& name,const ARG& arg, const label_type& l=label_type())
    : base_type(name,arg,l) {}
   template <class ARG>
-  SignedObservable(const std::string& name,std::string& s, const ARG& arg, const label_type& l=label_type()) 
+  SignedObservable(const std::string& name,std::string& s, const ARG& arg, const label_type& l=label_type())
    : base_type(name,s,arg,l) {}
   ~SignedObservable() {}
 
   Observable* clone() const {return new SignedObservable<OBS,SIGN>(*this);}
-   
+
   void operator<<(const value_type& x) { super_type::obs_ << x;}
   void add(const value_type& x) { operator<<(x);}
   void add(const value_type& x, sign_type s) { add(x*static_cast<element_type>(s));}
@@ -229,7 +229,7 @@ public:
 //-----------------------------------------------------------------------
 
 template <class OBS>
-boost::shared_ptr<Observable> make_observable(const OBS& obs, bool issigned=false) 
+boost::shared_ptr<Observable> make_observable(const OBS& obs, bool issigned=false)
 {
   if (issigned)
     return boost::shared_ptr<Observable>(new SignedObservable<OBS,double>(obs));
@@ -238,7 +238,7 @@ boost::shared_ptr<Observable> make_observable(const OBS& obs, bool issigned=fals
 }
 
 template <class OBS, class SIGN>
-boost::shared_ptr<Observable>  make_observable(const OBS& obs, const std::string& s, SIGN, bool issigned=true) 
+boost::shared_ptr<Observable>  make_observable(const OBS& obs, const std::string& s, SIGN, bool issigned=true)
 {
   if (issigned)
     return boost::shared_ptr<Observable>(new SignedObservable<OBS,SIGN>(obs,s));
@@ -261,8 +261,8 @@ const Observable& AbstractSignedObservable<OBS,SIGN>::sign() const
 }
 
 template <class OBS, class SIGN>
-void AbstractSignedObservable<OBS,SIGN>::set_sign(const Observable& sign) 
-{ 
+void AbstractSignedObservable<OBS,SIGN>::set_sign(const Observable& sign)
+{
   if (sign_name_.empty())
       sign_name_=sign.name();
   else
@@ -299,7 +299,7 @@ void AbstractSignedObservable<OBS,SIGN>::write_more_xml(oxstream& oxs, slice_ite
 }
 
 template <class OBS, class SIGN>
-Observable* AbstractSignedObservable<OBS,SIGN>::get_run(uint32_t n) const 
+Observable* AbstractSignedObservable<OBS,SIGN>::get_run(uint32_t n) const
 {
   AbstractSignedObservable* result = new AbstractSignedObservable(super_type::name());
   result->sign_=sign_;
@@ -317,7 +317,7 @@ void AbstractSignedObservable<OBS,SIGN>::output_scalar(std::ostream& out) const
   if(count()==0)
     out << " no measurements.\n";
   else {
-    out << ": " << mean() << " +/- " << round(error());
+    out << ": " << mean() << " +/- " << alps::round(error());
     if (!sign_name_.empty())
       out << "; sign in observable \"" << sign_name_ << "\"";
     if (converged_errors()==MAYBE_CONVERGED)
@@ -352,9 +352,9 @@ void AbstractSignedObservable<OBS,SIGN>::output_vector(std::ostream& out) const
       std::string lab=obs_value_traits<label_type>::slice_value(super_type::label(),it2);
       if (lab=="")
         lab=obs_value_traits<result_type>::slice_name(value_,sit);
-      out << "Entry[" <<lab << "]: " 
-          << obs_value_traits<result_type>::slice_value(value_,sit) << " +/- " 
-          << round(obs_value_traits<result_type>::slice_value(error_,sit));
+      out << "Entry[" <<lab << "]: "
+          << obs_value_traits<result_type>::slice_value(value_,sit) << " +/- "
+          << alps::round(obs_value_traits<result_type>::slice_value(error_,sit));
       if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==MAYBE_CONVERGED)
         out << " WARNING: check error convergence";
       if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==NOT_CONVERGED)
