@@ -53,29 +53,37 @@ class RealHistogramObservableXMLHandler;
 template <class T>
 class HistogramObservable : public Observable, public RecordableObservable<T>
 {
-typedef uint32_t integer_type;
+  typedef uint32_t integer_type;
 public:
   friend class RealHistogramObservableXMLHandler;
-  enum { version=type_traits<T>::type_tag+(type_traits<integer_type>::type_tag << 8) + (2<<16)};
+  typedef integer_type value_type;
+  typedef T range_type;
+  typedef uint64_t count_type;
+  typedef typename std::vector<integer_type>::const_iterator const_iterator;
+  typedef typename std::vector<integer_type>::const_reverse_iterator const_reverse_iterator;
+  typedef typename std::vector<integer_type>::size_type size_type;
+
+  BOOST_STATIC_CONSTANT(uint32_t, version = type_traits<T>::type_tag
+    + (type_traits<integer_type>::type_tag << 8) + (2<<16));
+
   HistogramObservable(const std::string& n="");
   HistogramObservable(const std::string& n, T min, T max, T stepsize=1);
+  virtual ~HistogramObservable() {}
+
   void set_range(T min, T max, T stepsize=1);
   virtual Observable* clone() const {return new HistogramObservable<T>(*this);}
   virtual ALPS_DUMMY_VOID reset(bool forthermalization=false);
   virtual ALPS_DUMMY_VOID output(std::ostream&) const;
 
-  void my_output() const;
-
 #ifndef ALPS_WITHOUT_OSIRIS
-  virtual uint32_t version_id() const { return version;}
+  virtual uint32_t version_id() const { return version; }
   virtual void save(ODump& dump) const;
   virtual void load(IDump& dump);
 #endif
 
-
   // thermalization support
   virtual void set_thermalization(uint32_t) {}
-  virtual uint32_t get_thermalization() const {return is_thermalized() ? thermalcount_ : count_; }
+  virtual uint32_t get_thermalization() const { return is_thermalized() ? thermalcount_ : count_; }
   virtual bool can_set_thermalization() const {return false;}
   virtual bool is_thermalized() const { return thermalized_; }
 
@@ -86,11 +94,6 @@ public:
 
   // forward a few things from container
 
-  typedef integer_type value_type;
-  typedef T range_type;
-  typedef typename std::vector<integer_type>::const_iterator const_iterator;
-  typedef typename std::vector<integer_type>::const_reverse_iterator const_reverse_iterator;
-  typedef typename std::vector<integer_type>::size_type size_type;
   const_iterator begin() const { return histogram_.begin();}
   const_iterator rbegin() const { return histogram_.rbegin();}
   const_iterator end() const { return histogram_.end();}
@@ -110,7 +113,7 @@ public:
 
   ALPS_DUMMY_VOID compact () {};
 
-  inline uint64_t count() const { return is_thermalized() ? count_ : 0;}
+  inline count_type count() const { return is_thermalized() ? count_ : 0; }
   // inline void set_count(uint32_t h) {count_=h;}
   inline range_type stepsize() const {return stepsize_;}
   inline range_type max() const {return max_;}
@@ -134,7 +137,7 @@ private:
 
 protected:
   mutable std::vector<value_type> histogram_;
-  mutable uint64_t count_;
+  mutable count_type count_;
   mutable bool thermalized_;
 };
 
@@ -189,13 +192,6 @@ void HistogramObservable<T>::write_xml(oxstream& oxs, const boost::filesystem::p
     }
     oxs << end_tag;
   }
-}
-
-template <class T>
-void HistogramObservable<T>::my_output() const
-{
-        std::cout<<"*** DEBUG: "<<name()<<std::endl;
-        std::cout<<"***      : "<<count()<<std::endl;
 }
 
 template <class T>

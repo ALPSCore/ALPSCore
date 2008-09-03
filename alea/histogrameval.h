@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2007 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2008 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Fabian Stoeckli <fabstoec@phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
@@ -51,112 +51,116 @@
 namespace alps {
 
 template <class T>
-class HistogramObservableEvaluator:public HistogramObservable<T>
-  {
-     typedef uint32_t integer_type;
-     typedef HistogramObservable<T> supertype;
-    public:
-     template <class X>
-     friend class HistogramObservableEvaluator;
-     typedef integer_type value_type;
-     typedef T range_type;
-     typedef uint64_t count_type;
+class HistogramObservableEvaluator : public HistogramObservable<T>
+{
+  typedef uint32_t integer_type;
+  typedef HistogramObservable<T> supertype;
+public:
+  template <class X>
+  friend class HistogramObservableEvaluator;
+  typedef typename supertype::value_type value_type;
+  typedef typename supertype::range_type range_type;
+  typedef typename supertype::count_type count_type;
+  typedef typename std::vector<HistogramObservableData<T> >::iterator iterator;
+  typedef typename std::vector<HistogramObservableData<T> >::const_iterator const_iterator;
 
-     //constructors
-     HistogramObservableEvaluator(const std::string& n="");
-     HistogramObservableEvaluator(const char* n);
-     HistogramObservableEvaluator(const HistogramObservableEvaluator& eval);
-     HistogramObservableEvaluator(const Observable& obs,const std::string&);
-     HistogramObservableEvaluator(const Observable&);
-     HistogramObservableEvaluator(const std::string& n, std::istream&, const XMLTag&);
+  BOOST_STATIC_CONSTANT(uint32_t, version = type_traits<T>::type_tag
+    + (type_traits<integer_type>::type_tag << 8) + (6<<16));
 
-     //assigning an observable
-     const HistogramObservableEvaluator<T>& operator=(const HistogramObservableEvaluator<T>& eval);
-     const HistogramObservableEvaluator<T>& operator=(const HistogramObservable<T>& obs);
+  //constructors
+  HistogramObservableEvaluator(const std::string& n="");
+  HistogramObservableEvaluator(const char* n);
+  HistogramObservableEvaluator(const HistogramObservableEvaluator& eval);
+  HistogramObservableEvaluator(const Observable& obs,const std::string&);
+  HistogramObservableEvaluator(const Observable&);
+  HistogramObservableEvaluator(const std::string& n, std::istream&, const XMLTag&);
+  virtual ~HistogramObservableEvaluator() {}
 
-     //add an observable
-     HistogramObservableEvaluator<T>& operator<<(const HistogramObservable<T>& obs)
-     { merge(obs); return *this; }
+  //assigning an observable
+  const HistogramObservableEvaluator<T>& operator=(const HistogramObservableEvaluator<T>& eval);
+  const HistogramObservableEvaluator<T>& operator=(const HistogramObservable<T>& obs);
 
-     void rename(const std::string& n)
-     {
-       Observable::rename(n);
-       automatic_naming_ = false;
-     }
+  //add an observable
+  HistogramObservableEvaluator<T>& operator<<(const HistogramObservable<T>& obs) {
+    merge(obs); return *this;
+  }
 
-     void rename(const std::string n, bool a)
-     {
-       Observable::rename(n);
-       automatic_naming_=a;
-     }
-     ALPS_DUMMY_VOID reset(bool=false);
+  void rename(const std::string& n) {
+    Observable::rename(n);
+    automatic_naming_ = false;
+  }
 
-     value_type max() const {collect(); return all_.max(); }
-     value_type min() const {collect(); return all_.min(); }
-     value_type operator[](int i) const { collect(); return all_[i]; }
+  void rename(const std::string n, bool a) {
+    Observable::rename(n);
+    automatic_naming_=a;
+  }
+  ALPS_DUMMY_VOID reset(bool=false);
 
-     count_type count() const {collect(); return all_.count(); }
+  value_type max() const {collect(); return all_.max(); }
+  value_type min() const {collect(); return all_.min(); }
+  value_type operator[](int i) const { collect(); return all_[i]; }
 
-     Observable* clone() const {
-       HistogramObservableEvaluator<T>* my_eval =
-         new HistogramObservableEvaluator<T>(*this);
-       return my_eval;
-     }
+  count_type count() const {collect(); return all_.count(); }
 
-     void set_thermalization(uint32_t todiscard);
-     uint32_t get_thermalization() const { collect(); return all_.get_thermalization(); }
-     bool can_set_thermalization() const { collect(); return all_.can_set_thermalization(); }
+  Observable* clone() const {
+    HistogramObservableEvaluator<T>* my_eval = new HistogramObservableEvaluator<T>(*this);
+    return my_eval;
+  }
 
-     uint32_t number_of_runs() const;
-     Observable* get_run(uint32_t) const;
+  void set_thermalization(uint32_t todiscard);
+  uint32_t get_thermalization() const { collect(); return all_.get_thermalization(); }
+  bool can_set_thermalization() const { collect(); return all_.can_set_thermalization(); }
 
-     ALPS_DUMMY_VOID compact();
+  uint32_t number_of_runs() const;
+  Observable* get_run(uint32_t) const;
 
-     ALPS_DUMMY_VOID output(std::ostream&) const;
-     void output_histogram(std::ostream&) const;
+  ALPS_DUMMY_VOID compact();
 
-     void operator<<(const HistogramObservableData<T>& obs);
+  ALPS_DUMMY_VOID output(std::ostream&) const;
+  void output_histogram(std::ostream&) const;
+
+  void operator<<(const HistogramObservableData<T>& obs);
 
 #ifndef ALPS_WITHOUT_OSIRIS
-     void save(ODump& dump) const;
-     void load(IDump& dump);
+  virtual uint32_t version_id() const { return version; }
+  virtual void save(ODump& dump) const;
+  virtual void load(IDump& dump);
 #endif
 
-     void merge(const Observable&);
-     bool can_merge() const {return true;}
-     bool can_merge(const Observable&) const;
-     Observable* convert_mergeable() const {return clone();}
-     HistogramObservableEvaluator<T> make_evaluator() const { return *this;}
+  void merge(const Observable&);
+  bool can_merge() const { return true; }
+  bool can_merge(const Observable&) const;
+  Observable* convert_mergeable() const { return clone(); }
+  HistogramObservableEvaluator<T> make_evaluator() const { return *this; }
 
-     private:
-     typedef typename std::vector<HistogramObservableData<T> >::iterator iterator;
-     typedef typename std::vector<HistogramObservableData<T> >::const_iterator const_iterator;
-     void collect() const;
+private:
+  void collect() const;
 
-     //?   mutable bool valid_;
-     bool automatic_naming_;
-     std::vector<HistogramObservableData<T> > runs_;
-     mutable HistogramObservableData<T> all_;
-  };
+  //?   mutable bool valid_;
+  bool automatic_naming_;
+  std::vector<HistogramObservableData<T> > runs_;
+  mutable HistogramObservableData<T> all_;
+};
 
-typedef HistogramObservableEvaluator<double> HistogramObsevaluator;
- //operations???
+typedef HistogramObservableEvaluator<int32_t> IntHistogramObsevaluator;
+typedef HistogramObservableEvaluator<double> RealHistogramObsevaluator;
 
 #ifndef ALPS_WITHOUT_OSIRIS
 
- template <class T>
-   inline void HistogramObservableEvaluator<T>::save(ODump& dump) const
-   {
-     Observable::save(dump);
-     dump << runs_ << all_;
-   }
+template <class T>
+inline void HistogramObservableEvaluator<T>::save(ODump& dump) const
+{
+  std::cerr << "saving HistogramObservableEvaluator with version_id = " << this->version_id() << std::endl; ////
+  Observable::save(dump);
+  dump << runs_ << all_;
+}
 
- template <class T>
-   inline void HistogramObservableEvaluator<T>::load(IDump& dump)
-   {
-     Observable::load(dump);
-     dump >> runs_ >> all_;
-   }
+template <class T>
+inline void HistogramObservableEvaluator<T>::load(IDump& dump)
+{
+  Observable::load(dump);
+  dump >> runs_ >> all_;
+}
 
 #endif
 
@@ -172,7 +176,7 @@ inline void HistogramObservableEvaluator<T>::collect() const
 }
 
 template <class T>
-inline const HistogramObservableEvaluator<T>&  HistogramObservableEvaluator<T>::operator=(const HistogramObservableEvaluator<T>& eval)
+inline const HistogramObservableEvaluator<T>& HistogramObservableEvaluator<T>::operator=(const HistogramObservableEvaluator<T>& eval)
 {
   runs_ = eval.runs_;
   all_ = eval.all_;

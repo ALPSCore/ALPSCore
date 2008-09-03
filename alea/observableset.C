@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2007 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2008 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -86,6 +86,8 @@ ObservableFactory::ObservableFactory()
   register_observable<SignedObservable<RealVectorTimeSeriesObservable> >();
   register_observable<IntHistogramObservable>();
   register_observable<RealHistogramObservable>();
+  register_observable<IntHistogramObsevaluator>();
+  register_observable<RealHistogramObsevaluator>();
   //register_observable<SignedObservable<SimpleIntVectorObservable> >();
   //register_observable<SignedObservable<IntVectorObservable> >();
   //register_observable<SignedObservable<IntVectorTimeSeriesObservable> >();
@@ -108,7 +110,7 @@ void ObservableSet::save(ODump& dump) const
   }
 }
 
-void ObservableSet::load(IDump& dump) 
+void ObservableSet::load(IDump& dump)
 {
   uint32_t n(dump);
   for (int i = 0; i < n; ++i) {
@@ -144,14 +146,14 @@ void ObservableSet::set_sign(const std::string& sign)
 ObservableSet::ObservableSet(const ObservableSet& m)
   : std::map<std::string,Observable*>()
 {
-  for (const_iterator it=m.begin();it!=m.end();++it) 
+  for (const_iterator it = m.begin(); it != m.end(); ++it)
     addObservable(it->second->clone());
 }
 
 ObservableSet& ObservableSet::operator=(const ObservableSet& m)
 {
   do_for_all(detail::deleteit);
-  erase(begin(),end());  
+  erase(begin(), end());
   for (const_iterator it = m.begin(); it != m.end(); ++it)
     addObservable(it->second->clone());
   return *this;
@@ -162,18 +164,18 @@ ObservableSet::~ObservableSet()
   do_for_all(detail::deleteit);
 }
 
-Observable& ObservableSet::operator[](const std::string& name) 
+Observable& ObservableSet::operator[](const std::string& name)
 {
   base_type::iterator it = base_type::find(name);
-  if(it == base_type::end()) 
+  if(it == base_type::end())
     boost::throw_exception(std::out_of_range("No Observable found with the name: "+name));
   return *((*it).second);
 }
 
-const Observable& ObservableSet::operator[](const std::string& name) const 
+const Observable& ObservableSet::operator[](const std::string& name) const
 {
   base_type::const_iterator it = base_type::find(name);
-  if(it == base_type::end()) 
+  if(it == base_type::end())
     boost::throw_exception(std::out_of_range("No Observable found with the name: "+name));
   return *((*it).second);
 }
@@ -197,17 +199,17 @@ void ObservableSet::addObservable(Observable* obs)
   if(has(obs->name()))
     removeObservable(obs->name());
   base_type::operator[](obs->name())= obs;
-  
+
   // insert into sign list if signed and set sign if possible
   if(obs->is_signed())
   {
     signs_.insert(std::make_pair(obs->sign_name(),obs->name()));
-          
+
     // set sign if possible
     if(has(obs->sign_name()))
       obs->set_sign((*this)[obs->sign_name()]);
   }
-  
+
   // set where this is sign
   for (signmap::iterator it=signs_.lower_bound(obs->name());
        it != signs_.upper_bound(obs->name()); ++it)
@@ -220,17 +222,17 @@ void ObservableSet::addObservable(const Observable& obs)
   addObservable(obs.clone());
 }
 
-void ObservableSet::removeObservable(const std::string& name) 
+void ObservableSet::removeObservable(const std::string& name)
 {
   base_type::iterator it=base_type::find(name);
-  if(it==base_type::end()) 
+  if (it == base_type::end())
     boost::throw_exception(std::out_of_range("No Observable found with the name: "+name));
 
   // delete where this is sign
   for (signmap::iterator is=signs_.lower_bound(name);
     is != signs_.upper_bound(name); ++is)
     (*this)[is->second].clear_sign();
-  
+
   if(it->second->is_signed())
   {
     // remove its sign entry
@@ -239,11 +241,11 @@ void ObservableSet::removeObservable(const std::string& name)
       if(is->second == name)
         signs_.erase(is);
   }
-  
+
 #ifndef ALPS_NO_DELETE
   delete it->second;
 #endif
-  erase(it);  
+  erase(it);
 }
 
 bool ObservableSet::can_set_thermalization_all() const
@@ -262,7 +264,7 @@ bool ObservableSet::can_set_thermalization_any() const
   return can;
 }
 
-void ObservableSet::set_thermalization(uint32_t n) 
+void ObservableSet::set_thermalization(uint32_t n)
 {
   for (iterator it=begin(); it !=end(); ++it)
     if(it->second->can_set_thermalization())
@@ -381,8 +383,8 @@ void ObservableSet::clear()
 ObsValueXMLHandler::ObsValueXMLHandler(const std::string& basename, double& val,
    const std::string& attr) :
   XMLHandlerBase(basename), value_(val), attr_(attr), started_(false) {}
-    
-void ObsValueXMLHandler::start_element(const std::string& name, const XMLAttributes& attributes, 
+
+void ObsValueXMLHandler::start_element(const std::string& name, const XMLAttributes& attributes,
   xml::tag_type type) {
   if (type == xml::element) {
     if (name != basename())
@@ -394,7 +396,7 @@ void ObsValueXMLHandler::start_element(const std::string& name, const XMLAttribu
     if (!attr_.empty()) {
       if (!attributes.defined(attr_))
         boost::throw_exception(std::runtime_error(
-          "ObsValueXMLHandler::start_element: attribute \"" + attr_ + 
+          "ObsValueXMLHandler::start_element: attribute \"" + attr_ +
           "\" not defined in <" + name + "> tag"));
       value_ = text_to_double(attributes[attr_]);
     }
@@ -417,7 +419,7 @@ void ObsValueXMLHandler::end_element(const std::string& name, xml::tag_type type
     started_ = false;
   }
 }
-    
+
 void ObsValueXMLHandler::text(const std::string& text) {
   if (attr_.empty()) buffer_ += text;
 }
@@ -437,7 +439,7 @@ void RealObsevaluatorValueXMLHandler::start_element(std::string const& /* name *
     method_ = attributes["method"];
   else
     method_ = "";
-  conv_ = (attributes["converged"] == "no" ? NOT_CONVERGED : 
+  conv_ = (attributes["converged"] == "no" ? NOT_CONVERGED :
            attributes["converged"] == "maybe" ? MAYBE_CONVERGED : CONVERGED);
   found_value_ = false;
 }
