@@ -150,7 +150,6 @@ typedef HistogramObservableEvaluator<double> RealHistogramObsevaluator;
 template <class T>
 inline void HistogramObservableEvaluator<T>::save(ODump& dump) const
 {
-  std::cerr << "saving HistogramObservableEvaluator with version_id = " << this->version_id() << std::endl; ////
   Observable::save(dump);
   dump << runs_ << all_;
 }
