@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1999-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1999-2008 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -40,9 +40,9 @@
 #include <alps/config.h>
 #include <alps/typetraits.h>
 #include <boost/call_traits.hpp>
+#include <boost/numeric/conversion/converter.hpp>
 #include <boost/type_traits.hpp>
 #include <boost/utility/enable_if.hpp>
-
 #include <algorithm>
 #include <complex>
 #include <cmath>
@@ -74,16 +74,16 @@ inline std::size_t binomial(std::size_t l, std::size_t n)
   return std::size_t(nominator/denominator+0.1);
 }
 
-/// \brief calculate the square of the absolute value. 
+/// \brief calculate the square of the absolute value.
 /// It is optimized by specialization for complex numbers.
 /// \return the square of the absolute value of the argument
 template <class T>
 inline typename type_traits<T>::norm_t abs2(T x, typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0) {
-  return x * x;        
+  return x * x;
 }
 template <class T>
 inline typename type_traits<T>::norm_t abs2(const T& x, typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0) {
-  return std::abs(x)*std::abs(x);        
+  return std::abs(x)*std::abs(x);
 }
 
 template <class T>
@@ -358,7 +358,7 @@ struct round_helper<N, std::complex<T> >
 } // end namespace detail
 
 template<unsigned int N, class T>
-inline T round(const T& x, 
+inline T round(const T& x,
   typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0)
 { return detail::round_helper<N, T>::result(x); }
 
@@ -367,7 +367,7 @@ inline T round(T x,
   typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0)
 { return is_zero(x) ? T(0) : x; }
 template<class T>
-inline T round(const T& x, 
+inline T round(const T& x,
   typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0)
 { return x; }
 template<class T>
@@ -432,6 +432,22 @@ inline bool is_negative(unsigned char) { return false; }
 inline bool is_negative(unsigned short) { return false; }
 inline bool is_negative(unsigned int) { return false; }
 inline bool is_negative(unsigned long) { return false; }
+
+//
+// double2int
+//
+
+/// \brief rounds a floating point value to the nearest integer
+/// ex) double2int(3.6) -> 3
+///     double2int(1.2) -> 1
+///     duoble2int(-0.7) -> -1 (!= int(-0.7 + 0.5))
+///
+/// \return nearest integer of the input
+inline int double2int(double in) {
+  typedef boost::numeric::converter<int, double, boost::numeric::conversion_traits<int, double>,
+    boost::numeric::def_overflow_handler, boost::numeric::RoundEven<double> > converter;
+  return converter::convert(in);
+}
 
 } // end namespace
 
