@@ -108,6 +108,18 @@
 // Define to 1 if you have the HDF5 library
 #undef ALPS_HAVE_HDF5
 
+// Define to 1 if you have the Boost.MPI library
+#undef ALPS_HAVE_BOOST_MPI
+
+// Define to 1 if you have the Boost.Signals library
+#undef ALPS_HAVE_BOOST_SIGNALS
+
+// Define to 1 if you have the Boost.ThreadMPI library
+#undef ALPS_HAVE_BOOST_THREAD
+
+// Define to 1 if you have wchar support in Boost.Regex and Boost.Serialization
+#undef ALPS_HAVE_BOOST_WCHAR
+
 //
 // BLAS and LAPACK
 //
