@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2008 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -58,7 +58,7 @@ public:
   Parameter() : key_(), value_() {}
 /// \brief a parameter with a name and value.
   ///
-  /// Arbitrary types can be stored. The StringValue constructor will convert 
+  /// Arbitrary types can be stored. The StringValue constructor will convert
   /// them to a string using boost::lexical_cast
   template<class U>
   Parameter(const key_type& k, const U& v) : key_(k), value_(v) {}
@@ -71,7 +71,7 @@ public:
 
   /// replace '${FOO}' with the the content of environment variable FOO
   void replace_envvar();
-  
+
   /// returns the key (parameter name)
   key_type& key() { return key_; }
   /// returns the key (parameter name)
@@ -83,8 +83,12 @@ public:
 
   /// support for Boost serialization
   template<class Archive>
-  void serialize(Archive & ar, const unsigned int) { ar & key_ & value_; }
-  
+  void serialize(Archive& ar, const unsigned int) {
+    std::string v = static_cast<std::string>(value_);
+    ar & key_ & v;
+    value_ = v;
+  }
+
 private:
   key_type key_;
   value_type value_;
@@ -124,7 +128,7 @@ inline alps::IDump& operator>>(alps::IDump& id, alps::Parameter& p) {
 namespace alps {
 #endif
 
-/// \brief XML output of a parameter value 
+/// \brief XML output of a parameter value
 ///
 /// follows the schema on http://xml.comp-phys.org/
 inline alps::oxstream& operator<<(alps::oxstream& oxs, const alps::Parameter& parameter)

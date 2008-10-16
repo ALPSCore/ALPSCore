@@ -36,10 +36,11 @@
 #include <alps/parser/parser.h>
 #include <alps/xml.h>
 #include <boost/foreach.hpp>
-#include <boost/serialization/collections_save_imp.hpp>
-#include <boost/serialization/collections_load_imp.hpp>
-#include <boost/serialization/split_member.hpp>
-#include <boost/serialization/string.hpp>
+// #include <boost/serialization/collections_save_imp.hpp>
+// #include <boost/serialization/collections_load_imp.hpp>
+// #include <boost/serialization/split_member.hpp>
+#include <boost/serialization/list.hpp>
+// #include <boost/serialization/string.hpp>
 #include <boost/throw_exception.hpp>
 #include <list>
 #include <map>
@@ -117,6 +118,9 @@ public:
   void clear() { list_.clear(); map_.clear(); }
   /// the number of parameters
   size_type size() const { return list_.size(); }
+
+  /// returns true if size == 0
+  bool empty() const { return map_.empty();}
 
   /// does a parameter with the given name exist?
   bool defined(const key_type& k) const { return (map_.find(k) != map_.end());}
@@ -203,19 +207,16 @@ public:
 
   /// support for Boost serialization
   template<class Archive>
-  inline void save(Archive & ar, const unsigned int) {
-    boost::serialization::stl::save_collection<Archive,Parameters>(ar,*this);
+  void save(Archive& ar, const unsigned int) const {
+    ar & list_;
   }
 
   /// support for Boost serialization
   template<class Archive>
-  inline void load(Archive & ar, const unsigned int) {
-    boost::serialization::stl::load_collection<Archive,Parameters,
-      boost::serialization::stl::archive_input_seq<Archive,Parameters>,
-        boost::serialization::stl::no_reserve_imp<Parameters> >(ar, *this);
+  void load(Archive& ar, const unsigned int) {
+    ar & list_;
+    for (iterator itr = list_.begin(); itr != list_.end(); ++itr) map_[itr->key()] = itr;
   }
-
-  bool empty() const { return map_.empty();}
 
 private:
   list_type list_;
