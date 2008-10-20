@@ -9,7 +9,7 @@ TESTS_ENVIRONMENT = $(top_srcdir)/config/run-test $(srcdir)
 
 TESTS_FC = fixed_capacity/fixed_capacity_deque fixed_capacity/fixed_capacity_traits fixed_capacity/fixed_capacity_vector fixed_capacity/test_deque fixed_capacity/test_vector
 TESTS_OSIRIS = osiris/os osiris/sizeof osiris/xdrdump osiris/xdrdump2 osiris/boostdump osiris/boostdump2 osiris/boostdump3 osiris/boostdump4
-TESTS_PARAMETER = parameter/expression parameter/expression2 parameter/flatten parameter/parameter parameter/parameterlist parameter/parameterlist_xml parameter/parameters parameter/parameters_mpi parameter/parameters_xml
+TESTS_PARAMETER = parameter/expression parameter/expression2 parameter/flatten parameter/parameter parameter/parameterlist parameter/parameterlist_xml parameter/parameters parameter/parameters_xml
 if HAVE_BOOST_MPI
 TESTS_PARAMETER += parameter/parameters_mpi
 endif
