@@ -36,11 +36,8 @@
 #include <alps/parser/parser.h>
 #include <alps/xml.h>
 #include <boost/foreach.hpp>
-// #include <boost/serialization/collections_save_imp.hpp>
-// #include <boost/serialization/collections_load_imp.hpp>
-// #include <boost/serialization/split_member.hpp>
 #include <boost/serialization/list.hpp>
-// #include <boost/serialization/string.hpp>
+#include <boost/serialization/split_member.hpp>
 #include <boost/throw_exception.hpp>
 #include <list>
 #include <map>
