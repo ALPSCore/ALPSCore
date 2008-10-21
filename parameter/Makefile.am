@@ -23,7 +23,8 @@ parameters_mpi_SOURCES = parameters_mpi.C
 parameters_mpi_LDFLAGS = $(LDFLAGS_MPI)
 parameters_mpi_LDADD = $(LIBS_MPI)
 
-dist_noinst_DATA = expression.input expression.output expression2.output flatten.input flatten.output parameter.input parameter.output parameterlist.input parameterlist.output parameterlist_xml.input parameterlist_xml.output parameters.input parameters.output parameters_mpi.ip-2 parameters_mpi.op-2 parameters_xml.input parameters_xml.output
+dist_noinst_DATA = expression.input expression.output expression2.output flatten.input flatten.output parameter.input parameter.output parameterlist.input parameterlist.output parameterlist_xml.input parameterlist_xml.output parameters.input parameters.output parameters_xml.input parameters_xml.output
+dist_noinst_DATA += parameters_mpi.ip-2 parameters_mpi.op-2
 
 .PHONY : test tests example examples
 test tests : check

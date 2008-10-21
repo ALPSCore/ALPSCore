@@ -15,9 +15,10 @@ TESTS_PARAMETER += parameter/parameters_mpi
 endif
 TESTS_PARSER = parser/xmlhandler parser/xmlparser parser/xmlstream
 TESTS_ALEA = alea/detailedbinning alea/histogram alea/observableset_xml alea/signed alea/simpleobseval alea/testobservableset alea/vectorobseval
-TESTS_LATTICE = lattice/example1 lattice/example2 lattice/example3 lattice/example4 lattice/example5 lattice/example6 lattice/example7 lattice/example8 lattice/example9 lattice/example10 \
-	lattice/label \
-	lattice/parity
+if HAVE_BOOST_MPI
+# TESTS_ALEA += alea/observableset_mpi
+endif
+TESTS_LATTICE = lattice/example1 lattice/example2 lattice/example3 lattice/example4 lattice/example5 lattice/example6 lattice/example7 lattice/example8 lattice/example9 lattice/example10 lattice/label lattice/parity
 TESTS_MODEL = model/example1 model/example2 model/example3 model/example4 model/example5 model/example6 model/example7 model/example8 model/example9 model/example10 model/example11 model/example12 model/example13 model/example14 model/example15 model/example16 model/example17 model/example18
 
 TESTS = $(TESTS_FC) $(TESTS_OSIRIS) $(TESTS_PARAMETER) $(TESTS_PARSER) $(TESTS_ALEA)
