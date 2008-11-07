@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2008 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -38,8 +38,17 @@
 #include <boost/graph/filtered_graph.hpp>
 #include <boost/graph/undirected_dfs.hpp>
 #include <boost/graph/visitors.hpp>
-#include <boost/spirit/core.hpp>
-#include <boost/spirit/actor.hpp>
+#include <boost/version.hpp>
+#if BOOST_VERSION >= 103600
+# if !defined(BOOST_SPIRIT_USE_OLD_NAMESPACE)
+#  define BOOST_SPIRIT_USE_OLD_NAMESPACE
+# endif
+# include <boost/spirit/include/classic_actor.hpp>
+# include <boost/spirit/include/classic_core.hpp>
+#else
+# include <boost/spirit/actor.hpp>
+# include <boost/spirit/core.hpp>
+#endif
 #include <boost/throw_exception.hpp>
 #include <boost/vector_property_map.hpp>
 #include <boost/detail/workaround.hpp>
@@ -64,13 +73,13 @@ struct parity_traits<parity_t, Graph> {
 
 #if !BOOST_WORKAROUND(__IBMCPP__, <= 800) && !defined(BOOST_NO_INCLASS_MEMBER_INITIALIZATION)
 template<class Graph>
-const typename parity_traits<parity_t, Graph>::value_type 
+const typename parity_traits<parity_t, Graph>::value_type
   parity_traits<parity_t, Graph>::white;
 template<class Graph>
-const typename parity_traits<parity_t, Graph>::value_type 
+const typename parity_traits<parity_t, Graph>::value_type
   parity_traits<parity_t, Graph>::black;
 template<class Graph>
-const typename parity_traits<parity_t, Graph>::value_type 
+const typename parity_traits<parity_t, Graph>::value_type
   parity_traits<parity_t, Graph>::undefined;
 #endif
 
@@ -98,14 +107,14 @@ public:
   void start_vertex(vertex_descriptor s, Graph const&) {
     map_[s] = parity_traits<Parity, Graph>::black;
   }
-  
+
   void tree_edge(edge_descriptor e, Graph const& g) {
     map_[target(e, g)] =
       (map_[source(e, g)] == parity_traits<Parity, Graph>::black ?
        parity_traits<Parity, Graph>::white :
        parity_traits<Parity, Graph>::black);
   }
-  
+
   void back_edge(edge_descriptor e, const Graph& g) const {
     if (map_[source(e, g)] == map_[target(e, g)])
       *bipartite_ = false;
@@ -126,7 +135,7 @@ struct backbone_edges {
   bool operator()(edge_descriptor e) const {
     return backbone->find(get(edge_type_t(), *graph, e)) != backbone->end();
   }
-  const Graph* graph;                       
+  const Graph* graph;
   const std::set<int>* backbone;
 };
 
@@ -141,7 +150,7 @@ struct parity_helper
 template<typename Graph, typename Parity>
 struct parity_helper<Graph, Parity, true>
 {
-  typedef typename property_map<Parity, Graph, 
+  typedef typename property_map<Parity, Graph,
     typename has_property<Parity, Graph>::type>::type map_type;
 
   template<typename G>
@@ -149,7 +158,7 @@ struct parity_helper<Graph, Parity, true>
   {
     typedef typename boost::graph_traits<G>::vertex_iterator vertex_iterator;
     typedef ParityVisitor<G, Parity, map_type> visitor_type;
-    
+
     bool bipartite = true;
     map_type map = boost::get(Parity(), g);
 

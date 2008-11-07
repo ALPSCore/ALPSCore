@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2006 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 2006-2008 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -32,9 +32,19 @@
 
 #include "parameterlist.h"
 #include "parameters_p.h"
-#include <boost/spirit/actor.hpp>
-#include <boost/spirit/core.hpp>
-#include <boost/spirit/utility/confix.hpp>
+#include <boost/version.hpp>
+#if BOOST_VERSION >= 103600
+# if !defined(BOOST_SPIRIT_USE_OLD_NAMESPACE)
+#  define BOOST_SPIRIT_USE_OLD_NAMESPACE
+# endif
+# include <boost/spirit/include/classic_actor.hpp>
+# include <boost/spirit/include/classic_core.hpp>
+# include <boost/spirit/include/classic_confix.hpp>
+#else
+# include <boost/spirit/actor.hpp>
+# include <boost/spirit/core.hpp>
+# include <boost/spirit/utility/confix.hpp>
+#endif
 
 namespace bs = boost::spirit;
 
@@ -63,8 +73,8 @@ struct ParameterListParser : public bs::grammar<ParameterListParser> {
             )
         >> !( bs::str_p("#stop") >> !bs::ch_p(";") >> *bs::eol_p )[bs::increment_a(self.stop)];
     }
-    
-    bs::rule<ScannerT> const& start() const { 
+
+    bs::rule<ScannerT> const& start() const {
       return parameterlist;
     }
   };
@@ -78,13 +88,13 @@ struct ParameterListParser : public bs::grammar<ParameterListParser> {
   mutable bool stop;
 };
 
-/// \brief Implementation handler of the ALPS XML parser for the ParameterList class  
+/// \brief Implementation handler of the ALPS XML parser for the ParameterList class
 class ParameterListXMLHandler : public CompositeXMLHandler
 {
 public:
   ParameterListXMLHandler(ParameterList& list);
 
-protected:  
+protected:
   void start_child(const std::string& name,
                    const XMLAttributes& attributes,
                    xml::tag_type type);
