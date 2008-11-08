@@ -1,0 +1,8 @@
+WORKER = "ising";
+SEED = 2398829;
+LATTICE = "chain lattice"
+L = 16;
+T = 2;
+SWEEPS = 108192;
+THERMALIZATION = SWEEPS/8;
+// SCHEDULER_KEEP_FULL_DUMP = false;

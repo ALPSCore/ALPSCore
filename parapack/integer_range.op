@@ -1,0 +1,41 @@
+Parameters:
+L = 4;
+T = 0.5;
+Test for integer_range<int>:
+parse []: result []
+parse [0:3]: result [0:3]
+parse [3:9]: result [3:9]
+parse [3:9:0]: integer_range: parse error: [3:9:0]
+parse [:3]: result [-2147483648:3]
+parse [-1:]: result [-1:2147483647]
+parse [3]: result [3:3]
+parse 6: result [6:6]
+parse [1/T:L^2]: result [2:16]
+parse [1/T]: result [2:2]
+parse [L:]: result [4:2147483647]
+parse [:L]: result [-2147483648:4]
+parse [2*L]: result [8:8]
+parse exp(L): result [54:54]
+Test for integer_range<unsigned int>:
+parse [0:3]: result [0:3]
+parse [3:9]: result [3:9]
+parse [:3]: result [0:3]
+parse [1:]: result [1:4294967295]
+parse [-3:9]: integer_range: range error
+parse 6: result [6:6]
+initial: [0:5]
+7 is included? 0
+3 is assigned: [3:3]
+8 is included: [3:8]
+7 is included? 1
+initial: [3:2147483647]
+multiplied by 3.5: [10:2147483647]
+multiplied by 2000000000: [2147483647:2147483647]
+multiplied by 0.1: [0:214748364]
+initial: [0:5]
+overlap with [-2:3]: [0:3]
+union with [-2:3]: [-2:5]
+overlap with [-2:10]: [0:5]
+union with [-2:10]: [-2:10]
+overlap with [7:10]: []
+union with [7:10]: no overlap
