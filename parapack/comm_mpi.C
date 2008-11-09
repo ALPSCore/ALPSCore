@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
         std::cout << "rank: " << world.rank()
                   << ", global rank = " << cg.rank() << std::endl;
     else
-      if (cl != MPI_COMM_NULL)
+      if (cl)
         std::cout << "rank: " << world.rank()
                   << ", local rank = " << cl.rank() << std::endl;
       else
