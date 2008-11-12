@@ -29,7 +29,15 @@
 /* $Id$ */
 
 #include <alps/parser/xmlattributes.h>
-#include <boost/spirit/core.hpp>
+#include <boost/version.hpp>
+#if BOOST_VERSION >= 103600
+# if !defined(BOOST_SPIRIT_USE_OLD_NAMESPACE)
+#  define BOOST_SPIRIT_USE_OLD_NAMESPACE
+# endif
+# include <boost/spirit/include/classic_core.hpp>
+#else
+# include <boost/spirit/core.hpp>
+#endif
 
 namespace alps {
   
