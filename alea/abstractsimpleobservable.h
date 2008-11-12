@@ -203,7 +203,7 @@ void AbstractSimpleObservable<T>::write_xml(oxstream& oxs, const boost::filesyst
 }
 
 template <class T>
-#ifdef ALPS_HAVE_HDF5
+#ifdef ALPS_HAVE_HDF5_CPP
 void AbstractSimpleObservable<T>::write_xml_scalar(oxstream& oxs, const boost::filesystem::path& fn_hdf5) const
 #else
 void AbstractSimpleObservable<T>::write_xml_scalar(oxstream& oxs, const boost::filesystem::path&) const
@@ -249,7 +249,7 @@ void AbstractSimpleObservable<T>::write_xml_scalar(oxstream& oxs, const boost::f
       oxs << precision(tau(), 3) << end_tag("AUTOCORR");
     }
 
-#ifdef ALPS_HAVE_HDF5
+#ifdef ALPS_HAVE_HDF5_CPP
     if (!fn_hdf5.empty() && bin_size() == 1) {
       //write tag for timeseries and the hdf5-file
       oxs << start_tag("TIMESERIES") << attribute("format", "HDF5")
@@ -274,7 +274,7 @@ void AbstractSimpleObservable<T>::write_xml_scalar(oxstream& oxs, const boost::f
 }
 
 template <class T>
-#ifdef ALPS_HAVE_HDF5
+#ifdef ALPS_HAVE_HDF5_CPP
 void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, const boost::filesystem::path& fn_hdf5) const
 #else
 void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, const boost::filesystem::path&) const
@@ -345,7 +345,7 @@ void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, const boost::f
             << end_tag("AUTOCORR");
       }
       
-#ifdef ALPS_HAVE_HDF5
+#ifdef ALPS_HAVE_HDF5_CPP
       if(!fn_hdf5.empty() && bin_size() == 1) {
         //write tag for timeseries and the hdf5-file
         oxs << start_tag("TIMESERIES") << attribute("format", "HDF5")

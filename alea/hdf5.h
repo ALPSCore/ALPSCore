@@ -39,7 +39,7 @@
 #include <valarray>
 #endif
 
-#ifdef ALPS_HAVE_HDF5
+#ifdef ALPS_HAVE_HDF5_CPP
 # include <H5Cpp.h>
 using namespace H5;
 
@@ -77,6 +77,6 @@ struct HDF5Traits<std::valarray<T> >
 
 } // end namespace alps
 
-#endif // ALPS_HAVE_HDF5
+#endif // ALPS_HAVE_HDF5_CPP
 
 #endif // ALPS_ALEA_HDF5_H
