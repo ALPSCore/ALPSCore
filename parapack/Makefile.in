@@ -57,6 +57,7 @@ am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
 	$(top_srcdir)/config/ac_cxx_namespaces.m4 \
 	$(top_srcdir)/config/ac_docbook.m4 \
 	$(top_srcdir)/config/ac_fop.m4 $(top_srcdir)/config/ac_hdf5.m4 \
+	$(top_srcdir)/config/ac_hdf5_cpp.m4 \
 	$(top_srcdir)/config/ac_mpi.m4 \
 	$(top_srcdir)/config/ac_lapack.m4 \
 	$(top_srcdir)/config/ac_pthread.m4 \
