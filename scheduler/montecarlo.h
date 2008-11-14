@@ -57,11 +57,12 @@ public:
   void write_xml(const boost::filesystem::path& name, const boost::filesystem::path& osirisname="") const;
   const ObservableSet& get_measurements() const { return measurements;}
   ObservableSet get_compacted_measurements() const;
+  ObservableSet get_and_remove_observable(const std::string& obsname, bool compact=false);
 
   std::string work_phase();
   void run();
   virtual bool is_thermalized() const;
-  bool handle_message(const Process& runmaster,int tag);
+  virtual bool handle_message(const Process& runmaster,int32_t tag);
 protected:
   ObservableSet measurements;
 };
@@ -96,6 +97,11 @@ public:
   static void print_copyright(std::ostream&) {}
   
   ObservableSet get_measurements(bool compact=false) const;
+  
+  ObservableSet get_and_remove_observable(const std::string& obsname, bool compact=false);
+  //Collecting all measurements at once (by get_measurements()) requires to much memory for very large observable sets.
+  //Returns an empty set if the observable does not exist
+  
   MCSimulation& operator<<(const Observable& obs);
   void addObservable(const Observable& obs);
 

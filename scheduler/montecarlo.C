@@ -27,6 +27,7 @@
 *****************************************************************************/
 
 /* $Id$ */
+#include<alps/alea.h>
 
 #include <alps/scheduler/montecarlo.h>
 #include <alps/scheduler/types.h>
@@ -99,14 +100,12 @@ ObservableSet MCSimulation::get_measurements(bool compactit) const
         all_measurements << dynamic_cast<const MCRun*>(runs[i])->get_measurements();
     }
   }
-
   // adding measurements from remote runs:
   if(remote_runs) {
     // broadcast request to all slaves
     OMPDump send;
     send << compactit;
     send.send(where_master,MCMP_get_measurements);
-      
     // collect results
     for (int i=0;i<where_master.size();i++) {
       // receive dump from remote process, abort if error
@@ -122,6 +121,51 @@ ObservableSet MCSimulation::get_measurements(bool compactit) const
   if (compactit)
     all_measurements.compact();
   return all_measurements;
+}
+
+
+ObservableSet MCSimulation::get_and_remove_observable(const std::string& obsname, bool compactit) 
+{
+  ObservableSet obs_set;    
+  ProcessList where_master;
+  int remote_runs=0;
+  // add runs stored locally
+  for (int i=0;i<runs.size();i++) {
+      if(workerstatus[i]==RemoteRun) {
+	if(!runs[i])
+	  boost::throw_exception(std::runtime_error( "run does not exist in MCSimulation::get_measurements"));
+	where_master.push_back( Process(dynamic_cast<const RemoteWorker*>(runs[i])->process()));
+	remote_runs++;
+      }
+      else if(runs[i]) {
+	obs_set << dynamic_cast<MCRun*>(runs[i])->get_and_remove_observable(obsname, compactit);
+      }
+  }
+  // adding measurements from remote runs:
+  if(remote_runs) {
+    // broadcast request to all slaves
+    OMPDump send;
+    send << compactit;
+    send << obsname;
+    send.send(where_master,MCMP_get_observable);
+    // collect results
+    for (int i=0;i<where_master.size();i++) {
+      // receive dump from remote process, abort if error
+      IMPDump receive(MCMP_observable);
+      ObservableSet m;
+      receive >> m;
+      obs_set << m;
+    }
+  }
+  if (measurements.has(obsname)) {
+    obs_set << measurements[obsname];
+    if(measurements[obsname].is_signed())
+      obs_set << measurements[measurements[obsname].sign_name()];
+    measurements.removeObservable(obsname);
+  }
+  if (compactit)
+    obs_set.compact();
+  return obs_set;
 }
 
 
@@ -230,27 +274,50 @@ void MCRun::write_xml(const boost::filesystem::path& name, const boost::filesyst
 }
 
 
-bool MCRun::handle_message(const Process& runmaster,int tag)
+bool MCRun::handle_message(const Process& runmaster,int32_t tag)
 {
   IMPDump message;
   OMPDump dump;
-  switch(tag)
-  {
-    case MCMP_get_measurements:
-      message.receive(runmaster,MCMP_get_measurements);
-      bool compactit;
-      message >> compactit;
-      if (compactit)
-        dump << get_compacted_measurements();
-      else
-        dump << get_measurements();
-      dump.send(runmaster,MCMP_measurements);
-      return true;
-
-    default:
-      return Worker::handle_message(runmaster,tag);
+  ObservableSet m;
+  bool compactit;
+  std::string obsname;
+  switch(tag) {
+  case MCMP_get_measurements:
+    message.receive(runmaster,MCMP_get_measurements);
+    message >> compactit;
+    if (compactit)
+      dump << get_compacted_measurements();
+    else
+      dump << get_measurements();
+    dump.send(runmaster,MCMP_measurements);
+    return true;
+  case MCMP_get_observable:
+    message.receive(runmaster, MCMP_get_observable);
+    message >> compactit;
+    message >> obsname;
+    dump << get_and_remove_observable(obsname, compactit);
+    dump.send(runmaster, MCMP_observable);
+    return true;
+  default:
+    return Worker::handle_message(runmaster,tag);
   }
 }
+  
+
+ObservableSet MCRun::get_and_remove_observable(const std::string& obsname, bool compactit) 
+{
+  ObservableSet obs_set;
+  if (measurements.has(obsname)) {
+    obs_set << measurements[obsname];
+    if(measurements[obsname].is_signed())
+      obs_set << measurements[measurements[obsname].sign_name()];
+    measurements.removeObservable(obsname);
+  }
+  if (compactit)
+    obs_set.compact();
+  return obs_set;
+}
+
 
 ObservableSet MCRun::get_compacted_measurements() const 
 {
