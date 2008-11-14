@@ -346,6 +346,9 @@ int start(int argc, char** argv) {
                 save_tasks(file_out, simname, file_in_str, file_out_str, tasks);
               }
               process.release(msg.group_id);
+            } else if (status->tag() == mcmp_tag::scheduler_halt) {
+              //// 2008-11-14 ST workaround for bug in process_mpi (or boost.MPI ?)
+              break;
             } else {
               std::clog << "Warning: ignoring a message with an unknown tag " << status->tag()
                         << std::endl;

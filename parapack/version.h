@@ -29,10 +29,10 @@
 #define PARAPACK_VERSION_H
 
 /* Define the version of ALPS/parapack */
-#define PARAPACK_VERSION "1.1"
+#define PARAPACK_VERSION "1.2b0"
 
 /* Define the published date of ALPS/parapack */
-#define PARAPACK_DATE "2008/11/08"
+#define PARAPACK_DATE "2008/11/14"
 
 #define PARAPACK_COPYRIGHT \
   "ALPS/parapack version " PARAPACK_VERSION " (" PARAPACK_DATE ")\n" \
