@@ -72,7 +72,7 @@ class AbstractBinning
 #endif
 
   bool can_set_thermalization() const { return false;}
-  bool has_minmax() const { return true;} // for now
+  bool has_minmax() const { return false;}  //disabled - measuring this is too expensive.
   bool has_variance() const { return true;} // for now
   bool is_thermalized() const { return thermalized_;}
   void reset (bool for_thermal) 

@@ -121,14 +121,14 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
 
   bool has_tau() const { collect(); return all_.has_tau(); }
   bool has_variance() const { collect(); return all_.has_variance(); }
-  bool has_minmax() const { collect() ; return all_.has_minmax(); }
-  value_type max() const { collect(); return all_.max(); }
-  value_type min() const { collect(); return all_.min(); }
+  bool has_minmax() const { return false; /*collect() ; return all_.has_minmax(); */} //min / max is no longer supported - too expensive.
+  //value_type max() const { collect(); return all_.max(); }
+  //value_type min() const { collect(); return all_.min(); }
 
   result_type value() const { collect(); return all_.mean(); }
   result_type mean() const { return value(); }
   result_type variance() const { collect(); return all_.variance(); }
-  result_type error() const { collect(); return all_.error(); }
+  result_type error() const {collect(); return all_.error(); }
   convergence_type  converged_errors() const { collect(); return all_.converged_errors(); }
   time_type tau() const { collect(); return all_.tau(); };
 

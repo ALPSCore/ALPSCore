@@ -78,9 +78,9 @@ class NoBinning : public AbstractBinning<T>
 
   uint32_t count() const { return super_type::is_thermalized() ? count_ : 0;}
 
-  bool has_minmax() const { return true;}
-  value_type min() const {return min_;}
-  value_type max() const {return max_;}
+  bool has_minmax() const { return false;}
+  /*value_type min() const {return min_;}
+  value_type max() const {return max_;}*/
 
   uint32_t get_thermalization() const { return super_type::is_thermalized() ? thermal_count_ : count_;}
 
@@ -96,7 +96,7 @@ class NoBinning : public AbstractBinning<T>
     value_type sum2_;      // sum of squared measurements
     uint32_t count_;          // total number of measurements
     uint32_t thermal_count_; // measurements done for thermalization
-    value_type min_,max_;  // minimum and maximum value
+    //value_type min_,max_;  // minimum and maximum value
 };
 
 #ifndef BOOST_NO_INCLASS_MEMBER_INITIALIZATION
@@ -132,8 +132,8 @@ inline void NoBinning<T>::reset(bool forthermalization)
   sum2_=0;
   count_=0;
 
-  min_ = obs_value_traits<T>::max();
-  max_ = -obs_value_traits<T>::max();
+  //min_ = obs_value_traits<T>::max();
+  //max_ = -obs_value_traits<T>::max();
 }
 
 
@@ -157,8 +157,8 @@ void NoBinning<T>::operator<<(const T& x)
   {
     obs_value_traits<T>::resize_same_as(sum_,x);
     obs_value_traits<T>::resize_same_as(sum2_,x);
-    obs_value_traits<T>::resize_same_as(max_,x);
-    obs_value_traits<T>::resize_same_as(min_,x);
+    //obs_value_traits<T>::resize_same_as(max_,x);
+    //obs_value_traits<T>::resize_same_as(min_,x);
   }
 
   if(obs_value_traits<T>::size(x)!=obs_value_traits<T>::size(sum_))
@@ -168,8 +168,8 @@ void NoBinning<T>::operator<<(const T& x)
   sum_+=x;
   sum2_+=y;
 
-  obs_value_traits<T>::check_for_max(max_,x);
-  obs_value_traits<T>::check_for_min(min_,x);
+  //obs_value_traits<T>::check_for_max(max_,x);
+  //obs_value_traits<T>::check_for_min(min_,x);
 
   count_++;
 }
@@ -262,14 +262,20 @@ template <class T>
 inline void NoBinning<T>::save(ODump& dump) const
 {
   AbstractBinning<T>::save(dump);
-  dump << sum_ << sum2_ << count_ << thermal_count_ << min_ << max_;
+  dump << sum_ << sum2_ << count_ << thermal_count_;
 }
 
 template <class T>
 inline void NoBinning<T>::load(IDump& dump)
 {
   AbstractBinning<T>::load(dump);
-  dump >> sum_ >> sum2_ >> count_ >> thermal_count_ >> min_ >> max_;
+  if(dump.version()>=305){
+    dump >> sum_ >> sum2_ >> count_ >> thermal_count_;
+  }else{
+    value_type min_ignored;
+    value_type max_ignored;
+    dump >> sum_ >> sum2_ >> count_ >> thermal_count_ >> min_ignored >> max_ignored;
+  }
 }
 
 #endif
