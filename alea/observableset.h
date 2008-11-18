@@ -233,7 +233,7 @@ class ObservableSet: public std::map<std::string,Observable*>
   void compact();
 
   void write_xml(oxstream& oxs, const boost::filesystem::path& =boost::filesystem::path()) const;
-  void write_hdf5(boost::filesystem::path const &, std::size_t realization=0, std::size_t clone=0);
+  void write_hdf5(boost::filesystem::path const &, std::size_t realization=0, std::size_t clone=0) const;
   void write_xml_with_id(oxstream& oxs, int id,
     const boost::filesystem::path& = boost::filesystem::path()) const;
 

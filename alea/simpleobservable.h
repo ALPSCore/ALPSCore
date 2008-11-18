@@ -119,6 +119,7 @@ public:
   void set_bin_number(count_type n) {b_.set_bin_number(n);}
   const value_type& bin_value(count_type n) const {return b_.bin_value(n);}
   const value_type& bin_value2(count_type n) const {return b_.bin_value2(n);}
+  void write_hdf5(const boost::filesystem::path& fn_hdf, std::size_t realization=0, std::size_t clone=0) const;
   
 #ifndef ALPS_WITHOUT_OSIRIS
   virtual void save(ODump& dump) const;

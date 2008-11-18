@@ -29,54 +29,90 @@
 *****************************************************************************/
 
 /* $Id$ */
-
 #ifndef ALPS_ALEA_HDF5_H
 #define ALPS_ALEA_HDF5_H
 
-#include <alps/config.h>
+#ifdef ALPS_HAVE_MOCASITO
 
-#ifdef ALPS_HAVE_VALARRAY
-#include <valarray>
-#endif
-
-#ifdef ALPS_HAVE_HDF5_CPP
-# include <H5Cpp.h>
-using namespace H5;
-
-namespace alps {
-
-template<class T>
-struct HDF5Traits 
-{
-  static PredType pred_type() 
-  {
-    boost::throw_exception(runtime_error("HDF5Traits not implemented for this type"));
-    return PredType::NATIVE_INT; // dummy return
+///New ALPS hdf5 interface
+#ifdef ALPS_HAVE_HDF5
+#include<hdf5.h>
+#include<alps/alea/observableset.h>
+#include<alps/alea/simpleobservable.h>
+#include<alps/alea/abstractsimpleobservable.h>
+#include<mocasito/src/io/container.hpp>
+#include<mocasito/src/io/hdf5.hpp>
+#include<mocasito/src/io/util.hpp>
+namespace mocasito {
+  namespace io {
+    template<typename E> context<E> & assign(context<E> & c, const alps::ObservableSet &measurements){
+      //For now: no need to write observable set specific information.
+      return c;
+    }
+    template<typename E> context<E> & assign(context<E> & c, const alps::Observable &obs){
+      //For now: no need to write observable specific information.
+      return c;
+    }
+    template<typename E, typename T> context<E> & assign(context<E> & c, const std::valarray<T> &val){
+      c.set(&(val[0]), val.size());
+      return c;
+    }
+    template<typename E, typename T> context<E> & assign(context<E> & c, alps::AbstractSimpleObservable<T> const &obs){
+      assign(c,*((alps::Observable*)&obs)); //dump observable first.
+      (c+"count")=obs.count();
+      (c+"mean/value")=obs.mean();
+      (c+"mean/error")=obs.error();
+      if(obs.has_variance())
+        (c+"mean/variance")=obs.variance();
+      if(obs.has_tau())
+        (c+"mean/tau_int")=obs.tau();
+      (c+"/mean/bins/bin_size")=obs.bin_size();
+      (c+"/mean/bins/number")=obs.bin_number();
+      (c+"/mean/bins2/number")=obs.bin_number2();
+      for(int k=0;k<obs.bin_number();++k){
+        std::stringstream path; path<<"mean/bins/"<<k<<"/value";
+        std::stringstream path2; path2<<"mean/bins2/"<<k<<"/value";
+        (c+path.str()) =obs.bin_value(k);
+        (c+path2.str())=obs.bin_value2(k);
+      }
+      return c;
+    }
+    template<typename E, typename T, typename B> context<E> & assign(context<E> & c, const alps::SimpleObservable<T,B> &obs){
+      assign(c,*((alps::AbstractSimpleObservable<T>*)&obs)); //dump observable first.
+      //For now: no need to write observable specific information.
+      return c;
+    }
   }
-};
-
-template<>
-struct HDF5Traits<double> 
-{
-  static PredType pred_type() { return PredType::NATIVE_DOUBLE; } 
-};
-
-template<>
-struct HDF5Traits<int>    
-{
-  static PredType pred_type() { return PredType::NATIVE_INT; } 
-};
-
-#ifdef ALPS_HAVE_VALARRAY
-template<class T>
-struct HDF5Traits<std::valarray<T> > 
-{
-  static PredType pred_type() { return HDF5Traits<T>::pred_type(); } 
-};
-#endif // ALPS_HAVE_VALARRAY
-
-} // end namespace alps
-
-#endif // ALPS_HAVE_HDF5_CPP
+}
+namespace alps{
+void ObservableSet::write_hdf5(boost::filesystem::path const & path, std::size_t realization, std::size_t clone) const {
+  mocasito::io::container<mocasito::io::hdf5> container(path.string());
+  std::stringstream set_path;
+  set_path<<"/simulation/realizations/"<<realization<<"/clones/"<<clone<<"/results";
+  assign(container[set_path.str()],*this);
+  for(ObservableSet::const_iterator it=begin();it!=end();++it){
+    it->second->write_hdf5(path, realization, clone);
+  }
+}
+template <typename T> void AbstractSimpleObservable<T>::write_hdf5(boost::filesystem::path const & path, std::size_t realization, std::size_t clone) const{
+  mocasito::io::container<mocasito::io::hdf5> container(path.string());
+  std::stringstream obs_path;
+  obs_path<<"/simulation/realizations/"<<realization<<"/clones/"<<clone<<"/results/"<<name();
+  std::cerr<<"path is: "<<obs_path.str()<<std::endl;
+  assign(container[obs_path.str()],*this);
+}
+template <typename T, typename B> void SimpleObservable<T,B>::write_hdf5(boost::filesystem::path const & path, std::size_t realization, std::size_t clone) const{
+  mocasito::io::container<mocasito::io::hdf5> container(path.string());
+  std::stringstream obs_path;
+  obs_path<<"/simulation/realizations/"<<realization<<"/clones/"<<clone<<"/results/"<<this->name();
+  std::cerr<<"path is: "<<obs_path.str()<<std::endl;
+  assign(container[obs_path.str()],*this);
+}
+void ObservableSet::read_hdf5(boost::filesystem::path const &, std::size_t realization, std::size_t clone){
+  
+}
+} //namespace
+#endif //ALPS_HAVE_MOCASITO
+#endif //ALPS_HAVE_HDF5
 
 #endif // ALPS_ALEA_HDF5_H
