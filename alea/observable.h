@@ -125,6 +125,8 @@ class Observable
 
   /** output the result */
   virtual void write_xml(oxstream& oxs, const boost::filesystem::path& fn_hdf5=boost::filesystem::path()) const;
+  virtual void write_hdf5(const boost::filesystem::path& fn_hdf, std::size_t realization=0, std::size_t clone=0) const {};
+  virtual void read_hdf5 (const boost::filesystem::path& fn_hdf, std::size_t realization=0, std::size_t clone=0) {};
 
 #ifndef ALPS_WITHOUT_OSIRIS
   /// return a version ID uniquely identifying the class
@@ -196,7 +198,6 @@ class Observable
       boost::throw_exception(std::runtime_error("Cannot add measurement to observable " + name()));
     dynamic_cast<RecordableObservable<T> *>(this)->add(x,s); 
   }
-  
 private:
   void added_to_set() { in_observable_set_=true;}
   std::string name_; // the name
