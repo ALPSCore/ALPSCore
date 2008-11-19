@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2008 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
@@ -70,7 +70,7 @@ public:
 
   /// the data type of averages and errors
   typedef typename obs_value_traits<T>::result_type result_type;
-    
+
   typedef typename obs_value_traits<result_type>::slice_iterator slice_iterator;
   /// the count data type: an integral type
   // typedef std::size_t count_type;
@@ -78,67 +78,67 @@ public:
 
   /// the data type for autocorrelation times
   typedef typename obs_value_traits<T>::time_type time_type;
-  
+
   typedef typename obs_value_traits<T>::convergence_type convergence_type;
 
   typedef typename obs_value_traits<value_type>::label_type label_type;
-  
-  AbstractSimpleObservable(const std::string& name="", const label_type& l=label_type()) 
+
+  AbstractSimpleObservable(const std::string& name="", const label_type& l=label_type())
    : Observable(name), label_(l) {}
-  
+
   virtual ~AbstractSimpleObservable() {}
-                  
+
   /// the number of measurements
   virtual count_type count() const =0;
-  
+
   /// the mean value
   virtual result_type mean() const =0;
-  
+
   /// the variance
   virtual result_type variance() const { boost::throw_exception(std::logic_error("No variance provided in observable"));  return result_type();}
-  
+
   /// the error
   virtual result_type error() const =0;
   virtual convergence_type converged_errors() const =0;
 
   /// is information about the minimum and maximum value available?
   virtual bool has_minmax() const { return false;}
-  
+
   /// the minimum value
   virtual value_type min() const { boost::throw_exception(std::logic_error("No min provided in observable")); return value_type();}
-  
+
   /// the maximum value
   virtual value_type max() const { boost::throw_exception(std::logic_error("No max provided in observable")); return value_type();}
-  
-  /// is autocorrelation information available ? 
+
+  /// is autocorrelation information available ?
   virtual bool has_tau() const { return false;}
-    
+
   /// the autocorrelation time, throws an exception if not available
   virtual time_type tau() const { boost::throw_exception(std::logic_error("No autocorrelation time provided in observable")); return time_type();}
 
-  /// is variance  available ? 
+  /// is variance  available ?
   virtual bool has_variance() const { return false;}
 
   // virtual void set_thermalization(uint32_t todiscard) = 0;
   // virtual uint32_t get_thermalization() = 0;
-  
+
   //@name binning information
   /// the number of bins
   virtual count_type bin_number() const { return 0;}
   /// the number of measurements per bin
   virtual count_type bin_size() const { return 0;}
   /// the value of a bin
-  virtual const value_type& bin_value(count_type) const 
+  virtual const value_type& bin_value(count_type) const
   { boost::throw_exception(std::logic_error("bin_value called but no bins present")); return *(new value_type());}
   /// the number of bins with squared values
   virtual count_type bin_number2() const { return 0;}
   /// the squared value of a bin
-  virtual const value_type& bin_value2(count_type) const 
+  virtual const value_type& bin_value2(count_type) const
   { boost::throw_exception(std::logic_error("bin_value2 called but no bins present")); return *(new value_type());}
 
   //@name Slicing of observables
   /** slice the data type using a single argument.
-      This can easily be extended when needed to more data types. 
+      This can easily be extended when needed to more data types.
       @param s the slice
       @param newname optionally a new name for the slice. Default is the
                      same name as the original observable
@@ -156,14 +156,17 @@ public:
 #endif
 
   void write_xml(oxstream&, const boost::filesystem::path& = boost::filesystem::path()) const;
-  virtual void write_hdf5(const boost::filesystem::path& fn_hdf, std::size_t realization=0, std::size_t clone=0) const;
   void write_xml_scalar(oxstream&, const boost::filesystem::path&) const;
   void write_xml_vector(oxstream&, const boost::filesystem::path&) const;
 
+#ifdef ALPS_HAVE_HDF5
+  virtual void write_hdf5(const boost::filesystem::path& fn_hdf, std::size_t realization=0, std::size_t clone=0) const;
+#endif
+
   virtual std::string evaluation_method(Target) const { return "";}
-  
+
   operator SimpleObservableEvaluator<value_type> () const { return make_evaluator();}
-  
+
   void set_label(const label_type& l) { label_=l;}
   const label_type& label() const { return label_;}
 
@@ -173,7 +176,7 @@ public:
     dump << label_;
   }
 
-  void load(IDump& dump) 
+  void load(IDump& dump)
   {
     Observable::load(dump);
     if (dump.version() >= 303 || dump.version()==0)
@@ -182,13 +185,13 @@ public:
 
 private:
   virtual SimpleObservableEvaluator<value_type> make_evaluator() const
-  { 
+  {
     return SimpleObservableEvaluator<value_type>(*this,name());
   }
   friend class SimpleObservableEvaluator<value_type>;
-  
+
   virtual void write_more_xml(oxstream&, slice_iterator = slice_iterator()) const {}
-  
+
   label_type label_;
 };
 
@@ -219,14 +222,14 @@ void AbstractSimpleObservable<T>::write_xml_scalar(oxstream& oxs, const boost::f
 
     oxs << start_tag("SCALAR_AVERAGE") << attribute("name", name());
     if (is_signed())
-      oxs << attribute("signed","true");     
+      oxs << attribute("signed","true");
 
     oxs << start_tag("COUNT") << no_linebreak << count() << end_tag("COUNT");
 
     oxs << start_tag("MEAN") << no_linebreak;
-    if (mm != "") 
+    if (mm != "")
       oxs << attribute("method", mm);
- 
+
     int prec=int(4-std::log10(std::abs(error()/mean())));
     prec = (prec>=3 && prec<20 ? prec : 8);
     oxs << precision(mean(),prec) << end_tag("MEAN");
@@ -234,7 +237,7 @@ void AbstractSimpleObservable<T>::write_xml_scalar(oxstream& oxs, const boost::f
     oxs << start_tag("ERROR") << attribute("converged", convergence_to_text(converged_errors())) ;
     if (error_underflow(mean(),error()))
       oxs << attribute("underflow","true");
-    if (em != "") 
+    if (em != "")
       oxs << attribute("method", em);
     oxs << no_linebreak;
     oxs << precision(error(), 3) << end_tag("ERROR");
@@ -306,7 +309,7 @@ void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, const boost::f
     oxs << start_tag("VECTOR_AVERAGE")<< attribute("name", name())
         << attribute("nvalues", obs_value_traits<T>::size(mean()));
     if (is_signed())
-      oxs << attribute("signed","true");     
+      oxs << attribute("signed","true");
 
     typename obs_value_traits<result_type>::slice_iterator it=obs_value_traits<result_type>::slice_begin(mean_);
     typename obs_value_traits<result_type>::slice_iterator end=obs_value_traits<result_type>::slice_end(mean_);
@@ -319,20 +322,20 @@ void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, const boost::f
       oxs << start_tag("SCALAR_AVERAGE")
           << attribute("indexvalue",lab);
       oxs << start_tag("COUNT") << no_linebreak << count() << end_tag;
-      int prec=(count()==1) ? 19 : int(4-std::log10(std::abs(obs_value_traits<result_type>::slice_value(error_,it)/obs_value_traits<result_type>::slice_value(mean_,it)))); 
+      int prec=(count()==1) ? 19 : int(4-std::log10(std::abs(obs_value_traits<result_type>::slice_value(error_,it)/obs_value_traits<result_type>::slice_value(mean_,it))));
       prec = (prec>=3 && prec<20 ? prec : 8);
       oxs << start_tag("MEAN") << no_linebreak;
       if (mm != "") oxs << attribute("method", mm);
       oxs << precision(obs_value_traits<result_type>::slice_value(mean_, it), prec)
           << end_tag("MEAN");
-      
+
       oxs << start_tag("ERROR") << attribute("converged", convergence_to_text(obs_value_traits<convergence_type>::slice_value(conv_,it))) << no_linebreak;
       if (error_underflow( obs_value_traits<result_type>::slice_value(mean_, it), obs_value_traits<result_type>::slice_value(error_, it)))
         oxs << attribute("underflow","true");
       if (em != "") oxs << attribute("method", em);
       oxs << precision(obs_value_traits<result_type>::slice_value(error_, it), 3)
           << end_tag("ERROR");
-      
+
       if (has_variance()) {
         oxs << start_tag("VARIANCE") << no_linebreak;
         if (vm != "") oxs << attribute("method", vm);
@@ -345,7 +348,7 @@ void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, const boost::f
         oxs << precision(obs_value_traits<time_type>::slice_value(tau_, it), 3)
             << end_tag("AUTOCORR");
       }
-      
+
 #ifdef ALPS_HAVE_HDF5_CPP
       if(!fn_hdf5.empty() && bin_size() == 1) {
         //write tag for timeseries and the hdf5-file
@@ -383,13 +386,13 @@ void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, const boost::f
 namespace alps {
 
 template <class T> template <class S>
-inline SimpleObservableEvaluator<typename obs_value_slice<T,S>::value_type> 
+inline SimpleObservableEvaluator<typename obs_value_slice<T,S>::value_type>
 AbstractSimpleObservable<T>::slice (S s, const std::string& n) const
 {
   if (dynamic_cast<const SimpleObservableEvaluator<T>*>(this)!=0)
     return dynamic_cast<const SimpleObservableEvaluator<T>*>(this)->slice(s,n);
   else
-    return SimpleObservableEvaluator<T>(*this).slice(s,n);        
+    return SimpleObservableEvaluator<T>(*this).slice(s,n);
 }
 
 } // end namespace alps

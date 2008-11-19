@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2008 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -42,9 +42,13 @@ void Observable::write_xml(oxstream& oxs, const boost::filesystem::path&) const
   oxs << start_tag("AVERAGE") << attribute("name", name()) << end_tag;
 }
 
+void Observable::write_hdf5(const boost::filesystem::path& /* fn_hdf */, std::size_t /* realization */, std::size_t /* clone */) const {}
+
+void Observable::read_hdf5 (const boost::filesystem::path& /* fn_hdf */, std::size_t /* realization */, std::size_t /* clone */) {}
+
 #ifndef ALPS_WITHOUT_OSIRIS
 
-void Observable::load(IDump& dump) 
+void Observable::load(IDump& dump)
 { dump >> name_; }
 
 void Observable::save(ODump& dump) const
@@ -52,29 +56,29 @@ void Observable::save(ODump& dump) const
 
 #endif // !ALPS_WITHOUT_OSIRIS
 
-bool Observable::is_signed() const 
+bool Observable::is_signed() const
 { return false;        }
 
-void Observable::set_sign(const Observable&) 
+void Observable::set_sign(const Observable&)
 {
-  if(is_signed()) 
+  if(is_signed())
     boost::throw_exception(std::logic_error("alps::Observable::set_sign not implemented."));
   else
     boost::throw_exception(std::logic_error("alps::Observable::set_sign called for unsigned Observable"));
 }
 
-void Observable::clear_sign() 
+void Observable::clear_sign()
 {
-  if(signed()) 
+  if(signed())
     boost::throw_exception(std::logic_error("alps::Observable::clear_sign not implemented."));
   else
     boost::throw_exception(std::logic_error("alps::Observable::clear_sign called for unsigned Observable"));
 }
 
 
-void Observable::set_sign_name(const std::string&) 
+void Observable::set_sign_name(const std::string&)
 {
-  if(signed()) 
+  if(signed())
     boost::throw_exception(std::logic_error("alps::Observable::set_sign_name not implemented."));
   else
     boost::throw_exception(std::logic_error("alps::Observable::set_sign_name called for unsigned Observable"));
@@ -82,7 +86,7 @@ void Observable::set_sign_name(const std::string&)
 
 const std::string Observable::sign_name() const
 {
-  if(signed()) 
+  if(signed())
     boost::throw_exception(std::logic_error("alps::Observable::sign_name not implemented."));
   else
     boost::throw_exception(std::logic_error("alps::Observable::sign_name called for unsigned Observable"));
@@ -91,7 +95,7 @@ const std::string Observable::sign_name() const
 
 const Observable& Observable::sign() const
 {
-  if(signed()) 
+  if(signed())
     boost::throw_exception(std::logic_error("alps::Observable::sign not implemented."));
   else
     boost::throw_exception(std::logic_error("alps::Observable::sign called for unsigned Observable"));
@@ -100,19 +104,19 @@ const Observable& Observable::sign() const
 
 const Observable& Observable::signed_observable() const
 {
-  if(signed()) 
+  if(signed())
     boost::throw_exception(std::logic_error("alps::Observable::signed_observable not implemented."));
   else
     boost::throw_exception(std::logic_error("alps::Observable::signed_observable called for unsigned Observable"));
   return (*reinterpret_cast<Observable*>(1));
 }
 
-uint32_t Observable::number_of_runs() const 
+uint32_t Observable::number_of_runs() const
 {
   return 1;
 }
 
-Observable* Observable::get_run(uint32_t) const 
+Observable* Observable::get_run(uint32_t) const
 {
   return clone();
 }
@@ -137,7 +141,7 @@ Observable* Observable::convert_mergeable() const
   boost::throw_exception(std::logic_error("alps::Observable::convert_mergeable not implemented."));
   return 0;
 }
-  
+
 bool Observable::can_set_thermalization() const
 {
   return false;

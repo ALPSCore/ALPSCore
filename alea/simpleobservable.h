@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2008 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
@@ -69,14 +69,14 @@ public:
   SimpleObservable(const std::string& name,uint32_t s, const label_type& l=label_type())
    : AbstractSimpleObservable<T>(name,l), b_(s) {}
 
-   
+
   uint32_t version_id() const { return version;}
-  
+
   Observable* clone() const {return new SimpleObservable<T,BINNING>(*this);}
 
   ALPS_DUMMY_VOID output(std::ostream&) const;
 
-  ALPS_DUMMY_VOID reset(bool forthermalization=false) 
+  ALPS_DUMMY_VOID reset(bool forthermalization=false)
   {
     b_.reset(forthermalization);
     ALPS_RETURN_VOID
@@ -95,20 +95,20 @@ public:
   //value_type max() const {return b_.max();}
   bool has_tau() const { return b_.has_tau;}
   time_type tau() const  { return b_.tau();}
-  
+
   virtual bool is_thermalized() const { return b_.is_thermalized();}
   uint32_t get_thermalization() const { return b_.get_thermalization();}
   bool can_set_thermalization() const { return b_.can_set_thermalization();}
-  
+
   void operator<<(const T& x) { b_ << x;}
- 
+
 
   // Additional binning member functions
- 
+
   count_type bin_size() const { return b_.bin_size();}
-  /// resize bins to contain at least the given number of entries 
+  /// resize bins to contain at least the given number of entries
   void set_bin_size(count_type s) {b_.set_bin_size(s);}
-  
+
   count_type bin_number() const { return b_.filled_bin_number();}
   count_type bin_number2() const { return b_.filled_bin_number2();}
   /// get the maximum number of bins
@@ -119,8 +119,10 @@ public:
   void set_bin_number(count_type n) {b_.set_bin_number(n);}
   const value_type& bin_value(count_type n) const {return b_.bin_value(n);}
   const value_type& bin_value2(count_type n) const {return b_.bin_value2(n);}
+#ifdef ALPS_HAVE_HDF5
   void write_hdf5(const boost::filesystem::path& fn_hdf, std::size_t realization=0, std::size_t clone=0) const;
-  
+#endif
+
 #ifndef ALPS_WITHOUT_OSIRIS
   virtual void save(ODump& dump) const;
   virtual void load(IDump& dump);
@@ -128,7 +130,7 @@ public:
 #endif
 
   ALPS_DUMMY_VOID compact() { b_.compact(); ALPS_RETURN_VOID }
-  virtual std::string evaluation_method(Target t) const 
+  virtual std::string evaluation_method(Target t) const
   { return (t==Mean || t== Variance) ? std::string("simple") : b_.evaluation_method();}
 
 private:
@@ -155,14 +157,14 @@ inline Observable* SimpleObservable<T,BINNING>::convert_mergeable() const
 
 template <class T,class BINNING>
 ALPS_DUMMY_VOID
-SimpleObservable<T,BINNING>::output(std::ostream& o) const 
-{ 
+SimpleObservable<T,BINNING>::output(std::ostream& o) const
+{
   if(count()==0)
   {
     if(get_thermalization()>0)
     o << super_type::name() << " " << get_thermalization() << " thermalization steps, no measurements.\n";
   }
-  else 
+  else
   {
     o << super_type::name ();
     output_helper<obs_value_traits<T>::array_valued>::output(b_,o,super_type::label());
@@ -171,8 +173,8 @@ SimpleObservable<T,BINNING>::output(std::ostream& o) const
 }
 
 template <class T,class BINNING>
-void SimpleObservable<T,BINNING>::write_more_xml(oxstream& oxs, slice_iterator it) const 
-{ 
+void SimpleObservable<T,BINNING>::write_more_xml(oxstream& oxs, slice_iterator it) const
+{
   output_helper<obs_value_traits<T>::array_valued>::write_more_xml(b_, oxs, it);
 }
 
@@ -186,7 +188,7 @@ inline void SimpleObservable<T,BINNING>::save(ODump& dump) const
 }
 
 template <class T,class BINNING>
-inline void SimpleObservable<T,BINNING>::load(IDump& dump) 
+inline void SimpleObservable<T,BINNING>::load(IDump& dump)
 {
   AbstractSimpleObservable<T>::load(dump);
   dump >> b_;

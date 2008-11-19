@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2008 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
@@ -107,10 +107,10 @@ class Observable
 
   /** dtor */
   virtual ~Observable() {}
-  
+
   /** clones the observable */
   virtual Observable* clone() const = 0;
-    
+
   /** returns the name */
   const std::string& name() const;
 
@@ -119,14 +119,14 @@ class Observable
 
   /** reset the observable */
   virtual ALPS_DUMMY_VOID reset(bool equilibrated=false) = 0;
-  
+
   /** output the result */
   virtual ALPS_DUMMY_VOID output(std::ostream&) const = 0;
 
   /** output the result */
   virtual void write_xml(oxstream& oxs, const boost::filesystem::path& fn_hdf5=boost::filesystem::path()) const;
-  virtual void write_hdf5(const boost::filesystem::path& fn_hdf, std::size_t realization=0, std::size_t clone=0) const{};
-  virtual void read_hdf5 (const boost::filesystem::path& fn_hdf, std::size_t realization=0, std::size_t clone=0) {};
+  virtual void write_hdf5(const boost::filesystem::path& fn_hdf, std::size_t realization=0, std::size_t clone=0) const;
+  virtual void read_hdf5 (const boost::filesystem::path& fn_hdf, std::size_t realization=0, std::size_t clone=0);
 
 
 #ifndef ALPS_WITHOUT_OSIRIS
@@ -161,7 +161,7 @@ class Observable
   virtual const Observable& signed_observable() const;
   /// get the name of the observable containing the sign
   virtual const std::string sign_name() const;
-    
+
   // Support for multiple runs
 
   /// get the number of runs which performed measurements for this observable
@@ -174,8 +174,8 @@ class Observable
   virtual ALPS_DUMMY_VOID compact();
 
   virtual void merge(const Observable&);
-  /// can this observable be merged with one of the same type  
-  virtual bool can_merge() const; 
+  /// can this observable be merged with one of the same type
+  virtual bool can_merge() const;
   /// can this  observable be merged with one of the given type
   virtual bool can_merge(const Observable&) const;
   /// create a copy of the observable that can be merged
@@ -183,21 +183,21 @@ class Observable
 
   /// merge this observable with another or add measurement
   template <class T> inline void operator<<(const T& x);
-  
+
   template <class T>
-  void add(const T& x) 
-  { 
+  void add(const T& x)
+  {
     if (dynamic_cast<RecordableObservable<T>*>(this)==0)
       boost::throw_exception(std::runtime_error("Cannot add measurement to observable " + name()));
-    dynamic_cast<RecordableObservable<T> *>(this)->add(x); 
+    dynamic_cast<RecordableObservable<T> *>(this)->add(x);
   }
 
   template <class T,class S>
-  void add(const T& x, S s) 
-  { 
+  void add(const T& x, S s)
+  {
     if (dynamic_cast<RecordableObservable<T>*>(this)==0)
       boost::throw_exception(std::runtime_error("Cannot add measurement to observable " + name()));
-    dynamic_cast<RecordableObservable<T> *>(this)->add(x,s); 
+    dynamic_cast<RecordableObservable<T> *>(this)->add(x,s);
   }
 private:
   void added_to_set() { in_observable_set_=true;}
@@ -221,7 +221,7 @@ struct pick_add_merge<false> {
 
 }
 
-template <class T> 
+template <class T>
 void Observable::operator<<(const T& x)
 {
     detail::pick_add_merge<boost::is_base_and_derived<Observable,T>::value>::add_or_merge(*this,x);
