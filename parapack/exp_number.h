@@ -257,6 +257,11 @@ alps::exp_number<T> exp(alps::exp_number<T> const& x) {
 }
 
 template<typename T>
+alps::exp_number<T> pow(alps::exp_number<T> const& x, int p) {
+  return x.pow(p);
+}
+
+template<typename T>
 alps::exp_number<T> pow(alps::exp_number<T> const& x, double p) {
   return x.pow(p);
 }
