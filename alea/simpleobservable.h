@@ -121,7 +121,8 @@ public:
   const value_type& bin_value2(count_type n) const {return b_.bin_value2(n);}
 #ifdef ALPS_HAVE_HDF5
   void write_hdf5(const boost::filesystem::path& fn_hdf, std::size_t realization=0, std::size_t clone=0) const;
-#endif
+  void read_hdf5 (const boost::filesystem::path& fn_hdf, std::size_t realization=0, std::size_t clone=0);
+#endif  
 
 #ifndef ALPS_WITHOUT_OSIRIS
   virtual void save(ODump& dump) const;

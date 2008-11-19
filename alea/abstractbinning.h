@@ -70,6 +70,10 @@ class AbstractBinning
 #ifndef ALPS_WITHOUT_OSIRIS
   void extract_timeseries(ODump& dump) const { dump << 0 << 0 << 0;}
 #endif
+#ifdef ALPS_HAVE_HDF5
+  template<typename E> void read_hdf5 (const E &engine);
+  template<typename E> void write_hdf5 (const E &engine)const;
+#endif
 
   bool can_set_thermalization() const { return false;}
   bool has_minmax() const { return false;}  //disabled - measuring this is too expensive.

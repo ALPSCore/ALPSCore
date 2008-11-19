@@ -156,12 +156,12 @@ public:
 #endif
 
   void write_xml(oxstream&, const boost::filesystem::path& = boost::filesystem::path()) const;
-  void write_xml_scalar(oxstream&, const boost::filesystem::path&) const;
-  void write_xml_vector(oxstream&, const boost::filesystem::path&) const;
-
 #ifdef ALPS_HAVE_HDF5
   virtual void write_hdf5(const boost::filesystem::path& fn_hdf, std::size_t realization=0, std::size_t clone=0) const;
+  virtual void read_hdf5 (const boost::filesystem::path& fn_hdf, std::size_t realization=0, std::size_t clone=0) {};
 #endif
+  void write_xml_scalar(oxstream&, const boost::filesystem::path&) const;
+  void write_xml_vector(oxstream&, const boost::filesystem::path&) const;
 
   virtual std::string evaluation_method(Target) const { return "";}
 

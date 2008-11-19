@@ -105,7 +105,10 @@ class SimpleBinning : public AbstractBinning<T>
 
   void write_scalar_xml(oxstream& oxs) const;
   template <class IT> void write_vector_xml(oxstream& oxs, IT) const;
-
+#ifdef ALPS_HAVE_HDF5
+  template<typename E> void read_hdf5 (const E &engine);
+  template<typename E> void write_hdf5 (E &engine) const;
+#endif
 private:
   std::vector<result_type> sum_; // sum of measurements in the bin
   std::vector<result_type> sum2_; // sum of the squares

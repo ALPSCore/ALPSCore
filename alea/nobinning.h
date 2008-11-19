@@ -86,6 +86,10 @@ class NoBinning : public AbstractBinning<T>
 
   void output_scalar(std::ostream& out) const;
   template <class L> void output_vector(std::ostream& out, const L& l) const;
+#ifdef ALPS_HAVE_HDF5
+  template<typename E> void read_hdf5 (const E &engine);
+  template<typename E> void write_hdf5 (const E &engine)const;
+#endif
 #ifndef ALPS_WITHOUT_OSIRIS
   virtual void save(ODump& dump) const;
   virtual void load(IDump& dump);

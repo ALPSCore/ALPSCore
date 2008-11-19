@@ -85,6 +85,10 @@ public:
   
   void compact();
   
+#ifdef ALPS_HAVE_HDF5
+  template<typename E> void read_hdf5 (const E &engine);
+  template<typename E> void write_hdf5 (E &engine) const;
+#endif  
 #ifndef ALPS_WITHOUT_OSIRIS
   virtual void save(ODump& dump) const;
   virtual void load(IDump& dump);
