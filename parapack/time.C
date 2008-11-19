@@ -42,7 +42,7 @@ int main()
   std::cerr << "10 seconds after: " << to_simple_string(t1) << std::endl;
 
   boost::posix_time::ptime t2 = t0 + boost::posix_time::minutes(5);
-  std::cerr << "5 minites after: " << to_simple_string(t2) << std::endl;
+  std::cerr << "5 minutes after: " << to_simple_string(t2) << std::endl;
 
   boost::posix_time::ptime t3 = t0 + boost::posix_time::hours(1);
   std::cerr << "One hour after: " << to_simple_string(t3) << std::endl;
