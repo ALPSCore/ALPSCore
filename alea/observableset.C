@@ -612,4 +612,25 @@ void ObservableSetXMLHandler::end_child(std::string const& name,
   }
 }
 
+#ifdef ALPS_HAVE_MOCASITO
+
+void ObservableSet::write_hdf5(boost::filesystem::path const & path, std::size_t realization, std::size_t clone) const {
+  mocasito::io::container<mocasito::io::hdf5> container(path.string());
+  std::stringstream set_path;
+  set_path<<"/simulation/realizations/"<<realization<<"/clones/"<<clone<<"/results";
+  assign(container[set_path.str()],*this);
+  for(ObservableSet::const_iterator it=begin();it!=end();++it){
+    it->second->write_hdf5(path, realization, clone);
+  }
+}
+void ObservableSet::read_hdf5(boost::filesystem::path const &, std::size_t realization, std::size_t clone){
+  /*mocasito::io::container<mocasito::io::hdf5> container(path.string());
+  std::stringstream set_path;
+  set_path<<"/simulation/realizations/"<<realization<<"/clones/"<<clone<<"/results";
+  assign(*this,container[set_path.str()]);
+  //iterate through observable set, figure out the type of observable, and read it back in.
+*/
+}
+#endif
+
 } // namespace alps

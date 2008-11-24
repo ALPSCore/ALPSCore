@@ -85,7 +85,7 @@ public:
   
   void compact();
   
-#ifdef ALPS_HAVE_HDF5
+#ifdef ALPS_HAVE_MOCASITO
   template<typename E> void read_hdf5 (const E &engine);
   template<typename E> void write_hdf5 (E &engine) const;
 #endif  
@@ -128,6 +128,7 @@ public:
 
 typedef SimpleObservable<int32_t,DetailedBinning<int32_t> > IntObservable;
 typedef SimpleObservable<double,DetailedBinning<double> > RealObservable;
+typedef SimpleObservable<float,DetailedBinning<float> > FloatObservable;
 typedef SimpleObservable<std::complex<double>,DetailedBinning<std::complex<double> > > ComplexObservable;
 typedef SimpleObservable<double,FixedBinning<double> > RealTimeSeriesObservable;
 typedef SimpleObservable<int32_t,FixedBinning<int32_t> > IntTimeSeriesObservable;
@@ -137,6 +138,8 @@ typedef SimpleObservable< std::valarray<int32_t> ,
                          DetailedBinning<std::valarray<int32_t> > > IntVectorObservable;
 typedef SimpleObservable< std::valarray<double> , 
                          DetailedBinning<std::valarray<double> > > RealVectorObservable;
+typedef SimpleObservable< std::valarray<float> , 
+                         DetailedBinning<std::valarray<float> > > FloatVectorObservable;
 typedef SimpleObservable< std::valarray<std::complex<double> > , 
                          DetailedBinning<std::valarray<std::complex<double> > > > ComplexVectorObservable;
 typedef SimpleObservable< std::valarray<int32_t> , 

@@ -86,7 +86,7 @@ class NoBinning : public AbstractBinning<T>
 
   void output_scalar(std::ostream& out) const;
   template <class L> void output_vector(std::ostream& out, const L& l) const;
-#ifdef ALPS_HAVE_HDF5
+#ifdef ALPS_HAVE_MOCASITO
   template<typename E> void read_hdf5 (const E &engine);
   template<typename E> void write_hdf5 (const E &engine)const;
 #endif
@@ -109,10 +109,12 @@ template <class T> const bool NoBinning<T>::has_tau;
 
 typedef SimpleObservable<int32_t,NoBinning<int32_t> > SimpleIntObservable;
 typedef SimpleObservable<double,NoBinning<double> > SimpleRealObservable;
+typedef SimpleObservable<float,NoBinning<float> > SimpleFloatObservable;
 typedef SimpleObservable<std::complex<double>,NoBinning<std::complex<double> > > SimpleComplexObservable;
 #ifdef ALPS_HAVE_VALARRAY
 typedef SimpleObservable< std::valarray<int32_t> , NoBinning<std::valarray<int32_t> > > SimpleIntVectorObservable;
 typedef SimpleObservable< std::valarray<double> , NoBinning<std::valarray<double> > > SimpleRealVectorObservable;
+typedef SimpleObservable< std::valarray<float> , NoBinning<std::valarray<float> > > SimpleFloatVectorObservable;
 typedef SimpleObservable< std::valarray<std::complex<double> > ,
                          NoBinning<std::valarray<std::complex<double> > > > SimpleComplexVectorObservable;
 #endif

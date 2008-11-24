@@ -40,6 +40,7 @@
 #include<alps/alea/observableset.h>
 #include<alps/alea/simpleobservable.h>
 #include<alps/alea/simplebinning.h>
+#include<alps/alea/detailedbinning.h>
 #include<alps/alea/nobinning.h>
 #include<alps/alea/abstractsimpleobservable.h>
 #include<mocasito/src/io/container.hpp>
@@ -47,8 +48,27 @@
 #include<mocasito/src/io/util.hpp>
 namespace mocasito {
   namespace io {
+    /*namespace hdf5{
+      template<typename T> struct type_traits {
+        typedef std::size_t type;
+        static std::size_t value;
+      };
+      template<> std::size_t type_traits<alps::RealObservable>::value = 1;
+      template<> std::size_t type_traits<alps::RealVectorObservable>::value = 2;
+      template<> std::size_t type_traits<alps::SimpleRealObservable>::value = 3;
+      template<> std::size_t type_traits<alps::SimpleRealVectorObservable>::value = 4;
+      template<> std::size_t type_traits<SimpleIntObservable>::value = 5;
+      template<> std::size_t type_traits<SimpleIntVectorObservable>::value = 6;
+      template<> std::size_t type_traits<IntObservable>::value = 7;
+      template<> std::size_t type_traits<FloatVectorObservable>::value = 8;
+      template<> std::size_t type_traits<SimpleFloatObservable>::value = 9;
+      template<> std::size_t type_traits<SimpleFloatVectorObservable>::value = 10;
+    }*/
     template<typename E> context<E> & assign(context<E> & c, const alps::ObservableSet &measurements){
       //For now: no need to write observable set specific information.
+      return c;
+    }
+    template<typename E> const context<E> & assign(alps::ObservableSet &measurements, const context<E> & c){
       return c;
     }
     template<typename E> context<E> & assign(context<E> & c, const alps::Observable &obs){
@@ -95,15 +115,6 @@ namespace mocasito {
   }
 }
 namespace alps{
-void ObservableSet::write_hdf5(boost::filesystem::path const & path, std::size_t realization, std::size_t clone) const {
-  mocasito::io::container<mocasito::io::hdf5> container(path.string());
-  std::stringstream set_path;
-  set_path<<"/simulation/realizations/"<<realization<<"/clones/"<<clone<<"/results";
-  assign(container[set_path.str()],*this);
-  for(ObservableSet::const_iterator it=begin();it!=end();++it){
-    it->second->write_hdf5(path, realization, clone);
-  }
-}
 template <typename T> void AbstractSimpleObservable<T>::write_hdf5(boost::filesystem::path const & path, std::size_t realization, std::size_t clone) const{
   mocasito::io::container<mocasito::io::hdf5> container(path.string());
   std::stringstream obs_path;
@@ -115,9 +126,6 @@ template <typename T, typename B> void SimpleObservable<T,B>::write_hdf5(boost::
   std::stringstream obs_path;
   obs_path<<"/simulation/realizations/"<<realization<<"/clones/"<<clone<<"/results/"<<this->name();
   b_.write_hdf5(container[obs_path.str()]);
-}
-void ObservableSet::read_hdf5(boost::filesystem::path const &, std::size_t realization, std::size_t clone){
-  
 }
 template<typename T, typename B> void SimpleObservable<T,B>::read_hdf5(boost::filesystem::path const & path, std::size_t realization, std::size_t clone){
   mocasito::io::container<mocasito::io::hdf5> container(path.string());

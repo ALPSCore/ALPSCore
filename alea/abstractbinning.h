@@ -70,7 +70,7 @@ class AbstractBinning
 #ifndef ALPS_WITHOUT_OSIRIS
   void extract_timeseries(ODump& dump) const { dump << 0 << 0 << 0;}
 #endif
-#ifdef ALPS_HAVE_HDF5
+#ifdef ALPS_HAVE_MOCASITO
   template<typename E> void read_hdf5 (const E &engine);
   template<typename E> void write_hdf5 (const E &engine)const;
 #endif
