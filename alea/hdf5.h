@@ -4,6 +4,7 @@
 *
 * ALPS Libraries
 *
+* Copyright (C)      2008 by Emanuel Gull < gull@itp.phys.ethz.ch>
 * Copyright (C) 1994-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@itp.phys.ethz.ch>,
@@ -46,24 +47,10 @@
 #include<mocasito/src/io/container.hpp>
 #include<mocasito/src/io/hdf5.hpp>
 #include<mocasito/src/io/util.hpp>
+#include<mocasito/src/io/context.hpp>
 namespace mocasito {
   namespace io {
-    /*namespace hdf5{
-      template<typename T> struct type_traits {
-        typedef std::size_t type;
-        static std::size_t value;
-      };
-      template<> std::size_t type_traits<alps::RealObservable>::value = 1;
-      template<> std::size_t type_traits<alps::RealVectorObservable>::value = 2;
-      template<> std::size_t type_traits<alps::SimpleRealObservable>::value = 3;
-      template<> std::size_t type_traits<alps::SimpleRealVectorObservable>::value = 4;
-      template<> std::size_t type_traits<SimpleIntObservable>::value = 5;
-      template<> std::size_t type_traits<SimpleIntVectorObservable>::value = 6;
-      template<> std::size_t type_traits<IntObservable>::value = 7;
-      template<> std::size_t type_traits<FloatVectorObservable>::value = 8;
-      template<> std::size_t type_traits<SimpleFloatObservable>::value = 9;
-      template<> std::size_t type_traits<SimpleFloatVectorObservable>::value = 10;
-    }*/
+  namespace detail {
     template<typename E> context<E> & assign(context<E> & c, const alps::ObservableSet &measurements){
       //For now: no need to write observable set specific information.
       return c;
@@ -111,6 +98,7 @@ namespace mocasito {
       //information is hidden within that binning class. let's get it from
       //there!
       write_hdf5(c);
+    }
     }
   }
 }
