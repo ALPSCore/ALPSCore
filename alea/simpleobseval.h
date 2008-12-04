@@ -132,7 +132,7 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
   convergence_type  converged_errors() const { collect(); return all_.converged_errors(); }
   time_type tau() const { collect(); return all_.tau(); };
 
-  covariance_type const& covariance(SimpleObservableEvaluator& obs2) const {
+  covariance_type covariance(SimpleObservableEvaluator& obs2) const {
     collect();
     obs2.collect();
     return all_.covariance(obs2.all_);

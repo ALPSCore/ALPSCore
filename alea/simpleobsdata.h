@@ -219,13 +219,13 @@ private:
   mutable std::vector<value_type> values_;
   mutable std::vector<value_type> values2_;
   mutable std::vector<result_type> jack_;
-
+  
   mutable convergence_type converged_errors_;
   mutable convergence_type any_converged_errors_;
   std::string eval_method_;
 };
 
-
+  
 template <class T>
 SimpleObservableData<T>::SimpleObservableData()
  : count_(0),
@@ -1025,7 +1025,7 @@ void SimpleObservableData<T>::fill_jack() const
 
     // Order-N initialization of jackknife data structure
     obs_value_traits<result_type>::resize_same_as(jack_[0], bin_value(0));
-    for(uint64_t i = 0; i < bin_number(); ++i)
+    for(uint64_t i = 0; i < bin_number(); ++i) 
       jack_[0] += obs_value_traits<result_type>::convert(bin_value(i)) / count_type(bin_size());
     for(uint64_t i = 0; i < bin_number(); ++i) {
       obs_value_traits<result_type>::resize_same_as(jack_[i+1], jack_[0]);
@@ -1108,7 +1108,7 @@ void SimpleObservableData<T>::jackknife() const
 
     error_ = 0.0;
     for (unsigned int i = 1; i < jack_.size(); ++i)
-      error_ += (jack_[i] - rav) * (jack_[i]-rav);
+      error_ += (jack_[i] - rav) * (jack_[i] - rav);
       //error_ += jack_[i] * jack_[i];
     
     error_/=count_type(k);
@@ -1150,7 +1150,11 @@ SimpleObservableData<T>::covariance(const SimpleObservableData<T> obs2) const
     cov-= obs_value_traits<T>::outer_product(rav1, rav2);
     cov *= count_type(k - 1);
     return cov;
-  }  
+  } else {
+    boost::throw_exception(std::runtime_error ("no binning information available for calculation of covariances"));
+    covariance_type dummy;
+    return dummy;
+  }
 }
 
 
