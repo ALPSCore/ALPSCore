@@ -275,7 +275,7 @@ template <class T>
 inline void NoBinning<T>::load(IDump& dump)
 {
   AbstractBinning<T>::load(dump);
-  if(dump.version()>=305){
+  if(dump.version() >= 305 || dump.version() == 0 /* version is not set */){
     dump >> sum_ >> sum2_ >> count_ >> thermal_count_;
   }else{
     value_type min_ignored;
