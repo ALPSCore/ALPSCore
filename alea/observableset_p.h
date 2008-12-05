@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2006-2007 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 2006-2008 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -42,8 +42,8 @@ class ObsValueXMLHandler : public XMLHandlerBase {
 public:
   ObsValueXMLHandler(const std::string& basename, double& val, const std::string& attr = "");
   virtual ~ObsValueXMLHandler() {}
-    
-  virtual void start_element(const std::string& name, const XMLAttributes& attributes, 
+
+  virtual void start_element(const std::string& name, const XMLAttributes& attributes,
     xml::tag_type type);
   virtual void end_element(const std::string& name, xml::tag_type type);
   virtual void text(const std::string& text);
@@ -74,7 +74,7 @@ private:
   bool found_value_;
 };
 
-  
+
 /// \brief XML parser for the RealObsevaluator class
 class RealObsevaluatorXMLHandler : public CompositeXMLHandler {
 public:
@@ -86,7 +86,7 @@ protected:
     xml::tag_type /* type */);
   void end_child(const std::string& name, xml::tag_type type);
 
-private:  
+private:
   RealObsevaluator& obs_;
   std::string& index_;
   SimpleXMLHandler<uint64_t> count_handler_;
@@ -97,7 +97,9 @@ private:
   DummyXMLHandler binned_handler_;
   DummyXMLHandler sign_handler_;
 };
-  
+
+#ifdef ALPS_HAVE_VALARRAY
+
 /// \brief XML parser for the RealVectorObsevaluator class
 class RealVectorObsevaluatorXMLHandler : public CompositeXMLHandler {
 public:
@@ -109,13 +111,15 @@ protected:
     xml::tag_type /* type */);
   void end_child(const std::string& name, xml::tag_type type);
 
-private:  
+private:
   RealVectorObsevaluator& obs_;
   int pos_;
   RealObsevaluator robs_;
   std::string index_;
   RealObsevaluatorXMLHandler robs_handler_;
 };
+
+#endif
 
 /// \brief XML parser for the entries for RealHistogramObservable class
 class RealHistogramEntryXMLHandler : public CompositeXMLHandler {
@@ -127,7 +131,7 @@ private:
   SimpleXMLHandler<uint64_t> count_handler_;
   SimpleXMLHandler<uint64_t> value_handler_;
 };
-  
+
 /// \brief XML parser for the RealHistogramObservable class
 class RealHistogramObservableXMLHandler : public CompositeXMLHandler {
 public:
@@ -139,13 +143,13 @@ protected:
     xml::tag_type /* type */);
   void end_child(const std::string& name, xml::tag_type type);
 
-private:  
+private:
   RealHistogramObservable& obs_;
   uint64_t count_;
   uint64_t value_;
   RealHistogramEntryXMLHandler entry_handler_;
 };
-  
+
 
 /// \brief XML parser for the ObservableSet class
 class ObservableSetXMLHandler : public CompositeXMLHandler {
@@ -160,13 +164,13 @@ private:
   RealObsevaluator robs_;
   std::string dummy_index_;
   RealObsevaluatorXMLHandler rhandler_;
+#ifdef ALPS_HAVE_VALARRAY
   RealVectorObsevaluator vobs_;
   RealVectorObsevaluatorXMLHandler vhandler_;
+#endif ALPS_HAVE_VALARRAY
   RealHistogramObservable hobs_;
   RealHistogramObservableXMLHandler hhandler_;
 };
-  
-    
 
 } // namespace alps
 
