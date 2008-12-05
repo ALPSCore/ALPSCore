@@ -76,6 +76,7 @@ public:
   template<typename U> friend class exp_number;
 
   exp_number() : log_(0), sign_(is_zero) {}
+  exp_number(self_ const& v) : log_(v.log_), sign_(v.sign_) {}
   exp_number(value_type v) {
     if (v > 0) {
       sign_ = is_positive;
@@ -89,8 +90,7 @@ public:
     }
   }
   template<typename U>
-  exp_number(exp_number<U> const& v)
-    : log_(static_cast<value_type>(v.log_)), sign_(v.sign_) {}
+  exp_number(exp_number<U> const& v) : log_(static_cast<value_type>(v.log_)), sign_(v.sign_) {}
 
   void set_log(value_type v) {
     log_ = v;
