@@ -44,8 +44,8 @@ try {
   std::cout << "y = " << y << " = " << static_cast<double>(y) <<  std::endl;
   std::cout << "x + y = " << x + y << " = " << static_cast<double>(x + y) <<  std::endl;
   std::cout << "x - y = " << x - y << " = " << static_cast<double>(x - y) <<  std::endl;
-  std::cout << "x * y = " << x * y << " = " << static_cast<double>(x + y) <<  std::endl;
-  std::cout << "x / y = " << x / y << " = " << static_cast<double>(x - y) <<  std::endl;
+  std::cout << "x * y = " << x * y << " = " << static_cast<double>(x * y) <<  std::endl;
+  std::cout << "x / y = " << x / y << " = " << static_cast<double>(x / y) <<  std::endl;
   std::cout << "x + 1.2 = " << x + 1.2 << " = " << static_cast<double>(x + 1.2) <<  std::endl;
   std::cout << "x - 1.2 = " << x - 1.2 << " = " << static_cast<double>(x - 1.2) <<  std::endl;
   std::cout << "x - 3.5 = " << x - 3.5 << " = " << static_cast<double>(x - 3.5) <<  std::endl;
