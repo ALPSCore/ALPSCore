@@ -167,7 +167,7 @@ private:
 #ifdef ALPS_HAVE_VALARRAY
   RealVectorObsevaluator vobs_;
   RealVectorObsevaluatorXMLHandler vhandler_;
-#endif ALPS_HAVE_VALARRAY
+#endif 
   RealHistogramObservable hobs_;
   RealHistogramObservableXMLHandler hhandler_;
 };

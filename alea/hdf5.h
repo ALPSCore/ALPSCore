@@ -50,23 +50,23 @@
 #include<mocasito/src/io/context.hpp>
 namespace mocasito {
   namespace io {
-  namespace detail {
-    template<typename E> context<E> & assign(context<E> & c, const alps::ObservableSet &measurements){
+    using namespace detail;
+    template<typename E> context<E>& assign(context<E>& c, const alps::ObservableSet &measurements){
       //For now: no need to write observable set specific information.
       return c;
     }
-    template<typename E> const context<E> & assign(alps::ObservableSet &measurements, const context<E> & c){
+    template<typename E> const context<E>& assign(alps::ObservableSet &measurements, const context<E> & c){
       return c;
     }
-    template<typename E> context<E> & assign(context<E> & c, const alps::Observable &obs){
+    template<typename E> context<E>& assign(context<E> & c, const alps::Observable &obs){
       //For now: no need to write observable specific information.
       return c;
     }
-    template<typename E, typename T> context<E> & assign(context<E> & c, const std::valarray<T> &val){
+    template<typename E, typename T> context<E>& assign(context<E>& c, const std::valarray<T> &val){
       c.set(&(val[0]), val.size());
       return c;
     }
-    template<typename E, typename T> std::valarray<T> & assign(std::valarray<T> &val, const context<E> & c){
+    template<typename E, typename T> std::valarray<T> & assign(std::valarray<T> &val, const context<E>& c){
       if (c.dimensions() != 1) throw(std::invalid_argument("this variable has dimension != 1"));
       val.resize(c.extends()[0]);
       c.get(&(val[0]));
@@ -92,13 +92,12 @@ namespace mocasito {
       }
       return c;
     }
-    template<typename E, typename T, typename B> context<E> & assign(context<E> & c, const alps::SimpleObservable<T,B> &obs){
+    template<typename E, typename T, typename B> context<E> & assign(context<E>& c, const alps::SimpleObservable<T,B> &obs){
       assign(c,*((alps::Observable*)&obs)); //dump observable first.
       //if we have 'binning', even if it is 'nobinning', then all the
       //information is hidden within that binning class. let's get it from
       //there!
       write_hdf5(c);
-    }
     }
   }
 }
