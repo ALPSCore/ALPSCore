@@ -125,7 +125,7 @@ public:
   void init_observables(alps::Parameters const& params, std::vector<alps::ObservableSet>& obs) {
     int nrep = beta_.size();
     obs.resize(nrep);
-    for (int p = nrep_local_; p < nrep; ++p)
+    for (int p = 0; p < nrep; ++p)
       helper::init_observables(walker_[0], params, init_, obs[p]);
     if (comm_.rank() == 0) {
       for (int p = 0; p < nrep; ++p) {
@@ -170,12 +170,16 @@ public:
       bool next_stage = false;
 
       for (int w = 0; w < nrep_local_; ++w) wp_local_[w] = walker_[w]->weight_parameter();
-      collect_vector(comm_, nreps_, offsets_, wp_local_, wp_);
       if (comm_.rank() == 0) {
+        std::copy(wp_local_.begin(), wp_local_.begin() + nrep_local_, wp_.begin());
+        for (int p = 1; p < nreps_.size(); ++p)
+          comm_.recv(p, 0, &wp_[offsets_[p]], nreps_[p]);
         for (int w = 0; w < nrep; ++w) {
           int p = tid_[w];
           weight_parameters_[p] += wp_[w];
         }
+      } else {
+        comm_.send(0, 0, &wp_local_[0], nrep_local_);
       }
 
       if (comm_.rank() == 0) {
@@ -340,7 +344,13 @@ public:
       broadcast(comm_, next_stage, 0);
       if (continue_stage) mcs_.continue_stage();
       if (next_stage) mcs_.next_stage();
-      distribute_vector(comm_, nreps_, offsets_, tid_, tid_local_);
+      if (comm_.rank() == 0) {
+        for (int p = 1; p < nreps_.size(); ++p)
+          comm_.send(p, 0, &tid_[offsets_[p]], nreps_[p]);
+        std::copy(tid_.begin(), tid_.begin() + nrep_local_, tid_local_.begin());
+      } else {
+        comm_.recv(0, 0, &tid_local_[0], nrep_local_);
+      }
     }
   }
 
