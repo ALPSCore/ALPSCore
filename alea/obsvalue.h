@@ -97,8 +97,8 @@ struct obs_value_traits
   template <class X>
   static inline void check_for_min(T& a,const X& b) { if (b<a) a=b;}
 
-/*  static T max() {return std::numeric_limits<T>::max();}
-  static T min() {return -std::numeric_limits<T>::max();}*/
+  static T max() {return std::numeric_limits<T>::max();}
+  static T min() {return -std::numeric_limits<T>::max();}
   static T epsilon() { return std::numeric_limits<T>::epsilon();}
 
   static inline time_type t_max() {return std::numeric_limits<time_type>::max();}
@@ -169,8 +169,8 @@ struct obs_value_traits<std::complex<T> >
   template <class X> static inline void check_for_max(std::complex<T>&,const X&) {}
   template <class X> static inline void check_for_min(std::complex<T>&,const X& b) {}
 
-//  static std::complex<T> max() { return  (std::numeric_limits<T>::max(),std::numeric_limits<T>::max());}
-//  static std::complex<T> min() { return  -max();}
+  static std::complex<T> max() { return  (std::numeric_limits<T>::max(),std::numeric_limits<T>::max());}
+  static std::complex<T> min() { return  -max();}
   static T epsilon() { return std::numeric_limits<T>::epsilon();}
 
   static inline time_type t_max() { return  std::numeric_limits<time_type>::max();}
@@ -247,8 +247,8 @@ struct obs_value_traits<std::valarray<T> >
     for(int32_t i=0;i!=(int32_t)a.size();++i)
       obs_value_traits<element_type>::fix_negative(a[i]);
   }
-//  static element_type min() {return obs_value_traits<T>::min();}
-//  static element_type max() {return obs_value_traits<T>::max();}
+  static element_type min() {return obs_value_traits<T>::min();}
+  static element_type max() {return obs_value_traits<T>::max();}
   static element_type epsilon() { return obs_value_traits<T>::epsilon();}
 
   static time_element_type t_max() {return obs_value_traits<T>::max();}

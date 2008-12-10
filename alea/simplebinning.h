@@ -87,8 +87,8 @@ class SimpleBinning : public AbstractBinning<T>
     // depth of logarithmic binning hierarchy = log2(measurements())
 
   //min and max are expensive to compute. This interface is now disabled.
-  //value_type min() const {return min_;}
-  //value_type max() const {return max_;}
+  value_type min() const {return min_;}
+  value_type max() const {return max_;}
 
   uint64_t get_thermalization() const { return super_type::is_thermalized() ? thermal_count_ : count_;}
 
@@ -117,7 +117,7 @@ private:
 
   uint64_t count_; // total number of measurements (=bin_entries_[0])
   uint32_t thermal_count_; // meaurements performed during thermalization
-  //value_type min_,max_; // minimum and maximum value
+  value_type min_,max_; // minimum and maximum value
 
   // some fast inlined functions without any range checks
   result_type binmean(uint64_t i) const ;
@@ -152,8 +152,8 @@ inline void SimpleBinning<T>::reset(bool forthermalization)
 
   count_ = 0;
 
-  //min_ =  obs_value_traits<T>::max();
-  //max_ = -obs_value_traits<T>::max();
+  min_ =  obs_value_traits<T>::max();
+  max_ = -obs_value_traits<T>::max();
 }
 
 
@@ -174,8 +174,8 @@ inline void SimpleBinning<T>::operator<<(const T& x)
     obs_value_traits<result_type>::resize_same_as(last_bin_[0],x);
     obs_value_traits<result_type>::resize_same_as(sum_[0],x);
     obs_value_traits<result_type>::resize_same_as(sum2_[0],x);
-    //obs_value_traits<result_type>::resize_same_as(max_,x);
-    //obs_value_traits<result_type>::resize_same_as(min_,x);
+    obs_value_traits<result_type>::resize_same_as(max_,x);
+    obs_value_traits<result_type>::resize_same_as(min_,x);
   }
 
   if(obs_value_traits<T>::size(x)!=size()) {
@@ -245,8 +245,8 @@ template <> inline void SimpleBinning<std::valarray<double> >::operator<<(const 
     obs_value_traits<result_type>::resize_same_as(last_bin_[0],x);
     obs_value_traits<result_type>::resize_same_as(sum_[0],x);
     obs_value_traits<result_type>::resize_same_as(sum2_[0],x);
-    //obs_value_traits<result_type>::resize_same_as(max_,x);
-    //obs_value_traits<result_type>::resize_same_as(min_,x);
+    obs_value_traits<result_type>::resize_same_as(max_,x);
+    obs_value_traits<result_type>::resize_same_as(min_,x);
   }
 
   if(obs_value_traits<std::valarray<double> >::size(x)!=size()) {
@@ -429,7 +429,7 @@ inline typename SimpleBinning<T>::result_type SimpleBinning<T>::variance() const
   if(count()<2)
     {
       result_type retval;
-      obs_value_traits<T>::resize_same_as(retval,sum_);
+      obs_value_traits<T>::resize_same_as(retval,min_);
       retval=inf();
       return retval;
     }
@@ -535,7 +535,7 @@ inline typename obs_value_traits<T>::time_type SimpleBinning<T>::tau() const
   else
   {
     time_type retval;
-    obs_value_traits<T>::resize_same_as(retval,sum_);
+    obs_value_traits<T>::resize_same_as(retval,min_);
     retval=inf();
     return retval;
   }
@@ -673,21 +673,17 @@ template <class T>
 inline void SimpleBinning<T>::save(ODump& dump) const
 {
   AbstractBinning<T>::save(dump);
-    dump << sum_ << sum2_ << bin_entries_ << last_bin_ << count_ << thermal_count_;
+    dump << sum_ << sum2_ << bin_entries_ << last_bin_ << count_ << thermal_count_<<min_<<max_;
 }
 
 template <class T>
 inline void SimpleBinning<T>::load(IDump& dump)
 {
   AbstractBinning<T>::load(dump);
-  if(dump.version() >= 305 || dump.version() == 0/* version is not set */)
-    dump >> sum_ >> sum2_ >> bin_entries_ >> last_bin_ >> count_ >> thermal_count_;
-  else if(dump.version() >= 302 || dump.version() == 0 /* version is not set */){
+  if(dump.version() >= 302 || dump.version() == 0 /* version is not set */){
     //previously saved min and max will be ignored from now on.
-    value_type min_ignored;
-    value_type max_ignored;
     dump >> sum_ >> sum2_ >> bin_entries_ >> last_bin_ >> count_ >> thermal_count_
-         >> min_ignored >> max_ignored;
+         >> min_>> max_;
   }
   else {
     // some data types have changed from 32 to 64 Bit between version 301 and 302

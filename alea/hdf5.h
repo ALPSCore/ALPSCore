@@ -75,6 +75,7 @@ namespace mocasito {
     template<typename E, typename T> context<E> & assign(context<E> & c, alps::AbstractSimpleObservable<T> const &obs){
       assign(c,*((alps::Observable*)&obs)); //dump observable first.
       (c+std::string("count"))=obs.count();
+      if(obs.count()==0){ throw(std::invalid_argument("trying to save observable "+obs.name()+"that has a count of zero")); }
       (c+std::string("mean/value"))=obs.mean();
       (c+std::string("mean/error"))=obs.error();
       if(obs.has_variance())
