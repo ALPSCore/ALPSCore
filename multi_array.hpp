@@ -161,9 +161,9 @@ std::ostream& operator<<(std::ostream& out, const boost::multi_array<T, 2, Alloc
 {
   std::vector<uint32_t> ex(x.shape(), x.shape() + x.num_dimensions());
   out << "{";
-  for (int i=0;i<ex[0];++i) {
+  for (uint32_t i=0;i<ex[0];++i) {
     out << "{";
-    for (int j=0;j<ex[1];++j) {
+    for (uint32_t j=0;j<ex[1];++j) {
       out << x[i][j];
       if (j!=ex[1]-1)
         out << ", ";
