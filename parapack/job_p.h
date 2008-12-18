@@ -166,10 +166,7 @@ public:
     if (type == xml::element && in_task_ && name == "TASK") in_task_ = false;
   }
 
-  void text(std::string const& /* text */) {
-    boost::throw_exception(std::runtime_error(
-      "text contents not allowed in <INPUT> and <OUTPUT> tags"));
-  }
+  void text(std::string const& /* text */) {}
 
 private:
   std::string& in_;
