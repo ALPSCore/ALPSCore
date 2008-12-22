@@ -33,7 +33,6 @@
 #ifndef ALPS_ALEA_HDF5_H
 #define ALPS_ALEA_HDF5_H
 
-#ifdef ALPS_HAVE_MOCASITO
 
 ///New ALPS ALEA hdf5 interface
 #ifdef ALPS_HAVE_HDF5
@@ -44,10 +43,10 @@
 #include<alps/alea/detailedbinning.h>
 #include<alps/alea/nobinning.h>
 #include<alps/alea/abstractsimpleobservable.h>
-#include<mocasito/src/io/container.hpp>
-#include<mocasito/src/io/hdf5.hpp>
-#include<mocasito/src/io/util.hpp>
-#include<mocasito/src/io/context.hpp>
+#include<mocasito/io/container.hpp>
+#include<mocasito/io/hdf5.hpp>
+#include<mocasito/io/util.hpp>
+#include<mocasito/io/context.hpp>
 namespace mocasito {
   namespace io {
     using namespace detail;
@@ -75,7 +74,11 @@ namespace mocasito {
     template<typename E, typename T> context<E> & assign(context<E> & c, alps::AbstractSimpleObservable<T> const &obs){
       assign(c,*((alps::Observable*)&obs)); //dump observable first.
       (c+std::string("count"))=obs.count();
-      if(obs.count()==0){ throw(std::invalid_argument("trying to save observable "+obs.name()+"that has a count of zero")); }
+      if(obs.count()==0){ 
+        std::cerr<<"warning: observable "<<obs.name()<<" has a count of zero!"<<std::endl;
+        return c;
+        //throw(std::invalid_argument("trying to save observable "+obs.name()+" that has a count of zero")); 
+      }
       (c+std::string("mean/value"))=obs.mean();
       (c+std::string("mean/error"))=obs.error();
       if(obs.has_variance())
@@ -205,7 +208,6 @@ template<typename T> template<typename E> void AbstractBinning<T>::read_hdf5(con
 }
 
 } //namespace
-#endif //ALPS_HAVE_MOCASITO
 #endif //ALPS_HAVE_HDF5
 
 #endif // ALPS_ALEA_HDF5_H

@@ -624,7 +624,7 @@ void ObservableSetXMLHandler::end_child(std::string const& name,
   }
 }
 
-#ifdef ALPS_HAVE_MOCASITO
+#ifdef ALPS_HAVE_HDF5
 
 void ObservableSet::write_hdf5(boost::filesystem::path const & path, std::size_t realization, std::size_t clone) const {
   mocasito::io::container<mocasito::io::hdf5> container(path.string());

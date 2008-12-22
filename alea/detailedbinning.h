@@ -85,7 +85,7 @@ public:
   
   void compact();
   
-#ifdef ALPS_HAVE_MOCASITO
+#ifdef ALPS_HAVE_HDF5
   template<typename E> void read_hdf5 (const E &engine);
   template<typename E> void write_hdf5 (E &engine) const;
 #endif  

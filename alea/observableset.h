@@ -44,7 +44,7 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/serialization/split_member.hpp>
 #include <map>
-#ifdef ALPS_HAVE_MOCASITO
+#ifdef ALPS_HAVE_HDF5
 #include <alps/alea/hdf5.h>
 #endif
 namespace alps {
@@ -240,7 +240,7 @@ class ObservableSet: public std::map<std::string,Observable*>
 
   void read_xml(std::istream& infile, const XMLTag& tag);
 
-#ifdef ALPS_HAVE_MOCASITO
+#ifdef ALPS_HAVE_HDF5
   void write_hdf5(boost::filesystem::path const &, std::size_t realization=0, std::size_t clone=0) const;
   void read_hdf5(boost::filesystem::path const &, std::size_t realization=0, std::size_t clone=0);
 #endif
