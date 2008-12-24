@@ -31,6 +31,15 @@
 #ifndef ALPS_CONFIG_H
 #define ALPS_CONFIG_H
 
+// Define to 1 if configuration is done by autoconf configure script
+#undef ALPS_AUTOCONF_CONFIGURE
+
+#ifdef ALPS_AUTOCONF_CONFIGURE
+
+//
+// configured by autoconf
+//
+
 // ALPS version
 #undef ALPS_VERSION
 
@@ -56,41 +65,27 @@
 #undef ALPS_CONFIG_USER
 
 //
-// C/C++ headers
+// C headers
 //
-
-// Define to 1 if you have the <inttypes.h> header file.
-#undef ALPS_HAVE_INTTYPES_H
-
-// Define to 1 if you have the <pwd.h> header file.
-#undef ALPS_HAVE_PWD_H
-
-// Define to 1 if you have the <stdarg.h> header file.
-#undef ALPS_HAVE_STDARG_H
-
-// Define to 1 if you have the <stdint.h> header file.
-#undef ALPS_HAVE_STDINT_H
-
-// Define to 1 if you have the <unistd.h> header file.
-#undef ALPS_HAVE_UNISTD_H
-
-// Define to 1 if you have the <bind/bitypes.h> header file.
-#undef ALPS_HAVE_BIND_BITYPES_H
 
 // Define to 1 if you have rpc/rpc.h and rpc/xdr.h
 #undef ALPS_HAVE_RPC_XDR_H
 
-// Define to 1 if you have the <sys/int_types.h> header file.
-#undef ALPS_HAVE_SYS_INT_TYPES_H
+// Define to 1 if you have the <stdarg.h> header file.
+#undef ALPS_HAVE_STDARG_H
 
 // Define to 1 if you have the <sys/systeminfo.h> header file.
 #undef ALPS_HAVE_SYS_SYSTEMINFO_H
 
-// Define to 1 if you have the <sys/time.h> header file.
-#undef ALPS_HAVE_SYS_TIME_H
-
 // Define to 1 if you have the <sys/types.h> header file.
 #undef ALPS_HAVE_SYS_TYPES_H
+
+// Define to 1 if you have the <unistd.h> header file.
+#undef ALPS_HAVE_UNISTD_H
+
+//
+// C++ headers
+//
 
 // Define to 1 if you have valarray<T>.
 #undef ALPS_HAVE_VALARRAY
@@ -158,22 +153,130 @@
 // Define to 1 if you use Xerces C++ XML parser by Apache Software Foundation.
 #undef ALPS_HAVE_XERCES_PARSER
 
+#else // ALPS_AUTOCONF_CONFIGURE
+
+//
+// configured by cmake
+//
+
+// ALPS version
+#cmakedefine ALPS_VERSION "@ALPS_VERSION@"
+
+// ALPS version (full string)
+#cmakedefine ALPS_VERSION_STRING "@ALPS_VERSION_STRING@"
+
+// latest publish year of ALPS
+#cmakedefine ALPS_YEAR "@ALPS_YEAR@"
+
+// install path of ALPS
+#undef ALPS_PREFIX
+
+// source directory of ALPS
+#undef ALPS_SRCDIR
+
+// XSLT PATH
+#cmakedefine ALPS_XML_DIR "@ALPS_XML_DIR@"
+
+// hostname where configure script was executed
+#cmakedefine ALPS_CONFIG_HOST "@ALPS_CONFIG_HOST@"
+
+// username who executed configure script
+#cmakedefine ALPS_CONFIG_USER "@ALPS_CONFIG_USER@"
+
+//
+// C headers
+//
+
+// Define to 1 if you have rpc/rpc.h and rpc/xdr.h
+#cmakedefine ALPS_HAVE_RPC_XDR_H
+
+// Define to 1 if you have the <stdarg.h> header file.
+#cmakedefine ALPS_HAVE_STDARG_H
+
+// Define to 1 if you have the <sys/systeminfo.h> header file.
+#cmakedefine ALPS_HAVE_SYS_SYSTEMINFO_H
+
+// Define to 1 if you have the <sys/types.h> header file.
+#cmakedefine ALPS_HAVE_SYS_TYPES_H
+
+// Define to 1 if you have the <unistd.h> header file.
+#cmakedefine ALPS_HAVE_UNISTD_H
+
+//
+// C++ headers
+//
+
+// Define to 1 if you have valarray<T>.
+#cmakedefine ALPS_HAVE_VALARRAY
+
+//
+// Libraries
+//
+
+// Define to 1 if you have the PTHREAD library
+#undef ALPS_HAVE_PTHREAD
+
+// Define to 1 if you have the MPI library
+#undef ALPS_HAVE_MPI
+
+// Define to 1 if you have the HDF5 library
+#undef ALPS_HAVE_HDF5
+
+// Define to 1 if you have the Boost.MPI library
+#undef ALPS_HAVE_BOOST_MPI
+
+// Define to 1 if you have the Boost.Signals library
+#undef ALPS_HAVE_BOOST_SIGNALS
+
+// Define to 1 if you have the Boost.ThreadMPI library
+#undef ALPS_HAVE_BOOST_THREAD
+
+// Define to 1 if you have wchar support in Boost.Regex and Boost.Serialization
+#undef ALPS_HAVE_BOOST_WCHAR
+
+//
+// BLAS and LAPACK
+//
+
+// Define if you have BLAS library
+#undef ALPS_HAVE_BLAS
+
+// Define if you have LAPACK library
+#undef ALPS_HAVE_LAPACK
+
+// Define if you have Intel Math Kernel Library
+#undef ALPS_HAVE_MKL
+
+// Define if you have the Digital Extended Math Library
+#undef ALPS_HAVE_DXML
+
+// Define if you have SGI SCSL Library
+#undef ALPS_HAVE_SCSL
+
+// Define if you have Mac OS X vecLib framework
+#undef ALPS_HAVE_VECLIB
+
+// Define if you have IBM ESSL Library
+#undef ALPS_HAVE_ESSL
+
+// Define if you have ATLAS library
+#undef ALPS_HAVE_ATLAS
+
+//
+// XML parser
+//
+
+// Define to 1 if you use Expat XML parser by James Clark.
+#undef ALPS_HAVE_EXPAT_PARSER
+
+// Define to 1 if you use Xerces C++ XML parser by Apache Software Foundation.
+#undef ALPS_HAVE_XERCES_PARSER
+
+#endif // ALPS_AUTOCONF_CONFIGURE
+
 //
 // Introduce [int,uint]*_t into alps namespace
 //
-
-#ifdef ALPS_HAVE_STDINT_H
-# include <stdint.h>
-#elif defined(ALPS_HAVE_INTTYPES_H)
-# include <inttypes.h>
-#elif defined(ALPS_HAVE_SYS_INT_TYPES_H)
-# include <sys/int_types.h>
-#elif defined(ALPS_HAVE_BIND_BITYPES_H)
-# include <bind/bitypes.h>
-  typedef u_int8_t uint8_t;
-  typedef u_int16_t uint16_t;
-  typedef u_int32_t uint32_t;
-#endif
 
 #include <boost/cstdint.hpp>
 
