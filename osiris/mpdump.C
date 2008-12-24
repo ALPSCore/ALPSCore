@@ -116,7 +116,7 @@ void OMPDump::send(const ProcessList& where,int32_t t)
   // send to all processes and 
   // return the first (if any) nonzero return value
   
-  for (int i=0;i<where.size();i++)
+  for (std::size_t i=0; i < where.size(); ++i)
     if(!where[i].local())
        send(where[i],t);
 }

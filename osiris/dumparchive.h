@@ -46,7 +46,6 @@
 #include <boost/version.hpp>
 #include <cstring>
 #include <iostream>
-#include <stdint.h>
 
 namespace alps {
 

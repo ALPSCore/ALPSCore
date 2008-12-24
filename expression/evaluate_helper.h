@@ -151,7 +151,7 @@ struct evaluate_helper<float>
   }
   static float evaluate_symbol(const std::string& name,bool=false)
   {
-    if (name=="Pi" || name=="PI" || name == "pi") return std::acos(-1.);
+    if (name=="Pi" || name=="PI" || name == "pi") return static_cast<float>(std::acos(-1.));
     boost::throw_exception(std::runtime_error("can not evaluate " + name));
     return 0.;
   }

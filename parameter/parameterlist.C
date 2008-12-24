@@ -71,7 +71,8 @@ void ParameterList::parse(std::istream& is, bool replace_env) {
 }
 
 void ParameterList::replace_envvar() {
-  BOOST_FOREACH(Parameters& p, *this) p.replace_envvar();
+  for (iterator itr = this->begin(); itr != this->end(); ++itr) itr->replace_envvar();
+  // BOOST_FOREACH(Parameters& p, *this) p.replace_envvar();
 }
 
 
