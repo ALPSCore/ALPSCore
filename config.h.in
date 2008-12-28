@@ -282,35 +282,35 @@
 
 namespace alps {
 
-typedef boost::int8_t int8_t;
-typedef boost::int_least8_t int_least8_t;
-typedef boost::int_fast8_t int_fast8_t;
-typedef boost::uint8_t uint8_t;
-typedef boost::uint_least8_t uint_least8_t;
-typedef boost::uint_fast8_t uint_fast8_t;
+using boost::int8_t;
+using boost::int_least8_t;
+using boost::int_fast8_t;
+using boost::uint8_t;
+using boost::uint_least8_t;
+using boost::uint_fast8_t;
 
-typedef boost::int16_t int16_t;
-typedef boost::int_least16_t int_least16_t;
-typedef boost::int_fast16_t int_fast16_t;
-typedef boost::uint16_t uint16_t;
-typedef boost::uint_least16_t uint_least16_t;
-typedef boost::uint_fast16_t uint_fast16_t;
+using boost::int16_t;
+using boost::int_least16_t;
+using boost::int_fast16_t;
+using boost::uint16_t;
+using boost::uint_least16_t;
+using boost::uint_fast16_t;
 
-typedef boost::int32_t int32_t;
-typedef boost::int_least32_t int_least32_t;
-typedef boost::int_fast32_t int_fast32_t;
-typedef boost::uint32_t uint32_t;
-typedef boost::uint_least32_t uint_least32_t;
-typedef boost::uint_fast32_t uint_fast32_t;
+using boost::int32_t;
+using boost::int_least32_t;
+using boost::int_fast32_t;
+using boost::uint32_t;
+using boost::uint_least32_t;
+using boost::uint_fast32_t;
 
 #ifndef BOOST_NO_INT64_T
 
-typedef boost::int64_t int64_t;
-typedef boost::int_least64_t int_least64_t;
-typedef boost::int_fast64_t int_fast64_t;
-typedef boost::uint64_t uint64_t;
-typedef boost::uint_least64_t uint_least64_t;
-typedef boost::uint_fast64_t uint_fast64_t;
+using boost::int64_t;
+using boost::int_least64_t;
+using boost::int_fast64_t;
+using boost::uint64_t;
+using boost::uint_least64_t;
+using boost::uint_fast64_t;
 
 #endif
 
