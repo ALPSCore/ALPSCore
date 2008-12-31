@@ -67,7 +67,7 @@ namespace mocasito {
     }
     template<typename E, typename T> std::valarray<T> & assign(std::valarray<T> &val, const context<E>& c){
       if (c.dimensions() != 1) throw(std::invalid_argument("this variable has dimension != 1"));
-      val.resize(c.extends()[0]);
+      val.resize(c.extent()[0]);
       c.get(&(val[0]));
       return val;
     }
@@ -179,8 +179,11 @@ template<typename T> template<typename E> void NoBinning<T>::write_hdf5(const E 
   (c+std::string("mean/sum2"))=sum2_;
 }
 template<typename T> template<typename E> void NoBinning<T>::read_hdf5(const E &c){
+  std::cerr<<"1: engine address is: "<<&c<<std::endl;
   AbstractBinning<T>::read_hdf5(c); //call base class function
+  std::cerr<<"2: engine address is: "<<&c<<std::endl;
   count_=(c+std::string("count"));
+  std::cerr<<"3: engine address is: "<<&c<<std::endl;
   thermal_count_=(c+std::string("thermal_count"));
   assign(sum_,(c+std::string("mean/sum")));
   assign(sum2_,(c+std::string("mean/sum2")));
