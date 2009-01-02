@@ -127,7 +127,7 @@ template<typename T, typename B> void SimpleObservable<T,B>::read_hdf5(boost::fi
 template<typename T> template<typename E> void SimpleBinning<T>::read_hdf5(const E &c){
   AbstractBinning<T>::read_hdf5(c); //call base class function
   count_=(c+std::string("count"));
-  std::cout<<"simplebinning read: "<<count_<<std::endl;
+  //std::cout<<"simplebinning read: "<<count_<<std::endl;
   thermal_count_=(c+std::string("thermal_count"));
   bin_entries_=(c+std::string("mean/bins/bin_entries"));
   last_bin_.resize((c+std::string("mean/bins/size")));
@@ -179,11 +179,8 @@ template<typename T> template<typename E> void NoBinning<T>::write_hdf5(const E 
   (c+std::string("mean/sum2"))=sum2_;
 }
 template<typename T> template<typename E> void NoBinning<T>::read_hdf5(const E &c){
-  std::cerr<<"1: engine address is: "<<&c<<std::endl;
   AbstractBinning<T>::read_hdf5(c); //call base class function
-  std::cerr<<"2: engine address is: "<<&c<<std::endl;
   count_=(c+std::string("count"));
-  std::cerr<<"3: engine address is: "<<&c<<std::endl;
   thermal_count_=(c+std::string("thermal_count"));
   assign(sum_,(c+std::string("mean/sum")));
   assign(sum2_,(c+std::string("mean/sum2")));
@@ -204,10 +201,13 @@ template<typename T> template<typename E> void BasicDetailedBinning<T>::read_hdf
   }
 }
 template<typename T> template<typename E> void AbstractBinning<T>::write_hdf5(const E &c) const{
-  (c+std::string("thermalized"))=thermalized_;
+  int thermalized=thermalized_;
+  (c+std::string("thermalized"))=thermalized; //gcc cannot write hdf5 bools and then read them again?
 }
 template<typename T> template<typename E> void AbstractBinning<T>::read_hdf5(const E &c){
-  thermalized_=(c+std::string("thermalized"));
+  int thermalized;
+  thermalized=(c+std::string("thermalized"));
+  thermalized_=(bool)thermalized;
 }
 
 } //namespace
