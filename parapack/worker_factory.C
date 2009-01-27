@@ -168,13 +168,33 @@ worker_factory* worker_factory::instance() {
 }
 
 worker_factory::creator_pointer_type worker_factory::make_creator(Parameters const& params) const {
-  if (!params.defined("WORKER")) {
-    std::cerr << "Parameter WORKER not defined\n";
+  if (worker_creators_.size() == 0) {
+    std::cerr << "No worker regisered\n";
     boost::throw_exception(std::runtime_error("worker_factory::make_creator()"));
+  }
+  if (!params.defined("WORKER")) {
+    if (worker_creators_.size() == 1) {
+      return worker_creators_.begin()->second;
+    } else {
+      std::cerr << "Please specify one of the workers (";
+      for (creator_map_type::const_iterator itr = worker_creators_.begin();
+           itr != worker_creators_.end(); ++itr) {
+        if (itr != worker_creators_.begin()) std::cerr << ", ";
+        std::cerr << itr->first;
+      }
+      std::cerr << ") by WORKER parameter\n";
+      boost::throw_exception(std::runtime_error("worker_factory::make_creator()"));
+    }
   }
   creator_map_type::const_iterator itr = worker_creators_.find(params["WORKER"]);
   if (itr == worker_creators_.end() || itr->second == 0) {
-    std::cerr << "Unknown worker: " << params["WORKER"] << std::endl;
+    std::cerr << "Unknown worker: " << params["WORKER"] << " (registered workers: ";
+    for (creator_map_type::const_iterator itr = worker_creators_.begin();
+         itr != worker_creators_.end(); ++itr) {
+      if (itr != worker_creators_.begin()) std::cerr << ", ";
+      std::cerr << itr->first;
+    }
+    std::cerr << ")\n";
     boost::throw_exception(std::runtime_error("worker_factory::make_creator()"));
   }
   return itr->second;
@@ -210,7 +230,13 @@ evaluator_factory::make_creator(Parameters const& params) const {
     } else {
       creator_map_type::const_iterator itr = evaluator_creators_.find(params["EVALUATOR"]);
       if (itr == evaluator_creators_.end() || itr->second == 0) {
-        std::cerr << "Unknown evaluator: " << params["EVALUATOR"] << std::endl;
+        std::cerr << "Unknown evaluator: " << params["EVALUATOR"] << " (registered evaluators: ";
+        for (creator_map_type::const_iterator itr = evaluator_creators_.begin();
+             itr != evaluator_creators_.end(); ++itr) {
+          if (itr != evaluator_creators_.begin()) std::cerr << ", ";
+          std::cerr << itr->first;
+        }
+        std::cerr << ")\n";
         boost::throw_exception(std::runtime_error("evaluator_factory::make_creator()"));
       }
       return itr->second;
