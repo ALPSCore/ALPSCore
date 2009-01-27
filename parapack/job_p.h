@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -104,7 +104,7 @@ public:
       if (task_.file_in_str_.empty())
         boost::throw_exception(std::runtime_error("missing <INPUT> tag in <TASK> tag"));
       if (task_.file_out_str_.empty())
-        boost::throw_exception(std::runtime_error("missing <OUTPUT> tag in <TASK> tag"));
+        task_.file_out_str_ = task_.file_in_str_;
       task_.base_ = regex_replace(task_.file_out_str_, boost::regex("\\.out\\.xml$"), "");
     }
   }

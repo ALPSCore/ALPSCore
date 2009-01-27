@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -204,8 +204,12 @@ int load_filename(boost::filesystem::path const& file, std::string& file_in_str,
   alps::filename_xml_handler handler(file_in_str, file_out_str, is_master);
   alps::XMLParser parser(handler);
   parser.parse(file);
-  if (is_master && file_in_str.empty())
-    file_in_str = regex_replace(file_out_str, boost::regex("\\.out\\.xml$"), ".in.xml");
+  if (is_master) {
+    if (file_out_str.empty())
+      file_out_str = file.leaf();
+    if (file_in_str.empty())
+      file_in_str = regex_replace(file_out_str, boost::regex("\\.out\\.xml$"), ".in.xml");
+  }
   return is_master ? 1 : 2;
 }
 
