@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2005 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2001-2009 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -41,7 +41,7 @@ LatticeDescriptor::LatticeDescriptor(const XMLTag& intag, std::istream& p)
 {
   XMLTag tag(intag);
   name_ = tag.attributes["name"];
-  dim_ = tag.attributes["dimension"]=="" ? 0 
+  dim_ = tag.attributes["dimension"]=="" ? 0
            : boost::lexical_cast<uint32_t,std::string>(tag.attributes["dimension"]);
   if(tag.attributes["ref"]!="")
     boost::throw_exception(std::runtime_error("Illegal ref attribute in fully defined <LATTICE>"));
@@ -120,7 +120,7 @@ void LatticeDescriptor::write_xml(oxstream& xml) const
     for (boost::tie(v, v_end) = basis_vectors(); v != v_end; ++v)
       xml << start_tag("VECTOR") << no_linebreak << write_vector(*v)
           << end_tag("VECTOR");
-    xml << end_tag("BASIS");        
+    xml << end_tag("BASIS");
   }
   if (num_reciprocal_basis_vectors()) {
     xml << start_tag("RECIPROCALBASIS");
@@ -128,15 +128,15 @@ void LatticeDescriptor::write_xml(oxstream& xml) const
     for (boost::tie(v, v_end) = reciprocal_basis_vectors(); v != v_end; ++v)
       xml << start_tag("VECTOR") << no_linebreak << write_vector(*v)
           << end_tag("VECTOR");
-    xml << end_tag("RECIPROCALBASIS");        
+    xml << end_tag("RECIPROCALBASIS");
   }
   xml << end_tag("LATTICE");
 }
 
 
-FiniteLatticeDescriptor::FiniteLatticeDescriptor() 
-  : name_("open chain"), 
-    lattice_name_("open chain"), 
+FiniteLatticeDescriptor::FiniteLatticeDescriptor()
+  : name_("open chain"),
+    lattice_name_("open chain"),
     dim_(1)
 {
   extent_.resize(dimension(),"L");
@@ -149,18 +149,18 @@ FiniteLatticeDescriptor::FiniteLatticeDescriptor(const XMLTag& intag,
 {
   XMLTag tag(intag);
   name_ = tag.attributes["name"];
-  dim_ = tag.attributes["dimension"]=="" ? 0 
+  dim_ = tag.attributes["dimension"]=="" ? 0
            : boost::lexical_cast<uint32_t,std::string>(tag.attributes["dimension"]);
   if(tag.attributes["ref"]!="")
     boost::throw_exception(std::runtime_error("Illegal ref attribute in fully defined <FINITELATTICE>"));
-  
-  if (tag.type == XMLTag::SINGLE) 
+
+  if (tag.type == XMLTag::SINGLE)
     boost::throw_exception(std::runtime_error("missing <LATTICE> element in <FINITELATTICE>"));
 
   tag=parse_tag(p);
   if (tag.name!="LATTICE")
     boost::throw_exception(std::runtime_error("missing <LATTICE> element in <FINITELATTICE>"));
-  
+
   lattice_name_=tag.attributes["ref"];
   if(lattice_name_!="")   {
     if (tag.type !=XMLTag::SINGLE) {
@@ -174,10 +174,10 @@ FiniteLatticeDescriptor::FiniteLatticeDescriptor(const XMLTag& intag,
   }
   else
     lattice_=LatticeDescriptor(tag,p);
-  
-  static_cast<base_type::parent_lattice_type&>(*this) 
+
+  static_cast<base_type::parent_lattice_type&>(*this)
    = static_cast<const LatticeDescriptor::base_type&>(lattice_);
-  
+
   if (dim_==0)
     dim_ = alps::dimension(lattice_);
   else if (alps::dimension(lattice_)!=0 && (alps::dimension(lattice_) !=dim_))
@@ -245,9 +245,9 @@ void FiniteLatticeDescriptor::write_xml(oxstream& xml) const
   else
     xml << start_tag("LATTICE") << attribute("ref", lattice_name_) << end_tag("LATTICE");
   for (Parameters::const_iterator it=flparms_.begin();it!=flparms_.end();++it)
-    xml << start_tag("PARAMETER") << attribute("name", it->key()) 
+    xml << start_tag("PARAMETER") << attribute("name", it->key())
         << attribute("default", it->value()) << end_tag("PARAMETER");
-  for (int i=0;i<dimension();++i) 
+  for (int i=0;i<dimension();++i)
     xml << start_tag("EXTENT") << attribute("dimension", i+1) << attribute("size", extent_[i]) << end_tag();
   for (int i=0;i<dimension();++i)
     if (bc_[i] != "")
@@ -273,7 +273,7 @@ void FiniteLatticeDescriptor::set_parameters(const Parameters& p)
     if(bc_[i]!="")
       while (parms.defined(bc_[i]) && static_cast<std::string>(parms[bc_[i]]) != bc_[i])
         bc_[i] = static_cast<std::string>(parms[bc_[i]]);
-    extent_[i] = alps::evaluate<double>(extent_[i], parms);
+    extent_[i] = static_cast<int>(alps::evaluate<double>(extent_[i], parms));
   }
 }
 
