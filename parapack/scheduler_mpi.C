@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -384,11 +384,11 @@ int start(int argc, char** argv) {
               check_queue.push(next_taskinfo(opt.checkpoint_interval));
             } else if (q.type == check_type::checkpoint) {
               // regular checkpoint
-              if (tasks[q.task_id].is_running(q.clone_id))
+              if (tasks[q.task_id].on_memory() && tasks[q.task_id].is_running(q.clone_id))
                 tasks[q.task_id].checkpoint(proxy, q.clone_id);
             } else {
               // regular progress check
-              if (tasks[q.task_id].is_running(q.clone_id))
+              if (tasks[q.task_id].on_memory() && tasks[q.task_id].is_running(q.clone_id))
                 tasks[q.task_id].update_info(proxy, q.clone_id);
             }
           } else {
