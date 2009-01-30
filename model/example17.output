@@ -1,13 +1,14 @@
 <HAMILTONIAN name="spin">
+  <PARAMETER name="J0" default="0"/>
+  <PARAMETER name="J" default="J0"/>
   <PARAMETER name="Jz" default="J"/>
   <PARAMETER name="Jxy" default="J"/>
-  <PARAMETER name="J" default="1"/>
-  <PARAMETER name="Jz'" default="J'"/>
-  <PARAMETER name="Jxy'" default="J'"/>
-  <PARAMETER name="J0" default="0"/>
-  <PARAMETER name="J'" default="J0"/>
   <PARAMETER name="Jz0" default="Jz"/>
   <PARAMETER name="Jxy0" default="Jxy"/>
+  <PARAMETER name="J1" default="0"/>
+  <PARAMETER name="J'" default="J1"/>
+  <PARAMETER name="Jz'" default="J'"/>
+  <PARAMETER name="Jxy'" default="J'"/>
   <PARAMETER name="Jz1" default="Jz'"/>
   <PARAMETER name="Jxy1" default="Jxy'"/>
   <PARAMETER name="h" default="0"/>
@@ -37,15 +38,16 @@
   </BONDTERM>
 </HAMILTONIAN>
 <HAMILTONIAN name="spin">
+  <PARAMETER name="J0" default="0"/>
+  <PARAMETER name="J" default="J0"/>
   <PARAMETER name="Jz" default="J"/>
   <PARAMETER name="Jxy" default="J"/>
-  <PARAMETER name="J" default="1"/>
-  <PARAMETER name="Jz'" default="J'"/>
-  <PARAMETER name="Jxy'" default="J'"/>
-  <PARAMETER name="J0" default="0"/>
-  <PARAMETER name="J'" default="J0"/>
   <PARAMETER name="Jz0" default="Jz"/>
   <PARAMETER name="Jxy0" default="Jxy"/>
+  <PARAMETER name="J1" default="0"/>
+  <PARAMETER name="J'" default="J1"/>
+  <PARAMETER name="Jz'" default="J'"/>
+  <PARAMETER name="Jxy'" default="J'"/>
   <PARAMETER name="Jz1" default="Jz'"/>
   <PARAMETER name="Jxy1" default="Jxy'"/>
   <PARAMETER name="h" default="0"/>
@@ -54,7 +56,6 @@
   <PARAMETER name="h0" default="h"/>
   <PARAMETER name="Gamma0" default="Gamma"/>
   <PARAMETER name="D0" default="D"/>
-  <PARAMETER name="J1" default="0"/>
   <BASIS ref="spin"/>
   <SITETERM site="i">
     <PARAMETER name="h#" default="h"/>
@@ -79,15 +80,16 @@
   </BONDTERM>
 </HAMILTONIAN>
 <HAMILTONIAN name="spin">
+  <PARAMETER name="J0" default="0"/>
+  <PARAMETER name="J" default="J0"/>
   <PARAMETER name="Jz" default="J"/>
   <PARAMETER name="Jxy" default="J"/>
-  <PARAMETER name="J" default="1"/>
-  <PARAMETER name="Jz'" default="J'"/>
-  <PARAMETER name="Jxy'" default="J'"/>
-  <PARAMETER name="J0" default="0"/>
-  <PARAMETER name="J'" default="J0"/>
   <PARAMETER name="Jz0" default="Jz"/>
   <PARAMETER name="Jxy0" default="Jxy"/>
+  <PARAMETER name="J1" default="0"/>
+  <PARAMETER name="J'" default="J1"/>
+  <PARAMETER name="Jz'" default="J'"/>
+  <PARAMETER name="Jxy'" default="J'"/>
   <PARAMETER name="Jz1" default="Jz'"/>
   <PARAMETER name="Jxy1" default="Jxy'"/>
   <PARAMETER name="h" default="0"/>
@@ -96,7 +98,6 @@
   <PARAMETER name="h0" default="h"/>
   <PARAMETER name="Gamma0" default="Gamma"/>
   <PARAMETER name="D0" default="D"/>
-  <PARAMETER name="J1" default="0"/>
   <BASIS ref="spin"/>
   <SITETERM site="i">
     <PARAMETER name="h#" default="h"/>
@@ -121,15 +122,16 @@
   </BONDTERM>
 </HAMILTONIAN>
 <HAMILTONIAN name="spin">
+  <PARAMETER name="J0" default="0"/>
+  <PARAMETER name="J" default="J0"/>
   <PARAMETER name="Jz" default="J"/>
   <PARAMETER name="Jxy" default="J"/>
-  <PARAMETER name="J" default="1"/>
-  <PARAMETER name="Jz'" default="J'"/>
-  <PARAMETER name="Jxy'" default="J'"/>
-  <PARAMETER name="J0" default="0"/>
-  <PARAMETER name="J'" default="J0"/>
   <PARAMETER name="Jz0" default="Jz"/>
   <PARAMETER name="Jxy0" default="Jxy"/>
+  <PARAMETER name="J1" default="0"/>
+  <PARAMETER name="J'" default="J1"/>
+  <PARAMETER name="Jz'" default="J'"/>
+  <PARAMETER name="Jxy'" default="J'"/>
   <PARAMETER name="Jz1" default="Jz'"/>
   <PARAMETER name="Jxy1" default="Jxy'"/>
   <PARAMETER name="h" default="0"/>
@@ -138,7 +140,6 @@
   <PARAMETER name="h0" default="h"/>
   <PARAMETER name="Gamma0" default="Gamma"/>
   <PARAMETER name="D0" default="D"/>
-  <PARAMETER name="J1" default="0"/>
   <BASIS ref="spin"/>
   <SITETERM site="i">
     <PARAMETER name="h#" default="h"/>
@@ -163,15 +164,16 @@
   </BONDTERM>
 </HAMILTONIAN>
 <HAMILTONIAN name="spin">
+  <PARAMETER name="J0" default="0"/>
+  <PARAMETER name="J" default="J0"/>
   <PARAMETER name="Jz" default="J"/>
   <PARAMETER name="Jxy" default="J"/>
-  <PARAMETER name="J" default="1"/>
-  <PARAMETER name="Jz'" default="J'"/>
-  <PARAMETER name="Jxy'" default="J'"/>
-  <PARAMETER name="J0" default="0"/>
-  <PARAMETER name="J'" default="J0"/>
   <PARAMETER name="Jz0" default="Jz"/>
   <PARAMETER name="Jxy0" default="Jxy"/>
+  <PARAMETER name="J1" default="0"/>
+  <PARAMETER name="J'" default="J1"/>
+  <PARAMETER name="Jz'" default="J'"/>
+  <PARAMETER name="Jxy'" default="J'"/>
   <PARAMETER name="Jz1" default="Jz'"/>
   <PARAMETER name="Jxy1" default="Jxy'"/>
   <PARAMETER name="h" default="0"/>
@@ -201,15 +203,16 @@
   </BONDTERM>
 </HAMILTONIAN>
 <HAMILTONIAN name="spin">
+  <PARAMETER name="J0" default="0"/>
+  <PARAMETER name="J" default="J0"/>
   <PARAMETER name="Jz" default="J"/>
   <PARAMETER name="Jxy" default="J"/>
-  <PARAMETER name="J" default="1"/>
-  <PARAMETER name="Jz'" default="J'"/>
-  <PARAMETER name="Jxy'" default="J'"/>
-  <PARAMETER name="J0" default="0"/>
-  <PARAMETER name="J'" default="J0"/>
   <PARAMETER name="Jz0" default="Jz"/>
   <PARAMETER name="Jxy0" default="Jxy"/>
+  <PARAMETER name="J1" default="0"/>
+  <PARAMETER name="J'" default="J1"/>
+  <PARAMETER name="Jz'" default="J'"/>
+  <PARAMETER name="Jxy'" default="J'"/>
   <PARAMETER name="Jz1" default="Jz'"/>
   <PARAMETER name="Jxy1" default="Jxy'"/>
   <PARAMETER name="h" default="0"/>
@@ -239,15 +242,16 @@
   </BONDTERM>
 </HAMILTONIAN>
 <HAMILTONIAN name="spin">
+  <PARAMETER name="J0" default="0"/>
+  <PARAMETER name="J" default="J0"/>
   <PARAMETER name="Jz" default="J"/>
   <PARAMETER name="Jxy" default="J"/>
-  <PARAMETER name="J" default="1"/>
-  <PARAMETER name="Jz'" default="J'"/>
-  <PARAMETER name="Jxy'" default="J'"/>
-  <PARAMETER name="J0" default="0"/>
-  <PARAMETER name="J'" default="J0"/>
   <PARAMETER name="Jz0" default="Jz"/>
   <PARAMETER name="Jxy0" default="Jxy"/>
+  <PARAMETER name="J1" default="0"/>
+  <PARAMETER name="J'" default="J1"/>
+  <PARAMETER name="Jz'" default="J'"/>
+  <PARAMETER name="Jxy'" default="J'"/>
   <PARAMETER name="Jz1" default="Jz'"/>
   <PARAMETER name="Jxy1" default="Jxy'"/>
   <PARAMETER name="h" default="0"/>
@@ -277,15 +281,16 @@
   </BONDTERM>
 </HAMILTONIAN>
 <HAMILTONIAN name="spin">
+  <PARAMETER name="J0" default="0"/>
+  <PARAMETER name="J" default="J0"/>
   <PARAMETER name="Jz" default="J"/>
   <PARAMETER name="Jxy" default="J"/>
-  <PARAMETER name="J" default="1"/>
-  <PARAMETER name="Jz'" default="J'"/>
-  <PARAMETER name="Jxy'" default="J'"/>
-  <PARAMETER name="J0" default="0"/>
-  <PARAMETER name="J'" default="J0"/>
   <PARAMETER name="Jz0" default="Jz"/>
   <PARAMETER name="Jxy0" default="Jxy"/>
+  <PARAMETER name="J1" default="0"/>
+  <PARAMETER name="J'" default="J1"/>
+  <PARAMETER name="Jz'" default="J'"/>
+  <PARAMETER name="Jxy'" default="J'"/>
   <PARAMETER name="Jz1" default="Jz'"/>
   <PARAMETER name="Jxy1" default="Jxy'"/>
   <PARAMETER name="h" default="0"/>
