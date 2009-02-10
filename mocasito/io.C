@@ -1,5 +1,5 @@
-#include "../io/container.hpp"
-#include "../io/hdf5.hpp"
+#include "mocasito/io/container.hpp"
+#include "mocasito/io/hdf5.hpp"
 #include <complex>
 #include <iostream>
 #include <cassert>
@@ -132,6 +132,7 @@ template<typename Engine> void test_engine(std::string const & ifile, std::strin
 }
 int main(int argc, char ** argv){
 	if(argc != 2)
-		throw(std::invalid_argument("call this function with prog_name path_to_file "));
-	test_engine<mocasito::io::hdf5>(std::string("data/io") + argv[1] + ".h5");
+          test_engine<mocasito::io::hdf5>(std::string("io.h5"));
+        else
+          test_engine<mocasito::io::hdf5>(std::string("data/io") + argv[1] + ".h5");
 }
