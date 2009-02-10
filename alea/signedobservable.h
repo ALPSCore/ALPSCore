@@ -107,7 +107,6 @@ public:
     obs_.write_xml(oxs,p);
   }
 
-
   count_type count() const { return obs_.count();}
   result_type mean() const { return make_evaluator().mean();}
   result_type error() const { return make_evaluator().error();}
@@ -219,6 +218,10 @@ public:
   void add(const value_type& x) { operator<<(x);}
   void add(const value_type& x, sign_type s) { add(x*static_cast<element_type>(s));}
   bool is_thermalized() const { return super_type::obs_.is_thermalized();}
+#ifdef ALPS_HAVE_HDF5
+  void write_hdf5(const boost::filesystem::path& fn_hdf, std::size_t realization=0, std::size_t clone=0) const;
+  void read_hdf5 (const boost::filesystem::path& fn_hdf, std::size_t realization=0, std::size_t clone=0);
+#endif
 };
 
 

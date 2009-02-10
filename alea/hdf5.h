@@ -39,6 +39,7 @@
 #include<hdf5.h>
 #include<alps/alea/observableset.h>
 #include<alps/alea/simpleobservable.h>
+#include<alps/alea/signedobservable.h>
 #include<alps/alea/simplebinning.h>
 #include<alps/alea/detailedbinning.h>
 #include<alps/alea/nobinning.h>
@@ -47,6 +48,7 @@
 #include<mocasito/io/hdf5.hpp>
 #include<mocasito/io/util.hpp>
 #include<mocasito/io/context.hpp>
+
 namespace mocasito {
   namespace io {
     using namespace detail;
@@ -96,12 +98,9 @@ namespace mocasito {
       }
       return c;
     }
-    template<typename E, typename T, typename B> context<E> & assign(context<E>& c, const alps::SimpleObservable<T,B> &obs){
-      assign(c,*((alps::Observable*)&obs)); //dump observable first.
-      //if we have 'binning', even if it is 'nobinning', then all the
-      //information is hidden within that binning class. let's get it from
-      //there!
-      write_hdf5(c);
+    template<typename E, typename T> context<E> & assign(context<E> & c, alps::SignedObservable<T> const &obs){
+      (c+std::string("sign_name"))=obs.sign_name();
+      return c;
     }
   }
 }
@@ -127,7 +126,6 @@ template<typename T, typename B> void SimpleObservable<T,B>::read_hdf5(boost::fi
 template<typename T> template<typename E> void SimpleBinning<T>::read_hdf5(const E &c){
   AbstractBinning<T>::read_hdf5(c); //call base class function
   count_=(c+std::string("count"));
-  //std::cout<<"simplebinning read: "<<count_<<std::endl;
   thermal_count_=(c+std::string("thermal_count"));
   bin_entries_=(c+std::string("mean/bins/bin_entries"));
   last_bin_.resize((c+std::string("mean/bins/size")));
@@ -187,12 +185,12 @@ template<typename T> template<typename E> void NoBinning<T>::read_hdf5(const E &
 }
 template<typename T> template<typename E> void BasicDetailedBinning<T>::read_hdf5(const E &c){
   SimpleBinning<T>::read_hdf5(c); //call base class function
-  binsize_=(c+"mean/bins/binsize");
-  minbinsize_=(c+"mean/bins/minbinsize");
-  maxbinnum_=(c+"mean/bins/maxbinnum");
-  binentries_=(c+"mean/bins/binentries");
-  values_.resize(c+"mean/bins/values/size");
-  values2_.resize(c+"mean/bins/values/size");
+  binsize_=(c+std::string("mean/bins/binsize"));
+  minbinsize_=(c+std::string("mean/bins/minbinsize"));
+  maxbinnum_=(c+std::string("mean/bins/maxbinnum"));
+  binentries_=(c+std::string("mean/bins/binentries"));
+  values_.resize(c+std::string("mean/bins/values/size"));
+  values2_.resize(c+std::string("mean/bins/values/size"));
   for(std::size_t i=0;i<values_.size();++i){
     std::stringstream path ; path <<"mean/bins/values/"<<i;
     std::stringstream path1; path1<<"mean/bins/values2/"<<i;
@@ -210,7 +208,42 @@ template<typename T> template<typename E> void AbstractBinning<T>::read_hdf5(con
   thermalized_=(bool)thermalized;
 }
 
+template <typename OBS, typename SIGN> void SignedObservable<OBS,SIGN>::write_hdf5(const boost::filesystem::path& path, std::size_t realization, std::size_t clone) const{
+  {
+    mocasito::io::container<mocasito::io::hdf5> container(path.string());
+    std::stringstream obs_path;
+    obs_path<<"/simulation/realizations/"<<realization<<"/clones/"<<clone<<"/results/"<<super_type::name();
+    assign(container[obs_path           .str()],*this);
+  }
+  std::stringstream sign_times_obs_path;
+  sign_times_obs_path<<"/simulation/realizations/"<<realization<<"/clones/"<<clone<<"/results/"<<(this->obs_).name();
+  ((OBS*)&(this->obs_))->write_hdf5(path, realization, clone); 
+}
+template <class OBS, class SIGN> void SignedObservable<OBS,SIGN>::read_hdf5(const boost::filesystem::path& path, std::size_t realization, std::size_t clone){
+  {
+    mocasito::io::container<mocasito::io::hdf5> container(path.string());
+    std::stringstream obs_path;
+    obs_path<<"/simulation/realizations/"<<realization<<"/clones/"<<clone<<"/results/"<<this->name();
+    this->set_sign_name(container[obs_path.str()+std::string("/sign_name")]);
+    this->clear_sign();
+  }
+  std::stringstream sign_times_obs_path;
+  sign_times_obs_path<<"/simulation/realizations/"<<realization<<"/clones/"<<clone<<"/results/"<<std::string("Sign * ")+((this->obs_).name());
+  ((OBS*)&(this->obs_))->read_hdf5(path, realization, clone);
+}
 } //namespace
+/*namespace mocasito {
+  namespace io {
+    using namespace detail;
+    template<typename E, typename T, typename B> context<E> & assign(context<E>& c, const alps::SimpleObservable<T,B> &obs){
+      assign(c,*((alps::Observable*)&obs)); //dump observable first.
+      //if we have 'binning', even if it is 'nobinning', then all the
+      //information is hidden within that binning class. let's get it from
+      //there!
+      obs.write_hdf5(c);
+      return c;
+    }
+  }
+}*/
 #endif //ALPS_HAVE_HDF5
-
 #endif // ALPS_ALEA_HDF5_H
