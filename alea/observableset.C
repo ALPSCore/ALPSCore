@@ -635,13 +635,16 @@ void ObservableSet::write_hdf5(boost::filesystem::path const & path, std::size_t
     it->second->write_hdf5(path, realization, clone);
   }
 }
-void ObservableSet::read_hdf5(boost::filesystem::path const &, std::size_t realization, std::size_t clone){
-  /*mocasito::io::container<mocasito::io::hdf5> container(path.string());
+void ObservableSet::read_hdf5(boost::filesystem::path const & path, std::size_t realization, std::size_t clone){
+  mocasito::io::container<mocasito::io::hdf5> container(path.string());
   std::stringstream set_path;
   set_path<<"/simulation/realizations/"<<realization<<"/clones/"<<clone<<"/results";
   assign(*this,container[set_path.str()]);
-  //iterate through observable set, figure out the type of observable, and read it back in.
-*/
+  for(ObservableSet::iterator it=begin();it!=end();++it){ //this reads in all the observables
+    it->second->read_hdf5(path, realization, clone);
+  }
+  //once we're done we need to update the sign pointers
+  update_signs();
 }
 #endif
 

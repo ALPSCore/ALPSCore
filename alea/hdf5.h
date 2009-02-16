@@ -68,7 +68,11 @@ namespace mocasito {
       return c;
     }
     template<typename E, typename T> std::valarray<T> & assign(std::valarray<T> &val, const context<E>& c){
-      if (c.dimensions() != 1) throw(std::invalid_argument("this variable has dimension != 1"));
+      if (c.dimensions() ==0){
+        val.resize(0);
+        return val;
+      }
+      if (c.dimensions() > 1) throw(std::invalid_argument("this variable has dimension != 1")); //0 is ok for 'NULL' vector
       val.resize(c.extent()[0]);
       c.get(&(val[0]));
       return val;
@@ -232,18 +236,5 @@ template <class OBS, class SIGN> void SignedObservable<OBS,SIGN>::read_hdf5(cons
   ((OBS*)&(this->obs_))->read_hdf5(path, realization, clone);
 }
 } //namespace
-/*namespace mocasito {
-  namespace io {
-    using namespace detail;
-    template<typename E, typename T, typename B> context<E> & assign(context<E>& c, const alps::SimpleObservable<T,B> &obs){
-      assign(c,*((alps::Observable*)&obs)); //dump observable first.
-      //if we have 'binning', even if it is 'nobinning', then all the
-      //information is hidden within that binning class. let's get it from
-      //there!
-      obs.write_hdf5(c);
-      return c;
-    }
-  }
-}*/
 #endif //ALPS_HAVE_HDF5
 #endif // ALPS_ALEA_HDF5_H
