@@ -6,10 +6,12 @@ LDADD = $(top_builddir)/lib/alps/libalps.la $(top_builddir)/lib/comm-sgl/libcomm
 check_PROGRAMS =
 if HAVE_HDF5
 check_PROGRAMS += io
+check_PROGRAMS += alea_mocasito
 endif
 io_SOURCES = io.C
+alea_mocasito_SOURCES = alea_mocasito.cpp
 
-dist_noinst_DATA =
+dist_noinst_DATA = alea_mocasito.output
 
 .PHONY : test tests example examples
 test tests : check
