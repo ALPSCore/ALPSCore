@@ -87,7 +87,7 @@ template<typename Engine> void test_engine(std::string const & ifile, std::strin
 				assert(v[i] == w[i]);
 		}
 	}
-	{
+	/*{
 		typedef std::complex<double> nested_t[5];
 		{
 			mocasito::io::container<Engine> container(ifile, ofile);
@@ -96,7 +96,7 @@ template<typename Engine> void test_engine(std::string const & ifile, std::strin
 			container["/vectors/nested"] = w;
 			container.flush();
 		}
-	}
+	}*/
 	{
 		mocasito::io::container<Engine> container(ifile, ofile);
 		std::vector<int> v;

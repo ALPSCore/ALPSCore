@@ -32,7 +32,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 @ALPS_FULL_TRUE@am__append_1 = lattice model parapack
-@HAVE_HDF5_TRUE@am__append_2 = mocasito/io
+@HAVE_HDF5_TRUE@am__append_2 = mocasito/io mocasito/alea_mocasito
 @ALPS_FULL_TRUE@am__append_3 = $(TESTS_LATTICE) $(TESTS_MODEL) $(TESTS_PARAPACK)
 subdir = test
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
@@ -260,9 +260,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__confi
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  test/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  test/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign  test/Makefile
+	  $(AUTOMAKE) --gnu  test/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \

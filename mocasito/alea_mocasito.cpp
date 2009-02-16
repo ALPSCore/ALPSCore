@@ -45,7 +45,7 @@ int main(void){
     measurements["signed_double_detailed"]<<0.8;
     measurements["signed_double_simple"]<<0.7;
     measurements["signed_double_none"]<<0.6;
-    measurements["Sign"]<<-1;
+    measurements["Sign"]<<-1.;
 
     measurements["float_detailed"]<<(float)(0.3);
     measurements["float_simple"]<<(float)(0.3);

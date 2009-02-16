@@ -33,7 +33,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 check_PROGRAMS = $(am__EXEEXT_1)
-@HAVE_HDF5_TRUE@am__append_1 = io
+@HAVE_HDF5_TRUE@am__append_1 = io alea_mocasito
 subdir = test/mocasito
 DIST_COMMON = $(dist_noinst_DATA) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in
@@ -60,11 +60,18 @@ CONFIG_HEADER = $(top_builddir)/src/alps/config.h \
 	$(top_builddir)/src/boost/sr_utf8_codecvt_facet.cpp \
 	$(top_builddir)/src/boost/fs_utf8_codecvt_facet.cpp
 CONFIG_CLEAN_FILES =
-@HAVE_HDF5_TRUE@am__EXEEXT_1 = io$(EXEEXT)
+@HAVE_HDF5_TRUE@am__EXEEXT_1 = io$(EXEEXT) alea_mocasito$(EXEEXT)
+am_alea_mocasito_OBJECTS = alea_mocasito.$(OBJEXT)
+alea_mocasito_OBJECTS = $(am_alea_mocasito_OBJECTS)
+alea_mocasito_LDADD = $(LDADD)
+am__DEPENDENCIES_1 =
+alea_mocasito_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_io_OBJECTS = io.$(OBJEXT)
 io_OBJECTS = $(am_io_OBJECTS)
 io_LDADD = $(LDADD)
-am__DEPENDENCIES_1 =
 io_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
 	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
@@ -80,8 +87,8 @@ CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(io_SOURCES)
-DIST_SOURCES = $(io_SOURCES)
+SOURCES = $(alea_mocasito_SOURCES) $(io_SOURCES)
+DIST_SOURCES = $(alea_mocasito_SOURCES) $(io_SOURCES)
 DATA = $(dist_noinst_DATA)
 ETAGS = etags
 CTAGS = ctags
@@ -248,11 +255,12 @@ AM_CPPFLAGS = $(BASE_CPPFLAGS) $(BOOST_CPPFLAGS) $(XML_CPPFLAGS) $(HDF5_CPPFLAGS
 AM_LDFLAGS = $(BASE_LDFLAGS) $(BOOST_LDFLAGS) $(HDF5_LDFLAGS) $(XML_LDFLAGS)
 LDADD = $(top_builddir)/lib/alps/libalps.la $(top_builddir)/lib/comm-sgl/libcomm-sgl.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(BASE_LIBS)
 io_SOURCES = io.C
-dist_noinst_DATA = 
+alea_mocasito_SOURCES = alea_mocasito.cpp
+dist_noinst_DATA = alea_mocasito.output
 all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .C .lo .o .obj
+.SUFFIXES: .C .cpp .lo .o .obj
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -262,9 +270,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__confi
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  test/mocasito/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  test/mocasito/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign  test/mocasito/Makefile
+	  $(AUTOMAKE) --gnu  test/mocasito/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -289,6 +297,9 @@ clean-checkPROGRAMS:
 	  echo " rm -f $$p $$f"; \
 	  rm -f $$p $$f ; \
 	done
+alea_mocasito$(EXEEXT): $(alea_mocasito_OBJECTS) $(alea_mocasito_DEPENDENCIES) 
+	@rm -f alea_mocasito$(EXEEXT)
+	$(CXXLINK) $(alea_mocasito_OBJECTS) $(alea_mocasito_LDADD) $(LIBS)
 io$(EXEEXT): $(io_OBJECTS) $(io_DEPENDENCIES) 
 	@rm -f io$(EXEEXT)
 	$(CXXLINK) $(io_OBJECTS) $(io_LDADD) $(LIBS)
@@ -299,6 +310,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/alea_mocasito.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/io.Po@am__quote@
 
 .C.o:
@@ -316,6 +328,27 @@ distclean-compile:
 @am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
 .C.lo:
+@am__fastdepCXX_TRUE@	$(LTCXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LTCXXCOMPILE) -c -o $@ $<
+
+.cpp.o:
+@am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ $<
+
+.cpp.obj:
+@am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+.cpp.lo:
 @am__fastdepCXX_TRUE@	$(LTCXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
 @am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
