@@ -104,14 +104,12 @@ int main(void){
   RealObsevaluator double_none_eval_1(measurements["double_none"]);
   RealObsevaluator double_none_eval_2(measurements2["double_none"]);
 
-  std::cout<<"mean double detailed: "<<double_detailed_eval_1.mean()<<std::endl;
-  std::cout<<"read in double detailed count: "<<double_detailed_eval_2.count()<<std::endl;
-  std::cout<<"read in double detailed: "<<double_detailed_eval_2.mean()<<std::endl;
-  std::cout<<"error double detailed: "<<double_detailed_eval_1.error()<<" "<<double_detailed_eval_2.error()<<std::endl;
-  std::cout<<"mean double simple: "<<double_simple_eval_1.mean()<<" "<<double_simple_eval_2.mean()<<std::endl;
-  std::cout<<"error double simple: "<<double_simple_eval_1.error()<<" "<<double_simple_eval_2.error()<<std::endl;
-  std::cout<<"mean double none: "<<double_none_eval_1.mean()<<" "<<double_none_eval_2.mean()<<std::endl;
-  std::cout<<"error double none: "<<double_none_eval_1.error()<<" "<<double_none_eval_2.error()<<std::endl;
+  std::cout<<"mean double detailed: "<<double_detailed_eval_1.mean()-double_detailed_eval_2.mean()<<std::endl;
+  std::cout<<"error double detailed: "<<double_detailed_eval_1.error()-double_detailed_eval_2.error()<<std::endl;
+  std::cout<<"mean double simple: "<<double_simple_eval_1.mean()-double_simple_eval_2.mean()<<std::endl;
+  std::cout<<"error double simple: "<<double_simple_eval_1.error()-double_simple_eval_2.error()<<std::endl;
+  std::cout<<"mean double none: "<<double_none_eval_1.mean()-double_none_eval_2.mean()<<std::endl;
+  std::cout<<"error double none: "<<double_none_eval_1.error()-double_none_eval_2.error()<<std::endl;
   
   SimpleObservableEvaluator<float> float_detailed_eval_1(measurements["float_detailed"]);
   SimpleObservableEvaluator<float> float_detailed_eval_2(measurements2["float_detailed"]);
@@ -120,12 +118,12 @@ int main(void){
   SimpleObservableEvaluator<float> float_none_eval_1(measurements["float_none"]);
   SimpleObservableEvaluator<float> float_none_eval_2(measurements2["float_none"]);
 
-  std::cout<<"mean float detailed: "<<float_detailed_eval_1.mean()<<" "<<float_detailed_eval_2.mean()<<std::endl;
-  std::cout<<"error float detailed: "<<float_detailed_eval_1.error()<<" "<<float_detailed_eval_2.error()<<std::endl;
-  std::cout<<"mean float simple: "<<float_simple_eval_1.mean()<<" "<<float_simple_eval_2.mean()<<std::endl;
-  std::cout<<"error float simple: "<<float_simple_eval_1.error()<<" "<<float_simple_eval_2.error()<<std::endl;
-  std::cout<<"mean float none: "<<float_none_eval_1.mean()<<" "<<float_none_eval_2.mean()<<std::endl;
-  std::cout<<"error float none: "<<float_none_eval_1.error()<<" "<<float_none_eval_2.error()<<std::endl;
+  std::cout<<"mean float detailed: "<<float_detailed_eval_1.mean()-float_detailed_eval_2.mean()<<std::endl;
+  std::cout<<"error float detailed: "<<float_detailed_eval_1.error()-float_detailed_eval_2.error()<<std::endl;
+  std::cout<<"mean float simple: "<<float_simple_eval_1.mean()-float_simple_eval_2.mean()<<std::endl;
+  std::cout<<"error float simple: "<<float_simple_eval_1.error()-float_simple_eval_2.error()<<std::endl;
+  std::cout<<"mean float none: "<<float_none_eval_1.mean()-float_none_eval_2.mean()<<std::endl;
+  std::cout<<"error float none: "<<float_none_eval_1.error()-float_none_eval_2.error()<<std::endl;
   
   RealObsevaluator sdouble_detailed_eval_1(measurements["signed_double_detailed"]);
   RealObsevaluator sdouble_detailed_eval_2(measurements2["signed_double_detailed"]);
@@ -134,12 +132,12 @@ int main(void){
   RealObsevaluator sdouble_none_eval_1(measurements["signed_double_none"]);
   RealObsevaluator sdouble_none_eval_2(measurements2["signed_double_none"]);
 
-  std::cout<<"signed mean double detailed: "<<sdouble_detailed_eval_1.mean()<<" "<<sdouble_detailed_eval_2.mean()<<std::endl;
-  std::cout<<"signed error double detailed: "<<sdouble_detailed_eval_1.error()<<" "<<sdouble_detailed_eval_2.error()<<std::endl;
-  std::cout<<"signed mean double simple: "<<sdouble_simple_eval_1.mean()<<" "<<sdouble_simple_eval_2.mean()<<std::endl;
-  std::cout<<"signed error double simple: "<<sdouble_simple_eval_1.error()<<" "<<sdouble_simple_eval_2.error()<<std::endl;
-  std::cout<<"signed mean double none: "<<sdouble_none_eval_1.mean()<<" "<<sdouble_none_eval_2.mean()<<std::endl;
-  std::cout<<"signed error double none: "<<sdouble_none_eval_1.error()<<" "<<sdouble_none_eval_2.error()<<std::endl;
+  std::cout<<"signed mean double detailed: "<<sdouble_detailed_eval_1.mean()-sdouble_detailed_eval_2.mean()<<std::endl;
+  std::cout<<"signed error double detailed: "<<sdouble_detailed_eval_1.error()-sdouble_detailed_eval_2.error()<<std::endl;
+  std::cout<<"signed mean double simple: "<<sdouble_simple_eval_1.mean()-sdouble_simple_eval_2.mean()<<std::endl;
+  std::cout<<"signed error double simple: "<<sdouble_simple_eval_1.error()-sdouble_simple_eval_2.error()<<std::endl;
+  std::cout<<"signed mean double none: "<<sdouble_none_eval_1.mean()-sdouble_none_eval_2.mean()<<std::endl;
+  std::cout<<"signed error double none: "<<sdouble_none_eval_1.error()-sdouble_none_eval_2.error()<<std::endl;
  
   /*SimpleObservableEvaluator<float> sfloat_detailed_eval_1(measurements["signed_float_detailed"]);
   SimpleObservableEvaluator<float> sfloat_detailed_eval_2(measurements2["signed_float_detailed"]);
@@ -162,12 +160,12 @@ int main(void){
   RealVectorObsevaluator double_none_vec_eval_1(measurements["double_none_vec"]);
   RealVectorObsevaluator double_none_vec_eval_2(measurements2["double_none_vec"]);
 
-  std::cout<<"mean double detailed vec: "<<double_detailed_vec_eval_1.mean()[0]<<" "<<double_detailed_vec_eval_2.mean()[0]<<std::endl;
-  std::cout<<"error double detailed vec: "<<double_detailed_vec_eval_1.error()[0]<<" "<<double_detailed_vec_eval_2.error()[0]<<std::endl;
-  std::cout<<"mean double simple vec: "<<double_simple_vec_eval_1.mean()[0]<<" "<<double_simple_vec_eval_2.mean()[0]<<std::endl;
-  std::cout<<"error double simple vec: "<<double_simple_vec_eval_1.error()[0]<<" "<<double_simple_vec_eval_2.error()[0]<<std::endl;
-  std::cout<<"mean double none vec: "<<double_none_vec_eval_1.mean()[0]<<" "<<double_none_vec_eval_2.mean()[0]<<std::endl;
-  std::cout<<"error double none vec: "<<double_none_vec_eval_1.error()[0]<<" "<<double_none_vec_eval_2.error()[0]<<std::endl;
+  std::cout<<"mean double detailed vec: "<<double_detailed_vec_eval_1.mean()[0]-double_detailed_vec_eval_2.mean()[0]<<std::endl;
+  std::cout<<"error double detailed vec: "<<double_detailed_vec_eval_1.error()[0]-double_detailed_vec_eval_2.error()[0]<<std::endl;
+  std::cout<<"mean double simple vec: "<<double_simple_vec_eval_1.mean()[0]-double_simple_vec_eval_2.mean()[0]<<std::endl;
+  std::cout<<"error double simple vec: "<<double_simple_vec_eval_1.error()[0]-double_simple_vec_eval_2.error()[0]<<std::endl;
+  std::cout<<"mean double none vec: "<<double_none_vec_eval_1.mean()[0]-double_none_vec_eval_2.mean()[0]<<std::endl;
+  std::cout<<"error double none vec: "<<double_none_vec_eval_1.error()[0]-double_none_vec_eval_2.error()[0]<<std::endl;
  
   RealVectorObsevaluator sdouble_detailed_vec_eval_1(measurements["signed_double_detailed_vec"]);
   RealVectorObsevaluator sdouble_detailed_vec_eval_2(measurements2["signed_double_detailed_vec"]);
@@ -176,11 +174,11 @@ int main(void){
   RealVectorObsevaluator sdouble_none_vec_eval_1(measurements["signed_double_none_vec"]);
   RealVectorObsevaluator sdouble_none_vec_eval_2(measurements2["signed_double_none_vec"]);
 
-  std::cout<<"signed mean double detailed vec: "<<sdouble_detailed_vec_eval_1.mean()[0]<<" "<<sdouble_detailed_vec_eval_2.mean()[0]<<std::endl;
-  std::cout<<"signed error double detailed vec: "<<sdouble_detailed_vec_eval_1.error()[0]<<" "<<sdouble_detailed_vec_eval_2.error()[0]<<std::endl;
-  std::cout<<"signed mean double simple vec: "<<sdouble_simple_vec_eval_1.mean()[0]<<" "<<sdouble_simple_vec_eval_2.mean()[0]<<std::endl;
-  std::cout<<"signed error double simple vec: "<<sdouble_simple_vec_eval_1.error()[0]<<" "<<sdouble_simple_vec_eval_2.error()[0]<<std::endl;
-  std::cout<<"signed mean double none vec: "<<sdouble_none_vec_eval_1.mean()[0]<<" "<<sdouble_none_vec_eval_2.mean()[0]<<std::endl;
-  std::cout<<"signed error double none vec: "<<sdouble_none_vec_eval_1.error()[0]<<" "<<sdouble_none_vec_eval_2.error()[0]<<std::endl;
+  std::cout<<"signed mean double detailed vec: "<<sdouble_detailed_vec_eval_1.mean()[0]-sdouble_detailed_vec_eval_2.mean()[0]<<std::endl;
+  std::cout<<"signed error double detailed vec: "<<sdouble_detailed_vec_eval_1.error()[0]-sdouble_detailed_vec_eval_2.error()[0]<<std::endl;
+  std::cout<<"signed mean double simple vec: "<<sdouble_simple_vec_eval_1.mean()[0]-sdouble_simple_vec_eval_2.mean()[0]<<std::endl;
+  std::cout<<"signed error double simple vec: "<<sdouble_simple_vec_eval_1.error()[0]-sdouble_simple_vec_eval_2.error()[0]<<std::endl;
+  std::cout<<"signed mean double none vec: "<<sdouble_none_vec_eval_1.mean()[0]-sdouble_none_vec_eval_2.mean()[0]<<std::endl;
+  std::cout<<"signed error double none vec: "<<sdouble_none_vec_eval_1.error()[0]-sdouble_none_vec_eval_2.error()[0]<<std::endl;
  
 }
