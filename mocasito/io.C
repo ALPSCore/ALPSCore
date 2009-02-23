@@ -131,8 +131,5 @@ template<typename Engine> void test_engine(std::string const & ifile, std::strin
 	}
 }
 int main(int argc, char ** argv){
-	if(argc != 2)
-          test_engine<mocasito::io::hdf5>(std::string("io.h5"));
-        else
-          test_engine<mocasito::io::hdf5>(std::string("data/io") + argv[1] + ".h5");
+	test_engine<mocasito::io::hdf5>(std::string("io.h5"));
 }
