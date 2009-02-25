@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2005 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2003-2009 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Axel Grzesik <axel@th.physik.uni-bonn.de>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
@@ -34,11 +34,11 @@
 
 #include <alps/model/quantumnumber.h>
 #include <alps/model/operatordescriptor.h>
+#include <boost/config.hpp>
 #include <cstddef>
 #include <stack>
 #include <utility>
 #include <vector>
-
 #include <iostream>
 
 namespace alps {
@@ -154,15 +154,15 @@ bool SiteBasisDescriptor<I>::evaluate()
     it->reset_limits();
     valid_ = valid_ && it->set_parameters(q_parms_);
     if(!valid_) break;
-    q_parms_[it->name()]=it->min();
+    q_parms_[it->name()]=it->min BOOST_PREVENT_MACRO_SUBSTITUTION ();
   }
   if (valid_ && this->begin()!=this->end()) {
     num_states_=1;
     iterator rit=this->end()-1;
     // no dependencies
     while(rit->set_parameters(parms_)) {
-      if(rit->levels()>=half_integer<I>::max().to_double()) {
-        num_states_=std::numeric_limits<I>::max();
+      if(rit->levels()>=half_integer<I>::max BOOST_PREVENT_MACRO_SUBSTITUTION ().to_double()) {
+        num_states_=std::numeric_limits<I>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();
         return true;
       }
       num_states_ *= rit->levels();
@@ -177,11 +177,11 @@ bool SiteBasisDescriptor<I>::evaluate()
       iterator it=this->begin();
       Parameters p=q_parms_;
       it->set_parameters(p);
-      if(it->levels()==std::numeric_limits<I>::max()) {
-        num_states_=std::numeric_limits<I>::max();
+      if(it->levels()==std::numeric_limits<I>::max BOOST_PREVENT_MACRO_SUBSTITUTION ()) {
+        num_states_=std::numeric_limits<I>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();
         return true;
       }
-      for(half_integer<I> q=it->min();q<=it->max();++q) {
+      for(half_integer<I> q=it->min BOOST_PREVENT_MACRO_SUBSTITUTION ();q<=it->max BOOST_PREVENT_MACRO_SUBSTITUTION ();++q) {
         p[it->name()]=q;
         s.push(q_pair(it,p));
       }
@@ -192,8 +192,8 @@ bool SiteBasisDescriptor<I>::evaluate()
         iterator itt=it+1;
         if(itt==rit) {
           itt->set_parameters(p);
-          if(itt->levels()==std::numeric_limits<I>::max()) {
-            num_states_=std::numeric_limits<I>::max();
+          if(itt->levels()==std::numeric_limits<I>::max BOOST_PREVENT_MACRO_SUBSTITUTION ()) {
+            num_states_=std::numeric_limits<I>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();
             return true;
           }
           n+=itt->levels();
@@ -201,11 +201,11 @@ bool SiteBasisDescriptor<I>::evaluate()
         else {
           ++it;
           it->set_parameters(p);
-          if(it->levels()==std::numeric_limits<I>::max()) {
-            num_states_=std::numeric_limits<I>::max();
+          if(it->levels()==std::numeric_limits<I>::max BOOST_PREVENT_MACRO_SUBSTITUTION ()) {
+            num_states_=std::numeric_limits<I>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();
             return true;
           }
-          for(half_integer<I> q=it->min();q<=it->max();++q) {
+          for(half_integer<I> q=it->min BOOST_PREVENT_MACRO_SUBSTITUTION ();q<=it->max BOOST_PREVENT_MACRO_SUBSTITUTION ();++q) {
             p[it->name()]=q;
             s.push(q_pair(it,p));
           }

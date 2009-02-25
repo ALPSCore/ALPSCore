@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -42,7 +42,7 @@
 
 namespace alps {
 
-class LatticeLibrary
+class ALPS_DECL LatticeLibrary
 {
 public:
   typedef hypercubic_lattice<coordinate_lattice<simple_lattice<GraphUnitCell> > > lattice_type;

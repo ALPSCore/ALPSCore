@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2005 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2003-2009 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Axel Grzesik <axel@th.physik.uni-bonn.de>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -33,6 +33,7 @@
 
 #include <alps/model/quantumnumber.h>
 #include <alps/model/sitestate.h>
+#include<boost/config.hpp>
 #include <vector>
 #include <iostream>
 
@@ -88,13 +89,13 @@ template <class I, class STATE>
 site_basis<I,STATE>::site_basis(const SiteBasisDescriptor<I>& b)
  : basis_(b)
 {
-  if ((I)(b.num_states())==std::numeric_limits<I>::max())
+  if ((I)(b.num_states())==std::numeric_limits<I>::max BOOST_PREVENT_MACRO_SUBSTITUTION ())
     boost::throw_exception(std::runtime_error("Cannot build infinite set of basis states\n"));
   std::stack<std::pair<typename SiteBasisDescriptor<I>::const_iterator,half_integer<I> > > s;
   typename SiteBasisDescriptor<I>::const_iterator it=b.begin();
   std::vector<half_integer<I> > quantumnumbers(basis_.size());
   const_cast<QuantumNumberDescriptor<I>&>(*it).set_parameters(b.get_parameters(true));
-  for(half_integer<I> q=it->max();q>=it->min();--q) 
+  for(half_integer<I> q=it->max BOOST_PREVENT_MACRO_SUBSTITUTION ();q>=it->min BOOST_PREVENT_MACRO_SUBSTITUTION ();--q) 
     s.push(std::make_pair(it,q));
   while(!s.empty()) {
     it=s.top().first;
@@ -108,7 +109,7 @@ site_basis<I,STATE>::site_basis(const SiteBasisDescriptor<I>& b)
       for(typename SiteBasisDescriptor<I>::const_iterator qit=b.begin();qit!=it;++qit)
         p[qit->name()]=quantumnumbers[qit-b.begin()];
       const_cast<QuantumNumberDescriptor<I>&>(*it).set_parameters(p);
-      for(half_integer<I> q=it->max();q>=it->min();--q)
+      for(half_integer<I> q=it->max BOOST_PREVENT_MACRO_SUBSTITUTION ();q>=it->min BOOST_PREVENT_MACRO_SUBSTITUTION ();--q)
         s.push(std::make_pair(it,q));
     }
   }

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -33,6 +33,7 @@
 #include "types.h"
 #include <alps/parser/xmlstream.h>
 #include <alps/scheduler.h>
+#include <alps/config.h>
 #include <deque>
 #include <set>
 #include <vector>
@@ -42,7 +43,7 @@ namespace alps {
 class job_task_xml_handler;
 class job_xml_handler;
 
-class task {
+class ALPS_DECL task {
 public:
   typedef integer_range<uint32_t> range_type;
 

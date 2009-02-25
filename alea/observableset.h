@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2008 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
@@ -60,7 +60,7 @@ public:
   void register_observable() { register_type<T>(T::version);}
 };
 
-class ObservableSet: public std::map<std::string,Observable*>
+class ALPS_DECL ObservableSet: public std::map<std::string,Observable*>
 {
   typedef std::map<std::string,Observable*> base_type;
   static ObservableFactory factory_;

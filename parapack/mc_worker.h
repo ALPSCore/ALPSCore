@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -31,6 +31,7 @@
 #include "worker_factory.h"
 #include "rng_helper.h"
 #include "version.h"
+#include <alps/config.h>
 #include <alps/lattice.h>
 #include <alps/model.h>
 #include <alps/scheduler.h>
@@ -54,7 +55,7 @@ public:
   double progress() const;
 };
 
-class mc_worker : public abstract_worker, protected rng_helper {
+class ALPS_DECL mc_worker : public abstract_worker, protected rng_helper {
 public:
   mc_worker(Parameters const& params);
   virtual ~mc_worker();

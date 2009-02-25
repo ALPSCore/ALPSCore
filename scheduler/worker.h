@@ -4,7 +4,8 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 1994-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -30,6 +31,7 @@
 #ifndef ALPS_SCHEDULER_WORKER_H
 #define ALPS_SCHEDULER_WORKER_H
 
+#include <alps/config.h>
 #include <alps/scheduler/info.h>
 #include <alps/parameter.h>
 #include <alps/random/rngfactory.h>
@@ -46,7 +48,7 @@ namespace alps {
 namespace scheduler {
 
 namespace {
-  const float MCTimeFactor = 0.05;
+  const double MCTimeFactor = 0.05;
 }
 
 typedef struct rt {
@@ -108,7 +110,7 @@ public:
 //-----------------------------------------------------------------------
 
 
-class Worker : public AbstractWorker
+class ALPS_DECL Worker : public AbstractWorker
 {
 public:
   Worker(const ProcessList&,const Parameters&, int32_t=0);

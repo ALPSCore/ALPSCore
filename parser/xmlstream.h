@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2004 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 2001-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -87,7 +87,7 @@ struct pi_t : public start_tag_t
 
 } // namespace detail
 
-class oxstream
+class ALPS_DECL oxstream
 {
 public:
   oxstream();

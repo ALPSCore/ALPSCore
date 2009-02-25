@@ -5,7 +5,8 @@
 * ALPS Libraries
 *
 * This File:
-* Copyright (C) 2006 by Andreas Laeuchli <laeuchli@comp-phys.ch>,
+* Copyright (C) 2006-2009 by Andreas Laeuchli <laeuchli@comp-phys.ch>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -65,12 +66,39 @@
 #include <alps/config.h>
 #ifndef ALPS_HAVE_RPC_XDR_H
 
+#include <boost/config.hpp>
+#ifdef BOOST_MSVC
+# include <boost/cstdint.hpp>
+# define __const const
+  typedef char * caddr_t;
+  using boost::int8_t;
+  using boost::uint8_t;
+  using boost::int16_t;
+  using boost::uint16_t;
+  using boost::int32_t;
+  using boost::uint32_t;
+  using boost::int64_t;
+  using boost::uint64_t;
+#endif
+
 #include <sys/types.h>
 
 #define bool_t  int
 #define enum_t  int
 #define uint_t  unsigned int
 #define ulong_t unsigned long
+
+// for ALPS on Windows
+#if defined(ALPS_HAVE_WINDOWS_H)
+  typedef unsigned int u_int;
+  typedef unsigned short u_short;
+  typedef unsigned long u_long;
+  typedef unsigned char u_char;
+  typedef boost::uint32_t u_int32_t;
+# define __BIG_ENDIAN 0
+# define __LITTLE_ENDIAN 1
+# define __BYTE_ORDER 1
+#endif
 
 #ifndef FALSE
 #       define  FALSE   (0)

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 2003-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -44,7 +44,7 @@
 
 namespace alps {
 
-class ModelLibrary
+class ALPS_DECL ModelLibrary
 {
 public:
   typedef std::map<std::string,OperatorDescriptor<short> > OperatorDescriptorMap;

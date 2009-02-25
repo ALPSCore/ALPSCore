@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -34,6 +34,7 @@
 #ifndef ALPS_PARSER_PATH_H
 #define ALPS_PARSER_PATH_H
 
+#include <alps/config.h>
 #include <boost/filesystem/path.hpp>
 #include <cstdlib>
 #include <string>
@@ -54,20 +55,20 @@ namespace alps {
 /// release of the library. E.g.  given the file name "ALPS.xsl" the
 /// returned string might be
 /// "http://xml.comp-phys.org/2004/10/ALPS.xsl".
-extern std::string xslt_path(const std::string& stylefile);
+extern ALPS_DECL std::string xslt_path(const std::string& stylefile);
 
 /// \brief returns the full path to the specified XML file.
 ///
 /// The function prepends the path to the ALPS XML/XSLT library
 /// directory to the specified filename.
-extern boost::filesystem::path xml_library_path(const std::string& file);
+extern ALPS_DECL boost::filesystem::path xml_library_path(const std::string& file);
 
 /// \brief returns the full path to the specified XML file and checks whether the file exists.
 ///
 /// The function prepends the path to the ALPS XML/XSLT library
 /// directory to the specified filename.  \throw \c std::runtime_error
 /// if the file does not exist in the ALPS XML/XSLT library directory.
-extern boost::filesystem::path search_xml_library_path(const std::string& file);
+extern ALPS_DECL boost::filesystem::path search_xml_library_path(const std::string& file);
   
 } // end namespace alps
 

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2005 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2009 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
@@ -37,6 +37,7 @@
 #include <alps/alea/observable.h>
 #include <alps/alea/simpleobservable.h>
 #include <alps/alea/simplebinning.h>
+#include <boost/config.hpp>
 
 #ifdef ALPS_HAVE_VALARRAY
 # include <valarray>
@@ -62,7 +63,7 @@ public:
   BOOST_STATIC_CONSTANT(bool, has_tau=true);
   BOOST_STATIC_CONSTANT(int, magic_id=3);
 
-  BasicDetailedBinning(uint32_t binsize=1, uint32_t binnum=std::numeric_limits<uint32_t>::max());
+  BasicDetailedBinning(uint32_t binsize=1, uint32_t binnum=std::numeric_limits<uint32_t>::max BOOST_PREVENT_MACRO_SUBSTITUTION ());
 
   void reset(bool=false);
   void operator<<(const T& x);
@@ -123,7 +124,7 @@ public:
   typedef T value_type;
   BOOST_STATIC_CONSTANT(int, magic_id=5);
   FixedBinning(uint32_t binsize=1) 
-  : BasicDetailedBinning<T>(binsize,std::numeric_limits<uint32_t>::max()) {}
+  : BasicDetailedBinning<T>(binsize,std::numeric_limits<uint32_t>::max BOOST_PREVENT_MACRO_SUBSTITUTION ()) {}
 };
 
 typedef SimpleObservable<int32_t,DetailedBinning<int32_t> > IntObservable;

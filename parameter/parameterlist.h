@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2006 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2009 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -77,7 +77,7 @@ namespace alps {
 /// each element usually describes the parameters for a single simulation.
 /// 
 /// The class is derived from a std::vector
-class ParameterList : public std::vector<Parameters>
+class ALPS_DECL ParameterList : public std::vector<Parameters>
 {
 public:
   typedef std::vector<Parameters> super_type;

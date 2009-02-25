@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -32,6 +32,7 @@
 #define OSIRIS_COMM_H
 
 #include <alps/osiris/process.h>
+#include <alps/config.h>
 
 namespace alps {
 
@@ -43,18 +44,18 @@ namespace alps {
 
 // initialize everything
 
-void comm_init(int& argc, char**& argv);
+ALPS_DECL void comm_init(int& argc, char**& argv);
 
 
 // stop message passing
 // the bool parameter indicates if all slave processes should be killed
 
-void comm_exit(bool kill_slaves=false);
+ALPS_DECL void comm_exit(bool kill_slaves=false);
 
 
 // do we actually run in parallel?
 
-bool runs_parallel();
+ALPS_DECL bool runs_parallel();
 
 //=======================================================================
 // HOST/PROCESS ENQUIRIES
@@ -67,7 +68,7 @@ int local_id(); // return the id of this Process
 int invalid_id(); // return an invalid id
 }
 
-bool is_master(); // is this the master Process ?
+ALPS_DECL bool is_master(); // is this the master Process ?
 
 Process local_process(); // make a descriptor of the local Process
 ProcessList all_processes(); // get a list of all running processes

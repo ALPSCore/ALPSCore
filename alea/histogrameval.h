@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2008 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2009 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Fabian Stoeckli <fabstoec@phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
@@ -96,8 +96,8 @@ public:
   }
   ALPS_DUMMY_VOID reset(bool=false);
 
-  value_type max() const {collect(); return all_.max(); }
-  value_type min() const {collect(); return all_.min(); }
+  value_type max BOOST_PREVENT_MACRO_SUBSTITUTION () const {collect(); return all_.max BOOST_PREVENT_MACRO_SUBSTITUTION (); }
+  value_type min BOOST_PREVENT_MACRO_SUBSTITUTION () const {collect(); return all_.min BOOST_PREVENT_MACRO_SUBSTITUTION (); }
   value_type operator[](int i) const { collect(); return all_[i]; }
 
   count_type count() const {collect(); return all_.count(); }

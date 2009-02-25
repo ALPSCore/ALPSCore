@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2005 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2001-2009 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -31,6 +31,7 @@
 #ifndef ALPS_LATTICE_UNITCELL_H
 #define ALPS_LATTICE_UNITCELL_H
 
+#include <alps/config.h>
 #include <alps/parser/parser.h>
 #include <alps/parser/xmlstream.h>
 #include <alps/lattice/graph.h>
@@ -54,7 +55,7 @@ dimension(const EmptyUnitCell& c)
   return c.dimension();
 }
 
-class GraphUnitCell
+class ALPS_DECL GraphUnitCell
 {
 public:
   typedef std::vector<int> offset_type;

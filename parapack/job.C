@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -30,6 +30,7 @@
 #include "filelock.h"
 #include "measurement.h"
 #include "simulation_p.h"
+#include <boost/config.hpp>
 #include <boost/foreach.hpp>
 #include <boost/regex.hpp>
 
@@ -269,7 +270,7 @@ void task::check_parameter() {
 }
 
 bool task::can_dispatch() const {
-  return num_suspended() > 0 || num_started() < num_clones_.max();
+  return num_suspended() > 0 || num_started() < num_clones_.max BOOST_PREVENT_MACRO_SUBSTITUTION ();
 }
 
 void task::info_updated(cid_t cid, clone_info const& info) {
@@ -382,7 +383,7 @@ void task::write_xml_archive(oxstream& os) const {
 
 double task::calc_progress() const {
   if (!on_memory()) boost::throw_exception(std::logic_error("task not loaded"));
-  return (double)(num_finished()) / num_clones().min();
+  return (double)(num_finished()) / num_clones().min BOOST_PREVENT_MACRO_SUBSTITUTION ();
 }
 
 std::pair<double, double> task::calc_weight() const {
@@ -393,12 +394,12 @@ std::pair<double, double> task::calc_weight() const {
   else if (num_started() == 0)
     // NotStarted
     w = 3.0;
-  else if (num_started() < num_clones().min())
+  else if (num_started() < num_clones().min BOOST_PREVENT_MACRO_SUBSTITUTION ())
     // Running
-    w = 2.0 - (double)(num_started()) / num_clones().min();
+    w = 2.0 - (double)(num_started()) / num_clones().min BOOST_PREVENT_MACRO_SUBSTITUTION ();
   else
     // Continuing
-    w = 1.0 - (double)(num_started()) / num_clones().max();
+    w = 1.0 - (double)(num_started()) / num_clones().max BOOST_PREVENT_MACRO_SUBSTITUTION ();
   double d = (num_running() + num_suspended() > 0) ? 4.0 : w;
   return std::make_pair(w, d);
 }
@@ -407,9 +408,9 @@ task_status_t task::calc_status() const {
   if (!on_memory()) boost::throw_exception(std::logic_error("task not loaded"));
   if (num_started() == 0)
     return task_status::Ready;
-  else if (num_finished() < num_clones_.min())
+  else if (num_finished() < num_clones_.min BOOST_PREVENT_MACRO_SUBSTITUTION ())
     return task_status::Running;
-  else if (num_finished() < num_clones_.max())
+  else if (num_finished() < num_clones_.max BOOST_PREVENT_MACRO_SUBSTITUTION ())
     return task_status::Continuing;
   else
     return task_status::Idling;

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -28,6 +28,7 @@
 #ifndef PARAPACK_FACTORY_H
 #define PARAPACK_FACTORY_H
 
+#include <alps/config.h>
 #include <alps/alea.h>
 #include <alps/parameter.h>
 #include <alps/scheduler.h>
@@ -40,7 +41,7 @@ namespace parapack {
 // abstract_worker
 //
 
-class abstract_worker {
+class ALPS_DECL abstract_worker {
 public:
   virtual ~abstract_worker();
 
@@ -90,7 +91,7 @@ private:
 // abstract_evaluator & simple_evaluator
 //
 
-class abstract_evaluator {
+class ALPS_DECL abstract_evaluator {
 public:
   virtual ~abstract_evaluator();
 
@@ -103,7 +104,7 @@ public:
   virtual void evaluate(std::vector<ObservableSet>& obs_out) const;
 };
 
-class simple_evaluator : public abstract_evaluator {
+class ALPS_DECL simple_evaluator : public abstract_evaluator {
 public:
   simple_evaluator();
   simple_evaluator(Parameters const& params);
@@ -159,7 +160,7 @@ public:
 // factory classes
 //
 
-class worker_factory : private boost::noncopyable {
+class ALPS_DECL worker_factory : private boost::noncopyable {
 private:
   typedef boost::shared_ptr<abstract_worker> worker_pointer_type;
   typedef boost::shared_ptr<abstract_worker_creator> creator_pointer_type;
@@ -205,7 +206,7 @@ private:
 };
 
 
-class evaluator_factory : private boost::noncopyable {
+class ALPS_DECL evaluator_factory : private boost::noncopyable {
 private:
   typedef boost::shared_ptr<abstract_evaluator> evaluator_pointer_type;
   typedef boost::shared_ptr<abstract_evaluator_creator> creator_pointer_type;

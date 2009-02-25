@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2005 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2003-2009 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -31,6 +31,7 @@
 #ifndef ALPS_MODEL_GLOBALOPERATOR_H
 #define ALPS_MODEL_GLOBALOPERATOR_H
 
+#include <alps/config.h>
 #include <alps/model/default_term.h>
 #include <alps/lattice/graph_helper.h>
 #include <vector>
@@ -39,7 +40,7 @@ namespace alps {
 
 class ModelLibrary;
 
-class GlobalOperator
+class ALPS_DECL GlobalOperator
 {
 public:
   GlobalOperator() {}

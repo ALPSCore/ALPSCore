@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -30,6 +30,18 @@
 #include <iostream>
 #include <fcntl.h> // for open()
 #include <stdexcept>
+
+#include <alps/config.h>
+#if defined(ALPS_HAVE_UNISTD_H)
+# include <unistd.h>
+#elif defined(ALPS_HAVE_WINDOWS_H)
+# include <windows.h>
+#endif
+
+#if defined(ALPS_HAVE_WINDOWS_H)
+# include <sys/stat.h>
+# include <io.h>
+#endif
 
 namespace alps {
 
@@ -66,12 +78,28 @@ void filelock::lock(int wait) {
   for (int i = 0; wait < 0 || i < wait+1; ++i) {
     if (i != 0) {
       std::cerr << "Waring: file \"" << file_ << "\" is locked.  Still trying.\n";
-      sleep(1);
+#if defined(ALPS_HAVE_UNISTD_H)
+      sleep(1);    // sleep 1 Sec
+#elif defined(ALPS_HAVE_WINDOWS_H)
+      Sleep(1000); // sleep 1000 mSec
+#else
+# error "sleep not found"
+#endif
+      //sleep(1);
     }
-    int fd = open(lock_.native_file_string().c_str(), O_WRONLY | O_CREAT | O_EXCL);
+#if defined(ALPS_HAVE_WINDOWS_H)
+    int fd = _open(lock_.native_file_string().c_str(), O_WRONLY | O_CREAT | O_EXCL , _S_IWRITE);
+#else
+    int fd = open(lock_.native_file_string().c_str(), O_WRONLY | O_CREAT | O_EXCL );
+#endif
+
     if (fd > 0) {
       is_locking_ = true;
+#if defined(ALPS_HAVE_WINDOWS_H)
+      _close(fd);
+#else
       close(fd);
+#endif	  
       break;
     }
   }

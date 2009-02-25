@@ -4,7 +4,8 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 1994-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+*                            Synge Todo <wistaria@comph-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -30,8 +31,10 @@
 #include <alps/config.h>
 #include <alps/scheduler/scheduler.h>
 #include <alps/osiris/mpdump.h>
-#ifdef ALPS_HAVE_UNISTD_H
+#if defined(ALPS_HAVE_UNISTD_H)
 # include <unistd.h>
+#elif defined(ALPS_HAVE_WINDOWS_H)
+# include <windows.h>
 #endif
 
 namespace alps {
@@ -97,10 +100,17 @@ void SlaveTask::run()
     } while (messageswaiting);
 
   // no more messages: do some work
-  if(theWorker)
+  if(theWorker) {
     dynamic_cast<Worker&>(*theWorker).run();
-  else
-    sleep(1);
+  } else {
+#if defined(ALPS_HAVE_UNISTD_H)
+    sleep(1);    // sleep 1 Sec
+#elif defined(ALPS_HAVE_WINDOWS_H)
+    Sleep(1000); // sleep 1000 mSec
+#else
+# error "sleep not found"
+#endif
+  }
 }
 
 void SlaveTask::start()

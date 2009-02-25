@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2002 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -33,6 +33,7 @@
 
 #include <alps/config.h>
 #include <boost/limits.hpp>
+#include <boost/config.hpp>
 
 namespace alps {
 
@@ -42,7 +43,7 @@ struct dimensional_traits {
   BOOST_STATIC_CONSTANT(bool, fixed_dimension=false);
   static dimension_type infinity()
   {
-    return std::numeric_limits<dimension_type>::max();
+    return std::numeric_limits<dimension_type>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();
   }
 };
 

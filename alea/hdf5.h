@@ -30,9 +30,9 @@
 *****************************************************************************/
 
 /* $Id$ */
+
 #ifndef ALPS_ALEA_HDF5_H
 #define ALPS_ALEA_HDF5_H
-
 
 ///New ALPS ALEA hdf5 interface
 #ifdef ALPS_HAVE_HDF5
@@ -52,14 +52,14 @@
 namespace mocasito {
   namespace io {
     using namespace detail;
-    template<typename E> context<E>& assign(context<E>& c, const alps::ObservableSet &measurements){
+    template<typename E> context<E>& assign(context<E>& c, const alps::ObservableSet & /* measurements */){
       //For now: no need to write observable set specific information.
       return c;
     }
-    template<typename E> const context<E>& assign(alps::ObservableSet &measurements, const context<E> & c){
+    template<typename E> const context<E>& assign(alps::ObservableSet & /* measurements */, const context<E> & c){
       return c;
     }
-    template<typename E> context<E>& assign(context<E> & c, const alps::Observable &obs){
+    template<typename E> context<E>& assign(context<E> & c, const alps::Observable & /* obs */){
       //For now: no need to write observable specific information.
       return c;
     }

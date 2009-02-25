@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2006 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2003-2009 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Axel Grzesik <axel@th.physik.uni-bonn.de>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
@@ -37,6 +37,7 @@
 #include <alps/parser/parser.h>
 #include <alps/parameter.h>
 #include <alps/expression.h>
+#include <boost/config.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -57,12 +58,16 @@ public:
                 const std::string& max_str, bool f=false);
   QuantumNumberDescriptor(const XMLTag&, std::istream&);
 
-  bool valid(value_type x) const { return x >= min() && x<= max(); }
+  bool valid(value_type x) const
+  {
+    return (x >= min BOOST_PREVENT_MACRO_SUBSTITUTION ()) &&
+      (x <= max BOOST_PREVENT_MACRO_SUBSTITUTION ()); 
+  }
 
   const std::string min_expression() const { return min_string_; }
   const std::string max_expression() const { return max_string_; }
   
-  value_type min() const
+  value_type min BOOST_PREVENT_MACRO_SUBSTITUTION () const
   {
     if (!valid_ && !evaluate())
       boost::throw_exception(std::runtime_error("Cannot evaluate expression " +
@@ -70,7 +75,7 @@ public:
     return min_;
   }
   
-  value_type max() const
+  value_type max BOOST_PREVENT_MACRO_SUBSTITUTION () const
   {
     if (!valid_ && !evaluate())
       boost::throw_exception(std::runtime_error("Cannot evaluate expression " +
@@ -80,12 +85,12 @@ public:
   
   value_type global_max() const 
   {
-    return global_max_ ? global_max_.get() : max();
+    return global_max_ ? global_max_.get() : max BOOST_PREVENT_MACRO_SUBSTITUTION ();
   }
 
   value_type global_min() const 
   {
-    return global_min_ ? global_min_.get() : min();
+    return global_min_ ? global_min_.get() : min BOOST_PREVENT_MACRO_SUBSTITUTION ();
   }
 
   value_type global_increment() const 
@@ -101,8 +106,8 @@ public:
   
   I levels() const
   {
-    return (max().distance(min())==std::numeric_limits<I>::max()) ?
-      std::numeric_limits<I>::max() : (max().distance(min()) + 1);
+    return (max BOOST_PREVENT_MACRO_SUBSTITUTION ().distance(min BOOST_PREVENT_MACRO_SUBSTITUTION ())==std::numeric_limits<I>::max BOOST_PREVENT_MACRO_SUBSTITUTION ()) ?
+      std::numeric_limits<I>::max BOOST_PREVENT_MACRO_SUBSTITUTION () : (max BOOST_PREVENT_MACRO_SUBSTITUTION ().distance(min BOOST_PREVENT_MACRO_SUBSTITUTION ()) + 1);
   }
   
   const std::string& name() const { return name_; }
@@ -129,7 +134,7 @@ public:
 
   void update_limits()
   {
-    value_type m = min();
+    value_type m = min BOOST_PREVENT_MACRO_SUBSTITUTION ();
     if (global_min_) {
       if (global_min_.get().is_even() != m.is_even())
         increment_=0.5;
@@ -138,7 +143,7 @@ public:
     }
     else
       global_min_ = m;
-    m = max();
+    m = max BOOST_PREVENT_MACRO_SUBSTITUTION ();
     if (global_max_) {
       if (global_max_.get().is_even() != m.is_even())
         increment_=0.5;
@@ -219,9 +224,15 @@ const QuantumNumberDescriptor<I>& QuantumNumberDescriptor<I>::operator+=(const Q
   min_string_ = boost::lexical_cast<std::string>(min_exp+Expression(rhs.min_string_));
   max_string_ = boost::lexical_cast<std::string>(max_exp+Expression(rhs.max_string_));
   if (valid_) {
-    if (min()!=value_type::min() && rhs.min()!=value_type::min())
+    if (min BOOST_PREVENT_MACRO_SUBSTITUTION () != 
+        value_type::min BOOST_PREVENT_MACRO_SUBSTITUTION () &&
+        rhs.min BOOST_PREVENT_MACRO_SUBSTITUTION () !=
+        value_type::min BOOST_PREVENT_MACRO_SUBSTITUTION ())
       min_ += rhs.min_;
-    if (max()!=value_type::max() && rhs.max()!=value_type::max())
+    if (max BOOST_PREVENT_MACRO_SUBSTITUTION () !=
+        value_type::max BOOST_PREVENT_MACRO_SUBSTITUTION () &&
+        rhs.max BOOST_PREVENT_MACRO_SUBSTITUTION () !=
+        value_type::max BOOST_PREVENT_MACRO_SUBSTITUTION ())
       max_ += rhs.max_;
   }
   if (fermionic() != rhs.fermionic())
@@ -285,12 +296,12 @@ bool QuantumNumberDescriptor<I>::evaluate(const Parameters& p) const
   max_exp_.simplify();
   valid_=true;
   if (min_exp_==" - infinity")
-    min_ = value_type::min();
+    min_ = value_type::min BOOST_PREVENT_MACRO_SUBSTITUTION ();
   else if (min_exp_.can_evaluate(eval))
     min_ = alps::evaluate<double>(min_exp_);
   else valid_=false;
   if (max_exp_=="infinity")
-    max_ = value_type::max();
+    max_ = value_type::max BOOST_PREVENT_MACRO_SUBSTITUTION ();
   else if (max_exp_.can_evaluate(eval))
     max_ = alps::evaluate<double>(max_exp_);
   else valid_=false;

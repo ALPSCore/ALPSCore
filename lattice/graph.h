@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2006 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2001-2009 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -362,7 +362,7 @@ inline std::size_t maximum_edge_type(const G& g)
 
   std::size_t num=0;
   for (; it!=end;++it)
-    num = std::max(num,static_cast<std::size_t>(edge_type_map[*it]));
+    num = std::max BOOST_PREVENT_MACRO_SUBSTITUTION (num,static_cast<std::size_t>(edge_type_map[*it]));
 
   return num;
 }
@@ -380,7 +380,7 @@ inline std::size_t maximum_vertex_type(const G& g)
 
   std::size_t num=0;
   for (boost::tie(it,end)=boost::vertices(g); it!=end;++it)
-    num = std::max(num,static_cast<std::size_t>(vertex_type_map[*it]));
+    num = std::max BOOST_PREVENT_MACRO_SUBSTITUTION (num,static_cast<std::size_t>(vertex_type_map[*it]));
 
   return num;
 }

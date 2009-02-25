@@ -4,7 +4,8 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2006 by Matthias Troyer <troyer@comp-phys.orgh>
+* Copyright (C) 2001-2009 by Matthias Troyer <troyer@comp-phys.orgh>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -30,6 +31,7 @@
 #ifndef ALPS_LATTICE_DISORDER_H
 #define ALPS_LATTICE_DISORDER_H
 
+#include <alps/config.h>
 #include <alps/parser/parser.h>
 #include <alps/parameter.h>
 #include <alps/expression.h>
@@ -200,7 +202,7 @@ public:
   int seed_;
 };
 
-class Depletion : public DepletionDescriptor
+class ALPS_DECL Depletion : public DepletionDescriptor
 {
 public:
   Depletion(DepletionDescriptor const& depl, std::size_t num_sites);

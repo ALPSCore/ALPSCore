@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2004 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2003-2009 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -31,6 +31,7 @@
 #ifndef ALPS_MODEL_HALF_INTEGER_H
 #define ALPS_MODEL_HALF_INTEGER_H
 
+#include <boost/config.hpp>
 #include <boost/mpl/and.hpp>
 #include <boost/mpl/not.hpp>
 #include <boost/throw_exception.hpp>
@@ -146,19 +147,28 @@ public:
 
   integer_type distance(const half_integer& x) const
   {
-    if ((*this==max()) != (x==max())) return std::numeric_limits<I>::max();
-    if (std::numeric_limits<I>::is_signed && (*this==min())!=(x==min()))
-      return std::numeric_limits<I>::max();
+    if ((*this==max BOOST_PREVENT_MACRO_SUBSTITUTION ()) !=
+        (x==max BOOST_PREVENT_MACRO_SUBSTITUTION ()))
+      return std::numeric_limits<I>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();
+    if (std::numeric_limits<I>::is_signed &&
+        (*this==min BOOST_PREVENT_MACRO_SUBSTITUTION ()) !=
+        (x==min BOOST_PREVENT_MACRO_SUBSTITUTION ()))
+      return std::numeric_limits<I>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();
     assert(std::abs(val_)%2 == std::abs(x.get_twice())%2);
     return (val_-x.get_twice())/2;
   }
-  static half_integer max()
-  { return half_integer(std::numeric_limits<I>::max(), to_distinguish()); }
-  static half_integer min()
+  static half_integer max BOOST_PREVENT_MACRO_SUBSTITUTION ()
+  {
+    return half_integer(std::numeric_limits<I>::max BOOST_PREVENT_MACRO_SUBSTITUTION (),
+                        to_distinguish());
+  }
+  static half_integer min BOOST_PREVENT_MACRO_SUBSTITUTION ()
   {
     return std::numeric_limits<I>::is_signed ?
-      -half_integer(std::numeric_limits<I>::max(), to_distinguish()) :
-      half_integer(std::numeric_limits<I>::min(), to_distinguish());
+      -half_integer(std::numeric_limits<I>::max BOOST_PREVENT_MACRO_SUBSTITUTION (),
+                    to_distinguish()) :
+      half_integer(std::numeric_limits<I>::min BOOST_PREVENT_MACRO_SUBSTITUTION (),
+                   to_distinguish());
   }
   
   half_integer abs() const
@@ -200,6 +210,7 @@ inline half_integer<I> abs(const half_integer<I>& x)
 {
   return x.abs();
 }
+
 } // namespace alps
 
 
@@ -245,10 +256,10 @@ template <class I>
 inline
 std::ostream& operator<<(std::ostream& os, const alps::half_integer<I>& x)
 {
-  if (x == alps::half_integer<I>::max())
+  if (x == alps::half_integer<I>::max BOOST_PREVENT_MACRO_SUBSTITUTION ())
     return os << "infinity";
   else if (std::numeric_limits<I>::is_signed &&
-           x == alps::half_integer<I>::min())
+           x == alps::half_integer<I>::min BOOST_PREVENT_MACRO_SUBSTITUTION ())
     return os << "-infinity";
   else if (x.get_twice()%2 ==0)
     return os << x.get_twice()/2;

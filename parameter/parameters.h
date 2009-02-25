@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2008 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -52,7 +52,7 @@ namespace alps {
 /// \brief a class storing a set of parameters
 ///
 /// the class acts like an associative array but at the same time remembers the order in which elements were added
-class Parameters
+class ALPS_DECL Parameters
 {
 public:
   /// the key (parameter name) is a string
@@ -227,7 +227,7 @@ namespace alps {
 #endif
 
 /// write parameters in text-form to a std::ostream
-std::ostream& operator<<(std::ostream& os, const alps::Parameters& p);
+ALPS_DECL std::ostream& operator<<(std::ostream& os, const alps::Parameters& p);
 
 /// parse parameters in text-form from a std::istream
 inline std::istream& operator>>(std::istream& is, alps::Parameters& p)

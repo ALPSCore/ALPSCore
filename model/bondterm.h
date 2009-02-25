@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2005 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2003-2009 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -43,8 +43,12 @@ public:
   BondTermDescriptor() : BondOperator(), type_(-2) {}
   BondTermDescriptor(const std::string& s, const std::string& t) : BondOperator(s,t), type_(-2) {}
   template <class T>
-  BondTermDescriptor(const T& term, const std::string& s="i", const std::string& t="j")
-    : BondOperator(term,s,t), type_(-2) {}
+  BondTermDescriptor(const T& term) : BondOperator(term, "i", "j"), type_(-2) {}
+  template <class T>
+  BondTermDescriptor(const T& term, const std::string& s) : BondOperator(term, s, "j"), type_(-2) {}
+  template <class T>
+  BondTermDescriptor(const T& term, const std::string& s, const std::string& t)
+    : BondOperator(term, s, t), type_(-2) {}
 
   BondTermDescriptor(const XMLTag&, std::istream&);
 

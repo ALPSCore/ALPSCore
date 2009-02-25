@@ -38,10 +38,9 @@
 #include <alps/alea/simpleobsdata.h>
 #include <alps/parser/parser.h>
 #include <alps/math.hpp>
-
-#include <algorithm>
+#include <boost/config.hpp>
 #include <boost/functional.hpp>
-
+#include <algorithm>
 #include <iostream>
 
 #ifndef ALPS_WITHOUT_OSIRIS
@@ -122,8 +121,8 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
   bool has_tau() const { collect(); return all_.has_tau(); }
   bool has_variance() const { collect(); return all_.has_variance(); }
   bool has_minmax() const { return false; /*collect() ; return all_.has_minmax(); */} //min / max is no longer supported - too expensive.
-  value_type max() const { collect(); return all_.max(); }
-  value_type min() const { collect(); return all_.min(); }
+  value_type max BOOST_PREVENT_MACRO_SUBSTITUTION () const { collect(); return all_.max BOOST_PREVENT_MACRO_SUBSTITUTION (); }
+  value_type min BOOST_PREVENT_MACRO_SUBSTITUTION () const { collect(); return all_.min BOOST_PREVENT_MACRO_SUBSTITUTION (); }
 
   result_type value() const { collect(); return all_.mean(); }
   result_type mean() const { return value(); }

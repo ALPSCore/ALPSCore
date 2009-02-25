@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -36,6 +36,7 @@
 // tasks to be performed
 //=======================================================================
 
+#include <alps/config.h>
 #include <alps/scheduler/factory.h>
 #include <alps/scheduler/options.h>
 
@@ -52,7 +53,7 @@
 namespace alps {
 namespace scheduler {
 
-void print_copyright(std::ostream& out);
+ALPS_DECL void print_copyright(std::ostream& out);
 
 
 //=======================================================================
@@ -61,7 +62,7 @@ void print_copyright(std::ostream& out);
 // the base class for schedulers, defining common functions
 //-----------------------------------------------------------------------
 
-class Scheduler : public boost::noncopyable
+class ALPS_DECL Scheduler : public boost::noncopyable
 {
 public: 
   Scheduler(const NoJobfileOptions&, const Factory&);    
@@ -131,7 +132,7 @@ protected:
 // work to the slave schedulers
 //-----------------------------------------------------------------------
 
-class MasterScheduler : public Scheduler
+class ALPS_DECL MasterScheduler : public Scheduler
 {
 public:
   enum TaskStatusFlag {
@@ -179,7 +180,7 @@ private:
 // a scheduler for a single task
 //-----------------------------------------------------------------------
 
-class SingleScheduler : public Scheduler 
+class ALPS_DECL SingleScheduler : public Scheduler 
 {
 public:
   SingleScheduler(const NoJobfileOptions&,const Factory&);
@@ -220,7 +221,7 @@ public:
 //-----------------------------------------------------------------------
 
 
-class MPPScheduler : public MasterScheduler 
+class ALPS_DECL MPPScheduler : public MasterScheduler 
 {
   private:
 
@@ -244,10 +245,10 @@ class MPPScheduler : public MasterScheduler
 //-----------------------------------------------------------------------
 
 // create a scheduler, I want to do some simulations
-int start(int,char**,const Factory&);
+ALPS_DECL int start(int,char**,const Factory&);
 
 // create a scheduler, I just want to evaluate some simulations
-void init(const Factory&);
+ALPS_DECL void init(const Factory&);
 
 // initialize a scheduler for real work, parsing the command line
 SingleScheduler* start_single(const Factory& p, int argc=0, char** argv=0);
@@ -255,7 +256,7 @@ void stop_single();
 
 
 // the scheduler on this node
-extern Scheduler* theScheduler;
+extern ALPS_DECL Scheduler* theScheduler;
 
 } // namespace scheduler
 } // namespace alps

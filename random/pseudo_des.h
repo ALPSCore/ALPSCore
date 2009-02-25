@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -40,6 +40,7 @@
 #include <boost/config.hpp>
 #include <boost/limits.hpp>
 #include <boost/integer_traits.hpp>
+#include <boost/detail/workaround.hpp>
 
 namespace alps {
 
@@ -69,10 +70,9 @@ public:
   BOOST_STATIC_CONSTANT(uint32_t, default_seed = 4357);
 
   /// minim value is 0
-  result_type min() const { return std::numeric_limits<result_type>::min(); }
+  result_type min BOOST_PREVENT_MACRO_SUBSTITUTION () const { return min_value; }
   /// maximum value is 2^32-1
-  result_type max() const { return std::numeric_limits<result_type>::max(); }
-
+  result_type max BOOST_PREVENT_MACRO_SUBSTITUTION () const { return max_value; }
   /// the default constructor
   pseudo_des() : seed_(default_seed), state_(1) {}
   /// construct with specified seed

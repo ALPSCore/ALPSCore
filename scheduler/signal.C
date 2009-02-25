@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -68,6 +68,7 @@ SignalHandler::SignalHandler()
       initialized=true;
       u1=u2=k=s=count=0;
 
+#ifndef BOOST_MSVC
       // register the signal handlers
       struct sigaction Action;
       sigemptyset(&Action.sa_mask);
@@ -87,6 +88,9 @@ SignalHandler::SignalHandler()
       sigaction(SIGUSR1, &Action, NULL);
       Action.sa_handler = reinterpret_cast<signal_handle_ptr>(&usr2);
       sigaction(SIGUSR2, &Action, NULL);
+#else
+      // ToDo: register signal handers under Windows environment (How?)
+#endif
     }
 }
 
@@ -136,7 +140,9 @@ void SignalHandler::tstp(int)
 
 void SignalHandler::stopprocess()
 {
+#ifndef BOOST_MSVC
   ::kill(getpid(),SIGSTOP); // stop myself
+#endif
 }  
 
 

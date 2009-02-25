@@ -30,8 +30,10 @@
 #include "queue.h"
 #include "version.h"
 
+#include <alps/config.h>
 #include <alps/osiris/comm.h>
 #include <alps/copyright.h>
+#include <boost/config.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/foreach.hpp>
 #include <boost/regex.hpp>
@@ -246,7 +248,7 @@ void load_tasks(boost::filesystem::path const& file_in,
                 << " to " << tasks.size() << std::endl;
     }
 
-    int nc = std::min(tasks.size(), tasks_out.size());
+    int nc = std::min BOOST_PREVENT_MACRO_SUBSTITUTION (tasks.size(), tasks_out.size());
     for (int i = 0; i < nc; ++i) {
       if (tasks[i].file_in_str() != tasks_out[i].file_in_str()) {
         std::cerr << "Error: input XML filename of task[" << i << "] has been modified\n";

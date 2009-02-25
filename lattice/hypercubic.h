@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2006 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2001-2009 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -135,7 +135,7 @@ public:
         ++offit;
       }
       (*offit)++;
-      while (*offit == lattice_->extent(d) && d > 0) //go backwards
+      while (*offit == static_cast<int>(lattice_->extent(d)) && d > 0) //go backwards
         {
           *offit =0;
           --d;
@@ -170,8 +170,8 @@ public:
 
   std::pair<cell_iterator,cell_iterator> cells() const
   {
-    offset_type begin(extent_);
-    offset_type end(extent_);
+    offset_type begin(extent_.begin(), extent_.end());
+    offset_type end(extent_.begin(), extent_.end());
     std::fill(coordinates(begin).first,coordinates(begin).second,0);
     if (coordinates(end).first != coordinates(end).second)
       std::fill(coordinates(end).first+1,coordinates(end).second,0);
@@ -191,9 +191,10 @@ public:
     size_type ind=0;
     size_type factor=1;
     offset_type o=offset(c,*this);
-    typedef typename coordinate_traits<offset_type>::const_iterator CI;
-    CI exit = coordinates(extent_).first;
-    CI offit = coordinates(o).first;
+    typedef typename coordinate_traits<offset_type>::const_iterator OCI;
+    typedef typename coordinate_traits<extent_type>::const_iterator ECI;
+    ECI exit = coordinates(extent_).first;
+    OCI offit = coordinates(o).first;
     if (exit == coordinates(extent_).second)
       return 0;
     int d=1;
@@ -204,28 +205,32 @@ public:
       ++offit;
     }
 
-    for (;d!=0;--exit,--offit,--d) {
+    while (true) {
       ind += factor* (*offit);
-      factor *= (*exit);
+      factor *= static_cast<int>(*exit);
+      --d;
+      if (d == 0) break;
+      --exit;
+      --offit;
     }
     return ind;
   }
 
   bool on_lattice(const cell_descriptor& c) const {
-    typedef typename coordinate_traits<offset_type>::const_iterator CI;
-    CI exit = coordinates(extent_).first;
-    CI offit = coordinates(offset(c,*this)).first;
+    typedef typename coordinate_traits<offset_type>::const_iterator OCI;
+    typedef typename coordinate_traits<extent_type>::const_iterator ECI;
+    ECI exit = coordinates(extent_).first;
+    OCI offit = coordinates(offset(c,*this)).first;
 
-    for (;exit!=coordinates(extent_).last;++exit,++offit)
-      if(*offit<0 || *offit>=*exit)
+    for (; exit != coordinates(extent_).second; ++exit, ++offit)
+      if(*offit<0 || *offit>=static_cast<int>(*exit))
         return false;
     return true;
   }
 
   cell_descriptor cell(size_type i)  const{
-    offset_type o(extent_);
-
-    typedef typename coordinate_traits<offset_type>::const_iterator CIT;
+    offset_type o(extent_.begin(), extent_.end());
+    typedef typename coordinate_traits<extent_type>::const_iterator CIT;
     typedef typename coordinate_traits<offset_type>::iterator IT;
     CIT ex = coordinates(extent_).first;
     IT offit = coordinates(o).first;
@@ -236,8 +241,8 @@ public:
     do {
       --ex; 
       --offit;
-      *offit=i%(*ex);
-      i/=(*ex); }    
+      *offit=i%static_cast<int>(*ex);
+      i/=static_cast<int>(*ex); }    
     while ( ex!=coordinates(extent_).first);
     
     //replaced this code:    
@@ -257,7 +262,7 @@ public:
   {
     o=o+s;
     typedef typename coordinate_traits<offset_type>::iterator IT;
-    typedef typename coordinate_traits<offset_type>::const_iterator CIT;
+    typedef typename coordinate_traits<extent_type>::const_iterator CIT;
     IT offit=alps::coordinates(o).first;
     CIT exit=alps::coordinates(extent_).first;
     std::vector<std::string>::const_iterator bit=bc_.begin();
@@ -266,15 +271,15 @@ public:
       if (*offit<0)
         while (*offit<0) {
                   if (*bit=="periodic") {
-                    *offit+=*exit; // need to check % for negative numbers
+                    *offit+=static_cast<int>(*exit); // need to check % for negative numbers
             crossing.set_crossing(dim,-1);
           }
                   else
                     return std::make_pair(false,boundary_crossing_type());
         }
-      else if (*offit >= *exit) {
+      else if (*offit >= static_cast<int>(*exit)) {
                 if (*bit=="periodic") {
-                  *offit %= *exit;
+                  *offit %= static_cast<int>(*exit);
           crossing.set_crossing(dim,1);
         }
                 else
@@ -318,8 +323,8 @@ public:
   std::vector<unsigned int> distance_multiplicities() const
   {
     std::vector<unsigned int> mult(num_distances());
-    for (cell_iterator it1=cells().begin; it1 != cells().end();++it1)
-      for (cell_iterator it2=cells().begin; it2 != cells().end();++it2)
+    for (cell_iterator it1=cells().first; it1 != cells().second; ++it1)
+      for (cell_iterator it2=cells().first; it2 != cells().second; ++it2)
         mult[distance(alps::offset(*it1,*this),alps::offset(*it2,*this))]++;
     return mult;
   }
@@ -329,9 +334,9 @@ public:
     std::size_t d=1;
     for (unsigned int i=0;i<BASE::dimension();++i) {
       if(boundary(i)=="periodic")
-        d*=extent(i);
+        d*=static_cast<std::size_t>(extent(i));
       else
-        d*=extent(i)*extent(i);
+        d*=static_cast<std::size_t>(extent(i))*static_cast<std::size_t>(extent(i));
     }
     return d;
   }
@@ -342,9 +347,10 @@ public:
       std::size_t d=0;
       for (unsigned int i=0;i<BASE::dimension();++i) {
         if(boundary(i)=="periodic")
-          d = d*extent(i) + (x[i] <= y[i] ? y[i]-x[i] : extent(i)+y[i]-x[i]);
+          d = d*static_cast<std::size_t>(extent(i)) +
+            (x[i] <= y[i] ? y[i]-x[i] : static_cast<std::size_t>(extent(i))+y[i]-x[i]);
         else
-          d = extent(i)*(d*extent(i) +x[i])+y[i];
+          d = static_cast<std::size_t>(extent(i))*(d*static_cast<std::size_t>(extent(i)) +x[i])+y[i];
       }
       return d;
     }
@@ -412,14 +418,14 @@ public:
     for (std::size_t i=0;i<bc_.size();++i)
       if (bc_[i]=="periodic") {
         if (ks.empty())
-          for (int j=0;j<extent_[i];++j)
-            ks.push_back(vector_type(1,2.*j*M_PI/extent_[i]));
+          for (int j = 0; j < static_cast<int>(extent_[i]); ++j)
+            ks.push_back(vector_type(1,2.*j*M_PI/ static_cast<int>(extent_[i])));
         else {
           std::vector<vector_type> newks;
           for (std::size_t l=0;l<ks.size();++l) 
-            for (int j=0;j<extent_[i];++j) {
+            for (int j = 0; j < static_cast<int>(extent_[i]); ++j) {
               vector_type k=ks[l];
-              k.push_back(2.*j*M_PI/extent_[i]);
+              k.push_back(2.*j*M_PI/ static_cast<int>(extent_[i]));
               newks.push_back(k);
             }
           ks.swap(newks);
@@ -436,7 +442,7 @@ public:
       boost::throw_exception(std::runtime_error("Incorrect number of momenta specified in hypercubic_lattice::translations"));
     
     std::vector<int> theshift(dirs.size());
-    offset_type off(extent_);
+    offset_type off(extent_.begin(), extent_.end());
     for (std::size_t i=0;i<alps::dimension(off);++i)
       off[i]=0;
     
@@ -445,7 +451,7 @@ public:
       double phase=0.;
       for (std::size_t i=0;i<dirs.size();++i) {
         off[dirs[i]]=theshift[i];
-        phase += theshift[i]*k[i];
+        phase += theshift[i] * static_cast<double>(k[i]);
       }
       std::vector<std::size_t> shifted_index;
       for (cell_iterator it=cells().first; it !=cells().second;++it) {
@@ -457,7 +463,7 @@ public:
       trans.push_back(std::make_pair(std::exp(std::complex<double>(0.,phase)),shifted_index));
       done=true;
       for (std::size_t i=0; i<theshift.size() && done;++i) {
-        if (++theshift[i]>=extent_[dirs[i]]) 
+        if (++theshift[i]>=static_cast<int>(extent_[dirs[i]])) 
           theshift[i]=0;
          else
            done=false;

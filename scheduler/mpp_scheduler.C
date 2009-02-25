@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2006 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2009 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -33,6 +33,12 @@
 #include <cstdio>
 #ifdef ALPS_HAVE_UNISTD_H
 # include <unistd.h>
+#endif
+
+#if defined(ALPS_HAVE_UNISTD_H)
+# include <unistd.h>
+#elif defined(ALPS_HAVE_WINDOWS_H)
+# include <windows.h>
 #endif
 
 using namespace boost::posix_time;
@@ -101,7 +107,13 @@ int MPPScheduler::run()
     if(theTask)
       theTask->run();
     else
-      sleep(1);
+#if defined(ALPS_HAVE_UNISTD_H)
+  sleep(1);    // sleep 1 Sec
+#elif defined(ALPS_HAVE_WINDOWS_H)
+  Sleep(1000); // sleep 1000 mSec
+#else
+# error "sleep not found"
+#endif
 
     // check if tasks have finished
 

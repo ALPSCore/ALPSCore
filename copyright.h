@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2004 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2003-2009 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -37,12 +37,13 @@
 #define ALPS_COPYRIGHT_H
 
 #include <iostream>
+#include <alps/config.h>
 
 namespace alps {
 
 /// print the ALPS library copyright statement 
 /// \param out the output stream to which the copyright statement should be written  
-void print_copyright(std::ostream& out);
+ALPS_DECL void print_copyright(std::ostream& out);
 
 /// print the ALPS license
 /// \param out the output stream to which the license should be written

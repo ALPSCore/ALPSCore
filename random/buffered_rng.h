@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>,
 *                            Mario Ruetti <mruetti@gmx.net>
 *
@@ -46,6 +46,7 @@
 #include <boost/throw_exception.hpp>
 #include <boost/type_traits.hpp>
 #include <boost/generator_iterator.hpp>
+#include <boost/detail/workaround.hpp>
 
 #include <iostream>
 
@@ -108,8 +109,8 @@ public:
   /// read the full state (including buffer) from a std::istream
   virtual void read_all(std::istream&) = 0;
 
-  virtual result_type min() const = 0;
-  virtual result_type max() const = 0;
+  virtual result_type min BOOST_PREVENT_MACRO_SUBSTITUTION () const = 0;
+  virtual result_type max BOOST_PREVENT_MACRO_SUBSTITUTION () const = 0;
 
 protected:
   std::vector<result_type> buf_;
@@ -141,8 +142,8 @@ public:
   void seed(uint32_t s) { seed_with_sequence(rng_,s); }
   void seed();
 
-  result_type min() const { return rng_.min(); }
-  result_type max() const { return rng_.max(); }
+  result_type min BOOST_PREVENT_MACRO_SUBSTITUTION () const { return rng_.min BOOST_PREVENT_MACRO_SUBSTITUTION (); }
+  result_type max BOOST_PREVENT_MACRO_SUBSTITUTION () const { return rng_.max BOOST_PREVENT_MACRO_SUBSTITUTION (); }
 
   virtual void write(std::ostream&) const;
   virtual void read(std::istream&);

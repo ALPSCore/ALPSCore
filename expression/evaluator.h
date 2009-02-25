@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2005 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2001-2009 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -33,10 +33,11 @@
 
 #include <alps/expression/expression_fwd.h>
 #include <alps/expression/evaluate_helper.h>
+#include <alps/config.h>
 
 namespace alps {
 
-class Disorder
+class ALPS_DECL Disorder
 {
 public:
   typedef boost::mt19937 random_type;

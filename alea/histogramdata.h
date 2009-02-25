@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2007 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2009 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Fabian Stoeckli <fabstoec@phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
@@ -34,6 +34,7 @@
 
 #include <alps/alea/histogram.h>
 #include <alps/parser/parser.h>
+#include <boost/config.hpp>
 #include <iostream>
 #include <vector>
 
@@ -71,8 +72,8 @@ public:
 
   count_type count() const {return count_;}
   size_type value(uint32_t) const;
-  range_type min() const { return min_;}
-  range_type max() const { return max_;}
+  range_type min BOOST_PREVENT_MACRO_SUBSTITUTION () const { return min_;}
+  range_type max BOOST_PREVENT_MACRO_SUBSTITUTION () const { return max_;}
   range_type stepsize() const { return stepsize_;}
 
   ALPS_DUMMY_VOID compact() {
@@ -212,8 +213,8 @@ template <class T>
      can_set_thermal_(obs.can_set_thermalization()),
      thermalcount_(obs.get_thermalization()),
      histogram_(obs.size()),
-     min_(obs.min()),
-     max_(obs.max()),
+     min_(obs.min BOOST_PREVENT_MACRO_SUBSTITUTION ()),
+     max_(obs.max BOOST_PREVENT_MACRO_SUBSTITUTION ()),
      stepsize_(obs.stepsize())
 {
   if(count())

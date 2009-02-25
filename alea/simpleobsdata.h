@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2008 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2009 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Beat Ammon <beat.ammon@bluewin.ch>,
 *                            Andreas Laeuchli <laeuchli@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>,
@@ -44,6 +44,8 @@
 #include <iostream>
 #include <numeric>
 #include <vector>
+#include <boost/config.hpp>
+
 #ifdef ALPS_HAVE_VALARRAY
 # include <valarray>
 #endif
@@ -118,8 +120,8 @@ public:
   inline const convergence_type& any_converged_errors() const;
   inline const result_type& variance() const;
   inline const time_type& tau() const;
-  inline const value_type& min() const;
-  inline const value_type& max() const;
+  inline const value_type& min BOOST_PREVENT_MACRO_SUBSTITUTION () const;
+  inline const value_type& max BOOST_PREVENT_MACRO_SUBSTITUTION () const;
   
   covariance_type covariance(const SimpleObservableData<T>) const;
 
@@ -348,8 +350,8 @@ SimpleObservableData<T>::SimpleObservableData(const AbstractSimpleObservable<T>&
     if (has_tau())
       obs_value_traits<time_type>::copy(tau_, obs.tau());
     if (has_minmax()) {
-      obs_value_traits<result_type>::copy(min_, obs.min());
-      obs_value_traits<result_type>::copy(max_, obs.max());
+      obs_value_traits<result_type>::copy(min_, obs.min BOOST_PREVENT_MACRO_SUBSTITUTION ());
+      obs_value_traits<result_type>::copy(max_, obs.max BOOST_PREVENT_MACRO_SUBSTITUTION ());
     }
 
     for (uint64_t i = 0; i < obs.bin_number(); ++i)
@@ -833,7 +835,7 @@ void SimpleObservableData<T>::collect_from(const std::vector<SimpleObservableDat
   jack_.clear();
 
   // find smallest and largest bin sizes
-  uint64_t minsize = std::numeric_limits<uint64_t>::max();
+  uint64_t minsize = std::numeric_limits<uint64_t>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();
   uint64_t maxsize = 0;
   for (typename std::vector<SimpleObservableData<T> >::const_iterator
          r = runs.begin(); r != runs.end(); ++r) {
@@ -936,8 +938,8 @@ void SimpleObservableData<T>::collect_from(const std::vector<SimpleObservableDat
           //  / double(count_ + r->count_);
         }
 
-        thermalcount_ = std::min(thermalcount_, r->thermalcount_);
-        discardedmeas_ = std::min(discardedmeas_, r->discardedmeas_);
+        thermalcount_ = std::min BOOST_PREVENT_MACRO_SUBSTITUTION (thermalcount_, r->thermalcount_);
+        discardedmeas_ = std::min BOOST_PREVENT_MACRO_SUBSTITUTION (discardedmeas_, r->discardedmeas_);
         count_ += r->count();
 
         if (r->bin_size() == maxsize) {
@@ -1270,7 +1272,7 @@ const typename SimpleObservableData<T>::time_type& SimpleObservableData<T>::tau(
 
 template <class T>
 inline
-const typename SimpleObservableData<T>::value_type& SimpleObservableData<T>::min() const
+const typename SimpleObservableData<T>::value_type& SimpleObservableData<T>::min BOOST_PREVENT_MACRO_SUBSTITUTION () const
 {
   if (count() == 0) boost::throw_exception(NoMeasurementsError());
   if (!has_minmax_)
@@ -1280,7 +1282,7 @@ const typename SimpleObservableData<T>::value_type& SimpleObservableData<T>::min
 
 template <class T>
 inline
-const typename SimpleObservableData<T>::value_type& SimpleObservableData<T>::max() const
+const typename SimpleObservableData<T>::value_type& SimpleObservableData<T>::max BOOST_PREVENT_MACRO_SUBSTITUTION () const
 {
   if (count() == 0) boost::throw_exception(NoMeasurementsError());
   if(!has_minmax_)

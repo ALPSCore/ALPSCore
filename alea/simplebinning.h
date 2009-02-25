@@ -39,6 +39,7 @@
 #include <alps/alea/nan.h>
 #include <alps/math.hpp>
 #include <alps/xml.h>
+#include <boost/config.hpp>
 
 //=======================================================================
 // SimpleBinning
@@ -72,10 +73,10 @@ class SimpleBinning : public AbstractBinning<T>
   uint64_t count() const {return super_type::is_thermalized() ? count_ : 0;} // number of measurements performed
   result_type mean() const;
   result_type variance() const;
-  result_type error(uint64_t bin_used=std::numeric_limits<uint64_t>::max()) const;
+  result_type error(uint64_t bin_used=std::numeric_limits<uint64_t>::max BOOST_PREVENT_MACRO_SUBSTITUTION ()) const;
 
   //valarray specializations
-  double error_element( uint64_t element, uint64_t bin_used=std::numeric_limits<uint64_t>::max()) const;
+  double error_element( uint64_t element, uint64_t bin_used=std::numeric_limits<uint64_t>::max BOOST_PREVENT_MACRO_SUBSTITUTION ()) const;
   double binmean_element(uint64_t element, uint64_t i) const ;
   double binvariance_element(uint64_t element, uint64_t i) const;
   double variance_element(uint64_t element) const;
@@ -87,8 +88,8 @@ class SimpleBinning : public AbstractBinning<T>
     // depth of logarithmic binning hierarchy = log2(measurements())
 
   //min and max are expensive to compute. This interface is now disabled.
-  value_type min() const {return min_;}
-  value_type max() const {return max_;}
+  value_type min BOOST_PREVENT_MACRO_SUBSTITUTION () const {return min_;}
+  value_type max BOOST_PREVENT_MACRO_SUBSTITUTION () const {return max_;}
 
   uint64_t get_thermalization() const { return super_type::is_thermalized() ? thermal_count_ : count_;}
 
@@ -152,8 +153,8 @@ inline void SimpleBinning<T>::reset(bool forthermalization)
 
   count_ = 0;
 
-  min_ =  obs_value_traits<T>::max();
-  max_ = -obs_value_traits<T>::max();
+  min_ =  obs_value_traits<T>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();
+  max_ = -obs_value_traits<T>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();
 }
 
 
@@ -206,10 +207,10 @@ inline void SimpleBinning<T>::operator<<(const T& x)
           bin++;
           if(bin>=last_bin_.size())
           {
-            last_bin_.resize(std::max(bin+1,last_bin_.size()));
-            sum_.resize(std::max(bin+1, sum_.size()));
-            sum2_.resize(std::max(bin+1,sum2_.size()));
-            bin_entries_.resize(std::max(bin+1,bin_entries_.size()));
+            last_bin_.resize(std::max BOOST_PREVENT_MACRO_SUBSTITUTION (bin+1,last_bin_.size()));
+            sum_.resize(std::max BOOST_PREVENT_MACRO_SUBSTITUTION (bin+1, sum_.size()));
+            sum2_.resize(std::max BOOST_PREVENT_MACRO_SUBSTITUTION (bin+1,sum2_.size()));
+            bin_entries_.resize(std::max BOOST_PREVENT_MACRO_SUBSTITUTION (bin+1,bin_entries_.size()));
 
             obs_value_traits<result_type>::resize_same_as(last_bin_[bin],x);
             obs_value_traits<result_type>::resize_same_as(sum_[bin],x);
@@ -279,10 +280,10 @@ template <> inline void SimpleBinning<std::valarray<double> >::operator<<(const 
           bin++;
           if(bin>=last_bin_.size())
           {
-            last_bin_.resize(std::max(bin+1,last_bin_.size()));
-            sum_.resize(std::max(bin+1, sum_.size()));
-            sum2_.resize(std::max(bin+1,sum2_.size()));
-            bin_entries_.resize(std::max(bin+1,bin_entries_.size()));
+            last_bin_.resize(std::max BOOST_PREVENT_MACRO_SUBSTITUTION (bin+1,last_bin_.size()));
+            sum_.resize(std::max BOOST_PREVENT_MACRO_SUBSTITUTION (bin+1, sum_.size()));
+            sum2_.resize(std::max BOOST_PREVENT_MACRO_SUBSTITUTION (bin+1,sum2_.size()));
+            bin_entries_.resize(std::max BOOST_PREVENT_MACRO_SUBSTITUTION (bin+1,bin_entries_.size()));
 
             obs_value_traits<result_type>::resize_same_as(last_bin_[bin],x);
             obs_value_traits<result_type>::resize_same_as(sum_[bin],x);
@@ -475,7 +476,7 @@ inline typename SimpleBinning<T>::result_type SimpleBinning<T>::error(uint64_t i
   if (count()==0)
      boost::throw_exception(NoMeasurementsError());
 
-  if (i==std::numeric_limits<uint64_t>::max())
+  if (i==std::numeric_limits<uint64_t>::max BOOST_PREVENT_MACRO_SUBSTITUTION ())
     i=binning_depth()-1;
 
   if (i > binning_depth()-1)
@@ -502,7 +503,7 @@ template <> inline double SimpleBinning<class std::valarray<double> >::error_ele
   if (count()==0)
      boost::throw_exception(NoMeasurementsError());
 
-  if (i==std::numeric_limits<uint64_t>::max())
+  if (i==std::numeric_limits<uint64_t>::max BOOST_PREVENT_MACRO_SUBSTITUTION ())
     i=binning_depth()-1;
 
   if (i > binning_depth()-1)

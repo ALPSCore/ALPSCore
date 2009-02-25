@@ -4,7 +4,8 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 1994-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -38,11 +39,12 @@
 #include <alps/lattice/graph_helper.h>
 #include <alps/alea/observableset.h>
 #include <boost/smart_ptr.hpp>
+#include <alps/config.h>
 
 namespace alps {
 namespace scheduler {
 
-class MCRun : public Worker
+class ALPS_DECL MCRun : public Worker
 {
 public:
   static void print_copyright(std::ostream&);
@@ -68,7 +70,7 @@ protected:
 };
 
 
-class DummyMCRun : public MCRun
+class ALPS_DECL DummyMCRun : public MCRun
 {
 public:
   DummyMCRun(const ProcessList& w,const alps::Parameters& p,int n);
@@ -80,7 +82,7 @@ public:
 };
 
 
-class MCSimulation : public WorkerTask
+class ALPS_DECL MCSimulation : public WorkerTask
 {        
 public:
   MCSimulation(const ProcessList& w, const boost::filesystem::path& p) 

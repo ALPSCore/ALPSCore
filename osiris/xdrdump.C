@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -321,7 +321,7 @@ void IXDRDump::setPosition(uint32_t pos)
 // reopen a file
 void OXDRFileDump::open_file(const std::string& fn,bool append)
 {
-  file_ = std::fopen(fn.c_str(),(append ? "a" : "w"));
+  file_ = std::fopen(fn.c_str(),(append ? "ab" : "wb"));
   if(file_)
       xdrstdio_create(&xdr_,file_,XDR_ENCODE);
   else  {
@@ -370,7 +370,7 @@ IXDRFileDump::IXDRFileDump(const boost::filesystem::path& p)
 void IXDRFileDump::open_file(const std::string& fn)
 {
   valid_ = true;
-  file_ = std::fopen(fn.c_str(),"r");
+  file_ = std::fopen(fn.c_str(),"rb");
 
   if(file_) // open succeeded
     xdrstdio_create(&xdr_,file_,XDR_DECODE);

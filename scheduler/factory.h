@@ -4,7 +4,8 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 1994-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -31,6 +32,7 @@
 #define ALPS_SCHEDULER_FACTORY_H
 
 #include <alps/scheduler/task.h>
+#include <alps/config.h>
 #include <boost/filesystem/path.hpp>
 #include <iostream>
 
@@ -43,7 +45,7 @@ namespace scheduler {
 // a factory for user defined task and subtask objects
 //-----------------------------------------------------------------------
 
-class Factory
+class ALPS_DECL Factory
 {
 public:
   Factory() {}

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -150,7 +150,7 @@ protected:
 
 /** a dump for serializing objects into a file using the XDR format. */
 
-class OXDRFileDump: public OXDRDump
+class ALPS_DECL OXDRFileDump: public OXDRDump
 {
 public:
   /// open a new dump file with the given name
@@ -171,7 +171,7 @@ private:
 
 /** a dump for deserializing objects from a file using the XDR format. */
 
-class IXDRFileDump: public IXDRDump
+class ALPS_DECL IXDRFileDump: public IXDRDump
 {
 public:
   /** open a file.

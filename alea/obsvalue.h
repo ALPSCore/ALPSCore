@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2006 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2009 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
@@ -35,14 +35,15 @@
 
 #include <alps/config.h>
 #include <alps/typetraits.h>
+#include <boost/config.hpp>
+#include <boost/lambda/lambda.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/limits.hpp>
-#include <boost/lambda/lambda.hpp>
+#include <boost/numeric/ublas/matrix.hpp>
+#include <complex>
 #include <cstddef>
 #include <vector>
-#include <complex>
 #include <valarray>
-#include <boost/numeric/ublas/matrix.hpp>
 
 namespace boost { 
 namespace lambda {
@@ -97,11 +98,11 @@ struct obs_value_traits
   template <class X>
   static inline void check_for_min(T& a,const X& b) { if (b<a) a=b;}
 
-  static T max() {return std::numeric_limits<T>::max();}
-  static T min() {return -std::numeric_limits<T>::max();}
+  static T max BOOST_PREVENT_MACRO_SUBSTITUTION () {return std::numeric_limits<T>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();}
+  static T min BOOST_PREVENT_MACRO_SUBSTITUTION () {return -std::numeric_limits<T>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();}
   static T epsilon() { return std::numeric_limits<T>::epsilon();}
 
-  static inline time_type t_max() {return std::numeric_limits<time_type>::max();}
+  static inline time_type t_max() {return std::numeric_limits<time_type>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();}
 
   static inline value_type check_divide(const result_type& a,const result_type& b) 
     {
@@ -169,11 +170,11 @@ struct obs_value_traits<std::complex<T> >
   template <class X> static inline void check_for_max(std::complex<T>&,const X&) {}
   template <class X> static inline void check_for_min(std::complex<T>&,const X& b) {}
 
-  static std::complex<T> max() { return  (std::numeric_limits<T>::max(),std::numeric_limits<T>::max());}
-  static std::complex<T> min() { return  -max();}
+  static std::complex<T> max BOOST_PREVENT_MACRO_SUBSTITUTION () { return  (std::numeric_limits<T>::max BOOST_PREVENT_MACRO_SUBSTITUTION (),std::numeric_limits<T>::max BOOST_PREVENT_MACRO_SUBSTITUTION ());}
+  static std::complex<T> min BOOST_PREVENT_MACRO_SUBSTITUTION () { return  -max BOOST_PREVENT_MACRO_SUBSTITUTION ();}
   static T epsilon() { return std::numeric_limits<T>::epsilon();}
 
-  static inline time_type t_max() { return  std::numeric_limits<time_type>::max();}
+  static inline time_type t_max() { return  std::numeric_limits<time_type>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();}
 
   static void fix_negative(value_type& x) { if (std::real(x)<0. || std::imag(x)<0.) x=0.;}
 
@@ -247,11 +248,11 @@ struct obs_value_traits<std::valarray<T> >
     for(int32_t i=0;i!=(int32_t)a.size();++i)
       obs_value_traits<element_type>::fix_negative(a[i]);
   }
-  static element_type min() {return obs_value_traits<T>::min();}
-  static element_type max() {return obs_value_traits<T>::max();}
+  static element_type min BOOST_PREVENT_MACRO_SUBSTITUTION () {return obs_value_traits<T>::min BOOST_PREVENT_MACRO_SUBSTITUTION ();}
+  static element_type max BOOST_PREVENT_MACRO_SUBSTITUTION () {return obs_value_traits<T>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();}
   static element_type epsilon() { return obs_value_traits<T>::epsilon();}
 
-  static time_element_type t_max() {return obs_value_traits<T>::max();}
+  static time_element_type t_max() {return obs_value_traits<T>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();}
 
   static inline time_type check_divide(const result_type& a,const result_type& b) 
   {

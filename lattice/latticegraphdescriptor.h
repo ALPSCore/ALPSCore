@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2006 by Matthias Troyer <troyer@comp-phys.orgh>,
+* Copyright (C) 2001-2009 by Matthias Troyer <troyer@comp-phys.orgh>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -45,7 +45,7 @@
 
 namespace alps {
 
-class LatticeGraphDescriptor
+class ALPS_DECL LatticeGraphDescriptor
   : public hypercubic_lattice<coordinate_lattice<simple_lattice<GraphUnitCell>,std::vector<StringValue> >, std::vector<StringValue> >
 {
 public:

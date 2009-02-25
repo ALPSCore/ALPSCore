@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2008 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -25,8 +25,6 @@
 * DEALINGS IN THE SOFTWARE.
 *
 *****************************************************************************/
-
-/* $Id$ */
 
 #ifndef ALPS_CONFIG_H
 #define ALPS_CONFIG_H
@@ -82,6 +80,9 @@
 
 // Define to 1 if you have the <unistd.h> header file.
 #undef ALPS_HAVE_UNISTD_H
+
+// Define to 1 if you have the <windows.h> header file.
+#undef ALPS_HAVE_WINDOWS_H
 
 //
 // C++ headers
@@ -202,6 +203,9 @@
 // Define to 1 if you have the <unistd.h> header file.
 #cmakedefine ALPS_HAVE_UNISTD_H
 
+// Define to 1 if you have the <windows.h> header file.
+#cmakedefine ALPS_HAVE_WINDOWS_H
+
 //
 // C++ headers
 //
@@ -278,6 +282,10 @@
 // Introduce [int,uint]*_t into alps namespace
 //
 
+#ifndef _USE_MATH_DEFINES // define const in math.h
+# define _USE_MATH_DEFINES
+#endif
+
 #include <boost/cstdint.hpp>
 
 namespace alps {
@@ -324,6 +332,20 @@ using boost::uint_fast64_t;
 #else
 # define ALPS_DUMMY_VOID bool
 # define ALPS_RETURN_VOID return true;
+#endif
+
+//
+// for Microsoft Visual C++
+//
+
+#if defined(BOOST_HAS_DECLSPEC)
+# if defined(ALPS_EXPORTS)
+#  define ALPS_DECL __declspec(dllexport)
+# else
+#  define ALPS_DECL __declspec(dllimport)
+# endif
+#else
+# define ALPS_DECL
 #endif
 
 #endif // ALPS_CONFIG_H

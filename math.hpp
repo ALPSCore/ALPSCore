@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1999-2008 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1999-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -43,6 +43,7 @@
 #include <boost/numeric/conversion/converter.hpp>
 #include <boost/type_traits.hpp>
 #include <boost/utility/enable_if.hpp>
+#include <boost/detail/workaround.hpp>
 #include <algorithm>
 #include <complex>
 #include <cmath>
@@ -65,8 +66,8 @@ inline std::size_t binomial(std::size_t l, std::size_t n)
 {
   double nominator=1;
   double denominator=1;
-  std::size_t n2=std::max(n,l-n);
-  std::size_t n1=std::min(n,l-n);
+  std::size_t n2=std::max BOOST_PREVENT_MACRO_SUBSTITUTION (n,l-n);
+  std::size_t n1=std::min BOOST_PREVENT_MACRO_SUBSTITUTION (n,l-n);
   for (std::size_t i=n2+1;i<=l;i++)
     nominator*=i;
   for (std::size_t i=2;i<=n1;i++)

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2008 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -31,6 +31,7 @@
 #ifndef ALPS_PARAMETER_PARAMETER_H
 #define ALPS_PARAMETER_PARAMETER_H
 
+#include <alps/config.h>
 #include <alps/osiris/dump.h>
 #include <alps/osiris/std/string.h>
 #include <alps/parser/xmlstream.h>
@@ -46,7 +47,7 @@ namespace alps {
 ///
 /// the parameter name (key) is stored as a std::string
 /// the parameter value is stores as a StringValue.
-class Parameter
+class ALPS_DECL Parameter
 {
 public:
   /// the parameter name (key) is stored as a std::string
@@ -101,7 +102,7 @@ namespace alps {
 #endif
 
 /// write parameter in text-form to a std::ostream
-std::ostream& operator<<(std::ostream& os, const alps::Parameter& p);
+ALPS_DECL std::ostream& operator<<(std::ostream& os, const alps::Parameter& p);
 
 //
 // OSIRIS support

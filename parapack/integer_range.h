@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -30,6 +30,7 @@
 
 #include <alps/expression.h>
 #include <alps/osiris.h>
+#include <boost/config.hpp>
 #include <boost/call_traits.hpp>
 #include <boost/version.hpp>
 #if BOOST_VERSION >= 103600
@@ -65,11 +66,11 @@ public:
   }
   integer_range(integer_range const& r) : mi_(r.mi_), ma_(r.ma_) {}
   integer_range(std::string const& str) :
-    mi_(std::numeric_limits<value_type>::min()), ma_(std::numeric_limits<value_type>::max()) {
+    mi_(std::numeric_limits<value_type>::min BOOST_PREVENT_MACRO_SUBSTITUTION ()), ma_(std::numeric_limits<value_type>::max BOOST_PREVENT_MACRO_SUBSTITUTION ()) {
     init(str, Parameters());
   }
   integer_range(std::string const& str, Parameters const& p) :
-    mi_(std::numeric_limits<value_type>::min()), ma_(std::numeric_limits<value_type>::max()) {
+    mi_(std::numeric_limits<value_type>::min BOOST_PREVENT_MACRO_SUBSTITUTION ()), ma_(std::numeric_limits<value_type>::max BOOST_PREVENT_MACRO_SUBSTITUTION ()) {
     init(str, p);
   }
   integer_range(std::string const& str, Parameters const& p, param_type def_mi,
@@ -88,12 +89,12 @@ public:
   template<typename U>
   integer_range& operator*=(U x) {
     if (x > U(0)) {
-      if (x > U(1) && mi_ > static_cast<value_type>(std::numeric_limits<value_type>::max() / x))
-        mi_ = std::numeric_limits<value_type>::max();
+      if (x > U(1) && mi_ > static_cast<value_type>(std::numeric_limits<value_type>::max BOOST_PREVENT_MACRO_SUBSTITUTION () / x))
+        mi_ = std::numeric_limits<value_type>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();
       else
         mi_ = static_cast<value_type>(x * mi_);
-      if (x > U(1) && ma_ > static_cast<value_type>(std::numeric_limits<value_type>::max() / x))
-        ma_ = std::numeric_limits<value_type>::max();
+      if (x > U(1) && ma_ > static_cast<value_type>(std::numeric_limits<value_type>::max BOOST_PREVENT_MACRO_SUBSTITUTION () / x))
+        ma_ = std::numeric_limits<value_type>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();
       else
         ma_ = static_cast<value_type>(x * ma_);
     } else {
@@ -118,25 +119,25 @@ public:
   void include(integer_range const& r) {
     if (r.valid()) {
       if (valid()) {
-        mi_ = std::min(mi_, r.min());
-        ma_ = std::max(ma_, r.max());
+        mi_ = std::min(mi_, r.min BOOST_PREVENT_MACRO_SUBSTITUTION ());
+        ma_ = std::max(ma_, r.max BOOST_PREVENT_MACRO_SUBSTITUTION ());
       } else {
-        mi_ = r.min();
-        ma_ = r.max();
+        mi_ = r.min BOOST_PREVENT_MACRO_SUBSTITUTION ();
+        ma_ = r.max BOOST_PREVENT_MACRO_SUBSTITUTION ();
       }
     }
   }
 
-  value_type min() const { return mi_; }
-  value_type max() const { return ma_; }
+  value_type min BOOST_PREVENT_MACRO_SUBSTITUTION () const { return mi_; }
+  value_type max BOOST_PREVENT_MACRO_SUBSTITUTION () const { return ma_; }
   value_type size() const { return 1 + ma_ - mi_; }
   bool empty() const { return size() == 0; }
   bool valid() const { return size() != 0; }
-  bool is_included(param_type v) const { return (v >= min()) && (v <= max()); }
+  bool is_included(param_type v) const { return (v >= min BOOST_PREVENT_MACRO_SUBSTITUTION ()) && (v <= max BOOST_PREVENT_MACRO_SUBSTITUTION ()); }
 
   integer_range overlap(integer_range const& r) const {
     return (empty() || r.empty()) ? integer_range()
-      : integer_range(std::max(min(), r.min()), std::min(max(), r.max()));
+      : integer_range(std::max BOOST_PREVENT_MACRO_SUBSTITUTION (min BOOST_PREVENT_MACRO_SUBSTITUTION (), r.min BOOST_PREVENT_MACRO_SUBSTITUTION ()), std::min BOOST_PREVENT_MACRO_SUBSTITUTION (max BOOST_PREVENT_MACRO_SUBSTITUTION (), r.max BOOST_PREVENT_MACRO_SUBSTITUTION ()));
   }
 
   void save(ODump& dp) const { dp << mi_ << ma_; }
@@ -166,21 +167,21 @@ protected:
       ma_str = "0";
     }
     if (mi_str.empty()) {
-      mi_ = std::numeric_limits<value_type>::min();
+      mi_ = std::numeric_limits<value_type>::min BOOST_PREVENT_MACRO_SUBSTITUTION ();
     } else {
       double v = alps::evaluate(mi_str, p);
-      if (v < std::numeric_limits<value_type>::min() ||
-          v > std::numeric_limits<value_type>::max())
+      if (v < std::numeric_limits<value_type>::min BOOST_PREVENT_MACRO_SUBSTITUTION () ||
+          v > std::numeric_limits<value_type>::max BOOST_PREVENT_MACRO_SUBSTITUTION ())
         boost::throw_exception(std::runtime_error("integer_range: range error"));
       mi_ = static_cast<value_type>(v);
       // Note: boost::numeric_cast<value_type>(v) does not work for intel C++ for x86_64
     }
     if (ma_str.empty()) {
-      ma_ = std::numeric_limits<value_type>::max();
+      ma_ = std::numeric_limits<value_type>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();
     } else {
       double v = alps::evaluate(ma_str, p);
-      if (v < std::numeric_limits<value_type>::min() ||
-          v > std::numeric_limits<value_type>::max())
+      if (v < std::numeric_limits<value_type>::min BOOST_PREVENT_MACRO_SUBSTITUTION () ||
+          v > std::numeric_limits<value_type>::max BOOST_PREVENT_MACRO_SUBSTITUTION ())
         boost::throw_exception(std::runtime_error("integer_range: range error"));
       ma_ = static_cast<value_type>(v);
       // Note: boost::numeric_cast<value_type>(v) does not work for intel C++ for x86_64
@@ -233,7 +234,7 @@ alps::integer_range<T> operator*(U x, alps::integer_range<T> const& t) {
 template<class T>
 std::ostream& operator<<(std::ostream& os, integer_range<T> const& ir) {
   if (ir.valid())
-    os << '[' << ir.min() << ':' << ir.max() << ']';
+    os << '[' << ir.min BOOST_PREVENT_MACRO_SUBSTITUTION () << ':' << ir.max BOOST_PREVENT_MACRO_SUBSTITUTION () << ']';
   else
     os << "[]";
   return os;

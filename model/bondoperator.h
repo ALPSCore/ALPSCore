@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2006 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2003-2009 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -31,6 +31,7 @@
 #ifndef ALPS_MODEL_BONDOPERATOR_H
 #define ALPS_MODEL_BONDOPERATOR_H
 
+#include <alps/config.h>
 #include <alps/model/operator.h>
 #include <alps/model/siteoperator.h>
 #include <alps/model/sitestate.h>
@@ -75,14 +76,20 @@ private:
   mutable bool second_site_fermionic_;
 };
 
-class BondOperator
+class ALPS_DECL BondOperator
 {
 public:
   BondOperator() : source_("i"), target_("j") {}
   BondOperator(const std::string& s, const std::string& t) : source_(s), target_(t) {}
   //BondOperator(const BondOperator& op) : name_(op.name_), term_(op.term_), source_(op.source_), target_(op.target_) {}
   template <class T>
-  BondOperator(const T& term, const std::string& s="i", const std::string& t="j")
+  BondOperator(const T& term)
+    : term_(boost::lexical_cast<std::string>(term)), source_("i"), target_("j") {}
+  template <class T>
+  BondOperator(const T& term, const std::string& s)
+    : term_(boost::lexical_cast<std::string>(term)), source_(s), target_("j") {}
+  template <class T>
+  BondOperator(const T& term, const std::string& s, const std::string& t)
     : term_(boost::lexical_cast<std::string>(term)), source_(s), target_(t) {}
   BondOperator(const XMLTag& tag, std::istream& in) { read_xml(tag,in);}
 

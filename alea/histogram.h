@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1997-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -116,8 +116,8 @@ public:
   inline count_type count() const { return is_thermalized() ? count_ : 0; }
   // inline void set_count(uint32_t h) {count_=h;}
   inline range_type stepsize() const {return stepsize_;}
-  inline range_type max() const {return max_;}
-  inline range_type min() const {return min_;}
+  inline range_type max BOOST_PREVENT_MACRO_SUBSTITUTION () const {return max_;}
+  inline range_type min BOOST_PREVENT_MACRO_SUBSTITUTION () const {return min_;}
 
   operator HistogramObservableEvaluator<T> () const { return make_evaluator();}
 
@@ -157,8 +157,8 @@ HistogramObservable<T>::HistogramObservable(const std::string& n)
  : Observable(n),
    size_(0),
    thermalcount_(0),
-   min_(std::numeric_limits<T>::max()),
-   max_(std::numeric_limits<T>::min()),
+   min_(std::numeric_limits<T>::max BOOST_PREVENT_MACRO_SUBSTITUTION ()),
+   max_(std::numeric_limits<T>::min BOOST_PREVENT_MACRO_SUBSTITUTION ()),
    stepsize_(0),
    count_(0),
    thermalized_(false)

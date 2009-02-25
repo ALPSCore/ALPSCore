@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2007 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1994-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -30,11 +30,13 @@
 #ifndef ALPS_ALEA_NAN_H
 #define ALPS_ALEA_NAN_H
 
+#include <alps/config.h>
+
 namespace alps {
 
 double nan();
 
-double inf();
+ALPS_DECL double inf();
 
 double ninf();
 

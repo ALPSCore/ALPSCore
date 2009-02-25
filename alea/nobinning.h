@@ -38,6 +38,7 @@
 #include <alps/alea/abstractbinning.h>
 #include <alps/alea/nan.h>
 #include <alps/math.hpp>
+#include <boost/config.hpp>
 
 #ifdef ALPS_HAVE_VALARRAY
 # include <valarray>
@@ -79,8 +80,8 @@ class NoBinning : public AbstractBinning<T>
   uint32_t count() const { return super_type::is_thermalized() ? count_ : 0;}
 
   bool has_minmax() const { return false;}
-  value_type min() const {return min_;}
-  value_type max() const {return max_;}
+  value_type min BOOST_PREVENT_MACRO_SUBSTITUTION () const {return min_;}
+  value_type max BOOST_PREVENT_MACRO_SUBSTITUTION () const {return max_;}
 
   uint32_t get_thermalization() const { return super_type::is_thermalized() ? thermal_count_ : count_;}
 
@@ -138,8 +139,8 @@ inline void NoBinning<T>::reset(bool forthermalization)
   sum2_=0;
   count_=0;
 
-  min_ = obs_value_traits<T>::max();
-  max_ = -obs_value_traits<T>::max();
+  min_ = obs_value_traits<T>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();
+  max_ = -obs_value_traits<T>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();
 }
 
 

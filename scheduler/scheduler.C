@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2006 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2009 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -40,7 +40,10 @@
 
 #ifdef ALPS_HAVE_UNISTD_H
 # include <unistd.h>
+#elif defined(ALPS_HAVE_WINDOWS_H)
+# include <windows.h>
 #endif
+
 
 namespace alps {
 namespace scheduler {
@@ -137,7 +140,13 @@ int Scheduler::run() // a slave scheduler
     if(theTask)
       theTask->run();
     else
-      sleep(1);
+#if defined(ALPS_HAVE_UNISTD_H)
+  sleep(1);    // sleep 1 Sec
+#elif defined(ALPS_HAVE_WINDOWS_H)
+  Sleep(1000); // sleep 1000 mSec
+#else
+# error "sleep not found"
+#endif
   } while(true) ;// forever
 }
 
@@ -195,6 +204,7 @@ AbstractTask* Scheduler::make_task(const ProcessList& w,const boost::filesystem:
   }
   else
     return new RemoteTask(where,fname);
+
 }
 
 AbstractTask* Scheduler::make_task(const boost::filesystem::path& fn)

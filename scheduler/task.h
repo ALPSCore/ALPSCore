@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2002-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2002-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -31,6 +31,7 @@
 #ifndef ALPS_SCHEDULER_TASK_H
 #define ALPS_SCHEDULER_TASK_H
 
+#include <alps/config.h>
 #include <alps/scheduler/worker.h>
 #include <alps/parameter.h>
 #include <boost/smart_ptr.hpp>
@@ -75,7 +76,7 @@ struct TaskStatus
 // the abstract base class for all classes describing a task
 //-----------------------------------------------------------------------
 
-class AbstractTask
+class ALPS_DECL AbstractTask
 {
 public:
   AbstractTask();
@@ -116,7 +117,7 @@ protected:
   bool use_error_limit;
 };
 
-class Task : public AbstractTask
+class ALPS_DECL Task : public AbstractTask
 {
 public:
   static void print_copyright(std::ostream&);
@@ -167,7 +168,7 @@ private:
 };
 
 
-class WorkerTask : public Task
+class ALPS_DECL WorkerTask : public Task
 {
 public:        
   enum RunStatus {

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -28,6 +28,7 @@
 #ifndef PARAPACK_SCHEDULER_H
 #define PARAPACK_SCHEDULER_H
 
+#include <alps/config.h>
 #include "worker_factory.h"
 #include "option.h"
 #include "job.h"
@@ -40,7 +41,7 @@ std::string compile_date();
 
 namespace parapack {
 
-int start(int argc, char **argv);
+ALPS_DECL int start(int argc, char **argv);
 
 int evaluate(int argc, char **argv);
 
@@ -65,13 +66,13 @@ std::string pg_name(alps::gid_t gid);
 void print_taskinfo(std::ostream& os, std::vector<alps::task> const& tasks);
 
 // return 1 for job XML (<JOB>) file or 2 for task XML (<SIMULATION>)
-int load_filename(boost::filesystem::path const& file, std::string& file_in_str,
+ALPS_DECL int load_filename(boost::filesystem::path const& file, std::string& file_in_str,
   std::string& file_out_str);
 
 void load_version(boost::filesystem::path const& file,
   std::vector<std::pair<std::string, std::string> >& versions);
 
-void load_tasks(boost::filesystem::path const& file_in,
+ALPS_DECL void load_tasks(boost::filesystem::path const& file_in,
   boost::filesystem::path const& file_out, boost::filesystem::path const& basedir,
   bool check_parameter, std::string& simname, std::vector<alps::task>& tasks);
 

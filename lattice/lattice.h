@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2003 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2001-2009 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -160,7 +160,7 @@ origin(const typename lattice_traits<Lattice>::cell_descriptor& c, const Lattice
     return typename lattice_traits<Lattice>::vector_type();
 }
 
-void prevent_optimization();
+void ALPS_DECL prevent_optimization();
 
 template <class Lattice>
 inline std::pair<typename lattice_traits<Lattice>::momentum_iterator,

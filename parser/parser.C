@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>,
 *                            Prakash Dayal <prakash@comp-phys.org>
 *
@@ -86,7 +86,7 @@ std::string read_until(std::istream& in, char end)
   return s;
 }
 
-void check_character(std::istream& in, char test, const std::string& error) 
+ALPS_DECL void check_character(std::istream& in, char test, const std::string& error) 
 {
   char c;
   in >> c;
