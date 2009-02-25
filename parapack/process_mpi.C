@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -104,7 +104,7 @@ bool process_helper_mpi::check_halted() {
     if (halt_stage_ == 1) {
       if (num_allocated() == 0) {
         num_halted_ = 1; // myself
-        for (int p = 1; p < world_d_.size(); ++p) world_d_.send(p, mcmp_tag::scheduler_halt);
+        for (int p = 1; p < world_d_.size(); ++p) world_d_.isend(p, mcmp_tag::scheduler_halt);
         halt_stage_ = 2;
       }
     }
@@ -118,7 +118,7 @@ bool process_helper_mpi::check_halted() {
   } else {
     if (halt_stage_ != 3 && world_d_.iprobe(0, mcmp_tag::scheduler_halt)) {
       world_d_.recv(0, mcmp_tag::scheduler_halt);
-      world_u_.send(0, mcmp_tag::scheduler_halt);
+      world_u_.isend(0, mcmp_tag::scheduler_halt);
       halt_stage_ = 3;
     }
   }

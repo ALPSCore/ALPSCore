@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2008 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
@@ -547,8 +547,8 @@ void SimpleBinning<T>::output_scalar(std::ostream& out) const
 {
   if(count())
   {
-    out << ": " << std::setprecision(6) << mean() << " +/- "
-        << std::setprecision(3) << alps::round(error()) << "; tau = "
+    out << ": " << std::setprecision(6) << alps::round<2>(mean()) << " +/- "
+        << std::setprecision(3) << alps::round<2>(error()) << "; tau = "
         << std::setprecision(3) << tau() << std::setprecision(6);
     if (converged_errors()==MAYBE_CONVERGED)
       out << " WARNING: check error convergence";
@@ -564,7 +564,7 @@ void SimpleBinning<T>::output_scalar(std::ostream& out) const
       for(unsigned int i=0;i<binning_depth();i++)
         out << "    bin #" << std::setw(3) <<  i+1
             << " : " << std::setw(8) << count()/(1<<i)
-            << " entries: error = " << alps::round(error(i)) << std::endl;
+            << " entries: error = " << alps::round<2>(error(i)) << std::endl;
       out.setf(oldflags);
     }
   }
@@ -640,8 +640,8 @@ inline void SimpleBinning<T>::output_vector(std::ostream& out, const L& label) c
       if (lab=="")
         lab=obs_value_traits<result_type>::slice_name(mean_,sit);
       out << "Entry[" << lab << "]: "
-          << obs_value_traits<result_type>::slice_value(mean_,sit) << " +/- "
-          << alps::round(obs_value_traits<result_type>::slice_value(error_,sit))
+          << alps::round<2>(obs_value_traits<result_type>::slice_value(mean_,sit)) << " +/- "
+          << alps::round<2>(obs_value_traits<result_type>::slice_value(error_,sit))
           << "; tau = " << obs_value_traits<time_type>::slice_value(tau_,sit);
       if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==MAYBE_CONVERGED)
         out << " WARNING: check error convergence";
