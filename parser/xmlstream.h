@@ -33,6 +33,7 @@
 #include <alps/config.h>
 #include <alps/parser/xmlattributes.h>
 
+#include <boost/config.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/lexical_cast.hpp>
@@ -42,6 +43,9 @@
 #include <stack>
 #include <string>
 #include <complex>
+#ifdef BOOST_MSVC
+# include <float.h>
+#endif
 
 namespace alps {
 
@@ -146,8 +150,8 @@ public:
 # undef ALPS_XMLSTREAM_DO_TYPE
 
   template <class T>
-  oxstream& operator<<(const std::complex<T>& t) { 
-    return text_str(boost::lexical_cast<std::string>(t)); 
+  oxstream& operator<<(const std::complex<T>& t) {
+    return text_str(boost::lexical_cast<std::string>(t));
   }
 
   // for manipulators
@@ -227,7 +231,19 @@ template<class T>
 inline std::string precision(const T& d, int n)
 {
   std::ostringstream stream;
+#ifndef BOOST_MSVC
   stream << std::setprecision(n) << d;
+#else
+  if (_finite(d)) {
+    stream << std::setprecision(n) << d;
+  } else {
+    if (_isnan(d)) {
+      stream << "nan";
+    } else {
+      stream << (d > 0 ? "inf" : "-inf");
+    }
+  }
+#endif
   return stream.str();
 }
 
