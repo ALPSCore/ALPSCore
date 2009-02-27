@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2008 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -34,21 +34,10 @@
 #include <alps/config.h>
 #include <alps/math.hpp>
 #include <alps/lattice/graphproperties.h>
-
+#include <boost/classic_spirit.hpp>
 #include <boost/graph/filtered_graph.hpp>
 #include <boost/graph/undirected_dfs.hpp>
 #include <boost/graph/visitors.hpp>
-#include <boost/version.hpp>
-#if BOOST_VERSION >= 103600
-# if !defined(BOOST_SPIRIT_USE_OLD_NAMESPACE)
-#  define BOOST_SPIRIT_USE_OLD_NAMESPACE
-# endif
-# include <boost/spirit/include/classic_actor.hpp>
-# include <boost/spirit/include/classic_core.hpp>
-#else
-# include <boost/spirit/actor.hpp>
-# include <boost/spirit/core.hpp>
-#endif
 #include <boost/throw_exception.hpp>
 #include <boost/vector_property_map.hpp>
 #include <boost/detail/workaround.hpp>

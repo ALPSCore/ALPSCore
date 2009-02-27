@@ -550,7 +550,8 @@ void SimpleBinning<T>::output_scalar(std::ostream& out) const
   {
     out << ": " << std::setprecision(6) << alps::round<2>(mean()) << " +/- "
         << std::setprecision(3) << alps::round<2>(error()) << "; tau = "
-        << std::setprecision(3) << tau() << std::setprecision(6);
+        << std::setprecision(3) << (alps::is_nonzero<2>(error()) ? tau() : 0)
+        << std::setprecision(6);
     if (converged_errors()==MAYBE_CONVERGED)
       out << " WARNING: check error convergence";
     if (converged_errors()==NOT_CONVERGED)
@@ -643,7 +644,7 @@ inline void SimpleBinning<T>::output_vector(std::ostream& out, const L& label) c
       out << "Entry[" << lab << "]: "
           << alps::round<2>(obs_value_traits<result_type>::slice_value(mean_,sit)) << " +/- "
           << alps::round<2>(obs_value_traits<result_type>::slice_value(error_,sit))
-          << "; tau = " << obs_value_traits<time_type>::slice_value(tau_,sit);
+          << "; tau = " << (alps::is_nonzero<2>(obs_value_traits<result_type>::slice_value(error_,sit)) ? obs_value_traits<time_type>::slice_value(tau_,sit) : 0);
       if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==MAYBE_CONVERGED)
         out << " WARNING: check error convergence";
       if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==NOT_CONVERGED)

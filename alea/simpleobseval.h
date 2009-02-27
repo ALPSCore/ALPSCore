@@ -498,7 +498,7 @@ void SimpleObservableEvaluator<T>::output_scalar(std::ostream& out) const
     out << ": " << std::setprecision(6) << alps::round<2>(mean()) << " +/- "
         << std::setprecision(3) << alps::round<2>(error());
     if(has_tau())
-      out << std::setprecision(3) <<  "; tau = " << tau();
+      out << std::setprecision(3) <<  "; tau = " << (alps::is_nonzero<2>(error()) ? tau() : 0);
     if (converged_errors()==MAYBE_CONVERGED)
       out << " WARNING: check error convergence";
     if (converged_errors()==NOT_CONVERGED)
@@ -534,7 +534,7 @@ void SimpleObservableEvaluator<T>::output_vector(std::ostream& out) const
           << alps::round<2>(obs_value_traits<result_type>::slice_value(value_,sit)) << " +/- "
           << alps::round<2>(obs_value_traits<result_type>::slice_value(error_,sit));
       if(has_tau())
-        out << "; tau = " << obs_value_traits<time_type>::slice_value(tau_,sit);
+        out << "; tau = " << (alps::is_nonzero<2>(obs_value_traits<result_type>::slice_value(error_,sit)) ? obs_value_traits<time_type>::slice_value(tau_,sit) : 0);
       if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==MAYBE_CONVERGED)
         out << " WARNING: check error convergence";
       if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==NOT_CONVERGED)

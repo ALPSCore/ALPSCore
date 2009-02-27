@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -29,20 +29,12 @@
 /* $Id$ */
 
 #include <alps/parser/xmlattributes.h>
-#include <boost/version.hpp>
-#if BOOST_VERSION >= 103600
-# if !defined(BOOST_SPIRIT_USE_OLD_NAMESPACE)
-#  define BOOST_SPIRIT_USE_OLD_NAMESPACE
-# endif
-# include <boost/spirit/include/classic_core.hpp>
-#else
-# include <boost/spirit/core.hpp>
-#endif
+#include <boost/classic_spirit.hpp>
 
 namespace alps {
-  
+
 namespace {
-    
+
 struct assign_string {
   assign_string(const std::string& name)
     : ptr_(const_cast<std::string*>(&name)) {}
@@ -84,7 +76,7 @@ struct attr_parser : public boost::spirit::grammar<attr_parser> {
   XMLAttributes& attr;
   std::string name, value;
 };
-  
+
 }
 
 XMLAttributes::XMLAttributes(const std::string& str)

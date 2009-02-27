@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -27,18 +27,8 @@
 
 #include "util.h"
 #include <alps/random/pseudo_des.h>
+#include <boost/classic_spirit.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/version.hpp>
-#if BOOST_VERSION >= 103600
-# if !defined(BOOST_SPIRIT_USE_OLD_NAMESPACE)
-#  define BOOST_SPIRIT_USE_OLD_NAMESPACE
-# endif
-# include <boost/spirit/include/classic_actor.hpp>
-# include <boost/spirit/include/classic_core.hpp>
-#else
-# include <boost/spirit/actor.hpp>
-# include <boost/spirit/core.hpp>
-#endif
 #include <boost/throw_exception.hpp>
 #include <stdexcept>
 

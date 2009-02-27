@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2006-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 2006-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -32,19 +32,7 @@
 
 #include "parameter.h"
 #include <alps/xml.h>
-#include <boost/version.hpp>
-#if BOOST_VERSION >= 103600
-# if !defined(BOOST_SPIRIT_USE_OLD_NAMESPACE)
-#  define BOOST_SPIRIT_USE_OLD_NAMESPACE
-# endif
-# include <boost/spirit/include/classic_actor.hpp>
-# include <boost/spirit/include/classic_core.hpp>
-# include <boost/spirit/include/classic_confix.hpp>
-#else
-# include <boost/spirit/actor.hpp>
-# include <boost/spirit/core.hpp>
-# include <boost/spirit/utility/confix.hpp>
-#endif
+#include <boost/classic_spirit.hpp>
 
 namespace bs = boost::spirit;
 
