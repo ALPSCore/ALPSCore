@@ -18,7 +18,7 @@ observable b: 1.49968 +/- 0.00275; tau = -0.0468
 
 observable c: 1.2 +/- 0
 
-observable d: 1.2 +/- 0; tau = nan
+observable d: 1.2 +/- 0; tau = 0
     bin #1   : 10000    entries: error = 0
     bin #2   : 5000     entries: error = 0
     bin #3   : 2500     entries: error = 0
