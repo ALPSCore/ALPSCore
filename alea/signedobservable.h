@@ -26,8 +26,6 @@
 *
 *****************************************************************************/
 
-/* $Id$ */
-
 #ifndef ALPS_ALEA_SIGNEDOBSERVABLE_H
 #define ALPS_ALEA_SIGNEDOBSERVABLE_H
 
@@ -321,14 +319,16 @@ void AbstractSignedObservable<OBS,SIGN>::output_scalar(std::ostream& out) const
     out << " no measurements.\n";
   else {
     out << ": " << alps::round<2>(mean()) << " +/- " << alps::round<2>(error());
-    if (!sign_name_.empty())
-      out << "; sign in observable \"" << sign_name_ << "\"";
-    if (converged_errors()==MAYBE_CONVERGED)
-      out << " WARNING: check error convergence";
-    if (converged_errors()==NOT_CONVERGED)
-      out << " WARNING: ERRORS NOT CONVERGED!!!";
-    if (error_underflow(mean(),error()))
-      out << " Warning: potential error underflow. Errors might be smaller";
+    if (alps::is_nonzero<2>(error())) {
+      if (!sign_name_.empty())
+        out << "; sign in observable \"" << sign_name_ << "\"";
+      if (converged_errors()==MAYBE_CONVERGED)
+        out << " WARNING: check error convergence";
+      if (converged_errors()==NOT_CONVERGED)
+        out << " WARNING: ERRORS NOT CONVERGED!!!";
+      if (error_underflow(mean(),error()))
+        out << " Warning: potential error underflow. Errors might be smaller";
+    }
     out << std::endl;
   }
 }
@@ -358,13 +358,15 @@ void AbstractSignedObservable<OBS,SIGN>::output_vector(std::ostream& out) const
       out << "Entry[" <<lab << "]: "
           << alps::round<2>(obs_value_traits<result_type>::slice_value(value_,sit)) << " +/- "
           << alps::round<2>(obs_value_traits<result_type>::slice_value(error_,sit));
-      if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==MAYBE_CONVERGED)
-        out << " WARNING: check error convergence";
-      if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==NOT_CONVERGED)
-        out << " WARNING: ERRORS NOT CONVERGED!!!";
-      if (error_underflow(obs_value_traits<result_type>::slice_value(value_,sit),
-                          obs_value_traits<result_type>::slice_value(error_,sit)))
-        out << " Warning: potential error underflow. Errors might be smaller";
+      if (alps::is_nonzero<2>(obs_value_traits<result_type>::slice_value(error_,sit))) {
+        if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==MAYBE_CONVERGED)
+          out << " WARNING: check error convergence";
+        if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==NOT_CONVERGED)
+          out << " WARNING: ERRORS NOT CONVERGED!!!";
+        if (error_underflow(obs_value_traits<result_type>::slice_value(value_,sit),
+                            obs_value_traits<result_type>::slice_value(error_,sit)))
+          out << " Warning: potential error underflow. Errors might be smaller";
+      }
       out << std::endl;
     }
   }

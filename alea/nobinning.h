@@ -231,7 +231,7 @@ inline void NoBinning<T>::output_scalar(std::ostream& out) const
 {
   if(count()) {
     out << ": " << alps::round<2>(mean()) << " +/- " << alps::round<2>(error());
-    if (error_underflow(mean(),error()))
+    if (alps::is_nonzero<2>(error()) && error_underflow(mean(),error()))
       out << " Warning: potential error underflow. Errors might be smaller";
     out << std::endl;
   }
@@ -255,7 +255,8 @@ inline void NoBinning<T>::output_vector(std::ostream& out, const L& label) const
       out << "Entry[" << lab << "]: "
           << alps::round<2>(obs_value_traits<result_type>::slice_value(mean_,sit)) << " +/- "
           << alps::round<2>(obs_value_traits<result_type>::slice_value(error_,sit));
-      if (error_underflow(obs_value_traits<result_type>::slice_value(mean_,sit),
+      if (alps::is_nonzero<2>(obs_value_traits<result_type>::slice_value(error_,sit)) &&
+          error_underflow(obs_value_traits<result_type>::slice_value(mean_,sit),
                           obs_value_traits<result_type>::slice_value(error_,sit)))
       out << " Warning: potential error underflow. Errors might be smaller";
       out << std::endl;

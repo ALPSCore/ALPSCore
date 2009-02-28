@@ -552,12 +552,14 @@ void SimpleBinning<T>::output_scalar(std::ostream& out) const
         << std::setprecision(3) << alps::round<2>(error()) << "; tau = "
         << std::setprecision(3) << (alps::is_nonzero<2>(error()) ? tau() : 0)
         << std::setprecision(6);
-    if (converged_errors()==MAYBE_CONVERGED)
-      out << " WARNING: check error convergence";
-    if (converged_errors()==NOT_CONVERGED)
-      out << " WARNING: ERRORS NOT CONVERGED!!!";
-    if (error_underflow(mean(),error()))
-      out << " Warning: potential error underflow. Errors might be smaller";
+    if (alps::is_nonzero<2>(error())) {
+      if (converged_errors()==MAYBE_CONVERGED)
+        out << " WARNING: check error convergence";
+      if (converged_errors()==NOT_CONVERGED)
+        out << " WARNING: ERRORS NOT CONVERGED!!!";
+      if (error_underflow(mean(),error()))
+        out << " Warning: potential error underflow. Errors might be smaller";
+    }
     out << std::endl;
     if (binning_depth()>1)
     {
@@ -645,13 +647,15 @@ inline void SimpleBinning<T>::output_vector(std::ostream& out, const L& label) c
           << alps::round<2>(obs_value_traits<result_type>::slice_value(mean_,sit)) << " +/- "
           << alps::round<2>(obs_value_traits<result_type>::slice_value(error_,sit))
           << "; tau = " << (alps::is_nonzero<2>(obs_value_traits<result_type>::slice_value(error_,sit)) ? obs_value_traits<time_type>::slice_value(tau_,sit) : 0);
-      if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==MAYBE_CONVERGED)
-        out << " WARNING: check error convergence";
-      if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==NOT_CONVERGED)
-        out << " WARNING: ERRORS NOT CONVERGED!!!";
-      if (error_underflow(obs_value_traits<result_type>::slice_value(mean_,sit),
-                          obs_value_traits<result_type>::slice_value(error_,sit)))
-        out << " Warning: potential error underflow. Errors might be smaller";
+      if (alps::is_nonzero<2>(obs_value_traits<result_type>::slice_value(error_,sit))) {
+        if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==MAYBE_CONVERGED)
+          out << " WARNING: check error convergence";
+        if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==NOT_CONVERGED)
+          out << " WARNING: ERRORS NOT CONVERGED!!!";
+        if (error_underflow(obs_value_traits<result_type>::slice_value(mean_,sit),
+                            obs_value_traits<result_type>::slice_value(error_,sit)))
+          out << " Warning: potential error underflow. Errors might be smaller";
+      }
       out << std::endl;
       if (binning_depth()>1)
         {
