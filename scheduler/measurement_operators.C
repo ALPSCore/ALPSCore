@@ -4,7 +4,8 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2006 by Matthias Troyer <troyer@comp-phys.org>
+* Copyright (C) 1994-2009 by Matthias Troyer <troyer@comp-phys.org>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -30,39 +31,47 @@
 #include <alps/scheduler/measurement_operators.h>
 
 alps::MeasurementOperators::MeasurementOperators (Parameters const& parms)
-{ 
+{
   boost::regex expression("^MEASURE_AVERAGE\\[(.*)]$");
-  boost::cmatch what;
-  for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it)
-    if (boost::regex_match(static_cast<std::string>(it->key()).c_str(), what, expression))
-      average_expressions[std::string(what[1].first,what[1].second)]=it->value();
+  boost::smatch what;
+  for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
+    std::string lhs = it->key();
+    if (boost::regex_match(lhs, what, expression))
+      average_expressions[what.str(1)]=it->value();
+  }
 
   expression = boost::regex("^MEASURE_LOCAL\\[(.*)]$");
-  for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it)
-    if (boost::regex_match(static_cast<std::string>(it->key()).c_str(), what, expression))
-      local_expressions[std::string(what[1].first,what[1].second)]=it->value();
-      
+  for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
+    std::string lhs = it->key();
+    if (boost::regex_match(lhs, what, expression))
+      local_expressions[what.str(1)]=it->value();
+  }
+
   expression = boost::regex("^MEASURE_CORRELATIONS\\[(.*)]$");
-  for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it)
-    if (boost::regex_match(static_cast<std::string>(it->key()).c_str(), what, expression)) {
-      std::string key(what[1].first,what[1].second);
+  for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
+    std::string lhs = it->key();
+    if (boost::regex_match(lhs, what, expression)) {
+      std::string key = what.str(1);
+      std::string value = it->value();
       boost::regex expression2("^(.*):(.*)$");
-      if (boost::regex_match(static_cast<std::string>(it->value()).c_str(), what, expression2))
-        correlation_expressions[key]=std::make_pair(std::string(what[1].first,what[1].second),std::string(what[2].first,what[2].second));
+      if (boost::regex_match(value, what, expression2))
+        correlation_expressions[key] = std::make_pair(what.str(1), what.str(2));
       else
-        correlation_expressions[key]=std::make_pair(std::string(it->value()),std::string(it->value()));
+        correlation_expressions[key] = std::make_pair(value, value);
     }
+  }
 
   expression = boost::regex("^MEASURE_STRUCTURE_FACTOR\\[(.*)]$");
-  for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it)
-    if (boost::regex_match(static_cast<std::string>(it->key()).c_str(), what, expression)) {
-      std::string key(what[1].first,what[1].second);
+  for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
+    std::string lhs = it->key();
+    if (boost::regex_match(lhs, what, expression)) {
+      std::string key = what.str(1);
+      std::string value = it->value();
       boost::regex expression2("^(.*):(.*)$");
-      if (boost::regex_match(static_cast<std::string>(it->value()).c_str(), what, expression2))
-        structurefactor_expressions[key]=std::make_pair(std::string(what[1].first,what[1].second),std::string(what[2].first,what[2].second));
+      if (boost::regex_match(value, what, expression2))
+        structurefactor_expressions[key] = std::make_pair(what.str(1), what.str(2));
       else
-        structurefactor_expressions[key]=std::make_pair(std::string(it->value()),std::string(it->value()));
+        structurefactor_expressions[key]=std::make_pair(value, value);
     }
-
+  }
 }
-
