@@ -43,9 +43,9 @@ public:
   SiteTermDescriptor() : type_(-2) {}
   SiteTermDescriptor(const std::string& t, const std::string& s="") 
    : super_type(t,s), type_(-2) {}
- template <class T>
- SiteTermDescriptor(const T& t, const std::string& s="") 
-   : super_type(t,s), type_(-2) {}
+  // template <class T>
+  // SiteTermDescriptor(const T& t, const std::string& s="") 
+  //   : super_type(t,s), type_(-2) {}
   SiteTermDescriptor(const XMLTag&, std::istream&);
   SiteTermDescriptor(SiteTermDescriptor const& t, std::string const& term, Parameters const& p, unsigned int type) 
    : super_type(t,term,p), type_(type) {}

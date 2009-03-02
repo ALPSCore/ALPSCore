@@ -84,12 +84,12 @@ public:
    , parms_(p)
   {}
     
-  template <class T>
-  SiteOperator(const T& t, const std::string& s)
-    : term_(boost::lexical_cast<std::string>(t)), site_(s) {}
+  // template <class T>
+  // SiteOperator(const T& t, const std::string& s)
+  //   : term_(boost::lexical_cast<std::string>(t)), site_(s) {}
   SiteOperator(const std::string& t)
     : term_(t+"(i)"), site_("i") {}
-  SiteOperator(const XMLTag& tag, std::istream& is) { read_xml(tag,is);}
+  SiteOperator(const XMLTag& tag, std::istream& is) { read_xml(tag,is); }
 
   void read_xml(const XMLTag& tag, std::istream& is);
   void write_xml(oxstream&) const;

@@ -82,15 +82,15 @@ public:
   BondOperator() : source_("i"), target_("j") {}
   BondOperator(const std::string& s, const std::string& t) : source_(s), target_(t) {}
   //BondOperator(const BondOperator& op) : name_(op.name_), term_(op.term_), source_(op.source_), target_(op.target_) {}
-  template <class T>
-  BondOperator(const T& term)
-    : term_(boost::lexical_cast<std::string>(term)), source_("i"), target_("j") {}
-  template <class T>
-  BondOperator(const T& term, const std::string& s)
-    : term_(boost::lexical_cast<std::string>(term)), source_(s), target_("j") {}
-  template <class T>
-  BondOperator(const T& term, const std::string& s, const std::string& t)
-    : term_(boost::lexical_cast<std::string>(term)), source_(s), target_(t) {}
+  // template <class T>
+  // BondOperator(const T& term)
+  //   : term_(boost::lexical_cast<std::string>(term)), source_("i"), target_("j") {}
+  // template <class T>
+  // BondOperator(const T& term, const std::string& s)
+  //   : term_(boost::lexical_cast<std::string>(term)), source_(s), target_("j") {}
+  // template <class T>
+  // BondOperator(const T& term, const std::string& s, const std::string& t)
+  //   : term_(boost::lexical_cast<std::string>(term)), source_(s), target_(t) {}
   BondOperator(const XMLTag& tag, std::istream& in) { read_xml(tag,in);}
 
   BondOperator(BondOperator const& op, std::string const& t, Parameters const& p) 

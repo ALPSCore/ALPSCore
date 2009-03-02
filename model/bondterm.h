@@ -42,13 +42,13 @@ class BondTermDescriptor : public BondOperator
 public:
   BondTermDescriptor() : BondOperator(), type_(-2) {}
   BondTermDescriptor(const std::string& s, const std::string& t) : BondOperator(s,t), type_(-2) {}
-  template <class T>
-  BondTermDescriptor(const T& term) : BondOperator(term, "i", "j"), type_(-2) {}
-  template <class T>
-  BondTermDescriptor(const T& term, const std::string& s) : BondOperator(term, s, "j"), type_(-2) {}
-  template <class T>
-  BondTermDescriptor(const T& term, const std::string& s, const std::string& t)
-    : BondOperator(term, s, t), type_(-2) {}
+  // template <class T>
+  // BondTermDescriptor(const T& term) : BondOperator(term, "i", "j"), type_(-2) {}
+  // template <class T>
+  // BondTermDescriptor(const T& term, const std::string& s) : BondOperator(term, s, "j"), type_(-2) {}
+  // template <class T>
+  // BondTermDescriptor(const T& term, const std::string& s, const std::string& t)
+  //   : BondOperator(term, s, t), type_(-2) {}
 
   BondTermDescriptor(const XMLTag&, std::istream&);
 
