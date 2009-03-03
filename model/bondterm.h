@@ -49,10 +49,12 @@ public:
   // template <class T>
   // BondTermDescriptor(const T& term, const std::string& s, const std::string& t)
   //   : BondOperator(term, s, t), type_(-2) {}
+  BondTermDescriptor(const std::string& term, const std::string& s, const std::string& t)
+    : BondOperator(term, s, t), type_(-2) {}
 
   BondTermDescriptor(const XMLTag&, std::istream&);
 
-  BondTermDescriptor(BondTermDescriptor const& t, std::string const& term, Parameters const& p, unsigned int type) 
+  BondTermDescriptor(BondTermDescriptor const& t, std::string const& term, Parameters const& p, unsigned int type)
    : BondOperator(t,term,p), type_(type) {}
 
   const BondOperator& bond_operator() const { return static_cast<const BondOperator&>(*this);}
@@ -80,23 +82,23 @@ public:
 
   BondOperatorEvaluator(const SiteOperatorEvaluator<I,T,STATE1>& s1, const SiteOperatorEvaluator<I,T,STATE2>& s2,const Parameters& p)
     : super_type(p), site1_(s1), site2_(s2) {}
-    
+
   bool can_evaluate_function(const std::string&, const expression::Expression<T>&, bool=false) const;
   expression::Expression<T> partial_evaluate_function(const std::string& name,
                                         const expression::Expression<T>& argument,bool=false) const;
   std::pair<STATE1,STATE2> state() const { return std::make_pair(site1_.state(),site2_.state());}
-  bool fermionic() const { 
+  bool fermionic() const {
     if (site1_.fermionic()!=site2_.fermionic())
       boost::throw_exception(std::runtime_error("Bond term contains unphysical single fermion creation operator"));
     return site1_.fermionic();
   }
-  
+
   bool has_operator(const std::string& name, const expression::Expression<T>& arg) const
-  { 
-    return (arg==site1_.site() && site1_.has_operator(name)) || 
-           (arg==site2_.site() && site2_.has_operator(name)); 
+  {
+    return (arg==site1_.site() && site1_.has_operator(name)) ||
+           (arg==site2_.site() && site2_.has_operator(name));
   }
-  
+
 private:
   SiteOperatorEvaluator<I,T,STATE1> site1_;
   SiteOperatorEvaluator<I,T,STATE2> site2_;
@@ -124,7 +126,7 @@ expression::Expression<T> BondOperatorEvaluator<I,T,STATE1,STATE2>::partial_eval
       f = site1_.fermionic();
       e =  site1_.partial_evaluate_function(name,site1_.site(),isarg);
       if (f != site1_.fermionic() && is_nonzero(e) && site2_.fermionic()) // for normal ordering
-        e.negate(); 
+        e.negate();
     }
     else  if (arg==site2_.site())
       e = site2_.partial_evaluate_function(name,site2_.site(),isarg);

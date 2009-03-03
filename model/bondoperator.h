@@ -63,11 +63,11 @@ public:
   expression::Expression<T> partial_evaluate_function(const std::string& name, const expression::Expression<T>& argument,bool=false) const;
   const std::pair<expression::Term<T>, expression::Term<T> >& site_operators() const { return site_ops_; }
   bool has_operator(const std::string& name, const expression::Expression<T>& arg) const
-  { 
-    return (arg==sites_.first && basis1_.has_operator(name)) || 
-           (arg==sites_.second && basis2_.has_operator(name)); 
+  {
+    return (arg==sites_.first && basis1_.has_operator(name)) ||
+           (arg==sites_.second && basis2_.has_operator(name));
   }
-  
+
 private:
   const SiteBasisDescriptor<I>& basis1_;
   const SiteBasisDescriptor<I>& basis2_;
@@ -91,13 +91,15 @@ public:
   // template <class T>
   // BondOperator(const T& term, const std::string& s, const std::string& t)
   //   : term_(boost::lexical_cast<std::string>(term)), source_(s), target_(t) {}
+  BondOperator(const std::string& term, const std::string& s, const std::string& t)
+    : term_(term), source_(s), target_(t) {}
   BondOperator(const XMLTag& tag, std::istream& in) { read_xml(tag,in);}
 
-  BondOperator(BondOperator const& op, std::string const& t, Parameters const& p) 
+  BondOperator(BondOperator const& op, std::string const& t, Parameters const& p)
    : name_(op.name_)
    , term_(t)
    , source_(op.source_)
-   , target_(op.target_)  
+   , target_(op.target_)
    , parms_(p)
   {}
 
@@ -118,10 +120,10 @@ public:
   std::vector<boost::tuple<expression::Term<T>,SiteOperator,SiteOperator> > templated_split(SiteBasisDescriptor<I> const&, SiteBasisDescriptor<I> const&, const Parameters& = Parameters()) const;
 
   template <class I>
-  std::vector<boost::tuple<Term,SiteOperator,SiteOperator> > split(SiteBasisDescriptor<I> const& b1 ,SiteBasisDescriptor<I> const& b2,const Parameters& p= Parameters()) const 
+  std::vector<boost::tuple<Term,SiteOperator,SiteOperator> > split(SiteBasisDescriptor<I> const& b1 ,SiteBasisDescriptor<I> const& b2,const Parameters& p= Parameters()) const
   { return templated_split<std::complex<double> >(b1,b2,p);}
 
-  std::vector<boost::tuple<Term,SiteOperator,SiteOperator> > split(const Parameters& p= Parameters()) const 
+  std::vector<boost::tuple<Term,SiteOperator,SiteOperator> > split(const Parameters& p= Parameters()) const
   { return templated_split<std::complex<double> >(SiteBasisDescriptor<short>(),SiteBasisDescriptor<short>(),p);}
   std::set<std::string> operator_names(const Parameters& = Parameters()) const;
 
@@ -223,10 +225,10 @@ BondOperator::matrix(const SiteBasisDescriptor<I>& b1,
           unsigned int j2=states2.index(evaluator.state().second);
           if (is_nonzero(term) && j1<dim1 && j2<dim2) {
             if (is_nonzero(mat[i1][i2][j1][j2].first)) {
-              if (mat[i1][i2][j1][j2].second != evaluator.fermionic()) 
+              if (mat[i1][i2][j1][j2].second != evaluator.fermionic())
               boost::throw_exception(std::runtime_error("Inconsistent fermionic nature of a matrix element: "
                                     + boost::lexical_cast<std::string>(*tit) + " is inconsistent with "
-                                    + boost::lexical_cast<std::string>(mat[i1][i2][j1][j2].first) + 
+                                    + boost::lexical_cast<std::string>(mat[i1][i2][j1][j2].first) +
                                     ". Please contact the library authors for an extension to the ALPS model library."));
             }
             else
