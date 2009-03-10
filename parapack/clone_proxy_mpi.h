@@ -41,23 +41,23 @@ public:
     boost::filesystem::path const& basedir, std::string const& base, bool is_new) const {
     clone_create_msg_t msg(tid, cid, procs.group_id, params, basedir.native_file_string(), base,
                            is_new);
-    BOOST_FOREACH(Process p, procs.process_list) comm_.isend(p, mcmp_tag::clone_create, msg);
+    BOOST_FOREACH(Process p, procs.process_list) comm_.send(p, mcmp_tag::clone_create, msg);
   }
 
   void checkpoint(Process const& proc) const {
-    comm_.isend(proc, mcmp_tag::clone_checkpoint);
+    comm_.send(proc, mcmp_tag::clone_checkpoint);
   }
 
   void update_info(Process const& proc) const {
-    comm_.isend(proc, mcmp_tag::clone_info);
+    comm_.send(proc, mcmp_tag::clone_info);
   }
 
   void suspend(Process const& proc) const {
-    comm_.isend(proc, mcmp_tag::clone_suspend);
+    comm_.send(proc, mcmp_tag::clone_suspend);
   }
 
   void halt(Process const& proc) const {
-    comm_.isend(proc, mcmp_tag::clone_halt);
+    comm_.send(proc, mcmp_tag::clone_halt);
   }
 
 private:

@@ -230,12 +230,12 @@ void clone_mpi::output() const{
 
 void clone_mpi::send_info(mcmp_tag_t tag) {
   if (work_.rank() == 0)
-    world_u_.isend(0, tag, clone_info_msg_t(task_id_, clone_id_, group_id_, info_));
+    world_u_.send(0, tag, clone_info_msg_t(task_id_, clone_id_, group_id_, info_));
 }
 
 void clone_mpi::send_halted() {
   if (work_.rank() == 0)
-    world_u_.isend(0, mcmp_tag::clone_halt, clone_halt_msg_t(task_id_, clone_id_, group_id_));
+    world_u_.send(0, mcmp_tag::clone_halt, clone_halt_msg_t(task_id_, clone_id_, group_id_));
 }
 
 } // end namespace alps
