@@ -33,6 +33,7 @@
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/foreach.hpp>
+#include <boost/regex.hpp>
 #include <boost/timer.hpp>
 #include <iostream>
 #include <string>
@@ -135,8 +136,9 @@ int start(int argc, char** argv) {
     signal_handler signals;
     std::string file_in_str;
     std::string file_out_str;
-    boost::filesystem::path file_in;
-    boost::filesystem::path file_out;
+    boost::filesystem::path file_in;   // xxx.in.xml
+    boost::filesystem::path file_out;  // xxx.out.xml
+    boost::filesystem::path file_term; // xxx.term
     filelock master_lock;
     std::string simname;
     std::vector<task> tasks;
@@ -183,6 +185,8 @@ int start(int argc, char** argv) {
     }
     file_in = complete(boost::filesystem::path(file_in_str), basedir);
     file_out = complete(boost::filesystem::path(file_out_str), basedir);
+    file_term = complete(boost::filesystem::path(regex_replace(file_out_str,
+                  boost::regex("\\.out\\.xml$"), ".term")), basedir);
 
     master_lock.set_file(file_out);
     master_lock.lock(0);
@@ -194,6 +198,7 @@ int start(int argc, char** argv) {
 
     std::clog << "  master input file  = " << file_in.native_file_string() << std::endl
               << "  master output file = " << file_out.native_file_string() << std::endl
+              << "  termination file   = " << file_term.native_file_string() << std::endl
               << "  number of process(es) = " << all_processes().size() << std::endl
               << "  process(es) per clone = " << opt.procs_per_clone << std::endl
               << "  check parameter = " << (opt.check_parameter ? "yes" : "no") << std::endl
@@ -201,7 +206,7 @@ int start(int argc, char** argv) {
     if (opt.time_limit != boost::posix_time::time_duration())
       std::clog << "  time limit = " << opt.time_limit.total_seconds() << " seconds\n";
     else
-      std::clog << "  time limit = none (runs forever)\n";
+      std::clog << "  time limit = unlimited\n";
     std::clog << "  interval between checkpointing  = "
               << opt.checkpoint_interval.total_seconds() << " seconds\n"
               << "  minimum interval between checks = "
@@ -243,6 +248,11 @@ int start(int argc, char** argv) {
         signal_info_t s = signals();
         if (s == signal_info::STOP || s == signal_info::TERMINATE) {
           std::clog << log_header() << "signal received\n";
+          to_halt = true;
+        }
+        if (exists(file_term)) {
+          std::clog << log_header() << "termination file detected\n";
+          remove(file_term);
           to_halt = true;
         }
         if (to_halt) {
