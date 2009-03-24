@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -447,7 +447,8 @@ public:
               static_cast<bool>(p.value_or_default("TEMPERATURE_OPTIMIZATION", 0))),
     sweep_(p.value_or_default("SWEEPS", "[65536:]"), p),
     therm_(p.defined("THERMALIZATION") ?
-           static_cast<unsigned int>(alps::evaluate("THERMALIZATION", p)) : (sweep_.min() >> 3)),
+           static_cast<unsigned int>(alps::evaluate("THERMALIZATION", p)) :
+           (sweep_.min BOOST_PREVENT_MACRO_SUBSTITUTION () >> 3)),
     optstep_(0), iteration_(0) {
 
     if (exchange_ && optimize_) {
@@ -460,7 +461,8 @@ public:
           std::runtime_error("unknown OPIMIZATION_TYPE: " + p["OPTIMIZATION_TYPE"]));
       }
 
-      if (p.defined("NUM_CLONES") && integer_range<uint32_t>(p["NUM_CLONES"]).max() > 1)
+      if (p.defined("NUM_CLONES") &&
+          integer_range<uint32_t>(p["NUM_CLONES"]).max BOOST_PREVENT_MACRO_SUBSTITUTION () > 1)
         boost::throw_exception(std::logic_error("temperature optimization and multipile clones"
                                                 " are exclusive"));
 
@@ -512,10 +514,14 @@ public:
   unsigned int operator()() const { return mcs_; }
   unsigned int stage() const { return stage_; }
   unsigned int stage_count() const { return count_; }
-  bool can_work() const { return !is_thermalized() && (mcs_ - optstep_ - therm_) < sweep_.max(); }
+  bool can_work() const {
+    return !is_thermalized() &&
+      (mcs_ - optstep_ - therm_) < sweep_.max BOOST_PREVENT_MACRO_SUBSTITUTION ();
+  }
   bool is_thermalized() const { return mcs_ >= optstep_ && (mcs_ - optstep_) >= therm_; }
   double progress() const {
-    return static_cast<double>(mcs_) / (optstep_ + therm_ + sweep_.min());
+    return static_cast<double>(mcs_) /
+      (optstep_ + therm_ + sweep_.min BOOST_PREVENT_MACRO_SUBSTITUTION ());
   }
   bool doing_optimization() const { return perform_optimization() && (stage_ < iteration_); }
 
