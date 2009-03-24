@@ -169,7 +169,7 @@ worker_factory* worker_factory::instance() {
 
 worker_factory::creator_pointer_type worker_factory::make_creator(Parameters const& params) const {
   if (worker_creators_.size() == 0) {
-    std::cerr << "No worker regisered\n";
+    std::cerr << "No worker registered\n";
     boost::throw_exception(std::runtime_error("worker_factory::make_creator()"));
   }
   if (!params.defined("WORKER")) {
