@@ -52,8 +52,8 @@ clone_mpi::clone_mpi(boost::mpi::communicator const& world_d,
   params_["WORKER_SEED"] = info_.worker_seed();
   params_["DISORDER_SEED"] = info_.disorder_seed();
 
-  if (work.size() > 1)
-    worker_ = alps::parapack::parallel_worker_factory::make_worker(work, params_);
+  if (work_.size() > 1)
+    worker_ = alps::parapack::parallel_worker_factory::make_worker(work_, params_);
   else
     worker_ = alps::parapack::worker_factory::make_worker(params_);
   if (is_new) worker_->init_observables(params_, measurements_);
