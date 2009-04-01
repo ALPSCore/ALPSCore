@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -169,26 +169,30 @@ worker_factory* worker_factory::instance() {
 
 worker_factory::creator_pointer_type worker_factory::make_creator(Parameters const& params) const {
   if (worker_creators_.size() == 0) {
-    std::cerr << "No worker registered\n";
+    std::cerr << "Error: no worker registered\n";
     boost::throw_exception(std::runtime_error("worker_factory::make_creator()"));
   }
-  if (!params.defined("WORKER")) {
-    if (worker_creators_.size() == 1) {
-      return worker_creators_.begin()->second;
-    } else {
-      std::cerr << "Please specify one of the workers (";
-      for (creator_map_type::const_iterator itr = worker_creators_.begin();
-           itr != worker_creators_.end(); ++itr) {
-        if (itr != worker_creators_.begin()) std::cerr << ", ";
-        std::cerr << itr->first;
-      }
-      std::cerr << ") by WORKER parameter\n";
-      boost::throw_exception(std::runtime_error("worker_factory::make_creator()"));
+  if (worker_creators_.size() == 1) {
+    if (params.defined("WORKER") && worker_creators_.begin()->first != params["WORKER"]) {
+      std::clog << "Warning: unknown worker: \"" << params["WORKER"]
+                << "\".  The only worker \"" << worker_creators_.begin()->first
+                << "\" will be used instead.\n";
     }
+    return worker_creators_.begin()->second;
+  }
+  if (!params.defined("WORKER")) {
+    std::cerr << "Error: no worker specified (registered workers: ";
+    for (creator_map_type::const_iterator itr = worker_creators_.begin();
+         itr != worker_creators_.end(); ++itr) {
+      if (itr != worker_creators_.begin()) std::cerr << ", ";
+      std::cerr << itr->first;
+    }
+    std::cerr << std::endl;
+    boost::throw_exception(std::runtime_error("worker_factory::make_creator()"));
   }
   creator_map_type::const_iterator itr = worker_creators_.find(params["WORKER"]);
   if (itr == worker_creators_.end() || itr->second == 0) {
-    std::cerr << "Unknown worker: " << params["WORKER"] << " (registered workers: ";
+    std::cerr << "Error: unknown worker: \"" << params["WORKER"] << "\" (registered workers: ";
     for (creator_map_type::const_iterator itr = worker_creators_.begin();
          itr != worker_creators_.end(); ++itr) {
       if (itr != worker_creators_.begin()) std::cerr << ", ";
@@ -224,28 +228,52 @@ evaluator_factory* evaluator_factory::instance() {
 
 evaluator_factory::creator_pointer_type
 evaluator_factory::make_creator(Parameters const& params) const {
-  if (params.defined("EVALUATOR")) {
-    if (params["EVALUATOR"] == "defualt") {
-      return creator_pointer_type(new evaluator_creator<simple_evaluator>);
+  if (params.defined("EVALUATOR") && params["EVALUATOR"] == "default") {
+    return creator_pointer_type(new evaluator_creator<simple_evaluator>);
+  }
+  if (evaluator_creators_.size() == 0) {
+    if (params.defined("EVALUATOR")) {
+      std::clog << "Warning: unknown evaluator: " << params["EVALUATOR"]
+                << ".  The default evaluator will be used istead\n";
+    } else if (params.defined("WORKER")) {
+      std::clog << "Warning: unknown evaluator: " << params["WORKER"]
+                << ".  The default evaluator will be used istead\n";
     } else {
-      creator_map_type::const_iterator itr = evaluator_creators_.find(params["EVALUATOR"]);
-      if (itr == evaluator_creators_.end() || itr->second == 0) {
-        std::cerr << "Unknown evaluator: " << params["EVALUATOR"] << " (registered evaluators: ";
-        for (creator_map_type::const_iterator itr = evaluator_creators_.begin();
-             itr != evaluator_creators_.end(); ++itr) {
-          if (itr != evaluator_creators_.begin()) std::cerr << ", ";
-          std::cerr << itr->first;
-        }
-        std::cerr << ")\n";
-        boost::throw_exception(std::runtime_error("evaluator_factory::make_creator()"));
-      }
-      return itr->second;
+      std::clog << "Info: no evaluator registered.  The default evaluator will be used";
     }
+    return creator_pointer_type(new evaluator_creator<simple_evaluator>);
+  }
+  if (evaluator_creators_.size() == 1) {
+    if (params.defined("EVALUATOR") && evaluator_creators_.begin()->first != params["EVALUATOR"]) {
+      std::clog << "Warning: unknown evaluator: \"" << params["EVALUATOR"]
+                << "\".  The only evaluator \"" << evaluator_creators_.begin()->first
+                << "\" will be used instead.\n";
+    } else if (params.defined("WORKER") && evaluator_creators_.begin()->first != params["WORKER"]) {
+      std::clog << "Warning: unknown evaluator: \"" << params["WORKER"]
+                << "\".  The only evaluator \"" << evaluator_creators_.begin()->first
+                << "\" will be used instead.\n";
+    }
+    return evaluator_creators_.begin()->second;
+  }
+  if (params.defined("EVALUATOR")) {
+    creator_map_type::const_iterator itr = evaluator_creators_.find(params["EVALUATOR"]);
+    if (itr == evaluator_creators_.end() || itr->second == 0) {
+      std::cerr << "Error: unknown evaluator: \"" << params["EVALUATOR"]
+                << "\" (registered evaluators: ";
+      for (creator_map_type::const_iterator itr = evaluator_creators_.begin();
+           itr != evaluator_creators_.end(); ++itr) {
+        if (itr != evaluator_creators_.begin()) std::cerr << ", ";
+        std::cerr << itr->first;
+      }
+      std::cerr << ")\n";
+      boost::throw_exception(std::runtime_error("evaluator_factory::make_creator()"));
+    }
+    return itr->second;
   } else if (params.defined("WORKER")) {
     creator_map_type::const_iterator itr = evaluator_creators_.find(params["WORKER"]);
     if (itr == evaluator_creators_.end() || itr->second == 0) {
-      std::clog << "Info: unknown evaluator: " << params["WORKER"]
-                << ".  Using default evaluator.\n";
+      std::clog << "Info: unknown evaluator: \"" << params["WORKER"]
+                << "\".  The default evaluator will be used instead\n";
       return creator_pointer_type(new evaluator_creator<simple_evaluator>);
     } else {
       return itr->second;

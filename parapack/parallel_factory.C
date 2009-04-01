@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -54,13 +54,37 @@ parallel_worker_factory* parallel_worker_factory::instance() {
 
 parallel_worker_factory::creator_pointer_type
 parallel_worker_factory::make_creator(Parameters const& params) const {
+  if (worker_creators_.size() == 0) {
+    std::cerr << "Error: no worker registered\n";
+    boost::throw_exception(std::runtime_error("parallel_worker_factory::make_creator()"));
+  }
+  if (worker_creators_.size() == 1) {
+    if (params.defined("WORKER") && worker_creators_.begin()->first != params["WORKER"]) {
+      std::clog << "Warning: unknown worker: \"" << params["WORKER"]
+                << "\".  The only worker \"" << worker_creators_.begin()->first
+                << "\" will be used instead.\n";
+    }
+    return worker_creators_.begin()->second;
+  }
   if (!params.defined("WORKER")) {
-    std::cerr << "Parameter WORKER not defined\n";
+    std::cerr << "Error: no worker specified (registered workers: ";
+    for (creator_map_type::const_iterator itr = worker_creators_.begin();
+         itr != worker_creators_.end(); ++itr) {
+      if (itr != worker_creators_.begin()) std::cerr << ", ";
+      std::cerr << itr->first;
+    }
+    std::cerr << std::endl;
     boost::throw_exception(std::runtime_error("worker_factory::make_creator()"));
   }
   creator_map_type::const_iterator itr = worker_creators_.find(params["WORKER"]);
   if (itr == worker_creators_.end() || itr->second == 0) {
-    std::cerr << "Unknown worker: " << params["WORKER"] << std::endl;
+    std::cerr << "Error: unknown worker: \"" << params["WORKER"] << "\" (registered workers: ";
+    for (creator_map_type::const_iterator itr = worker_creators_.begin();
+         itr != worker_creators_.end(); ++itr) {
+      if (itr != worker_creators_.begin()) std::cerr << ", ";
+      std::cerr << itr->first;
+    }
+    std::cerr << ")\n";
     boost::throw_exception(std::runtime_error("worker_factory::make_creator()"));
   }
   return itr->second;
