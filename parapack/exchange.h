@@ -658,13 +658,14 @@ public:
       if (mcs_.exchange()) {
         obs[p] << SimpleRealObservable("EXMC: Acceptance Rate")
                << SimpleRealObservable("EXMC: Ratio of Upward-Moving Walker")
-               << SimpleRealObservable("EXMC: Ratio of Downward-Moving Walker");
+               << SimpleRealObservable("EXMC: Ratio of Downward-Moving Walker")
+               << SimpleRealObservable("EXMC: Inverse Round-Trip Time");
         obs[p]["EXMC: Acceptance Rate"].reset(true);
         obs[p]["EXMC: Ratio of Upward-Moving Walker"].reset(true);
         obs[p]["EXMC: Ratio of Downward-Moving Walker"].reset(true);
       }
     }
-    if (mcs_.exchange()) obs[0] << SimpleRealObservable("EXMC: Inverse Round-Trip Time");
+    if (mcs_.exchange()) obs[0] << SimpleRealObservable("EXMC: Average Inverse Round-Trip Time");
   }
 
   void run(std::vector<alps::ObservableSet>& obs) {
@@ -736,13 +737,21 @@ public:
         }
       }
 
-      if (direc_[wid_.front()] == walker_direc::up) {
-        obs[0]["EXMC: Inverse Round-Trip Time"] << 1. / nrep;
+      int wtop = wid_.front();
+      for (int w = 0; w < nrep; ++w) {
+        if (w == wtop && direc_[w] == walker_direc::up) {
+          obs[w]["EXMC: Inverse Round-Trip Time"] << 1.;
+        } else {
+          obs[w]["EXMC: Inverse Round-Trip Time"] << 0.;
+        }
+      }
+      if (direc_[wtop] == walker_direc::up) {
+        obs[0]["EXMC: Average Inverse Round-Trip Time"] << 1. / nrep;
         ++num_returnee_;
       } else {
-        obs[0]["EXMC: Inverse Round-Trip Time"] << 0.;
+        obs[0]["EXMC: Average Inverse Round-Trip Time"] << 0.;
       }
-      direc_[wid_.front()] = walker_direc::down;
+      direc_[wtop] = walker_direc::down;
       if (direc_[wid_.back()] == walker_direc::down) direc_[wid_.back()] = walker_direc::up;
       for (int p = 0; p < nrep; ++p) {
         obs[p]["EXMC: Ratio of Upward-Moving Walker"] <<
