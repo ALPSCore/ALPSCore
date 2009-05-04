@@ -64,6 +64,7 @@ public:
 
   void send(const Process&,int32_t tag); // send to a single process
   void send(const ProcessList&,int32_t); // broadcast to a whole group
+  void broadcast(const alps::Process &thisprocess);
 
 /// INTERNAL ONLY
 # define ALPS_DUMP_DO_TYPE(T) \
@@ -119,7 +120,8 @@ public:
 
   const Process& sender() const;   // the sender of the message
   void receive(const Process& w,int32_t t); // receive a message from a specific process
-  void receive(int32_t t); // receive a mesage from anywhere
+  void receive(int32_t t); // receive a message from anywhere
+  void broadcast(const alps::Process &sender); //receive a message broadcasted from sender
 
 /// INTERNAL ONLY
 # define ALPS_DUMP_DO_TYPE(T) \

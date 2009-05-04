@@ -92,7 +92,7 @@ void OMPDump::send(const Process& where,int32_t t)
 #endif
   int info;
   if( (info = MPI_Send(buf_, buf_.size(), MPI_BYTE, where, t, MPI_COMM_WORLD))!=0)
-    boost::throw_exception( std::runtime_error( ("Error " + boost::lexical_cast<std::string,int>(info) + " wen sending message")));
+    boost::throw_exception( std::runtime_error( ("Error " + boost::lexical_cast<std::string,int>(info) + " when sending message")));
 }
 
 #else
@@ -121,6 +121,36 @@ void OMPDump::send(const ProcessList& where,int32_t t)
        send(where[i],t);
 }
 
+#ifdef ALPS_MPI
+
+void OMPDump::broadcast(const alps::Process &thisprocess)
+{
+#ifdef ALPS_TRACE
+  std::cerr << "broadcasting message " << " to process " << where << ".\n";
+#endif
+
+#ifdef ALPS_DEBUG
+  if(!valid_)
+    boost::throw_exception ( std::logic_error("message not initialized in OMPDump::send"));
+#endif
+  int info;
+  //this sucks: MPI_Probe does not work for broadcast operations, so first we
+  //communicate the size of the buffer and then the actual buffer. It will cost
+  //us some latency... who has a better idea?
+  int cnt=buf_.size();
+  if( (info = MPI_Bcast(&cnt, 1, MPI_INT, thisprocess, MPI_COMM_WORLD))!=0)
+    boost::throw_exception( std::runtime_error( ("Error " + boost::lexical_cast<std::string,int>(info) + " when broadcasting message")));
+  if( (info = MPI_Bcast(buf_, cnt, MPI_BYTE, thisprocess, MPI_COMM_WORLD))!=0)
+    boost::throw_exception( std::runtime_error( ("Error " + boost::lexical_cast<std::string,int>(info) + " when broadcasting message")));
+}
+
+#else
+
+void OMPDump::broadcast(const alps::Process &thisprocess){
+  //do nothing here. If someone tries to receive, we'll throw an exception.
+}
+
+#endif
 
 //-----------------------------------------------------------------------
 // WRITE AND READ TYPES
@@ -291,6 +321,41 @@ void IMPDump::receive(int32_t t)
 {
   receive(0,t);
 }
+
+#ifdef ALPS_MPI
+void IMPDump::broadcast(const alps::Process &sender)
+{
+  // check for message and size
+  int info;
+  
+  MPI_Status status;
+
+  // set the buffer to the apropriate length
+  int cnt;
+  if((info=MPI_Bcast(&cnt,1,MPI_INT,sender,MPI_COMM_WORLD))!=0)
+    boost::throw_exception( std::runtime_error( ("Error " + boost::lexical_cast<std::string,int>(info) + " when receiving message")));
+  buf_.resize(cnt);
+  // receive the message, aborts if an error occurs
+  if((info=MPI_Bcast(buf_,buf_.size(),MPI_BYTE,sender,MPI_COMM_WORLD))!=0)
+    boost::throw_exception( std::runtime_error( ("Error " + boost::lexical_cast<std::string,int>(info) + " when receiving message")));
+
+  // get the sender of the message
+  theSender_=sender;
+  valid_=true;
+
+#ifdef ALPS_TRACE
+  std::cerr << "Received message " << "--bcast: no tag--"
+       << " from process " << sender << ".\n";
+#endif
+}
+
+#else
+
+void IMPDump::broadcast(const alps::Process &sender)
+{
+  throw(std::runtime_error("message passing useless for single process programs"));
+}
+#endif
 
 //-----------------------------------------------------------------------
 // READ A STRING
