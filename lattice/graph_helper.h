@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2000-2008 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2000-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -36,8 +36,13 @@
 #include <alps/lattice/graph_traits.h>
 #include <alps/lattice/parity.h>
 #include <alps/lattice/propertymap.h>
-#include <boost/vector_property_map.hpp>
 #include <alps/multi_array.hpp>
+#include <boost/version.hpp>
+#if BOOST_VERSION < 10400
+# include <boost/vector_property_map.hpp>
+#else
+# include <boost/property_map/vector_property_map.hpp>
+#endif
 
 namespace alps {
 

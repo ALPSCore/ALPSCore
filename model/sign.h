@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2003-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -40,7 +40,12 @@
 #include <boost/graph/visitors.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
-#include <boost/vector_property_map.hpp>
+#include <boost/version.hpp>
+#if BOOST_VERSION < 10400
+# include <boost/vector_property_map.hpp>
+#else
+# include <boost/property_map/vector_property_map.hpp>
+#endif
 
 namespace alps {
 
@@ -79,7 +84,7 @@ public:
   }
   void back_edge(edge_descriptor e, const Graph& g)
   {
-    if (bond_sign_[e]*map_[boost::source(e,g)]*map_[boost::target(e,g)] < 0) 
+    if (bond_sign_[e]*map_[boost::source(e,g)]*map_[boost::target(e,g)] < 0)
       *check_ = true;
   }
 
@@ -123,7 +128,7 @@ public:
         map_[boost::source(e,g)] = -map_[boost::target(e,g)];
       }
     }
-    if (bond_sign_[e] * site_sign_[boost::source(e,g)] * 
+    if (bond_sign_[e] * site_sign_[boost::source(e,g)] *
         site_sign_[boost::target(e,g)] < 0) *check_ = true;
   }
   void back_edge(edge_descriptor e, const Graph& g)
@@ -174,7 +179,7 @@ public:
       map_(&map),
       graph_(&graph)
   {}
-            
+
   template <class E>
   int operator[] (const E& e) const {
     return const_cast<map_type&>(*map_)[boost::tie(bond_type_[e],
@@ -205,7 +210,7 @@ public:
     : site_type_(alps::get_or_default(alps::site_type_t(), graph, 0)),
       map_(&map)
   {}
-            
+
   template <class V>
   int operator[] (const V& v) const {
     return const_cast<map_type&>(*map_)[site_type_[v]];
@@ -235,7 +240,7 @@ struct nonzero_edge_weight {
 
 template <class G, class B>
 bool is_frustrated(const G& graph, B bond_map)
-{  
+{
   typedef G graph_type;
   boost::filtered_graph<graph_type, nonzero_edge_weight<B> >
     g(graph, nonzero_edge_weight<B>(bond_map));
@@ -257,7 +262,7 @@ bool is_frustrated(const G& graph, B bond_map)
 
 template <class G, class B, class S>
 bool is_frustrated(const G& graph, B bond_map, S site_map)
-{  
+{
   typedef G graph_type;
   boost::filtered_graph<graph_type, nonzero_edge_weight<B> >
     g(graph, nonzero_edge_weight<B>(bond_map));
@@ -276,13 +281,13 @@ bool is_frustrated(const G& graph, B bond_map, S site_map)
   return check; // no sign problem=>not frustrated
 }
 
-                                 
+
 template <class I, class G>
 bool has_sign_problem(const HamiltonianDescriptor<I>& ham,
                       const graph_helper<G>& lattice, const Parameters& p) {
   typedef G graph_type;
   const graph_type& graph(lattice.graph());
-  
+
   if (lattice.inhomogeneous_bonds()) {
     std::cerr << "Warning: inhomogeneous bonds on lattice not currently supported by the sign check program. Please contact the ALPS developers for assistance.\n";
     return true; // we might have a sign problem
@@ -315,8 +320,8 @@ bool has_sign_problem(const HamiltonianDescriptor<I>& ham,
                   sign = this_sign; // is stored
                 else if (this_sign && sign!=this_sign)
                   // compare other nonzero matrix elements
-                  return true; // we might have a sign problem: 
-                               // indefinite sign of matrix elements 
+                  return true; // we might have a sign problem:
+                               // indefinite sign of matrix elements
               }
       bond_sign[boost::make_tuple(btype,stype1,stype2)] = sign;
       bond_sign[boost::make_tuple(btype,stype2,stype1)] = sign;
@@ -347,8 +352,8 @@ bool has_sign_problem(const HamiltonianDescriptor<I>& ham,
               sign = this_sign; // is stored
             else if (this_sign && sign!=this_sign)
               // compare other nonzero matrix elements
-              return true; // we might have a sign problem: 
-                           // indefinite sign of matrix elements 
+              return true; // we might have a sign problem:
+                           // indefinite sign of matrix elements
           }
       site_sign[stype] = sign;
     }

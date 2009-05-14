@@ -39,7 +39,12 @@
 #include <boost/graph/undirected_dfs.hpp>
 #include <boost/graph/visitors.hpp>
 #include <boost/throw_exception.hpp>
-#include <boost/vector_property_map.hpp>
+#include <boost/version.hpp>
+#if BOOST_VERSION < 10400
+# include <boost/vector_property_map.hpp>
+#else
+# include <boost/property_map/vector_property_map.hpp>
+#endif
 #include <boost/detail/workaround.hpp>
 #include <stdexcept>
 
