@@ -38,7 +38,7 @@
 #include <alps/lattice/propertymap.h>
 #include <alps/multi_array.hpp>
 #include <boost/version.hpp>
-#if BOOST_VERSION < 10400
+#if BOOST_VERSION < 104000
 # include <boost/vector_property_map.hpp>
 #else
 # include <boost/property_map/vector_property_map.hpp>
