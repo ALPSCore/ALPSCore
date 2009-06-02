@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -51,19 +51,26 @@ std::string alps::xslt_path(const std::string& stylefile) {
   else
     return "http://xml.comp-phys.org/"+stylefile;
 }
-  
-boost::filesystem::path alps::xml_library_path(const std::string& file) 
+
+boost::filesystem::path alps::xml_library_path(const std::string& file)
 {
-  return boost::filesystem::path(std::string(ALPS_XML_DIR)+"/"+file,boost::filesystem::native);
+  std::string path;
+  char* p = getenv("ALPS_XML_PATH");
+  if (p != 0) {
+    path = std::string(p) + "/" + file;
+  } else {
+    path = std::string(ALPS_XML_DIR) + "/" + file;
+  }
+  return boost::filesystem::path(path, boost::filesystem::native);
 }
 
-boost::filesystem::path alps::search_xml_library_path(const std::string& file) 
+boost::filesystem::path alps::search_xml_library_path(const std::string& file)
 {
   boost::filesystem::path p(file,boost::filesystem::native);
   if (!boost::filesystem::exists(p)) {
-    p=xml_library_path(file);
-    if (!boost::filesystem::exists(p))
-      boost::throw_exception(std::runtime_error("Cannot find file " + file ));
+    p = xml_library_path(file);
   }
+  if (!boost::filesystem::exists(p))
+    boost::throw_exception(std::runtime_error("Cannot find file " + file ));
   return p;
 }

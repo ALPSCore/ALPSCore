@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -46,13 +46,12 @@
 
 namespace alps {
 
-class ODump
-{
+class ALPS_DECL ODump {
 public:
   ODump(uint32_t v = 0);
   virtual ~ODump() {}
 
-  uint32_t version() const { return version_; } 
+  uint32_t version() const { return version_; }
 
 /// INTERNAL ONLY
 # define ALPS_DUMP_DO_TYPE(T) \
@@ -117,21 +116,20 @@ public:
   virtual void write_string(std::size_t n, const char* s);
   virtual void write_string(const std::string&);
 
-private: 
+private:
   uint32_t version_;
 };
 
 
-class IDump
-{
+class ALPS_DECL IDump {
 public:
   IDump(uint32_t v=0);
   virtual ~IDump() {}
 
-  uint32_t version() const { return version_;} 
-  void set_version(uint32_t v) { version_=v;} 
+  uint32_t version() const { return version_;}
+  void set_version(uint32_t v) { version_=v;}
 
-/// INTERNAL ONLY  
+/// INTERNAL ONLY
 # define ALPS_DUMP_DO_TYPE(T) \
   virtual void read_simple(T& x);
 
@@ -155,17 +153,17 @@ public:
 # undef ALPS_DUMP_DO_TYPE
 
   template <class T>
-  void read_complex(std::complex<T>& x) 
-  { 
+  void read_complex(std::complex<T>& x)
+  {
     T re = get<T>();
     T im = get<T>();
     x = std::complex<T>(re,im);
   }
-  
+
   template<class T>
   IDump& operator>>(std::complex<T>& x) { read_complex(x); return *this; }
 
-/// INTERNAL ONLY  
+/// INTERNAL ONLY
 # define ALPS_DUMP_DO_TYPE(T) \
   virtual void read_array(std::size_t n, T * p); \
   IDump& operator>>(T& x) { read_simple(x); return *this; } \

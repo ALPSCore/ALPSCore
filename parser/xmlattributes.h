@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -31,6 +31,7 @@
 #ifndef ALPS_PARSER_XMLATTRIBUTES_H
 #define ALPS_PARSER_XMLATTRIBUTES_H
 
+#include <alps/config.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/throw_exception.hpp>
 #include <cstddef>
@@ -41,7 +42,7 @@
 
 namespace alps {
 
-class XMLAttribute
+class ALPS_DECL XMLAttribute
 {
 public:
   typedef std::string key_type;
@@ -66,7 +67,7 @@ private:
   value_type value_;
 };
 
-class XMLAttributes
+class ALPS_DECL XMLAttributes
 {
 public:
   typedef XMLAttribute::key_type    key_type;

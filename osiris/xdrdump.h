@@ -56,14 +56,14 @@
 
 namespace alps {
 
-/** The abstract base class for serializing an object 
-    using the XDR stream library to write the architecture 
+/** The abstract base class for serializing an object
+    using the XDR stream library to write the architecture
     indepedent XDR format. */
 
-class OXDRDump : public ODump
+class ALPS_DECL OXDRDump : public ODump
 {
 public:
-  OXDRDump () : ODump(0) {}    
+  OXDRDump () : ODump(0) {}
   virtual ~OXDRDump() {}
 
 /// INTERNAL ONLY
@@ -88,7 +88,7 @@ public:
   ALPS_DUMP_DO_TYPE(double)
   ALPS_DUMP_DO_TYPE(long double)
 # undef ALPS_DUMP_DO_TYPE
-    
+
   // write a c-style string
   virtual void write_string(std::size_t, const char *);
 
@@ -96,17 +96,17 @@ protected:
   /// get the position in the XDR stream.
   uint32_t getPosition() const;
   /// set the position in the XDR stream.
-  void setPosition(uint32_t pos);  
+  void setPosition(uint32_t pos);
 
   XDR xdr_; // the XDR stream
 };
 
 
-/** The abstract base class for deserializing an object 
-    using the XDR stream library to read the architecture 
+/** The abstract base class for deserializing an object
+    using the XDR stream library to read the architecture
     indepedent XDR format. */
 
-class IXDRDump : public IDump
+class ALPS_DECL IXDRDump : public IDump
 {
 public:
   IXDRDump() : IDump(0) {}
@@ -134,9 +134,9 @@ public:
   ALPS_DUMP_DO_TYPE(double)
   ALPS_DUMP_DO_TYPE(long double)
 # undef ALPS_DUMP_DO_TYPE
-      
+
   virtual void read_string(std::size_t n, char* s);
-  
+
 protected:
   /// get the position in the XDR stream.
   uint32_t getPosition() const;
@@ -159,7 +159,7 @@ public:
   virtual ~OXDRFileDump();
 
   void flush();
-  
+
 private:
   // file reference and file name, needed by dump reference
   std::FILE* file_;
@@ -184,10 +184,10 @@ public:
 
 private:
   // file reference and name, needed by dump reference
-  
-  std::FILE* file_;  
+
+  std::FILE* file_;
   bool valid_;
-  
+
   void open_file(const std::string&);
 };
 

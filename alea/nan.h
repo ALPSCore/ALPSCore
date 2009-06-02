@@ -34,11 +34,11 @@
 
 namespace alps {
 
-double nan();
+ALPS_DECL double nan();
 
 ALPS_DECL double inf();
 
-double ninf();
+ALPS_DECL double ninf();
 
 } // namespace alps
 
