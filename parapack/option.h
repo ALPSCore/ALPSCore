@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -38,9 +38,9 @@ namespace parapack {
 
 struct option {
   option(int argc, char** argv, int np = 1, int pid = 0);
+  boost::posix_time::time_duration check_interval;
   boost::posix_time::time_duration checkpoint_interval;
-  boost::posix_time::time_duration min_check_interval;
-  boost::posix_time::time_duration max_check_interval;
+  boost::posix_time::time_duration report_interval;
   boost::posix_time::time_duration time_limit;
   int procs_per_clone;
   bool check_parameter;

@@ -25,51 +25,52 @@
 *
 *****************************************************************************/
 
-#ifndef PARAPACK_CLONE_PROXY_H
-#define PARAPACK_CLONE_PROXY_H
+#ifndef PARAPACK_CLONE_TIMER_H
+#define PARAPACK_CLONE_TIMER_H
 
-#include "clone.h"
+#include <alps/config.h>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace alps {
 
-class clone_proxy {
+class clone_timer {
 public:
-  clone_proxy(clone*& clone_ptr, clone_timer::duration_t const& check_interval)
-    : clone_ptr_(clone_ptr), interval_(check_interval) {}
+  typedef uint64_t loops_t;
+  typedef boost::posix_time::ptime time_t;
+  typedef boost::posix_time::time_duration duration_t;
 
-  bool is_local(Process const&) const { return true; }
-
-  void start(tid_t tid, cid_t cid, process_group const&, Parameters const& params,
-    boost::filesystem::path const& basedir, std::string const& base, bool is_new) {
-    clone_ptr_ = new clone(tid, cid, params, basedir, base, interval_, is_new);
+  clone_timer(duration_t const& check_interval, double progress = 0) {
+    interval_ = check_interval;
+    reset(progress);
   }
 
-  clone_info const& info(Process const&) const {
-    if (!clone_ptr_)
-      boost::throw_exception(std::logic_error("clone_proxy::info()"));
-    return clone_ptr_->info();
+  void reset(double progress = 0) {
+    start_time_ = current_time();
+    start_progress_ = progress;
+    next_check_ = start_time_ + interval_;
   }
 
-  void checkpoint(Process const&) { if (clone_ptr_) clone_ptr_->checkpoint(); }
+  static time_t current_time() { return boost::posix_time::microsec_clock::local_time(); }
 
-  void update_info(Process const&) const {}
-
-  void suspend(Process const&) { if (clone_ptr_) clone_ptr_->suspend(); }
-
-  void halt(Process const&) { /* if (clone_ptr_) clone_ptr_->halt(); */ }
-
-  void destroy(Process const&) {
-    if (clone_ptr_) {
-      delete clone_ptr_;
-      clone_ptr_ = 0;
+  loops_t next_loops(loops_t loops) { return next_loops(loops, current_time()); }
+  loops_t next_loops(loops_t loops, time_t const& current) {
+    if (current > next_check_) {
+      loops /= 2;
+      if (loops == 0) loops = 1;
+    } else if (current + interval_/2 < next_check_) {
+      loops *= 2;
     }
+    next_check_ = current + interval_;
+    return loops;
   }
 
 private:
-  clone*& clone_ptr_;
-  clone_timer::duration_t interval_;
+  duration_t interval_;
+  time_t start_time_;
+  double start_progress_;
+  time_t next_check_;
 };
 
 } // end namespace alps
 
-#endif // PARAPACK_CLONE_PROXY_H
+#endif // PARAPACK_CLONE_TIMER_H

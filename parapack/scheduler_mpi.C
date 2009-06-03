@@ -45,84 +45,84 @@ namespace mpi = boost::mpi;
 namespace alps {
 namespace parapack {
 
-int run_sequential(int /* argc */, char** /* argv */) {
+int run_sequential(int argc, char** argv) {
 
 #ifndef BOOST_NO_EXCEPTIONS
   try {
 #endif
 
-  boost::throw_exception(std::runtime_error("run_sequaential: not implemented"));
+  mpi::environment env(argc, argv);
+  mpi::communicator world;
 
-//   mpi::environment env(argc, argv);
-//   mpi::communicator comm;
+  alps::ParameterList parameterlist;
+  if (is_master()) {
+    switch (argc) {
+    case 1:
+      std::cin >> parameterlist;
+      break;
+    case 2: {
+      boost::filesystem::ifstream is(argv[1]);
+      is >> parameterlist;
+      break;
+    }
+    default:
+      boost::throw_exception(std::invalid_argument(
+        "Usage: " + std::string(argv[0]) + " [paramfile]"));
+    }
+  }
+  broadcast(world, parameterlist, 0);
 
-//   alps::ParameterList parameterlist;
-//   if (comm.rank() == 0) {
-//     switch (argc) {
-//     case 1:
-//       std::cin >> parameterlist;
-//       break;
-//     case 2: {
-//       boost::filesystem::ifstream is(argv[1]);
-//       is >> parameterlist;
-//       break;
-//     }
-//     default:
-//       boost::throw_exception(std::invalid_argument(
-//         "Usage: " + std::string(argv[0]) + " [paramfile]"));
-//     }
-//   }
-//   broadcast(comm, parameterlist, 0);
-
-//   for (int i = 0; i < parameterlist.size(); ++i) {
-//     alps::Parameters p = parameterlist[i];
-//     comm.barrier();
-//     boost::timer tm;
-//     if (!p.defined("DIR_NAME")) p["DIR_NAME"] = ".";
-//     if (!p.defined("BASE_NAME")) p["BASE_NAME"] = "task" + boost::lexical_cast<std::string>(i+1);
-//     if (!p.defined("SEED")) p["SEED"] = static_cast<unsigned int>(time(0));
-//     p["WORKER_SEED"] = static_cast<unsigned int>(p["SEED"]) ^ (comm.rank() << 11);
-//     p["DISORDER_SEED"] = p["SEED"];
-//     if (comm.rank() == 0) std::cout << "[input parameters]\n" << p;
-//     std::vector<alps::ObservableSet> obs;
-//     boost::shared_ptr<alps::parapack::abstract_worker>
-//       worker = parallel_worker_factory::make_worker(comm, p);
-//     worker->init_observables(p, obs);
-//     bool thermalized = worker->is_thermalized();
-//     if (thermalized) BOOST_FOREACH(alps::ObservableSet& o, obs) { o.reset(true); }
-//     while (worker->progress() < 1.0) {
-//       worker->run(obs);
-//       if (!thermalized && worker->is_thermalized()) {
-//         BOOST_FOREACH(alps::ObservableSet& o, obs) { o.reset(true); }
-//         thermalized = true;
-//       }
-//     }
-//     if (comm.rank() == 0) {
-//       std::vector<alps::ObservableSet> obs_slave;
-//       for (int p = 1; p < comm.size(); ++p) {
-//         comm.recv(p, 0, obs_slave);
-//         for (int j = 0; j < obs.size(); ++j) obs[j] << obs_slave[j];
-//       }
-//     } else {
-//       comm.send(0, 0, obs);
-//     }
-//     if (comm.rank() == 0) {
-//       std::vector<alps::ObservableSet> obs_out;
-//       boost::shared_ptr<alps::parapack::abstract_evaluator>
-//         evaluator = evaluator_factory::make_evaluator(p);
-//       evaluator->load(obs, obs_out);
-//       evaluator->evaluate(obs_out);
-//       std::cerr << "[speed]\nelapsed time = " << tm.elapsed() << " sec\n";
-//       std::cout << "[results]\n";
-//       if (obs_out.size() == 1) {
-//         std::cout << obs_out[0];
-//       } else {
-//         for (int i = 0; i < obs_out.size(); ++i)
-//           std::cout << "[[replica " << i << "]]\n" << obs_out[i];
-//       }
-//     }
-//     comm.barrier();
-//   }
+  for (int i = 0; i < parameterlist.size(); ++i) {
+    alps::Parameters p = parameterlist[i];
+    world.barrier();
+    boost::timer tm;
+    if (!p.defined("DIR_NAME")) p["DIR_NAME"] = ".";
+    if (!p.defined("BASE_NAME")) p["BASE_NAME"] = "task" + boost::lexical_cast<std::string>(i+1);
+    if (!p.defined("SEED")) p["SEED"] = static_cast<unsigned int>(time(0));
+    p["WORKER_SEED"] = static_cast<unsigned int>(p["SEED"]) ^ (world.rank() << 11);
+    p["DISORDER_SEED"] = p["SEED"];
+    if (is_master()) std::cout << "[input parameters]\n" << p;
+    std::vector<alps::ObservableSet> obs;
+    boost::shared_ptr<alps::parapack::abstract_worker>
+      worker = parallel_worker_factory::make_worker(world, p);
+    worker->init_observables(p, obs);
+    bool thermalized = worker->is_thermalized();
+    if (thermalized) {
+      BOOST_FOREACH(alps::ObservableSet& o, obs) { o.reset(true); }
+    }
+    while (worker->progress() < 1.0) {
+      worker->run(obs);
+      if (!thermalized && worker->is_thermalized()) {
+        BOOST_FOREACH(alps::ObservableSet& o, obs) { o.reset(true); }
+        thermalized = true;
+      }
+    }
+    // if (is_master()) {
+    //   std::vector<alps::ObservableSet> obs_slave;
+    //   for (int p = 1; p < world.size(); ++p) {
+    //     world.recv(p, 0, obs_slave);
+    //     for (int j = 0; j < obs.size(); ++j) obs[j] << obs_slave[j];
+    //   }
+    // } else {
+    //   world.send(0, 0, obs);
+    //}
+    if (is_master()) {
+      std::vector<alps::ObservableSet> obs_out;
+      boost::shared_ptr<alps::parapack::abstract_evaluator>
+        evaluator = evaluator_factory::make_evaluator(p);
+      evaluator->load(obs, obs_out);
+      evaluator->evaluate(obs_out);
+      std::cerr << "[speed]\nelapsed time = " << tm.elapsed() << " sec\n";
+      std::cout << "[results]\n";
+      if (obs_out.size() == 1) {
+        std::cout << obs_out[0];
+      } else {
+        for (int i = 0; i < obs_out.size(); ++i)
+          std::cout << "[[replica " << i << "]]\n" << obs_out[i];
+      }
+    }
+    world.barrier();
+  }
 
 #ifndef BOOST_NO_EXCEPTIONS
   }
@@ -143,12 +143,11 @@ namespace scheduler {
 int start(int argc, char** argv) {
   mpi::environment env(argc, argv);
   mpi::communicator world;
-
   option opt(argc, argv, world.size(), world.rank());
   broadcast(world, opt.valid, 0);
   if (!opt.valid) return -1;
 
-  if (world.rank() == 0) print_copyright(std::clog);
+  if (is_master()) print_copyright(std::clog);
 
   boost::posix_time::ptime end_time =
     boost::posix_time::second_clock::local_time() + opt.time_limit;
@@ -180,7 +179,7 @@ int start(int argc, char** argv) {
 
     if (opt.evaluate_only) {
       if (is_master()) {
-        std::clog << log_header() << "starting evaluation on " << alps::hostname() << std::endl;
+        std::clog << logger::header() << "starting evaluation on " << alps::hostname() << std::endl;
         int t = scheduler::load_filename(file, file_in_str, file_out_str);
         if (t == 1) {
           file_in = complete(boost::filesystem::path(file_in_str), basedir);
@@ -197,7 +196,7 @@ int start(int argc, char** argv) {
           task t(file);
           t.evaluate();
         }
-        std::clog << scheduler::log_header() << "all tasks evaluated\n";
+        std::clog << logger::header() << "all tasks evaluated\n";
       }
       return 0;
     }
@@ -207,7 +206,7 @@ int start(int argc, char** argv) {
     //
 
     if (is_master()) {
-      std::clog << log_header() << "starting scheduler on " << alps::hostname() << std::endl;
+      std::clog << logger::header() << "starting scheduler on " << alps::hostname() << std::endl;
 
       if (load_filename(file, file_in_str, file_out_str) != 1) {
         std::cerr << "invalid master file: " << file.native_file_string() << std::endl;
@@ -229,8 +228,8 @@ int start(int argc, char** argv) {
       std::clog << "  master input file  = " << file_in.native_file_string() << std::endl
                 << "  master output file = " << file_out.native_file_string() << std::endl
                 << "  termination file   = " << file_term.native_file_string() << std::endl
-                << "  number of process(es)      = " << process.num_total_processes() << std::endl
-                << "  process(es) per clone      = " << process.num_procs_per_group() << std::endl
+                << "  number of process(es) = " << process.num_total_processes() << std::endl
+                << "  process(es) per clone = " << process.num_procs_per_group() << std::endl
                 << "  number of process group(s) = " << process.num_groups() << std::endl
                 << "  check parameter = " << (opt.check_parameter ? "yes" : "no") << std::endl
                 << "  auto evaluation = " << (opt.auto_evaluate ? "yes" : "no") << std::endl;
@@ -240,10 +239,8 @@ int start(int argc, char** argv) {
         std::clog << "  time limit = unlimited\n";
       std::clog << "  interval between checkpointing  = "
                 << opt.checkpoint_interval.total_seconds() << " seconds\n"
-                << "  minimum interval between checks = "
-                << opt.min_check_interval.total_seconds() << " seconds\n"
-                << "  maximum interval between checks = "
-                << opt.max_check_interval.total_seconds() << " seconds\n";
+                << "  interval between progress report = "
+                << opt.report_interval.total_seconds() << " seconds\n";
 
       load_tasks(file_in, file_out, basedir, opt.check_parameter, simname, tasks);
       if (simname != "")
@@ -265,87 +262,79 @@ int start(int argc, char** argv) {
 
       // server process
       if (is_master()) {
-
-        clone_proxy_mpi proxy(process.comm_down());
+        clone_proxy_mpi proxy(clone_ptr, opt.check_interval, process.comm_ctrl(),
+                              process.comm_work());
 
         if (!process.is_halting()) {
           bool to_halt = false;
           if (num_finished_tasks == tasks.size()) {
-            std::clog << log_header() << "all tasks have been finished\n";
+            std::clog << logger::header() << "all tasks have been finished\n";
             to_halt = true;
           }
           if (opt.time_limit != boost::posix_time::time_duration() &&
               boost::posix_time::second_clock::local_time() > end_time) {
-            std::clog << log_header() << "time limit reached\n";
+            std::clog << logger::header() << "time limit reached\n";
             to_halt = true;
           }
           signal_info_t s = signals();
           if (s == signal_info::STOP || s == signal_info::TERMINATE) {
-            std::clog << log_header() << "signal received\n";
+            std::clog << logger::header() << "signal received\n";
             to_halt = true;
           }
           if (exists(file_term)) {
-            std::clog << log_header() << "termination file detected\n";
+            std::clog << logger::header() << "termination file detected\n";
             remove(file_term);
             to_halt = true;
           }
           if (to_halt) {
-            BOOST_FOREACH(task& t, tasks) t.suspend_clones(proxy);
+            BOOST_FOREACH(task& t, tasks) t.suspend_remote_clones(proxy);
             process.halt();
           }
         }
 
-        while (true) {
+        while (!process.is_halting() || process.num_allocated() > 0) {
           boost::optional<mpi::status> status
-            = process.comm_up().iprobe(mpi::any_source, mpi::any_tag);
+            = process.comm_ctrl().iprobe(mpi::any_source, mpi::any_tag);
           if (status) {
-            if (status->tag() == mcmp_tag::clone_info
-                || status->tag() == mcmp_tag::clone_checkpoint) {
+            if (status->tag() == mcmp_tag::clone_info) {
               clone_info_msg_t msg;
-              process.comm_up().recv(mpi::any_source, status->tag(), msg);
-              if (tasks[msg.task_id].on_memory() && tasks[msg.task_id].is_running(msg.clone_id)) {
+              process.comm_ctrl().recv(mpi::any_source, status->tag(), msg);
+              if (msg.info.progress() < 1) {
+                std::clog << logger::header() << "progress report: "
+                          << logger::clone(msg.task_id, msg.clone_id) << " is " << msg.info.phase()
+                          << " (" << precision(msg.info.progress() * 100, 3) << "% done)\n";
+                if (tasks[msg.task_id].on_memory() && tasks[msg.task_id].is_running(msg.clone_id))
+                  check_queue.push(next_report(msg.task_id, msg.clone_id, msg.group_id,
+                    opt.report_interval));
+              } else {
                 tasks[msg.task_id].info_updated(msg.clone_id, msg.info);
-                if (msg.info.progress() < 1) {
-                  // tasks[msg.task_id].save();
-                  if (status->tag() == mcmp_tag::clone_checkpoint) {
-                    check_queue.push(next_checkpoint(msg.task_id, msg.clone_id, msg.group_id,
-                      opt.checkpoint_interval));
-                    std::clog << log_header() << "regular checkpoint: "
-                              << clone_name(msg.task_id, msg.clone_id) << " is " << msg.info.phase()
-                              << " (" << precision(msg.info.progress() * 100, 3) << "% done)\n";
-                  } else  {
-                    check_queue.push(next_check(msg.task_id, msg.clone_id, msg.group_id, opt.min_check_interval,
-                      opt.max_check_interval, msg.info.elapsed(), msg.info.progress()));
-                    std::clog << log_header() << "progress report: "
-                              << clone_name(msg.task_id, msg.clone_id) << " is " << msg.info.phase()
-                              << " (" << precision(msg.info.progress() * 100, 3) << "% done)\n";
-                  }
-                } else {
-                  tasks[msg.task_id].halt_clone(proxy, msg.clone_id);
-                  std::clog << log_header() << clone_name(msg.task_id, msg.clone_id) << " finished"
-                            << " on " << pg_name(msg.group_id) << std::endl;
-                }
+                tasks[msg.task_id].halt_clone(proxy, msg.clone_id, msg.group_id);
               }
+            } else if (status->tag() == mcmp_tag::clone_checkpoint) {
+              clone_info_msg_t msg;
+              process.comm_ctrl().recv(mpi::any_source, status->tag(), msg);
+              std::clog << logger::header() << "regular checkpoint: "
+                        << logger::clone(msg.task_id, msg.clone_id) << " is " << msg.info.phase()
+                        << " (" << precision(msg.info.progress() * 100, 3) << "% done)\n";
+              if (tasks[msg.task_id].on_memory() && tasks[msg.task_id].is_running(msg.clone_id))
+                tasks[msg.task_id].info_updated(msg.clone_id, msg.info);
+              check_queue.push(next_checkpoint(msg.task_id, msg.clone_id, msg.group_id,
+                opt.checkpoint_interval));
             } else if (status->tag() == mcmp_tag::clone_suspend) {
               clone_info_msg_t msg;
-              process.comm_up().recv(mpi::any_source, status->tag(), msg);
-              tasks[msg.task_id].clone_suspended(msg.clone_id, msg.info);
-              // tasks[msg.task_id].save();
+              process.comm_ctrl().recv(mpi::any_source, status->tag(), msg);
+              tasks[msg.task_id].clone_suspended(msg.clone_id, msg.group_id, msg.info);
               if (tasks[msg.task_id].num_running() == 0) {
                 tasks[msg.task_id].save();
                 tasks[msg.task_id].halt();
                 save_tasks(file_out, simname, file_in_str, file_out_str, tasks);
               }
               process.release(msg.group_id);
-              std::clog << log_header() << clone_name(msg.task_id, msg.clone_id)
-                        << " suspended (" << precision(msg.info.progress() * 100, 3) << "% done)"
-                        << " on " << pg_name(msg.group_id) << std::endl;
             } else if (status->tag() == mcmp_tag::clone_halt) {
               clone_halt_msg_t msg;
-              process.comm_up().recv(mpi::any_source, status->tag(), msg);
+              process.comm_ctrl().recv(mpi::any_source, status->tag(), msg);
               task_status_t old_status = tasks[msg.task_id].status();
               tasks[msg.task_id].clone_halted(msg.clone_id);
-              // tasks[msg.task_id].save();
               if (old_status != task_status::Continuing && old_status != task_status::Idling &&
                   (tasks[msg.task_id].status() == task_status::Continuing ||
                    tasks[msg.task_id].status() == task_status::Idling))
@@ -363,43 +352,51 @@ int start(int argc, char** argv) {
               std::clog << "Warning: ignoring a message with an unknown tag " << status->tag()
                         << std::endl;
             }
+          } else if (clone_ptr && clone_ptr->halted()) {
+            tid_t tid = clone_ptr->task_id();
+            cid_t cid = clone_ptr->clone_id();
+            double progress = tasks[tid].progress();
+            tasks[tid].info_updated(cid, clone_ptr->info());
+            tasks[tid].halt_clone(proxy, cid);
+            if (progress < 1 && tasks[tid].progress() >= 1) ++num_finished_tasks;
+            save_tasks(file_out, simname, file_in_str, file_out_str, tasks);
+            process.release(0);
+          } else if (clone_ptr && process.is_halting()) {
+            tid_t tid = clone_ptr->task_id();
+            cid_t cid = clone_ptr->clone_id();
+            tasks[tid].suspend_clone(proxy, cid);
+            process.release(0);
           } else if (!process.is_halting() && process.num_free() && task_queue.size()) {
-            // dispatch a new/suspended clone
             process_group g = process.allocate();
             tid_t tid = task_queue.top().task_id;
             task_queue.pop();
-            bool is_new;
-            cid_t cid;
-            boost::tie(cid, is_new) = tasks[tid].dispatch_clone(proxy, g);
-            check_queue.push(next_checkpoint(tid, cid, g.group_id, opt.checkpoint_interval));
-            check_queue.push(next_check(tid, cid, g.group_id, opt.min_check_interval));
-            if (tasks[tid].can_dispatch())
-              task_queue.push(task_queue_t::value_type(tasks[tid]));
-            if (is_new)
-              std::clog << log_header() << "dispatching a new " << clone_name(tid, cid)
-                        << " on " << pg_name(g.group_id) << std::endl;
-            else
-              std::clog << log_header() << "resuming a suspended " << clone_name(tid, cid)
-                        << " on " << pg_name(g.group_id) << std::endl;
+            boost::optional<cid_t> cid = tasks[tid].dispatch_clone(proxy, g);
+            if (cid) {
+              check_queue.push(next_checkpoint(tid, *cid, g.group_id, opt.checkpoint_interval));
+              check_queue.push(next_report(tid, *cid, g.group_id, opt.report_interval));
+              if (tasks[tid].can_dispatch()) task_queue.push(task_queue_t::value_type(tasks[tid]));
+            } else {
+              process.release(g);
+            }
           } else if (!process.is_halting() && check_queue.size() && check_queue.top().due()) {
             check_queue_t::value_type q = check_queue.top();
             check_queue.pop();
             if (q.type == check_type::taskinfo) {
               print_taskinfo(std::clog, tasks);
-              BOOST_FOREACH(task& t, tasks) {
-                if (t.status() == task_status::Running || t.status() == task_status::Continuing)
-                  t.save();
-              }
               save_tasks(file_out, simname, file_in_str, file_out_str, tasks);
               check_queue.push(next_taskinfo(opt.checkpoint_interval));
             } else if (q.type == check_type::checkpoint) {
-              // regular checkpoint
-              if (tasks[q.task_id].on_memory() && tasks[q.task_id].is_running(q.clone_id))
+              if (tasks[q.task_id].on_memory() && tasks[q.task_id].is_running(q.clone_id)) {
                 tasks[q.task_id].checkpoint(proxy, q.clone_id);
+                check_queue.push(next_checkpoint(q.task_id, q.clone_id, q.group_id,
+                                                 opt.checkpoint_interval));
+              }
             } else {
-              // regular progress check
-              if (tasks[q.task_id].on_memory() && tasks[q.task_id].is_running(q.clone_id))
-                tasks[q.task_id].update_info(proxy, q.clone_id);
+              if (tasks[q.task_id].on_memory() && tasks[q.task_id].is_running(q.clone_id)) {
+                tasks[q.task_id].report(proxy, q.clone_id);
+                check_queue.push(next_report(q.task_id, q.clone_id, q.group_id,
+                                             opt.report_interval));
+              }
             }
           } else {
             break;
@@ -411,19 +408,18 @@ int start(int argc, char** argv) {
 
         // work some
         clone_ptr->run();
-        if (clone_ptr->halted()) {
+        if (!is_master() && clone_ptr->halted()) {
           delete clone_ptr;
           clone_ptr = 0;
         }
 
       } else {
 
-        // create a clone
-        if (process.comm_down().iprobe(0, mcmp_tag::clone_create)) {
+        if (!is_master() && process.comm_ctrl().iprobe(0, mcmp_tag::clone_create)) {
+          // create a clone
           clone_create_msg_t msg;
-          process.comm_down().recv(0, mcmp_tag::clone_create, msg);
-          clone_ptr = new clone_mpi(process.comm_down(), process.comm_up(), process.comm_work(),
-            msg);
+          process.comm_ctrl().recv(0, mcmp_tag::clone_create, msg);
+          clone_ptr = new clone_mpi(process.comm_ctrl(), process.comm_work(), msg);
         }
 
       }
@@ -432,11 +428,12 @@ int start(int argc, char** argv) {
       if (process.check_halted()) {
         if (is_master()) {
           print_taskinfo(std::clog, tasks);
-          std::clog << log_header() << "all processes halted\n";
+          std::clog << logger::header() << "all processes halted\n";
           if (opt.auto_evaluate) {
-            std::clog << log_header() << "starting evaluation on " << alps::hostname() << std::endl;
+            std::clog << logger::header() << "starting evaluation on "
+                      << alps::hostname() << std::endl;
             BOOST_FOREACH(task& t, tasks) t.evaluate();
-            std::clog << scheduler::log_header() << "all tasks evaluated\n";
+            std::clog << logger::header() << "all tasks evaluated\n";
           }
         }
         break;
@@ -448,6 +445,6 @@ int start(int argc, char** argv) {
   return 0;
 }
 
-} // namespace scheduler
-} // namespace parapack
-} // namespace alps
+} // end namespace scheduler
+} // end namespace parapack
+} // end namespace alps

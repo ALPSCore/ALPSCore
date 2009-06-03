@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -29,6 +29,7 @@
 #define PARAPACK_CLONE_H
 
 #include "clone_info.h"
+#include "clone_timer.h"
 #include "worker_factory.h"
 #include "types.h"
 
@@ -51,7 +52,6 @@ public:
   virtual ~abstract_clone() {}
   virtual void run() = 0;
   virtual bool halted() const = 0;
-  virtual double progress() const = 0;
   virtual clone_info const& info() const = 0;
 
   virtual void load(IDump&) = 0;
@@ -59,13 +59,12 @@ public:
 
   virtual void checkpoint() = 0;
   virtual void suspend() = 0;
-  virtual void halt() = 0;
 };
 
 class clone : public abstract_clone {
 public:
   clone(tid_t tid, cid_t cid, Parameters const& params, boost::filesystem::path const& basedir,
-    std::string const& base, bool is_new);
+    std::string const& base, clone_timer::duration_t const& check_interval, bool is_new);
   virtual ~clone();
 
   tid_t task_id() const { return task_id_; }
@@ -73,7 +72,6 @@ public:
 
   void run();
   bool halted() const;
-  double progress() const;
   clone_info const& info() const;
 
   void load(IDump& dump);
@@ -81,9 +79,11 @@ public:
 
   void checkpoint();
   void suspend();
-  void halt();
 
   void output() const;
+
+protected:
+  void do_halt();
 
 private:
   tid_t task_id_;
@@ -94,6 +94,9 @@ private:
   boost::filesystem::path basedir_;
   clone_info info_;
   std::vector<ObservableSet> measurements_;
+
+  clone_timer timer_;
+  clone_timer::loops_t loops_;
 
   boost::shared_ptr<parapack::abstract_worker> worker_;
 };

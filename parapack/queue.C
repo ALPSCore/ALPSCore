@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -60,27 +60,12 @@ check_queue_element_t next_checkpoint(uint32_t tid, uint32_t cid, uint32_t gid,
   return check_queue_element_t(check_type::checkpoint, check, tid, cid, gid);
 }
 
-check_queue_element_t next_check(tid_t tid, cid_t cid, gid_t gid,
-  boost::posix_time::time_duration const& t_min, boost::posix_time::time_duration const& t_max,
-  boost::posix_time::time_duration const& elapsed, double progress) {
-  long sec = elapsed.total_seconds();
-  if (progress > 0)
-    sec = int((0.25 * (1 - progress) / progress) * sec);
-  boost::posix_time::time_duration t = boost::posix_time::seconds(sec);
-  if (t < t_min) t = t_min;
-  if (t > t_max) t = t_max;
-  boost::posix_time::ptime check =  boost::posix_time::second_clock::local_time() + t;
-  // std::cerr << "debug: next check of clone[" << tid << "," << cid << "] will be at "
+check_queue_element_t next_report(tid_t tid, cid_t cid, gid_t gid,
+  boost::posix_time::time_duration const& interval) {
+  boost::posix_time::ptime check =  boost::posix_time::second_clock::local_time() + interval;
+  // std::cerr << "debug: next report of clone[" << tid << "," << cid << "] will be at "
   //           << to_simple_string(check) << std::endl;
-  return check_queue_element_t(check_type::check, check, tid, cid, gid);
-}
-
-check_queue_element_t next_check(tid_t tid, cid_t cid, gid_t gid,
-  boost::posix_time::time_duration const& t_min) {
-  boost::posix_time::ptime check =  boost::posix_time::second_clock::local_time() + t_min;
-  // std::cerr << "debug: next check of clone[" << tid << "," << cid << "] will be at "
-  //           << to_simple_string(check) << std::endl;
-  return check_queue_element_t(check_type::check, check, tid, cid, gid);
+  return check_queue_element_t(check_type::report, check, tid, cid, gid);
 }
 
 } // end namespace alps

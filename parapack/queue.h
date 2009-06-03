@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -58,7 +58,7 @@ struct check_type {
   enum check_type_t {
     taskinfo,
     checkpoint,
-    check
+    report
   };
 };
 typedef check_type::check_type_t check_type_t;
@@ -82,12 +82,8 @@ check_queue_element_t next_taskinfo(boost::posix_time::time_duration const& inte
 check_queue_element_t next_checkpoint(tid_t tid, cid_t cid, gid_t gid,
   boost::posix_time::time_duration const& interval);
 
-check_queue_element_t next_check(tid_t tid, cid_t cid, gid_t gid,
-  boost::posix_time::time_duration const& t_min, boost::posix_time::time_duration const& t_max,
-  boost::posix_time::time_duration const& elapsed, double progress);
-
-check_queue_element_t next_check(tid_t tid, cid_t cid, gid_t gid,
-  boost::posix_time::time_duration const& t_min);
+check_queue_element_t next_report(tid_t tid, cid_t cid, gid_t gid,
+  boost::posix_time::time_duration const& interval);
 
 typedef std::priority_queue<check_queue_element_t> check_queue_t;
 

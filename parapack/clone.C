@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -79,9 +79,9 @@ bool load_observable(boost::filesystem::path const& file, std::vector<Observable
   return load_observable(dp, obs);
 }
 
-clone::clone(tid_t tid, cid_t cid, Parameters const& params,
-  boost::filesystem::path const& basedir, std::string const& base, bool is_new)
-  : task_id_(tid), clone_id_(cid), params_(params), basedir_(basedir) {
+clone::clone(tid_t tid, cid_t cid, Parameters const& params, boost::filesystem::path const& basedir,
+  std::string const& base, clone_timer::duration_t const& check_interval, bool is_new)
+  : task_id_(tid), clone_id_(cid), params_(params), basedir_(basedir), timer_(check_interval) {
   params_["DIR_NAME"] = basedir_.native_file_string();
   params_["BASE_NAME"] = base;
 
@@ -104,33 +104,37 @@ clone::clone(tid_t tid, cid_t cid, Parameters const& params,
   if (is_new && worker_->progress() >= 1) {
     info_.set_progress(worker_->progress());
     info_.stop();
-    halt();
+    do_halt();
   }
+
+  if (!is_new) timer_.reset(worker_->progress());
+  loops_ = 1;
 }
 
 clone::~clone() {}
 
 void clone::run() {
-  bool thermalized = worker_->is_thermalized();
-  double progress = worker_->progress();
-
-  worker_->run(measurements_);
-
+  for (clone_timer::loops_t i = 0; i < loops_; ++i) {
+    bool thermalized = worker_->is_thermalized();
+    double progress = worker_->progress();
+    worker_->run(measurements_);
+    if (!thermalized && worker_->is_thermalized()) {
+      BOOST_FOREACH(alps::ObservableSet& m, measurements_) m.reset(true);
+      info_.stop();
+      info_.start("running");
+    }
+    if (progress < 1 && worker_->progress() >= 1) {
+      info_.set_progress(worker_->progress());
+      info_.stop();
+      do_halt();
+      return;
+    }
+  }
   info_.set_progress(worker_->progress());
-  if (!thermalized && worker_->is_thermalized()) {
-    info_.stop();
-    BOOST_FOREACH(alps::ObservableSet& m, measurements_) m.reset(true);
-    info_.start("running");
-  }
-  if (progress < 1 && info_.progress() >= 1) {
-    info_.stop();
-    halt();
-  }
+  loops_ = timer_.next_loops(loops_);
 }
 
 bool clone::halted() const { return !worker_; }
-
-double clone::progress() const { return info_.progress(); }
 
 clone_info const& clone::info() const { return info_; }
 
@@ -168,7 +172,7 @@ void clone::suspend() {
   worker_.reset();
 }
 
-void clone::halt() {
+void clone::do_halt() {
   if (info_.progress() < 1)
     boost::throw_exception(std::logic_error("clone is not finished"));
   OXDRFileDump dp(complete(boost::filesystem::path(info_.dumpfile()), basedir_));

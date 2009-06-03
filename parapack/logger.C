@@ -25,51 +25,20 @@
 *
 *****************************************************************************/
 
-#ifndef PARAPACK_CLONE_PROXY_H
-#define PARAPACK_CLONE_PROXY_H
-
-#include "clone.h"
+#include "logger.h"
+#include <boost/lexical_cast.hpp>
 
 namespace alps {
 
-class clone_proxy {
-public:
-  clone_proxy(clone*& clone_ptr, clone_timer::duration_t const& check_interval)
-    : clone_ptr_(clone_ptr), interval_(check_interval) {}
+std::string logger::header() {
+  return std::string("[") + to_simple_string(boost::posix_time::second_clock::local_time()) + "]: ";
+}
+std::string logger::clone(alps::tid_t tid, alps::cid_t cid) {
+  return std::string("clone[") + boost::lexical_cast<std::string>(tid+1) + ',' +
+    boost::lexical_cast<std::string>(cid+1) + ']';
+}
+std::string logger::group(alps::gid_t gid) {
+  return std::string("processgroup[") + boost::lexical_cast<std::string>(gid+1) + ']';
+}
 
-  bool is_local(Process const&) const { return true; }
-
-  void start(tid_t tid, cid_t cid, process_group const&, Parameters const& params,
-    boost::filesystem::path const& basedir, std::string const& base, bool is_new) {
-    clone_ptr_ = new clone(tid, cid, params, basedir, base, interval_, is_new);
-  }
-
-  clone_info const& info(Process const&) const {
-    if (!clone_ptr_)
-      boost::throw_exception(std::logic_error("clone_proxy::info()"));
-    return clone_ptr_->info();
-  }
-
-  void checkpoint(Process const&) { if (clone_ptr_) clone_ptr_->checkpoint(); }
-
-  void update_info(Process const&) const {}
-
-  void suspend(Process const&) { if (clone_ptr_) clone_ptr_->suspend(); }
-
-  void halt(Process const&) { /* if (clone_ptr_) clone_ptr_->halt(); */ }
-
-  void destroy(Process const&) {
-    if (clone_ptr_) {
-      delete clone_ptr_;
-      clone_ptr_ = 0;
-    }
-  }
-
-private:
-  clone*& clone_ptr_;
-  clone_timer::duration_t interval_;
-};
-
-} // end namespace alps
-
-#endif // PARAPACK_CLONE_PROXY_H
+} // namespace alps

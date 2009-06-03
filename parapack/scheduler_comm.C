@@ -27,6 +27,7 @@
 
 #include "scheduler.h"
 #include "job_p.h"
+#include "logger.h"
 #include "queue.h"
 #include "version.h"
 
@@ -94,7 +95,7 @@ int evaluate(int argc, char **argv) {
       std::string file_out_str;
       std::vector<task> tasks;
 
-      std::clog << scheduler::log_header() << "starting evaluation on "
+      std::clog << logger::header() << "starting evaluation on "
                 << alps::hostname() << std::endl;
       int t = scheduler::load_filename(file, file_in_str, file_out_str);
       if (t == 1) {
@@ -113,7 +114,7 @@ int evaluate(int argc, char **argv) {
         task t(file);
         t.evaluate();
       }
-      std::clog << scheduler::log_header() << "all tasks evaluated\n";
+      std::clog << logger::header() << "all tasks evaluated\n";
     }
 
 #ifndef BOOST_NO_EXCEPTIONS
@@ -145,19 +146,19 @@ std::string alps_version() {
   return ALPS_VERSION_STRING "; " PARAPACK_VERSION_STRING "; configured on " ALPS_CONFIG_HOST " by " ALPS_CONFIG_USER "; compiled on " ALPS_COMPILE_DATE;
 }
 
-std::string log_header() {
-  return
-    std::string("[") + to_simple_string(boost::posix_time::second_clock::local_time()) + "]: ";
-}
+// std::string log_header() {
+//   return
+//     std::string("[") + to_simple_string(boost::posix_time::second_clock::local_time()) + "]: ";
+// }
 
-std::string clone_name(alps::tid_t tid, alps::cid_t cid) {
-  return std::string("clone[") + boost::lexical_cast<std::string>(tid+1) + ',' +
-    boost::lexical_cast<std::string>(cid+1) + ']';
-}
+// std::string clone_name(alps::tid_t tid, alps::cid_t cid) {
+//   return std::string("clone[") + boost::lexical_cast<std::string>(tid+1) + ',' +
+//     boost::lexical_cast<std::string>(cid+1) + ']';
+// }
 
-std::string pg_name(alps::gid_t gid) {
-  return std::string("processgroup[") + boost::lexical_cast<std::string>(gid+1) + ']';
-}
+// std::string pg_name(alps::gid_t gid) {
+//   return std::string("processgroup[") + boost::lexical_cast<std::string>(gid+1) + ']';
+// }
 
 void print_taskinfo(std::ostream& os, std::vector<alps::task> const& tasks) {
   uint32_t num_new = 0;
@@ -190,7 +191,7 @@ void print_taskinfo(std::ostream& os, std::vector<alps::task> const& tasks) {
       break;
     }
   }
-  os << log_header() << "task status: "
+  os << logger::header() << "task status: "
      << "total number of tasks = " << tasks.size() << std::endl
      << "  new = " << num_new
      << ", running = " << num_running

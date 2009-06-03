@@ -30,10 +30,12 @@
 
 #include "clone_info.h"
 #include "integer_range.h"
+#include "logger.h"
 #include "types.h"
 #include <alps/parser/xmlstream.h>
 #include <alps/scheduler.h>
 #include <alps/config.h>
+#include <boost/optional.hpp>
 #include <deque>
 #include <set>
 #include <vector>
@@ -70,12 +72,15 @@ public:
   void check_parameter();
 
   bool can_dispatch() const;
+
   template<typename PROXY>
-  std::pair<cid_t, bool> dispatch_clone(PROXY& proxy,
-    process_group const& procs = process_group()) {
+  boost::optional<cid_t>
+  dispatch_clone(PROXY& proxy, process_group const& procs = process_group()) {
     if (!on_memory()) load();
-    if (!can_dispatch())
-      boost::throw_exception(std::logic_error("no more clones can be dispatched"));
+    if (!can_dispatch()) {
+      if (num_running() == 0) halt();
+      return boost::optional<cid_t>();
+    }
     bool is_new;
     cid_t cid;
     Process master = (procs.process_list.size() ? procs.process_list[0] : Process());
@@ -96,7 +101,15 @@ public:
     proxy.start(task_id_, cid, procs, params_, basedir_, base_, is_new);
     boost::tie(weight_, dump_weight_) = calc_weight();
     status_ = calc_status();
-    return std::make_pair(cid, is_new);
+    if (is_new) {
+      std::clog << logger::header() << "dispatching a new " << logger::clone(task_id_, cid)
+                << " on " << logger::group(procs.group_id) << std::endl;
+    } else {
+      std::clog << logger::header() << "resuming a suspended " << logger::clone(task_id_, cid)
+                << " on " << logger::group(procs.group_id) << std::endl;
+      report(proxy, cid);
+    }
+    return boost::optional<cid_t>(cid);
   }
 
   bool is_running(cid_t cid) const {
@@ -104,39 +117,86 @@ public:
   }
 
   template<typename PROXY>
-  void checkpoint(PROXY& proxy, cid_t cid) const {
-    if (clone_status_[cid] == clone_status::Running)
+  void checkpoint(PROXY& proxy, cid_t cid) {
+    if (clone_status_[cid] == clone_status::Running) {
       proxy.checkpoint(clone_master_[cid]);
-  }
-
-  template<typename PROXY>
-  void update_info(PROXY& proxy, cid_t cid) const {
-    if (clone_status_[cid] == clone_status::Running)
-      proxy.update_info(clone_master_[cid]);
-  }
-
-  template<typename PROXY>
-  void suspend_clones(PROXY& proxy) {
-    if (on_memory()) {
-      BOOST_FOREACH(cid_t cid, running_) {
-        if (clone_status_[cid] == clone_status::Running) {
-          clone_status_[cid] = clone_status::Stopping;
-          proxy.suspend(clone_master_[cid]);
-        }
+      if (proxy.is_local(clone_master_[cid])) {
+        clone_info const& info = proxy.info(clone_master_[cid]);
+        std::clog << logger::header() << "regular checkpoint: "
+                  << logger::clone(task_id_, cid) << " is " << info.phase()
+                  << " (" << precision(info.progress() * 100, 3) << "% done)\n";
+        info_updated(cid, info);
+        save();
       }
     }
   }
 
   template<typename PROXY>
-  void halt_clone(PROXY& proxy, cid_t cid) {
-    if (clone_status_[cid] != clone_status::Idling)
-      boost::throw_exception(std::logic_error("clone is not idling"));
-    clone_status_[cid] = clone_status::Stopping;
-    proxy.halt(clone_master_[cid]);
+  void report(PROXY& proxy, cid_t cid) {
+    if (clone_status_[cid] == clone_status::Running) {
+      proxy.update_info(clone_master_[cid]);
+      if (proxy.is_local(clone_master_[cid])) {
+        clone_info const& info = proxy.info(clone_master_[cid]);
+        std::clog << logger::header() << "progress report: "
+                  << logger::clone(task_id_, cid) << " is " << info.phase()
+                  << " (" << precision(info.progress() * 100, 3) << "% done)\n";
+      }
+    }
+  }
+
+  template<typename PROXY>
+  void suspend_remote_clones(PROXY& proxy) {
+    if (on_memory()) {
+      BOOST_FOREACH(cid_t cid, running_) {
+        if (clone_status_[cid] == clone_status::Running && !proxy.is_local(clone_master_[cid])) {
+          clone_status_[cid] = clone_status::Stopping;
+          proxy.suspend(clone_master_[cid]);
+        }
+      }
+      if (num_running() == 0) {
+        save();
+        halt();
+      }
+    }
+  }
+
+  template<typename PROXY>
+  void suspend_clone(PROXY& proxy, cid_t cid) {
+    if (clone_status_[cid] == clone_status::Running && proxy.is_local(clone_master_[cid])) {
+      clone_status_[cid] = clone_status::Stopping;
+      proxy.suspend(clone_master_[cid]);
+      clone_info const& info = proxy.info(clone_master_[cid]);
+      clone_suspended(cid, 0, info);
+      proxy.destroy(clone_master_[cid]);
+      if (num_running() == 0) {
+        save();
+        halt();
+      }
+    }
+  }
+
+  template<typename PROXY>
+  void halt_clone(PROXY& proxy, cid_t cid, gid_t gid = 0) {
+    if (clone_status_[cid] == clone_status::Idling) {
+      std::clog << logger::header() << logger::clone(task_id_, cid) << " finished"
+                << " on " << logger::group(gid) << std::endl;
+      clone_status_[cid] = clone_status::Stopping;
+      proxy.halt(clone_master_[cid]);
+      if (proxy.is_local(clone_master_[cid])) {
+        clone_info const& info = proxy.info(clone_master_[cid]);
+        clone_halted(cid, info);
+      }
+      proxy.destroy(clone_master_[cid]);
+      if (num_running() == 0) {
+        save();
+        halt();
+      }
+    }
   }
 
   void info_updated(cid_t cid, clone_info const& info);
-  void clone_suspended(cid_t cid, clone_info const& info);
+  void clone_suspended(cid_t cid, gid_t gid, clone_info const& info);
+  void clone_halted(cid_t cid, clone_info const& info);
   void clone_halted(cid_t cid);
 
   void evaluate();

@@ -57,11 +57,14 @@ void print_license(std::ostream& os = std::cout);
 
 std::string alps_version();
 
-std::string log_header();
+// moved to logger.h
+// std::string log_header();
 
-std::string clone_name(alps::tid_t tid, alps::cid_t cid);
+// moved to logger.h
+// std::string clone_name(alps::tid_t tid, alps::cid_t cid);
 
-std::string pg_name(alps::gid_t gid);
+// moved to logger.h
+// std::string pg_name(alps::gid_t gid);
 
 void print_taskinfo(std::ostream& os, std::vector<alps::task> const& tasks);
 

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -52,12 +52,11 @@ public:
   process_helper_mpi(mpi::communicator const& comm, int np);
   ~process_helper_mpi();
 
-  mpi::communicator const& comm_down() const { return world_d_; }
-  mpi::communicator const& comm_up() const { return world_u_; }
+  mpi::communicator const& comm_ctrl() const { return ctrl_; }
   mpi::communicator const& comm_work() const { return work_; }
   int num_procs_per_group() const { return np_; }
 
-  int num_total_processes() const { return world_d_.size(); }
+  int num_total_processes() const { return ctrl_.size(); }
   int num_groups() const { return status_.size(); }
   int num_free() const { return free_.size(); }
   int num_allocated() const { return num_groups() - num_free(); }
@@ -71,9 +70,7 @@ public:
   bool check_halted();
 
 private:
-  mpi::communicator world_d_;
-  mpi::communicator world_u_;
-  mpi::communicator work_;
+  mpi::communicator ctrl_, work_;
 
   // number of processes in each group
   int np_;

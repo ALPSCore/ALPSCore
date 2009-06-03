@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -41,9 +41,9 @@ option::option(int argc, char** argv, int np, int pid)
   : time_limit(), procs_per_clone(1), check_parameter(false), auto_evaluate(false),
     evaluate_only(false), jobfiles(), valid(true) {
 
+  check_interval = pt::seconds(1);
   checkpoint_interval = pt::seconds(3600);
-  min_check_interval = pt::seconds(60);
-  max_check_interval = pt::seconds(900);
+  report_interval = pt::seconds(600);
 
   po::options_description desc("Allowed options");
   desc.add_options()
@@ -51,13 +51,13 @@ option::option(int argc, char** argv, int np, int pid)
     ("license,l", "print license conditions")
     ("auto-evaluate", "evaluate observables upon halting")
     ("check-parameter", "perform parameter checking")
+    ("check-interval", po::value<int>(),
+     "time between status check [unit = sec; default = 1s]")
     ("checkpoint-interval", po::value<int>(),
-     "time between checkpointing  [unit = sec; default = 3600s]")
+     "time between checkpointing [unit = sec; default = 3600s]")
     ("evaluate", "evaluation mode")
-    ("min-check-interval", po::value<int>(),
-     "minimum time between progress checks of clones [unit = sec; default = 60s]")
-    ("max-check-interval", po::value<int>(),
-     "maximum time between progress checks of clones [unit = sec; default = 900s]")
+    ("report-interval", po::value<int>(),
+     "time between progress report of clones [unit = sec; default = 600s]")
     ("time-limit,t", po::value<int>(),
      "time limit for the simulation [unit = sec; defulat = no time limit]")
     ("procs-per-clone,p", po::value<int>(),
@@ -75,12 +75,12 @@ option::option(int argc, char** argv, int np, int pid)
     auto_evaluate = true;
   if (vm.count("check-parameter"))
     check_parameter = true;
+  if (vm.count("check-interval"))
+    check_interval = pt::seconds(vm["check-interval"].as<int>());
   if (vm.count("checkpoint-interval"))
     checkpoint_interval = pt::seconds(vm["checkpoint-interval"].as<int>());
-  if (vm.count("min-check-interval"))
-    min_check_interval = pt::seconds(vm["min-check-interval"].as<int>());
-  if (vm.count("max-check-interval"))
-    max_check_interval = pt::seconds(vm["max-check-interval"].as<int>());
+  if (vm.count("report-interval"))
+    report_interval = pt::seconds(vm["report-interval"].as<int>());
   if (vm.count("evaluate"))
     evaluate_only = true;
   if (vm.count("time-limit"))
@@ -99,10 +99,6 @@ option::option(int argc, char** argv, int np, int pid)
     }
     if (procs_per_clone > np) {
       std::cerr << "Error: too large number of processors per clone\n";
-      valid = false;
-    }
-    if (min_check_interval > max_check_interval) {
-      std::cerr << "Error: max_check_interval must be longer than min_check_interval\n";
       valid = false;
     }
   }
@@ -124,8 +120,7 @@ evaluate_option::evaluate_option(int argc, char** argv) : jobfiles(), valid(true
   desc.add_options()
     ("help,h", "produce help message")
     ("license,l", "print license conditions")
-    ("input-file", po::value<std::vector<std::string> >(),
-     "input master XML files");
+    ("input-file", po::value<std::vector<std::string> >(), "input master XML files");
   po::positional_options_description p;
   p.add("input-file", -1);
 

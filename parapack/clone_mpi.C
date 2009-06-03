@@ -33,16 +33,11 @@
 
 namespace alps {
 
-clone_mpi::clone_mpi(boost::mpi::communicator const& world_d,
-  boost::mpi::communicator const& world_u, boost::mpi::communicator const& work,
-  clone_create_msg_t const& msg)
-  : world_d_(world_d), world_u_(world_u), work_(work) {
-
-  task_id_ = msg.task_id;
-  clone_id_ = msg.clone_id;
-  group_id_ = msg.group_id;
-  params_ = msg.params;
-  basedir_ = boost::filesystem::path(msg.basedir);
+clone_mpi::clone_mpi(boost::mpi::communicator const& ctrl,
+  boost::mpi::communicator const& work, clone_create_msg_t const& msg)
+  : ctrl_(ctrl), work_(work), task_id_(msg.task_id), clone_id_(msg.clone_id),
+    group_id_(msg.group_id), params_(msg.params), basedir_(boost::filesystem::path(msg.basedir)),
+    timer_(msg.check_interval) {
   bool is_new = msg.is_new;
 
   params_["DIR_NAME"] = msg.basedir;
@@ -60,13 +55,10 @@ clone_mpi::clone_mpi(boost::mpi::communicator const& world_d,
   if (!is_new) {
     IXDRFileDump dp(complete(boost::filesystem::path(info_.dumpfile()), basedir_));
     this->load(dp);
-    send_info(mcmp_tag::clone_info);
   }
 
-  if (work_.rank() == 0 && is_new && worker_->is_thermalized()) {
-    // no thermalization steps
+  if (is_new && worker_->is_thermalized()) // no thermalization steps
     BOOST_FOREACH(alps::ObservableSet& m, measurements_) m.reset(true);
-  }
 
   if (is_new || info_.progress() < 1)
     info_.start((worker_->is_thermalized()) ? "running" : "equilibrating");
@@ -75,17 +67,17 @@ clone_mpi::clone_mpi(boost::mpi::communicator const& world_d,
     info_.stop();
     send_info(mcmp_tag::clone_info);
   }
+
+  if (work_.rank() == 0 && !is_new) timer_.reset(worker_->progress());
+  loops_ = 1;
 }
 
 clone_mpi::~clone_mpi() {}
 
 void clone_mpi::run() {
-  bool thermalized = worker_->is_thermalized();
-  double progress = worker_->progress();
-
-  int tag = (progress < 1) ? mcmp_tag::do_step : mcmp_tag::do_nothing;
-  if (work_.rank() == 0 && world_d_.iprobe(0, boost::mpi::any_tag)) {
-    boost::mpi::status stat = world_d_.recv(0, boost::mpi::any_tag);
+  int tag = (info_.progress() < 1) ? mcmp_tag::do_step : mcmp_tag::do_nothing;
+  if (work_.rank() == 0 && ctrl_.iprobe(0, boost::mpi::any_tag)) {
+    boost::mpi::status stat = ctrl_.recv(0, boost::mpi::any_tag);
     tag = stat.tag();
     if (tag == mcmp_tag::clone_suspend && info_.progress() >= 1)
       tag = mcmp_tag::clone_halt;
@@ -94,21 +86,49 @@ void clone_mpi::run() {
 
   switch (tag) {
   case mcmp_tag::do_step :
-    worker_->run(measurements_);
+    for (clone_timer::loops_t i = 0; i < loops_; ++i) {
+      bool thermalized = worker_->is_thermalized();
+      double progress = worker_->progress();
+      worker_->run(measurements_);
+      if (!thermalized && worker_->is_thermalized()) {
+        BOOST_FOREACH(alps::ObservableSet& m, measurements_) m.reset(true);
+        if (work_.rank() == 0) {
+          info_.stop();
+          info_.start("running");
+        }
+      }
+      if (progress < 1 && worker_->progress() >= 1) {
+        if (work_.rank() == 0) {
+          info_.set_progress(worker_->progress());
+          info_.stop();
+        }
+        if (group_id_ == 0) {
+          do_halt();
+        } else {
+          if (work_.rank() == 0) send_info(mcmp_tag::clone_info);
+        }
+        return;
+      }
+    }
+    if (work_.rank() == 0) {
+      info_.set_progress(worker_->progress());
+      loops_ = timer_.next_loops(loops_);
+    }
+    broadcast(work_, loops_, 0);
     break;
   case mcmp_tag::clone_info :
     send_info(mcmp_tag::clone_info);
     break;
   case mcmp_tag::clone_checkpoint :
-    checkpoint();
+    do_checkpoint();
     send_info(mcmp_tag::clone_checkpoint);
     break;
   case mcmp_tag::clone_suspend :
-    this->suspend();
+    this->do_suspend();
     send_info(mcmp_tag::clone_suspend);
     break;
   case mcmp_tag::clone_halt :
-    this->halt();
+    this->do_halt();
     send_halted();
     break;
   case mcmp_tag::do_nothing :
@@ -117,32 +137,31 @@ void clone_mpi::run() {
     if (work_.rank() == 0)
       std::cerr << "Warning: ignoring a message with an unknown tag " << tag << std::endl;
   }
-
-  if (worker_) {
-    if (!thermalized && worker_->is_thermalized()) {
-      BOOST_FOREACH(alps::ObservableSet& m, measurements_) m.reset(true);
-    }
-    if (work_.rank() == 0) {
-      info_.set_progress(worker_->progress());
-      if (!thermalized && worker_->is_thermalized()) {
-        info_.stop();
-        info_.start("running");
-      }
-      if (progress < 1 && info_.progress() >= 1) {
-        info_.stop();
-        send_info(mcmp_tag::clone_info);
-      }
-    }
-  }
 }
 
 void clone_mpi::checkpoint() {
+  if (work_.rank() == 0) {
+    int tag = mcmp_tag::clone_checkpoint;
+    broadcast(work_, tag, 0);
+    do_checkpoint();
+  }
+}
+
+void clone_mpi::suspend() {
+  if (work_.rank() == 0) {
+    int tag = mcmp_tag::clone_suspend;
+    broadcast(work_, tag, 0);
+    do_suspend();
+  }
+}
+
+void clone_mpi::do_checkpoint() {
   if (work_.rank() == 0 && info_.progress() < 1) info_.stop();
   OXDRFileDump dp(complete(boost::filesystem::path(info_.dumpfile()), basedir_));
   this->save(dp);
 }
 
-void clone_mpi::suspend() {
+void clone_mpi::do_suspend() {
   if (work_.rank() == 0) info_.stop();
   OXDRFileDump dp(complete(boost::filesystem::path(info_.dumpfile()), basedir_));
   this->save(dp);
@@ -150,9 +169,11 @@ void clone_mpi::suspend() {
   worker_.reset();
 }
 
-void clone_mpi::halt() {
-  if (work_.rank() == 0 && info_.progress() < 1)
+void clone_mpi::do_halt() {
+  if (work_.rank() == 0 && info_.progress() < 1) {
+    std::cerr << "clone is not finished\n";
     boost::throw_exception(std::logic_error("clone is not finished"));
+  }
   OXDRFileDump dp(complete(boost::filesystem::path(info_.dumpfile()), basedir_));
   this->save(dp);
   work_.barrier();
@@ -161,36 +182,46 @@ void clone_mpi::halt() {
 
 bool clone_mpi::halted() const { return !worker_; }
 
-double clone_mpi::progress() const { return info_.progress(); }
-
 clone_info const& clone_mpi::info() const { return info_; }
 
 void clone_mpi::load(IDump& dp) {
   int32_t tag;
   dp >> tag;
   if (work_.rank() == 0) {
-    if (tag != parapack_dump::run_master)
+    if (tag != parapack_dump::run_master) {
+      std::cerr << "dump does not contain a master clone\n";
       boost::throw_exception(std::runtime_error("dump does not contain a master clone"));
+    }
   } else {
-    if (tag != parapack_dump::run_slave)
+    if (tag != parapack_dump::run_slave) {
+      std::cerr << "dump does not contain a slave clone\n";
       boost::throw_exception(std::runtime_error("dump does not contain a slave clone"));
+    }
   }
 
   int32_t version, np, rank;
   dp >> version >> np >> rank;
   dp.set_version(version);
 
-  if (version < parapack_dump::initial_version || version > parapack_dump::current_version)
+  if (version < parapack_dump::initial_version || version > parapack_dump::current_version) {
+    std::cerr << "The clone on dump is version " << version
+              << " but this program can read only versions between "
+              << parapack_dump::initial_version <<  " and "
+              << parapack_dump::current_version << std::endl;
     boost::throw_exception(std::runtime_error("The clone on dump is version " +
       boost::lexical_cast<std::string>(version) +
       " but this program can read only versions between " +
       boost::lexical_cast<std::string>(parapack_dump::initial_version) + " and " +
       boost::lexical_cast<std::string>(parapack_dump::current_version)));
-  if (np != work_.size())
+  }
+  if (np != work_.size()) {
+    std::cerr << "inconsistent number of processes\n";
     boost::throw_exception(std::runtime_error("inconsistent number of processes"));
-  if (rank != work_.rank())
+  }
+  if (rank != work_.rank()) {
+    std::cerr << "inconsistent rank of process\n";
     boost::throw_exception(std::runtime_error("inconsistent rank of process"));
-
+  }
   if (version >= 304) {
     dp >> params_ >> info_ >> measurements_;
   } else {
@@ -229,13 +260,17 @@ void clone_mpi::output() const{
 }
 
 void clone_mpi::send_info(mcmp_tag_t tag) {
-  if (work_.rank() == 0)
-    world_u_.send(0, tag, clone_info_msg_t(task_id_, clone_id_, group_id_, info_));
+  if (work_.rank() == 0) {
+    if (ctrl_.rank() == 0) std::cerr << "Error: sending to myself in clone_mpi::send_info()\n";
+    ctrl_.send(0, tag, clone_info_msg_t(task_id_, clone_id_, group_id_, info_));
+  }
 }
 
 void clone_mpi::send_halted() {
-  if (work_.rank() == 0)
-    world_u_.send(0, mcmp_tag::clone_halt, clone_halt_msg_t(task_id_, clone_id_, group_id_));
+  if (work_.rank() == 0) {
+    if (ctrl_.rank() == 0) std::cerr << "Error: sending to myself in clone_mpi::send_halted()\n";
+    ctrl_.send(0, mcmp_tag::clone_halt, clone_halt_msg_t(task_id_, clone_id_, group_id_));
+  }
 }
 
 } // end namespace alps
