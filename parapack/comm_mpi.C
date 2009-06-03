@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2005-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 2005-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
   mpi::communicator world;
   if (world.size() >= 4) {
     alps::process_helper_mpi process(world, 4);
-    mpi::communicator cg = process.comm_down();
+    mpi::communicator cg = process.comm_ctrl();
     mpi::communicator cl = process.comm_work();
     if (cg)
       if (cl)

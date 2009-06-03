@@ -27,6 +27,7 @@ check_PROGRAMS = \
 	alea \
 	clone_info \
 	clone_phase \
+	clone_timer \
 	exmc_optimize \
 	exp_number \
 	id2string \
@@ -65,6 +66,10 @@ clone_info_LDADD = $(LIBS_SGL)
 clone_phase_SOURCES = clone_phase.C
 clone_phase_LDFLAGS = $(LDFLAGS_SGL)
 clone_phase_LDADD = $(LIBS_SGL)
+
+clone_timer_SOURCES = clone_timer.C
+clone_timer_LDFLAGS = $(LDFLAGS_SGL)
+clone_timer_LDADD = $(LIBS_SGL)
 
 comm_mpi_SOURCES = comm_mpi.C
 comm_mpi_LDFLAGS = $(LDFLAGS_MPI)

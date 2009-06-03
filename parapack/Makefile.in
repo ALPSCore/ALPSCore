@@ -33,11 +33,11 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 check_PROGRAMS = alea$(EXEEXT) clone_info$(EXEEXT) \
-	clone_phase$(EXEEXT) exmc_optimize$(EXEEXT) \
-	exp_number$(EXEEXT) id2string$(EXEEXT) info_test$(EXEEXT) \
-	integer_range$(EXEEXT) linear_regression$(EXEEXT) \
-	percentage$(EXEEXT) time$(EXEEXT) version$(EXEEXT) \
-	wl_weight$(EXEEXT) $(am__EXEEXT_1)
+	clone_phase$(EXEEXT) clone_timer$(EXEEXT) \
+	exmc_optimize$(EXEEXT) exp_number$(EXEEXT) id2string$(EXEEXT) \
+	info_test$(EXEEXT) integer_range$(EXEEXT) \
+	linear_regression$(EXEEXT) percentage$(EXEEXT) time$(EXEEXT) \
+	version$(EXEEXT) wl_weight$(EXEEXT) $(am__EXEEXT_1)
 @HAVE_BOOST_MPI_TRUE@am__append_1 = \
 @HAVE_BOOST_MPI_TRUE@	comm_mpi \
 @HAVE_BOOST_MPI_TRUE@	collect_mpi \
@@ -101,6 +101,12 @@ clone_phase_DEPENDENCIES = $(am__DEPENDENCIES_2)
 clone_phase_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
 	$(CXXFLAGS) $(clone_phase_LDFLAGS) $(LDFLAGS) -o $@
+am_clone_timer_OBJECTS = clone_timer.$(OBJEXT)
+clone_timer_OBJECTS = $(am_clone_timer_OBJECTS)
+clone_timer_DEPENDENCIES = $(am__DEPENDENCIES_2)
+clone_timer_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
+	$(CXXFLAGS) $(clone_timer_LDFLAGS) $(LDFLAGS) -o $@
 am_collect_mpi_OBJECTS = collect_mpi.$(OBJEXT)
 collect_mpi_OBJECTS = $(am_collect_mpi_OBJECTS)
 am__DEPENDENCIES_3 = $(top_builddir)/lib/alps/libparapack-mpi.la \
@@ -215,19 +221,20 @@ CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
 SOURCES = $(alea_SOURCES) $(clone_info_SOURCES) $(clone_phase_SOURCES) \
-	$(collect_mpi_SOURCES) $(comm_mpi_SOURCES) \
-	$(exmc_optimize_SOURCES) $(exp_number_SOURCES) \
-	$(filelock_mpi_SOURCES) $(halt_mpi_SOURCES) \
-	$(id2string_SOURCES) $(info_test_SOURCES) \
+	$(clone_timer_SOURCES) $(collect_mpi_SOURCES) \
+	$(comm_mpi_SOURCES) $(exmc_optimize_SOURCES) \
+	$(exp_number_SOURCES) $(filelock_mpi_SOURCES) \
+	$(halt_mpi_SOURCES) $(id2string_SOURCES) $(info_test_SOURCES) \
 	$(info_test_mpi_SOURCES) $(integer_range_SOURCES) \
 	$(linear_regression_SOURCES) $(percentage_SOURCES) \
 	$(process_mpi_SOURCES) $(time_SOURCES) $(version_SOURCES) \
 	$(wl_weight_SOURCES)
 DIST_SOURCES = $(alea_SOURCES) $(clone_info_SOURCES) \
-	$(clone_phase_SOURCES) $(collect_mpi_SOURCES) \
-	$(comm_mpi_SOURCES) $(exmc_optimize_SOURCES) \
-	$(exp_number_SOURCES) $(filelock_mpi_SOURCES) \
-	$(halt_mpi_SOURCES) $(id2string_SOURCES) $(info_test_SOURCES) \
+	$(clone_phase_SOURCES) $(clone_timer_SOURCES) \
+	$(collect_mpi_SOURCES) $(comm_mpi_SOURCES) \
+	$(exmc_optimize_SOURCES) $(exp_number_SOURCES) \
+	$(filelock_mpi_SOURCES) $(halt_mpi_SOURCES) \
+	$(id2string_SOURCES) $(info_test_SOURCES) \
 	$(info_test_mpi_SOURCES) $(integer_range_SOURCES) \
 	$(linear_regression_SOURCES) $(percentage_SOURCES) \
 	$(process_mpi_SOURCES) $(time_SOURCES) $(version_SOURCES) \
@@ -430,6 +437,9 @@ clone_info_LDADD = $(LIBS_SGL)
 clone_phase_SOURCES = clone_phase.C
 clone_phase_LDFLAGS = $(LDFLAGS_SGL)
 clone_phase_LDADD = $(LIBS_SGL)
+clone_timer_SOURCES = clone_timer.C
+clone_timer_LDFLAGS = $(LDFLAGS_SGL)
+clone_timer_LDADD = $(LIBS_SGL)
 comm_mpi_SOURCES = comm_mpi.C
 comm_mpi_LDFLAGS = $(LDFLAGS_MPI)
 comm_mpi_LDADD = $(LIBS_MPI)
@@ -527,6 +537,9 @@ clone_info$(EXEEXT): $(clone_info_OBJECTS) $(clone_info_DEPENDENCIES)
 clone_phase$(EXEEXT): $(clone_phase_OBJECTS) $(clone_phase_DEPENDENCIES) 
 	@rm -f clone_phase$(EXEEXT)
 	$(clone_phase_LINK) $(clone_phase_OBJECTS) $(clone_phase_LDADD) $(LIBS)
+clone_timer$(EXEEXT): $(clone_timer_OBJECTS) $(clone_timer_DEPENDENCIES) 
+	@rm -f clone_timer$(EXEEXT)
+	$(clone_timer_LINK) $(clone_timer_OBJECTS) $(clone_timer_LDADD) $(LIBS)
 collect_mpi$(EXEEXT): $(collect_mpi_OBJECTS) $(collect_mpi_DEPENDENCIES) 
 	@rm -f collect_mpi$(EXEEXT)
 	$(collect_mpi_LINK) $(collect_mpi_OBJECTS) $(collect_mpi_LDADD) $(LIBS)
@@ -585,6 +598,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/alea.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/clone_info.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/clone_phase.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/clone_timer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/collect_mpi.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/comm_mpi.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/exmc_optimize.Po@am__quote@
