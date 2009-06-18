@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -41,20 +41,20 @@ namespace alps {
 namespace scheduler {
 
 /** implements a signal handler.
-    signals are intercepted and can be checked for. 
+    signals are intercepted and can be checked for.
 */
 
-class SignalHandler 
+class ALPS_DECL SignalHandler
 {
 public:
-  /** symbolic names for signals. 
+  /** symbolic names for signals.
     SIGINT, SIGQUIT and SIGTERM are mapped to TERMINATE
     SIGTSTP is mapped to STOP
     SIGUSR1 is mapped to USER1
     SIGUSR2 is mapped to USER2*/
-        
+
     enum SignalInfo
-    { 
+    {
       NOSIGNAL=0,
       USER1,
       USER2,
@@ -64,16 +64,16 @@ public:
 
   /// a default constructor
   SignalHandler();
-  
-  /** ask for signals. 
+
+  /** ask for signals.
       If more than one signal has been received the signal
       with the highest priority will be returned. Priorities are:
       USER1 > USER2 > STOP > TERMINATE. */
-   
-  SignalInfo operator()(); 
-  
+
+  SignalInfo operator()();
+
   /// send myself a noncatchable stop signal
-  static void stopprocess();  
+  static void stopprocess();
 
 private:
   static unsigned int u1; // number of user1 signals received
@@ -81,7 +81,7 @@ private:
   static unsigned int k; // number of terminate signals received
   static unsigned int s; // number of stop signals received
   static unsigned int count; // total number of signals received
-  static bool initialized; 
+  static bool initialized;
 
   // functions to be called by the signal handlers, to register them with
   // this object, only for internal use
