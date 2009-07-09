@@ -140,10 +140,14 @@ const coordinate_graph_type& LatticeLibrary::graph(const std::string& name) cons
 
 void LatticeLibrary::make_all_graphs()
 {
+#ifndef __FCC_VERSION
   for (LatticeGraphMap::const_iterator it=latticegraphs_.begin();
        it !=latticegraphs_.end();++it)
     graphs_["Graph created from " + it->first] =
       detail::graph_wrap(HypercubicLatticeGraph(it->second));
+#else
+  boost::throw_exception(std::runtime_error("make_all_graphs() not implemented for Fujitsu C++ compiler"));
+#endif
 }
 
 } // end namespace alps

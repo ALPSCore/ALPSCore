@@ -55,8 +55,7 @@ GraphUnitCell::GraphUnitCell(const XMLTag& intag, std::istream& p)
     boost::throw_exception(std::runtime_error("Illegal dimension "+tag.attributes["dimension"]+ " in unit cell"));
   if (tag.attributes["vertices"]!="") {
       uint32_t nvert=boost::lexical_cast<uint32_t,std::string>(tag.attributes["vertices"]);
-      // graph_ = graph_type(nvert); // ST: 2009-07-08: Fujitsu Compiler does not accept this
-      for (uint32_t i = 0; i < nvert; ++i) boost::add_vertex(graph_);
+      graph_ = graph_type(nvert);
       fixed_nvertices=true;
   }
   
