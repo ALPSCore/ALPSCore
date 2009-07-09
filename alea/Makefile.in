@@ -66,52 +66,108 @@ am_detailedbinning_OBJECTS = detailedbinning.$(OBJEXT)
 detailedbinning_OBJECTS = $(am_detailedbinning_OBJECTS)
 detailedbinning_LDADD = $(LDADD)
 am__DEPENDENCIES_1 =
-detailedbinning_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
-	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+@BUILD_UNIFIED_LIB_FALSE@detailedbinning_DEPENDENCIES = $(top_builddir)/lib/alps/libparapack-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
+@BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1)
+@BUILD_UNIFIED_LIB_TRUE@detailedbinning_DEPENDENCIES = $(top_builddir)/lib/alps/libalps-sgl.la \
+@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1)
 am_histogram_OBJECTS = histogram.$(OBJEXT)
 histogram_OBJECTS = $(am_histogram_OBJECTS)
 histogram_LDADD = $(LDADD)
-histogram_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
-	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+@BUILD_UNIFIED_LIB_FALSE@histogram_DEPENDENCIES = $(top_builddir)/lib/alps/libparapack-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
+@BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1)
+@BUILD_UNIFIED_LIB_TRUE@histogram_DEPENDENCIES = $(top_builddir)/lib/alps/libalps-sgl.la \
+@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1)
 am_observableset_xml_OBJECTS = observableset_xml.$(OBJEXT)
 observableset_xml_OBJECTS = $(am_observableset_xml_OBJECTS)
 observableset_xml_LDADD = $(LDADD)
-observableset_xml_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
-	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+@BUILD_UNIFIED_LIB_FALSE@observableset_xml_DEPENDENCIES = $(top_builddir)/lib/alps/libparapack-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
+@BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1)
+@BUILD_UNIFIED_LIB_TRUE@observableset_xml_DEPENDENCIES = $(top_builddir)/lib/alps/libalps-sgl.la \
+@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1)
 am_signed_OBJECTS = signed.$(OBJEXT)
 signed_OBJECTS = $(am_signed_OBJECTS)
 signed_LDADD = $(LDADD)
-signed_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
-	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+@BUILD_UNIFIED_LIB_FALSE@signed_DEPENDENCIES = $(top_builddir)/lib/alps/libparapack-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
+@BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1)
+@BUILD_UNIFIED_LIB_TRUE@signed_DEPENDENCIES = $(top_builddir)/lib/alps/libalps-sgl.la \
+@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1)
 am_simpleobseval_OBJECTS = simpleobseval.$(OBJEXT)
 simpleobseval_OBJECTS = $(am_simpleobseval_OBJECTS)
 simpleobseval_LDADD = $(LDADD)
-simpleobseval_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
-	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+@BUILD_UNIFIED_LIB_FALSE@simpleobseval_DEPENDENCIES = $(top_builddir)/lib/alps/libparapack-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
+@BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1)
+@BUILD_UNIFIED_LIB_TRUE@simpleobseval_DEPENDENCIES = $(top_builddir)/lib/alps/libalps-sgl.la \
+@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1)
 am_testobservableset_OBJECTS = testobservableset.$(OBJEXT)
 testobservableset_OBJECTS = $(am_testobservableset_OBJECTS)
 testobservableset_LDADD = $(LDADD)
-testobservableset_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
-	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+@BUILD_UNIFIED_LIB_FALSE@testobservableset_DEPENDENCIES = $(top_builddir)/lib/alps/libparapack-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
+@BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1)
+@BUILD_UNIFIED_LIB_TRUE@testobservableset_DEPENDENCIES = $(top_builddir)/lib/alps/libalps-sgl.la \
+@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1)
 am_vectorobseval_OBJECTS = vectorobseval.$(OBJEXT)
 vectorobseval_OBJECTS = $(am_vectorobseval_OBJECTS)
 vectorobseval_LDADD = $(LDADD)
-vectorobseval_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
-	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+@BUILD_UNIFIED_LIB_FALSE@vectorobseval_DEPENDENCIES = $(top_builddir)/lib/alps/libparapack-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
+@BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1)
+@BUILD_UNIFIED_LIB_TRUE@vectorobseval_DEPENDENCIES = $(top_builddir)/lib/alps/libalps-sgl.la \
+@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1)
 depcomp = $(SHELL) $(top_srcdir)/config/depcomp
 am__depfiles_maybe = depfiles
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
@@ -295,9 +351,11 @@ top_srcdir = @top_srcdir@
 DEFAULT_INCLUDES = -I$(top_builddir)/src -I$(top_srcdir)/src
 AM_CPPFLAGS = $(BASE_CPPFLAGS) $(BOOST_CPPFLAGS) $(XML_CPPFLAGS) $(HDF5_CPPFLAGS) $(MPI_CPPFLAGS)
 AM_LDFLAGS = $(BASE_LDFLAGS) $(BOOST_LDFLAGS) $(HDF5_LDFLAGS) $(XML_LDFLAGS)
-LDADD = $(top_builddir)/lib/alps/libalps.la $(top_builddir)/lib/comm-sgl/libcomm-sgl.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(BASE_LIBS)
+@BUILD_UNIFIED_LIB_FALSE@LDADD = $(top_builddir)/lib/alps/libparapack-sgl.la $(top_builddir)/lib/alps/libalps.la $(top_builddir)/lib/comm-sgl/libcomm-sgl.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(BASE_LIBS)
+@BUILD_UNIFIED_LIB_TRUE@LDADD = $(top_builddir)/lib/alps/libalps-sgl.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(BASE_LIBS)
 LDFLAGS_MPI = $(LDFLAGS_SGL) $(MPI_LDFLAGS)
-LIBS_MPI = $(top_builddir)/lib/alps/libalps.la $(top_builddir)/lib/comm-mpi/libcomm-mpi.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(MPI_LIBS) $(BASE_LIBS)
+@BUILD_UNIFIED_LIB_FALSE@LIBS_MPI = $(top_builddir)/lib/alps/libparapack-mpi.la $(top_builddir)/lib/alps/libalps.la $(top_builddir)/lib/comm-mpi/libcomm-mpi.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(MPI_LIBS) $(BASE_LIBS)
+@BUILD_UNIFIED_LIB_TRUE@LIBS_MPI = $(top_builddir)/lib/alps/libalps-mpi.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(MPI_LIBS) $(BASE_LIBS)
 # check_PROGRAMS += observableset_mpi
 detailedbinning_SOURCES = detailedbinning.C
 histogram_SOURCES = histogram.C
