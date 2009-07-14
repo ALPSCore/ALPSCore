@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -40,7 +40,6 @@ class rng_helper {
 public:
   rng_helper(const Parameters& p) :
     engine_ptr(rng_factory.create(p.value_or_default("RNG", "mt19937"))),
-    uniform_int(*engine_ptr, boost::uniform_int<uint32_t>()),
     uniform_01(*engine_ptr, boost::uniform_real<>()) {
     init(p);
   }
@@ -66,9 +65,9 @@ public:
   uint32_t seed;
   uint32_t disorder_seed; // shared by all workers in each clone
   mutable boost::shared_ptr<engine_type> engine_ptr;
-  boost::variate_generator<engine_type&, boost::uniform_int<uint32_t> > uniform_int;
   boost::variate_generator<engine_type&, boost::uniform_real<> > uniform_01;
-  uint32_t random_int() { return uniform_int(); }
+  int random_int(int a, int b) { return a + int((b-a+1) * uniform_01()); }
+  int random_int(int n) { return int(n * uniform_01()); }
   double random_01() { return uniform_01(); }
   double random() { return uniform_01(); } // obsolete
 };

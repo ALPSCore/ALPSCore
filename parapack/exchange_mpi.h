@@ -53,7 +53,7 @@ public:
 
   parallel_exchange_worker(mpi::communicator const& comm, alps::Parameters const& params)
     : super_type(params), comm_(comm), init_(params), beta_(params), mcs_(params),
-      num_returnee_(0), r_uint_(*engine_ptr, boost::uniform_int<unsigned int>()) {
+      num_returnee_(0) {
 
     int nrep = beta_.size();
     boost::tie(nrep_local_, offset_local_) = calc_nrep(comm_.rank());
@@ -83,8 +83,8 @@ public:
     alps::Parameters wp(params);
     for (int p = 0; p < nrep_local_; ++p) {
       // different WORKER_SEED for each walker, same DISORDER_SEED for all walkers
-      for (int j = 1; j < 3637 /* 509th prime number */; ++j) random_int();
-      wp["WORKER_SEED"] = random_int();
+      for (int j = 1; j < 3637 /* 509th prime number */; ++j) (*engine_ptr)();
+      wp["WORKER_SEED"] = (*engine_ptr)();
       walker_[p] = helper::create_walker(wp, init_);
       tid_local_[p] = p + offset_local_;
     }
@@ -415,8 +415,6 @@ private:
   std::vector<int> direc_;     // [master only] direction of each walker (replica)
   int num_returnee_;           // [master only] number of walkers returned to highest temperature
   std::vector<weight_parameter_type> weight_parameters_; // [master only]
-
-  boost::variate_generator<engine_type&, boost::uniform_int<unsigned int> > r_uint_;
 
   // working space
   std::vector<weight_parameter_type> wp_local_;

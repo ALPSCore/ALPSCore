@@ -606,8 +606,7 @@ public:
   static void print_copyright(std::ostream& out) { walker_type::print_copyright(out); }
 
   single_exchange_worker(alps::Parameters const& params)
-    : super_type(params), init_(params), beta_(params), mcs_(params), num_returnee_(0),
-      r_uint_(*engine_ptr, boost::uniform_int<unsigned int>()) {
+    : super_type(params), init_(params), beta_(params), mcs_(params), num_returnee_(0) {
 
     int nrep = beta_.size();
     std::clog << "EXMC: number of replicas = " << nrep << std::endl;
@@ -619,8 +618,8 @@ public:
     tid_.resize(nrep);
     alps::Parameters wp(params);
     for (int p = 0; p < nrep; ++p) {
-      for (int j = 1; j < 3637 /* 509th prime number */; ++j) r_uint_();
-      wp["WORKER_SEED"] = r_uint_(); // different seed for each walker
+      for (int j = 1; j < 3637 /* 509th prime number */; ++j) (*engine_ptr)();
+      wp["WORKER_SEED"] = (*engine_ptr)(); // different seed for each walker
       walker_[p] = helper::create_walker(wp, init_); // same DISORDER_SEED for all walkers
       tid_[p] = p;
     }
@@ -890,8 +889,6 @@ private:
   std::vector<int> direc_;   // direction of each walker
   int num_returnee_;         // number of walkers returned to highest temperature
   std::vector<weight_parameter_type> weight_parameters_;
-
-  boost::variate_generator<engine_type&, boost::uniform_int<unsigned int> > r_uint_;
 
   // working space
   std::vector<weight_parameter_type> wp_;
