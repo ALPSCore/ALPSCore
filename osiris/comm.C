@@ -43,9 +43,13 @@
 
 #ifdef ALPS_MPI
 
+int mpi_initialized=0;
+
 void alps::comm_init(int& argc, char**& argv)
 {
-  MPI_Init(&argc,&argv);
+  MPI_Initialized(&mpi_initialized);
+  if (!mpi_initialized)
+    MPI_Init(&argc,&argv);
 }
 
 #else
@@ -59,6 +63,8 @@ void alps::comm_init(int&, char**&) {}
 #ifdef ALPS_MPI
 void alps::comm_exit(bool kill_all)
 {
+  if (mpi_initialized)
+    return;
   if(kill_all)
     MPI_Abort(MPI_COMM_WORLD,-2);
   else
