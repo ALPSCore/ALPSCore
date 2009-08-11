@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -43,7 +43,7 @@ try {
   std::cout << "x = " << x << " = " << static_cast<double>(x) << std::endl;
   std::cout << "y = " << y << " = " << static_cast<double>(y) <<  std::endl;
   std::cout << "x + y = " << x + y << " = " << static_cast<double>(x + y) <<  std::endl;
-  std::cout << "x - y = " << x - y << " = " << static_cast<double>(x - y) <<  std::endl;
+  // std::cout << "x - y = " << x - y << " = " << static_cast<double>(x - y) <<  std::endl;
   std::cout << "x * y = " << x * y << " = " << static_cast<double>(x * y) <<  std::endl;
   std::cout << "x / y = " << x / y << " = " << static_cast<double>(x / y) <<  std::endl;
   std::cout << "x + 1.2 = " << x + 1.2 << " = " << static_cast<double>(x + 1.2) <<  std::endl;
