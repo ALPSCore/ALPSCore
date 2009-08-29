@@ -128,8 +128,8 @@ public:
   /// the strings "true" and "false" are valid ways to specify tryue or false boolean values. Any other
   /// value will be converted to bool using boost::lexical_cast
   operator bool() const {
-    if ( *this == "true" ) return true;
-    if ( *this == "false" ) return false;
+    if ( *this == "true" || *this == "True" ) return true;
+    if ( *this == "false" || *this == "False" ) return false;
     return boost::lexical_cast<bool>(*this);
   }
 
