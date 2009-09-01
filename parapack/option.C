@@ -53,13 +53,17 @@ option::option(int argc, char** argv, int np, int pid)
     ("check-parameter", "perform parameter checking")
     ("check-interval", po::value<int>(),
      "time between status check [unit = sec; default = 1s]")
-    ("checkpoint-interval", po::value<int>(),
+    ("checkpoint-time", po::value<int>(),
      "time between checkpointing [unit = sec; default = 3600s]")
     ("evaluate", "evaluation mode")
+    ("Nmin", "obsolete")
+    ("Nmax", "obsolete")
     ("report-interval", po::value<int>(),
      "time between progress report of clones [unit = sec; default = 600s]")
-    ("time-limit,t", po::value<int>(),
+    ("time-limit,T", po::value<int>(),
      "time limit for the simulation [unit = sec; defulat = no time limit]")
+    ("Tmin", "obsolete")
+    ("Tmax", "obsolete")
     ("procs-per-clone,p", po::value<int>(),
      "number of processes for each clone [default = 1]")
     ("input-file", po::value<std::vector<std::string> >(),

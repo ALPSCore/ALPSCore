@@ -343,7 +343,7 @@ void task::evaluate() {
     std::cout << (cid+1) << ' ' << std::flush;
     std::vector<ObservableSet> os;
     for (int w = 0; w < clone_info_[cid].checkpoints().size(); ++w) {
-      IXDRFileDump dp(basedir_ / clone_info_[cid].checkpoints()[w]);
+      IXDRFileDump dp(complete(clone_info_[cid].checkpoints()[w], basedir_));
       if (!load_observable(dp, os)) {
         std::cerr << "error while reading " << clone_info_[cid].checkpoints()[w] << std::endl;
       } else {
