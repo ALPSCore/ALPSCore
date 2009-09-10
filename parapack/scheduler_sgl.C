@@ -39,6 +39,16 @@
 #include <string>
 #include <vector>
 
+#if defined(ALPS_HAVE_UNISTD_H)
+# include <unistd.h>
+#elif defined(ALPS_HAVE_WINDOWS_H)
+# include <windows.h>
+#endif
+
+#ifdef _OPENMP
+# include <omp.h>
+#endif
+
 namespace alps {
 namespace parapack {
 
@@ -49,20 +59,18 @@ int run_sequential(int argc, char **argv) {
 #endif
 
   alps::ParameterList parameterlist;
-  if (is_master()) {
-    switch (argc) {
-    case 1:
-      std::cin >> parameterlist;
-      break;
-    case 2: {
-      boost::filesystem::ifstream is(argv[1]);
-      is >> parameterlist;
-      break;
-    }
-    default:
-      boost::throw_exception(std::invalid_argument(
-        "Usage: " + std::string(argv[0]) + " [paramfile]"));
-    }
+  switch (argc) {
+  case 1:
+    std::cin >> parameterlist;
+    break;
+  case 2: {
+    boost::filesystem::ifstream is(argv[1]);
+    is >> parameterlist;
+    break;
+  }
+  default:
+    boost::throw_exception(std::invalid_argument(
+      "Usage: " + std::string(argv[0]) + " [paramfile]"));
   }
 
   for (int i = 0; i < parameterlist.size(); ++i) {
@@ -73,7 +81,7 @@ int run_sequential(int argc, char **argv) {
     if (!p.defined("SEED")) p["SEED"] = static_cast<unsigned int>(time(0));
     p["WORKER_SEED"] = p["SEED"];
     p["DISORDER_SEED"] = p["SEED"];
-    if (is_master()) std::cout << "[input parameters]\n" << p;
+    std::cout << "[input parameters]\n" << p;
     std::vector<alps::ObservableSet> obs;
     boost::shared_ptr<alps::parapack::abstract_worker>
       worker = worker_factory::make_worker(p);
@@ -87,20 +95,18 @@ int run_sequential(int argc, char **argv) {
         thermalized = true;
       }
     }
-    if (is_master()) {
-      std::vector<alps::ObservableSet> obs_out;
-      boost::shared_ptr<alps::parapack::abstract_evaluator>
-        evaluator = evaluator_factory::make_evaluator(p);
-      evaluator->load(obs, obs_out);
-      evaluator->evaluate(obs_out);
-      std::cerr << "[speed]\nelapsed time = " << tm.elapsed() << " sec\n";
-      std::cout << "[results]\n";
-      if (obs_out.size() == 1) {
-        std::cout << obs_out[0];
-      } else {
-        for (int i = 0; i < obs_out.size(); ++i)
-          std::cout << "[[replica " << i << "]]\n" << obs_out[i];
-      }
+    std::vector<alps::ObservableSet> obs_out;
+    boost::shared_ptr<alps::parapack::abstract_evaluator>
+      evaluator = evaluator_factory::make_evaluator(p);
+    evaluator->load(obs, obs_out);
+    evaluator->evaluate(obs_out);
+    std::cerr << "[speed]\nelapsed time = " << tm.elapsed() << " sec\n";
+    std::cout << "[results]\n";
+    if (obs_out.size() == 1) {
+      std::cout << obs_out[0];
+    } else {
+      for (int i = 0; i < obs_out.size(); ++i)
+        std::cout << "[[replica " << i << "]]\n" << obs_out[i];
     }
   }
 
@@ -124,7 +130,7 @@ int start(int argc, char** argv) {
   option opt(argc, argv);
   if (!opt.valid) return -1;
 
-  if (is_master()) print_copyright(std::clog);
+  print_copyright(std::clog);
 
   boost::posix_time::ptime end_time =
     boost::posix_time::second_clock::local_time() + opt.time_limit;
@@ -147,8 +153,11 @@ int start(int argc, char** argv) {
     std::string simname;
     std::vector<task> tasks;
     task_queue_t task_queue;
-    check_queue_t check_queue;
     int num_finished_tasks = 0;
+    int num_threads = 1;
+#ifdef _OPENMP
+    num_threads = omp_get_max_threads();
+#endif
 
     //
     // evaluation only
@@ -167,7 +176,10 @@ int start(int argc, char** argv) {
           std::clog << "  master input file  = " << file_in.native_file_string() << std::endl
                     << "  master output file = " << file_out.native_file_string() << std::endl;
           scheduler::print_taskinfo(std::clog, tasks);
-          BOOST_FOREACH(task& t, tasks) t.evaluate();
+          #pragma omp parallel for
+          for (int t = 0; t < tasks.size(); ++t) {
+            tasks[t].evaluate();
+          }
         } else {
           // process one task
           task t(file);
@@ -205,9 +217,9 @@ int start(int argc, char** argv) {
       std::clog << "  master input file  = " << file_in.native_file_string() << std::endl
                 << "  master output file = " << file_out.native_file_string() << std::endl
                 << "  termination file   = " << file_term.native_file_string() << std::endl
-                << "  number of process(es)      = " << 1 << std::endl
-                << "  process(es) per clone      = " << 1 << std::endl
-                << "  number of process group(s) = " << 1 << std::endl
+                << "  number of thread(s)       = " << num_threads << std::endl
+                << "  thread(s) per clone       = " << 1 << std::endl
+                << "  number of thread group(s) = " << num_threads << std::endl
                 << "  check parameter = " << (opt.check_parameter ? "yes" : "no") << std::endl
                 << "  auto evaluation = " << (opt.auto_evaluate ? "yes" : "no") << std::endl;
       if (opt.time_limit != boost::posix_time::time_duration())
@@ -231,81 +243,123 @@ int start(int argc, char** argv) {
       }
       print_taskinfo(std::clog, tasks);
       if (tasks.size() == 0) std::clog << "Warning: no tasks found\n";
-      check_queue.push(next_taskinfo(opt.checkpoint_interval / 2));
     }
 
-    clone* clone_ptr = 0;
-    while (true) {
+    #pragma omp parallel
+    {
+      int pid = 0;
+#ifdef _OPENMP
+      pid = omp_get_thread_num();
+#endif
+      std::clog << logger::header() << "thead " << pid << " started\n";
 
-      // server process
-      if (is_master()) {
-        clone_proxy proxy(clone_ptr, opt.check_interval);
+      check_queue_t check_queue; // check_queue is theread private
+      #pragma omp single
+      {
+        check_queue.push(next_taskinfo(opt.checkpoint_interval / 2));
+      } // end omp master
 
-        if (!process.is_halting()) {
-          bool to_halt = false;
-          if (num_finished_tasks == tasks.size()) {
-            std::clog << logger::header() << "all tasks have been finished\n";
-            to_halt = true;
+      clone* clone_ptr = 0;
+      clone_proxy proxy(clone_ptr, opt.check_interval);
+
+      while (true) {
+
+        #pragma omp master
+        {
+          if (!process.is_halting()) {
+            bool to_halt = false;
+            if (num_finished_tasks == tasks.size()) {
+              std::clog << logger::header() << "all tasks have been finished\n";
+              to_halt = true;
+            }
+            if (opt.time_limit != boost::posix_time::time_duration() &&
+                boost::posix_time::second_clock::local_time() > end_time) {
+              std::clog << logger::header() << "time limit reached\n";
+              to_halt = true;
+            }
+            signal_info_t s = signals();
+            if (s == signal_info::STOP || s == signal_info::TERMINATE) {
+              std::clog << logger::header() << "signal received\n";
+              to_halt = true;
+            }
+            if (exists(file_term)) {
+              std::clog << logger::header() << "termination file detected\n";
+              remove(file_term);
+              to_halt = true;
+            }
+            if (to_halt) {
+              #pragma omp critical
+              {
+                BOOST_FOREACH(task& t, tasks) t.suspend_remote_clones(proxy);
+              }
+              process.halt();
+            }
           }
-          if (opt.time_limit != boost::posix_time::time_duration() &&
-              boost::posix_time::second_clock::local_time() > end_time) {
-            std::clog << logger::header() << "time limit reached\n";
-            to_halt = true;
-          }
-          signal_info_t s = signals();
-          if (s == signal_info::STOP || s == signal_info::TERMINATE) {
-            std::clog << logger::header() << "signal received\n";
-            to_halt = true;
-          }
-          if (exists(file_term)) {
-            std::clog << logger::header() << "termination file detected\n";
-            remove(file_term);
-            to_halt = true;
-          }
-          if (to_halt) {
-            BOOST_FOREACH(task& t, tasks) t.suspend_remote_clones(proxy);
-            process.halt();
-          }
-        }
+        } // end omp master
 
         while (true) {
           if (clone_ptr && clone_ptr->halted()) {
             tid_t tid = clone_ptr->task_id();
             cid_t cid = clone_ptr->clone_id();
-            double progress = tasks[tid].progress();
-            tasks[tid].info_updated(cid, clone_ptr->info());
-            tasks[tid].halt_clone(proxy, cid);
-            if (progress < 1 && tasks[tid].progress() >= 1) ++num_finished_tasks;
-            save_tasks(file_out, simname, file_in_str, file_out_str, tasks);
+            #pragma omp critical
+            {
+              double progress = tasks[tid].progress();
+              tasks[tid].info_updated(cid, clone_ptr->info());
+              tasks[tid].halt_clone(proxy, cid);
+              if (progress < 1 && tasks[tid].progress() >= 1) ++num_finished_tasks;
+              save_tasks(file_out, simname, file_in_str, file_out_str, tasks);
+            } // end omp critical
           } else if (clone_ptr && process.is_halting()) {
             tid_t tid = clone_ptr->task_id();
             cid_t cid = clone_ptr->clone_id();
-            tasks[tid].suspend_clone(proxy, cid);
-          } else if (!process.is_halting() && !clone_ptr && task_queue.size()) {
-            tid_t tid = task_queue.top().task_id;
-            task_queue.pop();
-            boost::optional<cid_t> cid = tasks[tid].dispatch_clone(proxy);
+            #pragma omp critical
+            {
+              tasks[tid].suspend_clone(proxy, cid);
+            } // end omp critical
+          } else if (!process.is_halting() && !clone_ptr) {
+            tid_t tid;
+            boost::optional<cid_t> cid;
+            #pragma omp critical
+            {
+              if (task_queue.size()) {
+                tid = task_queue.top().task_id;
+                task_queue.pop();
+                cid = tasks[tid].dispatch_clone(proxy);
+                if (cid && tasks[tid].can_dispatch())
+                  task_queue.push(task_queue_t::value_type(tasks[tid]));
+              }
+            } // end omp critical
             if (cid) {
               check_queue.push(next_checkpoint(tid, *cid, 0, opt.checkpoint_interval));
               check_queue.push(next_report(tid, *cid, 0, opt.report_interval));
-              if (tasks[tid].can_dispatch()) task_queue.push(task_queue_t::value_type(tasks[tid]));
+            } else {
+              break;
             }
           } else if (!process.is_halting() && check_queue.size() && check_queue.top().due()) {
             check_queue_t::value_type q = check_queue.top();
             check_queue.pop();
             if (q.type == check_type::taskinfo) {
-              print_taskinfo(std::clog, tasks);
-              save_tasks(file_out, simname, file_in_str, file_out_str, tasks);
+              #pragma omp critical
+              {
+                print_taskinfo(std::clog, tasks);
+                save_tasks(file_out, simname, file_in_str, file_out_str, tasks);
+              } // end omp critical
               check_queue.push(next_taskinfo(opt.checkpoint_interval));
             } else if (q.type == check_type::checkpoint) {
               if (tasks[q.task_id].on_memory() && tasks[q.task_id].is_running(q.clone_id)) {
-                tasks[q.task_id].checkpoint(proxy, q.clone_id);
+                #pragma omp critical
+                {
+                  tasks[q.task_id].checkpoint(proxy, q.clone_id);
+                } // end omp critical
                 check_queue.push(next_checkpoint(q.task_id, q.clone_id, q.group_id,
                                                  opt.checkpoint_interval));
               }
             } else {
               if (tasks[q.task_id].on_memory() && tasks[q.task_id].is_running(q.clone_id)) {
-                tasks[q.task_id].report(proxy, q.clone_id);
+                #pragma omp critical
+                {
+                  tasks[q.task_id].report(proxy, q.clone_id);
+                } // end omp critical
                 check_queue.push(next_report(q.task_id, q.clone_id, q.group_id,
                                              opt.report_interval));
               }
@@ -314,32 +368,47 @@ int start(int argc, char** argv) {
             break;
           }
         }
-      }
 
-      if (clone_ptr) {
+        if (clone_ptr) {
 
-        // work some
-        clone_ptr->run();
+          // work some
+          clone_ptr->run();
 
-      }
+        } else {
 
-      // check if all processes are halted
-      if (process.check_halted()) {
-        if (is_master()) {
-          print_taskinfo(std::clog, tasks);
-          std::clog << logger::header() << "all processes halted\n";
-          if (opt.auto_evaluate) {
-            std::clog << logger::header() << "starting evaluation on "
-                      << alps::hostname() << std::endl;
-            BOOST_FOREACH(task& t, tasks) t.evaluate();
-            std::clog << logger::header() << "all tasks evaluated\n";
+          // nothing to do
+          if (pid == 0) {
+            if (process.check_halted()) {
+              break;
+            } else {
+              #if defined(ALPS_HAVE_UNISTD_H)
+                sleep(1);    // sleep 1 Sec
+              #elif defined(ALPS_HAVE_WINDOWS_H)
+                Sleep(100); // sleep 100 mSec
+              #endif
+            }
+          } else {
+            break;
           }
+
         }
-        break;
       }
+
+      std::clog << logger::header() << "thead " << pid << " stopped\n";
+    } // end omp parallel
+
+    print_taskinfo(std::clog, tasks);
+    if (opt.auto_evaluate) {
+      std::clog << logger::header() << "starting evaluation on "
+                << alps::hostname() << std::endl;
+      #pragma omp parallel for
+      for (int t = 0; t < tasks.size(); ++t) {
+        tasks[t].evaluate();
+      } // end omp parallel for
+      std::clog << logger::header() << "all tasks evaluated\n";
     }
 
-    if (is_master()) master_lock.release();
+    master_lock.release();
   }
   return 0;
 }
