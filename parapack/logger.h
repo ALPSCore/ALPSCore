@@ -38,6 +38,7 @@ struct logger {
   static std::string header();
   static std::string clone(alps::tid_t tid, alps::cid_t cid);
   static std::string group(alps::gid_t gid);
+  static std::string threadgroup(alps::gid_t gid);
 };
 
 } // namespace alps

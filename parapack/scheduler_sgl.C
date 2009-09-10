@@ -87,7 +87,7 @@ int run_sequential(int argc, char **argv) {
       worker = worker_factory::make_worker(p);
     worker->init_observables(p, obs);
     bool thermalized = worker->is_thermalized();
-    if (thermalized) BOOST_FOREACH(alps::ObservableSet& o, obs) { o.reset(true); }
+    if (thermalized) { BOOST_FOREACH(alps::ObservableSet& o, obs) { o.reset(true); } }
     while (worker->progress() < 1.0) {
       worker->run(obs);
       if (!thermalized && worker->is_thermalized()) {
@@ -251,10 +251,13 @@ int start(int argc, char** argv) {
 #ifdef _OPENMP
       pid = omp_get_thread_num();
 #endif
-      std::clog << logger::header() << "thead " << pid << " started\n";
+      #pragma omp master
+      {
+        std::clog << logger::header() << "starting " << num_threads << " threadgroup(s)\n";
+      }
 
       check_queue_t check_queue; // check_queue is theread private
-      #pragma omp single
+      #pragma omp master
       {
         check_queue.push(next_taskinfo(opt.checkpoint_interval / 2));
       } // end omp master
@@ -317,7 +320,7 @@ int start(int argc, char** argv) {
               tasks[tid].suspend_clone(proxy, cid);
             } // end omp critical
           } else if (!process.is_halting() && !clone_ptr) {
-            tid_t tid;
+            tid_t tid = 0;
             boost::optional<cid_t> cid;
             #pragma omp critical
             {
@@ -394,7 +397,7 @@ int start(int argc, char** argv) {
         }
       }
 
-      std::clog << logger::header() << "thead " << pid << " stopped\n";
+      std::clog << logger::header() << logger::threadgroup(pid) << " halted\n";
     } // end omp parallel
 
     print_taskinfo(std::clog, tasks);

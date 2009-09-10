@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -149,11 +149,13 @@ void clone_info::start(std::string const& phase) {
 }
 
 void clone_info::stop() {
-  if (is_master_)
-    if (phases_.size())
+  if (is_master_) {
+    if (phases_.size()) {
       phases_.back().stop();
-    else
+    } else {
       boost::throw_exception(std::logic_error("empty clone_info in clone_info::stop"));
+    }
+  }
 }
 
 boost::posix_time::time_duration clone_info::elapsed() const {
