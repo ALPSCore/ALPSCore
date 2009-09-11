@@ -234,10 +234,10 @@ evaluator_factory::make_creator(Parameters const& params) const {
   if (evaluator_creators_.size() == 0) {
     if (params.defined("EVALUATOR")) {
       std::clog << "Warning: unknown evaluator: " << params["EVALUATOR"]
-                << ".  The default evaluator will be used istead\n";
+                << ".  The default evaluator will be used instead\n";
     } else if (params.defined("WORKER")) {
       std::clog << "Warning: unknown evaluator: " << params["WORKER"]
-                << ".  The default evaluator will be used istead\n";
+                << ".  The default evaluator will be used instead\n";
     } else {
       std::clog << "Info: no evaluator registered.  The default evaluator will be used";
     }
