@@ -43,6 +43,7 @@ struct option {
   boost::posix_time::time_duration report_interval;
   boost::posix_time::time_duration time_limit;
   int procs_per_clone;
+  int threads_per_clone;
   bool check_parameter;
   bool auto_evaluate;
   bool evaluate_only;

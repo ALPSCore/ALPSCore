@@ -39,7 +39,7 @@ public:
 
   bool is_local(Process const&) const { return true; }
 
-  void start(tid_t tid, cid_t cid, process_group const&, Parameters const& params,
+  void start(tid_t tid, cid_t cid, thread_group const&, Parameters const& params,
     boost::filesystem::path const& basedir, std::string const& base, bool is_new) {
     clone_ptr_ = new clone(tid, cid, params, basedir, base, interval_, is_new);
   }

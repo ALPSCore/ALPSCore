@@ -37,11 +37,11 @@ std::string logger::clone(alps::tid_t tid, alps::cid_t cid) {
   return std::string("clone[") + boost::lexical_cast<std::string>(tid+1) + ',' +
     boost::lexical_cast<std::string>(cid+1) + ']';
 }
-std::string logger::group(alps::gid_t gid) {
-  return std::string("processgroup[") + boost::lexical_cast<std::string>(gid+1) + ']';
+std::string logger::group(alps::process_group g) {
+  return std::string("processgroup[") + boost::lexical_cast<std::string>(g.group_id+1) + ']';
 }
-std::string logger::threadgroup(alps::gid_t gid) {
-  return std::string("threadgroup[") + boost::lexical_cast<std::string>(gid+1) + ']';
+std::string logger::group(alps::thread_group g) {
+  return std::string("threadgroup[") + boost::lexical_cast<std::string>(g.group_id+1) + ']';
 }
 
 } // namespace alps

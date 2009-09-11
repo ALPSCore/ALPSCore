@@ -28,6 +28,7 @@
 #ifndef PARAPACK_LOGGER_H
 #define PARAPACK_LOGGER_H
 
+#include <alps/parapack/process.h>
 #include <alps/parapack/types.h>
 #include <iostream>
 #include <string>
@@ -37,8 +38,8 @@ namespace alps {
 struct logger {
   static std::string header();
   static std::string clone(alps::tid_t tid, alps::cid_t cid);
-  static std::string group(alps::gid_t gid);
-  static std::string threadgroup(alps::gid_t gid);
+  static std::string group(alps::process_group g);
+  static std::string group(alps::thread_group g);
 };
 
 } // namespace alps

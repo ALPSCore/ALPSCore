@@ -308,7 +308,7 @@ int start(int argc, char** argv) {
                     opt.report_interval));
               } else {
                 tasks[msg.task_id].info_updated(msg.clone_id, msg.info);
-                tasks[msg.task_id].halt_clone(proxy, msg.clone_id, msg.group_id);
+                tasks[msg.task_id].halt_clone(proxy, msg.clone_id, process_group(msg.group_id));
               }
             } else if (status->tag() == mcmp_tag::clone_checkpoint) {
               clone_info_msg_t msg;
@@ -323,7 +323,8 @@ int start(int argc, char** argv) {
             } else if (status->tag() == mcmp_tag::clone_suspend) {
               clone_info_msg_t msg;
               process.comm_ctrl().recv(mpi::any_source, status->tag(), msg);
-              tasks[msg.task_id].clone_suspended(msg.clone_id, msg.group_id, msg.info);
+              tasks[msg.task_id].clone_suspended(msg.clone_id, process_group(msg.group_id),
+                                                 msg.info);
               if (tasks[msg.task_id].num_running() == 0) {
                 tasks[msg.task_id].save();
                 tasks[msg.task_id].halt();
@@ -357,14 +358,14 @@ int start(int argc, char** argv) {
             cid_t cid = clone_ptr->clone_id();
             double progress = tasks[tid].progress();
             tasks[tid].info_updated(cid, clone_ptr->info());
-            tasks[tid].halt_clone(proxy, cid);
+            tasks[tid].halt_clone(proxy, cid, process_group(0));
             if (progress < 1 && tasks[tid].progress() >= 1) ++num_finished_tasks;
             save_tasks(file_out, simname, file_in_str, file_out_str, tasks);
             process.release(0);
           } else if (clone_ptr && process.is_halting()) {
             tid_t tid = clone_ptr->task_id();
             cid_t cid = clone_ptr->clone_id();
-            tasks[tid].suspend_clone(proxy, cid);
+            tasks[tid].suspend_clone(proxy, cid, process_group());
             process.release(0);
           } else if (!process.is_halting() && process.num_free() && task_queue.size()) {
             process_group g = process.allocate();

@@ -57,8 +57,9 @@ clone_mpi::clone_mpi(boost::mpi::communicator const& ctrl,
     this->load(dp);
   }
 
-  if (is_new && worker_->is_thermalized()) // no thermalization steps
-    BOOST_FOREACH(alps::ObservableSet& m, measurements_) m.reset(true);
+  if (is_new && worker_->is_thermalized()) { // no thermalization steps
+    BOOST_FOREACH(alps::ObservableSet& m, measurements_) { m.reset(true); }
+  }
 
   if (is_new || info_.progress() < 1)
     info_.start((worker_->is_thermalized()) ? "running" : "equilibrating");

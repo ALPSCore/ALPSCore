@@ -158,6 +158,7 @@ int start(int argc, char** argv) {
 #ifdef _OPENMP
     num_threads = omp_get_max_threads();
 #endif
+    int num_groups = num_threads / opt.threads_per_clone;
 
     //
     // evaluation only
@@ -218,8 +219,8 @@ int start(int argc, char** argv) {
                 << "  master output file = " << file_out.native_file_string() << std::endl
                 << "  termination file   = " << file_term.native_file_string() << std::endl
                 << "  number of thread(s)       = " << num_threads << std::endl
-                << "  thread(s) per clone       = " << 1 << std::endl
-                << "  number of thread group(s) = " << num_threads << std::endl
+                << "  thread(s) per clone       = " << opt.threads_per_clone << std::endl
+                << "  number of thread group(s) = " << num_groups << std::endl
                 << "  check parameter = " << (opt.check_parameter ? "yes" : "no") << std::endl
                 << "  auto evaluation = " << (opt.auto_evaluate ? "yes" : "no") << std::endl;
       if (opt.time_limit != boost::posix_time::time_duration())
@@ -245,15 +246,16 @@ int start(int argc, char** argv) {
       if (tasks.size() == 0) std::clog << "Warning: no tasks found\n";
     }
 
-    #pragma omp parallel
+    #pragma omp parallel num_threads(num_groups)
     {
-      int pid = 0;
+      thread_group group(0);
 #ifdef _OPENMP
-      pid = omp_get_thread_num();
+      group.group_id = omp_get_thread_num();
+      omp_set_num_threads(opt.threads_per_clone);
 #endif
       #pragma omp master
       {
-        std::clog << logger::header() << "starting " << num_threads << " threadgroup(s)\n";
+        std::clog << logger::header() << "starting " << num_groups << " threadgroup(s)\n";
       }
 
       check_queue_t check_queue; // check_queue is theread private
@@ -308,7 +310,7 @@ int start(int argc, char** argv) {
             {
               double progress = tasks[tid].progress();
               tasks[tid].info_updated(cid, clone_ptr->info());
-              tasks[tid].halt_clone(proxy, cid);
+              tasks[tid].halt_clone(proxy, cid, group);
               if (progress < 1 && tasks[tid].progress() >= 1) ++num_finished_tasks;
               save_tasks(file_out, simname, file_in_str, file_out_str, tasks);
             } // end omp critical
@@ -317,7 +319,7 @@ int start(int argc, char** argv) {
             cid_t cid = clone_ptr->clone_id();
             #pragma omp critical
             {
-              tasks[tid].suspend_clone(proxy, cid);
+              tasks[tid].suspend_clone(proxy, cid, group);
             } // end omp critical
           } else if (!process.is_halting() && !clone_ptr) {
             tid_t tid = 0;
@@ -327,7 +329,7 @@ int start(int argc, char** argv) {
               if (task_queue.size()) {
                 tid = task_queue.top().task_id;
                 task_queue.pop();
-                cid = tasks[tid].dispatch_clone(proxy);
+                cid = tasks[tid].dispatch_clone(proxy, group);
                 if (cid && tasks[tid].can_dispatch())
                   task_queue.push(task_queue_t::value_type(tasks[tid]));
               }
@@ -380,7 +382,7 @@ int start(int argc, char** argv) {
         } else {
 
           // nothing to do
-          if (pid == 0) {
+          if (group.group_id == 0) {
             if (process.check_halted()) {
               break;
             } else {
@@ -397,7 +399,7 @@ int start(int argc, char** argv) {
         }
       }
 
-      std::clog << logger::header() << logger::threadgroup(pid) << " halted\n";
+      std::clog << logger::header() << logger::group(group) << " halted\n";
     } // end omp parallel
 
     print_taskinfo(std::clog, tasks);

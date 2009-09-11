@@ -31,6 +31,10 @@
 #include <boost/foreach.hpp>
 #include <boost/program_options.hpp>
 
+#ifdef _OPENMP
+# include <omp.h>
+#endif
+
 namespace alps {
 namespace parapack {
 
@@ -38,8 +42,8 @@ namespace po = boost::program_options;
 namespace pt = boost::posix_time;
 
 option::option(int argc, char** argv, int np, int pid)
-  : time_limit(), procs_per_clone(1), check_parameter(false), auto_evaluate(false),
-    evaluate_only(false), jobfiles(), valid(true) {
+  : time_limit(), procs_per_clone(1), threads_per_clone(1), check_parameter(false),
+    auto_evaluate(false), evaluate_only(false), jobfiles(), valid(true) {
 
   check_interval = pt::seconds(1);
   checkpoint_interval = pt::seconds(3600);
@@ -66,6 +70,8 @@ option::option(int argc, char** argv, int np, int pid)
     ("Tmax", "obsolete")
     ("procs-per-clone,p", po::value<int>(),
      "number of processes for each clone [default = 1]")
+    ("threads-per-clone,r", po::value<int>(),
+     "number of threads for each clone [default = 1]")
     ("input-file", po::value<std::vector<std::string> >(),
      "input master XML files");
   po::positional_options_description p;
@@ -91,6 +97,8 @@ option::option(int argc, char** argv, int np, int pid)
     time_limit = pt::seconds(vm["time-limit"].as<int>());
   if (vm.count("procs-per-clone"))
     procs_per_clone = vm["procs-per-clone"].as<int>();
+  if (vm.count("threads-per-clone"))
+    threads_per_clone = vm["threads-per-clone"].as<int>();
 
   if (pid == 0) {
     if (vm.count("help")) {
@@ -101,10 +109,16 @@ option::option(int argc, char** argv, int np, int pid)
       std::cout << "license" << std::endl;
       valid = false;
     }
-    if (procs_per_clone > np) {
-      std::cerr << "Error: too large number of processors per clone\n";
+    if (procs_per_clone < 1 || procs_per_clone > np) {
+      std::cerr << "Error: invalid number of processes per clone\n";
       valid = false;
     }
+#ifdef _OPENMP
+    if (threads_per_clone < 1 || threads_per_clone > omp_get_max_threads()) {
+      std::cerr << "Error: invalid number of threads per clone\n";
+      valid = false;
+    }
+#endif
   }
 
   if (vm.count("input-file"))

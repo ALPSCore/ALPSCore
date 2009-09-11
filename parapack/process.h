@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -35,7 +35,9 @@ namespace alps {
 
 struct process_group {
   process_group() : group_id(0), process_list() {}
+  process_group(gid_t gid) : group_id(gid), process_list() {}
   process_group(gid_t gid, ProcessList const& plist) : group_id(gid), process_list(plist) {}
+  Process master() const { return process_list[0]; }
   gid_t group_id;
   ProcessList process_list;
 };
@@ -48,6 +50,13 @@ public:
   bool check_halted() const { return halted_; }
 private:
   bool halted_;
+};
+
+struct thread_group {
+  thread_group() : group_id(0) {}
+  thread_group(gid_t gid) : group_id(gid) {}
+  Process master() const { return Process(); }
+  gid_t group_id;
 };
 
 } // end namespace alps

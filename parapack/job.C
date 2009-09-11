@@ -280,19 +280,6 @@ void task::info_updated(cid_t cid, clone_info const& info) {
   }
 }
 
-void task::clone_suspended(cid_t cid, gid_t gid, clone_info const& info) {
-  if (clone_status_[cid] != clone_status::Stopping)
-    boost::throw_exception(std::logic_error("clone is not stopping"));
-  std::clog << logger::header() << logger::clone(task_id_, cid)
-            << " suspended (" << precision(info.progress() * 100, 3)
-            << "% done)" << " on " << logger::group(gid) << std::endl;
-  clone_info_[cid] = info;
-  clone_status_[cid] = clone_status::Suspended;
-  running_.erase(cid);
-  suspended_.insert(cid);
-  boost::tie(weight_, dump_weight_) = calc_weight();
-}
-
 void task::clone_halted(cid_t cid, clone_info const& info) {
   info_updated(cid, info);
   clone_halted(cid);
