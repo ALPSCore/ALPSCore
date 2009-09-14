@@ -295,7 +295,7 @@ int start(int argc, char** argv) {
             if (to_halt) {
               #pragma omp critical
               {
-                BOOST_FOREACH(task& t, tasks) t.suspend_remote_clones(proxy);
+                for (int t = 0; t < tasks.size(); ++t) tasks[t].suspend_remote_clones(proxy);
               }
               process.halt();
             }
