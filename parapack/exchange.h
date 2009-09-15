@@ -620,7 +620,6 @@ public:
     for (int p = 0; p < nrep; ++p) {
       for (int j = 1; j < 3637 /* 509th prime number */; ++j) engine()();
       wp["WORKER_SEED"] = engine()(); // different seed for each walker
-      std::cerr << wp["WORKER_SEED"] << std::endl;
       walker_[p] = helper::create_walker(wp, init_); // same DISORDER_SEED for all walkers
       tid_[p] = p;
     }
