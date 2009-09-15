@@ -26,6 +26,8 @@
 *****************************************************************************/
 
 #include "rng_helper.h"
+#include "process.h"
+
 #ifdef _OPENMP
 # include <omp.h>
 #endif
@@ -39,10 +41,14 @@ rng_helper::rng_helper(const Parameters& p) {
 #endif
   engines_.resize(nr);
   generators_.resize(nr);
-  #pragma omp parallel for
-  for (int r = 0; r < nr; ++r) {
-    engines_[r].reset(rng_factory.create(p.value_or_default("RNG", "mt19937")));
-    generators_[r].reset(new generator_type(*engines_[r], boost::uniform_real<>()));
+  #pragma omp parallel
+  {
+    for (int r = 0; r < nr; ++r) {
+      if (r == thread_id()) {
+        engines_[r].reset(rng_factory.create(p.value_or_default("RNG", "mt19937")));
+        generators_[r].reset(new generator_type(*engines_[r], boost::uniform_real<>()));
+      }
+    }
   }
   init(p);
 }

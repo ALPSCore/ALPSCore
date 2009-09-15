@@ -157,6 +157,7 @@ int start(int argc, char** argv) {
     int num_threads = 1;
 #ifdef _OPENMP
     num_threads = omp_get_max_threads();
+    omp_set_nested(1);
 #endif
     int num_groups = num_threads / opt.threads_per_clone;
 
@@ -248,9 +249,8 @@ int start(int argc, char** argv) {
 
     #pragma omp parallel num_threads(num_groups)
     {
-      thread_group group(0);
+      thread_group group(thread_id());
 #ifdef _OPENMP
-      group.group_id = omp_get_thread_num();
       omp_set_num_threads(opt.threads_per_clone);
 #endif
       #pragma omp master
@@ -268,39 +268,6 @@ int start(int argc, char** argv) {
       clone_proxy proxy(clone_ptr, opt.check_interval);
 
       while (true) {
-
-        #pragma omp master
-        {
-          if (!process.is_halting()) {
-            bool to_halt = false;
-            if (num_finished_tasks == tasks.size()) {
-              std::clog << logger::header() << "all tasks have been finished\n";
-              to_halt = true;
-            }
-            if (opt.time_limit != boost::posix_time::time_duration() &&
-                boost::posix_time::second_clock::local_time() > end_time) {
-              std::clog << logger::header() << "time limit reached\n";
-              to_halt = true;
-            }
-            signal_info_t s = signals();
-            if (s == signal_info::STOP || s == signal_info::TERMINATE) {
-              std::clog << logger::header() << "signal received\n";
-              to_halt = true;
-            }
-            if (exists(file_term)) {
-              std::clog << logger::header() << "termination file detected\n";
-              remove(file_term);
-              to_halt = true;
-            }
-            if (to_halt) {
-              #pragma omp critical
-              {
-                for (int t = 0; t < tasks.size(); ++t) tasks[t].suspend_remote_clones(proxy);
-              }
-              process.halt();
-            }
-          }
-        } // end omp master
 
         while (true) {
           if (clone_ptr && clone_ptr->halted()) {
@@ -373,6 +340,39 @@ int start(int argc, char** argv) {
             break;
           }
         }
+
+        #pragma omp master
+        {
+          if (!process.is_halting()) {
+            bool to_halt = false;
+            if (num_finished_tasks == tasks.size()) {
+              std::clog << logger::header() << "all tasks have been finished\n";
+              to_halt = true;
+            }
+            if (opt.time_limit != boost::posix_time::time_duration() &&
+                boost::posix_time::second_clock::local_time() > end_time) {
+              std::clog << logger::header() << "time limit reached\n";
+              to_halt = true;
+            }
+            signal_info_t s = signals();
+            if (s == signal_info::STOP || s == signal_info::TERMINATE) {
+              std::clog << logger::header() << "signal received\n";
+              to_halt = true;
+            }
+            if (exists(file_term)) {
+              std::clog << logger::header() << "termination file detected\n";
+              remove(file_term);
+              to_halt = true;
+            }
+            if (to_halt) {
+              #pragma omp critical
+              {
+                for (int t = 0; t < tasks.size(); ++t) tasks[t].suspend_remote_clones(proxy);
+              }
+              process.halt();
+            }
+          }
+        } // end omp master
 
         if (clone_ptr) {
 

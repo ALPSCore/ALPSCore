@@ -31,6 +31,10 @@
 #include "types.h"
 #include <alps/osiris.h>
 
+#ifdef _OPENMP
+# include <omp.h>
+#endif
+
 namespace alps {
 
 struct process_group {
@@ -58,6 +62,14 @@ struct thread_group {
   Process master() const { return Process(); }
   gid_t group_id;
 };
+
+inline int thread_id() {
+#ifndef _OPENMP
+  return 0;
+#else
+  return omp_get_thread_num();
+#endif
+}
 
 } // end namespace alps
 

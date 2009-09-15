@@ -47,13 +47,13 @@ public:
   uint32_t seed;
   uint32_t disorder_seed; // shared by all workers in each clone
   engine_type& engine() { return *(engines_[0]); }
-  engine_type& engine(int p) { return *(engines_[p]); }
-  generator_type& generator_01() { return (*generators_[0]); }
-  generator_type& generator_01(int p) { return (*generators_[p]); }
+  engine_type& engine(int r) { return *(engines_[r]); }
+  generator_type& generator_01() { return *(generators_[0]); }
+  generator_type& generator_01(int r) { return *(generators_[r]); }
   double random_01() { return generators_[0]->operator()(); }
-  double random_01(int p) { return generators_[p]->operator()(); }
+  double random_01(int r) { return generators_[r]->operator()(); }
   double uniform_01() { return random_01(); }
-  double uniform_01(int p) { return random_01(p); }
+  double uniform_01(int r) { return random_01(r); }
   // int random_int(int a, int b) { return a + int((b-a+1) * rngs[0]()); }
   // int random_int(int n) { return int(n * uniform_01()); }
   // double random() { return uniform_01(); } // obsolete
