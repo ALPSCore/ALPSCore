@@ -30,7 +30,7 @@
 /* $Id$ */
 
 /// \file buffered_rng.h
-/// \brief contains an efficient buffered implementation of a runtime-polymorphic random number generator 
+/// \brief contains an efficient buffered implementation of a runtime-polymorphic random number generator
 
 #ifndef ALPS_RANDOM_H
 #define ALPS_RANDOM_H
@@ -52,8 +52,8 @@
 
 namespace alps {
 
-/// \brief abstract base class of a runtime-polymorphic random number generator 
-/// 
+/// \brief abstract base class of a runtime-polymorphic random number generator
+///
 /// In order to mask the abstraction penalty, the derived generators
 /// do not produce single random numbers at each call, but instead a
 /// large buffer is filled in a virtual function call, and then
@@ -64,12 +64,12 @@ public:
   /// we create random numbers of type uint32_t
   typedef uint32_t result_type;
   typedef std::vector<result_type> buffer_type;
-  
+
   BOOST_STATIC_CONSTANT(bool, has_fixed_range = false);
 
   /// \brief the constructor
   /// \param b the size of the buffer
-  buffered_rng_base(std::size_t b=10240) 
+  buffered_rng_base(std::size_t b=10240)
    : buf_(b), ptr_(buf_.end()) {}
 
   buffered_rng_base(const buffered_rng_base& gen)
@@ -80,7 +80,7 @@ public:
 
   virtual ~buffered_rng_base() {}
 
-  /// \brief returns the next random number 
+  /// \brief returns the next random number
   ///
   /// numbers are taken from the buffer, which is refilled by a call
   /// to fill_buffer when it gets empty
@@ -91,14 +91,16 @@ public:
     }
     return *ptr_++;
   }
-  
+
   template <class OutputIterator>
   OutputIterator generate_n(std::size_t n, OutputIterator it);
-  
+
   /// seed with an unsigned integer
   virtual void seed(uint32_t) = 0;
   /// seed with the default value
   virtual void seed() =0;
+  /// seed with the pseudo_des generator
+  virtual void seed(pseudo_des& inigen) = 0;
   /// write the state to a std::ostream
   virtual void write(std::ostream&) const =0;
   /// read the state from a std::istream
@@ -141,6 +143,8 @@ public:
   /// \sa seed_with_sequence()
   void seed(uint32_t s) { seed_with_sequence(rng_,s); }
   void seed();
+  /// seed with the pseudo_des generator
+  void seed(pseudo_des& inigen) { seed_with_generator(rng_, inigen); }
 
   result_type min BOOST_PREVENT_MACRO_SUBSTITUTION () const { return rng_.min BOOST_PREVENT_MACRO_SUBSTITUTION (); }
   result_type max BOOST_PREVENT_MACRO_SUBSTITUTION () const { return rng_.max BOOST_PREVENT_MACRO_SUBSTITUTION (); }

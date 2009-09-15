@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>,
 *                            Mario Ruetti <mruetti@gmx.net>
 *
@@ -30,7 +30,7 @@
 /* $Id$ */
 
 /// \file seed.h
-/// \brief a generic seeding function for random number generators 
+/// \brief a generic seeding function for random number generators
 
 #ifndef ALPS_RANDOM_SEED_H
 #define ALPS_RANDOM_SEED_H
@@ -48,7 +48,7 @@
 namespace alps {
 
 /// \brief a generic seeding function for random number generators
-/// \param rng the random number generator to be seeded 
+/// \param rng the random number generator to be seeded
 /// \param seed the seed block number
 ///
 /// seeds a random number generator following the Boost specifications
@@ -66,6 +66,16 @@ void seed_with_sequence(RNG& rng, uint32_t seed)
   iterator_type start_it(boost::make_generator_iterator(start));
   iterator_type end_it(boost::make_generator_iterator(end));
   rng.seed(start_it,end_it);
+}
+
+template<class RNG, class INIGEN>
+void seed_with_generator(RNG& rng, INIGEN& inigen) {
+  INIGEN end(inigen);
+  inigen(); // make start != end
+  typedef typename boost::generator_iterator_generator<INIGEN>::type iterator_type;
+  iterator_type start_it(boost::make_generator_iterator(inigen));
+  iterator_type end_it(boost::make_generator_iterator(end));
+  rng.seed(start_it, end_it);
 }
 
 } // end namespace

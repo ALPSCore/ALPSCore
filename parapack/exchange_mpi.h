@@ -83,8 +83,8 @@ public:
     alps::Parameters wp(params);
     for (int p = 0; p < nrep_local_; ++p) {
       // different WORKER_SEED for each walker, same DISORDER_SEED for all walkers
-      for (int j = 1; j < 3637 /* 509th prime number */; ++j) (*engine_ptr)();
-      wp["WORKER_SEED"] = (*engine_ptr)();
+      for (int j = 1; j < 3637 /* 509th prime number */; ++j) engine()();
+      wp["WORKER_SEED"] = engine()();
       walker_[p] = helper::create_walker(wp, init_);
       tid_local_[p] = p + offset_local_;
     }
@@ -187,7 +187,7 @@ public:
         if (mcs_.random_exchange()) {
           // random exchange
           for (int p = 0; p < nrep - 1; ++p) permutation_[p] = p;
-          alps::random_shuffle(permutation_.begin(), permutation_.end(), uniform_01);
+          alps::random_shuffle(permutation_.begin(), permutation_.end(), generator_01());
 
           for (int i = 0; i < nrep - 1; ++i) {
             int p = permutation_[i];

@@ -618,8 +618,9 @@ public:
     tid_.resize(nrep);
     alps::Parameters wp(params);
     for (int p = 0; p < nrep; ++p) {
-      for (int j = 1; j < 3637 /* 509th prime number */; ++j) (*engine_ptr)();
-      wp["WORKER_SEED"] = (*engine_ptr)(); // different seed for each walker
+      for (int j = 1; j < 3637 /* 509th prime number */; ++j) engine()();
+      wp["WORKER_SEED"] = engine()(); // different seed for each walker
+      std::cerr << wp["WORKER_SEED"] << std::endl;
       walker_[p] = helper::create_walker(wp, init_); // same DISORDER_SEED for all walkers
       tid_[p] = p;
     }
@@ -695,7 +696,7 @@ public:
       if (mcs_.random_exchange()) {
         // random exchange
         for (int p = 0; p < nrep - 1; ++p) permutation_[p] = p;
-        alps::random_shuffle(permutation_.begin(), permutation_.end(), uniform_01);
+        alps::random_shuffle(permutation_.begin(), permutation_.end(), generator_01());
 
         for (int i = 0; i < nrep - 1; ++i) {
           int p = permutation_[i];

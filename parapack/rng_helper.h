@@ -38,38 +38,28 @@ namespace alps {
 
 class rng_helper {
 public:
-  rng_helper(const Parameters& p) :
-    engine_ptr(rng_factory.create(p.value_or_default("RNG", "mt19937"))),
-    uniform_01(*engine_ptr, boost::uniform_real<>()) {
-    init(p);
-  }
-  void init(const Parameters& p) {
-    seed = static_cast<uint32_t>(p["WORKER_SEED"]);
-    disorder_seed = static_cast<uint32_t>(p["DISORDER_SEED"]);
-    engine_ptr->seed(seed);
-    Disorder::seed(disorder_seed);
-  }
-  void load(IDump& dp) {
-    std::string state;
-    dp >> seed >> disorder_seed >> state;
-    std::stringstream rngstream(state);
-    engine_ptr->read_all(rngstream);
-    Disorder::seed(disorder_seed);
-  }
-  void save(ODump& dp) const {
-    std::ostringstream rngstream;
-    engine_ptr->write_all(rngstream);
-    dp << seed << disorder_seed << rngstream.str();
-  }
+  rng_helper(const Parameters& p);
+  void init(const Parameters& p);
+  void load(IDump& dp);
+  void save(ODump& dp) const;
   typedef buffered_rng_base engine_type;
+  typedef boost::variate_generator<engine_type&, boost::uniform_real<> > generator_type;
   uint32_t seed;
   uint32_t disorder_seed; // shared by all workers in each clone
-  mutable boost::shared_ptr<engine_type> engine_ptr;
-  boost::variate_generator<engine_type&, boost::uniform_real<> > uniform_01;
-  int random_int(int a, int b) { return a + int((b-a+1) * uniform_01()); }
-  int random_int(int n) { return int(n * uniform_01()); }
-  double random_01() { return uniform_01(); }
-  double random() { return uniform_01(); } // obsolete
+  engine_type& engine() { return *(engines_[0]); }
+  engine_type& engine(int p) { return *(engines_[p]); }
+  generator_type& generator_01() { return (*generators_[0]); }
+  generator_type& generator_01(int p) { return (*generators_[p]); }
+  double random_01() { return generators_[0]->operator()(); }
+  double random_01(int p) { return generators_[p]->operator()(); }
+  double uniform_01() { return random_01(); }
+  double uniform_01(int p) { return random_01(p); }
+  // int random_int(int a, int b) { return a + int((b-a+1) * rngs[0]()); }
+  // int random_int(int n) { return int(n * uniform_01()); }
+  // double random() { return uniform_01(); } // obsolete
+private:
+  mutable std::vector<boost::shared_ptr<engine_type> > engines_;
+  std::vector<boost::shared_ptr<generator_type> > generators_;
 };
 
 } // end namespace alps
