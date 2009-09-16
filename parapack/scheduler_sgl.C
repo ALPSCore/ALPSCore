@@ -87,11 +87,11 @@ int run_sequential(int argc, char **argv) {
       worker = worker_factory::make_worker(p);
     worker->init_observables(p, obs);
     bool thermalized = worker->is_thermalized();
-    if (thermalized) { BOOST_FOREACH(alps::ObservableSet& o, obs) { o.reset(true); } }
+    if (thermalized) for (int i = 0; i < obs.size(); ++i) obs[i].reset(true);
     while (worker->progress() < 1.0) {
       worker->run(obs);
       if (!thermalized && worker->is_thermalized()) {
-        BOOST_FOREACH(alps::ObservableSet& o, obs) { o.reset(true); }
+        for (int i = 0; i < obs.size(); ++i) obs[i].reset(true);
         thermalized = true;
       }
     }
@@ -157,7 +157,7 @@ int start(int argc, char** argv) {
     int num_threads = 1;
 #ifdef _OPENMP
     num_threads = omp_get_max_threads();
-    omp_set_nested(1);
+    omp_set_nested(true);
 #endif
     int num_groups = num_threads / opt.threads_per_clone;
 
