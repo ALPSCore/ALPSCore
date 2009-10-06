@@ -57,7 +57,7 @@ option::option(int argc, char** argv, int np, int pid)
     ("check-parameter", "perform parameter checking")
     ("check-interval", po::value<int>(),
      "time between status check [unit = sec; default = 1s]")
-    ("checkpoint-time", po::value<int>(),
+    ("checkpoint-interval", po::value<int>(),
      "time between checkpointing [unit = sec; default = 3600s]")
     ("evaluate", "evaluation mode")
     ("Nmin", "obsolete")
