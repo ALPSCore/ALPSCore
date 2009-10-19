@@ -38,8 +38,9 @@ check_PROGRAMS = alea$(EXEEXT) clone_info$(EXEEXT) \
 	clone_phase$(EXEEXT) clone_timer$(EXEEXT) \
 	exmc_optimize$(EXEEXT) exp_number$(EXEEXT) id2string$(EXEEXT) \
 	info_test$(EXEEXT) integer_range$(EXEEXT) \
-	linear_regression$(EXEEXT) percentage$(EXEEXT) time$(EXEEXT) \
-	version$(EXEEXT) wl_weight$(EXEEXT) $(am__EXEEXT_1)
+	linear_regression$(EXEEXT) percentage$(EXEEXT) \
+	temperature_scan$(EXEEXT) time$(EXEEXT) version$(EXEEXT) \
+	wl_weight$(EXEEXT) $(am__EXEEXT_1)
 @HAVE_BOOST_MPI_TRUE@am__append_1 = \
 @HAVE_BOOST_MPI_TRUE@	comm_mpi \
 @HAVE_BOOST_MPI_TRUE@	collect_mpi \
@@ -209,6 +210,12 @@ process_mpi_DEPENDENCIES = $(am__DEPENDENCIES_3)
 process_mpi_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
 	$(CXXFLAGS) $(process_mpi_LDFLAGS) $(LDFLAGS) -o $@
+am_temperature_scan_OBJECTS = temperature_scan.$(OBJEXT)
+temperature_scan_OBJECTS = $(am_temperature_scan_OBJECTS)
+temperature_scan_DEPENDENCIES = $(am__DEPENDENCIES_2)
+temperature_scan_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
+	$(CXXFLAGS) $(temperature_scan_LDFLAGS) $(LDFLAGS) -o $@
 am_time_OBJECTS = time.$(OBJEXT)
 time_OBJECTS = $(am_time_OBJECTS)
 time_DEPENDENCIES = $(am__DEPENDENCIES_2)
@@ -246,8 +253,8 @@ SOURCES = $(alea_SOURCES) $(clone_info_SOURCES) $(clone_phase_SOURCES) \
 	$(halt_mpi_SOURCES) $(id2string_SOURCES) $(info_test_SOURCES) \
 	$(info_test_mpi_SOURCES) $(integer_range_SOURCES) \
 	$(linear_regression_SOURCES) $(percentage_SOURCES) \
-	$(process_mpi_SOURCES) $(time_SOURCES) $(version_SOURCES) \
-	$(wl_weight_SOURCES)
+	$(process_mpi_SOURCES) $(temperature_scan_SOURCES) \
+	$(time_SOURCES) $(version_SOURCES) $(wl_weight_SOURCES)
 DIST_SOURCES = $(alea_SOURCES) $(clone_info_SOURCES) \
 	$(clone_phase_SOURCES) $(clone_timer_SOURCES) \
 	$(collect_mpi_SOURCES) $(comm_mpi_SOURCES) \
@@ -256,8 +263,8 @@ DIST_SOURCES = $(alea_SOURCES) $(clone_info_SOURCES) \
 	$(id2string_SOURCES) $(info_test_SOURCES) \
 	$(info_test_mpi_SOURCES) $(integer_range_SOURCES) \
 	$(linear_regression_SOURCES) $(percentage_SOURCES) \
-	$(process_mpi_SOURCES) $(time_SOURCES) $(version_SOURCES) \
-	$(wl_weight_SOURCES)
+	$(process_mpi_SOURCES) $(temperature_scan_SOURCES) \
+	$(time_SOURCES) $(version_SOURCES) $(wl_weight_SOURCES)
 DATA = $(dist_noinst_DATA)
 ETAGS = etags
 CTAGS = ctags
@@ -448,6 +455,7 @@ dist_noinst_DATA = \
 	linear_regression.op \
 	percentage.op \
 	process_mpi.op-8 \
+	temperature_scan.ip temperature_scan.op \
 	wl_weight.op \
 	worker_mpi.ip-4 worker_mpi.op-4
 
@@ -508,6 +516,9 @@ percentage_LDADD = $(LIBS_SGL)
 process_mpi_SOURCES = process_mpi.C
 process_mpi_LDFLAGS = $(LDFLAGS_MPI)
 process_mpi_LDADD = $(LIBS_MPI)
+temperature_scan_SOURCES = temperature_scan.C
+temperature_scan_LDFLAGS = $(LDFLAGS_SGL)
+temperature_scan_LDADD = $(LIBS_SGL)
 time_SOURCES = time.C
 time_LDFLAGS = $(LDFLAGS_SGL)
 time_LDADD = $(LIBS_SGL)
@@ -611,6 +622,9 @@ percentage$(EXEEXT): $(percentage_OBJECTS) $(percentage_DEPENDENCIES)
 process_mpi$(EXEEXT): $(process_mpi_OBJECTS) $(process_mpi_DEPENDENCIES) 
 	@rm -f process_mpi$(EXEEXT)
 	$(process_mpi_LINK) $(process_mpi_OBJECTS) $(process_mpi_LDADD) $(LIBS)
+temperature_scan$(EXEEXT): $(temperature_scan_OBJECTS) $(temperature_scan_DEPENDENCIES) 
+	@rm -f temperature_scan$(EXEEXT)
+	$(temperature_scan_LINK) $(temperature_scan_OBJECTS) $(temperature_scan_LDADD) $(LIBS)
 time$(EXEEXT): $(time_OBJECTS) $(time_DEPENDENCIES) 
 	@rm -f time$(EXEEXT)
 	$(time_LINK) $(time_OBJECTS) $(time_LDADD) $(LIBS)
@@ -644,6 +658,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/linear_regression.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/percentage.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/process_mpi.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/temperature_scan.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/time.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/version.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wl_weight.Po@am__quote@

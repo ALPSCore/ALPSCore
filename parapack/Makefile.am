@@ -28,6 +28,7 @@ dist_noinst_DATA = \
 	linear_regression.op \
 	percentage.op \
 	process_mpi.op-8 \
+	temperature_scan.ip temperature_scan.op \
 	wl_weight.op \
 	worker_mpi.ip-4 worker_mpi.op-4
 
@@ -43,6 +44,7 @@ check_PROGRAMS = \
 	integer_range \
 	linear_regression \
 	percentage \
+	temperature_scan \
 	time \
 	version \
 	wl_weight
@@ -130,6 +132,10 @@ percentage_LDADD = $(LIBS_SGL)
 process_mpi_SOURCES = process_mpi.C
 process_mpi_LDFLAGS = $(LDFLAGS_MPI)
 process_mpi_LDADD = $(LIBS_MPI)
+
+temperature_scan_SOURCES = temperature_scan.C
+temperature_scan_LDFLAGS = $(LDFLAGS_SGL)
+temperature_scan_LDADD = $(LIBS_SGL)
 
 time_SOURCES = time.C
 time_LDFLAGS = $(LDFLAGS_SGL)
