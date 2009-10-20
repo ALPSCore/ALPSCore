@@ -8,6 +8,7 @@ else
 endif
 
 check_PROGRAMS = example1 example2 example3 example4 example5 example6 example7 example8 example9 example10 example11 \
+	coloring \
 	label \
 	parity
 
@@ -22,10 +23,12 @@ example8_SOURCES = example8.C
 example9_SOURCES = example9.C
 example10_SOURCES = example10.C
 example11_SOURCES = example11.C
+coloring_SOURCES = coloring.C
 label_SOURCES = label.C
 parity_SOURCES = parity.C
 
 dist_noinst_DATA = example1.output example2.output example3.output example4.output example5.output example6.output example7.input example7.output example8.input example8.output example9.input example9.output example10.output example11.output \
+	coloring.input coloring.output \
 	label.input label.output \
 	parity.input parity.output
 

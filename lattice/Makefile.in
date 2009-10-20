@@ -37,8 +37,8 @@ host_triplet = @host@
 check_PROGRAMS = example1$(EXEEXT) example2$(EXEEXT) example3$(EXEEXT) \
 	example4$(EXEEXT) example5$(EXEEXT) example6$(EXEEXT) \
 	example7$(EXEEXT) example8$(EXEEXT) example9$(EXEEXT) \
-	example10$(EXEEXT) example11$(EXEEXT) label$(EXEEXT) \
-	parity$(EXEEXT)
+	example10$(EXEEXT) example11$(EXEEXT) coloring$(EXEEXT) \
+	label$(EXEEXT) parity$(EXEEXT)
 subdir = test/lattice
 DIST_COMMON = $(dist_noinst_DATA) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/parameters.in \
@@ -67,10 +67,25 @@ CONFIG_HEADER = $(top_builddir)/src/alps/config.h \
 	$(top_builddir)/src/boost/fs_utf8_codecvt_facet.cpp
 CONFIG_CLEAN_FILES = parameters parameters_complex
 CONFIG_CLEAN_VPATH_FILES =
+am_coloring_OBJECTS = coloring.$(OBJEXT)
+coloring_OBJECTS = $(am_coloring_OBJECTS)
+coloring_LDADD = $(LDADD)
+am__DEPENDENCIES_1 =
+@BUILD_UNIFIED_LIB_FALSE@coloring_DEPENDENCIES = $(top_builddir)/lib/alps/libparapack-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
+@BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1)
+@BUILD_UNIFIED_LIB_TRUE@coloring_DEPENDENCIES = $(top_builddir)/lib/alps/libalps-sgl.la \
+@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
+@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1)
 am_example1_OBJECTS = example1.$(OBJEXT)
 example1_OBJECTS = $(am_example1_OBJECTS)
 example1_LDADD = $(LDADD)
-am__DEPENDENCIES_1 =
 @BUILD_UNIFIED_LIB_FALSE@example1_DEPENDENCIES = $(top_builddir)/lib/alps/libparapack-sgl.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
@@ -275,16 +290,16 @@ CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(example1_SOURCES) $(example10_SOURCES) \
+SOURCES = $(coloring_SOURCES) $(example1_SOURCES) $(example10_SOURCES) \
 	$(example11_SOURCES) $(example2_SOURCES) $(example3_SOURCES) \
 	$(example4_SOURCES) $(example5_SOURCES) $(example6_SOURCES) \
 	$(example7_SOURCES) $(example8_SOURCES) $(example9_SOURCES) \
 	$(label_SOURCES) $(parity_SOURCES)
-DIST_SOURCES = $(example1_SOURCES) $(example10_SOURCES) \
-	$(example11_SOURCES) $(example2_SOURCES) $(example3_SOURCES) \
-	$(example4_SOURCES) $(example5_SOURCES) $(example6_SOURCES) \
-	$(example7_SOURCES) $(example8_SOURCES) $(example9_SOURCES) \
-	$(label_SOURCES) $(parity_SOURCES)
+DIST_SOURCES = $(coloring_SOURCES) $(example1_SOURCES) \
+	$(example10_SOURCES) $(example11_SOURCES) $(example2_SOURCES) \
+	$(example3_SOURCES) $(example4_SOURCES) $(example5_SOURCES) \
+	$(example6_SOURCES) $(example7_SOURCES) $(example8_SOURCES) \
+	$(example9_SOURCES) $(label_SOURCES) $(parity_SOURCES)
 DATA = $(dist_noinst_DATA)
 ETAGS = etags
 CTAGS = ctags
@@ -470,9 +485,11 @@ example8_SOURCES = example8.C
 example9_SOURCES = example9.C
 example10_SOURCES = example10.C
 example11_SOURCES = example11.C
+coloring_SOURCES = coloring.C
 label_SOURCES = label.C
 parity_SOURCES = parity.C
 dist_noinst_DATA = example1.output example2.output example3.output example4.output example5.output example6.output example7.input example7.output example8.input example8.output example9.input example9.output example10.output example11.output \
+	coloring.input coloring.output \
 	label.input label.output \
 	parity.input parity.output
 
@@ -523,6 +540,9 @@ clean-checkPROGRAMS:
 	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
 	echo " rm -f" $$list; \
 	rm -f $$list
+coloring$(EXEEXT): $(coloring_OBJECTS) $(coloring_DEPENDENCIES) 
+	@rm -f coloring$(EXEEXT)
+	$(CXXLINK) $(coloring_OBJECTS) $(coloring_LDADD) $(LIBS)
 example1$(EXEEXT): $(example1_OBJECTS) $(example1_DEPENDENCIES) 
 	@rm -f example1$(EXEEXT)
 	$(CXXLINK) $(example1_OBJECTS) $(example1_LDADD) $(LIBS)
@@ -569,6 +589,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/coloring.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/example1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/example10.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/example11.Po@am__quote@
