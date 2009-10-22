@@ -26,19 +26,11 @@
 *****************************************************************************/
 
 #include "rng_helper.h"
-#include "process.h"
-
-#ifdef _OPENMP
-# include <omp.h>
-#endif
 
 namespace alps {
 
 rng_helper::rng_helper(const Parameters& p) {
-  int nr = 1;
-#ifdef _OPENMP
-  nr = omp_get_max_threads();
-#endif
+  int nr = max_threads();
   engines_.resize(nr);
   generators_.resize(nr);
   #pragma omp parallel

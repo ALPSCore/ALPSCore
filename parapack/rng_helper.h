@@ -28,6 +28,7 @@
 #ifndef PARAPACK_RNG_HELPER_H
 #define PARAPACK_RNG_HELPER_H
 
+#include "process.h"
 #include "types.h"
 #include <alps/config.h>
 #include <alps/osiris.h>
@@ -81,5 +82,46 @@ inline alps::ODump& operator<<(alps::ODump& dp, alps::rng_helper const& rng) {
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // end namespace alps
 #endif
+
+namespace alps {
+  
+template<typename DIST>
+class distribution_helper {
+public:
+  typedef buffered_rng_base engine_type;
+  typedef DIST distribution_type;
+  typedef boost::variate_generator<engine_type&, distribution_type> generator_type;
+  distribution_helper(rng_helper& rng, distribution_type const& dist = distribution_type()) {
+    int nr = max_threads();
+    generators_.resize(nr);
+    #pragma omp parallel
+    {
+      for (int r = 0; r < nr; ++r)
+        if (r == thread_id())
+          generators_[r].reset(new generator_type(rng.engine(r), dist));
+    }
+  }
+  void load(IDump& dp) {
+    std::string state;
+    for (int r = 0; r < generators_.size(); ++r) {
+      dp >> state;
+      std::stringstream rngstream(state);
+      rngstream >> generators_[r]->distribution();
+    }
+  }
+  void save(ODump& dp) const {
+    std::ostringstream rngstream;
+    for (int r = 0; r < generators_.size(); ++r) {
+      rngstream << generators_[r]->distribution();
+      dp << rngstream.str();
+    }
+  }
+  double operator()() { return generators_[0]->operator()(); }
+  double operator()(int r) { return generators_[r]->operator()(); }
+private:
+  std::vector<boost::shared_ptr<generator_type> > generators_;
+};
+  
+} // end namespace alps
 
 #endif // PARAPACK_RNG_HELPER_H

@@ -71,6 +71,14 @@ inline int thread_id() {
 #endif
 }
 
+inline int max_threads() {
+#ifndef _OPENMP
+  return 1;
+#else
+  return omp_get_max_threads();
+#endif
+}
+
 } // end namespace alps
 
 #endif // PARAPACK_PROCESS_H
