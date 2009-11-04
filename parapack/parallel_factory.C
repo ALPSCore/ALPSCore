@@ -55,34 +55,41 @@ parallel_worker_factory* parallel_worker_factory::instance() {
 parallel_worker_factory::creator_pointer_type
 parallel_worker_factory::make_creator(Parameters const& params) const {
   if (worker_creators_.size() == 0) {
-    std::cerr << "Error: no worker registered\n";
+    std::cerr << "Error: no algorithm registered\n";
     boost::throw_exception(std::runtime_error("parallel_worker_factory::make_creator()"));
   }
+  std::string algoname = "";
+  if (params.defined("ALGORITHM")) {
+    algoname = params["ALGORITHM"];
+  } else if (params.defined("WORKER")) {
+    algoname = params["WORKER"];
+    std::clog << "Warning: parameter WORKER is obsolete.  Please use ALGORITHM instead.\n";
+  }
   if (worker_creators_.size() == 1) {
-    if (params.defined("WORKER") && worker_creators_.begin()->first != params["WORKER"]) {
-      std::clog << "Warning: unknown worker: \"" << params["WORKER"]
-                << "\".  The only worker \"" << worker_creators_.begin()->first
+    if (algoname != "" && worker_creators_.begin()->first != algoname) {
+      std::clog << "Warning: unknown algorithm: \"" << algoname
+                << "\".  The only algorithm \"" << worker_creators_.begin()->first
                 << "\" will be used instead.\n";
     }
     return worker_creators_.begin()->second;
   }
-  if (!params.defined("WORKER")) {
-    std::cerr << "Error: no worker specified (registered workers: ";
+  if (algoname == "") {
+    std::cerr << "Error: no algorithm specified (registered algorithms: ";
     for (creator_map_type::const_iterator itr = worker_creators_.begin();
          itr != worker_creators_.end(); ++itr) {
       if (itr != worker_creators_.begin()) std::cerr << ", ";
-      std::cerr << itr->first;
+      std::cerr << "\"" << itr->first << "\"";
     }
     std::cerr << std::endl;
     boost::throw_exception(std::runtime_error("worker_factory::make_creator()"));
   }
-  creator_map_type::const_iterator itr = worker_creators_.find(params["WORKER"]);
+  creator_map_type::const_iterator itr = worker_creators_.find(algoname);
   if (itr == worker_creators_.end() || itr->second == 0) {
-    std::cerr << "Error: unknown worker: \"" << params["WORKER"] << "\" (registered workers: ";
+    std::cerr << "Error: unknown algorithm: \"" << algoname << "\" (registered algorithms: ";
     for (creator_map_type::const_iterator itr = worker_creators_.begin();
          itr != worker_creators_.end(); ++itr) {
       if (itr != worker_creators_.begin()) std::cerr << ", ";
-      std::cerr << itr->first;
+      std::cerr << "\"" << itr->first << "\"";
     }
     std::cerr << ")\n";
     boost::throw_exception(std::runtime_error("worker_factory::make_creator()"));

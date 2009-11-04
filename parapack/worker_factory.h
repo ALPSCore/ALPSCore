@@ -246,6 +246,12 @@ const bool BOOST_JOIN(version_, __LINE__) \
   = alps::parapack::worker_factory::instance()->set_version(str); \
 }
 
+#define PARAPACK_REGISTER_ALGORITHM(worker, name) \
+namespace { \
+const bool BOOST_JOIN(worker_, __LINE__) \
+  = alps::parapack::worker_factory::instance()->register_worker<worker>(name); \
+}
+
 #define PARAPACK_REGISTER_WORKER(worker, name) \
 namespace { \
 const bool BOOST_JOIN(worker_, __LINE__) \

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -95,6 +95,12 @@ private:
 
 } // end namespace parapack
 } // end namespace alps
+
+#define PARAPACK_REGISTER_PARALLEL_ALGORITHM(worker, name) \
+namespace { \
+  const bool BOOST_JOIN(worker_, __LINE__) \
+    = alps::parapack::parallel_worker_factory::instance()->register_worker<worker>(name); \
+}
 
 #define PARAPACK_REGISTER_PARALLEL_WORKER(worker, name) \
 namespace { \

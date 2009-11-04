@@ -169,34 +169,41 @@ worker_factory* worker_factory::instance() {
 
 worker_factory::creator_pointer_type worker_factory::make_creator(Parameters const& params) const {
   if (worker_creators_.size() == 0) {
-    std::cerr << "Error: no worker registered\n";
+    std::cerr << "Error: no algorithm registered\n";
     boost::throw_exception(std::runtime_error("worker_factory::make_creator()"));
   }
+  std::string algoname = "";
+  if (params.defined("ALGORITHM")) {
+    algoname = params["ALGORITHM"];
+  } else if (params.defined("WORKER")) {
+    algoname = params["WORKER"];
+    std::clog << "Warning: parameter WORKER is obsolete.  Please use ALGORITHM instead.\n";
+  }
   if (worker_creators_.size() == 1) {
-    if (params.defined("WORKER") && worker_creators_.begin()->first != params["WORKER"]) {
-      std::clog << "Warning: unknown worker: \"" << params["WORKER"]
-                << "\".  The only worker \"" << worker_creators_.begin()->first
+    if (algoname != "" && worker_creators_.begin()->first != algoname) {
+      std::clog << "Warning: unknown algorithm: \"" << algoname
+                << "\".  The only algorithm \"" << worker_creators_.begin()->first
                 << "\" will be used instead.\n";
     }
     return worker_creators_.begin()->second;
   }
-  if (!params.defined("WORKER")) {
-    std::cerr << "Error: no worker specified (registered workers: ";
+  if (algoname == "") {
+    std::cerr << "Error: no algorithm specified (registered algorithms: ";
     for (creator_map_type::const_iterator itr = worker_creators_.begin();
          itr != worker_creators_.end(); ++itr) {
       if (itr != worker_creators_.begin()) std::cerr << ", ";
-      std::cerr << itr->first;
+      std::cerr << "\"" << itr->first << "\"";
     }
     std::cerr << std::endl;
     boost::throw_exception(std::runtime_error("worker_factory::make_creator()"));
   }
-  creator_map_type::const_iterator itr = worker_creators_.find(params["WORKER"]);
+  creator_map_type::const_iterator itr = worker_creators_.find(algoname);
   if (itr == worker_creators_.end() || itr->second == 0) {
-    std::cerr << "Error: unknown worker: \"" << params["WORKER"] << "\" (registered workers: ";
+    std::cerr << "Error: unknown algorithm: \"" << algoname << "\" (registered algorithms: ";
     for (creator_map_type::const_iterator itr = worker_creators_.begin();
          itr != worker_creators_.end(); ++itr) {
       if (itr != worker_creators_.begin()) std::cerr << ", ";
-      std::cerr << itr->first;
+      std::cerr << "\"" << itr->first << "\"";
     }
     std::cerr << ")\n";
     boost::throw_exception(std::runtime_error("worker_factory::make_creator()"));
@@ -228,55 +235,67 @@ evaluator_factory* evaluator_factory::instance() {
 
 evaluator_factory::creator_pointer_type
 evaluator_factory::make_creator(Parameters const& params) const {
-  if (params.defined("EVALUATOR") && params["EVALUATOR"] == "default") {
-    return creator_pointer_type(new evaluator_creator<simple_evaluator>);
-  }
-  if (evaluator_creators_.size() == 0) {
-    if (params.defined("EVALUATOR")) {
-      std::clog << "Warning: unknown evaluator: " << params["EVALUATOR"]
-                << ".  The default evaluator will be used instead\n";
+  std::string evalname = "";
+  if (params.defined("EVALUATOR")) evalname = params["EVALUATOR"];
+  std::string algoname = "";
+  if (evalname == "") {
+    if (params.defined("ALGORITHM")) {
+      algoname = params["ALGORITHM"];
     } else if (params.defined("WORKER")) {
-      std::clog << "Warning: unknown evaluator: " << params["WORKER"]
+      algoname = params["WORKER"];
+      std::clog << "Warning: parameter WORKER is obsolete.  Please use ALGORITHM instead.\n";
+    }
+  }
+  if (evalname == "default") {
+    // return default evaluator
+  } else if (evaluator_creators_.size() == 0) {
+    if (evalname != "") {
+      std::clog << "Warning: unknown evaluator: " << evalname
+                << ".  The default evaluator will be used instead\n";
+    } else if (algoname != "") {
+      std::clog << "Warning: unknown evaluator: " << algoname
                 << ".  The default evaluator will be used instead\n";
     } else {
       std::clog << "Info: no evaluator registered.  The default evaluator will be used";
     }
-    return creator_pointer_type(new evaluator_creator<simple_evaluator>);
-  }
-  if (evaluator_creators_.size() == 1) {
-    if (params.defined("EVALUATOR") && evaluator_creators_.begin()->first != params["EVALUATOR"]) {
-      std::clog << "Warning: unknown evaluator: \"" << params["EVALUATOR"]
+  } else if (evaluator_creators_.size() == 1) {
+    if (evalname != "" && evaluator_creators_.begin()->first != evalname) {
+      std::clog << "Warning: unknown evaluator: \"" << evalname
                 << "\".  The only evaluator \"" << evaluator_creators_.begin()->first
                 << "\" will be used instead.\n";
-    } else if (params.defined("WORKER") && evaluator_creators_.begin()->first != params["WORKER"]) {
-      std::clog << "Warning: unknown evaluator: \"" << params["WORKER"]
+    } else if (algoname != "" && evaluator_creators_.begin()->first != algoname) {
+      std::clog << "Warning: unknown evaluator: \"" << algoname
                 << "\".  The only evaluator \"" << evaluator_creators_.begin()->first
                 << "\" will be used instead.\n";
     }
     return evaluator_creators_.begin()->second;
-  }
-  if (params.defined("EVALUATOR")) {
-    creator_map_type::const_iterator itr = evaluator_creators_.find(params["EVALUATOR"]);
-    if (itr == evaluator_creators_.end() || itr->second == 0) {
-      std::cerr << "Error: unknown evaluator: \"" << params["EVALUATOR"]
+  } else if (evalname != "") {
+    creator_map_type::const_iterator itr = evaluator_creators_.find(evalname);
+    if (itr != evaluator_creators_.end() && itr->second != 0) {
+      return itr->second;
+    } else {
+      std::cerr << "Warning: unknown evaluator: \"" << evalname
                 << "\" (registered evaluators: ";
       for (creator_map_type::const_iterator itr = evaluator_creators_.begin();
            itr != evaluator_creators_.end(); ++itr) {
         if (itr != evaluator_creators_.begin()) std::cerr << ", ";
-        std::cerr << itr->first;
+        std::cerr << "\"" << itr->first << "\"";
       }
-      std::cerr << ")\n";
-      boost::throw_exception(std::runtime_error("evaluator_factory::make_creator()"));
+      std::cerr << ").  The default evaluator will be used instead.\n";
     }
-    return itr->second;
-  } else if (params.defined("WORKER")) {
-    creator_map_type::const_iterator itr = evaluator_creators_.find(params["WORKER"]);
-    if (itr == evaluator_creators_.end() || itr->second == 0) {
-      std::clog << "Info: unknown evaluator: \"" << params["WORKER"]
-                << "\".  The default evaluator will be used instead\n";
-      return creator_pointer_type(new evaluator_creator<simple_evaluator>);
-    } else {
+  } else if (algoname != "") {
+    creator_map_type::const_iterator itr = evaluator_creators_.find(algoname);
+    if (itr != evaluator_creators_.end() && itr->second != 0) {
       return itr->second;
+    } else {
+      std::cerr << "Warning: unknown evaluator: \"" << algoname
+                << "\" (registered evaluators: ";
+      for (creator_map_type::const_iterator itr = evaluator_creators_.begin();
+           itr != evaluator_creators_.end(); ++itr) {
+        if (itr != evaluator_creators_.begin()) std::cerr << ", ";
+        std::cerr << "\"" << itr->first << "\"";
+      }
+      std::cerr << ").  The default evaluator will be used instead.\n";
     }
   }
   // default evaluator
