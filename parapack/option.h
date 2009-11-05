@@ -42,7 +42,7 @@ struct option {
   boost::posix_time::time_duration checkpoint_interval;
   boost::posix_time::time_duration report_interval;
   boost::posix_time::time_duration time_limit;
-  int procs_per_clone;
+  int num_total_threads;
   int threads_per_clone;
   bool check_parameter;
   bool auto_evaluate;

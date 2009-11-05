@@ -154,12 +154,10 @@ int start(int argc, char** argv) {
     std::vector<task> tasks;
     task_queue_t task_queue;
     int num_finished_tasks = 0;
-    int num_threads = 1;
+    int num_groups = opt.num_total_threads / opt.threads_per_clone;
 #ifdef _OPENMP
-    num_threads = omp_get_max_threads();
     omp_set_nested(true);
 #endif
-    int num_groups = num_threads / opt.threads_per_clone;
 
     //
     // evaluation only
@@ -219,7 +217,7 @@ int start(int argc, char** argv) {
       std::clog << "  master input file  = " << file_in.native_file_string() << std::endl
                 << "  master output file = " << file_out.native_file_string() << std::endl
                 << "  termination file   = " << file_term.native_file_string() << std::endl
-                << "  number of thread(s)       = " << num_threads << std::endl
+                << "  total number of thread(s) = " << opt.num_total_threads << std::endl
                 << "  thread(s) per clone       = " << opt.threads_per_clone << std::endl
                 << "  number of thread group(s) = " << num_groups << std::endl
                 << "  check parameter = " << (opt.check_parameter ? "yes" : "no") << std::endl

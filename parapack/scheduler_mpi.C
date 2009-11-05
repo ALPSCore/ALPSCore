@@ -154,7 +154,8 @@ int start(int argc, char** argv) {
 
   BOOST_FOREACH(std::string const& file_str, opt.jobfiles) {
 
-    process_helper_mpi process(world, opt.procs_per_clone);
+    process_helper_mpi
+      process(world, world.size() * opt.threads_per_clone / opt.num_total_threads);
 
     boost::filesystem::path file = complete(boost::filesystem::path(file_str)).normalize();
     boost::filesystem::path basedir = file.branch_path();
@@ -228,9 +229,12 @@ int start(int argc, char** argv) {
       std::clog << "  master input file  = " << file_in.native_file_string() << std::endl
                 << "  master output file = " << file_out.native_file_string() << std::endl
                 << "  termination file   = " << file_term.native_file_string() << std::endl
-                << "  number of process(es) = " << process.num_total_processes() << std::endl
-                << "  process(es) per clone = " << process.num_procs_per_group() << std::endl
-                << "  number of process group(s) = " << process.num_groups() << std::endl
+                << "  total number of process(es)/thread(s) = "
+                << process.num_total_processes() << "/" << opt.num_total_threads << std::endl
+                << "  process(es)/thread(s) per clone       = "
+                << process.num_procs_per_group() << "/" << opt.threads_per_clone << std::endl
+                << "  number of process group(s)            = "
+                << process.num_groups() << std::endl
                 << "  check parameter = " << (opt.check_parameter ? "yes" : "no") << std::endl
                 << "  auto evaluation = " << (opt.auto_evaluate ? "yes" : "no") << std::endl;
       if (opt.time_limit != boost::posix_time::time_duration())
@@ -256,6 +260,10 @@ int start(int argc, char** argv) {
       if (tasks.size() == 0) std::clog << "Warning: no tasks found\n";
       check_queue.push(next_taskinfo(opt.checkpoint_interval / 2));
     }
+
+#ifdef _OPENMP
+    omp_set_num_threads(opt.num_total_threads / process.num_total_processes());
+#endif
 
     clone_mpi* clone_ptr = 0;
     while (true) {
@@ -303,9 +311,6 @@ int start(int argc, char** argv) {
                 std::clog << logger::header() << "progress report: "
                           << logger::clone(msg.task_id, msg.clone_id) << " is " << msg.info.phase()
                           << " (" << precision(msg.info.progress() * 100, 3) << "% done)\n";
-                if (tasks[msg.task_id].on_memory() && tasks[msg.task_id].is_running(msg.clone_id))
-                  check_queue.push(next_report(msg.task_id, msg.clone_id, msg.group_id,
-                    opt.report_interval));
               } else {
                 tasks[msg.task_id].info_updated(msg.clone_id, msg.info);
                 tasks[msg.task_id].halt_clone(proxy, msg.clone_id, process_group(msg.group_id));
@@ -318,8 +323,6 @@ int start(int argc, char** argv) {
                         << " (" << precision(msg.info.progress() * 100, 3) << "% done)\n";
               if (tasks[msg.task_id].on_memory() && tasks[msg.task_id].is_running(msg.clone_id))
                 tasks[msg.task_id].info_updated(msg.clone_id, msg.info);
-              check_queue.push(next_checkpoint(msg.task_id, msg.clone_id, msg.group_id,
-                opt.checkpoint_interval));
             } else if (status->tag() == mcmp_tag::clone_suspend) {
               clone_info_msg_t msg;
               process.comm_ctrl().recv(mpi::any_source, status->tag(), msg);

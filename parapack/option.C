@@ -26,6 +26,7 @@
 *****************************************************************************/
 
 #include "option.h"
+#include "process.h"
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/foreach.hpp>
@@ -42,10 +43,10 @@ namespace po = boost::program_options;
 namespace pt = boost::posix_time;
 
 option::option(int argc, char** argv, int np, int pid)
-  : time_limit(), procs_per_clone(1), threads_per_clone(1), check_parameter(false),
-    auto_evaluate(false), evaluate_only(false), jobfiles(), valid(true) {
+  : time_limit(), num_total_threads(np == 1 ? max_threads() : np), threads_per_clone(1),
+    check_parameter(false), auto_evaluate(false), evaluate_only(false), jobfiles(), valid(true) {
 
-  check_interval = pt::seconds(1);
+  check_interval = pt::millisec(100);
   checkpoint_interval = pt::seconds(3600);
   report_interval = pt::seconds(600);
 
@@ -56,7 +57,7 @@ option::option(int argc, char** argv, int np, int pid)
     ("auto-evaluate", "evaluate observables upon halting")
     ("check-parameter", "perform parameter checking")
     ("check-interval", po::value<int>(),
-     "time between status check [unit = sec; default = 1s]")
+     "time between internal status check [unit = millisec; default = 100ms]")
     ("checkpoint-interval", po::value<int>(),
      "time between checkpointing [unit = sec; default = 3600s]")
     ("evaluate", "evaluation mode")
@@ -68,10 +69,10 @@ option::option(int argc, char** argv, int np, int pid)
      "time limit for the simulation [unit = sec; defulat = no time limit]")
     ("Tmin", "obsolete")
     ("Tmax", "obsolete")
-    ("procs-per-clone,p", po::value<int>(),
-     "number of processes for each clone [default = 1]")
-    ("threads-per-clone,r", po::value<int>(),
+    ("threads-per-clone,p", po::value<int>(),
      "number of threads for each clone [default = 1]")
+    ("total-threads,r", po::value<std::string>(),
+     "total number of threads [integer or 'auto'; default = total number of processes]")
     ("input-file", po::value<std::vector<std::string> >(),
      "input master XML files");
   po::positional_options_description p;
@@ -86,7 +87,7 @@ option::option(int argc, char** argv, int np, int pid)
   if (vm.count("check-parameter"))
     check_parameter = true;
   if (vm.count("check-interval"))
-    check_interval = pt::seconds(vm["check-interval"].as<int>());
+    check_interval = pt::millisec(vm["check-interval"].as<int>());
   if (vm.count("checkpoint-interval"))
     checkpoint_interval = pt::seconds(vm["checkpoint-interval"].as<int>());
   if (vm.count("report-interval"))
@@ -95,11 +96,15 @@ option::option(int argc, char** argv, int np, int pid)
     evaluate_only = true;
   if (vm.count("time-limit"))
     time_limit = pt::seconds(vm["time-limit"].as<int>());
-  if (vm.count("procs-per-clone"))
-    procs_per_clone = vm["procs-per-clone"].as<int>();
   if (vm.count("threads-per-clone"))
     threads_per_clone = vm["threads-per-clone"].as<int>();
-
+  if (vm.count("total-threads")) {
+    if (vm["total-threads"].as<std::string>() == "auto") {
+      num_total_threads = np * max_threads();
+    } else {
+      num_total_threads = boost::lexical_cast<int>(vm["total-threads"].as<std::string>());
+    }
+  }
   if (pid == 0) {
     if (vm.count("help")) {
       std::cout << desc << std::endl;
@@ -109,18 +114,12 @@ option::option(int argc, char** argv, int np, int pid)
       std::cout << "license" << std::endl;
       valid = false;
     }
-    if (procs_per_clone < 1 || procs_per_clone > np) {
-      std::cerr << "Error: invalid number of processes per clone\n";
+    if (num_total_threads < 1 || threads_per_clone < 1 ||
+        threads_per_clone > num_total_threads || num_total_threads % threads_per_clone != 0) {
+      std::cerr << "Error: invalid number of threads\n";
       valid = false;
     }
-#ifdef _OPENMP
-    if (threads_per_clone < 1 || threads_per_clone > omp_get_max_threads()) {
-      std::cerr << "Error: invalid number of threads per clone\n";
-      valid = false;
-    }
-#endif
   }
-
   if (vm.count("input-file"))
     jobfiles = vm["input-file"].as<std::vector<std::string> >();
   if (pid == 0) {
