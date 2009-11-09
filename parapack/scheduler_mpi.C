@@ -264,7 +264,10 @@ int start(int argc, char** argv) {
       check_queue.push(next_taskinfo(opt.checkpoint_interval / 2));
     }
 
+#if defined(__APPLE_CC__) && __GNUC__ == 4 && __GNUC_MINOR__ == 2
+    // g++ on Mac OS X Snow Leopard requires the following OpenMP directive
     #pragma omp parallel num_threads(1)
+#endif
     {
 #ifdef _OPENMP
       omp_set_num_threads(opt.num_total_threads / process.num_total_processes());
