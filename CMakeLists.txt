@@ -5,7 +5,7 @@ include_directories(${Boost_ROOT_DIR})
 
 add_subdirectory(alea)
 add_subdirectory(fixed_capacity)
-#add_subdirectory(lattice)
+add_subdirectory(lattice)
 add_subdirectory(model)
 add_subdirectory(osiris)
 add_subdirectory(parameter)
