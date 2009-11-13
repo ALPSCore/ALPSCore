@@ -1,5 +1,5 @@
 #define tests here. Each test neet ${name}.C ${name}.input ${name}.output
-FOREACH (name detailedbinning histogram signed simpleobseval testobservableset observableset_xml vectorobseval)
+FOREACH (name fixed_capacity_deque fixed_capacity_traits fixed_capacity_vector test_deque test_vector timing_queue timing_stack timing_vector)
 
 	add_executable(${name} ${name}.C)
 	add_dependencies(${name} alps)

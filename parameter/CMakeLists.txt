@@ -1,5 +1,10 @@
+include_directories(${PROJECT_BINARY_DIR}/src)
+include_directories(${PROJECT_SOURCE_DIR}/src)
+include_directories(${PROJECT_SOURCE_DIR}/tool)
+include_directories(${Boost_ROOT_DIR})
+
 #define tests here. Each test neet ${name}.C ${name}.input ${name}.output
-FOREACH (name detailedbinning histogram signed simpleobseval testobservableset observableset_xml vectorobseval)
+FOREACH (name expression expression2 flatten parameter parameterlist parameterlist_xml parameters parameters_xml)
 
 	add_executable(${name} ${name}.C)
 	add_dependencies(${name} alps)
