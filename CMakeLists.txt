@@ -1,5 +1,7 @@
-
-ENABLE_TESTING()
+include_directories(${PROJECT_BINARY_DIR}/src)
+include_directories(${PROJECT_SOURCE_DIR}/src)
+include_directories(${PROJECT_SOURCE_DIR}/tool)
+include_directories(${Boost_ROOT_DIR})
 
 add_subdirectory(alea)
 add_subdirectory(fixed_capacity)
