@@ -87,8 +87,7 @@ int main()
 
     // read parameters
     alps::Parameters parameters;
-    std::ifstream parmfile("parameters");
-    parmfile >> parameters;
+    std::cin >> parameters;
     // create a graph factory with default graph type
     alps::graph_helper<> lattice(parameters);
 

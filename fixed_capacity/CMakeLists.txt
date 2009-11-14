@@ -4,7 +4,7 @@ include_directories(${PROJECT_SOURCE_DIR}/tool)
 include_directories(${Boost_ROOT_DIR})
 
 #define tests here. Each test neet ${name}.C ${name}.input ${name}.output
-FOREACH (name fixed_capacity_deque fixed_capacity_traits fixed_capacity_vector test_deque test_vector timing_queue timing_stack timing_vector)
+FOREACH (name fixed_capacity_deque fixed_capacity_traits fixed_capacity_vector test_deque test_vector)
 
 	add_executable(${name} ${name}.C)
 	add_dependencies(${name} alps)

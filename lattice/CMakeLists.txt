@@ -3,7 +3,7 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 include_directories(${PROJECT_SOURCE_DIR}/tool)
 include_directories(${Boost_ROOT_DIR})
 
-#define tests here. Each test neet ${name}.C ${name}.input ${name}.output
+#define tests here. Each test needs ${name}.C ${name}.input ${name}.output
 FOREACH (name example1 example2 example3 example4 example5 example6 example7 example8 example9 example10 example11)
 
 	add_executable(lattice_${name} ${name}.C)
