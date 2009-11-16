@@ -20,7 +20,7 @@ set(ALPS_SOURCES
     # model
     model/bondterm.C model/globaloperator.C model/modellibrary.C model/siteterm.C
     # osiris
-    osiris/buffer.C osiris/dump.C osiris/os.C osiris/process.C osiris/comm.C
+    osiris/buffer.C osiris/dump.C osiris/dumparchive.C osiris/os.C osiris/process.C osiris/comm.C
     osiris/mpdump.C osiris/xdrdump.C osiris/xdrcore.C
     # parameter
     parameter/parameter.C parameter/parameterlist.C parameter/parameters.C
