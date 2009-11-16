@@ -9,7 +9,7 @@ FOREACH (name example1 example2 example3 example4 example5 example6 example7 exa
 	add_executable(model_${name} ${name}.C)
 	add_dependencies(model_${name} alps)
 	target_link_libraries(model_${name} alps)
-	install(TARGETS model_${name} RUNTIME DESTINATION bin)
+	# install(TARGETS model_${name} RUNTIME DESTINATION bin)
 	
 	ADD_TEST(
 		model_${name} 

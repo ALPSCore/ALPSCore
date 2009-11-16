@@ -9,7 +9,7 @@ FOREACH (name expression expression2 flatten parameter parameterlist parameterli
 	add_executable(${name} ${name}.C)
 	add_dependencies(${name} alps)
 	target_link_libraries(${name} alps)
-	install(TARGETS ${name} RUNTIME DESTINATION bin)
+	# install(TARGETS ${name} RUNTIME DESTINATION bin)
 	
 	ADD_TEST(
 		${name} 

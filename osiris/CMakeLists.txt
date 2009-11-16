@@ -13,7 +13,7 @@ FOREACH (name os sizeof xdrdump xdrdump2 boostdump boostdump2 boostdump3 boostdu
 	add_executable(${name} ${name}.C)
 	add_dependencies(${name} alps)
 	target_link_libraries(${name} alps)
-	install(TARGETS ${name} RUNTIME DESTINATION bin)
+	# install(TARGETS ${name} RUNTIME DESTINATION bin)
 	
 	ADD_TEST(
 		${name} 

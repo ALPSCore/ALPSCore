@@ -9,7 +9,7 @@ FOREACH (name example1 example2 example3 example4 example5 example6 example7 exa
 	add_executable(lattice_${name} ${name}.C)
 	add_dependencies(lattice_${name} alps)
 	target_link_libraries(lattice_${name} alps)
-	install(TARGETS lattice_${name} RUNTIME DESTINATION bin)
+	# install(TARGETS lattice_${name} RUNTIME DESTINATION bin)
 	
 	ADD_TEST(
 		lattice_${name} 
