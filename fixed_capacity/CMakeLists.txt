@@ -15,8 +15,10 @@ FOREACH (name fixed_capacity_deque fixed_capacity_traits fixed_capacity_vector t
 		${name} 
 		${CMAKE_COMMAND}
 			-Dcmd=${name}
-			-Dinput=${CMAKE_CURRENT_SOURCE_DIR}/${name}.input
-			-Doutput=${CMAKE_CURRENT_SOURCE_DIR}/${name}.output
+                        -Dsourcedir=${CMAKE_CURRENT_SOURCE_DIR}
+                        -Dbinarydir=${CMAKE_CURRENT_BINARY_DIR}
+			-Dinput=${name}.input
+			-Doutput=${name}.output
 			-Dtimeout=600
 			-P ${PROJECT_SOURCE_DIR}/config/CMake/run_test.cmake
 	)

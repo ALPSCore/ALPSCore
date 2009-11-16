@@ -44,6 +44,7 @@ int main()
 #endif
 
     alps::Parameters p;
+    std::cin >> p;
     p["LATTICE"] = "chain lattice";
     p["L"] = 4;
     alps::graph_helper<> g(p);
