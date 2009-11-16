@@ -3,11 +3,12 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 include_directories(${PROJECT_SOURCE_DIR}/tool)
 include_directories(${Boost_ROOT_DIR})
 
+configure_file(xdrdump2.input.cmake ${CMAKE_CURRENT_BINARY_DIR}/boostdump2.input)
 configure_file(xdrdump2.input.cmake ${CMAKE_CURRENT_BINARY_DIR}/xdrdump2.input)
 
 #define tests here. Each test neet ${name}.C ${name}.input ${name}.output
-#FOREACH (name os sizeof xdrdump xdrdump2 boostdump boostdump2 boostdump3 boostdump4)
-FOREACH (name os sizeof xdrdump xdrdump2)
+FOREACH (name os sizeof xdrdump xdrdump2 boostdump boostdump2 boostdump3 boostdump4)
+# FOREACH (name os sizeof xdrdump xdrdump2)
 
 	add_executable(${name} ${name}.C)
 	add_dependencies(${name} alps)
