@@ -56,6 +56,9 @@ void Observable::save(ODump& dump) const
 
 #endif // !ALPS_WITHOUT_OSIRIS
 
+void Observable::save(mocasito::hdf5& dump, std::size_t realization, std::size_t clone) const {
+}
+
 bool Observable::is_signed() const
 { return false;        }
 

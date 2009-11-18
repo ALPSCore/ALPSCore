@@ -33,6 +33,8 @@
 #ifndef ALPS_ALEA_OBSERVABLESET_H
 #define ALPS_ALEA_OBSERVABLESET_H
 
+#include <mocasito/hdf5.hpp>
+
 #include <alps/config.h>
 #include <alps/factory.h>
 #include <alps/alea/observable.h>
@@ -210,6 +212,8 @@ class ALPS_DECL ObservableSet: public std::map<std::string,Observable*>
   virtual void save(ODump& dump) const;
   virtual void load(IDump& dump);
 #endif
+
+virtual void save(mocasito::hdf5 &, std::size_t = 0, std::size_t = 0) const;
 
   BOOST_SERIALIZATION_SPLIT_MEMBER()
 

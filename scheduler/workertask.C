@@ -438,3 +438,4 @@ void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::pa
 
 } // namespace scheduler
 } // namespace alps
+ 

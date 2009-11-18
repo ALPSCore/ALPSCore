@@ -184,6 +184,28 @@ public:
       dump >> label_;
   }
 
+	void save(mocasito::hdf5& dump, std::size_t realization, std::size_t clone) const {
+		std::stringstream path;
+		path << "/simulation/realizations/" << realization << "/clones/" << clone << "/results/" << name();
+		dump.set_data(path.str() + "/count", count());
+		if (count() > 0) {
+			dump.set_data(path.str() + "/mean", mean());
+			dump.set_data(path.str() + "/error", error());
+			if(has_variance())
+				dump.set_data(path.str() + "/variance", variance());
+			if(has_tau())
+				dump.set_data(path.str() + "/tau_int", tau());
+			dump.set_data(path.str() + "/bins/bin_size", bin_size());
+			dump.set_data(path.str() + "/bins/number", bin_number());
+			dump.set_data(path.str() + "/bins2/value", bin_number2());
+			for(std::size_t k = 0; k < bin_number(); ++k) {
+				std::stringstream segment; segment << k << "/value";
+				dump.set_data(path.str() + "mean/bins/" + segment.str(), bin_value(k));
+				dump.set_data(path.str() + "mean/bins2/" + segment.str(), bin_value2(k));
+			}
+		}
+	}
+
 private:
   virtual SimpleObservableEvaluator<value_type> make_evaluator() const
   {

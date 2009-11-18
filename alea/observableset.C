@@ -123,6 +123,13 @@ void ObservableSet::load(IDump& dump)
 
 #endif
 
+void ObservableSet::save(mocasito::hdf5& dump, std::size_t realization, std::size_t clone) const {
+	for(base_type::const_iterator it = base_type::begin(); it != base_type::end(); ++it)
+		if(it->second)
+			it->second->save(dump, realization, clone);
+
+}
+
 void ObservableSet::update_signs()
 {
   signs_.clear();

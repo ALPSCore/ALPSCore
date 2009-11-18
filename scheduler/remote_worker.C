@@ -65,7 +65,7 @@ RemoteWorker::~RemoteWorker()
 }
 
 void RemoteWorker::save_to_file(const boost::filesystem::path& fn) const
-{
+{ 
   // let the remote process write the run into the file
   OMPDump send;
   send << fn.string ();

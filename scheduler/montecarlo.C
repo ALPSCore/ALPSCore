@@ -216,11 +216,23 @@ void MCRun::save_worker(ODump& dump) const
   save(dump);
 }
 
+void MCRun::save_worker(mocasito::hdf5 & dump) const
+{
+  Worker::save_worker(dump);
+  if(node==0)
+    measurements.save(dump); 
+  save(dump);
+}
+
 void MCRun::save(ODump&) const
 {
 }
 
 void MCRun::load(IDump&)
+{
+}
+
+void MCRun::save(mocasito::hdf5&) const
 {
 }
 
