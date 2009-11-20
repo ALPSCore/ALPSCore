@@ -31,14 +31,11 @@
 #ifndef ALPS_SCHEDULER_WORKER_H
 #define ALPS_SCHEDULER_WORKER_H
 
-#ifdef ALPS_HAVE_HDF5
-	#include <alps/hdf5.hpp>
-#endif
-
 #include <alps/config.h>
 #include <alps/scheduler/info.h>
 #include <alps/parameter.h>
 #include <alps/random/rngfactory.h>
+#include <alps/h5archive.hpp>
 #include <boost/smart_ptr.hpp>
 #include <boost/random.hpp>
 #include <boost/filesystem/path.hpp>
@@ -125,8 +122,8 @@ public:
   virtual void save_worker(ODump&) const;
   virtual void load_worker(IDump&);
 	#ifdef ALPS_HAVE_HDF5
-		virtual void save_worker(hdf5 &) const;
-//		virtual void load_worker(hdf5 &);
+		virtual void save_worker(h5archive &) const;
+//		virtual void load_worker(h5archive &);
 	#endif
   virtual void write_xml(const boost::filesystem::path& name, const boost::filesystem::path& ckpt_name="") const;
   void save_to_file(const boost::filesystem::path&) const;

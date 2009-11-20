@@ -31,10 +31,6 @@
 #ifndef ALPS_SCHEDULER_MONTECARLO_H
 #define ALPS_SCHEDULER_MONTECARLO_H
 
-#ifdef ALPS_HAVE_HDF5
-	#include <alps/hdf5.hpp>
-#endif
-
 #include <alps/scheduler/scheduler.h>
 #include <alps/scheduler/task.h>
 #include <alps/scheduler/worker.h>
@@ -42,6 +38,7 @@
 #include <alps/model/sign.h>
 #include <alps/lattice/graph_helper.h>
 #include <alps/alea/observableset.h>
+#include <alps/h5archive.hpp>
 #include <boost/smart_ptr.hpp>
 #include <alps/config.h>
 
@@ -58,12 +55,12 @@ public:
   void save_worker(ODump&) const;
   void load_worker(IDump&);
 	#ifdef ALPS_HAVE_HDF5
-		void save_worker(hdf5 &) const;
+		void save_worker(h5archive &) const;
 	#endif
   virtual void save(ODump&) const;
   virtual void load(IDump&);
 	#ifdef ALPS_HAVE_HDF5
-		virtual void save(hdf5 &) const;
+		virtual void save(h5archive &) const;
 	#endif
 
   void write_xml(const boost::filesystem::path& name, const boost::filesystem::path& osirisname="") const;

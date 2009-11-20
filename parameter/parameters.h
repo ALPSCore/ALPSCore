@@ -31,15 +31,11 @@
 #ifndef ALPS_PARAMETER_PARAMETERS_H
 #define ALPS_PARAMETER_PARAMETERS_H
 
-#ifdef ALPS_HAVE_HDF5
-	#include <alps/hdf5.hpp>
-	#include <alps/expression.h>
-#endif
-
 #include "parameter.h"
 #include <alps/osiris/dump.h>
 #include <alps/parser/parser.h>
 #include <alps/xml.h>
+#include <alps/h5archive.hpp>
 #include <boost/foreach.hpp>
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/split_member.hpp>
@@ -221,21 +217,7 @@ public:
   }
 
 #ifdef ALPS_HAVE_HDF5
-	void save(hdf5 & dump) const {
-		for (const_iterator it = begin(); it != end(); ++it) {
-			expression::Expression<double> expr(it->value());
-			if (expr.can_evaluate(*this)) {
-				double value = expr.value(*this);
-				if (is_zero(value - static_cast<double>(static_cast<int>(value))))
-					dump.set_data<int>("/parameters/" + it->key(), value);
-				else
-					dump.set_data("/parameters/" + it->key(), value);
-			} else {
-				expr.partial_evaluate(*this);
-				dump.set_data("/parameters/" + it->key(), boost::lexical_cast<std::string>(expr));
-			}
-		}
-	}
+	void save(h5archive &) const;
 #endif
 
 private:

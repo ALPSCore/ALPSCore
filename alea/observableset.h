@@ -33,16 +33,13 @@
 #ifndef ALPS_ALEA_OBSERVABLESET_H
 #define ALPS_ALEA_OBSERVABLESET_H
 
-#ifdef ALPS_HAVE_HDF5
-	#include <alps/hdf5.hpp>
-#endif
-
 #include <alps/config.h>
 #include <alps/factory.h>
 #include <alps/alea/observable.h>
 #include <alps/osiris/archivedump.h>
 #include <alps/parser/parser.h>
 #include <alps/xml.h>
+#include <alps/h5archive.hpp>
 
 #include <boost/functional.hpp>
 #include <boost/filesystem/path.hpp>
@@ -216,7 +213,7 @@ class ALPS_DECL ObservableSet: public std::map<std::string,Observable*>
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-	virtual void save(hdf5 &, std::size_t = 0, std::size_t = 0) const;
+	virtual void save(h5archive &, std::size_t = 0, std::size_t = 0) const;
 #endif
 
   BOOST_SERIALIZATION_SPLIT_MEMBER()

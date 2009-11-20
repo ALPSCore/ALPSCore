@@ -39,14 +39,11 @@
 #ifndef ALPS_ALEA_OBSERVABLE_H
 #define ALPS_ALEA_OBSERVABLE_H
 
-#ifdef ALPS_HAVE_HDF5
-	#include <alps/hdf5.hpp>
-#endif
-
 #include <alps/config.h>
 #include <alps/alea/obsvalue.h>
 #include <alps/alea/recordableobservable.h>
 #include <alps/xml.h>
+#include <alps/h5archive.hpp>
 
 #include <boost/filesystem/path.hpp>
 #include <boost/type_traits.hpp>
@@ -142,7 +139,7 @@ class ALPS_DECL Observable
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-  virtual void save(alsp::hdf5 &, std::size_t, std::size_t) const;
+  virtual void save(h5archive &, std::size_t, std::size_t) const;
 #endif
 
 // Thermalization support

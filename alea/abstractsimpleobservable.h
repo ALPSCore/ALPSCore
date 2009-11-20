@@ -185,24 +185,24 @@ public:
   }
   
 #ifdef ALPS_HAVE_HDF5
-	void save(hdf5& dump, std::size_t realization, std::size_t clone) const {
+	void save(h5archive & ar, std::size_t realization, std::size_t clone) const {
 		std::stringstream path;
 		path << "/simulation/realizations/" << realization << "/clones/" << clone << "/results/" << name();
-		dump.set_data(path.str() + "/count", count());
+		ar.set_data(path.str() + "/count", count());
 		if (count() > 0) {
-			dump.set_data(path.str() + "/mean", mean());
-			dump.set_data(path.str() + "/error", error());
+			ar.set_data(path.str() + "/mean", mean());
+			ar.set_data(path.str() + "/error", error());
 			if(has_variance())
-				dump.set_data(path.str() + "/variance", variance());
+				ar.set_data(path.str() + "/variance", variance());
 			if(has_tau())
-				dump.set_data(path.str() + "/tau_int", tau());
-			dump.set_data(path.str() + "/bins/bin_size", bin_size());
-			dump.set_data(path.str() + "/bins/number", bin_number());
-			dump.set_data(path.str() + "/bins2/value", bin_number2());
+				ar.set_data(path.str() + "/tau_int", tau());
+			ar.set_data(path.str() + "/bins/bin_size", bin_size());
+			ar.set_data(path.str() + "/bins/number", bin_number());
+			ar.set_data(path.str() + "/bins2/value", bin_number2());
 			for(std::size_t k = 0; k < bin_number(); ++k) {
 				std::stringstream segment; segment << k << "/value";
-				dump.set_data(path.str() + "mean/bins/" + segment.str(), bin_value(k));
-				dump.set_data(path.str() + "mean/bins2/" + segment.str(), bin_value2(k));
+				ar.set_data(path.str() + "mean/bins/" + segment.str(), bin_value(k));
+				ar.set_data(path.str() + "mean/bins2/" + segment.str(), bin_value2(k));
 			}
 		}
 	}

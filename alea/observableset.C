@@ -124,10 +124,10 @@ void ObservableSet::load(IDump& dump)
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-void ObservableSet::save(hdf5& dump, std::size_t realization, std::size_t clone) const {
+void ObservableSet::save(h5archive & ar, std::size_t realization, std::size_t clone) const {
 	for(base_type::const_iterator it = base_type::begin(); it != base_type::end(); ++it)
 		if(it->second)
-			it->second->save(dump, realization, clone);
+			it->second->save(ar, realization, clone);
 
 }
 #endif

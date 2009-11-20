@@ -32,7 +32,6 @@
 #define ALPS_EXPRESSION_EVALUATABLE_H
 
 #include <alps/expression/expression_fwd.h>
-#include <alps/expression/evaluator.h>
 
 namespace alps {
 namespace expression {
