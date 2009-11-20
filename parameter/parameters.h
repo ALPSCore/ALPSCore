@@ -31,8 +31,13 @@
 #ifndef ALPS_PARAMETER_PARAMETERS_H
 #define ALPS_PARAMETER_PARAMETERS_H
 
+#ifdef ALPS_HAVE_HDF5
+	#include <alps/hdf5.hpp>
+#endif
+
 #include "parameter.h"
 #include <alps/osiris/dump.h>
+#include <alps/expression.h>
 #include <alps/parser/parser.h>
 #include <alps/xml.h>
 #include <boost/foreach.hpp>
@@ -215,21 +220,23 @@ public:
     for (iterator itr = list_.begin(); itr != list_.end(); ++itr) map_[itr->key()] = itr;
   }
 
+#ifdef ALPS_HAVE_HDF5
 	void save(hdf5 & dump) const {
 		for (const_iterator it = begin(); it != end(); ++it) {
-			alps::expression::Expression<double> expr(it->value());
+			expression::Expression<double> expr(it->value());
 			if (expr.can_evaluate(*this)) {
 				double value = expr.value(*this);
 				if (is_zero(value - static_cast<double>(static_cast<int>(value))))
-					h5.set_data<int>("/parameters/" + it->key(), value);
+					dump.set_data<int>("/parameters/" + it->key(), value);
 				else
-					h5.set_data("/parameters/" + it->key(), value);
+					dump.set_data("/parameters/" + it->key(), value);
 			} else {
 				expr.partial_evaluate(*this);
-				h5.set_data("/parameters/" + it->key(), boost::lexical_cast<std::string>(expr));
+				dump.set_data("/parameters/" + it->key(), boost::lexical_cast<std::string>(expr));
 			}
 		}
 	}
+#endif
 
 private:
   list_type list_;

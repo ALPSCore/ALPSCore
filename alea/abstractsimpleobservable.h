@@ -185,7 +185,7 @@ public:
   }
   
 #ifdef ALPS_HAVE_HDF5
-	void save(alps::hdf5& dump, std::size_t realization, std::size_t clone) const {
+	void save(hdf5& dump, std::size_t realization, std::size_t clone) const {
 		std::stringstream path;
 		path << "/simulation/realizations/" << realization << "/clones/" << clone << "/results/" << name();
 		dump.set_data(path.str() + "/count", count());

@@ -58,12 +58,12 @@ public:
   void save_worker(ODump&) const;
   void load_worker(IDump&);
 	#ifdef ALPS_HAVE_HDF5
-		void save_worker(alps::hdf5 &) const;
+		void save_worker(hdf5 &) const;
 	#endif
   virtual void save(ODump&) const;
   virtual void load(IDump&);
 	#ifdef ALPS_HAVE_HDF5
-		virtual void save(alps::hdf5 &) const;
+		virtual void save(hdf5 &) const;
 	#endif
 
   void write_xml(const boost::filesystem::path& name, const boost::filesystem::path& osirisname="") const;
