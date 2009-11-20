@@ -3,6 +3,7 @@
 #include <complex>
 #include <iostream>
 #include <cassert>
+#include <boost/filesystem/operations.hpp>
 
 const std::size_t len = 20;
 
@@ -132,4 +133,5 @@ template<typename Engine> void test_engine(std::string const & ifile, std::strin
 }
 int main(int argc, char ** argv){
 	test_engine<mocasito::io::hdf5>(std::string("io.h5"));
+	boost::filesystem::remove(boost::filesystem::path("io.h5"));
 }
