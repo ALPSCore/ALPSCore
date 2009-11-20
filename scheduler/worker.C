@@ -242,7 +242,7 @@ void Worker::save_to_file(const boost::filesystem::path& fnpath) const
 				h5.set_data("/parameters/" + it->key(), value);
 		} else {
 			expr.partial_evaluate(parms);
-			h5.set_data("/parameters/" + it->key(), expr.value(parms));
+			h5.set_data("/parameters/" + it->key(), boost::lexical_cast<std::string>(expr));
 		}
 	}
 	save_worker(h5);
