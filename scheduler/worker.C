@@ -231,7 +231,7 @@ void Worker::save_to_file(const boost::filesystem::path& fnpath) const
   boost::filesystem::path h5bakpath=h5path.branch_path()/(h5path.leaf()+".bak");
   bool h5backup=boost::filesystem::exists(h5path);
   {
-	mocasito::hdf5 h5(h5path);
+		mocasito::hdf5 h5(h5backup ? h5bakpath : h5path);
 	for (alps::Parameters::const_iterator it = parms.begin(); it != parms.end(); ++it) {
 		alps::expression::Expression<double> expr(it->value());
 		if (expr.can_evaluate(parms)) {
