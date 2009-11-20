@@ -33,11 +33,11 @@
 
 #ifdef ALPS_HAVE_HDF5
 	#include <alps/hdf5.hpp>
+	#include <alps/expression.h>
 #endif
 
 #include "parameter.h"
 #include <alps/osiris/dump.h>
-#include <alps/expression.h>
 #include <alps/parser/parser.h>
 #include <alps/xml.h>
 #include <boost/foreach.hpp>
