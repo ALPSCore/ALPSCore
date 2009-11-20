@@ -64,7 +64,7 @@ namespace mocasito {
       return c;
     }
     template<typename E, typename T> context<E>& assign(context<E>& c, const std::valarray<T> &val){
-      c.set(&(val[0]), val.size());
+      c.set(&const_cast<std::valarray<T>&>(val)[0], val.size());
       return c;
     }
     template<typename E, typename T> std::valarray<T> & assign(std::valarray<T> &val, const context<E>& c){
