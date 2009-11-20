@@ -216,13 +216,15 @@ void MCRun::save_worker(ODump& dump) const
   save(dump);
 }
 
-void MCRun::save_worker(mocasito::hdf5 & dump) const
+#ifdef ALPS_HAVE_HDF5
+void MCRun::save_worker(alsp::hdf5 & dump) const
 {
   Worker::save_worker(dump);
   if(node==0)
     measurements.save(dump); 
   save(dump);
 }
+#endif
 
 void MCRun::save(ODump&) const
 {
@@ -232,9 +234,10 @@ void MCRun::load(IDump&)
 {
 }
 
-void MCRun::save(mocasito::hdf5&) const
-{
-}
+#ifdef ALPS_HAVE_HDF5
+	void MCRun::save(alsp::hdf5&) const {
+	}
+#endif
 
 // start/restart the run
 std::string MCRun::work_phase()

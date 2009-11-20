@@ -31,7 +31,9 @@
 #ifndef ALPS_SCHEDULER_WORKER_H
 #define ALPS_SCHEDULER_WORKER_H
 
-#include <mocasito/hdf5.hpp>
+#ifdef ALPS_HAVE_HDF5
+	#include <alps/hdf5.hpp>
+#endif
 
 #include <alps/config.h>
 #include <alps/scheduler/info.h>
@@ -122,8 +124,10 @@ public:
   virtual bool change_parameter(const std::string& name, const StringValue& value);
   virtual void save_worker(ODump&) const;
   virtual void load_worker(IDump&);
-  virtual void save_worker(mocasito::hdf5 &) const;
-//  virtual void load_worker(mocasito::hdf5 &);
+	#ifdef ALPS_HAVE_HDF5
+		virtual void save_worker(alps::hdf5 &) const;
+//		virtual void load_worker(alps::hdf5 &);
+	#endif
   virtual void write_xml(const boost::filesystem::path& name, const boost::filesystem::path& ckpt_name="") const;
   void save_to_file(const boost::filesystem::path&) const;
   void load_from_file(const boost::filesystem::path&);

@@ -89,7 +89,7 @@ public:
     ar & key_ & v;
     value_ = v;
   }
-
+  
 private:
   key_type key_;
   value_type value_;

@@ -31,7 +31,9 @@
 #ifndef ALPS_SCHEDULER_MONTECARLO_H
 #define ALPS_SCHEDULER_MONTECARLO_H
 
-#include <mocasito/hdf5.hpp>
+#ifdef ALPS_HAVE_HDF5
+	#include <alps/hdf5.hpp>
+#endif
 
 #include <alps/scheduler/scheduler.h>
 #include <alps/scheduler/task.h>
@@ -55,10 +57,14 @@ public:
 
   void save_worker(ODump&) const;
   void load_worker(IDump&);
-  void save_worker(mocasito::hdf5 &) const;
+	#ifdef ALPS_HAVE_HDF5
+		void save_worker(alps::hdf5 &) const;
+	#endif
   virtual void save(ODump&) const;
   virtual void load(IDump&);
-  virtual void save(mocasito::hdf5&) const;
+	#ifdef ALPS_HAVE_HDF5
+		virtual void save(alps::hdf5 &) const;
+	#endif
 
   void write_xml(const boost::filesystem::path& name, const boost::filesystem::path& osirisname="") const;
   const ObservableSet& get_measurements() const { return measurements;}

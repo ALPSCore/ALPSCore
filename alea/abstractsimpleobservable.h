@@ -183,8 +183,9 @@ public:
     if (dump.version() >= 303 || dump.version()==0)
       dump >> label_;
   }
-
-	void save(mocasito::hdf5& dump, std::size_t realization, std::size_t clone) const {
+  
+#ifdef ALPS_HAVE_HDF5
+	void save(alps::hdf5& dump, std::size_t realization, std::size_t clone) const {
 		std::stringstream path;
 		path << "/simulation/realizations/" << realization << "/clones/" << clone << "/results/" << name();
 		dump.set_data(path.str() + "/count", count());
@@ -205,6 +206,7 @@ public:
 			}
 		}
 	}
+#endif
 
 private:
   virtual SimpleObservableEvaluator<value_type> make_evaluator() const

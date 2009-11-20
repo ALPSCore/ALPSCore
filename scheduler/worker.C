@@ -156,9 +156,11 @@ void Worker::save_worker(ODump& dump) const
   // TODO: save slave runs
  }
  
+#ifdef ALPS_HAVE_HDF5
 void Worker::save_worker(mocasito::hdf5 & dump) const {
 // TODO: implement
 }
+#endif
 
 TaskInfo Worker::get_info() const
 {
@@ -227,30 +229,20 @@ void Worker::save_to_file(const boost::filesystem::path& fnpath) const
     boost::filesystem::rename(bakpath,fnpath);
   }
  
-  boost::filesystem::path h5path=fnpath.branch_path()/(fnpath.leaf()+".h5");
-  boost::filesystem::path h5bakpath=h5path.branch_path()/(h5path.leaf()+".bak");
-  bool h5backup=boost::filesystem::exists(h5path);
-  {
+#ifdef ALPS_HAVE_HDF5
+	boost::filesystem::path h5path=fnpath.branch_path()/(fnpath.leaf()+".h5");
+	boost::filesystem::path h5bakpath=h5path.branch_path()/(h5path.leaf()+".bak");
+	bool h5backup=boost::filesystem::exists(h5path);
+	{
 		mocasito::hdf5 h5(h5backup ? h5bakpath : h5path);
-	for (alps::Parameters::const_iterator it = parms.begin(); it != parms.end(); ++it) {
-		alps::expression::Expression<double> expr(it->value());
-		if (expr.can_evaluate(parms)) {
-			double value = expr.value(parms);
-			if (alps::is_zero(value - static_cast<double>(static_cast<int>(value))))
-				h5.set_data<int>("/parameters/" + it->key(), value);
-			else
-				h5.set_data("/parameters/" + it->key(), value);
-		} else {
-			expr.partial_evaluate(parms);
-			h5.set_data("/parameters/" + it->key(), boost::lexical_cast<std::string>(expr));
-		}
+		parms.save(h5);
+		save_worker(h5);
 	}
-	save_worker(h5);
-  } // close file
-  if (h5backup) {
-    boost::filesystem::remove(h5path);
-    boost::filesystem::rename(h5bakpath,h5path);
-  }
+	if (h5backup) {
+		boost::filesystem::remove(h5path);
+		boost::filesystem::rename(h5bakpath,h5path);
+	}
+#endif
 }
 
 bool Worker::handle_message(const Process& master,int32_t tag) {

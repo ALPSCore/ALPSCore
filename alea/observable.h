@@ -39,7 +39,9 @@
 #ifndef ALPS_ALEA_OBSERVABLE_H
 #define ALPS_ALEA_OBSERVABLE_H
 
-#include <mocasito/hdf5.hpp>
+#ifdef ALPS_HAVE_HDF5
+	#include <alps/hdf5.hpp>
+#endif
 
 #include <alps/config.h>
 #include <alps/alea/obsvalue.h>
@@ -139,7 +141,9 @@ class ALPS_DECL Observable
   virtual void load(IDump& dump);
 #endif
 
-  virtual void save(mocasito::hdf5 &, std::size_t, std::size_t) const;
+#ifdef ALPS_HAVE_HDF5
+  virtual void save(alsp::hdf5 &, std::size_t, std::size_t) const;
+#endif
 
 // Thermalization support
 

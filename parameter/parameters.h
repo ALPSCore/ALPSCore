@@ -215,6 +215,22 @@ public:
     for (iterator itr = list_.begin(); itr != list_.end(); ++itr) map_[itr->key()] = itr;
   }
 
+	void save(hdf5 & dump) const {
+		for (const_iterator it = begin(); it != end(); ++it) {
+			alps::expression::Expression<double> expr(it->value());
+			if (expr.can_evaluate(*this)) {
+				double value = expr.value(*this);
+				if (is_zero(value - static_cast<double>(static_cast<int>(value))))
+					h5.set_data<int>("/parameters/" + it->key(), value);
+				else
+					h5.set_data("/parameters/" + it->key(), value);
+			} else {
+				expr.partial_evaluate(*this);
+				h5.set_data("/parameters/" + it->key(), boost::lexical_cast<std::string>(expr));
+			}
+		}
+	}
+
 private:
   list_type list_;
   map_type map_;
