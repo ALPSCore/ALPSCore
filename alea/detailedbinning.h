@@ -236,8 +236,10 @@ void BasicDetailedBinning<T>::collect_bins(uint32_t howmany)
   // full bins
   for (uint32_t i=0;i<values_.size()/howmany;++i)
   {
-    values_[i]=values_[howmany*i];
-    values2_[i]=values2_[howmany*i];
+    if(howmany*i !=i){
+      values_[i]=values_[howmany*i];
+      values2_[i]=values2_[howmany*i];
+    }
     for (uint32_t j = 1 ; j<howmany;++j)
     {
       values_[i] += values_[howmany*i+j];
