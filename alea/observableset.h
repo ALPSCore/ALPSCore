@@ -39,13 +39,13 @@
 #include <alps/osiris/archivedump.h>
 #include <alps/parser/parser.h>
 #include <alps/xml.h>
-#include <alps/h5archive.hpp>
 
 #include <boost/functional.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/serialization/split_member.hpp>
 #include <map>
 #ifdef ALPS_HAVE_HDF5
+#include <alps/h5archive.hpp>
 #include <alps/alea/hdf5.h>
 #endif
 namespace alps {

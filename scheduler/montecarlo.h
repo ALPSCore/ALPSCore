@@ -38,9 +38,12 @@
 #include <alps/model/sign.h>
 #include <alps/lattice/graph_helper.h>
 #include <alps/alea/observableset.h>
-#include <alps/h5archive.hpp>
 #include <boost/smart_ptr.hpp>
 #include <alps/config.h>
+
+#ifdef ALPS_HAVE_HDF5
+#include <alps/h5archive.hpp>
+#endif
 
 namespace alps {
 namespace scheduler {

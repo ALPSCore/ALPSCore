@@ -35,7 +35,6 @@
 #include <alps/osiris/dump.h>
 #include <alps/parser/parser.h>
 #include <alps/xml.h>
-#include <alps/h5archive.hpp>
 #include <boost/foreach.hpp>
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/split_member.hpp>
@@ -44,6 +43,10 @@
 #include <map>
 #include <stdexcept>
 #include <string>
+
+#ifdef ALPS_HAVE_HDF5
+#include <alps/h5archive.hpp>
+#endif
 
 /// \file parameters.h
 /// \brief classes to store simulation parameters

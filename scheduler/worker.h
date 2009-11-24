@@ -35,7 +35,6 @@
 #include <alps/scheduler/info.h>
 #include <alps/parameter.h>
 #include <alps/random/rngfactory.h>
-#include <alps/h5archive.hpp>
 #include <boost/smart_ptr.hpp>
 #include <boost/random.hpp>
 #include <boost/filesystem/path.hpp>
@@ -43,6 +42,10 @@
 #include <alps/osiris/dump.h>
 #include <cmath>
 #include <iostream>
+
+#ifdef ALPS_HAVE_HDF5
+#include <alps/h5archive.hpp>
+#endif
 
 namespace alps {
 

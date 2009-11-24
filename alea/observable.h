@@ -43,7 +43,10 @@
 #include <alps/alea/obsvalue.h>
 #include <alps/alea/recordableobservable.h>
 #include <alps/xml.h>
+
+#ifdef ALPS_HAVE_HDF5
 #include <alps/h5archive.hpp>
+#endif
 
 #include <boost/filesystem/path.hpp>
 #include <boost/type_traits.hpp>
