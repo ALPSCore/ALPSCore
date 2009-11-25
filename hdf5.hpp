@@ -24,7 +24,7 @@
 
 #ifndef ALPS_HDF5
 #define ALPS_HDF5
-namespace alsp {
+namespace alps{
 	namespace detail {
 		class h5_e {
 			public:
