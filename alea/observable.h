@@ -142,7 +142,7 @@ class ALPS_DECL Observable
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-  virtual void save(h5archive &, std::size_t, std::size_t) const;
+  virtual void save(h5archive<h5write> &, std::size_t, std::size_t) const;
 #endif
 
 // Thermalization support

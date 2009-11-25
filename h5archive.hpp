@@ -3,7 +3,6 @@
 // License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 
-#ifdef ALPS_HAVE_HDF5
 #ifndef ALPS_H5ARCHIVE
 #define ALPS_H5ARCHIVE
 
@@ -16,14 +15,9 @@
 
 #include <boost/filesystem/path.hpp>
 #include <boost/type_traits.hpp>
-#include <boost/utility/enable_if.hpp>
+#include <boost/utility.hpp>
 
 #include <hdf5.h>
-
-#include <alps/config.h>
-#ifdef ALPS_HAVE_VALARRAY
-#	include <valarray>
-#endif
 
 namespace alps {
 	namespace detail {
@@ -59,8 +53,42 @@ namespace alps {
 		typedef h5_t<H5Tclose> h5t_t;
 		typedef h5_t<H5Pclose> h5p_t;
 		typedef h5_t<h5_e::noop> h5e_t;
+		template <typename T> class h5_pcp {
+			public:
+				h5_pcp(std::string const & p, T v): _p(p), _v(v) {}
+				h5_pcp(h5_pcp<T> const & c): _p(c._p), _v(c._v) {}
+				std::string get_path() const { return _p; }
+				T get_value() const { return _v; }
+			private:
+				std::string _p;
+				mutable T _v;
+		};
+		template <typename T> class h5_pvp {
+			public:
+				h5_pvp(std::string const & p, T v): _p(p), _v(v) {}
+				h5_pvp(h5_pvp<T> const & c): _p(c._p), _v(c._v) {}
+				std::string get_path(std::string const & c) const {
+					if (_p[0] == '/')
+						return _p;
+					else if (_p.substr(0, 2) != "..")
+						return c + "/" + _p;
+					else {
+						std::string s = c;
+						std::size_t i = 0;
+						for (; _p.substr(i, 2) == ".."; i += 3)
+							s = s.substr(0, s.find_last_of('/'));
+						return s + "/" + _p.substr(i);
+					}
+				}
+				T get_value() const { return _v; }
+			private:
+				std::string _p;
+				mutable T _v;
+		};
 	}
-	class h5archive {
+	struct h5write {};
+	struct h5read {};
+	template <typename Tag> class h5archive: boost::noncopyable {
 		public:
 			h5archive(boost::filesystem::path const & file) {
 				H5Eset_auto(H5E_DEFAULT, NULL, NULL);
@@ -69,6 +97,21 @@ namespace alps {
 			}
 			~h5archive() {
 				H5Fflush(_file, H5F_SCOPE_GLOBAL);
+			}
+			void set_context(std::string const & c) {
+				if (c[0] == '/')
+					_context = c;
+				else if (c.substr(0, 2) != "..")
+					_context += "/" + c;
+				else {
+					std::size_t i = 0;
+					for (; c.substr(i, 2) == ".."; i += 3)
+						_context = _context.substr(0, _context.find_last_of('/'));
+					_context += "/" + c.substr(i);
+				}
+			}
+			std::string get_context() {
+				return _context;
 			}
 			bool is_group(std::string const & p) const {
 				hid_t id = H5Gopen(_file, p.c_str(), H5P_DEFAULT);
@@ -150,10 +193,10 @@ namespace alps {
 				detail::h5e_t(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &v));
 			}
 			template<typename T> typename boost::disable_if<boost::is_scalar<T> >::type set_data(std::string const & p, T const & v) {
-				set_data(p, &const_cast<T&>(v)[0], v.size());
+				set_data(p, &const_cast<T &>(v)[0], v.size());
 			}
 			template<typename T> void set_data(std::string const & p, char const * const & v) {
-				set_data(p, v, std::strlen(v));
+				set_data(p, std::string(v));
 			}
 			template<typename T> void set_data(std::string const & p, T const * v, hsize_t s) {
 				detail::h5t_t type_id(get_native_type(v));
@@ -207,6 +250,7 @@ namespace alps {
 			hid_t get_native_type(long double) const { return H5Tcopy(H5T_NATIVE_LDOUBLE); }
 			hid_t get_native_type(bool) const { return H5Tcopy(H5T_NATIVE_HBOOL); }
 			template<typename T> hid_t get_native_type(T * ) const { return get_native_type(T()); }
+			hid_t get_native_type(char const *) const { return H5Tcopy(H5T_C_S1); }
 			static herr_t child_visitor(hid_t, char const * n, void * d) {
 				reinterpret_cast<std::vector<std::string> *>(d)->push_back(n);
 				return 0;
@@ -250,8 +294,43 @@ namespace alps {
 					detail::h5e_t(H5Pset_chunk (prop_id, 1, &s));
 				return H5Dcreate(_file, p.c_str(), type_id, detail::h5s_t(space_id), H5P_DEFAULT, prop_id, H5P_DEFAULT);
 			}
+			std::string _context;
 			detail::h5f_t _file;
 	};
+	template <typename T> detail::h5_pcp<T &> make_pcp(std::string const & p, T & v) {
+		return detail::h5_pcp<T &>(p, v);
+	}
+	template <typename T> detail::h5_pvp<T &> make_pvp(std::string const & p, T & v) {
+		return detail::h5_pvp<T &>(p, v);
+	}
+	template <typename T> detail::h5_pvp<T> make_pvp(std::string const & p, T const & v) {
+		return detail::h5_pvp<T>(p, v);
+	}	
+	template <typename Tag, typename T> h5archive<Tag> & operator& (h5archive<Tag> & ar, detail::h5_pcp<T &> const & v) {
+		std::string c = ar.get_context();
+		ar.set_context(v.get_path());
+		v.get_value().serialize(ar);
+		ar.set_context(c);
+		return ar;
+	}
+	template <typename T> h5archive<h5write> & operator& (h5archive<h5write> & ar, detail::h5_pvp<T &> const & v) {
+		return ar << v;
+	}
+	template <typename T> h5archive<h5read> & operator& (h5archive<h5read> & ar, detail::h5_pvp<T &> const & v) {
+		return ar >> v;
+	}
+	template <typename T> h5archive<h5write> & operator<< (h5archive<h5write> & ar, detail::h5_pcp<T> const & v) {
+		return ar & v;
+	}
+	template <typename T> h5archive<h5read> & operator>> (h5archive<h5read> & ar, detail::h5_pcp<T> const & v) {
+		return ar & v;
+	}
+	template <typename T> h5archive<h5write> & operator<< (h5archive<h5write> & ar, detail::h5_pvp<T> const & v) {
+		ar.set_data(v.get_path(ar.get_context()), v.get_value());
+		return ar;
+	}
+	template <typename T> h5archive<h5read> & operator>> (h5archive<h5read> & ar, detail::h5_pvp<T &> const & v) {
+		ar.get_data(v.get_path(ar.get_context()), v.get_value());
+	}
 }
-#endif
 #endif

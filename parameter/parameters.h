@@ -220,7 +220,8 @@ public:
   }
 
 #ifdef ALPS_HAVE_HDF5
-	void save(h5archive &) const;
+	void serialize(h5archive<h5write> &) const;
+	void serialize(h5archive<h5read> &) const;
 #endif
 
 private:

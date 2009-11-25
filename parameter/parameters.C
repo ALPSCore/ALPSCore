@@ -136,18 +136,18 @@ void Parameters::replace_envvar() {
 }
 
 #ifdef ALPS_HAVE_HDF5
-	void Parameters::save(h5archive & ar) const {
+	void Parameters::serialize(h5archive<h5write> & ar) const {
 		for (const_iterator it = begin(); it != end(); ++it) {
 			expression::Expression<double> expr(it->value());
 			if (expr.can_evaluate(*this)) {
 				double value = expr.value(*this);
 				if (is_zero(value - static_cast<double>(static_cast<int>(value))))
-					ar.set_data<int>("/parameters/" + it->key(), value);
+					ar << make_pvp(it->key(), static_cast<int>(value));
 				else
-					ar.set_data("/parameters/" + it->key(), value);
+					ar << make_pvp(it->key(), value);
 			} else {
 				expr.partial_evaluate(*this);
-				ar.set_data("/parameters/" + it->key(), boost::lexical_cast<std::string>(expr));
+				ar << make_pvp(it->key(), boost::lexical_cast<std::string>(expr));
 			}
 		}
 	}

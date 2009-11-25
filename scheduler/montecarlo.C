@@ -217,7 +217,7 @@ void MCRun::save_worker(ODump& dump) const
 }
 
 #ifdef ALPS_HAVE_HDF5
-	void MCRun::save_worker(h5archive & ar) const {
+	void MCRun::save_worker(h5archive<h5write> & ar) const {
 		Worker::save_worker(ar);
 		if(node==0)
 			measurements.save(ar); 
@@ -234,7 +234,7 @@ void MCRun::load(IDump&)
 }
 
 #ifdef ALPS_HAVE_HDF5
-	void MCRun::save(h5archive &) const {}
+	void MCRun::save(h5archive<h5write> &) const {}
 #endif
 
 // start/restart the run
