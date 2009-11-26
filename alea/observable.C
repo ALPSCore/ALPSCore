@@ -57,7 +57,7 @@ void Observable::save(ODump& dump) const
 #endif // !ALPS_WITHOUT_OSIRIS
 
 #ifdef ALPS_HAVE_HDF5
-	void Observable::save(h5archive<h5write> & ar, std::size_t realization, std::size_t clone) const {}
+  void Observable::save(h5archive<h5write> & /* ar */, std::size_t /* realization */, std::size_t /* clone */) const {}
 #endif
 
 bool Observable::is_signed() const
