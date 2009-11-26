@@ -331,6 +331,7 @@ namespace alps {
 	}
 	template <typename T> h5archive<h5read> & operator>> (h5archive<h5read> & ar, detail::h5_pvp<T &> const & v) {
 		ar.get_data(v.get_path(ar.get_context()), v.get_value());
+		return ar;
 	}
 }
 #endif
