@@ -4,20 +4,20 @@ AM_LDFLAGS = $(BASE_LDFLAGS) $(BOOST_LDFLAGS) $(HDF5_LDFLAGS) $(XML_LDFLAGS)
 if BUILD_UNIFIED_LIB
   LDADD = $(top_builddir)/lib/alps/libalps-sgl.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(BASE_LIBS)
 else
-  LDADD = $(top_builddir)/lib/alps/libparapack-sgl.la $(top_builddir)/lib/alps/libalps.la $(top_builddir)/lib/comm-sgl/libcomm-sgl.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(BASE_LIBS)
+  LDADD = $(top_builddir)/lib/alps/libalps.la $(top_builddir)/lib/comm-sgl/libcomm-sgl.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(BASE_LIBS)
 endif
 
-LDFLAGS_MPI = $(LDFLAGS_SGL) $(MPI_LDFLAGS)
-if BUILD_UNIFIED_LIB
-  LIBS_MPI = $(top_builddir)/lib/alps/libalps-mpi.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(MPI_LIBS) $(BASE_LIBS)
-else
-  LIBS_MPI = $(top_builddir)/lib/alps/libparapack-mpi.la $(top_builddir)/lib/alps/libalps.la $(top_builddir)/lib/comm-mpi/libcomm-mpi.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(MPI_LIBS) $(BASE_LIBS)
-endif
+# LDFLAGS_MPI = $(LDFLAGS_SGL) $(MPI_LDFLAGS)
+# if BUILD_UNIFIED_LIB
+#   LIBS_MPI = $(top_builddir)/lib/alps/libalps-mpi.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(MPI_LIBS) $(BASE_LIBS)
+# else
+#   LIBS_MPI = $(top_builddir)/lib/alps/libalps.la $(top_builddir)/lib/comm-mpi/libcomm-mpi.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(MPI_LIBS) $(BASE_LIBS)
+# endif
 
 check_PROGRAMS = expression expression2 flatten parameter parameterlist parameterlist_xml parameters parameters_xml
-if HAVE_BOOST_MPI
-check_PROGRAMS += parameters_mpi
-endif
+# if HAVE_BOOST_MPI
+# check_PROGRAMS += parameters_mpi
+# endif
 expression_SOURCES = expression.C
 expression2_SOURCES = expression2.C
 flatten_SOURCES = flatten.C
@@ -27,9 +27,9 @@ parameterlist_xml_SOURCES = parameterlist_xml.C
 parameters_SOURCES = parameters.C
 parameters_xml_SOURCES = parameters_xml.C
 
-parameters_mpi_SOURCES = parameters_mpi.C
-parameters_mpi_LDFLAGS = $(LDFLAGS_MPI)
-parameters_mpi_LDADD = $(LIBS_MPI)
+# parameters_mpi_SOURCES = parameters_mpi.C
+# parameters_mpi_LDFLAGS = $(LDFLAGS_MPI)
+# parameters_mpi_LDADD = $(LIBS_MPI)
 
 dist_noinst_DATA = expression.input expression.output expression2.output flatten.input flatten.output parameter.input parameter.output parameterlist.input parameterlist.output parameterlist_xml.input parameterlist_xml.output parameters.input parameters.output parameters_xml.input parameters_xml.output
 dist_noinst_DATA += parameters_mpi.ip-2 parameters_mpi.op-2

@@ -37,8 +37,7 @@ host_triplet = @host@
 check_PROGRAMS = expression$(EXEEXT) expression2$(EXEEXT) \
 	flatten$(EXEEXT) parameter$(EXEEXT) parameterlist$(EXEEXT) \
 	parameterlist_xml$(EXEEXT) parameters$(EXEEXT) \
-	parameters_xml$(EXEEXT) $(am__EXEEXT_1)
-@HAVE_BOOST_MPI_TRUE@am__append_1 = parameters_mpi
+	parameters_xml$(EXEEXT)
 subdir = test/parameter
 DIST_COMMON = $(dist_noinst_DATA) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in
@@ -66,12 +65,11 @@ CONFIG_HEADER = $(top_builddir)/src/alps/config.h \
 	$(top_builddir)/src/boost/fs_utf8_codecvt_facet.cpp
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-@HAVE_BOOST_MPI_TRUE@am__EXEEXT_1 = parameters_mpi$(EXEEXT)
 am_expression_OBJECTS = expression.$(OBJEXT)
 expression_OBJECTS = $(am_expression_OBJECTS)
 expression_LDADD = $(LDADD)
 am__DEPENDENCIES_1 =
-@BUILD_UNIFIED_LIB_FALSE@expression_DEPENDENCIES = $(top_builddir)/lib/alps/libparapack-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@expression_DEPENDENCIES =  \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
@@ -86,7 +84,7 @@ am__DEPENDENCIES_1 =
 am_expression2_OBJECTS = expression2.$(OBJEXT)
 expression2_OBJECTS = $(am_expression2_OBJECTS)
 expression2_LDADD = $(LDADD)
-@BUILD_UNIFIED_LIB_FALSE@expression2_DEPENDENCIES = $(top_builddir)/lib/alps/libparapack-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@expression2_DEPENDENCIES =  \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
@@ -101,7 +99,7 @@ expression2_LDADD = $(LDADD)
 am_flatten_OBJECTS = flatten.$(OBJEXT)
 flatten_OBJECTS = $(am_flatten_OBJECTS)
 flatten_LDADD = $(LDADD)
-@BUILD_UNIFIED_LIB_FALSE@flatten_DEPENDENCIES = $(top_builddir)/lib/alps/libparapack-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@flatten_DEPENDENCIES =  \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
@@ -116,7 +114,7 @@ flatten_LDADD = $(LDADD)
 am_parameter_OBJECTS = parameter.$(OBJEXT)
 parameter_OBJECTS = $(am_parameter_OBJECTS)
 parameter_LDADD = $(LDADD)
-@BUILD_UNIFIED_LIB_FALSE@parameter_DEPENDENCIES = $(top_builddir)/lib/alps/libparapack-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@parameter_DEPENDENCIES =  \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
@@ -131,7 +129,7 @@ parameter_LDADD = $(LDADD)
 am_parameterlist_OBJECTS = parameterlist.$(OBJEXT)
 parameterlist_OBJECTS = $(am_parameterlist_OBJECTS)
 parameterlist_LDADD = $(LDADD)
-@BUILD_UNIFIED_LIB_FALSE@parameterlist_DEPENDENCIES = $(top_builddir)/lib/alps/libparapack-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@parameterlist_DEPENDENCIES =  \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
@@ -146,7 +144,7 @@ parameterlist_LDADD = $(LDADD)
 am_parameterlist_xml_OBJECTS = parameterlist_xml.$(OBJEXT)
 parameterlist_xml_OBJECTS = $(am_parameterlist_xml_OBJECTS)
 parameterlist_xml_LDADD = $(LDADD)
-@BUILD_UNIFIED_LIB_FALSE@parameterlist_xml_DEPENDENCIES = $(top_builddir)/lib/alps/libparapack-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@parameterlist_xml_DEPENDENCIES =  \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
@@ -161,7 +159,7 @@ parameterlist_xml_LDADD = $(LDADD)
 am_parameters_OBJECTS = parameters.$(OBJEXT)
 parameters_OBJECTS = $(am_parameters_OBJECTS)
 parameters_LDADD = $(LDADD)
-@BUILD_UNIFIED_LIB_FALSE@parameters_DEPENDENCIES = $(top_builddir)/lib/alps/libparapack-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@parameters_DEPENDENCIES =  \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
@@ -173,30 +171,10 @@ parameters_LDADD = $(LDADD)
 @BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
 @BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
 @BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1)
-am_parameters_mpi_OBJECTS = parameters_mpi.$(OBJEXT)
-parameters_mpi_OBJECTS = $(am_parameters_mpi_OBJECTS)
-@BUILD_UNIFIED_LIB_FALSE@am__DEPENDENCIES_2 = $(top_builddir)/lib/alps/libparapack-mpi.la \
-@BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
-@BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/comm-mpi/libcomm-mpi.la \
-@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
-@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
-@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
-@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
-@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1)
-@BUILD_UNIFIED_LIB_TRUE@am__DEPENDENCIES_2 = $(top_builddir)/lib/alps/libalps-mpi.la \
-@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
-@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
-@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
-@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
-@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1)
-parameters_mpi_DEPENDENCIES = $(am__DEPENDENCIES_2)
-parameters_mpi_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
-	$(CXXFLAGS) $(parameters_mpi_LDFLAGS) $(LDFLAGS) -o $@
 am_parameters_xml_OBJECTS = parameters_xml.$(OBJEXT)
 parameters_xml_OBJECTS = $(am_parameters_xml_OBJECTS)
 parameters_xml_LDADD = $(LDADD)
-@BUILD_UNIFIED_LIB_FALSE@parameters_xml_DEPENDENCIES = $(top_builddir)/lib/alps/libparapack-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@parameters_xml_DEPENDENCIES =  \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
@@ -223,13 +201,11 @@ CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 SOURCES = $(expression_SOURCES) $(expression2_SOURCES) \
 	$(flatten_SOURCES) $(parameter_SOURCES) \
 	$(parameterlist_SOURCES) $(parameterlist_xml_SOURCES) \
-	$(parameters_SOURCES) $(parameters_mpi_SOURCES) \
-	$(parameters_xml_SOURCES)
+	$(parameters_SOURCES) $(parameters_xml_SOURCES)
 DIST_SOURCES = $(expression_SOURCES) $(expression2_SOURCES) \
 	$(flatten_SOURCES) $(parameter_SOURCES) \
 	$(parameterlist_SOURCES) $(parameterlist_xml_SOURCES) \
-	$(parameters_SOURCES) $(parameters_mpi_SOURCES) \
-	$(parameters_xml_SOURCES)
+	$(parameters_SOURCES) $(parameters_xml_SOURCES)
 DATA = $(dist_noinst_DATA)
 ETAGS = etags
 CTAGS = ctags
@@ -413,11 +389,11 @@ top_srcdir = @top_srcdir@
 DEFAULT_INCLUDES = -I$(top_builddir)/src -I$(top_srcdir)/src
 AM_CPPFLAGS = $(BASE_CPPFLAGS) $(BOOST_CPPFLAGS) $(XML_CPPFLAGS) $(HDF5_CPPFLAGS) $(MPI_CPPFLAGS)
 AM_LDFLAGS = $(BASE_LDFLAGS) $(BOOST_LDFLAGS) $(HDF5_LDFLAGS) $(XML_LDFLAGS)
-@BUILD_UNIFIED_LIB_FALSE@LDADD = $(top_builddir)/lib/alps/libparapack-sgl.la $(top_builddir)/lib/alps/libalps.la $(top_builddir)/lib/comm-sgl/libcomm-sgl.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(BASE_LIBS)
+@BUILD_UNIFIED_LIB_FALSE@LDADD = $(top_builddir)/lib/alps/libalps.la $(top_builddir)/lib/comm-sgl/libcomm-sgl.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(BASE_LIBS)
 @BUILD_UNIFIED_LIB_TRUE@LDADD = $(top_builddir)/lib/alps/libalps-sgl.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(BASE_LIBS)
-LDFLAGS_MPI = $(LDFLAGS_SGL) $(MPI_LDFLAGS)
-@BUILD_UNIFIED_LIB_FALSE@LIBS_MPI = $(top_builddir)/lib/alps/libparapack-mpi.la $(top_builddir)/lib/alps/libalps.la $(top_builddir)/lib/comm-mpi/libcomm-mpi.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(MPI_LIBS) $(BASE_LIBS)
-@BUILD_UNIFIED_LIB_TRUE@LIBS_MPI = $(top_builddir)/lib/alps/libalps-mpi.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(MPI_LIBS) $(BASE_LIBS)
+# if HAVE_BOOST_MPI
+# check_PROGRAMS += parameters_mpi
+# endif
 expression_SOURCES = expression.C
 expression2_SOURCES = expression2.C
 flatten_SOURCES = flatten.C
@@ -426,9 +402,10 @@ parameterlist_SOURCES = parameterlist.C
 parameterlist_xml_SOURCES = parameterlist_xml.C
 parameters_SOURCES = parameters.C
 parameters_xml_SOURCES = parameters_xml.C
-parameters_mpi_SOURCES = parameters_mpi.C
-parameters_mpi_LDFLAGS = $(LDFLAGS_MPI)
-parameters_mpi_LDADD = $(LIBS_MPI)
+
+# parameters_mpi_SOURCES = parameters_mpi.C
+# parameters_mpi_LDFLAGS = $(LDFLAGS_MPI)
+# parameters_mpi_LDADD = $(LIBS_MPI)
 dist_noinst_DATA = expression.input expression.output \
 	expression2.output flatten.input flatten.output \
 	parameter.input parameter.output parameterlist.input \
@@ -500,9 +477,6 @@ parameterlist_xml$(EXEEXT): $(parameterlist_xml_OBJECTS) $(parameterlist_xml_DEP
 parameters$(EXEEXT): $(parameters_OBJECTS) $(parameters_DEPENDENCIES) 
 	@rm -f parameters$(EXEEXT)
 	$(CXXLINK) $(parameters_OBJECTS) $(parameters_LDADD) $(LIBS)
-parameters_mpi$(EXEEXT): $(parameters_mpi_OBJECTS) $(parameters_mpi_DEPENDENCIES) 
-	@rm -f parameters_mpi$(EXEEXT)
-	$(parameters_mpi_LINK) $(parameters_mpi_OBJECTS) $(parameters_mpi_LDADD) $(LIBS)
 parameters_xml$(EXEEXT): $(parameters_xml_OBJECTS) $(parameters_xml_DEPENDENCIES) 
 	@rm -f parameters_xml$(EXEEXT)
 	$(CXXLINK) $(parameters_xml_OBJECTS) $(parameters_xml_LDADD) $(LIBS)
@@ -520,7 +494,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parameterlist.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parameterlist_xml.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parameters.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parameters_mpi.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parameters_xml.Po@am__quote@
 
 .C.o:

@@ -67,7 +67,7 @@ am_xmlhandler_OBJECTS = xmlhandler.$(OBJEXT)
 xmlhandler_OBJECTS = $(am_xmlhandler_OBJECTS)
 xmlhandler_LDADD = $(LDADD)
 am__DEPENDENCIES_1 =
-@BUILD_UNIFIED_LIB_FALSE@xmlhandler_DEPENDENCIES = $(top_builddir)/lib/alps/libparapack-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@xmlhandler_DEPENDENCIES =  \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
@@ -82,7 +82,7 @@ am__DEPENDENCIES_1 =
 am_xmlparser_OBJECTS = xmlparser.$(OBJEXT)
 xmlparser_OBJECTS = $(am_xmlparser_OBJECTS)
 xmlparser_LDADD = $(LDADD)
-@BUILD_UNIFIED_LIB_FALSE@xmlparser_DEPENDENCIES = $(top_builddir)/lib/alps/libparapack-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@xmlparser_DEPENDENCIES =  \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
@@ -97,7 +97,7 @@ xmlparser_LDADD = $(LDADD)
 am_xmlstream_OBJECTS = xmlstream.$(OBJEXT)
 xmlstream_OBJECTS = $(am_xmlstream_OBJECTS)
 xmlstream_LDADD = $(LDADD)
-@BUILD_UNIFIED_LIB_FALSE@xmlstream_DEPENDENCIES = $(top_builddir)/lib/alps/libparapack-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@xmlstream_DEPENDENCIES =  \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
@@ -308,7 +308,7 @@ top_srcdir = @top_srcdir@
 DEFAULT_INCLUDES = -I$(top_builddir)/src -I$(top_srcdir)/src
 AM_CPPFLAGS = $(BASE_CPPFLAGS) $(BOOST_CPPFLAGS) $(XML_CPPFLAGS) $(HDF5_CPPFLAGS)
 AM_LDFLAGS = $(BASE_LDFLAGS) $(BOOST_LDFLAGS) $(HDF5_LDFLAGS) $(XML_LDFLAGS)
-@BUILD_UNIFIED_LIB_FALSE@LDADD = $(top_builddir)/lib/alps/libparapack-sgl.la $(top_builddir)/lib/alps/libalps.la $(top_builddir)/lib/comm-sgl/libcomm-sgl.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(BASE_LIBS)
+@BUILD_UNIFIED_LIB_FALSE@LDADD = $(top_builddir)/lib/alps/libalps.la $(top_builddir)/lib/comm-sgl/libcomm-sgl.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(BASE_LIBS)
 @BUILD_UNIFIED_LIB_TRUE@LDADD = $(top_builddir)/lib/alps/libalps-sgl.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(BASE_LIBS)
 xmlhandler_SOURCES = xmlhandler.C
 xmlparser_SOURCES = xmlparser.C

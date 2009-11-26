@@ -70,7 +70,7 @@ am_fixed_capacity_deque_OBJECTS = fixed_capacity_deque.$(OBJEXT)
 fixed_capacity_deque_OBJECTS = $(am_fixed_capacity_deque_OBJECTS)
 fixed_capacity_deque_LDADD = $(LDADD)
 am__DEPENDENCIES_1 =
-@BUILD_UNIFIED_LIB_FALSE@fixed_capacity_deque_DEPENDENCIES = $(top_builddir)/lib/alps/libparapack-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@fixed_capacity_deque_DEPENDENCIES =  \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
@@ -85,7 +85,7 @@ am__DEPENDENCIES_1 =
 am_fixed_capacity_traits_OBJECTS = fixed_capacity_traits.$(OBJEXT)
 fixed_capacity_traits_OBJECTS = $(am_fixed_capacity_traits_OBJECTS)
 fixed_capacity_traits_LDADD = $(LDADD)
-@BUILD_UNIFIED_LIB_FALSE@fixed_capacity_traits_DEPENDENCIES = $(top_builddir)/lib/alps/libparapack-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@fixed_capacity_traits_DEPENDENCIES =  \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
@@ -100,7 +100,7 @@ fixed_capacity_traits_LDADD = $(LDADD)
 am_fixed_capacity_vector_OBJECTS = fixed_capacity_vector.$(OBJEXT)
 fixed_capacity_vector_OBJECTS = $(am_fixed_capacity_vector_OBJECTS)
 fixed_capacity_vector_LDADD = $(LDADD)
-@BUILD_UNIFIED_LIB_FALSE@fixed_capacity_vector_DEPENDENCIES = $(top_builddir)/lib/alps/libparapack-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@fixed_capacity_vector_DEPENDENCIES =  \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
@@ -115,7 +115,7 @@ fixed_capacity_vector_LDADD = $(LDADD)
 am_test_deque_OBJECTS = test_deque.$(OBJEXT)
 test_deque_OBJECTS = $(am_test_deque_OBJECTS)
 test_deque_LDADD = $(LDADD)
-@BUILD_UNIFIED_LIB_FALSE@test_deque_DEPENDENCIES = $(top_builddir)/lib/alps/libparapack-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@test_deque_DEPENDENCIES =  \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
@@ -130,7 +130,7 @@ test_deque_LDADD = $(LDADD)
 am_test_vector_OBJECTS = test_vector.$(OBJEXT)
 test_vector_OBJECTS = $(am_test_vector_OBJECTS)
 test_vector_LDADD = $(LDADD)
-@BUILD_UNIFIED_LIB_FALSE@test_vector_DEPENDENCIES = $(top_builddir)/lib/alps/libparapack-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@test_vector_DEPENDENCIES =  \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
@@ -145,7 +145,7 @@ test_vector_LDADD = $(LDADD)
 am_timing_queue_OBJECTS = timing_queue.$(OBJEXT)
 timing_queue_OBJECTS = $(am_timing_queue_OBJECTS)
 timing_queue_LDADD = $(LDADD)
-@BUILD_UNIFIED_LIB_FALSE@timing_queue_DEPENDENCIES = $(top_builddir)/lib/alps/libparapack-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@timing_queue_DEPENDENCIES =  \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
@@ -160,7 +160,7 @@ timing_queue_LDADD = $(LDADD)
 am_timing_stack_OBJECTS = timing_stack.$(OBJEXT)
 timing_stack_OBJECTS = $(am_timing_stack_OBJECTS)
 timing_stack_LDADD = $(LDADD)
-@BUILD_UNIFIED_LIB_FALSE@timing_stack_DEPENDENCIES = $(top_builddir)/lib/alps/libparapack-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@timing_stack_DEPENDENCIES =  \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
@@ -175,7 +175,7 @@ timing_stack_LDADD = $(LDADD)
 am_timing_vector_OBJECTS = timing_vector.$(OBJEXT)
 timing_vector_OBJECTS = $(am_timing_vector_OBJECTS)
 timing_vector_LDADD = $(LDADD)
-@BUILD_UNIFIED_LIB_FALSE@timing_vector_DEPENDENCIES = $(top_builddir)/lib/alps/libparapack-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@timing_vector_DEPENDENCIES =  \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
@@ -393,7 +393,7 @@ top_srcdir = @top_srcdir@
 DEFAULT_INCLUDES = -I$(top_builddir)/src -I$(top_srcdir)/src
 AM_CPPFLAGS = $(BASE_CPPFLAGS) $(BOOST_CPPFLAGS) $(XML_CPPFLAGS) $(HDF5_CPPFLAGS)
 AM_LDFLAGS = $(BASE_LDFLAGS) $(BOOST_LDFLAGS) $(HDF5_LDFLAGS) $(XML_LDFLAGS)
-@BUILD_UNIFIED_LIB_FALSE@LDADD = $(top_builddir)/lib/alps/libparapack-sgl.la $(top_builddir)/lib/alps/libalps.la $(top_builddir)/lib/comm-sgl/libcomm-sgl.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(BASE_LIBS)
+@BUILD_UNIFIED_LIB_FALSE@LDADD = $(top_builddir)/lib/alps/libalps.la $(top_builddir)/lib/comm-sgl/libcomm-sgl.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(BASE_LIBS)
 @BUILD_UNIFIED_LIB_TRUE@LDADD = $(top_builddir)/lib/alps/libalps-sgl.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(BASE_LIBS)
 fixed_capacity_deque_SOURCES = fixed_capacity_deque.C
 fixed_capacity_traits_SOURCES = fixed_capacity_traits.C

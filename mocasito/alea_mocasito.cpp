@@ -1,6 +1,7 @@
 #include<iostream>
 #include <alps/alea.h>
 #include <iostream>
+#include <boost/filesystem/operations.hpp>
 
 using namespace alps;
 int main(void){
@@ -89,6 +90,7 @@ int main(void){
   measurements2<<SignedObservable<SimpleObservable<std::valarray<double>,NoBinning<std::valarray<double> > > >("signed_double_none_vec");
   
   measurements2.read_hdf5("test.hdf5");
+  boost::filesystem::remove(boost::filesystem::path("test.hdf5"));
 
   //SimpleObservable<double,DetailedBinning<double> >dd_obs("double_detailed");
   /*SimpleObservable<double,SimpleBinning<double> >ds_obs("double_simple");
