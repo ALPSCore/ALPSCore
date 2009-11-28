@@ -212,16 +212,15 @@ void MCRun::save_worker(ODump& dump) const
 {
   Worker::save_worker(dump);
   if(node==0)
-    dump << measurements; 
+    dump << measurements;
   save(dump);
 }
 
 #ifdef ALPS_HAVE_HDF5
-	void MCRun::save_worker(h5archive<h5write> & ar) const {
-		Worker::save_worker(ar);
-		if(node==0)
-			measurements.save(ar); 
-		save(ar);
+	void MCRun::serialize(h5archive<h5write> & ar) const {
+// TODO:
+//		dynamic_cast<Worker const *>(this)->serialize(ar);
+		ar << make_pvp("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(node) + "/results", measurements);
 	}
 #endif
 
@@ -232,10 +231,6 @@ void MCRun::save(ODump&) const
 void MCRun::load(IDump&)
 {
 }
-
-#ifdef ALPS_HAVE_HDF5
-	void MCRun::save(h5archive<h5write> &) const {}
-#endif
 
 // start/restart the run
 std::string MCRun::work_phase()

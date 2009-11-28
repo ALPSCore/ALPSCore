@@ -185,25 +185,14 @@ public:
   }
   
 #ifdef ALPS_HAVE_HDF5
-	void save(h5archive<h5write> & ar, std::size_t realization, std::size_t clone) const {
-		std::stringstream path;
-		path << "/simulation/realizations/" << realization << "/clones/" << clone << "/results/" << name();
-		ar.set_data(path.str() + "/count", count());
+	void serialize(h5archive<h5write> & ar) const {
+		ar << make_pvp("count", count());
 		if (count() > 0) {
-			ar.set_data(path.str() + "/mean", mean());
-			ar.set_data(path.str() + "/error", error());
+			ar << make_pvp("mean", mean()) << make_pvp("error", error());
 			if(has_variance())
-				ar.set_data(path.str() + "/variance", variance());
+				ar << make_pvp("variance", variance());
 			if(has_tau())
-				ar.set_data(path.str() + "/tau_int", tau());
-			ar.set_data(path.str() + "/bins/bin_size", bin_size());
-			ar.set_data(path.str() + "/bins/number", bin_number());
-			ar.set_data(path.str() + "/bins2/value", bin_number2());
-			for(std::size_t k = 0; k < bin_number(); ++k) {
-				std::stringstream segment; segment << k << "/value";
-				ar.set_data(path.str() + "mean/bins/" + segment.str(), bin_value(k));
-				ar.set_data(path.str() + "mean/bins2/" + segment.str(), bin_value2(k));
-			}
+				ar << make_pvp("tau_int", tau());
 		}
 	}
 #endif

@@ -102,6 +102,10 @@ class SimpleBinning : public AbstractBinning<T>
   virtual void load(IDump& dump);
 #endif
 
+#ifdef ALPS_HAVE_HDF5
+	void serialize(h5archive<h5write> & ar) const;
+#endif
+
   std::string evaluation_method() const { return "binning";}
 
   void write_scalar_xml(oxstream& oxs) const;
@@ -706,6 +710,28 @@ inline void SimpleBinning<T>::load(IDump& dump)
    }
 }
 #endif
+
+#ifdef ALPS_HAVE_HDF5
+/*
+	template <class T> inline void SimpleBinning<T>::serialize(h5archive<h5write> & ar) const {
+		dynamic_cast<AbstractSimpleObservable<T> *>(this)->serialize(ar);
+//  AbstractBinning<T>::save(dump);
+//		ar << 
+//	    dump << sum_ << sum2_ << bin_entries_ << last_bin_ << count_ << thermal_count_<<min_<<max_;
+		
+		
+		ar << make_pvp("count", count());
+		if (count() > 0) {
+			ar << make_pvp("mean", mean()) << make_pvp("error", error());
+			if(has_variance())
+				ar << make_pvp("variance", variance());
+			if(has_tau())
+				ar << make_pvp("tau_int", tau());
+		}
+	}
+*/
+#endif
+
 
 } // end namespace alps
 

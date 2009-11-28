@@ -208,6 +208,11 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
   void save(ODump& dump) const;
   void load(IDump& dump);
 #endif
+
+#ifdef ALPS_HAVE_HDF5
+//	inline void serialize(h5archive<h5write> & ar) const;
+#endif
+
   template<class X> void subtract_from(const X& x);
   template<class X> void divide(const X& x);
 
@@ -358,7 +363,20 @@ inline void SimpleObservableEvaluator<T>::load(IDump& dump)
   dump >> valid_ >> runs_ >> all_;
 }
 #endif
-
+/*
+#ifdef ALPS_HAVE_HDF5
+	template <typename T> inline void SimpleObservableEvaluator<T>::serialize(h5archive<h5write> & ar) const {
+	
+	
+		// /sim/N/clones/i/results/name()
+		for(std::size_t i = 0; i < runs_.size(); ++i)
+			ar << make_pvp("../../../../results/" + name() + boost::lexical_cast<std::string>(i), runs_[i]);
+		// /sim/N/results/name()
+		ar << make_pvp("all", all_);
+	
+	}
+#endif
+*/
 template <class T>
 inline void SimpleObservableEvaluator<T>::collect() const
 {
@@ -554,7 +572,7 @@ void SimpleObservableEvaluator<T>::output_vector(std::ostream& out) const
 template <class T>
 inline bool SimpleObservableEvaluator<T>::can_merge(const Observable& obs) const
 {
-  return dynamic_cast<const AbstractSimpleObservable<T>*>(&obs) != 0;
+  return dynamic_cast<const AbstractSimpleObservable<T> *>(&obs) != 0;
 }
 
 template <class T>

@@ -125,8 +125,8 @@ public:
   virtual void save_worker(ODump&) const;
   virtual void load_worker(IDump&);
 	#ifdef ALPS_HAVE_HDF5
-		virtual void save_worker(h5archive<h5write> &) const;
-//		virtual void load_worker(h5archive<h5write> &);
+		virtual void serialize(h5archive<h5read> &) const;
+		virtual void serialize(h5archive<h5write> &) const;
 	#endif
   virtual void write_xml(const boost::filesystem::path& name, const boost::filesystem::path& ckpt_name="") const;
   void save_to_file(const boost::filesystem::path&) const;

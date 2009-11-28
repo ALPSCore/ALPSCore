@@ -157,7 +157,10 @@ void Worker::save_worker(ODump& dump) const
  }
  
 #ifdef ALPS_HAVE_HDF5
-	void Worker::save_worker(h5archive<h5write> & ar) const {
+	void Worker::serialize(h5archive<h5read> & ar) const {
+// TODO: implement
+	}
+	void Worker::serialize(h5archive<h5write> & ar) const {
 // TODO: implement
 	}
 #endif
@@ -235,8 +238,7 @@ void Worker::save_to_file(const boost::filesystem::path& fnpath) const
 	bool h5backup=boost::filesystem::exists(h5path);
 	{
 		h5archive<h5write> h5(h5backup ? h5bakpath : h5path);
-		h5 << make_pcp("/parameters", parms);
-		save_worker(h5);
+		h5 << make_pvp("/parameters", parms) << make_pvp("/", this);
 	}
 	if (h5backup) {
 		boost::filesystem::remove(h5path);

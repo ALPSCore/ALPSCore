@@ -124,11 +124,10 @@ void ObservableSet::load(IDump& dump)
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-void ObservableSet::save(h5archive<h5write> & ar, std::size_t realization, std::size_t clone) const {
+void ObservableSet::serialize(h5archive<h5write> & ar) const {
 	for(base_type::const_iterator it = base_type::begin(); it != base_type::end(); ++it)
 		if(it->second)
-			it->second->save(ar, realization, clone);
-
+			ar << make_pvp(it->second->name(), it->second);
 }
 #endif
 

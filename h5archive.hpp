@@ -10,12 +10,13 @@
 #include <sstream>
 #include <cstring>
 #include <vector>
-#include <map>
+#include <complex>
 #include <stdexcept>
 
+#include <boost/config.hpp>
+#include <boost/utility.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/type_traits.hpp>
-#include <boost/utility.hpp>
 
 #include <hdf5.h>
 
@@ -53,31 +54,21 @@ namespace alps {
 		typedef h5_t<H5Tclose> h5t_t;
 		typedef h5_t<H5Pclose> h5p_t;
 		typedef h5_t<h5_e::noop> h5e_t;
-		template <typename T> class h5_pcp {
-			public:
-				h5_pcp(std::string const & p, T v): _p(p), _v(v) {}
-				h5_pcp(h5_pcp<T> const & c): _p(c._p), _v(c._v) {}
-				std::string get_path() const { return _p; }
-				T get_value() const { return _v; }
-			private:
-				std::string _p;
-				mutable T _v;
-		};
 		template <typename T> class h5_pvp {
 			public:
 				h5_pvp(std::string const & p, T v): _p(p), _v(v) {}
 				h5_pvp(h5_pvp<T> const & c): _p(c._p), _v(c._v) {}
 				std::string get_path(std::string const & c) const {
-					if (_p[0] == '/')
+					if (_p.size() && _p[0] == '/')
 						return _p;
-					else if (_p.substr(0, 2) != "..")
-						return c + "/" + _p;
+					else if (_p.size() < 2 || _p.substr(0, 2) != "..")
+						return c + (c.size() == 1 ? "" : "/") + _p;
 					else {
 						std::string s = c;
 						std::size_t i = 0;
-						for (; _p.substr(i, 2) == ".."; i += 3)
+						for (; s.size() && _p.substr(i, 2) == ".."; i += 3)
 							s = s.substr(0, s.find_last_of('/'));
-						return s + "/" + _p.substr(i);
+						return s + (s.size() == 1 ? "" : "/") + _p.substr(i);
 					}
 				}
 				T get_value() const { return _v; }
@@ -99,16 +90,7 @@ namespace alps {
 				H5Fflush(_file, H5F_SCOPE_GLOBAL);
 			}
 			void set_context(std::string const & c) {
-				if (c[0] == '/')
-					_context = c;
-				else if (c.substr(0, 2) != "..")
-					_context += "/" + c;
-				else {
-					std::size_t i = 0;
-					for (; c.substr(i, 2) == ".."; i += 3)
-						_context = _context.substr(0, _context.find_last_of('/'));
-					_context += "/" + c.substr(i);
-				}
+				_context = c;
 			}
 			std::string get_context() {
 				return _context;
@@ -184,6 +166,7 @@ namespace alps {
 				else
 					get_attr_helper<detail::h5d_t, T>(H5Dopen(_file, p.c_str(), H5P_DEFAULT), s, &v);
 			}
+			// = = = = = = = = = = set_data = = = = = = = = = =
 			template<typename T> typename boost::enable_if<boost::is_scalar<T> >::type set_data(std::string const & p, T v) {
 				detail::h5t_t type_id(get_native_type(v));
 				hid_t id = H5Dopen(_file, p.c_str(), H5P_DEFAULT);
@@ -198,6 +181,9 @@ namespace alps {
 			template<typename T> void set_data(std::string const & p, char const * const & v) {
 				set_data(p, std::string(v));
 			}
+			template<typename T> void set_data(std::string const & p, std::complex<T> const & v) {
+				set_data(p, reinterpret_cast<T *>(&v), 2);
+			}
 			template<typename T> void set_data(std::string const & p, T const * v, hsize_t s) {
 				detail::h5t_t type_id(get_native_type(v));
 				hid_t id = H5Dopen(_file, p.c_str(), H5P_DEFAULT);
@@ -209,6 +195,7 @@ namespace alps {
 				if (s > 0)
 					detail::h5e_t(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, v));
 			}
+			// = = = = = = = = = = append_data = = = = = = = = = =			
 			template<typename T> void append_data(std::string const & p, T const * v, hsize_t s) {
 				detail::h5t_t type_id(get_native_type(v));
 				hid_t id = H5Dopen(_file, p.c_str(), H5P_DEFAULT);
@@ -297,41 +284,53 @@ namespace alps {
 			std::string _context;
 			detail::h5f_t _file;
 	};
-	template <typename T> detail::h5_pcp<T &> make_pcp(std::string const & p, T & v) {
-		return detail::h5_pcp<T &>(p, v);
-	}
 	template <typename T> detail::h5_pvp<T &> make_pvp(std::string const & p, T & v) {
 		return detail::h5_pvp<T &>(p, v);
 	}
 	template <typename T> detail::h5_pvp<T> make_pvp(std::string const & p, T const & v) {
 		return detail::h5_pvp<T>(p, v);
-	}	
-	template <typename Tag, typename T> h5archive<Tag> & operator& (h5archive<Tag> & ar, detail::h5_pcp<T &> const & v) {
+	}
+	namespace detail {
+		template <typename T> struct h5_is_serialize_wrapper {
+			template <void (T::*)(h5archive<h5write> &) const> struct apply {
+				typedef T type; 
+			};
+		};
+		template <typename T> boost::type_traits::yes_type h5_is_serialize_helper(
+			typename h5_is_serialize_wrapper<T>::template apply<&T::serialize>::type *
+		);
+		template <typename T> boost::type_traits::no_type h5_is_serialize_helper(...);
+		template<typename T> struct h5_is_serialize{
+			enum { value = sizeof(h5_is_serialize_helper<T>(0)) == sizeof(boost::type_traits::yes_type) };
+		};
+		template<typename T> struct h5_is_serialize <T *>{
+			enum { value = sizeof(h5_is_serialize_helper<T>(0)) == sizeof(boost::type_traits::yes_type) };
+		};
+		template <typename T> void h5_call_serialize(T const & v, h5archive<h5write> & ar) {
+			v.serialize(ar);
+		}
+		template <typename T> void h5_call_serialize(T * const & v, h5archive<h5write> & ar) {
+			v->serialize(ar);
+		}
+	}
+	template <typename T> typename boost::enable_if<
+		boost::mpl::bool_<detail::h5_is_serialize<T>::value>, h5archive<h5write> &
+	>::type operator<< (h5archive<h5write> & ar, detail::h5_pvp<T> const & v) {
 		std::string c = ar.get_context();
-		ar.set_context(v.get_path());
-		v.get_value().serialize(ar);
+		ar.set_context(v.get_path(ar.get_context()));
+		detail::h5_call_serialize(v.get_value(), ar);
 		ar.set_context(c);
 		return ar;
 	}
-	template <typename T> h5archive<h5write> & operator& (h5archive<h5write> & ar, detail::h5_pvp<T &> const & v) {
-		return ar << v;
-	}
-	template <typename T> h5archive<h5read> & operator& (h5archive<h5read> & ar, detail::h5_pvp<T &> const & v) {
-		return ar >> v;
-	}
-	template <typename T> h5archive<h5write> & operator<< (h5archive<h5write> & ar, detail::h5_pcp<T> const & v) {
-		return ar & v;
-	}
-	template <typename T> h5archive<h5read> & operator>> (h5archive<h5read> & ar, detail::h5_pcp<T> const & v) {
-		return ar & v;
-	}
-	template <typename T> h5archive<h5write> & operator<< (h5archive<h5write> & ar, detail::h5_pvp<T> const & v) {
+	template <typename T> typename boost::disable_if<
+		boost::mpl::bool_<detail::h5_is_serialize<T>::value>, h5archive<h5write> &
+	>::type operator<< (h5archive<h5write> & ar, detail::h5_pvp<T> const & v) {
 		ar.set_data(v.get_path(ar.get_context()), v.get_value());
 		return ar;
 	}
-	template <typename T> h5archive<h5read> & operator>> (h5archive<h5read> & ar, detail::h5_pvp<T &> const & v) {
+/*	template <typename T> h5archive<h5read> & operator>> (h5archive<h5read> & ar, detail::h5_pvp<T &> const & v) {
 		ar.get_data(v.get_path(ar.get_context()), v.get_value());
 		return ar;
 	}
-}
+*/}
 #endif

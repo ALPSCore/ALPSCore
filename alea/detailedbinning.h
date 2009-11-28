@@ -96,6 +96,10 @@ public:
   void extract_timeseries(ODump& dump) const { dump << binsize_ << values_.size() << binentries_ << values_;}
 #endif
 
+#ifdef ALPS_HAVE_HDF5
+	void serialize(h5archive<h5write> & ar) const;
+#endif
+
 private:
   uint32_t binsize_;       // number of measurements per bin
   uint32_t minbinsize_;    // minimum number of measurements per bin
@@ -309,6 +313,24 @@ inline void BasicDetailedBinning<T>::load(IDump& dump)
        >> values2_;
 }
 #endif
+
+#ifdef ALPS_HAVE_HDF5
+/*
+	template <class T> inline void BasicDetailedBinning<T>::serialize(h5archive<h5write> & ar) const {
+		dynamic_cast<SimpleBinning<T> *>(this)->serialize(ar);
+		
+	// TODO: HDF5 -> write to timeseries
+
+// TODO: move to detailed binning
+			ar << make_pvp("bins/bin_size", bin_size()) << make_pvp("bins/number", bin_number()) << make_pvp("bins2/value", bin_number2());
+			for(std::size_t i = 0; i < bin_number(); ++i)
+				// TODO: write as vector data
+				ar << make_pvp("mean/bins/" + boost::lexical_cast<std::string>(i) + "/value", bin_value(i))
+				   << make_pvp("mean/bins2/" + boost::lexical_cast<std::string>(i) + "/value", bin_value2(i));
+	}
+*/
+#endif
+
 
 } // end namespace alps
 

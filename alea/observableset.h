@@ -213,7 +213,7 @@ class ALPS_DECL ObservableSet: public std::map<std::string,Observable*>
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-	virtual void save(h5archive<h5write> &, std::size_t = 0, std::size_t = 0) const;
+	virtual void serialize(h5archive<h5write> &) const;
 #endif
 
   BOOST_SERIALIZATION_SPLIT_MEMBER()

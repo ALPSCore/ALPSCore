@@ -153,7 +153,11 @@ public:
   void save(ODump& dump) const;
   void load(IDump& dump);
 #endif
- 
+
+#ifdef ALPS_HAVE_HDF5
+//	inline void serialize(h5archive<h5write> & ar) const;
+#endif
+
   inline void set_bin_size(uint64_t);
   inline void set_bin_number(uint64_t);
  
@@ -1006,7 +1010,24 @@ void SimpleObservableData<T>::load(IDump& dump)
 }
 
 #endif
-
+/*
+#ifdef ALPS_HAVE_HDF5
+	template <typename T> inline void SimpleObservableData<T>::serialize(h5archive<h5write> & ar) const {
+		ar << make_pvp("count", count_) << make_pvp("mean", mean_) << make_pvp("error", error_);
+		if (has_variance_)
+			ar << make_pvp("variance", variance_);
+		if (has_tau_)
+			ar << make_pvp("variance", tau_);
+		ar << make_pvp("has_minmax", has_minmax_) << make_pvp("thermalcount_", thermalcount_) << make_pvp("can_set_thermal", can_set_thermal_)
+		   << make_pvp("min", min_) << make_pvp("max", max_) << make_pvp("binsize", binsize_) << make_pvp("discardedmeas", discardedmeas_) 
+		   << make_pvp("discardedbins", discardedbins_) << make_pvp("valid", valid_) << make_pvp("jack_valid", jack_valid_) 
+		   << make_pvp("changed", changed_) << make_pvp("nonlinear_operations", nonlinear_operations_) << make_pvp("values", values_) 
+		   << make_pvp("values2", values2_) << make_pvp("jack_", jack_) << make_pvp("converged_errors_", converged_errors_) 
+		   << make_pvp("any_converged_errors", any_converged_errors_;
+	
+	}
+#endif
+*/
 template <class T>
 void SimpleObservableData<T>::fill_jack() const
 {
