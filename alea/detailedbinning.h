@@ -141,14 +141,14 @@ typedef SimpleObservable< std::valarray<double> ,
                          DetailedBinning<std::valarray<double> > > RealVectorObservable;
 typedef SimpleObservable< std::valarray<float> , 
                          DetailedBinning<std::valarray<float> > > FloatVectorObservable;
-typedef SimpleObservable< std::valarray<std::complex<double> > , 
-                         DetailedBinning<std::valarray<std::complex<double> > > > ComplexVectorObservable;
+//typedef SimpleObservable< std::valarray<std::complex<double> > , 
+//                         DetailedBinning<std::valarray<std::complex<double> > > > ComplexVectorObservable;
 typedef SimpleObservable< std::valarray<int32_t> , 
                          FixedBinning<std::valarray<int32_t> > > IntVectorTimeSeriesObservable;
 typedef SimpleObservable< std::valarray<double> , 
                          FixedBinning<std::valarray<double> > > RealVectorTimeSeriesObservable;
-typedef SimpleObservable< std::valarray<std::complex<double> > , 
-                         FixedBinning<std::valarray<std::complex<double> > > > ComplexVectorTimeSeriesObservable;
+//typedef SimpleObservable< std::valarray<std::complex<double> > , 
+//                         FixedBinning<std::valarray<std::complex<double> > > > ComplexVectorTimeSeriesObservable;
 #endif
 
 

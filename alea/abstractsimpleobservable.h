@@ -46,7 +46,7 @@ template <class T>
 inline bool error_underflow(T mean, T error)
 {
   return ((error!= 0. && mean != 0.)  && (std::abs(mean) * 10.
-             *std::sqrt(std::numeric_limits<T>::epsilon()) > error));
+             *std::sqrt(type_traits<T>::epsilon()) > std::abs(error)));
 }
 
 class RealVectorObsevaluatorXMLHandler;

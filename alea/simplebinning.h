@@ -334,14 +334,14 @@ typename SimpleBinning<T>::convergence_type SimpleBinning<T>::converged_errors()
       result_type this_err(error(i));
       for (it= obs_value_traits<convergence_type>::slice_begin(conv);
            it!= obs_value_traits<convergence_type>::slice_end(conv); ++it) {
-        if (obs_value_traits<result_type>::slice_value(this_err,it) >=
-            obs_value_traits<result_type>::slice_value(err,it))
+        if (std::abs(obs_value_traits<result_type>::slice_value(this_err,it)) >=
+            std::abs(obs_value_traits<result_type>::slice_value(err,it)))
           obs_value_traits<convergence_type>::slice_value(conv,it)=CONVERGED;
-        else if (obs_value_traits<result_type>::slice_value(this_err,it) <0.824*
-            obs_value_traits<result_type>::slice_value(err,it))
+        else if (std::abs(obs_value_traits<result_type>::slice_value(this_err,it)) <0.824*
+            std::abs(obs_value_traits<result_type>::slice_value(err,it)))
           obs_value_traits<convergence_type>::slice_value(conv,it)=NOT_CONVERGED;
-        else if (obs_value_traits<result_type>::slice_value(this_err,it) <0.9*
-            obs_value_traits<result_type>::slice_value(err,it)  &&
+        else if (std::abs(obs_value_traits<result_type>::slice_value(this_err,it)) <0.9*
+            std::abs(obs_value_traits<result_type>::slice_value(err,it))  &&
             obs_value_traits<convergence_type>::slice_value(conv,it)!=NOT_CONVERGED)
           obs_value_traits<convergence_type>::slice_value(conv,it)=MAYBE_CONVERGED;
       }
@@ -527,9 +527,9 @@ inline typename obs_value_traits<T>::time_type SimpleBinning<T>::tau() const
   if( binning_depth() >= 2 )
   {
     count_type factor =count()-1;
-    result_type er(error());
+    time_type er(std::abs(error()));
     er *=er*factor;
-    er /= variance();
+    er /= std::abs(variance());
     er -=1.;
     return 0.5*er;
   }

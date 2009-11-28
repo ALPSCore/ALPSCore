@@ -1051,7 +1051,7 @@ void SimpleObservableData<T>::analyze() const
     if (!values2_.empty()) {
       has_variance_ = true;
       has_tau_ = true;
-      obs_value_traits<result_type>::resize_same_as(variance_, bin_value2(0));
+      obs_value_traits<result_type>::resize_same_as(variance_, bin_value2(0.));
       variance_ = 0.;
       for (uint64_t i=0;i<values2_.size();++i)
         variance_+=obs_value_traits<result_type>::convert(values2_[i]);
@@ -1061,9 +1061,9 @@ void SimpleObservableData<T>::analyze() const
       variance_ -= mean2;
       variance_ /= count_type(count()-1);
       obs_value_traits<result_type>::resize_same_as(tau_, error_);
-      tau_=error_;
-      tau_*=error_*count_type(count());
-      tau_/=variance_;
+      tau_=std::abs(error_);
+      tau_*=std::abs(error_)*count_type(count());
+      tau_/=std::abs(variance_);
       tau_-=1.;
       tau_*=0.5;
     } else {

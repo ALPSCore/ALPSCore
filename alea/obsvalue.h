@@ -153,34 +153,34 @@ template <class T>
 struct obs_value_traits<std::complex<T> >
 {
   typedef std::complex<T> value_type;
-  typedef std::complex<T> element_type;
+  typedef value_type element_type;
   typedef double count_type;
   typedef unsigned int index_type;
   typedef double time_type;
   typedef time_type time_element_type;
   typedef uint32_t size_type;
-  typedef typename type_traits<T>::average_t result_type;
+  typedef typename type_traits<value_type>::average_t result_type;
   typedef int convergence_type;
-  typedef typename type_traits<T>::average_t covariance_type;  
+  typedef typename type_traits<value_type>::average_t covariance_type;  
   typedef int slice_iterator;
-  BOOST_STATIC_CONSTANT(uint32_t, magic_id = type_traits<T>::type_tag);
+  BOOST_STATIC_CONSTANT(uint32_t, magic_id = type_traits<value_type>::type_tag);
   BOOST_STATIC_CONSTANT(bool, array_valued=false);
   typedef std::string label_type;
 
-  template <class X> static inline void check_for_max(std::complex<T>&,const X&) {}
-  template <class X> static inline void check_for_min(std::complex<T>&,const X& b) {}
+  template <class X> static inline void check_for_max(value_type&,const X&) {}
+  template <class X> static inline void check_for_min(value_type&,const X& b) {}
 
-  static std::complex<T> max BOOST_PREVENT_MACRO_SUBSTITUTION () { return  (std::numeric_limits<T>::max BOOST_PREVENT_MACRO_SUBSTITUTION (),std::numeric_limits<T>::max BOOST_PREVENT_MACRO_SUBSTITUTION ());}
-  static std::complex<T> min BOOST_PREVENT_MACRO_SUBSTITUTION () { return  -max BOOST_PREVENT_MACRO_SUBSTITUTION ();}
+  static value_type max BOOST_PREVENT_MACRO_SUBSTITUTION () { return  (std::numeric_limits<T>::max BOOST_PREVENT_MACRO_SUBSTITUTION (),std::numeric_limits<T>::max BOOST_PREVENT_MACRO_SUBSTITUTION ());}
+  static value_type min BOOST_PREVENT_MACRO_SUBSTITUTION () { return  -max BOOST_PREVENT_MACRO_SUBSTITUTION ();}
   static T epsilon() { return std::numeric_limits<T>::epsilon();}
 
   static inline time_type t_max() { return  std::numeric_limits<time_type>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();}
 
   static void fix_negative(value_type& x) { if (std::real(x)<0. || std::imag(x)<0.) x=0.;}
 
-  static inline T check_divide(const result_type& a,const result_type& b)
+  static inline value_type check_divide(const result_type& a,const result_type& b)
     {
-      return (b==0 && a==0 ? 1. : a/b); 
+      return (b==0. && a==0. ? 1. : a/b); 
     }
 
   /** resize a to the lenth size */
@@ -192,7 +192,7 @@ struct obs_value_traits<std::complex<T> >
     return std::conj(a)*b;
   }
 
-  template <class X> static T convert(X x) { return static_cast<T>(x);}
+  template <class X> static value_type convert(X x) { return static_cast<value_type>(x);}
   static slice_iterator slice_begin(const value_type&) { return 0;}
   static slice_iterator slice_end(const value_type&) { return 1;}
   static std::string slice_name(const value_type& ,slice_iterator) { return ""; }
@@ -254,9 +254,9 @@ struct obs_value_traits<std::valarray<T> >
 
   static time_element_type t_max() {return obs_value_traits<T>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();}
 
-  static inline time_type check_divide(const result_type& a,const result_type& b) 
+  static inline result_type check_divide(const result_type& a,const result_type& b) 
   {
-    time_type retval;
+    result_type retval;
     resize_same_as(retval,b);
     for(int32_t i(0);i<(int32_t)b.size();++i)
       retval[i] = obs_value_traits<element_type>::check_divide(a[i],b[i]);
