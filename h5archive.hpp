@@ -182,7 +182,7 @@ namespace alps {
 				set_data(p, std::string(v));
 			}
 			template<typename T> void set_data(std::string const & p, std::complex<T> const & v) {
-				set_data(p, reinterpret_cast<T *>(&v), 2);
+				set_data(p, const_cast<T *>(reinterpret_cast<const T *>(&v)), 2);
 			}
 			template<typename T> void set_data(std::string const & p, T const * v, hsize_t s) {
 				detail::h5t_t type_id(get_native_type(v));
