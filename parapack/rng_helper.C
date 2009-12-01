@@ -33,7 +33,10 @@ rng_helper::rng_helper(const Parameters& p) {
   int nr = max_threads();
   engines_.resize(nr);
   generators_.resize(nr);
-  #pragma omp parallel
+#if !(defined(__APPLE_CC__) && __GNUC__ == 4 && __GNUC_MINOR__ == 2)
+  // g++ with -fopenmp on Mac OS X Snow Leopard crashes with the following directive
+  #pragma omp parallel num_threads(nr)
+#endif
   {
     for (int r = 0; r < nr; ++r) {
       if (r == thread_id()) {
