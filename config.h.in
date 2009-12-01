@@ -226,6 +226,9 @@
 // Define to 1 if you have the HDF5 library
 #cmakedefine ALPS_HAVE_HDF5
 
+// Define to 1 if you have the HDF5 library with parallel(MPI) support
+#cmakedefine ALPS_HAVE_HDF5_PARALLEL
+
 // Define to 1 if you have the Boost.MPI library
 #undef ALPS_HAVE_BOOST_MPI
 

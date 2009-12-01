@@ -44,6 +44,10 @@
 #include <alps/alea/recordableobservable.h>
 #include <alps/xml.h>
 
+#ifdef ALPS_HAVE_HDF5_PARALLEL
+#include <mpi.h>
+#endif
+
 #ifdef ALPS_HAVE_HDF5
 #include <alps/h5archive.hpp>
 #endif
