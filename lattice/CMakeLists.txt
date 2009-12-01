@@ -23,3 +23,23 @@ FOREACH (name example1 example2 example3 example4 example5 example6 example7 exa
 			-P ${PROJECT_SOURCE_DIR}/config/CMake/run_test.cmake
 	)
 ENDFOREACH(name)
+
+FOREACH (name coloring label parity)
+
+	add_executable(${name} ${name}.C)
+	add_dependencies(${name} alps)
+	target_link_libraries(${name} alps)
+	# install(TARGETS ${name} RUNTIME DESTINATION bin)
+	
+	ADD_TEST(
+		${name} 
+		${CMAKE_COMMAND}
+			-Dcmd=${name}
+                        -Dsourcedir=${CMAKE_CURRENT_SOURCE_DIR}
+                        -Dbinarydir=${CMAKE_CURRENT_BINARY_DIR}
+			-Dinput=${name}.input
+			-Doutput=${name}.output
+			-Dtimeout=600
+			-P ${PROJECT_SOURCE_DIR}/config/CMake/run_test.cmake
+	)
+ENDFOREACH(name)

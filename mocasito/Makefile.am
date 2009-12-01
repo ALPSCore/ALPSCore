@@ -13,7 +13,7 @@ check_PROGRAMS += io
 check_PROGRAMS += alea_mocasito
 endif
 io_SOURCES = io.C
-alea_mocasito_SOURCES = alea_mocasito.cpp
+alea_mocasito_SOURCES = alea_mocasito.C
 
 dist_noinst_DATA = alea_mocasito.output
 

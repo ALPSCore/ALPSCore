@@ -15,7 +15,6 @@ else
 endif
 
 dist_noinst_DATA = \
-	alea.op \
 	clone_mpi.ip-4 \
 	clone_info.ip clone_info.op \
 	clone_phase.ip clone_phase.op \
@@ -26,6 +25,7 @@ dist_noinst_DATA = \
 	id2string.op \
 	integer_range.ip integer_range.op \
 	linear_regression.op \
+	merge.op \
 	percentage.op \
 	process_mpi.op-8 \
 	temperature_scan.ip temperature_scan.op \
@@ -33,7 +33,6 @@ dist_noinst_DATA = \
 	worker_mpi.ip-4 worker_mpi.op-4
 
 check_PROGRAMS = \
-	alea \
 	clone_info \
 	clone_phase \
 	clone_timer \
@@ -43,6 +42,7 @@ check_PROGRAMS = \
 	info_test \
 	integer_range \
 	linear_regression \
+	merge \
 	percentage \
 	temperature_scan \
 	time \
@@ -60,10 +60,6 @@ check_PROGRAMS += \
 #	clone_mpi
 #	worker_mpi
 endif
-
-alea_SOURCES = alea.C
-alea_LDFLAGS = $(LDFLAGS_SGL)
-alea_LDADD = $(LIBS_SGL)
 
 # clone_mpi_SOURCES = clone_mpi.C
 # clone_mpi_LDFLAGS = $(LDFLAGS_MPI)
@@ -120,6 +116,10 @@ integer_range_LDADD = $(LIBS_SGL)
 linear_regression_SOURCES = linear_regression.C
 linear_regression_LDFLAGS = $(LDFLAGS_SGL)
 linear_regression_LDADD = $(LIBS_SGL)
+
+merge_SOURCES = merge.C
+merge_LDFLAGS = $(LDFLAGS_SGL)
+merge_LDADD = $(LIBS_SGL)
 
 halt_mpi_SOURCES = halt_mpi.C
 halt_mpi_LDFLAGS = $(LDFLAGS_MPI)

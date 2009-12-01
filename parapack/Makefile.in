@@ -34,13 +34,13 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-check_PROGRAMS = alea$(EXEEXT) clone_info$(EXEEXT) \
-	clone_phase$(EXEEXT) clone_timer$(EXEEXT) \
-	exmc_optimize$(EXEEXT) exp_number$(EXEEXT) id2string$(EXEEXT) \
-	info_test$(EXEEXT) integer_range$(EXEEXT) \
-	linear_regression$(EXEEXT) percentage$(EXEEXT) \
-	temperature_scan$(EXEEXT) time$(EXEEXT) version$(EXEEXT) \
-	wl_weight$(EXEEXT) $(am__EXEEXT_1)
+check_PROGRAMS = clone_info$(EXEEXT) clone_phase$(EXEEXT) \
+	clone_timer$(EXEEXT) exmc_optimize$(EXEEXT) \
+	exp_number$(EXEEXT) id2string$(EXEEXT) info_test$(EXEEXT) \
+	integer_range$(EXEEXT) linear_regression$(EXEEXT) \
+	merge$(EXEEXT) percentage$(EXEEXT) temperature_scan$(EXEEXT) \
+	time$(EXEEXT) version$(EXEEXT) wl_weight$(EXEEXT) \
+	$(am__EXEEXT_1)
 @HAVE_BOOST_MPI_TRUE@am__append_1 = \
 @HAVE_BOOST_MPI_TRUE@	comm_mpi \
 @HAVE_BOOST_MPI_TRUE@	collect_mpi \
@@ -81,8 +81,8 @@ CONFIG_CLEAN_VPATH_FILES =
 @HAVE_BOOST_MPI_TRUE@	filelock_mpi$(EXEEXT) halt_mpi$(EXEEXT) \
 @HAVE_BOOST_MPI_TRUE@	info_test_mpi$(EXEEXT) \
 @HAVE_BOOST_MPI_TRUE@	process_mpi$(EXEEXT)
-am_alea_OBJECTS = alea.$(OBJEXT)
-alea_OBJECTS = $(am_alea_OBJECTS)
+am_clone_info_OBJECTS = clone_info.$(OBJEXT)
+clone_info_OBJECTS = $(am_clone_info_OBJECTS)
 am__DEPENDENCIES_1 =
 @BUILD_UNIFIED_LIB_FALSE@am__DEPENDENCIES_2 = $(top_builddir)/lib/alps/libparapack-sgl.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
@@ -96,12 +96,6 @@ am__DEPENDENCIES_1 =
 @BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
 @BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
 @BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1)
-alea_DEPENDENCIES = $(am__DEPENDENCIES_2)
-alea_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
-	$(alea_LDFLAGS) $(LDFLAGS) -o $@
-am_clone_info_OBJECTS = clone_info.$(OBJEXT)
-clone_info_OBJECTS = $(am_clone_info_OBJECTS)
 clone_info_DEPENDENCIES = $(am__DEPENDENCIES_2)
 clone_info_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
@@ -198,6 +192,12 @@ linear_regression_DEPENDENCIES = $(am__DEPENDENCIES_2)
 linear_regression_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
 	$(CXXFLAGS) $(linear_regression_LDFLAGS) $(LDFLAGS) -o $@
+am_merge_OBJECTS = merge.$(OBJEXT)
+merge_OBJECTS = $(am_merge_OBJECTS)
+merge_DEPENDENCIES = $(am__DEPENDENCIES_2)
+merge_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
+	$(merge_LDFLAGS) $(LDFLAGS) -o $@
 am_percentage_OBJECTS = percentage.$(OBJEXT)
 percentage_OBJECTS = $(am_percentage_OBJECTS)
 percentage_DEPENDENCIES = $(am__DEPENDENCIES_2)
@@ -246,25 +246,26 @@ CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(alea_SOURCES) $(clone_info_SOURCES) $(clone_phase_SOURCES) \
+SOURCES = $(clone_info_SOURCES) $(clone_phase_SOURCES) \
 	$(clone_timer_SOURCES) $(collect_mpi_SOURCES) \
 	$(comm_mpi_SOURCES) $(exmc_optimize_SOURCES) \
 	$(exp_number_SOURCES) $(filelock_mpi_SOURCES) \
 	$(halt_mpi_SOURCES) $(id2string_SOURCES) $(info_test_SOURCES) \
 	$(info_test_mpi_SOURCES) $(integer_range_SOURCES) \
-	$(linear_regression_SOURCES) $(percentage_SOURCES) \
-	$(process_mpi_SOURCES) $(temperature_scan_SOURCES) \
-	$(time_SOURCES) $(version_SOURCES) $(wl_weight_SOURCES)
-DIST_SOURCES = $(alea_SOURCES) $(clone_info_SOURCES) \
-	$(clone_phase_SOURCES) $(clone_timer_SOURCES) \
-	$(collect_mpi_SOURCES) $(comm_mpi_SOURCES) \
-	$(exmc_optimize_SOURCES) $(exp_number_SOURCES) \
-	$(filelock_mpi_SOURCES) $(halt_mpi_SOURCES) \
-	$(id2string_SOURCES) $(info_test_SOURCES) \
+	$(linear_regression_SOURCES) $(merge_SOURCES) \
+	$(percentage_SOURCES) $(process_mpi_SOURCES) \
+	$(temperature_scan_SOURCES) $(time_SOURCES) $(version_SOURCES) \
+	$(wl_weight_SOURCES)
+DIST_SOURCES = $(clone_info_SOURCES) $(clone_phase_SOURCES) \
+	$(clone_timer_SOURCES) $(collect_mpi_SOURCES) \
+	$(comm_mpi_SOURCES) $(exmc_optimize_SOURCES) \
+	$(exp_number_SOURCES) $(filelock_mpi_SOURCES) \
+	$(halt_mpi_SOURCES) $(id2string_SOURCES) $(info_test_SOURCES) \
 	$(info_test_mpi_SOURCES) $(integer_range_SOURCES) \
-	$(linear_regression_SOURCES) $(percentage_SOURCES) \
-	$(process_mpi_SOURCES) $(temperature_scan_SOURCES) \
-	$(time_SOURCES) $(version_SOURCES) $(wl_weight_SOURCES)
+	$(linear_regression_SOURCES) $(merge_SOURCES) \
+	$(percentage_SOURCES) $(process_mpi_SOURCES) \
+	$(temperature_scan_SOURCES) $(time_SOURCES) $(version_SOURCES) \
+	$(wl_weight_SOURCES)
 DATA = $(dist_noinst_DATA)
 ETAGS = etags
 CTAGS = ctags
@@ -454,7 +455,6 @@ LDFLAGS_MPI = $(LDFLAGS_SGL) $(MPI_LDFLAGS)
 @BUILD_UNIFIED_LIB_FALSE@LIBS_MPI = $(top_builddir)/lib/alps/libparapack-mpi.la $(top_builddir)/lib/alps/libalps.la $(top_builddir)/lib/comm-mpi/libcomm-mpi.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(MPI_LIBS) $(BASE_LIBS)
 @BUILD_UNIFIED_LIB_TRUE@LIBS_MPI = $(top_builddir)/lib/alps/libalps-mpi.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(MPI_LIBS) $(BASE_LIBS)
 dist_noinst_DATA = \
-	alea.op \
 	clone_mpi.ip-4 \
 	clone_info.ip clone_info.op \
 	clone_phase.ip clone_phase.op \
@@ -465,6 +465,7 @@ dist_noinst_DATA = \
 	id2string.op \
 	integer_range.ip integer_range.op \
 	linear_regression.op \
+	merge.op \
 	percentage.op \
 	process_mpi.op-8 \
 	temperature_scan.ip temperature_scan.op \
@@ -473,9 +474,6 @@ dist_noinst_DATA = \
 
 #	clone_mpi
 #	worker_mpi
-alea_SOURCES = alea.C
-alea_LDFLAGS = $(LDFLAGS_SGL)
-alea_LDADD = $(LIBS_SGL)
 
 # clone_mpi_SOURCES = clone_mpi.C
 # clone_mpi_LDFLAGS = $(LDFLAGS_MPI)
@@ -519,6 +517,9 @@ integer_range_LDADD = $(LIBS_SGL)
 linear_regression_SOURCES = linear_regression.C
 linear_regression_LDFLAGS = $(LDFLAGS_SGL)
 linear_regression_LDADD = $(LIBS_SGL)
+merge_SOURCES = merge.C
+merge_LDFLAGS = $(LDFLAGS_SGL)
+merge_LDADD = $(LIBS_SGL)
 halt_mpi_SOURCES = halt_mpi.C
 halt_mpi_LDFLAGS = $(LDFLAGS_MPI)
 halt_mpi_LDADD = $(LIBS_MPI)
@@ -583,9 +584,6 @@ clean-checkPROGRAMS:
 	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
 	echo " rm -f" $$list; \
 	rm -f $$list
-alea$(EXEEXT): $(alea_OBJECTS) $(alea_DEPENDENCIES) 
-	@rm -f alea$(EXEEXT)
-	$(alea_LINK) $(alea_OBJECTS) $(alea_LDADD) $(LIBS)
 clone_info$(EXEEXT): $(clone_info_OBJECTS) $(clone_info_DEPENDENCIES) 
 	@rm -f clone_info$(EXEEXT)
 	$(clone_info_LINK) $(clone_info_OBJECTS) $(clone_info_LDADD) $(LIBS)
@@ -628,6 +626,9 @@ integer_range$(EXEEXT): $(integer_range_OBJECTS) $(integer_range_DEPENDENCIES)
 linear_regression$(EXEEXT): $(linear_regression_OBJECTS) $(linear_regression_DEPENDENCIES) 
 	@rm -f linear_regression$(EXEEXT)
 	$(linear_regression_LINK) $(linear_regression_OBJECTS) $(linear_regression_LDADD) $(LIBS)
+merge$(EXEEXT): $(merge_OBJECTS) $(merge_DEPENDENCIES) 
+	@rm -f merge$(EXEEXT)
+	$(merge_LINK) $(merge_OBJECTS) $(merge_LDADD) $(LIBS)
 percentage$(EXEEXT): $(percentage_OBJECTS) $(percentage_DEPENDENCIES) 
 	@rm -f percentage$(EXEEXT)
 	$(percentage_LINK) $(percentage_OBJECTS) $(percentage_LDADD) $(LIBS)
@@ -653,7 +654,6 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/alea.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/clone_info.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/clone_phase.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/clone_timer.Po@am__quote@
@@ -668,6 +668,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/info_test_mpi.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/integer_range.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/linear_regression.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/merge.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/percentage.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/process_mpi.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/temperature_scan.Po@am__quote@
