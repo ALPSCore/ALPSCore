@@ -224,7 +224,7 @@
 #undef ALPS_HAVE_MPI
 
 // Define to 1 if you have the HDF5 library
-#undef ALPS_HAVE_HDF5
+#cmakedefine ALPS_HAVE_HDF5
 
 // Define to 1 if you have the Boost.MPI library
 #undef ALPS_HAVE_BOOST_MPI
