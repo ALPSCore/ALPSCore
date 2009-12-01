@@ -35,8 +35,7 @@ rng_helper::rng_helper(const Parameters& p) {
   generators_.resize(nr);
 #if !(defined(__APPLE_CC__) && __GNUC__ == 4 && __GNUC_MINOR__ == 2)
   // g++ with -fopenmp on Mac OS X Snow Leopard crashes with the following directive
-  #pragma omp parallel num_threads(nr)
-#endif
+  #pragma omp parallel
   {
     for (int r = 0; r < nr; ++r) {
       if (r == thread_id()) {
@@ -45,6 +44,12 @@ rng_helper::rng_helper(const Parameters& p) {
       }
     }
   }
+#else
+  for (int r = 0; r < nr; ++r) {
+    engines_[r].reset(rng_factory.create(p.value_or_default("RNG", "mt19937")));
+    generators_[r].reset(new generator_type(*engines_[r], boost::uniform_real<>()));
+  }
+#endif
   init(p);
 }
 
