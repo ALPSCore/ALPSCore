@@ -44,7 +44,7 @@
 #include <iostream>
 
 #ifdef ALPS_HAVE_HDF5
-#include <alps/h5archive.hpp>
+#include <alps/hdf5.hpp>
 #endif
 
 namespace alps {
@@ -125,8 +125,8 @@ public:
   virtual void save_worker(ODump&) const;
   virtual void load_worker(IDump&);
 	#ifdef ALPS_HAVE_HDF5
-		virtual void serialize(h5archive<h5read> &) const;
-		virtual void serialize(h5archive<h5write> &) const;
+		virtual void serialize(hdf5::archive<hdf5::read> &) const;
+		virtual void serialize(hdf5::archive<hdf5::write> &) const;
 	#endif
   virtual void write_xml(const boost::filesystem::path& name, const boost::filesystem::path& ckpt_name="") const;
   void save_to_file(const boost::filesystem::path&) const;

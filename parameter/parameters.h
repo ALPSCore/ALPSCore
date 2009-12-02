@@ -45,7 +45,7 @@
 #include <string>
 
 #ifdef ALPS_HAVE_HDF5
-#include <alps/h5archive.hpp>
+#include <alps/hdf5.hpp>
 #endif
 
 /// \file parameters.h
@@ -220,8 +220,8 @@ public:
   }
 
 #ifdef ALPS_HAVE_HDF5
-	void serialize(h5archive<h5write> &) const;
-	void serialize(h5archive<h5read> &) const;
+	void serialize(hdf5::archive<hdf5::write> &) const;
+	void serialize(hdf5::archive<hdf5::read> &) const;
 #endif
 
 private:

@@ -210,7 +210,7 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-//	inline void serialize(h5archive<h5write> & ar) const;
+//	inline void serialize(hdf5::archive<hdf5::write> & ar) const;
 #endif
 
   template<class X> void subtract_from(const X& x);
@@ -365,7 +365,7 @@ inline void SimpleObservableEvaluator<T>::load(IDump& dump)
 #endif
 /*
 #ifdef ALPS_HAVE_HDF5
-	template <typename T> inline void SimpleObservableEvaluator<T>::serialize(h5archive<h5write> & ar) const {
+	template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::archive<hdf5::write> & ar) const {
 	
 	
 		// /sim/N/clones/i/results/name()

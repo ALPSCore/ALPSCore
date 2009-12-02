@@ -185,7 +185,7 @@ public:
   }
   
 #ifdef ALPS_HAVE_HDF5
-	void serialize(h5archive<h5write> & ar) const {
+	void serialize(hdf5::archive<hdf5::write> & ar) const {
 		ar << make_pvp("count", count());
 		if (count() > 0) {
 			ar << make_pvp("mean", mean()) << make_pvp("error", error());

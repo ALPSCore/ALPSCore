@@ -157,11 +157,12 @@ void Worker::save_worker(ODump& dump) const
  }
  
 #ifdef ALPS_HAVE_HDF5
-	void Worker::serialize(h5archive<h5read> & ar) const {
+	void Worker::serialize(hdf5::archive<hdf5::read> & ar) const {
 // TODO: implement
 	}
-	void Worker::serialize(h5archive<h5write> & ar) const {
-// TODO: implement
+	void Worker::serialize(hdf5::archive<hdf5::write> & ar) const {
+		ar << make_pvp("/parameters", parms);
+//		ar << make_pvp("/version", MCDump_worker_version) << make_pvp("/parameters", parms) << make_pvp("/engine_ptr", boost::lexical_cast<std::string>(*engine_ptr));
 	}
 #endif
 
@@ -237,8 +238,8 @@ void Worker::save_to_file(const boost::filesystem::path& fnpath) const
 	boost::filesystem::path h5bakpath=h5path.branch_path()/(h5path.leaf()+".bak");
 	bool h5backup=boost::filesystem::exists(h5path);
 	{
-		h5archive<h5write> h5(h5backup ? h5bakpath : h5path);
-		h5 << make_pvp("/parameters", parms) << make_pvp("/", this);
+		hdf5::archive<hdf5::write> h5(h5backup ? h5bakpath : h5path);
+		h5 << make_pvp("/", this);
 	}
 	if (h5backup) {
 		boost::filesystem::remove(h5path);

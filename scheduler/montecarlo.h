@@ -42,7 +42,7 @@
 #include <alps/config.h>
 
 #ifdef ALPS_HAVE_HDF5
-#include <alps/h5archive.hpp>
+#include <alps/hdf5.hpp>
 #endif
 
 namespace alps {
@@ -58,7 +58,7 @@ public:
   void save_worker(ODump&) const;
   void load_worker(IDump&);
 	#ifdef ALPS_HAVE_HDF5
-		void serialize(h5archive<h5write> &) const;
+		void serialize(hdf5::archive<hdf5::write> &) const;
 	#endif
   virtual void save(ODump&) const;
   virtual void load(IDump&);

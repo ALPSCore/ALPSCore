@@ -49,7 +49,7 @@
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-#include <alps/h5archive.hpp>
+#include <alps/hdf5.hpp>
 #endif
 
 #include <boost/filesystem/path.hpp>
@@ -146,7 +146,7 @@ class ALPS_DECL Observable
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-	virtual void serialize(h5archive<h5write> &) const;
+	virtual void serialize(hdf5::archive<hdf5::write> &) const;
 #endif
 
 // Thermalization support

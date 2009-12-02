@@ -97,7 +97,7 @@ public:
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-	void serialize(h5archive<h5write> & ar) const;
+	void serialize(hdf5::archive<hdf5::write> & ar) const;
 #endif
 
 private:
@@ -316,7 +316,7 @@ inline void BasicDetailedBinning<T>::load(IDump& dump)
 
 #ifdef ALPS_HAVE_HDF5
 /*
-	template <class T> inline void BasicDetailedBinning<T>::serialize(h5archive<h5write> & ar) const {
+	template <class T> inline void BasicDetailedBinning<T>::serialize(hdf5::archive<hdf5::write> & ar) const {
 		dynamic_cast<SimpleBinning<T> *>(this)->serialize(ar);
 		
 	// TODO: HDF5 -> write to timeseries

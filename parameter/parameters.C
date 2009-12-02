@@ -136,7 +136,7 @@ void Parameters::replace_envvar() {
 }
 
 #ifdef ALPS_HAVE_HDF5
-	void Parameters::serialize(h5archive<h5write> & ar) const {
+	void Parameters::serialize(hdf5::archive<hdf5::write> & ar) const {
 		for (const_iterator it = begin(); it != end(); ++it) {
 			expression::Expression<double> expr(it->value());
 			if (expr.can_evaluate(*this)) {

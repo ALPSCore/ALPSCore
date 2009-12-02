@@ -45,7 +45,7 @@
 #include <boost/serialization/split_member.hpp>
 #include <map>
 #ifdef ALPS_HAVE_HDF5
-#include <alps/h5archive.hpp>
+#include <alps/hdf5.hpp>
 #include <alps/alea/hdf5.h>
 #endif
 namespace alps {
@@ -213,7 +213,7 @@ class ALPS_DECL ObservableSet: public std::map<std::string,Observable*>
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-	virtual void serialize(h5archive<h5write> &) const;
+	virtual void serialize(hdf5::archive<hdf5::write> &) const;
 #endif
 
   BOOST_SERIALIZATION_SPLIT_MEMBER()
