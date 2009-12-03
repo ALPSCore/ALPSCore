@@ -44,7 +44,7 @@ set(ALPS_SOURCES
 )
 
 add_library(alps ${ALPS_SOURCES})
-target_link_libraries(alps boost)
+target_link_libraries(alps boost ${LINK_LIBRARIES})
 if(BUILD_SHARED_LIBS)
   set_target_properties(alps PROPERTIES COMPILE_DEFINITIONS "${ALPS_SHARED_CPPFLAGS}")
 else(BUILD_SHARED_LIBS)
