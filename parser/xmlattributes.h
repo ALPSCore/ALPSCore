@@ -31,6 +31,11 @@
 #ifndef ALPS_PARSER_XMLATTRIBUTES_H
 #define ALPS_PARSER_XMLATTRIBUTES_H
 
+// for MSVC
+#if defined(_MSC_VER)
+# pragma warning(disable:4251)
+#endif
+
 #include <alps/config.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/throw_exception.hpp>

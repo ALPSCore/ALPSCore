@@ -55,6 +55,12 @@
 #ifndef ALPS_PARAMETER_PARAMETERLIST_H
 #define ALPS_PARAMETER_PARAMETERLIST_H
 
+// for MSVC
+#if defined(_MSC_VER)
+# pragma warning(disable:4251)
+# pragma warning(disable:4275)
+#endif
+
 #include <alps/config.h>
 #include "parameters.h"
 #include <boost/serialization/vector.hpp>

@@ -31,6 +31,11 @@
 #ifndef ALPS_PARAMETER_PARAMETERS_H
 #define ALPS_PARAMETER_PARAMETERS_H
 
+// for MSVC
+#if defined(_MSC_VER)
+# pragma warning(disable:4251)
+#endif
+
 #include "parameter.h"
 #include <alps/osiris/dump.h>
 #include <alps/parser/parser.h>

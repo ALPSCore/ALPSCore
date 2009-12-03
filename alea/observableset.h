@@ -33,6 +33,11 @@
 #ifndef ALPS_ALEA_OBSERVABLESET_H
 #define ALPS_ALEA_OBSERVABLESET_H
 
+// for MSVC
+#if defined(_MSC_VER)
+# pragma warning(disable:4275)
+#endif
+
 #include <alps/config.h>
 #include <alps/factory.h>
 #include <alps/alea/observable.h>

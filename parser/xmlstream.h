@@ -30,6 +30,11 @@
 #ifndef ALPS_PARSER_XMLSTREAM_H
 #define ALPS_PARSER_XMLSTREAM_H
 
+// for MSVC
+#if defined(_MSC_VER)
+# pragma warning(disable:4251)
+#endif
+
 #include <alps/config.h>
 #include <alps/parser/xmlattributes.h>
 
