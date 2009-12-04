@@ -217,7 +217,7 @@ void MCRun::save_worker(ODump& dump) const
 }
 
 #ifdef ALPS_HAVE_HDF5
-	void MCRun::serialize(hdf5::archive<hdf5::write> & ar) const {
+	void MCRun::serialize(hdf5oarchive & ar) const {
 		Worker::serialize(ar);
 		ar << make_pvp("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(node) + "/results", measurements);
 	}

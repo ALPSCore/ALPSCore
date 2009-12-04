@@ -103,7 +103,7 @@ class SimpleBinning : public AbstractBinning<T>
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-	void serialize(hdf5::archive<hdf5::write> & ar) const;
+	void serialize(hdf5oarchive & ar) const;
 #endif
 
   std::string evaluation_method() const { return "binning";}
@@ -712,7 +712,7 @@ inline void SimpleBinning<T>::load(IDump& dump)
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-	template <class T> inline void SimpleBinning<T>::serialize(hdf5::archive<hdf5::write> & ar) const {
+	template <class T> inline void SimpleBinning<T>::serialize(hdf5oarchive & ar) const {
 		AbstractBinning<T>::serialize(ar);
 /*
 //  AbstractBinning<T>::save(dump);

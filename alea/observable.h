@@ -104,7 +104,7 @@ public:
 
 class ALPS_DECL Observable
 #ifdef ALPS_HAVE_HDF5
-	: public hdf5::serializable
+	: public hdf5serializable
 #endif
 {
  public:
@@ -149,7 +149,7 @@ class ALPS_DECL Observable
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-	virtual void serialize(hdf5::archive<hdf5::write> &) const;
+	void serialize(hdf5oarchive &) const;
 #endif
 
 // Thermalization support

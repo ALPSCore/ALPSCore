@@ -63,7 +63,6 @@ namespace alps {
 		}
 		struct write {};
 		struct read {};
-		struct serializable {};
 		template <typename Tag> class archive: boost::noncopyable {
 			public:
 				archive() {
@@ -304,6 +303,10 @@ namespace alps {
 				std::string _context;
 				detail::file_type _file;
 		};
+		struct serializable {
+			virtual void serialize(hdf5::archive<hdf5::write> &) const {};
+			virtual void serialize(hdf5::archive<hdf5::read> &) const {};
+		};
 		namespace detail {
 			typedef enum {plain, ptr, array} pvp_type;
 			template <typename T, pvp_type U = plain> class pvp {
@@ -383,6 +386,9 @@ namespace alps {
 //			return ar;
 		}
 	}
+	typedef hdf5::archive<hdf5::write> hdf5oarchive;
+	typedef hdf5::archive<hdf5::read> hdf5iarchive;
+	typedef hdf5::serializable hdf5serializable;
 	template <typename T> hdf5::detail::pvp<T &, hdf5::detail::plain> make_pvp(std::string const & p, T & v) {
 		return hdf5::detail::pvp<T &, hdf5::detail::plain>(p, v);
 	}

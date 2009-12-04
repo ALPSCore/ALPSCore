@@ -57,7 +57,7 @@ void Observable::save(ODump& dump) const
 #endif // !ALPS_WITHOUT_OSIRIS
 
 #ifdef ALPS_HAVE_HDF5
-	void Observable::serialize(hdf5::archive<hdf5::write> & ar) const {}
+	void Observable::serialize(hdf5oarchive & ar) const {}
 #endif
 
 bool Observable::is_signed() const

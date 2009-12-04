@@ -45,7 +45,7 @@ namespace alps {
 template <class T>
 class AbstractBinning
 #ifdef ALPS_HAVE_HDF5
-	: public hdf5::serializable
+	: public hdf5serializable
 #endif
 {
  public: 
@@ -96,7 +96,7 @@ class AbstractBinning
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-	virtual void serialize(hdf5::archive<hdf5::write> & ar) const {
+	virtual void serialize(hdf5oarchive & ar) const {
 		ar << make_pvp("thermalized", thermalized_);
 	}
 #endif
