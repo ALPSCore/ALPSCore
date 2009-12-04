@@ -86,13 +86,13 @@ namespace alps {
 					if (p.size() && p[0] == '/')
 						return p;
 					else if (p.size() < 2 || p.substr(0, 2) != "..")
-						return _context + (_context.size() == 1 ? "" : "/") + p;
+						return _context + (_context.size() == 1 || !p.size() ? "" : "/") + p;
 					else {
 						std::string s = _context;
 						std::size_t i = 0;
 						for (; s.size() && p.substr(i, 2) == ".."; i += 3)
 							s = s.substr(0, s.find_last_of('/'));
-						return s + (s.size() == 1 ? "" : "/") + p.substr(i);
+						return s + (s.size() == 1 || !p.substr(i).size() ? "" : "/") + p.substr(i);
 					}
 				}
 				bool is_group(std::string const & p) const {
@@ -188,22 +188,69 @@ namespace alps {
 				}
 				#ifdef ALPS_HAVE_VALARRAY
 					template<typename T> void set_data(std::string const & p, std::vector<std::valarray<T> > const & v) {
-					
-					
-					std::cout << "Not impl: " << p << std::endl;
-					
-	//					set_data(p, const_cast<T *>(reinterpret_cast<const T *>(&v)), 2);
-	
-	
-	
+						if (v.size() == 0)
+
+{
+std::cout << __LINE__ << std::endl;
+
+							set_data(p, static_cast<T const *>(NULL), NULL);
+
+}
+
+						else {
+std::cout << __LINE__ << std::endl;
+							detail::type_type type_id(get_native_type(T()));
+std::cout << __LINE__ << std::endl;
+							hsize_t s[2] = { v.size(), v[0].size() };
+std::cout << __LINE__ << std::endl;
+							hid_t id = H5Dopen2(_file, p.c_str(), H5P_DEFAULT);
+std::cout << __LINE__ << std::endl;
+							if (id < 0)
+								id = create_path(p, type_id, H5Screate_simple(2, s, NULL), 2, s);
+							else
+								detail::error_type(H5Dset_extent(id, s));
+std::cout << __LINE__ << std::endl;
+							detail::data_type data_id(id);
+
+std::cout << __LINE__ << std::endl;
+
+							for (std::size_t i; i < v.size(); ++i)
+								if (v[i].size() != v[0].size())
+									throw std::runtime_error(p + " is not a rectengual matrix");
+								else {
+
+std::cout << __LINE__ << std::endl;
+
+									hsize_t start[2] = { i, 0 }, count[2] = { 1, v[i].size() };
+
+std::cout << __LINE__ << std::endl;
+
+									detail::space_type space_id(H5Dget_space(data_id));
+
+std::cout << __LINE__ << std::endl;
+
+									detail::error_type(H5Sselect_hyperslab(space_id, H5S_SELECT_SET, start, NULL, count, NULL));
+
+std::cout << __LINE__ << std::endl;
+
+									detail::space_type mem_id(H5Screate_simple(2, count, NULL));
+
+std::cout << __LINE__ << std::endl;
+
+									detail::error_type(H5Dwrite(data_id, type_id, mem_id, space_id, H5P_DEFAULT, &(v[0][0])));
+
+std::cout << __LINE__ << std::endl;
+
+								}
+						}
 					}
 				#endif
 				template<typename T> void set_data(std::string const & p, T const * v, hsize_t s) {
 					detail::type_type type_id(get_native_type(v));
 					hid_t id = H5Dopen2(_file, p.c_str(), H5P_DEFAULT);
-					if (id < 0) {
-						id = create_path(p, type_id, s ? H5Screate_simple(1, &s, NULL) : H5Screate(H5S_NULL), s);
-					} else 
+					if (id < 0)
+						id = create_path(p, type_id, s ? H5Screate_simple(1, &s, NULL) : H5Screate(H5S_NULL), 1, &s);
+					else 
 						detail::error_type(H5Dset_extent(id, &s));
 					detail::data_type data_id(id);
 					if (s > 0)
@@ -280,7 +327,7 @@ namespace alps {
 					detail::attribute_type attr_id(id);
 					detail::error_type(H5Awrite(attr_id, type_id, &v));
 				}
-				hid_t create_path(std::string const & p, hid_t type_id, hid_t space_id, hsize_t s) {
+				hid_t create_path(std::string const & p, hid_t type_id, hid_t space_id, hsize_t d, hsize_t * s = NULL) {
 					std::size_t pos;
 					hid_t data_id = -1;
 					for (pos = p.find_last_of('/'); data_id < 0 && pos > 0 && pos < std::string::npos; pos = p.find_last_of('/', pos - 1))
@@ -296,8 +343,8 @@ namespace alps {
 						detail::group_type(H5Gcreate2(_file, p.substr(0, pos).c_str(), 0, H5P_DEFAULT, H5P_DEFAULT));
 					detail::property_type prop_id(H5Pcreate(H5P_DATASET_CREATE)); 
 					detail::error_type(H5Pset_fill_time(prop_id, H5D_FILL_TIME_NEVER));
-					if (s > 0)
-						detail::error_type(H5Pset_chunk (prop_id, 1, &s));
+					if (d > 0)
+						detail::error_type(H5Pset_chunk (prop_id, d, s));
 					return H5Dcreate2(_file, p.c_str(), type_id, detail::space_type(space_id), H5P_DEFAULT, prop_id, H5P_DEFAULT);
 				}
 				std::string _context;
@@ -323,6 +370,7 @@ namespace alps {
 						} else
 							ar.set_data(ar.compute_path(_p), _v);
 					}
+					void get_value(hdf5::archive<hdf5::read> & ar) const { std::cout << "Not impl" << std::endl; }
 				private:
 					std::string _p;
 					mutable T _v;
@@ -334,6 +382,7 @@ namespace alps {
 					std::string get_path() const { return _p; }
 					void serialize(hdf5::archive<hdf5::write> & ar) const { _v->serialize(ar); }
 					void set_value(hdf5::archive<hdf5::write> & ar) const { ar.set_data(ar.compute_path(_p), *_v); }
+					void get_value(hdf5::archive<hdf5::read> & ar) const { std::cout << "Not impl" << std::endl; }
 				private:
 					std::string _p;
 					mutable T * _v;
@@ -345,28 +394,29 @@ namespace alps {
 					std::string get_path() const { return _p; }
 					void serialize(hdf5::archive<hdf5::write> & ar) const { _v->serialize(ar); }
 					void set_value(hdf5::archive<hdf5::write> & ar) const { ar.set_data(ar.compute_path(_p), _v, _s); }
+					void get_value(hdf5::archive<hdf5::read> & ar) const { std::cout << "Not impl" << std::endl; }
 				private:
 					std::string _p;
 					std::size_t _s;
 					mutable T * _v;
 			};
-			template <typename T, void (T::*)(archive<write> &) const> struct has_serialize_wrapper {
+			template <typename T, typename U, void (T::*)(archive<U> &) const> struct has_serialize_wrapper {
 				typedef T type;
 			};
-			template <typename T> boost::type_traits::yes_type has_serialize_helper(
-				typename has_serialize_wrapper<T, &T::serialize>::type *
+			template <typename T, typename U> boost::type_traits::yes_type has_serialize_helper(
+				typename has_serialize_wrapper<T, U, &T::serialize>::type *
 			);
-			template <typename T> boost::type_traits::no_type has_serialize_helper(...);
-			template<typename T, bool B> struct has_serialize {
+			template <typename T, typename U> boost::type_traits::no_type has_serialize_helper(...);
+			template<typename T, typename U, bool B> struct has_serialize {
 				enum { value = false };
 			};
-			template<typename T> struct has_serialize<T, true> {
-				enum { value = sizeof(has_serialize_helper<T>(NULL)) == sizeof(boost::type_traits::yes_type) };
+			template<typename T, typename U> struct has_serialize<T, U, true> {
+				enum { value = sizeof(has_serialize_helper<T, U>(NULL)) == sizeof(boost::type_traits::yes_type) };
 			};
 		}
 		template <typename T, detail::pvp_type U> typename boost::enable_if<boost::mpl::bool_<
 			boost::is_base_of<serializable, typename boost::remove_reference<typename boost::remove_cv<T>::type>::type>::value ||
-			detail::has_serialize<T, boost::is_class<T>::value>::value
+			detail::has_serialize<T, write, boost::is_class<T>::value>::value
 		>, archive<write> &>::type operator<< (archive<write> & ar, detail::pvp<T, U> const & v) {
 			std::string c = ar.get_context();
 			ar.set_context(ar.compute_path(v.get_path()));
@@ -376,14 +426,27 @@ namespace alps {
 		}
 		template <typename T, detail::pvp_type U> typename boost::disable_if<boost::mpl::bool_<
 			boost::is_base_of<serializable, typename boost::remove_reference<typename boost::remove_cv<T>::type>::type>::value ||
-			detail::has_serialize<T, boost::is_class<T>::value>::value
+			detail::has_serialize<T, write, boost::is_class<T>::value>::value
 		>, archive<write> &>::type operator<< (archive<write> & ar, detail::pvp<T, U> const & v) {
 			v.set_value(ar);
 			return ar;
 		}
-		template <typename T> archive<read> & operator>> (archive<read> & ar, detail::pvp<T &, detail::plain> const & v) {
-//			ar.get_data(v.get_path(ar.get_context()), v.get_value());
-//			return ar;
+		template <typename T, detail::pvp_type U> typename boost::enable_if<boost::mpl::bool_<
+			boost::is_base_of<serializable, typename boost::remove_reference<typename boost::remove_cv<T>::type>::type>::value ||
+			detail::has_serialize<T, read, boost::is_class<T>::value>::value
+		>, archive<read> &>::type operator>> (archive<read> & ar, detail::pvp<T, U> const & v) {
+			std::string c = ar.get_context();
+			ar.set_context(ar.compute_path(v.get_path()));
+			v.serialize(ar);
+			ar.set_context(c);
+			return ar;
+		}
+		template <typename T, detail::pvp_type U> typename boost::disable_if<boost::mpl::bool_<
+			boost::is_base_of<serializable, typename boost::remove_reference<typename boost::remove_cv<T>::type>::type>::value ||
+			detail::has_serialize<T, read, boost::is_class<T>::value>::value
+		>, archive<read> &>::type operator>> (archive<read> & ar, detail::pvp<T, U> const & v) {
+			v.get_value(ar);
+			return ar;
 		}
 	}
 	typedef hdf5::archive<hdf5::write> hdf5oarchive;

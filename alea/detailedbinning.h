@@ -317,9 +317,9 @@ inline void BasicDetailedBinning<T>::load(IDump& dump)
 #ifdef ALPS_HAVE_HDF5
 	template <class T> inline void BasicDetailedBinning<T>::serialize(hdf5oarchive & ar) const {
 		SimpleBinning<T>::serialize(ar);
-		ar << make_pvp("timeseries/values", values_) << make_pvp("timeseries/values/@binsize", binsize_);
+//		ar << make_pvp("timeseries/values", values_) << make_pvp("timeseries/values/@binsize", binsize_);
 		
-		std::cout << "detailedbinning: " << values_.size() << ", binsize: " << binsize_ << ", minbinsize: " << minbinsize_ << ", maxbinnum: " << maxbinnum_ << ", binentries: " << binentries_ << std::endl;
+//		std::cout << "detailedbinning: " << values_.size() << ", binsize: " << binsize_ << ", minbinsize: " << minbinsize_ << ", maxbinnum: " << maxbinnum_ << ", binentries: " << binentries_ << std::endl;
 /*		
 
 dump << binsize_ << minbinsize_ << maxbinnum_<< binentries_ << values_ << values2_;
