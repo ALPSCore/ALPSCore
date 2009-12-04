@@ -44,6 +44,9 @@ namespace alps {
 
 template <class T>
 class AbstractBinning
+#ifdef ALPS_HAVE_HDF5
+	: public hdf5::serializable
+#endif
 {
  public: 
   typedef T value_type;
@@ -91,6 +94,13 @@ class AbstractBinning
   virtual void save(ODump& dump) const { dump << thermalized_;}
   virtual void load(IDump& dump) { dump >> thermalized_;}
 #endif
+
+#ifdef ALPS_HAVE_HDF5
+	virtual void serialize(hdf5::archive<hdf5::write> & ar) const {
+		ar << make_pvp("thermalized", thermalized_);
+	}
+#endif
+
   std::string evaluation_method() const { return "simple";}
 private:
   bool thermalized_;  

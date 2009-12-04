@@ -712,9 +712,9 @@ inline void SimpleBinning<T>::load(IDump& dump)
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-/*
 	template <class T> inline void SimpleBinning<T>::serialize(hdf5::archive<hdf5::write> & ar) const {
-		dynamic_cast<AbstractSimpleObservable<T> *>(this)->serialize(ar);
+		AbstractBinning<T>::serialize(ar);
+/*
 //  AbstractBinning<T>::save(dump);
 //		ar << 
 //	    dump << sum_ << sum2_ << bin_entries_ << last_bin_ << count_ << thermal_count_<<min_<<max_;
@@ -728,8 +728,8 @@ inline void SimpleBinning<T>::load(IDump& dump)
 			if(has_tau())
 				ar << make_pvp("tau_int", tau());
 		}
-	}
 */
+	}
 #endif
 
 

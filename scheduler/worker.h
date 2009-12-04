@@ -90,8 +90,7 @@ typedef std::vector<ResultType> ResultsType;
 // simulation.
 //-----------------------------------------------------------------------
 
-class AbstractWorker
-{
+class AbstractWorker {
 public:                
   AbstractWorker() {};
   virtual ~AbstractWorker() {};

@@ -130,6 +130,10 @@ public:
   void extract_timeseries(ODump& dump) const { b_.extract_timeseries(dump);}
 #endif
 
+#ifdef ALPS_HAVE_HDF5
+	virtual void serialize(hdf5::archive<hdf5::write> & ar) const;
+#endif
+
   ALPS_DUMMY_VOID compact() { b_.compact(); ALPS_RETURN_VOID }
   virtual std::string evaluation_method(Target t) const
   { return (t==Mean || t== Variance) ? std::string("simple") : b_.evaluation_method();}
@@ -195,6 +199,13 @@ inline void SimpleObservable<T,BINNING>::load(IDump& dump)
   dump >> b_;
 }
 
+#endif
+
+#ifdef ALPS_HAVE_HDF5
+	template <class T,class BINNING> inline void SimpleObservable<T,BINNING>::serialize(hdf5::archive<hdf5::write> & ar) const {
+		AbstractSimpleObservable<T>::serialize(ar);
+		ar << make_pvp("", b_);
+	}
 #endif
 
 } // end namespace alps

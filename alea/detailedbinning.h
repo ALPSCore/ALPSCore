@@ -315,10 +315,16 @@ inline void BasicDetailedBinning<T>::load(IDump& dump)
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-/*
 	template <class T> inline void BasicDetailedBinning<T>::serialize(hdf5::archive<hdf5::write> & ar) const {
-		dynamic_cast<SimpleBinning<T> *>(this)->serialize(ar);
+		SimpleBinning<T>::serialize(ar);
+		ar << make_pvp("timeseries/values", values_) << make_pvp("timeseries/values/@binsize", binsize_);
 		
+		std::cout << "detailedbinning: " << values_.size() << ", binsize: " << binsize_ << ", minbinsize: " << minbinsize_ << ", maxbinnum: " << maxbinnum_ << ", binentries: " << binentries_ << std::endl;
+/*		
+
+dump << binsize_ << minbinsize_ << maxbinnum_<< binentries_ << values_ << values2_;
+
+
 	// TODO: HDF5 -> write to timeseries
 
 // TODO: move to detailed binning
@@ -327,8 +333,8 @@ inline void BasicDetailedBinning<T>::load(IDump& dump)
 				// TODO: write as vector data
 				ar << make_pvp("mean/bins/" + boost::lexical_cast<std::string>(i) + "/value", bin_value(i))
 				   << make_pvp("mean/bins2/" + boost::lexical_cast<std::string>(i) + "/value", bin_value2(i));
-	}
 */
+	}
 #endif
 
 
