@@ -44,6 +44,11 @@
 #else
 #include <alps/osiris/xdrcore.h>
 #endif
+// remove harmful 'enum_t' macro
+// (which conflicts with boost/detail/scoped_enum_emulation.hpp in Boost 1.41.0)
+#ifdef enum_t
+# undef enum_t
+#endif
 
 #ifdef BOOST_NO_STDC_NAMESPACE
   namespace std {
