@@ -79,8 +79,15 @@ option::option(int argc, char** argv, int np, int pid)
   p.add("input-file", -1);
 
   po::variables_map vm;
-  po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
-  po::notify(vm);
+  try {
+    po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
+    po::notify(vm);
+  }
+  catch (...) {
+    if (pid == 0) std::cerr << "Error: unknown command line option(s)\n";
+    valid = false;
+    return;
+  }
 
   if (vm.count("auto-evaluate"))
     auto_evaluate = true;
