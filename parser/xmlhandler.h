@@ -47,7 +47,7 @@ enum tag_type { element, processing_instruction, stylesheet };
 
 } // namespace xml
 
-class XMLHandlerBase
+class ALPS_DECL XMLHandlerBase
 {
 public:
   XMLHandlerBase(const std::string& basename) : basename_(basename) {
@@ -76,7 +76,7 @@ private:
 };
 
 
-class DummyXMLHandler : public XMLHandlerBase
+class ALPS_DECL DummyXMLHandler : public XMLHandlerBase
 {
 public:
   DummyXMLHandler(const std::string& basename)
@@ -90,7 +90,7 @@ public:
 
 
 template<class T>
-class SimpleXMLHandler : public XMLHandlerBase
+class ALPS_DECL SimpleXMLHandler : public XMLHandlerBase
 {
 public:
   typedef T value_type;
@@ -154,7 +154,7 @@ private:
 };
 
 
-class CompositeXMLHandler : public XMLHandlerBase
+class ALPS_DECL CompositeXMLHandler : public XMLHandlerBase
 {
 private:
   typedef XMLHandlerBase base_type;
@@ -205,7 +205,7 @@ private:
 
 
 template<class T, class C = std::vector<T>, class H = SimpleXMLHandler<T> >
-class VectorXMLHandler : public CompositeXMLHandler
+class ALPS_DECL VectorXMLHandler : public CompositeXMLHandler
 {
 public:
   VectorXMLHandler(const std::string& basename, C& cont, T& val, H& handler)
@@ -228,7 +228,7 @@ private:
 };
 
 
-class PrintXMLHandler : public XMLHandlerBase
+class ALPS_DECL PrintXMLHandler : public XMLHandlerBase
 {
 public:
   PrintXMLHandler(std::ostream& os = std::cout)
@@ -277,7 +277,7 @@ private:
 };
 
 
-class StylesheetXMLHandler : public XMLHandlerBase
+class ALPS_DECL StylesheetXMLHandler : public XMLHandlerBase
 {
 public:
   StylesheetXMLHandler(std::string& style) 
