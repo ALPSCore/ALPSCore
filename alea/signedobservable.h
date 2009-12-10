@@ -146,6 +146,10 @@ public:
   void load(IDump& dump);
 #endif
 
+#ifdef ALPS_HAVE_HDF5
+	void serialize(hdf5::oarchive & ar) const;
+#endif
+
   Observable* clone() const {return new AbstractSignedObservable<OBS,SIGN>(*this);}
 
   bool is_signed() const { return true;}
@@ -289,6 +293,16 @@ void AbstractSignedObservable<OBS,SIGN>::load(IDump& dump)
   dump >> sign_name_;
   clear_sign();
 }
+
+#ifdef ALPS_HAVE_HDF5
+	template <class OBS, class SIGN>
+	void AbstractSignedObservable<OBS,SIGN>::serialize(hdf5::oarchive & ar) const {
+		ar
+			<< make_pvp("../" + obs_.name(), obs_)
+//			<< make_pvp("@sign", sign_name_)
+		;
+	}
+#endif
 
 template <class OBS, class SIGN>
 void AbstractSignedObservable<OBS,SIGN>::write_more_xml(oxstream& oxs, slice_iterator) const

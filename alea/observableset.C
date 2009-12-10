@@ -124,7 +124,7 @@ void ObservableSet::load(IDump& dump)
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-void ObservableSet::serialize(hdf5oarchive & ar) const {
+void ObservableSet::serialize(hdf5::oarchive & ar) const {
 	for(base_type::const_iterator it = base_type::begin(); it != base_type::end(); ++it)
 		if(it->second)
 			ar << make_pvp(it->second->name(), it->second);

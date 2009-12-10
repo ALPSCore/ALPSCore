@@ -210,7 +210,7 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-//	inline void serialize(hdf5::archive<hdf5::write> & ar) const;
+	inline void serialize(hdf5::archive<hdf5::write> & ar) const;
 #endif
 
   template<class X> void subtract_from(const X& x);
@@ -363,20 +363,33 @@ inline void SimpleObservableEvaluator<T>::load(IDump& dump)
   dump >> valid_ >> runs_ >> all_;
 }
 #endif
-/*
+
 #ifdef ALPS_HAVE_HDF5
 	template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::archive<hdf5::write> & ar) const {
 	
+	
+	std::cout << __FILE__ << " " << ar.get_context() << std::endl;
+	
+	
+		ar
+//			<< make_pvp()
+		;
+/*
+realisation/k/results = all_
+foreach runs_ as i => run
+realisation/k/clones/<i>/results = run
+*/
+/*	
 	
 		// /sim/N/clones/i/results/name()
 		for(std::size_t i = 0; i < runs_.size(); ++i)
 			ar << make_pvp("../../../../results/" + name() + boost::lexical_cast<std::string>(i), runs_[i]);
 		// /sim/N/results/name()
 		ar << make_pvp("all", all_);
-	
+*/	
 	}
 #endif
-*/
+
 template <class T>
 inline void SimpleObservableEvaluator<T>::collect() const
 {

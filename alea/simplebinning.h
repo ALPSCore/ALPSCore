@@ -103,7 +103,7 @@ class SimpleBinning : public AbstractBinning<T>
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-	void serialize(hdf5oarchive & ar) const;
+	void serialize(hdf5::oarchive & ar) const;
 #endif
 
   std::string evaluation_method() const { return "binning";}
@@ -712,26 +712,23 @@ inline void SimpleBinning<T>::load(IDump& dump)
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-	template <class T> inline void SimpleBinning<T>::serialize(hdf5oarchive & ar) const {
-		AbstractBinning<T>::serialize(ar);
-/*
-//  AbstractBinning<T>::save(dump);
-//		ar << 
-//	    dump << sum_ << sum2_ << bin_entries_ << last_bin_ << count_ << thermal_count_<<min_<<max_;
-		
-		
-		ar << make_pvp("count", count());
-		if (count() > 0) {
-			ar << make_pvp("mean", mean()) << make_pvp("error", error());
-			if(has_variance())
-				ar << make_pvp("variance", variance());
-			if(has_tau())
-				ar << make_pvp("tau_int", tau());
-		}
-*/
+	template <class T> inline void SimpleBinning<T>::serialize(hdf5::oarchive & ar) const {
+		if (AbstractBinning<T>::is_thermalized())
+			ar
+				<< make_pvp("sum", sum_[0])
+				<< make_pvp("sum2", sum2_[0])
+				<< make_pvp("count", count_)
+				<< make_pvp("timeseries/logbinning", sum_)
+//				<< make_pvp("timeseries/logbinning/@binningtype", "logarithmic"
+				<< make_pvp("timeseries/logbinning2", sum2_)
+//				<< make_pvp("timeseries/logbinning2/@binningtype = "logarithmic"
+				<< make_pvp("timeseries/logbinning_lastbin", last_bin_)
+//				<< make_pvp("timeseries/logbinning_lastbin/@binningtype = "logarithmic"
+				<< make_pvp("timeseries/logbinning_counts", bin_entries_)
+//				<< make_pvp("timeseries/logbinning_counts/@binningtype = "logarithmic"
+			;
 	}
 #endif
-
 
 } // end namespace alps
 
