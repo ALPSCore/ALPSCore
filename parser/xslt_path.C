@@ -35,11 +35,12 @@
 #include <stdexcept>
 
 std::string alps::xslt_path(const std::string& stylefile) {
-  std::string path("file://");
-  path += ALPS_XML_DIR;
   char* p = getenv("ALPS_XSLT_PATH");
-  if (p!=0)
-    path = p;
+  if (p==0)
+    return stylefile == "job.xsl" ? "ALPS.xsl" : stylefile;
+  
+  std::string path = p;
+  
   if (path != "http://xml.comp-phys.org" && path != "http://xml.comp-phys.org/")
     return path+"/"+stylefile;
   else if (stylefile == "job.xsl")
@@ -74,3 +75,13 @@ boost::filesystem::path alps::search_xml_library_path(const std::string& file)
     boost::throw_exception(std::runtime_error("Cannot find file " + file ));
   return p;
 }
+
+void alps::copy_stylesheet(boost::filesystem::path const& dir)
+{
+  boost::filesystem::path src = 
+     boost::filesystem::path(ALPS_XML_DIR,boost::filesystem::native) / "ALPS.xsl";
+  boost::filesystem::path dest = dir / "ALPS.xsl";
+  if (! boost::filesystem::exists(dest))
+    boost::filesystem::copy_file(src,dest);
+}
+

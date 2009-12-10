@@ -213,7 +213,7 @@ void MasterScheduler::checkpoint()
   { // scope for out
     oxstream out(filename);
 
-    out << header("UTF-8") << stylesheet(xslt_path("job.xsl"));
+    out << header("UTF-8") << stylesheet(xslt_path("ALPS.xsl"));
     out << start_tag("JOB") 
         << xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
         << attribute("xsi:noNamespaceSchemaLocation",

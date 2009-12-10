@@ -46,7 +46,7 @@ struct job_xml_writer {
     if (make_backup && exists(file)) rename(file, file_bak);
     oxstream os(file);
     os << header("UTF-8")
-       << stylesheet(xslt_path("job.xsl"))
+       << stylesheet(xslt_path("ALPS.xsl"))
        << start_tag("JOB")
        << xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
        << attribute("xsi:noNamespaceSchemaLocation", "http://xml.comp-phys.org/2003/8/job.xsd");

@@ -43,8 +43,7 @@ namespace alps {
 
 /// \brief given the name of an XSLT file, return the full path
 ///
-/// The default behavior is to prepend the path to the ALPS XSLT
-/// directory to the filename.
+/// The default behavior is to just return the file name
 ///
 /// If the environment variable ALPS_XSLT_PATH is set, the contents of
 /// ALPS_XSLT_PATH are used instead of the default path.
@@ -70,6 +69,13 @@ extern ALPS_DECL boost::filesystem::path xml_library_path(const std::string& fil
 /// if the file does not exist in the ALPS XML/XSLT library directory.
 extern ALPS_DECL boost::filesystem::path search_xml_library_path(const std::string& file);
   
+/// \brief copies the ALPS.xsl stylesheet to the specifeid directory
+///
+/// This function copies the ALPS.xsl stylesheet to the specified directory.
+/// The function does not overwrite an already existing file with the name ALPS.xsl
+
+extern ALPS_DECL void copy_stylesheet(boost::filesystem::path const& dir);
+
 } // end namespace alps
 
 #endif // ALPS_PARSER_PARSER_H
