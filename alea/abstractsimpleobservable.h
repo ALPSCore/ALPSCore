@@ -194,6 +194,22 @@ public:
 	}
 	void serialize(hdf5::oarchive & ar) const {
 		serialize_label(ar, label_);
+		ar
+			<< make_pvp("count", count())
+		;
+		ar
+			<< make_pvp("mean/value", mean())
+			<< make_pvp("mean/error", error())
+			<< make_pvp("mean/error_convergence", converged_errors())
+		;
+		if(has_variance())
+			ar
+				<< make_pvp("variance/value", variance())
+			;
+		if(has_tau())
+			ar
+				<< make_pvp("tau/value", tau())
+			;
 	}
 #endif
 
