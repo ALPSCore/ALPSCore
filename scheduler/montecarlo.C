@@ -221,6 +221,9 @@ void MCRun::save_worker(ODump& dump) const
 		Worker::serialize(ar);
 		ar << make_pvp("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(node) + "/results", measurements);
 	}
+	void MCRun::serialize(hdf5::iarchive & ar) {
+		Worker::serialize(ar);
+	}
 #endif
 
 void MCRun::save(ODump&) const

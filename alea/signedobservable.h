@@ -299,7 +299,7 @@ void AbstractSignedObservable<OBS,SIGN>::load(IDump& dump)
 	void AbstractSignedObservable<OBS,SIGN>::serialize(hdf5::oarchive & ar) const {
 		ar
 			<< make_pvp("../" + obs_.name(), obs_)
-//			<< make_pvp("@sign", sign_name_)
+			<< make_pvp("@sign", sign_name_)
 		;
 	}
 #endif

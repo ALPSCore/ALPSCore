@@ -131,7 +131,7 @@ public:
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-	virtual void serialize(hdf5::archive<hdf5::write> & ar) const;
+	virtual void serialize(hdf5::oarchive & ar) const;
 #endif
 
   ALPS_DUMMY_VOID compact() { b_.compact(); ALPS_RETURN_VOID }
@@ -202,7 +202,7 @@ inline void SimpleObservable<T,BINNING>::load(IDump& dump)
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-	template <class T,class BINNING> inline void SimpleObservable<T,BINNING>::serialize(hdf5::archive<hdf5::write> & ar) const {
+	template <class T,class BINNING> inline void SimpleObservable<T,BINNING>::serialize(hdf5::oarchive & ar) const {
 		AbstractSimpleObservable<T>::serialize(ar);
 		ar << make_pvp("", b_);
 	}

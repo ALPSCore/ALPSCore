@@ -150,6 +150,7 @@ class ALPS_DECL Observable
 
 #ifdef ALPS_HAVE_HDF5
 	virtual void serialize(hdf5::oarchive &) const {};
+	virtual void serialize(hdf5::iarchive &) {};
 #endif
 
 // Thermalization support

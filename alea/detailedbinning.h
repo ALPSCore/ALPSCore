@@ -321,11 +321,11 @@ inline void BasicDetailedBinning<T>::load(IDump& dump)
 			ar 
 				<< make_pvp("timeseries/data", values_)
 				<< make_pvp("timeseries/data", values_)
-//				<< make_pvp("timeseries/data/@binningtype", "linear")
+				<< make_pvp("timeseries/data/@binningtype", "linear")
 				<< make_pvp("timeseries/data/@minbinsize", minbinsize_)
 				<< make_pvp("timeseries/data/@maxbinnum", maxbinnum_)
 				<< make_pvp("timeseries/data2", values2_)
-//				<< make_pvp("timeseries/data2/@binningtype", "linear")
+				<< make_pvp("timeseries/data2/@binningtype", "linear")
 			;
 	}
 #endif

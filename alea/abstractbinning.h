@@ -84,7 +84,7 @@ class AbstractBinning
   bool is_thermalized() const { return thermalized_;}
   void reset (bool for_thermal) 
   {
-    thermalized_=for_thermal;
+    thermalized_ = for_thermal;
   }
   void compact() {}
   void write_scalar_xml(oxstream&) const {}
@@ -96,7 +96,8 @@ class AbstractBinning
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-	virtual void serialize(hdf5::oarchive & ar) const {}
+	virtual void serialize(hdf5::oarchive & ar) const {};
+	virtual void serialize(hdf5::iarchive & ar) {};
 #endif
 
   std::string evaluation_method() const { return "simple";}

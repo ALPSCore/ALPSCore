@@ -98,6 +98,7 @@ class NoBinning : public AbstractBinning<T>
 
 #ifdef ALPS_HAVE_HDF5
 	void serialize(hdf5::oarchive & ar) const;
+	void serialize(hdf5::iarchive & ar);
 #endif
 
  private:
@@ -299,6 +300,7 @@ inline void NoBinning<T>::load(IDump& dump)
 				<< make_pvp("count", count_)
 			;
 	}
+	template <class T> inline void NoBinning<T>::serialize(hdf5::iarchive & ar) {}
 #endif
 
 } // end namespace alps

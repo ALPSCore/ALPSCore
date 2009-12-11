@@ -58,7 +58,8 @@ public:
   void save_worker(ODump&) const;
   void load_worker(IDump&);
 	#ifdef ALPS_HAVE_HDF5
-		void serialize(hdf5::archive<hdf5::write> &) const;
+		void serialize(hdf5::oarchive &) const;
+		void serialize(hdf5::iarchive &);
 	#endif
   virtual void save(ODump&) const;
   virtual void load(IDump&);

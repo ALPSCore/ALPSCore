@@ -161,8 +161,11 @@ void Worker::save_worker(ODump& dump) const
 // TODO: implement
 	}
 	void Worker::serialize(hdf5::oarchive & ar) const {
-		ar << make_pvp("/parameters", parms);
-//		ar << make_pvp("/version", MCDump_worker_version) << make_pvp("/parameters", parms) << make_pvp("/engine_ptr", boost::lexical_cast<std::string>(*engine_ptr));
+		ar 
+//			<< make_pvp("/version", version) 
+			<< make_pvp("/parameters", parms) 
+//			<< make_pvp("/engine_ptr", boost::lexical_cast<std::string>(*engine_ptr))
+		;
 	}
 #endif
 
@@ -218,6 +221,12 @@ void Worker::load_from_file(const boost::filesystem::path& fn)
 {
   IXDRFileDump dump(fn);
   load_worker(dump);
+  
+#ifdef ALPS_HAVE_HDF5
+	boost::filesystem::path h5fn = fn.branch_path() / (fn.leaf() + ".h5");
+	hdf5::iarchive h5(h5fn);
+//	h5 >> make_pvp("/", this);
+#endif
 }
 
 void Worker::save_to_file(const boost::filesystem::path& fnpath) const
@@ -234,8 +243,8 @@ void Worker::save_to_file(const boost::filesystem::path& fnpath) const
   }
  
 #ifdef ALPS_HAVE_HDF5
-	boost::filesystem::path h5path=fnpath.branch_path()/(fnpath.leaf()+".h5");
-	boost::filesystem::path h5bakpath=h5path.branch_path()/(h5path.leaf()+".bak");
+	boost::filesystem::path h5path = fnpath.branch_path() / (fnpath.leaf() + ".h5");
+	boost::filesystem::path h5bakpath = h5path.branch_path() / (h5path.leaf() + ".bak");
 	bool h5backup=boost::filesystem::exists(h5path);
 	{
 		hdf5::oarchive h5(h5backup ? h5bakpath : h5path);
