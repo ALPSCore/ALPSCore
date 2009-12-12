@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2006 by Simon Trebst <trebst@itp.phys.ethz.ch>,
+* Copyright (C) 2003-2009 by Simon Trebst <trebst@itp.phys.ethz.ch>,
 *                            Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
@@ -216,7 +216,7 @@ private:
 template<class C>
 inline oxstream& operator<<(oxstream& out, const Plot<C>& p)
 {
-  out << header("UTF-8") << stylesheet(xslt_path("plot2html.xsl"))
+  out << header("UTF-8") << stylesheet(xslt_path("ALPS.xsl"))
       << start_tag("plot") << alps::xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
       << attribute("xsi:noNamespaceSchemaLocation","http://xml.comp-phys.org/2003/4/plot.xsd")
       << attribute("name", p.name());

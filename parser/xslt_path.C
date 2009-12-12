@@ -35,20 +35,16 @@
 #include <stdexcept>
 
 std::string alps::xslt_path(const std::string& stylefile) {
-  char* p = getenv("ALPS_XSLT_PATH");
+  char* p = getenv("ALPS_XML_PATH");
   if (p==0)
-    return stylefile == "job.xsl" ? "ALPS.xsl" : stylefile;
+    return stylefile == "job.xsl" || stylefile == "plot2html.xsl" ? "ALPS.xsl" : stylefile;
   
   std::string path = p;
   
   if (path != "http://xml.comp-phys.org" && path != "http://xml.comp-phys.org/")
     return path+"/"+stylefile;
-  else if (stylefile == "job.xsl")
-    return "http://xml.comp-phys.org/2002/10/job.xsl";
   else if (stylefile == "ALPS.xsl")
-    return "http://xml.comp-phys.org/2004/10/ALPS.xsl";
-  else if (stylefile == "plot2html.xsl")
-    return "http://xml.comp-phys.org/2003/4/plot2html.xsl";
+    return "http://xml.comp-phys.org/2009/12/ALPS.xsl";
   else
     return "http://xml.comp-phys.org/"+stylefile;
 }
