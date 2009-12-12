@@ -366,13 +366,10 @@ inline void SimpleObservableEvaluator<T>::load(IDump& dump)
 
 #ifdef ALPS_HAVE_HDF5
 	template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::oarchive & ar) const {
-		ar
-			<< make_pvp("../../../results/" + super_type::name(), all_)
-		;
+		ar << make_pvp(super_type::name(), all_);
+        if (runs_.size()>1)
 		for(std::size_t i = 0; i < runs_.size(); ++i)
-			ar 
-				<< make_pvp("../../" + boost::lexical_cast<std::string>(i) + "/results/" + super_type::name(), runs_[i])
-			;
+			ar << make_pvp("../realization/" + boost::lexical_cast<std::string>(i) + "/results/" + super_type::name(), runs_[i]);
 	}
 #endif
 
