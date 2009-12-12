@@ -90,7 +90,7 @@ void filelock::lock(int wait) {
 #if defined(ALPS_HAVE_WINDOWS_H)
     int fd = _open(lock_.native_file_string().c_str(), O_WRONLY | O_CREAT | O_EXCL , _S_IWRITE);
 #else
-    int fd = open(lock_.native_file_string().c_str(), O_WRONLY | O_CREAT | O_EXCL );
+    int fd = open(lock_.native_file_string().c_str(), O_WRONLY | O_CREAT | O_EXCL , S_IWRITE);
 #endif
 
     if (fd > 0) {
