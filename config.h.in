@@ -170,10 +170,10 @@
 #cmakedefine ALPS_YEAR "@ALPS_YEAR@"
 
 // install path of ALPS
-#undef ALPS_PREFIX
+#cmakedefine ALPS_PREFIX "@ALPS_PREFIX@"
 
 // source directory of ALPS
-#undef ALPS_SRCDIR
+#cmakedefine ALPS_SRCDIR "@ALPS_SRCDIR@"
 
 // XSLT PATH
 #cmakedefine ALPS_XML_DIR "@ALPS_XML_DIR@"
