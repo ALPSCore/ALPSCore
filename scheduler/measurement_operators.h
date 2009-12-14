@@ -53,16 +53,37 @@ public:
     return !(average_expressions.empty() && local_expressions.empty()
               && correlation_expressions.empty() && structurefactor_expressions.empty() );
   }
-  
+
 protected:
+  bool calc_labels() const 
+  { 
+    return !(local_expressions.empty()
+              && correlation_expressions.empty() && structurefactor_expressions.empty() );
+  }
+  
   std::map<std::string,std::string> average_expressions;
   std::map<std::string,std::string> local_expressions;
   std::map<std::string,std::pair<std::string,std::string> > correlation_expressions;
   std::map<std::string,std::pair<std::string,std::string> > structurefactor_expressions;
 };
 
+class ALPS_DECL MeasurementLabels : public MeasurementOperators
+{
+public:
+  template <class LatticeModel>
+  MeasurementLabels(LatticeModel const&);
+protected:
+  std::vector<std::string> distlabel_;
+  std::vector<std::string> momentumlabel_;
+  std::vector<std::string> bondlabel_;
+  std::vector<std::string> sitelabel_;
+  mutable std::map<std::string,bool> bond_operator_; // mutable to allow operator[]
+};
+
+
 template <class ValueType>
-class EigenvectorMeasurements : public MeasurementOperators
+class EigenvectorMeasurements 
+ : public MeasurementLabels
 {
 public:
   typedef ValueType value_type;
@@ -77,22 +98,15 @@ public:
   std::map<std::string,std::vector<std::vector<value_type> > > local_values;
   std::map<std::string,std::vector<std::vector<value_type> > > correlation_values;
   std::map<std::string,std::vector<std::vector<value_type> > > structurefactor_values;
-
-private:
-  std::vector<std::string> distlabel_;
-  std::vector<std::string> momentumlabel_;
-  std::vector<std::string> bondlabel_;
-  std::vector<std::string> sitelabel_;
-  mutable std::map<std::string,bool> bond_operator_;
 };
 
 
-template <class ValueType>
 template<class LatticeModel>
-EigenvectorMeasurements<ValueType>::EigenvectorMeasurements(LatticeModel const& lattice_model)
+MeasurementLabels::MeasurementLabels(LatticeModel const& lattice_model)
  : MeasurementOperators(lattice_model.get_parameters())
 {
-  if (calc_averages()) {
+  if (calc_labels()) 
+  {
     distlabel_ = lattice_model.distance_labels();
     momentumlabel_ = lattice_model.momenta_labels();
     bondlabel_ = lattice_model.bond_labels();
@@ -101,6 +115,14 @@ EigenvectorMeasurements<ValueType>::EigenvectorMeasurements(LatticeModel const& 
     BOOST_FOREACH(string_pair const& x, local_expressions)
       bond_operator_[x.first] = lattice_model.has_bond_operator(x.second);
   }
+}
+
+
+template <class ValueType>
+template<class LatticeModel>
+EigenvectorMeasurements<ValueType>::EigenvectorMeasurements(LatticeModel const& lattice_model)
+ : MeasurementLabels(lattice_model)
+{
 }
 
 
