@@ -46,10 +46,10 @@ int main() {
   DO_TYPE(double)
   DO_TYPE(long double)
 
-  DO_TYPE(int8_t)
-  DO_TYPE(int16_t)
-  DO_TYPE(int32_t)
-  DO_TYPE(int64_t)
+  DO_TYPE(alps::int8_t)
+  DO_TYPE(alps::int16_t)
+  DO_TYPE(alps::int32_t)
+  DO_TYPE(alps::int64_t)
 
   DO_TYPE(std::size_t)
   DO_TYPE(std::ptrdiff_t)
