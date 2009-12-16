@@ -25,6 +25,19 @@
 
 namespace hdf5 {
 	namespace detail {
+		template <typename T> boost::type_traits::yes_type has_value_type_helper(
+			typename T::value_type *
+		);
+		template <typename T> boost::type_traits::no_type has_value_type_helper(...);
+		template<typename T, bool B> struct has_value_type_checker {
+			enum { value = false };
+		};
+		template<typename T> struct has_value_type_checker<T, true> {
+			enum { value = sizeof(has_value_type_helper<T>(NULL)) == sizeof(boost::type_traits::yes_type) };
+		};
+		template <typename T> struct has_value_type {
+			typedef has_value_type_checker<typename boost::remove_reference<typename boost::remove_cv<T>::type>::type, boost::is_class<T>::value> type;
+		};
 		class error {
 			public:
 				static herr_t noop(hid_t) { return 0; }
@@ -181,11 +194,11 @@ namespace hdf5 {
 					detail::data_type data_id(id);
 					detail::error_type(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &v));
 				}
-				template<typename T> typename boost::disable_if<boost::is_scalar<T> >::type set_data(std::string const & p, T const & v) {
+				template<typename T> typename boost::enable_if<typename has_value_type<T>::type>::type set_data(std::string const & p, T const & v) {
 					if (!v.size())
 						set_data(p, static_cast<typename T::value_type const *>(NULL), 0);
 					else
-                                                set_data(p, &const_cast<T&>(v)[0], v.size());
+						set_data(p, &(const_cast<T &>(v)[0]), v.size());
 				}
 				void set_data(std::string const & p, char const * const & v) {
 					set_data(p, std::string(v));
@@ -205,7 +218,7 @@ namespace hdf5 {
 						else
 							detail::error_type(H5Dset_extent(id, s));
 						detail::data_type data_id(id);
-						detail::error_type(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(const_cast<std::vector<std::valarray<T> >&>(v)[0][0])));
+						detail::error_type(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(v[0][0])));
 						for (std::size_t i = 1; i < v.size(); ++i)
 							if (v[i].size() != v[0].size())
 								throw std::runtime_error(p + " is not a rectengual matrix");
@@ -214,7 +227,7 @@ namespace hdf5 {
 								detail::space_type space_id(H5Dget_space(data_id));
 								detail::error_type(H5Sselect_hyperslab(space_id, H5S_SELECT_SET, start, NULL, count, NULL));
 								detail::space_type mem_id(H5Screate_simple(2, count, NULL));
-								detail::error_type(H5Dwrite(data_id, type_id, mem_id, space_id, H5P_DEFAULT, &(const_cast<std::vector<std::valarray<T> >&>(v)[1][0])));
+								detail::error_type(H5Dwrite(data_id, type_id, mem_id, space_id, H5P_DEFAULT, &(const_cast<std::vector<std::valarray<T> > &>(v)[i][0])));
 							}
 					}
 				}
@@ -262,8 +275,8 @@ namespace hdf5 {
 					else
 						throw std::runtime_error("unknown path: " + p);
 				}
-				template<typename T> typename boost::disable_if<boost::is_scalar<T> >::type set_attr(std::string const & p, std::string const & s, T const & v) {
-                                        set_attr(p, s, &const_cast<T&>(v)[0], v.size());
+				template<typename T> typename boost::enable_if<typename has_value_type<T>::type>::type set_attr(std::string const & p, std::string const & s, T const & v) {
+					set_attr(p, s, &(const_cast<T&>(v)[0]), v.size());
 				}
 				void set_attr(std::string const & p, std::string const & s, char const * const & v) {
 					set_attr(p, s, std::string(v));
