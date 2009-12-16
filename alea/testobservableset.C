@@ -62,7 +62,7 @@ try {
 
   //ADD MEASUREMENTS TO THE OBSERVABLES
   //----------------------------------- 
-  for(uint i = 0; i < thermalization_steps; ++i){ 
+  for(uint32_t i = 0; i < thermalization_steps; ++i){ 
     measurement["observable a"] << random();
     measurement["observable b"] << random()+1;
   }
