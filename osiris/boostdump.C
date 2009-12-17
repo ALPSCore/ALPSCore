@@ -35,13 +35,6 @@
 #include <cstdlib>
 #include <fstream>
 
-#if (BOOST_VERSION >= 103300)
-# include <boost/archive/impl/text_iarchive_impl.ipp>
-# include <boost/archive/impl/basic_text_iarchive.ipp>
-# include <boost/archive/impl/text_oarchive_impl.ipp>
-# include <boost/archive/impl/basic_text_oarchive.ipp>
-#endif
-
 int main()
 {
 #ifndef BOOST_NO_EXCEPTIONS
@@ -86,7 +79,7 @@ try {
   std::string str;
   id >> str;
   std::cout << str << std::endl;
-  
+
 #ifndef BOOST_NO_EXCEPTIONS
 }
 catch (std::exception& exp) {

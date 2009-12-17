@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2006 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2001-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -42,7 +42,11 @@ int main()
   try {
 #endif
 
+#ifndef BOOST_MSVC
   setenv("DIR", "/home/alps", 1);
+#else
+  _putenv("DIR=/home/alps");
+#endif
 
   boost::filesystem::path path("parameterlist.dump", boost::filesystem::native);
 
@@ -53,17 +57,17 @@ int main()
     alps::OXDRFileDump od(path);
     od << params;
   }
-  
+
   params.clear();
-  
+
   {
     alps::IXDRFileDump id(path);
     id >> params;
   }
-  
+
   std::cout << params;
   boost::filesystem::remove(path);
-  
+
 #ifndef BOOST_NO_EXCEPTIONS
 }
 catch (std::exception& e)

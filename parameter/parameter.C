@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2006 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 2006-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -40,8 +40,12 @@ int main()
   try {
 #endif
 
+#ifndef BOOST_MSVC
   setenv("DIR", "/home/alps", 1);
-    
+#else
+  _putenv("DIR=/home/alps");
+#endif
+
   std::string str;
   alps::Parameter p;
   while (std::getline(std::cin, str)) {
