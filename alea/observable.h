@@ -102,11 +102,7 @@ public:
 
 /// the base class for all observables
 
-class ALPS_DECL Observable
-#ifdef ALPS_HAVE_HDF5
-	: public hdf5::serializable
-#endif
-{
+class ALPS_DECL Observable {
  public:
   friend class ObservableSet;
   typedef uint32_t version_type;

@@ -43,11 +43,7 @@ namespace alps {
 //-----------------------------------------------------------------------
 
 template <class T>
-class AbstractBinning
-#ifdef ALPS_HAVE_HDF5
-	: public hdf5::serializable
-#endif
-{
+class AbstractBinning {
  public: 
   typedef T value_type;
   typedef typename obs_value_traits<T>::time_type time_type;

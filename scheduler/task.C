@@ -75,25 +75,31 @@ Task::~Task()
 
 void Task::parse_task_file(bool read_parms_only)
 {
-  boost::filesystem::ifstream infile(infilename);
+/*	if (infilename.filename().substr(-3) == ".h5")
+		parms = parse_ext_task_file(infilename.filename());
+	else
+	
+*/  {
+    boost::filesystem::ifstream infile(infilename);
+    
+    // read outermost tag (e.g. <SIMULATION>)
+    XMLTag tag=parse_tag(infile,true);
+    std::string closingtag = "/"+tag.name;
   
-  // read outermost tag (e.g. <SIMULATION>)
-  XMLTag tag=parse_tag(infile,true);
-  std::string closingtag = "/"+tag.name;
-  
-  // scan for <PARAMETERS> and read them
-  tag=parse_tag(infile,true);
-  while (tag.name!="PARAMETERS" && tag.name != closingtag) {
-    skip_element(infile,tag);
+    // scan for <PARAMETERS> and read them
     tag=parse_tag(infile,true);
-  }
-  parms.read_xml(tag,infile,true);
-  if (!read_parms_only) {
-    // scan for first worker element (e.g. <MCRUN> or <REALIZATION>)
-    tag=parse_tag(infile,true);
-    while (tag.name != closingtag) {
-      handle_tag(infile,tag);
-      tag=parse_tag(infile,true); 
+    while (tag.name!="PARAMETERS" && tag.name != closingtag) {
+      skip_element(infile,tag);
+      tag=parse_tag(infile,true);
+    }
+    parms.read_xml(tag,infile,true);
+    if (!read_parms_only) {
+      // scan for first worker element (e.g. <MCRUN> or <REALIZATION>)
+      tag=parse_tag(infile,true);
+      while (tag.name != closingtag) {
+        handle_tag(infile,tag);
+        tag=parse_tag(infile,true); 
+      }
     }
   }
   // astreich, 06/20
@@ -112,24 +118,34 @@ void Task::parse_task_file(bool read_parms_only)
 /* astreich, 06/17 */
 Parameters Task::parse_ext_task_file(std::string infilename)
 {
-  Parameters res;
-  boost::filesystem::ifstream infile(infilename);
+/*	if (infilename.substr(-3) == ".h5") {
+	
+	
+	
+	std::cerr << "Im a h5 file!!" << std::endl;
+	
+	
+	} else
+*/  {
+    Parameters res;
+    boost::filesystem::ifstream infile(infilename);
   
-  // read outermost tag (e.g. <SIMULATION>)
-  XMLTag tag=parse_tag(infile,true);
-  std::string closingtag = "/"+tag.name;
+    // read outermost tag (e.g. <SIMULATION>)
+    XMLTag tag=parse_tag(infile,true);
+    std::string closingtag = "/"+tag.name;
   
-  // scan for <PARAMETERS> and read them
-  tag=parse_tag(infile,true);
-  while (tag.name!="PARAMETERS" && tag.name != closingtag) {
-    std::cerr << "skipping tag with name " << tag.name << "\n";
-    skip_element(infile,tag);
+    // scan for <PARAMETERS> and read them
     tag=parse_tag(infile,true);
+    while (tag.name!="PARAMETERS" && tag.name != closingtag) {
+      std::cerr << "skipping tag with name " << tag.name << "\n";
+      skip_element(infile,tag);
+      tag=parse_tag(infile,true);
+    }
+    res.read_xml(tag,infile,true);
+    if (!res.defined("SEED"))
+      res["SEED"]=0;
+    return res;
   }
-  res.read_xml(tag,infile,true);
-  if (!res.defined("SEED"))
-    res["SEED"]=0;
-  return res;
 }
 
 void Task::handle_tag(std::istream& infile, const XMLTag& tag) 

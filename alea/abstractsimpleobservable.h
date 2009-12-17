@@ -196,8 +196,6 @@ public:
 		serialize_label(ar, label_);
 		ar
 			<< make_pvp("count", count())
-		;
-		ar
 			<< make_pvp("mean/value", mean())
 			<< make_pvp("mean/error", error())
 			<< make_pvp("mean/error_convergence", converged_errors())

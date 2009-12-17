@@ -73,11 +73,7 @@ using namespace boost::lambda;
 
 
 template <class T>
-class SimpleObservableData
-#ifdef ALPS_HAVE_HDF5
-	: public hdf5::serializable
-#endif
-{
+class SimpleObservableData {
 public:
   template <class X>
   friend class SimpleObservableData;
@@ -159,6 +155,7 @@ public:
 
 #ifdef ALPS_HAVE_HDF5
 	void serialize(hdf5::oarchive & ar) const;
+	void serialize(hdf5::iarchive & ar) const;
 #endif
 
   inline void set_bin_size(uint64_t);
@@ -234,7 +231,6 @@ private:
   std::string eval_method_;
 };
 
-  
 template <class T>
 SimpleObservableData<T>::SimpleObservableData()
  : count_(0),
@@ -1046,6 +1042,10 @@ void SimpleObservableData<T>::load(IDump& dump)
 					<< make_pvp("jacknife/data/@binnintype", "linear")
 				;
 		}
+	}
+	template <typename T> void SimpleObservableData<T>::serialize(hdf5::iarchive & ar) const {
+	
+	
 	}
 #endif
 template <class T>
