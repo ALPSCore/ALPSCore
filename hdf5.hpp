@@ -424,7 +424,7 @@ namespace alps {
 		typedef detail::archive<detail::write> oarchive;
 		namespace detail {
 			template <typename T, pvp_type U> archive<write> & operator<< (archive<write> & ar, pvp<T, U> const & v) { 
-//return ar;
+return ar;
 				return v.set_value(ar);
 			}
 			template <typename T, pvp_type U> archive<read> & operator>> (archive<read> & ar, pvp<T, U> const & v) { 

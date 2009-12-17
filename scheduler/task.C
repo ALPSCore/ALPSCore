@@ -75,11 +75,10 @@ Task::~Task()
 
 void Task::parse_task_file(bool read_parms_only)
 {
-/*	if (infilename.filename().substr(-3) == ".h5")
+	if (infilename.native_file_string().substr(infilename.native_file_string().size() - 3) == ".h5")
 		parms = parse_ext_task_file(infilename.filename());
 	else
-	
-*/  {
+  {
     boost::filesystem::ifstream infile(infilename);
     
     // read outermost tag (e.g. <SIMULATION>)
@@ -118,7 +117,7 @@ void Task::parse_task_file(bool read_parms_only)
 /* astreich, 06/17 */
 Parameters Task::parse_ext_task_file(std::string infilename)
 {
-/*	if (infilename.substr(-3) == ".h5") {
+	if (infilename.substr(infilename.size() - 3) == ".h5") {
 	
 	
 	
@@ -126,7 +125,7 @@ Parameters Task::parse_ext_task_file(std::string infilename)
 	
 	
 	} else
-*/  {
+  {
     Parameters res;
     boost::filesystem::ifstream infile(infilename);
   
