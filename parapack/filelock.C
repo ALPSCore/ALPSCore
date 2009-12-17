@@ -37,9 +37,10 @@
 #elif defined(ALPS_HAVE_WINDOWS_H)
 # include <windows.h>
 #endif
-
-#if defined(ALPS_HAVE_WINDOWS_H)
+#if defined(ALPS_HAVE_SYS_STAT_H)
 # include <sys/stat.h>
+#endif
+#if defined(ALPS_HAVE_WINDOWS_H)
 # include <io.h>
 #endif
 

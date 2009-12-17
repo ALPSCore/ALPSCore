@@ -72,6 +72,9 @@
 // Define to 1 if you have the <stdarg.h> header file.
 #undef ALPS_HAVE_STDARG_H
 
+// Define to 1 if you have the <sys/stat.h> header file.
+#undef ALPS_HAVE_SYS_STAT_H
+
 // Define to 1 if you have the <sys/systeminfo.h> header file.
 #undef ALPS_HAVE_SYS_SYSTEMINFO_H
 
@@ -193,6 +196,9 @@
 
 // Define to 1 if you have the <stdarg.h> header file.
 #cmakedefine ALPS_HAVE_STDARG_H
+
+// Define to 1 if you have the <sys/stat.h> header file.
+#cmakedefine ALPS_HAVE_SYS_STAT_H
 
 // Define to 1 if you have the <sys/systeminfo.h> header file.
 #cmakedefine ALPS_HAVE_SYS_SYSTEMINFO_H
