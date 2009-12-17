@@ -230,7 +230,7 @@ inline oxstream& end_cdata(oxstream& oxs) { return oxs.end_comment(); }
 inline oxstream& no_linebreak(oxstream& oxs) { return oxs.no_linebreak(); }
 
 // replace "<", "&", etc to entities
-std::string convert(const std::string& str);
+ALPS_DECL std::string convert(const std::string& str);
 
 template<class T>
 inline std::string precision(const T& d, int n)

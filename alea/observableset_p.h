@@ -38,7 +38,7 @@
 
 namespace alps {
 
-class ObsValueXMLHandler : public XMLHandlerBase {
+class ALPS_DECL ObsValueXMLHandler : public XMLHandlerBase {
 public:
   ObsValueXMLHandler(const std::string& basename, double& val, const std::string& attr = "");
   virtual ~ObsValueXMLHandler() {}
@@ -57,7 +57,7 @@ private:
 
 
 /// \brief XML parser for the elements for RealObsevaluator class
-class RealObsevaluatorValueXMLHandler : public XMLHandlerBase {
+class ALPS_DECL RealObsevaluatorValueXMLHandler : public XMLHandlerBase {
 public:
   RealObsevaluatorValueXMLHandler(std::string const& name, double& value, std::string& method,
     int& conv);
@@ -76,7 +76,7 @@ private:
 
 
 /// \brief XML parser for the RealObsevaluator class
-class RealObsevaluatorXMLHandler : public CompositeXMLHandler {
+class ALPS_DECL RealObsevaluatorXMLHandler : public CompositeXMLHandler {
 public:
   RealObsevaluatorXMLHandler(RealObsevaluator& obs, std::string& index);
   virtual ~RealObsevaluatorXMLHandler() {}
@@ -101,7 +101,7 @@ private:
 #ifdef ALPS_HAVE_VALARRAY
 
 /// \brief XML parser for the RealVectorObsevaluator class
-class RealVectorObsevaluatorXMLHandler : public CompositeXMLHandler {
+class ALPS_DECL RealVectorObsevaluatorXMLHandler : public CompositeXMLHandler {
 public:
   RealVectorObsevaluatorXMLHandler(RealVectorObsevaluator& obs);
   virtual ~RealVectorObsevaluatorXMLHandler() {}
@@ -122,7 +122,7 @@ private:
 #endif
 
 /// \brief XML parser for the entries for RealHistogramObservable class
-class RealHistogramEntryXMLHandler : public CompositeXMLHandler {
+class ALPS_DECL RealHistogramEntryXMLHandler : public CompositeXMLHandler {
 public:
   RealHistogramEntryXMLHandler(uint64_t& count, uint64_t& value);
   virtual ~RealHistogramEntryXMLHandler() {}
@@ -133,7 +133,7 @@ private:
 };
 
 /// \brief XML parser for the RealHistogramObservable class
-class RealHistogramObservableXMLHandler : public CompositeXMLHandler {
+class ALPS_DECL RealHistogramObservableXMLHandler : public CompositeXMLHandler {
 public:
   RealHistogramObservableXMLHandler(RealHistogramObservable& obs);
   virtual ~RealHistogramObservableXMLHandler() {}
@@ -152,7 +152,7 @@ private:
 
 
 /// \brief XML parser for the ObservableSet class
-class ObservableSetXMLHandler : public CompositeXMLHandler {
+class ALPS_DECL ObservableSetXMLHandler : public CompositeXMLHandler {
 public:
   ObservableSetXMLHandler(ObservableSet& obs);
 
@@ -167,7 +167,7 @@ private:
 #ifdef ALPS_HAVE_VALARRAY
   RealVectorObsevaluator vobs_;
   RealVectorObsevaluatorXMLHandler vhandler_;
-#endif 
+#endif
   RealHistogramObservable hobs_;
   RealHistogramObservableXMLHandler hhandler_;
 };

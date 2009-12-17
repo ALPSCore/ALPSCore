@@ -28,6 +28,7 @@
 #ifndef PARAPACK_UTIL_H
 #define PARAPACK_UTIL_H
 
+#include <alps/config.h>
 #include <string>
 
 namespace alps {
@@ -36,7 +37,7 @@ int hash(int n, int s = 826);
 
 std::string id2string(int id, std::string const& pad = "_");
 
-double parse_percentage(std::string const& str);
+ALPS_DECL double parse_percentage(std::string const& str);
 
 } // end namespace alps
 

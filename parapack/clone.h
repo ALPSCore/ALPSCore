@@ -40,12 +40,14 @@
 
 namespace alps {
 
-bool load_observable(IDump& dp, Parameters& params, clone_info& info,
+ALPS_DECL bool load_observable(IDump& dp, Parameters& params, clone_info& info,
   std::vector<ObservableSet>& obs);
-bool load_observable(boost::filesystem::path const& file, Parameters& params, clone_info& info,
+ALPS_DECL bool load_observable(boost::filesystem::path const& file, Parameters& params,
+  clone_info& info,
   std::vector<ObservableSet>& obs);
-bool load_observable(IDump& dp, std::vector<ObservableSet>& obs);
-bool load_observable(boost::filesystem::path const& file, std::vector<ObservableSet>& obs);
+ALPS_DECL bool load_observable(IDump& dp, std::vector<ObservableSet>& obs);
+ALPS_DECL bool load_observable(boost::filesystem::path const& file,
+  std::vector<ObservableSet>& obs);
 
 class abstract_clone : public boost::noncopyable {
 public:

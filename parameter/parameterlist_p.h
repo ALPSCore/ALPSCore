@@ -40,7 +40,7 @@ namespace alps {
 
 // parser for alps::ParameterList
 
-struct ParameterListParser : public bs::grammar<ParameterListParser> {
+struct ALPS_DECL ParameterListParser : public bs::grammar<ParameterListParser> {
 
   template<typename ScannerT>
   struct definition {
@@ -77,7 +77,7 @@ struct ParameterListParser : public bs::grammar<ParameterListParser> {
 };
 
 /// \brief Implementation handler of the ALPS XML parser for the ParameterList class
-class ParameterListXMLHandler : public CompositeXMLHandler
+class ALPS_DECL ParameterListXMLHandler : public CompositeXMLHandler
 {
 public:
   ParameterListXMLHandler(ParameterList& list);

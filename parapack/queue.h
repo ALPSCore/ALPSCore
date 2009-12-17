@@ -75,14 +75,14 @@ struct check_queue_element_t {
   bool due() const;
 };
 
-bool operator<(check_queue_element_t const& lhs, check_queue_element_t const& rhs);
+ALPS_DECL bool operator<(check_queue_element_t const& lhs, check_queue_element_t const& rhs);
 
-check_queue_element_t next_taskinfo(boost::posix_time::time_duration const& interval);
+ALPS_DECL check_queue_element_t next_taskinfo(boost::posix_time::time_duration const& interval);
 
-check_queue_element_t next_checkpoint(tid_t tid, cid_t cid, gid_t gid,
+ALPS_DECL check_queue_element_t next_checkpoint(tid_t tid, cid_t cid, gid_t gid,
   boost::posix_time::time_duration const& interval);
 
-check_queue_element_t next_report(tid_t tid, cid_t cid, gid_t gid,
+ALPS_DECL check_queue_element_t next_report(tid_t tid, cid_t cid, gid_t gid,
   boost::posix_time::time_duration const& interval);
 
 typedef std::priority_queue<check_queue_element_t> check_queue_t;

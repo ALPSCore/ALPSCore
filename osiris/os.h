@@ -41,10 +41,10 @@
 namespace alps {
 
 /// returns the hostname
-std::string hostname();
+ALPS_DECL std::string hostname();
 
 /// returns the username
-std::string username();
+ALPS_DECL std::string username();
 
 } // end namespace
 

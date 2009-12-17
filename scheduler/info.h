@@ -46,9 +46,9 @@ namespace scheduler {
 // information about a specific computation on a worker
 //-----------------------------------------------------------------------
 
-class TaskInfo;
+class ALPS_DECL TaskInfo;
 
-class Info 
+class ALPS_DECL Info
 {
   friend class TaskInfo;
 public:
@@ -56,7 +56,7 @@ public:
   void start(const std::string&); // register that it is started/restarted NOW
   void halt(); // register that it is halted/thermalized NOW
   void checkpoint(); // we are checkpointing, update info beforehand
-  
+
   // write the info
   void save (ODump&) const;
   ALPS_DUMMY_VOID write_xml(alps::oxstream&) const;
@@ -77,14 +77,14 @@ private:
 };
 
 
-class TaskInfo : public std::vector<Info> 
+class ALPS_DECL TaskInfo : public std::vector<Info>
 {
 public:
   TaskInfo() {}
 
   void start(const std::string&); // the run is started/restarted NOW
   void halt(); // the run is halted/thermalized NOW
-  
+
   void save (ODump& dump) const;
   void load (IDump& dump,int version=MCDump_worker_version);
   void write_xml(alps::oxstream&) const;

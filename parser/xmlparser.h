@@ -47,7 +47,7 @@
 
 namespace alps {
 
-class XMLParser
+class ALPS_DECL XMLParser
 {
 public:
   XMLParser(XMLHandlerBase&);
@@ -71,5 +71,5 @@ private:
 };
 
 } // end namespace alps
- 
+
 #endif // ALPS_XML_XMLPARSER_H

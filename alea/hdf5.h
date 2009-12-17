@@ -4,8 +4,8 @@
 *
 * ALPS Libraries
 *
-* Copyright (C)      2008 by Emanuel Gull < gull@itp.phys.ethz.ch>
-* Copyright (C) 1994-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2009 by Emanuel Gull < gull@itp.phys.ethz.ch>,
+*                            Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
@@ -36,6 +36,12 @@
 
 ///New ALPS ALEA hdf5 interface
 #ifdef ALPS_HAVE_HDF5
+#ifndef _HDF5USEDLL_
+# define _HDF5USEDLL_
+#endif
+#ifndef _HDF5USEHLDLL_
+# define _HDF5USEHLDLL_
+#endif
 #include<hdf5.h>
 #include<alps/alea/observableset.h>
 #include<alps/alea/simpleobservable.h>
@@ -80,10 +86,10 @@ namespace mocasito {
     template<typename E, typename T> context<E> & assign(context<E> & c, alps::AbstractSimpleObservable<T> const &obs){
       assign(c,*((alps::Observable*)&obs)); //dump observable first.
       (c+std::string("count"))=obs.count();
-      if(obs.count()==0){ 
+      if(obs.count()==0){
         std::cerr<<"warning: observable "<<obs.name()<<" has a count of zero!"<<std::endl;
         return c;
-        //throw(std::invalid_argument("trying to save observable "+obs.name()+" that has a count of zero")); 
+        //throw(std::invalid_argument("trying to save observable "+obs.name()+" that has a count of zero"));
       }
       (c+std::string("mean/value"))=obs.mean();
       (c+std::string("mean/error"))=obs.error();
@@ -221,7 +227,7 @@ template <typename OBS, typename SIGN> void SignedObservable<OBS,SIGN>::write_hd
   }
   std::stringstream sign_times_obs_path;
   sign_times_obs_path<<"/simulation/realizations/"<<realization<<"/clones/"<<clone<<"/results/"<<(this->obs_).name();
-  ((OBS*)&(this->obs_))->write_hdf5(path, realization, clone); 
+  ((OBS*)&(this->obs_))->write_hdf5(path, realization, clone);
 }
 template <class OBS, class SIGN> void SignedObservable<OBS,SIGN>::read_hdf5(const boost::filesystem::path& path, std::size_t realization, std::size_t clone){
   {

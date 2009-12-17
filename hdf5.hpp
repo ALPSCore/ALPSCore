@@ -21,6 +21,12 @@
 #include <boost/type_traits.hpp>
 #include <boost/function.hpp>
 
+#ifndef _HDF5USEDLL_
+# define _HDF5USEDLL_
+#endif
+#ifndef _HDF5USEHLDLL_
+# define _HDF5USEHLDLL_
+#endif
 #include <hdf5.h>
 
 namespace hdf5 {

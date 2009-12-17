@@ -43,7 +43,7 @@ namespace alps {
 
 class clone_phase_xml_handler;
 
-class clone_phase {
+class ALPS_DECL clone_phase {
 public:
   clone_phase() {}
   clone_phase(std::vector<std::string> const& hosts, std::string const& user,
@@ -87,11 +87,11 @@ private:
 namespace alps {
 #endif
 
-alps::oxstream& operator<<(alps::oxstream& os, alps::clone_phase const& phase);
+ALPS_DECL alps::oxstream& operator<<(alps::oxstream& os, alps::clone_phase const& phase);
 
-alps::ODump& operator<<(alps::ODump& dump, alps::clone_phase const& phase);
+ALPS_DECL alps::ODump& operator<<(alps::ODump& dump, alps::clone_phase const& phase);
 
-alps::IDump& operator>>(alps::IDump& dump, alps::clone_phase& phase);
+ALPS_DECL alps::IDump& operator>>(alps::IDump& dump, alps::clone_phase& phase);
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // namespace alps
@@ -105,7 +105,7 @@ namespace alps {
 
 class clone_info_xml_handler;
 
-class clone_info {
+class ALPS_DECL clone_info {
 public:
   clone_info();
   clone_info(cid_t cid, Parameters const& params, std::string const& dump, bool initialize = true);
@@ -171,11 +171,11 @@ private:
 namespace alps {
 #endif
 
-alps::oxstream& operator<<(alps::oxstream& os, alps::clone_info const& info);
+ALPS_DECL alps::oxstream& operator<<(alps::oxstream& os, alps::clone_info const& info);
 
-alps::ODump& operator<<(alps::ODump& dp, alps::clone_info const& info);
+ALPS_DECL alps::ODump& operator<<(alps::ODump& dp, alps::clone_info const& info);
 
-alps::IDump& operator>>(alps::IDump& dp, alps::clone_info& info);
+ALPS_DECL alps::IDump& operator>>(alps::IDump& dp, alps::clone_info& info);
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // namespace alps

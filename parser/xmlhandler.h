@@ -90,7 +90,7 @@ public:
 
 
 template<class T>
-class ALPS_DECL SimpleXMLHandler : public XMLHandlerBase
+class SimpleXMLHandler : public XMLHandlerBase
 {
 public:
   typedef T value_type;
@@ -98,14 +98,15 @@ public:
   SimpleXMLHandler(const std::string& basename, T& val,
                    const std::string& attr = "")
     : XMLHandlerBase(basename), value_(val), attr_(attr), started_(false) {}
-    
+  virtual ~SimpleXMLHandler() {}
+
   virtual void start_element(const std::string& name,
                              const XMLAttributes& attributes,
                              xml::tag_type type) {
     if (type == xml::element) {
       if (name != basename())
         boost::throw_exception(std::runtime_error(
-          "SimpleXMLHandler::start_element: unknown start tag <" + name + 
+          "SimpleXMLHandler::start_element: unknown start tag <" + name +
           ">"));
       if (started_)
         boost::throw_exception(std::runtime_error(
@@ -114,7 +115,7 @@ public:
       if (!attr_.empty()) {
         if (!attributes.defined(attr_))
           boost::throw_exception(std::runtime_error(
-            "SimpleXMLHandler::start_element: attribute \"" + attr_ + 
+            "SimpleXMLHandler::start_element: attribute \"" + attr_ +
             "\" not defined in <" + name + "> tag"));
         value_ = boost::lexical_cast<value_type>(attributes[attr_]);
       }
@@ -138,7 +139,7 @@ public:
       started_ = false;
     }
   }
-    
+
   virtual void text(const std::string& text) {
     if (attr_.empty()) {
       if (!buffer_.empty()) buffer_ += ' ';
@@ -197,7 +198,7 @@ protected:
   { return false; }
   virtual bool text_impl(const std::string& /* text */) { return false; }
 
-private:  
+private:
   map_type handlers_;       // list of pointer to handlers
   XMLHandlerBase* current_; // pointer to current handler
   unsigned int level_;
@@ -205,7 +206,7 @@ private:
 
 
 template<class T, class C = std::vector<T>, class H = SimpleXMLHandler<T> >
-class ALPS_DECL VectorXMLHandler : public CompositeXMLHandler
+class VectorXMLHandler : public CompositeXMLHandler
 {
 public:
   VectorXMLHandler(const std::string& basename, C& cont, T& val, H& handler)
@@ -221,7 +222,7 @@ protected:
       cont_.push_back(val_);
   }
 
-private:  
+private:
   C& cont_;
   T& val_;
   H& handler_;
@@ -280,7 +281,7 @@ private:
 class ALPS_DECL StylesheetXMLHandler : public XMLHandlerBase
 {
 public:
-  StylesheetXMLHandler(std::string& style) 
+  StylesheetXMLHandler(std::string& style)
     : XMLHandlerBase("style"), style_(style) {}
   void start_element(const std::string&,
                      const XMLAttributes& attributes,

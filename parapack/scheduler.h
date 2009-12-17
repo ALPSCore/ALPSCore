@@ -37,25 +37,25 @@
 namespace alps {
 
 /// return the compile date of ALPS/parapack
-std::string compile_date();
+ALPS_DECL std::string compile_date();
 
 namespace parapack {
 
 ALPS_DECL int start(int argc, char **argv);
 
-int evaluate(int argc, char **argv);
+ALPS_DECL int evaluate(int argc, char **argv);
 
-int run_sequential(int argc, char **argv);
+ALPS_DECL int run_sequential(int argc, char **argv);
 
 namespace scheduler {
 
-int start(int argc, char **argv);
+ALPS_DECL int start(int argc, char **argv);
 
-void print_copyright(std::ostream& os = std::cout);
+ALPS_DECL void print_copyright(std::ostream& os = std::cout);
 
-void print_license(std::ostream& os = std::cout);
+ALPS_DECL void print_license(std::ostream& os = std::cout);
 
-std::string alps_version();
+ALPS_DECL std::string alps_version();
 
 // moved to logger.h
 // std::string log_header();
@@ -66,20 +66,20 @@ std::string alps_version();
 // moved to logger.h
 // std::string pg_name(alps::gid_t gid);
 
-void print_taskinfo(std::ostream& os, std::vector<alps::task> const& tasks);
+ALPS_DECL void print_taskinfo(std::ostream& os, std::vector<alps::task> const& tasks);
 
 // return 1 for job XML (<JOB>) file or 2 for task XML (<SIMULATION>)
 ALPS_DECL int load_filename(boost::filesystem::path const& file, std::string& file_in_str,
   std::string& file_out_str);
 
-void load_version(boost::filesystem::path const& file,
+ALPS_DECL void load_version(boost::filesystem::path const& file,
   std::vector<std::pair<std::string, std::string> >& versions);
 
 ALPS_DECL void load_tasks(boost::filesystem::path const& file_in,
   boost::filesystem::path const& file_out, boost::filesystem::path const& basedir,
   bool check_parameter, std::string& simname, std::vector<alps::task>& tasks);
 
-void save_tasks(boost::filesystem::path const& file, std::string const& simname,
+ALPS_DECL void save_tasks(boost::filesystem::path const& file, std::string const& simname,
   std::string const& file_in_str, std::string const& file_out_str, std::vector<alps::task>& tasks);
 
 } // namespace scheduler

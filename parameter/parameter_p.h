@@ -39,7 +39,7 @@ namespace bs = boost::spirit;
 namespace alps {
 
 /// \brief Text-form parser for the Parameter class
-struct ParameterParser : public bs::grammar<ParameterParser> {
+struct ALPS_DECL ParameterParser : public bs::grammar<ParameterParser> {
 
   template<typename ScannerT>
   struct definition {
@@ -78,7 +78,7 @@ struct ParameterParser : public bs::grammar<ParameterParser> {
 };
 
 /// \brief ALPS XML handler for the Parameter class
-class ParameterXMLHandler : public XMLHandlerBase {
+class ALPS_DECL ParameterXMLHandler : public XMLHandlerBase {
 
 public:
   ParameterXMLHandler(Parameter& p);

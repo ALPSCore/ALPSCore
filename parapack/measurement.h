@@ -32,9 +32,10 @@
 
 namespace alps {
 
-void merge_clone(alps::ObservableSet& total, alps::ObservableSet const& clone, bool same_weight);
+ALPS_DECL void merge_clone(alps::ObservableSet& total, alps::ObservableSet const& clone,
+  bool same_weight);
 
-void merge_random_clone(alps::ObservableSet& total, alps::ObservableSet const& clone);
+ALPS_DECL void merge_random_clone(alps::ObservableSet& total, alps::ObservableSet const& clone);
 
 } // end namespace alps
 
