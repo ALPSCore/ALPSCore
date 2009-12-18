@@ -36,7 +36,7 @@
 using namespace boost::python;
 
 
-BOOST_PYTHON_MODULE(value_with_error_module)
+BOOST_PYTHON_MODULE(value_with_error)
 {
   class_<value_with_error<double> >("value_with_error",init<optional<value_with_error<double>::value_type,value_with_error<double>::value_type> >())
     .add_property("mean", &value_with_error<double>::mean)
