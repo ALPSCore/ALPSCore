@@ -23,6 +23,8 @@
 #include <valarray>
 #include <iostream>
 
+#include <typeinfo>
+
 #include <boost/config.hpp>
 #include <boost/utility.hpp>
 #include <boost/filesystem/path.hpp>
@@ -222,7 +224,7 @@ namespace alps {
 						if (!v.size() || !v[0].size())
 							set_data(p, static_cast<typename T::value_type::value_type const *>(NULL), 0);
 						else {
-							detail::type_type type_id(get_native_type(typename T::value_type::value_type()));
+							detail::type_type type_id(get_native_type(const_cast<T &>(v)[0][0]));
 							hsize_t s[2] = { v.size(), v[0].size() };
 							hid_t id = H5Dopen2(_file, p.c_str(), H5P_DEFAULT);
 							if (id < 0)
@@ -230,12 +232,11 @@ namespace alps {
 							else
 								detail::error_type(H5Dset_extent(id, s));
 							detail::data_type data_id(id);
-							detail::error_type(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(const_cast<T &>(v)[0][0])));
-							for (std::size_t i = 1; i < v.size(); ++i)
+							for (std::size_t i = 0; i < v.size(); ++i)
 								if (v[i].size() != v[0].size())
 									throw std::runtime_error(p + " is not a rectengual matrix");
 								else {
-									hsize_t start[2] = { i, 0 }, count[2] = { 1, v[i].size() };
+									hsize_t start[2] = { i, 0 }, count[2] = { i, v[i].size() };
 									detail::space_type space_id(H5Dget_space(data_id));
 									detail::error_type(H5Sselect_hyperslab(space_id, H5S_SELECT_SET, start, NULL, count, NULL));
 									detail::space_type mem_id(H5Screate_simple(2, count, NULL));
@@ -288,7 +289,7 @@ namespace alps {
 						else if (is_data(p))
 							set_attr_helper<detail::data_type, T>(H5Dopen2(_file, p.c_str(), H5P_DEFAULT), s, v);
 						else
-							throw std::runtime_error("unknown path: " + p);
+                            ;//							throw std::runtime_error("unknown path: " + p);
 					}
 					template<typename T> void set_attr(std::string const & p, std::string const & s, std::string const & v, stl_container_type) {
 						set_attr(p, s, v.c_str(), scalar_type());
