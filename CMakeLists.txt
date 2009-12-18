@@ -11,7 +11,7 @@ set(ALPS_SOURCES
     # alps 
     copyright.C
     # alea
-    alea/nan.C alea/observable.C alea/observableset.C alea/value_with_error.C
+    alea/nan.C alea/observable.C alea/observableset.C 
     # expression
     expression/evaluator.C
     # lattice
@@ -43,7 +43,13 @@ set(ALPS_SOURCES
     scheduler/slave_task.C scheduler/task.C scheduler/worker.C scheduler/workertask.C
 )
 
+
+if (ALPS_HAVE_PYTHON)
+   set (ALPS_SOURCES ${ALPS_SOURCES} alea/value_with_error.C)
+endif (ALPS_HAVE_PYTHON)
+
 add_library(alps ${ALPS_SOURCES})
+
 target_link_libraries(alps boost ${LINK_LIBRARIES})
 if(BUILD_SHARED_LIBS)
   set_target_properties(alps PROPERTIES COMPILE_DEFINITIONS "${ALPS_SHARED_CPPFLAGS}")
