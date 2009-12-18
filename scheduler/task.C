@@ -117,16 +117,12 @@ void Task::parse_task_file(bool read_parms_only)
 /* astreich, 06/17 */
 Parameters Task::parse_ext_task_file(std::string infilename)
 {
+	Parameters res;
 	if (infilename.substr(infilename.size() - 3) == ".h5") {
-	
-	
-	
-	std::cerr << "Im a h5 file!!" << std::endl;
-	
-	
+		hdf5::iarchive ar(infilename);
+		ar >> make_pvp("/Parameters", res);
 	} else
   {
-    Parameters res;
     boost::filesystem::ifstream infile(infilename);
   
     // read outermost tag (e.g. <SIMULATION>)
@@ -143,8 +139,8 @@ Parameters Task::parse_ext_task_file(std::string infilename)
     res.read_xml(tag,infile,true);
     if (!res.defined("SEED"))
       res["SEED"]=0;
-    return res;
   }
+	return res;
 }
 
 void Task::handle_tag(std::istream& infile, const XMLTag& tag) 

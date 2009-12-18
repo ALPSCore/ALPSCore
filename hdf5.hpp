@@ -23,13 +23,12 @@
 #include <valarray>
 #include <iostream>
 
-#include <typeinfo>
-
 #include <boost/config.hpp>
 #include <boost/utility.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/type_traits.hpp>
 #include <boost/function.hpp>
+#include <boost/mpl/and.hpp>
 
 #include <hdf5.h>
 
@@ -112,14 +111,25 @@ namespace alps {
 							return s + (s.size() == 1 || !p.substr(i).size() ? "" : "/") + p.substr(i);
 						}
 					}
-					template<typename T> typename boost::enable_if<is_writable<T>, archive<Tag> &>::type set_value(std::string const & p, T const & v) {
+					template<typename T> typename boost::enable_if<
+						typename boost::mpl::and_<is_writable<T>, typename boost::is_same<Tag, write>::type >, archive<Tag> &
+					>::type serialize(std::string const & p, T const & v) {
 						if (p.find_last_of('@') != std::string::npos)
 							set_attr(compute_path(p.substr(0, p.find_last_of('@') - 1)), p.substr(p.find_last_of('@') + 1), v, typename is_writable<T>::category());
 						else
 							set_data(compute_path(p), v, typename is_writable<T>::category());
 						return *this;
 					}
-					template<typename T> typename boost::disable_if<is_writable<T>, archive<Tag> &>::type set_value(std::string const & p, T const & v) {
+					template<typename T> typename boost::enable_if<
+						typename boost::mpl::and_<is_writable<T>, typename boost::is_same<Tag, read>::type >, archive<Tag> &
+					>::type serialize(std::string const & p, T & v) {
+						if (p.find_last_of('@') != std::string::npos)
+							get_attr(compute_path(p.substr(0, p.find_last_of('@') - 1)), p.substr(p.find_last_of('@') + 1), v, typename is_writable<T>::category());
+						else
+							get_data(compute_path(p), v, typename is_writable<T>::category());
+						return *this;
+					}
+					template<typename T> typename boost::disable_if<is_writable<T>, archive<Tag> &>::type serialize(std::string const & p, T const & v) {
 						std::string c = _context;
 						_context = compute_path(p);
 						v.serialize(*this);
@@ -184,7 +194,6 @@ namespace alps {
 						}
 						return list;
 					}
-// = = = = = = = = = = get_data = = = = = = = = = =
 					template<typename T> void get_data(std::string const & p, T * v) const {
 						detail::data_type data_id(H5Dopen2(_file, p.c_str(), H5P_DEFAULT));
 						if (!is_null(p)) {
@@ -192,57 +201,11 @@ namespace alps {
 							detail::error_type(H5Dread2(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, v));
 						}
 					}
-// = = = = = = = = = = get_attr = = = = = = = = = =
 					template<typename T> void get_attr(std::string const & p, std::string const & s, T & v) const {
 						if (is_group(p))
 							get_attr_helper<detail::group_type, T>(H5Gopen2(_file, p.c_str(), H5P_DEFAULT), s, &v);
 						else
 							get_attr_helper<detail::data_type, T>(H5Dopen2(_file, p.c_str(), H5P_DEFAULT), s, &v);
-					}
-// = = = = = = = = = = set_data = = = = = = = = = =
-					template<typename T> void set_data(std::string const & p, T v, scalar_type) {
-						detail::type_type type_id(get_native_type(v));
-						hid_t id = H5Dopen2(_file, p.c_str(), H5P_DEFAULT);
-						if (id < 0)
-							id = create_path(p, type_id, H5Screate(H5S_SCALAR), 0);
-						detail::data_type data_id(id);
-						detail::error_type(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &v));
-					}
-					template<typename T> void set_data(std::string const & p, T const & v, stl_container_type) {
-						if (!v.size())
-							set_data(p, static_cast<typename T::value_type const *>(NULL), 0);
-						else
-							set_data(p, &(const_cast<T &>(v)[0]), v.size());
-					}
-					template<typename T> void set_data(std::string const & p, T const & v, c_string_type) {
-						set_data(p, std::string(v), stl_container_type());
-					}
-					template<typename T> void set_data(std::string const & p, T const & v, complex_type) {
-						set_data(p, static_cast<typename T::value_type const *>(&v), 2);
-					}
-					template<typename T> void set_data(std::string const & p, T const & v, stl_container_of_container_type) {
-						if (!v.size() || !v[0].size())
-							set_data(p, static_cast<typename T::value_type::value_type const *>(NULL), 0);
-						else {
-							detail::type_type type_id(get_native_type(const_cast<T &>(v)[0][0]));
-							hsize_t s[2] = { v.size(), v[0].size() };
-							hid_t id = H5Dopen2(_file, p.c_str(), H5P_DEFAULT);
-							if (id < 0)
-								id = create_path(p, type_id, H5Screate_simple(2, s, NULL), 2, s);
-							else
-								detail::error_type(H5Dset_extent(id, s));
-							detail::data_type data_id(id);
-							for (std::size_t i = 0; i < v.size(); ++i)
-								if (v[i].size() != v[0].size())
-									throw std::runtime_error(p + " is not a rectangular matrix");
-								else {
-									hsize_t start[2] = { i, 0 }, count[2] = { 1, v[i].size() };
-									detail::space_type space_id(H5Dget_space(data_id));
-									detail::error_type(H5Sselect_hyperslab(space_id, H5S_SELECT_SET, start, NULL, count, NULL));
-									detail::space_type mem_id(H5Screate_simple(2, count, NULL));
-									detail::error_type(H5Dwrite(data_id, type_id, mem_id, space_id, H5P_DEFAULT, &(const_cast<T &>(v)[i][0])));
-								}
-						}
 					}
 					template<typename T> typename boost::enable_if<boost::is_scalar<T> >::type set_data(std::string const & p, T const * v, hsize_t s) {
 						detail::type_type type_id(get_native_type(v));
@@ -260,44 +223,6 @@ namespace alps {
 					template<typename T> typename boost::enable_if<boost::is_scalar<T> >::type set_data(std::string const & p, std::complex<T> const * v, hsize_t s) {
 						set_data(p, static_cast<T const *>(v), 2 * s);
 					}
-// = = = = = = = = = = append_data = = = = = = = = = =			
-					template<typename T> void append_data(std::string const & p, T const * v, hsize_t s) {
-						detail::type_type type_id(get_native_type(v));
-						hid_t id = H5Dopen2(_file, p.c_str(), H5P_DEFAULT);
-						if (id < 0)
-							return set_data(p, v, s);
-						detail::data_type data_id(id);
-						hsize_t start = extent(p)[0], count = start + s;
-						detail::error_type(H5Dset_extent(data_id, &count));
-						detail::space_type space_id(H5Dget_space(data_id));
-						detail::error_type(H5Sselect_hyperslab(space_id, H5S_SELECT_SET, &start, NULL, &s, NULL));
-						detail::space_type mem_id(H5Screate_simple(1, &s, NULL));
-						detail::error_type(H5Dwrite(data_id, type_id, mem_id, space_id, H5P_DEFAULT, v));
-					}
-// = = = = = = = = = = delete_data = = = = = = = = = =
-					void delete_data(std::string const & p, std::string const & s) {
-						detail::group_type data_id(H5Dopen2(_file, p.c_str(), H5P_DEFAULT));
-						detail::error_type(H5Ldelete(_file, s.c_str(), data_id));
-					}
-// = = = = = = = = = = set_attr = = = = = = = = = =
-					template<typename T, typename D> void set_attr(std::string const & p, std::string const & s, T const & v, D) {
-						throw std::runtime_error("not Implemented");
-					}
-					template<typename T> void set_attr(std::string const & p, std::string const & s, T const & v, scalar_type) {
-						if (is_group(p))
-							set_attr_helper<detail::group_type, T>(H5Gopen2(_file, p.c_str(), H5P_DEFAULT), s, v);
-						else if (is_data(p))
-							set_attr_helper<detail::data_type, T>(H5Dopen2(_file, p.c_str(), H5P_DEFAULT), s, v);
-						else
-                            ;//							throw std::runtime_error("unknown path: " + p);
-					}
-					template<typename T> void set_attr(std::string const & p, std::string const & s, std::string const & v, stl_container_type) {
-						set_attr(p, s, v.c_str(), scalar_type());
-					}
-					template<typename T> void set_attr(std::string const & p, std::string const & s, T const & v, c_string_type) {
-						set_attr(p, s, v, scalar_type());
-					}
-// = = = = = = = = = = private = = = = = = = = = =
 				private:
 					template<typename T> hid_t get_native_type(T &) const { throw std::runtime_error("unknown type"); }
 					hid_t get_native_type(char) const { return H5Tcopy(H5T_NATIVE_CHAR); }
@@ -360,6 +285,79 @@ namespace alps {
 							detail::error_type(H5Pset_chunk(prop_id, d, s));
 						return H5Dcreate2(_file, p.c_str(), type_id, detail::space_type(space_id), H5P_DEFAULT, prop_id, H5P_DEFAULT);
 					}
+					template<typename T, typename D> void get_data(std::string const & p, T & v, D) const {
+						
+						
+						
+						throw std::runtime_error("not Implemented");
+						
+						
+						
+					}
+					template<typename T, typename D> void get_attr(std::string const & p, std::string const & s, T & v, D) const {
+						throw std::runtime_error("not Implemented");
+					}
+					template<typename T> void set_data(std::string const & p, T v, scalar_type) {
+						detail::type_type type_id(get_native_type(v));
+						hid_t id = H5Dopen2(_file, p.c_str(), H5P_DEFAULT);
+						if (id < 0)
+							id = create_path(p, type_id, H5Screate(H5S_SCALAR), 0);
+						detail::data_type data_id(id);
+						detail::error_type(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &v));
+					}
+					template<typename T> void set_data(std::string const & p, T const & v, stl_container_type) {
+						if (!v.size())
+							set_data(p, static_cast<typename T::value_type const *>(NULL), 0);
+						else
+							set_data(p, &(const_cast<T &>(v)[0]), v.size());
+					}
+					template<typename T> void set_data(std::string const & p, T const & v, c_string_type) {
+						set_data(p, std::string(v), stl_container_type());
+					}
+					template<typename T> void set_data(std::string const & p, T const & v, complex_type) {
+						set_data(p, static_cast<typename T::value_type const *>(&v), 2);
+					}
+					template<typename T> void set_data(std::string const & p, T const & v, stl_container_of_container_type) {
+						if (!v.size() || !v[0].size())
+							set_data(p, static_cast<typename T::value_type::value_type const *>(NULL), 0);
+						else {
+							detail::type_type type_id(get_native_type(const_cast<T &>(v)[0][0]));
+							hsize_t s[2] = { v.size(), v[0].size() };
+							hid_t id = H5Dopen2(_file, p.c_str(), H5P_DEFAULT);
+							if (id < 0)
+								id = create_path(p, type_id, H5Screate_simple(2, s, NULL), 2, s);
+							else
+								detail::error_type(H5Dset_extent(id, s));
+							detail::data_type data_id(id);
+						for (std::size_t i = 0; i < v.size(); ++i)
+								if (v[i].size() != v[0].size())
+									throw std::runtime_error(p + " is not a rectengual matrix");
+								else {
+									hsize_t start[2] = { i, 0 }, count[2] = { 1, v[i].size() };
+									detail::space_type space_id(H5Dget_space(data_id));
+									detail::error_type(H5Sselect_hyperslab(space_id, H5S_SELECT_SET, start, NULL, count, NULL));
+									detail::space_type mem_id(H5Screate_simple(2, count, NULL));
+									detail::error_type(H5Dwrite(data_id, type_id, mem_id, space_id, H5P_DEFAULT, &(const_cast<T &>(v)[i][0])));
+								}
+						}
+					}
+					template<typename T, typename D> void set_attr(std::string const & p, std::string const & s, T const & v, D) {
+						throw std::runtime_error("not Implemented");
+					}
+					template<typename T> void set_attr(std::string const & p, std::string const & s, T const & v, scalar_type) {
+						if (is_group(p))
+							set_attr_helper<detail::group_type, T>(H5Gopen2(_file, p.c_str(), H5P_DEFAULT), s, v);
+						else if (is_data(p))
+							set_attr_helper<detail::data_type, T>(H5Dopen2(_file, p.c_str(), H5P_DEFAULT), s, v);
+						else
+							throw std::runtime_error("unknown path: " + p);
+					}
+					template<typename T> void set_attr(std::string const & p, std::string const & s, std::string const & v, stl_container_type) {
+						set_attr(p, s, v.c_str(), scalar_type());
+					}
+					template<typename T> void set_attr(std::string const & p, std::string const & s, T const & v, c_string_type) {
+						set_attr(p, s, v, scalar_type());
+					}
 					std::string _context;
 					detail::file_type _file;
 			};
@@ -368,8 +366,7 @@ namespace alps {
 				public:
 					pvp(std::string const & p, T v): _p(p), _v(v) {}
 					pvp(pvp<T, U> const & c): _p(c._p), _v(c._v) {}
-					archive<write> & set_value(archive<write> & ar) const { return ar.set_value(_p, _v); }
-					archive<read> & get_value(archive<read> & ar) const { std::cerr << "Not impl" << std::endl; return ar; }
+					template<typename Tag> archive<Tag> & serialize(archive<Tag> & ar) const { return ar.serialize(_p, _v); }
 				private:
 					std::string _p;
 					mutable T _v;
@@ -378,8 +375,7 @@ namespace alps {
 				public:
 					pvp(std::string const & p, T * v): _p(p), _v(v) {}
 					pvp(pvp<T, ptr> const & c): _p(c._p), _v(c._v) {}
-					archive<write> & set_value(archive<write> & ar) const { return ar.set_value(_p, *_v); }
-					archive<read> & get_value(archive<read> & ar) const { std::cerr << "Not impl" << std::endl; return ar; }
+					template<typename Tag> archive<Tag> & serialize(archive<Tag> & ar) const { return ar.serialize(_p, *_v); }
 				private:
 					std::string _p;
 					mutable T * _v;
@@ -393,8 +389,8 @@ namespace alps {
 				public:
 					pvp(std::string const & p, T * v, std::size_t s): _p(p), _v(v), _s(s) {}
 					pvp(pvp<T, ptr> const & c): _p(c._p), _v(c._v), _s(c._s) {}
-					archive<write> & set_value(archive<write> & ar) const { return ar.set_data(ar.compute_path(_p), _v, _s); }
-					archive<read> & get_value(archive<read> & ar) const { std::cerr << "Not impl" << std::endl; return ar; }
+					archive<write> & serialize(archive<write> & ar) const { return ar.set_data(ar.compute_path(_p), _v, _s); }
+					archive<read> & serialize(archive<read> & ar) const { return ar.get_data(ar.compute_path(_p), _v); }
 				private:
 					std::string _p;
 					std::size_t _s;
@@ -405,10 +401,10 @@ namespace alps {
 		typedef detail::archive<detail::write> oarchive;
 		namespace detail {
 			template <typename T, pvp_type U> archive<write> & operator<< (archive<write> & ar, pvp<T, U> const & v) { 
-				return v.set_value(ar);
+				return v.serialize(ar);
 			}
 			template <typename T, pvp_type U> archive<read> & operator>> (archive<read> & ar, pvp<T, U> const & v) { 
-				return v.get_value(ar);
+				return v.serialize(ar);
 			}
 		}
 	}
