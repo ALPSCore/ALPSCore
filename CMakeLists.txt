@@ -11,7 +11,7 @@ set(ALPS_SOURCES
     # alps 
     copyright.C
     # alea
-    alea/nan.C alea/observable.C alea/observableset.C
+    alea/nan.C alea/observable.C alea/observableset.C alea/value_with_error.C
     # expression
     expression/evaluator.C
     # lattice
