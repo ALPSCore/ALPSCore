@@ -110,32 +110,17 @@ namespace alps {
 						}
 					}
 					template<typename T> typename boost::enable_if<is_writable<T>, archive<Tag> &>::type set_value(std::string const & p, T const & v) {
-
-
-					std::cerr << __LINE__ << " " << _context << " " << p << std::endl;
-					std::cerr << __LINE__ << " " << compute_path(p) << std::endl;
-
-
 						if (p.find_last_of('@') != std::string::npos)
 							set_attr(compute_path(p.substr(0, p.find_last_of('@') - 1)), p.substr(p.find_last_of('@') + 1), v, typename is_writable<T>::category());
 						else
 							set_data(compute_path(p), v, typename is_writable<T>::category());
+						return *this;
 					}
 					template<typename T> typename boost::disable_if<is_writable<T>, archive<Tag> &>::type set_value(std::string const & p, T const & v) {
-			
-			
-					std::cerr << __LINE__ << " " << _context << " " << p << std::endl;
-			
-			
 						std::string c = _context;
 						_context = compute_path(p);
 						v.serialize(*this);
 						_context = c;
-						
-						
-					std::cerr << __LINE__ << " " << _context << " " << p << std::endl;
-					
-						
 						return *this;
 					}
 					bool is_group(std::string const & p) const {
@@ -320,7 +305,7 @@ std::cerr << "unknown path: " + p << std::endl;
 					}
 					template<typename T> typename boost::enable_if<boost::is_scalar<T> >::type set_attr(std::string const & p, std::string const & s, T const * v, hsize_t e) {
 
-std::cerr << "Not Implemented: " << p << std::endl;
+std::cerr << "Array attributs are not Implemented: " << p << std::endl;
 
 /*						if (is_group(p))
 							set_attr_helper<detail::group_type, T>(H5Gopen2(_file, p.c_str(), H5P_DEFAULT), s, v, e);
@@ -449,15 +434,7 @@ std::cerr << "Not Implemented: " << p << std::endl;
 		typedef detail::archive<detail::write> oarchive;
 		namespace detail {
 			template <typename T, pvp_type U> archive<write> & operator<< (archive<write> & ar, pvp<T, U> const & v) { 
-			
-			std::cerr << __LINE__ << " | " << ar.get_context() << std::endl;
-			
-				v.set_value(ar);
-			
-			std::cerr << __LINE__ << " | " << ar.get_context() << std::endl;
-			
-			return ar;
-			
+				return v.set_value(ar);
 			}
 			template <typename T, pvp_type U> archive<read> & operator>> (archive<read> & ar, pvp<T, U> const & v) { 
 				return v.get_value(ar);
