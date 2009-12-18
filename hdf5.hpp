@@ -6,6 +6,13 @@
 #ifndef ALPS_HDF5_HPP
 #define ALPS_HDF5_HPP
 
+#ifndef _HDF5USEDLL_
+# define _HDF5USEDLL_
+#endif
+#ifndef _HDF5USEHLDLL_
+# define _HDF5USEHLDLL_
+#endif
+
 #include <string>
 #include <sstream>
 #include <cstring>
@@ -21,12 +28,6 @@
 #include <boost/type_traits.hpp>
 #include <boost/function.hpp>
 
-#ifndef _HDF5USEDLL_
-# define _HDF5USEDLL_
-#endif
-#ifndef _HDF5USEHLDLL_
-# define _HDF5USEHLDLL_
-#endif
 #include <hdf5.h>
 	
 namespace alps {
@@ -84,9 +85,6 @@ namespace alps {
 			struct read {};
 			template <typename Tag> class archive: boost::noncopyable {
 				public:
-					archive() {
-						throw std::runtime_error("no filename passed");
-					}
 					archive(boost::filesystem::path const & file) {
 						H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
 						hid_t id = H5Fopen(file.file_string().c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
@@ -280,7 +278,12 @@ namespace alps {
 					}
 // = = = = = = = = = = set_attr = = = = = = = = = =
 					template<typename T, typename D> void set_attr(std::string const & p, std::string const & s, T const & v, D) {
-						throw std::runtime_error("not Implemented");
+
+
+std::cerr << "Not Implemented: " << p << std::endl;
+
+
+//						throw std::runtime_error("not Implemented");
 					}
 					template<typename T> void set_attr(std::string const & p, std::string const & s, T const & v, scalar_type) {
 						if (is_group(p))
@@ -288,9 +291,12 @@ namespace alps {
 						else if (is_data(p))
 							set_attr_helper<detail::data_type, T>(H5Dopen2(_file, p.c_str(), H5P_DEFAULT), s, v);
 						else
-							throw std::runtime_error("unknown path: " + p);
+
+std::cerr << "unknown path: " + p << std::endl;
+
+//							throw std::runtime_error("unknown path: " + p);
 					}
-					template<typename T> void set_data(std::string const & p, std::string const & s, T const & v, stl_container_type) {
+					template<typename T> void set_attr(std::string const & p, std::string const & s, T const & v, stl_container_type) {
 						set_attr(p, s, &(const_cast<typename T::value_type &>(v[0])), v.size());
 					}
 					template<typename T> void set_attr(std::string const & p, std::string const & s, T const & v, c_string_type) {
@@ -302,7 +308,12 @@ namespace alps {
 						else if (is_data(p))
 							set_attr_helper<detail::data_type, T>(H5Dopen2(_file, p.c_str(), H5P_DEFAULT), s, v, e);
 						else
-							throw std::runtime_error("unknown path: " + p);
+
+
+std::cerr << "unknown path: " + p << std::endl;
+
+
+//							throw std::runtime_error("unknown path: " + p);
 					}
 // = = = = = = = = = = private = = = = = = = = = =
 				private:
@@ -424,7 +435,6 @@ namespace alps {
 		typedef detail::archive<detail::write> oarchive;
 		namespace detail {
 			template <typename T, pvp_type U> archive<write> & operator<< (archive<write> & ar, pvp<T, U> const & v) { 
-return ar;
 				return v.set_value(ar);
 			}
 			template <typename T, pvp_type U> archive<read> & operator>> (archive<read> & ar, pvp<T, U> const & v) { 
