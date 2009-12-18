@@ -16,6 +16,7 @@
 #include <string>
 #include <sstream>
 #include <cstring>
+#include <deque>
 #include <vector>
 #include <complex>
 #include <stdexcept>
@@ -231,7 +232,7 @@ namespace alps {
 							else
 								detail::error_type(H5Dset_extent(id, s));
 							detail::data_type data_id(id);
-							detail::error_type(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(v[0][0])));
+							detail::error_type(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(const_cast<T&>(v)[0][0])));
 							for (std::size_t i = 1; i < v.size(); ++i)
 								if (v[i].size() != v[0].size())
 									throw std::runtime_error(p + " is not a rectengual matrix");
