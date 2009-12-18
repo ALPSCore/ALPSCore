@@ -29,6 +29,8 @@
 #include <boost/function.hpp>
 
 #include <hdf5.h>
+
+#include <typeinfo>
 	
 namespace alps {
 	namespace hdf5 {
@@ -281,7 +283,7 @@ namespace alps {
 					template<typename T, typename D> void set_attr(std::string const & p, std::string const & s, T const & v, D) {
 
 
-std::cerr << "Not Implemented: " << p << std::endl;
+std::cerr << "Not Implemented: " << p << ", D:" << typeid(D).name() << ", T:" << typeid(T).name() << std::endl;
 
 
 //						throw std::runtime_error("not Implemented");
@@ -297,23 +299,12 @@ std::cerr << "unknown path: " + p << std::endl;
 
 //							throw std::runtime_error("unknown path: " + p);
 					}
-					template<typename T> void set_attr(std::string const & p, std::string const & s, T const & v, stl_container_type) {
-						set_attr(p, s, &(const_cast<typename T::value_type &>(v[0])), v.size());
+					template<typename T> void set_attr(std::string const & p, std::string const & s, std::string const & v, stl_container_type) {
+						set_attr(p, s, v.c_str(), scalar_type());
 					}
 					template<typename T> void set_attr(std::string const & p, std::string const & s, T const & v, c_string_type) {
-						set_attr(p, s, std::string(v), stl_container_type());
+						set_attr(p, s, v, scalar_type());
 					}
-					template<typename T> typename boost::enable_if<boost::is_scalar<T> >::type set_attr(std::string const & p, std::string const & s, T const * v, hsize_t e) {
-
-std::cerr << "Array attributs are not Implemented: " << p << std::endl;
-
-/*						if (is_group(p))
-							set_attr_helper<detail::group_type, T>(H5Gopen2(_file, p.c_str(), H5P_DEFAULT), s, v, e);
-						else if (is_data(p))
-							set_attr_helper<detail::data_type, T>(H5Dopen2(_file, p.c_str(), H5P_DEFAULT), s, v, e);
-						else
-							throw std::runtime_error("unknown path: " + p);
-*/					}
 // = = = = = = = = = = private = = = = = = = = = =
 				private:
 					template<typename T> hid_t get_native_type(T &) const { throw std::runtime_error("unknown type"); }
@@ -356,18 +347,6 @@ std::cerr << "Array attributs are not Implemented: " << p << std::endl;
 						}
 						detail::attribute_type attr_id(id);
 						detail::error_type(H5Awrite(attr_id, type_id, &v));
-					}
-					template<typename I, typename T> void set_attr_helper(I const & data_id, std::string const & s, T const * v, hsize_t e) {
-						detail::type_type type_id(get_native_type(v));
-						hid_t id = H5Aopen(data_id, s.c_str(), H5P_DEFAULT);
-						if (id < 0) {
-							detail::property_type prop_id(H5Pcreate(H5P_DATASET_CREATE)); 
-							detail::error_type(H5Pset_fill_time(prop_id, H5D_FILL_TIME_NEVER));
-							detail::error_type(H5Pset_chunk(prop_id, 1, &e));
-							id = H5Acreate(data_id, s.c_str(), type_id, detail::space_type(e ? H5Screate_simple(1, &e, NULL) : H5Screate(H5S_NULL)), H5P_DEFAULT, H5P_DEFAULT);
-						}
-						detail::attribute_type attr_id(id);
-						detail::error_type(H5Awrite(attr_id, type_id, v));
 					}
 					hid_t create_path(std::string const & p, hid_t type_id, hid_t space_id, hsize_t d, hsize_t const * s = NULL) {
 						std::size_t pos;
