@@ -31,10 +31,10 @@
 
 
 #include <boost/python.hpp>
-#include "value_with_error_module.hpp"
+#include "value_with_error.h"
 
 using namespace boost::python;
-
+using namespace alps::alea;
 
 BOOST_PYTHON_MODULE(value_with_error)
 {

@@ -234,9 +234,9 @@ namespace alps {
 							detail::data_type data_id(id);
 							for (std::size_t i = 0; i < v.size(); ++i)
 								if (v[i].size() != v[0].size())
-									throw std::runtime_error(p + " is not a rectengual matrix");
+									throw std::runtime_error(p + " is not a rectangular matrix");
 								else {
-									hsize_t start[2] = { i, 0 }, count[2] = { i, v[i].size() };
+									hsize_t start[2] = { i, 0 }, count[2] = { 1, v[i].size() };
 									detail::space_type space_id(H5Dget_space(data_id));
 									detail::error_type(H5Sselect_hyperslab(space_id, H5S_SELECT_SET, start, NULL, count, NULL));
 									detail::space_type mem_id(H5Screate_simple(2, count, NULL));
