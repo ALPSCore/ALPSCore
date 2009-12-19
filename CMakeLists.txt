@@ -45,7 +45,7 @@ set(ALPS_SOURCES
 
 
 if (ALPS_HAVE_PYTHON)
-   set (ALPS_SOURCES ${ALPS_SOURCES} alea/value_with_error.C)
+#   set (ALPS_SOURCES ${ALPS_SOURCES} alea/value_with_error.C)
 endif (ALPS_HAVE_PYTHON)
 
 add_library(alps ${ALPS_SOURCES})
