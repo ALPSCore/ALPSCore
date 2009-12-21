@@ -41,6 +41,7 @@
 
 #include <alps/parser/xmlstream.h>
 #include <alps/parser/xslt_path.h>
+#include <alps/parameter/parameters.h>
 #include <boost/tuple/tuple.hpp>
 
 #include <vector>
@@ -176,8 +177,8 @@ public:
   /// \brief Constructor of a plot
   /// \param name the title of the plot
   /// \param show_legend indicates whether a legend should be shown
-  Plot(std::string name="", bool show_legend=true)
-    : name_(name), show_legend_(show_legend) {};
+  Plot(std::string name="", alps::Parameters const& p = alps::Parameters(), bool show_legend=true)
+    : name_(name), parms(p), show_legend_(show_legend) {};
   
   /// add a set to the plot
   Plot<C>& operator<<(const Set<C>& s) { push_back(s); return *this; }
@@ -197,7 +198,12 @@ public:
   void set_name(const std::string& name) { name_ = name; }
   /// set the x- and y-axis labels
   void set_labels(const std::string& xaxis, const std::string& yaxis)
-  { xaxis_ = xaxis; yaxis_ = yaxis; }
+  { 
+    xaxis_ = xaxis; 
+    yaxis_ = yaxis; 
+    if (!parms.defined("observable"))
+      parms["observable"] = yaxis;
+  }
   /// set whether the legend should be shown
   void show_legend(bool show) { show_legend_ = show; }
   
@@ -207,8 +213,10 @@ public:
   const Set<C>& operator[](int i) const
   { return std::vector<Set<C> >::operator[](i); }
 
+  Parameters const& parameters() const { return parms;}
 private:
   std::string name_, xaxis_, yaxis_;
+  alps::Parameters parms;
   bool show_legend_;
 };   // xmlPlot::Plot
 
@@ -220,6 +228,7 @@ inline oxstream& operator<<(oxstream& out, const Plot<C>& p)
       << start_tag("plot") << alps::xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
       << attribute("xsi:noNamespaceSchemaLocation","http://xml.comp-phys.org/2003/4/plot.xsd")
       << attribute("name", p.name());
+  out << p.parameters();
   out << start_tag("legend")
       << attribute("show", p.show_legend() ? "true" : "false")
       << end_tag("legend");
