@@ -209,8 +209,6 @@ public:
   /// extract the contents from the first <PARAMETERS> element in the XML stream
   void extract_from_xml(std::istream& xml);
   
-  void extract_from_hdf5(boost::filesystem::path const & fn);
-
   BOOST_SERIALIZATION_SPLIT_MEMBER()
 
   /// support for Boost serialization
@@ -228,7 +226,7 @@ public:
 
 #ifdef ALPS_HAVE_HDF5
 	void serialize(hdf5::oarchive &) const;
-	void serialize(hdf5::iarchive &) const;
+	void serialize(hdf5::iarchive &);
 #endif
 
 private:

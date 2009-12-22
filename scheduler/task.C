@@ -120,7 +120,7 @@ Parameters Task::parse_ext_task_file(std::string infilename)
 	Parameters res;
 	if (infilename.substr(infilename.size() - 3) == ".h5") {
 		hdf5::iarchive ar(infilename);
-		ar >> make_pvp("/Parameters", res);
+		ar >> make_pvp("/parameters", res);
 	} else
   {
     boost::filesystem::ifstream infile(infilename);

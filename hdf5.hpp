@@ -35,6 +35,21 @@
 namespace alps {
 	namespace hdf5 {
 		namespace detail {
+			#define HDF5_FOREACH_SCALAR(callback)													\
+				callback(char)																		\
+				callback(signed char)																\
+				callback(unsigned char)																\
+				callback(short)																		\
+				callback(unsigned short)															\
+				callback(int)																		\
+				callback(unsigned int)																\
+				callback(long)																		\
+				callback(unsigned long)																\
+				callback(long long)																	\
+				callback(unsigned long long)														\
+				callback(float)																		\
+				callback(double)																	\
+				callback(long double)
 			struct scalar_type {};
 			struct complex_type {};
 			struct stl_container_type {};
@@ -129,7 +144,7 @@ namespace alps {
 							get_data(compute_path(p), v, typename is_writable<T>::category());
 						return *this;
 					}
-					template<typename T> typename boost::disable_if<is_writable<T>, archive<Tag> &>::type serialize(std::string const & p, T const & v) {
+					template<typename T> typename boost::disable_if<is_writable<T>, archive<Tag> &>::type serialize(std::string const & p, T & v) {
 						std::string c = _context;
 						_context = compute_path(p);
 						v.serialize(*this);
@@ -180,17 +195,21 @@ namespace alps {
 					}
 					std::vector<std::string> list_children(std::string const & p) const {
 						std::vector<std::string> list;
-						H5Giterate2(_file, p.c_str(), NULL, child_visitor, reinterpret_cast<void *>(&list));
+						hid_t id = H5Gopen2(_file, p.c_str(), H5P_DEFAULT);
+						if (id >= 0) {
+							detail::group_type group_id(id);
+							detail::error_type(H5Literate(group_id, H5_INDEX_NAME, H5_ITER_NATIVE, NULL, child_visitor, reinterpret_cast<void *>(&list)));
+						}
 						return list;
 					}
 					std::vector<std::string> list_attr(std::string const & p) const {
 						std::vector<std::string> list;
 						if (is_group(p)) {
 							detail::group_type id(H5Gopen2(_file, p.c_str(), H5P_DEFAULT));
-							H5Aiterate2(id, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, NULL, attr_visitor, reinterpret_cast<void *>(&list));
+							detail::error_type(H5Aiterate2(id, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, NULL, attr_visitor, reinterpret_cast<void *>(&list)));
 						} else {
 							detail::data_type id(H5Dopen2(_file, p.c_str(), H5P_DEFAULT));
-							H5Aiterate2(id, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, NULL, attr_visitor, reinterpret_cast<void *>(&list));
+							detail::error_type(H5Aiterate2(id, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, NULL, attr_visitor, reinterpret_cast<void *>(&list)));
 						}
 						return list;
 					}
@@ -198,7 +217,7 @@ namespace alps {
 						detail::data_type data_id(H5Dopen2(_file, p.c_str(), H5P_DEFAULT));
 						if (!is_null(p)) {
 							detail::type_type type_id(get_native_type(v));
-							detail::error_type(H5Dread2(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, v));
+							detail::error_type(H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, v));
 						}
 					}
 					template<typename T> void get_attr(std::string const & p, std::string const & s, T & v) const {
@@ -242,7 +261,7 @@ namespace alps {
 					hid_t get_native_type(bool) const { return H5Tcopy(H5T_NATIVE_HBOOL); }
 					template<typename T> hid_t get_native_type(T * ) const { return get_native_type(T()); }
 					hid_t get_native_type(char const *) const { return H5Tcopy(H5T_C_S1); }
-					static herr_t child_visitor(hid_t, char const * n, void * d) {
+					static herr_t child_visitor(hid_t, char const * n, const H5L_info_t *, void * d) {
 						reinterpret_cast<std::vector<std::string> *>(d)->push_back(n);
 						return 0;
 					}
@@ -285,14 +304,39 @@ namespace alps {
 							detail::error_type(H5Pset_chunk(prop_id, d, s));
 						return H5Dcreate2(_file, p.c_str(), type_id, detail::space_type(space_id), H5P_DEFAULT, prop_id, H5P_DEFAULT);
 					}
-					template<typename T, typename D> void get_data(std::string const & p, T & v, D) const {
-						
-						
-						
-						throw std::runtime_error("not Implemented");
-						
-						
-						
+					template<typename T> void get_data(std::string const & p, T & v, scalar_type) const {
+						throw std::runtime_error("not implemented: " + p);
+					}
+					template<typename T> void get_data(std::string const & p, T & v, complex_type) const {
+						throw std::runtime_error("not implemented: " + p);
+					}
+					template<typename T> typename boost::disable_if<typename boost::is_same<T, std::string>::type>::type get_data(std::string const & p, T & v, stl_container_type) const {
+						throw std::runtime_error("not implemented: " + p);
+					}
+					void get_data(std::string const & p, std::string & v, stl_container_type) const {
+						if (is_scalar(p)) {
+							detail::data_type data_id(H5Dopen2(_file, p.c_str(), 0));
+							detail::type_type native_id(H5Tget_native_type(H5Dget_type(data_id), H5T_DIR_ASCEND));
+							if (false);
+							#define HDF5_GET_STRING(T)																	\
+								else if (detail::error_type(H5Tequal(													\
+									detail::type_type(H5Tcopy(native_id)), detail::type_type(get_native_type<T>(0))		\
+								)) > 0) {																				\
+									T t;																				\
+									get_data(p, &t);																	\
+									v = boost::lexical_cast<std::string>(t);											\
+								}
+							HDF5_FOREACH_SCALAR(HDF5_GET_STRING)
+							#undef HDF5_GET_STRING
+							else throw std::runtime_error("error in types: " + p);
+						} else
+							throw std::runtime_error("not implemented: " + p);
+					}
+					template<typename T> void get_data(std::string const & p, T & v, stl_container_of_container_type) const {
+						throw std::runtime_error("not implemented: " + p);
+					}
+					template<typename T> void get_data(std::string const & p, T & v, c_string_type) const {
+						throw std::runtime_error("not implemented: " + p);
 					}
 					template<typename T, typename D> void get_attr(std::string const & p, std::string const & s, T & v, D) const {
 						throw std::runtime_error("not Implemented");
@@ -352,7 +396,7 @@ namespace alps {
 						else
 							throw std::runtime_error("unknown path: " + p);
 					}
-					template<typename T> void set_attr(std::string const & p, std::string const & s, std::string const & v, stl_container_type) {
+					void set_attr(std::string const & p, std::string const & s, std::string const & v, stl_container_type) {
 						set_attr(p, s, v.c_str(), scalar_type());
 					}
 					template<typename T> void set_attr(std::string const & p, std::string const & s, T const & v, c_string_type) {
@@ -406,6 +450,7 @@ namespace alps {
 			template <typename T, pvp_type U> archive<read> & operator>> (archive<read> & ar, pvp<T, U> const & v) { 
 				return v.serialize(ar);
 			}
+			#undef HDF5_FOREACH_SCALAR
 		}
 	}
 	template <typename T> hdf5::detail::pvp<T &, hdf5::detail::plain> make_pvp(std::string const & p, T & v) {
