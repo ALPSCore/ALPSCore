@@ -43,11 +43,6 @@ set(ALPS_SOURCES
     scheduler/slave_task.C scheduler/task.C scheduler/worker.C scheduler/workertask.C
 )
 
-
-if (ALPS_HAVE_PYTHON)
-#   set (ALPS_SOURCES ${ALPS_SOURCES} alea/value_with_error.C)
-endif (ALPS_HAVE_PYTHON)
-
 add_library(alps ${ALPS_SOURCES})
 
 target_link_libraries(alps boost ${LINK_LIBRARIES})
