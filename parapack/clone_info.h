@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -108,6 +108,7 @@ class clone_info_xml_handler;
 class ALPS_DECL clone_info {
 public:
   clone_info();
+  clone_info(cid_t cid);
   clone_info(cid_t cid, Parameters const& params, std::string const& dump, bool initialize = true);
   virtual ~clone_info() {}
 

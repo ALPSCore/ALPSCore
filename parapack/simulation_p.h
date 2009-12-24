@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -55,7 +55,7 @@ struct simulation_xml_writer {
     } else {
       for (int i = 0; i < obs.size(); ++i) obs[i].write_xml_with_id(os, i+1);
     }
-    for (int i = 0; i < info.size(); ++i) if (info[i].clone_id() == i) os << info[i];
+    for (int i = 0; i < info.size(); ++i) os << info[i];
     os << end_tag("SIMULATION");
     if (make_backup && exists(file_bak)) remove(file_bak);
   }

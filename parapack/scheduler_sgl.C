@@ -259,7 +259,7 @@ int start(int argc, char** argv) {
       check_queue_t check_queue; // check_queue is theread private
       #pragma omp master
       {
-        check_queue.push(next_taskinfo(opt.checkpoint_interval / 2));
+        check_queue.push(next_taskinfo(opt.checkpoint_interval / 10));
       } // end omp master
 
       clone* clone_ptr = 0;
@@ -311,8 +311,10 @@ int start(int argc, char** argv) {
             if (q.type == check_type::taskinfo) {
               #pragma omp critical
               {
-                print_taskinfo(std::clog, tasks);
+                std::clog << logger::header() << "checkpointing task files\n";
+                BOOST_FOREACH(task const& t, tasks) { if (t.on_memory()) t.save(); }
                 save_tasks(file_out, simname, file_in_str, file_out_str, tasks);
+                print_taskinfo(std::clog, tasks);
               } // end omp critical
               check_queue.push(next_taskinfo(opt.checkpoint_interval));
             } else if (q.type == check_type::checkpoint) {

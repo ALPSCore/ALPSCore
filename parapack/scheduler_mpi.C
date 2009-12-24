@@ -261,7 +261,7 @@ int start(int argc, char** argv) {
       }
       print_taskinfo(std::clog, tasks);
       if (tasks.size() == 0) std::clog << "Warning: no tasks found\n";
-      check_queue.push(next_taskinfo(opt.checkpoint_interval / 2));
+      check_queue.push(next_taskinfo(opt.checkpoint_interval / 10));
     }
 
 #if defined(__APPLE_CC__) && __GNUC__ == 4 && __GNUC_MINOR__ == 2
@@ -372,7 +372,7 @@ int start(int argc, char** argv) {
               tasks[tid].info_updated(cid, clone_ptr->info());
               tasks[tid].halt_clone(proxy, cid, process_group(0));
               if (progress < 1 && tasks[tid].progress() >= 1) ++num_finished_tasks;
-              save_tasks(file_out, simname, file_in_str, file_out_str, tasks);
+              // save_tasks(file_out, simname, file_in_str, file_out_str, tasks);
               process.release(0);
             } else if (clone_ptr && process.is_halting()) {
               tid_t tid = clone_ptr->task_id();
@@ -396,8 +396,10 @@ int start(int argc, char** argv) {
               check_queue_t::value_type q = check_queue.top();
               check_queue.pop();
               if (q.type == check_type::taskinfo) {
-                print_taskinfo(std::clog, tasks);
+                std::clog << logger::header() << "checkpointing task files\n";
+                BOOST_FOREACH(task const& t, tasks) { if (t.on_memory()) t.save(); }
                 save_tasks(file_out, simname, file_in_str, file_out_str, tasks);
+                print_taskinfo(std::clog, tasks);
                 check_queue.push(next_taskinfo(opt.checkpoint_interval));
               } else if (q.type == check_type::checkpoint) {
                 if (tasks[q.task_id].on_memory() && tasks[q.task_id].is_running(q.clone_id)) {

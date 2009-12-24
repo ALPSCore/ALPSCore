@@ -125,6 +125,8 @@ namespace alps {
 
 clone_info::clone_info() : clone_id_(0), progress_(0), is_master_(true) {}
 
+clone_info::clone_info(cid_t cid) : clone_id_(cid), progress_(0), is_master_(true) {}
+
 clone_info::clone_info(cid_t cid, Parameters const& params, std::string const& dump,
   bool initialize) :
   clone_id_(cid), progress_(0), is_master_(true) {

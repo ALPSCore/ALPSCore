@@ -95,7 +95,7 @@ public:
       cid = clone_status_.size();
       clone_status_.push_back(clone_status::Running);
       clone_master_.push_back(master);
-      clone_info_.push_back(clone_info());
+      clone_info_.push_back(clone_info(cid));
     }
     running_.insert(cid);
     proxy.start(task_id_, cid, group, params_, basedir_, base_, is_new);
@@ -126,7 +126,7 @@ public:
                   << logger::clone(task_id_, cid) << " is " << info.phase()
                   << " (" << precision(info.progress() * 100, 3) << "% done)\n";
         info_updated(cid, info);
-        save();
+        // save();
       }
     }
   }
