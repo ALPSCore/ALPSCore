@@ -14,6 +14,11 @@ FOREACH (name os sizeof xdrdump xdrdump2 boostdump boostdump2 boostdump3 boostdu
 	add_dependencies(${name} alps)
 	target_link_libraries(${name} alps)
 	# install(TARGETS ${name} RUNTIME DESTINATION bin)
+        if(MSVC)
+          get_target_property(EXE_NAME ${name} LOCATION)
+          add_custom_command(TARGET ${name} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy ${EXE_NAME} ${PROJECT_BINARY_DIR}/bin)
+        endif(MSVC)
 	
 	ADD_TEST(
 		${name} 
@@ -21,6 +26,7 @@ FOREACH (name os sizeof xdrdump xdrdump2 boostdump boostdump2 boostdump3 boostdu
 			-Dcmd=${name}
                         -Dsourcedir=${CMAKE_CURRENT_SOURCE_DIR}
                         -Dbinarydir=${CMAKE_CURRENT_BINARY_DIR}
+                        -Ddllexedir=${PROJECT_BINARY_DIR}/bin
 			-Dinput=${name}.input
 			-Doutput=${name}.output
 			-Dtimeout=600

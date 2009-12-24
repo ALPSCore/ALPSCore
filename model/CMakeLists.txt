@@ -10,6 +10,11 @@ FOREACH (name example1 example2 example3 example4 example5 example6 example7 exa
 	add_dependencies(model_${name} alps)
 	target_link_libraries(model_${name} alps)
 	# install(TARGETS model_${name} RUNTIME DESTINATION bin)
+        if(MSVC)
+          get_target_property(EXE_NAME model_${name} LOCATION)
+          add_custom_command(TARGET model_${name} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy ${EXE_NAME} ${PROJECT_BINARY_DIR}/bin)
+        endif(MSVC)
 	
 	ADD_TEST(
 		model_${name} 
@@ -17,6 +22,7 @@ FOREACH (name example1 example2 example3 example4 example5 example6 example7 exa
 			-Dcmd=model_${name}
                         -Dsourcedir=${CMAKE_CURRENT_SOURCE_DIR}
                         -Dbinarydir=${CMAKE_CURRENT_BINARY_DIR}
+                        -Ddllexedir=${PROJECT_BINARY_DIR}/bin
 			-Dinput=${name}.input
 			-Doutput=${name}.output
 			-Dtimeout=600
