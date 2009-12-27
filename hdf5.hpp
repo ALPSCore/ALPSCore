@@ -54,6 +54,7 @@ namespace alps {
 			struct complex_type {};
 			struct stl_container_type {};
 			struct stl_container_of_container_type {};
+			struct stl_string_type {};
 			struct c_string_type {};
 			template<typename T> struct is_writable : boost::is_scalar<T>::type { typedef scalar_type category; };
 			template<typename T> struct is_writable<std::complex<T> > : boost::mpl::true_ { typedef complex_type category; };
@@ -61,7 +62,7 @@ namespace alps {
 			template<typename T> struct is_writable<std::deque<T> > : boost::mpl::true_ { typedef stl_container_type category; };
 			template<typename T> struct is_writable<std::valarray<T> > : boost::mpl::true_ { typedef stl_container_type category; };
 			template<typename T> struct is_writable<std::vector<std::valarray<T> > > : boost::mpl::true_ { typedef stl_container_of_container_type category; };
-			template<> struct is_writable<std::string> : boost::mpl::true_ { typedef stl_container_type category; };
+			template<> struct is_writable<std::string> : boost::mpl::true_ { typedef stl_string_type category; };
 			template<> struct is_writable<char const *> : boost::mpl::true_ { typedef c_string_type category; };
 			template<std::size_t N> struct is_writable<const char [N]> : boost::mpl::true_ { typedef c_string_type category; };
 			template<std::size_t N> struct is_writable<char [N]> : boost::mpl::true_ { typedef c_string_type category; };
@@ -233,11 +234,9 @@ namespace alps {
 							id = create_path(p, type_id, s ? H5Screate_simple(1, &s, NULL) : H5Screate(H5S_NULL), s ? 1 : 0, &s);
 						else if (s > 0)
 							detail::error_type(H5Dset_extent(id, &s));
-						if (id > 0) {
-							detail::data_type data_id(id);
-							if (s > 0)
-								detail::error_type(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, v));
-						}
+						detail::data_type data_id(id);
+						if (s > 0)
+							detail::error_type(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, v));
 					}
 					template<typename T> typename boost::enable_if<boost::is_scalar<T> >::type set_data(std::string const & p, std::complex<T> const * v, hsize_t s) {
 						set_data(p, static_cast<T const *>(v), 2 * s);
@@ -260,7 +259,6 @@ namespace alps {
 					hid_t get_native_type(long double) const { return H5Tcopy(H5T_NATIVE_LDOUBLE); }
 					hid_t get_native_type(bool) const { return H5Tcopy(H5T_NATIVE_HBOOL); }
 					template<typename T> hid_t get_native_type(T * ) const { return get_native_type(T()); }
-					hid_t get_native_type(char const *) const { return H5Tcopy(H5T_C_S1); }
 					static herr_t child_visitor(hid_t, char const * n, const H5L_info_t *, void * d) {
 						reinterpret_cast<std::vector<std::string> *>(d)->push_back(n);
 						return 0;
@@ -310,10 +308,10 @@ namespace alps {
 					template<typename T> void get_data(std::string const & p, T & v, complex_type) const {
 						throw std::runtime_error("not implemented: " + p);
 					}
-					template<typename T> typename boost::disable_if<typename boost::is_same<T, std::string>::type>::type get_data(std::string const & p, T & v, stl_container_type) const {
+					template<typename T> void get_data(std::string const & p, T & v, stl_container_type) const {
 						throw std::runtime_error("not implemented: " + p);
 					}
-					void get_data(std::string const & p, std::string & v, stl_container_type) const {
+					template<typename T> void get_data(std::string const & p, T & v, stl_string_type) const {
 						if (is_scalar(p)) {
 							detail::data_type data_id(H5Dopen2(_file, p.c_str(), 0));
 							detail::type_type native_id(H5Tget_native_type(H5Dget_type(data_id), H5T_DIR_ASCEND));
@@ -355,8 +353,24 @@ namespace alps {
 						else
 							set_data(p, &(const_cast<T &>(v)[0]), v.size());
 					}
+					template<typename T> void set_data(std::string const & p, T const & v, stl_string_type) {
+						if (!v.size())
+							set_data(p, static_cast<char const *>(NULL), 0);
+						else {
+							detail::type_type type_id(H5Tcopy(H5T_C_S1));
+							H5Tset_size(type_id, v.size());
+							hsize_t s = v.size();
+							hid_t id = H5Dopen2(_file, p.c_str(), H5P_DEFAULT);
+							if (id < 0)
+								id = create_path(p, type_id, H5Screate_simple(1, &s, NULL), 1, &s);
+							else
+								detail::error_type(H5Dset_extent(id, &s));
+							detail::data_type data_id(id);
+							detail::error_type(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(v[0])));
+						}
+					}
 					template<typename T> void set_data(std::string const & p, T const & v, c_string_type) {
-						set_data(p, std::string(v), stl_container_type());
+						set_data(p, std::string(v), stl_string_type());
 					}
 					template<typename T> void set_data(std::string const & p, T const & v, complex_type) {
 						set_data(p, static_cast<typename T::value_type const *>(&v), 2);
@@ -396,7 +410,7 @@ namespace alps {
 						else
 							throw std::runtime_error("unknown path: " + p);
 					}
-					void set_attr(std::string const & p, std::string const & s, std::string const & v, stl_container_type) {
+					template<typename T> void set_attr(std::string const & p, std::string const & s, T const & v, stl_string_type) {
 						set_attr(p, s, v.c_str(), scalar_type());
 					}
 					template<typename T> void set_attr(std::string const & p, std::string const & s, T const & v, c_string_type) {
