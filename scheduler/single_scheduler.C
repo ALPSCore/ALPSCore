@@ -124,7 +124,7 @@ int SingleScheduler::run()
 // initialize a scheduler for real work, parsing the command line
 SingleScheduler* start_single(const Factory& p, int argc, char** argv)
 {
-  alps::comm_init(argc,argv);
+  alps::comm_init(argc,argv,false);
   if (is_master()) {
     p.print_copyright(std::cerr);
     alps::scheduler::print_copyright(std::cerr);

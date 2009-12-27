@@ -46,12 +46,14 @@ NoJobfileOptions::NoJobfileOptions()
     min_cpus(1),
     max_cpus(1),
     time_limit(0.),
+    use_mpi(false),
     valid(true) // shall we really run?
 {
 }
 
 NoJobfileOptions::NoJobfileOptions(int argc, char** argv) 
   : programname(std::string(argv[0])),
+    use_mpi(false),
     valid(true) // shall we really run?
 {
   if (argc) {
@@ -60,6 +62,7 @@ NoJobfileOptions::NoJobfileOptions(int argc, char** argv)
   desc.add_options()
     ("help", "produce help message")
     ("license,l", "print license conditions") 
+    ("mpi", "run in parallel using MPI") 
     ("checkpoint-time", po::value<double>(&checkpoint_time)->default_value(1800),"time between checkpoints")
     ("Tmin", po::value<double>(&min_check_time)->default_value(60),"minimum time between checks whether a simulation is finished")
     ("Tmax", po::value<double>(&max_check_time)->default_value(900),"maximum time between checks whether a simulation is finished")
@@ -89,6 +92,10 @@ NoJobfileOptions::NoJobfileOptions(int argc, char** argv)
   }
   if (!valid)
     return;
+
+  if (vm.count("mpi")) {
+    use_mpi = true;
+  }
     
   if(min_cpus>max_cpus)
     boost::throw_exception(std::runtime_error("Minimum number of CPUs larger than maximum number of CPU"));
@@ -113,6 +120,7 @@ Options::Options(int argc, char** argv)
   desc.add_options()
     ("help", "produce help message")
     ("license,l", "print license conditions") 
+    ("mpi", "run in parallel using MPI") 
     ("checkpoint-time", po::value<double>(&checkpoint_time)->default_value(1800),"time between checkpoints")
     ("Tmin", po::value<double>(&min_check_time)->default_value(60),"minimum time between checks whether a simulation is finished")
     ("Tmax", po::value<double>(&max_check_time)->default_value(900),"maximum time between checks whether a simulation is finished")
@@ -139,6 +147,9 @@ Options::Options(int argc, char** argv)
   if (!valid)
     return;
   
+  if (vm.count("mpi")) {
+    use_mpi = true;
+  }
   if (!filename.empty())
     jobfilename=boost::filesystem::path(filename,boost::filesystem::native);
   else

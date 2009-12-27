@@ -231,26 +231,25 @@ void init(const Factory& p)
 // initialize a scheduler for real work, parsing the command line
 int start(int argc, char** argv, const Factory& p)
 {
-  comm_init(argc,argv);
+  Options opt(argc,argv);
+  comm_init(argc,argv,opt.use_mpi);
   if (is_master() || !runs_parallel()) {
     p.print_copyright(std::cerr);
     alps::scheduler::print_copyright(std::cerr);
     alps::print_copyright(std::cerr);
   }
   
-  Options opt(argc,argv);
   int res=0;
   if (opt.valid) {
-    if(!runs_parallel())
+    if(!runs_parallel()) 
       theScheduler = new SerialScheduler(opt,p);
     else if (is_master()) 
       theScheduler = new MPPScheduler(opt,p);
-    else
+    else 
       theScheduler = new Scheduler(opt,p);
     res = theScheduler->run();
     delete theScheduler; 
   }
-  
   comm_exit();
   return res;
 }

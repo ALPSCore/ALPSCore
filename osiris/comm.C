@@ -43,18 +43,29 @@
 
 #ifdef ALPS_MPI
 
-int mpi_initialized=0;
+namespace alps {
+  int mpi_initialized=0;
+}
 
-void alps::comm_init(int& argc, char**& argv)
+void alps::comm_init(int& argc, char**& argv, bool usempi)
 {
-  MPI_Initialized(&mpi_initialized);
-  if (!mpi_initialized)
-    MPI_Init(&argc,&argv);
+  if (usempi) {
+    MPI_Initialized(&mpi_initialized);
+    if (!mpi_initialized)
+      MPI_Init(&argc,&argv);
+    mpi_initialized=1;
+  }
+  else
+    mpi_initialized=0;
 }
 
 #else
 
-void alps::comm_init(int&, char**&) {}
+void alps::comm_init(int&, char**&, bool usempi) 
+{
+  if (usempi)
+    boost::throw_exception(std::runtime_error("This program has not been compiled for use with MPI"));
+}
 
 #endif
 
@@ -63,7 +74,8 @@ void alps::comm_init(int&, char**&) {}
 #ifdef ALPS_MPI
 void alps::comm_exit(bool kill_all)
 {
-  if (mpi_initialized)
+  MPI_Initialized(&mpi_initialized);
+  if (!mpi_initialized)
     return;
   if(kill_all)
     MPI_Abort(MPI_COMM_WORLD,-2);
@@ -86,8 +98,9 @@ bool alps::is_master()
 {
 #ifdef ALPS_MPI
 
-  int num;
-  MPI_Comm_rank(MPI_COMM_WORLD,&num);
+  int num=0;
+  if (mpi_initialized)
+    MPI_Comm_rank(MPI_COMM_WORLD,&num);
   return (num==0);
   
 #else
@@ -110,9 +123,9 @@ int alps::detail::invalid_id()
 int alps::detail::local_id()
 {
 #ifdef ALPS_MPI
-
-  int num;
-  MPI_Comm_rank(MPI_COMM_WORLD,&num);
+  int num=0;
+  if (mpi_initialized)
+    MPI_Comm_rank(MPI_COMM_WORLD,&num);
   return num;
   
 #else
@@ -125,9 +138,9 @@ int alps::detail::local_id()
 alps::Process alps::local_process()
 {
 #ifdef ALPS_MPI
-
-  int num;
-  MPI_Comm_rank(MPI_COMM_WORLD,&num);
+  int num=0;
+  if (mpi_initialized)
+    MPI_Comm_rank(MPI_COMM_WORLD,&num);
   return Process(num);
 #else
 
@@ -145,19 +158,14 @@ alps::ProcessList alps::all_processes()
   ProcessList p;
 #ifdef ALPS_MPI
 
-  int num;
-  MPI_Comm_size(MPI_COMM_WORLD,&num);
-  p.resize(num);
-
+  int num=1;
+  if (mpi_initialized)
+    MPI_Comm_size(MPI_COMM_WORLD,&num);
   for (int i=0;i<num;i++)
-    p[i] = Process(i);
+    p.push_back(Process(i));
 
 #else
-
-  // single CPU case
-  
-  p.resize(1);  
-  p[0]=local_process();
+  p.push_bacl(local_process());
   
 #endif
 
@@ -176,7 +184,7 @@ alps::Process alps::master_process()
 bool alps::runs_parallel()
 {
 #ifdef ALPS_MPI
-  return true;
+  return mpi_initialized;
 #else
   return false;
 #endif

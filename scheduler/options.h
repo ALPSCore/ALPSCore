@@ -56,6 +56,7 @@ public:
   int max_cpus;               // maximum number of runs per simulation
   double time_limit;          // time limit for the simulation
   bool valid;                 // shall we really run?
+  bool use_mpi;              // should we use MPI
 
   NoJobfileOptions(int argc, char** argv);
   NoJobfileOptions();
@@ -65,7 +66,7 @@ class Options : public NoJobfileOptions
 {
 public:
   boost::filesystem::path jobfilename;      // name of the jobfile
-
+   
   Options(int argc, char** argv);
   Options();
 };

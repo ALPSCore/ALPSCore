@@ -36,6 +36,7 @@
 
 namespace alps {
 
+
 //=======================================================================
 // INITIALIZATION AND CLEANUP
 //
@@ -44,7 +45,7 @@ namespace alps {
 
 // initialize everything
 
-ALPS_DECL void comm_init(int& argc, char**& argv);
+ALPS_DECL void comm_init(int& argc, char**& argv, bool=false);
 
 
 // stop message passing
