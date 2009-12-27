@@ -86,7 +86,7 @@ clone_info_OBJECTS = $(am_clone_info_OBJECTS)
 am__DEPENDENCIES_1 =
 @BUILD_UNIFIED_LIB_FALSE@am__DEPENDENCIES_2 = $(top_builddir)/lib/alps/libparapack-sgl.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
-@BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/comm-sgl/libcomm-sgl.la \
+@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
 @BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
 @BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
 @BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
@@ -116,7 +116,6 @@ am_collect_mpi_OBJECTS = collect_mpi.$(OBJEXT)
 collect_mpi_OBJECTS = $(am_collect_mpi_OBJECTS)
 @BUILD_UNIFIED_LIB_FALSE@am__DEPENDENCIES_3 = $(top_builddir)/lib/alps/libparapack-mpi.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
-@BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/comm-mpi/libcomm-mpi.la \
 @BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
 @BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
 @BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
@@ -448,11 +447,11 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 DEFAULT_INCLUDES = -I$(top_builddir)/src -I$(top_srcdir)/src $(BASE_CPPFLAGS) $(BOOST_CPPFLAGS) $(XML_CPPFLAGS) $(HDF5_CPPFLAGS) $(MPI_CPPFLAGS)
-LDFLAGS_SGL = $(BASE_LDFLAGS) $(BOOST_LDFLAGS) $(HDF5_LDFLAGS) $(XML_LDFLAGS)
-@BUILD_UNIFIED_LIB_FALSE@LIBS_SGL = $(top_builddir)/lib/alps/libparapack-sgl.la $(top_builddir)/lib/alps/libalps.la $(top_builddir)/lib/comm-sgl/libcomm-sgl.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(BASE_LIBS)
+LDFLAGS_SGL = $(BASE_LDFLAGS) $(BOOST_LDFLAGS) $(HDF5_LDFLAGS) $(XML_LDFLAGS)  $(MPI_LDFLAGS)
+@BUILD_UNIFIED_LIB_FALSE@LIBS_SGL = $(top_builddir)/lib/alps/libparapack-sgl.la $(top_builddir)/lib/alps/libalps.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(MPI_LIBS) $(BASE_LIBS)
 @BUILD_UNIFIED_LIB_TRUE@LIBS_SGL = $(top_builddir)/lib/alps/libalps-sgl.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(BASE_LIBS)
-LDFLAGS_MPI = $(LDFLAGS_SGL) $(MPI_LDFLAGS)
-@BUILD_UNIFIED_LIB_FALSE@LIBS_MPI = $(top_builddir)/lib/alps/libparapack-mpi.la $(top_builddir)/lib/alps/libalps.la $(top_builddir)/lib/comm-mpi/libcomm-mpi.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(MPI_LIBS) $(BASE_LIBS)
+LDFLAGS_MPI = $(LDFLAGS_SGL)
+@BUILD_UNIFIED_LIB_FALSE@LIBS_MPI = $(top_builddir)/lib/alps/libparapack-mpi.la $(top_builddir)/lib/alps/libalps.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(MPI_LIBS) $(BASE_LIBS)
 @BUILD_UNIFIED_LIB_TRUE@LIBS_MPI = $(top_builddir)/lib/alps/libalps-mpi.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(MPI_LIBS) $(BASE_LIBS)
 dist_noinst_DATA = \
 	clone_mpi.ip-4 \
