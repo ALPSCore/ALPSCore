@@ -165,7 +165,7 @@ alps::ProcessList alps::all_processes()
     p.push_back(Process(i));
 
 #else
-  p.push_bacl(local_process());
+  p.push_back(local_process());
   
 #endif
 
