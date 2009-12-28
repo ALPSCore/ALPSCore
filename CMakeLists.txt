@@ -3,7 +3,7 @@
 #
 
 set(ALPS_SOURCES "")
-if (MPI_FOUND)
+if (MPI_FOUND AND NOT ALPS_FOR_VISTRAILS)
   set(ALPS_SHARED_CPPFLAGS ALPS_EXPORTS=1 ALPS_MPI=1)
   set(ALPS_STATIC_CPPFLAGS ALPS_MPI=1)
 else(MPI_FOUND)
@@ -63,10 +63,25 @@ if(MSVC)
     COMMAND ${CMAKE_COMMAND} -E copy ${LIB_NAME} ${PROJECT_BINARY_DIR}/bin)
 endif(MSVC)
 
+if (ALPS_FOR_VISTRAILS)
+  SET_TARGET_PROPERTIES(alps
+    PROPERTIES BUILD_WITH_INSTALL_RPATH ON
+    INSTALL_NAME_DIR "@executable_path/../Frameworks"
+  )
+endif (ALPS_FOR_VISTRAILS)
+
+
 #######################################################################
 # install
 #######################################################################
+if (ALPS_FOR_VISTRAILS)
 install(TARGETS alps
-        RUNTIME DESTINATION bin
-        ARCHIVE DESTINATION lib
-        LIBRARY DESTINATION lib)
+          RUNTIME DESTINATION .
+          ARCHIVE DESTINATION .
+          LIBRARY DESTINATION .)
+else (ALPS_FOR_VISTRAILS)
+  install(TARGETS alps
+          RUNTIME DESTINATION bin
+          ARCHIVE DESTINATION lib
+          LIBRARY DESTINATION lib)
+endif (ALPS_FOR_VISTRAILS)
