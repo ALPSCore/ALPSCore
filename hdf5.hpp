@@ -309,7 +309,10 @@ namespace alps {
 						throw std::runtime_error("not implemented: " + p);
 					}
 					template<typename T> void get_data(std::string const & p, T & v, stl_container_type) const {
-						throw std::runtime_error("not implemented: " + p);
+						if (dimensions(p) != 1)
+							throw std::runtime_error("the path " + p + " has not dimension 1");
+						v.resize(extent(p)[0]);
+						get_data(p, &(v.front()));
 					}
 					template<typename T> void get_data(std::string const & p, T & v, stl_string_type) const {
 						if (is_scalar(p)) {
