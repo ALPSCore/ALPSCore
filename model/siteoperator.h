@@ -72,7 +72,7 @@ private:
   std::string site_;
 };
 
-class SiteOperator
+class ALPS_DECL SiteOperator
 {
 public:
   SiteOperator() {}

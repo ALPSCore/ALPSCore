@@ -86,7 +86,7 @@ ObservableSet MCSimulation::get_measurements(bool compactit) const
   ProcessList where_master;
   int remote_runs=0;
   // add runs stored locally
-  for (int i=0;i<runs.size();i++) {
+  for (unsigned int i=0;i<runs.size();i++) {
     if(workerstatus[i]==RemoteRun) {
       if(!runs[i])
         boost::throw_exception(std::runtime_error( "run does not exist in MCSimulation::get_measurements"));
@@ -107,7 +107,7 @@ ObservableSet MCSimulation::get_measurements(bool compactit) const
     send << compactit;
     send.send(where_master,MCMP_get_measurements);
     // collect results
-    for (int i=0;i<where_master.size();i++) {
+    for (unsigned int i=0;i<where_master.size();i++) {
       // receive dump from remote process, abort if error
       IMPDump receive(MCMP_measurements);
       ObservableSet m;
@@ -130,7 +130,7 @@ ObservableSet MCSimulation::get_and_remove_observable(const std::string& obsname
   ProcessList where_master;
   int remote_runs=0;
   // add runs stored locally
-  for (int i=0;i<runs.size();i++) {
+  for (unsigned int i=0;i<runs.size();i++) {
       if(workerstatus[i]==RemoteRun) {
 	if(!runs[i])
 	  boost::throw_exception(std::runtime_error( "run does not exist in MCSimulation::get_measurements"));
@@ -149,7 +149,7 @@ ObservableSet MCSimulation::get_and_remove_observable(const std::string& obsname
     send << obsname;
     send.send(where_master,MCMP_get_observable);
     // collect results
-    for (int i=0;i<where_master.size();i++) {
+    for (unsigned int i=0;i<where_master.size();i++) {
       // receive dump from remote process, abort if error
       IMPDump receive(MCMP_observable);
       ObservableSet m;

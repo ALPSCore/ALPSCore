@@ -96,14 +96,14 @@ struct XMLTag
 
 
 /// reads an XML tag or attribute name from a \c std::istream
-extern std::string parse_identifier(std::istream& in);
+std::string parse_identifier(std::istream& in);
 
 /// \brief reads an ALPS parameter name from a \c std::istream
 /// 
 /// valid characters, in addition to those in an XML identifier are \c ', 
 /// and additionally any arbitrary sequence of characters (including whitespace) surrounded by \c [ ... \ ] 
 /// characters, such as in \c MEASURE[Staggered \c Magnetization^2] .
-extern ALPS_DECL std::string parse_parameter_name(std::istream& in);
+ALPS_DECL std::string parse_parameter_name(std::istream& in);
 
 /// \brief reads until the next occurence of the character \a end or until the end of the stream is reached. 
 ///
@@ -111,7 +111,7 @@ extern ALPS_DECL std::string parse_parameter_name(std::istream& in);
 /// \param end the character until which should be read
 /// \return  string containing the characters read, excluding leading and trailing whitespace 
 /// and excluding the terminating character \a end.
-extern std::string read_until(std::istream& in, char end);
+std::string read_until(std::istream& in, char end);
 
 /// \brief checks that the next character read from the stream.
 /// \param in the stream to be read
@@ -120,7 +120,7 @@ extern std::string read_until(std::istream& in, char end);
 /// \throw \c std::runtime_error( \a err \c ) if the next character is not \a c
 ///  reads the next character (slipping white space) and checks if it is the same
 ///  as the character passed as argument \a c and throws a \c std::runtime_error otherwise.
-extern ALPS_DECL void check_character(std::istream& in, char c, const std::string& err);
+ALPS_DECL void check_character(std::istream& in, char c, const std::string& err);
 
 /// \brief parses an XML tag
 /// \param in the stream to be read
@@ -135,13 +135,13 @@ ALPS_DECL std::string parse_content(std::istream& in);
 /// \param in the stream to be read
 /// \param tag the opening tag of the element to be skipped
 /// the function reads until it finds the closing tag correesponding to the \a tag passed as argument.
-void skip_element(std::istream& in,const XMLTag& tag);
+ALPS_DECL void skip_element(std::istream& in,const XMLTag& tag);
 
 /// \brief checks whether the next tag in the XML file has the given name
 /// \param in the stream to be read
 /// \param name the name of the expected tag
 /// \throw \c std::runtime_error if the next tag read from the stream \a in does not have the name given by the argument \a name.
-void check_tag(std::istream& in, const std::string& name);
+ALPS_DECL void check_tag(std::istream& in, const std::string& name);
 
 } // end namespace alps
 

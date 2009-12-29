@@ -47,7 +47,7 @@ ALPS_DECL void print_copyright(std::ostream& out);
 
 /// print the ALPS license
 /// \param out the output stream to which the license should be written
-void print_license(std::ostream& out);
+ALPS_DECL void print_license(std::ostream& out);
 }
 
 #endif

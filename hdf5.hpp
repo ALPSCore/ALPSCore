@@ -154,11 +154,11 @@ namespace alps {
 					}
 					bool is_group(std::string const & p) const {
 						hid_t id = H5Gopen2(_file, p.c_str(), H5P_DEFAULT);
-						return id < 0 ? false : static_cast<bool>(detail::group_type(id));
+						return id < 0 ? false : detail::group_type(id)!=0;
 					}
 					bool is_data(std::string const & p) const {
 						hid_t id = H5Dopen2(_file, p.c_str(), H5P_DEFAULT);
-						return id < 0 ? false : static_cast<bool>(detail::data_type(id));
+						return id < 0 ? false : detail::data_type(id)!=0;
 					}
 					std::vector<std::size_t> extent(std::string const & p) const {
 						if (is_null(p))

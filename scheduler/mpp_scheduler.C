@@ -81,7 +81,7 @@ int MPPScheduler::run()
         ((time_limit<=0)||(second_clock::local_time()<end_time))) {
 
     if (check_signals() == SignalHandler::TERMINATE) {
-      for(int i=0;i<active.size();i++)
+      for(unsigned int i=0;i<active.size();i++)
         if(active[i].where.size())
           tasks[active[i].number]->halt();
       checkpoint();
@@ -93,7 +93,7 @@ int MPPScheduler::run()
       while(freen!=free.size()) { 
         // check once again, if more processes have become available
         // too expnesive in CPU time on MPP systems
-        for (int i=0;i<active.size();i++)
+        for (unsigned int i=0;i<active.size();i++)
           check_tasks(free);
         freen=free.size();
       } 
@@ -153,7 +153,7 @@ void MPPScheduler::assign_processes(ProcessList& free)
   while(free_processes&&active.size()) {
     int creation_failed=0;
     std::vector<int> more_processes(active.size());
-    int i;
+    unsigned int i;
     for (i=0;i<active.size();i++)
       active[i].work=tasks[active[i].number]->work();
 
@@ -190,7 +190,7 @@ void MPPScheduler::assign_processes(ProcessList& free)
 
       // assign remaining processes to the tasks that need them most
       if(free_processes) { // determine work to be done
-        int i;
+        unsigned int i;
         do { // look for maximum work simulation
           found=-1;
           double maxwork=-1.;
@@ -283,7 +283,7 @@ int MPPScheduler::check_tasks(ProcessList& free)
   for (int i=0;i<active.size();i++)
     {
     */
-  int i=last_check;    
+  unsigned int i=last_check;    
   if(i<active.size()) {
     if(active[i].where.size() &&
        second_clock::local_time() > active[i].next_check) {

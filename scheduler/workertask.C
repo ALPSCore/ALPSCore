@@ -111,7 +111,7 @@ void WorkerTask::construct() // delayed until child class is fully constructed
   ProcessList here(cpus());
   int j=-1; // count existing runs
   int in=0; // first available node
-  for (int i=0;i<runs.size();i++) {
+  for (unsigned int i=0;i<runs.size();i++) {
     j++;
     // load as many runs as possible
     if(in+cpus()<=where.size()) {// a process is available
@@ -349,7 +349,7 @@ double WorkerTask::work_done()  const
   
   // add runs stored locally
   if(runs.size()) {
-    for (int i=0;i<runs.size();i++) {
+    for (unsigned int i=0;i<runs.size();i++) {
       if(workerstatus[i]==RemoteRun) {
          if(!runs[i])
             boost::throw_exception(std::runtime_error( "run does not exist in Task::get_measurements"));
@@ -368,7 +368,7 @@ double WorkerTask::work_done()  const
     send.send(where_master,MCMP_get_run_work);
       
     // collect results
-    for (int i=0;i<where_master.size();i++) {
+    for (unsigned int i=0;i<where_master.size();i++) {
       // receive dump from remote process, abort if error
       IMPDump receive(MCMP_run_work);
       w += double(receive);
@@ -389,7 +389,7 @@ double WorkerTask::work() const
 void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::path& fn) const
 {
   boost::filesystem::path dir=fn.branch_path();
-  for (int i=0;i<runs.size();++i) {
+  for (unsigned int i=0;i<runs.size();++i) {
     if(workerstatus[i] == RunNotExisting) {
       if(runs[i])
         boost::throw_exception(std::logic_error("run exists but marked as non-existing"));
@@ -409,7 +409,7 @@ void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::pa
           name =fn.leaf();
           name.erase(name.size()-4,4);
           name+= ".run" + boost::lexical_cast<std::string,int>(j+1);
-          for (int k=0;k<runfiles.size();++k)
+          for (unsigned int k=0;k<runfiles.size();++k)
           if(runfiles[k].out.leaf()==name) 
             found=true;
           j++;

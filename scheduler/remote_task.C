@@ -72,7 +72,7 @@ bool RemoteTask::finished(double& more_time, double& percentage) const
       
   int32_t flag;
   receive >> flag >> more_time >> percentage;
-  return flag;
+  return flag!=0;
 }
 
 double RemoteTask::work() const

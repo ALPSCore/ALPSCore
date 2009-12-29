@@ -70,8 +70,10 @@ protected:
 class ALPS_DECL MeasurementLabels : public MeasurementOperators
 {
 public:
+
   template <class LatticeModel>
-  MeasurementLabels(LatticeModel const&);
+  MeasurementLabels(LatticeModel const&, int);
+
 protected:
   std::vector<std::string> distlabel_;
   std::vector<std::string> momentumlabel_;
@@ -102,7 +104,7 @@ public:
 
 
 template<class LatticeModel>
-MeasurementLabels::MeasurementLabels(LatticeModel const& lattice_model)
+MeasurementLabels::MeasurementLabels(LatticeModel const& lattice_model, int /* unused*/)
  : MeasurementOperators(lattice_model.get_parameters())
 {
   if (calc_labels()) 
@@ -121,7 +123,7 @@ MeasurementLabels::MeasurementLabels(LatticeModel const& lattice_model)
 template <class ValueType>
 template<class LatticeModel>
 EigenvectorMeasurements<ValueType>::EigenvectorMeasurements(LatticeModel const& lattice_model)
- : MeasurementLabels(lattice_model)
+ : MeasurementLabels(lattice_model,0)
 {
 }
 

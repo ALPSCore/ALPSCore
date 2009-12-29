@@ -64,7 +64,7 @@ int SerialScheduler::run()
   ptime end_time=second_clock::local_time()+seconds(long(time_limit));
   ptime task_time(second_clock::local_time());
   // do all Tasks
-  for(int i=0;i<tasks.size();i++) {
+  for(unsigned int i=0;i<tasks.size();i++) {
     if(time_limit>0. && second_clock::local_time()>end_time)
       return 1;
     if(taskstatus[i]==TaskFinished)

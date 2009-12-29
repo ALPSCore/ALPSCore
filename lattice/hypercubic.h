@@ -37,8 +37,13 @@
 #include <alps/vectorio.h>
 #include <alps/vectormath.h>
 #include <boost/utility.hpp>
+#include <cmath>
 
 #include <vector>
+
+#ifndef M_PI
+#define M_PI std::acos(-1.)
+#endif
 
 namespace alps {
 
@@ -387,13 +392,13 @@ public:
         return;
       valid_=true;
       k_.resize(alps::dimension(*cell_iterator::lattice_));
-      for (int i=0;i<alps::dimension(*cell_iterator::lattice_);++i) {
-	k_[i] = 0.;
+      for (unsigned int i=0;i<alps::dimension(*cell_iterator::lattice_);++i) {
+	    k_[i] = 0.;
         int l=cell_iterator::lattice_->extent()[i];
         int x=cell_iterator::offset_[i];
         if (x>l/2)
           x-=l;
-        k_[i] = 2*M_PI*double(x)/double(l);
+		k_[i] = 2.*M_PI*double(x)/double(l);
       }
     }
   };
