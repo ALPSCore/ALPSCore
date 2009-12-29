@@ -11,6 +11,26 @@ else(MPI_FOUND AND NOT ALPS_FOR_VISTRAILS)
   set(ALPS_STATIC_CPPFLAGS "")
 endif(MPI_FOUND AND NOT ALPS_FOR_VISTRAILS)
 
+if (ALPS_FOR_VISTRAILS)
+set(ALPS_SOURCES
+    # alps 
+    copyright.C
+    # alea
+    alea/nan.C alea/observable.C alea/observableset.C 
+    # expression
+    expression/evaluator.C
+    # osiris
+    osiris/buffer.C osiris/dump.C osiris/dumparchive.C osiris/os.C osiris/process.C osiris/comm.C
+    osiris/mpdump.C osiris/xdrdump.C osiris/xdrcore.C
+    # parameter
+    parameter/parameter.C parameter/parameterlist.C parameter/parameters.C
+    # parser
+    parser/parser.C parser/xmlattributes.C parser/xmlhandler.C parser/xmlparser.C
+    parser/xmlstream.C parser/xslt_path.C
+    # random
+    random/rngfactory.C
+)
+else(ALPS_FOR_VISTRAILS)
 # alps
 set(ALPS_SOURCES
     # alps 
@@ -47,6 +67,7 @@ set(ALPS_SOURCES
     scheduler/serial_scheduler.C scheduler/signal.C scheduler/single_scheduler.C
     scheduler/slave_task.C scheduler/task.C scheduler/worker.C scheduler/workertask.C
 )
+endif(ALPS_FOR_VISTRAILS)
 
 add_library(alps ${ALPS_SOURCES})
 
@@ -76,9 +97,9 @@ endif (ALPS_FOR_VISTRAILS)
 #######################################################################
 if (ALPS_FOR_VISTRAILS)
 install(TARGETS alps
-          RUNTIME DESTINATION .
-          ARCHIVE DESTINATION .
-          LIBRARY DESTINATION .)
+          RUNTIME DESTINATION ${VISTRAILS_APP_NAME}/Contents/Frameworks
+          ARCHIVE DESTINATION ${VISTRAILS_APP_NAME}/Contents/Frameworks
+          LIBRARY DESTINATION ${VISTRAILS_APP_NAME}/Contents/Frameworks)
 else (ALPS_FOR_VISTRAILS)
   install(TARGETS alps
           RUNTIME DESTINATION bin
