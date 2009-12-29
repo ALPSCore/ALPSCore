@@ -25,9 +25,9 @@
 
 #include <boost/config.hpp>
 #include <boost/utility.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/type_traits.hpp>
-#include <boost/function.hpp>
 #include <boost/mpl/and.hpp>
 
 #include <hdf5.h>
@@ -154,11 +154,11 @@ namespace alps {
 					}
 					bool is_group(std::string const & p) const {
 						hid_t id = H5Gopen2(_file, p.c_str(), H5P_DEFAULT);
-						return id < 0 ? false : detail::group_type(id)!=0;
+						return id < 0 ? false : detail::group_type(id) != 0;
 					}
 					bool is_data(std::string const & p) const {
 						hid_t id = H5Dopen2(_file, p.c_str(), H5P_DEFAULT);
-						return id < 0 ? false : detail::data_type(id)!=0;
+						return id < 0 ? false : detail::data_type(id) != 0;
 					}
 					std::vector<std::size_t> extent(std::string const & p) const {
 						if (is_null(p))
@@ -387,7 +387,7 @@ namespace alps {
 							else
 								detail::error_type(H5Dset_extent(id, s));
 							detail::data_type data_id(id);
-						for (std::size_t i = 0; i < v.size(); ++i)
+							for (std::size_t i = 0; i < v.size(); ++i)
 								if (v[i].size() != v[0].size())
 									throw std::runtime_error(p + " is not a rectengual matrix");
 								else {
@@ -447,12 +447,18 @@ namespace alps {
 				public:
 					pvp(std::string const & p, T * v, std::size_t s): _p(p), _v(v), _s(s) {}
 					pvp(pvp<T, ptr> const & c): _p(c._p), _v(c._v), _s(c._s) {}
-					archive<write> & serialize(archive<write> & ar) const { return ar.set_data(ar.compute_path(_p), _v, _s); }
-					archive<read> & serialize(archive<read> & ar) const { return ar.get_data(ar.compute_path(_p), _v); }
+					archive<write> & serialize(archive<write> & ar) const { 
+						ar.set_data(ar.compute_path(_p), _v, _s);
+						return ar;
+					}
+					archive<read> & serialize(archive<read> & ar) const { 
+						ar.get_data(ar.compute_path(_p), _v); 
+						return ar;
+					}
 				private:
 					std::string _p;
-					std::size_t _s;
 					mutable T * _v;
+					std::size_t _s;
 			};
 		}	
 		typedef detail::archive<detail::read> iarchive;
