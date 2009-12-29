@@ -1032,14 +1032,14 @@ void SimpleObservableData<T>::load(IDump& dump)
 			ar
 				<< make_pvp("thermalization", thermalcount_)
 				<< make_pvp("timeseries/data", values_)
-				<< make_pvp("timeseries/data/@binnintype", "linear")
+				<< make_pvp("timeseries/data/@binningtype", "linear")
 				<< make_pvp("timeseries/data2", values2_)
-				<< make_pvp("timeseries/data2/@binnintype", "linear")
+				<< make_pvp("timeseries/data2/@binningtype", "linear")
 			;
 			if (jack_valid_)
 				ar
 					<< make_pvp("jacknife/data", jack_)
-					<< make_pvp("jacknife/data/@binnintype", "linear")
+					<< make_pvp("jacknife/data/@binningtype", "linear")
 				;
 		}
 	}
