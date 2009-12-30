@@ -309,11 +309,13 @@ namespace alps {
 								error_type(H5Dread(data_id, type_type(H5Tcopy(type_id)), H5S_ALL, H5S_ALL, H5P_DEFAULT, &v[0]));
 							}
 							#define HDF5_GET_STRING(T)																	\
-								else if (error_type(H5Tequal(													\
-									type_type(H5Tcopy(native_id)), type_type(get_native_type<T>(0))		\
+								else if (error_type(H5Tequal(															\
+									type_type(H5Tcopy(native_id)), type_type(get_native_type<T>(0))						\
 								)) > 0) {																				\
 									T t;																				\
-									get_data(p, &t);																	\
+									error_type(H5Dread(																	\
+										data_id, type_type(H5Tcopy(type_id)), H5S_ALL, H5S_ALL, H5P_DEFAULT, &t			\
+									));																					\
 									v = boost::lexical_cast<std::string>(t);											\
 								}
 							HDF5_FOREACH_SCALAR(HDF5_GET_STRING)
@@ -356,53 +358,25 @@ namespace alps {
 						else
 							throw std::runtime_error("unknown path: " + p);
 						attribute_type attr_id(H5Aopen(parent_id, s.c_str(), H5P_DEFAULT));
-						type_type type_id(H5Dget_type(attr_id));
-	/*					
-						type_type native_id(H5Tget_native_type(type_type(H5Dget_type(attr_id)), H5T_DIR_ASCEND));
-						if (H5Tget_class(native_id) == H5T_STRING) {
+						type_type type_id(H5Aget_type(attr_id));
+						type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));
+						if (H5Tget_class(type_id) == H5T_STRING) {
 							v.resize(H5Tget_size(native_id));
-							error_type(H5Dread(data_id, type_type(H5Tcopy(type_type(H5Dget_type(data_id)))), H5S_ALL, H5S_ALL, H5P_DEFAULT, &v[0]));
+							error_type(H5Aread(attr_id, type_id, &v[0]));
 						}
-						#define HDF5_GET_STRING(T)																	\
-							else if (error_type(H5Tequal(													\
-								type_type(H5Tcopy(native_id)), type_type(get_native_type<T>(0))		\
-							)) > 0) {																				\
-								T t;																				\
-								get_data(p, &t);																	\
-								v = boost::lexical_cast<std::string>(t);											\
+						#define HDF5_GET_STRING(T)																		\
+							else if (error_type(H5Tequal(																\
+								type_type(H5Tcopy(native_id)), type_type(get_native_type<T>(0))							\
+							)) > 0) {																					\
+								T t;																					\
+								get_data(p, &t);																		\
+								error_type(H5Aread(attr_id, type_id, &t));												\
+								v = boost::lexical_cast<std::string>(t);												\
 							}
 						HDF5_FOREACH_SCALAR(HDF5_GET_STRING)
 						#undef HDF5_GET_STRING
 						else throw std::runtime_error("error in types: " + p);
-					
-					
-					
-						type_type type_id(H5Tcopy(H5T_C_S1));
-						error_type(H5Tset_size(type_id, v.size()));
-						hid_t id = H5Aopen(parent_id, s.c_str(), H5P_DEFAULT);
-						if (id < 0) {
-							space_type space_id(H5Screate(H5S_SCALAR));
-							id = H5Acreate(parent_id, s.c_str(), type_id, space_id, H5P_DEFAULT, H5P_DEFAULT);
-						}
-						attribute_type attr_id(id);
-						error_type(H5Awrite(attr_id, type_id, &v[0]));
 						if (is_group(p))
-							group_type(parent_id);
-						else
-							data_type(parent_id);
-					}
-
-
-hid_t parent_id;
-						if (is_group(p))
-							parent_id = H5Gopen2(_file, p.c_str(), H5P_DEFAULT);
-						else if (is_data(p))
-							parent_id = H5Dopen2(_file, p.c_str(), H5P_DEFAULT);
-						else
-							throw std::runtime_error("unknown path: " + p);
-						type_type type_id(get_native_type(v));
-						error_type(H5Aread(attr_id, type_id, &v));
-*/						if (is_group(p))
 							group_type(parent_id);
 						else
 							data_type(parent_id);
