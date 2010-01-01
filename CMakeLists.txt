@@ -19,6 +19,11 @@ set(ALPS_SOURCES
     alea/nan.C alea/observable.C alea/observableset.C 
     # expression
     expression/evaluator.C
+    # lattice
+    lattice/disorder.C lattice/latticedescriptor.C lattice/latticegraphdescriptor.C
+    lattice/latticelibrary.C lattice/unitcell.C
+    # model
+    model/bondterm.C model/globaloperator.C model/modellibrary.C model/siteterm.C
     # osiris
     osiris/buffer.C osiris/dump.C osiris/dumparchive.C osiris/os.C osiris/process.C osiris/comm.C
     osiris/mpdump.C osiris/xdrdump.C osiris/xdrcore.C
@@ -29,6 +34,13 @@ set(ALPS_SOURCES
     parser/xmlstream.C parser/xslt_path.C
     # random
     random/rngfactory.C
+    # scheduler
+    scheduler/abstract_task.C scheduler/convertxdr.C scheduler/factory.C scheduler/info.C
+    scheduler/master_scheduler.C scheduler/measurement_operators.C
+    scheduler/montecarlo.C scheduler/mpp_scheduler.C scheduler/options.C
+    scheduler/remote_task.C scheduler/remote_worker.C scheduler/scheduler.C
+    scheduler/serial_scheduler.C scheduler/signal.C scheduler/single_scheduler.C
+    scheduler/slave_task.C scheduler/task.C scheduler/worker.C scheduler/workertask.C
 )
 else(ALPS_FOR_VISTRAILS)
 # alps
@@ -60,7 +72,7 @@ set(ALPS_SOURCES
     # random
     random/rngfactory.C
     # scheduler
-    scheduler/abstract_task.C scheduler/factory.C scheduler/info.C
+    scheduler/abstract_task.C scheduler/convertxdr.C scheduler/factory.C scheduler/info.C
     scheduler/master_scheduler.C scheduler/measurement_operators.C
     scheduler/montecarlo.C scheduler/mpp_scheduler.C scheduler/options.C
     scheduler/remote_task.C scheduler/remote_worker.C scheduler/scheduler.C
