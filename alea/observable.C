@@ -32,6 +32,46 @@
 
 namespace alps {
 
+Observable::~Observable() {}
+
+Observable::Observable(const std::string& n) 
+  : name_(n)
+  , in_observable_set_(false) 
+{
+}
+
+
+Observable::Observable(const Observable& o) 
+  : name_(o.name_)
+  , in_observable_set_(false) 
+{
+}
+
+ALPS_DUMMY_VOID Observable::reset(bool equilibrated)
+{
+}
+
+
+ALPS_DUMMY_VOID Observable::output(std::ostream&) const
+{
+}
+
+Observable* Observable::clone() const
+{
+  return new Observable(*this);
+}
+
+uint32_t Observable::version_id() const
+{
+  return 0;
+}
+
+uint32_t Observable::get_thermalization() const
+{
+  return 0;
+}
+
+
 const std::string& Observable::name() const
 {
   return name_;

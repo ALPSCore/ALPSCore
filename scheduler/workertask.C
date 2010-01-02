@@ -62,7 +62,7 @@ WorkerTask::WorkerTask(const ProcessList& w,const Parameters& p)
 
 WorkerTask::~WorkerTask()
 {
-  for (int i=0;i<runs.size();++i)
+  for (unsigned int i=0;i<runs.size();++i)
     if(runs[i])
       delete runs[i];
 }
@@ -178,7 +178,7 @@ void WorkerTask::construct() // delayed until child class is fully constructed
       }
     }
   }
-  for (int i=0;i<runs.size();++i) {
+  for (unsigned int i=0;i<runs.size();++i) {
     runs[i]->set_parameters(parms);
   }
 }
@@ -188,7 +188,7 @@ void WorkerTask::start()
 {
   if(!started()) {
     Task::start();
-    for (int i=0; i<runs.size();i++)
+    for (unsigned int i=0; i<runs.size();i++)
       if(runs[i] && workerstatus[i] > RunNotExisting && workerstatus[i] < RunOnDump) {
         runs[i]->start_worker();
       }
@@ -202,15 +202,15 @@ void WorkerTask::add_process(const Process& p)
   ProcessList here(1);
   here[0]=p;
 
-  int i;
+  unsigned int i;
   // look for empty entry
-  for (i=0;i<where.size() && where[i].valid();i++)
+  for ( i=0;i<where.size() && where[i].valid();i++)
     {}   
   if(i==where.size())
     where.resize(i+1);
   where[i] = p;
   
-  int j;
+  unsigned int j;
   // look for run to start on this process
   for (j=0; j<runs.size() && runs[j] && workerstatus[j] != RunNotExisting 
                               && workerstatus[j] != RunOnDump ; j++)
@@ -297,7 +297,7 @@ void WorkerTask::halt()
 {
   if(started()) {
     Task::halt();
-    for(int i=0;i<runs.size();i++)
+    for(unsigned int i=0;i<runs.size();i++)
       if(runs[i] && workerstatus[i] > RunNotExisting && workerstatus[i] < RunOnDump)
         runs[i]->halt_worker();
   }
@@ -314,7 +314,7 @@ ResultType WorkerTask::get_summary() const
 
   // add runs stored locally
   if (runs.size()) {
-    for (int i=0; i<runs.size(); i++) {
+    for (unsigned int i=0; i<runs.size(); i++) {
       if (workerstatus[i]==RemoteRun) {
         if (!runs[i])
           boost::throw_exception(std::runtime_error("Run does not exist in Task::get_measurements"));
@@ -331,7 +331,7 @@ ResultType WorkerTask::get_summary() const
     send.send(where_master,MCMP_get_summary);
     
     // collect results
-    for (int i=0; i<where_master.size(); i++) {
+    for (unsigned int i=0; i<where_master.size(); i++) {
       // receive dump
       IMPDump receive(MCMP_summary);
       ResultType s_res;

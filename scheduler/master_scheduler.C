@@ -90,7 +90,7 @@ void MasterScheduler::set_new_jobfile(const boost::filesystem::path& jobfilename
   sim_results.resize(taskfiles.size());
 
   std::cerr << "parsing task files ... \n";
-  for (int i=0; i<taskfiles.size(); i++) {
+  for (unsigned int i=0; i<taskfiles.size(); i++) {
 #ifndef BOOST_NO_EXCEPTIONS
     try {
 #endif
@@ -197,7 +197,7 @@ void  MasterScheduler::remake_task(ProcessList& where, const int i)
 
 MasterScheduler::~MasterScheduler()
 {
-  for (int i=0;i<tasks.size();++i)
+  for (unsigned int i=0;i<tasks.size();++i)
     if(tasks[i])
       delete tasks[i];
 }
@@ -220,7 +220,7 @@ void MasterScheduler::checkpoint()
                "http://xml.comp-phys.org/2003/8/job.xsd");
     int local_sim=-1;
     
-    for (int i=0; i<tasks.size();i++) {
+    for (unsigned int i=0; i<tasks.size();i++) {
       if (taskstatus[i]==TaskFinished) {
         out << start_tag("TASK") << attribute("status","finished")
             << start_tag("INPUT") 

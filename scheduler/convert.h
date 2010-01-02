@@ -28,6 +28,7 @@
 *****************************************************************************/
 
 /* $Id: convert2xml.C 3523 2009-12-12 05:52:24Z troyer $ */
+#include <alps/config.h>
 #include <string>
 
 
@@ -35,5 +36,5 @@ namespace alps {
 
   /// convert a file from XDR format to XML
   
-  std::string convert2xml(std::string const& name);
+  std::string ALPS_DECL convert2xml(std::string const& name);
 } // end namespace

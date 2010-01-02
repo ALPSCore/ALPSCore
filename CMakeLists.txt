@@ -90,11 +90,11 @@ else(BUILD_SHARED_LIBS)
   set_target_properties(alps PROPERTIES COMPILE_DEFINITIONS "${ALPS_STATIC_CPPFLAGS}")
 endif(BUILD_SHARED_LIBS)
 
-#if(MSVC)
-#  get_target_property(LIB_NAME alps LOCATION)
-#  add_custom_command(TARGET alps POST_BUILD
-#    COMMAND ${CMAKE_COMMAND} -E copy ${LIB_NAME} ${PROJECT_BINARY_DIR}/bin)
-#endif(MSVC)
+if(MSVC)
+  get_target_property(LIB_NAME alps LOCATION)
+  add_custom_command(TARGET alps POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy ${LIB_NAME} ${PROJECT_BINARY_DIR}/bin)
+endif(MSVC)
 
 if (ALPS_FOR_VISTRAILS)
   SET_TARGET_PROPERTIES(alps

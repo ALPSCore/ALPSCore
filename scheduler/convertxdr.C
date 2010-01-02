@@ -30,6 +30,8 @@
 /* $Id: convert2xml.C 3523 2009-12-12 05:52:24Z troyer $ */
 
 #include <boost/filesystem/operations.hpp>
+
+#include <alps/scheduler/convert.h>
 #include <alps/osiris/xdrdump.h>
 #include <alps/parser/xslt_path.h>
 #include <alps/scheduler/montecarlo.h>
@@ -40,7 +42,7 @@
 #include <stdexcept>
 
 namespace alps {
-
+ 
 void convert_params(const std::string& inname, const std::string& outfilename)
 {
   alps::ParameterList list;
@@ -65,7 +67,7 @@ void convert_params(const std::string& inname, const std::string& outfilename)
       << alps::attribute("file", basename+".out.xml")
       << alps::end_tag("OUTPUT");
 
-  for (int i = 0; i < list.size(); ++i) {
+  for (unsigned int i = 0; i < list.size(); ++i) {
     std::string taskname =
       basename+".task"+boost::lexical_cast<std::string,int>(i+1);
     out << alps::start_tag("TASK") << alps::attribute("status","new")
@@ -171,7 +173,7 @@ void convert_scheduler(const std::string& inname, const std::string& outname)
   dump >> list;
   std::vector<int> status;
   dump >> status;
-  for (int i=0;i<list.size();++i)
+  for (unsigned int i=0;i<list.size();++i)
     if (status[i]) {
       std::string xmlname = outname;
       std::string dumpname = inname;
@@ -181,7 +183,7 @@ void convert_scheduler(const std::string& inname, const std::string& outname)
         out << alps::start_tag("TASK") << alps::attribute("status",status_text[status[i]])
           << alps::start_tag("INPUT") << alps::attribute("file",xmlname+".xml")
           << alps::end_tag("INPUT") << alps::end_tag("TASK");
-        convert_simulation(dumpname,xmlname);
+        convert_simulation(dumpname,xmlname);  
       }
     }
    out << alps::end_tag("JOB");

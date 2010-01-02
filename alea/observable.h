@@ -107,16 +107,14 @@ class ALPS_DECL Observable {
   friend class ObservableSet;
   typedef uint32_t version_type;
   /** standard constructors: just assign the name */
-  Observable(const char* n = "") : name_(n), in_observable_set_(false) {}
-  /** standard constructors: just assign the name */
-  Observable(const std::string& n) : name_(n), in_observable_set_(false) {}
-  Observable(const Observable& o) : name_(o.name_), in_observable_set_(false) {}
+  Observable(const std::string& n);
+  Observable(const Observable& o);
 
   /** dtor */
-  virtual ~Observable() {}
+  virtual ~Observable();
 
   /** clones the observable */
-  virtual Observable* clone() const = 0;
+  virtual Observable* clone() const;
 
   /** returns the name */
   const std::string& name() const;
@@ -125,10 +123,10 @@ class ALPS_DECL Observable {
   virtual void rename(const std::string& newname);
 
   /** reset the observable */
-  virtual ALPS_DUMMY_VOID reset(bool equilibrated=false) = 0;
+  virtual ALPS_DUMMY_VOID reset(bool equilibrated=false);
 
   /** output the result */
-  virtual ALPS_DUMMY_VOID output(std::ostream&) const = 0;
+  virtual ALPS_DUMMY_VOID output(std::ostream&) const;
 
   /** output the result */
   virtual void write_xml(oxstream& oxs, const boost::filesystem::path& fn_hdf5=boost::filesystem::path()) const;
@@ -138,7 +136,7 @@ class ALPS_DECL Observable {
 
 #ifndef ALPS_WITHOUT_OSIRIS
   /// return a version ID uniquely identifying the class
-  virtual uint32_t version_id() const =0;
+  virtual uint32_t version_id() const;
 
   virtual void save(ODump& dump) const;
   virtual void load(IDump& dump);
@@ -156,7 +154,7 @@ class ALPS_DECL Observable {
   /// set the number of measurements to be discarded for thermalization
   virtual void set_thermalization(uint32_t todiscard);
   /// get the number of measurements discarded for thermalization
-  virtual uint32_t get_thermalization() const=0;
+  virtual uint32_t get_thermalization() const;
 
   // Sign problem support
 
