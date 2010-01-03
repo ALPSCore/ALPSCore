@@ -61,7 +61,7 @@ int main()
                  lib.get_hamiltonian("spin").basis().site_basis(),lib.get_hamiltonian("spin").basis().site_basis()) << "\n";
 
      alps::Parameters parms;
-     parms["Nmax"]=2;
+     parms["Nmax"]=2; 
      alps::HamiltonianDescriptor<short> ham = lib.get_hamiltonian("boson Hubbard",parms,true);
      //ham.set_parameters(parms);
      std::cout << "HBosonSite =\n"
