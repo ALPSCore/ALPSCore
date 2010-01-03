@@ -210,7 +210,7 @@ public:
   std::size_t mapped_site(std::size_t site) const { return mapping[site].get();}
   std::size_t num_sites() { return num;}
 private:
-  void check(int) const;
+  void check(unsigned int) const;
   std::vector<boost::optional<std::size_t> > mapping;
   std::size_t num;
 };

@@ -146,7 +146,7 @@ const HamiltonianDescriptor<short>& ModelLibrary::get_hamiltonian(const std::str
 
 HamiltonianDescriptor<short> ModelLibrary::get_hamiltonian(const std::string& name, Parameters const& parms, bool issymbolic) const
 {
-  Parameters p(parms);
+  Parameters p(parms); 
   alps::HamiltonianDescriptor<short> ham(get_hamiltonian(name));
   if (!issymbolic)
     p.copy_undefined(ham.default_parameters());

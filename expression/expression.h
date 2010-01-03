@@ -204,6 +204,7 @@ void Expression<T>::sort()
 {
   partial_evaluate(Evaluator<T>(false));
   std::sort(terms_.begin(),terms_.end(),term_less<T>());
+
   typename std::vector<Term<T> >::iterator prev,it;
   prev=terms_.begin();
   if (prev==terms_.end())
@@ -220,6 +221,8 @@ void Expression<T>::sort()
       terms_.erase(it);
       added=true;
       *prev=Term<T>(prev_term);
+	  it = prev;
+	  ++it;
     }
     else {
       if (added && is_zero(prev_term.first))

@@ -130,12 +130,14 @@ boost::multi_array<T,2> get_matrix(T,const SiteOperator& m, const SiteBasisDescr
 {
   boost::multi_array<std::pair<T,bool>,2> f_matrix = m.template matrix<T,I>(basis1,p);
   boost::multi_array<T,2> matrix(boost::extents[f_matrix.shape()[0]][f_matrix.shape()[1]]);
+
   for (std::size_t i=0;i<f_matrix.shape()[0];++i)
     for (std::size_t j=0;j<f_matrix.shape()[1];++j)
       if (!ignore_fermion && f_matrix[i][j].second)
         boost::throw_exception(std::runtime_error("Cannot convert fermionic operator to a bosonic matrix"));
       else
         matrix[i][j]=f_matrix[i][j].first;
+
   return matrix;
 }
 
@@ -163,7 +165,6 @@ template <class T, class I> boost::multi_array<std::pair<T,bool>,2>
 SiteOperator::matrix(const SiteBasisDescriptor<I>& b,  const Parameters& p) const
 {
   typedef typename expression_value_type_traits<T>::value_type value_type;
-
   SiteBasisDescriptor<I> basis(b);
   basis.set_parameters(p);
   Parameters parms(p);
@@ -183,7 +184,7 @@ SiteOperator::matrix(const SiteBasisDescriptor<I>& b,  const Parameters& p) cons
     for (std::size_t i=0;i<states.size();++i) {
     //calculate expression applied to state *it and store it into matrix
       for (typename expression::Expression<value_type>::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
-            SiteOperatorEvaluator<I,value_type> evaluator(states[i],basis,parms,site());
+        SiteOperatorEvaluator<I,value_type> evaluator(states[i],basis,parms,site());
         expression::Term<value_type> term(*tit);
         term.partial_evaluate(evaluator);
         unsigned int j = states.index(evaluator.state());
