@@ -4,7 +4,7 @@ include_directories(${PROJECT_SOURCE_DIR}/tool)
 include_directories(${Boost_ROOT_DIR})
 
 #define tests here. Each test needs ${name}.C ${name}.input ${name}.output
-FOREACH (name example1 example2 example3 example4 example5 example6 example7 example8 example9 example10 example11)
+FOREACH (name example1 example2 example3 example4 example5 example6 example7 example8 example9 example10 example11 label)
 
 	add_executable(lattice_${name} ${name}.C)
 	add_dependencies(lattice_${name} alps)
@@ -30,7 +30,7 @@ FOREACH (name example1 example2 example3 example4 example5 example6 example7 exa
 	)
 ENDFOREACH(name)
 
-FOREACH (name coloring label parity)
+FOREACH (name coloring parity)
 
 	add_executable(${name} ${name}.C)
 	add_dependencies(${name} alps)
