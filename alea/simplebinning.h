@@ -135,7 +135,7 @@ template <class T> const bool SimpleBinning<T>::has_tau;
 #endif
 
 template <class T>
-inline SimpleBinning<T>::SimpleBinning(std::size_t s) : AbstractBinning(s)
+inline SimpleBinning<T>::SimpleBinning(std::size_t)
 {
   reset();
 }
