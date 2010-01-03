@@ -48,7 +48,7 @@ class AbstractBinning {
   typedef T value_type;
   typedef typename obs_value_traits<T>::time_type time_type;
   typedef typename obs_value_traits<T>::convergence_type convergence_type;
-  AbstractBinning(uint32_t=0) { }
+  AbstractBinning(std::size_t=0) {}
   virtual ~AbstractBinning() {}
 
   time_type tau()                  const { boost::throw_exception(std::logic_error("Called non-implemented function of AbstractBinning")); return time_type(); }
