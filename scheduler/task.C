@@ -118,10 +118,12 @@ void Task::parse_task_file(bool read_parms_only)
 Parameters Task::parse_ext_task_file(std::string infilename)
 {
 	Parameters res;
+#ifdef ALPS_HAVE_HDF5
 	if (infilename.substr(infilename.size() - 3) == ".h5") {
 		hdf5::iarchive ar(infilename);
 		ar >> make_pvp("/parameters", res);
 	} else
+#endif
   {
     boost::filesystem::ifstream infile(infilename);
   
