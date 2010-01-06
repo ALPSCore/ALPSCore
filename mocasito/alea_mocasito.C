@@ -66,7 +66,7 @@ int main(void){
     measurements["signed_double_none_vec"]<<double_vec;
   }
 
-  measurements.write_hdf5("test.hdf5");
+//  measurements.write_hdf5("test.hdf5");
 
   measurements2<<SimpleObservable<double,DetailedBinning<double> >("double_detailed");
   measurements2<<SimpleObservable<double,SimpleBinning<double> >("double_simple");
@@ -89,8 +89,8 @@ int main(void){
   measurements2<<SignedObservable<SimpleObservable<std::valarray<double>,SimpleBinning<std::valarray<double> > > >("signed_double_simple_vec");
   measurements2<<SignedObservable<SimpleObservable<std::valarray<double>,NoBinning<std::valarray<double> > > >("signed_double_none_vec");
   
-  measurements2.read_hdf5("test.hdf5");
-  boost::filesystem::remove(boost::filesystem::path("test.hdf5"));
+//  measurements2.read_hdf5("test.hdf5");
+//  boost::filesystem::remove(boost::filesystem::path("test.hdf5"));
 
   //SimpleObservable<double,DetailedBinning<double> >dd_obs("double_detailed");
   /*SimpleObservable<double,SimpleBinning<double> >ds_obs("double_simple");
