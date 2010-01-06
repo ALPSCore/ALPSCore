@@ -185,16 +185,9 @@ public:
   }
   
 #ifdef ALPS_HAVE_HDF5
-	void serialize_label(hdf5::oarchive & ar, std::string const & label) const {
-		ar << make_pvp("labels/0", label);
-	}
-	void serialize_label(hdf5::oarchive & ar, std::vector<std::string> const & labels) const {
-		for (std::size_t i = 0; i < labels.size(); ++i)
-			ar << make_pvp("labels/" + boost::lexical_cast<std::string>(i), labels[i]);
-	}
 	void serialize(hdf5::oarchive & ar) const {
-		serialize_label(ar, label_);
 		ar
+			<< make_pvp("labels", label_)
 			<< make_pvp("count", count())
 			<< make_pvp("mean/value", mean())
 			<< make_pvp("mean/error", error())
