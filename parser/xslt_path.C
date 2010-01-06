@@ -30,6 +30,7 @@
 
 #include <alps/parser/xslt_path.h>
 #include <alps/config.h>
+#include <alps/version.h>
 #include <boost/throw_exception.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <stdexcept>

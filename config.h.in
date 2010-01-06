@@ -38,29 +38,6 @@
 // configured by autoconf
 //
 
-// ALPS version
-#undef ALPS_VERSION
-
-// ALPS version (full string)
-#undef ALPS_VERSION_STRING
-
-// latest publish year of ALPS
-#undef ALPS_YEAR
-
-// install path of ALPS
-#undef ALPS_PREFIX
-
-// source directory of ALPS
-#undef ALPS_SRCDIR
-
-// XSLT PATH
-#undef ALPS_XML_DIR
-
-// hostname where configure script was executed
-#undef ALPS_CONFIG_HOST
-
-// username who executed configure script
-#undef ALPS_CONFIG_USER
 
 //
 // C headers
@@ -162,30 +139,6 @@
 //
 // configured by cmake
 //
-
-// ALPS version
-#cmakedefine ALPS_VERSION "@ALPS_VERSION@"
-
-// ALPS version (full string)
-#cmakedefine ALPS_VERSION_STRING "@ALPS_VERSION_STRING@"
-
-// latest publish year of ALPS
-#cmakedefine ALPS_YEAR "@ALPS_YEAR@"
-
-// install path of ALPS
-#cmakedefine ALPS_PREFIX "@ALPS_PREFIX@"
-
-// source directory of ALPS
-#cmakedefine ALPS_SRCDIR "@ALPS_SRCDIR@"
-
-// XSLT PATH
-#cmakedefine ALPS_XML_DIR "@ALPS_XML_DIR@"
-
-// hostname where configure script was executed
-#cmakedefine ALPS_CONFIG_HOST "@ALPS_CONFIG_HOST@"
-
-// username who executed configure script
-#cmakedefine ALPS_CONFIG_USER "@ALPS_CONFIG_USER@"
 
 //
 // C headers

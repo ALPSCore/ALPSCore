@@ -31,6 +31,7 @@
 #include "queue.h"
 #include "version.h"
 
+#include <alps/version.h>
 #include <alps/config.h>
 #include <alps/osiris/comm.h>
 #include <alps/copyright.h>
