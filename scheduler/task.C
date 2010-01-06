@@ -120,7 +120,7 @@ Parameters Task::parse_ext_task_file(std::string infilename)
 	Parameters res;
 #ifdef ALPS_HAVE_HDF5
 	if (infilename.substr(infilename.size() - 3) == ".h5") {
-		hdf5::iarchive ar(infilename);
+		hdf5::iarchive ar(infilename.file_string());
 		ar >> make_pvp("/parameters", res);
 	} else
 #endif

@@ -224,7 +224,7 @@ void Worker::load_from_file(const boost::filesystem::path& fn)
   
 #ifdef ALPS_HAVE_HDF5
 	boost::filesystem::path h5fn = fn.branch_path() / (fn.leaf() + ".h5");
-	hdf5::iarchive h5(h5fn);
+	hdf5::iarchive h5(h5fn.file_string());
 //	h5 >> make_pvp("/", this);
 #endif
 }
@@ -247,7 +247,7 @@ void Worker::save_to_file(const boost::filesystem::path& fnpath) const
 	boost::filesystem::path h5bakpath = h5path.branch_path() / (h5path.leaf() + ".bak");
 	bool h5backup=boost::filesystem::exists(h5path);
 	{
-		hdf5::oarchive h5(h5backup ? h5bakpath : h5path);
+		hdf5::oarchive h5(h5backup ? h5bakpath.file_string() : h5path.file_string());
 		h5 << make_pvp("/", this);
 	}
 	if (h5backup) {

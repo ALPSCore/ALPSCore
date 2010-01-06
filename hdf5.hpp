@@ -29,7 +29,6 @@
 #include <boost/config.hpp>
 #include <boost/utility.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/filesystem/path.hpp>
 #include <boost/type_traits.hpp>
 #include <boost/mpl/or.hpp>
 #include <boost/mpl/and.hpp>
@@ -136,10 +135,10 @@ namespace alps {
 			struct read {};
 			template <typename Tag> class archive: boost::noncopyable {
 				public:
-					archive(boost::filesystem::path const & file) {
+					archive(std::string const & file) {
 						H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
-						hid_t id = H5Fopen(file.file_string().c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
-						_file = (id < 0 ? H5Fcreate(file.native_file_string().c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT) : id);
+						hid_t id = H5Fopen(file.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
+						_file = (id < 0 ? H5Fcreate(file.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT) : id);
 					}
 					~archive() {
 						H5Fflush(_file, H5F_SCOPE_GLOBAL);
