@@ -26,6 +26,7 @@
 *****************************************************************************/
 
 #include <alps/osiris/os.h>
+#include <alps/version.h>
 #include <iostream>
 
 int main() {

@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
       alps::ObservableSet obs;
       obs << alps::RealObservable("observable a");
       obs << alps::RealObservable("observable b");
-      obs.reset(true);
+
       for(int i=0; i < (1<<12); ++i) {
         obs["observable a"] << random();
         obs["observable b"] << random();

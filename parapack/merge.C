@@ -37,7 +37,6 @@ try {
   std::cout << std::setprecision(3);
 
   alps::RealObservable obs_1("obs_1");
-  obs_1.reset(true);
   for (int i = 0; i < 100; ++i)
     obs_1 << (double)i;
   std::cout << obs_1.mean() << " +/- " << obs_1.error() << std::endl;

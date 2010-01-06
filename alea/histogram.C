@@ -44,7 +44,6 @@ try {
   obs1 << alps::SimpleRealObservable("scalar 1");
   obs1 << alps::HistogramObservable<int>("histogram 1", 0, 10);
   obs1 << alps::HistogramObservable<double>("histogram 2", 0, 1, 0.1);
-  obs1.reset(true);
 
   for (int i=0; i < (1<<12); ++i) {
     double r = random();
@@ -60,7 +59,6 @@ try {
   obs2 << alps::SimpleRealObservable("scalar 1");
   obs2 << alps::HistogramObservable<int>("histogram 1", 0, 10);
   obs2 << alps::HistogramObservable<double>("histogram 2", 0, 1, 0.1);
-  obs2.reset(true);
 
   for (int i=0; i < (1<<10); ++i) {
     double r = random();

@@ -60,16 +60,12 @@ try {
   uint32_t thermalization_steps=parms.value_or_default("THERMALIZATION",1000);
   uint32_t number_of_steps=parms.value_or_default("STEPS",10000);
 
-  //ADD MEASUREMENTS TO THE OBSERVABLES
+  // THERMALIZATION
   //----------------------------------- 
   for(uint32_t i = 0; i < thermalization_steps; ++i){ 
-    measurement["observable a"] << random();
-    measurement["observable b"] << random()+1;
+    random();
+    random();
   }
-
-  //RESET OBSERVABLES (THERMALIZATION FINISHED)
-  //-------------------------------------------
-  measurement.reset(true);
 
   //ADD MEASUREMENTS TO THE OBSERVABLES
   //-----------------------------------

@@ -53,10 +53,6 @@ try {
   alps::RealObservable obs_b("observable b");
   alps::RealObservable obs_c("observable c");
   alps::RealObservable obs_d("observable d");
-  obs_a.reset(true);
-  obs_b.reset(true);
-  obs_c.reset(true);
-  obs_d.reset(true);
 
   for(int i=0; i < (1<<12); ++i) {
     obs_a << random();

@@ -59,19 +59,13 @@ try {
   uint32_t thermalization_steps=parms.value_or_default("THERMALIZATION",1000);
   uint32_t number_of_steps=parms.value_or_default("STEPS",10000);
 
-  //ADD MEASUREMENTS TO THE OBSERVABLES
+  //THERMALIZATION STEPS, NO MEASUREMENTS
   //-----------------------------------
   for(uint32_t i = 0; i < thermalization_steps; ++i){
-    obs_a << random();
-    obs_b << random()+1;
+    random();
+    random();
   }
 
-  //RESET OBSERVABLES (THERMALIZATION FINISHED)
-  //-------------------------------------------
-  obs_a.reset(true);
-  obs_b.reset(true);
-  obs_c.reset(true);
-  obs_d.reset(true);
 
   //ADD MEASUREMENTS TO THE OBSERVABLES
   //-----------------------------------

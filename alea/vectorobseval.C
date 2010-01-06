@@ -44,7 +44,6 @@ try {
   random_type random(random_int); 
 
   alps::RealVectorObservable obs_a("observable");
-  obs_a.reset(true);
 
   for(int i=0; i < (1<<12); ++i) {
     std::valarray<double> obs(2);

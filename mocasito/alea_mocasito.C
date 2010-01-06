@@ -37,7 +37,6 @@ int main(void){
   measurements<<SimpleObservable<std::valarray<float>,NoBinning<std::valarray<float> > >("float_none_vec");
   */
   measurements<<RealObservable("Sign");
-  measurements.reset(true);
   for(int i=0;i<100;++i){
     measurements["double_detailed"]<<0.5;
     measurements["double_simple"]<<0.5;
