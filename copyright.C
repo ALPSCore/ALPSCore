@@ -30,6 +30,7 @@
 
 #include <alps/config.h>
 #include <alps/copyright.h>
+#include <alps/version.h>
 
 void alps::print_copyright(std::ostream& out) {
   out << "based on the ALPS libraries version " << ALPS_VERSION << "\n";
