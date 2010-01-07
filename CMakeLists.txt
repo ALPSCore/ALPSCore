@@ -65,7 +65,7 @@ set(ALPS_SOURCES
     parapack/clone.C parapack/clone_info.C parapack/filelock.C parapack/logger.C
     parapack/job.C parapack/mc_worker.C parapack/measurement.C parapack/process_impl.C
     parapack/option.C parapack/parapack.C parapack/queue.C parapack/rng_helper.C
-    parapack/types.C parapack/util.C parapack/worker_factory.C
+    parapack/types.C parapack/util.C parapack/version.C parapack/worker_factory.C
     # parser
     parser/parser.C parser/xmlattributes.C parser/xmlhandler.C parser/xmlparser.C
     parser/xmlstream.C parser/xslt_path.C
