@@ -83,6 +83,9 @@ public:
   }
 
   template<class T>
+  ODump& operator<<(const T& x) {x.save(*this); return *this; }
+
+  template<class T>
   ODump& operator<<(const std::complex<T>& x) { write_complex(x); return *this; }
 
 
@@ -159,6 +162,9 @@ public:
     T im = get<T>();
     x = std::complex<T>(re,im);
   }
+
+  template<class T>
+  IDump& operator>>(T& x) { x.load(*this); return *this; }
 
   template<class T>
   IDump& operator>>(std::complex<T>& x) { read_complex(x); return *this; }
