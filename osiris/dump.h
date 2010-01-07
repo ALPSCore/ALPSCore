@@ -82,12 +82,17 @@ public:
     write_simple(std::imag(x));
   }
 
-  template<class T>
-  ODump& operator<<(const T& x) {x.save(*this); return *this; }
+  // template<class T>
+  // ODump& operator<<(const T& x) {x.save(*this); return *this; }
+  // 
+  // template<class T>
+  // ODump& operator<<(const std::complex<T>& x) { write_complex(x); return *this; }
 
   template<class T>
-  ODump& operator<<(const std::complex<T>& x) { write_complex(x); return *this; }
+  ODump& store(const T& x) {x.save(*this); return *this; }
 
+  template<class T>
+  ODump& store(const std::complex<T>& x) { write_complex(x); return *this; }
 
 /// INTERNAL ONLY
 # define ALPS_DUMP_DO_TYPE(T)                        \
@@ -123,6 +128,11 @@ private:
   uint32_t version_;
 };
 
+template<class T>
+ODump& operator<<(ODump& d, const T& x) {x.save(d); return d; }
+
+template<class T>
+ODump& operator<<(ODump& d, const std::complex<T>& x) { d.write_complex(x); return d; }
 
 class ALPS_DECL IDump {
 public:
@@ -163,11 +173,17 @@ public:
     x = std::complex<T>(re,im);
   }
 
-  template<class T>
-  IDump& operator>>(T& x) { x.load(*this); return *this; }
+  // template<class T>
+  // IDump& operator>>(T& x) { x.load(*this); return *this; }
+  // 
+  // template<class T>
+  // IDump& operator>>(std::complex<T>& x) { read_complex(x); return *this; }
 
   template<class T>
-  IDump& operator>>(std::complex<T>& x) { read_complex(x); return *this; }
+  IDump& load(T& x) { x.load(*this); return *this; }
+
+  template<class T>
+  IDump& load(std::complex<T>& x) { read_complex(x); return *this; }
 
 /// INTERNAL ONLY
 # define ALPS_DUMP_DO_TYPE(T) \
@@ -221,6 +237,12 @@ public:
 private:
   uint32_t version_;
 };
+
+template<class T>
+IDump& operator>>(IDump& d, T& x) { x.load(d); return d; }
+
+template<class T>
+IDump& operator>>(IDump& d, std::complex<T>& x) { d.read_complex(x); return d; }
 
 } // end namespace
 
