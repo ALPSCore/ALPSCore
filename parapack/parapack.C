@@ -1,0 +1,1132 @@
+/*****************************************************************************
+*
+* ALPS Project: Algorithms and Libraries for Physics Simulations
+*
+* ALPS Libraries
+*
+* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
+*
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+* FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
+* SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
+* FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
+* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+* DEALINGS IN THE SOFTWARE.
+*
+*****************************************************************************/
+
+#include "parapack.h"
+#include "clone.h"
+#include "clone_proxy.h"
+#include "filelock.h"
+#include "job_p.h"
+#include "logger.h"
+#include "queue.h"
+#include "version.h"
+
+#include <alps/config.h>
+#include <alps/osiris/comm.h>
+#include <alps/copyright.h>
+#include <alps/version.h>
+#include <boost/config.hpp>
+#include <boost/filesystem/operations.hpp>
+#include <boost/foreach.hpp>
+#include <boost/regex.hpp>
+#include <boost/timer.hpp>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <time.h>
+
+#if defined(ALPS_HAVE_UNISTD_H)
+# include <unistd.h>
+#elif defined(ALPS_HAVE_WINDOWS_H)
+# include <windows.h>
+#endif
+
+#ifdef _OPENMP
+# include <omp.h>
+#endif
+
+namespace alps {
+
+// compile_date
+#if defined(__DATE__) && defined(__TIME__)
+# define ALPS_COMPILE_DATE __DATE__ " " __TIME__
+#else
+# define ALPS_COMPILE_DATE "unknown"
+#endif
+std::string compile_date() { return ALPS_COMPILE_DATE; }
+
+namespace parapack {
+
+int start(int argc, char **argv) {
+  #ifndef BOOST_NO_EXCEPTIONS
+  try {
+  #endif
+
+    option opt(argc, argv);
+    int ret;
+    if (!opt.use_mpi)
+      ret = start_sgl(argc, argv, opt);
+    else
+      ret = start_mpi(argc, argv, opt);
+    return ret;
+
+  #ifndef BOOST_NO_EXCEPTIONS
+  }
+  catch (const std::exception& excp) {
+    std::cerr << excp.what() << std::endl;
+  }
+  catch (...) {
+    std::cerr << "Unknown exception occurred!" << std::endl;
+  }
+  return -1;
+  #endif
+}
+
+int evaluate(int argc, char **argv) {
+  #ifndef BOOST_NO_EXCEPTIONS
+  try {
+  #endif
+
+    evaluate_option opt(argc, argv);
+    if (!opt.valid) {
+      std::cerr << "Error: unknown command line option(s)\n";
+      opt.print(std::cerr);
+      return -1;
+    }
+    if (opt.show_help) {
+      opt.print(std::cout);
+      return 0;
+    }
+    if (opt.show_license) {
+      print_copyright(std::cout);
+      print_license(std::cout);
+      return 0;
+    }
+
+    BOOST_FOREACH(std::string const& file_str, opt.jobfiles) {
+      boost::filesystem::path file = complete(boost::filesystem::path(file_str)).normalize();
+      if (!exists(file)) {
+        std::cerr << "Error: file not found: " << file << std::endl;
+        return -1;
+      }
+      boost::filesystem::path basedir = file.branch_path();
+      std::string file_in_str;
+      std::string file_out_str;
+      std::vector<task> tasks;
+
+      std::clog << logger::header() << "starting evaluation on "
+                << alps::hostname() << std::endl;
+      int t = load_filename(file, file_in_str, file_out_str);
+      if (t == 1) {
+        // process all tasks
+        boost::filesystem::path file_in = complete(boost::filesystem::path(file_in_str), basedir);
+        boost::filesystem::path file_out = complete(boost::filesystem::path(file_out_str), basedir);
+        std::string simname;
+        load_tasks(file_in, file_out, basedir, /* check_parameter = */ false,
+                              simname, tasks);
+        std::clog << "  master input file  = " << file_in.native_file_string() << std::endl
+                  << "  master output file = " << file_out.native_file_string() << std::endl;
+        print_taskinfo(std::clog, tasks);
+        BOOST_FOREACH(task& t, tasks) t.evaluate();
+      } else {
+        // process one task
+        task t(file);
+        t.evaluate();
+      }
+      std::clog << logger::header() << "all tasks evaluated\n";
+    }
+    return 0;
+
+  #ifndef BOOST_NO_EXCEPTIONS
+  }
+  catch (const std::exception& excp) {
+    std::cerr << excp.what() << std::endl;
+  }
+  catch (...) {
+    std::cerr << "known exception occurred!" << std::endl;
+  }
+  return -1;
+  #endif
+}
+
+void print_copyright(std::ostream& os) {
+  worker_factory::print_copyright(os);
+  os << std::endl << "using " << PARAPACK_COPYRIGHT << std::endl;
+  alps::print_copyright(os);
+}
+
+void print_license(std::ostream& os) {
+  os << "Please look at the file LICENSE for the license conditions.\n";
+}
+
+std::string alps_version() {
+  return ALPS_VERSION_STRING "; configured on " ALPS_CONFIG_HOST " by " ALPS_CONFIG_USER "; compiled on " ALPS_COMPILE_DATE;
+}
+
+void print_taskinfo(std::ostream& os, std::vector<alps::task> const& tasks) {
+  uint32_t num_new = 0;
+  uint32_t num_running = 0;
+  uint32_t num_continuing = 0;
+  uint32_t num_suspended = 0;
+  uint32_t num_finished = 0;
+  uint32_t num_completed = 0;
+  BOOST_FOREACH(alps::task const& t, tasks) {
+    switch (t.status()) {
+    case alps::task_status::NotStarted :
+      ++num_new;
+      break;
+    case alps::task_status::Running :
+      ++num_running;
+      break;
+    case alps::task_status::Continuing :
+      ++num_continuing;
+      break;
+    case alps::task_status::Suspended :
+      ++num_suspended;
+      break;
+    case alps::task_status::Finished :
+      ++num_finished;
+      break;
+    case alps::task_status::Completed :
+      ++num_completed;
+      break;
+    default :
+      break;
+    }
+  }
+  os << logger::header() << "task status: "
+     << "total number of tasks = " << tasks.size() << std::endl
+     << "  new = " << num_new
+     << ", running = " << num_running
+     << ", continuing = " << num_continuing
+     << ", suspended = " << num_suspended
+     << ", finished = " << num_finished
+     << ", completed = " << num_completed << std::endl;
+}
+
+int load_filename(boost::filesystem::path const& file, std::string& file_in_str,
+  std::string& file_out_str) {
+  bool is_master;
+  alps::filename_xml_handler handler(file_in_str, file_out_str, is_master);
+  alps::XMLParser parser(handler);
+  parser.parse(file);
+  if (is_master) {
+    if (file_out_str.empty())
+      file_out_str = file.leaf();
+    if (file_in_str.empty())
+      file_in_str = regex_replace(file_out_str, boost::regex("\\.out\\.xml$"), ".in.xml");
+  }
+  return is_master ? 1 : 2;
+}
+
+void load_version(boost::filesystem::path const& file,
+  std::vector<std::pair<std::string, std::string> >& versions) {
+  alps::version_xml_handler handler(versions);
+  alps::XMLParser parser(handler);
+  parser.parse(file);
+}
+
+void load_tasks(boost::filesystem::path const& file_in,
+  boost::filesystem::path const& file_out, boost::filesystem::path const& basedir,
+  bool check_parameter, std::string& simname, std::vector<alps::task>& tasks) {
+  tasks.clear();
+  alps::job_tasks_xml_handler handler(simname, tasks, basedir);
+  alps::XMLParser parser(handler);
+  if (check_parameter || !exists(file_out))
+    parser.parse(file_in);
+  else
+    parser.parse(file_out);
+
+  if (check_parameter && exists(file_out)) {
+    std::vector<alps::task> tasks_out;
+    alps::job_tasks_xml_handler handler_out(simname, tasks_out, basedir);
+    alps::XMLParser parser_out(handler_out);
+    parser_out.parse(file_out);
+
+    if (tasks.size() == tasks_out.size()) {
+    } else if (tasks.size() > tasks_out.size()) {
+      std::clog << "Info: number of parameter sets has been increased from " << tasks_out.size()
+                << " to " << tasks.size() << std::endl;
+    } else {
+      std::clog << "Warning: number of parameter sets has been decreased from " << tasks_out.size()
+                << " to " << tasks.size() << std::endl;
+    }
+
+    int nc = std::min BOOST_PREVENT_MACRO_SUBSTITUTION (tasks.size(), tasks_out.size());
+    for (int i = 0; i < nc; ++i) {
+      if (tasks[i].file_in_str() != tasks_out[i].file_in_str()) {
+        std::cerr << "Error: input XML filename of task[" << i << "] has been modified\n";
+        boost::throw_exception(std::runtime_error("check parameter"));
+      }
+      if (tasks[i].file_out_str() != tasks_out[i].file_out_str()) {
+        std::cerr << "Error: output XML filename of task[" << i << "] has been modified\n";
+        boost::throw_exception(std::runtime_error("check parameter"));
+      }
+    }
+    BOOST_FOREACH(alps::task& t, tasks) t.check_parameter();
+  }
+}
+
+void save_tasks(boost::filesystem::path const& file, std::string const& simname,
+  std::string const& file_in_str, std::string const& file_out_str,
+  std::vector<alps::task>& tasks) {
+  alps::job_xml_writer(file, simname, file_in_str, file_out_str, alps_version(),
+    worker_factory::version(), tasks, true);
+}
+
+int run_sequential(int argc, char **argv) {
+
+#ifndef BOOST_NO_EXCEPTIONS
+  try {
+#endif
+
+  alps::ParameterList parameterlist;
+  switch (argc) {
+  case 1:
+    std::cin >> parameterlist;
+    break;
+  case 2: {
+    boost::filesystem::ifstream is(argv[1]);
+    is >> parameterlist;
+    break;
+  }
+  default:
+    boost::throw_exception(std::invalid_argument(
+      "Usage: " + std::string(argv[0]) + " [paramfile]"));
+  }
+
+  for (int i = 0; i < parameterlist.size(); ++i) {
+    alps::Parameters p = parameterlist[i];
+    boost::timer tm;
+    if (!p.defined("DIR_NAME")) p["DIR_NAME"] = ".";
+    if (!p.defined("BASE_NAME")) p["BASE_NAME"] = "task" + boost::lexical_cast<std::string>(i+1);
+    if (!p.defined("SEED")) p["SEED"] = static_cast<unsigned int>(time(0));
+    p["WORKER_SEED"] = p["SEED"];
+    p["DISORDER_SEED"] = p["SEED"];
+    std::cout << "[input parameters]\n" << p;
+    std::vector<alps::ObservableSet> obs;
+    boost::shared_ptr<alps::parapack::abstract_worker>
+      worker = worker_factory::make_worker(p);
+    worker->init_observables(p, obs);
+    bool thermalized = worker->is_thermalized();
+    if (thermalized) for (int i = 0; i < obs.size(); ++i) obs[i].reset(true);
+    while (worker->progress() < 1.0) {
+      worker->run(obs);
+      if (!thermalized && worker->is_thermalized()) {
+        for (int i = 0; i < obs.size(); ++i) obs[i].reset(true);
+        thermalized = true;
+      }
+    }
+    std::vector<alps::ObservableSet> obs_out;
+    boost::shared_ptr<alps::parapack::abstract_evaluator>
+      evaluator = evaluator_factory::make_evaluator(p);
+    evaluator->load(obs, obs_out);
+    evaluator->evaluate(obs_out);
+    std::cerr << "[speed]\nelapsed time = " << tm.elapsed() << " sec\n";
+    std::cout << "[results]\n";
+    if (obs_out.size() == 1) {
+      std::cout << obs_out[0];
+    } else {
+      for (int i = 0; i < obs_out.size(); ++i)
+        std::cout << "[[replica " << i << "]]\n" << obs_out[i];
+    }
+  }
+
+#ifndef BOOST_NO_EXCEPTIONS
+  }
+  catch (const std::exception& excp) {
+    std::cerr << excp.what() << std::endl;
+    alps::comm_exit(true);
+    return -1; }
+  catch (...) {
+    std::cerr << "Unknown exception occurred!" << std::endl;
+    alps::comm_exit(true);
+    return -1; }
+#endif
+  return 0;
+}
+
+int start_sgl(int argc, char** argv, option const& opt) {
+  if (!opt.valid) {
+    std::cerr << "Error: unknown command line option(s)\n";
+    opt.print(std::cerr);
+    return -1;
+  }
+  if (opt.show_help) {
+    opt.print(std::cout);
+    return 0;
+  }
+  if (opt.show_license) {
+    print_copyright(std::cout);
+    print_license(std::cout);
+    return 0;
+  }
+  print_copyright(std::clog);
+
+  boost::posix_time::ptime end_time =
+    boost::posix_time::second_clock::local_time() + opt.time_limit;
+  int num_total_threads =
+    (opt.default_total_threads || opt.auto_total_threads) ? max_threads() : opt.num_total_threads;
+
+  BOOST_FOREACH(std::string const& file_str, opt.jobfiles) {
+    process_helper process;
+    boost::filesystem::path file = complete(boost::filesystem::path(file_str)).normalize();
+    if (!exists(file)) {
+      std::cerr << "Error: file not found: " << file << std::endl;
+      return -1;
+    }
+    boost::filesystem::path basedir = file.branch_path();
+
+    // only for master scheduler
+    signal_handler signals;
+    std::string file_in_str;
+    std::string file_out_str;
+    boost::filesystem::path file_in;   // xxx.in.xml
+    boost::filesystem::path file_out;  // xxx.out.xml
+    boost::filesystem::path file_term; // xxx.term
+    filelock master_lock;
+    std::string simname;
+    std::vector<task> tasks;
+    task_queue_t task_queue;
+    int num_finished_tasks = 0;
+    int num_groups = num_total_threads / opt.threads_per_clone;
+#ifdef _OPENMP
+    omp_set_nested(true);
+#endif
+
+    //
+    // evaluation only
+    //
+
+    if (opt.evaluate_only) {
+      if (is_master()) {
+        std::clog << logger::header() << "starting evaluation on " << alps::hostname() << std::endl;
+        int t = load_filename(file, file_in_str, file_out_str);
+        if (t == 1) {
+          file_in = complete(boost::filesystem::path(file_in_str), basedir);
+          file_out = complete(boost::filesystem::path(file_out_str), basedir);
+          std::string simname;
+          load_tasks(file_in, file_out, basedir, /* check_parameter = */ false,
+                                simname, tasks);
+          std::clog << "  master input file  = " << file_in.native_file_string() << std::endl
+                    << "  master output file = " << file_out.native_file_string() << std::endl;
+          print_taskinfo(std::clog, tasks);
+          #pragma omp parallel for
+          for (int t = 0; t < tasks.size(); ++t) {
+            tasks[t].evaluate();
+          }
+        } else {
+          // process one task
+          task t(file);
+          t.evaluate();
+        }
+        std::clog << logger::header() << "all tasks evaluated\n";
+      }
+      return 0;
+    }
+
+    //
+    // rum simulations
+    //
+
+    if (is_master()) {
+      std::clog << logger::header() << "starting scheduler on " << alps::hostname() << std::endl;
+
+      if (load_filename(file, file_in_str, file_out_str) != 1) {
+        std::cerr << "invalid master file: " << file.native_file_string() << std::endl;
+        process.halt();
+      }
+      file_in = complete(boost::filesystem::path(file_in_str), basedir);
+      file_out = complete(boost::filesystem::path(file_out_str), basedir);
+      file_term = complete(boost::filesystem::path(regex_replace(file_out_str,
+                    boost::regex("\\.out\\.xml$"), ".term")), basedir);
+
+      master_lock.set_file(file_out);
+      master_lock.lock(0);
+      if (!master_lock.locked()) {
+        std::cerr << "Error: master file (" << file_out.native_file_string()
+                  << ") is being used by other scheduler.  Skip this file.\n";
+        continue;
+      }
+
+      std::clog << "  master input file  = " << file_in.native_file_string() << std::endl
+                << "  master output file = " << file_out.native_file_string() << std::endl
+                << "  termination file   = " << file_term.native_file_string() << std::endl
+                << "  total number of thread(s) = " << num_total_threads << std::endl
+                << "  thread(s) per clone       = " << opt.threads_per_clone << std::endl
+                << "  number of thread group(s) = " << num_groups << std::endl
+                << "  check parameter = " << (opt.check_parameter ? "yes" : "no") << std::endl
+                << "  auto evaluation = " << (opt.auto_evaluate ? "yes" : "no") << std::endl;
+      if (opt.has_time_limit)
+        std::clog << "  time limit = " << opt.time_limit.total_seconds() << " seconds\n";
+      else
+        std::clog << "  time limit = unlimited\n";
+      std::clog << "  interval between checkpointing  = "
+                << opt.checkpoint_interval.total_seconds() << " seconds\n"
+                << "  interval between progress report = "
+                << opt.report_interval.total_seconds() << " seconds\n";
+
+      load_tasks(file_in, file_out, basedir, opt.check_parameter, simname, tasks);
+      if (simname != "")
+        std::clog << "  simulation name = " << simname << std::endl;
+      BOOST_FOREACH(task const& t, tasks) {
+        if (t.status() == task_status::NotStarted || t.status() == task_status::Suspended ||
+            t.status() == task_status::Finished)
+          task_queue.push(task_queue_t::value_type(t));
+        if (t.status() == task_status::Finished || t.status() == task_status::Completed)
+          ++num_finished_tasks;
+      }
+      print_taskinfo(std::clog, tasks);
+      if (tasks.size() == 0) std::clog << "Warning: no tasks found\n";
+    }
+
+    #pragma omp parallel num_threads(num_groups)
+    {
+      thread_group group(thread_id());
+#ifdef _OPENMP
+      omp_set_num_threads(opt.threads_per_clone);
+#endif
+      #pragma omp master
+      {
+        std::clog << logger::header() << "starting " << num_groups << " threadgroup(s)\n";
+      }
+
+      check_queue_t check_queue; // check_queue is theread private
+      #pragma omp master
+      {
+        check_queue.push(next_taskinfo(opt.checkpoint_interval / 10));
+      } // end omp master
+
+      clone* clone_ptr = 0;
+      clone_proxy proxy(clone_ptr, opt.check_interval);
+
+      while (true) {
+
+        while (true) {
+          if (clone_ptr && clone_ptr->halted()) {
+            tid_t tid = clone_ptr->task_id();
+            cid_t cid = clone_ptr->clone_id();
+            #pragma omp critical
+            {
+              double progress = tasks[tid].progress();
+              tasks[tid].info_updated(cid, clone_ptr->info());
+              tasks[tid].halt_clone(proxy, cid, group);
+              if (progress < 1 && tasks[tid].progress() >= 1) ++num_finished_tasks;
+              save_tasks(file_out, simname, file_in_str, file_out_str, tasks);
+            } // end omp critical
+          } else if (clone_ptr && process.is_halting()) {
+            tid_t tid = clone_ptr->task_id();
+            cid_t cid = clone_ptr->clone_id();
+            #pragma omp critical
+            {
+              tasks[tid].suspend_clone(proxy, cid, group);
+            } // end omp critical
+          } else if (!process.is_halting() && !clone_ptr) {
+            tid_t tid = 0;
+            boost::optional<cid_t> cid;
+            #pragma omp critical
+            {
+              if (task_queue.size()) {
+                tid = task_queue.top().task_id;
+                task_queue.pop();
+                cid = tasks[tid].dispatch_clone(proxy, group);
+                if (cid && tasks[tid].can_dispatch())
+                  task_queue.push(task_queue_t::value_type(tasks[tid]));
+              }
+            } // end omp critical
+            if (cid) {
+              check_queue.push(next_checkpoint(tid, *cid, 0, opt.checkpoint_interval));
+              check_queue.push(next_report(tid, *cid, 0, opt.report_interval));
+            } else {
+              break;
+            }
+          } else if (!process.is_halting() && check_queue.size() && check_queue.top().due()) {
+            check_queue_t::value_type q = check_queue.top();
+            check_queue.pop();
+            if (q.type == check_type::taskinfo) {
+              #pragma omp critical
+              {
+                std::clog << logger::header() << "checkpointing task files\n";
+                BOOST_FOREACH(task const& t, tasks) { if (t.on_memory()) t.save(); }
+                save_tasks(file_out, simname, file_in_str, file_out_str, tasks);
+                print_taskinfo(std::clog, tasks);
+              } // end omp critical
+              check_queue.push(next_taskinfo(opt.checkpoint_interval));
+            } else if (q.type == check_type::checkpoint) {
+              if (tasks[q.task_id].on_memory() && tasks[q.task_id].is_running(q.clone_id)) {
+                #pragma omp critical
+                {
+                  tasks[q.task_id].checkpoint(proxy, q.clone_id);
+                } // end omp critical
+                check_queue.push(next_checkpoint(q.task_id, q.clone_id, q.group_id,
+                                                 opt.checkpoint_interval));
+              }
+            } else {
+              if (tasks[q.task_id].on_memory() && tasks[q.task_id].is_running(q.clone_id)) {
+                #pragma omp critical
+                {
+                  tasks[q.task_id].report(proxy, q.clone_id);
+                } // end omp critical
+                check_queue.push(next_report(q.task_id, q.clone_id, q.group_id,
+                                             opt.report_interval));
+              }
+            }
+          } else {
+            break;
+          }
+        }
+
+        #pragma omp master
+        {
+          if (!process.is_halting()) {
+            bool to_halt = false;
+            if (num_finished_tasks == tasks.size()) {
+              std::clog << logger::header() << "all tasks have been finished\n";
+              to_halt = true;
+            }
+            if (opt.time_limit != boost::posix_time::time_duration() &&
+                boost::posix_time::second_clock::local_time() > end_time) {
+              std::clog << logger::header() << "time limit reached\n";
+              to_halt = true;
+            }
+            signal_info_t s = signals();
+            if (s == signal_info::STOP || s == signal_info::TERMINATE) {
+              std::clog << logger::header() << "signal received\n";
+              to_halt = true;
+            }
+            if (exists(file_term)) {
+              std::clog << logger::header() << "termination file detected\n";
+              remove(file_term);
+              to_halt = true;
+            }
+            if (to_halt) {
+              #pragma omp critical
+              {
+                for (int t = 0; t < tasks.size(); ++t) tasks[t].suspend_remote_clones(proxy);
+              }
+              process.halt();
+            }
+          }
+        } // end omp master
+
+        if (clone_ptr) {
+
+          // work some
+          clone_ptr->run();
+
+        } else {
+
+          // nothing to do
+          if (group.group_id == 0) {
+            if (process.check_halted()) {
+              break;
+            } else {
+              #if defined(ALPS_HAVE_UNISTD_H)
+                sleep(1);    // sleep 1 Sec
+              #elif defined(ALPS_HAVE_WINDOWS_H)
+                Sleep(100); // sleep 100 mSec
+              #endif
+            }
+          } else {
+            break;
+          }
+
+        }
+      }
+
+      std::clog << logger::header() << logger::group(group) << " halted\n";
+    } // end omp parallel
+
+    print_taskinfo(std::clog, tasks);
+    if (opt.auto_evaluate) {
+      std::clog << logger::header() << "starting evaluation on "
+                << alps::hostname() << std::endl;
+      #pragma omp parallel for
+      for (int t = 0; t < tasks.size(); ++t) {
+        tasks[t].evaluate();
+      } // end omp parallel for
+      std::clog << logger::header() << "all tasks evaluated\n";
+    }
+
+    master_lock.release();
+  }
+  return 0;
+}
+
+#ifdef ALPS_HAVE_MPI
+
+int run_sequential_mpi(int argc, char** argv) {
+
+#ifndef BOOST_NO_EXCEPTIONS
+  try {
+#endif
+
+  boost::mpi::environment env(argc, argv);
+  boost::mpi::communicator world;
+
+  alps::ParameterList parameterlist;
+  if (is_master()) {
+    switch (argc) {
+    case 1:
+      std::cin >> parameterlist;
+      break;
+    case 2: {
+      boost::filesystem::ifstream is(argv[1]);
+      is >> parameterlist;
+      break;
+    }
+    default:
+      boost::throw_exception(std::invalid_argument(
+        "Usage: " + std::string(argv[0]) + " [paramfile]"));
+    }
+  }
+  broadcast(world, parameterlist, 0);
+
+  for (int i = 0; i < parameterlist.size(); ++i) {
+    alps::Parameters p = parameterlist[i];
+    world.barrier();
+    boost::timer tm;
+    if (!p.defined("DIR_NAME")) p["DIR_NAME"] = ".";
+    if (!p.defined("BASE_NAME")) p["BASE_NAME"] = "task" + boost::lexical_cast<std::string>(i+1);
+    if (!p.defined("SEED")) p["SEED"] = static_cast<unsigned int>(time(0));
+    p["WORKER_SEED"] = static_cast<unsigned int>(p["SEED"]) ^ (world.rank() << 11);
+    p["DISORDER_SEED"] = p["SEED"];
+    if (is_master()) std::cout << "[input parameters]\n" << p;
+    std::vector<alps::ObservableSet> obs;
+    boost::shared_ptr<alps::parapack::abstract_worker>
+      worker = parallel_worker_factory::make_worker(world, p);
+    worker->init_observables(p, obs);
+    bool thermalized = worker->is_thermalized();
+    if (thermalized) {
+      BOOST_FOREACH(alps::ObservableSet& o, obs) { o.reset(true); }
+    }
+    while (worker->progress() < 1.0) {
+      worker->run(obs);
+      if (!thermalized && worker->is_thermalized()) {
+        BOOST_FOREACH(alps::ObservableSet& o, obs) { o.reset(true); }
+        thermalized = true;
+      }
+    }
+    // if (is_master()) {
+    //   std::vector<alps::ObservableSet> obs_slave;
+    //   for (int p = 1; p < world.size(); ++p) {
+    //     world.recv(p, 0, obs_slave);
+    //     for (int j = 0; j < obs.size(); ++j) obs[j] << obs_slave[j];
+    //   }
+    // } else {
+    //   world.send(0, 0, obs);
+    //}
+    if (is_master()) {
+      std::vector<alps::ObservableSet> obs_out;
+      boost::shared_ptr<alps::parapack::abstract_evaluator>
+        evaluator = evaluator_factory::make_evaluator(p);
+      evaluator->load(obs, obs_out);
+      evaluator->evaluate(obs_out);
+      std::cerr << "[speed]\nelapsed time = " << tm.elapsed() << " sec\n";
+      std::cout << "[results]\n";
+      if (obs_out.size() == 1) {
+        std::cout << obs_out[0];
+      } else {
+        for (int i = 0; i < obs_out.size(); ++i)
+          std::cout << "[[replica " << i << "]]\n" << obs_out[i];
+      }
+    }
+    world.barrier();
+  }
+
+#ifndef BOOST_NO_EXCEPTIONS
+  }
+  catch (const std::exception& excp) {
+    std::cerr << excp.what() << std::endl;
+    alps::comm_exit(true);
+    return -1; }
+  catch (...) {
+    std::cerr << "Unknown exception occurred!" << std::endl;
+    alps::comm_exit(true);
+    return -1; }
+#endif
+  return 0;
+}
+
+#else // ALPS_HAVE_MPI
+
+int run_sequential_mpi(int argc, char** argv) {
+  std::cerr << "This program has not been compiled for use with MPI\n";
+  return -1;
+}
+
+#endif // ALPS_HAVE_MPI
+
+#ifdef ALPS_HAVE_MPI
+
+int start_mpi(int argc, char** argv, option const& opt) {
+  boost::mpi::environment env(argc, argv);
+  boost::mpi::communicator world;
+  if (!opt.valid) {
+    if (world.rank() == 0) {
+      std::cerr << "Error: unknown command line option(s)\n";
+      opt.print(std::cerr);
+    }
+    return -1;
+  }
+  if (opt.show_help) {
+    if (world.rank() == 0) opt.print(std::cout);
+    return 0;
+  }
+  if (opt.show_license) {
+    if (world.rank() == 0) {
+      print_copyright(std::cout);
+      print_license(std::cout);
+    }
+    return 0;
+  }
+  if (world.rank() == 0) print_copyright(std::clog);
+
+  boost::posix_time::ptime end_time =
+    boost::posix_time::second_clock::local_time() + opt.time_limit;
+  int num_total_threads;
+  if (opt.default_total_threads)
+    num_total_threads = world.size();
+  else if (opt.auto_total_threads)
+    num_total_threads = max_threads() * world.size();
+  else
+    num_total_threads = opt.num_total_threads;
+
+  BOOST_FOREACH(std::string const& file_str, opt.jobfiles) {
+    process_helper_mpi
+      process(world, world.size() * opt.threads_per_clone / num_total_threads);
+    boost::filesystem::path file = complete(boost::filesystem::path(file_str)).normalize();
+    if (!exists(file)) {
+      if (world.rank() == 0)
+        std::cerr << "Error: file not found: " << file << std::endl;
+      return -1;
+    }
+    boost::filesystem::path basedir = file.branch_path();
+
+    // only for master scheduler
+    signal_handler signals;
+    std::string file_in_str;
+    std::string file_out_str;
+    boost::filesystem::path file_in;   // xxx.in.xml
+    boost::filesystem::path file_out;  // xxx.out.xml
+    boost::filesystem::path file_term; // xxx.term
+    filelock master_lock;
+    std::string simname;
+    std::vector<task> tasks;
+    task_queue_t task_queue;
+    check_queue_t check_queue;
+    int num_finished_tasks = 0;
+#ifdef _OPENMP
+    omp_set_nested(true);
+#endif
+
+    //
+    // evaluation only
+    //
+
+    if (opt.evaluate_only) {
+      if (world.rank() == 0) {
+        std::clog << logger::header() << "starting evaluation on " << alps::hostname() << std::endl;
+        int t = load_filename(file, file_in_str, file_out_str);
+        if (t == 1) {
+          file_in = complete(boost::filesystem::path(file_in_str), basedir);
+          file_out = complete(boost::filesystem::path(file_out_str), basedir);
+          std::string simname;
+          load_tasks(file_in, file_out, basedir, /* check_parameter = */ false,
+                                simname, tasks);
+          std::clog << "  master input file  = " << file_in.native_file_string() << std::endl
+                    << "  master output file = " << file_out.native_file_string() << std::endl;
+          print_taskinfo(std::clog, tasks);
+          BOOST_FOREACH(task& t, tasks) t.evaluate();
+        } else {
+          // process one task
+          task t(file);
+          t.evaluate();
+        }
+        std::clog << logger::header() << "all tasks evaluated\n";
+      }
+      return 0;
+    }
+
+    //
+    // rum simulations
+    //
+
+    if (world.rank() == 0) {
+      std::clog << logger::header() << "starting scheduler on " << alps::hostname() << std::endl;
+
+      if (load_filename(file, file_in_str, file_out_str) != 1) {
+        std::cerr << "invalid master file: " << file.native_file_string() << std::endl;
+        process.halt();
+      }
+      file_in = complete(boost::filesystem::path(file_in_str), basedir);
+      file_out = complete(boost::filesystem::path(file_out_str), basedir);
+      file_term = complete(boost::filesystem::path(regex_replace(file_out_str,
+                    boost::regex("\\.out\\.xml$"), ".term")), basedir);
+
+      master_lock.set_file(file_out);
+      master_lock.lock(0);
+      if (!master_lock.locked()) {
+        std::cerr << "Error: master file (" << file_out.native_file_string()
+                  << ") is being used by other scheduler.  Skip this file.\n";
+        continue;
+      }
+
+      std::clog << "  master input file  = " << file_in.native_file_string() << std::endl
+                << "  master output file = " << file_out.native_file_string() << std::endl
+                << "  termination file   = " << file_term.native_file_string() << std::endl
+                << "  total number of process(es)/thread(s) = "
+                << process.num_total_processes() << "/" << num_total_threads << std::endl
+                << "  process(es)/thread(s) per clone       = "
+                << process.num_procs_per_group() << "/" << opt.threads_per_clone << std::endl
+                << "  number of process group(s)            = "
+                << process.num_groups() << std::endl
+                << "  check parameter = " << (opt.check_parameter ? "yes" : "no") << std::endl
+                << "  auto evaluation = " << (opt.auto_evaluate ? "yes" : "no") << std::endl;
+      if (opt.time_limit != boost::posix_time::time_duration())
+        std::clog << "  time limit = " << opt.time_limit.total_seconds() << " seconds\n";
+      else
+        std::clog << "  time limit = unlimited\n";
+      std::clog << "  interval between checkpointing  = "
+                << opt.checkpoint_interval.total_seconds() << " seconds\n"
+                << "  interval between progress report = "
+                << opt.report_interval.total_seconds() << " seconds\n";
+
+      load_tasks(file_in, file_out, basedir, opt.check_parameter, simname, tasks);
+      if (simname != "")
+        std::clog << "  simulation name = " << simname << std::endl;
+      BOOST_FOREACH(task const& t, tasks) {
+        if (t.status() == task_status::NotStarted || t.status() == task_status::Suspended ||
+            t.status() == task_status::Finished)
+          task_queue.push(task_queue_t::value_type(t));
+        if (t.status() == task_status::Finished || t.status() == task_status::Completed)
+          ++num_finished_tasks;
+      }
+      print_taskinfo(std::clog, tasks);
+      if (tasks.size() == 0) std::clog << "Warning: no tasks found\n";
+      check_queue.push(next_taskinfo(opt.checkpoint_interval / 10));
+    }
+
+#if defined(__APPLE_CC__) && __GNUC__ == 4 && __GNUC_MINOR__ == 2
+    // g++ on Mac OS X Snow Leopard requires the following OpenMP directive
+    #pragma omp parallel num_threads(1)
+#endif
+    {
+#ifdef _OPENMP
+      omp_set_num_threads(num_total_threads / process.num_total_processes());
+#endif
+
+      clone_mpi* clone_ptr = 0;
+      while (true) {
+
+        // server process
+        if (world.rank() == 0) {
+          clone_proxy_mpi proxy(clone_ptr, opt.check_interval, process.comm_ctrl(),
+                                process.comm_work());
+
+          if (!process.is_halting()) {
+            bool to_halt = false;
+            if (num_finished_tasks == tasks.size()) {
+              std::clog << logger::header() << "all tasks have been finished\n";
+              to_halt = true;
+            }
+            if (opt.time_limit != boost::posix_time::time_duration() &&
+                boost::posix_time::second_clock::local_time() > end_time) {
+              std::clog << logger::header() << "time limit reached\n";
+              to_halt = true;
+            }
+            signal_info_t s = signals();
+            if (s == signal_info::STOP || s == signal_info::TERMINATE) {
+              std::clog << logger::header() << "signal received\n";
+              to_halt = true;
+            }
+            if (exists(file_term)) {
+              std::clog << logger::header() << "termination file detected\n";
+              remove(file_term);
+              to_halt = true;
+            }
+            if (to_halt) {
+              BOOST_FOREACH(task& t, tasks) t.suspend_remote_clones(proxy);
+              process.halt();
+            }
+          }
+
+          while (!process.is_halting() || process.num_allocated() > 0) {
+            boost::optional<boost::mpi::status> status
+              = process.comm_ctrl().iprobe(boost::mpi::any_source, boost::mpi::any_tag);
+            if (status) {
+              if (status->tag() == mcmp_tag::clone_info) {
+                clone_info_msg_t msg;
+                process.comm_ctrl().recv(boost::mpi::any_source, status->tag(), msg);
+                if (msg.info.progress() < 1) {
+                  std::clog << logger::header() << "progress report: "
+                            << logger::clone(msg.task_id, msg.clone_id) << " is "
+                            << msg.info.phase()
+                            << " (" << precision(msg.info.progress() * 100, 3) << "% done)\n";
+                } else {
+                  tasks[msg.task_id].info_updated(msg.clone_id, msg.info);
+                  tasks[msg.task_id].halt_clone(proxy, msg.clone_id, process_group(msg.group_id));
+                }
+              } else if (status->tag() == mcmp_tag::clone_checkpoint) {
+                clone_info_msg_t msg;
+                process.comm_ctrl().recv(boost::mpi::any_source, status->tag(), msg);
+                std::clog << logger::header() << "regular checkpoint: "
+                          << logger::clone(msg.task_id, msg.clone_id) << " is " << msg.info.phase()
+                          << " (" << precision(msg.info.progress() * 100, 3) << "% done)\n";
+                if (tasks[msg.task_id].on_memory() && tasks[msg.task_id].is_running(msg.clone_id))
+                  tasks[msg.task_id].info_updated(msg.clone_id, msg.info);
+              } else if (status->tag() == mcmp_tag::clone_suspend) {
+                clone_info_msg_t msg;
+                process.comm_ctrl().recv(boost::mpi::any_source, status->tag(), msg);
+                tasks[msg.task_id].clone_suspended(msg.clone_id, process_group(msg.group_id),
+                                                   msg.info);
+                if (tasks[msg.task_id].num_running() == 0) {
+                  tasks[msg.task_id].save();
+                  tasks[msg.task_id].halt();
+                  save_tasks(file_out, simname, file_in_str, file_out_str, tasks);
+                }
+                process.release(msg.group_id);
+              } else if (status->tag() == mcmp_tag::clone_halt) {
+                clone_halt_msg_t msg;
+                process.comm_ctrl().recv(boost::mpi::any_source, status->tag(), msg);
+                task_status_t old_status = tasks[msg.task_id].status();
+                tasks[msg.task_id].clone_halted(msg.clone_id);
+                if (old_status != task_status::Continuing && old_status != task_status::Idling &&
+                    (tasks[msg.task_id].status() == task_status::Continuing ||
+                     tasks[msg.task_id].status() == task_status::Idling))
+                  ++num_finished_tasks;
+                if (tasks[msg.task_id].num_running() == 0) {
+                  tasks[msg.task_id].save();
+                  tasks[msg.task_id].halt();
+                  save_tasks(file_out, simname, file_in_str, file_out_str, tasks);
+                }
+                process.release(msg.group_id);
+              } else if (status->tag() == mcmp_tag::scheduler_halt) {
+                //// 2008-11-14 ST workaround for bug in process_mpi (or boost.MPI ?)
+                break;
+              } else {
+                std::clog << "Warning: ignoring a message with an unknown tag " << status->tag()
+                          << std::endl;
+              }
+            } else if (clone_ptr && clone_ptr->halted()) {
+              tid_t tid = clone_ptr->task_id();
+              cid_t cid = clone_ptr->clone_id();
+              double progress = tasks[tid].progress();
+              tasks[tid].info_updated(cid, clone_ptr->info());
+              tasks[tid].halt_clone(proxy, cid, process_group(0));
+              if (progress < 1 && tasks[tid].progress() >= 1) ++num_finished_tasks;
+              // save_tasks(file_out, simname, file_in_str, file_out_str, tasks);
+              process.release(0);
+            } else if (clone_ptr && process.is_halting()) {
+              tid_t tid = clone_ptr->task_id();
+              cid_t cid = clone_ptr->clone_id();
+              tasks[tid].suspend_clone(proxy, cid, process_group());
+              process.release(0);
+            } else if (!process.is_halting() && process.num_free() && task_queue.size()) {
+              process_group g = process.allocate();
+              tid_t tid = task_queue.top().task_id;
+              task_queue.pop();
+              boost::optional<cid_t> cid = tasks[tid].dispatch_clone(proxy, g);
+              if (cid) {
+                check_queue.push(next_checkpoint(tid, *cid, g.group_id, opt.checkpoint_interval));
+                check_queue.push(next_report(tid, *cid, g.group_id, opt.report_interval));
+                if (tasks[tid].can_dispatch())
+                  task_queue.push(task_queue_t::value_type(tasks[tid]));
+              } else {
+                process.release(g);
+              }
+            } else if (!process.is_halting() && check_queue.size() && check_queue.top().due()) {
+              check_queue_t::value_type q = check_queue.top();
+              check_queue.pop();
+              if (q.type == check_type::taskinfo) {
+                std::clog << logger::header() << "checkpointing task files\n";
+                BOOST_FOREACH(task const& t, tasks) { if (t.on_memory()) t.save(); }
+                save_tasks(file_out, simname, file_in_str, file_out_str, tasks);
+                print_taskinfo(std::clog, tasks);
+                check_queue.push(next_taskinfo(opt.checkpoint_interval));
+              } else if (q.type == check_type::checkpoint) {
+                if (tasks[q.task_id].on_memory() && tasks[q.task_id].is_running(q.clone_id)) {
+                  tasks[q.task_id].checkpoint(proxy, q.clone_id);
+                  check_queue.push(next_checkpoint(q.task_id, q.clone_id, q.group_id,
+                                                   opt.checkpoint_interval));
+                }
+              } else {
+                if (tasks[q.task_id].on_memory() && tasks[q.task_id].is_running(q.clone_id)) {
+                  tasks[q.task_id].report(proxy, q.clone_id);
+                  check_queue.push(next_report(q.task_id, q.clone_id, q.group_id,
+                                               opt.report_interval));
+                }
+              }
+            } else {
+              break;
+            }
+          }
+        }
+
+        if (clone_ptr) {
+
+          // work some
+          clone_ptr->run();
+          if (world.rank() != 0 && clone_ptr->halted()) {
+            delete clone_ptr;
+            clone_ptr = 0;
+          }
+
+        } else {
+
+          if (world.rank() != 0 && process.comm_ctrl().iprobe(0, mcmp_tag::clone_create)) {
+            // create a clone
+            clone_create_msg_t msg;
+            process.comm_ctrl().recv(0, mcmp_tag::clone_create, msg);
+            clone_ptr = new clone_mpi(process.comm_ctrl(), process.comm_work(), msg);
+          }
+
+        }
+
+        // check if all processes are halted
+        if (process.check_halted()) {
+          if (world.rank() == 0) {
+            print_taskinfo(std::clog, tasks);
+            std::clog << logger::header() << "all processes halted\n";
+            if (opt.auto_evaluate) {
+              std::clog << logger::header() << "starting evaluation on "
+                        << alps::hostname() << std::endl;
+              BOOST_FOREACH(task& t, tasks) t.evaluate();
+              std::clog << logger::header() << "all tasks evaluated\n";
+            }
+          }
+          break;
+        }
+      }
+    } // end omp parallel
+
+    if (world.rank() == 0) master_lock.release();
+  }
+  return 0;
+}
+
+#else // ALPS_HAVE_MPI
+
+int start_mpi(int, char**, option const&) {
+  boost::throw_exception(std::runtime_error(
+    "This program has not been compiled for use with MPI"));
+  return -1;
+}
+
+#endif // ALPS_HAVE_MPI
+
+} // end namespace parapack
+} // end namespace alps

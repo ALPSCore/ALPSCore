@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -25,13 +25,15 @@
 *
 *****************************************************************************/
 
-#include "process_mpi.h"
-#include <boost/lexical_cast.hpp>
-#include <boost/throw_exception.hpp>
-#include <algorithm>
-#include <stdexcept>
+#include "process.h"
+#ifdef ALPS_HAVE_MPI
+# include <boost/lexical_cast.hpp>
+# include <boost/throw_exception.hpp>
+# include <algorithm>
+# include <stdexcept>
+#endif // ALPS_HAVE_MPI
 
-namespace mpi = boost::mpi;
+#ifdef ALPS_HAVE_MPI
 
 namespace alps {
 
@@ -39,8 +41,8 @@ namespace alps {
 // process_helper_mpi
 //
 
-process_helper_mpi::process_helper_mpi(mpi::communicator const& comm, int np) :
-  ctrl_(comm, mpi::comm_duplicate), np_(np), halt_stage_(0), num_halted_(0) {
+process_helper_mpi::process_helper_mpi(boost::mpi::communicator const& comm, int np) :
+  ctrl_(comm, boost::mpi::comm_duplicate), np_(np), halt_stage_(0), num_halted_(0) {
 
   int ng = comm.size() / np_;
 
@@ -114,8 +116,8 @@ bool process_helper_mpi::check_halted() {
       }
     }
     if (halt_stage_ == 2) {
-      while (ctrl_.iprobe(mpi::any_source, mcmp_tag::scheduler_halt)) {
-        ctrl_.recv(mpi::any_source, mcmp_tag::scheduler_halt);
+      while (ctrl_.iprobe(boost::mpi::any_source, mcmp_tag::scheduler_halt)) {
+        ctrl_.recv(boost::mpi::any_source, mcmp_tag::scheduler_halt);
         ++num_halted_;
       }
       if (num_halted_ == ctrl_.size()) halt_stage_ = 3;
@@ -131,3 +133,5 @@ bool process_helper_mpi::check_halted() {
 }
 
 } // end namespace alps
+
+#endif // ALPS_HAVE_MPI

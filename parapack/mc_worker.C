@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -37,7 +37,7 @@ namespace parapack {
 dumb_worker::~dumb_worker() {}
 
 void dumb_worker::print_copyright(std::ostream& out) {
-  out << "ALPS/parapack dump worker " << PARAPACK_VERSION << std::endl;
+  out << "ALPS/parapack dumb worker\n";
 }
 
 void dumb_worker::init_observables(Parameters const&, ObservableSet&) {}

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -26,15 +26,6 @@
 *****************************************************************************/
 
 #include "option.h"
-#include "process.h"
-
-#include <boost/filesystem/operations.hpp>
-#include <boost/foreach.hpp>
-#include <boost/program_options.hpp>
-
-#ifdef _OPENMP
-# include <omp.h>
-#endif
 
 namespace alps {
 namespace parapack {
@@ -42,15 +33,12 @@ namespace parapack {
 namespace po = boost::program_options;
 namespace pt = boost::posix_time;
 
-option::option(int argc, char** argv, int np, int pid)
-  : time_limit(), num_total_threads(np == 1 ? max_threads() : np), threads_per_clone(1),
-    check_parameter(false), auto_evaluate(false), evaluate_only(false), jobfiles(), valid(true) {
-
-  check_interval = pt::millisec(100);
-  checkpoint_interval = pt::seconds(3600);
-  report_interval = pt::seconds(600);
-
-  po::options_description desc("Allowed options");
+option::option(int argc, char** argv)
+  : desc("Allowed options"), has_time_limit(false), time_limit(), check_interval(pt::millisec(100)),
+    checkpoint_interval(pt::seconds(3600)), report_interval(pt::seconds(600)),
+    default_total_threads(true), auto_total_threads(false), num_total_threads(1),
+    threads_per_clone(1), check_parameter(false), auto_evaluate(false), evaluate_only(false),
+    use_mpi(false), jobfiles(), valid(true), show_help(false), show_license(false) {
   desc.add_options()
     ("help,h", "produce help message")
     ("license,l", "print license conditions")
@@ -61,6 +49,7 @@ option::option(int argc, char** argv, int np, int pid)
     ("checkpoint-interval", po::value<int>(),
      "time between checkpointing [unit = sec; default = 3600s]")
     ("evaluate", "evaluation mode")
+    ("mpi", "run in parallel using MPI")
     ("Nmin", "obsolete")
     ("Nmax", "obsolete")
     ("report-interval", po::value<int>(),
@@ -84,11 +73,14 @@ option::option(int argc, char** argv, int np, int pid)
     po::notify(vm);
   }
   catch (...) {
-    if (pid == 0) std::cerr << "Error: unknown command line option(s)\n";
     valid = false;
     return;
   }
 
+  if (vm.count("help"))
+    show_help = true;
+  if (vm.count("license"))
+    show_license = true;
   if (vm.count("auto-evaluate"))
     auto_evaluate = true;
   if (vm.count("check-parameter"))
@@ -99,48 +91,32 @@ option::option(int argc, char** argv, int np, int pid)
     checkpoint_interval = pt::seconds(vm["checkpoint-interval"].as<int>());
   if (vm.count("report-interval"))
     report_interval = pt::seconds(vm["report-interval"].as<int>());
+  if (vm.count("mpi"))
+    use_mpi = true;
   if (vm.count("evaluate"))
     evaluate_only = true;
-  if (vm.count("time-limit"))
+  if (vm.count("time-limit")) {
+    has_time_limit = true;
     time_limit = pt::seconds(vm["time-limit"].as<int>());
+  }
   if (vm.count("threads-per-clone"))
     threads_per_clone = vm["threads-per-clone"].as<int>();
   if (vm.count("total-threads")) {
+    default_total_threads = false;
     if (vm["total-threads"].as<std::string>() == "auto") {
-      num_total_threads = np * max_threads();
+      auto_total_threads = true;
     } else {
       num_total_threads = boost::lexical_cast<int>(vm["total-threads"].as<std::string>());
     }
   }
-  if (pid == 0) {
-    if (vm.count("help")) {
-      std::cout << desc << std::endl;
-      valid = false;
-    }
-    if (vm.count("license")) {
-      std::cout << "license" << std::endl;
-      valid = false;
-    }
-    if (num_total_threads < 1 || threads_per_clone < 1 ||
-        threads_per_clone > num_total_threads || num_total_threads % threads_per_clone != 0) {
-      std::cerr << "Error: invalid number of threads\n";
-      valid = false;
-    }
-  }
   if (vm.count("input-file"))
     jobfiles = vm["input-file"].as<std::vector<std::string> >();
-  if (pid == 0) {
-    BOOST_FOREACH(std::string const& file, jobfiles) {
-      if (!exists(complete(boost::filesystem::path(file)))) {
-        std::cerr << "Error: file not found: " << file << std::endl;
-        valid = false;
-      }
-    }
-  }
 }
 
-evaluate_option::evaluate_option(int argc, char** argv) : jobfiles(), valid(true) {
-  po::options_description desc("Allowed options");
+void option::print(std::ostream& os) const { desc.print(os); }
+
+evaluate_option::evaluate_option(int argc, char** argv)
+  : desc("Allowed options"), jobfiles(), valid(true), show_help(false), show_license(false) {
   desc.add_options()
     ("help,h", "produce help message")
     ("license,l", "print license conditions")
@@ -149,27 +125,24 @@ evaluate_option::evaluate_option(int argc, char** argv) : jobfiles(), valid(true
   p.add("input-file", -1);
 
   po::variables_map vm;
-  po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
-  po::notify(vm);
-
-  if (vm.count("help")) {
-    std::cout << desc << std::endl;
-    valid = false;
+  try {
+    po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
+    po::notify(vm);
   }
-  if (vm.count("license")) {
-    std::cout << "license" << std::endl;
+  catch (...) {
     valid = false;
+    return;
   }
 
+  if (vm.count("help"))
+    show_help = true;
+  if (vm.count("license"))
+    show_license = true;
   if (vm.count("input-file"))
     jobfiles = vm["input-file"].as<std::vector<std::string> >();
-  BOOST_FOREACH(std::string const& file, jobfiles) {
-    if (!exists(complete(boost::filesystem::path(file)))) {
-      std::cerr << "Error: file not found: " << file << std::endl;
-      valid = false;
-    }
-  }
 }
+
+void evaluate_option::print(std::ostream& os) const { desc.print(os); }
 
 } // end namespace parapack
 } // end namespace alps

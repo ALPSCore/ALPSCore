@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -28,33 +28,33 @@
 #ifndef PARAPACK_OPTION_H
 #define PARAPACK_OPTION_H
 
-#include "process.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <string>
-#include <vector>
+#include <boost/program_options.hpp>
 
 namespace alps {
 namespace parapack {
 
 struct option {
-  option(int argc, char** argv, int np = 1, int pid = 0);
-  boost::posix_time::time_duration check_interval;
-  boost::posix_time::time_duration checkpoint_interval;
-  boost::posix_time::time_duration report_interval;
-  boost::posix_time::time_duration time_limit;
-  int num_total_threads;
-  int threads_per_clone;
-  bool check_parameter;
-  bool auto_evaluate;
-  bool evaluate_only;
+  option(int argc, char** argv);
+  boost::program_options::options_description desc;
+  bool has_time_limit;
+  boost::posix_time::time_duration time_limit, check_interval, checkpoint_interval, report_interval;
+  bool default_total_threads, auto_total_threads;
+  int num_total_threads, threads_per_clone;
+  bool check_parameter, auto_evaluate, evaluate_only;
+  bool use_mpi;
   std::vector<std::string> jobfiles;
-  bool valid;
+  bool valid, show_help, show_license;
+  void print(std::ostream& os) const;
 };
 
 struct evaluate_option {
   evaluate_option(int argc, char** argv);
+  boost::program_options::options_description desc;
   std::vector<std::string> jobfiles;
-  bool valid;
+  bool valid, show_help, show_license;
+  std::string help() const;
+  void print(std::ostream& os) const;
 };
 
 } // end namespace parapack

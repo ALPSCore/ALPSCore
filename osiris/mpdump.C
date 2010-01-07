@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -30,10 +30,11 @@
 
 // TODO: bool, uint64_t, int64_t
 
-#ifdef ALPS_MPI
+#include <alps/config.h>
+
+#ifdef ALPS_HAVE_MPI
 # include <mpi.h>
 #endif
-
 #include <alps/osiris/comm.h>
 #include <alps/osiris/mpdump.h>
 #include <alps/osiris/process.h>
@@ -65,7 +66,7 @@ OMPDump::~OMPDump()
 // reinitialize the buffer
 void OMPDump::init()
 {
-#ifdef ALPS_MPI
+#ifdef ALPS_HAVE_MPI
   valid_=true;
   buf_.clear();
 #endif
@@ -78,7 +79,7 @@ void OMPDump::init()
 
 // send the dump to a given process with a given message id
 
-#ifdef ALPS_MPI
+#ifdef ALPS_HAVE_MPI
 
 void OMPDump::send(const Process& where,int32_t t)
 {
@@ -97,7 +98,7 @@ void OMPDump::send(const Process& where,int32_t t)
 
 #else
 
-void OMPDump::send(const Process&,int32_t) 
+void OMPDump::send(const Process&,int32_t)
 {
   boost::throw_exception( std::logic_error("message passing useless in single CPU programs" ));
 }
@@ -113,15 +114,15 @@ void OMPDump::send(const ProcessList& where,int32_t t)
 #endif
 
   // default action:
-  // send to all processes and 
+  // send to all processes and
   // return the first (if any) nonzero return value
-  
+
   for (std::size_t i=0; i < where.size(); ++i)
     if(!where[i].local())
        send(where[i],t);
 }
 
-#ifdef ALPS_MPI
+#ifdef ALPS_HAVE_MPI
 
 void OMPDump::broadcast(const alps::Process &thisprocess)
 {
@@ -156,7 +157,7 @@ void OMPDump::broadcast(const alps::Process &thisprocess){
 // WRITE AND READ TYPES
 //-----------------------------------------------------------------------
 
-#ifdef ALPS_MPI
+#ifdef ALPS_HAVE_MPI
 
 #define ALPS_DUMP_DO_TYPE(T) \
 void OMPDump::write_simple(T x) { buf_.write(x);} \
@@ -205,7 +206,7 @@ ALPS_DUMP_DO_TYPE(long double)
 // WRITE A STRING
 //-----------------------------------------------------------------------
 
-#ifdef ALPS_MPI
+#ifdef ALPS_HAVE_MPI
 void OMPDump::write_string(std::size_t n, const char* x)
 {
   buf_.write(x,n);
@@ -240,7 +241,7 @@ IMPDump::IMPDump()
 void IMPDump::init()
 {
   theSender_=Process();
-#ifdef ALPS_MPI
+#ifdef ALPS_HAVE_MPI
   buf_.clear();
 #endif
 }
@@ -268,7 +269,7 @@ const Process& IMPDump::sender() const
 }
 
 // receive a message
-#ifdef ALPS_MPI
+#ifdef ALPS_HAVE_MPI
 
 void IMPDump::receive(const Process* where,int32_t t)
 {
@@ -276,7 +277,7 @@ void IMPDump::receive(const Process* where,int32_t t)
   int node = MPI_ANY_SOURCE;
   int tag = (t== -1 ? MPI_ANY_TAG : t);
   int info;
-  
+
   MPI_Status status;
   if(where)
     node=(*where);
@@ -298,7 +299,7 @@ void IMPDump::receive(const Process* where,int32_t t)
   valid_=true;
 
 #ifdef ALPS_TRACE
-  std::cerr << "Received message " << status.MPI_TAG 
+  std::cerr << "Received message " << status.MPI_TAG
        << " from process " << status.MPI_SOURCE << ".\n";
 #endif
 }
@@ -322,12 +323,12 @@ void IMPDump::receive(int32_t t)
   receive(0,t);
 }
 
-#ifdef ALPS_MPI
+#ifdef ALPS_HAVE_MPI
 void IMPDump::broadcast(const alps::Process &sender)
 {
   // check for message and size
   int info;
-  
+
   MPI_Status status;
 
   // set the buffer to the apropriate length
@@ -361,14 +362,14 @@ void IMPDump::broadcast(const alps::Process &sender)
 // READ A STRING
 //-----------------------------------------------------------------------
 
-#ifdef ALPS_MPI
+#ifdef ALPS_HAVE_MPI
 
 void IMPDump::read_string(std::size_t n, char* x)
 {
   buf_.read(x,n);
 }
 
-#else  
+#else
 
 void IMPDump::read_string(std::size_t n, char* x)
 {
@@ -392,7 +393,7 @@ int32_t IMPDump::probe(int32_t t)
   return probe(0,t);
 }
 
-#ifdef ALPS_MPI
+#ifdef ALPS_HAVE_MPI
 
 int32_t IMPDump::probe(const Process* w, int32_t t)
 {
@@ -400,7 +401,7 @@ int32_t IMPDump::probe(const Process* w, int32_t t)
   int tag = (t != -1 ? t : MPI_ANY_TAG);
   int flag;
   MPI_Status status;
-  
+
   int info;
   if((info=MPI_Iprobe(node,tag,MPI_COMM_WORLD,&flag,&status))!=0) {
     boost::throw_exception( std::runtime_error( ("Error " + boost::lexical_cast<std::string,int>(info) + " from MPI_Iprobe")));
@@ -409,7 +410,7 @@ int32_t IMPDump::probe(const Process* w, int32_t t)
   if(flag)
     {
 #ifdef ALPS_TRACE
-      std::cerr << "Found message " << status.MPI_TAG 
+      std::cerr << "Found message " << status.MPI_TAG
                    << " from " << status.MPI_SOURCE << ".\n";
 #endif
       return status.MPI_TAG;

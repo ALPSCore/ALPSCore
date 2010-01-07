@@ -3,13 +3,8 @@
 #
 
 set(ALPS_SOURCES "")
-if (MPI_FOUND AND NOT ALPS_FOR_VISTRAILS)
-  set(ALPS_SHARED_CPPFLAGS ALPS_EXPORTS=1 ALPS_MPI=1)
-  set(ALPS_STATIC_CPPFLAGS ALPS_MPI=1)
-else(MPI_FOUND AND NOT ALPS_FOR_VISTRAILS)
-  set(ALPS_SHARED_CPPFLAGS ALPS_EXPORTS=1)
-  set(ALPS_STATIC_CPPFLAGS "")
-endif(MPI_FOUND AND NOT ALPS_FOR_VISTRAILS)
+set(ALPS_SHARED_CPPFLAGS ALPS_EXPORTS=1)
+set(ALPS_STATIC_CPPFLAGS "")
 
 if (ALPS_FOR_VISTRAILS)
 set(ALPS_SOURCES
@@ -29,6 +24,11 @@ set(ALPS_SOURCES
     osiris/mpdump.C osiris/xdrdump.C osiris/xdrcore.C
     # parameter
     parameter/parameter.C parameter/parameterlist.C parameter/parameters.C
+    # parapack
+    parapack/clone.C parapack/clone_info.C parapack/filelock.C parapack/logger.C
+    parapack/job.C parapack/mc_worker.C parapack/measurement.C parapack/process_impl.C
+    parapack/option.C parapack/parapack.C parapack/queue.C parapack/rng_helper.C
+    parapack/types.C parapack/util.C parapack/worker_factory.C
     # parser
     parser/parser.C parser/xmlattributes.C parser/xmlhandler.C parser/xmlparser.C
     parser/xmlstream.C parser/xslt_path.C
@@ -63,8 +63,8 @@ set(ALPS_SOURCES
     parameter/parameter.C parameter/parameterlist.C parameter/parameters.C
     # parapack
     parapack/clone.C parapack/clone_info.C parapack/filelock.C parapack/logger.C
-    parapack/job.C parapack/mc_worker.C parapack/measurement.C parapack/option.C parapack/rng_helper.C
-    parapack/queue.C parapack/scheduler_comm.C parapack/scheduler_sgl.C
+    parapack/job.C parapack/mc_worker.C parapack/measurement.C parapack/process_impl.C
+    parapack/option.C parapack/parapack.C parapack/queue.C parapack/rng_helper.C
     parapack/types.C parapack/util.C parapack/worker_factory.C
     # parser
     parser/parser.C parser/xmlattributes.C parser/xmlhandler.C parser/xmlparser.C

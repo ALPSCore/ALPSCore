@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -118,7 +118,7 @@ std::string worker_factory::version() {
   if (instance()->version_string_.size())
     return instance()->version_string_;
   else
-    return PARAPACK_VERSION_STRING;
+    return "ALPS/parapack scheduler";
 }
 
 bool worker_factory::set_copyright(std::string const& str) {
@@ -302,6 +302,77 @@ evaluator_factory::make_creator(Parameters const& params) const {
   return creator_pointer_type(new evaluator_creator<simple_evaluator>);
 }
 
+#ifdef ALPS_HAVE_MPI
+
+//
+// parallel_worker_factory
+//
+
+parallel_worker_factory::worker_pointer_type
+parallel_worker_factory::make_worker(boost::mpi::communicator const& comm,
+  Parameters const& params) {
+  return instance()->make_creator(params)->create(comm, params);
+}
+
+bool parallel_worker_factory::unregister_worker(std::string const& name) {
+  creator_map_type::iterator itr = worker_creators_.find(name);
+  if (itr == worker_creators_.end()) return false;
+  worker_creators_.erase(itr);
+  return true;
+}
+
+parallel_worker_factory* parallel_worker_factory::instance() {
+  if (!instance_) instance_ = new parallel_worker_factory;
+  return instance_;
+}
+
+parallel_worker_factory::creator_pointer_type
+parallel_worker_factory::make_creator(Parameters const& params) const {
+  if (worker_creators_.size() == 0) {
+    std::cerr << "Error: no algorithm registered\n";
+    boost::throw_exception(std::runtime_error("parallel_worker_factory::make_creator()"));
+  }
+  std::string algoname = "";
+  if (params.defined("ALGORITHM")) {
+    algoname = params["ALGORITHM"];
+  } else if (params.defined("WORKER")) {
+    algoname = params["WORKER"];
+    std::clog << "Warning: parameter WORKER is obsolete.  Please use ALGORITHM instead.\n";
+  }
+  if (worker_creators_.size() == 1) {
+    if (algoname != "" && worker_creators_.begin()->first != algoname) {
+      std::clog << "Warning: unknown algorithm: \"" << algoname
+                << "\".  The only algorithm \"" << worker_creators_.begin()->first
+                << "\" will be used instead.\n";
+    }
+    return worker_creators_.begin()->second;
+  }
+  if (algoname == "") {
+    std::cerr << "Error: no algorithm specified (registered algorithms: ";
+    for (creator_map_type::const_iterator itr = worker_creators_.begin();
+         itr != worker_creators_.end(); ++itr) {
+      if (itr != worker_creators_.begin()) std::cerr << ", ";
+      std::cerr << "\"" << itr->first << "\"";
+    }
+    std::cerr << std::endl;
+    boost::throw_exception(std::runtime_error("worker_factory::make_creator()"));
+  }
+  creator_map_type::const_iterator itr = worker_creators_.find(algoname);
+  if (itr == worker_creators_.end() || itr->second == 0) {
+    std::cerr << "Error: unknown algorithm: \"" << algoname << "\" (registered algorithms: ";
+    for (creator_map_type::const_iterator itr = worker_creators_.begin();
+         itr != worker_creators_.end(); ++itr) {
+      if (itr != worker_creators_.begin()) std::cerr << ", ";
+      std::cerr << "\"" << itr->first << "\"";
+    }
+    std::cerr << ")\n";
+    boost::throw_exception(std::runtime_error("worker_factory::make_creator()"));
+  }
+  return itr->second;
+}
+
+#endif // ALPS_HAVE_MPI
+
 //
 // initialization of static member pointer of factories
 //
@@ -309,6 +380,12 @@ evaluator_factory::make_creator(Parameters const& params) const {
 worker_factory* worker_factory::instance_ = 0;
 
 evaluator_factory* evaluator_factory::instance_ = 0;
+
+#ifdef ALPS_HAVE_MPI
+
+parallel_worker_factory* parallel_worker_factory::instance_ = 0;
+
+#endif // ALPS_HAVE_MPI
 
 } // end namespace parapack
 } // end namespace alps

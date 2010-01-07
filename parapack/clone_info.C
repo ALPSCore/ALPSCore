@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -269,3 +269,32 @@ alps::IDump& operator>>(alps::IDump& dp, alps::clone_info& info) {
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // namespace alps
 #endif
+
+#ifdef ALPS_HAVE_MPI
+
+namespace alps {
+
+clone_info_mpi::clone_info_mpi(boost::mpi::communicator const& comm, cid_t cid,
+  Parameters const& params, std::string const& dump) :
+  clone_info(cid, params, dump, false), comm_(comm) {
+  clone_info::init(params, dump);
+}
+
+unsigned int clone_info_mpi::num_processes() const { return comm_.size(); }
+
+unsigned int clone_info_mpi::process_id() const { return comm_.rank(); }
+
+void clone_info_mpi::set_hosts(std::vector<std::string>& hosts, bool& is_master) {
+  is_master = (comm_.rank() == 0);
+  std::string host = alps::hostname();
+  if (is_master) {
+    hosts.resize(comm_.size());
+    gather(comm_, host, hosts, 0);
+  } else {
+    gather(comm_, host, 0);
+  }
+}
+
+} // namespace alps
+
+#endif // ALPS_HAVE_MPI

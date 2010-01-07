@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -28,15 +28,12 @@
 #ifndef PARAPACK_VERSION_H
 #define PARAPACK_VERSION_H
 
-/* Define the version of ALPS/parapack */
-#define PARAPACK_VERSION "2009-01-22"
+#include <alps/version.h>
 
 #define PARAPACK_COPYRIGHT \
-  "ALPS/parapack version " PARAPACK_VERSION "\n" \
+  "ALPS/parapack scheduler\n" \
   "  a Monte Carlo scheduler for multiple-level parallelization\n" \
   "  available from http://wistaria.comp-phys.org/alps-parapack/\n" \
-  "  copyright (c) 1997-2009 by Synge Todo <wistaria@comp-phys.org>\n"
-
-#define PARAPACK_VERSION_STRING "ALPS/parapack version " PARAPACK_VERSION
+  "  copyright (c) 1997-" ALPS_YEAR " by Synge Todo <wistaria@comp-phys.org>\n"
 
 #endif // PARAPACK_VERSION_H

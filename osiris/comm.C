@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2005 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2010 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -28,20 +28,21 @@
 
 /* $Id$ */
 
-#ifdef ALPS_MPI
-#include <mpi.h>
-#endif
+#include <alps/config.h>
 
+#ifdef ALPS_HAVE_MPI
+# include <mpi.h>
+#endif
 #include <alps/osiris/comm.h>
 #include <alps/osiris/process.h>
 
 //=======================================================================
 // INITIALIZATION AND CLEANUP
 //
-// initialize or stop the message passing library 
+// initialize or stop the message passing library
 //-----------------------------------------------------------------------
 
-#ifdef ALPS_MPI
+#ifdef ALPS_HAVE_MPI
 
 namespace alps {
   int mpi_initialized=0;
@@ -61,7 +62,7 @@ void alps::comm_init(int& argc, char**& argv, bool usempi)
 
 #else
 
-void alps::comm_init(int&, char**&, bool usempi) 
+void alps::comm_init(int&, char**&, bool usempi)
 {
   if (usempi)
     boost::throw_exception(std::runtime_error("This program has not been compiled for use with MPI"));
@@ -71,7 +72,7 @@ void alps::comm_init(int&, char**&, bool usempi)
 
 
 // clean up everything
-#ifdef ALPS_MPI
+#ifdef ALPS_HAVE_MPI
 void alps::comm_exit(bool kill_all)
 {
   MPI_Initialized(&mpi_initialized);
@@ -89,20 +90,20 @@ void alps::comm_exit(bool ) {}
 //=======================================================================
 // HOST/PROCESS ENQUIRIES
 //
-// ask for processes, hosts, ... 
+// ask for processes, hosts, ...
 //-----------------------------------------------------------------------
 
 // is this the master process ?
 
 bool alps::is_master()
 {
-#ifdef ALPS_MPI
+#ifdef ALPS_HAVE_MPI
 
   int num=0;
   if (mpi_initialized)
     MPI_Comm_rank(MPI_COMM_WORLD,&num);
   return (num==0);
-  
+
 #else
     return true; // only one CPU, always Master
 #endif
@@ -122,12 +123,12 @@ int alps::detail::invalid_id()
 
 int alps::detail::local_id()
 {
-#ifdef ALPS_MPI
+#ifdef ALPS_HAVE_MPI
   int num=0;
   if (mpi_initialized)
     MPI_Comm_rank(MPI_COMM_WORLD,&num);
   return num;
-  
+
 #else
         return 0; // only one CPU, ID=0
 #endif
@@ -137,7 +138,7 @@ int alps::detail::local_id()
 
 alps::Process alps::local_process()
 {
-#ifdef ALPS_MPI
+#ifdef ALPS_HAVE_MPI
   int num=0;
   if (mpi_initialized)
     MPI_Comm_rank(MPI_COMM_WORLD,&num);
@@ -146,7 +147,7 @@ alps::Process alps::local_process()
 
   // single CPU case
   return Process(0);
-  
+
 #endif
 }
 
@@ -156,7 +157,7 @@ alps::Process alps::local_process()
 alps::ProcessList alps::all_processes()
 {
   ProcessList p;
-#ifdef ALPS_MPI
+#ifdef ALPS_HAVE_MPI
 
   int num=1;
   if (mpi_initialized)
@@ -166,7 +167,7 @@ alps::ProcessList alps::all_processes()
 
 #else
   p.push_back(local_process());
-  
+
 #endif
 
   return p;
@@ -183,7 +184,7 @@ alps::Process alps::master_process()
 
 bool alps::runs_parallel()
 {
-#ifdef ALPS_MPI
+#ifdef ALPS_HAVE_MPI
   return mpi_initialized;
 #else
   return false;

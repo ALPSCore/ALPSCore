@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2002 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -28,14 +28,14 @@
 
 /* $Id$ */
 
-#ifdef ALPS_MPI
-#include <mpi.h>
-#endif
+#include <alps/config.h>
 
+#ifdef ALPS_HAVE_MPI
+# include <mpi.h>
+#endif
 #include <alps/osiris/comm.h>
 #include <alps/osiris/process.h>
 #include <alps/osiris/dump.h>
-
 #include <string>
 #include <algorithm>
 #include <functional>
@@ -66,16 +66,16 @@ bool Process::local() const
 
 bool Process::valid() const
 {
-#ifdef ALPS_MPI
+#ifdef ALPS_HAVE_MPI
 
   int total;
   MPI_Comm_size(MPI_COMM_WORLD,&total);
   return ((tid>=0) && (tid < total));
-   
+
 #else
 
   return (tid==0);
-  
+
 #endif
 }
 

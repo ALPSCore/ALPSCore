@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -47,9 +47,11 @@ ALPS_DECL int evaluate(int argc, char **argv);
 
 ALPS_DECL int run_sequential(int argc, char **argv);
 
-namespace scheduler {
+ALPS_DECL int run_sequential_mpi(int argc, char **argv);
 
-ALPS_DECL int start(int argc, char **argv);
+ALPS_DECL int start_sgl(int argc, char **argv, option const& opt);
+
+ALPS_DECL int start_mpi(int argc, char **argv, option const& opt);
 
 ALPS_DECL void print_copyright(std::ostream& os = std::cout);
 
@@ -82,7 +84,6 @@ ALPS_DECL void load_tasks(boost::filesystem::path const& file_in,
 ALPS_DECL void save_tasks(boost::filesystem::path const& file, std::string const& simname,
   std::string const& file_in_str, std::string const& file_out_str, std::vector<alps::task>& tasks);
 
-} // namespace scheduler
 } // namespace parapack
 } // namespace alps
 
