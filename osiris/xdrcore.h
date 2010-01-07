@@ -90,8 +90,8 @@
 
 #define bool_t  int
 #define enum_t  int
-#define uint_t  unsigned int
-#define ulong_t unsigned long
+// #define uint_t  unsigned int
+// #define ulong_t unsigned long
 
 // for ALPS on Windows
 #if defined(ALPS_HAVE_WINDOWS_H)
