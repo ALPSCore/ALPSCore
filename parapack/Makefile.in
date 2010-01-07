@@ -84,156 +84,152 @@ CONFIG_CLEAN_VPATH_FILES =
 @HAVE_BOOST_MPI_TRUE@	process_mpi$(EXEEXT)
 am_clone_info_OBJECTS = clone_info.$(OBJEXT)
 clone_info_OBJECTS = $(am_clone_info_OBJECTS)
+clone_info_LDADD = $(LDADD)
 am__DEPENDENCIES_1 =
-@BUILD_UNIFIED_LIB_FALSE@am__DEPENDENCIES_2 = $(top_builddir)/lib/alps/libparapack-sgl.la \
-@BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
-@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
-@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
-@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
-@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
-@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1)
-@BUILD_UNIFIED_LIB_TRUE@am__DEPENDENCIES_2 = $(top_builddir)/lib/alps/libalps-sgl.la \
-@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
-@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
-@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
-@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1)
-clone_info_DEPENDENCIES = $(am__DEPENDENCIES_2)
-clone_info_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
-	$(CXXFLAGS) $(clone_info_LDFLAGS) $(LDFLAGS) -o $@
+clone_info_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_clone_phase_OBJECTS = clone_phase.$(OBJEXT)
 clone_phase_OBJECTS = $(am_clone_phase_OBJECTS)
-clone_phase_DEPENDENCIES = $(am__DEPENDENCIES_2)
-clone_phase_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
-	$(CXXFLAGS) $(clone_phase_LDFLAGS) $(LDFLAGS) -o $@
+clone_phase_LDADD = $(LDADD)
+clone_phase_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_clone_timer_OBJECTS = clone_timer.$(OBJEXT)
 clone_timer_OBJECTS = $(am_clone_timer_OBJECTS)
-clone_timer_DEPENDENCIES = $(am__DEPENDENCIES_2)
-clone_timer_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
-	$(CXXFLAGS) $(clone_timer_LDFLAGS) $(LDFLAGS) -o $@
+clone_timer_LDADD = $(LDADD)
+clone_timer_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_collect_mpi_OBJECTS = collect_mpi.$(OBJEXT)
 collect_mpi_OBJECTS = $(am_collect_mpi_OBJECTS)
-@BUILD_UNIFIED_LIB_FALSE@am__DEPENDENCIES_3 = $(top_builddir)/lib/alps/libparapack-mpi.la \
-@BUILD_UNIFIED_LIB_FALSE@	$(top_builddir)/lib/alps/libalps.la \
-@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
-@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
-@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
-@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1) \
-@BUILD_UNIFIED_LIB_FALSE@	$(am__DEPENDENCIES_1)
-@BUILD_UNIFIED_LIB_TRUE@am__DEPENDENCIES_3 = $(top_builddir)/lib/alps/libalps-mpi.la \
-@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
-@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
-@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
-@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1) \
-@BUILD_UNIFIED_LIB_TRUE@	$(am__DEPENDENCIES_1)
-collect_mpi_DEPENDENCIES = $(am__DEPENDENCIES_3)
-collect_mpi_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
-	$(CXXFLAGS) $(collect_mpi_LDFLAGS) $(LDFLAGS) -o $@
+collect_mpi_LDADD = $(LDADD)
+collect_mpi_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_comm_mpi_OBJECTS = comm_mpi.$(OBJEXT)
 comm_mpi_OBJECTS = $(am_comm_mpi_OBJECTS)
-comm_mpi_DEPENDENCIES = $(am__DEPENDENCIES_3)
-comm_mpi_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
-	$(CXXFLAGS) $(comm_mpi_LDFLAGS) $(LDFLAGS) -o $@
+comm_mpi_LDADD = $(LDADD)
+comm_mpi_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_exmc_optimize_OBJECTS = exmc_optimize.$(OBJEXT)
 exmc_optimize_OBJECTS = $(am_exmc_optimize_OBJECTS)
-exmc_optimize_DEPENDENCIES = $(am__DEPENDENCIES_2)
-exmc_optimize_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
-	$(CXXFLAGS) $(exmc_optimize_LDFLAGS) $(LDFLAGS) -o $@
+exmc_optimize_LDADD = $(LDADD)
+exmc_optimize_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_exp_number_OBJECTS = exp_number.$(OBJEXT)
 exp_number_OBJECTS = $(am_exp_number_OBJECTS)
-exp_number_DEPENDENCIES = $(am__DEPENDENCIES_2)
-exp_number_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
-	$(CXXFLAGS) $(exp_number_LDFLAGS) $(LDFLAGS) -o $@
+exp_number_LDADD = $(LDADD)
+exp_number_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_filelock_mpi_OBJECTS = filelock_mpi.$(OBJEXT)
 filelock_mpi_OBJECTS = $(am_filelock_mpi_OBJECTS)
-filelock_mpi_DEPENDENCIES = $(am__DEPENDENCIES_3)
-filelock_mpi_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
-	$(CXXFLAGS) $(filelock_mpi_LDFLAGS) $(LDFLAGS) -o $@
+filelock_mpi_LDADD = $(LDADD)
+filelock_mpi_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_halt_mpi_OBJECTS = halt_mpi.$(OBJEXT)
 halt_mpi_OBJECTS = $(am_halt_mpi_OBJECTS)
-halt_mpi_DEPENDENCIES = $(am__DEPENDENCIES_3)
-halt_mpi_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
-	$(CXXFLAGS) $(halt_mpi_LDFLAGS) $(LDFLAGS) -o $@
+halt_mpi_LDADD = $(LDADD)
+halt_mpi_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_id2string_OBJECTS = id2string.$(OBJEXT)
 id2string_OBJECTS = $(am_id2string_OBJECTS)
-id2string_DEPENDENCIES = $(am__DEPENDENCIES_2)
-id2string_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
-	$(CXXFLAGS) $(id2string_LDFLAGS) $(LDFLAGS) -o $@
+id2string_LDADD = $(LDADD)
+id2string_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_info_test_OBJECTS = info_test.$(OBJEXT)
 info_test_OBJECTS = $(am_info_test_OBJECTS)
-info_test_DEPENDENCIES = $(am__DEPENDENCIES_2)
-info_test_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
-	$(CXXFLAGS) $(info_test_LDFLAGS) $(LDFLAGS) -o $@
+info_test_LDADD = $(LDADD)
+info_test_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_info_test_mpi_OBJECTS = info_test_mpi.$(OBJEXT)
 info_test_mpi_OBJECTS = $(am_info_test_mpi_OBJECTS)
-info_test_mpi_DEPENDENCIES = $(am__DEPENDENCIES_3)
-info_test_mpi_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
-	$(CXXFLAGS) $(info_test_mpi_LDFLAGS) $(LDFLAGS) -o $@
+info_test_mpi_LDADD = $(LDADD)
+info_test_mpi_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_integer_range_OBJECTS = integer_range.$(OBJEXT)
 integer_range_OBJECTS = $(am_integer_range_OBJECTS)
-integer_range_DEPENDENCIES = $(am__DEPENDENCIES_2)
-integer_range_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
-	$(CXXFLAGS) $(integer_range_LDFLAGS) $(LDFLAGS) -o $@
+integer_range_LDADD = $(LDADD)
+integer_range_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_linear_regression_OBJECTS = linear_regression.$(OBJEXT)
 linear_regression_OBJECTS = $(am_linear_regression_OBJECTS)
-linear_regression_DEPENDENCIES = $(am__DEPENDENCIES_2)
-linear_regression_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
-	$(CXXFLAGS) $(linear_regression_LDFLAGS) $(LDFLAGS) -o $@
+linear_regression_LDADD = $(LDADD)
+linear_regression_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_merge_OBJECTS = merge.$(OBJEXT)
 merge_OBJECTS = $(am_merge_OBJECTS)
-merge_DEPENDENCIES = $(am__DEPENDENCIES_2)
-merge_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
-	$(merge_LDFLAGS) $(LDFLAGS) -o $@
+merge_LDADD = $(LDADD)
+merge_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_percentage_OBJECTS = percentage.$(OBJEXT)
 percentage_OBJECTS = $(am_percentage_OBJECTS)
-percentage_DEPENDENCIES = $(am__DEPENDENCIES_2)
-percentage_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
-	$(CXXFLAGS) $(percentage_LDFLAGS) $(LDFLAGS) -o $@
+percentage_LDADD = $(LDADD)
+percentage_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_process_mpi_OBJECTS = process_mpi.$(OBJEXT)
 process_mpi_OBJECTS = $(am_process_mpi_OBJECTS)
-process_mpi_DEPENDENCIES = $(am__DEPENDENCIES_3)
-process_mpi_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
-	$(CXXFLAGS) $(process_mpi_LDFLAGS) $(LDFLAGS) -o $@
+process_mpi_LDADD = $(LDADD)
+process_mpi_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_temperature_scan_OBJECTS = temperature_scan.$(OBJEXT)
 temperature_scan_OBJECTS = $(am_temperature_scan_OBJECTS)
-temperature_scan_DEPENDENCIES = $(am__DEPENDENCIES_2)
-temperature_scan_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
-	$(CXXFLAGS) $(temperature_scan_LDFLAGS) $(LDFLAGS) -o $@
+temperature_scan_LDADD = $(LDADD)
+temperature_scan_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_time_OBJECTS = time.$(OBJEXT)
 time_OBJECTS = $(am_time_OBJECTS)
-time_DEPENDENCIES = $(am__DEPENDENCIES_2)
-time_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
-	$(time_LDFLAGS) $(LDFLAGS) -o $@
+time_LDADD = $(LDADD)
+time_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_version_OBJECTS = version.$(OBJEXT)
 version_OBJECTS = $(am_version_OBJECTS)
-version_DEPENDENCIES = $(am__DEPENDENCIES_2)
-version_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
-	$(version_LDFLAGS) $(LDFLAGS) -o $@
+version_LDADD = $(LDADD)
+version_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_wl_weight_OBJECTS = wl_weight.$(OBJEXT)
 wl_weight_OBJECTS = $(am_wl_weight_OBJECTS)
-wl_weight_DEPENDENCIES = $(am__DEPENDENCIES_2)
-wl_weight_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
-	$(CXXFLAGS) $(wl_weight_LDFLAGS) $(LDFLAGS) -o $@
+wl_weight_LDADD = $(LDADD)
+wl_weight_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 depcomp = $(SHELL) $(top_srcdir)/config/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
@@ -447,13 +443,10 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-DEFAULT_INCLUDES = -I$(top_builddir)/src -I$(top_srcdir)/src $(BASE_CPPFLAGS) $(BOOST_CPPFLAGS) $(XML_CPPFLAGS) $(HDF5_CPPFLAGS) $(MPI_CPPFLAGS)
-LDFLAGS_SGL = $(BASE_LDFLAGS) $(BOOST_LDFLAGS) $(HDF5_LDFLAGS) $(XML_LDFLAGS)  $(MPI_LDFLAGS)
-@BUILD_UNIFIED_LIB_FALSE@LIBS_SGL = $(top_builddir)/lib/alps/libparapack-sgl.la $(top_builddir)/lib/alps/libalps.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(MPI_LIBS) $(BASE_LIBS)
-@BUILD_UNIFIED_LIB_TRUE@LIBS_SGL = $(top_builddir)/lib/alps/libalps-sgl.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(BASE_LIBS)
-LDFLAGS_MPI = $(LDFLAGS_SGL)
-@BUILD_UNIFIED_LIB_FALSE@LIBS_MPI = $(top_builddir)/lib/alps/libparapack-mpi.la $(top_builddir)/lib/alps/libalps.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(MPI_LIBS) $(BASE_LIBS)
-@BUILD_UNIFIED_LIB_TRUE@LIBS_MPI = $(top_builddir)/lib/alps/libalps-mpi.la $(BOOST_LIBS) $(HDF5_LIBS) $(XML_LIBS) $(MPI_LIBS) $(BASE_LIBS)
+DEFAULT_INCLUDES = -I$(top_builddir)/src -I$(top_srcdir)/src
+AM_CPPFLAGS = $(BASE_CPPFLAGS) $(BOOST_CPPFLAGS) $(XML_CPPFLAGS) $(HDF5_CPPFLAGS) $(MPI_CPPFLAGS)
+AM_LDFLAGS = $(BASE_LDFLAGS) $(BOOST_LDFLAGS) $(SQLITE_LDFLAGS) $(XML_LDFLAGS) $(HDF5_LDFLAGS) $(MPI_LDFLAGS)
+LDADD = $(top_builddir)/lib/alps/libalps.la $(BOOST_LIBS) $(SQLITE_LIBS) $(XML_LIBS) $(HDF5_LIBS) $(MPI_LIBS) $(BASE_LIBS) 
 dist_noinst_DATA = \
 	clone_mpi.ip-4 \
 	clone_info.ip clone_info.op \
@@ -476,71 +469,27 @@ dist_noinst_DATA = \
 #	worker_mpi
 
 # clone_mpi_SOURCES = clone_mpi.C
-# clone_mpi_LDFLAGS = $(LDFLAGS_MPI)
-# clone_mpi_LDADD = $(LIBS_MPI)
 clone_info_SOURCES = clone_info.C
-clone_info_LDFLAGS = $(LDFLAGS_SGL)
-clone_info_LDADD = $(LIBS_SGL)
 clone_phase_SOURCES = clone_phase.C
-clone_phase_LDFLAGS = $(LDFLAGS_SGL)
-clone_phase_LDADD = $(LIBS_SGL)
 clone_timer_SOURCES = clone_timer.C
-clone_timer_LDFLAGS = $(LDFLAGS_SGL)
-clone_timer_LDADD = $(LIBS_SGL)
 comm_mpi_SOURCES = comm_mpi.C
-comm_mpi_LDFLAGS = $(LDFLAGS_MPI)
-comm_mpi_LDADD = $(LIBS_MPI)
 collect_mpi_SOURCES = collect_mpi.C
-collect_mpi_LDFLAGS = $(LDFLAGS_MPI)
-collect_mpi_LDADD = $(LIBS_MPI)
 exmc_optimize_SOURCES = exmc_optimize.C
-exmc_optimize_LDFLAGS = $(LDFLAGS_SGL)
-exmc_optimize_LDADD = $(LIBS_SGL)
 exp_number_SOURCES = exp_number.C
-exp_number_LDFLAGS = $(LDFLAGS_SGL)
-exp_number_LDADD = $(LIBS_SGL)
 filelock_mpi_SOURCES = filelock_mpi.C
-filelock_mpi_LDFLAGS = $(LDFLAGS_MPI)
-filelock_mpi_LDADD = $(LIBS_MPI)
 id2string_SOURCES = id2string.C
-id2string_LDFLAGS = $(LDFLAGS_SGL)
-id2string_LDADD = $(LIBS_SGL)
 info_test_SOURCES = info_test.C
-info_test_LDFLAGS = $(LDFLAGS_SGL)
-info_test_LDADD = $(LIBS_SGL)
 info_test_mpi_SOURCES = info_test_mpi.C
-info_test_mpi_LDFLAGS = $(LDFLAGS_MPI)
-info_test_mpi_LDADD = $(LIBS_MPI)
 integer_range_SOURCES = integer_range.C
-integer_range_LDFLAGS = $(LDFLAGS_SGL)
-integer_range_LDADD = $(LIBS_SGL)
 linear_regression_SOURCES = linear_regression.C
-linear_regression_LDFLAGS = $(LDFLAGS_SGL)
-linear_regression_LDADD = $(LIBS_SGL)
 merge_SOURCES = merge.C
-merge_LDFLAGS = $(LDFLAGS_SGL)
-merge_LDADD = $(LIBS_SGL)
 halt_mpi_SOURCES = halt_mpi.C
-halt_mpi_LDFLAGS = $(LDFLAGS_MPI)
-halt_mpi_LDADD = $(LIBS_MPI)
 percentage_SOURCES = percentage.C
-percentage_LDFLAGS = $(LDFLAGS_SGL)
-percentage_LDADD = $(LIBS_SGL)
 process_mpi_SOURCES = process_mpi.C
-process_mpi_LDFLAGS = $(LDFLAGS_MPI)
-process_mpi_LDADD = $(LIBS_MPI)
 temperature_scan_SOURCES = temperature_scan.C
-temperature_scan_LDFLAGS = $(LDFLAGS_SGL)
-temperature_scan_LDADD = $(LIBS_SGL)
 time_SOURCES = time.C
-time_LDFLAGS = $(LDFLAGS_SGL)
-time_LDADD = $(LIBS_SGL)
 version_SOURCES = version.C
-version_LDFLAGS = $(LDFLAGS_SGL)
-version_LDADD = $(LIBS_SGL)
 wl_weight_SOURCES = wl_weight.C
-wl_weight_LDFLAGS = $(LDFLAGS_SGL)
-wl_weight_LDADD = $(LIBS_SGL)
 all: all-am
 
 .SUFFIXES:
@@ -586,67 +535,67 @@ clean-checkPROGRAMS:
 	rm -f $$list
 clone_info$(EXEEXT): $(clone_info_OBJECTS) $(clone_info_DEPENDENCIES) 
 	@rm -f clone_info$(EXEEXT)
-	$(clone_info_LINK) $(clone_info_OBJECTS) $(clone_info_LDADD) $(LIBS)
+	$(CXXLINK) $(clone_info_OBJECTS) $(clone_info_LDADD) $(LIBS)
 clone_phase$(EXEEXT): $(clone_phase_OBJECTS) $(clone_phase_DEPENDENCIES) 
 	@rm -f clone_phase$(EXEEXT)
-	$(clone_phase_LINK) $(clone_phase_OBJECTS) $(clone_phase_LDADD) $(LIBS)
+	$(CXXLINK) $(clone_phase_OBJECTS) $(clone_phase_LDADD) $(LIBS)
 clone_timer$(EXEEXT): $(clone_timer_OBJECTS) $(clone_timer_DEPENDENCIES) 
 	@rm -f clone_timer$(EXEEXT)
-	$(clone_timer_LINK) $(clone_timer_OBJECTS) $(clone_timer_LDADD) $(LIBS)
+	$(CXXLINK) $(clone_timer_OBJECTS) $(clone_timer_LDADD) $(LIBS)
 collect_mpi$(EXEEXT): $(collect_mpi_OBJECTS) $(collect_mpi_DEPENDENCIES) 
 	@rm -f collect_mpi$(EXEEXT)
-	$(collect_mpi_LINK) $(collect_mpi_OBJECTS) $(collect_mpi_LDADD) $(LIBS)
+	$(CXXLINK) $(collect_mpi_OBJECTS) $(collect_mpi_LDADD) $(LIBS)
 comm_mpi$(EXEEXT): $(comm_mpi_OBJECTS) $(comm_mpi_DEPENDENCIES) 
 	@rm -f comm_mpi$(EXEEXT)
-	$(comm_mpi_LINK) $(comm_mpi_OBJECTS) $(comm_mpi_LDADD) $(LIBS)
+	$(CXXLINK) $(comm_mpi_OBJECTS) $(comm_mpi_LDADD) $(LIBS)
 exmc_optimize$(EXEEXT): $(exmc_optimize_OBJECTS) $(exmc_optimize_DEPENDENCIES) 
 	@rm -f exmc_optimize$(EXEEXT)
-	$(exmc_optimize_LINK) $(exmc_optimize_OBJECTS) $(exmc_optimize_LDADD) $(LIBS)
+	$(CXXLINK) $(exmc_optimize_OBJECTS) $(exmc_optimize_LDADD) $(LIBS)
 exp_number$(EXEEXT): $(exp_number_OBJECTS) $(exp_number_DEPENDENCIES) 
 	@rm -f exp_number$(EXEEXT)
-	$(exp_number_LINK) $(exp_number_OBJECTS) $(exp_number_LDADD) $(LIBS)
+	$(CXXLINK) $(exp_number_OBJECTS) $(exp_number_LDADD) $(LIBS)
 filelock_mpi$(EXEEXT): $(filelock_mpi_OBJECTS) $(filelock_mpi_DEPENDENCIES) 
 	@rm -f filelock_mpi$(EXEEXT)
-	$(filelock_mpi_LINK) $(filelock_mpi_OBJECTS) $(filelock_mpi_LDADD) $(LIBS)
+	$(CXXLINK) $(filelock_mpi_OBJECTS) $(filelock_mpi_LDADD) $(LIBS)
 halt_mpi$(EXEEXT): $(halt_mpi_OBJECTS) $(halt_mpi_DEPENDENCIES) 
 	@rm -f halt_mpi$(EXEEXT)
-	$(halt_mpi_LINK) $(halt_mpi_OBJECTS) $(halt_mpi_LDADD) $(LIBS)
+	$(CXXLINK) $(halt_mpi_OBJECTS) $(halt_mpi_LDADD) $(LIBS)
 id2string$(EXEEXT): $(id2string_OBJECTS) $(id2string_DEPENDENCIES) 
 	@rm -f id2string$(EXEEXT)
-	$(id2string_LINK) $(id2string_OBJECTS) $(id2string_LDADD) $(LIBS)
+	$(CXXLINK) $(id2string_OBJECTS) $(id2string_LDADD) $(LIBS)
 info_test$(EXEEXT): $(info_test_OBJECTS) $(info_test_DEPENDENCIES) 
 	@rm -f info_test$(EXEEXT)
-	$(info_test_LINK) $(info_test_OBJECTS) $(info_test_LDADD) $(LIBS)
+	$(CXXLINK) $(info_test_OBJECTS) $(info_test_LDADD) $(LIBS)
 info_test_mpi$(EXEEXT): $(info_test_mpi_OBJECTS) $(info_test_mpi_DEPENDENCIES) 
 	@rm -f info_test_mpi$(EXEEXT)
-	$(info_test_mpi_LINK) $(info_test_mpi_OBJECTS) $(info_test_mpi_LDADD) $(LIBS)
+	$(CXXLINK) $(info_test_mpi_OBJECTS) $(info_test_mpi_LDADD) $(LIBS)
 integer_range$(EXEEXT): $(integer_range_OBJECTS) $(integer_range_DEPENDENCIES) 
 	@rm -f integer_range$(EXEEXT)
-	$(integer_range_LINK) $(integer_range_OBJECTS) $(integer_range_LDADD) $(LIBS)
+	$(CXXLINK) $(integer_range_OBJECTS) $(integer_range_LDADD) $(LIBS)
 linear_regression$(EXEEXT): $(linear_regression_OBJECTS) $(linear_regression_DEPENDENCIES) 
 	@rm -f linear_regression$(EXEEXT)
-	$(linear_regression_LINK) $(linear_regression_OBJECTS) $(linear_regression_LDADD) $(LIBS)
+	$(CXXLINK) $(linear_regression_OBJECTS) $(linear_regression_LDADD) $(LIBS)
 merge$(EXEEXT): $(merge_OBJECTS) $(merge_DEPENDENCIES) 
 	@rm -f merge$(EXEEXT)
-	$(merge_LINK) $(merge_OBJECTS) $(merge_LDADD) $(LIBS)
+	$(CXXLINK) $(merge_OBJECTS) $(merge_LDADD) $(LIBS)
 percentage$(EXEEXT): $(percentage_OBJECTS) $(percentage_DEPENDENCIES) 
 	@rm -f percentage$(EXEEXT)
-	$(percentage_LINK) $(percentage_OBJECTS) $(percentage_LDADD) $(LIBS)
+	$(CXXLINK) $(percentage_OBJECTS) $(percentage_LDADD) $(LIBS)
 process_mpi$(EXEEXT): $(process_mpi_OBJECTS) $(process_mpi_DEPENDENCIES) 
 	@rm -f process_mpi$(EXEEXT)
-	$(process_mpi_LINK) $(process_mpi_OBJECTS) $(process_mpi_LDADD) $(LIBS)
+	$(CXXLINK) $(process_mpi_OBJECTS) $(process_mpi_LDADD) $(LIBS)
 temperature_scan$(EXEEXT): $(temperature_scan_OBJECTS) $(temperature_scan_DEPENDENCIES) 
 	@rm -f temperature_scan$(EXEEXT)
-	$(temperature_scan_LINK) $(temperature_scan_OBJECTS) $(temperature_scan_LDADD) $(LIBS)
+	$(CXXLINK) $(temperature_scan_OBJECTS) $(temperature_scan_LDADD) $(LIBS)
 time$(EXEEXT): $(time_OBJECTS) $(time_DEPENDENCIES) 
 	@rm -f time$(EXEEXT)
-	$(time_LINK) $(time_OBJECTS) $(time_LDADD) $(LIBS)
+	$(CXXLINK) $(time_OBJECTS) $(time_LDADD) $(LIBS)
 version$(EXEEXT): $(version_OBJECTS) $(version_DEPENDENCIES) 
 	@rm -f version$(EXEEXT)
-	$(version_LINK) $(version_OBJECTS) $(version_LDADD) $(LIBS)
+	$(CXXLINK) $(version_OBJECTS) $(version_LDADD) $(LIBS)
 wl_weight$(EXEEXT): $(wl_weight_OBJECTS) $(wl_weight_DEPENDENCIES) 
 	@rm -f wl_weight$(EXEEXT)
-	$(wl_weight_LINK) $(wl_weight_OBJECTS) $(wl_weight_LDADD) $(LIBS)
+	$(CXXLINK) $(wl_weight_OBJECTS) $(wl_weight_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -902,10 +851,7 @@ uninstall-am:
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
 	tags uninstall uninstall-am
 
-
 # worker_mpi_SOURCES = worker_mpi.C
-# worker_mpi_LDFLAGS = $(LDFLAGS_MPI)
-# worker_mpi_LDADD = $(LIBS_MPI)
 
 .PHONY : test tests example examples
 test tests : check
