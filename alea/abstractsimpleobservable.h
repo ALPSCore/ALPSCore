@@ -120,9 +120,6 @@ public:
   /// is variance  available ?
   virtual bool has_variance() const { return false;}
 
-  // virtual void set_thermalization(uint32_t todiscard) = 0;
-  // virtual uint32_t get_thermalization() = 0;
-
   //@name binning information
   /// the number of bins
   virtual count_type bin_number() const { return 0;}

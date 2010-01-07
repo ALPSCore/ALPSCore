@@ -66,20 +66,11 @@ public:
   void read_xml(std::istream& infile, const XMLTag& intag);
   void read_xml_histogram(std::istream& infile, const XMLTag& intag);
 
-  ALPS_DUMMY_VOID set_thermalization(uint32_t) {boost::throw_exception(std::runtime_error("no set_thermalization() for HistogramObservableData"));}
-  integer_type get_thermalization() const { return thermalcount_;}
-  bool can_set_thermalization() const { return false;}
-
   count_type count() const {return count_;}
   size_type value(uint32_t) const;
   range_type min BOOST_PREVENT_MACRO_SUBSTITUTION () const { return min_;}
   range_type max BOOST_PREVENT_MACRO_SUBSTITUTION () const { return max_;}
   range_type stepsize() const { return stepsize_;}
-
-  ALPS_DUMMY_VOID compact() {
-    count_=count();
-    ALPS_RETURN_VOID;
-  }
 
 #ifndef ALPS_WITHOUT_OSIRIS
     void save(ODump& dump) const;
@@ -94,13 +85,6 @@ public:
 
 private:
   mutable count_type count_;
-  mutable bool can_set_thermal_;
-  mutable uint32_t thermalcount_;
-  //mutable uint32_t discardemeas_;
-  //mutable uint32_t discardebins_;
-  //bool changed;
-  //mutable bool valid_;
-
   mutable std::vector<value_type> histogram_;
   mutable range_type min_;
   mutable range_type max_;
@@ -112,8 +96,6 @@ private:
 template <class T>
 inline HistogramObservableData<T>::HistogramObservableData()
   :  count_(0),
-     can_set_thermal_(false),
-     thermalcount_(0),
      histogram_(),
      min_(),
      max_(),
@@ -129,10 +111,7 @@ inline void HistogramObservableData<T>::collect_from(const std::vector<Histogram
   for(typename std::vector<HistogramObservableData<T> >::const_iterator r = runs.begin(); r!=runs.end();++r) {
         if(r->count()) {
           if(!got_data) {
-            can_set_thermal_=r->can_set_thermal_;
-            thermalcount_=r->thermalcount_;
             count_=r->count_;
-            thermalcount_=r->thermalcount_;
             min_=r->min_;
             max_=r->max_;
             stepsize_=r->stepsize_;
@@ -161,8 +140,6 @@ inline void HistogramObservableData<T>::collect_from(const std::vector<Histogram
 template <class T>
   inline HistogramObservableData<T>::HistogramObservableData(std::istream& infile, const XMLTag& intag)
 :count_(0),
-     can_set_thermal_(false),
-     thermalcount_(0),
      histogram_(),
      min_(),
      max_(),
@@ -210,8 +187,6 @@ template <class T>
 template <class T>
   inline HistogramObservableData<T>::HistogramObservableData(const HistogramObservable<T>& obs)
     : count_(obs.count()),
-     can_set_thermal_(obs.can_set_thermalization()),
-     thermalcount_(obs.get_thermalization()),
      histogram_(obs.size()),
      min_(obs.min BOOST_PREVENT_MACRO_SUBSTITUTION ()),
      max_(obs.max BOOST_PREVENT_MACRO_SUBSTITUTION ()),
@@ -235,34 +210,25 @@ template <class T>
 template<class T>
   inline void HistogramObservableData<T>::save(ODump& dump) const
 {
-  dump <<count_<<histogram_<<min_<<max_<<stepsize_<<thermalcount_<<can_set_thermal_;
+  dump <<count_<<histogram_<<min_<<max_<<stepsize_;
 }
 
 template <class T>
 inline void HistogramObservableData<T>::load(IDump& dump)
 {
-dump >>count_>>histogram_>>min_>>max_>>stepsize_>>thermalcount_>>can_set_thermal_;
+
+  uint32_t thermalcount_;
+  bool can_set_thermal_;
+  if(dump.version() >= 306 || dump.version() == 0 /* version is not set */)
+    dump >> count_ >> histogram_ >> min_ >> max_ >> stepsize_;
+  else
+     dump >> count_ >> histogram_ >> min_ >> max_ >> stepsize_
+          >> thermalcount_ >> can_set_thermal_;
 }
 
 }
 
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-namespace alps {
-#endif
-
-template<class T>
-inline alps::ODump& operator<<(alps::ODump& od, const alps::HistogramObservableData<T>& m)
-{ m.save(od); return od; }
-
-template<class T>
-inline alps::IDump& operator>>(alps::IDump& id, alps::HistogramObservableData<T>& m)
-{ m.load(id); return id; }
 
 #endif
 
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-} // namespace alps
 #endif
-
-#endif
-

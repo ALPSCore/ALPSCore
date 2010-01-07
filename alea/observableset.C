@@ -256,47 +256,6 @@ void ObservableSet::removeObservable(const std::string& name)
   erase(it);
 }
 
-bool ObservableSet::can_set_thermalization_all() const
-{
-  bool can=true;
-  for (const_iterator it=begin(); it !=end(); ++it)
-    can = can && it->second->can_set_thermalization();
-  return can;
-}
-
-bool ObservableSet::can_set_thermalization_any() const
-{
-  bool can=false;
-  for (const_iterator it=begin(); it !=end(); ++it)
-    can =  can || it->second->can_set_thermalization();
-  return can;
-}
-
-void ObservableSet::set_thermalization(uint32_t n)
-{
-  for (iterator it=begin(); it !=end(); ++it)
-    if(it->second->can_set_thermalization())
-      it->second->set_thermalization(n);
-}
-
-uint32_t ObservableSet::get_thermalization() const
-{
-  uint32_t thermal=0;
-  bool got_one=false;
-  for (const_iterator it=begin(); it !=end(); ++it)
-    if(it->second->get_thermalization())
-    {
-      if(got_one)
-        thermal = std::min(thermal,it->second->get_thermalization());
-      else
-      {
-        thermal = it->second->get_thermalization();
-        got_one=true;
-      }
-    }
-  return thermal;
-}
-
 uint32_t ObservableSet::number_of_runs() const
 {
   uint32_t n=0;
@@ -335,11 +294,6 @@ ObservableSet& ObservableSet::operator<<(const Observable& obs)
 }
 
 ObservableFactory ObservableSet::factory_;
-
-void ObservableSet::compact()
-{
-  do_for_all(boost::mem_fun_ref(&Observable::compact));
-}
 
 void ObservableSet::write_xml(oxstream& oxs, const boost::filesystem::path& fn_hdf5) const
 {
@@ -585,7 +539,6 @@ void RealHistogramObservableXMLHandler::start_top(const std::string& /* name */,
   const XMLAttributes& attributes, xml::tag_type /* type */) {
   obs_.reset();
   if (attributes.defined("name")) obs_.rename(attributes["name"]);
-  obs_.thermalized_ = true;
   obs_.histogram_.clear();
 }
 

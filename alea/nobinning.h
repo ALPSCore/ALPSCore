@@ -67,9 +67,9 @@ class NoBinning : public AbstractBinning<T>
   BOOST_STATIC_CONSTANT(int, magic_id=1);
 
   NoBinning(uint32_t=0);
-  virtual ~NoBinning() {}
 
-  void reset(bool=false);
+  void reset(bool=true);
+
   inline void operator<<(const value_type& x);
 
   result_type mean() const;
@@ -77,13 +77,7 @@ class NoBinning : public AbstractBinning<T>
   result_type error() const;
   convergence_type converged_errors() const;
 
-  uint32_t count() const { return super_type::is_thermalized() ? count_ : 0;}
-
-  bool has_minmax() const { return false;}
-  value_type min BOOST_PREVENT_MACRO_SUBSTITUTION () const {return min_;}
-  value_type max BOOST_PREVENT_MACRO_SUBSTITUTION () const {return max_;}
-
-  uint32_t get_thermalization() const { return super_type::is_thermalized() ? thermal_count_ : count_;}
+  uint32_t count() const { return  count_;}
 
   void output_scalar(std::ostream& out) const;
   template <class L> void output_vector(std::ostream& out, const L& l) const;
@@ -92,8 +86,8 @@ class NoBinning : public AbstractBinning<T>
   template<typename E> void write_hdf5 (const E &engine)const;
 #endif
 #ifndef ALPS_WITHOUT_OSIRIS
-  virtual void save(ODump& dump) const;
-  virtual void load(IDump& dump);
+  void save(ODump& dump) const;
+  void load(IDump& dump);
 #endif
 
 #ifdef ALPS_HAVE_HDF5
@@ -105,8 +99,6 @@ class NoBinning : public AbstractBinning<T>
     value_type sum_;       // sum of measurements
     value_type sum2_;      // sum of squared measurements
     uint32_t count_;          // total number of measurements
-    uint32_t thermal_count_; // measurements done for thermalization
-    value_type min_,max_;  // minimum and maximum value
 };
 
 #ifndef BOOST_NO_INCLASS_MEMBER_INITIALIZATION
@@ -129,25 +121,19 @@ typedef SimpleObservable< std::valarray<std::complex<double> > ,
 
 template <class T>
 inline NoBinning<T>::NoBinning(uint32_t)
+ : count_(0)
 {
   reset();
 }
 
-
 template <class T>
-inline void NoBinning<T>::reset(bool forthermalization)
+inline void NoBinning<T>::reset(bool)
 {
-  AbstractBinning<T>::reset(forthermalization);
-  thermal_count_= (forthermalization ? count_ : 0);
-
   sum_=0;
   sum2_=0;
   count_=0;
 
-  min_ = obs_value_traits<T>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();
-  max_ = -obs_value_traits<T>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();
 }
-
 
 template <class T>
 typename NoBinning<T>::convergence_type NoBinning<T>::converged_errors() const
@@ -165,23 +151,18 @@ typename NoBinning<T>::convergence_type NoBinning<T>::converged_errors() const
 template <class T>
 void NoBinning<T>::operator<<(const T& x)
 {
-  if(count_==0 && thermal_count_==0)
+  if(count_==0)
   {
     obs_value_traits<T>::resize_same_as(sum_,x);
     obs_value_traits<T>::resize_same_as(sum2_,x);
-    obs_value_traits<T>::resize_same_as(max_,x);
-    obs_value_traits<T>::resize_same_as(min_,x);
   }
 
   if(obs_value_traits<T>::size(x)!=obs_value_traits<T>::size(sum_))
-    boost::throw_exception(std::runtime_error("Size of argument does not match in SimpleBinning<T>::add"));
+    boost::throw_exception(std::runtime_error("Size of argument does not match in NoBinning<T>::add"));
 
   value_type y=x*x;
   sum_+=x;
   sum2_+=y;
-
-  //obs_value_traits<T>::check_for_max(max_,x);
-  //obs_value_traits<T>::check_for_min(min_,x);
 
   count_++;
 }
@@ -275,54 +256,37 @@ template <class T>
 inline void NoBinning<T>::save(ODump& dump) const
 {
   AbstractBinning<T>::save(dump);
-  dump << sum_ << sum2_ << count_ << thermal_count_<<min_<<max_;
+  dump << sum_ << sum2_ << count_;
 }
 
 template <class T>
 inline void NoBinning<T>::load(IDump& dump)
 {
+  uint32_t thermal_count_; 
+  value_type min_,max_; 
   AbstractBinning<T>::load(dump);
-  if(dump.version() >= 302 || dump.version() == 0 /* version is not set */){
-    dump >> sum_ >> sum2_ >> count_ >> thermal_count_>>min_>>max_;
-  }else{
-    dump >> sum_ >> sum2_ >> count_ >> thermal_count_ >> min_>> max_;
+  if(dump.version() >= 306 || dump.version() == 0 /* version is not set */) {
+    dump >> sum_ >> sum2_ >> count_;
   }
+  else if(dump.version() >= 302)
+    dump >> sum_ >> sum2_ >> count_ >> thermal_count_ >> min_ >> max_;
+  else
+    dump >> sum_ >> sum2_ >> count_ >> thermal_count_ >> min_ >> max_;
 }
 
 #endif
 
 #ifdef ALPS_HAVE_HDF5
 	template <class T> inline void NoBinning<T>::serialize(hdf5::oarchive & ar) const {
-		if (AbstractBinning<T>::is_thermalized())
-			ar
-				<< make_pvp("sum", sum_)
-				<< make_pvp("sum2", sum2_)
-				<< make_pvp("count", count_)
-			;
+      ar
+          << make_pvp("sum", sum_)
+          << make_pvp("sum2", sum2_)
+          << make_pvp("count", count_)
+      ;
 	}
 	template <class T> inline void NoBinning<T>::serialize(hdf5::iarchive & ar) {}
 #endif
 
 } // end namespace alps
-
-#ifndef ALPS_WITHOUT_OSIRIS
-
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-namespace alps {
-#endif
-
-template<class T>
-inline alps::ODump& operator<<(alps::ODump& od, const alps::NoBinning<T>& m)
-{ m.save(od); return od; }
-
-template<class T>
-inline alps::IDump& operator>>(alps::IDump& id, alps::NoBinning<T>& m)
-{ m.load(id); return id; }
-
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-} // namespace alps
-#endif
-
-#endif
 
 #endif // ALPS_ALEA_NOBINNING_H

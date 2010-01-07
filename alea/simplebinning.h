@@ -65,12 +65,12 @@ class SimpleBinning : public AbstractBinning<T>
   BOOST_STATIC_CONSTANT(int, magic_id=2);
 
   SimpleBinning(std::size_t=0);
-  virtual ~SimpleBinning() {}
 
-  void reset(bool forthermalization=false);
+  void reset(bool =true);
+
   void operator<<(const T& x);
 
-  uint64_t count() const {return super_type::is_thermalized() ? count_ : 0;} // number of measurements performed
+  uint64_t count() const {return count_;} // number of measurements performed
   result_type mean() const;
   result_type variance() const;
   result_type error(std::size_t bin_used=std::numeric_limits<std::size_t>::max BOOST_PREVENT_MACRO_SUBSTITUTION ()) const;
@@ -87,19 +87,13 @@ class SimpleBinning : public AbstractBinning<T>
   uint32_t binning_depth() const;
     // depth of logarithmic binning hierarchy = log2(measurements())
 
-  //min and max are expensive to compute. This interface is now disabled.
-  value_type min BOOST_PREVENT_MACRO_SUBSTITUTION () const {return min_;}
-  value_type max BOOST_PREVENT_MACRO_SUBSTITUTION () const {return max_;}
-
-  uint32_t get_thermalization() const { return super_type::is_thermalized() ? thermal_count_ : count_;}
-
   std::size_t size() const { return sum_.size()==0?0:obs_value_traits<T>::size(sum_[0]);}
 
   void output_scalar(std::ostream& out) const;
   template <class L> void output_vector(std::ostream& out, const L&) const;
 #ifndef ALPS_WITHOUT_OSIRIS
-  virtual void save(ODump& dump) const;
-  virtual void load(IDump& dump);
+  void save(ODump& dump) const;
+  void load(IDump& dump);
 #endif
 
 #ifdef ALPS_HAVE_HDF5
@@ -122,8 +116,6 @@ private:
   std::vector<result_type> last_bin_; // the last value measured
 
   uint64_t count_; // total number of measurements (=bin_entries_[0])
-  uint32_t thermal_count_; // meaurements performed during thermalization
-  value_type min_,max_; // minimum and maximum value
 
   // some fast inlined functions without any range checks
   result_type binmean(std::size_t i) const ;
@@ -136,32 +128,20 @@ template <class T> const bool SimpleBinning<T>::has_tau;
 
 template <class T>
 inline SimpleBinning<T>::SimpleBinning(std::size_t)
+ : count_(0)
 {
-  reset();
 }
-
 
 // Reset the observable.
 template <class T>
-inline void SimpleBinning<T>::reset(bool forthermalization)
+inline void SimpleBinning<T>::reset(bool )
 {
-  typedef typename obs_value_traits<T>::count_type count_type;
-
-  AbstractBinning<T>::reset(forthermalization);
-
-  thermal_count_= (forthermalization ? count_ : 0);
-
   sum_.clear();
   sum2_.clear();
   bin_entries_.clear();
   last_bin_.clear();
-
   count_ = 0;
-
-  min_ =  obs_value_traits<T>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();
-  max_ = -obs_value_traits<T>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();
 }
-
 
 // add a new measurement
 template <> void SimpleBinning<std::valarray<double> >::operator<<(const std::valarray<double>& x);
@@ -180,21 +160,16 @@ inline void SimpleBinning<T>::operator<<(const T& x)
     obs_value_traits<result_type>::resize_same_as(last_bin_[0],x);
     obs_value_traits<result_type>::resize_same_as(sum_[0],x);
     obs_value_traits<result_type>::resize_same_as(sum2_[0],x);
-    obs_value_traits<result_type>::resize_same_as(max_,x);
-    obs_value_traits<result_type>::resize_same_as(min_,x);
   }
-
   if(obs_value_traits<T>::size(x)!=size()) {
     std::cerr << "Size is " << size() << " while new size is " << obs_value_traits<T>::size(x) << "\n";
     boost::throw_exception(std::runtime_error("Size of argument does not match in SimpleBinning<T>::add"));
   }
 
-  // store x, x^2 and the minimum and maximum value
+  // store x, x^2
   last_bin_[0]=obs_value_traits<result_type>::convert(x);
   sum_[0]+=obs_value_traits<result_type>::convert(x);
   sum2_[0]+=obs_value_traits<result_type>::convert(x)*obs_value_traits<result_type>::convert(x);
-  //obs_value_traits<T>::check_for_max(max_,x);
-  //obs_value_traits<T>::check_for_min(min_,x);
 
   uint64_t i=count_;
   count_++;
@@ -251,8 +226,6 @@ template <> inline void SimpleBinning<std::valarray<double> >::operator<<(const 
     obs_value_traits<result_type>::resize_same_as(last_bin_[0],x);
     obs_value_traits<result_type>::resize_same_as(sum_[0],x);
     obs_value_traits<result_type>::resize_same_as(sum2_[0],x);
-    obs_value_traits<result_type>::resize_same_as(max_,x);
-    obs_value_traits<result_type>::resize_same_as(min_,x);
   }
 
   if(obs_value_traits<std::valarray<double> >::size(x)!=size()) {
@@ -266,8 +239,6 @@ template <> inline void SimpleBinning<std::valarray<double> >::operator<<(const 
     sum_[0][i]+=x[i];
     sum2_[0][i]+=x[i]*x[i];
   }
-  //obs_value_traits<std::valarray<double> >::check_for_max(max_,x);
-  //obs_value_traits<std::valarray<double> >::check_for_min(min_,x);
 
   uint64_t i=count_;
   count_++;
@@ -435,7 +406,7 @@ inline typename SimpleBinning<T>::result_type SimpleBinning<T>::variance() const
   if(count()<2)
     {
       result_type retval;
-      obs_value_traits<T>::resize_same_as(retval,min_);
+      obs_value_traits<T>::resize_same_as(retval,sum_[0]);
       retval=inf();
       return retval;
     }
@@ -541,7 +512,7 @@ inline typename obs_value_traits<T>::time_type SimpleBinning<T>::tau() const
   else
   {
     time_type retval;
-    obs_value_traits<T>::resize_same_as(retval,min_);
+    obs_value_traits<T>::resize_same_as(retval,sum_[0]);
     retval=inf();
     return retval;
   }
@@ -684,14 +655,23 @@ template <class T>
 inline void SimpleBinning<T>::save(ODump& dump) const
 {
   AbstractBinning<T>::save(dump);
-    dump << sum_ << sum2_ << bin_entries_ << last_bin_ << count_ << thermal_count_<<min_<<max_;
+    dump << sum_ << sum2_ << bin_entries_ << last_bin_ << count_;
 }
 
 template <class T>
 inline void SimpleBinning<T>::load(IDump& dump)
 {
+  // local variables for depreacted members
+  bool has_minmax_;
+  value_type min_, max_;
+  uint32_t thermal_count_;
+
   AbstractBinning<T>::load(dump);
-  if(dump.version() >= 302 || dump.version() == 0 /* version is not set */){
+  if(dump.version() >= 306 || dump.version() == 0 /* version is not set */){
+    //previously saved min and max will be ignored from now on.
+    dump >> sum_ >> sum2_ >> bin_entries_ >> last_bin_ >> count_;
+  }
+  else if(dump.version() >= 302 /* version is not set */){
     //previously saved min and max will be ignored from now on.
     dump >> sum_ >> sum2_ >> bin_entries_ >> last_bin_ >> count_ >> thermal_count_
          >> min_>> max_;
@@ -700,11 +680,8 @@ inline void SimpleBinning<T>::load(IDump& dump)
     // some data types have changed from 32 to 64 Bit between version 301 and 302
     uint32_t count_tmp;
     std::vector<uint32_t> bin_entries_tmp;
-    //previously saved min and max will be ignored from now on.
-    value_type min_ignored;
-    value_type max_ignored;
     dump >> sum_ >> sum2_ >> bin_entries_tmp >> last_bin_ >> count_tmp >> thermal_count_
-         >> min_ignored >> max_ignored;
+         >> min_ >> max_;
     // perform the conversions which may be necessary
     count_ = count_tmp;
     bin_entries_.assign(bin_entries_tmp.begin(), bin_entries_tmp.end());
@@ -714,53 +691,31 @@ inline void SimpleBinning<T>::load(IDump& dump)
 
 #ifdef ALPS_HAVE_HDF5
 	template <class T> inline void SimpleBinning<T>::serialize(hdf5::oarchive & ar) const {
-		if (AbstractBinning<T>::is_thermalized())
-			ar
-				<< make_pvp("sum", sum_[0])
-				<< make_pvp("sum2", sum2_[0])
-				<< make_pvp("count", count_)
-				<< make_pvp("timeseries/logbinning", sum_)
-				<< make_pvp("timeseries/logbinning/@binningtype", "logarithmic")
-				<< make_pvp("timeseries/logbinning2", sum2_)
-				<< make_pvp("timeseries/logbinning2/@binningtype", "logarithmic")
-				<< make_pvp("timeseries/logbinning_lastbin", last_bin_)
-				<< make_pvp("timeseries/logbinning_lastbin/@binningtype", "logarithmic")
-				<< make_pvp("timeseries/logbinning_counts", bin_entries_)
-				<< make_pvp("timeseries/logbinning_counts/@binningtype", "logarithmic")
-			;
+      ar
+          << make_pvp("sum", sum_[0])
+          << make_pvp("sum2", sum2_[0])
+          << make_pvp("count", count_)
+          << make_pvp("timeseries/logbinning", sum_)
+          << make_pvp("timeseries/logbinning/@binningtype", "logarithmic")
+          << make_pvp("timeseries/logbinning2", sum2_)
+          << make_pvp("timeseries/logbinning2/@binningtype", "logarithmic")
+          << make_pvp("timeseries/logbinning_lastbin", last_bin_)
+          << make_pvp("timeseries/logbinning_lastbin/@binningtype", "logarithmic")
+          << make_pvp("timeseries/logbinning_counts", bin_entries_)
+          << make_pvp("timeseries/logbinning_counts/@binningtype", "logarithmic")
+      ;
 	}
 	template <class T> inline void SimpleBinning<T>::serialize(hdf5::iarchive & ar) {
-			ar
-				>> make_pvp("count", count_)
-				>> make_pvp("timeseries/logbinning", sum_)
-				>> make_pvp("timeseries/logbinning2", sum2_)
-				>> make_pvp("timeseries/logbinning_lastbin", last_bin_)
-				>> make_pvp("timeseries/logbinning_counts", bin_entries_)
-			;
-			// thermal_count_ >> min_>> max_;
+      ar
+          >> make_pvp("count", count_)
+          >> make_pvp("timeseries/logbinning", sum_)
+          >> make_pvp("timeseries/logbinning2", sum2_)
+          >> make_pvp("timeseries/logbinning_lastbin", last_bin_)
+          >> make_pvp("timeseries/logbinning_counts", bin_entries_)
+      ;
 	}
 #endif
 
 } // end namespace alps
-
-#ifndef ALPS_WITHOUT_OSIRIS
-
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-namespace alps {
-#endif
-
-template<class T>
-inline alps::ODump& operator<<(alps::ODump& od, const alps::SimpleBinning<T>& m)
-{ m.save(od); return od; }
-
-template<class T>
-inline alps::IDump& operator>>(alps::IDump& id, alps::SimpleBinning<T>& m)
-{ m.load(id); return id; }
-
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-} // namespace alps
-#endif
-
-#endif
 
 #endif // ALPS_ALEA_SIMPLEBINNING_H

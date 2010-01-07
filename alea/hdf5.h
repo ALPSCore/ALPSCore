@@ -136,7 +136,6 @@ template<typename T, typename B> void SimpleObservable<T,B>::read_hdf5(boost::fi
 template<typename T> template<typename E> void SimpleBinning<T>::read_hdf5(const E &c){
   AbstractBinning<T>::read_hdf5(c); //call base class function
   count_=(c+std::string("count"));
-  thermal_count_=(c+std::string("thermal_count"));
   bin_entries_=(c+std::string("mean/bins/bin_entries"));
   last_bin_.resize((c+std::string("mean/bins/size")));
   sum_.resize((c+std::string("mean/bins/size")));
@@ -167,7 +166,6 @@ template<typename T> template<typename E> void BasicDetailedBinning<T>::write_hd
 template<typename T> template<typename E> void SimpleBinning<T>::write_hdf5(E &c) const {
   AbstractBinning<T>::write_hdf5(c); //call base class function
   (c+std::string("count"))=count_;
-  (c+std::string("thermal_count"))=thermal_count_;
   (c+std::string("mean/bins/bin_entries"))=bin_entries_;
   (c+std::string("mean/bins/size"))=last_bin_.size();
   for(std::size_t i=0;i<last_bin_.size();++i){
@@ -182,14 +180,12 @@ template<typename T> template<typename E> void SimpleBinning<T>::write_hdf5(E &c
 template<typename T> template<typename E> void NoBinning<T>::write_hdf5(const E &c) const{
   AbstractBinning<T>::write_hdf5(c); //call base class function
   (c+std::string("count"))=count_;
-  (c+std::string("thermal_count"))=thermal_count_;
   (c+std::string("mean/sum"))=sum_;
   (c+std::string("mean/sum2"))=sum2_;
 }
 template<typename T> template<typename E> void NoBinning<T>::read_hdf5(const E &c){
   AbstractBinning<T>::read_hdf5(c); //call base class function
   count_=(c+std::string("count"));
-  thermal_count_=(c+std::string("thermal_count"));
   assign(sum_,(c+std::string("mean/sum")));
   assign(sum2_,(c+std::string("mean/sum2")));
 }
@@ -208,15 +204,8 @@ template<typename T> template<typename E> void BasicDetailedBinning<T>::read_hdf
     assign(values2_[i],(c+path1.str()));
   }
 }
-template<typename T> template<typename E> void AbstractBinning<T>::write_hdf5(const E &c) const{
-  int thermalized=thermalized_;
-  (c+std::string("thermalized"))=thermalized; //gcc cannot write hdf5 bools and then read them again?
-}
-template<typename T> template<typename E> void AbstractBinning<T>::read_hdf5(const E &c){
-  int thermalized;
-  thermalized=(c+std::string("thermalized"));
-  thermalized_=(bool)thermalized;
-}
+template<typename T> template<typename E> void AbstractBinning<T>::write_hdf5(const E &c) const{}
+template<typename T> template<typename E> void AbstractBinning<T>::read_hdf5(const E &c){}
 
 template <typename OBS, typename SIGN> void SignedObservable<OBS,SIGN>::write_hdf5(const boost::filesystem::path& path, std::size_t realization, std::size_t clone) const{
   {

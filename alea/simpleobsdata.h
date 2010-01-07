@@ -119,15 +119,11 @@ public:
   inline const convergence_type& any_converged_errors() const;
   inline const result_type& variance() const;
   inline const time_type& tau() const;
-  inline const value_type& min BOOST_PREVENT_MACRO_SUBSTITUTION () const;
-  inline const value_type& max BOOST_PREVENT_MACRO_SUBSTITUTION () const;
   
   covariance_type covariance(const SimpleObservableData<T>) const;
 
   bool has_variance() const { return has_variance_;}
   bool has_tau() const { return has_tau_;}
-  //bool has_minmax() const { return has_minmax_;}
-  bool has_minmax() const { return false;} //this interface is disabled - keeping track of min and max is too expensive
 
   uint64_t bin_size() const { return binsize_;}
   std::size_t bin_number() const { return values_.size()-discardedbins_;}
@@ -203,11 +199,9 @@ private:
 
   mutable bool has_variance_;
   mutable bool has_tau_;
-  mutable bool has_minmax_;
   mutable bool can_set_thermal_;
 
   mutable uint64_t binsize_;
-  mutable uint32_t thermalcount_; 
   mutable uint32_t discardedmeas_;
   mutable uint32_t discardedbins_;
     
@@ -220,7 +214,6 @@ private:
   mutable result_type error_;    // valid only if (valid_)
   mutable result_type variance_; // valid only if (valid_ && has_variance_)
   mutable time_type tau_;        // valid only if (valid_ && has_tau_)
-  mutable value_type min_, max_; // valid only if (valid_ && has_minmax_)
   
   mutable std::vector<value_type> values_;
   mutable std::vector<value_type> values2_;
@@ -236,18 +229,22 @@ SimpleObservableData<T>::SimpleObservableData()
  : count_(0),
    has_variance_(false),
    has_tau_(false),
-   has_minmax_(false),
-   can_set_thermal_(false),
    binsize_(0),
-   thermalcount_(0),
    discardedmeas_(0),
    discardedbins_(0),
    changed_(false),
    valid_(true),
    jack_valid_(true),
    nonlinear_operations_(false),
-   mean_(), error_(), variance_(), tau_(), min_(), max_(),
-   values_(), values2_(), jack_(), converged_errors_(), any_converged_errors_()
+   mean_(), 
+   error_(), 
+   variance_(), 
+   tau_(),
+   values_(), 
+   values2_(), 
+   jack_(), 
+   converged_errors_(), 
+   any_converged_errors_()
 {}
 
 template <class T>
@@ -257,10 +254,8 @@ SimpleObservableData<T>::SimpleObservableData(const SimpleObservableData<U>& x, 
  : count_(x.count_),          
    has_variance_(x.has_variance_),
    has_tau_(x.has_tau_),
-   has_minmax_(x.has_minmax_),
    can_set_thermal_(x.can_set_thermal_),
    binsize_(x.binsize_),
-   thermalcount_(x.thermalcount_),
    discardedmeas_(x.discardedmeas_),
    discardedbins_(x.discardedbins_),
    changed_(x.changed_),
@@ -271,8 +266,6 @@ SimpleObservableData<T>::SimpleObservableData(const SimpleObservableData<U>& x, 
    error_(obs_value_slice<typename obs_value_traits<U>::result_type,S>()(x.error_, s)),
    variance_(has_variance_ ? obs_value_slice<typename obs_value_traits<U>::result_type,S>()(x.variance_, s) : result_type()),
    tau_(has_tau_ ? obs_value_slice<typename obs_value_traits<U>::time_type,S>()(x.tau_, s) : time_type()),
-   min_(has_minmax_ ? obs_value_slice<U,S>()(x.min_, s) : result_type()), 
-   max_(has_minmax_ ? obs_value_slice<U,S>()(x.max_, s) : result_type()),
    values_(x.values_.size()), 
    values2_(x.values2_.size()), 
    jack_(x.jack_.size()),
@@ -300,10 +293,8 @@ SimpleObservableData<T> const& SimpleObservableData<T>::operator=(const SimpleOb
    count_=x.count_;        
    has_variance_=x.has_variance_;
    has_tau_=x.has_tau_;
-   has_minmax_=x.has_minmax_;
    can_set_thermal_=x.can_set_thermal_;
    binsize_=x.binsize_;
-   thermalcount_=x.thermalcount_;
    discardedmeas_=x.discardedmeas_;
    discardedbins_=x.discardedbins_;
    changed_=x.changed_;
@@ -314,8 +305,6 @@ SimpleObservableData<T> const& SimpleObservableData<T>::operator=(const SimpleOb
    obs_value_traits<result_type>::copy(error_,x.error_);
    obs_value_traits<result_type>::copy(variance_,x.variance_);
    obs_value_traits<time_type>::copy(tau_,x.tau_);
-   obs_value_traits<value_type>::copy(min_,x.min_);
-   obs_value_traits<value_type>::copy(max_,x.max_);
    values_=x.values_; 
    values2_=x.values2_; 
    jack_=x.jack_;
@@ -332,18 +321,21 @@ SimpleObservableData<T>::SimpleObservableData(const AbstractSimpleObservable<T>&
  : count_(obs.count()),
    has_variance_(obs.has_variance()),
    has_tau_(obs.has_tau()),
-   has_minmax_(obs.has_minmax()),
-   can_set_thermal_(obs.can_set_thermalization()),
+   can_set_thermal_(true),
    binsize_(obs.bin_size()),
-   thermalcount_(obs.get_thermalization()),
    discardedmeas_(0),
    discardedbins_(0),
    changed_(false),
    valid_(false),
    jack_valid_(false),
    nonlinear_operations_(false),
-   mean_(), error_(), variance_(), tau_(), min_(), max_(),
-   values_(), values2_(), jack_()
+   mean_(), 
+   error_(), 
+   variance_(), 
+   tau_(),
+   values_(), 
+   values2_(), 
+   jack_()
 {
   if (count()) {
     obs_value_traits<result_type>::copy(mean_, obs.mean());
@@ -352,10 +344,6 @@ SimpleObservableData<T>::SimpleObservableData(const AbstractSimpleObservable<T>&
       obs_value_traits<result_type>::copy(variance_, obs.variance());
     if (has_tau())
       obs_value_traits<time_type>::copy(tau_, obs.tau());
-    if (has_minmax()) {
-      obs_value_traits<result_type>::copy(min_, obs.min BOOST_PREVENT_MACRO_SUBSTITUTION ());
-      obs_value_traits<result_type>::copy(max_, obs.max BOOST_PREVENT_MACRO_SUBSTITUTION ());
-    }
 
     for (std::size_t i = 0; i < obs.bin_number(); ++i)
       values_.push_back(obs.bin_value(i));
@@ -373,18 +361,21 @@ SimpleObservableData<T>::SimpleObservableData(std::istream& infile, const XMLTag
   : count_(0),
     has_variance_(false),
     has_tau_(false),
-    has_minmax_(false),
     can_set_thermal_(false),
     binsize_(0),
-    thermalcount_(0),
     discardedmeas_(0),
     discardedbins_(0),
     changed_(false),
     valid_(true),
     jack_valid_(false),
     nonlinear_operations_(false),
-    mean_(), error_(), variance_(), tau_(), min_(), max_(),
-    values_(), values2_(), jack_()
+    mean_(), 
+    error_(), 
+    variance_(), 
+    tau_(), 
+    values_(), 
+    values2_(), 
+    jack_()
 {
   read_xml(infile,intag,l);
 }
@@ -649,7 +640,6 @@ void SimpleObservableData<T>::transform(const SimpleObservableData<X>& x, OP op,
   valid_ = false;
   nonlinear_operations_ = true;
   changed_ = true;
-  has_minmax_ = false;
   has_variance_ = false;
   has_tau_=false;
   values2_.clear();
@@ -665,21 +655,16 @@ void SimpleObservableData<T>::transform(const SimpleObservableData<X>& x, OP op,
     for (std::size_t i = 0; i < jack_.size(); ++i)
       jack_[i] = op(jack_[i], x.jack_[i]);
   }
-  
-  obs_value_traits<convergence_type>::check_for_max(converged_errors_, x.converged_errors());
-  obs_value_traits<convergence_type>::check_for_min(any_converged_errors_, x.any_converged_errors());
-   
 }
 
 template <class T>
-ALPS_DUMMY_VOID SimpleObservableData<T>::compact()
+void SimpleObservableData<T>::compact()
 {
   analyze();
   count_=count();
   values_.clear();
   values2_.clear();
   jack_.clear();
-  ALPS_RETURN_VOID
 }
 
 template <class T> 
@@ -702,7 +687,6 @@ void SimpleObservableData<T>::transform(OP op)
   has_variance_ = false;
   has_tau_ = false;
   values2_.clear();
-  has_minmax_ = false;
   std::transform(values_.begin(), values_.end(), values_.begin(),_1/double(bin_size()));
   std::transform(values_.begin(), values_.end(), values_.begin(), op);
   std::transform(values_.begin(), values_.end(), values_.begin(),_1*double(bin_size()));
@@ -713,24 +697,14 @@ void SimpleObservableData<T>::transform(OP op)
 template <class T>
 void SimpleObservableData<T>::negate()
 {
-  if (count()) {
-    if (has_minmax_) {
-      value_type tmp(min_);
-      min_ = -max_;
-      max_ = -tmp;
-    }
+  if (count())
     transform_linear(-_1);
-  }
 }
 
 template <class T> template <class X>
 SimpleObservableData<T>& SimpleObservableData<T>::operator+=(X x)
 {
   if (count()) {
-    if (has_minmax_) {
-      min_ += x;
-      max_ += x;
-    }
     transform_linear(_1 + x);
     for (int i=0;i<values2_.size();++i)
       values2_[i] += 2.*values_[i]*x+x*x;
@@ -742,10 +716,6 @@ template <class T> template <class X>
 SimpleObservableData<T>& SimpleObservableData<T>::operator-=(X x)
 {
   if(count()) {
-    if (has_minmax_) {
-      min_ -= x;
-      max_ -= x;
-    }
     transform_linear(_1-x);
     for (int i=0;i<values2_.size();++i)
       values2_[i] += -2.*values_[i]*x+x*x;
@@ -757,10 +727,6 @@ template <class T> template <class X>
 void SimpleObservableData<T>::subtract_from(const X& x)
 {
   if (count()) {
-    if(has_minmax_) {
-      min_ = x-max_;
-      max_ = x-min_;
-    }
     transform_linear(x-_1);
     for (int i=0;i<values2_.size();++i)
       values2_[i] += -2.*values_[i]*x+x*x;
@@ -774,7 +740,6 @@ SimpleObservableData<T>& SimpleObservableData<T>::operator*=(X x)
     error_ *= x;
     if(has_variance_)
       variance_ *= x*x;
-    has_minmax_ = false;
     
     transform_linear(_1*x);
     std::transform(values2_.begin(),values2_.end(),values2_.begin(),_1*(x*x));
@@ -789,7 +754,6 @@ SimpleObservableData<T>& SimpleObservableData<T>::operator/=(X x)
     error_ /= x;
     if(has_variance_)
       variance_ /= x*x;
-    has_minmax_ = false;
     
     transform_linear(_1/x);
     std::transform(values2_.begin(),values2_.end(),values2_.begin(),_1/(x*x));
@@ -802,7 +766,6 @@ void SimpleObservableData<T>::divide(const X& x)
 {
   if (count()) {
     error_ = x *error_/mean_/mean_;
-    has_minmax_ = false;
     has_variance_ = false;
     values2_.clear();
     has_tau_ = false;
@@ -831,7 +794,6 @@ void SimpleObservableData<T>::collect_from(const std::vector<SimpleObservableDat
   discardedmeas_ = 0;
   has_variance_ = false;
   has_tau_ = false;
-  has_minmax_ = false;
 
   values_.clear();
   values2_.clear();
@@ -859,7 +821,6 @@ void SimpleObservableData<T>::collect_from(const std::vector<SimpleObservableDat
 
         has_variance_ = r->has_variance_;
         has_tau_ = r->has_tau_;
-        has_minmax_ = r->has_minmax_;
         can_set_thermal_ = r->can_set_thermal_;
         nonlinear_operations_ = r->nonlinear_operations_;
         changed_ = r->changed_;
@@ -867,15 +828,10 @@ void SimpleObservableData<T>::collect_from(const std::vector<SimpleObservableDat
         obs_value_traits<result_type>::copy(error_,r->error_);
         obs_value_traits<convergence_type>::copy(converged_errors_,r->converged_errors_);
         obs_value_traits<convergence_type>::copy(any_converged_errors_,r->any_converged_errors_);
-        if (has_minmax_) {
-          obs_value_traits<value_type>::copy(min_, r->min_);
-          obs_value_traits<value_type>::copy(max_, r->max_);
-        }
         if(has_variance_)
           obs_value_traits<result_type>::copy(variance_,r->variance_);
         if(has_tau_)
           obs_value_traits<time_type>::copy(tau_,r->tau_);
-        thermalcount_ = r->thermalcount_;
         discardedmeas_ = r->discardedmeas_;
         count_ = r->count();
 
@@ -899,14 +855,9 @@ void SimpleObservableData<T>::collect_from(const std::vector<SimpleObservableDat
 
         has_variance_ = has_variance_ && r->has_variance_;
         has_tau_ = has_tau_ && r->has_tau_;
-        has_minmax_ = has_minmax_ && r->has_minmax_;
         can_set_thermal_ = can_set_thermal_ && r->can_set_thermal_;
         nonlinear_operations_ = nonlinear_operations_ || r->nonlinear_operations_;
         changed_ = changed_ && r->changed_;
-        if(has_minmax_) {
-          obs_value_traits<value_type>::check_for_min(min_, r->min_);
-          obs_value_traits<value_type>::check_for_max(max_, r->max_);
-        }
         obs_value_traits<convergence_type>::check_for_max(converged_errors_, r->converged_errors_);
         obs_value_traits<convergence_type>::check_for_min(any_converged_errors_, r->any_converged_errors_);
 
@@ -941,7 +892,6 @@ void SimpleObservableData<T>::collect_from(const std::vector<SimpleObservableDat
           //  / double(count_ + r->count_);
         }
 
-        thermalcount_ = std::min BOOST_PREVENT_MACRO_SUBSTITUTION (thermalcount_, r->thermalcount_);
         discardedmeas_ = std::min BOOST_PREVENT_MACRO_SUBSTITUTION (discardedmeas_, r->discardedmeas_);
         count_ += r->count();
 
@@ -977,14 +927,25 @@ template <class T>
 void SimpleObservableData<T>::save(ODump& dump) const
 {
   dump << count_ << mean_ << error_ << variance_ << tau_ << has_variance_
-       << has_tau_ << has_minmax_ << thermalcount_ << can_set_thermal_ << min_ << max_
+       << has_tau_ << can_set_thermal_
        << binsize_ << discardedmeas_ << discardedbins_ << valid_ << jack_valid_ << changed_
        << nonlinear_operations_ << values_ << values2_ << jack_ << converged_errors_ << any_converged_errors_;
 }
 template <class T>
 void SimpleObservableData<T>::load(IDump& dump)
 {
-  if(dump.version() >= 302 || dump.version() == 0 /* version is not set */){
+  // local variables for depreacted members
+  bool has_minmax_;
+  value_type min_, max_;
+  uint32_t thermalcount_;
+  
+  if(dump.version() >= 306 || dump.version() == 0 /* version is not set */){
+    dump >> count_ >> mean_ >> error_ >> variance_ >> tau_ >> has_variance_
+         >> has_tau_ >> can_set_thermal_ 
+         >> binsize_ >> discardedmeas_ >> discardedbins_ >> valid_ >> jack_valid_ >> changed_
+         >> nonlinear_operations_ >> values_ >> values2_ >> jack_;
+  }
+  else if(dump.version() >= 302 || dump.version() == 0 /* version is not set */){
     dump >> count_ >> mean_ >> error_ >> variance_ >> tau_ >> has_variance_
          >> has_tau_ >> has_minmax_ >> thermalcount_ >> can_set_thermal_ 
          >> min_ >> max_
@@ -1029,7 +990,6 @@ void SimpleObservableData<T>::load(IDump& dump)
 					<< make_pvp("tau/value", tau_)
 				;
 			ar
-				<< make_pvp("thermalization", thermalcount_)
 				<< make_pvp("timeseries/data", values_)
 				<< make_pvp("timeseries/data/@binningtype", "linear")
 				<< make_pvp("timeseries/data2", values2_)
@@ -1194,24 +1154,23 @@ SimpleObservableData<T>::covariance(const SimpleObservableData<T> obs2) const
 template <class T>
 uint32_t SimpleObservableData<T>::get_thermalization() const
 {
-  return thermalcount_ + discardedmeas_;
+  return  discardedmeas_;
 }
 
 template <class T>
-ALPS_DUMMY_VOID SimpleObservableData<T>::set_thermalization(uint32_t thermal)
+void SimpleObservableData<T>::set_thermalization(uint32_t thermal)
 {
   if (nonlinear_operations_)
     boost::throw_exception(std::runtime_error("cannot set thermalization after nonlinear operations"));
   if (!can_set_thermalization())
     boost::throw_exception(std::runtime_error("cannot set thermalization"));
   if (binsize_) {
-    discardedmeas_ = thermal - thermalcount_;
+    discardedmeas_ = thermal ;
     discardedbins_ = (discardedmeas_ + binsize_ - 1) / binsize_;  
     changed_ = true;
     valid_ = false;
     jack_valid_ = false;
   }
-  ALPS_RETURN_VOID
 }
 
 template <class T>
@@ -1310,51 +1269,6 @@ const typename SimpleObservableData<T>::time_type& SimpleObservableData<T>::tau(
   return tau_;
 }
 
-template <class T>
-inline
-const typename SimpleObservableData<T>::value_type& SimpleObservableData<T>::min BOOST_PREVENT_MACRO_SUBSTITUTION () const
-{
-  if (count() == 0) boost::throw_exception(NoMeasurementsError());
-  if (!has_minmax_)
-    boost::throw_exception(std::logic_error("observable does not have minimum"));
-  return min_;
-}
-
-template <class T>
-inline
-const typename SimpleObservableData<T>::value_type& SimpleObservableData<T>::max BOOST_PREVENT_MACRO_SUBSTITUTION () const
-{
-  if (count() == 0) boost::throw_exception(NoMeasurementsError());
-  if(!has_minmax_)
-    boost::throw_exception(std::logic_error("observable does not have maximum"));
-  return max_;
-}
-
 } // end namespace alps
-
-
-//
-// OSIRIS support
-//
-
-#ifndef ALPS_WITHOUT_OSIRIS
-
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-namespace alps {
-#endif
-
-template<class T>
-inline alps::ODump& operator<<(alps::ODump& od, const alps::SimpleObservableData<T>& m)
-{ m.save(od); return od; }
-
-template<class T>
-inline alps::IDump& operator>>(alps::IDump& id, alps::SimpleObservableData<T>& m)
-{ m.load(id); return id; }
-
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-} // namespace alps
-#endif
-
-#endif // !ALPS_WITHOUT_OSIRIS
 
 #endif // ALPS_ALEA_SIMPLEOBSDATA_H

@@ -91,8 +91,8 @@ public:
   template<typename E> void write_hdf5 (E &engine) const;
 #endif  
 #ifndef ALPS_WITHOUT_OSIRIS
-  virtual void save(ODump& dump) const;
-  virtual void load(IDump& dump);
+  void save(ODump& dump) const;
+  void load(IDump& dump);
   void extract_timeseries(ODump& dump) const { dump << binsize_ << values_.size() << binentries_ << values_;}
 #endif
 
@@ -168,14 +168,11 @@ inline BasicDetailedBinning<T>::BasicDetailedBinning(uint32_t binsize, uint32_t 
 template <class T>
 inline void BasicDetailedBinning<T>::compact()
 {
-  std::vector<value_type> tmp1;
-  std::vector<value_type> tmp2;
-  values_.swap(tmp1);
-  values2_.swap(tmp2);
+  values_.clear();
+  values2_.clear();
   binsize_=minbinsize_;
   binentries_=0;
 }
-
 
 template <class T>
 inline void BasicDetailedBinning<T>::reset(bool forthermal)
@@ -183,7 +180,6 @@ inline void BasicDetailedBinning<T>::reset(bool forthermal)
   compact();
   SimpleBinning<T>::reset(forthermal);
 }
-
 
 template <class T>
 inline void BasicDetailedBinning<T>::operator<<(const T& x)
@@ -318,56 +314,19 @@ inline void BasicDetailedBinning<T>::load(IDump& dump)
 #ifdef ALPS_HAVE_HDF5
 	template <class T> inline void BasicDetailedBinning<T>::serialize(hdf5::oarchive & ar) const {
 		SimpleBinning<T>::serialize(ar);
-		if (AbstractBinning<T>::is_thermalized())
-			ar 
-				<< make_pvp("timeseries/data", values_)
-				<< make_pvp("timeseries/data", values_)
-				<< make_pvp("timeseries/data/@binningtype", "linear")
-				<< make_pvp("timeseries/data/@minbinsize", minbinsize_)
-				<< make_pvp("timeseries/data/@maxbinnum", maxbinnum_)
-				<< make_pvp("timeseries/data2", values2_)
-				<< make_pvp("timeseries/data2/@binningtype", "linear")
-			;
+        ar 
+            << make_pvp("timeseries/data", values_)
+            << make_pvp("timeseries/data", values_)
+            << make_pvp("timeseries/data/@binningtype", "linear")
+            << make_pvp("timeseries/data/@minbinsize", minbinsize_)
+            << make_pvp("timeseries/data/@maxbinnum", maxbinnum_)
+            << make_pvp("timeseries/data2", values2_)
+            << make_pvp("timeseries/data2/@binningtype", "linear")
+        ;
 	}
 #endif
 
 
 } // end namespace alps
-
-#ifndef ALPS_WITHOUT_OSIRIS
-
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-namespace alps {
-#endif
-
-template<class T>
-inline alps::ODump& operator<<(alps::ODump& od, const alps::BasicDetailedBinning<T>& m)
-{ m.save(od); return od; }
-
-template<class T>
-inline alps::IDump& operator>>(alps::IDump& id, alps::BasicDetailedBinning<T>& m)
-{ m.load(id); return id; }
-
-template<class T>
-inline alps::ODump& operator<<(alps::ODump& od, const alps::DetailedBinning<T>& m)
-{ m.save(od); return od; }
-
-template<class T>
-inline alps::IDump& operator>>(alps::IDump& id, alps::DetailedBinning<T>& m)
-{ m.load(id); return id; }
-
-template<class T>
-inline alps::ODump& operator<<(alps::ODump& od, const alps::FixedBinning<T>& m)
-{ m.save(od); return od; }
-
-template<class T>
-inline alps::IDump& operator>>(alps::IDump& id, alps::FixedBinning<T>& m)
-{ m.load(id); return id; }
-
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-} // namespace alps
-#endif
-
-#endif
 
 #endif // ALPS_ALEA_DETAILEDBINNING_H

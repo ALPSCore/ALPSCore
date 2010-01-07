@@ -51,7 +51,6 @@ ALPS_DUMMY_VOID Observable::reset(bool equilibrated)
 {
 }
 
-
 ALPS_DUMMY_VOID Observable::output(std::ostream&) const
 {
 }
@@ -62,11 +61,6 @@ Observable* Observable::clone() const
 }
 
 uint32_t Observable::version_id() const
-{
-  return 0;
-}
-
-uint32_t Observable::get_thermalization() const
 {
   return 0;
 }
@@ -182,26 +176,8 @@ Observable* Observable::convert_mergeable() const
   return 0;
 }
 
-bool Observable::can_set_thermalization() const
-{
-  return false;
-}
-
-void Observable::set_thermalization(uint32_t)
-{
-  boost::throw_exception(std::logic_error("alps::Observable::set_thermalization not implemented for this observable."));
-}
-
-ALPS_DUMMY_VOID Observable::compact()
-{
-  // do nothing
-  ALPS_RETURN_VOID
-}
-
 void Observable::rename(const std::string& newname)
 {
-  if (in_observable_set_)
-    boost::throw_exception(std::runtime_error("Cannot change name of an Observable in an ObservableSet."));
   name_=newname;
 }
 

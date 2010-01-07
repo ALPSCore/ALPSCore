@@ -120,9 +120,6 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
 
   bool has_tau() const { collect(); return all_.has_tau(); }
   bool has_variance() const { collect(); return all_.has_variance(); }
-  bool has_minmax() const { return false; /*collect() ; return all_.has_minmax(); */} //min / max is no longer supported - too expensive.
-  value_type max BOOST_PREVENT_MACRO_SUBSTITUTION () const { collect(); return all_.max BOOST_PREVENT_MACRO_SUBSTITUTION (); }
-  value_type min BOOST_PREVENT_MACRO_SUBSTITUTION () const { collect(); return all_.min BOOST_PREVENT_MACRO_SUBSTITUTION (); }
 
   result_type value() const { collect(); return all_.mean(); }
   result_type mean() const { return value(); }
@@ -423,8 +420,7 @@ inline void SimpleObservableEvaluator<T>::merge(const Observable& o)
 {
   if (automatic_naming_ && super_type::name()=="") Observable::rename(o.name());
   if (dynamic_cast<const RecordableObservable<T>*>(&o)!=0) {
-    if(dynamic_cast<const RecordableObservable<T>&>(o).is_thermalized())
-      (*this) <<
+    (*this) <<
         SimpleObservableData<T>(dynamic_cast<const AbstractSimpleObservable<T>&>(o));
   } else {
     const SimpleObservableEvaluator<T>& eval =

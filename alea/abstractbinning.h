@@ -49,15 +49,13 @@ class AbstractBinning {
   typedef typename obs_value_traits<T>::time_type time_type;
   typedef typename obs_value_traits<T>::convergence_type convergence_type;
   AbstractBinning(std::size_t=0) {}
-  virtual ~AbstractBinning() {}
 
   time_type tau()                  const { boost::throw_exception(std::logic_error("Called non-implemented function of AbstractBinning")); return time_type(); }
-  virtual uint32_t max_bin_number()        const { return 0; }
-  virtual uint32_t bin_number()            const { return 0; }
-  virtual uint32_t filled_bin_number()     const { return 0; }
-  virtual uint32_t filled_bin_number2()     const { return 0; }
-  virtual uint32_t bin_size()              const { return 0; }
-  virtual convergence_type converged_errors() const=0;
+  uint32_t max_bin_number()        const { return 0; }
+  uint32_t bin_number()            const { return 0; }
+  uint32_t filled_bin_number()     const { return 0; }
+  uint32_t filled_bin_number2()     const { return 0; }
+  uint32_t bin_size()              const { return 0; }
   const value_type& bin_value(uint32_t  ) const {
     boost::throw_exception(std::logic_error("Binning is not supported for this observable"));
     return *(new value_type); // dummy return
@@ -74,54 +72,28 @@ class AbstractBinning {
   template<typename E> void write_hdf5 (const E &engine)const;
 #endif
 
-  bool can_set_thermalization() const { return false;}
-  bool has_minmax() const { return false;}  //disabled - measuring this is too expensive.
   bool has_variance() const { return true;} // for now
-  bool is_thermalized() const { return thermalized_;}
-  void reset (bool for_thermal) 
-  {
-    thermalized_ = for_thermal;
-  }
-  void compact() {}
   void write_scalar_xml(oxstream&) const {}
   template <class IT> void write_vector_xml(oxstream&, IT) const {}
 
 #ifndef ALPS_WITHOUT_OSIRIS
-  virtual void save(ODump& dump) const { dump << thermalized_;}
-  virtual void load(IDump& dump) { dump >> thermalized_;}
+  void save(ODump& dump) const {}
+  void load(IDump& dump) 
+  { 
+    bool thermalized_; 
+    if (dump.version() < 306 && dump.version() != 0) 
+      dump >> thermalized_;
+  }
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-	virtual void serialize(hdf5::oarchive & ar) const {};
-	virtual void serialize(hdf5::iarchive & ar) {};
+	void serialize(hdf5::oarchive & ar) const {};
+	void serialize(hdf5::iarchive & ar) {};
 #endif
 
   std::string evaluation_method() const { return "simple";}
-private:
-  bool thermalized_;  
 };
 
 } // end namespace alps
-
-
-#ifndef ALPS_WITHOUT_OSIRIS
-
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-namespace alps {
-#endif
-
-template<class T>
-inline alps::ODump& operator<<(alps::ODump& od, const alps::AbstractBinning<T>& m)
-{ m.save(od); return od; }
-
-template<class T>
-inline alps::IDump& operator>>(alps::IDump& id, alps::AbstractBinning<T>& m)
-{ m.load(id); return id; }
-
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-} // namespace alps
-#endif
-
-#endif // !ALPS_WITHOUT_OSIRIS
 
 #endif // ALPS_ALEA_ABSTRACTBINNING_H

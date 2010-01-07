@@ -89,9 +89,8 @@ public:
 
   uint32_t version_id() const { return version;}
 
-  ALPS_DUMMY_VOID compact() { obs_.compact(); ALPS_RETURN_VOID; }
-  void rename(const std::string& newname) { rename(newname); obs_.rename(sign_name_ + " * "+newname);}
   ALPS_DUMMY_VOID reset(bool forthermalization) { obs_.reset(forthermalization); ALPS_RETURN_VOID; }
+
   ALPS_DUMMY_VOID output(std::ostream& out) const
   {
     output_helper<obs_value_traits<value_type>::array_valued>::output(*this,out);
@@ -109,10 +108,6 @@ public:
   result_type mean() const { return make_evaluator().mean();}
   result_type error() const { return make_evaluator().error();}
   convergence_type converged_errors() const { return make_evaluator().converged_errors();}
-
-  bool can_set_thermalization() const { return  obs_.can_set_thermalization();}
-  void set_thermalization(uint32_t todiscard) { obs_.set_thermalization(todiscard);}
-  uint32_t get_thermalization() const { return obs_.get_thermalization();}
 
   SimpleObservableEvaluator<value_type> make_evaluator() const
   {
@@ -219,7 +214,6 @@ public:
   void operator<<(const value_type& x) { super_type::obs_ << x;}
   void add(const value_type& x) { operator<<(x);}
   void add(const value_type& x, sign_type s) { add(x*static_cast<element_type>(s));}
-  bool is_thermalized() const { return super_type::obs_.is_thermalized();}
 #ifdef ALPS_HAVE_HDF5
   void write_hdf5(const boost::filesystem::path& fn_hdf, std::size_t realization=0, std::size_t clone=0) const;
   void read_hdf5 (const boost::filesystem::path& fn_hdf, std::size_t realization=0, std::size_t clone=0);

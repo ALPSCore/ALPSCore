@@ -96,8 +96,6 @@ public:
   }
   ALPS_DUMMY_VOID reset(bool=false);
 
-  value_type max BOOST_PREVENT_MACRO_SUBSTITUTION () const {collect(); return all_.max BOOST_PREVENT_MACRO_SUBSTITUTION (); }
-  value_type min BOOST_PREVENT_MACRO_SUBSTITUTION () const {collect(); return all_.min BOOST_PREVENT_MACRO_SUBSTITUTION (); }
   value_type operator[](int i) const { collect(); return all_[i]; }
 
   count_type count() const {collect(); return all_.count(); }
@@ -107,14 +105,8 @@ public:
     return my_eval;
   }
 
-  void set_thermalization(uint32_t todiscard);
-  uint32_t get_thermalization() const { collect(); return all_.get_thermalization(); }
-  bool can_set_thermalization() const { collect(); return all_.can_set_thermalization(); }
-
   uint32_t number_of_runs() const;
   Observable* get_run(uint32_t) const;
-
-  ALPS_DUMMY_VOID compact();
 
   ALPS_DUMMY_VOID output(std::ostream&) const;
   void output_histogram(std::ostream&) const;
@@ -171,7 +163,6 @@ inline void HistogramObservableEvaluator<T>::collect() const
   supertype::histogram_.resize(all_.size());
   for (std::size_t i=0;i<all_.size();++i)
     supertype::histogram_[i] = all_[i];
-  supertype::thermalized_ = (supertype::count_ > 0);
 }
 
 template <class T>
@@ -195,12 +186,6 @@ inline const HistogramObservableEvaluator<T>&  HistogramObservableEvaluator<T>::
 }
 
 template <class T>
-inline void HistogramObservableEvaluator<T>::set_thermalization(uint32_t todiscard)
-{
-  std::for_each(runs_.begin(), runs_.end(), boost::bind2nd(boost::mem_fun_ref(&HistogramObservableData<T>::set_thermalization), todiscard));
-}
-
-template <class T>
 inline void HistogramObservableEvaluator<T>::operator<<(const HistogramObservableData<T>& b)
 {
   runs_.push_back(b);
@@ -211,8 +196,7 @@ inline void HistogramObservableEvaluator<T>::merge(const Observable& o)
 {
   if (automatic_naming_ && supertype::name()=="") Observable::rename(o.name());
   if (dynamic_cast<const HistogramObservable<T>*>(&o)!=0) {
-    if (dynamic_cast<const HistogramObservable<T>&>(o).is_thermalized())
-      (*this) << HistogramObservableData<T>(dynamic_cast<const HistogramObservable<T>&>(o));
+    (*this) << HistogramObservableData<T>(dynamic_cast<const HistogramObservable<T>&>(o));
   } else {
     const HistogramObservableEvaluator<T>& eval =
       dynamic_cast<const HistogramObservableEvaluator<T>&>(o);
@@ -223,19 +207,10 @@ inline void HistogramObservableEvaluator<T>::merge(const Observable& o)
   this->collect();
 }
 
-
 template <class T>
 inline uint32_t HistogramObservableEvaluator<T>::number_of_runs() const
 {
   return runs_.size();
-}
-
-template <class T>
-inline Observable* HistogramObservableEvaluator<T>::get_run(uint32_t i) const
-{
-  HistogramObservableEvaluator<T>* res = new HistogramObservableEvaluator<T>(supertype::name());
-  (*res) << runs_[i];
-  return res;
 }
 
 template <class T>
@@ -247,12 +222,11 @@ inline ALPS_DUMMY_VOID HistogramObservableEvaluator<T>::reset(bool)
 }
 
 template <class T>
-inline ALPS_DUMMY_VOID HistogramObservableEvaluator<T>::compact()
+inline Observable* HistogramObservableEvaluator<T>::get_run(uint32_t i) const
 {
-  collect();
-  std::for_each(runs_.begin(), runs_.end(), boost::mem_fun_ref(&HistogramObservableData<T>::compact));
-  all_.compact();
-  ALPS_RETURN_VOID
+  HistogramObservableEvaluator<T>* res = new HistogramObservableEvaluator<T>(supertype::name());
+  (*res) << runs_[i];
+  return res;
 }
 
 template <class T>

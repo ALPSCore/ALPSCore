@@ -120,7 +120,7 @@ class ALPS_DECL Observable {
   const std::string& name() const;
 
   /// rename the observable
-  virtual void rename(const std::string& newname);
+  virtual void rename(const std::string&);
 
   /** reset the observable */
   virtual ALPS_DUMMY_VOID reset(bool equilibrated=false);
@@ -147,15 +147,6 @@ class ALPS_DECL Observable {
 	virtual void serialize(hdf5::iarchive &) {};
 #endif
 
-// Thermalization support
-
-  /// can the thermalization be changed?
-  virtual bool can_set_thermalization() const;
-  /// set the number of measurements to be discarded for thermalization
-  virtual void set_thermalization(uint32_t todiscard);
-  /// get the number of measurements discarded for thermalization
-  virtual uint32_t get_thermalization() const;
-
   // Sign problem support
 
   /// is the observable signed?
@@ -178,10 +169,6 @@ class ALPS_DECL Observable {
   virtual uint32_t number_of_runs() const;
   /// extract an observable from a specific run only
   virtual Observable* get_run(uint32_t) const;
-
-
-  /// compact the data, useful e.g. for time series when I just need th result
-  virtual ALPS_DUMMY_VOID compact();
 
   virtual void merge(const Observable&);
   /// can this observable be merged with one of the same type
@@ -244,27 +231,9 @@ void Observable::operator<<(const T& x)
 namespace alps {
 #endif
 
-//---------------------------------------------------------------------
-// The output operator
-//---------------------------------------------------------------------
-
 /// write an observable to a std::ostream
 inline std::ostream& operator<<(std::ostream& out, const alps::Observable& m)
 { m.output(out); return out; }
-
-//
-// OSIRIS support
-//
-
-#ifndef ALPS_WITHOUT_OSIRIS
-
-inline alps::ODump& operator<<(alps::ODump& od, const alps::Observable& m)
-{ m.save(od); return od; }
-
-inline alps::IDump& operator>>(alps::IDump& id, alps::Observable& m)
-{ m.load(id); return id; }
-
-#endif // !ALPS_WITHOUT_OSIRIS
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // end namespace alps

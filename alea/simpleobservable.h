@@ -74,12 +74,11 @@ public:
 
   Observable* clone() const {return new SimpleObservable<T,BINNING>(*this);}
 
-  ALPS_DUMMY_VOID output(std::ostream&) const;
+  void output(std::ostream&) const;
 
-  ALPS_DUMMY_VOID reset(bool forthermalization=false)
+  ALPS_DUMMY_VOID reset(bool why)
   {
-    b_.reset(forthermalization);
-    ALPS_RETURN_VOID
+    b_.reset(why);
   }
 
   result_type mean() const {return b_.mean();}
@@ -89,16 +88,8 @@ public:
   result_type error(unsigned bin_used) const {return b_.error(bin_used);}
   convergence_type converged_errors() const {return b_.converged_errors();}
   count_type count() const {return b_.count();}
-  bool has_minmax() const { return false;} //minmax has been removed
-  //bool has_minmax() const { return b_.has_minmax();}
-  //value_type min() const {return b_.min();}
-  //value_type max() const {return b_.max();}
   bool has_tau() const { return b_.has_tau;}
   time_type tau() const  { return b_.tau();}
-
-  virtual bool is_thermalized() const { return b_.is_thermalized();}
-  uint32_t get_thermalization() const { return b_.get_thermalization();}
-  bool can_set_thermalization() const { return b_.can_set_thermalization();}
 
   void operator<<(const T& x) { b_ << x;}
 
@@ -134,7 +125,6 @@ public:
 	virtual void serialize(hdf5::oarchive & ar) const;
 #endif
 
-  ALPS_DUMMY_VOID compact() { b_.compact(); ALPS_RETURN_VOID }
   virtual std::string evaluation_method(Target t) const
   { return (t==Mean || t== Variance) ? std::string("simple") : b_.evaluation_method();}
 
@@ -161,20 +151,14 @@ inline Observable* SimpleObservable<T,BINNING>::convert_mergeable() const
 
 
 template <class T,class BINNING>
-ALPS_DUMMY_VOID
+void
 SimpleObservable<T,BINNING>::output(std::ostream& o) const
 {
-  if(count()==0)
-  {
-    if(get_thermalization()>0)
-    o << super_type::name() << " " << get_thermalization() << " thermalization steps, no measurements.\n";
-  }
-  else
+  if(count()!=0)
   {
     o << super_type::name ();
     output_helper<obs_value_traits<T>::array_valued>::output(b_,o,super_type::label());
   }
-  ALPS_RETURN_VOID
 }
 
 template <class T,class BINNING>
@@ -209,27 +193,5 @@ inline void SimpleObservable<T,BINNING>::load(IDump& dump)
 #endif
 
 } // end namespace alps
-
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-namespace alps {
-#endif
-
-
-#ifndef ALPS_WITHOUT_OSIRIS
-
-template <class T,class BINNING>
-inline alps::ODump& operator<<(alps::ODump& od, const alps::SimpleObservable<T,BINNING>& m)
-{ m.save(od); return od; }
-
-template <class T,class BINNING>
-inline alps::IDump& operator>>(alps::IDump& id, alps::SimpleObservable<T,BINNING>& m)
-{ m.load(id); return id; }
-
-#endif // !ALPS_WITHOUT_OSIRIS
-
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-} // end namespace alps
-#endif
-
 
 #endif // ALPS_ALEA_SIMPLEOBSERVABLE_H

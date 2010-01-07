@@ -68,9 +68,7 @@ public:
       boost::throw_exception(std::logic_error("Called add of unsigned dobservable with a sign that is not 1"));
   }
  
-  /// is it thermalized ? 
-  virtual bool is_thermalized() const =0;
- };
+   };
 }
 
 #endif // ALPS_ALEA_SIMPLEOBSERVABLE_H

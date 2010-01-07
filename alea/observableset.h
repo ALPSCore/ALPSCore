@@ -129,7 +129,7 @@ class ALPS_DECL ObservableSet: public std::map<std::string,Observable*>
       @param flag a value of true means that reset is called after thermalization
                   and information about thermalization should be kept.
   */
-  void reset(bool flag=false);
+  void reset(bool =true /* deprecated flag */);
 
   /// apply a unary function to all observables
   template <class F>
@@ -188,18 +188,6 @@ class ALPS_DECL ObservableSet: public std::map<std::string,Observable*>
       return *retval;
     }
 
-  /// can the thermalization information be set for all observables?
-  bool can_set_thermalization_all() const;
-
-  /// can the thermalization information be set for any observable?
-  bool can_set_thermalization_any() const;
-
-  /// set the thermalization information for all observables where it is possible
-  void set_thermalization(uint32_t todiscard);
-
-  /// get the minimum number of thermalization steps for all observables
-  uint32_t get_thermalization() const;
-
   /** the number of runs from which the observables were collected.
       Care must be taken that if some observables did not occur in all sets the
       numbering is not consistent and problems can result.
@@ -242,7 +230,7 @@ class ALPS_DECL ObservableSet: public std::map<std::string,Observable*>
   void set_sign(const std::string&);
 
   /// compact the observables to save space, discarding e.g. time series information
-  void compact();
+  void compact() {} // deprecated
 
   void write_xml(oxstream& oxs, const boost::filesystem::path& =boost::filesystem::path()) const;
   void write_xml_with_id(oxstream& oxs, int id,
@@ -276,16 +264,6 @@ inline std::ostream& operator<<(std::ostream& out,const alps::ObservableSet& obs
   obs.do_for_all(boost::bind2nd(boost::mem_fun_ref(&alps::Observable::output),out));
   return out;
 }
-
-#ifndef ALPS_WITHOUT_OSIRIS
-
-inline alps::ODump& operator<<(alps::ODump& od, const alps::ObservableSet& m)
-{ m.save(od); return od; }
-
-inline alps::IDump& operator>>(alps::IDump& id, alps::ObservableSet& m)
-{ m.load(id); return id; }
-
-#endif // !ALPS_WITHOUT_OSIRIS
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // end namespace alps

@@ -68,7 +68,6 @@ public:
 
   HistogramObservable(const std::string& n="");
   HistogramObservable(const std::string& n, T min, T max, T stepsize=1);
-  virtual ~HistogramObservable() {}
 
   void set_range(T min, T max, T stepsize=1);
   virtual Observable* clone() const {return new HistogramObservable<T>(*this);}
@@ -80,12 +79,6 @@ public:
   virtual void save(ODump& dump) const;
   virtual void load(IDump& dump);
 #endif
-
-  // thermalization support
-  virtual void set_thermalization(uint32_t) {}
-  virtual uint32_t get_thermalization() const { return is_thermalized() ? thermalcount_ : count_; }
-  virtual bool can_set_thermalization() const {return false;}
-  virtual bool is_thermalized() const { return thermalized_; }
 
   /** add a simple T-value to the Observable */
   void add(const T& x); // { b_.add(x); }
@@ -111,10 +104,7 @@ public:
   void write_xml(oxstream&, const boost::filesystem::path& = boost::filesystem::path()) const;
 
 
-  ALPS_DUMMY_VOID compact () {};
-
-  inline count_type count() const { return is_thermalized() ? count_ : 0; }
-  // inline void set_count(uint32_t h) {count_=h;}
+  inline count_type count() const {  return count_; }
   inline range_type stepsize() const {return stepsize_;}
   inline range_type max BOOST_PREVENT_MACRO_SUBSTITUTION () const {return max_;}
   inline range_type min BOOST_PREVENT_MACRO_SUBSTITUTION () const {return min_;}
@@ -130,7 +120,6 @@ private:
   friend class HistogramObservableEvaluator<T>;
 
   uint32_t size_;
-  uint32_t thermalcount_;
   range_type min_;
   range_type max_;
   range_type stepsize_;
@@ -138,7 +127,6 @@ private:
 protected:
   mutable std::vector<value_type> histogram_;
   mutable count_type count_;
-  mutable bool thermalized_;
 };
 
 
@@ -156,12 +144,10 @@ template <class T>
 HistogramObservable<T>::HistogramObservable(const std::string& n)
  : Observable(n),
    size_(0),
-   thermalcount_(0),
    min_(std::numeric_limits<T>::max BOOST_PREVENT_MACRO_SUBSTITUTION ()),
    max_(std::numeric_limits<T>::min BOOST_PREVENT_MACRO_SUBSTITUTION ()),
    stepsize_(0),
-   count_(0),
-   thermalized_(false)
+   count_(0)
  {
  }
 
@@ -169,11 +155,8 @@ template <class T>
 inline HistogramObservable<T>::HistogramObservable(const std::string& n, T min, T max, T stepsize)
  : Observable(n),
    size_(0),
-   thermalcount_(0),
-   count_(0),
-   thermalized_(false)
+   count_(0)
 {
-  //std::cout<<"calling set_range"<<std::endl;
   set_range(min,max,stepsize);
 }
 
@@ -221,8 +204,6 @@ template <class T>
 inline ALPS_DUMMY_VOID
 HistogramObservable<T>::reset(bool forthermalization)
 {
-  thermalized_ = forthermalization;
-  thermalcount_ = (forthermalization ? count_ : 0);
   count_=0;
   std::fill(histogram_.begin(),histogram_.end(),0);
   ALPS_RETURN_VOID
@@ -253,14 +234,20 @@ template <class T>
 inline void HistogramObservable<T>::save(ODump& dump) const
 {
   Observable::save(dump);
-  dump << thermalized_ << thermalcount_ << count_ << min_ << max_ << stepsize_ << histogram_;
+  dump << count_ << min_ << max_ << stepsize_ << histogram_;
 }
 
 template <class T>
 inline void HistogramObservable<T>::load(IDump& dump)
 {
   Observable::load(dump);
-  dump >> thermalized_ >> thermalcount_ >> count_ >> min_ >> max_ >> stepsize_ >> histogram_;
+  bool thermalized_;
+  uint32_t thermalcount_;
+
+  if(dump.version() >= 306 || dump.version() == 0 /* version is not set */)
+    dump >> count_ >> min_ >> max_ >> stepsize_ >> histogram_;
+  else
+    dump >> thermalized_ >> thermalcount_ >> count_ >> min_ >> max_ >> stepsize_ >> histogram_;
 }
 
 #endif
