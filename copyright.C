@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2006 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2003-2010 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -44,4 +44,22 @@ void alps::print_copyright(std::ostream& out) {
 
 void alps::print_license(std::ostream& out) {
   out << "Please look at the file LICENSE.txt for the license conditions\n";
+}
+
+std::string alps::version() { return ALPS_VERSION; }
+
+std::string alps::version_string() { return ALPS_VERSION_STRING; }
+
+std::string alps::year() { return ALPS_YEAR; }
+
+std::string alps::config_host() { return ALPS_CONFIG_HOST; }
+
+std::string alps::config_user() { return ALPS_CONFIG_USER; }
+
+std::string alps::compile_date() {
+#if defined(__DATE__) && defined(__TIME__)
+  return __DATE__ " " __TIME__;
+#else
+  return "unknown";
+#endif
 }

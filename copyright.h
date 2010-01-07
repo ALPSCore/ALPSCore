@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2009 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2003-2010 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -41,13 +41,32 @@
 
 namespace alps {
 
-/// print the ALPS library copyright statement 
-/// \param out the output stream to which the copyright statement should be written  
+/// print the ALPS library copyright statement
+/// \param out the output stream to which the copyright statement should be written
 ALPS_DECL void print_copyright(std::ostream& out);
 
 /// print the ALPS license
 /// \param out the output stream to which the license should be written
 ALPS_DECL void print_license(std::ostream& out);
-}
+
+/// return ALPS version
+ALPS_DECL std::string version();
+
+/// return ALPS version (full string)
+ALPS_DECL std::string version_string();
+
+/// return latest publish year of ALPS
+ALPS_DECL std::string year();
+
+/// return the hostname where configure script was executed
+ALPS_DECL std::string config_host();
+
+/// return the username who executed configure script
+ALPS_DECL std::string config_user();
+
+/// return the compile date of ALPS
+ALPS_DECL std::string compile_date();
+
+} // end namespace alps
 
 #endif

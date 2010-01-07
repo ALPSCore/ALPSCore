@@ -111,7 +111,7 @@ void worker_factory::print_copyright(std::ostream& out) {
   else if (instance()->version_string_.size())
     out << instance()->version_string_ << std::endl;
   else
-    out << PARAPACK_COPYRIGHT << std::endl;
+    out << parapack_copyright() << std::endl;
 }
 
 std::string worker_factory::version() {

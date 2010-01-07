@@ -35,9 +35,9 @@
 #include "version.h"
 
 #include <alps/config.h>
+#include <alps/copyright.h>
 #include <alps/osiris/comm.h>
 #include <alps/copyright.h>
-#include <alps/version.h>
 #include <boost/config.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/foreach.hpp>
@@ -59,14 +59,6 @@
 #endif
 
 namespace alps {
-
-// compile_date
-#if defined(__DATE__) && defined(__TIME__)
-# define ALPS_COMPILE_DATE __DATE__ " " __TIME__
-#else
-# define ALPS_COMPILE_DATE "unknown"
-#endif
-std::string compile_date() { return ALPS_COMPILE_DATE; }
 
 namespace parapack {
 
@@ -164,7 +156,7 @@ int evaluate(int argc, char **argv) {
 
 void print_copyright(std::ostream& os) {
   worker_factory::print_copyright(os);
-  os << std::endl << "using " << PARAPACK_COPYRIGHT << std::endl;
+  os << std::endl << "using " << parapack_copyright() << std::endl;
   alps::print_copyright(os);
 }
 
@@ -173,7 +165,8 @@ void print_license(std::ostream& os) {
 }
 
 std::string alps_version() {
-  return ALPS_VERSION_STRING "; configured on " ALPS_CONFIG_HOST " by " ALPS_CONFIG_USER "; compiled on " ALPS_COMPILE_DATE;
+  return version_string() + "; configured on " + config_host() +
+    " by " + config_user() + "; compiled on " + compile_date();
 }
 
 void print_taskinfo(std::ostream& os, std::vector<alps::task> const& tasks) {
