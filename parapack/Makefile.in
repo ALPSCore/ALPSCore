@@ -36,11 +36,11 @@ build_triplet = @build@
 host_triplet = @host@
 check_PROGRAMS = clone_info$(EXEEXT) clone_phase$(EXEEXT) \
 	clone_timer$(EXEEXT) exmc_optimize$(EXEEXT) \
-	exp_number$(EXEEXT) id2string$(EXEEXT) info_test$(EXEEXT) \
-	integer_range$(EXEEXT) linear_regression$(EXEEXT) \
-	merge$(EXEEXT) percentage$(EXEEXT) temperature_scan$(EXEEXT) \
-	time$(EXEEXT) version$(EXEEXT) wl_weight$(EXEEXT) \
-	$(am__EXEEXT_1)
+	exp_number$(EXEEXT) footprint$(EXEEXT) id2string$(EXEEXT) \
+	info_test$(EXEEXT) integer_range$(EXEEXT) \
+	linear_regression$(EXEEXT) merge$(EXEEXT) percentage$(EXEEXT) \
+	temperature_scan$(EXEEXT) time$(EXEEXT) version$(EXEEXT) \
+	wl_weight$(EXEEXT) $(am__EXEEXT_1)
 @HAVE_BOOST_MPI_TRUE@am__append_1 = \
 @HAVE_BOOST_MPI_TRUE@	comm_mpi \
 @HAVE_BOOST_MPI_TRUE@	collect_mpi \
@@ -136,6 +136,13 @@ am_filelock_mpi_OBJECTS = filelock_mpi.$(OBJEXT)
 filelock_mpi_OBJECTS = $(am_filelock_mpi_OBJECTS)
 filelock_mpi_LDADD = $(LDADD)
 filelock_mpi_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+am_footprint_OBJECTS = footprint.$(OBJEXT)
+footprint_OBJECTS = $(am_footprint_OBJECTS)
+footprint_LDADD = $(LDADD)
+footprint_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
@@ -246,20 +253,20 @@ SOURCES = $(clone_info_SOURCES) $(clone_phase_SOURCES) \
 	$(clone_timer_SOURCES) $(collect_mpi_SOURCES) \
 	$(comm_mpi_SOURCES) $(exmc_optimize_SOURCES) \
 	$(exp_number_SOURCES) $(filelock_mpi_SOURCES) \
-	$(halt_mpi_SOURCES) $(id2string_SOURCES) $(info_test_SOURCES) \
-	$(info_test_mpi_SOURCES) $(integer_range_SOURCES) \
-	$(linear_regression_SOURCES) $(merge_SOURCES) \
-	$(percentage_SOURCES) $(process_mpi_SOURCES) \
+	$(footprint_SOURCES) $(halt_mpi_SOURCES) $(id2string_SOURCES) \
+	$(info_test_SOURCES) $(info_test_mpi_SOURCES) \
+	$(integer_range_SOURCES) $(linear_regression_SOURCES) \
+	$(merge_SOURCES) $(percentage_SOURCES) $(process_mpi_SOURCES) \
 	$(temperature_scan_SOURCES) $(time_SOURCES) $(version_SOURCES) \
 	$(wl_weight_SOURCES)
 DIST_SOURCES = $(clone_info_SOURCES) $(clone_phase_SOURCES) \
 	$(clone_timer_SOURCES) $(collect_mpi_SOURCES) \
 	$(comm_mpi_SOURCES) $(exmc_optimize_SOURCES) \
 	$(exp_number_SOURCES) $(filelock_mpi_SOURCES) \
-	$(halt_mpi_SOURCES) $(id2string_SOURCES) $(info_test_SOURCES) \
-	$(info_test_mpi_SOURCES) $(integer_range_SOURCES) \
-	$(linear_regression_SOURCES) $(merge_SOURCES) \
-	$(percentage_SOURCES) $(process_mpi_SOURCES) \
+	$(footprint_SOURCES) $(halt_mpi_SOURCES) $(id2string_SOURCES) \
+	$(info_test_SOURCES) $(info_test_mpi_SOURCES) \
+	$(integer_range_SOURCES) $(linear_regression_SOURCES) \
+	$(merge_SOURCES) $(percentage_SOURCES) $(process_mpi_SOURCES) \
 	$(temperature_scan_SOURCES) $(time_SOURCES) $(version_SOURCES) \
 	$(wl_weight_SOURCES)
 DATA = $(dist_noinst_DATA)
@@ -477,6 +484,7 @@ collect_mpi_SOURCES = collect_mpi.C
 exmc_optimize_SOURCES = exmc_optimize.C
 exp_number_SOURCES = exp_number.C
 filelock_mpi_SOURCES = filelock_mpi.C
+footprint_SOURCES = footprint.C
 id2string_SOURCES = id2string.C
 info_test_SOURCES = info_test.C
 info_test_mpi_SOURCES = info_test_mpi.C
@@ -557,6 +565,9 @@ exp_number$(EXEEXT): $(exp_number_OBJECTS) $(exp_number_DEPENDENCIES)
 filelock_mpi$(EXEEXT): $(filelock_mpi_OBJECTS) $(filelock_mpi_DEPENDENCIES) 
 	@rm -f filelock_mpi$(EXEEXT)
 	$(CXXLINK) $(filelock_mpi_OBJECTS) $(filelock_mpi_LDADD) $(LIBS)
+footprint$(EXEEXT): $(footprint_OBJECTS) $(footprint_DEPENDENCIES) 
+	@rm -f footprint$(EXEEXT)
+	$(CXXLINK) $(footprint_OBJECTS) $(footprint_LDADD) $(LIBS)
 halt_mpi$(EXEEXT): $(halt_mpi_OBJECTS) $(halt_mpi_DEPENDENCIES) 
 	@rm -f halt_mpi$(EXEEXT)
 	$(CXXLINK) $(halt_mpi_OBJECTS) $(halt_mpi_LDADD) $(LIBS)
@@ -611,6 +622,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/exmc_optimize.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/exp_number.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filelock_mpi.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/footprint.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/halt_mpi.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/id2string.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/info_test.Po@am__quote@

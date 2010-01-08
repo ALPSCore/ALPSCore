@@ -27,6 +27,7 @@ check_PROGRAMS = \
 	clone_timer \
 	exmc_optimize \
 	exp_number \
+	footprint \
 	id2string \
 	info_test \
 	integer_range \
@@ -59,6 +60,7 @@ collect_mpi_SOURCES = collect_mpi.C
 exmc_optimize_SOURCES = exmc_optimize.C
 exp_number_SOURCES = exp_number.C
 filelock_mpi_SOURCES = filelock_mpi.C
+footprint_SOURCES = footprint.C
 id2string_SOURCES = id2string.C
 info_test_SOURCES = info_test.C
 info_test_mpi_SOURCES = info_test_mpi.C

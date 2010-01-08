@@ -4,7 +4,7 @@ include_directories(${PROJECT_SOURCE_DIR}/tool)
 include_directories(${Boost_ROOT_DIR})
 
 #define tests here. Each test neet ${name}.C ${name}.input ${name}.output
-FOREACH (name clone_info clone_phase clone_timer exmc_optimize exp_number info_test integer_range linear_regression merge percentage temperature_scan time version wl_weight)
+FOREACH (name clone_info clone_phase clone_timer exmc_optimize exp_number footprint info_test integer_range linear_regression merge percentage temperature_scan time version wl_weight)
 
 
 	add_executable(${name} ${name}.C)
