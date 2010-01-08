@@ -73,7 +73,7 @@ const std::string& Observable::name() const
 
 void Observable::write_xml(oxstream& oxs, const boost::filesystem::path&) const
 {
-  oxs << start_tag("AVERAGE") << attribute("name", name()) << end_tag;
+  oxs << start_tag("AVERAGE") << attribute("name", name()) << end_tag("AVERAGE");
 }
 
 void Observable::write_hdf5(const boost::filesystem::path& /* fn_hdf */, std::size_t /* realization */, std::size_t /* clone */) const {}

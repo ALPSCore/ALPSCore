@@ -169,11 +169,11 @@ void HistogramObservable<T>::write_xml(oxstream& oxs, const boost::filesystem::p
         << attribute("nvalues",histogram_.size());
     for(unsigned int i=0;i<histogram_.size();++i) {
       oxs << start_tag("ENTRY") << attribute("indexvalue", i);
-      oxs << start_tag("COUNT") << no_linebreak << count() <<end_tag;
-      oxs << start_tag("VALUE") << no_linebreak << histogram_[i] <<end_tag;
-      oxs << end_tag;
+      oxs << start_tag("COUNT") << no_linebreak << count() <<end_tag("COUNT");
+      oxs << start_tag("VALUE") << no_linebreak << histogram_[i] <<end_tag ("VALUE");
+      oxs << end_tag("ENTRY");
     }
-    oxs << end_tag;
+    oxs << end_tag("HISTOGRAM");
   }
 }
 
