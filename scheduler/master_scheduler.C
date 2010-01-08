@@ -207,7 +207,6 @@ void MasterScheduler::checkpoint()
   bool make_backup=boost::filesystem::exists(outfilepath);
   boost::filesystem::path filename=outfilepath;
   boost::filesystem::path dir=outfilepath.branch_path();
-  
   if (make_backup)
     filename=dir/(filename.leaf()+".bak");
   { // scope for out
@@ -221,10 +220,16 @@ void MasterScheduler::checkpoint()
     int local_sim=-1;
     
     for (unsigned int i=0; i<tasks.size();i++) {
+#ifdef ALPS_HAVE_HDF5
+		boost::filesystem::path task_path = taskfiles[i].out.file_string().substr(0, taskfiles[i].out.file_string().find_last_of('.')) + ".h5";
+#else
+		boost::filesystem::path task_path = taskfiles[i].out.native_file_string();
+#endif
+
       if (taskstatus[i]==TaskFinished) {
         out << start_tag("TASK") << attribute("status","finished")
             << start_tag("INPUT") 
-            << attribute("file",taskfiles[i].out.native_file_string())
+            << attribute("file",task_path)
             << end_tag() << end_tag();
         std::cerr  << "Checkpointing Simulation " << i+1 << "\n";
         if (tasks[i]!=0 && boost::filesystem::complete(taskfiles[i].out,dir).string()!=taskfiles[i].in.string()) {          
@@ -244,7 +249,7 @@ void MasterScheduler::checkpoint()
       else {
         out << start_tag("TASK") 
             << attribute("status",((taskstatus[i]==TaskNotStarted) ? "new" : "running"))
-            << start_tag("INPUT") << attribute("file",taskfiles[i].out.native_file_string())
+            << start_tag("INPUT") << attribute("file",task_path)
             << end_tag() << end_tag();
         if(theTask != tasks[i]) {
           tasks[i]->checkpoint(boost::filesystem::complete(taskfiles[i].out,dir));

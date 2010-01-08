@@ -33,6 +33,9 @@
 #include <alps/scheduler/types.h>
 #include <alps/parser/xmlstream.h>
 #include <alps/osiris/dump.h>
+#ifdef ALPS_HAVE_HDF5
+#include <alps/hdf5.hpp>
+#endif
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <iterator>
 #include <ctime>
@@ -58,6 +61,10 @@ public:
   void checkpoint(); // we are checkpointing, update info beforehand
 
   // write the info
+	#ifdef ALPS_HAVE_HDF5
+		void serialize(hdf5::oarchive &) const;
+		void serialize(hdf5::iarchive &);
+	#endif
   void save (ODump&) const;
   ALPS_DUMMY_VOID write_xml(alps::oxstream&) const;
   void load (IDump& dump,int version=MCDump_worker_version);
@@ -84,6 +91,11 @@ public:
 
   void start(const std::string&); // the run is started/restarted NOW
   void halt(); // the run is halted/thermalized NOW
+  
+	#ifdef ALPS_HAVE_HDF5
+		void serialize(hdf5::oarchive &) const;
+		void serialize(hdf5::iarchive &);
+	#endif
 
   void save (ODump& dump) const;
   void load (IDump& dump,int version=MCDump_worker_version);

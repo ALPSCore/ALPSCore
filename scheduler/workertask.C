@@ -389,6 +389,15 @@ double WorkerTask::work() const
 void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::path& fn) const
 {
   boost::filesystem::path dir=fn.branch_path();
+#ifdef ALPS_HAVE_HDF5
+	std::string task_path = fn.file_string().substr(0, fn.file_string().find_last_of('.')) + ".h5";
+	std::string task_backup = fn.file_string().substr(0, fn.file_string().find_last_of('.')) + ".bak.h5";
+	bool task_exists = boost::filesystem::exists(task_path);
+	hdf5::oarchive task_ar(task_exists ? task_backup : task_path);
+	task_ar
+		<< make_pvp("/parameters", parms) 
+	;
+#endif
   for (unsigned int i=0;i<runs.size();++i) {
     if(workerstatus[i] == RunNotExisting) {
       if(runs[i])
@@ -407,7 +416,7 @@ void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::pa
         do {
           found = false;
           name =fn.leaf();
-          name.erase(name.size()-4,4);
+          name = name.substr(0, name.find_last_of('.'));
           name+= ".run" + boost::lexical_cast<std::string,int>(j+1);
           for (unsigned int k=0;k<runfiles.size();++k)
           if(runfiles[k].out.leaf()==name) 
@@ -416,9 +425,24 @@ void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::pa
         } while (found);
         runfiles[i].out = boost::filesystem::path(name);
       }
-      if(workerstatus[i] == LocalRun || workerstatus[i] == RemoteRun)
+      if(workerstatus[i] == LocalRun || workerstatus[i] == RemoteRun) {
         runs[i]->save_to_file(boost::filesystem::complete(runfiles[i].out,dir));
-      else if (workerstatus[i] == RunOnDump) {
+#ifdef ALPS_HAVE_HDF5
+		{
+			std::string worker_path = boost::filesystem::complete(runfiles[i].out, dir).file_string() + ".h5";
+			std::string worker_backup = boost::filesystem::complete(runfiles[i].out, dir).file_string() + ".bak.h5";
+			bool worker_exists = boost::filesystem::exists(worker_path);
+			{
+				hdf5::oarchive worker_ar(worker_exists ? worker_backup : worker_path);
+				worker_ar << make_pvp("/", runs[i]);
+			}
+			if (worker_exists) {
+				boost::filesystem::remove(worker_path);
+				boost::filesystem::rename(worker_backup, worker_path);
+			}
+		}
+#endif
+      } else if (workerstatus[i] == RunOnDump) {
         if(boost::filesystem::complete(runfiles[i].out,dir).string()!=runfiles[i].in.string()) {
           boost::filesystem::remove(boost::filesystem::complete(runfiles[i].out,dir));
           boost::filesystem::copy_file(boost::filesystem::complete(runfiles[i].in,dir),boost::filesystem::complete(runfiles[i].out,dir));
@@ -432,8 +456,20 @@ void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::pa
           << alps::attribute("file",runfiles[i].out.native_file_string());
       out << alps::end_tag("CHECKPOINT") << alps::end_tag(worker_tag());
       runfiles[i].in=boost::filesystem::complete(runfiles[i].out,dir);
+#ifdef ALPS_HAVE_HDF5
+		task_ar
+			<< make_pvp("/logs/" + boost::lexical_cast<std::string>(i), runs[i]->get_info())
+			<< make_pvp("/checkpoint/" + boost::lexical_cast<std::string>(i), runfiles[i].out.file_string())
+		;
+#endif
     }
   }
+#ifdef ALPS_HAVE_HDF5
+	if (task_exists) {
+		boost::filesystem::remove(task_path);
+		boost::filesystem::rename(task_backup, task_path);
+	}
+#endif
 }
 
 } // namespace scheduler

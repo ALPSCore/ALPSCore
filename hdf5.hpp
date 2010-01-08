@@ -299,13 +299,13 @@ namespace alps {
 							for (pos = p.find_last_of('/'); data_id < 0 && pos > 0 && pos < std::string::npos; pos = p.find_last_of('/', pos - 1))
 								data_id = H5Gopen2(_file, p.substr(0, pos).c_str(), H5P_DEFAULT);
 							if (data_id < 0) {
-								pos = p.find_first_of('/', 1);
-								group_type(H5Gcreate2(_file, p.substr(0, pos).c_str(), 0, H5P_DEFAULT, H5P_DEFAULT));
+								if ((pos = p.find_first_of('/', 1)) != std::string::npos)
+									group_type(H5Gcreate2(_file, p.substr(0, pos).c_str(), 0, H5P_DEFAULT, H5P_DEFAULT));
 							} else {
 								pos = p.find_first_of('/', pos + 1);
 								group_type(data_id);
 							}
-							while ((pos = p.find_first_of('/', pos + 1)) != std::string::npos && pos > 0)
+							while (pos != std::string::npos && (pos = p.find_first_of('/', pos + 1)) != std::string::npos && pos > 0)
 								group_type(H5Gcreate2(_file, p.substr(0, pos).c_str(), 0, H5P_DEFAULT, H5P_DEFAULT));
 						} else if (d > 0 && s[0] > 0) {
 							error_type(H5Dset_extent(id, s));

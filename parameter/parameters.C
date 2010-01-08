@@ -154,9 +154,9 @@ void Parameters::replace_envvar() {
 	void Parameters::serialize(hdf5::iarchive & ar) {
 		std::vector<std::string> list = ar.list_children(ar.get_context());
 		for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
-				std::string v;
-				ar >> make_pvp(*it, v);
-				push_back(*it, value_type(v));
+			std::string v;
+			ar >> make_pvp(*it, v);
+			push_back(*it, value_type(v));
 		}
 	}
 #endif

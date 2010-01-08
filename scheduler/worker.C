@@ -157,14 +157,14 @@ void Worker::save_worker(ODump& dump) const
  }
  
 #ifdef ALPS_HAVE_HDF5
-	void Worker::serialize(hdf5::iarchive & ar) const {
+	void Worker::serialize(hdf5::iarchive & ar) {
 // TODO: implement
 	}
 	void Worker::serialize(hdf5::oarchive & ar) const {
 		ar 
-//			<< make_pvp("/version", version) 
+			<< make_pvp("/version", version) 
 			<< make_pvp("/parameters", parms) 
-//			<< make_pvp("/engine_ptr", boost::lexical_cast<std::string>(*engine_ptr))
+			<< make_pvp("/engine_ptr", boost::lexical_cast<std::string>(*engine_ptr))
 		;
 	}
 #endif
@@ -241,20 +241,6 @@ void Worker::save_to_file(const boost::filesystem::path& fnpath) const
     boost::filesystem::remove(fnpath);
     boost::filesystem::rename(bakpath,fnpath);
   }
- 
-#ifdef ALPS_HAVE_HDF5
-	boost::filesystem::path h5path = fnpath.branch_path() / (fnpath.leaf() + ".h5");
-	boost::filesystem::path h5bakpath = h5path.branch_path() / (h5path.leaf() + ".bak");
-	bool h5backup=boost::filesystem::exists(h5path);
-	{
-		hdf5::oarchive h5(h5backup ? h5bakpath.file_string() : h5path.file_string());
-		h5 << make_pvp("/", this);
-	}
-	if (h5backup) {
-		boost::filesystem::remove(h5path);
-		boost::filesystem::rename(h5bakpath,h5path);
-	}
-#endif
 }
 
 bool Worker::handle_message(const Process& master,int32_t tag) {

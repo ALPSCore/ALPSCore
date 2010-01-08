@@ -44,6 +44,20 @@ Info::Info()
 {
 }
 
+#ifdef ALPS_HAVE_HDF5
+	void Info::serialize(hdf5::oarchive & ar) const {
+		ar
+			<< make_pvp("from", boost::posix_time::to_simple_string(startt_))
+			<< make_pvp("to", boost::posix_time::to_simple_string(stopt_))
+			<< make_pvp("machine/name", host_)
+		;
+	}
+	void Info::serialize(hdf5::iarchive & ar) {
+	
+	
+	}
+#endif
+
 void Info::save(ODump& dump) const
 {
   dump << host_ << boost::posix_time::to_iso_string(startt_) 
@@ -127,6 +141,20 @@ ALPS_DUMMY_VOID Info::write_xml(alps::oxstream& xml) const
   ALPS_RETURN_VOID
 }
 
+#ifdef ALPS_HAVE_HDF5
+	void TaskInfo::serialize(hdf5::oarchive & ar) const {
+		if(!empty())
+			const_cast<TaskInfo &>(*this).back().checkpoint();
+		for (std::vector<Info>::const_iterator it = std::vector<Info>::begin(); it != std::vector<Info>::end(); ++it)
+			ar
+				<< make_pvp(it->phase(), *it)
+			;
+	}
+	void TaskInfo::serialize(hdf5::iarchive & ar) {
+	
+	
+	}
+#endif
 
 void TaskInfo::save (ODump& dump) const
 {

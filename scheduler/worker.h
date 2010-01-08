@@ -94,6 +94,10 @@ class AbstractWorker {
 public:                
   AbstractWorker() {};
   virtual ~AbstractWorker() {};
+	#ifdef ALPS_HAVE_HDF5
+		virtual void serialize(hdf5::iarchive &) {}
+		virtual void serialize(hdf5::oarchive &) const {}
+	#endif
   virtual void save_to_file(const boost::filesystem::path&) const=0;
   virtual void load_from_file(const boost::filesystem::path&)=0;
   virtual void set_parameters(const Parameters& parms)=0;
@@ -124,8 +128,8 @@ public:
   virtual void save_worker(ODump&) const;
   virtual void load_worker(IDump&);
 	#ifdef ALPS_HAVE_HDF5
-		virtual void serialize(hdf5::iarchive &) const;
-		virtual void serialize(hdf5::oarchive &) const;
+		void serialize(hdf5::iarchive &);
+		void serialize(hdf5::oarchive &) const;
 	#endif
   virtual void write_xml(const boost::filesystem::path& name, const boost::filesystem::path& ckpt_name="") const;
   void save_to_file(const boost::filesystem::path&) const;
