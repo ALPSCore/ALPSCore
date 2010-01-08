@@ -77,7 +77,7 @@ class AbstractBinning {
   template <class IT> void write_vector_xml(oxstream&, IT) const {}
 
 #ifndef ALPS_WITHOUT_OSIRIS
-  void save(ODump& dump) const {}
+  void save(ODump& /* dump */) const {}
   void load(IDump& dump) 
   { 
     bool thermalized_; 

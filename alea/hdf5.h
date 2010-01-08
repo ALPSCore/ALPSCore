@@ -204,8 +204,8 @@ template<typename T> template<typename E> void BasicDetailedBinning<T>::read_hdf
     assign(values2_[i],(c+path1.str()));
   }
 }
-template<typename T> template<typename E> void AbstractBinning<T>::write_hdf5(const E &c) const{}
-template<typename T> template<typename E> void AbstractBinning<T>::read_hdf5(const E &c){}
+template<typename T> template<typename E> void AbstractBinning<T>::write_hdf5(const E & /* c */) const{}
+template<typename T> template<typename E> void AbstractBinning<T>::read_hdf5(const E & /* c */){}
 
 template <typename OBS, typename SIGN> void SignedObservable<OBS,SIGN>::write_hdf5(const boost::filesystem::path& path, std::size_t realization, std::size_t clone) const{
   {

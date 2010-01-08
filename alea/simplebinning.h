@@ -662,7 +662,7 @@ template <class T>
 inline void SimpleBinning<T>::load(IDump& dump)
 {
   // local variables for depreacted members
-  bool has_minmax_;
+  // bool has_minmax_;
   value_type min_, max_;
   uint32_t thermal_count_;
 

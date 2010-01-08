@@ -202,7 +202,7 @@ inline void HistogramObservable<T>::add(const T& x)
 
 template <class T>
 inline ALPS_DUMMY_VOID
-HistogramObservable<T>::reset(bool forthermalization)
+HistogramObservable<T>::reset(bool /* forthermalization */)
 {
   count_=0;
   std::fill(histogram_.begin(),histogram_.end(),0);
