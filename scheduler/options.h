@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -55,8 +55,8 @@ public:
   int min_cpus;               // minimum number of runs per simulation
   int max_cpus;               // maximum number of runs per simulation
   double time_limit;          // time limit for the simulation
+  bool use_mpi;               // should we use MPI
   bool valid;                 // shall we really run?
-  bool use_mpi;              // should we use MPI
 
   NoJobfileOptions(int argc, char** argv);
   NoJobfileOptions();
@@ -66,7 +66,7 @@ class Options : public NoJobfileOptions
 {
 public:
   boost::filesystem::path jobfilename;      // name of the jobfile
-   
+
   Options(int argc, char** argv);
   Options();
 };
