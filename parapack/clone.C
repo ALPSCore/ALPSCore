@@ -26,6 +26,7 @@
 *****************************************************************************/
 
 #include "clone.h"
+#include <alps/hdf5.hpp>
 #include <boost/filesystem/operations.hpp>
 
 namespace alps {
@@ -96,8 +97,7 @@ clone::clone(tid_t tid, cid_t cid, Parameters const& params, boost::filesystem::
   worker_ = parapack::worker_factory::make_worker(params_);
   if (is_new) worker_->init_observables(params_, measurements_);
   if (!is_new) {
-    IXDRFileDump dp(complete(boost::filesystem::path(info_.dumpfile()), basedir_));
-    this->load(dp);
+    this->load();
   }
 
   if (is_new && worker_->is_thermalized()) { // no thermalization steps
@@ -143,13 +143,16 @@ bool clone::halted() const { return !worker_; }
 
 clone_info const& clone::info() const { return info_; }
 
-void clone::load(IDump& dp) {
+void clone::load() {
+  IXDRFileDump dp(complete(boost::filesystem::path(info_.dumpfile()), basedir_));
   load_observable(dp, params_, info_, measurements_);
   bool full_dump(dp);
   if (full_dump) worker_->load_worker(dp);
 }
 
-void clone::save(ODump& dp) const{
+void clone::save() const{
+  boost::filesystem::path fn = complete(boost::filesystem::path(info_.dumpfile()), basedir_);
+  OXDRFileDump dp(fn);
   dp << static_cast<int32_t>(parapack_dump::run_master)
      << static_cast<int32_t>(parapack_dump::current_version)
      << static_cast<int32_t>(1)
@@ -162,26 +165,48 @@ void clone::save(ODump& dp) const{
     (info_.progress() < 1) || params_.value_or_default("SCHEDULER_KEEP_FULL_DUMP", false);
   dp << full_dump;
   if (full_dump) worker_->save_worker(dp);
+
+#ifdef ALPS_HAVE_HDF5
+  hdf5::oarchive h5(fn.file_string() + ".h5");
+  h5 << make_pvp("/", this);
+#endif
 }
+
+#ifdef ALPS_HAVE_HDF5
+
+void clone::serialize(hdf5::iarchive& ar) {
+  // TODO: implement
+}
+
+void clone::serialize(hdf5::oarchive& ar) const {
+  ar << make_pvp("/parameters", params_);
+  for (int m = 0; m < measurements_.size(); ++m) {
+    // TODO: check hdf5 section name conventions
+    ar << make_pvp("/simulation/realizations/" + boost::lexical_cast<std::string>(0) +
+                   "/clones/" + boost::lexical_cast<std::string>(clone_id_) +
+                   "/results/" + boost::lexical_cast<std::string>(m) +
+                   "/worker/" + boost::lexical_cast<std::string>(0) +
+                   "/", measurements_[m]);
+  }
+}
+
+#endif
 
 void clone::checkpoint() {
   if (info_.progress() < 1) info_.stop();
-  OXDRFileDump dp(complete(boost::filesystem::path(info_.dumpfile()), basedir_));
-  this->save(dp);
+  this->save();
 }
 
 void clone::suspend() {
   info_.stop();
-  OXDRFileDump dp(complete(boost::filesystem::path(info_.dumpfile()), basedir_));
-  this->save(dp);
+  this->save();
   worker_.reset();
 }
 
 void clone::do_halt() {
   if (info_.progress() < 1)
     boost::throw_exception(std::logic_error("clone is not finished"));
-  OXDRFileDump dp(complete(boost::filesystem::path(info_.dumpfile()), basedir_));
-  this->save(dp);
+  this->save();
   worker_.reset();
 }
 
@@ -216,8 +241,7 @@ clone_mpi::clone_mpi(boost::mpi::communicator const& ctrl,
     worker_ = alps::parapack::worker_factory::make_worker(params_);
   if (is_new) worker_->init_observables(params_, measurements_);
   if (!is_new) {
-    IXDRFileDump dp(complete(boost::filesystem::path(info_.dumpfile()), basedir_));
-    this->load(dp);
+    this->load();
   }
 
   if (is_new && worker_->is_thermalized()) { // no thermalization steps
@@ -321,14 +345,12 @@ void clone_mpi::suspend() {
 
 void clone_mpi::do_checkpoint() {
   if (work_.rank() == 0 && info_.progress() < 1) info_.stop();
-  OXDRFileDump dp(complete(boost::filesystem::path(info_.dumpfile()), basedir_));
-  this->save(dp);
+  this->save();
 }
 
 void clone_mpi::do_suspend() {
   if (work_.rank() == 0) info_.stop();
-  OXDRFileDump dp(complete(boost::filesystem::path(info_.dumpfile()), basedir_));
-  this->save(dp);
+  this->save();
   work_.barrier();
   worker_.reset();
 }
@@ -338,8 +360,7 @@ void clone_mpi::do_halt() {
     std::cerr << "clone is not finished\n";
     boost::throw_exception(std::logic_error("clone is not finished"));
   }
-  OXDRFileDump dp(complete(boost::filesystem::path(info_.dumpfile()), basedir_));
-  this->save(dp);
+  this->save();
   work_.barrier();
   worker_.reset();
 }
@@ -348,7 +369,8 @@ bool clone_mpi::halted() const { return !worker_; }
 
 clone_info const& clone_mpi::info() const { return info_; }
 
-void clone_mpi::load(IDump& dp) {
+void clone_mpi::load() {
+  IXDRFileDump dp(complete(boost::filesystem::path(info_.dumpfile()), basedir_));
   int32_t tag;
   dp >> tag;
   if (work_.rank() == 0) {
@@ -397,12 +419,13 @@ void clone_mpi::load(IDump& dp) {
   if (full_dump) worker_->load_worker(dp);
 }
 
-void clone_mpi::save(ODump& dp) const{
+void clone_mpi::save() const{
+  boost::filesystem::path fn = complete(boost::filesystem::path(info_.dumpfile()), basedir_);
+  OXDRFileDump dp(fn);
   if (work_.rank() == 0)
     dp << static_cast<int32_t>(parapack_dump::run_master);
   else
     dp << static_cast<int32_t>(parapack_dump::run_slave);
-
   dp << static_cast<int32_t>(parapack_dump::current_version)
      << static_cast<int32_t>(work_.size())
      << static_cast<int32_t>(work_.rank());
@@ -416,7 +439,32 @@ void clone_mpi::save(ODump& dp) const{
   broadcast(work_, full_dump, 0);
   dp << full_dump;
   if (full_dump) worker_->save_worker(dp);
+
+#ifdef ALPS_HAVE_HDF5
+  hdf5::oarchive h5(fn.file_string() + ".h5");
+  h5 << make_pvp("/", this);
+#endif
 }
+
+#ifdef ALPS_HAVE_HDF5
+
+void clone_mpi::serialize(hdf5::iarchive& ar) {
+  // TODO: implement
+}
+
+void clone_mpi::serialize(hdf5::oarchive& ar) const {
+  ar << make_pvp("/parameters", params_);
+  for (int m = 0; m < measurements_.size(); ++m) {
+    // TODO: check hdf5 section name conventions
+    ar << make_pvp("/simulation/realizations/" + boost::lexical_cast<std::string>(0) +
+                   "/clones/" + boost::lexical_cast<std::string>(clone_id_) +
+                   "/results/" + boost::lexical_cast<std::string>(m) +
+                   "/worker/" + boost::lexical_cast<std::string>(work_.rank()) +
+                   "/", measurements_[m]);
+  }
+}
+
+#endif
 
 void clone_mpi::output() const{
   std::cout << params_;

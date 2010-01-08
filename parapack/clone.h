@@ -37,6 +37,9 @@
 #include <alps/osiris.h>
 #include <alps/parameter.h>
 #include <alps/scheduler/info.h>
+#ifdef ALPS_HAVE_HDF5
+# include <alps/hdf5.hpp>
+#endif
 
 namespace alps {
 
@@ -56,8 +59,12 @@ public:
   virtual bool halted() const = 0;
   virtual clone_info const& info() const = 0;
 
-  virtual void load(IDump&) = 0;
-  virtual void save(ODump&) const = 0;
+  virtual void load() = 0;
+  virtual void save() const = 0;
+#ifdef ALPS_HAVE_HDF5
+  virtual void serialize(hdf5::iarchive &) = 0;
+  virtual void serialize(hdf5::oarchive &) const = 0;
+#endif
 
   virtual void checkpoint() = 0;
   virtual void suspend() = 0;
@@ -76,8 +83,12 @@ public:
   bool halted() const;
   clone_info const& info() const;
 
-  void load(IDump& dump);
-  void save(ODump& dump) const;
+  void load();
+  void save() const;
+#ifdef ALPS_HAVE_HDF5
+  void serialize(hdf5::iarchive &);
+  void serialize(hdf5::oarchive &) const;
+#endif
 
   void checkpoint();
   void suspend();
@@ -168,8 +179,12 @@ public:
   bool halted() const;
   clone_info const& info() const;
 
-  void load(IDump& dump);
-  void save(ODump& dump) const;
+  void load();
+  void save() const;
+#ifdef ALPS_HAVE_HDF5
+  void serialize(hdf5::iarchive &);
+  void serialize(hdf5::oarchive &) const;
+#endif
 
   void checkpoint();
   void suspend();
