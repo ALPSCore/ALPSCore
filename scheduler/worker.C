@@ -158,14 +158,40 @@ void Worker::save_worker(ODump& dump) const
  
 #ifdef ALPS_HAVE_HDF5
 	void Worker::serialize(hdf5::iarchive & ar) {
-// TODO: implement
+		int32_t run;
+		std::string state;
+		ar 
+			>> make_pvp("/run", run) 
+			>> make_pvp("/version", version) 
+			>> make_pvp("/parameters", parms) 
+			>> make_pvp("/engine_ptr", state)
+		;
+		if(run != MCDump_run)
+			boost::throw_exception(std::runtime_error("dump does not contain a run"));
+		if(version > MCDump_worker_version) {
+			std::string msg = "The run on dump is version " 
+				+ boost::lexical_cast<std::string>(version) + 
+				+ " but this program can read only up to version "
+				+ boost::lexical_cast<std::string>(MCDump_worker_version);
+			throw std::runtime_error(msg);
+		}
+		std::stringstream rngstream(state);
+		engine_ptr->read(rngstream);
+		if(node==0)
+			ar >> make_pvp("/info", info);
+		Disorder::seed(parms.value_or_default("DISORDERSEED",0));
 	}
 	void Worker::serialize(hdf5::oarchive & ar) const {
+		std::ostringstream rngstream;
+		rngstream << *engine_ptr;
 		ar 
-			<< make_pvp("/version", version) 
+			<< make_pvp("/run", int32_t(MCDump_run)) 
+			<< make_pvp("/version", int32_t(MCDump_worker_version)) 
 			<< make_pvp("/parameters", parms) 
-			<< make_pvp("/engine_ptr", boost::lexical_cast<std::string>(*engine_ptr))
+			<< make_pvp("/engine_ptr", rngstream.str())
 		;
+			if(node == 0)
+				ar << make_pvp("/info", info);
 	}
 #endif
 
@@ -219,14 +245,16 @@ void Worker::write_xml(const boost::filesystem::path& , const boost::filesystem:
 
 void Worker::load_from_file(const boost::filesystem::path& fn)
 {
+#ifdef ALPS_HAVE_HDF5
+	if (fn.file_string().substr(fn.file_string().size() - 3) == ".h5") {
+		hdf5::iarchive ar(fn.file_string());
+		ar >> make_pvp("/", this);
+	} else
+#endif
+	{
   IXDRFileDump dump(fn);
   load_worker(dump);
-  
-#ifdef ALPS_HAVE_HDF5
-	boost::filesystem::path h5fn = fn.branch_path() / (fn.leaf() + ".h5");
-	hdf5::iarchive h5(h5fn.file_string());
-//	h5 >> make_pvp("/", this);
-#endif
+}
 }
 
 void Worker::save_to_file(const boost::filesystem::path& fnpath) const

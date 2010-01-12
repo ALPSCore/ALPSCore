@@ -149,6 +149,10 @@ public:
   
   virtual ResultType get_summary() const; 
   static Parameters parse_ext_task_file(std::string);
+  
+#ifdef ALPS_HAVE_HDF5
+	virtual void serialize(hdf5::iarchive &);
+#endif;
 
 protected:
   virtual void write_xml_header(alps::oxstream&) const;
@@ -197,6 +201,10 @@ public:
   virtual ResultType get_summary() const; 
   
   std::vector<AbstractWorker*> runs; // the list of all runs
+
+#ifdef ALPS_HAVE_HDF5
+	void serialize(hdf5::iarchive &);
+#endif;
 
 protected:
   virtual std::string worker_tag() const=0;

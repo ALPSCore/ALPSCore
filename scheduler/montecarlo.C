@@ -357,6 +357,12 @@ ResultType DummyMCRun::get_summary() const
   return res;
 }
 
+#ifdef ALPS_HAVE_HDF5
+	void MCSimulation::serialize(hdf5::iarchive & ar) {
+		WorkerTask::serialize(ar);
+	}
+#endif;
+
 void MCSimulation::handle_tag(std::istream& infile, const XMLTag& tag) 
 {
   if (tag.name!="AVERAGES")

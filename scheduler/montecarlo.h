@@ -119,6 +119,10 @@ public:
   virtual ResultType get_summary() const;
   virtual ResultType get_summary(const std::string) const;
 
+#ifdef ALPS_HAVE_HDF5
+	void serialize(hdf5::iarchive &);
+#endif;
+
 private:
   std::string worker_tag() const;
   void write_xml_body(alps::oxstream&, const boost::filesystem::path&) const;

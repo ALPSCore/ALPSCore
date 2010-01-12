@@ -75,9 +75,15 @@ Task::~Task()
 
 void Task::parse_task_file(bool read_parms_only)
 {
-	if (infilename.native_file_string().substr(infilename.native_file_string().size() - 3) == ".h5")
-		parms = parse_ext_task_file(infilename.filename());
-	else
+#ifdef ALPS_HAVE_HDF5
+	if (infilename.native_file_string().substr(infilename.file_string().size() - 3) == ".h5") {
+		parms = parse_ext_task_file(infilename.file_string());
+		if (!read_parms_only) {
+			hdf5::iarchive ar(infilename.file_string());
+			ar >> make_pvp("", this);
+		}
+	} else
+#endif
   {
     boost::filesystem::ifstream infile(infilename);
     
@@ -144,6 +150,10 @@ Parameters Task::parse_ext_task_file(std::string infilename)
   }
 	return res;
 }
+
+#ifdef ALPS_HAVE_HDF5
+	void Task::serialize(hdf5::iarchive & ar) {}
+#endif;
 
 void Task::handle_tag(std::istream& infile, const XMLTag& tag) 
 {

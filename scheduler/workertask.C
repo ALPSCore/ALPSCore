@@ -67,6 +67,20 @@ WorkerTask::~WorkerTask()
       delete runs[i];
 }
 
+#ifdef ALPS_HAVE_HDF5
+	void WorkerTask::serialize(hdf5::iarchive & ar) {
+		std::vector<std::string> list = ar.list_children("/checkpoint");
+		for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
+			std::string filename;
+			ar >> make_pvp("/checkpoint/" + *it, filename);
+			CheckpointFiles files;
+			files.in = boost::filesystem::complete(boost::filesystem::path(filename, boost::filesystem::native), infilename.branch_path());
+			runfiles.push_back(files);
+			workerstatus.push_back(RunOnDump);
+		}
+	}
+#endif;
+
 void WorkerTask::handle_tag(std::istream& infile, const XMLTag& intag) 
 {
   if (intag.name!=worker_tag()) {
@@ -460,6 +474,7 @@ void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::pa
 		task_ar
 			<< make_pvp("/logs/" + boost::lexical_cast<std::string>(i), runs[i]->get_info())
 			<< make_pvp("/checkpoint/" + boost::lexical_cast<std::string>(i), runfiles[i].out.file_string())
+//			<< make_pvp("/checkpoint/" + boost::lexical_cast<std::string>(i), runfiles[i].out.file_string() + ".h5")
 		;
 #endif
     }

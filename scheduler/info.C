@@ -53,8 +53,12 @@ Info::Info()
 		;
 	}
 	void Info::serialize(hdf5::iarchive & ar) {
-	
-	
+		std::string startt, stopt;
+		ar
+			>> make_pvp("from", startt)
+			>> make_pvp("to", stopt)
+			>> make_pvp("machine/name", host_)
+		;
 	}
 #endif
 
@@ -152,6 +156,13 @@ ALPS_DUMMY_VOID Info::write_xml(alps::oxstream& xml) const
 	}
 	void TaskInfo::serialize(hdf5::iarchive & ar) {
 	
+	
+//		this->start(phase...)
+	
+	std::cout << __LINE__ << " " << __FILE__ << std::endl;
+	
+	
+
 	
 	}
 #endif

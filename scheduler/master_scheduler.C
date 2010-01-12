@@ -221,7 +221,8 @@ void MasterScheduler::checkpoint()
     
     for (unsigned int i=0; i<tasks.size();i++) {
 #ifdef ALPS_HAVE_HDF5
-		boost::filesystem::path task_path = taskfiles[i].out.file_string().substr(0, taskfiles[i].out.file_string().find_last_of('.')) + ".h5";
+		boost::filesystem::path task_path = taskfiles[i].out.native_file_string();
+//		boost::filesystem::path task_path = taskfiles[i].out.file_string().substr(0, taskfiles[i].out.file_string().find_last_of('.')) + ".h5";
 #else
 		boost::filesystem::path task_path = taskfiles[i].out.native_file_string();
 #endif
