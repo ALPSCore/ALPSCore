@@ -142,6 +142,7 @@ public:
 #endif
 
 #ifdef ALPS_HAVE_HDF5
+	void serialize(hdf5::iarchive & ar);
 	void serialize(hdf5::oarchive & ar) const;
 #endif
 
@@ -289,6 +290,12 @@ void AbstractSignedObservable<OBS,SIGN>::load(IDump& dump)
 }
 
 #ifdef ALPS_HAVE_HDF5
+	template <class OBS, class SIGN>
+	void AbstractSignedObservable<OBS,SIGN>::serialize(hdf5::iarchive & ar) {
+		ar
+			>> make_pvp("@sign", sign_name_)
+		;
+	}
 	template <class OBS, class SIGN>
 	void AbstractSignedObservable<OBS,SIGN>::serialize(hdf5::oarchive & ar) const {
 		ar

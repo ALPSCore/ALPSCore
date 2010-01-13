@@ -158,7 +158,7 @@ void Worker::save_worker(ODump& dump) const
  
 #ifdef ALPS_HAVE_HDF5
 	void Worker::serialize(hdf5::iarchive & ar) {
-		int32_t run;
+		int run;
 		std::string state;
 		ar 
 			>> make_pvp("/run", run) 
@@ -177,7 +177,7 @@ void Worker::save_worker(ODump& dump) const
 		}
 		std::stringstream rngstream(state);
 		engine_ptr->read(rngstream);
-		if(node==0)
+		if(node == 0)
 			ar >> make_pvp("/info", info);
 		Disorder::seed(parms.value_or_default("DISORDERSEED",0));
 	}
@@ -185,8 +185,8 @@ void Worker::save_worker(ODump& dump) const
 		std::ostringstream rngstream;
 		rngstream << *engine_ptr;
 		ar 
-			<< make_pvp("/run", int32_t(MCDump_run)) 
-			<< make_pvp("/version", int32_t(MCDump_worker_version)) 
+			<< make_pvp("/run", int(MCDump_run)) 
+			<< make_pvp("/version", int(MCDump_worker_version)) 
 			<< make_pvp("/parameters", parms) 
 			<< make_pvp("/engine_ptr", rngstream.str())
 		;

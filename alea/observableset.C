@@ -124,11 +124,23 @@ void ObservableSet::load(IDump& dump)
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-void ObservableSet::serialize(hdf5::oarchive & ar) const {
-	for(base_type::const_iterator it = base_type::begin(); it != base_type::end(); ++it)
-		if(it->second)
-			ar << make_pvp(it->second->name(), it->second);
-}
+	void ObservableSet::serialize(hdf5::iarchive & ar) {
+		std::vector<std::string> list = ar.list_children(ar.get_context());
+		for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
+			int version;
+			ar >> make_pvp(*it + "/@version", version);
+			Observable* obs = factory_.create(version);
+			ar >> make_pvp(*it, obs);
+			addObservable(obs);
+		}
+	}
+	void ObservableSet::serialize(hdf5::oarchive & ar) const {
+		for(base_type::const_iterator it = base_type::begin(); it != base_type::end(); ++it)
+			if (it->second->name().find_first_of('/') < std::string::npos)
+				throw std::runtime_error("observables names must not contain '/'");
+			else if(it->second)
+				ar << make_pvp(it->second->name(), it->second);
+	}
 #endif
 
 void ObservableSet::update_signs()

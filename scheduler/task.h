@@ -157,7 +157,12 @@ public:
 protected:
   virtual void write_xml_header(alps::oxstream&) const;
   virtual void write_xml_trailer(alps::oxstream&) const;
-  virtual void write_xml_body(alps::oxstream&, const boost::filesystem::path&) const=0;
+  
+#ifdef ALPS_HAVE_HDF5
+	virtual void write_xml_body(alps::oxstream&, const boost::filesystem::path&, hdf5::oarchive &) const=0;
+#else
+	virtual void write_xml_body(alps::oxstream&, const boost::filesystem::path&) const=0;
+#endif;
   virtual void handle_tag(std::istream&, const XMLTag&);
 
   alps::Parameters parms;
@@ -208,7 +213,11 @@ public:
 
 protected:
   virtual std::string worker_tag() const=0;
-  void write_xml_body(alps::oxstream&, const boost::filesystem::path&) const;
+#ifdef ALPS_HAVE_HDF5
+	void write_xml_body(alps::oxstream&, const boost::filesystem::path&, hdf5::oarchive &) const;
+#else
+	void write_xml_body(alps::oxstream&, const boost::filesystem::path&) const;
+#endif;
   void handle_tag(std::istream&, const XMLTag&);
   std::vector<RunStatus> workerstatus;
 

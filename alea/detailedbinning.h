@@ -98,7 +98,7 @@ public:
 
 #ifdef ALPS_HAVE_HDF5
 	void serialize(hdf5::oarchive & ar) const;
-	void serialize(hdf5::iarchive & ar) const {};
+	void serialize(hdf5::iarchive & ar);
 #endif
 
 private:
@@ -312,6 +312,16 @@ inline void BasicDetailedBinning<T>::load(IDump& dump)
 #endif
 
 #ifdef ALPS_HAVE_HDF5
+	template <class T> inline void BasicDetailedBinning<T>::serialize(hdf5::iarchive & ar) {
+		SimpleBinning<T>::serialize(ar);
+        ar 
+            >> make_pvp("timeseries/data", values_)
+            >> make_pvp("timeseries/data", values_)
+            >> make_pvp("timeseries/data/@minbinsize", minbinsize_)
+            >> make_pvp("timeseries/data/@maxbinnum", maxbinnum_)
+            >> make_pvp("timeseries/data2", values2_)
+        ;
+	}
 	template <class T> inline void BasicDetailedBinning<T>::serialize(hdf5::oarchive & ar) const {
 		SimpleBinning<T>::serialize(ar);
         ar 

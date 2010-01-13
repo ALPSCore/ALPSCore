@@ -90,6 +90,14 @@ void Observable::save(ODump& dump) const
 
 #endif // !ALPS_WITHOUT_OSIRIS
 
+#ifdef ALPS_HAVE_HDF5
+	void Observable::serialize(hdf5::iarchive &) {};
+	void Observable::serialize(hdf5::oarchive & ar) const {
+		ar.set_group("");
+		ar << make_pvp("@version", version_id());
+	};
+#endif
+
 bool Observable::is_signed() const
 { return false;        }
 

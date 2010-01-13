@@ -1003,8 +1003,32 @@ void SimpleObservableData<T>::load(IDump& dump)
 		}
 	}
 	template <typename T> void SimpleObservableData<T>::serialize(hdf5::iarchive & ar) const {
-	
-	
+		ar
+			>> make_pvp("count", count_)
+		;
+		if (valid_ = ar.is_data("mean/value")) {
+			ar
+				>> make_pvp("mean/value", mean_)
+				>> make_pvp("mean/error", error_)
+				>> make_pvp("mean/error_convergence", converged_errors_)
+			;
+			if (has_variance_ = ar.is_data("variance/value"))
+				ar
+					>> make_pvp("variance/value", variance_)
+				;
+			if (has_tau_ = ar.is_data("variance/tau_"))
+				ar
+					>> make_pvp("tau/value", tau_)
+				;
+			ar
+				>> make_pvp("timeseries/data", values_)
+				>> make_pvp("timeseries/data2", values2_)
+			;
+			if (jack_valid_ = ar.is_data("jacknife/data"))
+				ar
+					>> make_pvp("jacknife/data", jack_)
+				;
+		}
 	}
 #endif
 template <class T>

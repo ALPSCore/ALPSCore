@@ -206,6 +206,7 @@ class ALPS_DECL ObservableSet: public std::map<std::string,Observable*>
 #endif
 
 #ifdef ALPS_HAVE_HDF5
+	virtual void serialize(hdf5::iarchive &);
 	virtual void serialize(hdf5::oarchive &) const;
 #endif
 

@@ -156,7 +156,7 @@ void Parameters::replace_envvar() {
 		for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
 			std::string v;
 			ar >> make_pvp(*it, v);
-			push_back(*it, value_type(v));
+			operator[](*it) = v;
 		}
 	}
 #endif

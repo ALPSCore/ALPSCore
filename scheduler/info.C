@@ -59,6 +59,7 @@ Info::Info()
 			>> make_pvp("to", stopt)
 			>> make_pvp("machine/name", host_)
 		;
+		phase_ = ar.get_context().substr(ar.get_context().find_last_of('/') + 1);
 	}
 #endif
 
@@ -155,15 +156,10 @@ ALPS_DUMMY_VOID Info::write_xml(alps::oxstream& xml) const
 			;
 	}
 	void TaskInfo::serialize(hdf5::iarchive & ar) {
-	
-	
-//		this->start(phase...)
-	
-	std::cout << __LINE__ << " " << __FILE__ << std::endl;
-	
-	
-
-	
+		std::vector<std::string> list = ar.list_children("/info");
+		resize(list.size());
+		for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it)
+			ar >> make_pvp(*it, operator[](it - list.begin()));
 	}
 #endif
 

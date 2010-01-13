@@ -125,7 +125,11 @@ public:
 
 private:
   std::string worker_tag() const;
+#ifdef ALPS_HAVE_HDF5
+	void write_xml_body(alps::oxstream&, const boost::filesystem::path&, hdf5::oarchive &) const;
+#else
   void write_xml_body(alps::oxstream&, const boost::filesystem::path&) const;
+#endif;
   virtual void handle_tag(std::istream&, const XMLTag&);
   ObservableSet measurements;
 };

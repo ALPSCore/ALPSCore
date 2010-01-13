@@ -137,16 +137,19 @@ namespace alps {
 				public:
 					archive(std::string const & file) {
 						H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
-						hid_t id = H5Fopen(file.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
-						_file = (id < 0 ? H5Fcreate(file.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT) : id);
+						if (boost::is_same<Tag, write>::value) {
+							hid_t id = H5Fopen(file.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
+							_file = (id < 0 ? H5Fcreate(file.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT) : id);
+						} else
+							_file = H5Fopen(file.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
 					}
 					~archive() {
 						H5Fflush(_file, H5F_SCOPE_GLOBAL);
 					}
-					std::string get_context() {
+					std::string get_context() const {
 						return _context;
 					}
-					std::string compute_path(std::string const & p) {
+					std::string compute_path(std::string const & p) const {
 						if (p.size() && p[0] == '/')
 							return p;
 						else if (p.size() < 2 || p.substr(0, 2) != "..")
@@ -163,7 +166,7 @@ namespace alps {
 						typename boost::mpl::and_<is_writable<T>, typename boost::is_same<Tag, write>::type >
 					>::type serialize(std::string const & p, T const & v) {
 						if (p.find_last_of('@') != std::string::npos)
-							set_attr(compute_path(p.substr(0, p.find_last_of('@') - 1)), p.substr(p.find_last_of('@') + 1), v, typename is_writable<T>::category());
+							set_attr(compute_path(p).substr(0, compute_path(p).find_last_of('@') - 1), p.substr(p.find_last_of('@') + 1), v, typename is_writable<T>::category());
 						else
 							set_data(compute_path(p), v, typename is_writable<T>::category());
 					}
@@ -182,11 +185,11 @@ namespace alps {
 						_context = c;
 					}
 					bool is_group(std::string const & p) const {
-						hid_t id = H5Gopen2(_file, p.c_str(), H5P_DEFAULT);
+						hid_t id = H5Gopen2(_file, compute_path(p).c_str(), H5P_DEFAULT);
 						return id < 0 ? false : group_type(id) != 0;
 					}
 					bool is_data(std::string const & p) const {
-						hid_t id = H5Dopen2(_file, p.c_str(), H5P_DEFAULT);
+						hid_t id = H5Dopen2(_file, compute_path(p).c_str(), H5P_DEFAULT);
 						return id < 0 ? false : data_type(id) != 0;
 					}
 					std::vector<std::size_t> extent(std::string const & p) const {
@@ -194,7 +197,7 @@ namespace alps {
 							return std::vector<std::size_t>(1, 0);
 						std::vector<hsize_t> buffer(dimensions(p), 0);
 						{
-							data_type data_id(H5Dopen2(_file, p.c_str(), H5P_DEFAULT));
+							data_type data_id(H5Dopen2(_file, compute_path(p).c_str(), H5P_DEFAULT));
 							space_type space_id(H5Dget_space(data_id));
 							error_type(H5Sget_simple_extent_dims(space_id, &buffer.front(), NULL));
 						}
@@ -203,49 +206,65 @@ namespace alps {
 						return extend;
 					}
 					std::size_t dimensions(std::string const & p) const {
-						data_type data_id(H5Dopen2(_file, p.c_str(), H5P_DEFAULT));
+						data_type data_id(H5Dopen2(_file, compute_path(p).c_str(), H5P_DEFAULT));
 						space_type space_id(H5Dget_space(data_id));
 						return static_cast<hid_t>(error_type(H5Sget_simple_extent_dims(space_id, NULL, NULL)));
 					}
 					bool is_scalar(std::string const & p) const {
-						data_type data_id(H5Dopen2(_file, p.c_str(), H5P_DEFAULT));
+						data_type data_id(H5Dopen2(_file, compute_path(p).c_str(), H5P_DEFAULT));
 						space_type space_id(H5Dget_space(data_id));
 						H5S_class_t type = H5Sget_simple_extent_type(space_id);
 						if (type == H5S_NO_CLASS)
-							throw std::runtime_error("error reading class " + p);
+							throw std::runtime_error("error reading class " + compute_path(p));
 						return type == H5S_SCALAR;
 					}
 					bool is_null(std::string const & p) const {
-						data_type data_id(H5Dopen2(_file, p.c_str(), H5P_DEFAULT));
+						data_type data_id(H5Dopen2(_file, compute_path(p).c_str(), H5P_DEFAULT));
 						space_type space_id(H5Dget_space(data_id));
 						H5S_class_t type = H5Sget_simple_extent_type(space_id);
 						if (type == H5S_NO_CLASS)
-							throw std::runtime_error("error reading class " + p);
+							throw std::runtime_error("error reading class " + compute_path(p));
 						return type == H5S_NULL;
 					}
 					std::vector<std::string> list_children(std::string const & p) const {
 						std::vector<std::string> list;
-						hid_t id = H5Gopen2(_file, p.c_str(), H5P_DEFAULT);
-						if (id >= 0) {
-							group_type group_id(id);
-							error_type(H5Literate(group_id, H5_INDEX_NAME, H5_ITER_NATIVE, NULL, child_visitor, reinterpret_cast<void *>(&list)));
-						}
+						group_type group_id(H5Gopen2(_file, compute_path(p).c_str(), H5P_DEFAULT));
+						error_type(H5Literate(group_id, H5_INDEX_NAME, H5_ITER_NATIVE, NULL, child_visitor, reinterpret_cast<void *>(&list)));
 						return list;
 					}
 					std::vector<std::string> list_attr(std::string const & p) const {
 						std::vector<std::string> list;
 						if (is_group(p)) {
-							group_type id(H5Gopen2(_file, p.c_str(), H5P_DEFAULT));
+							group_type id(H5Gopen2(_file, compute_path(p).c_str(), H5P_DEFAULT));
 							error_type(H5Aiterate2(id, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, NULL, attr_visitor, reinterpret_cast<void *>(&list)));
 						} else {
-							data_type id(H5Dopen2(_file, p.c_str(), H5P_DEFAULT));
+							data_type id(H5Dopen2(_file, compute_path(p).c_str(), H5P_DEFAULT));
 							error_type(H5Aiterate2(id, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, NULL, attr_visitor, reinterpret_cast<void *>(&list)));
 						}
 						return list;
 					}
-					template<typename T> void get_data(std::string const & p, T * v) const {
-						data_type data_id(H5Dopen2(_file, p.c_str(), H5P_DEFAULT));
+					void set_group(std::string const & p) const {
+						std::string q = compute_path(p);
+						if (!is_group(q)) {
+							std::size_t pos;
+							hid_t id = -1;
+							for (pos = q.find_last_of('/'); id < 0 && pos > 0 && pos < std::string::npos; pos = q.find_last_of('/', pos - 1))
+								id = H5Gopen2(_file, q.substr(0, pos).c_str(), H5P_DEFAULT);
+							if (id < 0) {
+								if ((pos = q.find_first_of('/', 1)) != std::string::npos)
+									group_type(H5Gcreate2(_file, q.substr(0, pos).c_str(), 0, H5P_DEFAULT, H5P_DEFAULT));
+							} else {
+								pos = q.find_first_of('/', pos + 1);
+								group_type(group_id);
+							}
+							while (pos != std::string::npos && (pos = q.find_first_of('/', pos + 1)) != std::string::npos && pos > 0)
+								group_type(H5Gcreate2(_file, q.substr(0, pos).c_str(), 0, H5P_DEFAULT, H5P_DEFAULT));
+							group_type(H5Gcreate2(_file, q.c_str(), 0, H5P_DEFAULT, H5P_DEFAULT));
+						}
+					}
+					template<typename T> typename boost::enable_if<boost::is_scalar<T> >::type get_data(std::string const & p, T * v) const {
 						if (!is_null(p)) {
+							data_type data_id(H5Dopen2(_file, compute_path(p).c_str(), H5P_DEFAULT));
 							type_type type_id(get_native_type(v));
 							error_type(H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, v));
 						}
@@ -255,7 +274,7 @@ namespace alps {
 					}
 					template<typename T> typename boost::enable_if<boost::is_scalar<T> >::type set_data(std::string const & p, T const * v, hsize_t s) const {
 						type_type type_id(get_native_type(v));
-						data_type data_id(create_path(p, type_id, s ? H5Screate_simple(1, &s, NULL) : H5Screate(H5S_NULL), s ? 1 : 0, &s));
+						data_type data_id(create_path(compute_path(p), type_id, s ? H5Screate_simple(1, &s, NULL) : H5Screate(H5S_NULL), s ? 1 : 0, &s));
 						if (s > 0)
 							error_type(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, v));
 					}
@@ -333,23 +352,23 @@ namespace alps {
 						const_cast<archive<Tag> &>(*this) >> make_pvp(p + "/second", v.second);
 					}
 					template<typename T> void get_data(std::string const & p, T & v, stl_complex_tag) const {
-						throw std::runtime_error(std::string("not implemented ") + __FUNCTION__ + p);
+						get_data(p, static_cast<typename T::value_type *>(&v));
 					}
 					template<typename T> void get_data(std::string const & p, T & v, stl_container_of_scalar_tag) const {
 						if (is_null(p))
-							v.clear();
+							v.resize(0);
 						else {
 							if (dimensions(p) != 1)
 								throw std::runtime_error("the path " + p + " has not dimension 1");
 							v.resize(extent(p)[0]);
-							get_data(p, &(v.front()));
+							get_data(p, &(v[0]));
 						}
 					}
 					template<typename T> void get_data(std::string const & p, T & v, stl_string_tag) const {
 						if (is_null(p))
 							v = "";
 						else if (is_scalar(p)) {
-							data_type data_id(H5Dopen2(_file, p.c_str(), 0));
+							data_type data_id(H5Dopen2(_file, p.c_str(), H5P_DEFAULT));
 							type_type type_id(H5Dget_type(data_id));
 							type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));
 							if (H5Tget_class(native_id) == H5T_STRING) {
@@ -397,13 +416,51 @@ namespace alps {
 						}
 					}
 					template<typename T> void get_data(std::string const & p, T & v, stl_container_of_string_tag) const {
-						throw std::runtime_error(std::string("not implemented ") + __FUNCTION__ + p);
+						if (is_null(p))
+							v.clear();
+						else {
+							if (dimensions(p) != 1)
+								throw std::runtime_error("the path " + p + " has not dimension 1");
+							v.resize(extent(p)[0]);
+							data_type data_id(H5Dopen2(_file, p.c_str(), 0));
+							type_type type_id(H5Dget_type(data_id));
+							type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));
+							if (H5Tget_class(native_id) != H5T_STRING)
+								throw std::runtime_error("the path " + p + " does not contain strings");
+							char **data = new char*[v.size()];
+							error_type(H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, data));
+							for (std::size_t i = 0; i < v.size(); ++i) {
+								v[i] = data[i];
+								free(data[i]);
+							}
+							delete[] data;
+						}
 					}
 					template<typename T> void get_data(std::string const & p, T & v, stl_container_of_container_tag) const {
-						throw std::runtime_error(std::string("not implemented ") + __FUNCTION__ + p);
+						if (is_null(p))
+							v.clear();
+						else {
+							if (dimensions(p) != 2)
+								throw std::runtime_error("the path " + p + " has not dimension 2");
+							v.resize(extent(p)[0]);
+							v[0].resize(extent(p)[1]);
+							for (typename T::iterator it = v.begin() + 1; it != v.end(); ++it)
+								it->resize(v[0].size());
+							data_type data_id(H5Dopen2(_file, p.c_str(), H5P_DEFAULT));
+							type_type type_id(get_native_type(const_cast<T &>(v)[0][0]));
+							for (std::size_t i = 0; i < v.size(); ++i) {
+								hsize_t start[2] = { i, 0 }, count[2] = { 1, v[i].size() };
+								space_type space_id(H5Dget_space(data_id));
+								error_type(H5Sselect_hyperslab(space_id, H5S_SELECT_SET, start, NULL, count, NULL));
+								space_type mem_id(H5Screate_simple(2, count, NULL));
+								error_type(H5Dread(data_id, type_id, mem_id, space_id, H5P_DEFAULT, &(const_cast<T &>(v)[i][0])));
+							}
+						}
 					}
 					template<typename T> void get_data(std::string const & p, T & v, c_string_tag) const {
-						throw std::runtime_error(std::string("not implemented ") + __FUNCTION__ + p);
+						std::string s;
+						get_data(p, s, stl_string_tag());
+						std::strcpy(v, s.c_str());
 					}
 					template<typename T> void get_attr(std::string const &, std::string const & p, T &, stl_container_of_scalar_tag) const {
 						throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
@@ -684,6 +741,9 @@ namespace alps {
 	}
 	template <typename T> hdf5::detail::pvp<T const &, hdf5::detail::plain> make_pvp(std::string const & p, T const & v) {
 		return hdf5::detail::pvp<T const &, hdf5::detail::plain>(p, v);
+	}
+	template <typename T> hdf5::detail::pvp<T, hdf5::detail::ptr> make_pvp(std::string const & p, T * & v) {
+		return hdf5::detail::pvp<T, hdf5::detail::ptr>(p, v);
 	}
 	template <typename T> hdf5::detail::pvp<T, hdf5::detail::ptr> make_pvp(std::string const & p, T * const & v) {
 		return hdf5::detail::pvp<T, hdf5::detail::ptr>(p, v);

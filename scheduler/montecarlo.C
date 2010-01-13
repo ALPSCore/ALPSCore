@@ -175,16 +175,25 @@ std::string MCSimulation::worker_tag() const
 }
 
 
-void MCSimulation::write_xml_body(oxstream& out, const boost::filesystem::path& name) const
+#ifdef ALPS_HAVE_HDF5
+	void MCSimulation::write_xml_body(oxstream& out, const boost::filesystem::path& name, hdf5::oarchive & ar) const
+#else
+	void MCSimulation::write_xml_body(oxstream& out, const boost::filesystem::path& name) const
+#endif
 {
   boost::filesystem::path fn_hdf5;
   // commented out by astreich, 05/31
   // produced permament crashes.
   if(!name.empty())
     fn_hdf5=name.branch_path()/(name.leaf()+".hdf");
-  // get_measurements(false).write_xml(out,name); // write non-compacted measurements
-  get_measurements(false).write_xml(out,fn_hdf5); // write non-compacted measurements
-  WorkerTask::write_xml_body(out,name);
+  ObservableSet set = get_measurements(false);
+  set.write_xml(out,fn_hdf5); // write non-compacted measurements
+#ifdef ALPS_HAVE_HDF5
+  ar << make_pvp("/simulation/results", set);
+  WorkerTask::write_xml_body(out, name, ar);
+#else
+  WorkerTask::write_xml_body(out, name);
+#endif
 }
 
 
@@ -223,6 +232,7 @@ void MCRun::save_worker(ODump& dump) const
 	}
 	void MCRun::serialize(hdf5::iarchive & ar) {
 		Worker::serialize(ar);
+		ar >> make_pvp("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(node) + "/results", measurements);
 	}
 #endif
 

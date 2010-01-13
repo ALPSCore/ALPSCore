@@ -400,18 +400,13 @@ double WorkerTask::work() const
 }
 
 // checkpoint: save into a file
-void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::path& fn) const
+#ifdef ALPS_HAVE_HDF5
+	void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::path& fn, hdf5::oarchive & task_ar) const
+#else
+	void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::path& fn) const
+#endif
 {
   boost::filesystem::path dir=fn.branch_path();
-#ifdef ALPS_HAVE_HDF5
-	std::string task_path = fn.file_string().substr(0, fn.file_string().find_last_of('.')) + ".h5";
-	std::string task_backup = fn.file_string().substr(0, fn.file_string().find_last_of('.')) + ".bak.h5";
-	bool task_exists = boost::filesystem::exists(task_path);
-	hdf5::oarchive task_ar(task_exists ? task_backup : task_path);
-	task_ar
-		<< make_pvp("/parameters", parms) 
-	;
-#endif
   for (unsigned int i=0;i<runs.size();++i) {
     if(workerstatus[i] == RunNotExisting) {
       if(runs[i])
@@ -479,12 +474,6 @@ void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::pa
 #endif
     }
   }
-#ifdef ALPS_HAVE_HDF5
-	if (task_exists) {
-		boost::filesystem::remove(task_path);
-		boost::filesystem::rename(task_backup, task_path);
-	}
-#endif
 }
 
 } // namespace scheduler
