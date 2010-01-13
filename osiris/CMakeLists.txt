@@ -15,6 +15,8 @@ FOREACH (name os sizeof xdrdump xdrdump2 boostdump boostdump2 boostdump3 boostdu
 	target_link_libraries(${name} alps)
 	# install(TARGETS ${name} RUNTIME DESTINATION bin)
         if(MSVC)
+          add_definitions(-DBOOST_NO_STD_LOCALE)
+          # otherwise we have a debug mode bug in some ALPS tests
           get_target_property(EXE_NAME ${name} LOCATION)
           add_custom_command(TARGET ${name} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy ${EXE_NAME} ${PROJECT_BINARY_DIR}/bin)
