@@ -692,8 +692,6 @@ inline void SimpleBinning<T>::load(IDump& dump)
 #ifdef ALPS_HAVE_HDF5
 	template <class T> inline void SimpleBinning<T>::serialize(hdf5::iarchive & ar) {
 		ar
-			>> make_pvp("sum", sum_[0])
-			>> make_pvp("sum2", sum2_[0])
 			>> make_pvp("count", count_)
 			>> make_pvp("timeseries/logbinning", sum_)
 			>> make_pvp("timeseries/logbinning2", sum2_)
@@ -702,9 +700,15 @@ inline void SimpleBinning<T>::load(IDump& dump)
 		;
 	}
 	template <class T> inline void SimpleBinning<T>::serialize(hdf5::oarchive & ar) const {
+		if (sum_.size())
+			ar
+				<< make_pvp("sum", sum_[0])
+			;
+		if (sum2_.size())
+			ar
+				<< make_pvp("sum2", sum2_[0])
+			;
 		ar
-			<< make_pvp("sum", sum_[0])
-			<< make_pvp("sum2", sum2_[0])
 			<< make_pvp("count", count_)
 			<< make_pvp("timeseries/logbinning", sum_)
 			<< make_pvp("timeseries/logbinning/@binningtype", "logarithmic")

@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Lukas Gamper <gamperl -at- gmail.com>
+// Copyright (C) 2008 - 2010 Lukas Gamper <gamperl -at- gmail.com>
 // Use, modification and distribution is subject to the Boost Software
 // License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -109,7 +109,6 @@ namespace alps {
 						std::ostringstream buffer;
 						buffer << "HDF5 error:" << std::endl;
 						H5Ewalk2(H5E_DEFAULT, H5E_WALK_DOWNWARD, callback, &buffer);
-						std::cerr << buffer.str() << std::endl;
 						throw std::runtime_error(buffer.str());
 					}
 			};
@@ -138,10 +137,15 @@ namespace alps {
 					archive(std::string const & file) {
 						H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
 						if (boost::is_same<Tag, write>::value) {
+							if (H5Fis_hdf5(file.c_str()) == 0)
+								throw std::runtime_error("no valid hdf5 file " + file);
 							hid_t id = H5Fopen(file.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
 							_file = (id < 0 ? H5Fcreate(file.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT) : id);
-						} else
+						} else {
+							if (error_type(H5Fis_hdf5(file.c_str())) == 0)
+								throw std::runtime_error("no valid hdf5 file " + file);
 							_file = H5Fopen(file.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+						}
 					}
 					~archive() {
 						H5Fflush(_file, H5F_SCOPE_GLOBAL);

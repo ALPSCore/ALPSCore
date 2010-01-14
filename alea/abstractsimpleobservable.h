@@ -184,10 +184,7 @@ public:
 #ifdef ALPS_HAVE_HDF5
 	void serialize(hdf5::iarchive & ar) {
 		Observable::serialize(ar);
-	
-	
-	std::cout << __LINE__ << " " << __FILE__ << std::endl;
-	
+		ar >> make_pvp("labels", label_);
 	}
 	void serialize(hdf5::oarchive & ar) const {
 		Observable::serialize(ar);
