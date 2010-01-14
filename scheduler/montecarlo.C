@@ -371,7 +371,7 @@ ResultType DummyMCRun::get_summary() const
 	void MCSimulation::serialize(hdf5::iarchive & ar) {
 		WorkerTask::serialize(ar);
 	}
-#endif;
+#endif
 
 void MCSimulation::handle_tag(std::istream& infile, const XMLTag& tag) 
 {

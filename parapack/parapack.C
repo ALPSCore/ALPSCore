@@ -352,7 +352,7 @@ int run_sequential(int argc, char **argv) {
   return 0;
 }
 
-int start_sgl(int argc, char** argv, option const& opt) {
+int start_sgl(int /* argc */, char** /* argv */, option const& opt) {
   if (!opt.valid) {
     std::cerr << "Error: unknown command line option(s)\n";
     opt.print(std::cerr);

@@ -79,7 +79,7 @@ WorkerTask::~WorkerTask()
 			workerstatus.push_back(RunOnDump);
 		}
 	}
-#endif;
+#endif
 
 void WorkerTask::handle_tag(std::istream& infile, const XMLTag& intag) 
 {
@@ -478,4 +478,3 @@ double WorkerTask::work() const
 
 } // namespace scheduler
 } // namespace alps
- 

@@ -174,7 +174,7 @@ void clone::save() const{
 
 #ifdef ALPS_HAVE_HDF5
 
-void clone::serialize(hdf5::iarchive& ar) {
+void clone::serialize(hdf5::iarchive& /* ar */) {
   // TODO: implement
 }
 
@@ -448,7 +448,7 @@ void clone_mpi::save() const{
 
 #ifdef ALPS_HAVE_HDF5
 
-void clone_mpi::serialize(hdf5::iarchive& ar) {
+void clone_mpi::serialize(hdf5::iarchive& /* ar */) {
   // TODO: implement
 }
 

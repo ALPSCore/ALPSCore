@@ -87,8 +87,8 @@ class AbstractBinning {
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-	void serialize(hdf5::oarchive & ar) const {};
-	void serialize(hdf5::iarchive & ar) {};
+  void serialize(hdf5::oarchive & /* ar */) const {};
+  void serialize(hdf5::iarchive & /* ar */) {};
 #endif
 
   std::string evaluation_method() const { return "simple";}
