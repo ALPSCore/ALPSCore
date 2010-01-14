@@ -5,8 +5,8 @@
 
 using namespace alps;
 int main(void){
-  int N=5000;
-  int M=50;
+  // int N=5000;
+  // int M=50;
   ObservableSet measurements, measurements2;
   measurements<<SimpleObservable<double,DetailedBinning<double> >("double_detailed");
   measurements<<SimpleObservable<double,SimpleBinning<double> >("double_simple");
