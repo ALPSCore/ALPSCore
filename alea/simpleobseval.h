@@ -691,90 +691,118 @@ inline const SimpleObservableEvaluator<T>& SimpleObservableEvaluator<T>::operato
 namespace alps {
 #endif
 
-/// sum of two observables or of observable and number
-template <class T, class Y>
-inline alps::SimpleObservableEvaluator<T> operator+(const alps::SimpleObservableEvaluator<T>& x, const Y& y)
+/// sum of two observables
+template <class T, class U>
+inline alps::SimpleObservableEvaluator<T> operator+(alps::SimpleObservableEvaluator<T> x, const alps::SimpleObservableEvaluator<U>& y)
 {
-  alps::SimpleObservableEvaluator<T> tmp(x);
-  tmp += y;
-  return tmp;
+  x += y;
+  return x;
 }
 
-/// difference of two observables or of observable and number
+/// sum of observable and number
 template <class T, class Y>
-inline alps::SimpleObservableEvaluator<T> operator-(const alps::SimpleObservableEvaluator<T>& x, const Y& y)
+inline alps::SimpleObservableEvaluator<T> operator+(alps::SimpleObservableEvaluator<T> x, const Y& y)
 {
-  alps::SimpleObservableEvaluator<T> tmp(x);
-  tmp -= y;
-  return tmp;
+  x += y;
+  return x;
 }
 
-/// product of two observables or of observable and number
+/// sum of observable and number
 template <class T, class Y>
-inline alps::SimpleObservableEvaluator<T> operator*(const alps::SimpleObservableEvaluator<T>& x, const Y& y)
+inline alps::SimpleObservableEvaluator<T> operator+(const Y& y, alps::SimpleObservableEvaluator<T> x)
 {
-  alps::SimpleObservableEvaluator<T> tmp(x);
-  tmp *= y;
-  return tmp;
+  x += y;
+  return x;
+}
+
+/// difference of two observables
+template <class T, class U>
+inline alps::SimpleObservableEvaluator<T> operator-(alps::SimpleObservableEvaluator<T> x, const alps::SimpleObservableEvaluator<U>& y)
+{
+  x -= y;
+  return x;
+}
+
+/// difference of observable and number
+template <class T, class Y>
+inline alps::SimpleObservableEvaluator<T> operator-(alps::SimpleObservableEvaluator<T> x, const Y& y)
+{
+  x -= y;
+  return x;
+}
+
+/// difference of observable and number
+template <class T, class Y>
+inline alps::SimpleObservableEvaluator<T> operator-(const Y& y, alps::SimpleObservableEvaluator<T> x)
+{
+  x.subtract_from(y);
+  return x;
+}
+
+
+/// product of two observables 
+template <class T, class U>
+inline alps::SimpleObservableEvaluator<T> operator*(alps::SimpleObservableEvaluator<T> x, const alps::SimpleObservableEvaluator<U>& y)
+{
+  x *= y;
+  return x;
+}
+
+/// product of observable and number
+template <class T, class Y>
+inline alps::SimpleObservableEvaluator<T> operator*(alps::SimpleObservableEvaluator<T> x, const Y& y)
+{
+  x *= y;
+  return x;
+}
+
+/// product of observable and number
+template <class T, class Y>
+inline alps::SimpleObservableEvaluator<T> operator*(const Y& y, alps::SimpleObservableEvaluator<T> x)
+{
+  x *= y;
+  return x;
 }
 
 /// product of vector and scalar observable
 template <class T>
-inline alps::SimpleObservableEvaluator<std::valarray<T> > operator*(const alps::SimpleObservableEvaluator<std::valarray<T> >& x, const alps::SimpleObservableEvaluator<T>& y)
+inline alps::SimpleObservableEvaluator<std::valarray<T> > operator*(alps::SimpleObservableEvaluator<std::valarray<T> > x, const alps::SimpleObservableEvaluator<T>& y)
 {
-  alps::SimpleObservableEvaluator<T> tmp(x);
-  tmp *= y;
-  return tmp;
+  x *= y;
+  return x;
 }
 
+/// product of vector and scalar observable
 template <class T>
-inline alps::SimpleObservableEvaluator<std::valarray<T> > operator*(const alps::SimpleObservableEvaluator<T>& y, const alps::SimpleObservableEvaluator<std::valarray<T> >& x)
+inline alps::SimpleObservableEvaluator<std::valarray<T> > operator*(const alps::SimpleObservableEvaluator<T>& y, alps::SimpleObservableEvaluator<std::valarray<T> > x)
 {
-  alps::SimpleObservableEvaluator<T> tmp(x);
-  tmp *= y;
-  return tmp;
+  x *= y;
+  return x;
 }
 
 
-/// ratio of two observables or of observable and number
+/// ratio of two observables 
+template <class T, class U>
+inline alps::SimpleObservableEvaluator<T> operator/(alps::SimpleObservableEvaluator<T> x, const alps::SimpleObservableEvaluator<U>& y)
+{
+  x /= y;
+  return x;
+}
+
+/// ratio of observable and number
 template <class T, class Y>
-inline alps::SimpleObservableEvaluator<T> operator/(const alps::SimpleObservableEvaluator<T>& x, const Y& y)
+inline alps::SimpleObservableEvaluator<T> operator/(alps::SimpleObservableEvaluator<T> x, const Y& y)
 {
-  alps::SimpleObservableEvaluator<T> tmp(x);
-  tmp /= y;
-  return tmp;
+  x /= y;
+  return x;
 }
 
-//
-// Basic Arithmetic operations with signature T # SimpleObservableEvaluator
-//
-
-template <class T>
-inline alps::SimpleObservableEvaluator<T> operator+(const T& x, const alps::SimpleObservableEvaluator<T>& y)
+/// ratio of number and observable
+template <class T, class Y>
+inline alps::SimpleObservableEvaluator<T> operator/(const Y& x, alps::SimpleObservableEvaluator<T> y)
 {
-  return y + x;
-}
-
-template <class T>
-inline alps::SimpleObservableEvaluator<T> operator-(const T& x, const alps::SimpleObservableEvaluator<T>& y)
-{
-  alps::SimpleObservableEvaluator<T> tmp(y);
-  tmp.subtract_from(x);
-  return tmp;
-}
-
-template <class T>
-inline alps::SimpleObservableEvaluator<T> operator*(const T& x, const alps::SimpleObservableEvaluator<T>& y)
-{
-  return y * x;
-}
-
-template <class T>
-inline alps::SimpleObservableEvaluator<T> operator/(const T& x, const alps::SimpleObservableEvaluator<T>& y)
-{
-  alps::SimpleObservableEvaluator<T> tmp(y);
-  tmp.divide(x);
-  return tmp;
+  y.divide(x);
+  return y;
 }
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
