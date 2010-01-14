@@ -37,7 +37,8 @@ host_triplet = @host@
 check_PROGRAMS = expression$(EXEEXT) expression2$(EXEEXT) \
 	flatten$(EXEEXT) parameter$(EXEEXT) parameterlist$(EXEEXT) \
 	parameterlist_xml$(EXEEXT) parameters$(EXEEXT) \
-	parameters_xml$(EXEEXT)
+	parameters_xml$(EXEEXT) $(am__EXEEXT_1)
+@HAVE_HDF5_TRUE@am__append_1 = parameters_hdf5
 subdir = test/parameter
 DIST_COMMON = $(dist_noinst_DATA) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in
@@ -66,6 +67,7 @@ CONFIG_HEADER = $(top_builddir)/src/alps/config.h \
 	$(top_builddir)/src/boost/fs_utf8_codecvt_facet.cpp
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
+@HAVE_HDF5_TRUE@am__EXEEXT_1 = parameters_hdf5$(EXEEXT)
 am_expression_OBJECTS = expression.$(OBJEXT)
 expression_OBJECTS = $(am_expression_OBJECTS)
 expression_LDADD = $(LDADD)
@@ -116,6 +118,13 @@ parameters_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+am_parameters_hdf5_OBJECTS = parameters_hdf5.$(OBJEXT)
+parameters_hdf5_OBJECTS = $(am_parameters_hdf5_OBJECTS)
+parameters_hdf5_LDADD = $(LDADD)
+parameters_hdf5_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_parameters_xml_OBJECTS = parameters_xml.$(OBJEXT)
 parameters_xml_OBJECTS = $(am_parameters_xml_OBJECTS)
 parameters_xml_LDADD = $(LDADD)
@@ -138,11 +147,13 @@ CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 SOURCES = $(expression_SOURCES) $(expression2_SOURCES) \
 	$(flatten_SOURCES) $(parameter_SOURCES) \
 	$(parameterlist_SOURCES) $(parameterlist_xml_SOURCES) \
-	$(parameters_SOURCES) $(parameters_xml_SOURCES)
+	$(parameters_SOURCES) $(parameters_hdf5_SOURCES) \
+	$(parameters_xml_SOURCES)
 DIST_SOURCES = $(expression_SOURCES) $(expression2_SOURCES) \
 	$(flatten_SOURCES) $(parameter_SOURCES) \
 	$(parameterlist_SOURCES) $(parameterlist_xml_SOURCES) \
-	$(parameters_SOURCES) $(parameters_xml_SOURCES)
+	$(parameters_SOURCES) $(parameters_hdf5_SOURCES) \
+	$(parameters_xml_SOURCES)
 DATA = $(dist_noinst_DATA)
 ETAGS = etags
 CTAGS = ctags
@@ -339,6 +350,7 @@ parameterlist_SOURCES = parameterlist.C
 parameterlist_xml_SOURCES = parameterlist_xml.C
 parameters_SOURCES = parameters.C
 parameters_xml_SOURCES = parameters_xml.C
+parameters_hdf5_SOURCES = parameters_hdf5.C
 
 # parameters_mpi_SOURCES = parameters_mpi.C
 dist_noinst_DATA = expression.input expression.output \
@@ -346,8 +358,9 @@ dist_noinst_DATA = expression.input expression.output \
 	parameter.input parameter.output parameterlist.input \
 	parameterlist.output parameterlist_xml.input \
 	parameterlist_xml.output parameters.input parameters.output \
-	parameters_xml.input parameters_xml.output parameters_mpi.ip-2 \
-	parameters_mpi.op-2
+	parameters_xml.input parameters_xml.output \
+	parameters_hdf5.input parameters_hdf5.output \
+	parameters_mpi.ip-2 parameters_mpi.op-2
 all: all-am
 
 .SUFFIXES:
@@ -412,6 +425,9 @@ parameterlist_xml$(EXEEXT): $(parameterlist_xml_OBJECTS) $(parameterlist_xml_DEP
 parameters$(EXEEXT): $(parameters_OBJECTS) $(parameters_DEPENDENCIES) 
 	@rm -f parameters$(EXEEXT)
 	$(CXXLINK) $(parameters_OBJECTS) $(parameters_LDADD) $(LIBS)
+parameters_hdf5$(EXEEXT): $(parameters_hdf5_OBJECTS) $(parameters_hdf5_DEPENDENCIES) 
+	@rm -f parameters_hdf5$(EXEEXT)
+	$(CXXLINK) $(parameters_hdf5_OBJECTS) $(parameters_hdf5_LDADD) $(LIBS)
 parameters_xml$(EXEEXT): $(parameters_xml_OBJECTS) $(parameters_xml_DEPENDENCIES) 
 	@rm -f parameters_xml$(EXEEXT)
 	$(CXXLINK) $(parameters_xml_OBJECTS) $(parameters_xml_LDADD) $(LIBS)
@@ -429,6 +445,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parameterlist.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parameterlist_xml.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parameters.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parameters_hdf5.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parameters_xml.Po@am__quote@
 
 .C.o:

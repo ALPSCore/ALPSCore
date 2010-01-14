@@ -1,0 +1,6 @@
+a = 2
+b = "/home/ALPS/lib/xml"
+c = "abc def "
+a = 2
+b = /home/ALPS/lib/xml
+c = "abc def "
