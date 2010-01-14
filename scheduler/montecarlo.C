@@ -175,12 +175,7 @@ std::string MCSimulation::worker_tag() const
 }
 
 
-#ifdef ALPS_HAVE_HDF5
-	void MCSimulation::write_xml_body(oxstream& out, const boost::filesystem::path& name, hdf5::oarchive & ar) const
-#else
-	void MCSimulation::write_xml_body(oxstream& out, const boost::filesystem::path& name) const
-#endif
-{
+void MCSimulation::write_xml_body(oxstream& out, const boost::filesystem::path& name) const {
   boost::filesystem::path fn_hdf5;
   // commented out by astreich, 05/31
   // produced permament crashes.
@@ -189,11 +184,14 @@ std::string MCSimulation::worker_tag() const
   ObservableSet set = get_measurements(false);
   set.write_xml(out,fn_hdf5); // write non-compacted measurements
 #ifdef ALPS_HAVE_HDF5
-  ar << make_pvp("/simulation/results", set);
-  WorkerTask::write_xml_body(out, name, ar);
-#else
-  WorkerTask::write_xml_body(out, name);
+	std::string task_path = name.file_string().substr(0, name.file_string().find_last_of('.')) + ".h5";
+	std::string task_backup = name.file_string().substr(0, name.file_string().find_last_of('.')) + ".bak.h5";
+	{
+		hdf5::oarchive ar(boost::filesystem::exists(task_backup) ? task_backup : task_path);
+		ar << make_pvp("/simulation/results", set);
+	}
 #endif
+  WorkerTask::write_xml_body(out, name);
 }
 
 

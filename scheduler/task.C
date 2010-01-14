@@ -246,17 +246,15 @@ void Task::checkpoint(const boost::filesystem::path& fn) const
   boost::filesystem::path filename = (make_backup ? dir/(fn.leaf()+".bak") : fn);
   {
 #ifdef ALPS_HAVE_HDF5
-	hdf5::oarchive ar(task_exists ? task_backup : task_path);
-	ar << make_pvp("/parameters", parms);
+	{
+		hdf5::oarchive ar(task_exists ? task_backup : task_path);
+		ar << make_pvp("/parameters", parms);
+	}
 #endif
   alps::oxstream out (filename);
   write_xml_header(out);
   out << parms;
-#ifdef ALPS_HAVE_HDF5
-  write_xml_body(out,fn, ar);
-#else
   write_xml_body(out,fn);
-#endif
   write_xml_trailer(out);
   } // close file
 #ifdef ALPS_HAVE_HDF5

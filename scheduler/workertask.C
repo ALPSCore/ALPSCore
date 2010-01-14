@@ -400,12 +400,12 @@ double WorkerTask::work() const
 }
 
 // checkpoint: save into a file
+void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::path& fn) const {
 #ifdef ALPS_HAVE_HDF5
-	void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::path& fn, hdf5::oarchive & task_ar) const
-#else
-	void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::path& fn) const
+	std::string task_path = fn.file_string().substr(0, fn.file_string().find_last_of('.')) + ".h5";
+	std::string task_backup = fn.file_string().substr(0, fn.file_string().find_last_of('.')) + ".bak.h5";
+	hdf5::oarchive task_ar(boost::filesystem::exists(task_backup) ? task_backup : task_path);
 #endif
-{
   boost::filesystem::path dir=fn.branch_path();
   for (unsigned int i=0;i<runs.size();++i) {
     if(workerstatus[i] == RunNotExisting) {
