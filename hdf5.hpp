@@ -16,6 +16,7 @@
 #include <string>
 #include <sstream>
 #include <cstring>
+#include <cstdlib>
 #include <vector>
 #include <deque>
 #include <list>
@@ -105,20 +106,37 @@ namespace alps {
 						*reinterpret_cast<std::ostringstream *>(buffer) << "    #" << n << " " << desc->file_name << " line " << desc->line << " in " << desc->func_name << "(): " << desc->desc << std::endl;
 						return 0;
 					}
-					static void invoke() {
+					static std::string invoke() {
 						std::ostringstream buffer;
 						buffer << "HDF5 error:" << std::endl;
 						H5Ewalk2(H5E_DEFAULT, H5E_WALK_DOWNWARD, callback, &buffer);
-						throw std::runtime_error(buffer.str());
+						return buffer.str();
 					}
 			};
 			template<herr_t(*F)(hid_t)> class ressource {
 				public:
 					ressource(): _id(-1) {}
-					ressource(hid_t id): _id(id) {  if (_id < 0) error::invoke(); H5Eclear2(H5E_DEFAULT); }
-					~ressource() { if(_id >= 0 && F(_id) < 0) error::invoke(); H5Eclear2(H5E_DEFAULT); }
-					operator hid_t() const { return _id; }
-					ressource & operator=(hid_t id) { if ((_id = id) < 0) error::invoke(); H5Eclear2(H5E_DEFAULT); return *this; }
+					ressource(hid_t id): _id(id) {
+						if (_id < 0)
+							throw std::runtime_error(error::invoke()); 
+						H5Eclear2(H5E_DEFAULT);
+					}
+					~ressource() {
+						if(_id < 0 || F(_id) < 0) {
+							std::cerr << error::invoke() << std::endl;
+							std::abort();
+						}
+						H5Eclear2(H5E_DEFAULT); 
+					}
+					operator hid_t() const { 
+						return _id; 
+					}
+					ressource<F> & operator=(hid_t id) { 
+						if ((_id = id) < 0) 
+							throw std::runtime_error(error::invoke()); 
+						H5Eclear2(H5E_DEFAULT); 
+						return *this; 
+					}
 				private:
 					hid_t _id;
 			};
@@ -130,6 +148,14 @@ namespace alps {
 			typedef ressource<H5Tclose> type_type;
 			typedef ressource<H5Pclose> property_type;
 			typedef ressource<error::noop> error_type;
+			template <typename T> T check_file(T id) { file_type unused(id); return unused; }
+			template <typename T> T check_group(T id) { group_type unused(id); return unused; }
+			template <typename T> T check_data(T id) { data_type unused(id); return unused; }
+			template <typename T> T check_attribute(T id) { attribute_type unused(id); return unused; }
+			template <typename T> T check_space(T id) { space_type unused(id); return unused; }
+			template <typename T> T check_type(T id) { type_type unused(id); return unused; }
+			template <typename T> T check_property(T id) { property_type unused(id); return unused; }
+			template <typename T> T check_error(T id) { error_type unused(id); return unused; }
 			struct write {};
 			struct read {};
 			template <typename Tag> class archive: boost::noncopyable {
@@ -142,13 +168,17 @@ namespace alps {
 							hid_t id = H5Fopen(file.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
 							_file = (id < 0 ? H5Fcreate(file.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT) : id);
 						} else {
-							if (error_type(H5Fis_hdf5(file.c_str())) == 0)
+							if (check_error(H5Fis_hdf5(file.c_str())) == 0)
 								throw std::runtime_error("no valid hdf5 file " + file);
 							_file = H5Fopen(file.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
 						}
 					}
 					~archive() {
 						H5Fflush(_file, H5F_SCOPE_GLOBAL);
+						if (H5Fget_obj_count(_file, H5F_OBJ_ALL) - H5Fget_obj_count(_file, H5F_OBJ_FILE) > 0) {
+							std::cerr << "Not all ressources closed" << std::endl;
+							std::abort();
+						}
 					}
 					std::string get_context() const {
 						return _context;
@@ -190,11 +220,11 @@ namespace alps {
 					}
 					bool is_group(std::string const & p) const {
 						hid_t id = H5Gopen2(_file, compute_path(p).c_str(), H5P_DEFAULT);
-						return id < 0 ? false : group_type(id) != 0;
+						return id < 0 ? false : check_group(id) != 0;
 					}
 					bool is_data(std::string const & p) const {
 						hid_t id = H5Dopen2(_file, compute_path(p).c_str(), H5P_DEFAULT);
-						return id < 0 ? false : data_type(id) != 0;
+						return id < 0 ? false : check_data(id) != 0;
 					}
 					std::vector<std::size_t> extent(std::string const & p) const {
 						if (is_null(p))
@@ -203,7 +233,7 @@ namespace alps {
 						{
 							data_type data_id(H5Dopen2(_file, compute_path(p).c_str(), H5P_DEFAULT));
 							space_type space_id(H5Dget_space(data_id));
-							error_type(H5Sget_simple_extent_dims(space_id, &buffer.front(), NULL));
+							check_error(H5Sget_simple_extent_dims(space_id, &buffer.front(), NULL));
 						}
 						std::vector<std::size_t> extend(buffer.size(), 0);
 						std::copy(buffer.begin(), buffer.end(), extend.begin());
@@ -212,7 +242,7 @@ namespace alps {
 					std::size_t dimensions(std::string const & p) const {
 						data_type data_id(H5Dopen2(_file, compute_path(p).c_str(), H5P_DEFAULT));
 						space_type space_id(H5Dget_space(data_id));
-						return static_cast<hid_t>(error_type(H5Sget_simple_extent_dims(space_id, NULL, NULL)));
+						return static_cast<hid_t>(check_error(H5Sget_simple_extent_dims(space_id, NULL, NULL)));
 					}
 					bool is_scalar(std::string const & p) const {
 						data_type data_id(H5Dopen2(_file, compute_path(p).c_str(), H5P_DEFAULT));
@@ -233,17 +263,17 @@ namespace alps {
 					std::vector<std::string> list_children(std::string const & p) const {
 						std::vector<std::string> list;
 						group_type group_id(H5Gopen2(_file, compute_path(p).c_str(), H5P_DEFAULT));
-						error_type(H5Literate(group_id, H5_INDEX_NAME, H5_ITER_NATIVE, NULL, child_visitor, reinterpret_cast<void *>(&list)));
+						check_error(H5Literate(group_id, H5_INDEX_NAME, H5_ITER_NATIVE, NULL, child_visitor, reinterpret_cast<void *>(&list)));
 						return list;
 					}
 					std::vector<std::string> list_attr(std::string const & p) const {
 						std::vector<std::string> list;
 						if (is_group(p)) {
 							group_type id(H5Gopen2(_file, compute_path(p).c_str(), H5P_DEFAULT));
-							error_type(H5Aiterate2(id, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, NULL, attr_visitor, reinterpret_cast<void *>(&list)));
+							check_error(H5Aiterate2(id, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, NULL, attr_visitor, reinterpret_cast<void *>(&list)));
 						} else {
 							data_type id(H5Dopen2(_file, compute_path(p).c_str(), H5P_DEFAULT));
-							error_type(H5Aiterate2(id, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, NULL, attr_visitor, reinterpret_cast<void *>(&list)));
+							check_error(H5Aiterate2(id, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, NULL, attr_visitor, reinterpret_cast<void *>(&list)));
 						}
 						return list;
 					}
@@ -251,26 +281,26 @@ namespace alps {
 						std::string q = compute_path(p);
 						if (!is_group(q)) {
 							std::size_t pos;
-							hid_t id = -1;
-							for (pos = q.find_last_of('/'); id < 0 && pos > 0 && pos < std::string::npos; pos = q.find_last_of('/', pos - 1))
-								id = H5Gopen2(_file, q.substr(0, pos).c_str(), H5P_DEFAULT);
-							if (id < 0) {
+							hid_t group_id = -1;
+							for (pos = q.find_last_of('/'); group_id < 0 && pos > 0 && pos < std::string::npos; pos = q.find_last_of('/', pos - 1))
+								group_id = H5Gopen2(_file, q.substr(0, pos).c_str(), H5P_DEFAULT);
+							if (group_id < 0) {
 								if ((pos = q.find_first_of('/', 1)) != std::string::npos)
-									group_type(H5Gcreate2(_file, q.substr(0, pos).c_str(), 0, H5P_DEFAULT, H5P_DEFAULT));
+									check_group(H5Gcreate2(_file, q.substr(0, pos).c_str(), 0, H5P_DEFAULT, H5P_DEFAULT));
 							} else {
 								pos = q.find_first_of('/', pos + 1);
-								group_type(group_id);
+								check_group(group_id);
 							}
 							while (pos != std::string::npos && (pos = q.find_first_of('/', pos + 1)) != std::string::npos && pos > 0)
-								group_type(H5Gcreate2(_file, q.substr(0, pos).c_str(), 0, H5P_DEFAULT, H5P_DEFAULT));
-							group_type(H5Gcreate2(_file, q.c_str(), 0, H5P_DEFAULT, H5P_DEFAULT));
+								check_group(H5Gcreate2(_file, q.substr(0, pos).c_str(), 0, H5P_DEFAULT, H5P_DEFAULT));
+							check_group(H5Gcreate2(_file, q.c_str(), 0, H5P_DEFAULT, H5P_DEFAULT));
 						}
 					}
 					template<typename T> typename boost::enable_if<boost::is_scalar<T> >::type get_data(std::string const & p, T * v) const {
 						if (!is_null(p)) {
 							data_type data_id(H5Dopen2(_file, compute_path(p).c_str(), H5P_DEFAULT));
 							type_type type_id(get_native_type(v));
-							error_type(H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, v));
+							check_error(H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, v));
 						}
 					}
 					template<typename T> typename boost::enable_if<boost::is_scalar<T> >::type get_data(std::string const & p, std::complex<T> * v) const {
@@ -280,7 +310,7 @@ namespace alps {
 						type_type type_id(get_native_type(v));
 						data_type data_id(create_path(compute_path(p), type_id, s ? H5Screate_simple(1, &s, NULL) : H5Screate(H5S_NULL), s ? 1 : 0, &s));
 						if (s > 0)
-							error_type(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, v));
+							check_error(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, v));
 					}
 					template<typename T> typename boost::enable_if<boost::is_scalar<T> >::type set_data(std::string const & p, std::complex<T> const * v, hsize_t s) const {
 						set_data(p, reinterpret_cast<T const *>(v), 2 * s);
@@ -314,32 +344,21 @@ namespace alps {
 					hid_t create_path(std::string const & p, hid_t type_id, hid_t space_id, hsize_t d, hsize_t const * s = NULL, bool set_prop = true) const {
 						hid_t id = H5Dopen2(_file, p.c_str(), H5P_DEFAULT);
 						if (d > 0 && s[0] > 0 && id >= 0 && is_null(p)) {
-							data_type(id);
-							error_type(H5Ldelete(_file, p.c_str(), H5P_DEFAULT));
+							check_data(id);
+							check_error(H5Ldelete(_file, p.c_str(), H5P_DEFAULT));
 						} else if (id < 0) {
-							std::size_t pos;
-							hid_t data_id = -1;
-							for (pos = p.find_last_of('/'); data_id < 0 && pos > 0 && pos < std::string::npos; pos = p.find_last_of('/', pos - 1))
-								data_id = H5Gopen2(_file, p.substr(0, pos).c_str(), H5P_DEFAULT);
-							if (data_id < 0) {
-								if ((pos = p.find_first_of('/', 1)) != std::string::npos)
-									group_type(H5Gcreate2(_file, p.substr(0, pos).c_str(), 0, H5P_DEFAULT, H5P_DEFAULT));
-							} else {
-								pos = p.find_first_of('/', pos + 1);
-								group_type(data_id);
-							}
-							while (pos != std::string::npos && (pos = p.find_first_of('/', pos + 1)) != std::string::npos && pos > 0)
-								group_type(H5Gcreate2(_file, p.substr(0, pos).c_str(), 0, H5P_DEFAULT, H5P_DEFAULT));
+							if (p.find_last_of('/') < std::string::npos && p.find_last_of('/') > 0)
+								set_group(p.substr(0, p.find_last_of('/')));
 						} else if (d > 0 && s[0] > 0) {
-							error_type(H5Dset_extent(id, s));
+							check_error(H5Dset_extent(id, s));
 							return id;
 						} else
 							return id;
 						if (set_prop) {
 							property_type prop_id(H5Pcreate(H5P_DATASET_CREATE));
-							error_type(H5Pset_fill_time(prop_id, H5D_FILL_TIME_NEVER));
+							check_error(H5Pset_fill_time(prop_id, H5D_FILL_TIME_NEVER));
 							if (d > 0)
-								error_type(H5Pset_chunk(prop_id, d, s));
+								check_error(H5Pset_chunk(prop_id, d, s));
 							return H5Dcreate2(_file, p.c_str(), type_id, space_type(space_id), H5P_DEFAULT, prop_id, H5P_DEFAULT);
 						} else
 							return H5Dcreate2(_file, p.c_str(), type_id, space_type(space_id), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
@@ -377,17 +396,17 @@ namespace alps {
 							type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));
 							if (H5Tget_class(native_id) == H5T_STRING) {
 								v.resize(H5Tget_size(native_id));
-								error_type(H5Dread(data_id, type_type(H5Tcopy(type_id)), H5S_ALL, H5S_ALL, H5P_DEFAULT, &v[0]));
+								check_error(H5Dread(data_id, type_type(H5Tcopy(type_id)), H5S_ALL, H5S_ALL, H5P_DEFAULT, &v[0]));
 							}
-							#define HDF5_GET_STRING(T)																	\
-								else if (error_type(H5Tequal(															\
-									type_type(H5Tcopy(native_id)), type_type(get_native_type<T>(0))						\
-								)) > 0) {																				\
-									T t;																				\
-									error_type(H5Dread(																	\
-										data_id, type_type(H5Tcopy(type_id)), H5S_ALL, H5S_ALL, H5P_DEFAULT, &t			\
-									));																					\
-									v = boost::lexical_cast<std::string>(t);											\
+							#define HDF5_GET_STRING(T)																		\
+								else if (check_error(H5Tequal(																\
+									check_type(H5Tcopy(native_id)), check_type(get_native_type<T>(0))						\
+								)) > 0) {																					\
+									T t;																					\
+									check_error(H5Dread(																	\
+										data_id, check_type(H5Tcopy(type_id)), H5S_ALL, H5S_ALL, H5P_DEFAULT, &t			\
+									));																						\
+									v = boost::lexical_cast<std::string>(t);												\
 								}
 							HDF5_FOREACH_SCALAR(HDF5_GET_STRING)
 							#undef HDF5_GET_STRING
@@ -432,7 +451,7 @@ namespace alps {
 							if (H5Tget_class(native_id) != H5T_STRING)
 								throw std::runtime_error("the path " + p + " does not contain strings");
 							char **data = new char*[v.size()];
-							error_type(H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, data));
+							check_error(H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, data));
 							for (std::size_t i = 0; i < v.size(); ++i) {
 								v[i] = data[i];
 								free(data[i]);
@@ -455,9 +474,9 @@ namespace alps {
 							for (std::size_t i = 0; i < v.size(); ++i) {
 								hsize_t start[2] = { i, 0 }, count[2] = { 1, v[i].size() };
 								space_type space_id(H5Dget_space(data_id));
-								error_type(H5Sselect_hyperslab(space_id, H5S_SELECT_SET, start, NULL, count, NULL));
+								check_error(H5Sselect_hyperslab(space_id, H5S_SELECT_SET, start, NULL, count, NULL));
 								space_type mem_id(H5Screate_simple(2, count, NULL));
-								error_type(H5Dread(data_id, type_id, mem_id, space_id, H5P_DEFAULT, &(const_cast<T &>(v)[i][0])));
+								check_error(H5Dread(data_id, type_id, mem_id, space_id, H5P_DEFAULT, &(const_cast<T &>(v)[i][0])));
 							}
 						}
 					}
@@ -494,11 +513,11 @@ namespace alps {
 							throw std::runtime_error("unknown path: " + p);
 						type_type type_id(get_native_type(v));
 						attribute_type attr_id(H5Aopen(parent_id, s.c_str(), H5P_DEFAULT));
-						error_type(H5Aread(attr_id, type_id, &v));
+						check_error(H5Aread(attr_id, type_id, &v));
 						if (is_group(p))
-							group_type(parent_id);
+							check_group(parent_id);
 						else
-							data_type(parent_id);
+							check_data(parent_id);
 					}
 					template<typename T> void get_attr(std::string const & p, std::string const & s, T & v, stl_string_tag) const {
 						hid_t parent_id;
@@ -513,29 +532,29 @@ namespace alps {
 						type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));
 						if (H5Tget_class(type_id) == H5T_STRING) {
 							v.resize(H5Tget_size(native_id));
-							error_type(H5Aread(attr_id, type_id, &v[0]));
+							check_error(H5Aread(attr_id, type_id, &v[0]));
 						}
 						#define HDF5_GET_STRING(T)																		\
-							else if (error_type(H5Tequal(																\
-								type_type(H5Tcopy(native_id)), type_type(get_native_type<T>(0))							\
+							else if (check_error(H5Tequal(																\
+								check_type(H5Tcopy(native_id)), check_type(get_native_type<T>(0))						\
 							)) > 0) {																					\
 								T t;																					\
 								get_data(p, &t);																		\
-								error_type(H5Aread(attr_id, type_id, &t));												\
+								check_error(H5Aread(attr_id, type_id, &t));												\
 								v = boost::lexical_cast<std::string>(t);												\
 							}
 						HDF5_FOREACH_SCALAR(HDF5_GET_STRING)
 						#undef HDF5_GET_STRING
 						else throw std::runtime_error("error in types: " + p);
 						if (is_group(p))
-							group_type(parent_id);
+							check_group(parent_id);
 						else
-							data_type(parent_id);
+							check_data(parent_id);
 					}
 					template<typename T> void set_data(std::string const & p, T v, scalar_tag) const {
 						type_type type_id(get_native_type(v));
 						data_type data_id(create_path(p, type_id, H5Screate(H5S_SCALAR), 0));
-						error_type(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &v));
+						check_error(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &v));
 					}
 					template<typename T> void set_data(std::string const & p, T const & v, stl_container_of_scalar_tag) const {
 						if (!v.size())
@@ -548,9 +567,9 @@ namespace alps {
 							set_data(p, static_cast<char const *>(NULL), 0);
 						else {
 							type_type type_id(H5Tcopy(H5T_C_S1));
-							error_type(H5Tset_size(type_id, v.size()));
+							check_error(H5Tset_size(type_id, v.size()));
 							data_type data_id(create_path(p, type_id, H5Screate(H5S_SCALAR), 0, false));
-							error_type(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(v[0])));
+							check_error(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(v[0])));
 						}
 					}
 					template<typename T> void set_data(std::string const & p, T const & v, c_string_tag) const {
@@ -578,16 +597,16 @@ namespace alps {
 							set_data(p, static_cast<typename T::value_type::value_type const *>(NULL), 0);
 						else {
 							type_type type_id(H5Tcopy(H5T_C_S1));
-							error_type(H5Tset_size(type_id, H5T_VARIABLE));
+							check_error(H5Tset_size(type_id, H5T_VARIABLE));
 							hsize_t s = v.size();
 							data_type data_id(create_path(p, type_id, H5Screate_simple(1, &s, NULL), 1, &s, false));
 							for (std::size_t i = 0; i < v.size(); ++i) {
 								hsize_t start = i, count = 1;
 								space_type space_id(H5Dget_space(data_id));
-								error_type(H5Sselect_hyperslab(space_id, H5S_SELECT_SET, &start, NULL, &count, NULL));
+								check_error(H5Sselect_hyperslab(space_id, H5S_SELECT_SET, &start, NULL, &count, NULL));
 								space_type mem_id(H5Screate_simple(1, &count, NULL));
 								char const * c = const_cast<T &>(v)[i].c_str();
-								error_type(H5Dwrite(data_id, type_id, mem_id, space_id, H5P_DEFAULT, &c));
+								check_error(H5Dwrite(data_id, type_id, mem_id, space_id, H5P_DEFAULT, &c));
 							}
 						}
 					}
@@ -604,9 +623,9 @@ namespace alps {
 								else {
 									hsize_t start[2] = { i, 0 }, count[2] = { 1, v[i].size() };
 									space_type space_id(H5Dget_space(data_id));
-									error_type(H5Sselect_hyperslab(space_id, H5S_SELECT_SET, start, NULL, count, NULL));
+									check_error(H5Sselect_hyperslab(space_id, H5S_SELECT_SET, start, NULL, count, NULL));
 									space_type mem_id(H5Screate_simple(2, count, NULL));
-									error_type(H5Dwrite(data_id, type_id, mem_id, space_id, H5P_DEFAULT, &(const_cast<T &>(v)[i][0])));
+									check_error(H5Dwrite(data_id, type_id, mem_id, space_id, H5P_DEFAULT, &(const_cast<T &>(v)[i][0])));
 								}
 						}
 					}
@@ -643,11 +662,11 @@ namespace alps {
 							id = H5Acreate(parent_id, s.c_str(), type_id, space_id, H5P_DEFAULT, H5P_DEFAULT);
 						}
 						attribute_type attr_id(id);
-						error_type(H5Awrite(attr_id, type_id, &v));
+						check_error(H5Awrite(attr_id, type_id, &v));
 						if (is_group(p))
-							group_type(parent_id);
+							check_group(parent_id);
 						else
-							data_type(parent_id);
+							check_data(parent_id);
 					}
 					template<typename T> void set_attr(std::string const & p, std::string const & s, T const & v, stl_string_tag) {
 						hid_t parent_id;
@@ -658,18 +677,18 @@ namespace alps {
 						else
 							throw std::runtime_error("unknown path: " + p);
 						type_type type_id(H5Tcopy(H5T_C_S1));
-						error_type(H5Tset_size(type_id, v.size()));
+						check_error(H5Tset_size(type_id, v.size()));
 						hid_t id = H5Aopen(parent_id, s.c_str(), H5P_DEFAULT);
 						if (id < 0) {
 							space_type space_id(H5Screate(H5S_SCALAR));
 							id = H5Acreate(parent_id, s.c_str(), type_id, space_id, H5P_DEFAULT, H5P_DEFAULT);
 						}
 						attribute_type attr_id(id);
-						error_type(H5Awrite(attr_id, type_id, &v[0]));
+						check_error(H5Awrite(attr_id, type_id, &v[0]));
 						if (is_group(p))
-							group_type(parent_id);
+							check_group(parent_id);
 						else
-							data_type(parent_id);
+							check_data(parent_id);
 					}
 					template<typename T> void set_attr(std::string const & p, std::string const & s, T const & v, c_string_tag) {
 						set_attr(p, s, std::string(v), stl_string_tag());
