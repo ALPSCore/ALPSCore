@@ -49,24 +49,15 @@ ALPS_DECL int run_sequential(int argc, char **argv);
 
 ALPS_DECL int run_sequential_mpi(int argc, char **argv);
 
-ALPS_DECL int start_sgl(int argc, char **argv, option const& opt);
+ALPS_DECL int start_sgl(int argc, char **argv);
 
-ALPS_DECL int start_mpi(int argc, char **argv, option const& opt);
+ALPS_DECL int start_mpi(int argc, char **argv);
 
 ALPS_DECL void print_copyright(std::ostream& os = std::cout);
 
 ALPS_DECL void print_license(std::ostream& os = std::cout);
 
 ALPS_DECL std::string alps_version();
-
-// moved to logger.h
-// std::string log_header();
-
-// moved to logger.h
-// std::string clone_name(alps::tid_t tid, alps::cid_t cid);
-
-// moved to logger.h
-// std::string pg_name(alps::gid_t gid);
 
 ALPS_DECL void print_taskinfo(std::ostream& os, std::vector<alps::task> const& tasks);
 

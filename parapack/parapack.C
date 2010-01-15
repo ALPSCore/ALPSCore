@@ -70,9 +70,9 @@ int start(int argc, char **argv) {
     option opt(argc, argv);
     int ret;
     if (!opt.use_mpi)
-      ret = start_sgl(argc, argv, opt);
+      ret = start_sgl(argc, argv);
     else
-      ret = start_mpi(argc, argv, opt);
+      ret = start_mpi(argc, argv);
     return ret;
 
   #ifndef BOOST_NO_EXCEPTIONS
@@ -352,7 +352,8 @@ int run_sequential(int argc, char **argv) {
   return 0;
 }
 
-int start_sgl(int /* argc */, char** /* argv */, option const& opt) {
+int start_sgl(int argc, char** argv) {
+  option opt(argc, argv);
   if (!opt.valid) {
     std::cerr << "Error: unknown command line option(s)\n";
     opt.print(std::cerr);
@@ -553,7 +554,9 @@ int start_sgl(int /* argc */, char** /* argv */, option const& opt) {
               #pragma omp critical
               {
                 std::clog << logger::header() << "checkpointing task files\n";
-                BOOST_FOREACH(task const& t, tasks) { if (t.on_memory()) t.save(); }
+                for (int t = 0; t < tasks.size(); ++t) {
+                  if (tasks[t].on_memory()) tasks[t].save();
+                }
                 save_tasks(file_out, simname, file_in_str, file_out_str, tasks);
                 print_taskinfo(std::clog, tasks);
               } // end omp critical
@@ -765,9 +768,10 @@ int run_sequential_mpi(int argc, char** argv) {
 
 #ifdef ALPS_HAVE_MPI
 
-int start_mpi(int argc, char** argv, option const& opt) {
+int start_mpi(int argc, char** argv) {
   boost::mpi::environment env(argc, argv);
   boost::mpi::communicator world;
+  option opt(argc, argv);
   if (!opt.valid) {
     if (world.rank() == 0) {
       std::cerr << "Error: unknown command line option(s)\n";
