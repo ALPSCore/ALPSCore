@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2009 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2010 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Beat Ammon <beat.ammon@bluewin.ch>,
 *                            Andreas Laeuchli <laeuchli@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>,
@@ -107,7 +107,7 @@ public:
   void read_xml(std::istream&, const XMLTag&, label_type& label);
   void read_xml_scalar(std::istream&, const XMLTag&);
   void read_xml_vector(std::istream&, const XMLTag&, label_type& label);
-  
+
   inline ALPS_DUMMY_VOID set_thermalization(uint32_t todiscard);
   inline uint32_t get_thermalization() const;
   inline bool can_set_thermalization() const { return can_set_thermal_ && !nonlinear_operations_;}
@@ -119,7 +119,7 @@ public:
   inline const convergence_type& any_converged_errors() const;
   inline const result_type& variance() const;
   inline const time_type& tau() const;
-  
+
   covariance_type covariance(const SimpleObservableData<T>) const;
 
   bool has_variance() const { return has_variance_;}
@@ -134,7 +134,7 @@ public:
   const value_type& bin_value2(std::size_t i) const {
     return values2_[i+discardedbins_];
   }
-  
+
   template <class S>
     SimpleObservableData<typename obs_value_slice<T,S>::value_type> slice(S s) const
       {
@@ -142,7 +142,7 @@ public:
       }
 
   ALPS_DUMMY_VOID compact();
-  
+
 #ifndef ALPS_WITHOUT_OSIRIS
   void extract_timeseries(ODump& dump) const;
   void save(ODump& dump) const;
@@ -150,19 +150,19 @@ public:
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-	void serialize(hdf5::oarchive & ar) const;
-	void serialize(hdf5::iarchive & ar) const;
+        void serialize(hdf5::oarchive & ar) const;
+        void serialize(hdf5::iarchive & ar) const;
 #endif
 
   inline void set_bin_size(uint64_t);
   inline void set_bin_number(std::size_t);
- 
+
   // collect information from many data objects
   void collect_from(const std::vector<SimpleObservableData<T> >& runs);
 
   // unary operation: neagtion
   void negate();
-  
+
   // operations with constant
   template <class X> SimpleObservableData<T>& operator+=(X);
   template <class X> SimpleObservableData<T>& operator-=(X);
@@ -170,7 +170,7 @@ public:
   template <class X> SimpleObservableData<T>& operator/=(X);
   template<class X> void subtract_from(const X& x);
   template<class X> void divide(const X& x);
-  
+
 
   // operations with another observable
   SimpleObservableData<T>& operator+=(const SimpleObservableData<T>&);
@@ -194,8 +194,8 @@ protected:
   void transform(const SimpleObservableData<X>& x, OP op, double factor=1.);
   template <class OP> void transform_linear(OP op);
 
-private:  
-  mutable uint64_t count_;          
+private:
+  mutable uint64_t count_;
 
   mutable bool has_variance_;
   mutable bool has_tau_;
@@ -204,21 +204,21 @@ private:
   mutable uint64_t binsize_;
   mutable uint32_t discardedmeas_;
   mutable uint32_t discardedbins_;
-    
+
   bool changed_;
   mutable bool valid_;
   mutable bool jack_valid_;
   bool nonlinear_operations_; // nontrivial operations
-    
+
   mutable result_type mean_;     // valid only if (valid_)
   mutable result_type error_;    // valid only if (valid_)
   mutable result_type variance_; // valid only if (valid_ && has_variance_)
   mutable time_type tau_;        // valid only if (valid_ && has_tau_)
-  
+
   mutable std::vector<value_type> values_;
   mutable std::vector<value_type> values2_;
   mutable std::vector<result_type> jack_;
-  
+
   mutable convergence_type converged_errors_;
   mutable convergence_type any_converged_errors_;
   std::string eval_method_;
@@ -236,14 +236,14 @@ SimpleObservableData<T>::SimpleObservableData()
    valid_(true),
    jack_valid_(true),
    nonlinear_operations_(false),
-   mean_(), 
-   error_(), 
-   variance_(), 
+   mean_(),
+   error_(),
+   variance_(),
    tau_(),
-   values_(), 
-   values2_(), 
-   jack_(), 
-   converged_errors_(), 
+   values_(),
+   values2_(),
+   jack_(),
+   converged_errors_(),
    any_converged_errors_()
 {}
 
@@ -251,7 +251,7 @@ template <class T>
 template <class U, class S>
 inline
 SimpleObservableData<T>::SimpleObservableData(const SimpleObservableData<U>& x, S s)
- : count_(x.count_),          
+ : count_(x.count_),
    has_variance_(x.has_variance_),
    has_tau_(x.has_tau_),
    can_set_thermal_(x.can_set_thermal_),
@@ -266,8 +266,8 @@ SimpleObservableData<T>::SimpleObservableData(const SimpleObservableData<U>& x, 
    error_(obs_value_slice<typename obs_value_traits<U>::result_type,S>()(x.error_, s)),
    variance_(has_variance_ ? obs_value_slice<typename obs_value_traits<U>::result_type,S>()(x.variance_, s) : result_type()),
    tau_(has_tau_ ? obs_value_slice<typename obs_value_traits<U>::time_type,S>()(x.tau_, s) : time_type()),
-   values_(x.values_.size()), 
-   values2_(x.values2_.size()), 
+   values_(x.values_.size()),
+   values2_(x.values2_.size()),
    jack_(x.jack_.size()),
    converged_errors_(obs_value_slice<typename obs_value_traits<U>::convergence_type,S>()(x.converged_errors_,s)),
    any_converged_errors_(obs_value_slice<typename obs_value_traits<U>::convergence_type,S>()(x.any_converged_errors_,s))
@@ -290,7 +290,7 @@ template <class T>
 inline
 SimpleObservableData<T> const& SimpleObservableData<T>::operator=(const SimpleObservableData<T>& x)
  {
-   count_=x.count_;        
+   count_=x.count_;
    has_variance_=x.has_variance_;
    has_tau_=x.has_tau_;
    can_set_thermal_=x.can_set_thermal_;
@@ -305,13 +305,13 @@ SimpleObservableData<T> const& SimpleObservableData<T>::operator=(const SimpleOb
    obs_value_traits<result_type>::copy(error_,x.error_);
    obs_value_traits<result_type>::copy(variance_,x.variance_);
    obs_value_traits<time_type>::copy(tau_,x.tau_);
-   values_=x.values_; 
-   values2_=x.values2_; 
+   values_=x.values_;
+   values2_=x.values2_;
    jack_=x.jack_;
-   
+
    obs_value_traits<convergence_type>::copy(converged_errors_,x.converged_errors_);
    obs_value_traits<convergence_type>::copy(any_converged_errors_,x.any_converged_errors_);
-   
+
   return *this;
 }
 
@@ -329,12 +329,12 @@ SimpleObservableData<T>::SimpleObservableData(const AbstractSimpleObservable<T>&
    valid_(false),
    jack_valid_(false),
    nonlinear_operations_(false),
-   mean_(), 
-   error_(), 
-   variance_(), 
+   mean_(),
+   error_(),
+   variance_(),
    tau_(),
-   values_(), 
-   values2_(), 
+   values_(),
+   values2_(),
    jack_()
 {
   if (count()) {
@@ -351,7 +351,7 @@ SimpleObservableData<T>::SimpleObservableData(const AbstractSimpleObservable<T>&
       values2_.push_back(obs.bin_value2(i));
     obs_value_traits<convergence_type>::copy(converged_errors_, obs.converged_errors());
     obs_value_traits<convergence_type>::copy(any_converged_errors_, obs.converged_errors());
-    
+
     if (bin_size() != 1 && bin_number() > 128) set_bin_number(128);
   }
 }
@@ -369,18 +369,18 @@ SimpleObservableData<T>::SimpleObservableData(std::istream& infile, const XMLTag
     valid_(true),
     jack_valid_(false),
     nonlinear_operations_(false),
-    mean_(), 
-    error_(), 
-    variance_(), 
-    tau_(), 
-    values_(), 
-    values2_(), 
+    mean_(),
+    error_(),
+    variance_(),
+    tau_(),
+    values_(),
+    values2_(),
     jack_()
 {
   read_xml(infile,intag,l);
 }
 
-inline double text_to_double(const std::string& val) 
+inline double text_to_double(const std::string& val)
 {
   return ((val=="NaN" || val=="nan" || val=="NaNQ") ? alps::nan() :
           ((val=="INF" || val=="Inf" || val == "inf") ? alps::inf() :
@@ -414,8 +414,8 @@ void SimpleObservableData<T>::read_xml_scalar(std::istream& infile, const XMLTag
     else if (tag.name=="ERROR") {
       if (tag.type !=XMLTag::SINGLE) {
         error_=text_to_double(parse_content(infile));
-        eval_method_=tag.attributes["method"]; 
-        converged_errors_=(tag.attributes["converged"]=="no" ? NOT_CONVERGED : 
+        eval_method_=tag.attributes["method"];
+        converged_errors_=(tag.attributes["converged"]=="no" ? NOT_CONVERGED :
                            tag.attributes["converged"]=="maybe" ? MAYBE_CONVERGED : CONVERGED);
         any_converged_errors_ = converged_errors_;
         check_tag(infile,"/ERROR");
@@ -435,7 +435,7 @@ void SimpleObservableData<T>::read_xml_scalar(std::istream& infile, const XMLTag
         check_tag(infile,"/AUTOCORR");
       }
     }
-    else 
+    else
       skip_element(infile,tag);
     tag = parse_tag(infile);
   }
@@ -457,7 +457,7 @@ void SimpleObservableData<T>::read_xml_vector(std::istream& infile, const XMLTag
   obs_value_traits<convergence_type>::resize(converged_errors_,s);
   obs_value_traits<convergence_type>::resize(any_converged_errors_,s);
   obs_value_traits<label_type>::resize(label,s);
-  
+
   tag = parse_tag(infile);
   int i=0;
   while (tag.name =="SCALAR_AVERAGE") {
@@ -479,10 +479,10 @@ void SimpleObservableData<T>::read_xml_vector(std::istream& infile, const XMLTag
       else if (tag.name=="ERROR") {
         if (tag.type != XMLTag::SINGLE) {
           error_[i]=text_to_double(parse_content(infile));
-          converged_errors_[i] =(tag.attributes["converged"]=="no" ? NOT_CONVERGED : 
+          converged_errors_[i] =(tag.attributes["converged"]=="no" ? NOT_CONVERGED :
                                  tag.attributes["converged"]=="maybe" ? MAYBE_CONVERGED : CONVERGED);
           any_converged_errors_[i] = converged_errors_[i];
-          eval_method_=tag.attributes["method"]; 
+          eval_method_=tag.attributes["method"];
           check_tag(infile,"/ERROR");
         }
       }
@@ -500,7 +500,7 @@ void SimpleObservableData<T>::read_xml_vector(std::istream& infile, const XMLTag
           check_tag(infile,"/AUTOCORR");
         }
       }
-      else 
+      else
         skip_element(infile,tag);
       tag = parse_tag(infile);
     }
@@ -514,7 +514,7 @@ void SimpleObservableData<T>::read_xml_vector(std::istream& infile, const XMLTag
 namespace detail {
 
 template <bool arrayvalued> struct input_helper {};
-  
+
 template <> struct input_helper<true>
 {
   template <class T, class L>
@@ -522,7 +522,7 @@ template <> struct input_helper<true>
     obs.read_xml_vector(infile,tag,l);
   }
 };
-  
+
 template <> struct input_helper<false>
 {
   template <class T, class L>
@@ -539,7 +539,7 @@ inline void SimpleObservableData<T>::read_xml(std::istream& infile, const XMLTag
   detail::input_helper<obs_value_traits<T>::array_valued>::read_xml(*this,infile,intag,l);
 }
 
-template <class T> 
+template <class T>
 std::string SimpleObservableData<T>::evaluation_method(Target t) const
 {
   if (t==Variance)
@@ -554,7 +554,7 @@ std::string SimpleObservableData<T>::evaluation_method(Target t) const
     return "simple";
 }
 
-template <class T> 
+template <class T>
 SimpleObservableData<T>& SimpleObservableData<T>::operator+=(const SimpleObservableData<T>& x)
 {
   using std::sqrt;
@@ -633,7 +633,7 @@ void SimpleObservableData<T>::transform(const SimpleObservableData<X>& x, OP op,
 {
   if ((count()==0) || (x.count()==0))
     boost::throw_exception(std::runtime_error("both observables need measurements"));
-    
+
   if(!jack_valid_) fill_jack();
   if(!x.jack_valid_) x.fill_jack();
 
@@ -667,7 +667,7 @@ void SimpleObservableData<T>::compact()
   jack_.clear();
 }
 
-template <class T> 
+template <class T>
 template <class OP>
 void SimpleObservableData<T>::transform_linear(OP op)
 {
@@ -677,7 +677,7 @@ void SimpleObservableData<T>::transform_linear(OP op)
   std::transform(jack_.begin(), jack_.end(), jack_.begin(), op);
 }
 
-template <class T> 
+template <class T>
 template <class OP>
 void SimpleObservableData<T>::transform(OP op)
 {
@@ -740,7 +740,7 @@ SimpleObservableData<T>& SimpleObservableData<T>::operator*=(X x)
     error_ *= x;
     if(has_variance_)
       variance_ *= x*x;
-    
+
     transform_linear(_1*x);
     std::transform(values2_.begin(),values2_.end(),values2_.begin(),_1*(x*x));
   }
@@ -754,7 +754,7 @@ SimpleObservableData<T>& SimpleObservableData<T>::operator/=(X x)
     error_ /= x;
     if(has_variance_)
       variance_ /= x*x;
-    
+
     transform_linear(_1/x);
     std::transform(values2_.begin(),values2_.end(),values2_.begin(),_1/(x*x));
   }
@@ -771,8 +771,9 @@ void SimpleObservableData<T>::divide(const X& x)
     has_tau_ = false;
     nonlinear_operations_ = true;
     changed_ = true;
-	mean_ = x/mean_;
-    std::transform(values_.begin(), values_.end(), values_.begin(), (x*bin_size()*bin_size())/_1);
+    mean_ = x/mean_;
+    double f = bin_size() * bin_size();
+    std::transform(values_.begin(), values_.end(), values_.begin(), (x*f)/_1);
     fill_jack();
     std::transform(jack_.begin(), jack_.end(), jack_.begin(), x/_1);
   }
@@ -811,7 +812,7 @@ void SimpleObservableData<T>::collect_from(const std::vector<SimpleObservableDat
   }
 
   binsize_ = maxsize;
-  
+
   for (typename std::vector<SimpleObservableData<T> >::const_iterator
          r = runs.begin(); r != runs.end(); ++r) {
     if (r->count()) {
@@ -938,16 +939,16 @@ void SimpleObservableData<T>::load(IDump& dump)
   bool has_minmax_;
   value_type min_, max_;
   uint32_t thermalcount_;
-  
+
   if(dump.version() >= 306 || dump.version() == 0 /* version is not set */){
     dump >> count_ >> mean_ >> error_ >> variance_ >> tau_ >> has_variance_
-         >> has_tau_ >> can_set_thermal_ 
+         >> has_tau_ >> can_set_thermal_
          >> binsize_ >> discardedmeas_ >> discardedbins_ >> valid_ >> jack_valid_ >> changed_
          >> nonlinear_operations_ >> values_ >> values2_ >> jack_;
   }
   else if(dump.version() >= 302 || dump.version() == 0 /* version is not set */){
     dump >> count_ >> mean_ >> error_ >> variance_ >> tau_ >> has_variance_
-         >> has_tau_ >> has_minmax_ >> thermalcount_ >> can_set_thermal_ 
+         >> has_tau_ >> has_minmax_ >> thermalcount_ >> can_set_thermal_
          >> min_ >> max_
          >> binsize_ >> discardedmeas_ >> discardedbins_ >> valid_ >> jack_valid_ >> changed_
          >> nonlinear_operations_ >> values_ >> values2_ >> jack_;
@@ -971,65 +972,65 @@ void SimpleObservableData<T>::load(IDump& dump)
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-	template <typename T> void SimpleObservableData<T>::serialize(hdf5::oarchive & ar) const {
-		ar
-			<< make_pvp("count", count_)
-		;
-		if (valid_) {
-			ar
-				<< make_pvp("mean/value", mean_)
-				<< make_pvp("mean/error", error_)
-				<< make_pvp("mean/error_convergence", converged_errors_)
-			;
-			if (has_variance_)
-				ar
-					<< make_pvp("variance/value", variance_)
-				;
-			if (has_tau_)
-				ar
-					<< make_pvp("tau/value", tau_)
-				;
-			ar
-				<< make_pvp("timeseries/data", values_)
-				<< make_pvp("timeseries/data/@binningtype", "linear")
-				<< make_pvp("timeseries/data2", values2_)
-				<< make_pvp("timeseries/data2/@binningtype", "linear")
-			;
-			if (jack_valid_)
-				ar
-					<< make_pvp("jacknife/data", jack_)
-					<< make_pvp("jacknife/data/@binningtype", "linear")
-				;
-		}
-	}
-	template <typename T> void SimpleObservableData<T>::serialize(hdf5::iarchive & ar) const {
-		ar
-			>> make_pvp("count", count_)
-		;
-		if (valid_ = ar.is_data("mean/value")) {
-			ar
-				>> make_pvp("mean/value", mean_)
-				>> make_pvp("mean/error", error_)
-				>> make_pvp("mean/error_convergence", converged_errors_)
-			;
-			if (has_variance_ = ar.is_data("variance/value"))
-				ar
-					>> make_pvp("variance/value", variance_)
-				;
-			if (has_tau_ = ar.is_data("variance/tau_"))
-				ar
-					>> make_pvp("tau/value", tau_)
-				;
-			ar
-				>> make_pvp("timeseries/data", values_)
-				>> make_pvp("timeseries/data2", values2_)
-			;
-			if (jack_valid_ = ar.is_data("jacknife/data"))
-				ar
-					>> make_pvp("jacknife/data", jack_)
-				;
-		}
-	}
+        template <typename T> void SimpleObservableData<T>::serialize(hdf5::oarchive & ar) const {
+                ar
+                        << make_pvp("count", count_)
+                ;
+                if (valid_) {
+                        ar
+                                << make_pvp("mean/value", mean_)
+                                << make_pvp("mean/error", error_)
+                                << make_pvp("mean/error_convergence", converged_errors_)
+                        ;
+                        if (has_variance_)
+                                ar
+                                        << make_pvp("variance/value", variance_)
+                                ;
+                        if (has_tau_)
+                                ar
+                                        << make_pvp("tau/value", tau_)
+                                ;
+                        ar
+                                << make_pvp("timeseries/data", values_)
+                                << make_pvp("timeseries/data/@binningtype", "linear")
+                                << make_pvp("timeseries/data2", values2_)
+                                << make_pvp("timeseries/data2/@binningtype", "linear")
+                        ;
+                        if (jack_valid_)
+                                ar
+                                        << make_pvp("jacknife/data", jack_)
+                                        << make_pvp("jacknife/data/@binningtype", "linear")
+                                ;
+                }
+        }
+        template <typename T> void SimpleObservableData<T>::serialize(hdf5::iarchive & ar) const {
+                ar
+                        >> make_pvp("count", count_)
+                ;
+                if (valid_ = ar.is_data("mean/value")) {
+                        ar
+                                >> make_pvp("mean/value", mean_)
+                                >> make_pvp("mean/error", error_)
+                                >> make_pvp("mean/error_convergence", converged_errors_)
+                        ;
+                        if (has_variance_ = ar.is_data("variance/value"))
+                                ar
+                                        >> make_pvp("variance/value", variance_)
+                                ;
+                        if (has_tau_ = ar.is_data("variance/tau_"))
+                                ar
+                                        >> make_pvp("tau/value", tau_)
+                                ;
+                        ar
+                                >> make_pvp("timeseries/data", values_)
+                                >> make_pvp("timeseries/data2", values2_)
+                        ;
+                        if (jack_valid_ = ar.is_data("jacknife/data"))
+                                ar
+                                        >> make_pvp("jacknife/data", jack_)
+                                ;
+                }
+        }
 #endif
 template <class T>
 void SimpleObservableData<T>::fill_jack() const
@@ -1043,7 +1044,7 @@ void SimpleObservableData<T>::fill_jack() const
 
     // Order-N initialization of jackknife data structure
     obs_value_traits<result_type>::resize_same_as(jack_[0], bin_value(0));
-    for(std::size_t i = 0; i < bin_number(); ++i) 
+    for(std::size_t i = 0; i < bin_number(); ++i)
       jack_[0] += obs_value_traits<result_type>::convert(bin_value(i)) / count_type(bin_size());
     for(std::size_t i = 0; i < bin_number(); ++i) {
       obs_value_traits<result_type>::resize_same_as(jack_[i+1], jack_[0]);
@@ -1106,17 +1107,17 @@ void SimpleObservableData<T>::jackknife() const
   if (jack_.size()) {
     // if any run is converged the errors will be OK
     converged_errors_=any_converged_errors_;
-    
+
     result_type rav;
-    obs_value_traits<result_type>::resize_same_as(mean_, jack_[0]);  
-    obs_value_traits<result_type>::resize_same_as(error_, jack_[0]);  
-    obs_value_traits<result_type>::resize_same_as(rav, jack_[0]);  
+    obs_value_traits<result_type>::resize_same_as(mean_, jack_[0]);
+    obs_value_traits<result_type>::resize_same_as(error_, jack_[0]);
+    obs_value_traits<result_type>::resize_same_as(rav, jack_[0]);
     unsigned int k = jack_.size()-1;
 
     rav = 0;
     rav = std::accumulate(jack_.begin()+1, jack_.end(), rav);
     rav /= count_type(k);
-    
+
     result_type tmp(rav);
     tmp -= jack_[0];
     tmp *= count_type(k - 1);
@@ -1127,7 +1128,7 @@ void SimpleObservableData<T>::jackknife() const
     for (unsigned int i = 1; i < jack_.size(); ++i)
       error_ += (jack_[i] - rav) * (jack_[i] - rav);
       //error_ += jack_[i] * jack_[i];
-    
+
     error_/=count_type(k);
     //error_-= rav * rav;
     //error_ = (error_ / count_type(k) - rav * rav);
@@ -1138,7 +1139,7 @@ void SimpleObservableData<T>::jackknife() const
 
 
 template<class T>
-typename SimpleObservableData<T>::covariance_type 
+typename SimpleObservableData<T>::covariance_type
 SimpleObservableData<T>::covariance(const SimpleObservableData<T> obs2) const
 {
   fill_jack();
@@ -1146,9 +1147,9 @@ SimpleObservableData<T>::covariance(const SimpleObservableData<T> obs2) const
   if (jack_.size() && obs2.jack_.size()) {
     result_type rav1;
     result_type rav2;
-    obs_value_traits<result_type>::resize_same_as(rav1, jack_[0]);  
-    obs_value_traits<result_type>::resize_same_as(rav2, obs2.jack_[0]);  
-    if (jack_.size() != obs2.jack_.size()) 
+    obs_value_traits<result_type>::resize_same_as(rav1, jack_[0]);
+    obs_value_traits<result_type>::resize_same_as(rav2, obs2.jack_[0]);
+    if (jack_.size() != obs2.jack_.size())
       boost::throw_exception(std::runtime_error("unequal number of bins in calculation of covariance matrix"));
     uint32_t k = jack_.size()-1;
 
@@ -1158,11 +1159,11 @@ SimpleObservableData<T>::covariance(const SimpleObservableData<T> obs2) const
     rav2 = std::accumulate(obs2.jack_.begin()+1, obs2.jack_.end(), rav2);
     rav1 /= count_type(k);
     rav2 /= count_type(k);
-    
+
     covariance_type cov = obs_value_traits<T>::outer_product(jack_[1],obs2.jack_[1]);
     for (uint32_t i = 2; i < jack_.size(); ++i)
       cov += obs_value_traits<T>::outer_product(jack_[i],obs2.jack_[i]);
-    
+
     cov/=count_type(k);
     cov-= obs_value_traits<T>::outer_product(rav1, rav2);
     cov *= count_type(k - 1);
@@ -1190,7 +1191,7 @@ void SimpleObservableData<T>::set_thermalization(uint32_t thermal)
     boost::throw_exception(std::runtime_error("cannot set thermalization"));
   if (binsize_) {
     discardedmeas_ = thermal ;
-    discardedbins_ = (discardedmeas_ + binsize_ - 1) / binsize_;  
+    discardedbins_ = (discardedmeas_ + binsize_ - 1) / binsize_;
     changed_ = true;
     valid_ = false;
     jack_valid_ = false;
@@ -1203,9 +1204,9 @@ void SimpleObservableData<T>::collect_bins(std::size_t howmany)
   if (nonlinear_operations_)
     boost::throw_exception(std::runtime_error("cannot change bins after nonlinear operations"));
   if (values_.empty() || howmany <= 1) return;
-    
+
   std::size_t newbins = values_.size() / howmany;
-  
+
   // fill bins
   for (std::size_t i = 0; i < newbins; ++i) {
     values_[i] = values_[howmany * i];
@@ -1215,13 +1216,13 @@ void SimpleObservableData<T>::collect_bins(std::size_t howmany)
       if (!values2_.empty()) values2_[i] += values2_[howmany * i + j];
     }
   }
-  
+
   binsize_ *= howmany;
   discardedbins_ = (discardedmeas_ + binsize_ - 1) / binsize_;
 
   values_.resize(newbins);
   if (!values2_.empty()) values2_.resize(newbins);
-  
+
   changed_ = true;
   jack_valid_ = false;
   valid_ = false;
