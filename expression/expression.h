@@ -104,7 +104,7 @@ public:
   bool depends_on(const std::string&) const;
 
   void parse(const std::string& str);
-  void parse(std::istream& is);
+  bool parse(std::istream& is);
 
   Expression operator-() const { Expression e(*this); e.negate(); return e;}
   const Expression& negate() 
@@ -159,23 +159,20 @@ Term<T> Expression<T>::term() const
 template<class T>
 void Expression<T>::parse(const std::string& str)
 {
-#ifndef BOOST_NO_STRINGSTREAM
   std::istringstream in(str);
-#else
-  std::istrstream in(str.c_str()); // for out-of-the-box g++ 2.95.2
-#endif
-  parse(in);
+  if (!parse(in))
+    boost::throw_exception(std::runtime_error("Did not parse to end of string '" + str + "'"));
 }
 
 template<class T>
-void Expression<T>::parse(std::istream& is)
+bool Expression<T>::parse(std::istream& is)
 {
   terms_.clear();
   bool negate=false;
   char c;
   is >> c;
-  if (!is)
-    return;
+  if (is.eof())
+    return true;
   if (c=='-')
     negate=true;
   else if (c=='+')
@@ -185,15 +182,15 @@ void Expression<T>::parse(std::istream& is)
   terms_.push_back(Term<T>(is,negate));
   while(true) {
     is >> c;
-    if (!is)
-      return;
+    if (is.eof())
+      return true;
     if (c=='-')
       negate=true;
     else if (c=='+')
       negate=false;
     else {
       is.putback(c);
-      return;
+      return false;
     }
     terms_.push_back(Term<T>(is,negate));
   }

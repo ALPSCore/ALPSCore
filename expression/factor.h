@@ -128,6 +128,8 @@ SimpleFactor<T>::SimpleFactor(std::istream& in) : term_()
     in.putback(c);
     typename Number<T>::real_type val;
     in >> val;
+    if (!in)
+      boost::throw_exception(std::runtime_error("Failed to parse number in factor"));
     term_.reset(new Number<T>(value_type(val)));
   }
   else if (std::isalnum(c)) {
@@ -150,7 +152,10 @@ SimpleFactor<T>::SimpleFactor(std::istream& in) : term_()
 
 
 template<class T>
-Factor<T>::Factor(std::istream& in, bool inv) : super_type(in), is_inverse_(inv), power_(1.)
+Factor<T>::Factor(std::istream& in, bool inv) 
+ : super_type(in)
+ , is_inverse_(inv)
+ , power_(1.)
 {
   char c;
   in >> c;
