@@ -1,137 +1,206 @@
-#include "mocasito/io/container.hpp"
-#include "mocasito/io/hdf5.hpp"
-#include <complex>
+#include <string>
 #include <iostream>
-#include <cassert>
-#include <boost/filesystem/operations.hpp>
+#include <algorithm>
+#include <alps/hdf5.hpp>
+#include <boost/filesystem.hpp>
 
-const std::size_t len = 20;
+const int length = 15;
+typedef enum { A, B } enum_type;
 
-template<typename Engine, typename T> void test_engine_fixed(std::string const & ifile, std::string const & ofile, std::string const & name) {
-	{
-		mocasito::io::container<Engine> container(ifile, ofile);
-		T value = 20;
-		container["/scalar/" + name] = value;
-		std::vector<T> v;
-		for (std::size_t i = 0; i < len; ++i)
-			v.push_back(static_cast<T>(i));
-		container["/vectors/" + name] = v;
-		container.flush();
-	}
-	{
-		mocasito::io::container<Engine> container(ifile, ofile);
-		std::vector<T> w;
-		for (std::size_t i = 0; i < len; ++i)
-			w.push_back(static_cast<T>(len + i));
-		container["/vectors/" + name] << w;
-		container.flush();
-	}
-}
-template<typename Engine, typename T> void test_engine_number(std::string const & ifile, std::string const & ofile, std::string const & name) {
-	test_engine_fixed<Engine, T>(ifile, ofile, name);
-	{
-		T value = 20;
-		mocasito::io::container<Engine> container(ifile, ofile);
-		container["/scalar/@" + name] = value;
-		container.flush();
-	}
-	{
-		mocasito::io::container<Engine> container(ifile, ofile);
-		std::vector<std::size_t> v;
-		assign(v, container["/vectors/" + name]);
-		assert(v.size() == 2 * len);
-		for (std::size_t i = 0; i < v.size(); ++i)
-			assert(v[i] == i);
-	}
-}
-template<typename Engine> void test_engine(std::string const & ifile, std::string const & ofile = "") {
-	test_engine_number<Engine, char>(ifile, ofile, "char");
-	test_engine_number<Engine, signed char>(ifile, ofile, "signedchar");
-	test_engine_number<Engine, unsigned char>(ifile, ofile, "unsignedchar");
-	test_engine_number<Engine, short>(ifile, ofile, "short");
-	test_engine_number<Engine, signed short>(ifile, ofile, "char");
-	test_engine_number<Engine, int>(ifile, ofile, "int");
-	test_engine_number<Engine, unsigned>(ifile, ofile, "unsigned");
-	test_engine_number<Engine, long>(ifile, ofile, "long");
-	test_engine_number<Engine, unsigned long>(ifile, ofile, "unsignedlong");
-	test_engine_number<Engine, long long>(ifile, ofile, "longlong");
-	test_engine_number<Engine, unsigned long long>(ifile, ofile, "unsignedlonglong");
-	test_engine_number<Engine, float>(ifile, ofile, "float");
-	test_engine_number<Engine, double>(ifile, ofile, "double");
-	test_engine_number<Engine, long double>(ifile, ofile, "longdouble");
-	{
-		mocasito::io::container<Engine> container(ifile, ofile);
-		bool value = true;
-		container["/scalar/bool"] = value;
-		container["/scalar/@bool"] = value;
-		container.flush();
-	}
-	test_engine_fixed<Engine, std::complex<int> >(ifile, ofile, "complexint");
-	test_engine_fixed<Engine, std::complex<double> >(ifile, ofile, "complexdouble");
-	{
-		int v[] = {1, 4, 2, 5, 8, 5};
-		{
-			mocasito::io::container<Engine> container(ifile, ofile);
-			container["/vectors/fix"] = v;
-			container.flush();
+namespace alps {
+	namespace hdf5 {
+		template <> oarchive & serialize(oarchive & ar, std::string const & p, enum_type const & v) {
+			ar << alps::make_pvp(p, v == A ? 0 : 1);
+			return ar;
 		}
-		{
-			mocasito::io::container<Engine> container(ifile, ofile);
-			std::vector<int> u;
-			int w[6];
-			assign(u, container["/vectors/fix"]);
-			assert(u.size() == 6);
-			for (std::size_t i = 0; i < 6; ++i)
-				assert(v[i] == u[i]);
-			assign(w, container["/vectors/fix"]);
-			for (std::size_t i = 0; i < 6; ++i)
-				assert(v[i] == w[i]);
+		template <> iarchive & serialize(iarchive & ar, std::string const & p, enum_type & v) {
+			int t;
+			ar >> alps::make_pvp(p, t);
+			v = t ? A : B;
+			return ar;
 		}
 	}
-	/*{
-		typedef std::complex<double> nested_t[5];
-		{
-			mocasito::io::container<Engine> container(ifile, ofile);
-			nested_t v, w[23];
-			container["/scalar/nested"] = v;
-			container["/vectors/nested"] = w;
-			container.flush();
-		}
-	}*/
-	{
-		mocasito::io::container<Engine> container(ifile, ofile);
-		std::vector<int> v;
-		container["/vectors/empty"] = v;
-		container.flush();
-	}
-	{
-		mocasito::io::container<Engine> container(ifile, ofile);
-		std::vector<int> v;
-		assign(v, container["/vectors/empty"]);
-		assert(v.size() == 0);
-	}
-	{
-		mocasito::io::container<Engine> container(ifile, ofile);
-		std::vector<int> v;
-		container["/string/std"] = std::string("std");
-		container["/string/c"] = "cstr";
-		container["/string/empty"] = "";
-//		container["/string/@attr"] = std::string("value");
-		container.flush();
-	}
-	{
-		mocasito::io::container<Engine> container(ifile, ofile);
-		assert(container["/string/std"] == std::string("std"));
-		assert(container["/string/std"] == "std");
-		assert(container["/string/c"] == std::string("cstr"));
-		assert(container["/string/c"] == "cstr");
-		assert(container["/string/empty"] == std::string(""));
-		assert(container["/string/empty"] == "");
-		std::string s = container["/string/std"];
-		assert(s == "std");
-	}
 }
-int main(int argc, char ** argv){
-	test_engine<mocasito::io::hdf5>(std::string("io.h5"));
-	boost::filesystem::remove(boost::filesystem::path("io.h5"));
+
+int main() {
+	{
+		alps::hdf5::oarchive h5ar("bela.h5");
+		std::cout << h5ar.escape("a/b/c&c/d/e") << " " << h5ar.unescape(h5ar.escape("a/b/c&c/d/e")) << std::endl;
+	}
+	{
+		alps::hdf5::oarchive h5ar("bela.h5");
+		int d = 42;
+		h5ar << alps::make_pvp("/int", d);
+	}
+	{
+		alps::hdf5::iarchive h5ar("bela.h5");
+		int d = 0;
+		h5ar >> alps::make_pvp("int", d);
+		std::cout << d << std::endl;
+	}
+	{
+		alps::hdf5::iarchive h5ar("bela.h5");
+		std::string s;
+		h5ar >> alps::make_pvp("int", s);
+		std::cout << s << std::endl;
+	}
+	{
+		alps::hdf5::oarchive h5ar("bela.h5");
+		int *d = new int[length];
+		std::fill_n(d, length, 42);
+		h5ar << alps::make_pvp("/foo/bar", d, length);
+		delete[] d;
+	}
+	{
+		alps::hdf5::iarchive h5ar("bela.h5");
+		int *d = new int[length];
+		std::fill_n(d, length, 0);
+		h5ar >> alps::make_pvp("/foo/bar", d, length);
+		std::copy (d, d + length, std::ostream_iterator<int, char, std::char_traits<char> >(std::cout, " "));
+		std::cout << std::endl;
+		delete[] d;
+	}
+	{
+		alps::hdf5::oarchive h5ar("bela.h5");
+		std::vector<int> d(length, 42);
+		h5ar << alps::make_pvp("/foo/bar2", d);
+	}
+	{
+		alps::hdf5::iarchive h5ar("bela.h5");
+		std::vector<int> d;
+		h5ar >> alps::make_pvp("/foo/bar2", d);
+		std::copy (d.begin(), d.end(), std::ostream_iterator<int, char, std::char_traits<char> >(std::cout, " "));
+		std::cout << std::endl;
+	}
+	{
+		alps::hdf5::oarchive h5ar("bela.h5");
+		std::string s("blub");
+		h5ar << alps::make_pvp("/foo/bar3", s);
+	}
+	{
+		alps::hdf5::iarchive h5ar("bela.h5");
+		std::string s;
+		h5ar >> alps::make_pvp("/foo/bar3", s);
+		std::cout << s << std::endl;
+	}
+	{
+		alps::hdf5::oarchive h5ar("bela.h5");
+		int a = 42;
+		h5ar << alps::make_pvp("/foo/@bar4", a);
+	}
+	{
+		alps::hdf5::iarchive h5ar("bela.h5");
+		int a = 0;
+		h5ar >> alps::make_pvp("/foo/@bar4", a);
+		std::cout << a << std::endl;
+	}
+	{
+		alps::hdf5::oarchive h5ar("bela.h5");
+		std::string s("blub");
+		h5ar << alps::make_pvp("/foo/@bar5", s);
+	}
+	{
+		alps::hdf5::iarchive h5ar("bela.h5");
+		std::string s;
+		h5ar >> alps::make_pvp("/foo/@bar5", s);
+		std::cout << s << std::endl;
+	}
+	{
+		alps::hdf5::oarchive h5ar("bela.h5");
+		std::complex<double> *d = new std::complex<double>[length];
+		h5ar << alps::make_pvp("test/data", d, length);
+	}
+	{
+		alps::hdf5::iarchive h5ar("bela.h5");
+		std::complex<double> *d = new std::complex<double>[length];
+		h5ar >> alps::make_pvp("test/data", d, length);
+	}
+	{
+		alps::hdf5::oarchive h5ar("bela.h5");
+		enum_type d = A;
+		h5ar << alps::make_pvp("test/enum", d);
+	}
+	{
+		alps::hdf5::iarchive h5ar("bela.h5");
+		enum_type d;
+		h5ar >> alps::make_pvp("test/enum", d);
+		std::cout << (d == A ? "A" : "B") << std::endl;
+	}
+	{
+		alps::hdf5::oarchive h5ar("bela.h5");
+		std::vector<std::string> d;
+		d.push_back("value1");
+		d.push_back("val2");
+		d.push_back("v3");
+		d.push_back("value4");
+		h5ar << alps::make_pvp("test/vectorstring", d);
+	}
+	{
+		alps::hdf5::iarchive h5ar("bela.h5");
+		std::vector<std::string> d;
+		h5ar >> alps::make_pvp("test/vectorstring", d);
+		for (std::vector<std::string>::const_iterator it = d.begin(); it != d.end(); ++it)
+			std::cout << *it << std::endl;
+	}
+	{
+		alps::hdf5::oarchive h5ar("bela.h5");
+		std::vector<int> d;
+		h5ar << alps::make_pvp("/test/growing", d);
+	}
+	{
+		alps::hdf5::oarchive h5ar("bela.h5");
+		std::vector<int> d(length, 42);
+		h5ar << alps::make_pvp("/test/growing", d);
+	}
+	{
+		alps::hdf5::oarchive h5ar("bela.h5");
+		std::vector<std::vector<int> > d;
+		d.push_back(std::vector<int>(1, 2));
+		d.push_back(std::vector<int>(3, 4));
+		d.push_back(std::vector<int>(5, 0));
+		d.push_back(std::vector<int>());
+		h5ar << alps::make_pvp("/test/vector", d);
+	}
+	{
+		alps::hdf5::iarchive h5ar("bela.h5");
+		std::vector<std::vector<int> > d;
+		h5ar >> alps::make_pvp("/test/vector", d);
+		for (std::vector<std::vector<int> >::const_iterator it = d.begin(); it != d.end(); ++it)
+			std::cout << it->size() << " " << (it->size() ? it->front() : 0) << std::endl;
+	}
+	{
+		alps::hdf5::oarchive h5ar("bela.h5");
+		std::vector<std::valarray<int> > d;
+		d.push_back(std::valarray<int>(2, 2));
+		d.push_back(std::valarray<int>(4, 2));
+		d.push_back(std::valarray<int>(0, 2));
+		h5ar << alps::make_pvp("/test/vecval", d);
+	}
+	{
+		alps::hdf5::iarchive h5ar("bela.h5");
+		std::vector<std::valarray<int> > d;
+		h5ar >> alps::make_pvp("/test/vecval", d);
+		for (std::vector<std::valarray<int> >::const_iterator it = d.begin(); it != d.end(); ++it)
+			std::cout << it->size() << " " << (it->size() ? (*it)[0] : 0) << std::endl;
+	}
+	{
+		alps::hdf5::oarchive h5ar("bela.h5");
+		std::map<std::string, std::vector<int> > d;
+		d["foo"] = std::vector<int>(1, 2);
+		d["bar"] = std::vector<int>();
+		h5ar << alps::make_pvp("/test/map", d);
+	}
+	{
+		alps::hdf5::iarchive h5ar("bela.h5");
+		std::map<std::string, std::vector<int> > d;
+		h5ar >> alps::make_pvp("/test/map", d);
+		for (std::map<std::string, std::vector<int> >::const_iterator it = d.begin(); it != d.end(); ++it)
+			std::cout << it->first << " " << it->second.size() << std::endl;
+	}
+	{
+		alps::hdf5::oarchive h5ar("bela.h5");
+		h5ar.set_group("/path/to/group/to/set/attr");
+		h5ar << alps::make_pvp("/path/to/group/to/set/attr/@version", 1);
+	}
+	boost::filesystem::remove(boost::filesystem::path("bela.h5"));
 }
