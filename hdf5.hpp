@@ -110,6 +110,11 @@ namespace alps {
 						std::ostringstream buffer;
 						buffer << "HDF5 error:" << std::endl;
 						H5Ewalk2(H5E_DEFAULT, H5E_WALK_DOWNWARD, callback, &buffer);
+						
+						
+							std::abort();
+						
+						
 						return buffer.str();
 					}
 			};
@@ -176,7 +181,7 @@ namespace alps {
 					~archive() {
 						H5Fflush(_file, H5F_SCOPE_GLOBAL);
 						if (H5Fget_obj_count(_file, H5F_OBJ_ALL) - H5Fget_obj_count(_file, H5F_OBJ_FILE) > 0) {
-							std::cerr << "Not all ressources closed" << std::endl;
+							std::cerr << "Not all resources closed" << std::endl;
 							std::abort();
 						}
 					}
@@ -414,11 +419,11 @@ namespace alps {
 							}
 							#define HDF5_GET_STRING(T)																		\
 								else if (check_error(H5Tequal(																\
-									check_type(H5Tcopy(native_id)), check_type(get_native_type<T>(0))						\
+									type_type(H5Tcopy(native_id)), type_type(get_native_type<T>(0))						\
 								)) > 0) {																					\
 									T t;																					\
 									check_error(H5Dread(																	\
-										data_id, check_type(H5Tcopy(type_id)), H5S_ALL, H5S_ALL, H5P_DEFAULT, &t			\
+										data_id, type_type(H5Tcopy(type_id)), H5S_ALL, H5S_ALL, H5P_DEFAULT, &t			\
 									));																						\
 									v = boost::lexical_cast<std::string>(t);												\
 								}
