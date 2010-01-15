@@ -5,6 +5,9 @@
 
 using namespace alps;
 int main(void){
+
+	return 0;
+
   // int N=5000;
   // int M=50;
   ObservableSet measurements, measurements2;
