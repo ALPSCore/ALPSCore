@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -177,10 +177,10 @@
 //
 
 // Define to 1 if you have the PTHREAD library
-#undef ALPS_HAVE_PTHREAD
+#cmakedefine ALPS_HAVE_PTHREAD
 
 // Define to 1 if you have the MPI library
-#undef ALPS_HAVE_MPI
+#cmakedefine ALPS_HAVE_MPI
 
 // Define to 1 if you have the HDF5 library
 #cmakedefine ALPS_HAVE_HDF5
@@ -189,54 +189,54 @@
 #cmakedefine ALPS_HAVE_HDF5_PARALLEL
 
 // Define to 1 if you have the Boost.MPI library
-#undef ALPS_HAVE_BOOST_MPI
+#cmakedefine ALPS_HAVE_BOOST_MPI
 
 // Define to 1 if you have the Boost.Signals library
-#undef ALPS_HAVE_BOOST_SIGNALS
+#cmakedefine ALPS_HAVE_BOOST_SIGNALS
 
 // Define to 1 if you have the Boost.ThreadMPI library
-#undef ALPS_HAVE_BOOST_THREAD
+#cmakedefine ALPS_HAVE_BOOST_THREAD
 
 // Define to 1 if you have wchar support in Boost.Regex and Boost.Serialization
-#undef ALPS_HAVE_BOOST_WCHAR
+#cmakedefine ALPS_HAVE_BOOST_WCHAR
 
 //
 // BLAS and LAPACK
 //
 
 // Define if you have BLAS library
-#undef ALPS_HAVE_BLAS
+#cmakedefine ALPS_HAVE_BLAS
 
 // Define if you have LAPACK library
-#undef ALPS_HAVE_LAPACK
+#cmakedefine ALPS_HAVE_LAPACK
 
 // Define if you have Intel Math Kernel Library
-#undef ALPS_HAVE_MKL
+#cmakedefine ALPS_HAVE_MKL
 
 // Define if you have the Digital Extended Math Library
-#undef ALPS_HAVE_DXML
+#cmakedefine ALPS_HAVE_DXML
 
 // Define if you have SGI SCSL Library
-#undef ALPS_HAVE_SCSL
+#cmakedefine ALPS_HAVE_SCSL
 
 // Define if you have Mac OS X vecLib framework
-#undef ALPS_HAVE_VECLIB
+#cmakedefine ALPS_HAVE_VECLIB
 
 // Define if you have IBM ESSL Library
-#undef ALPS_HAVE_ESSL
+#cmakedefine ALPS_HAVE_ESSL
 
 // Define if you have ATLAS library
-#undef ALPS_HAVE_ATLAS
+#cmakedefine ALPS_HAVE_ATLAS
 
 //
 // XML parser
 //
 
 // Define to 1 if you use Expat XML parser by James Clark.
-#undef ALPS_HAVE_EXPAT_PARSER
+#cmakedefine ALPS_HAVE_EXPAT_PARSER
 
 // Define to 1 if you use Xerces C++ XML parser by Apache Software Foundation.
-#undef ALPS_HAVE_XERCES_PARSER
+#cmakedefine ALPS_HAVE_XERCES_PARSER
 
 #endif // ALPS_AUTOCONF_CONFIGURE
 
