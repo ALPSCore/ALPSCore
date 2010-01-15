@@ -453,8 +453,8 @@ void clone_mpi::serialize(hdf5::oarchive& ar) const {
     ar << make_pvp("/simulation/realizations/" + boost::lexical_cast<std::string>(0) +
                    "/clones/" + boost::lexical_cast<std::string>(clone_id_) +
                    "/results/" + boost::lexical_cast<std::string>(m) +
-                   "/worker/" + boost::lexical_cast<std::string>(work_.rank()) +
-                   "/", measurements_[m]);
+                   "/worker/" + boost::lexical_cast<std::string>(work_.rank()),
+                   measurements_[m]);
   }
 }
 
