@@ -441,6 +441,8 @@ void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::pa
 			std::string worker_path = boost::filesystem::complete(runfiles[i].out, dir).file_string() + ".h5";
 			std::string worker_backup = boost::filesystem::complete(runfiles[i].out, dir).file_string() + ".bak.h5";
 			bool worker_exists = boost::filesystem::exists(worker_path);
+			if (worker_exists)
+				boost::filesystem::remove(worker_backup);
 			{
 				hdf5::oarchive worker_ar(worker_exists ? worker_backup : worker_path);
 				worker_ar << make_pvp("/", runs[i]);
