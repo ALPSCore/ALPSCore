@@ -110,11 +110,6 @@ namespace alps {
 						std::ostringstream buffer;
 						buffer << "HDF5 error:" << std::endl;
 						H5Ewalk2(H5E_DEFAULT, H5E_WALK_DOWNWARD, callback, &buffer);
-						
-						
-							std::abort();
-						
-						
 						return buffer.str();
 					}
 			};
