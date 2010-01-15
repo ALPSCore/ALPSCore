@@ -127,19 +127,16 @@ void ObservableSet::load(IDump& dump)
 	void ObservableSet::serialize(hdf5::iarchive & ar) {
 		std::vector<std::string> list = ar.list_children(ar.get_context());
 		for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
-			int version;
-			ar >> make_pvp(*it + "/@version", version);
-			Observable* obs = factory_.create(version);
-			ar >> make_pvp(*it, obs);
-			addObservable(obs);
+			std::string name = ar.unescape(*it);
+			if (!has(name))
+				throw std::runtime_error("the observalbe " + *it + " does not exists");
+			ar >> make_pvp(*it, operator[](name));
 		}
 	}
 	void ObservableSet::serialize(hdf5::oarchive & ar) const {
 		for(base_type::const_iterator it = base_type::begin(); it != base_type::end(); ++it)
-			if (it->second->name().find_first_of('/') < std::string::npos)
-				throw std::runtime_error("observables names must not contain '/'");
-			else if(it->second)
-				ar << make_pvp(it->second->name(), it->second);
+			if(it->second)
+				ar << make_pvp(ar.escape(it->second->name()), it->second);
 	}
 #endif
 

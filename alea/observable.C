@@ -92,10 +92,7 @@ void Observable::save(ODump& dump) const
 
 #ifdef ALPS_HAVE_HDF5
 	void Observable::serialize(hdf5::iarchive &) {};
-	void Observable::serialize(hdf5::oarchive & ar) const {
-		ar.set_group("");
-		ar << make_pvp("@version", version_id());
-	};
+	void Observable::serialize(hdf5::oarchive & ar) const {};
 #endif
 
 bool Observable::is_signed() const
