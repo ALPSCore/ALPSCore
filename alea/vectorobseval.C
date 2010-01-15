@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2006 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 2006-2010 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -28,7 +28,7 @@
 /* $Id$ */
 
 #include <alps/alea.h>
-#include <boost/random.hpp> 
+#include <boost/random.hpp>
 #include <iostream>
 #include <iomanip>
 
@@ -39,9 +39,9 @@ try {
 #endif
 
   typedef boost::minstd_rand0 random_base_type;
-  typedef boost::uniform_01<random_base_type> random_type; 
+  typedef boost::uniform_01<random_base_type> random_type;
   random_base_type random_int;
-  random_type random(random_int); 
+  random_type random(random_int);
 
   alps::RealVectorObservable obs_a("observable");
 
@@ -53,8 +53,33 @@ try {
   }
   std::cout << obs_a;
 
-  alps::RealVectorObsevaluator veceval(obs_a);
-  std::cout << veceval;
+  alps::RealVectorObsevaluator veceval0(obs_a);
+  alps::RealVectorObsevaluator veceval1(obs_a);
+  std::valarray<double> vec(2);
+  vec[0] = 3;
+  vec[1] = -2;
+
+  std::cout << veceval0;
+
+  std::cout << veceval0 + 1.0;
+  std::cout << 2.5 + veceval0;
+  std::cout << veceval0 + veceval1;
+  // std::cout << veceval0 + vec; // compile error
+
+  std::cout << veceval0 - 1.0;
+  std::cout << 2.5 - veceval0;
+  std::cout << veceval0 - veceval1;
+  // std::cout << veceval0 - vec; // compile error
+
+  std::cout << veceval0 * 3.0;
+  std::cout << 1.3 * veceval0;
+  std::cout << veceval0 * veceval1;
+  // std::cout << veceval0 * vec; // compile error
+
+  std::cout << veceval0 / 3.0;
+  std::cout << 1.3 / veceval0;
+  std::cout << veceval0 / veceval1;
+  // std::cout << veceval0 / vec; // compile error
 
   alps::RealObsevaluator eval0(obs_a.slice(0));
   alps::RealObsevaluator eval1(obs_a.slice(1));
