@@ -4,7 +4,7 @@ include_directories(${PROJECT_SOURCE_DIR}/tool)
 include_directories(${Boost_ROOT_DIR})
 
 #define tests here. Each test neet ${name}.C ${name}.input ${name}.output
-FOREACH (name alea_mocasito)
+FOREACH (name alea_mocasito io)
 
 
 	add_executable(${name} ${name}.C)
