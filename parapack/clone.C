@@ -42,8 +42,7 @@ bool load_observable(IDump& dp, Parameters& params, clone_info& info,
 
   int32_t version, np, rank;
   dp >> version >> np >> rank;
-  dp.set_version(version);
-
+  // dp.set_version(version); /* this line causes a segmentation fault */
   if (version < parapack_dump::initial_version || version > parapack_dump::current_version) {
     std::cerr << "The clone on dump is version " << version
               << " but this program can read only versions between "
@@ -157,15 +156,12 @@ void clone::save() const{
      << static_cast<int32_t>(parapack_dump::current_version)
      << static_cast<int32_t>(1)
      << static_cast<int32_t>(0);
-
   dp << params_ << info_ << measurements_;
-
   bool full_dump = false;
   full_dump =
     (info_.progress() < 1) || params_.value_or_default("SCHEDULER_KEEP_FULL_DUMP", false);
   dp << full_dump;
   if (full_dump) worker_->save_worker(dp);
-
 #ifdef ALPS_HAVE_HDF5
   hdf5::oarchive h5(fn.file_string() + ".h5");
   h5 << make_pvp("/", this);
@@ -185,8 +181,8 @@ void clone::serialize(hdf5::oarchive& ar) const {
     ar << make_pvp("/simulation/realizations/" + boost::lexical_cast<std::string>(0) +
                    "/clones/" + boost::lexical_cast<std::string>(clone_id_) +
                    "/results/" + boost::lexical_cast<std::string>(m) +
-                   "/worker/" + boost::lexical_cast<std::string>(0) +
-                   "/", measurements_[m]);
+                   "/worker/" + boost::lexical_cast<std::string>(0),
+                   measurements_[m]);
   }
 }
 
@@ -429,9 +425,7 @@ void clone_mpi::save() const{
   dp << static_cast<int32_t>(parapack_dump::current_version)
      << static_cast<int32_t>(work_.size())
      << static_cast<int32_t>(work_.rank());
-
   dp << params_ << info_ << measurements_;
-
   bool full_dump = false;
   if (work_.rank() == 0)
     full_dump =
