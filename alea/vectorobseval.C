@@ -64,22 +64,26 @@ try {
   std::cout << veceval0 + 1.0;
   std::cout << 2.5 + veceval0;
   std::cout << veceval0 + veceval1;
-  // std::cout << veceval0 + vec; // compile error
+  std::cout << vec + veceval0;
 
   std::cout << veceval0 - 1.0;
   std::cout << 2.5 - veceval0;
   std::cout << veceval0 - veceval1;
-  // std::cout << veceval0 - vec; // compile error
+  std::cout << veceval0 - vec;
 
   std::cout << veceval0 * 3.0;
   std::cout << 1.3 * veceval0;
   std::cout << veceval0 * veceval1;
-  // std::cout << veceval0 * vec; // compile error
+  std::cout << veceval0 * vec;
+  std::cout << vec * veceval0;
 
   std::cout << veceval0 / 3.0;
   std::cout << 1.3 / veceval0;
   std::cout << veceval0 / veceval1;
-  // std::cout << veceval0 / vec; // compile error
+  std::cout << veceval0 / vec;
+  std::cout << vec / veceval0;
+
+  std::cout << pow(veceval0, 2);
 
   alps::RealObsevaluator eval0(obs_a.slice(0));
   alps::RealObsevaluator eval1(obs_a.slice(1));
