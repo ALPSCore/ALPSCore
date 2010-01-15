@@ -1117,7 +1117,7 @@ int start_mpi(int argc, char** argv) {
 
 #else // ALPS_HAVE_MPI
 
-int start_mpi(int, char**, option const&) {
+int start_mpi(int, char**) {
   boost::throw_exception(std::runtime_error(
     "This program has not been compiled for use with MPI"));
   return -1;
