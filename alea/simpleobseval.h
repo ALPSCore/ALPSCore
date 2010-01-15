@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2009 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2010 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
@@ -207,8 +207,8 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-	inline void serialize(hdf5::iarchive & ar);
-	inline void serialize(hdf5::oarchive & ar) const;
+        inline void serialize(hdf5::iarchive & ar);
+        inline void serialize(hdf5::oarchive & ar) const;
 #endif
 
   template<class X> void subtract_from(const X& x);
@@ -363,22 +363,15 @@ inline void SimpleObservableEvaluator<T>::load(IDump& dump)
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-	template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::iarchive & ar) {
-
-
-
-
-std::cout << __LINE__ << " " << __FILE__ << std::endl;
-
-
-
-	}
-	template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::oarchive & ar) const {
-		ar << make_pvp(super_type::name(), all_);
-		if (runs_.size() > 1)
-			for(std::size_t i = 0; i < runs_.size(); ++i)
-				ar << make_pvp("../clone/" + boost::lexical_cast<std::string>(i) + "/results/" + super_type::name(), runs_[i]);
-	}
+template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::iarchive & /* ar */) {
+  std::cout << __LINE__ << " " << __FILE__ << std::endl;
+}
+template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::oarchive & ar) const {
+  ar << make_pvp(super_type::name(), all_);
+  if (runs_.size() > 1)
+    for(std::size_t i = 0; i < runs_.size(); ++i)
+      ar << make_pvp("../clone/" + boost::lexical_cast<std::string>(i) + "/results/" + super_type::name(), runs_[i]);
+}
 #endif
 
 template <class T>
@@ -740,7 +733,7 @@ inline alps::SimpleObservableEvaluator<T> operator-(const Y& y, alps::SimpleObse
 }
 
 
-/// product of two observables 
+/// product of two observables
 template <class T, class U>
 inline alps::SimpleObservableEvaluator<T> operator*(alps::SimpleObservableEvaluator<T> x, const alps::SimpleObservableEvaluator<U>& y)
 {
@@ -781,7 +774,7 @@ inline alps::SimpleObservableEvaluator<std::valarray<T> > operator*(const alps::
 }
 
 
-/// ratio of two observables 
+/// ratio of two observables
 template <class T, class U>
 inline alps::SimpleObservableEvaluator<T> operator/(alps::SimpleObservableEvaluator<T> x, const alps::SimpleObservableEvaluator<U>& y)
 {
