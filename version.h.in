@@ -85,6 +85,7 @@
 
 // XSLT PATH
 #cmakedefine ALPS_XML_DIR "@ALPS_XML_DIR@"
+#cmakedefine ALPS_XML_ALTERNATE_DIR "@ALPS_XML_ALTERNATE_DIR@"
 
 // hostname where configure script was executed
 #cmakedefine ALPS_CONFIG_HOST "@ALPS_CONFIG_HOST@"
