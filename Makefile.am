@@ -1,4 +1,4 @@
-SUBDIRS = fixed_capacity osiris parameter parser alea mocasito
+SUBDIRS = fixed_capacity osiris parameter parser alea hdf5
 if ALPS_FULL
 SUBDIRS += lattice model parapack
 endif

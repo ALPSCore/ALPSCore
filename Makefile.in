@@ -285,7 +285,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-SUBDIRS = fixed_capacity osiris parameter parser alea mocasito \
+SUBDIRS = fixed_capacity osiris parameter parser alea hdf5 \
 	$(am__append_1) .
 DIST_SUBDIRS = $(SUBDIRS)
 TESTS_ENVIRONMENT = $(top_srcdir)/config/run-test $(srcdir)
