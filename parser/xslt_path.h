@@ -56,12 +56,6 @@ namespace alps {
 /// "http://xml.comp-phys.org/2004/10/ALPS.xsl".
 extern ALPS_DECL std::string xslt_path(const std::string& stylefile);
 
-/// \brief returns the full path to the specified XML file.
-///
-/// The function prepends the path to the ALPS XML/XSLT library
-/// directory to the specified filename.
-extern ALPS_DECL boost::filesystem::path xml_library_path(const std::string& file);
-
 /// \brief returns the full path to the specified XML file and checks whether the file exists.
 ///
 /// The function prepends the path to the ALPS XML/XSLT library

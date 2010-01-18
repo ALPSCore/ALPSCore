@@ -50,53 +50,38 @@ std::string alps::xslt_path(const std::string& stylefile) {
     return "http://xml.comp-phys.org/"+stylefile;
 }
 
-boost::filesystem::path alps::xml_library_path(const std::string& file)
-{
-  std::string path;
-  char* p = getenv("ALPS_XML_PATH");
-  if (p != 0) {
-    path = std::string(p) + "/" + file;
-  } else {
-    path = std::string(ALPS_XML_DIR) + "/" + file;
-#ifdef ALPS_XML_ALTERNATE_DIR
-    if (!boost::filesystem::exists(path))
-      path = std::string(ALPS_XML_ALTERNATE_DIR) + "/" + file;
-#endif
-    if (!boost::filesystem::exists(path))
-      boost::throw_exception(std::runtime_error("Cannot find XML file " + file));
-  }
-  return boost::filesystem::path(path, boost::filesystem::native);
-}
 
 boost::filesystem::path alps::search_xml_library_path(const std::string& file)
 {
-  boost::filesystem::path p(file,boost::filesystem::native);
-  if (!boost::filesystem::exists(p)) {
-    p = xml_library_path(file);
+  // check whether this is a full path and the file exists 
+  boost::filesystem::path path(file,boost::filesystem::native);
+  if (boost::filesystem::exists(path))
+    return path;
+    
+  char* p = getenv("ALPS_XML_PATH");
+  if (p != 0)
+    path = boost::filesystem::path(p,boost::filesystem::native) /  file;
+  else { 
+    p = getenv("ALPS_ROOT");
+    if (p != 0) 
+      path = boost::filesystem::path(p,boost::filesystem::native) / "lib" / "xml" / file;
+    else {
+      path = boost::filesystem::path(ALPS_XML_DIR,boost::filesystem::native) / file;
+    #ifdef ALPS_XML_ALTERNATE_DIR
+      if (!boost::filesystem::exists(path))
+        path = boost::filesystem::path(ALPS_XML_ALTERNATE_DIR,boost::filesystem::native) / file;
+    #endif
+    }
   }
-  if (!boost::filesystem::exists(p))
+  if (!boost::filesystem::exists(path))
     boost::throw_exception(std::runtime_error("Cannot find file " + file ));
-  return p;
+  return path;
 }
 
 void alps::copy_stylesheet(boost::filesystem::path const& dir)
 {
-  boost::filesystem::path src = 
-     boost::filesystem::path(ALPS_XML_DIR,boost::filesystem::native) / "ALPS.xsl";
- #ifdef ALPS_XML_ALTERNATE_DIR
-  boost::filesystem::path altsrc = 
-     boost::filesystem::path(ALPS_XML_ALTERNATE_DIR,boost::filesystem::native) / "ALPS.xsl";
-#endif
   boost::filesystem::path dest = dir / "ALPS.xsl";
-  if (! boost::filesystem::exists(dest)) {
-    if (boost::filesystem::exists(src))
-      boost::filesystem::copy_file(src,dest);
-#ifdef ALPS_XML_ALTERNATE_DIR
-    else if (boost::filesystem::exists(altsrc))
-      boost::filesystem::copy_file(altsrc,dest);
-#endif
-    else
-      boost::throw_exception(std::runtime_error("Cannot find ALPS style file"));
-  }
+  if (! boost::filesystem::exists(dest))
+    boost::filesystem::copy_file(search_xml_library_path("ALPS.xsl"),dest);
 }
 
