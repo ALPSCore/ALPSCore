@@ -163,8 +163,11 @@ void clone::save() const{
   dp << full_dump;
   if (full_dump) worker_->save_worker(dp);
 #ifdef ALPS_HAVE_HDF5
-  hdf5::oarchive h5(fn.file_string() + ".h5");
-  h5 << make_pvp("/", this);
+  #pragma omp critical (hdf5io)
+  {
+    hdf5::oarchive h5(fn.file_string() + ".h5");
+    h5 << make_pvp("/", this);
+  }
 #endif
 }
 
@@ -435,8 +438,11 @@ void clone_mpi::save() const{
   if (full_dump) worker_->save_worker(dp);
 
 #ifdef ALPS_HAVE_HDF5
-  hdf5::oarchive h5(fn.file_string() + ".h5");
-  h5 << make_pvp("/", this);
+  #pragma omp critical (hdf5io)
+  {
+    hdf5::oarchive h5(fn.file_string() + ".h5");
+    h5 << make_pvp("/", this);
+  }
 #endif
 }
 
