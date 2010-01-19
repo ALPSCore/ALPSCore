@@ -26,7 +26,9 @@
 *****************************************************************************/
 
 #include "clone.h"
-#include <alps/hdf5.hpp>
+#ifdef ALPS_HAVE_HDF5
+# include <alps/hdf5.hpp>
+#endif
 #include <boost/filesystem/operations.hpp>
 
 namespace alps {
