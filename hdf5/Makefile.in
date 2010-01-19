@@ -35,7 +35,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 check_PROGRAMS = $(am__EXEEXT_1)
-@HAVE_HDF5_TRUE@am__append_1 = io alea_mocasito
+@HAVE_HDF5_TRUE@am__append_1 = io alea_mocasito alea_mocasito2
 subdir = test/hdf5
 DIST_COMMON = $(dist_noinst_DATA) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in
@@ -64,12 +64,20 @@ CONFIG_HEADER = $(top_builddir)/src/alps/config.h \
 	$(top_builddir)/src/boost/fs_utf8_codecvt_facet.cpp
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-@HAVE_HDF5_TRUE@am__EXEEXT_1 = io$(EXEEXT) alea_mocasito$(EXEEXT)
+@HAVE_HDF5_TRUE@am__EXEEXT_1 = io$(EXEEXT) alea_mocasito$(EXEEXT) \
+@HAVE_HDF5_TRUE@	alea_mocasito2$(EXEEXT)
 am_alea_mocasito_OBJECTS = alea_mocasito.$(OBJEXT)
 alea_mocasito_OBJECTS = $(am_alea_mocasito_OBJECTS)
 alea_mocasito_LDADD = $(LDADD)
 am__DEPENDENCIES_1 =
 alea_mocasito_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+am_alea_mocasito2_OBJECTS = alea_mocasito2.$(OBJEXT)
+alea_mocasito2_OBJECTS = $(am_alea_mocasito2_OBJECTS)
+alea_mocasito2_LDADD = $(LDADD)
+alea_mocasito2_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
@@ -92,8 +100,10 @@ CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(alea_mocasito_SOURCES) $(io_SOURCES)
-DIST_SOURCES = $(alea_mocasito_SOURCES) $(io_SOURCES)
+SOURCES = $(alea_mocasito_SOURCES) $(alea_mocasito2_SOURCES) \
+	$(io_SOURCES)
+DIST_SOURCES = $(alea_mocasito_SOURCES) $(alea_mocasito2_SOURCES) \
+	$(io_SOURCES)
 DATA = $(dist_noinst_DATA)
 ETAGS = etags
 CTAGS = ctags
@@ -281,6 +291,7 @@ AM_LDFLAGS = $(BASE_LDFLAGS) $(BOOST_LDFLAGS) $(SQLITE_LDFLAGS) $(XML_LDFLAGS) $
 LDADD = $(top_builddir)/lib/alps/libalps.la $(BOOST_LIBS) $(SQLITE_LIBS) $(XML_LIBS) $(HDF5_LIBS) $(MPI_LIBS) $(BASE_LIBS) 
 io_SOURCES = io.C
 alea_mocasito_SOURCES = alea_mocasito.C
+alea_mocasito2_SOURCES = alea_mocasito2.C
 dist_noinst_DATA = alea_mocasito.output
 all: all-am
 
@@ -328,6 +339,9 @@ clean-checkPROGRAMS:
 alea_mocasito$(EXEEXT): $(alea_mocasito_OBJECTS) $(alea_mocasito_DEPENDENCIES) 
 	@rm -f alea_mocasito$(EXEEXT)
 	$(CXXLINK) $(alea_mocasito_OBJECTS) $(alea_mocasito_LDADD) $(LIBS)
+alea_mocasito2$(EXEEXT): $(alea_mocasito2_OBJECTS) $(alea_mocasito2_DEPENDENCIES) 
+	@rm -f alea_mocasito2$(EXEEXT)
+	$(CXXLINK) $(alea_mocasito2_OBJECTS) $(alea_mocasito2_LDADD) $(LIBS)
 io$(EXEEXT): $(io_OBJECTS) $(io_DEPENDENCIES) 
 	@rm -f io$(EXEEXT)
 	$(CXXLINK) $(io_OBJECTS) $(io_LDADD) $(LIBS)
@@ -339,6 +353,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/alea_mocasito.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/alea_mocasito2.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/io.Po@am__quote@
 
 .C.o:
@@ -482,7 +497,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-checkPROGRAMS clean-generic clean-libtool \
+clean-am: clean-checkPROGRAMS clean-generic clean-libtool clean-local \
 	mostlyclean-am
 
 distclean: distclean-am
@@ -554,8 +569,8 @@ uninstall-am:
 .MAKE: check-am install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am check check-am clean \
-	clean-checkPROGRAMS clean-generic clean-libtool ctags \
-	distclean distclean-compile distclean-generic \
+	clean-checkPROGRAMS clean-generic clean-libtool clean-local \
+	ctags distclean distclean-compile distclean-generic \
 	distclean-libtool distclean-tags distdir dvi dvi-am html \
 	html-am info info-am install install-am install-data \
 	install-data-am install-dvi install-dvi-am install-exec \
@@ -571,6 +586,9 @@ uninstall-am:
 .PHONY : test tests example examples
 test tests : check
 example examples :
+
+clean-local:
+	rm -f *.h5 *.hdf5
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
