@@ -30,6 +30,11 @@
 #ifndef ALPS_SCHEDULER_INFO_H
 #define ALPS_SCHEDULER_INFO_H
 
+// for MSVC
+#if defined(_MSC_VER)
+# pragma warning(disable:4275)
+#endif
+
 #include <alps/scheduler/types.h>
 #include <alps/parser/xmlstream.h>
 #include <alps/osiris/dump.h>
