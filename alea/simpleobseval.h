@@ -406,10 +406,10 @@ template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::
   std::cout << __LINE__ << " " << __FILE__ << std::endl;
 }
 template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::oarchive & ar) const {
-  ar << make_pvp(super_type::name(), all_);
+  ar << make_pvp("", all_);
   if (runs_.size() > 1)
     for(std::size_t i = 0; i < runs_.size(); ++i)
-      ar << make_pvp("../clone/" + boost::lexical_cast<std::string>(i) + "/results/" + super_type::name(), runs_[i]);
+      ar << make_pvp("../../clone/" + boost::lexical_cast<std::string>(i) + "/results/" + super_type::name(), runs_[i]);
 }
 #endif
 
