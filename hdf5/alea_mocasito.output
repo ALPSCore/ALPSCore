@@ -1,0 +1,30 @@
+mean double detailed: 0
+error double detailed: 0
+mean double simple: 0
+error double simple: 0
+mean double none: 0
+error double none: 0
+mean float detailed: 0
+error float detailed: 0
+mean float simple: 0
+error float simple: 0
+mean float none: 0
+error float none: 0
+signed mean double detailed: 0
+signed error double detailed: 0
+signed mean double simple: 0
+signed error double simple: 0
+signed mean double none: 0
+signed error double none: 0
+mean double detailed vec: 0
+error double detailed vec: 0
+mean double simple vec: 0
+error double simple vec: 0
+mean double none vec: 0
+error double none vec: 0
+signed mean double detailed vec: 0
+signed error double detailed vec: 0
+signed mean double simple vec: 0
+signed error double simple vec: 0
+signed mean double none vec: 0
+signed error double none vec: 0
