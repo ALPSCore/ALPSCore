@@ -31,6 +31,10 @@
 #include <boost/utility.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/type_traits.hpp>
+#include <boost/scoped_ptr.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
+#include <boost/intrusive_ptr.hpp>
 #include <boost/mpl/or.hpp>
 #include <boost/mpl/and.hpp>
 #include <boost/mpl/if.hpp>
@@ -779,12 +783,28 @@ namespace alps {
 	template <typename T> hdf5::detail::pvp<T const &, hdf5::detail::plain> make_pvp(std::string const & p, T const & v) {
 		return hdf5::detail::pvp<T const &, hdf5::detail::plain>(p, v);
 	}
-	template <typename T> hdf5::detail::pvp<T, hdf5::detail::ptr> make_pvp(std::string const & p, T * & v) {
-		return hdf5::detail::pvp<T, hdf5::detail::ptr>(p, v);
-	}
-	template <typename T> hdf5::detail::pvp<T, hdf5::detail::ptr> make_pvp(std::string const & p, T * const & v) {
-		return hdf5::detail::pvp<T, hdf5::detail::ptr>(p, v);
-	}
+	#define HDF5_MAKE_PVP(ref_type)																											\
+		template <typename T> hdf5::detail::pvp<T, hdf5::detail::ptr> make_pvp(std::string const & p, T * ref_type v) {						\
+			return hdf5::detail::pvp<T, hdf5::detail::ptr>(p, v);																			\
+		}																																	\
+		template <typename T> hdf5::detail::pvp<T, hdf5::detail::ptr> make_pvp(std::string const & p, boost::shared_ptr<T> ref_type v) {	\
+			return hdf5::detail::pvp<T, hdf5::detail::ptr>(p, v.get());																		\
+		}																																	\
+		template <typename T> hdf5::detail::pvp<T, hdf5::detail::ptr> make_pvp(std::string const & p, std::auto_ptr<T> ref_type v) {		\
+			return hdf5::detail::pvp<T, hdf5::detail::ptr>(p, v.get());																		\
+		}																																	\
+		template <typename T> hdf5::detail::pvp<T, hdf5::detail::ptr> make_pvp(std::string const & p, boost::weak_ptr<T> ref_type v) {		\
+			return hdf5::detail::pvp<T, hdf5::detail::ptr>(p, v.get());																		\
+		}																																	\
+		template <typename T> hdf5::detail::pvp<T, hdf5::detail::ptr> make_pvp(std::string const & p, boost::intrusive_ptr<T> ref_type v) {	\
+			return hdf5::detail::pvp<T, hdf5::detail::ptr>(p, v.get());																		\
+		}																																	\
+		template <typename T> hdf5::detail::pvp<T, hdf5::detail::ptr> make_pvp(std::string const & p, boost::scoped_ptr<T> ref_type v) {	\
+			return hdf5::detail::pvp<T, hdf5::detail::ptr>(p, v.get());																		\
+		}
+	HDF5_MAKE_PVP(&)
+	HDF5_MAKE_PVP(const &)
+	#undef HDF5_MAKE_PVP;
 	template <typename T> hdf5::detail::pvp<T, hdf5::detail::array> make_pvp(std::string const & p, T * v, std::size_t s) {
 		return hdf5::detail::pvp<T, hdf5::detail::array>(p, v, s);
 	}
