@@ -673,7 +673,7 @@ namespace alps {
 						hid_t id = H5Aopen(parent_id, s.c_str(), H5P_DEFAULT);
 						if (id < 0) {
 							space_type space_id(H5Screate(H5S_SCALAR));
-							id = H5Acreate(parent_id, s.c_str(), type_id, space_id, H5P_DEFAULT, H5P_DEFAULT);
+							id = H5Acreate2(parent_id, s.c_str(), type_id, space_id, H5P_DEFAULT, H5P_DEFAULT);
 						}
 						attribute_type attr_id(id);
 						check_error(H5Awrite(attr_id, type_id, &v));
@@ -695,7 +695,7 @@ namespace alps {
 						hid_t id = H5Aopen(parent_id, s.c_str(), H5P_DEFAULT);
 						if (id < 0) {
 							space_type space_id(H5Screate(H5S_SCALAR));
-							id = H5Acreate(parent_id, s.c_str(), type_id, space_id, H5P_DEFAULT, H5P_DEFAULT);
+							id = H5Acreate2(parent_id, s.c_str(), type_id, space_id, H5P_DEFAULT, H5P_DEFAULT);
 						}
 						attribute_type attr_id(id);
 						check_error(H5Awrite(attr_id, type_id, &v[0]));
