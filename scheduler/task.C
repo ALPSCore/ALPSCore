@@ -76,7 +76,7 @@ Task::~Task()
 void Task::parse_task_file(bool read_parms_only)
 {
 #ifdef ALPS_HAVE_HDF5
-        if (infilename.native_file_string().substr(infilename.file_string().size() - 3) == ".h5") {
+        if (infilename.file_string().substr(infilename.file_string().size() - 3) == ".h5") {
                 parms = parse_ext_task_file(infilename.file_string());
                 if (!read_parms_only) {
                         hdf5::iarchive ar(infilename.file_string());
@@ -152,7 +152,7 @@ Parameters Task::parse_ext_task_file(std::string infilename)
 }
 
 #ifdef ALPS_HAVE_HDF5
-void Task::serialize(hdf5::iarchive & /* ar */) {}
+void Task::serialize(hdf5::iarchive &) {}
 #endif
 
 void Task::handle_tag(std::istream& infile, const XMLTag& tag)
@@ -240,6 +240,8 @@ void Task::checkpoint(const boost::filesystem::path& fn) const
         std::string task_path = fn.file_string().substr(0, fn.file_string().find_last_of('.')) + ".h5";
         std::string task_backup = fn.file_string().substr(0, fn.file_string().find_last_of('.')) + ".bak.h5";
         bool task_exists = boost::filesystem::exists(task_path);
+        if (boost::filesystem::exists(task_backup))
+            boost::filesystem::remove(task_backup);
 #endif
   boost::filesystem::path dir=fn.branch_path();
   bool make_backup = boost::filesystem::exists(fn);

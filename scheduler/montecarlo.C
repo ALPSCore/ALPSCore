@@ -186,11 +186,8 @@ void MCSimulation::write_xml_body(oxstream& out, const boost::filesystem::path& 
 #ifdef ALPS_HAVE_HDF5
 	std::string task_path = name.file_string().substr(0, name.file_string().find_last_of('.')) + ".h5";
 	std::string task_backup = name.file_string().substr(0, name.file_string().find_last_of('.')) + ".bak.h5";
-	bool task_exists = boost::filesystem::exists(task_backup);
-	if (task_exists)
-		boost::filesystem::remove(task_backup);
 	{
-		hdf5::oarchive ar(task_exists ? task_backup : task_path);
+		hdf5::oarchive ar(boost::filesystem::exists(task_backup) ? task_backup : task_path);
 		ar << make_pvp("/simulation/results", set);
 	}
 #endif
