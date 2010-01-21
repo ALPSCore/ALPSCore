@@ -804,7 +804,7 @@ namespace alps {
 		}
 	HDF5_MAKE_PVP(&)
 	HDF5_MAKE_PVP(const &)
-	#undef HDF5_MAKE_PVP;
+	#undef HDF5_MAKE_PVP
 	template <typename T> hdf5::detail::pvp<T, hdf5::detail::array> make_pvp(std::string const & p, T * v, std::size_t s) {
 		return hdf5::detail::pvp<T, hdf5::detail::array>(p, v, s);
 	}
