@@ -343,6 +343,9 @@ void Worker::set_parameters(const alps::Parameters& p)
     if(it->key() != "SEED" && parms[it->key()] != it->value()) {
       if(!(change_parameter(it->key(), it->value()) ||
           Worker::change_parameter(it->key(), it->value())))
+          // check why the values are not the same
+          // print a warning and print the values to check instead of throwing an exception, but accepty the change for now
+          // maybe we need to also test whether the partially or fully evaluated values differ
         boost::throw_exception(std::runtime_error("Cannot change parameter " + it->key()));
       parms[it->key()]=it->value();
     }    
