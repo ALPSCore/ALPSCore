@@ -29,6 +29,7 @@
 #include <boost/filesystem/operations.hpp>
 #include <iostream>
 #include <fcntl.h> // for open()
+#include <sys/stat.h>
 #include <stdexcept>
 
 #include <alps/config.h>
