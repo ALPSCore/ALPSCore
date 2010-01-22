@@ -295,6 +295,11 @@ void AbstractSignedObservable<OBS,SIGN>::load(IDump& dump)
 		ar
 			>> make_pvp("@sign", sign_name_)
 		;
+        // set obs' sign name to sign_name_
+        // rename obs to s + " * "+name
+        // then load
+		ar
+			>> make_pvp("../" + obs_.name(), obs_)        
 	}
 	template <class OBS, class SIGN>
 	void AbstractSignedObservable<OBS,SIGN>::serialize(hdf5::oarchive & ar) const {

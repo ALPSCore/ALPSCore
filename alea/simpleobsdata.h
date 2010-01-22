@@ -1004,6 +1004,9 @@ void SimpleObservableData<T>::load(IDump& dump)
                 }
         }
         template <typename T> void SimpleObservableData<T>::serialize(hdf5::iarchive & ar) const {
+               // can_set_thermal_ and discardedmeas should be ignored and set to false and 0
+               // discardedbins_ should be written as  timeseries/data/@discard and timeseries/data2/@discard
+               // write changed and nonlinearoperations for now as @changed, @nonlinearoperations
                 ar
                         >> make_pvp("count", count_)
                 ;

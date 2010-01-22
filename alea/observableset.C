@@ -128,8 +128,26 @@ void ObservableSet::load(IDump& dump)
 		std::vector<std::string> list = ar.list_children(ar.get_context());
 		for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
 			std::string name = hdf5_name_decode(*it);
-			if (!has(name))
+			if (!has(name)) {
 				throw std::runtime_error("the observalbe " + *it + " does not exists");
+            /*
+                for unsigned:
+                    distinguish between Real and RealVector depending on size of mean or sum, whatever exists
+                    if timeseries/data and timeseries/logbinning exist create a RealObservable or RealVectorObservable
+                    if timeseries/logbinning only exists create a SimpleReal or SimpleRealVector Observable
+                    otherwise create a RealObseval or RealVectorObseval
+
+                for signed:
+                    before loading anything loop over all observables and check for signed ones
+                       for each signed one remember the name signname + " * " + name
+                    when loading skip all these 'signname + " * " + name' observbles
+                    when loading the signed observable first determine the type of the 'signname + " * " + name' observable (see above)
+                    then create the signed observable and load 'signname + " * " + name' into it
+                    look above: if it is either SimpleReal* or Real* Observable, create a signed one and read it
+                    otherwise
+            */
+                
+            }
 			ar >> make_pvp(*it, operator[](name));
 		}
 	}

@@ -316,16 +316,21 @@ inline void BasicDetailedBinning<T>::load(IDump& dump)
 		SimpleBinning<T>::serialize(ar);
         ar 
             >> make_pvp("timeseries/data", values_)
-            >> make_pvp("timeseries/data", values_)
             >> make_pvp("timeseries/data/@minbinsize", minbinsize_)
             >> make_pvp("timeseries/data/@maxbinnum", maxbinnum_)
             >> make_pvp("timeseries/data2", values2_)
         ;
 	}
 	template <class T> inline void BasicDetailedBinning<T>::serialize(hdf5::oarchive & ar) const {
+      // copy back() to "timeseries/partialbin"
+      // set "timeseries/partialbin/@count to binentries_
+      // pop off the last bin
+      // serialize
+      // push back the last bin
+      // for values and values2
+      
 		SimpleBinning<T>::serialize(ar);
         ar 
-            << make_pvp("timeseries/data", values_)
             << make_pvp("timeseries/data", values_)
             << make_pvp("timeseries/data/@binningtype", "linear")
             << make_pvp("timeseries/data/@minbinsize", minbinsize_)
