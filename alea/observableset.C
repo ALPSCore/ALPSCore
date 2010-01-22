@@ -35,7 +35,7 @@
 #include "simpleobseval.h"
 #include "histogrameval.h"
 #include "observableset_p.h"
-
+#include <alps/encode.hpp>
 #include <alps/multi_array.hpp>
 #include <boost/lexical_cast.hpp>
 
@@ -127,7 +127,7 @@ void ObservableSet::load(IDump& dump)
 	void ObservableSet::serialize(hdf5::iarchive & ar) {
 		std::vector<std::string> list = ar.list_children(ar.get_context());
 		for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
-			std::string name = ar.unescape(*it);
+			std::string name = hdf5_name_decode(*it);
 			if (!has(name))
 				throw std::runtime_error("the observalbe " + *it + " does not exists");
 			ar >> make_pvp(*it, operator[](name));
@@ -136,7 +136,7 @@ void ObservableSet::load(IDump& dump)
 	void ObservableSet::serialize(hdf5::oarchive & ar) const {
 		for(base_type::const_iterator it = base_type::begin(); it != base_type::end(); ++it)
 			if(it->second)
-				ar << make_pvp(ar.escape(it->second->name()), it->second);
+				ar << make_pvp(hdf5_name_encode(it->second->name()), it->second);
 	}
 #endif
 

@@ -9,7 +9,7 @@ set(ALPS_STATIC_CPPFLAGS "")
 if (ALPS_FOR_VISTRAILS)
 set(ALPS_SOURCES
     # alps 
-    copyright.C
+    copyright.C encode.cpp
     # alea
     alea/nan.C alea/observable.C alea/observableset.C 
     # expression
@@ -46,7 +46,7 @@ else(ALPS_FOR_VISTRAILS)
 # alps
 set(ALPS_SOURCES
     # alps 
-    copyright.C
+    copyright.C encode.cpp
     # alea
     alea/nan.C alea/observable.C alea/observableset.C 
     # expression
