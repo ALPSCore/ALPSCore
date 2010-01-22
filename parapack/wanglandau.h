@@ -105,7 +105,7 @@ public:
   int bin_max() const { return walk_range_.max(); }
   range_t const& walk_range() const { return walk_range_; }
   range_t const& measure_range() const { return measure_range_; }
-  int bin2index(int bin) const { return bin - bin_min(); }
+  int32_t bin2index(int bin) const { return bin - bin_min(); }
   int index2bin(int index) const { return index + bin_min(); }
 
   exp_double relative_weight(int bin, int bin_new) const {

@@ -386,6 +386,7 @@ public:
     if (b < beta.front() && b > beta.back())
       boost::throw_exception(std::range_error("interpolate"));
     int n = std::lower_bound(beta.begin(), beta.end(), b) - beta.begin();
+    if (n == 0) ++n;
     return (((beta[n] - b) / (beta[n] - beta[n-1])) * func[n-1] +
             ((b - beta[n-1]) / (beta[n] - beta[n-1])) * func[n]);
   }
