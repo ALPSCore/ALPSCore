@@ -2,6 +2,7 @@
 #include <iostream>
 #include <algorithm>
 #include <alps/hdf5.hpp>
+#include <alps/encode.hpp>
 #include <boost/filesystem.hpp>
 
 const int length = 15;
@@ -25,7 +26,8 @@ namespace alps {
 int main() {
 	{
 		alps::hdf5::oarchive h5ar("bela.h5");
-		std::cout << h5ar.escape("a/b/c&c/d/e") << " " << h5ar.unescape(h5ar.escape("a/b/c&c/d/e")) << std::endl;
+		std::cout << alps::hdf5_name_encode("a/b/c&c/d/e") << " " 
+                  << alps::hdf5_name_decode(alps::hdf5_name_encode("a/b/c&c/d/e")) << std::endl;
 	}
 	{
 		alps::hdf5::oarchive h5ar("bela.h5");
