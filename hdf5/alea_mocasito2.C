@@ -48,7 +48,17 @@ int main()
   }
   std::cout << measurement;
   boost::filesystem::remove(boost::filesystem::path(file));
-  alps::hdf5::oarchive h5(file);
-  h5 << make_pvp("/test/0/result", measurement);
+  {
+    alps::hdf5::oarchive h5(file);
+    h5 << make_pvp("/test/0/result", measurement);
+  }
+  
+  alps::ObservableSet measurement2;
+  {
+    alps::hdf5::iarchive h5(file);
+    h5 >> make_pvp("/test/0/result", measurement2);
+  }
+  std::cout << measurement2;
+  
   boost::filesystem::remove(boost::filesystem::path(file));
 }
