@@ -8,9 +8,10 @@
 
 #include <string>
 #include <boost/lexical_cast.hpp>
+#include <alps/config.h>
 
-namespace alps {
-  std::string hdf5_name_encode(std::string const & s);
-  std::string hdf5_name_decode(std::string const & s);
+namespace alps { 
+  ALPS_DECL std::string hdf5_name_encode(std::string const & s);
+  ALPS_DECL std::string hdf5_name_decode(std::string const & s);
 }
 #endif
