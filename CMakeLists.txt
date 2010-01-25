@@ -11,7 +11,7 @@ set(ALPS_SOURCES
     # alps 
     copyright.C encode.cpp
     # alea
-    alea/nan.C alea/observable.C alea/observableset.C 
+    alea/nan.C alea/observable.C alea/observablefactory.C alea/observableset.C 
     # expression
     expression/evaluator.C
     # lattice
@@ -48,7 +48,7 @@ set(ALPS_SOURCES
     # alps 
     copyright.C encode.cpp
     # alea
-    alea/nan.C alea/observable.C alea/observableset.C 
+    alea/nan.C alea/observable.C alea/observablefactory.C alea/observableset.C 
     # expression
     expression/evaluator.C
     # lattice

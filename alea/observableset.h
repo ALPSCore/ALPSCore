@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
@@ -39,8 +39,8 @@
 #endif
 
 #include <alps/config.h>
-#include <alps/factory.h>
 #include <alps/alea/observable.h>
+#include <alps/alea/observablefactory.h>
 #include <alps/osiris/archivedump.h>
 #include <alps/parser/parser.h>
 #include <alps/xml.h>
@@ -53,18 +53,8 @@
 #include <alps/hdf5.hpp>
 #include <alps/alea/hdf5.h>
 #endif
+
 namespace alps {
-
-/** A class to collect the various measurements performed in a simulation
-    It is implemented as a map, with std::string as key type */
-
-class ObservableFactory : public factory<uint32_t,Observable>
-{
-public:
-  ObservableFactory();
-  template <class T>
-  void register_observable() { register_type<T>(T::version);}
-};
 
 class ALPS_DECL ObservableSet: public std::map<std::string,Observable*>
 {
@@ -206,8 +196,8 @@ class ALPS_DECL ObservableSet: public std::map<std::string,Observable*>
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-	virtual void serialize(hdf5::iarchive &);
-	virtual void serialize(hdf5::oarchive &) const;
+        virtual void serialize(hdf5::iarchive &);
+        virtual void serialize(hdf5::oarchive &) const;
 #endif
 
   BOOST_SERIALIZATION_SPLIT_MEMBER()

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -29,11 +29,6 @@
 /* $Id$ */
 
 #include "observableset.h"
-#include "signedobservable.h"
-#include "nobinning.h"
-#include "detailedbinning.h"
-#include "simpleobseval.h"
-#include "histogrameval.h"
 #include "observableset_p.h"
 #include <alps/encode.hpp>
 #include <alps/multi_array.hpp>
@@ -49,55 +44,6 @@ inline void deleteit(Observable& obs)
 }
 
 } // end namespace detail
-
-
-
-ObservableFactory::ObservableFactory()
-{
-  register_observable<IntObsevaluator>();
-  register_observable<RealObsevaluator>();
-  register_observable<IntObservable>();
-  register_observable<RealObservable>();
-  register_observable<AbstractSignedObservable<RealObsevaluator> >();
-  //register_observable<AbstractSignedObservable<IntObsevaluator> >();
-  //register_observable<SignedObservable<SimpleIntObservable> >();
-  //register_observable<SignedObservable<IntObservable> >();
-  //register_observable<SignedObservable<IntTimeSeriesObservable> >();
-  register_observable<SignedObservable<RealObservable> >();
-  register_observable<SignedObservable<SimpleRealObservable> >();
-  register_observable<SignedObservable<RealTimeSeriesObservable> >();
-  register_observable<IntTimeSeriesObservable>();
-  register_observable<RealTimeSeriesObservable>();
-  register_observable<SimpleRealObservable>();
-  register_observable<SimpleIntObservable>();
-#ifdef ALPS_HAVE_VALARRAY
-  register_observable<RealVectorObsevaluator>();
-  register_observable<RealVectorObservable>();
-  register_observable<SignedObservable<RealVectorObservable> >();
-  register_observable<IntVectorObservable>();
-  register_observable<IntVectorObsevaluator>();
-  register_observable<IntVectorTimeSeriesObservable>();
-  register_observable<RealVectorTimeSeriesObservable>();
-  register_observable<SimpleIntVectorObservable>();
-  register_observable<SimpleRealVectorObservable>();
-  register_observable<AbstractSignedObservable<RealVectorObsevaluator> >();
-  //register_observable<AbstractSignedObservable<IntVectorObsevaluator> >();
-  register_observable<SignedObservable<SimpleRealVectorObservable> >();
-  register_observable<SignedObservable<RealVectorTimeSeriesObservable> >();
-  register_observable<IntHistogramObservable>();
-  register_observable<RealHistogramObservable>();
-  register_observable<IntHistogramObsevaluator>();
-  register_observable<RealHistogramObsevaluator>();
-  //register_observable<SignedObservable<SimpleIntVectorObservable> >();
-  //register_observable<SignedObservable<IntVectorObservable> >();
-  //register_observable<SignedObservable<IntVectorTimeSeriesObservable> >();
-#endif
-/*
-  register_observable<HistogramObservable<int32_t> >();
-  register_observable<HistogramObservable<int32_t,double> >();
-*/
-}
-
 
 #ifndef ALPS_WITHOUT_OSIRIS
 
@@ -124,12 +70,12 @@ void ObservableSet::load(IDump& dump)
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-	void ObservableSet::serialize(hdf5::iarchive & ar) {
-		std::vector<std::string> list = ar.list_children(ar.get_context());
-		for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
-			std::string name = hdf5_name_decode(*it);
-			if (!has(name)) {
-				throw std::runtime_error("the observalbe " + *it + " does not exists");
+        void ObservableSet::serialize(hdf5::iarchive & ar) {
+                std::vector<std::string> list = ar.list_children(ar.get_context());
+                for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
+                        std::string name = hdf5_name_decode(*it);
+                        if (!has(name)) {
+                                throw std::runtime_error("the observalbe " + *it + " does not exists");
             /*
                 for unsigned:
                     distinguish between Real and RealVector depending on size of mean or sum, whatever exists
@@ -146,16 +92,16 @@ void ObservableSet::load(IDump& dump)
                     look above: if it is either SimpleReal* or Real* Observable, create a signed one and read it
                     otherwise
             */
-                
+
             }
-			ar >> make_pvp(*it, operator[](name));
-		}
-	}
-	void ObservableSet::serialize(hdf5::oarchive & ar) const {
-		for(base_type::const_iterator it = base_type::begin(); it != base_type::end(); ++it)
-			if(it->second)
-				ar << make_pvp(hdf5_name_encode(it->second->name()), it->second);
-	}
+                        ar >> make_pvp(*it, operator[](name));
+                }
+        }
+        void ObservableSet::serialize(hdf5::oarchive & ar) const {
+                for(base_type::const_iterator it = base_type::begin(); it != base_type::end(); ++it)
+                        if(it->second)
+                                ar << make_pvp(hdf5_name_encode(it->second->name()), it->second);
+        }
 #endif
 
 void ObservableSet::update_signs()
