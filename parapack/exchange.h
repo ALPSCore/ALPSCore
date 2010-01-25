@@ -657,13 +657,15 @@ public:
       obs[p] << SimpleRealObservable("EXMC: Temperature")
              << SimpleRealObservable("EXMC: Inverse Temperature");
       if (mcs_.exchange()) {
-        obs[p] << SimpleRealObservable("EXMC: Acceptance Rate")
-               << SimpleRealObservable("EXMC: Ratio of Upward-Moving Walker")
+        obs[p] << SimpleRealObservable("EXMC: Ratio of Upward-Moving Walker")
                << SimpleRealObservable("EXMC: Ratio of Downward-Moving Walker")
                << SimpleRealObservable("EXMC: Inverse Round-Trip Time");
-        obs[p]["EXMC: Acceptance Rate"].reset(true);
         obs[p]["EXMC: Ratio of Upward-Moving Walker"].reset(true);
         obs[p]["EXMC: Ratio of Downward-Moving Walker"].reset(true);
+        if (p != nrep - 1) {
+          obs[p] << SimpleRealObservable("EXMC: Acceptance Rate");
+          obs[p]["EXMC: Acceptance Rate"].reset(true);
+        }
       }
     }
     if (mcs_.exchange()) obs[0] << SimpleRealObservable("EXMC: Average Inverse Round-Trip Time");
@@ -779,8 +781,10 @@ public:
           }
           mcs_.next_stage();
 
-          for (int p = 0; p < nrep; ++p) {
+          for (int p = 0; p < nrep - 1; ++p) {
             obs[p]["EXMC: Acceptance Rate"].reset(true);
+          }
+          for (int p = 0; p < nrep; ++p) {
             obs[p]["EXMC: Ratio of Upward-Moving Walker"].reset(true);
             obs[p]["EXMC: Ratio of Downward-Moving Walker"].reset(true);
             weight_parameters_[p] = weight_parameter_type(0);
@@ -827,8 +831,10 @@ public:
               std::clog << "EXMC stage " << mcs_.stage() << ": optimized inverse temperature set = "
                         << write_vector(beta_, " ", 5) << std::endl;
             mcs_.next_stage();
-            for (int p = 0; p < nrep; ++p) {
+            for (int p = 0; p < nrep - 1; ++p) {
               obs[p]["EXMC: Acceptance Rate"].reset(true);
+            }
+            for (int p = 0; p < nrep; ++p) {
               obs[p]["EXMC: Ratio of Upward-Moving Walker"].reset(true);
               obs[p]["EXMC: Ratio of Downward-Moving Walker"].reset(true);
             }
@@ -996,13 +1002,15 @@ public:
         obs[p] << SimpleRealObservable("EXMC: Temperature")
                << SimpleRealObservable("EXMC: Inverse Temperature");
         if (mcs_.exchange()) {
-          obs[p] << SimpleRealObservable("EXMC: Acceptance Rate")
-                 << SimpleRealObservable("EXMC: Ratio of Upward-Moving Walker")
+          obs[p] << SimpleRealObservable("EXMC: Ratio of Upward-Moving Walker")
                  << SimpleRealObservable("EXMC: Ratio of Downward-Moving Walker")
                  << SimpleRealObservable("EXMC: Inverse Round-Trip Time");
-          obs[p]["EXMC: Acceptance Rate"].reset(true);
           obs[p]["EXMC: Ratio of Upward-Moving Walker"].reset(true);
           obs[p]["EXMC: Ratio of Downward-Moving Walker"].reset(true);
+          if (p != nrep - 1) {
+            obs[p] << SimpleRealObservable("EXMC: Acceptance Rate");
+            obs[p]["EXMC: Acceptance Rate"].reset(true);
+          }
         }
       }
       if (mcs_.exchange()) obs[0] << SimpleRealObservable("EXMC: Average Inverse Round-Trip Time");
@@ -1132,6 +1140,8 @@ public:
 
             for (int p = 0; p < nrep; ++p) {
               obs[p]["EXMC: Acceptance Rate"].reset(true);
+            }
+            for (int p = 0; p < nrep; ++p) {
               obs[p]["EXMC: Ratio of Upward-Moving Walker"].reset(true);
               obs[p]["EXMC: Ratio of Downward-Moving Walker"].reset(true);
               weight_parameters_[p] = weight_parameter_type(0);
@@ -1178,8 +1188,10 @@ public:
                 std::clog << "EXMC stage " << mcs_.stage() << ": optimized inverse temperature set = "
                           << write_vector(beta_, " ", 5) << std::endl;
               next_stage = true;
-              for (int p = 0; p < nrep; ++p) {
+              for (int p = 0; p < nrep - 1; ++p) {
                 obs[p]["EXMC: Acceptance Rate"].reset(true);
+              }
+              for (int p = 0; p < nrep; ++p) {
                 obs[p]["EXMC: Ratio of Upward-Moving Walker"].reset(true);
                 obs[p]["EXMC: Ratio of Downward-Moving Walker"].reset(true);
               }

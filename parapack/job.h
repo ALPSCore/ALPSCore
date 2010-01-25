@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -66,7 +66,7 @@ public:
 
   void load();
   void save() const;
-  void save_observable() const;
+  void save_observable(std::vector<std::vector<ObservableSet> > const& oss) const;
   void halt();
 
   void check_parameter();

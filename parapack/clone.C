@@ -164,13 +164,13 @@ void clone::save() const{
     (info_.progress() < 1) || params_.value_or_default("SCHEDULER_KEEP_FULL_DUMP", false);
   dp << full_dump;
   if (full_dump) worker_->save_worker(dp);
-#ifdef ALPS_HAVE_HDF5
-  #pragma omp critical (hdf5io)
-  {
-    hdf5::oarchive h5(fn.file_string() + ".h5");
-    h5 << make_pvp("/", this);
-  }
-#endif
+// #ifdef ALPS_HAVE_HDF5
+//   #pragma omp critical (hdf5io)
+//   {
+//     hdf5::oarchive h5(fn.file_string() + ".h5");
+//     h5 << make_pvp("/", this);
+//   }
+// #endif
 }
 
 #ifdef ALPS_HAVE_HDF5
@@ -180,15 +180,15 @@ void clone::serialize(hdf5::iarchive& /* ar */) {
 }
 
 void clone::serialize(hdf5::oarchive& ar) const {
-  ar << make_pvp("/parameters", params_);
-  for (int m = 0; m < measurements_.size(); ++m) {
-    // TODO: check hdf5 section name conventions
-    ar << make_pvp("/simulation/realizations/" + boost::lexical_cast<std::string>(0) +
-                   "/clones/" + boost::lexical_cast<std::string>(clone_id_) +
-                   "/results/" + boost::lexical_cast<std::string>(m) +
-                   "/worker/" + boost::lexical_cast<std::string>(0),
-                   measurements_[m]);
-  }
+//   ar << make_pvp("/parameters", params_);
+//   for (int m = 0; m < measurements_.size(); ++m) {
+//     // TODO: check hdf5 section name conventions
+//     ar << make_pvp("/simulation/realizations/" + boost::lexical_cast<std::string>(0) +
+//                    "/clones/" + boost::lexical_cast<std::string>(clone_id_) +
+//                    "/results/" + boost::lexical_cast<std::string>(m) +
+//                    "/worker/" + boost::lexical_cast<std::string>(0),
+//                    measurements_[m]);
+//   }
 }
 
 #endif
@@ -439,13 +439,13 @@ void clone_mpi::save() const{
   dp << full_dump;
   if (full_dump) worker_->save_worker(dp);
 
-#ifdef ALPS_HAVE_HDF5
-  #pragma omp critical (hdf5io)
-  {
-    hdf5::oarchive h5(fn.file_string() + ".h5");
-    h5 << make_pvp("/", this);
-  }
-#endif
+// #ifdef ALPS_HAVE_HDF5
+//   #pragma omp critical (hdf5io)
+//   {
+//     hdf5::oarchive h5(fn.file_string() + ".h5");
+//     h5 << make_pvp("/", this);
+//   }
+// #endif
 }
 
 #ifdef ALPS_HAVE_HDF5
@@ -455,15 +455,15 @@ void clone_mpi::serialize(hdf5::iarchive& /* ar */) {
 }
 
 void clone_mpi::serialize(hdf5::oarchive& ar) const {
-  ar << make_pvp("/parameters", params_);
-  for (int m = 0; m < measurements_.size(); ++m) {
-    // TODO: check hdf5 section name conventions
-    ar << make_pvp("/simulation/realizations/" + boost::lexical_cast<std::string>(0) +
-                   "/clones/" + boost::lexical_cast<std::string>(clone_id_) +
-                   "/results/" + boost::lexical_cast<std::string>(m) +
-                   "/worker/" + boost::lexical_cast<std::string>(work_.rank()),
-                   measurements_[m]);
-  }
+//   ar << make_pvp("/parameters", params_);
+//   for (int m = 0; m < measurements_.size(); ++m) {
+//     // TODO: check hdf5 section name conventions
+//     ar << make_pvp("/simulation/realizations/" + boost::lexical_cast<std::string>(0) +
+//                    "/clones/" + boost::lexical_cast<std::string>(clone_id_) +
+//                    "/results/" + boost::lexical_cast<std::string>(m) +
+//                    "/worker/" + boost::lexical_cast<std::string>(work_.rank()),
+//                    measurements_[m]);
+//   }
 }
 
 #endif

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -30,6 +30,9 @@
 #include "filelock.h"
 #include "measurement.h"
 #include "simulation_p.h"
+#ifdef ALPS_HAVE_HDF5
+# include <alps/hdf5.hpp>
+#endif
 #include <boost/config.hpp>
 #include <boost/foreach.hpp>
 #include <boost/regex.hpp>
@@ -149,7 +152,7 @@ void task::save() const {
   }
 }
 
-void task::save_observable() const {
+void task::save_observable(std::vector<std::vector<ObservableSet> > const& oss) const {
   if (!on_memory()) boost::throw_exception(std::logic_error("task not loaded"));
   boost::filesystem::path file_out = complete(boost::filesystem::path(file_out_str_), basedir_);
   {
@@ -163,7 +166,39 @@ void task::save_observable() const {
       simulation_xml_handler handler(params_tmp, obs_tmp, clone_info_tmp);
       XMLParser parser(handler);
       parser.parse(file_out);
+      if (obs_.size() > 1 && !params_tmp.defined("NUM_REPLICAS"))
+        params_tmp["NUM_REPLICAS"] = obs_.size();
       simulation_xml_writer(file_out, true, params_tmp, obs_, clone_info_tmp);
+#ifdef ALPS_HAVE_HDF5
+      if (obs_.size() == 1) {
+        #pragma omp critical (hdf5io)
+        {
+          boost::filesystem::path file = complete(boost::filesystem::path(base_ + ".h5"), basedir_);
+          hdf5::oarchive h5(file.native_file_string());
+          h5 << make_pvp("/parameters", params_tmp);
+          h5 << make_pvp("/simulation/results", obs_[0]);
+          for (int n = 0; n < oss.size(); ++n)
+            h5 << make_pvp("/simulation/realizations/0/clones/" +
+                           boost::lexical_cast<std::string>(n) + "/results", oss[n][0]);
+        }
+      } else {
+        for (int i = 0; i < obs_.size(); ++i) {
+          Parameters p = params_tmp;
+          if (!p.defined("REPLICA")) p["REPLICA"] = i+1;
+          #pragma omp critical (hdf5io)
+          {
+            boost::filesystem::path file = complete(boost::filesystem::path(
+              base_ + ".replica" + boost::lexical_cast<std::string>(i+1) + ".h5"), basedir_);
+            hdf5::oarchive h5(file.native_file_string());
+            h5 << make_pvp("/parameters", p);
+            h5 << make_pvp("/simulation/results", obs_[i]);
+            for (int n = 0; n < oss.size(); ++n)
+              h5 << make_pvp("/simulation/realizations/0/clones/" +
+                             boost::lexical_cast<std::string>(n) + "/results", oss[n][i]);
+          }
+        }
+      }
+#endif
     } else {
       boost::throw_exception(std::logic_error("task::save_observable()"));
     }
@@ -326,22 +361,26 @@ void task::evaluate() {
     = parapack::evaluator_factory::instance()->make_evaluator(p);
 
   std::cout << "  loading clones: ";
+  std::vector<std::vector<ObservableSet> > oss;
   BOOST_FOREACH(cid_t cid, clones) {
     std::cout << (cid+1) << ' ' << std::flush;
     std::vector<ObservableSet> os;
     for (int w = 0; w < clone_info_[cid].checkpoints().size(); ++w) {
       IXDRFileDump dp(complete(clone_info_[cid].checkpoints()[w], basedir_));
-      if (!load_observable(dp, os)) {
+      std::vector<ObservableSet> o;
+      if (!load_observable(dp, o)) {
         std::cerr << "error while reading " << clone_info_[cid].checkpoints()[w] << std::endl;
       } else {
-        evaluator->load(os, obs_);
+        evaluator->load(o, os);
+        evaluator->load(o, obs_);
       }
     }
+    oss.push_back(os);
   }
   std::cout << std::endl;
   if (clones.size() > 0) {
     evaluator->evaluate(obs_);
-    save_observable();
+    save_observable(oss);
   }
   halt();
 }
