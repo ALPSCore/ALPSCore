@@ -201,7 +201,7 @@ int main() {
 	}
 	{
 		alps::hdf5::oarchive h5ar("bela.h5");
-		h5ar.set_group("/path/to/group/to/set/attr");
+		h5ar.serialize("/path/to/group/to/set/attr");
 		h5ar << alps::make_pvp("/path/to/group/to/set/attr/@version", 1);
 	}
 	boost::filesystem::remove(boost::filesystem::path("bela.h5"));
