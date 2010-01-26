@@ -352,15 +352,6 @@ inline void BasicDetailedBinning<T>::load(IDump& dump)
 			;
 			const_cast<BasicDetailedBinning<T> *>(this)->values_.push_back(value);
 			const_cast<BasicDetailedBinning<T> *>(this)->values2_.push_back(value2);
-		} else {
-			ar
-				<< make_pvp("timeseries/data", std::vector<value_type>())
-				<< make_pvp("timeseries/data/@binningtype", "linear")
-				<< make_pvp("timeseries/data/@minbinsize", minbinsize_)
-				<< make_pvp("timeseries/data/@maxbinnum", maxbinnum_)
-				<< make_pvp("timeseries/data2", std::vector<value_type>())
-				<< make_pvp("timeseries/data2/@binningtype", "linear")
-			;
 		}
 	}
 #endif

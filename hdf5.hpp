@@ -168,19 +168,19 @@ namespace alps {
 			struct write {};
 			struct read {};
 			namespace internal_state_type {
-				typedef enum { CREATE, DELETE, PLACEHOLDER } type;
+				typedef enum { CREATE, PLACEHOLDER } type;
 			}
 			struct internal_log_type {
 				unsigned int timestamp;
-				char * username;
+				char * log;
 			};
 			template <typename Tag> class archive: boost::noncopyable {
 				public:
 					typedef struct {
 						unsigned int timestamp;
-						std::string username;
+						std::string log;
 					} log_type;
-					archive(std::string const & file): _revision(-1) {
+					archive(std::string const & file): _revision(0) {
 						H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
 						if (boost::is_same<Tag, write>::value) {
 							if (H5Fis_hdf5(file.c_str()) == 0)
@@ -194,19 +194,18 @@ namespace alps {
 						}
 						if (!is_group("/revisions")) {
 							set_group("/revisions");
+							set_attr("/revisions", "last", _revision, scalar_tag());
 							internal_state_type::type v;
 							type_type state_id = H5Tenum_create(H5T_NATIVE_SHORT);
 							check_error(H5Tenum_insert(state_id, "CREATE", &(v = internal_state_type::CREATE)));
-							check_error(H5Tenum_insert(state_id, "DELETE", &(v = internal_state_type::DELETE)));
 							check_error(H5Tenum_insert(state_id, "PLACEHOLDER", &(v = internal_state_type::PLACEHOLDER)));
 							check_error(H5Tcommit2(_file, "state_type", state_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
 							type_type log_id = H5Tcreate (H5T_COMPOUND, sizeof(internal_log_type));
 							check_error(H5Tinsert(log_id, "timestamp", HOFFSET(internal_log_type, timestamp), H5T_NATIVE_UINT));
 							type_type uname_id(H5Tcopy(H5T_C_S1));
 							check_error(H5Tset_size(uname_id, H5T_VARIABLE));
-							check_error(H5Tinsert(log_id, "username", HOFFSET(internal_log_type, username), uname_id));
-							check_error(H5Tcommit2(_file, "log_type", _log_id = log_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
-							commit();
+							check_error(H5Tinsert(log_id, "log", HOFFSET(internal_log_type, log), uname_id));
+							check_error(H5Tcommit2(_file, "log_type", log_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
 						} else
 							get_attr("/revisions", "last", _revision, scalar_tag());
 						_log_id = H5Topen2(_file, "log_type", H5P_DEFAULT);
@@ -236,15 +235,15 @@ namespace alps {
 							r = r.substr(0, pos) + static_cast<char>(boost::lexical_cast<int>(r.substr(pos + 2, r.find_first_of(';', pos) - pos - 2))) + r.substr(r.find_first_of(';', pos) + 1);
 						return r;
 					}
-					void commit(std::string const & username = "anonymous") {
+					void commit(std::string const & log = "") {
 						set_attr("/revisions", "last", ++_revision, scalar_tag());
 						set_group("/revisions/" + boost::lexical_cast<std::string>(_revision));
 						internal_log_type v = {
 							(boost::posix_time::second_clock::universal_time() - boost::posix_time::ptime(boost::gregorian::date(1970,1,1))).total_seconds(),
-							std::strcpy(new char[username.size() + 1], username.c_str())
+							std::strcpy(new char[log.size() + 1], log.c_str())
 						};
 						set_attr("/revisions/" + boost::lexical_cast<std::string>(_revision), "info", v, internal_log_tag());
-						delete[] v.username;
+						delete[] v.log;
 					}
 					std::vector<std::pair<std::string, std::size_t> > list_revisions() {
 						// TODO: implement
@@ -460,34 +459,28 @@ namespace alps {
 							}
 						}
 					}
-					void save_comitted_attr(std::string const & p, std::string const & s) const {
-					
-					}
-					hid_t open_attr_parent(std::string const & p) const {
+					template<typename T> void set_attr_helper(std::string const & p, std::string const & s, hid_t type_id, T const * const v) const {
+						//  save_comitted_attr(p, s);
+						
+						
+						
+						hid_t parent_id;
 						if (is_group(p))
-							return H5Gopen2(_file, p.c_str(), H5P_DEFAULT);
+							parent_id = H5Gopen2(_file, p.c_str(), H5P_DEFAULT);
 						else if (is_data(p))
-							return H5Dopen2(_file, p.c_str(), H5P_DEFAULT);
+							parent_id = H5Dopen2(_file, p.c_str(), H5P_DEFAULT);
 						else
 							throw std::runtime_error("unknown path: " + p);
-					}
-					void close_attr_parent(std::string const & p, hid_t id) const {
-						if (is_group(p))
-							check_group(id);
-						else
-							check_data(id);
-					}
-					template<typename T> void set_attr_helper(std::string const & p, std::string const & s, hid_t type_id, hid_t space_id, T const * const v) {
-						hid_t parent_id = open_attr_parent(p);
 						hid_t id = H5Aopen(parent_id, s.c_str(), H5P_DEFAULT);
 						if (id < 0)
-							id = H5Acreate2(parent_id, s.c_str(), type_id, space_id, H5P_DEFAULT, H5P_DEFAULT);
+							id = H5Acreate2(parent_id, s.c_str(), type_id, space_type(H5Screate(H5S_SCALAR)), H5P_DEFAULT, H5P_DEFAULT);
 						attribute_type attr_id(id);
 						check_error(H5Awrite(attr_id, type_id, v));
-						close_attr_parent(p, parent_id);
+						if (is_group(p))
+							check_group(parent_id);
+						else
+							check_data(parent_id);
 					}
-					
-					
 					template<typename T> void get_data(std::string const & p, T & v, scalar_tag) const {
 						if (is_null(p))
 							throw std::runtime_error("the path '" + p + "' is null");
@@ -800,50 +793,21 @@ namespace alps {
 						throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
 					}
 					template<typename T> void set_attr(std::string const & p, std::string const & s, T const & v, scalar_tag) const {
-						save_comitted_attr(p, s);
-						hid_t parent_id = open_attr_parent(p);
-						type_type type_id(get_native_type(v));
-						hid_t id = H5Aopen(parent_id, s.c_str(), H5P_DEFAULT);
-						if (id < 0)
-							id = H5Acreate2(parent_id, s.c_str(), type_id, space_type(H5Screate(H5S_SCALAR)), H5P_DEFAULT, H5P_DEFAULT);
-						attribute_type attr_id(id);
-						check_error(H5Awrite(attr_id, type_id, &v));
-						close_attr_parent(p, parent_id);
+						set_attr_helper(p, s, type_type(get_native_type(v)), &v);
 					}
-					template<typename T> void set_attr(std::string const & p, std::string const & s, T const & v, stl_string_tag) {
-						save_comitted_attr(p, s);
-						hid_t parent_id = open_attr_parent(p);
+					template<typename T> void set_attr(std::string const & p, std::string const & s, T const & v, stl_string_tag) const {
 						type_type type_id(H5Tcopy(H5T_C_S1));
 						check_error(H5Tset_size(type_id, v.size()));
-						hid_t id = H5Aopen(parent_id, s.c_str(), H5P_DEFAULT);
-						if (id < 0)
-							id = H5Acreate2(parent_id, s.c_str(), type_id, space_type(H5Screate(H5S_SCALAR)), H5P_DEFAULT, H5P_DEFAULT);
-						attribute_type attr_id(id);
-						check_error(H5Awrite(attr_id, type_id, &v[0]));
-						close_attr_parent(p, parent_id);
+						set_attr_helper(p, s, type_id, &v[0]);
 					}
-					template<typename T> void set_attr(std::string const & p, std::string const & s, T const & v, c_string_tag) {
+					template<typename T> void set_attr(std::string const & p, std::string const & s, T const & v, c_string_tag) const {
 						set_attr(p, s, std::string(v), stl_string_tag());
 					}
-					template<typename T> void set_attr(std::string const & p, std::string const & s, T const & v, internal_state_tag) {
-						hid_t parent_id = open_attr_parent(p);
-
-
-						hid_t id = H5Aopen(parent_id, s.c_str(), H5P_DEFAULT);
-						if (id < 0)
-							id = H5Acreate2(parent_id, s.c_str(), _state_id, space_type(H5Screate(H5S_SCALAR)), H5P_DEFAULT, H5P_DEFAULT);
-						attribute_type attr_id(id);
-						check_error(H5Awrite(attr_id, _state_id, &v));
-						close_attr_parent(p, parent_id);
+					template<typename T> void set_attr(std::string const & p, std::string const & s, T const & v, internal_state_tag) const {
+						set_attr_helper(p, s, _state_id, &v);
 					}
-					template<typename T> void set_attr(std::string const & p, std::string const & s, T const & v, internal_log_tag) {
-						hid_t parent_id = open_attr_parent(p);
-						hid_t id = H5Aopen(parent_id, s.c_str(), H5P_DEFAULT);
-						if (id < 0)
-							id = H5Acreate2(parent_id, s.c_str(), _log_id, space_type(H5Screate(H5S_SCALAR)), H5P_DEFAULT, H5P_DEFAULT);
-						attribute_type attr_id(id);
-						check_error(H5Awrite(attr_id, _log_id, &v));
-						close_attr_parent(p, parent_id);
+					template<typename T> void set_attr(std::string const & p, std::string const & s, T const & v, internal_log_tag) const {
+						set_attr_helper(p, s, _log_id, &v);
 					}
 					void set_group(std::string const & p) const {
 						if (!is_group(p)) {
