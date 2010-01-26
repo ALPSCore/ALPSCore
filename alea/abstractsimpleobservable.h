@@ -191,18 +191,25 @@ public:
 		ar
 			<< make_pvp("labels", label_)
 			<< make_pvp("count", count())
-			<< make_pvp("mean/value", mean())
-			<< make_pvp("mean/error", error())
-			<< make_pvp("mean/error_convergence", converged_errors())
 		;
-		if(has_variance())
+		if (count() > 0)
 			ar
-				<< make_pvp("variance/value", variance())
+				<< make_pvp("mean/value", mean())
 			;
-		if(has_tau())
+		if (count() > 1) {
 			ar
-				<< make_pvp("tau/value", tau())
+				<< make_pvp("mean/error", error())
+				<< make_pvp("mean/error_convergence", converged_errors())
 			;
+			if(has_variance())
+				ar
+					<< make_pvp("variance/value", variance())
+				;
+			if(has_tau())
+				ar
+					<< make_pvp("tau/value", tau())
+				;
+		}
 	}
 #endif
 

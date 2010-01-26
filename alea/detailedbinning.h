@@ -320,24 +320,48 @@ inline void BasicDetailedBinning<T>::load(IDump& dump)
             >> make_pvp("timeseries/data/@maxbinnum", maxbinnum_)
             >> make_pvp("timeseries/data2", values2_)
         ;
+		value_type value, value2;
+		ar 
+			>> make_pvp("timeseries/partialbin", value)
+			>> make_pvp("timeseries/partialbin2", value2)
+			>> make_pvp("timeseries/partialbin/@count", binentries_)
+		;
+		values_.push_back(value);
+		values2_.push_back(value2);
 	}
 	template <class T> inline void BasicDetailedBinning<T>::serialize(hdf5::oarchive & ar) const {
-      // copy back() to "timeseries/partialbin"
-      // set "timeseries/partialbin/@count to binentries_
-      // pop off the last bin
-      // serialize
-      // push back the last bin
-      // for values and values2
-      
 		SimpleBinning<T>::serialize(ar);
-        ar 
-            << make_pvp("timeseries/data", values_)
-            << make_pvp("timeseries/data/@binningtype", "linear")
-            << make_pvp("timeseries/data/@minbinsize", minbinsize_)
-            << make_pvp("timeseries/data/@maxbinnum", maxbinnum_)
-            << make_pvp("timeseries/data2", values2_)
-            << make_pvp("timeseries/data2/@binningtype", "linear")
-        ;
+		if (values_.size() && values2_.size()) {
+			ar 
+				<< make_pvp("timeseries/partialbin", values_.back())
+				<< make_pvp("timeseries/partialbin/@count", binentries_)
+				<< make_pvp("timeseries/partialbin2", values2_.back())
+				<< make_pvp("timeseries/partialbin2/@count", binentries_)
+			;
+			value_type value = values_.back();
+			const_cast<BasicDetailedBinning<T> *>(this)->values_.pop_back();
+			value_type value2 = values2_.back();
+			const_cast<BasicDetailedBinning<T> *>(this)->values2_.pop_back();
+			ar
+				<< make_pvp("timeseries/data", values_)
+				<< make_pvp("timeseries/data/@binningtype", "linear")
+				<< make_pvp("timeseries/data/@minbinsize", minbinsize_)
+				<< make_pvp("timeseries/data/@maxbinnum", maxbinnum_)
+				<< make_pvp("timeseries/data2", values2_)
+				<< make_pvp("timeseries/data2/@binningtype", "linear")
+			;
+			const_cast<BasicDetailedBinning<T> *>(this)->values_.push_back(value);
+			const_cast<BasicDetailedBinning<T> *>(this)->values2_.push_back(value2);
+		} else {
+			ar
+				<< make_pvp("timeseries/data", std::vector<value_type>())
+				<< make_pvp("timeseries/data/@binningtype", "linear")
+				<< make_pvp("timeseries/data/@minbinsize", minbinsize_)
+				<< make_pvp("timeseries/data/@maxbinnum", maxbinnum_)
+				<< make_pvp("timeseries/data2", std::vector<value_type>())
+				<< make_pvp("timeseries/data2/@binningtype", "linear")
+			;
+		}
 	}
 #endif
 

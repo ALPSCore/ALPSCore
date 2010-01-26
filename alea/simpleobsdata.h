@@ -974,7 +974,9 @@ void SimpleObservableData<T>::load(IDump& dump)
 #ifdef ALPS_HAVE_HDF5
         template <typename T> void SimpleObservableData<T>::serialize(hdf5::oarchive & ar) const {
                 ar
-                        << make_pvp("count", count_)
+					<< make_pvp("count", count_)
+					<< make_pvp("@changed", changed_)
+					<< make_pvp("@nonlinearoperations", nonlinear_operations_)
                 ;
                 if (valid_) {
                         ar
@@ -991,48 +993,52 @@ void SimpleObservableData<T>::load(IDump& dump)
                                         << make_pvp("tau/value", tau_)
                                 ;
                         ar
-                                << make_pvp("timeseries/data", values_)
-                                << make_pvp("timeseries/data/@binningtype", "linear")
-                                << make_pvp("timeseries/data2", values2_)
-                                << make_pvp("timeseries/data2/@binningtype", "linear")
+							<< make_pvp("timeseries/data", values_)
+							<< make_pvp("timeseries/data/@discard", discardedbins_)
+							<< make_pvp("timeseries/data/@binningtype", "linear")
+							<< make_pvp("timeseries/data2", values2_)
+							<< make_pvp("timeseries/data2/@discard", discardedbins_)
+							<< make_pvp("timeseries/data2/@binningtype", "linear")
                         ;
                         if (jack_valid_)
-                                ar
+							ar
                                         << make_pvp("jacknife/data", jack_)
                                         << make_pvp("jacknife/data/@binningtype", "linear")
                                 ;
                 }
         }
         template <typename T> void SimpleObservableData<T>::serialize(hdf5::iarchive & ar) const {
-               // can_set_thermal_ and discardedmeas should be ignored and set to false and 0
-               // discardedbins_ should be written as  timeseries/data/@discard and timeseries/data2/@discard
-               // write changed and nonlinearoperations for now as @changed, @nonlinearoperations
-                ar
-                        >> make_pvp("count", count_)
-                ;
-                if (valid_ = ar.is_data("mean/value")) {
-                        ar
-                                >> make_pvp("mean/value", mean_)
-                                >> make_pvp("mean/error", error_)
-                                >> make_pvp("mean/error_convergence", converged_errors_)
-                        ;
-                        if (has_variance_ = ar.is_data("variance/value"))
-                                ar
-                                        >> make_pvp("variance/value", variance_)
-                                ;
-                        if (has_tau_ = ar.is_data("variance/tau_"))
-                                ar
-                                        >> make_pvp("tau/value", tau_)
-                                ;
-                        ar
-                                >> make_pvp("timeseries/data", values_)
-                                >> make_pvp("timeseries/data2", values2_)
-                        ;
-                        if (jack_valid_ = ar.is_data("jacknife/data"))
-                                ar
-                                        >> make_pvp("jacknife/data", jack_)
-                                ;
-                }
+			can_set_thermal_ = false;
+			discardedmeas_ = 0;
+			ar
+				>> make_pvp("count", count_)
+				>> make_pvp("@changed", changed_)
+				>> make_pvp("@nonlinearoperations", nonlinear_operations_)
+			;
+			if (valid_ = ar.is_data("mean/value")) {
+				ar
+					>> make_pvp("mean/value", mean_)
+					>> make_pvp("mean/error", error_)
+					>> make_pvp("mean/error_convergence", converged_errors_)
+				;
+				if (has_variance_ = ar.is_data("variance/value"))
+					ar
+						>> make_pvp("variance/value", variance_)
+					;
+				if (has_tau_ = ar.is_data("variance/tau_"))
+					ar
+						>> make_pvp("tau/value", tau_)
+					;
+				ar
+					>> make_pvp("timeseries/data", values_)
+					>> make_pvp("timeseries/data/@discard", discardedbins_)
+					>> make_pvp("timeseries/data2", values2_)
+				;
+				if (jack_valid_ = ar.is_data("jacknife/data"))
+					ar
+						>> make_pvp("jacknife/data", jack_)
+					;
+			}
         }
 #endif
 template <class T>

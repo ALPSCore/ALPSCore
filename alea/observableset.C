@@ -74,9 +74,10 @@ void ObservableSet::load(IDump& dump)
                 std::vector<std::string> list = ar.list_children(ar.get_context());
                 for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
                         std::string name = hdf5_name_decode(*it);
-                        if (!has(name)) {
+                        if (!has(name))
                                 throw std::runtime_error("the observalbe " + *it + " does not exists");
             /*
+// TODO: Lukas
                 for unsigned:
                     distinguish between Real and RealVector depending on size of mean or sum, whatever exists
                     if timeseries/data and timeseries/logbinning exist create a RealObservable or RealVectorObservable
@@ -92,16 +93,14 @@ void ObservableSet::load(IDump& dump)
                     look above: if it is either SimpleReal* or Real* Observable, create a signed one and read it
                     otherwise
             */
-
-            }
-                        ar >> make_pvp(*it, operator[](name));
-                }
-        }
-        void ObservableSet::serialize(hdf5::oarchive & ar) const {
-                for(base_type::const_iterator it = base_type::begin(); it != base_type::end(); ++it)
-                        if(it->second)
-                                ar << make_pvp(hdf5_name_encode(it->second->name()), it->second);
-        }
+			ar >> make_pvp(*it, operator[](name));
+		}
+	}
+	void ObservableSet::serialize(hdf5::oarchive & ar) const {
+		for(base_type::const_iterator it = base_type::begin(); it != base_type::end(); ++it)
+			if(it->second)
+				ar << make_pvp(hdf5_name_encode(it->second->name()), it->second);
+	}
 #endif
 
 void ObservableSet::update_signs()
