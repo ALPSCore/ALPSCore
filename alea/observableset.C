@@ -75,7 +75,8 @@ void ObservableSet::load(IDump& dump)
                 for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
                         std::string name = hdf5_name_decode(*it);
                         if (!has(name))
-                                throw std::runtime_error("the observalbe " + *it + " does not exists");
+                                //throw std::runtime_error("the observalbe " + *it + " does not exists");
+                                continue;
             /*
 // TODO: Lukas
                 for unsigned:
