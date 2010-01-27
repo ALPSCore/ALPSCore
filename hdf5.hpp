@@ -176,10 +176,10 @@ namespace alps {
 			};
 			template <typename Tag> class archive: boost::noncopyable {
 				public:
-					typedef struct {
-						unsigned int timestamp;
-						std::string log;
-					} log_type;
+// 					typedef struct {
+// 						unsigned int timestamp;
+// 						std::string log;
+// 					} log_type;
 					archive(std::string const & file): _revision(0) {
 						H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
 						if (boost::is_same<Tag, write>::value) {
