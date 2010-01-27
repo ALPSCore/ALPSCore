@@ -51,7 +51,7 @@ template<class T, std::size_t N>
 inline alps::ODump& operator<<(alps::ODump& dump, const boost::array<T,N>& x)
 {
   dump.write_array(N,&(x[0]));
-  return dump;	
+  return dump;
 }
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE

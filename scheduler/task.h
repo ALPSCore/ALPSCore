@@ -151,7 +151,7 @@ public:
   static Parameters parse_ext_task_file(std::string);
   
 #ifdef ALPS_HAVE_HDF5
-	virtual void serialize(hdf5::iarchive &);
+  virtual void serialize(hdf5::iarchive &);
 #endif
 
 protected:
@@ -203,7 +203,7 @@ public:
   std::vector<AbstractWorker*> runs; // the list of all runs
 
 #ifdef ALPS_HAVE_HDF5
-	void serialize(hdf5::iarchive &);
+  void serialize(hdf5::iarchive &);
 #endif
 
 protected:

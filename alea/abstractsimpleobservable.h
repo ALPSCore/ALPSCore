@@ -182,35 +182,35 @@ public:
   }
   
 #ifdef ALPS_HAVE_HDF5
-	void serialize(hdf5::iarchive & ar) {
-		Observable::serialize(ar);
-		ar >> make_pvp("labels", label_);
-	}
-	void serialize(hdf5::oarchive & ar) const {
-		Observable::serialize(ar);
-		ar
-			<< make_pvp("labels", label_)
-			<< make_pvp("count", count())
-		;
-		if (count() > 0)
-			ar
-				<< make_pvp("mean/value", mean())
-			;
-		if (count() > 1) {
-			ar
-				<< make_pvp("mean/error", error())
-				<< make_pvp("mean/error_convergence", converged_errors())
-			;
-			if(has_variance())
-				ar
-					<< make_pvp("variance/value", variance())
-				;
-			if(has_tau())
-				ar
-					<< make_pvp("tau/value", tau())
-				;
-		}
-	}
+    void serialize(hdf5::iarchive & ar) {
+        Observable::serialize(ar);
+        ar >> make_pvp("labels", label_);
+    }
+    void serialize(hdf5::oarchive & ar) const {
+        Observable::serialize(ar);
+        ar
+            << make_pvp("labels", label_)
+            << make_pvp("count", count())
+        ;
+        if (count() > 0)
+            ar
+                << make_pvp("mean/value", mean())
+            ;
+        if (count() > 1) {
+            ar
+                << make_pvp("mean/error", error())
+                << make_pvp("mean/error_convergence", converged_errors())
+            ;
+            if(has_variance())
+                ar
+                    << make_pvp("variance/value", variance())
+                ;
+            if(has_tau())
+                ar
+                    << make_pvp("tau/value", tau())
+                ;
+        }
+    }
 #endif
 
 private:
@@ -352,9 +352,9 @@ void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, const boost::f
       oxs << start_tag("SCALAR_AVERAGE")
           << attribute("indexvalue",lab);
       oxs << start_tag("COUNT");
-	  oxs << no_linebreak;
-	  oxs << count();
-	  oxs << end_tag("COUNT");
+      oxs << no_linebreak;
+      oxs << count();
+      oxs << end_tag("COUNT");
       int prec=(count()==1) ? 19 : int(4-std::log10(std::abs(obs_value_traits<result_type>::slice_value(error_,it)/obs_value_traits<result_type>::slice_value(mean_,it))));
       prec = (prec>=3 && prec<20 ? prec : 8);
       oxs << start_tag("MEAN") << no_linebreak;

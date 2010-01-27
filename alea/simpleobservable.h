@@ -122,8 +122,8 @@ public:
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-	virtual void serialize(hdf5::iarchive & ar);
-	virtual void serialize(hdf5::oarchive & ar) const;
+  virtual void serialize(hdf5::iarchive & ar);
+  virtual void serialize(hdf5::oarchive & ar) const;
 #endif
 
   virtual std::string evaluation_method(Target t) const
@@ -187,14 +187,14 @@ inline void SimpleObservable<T,BINNING>::load(IDump& dump)
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-	template <class T,class BINNING> inline void SimpleObservable<T,BINNING>::serialize(hdf5::iarchive & ar) {
-		AbstractSimpleObservable<T>::serialize(ar);
-		ar >> make_pvp("", b_);
-	}
-	template <class T,class BINNING> inline void SimpleObservable<T,BINNING>::serialize(hdf5::oarchive & ar) const {
-		AbstractSimpleObservable<T>::serialize(ar);
-		ar << make_pvp("", b_);
-	}
+  template <class T,class BINNING> inline void SimpleObservable<T,BINNING>::serialize(hdf5::iarchive & ar) {
+    AbstractSimpleObservable<T>::serialize(ar);
+    ar >> make_pvp("", b_);
+  }
+  template <class T,class BINNING> inline void SimpleObservable<T,BINNING>::serialize(hdf5::oarchive & ar) const {
+    AbstractSimpleObservable<T>::serialize(ar);
+    ar << make_pvp("", b_);
+  }
 #endif
 
 } // end namespace alps

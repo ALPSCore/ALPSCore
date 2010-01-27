@@ -61,7 +61,7 @@
  */
 
 #ifndef _xdrcore_h
-#define	_xdrcore_h
+#define _xdrcore_h
 
 #include <alps/config.h>
 #ifndef ALPS_HAVE_RPC_XDR_H
@@ -157,7 +157,7 @@ enum xdr_op {
 /*
  * This is the number of bytes per unit of external data.
  */
-#define BYTES_PER_XDR_UNIT	(4)
+#define BYTES_PER_XDR_UNIT    (4)
 /*
  * This only works if the above is a power of 2.  But it's defined to be
  * 4 by the appropriate RFCs.  So it will work.  And it's normally quicker
@@ -167,7 +167,7 @@ enum xdr_op {
 #define RNDUP(x)  (((x) + BYTES_PER_XDR_UNIT - 1) & ~(BYTES_PER_XDR_UNIT - 1))
 #else /* this is the old routine */
 #define RNDUP(x)  ((((x) + BYTES_PER_XDR_UNIT - 1) / BYTES_PER_XDR_UNIT) \
-		    * BYTES_PER_XDR_UNIT)
+            * BYTES_PER_XDR_UNIT)
 #endif
 
 /*
@@ -179,35 +179,35 @@ enum xdr_op {
 typedef struct XDR XDR;
 struct XDR
   {
-    enum xdr_op x_op;		/* operation; fast additional param */
+    enum xdr_op x_op;        /* operation; fast additional param */
     struct xdr_ops
       {
-	bool_t (*x_getlong) (XDR *__xdrs, long *__lp);
-	/* get a long from underlying stream */
-	bool_t (*x_putlong) (XDR *__xdrs, __const long *__lp);
-	/* put a long to " */
-	bool_t (*x_getbytes) (XDR *__xdrs, caddr_t __addr, u_int __len);
-	/* get some bytes from " */
-	bool_t (*x_putbytes) (XDR *__xdrs, __const char *__addr, u_int __len);
-	/* put some bytes to " */
-	u_int (*x_getpostn) (__const XDR *__xdrs);
-	/* returns bytes off from beginning */
-	bool_t (*x_setpostn) (XDR *__xdrs, u_int __pos);
-	/* lets you reposition the stream */
-	int32_t *(*x_inline) (XDR *__xdrs, u_int __len);
-	/* buf quick ptr to buffered data */
-	void (*x_destroy) (XDR *__xdrs);
-	/* free privates of this xdr_stream */
-	bool_t (*x_getint32) (XDR *__xdrs, int32_t *__ip);
-	/* get a int from underlying stream */
-	bool_t (*x_putint32) (XDR *__xdrs, __const int32_t *__ip);
-	/* put a int to " */
+    bool_t (*x_getlong) (XDR *__xdrs, long *__lp);
+    /* get a long from underlying stream */
+    bool_t (*x_putlong) (XDR *__xdrs, __const long *__lp);
+    /* put a long to " */
+    bool_t (*x_getbytes) (XDR *__xdrs, caddr_t __addr, u_int __len);
+    /* get some bytes from " */
+    bool_t (*x_putbytes) (XDR *__xdrs, __const char *__addr, u_int __len);
+    /* put some bytes to " */
+    u_int (*x_getpostn) (__const XDR *__xdrs);
+    /* returns bytes off from beginning */
+    bool_t (*x_setpostn) (XDR *__xdrs, u_int __pos);
+    /* lets you reposition the stream */
+    int32_t *(*x_inline) (XDR *__xdrs, u_int __len);
+    /* buf quick ptr to buffered data */
+    void (*x_destroy) (XDR *__xdrs);
+    /* free privates of this xdr_stream */
+    bool_t (*x_getint32) (XDR *__xdrs, int32_t *__ip);
+    /* get a int from underlying stream */
+    bool_t (*x_putint32) (XDR *__xdrs, __const int32_t *__ip);
+    /* put a int to " */
       }
      *x_ops;
-    caddr_t x_public;		/* users' data */
-    caddr_t x_private;		/* pointer to private data */
-    caddr_t x_base;		/* private used for position info */
-    u_int x_handy;		/* extra private word */
+    caddr_t x_public;        /* users' data */
+    caddr_t x_private;        /* pointer to private data */
+    caddr_t x_base;        /* private used for position info */
+    u_int x_handy;        /* extra private word */
   };
 
 /*
@@ -242,51 +242,51 @@ typedef bool_t (*xdrproc_t) (XDR *, void *,...);
 #define xdr_putint32(xdrs, int32p)                      \
         (*(xdrs)->x_ops->x_putint32)(xdrs, int32p)
 
-#define XDR_GETLONG(xdrs, longp)			\
-	(*(xdrs)->x_ops->x_getlong)(xdrs, longp)
-#define xdr_getlong(xdrs, longp)			\
-	(*(xdrs)->x_ops->x_getlong)(xdrs, longp)
+#define XDR_GETLONG(xdrs, longp)            \
+    (*(xdrs)->x_ops->x_getlong)(xdrs, longp)
+#define xdr_getlong(xdrs, longp)            \
+    (*(xdrs)->x_ops->x_getlong)(xdrs, longp)
 
-#define XDR_PUTLONG(xdrs, longp)			\
-	(*(xdrs)->x_ops->x_putlong)(xdrs, longp)
-#define xdr_putlong(xdrs, longp)			\
-	(*(xdrs)->x_ops->x_putlong)(xdrs, longp)
+#define XDR_PUTLONG(xdrs, longp)            \
+    (*(xdrs)->x_ops->x_putlong)(xdrs, longp)
+#define xdr_putlong(xdrs, longp)            \
+    (*(xdrs)->x_ops->x_putlong)(xdrs, longp)
 
-#define XDR_GETBYTES(xdrs, addr, len)			\
-	(*(xdrs)->x_ops->x_getbytes)(xdrs, addr, len)
-#define xdr_getbytes(xdrs, addr, len)			\
-	(*(xdrs)->x_ops->x_getbytes)(xdrs, addr, len)
+#define XDR_GETBYTES(xdrs, addr, len)            \
+    (*(xdrs)->x_ops->x_getbytes)(xdrs, addr, len)
+#define xdr_getbytes(xdrs, addr, len)            \
+    (*(xdrs)->x_ops->x_getbytes)(xdrs, addr, len)
 
-#define XDR_PUTBYTES(xdrs, addr, len)			\
-	(*(xdrs)->x_ops->x_putbytes)(xdrs, addr, len)
-#define xdr_putbytes(xdrs, addr, len)			\
-	(*(xdrs)->x_ops->x_putbytes)(xdrs, addr, len)
+#define XDR_PUTBYTES(xdrs, addr, len)            \
+    (*(xdrs)->x_ops->x_putbytes)(xdrs, addr, len)
+#define xdr_putbytes(xdrs, addr, len)            \
+    (*(xdrs)->x_ops->x_putbytes)(xdrs, addr, len)
 
-#define XDR_GETPOS(xdrs)				\
-	(*(xdrs)->x_ops->x_getpostn)(xdrs)
-#define xdr_getpos(xdrs)				\
-	(*(xdrs)->x_ops->x_getpostn)(xdrs)
+#define XDR_GETPOS(xdrs)                \
+    (*(xdrs)->x_ops->x_getpostn)(xdrs)
+#define xdr_getpos(xdrs)                \
+    (*(xdrs)->x_ops->x_getpostn)(xdrs)
 
-#define XDR_SETPOS(xdrs, pos)				\
-	(*(xdrs)->x_ops->x_setpostn)(xdrs, pos)
-#define xdr_setpos(xdrs, pos)				\
-	(*(xdrs)->x_ops->x_setpostn)(xdrs, pos)
+#define XDR_SETPOS(xdrs, pos)                \
+    (*(xdrs)->x_ops->x_setpostn)(xdrs, pos)
+#define xdr_setpos(xdrs, pos)                \
+    (*(xdrs)->x_ops->x_setpostn)(xdrs, pos)
 
-#define	XDR_INLINE(xdrs, len)				\
-	(*(xdrs)->x_ops->x_inline)(xdrs, len)
-#define	xdr_inline(xdrs, len)				\
-	(*(xdrs)->x_ops->x_inline)(xdrs, len)
+#define    XDR_INLINE(xdrs, len)                \
+    (*(xdrs)->x_ops->x_inline)(xdrs, len)
+#define    xdr_inline(xdrs, len)                \
+    (*(xdrs)->x_ops->x_inline)(xdrs, len)
 
-#define	XDR_DESTROY(xdrs)					\
-	do {							\
-		if ((xdrs)->x_ops->x_destroy)			\
-			(*(xdrs)->x_ops->x_destroy)(xdrs);	\
-	} while (0)
-#define	xdr_destroy(xdrs)					\
-	do {							\
-		if ((xdrs)->x_ops->x_destroy)			\
-			(*(xdrs)->x_ops->x_destroy)(xdrs);	\
-	} while (0)
+#define    XDR_DESTROY(xdrs)                    \
+    do {                            \
+        if ((xdrs)->x_ops->x_destroy)            \
+            (*(xdrs)->x_ops->x_destroy)(xdrs);    \
+    } while (0)
+#define    xdr_destroy(xdrs)                    \
+    do {                            \
+        if ((xdrs)->x_ops->x_destroy)            \
+            (*(xdrs)->x_ops->x_destroy)(xdrs);    \
+    } while (0)
 
 /*
  * Support struct for discriminated unions.
@@ -332,8 +332,8 @@ struct xdr_discrim
  */
 #define IXDR_GET_LONG(buf) ((long)IXDR_GET_U_INT32(buf))
 #define IXDR_PUT_LONG(buf, v) ((long)IXDR_PUT_INT32(buf, (long)(v)))
-#define IXDR_GET_U_LONG(buf)	      ((u_long)IXDR_GET_LONG(buf))
-#define IXDR_PUT_U_LONG(buf, v)	      IXDR_PUT_LONG(buf, (long)(v))
+#define IXDR_GET_U_LONG(buf)          ((u_long)IXDR_GET_LONG(buf))
+#define IXDR_PUT_U_LONG(buf, v)          IXDR_PUT_LONG(buf, (long)(v))
 
 
 #define IXDR_GET_BOOL(buf)            ((bool_t)IXDR_GET_LONG(buf))
@@ -376,25 +376,25 @@ extern bool_t xdr_uint64_t (XDR *__xdrs, uint64_t *__up) ;
 extern bool_t xdr_bool (XDR *__xdrs, bool_t *__bp) ;
 extern bool_t xdr_enum (XDR *__xdrs, enum_t *__ep) ;
 extern bool_t xdr_array (XDR * _xdrs, caddr_t *__addrp, u_int *__sizep,
-			 u_int __maxsize, u_int __elsize, xdrproc_t __elproc)
+             u_int __maxsize, u_int __elsize, xdrproc_t __elproc)
      ;
 extern bool_t xdr_bytes (XDR *__xdrs, char **__cpp, u_int *__sizep,
-			 u_int __maxsize) ;
+             u_int __maxsize) ;
 extern bool_t xdr_opaque (XDR *__xdrs, caddr_t __cp, u_int __cnt) ;
 extern bool_t xdr_string (XDR *__xdrs, char **__cpp, u_int __maxsize) ;
 extern bool_t xdr_union (XDR *__xdrs, enum_t *__dscmp, char *__unp,
-			 __const struct xdr_discrim *__choices,
-			 xdrproc_t dfault) ;
+             __const struct xdr_discrim *__choices,
+             xdrproc_t dfault) ;
 extern bool_t xdr_char (XDR *__xdrs, char *__cp) ;
 extern bool_t xdr_u_char (XDR *__xdrs, u_char *__cp) ;
 extern bool_t xdr_vector (XDR *__xdrs, char *__basep, u_int __nelem,
-			  u_int __elemsize, xdrproc_t __xdr_elem) ;
+              u_int __elemsize, xdrproc_t __xdr_elem) ;
 extern bool_t xdr_float (XDR *__xdrs, float *__fp) ;
 extern bool_t xdr_double (XDR *__xdrs, double *__dp) ;
 extern bool_t xdr_reference (XDR *__xdrs, caddr_t *__xpp, u_int __size,
-			     xdrproc_t __proc) ;
+                 xdrproc_t __proc) ;
 extern bool_t xdr_pointer (XDR *__xdrs, char **__objpp,
-			   u_int __obj_size, xdrproc_t __xdr_obj) ;
+               u_int __obj_size, xdrproc_t __xdr_obj) ;
 extern bool_t xdr_wrapstring (XDR *__xdrs, char **__cpp) ;
 extern u_long xdr_sizeof (xdrproc_t, void *) ;
 
@@ -418,7 +418,7 @@ extern bool_t xdr_netobj (XDR *__xdrs, struct netobj *__np);
 
 /* XDR using memory buffers */
 extern void xdrmem_create (XDR *__xdrs, __const caddr_t __addr,
-			   u_int __size, enum xdr_op __xop) ;
+               u_int __size, enum xdr_op __xop) ;
 
 /* XDR using stdio library */
 extern void xdrstdio_create (XDR *__xdrs, FILE *__file, enum xdr_op __xop)
@@ -426,9 +426,9 @@ extern void xdrstdio_create (XDR *__xdrs, FILE *__file, enum xdr_op __xop)
 
 /* XDR pseudo records for tcp */
 extern void xdrrec_create (XDR *__xdrs, u_int __sendsize,
-			   u_int __recvsize, caddr_t __tcp_handle,
-			   int (*__readit) (char *, char *, int),
-			   int (*__writeit) (char *, char *, int)) ;
+               u_int __recvsize, caddr_t __tcp_handle,
+               int (*__readit) (char *, char *, int),
+               int (*__writeit) (char *, char *, int)) ;
 
 /* make end of xdr record */
 extern bool_t xdrrec_endofrecord (XDR *__xdrs, bool_t __sendnow) ;

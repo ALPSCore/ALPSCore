@@ -55,7 +55,7 @@ enum MCDumpType {
     MCDump_worker_version          =306
     // Some data types changed from 32 to 64 Bit between version 301 and 302
     // vector observable labels stored from 303
-	// RNG changed to Mersenne twister from 304
+    // RNG changed to Mersenne twister from 304
     // minmax dropped in 306
 };
 

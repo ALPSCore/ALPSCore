@@ -62,7 +62,7 @@ template <class T> struct VectorHelper<T,true> {
   static void read(alps::IDump& dump, std::vector<T,ALLOCATOR>& x) 
   {
     x.resize(uint32_t(dump));
-	if (x.size())
+    if (x.size())
       dump.read_array(x.size(),&(x[0]));
   }
   
@@ -70,7 +70,7 @@ template <class T> struct VectorHelper<T,true> {
   static void write(alps::ODump& dump, const std::vector<T,ALLOCATOR>& x) 
   {
     dump << uint32_t(x.size());
-	if(x.size())
+    if(x.size())
       dump.write_array(x.size(),&(x[0]));
   }
 };

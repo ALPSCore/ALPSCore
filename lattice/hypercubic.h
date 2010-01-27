@@ -393,12 +393,12 @@ public:
       valid_=true;
       k_.resize(alps::dimension(*cell_iterator::lattice_));
       for (unsigned int i=0;i<alps::dimension(*cell_iterator::lattice_);++i) {
-	    k_[i] = 0.;
+        k_[i] = 0.;
         int l=cell_iterator::lattice_->extent()[i];
         int x=cell_iterator::offset_[i];
         if (x>l/2)
           x-=l;
-		k_[i] = 2.*M_PI*double(x)/double(l);
+        k_[i] = 2.*M_PI*double(x)/double(l);
       }
     }
   };

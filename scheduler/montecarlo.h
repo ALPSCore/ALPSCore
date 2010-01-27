@@ -57,10 +57,10 @@ public:
 
   void save_worker(ODump&) const;
   void load_worker(IDump&);
-	#ifdef ALPS_HAVE_HDF5
-		void serialize(hdf5::oarchive &) const;
-		void serialize(hdf5::iarchive &);
-	#endif
+#ifdef ALPS_HAVE_HDF5
+  void serialize(hdf5::oarchive &) const;
+  void serialize(hdf5::iarchive &);
+#endif
   virtual void save(ODump&) const;
   virtual void load(IDump&);
 
@@ -120,7 +120,7 @@ public:
   virtual ResultType get_summary(const std::string) const;
 
 #ifdef ALPS_HAVE_HDF5
-	void serialize(hdf5::iarchive &);
+  void serialize(hdf5::iarchive &);
 #endif
 
 private:

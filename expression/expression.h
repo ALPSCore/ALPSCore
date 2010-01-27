@@ -218,8 +218,8 @@ void Expression<T>::sort()
       terms_.erase(it);
       added=true;
       *prev=Term<T>(prev_term);
-	  it = prev;
-	  ++it;
+      it = prev;
+      ++it;
     }
     else {
       if (added && is_zero(prev_term.first))

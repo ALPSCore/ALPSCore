@@ -142,8 +142,8 @@ public:
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-	void serialize(hdf5::iarchive & ar);
-	void serialize(hdf5::oarchive & ar) const;
+  void serialize(hdf5::iarchive & ar);
+  void serialize(hdf5::oarchive & ar) const;
 #endif
 
   Observable* clone() const {return new AbstractSignedObservable<OBS,SIGN>(*this);}
@@ -290,24 +290,24 @@ void AbstractSignedObservable<OBS,SIGN>::load(IDump& dump)
 }
 
 #ifdef ALPS_HAVE_HDF5
-	template <class OBS, class SIGN>
-	void AbstractSignedObservable<OBS,SIGN>::serialize(hdf5::iarchive & ar) {
-		ar
-			>> make_pvp("@sign", sign_name_)
-		;
-		obs_.rename(sign_name_ + " * " + super_type::name());
-		ar
-			>> make_pvp("../" + obs_.name(), obs_)
-		;
-	}
-	template <class OBS, class SIGN>
-	void AbstractSignedObservable<OBS,SIGN>::serialize(hdf5::oarchive & ar) const {
-		ar.serialize("");
-		ar
-			<< make_pvp("../" + obs_.name(), obs_)
-			<< make_pvp("@sign", sign_name_)
-		;
-	}
+  template <class OBS, class SIGN>
+  void AbstractSignedObservable<OBS,SIGN>::serialize(hdf5::iarchive & ar) {
+    ar
+      >> make_pvp("@sign", sign_name_)
+    ;
+    obs_.rename(sign_name_ + " * " + super_type::name());
+    ar
+      >> make_pvp("../" + obs_.name(), obs_)
+    ;
+  }
+  template <class OBS, class SIGN>
+  void AbstractSignedObservable<OBS,SIGN>::serialize(hdf5::oarchive & ar) const {
+    ar.serialize("");
+    ar
+      << make_pvp("../" + obs_.name(), obs_)
+      << make_pvp("@sign", sign_name_)
+    ;
+  }
 #endif
 
 template <class OBS, class SIGN>
