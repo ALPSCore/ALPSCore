@@ -6,11 +6,11 @@ LDADD = $(top_builddir)/lib/alps/libalps.la $(BOOST_LIBS) $(SQLITE_LIBS) $(XML_L
 check_PROGRAMS =
 if HAVE_HDF5
 check_PROGRAMS += io
-check_PROGRAMS += alea_mocasito alea_mocasito2
+check_PROGRAMS += alea_mocasito alea2
 endif
 io_SOURCES = io.C
 alea_mocasito_SOURCES = alea_mocasito.C
-alea_mocasito2_SOURCES = alea_mocasito2.C
+alea2_SOURCES = alea2.C
 
 dist_noinst_DATA = alea_mocasito.output
 

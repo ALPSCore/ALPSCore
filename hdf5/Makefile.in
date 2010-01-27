@@ -35,7 +35,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 check_PROGRAMS = $(am__EXEEXT_1)
-@HAVE_HDF5_TRUE@am__append_1 = io alea_mocasito alea_mocasito2
+@HAVE_HDF5_TRUE@am__append_1 = io alea_mocasito alea2
 subdir = test/hdf5
 DIST_COMMON = $(dist_noinst_DATA) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in
@@ -65,19 +65,19 @@ CONFIG_HEADER = $(top_builddir)/src/alps/config.h \
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 @HAVE_HDF5_TRUE@am__EXEEXT_1 = io$(EXEEXT) alea_mocasito$(EXEEXT) \
-@HAVE_HDF5_TRUE@	alea_mocasito2$(EXEEXT)
-am_alea_mocasito_OBJECTS = alea_mocasito.$(OBJEXT)
-alea_mocasito_OBJECTS = $(am_alea_mocasito_OBJECTS)
-alea_mocasito_LDADD = $(LDADD)
+@HAVE_HDF5_TRUE@	alea2$(EXEEXT)
+am_alea2_OBJECTS = alea2.$(OBJEXT)
+alea2_OBJECTS = $(am_alea2_OBJECTS)
+alea2_LDADD = $(LDADD)
 am__DEPENDENCIES_1 =
-alea_mocasito_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+alea2_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
-am_alea_mocasito2_OBJECTS = alea_mocasito2.$(OBJEXT)
-alea_mocasito2_OBJECTS = $(am_alea_mocasito2_OBJECTS)
-alea_mocasito2_LDADD = $(LDADD)
-alea_mocasito2_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
+am_alea_mocasito_OBJECTS = alea_mocasito.$(OBJEXT)
+alea_mocasito_OBJECTS = $(am_alea_mocasito_OBJECTS)
+alea_mocasito_LDADD = $(LDADD)
+alea_mocasito_DEPENDENCIES = $(top_builddir)/lib/alps/libalps.la \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
@@ -100,10 +100,8 @@ CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(alea_mocasito_SOURCES) $(alea_mocasito2_SOURCES) \
-	$(io_SOURCES)
-DIST_SOURCES = $(alea_mocasito_SOURCES) $(alea_mocasito2_SOURCES) \
-	$(io_SOURCES)
+SOURCES = $(alea2_SOURCES) $(alea_mocasito_SOURCES) $(io_SOURCES)
+DIST_SOURCES = $(alea2_SOURCES) $(alea_mocasito_SOURCES) $(io_SOURCES)
 DATA = $(dist_noinst_DATA)
 ETAGS = etags
 CTAGS = ctags
@@ -291,7 +289,7 @@ AM_LDFLAGS = $(BASE_LDFLAGS) $(BOOST_LDFLAGS) $(SQLITE_LDFLAGS) $(XML_LDFLAGS) $
 LDADD = $(top_builddir)/lib/alps/libalps.la $(BOOST_LIBS) $(SQLITE_LIBS) $(XML_LIBS) $(HDF5_LIBS) $(MPI_LIBS) $(BASE_LIBS) 
 io_SOURCES = io.C
 alea_mocasito_SOURCES = alea_mocasito.C
-alea_mocasito2_SOURCES = alea_mocasito2.C
+alea2_SOURCES = alea2.C
 dist_noinst_DATA = alea_mocasito.output
 all: all-am
 
@@ -336,12 +334,12 @@ clean-checkPROGRAMS:
 	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
 	echo " rm -f" $$list; \
 	rm -f $$list
+alea2$(EXEEXT): $(alea2_OBJECTS) $(alea2_DEPENDENCIES) 
+	@rm -f alea2$(EXEEXT)
+	$(CXXLINK) $(alea2_OBJECTS) $(alea2_LDADD) $(LIBS)
 alea_mocasito$(EXEEXT): $(alea_mocasito_OBJECTS) $(alea_mocasito_DEPENDENCIES) 
 	@rm -f alea_mocasito$(EXEEXT)
 	$(CXXLINK) $(alea_mocasito_OBJECTS) $(alea_mocasito_LDADD) $(LIBS)
-alea_mocasito2$(EXEEXT): $(alea_mocasito2_OBJECTS) $(alea_mocasito2_DEPENDENCIES) 
-	@rm -f alea_mocasito2$(EXEEXT)
-	$(CXXLINK) $(alea_mocasito2_OBJECTS) $(alea_mocasito2_LDADD) $(LIBS)
 io$(EXEEXT): $(io_OBJECTS) $(io_DEPENDENCIES) 
 	@rm -f io$(EXEEXT)
 	$(CXXLINK) $(io_OBJECTS) $(io_LDADD) $(LIBS)
@@ -352,8 +350,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/alea2.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/alea_mocasito.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/alea_mocasito2.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/io.Po@am__quote@
 
 .C.o:
