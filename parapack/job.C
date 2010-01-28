@@ -173,7 +173,7 @@ void task::save_observable(std::vector<std::vector<ObservableSet> > const& oss) 
       if (obs_.size() == 1) {
         #pragma omp critical (hdf5io)
         {
-          boost::filesystem::path file = complete(boost::filesystem::path(base_ + ".h5"), basedir_);
+          boost::filesystem::path file = complete(boost::filesystem::path(base_ + ".out.h5"), basedir_);
           hdf5::oarchive h5(file.native_file_string());
           h5 << make_pvp("/parameters", params_tmp);
           h5 << make_pvp("/simulation/results", obs_[0]);
