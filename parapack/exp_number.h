@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -37,8 +37,6 @@
 
 namespace alps {
 
-namespace {
-
 template<typename T, typename U>
 struct fp_promotion_traits;
 
@@ -59,8 +57,6 @@ FP_PROMOTION_TRAITS(long double, double, long double)
 FP_PROMOTION_TRAITS(long double, long double, long double)
 
 #undef FP_PROMOTION_TRAITS
-
-}
 
 template<typename T>
 class exp_number {
