@@ -25,6 +25,8 @@
 *
 *****************************************************************************/
 
+// boostinspect:nounnamed
+
 #ifndef PARAPACK_FACTORY_H
 #define PARAPACK_FACTORY_H
 
