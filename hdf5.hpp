@@ -41,6 +41,8 @@
 #include <boost/intrusive_ptr.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/filesystem/path.hpp>
+#include <boost/numeric/ublas/vector.hpp>
 
 #include <hdf5.h>
 
@@ -96,6 +98,7 @@ namespace alps {
             template<> struct is_writable<std::valarray<std::string> > : boost::mpl::true_ { typedef stl_container_of_string_tag category; };
             #define HDF5_CONTAINER_OF_SCALAR_CV(T)                                                                                                                 \
                 template<> struct is_writable<std::vector<T> > : boost::mpl::true_ { typedef stl_container_of_scalar_tag category; };                              \
+                template<> struct is_writable<boost::numeric::ublas::vector<T> > : boost::mpl::true_ { typedef stl_container_of_scalar_tag category; };                              \
                 template<> struct is_writable<std::valarray<T> > : boost::mpl::true_ { typedef stl_container_of_scalar_tag category; };                            \
                 template<> struct is_writable<std::vector<std::valarray<T> > > : boost::mpl::true_ { typedef stl_container_of_container_tag category; };           \
                 template<> struct is_writable<std::vector<std::vector<T> > > : boost::mpl::true_ { typedef stl_container_of_container_tag category; };
@@ -224,23 +227,15 @@ namespace alps {
                             std::abort();
                         }
                     }
-                    static std::string encode(std::string const & s) {
-                        std::string r = s;
-                        char chars[] = {'&', '/'};
-                        for (std::size_t i = 0; i < 2; ++i)
-                            for (std::size_t pos = r.find_first_of(chars[i]); pos < std::string::npos; pos = r.find_first_of(chars[i], pos + 1))
-                                r = r.substr(0, pos) + "&#" + boost::lexical_cast<std::string, int>(chars[i]) + ";" + r.substr(pos + 1);
-                        return r;
-                    }
-                    static std::string decode(std::string const & s) {
-                        std::string r = s;
-                        for (std::size_t pos = r.find_first_of('&'); pos < std::string::npos; pos = r.find_first_of('&', pos + 1))
-                            r = r.substr(0, pos) + static_cast<char>(boost::lexical_cast<int>(r.substr(pos + 2, r.find_first_of(';', pos) - pos - 2))) + r.substr(r.find_first_of(';', pos) + 1);
-                        return r;
-                    }
+                    
                     std::string const & filename() const {
                         return _filename;
                     }
+                    
+                    boost::filesystem::path const & filepath() const {
+                        return boost::filesystem::path(_filename,boost::filesystem::native);
+                    }
+                    
                     void commit(std::string const & log = "") {
                         set_attr("/revisions", "last", ++_revision, scalar_tag());
                         set_group("/revisions/" + boost::lexical_cast<std::string>(_revision));
@@ -251,13 +246,16 @@ namespace alps {
                         set_attr("/revisions/" + boost::lexical_cast<std::string>(_revision), "info", v, internal_log_tag());
                         delete[] v.log;
                     }
+                    
                     std::vector<std::pair<std::string, std::size_t> > list_revisions() {
                         // TODO: implement
                         return std::vector<std::pair<std::string, std::size_t> >();
                     }
+                    
                     void export_revision(std::size_t revision, std::string const & file) {
                         // TODO: implement
                     }
+                    
                     std::string get_context() const {
                         return _context;
                     }
@@ -790,7 +788,7 @@ namespace alps {
                         const_cast<archive<Tag> &>(*this) << make_pvp(p + "/second", v.second);
                     }
                     template<typename T> void set_data(std::string const & p, T const & v, stl_complex_tag) const {
-                        set_data(p, static_cast<typename T::value_type const *>(&v), 2);
+                        set_data(p, reinterpret_cast<typename T::value_type const *>(&v), 2);
                     }
                     template<typename T> void set_data(std::string const & p, T const & v, stl_container_of_unknown_tag) const {
                         if (!v.size())
