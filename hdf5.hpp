@@ -94,14 +94,17 @@ namespace alps {
             template<typename T> struct is_writable<std::list<T> > : boost::mpl::true_ { typedef stl_container_of_unknown_tag category; };
             template<> struct is_writable<std::vector<std::string> > : boost::mpl::true_ { typedef stl_container_of_string_tag category; };
             template<> struct is_writable<std::valarray<std::string> > : boost::mpl::true_ { typedef stl_container_of_string_tag category; };
-            #define HDF5_CONTAINER_OF_SCALAR_CV(T)                                                                                        \
-                template<> struct is_writable<std::vector<T> > : boost::mpl::true_ { typedef stl_container_of_scalar_tag category; };    \
-                template<> struct is_writable<std::valarray<T> > : boost::mpl::true_ { typedef stl_container_of_scalar_tag category; };
-            #define HDF5_CONTAINER_OF_SCALAR(T)                                                                                            \
+            #define HDF5_CONTAINER_OF_SCALAR_CV(T)                                                                                                                 \
+                template<> struct is_writable<std::vector<T> > : boost::mpl::true_ { typedef stl_container_of_scalar_tag category; };                              \
+                template<> struct is_writable<std::valarray<T> > : boost::mpl::true_ { typedef stl_container_of_scalar_tag category; };                            \
+                template<> struct is_writable<std::vector<std::valarray<T> > > : boost::mpl::true_ { typedef stl_container_of_container_tag category; };           \
+                template<> struct is_writable<std::vector<std::vector<T> > > : boost::mpl::true_ { typedef stl_container_of_container_tag category; };
+            #define HDF5_CONTAINER_OF_SCALAR(T)                                                                                                                    \
                 HDF5_ADD_CV(HDF5_CONTAINER_OF_SCALAR_CV, T)
             HDF5_FOREACH_SCALAR(HDF5_CONTAINER_OF_SCALAR)
             #undef HDF5_CONTAINER_OF_SCALAR
-            template<typename T> struct is_writable<std::vector<std::valarray<T> > > : boost::mpl::true_ { typedef stl_container_of_container_tag category; };
+            template<typename T> struct is_writable<std::vector<std::valarray<std::complex<T> > > > : boost::mpl::true_ { typedef stl_container_of_container_tag category; };           \
+            template<typename T> struct is_writable<std::vector<std::vector<std::complex<T> > > > : boost::mpl::true_ { typedef stl_container_of_container_tag category; };
             template<typename T, typename C, typename A> struct is_writable<std::set<T, C, A> > : boost::mpl::true_ { typedef stl_container_of_unknown_tag category; };
             template<typename K, typename D, typename C, typename A> struct is_writable<std::map<K, D, C, A> > : boost::mpl::true_ { typedef stl_container_of_unknown_tag category; };
             template<> struct is_writable<std::string> : boost::mpl::true_ { typedef stl_string_tag category; };
