@@ -402,15 +402,15 @@ inline void SimpleObservableEvaluator<T>::load(IDump& dump)
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::iarchive & /* ar */) {
-  std::cout << __LINE__ << " " << __FILE__ << std::endl;
+template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::iarchive & ar) {
+//    ar >> make_pvp("", all_);
 }
 template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::oarchive & ar) const {
-  ar << make_pvp("", all_);
+    ar << make_pvp("", all_);
 /* TODO: write this after deleting the task<M>.run<N>.h5 files
-  if (runs_.size() > 1)
-    for(std::size_t i = 0; i < runs_.size(); ++i)
-      ar << make_pvp("../../clone/" + boost::lexical_cast<std::string>(i) + "/results/" + super_type::name(), runs_[i]);
+    if (runs_.size() > 1)
+      for(std::size_t i = 0; i < runs_.size(); ++i)
+          ar << make_pvp("../../clone/" + boost::lexical_cast<std::string>(i) + "/results/" + super_type::name(), runs_[i]);
 */
 }
 #endif

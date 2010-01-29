@@ -72,18 +72,18 @@ void ObservableSet::load(IDump& dump)
 #ifdef ALPS_HAVE_HDF5
     void ObservableSet::serialize(hdf5::iarchive & ar) {
         std::vector<std::string> list = ar.list_children(ar.get_context());
-        std::set<std::string> signedobs;
+        std::set<std::string> spip;
         for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
             std::string obsname = hdf5_name_decode(*it);
-            if (!has(obsname) && ar.is_attribute(obsname, "@sign")) {
+            if (ar.is_attribute(obsname, "@sign")) {
                 std::string signname;
                 ar >> make_pvp(obsname + "/@sign", signname);
-                signedobs.insert(signname + " * " + obsname);
+                spip.insert(signname + " * " + obsname);
             }
         }
         for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
             std::string obsname = hdf5_name_decode(*it);
-            if (signedobs.find(obsname) == signedobs.end()) {
+            if (spip.find(obsname) == spip.end()) {
                 if (!has(obsname)) {
                     bool is_vector;
                     if (ar.is_data(obsname + "/mean/value"))
