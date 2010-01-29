@@ -70,38 +70,51 @@ void ObservableSet::load(IDump& dump)
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-        void ObservableSet::serialize(hdf5::iarchive & ar) {
-                std::vector<std::string> list = ar.list_children(ar.get_context());
-                for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
-                        std::string name = hdf5_name_decode(*it);
-                        if (!has(name))
-                                //throw std::runtime_error("the observalbe " + *it + " does not exists");
-                                continue;
-            /*
-// TODO: Lukas
-                for unsigned:
-                    distinguish between Real and RealVector depending on size of mean or sum, whatever exists
-                    if timeseries/data and timeseries/logbinning exist create a RealObservable or RealVectorObservable
-                    if timeseries/logbinning only exists create a SimpleReal or SimpleRealVector Observable
-                    otherwise create a RealObseval or RealVectorObseval
-
-                for signed:
-                    before loading anything loop over all observables and check for signed ones
-                       for each signed one remember the name signname + " * " + name
-                    when loading skip all these 'signname + " * " + name' observbles
-                    when loading the signed observable first determine the type of the 'signname + " * " + name' observable (see above)
-                    then create the signed observable and load 'signname + " * " + name' into it
-                    look above: if it is either SimpleReal* or Real* Observable, create a signed one and read it
-                    otherwise
-            */
-			ar >> make_pvp(*it, operator[](name));
-		}
-	}
-	void ObservableSet::serialize(hdf5::oarchive & ar) const {
-		for(base_type::const_iterator it = base_type::begin(); it != base_type::end(); ++it)
-			if(it->second)
-				ar << make_pvp(hdf5_name_encode(it->second->name()), it->second);
-	}
+    void ObservableSet::serialize(hdf5::iarchive & ar) {
+        std::vector<std::string> list = ar.list_children(ar.get_context());
+        std::set<std::string> signedobs;
+        for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
+            std::string obsname = hdf5_name_decode(*it);
+            if (!has(obsname) && ar.is_attribute(obsname, "@sign")) {
+                std::string signname;
+                ar >> make_pvp(obsname + "/@sign", signname);
+                signedobs.insert(signname + " * " + obsname);
+            }
+        }
+        for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
+            std::string obsname = hdf5_name_decode(*it);
+            if (signedobs.find(obsname) == signedobs.end()) {
+                if (!has(obsname)) {
+                    bool is_vector;
+                    if (ar.is_data(obsname + "/mean/value"))
+                        is_vector = ar.is_scalar(obsname + "/mean/value");
+                    else if (ar.is_data(obsname + "/timeseries/logbinning"))
+                        is_vector = ar.is_scalar(obsname + "/timeseries/logbinning");
+                    if (is_vector) {
+                        if (ar.is_data(obsname + "/timeseries/data") && ar.is_data(obsname + "/timeseries/logbinning"))
+                            addObservable(RealVectorObservable(obsname));
+                        else if (ar.is_data(obsname + "/timeseries/logbinning"))
+                            addObservable(SimpleRealVectorObservable(obsname));
+                        else
+                            addObservable(RealVectorObsevaluator(obsname));
+                    } else {
+                        if (ar.is_data(obsname + "/timeseries/data") && ar.is_data(obsname + "/timeseries/logbinning"))
+                            addObservable(RealObservable(obsname));
+                        else if (ar.is_data(obsname + "/timeseries/logbinning"))
+                            addObservable(SimpleRealObservable(obsname));
+                        else
+                            addObservable(RealObsevaluator(obsname));
+                    }
+                }
+                ar >> make_pvp(*it, operator[](obsname));
+            }
+        }
+    }
+    void ObservableSet::serialize(hdf5::oarchive & ar) const {
+        for(base_type::const_iterator it = base_type::begin(); it != base_type::end(); ++it)
+            if(it->second)
+                ar << make_pvp(hdf5_name_encode(it->second->name()), it->second);
+    }
 #endif
 
 void ObservableSet::update_signs()

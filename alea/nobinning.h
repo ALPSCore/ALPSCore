@@ -285,11 +285,30 @@ inline void NoBinning<T>::load(IDump& dump)
       ;
     }
     template <class T> inline void NoBinning<T>::serialize(hdf5::iarchive & ar) {
+    
+          std::cout << __LINE__ << std::endl;
+
+    
       ar
           >> make_pvp("sum", sum_)
+          
+          ;
+          std::cout << __LINE__ << std::endl;
+          ar
+          
           >> make_pvp("sum2", sum2_)
+          
+          ;
+          std::cout << __LINE__ << std::endl;
+          ar
+          
+          
           >> make_pvp("count", count_)
       ;
+      
+          std::cout << __LINE__ << std::endl;
+      
+      
     }
 #endif
 
