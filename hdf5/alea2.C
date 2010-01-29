@@ -40,9 +40,12 @@ int main()
   random_type random(random_int);
 
   alps::ObservableSet measurement;
-  measurement << alps::make_observable(alps::RealObservable("Test"), true)
-              << alps::RealObservable("Sign")
-              << alps::RealObservable("No Measurements");
+  measurement << alps::make_observable(alps::SimpleRealObservable("Test"), true)
+// RealObservable
+              << alps::SimpleRealObservable("Sign")
+// RealObservable
+              << alps::SimpleRealObservable("No Measurements");
+//              << alps::RealObservable("No Measurements");
   for (int i = 0; i < 10000; ++i) {
     measurement["Test"] << random();
     measurement["Sign"] << 1.0;
@@ -53,7 +56,6 @@ int main()
     alps::hdf5::oarchive h5(file);
     h5 << make_pvp("/test/0/result", measurement);
   }
-
   alps::ObservableSet measurement2;
   {
     alps::hdf5::iarchive h5(file);
