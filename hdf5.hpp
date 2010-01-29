@@ -235,7 +235,7 @@ namespace alps {
                             r = r.substr(0, pos) + static_cast<char>(boost::lexical_cast<int>(r.substr(pos + 2, r.find_first_of(';', pos) - pos - 2))) + r.substr(r.find_first_of(';', pos) + 1);
                         return r;
                     }
-                    std::string const & filename() {
+                    std::string const & filename() const {
                         return _filename;
                     }
                     void commit(std::string const & log = "") {
