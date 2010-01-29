@@ -32,7 +32,7 @@
 
 int main()
 {
-  std::string file = "alea_mocasito2.h5";
+  std::string file = "alea2.h5";
 
   typedef boost::minstd_rand0 random_base_type;
   typedef boost::uniform_01<random_base_type> random_type;
