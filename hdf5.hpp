@@ -180,7 +180,7 @@ namespace alps {
                         unsigned int timestamp;
                         std::string log;
                     } log_type;
-                    archive(std::string const & file): _revision(0) {
+                    archive(std::string const & file): _revision(0), _filename(file) {
                         H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
                         if (boost::is_same<Tag, write>::value) {
                             if (H5Fis_hdf5(file.c_str()) == 0)
@@ -234,6 +234,9 @@ namespace alps {
                         for (std::size_t pos = r.find_first_of('&'); pos < std::string::npos; pos = r.find_first_of('&', pos + 1))
                             r = r.substr(0, pos) + static_cast<char>(boost::lexical_cast<int>(r.substr(pos + 2, r.find_first_of(';', pos) - pos - 2))) + r.substr(r.find_first_of(';', pos) + 1);
                         return r;
+                    }
+                    std::string const & filename() {
+                        return _filename;
                     }
                     void commit(std::string const & log = "") {
                         set_attr("/revisions", "last", ++_revision, scalar_tag());
@@ -903,6 +906,7 @@ namespace alps {
                     type_type _state_id;
                     type_type _log_id;
                     std::string _context;
+                    std::string _filename;
                     file_type _file;
             };
         }
