@@ -157,10 +157,10 @@ int main() {
 	{
 		alps::hdf5::oarchive h5ar("bela.h5");
 		std::vector<std::vector<int> > d;
-		d.push_back(std::vector<int>(1, 2));
+		d.push_back(std::vector<int>(3, 2));
 		d.push_back(std::vector<int>(3, 4));
-		d.push_back(std::vector<int>(5, 0));
-		d.push_back(std::vector<int>());
+		d.push_back(std::vector<int>(3, 0));
+		d.push_back(std::vector<int>(3, 3));
 		h5ar << alps::make_pvp("/test/vector", d);
 	}
 	{
