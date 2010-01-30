@@ -399,7 +399,7 @@ inline boost::filesystem::path optional_complete(boost::filesystem::path const& 
   if (dir.empty() || p.empty())
     return p;
   else 
-    boost::filesystem::complete(p,dir);
+    return boost::filesystem::complete(p,dir);
 }
 
 // checkpoint: save into a file
