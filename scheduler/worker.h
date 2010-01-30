@@ -94,8 +94,8 @@ public:
         virtual void serialize(hdf5::iarchive &) {}
         virtual void serialize(hdf5::oarchive &) const {}
     #endif
-  virtual void save_to_file(const boost::filesystem::path&) const=0;
-  virtual void load_from_file(const boost::filesystem::path&)=0;
+  virtual void save_to_file(const boost::filesystem::path&,const boost::filesystem::path&) const=0;
+  virtual void load_from_file(const boost::filesystem::path&,const boost::filesystem::path&)=0;
   virtual void set_parameters(const Parameters& parms)=0;
   virtual TaskInfo get_info() const = 0;
   virtual double work_done() const =0;
@@ -123,13 +123,13 @@ public:
   virtual bool change_parameter(const std::string& name, const StringValue& value);
   virtual void save_worker(ODump&) const;
   virtual void load_worker(IDump&);
-    #ifdef ALPS_HAVE_HDF5
-        void serialize(hdf5::iarchive &);
-        void serialize(hdf5::oarchive &) const;
-    #endif
-  virtual void write_xml(const boost::filesystem::path& name, const boost::filesystem::path& ckpt_name="") const;
-  void save_to_file(const boost::filesystem::path&) const;
-  void load_from_file(const boost::filesystem::path&);
+#ifdef ALPS_HAVE_HDF5
+  void serialize(hdf5::iarchive &);
+  void serialize(hdf5::oarchive &) const;
+#endif
+  virtual void write_xml(const boost::filesystem::path& name) const;
+  void save_to_file(const boost::filesystem::path&,const boost::filesystem::path&) const;
+  void load_from_file(const boost::filesystem::path&,const boost::filesystem::path&);
   // creates a new information object containing information about this run
   TaskInfo get_info() const;
   void start_worker();
@@ -148,10 +148,6 @@ protected:
   int32_t version;
   int32_t user_version;
 
-  typedef buffered_rng_base engine_type;
-  mutable boost::shared_ptr<engine_type> engine_ptr;
-  mutable boost::variate_generator<engine_type&, boost::uniform_real<> > random;
-  mutable boost::variate_generator<engine_type&, boost::uniform_real<> > random_01;
 
   double random_real(double a=0., double b=1.) { return a+b*random();}
   //return boost::variate_generator<random_type&,boost::uniform_real<> >(random,boost::uniform_real<>(a,b))();
@@ -165,7 +161,14 @@ protected:
   int node;
   Parameters parms;
   ProcessList where;
+
+  typedef buffered_rng_base engine_type;
+  mutable boost::shared_ptr<engine_type> engine_ptr;
+  mutable boost::variate_generator<engine_type&, boost::uniform_real<> > random;
+  mutable boost::variate_generator<engine_type&, boost::uniform_real<> > random_01;
+
 private:
+  std::string rng_name() const { return parms.value_or_default("RNG","mt19937");}
   TaskInfo info;
   int halted,started;
 };
@@ -190,8 +193,8 @@ public:
   void set_parameters(const Parameters& parms);
 
   // save function also saves actual object
-  void save_to_file(const boost::filesystem::path&) const;
-  void load_from_file(const boost::filesystem::path&);
+  void save_to_file(const boost::filesystem::path&,const boost::filesystem::path&) const;
+  void load_from_file(const boost::filesystem::path&,const boost::filesystem::path&);
   void start_worker();
   virtual void halt_worker();
   

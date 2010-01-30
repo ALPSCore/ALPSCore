@@ -31,6 +31,12 @@
 #ifndef ALPS_SCHEDULER_TASK_H
 #define ALPS_SCHEDULER_TASK_H
 
+#ifdef ALPS_ONLY_HDF5
+  #define ALPS_WRITE_ALL_XML false
+#else
+  #define ALPS_WRITE_ALL_XML true
+#endif
+
 #include <alps/config.h>
 #include <alps/scheduler/worker.h>
 #include <alps/parameter.h>
@@ -44,6 +50,8 @@ struct CheckpointFiles
 {
   boost::filesystem::path in;
   boost::filesystem::path out;
+  boost::filesystem::path hdf5in;
+  boost::filesystem::path hdf5out;
 };
 
 //=======================================================================
@@ -83,7 +91,7 @@ public:
   AbstractTask(const ProcessList&);
   virtual ~AbstractTask();
 
-  virtual void checkpoint(const boost::filesystem::path&) const = 0; 
+  virtual void checkpoint(const boost::filesystem::path&, bool = ALPS_WRITE_ALL_XML) const = 0; 
 
   virtual uint32_t cpus() const=0; // cpus per run
   virtual bool local() {return false;}; // is it running on the local process?
@@ -129,7 +137,7 @@ public:
   
   virtual void construct(); // needs to be called to finish construction
 
-  void checkpoint(const boost::filesystem::path&) const; // write into a file
+  void checkpoint(const boost::filesystem::path&, bool = ALPS_WRITE_ALL_XML) const; // write into a file
 
   void add_process(const Process&);
 
@@ -152,12 +160,13 @@ public:
   
 #ifdef ALPS_HAVE_HDF5
   virtual void serialize(hdf5::iarchive &);
+  virtual void serialize(hdf5::oarchive &) const;
 #endif
 
 protected:
   virtual void write_xml_header(alps::oxstream&) const;
   virtual void write_xml_trailer(alps::oxstream&) const;
-  virtual void write_xml_body(alps::oxstream&, const boost::filesystem::path&) const=0;
+  virtual void write_xml_body(alps::oxstream&, boost::filesystem::path const& fn,bool writeall) const=0;
   virtual void handle_tag(std::istream&, const XMLTag&);
 
   alps::Parameters parms;
@@ -202,13 +211,9 @@ public:
   
   std::vector<AbstractWorker*> runs; // the list of all runs
 
-#ifdef ALPS_HAVE_HDF5
-  void serialize(hdf5::iarchive &);
-#endif
-
 protected:
   virtual std::string worker_tag() const=0;
-  void write_xml_body(alps::oxstream&, const boost::filesystem::path&) const;
+  void write_xml_body(alps::oxstream&, boost::filesystem::path const&,bool writeall) const;
   void handle_tag(std::istream&, const XMLTag&);
   std::vector<RunStatus> workerstatus;
 
@@ -224,7 +229,7 @@ class RemoteTask : public AbstractTask
 public:
   RemoteTask(const ProcessList&,const boost::filesystem::path&);
   ~RemoteTask();
-  void checkpoint(const boost::filesystem::path&) const; // write into a file
+  void checkpoint(const boost::filesystem::path&, bool = ALPS_WRITE_ALL_XML) const; // write into a file
 
   void add_processes(const ProcessList&);
   void add_process(const Process&);
@@ -249,7 +254,7 @@ public:
   SlaveTask(const Process&);
   
   virtual void run(); // run a few steps and return control
-  virtual void checkpoint(const boost::filesystem::path& fn) const;
+  virtual void checkpoint(const boost::filesystem::path& fn, bool = ALPS_WRITE_ALL_XML) const;
   virtual void add_process(const Process& p);
   virtual void start();
   virtual double work() const;

@@ -45,22 +45,25 @@ Info::Info()
 }
 
 #ifdef ALPS_HAVE_HDF5
-	void Info::serialize(hdf5::oarchive & ar) const {
-		ar
-			<< make_pvp("from", boost::posix_time::to_simple_string(startt_))
-			<< make_pvp("to", boost::posix_time::to_simple_string(stopt_))
-			<< make_pvp("machine/name", host_)
-		;
-	}
-	void Info::serialize(hdf5::iarchive & ar) {
-		std::string startt, stopt;
-		ar
-			>> make_pvp("from", startt)
-			>> make_pvp("to", stopt)
-			>> make_pvp("machine/name", host_)
-		;
-		phase_ = ar.get_context().substr(ar.get_context().find_last_of('/') + 1);
-	}
+void Info::serialize(hdf5::oarchive & ar) const {
+  ar
+      << make_pvp("machine/name", host_)
+      << make_pvp("from", boost::posix_time::to_iso_string(startt_))
+      << make_pvp("to", boost::posix_time::to_iso_string(stopt_))
+      << make_pvp("phase", phase_)
+  ;
+}
+void Info::serialize(hdf5::iarchive & ar) {
+  std::string startt, stopt;
+  ar
+      >> make_pvp("from", startt)
+      >> make_pvp("to", stopt)
+      >> make_pvp("machine/name", host_)
+      >> make_pvp("phase", phase_)
+  ;
+  // startt_ = boost::posix_time::from_iso_string(startt);
+  // stopt_ = boost::posix_time::from_iso_string(stopt);
+}
 #endif
 
 void Info::save(ODump& dump) const
@@ -147,20 +150,18 @@ ALPS_DUMMY_VOID Info::write_xml(alps::oxstream& xml) const
 }
 
 #ifdef ALPS_HAVE_HDF5
-	void TaskInfo::serialize(hdf5::oarchive & ar) const {
-		if(!empty())
-			const_cast<TaskInfo &>(*this).back().checkpoint();
-		for (std::vector<Info>::const_iterator it = std::vector<Info>::begin(); it != std::vector<Info>::end(); ++it)
-			ar
-				<< make_pvp(it->phase(), *it)
-			;
-	}
-	void TaskInfo::serialize(hdf5::iarchive & ar) {
-		std::vector<std::string> list = ar.list_children("/info");
-		resize(list.size());
-		for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it)
-			ar >> make_pvp(*it, operator[](it - list.begin()));
-	}
+void TaskInfo::serialize(hdf5::oarchive & ar) const {
+  if(!empty())
+    const_cast<TaskInfo &>(*this).back().checkpoint();
+  for (unsigned int i=0 ; i < size() ; ++i)
+    ar << make_pvp(boost::lexical_cast<std::string>(i), (*this)[i]);
+}
+void TaskInfo::serialize(hdf5::iarchive & ar) {
+    std::vector<std::string> list = ar.list_children("/log/alps");
+    resize(list.size());
+    for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it)
+      ar >> make_pvp(*it, (*this)[it - list.begin()]);
+}
 #endif
 
 void TaskInfo::save (ODump& dump) const

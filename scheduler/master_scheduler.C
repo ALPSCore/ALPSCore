@@ -253,18 +253,18 @@ void MasterScheduler::checkpoint()
             << start_tag("INPUT") << attribute("file",task_path)
             << end_tag() << end_tag();
         if(theTask != tasks[i]) {
+          std::cerr  << "Checkpointing Simulation " << i+1 << "\n";
           tasks[i]->checkpoint(boost::filesystem::complete(taskfiles[i].out,dir));
                 taskfiles[i].in=boost::filesystem::complete(taskfiles[i].out,dir);
-                std::cerr  << "Checkpointing Simulation " << i+1 << "\n";
         }
         else
           local_sim=i;
       }
     }
     if(local_sim>=0) {
+      std::cerr  << "Checkpointing Simulation " << local_sim+1 << "\n";
       tasks[local_sim]->checkpoint(boost::filesystem::complete(taskfiles[local_sim].out,dir));
       taskfiles[local_sim].in=boost::filesystem::complete(taskfiles[local_sim].out,dir);
-      std::cerr  << "Checkpointing Simulation " << local_sim+1 << "\n";
     }
     out << end_tag("JOB");
   }

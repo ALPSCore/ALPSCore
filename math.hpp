@@ -46,6 +46,7 @@
 #include <boost/detail/workaround.hpp>
 #include <algorithm>
 #include <complex>
+#include <vector>
 #include <cmath>
 #include <cstddef>
 #include <limits>
@@ -58,6 +59,26 @@ inline T real(T x) { return x;}
 
 template <class T>
 inline T real(std::complex<T> x) { return std::real(x);}
+
+template <class T>
+inline std::vector<T> real(std::vector<std::complex<T> > x) 
+{
+  std::vector<T> re;
+  re.reserve(x.size());
+  std::transform(x.begin(),x.end(),std::back_inserter(re),
+                 static_cast<T (*)(std::complex<T>)>(&real));
+  return re;
+}
+
+template <class T>
+inline std::vector<std::vector<T> > real(std::vector<std::vector<std::complex<T> > > x) 
+{
+  std::vector<std::vector< T > > re;
+  re.reserve(x.size());
+  std::transform(x.begin(),x.end(),std::back_inserter(re),
+                 static_cast<std::vector<T> (*)(std::vector<std::complex<T> >)>(&real));
+  return re;
+}
 
 
 /// \brief calculate the binomial coefficient

@@ -124,10 +124,10 @@ uint32_t RemoteTask::cpus() const
   return static_cast<uint32_t>(receive);
 }
 
-void RemoteTask::checkpoint(const boost::filesystem::path& fn) const
+void RemoteTask::checkpoint(const boost::filesystem::path& fn,bool write_all_xml) const
 {
   OMPDump send;
-  send << fn.string();
+  send << fn.string() << write_all_xml;
   send.send(where[0],MCMP_checkpoint);
 }
 

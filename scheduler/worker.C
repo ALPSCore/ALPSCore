@@ -55,14 +55,12 @@ namespace scheduler {
 Worker::Worker(const ProcessList& w,const alps::Parameters&  myparms,int32_t n)
   : AbstractWorker(),
     version(MCDump_worker_version),
-
-    engine_ptr(rng_factory.create(myparms.value_or_default("RNG","mt19937"))),
-    random(*engine_ptr, boost::uniform_real<>()),
-    random_01(*engine_ptr, boost::uniform_real<>()),
-
     node(n),
     parms(myparms),
     where(w),
+    engine_ptr(rng_factory.create(rng_name())),
+    random(*engine_ptr, boost::uniform_real<>()),
+    random_01(*engine_ptr, boost::uniform_real<>()),
     started(false)
 {
   if( node<0||(node>=where.size()&&where.size()!=0))
@@ -78,14 +76,12 @@ Worker::Worker(const ProcessList& w,const alps::Parameters&  myparms,int32_t n)
 Worker::Worker(const alps::Parameters&  myparms,int32_t n)
   : AbstractWorker(),
     version(MCDump_worker_version),
-
-    engine_ptr(rng_factory.create(myparms.value_or_default("RNG","mt19937"))),
-    random(*engine_ptr, boost::uniform_real<>()),
-    random_01(*engine_ptr, boost::uniform_real<>()),
-
     node(n),
     parms(myparms),
     where(1),
+    engine_ptr(rng_factory.create(rng_name())),
+    random(*engine_ptr, boost::uniform_real<>()),
+    random_01(*engine_ptr, boost::uniform_real<>()),
     started(false)
 {
   if( node<0||(node>=where.size()&&where.size()!=0))
@@ -122,77 +118,70 @@ void Worker::load_worker(IDump& dump)
     boost::throw_exception(std::runtime_error(msg));
   }
 
+  if (version < 400) {
+    dump >> parms;
+    std::string state;
+    dump >> state;
+    std::stringstream rngstream(state);
 
-  dump >> parms;
-  std::string state;
-  dump >> state;
-  std::stringstream rngstream(state);
+    if (version < 304 && !parms.defined("RNG"))
+      std::clog << "Re-seeding the random number generator since its type has changed from the old version. Please define RNG to the old value of \"lagged_fibonacci607\" to continue with the old generator." << std::endl;
+    else
+      engine_ptr->read(rngstream);
 
-  if (version < 304 && !parms.defined("RNG"))
-    std::clog << "Re-seeding the random number generator since its type has changed from the old version. Please define RNG to the old value of \"lagged_fibonacci607\" to continue with the old generator." << std::endl;
-  else
-    engine_ptr->read(rngstream);
-
-  if(node==0) {
-    int32_t dummy;
-    info.load(dump,version);
-    if(version<200) 
-      dump >> dummy >> dummy >> dummy;
+    if(node==0) {
+      int32_t dummy;
+      info.load(dump,version);
+      if(version<200) 
+        dump >> dummy >> dummy >> dummy;
+    }
+    Disorder::seed(parms.value_or_default("DISORDERSEED",0));
   }
-  Disorder::seed(parms.value_or_default("DISORDERSEED",0));
-  // TODO: load slave runs
 }
 
 void Worker::save_worker(ODump& dump) const
 {
-  dump << int32_t(MCDump_run) << int32_t(0) << int32_t(MCDump_worker_version) << parms;
-  std::ostringstream rngstream;
+  dump << int32_t(MCDump_run) << int32_t(0) << int32_t(MCDump_worker_version);
+  if (MCDump_worker_version < 400) {
+    dump << parms;
+    std::ostringstream rngstream;
 
-  rngstream << *engine_ptr;
+    rngstream << *engine_ptr;
 
-  dump << rngstream.str();
-  if(node==0)
-    dump << info;
-  // TODO: save slave runs
+    dump << rngstream.str();
+    if(node==0)
+      dump << info;
+  }
  }
  
 #ifdef ALPS_HAVE_HDF5
-    void Worker::serialize(hdf5::iarchive & ar) {
-        int run;
-        std::string state;
-        ar 
-            >> make_pvp("/run", run) 
-            >> make_pvp("/version", version) 
-            >> make_pvp("/parameters", parms) 
-            >> make_pvp("/engine_ptr", state)
-        ;
-        if(run != MCDump_run)
-            boost::throw_exception(std::runtime_error("dump does not contain a run"));
-        if(version > MCDump_worker_version) {
-            std::string msg = "The run on dump is version " 
-                + boost::lexical_cast<std::string>(version) + 
-                + " but this program can read only up to version "
-                + boost::lexical_cast<std::string>(MCDump_worker_version);
-            throw std::runtime_error(msg);
-        }
-        std::stringstream rngstream(state);
-        engine_ptr->read(rngstream);
-        if(node == 0)
-            ar >> make_pvp("/info", info);
-        Disorder::seed(parms.value_or_default("DISORDERSEED",0));
-    }
-    void Worker::serialize(hdf5::oarchive & ar) const {
-        std::ostringstream rngstream;
-        rngstream << *engine_ptr;
-        ar 
-            << make_pvp("/run", int(MCDump_run)) 
-            << make_pvp("/version", int(MCDump_worker_version)) 
-            << make_pvp("/parameters", parms) 
-            << make_pvp("/engine_ptr", rngstream.str())
-        ;
-        if(node == 0)
-            ar << make_pvp("/info", info);
-    }
+void Worker::serialize(hdf5::iarchive & ar) 
+{
+  std::string state;
+  std::string rngname;
+  ar  >> make_pvp("/parameters", parms)
+      >> make_pvp("/rng", state)
+      >> make_pvp("/rng/@name", rngname);
+
+  std::stringstream rngstream(state);
+  if (rngname != rng_name())
+    boost::throw_exception(std::runtime_error("Created RNG " + rng_name() + " but attenprint to load " + rngname));
+  engine_ptr->read(rngstream);
+  if(node == 0)
+      ar >> make_pvp("/log/alps", info);
+  Disorder::seed(parms.value_or_default("DISORDERSEED",0));
+}
+
+void Worker::serialize(hdf5::oarchive & ar) const 
+{
+  std::ostringstream rngstream;
+  rngstream << *engine_ptr;
+  ar << make_pvp("/parameters", parms) 
+      << make_pvp("/rng", rngstream.str())
+      << make_pvp("/rng/@name", rng_name());
+  if(node == 0)
+      ar << make_pvp("/log/alps", info);
+}
 #endif
 
 TaskInfo Worker::get_info() const
@@ -238,35 +227,52 @@ void Worker::run()
 }
 
 
-void Worker::write_xml(const boost::filesystem::path& , const boost::filesystem::path&) const
+void Worker::write_xml(const boost::filesystem::path&) const
 {
   boost::throw_exception(std::runtime_error("XML output not implemented for the worker"));
 }
 
-void Worker::load_from_file(const boost::filesystem::path& fn)
+void Worker::load_from_file(const boost::filesystem::path& fn,const boost::filesystem::path& hdf5path)
 {
 #ifdef ALPS_HAVE_HDF5
-    if (fn.file_string().substr(fn.file_string().size() - 3) == ".h5") {
-        hdf5::iarchive ar(fn.file_string());
-        ar >> make_pvp("/", this);
-    } else
+  if (boost::filesystem::exists(hdf5path)) {
+      hdf5::iarchive ar(hdf5path.file_string());
+      ar >> make_pvp("/", this);
+  }
 #endif
-{
   IXDRFileDump dump(fn);
   load_worker(dump);
 }
-}
 
-void Worker::save_to_file(const boost::filesystem::path& fnpath) const
+void Worker::save_to_file(const boost::filesystem::path& fnpath, const boost::filesystem::path& hdf5path) const
 {
   boost::filesystem::path bakpath=fnpath.branch_path()/(fnpath.leaf()+".bak");
   bool backup=boost::filesystem::exists(fnpath);
+  
+#ifdef ALPS_HAVE_HDF5
+  boost::filesystem::path hdf5bakpath =  fnpath.branch_path()/(hdf5path.leaf()+".bak");
+  backup =  backup || boost::filesystem::exists(fnpath);
+  {
+    boost::filesystem::path p = backup ? hdf5bakpath : hdf5path;
+    if (boost::filesystem::exists(p))
+      boost::filesystem::remove(p);
+    hdf5::oarchive worker_ar(p.string());
+    worker_ar << make_pvp("/", this);
+  } // close file
+  if (backup) {
+    if (boost::filesystem::exists(hdf5path))
+      boost::filesystem::remove(hdf5path);
+    boost::filesystem::rename(hdf5bakpath,hdf5path);
+  }
+#endif
+
   {
     OXDRFileDump dump(backup ? bakpath : fnpath);
     save_worker(dump);
   } // close file
   if (backup) {
-    boost::filesystem::remove(fnpath);
+    if (boost::filesystem::exists(fnpath))
+      boost::filesystem::remove(fnpath);
     boost::filesystem::rename(bakpath,fnpath);
   }
 }
@@ -274,7 +280,7 @@ void Worker::save_to_file(const boost::filesystem::path& fnpath) const
 bool Worker::handle_message(const Process& master,int32_t tag) {
   IMPDump message;
   OMPDump dump;
-  std::string name;
+  std::string name1, name2;
   alps::Parameters parms;
   ResultType res;
   switch (tag) {
@@ -290,14 +296,14 @@ bool Worker::handle_message(const Process& master,int32_t tag) {
 
     case MCMP_load_run_from_file:
       message.receive(master,MCMP_load_run_from_file);
-      message >> name;
-      load_from_file(boost::filesystem::path(name));
+      message >> name1 >> name2;
+      load_from_file(boost::filesystem::path(name1),boost::filesystem::path(name2));
       break;
           
     case MCMP_save_run_to_file:
       message.receive(master,MCMP_save_run_to_file);
-      message >> name;
-      save_to_file(boost::filesystem::path(name));
+      message >> name1 >> name2;
+      save_to_file(boost::filesystem::path(name1),boost::filesystem::path(name2));
       return true;
 
     case MCMP_get_run_work:
@@ -340,15 +346,14 @@ std::string Worker::work_phase()
 void Worker::set_parameters(const alps::Parameters& p)
 {
   for (Parameters::const_iterator it = p.begin(); it != p.end(); ++it) {
-    if(it->key() != "SEED" && parms[it->key()] != it->value()) {
+    if(it->key() != "SEED" && 
+    
+      simplify_value(parms[it->key()],parms) != simplify_value(it->value(),p)) {
       if(!(change_parameter(it->key(), it->value()) ||
-          Worker::change_parameter(it->key(), it->value())))
-// TODO: Lukas
-          // check why the values are not the same
-          // print a warning and print the values to check instead of throwing an exception, but accepty the change for now
-          // maybe we need to also test whether the partially or fully evaluated values differ
-          std::cerr << "parameters do not match: " << it->key() << ", value: " << parms[it->key()] << ", value2: " << it->value() << std::endl;
-//        boost::throw_exception(std::runtime_error("Cannot change parameter " + it->key()));
+          Worker::change_parameter(it->key(), it->value()))) {
+        std::cerr << "parameters do not match: " << it->key() << ", value: " << simplify_value(parms[it->key()],parms) << ", value2: " << simplify_value(it->value(),p) << std::endl;
+        boost::throw_exception(std::runtime_error("Cannot change parameter " + it->key()));
+      }
       parms[it->key()]=it->value();
     }    
   }

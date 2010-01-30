@@ -185,6 +185,8 @@ template<class T>
 void simplify(expression::Expression<T>& x) { x.simplify();}
 
 
+StringValue simplify_value(StringValue const& val, Parameters const& parms);
+
 } // end namespace alps
 
 #endif // ! ALPS_EXPRESSION_H

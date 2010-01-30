@@ -97,10 +97,10 @@ public:
   void start(const std::string&); // the run is started/restarted NOW
   void halt(); // the run is halted/thermalized NOW
   
-    #ifdef ALPS_HAVE_HDF5
-        void serialize(hdf5::oarchive &) const;
-        void serialize(hdf5::iarchive &);
-    #endif
+#ifdef ALPS_HAVE_HDF5
+  void serialize(hdf5::oarchive &) const;
+  void serialize(hdf5::iarchive &);
+#endif
 
   void save (ODump& dump) const;
   void load (IDump& dump,int version=MCDump_worker_version);

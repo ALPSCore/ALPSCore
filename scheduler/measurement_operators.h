@@ -35,6 +35,7 @@
 #include <alps/xml.h>
 #include <alps/math.hpp>
 #include <alps/config.h>
+#include <alps/encode.hpp>
 #include <boost/regex.hpp> 
 #include <boost/foreach.hpp>
 #include <vector>
@@ -96,6 +97,10 @@ public:
   void write_xml_one_vector(oxstream& out, const boost::filesystem::path&, int j) const;
   XMLTag handle_tag(std::istream& infile, const XMLTag& intag);
   
+#ifdef ALPS_HAVE_HDF5
+  void write_hdf5(alps::hdf5::oarchive& ar, std::string const& p) const;
+#endif
+  
   std::map<std::string,std::vector<value_type> > average_values;
   std::map<std::string,std::vector<std::vector<value_type> > > local_values;
   std::map<std::string,std::vector<std::vector<value_type> > > correlation_values;
@@ -126,6 +131,45 @@ EigenvectorMeasurements<ValueType>::EigenvectorMeasurements(LatticeModel const& 
  : MeasurementLabels(lattice_model,0)
 {
 }
+
+#ifdef ALPS_HAVE_HDF5
+template <class ValueType>
+void EigenvectorMeasurements<ValueType>::write_hdf5(alps::hdf5::oarchive& ar, std::string const& p) const
+{
+
+  for (typename std::map<std::string,std::vector<value_type> >::const_iterator
+    it=average_values.begin();it!=average_values.end();++it) 
+  {
+    std::string path = p + "/results/"+ hdf5_name_encode(it->first);
+    ar << make_pvp(path+"/mean/value", alps::real(it->second));
+  }    
+
+  for (typename std::map<std::string,std::vector<std::vector<value_type> > >::const_iterator 
+          it=local_values.begin();it!=local_values.end();++it) {
+    std::string path = p + "/results/"+ hdf5_name_encode(it->first);
+    ar << make_pvp(path+"/mean/value", alps::real(it->second));
+    if (bond_operator_[it->first])
+      ar << make_pvp(path+"/labels", bondlabel_);
+    else
+      ar << make_pvp(path+"/labels", sitelabel_);
+  }
+
+  for (typename std::map<std::string,std::vector<std::vector<value_type> > >::const_iterator 
+        it=correlation_values.begin();it!=correlation_values.end();++it) {
+    std::string path = p + "/results/"+ hdf5_name_encode(it->first);
+    ar << make_pvp(path+"/mean/value", alps::real(it->second));
+    ar << make_pvp(path+"/labels", distlabel_);
+  }
+
+  for (typename std::map<std::string,std::vector<std::vector<value_type> > >::const_iterator 
+        it=structurefactor_values.begin();it!=structurefactor_values.end();++it) {
+    std::string path = p + "/results/"+ hdf5_name_encode(it->first);
+    ar << make_pvp(path+"/mean/value", alps::real(it->second));
+    ar << make_pvp(path+"/labels", momentumlabel_);
+  }
+
+}
+#endif
 
 
 template <class ValueType>

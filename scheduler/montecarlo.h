@@ -64,7 +64,7 @@ public:
   virtual void save(ODump&) const;
   virtual void load(IDump&);
 
-  void write_xml(const boost::filesystem::path& name, const boost::filesystem::path& osirisname="") const;
+  void write_xml(const boost::filesystem::path& name) const;
   const ObservableSet& get_measurements() const { return measurements;}
   ObservableSet get_compacted_measurements() const;
   ObservableSet get_and_remove_observable(const std::string& obsname, bool compact=false);
@@ -120,12 +120,13 @@ public:
   virtual ResultType get_summary(const std::string) const;
 
 #ifdef ALPS_HAVE_HDF5
+  void serialize(hdf5::oarchive &) const;
   void serialize(hdf5::iarchive &);
 #endif
 
 private:
   std::string worker_tag() const;
-  void write_xml_body(alps::oxstream&, const boost::filesystem::path&) const;
+  void write_xml_body(alps::oxstream&, boost::filesystem::path const& fn, bool) const;
   virtual void handle_tag(std::istream&, const XMLTag&);
   ObservableSet measurements;
 };

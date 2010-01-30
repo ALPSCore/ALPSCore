@@ -175,23 +175,12 @@ std::string MCSimulation::worker_tag() const
 }
 
 
-void MCSimulation::write_xml_body(oxstream& out, const boost::filesystem::path& name) const {
-  boost::filesystem::path fn_hdf5;
-  // commented out by astreich, 05/31
-  // produced permament crashes.
-  if(!name.empty())
-    fn_hdf5=name.branch_path()/(name.leaf()+".hdf");
-  ObservableSet set = get_measurements(false);
-  set.write_xml(out,fn_hdf5); // write non-compacted measurements
-#ifdef ALPS_HAVE_HDF5
-	std::string task_path = name.file_string().substr(0, name.file_string().find_last_of('.')) + ".h5";
-	std::string task_backup = name.file_string().substr(0, name.file_string().find_last_of('.')) + ".bak.h5";
-	{
-		hdf5::oarchive ar(boost::filesystem::exists(task_backup) ? task_backup : task_path);
-		ar << make_pvp("/simulation/results", set);
-	}
-#endif
-  WorkerTask::write_xml_body(out, name);
+void MCSimulation::write_xml_body(oxstream& out, boost::filesystem::path const& fn, bool writeall) const {
+  if (writeall) {
+    ObservableSet set = get_measurements(false);
+    set.write_xml(out); // write non-compacted measurements
+  }
+  WorkerTask::write_xml_body(out,fn,writeall);
 }
 
 
@@ -210,7 +199,7 @@ MCRun::MCRun(const ProcessList& w,const Parameters&  myparms,int n)
 void MCRun::load_worker(IDump& dump)
 {
   Worker::load_worker(dump);
-  if(node==0)
+  if(node==0 && dump.version() < 400)
     dump >> measurements;
   load(dump);
 }
@@ -218,20 +207,23 @@ void MCRun::load_worker(IDump& dump)
 void MCRun::save_worker(ODump& dump) const
 {
   Worker::save_worker(dump);
-  if(node==0)
+  if(node==0 && MCDump_worker_version < 400)
     dump << measurements;
   save(dump);
 }
 
 #ifdef ALPS_HAVE_HDF5
-	void MCRun::serialize(hdf5::oarchive & ar) const {
-		Worker::serialize(ar);
-		ar << make_pvp("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(node) + "/results", measurements);
-	}
-	void MCRun::serialize(hdf5::iarchive & ar) {
-		Worker::serialize(ar);
-		ar >> make_pvp("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(node) + "/results", measurements);
-	}
+void MCRun::serialize(hdf5::oarchive & ar) const {
+  Worker::serialize(ar);
+  if(node==0)
+    ar << make_pvp("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(node) + "/results", measurements);
+}
+
+void MCRun::serialize(hdf5::iarchive & ar) {
+  Worker::serialize(ar);
+//  if(node==0)
+//    ar >> make_pvp("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(node) + "/results", measurements);
+}
 #endif
 
 void MCRun::save(ODump&) const
@@ -271,7 +263,7 @@ bool MCRun::is_thermalized() const
 }
 
 
-void MCRun::write_xml(const boost::filesystem::path& name, const boost::filesystem::path& osirisname) const
+void MCRun::write_xml(const boost::filesystem::path& name) const
 {
   oxstream xml(name.branch_path()/(name.leaf()+".xml"));
   boost::filesystem::path fn_hdf5(name.branch_path()/(name.leaf()+".hdf"));
@@ -282,12 +274,17 @@ void MCRun::write_xml(const boost::filesystem::path& name, const boost::filesyst
   xml << parms;
   measurements.write_xml(xml);
   xml << start_tag("MCRUN");
-  if(!osirisname.empty())
-    xml << start_tag("CHECKPOINT") << attribute("format","osiris")
-        << attribute("file", osirisname.native_file_string())
-        << end_tag("CHECKPOINT");
+  xml << start_tag("CHECKPOINT") << attribute("format","osiris")
+      << attribute("file", name.native_file_string())
+      << end_tag("CHECKPOINT");
+#ifdef ALPS_HAVE_HDF5
+  xml << start_tag("CHECKPOINT") << attribute("format","hdf5")
+      << attribute("file", fn_hdf5.native_file_string())
+      << end_tag("CHECKPOINT");
+#endif
+
   xml << get_info();
-  measurements.write_xml(xml,fn_hdf5);
+  measurements.write_xml(xml);
   xml << end_tag("MCRUN") << end_tag("SIMULATION");
 }
 
@@ -366,9 +363,15 @@ ResultType DummyMCRun::get_summary() const
 }
 
 #ifdef ALPS_HAVE_HDF5
-	void MCSimulation::serialize(hdf5::iarchive & ar) {
-		WorkerTask::serialize(ar);
-	}
+void MCSimulation::serialize(hdf5::iarchive & ar) {
+  WorkerTask::serialize(ar);
+  // ar >> make_pvp("/simulation/results", measurements);
+}
+
+void MCSimulation::serialize(hdf5::oarchive & ar) const {
+  WorkerTask::serialize(ar);
+  ar << make_pvp("/simulation/results", get_measurements(false));
+}
 #endif
 
 void MCSimulation::handle_tag(std::istream& infile, const XMLTag& tag) 

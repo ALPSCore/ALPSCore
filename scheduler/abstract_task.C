@@ -70,6 +70,7 @@ bool AbstractTask::handle_message(const Process& master,int tag)
   Process p;
   int32_t n;
   double w=0.;
+  bool flag;
   double percentage=0.;
   std::string filename;
   ResultType res;
@@ -124,8 +125,8 @@ bool AbstractTask::handle_message(const Process& master,int tag)
                     
     case MCMP_checkpoint:
       message.receive(master,MCMP_checkpoint);
-      message >> filename;
-      checkpoint(boost::filesystem::path(filename));
+      message >> filename >> flag;
+      checkpoint(boost::filesystem::path(filename),flag);
       return true;
 
     default:

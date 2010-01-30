@@ -64,19 +64,19 @@ RemoteWorker::~RemoteWorker()
   Scheduler::delete_slave_task(where);
 }
 
-void RemoteWorker::save_to_file(const boost::filesystem::path& fn) const
+void RemoteWorker::save_to_file(const boost::filesystem::path& fn, const boost::filesystem::path& hdf5fn) const
 { 
   // let the remote process write the run into the file
   OMPDump send;
-  send << fn.string ();
+  send << fn.string () << hdf5fn.string();
   send.send(where,MCMP_save_run_to_file);
 }
 
-void RemoteWorker::load_from_file(const boost::filesystem::path& fn)
+void RemoteWorker::load_from_file(const boost::filesystem::path& fn, const boost::filesystem::path& hdf5fn)
 {
   // let the remote process write the run into the file
   OMPDump send;
-  send << fn.string();
+  send << fn.string() << hdf5fn.string();
   send.send(where,MCMP_load_run_from_file);
 }
 

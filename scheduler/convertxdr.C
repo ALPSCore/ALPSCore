@@ -43,7 +43,7 @@
 
 namespace alps {
  
-void convert_params(const std::string& inname, const std::string& outfilename)
+void convert_params(const std::string& inname)
 {
   alps::ParameterList list;
   {
@@ -51,7 +51,7 @@ void convert_params(const std::string& inname, const std::string& outfilename)
     in >> list;
   }
 
-  std::string basename = boost::filesystem::path(outfilename,
+  std::string basename = boost::filesystem::path(inname,
     boost::filesystem::native).leaf();
   std::cout << "Converting parameter file " << inname << " to "
             <<  basename+".in.xml" << std::endl;
@@ -94,21 +94,21 @@ void convert_params(const std::string& inname, const std::string& outfilename)
   out << alps::end_tag("JOB");
 }
 
-void convert_run(const std::string& inname, const std::string& outname)
+void convert_run(const std::string& inname)
 {
   alps::IXDRFileDump dump(boost::filesystem::path(inname,boost::filesystem::native));
-  std::cout << "Converting run file " << inname << " to " <<  outname+".xml" <<std::endl;
+  std::cout << "Converting run file " << inname << " to " <<  inname+".xml" <<std::endl;
   alps::scheduler::DummyMCRun run;
   run.load_worker(dump);
-  run.write_xml(outname,inname);
+  run.write_xml(inname);
 }
 
-void convert_simulation(const std::string& inname, const std::string& outname)
+void convert_simulation(const std::string& inname)
 {
   alps::IXDRFileDump dump(boost::filesystem::path(inname,boost::filesystem::native));
   if (static_cast<int>(dump)!=alps::scheduler::MCDump_task)
     boost::throw_exception(std::runtime_error("did not get a simulation on dump"));
-  std::string jobname=outname+".xml";
+  std::string jobname=inname+".xml";
   std::cout << "Converting simulation file " << inname << " to " <<  jobname << std::endl;
   alps::oxstream out(boost::filesystem::path(jobname,boost::filesystem::native));
   out << alps::header("UTF-8") << alps::stylesheet(alps::xslt_path("ALPS.xsl"))
@@ -133,21 +133,15 @@ void convert_simulation(const std::string& inname, const std::string& outname)
   std::cout << num << " run(s)" << std::endl;
   for (int i=0;i<num;++i) {
     std::string srcname = inname+ ".run" + boost::lexical_cast<std::string,int>(i+1);
-    std::string dstname = outname+ ".run" + boost::lexical_cast<std::string,int>(i+1);
-    if (srcname!=dstname)
-    {
-      boost::filesystem::remove(dstname);
-      boost::filesystem::copy_file(srcname,dstname);
-    }
     out << alps::start_tag("MCRUN") << alps::start_tag("CHECKPOINT")
         << alps::attribute("format","osiris") << alps::attribute("file=","dstname")
         << alps::end_tag("CHECKPOINT") << alps::end_tag("MCRUN");
-    convert_run(srcname,dstname);
+    convert_run(srcname);
   }
   out << alps::end_tag("SIMULATION");
 }
 
-void convert_scheduler(const std::string& inname, const std::string& outname)
+void convert_scheduler(const std::string& inname)
 {
   std::map<int,std::string> status_text;
   status_text[alps::scheduler::MasterScheduler::TaskNotStarted]="new";
@@ -159,7 +153,7 @@ void convert_scheduler(const std::string& inname, const std::string& outname)
   alps::IXDRFileDump dump(boost::filesystem::path(inname,boost::filesystem::native));
   if (static_cast<int>(dump)!=alps::scheduler::MCDump_scheduler)
     boost::throw_exception(std::runtime_error("did not get scheduler on dump"));
-  std::string jobname=outname+".xml";
+  std::string jobname=inname+".xml";
   std::cout << "Converting scheduler file " << inname << " to " <<  jobname << std::endl;
   alps::oxstream out(boost::filesystem::path(jobname,boost::filesystem::native));
   out << alps::header("UTF-8") << alps::stylesheet(alps::xslt_path("ALPS.xsl"))
@@ -175,15 +169,14 @@ void convert_scheduler(const std::string& inname, const std::string& outname)
   dump >> status;
   for (unsigned int i=0;i<list.size();++i)
     if (status[i]) {
-      std::string xmlname = outname;
+      std::string xmlname = inname;
       std::string dumpname = inname;
       xmlname += ".task" + boost::lexical_cast<std::string,int>(i+1);
-      dumpname += "Sim" + boost::lexical_cast<std::string,int>(i+1);
       if(boost::filesystem::exists(dumpname)) {
         out << alps::start_tag("TASK") << alps::attribute("status",status_text[status[i]])
           << alps::start_tag("INPUT") << alps::attribute("file",xmlname+".xml")
           << alps::end_tag("INPUT") << alps::end_tag("TASK");
-        convert_simulation(dumpname,xmlname);  
+        convert_simulation(xmlname);  
       }
     }
    out << alps::end_tag("JOB");
@@ -196,17 +189,17 @@ std::string convert2xml(std::string const& inname)
     dump >> type;
     switch (type) {
     case alps::scheduler::MCDump_scheduler:
-      convert_scheduler(inname,inname);
+      convert_scheduler(inname);
       return inname+".xml";
       break;
     case alps::scheduler::MCDump_task:
-      convert_simulation(inname,inname);
+      convert_simulation(inname);
       return inname+".xml";
     case alps::scheduler::MCDump_run:
-      convert_run(inname,inname);
+      convert_run(inname);
       return inname+".xml";
     default:
-      convert_params(inname,inname);
+      convert_params(inname);
     }
   return inname+".in.xml";
 }

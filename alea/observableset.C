@@ -304,15 +304,14 @@ void ObservableSet::read_xml(std::istream& infile, const XMLTag& intag)
     return;
   XMLTag tag = parse_tag(infile);
   while (tag.name != "/" + intag.name) {
-    if (tag.name == "SCALAR_AVERAGE")
+    if (has(tag.attributes["name"]))
+      skip_element(infile,tag);
+    else if (tag.name == "SCALAR_AVERAGE")
       operator<<(RealObsevaluator(tag.attributes["name"],infile,tag));
-#ifdef ALPS_HAVE_VALARRAY
     else if (tag.name == "VECTOR_AVERAGE")
       operator<<(RealVectorObsevaluator(tag.attributes["name"],infile,tag));
-#endif
-    else if (tag.name == "HISTOGRAM") {
+    else if (tag.name == "HISTOGRAM")
      operator<< (HistogramObservableEvaluator<double>(tag.attributes["name"],infile,tag));
-    }
     else
       boost::throw_exception(std::runtime_error("Cannot parse tag " + tag.name + " in <" + intag.name + ">"));
     tag = parse_tag(infile);

@@ -52,11 +52,16 @@ enum MCDumpType {
     MCDump_run_slave               =6,
 
     // dump version numbers
-    MCDump_worker_version          =306
+#ifdef ALPS_ONLY_HDF5
+    MCDump_worker_version          =310
+#else
+    MCDump_worker_version          =400
+#endif
     // Some data types changed from 32 to 64 Bit between version 301 and 302
     // vector observable labels stored from 303
     // RNG changed to Mersenne twister from 304
     // minmax dropped in 306
+    // went to HDF5 for ALPS-internal data in 310
 };
 
 

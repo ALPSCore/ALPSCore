@@ -28,6 +28,7 @@
 /* $Id$ */
 
 #include <alps/expression/evaluator.h>
+#include <alps/expression/evaluate.h>
 
 namespace alps {
 
@@ -53,5 +54,26 @@ void Disorder::seed_if_unseeded(const alps::Parameters& p)
   if (s && s != last_seed_)
     seed(s);
 }
+
+StringValue simplify_value(StringValue const& val, Parameters const& parms)
+{
+  try {
+    expression::Expression<double> expr(val);
+    if (expr.can_evaluate(parms)) {
+        double value = expr.value(parms);
+        if (is_zero(value - static_cast<double>(static_cast<int>(value)))) 
+            return static_cast<int>(value);
+        else 
+            return value;
+    } else {
+        expr.partial_evaluate(parms);
+        return boost::lexical_cast<std::string>(expr);
+    }
+  } catch(...) {
+    // we had a problem evaluating, use original full value
+    return val;
+  }
+}
+
 
 } // end namespace alps

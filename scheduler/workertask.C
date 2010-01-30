@@ -67,20 +67,6 @@ WorkerTask::~WorkerTask()
       delete runs[i];
 }
 
-#ifdef ALPS_HAVE_HDF5
-	void WorkerTask::serialize(hdf5::iarchive & ar) {
-		std::vector<std::string> list = ar.list_children("/checkpoint");
-		for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
-			std::string filename;
-			ar >> make_pvp("/checkpoint/" + *it, filename);
-			CheckpointFiles files;
-			files.in = boost::filesystem::complete(boost::filesystem::path(filename, boost::filesystem::native), infilename.branch_path());
-			runfiles.push_back(files);
-			workerstatus.push_back(RunOnDump);
-		}
-	}
-#endif
-
 void WorkerTask::handle_tag(std::istream& infile, const XMLTag& intag) 
 {
   if (intag.name!=worker_tag()) {
@@ -102,16 +88,26 @@ void WorkerTask::handle_tag(std::istream& infile, const XMLTag& intag)
   }
     
   // read <CHECKPOINT> tag
-  if (tag.attributes["file"]=="")
-    boost::throw_exception(std::runtime_error("file attribute missing in <CHECKPOINT> element in task file"));
   CheckpointFiles files; 
-  files.in=boost::filesystem::complete(
-  boost::filesystem::path(tag.attributes["file"],boost::filesystem::native),infilename.branch_path());
-  // relative to XML file
+  while (tag.name == "CHECKPOINT") {
+    if (tag.attributes["file"]=="")
+      boost::throw_exception(std::runtime_error("file attribute missing in <CHECKPOINT> element in task file"));
+    if (tag.attributes["format"]=="osiris")
+      files.in=boost::filesystem::complete(
+      boost::filesystem::path(tag.attributes["file"],boost::filesystem::native),infilename.branch_path());
+    else if (tag.attributes["format"]=="hdf5")
+      files.hdf5in=boost::filesystem::complete(
+      boost::filesystem::path(tag.attributes["file"],boost::filesystem::native),infilename.branch_path());
+    else
+      boost::throw_exception(std::runtime_error("unknown format in <CHECKPOINT> element in task file"));
+    skip_element(infile,tag);
+    tag=parse_tag(infile,true);
+  }
+      
+    // relative to XML file
     
   runfiles.push_back(files);
   workerstatus.push_back(RunOnDump);
-  skip_element(infile,tag);
   while (tag.name!=worker_close) {
     skip_element(infile,tag);
     tag=parse_tag(infile,true);
@@ -136,7 +132,7 @@ void WorkerTask::construct() // delayed until child class is fully constructed
 #endif
         std::copy(where.begin()+in,where.begin()+in+cpus(),here.begin());
         runs[0]=theScheduler->make_worker(here,parms);
-        runs[0]->load_from_file(runfiles[i].in);
+        runs[0]->load_from_file(runfiles[i].in,runfiles[i].hdf5in);
         theWorker = runs[0];
         workerstatus[0] = LocalRun;
         in+=cpus();
@@ -147,7 +143,7 @@ void WorkerTask::construct() // delayed until child class is fully constructed
 #endif
         std::copy(where.begin()+in,where.begin()+in+cpus(),here.begin());
         runs[j]=new RemoteWorker(here,parms);
-        runs[j]->load_from_file(runfiles[i].in);
+        runs[j]->load_from_file(runfiles[i].in,runfiles[i].hdf5in);
         workerstatus[j] = RemoteRun;
         in+=cpus();
       }
@@ -158,7 +154,7 @@ void WorkerTask::construct() // delayed until child class is fully constructed
                  << runfiles[i].in.string() << "\n";
 #endif
       runs[j]=theScheduler->make_worker(parms);
-      runs[j]->load_from_file(runfiles[i].in);
+      runs[j]->load_from_file(runfiles[i].in,runfiles[i].hdf5in);
       workerstatus[j] = RunOnDump;
     }
   }
@@ -192,9 +188,8 @@ void WorkerTask::construct() // delayed until child class is fully constructed
       }
     }
   }
-  for (unsigned int i=0;i<runs.size();++i) {
+  for (unsigned int i=0;i<runs.size();++i)
     runs[i]->set_parameters(parms);
-  }
 }
         
 // start all runs which are active
@@ -251,7 +246,7 @@ void WorkerTask::add_process(const Process& p)
     std::cerr  << "Loading additional run " << j << " remote on Host: " << p << "\n";
 #endif
     runs[j]=new RemoteWorker(here,parms);
-    runs[j]->load_from_file(runfiles[j].in);
+    runs[j]->load_from_file(runfiles[j].in,runfiles[i].hdf5in);
     workerstatus[j] = RemoteRun;
   }
 }
@@ -399,13 +394,16 @@ double WorkerTask::work() const
          *(1.-work_done());
 }
 
+inline boost::filesystem::path optional_complete(boost::filesystem::path const& p, boost::filesystem::path const& dir)
+{
+  if (dir.empty() || p.empty())
+    return p;
+  else 
+    boost::filesystem::complete(p,dir);
+}
+
 // checkpoint: save into a file
-void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::path& fn) const {
-#ifdef ALPS_HAVE_HDF5
-	std::string task_path = fn.file_string().substr(0, fn.file_string().find_last_of('.')) + ".h5";
-	std::string task_backup = fn.file_string().substr(0, fn.file_string().find_last_of('.')) + ".bak.h5";
-	hdf5::oarchive task_ar(boost::filesystem::exists(task_backup) ? task_backup : task_path);
-#endif
+void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::path& fn, bool) const {
   boost::filesystem::path dir=fn.branch_path();
   for (unsigned int i=0;i<runs.size();++i) {
     if(workerstatus[i] == RunNotExisting) {
@@ -415,8 +413,16 @@ void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::pa
     else if(runs[i]==0)
       boost::throw_exception(std::logic_error("run does not exist but marked as existing"));
     else {
-      if (!runfiles[i].out.empty())
-        runfiles[i].in=boost::filesystem::complete(runfiles[i].out,dir);
+      if (!runfiles[i].out.empty()) {
+        runfiles[i].in=optional_complete(runfiles[i].out,dir);
+#ifdef ALPS_HAVE_HDF5
+        if (!runfiles[i].hdf5out.empty()) 
+          runfiles[i].hdf5in=optional_complete(runfiles[i].hdf5out,dir);
+        else {
+          runfiles[i].hdf5in=runfiles[i].in.branch_path()/(runfiles[i].in.leaf()+".h5");
+        }
+#endif
+      }
       else {
         // search file name
         int j=0;
@@ -433,30 +439,25 @@ void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::pa
           j++;
         } while (found);
         runfiles[i].out = boost::filesystem::path(name);
-      }
-      if(workerstatus[i] == LocalRun || workerstatus[i] == RemoteRun) {
-        runs[i]->save_to_file(boost::filesystem::complete(runfiles[i].out,dir));
 #ifdef ALPS_HAVE_HDF5
-		{
-			std::string worker_path = boost::filesystem::complete(runfiles[i].out, dir).file_string() + ".h5";
-			std::string worker_backup = boost::filesystem::complete(runfiles[i].out, dir).file_string() + ".bak.h5";
-			bool worker_exists = boost::filesystem::exists(worker_path);
-			if (worker_exists)
-				boost::filesystem::remove(worker_backup);
-			{
-				hdf5::oarchive worker_ar(worker_exists ? worker_backup : worker_path);
-				worker_ar << make_pvp("/", runs[i]);
-			}
-			if (worker_exists) {
-				boost::filesystem::remove(worker_path);
-				boost::filesystem::rename(worker_backup, worker_path);
-			}
-		}
+        runfiles[i].hdf5out = boost::filesystem::path(name+".h5");
 #endif
+      }
+
+      if(workerstatus[i] == LocalRun || workerstatus[i] == RemoteRun) {
+        runs[i]->save_to_file(optional_complete(runfiles[i].out,dir),optional_complete(runfiles[i].hdf5out,dir));
       } else if (workerstatus[i] == RunOnDump) {
-        if(boost::filesystem::complete(runfiles[i].out,dir).string()!=runfiles[i].in.string()) {
+        if(optional_complete(runfiles[i].out,dir).string()!=runfiles[i].in.string()) {
           boost::filesystem::remove(boost::filesystem::complete(runfiles[i].out,dir));
           boost::filesystem::copy_file(boost::filesystem::complete(runfiles[i].in,dir),boost::filesystem::complete(runfiles[i].out,dir));
+        }
+#ifdef ALPS_HAVE_HDF5
+        if(optional_complete(runfiles[i].hdf5out,dir).string()!=runfiles[i].hdf5in.string()) {
+          if (boost::filesystem::exists(optional_complete(runfiles[i].hdf5out,dir)))
+            boost::filesystem::remove(optional_complete(runfiles[i].hdf5out,dir));
+          if (boost::filesystem::exists(optional_complete(runfiles[i].hdf5in,dir)))
+            boost::filesystem::copy_file(optional_complete(runfiles[i].hdf5in,dir),optional_complete(runfiles[i].hdf5out,dir));
+#endif
         }
       }
       else 
@@ -465,18 +466,26 @@ void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::pa
       out << runs[i]->get_info();
       out << alps::start_tag("CHECKPOINT") << alps::attribute("format","osiris")
           << alps::attribute("file",runfiles[i].out.native_file_string());
-      out << alps::end_tag("CHECKPOINT") << alps::end_tag(worker_tag());
-      runfiles[i].in=boost::filesystem::complete(runfiles[i].out,dir);
+      out << alps::end_tag("CHECKPOINT");
+      runfiles[i].in=optional_complete(runfiles[i].out,dir);
 #ifdef ALPS_HAVE_HDF5
-		task_ar
-			<< make_pvp("/logs/" + boost::lexical_cast<std::string>(i), runs[i]->get_info())
-			<< make_pvp("/checkpoint/" + boost::lexical_cast<std::string>(i), runfiles[i].out.file_string())
-//			<< make_pvp("/checkpoint/" + boost::lexical_cast<std::string>(i), runfiles[i].out.file_string() + ".h5")
-		;
+      if (!runfiles[i].hdf5out.empty()) 
+        runfiles[i].hdf5in=optional_complete(runfiles[i].hdf5out,dir);
+      else 
+        runfiles[i].hdf5in=boost::filesystem::path();
+      if (boost::filesystem::exists(runfiles[i].hdf5in)) {
+        out << alps::start_tag("CHECKPOINT") << alps::attribute("format","hdf5")
+            << alps::attribute("file",runfiles[i].hdf5out.native_file_string());
+        out << alps::end_tag("CHECKPOINT");
+      }
 #endif
+      out << alps::end_tag(worker_tag());
     }
   }
 }
+
+
+
 
 } // namespace scheduler
 } // namespace alps
