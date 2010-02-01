@@ -375,9 +375,8 @@ double Worker::work_done() const
 
 ResultType Worker::get_summary() const
 {
-  ResultType res;
   std::cerr << "\nWorker:;get_summary() called - this should not happen!!\n";
-  return res;
+  return ResultType();
 }
 } // namespace scheduler
 } // namespace alps
