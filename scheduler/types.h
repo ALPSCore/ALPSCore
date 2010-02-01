@@ -53,9 +53,9 @@ enum MCDumpType {
 
     // dump version numbers
 #ifdef ALPS_ONLY_HDF5
-    MCDump_worker_version          =310
-#else
     MCDump_worker_version          =400
+#else
+    MCDump_worker_version          =310
 #endif
     // Some data types changed from 32 to 64 Bit between version 301 and 302
     // vector observable labels stored from 303
