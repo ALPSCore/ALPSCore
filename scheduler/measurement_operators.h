@@ -98,7 +98,8 @@ public:
   XMLTag handle_tag(std::istream& infile, const XMLTag& intag);
   
 #ifdef ALPS_HAVE_HDF5
-  void write_hdf5(alps::hdf5::oarchive& ar, std::string const& p) const;
+  void serialize(alps::hdf5::oarchive & ar) const;
+  void serialize(alps::hdf5::iarchive & ar);
 #endif
   
   std::map<std::string,std::vector<value_type> > average_values;
@@ -134,19 +135,19 @@ EigenvectorMeasurements<ValueType>::EigenvectorMeasurements(LatticeModel const& 
 
 #ifdef ALPS_HAVE_HDF5
 template <class ValueType>
-void EigenvectorMeasurements<ValueType>::write_hdf5(alps::hdf5::oarchive& ar, std::string const& p) const
+void EigenvectorMeasurements<ValueType>::serialize(alps::hdf5::oarchive& ar) const
 {
 
   for (typename std::map<std::string,std::vector<value_type> >::const_iterator
     it=average_values.begin();it!=average_values.end();++it) 
   {
-    std::string path = p + "/results/"+ hdf5_name_encode(it->first);
+    std::string path = "results/"+ hdf5_name_encode(it->first);
     ar << make_pvp(path+"/mean/value", alps::real(it->second));
   }    
 
   for (typename std::map<std::string,std::vector<std::vector<value_type> > >::const_iterator 
           it=local_values.begin();it!=local_values.end();++it) {
-    std::string path = p + "/results/"+ hdf5_name_encode(it->first);
+    std::string path = "results/"+ hdf5_name_encode(it->first);
     ar << make_pvp(path+"/mean/value", alps::real(it->second));
     if (bond_operator_[it->first])
       ar << make_pvp(path+"/labels", bondlabel_);
@@ -156,19 +157,83 @@ void EigenvectorMeasurements<ValueType>::write_hdf5(alps::hdf5::oarchive& ar, st
 
   for (typename std::map<std::string,std::vector<std::vector<value_type> > >::const_iterator 
         it=correlation_values.begin();it!=correlation_values.end();++it) {
-    std::string path = p + "/results/"+ hdf5_name_encode(it->first);
+    std::string path = "results/"+ hdf5_name_encode(it->first);
     ar << make_pvp(path+"/mean/value", alps::real(it->second));
     ar << make_pvp(path+"/labels", distlabel_);
   }
 
   for (typename std::map<std::string,std::vector<std::vector<value_type> > >::const_iterator 
         it=structurefactor_values.begin();it!=structurefactor_values.end();++it) {
-    std::string path = p + "/results/"+ hdf5_name_encode(it->first);
+    std::string path = "results/"+ hdf5_name_encode(it->first);
     ar << make_pvp(path+"/mean/value", alps::real(it->second));
     ar << make_pvp(path+"/labels", momentumlabel_);
   }
 
 }
+
+template <class ValueType>
+void EigenvectorMeasurements<ValueType>::serialize(alps::hdf5::iarchive& ar)
+{
+}
+
+
+/*
+
+  XMLTag tag=intag;
+  while (true) {
+    if (tag.name=="SCALAR_AVERAGE") {
+      std::string name=tag.attributes["name"];
+      tag=parse_tag(infile);
+      if (tag.name!="MEAN")
+        boost::throw_exception(std::runtime_error("<MEAN> element expected inside <SCALAR_AVERAGE>"));
+      value_type val;
+      infile >> val;
+      average_values[name].push_back(val);
+      tag=parse_tag(infile);
+      if (tag.name!="/MEAN")
+        boost::throw_exception(std::runtime_error("</MEAN> element expected inside <SCALAR_AVERAGE>"));
+      tag=parse_tag(infile);
+      if (tag.name!="/SCALAR_AVERAGE")
+        boost::throw_exception(std::runtime_error("</SCALAR_AVERAGE> expected"));
+    }
+    else if (tag.name=="VECTOR_AVERAGE") {
+      std::string name=tag.attributes["name"];
+      std::vector<value_type> vals;
+      if (tag.type != XMLTag::SINGLE) {
+        tag=parse_tag(infile);
+        while (tag.name=="SCALAR_AVERAGE") {
+          tag=parse_tag(infile);
+          if (tag.name!="MEAN")
+            boost::throw_exception(std::runtime_error("<MEAN> element expected inside <SCALAR_AVERAGE>"));
+          value_type val;
+          infile >> val;
+          vals.push_back(val);
+          tag=parse_tag(infile);
+          if (tag.name!="/MEAN")
+            boost::throw_exception(std::runtime_error("</MEAN> element expected inside <SCALAR_AVERAGE>"));
+          tag=parse_tag(infile);
+          if (tag.name!="/SCALAR_AVERAGE")
+            boost::throw_exception(std::runtime_error("</SCALAR_AVERAGE> expected"));
+          tag=parse_tag(infile);
+        }
+        if (tag.name!="/VECTOR_AVERAGE")
+          boost::throw_exception(std::runtime_error("</VECTOR_AVERAGE> expected"));
+      }
+      if (local_expressions.find(name) != local_expressions.end())
+        local_values[name].push_back(vals);
+      else if (correlation_expressions.find(name) != correlation_expressions.end())
+        correlation_values[name].push_back(vals);
+      else if (structurefactor_expressions.find(name) != structurefactor_expressions.end())
+        structurefactor_values[name].push_back(vals);
+      else
+        boost::throw_exception(std::runtime_error("cannot decide whether " + name + " is local or correlation measurement "));
+    }
+    else
+      return tag;
+    tag=parse_tag(infile);
+  }
+  */
+  
 #endif
 
 
