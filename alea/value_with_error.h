@@ -6,7 +6,6 @@
 *
 * Copyright (C) 1994-2010 by Ping Nang Ma <pingnang@itp.phys.ethz.ch>,
 *                            Matthias Troyer <troyer@itp.phys.ethz.ch>,
-*                            Bela Bauer <bauerb@itp.phys.ethz.ch>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -30,7 +29,8 @@
 /* $Id: nobinning.h 3520 2009-12-11 16:49:53Z gamperl $ */
 
 
-#include <boost/math/special_functions.hpp>
+#include <alps/numeric/vector_functions.hpp>
+#include <boost/type_traits.hpp>
 #include <iostream>
 #include <iomanip>
 #include <cmath>
@@ -39,625 +39,581 @@
 #include <cassert>
 
 
-namespace alps { namespace alea {
+namespace alps { 
 
-template<class T> 
-class value_with_error
-{
-public:
-  typedef T        value_type;
-
-  // constructors 
-  value_with_error(value_type mean=value_type(), value_type error=value_type())
-    : _mean(mean)
-    , _error(error) {}
-
-
-  // obtaining mean and error
-  inline value_type mean() const {  return _mean;  }
-  inline value_type error() const {  return _error; }
-
-
-  // intrinsic operations 0: ( +:pos , -:neg , abs )
-  inline value_with_error<value_type>& operator+()
+  // implement trait techniques to set element_type  -- very cool, amazing, awesome, better and better...
+  template <typename T>
+  struct element_type 
+    : public boost::remove_cv<T>
   {
-    return *this;
-  }
+    typedef T type;
+  };  
 
-  inline value_with_error<value_type> operator-()
-  {
-    return value_with_error(-_mean,_error);
-  }
+  template <typename T>
+  struct element_type<std::vector<T> >
+    : public element_type<T>
+  {}; 
 
-  inline static value_with_error<value_type> abs(value_with_error<value_type> const& rhs)
-  {
-    return value_with_error<value_type>(std::abs(rhs._mean),rhs._error);
-  }
+  namespace alea {
 
-  inline value_with_error<value_type>& operator= (value_with_error<value_type> const rhs)
-  {
-    _mean  = rhs._mean;
-    _error = rhs._error;
-    return *this;
-  }
-
-  inline bool operator==(value_with_error const & rhs)
-  {
-    return ( (_mean == rhs._mean) && (_error == rhs._error) );
-  }
-
-  // intrinsic operations 1: ( += , -= , *= , /= )
-  inline value_with_error& operator+=(value_with_error const & rhs)
-  {
-    _error = std::sqrt(_error*_error+rhs._error*rhs._error); 
-    _mean  = _mean + rhs._mean;
-    return *this;
-  }  
-
-  inline value_with_error& operator+=(value_type const & rhs)
-  {
-    _mean  = _mean + rhs;
-    return *this;
-  }
-
-  inline value_with_error& operator-=(value_with_error const & rhs)
-  {
-    _error = std::sqrt(_error*_error+rhs._error*rhs._error);
-    _mean  = _mean - rhs._mean;
-    return *this; 
-  }
-
-  inline value_with_error& operator-=(value_type const & rhs)
-  {
-    _mean  = _mean - rhs;
-    return *this;
-  }
-
-  inline value_with_error& operator*=(value_with_error const & rhs)
-  {
-    _error =  std::sqrt(rhs._mean*rhs._mean*_error*_error + _mean*_mean*rhs._error*rhs._error);
-    _mean  = _mean * rhs._mean;
-    return *this;
-  }
-
-  inline value_with_error& operator*=(value_type const & rhs)
-  {
-    _error = std::abs(_error * rhs);
-    _mean  = _mean  * rhs;
-    return *this;
-  }
-
-  inline value_with_error& operator/=(value_with_error const & rhs)
-  {
-    _error = std::sqrt(rhs._mean*rhs._mean*_error*_error + _mean*_mean*rhs._error*rhs._error);
-    _error = _error / (rhs._mean*rhs._mean);
-    _mean  = _mean  /rhs._mean;
-    return *this;
-  }
-
-  inline value_with_error& operator/=(value_type const & rhs)
-  {
-    _error = std::abs(_error / rhs);
-    _mean  = _mean  / rhs;
-    return *this;
-  }
-
-
-private:
-  value_type  _mean;
-  value_type  _error;
-};
-
-
-template<class T>
-class value_with_error_container    // this is not designed to be as a stl container  
-{
-public:
-  // typedef
-  typedef T                           value_type;
-  typedef std::size_t                 size_type;
-  typedef std::size_t                 index_type;
-  typedef std::vector<T>              container_type;
-
-
-  value_with_error_container(container_type _mean_container=container_type(), container_type _error_container=container_type()) {
-    assert(_mean_container.size() == _error_container.size());
-    for(index_type index=0; index < _mean_container.size(); ++index)
+    template<class T> 
+    class value_with_error 
     {
-      _mean_container.push_back(_mean_container[index]);
-      _error_container.push_back(_error_container[index]);
-    }
-  }
-
-  size_type size()
-  {
-    assert(_mean_container.size() == _error_container.size());
-    return _mean_container.size();
-  }
-
-  void append(value_with_error<value_type> const &rhs)
-  {
-    _mean_container.push_back(rhs.mean());
-    _error_container.push_back(rhs.error());   
-  }
-
-  void extend(value_with_error_container<value_type> const rhs)
-  {
-    for (typename container_type::const_iterator it_mean=rhs._mean_container.begin(), it_error=rhs._error_container.begin(); it_mean != rhs._mean_container.end(); ++it_mean,++it_error)
-    {
-      _mean_container.push_back(*it_mean);
-      _error_container.push_back(*it_error);
-    }
-  }
-
-  void fill(index_type index_begin, index_type index_end, value_with_error<value_type> const & rhs)
-  {
-    while (size() < index_begin)
-    {
-      append(value_with_error<value_type>());
-    }
-
-    index_type index = index_begin;
-    while (index < index_end)
-    {
-      if (index < size()) 
+    public:
+      typedef T                                     value_type;
+      typedef typename alps::element_type<T>::type  element_type;
+      typedef std::size_t                           size_type;
+      typedef std::size_t                           index_type;
+      typedef std::ptrdiff_t                        difference_type;
+    
+    private:
+      value_type _mean;
+      value_type _error;
+    
+    public:
+      // constructors, assignment operator
+      value_with_error(value_type mean =value_type(), value_type error =value_type())
+        : _mean(mean)
+        , _error(error) 
+      {}
+    
+      inline value_with_error<value_type>& operator= (value_with_error<value_type> const rhs)
       {
-        _mean_container[index]  = rhs.mean();
-        _error_container[index] = rhs.error();
+        _mean  = rhs._mean;
+        _error = rhs._error;
+        return *this;
+      }
+    
+      // call
+      inline value_type const & mean()  const {  return _mean;  }
+      inline value_type const & error() const {  return _error; }
+    
+      // indicing operator
+      //value_with_error<element_type> operator[] (const index_type);
+    
+      // comparison
+      inline bool operator==(value_with_error const & rhs)
+      {  return ((_mean == rhs._mean) && (_error == rhs._error));  }
+    
+    
+      // intrinsic operations: ( += , -= , *= , /= )
+      inline value_with_error<value_type>& operator+=(value_with_error<value_type> const & rhs)
+      {
+        using std::sqrt;
+        using alps::numeric::sq;
+        using alps::numeric::sqrt;
+        using boost::numeric::operators::operator+;
+
+        _error = sqrt(sq(_error)+sq(rhs._error));
+        _mean  = _mean + rhs._mean;
+        return *this;
+      }
+    
+      inline value_with_error<value_type>& operator+=(value_type const & rhs)
+      {
+        using boost::numeric::operators::operator+;
+       
+        _mean  = _mean + rhs;
+        return *this;
+      }
+    
+      inline value_with_error<value_type>& operator-=(value_with_error const & rhs)
+      {
+        using std::sqrt;
+        using alps::numeric::sq;
+        using alps::numeric::sqrt;
+        using boost::numeric::operators::operator+;
+        using boost::numeric::operators::operator-;
+    
+        _error = sqrt(sq(_error)+sq(rhs._error));
+        _mean  = _mean - rhs._mean;
+        return *this;
+      }
+    
+      inline value_with_error<value_type>& operator-=(value_type const & rhs)
+      {
+        using boost::numeric::operators::operator-;
+
+        _mean  = _mean - rhs;
+        return *this;
+      }
+    
+      inline value_with_error<value_type>& operator*=(value_with_error<value_type> const & rhs)
+      {
+        using std::sqrt;
+        using alps::numeric::sq;
+        using alps::numeric::sqrt;
+        using boost::numeric::operators::operator+;
+        using boost::numeric::operators::operator*;
+    
+        _error =  sqrt(sq(rhs._mean)*sq(_error) + sq(_mean)*sq(rhs._error));
+        _mean  = _mean * rhs._mean;
+        return *this;
+      }
+    
+      inline value_with_error<value_type>& operator*=(value_type const & rhs)
+      {
+        using std::abs;
+        using alps::numeric::abs;
+        using boost::numeric::operators::operator*;
+    
+        _error = abs(_error * rhs);
+        _mean  = _mean  * rhs;
+        return *this;
+      }
+    
+      inline value_with_error<value_type>& operator/=(value_with_error<value_type> const & rhs)
+      {
+        using std::sqrt;
+        using alps::numeric::sq;
+        using alps::numeric::sqrt;
+        using boost::numeric::operators::operator+;
+        using boost::numeric::operators::operator*;
+        using boost::numeric::operators::operator/;
+    
+        _error = sqrt(sq(rhs._mean)*sq(_error) + sq(_mean)*sq(rhs._error));
+        _error = _error / sq(rhs._mean);
+        _mean  = _mean  /rhs._mean;
+        return *this;
+      }
+    
+      inline value_with_error<value_type>& operator/=(value_type const & rhs)
+      {
+        using std::abs;
+        using alps::numeric::abs;
+        using boost::numeric::operators::operator/;
+    
+        _error = abs(_error / rhs);
+        _mean  = _mean  / rhs;
+        return *this;
+      }
+    
+      // extending to STL container interface... in progress ***
+      size_type size() const
+      {
+        assert(_mean.size() == _error.size());
+        return (_mean.size());
+      }
+
+      void push_back(value_with_error<element_type> const & rhs)
+      {
+        _mean.push_back(rhs.mean());
+        _error.push_back(rhs.error());
+      }
+
+      void pop_back()
+      {
+        assert((_mean.size() != 0) && (_error.size() != 0));
+        _mean.pop_back();
+        _error.pop_back();
+      }
+
+    };
+    
+    
+    // i/o operators
+    template <class T>
+    std::ostream& operator<< (std::ostream &out, value_with_error<T> const& value)
+    {
+      out << value.mean() << " +/- " << value.error();
+      return out;
+    }
+    
+    template <class T>
+    std::ostream& operator<< (std::ostream &out, value_with_error<std::vector<T> > const & vec)
+    {
+      for (std::size_t index=0; index < vec.size(); ++index)  
+      {
+        out << vec.mean()[index] << " +/- " << vec.error()[index] << "\n";
+      }
+      return out;
+    }
+    
+    
+    // positivity operation, declaration of negativity and absolute declaration
+    template <class T>
+    inline value_with_error<T>& operator+(value_with_error<T>& rhs)  
+    {  
+      return rhs;  
+    }
+    
+    template <class T>
+    inline value_with_error<T> operator-(value_with_error<T> rhs)
+    {
+      using boost::numeric::operators::operator-;
+      return value_with_error<T>(-(rhs.mean()),rhs.error());
+    }
+    
+    template <class T>
+    inline value_with_error<T> abs(value_with_error<T> rhs)
+    {
+      using std::abs;
+      using alps::numeric::abs;
+      
+      return value_with_error<T>(abs(rhs.mean()),rhs.error());  
+    }
+    
+    
+    // ( + , - , * , / ) operators
+    #define IMPLEMENT_OPERATION(OPERATOR_NAME,OPERATOR_ASSIGN) \
+    template<class T> \
+    inline value_with_error<T> OPERATOR_NAME(value_with_error<T> lhs, value_with_error<T> const & rhs) \
+    {  return lhs OPERATOR_ASSIGN rhs;  } \
+    \
+    template <class T> \
+    inline value_with_error<T> OPERATOR_NAME(value_with_error<T> lhs, T const & rhs) \
+    {  return lhs OPERATOR_ASSIGN rhs;  } \
+    \
+    template <class T> \
+    inline value_with_error<std::vector<T> > OPERATOR_NAME(value_with_error<std::vector<T> > lhs, typename value_with_error<std::vector<T> >::element_type const & rhs_elem) \
+    { \
+      std::vector<T> rhs(lhs.size(),rhs_elem); \
+      return lhs OPERATOR_ASSIGN rhs; \
+    }
+    
+    IMPLEMENT_OPERATION(operator+,+=)
+    IMPLEMENT_OPERATION(operator-,-=)
+    IMPLEMENT_OPERATION(operator*,*=)
+    IMPLEMENT_OPERATION(operator/,/=)
+    
+    template <class T>
+    inline value_with_error<T> operator+(T const & lhs, value_with_error<T> rhs)
+    {  return rhs += lhs;  }
+    
+    template <class T>
+    inline value_with_error<T> operator-(T const & lhs, value_with_error<T> rhs)
+    { return -rhs + lhs;  }
+    
+    template <class T>
+    inline value_with_error<T> operator*(T const & lhs, value_with_error<T> rhs)
+    {  return rhs *= lhs;  }
+    
+    template <class T>
+    inline value_with_error<T> operator/(T const & lhs, value_with_error<T> const & rhs)
+    {
+      using std::abs;
+      using alps::numeric::abs;
+      using boost::numeric::operators::operator*;
+      using boost::numeric::operators::operator/;
+
+      T inverse_mean = lhs/rhs.mean();
+      return value_with_error<T>(inverse_mean,abs(inverse_mean*rhs.error()/rhs.mean()));
+    }
+
+    #define IMPLEMENT_OPERATION2(OPERATOR_NAME,OPERATOR_ASSIGN) \
+    template <class T> \
+    inline value_with_error<std::vector<T> > OPERATOR_NAME(typename value_with_error<std::vector<T> >::element_type const & lhs_elem, value_with_error<std::vector<T> > rhs) \
+    { \
+      std::vector<T> lhs(rhs.size(),lhs_elem); \
+      return lhs OPERATOR_ASSIGN rhs; \
+    }
+
+    IMPLEMENT_OPERATION2(operator+,+)
+    IMPLEMENT_OPERATION2(operator-,-)
+    IMPLEMENT_OPERATION2(operator*,*)
+    IMPLEMENT_OPERATION2(operator/,/)
+
+    // pow, sq, sqrt, cb, cbrt, exp, log    
+    template <class T>
+    inline value_with_error<T> pow(value_with_error<T> rhs, typename value_with_error<T>::element_type const & exponent)
+    {
+      if (exponent == 1.)
+      {
+        return rhs;
       }
       else
       {
-        append(rhs);
+        using std::pow;
+        using std::abs;
+        using alps::numeric::pow;
+        using alps::numeric::abs;
+        using boost::numeric::operators::operator-;
+        using boost::numeric::operators::operator*;
+
+        T dummy = pow(rhs.mean(),exponent-1.);
+        return value_with_error<T>(dummy*rhs.mean(),abs(exponent*dummy*rhs.error()));
       }
-      ++index;
     }
-  }
 
-  void insert(index_type index, value_with_error<value_type> const & rhs)
-  {
-    assert(index >= 0);
-    if (index <= size())
+
+    template<class T>
+    inline value_with_error<T> sq(value_with_error<T> rhs)
     {
-      _mean_container.insert(_mean_container.begin() + index, rhs.mean());
-      _error_container.insert(_error_container.begin() + index, rhs.error());
+      using alps::numeric::sq;
+      using std::abs;
+      using alps::numeric::abs;
+      using alps::numeric::operator*;
+      using boost::numeric::operators::operator*;
+
+      return value_with_error<T>(sq(rhs.mean()),abs(2.*rhs.mean()*rhs.error()));
     }
-    else
+    
+    template<class T>
+    value_with_error<T> cb(value_with_error<T> rhs)
     {
-      fill(index,index+1,rhs);
+      using alps::numeric::sq;
+      using std::abs;
+      using alps::numeric::abs;
+      using alps::numeric::operator*;
+      using boost::numeric::operators::operator*;
+
+      return value_with_error<T>((sq(rhs.mean()))*rhs.mean(),abs(3.*(sq(rhs.mean()))*rhs.error()));
     }
-  }
-
-  void push_back(value_with_error<value_type> const &rhs)
-  {
-    append(rhs);
-  }
-
-  void pop_back()
-  {
-    assert((_mean_container.size() != 0) && (_error_container.size() != 0));
-    _mean_container.pop_back();
-    _error_container.pop_back();
-  }
-
-  void erase(index_type index)
-  {
-    if (index < size())
+    
+    template<class T>
+    value_with_error<T> sqrt(value_with_error<T> rhs)
     {
-      _mean_container.erase(_mean_container.begin()+index);
-      _error_container.erase(_error_container.begin()+index);
+      using std::sqrt;
+      using alps::numeric::sqrt;
+      using std::abs;
+      using alps::numeric::abs;
+      using alps::numeric::operator*;
+      using boost::numeric::operators::operator/;
+
+      return value_with_error<T>(sqrt(rhs.mean()),abs(rhs.error()/(2.*sqrt(rhs.mean()))));
     }
-  }
-
-  void unfill(index_type index_begin, index_type index_end)
-  {
-    index_type index = index_end;
-    while (index > index_begin)
+    
+    template<class T>
+    value_with_error<T> cbrt(value_with_error<T> rhs)
     {
-      --index;
-      erase(index);
-    } 
-  }
+      using alps::numeric::sq;
+      using std::abs;
+      using alps::numeric::abs;
+      using std::pow;
+      using alps::numeric::pow;
+      using alps::numeric::operator*;
+      using boost::numeric::operators::operator/;
+
+      T dummy = pow(rhs.mean(),1./3);
+      return value_with_error<T>(dummy,abs(rhs.error()/(3.*sq(dummy))));
+    }
+    
+    template<class T>
+    value_with_error<T> exp(value_with_error<T> rhs)
+    {
+      using std::exp;
+      using alps::numeric::exp;
+      using boost::numeric::operators::operator*;
+
+      T dummy = exp(rhs.mean());
+      return value_with_error<T>(dummy,dummy*rhs.error());
+    }
+    
+    template<class T>
+    value_with_error<T> log(value_with_error<T> rhs)
+    {
+      using std::log;
+      using alps::numeric::log;
+      using std::abs;
+      using alps::numeric::abs;
+      using boost::numeric::operators::operator/;
+
+      return value_with_error<T>(log(rhs.mean()),abs(rhs.error()/rhs.mean()));
+    }
+
   
-  void clear()
-  {
-    _mean_container.clear();
-    _error_container.clear();
-  }
-
-  value_with_error<value_type> getitem(index_type index) const
-  {
-    return value_with_error<value_type>(_mean_container[index],_error_container[index]);
-  }
-
-  value_with_error_container<value_type> getslice(index_type index_begin, index_type index_end) const
-  {
-    value_with_error_container<value_type> result;
-    for (index_type index=index_begin; index < index_end; ++index)
+    // ( sin, ... , atanh ) operations
+    template<class T>
+    inline value_with_error<T> sin(value_with_error<T> rhs)
     {
-      result.append(getitem(index));
-    } 
-    return result;
+      using std::abs;
+      using alps::numeric::abs;
+      using std::sin;
+      using alps::numeric::sin;
+      using std::cos;
+      using alps::numeric::cos;
+      using boost::numeric::operators::operator*;
+
+      T derivative = cos(rhs.mean());
+      return value_with_error<T>(sin(rhs.mean()),abs(derivative*rhs.error()));
+    }
+    
+    template<class T>
+    value_with_error<T> cos(value_with_error<T> rhs)
+    {
+      using std::abs;
+      using alps::numeric::abs;
+      using std::sin;
+      using alps::numeric::sin;
+      using std::cos;
+      using alps::numeric::cos;
+      using boost::numeric::operators::operator-;
+      using boost::numeric::operators::operator*;
+
+      T derivative = -sin(rhs.mean());
+      return value_with_error<T>(cos(rhs.mean()),abs(derivative*rhs.error()));
+    }
+    
+    template<class T>
+    value_with_error<T> tan(value_with_error<T> rhs)
+    {
+      using std::abs;
+      using alps::numeric::abs;
+      using std::tan;
+      using alps::numeric::tan;
+      using std::cos;
+      using alps::numeric::cos;
+      using boost::numeric::operators::operator*;
+      using alps::numeric::operator/;
+
+      T derivative = 1./(cos(rhs.mean())*cos(rhs.mean()));
+      return value_with_error<T>(tan(rhs.mean()),abs(derivative*rhs.error()));
+    }
+    
+    template<class T>
+    value_with_error<T> sinh(value_with_error<T> rhs)
+    {
+      using std::abs;
+      using alps::numeric::abs;
+      using std::sinh;
+      using alps::numeric::sinh;
+      using std::cosh;
+      using alps::numeric::cosh;
+      using boost::numeric::operators::operator*;
+
+      T derivative = cosh(rhs.mean());
+      return value_with_error<T>(sinh(rhs.mean()),abs(derivative*rhs.error()));
+    }
+    
+    template<class T>
+    value_with_error<T> cosh(value_with_error<T> rhs)
+    {
+      using std::abs;
+      using alps::numeric::abs;
+      using std::sinh;
+      using alps::numeric::sinh;
+      using std::cosh;
+      using alps::numeric::cosh;
+      using boost::numeric::operators::operator*;
+
+      T derivative = sinh(rhs.mean());
+      return value_with_error<T>(cosh(rhs.mean()),abs(derivative*rhs.error()));
+    }
+    
+    template<class T>
+    value_with_error<T> tanh(value_with_error<T> rhs)
+    {
+      using std::abs;
+      using alps::numeric::abs;
+      using std::cosh;
+      using alps::numeric::cosh;
+      using std::tanh;
+      using alps::numeric::tanh;
+      using boost::numeric::operators::operator*;
+      using alps::numeric::operator/;
+
+      T derivative = 1./(cosh(rhs.mean())*cosh(rhs.mean()));
+      return value_with_error<T>(tanh(rhs.mean()),abs(derivative*rhs.error()));
+    }
+    
+    template<class T>
+    value_with_error<T> asin(value_with_error<T> rhs)
+    {
+      using std::abs;
+      using alps::numeric::abs;
+      using std::sqrt;
+      using alps::numeric::sqrt;
+      using std::asin;
+      using alps::numeric::asin;
+      using alps::numeric::operator-;
+      using boost::numeric::operators::operator*;
+      using alps::numeric::operator/;
+
+      T derivative = 1./sqrt(1. - rhs.mean()*rhs.mean());
+      return value_with_error<T>(asin(rhs.mean()),abs(derivative*rhs.error()));
+    }
+    
+    template<class T>
+    value_with_error<T> acos(value_with_error<T> rhs)
+    {
+      using std::abs;
+      using alps::numeric::abs;
+      using std::sqrt;
+      using alps::numeric::sqrt;
+      using std::acos;
+      using alps::numeric::acos;
+      using alps::numeric::operator-;
+      using boost::numeric::operators::operator-;
+      using boost::numeric::operators::operator*;
+      using alps::numeric::operator/;
+
+      T derivative = -1./sqrt(1. - rhs.mean()*rhs.mean());
+      return value_with_error<T>(acos(rhs.mean()),abs(derivative*rhs.error()));
+    }
+    
+    template<class T>
+    value_with_error<T> atan(value_with_error<T> rhs)
+    {
+      using std::abs;
+      using alps::numeric::abs;
+      using std::atan;
+      using alps::numeric::atan;
+      using alps::numeric::operator+;
+      using boost::numeric::operators::operator*;
+      using alps::numeric::operator/;
+
+      T derivative = 1./(1. + rhs.mean()*rhs.mean());
+      return value_with_error<T>(atan(rhs.mean()),abs(derivative*rhs.error()));
+    }
+    
+    template<class T>
+    value_with_error<T> asinh(value_with_error<T> rhs)
+    {
+      using std::abs;
+      using alps::numeric::abs;
+      using std::sqrt;
+      using alps::numeric::sqrt;
+      using boost::math::asinh;
+      using alps::numeric::asinh;
+      using alps::numeric::operator+;
+      using boost::numeric::operators::operator*;
+      using alps::numeric::operator/;
+
+      T derivative = 1./sqrt(rhs.mean()*rhs.mean() + 1.);
+      return value_with_error<T>(asinh(rhs.mean()),abs(derivative*rhs.error()));
+    }
+    
+    template<class T>
+    value_with_error<T> acosh(value_with_error<T> rhs)
+    {
+      using std::abs;
+      using alps::numeric::abs;
+      using std::sqrt;
+      using alps::numeric::sqrt;
+      using boost::math::acosh;
+      using alps::numeric::acosh;
+      using alps::numeric::operator-;
+      using boost::numeric::operators::operator*;
+      using alps::numeric::operator/;
+
+      T derivative = 1./sqrt(rhs.mean()*rhs.mean() - 1.);
+      return value_with_error<T>(acosh(rhs.mean()),abs(derivative*rhs.error()));
+    }
+    
+    template<class T>
+    value_with_error<T> atanh(value_with_error<T> rhs)
+    {
+      using std::abs;
+      using alps::numeric::abs;
+      using boost::math::atanh;
+      using alps::numeric::atanh;
+      using alps::numeric::operator-;
+      using boost::numeric::operators::operator*;
+      using alps::numeric::operator/;
+
+
+      T derivative = 1./(1. - rhs.mean()*rhs.mean());
+      return value_with_error<T>(atanh(rhs.mean()),abs(derivative*rhs.error()));
+    }
+
   }
-
-  void setitem(index_type index, value_with_error<value_type> const & value)
-  {
-    fill(index,index+1,value);
-  }
-
-  void setslice(index_type index_begin, index_type index_end, value_with_error<value_type> const & value)
-  {
-    fill(index_begin,index_end,value);
-  }
-
-  void delitem(index_type index)
-  {
-    erase(index);
-  }
-
-  void delslice(index_type index_begin, index_type index_end)
-  {
-    unfill(index_begin,index_end);
-  }
-
-  value_with_error<value_type> operator[] (index_type index)
-  {
-    return value_with_error<value_type>(_mean_container[index],_error_container[index]);
-  }
-
-  inline container_type mean_container()  const { return _mean_container; }
-  inline container_type error_container() const { return _error_container; }
-
-  inline value_type mean(index_type index) const  { return _mean_container[index]; }
-  inline value_type error(index_type index) const { return _error_container[index]; }
-
-
-private:
-  container_type _mean_container;
-  container_type _error_container;
-};
-
-
-/////////////////////////////////////////////////////////////////////////////////
-// free functions dealing with value_with_error
-// (other member functions are stored within the value_with_error<T> class itself)
-
-template<class T>
-inline value_with_error<T> operator+(value_with_error<T> lhs, value_with_error<T> const & rhs)
-{
-  return lhs += rhs;
-}
-
-template<class T>
-inline value_with_error<T> operator+(value_with_error<T> lhs, T const & rhs)
-{
-  return lhs += rhs;
-}
-
-template<class T>
-inline value_with_error<T> operator+(T const & lhs, value_with_error<T> rhs)
-{
-  return rhs += lhs;
-}
-
-template<class T>
-inline value_with_error<T> operator-(value_with_error<T> lhs, value_with_error<T> const & rhs)
-{
-  return lhs -= rhs;
-}
-
-template<class T>
-inline value_with_error<T> operator-(value_with_error<T> lhs, T const & rhs)
-{
-  return lhs -= rhs;
-}
-
-template<class T>
-inline value_with_error<T> operator-(T const & lhs, value_with_error<T> rhs)
-// *** pay special attention here...
-{
-  return -rhs + lhs;
-}
-
-template<class T>
-inline value_with_error<T> operator*(value_with_error<T> lhs, value_with_error<T> const & rhs)
-{
-  return lhs *= rhs;
-}
-
-template<class T>
-inline value_with_error<T> operator*(value_with_error<T> lhs, T const & rhs)
-{
-  return lhs *= rhs;
-}
-
-template<class T>
-inline value_with_error<T> operator*(T const & lhs, value_with_error<T> rhs)
-{
-  return rhs *= lhs;
-}
-
-template<class T>
-inline value_with_error<T> operator/(value_with_error<T> lhs, value_with_error<T> const & rhs)
-{
-  return lhs /= rhs;
-}
-
-template<class T>
-inline value_with_error<T> operator/(value_with_error<T> lhs, T const & rhs)
-{
-  return lhs /= rhs;
-}
-
-template<class T>
-inline value_with_error<T> operator/(T const & lhs, value_with_error<T> const & rhs)
-// *** pay special attention here...
-{
-  T inverse_mean = lhs/rhs.mean();
-  return value_with_error<T>(inverse_mean,std::abs(inverse_mean*rhs.error()/rhs.mean()));
-}
-
-
-// intrinsic operations 2: ( pow , sq , cb , sqrt , cbrt , exp , log )
-
-template<class T>
-inline value_with_error<T> value_with_error_pow(value_with_error<T> const & rhs, T const & index)
-{
-  if (index == 1.) 
-  {   
-    return rhs;
-  }   
-  else
-  {   
-    T dummy = std::pow(rhs.mean(),index-1.);
-    return value_with_error<T>(dummy*rhs.mean(),std::abs(index*dummy*rhs.error()));
-  }   
-}
-
-template<class T>
-inline value_with_error<T> value_with_error_sq(value_with_error<T> const & rhs)
-{
-  return value_with_error<T>(rhs.mean()*rhs.mean(),std::abs(2.*rhs.mean()*rhs.error()));
-}
-
-template<class T>
-inline value_with_error<T> value_with_error_cb(value_with_error<T> const & rhs)
-{
-  double mean_sq = rhs.mean()*rhs.mean();
-  return value_with_error<T>(mean_sq*rhs.mean(),std::abs(3.*mean_sq*rhs.error()));
-}
-
-template<class T>
-inline value_with_error<T> value_with_error_sqrt(value_with_error<T> const & rhs)
-{
-  T dummy = std::sqrt(rhs.mean());
-  return value_with_error<T>(dummy,std::abs(rhs.error()/(2.*dummy)));
-}
-
-template<class T>
-inline value_with_error<T> value_with_error_cbrt(value_with_error<T> const & rhs)
-{
-  T dummy = std::pow(rhs.mean(),1./3);
-  return value_with_error<T>(dummy,std::abs(rhs.error()/(3.*dummy*dummy)));
-}
-
-template<class T>
-inline static value_with_error<T> value_with_error_exp(value_with_error<T> const & rhs)
-{
-  T dummy = std::exp(rhs.mean());
-  return value_with_error<T>(dummy,dummy*rhs.error());
-}
-
-template<class T>
-inline static value_with_error<T> value_with_error_log(value_with_error<T> const & rhs)
-{
-  return value_with_error<T>(std::log(rhs.mean()),std::abs(rhs.error()/rhs.mean()));
-}
-
-
-// intrinsic operations 3: ( sin , cos , tan , asin , acos , atan , sinh , cosh , tanh , asinh , acosh, atanh)
-template<class T>
-inline value_with_error<T> value_with_error_sin(value_with_error<T> const & rhs)
-{
-  T derivative = std::cos(rhs.mean());
-  return value_with_error<T>(std::sin(rhs.mean()),std::abs(derivative*rhs.error()));
-}
-
-template<class T>
-inline static value_with_error<T> value_with_error_cos(value_with_error<T> const & rhs)
-{
-  T derivative = -std::sin(rhs.mean());
-  return value_with_error<T>(std::cos(rhs.mean()),std::abs(derivative*rhs.error()));
-}
-
-template<class T>
-inline static value_with_error<T> value_with_error_tan(value_with_error<T> const & rhs)
-{
-  T derivative = 1./(std::cos(rhs.mean())*std::cos(rhs.mean()));
-  return value_with_error<T>(std::tan(rhs.mean()),std::abs(derivative*rhs.error()));
-}
-
-template<class T>
-inline static value_with_error<T> value_with_error_sinh(value_with_error<T> const & rhs)
-{
-  T derivative = std::cosh(rhs.mean());
-  return value_with_error<T>(std::sinh(rhs.mean()),std::abs(derivative*rhs.error()));
-}
-
-template<class T>
-inline static value_with_error<T> value_with_error_cosh(value_with_error<T> const & rhs)
-{
-  T derivative = std::sinh(rhs.mean());
-  return value_with_error<T>(std::cosh(rhs.mean()),std::abs(derivative*rhs.error()));
-}
-
-template<class T>
-inline static value_with_error<T> value_with_error_tanh(value_with_error<T> const & rhs)
-{
-  T derivative = 1./(std::cosh(rhs.mean())*std::cosh(rhs.mean()));
-  return value_with_error<T>(std::tanh(rhs.mean()),std::abs(derivative*rhs.error()));
-}
-
-template<class T>
-inline static value_with_error<T> value_with_error_asin(value_with_error<T> const & rhs)
-{
-  T derivative = 1./std::sqrt(1. - rhs.mean()*rhs.mean());
-  return value_with_error<T>(std::asin(rhs.mean()),std::abs(derivative*rhs.error()));
-}
-
-template<class T>
-inline static value_with_error<T> value_with_error_acos(value_with_error<T> const & rhs)
-{
-  T derivative = -1./std::sqrt(1. - rhs.mean()*rhs.mean());
-  return value_with_error<T>(std::acos(rhs.mean()),std::abs(derivative*rhs.error()));
-}
-
-template<class T>
-inline static value_with_error<T> value_with_error_atan(value_with_error<T> const & rhs)
-{
-  T derivative = 1./(1. + rhs.mean()*rhs.mean());
-  return value_with_error<T>(std::atan(rhs.mean()),std::abs(derivative*rhs.error()));
-}
-
-template<class T>
-inline static value_with_error<T> value_with_error_asinh(value_with_error<T> const & rhs)
-{
-  T derivative = 1./std::sqrt(rhs.mean()*rhs.mean() + 1.);
-  return value_with_error<T>(boost::math::asinh(rhs.mean()),std::abs(derivative*rhs.error()));
-}
-
-template<class T>
-inline static value_with_error<T> value_with_error_acosh(value_with_error<T> const & rhs)
-{
-  T derivative = 1./std::sqrt(rhs.mean()*rhs.mean() - 1.);
-  return value_with_error<T>(boost::math::acosh(rhs.mean()),std::abs(derivative*rhs.error()));
-}
-
-template<class T>
-inline static value_with_error<T> value_with_error_atanh(value_with_error<T> const & rhs)
-{
-  T derivative = 1./(1. - rhs.mean()*rhs.mean());
-  return value_with_error<T>(boost::math::atanh(rhs.mean()),std::abs(derivative*rhs.error()));
 }
 
 
 
 
-////////////////////////////////////////////////////////////////////////////////////////
-// global functions dealing with value_with_error_container<T>
-
-// intrinsic operations : ( + , - , * , / )
-
-#define IMPLEMENT_VECTOR_OPERATION(FUNCTION, OPERATOR) \
-template<class T> \
-inline value_with_error_container<T> FUNCTION(value_with_error_container<T> lhs, value_with_error_container<T> rhs) \
-{ \
-  assert(lhs.size() == rhs.size()); \
-  value_with_error_container<T> result; \
-  for (std::size_t index=0; index < lhs.size(); ++index) \
-  { \
-    result.push_back(lhs[index] OPERATOR rhs[index]); \
-  } \
-  return result; \
-} \
-\
-template<class T> \
-inline value_with_error_container<T> FUNCTION(value_with_error_container<T> lhs, T rhs) \
-{ \
-  value_with_error_container<T> result; \
-  for (std::size_t index=0; index < lhs.size(); ++index) \
-  { \
-    result.push_back(lhs[index] OPERATOR rhs); \
-  } \
-  return result; \
-} \
-\
-template<class T> \
-inline value_with_error_container<T> FUNCTION(T lhs, value_with_error_container<T> rhs) \
-{ \
-  value_with_error_container<T> result; \
-  for (std::size_t index=0; index < rhs.size(); ++index) \
-  { \
-    result.push_back(lhs OPERATOR rhs[index]); \
-  } \
-  return result; \
-} 
-
-IMPLEMENT_VECTOR_OPERATION(operator+,+)
-IMPLEMENT_VECTOR_OPERATION(operator-,-)
-IMPLEMENT_VECTOR_OPERATION(operator*,*)
-IMPLEMENT_VECTOR_OPERATION(operator/,/)
 
 
 
-// intrinsic operations : ( +:pos , -:neg , abs )
-template<class T>
-inline value_with_error_container<T>& operator+(value_with_error_container<T> & rhs)
-{
-  return rhs;
-}
-
-template<class T>
-inline value_with_error_container<T> operator-(value_with_error_container<T> const & rhs)
-{
-  return (rhs * (-1.));
-}
 
 
-// intrinsic operations : (abs , pow , sq , cb , sqrt, cbrt , exp , log ,  sin , cos , tan , asin , acos , atan , sinh , cosh , tanh , asinh , acosh, atanh)
-
-template<class T>
-inline value_with_error_container<T> value_with_error_container_abs(value_with_error_container<T> rhs)
-{
-  value_with_error_container<T> result;
-  for (std::size_t index=0; index < rhs.size(); ++index)
-  {
-    result.push_back(value_with_error<T>::abs(rhs[index]));
-  }
-  return result;
-}
-
-
-template<class T>
-inline value_with_error_container<T> value_with_error_container_pow(value_with_error_container<T> rhs, T exponent)
-{
-  value_with_error_container<T> result;
-  for (std::size_t index=0; index < rhs.size(); ++index)
-  {
-    result.push_back(value_with_error_pow<T>(rhs[index],exponent));
-  }
-  return result;
-}
-
-#define IMPLEMENT_VECTOR_FUNCTION(NAME,NAME_CONTAINER) \
-template<class T> \
-inline value_with_error_container<T> NAME_CONTAINER(value_with_error_container<T> rhs) \
-{ \
-  value_with_error_container<T> result; \
-  for (std::size_t index=0; index < rhs.size(); ++index) \
-  { \
-    result.push_back(NAME<T>(rhs[index])); \
-  } \
-  return result; \
-}
-
-IMPLEMENT_VECTOR_FUNCTION(value_with_error_sq,value_with_error_container_sq)
-IMPLEMENT_VECTOR_FUNCTION(value_with_error_cb,value_with_error_container_cb)
-IMPLEMENT_VECTOR_FUNCTION(value_with_error_sqrt,value_with_error_container_sqrt)
-IMPLEMENT_VECTOR_FUNCTION(value_with_error_cbrt,value_with_error_container_cbrt)
-IMPLEMENT_VECTOR_FUNCTION(value_with_error_exp,value_with_error_container_exp)
-IMPLEMENT_VECTOR_FUNCTION(value_with_error_log,value_with_error_container_log)
-IMPLEMENT_VECTOR_FUNCTION(value_with_error_sin,value_with_error_container_sin)
-IMPLEMENT_VECTOR_FUNCTION(value_with_error_cos,value_with_error_container_cos)
-IMPLEMENT_VECTOR_FUNCTION(value_with_error_tan,value_with_error_container_tan)
-IMPLEMENT_VECTOR_FUNCTION(value_with_error_asin,value_with_error_container_asin)
-IMPLEMENT_VECTOR_FUNCTION(value_with_error_acos,value_with_error_container_acos)
-IMPLEMENT_VECTOR_FUNCTION(value_with_error_atan,value_with_error_container_atan)
-IMPLEMENT_VECTOR_FUNCTION(value_with_error_sinh,value_with_error_container_sinh)
-IMPLEMENT_VECTOR_FUNCTION(value_with_error_cosh,value_with_error_container_cosh)
-IMPLEMENT_VECTOR_FUNCTION(value_with_error_tanh,value_with_error_container_tanh)
-IMPLEMENT_VECTOR_FUNCTION(value_with_error_asinh,value_with_error_container_asinh)
-IMPLEMENT_VECTOR_FUNCTION(value_with_error_acosh,value_with_error_container_acosh)
-IMPLEMENT_VECTOR_FUNCTION(value_with_error_atanh,value_with_error_container_atanh)
-
-}
-}
