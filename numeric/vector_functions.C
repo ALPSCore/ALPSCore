@@ -1,4 +1,4 @@
-/*****************************************************************************
+/****************************************************************************
 *
 * ALPS Project: Algorithms and Libraries for Physics Simulations
 *
@@ -74,6 +74,38 @@ int main(int argc, char** argv)
 
   res = vecA / vecB;
   std::cout << "\nA / B: \n";
+  std::copy(res.begin(),res.end(),std::ostream_iterator<double>(std::cout,"\n"));
+
+  res = vecA + 1.;
+  std::cout << "\nA + 1.: \n";
+  std::copy(res.begin(),res.end(),std::ostream_iterator<double>(std::cout,"\n"));
+
+  res = vecA - 1.;
+  std::cout << "\nA - 1.: \n";
+  std::copy(res.begin(),res.end(),std::ostream_iterator<double>(std::cout,"\n"));
+
+  res = vecA * 1.;
+  std::cout << "\nA * 1.: \n";
+  std::copy(res.begin(),res.end(),std::ostream_iterator<double>(std::cout,"\n"));
+
+  res = vecA / 1.;
+  std::cout << "\nA / 1.: \n";
+  std::copy(res.begin(),res.end(),std::ostream_iterator<double>(std::cout,"\n"));
+
+  res = 1. + vecA;
+  std::cout << "\n1. + A: \n";
+  std::copy(res.begin(),res.end(),std::ostream_iterator<double>(std::cout,"\n"));
+
+  res = 1. - vecA;
+  std::cout << "\n1. - A: \n";
+  std::copy(res.begin(),res.end(),std::ostream_iterator<double>(std::cout,"\n"));
+
+  res = 1. * vecA;
+  std::cout << "\n1. * A: \n";
+  std::copy(res.begin(),res.end(),std::ostream_iterator<double>(std::cout,"\n"));
+
+  res = 1. / vecA;
+  std::cout << "\n1. / A: \n";
   std::copy(res.begin(),res.end(),std::ostream_iterator<double>(std::cout,"\n"));
 
 
@@ -156,6 +188,12 @@ int main(int argc, char** argv)
 
   res = atanh(vecA);
   std::cout << "\natanh(A): \n";
+  std::copy(res.begin(),res.end(),std::ostream_iterator<double>(std::cout,"\n"));
+
+
+  // compound statements
+  res = sqrt(vecA*vecA + vecB*vecB);
+  std::cout << "\nsqrt(A^2 + B^2): \n";
   std::copy(res.begin(),res.end(),std::ostream_iterator<double>(std::cout,"\n"));
 
 
