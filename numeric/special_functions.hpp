@@ -6,7 +6,6 @@
 *
 * Copyright (C) 1994-2010 by Ping Nang Ma <pingnang@itp.phys.ethz.ch>,
 *                            Matthias Troyer <troyer@itp.phys.ethz.ch>,
-*                            Bela Bauer <bauerb@itp.phys.ethz.ch>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under

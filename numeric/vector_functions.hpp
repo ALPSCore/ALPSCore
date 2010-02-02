@@ -6,7 +6,6 @@
 *
 * Copyright (C) 1994-2010 by Ping Nang Ma <pingnang@itp.phys.ethz.ch>,
 *                            Matthias Troyer <troyer@itp.phys.ethz.ch>,
-*                            Bela Bauer <bauerb@itp.phys.ethz.ch>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -48,6 +47,38 @@ namespace alps {
     template<class T>
     inline std::vector<T>& operator+(std::vector<T>& vec)  {  return vec;  }
 
+
+    // include ( + , - , * , / vector-scalar operations)
+    #define IMPLEMENT_ALPS_VECTOR_SCALAR_OPERATION(OPERATOR_NAME,OPERATOR) \
+    template<class T> \
+    inline std::vector<T> OPERATOR_NAME(std::vector<T> vector, T const & scalar) \
+    { \
+      std::vector<T> res; \
+      res.reserve(vector.size()); \
+      for (typename std::vector<T>::iterator it=vector.begin(); it != vector.end(); ++it) \
+      { \
+        res.push_back(((*it) OPERATOR scalar)); \
+      } \
+      return res; \
+    } \
+    \
+    template<class T> \
+    inline std::vector<T> OPERATOR_NAME(T const & scalar, std::vector<T> vector) \
+    { \
+      std::vector<T> res; \
+      res.reserve(vector.size()); \
+      for (typename std::vector<T>::iterator it=vector.begin(); it != vector.end(); ++it) \
+      { \
+        res.push_back((scalar OPERATOR (*it))); \
+      } \
+      return res; \
+    } 
+
+    IMPLEMENT_ALPS_VECTOR_SCALAR_OPERATION(operator+,+)
+    IMPLEMENT_ALPS_VECTOR_SCALAR_OPERATION(operator-,-)
+    IMPLEMENT_ALPS_VECTOR_SCALAR_OPERATION(operator*,*)
+    IMPLEMENT_ALPS_VECTOR_SCALAR_OPERATION(operator/,/)
+    
 
     // include important functions for vectors
     #define IMPLEMENT_ALPS_VECTOR_FUNCTION(LIB_HEADER,FUNCTION_NAME) \
@@ -94,6 +125,8 @@ namespace alps {
     }
 
     IMPLEMENT_ALPS_VECTOR_FUNCTION2(std,pow)
+
+    
   }
 }
 
