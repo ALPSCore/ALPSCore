@@ -52,7 +52,7 @@ int main()
     alps::hdf5::oarchive h5(file);
     h5 << make_pvp("/test/0/result", measurement);
   }
-  std::cout << "+ + + + + + + + +" << std::endl;
+  std::cout << measurement;
   alps::ObservableSet measurement2;
   {
     alps::hdf5::iarchive h5(file);
