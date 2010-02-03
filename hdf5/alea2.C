@@ -41,21 +41,18 @@ int main()
 
   alps::ObservableSet measurement;
   measurement << alps::make_observable(alps::SimpleRealObservable("Test"), true)
-// RealObservable
-              << alps::SimpleRealObservable("Sign")
-// RealObservable
-              << alps::SimpleRealObservable("No Measurements");
-//              << alps::RealObservable("No Measurements");
+              << alps::RealObservable("Sign")
+              << alps::RealObservable("No Measurements");
   for (int i = 0; i < 10000; ++i) {
     measurement["Test"] << random();
     measurement["Sign"] << 1.0;
   }
-  std::cout << measurement;
   boost::filesystem::remove(boost::filesystem::path(file));
   {
     alps::hdf5::oarchive h5(file);
     h5 << make_pvp("/test/0/result", measurement);
   }
+  std::cout << "+ + + + + + + + +" << std::endl;
   alps::ObservableSet measurement2;
   {
     alps::hdf5::iarchive h5(file);
