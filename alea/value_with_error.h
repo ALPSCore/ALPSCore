@@ -87,10 +87,7 @@ namespace alps {
       // call
       inline value_type mean()  const {  return _mean;  }
       inline value_type error() const {  return _error; }
-    
-      // indicing operator
-      value_with_error<element_type> operator[] (const index_type index)
-      {  return value_with_error<element_type>(_mean[index],_error[index]); }
+
     
       // comparison
       inline bool operator==(value_with_error const & rhs)
@@ -189,7 +186,7 @@ namespace alps {
         return *this;
       }
     
-      // extending to STL container interface... in progress ***
+      // non- STL container support
       size_type size() const
       {
         assert(_mean.size() == _error.size());
@@ -209,6 +206,30 @@ namespace alps {
         _error.pop_back();
       }
 
+      void clear()
+      {
+        _mean.clear();
+        _error.clear();
+      }
+
+      void insert(index_type const & index, value_with_error<element_type> const & value)
+      {
+        assert((_mean.size() > index) && (_error.size() > index));
+        _mean.insert(_mean.begin()+index,value.mean());
+        _error.insert(_error.begin()+index,value.error());
+      }
+
+      void erase(index_type const & index)
+      {
+        assert((_mean.size() > index) && (_error.size() > index));
+        _mean.erase(_mean.begin()+index);
+        _error.erase(_error.begin()+index);
+      }
+
+      value_with_error<element_type> at(index_type const & index)
+      {
+        return value_with_error<element_type>(_mean[index],_error[index]);
+      }
     };
     
     
@@ -605,6 +626,232 @@ namespace alps {
 
       T derivative = 1./(1. - rhs.mean()*rhs.mean());
       return value_with_error<T>(atanh(rhs.mean()),abs(derivative*rhs.error()));
+    }
+
+
+    // extended support for std::vector<value_with_error<T> >    
+    template<class T>
+    inline std::vector<value_with_error<T> > operator+(std::vector<value_with_error<T> > const & lhs, std::vector<value_with_error<T> > const & rhs)
+    {
+      return boost::numeric::operators::operator+ <value_with_error<T>, value_with_error<T> > (lhs,rhs);
+    }
+
+    template<class T>
+    inline std::vector<value_with_error<T> > operator+(std::vector<value_with_error<T> > const & lhs, T const & rhs)
+    {
+      std::vector<T> rhs_vector;
+      rhs_vector.resize(lhs.size());
+      std::fill(rhs_vector.begin(),rhs_vector.end(),rhs);
+
+      return boost::numeric::operators::operator+ <value_with_error<T>, T> (lhs,rhs_vector);
+    }
+
+    template<class T>
+    inline std::vector<value_with_error<T> > operator+(T const & lhs, std::vector<value_with_error<T> > const & rhs)
+    {
+      std::vector<T> lhs_vector;
+      lhs_vector.resize(rhs.size());
+      std::fill(lhs_vector.begin(),lhs_vector.end(),lhs);
+
+      return boost::numeric::operators::operator+ <T, value_with_error<T> > (lhs_vector,rhs);
+    }
+
+    template<class T>
+    inline std::vector<value_with_error<T> > operator+(std::vector<value_with_error<T> > const & lhs, std::vector<T> const & rhs)
+    {
+      return boost::numeric::operators::operator+<value_with_error<T>, T> (lhs,rhs);
+    }
+
+    template<class T>
+    inline std::vector<value_with_error<T> > operator+(std::vector<T> const & lhs, std::vector<value_with_error<T> > const & rhs)
+    {
+      return boost::numeric::operators::operator+ <T, value_with_error<T> > (lhs,rhs);
+    }
+
+    template<class T>
+    inline std::vector<value_with_error<T> > operator-(std::vector<value_with_error<T> > const & lhs, std::vector<value_with_error<T> > const & rhs)
+    {
+      return boost::numeric::operators::operator- <value_with_error<T>, value_with_error<T> > (lhs,rhs);
+    }
+
+    
+    template<class T>
+    inline std::vector<value_with_error<T> > operator-(std::vector<value_with_error<T> > const & lhs, T const & rhs)
+    {
+      std::vector<T> rhs_vector; 
+      rhs_vector.resize(lhs.size());
+      std::fill(rhs_vector.begin(),rhs_vector.end(),rhs);
+
+      return boost::numeric::operators::operator- <value_with_error<T>, T> (lhs,rhs_vector);
+    }
+    
+    template<class T>
+    inline std::vector<value_with_error<T> > operator-(T const & lhs, std::vector<value_with_error<T> > const & rhs)
+    {
+      std::vector<T> lhs_vector;
+      lhs_vector.resize(rhs.size());
+      std::fill(lhs_vector.begin(),lhs_vector.end(),lhs);
+
+      return boost::numeric::operators::operator- <T, value_with_error<T> > (lhs_vector,rhs);
+    }
+
+    template<class T>
+    inline std::vector<value_with_error<T> > operator-(std::vector<value_with_error<T> > const & lhs, std::vector<T> const & rhs)
+    {
+      return boost::numeric::operators::operator- <value_with_error<T>, T> (lhs,rhs);
+    }
+   
+    template<class T>
+    inline std::vector<value_with_error<T> > operator-(std::vector<T> const & lhs, std::vector<value_with_error<T> > const & rhs)
+    {
+      return boost::numeric::operators::operator- <T, value_with_error<T> > (lhs,rhs);
+    }
+    
+    template<class T>
+    inline std::vector<value_with_error<T> > operator*(std::vector<value_with_error<T> > const & lhs, std::vector<value_with_error<T> > const & rhs)
+    {
+      return boost::numeric::operators::operator* <value_with_error<T>, value_with_error<T> > (lhs,rhs);
+    }
+    
+    template<class T>
+    inline std::vector<value_with_error<T> > operator*(std::vector<value_with_error<T> > const & lhs, T const & rhs)
+    {
+      std::vector<T> rhs_vector;
+      rhs_vector.resize(lhs.size());
+      std::fill(rhs_vector.begin(),rhs_vector.end(),rhs);
+
+      return boost::numeric::operators::operator* <value_with_error<T>, T> (lhs,rhs_vector);
+    }
+    
+    template<class T>
+    inline std::vector<value_with_error<T> > operator*(T const & lhs, std::vector<value_with_error<T> > const & rhs)
+    {
+      std::vector<T> lhs_vector;
+      lhs_vector.resize(rhs.size());
+      std::fill(lhs_vector.begin(),lhs_vector.end(),lhs);
+
+      return boost::numeric::operators::operator* <T, value_with_error<T> > (lhs_vector,rhs);
+    }
+    
+    template<class T>
+    inline std::vector<value_with_error<T> > operator*(std::vector<value_with_error<T> > const & lhs, std::vector<T> const & rhs)
+    {
+      return boost::numeric::operators::operator* <value_with_error<T>, T> (lhs,rhs);
+    }
+
+    template<class T>
+    inline std::vector<value_with_error<T> > operator*(std::vector<T> const & lhs, std::vector<value_with_error<T> > const & rhs)
+    {
+      return boost::numeric::operators::operator* <T, value_with_error<T> > (lhs,rhs);
+    }
+
+    template<class T>
+    inline std::vector<value_with_error<T> > operator/(std::vector<value_with_error<T> > const & lhs, std::vector<value_with_error<T> > const & rhs)
+    {
+      return boost::numeric::operators::operator/ <value_with_error<T>, value_with_error<T> > (lhs,rhs);
+    }
+    
+    template<class T>
+    inline std::vector<value_with_error<T> > operator/(std::vector<value_with_error<T> > const & lhs, T const & rhs)
+    {
+      std::vector<T> rhs_vector;
+      rhs_vector.resize(lhs.size());
+      std::fill(rhs_vector.begin(),rhs_vector.end(),rhs);
+
+      return boost::numeric::operators::operator/ <value_with_error<T>, T> (lhs,rhs_vector);
+    }
+    
+    template<class T>
+    inline std::vector<value_with_error<T> > operator/(T const & lhs, std::vector<value_with_error<T> > const & rhs)
+    {
+      std::vector<T> lhs_vector;
+      lhs_vector.resize(rhs.size());
+      std::fill(lhs_vector.begin(),lhs_vector.end(),lhs);
+
+      return boost::numeric::operators::operator/ <T, value_with_error<T> > (lhs_vector,rhs);
+    }
+
+    template<class T>
+    inline std::vector<value_with_error<T> > operator/(std::vector<value_with_error<T> > const & lhs, std::vector<T> const & rhs)
+    {
+      return boost::numeric::operators::operator/ <value_with_error<T>, T> (lhs,rhs);
+    } 
+   
+    template<class T>
+    inline std::vector<value_with_error<T> > operator/(std::vector<T> const & lhs, std::vector<value_with_error<T> > const & rhs)
+    {
+      return boost::numeric::operators::operator/ <T, value_with_error<T> > (lhs,rhs);
+    } 
+
+    template<class T>
+    inline std::vector<T> operator-(std::vector<T> const & rhs)
+    {
+      return rhs * (-1.);
+    }
+
+
+
+    template<class T>
+    inline static std::vector<value_with_error<T> > vec_pow(std::vector<value_with_error<T> > const & rhs, T const & exponent)
+    {
+      std::vector<T> exponent_vec;
+      exponent_vec.resize(rhs.size(),exponent);
+      std::vector<value_with_error<T> > res;
+      res.reserve(rhs.size());
+      std::transform(rhs.begin(),rhs.end(),exponent_vec.begin(),std::back_inserter(res),pow<T>);
+      return res;
+    }
+
+    #define IMPLEMENT_VECTOR_OF_VALUE_WITH_ERROR_FUNCTION(NAME1,NAME2) \
+    template<class T> \
+    std::vector<value_with_error<T> > NAME1(std::vector<value_with_error<T> > const & rhs) \
+    { \
+      std::vector<value_with_error<T> > res; \
+      res.reserve(rhs.size()); \
+      std::transform(rhs.begin(),rhs.end(),std::back_inserter(res),NAME2<T>); \
+      return res; \
+    }
+
+    IMPLEMENT_VECTOR_OF_VALUE_WITH_ERROR_FUNCTION(vec_abs,abs)
+    IMPLEMENT_VECTOR_OF_VALUE_WITH_ERROR_FUNCTION(vec_sq,sq)
+    IMPLEMENT_VECTOR_OF_VALUE_WITH_ERROR_FUNCTION(vec_cb,cb)
+    IMPLEMENT_VECTOR_OF_VALUE_WITH_ERROR_FUNCTION(vec_sqrt,sqrt)
+    IMPLEMENT_VECTOR_OF_VALUE_WITH_ERROR_FUNCTION(vec_cbrt,cbrt)
+    IMPLEMENT_VECTOR_OF_VALUE_WITH_ERROR_FUNCTION(vec_exp,exp)
+    IMPLEMENT_VECTOR_OF_VALUE_WITH_ERROR_FUNCTION(vec_log,log)
+    IMPLEMENT_VECTOR_OF_VALUE_WITH_ERROR_FUNCTION(vec_sin,sin)
+    IMPLEMENT_VECTOR_OF_VALUE_WITH_ERROR_FUNCTION(vec_cos,cos)
+    IMPLEMENT_VECTOR_OF_VALUE_WITH_ERROR_FUNCTION(vec_tan,tan)
+    IMPLEMENT_VECTOR_OF_VALUE_WITH_ERROR_FUNCTION(vec_asin,asin)
+    IMPLEMENT_VECTOR_OF_VALUE_WITH_ERROR_FUNCTION(vec_acos,acos)
+    IMPLEMENT_VECTOR_OF_VALUE_WITH_ERROR_FUNCTION(vec_atan,atan)
+    IMPLEMENT_VECTOR_OF_VALUE_WITH_ERROR_FUNCTION(vec_sinh,sinh)
+    IMPLEMENT_VECTOR_OF_VALUE_WITH_ERROR_FUNCTION(vec_cosh,cosh)
+    IMPLEMENT_VECTOR_OF_VALUE_WITH_ERROR_FUNCTION(vec_tanh,tanh)
+    IMPLEMENT_VECTOR_OF_VALUE_WITH_ERROR_FUNCTION(vec_asinh,asinh)
+    IMPLEMENT_VECTOR_OF_VALUE_WITH_ERROR_FUNCTION(vec_acosh,acosh)
+    IMPLEMENT_VECTOR_OF_VALUE_WITH_ERROR_FUNCTION(vec_atanh,atanh)
+
+
+    // std::vector<value_with_error<T> >  interchanging with  value_with_error<std::vector<T> >
+    template <class T>
+    void obtain_vector_of_value_with_error_from_vector_with_error(std::vector<value_with_error<T> > & res, value_with_error<std::vector<T> > vec_with_error)
+    {
+      res.clear();
+      for (std::size_t index=0; index < vec_with_error.size(); ++index)
+      {
+        res.push_back(vec_with_error.at(index));
+      }
+    }
+
+    template <class T>
+    void obtain_vector_with_error_from_vector_of_value_with_error(value_with_error<std::vector<T> > & res, std::vector<value_with_error<T> > vec_of_value_with_error)
+    {
+      res.clear();
+      for (std::size_t index=0; index < vec_of_value_with_error.size(); ++index)
+      {
+        res.push_back(vec_of_value_with_error[index]);
+      }
     }
 
   }
