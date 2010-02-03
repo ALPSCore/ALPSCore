@@ -325,15 +325,17 @@ namespace alps {
                         hid_t id = H5Dopen2(_file, complete_path(p).c_str(), H5P_DEFAULT);
                         return id < 0 ? false : check_data(id) != 0;
                     }
-                    bool is_attribute(std::string const & p, std::string const & s) const {
+                    bool is_attribute(std::string const & p) const {
+                        if (p.find_last_of('@') == std::string::npos)
+                            throw std::runtime_error("no attribute paht: " + complete_path(p));
                         hid_t parent_id;
                         if (is_group(p))
-                            parent_id = check_error(H5Gopen2(_file, complete_path(p).c_str(), H5P_DEFAULT));
+                            parent_id = check_error(H5Gopen2(_file, complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1).c_str(), H5P_DEFAULT));
                         else if (is_data(p))
-                            parent_id = check_error(H5Dopen2(_file, complete_path(p).c_str(), H5P_DEFAULT));
+                            parent_id = check_error(H5Dopen2(_file, complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1).c_str(), H5P_DEFAULT));
                         else
                             throw std::runtime_error("unknown path: " + complete_path(p));
-                        bool exists = check_error(H5Aexists(parent_id, s.c_str()));
+                        bool exists = check_error(H5Aexists(parent_id, p.substr(p.find_last_of('@') + 1).c_str()));
                         if (is_group(p))
                             check_group(parent_id);
                         else

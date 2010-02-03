@@ -75,13 +75,10 @@ void ObservableSet::load(IDump& dump)
         std::set<std::string> skip;
         for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
             std::string obsname = hdf5_name_decode(*it);
-            if (ar.is_attribute(obsname, "@sign")) {
+            if (ar.is_attribute(obsname + "/@sign")) {
                 std::string signname;
                 ar >> make_pvp(obsname + "/@sign", signname);
                 skip.insert(signname + " * " + obsname);
-                
-                std::cout << "skip: " << (signname + " * " + obsname) << std::endl;
-                
             }
         }
         for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {

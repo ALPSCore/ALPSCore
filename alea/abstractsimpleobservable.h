@@ -37,7 +37,6 @@
 #include <alps/alea/abstractbinning.h>
 #include <alps/alea/recordableobservable.h>
 #include <alps/alea/output_helper.h>
-//#include <alps/alea/hdf5.h>
 #include <boost/config.hpp>
 
 namespace alps {

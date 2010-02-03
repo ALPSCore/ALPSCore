@@ -403,6 +403,7 @@ inline void SimpleObservableEvaluator<T>::load(IDump& dump)
 
 #ifdef ALPS_HAVE_HDF5
 template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::iarchive & ar) {
+    valid_ = true;
     ar >> make_pvp("", all_);
 }
 template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::oarchive & ar) const {
