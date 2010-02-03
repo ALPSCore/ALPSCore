@@ -72,38 +72,41 @@ void ObservableSet::load(IDump& dump)
 #ifdef ALPS_HAVE_HDF5
     void ObservableSet::serialize(hdf5::iarchive & ar) {
         std::vector<std::string> list = ar.list_children(ar.get_context());
-        std::set<std::string> spip;
+        std::set<std::string> skip;
         for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
             std::string obsname = hdf5_name_decode(*it);
             if (ar.is_attribute(obsname, "@sign")) {
                 std::string signname;
                 ar >> make_pvp(obsname + "/@sign", signname);
-                spip.insert(signname + " * " + obsname);
+                skip.insert(signname + " * " + obsname);
+                
+                std::cout << "skip: " << (signname + " * " + obsname) << std::endl;
+                
             }
         }
         for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
             std::string obsname = hdf5_name_decode(*it);
-            if (spip.find(obsname) == spip.end()) {
+            if (skip.find(obsname) == skip.end()) {
                 if (!has(obsname)) {
-                    bool is_vector;
+                    bool is_scalar;
                     if (ar.is_data(obsname + "/mean/value"))
-                        is_vector = ar.is_scalar(obsname + "/mean/value");
+                        is_scalar = ar.is_scalar(obsname + "/mean/value");
                     else if (ar.is_data(obsname + "/timeseries/logbinning"))
-                        is_vector = ar.is_scalar(obsname + "/timeseries/logbinning");
-                    if (is_vector) {
-                        if (ar.is_data(obsname + "/timeseries/data") && ar.is_data(obsname + "/timeseries/logbinning"))
-                            addObservable(RealVectorObservable(obsname));
-                        else if (ar.is_data(obsname + "/timeseries/logbinning"))
-                            addObservable(SimpleRealVectorObservable(obsname));
-                        else
-                            addObservable(RealVectorObsevaluator(obsname));
-                    } else {
+                        is_scalar = ar.dimensions(obsname + "/timeseries/logbinning") == 1;
+                    if (is_scalar) {
                         if (ar.is_data(obsname + "/timeseries/data") && ar.is_data(obsname + "/timeseries/logbinning"))
                             addObservable(RealObservable(obsname));
                         else if (ar.is_data(obsname + "/timeseries/logbinning"))
                             addObservable(SimpleRealObservable(obsname));
                         else
                             addObservable(RealObsevaluator(obsname));
+                    } else {
+                        if (ar.is_data(obsname + "/timeseries/data") && ar.is_data(obsname + "/timeseries/logbinning"))
+                            addObservable(RealVectorObservable(obsname));
+                        else if (ar.is_data(obsname + "/timeseries/logbinning"))
+                            addObservable(SimpleRealVectorObservable(obsname));
+                        else
+                            addObservable(RealVectorObsevaluator(obsname));
                     }
                 }
                 ar >> make_pvp(*it, operator[](obsname));

@@ -79,7 +79,8 @@ namespace alps {
             struct stl_container_of_unknown_tag {};
             struct stl_container_of_string_tag {};
             struct stl_container_of_scalar_tag {};
-            struct stl_container_of_container_tag {};
+            struct stl_container_of_container_of_scalar_tag {};
+            struct stl_container_of_container_of_complex_tag {};
             struct stl_string_tag {};
             struct c_string_tag {};
             struct enum_tag {};
@@ -98,16 +99,16 @@ namespace alps {
             template<> struct is_writable<std::valarray<std::string> > : boost::mpl::true_ { typedef stl_container_of_string_tag category; };
             #define HDF5_CONTAINER_OF_SCALAR_CV(T)                                                                                                                 \
                 template<> struct is_writable<std::vector<T> > : boost::mpl::true_ { typedef stl_container_of_scalar_tag category; };                              \
-                template<> struct is_writable<boost::numeric::ublas::vector<T> > : boost::mpl::true_ { typedef stl_container_of_scalar_tag category; };                              \
+                template<> struct is_writable<boost::numeric::ublas::vector<T> > : boost::mpl::true_ { typedef stl_container_of_scalar_tag category; };            \
                 template<> struct is_writable<std::valarray<T> > : boost::mpl::true_ { typedef stl_container_of_scalar_tag category; };                            \
-                template<> struct is_writable<std::vector<std::valarray<T> > > : boost::mpl::true_ { typedef stl_container_of_container_tag category; };           \
-                template<> struct is_writable<std::vector<std::vector<T> > > : boost::mpl::true_ { typedef stl_container_of_container_tag category; };
+                template<> struct is_writable<std::vector<std::valarray<T> > > : boost::mpl::true_ { typedef stl_container_of_container_of_scalar_tag category; }; \
+                template<> struct is_writable<std::vector<std::vector<T> > > : boost::mpl::true_ { typedef stl_container_of_container_of_scalar_tag category; };
             #define HDF5_CONTAINER_OF_SCALAR(T)                                                                                                                    \
                 HDF5_ADD_CV(HDF5_CONTAINER_OF_SCALAR_CV, T)
             HDF5_FOREACH_SCALAR(HDF5_CONTAINER_OF_SCALAR)
             #undef HDF5_CONTAINER_OF_SCALAR
-            template<typename T> struct is_writable<std::vector<std::valarray<std::complex<T> > > > : boost::mpl::true_ { typedef stl_container_of_container_tag category; };           \
-            template<typename T> struct is_writable<std::vector<std::vector<std::complex<T> > > > : boost::mpl::true_ { typedef stl_container_of_container_tag category; };
+            template<typename T> struct is_writable<std::vector<std::valarray<std::complex<T> > > > : boost::mpl::true_ { typedef stl_container_of_container_of_complex_tag category; };
+            template<typename T> struct is_writable<std::vector<std::vector<std::complex<T> > > > : boost::mpl::true_ { typedef stl_container_of_container_of_complex_tag category; };
             template<typename T, typename C, typename A> struct is_writable<std::set<T, C, A> > : boost::mpl::true_ { typedef stl_container_of_unknown_tag category; };
             template<typename K, typename D, typename C, typename A> struct is_writable<std::map<K, D, C, A> > : boost::mpl::true_ { typedef stl_container_of_unknown_tag category; };
             template<> struct is_writable<std::string> : boost::mpl::true_ { typedef stl_string_tag category; };
@@ -177,14 +178,14 @@ namespace alps {
                 typedef enum { CREATE, PLACEHOLDER } type;
             }
             struct internal_log_type {
-                unsigned int timestamp;
-                char * log;
+                char * time;
+                char * name;
             };
             template <typename Tag> class archive: boost::noncopyable {
                 public:
                     struct log_type {
-                        unsigned int timestamp;
-                        std::string log;
+                        boost::posix_time::ptime time;
+                        std::string name;
                     };
                     archive(std::string const & file): _revision(0), _filename(file) {
                         H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
@@ -193,27 +194,31 @@ namespace alps {
                                 throw std::runtime_error("no valid hdf5 file " + file);
                             hid_t id = H5Fopen(file.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
                             _file = (id < 0 ? H5Fcreate(file.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT) : id);
+                            if (!is_group("/revisions")) {
+                                set_group("/revisions");
+                                set_attr("/revisions", "last", _revision, scalar_tag());
+                                internal_state_type::type v;
+                                type_type state_id = H5Tenum_create(H5T_NATIVE_SHORT);
+                                check_error(H5Tenum_insert(state_id, "CREATE", &(v = internal_state_type::CREATE)));
+                                check_error(H5Tenum_insert(state_id, "PLACEHOLDER", &(v = internal_state_type::PLACEHOLDER)));
+                                check_error(H5Tcommit2(_file, "state_type", state_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
+                                type_type log_id = H5Tcreate (H5T_COMPOUND, sizeof(internal_log_type));
+                                type_type time_id(H5Tcopy(H5T_C_S1));
+                                check_error(H5Tset_size(time_id, H5T_VARIABLE));
+                                check_error(H5Tinsert(log_id, "time", HOFFSET(internal_log_type, time), time_id));
+                                type_type name_id(H5Tcopy(H5T_C_S1));
+                                check_error(H5Tset_size(name_id, H5T_VARIABLE));
+                                check_error(H5Tinsert(log_id, "log", HOFFSET(internal_log_type, name), name_id));
+                                check_error(H5Tcommit2(_file, "log_type", log_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
+                            }
                         } else {
                             if (check_error(H5Fis_hdf5(file.c_str())) == 0)
                                 throw std::runtime_error("no valid hdf5 file " + file);
                             _file = H5Fopen(file.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+                            if (!is_group("/revisions"))
+                                throw std::runtime_error("the hdf5 file is of an old format. Please create a oarchive once to convert.");
                         }
-                        if (!is_group("/revisions")) {
-                            set_group("/revisions");
-                            set_attr("/revisions", "last", _revision, scalar_tag());
-                            internal_state_type::type v;
-                            type_type state_id = H5Tenum_create(H5T_NATIVE_SHORT);
-                            check_error(H5Tenum_insert(state_id, "CREATE", &(v = internal_state_type::CREATE)));
-                            check_error(H5Tenum_insert(state_id, "PLACEHOLDER", &(v = internal_state_type::PLACEHOLDER)));
-                            check_error(H5Tcommit2(_file, "state_type", state_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
-                            type_type log_id = H5Tcreate (H5T_COMPOUND, sizeof(internal_log_type));
-                            check_error(H5Tinsert(log_id, "timestamp", HOFFSET(internal_log_type, timestamp), H5T_NATIVE_UINT));
-                            type_type uname_id(H5Tcopy(H5T_C_S1));
-                            check_error(H5Tset_size(uname_id, H5T_VARIABLE));
-                            check_error(H5Tinsert(log_id, "log", HOFFSET(internal_log_type, log), uname_id));
-                            check_error(H5Tcommit2(_file, "log_type", log_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
-                        } else
-                            get_attr("/revisions", "last", _revision, scalar_tag());
+                        get_attr("/revisions", "last", _revision, scalar_tag());
                         _log_id = H5Topen2(_file, "log_type", H5P_DEFAULT);
                         _state_id = H5Topen2(_file, "state_type", H5P_DEFAULT);
                     }
@@ -227,35 +232,31 @@ namespace alps {
                             std::abort();
                         }
                     }
-                    
                     std::string const & filename() const {
                         return _filename;
                     }
-                    
                     boost::filesystem::path const & filepath() const {
                         return boost::filesystem::path(_filename,boost::filesystem::native);
                     }
-                    
-                    void commit(std::string const & log = "") {
+                    void commit(std::string const & name = "") {
                         set_attr("/revisions", "last", ++_revision, scalar_tag());
                         set_group("/revisions/" + boost::lexical_cast<std::string>(_revision));
+                        std::string time = boost::posix_time::to_iso_string(boost::posix_time::second_clock::local_time());
                         internal_log_type v = {
-                            (boost::posix_time::second_clock::universal_time() - boost::posix_time::ptime(boost::gregorian::date(1970,1,1))).total_seconds(),
-                            std::strcpy(new char[log.size() + 1], log.c_str())
+                            std::strcpy(new char[time.size() + 1], time.c_str()),
+                            std::strcpy(new char[name.size() + 1], name.c_str())
                         };
                         set_attr("/revisions/" + boost::lexical_cast<std::string>(_revision), "info", v, internal_log_tag());
-                        delete[] v.log;
+                        delete[] v.time;
+                        delete[] v.name;
                     }
-                    
                     std::vector<std::pair<std::string, std::size_t> > list_revisions() {
                         // TODO: implement
                         return std::vector<std::pair<std::string, std::size_t> >();
                     }
-                    
                     void export_revision(std::size_t revision, std::string const & file) {
                         // TODO: implement
                     }
-                    
                     std::string get_context() const {
                         return _context;
                     }
@@ -657,7 +658,7 @@ namespace alps {
                             delete[] data;
                         }
                     }
-                    template<typename T> void get_data(std::string const & p, T & v, stl_container_of_container_tag) const {
+                    template<typename T> void get_data(std::string const & p, T & v, stl_container_of_container_of_scalar_tag) const {
                         if (is_null(p))
                             v.clear();
                         else {
@@ -702,7 +703,7 @@ namespace alps {
                     template<typename T> void get_attr(std::string const &, std::string const & p, T &, stl_container_of_string_tag) const {
                         throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
                     }
-                    template<typename T> void get_attr(std::string const &, std::string const & p, T &, stl_container_of_container_tag) const {
+                    template<typename T> void get_attr(std::string const &, std::string const & p, T &, stl_container_of_container_of_scalar_tag) const {
                         throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
                     }
                     template<typename T> void get_attr(std::string const &, std::string const & p, T &, stl_pair_tag) const {
@@ -818,7 +819,7 @@ namespace alps {
                             }
                         }
                     }
-                    template<typename T> void set_data(std::string const & p, T const & v, stl_container_of_container_tag) const {
+                    template<typename T> void set_data(std::string const & p, T const & v, stl_container_of_container_of_scalar_tag) const {
                         if (!v.size() || !v[0].size())
                             set_data(p, static_cast<typename T::value_type::value_type const *>(NULL), 0);
                         else {
@@ -853,7 +854,7 @@ namespace alps {
                     template<typename T> void set_attr(std::string const &, std::string const & p, T const &, stl_container_of_scalar_tag) const {
                         throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
                     }
-                    template<typename T> void set_attr(std::string const &, std::string const & p, T const &, stl_container_of_container_tag) const {
+                    template<typename T> void set_attr(std::string const &, std::string const & p, T const &, stl_container_of_container_of_scalar_tag) const {
                         throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
                     }
                     template<typename T> void set_attr(std::string const &, std::string const & p, T const &, stl_container_of_unknown_tag) const {

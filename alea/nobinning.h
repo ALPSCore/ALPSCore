@@ -91,8 +91,8 @@ class NoBinning : public AbstractBinning<T>
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-    void serialize(hdf5::oarchive & ar) const;
-    void serialize(hdf5::iarchive & ar);
+    void serialize(hdf5::oarchive &) const;
+    void serialize(hdf5::iarchive &);
 #endif
 
  private:
@@ -285,30 +285,12 @@ inline void NoBinning<T>::load(IDump& dump)
       ;
     }
     template <class T> inline void NoBinning<T>::serialize(hdf5::iarchive & ar) {
-    
-          std::cout << __LINE__ << std::endl;
-
-    
-      ar
-          >> make_pvp("sum", sum_)
-          
-          ;
-          std::cout << __LINE__ << std::endl;
+      if (count_ > 0)
           ar
-          
-          >> make_pvp("sum2", sum2_)
-          
+              >> make_pvp("sum", sum_)
+              >> make_pvp("sum2", sum2_)
+              >> make_pvp("count", count_)
           ;
-          std::cout << __LINE__ << std::endl;
-          ar
-          
-          
-          >> make_pvp("count", count_)
-      ;
-      
-          std::cout << __LINE__ << std::endl;
-      
-      
     }
 #endif
 

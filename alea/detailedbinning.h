@@ -97,8 +97,8 @@ public:
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-    void serialize(hdf5::oarchive & ar) const;
-    void serialize(hdf5::iarchive & ar);
+    void serialize(hdf5::oarchive &) const;
+    void serialize(hdf5::iarchive &);
 #endif
 
 private:
