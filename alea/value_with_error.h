@@ -85,11 +85,12 @@ namespace alps {
       }
     
       // call
-      inline value_type const & mean()  const {  return _mean;  }
-      inline value_type const & error() const {  return _error; }
+      inline value_type mean()  const {  return _mean;  }
+      inline value_type error() const {  return _error; }
     
       // indicing operator
-      //value_with_error<element_type> operator[] (const index_type);
+      value_with_error<element_type> operator[] (const index_type index)
+      {  return value_with_error<element_type>(_mean[index],_error[index]); }
     
       // comparison
       inline bool operator==(value_with_error const & rhs)
