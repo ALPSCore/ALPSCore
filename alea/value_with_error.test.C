@@ -258,14 +258,58 @@ int main(int argc, char** argv)
   std::cout << "\natanh(A): \t" << atanh(vecA) << "\n";
 
 
-  // testing STL (and non-STL support)
-  std::cout << "\nvecA.push_back(b) following by vecA.pop_back" << "\n";
-  
+  // testing vector support (non-STL)
+ 
   vecA.push_back(b);
+  std::cout << "\nvecA.push_back(b)\n";
   std::cout << "\n(A): \t" << vecA << "\n";
 
   vecA.pop_back();
+  std::cout << "\nvecA.pop_back() \n";
   std::cout << "\n(A): \t" << vecA << "\n";
+
+  vecA.clear();
+  std::cout << "\nvecA.clear() \n";
+  std::cout << "\n(A): \t" << vecA << "\n";
+  
+  value_with_error<std::vector<double> > vecX;
+  vecX.push_back(a);
+  vecX.push_back(b);
+  vecX.push_back(c);
+  vecX.push_back(a);
+  vecX.push_back(b);
+  vecX.push_back(c);
+  std::cout << "\nvecX: \n" << vecX << "\n";
+
+  vecX.at(4);
+  std::cout << "\nvecX.at(4): \t" << vecX.at(4) << "\n";
+
+  vecX.insert(2,c);
+  std::cout << "\nvecX.insert(2,c): \n:" << vecX << "\n";
+
+  vecX.erase(0);
+  std::cout << "\nvecX.erase(0): \n:" << vecX << "\n";
+
+
+  // testing interface interchange
+  std::vector<value_with_error<double> > vec_of_vwe;
+  value_with_error<std::vector<double> > vec_with_error;
+
+  vec_with_error = vecX;
+  obtain_vector_of_value_with_error_from_vector_with_error<double>(vec_of_vwe,vec_with_error);
+
+  std::cout << "\nSuccessful converting from vec_with_error: \n" << vec_with_error << "to vec_of_vwe: \n";
+  std::copy(vec_of_vwe.begin(),vec_of_vwe.end(),std::ostream_iterator<value_with_error<double> >(std::cout,"\n"));
+
+  std::cout << std::endl;
+
+  vec_with_error.clear();
+  obtain_vector_with_error_from_vector_of_value_with_error(vec_with_error,vec_of_vwe);
+
+  std::cout << "\nSuccessful converting from vec_of_vwe: \n";
+  std::copy(vec_of_vwe.begin(),vec_of_vwe.end(),std::ostream_iterator<value_with_error<double> >(std::cout,"\n"));
+  std::cout << "to vec_with_error:\n" << vec_with_error;
+  
 
   return 0;
 }
