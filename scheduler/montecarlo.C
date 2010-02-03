@@ -221,8 +221,10 @@ void MCRun::serialize(hdf5::oarchive & ar) const {
 
 void MCRun::serialize(hdf5::iarchive & ar) {
   Worker::serialize(ar);
-//  if(node==0)
-//    ar >> make_pvp("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(node) + "/results", measurements);
+#ifdef ALPS_ONLY_HDF5
+  if(node==0)
+    ar >> make_pvp("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(node) + "/results", measurements);
+#endif
 }
 #endif
 
@@ -365,7 +367,9 @@ ResultType DummyMCRun::get_summary() const
 #ifdef ALPS_HAVE_HDF5
 void MCSimulation::serialize(hdf5::iarchive & ar) {
   WorkerTask::serialize(ar);
-  // ar >> make_pvp("/simulation/results", measurements);
+#ifdef ALPS_ONLY_
+  ar >> make_pvp("/simulation/results", measurements);
+#endif
 }
 
 void MCSimulation::serialize(hdf5::oarchive & ar) const {

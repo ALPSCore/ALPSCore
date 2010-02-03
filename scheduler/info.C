@@ -61,8 +61,8 @@ void Info::serialize(hdf5::iarchive & ar) {
       >> make_pvp("machine/name", host_)
       >> make_pvp("phase", phase_)
   ;
-  // startt_ = boost::posix_time::from_iso_string(startt);
-  // stopt_ = boost::posix_time::from_iso_string(stopt);
+  startt_ = boost::posix_time::from_iso_string(startt);
+  stopt_ = boost::posix_time::from_iso_string(stopt);
 }
 #endif
 
