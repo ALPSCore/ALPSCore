@@ -187,12 +187,10 @@ public:
     }
     void serialize(hdf5::oarchive & ar) const {
         Observable::serialize(ar);
-        ar
-            << make_pvp("labels", label_)
-            << make_pvp("count", count())
-        ;
         if (count() > 0)
             ar
+                << make_pvp("labels", label_)
+                << make_pvp("count", count())
                 << make_pvp("mean/value", mean())
             ;
         if (count() > 1) {
