@@ -835,23 +835,25 @@ namespace alps {
 
     // std::vector<value_with_error<T> >  interchanging with  value_with_error<std::vector<T> >
     template <class T>
-    void obtain_vector_of_value_with_error_from_vector_with_error(std::vector<value_with_error<T> > & res, value_with_error<std::vector<T> > vec_with_error)
+    std::vector<value_with_error<T> > obtain_vector_of_value_with_error_from_vector_with_error(value_with_error<std::vector<T> > vec_with_error)
     {
-      res.clear();
+      std::vector<value_with_error<T> > res;
       for (std::size_t index=0; index < vec_with_error.size(); ++index)
       {
         res.push_back(vec_with_error.at(index));
       }
+      return res;
     }
 
     template <class T>
-    void obtain_vector_with_error_from_vector_of_value_with_error(value_with_error<std::vector<T> > & res, std::vector<value_with_error<T> > vec_of_value_with_error)
+    value_with_error<std::vector<T> > obtain_vector_with_error_from_vector_of_value_with_error(std::vector<value_with_error<T> > vec_of_value_with_error)
     {
-      res.clear();
+      value_with_error<std::vector<T> > res;
       for (std::size_t index=0; index < vec_of_value_with_error.size(); ++index)
       {
         res.push_back(vec_of_value_with_error[index]);
       }
+      return res;
     }
 
   }
