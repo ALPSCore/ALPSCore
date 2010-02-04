@@ -91,7 +91,7 @@ print "a.cosh()\t" + str(a.cosh())
 print "a.tanh()\t" + str(a.tanh())
 print "a.asinh()\t" + str(a.asinh())
 print "b.acosh()\t" + str(b.acosh())
-print "NOTE: atanh IS NOT OKAY IN PYTHON EXPORTATION!!!"   
+print '\n### WARNING : "atanh" is having problems in python exportation.'   
 #print "a.atanh()\t" + repr(a.atanh())    
 
 print "\n"
@@ -223,8 +223,8 @@ print "del H[3:], H:\n" + str(H) + "\n"
 
 print "Operations:\n"
 
-G.obtained_from(X)
-H.obtained_from(Y)
+G = convert2_vector_of_value_with_error(X)
+H = convert2_vector_of_value_with_error(Y)
 
 print "G:\n" + str(G) + "\n"
 print "H:\n" + str(H) + "\n"
@@ -285,12 +285,12 @@ print "\nSwitching from vector_with_error to vector_of_value_with_error and vice
 print "\n-----------------------------------------------------------------------------"
 
 V1 = vector_with_error()
-V1.obtained_from(G)
-print "V1 = vector_with_error()\nV1.obtained_from(G)\n\nV1:\n" + str(V1)
+V1 = convert2_vector_with_error(G)
+print "V1 = vector_with_error()\nV1 = convert2_vector_with_error(G)\n\nV1:\n" + str(V1)
 
 V2 = vector_of_value_with_error()
-V2.obtained_from(X)
-print "V2 = vector_of_value_with_error()\nV2.obtained_from(X)\n\nV2:\n" + str(V2)
+V2 = convert2_vector_of_value_with_error(X)
+print "V2 = vector_of_value_with_error()\nV2 = convert2_vector_with_error(X)\n\nV2:\n" + str(V2)
 
 
 

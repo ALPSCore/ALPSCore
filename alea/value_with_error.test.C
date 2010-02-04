@@ -296,7 +296,7 @@ int main(int argc, char** argv)
   value_with_error<std::vector<double> > vec_with_error;
 
   vec_with_error = vecX;
-  obtain_vector_of_value_with_error_from_vector_with_error<double>(vec_of_vwe,vec_with_error);
+  vec_of_vwe = obtain_vector_of_value_with_error_from_vector_with_error<double>(vec_with_error);
 
   std::cout << "\nSuccessful converting from vec_with_error: \n" << vec_with_error << "to vec_of_vwe: \n";
   std::copy(vec_of_vwe.begin(),vec_of_vwe.end(),std::ostream_iterator<value_with_error<double> >(std::cout,"\n"));
@@ -304,7 +304,7 @@ int main(int argc, char** argv)
   std::cout << std::endl;
 
   vec_with_error.clear();
-  obtain_vector_with_error_from_vector_of_value_with_error(vec_with_error,vec_of_vwe);
+  vec_with_error = obtain_vector_with_error_from_vector_of_value_with_error(vec_of_vwe);
 
   std::cout << "\nSuccessful converting from vec_of_vwe: \n";
   std::copy(vec_of_vwe.begin(),vec_of_vwe.end(),std::ostream_iterator<value_with_error<double> >(std::cout,"\n"));
