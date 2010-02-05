@@ -89,12 +89,12 @@ void ObservableSet::load(IDump& dump)
                         ? ar.is_scalar(obsname + "/mean/value")
                         : (ar.is_data(obsname + "/timeseries/logbinning") ? ar.dimensions(obsname + "/timeseries/logbinning") == 1 : false)
                     );
-                    bool is_signed = false && ar.is_attribute(obsname + "/@sign");
+                    bool is_signed = ar.is_attribute(obsname + "/@sign");
                     std::string signname;
                     if (is_signed)
                         ar >> make_pvp(obsname + "/@sign", signname);
-                    bool is_simple_real = ar.is_data((is_signed ? (signname + " * " + obsname) : obsname) + "/timeseries/logbinning");
-                    bool is_real = is_simple_real && ar.is_data((is_signed ? (signname + " * " + obsname) : obsname) + "/timeseries/data");
+                    bool is_simple_real = ar.is_data((is_signed ? (signname + " * " + obsname) : obsname) + "/sum");
+                    bool is_real = ar.is_data((is_signed ? (signname + " * " + obsname) : obsname) + "/timeseries/logbinning") && ar.is_data((is_signed ? (signname + " * " + obsname) : obsname) + "/timeseries/data");
                     if (is_scalar) {
                         if (is_real) {
                             if (is_signed)
