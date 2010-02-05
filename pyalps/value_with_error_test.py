@@ -223,8 +223,8 @@ print "del H[3:], H:\n" + str(H) + "\n"
 
 print "Operations:\n"
 
-G = convert2_vector_of_value_with_error(X)
-H = convert2_vector_of_value_with_error(Y)
+G = convert2vector_of_value_with_error(X)
+H = convert2vector_of_value_with_error(Y)
 
 print "G:\n" + str(G) + "\n"
 print "H:\n" + str(H) + "\n"
@@ -285,12 +285,12 @@ print "\nSwitching from vector_with_error to vector_of_value_with_error and vice
 print "\n-----------------------------------------------------------------------------"
 
 V1 = vector_with_error()
-V1 = convert2_vector_with_error(G)
-print "V1 = vector_with_error()\nV1 = convert2_vector_with_error(G)\n\nV1:\n" + str(V1)
+V1 = convert2vector_with_error(G)
+print "V1 = vector_with_error()\nV1 = convert2vector_with_error(G)\n\nV1:\n" + str(V1)
 
 V2 = vector_of_value_with_error()
-V2 = convert2_vector_of_value_with_error(X)
-print "V2 = vector_of_value_with_error()\nV2 = convert2_vector_with_error(X)\n\nV2:\n" + str(V2)
+V2 = convert2vector_of_value_with_error(X)
+print "V2 = vector_of_value_with_error()\nV2 = convert2vector_with_error(X)\n\nV2:\n" + str(V2)
 
 
 

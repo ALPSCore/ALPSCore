@@ -14,7 +14,7 @@ X.push_back(b)
 X.push_back(c)
 
 Y = vector_of_value_with_error()
-Y = convert2_vector_of_value_with_error(X)
+Y = convert2vector_of_value_with_error(X)
 
 Z = numpy.array([a,b,c])
 
