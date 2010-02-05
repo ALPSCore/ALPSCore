@@ -30,6 +30,8 @@
 
 
 #include <alps/numeric/vector_functions.hpp>
+#include <boost/python.hpp>
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <boost/type_traits.hpp>
 #include <iostream>
 #include <iomanip>
@@ -72,6 +74,8 @@ namespace alps {
     
     public:
       // constructors, assignment operator
+      value_with_error(boost::python::object const & mean_nparray, boost::python::object const & error_nparray);
+
       value_with_error(value_type mean =value_type(), value_type error =value_type())
         : _mean(mean)
         , _error(error) 
