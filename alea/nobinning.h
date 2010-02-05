@@ -278,6 +278,11 @@ inline void NoBinning<T>::load(IDump& dump)
 
 #ifdef ALPS_HAVE_HDF5
     template <class T> inline void NoBinning<T>::serialize(hdf5::oarchive & ar) const {
+    
+    
+    std::cout << __LINE__ << " " << ar.complete_path("") << std::endl;
+    
+    
       ar
           << make_pvp("sum", sum_)
           << make_pvp("sum2", sum2_)

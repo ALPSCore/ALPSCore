@@ -122,8 +122,8 @@ public:
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-  virtual void serialize(hdf5::iarchive & ar);
-  virtual void serialize(hdf5::oarchive & ar) const;
+  virtual void serialize(hdf5::iarchive &);
+  virtual void serialize(hdf5::oarchive &) const;
 #endif
 
   virtual std::string evaluation_method(Target t) const

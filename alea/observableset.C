@@ -85,24 +85,41 @@ void ObservableSet::load(IDump& dump)
             std::string obsname = hdf5_name_decode(*it);
             if (skip.find(obsname) == skip.end()) {
                 if (!has(obsname)) {
-                    bool is_scalar;
-                    if (ar.is_data(obsname + "/mean/value"))
-                        is_scalar = ar.is_scalar(obsname + "/mean/value");
-                    else if (ar.is_data(obsname + "/timeseries/logbinning"))
-                        is_scalar = ar.dimensions(obsname + "/timeseries/logbinning") == 1;
+                    bool is_scalar = (ar.is_data(obsname + "/mean/value") 
+                        ? ar.is_scalar(obsname + "/mean/value")
+                        : (ar.is_data(obsname + "/timeseries/logbinning") ? ar.dimensions(obsname + "/timeseries/logbinning") == 1 : false)
+                    );
+                    bool is_signed = false && ar.is_attribute(obsname + "/@sign");
+                    std::string signname;
+                    if (is_signed)
+                        ar >> make_pvp(obsname + "/@sign", signname);
+                    bool is_simple_real = ar.is_data((is_signed ? (signname + " * " + obsname) : obsname) + "/timeseries/logbinning");
+                    bool is_real = is_simple_real && ar.is_data((is_signed ? (signname + " * " + obsname) : obsname) + "/timeseries/data");
                     if (is_scalar) {
-                        if (ar.is_data(obsname + "/timeseries/data") && ar.is_data(obsname + "/timeseries/logbinning"))
-                            addObservable(RealObservable(obsname));
-                        else if (ar.is_data(obsname + "/timeseries/logbinning"))
-                            addObservable(SimpleRealObservable(obsname));
-                        else
+                        if (is_real) {
+                            if (is_signed)
+                                addObservable(SignedObservable<RealObservable, double>(obsname));
+                            else
+                                addObservable(RealObservable(obsname));
+                        } else if (is_simple_real) {
+                            if (is_signed)
+                                addObservable(SignedObservable<SimpleRealObservable, double>(obsname));
+                            else
+                                addObservable(SimpleRealObservable(obsname));
+                        } else
                             addObservable(RealObsevaluator(obsname));
                     } else {
-                        if (ar.is_data(obsname + "/timeseries/data") && ar.is_data(obsname + "/timeseries/logbinning"))
-                            addObservable(RealVectorObservable(obsname));
-                        else if (ar.is_data(obsname + "/timeseries/logbinning"))
-                            addObservable(SimpleRealVectorObservable(obsname));
-                        else
+                        if (is_real) {
+                            if (is_signed)
+                                addObservable(SignedObservable<RealVectorObservable, double>(obsname));
+                            else
+                                addObservable(RealVectorObservable(obsname));
+                        } else if (is_simple_real) {
+                            if (is_signed)
+                                addObservable(SignedObservable<SimpleRealVectorObservable, double>(obsname));
+                            else
+                                addObservable(SimpleRealVectorObservable(obsname));
+                        } else
                             addObservable(RealVectorObsevaluator(obsname));
                     }
                 }
