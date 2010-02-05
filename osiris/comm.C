@@ -31,6 +31,9 @@
 #include <alps/config.h>
 
 #ifdef ALPS_HAVE_MPI
+# undef SEEK_SET
+# undef SEEK_CUR
+# undef SEEK_END
 # include <mpi.h>
 #endif
 #include <alps/osiris/comm.h>
