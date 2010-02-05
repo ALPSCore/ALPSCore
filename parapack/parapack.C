@@ -557,6 +557,7 @@ int start_sgl(int argc, char** argv) {
                 for (int t = 0; t < tasks.size(); ++t) {
                   if (tasks[t].on_memory()) tasks[t].save();
                 }
+                std::cerr << "save task\n";
                 save_tasks(file_out, simname, file_in_str, file_out_str, tasks);
                 print_taskinfo(std::clog, tasks);
               } // end omp critical
@@ -1025,7 +1026,7 @@ int start_mpi(int argc, char** argv) {
               tasks[tid].info_updated(cid, clone_ptr->info());
               tasks[tid].halt_clone(proxy, cid, process_group(0));
               if (progress < 1 && tasks[tid].progress() >= 1) ++num_finished_tasks;
-              // save_tasks(file_out, simname, file_in_str, file_out_str, tasks);
+              save_tasks(file_out, simname, file_in_str, file_out_str, tasks);
               process.release(0);
             } else if (clone_ptr && process.is_halting()) {
               tid_t tid = clone_ptr->task_id();
