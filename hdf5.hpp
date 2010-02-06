@@ -187,7 +187,7 @@ namespace alps {
                         boost::posix_time::ptime time;
                         std::string name;
                     };
-                    archive(std::string const & file): _revision(0), _filename(file) {
+                    archive(std::string const & file): _revision(0), _state_id(-1), _log_id(-1), _filename(file) {
                         H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
                         if (boost::is_same<Tag, write>::value) {
                             if (H5Fis_hdf5(file.c_str()) == 0)
@@ -215,17 +215,21 @@ namespace alps {
                             if (check_error(H5Fis_hdf5(file.c_str())) == 0)
                                 throw std::runtime_error("no valid hdf5 file " + file);
                             _file = H5Fopen(file.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
-                            if (!is_group("/revisions"))
-                                throw std::runtime_error("the hdf5 file is of an old format. Please create a oarchive once to convert.");
                         }
-                        get_attr("/revisions", "last", _revision, scalar_tag());
-                        _log_id = H5Topen2(_file, "log_type", H5P_DEFAULT);
-                        _state_id = H5Topen2(_file, "state_type", H5P_DEFAULT);
+                        if (is_group("/revisions")) {
+                            get_attr("/revisions", "last", _revision, scalar_tag());
+                            _log_id = check_error(H5Topen2(_file, "log_type", H5P_DEFAULT));
+                            _state_id = check_error(H5Topen2(_file, "state_type", H5P_DEFAULT));
+                        }
                     }
                     ~archive() {
                         H5Fflush(_file, H5F_SCOPE_GLOBAL);
+                        if (_state_id > -1)
+                            check_type(_state_id);
+                        if (_log_id > -1)
+                            check_type(_log_id);
                         if (
-                               H5Fget_obj_count(_file, H5F_OBJ_DATATYPE) > 2
+                               H5Fget_obj_count(_file, H5F_OBJ_DATATYPE) > (_state_id == -1 ? 0 : 1) + (_log_id == -1 ? 0 : 1)
                             || H5Fget_obj_count(_file, H5F_OBJ_ALL) - H5Fget_obj_count(_file, H5F_OBJ_FILE) - H5Fget_obj_count(_file, H5F_OBJ_DATATYPE) > 0
                         ) {
                             std::cerr << "Not all resources closed" << std::endl;
@@ -907,8 +911,8 @@ namespace alps {
                         }
                     }
                     int _revision;
-                    type_type _state_id;
-                    type_type _log_id;
+                    hid_t _state_id;
+                    hid_t _log_id;
                     std::string _context;
                     std::string _filename;
                     file_type _file;
