@@ -92,6 +92,8 @@ namespace alps {
       inline value_type mean()  const {  return _mean;  }
       inline value_type error() const {  return _error; }
 
+      boost::python::object mean_nparray() const;
+      boost::python::object error_nparray() const;
     
       // comparison
       inline bool operator==(value_with_error const & rhs)
