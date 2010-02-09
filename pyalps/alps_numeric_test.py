@@ -5,8 +5,8 @@ a = value_with_error(1.,0.1)
 b = value_with_error(2.,0.2)
 c = value_with_error(3.,0.3)
 
-M = numpy.array([1,2,3])
-N = numpy.array([1.,2.,3.])
+M = np.array([1,2,3])
+N = np.array([1.,2.,3.])
 
 X = vector_with_error()
 X.push_back(a)
@@ -16,7 +16,7 @@ X.push_back(c)
 Y = vector_of_value_with_error()
 Y = convert2vector_of_value_with_error(X)
 
-Z = numpy.array([a,b,c])
+Z = np.array([a,b,c])
 
 
 print "\n"
