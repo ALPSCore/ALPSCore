@@ -70,7 +70,7 @@ void ObservableSet::load(IDump& dump)
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-    void ObservableSet::serialize(hdf5::iarchive & ar) {
+    void ObservableSet::serialize(hdf5::iarchive & ar, bool write_all_clones) {
         std::vector<std::string> list = ar.list_children(ar.get_context());
         std::set<std::string> skip;
         for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
@@ -123,14 +123,21 @@ void ObservableSet::load(IDump& dump)
                             addObservable(RealVectorObsevaluator(obsname));
                     }
                 }
-                ar >> make_pvp(*it, operator[](obsname));
+                std::string context = ar.get_context();
+                ar.set_context(ar.complete_path(*it));
+                operator[](obsname).serialize(ar, write_all_clones);
+                ar.set_context(context);
             }
         }
     }
-    void ObservableSet::serialize(hdf5::oarchive & ar) const {
+    void ObservableSet::serialize(hdf5::oarchive & ar, bool write_all_clones) const {
         for(base_type::const_iterator it = base_type::begin(); it != base_type::end(); ++it)
-            if(it->second)
-                ar << make_pvp(hdf5_name_encode(it->second->name()), it->second);
+            if(it->second) {
+                std::string context = ar.get_context();
+                ar.set_context(ar.complete_path(it->second->name()));
+                it->second->serialize(ar, write_all_clones);
+                ar.set_context(context);
+            }
     }
 #endif
 

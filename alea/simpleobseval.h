@@ -226,8 +226,8 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-    inline void serialize(hdf5::iarchive &);
-    inline void serialize(hdf5::oarchive &) const;
+    inline void serialize(hdf5::iarchive &, bool = false);
+    inline void serialize(hdf5::oarchive &, bool = false) const;
 #endif
 
   template<class X> void add_to(const X& x);
@@ -402,18 +402,22 @@ inline void SimpleObservableEvaluator<T>::load(IDump& dump)
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::iarchive & ar) {
+template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::iarchive & ar, bool write_all_clones) {
     valid_ = true;
     ar >> make_pvp("", all_);
+    if (write_all_clones)
+        for(std::size_t i = 0; ar.is_data("../../clone/" + boost::lexical_cast<std::string>(i) + "/results/" + super_type::name()); ++i) {
+            SimpleObservableData<T> obs;
+            ar >> make_pvp("../../clone/" + boost::lexical_cast<std::string>(i) + "/results/" + super_type::name(), obs);
+            runs_.push_back(obs);
+        }
 }
-template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::oarchive & ar) const {
+template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::oarchive & ar, bool write_all_clones) const {
     collect();
     ar << make_pvp("", all_);
-/* TODO: write this after deleting the task<M>.run<N>.h5 files
-    if (runs_.size() > 1)
-      for(std::size_t i = 0; i < runs_.size(); ++i)
-          ar << make_pvp("../../clone/" + boost::lexical_cast<std::string>(i) + "/results/" + super_type::name(), runs_[i]);
-*/
+    if (write_all_clones && runs_.size() > 1)
+        for(std::size_t i = 0; i < runs_.size(); ++i)
+            ar << make_pvp("../../clone/" + boost::lexical_cast<std::string>(i) + "/results/" + super_type::name(), runs_[i]);
 }
 #endif
 

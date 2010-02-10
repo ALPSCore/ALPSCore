@@ -260,6 +260,9 @@ namespace alps {
                     std::string get_context() const {
                         return _context;
                     }
+                    void set_context(std::string const & context) {
+                        _context = context;
+                    }
                     std::string complete_path(std::string const & p) const {
                         if (p.size() && p[0] == '/')
                             return p;
@@ -290,10 +293,10 @@ namespace alps {
                             get_data(complete_path(p), v, typename is_writable<T>::category());
                     }
                     template<typename T> typename boost::disable_if<is_writable<T> >::type serialize(std::string const & p, T & v) {
-                        std::string c = _context;
-                        _context = complete_path(p);
+                        std::string c = get_context();
+                        set_context(complete_path(p));
                         v.serialize(*this);
-                        _context = c;
+                        set_context(c);
                     }
                     template<typename T> typename boost::enable_if<
                         typename boost::mpl::and_<is_writable<T>, typename boost::is_same<Tag, write>::type >
