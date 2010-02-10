@@ -183,16 +183,21 @@ public:
 #ifdef ALPS_HAVE_HDF5
     void serialize(hdf5::iarchive & ar) {
         Observable::serialize(ar);
-        ar >> make_pvp("labels", label_);
+        if (ar.is_data("labels"))
+            ar >> make_pvp("labels", label_);
     }
     void serialize(hdf5::oarchive & ar) const {
         Observable::serialize(ar);
-        if (count() > 0)
+        if (count() > 0) {
+            if (label_.size())
+                ar
+                    << make_pvp("labels", label_)
+                ;
             ar
-                << make_pvp("labels", label_)
                 << make_pvp("count", count())
                 << make_pvp("mean/value", mean())
             ;
+        }
         if (count() > 1) {
             ar
                 << make_pvp("mean/error", error())

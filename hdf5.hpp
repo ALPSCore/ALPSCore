@@ -41,7 +41,6 @@
 #include <boost/intrusive_ptr.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/filesystem/path.hpp>
 #include <boost/numeric/ublas/vector.hpp>
 
 #include <hdf5.h>
@@ -238,9 +237,6 @@ namespace alps {
                     }
                     std::string const & filename() const {
                         return _filename;
-                    }
-                    boost::filesystem::path const & filepath() const {
-                        return boost::filesystem::path(_filename,boost::filesystem::native);
                     }
                     void commit(std::string const & name = "") {
                         set_attr("/revisions", "last", ++_revision, scalar_tag());
