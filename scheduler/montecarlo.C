@@ -367,7 +367,7 @@ ResultType DummyMCRun::get_summary() const
 #ifdef ALPS_HAVE_HDF5
 void MCSimulation::serialize(hdf5::iarchive & ar) {
   WorkerTask::serialize(ar);
-#ifdef ALPS_ONLY_
+#ifdef ALPS_ONLY_HDF5
   ar >> make_pvp("/simulation/results", measurements);
 #endif
 }
