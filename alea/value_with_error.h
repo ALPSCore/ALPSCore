@@ -29,6 +29,7 @@
 /* $Id: nobinning.h 3520 2009-12-11 16:49:53Z gamperl $ */
 
 
+#include <alps/config.h>
 #include <alps/numeric/vector_functions.hpp>
 
 #ifdef ALPS_HAVE_PYTHON
