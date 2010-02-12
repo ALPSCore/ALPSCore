@@ -31,6 +31,8 @@
 #ifndef ALPS_SCHEDULER_TYPES_H
 #define ALPS_SCHEDULER_TYPES_H
 
+#include <alps/config.h>
+
 //=======================================================================
 // This file constants such as magic ids for dumps and message ids
 //=======================================================================
