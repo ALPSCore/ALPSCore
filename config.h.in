@@ -318,4 +318,9 @@ using boost::uint_fast64_t;
 # define ALPS_DECL
 #endif
 
+//
+// Enable HDF5 checkpoints
+//
+#define ALPS_ONLY_HDF5
+
 #endif // ALPS_CONFIG_H
