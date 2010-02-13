@@ -319,8 +319,11 @@ using boost::uint_fast64_t;
 #endif
 
 //
-// Enable HDF5 checkpoints
+// Enable HDF5 checkpoints: no ALPS checkpoint data is written into XDR files 
+// anymore, but they can still be read
 //
+#ifdef ALPS_HAVE_HDF5
 #define ALPS_ONLY_HDF5
+#endif
 
 #endif // ALPS_CONFIG_H
