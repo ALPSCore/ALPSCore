@@ -234,7 +234,7 @@ void MasterScheduler::checkpoint()
             << end_tag() << end_tag();
         std::cerr  << "Checkpointing Simulation " << i+1 << "\n";
         if (tasks[i]!=0 && boost::filesystem::complete(taskfiles[i].out,dir).string()!=taskfiles[i].in.string()) {          
-          tasks[i]->checkpoint(boost::filesystem::complete(taskfiles[i].out,dir));
+          tasks[i]->checkpoint(boost::filesystem::complete(taskfiles[i].out,dir),write_xml);
           taskfiles[i].in=boost::filesystem::complete(taskfiles[i].out,dir);
         }
         if (tasks[i]!=0) 
@@ -254,7 +254,7 @@ void MasterScheduler::checkpoint()
             << end_tag() << end_tag();
         if(theTask != tasks[i]) {
           std::cerr  << "Checkpointing Simulation " << i+1 << "\n";
-          tasks[i]->checkpoint(boost::filesystem::complete(taskfiles[i].out,dir));
+          tasks[i]->checkpoint(boost::filesystem::complete(taskfiles[i].out,dir),write_xml);
                 taskfiles[i].in=boost::filesystem::complete(taskfiles[i].out,dir);
         }
         else
@@ -263,7 +263,7 @@ void MasterScheduler::checkpoint()
     }
     if(local_sim>=0) {
       std::cerr  << "Checkpointing Simulation " << local_sim+1 << "\n";
-      tasks[local_sim]->checkpoint(boost::filesystem::complete(taskfiles[local_sim].out,dir));
+      tasks[local_sim]->checkpoint(boost::filesystem::complete(taskfiles[local_sim].out,dir),write_xml);
       taskfiles[local_sim].in=boost::filesystem::complete(taskfiles[local_sim].out,dir);
     }
     out << end_tag("JOB");
@@ -286,7 +286,7 @@ void MasterScheduler::finish_task(int i)
   if (make_summary) {
     sim_results[i] = tasks[i]->get_summary();
   }
-  tasks[i]->checkpoint(boost::filesystem::complete(taskfiles[i].out,outfilepath.branch_path()));
+  tasks[i]->checkpoint(boost::filesystem::complete(taskfiles[i].out,outfilepath.branch_path()),write_xml);
   delete tasks[i];
   tasks[i]=0;
   taskstatus[i] = TaskFinished;      

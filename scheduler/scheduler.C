@@ -159,7 +159,8 @@ Scheduler::Scheduler(const NoJobfileOptions& opt, const Factory& p)
     checkpoint_time(opt.checkpoint_time),
     min_cpus(opt.min_cpus),
     max_cpus(opt.max_cpus),
-    time_limit(opt.time_limit)
+    time_limit(opt.time_limit),
+    write_xml(opt.write_xml)
 {
   processes = all_processes();
   theScheduler=this;

@@ -57,6 +57,7 @@ public:
   double time_limit;          // time limit for the simulation
   bool use_mpi;               // should we use MPI
   bool valid;                 // shall we really run?
+  bool write_xml;             // shall we write the results to XML?
 
   NoJobfileOptions(int argc, char** argv);
   NoJobfileOptions();

@@ -44,6 +44,7 @@
 #include <boost/type_traits.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/detail/workaround.hpp>
+#include <boost/foreach.hpp>
 #include <algorithm>
 #include <complex>
 #include <vector>
@@ -71,13 +72,38 @@ inline std::vector<T> real(std::vector<std::complex<T> > x)
 }
 
 template <class T>
-inline std::vector<std::vector<T> > real(std::vector<std::vector<std::complex<T> > > x) 
+std::vector<std::vector<T> > real(std::vector<std::vector<std::complex<T> > >const & x) 
 {
   std::vector<std::vector< T > > re;
   re.reserve(x.size());
   std::transform(x.begin(),x.end(),std::back_inserter(re),
                  static_cast<std::vector<T> (*)(std::vector<std::complex<T> >)>(&real));
   return re;
+}
+
+template <class T, class U>
+inline T numeric_convert(U x) { return x;}
+
+template <class T, class U>
+std::vector<T> numeric_convert(std::vector<U> const& x) 
+{
+  std::vector<T> res;
+  res.reserve(x.size());
+  BOOST_FOREACH( U const& u, x) {
+    res.push_back(numeric_convert<T>(u));
+  }
+  return res;
+}
+
+template <class T, class U>
+std::vector<std::vector<T> > numeric_convert(std::vector<std::vector<U> > const & x) 
+{
+  std::vector<std::vector< T > > res;
+  res.reserve(x.size());
+  BOOST_FOREACH( std::vector<U> const& u, x) {
+    res.push_back(numeric_convert<T>(u));
+  }
+  return res;
 }
 
 
