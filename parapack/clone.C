@@ -388,7 +388,7 @@ void clone_mpi::load() {
 
   int32_t version, np, rank;
   dp >> version >> np >> rank;
-  dp.set_version(version);
+  // dp.set_version(version); /* this line causes a segmentation fault */
 
   if (version < parapack_dump::initial_version || version > parapack_dump::current_version) {
     std::cerr << "The clone on dump is version " << version
