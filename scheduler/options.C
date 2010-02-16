@@ -47,14 +47,16 @@ NoJobfileOptions::NoJobfileOptions()
     max_cpus(1),
     time_limit(0.),
     use_mpi(false),
-    valid(true) // shall we really run?
+    valid(true), // shall we really run?
+    write_xml(false)
 {
 }
 
 NoJobfileOptions::NoJobfileOptions(int argc, char** argv) 
   : programname(std::string(argv[0])),
     use_mpi(false),
-    valid(true) // shall we really run?
+    valid(true), // shall we really run?
+    write_xml(false)
 {
   if (argc) {
   

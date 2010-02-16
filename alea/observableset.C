@@ -75,9 +75,9 @@ void ObservableSet::load(IDump& dump)
         std::set<std::string> skip;
         for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
             std::string obsname = hdf5_name_decode(*it);
-            if (ar.is_attribute(obsname + "/@sign")) {
+            if (ar.is_attribute(*it + "/@sign")) {
                 std::string signname;
-                ar >> make_pvp(obsname + "/@sign", signname);
+                ar >> make_pvp(*it + "/@sign", signname);
                 skip.insert(signname + " * " + obsname);
             }
         }
@@ -85,16 +85,16 @@ void ObservableSet::load(IDump& dump)
             std::string obsname = hdf5_name_decode(*it);
             if (skip.find(obsname) == skip.end()) {
                 if (!has(obsname)) {
-                    bool is_scalar = (ar.is_data(obsname + "/mean/value") 
-                        ? ar.is_scalar(obsname + "/mean/value")
-                        : (ar.is_data(obsname + "/timeseries/logbinning") ? ar.dimensions(obsname + "/timeseries/logbinning") == 1 : false)
+                    bool is_scalar = (ar.is_data(*it + "/mean/value") 
+                        ? ar.is_scalar(*it + "/mean/value")
+                        : (ar.is_data(*it + "/timeseries/logbinning") ? ar.dimensions(*it + "/timeseries/logbinning") == 1 : false)
                     );
-                    bool is_signed = ar.is_attribute(obsname + "/@sign");
+                    bool is_signed = ar.is_attribute(*it + "/@sign");
                     std::string signname;
                     if (is_signed)
-                        ar >> make_pvp(obsname + "/@sign", signname);
-                    bool is_simple_real = ar.is_data((is_signed ? (signname + " * " + obsname) : obsname) + "/sum");
-                    bool is_real = ar.is_data((is_signed ? (signname + " * " + obsname) : obsname) + "/timeseries/logbinning") && ar.is_data((is_signed ? (signname + " * " + obsname) : obsname) + "/timeseries/data");
+                        ar >> make_pvp(*it + "/@sign", signname);
+                    bool is_simple_real = ar.is_data((is_signed ? (signname + " * " + *it) : *it) + "/sum");
+                    bool is_real = ar.is_data((is_signed ? (signname + " * " + *it) : *it) + "/timeseries/logbinning") && ar.is_data((is_signed ? (signname + " * " + *it) : *it) + "/timeseries/data");
                     if (is_scalar) {
                         if (is_real) {
                             if (is_signed)
@@ -134,7 +134,7 @@ void ObservableSet::load(IDump& dump)
         for(base_type::const_iterator it = base_type::begin(); it != base_type::end(); ++it)
             if(it->second) {
                 std::string context = ar.get_context();
-                ar.set_context(ar.complete_path(it->second->name()));
+                ar.set_context(ar.complete_path(hdf5_name_encode(it->second->name())));
                 it->second->serialize(ar, write_all_clones);
                 ar.set_context(context);
             }

@@ -96,10 +96,11 @@ void convert_params(const std::string& inname)
 
 void convert_run(const std::string& inname)
 {
-  alps::IXDRFileDump dump(boost::filesystem::path(inname,boost::filesystem::native));
+  boost::filesystem::path xdrpath(inname,boost::filesystem::native);
+  boost::filesystem::path hdfpath(inname + ".h5",boost::filesystem::native);
   std::cout << "Converting run file " << inname << " to " <<  inname+".xml" <<std::endl;
   alps::scheduler::DummyMCRun run;
-  run.load_worker(dump);
+  run.load_from_file(xdrpath,hdfpath);
   run.write_xml(inname);
 }
 

@@ -13,7 +13,7 @@ namespace alps {
   {
     std::string r = s;
     char chars[] = {'&', '/'};
-    for (std::size_t i = 0; i < 2; ++i)
+    for (std::size_t i = 0; i < sizeof(chars); ++i)
         for (std::size_t pos = r.find_first_of(chars[i]); pos < std::string::npos; pos = r.find_first_of(chars[i], pos + 1))
             r = r.substr(0, pos) + "&#" + boost::lexical_cast<std::string, int>(chars[i]) + ";" + r.substr(pos + 1);
     return r;
