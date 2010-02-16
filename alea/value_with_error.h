@@ -28,6 +28,8 @@
 
 /* $Id: nobinning.h 3520 2009-12-11 16:49:53Z gamperl $ */
 
+#ifndef ALPS_VALUE_WITH_ERROR
+#define ALPS_VALUE_WITH_ERROR
 
 #include <alps/config.h>
 #include <alps/numeric/vector_functions.hpp>
@@ -872,11 +874,5 @@ namespace alps {
   }
 }
 
-
-
-
-
-
-
-
+#endif
 
