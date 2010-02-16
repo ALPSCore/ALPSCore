@@ -46,7 +46,7 @@ int main(int argc, char** argv)
   valA.resize(10);
   for (int i=0; i < 10; ++i)  {  valA[i] = i;  }
 
-  valarray2vector<double>(valA,vecA);
+  vecA = valarray2vector<double>(valA);
 
   std::cout << "Valarray -> Vector\n";
   std::cout << "------------------\n";
@@ -65,7 +65,7 @@ int main(int argc, char** argv)
 
   for (int i=0; i < 10; ++i)  {  vecB.push_back(10-i);  }
   
-  vector2valarray<double>(vecB,valB);
+  valB = vector2valarray<double>(vecB);
 
   std::cout << "Vector -> Valarray\n";
   std::cout << "------------------\n";
