@@ -177,8 +177,8 @@ void EigenvectorMeasurements<ValueType>::serialize(alps::hdf5::iarchive& ar)
   std::vector<std::string> list = ar.list_children(ar.get_context()+"/results");
   for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
     std::string name = hdf5_name_decode(*it);
-    std::string path = "results"+*it;
-    if (average_expressions.find(name) != average_expressions.end()) {
+    std::string path = "results/"+*it;
+    if (average_expressions.find(name) != average_expressions.end() || name == "Energy") {
       std::vector<double> vals;
       ar >> make_pvp(path+"/mean/value",vals);
       average_values[name] = numeric_convert<ValueType> (vals);
