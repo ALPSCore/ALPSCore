@@ -126,6 +126,17 @@ namespace alps {
 
     IMPLEMENT_ALPS_VECTOR_FUNCTION2(std,pow)
 
+    template <class T>
+    std::ostream& operator<< (std::ostream &out, std::vector<T> const & vec)
+    {
+      for (std::size_t index=0; index < vec.size(); ++index)
+      {
+        out << vec[index] << "\n";
+      }
+      return out;
+    }
+
+
     
   }
 }
