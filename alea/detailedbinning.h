@@ -328,11 +328,27 @@ inline void BasicDetailedBinning<T>::load(IDump& dump)
         ;
         values_.push_back(value);
         values2_.push_back(value2);
+        
+        
+        
+        
+        std::cout << __LINE__ << " " << binentries_ << " " << values_.size() << " " << values2_.size() << std::endl;
+        
+        
+        
+        
     }
     template <class T> inline void BasicDetailedBinning<T>::serialize(hdf5::oarchive & ar, bool write_all_clones) const {
         SimpleBinning<T>::serialize(ar, write_all_clones);
+        
+        
+        std::cout << __LINE__ << " " << binentries_ << " " << values_.size() << " " << values2_.size() << std::endl;
+        
+        
+        
+        
         if (values_.size() && values2_.size()) {
-            ar 
+            ar
                 << make_pvp("timeseries/partialbin", values_.back())
                 << make_pvp("timeseries/partialbin/@count", binentries_)
                 << make_pvp("timeseries/partialbin2", values2_.back())

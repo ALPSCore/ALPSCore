@@ -129,6 +129,7 @@ void ObservableSet::load(IDump& dump)
                 ar.set_context(context);
             }
         }
+        update_signs();
     }
     void ObservableSet::serialize(hdf5::oarchive & ar, bool write_all_clones) const {
         for(base_type::const_iterator it = base_type::begin(); it != base_type::end(); ++it)

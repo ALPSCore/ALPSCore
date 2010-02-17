@@ -323,7 +323,7 @@ using boost::uint_fast64_t;
 // anymore, but they can still be read
 //
 #ifdef ALPS_HAVE_HDF5
-#define ALPS_ONLY_HDF5
+//#  define ALPS_ONLY_HDF5
 #endif
 
 #endif // ALPS_CONFIG_H
