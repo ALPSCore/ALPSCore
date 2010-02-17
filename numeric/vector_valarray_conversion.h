@@ -13,37 +13,18 @@ namespace alps {
     std::vector<T> valarray2vector(std::valarray<T> const & from)
     {
       std::vector<T> to;
-      to.clear();
       to.reserve(from.size());
-      std::copy(&from[0],&from[from.size()],std::back_inserter(to));
+      std::copy(&from[0],&from[0]+from.size(),std::back_inserter(to));
       return to;
     }
 
     template<class T>
     std::valarray<T> vector2valarray(std::vector<T> const & from)
     {
-      std::valarray<T> to;
-      to.resize(from.size());
+      std::valarray<T> to(from.size());
       std::copy(from.begin(),from.end(),&to[0]);
       return to;
     }
-
-/*
-    template<class T>
-    void valarray2vector(std::valarray<T> const & from, std::vector<T> & to)
-    {
-      to.clear();
-      to.reserve(from.size());
-      std::copy(&from[0],&from[from.size()],std::back_inserter(to));
-    }  
-
-    template<class T>
-    void vector2valarray(std::vector<T> const & from, std::valarray<T> & to)
-    {
-      to.resize(from.size());
-      std::copy(from.begin(),from.end(),&to[0]);
-    }
-*/
 
   }
 }
