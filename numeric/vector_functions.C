@@ -194,8 +194,8 @@ int main(int argc, char** argv)
   // compound statements
   res = sqrt(vecA*vecA + vecB*vecB);
   std::cout << "\nsqrt(A^2 + B^2): \n";
-  std::copy(res.begin(),res.end(),std::ostream_iterator<double>(std::cout,"\n"));
-
+  //std::copy(res.begin(),res.end(),std::ostream_iterator<double>(std::cout,"\n"));
+  std::cout << res << std::endl;
 
   return 0;
 }
