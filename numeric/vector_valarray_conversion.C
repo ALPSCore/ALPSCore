@@ -30,6 +30,7 @@
 
 #include <alps/numeric/vector_valarray_conversion.h>
 #include <iostream>
+#include <iterator>
 #include <iomanip>
 #include <valarray>
 #include <vector>
