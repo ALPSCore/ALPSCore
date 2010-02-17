@@ -291,8 +291,8 @@ void AbstractSignedObservable<OBS,SIGN>::load(IDump& dump)
 
 #ifdef ALPS_HAVE_HDF5
     template <class OBS, class SIGN>
-    void AbstractSignedObservable<OBS,SIGN>::serialize(hdf5::iarchive & ar, bool write_all_clones) {
-        super_type::serialize(ar, write_all_clones);
+    void AbstractSignedObservable<OBS,SIGN>::serialize(hdf5::iarchive & ar, bool read_all_clones) {
+        super_type::serialize(ar, read_all_clones);
         ar
             >> make_pvp("@sign", sign_name_)
         ;

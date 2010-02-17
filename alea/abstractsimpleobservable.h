@@ -181,8 +181,8 @@ public:
   }
   
 #ifdef ALPS_HAVE_HDF5
-    void serialize(hdf5::iarchive & ar, bool write_all_clones = false) {
-        Observable::serialize(ar, write_all_clones);
+    void serialize(hdf5::iarchive & ar, bool read_all_clones = false) {
+        Observable::serialize(ar, read_all_clones);
         if (ar.is_data("labels"))
             ar >> make_pvp("labels", label_);
     }

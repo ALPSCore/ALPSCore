@@ -151,7 +151,7 @@ public:
 
 #ifdef ALPS_HAVE_HDF5
     void serialize(hdf5::iarchive &, bool = false);
-    void serialize(hdf5::oarchive &, bool = false) const;
+    void serialize(hdf5::oarchive &, bool = false, bool = false) const;
 #endif
 
   inline void set_bin_size(uint64_t);
@@ -972,7 +972,7 @@ void SimpleObservableData<T>::load(IDump& dump)
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-    template <typename T> void SimpleObservableData<T>::serialize(hdf5::iarchive & ar, bool write_all_clones) {
+    template <typename T> void SimpleObservableData<T>::serialize(hdf5::iarchive & ar, bool read_all_clones) {
         can_set_thermal_ = false;
         discardedmeas_ = 0;
         ar
@@ -1005,13 +1005,13 @@ void SimpleObservableData<T>::load(IDump& dump)
               ;
         }
     }
-    template <typename T> void SimpleObservableData<T>::serialize(hdf5::oarchive & ar, bool write_all_clones) const {
+    template <typename T> void SimpleObservableData<T>::serialize(hdf5::oarchive & ar, bool write_all_clones, bool is_valid) const {
         ar
             << make_pvp("count", count_)
             << make_pvp("@changed", changed_)
             << make_pvp("@nonlinearoperations", nonlinear_operations_)
         ;
-        if (valid_) {
+        if (is_valid || valid_) {
             ar
                 << make_pvp("mean/value", mean_)
                 << make_pvp("mean/error", error_)

@@ -312,8 +312,8 @@ inline void BasicDetailedBinning<T>::load(IDump& dump)
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-    template <class T> inline void BasicDetailedBinning<T>::serialize(hdf5::iarchive & ar, bool write_all_clones) {
-        SimpleBinning<T>::serialize(ar, write_all_clones);
+    template <class T> inline void BasicDetailedBinning<T>::serialize(hdf5::iarchive & ar, bool read_all_clones) {
+        SimpleBinning<T>::serialize(ar, read_all_clones);
         ar 
             >> make_pvp("timeseries/data", values_)
             >> make_pvp("timeseries/data/@minbinsize", minbinsize_)

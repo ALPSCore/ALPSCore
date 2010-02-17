@@ -70,7 +70,7 @@ void ObservableSet::load(IDump& dump)
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-    void ObservableSet::serialize(hdf5::iarchive & ar, bool write_all_clones) {
+    void ObservableSet::serialize(hdf5::iarchive & ar, bool read_all_clones) {
         std::vector<std::string> list = ar.list_children(ar.get_context());
         std::set<std::string> skip;
         for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
@@ -125,7 +125,7 @@ void ObservableSet::load(IDump& dump)
                 }
                 std::string context = ar.get_context();
                 ar.set_context(ar.complete_path(*it));
-                operator[](obsname).serialize(ar, write_all_clones);
+                operator[](obsname).serialize(ar, read_all_clones);
                 ar.set_context(context);
             }
         }

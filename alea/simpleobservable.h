@@ -187,8 +187,8 @@ inline void SimpleObservable<T,BINNING>::load(IDump& dump)
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-  template <class T,class BINNING> inline void SimpleObservable<T,BINNING>::serialize(hdf5::iarchive & ar, bool write_all_clones) {
-    AbstractSimpleObservable<T>::serialize(ar, write_all_clones);
+  template <class T,class BINNING> inline void SimpleObservable<T,BINNING>::serialize(hdf5::iarchive & ar, bool read_all_clones) {
+    AbstractSimpleObservable<T>::serialize(ar, read_all_clones);
     ar >> make_pvp("", b_);
   }
   template <class T,class BINNING> inline void SimpleObservable<T,BINNING>::serialize(hdf5::oarchive & ar, bool write_all_clones) const {

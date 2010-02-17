@@ -37,6 +37,7 @@
 #include <alps/alea/simpleobservable.h>
 #include <alps/alea/simpleobsdata.h>
 #include <alps/parser/parser.h>
+#include <alps/encode.hpp>
 #include <alps/math.hpp>
 #include <boost/config.hpp>
 #include <boost/functional.hpp>
@@ -402,10 +403,10 @@ inline void SimpleObservableEvaluator<T>::load(IDump& dump)
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::iarchive & ar, bool write_all_clones) {
+template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::iarchive & ar, bool read_all_clones) {
     valid_ = true;
     ar >> make_pvp("", all_);
-    if (write_all_clones)
+    if (read_all_clones)
         for(std::size_t i = 0; ar.is_data("../../clone/" + boost::lexical_cast<std::string>(i) + "/results/" + super_type::name()); ++i) {
             SimpleObservableData<T> obs;
             ar >> make_pvp("../../clone/" + boost::lexical_cast<std::string>(i) + "/results/" + super_type::name(), obs);
@@ -416,8 +417,12 @@ template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::
     collect();
     ar << make_pvp("", all_);
     if (write_all_clones && runs_.size() > 1)
-        for(std::size_t i = 0; i < runs_.size(); ++i)
-            ar << make_pvp("../../clone/" + boost::lexical_cast<std::string>(i) + "/results/" + super_type::name(), runs_[i]);
+        for(std::size_t i = 0; i < runs_.size(); ++i) {
+            std::string context = ar.get_context();
+            ar.set_context(ar.complete_path("../../clone/" + boost::lexical_cast<std::string>(i) + "/results/" + hdf5_name_encode(super_type::name())));
+            runs_[i].serialize(ar, write_all_clones, true);
+            ar.set_context(context);
+        }
 }
 #endif
 
