@@ -129,13 +129,9 @@ namespace alps {
     template <class T>
     std::ostream& operator<< (std::ostream &out, std::vector<T> const & vec)
     {
-      for (std::size_t index=0; index < vec.size(); ++index)
-      {
-        out << vec[index] << "\n";
-      }
+      std::copy(vec.begin(),vec.end(),std::ostream_iterator<T>(out,"\n"));
       return out;
     }
-
 
     
   }
