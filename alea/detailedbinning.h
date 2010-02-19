@@ -317,6 +317,7 @@ inline void BasicDetailedBinning<T>::load(IDump& dump)
         ar 
             >> make_pvp("timeseries/data", values_)
             >> make_pvp("timeseries/data/@minbinsize", minbinsize_)
+            >> make_pvp("timeseries/data/@binsize", binsize_)
             >> make_pvp("timeseries/data/@maxbinnum", maxbinnum_)
             >> make_pvp("timeseries/data2", values2_)
         ;
@@ -328,25 +329,9 @@ inline void BasicDetailedBinning<T>::load(IDump& dump)
         ;
         values_.push_back(value);
         values2_.push_back(value2);
-        
-        
-        
-        
-        std::cout << __LINE__ << " " << binentries_ << " " << values_.size() << " " << values2_.size() << std::endl;
-        
-        
-        
-        
     }
     template <class T> inline void BasicDetailedBinning<T>::serialize(hdf5::oarchive & ar, bool write_all_clones) const {
         SimpleBinning<T>::serialize(ar, write_all_clones);
-        
-        
-        std::cout << __LINE__ << " " << binentries_ << " " << values_.size() << " " << values2_.size() << std::endl;
-        
-        
-        
-        
         if (values_.size() && values2_.size()) {
             ar
                 << make_pvp("timeseries/partialbin", values_.back())
@@ -362,9 +347,13 @@ inline void BasicDetailedBinning<T>::load(IDump& dump)
                 << make_pvp("timeseries/data", values_)
                 << make_pvp("timeseries/data/@binningtype", "linear")
                 << make_pvp("timeseries/data/@minbinsize", minbinsize_)
+                << make_pvp("timeseries/data/@binsize", binsize_)
                 << make_pvp("timeseries/data/@maxbinnum", maxbinnum_)
                 << make_pvp("timeseries/data2", values2_)
                 << make_pvp("timeseries/data2/@binningtype", "linear")
+                << make_pvp("timeseries/data2/@minbinsize", minbinsize_)
+                << make_pvp("timeseries/data2/@binsize", binsize_)
+                << make_pvp("timeseries/data2/@maxbinnum", maxbinnum_)
             ;
             const_cast<BasicDetailedBinning<T> *>(this)->values_.push_back(value);
             const_cast<BasicDetailedBinning<T> *>(this)->values2_.push_back(value2);
