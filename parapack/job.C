@@ -365,7 +365,7 @@ void task::evaluate() {
   BOOST_FOREACH(cid_t cid, clones) {
     std::cout << (cid+1) << ' ' << std::flush;
     std::vector<ObservableSet> os;
-    for (int w = 0; w < clone_info_[cid].checkpoints().size(); ++w) {
+    for (unsigned int w = 0; w < clone_info_[cid].checkpoints().size(); ++w) {
       IXDRFileDump dp(complete(clone_info_[cid].checkpoints()[w], basedir_));
       std::vector<ObservableSet> o;
       if (!load_observable(dp, o)) {
@@ -409,9 +409,9 @@ void task::write_xml_archive(oxstream& os) const {
   if (obs_.size() == 1) {
     obs_[0].write_xml(os);
   } else {
-    for (int i = 0; i < obs_.size(); ++i) obs_[i].write_xml_with_id(os, i+1);
+    for (unsigned int i = 0; i < obs_.size(); ++i) obs_[i].write_xml_with_id(os, i+1);
   }
-  for (int i = 0; i < clone_info_.size(); ++i) if (clone_info_[i].clone_id() == i) os << clone_info_[i];
+  for (unsigned int i = 0; i < clone_info_.size(); ++i) if (clone_info_[i].clone_id() == i) os << clone_info_[i];
   os << alps::end_tag("SIMULATION");
 }
 

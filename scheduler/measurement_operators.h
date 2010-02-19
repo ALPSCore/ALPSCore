@@ -235,14 +235,14 @@ void EigenvectorMeasurements<ValueType>::write_xml_one_vector(
       out << start_tag("VECTOR_AVERAGE") <<  attribute("name",it->first);
       typename std::vector<value_type> ::const_iterator vit = it->second[j].begin();
       if (bond_operator_[it->first]) {
-        for (int nb=0; nb < bondlabel_.size() && vit != it->second[j].end() ; ++vit, ++nb)
+        for (unsigned nb=0; nb < bondlabel_.size() && vit != it->second[j].end() ; ++vit, ++nb)
           out << start_tag("SCALAR_AVERAGE")
               << attribute("indexvalue",bondlabel_[nb]) << no_linebreak
               << start_tag("MEAN") << no_linebreak <<  alps::real(*vit) << end_tag("MEAN")
               << end_tag("SCALAR_AVERAGE");
       }
       else {
-        for (int ns=0; ns < sitelabel_.size() && vit != it->second[j].end() ; ++vit, ++ns)
+        for (unsigned ns=0; ns < sitelabel_.size() && vit != it->second[j].end() ; ++vit, ++ns)
           out << start_tag("SCALAR_AVERAGE")
               << attribute("indexvalue",sitelabel_[ns]) << no_linebreak
               << start_tag("MEAN") << no_linebreak <<  alps::real(*vit) << end_tag("MEAN")
@@ -256,7 +256,7 @@ void EigenvectorMeasurements<ValueType>::write_xml_one_vector(
     if (j<it->second.size()) {
       out << start_tag("VECTOR_AVERAGE") <<  attribute("name",it->first);
       typename std::vector<value_type> ::const_iterator vit = it->second[j].begin();
-      for (int d=0;d<distlabel_.size() && vit != it->second[j].end();++d,++vit)
+      for (unsigned d=0;d<distlabel_.size() && vit != it->second[j].end();++d,++vit)
         out << start_tag("SCALAR_AVERAGE") 
             << attribute("indexvalue",distlabel_[d]) << no_linebreak
             << start_tag("MEAN") << no_linebreak <<  alps::real(*vit) << end_tag("MEAN")
@@ -269,7 +269,7 @@ void EigenvectorMeasurements<ValueType>::write_xml_one_vector(
     if (j<it->second.size()) {
       out << start_tag("VECTOR_AVERAGE") <<  attribute("name",it->first);
       typename std::vector<value_type> ::const_iterator vit = it->second[j].begin();
-      for (int d=0;d<momentumlabel_.size() && vit != it->second[j].end();++d,++vit)
+      for (unsigned d=0;d<momentumlabel_.size() && vit != it->second[j].end();++d,++vit)
         out << start_tag("SCALAR_AVERAGE") 
             << attribute("indexvalue",momentumlabel_[d]) << no_linebreak
             << start_tag("MEAN") << no_linebreak <<  alps::real(*vit) << end_tag("MEAN")
