@@ -287,10 +287,16 @@ namespace alps {
                     template<typename T> typename boost::enable_if<
                         typename boost::mpl::and_<is_writable<T>, typename boost::is_same<Tag, read>::type >
                     >::type serialize(std::string const & p, T & v) {
-                        if (p.find_last_of('@') != std::string::npos)
-                            get_attr(complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1), p.substr(p.find_last_of('@') + 1), v, typename is_writable<T>::category());
-                        else
-                            get_data(complete_path(p), v, typename is_writable<T>::category());
+                        if (p.find_last_of('@') != std::string::npos) {
+                            #ifdef ALPS_HDF5_READ_GREEDY
+                                if (is_attribute(p))
+                            #endif
+                                    get_attr(complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1), p.substr(p.find_last_of('@') + 1), v, typename is_writable<T>::category());
+                        } else
+                            #ifdef ALPS_HDF5_READ_GREEDY
+                                if (is_data(p))
+                            #endif
+                                    get_data(complete_path(p), v, typename is_writable<T>::category());
                     }
                     template<typename T> typename boost::disable_if<is_writable<T> >::type serialize(std::string const & p, T & v) {
                         std::string c = get_context();
@@ -337,7 +343,11 @@ namespace alps {
                         else if (is_data(complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1)))
                             parent_id = check_error(H5Dopen2(_file, complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1).c_str(), H5P_DEFAULT));
                         else
-                            throw std::runtime_error("unknown path: " + complete_path(p));
+                            #ifdef ALPS_HDF5_READ_GREEDY
+                                return false;
+                            #else
+                                throw std::runtime_error("unknown path: " + complete_path(p));
+                            #endif
                         bool exists = check_error(H5Aexists(parent_id, p.substr(p.find_last_of('@') + 1).c_str()));
                         if (is_group(complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1)))
                             check_group(parent_id);
