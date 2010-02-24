@@ -355,7 +355,7 @@ template <class T>
 inline void SimpleObservableEvaluator<T>::save(ODump& dump) const
 {
   AbstractSimpleObservable<T>::save(dump);
-//  dump << all_;
+  dump << all_;
 }
 
 template <class T>
@@ -363,7 +363,7 @@ inline void SimpleObservableEvaluator<T>::load(IDump& dump)
 {
   AbstractSimpleObservable<T>::load(dump);
 //  dump >> valid_ >> runs_ >> all_;
-//  dump >> all_;
+  dump >> all_;
 }
 #endif
 
