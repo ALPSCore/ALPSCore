@@ -897,7 +897,8 @@ void SimpleObservableData<T>::save(ODump& dump) const
   dump << count_ << mean_ << error_ << variance_ << tau_ << has_variance_
        << has_tau_ << can_set_thermal_
        << binsize_ << discardedmeas_ << discardedbins_ << valid_ << jack_valid_ << changed_
-       << nonlinear_operations_ << values_ << values2_ << jack_ << converged_errors_ << any_converged_errors_;
+       << nonlinear_operations_ << values_ << values2_ << jack_ << converged_errors_ 
+       << any_converged_errors_ << max_bin_number_;
 }
 template <class T>
 void SimpleObservableData<T>::load(IDump& dump)
@@ -912,15 +913,13 @@ void SimpleObservableData<T>::load(IDump& dump)
          >> has_tau_ >> can_set_thermal_
          >> binsize_ >> discardedmeas_ >> discardedbins_ >> valid_ >> jack_valid_ >> changed_
          >> nonlinear_operations_ >> values_ >> values2_ >> jack_;
-  }
-  else if(dump.version() >= 302 || dump.version() == 0 /* version is not set */){
+  } else if(dump.version() >= 302 || dump.version() == 0 /* version is not set */){
     dump >> count_ >> mean_ >> error_ >> variance_ >> tau_ >> has_variance_
          >> has_tau_ >> has_minmax_ >> thermalcount_ >> can_set_thermal_
          >> min_ >> max_
          >> binsize_ >> discardedmeas_ >> discardedbins_ >> valid_ >> jack_valid_ >> changed_
          >> nonlinear_operations_ >> values_ >> values2_ >> jack_;
-  }
-  else {
+  } else {
     // some data types have changed from 32 to 64 Bit between version 301 and 302
     uint32_t count_tmp, binsize_tmp;
     dump >> count_tmp >> mean_ >> error_ >> variance_ >> tau_ >> has_variance_
@@ -934,6 +933,8 @@ void SimpleObservableData<T>::load(IDump& dump)
    }
   if (dump.version() > 300 || dump.version() == 0 /* version is not set */)
     dump >> converged_errors_ >> any_converged_errors_;
+  if (dump.version() >= 400 || dump.version() == 0)
+    dump >> max_bin_number_;
 }
 
 #endif
@@ -974,6 +975,7 @@ void SimpleObservableData<T>::load(IDump& dump)
         }
     }
     template <typename T> void SimpleObservableData<T>::serialize(hdf5::oarchive & ar) const {
+        analyze();
         ar
             << make_pvp("count", count_)
             << make_pvp("@changed", changed_)

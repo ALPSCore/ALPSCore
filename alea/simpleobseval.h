@@ -362,7 +362,11 @@ template <class T>
 inline void SimpleObservableEvaluator<T>::load(IDump& dump)
 {
   AbstractSimpleObservable<T>::load(dump);
-//  dump >> valid_ >> runs_ >> all_;
+  if (dump.version() < 400 || dump.version() == 0) {
+    bool valid;
+    std::vector<SimpleObservableData<T> > runs;
+    dump >> valid >> runs;
+  }
   dump >> all_;
 }
 #endif
@@ -424,7 +428,7 @@ SimpleObservableEvaluator<T>::slice(const S& sl, const std::string& n) const
 {
   SimpleObservableEvaluator<typename obs_value_slice<T,S>::value_type>
      res(n.length()==0 ? super_type::name()+boost::lexical_cast<std::string,S>(sl) : n);
-
+  res << all_.slice(sl);
   return res;
 }
 
