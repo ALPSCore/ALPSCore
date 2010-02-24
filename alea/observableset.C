@@ -123,22 +123,19 @@ void ObservableSet::load(IDump& dump)
                             addObservable(RealVectorObsevaluator(obsname));
                     }
                 }
-                std::string context = ar.get_context();
-                ar.set_context(ar.complete_path(*it));
-                operator[](obsname).serialize(ar);
-                ar.set_context(context);
+                ar 
+                    >> make_pvp(obsname, operator[](*it))
+                ;
             }
         }
         update_signs();
     }
     void ObservableSet::serialize(hdf5::oarchive & ar) const {
         for(base_type::const_iterator it = base_type::begin(); it != base_type::end(); ++it)
-            if(it->second) {
-                std::string context = ar.get_context();
-                ar.set_context(ar.complete_path(hdf5_name_encode(it->second->name())));
-                it->second->serialize(ar);
-                ar.set_context(context);
-            }
+            if(it->second)
+                ar 
+                    << make_pvp(hdf5_name_encode(it->second->name()), it->second)
+                ;
     }
 #endif
 
