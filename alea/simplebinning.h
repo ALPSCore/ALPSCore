@@ -97,8 +97,8 @@ class SimpleBinning : public AbstractBinning<T>
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-  void serialize(hdf5::oarchive &, bool = false) const;
-  void serialize(hdf5::iarchive &, bool = false);
+  void serialize(hdf5::oarchive &) const;
+  void serialize(hdf5::iarchive &);
 #endif
 
   std::string evaluation_method() const { return "binning";}
@@ -690,7 +690,7 @@ inline void SimpleBinning<T>::load(IDump& dump)
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-    template <class T> inline void SimpleBinning<T>::serialize(hdf5::iarchive & ar, bool read_all_clones) {
+    template <class T> inline void SimpleBinning<T>::serialize(hdf5::iarchive & ar) {
         ar
             >> make_pvp("count", count_)
             >> make_pvp("timeseries/logbinning", sum_)
@@ -699,7 +699,7 @@ inline void SimpleBinning<T>::load(IDump& dump)
             >> make_pvp("timeseries/logbinning_counts", bin_entries_)
         ;
     }
-    template <class T> inline void SimpleBinning<T>::serialize(hdf5::oarchive & ar, bool write_all_clones) const {
+    template <class T> inline void SimpleBinning<T>::serialize(hdf5::oarchive & ar) const {
         if (sum_.size() && sum2_.size())
             ar
                 << make_pvp("sum", sum_[0])

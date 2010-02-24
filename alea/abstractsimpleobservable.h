@@ -122,6 +122,8 @@ public:
   //@name binning information
   /// the number of bins
   virtual count_type bin_number() const { return 0;}
+  /// the number of bins
+  virtual count_type max_bin_number() const { return 0;}
   /// the number of measurements per bin
   virtual count_type bin_size() const { return 0;}
   /// the value of a bin
@@ -181,13 +183,13 @@ public:
   }
   
 #ifdef ALPS_HAVE_HDF5
-    void serialize(hdf5::iarchive & ar, bool read_all_clones = false) {
-        Observable::serialize(ar, read_all_clones);
+    void serialize(hdf5::iarchive & ar) {
+        Observable::serialize(ar);
         if (ar.is_data("labels"))
             ar >> make_pvp("labels", label_);
     }
-    void serialize(hdf5::oarchive & ar, bool write_all_clones = false) const {
-        Observable::serialize(ar, write_all_clones);
+    void serialize(hdf5::oarchive & ar) const {
+        Observable::serialize(ar);
         if (count() > 0) {
             if (label_.size())
                 ar

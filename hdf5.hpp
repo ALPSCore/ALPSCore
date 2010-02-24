@@ -78,6 +78,7 @@ namespace alps {
             struct stl_container_of_unknown_tag {};
             struct stl_container_of_string_tag {};
             struct stl_container_of_scalar_tag {};
+            struct stl_container_of_complex_tag {};
             struct stl_container_of_container_of_scalar_tag {};
             struct stl_container_of_container_of_complex_tag {};
             struct stl_string_tag {};
@@ -100,6 +101,7 @@ namespace alps {
                 template<> struct is_writable<std::vector<T> > : boost::mpl::true_ { typedef stl_container_of_scalar_tag category; };                              \
                 template<> struct is_writable<boost::numeric::ublas::vector<T> > : boost::mpl::true_ { typedef stl_container_of_scalar_tag category; };            \
                 template<> struct is_writable<std::valarray<T> > : boost::mpl::true_ { typedef stl_container_of_scalar_tag category; };                            \
+                template<> struct is_writable<std::vector<std::complex<T> > > : boost::mpl::true_ { typedef stl_container_of_complex_tag category; };              \
                 template<> struct is_writable<std::vector<std::valarray<T> > > : boost::mpl::true_ { typedef stl_container_of_container_of_scalar_tag category; }; \
                 template<> struct is_writable<std::vector<std::vector<T> > > : boost::mpl::true_ { typedef stl_container_of_container_of_scalar_tag category; };
             #define HDF5_CONTAINER_OF_SCALAR(T)                                                                                                                    \
@@ -180,6 +182,10 @@ namespace alps {
                 char * time;
                 char * name;
             };
+            struct internal_complex_type { 
+               double r;
+               double i; 
+            };
             template <typename Tag> class archive: boost::noncopyable {
                 public:
                     struct log_type {
@@ -215,6 +221,9 @@ namespace alps {
                                 throw std::runtime_error("no valid hdf5 file " + file);
                             _file = H5Fopen(file.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
                         }
+                        _complex_id = H5Tcreate (H5T_COMPOUND, sizeof(internal_complex_type));
+                        check_error(H5Tinsert(_complex_id, "r", HOFFSET(internal_complex_type, r), H5T_NATIVE_DOUBLE));
+                        check_error(H5Tinsert(_complex_id, "i", HOFFSET(internal_complex_type, i), H5T_NATIVE_DOUBLE));
                         if (is_group("/revisions")) {
                             get_attr("/revisions", "last", _revision, scalar_tag());
                             _log_id = check_error(H5Topen2(_file, "log_type", H5P_DEFAULT));
@@ -602,6 +611,21 @@ namespace alps {
                             get_data(p, &(v[0]));
                         }
                     }
+                    template<typename T> void get_data(std::string const & p, T & v, stl_container_of_complex_tag) const {
+                        v.resize(0);
+                        if (!is_null(p)) {
+                            if (dimensions(p) != 1)
+                                throw std::runtime_error("the path " + p + " has not dimension 1");
+                            data_type data_id(H5Dopen2(_file, p.c_str(), H5P_DEFAULT));
+                            type_type type_id(H5Dget_type(data_id));
+                            if (!check_error(H5Tequal(_complex_id, type_type(H5Tcopy(type_id)))))
+                                throw std::runtime_error("invalid type");
+                            std::vector<internal_complex_type> w(extent(p)[0]);
+                            check_error(H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(w[0])));
+                            for (std::vector<internal_complex_type>::const_iterator it = w.begin(); it != w.end(); ++it)
+                                v.push_back(T::value_type(it->r, it->i));
+                        }
+                    }
                     template<typename T> void get_data(std::string const & p, T & v, stl_string_tag) const {
                         if (is_null(p))
                             v = "";
@@ -712,6 +736,9 @@ namespace alps {
                     template<typename T> void get_attr(std::string const &, std::string const & p, T &, stl_container_of_scalar_tag) const {
                         throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
                     }
+                    template<typename T> void get_attr(std::string const &, std::string const & p, T &, stl_container_of_complex_tag) const {
+                        throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
+                    }
                     template<typename T> void get_attr(std::string const &, std::string const & p, T &, stl_container_of_unknown_tag) const {
                         throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
                     }
@@ -785,6 +812,9 @@ namespace alps {
                             set_data(p, static_cast<typename T::value_type const *>(NULL), 0);
                         else
                             set_data(p, &(const_cast<T &>(v)[0]), v.size());
+                    }
+                    template<typename T> void set_data(std::string const & p, T const & v, stl_container_of_complex_tag) const {
+                        throw std::runtime_error("Not implemented");
                     }
                     template<typename T> void set_data(std::string const & p, T const & v, stl_string_tag) const {
                         if (!v.size())
@@ -869,6 +899,9 @@ namespace alps {
                     template<typename T> void set_attr(std::string const &, std::string const & p, T const &, stl_container_of_scalar_tag) const {
                         throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
                     }
+                    template<typename T> void set_attr(std::string const &, std::string const & p, T const &, stl_container_of_complex_tag) const {
+                        throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
+                    }
                     template<typename T> void set_attr(std::string const &, std::string const & p, T const &, stl_container_of_container_of_scalar_tag) const {
                         throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
                     }
@@ -922,6 +955,7 @@ namespace alps {
                     int _revision;
                     hid_t _state_id;
                     hid_t _log_id;
+                    hid_t _complex_id;
                     std::string _context;
                     std::string _filename;
                     file_type _file;

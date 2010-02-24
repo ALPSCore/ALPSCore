@@ -97,8 +97,8 @@ public:
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-    void serialize(hdf5::oarchive &, bool = false) const;
-    void serialize(hdf5::iarchive &, bool = false);
+    void serialize(hdf5::oarchive &) const;
+    void serialize(hdf5::iarchive &);
 #endif
 
 private:
@@ -312,8 +312,8 @@ inline void BasicDetailedBinning<T>::load(IDump& dump)
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-    template <class T> inline void BasicDetailedBinning<T>::serialize(hdf5::iarchive & ar, bool read_all_clones) {
-        SimpleBinning<T>::serialize(ar, read_all_clones);
+    template <class T> inline void BasicDetailedBinning<T>::serialize(hdf5::iarchive & ar) {
+        SimpleBinning<T>::serialize(ar);
         ar 
             >> make_pvp("timeseries/data", values_)
             >> make_pvp("timeseries/data/@minbinsize", minbinsize_)
@@ -330,8 +330,8 @@ inline void BasicDetailedBinning<T>::load(IDump& dump)
         values_.push_back(value);
         values2_.push_back(value2);
     }
-    template <class T> inline void BasicDetailedBinning<T>::serialize(hdf5::oarchive & ar, bool write_all_clones) const {
-        SimpleBinning<T>::serialize(ar, write_all_clones);
+    template <class T> inline void BasicDetailedBinning<T>::serialize(hdf5::oarchive & ar) const {
+        SimpleBinning<T>::serialize(ar);
         if (values_.size() && values2_.size()) {
             ar
                 << make_pvp("timeseries/partialbin", values_.back())

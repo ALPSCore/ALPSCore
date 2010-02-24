@@ -70,7 +70,7 @@ void ObservableSet::load(IDump& dump)
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-    void ObservableSet::serialize(hdf5::iarchive & ar, bool read_all_clones) {
+    void ObservableSet::serialize(hdf5::iarchive & ar) {
         std::vector<std::string> list = ar.list_children(ar.get_context());
         std::set<std::string> skip;
         for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
@@ -125,18 +125,18 @@ void ObservableSet::load(IDump& dump)
                 }
                 std::string context = ar.get_context();
                 ar.set_context(ar.complete_path(*it));
-                operator[](obsname).serialize(ar, read_all_clones);
+                operator[](obsname).serialize(ar);
                 ar.set_context(context);
             }
         }
         update_signs();
     }
-    void ObservableSet::serialize(hdf5::oarchive & ar, bool write_all_clones) const {
+    void ObservableSet::serialize(hdf5::oarchive & ar) const {
         for(base_type::const_iterator it = base_type::begin(); it != base_type::end(); ++it)
             if(it->second) {
                 std::string context = ar.get_context();
                 ar.set_context(ar.complete_path(hdf5_name_encode(it->second->name())));
-                it->second->serialize(ar, write_all_clones);
+                it->second->serialize(ar);
                 ar.set_context(context);
             }
     }
@@ -460,7 +460,6 @@ void RealObsevaluatorXMLHandler::start_top(const std::string& /* name */,
     index_ = attributes["indexvalue"];
   else
     index_ = "";
-  obs_.valid_ = true;
   obs_.automatic_naming_ = false;
 }
 
@@ -491,7 +490,6 @@ void RealVectorObsevaluatorXMLHandler::start_top(const std::string& /* name */,
   const XMLAttributes& attributes, xml::tag_type /* type */) {
   obs_.reset();
   obs_.rename(attributes["name"]);
-  obs_.valid_ = true;
   obs_.automatic_naming_ = false;
 
   pos_ = 0;

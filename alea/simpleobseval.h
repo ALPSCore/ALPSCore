@@ -138,37 +138,31 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
   }
   ALPS_DUMMY_VOID reset(bool = false);
 
-  bool has_tau() const { collect(); return all_.has_tau(); }
-  bool has_variance() const { collect(); return all_.has_variance(); }
+  bool has_tau() const { return all_.has_tau(); }
+  bool has_variance() const { return all_.has_variance(); }
 
-  result_type value() const { collect(); return all_.mean(); }
+  result_type value() const { return all_.mean(); }
   result_type mean() const { return value(); }
-  result_type variance() const { collect(); return all_.variance(); }
-  result_type error() const {collect(); return all_.error(); }
-  convergence_type  converged_errors() const { collect(); return all_.converged_errors(); }
-  time_type tau() const { collect(); return all_.tau(); };
+  result_type variance() const { return all_.variance(); }
+  result_type error() const {return all_.error(); }
+  convergence_type  converged_errors() const { return all_.converged_errors(); }
+  time_type tau() const { return all_.tau(); };
 
   covariance_type covariance(SimpleObservableEvaluator& obs2) const {
-    collect();
-    obs2.collect();
     return all_.covariance(obs2.all_);
   }
 
-  count_type bin_number() const { collect(); return all_.bin_number(); }
-  const value_type& bin_value(count_type i) const { collect(); return all_.bin_value(i); }
-  count_type bin_number2() const { collect(); return all_.bin_number2(); }
-  const value_type& bin_value2(count_type i) const { collect(); return all_.bin_value2(i); }
-  count_type bin_size() const { collect(); return all_.bin_size(); }
-  count_type count() const { collect(); return all_.count(); }
+  count_type bin_number() const { return all_.bin_number(); }
+  const value_type& bin_value(count_type i) const { return all_.bin_value(i); }
+  count_type bin_number2() const { return all_.bin_number2(); }
+  const value_type& bin_value2(count_type i) const { return all_.bin_value2(i); }
+  count_type bin_size() const { return all_.bin_size(); }
+  count_type count() const { return all_.count(); }
 
   Observable* clone() const { return new SimpleObservableEvaluator<T>(*this); }
 
-  void set_thermalization(uint32_t todiscard);
-  uint32_t get_thermalization() const { collect(); return all_.get_thermalization(); }
-  bool can_set_thermalization() const { collect(); return all_.can_set_thermalization(); }
-
-  uint32_t number_of_runs() const;
-  Observable* get_run(uint32_t) const;
+  uint32_t get_thermalization() const { return all_.get_thermalization(); }
+  bool can_set_thermalization() const { return all_.can_set_thermalization(); }
 
   ALPS_DUMMY_VOID compact();
 
@@ -227,8 +221,8 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-    inline void serialize(hdf5::iarchive &, bool = false);
-    inline void serialize(hdf5::oarchive &, bool = false) const;
+    inline void serialize(hdf5::iarchive &);
+    inline void serialize(hdf5::oarchive &) const;
 #endif
 
   template<class X> void add_to(const X& x);
@@ -247,13 +241,9 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
  private:
   typedef typename std::vector<SimpleObservableData<T> >::iterator iterator;
   typedef typename std::vector<SimpleObservableData<T> >::const_iterator const_iterator;
-  void collect() const;
 
-
-  mutable bool valid_;
   bool automatic_naming_; // true if explicit name was not given through
                           // constructor or rename() member function
-  std::vector<SimpleObservableData<T> > runs_;
   mutable SimpleObservableData<T> all_;
 };
 
@@ -269,10 +259,7 @@ typedef SimpleObservableEvaluator<std::valarray<double> > RealVectorObsevaluator
 template <class T> template <class OPV /* , class OPR */>
 inline const SimpleObservableEvaluator<T>& SimpleObservableEvaluator<T>::transform(OPV opv, /* OPR opr, */ const std::string& n)
 {
-  collect();
   all_.transform(opv /* ,opr */);
-  for (iterator r = runs_.begin(); r != runs_.end(); ++r)
-    if (r->count()) r->transform(opv /* ,opr */);
   if (automatic_naming_) Observable::rename(n);
   return (*this);
 }
@@ -280,21 +267,15 @@ inline const SimpleObservableEvaluator<T>& SimpleObservableEvaluator<T>::transfo
 template <class T>
 inline SimpleObservableEvaluator<T> SimpleObservableEvaluator<T>::operator-() const
 {
-  collect();
   SimpleObservableEvaluator<T> tmp(*this);
   if (automatic_naming_) tmp.rename("-(" + super_type::name() + ")", true);
   tmp.all_.negate();
-  for (iterator r = tmp.runs_.begin(); r != tmp.runs_.end(); ++r)
-    if (r->count()) r->negate();
   return tmp;
 }
 
 template <class T> template <class X>
 inline const SimpleObservableEvaluator<T>& SimpleObservableEvaluator<T>::operator+=(const X& x)
 {
-  collect();
-  for (iterator r = runs_.begin(); r != runs_.end(); ++r)
-    if (r->count()) *r += x;
   all_+=x;
   if (automatic_naming_)
     Observable::rename(super_type::name()+" + " + ObservableNamingHelper::generate(x));
@@ -313,9 +294,6 @@ inline void SimpleObservableEvaluator<T>::add_to(const X& x)
 template <class T> template <class X>
 inline void SimpleObservableEvaluator<T>::subtract_from(const X& x)
 {
-  collect();
-  for (iterator r = runs_.begin(); r != runs_.end(); ++r)
-    if (r->count()) r->subtract_from(x);
   all_.subtract_from(x);
   if (automatic_naming_)
     Observable::rename(ObservableNamingHelper::generate(x) + " - " + super_type::name());
@@ -324,9 +302,6 @@ inline void SimpleObservableEvaluator<T>::subtract_from(const X& x)
 template <class T> template <class X>
 inline const SimpleObservableEvaluator<T>& SimpleObservableEvaluator<T>::operator-=(const X& x)
 {
-  collect();
-  for (iterator r = runs_.begin(); r != runs_.end(); ++r)
-    if (r->count()) *r -= x;
   all_-=x;
   if (automatic_naming_)
     Observable::rename(super_type::name()+" - " + ObservableNamingHelper::generate(x));
@@ -345,10 +320,6 @@ inline void SimpleObservableEvaluator<T>::multiply_to(const X& x)
 template <class T> template <class X>
 inline const SimpleObservableEvaluator<T>& SimpleObservableEvaluator<T>::operator*=(const X& x)
 {
-  collect();
-  for (iterator r = runs_.begin(); r != runs_.end(); ++r) {
-    if (r->count()) *r *= x;
-  }
   all_*=x;
   if (automatic_naming_)
     Observable::rename("("+super_type::name()+") * " + ObservableNamingHelper::generate(x));
@@ -358,9 +329,6 @@ inline const SimpleObservableEvaluator<T>& SimpleObservableEvaluator<T>::operato
 template <class T> template <class X>
 inline const SimpleObservableEvaluator<T>& SimpleObservableEvaluator<T>::operator/=(const X& x)
 {
-  collect();
-  for (iterator r = runs_.begin(); r != runs_.end(); ++r)
-    if (r->count()) *r /= x;
   all_/=x;
   if (automatic_naming_)
     Observable::rename("("+super_type::name()+") / " + ObservableNamingHelper::generate(x));
@@ -370,9 +338,6 @@ inline const SimpleObservableEvaluator<T>& SimpleObservableEvaluator<T>::operato
 template <class T> template <class X>
 inline void SimpleObservableEvaluator<T>::divide(const X& x)
 {
-  collect();
-  for (iterator r = runs_.begin(); r != runs_.end(); ++r)
-    if (r->count()) r->divide(x);
   all_.divide(x);
   if (automatic_naming_)
     Observable::rename(ObservableNamingHelper::generate(x) + " / (" + super_type::name() + ")");
@@ -383,7 +348,6 @@ inline void SimpleObservableEvaluator<T>::divide(const X& x)
 template <class T>
 inline void SimpleObservableEvaluator<T>::extract_timeseries(ODump& dump) const
 {
-  collect();
   all_.extract_timeseries(dump);
 }
 
@@ -391,56 +355,31 @@ template <class T>
 inline void SimpleObservableEvaluator<T>::save(ODump& dump) const
 {
   AbstractSimpleObservable<T>::save(dump);
-  dump << valid_ << runs_ << all_;
+//  dump << all_;
 }
 
 template <class T>
 inline void SimpleObservableEvaluator<T>::load(IDump& dump)
 {
   AbstractSimpleObservable<T>::load(dump);
-  dump >> valid_ >> runs_ >> all_;
+//  dump >> valid_ >> runs_ >> all_;
+//  dump >> all_;
 }
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::iarchive & ar, bool read_all_clones) {
-    valid_ = true;
+template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::iarchive & ar) {
     ar >> make_pvp("", all_);
-    if (read_all_clones)
-        for(std::size_t i = 0; ar.is_data("../../clone/" + boost::lexical_cast<std::string>(i) + "/results/" + super_type::name()); ++i) {
-            SimpleObservableData<T> obs;
-            ar >> make_pvp("../../clone/" + boost::lexical_cast<std::string>(i) + "/results/" + super_type::name(), obs);
-            runs_.push_back(obs);
-        }
 }
-template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::oarchive & ar, bool write_all_clones) const {
-    collect();
+template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::oarchive & ar) const {
     ar << make_pvp("", all_);
-    if (write_all_clones && runs_.size() > 1)
-        for(std::size_t i = 0; i < runs_.size(); ++i) {
-            std::string context = ar.get_context();
-            ar.set_context(ar.complete_path("../../clone/" + boost::lexical_cast<std::string>(i) + "/results/" + hdf5_name_encode(super_type::name())));
-            runs_[i].serialize(ar, write_all_clones, true);
-            ar.set_context(context);
-        }
 }
 #endif
 
 template <class T>
-inline void SimpleObservableEvaluator<T>::collect() const
-{
-  if (!valid_) {
-    all_.collect_from(runs_);
-    valid_ = true;
-  }
-}
-
-template <class T>
 inline const SimpleObservableEvaluator<T>&  SimpleObservableEvaluator<T>::operator=(const SimpleObservableEvaluator<T>& eval)
 {
-  runs_ = eval.runs_;
   all_ = eval.all_;
-  valid_ = eval.valid_;
   if (automatic_naming_ && super_type::name() == "") Observable::rename(eval.name());
   return *this;
 }
@@ -457,18 +396,10 @@ inline const SimpleObservableEvaluator<T>&  SimpleObservableEvaluator<T>::operat
 }
 
 template <class T>
-inline void SimpleObservableEvaluator<T>::set_thermalization(uint32_t todiscard)
-{
-  std::for_each(runs_.begin(), runs_.end(), boost::bind2nd(boost::mem_fun_ref(&SimpleObservableData<T>::set_thermalization), todiscard));
-  valid_ = false;
-}
-
-template <class T>
 inline
 void SimpleObservableEvaluator<T>::operator<<(const SimpleObservableData<T>& b)
 {
-  runs_.push_back(b);
-  valid_ = false;
+  all_ << b;
 }
 
 template <class T>
@@ -482,14 +413,8 @@ inline void SimpleObservableEvaluator<T>::merge(const Observable& o)
     const SimpleObservableEvaluator<T>& eval =
       dynamic_cast<const SimpleObservableEvaluator<T>&>(o);
     if (automatic_naming_ && !eval.automatic_naming_) automatic_naming_ = false;
-    for (unsigned int i = 0; i < eval.runs_.size(); ++i) (*this) << eval.runs_[i];
+    (*this) << eval.all_;
   }
-}
-
-template <class T>
-inline uint32_t SimpleObservableEvaluator<T>::number_of_runs() const
-{
-  return runs_.size();
 }
 
 template <class T>
@@ -500,9 +425,6 @@ SimpleObservableEvaluator<T>::slice(const S& sl, const std::string& n) const
   SimpleObservableEvaluator<typename obs_value_slice<T,S>::value_type>
      res(n.length()==0 ? super_type::name()+boost::lexical_cast<std::string,S>(sl) : n);
 
-  for (typename std::vector<SimpleObservableData<T> >::const_iterator it=runs_.begin();
-       it !=runs_.end();++it)
-    res << it->slice(sl);
   return res;
 }
 
@@ -514,25 +436,12 @@ SimpleObservableEvaluator<T>::slice(const S& sl) const
   SimpleObservableEvaluator<typename obs_value_slice<T,S>::value_type>
      res(super_type::name()+boost::lexical_cast<std::string,S>(sl));
 
-  for (typename std::vector<SimpleObservableData<T> >::const_iterator it=runs_.begin();
-       it !=runs_.end();++it)
-    res << it->slice(sl);
   return res;
 }
-
-template <class T>
-inline Observable* SimpleObservableEvaluator<T>::get_run(uint32_t i) const
-{
-  SimpleObservableEvaluator<T>* res = new SimpleObservableEvaluator<T>(super_type::name());
-  (*res) << runs_[i];
-  return res;
-}
-
 
 template <class T>
 inline ALPS_DUMMY_VOID SimpleObservableEvaluator<T>::reset(bool)
 {
-  runs_.clear();
   all_ = SimpleObservableData<T>();
   ALPS_RETURN_VOID
 }
@@ -540,8 +449,6 @@ inline ALPS_DUMMY_VOID SimpleObservableEvaluator<T>::reset(bool)
 template <class T>
 inline ALPS_DUMMY_VOID SimpleObservableEvaluator<T>::compact()
 {
-  collect();
-  std::for_each(runs_.begin(), runs_.end(), boost::mem_fun_ref(&SimpleObservableData<T>::compact));
   all_.compact();
   ALPS_RETURN_VOID
 }
@@ -625,31 +532,27 @@ inline bool SimpleObservableEvaluator<T>::can_merge(const Observable& obs) const
 
 template <class T>
 inline SimpleObservableEvaluator<T>::SimpleObservableEvaluator(const std::string& n)
-  : AbstractSimpleObservable<T>(n), valid_(false), automatic_naming_(n=="") {}
+  : AbstractSimpleObservable<T>(n), automatic_naming_(n=="") {}
 
 template <class T>
 inline SimpleObservableEvaluator<T>::SimpleObservableEvaluator(const char* n)
-  : AbstractSimpleObservable<T>(std::string(n)), valid_(false),
-    automatic_naming_(false) {
+  : AbstractSimpleObservable<T>(std::string(n)), automatic_naming_(false) {
 }
 
 template <class T>
 inline SimpleObservableEvaluator<T>::SimpleObservableEvaluator(const SimpleObservableEvaluator& eval)
-  : AbstractSimpleObservable<T>(eval), valid_(eval.valid_),
-    automatic_naming_(true), runs_(eval.runs_), all_(eval.all_) {}
+  : AbstractSimpleObservable<T>(eval), automatic_naming_(true), all_(eval.all_) {}
 
 template <class T>
 inline SimpleObservableEvaluator<T>::SimpleObservableEvaluator(const Observable& b, const std::string& n)
-  : AbstractSimpleObservable<T>(n,dynamic_cast<const AbstractSimpleObservable<T>&>(b).super_type::label()), valid_(false),
-    automatic_naming_(n=="")
+  : AbstractSimpleObservable<T>(n,dynamic_cast<const AbstractSimpleObservable<T>&>(b).super_type::label()), automatic_naming_(n=="")
 {
   merge(b);
 }
 
 template <class T>
 inline SimpleObservableEvaluator<T>::SimpleObservableEvaluator(const Observable& b)
-  : AbstractSimpleObservable<T>(dynamic_cast<const AbstractSimpleObservable<T>&>(b)), valid_(false),
-    automatic_naming_(true)
+  : AbstractSimpleObservable<T>(dynamic_cast<const AbstractSimpleObservable<T>&>(b)), automatic_naming_(true)
 {
   if (dynamic_cast<const AbstractSimpleObservable<T>*>(&b)==0)
     merge(b);
@@ -660,7 +563,6 @@ inline SimpleObservableEvaluator<T>::SimpleObservableEvaluator(const Observable&
 template <class T>
 inline SimpleObservableEvaluator<T>::SimpleObservableEvaluator(const std::string& n, std::istream& infile, const XMLTag& intag)
   : AbstractSimpleObservable<T>(n),
-    valid_(true),
     automatic_naming_(false),
     all_(infile,intag,super_type::label_)
 {}
@@ -668,13 +570,7 @@ inline SimpleObservableEvaluator<T>::SimpleObservableEvaluator(const std::string
 template <class T>
 inline const SimpleObservableEvaluator<T>& SimpleObservableEvaluator<T>::operator+=(const SimpleObservableEvaluator<T>& rh)
 {
-  if(runs_.size() != rh.runs_.size())
-    boost::throw_exception(std::runtime_error("unequal number of runs in addition of observables"));
-  collect();
-  rh.collect();
   all_ += rh.all_;
-  for (int i = 0; i < runs_.size(); ++i)
-    if (runs_[i].count() || rh.runs_[i].count()) runs_[i] += rh.runs_[i];
   if (automatic_naming_) Observable::rename(super_type::name() + " + " + rh.name());
   return (*this);
 }
@@ -683,13 +579,7 @@ inline const SimpleObservableEvaluator<T>& SimpleObservableEvaluator<T>::operato
 template <class T>
 inline const SimpleObservableEvaluator<T>& SimpleObservableEvaluator<T>::operator-=(const SimpleObservableEvaluator<T>& rh)
 {
-  if(runs_.size() != rh.runs_.size())
-    boost::throw_exception(std::runtime_error("unequal number of runs in subtraction of observables"));
-  collect();
-  rh.collect();
   all_ -= rh.all_;
-  for (int i = 0; i < runs_.size(); ++i)
-    if (runs_[i].count() || rh.runs_[i].count()) runs_[i] -= rh.runs_[i];
   if (automatic_naming_) Observable::rename(super_type::name() + " - " + rh.name());
   return (*this);
 }
@@ -697,13 +587,7 @@ inline const SimpleObservableEvaluator<T>& SimpleObservableEvaluator<T>::operato
 template <class T> template <class X>
 inline const SimpleObservableEvaluator<T>& SimpleObservableEvaluator<T>::operator*=(const SimpleObservableEvaluator<X>& rh)
 {
-  if(runs_.size() != rh.runs_.size())
-    boost::throw_exception(std::runtime_error("unequal number of runs in multiplication of observables"));
-  collect();
-  rh.collect();
   all_ *= rh.all_;
-  for (unsigned int i = 0; i < runs_.size(); ++i)
-    if (runs_[i].count() || rh.runs_[i].count()) runs_[i] *= rh.runs_[i];
   if (automatic_naming_)
     Observable::rename("(" + super_type::name() + ") * (" + rh.name() + ")");
   return (*this);
@@ -712,13 +596,7 @@ inline const SimpleObservableEvaluator<T>& SimpleObservableEvaluator<T>::operato
 template <class T> template <class X>
 inline const SimpleObservableEvaluator<T>& SimpleObservableEvaluator<T>::operator/=(const SimpleObservableEvaluator<X>& rh)
 {
-  if(runs_.size() != rh.runs_.size())
-    boost::throw_exception(std::runtime_error("unequal number of runs in division of observables"));
-  collect();
-  rh.collect();
   all_ /= rh.all_;
-  for (unsigned int i = 0; i < runs_.size(); ++i)
-    if (runs_[i].count() || rh.runs_[i].count()) runs_[i] /= rh.runs_[i];
   if (automatic_naming_)
     Observable::rename("(" + super_type::name() + ") / (" + rh.name() + ")");
   return (*this);

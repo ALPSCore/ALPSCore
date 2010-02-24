@@ -150,15 +150,14 @@ public:
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-    void serialize(hdf5::iarchive &, bool = false);
-    void serialize(hdf5::oarchive &, bool = false, bool = false) const;
+    void serialize(hdf5::iarchive &);
+    void serialize(hdf5::oarchive &) const;
 #endif
 
   inline void set_bin_size(uint64_t);
   inline void set_bin_number(std::size_t);
 
-  // collect information from many data objects
-  void collect_from(const std::vector<SimpleObservableData<T> >& runs);
+  SimpleObservableData<T> &  operator<<(const SimpleObservableData<T>& b);
 
   // unary operation: neagtion
   void negate();
@@ -202,6 +201,7 @@ private:
   mutable bool can_set_thermal_;
 
   mutable uint64_t binsize_;
+  mutable uint64_t max_bin_number_;
   mutable uint32_t discardedmeas_;
   mutable uint32_t discardedbins_;
 
@@ -230,6 +230,7 @@ SimpleObservableData<T>::SimpleObservableData()
    has_variance_(false),
    has_tau_(false),
    binsize_(0),
+   max_bin_number_(0),
    discardedmeas_(0),
    discardedbins_(0),
    changed_(false),
@@ -256,6 +257,7 @@ SimpleObservableData<T>::SimpleObservableData(const SimpleObservableData<U>& x, 
    has_tau_(x.has_tau_),
    can_set_thermal_(x.can_set_thermal_),
    binsize_(x.binsize_),
+   max_bin_number_(x.max_bin_number_),
    discardedmeas_(x.discardedmeas_),
    discardedbins_(x.discardedbins_),
    changed_(x.changed_),
@@ -295,6 +297,7 @@ SimpleObservableData<T> const& SimpleObservableData<T>::operator=(const SimpleOb
    has_tau_=x.has_tau_;
    can_set_thermal_=x.can_set_thermal_;
    binsize_=x.binsize_;
+   max_bin_number_=x.max_bin_number_;
    discardedmeas_=x.discardedmeas_;
    discardedbins_=x.discardedbins_;
    changed_=x.changed_;
@@ -323,6 +326,7 @@ SimpleObservableData<T>::SimpleObservableData(const AbstractSimpleObservable<T>&
    has_tau_(obs.has_tau()),
    can_set_thermal_(true),
    binsize_(obs.bin_size()),
+   max_bin_number_(obs.max_bin_number()),
    discardedmeas_(0),
    discardedbins_(0),
    changed_(false),
@@ -352,7 +356,7 @@ SimpleObservableData<T>::SimpleObservableData(const AbstractSimpleObservable<T>&
     obs_value_traits<convergence_type>::copy(converged_errors_, obs.converged_errors());
     obs_value_traits<convergence_type>::copy(any_converged_errors_, obs.converged_errors());
 
-    if (bin_size() != 1 && bin_number() > 128) set_bin_number(128);
+    if (bin_size() != 1 && bin_number() > max_bin_number_) set_bin_number(max_bin_number_);
   }
 }
 
@@ -363,6 +367,7 @@ SimpleObservableData<T>::SimpleObservableData(std::istream& infile, const XMLTag
     has_tau_(false),
     can_set_thermal_(false),
     binsize_(0),
+    max_bin_number_(0),
     discardedmeas_(0),
     discardedbins_(0),
     changed_(false),
@@ -779,141 +784,103 @@ void SimpleObservableData<T>::divide(const X& x)
   }
 }
 
-template <class T>
-void SimpleObservableData<T>::collect_from(const std::vector<SimpleObservableData<T> >& runs)
-{
-  bool got_data = false;
+template <class T> SimpleObservableData<T> & SimpleObservableData<T>::operator<<(const SimpleObservableData<T>& run) {
+  if (run.count()) {
+    if (!count()) {
+      // initialize
+      valid_ = false;
+      jack_valid_ = true;
+      nonlinear_operations_ = false;
+      discardedbins_ = 0;
+      binsize_ = run.bin_size();
+      max_bin_number_ = run.max_bin_number_;
+      has_variance_ = run.has_variance_;
+      has_tau_ = run.has_tau_;
+      can_set_thermal_ = run.can_set_thermal_;
+      nonlinear_operations_ = run.nonlinear_operations_;
+      changed_ = run.changed_;
+      obs_value_traits<result_type>::copy(mean_,run.mean_);
+      obs_value_traits<result_type>::copy(error_,run.error_);
+      obs_value_traits<convergence_type>::copy(converged_errors_,run.converged_errors_);
+      obs_value_traits<convergence_type>::copy(any_converged_errors_,run.any_converged_errors_);
+      if(has_variance_)
+        obs_value_traits<result_type>::copy(variance_,run.variance_);
+      if(has_tau_)
+        obs_value_traits<time_type>::copy(tau_,run.tau_);
+      discardedmeas_ = run.discardedmeas_;
+      count_ = run.count();
 
-  count_ = 0;
+      run.fill_jack();
+      values_ = run.values_;
+      values2_ = run.values2_;
+      jack_ = run.jack_;
+    } else {
+      // add
+      jack_valid_ = false;
+      
+      has_variance_ = has_variance_ && run.has_variance_;
+      has_tau_ = has_tau_ && run.has_tau_;
+      can_set_thermal_ = can_set_thermal_ && run.can_set_thermal_;
+      nonlinear_operations_ = nonlinear_operations_ || run.nonlinear_operations_;
+      changed_ = changed_ && run.changed_;
+      obs_value_traits<convergence_type>::check_for_max(converged_errors_, run.converged_errors_);
+      obs_value_traits<convergence_type>::check_for_min(any_converged_errors_, run.any_converged_errors_);
 
-  changed_ = false;
-  valid_ = false;
-  jack_valid_ = false;
-  nonlinear_operations_ = false;
-
-  discardedbins_ = 0;
-  discardedmeas_ = 0;
-  has_variance_ = false;
-  has_tau_ = false;
-
-  values_.clear();
-  values2_.clear();
-  jack_.clear();
-
-  // find smallest and largest bin sizes
-  uint64_t minsize = std::numeric_limits<uint64_t>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();
-  uint64_t maxsize = 0;
-  for (typename std::vector<SimpleObservableData<T> >::const_iterator
-         r = runs.begin(); r != runs.end(); ++r) {
-    if (r->count()) {
-      if (r->bin_size() < minsize) minsize = r->bin_size();
-      if (r->bin_size() > maxsize) maxsize = r->bin_size();
-    }
-  }
-
-  binsize_ = maxsize;
-
-  for (typename std::vector<SimpleObservableData<T> >::const_iterator
-         r = runs.begin(); r != runs.end(); ++r) {
-    if (r->count()) {
-      if (!got_data) {
-        // initialize
-        jack_valid_ = true;
-
-        has_variance_ = r->has_variance_;
-        has_tau_ = r->has_tau_;
-        can_set_thermal_ = r->can_set_thermal_;
-        nonlinear_operations_ = r->nonlinear_operations_;
-        changed_ = r->changed_;
-        obs_value_traits<result_type>::copy(mean_,r->mean_);
-        obs_value_traits<result_type>::copy(error_,r->error_);
-        obs_value_traits<convergence_type>::copy(converged_errors_,r->converged_errors_);
-        obs_value_traits<convergence_type>::copy(any_converged_errors_,r->any_converged_errors_);
-        if(has_variance_)
-          obs_value_traits<result_type>::copy(variance_,r->variance_);
-        if(has_tau_)
-          obs_value_traits<time_type>::copy(tau_,r->tau_);
-        discardedmeas_ = r->discardedmeas_;
-        count_ = r->count();
-
-        if (r->bin_size() == maxsize) {
-          r->fill_jack();
-          values_ = r->values_;
-          values2_ = r->values2_;
-          jack_ = r->jack_;
-        } else {
-          SimpleObservableData<T> tmp(*r);
-          tmp.set_bin_size(maxsize);
-          tmp.fill_jack();
-          values_ = tmp.values_;
-          values2_ = tmp.values2_;
-          jack_ = tmp.jack_;
-        }
-        got_data=true;
-      } else {
-        // add
-        jack_valid_ = false;
-
-        has_variance_ = has_variance_ && r->has_variance_;
-        has_tau_ = has_tau_ && r->has_tau_;
-        can_set_thermal_ = can_set_thermal_ && r->can_set_thermal_;
-        nonlinear_operations_ = nonlinear_operations_ || r->nonlinear_operations_;
-        changed_ = changed_ && r->changed_;
-        obs_value_traits<convergence_type>::check_for_max(converged_errors_, r->converged_errors_);
-        obs_value_traits<convergence_type>::check_for_min(any_converged_errors_, r->any_converged_errors_);
-
-        mean_ *= double(count_);
-        mean_ += double(r->count_)*r->mean_;
-        mean_ /= double(count_ + r->count_);
-        //mean_ = (double(count_)*mean_+double(r->count_)*r->mean_)
-        //        / double(count_ + r->count_);
-        using std::sqrt;
-        result_type tmp = error_;
-        tmp *= error_*(double(count_)*double(count_));
-        result_type tmp2 = r->error_;
-        tmp2 *= r->error_*(double(r->count_)*double(r->count_));
-        error_=tmp+tmp2;
-        error_=sqrt(error_);
-        error_/=double(count_ + r->count_);
-        //error_ = sqrt(double(count_)*double(count_)*error_*error_
-         //             +double(r->count_)*double(r->count_)*r->error_*r->error_)
-         // / double(count_ + r->count_);
-        if(has_variance_) {
-          variance_*=double(count_);
-          variance_+=double(r->count_)*r->variance_;
-          variance_ /= double(count_ + r->count_);
-          //variance_ = (double(count_)*variance_+double(r->count_)*r->variance_)
-          //  / double(count_ + r->count_);
-        }
-        if(has_tau_) {
-          tau_ *= double(count_);
-          tau_ += double(r->count_)*r->tau_;
-          tau_ /= double(count_ + r->count_);
-          //tau_ = (double(count_)*tau_+double(r->count_)*r->tau_)
-          //  / double(count_ + r->count_);
-        }
-
-        discardedmeas_ = std::min BOOST_PREVENT_MACRO_SUBSTITUTION (discardedmeas_, r->discardedmeas_);
-        count_ += r->count();
-
-        if (r->bin_size() == maxsize) {
-          std::copy(r->values_.begin(), r->values_.end(),
-                    std::back_inserter(values_));
-          std::copy(r->values2_.begin(), r->values2_.end(),
-                    std::back_inserter(values2_));
-        } else {
-          SimpleObservableData<T> tmp(*r);
-          tmp.set_bin_size(maxsize);
-          std::copy(tmp.values_.begin(), tmp.values_.end(),
-                    std::back_inserter(values_));
-          std::copy(tmp.values2_.begin(), tmp.values2_.end(),
-                    std::back_inserter(values2_));
-        }
+      mean_ *= double(count_);
+      mean_ += double(run.count_)*run.mean_;
+      mean_ /= double(count_ + run.count_);
+      //mean_ = (double(count_)*mean_+double(run.count_)*run.mean_)
+      //        / double(count_ + run.count_);
+      using std::sqrt;
+      result_type tmp = error_;
+      tmp *= error_*(double(count_)*double(count_));
+      result_type tmp2 = run.error_;
+      tmp2 *= run.error_*(double(run.count_)*double(run.count_));
+      error_=tmp+tmp2;
+      error_=sqrt(error_);
+      error_/=double(count_ + run.count_);
+      //error_ = sqrt(double(count_)*double(count_)*error_*error_
+      //             +double(run.count_)*double(run.count_)*run.error_*run.error_)
+      // / double(count_ + run.count_);
+      if(has_variance_) {
+        variance_*=double(count_);
+        variance_+=double(run.count_)*run.variance_;
+        variance_ /= double(count_ + run.count_);
+        //variance_ = (double(count_)*variance_+double(run.count_)*run.variance_)
+        //  / double(count_ + run.count_);
       }
+      if(has_tau_) {
+        tau_ *= double(count_);
+        tau_ += double(run.count_)*run.tau_;
+        tau_ /= double(count_ + run.count_);
+        //tau_ = (double(count_)*tau_+double(run.count_)*run.tau_)
+        //  / double(count_ + run.count_);
+      }
+
+      discardedmeas_ = std::min BOOST_PREVENT_MACRO_SUBSTITUTION (discardedmeas_, run.discardedmeas_);
+      max_bin_number_ = std::max BOOST_PREVENT_MACRO_SUBSTITUTION (max_bin_number_, run.max_bin_number_);
+      count_ += run.count();
+
+      if (binsize_ <= run.bin_size()) {
+        if (binsize_ < run.bin_size())
+          set_bin_size(run.bin_size());
+        std::copy(run.values_.begin(), run.values_.end(),
+                  std::back_inserter(values_));
+        std::copy(run.values2_.begin(), run.values2_.end(),
+                  std::back_inserter(values2_));
+      } else {
+        SimpleObservableData<T> tmp(run);
+        tmp.set_bin_size(binsize_);
+        std::copy(tmp.values_.begin(), tmp.values_.end(),
+                  std::back_inserter(values_));
+        std::copy(tmp.values2_.begin(), tmp.values2_.end(),
+                  std::back_inserter(values2_));
+      }
+      if (max_bin_number_ && max_bin_number_ < bin_number())
+        set_bin_number(max_bin_number_);
     }
   }
-
-  analyze();
+  return *this;
 }
 
 #ifndef ALPS_WITHOUT_OSIRIS
@@ -972,7 +939,7 @@ void SimpleObservableData<T>::load(IDump& dump)
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-    template <typename T> void SimpleObservableData<T>::serialize(hdf5::iarchive & ar, bool read_all_clones) {
+    template <typename T> void SimpleObservableData<T>::serialize(hdf5::iarchive & ar) {
         can_set_thermal_ = false;
         discardedmeas_ = 0;
         ar
@@ -997,6 +964,7 @@ void SimpleObservableData<T>::load(IDump& dump)
             ar
                 >> make_pvp("timeseries/data", values_)
                 >> make_pvp("timeseries/data/@discard", discardedbins_)
+                >> make_pvp("timeseries/data/@maxbinnum", max_bin_number_)
                 >> make_pvp("timeseries/data2", values2_)
             ;
             if ((jack_valid_ = ar.is_data("jacknife/data")))
@@ -1005,13 +973,13 @@ void SimpleObservableData<T>::load(IDump& dump)
                 ;
         }
     }
-    template <typename T> void SimpleObservableData<T>::serialize(hdf5::oarchive & ar, bool write_all_clones, bool is_valid) const {
+    template <typename T> void SimpleObservableData<T>::serialize(hdf5::oarchive & ar) const {
         ar
             << make_pvp("count", count_)
             << make_pvp("@changed", changed_)
             << make_pvp("@nonlinearoperations", nonlinear_operations_)
         ;
-        if (is_valid || valid_) {
+        if (valid_) {
             ar
                 << make_pvp("mean/value", mean_)
                 << make_pvp("mean/error", error_)
@@ -1028,9 +996,12 @@ void SimpleObservableData<T>::load(IDump& dump)
             ar
                 << make_pvp("timeseries/data", values_)
                 << make_pvp("timeseries/data/@discard", discardedbins_)
+                << make_pvp("timeseries/data/@maxbinnum", max_bin_number_)
                 << make_pvp("timeseries/data/@binningtype", "linear")
+                
                 << make_pvp("timeseries/data2", values2_)
                 << make_pvp("timeseries/data2/@discard", discardedbins_)
+                << make_pvp("timeseries/data/@maxbinnum", max_bin_number_)
                 << make_pvp("timeseries/data2/@binningtype", "linear")
             ;
             if (jack_valid_)
