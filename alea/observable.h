@@ -143,8 +143,8 @@ class ALPS_DECL Observable {
 #endif
 
 #ifdef ALPS_HAVE_HDF5
-    virtual void serialize(hdf5::iarchive &, bool = false);
-    virtual void serialize(hdf5::oarchive &, bool = false) const;
+    virtual void serialize(hdf5::iarchive &);
+    virtual void serialize(hdf5::oarchive &) const;
 #endif
 
   // Sign problem support

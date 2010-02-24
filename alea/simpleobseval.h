@@ -376,9 +376,6 @@ template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::
     ar >> make_pvp("", all_);
 }
 template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::oarchive & ar) const {
-
-std::cout << __LINE__ << " " << ar.get_context() << std::endl;
-
     ar << make_pvp("", all_);
 }
 #endif
