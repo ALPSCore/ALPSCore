@@ -362,7 +362,7 @@ template <class T>
 inline void SimpleObservableEvaluator<T>::load(IDump& dump)
 {
   AbstractSimpleObservable<T>::load(dump);
-  if (dump.version() < 400 || dump.version() == 0) {
+  if (dump.version() < 400 && dump.version() > 0) {
     bool valid;
     std::vector<SimpleObservableData<T> > runs;
     dump >> valid >> runs;
