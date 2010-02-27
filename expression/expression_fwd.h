@@ -38,7 +38,6 @@
 #include <alps/parameter.h>
 #include <alps/random.h>
 #include <alps/parser/parser.h>
-#include <alps/typetraits.h>
 #include <alps/vectorio.h>
 
 #include <boost/call_traits.hpp>

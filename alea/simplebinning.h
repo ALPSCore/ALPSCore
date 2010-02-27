@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
@@ -39,6 +39,8 @@
 #include <alps/alea/nan.h>
 #include <alps/math.hpp>
 #include <alps/xml.h>
+#include <alps/type_traits/change_value_type.hpp>
+#include <alps/type_traits/average_type.hpp>
 #include <boost/config.hpp>
 
 //=======================================================================
@@ -55,11 +57,11 @@ class SimpleBinning : public AbstractBinning<T>
   typedef AbstractBinning<T> super_type;
  public:
   typedef T value_type;
-  typedef typename obs_value_traits<T>::time_type time_type;
-  typedef typename obs_value_traits<T>::size_type size_type;
-  typedef typename obs_value_traits<T>::count_type count_type;
-  typedef typename obs_value_traits<T>::result_type result_type;
-  typedef typename obs_value_traits<T>::convergence_type convergence_type;
+  typedef typename change_value_type<T,double>::type time_type;
+  typedef std::size_t size_type;
+  typedef alea::count_type count_type;
+  typedef typename average_type<T>::type result_type;
+  typedef typename change_value_type<T,int>::type convergence_type;
 
   BOOST_STATIC_CONSTANT(bool, has_tau=true);
   BOOST_STATIC_CONSTANT(int, magic_id=2);
@@ -148,8 +150,6 @@ template <> void SimpleBinning<std::valarray<double> >::operator<<(const std::va
 template <class T>
 inline void SimpleBinning<T>::operator<<(const T& x)
 {
-  typedef typename obs_value_traits<T>::count_type count_type;
-
   // set sizes if starting additions
   if(count_==0)
   {
@@ -214,8 +214,6 @@ inline void SimpleBinning<T>::operator<<(const T& x)
 
 template <> inline void SimpleBinning<std::valarray<double> >::operator<<(const std::valarray<double> & x)
 {
-  typedef obs_value_traits<std::valarray<double> >::count_type count_type;
-
   // set sizes if starting additions
   if(count_==0)
   {
@@ -295,32 +293,25 @@ typename SimpleBinning<T>::convergence_type SimpleBinning<T>::converged_errors()
   result_type err=error();
   obs_value_traits<T>::resize_same_as(conv,err);
   const unsigned int range=4;
-  typename obs_value_traits<convergence_type>::slice_iterator it;
+  typename slice_index<convergence_type>::type it;
   if (binning_depth()<range) {
-    for (it= obs_value_traits<convergence_type>::slice_begin(conv);
-       it!= obs_value_traits<convergence_type>::slice_end(conv); ++it)
-      obs_value_traits<convergence_type>::slice_value(conv,it) = MAYBE_CONVERGED;
+    for (it= slices(conv).first; it!= slices(conv).second; ++it)
+      slice_value(conv,it) = MAYBE_CONVERGED;
   }
   else {
-    for (it= obs_value_traits<convergence_type>::slice_begin(conv);
-       it!= obs_value_traits<convergence_type>::slice_end(conv); ++it)
-      obs_value_traits<convergence_type>::slice_value(conv,it) = CONVERGED;
+    for (it= slices(conv).first; it!= slices(conv).second; ++it)
+      slice_value(conv,it) = CONVERGED;
 
     for (unsigned int i=binning_depth()-range;i<binning_depth()-1;++i) {
       result_type this_err(error(i));
-      for (it= obs_value_traits<convergence_type>::slice_begin(conv);
-           it!= obs_value_traits<convergence_type>::slice_end(conv); ++it) {
-        if (std::abs(obs_value_traits<result_type>::slice_value(this_err,it)) >=
-            std::abs(obs_value_traits<result_type>::slice_value(err,it)))
-          obs_value_traits<convergence_type>::slice_value(conv,it)=CONVERGED;
-        else if (std::abs(obs_value_traits<result_type>::slice_value(this_err,it)) <0.824*
-            std::abs(obs_value_traits<result_type>::slice_value(err,it)))
-          obs_value_traits<convergence_type>::slice_value(conv,it)=NOT_CONVERGED;
-        else if (std::abs(obs_value_traits<result_type>::slice_value(this_err,it)) <0.9*
-            std::abs(obs_value_traits<result_type>::slice_value(err,it))  &&
-            obs_value_traits<convergence_type>::slice_value(conv,it)!=NOT_CONVERGED)
-          obs_value_traits<convergence_type>::slice_value(conv,it)=MAYBE_CONVERGED;
-      }
+      for (it= slices(conv).first; it!= slices(conv).second; ++it)
+        if (std::abs(slice_value(this_err,it)) >= std::abs(slice_value(err,it)))
+          slice_value(conv,it)=CONVERGED;
+        else if (std::abs(slice_value(this_err,it)) < 0.824 * slice_value(err,it))
+          slice_value(conv,it)=NOT_CONVERGED;
+        else if (std::abs(slice_value(this_err,it)) <0.9* std::abs(slice_value(err,it))  &&
+            slice_value(conv,it)!=NOT_CONVERGED)
+          slice_value(conv,it)=MAYBE_CONVERGED;
     }
   }
   return conv;
@@ -330,8 +321,6 @@ typename SimpleBinning<T>::convergence_type SimpleBinning<T>::converged_errors()
 template <class T>
 inline typename SimpleBinning<T>::result_type SimpleBinning<T>::binmean(std::size_t i) const
 {
-  typedef typename obs_value_traits<T>::count_type count_type;
-
   return sum_[i]/(count_type(bin_entries_[i]) * count_type(1ll<<i));
 }
 template <class T>
@@ -344,8 +333,6 @@ inline double SimpleBinning<T>::binmean_element(std::size_t element, std::size_t
 template <>
 inline double SimpleBinning<std::valarray<double> >::binmean_element(std::size_t element, std::size_t i) const
 {
-  typedef obs_value_traits<std::valarray<double> >::count_type count_type;
-
   return sum_[i][element]/(count_type(bin_entries_[i]) * count_type(1ll<<i));
 }
 
@@ -353,8 +340,6 @@ inline double SimpleBinning<std::valarray<double> >::binmean_element(std::size_t
 template <class T>
 inline typename SimpleBinning<T>::result_type SimpleBinning<T>::binvariance(std::size_t i) const
 {
-  typedef typename obs_value_traits<T>::count_type count_type;
-
   result_type retval(sum2_[i]);
   retval/=count_type(bin_entries_[i]);
   retval-=binmean(i)*binmean(i);
@@ -370,8 +355,6 @@ inline double SimpleBinning<T>::binvariance_element(std::size_t element, std::si
 }
 template <>inline double SimpleBinning<std::valarray<double> >::binvariance_element(std::size_t element, std::size_t i) const
 {
-  typedef  obs_value_traits<std::valarray<double> >::count_type count_type;
-
   double retval(sum2_[i][element]);
   retval/=count_type(bin_entries_[i]);
   retval-=binmean_element(element,i)*binmean_element(element,i);
@@ -398,8 +381,6 @@ inline typename SimpleBinning<T>::result_type SimpleBinning<T>::mean() const
 template <class T>
 inline typename SimpleBinning<T>::result_type SimpleBinning<T>::variance() const
 {
-  typedef typename obs_value_traits<T>::count_type count_type;
-
   if (count()==0)
      boost::throw_exception(NoMeasurementsError());
 
@@ -427,8 +408,6 @@ inline double SimpleBinning<T>::variance_element(std::size_t element) const
 template <>
 inline double SimpleBinning<std::valarray<double> >::variance_element(std::size_t element) const
 {
-  typedef obs_value_traits<std::valarray<double> >::count_type count_type;
-
   if (count()==0)
      boost::throw_exception(NoMeasurementsError());
 
@@ -448,7 +427,6 @@ inline double SimpleBinning<std::valarray<double> >::variance_element(std::size_
 template <class T>
 inline typename SimpleBinning<T>::result_type SimpleBinning<T>::error(std::size_t i) const
 {
-  typedef typename obs_value_traits<T>::count_type count_type;
   if (count()==0)
      boost::throw_exception(NoMeasurementsError());
 
@@ -475,7 +453,6 @@ inline double SimpleBinning<T>::error_element(std::size_t element,std::size_t i)
 // error estimated from bin i, or from default bin if <0
 template <> inline double SimpleBinning<class std::valarray<double> >::error_element( std::size_t element,std::size_t i) const
 {
-  typedef obs_value_traits<class std::valarray<double> >::count_type count_type;
   if (count()==0)
      boost::throw_exception(NoMeasurementsError());
 
@@ -493,10 +470,8 @@ template <> inline double SimpleBinning<class std::valarray<double> >::error_ele
 }
 
 template <class T>
-inline typename obs_value_traits<T>::time_type SimpleBinning<T>::tau() const
+inline typename SimpleBinning<T>::time_type SimpleBinning<T>::tau() const
 {
-  typedef typename obs_value_traits<T>::count_type count_type;
-
   if (count()==0)
      boost::throw_exception(NoMeasurementsError());
 
@@ -567,15 +542,15 @@ void SimpleBinning<T>::write_scalar_xml(oxstream& oxs) const {
 template <class T> template <class IT>
 void SimpleBinning<T>::write_vector_xml(oxstream& oxs, IT it) const {
   for (int i = 0; i < (int)binning_depth() ; ++i) {
-    int prec=int(4-std::log10(std::abs(obs_value_traits<result_type>::slice_value(error(i),it)
-                            /obs_value_traits<result_type>::slice_value(binmean(i),it))));
+    int prec=int(4-std::log10(std::abs(slice_value(error(i),it)
+                            /slice_value(binmean(i),it))));
     prec = (prec>=3 && prec<20 ? prec : 16);
     oxs << start_tag("BINNED") << attribute("size",boost::lexical_cast<std::string>(1ll<<i))
               << no_linebreak << start_tag("COUNT") << count()/(1ll<<i) << end_tag("COUNT")
         << start_tag("MEAN") << attribute("method", "simple")
-        << no_linebreak << precision(obs_value_traits<result_type>::slice_value(binmean(i),it), 8) << end_tag("MEAN")
+        << no_linebreak << precision(slice_value(binmean(i),it), 8) << end_tag("MEAN")
         << start_tag("ERROR") << attribute("method", "simple")
-        << no_linebreak << precision(obs_value_traits<result_type>::slice_value(error(i),it), 3) << end_tag("ERROR")
+        << no_linebreak << precision(slice_value(error(i),it), 3) << end_tag("ERROR")
         << end_tag("BINNED");
   }
 }
@@ -611,25 +586,23 @@ inline void SimpleBinning<T>::output_vector(std::ostream& out, const L& label) c
       errs_[i]=error(i);
 
     out << "\n";
-    typename obs_value_traits<L>::slice_iterator it2=obs_value_traits<L>::slice_begin(label);
-    for (typename obs_value_traits<result_type>::slice_iterator sit=
-           obs_value_traits<result_type>::slice_begin(mean_);
-          sit!=obs_value_traits<result_type>::slice_end(mean_);++sit,++it2)
+    typename alps::slice_index<L>::type it2=slices(label).first;
+    for (typename alps::slice_index<result_type>::type sit= slices(mean_).first; 
+         sit!=slices(mean_).second;++sit,++it2)
     {
-      std::string lab=obs_value_traits<L>::slice_value(label,it2);
+      std::string lab = slice_value(label,it2);
       if (lab=="")
-        lab=obs_value_traits<result_type>::slice_name(mean_,sit);
+        lab = slice_name(mean_,sit);
       out << "Entry[" << lab << "]: "
-          << alps::round<2>(obs_value_traits<result_type>::slice_value(mean_,sit)) << " +/- "
-          << alps::round<2>(obs_value_traits<result_type>::slice_value(error_,sit))
-          << "; tau = " << (alps::is_nonzero<2>(obs_value_traits<result_type>::slice_value(error_,sit)) ? obs_value_traits<time_type>::slice_value(tau_,sit) : 0);
-      if (alps::is_nonzero<2>(obs_value_traits<result_type>::slice_value(error_,sit))) {
-        if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==MAYBE_CONVERGED)
+          << alps::round<2>(slice_value(mean_,sit)) << " +/- "
+          << alps::round<2>(slice_value(error_,sit))
+          << "; tau = " << (alps::is_nonzero<2>(slice_value(error_,sit)) ? slice_value(tau_,sit) : 0);
+      if (alps::is_nonzero<2>(slice_value(error_,sit))) {
+        if (slice_value(conv_,sit)==MAYBE_CONVERGED)
           out << " WARNING: check error convergence";
-        if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==NOT_CONVERGED)
+        if (slice_value(conv_,sit)==NOT_CONVERGED)
           out << " WARNING: ERRORS NOT CONVERGED!!!";
-        if (error_underflow(obs_value_traits<result_type>::slice_value(mean_,sit),
-                            obs_value_traits<result_type>::slice_value(error_,sit)))
+        if (error_underflow(slice_value(mean_,sit),slice_value(error_,sit)))
           out << " Warning: potential error underflow. Errors might be smaller";
       }
       out << std::endl;
@@ -641,7 +614,7 @@ inline void SimpleBinning<T>::output_vector(std::ostream& out, const L& label) c
             out << "    bin #" << std::setw(3) <<  i+1
                 << " : " << std::setw(8) << count()/(1ll<<i)
                 << " entries: error = "
-                << obs_value_traits<result_type>::slice_value(errs_[i],sit)
+                << slice_value(errs_[i],sit)
                 << std::endl;
           out.setf(oldflags);
         }

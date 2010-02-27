@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1997-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -36,7 +36,6 @@
 #include <alps/alea/recordableobservable.h>
 #include <alps/alea/output_helper.h>
 #include <alps/alea/hdf5.h>
-#include <alps/typetraits.h>
 
 #include <vector>
 
@@ -63,8 +62,8 @@ public:
   typedef typename std::vector<integer_type>::const_reverse_iterator const_reverse_iterator;
   typedef typename std::vector<integer_type>::size_type size_type;
 
-  BOOST_STATIC_CONSTANT(uint32_t, version = type_traits<T>::type_tag
-    + (type_traits<integer_type>::type_tag << 8) + (2<<16));
+  BOOST_STATIC_CONSTANT(uint32_t, version = type_tag<T>::value
+    + (type_tag<integer_type>::value << 8) + (2<<16));
 
   HistogramObservable(const std::string& n="");
   HistogramObservable(const std::string& n, T min, T max, T stepsize=1);

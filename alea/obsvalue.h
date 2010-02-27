@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2009 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2010 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
@@ -33,13 +33,16 @@
 #ifndef ALPS_ALEA_OBSVALUE_H
 #define ALPS_ALEA_OBSVALUE_H
 
+#include <alps/alea/convergence.hpp>
+#include <alps/type_traits/slice.hpp>
+#include <alps/type_traits/average_type.hpp>
+#include <alps/type_traits/type_tag.hpp>
 #include <alps/config.h>
-#include <alps/typetraits.h>
+
 #include <boost/config.hpp>
-#include <boost/lambda/lambda.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/limits.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
+#include <boost/lambda/lambda.hpp>
+
 #include <complex>
 #include <cstddef>
 #include <vector>
@@ -68,117 +71,65 @@ struct plain_return_type_2<arithmetic_action<Act>, U, std::valarray<T> > {
 
 namespace alps {
 
-enum error_convergence {CONVERGED, MAYBE_CONVERGED, NOT_CONVERGED};
+namespace alea {
 
-inline std::string convergence_to_text(int c)
+  typedef double count_type;
+
+}
+
+template <class T>
+void update_max(T& lhs, T const& rhs)
 {
-  return (c==CONVERGED ? "yes" : c==MAYBE_CONVERGED ? "maybe" : c==NOT_CONVERGED ? "no" : "");
+  for (typename slice_index<T>::type it = slices(lhs).first; 
+       it < slices(lhs).second && it < slices(rhs).second; ++it)
+    if (slice_value(lhs,it) < slice_value(rhs,it))
+      slice_value(lhs,it) = slice_value(rhs,it);
+}
+
+template <class T>
+void update_min(T& lhs, T const& rhs)
+{
+  for (typename slice_index<T>::type it = slices(lhs).first; 
+       it < slices(lhs).second && it < slices(rhs).second; ++it)
+    if (slice_value(rhs,it) < slice_value(lhs,it))
+      slice_value(lhs,it) = slice_value(rhs,it);
 }
 
 template <class T>
 struct obs_value_traits
 {
-  typedef T value_type; 
-  typedef T element_type;
-  typedef double count_type;
-  typedef unsigned int index_type;
-  typedef double time_type;
-  typedef time_type time_element_type;
-  typedef typename type_traits<T>::average_t result_type;
-  typedef int convergence_type;
-  typedef typename type_traits<T>::average_t covariance_type;
-  typedef int slice_iterator;
-  BOOST_STATIC_CONSTANT( uint32_t, magic_id = type_traits<T>::type_tag);
-  typedef uint64_t size_type;
-  BOOST_STATIC_CONSTANT( bool, array_valued = false);
-  typedef std::string label_type;
+  BOOST_STATIC_CONSTANT( uint32_t, magic_id = type_tag<T>::value);
 
   template <class X>
-  static inline void check_for_max(T& a,const X& b) { if (b>a) a=b;}
-  template <class X>
-  static inline void check_for_min(T& a,const X& b) { if (b<a) a=b;}
-
-  static T max BOOST_PREVENT_MACRO_SUBSTITUTION () {return std::numeric_limits<T>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();}
-  static T min BOOST_PREVENT_MACRO_SUBSTITUTION () {return -std::numeric_limits<T>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();}
-  static T epsilon() { return std::numeric_limits<T>::epsilon();}
-
-  static inline time_type t_max() {return std::numeric_limits<time_type>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();}
-
-  static inline value_type check_divide(const result_type& a,const result_type& b) 
+  static inline X check_divide(const X& a,const X& b) 
     {
       return (b==0 && a==0? 1. : a/b); 
     }
     
-  static void fix_negative(value_type& x) { if (x<0.) x=0.;}
+  static void fix_negative(T& x) { if (x<0.) x=0.;}
 
   /* resize a to the lenth size */
   template <class X, class Y> static void resize_same_as(X&,const Y&) {}
   template <class X, class Y> static void copy(X& x,const Y& y) {x=y;}
   template <class X> static std::size_t size(const X&) { return 1;}
   
-  static inline covariance_type outer_product(result_type a, result_type b) {
+  template <class X>
+  static inline X outer_product(X a, X b) {
     return a*b;
   }
 
   template <class X> static T convert(X x) { return static_cast<T>(x);}
-  static slice_iterator slice_begin(const value_type&) { return 0;}
-  static slice_iterator slice_end(const value_type&) { return 1;}
-  static std::string slice_name(const value_type& ,slice_iterator) { return ""; }
-  static element_type slice_value(const value_type& x, int) { return x;}
-  static element_type& slice_value(value_type& x, int) { return x;}
-
 };
-
-/*
-template <class DST> struct obs_value_cast
-{
-  DST const& operator()(DST const& x) { return x;}
-
-  template <class SRC> 
-  DST operator()(const SRC& s) 
-  {
-    return obs_value_traits<DST>::convert(s);
-  }
-
-template <class T> T const& obs_value_cast(const T& s, constT&=T()) 
-{
-  return s;
-}
-
-
-};
-*/
 
 template <class T>
 struct obs_value_traits<std::complex<T> >
 {
-  typedef std::complex<T> value_type;
-  typedef value_type element_type;
-  typedef double count_type;
-  typedef unsigned int index_type;
-  typedef double time_type;
-  typedef time_type time_element_type;
-  typedef uint32_t size_type;
-  typedef typename type_traits<value_type>::average_t result_type;
-  typedef int convergence_type;
-  typedef typename type_traits<value_type>::average_t covariance_type;  
-  typedef int slice_iterator;
-  BOOST_STATIC_CONSTANT(uint32_t, magic_id = type_traits<value_type>::type_tag);
-  BOOST_STATIC_CONSTANT(bool, array_valued=false);
-  typedef std::string label_type;
+  BOOST_STATIC_CONSTANT(uint32_t, magic_id = type_tag<T>::value);
 
-  template <class X> static inline void check_for_max(value_type&,const X&) {}
-  template <class X> static inline void check_for_min(value_type&,const X& b) {}
+  static void fix_negative(T& x) { if (std::real(x)<0. || std::imag(x)<0.) x=0.;}
 
-  static value_type max BOOST_PREVENT_MACRO_SUBSTITUTION () { return  (std::numeric_limits<T>::max BOOST_PREVENT_MACRO_SUBSTITUTION (),std::numeric_limits<T>::max BOOST_PREVENT_MACRO_SUBSTITUTION ());}
-  static value_type min BOOST_PREVENT_MACRO_SUBSTITUTION () { return  -max BOOST_PREVENT_MACRO_SUBSTITUTION ();}
-  static T epsilon() { return std::numeric_limits<T>::epsilon();}
-
-  static inline time_type t_max() { return  std::numeric_limits<time_type>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();}
-
-  static void fix_negative(value_type& x) { if (std::real(x)<0. || std::imag(x)<0.) x=0.;}
-
-  static inline value_type check_divide(const result_type& a,const result_type& b)
+  template <class X>
+  static inline X check_divide(const X& a,const X& b)
     {
       return (b==0. && a==0. ? 1. : a/b); 
     }
@@ -188,78 +139,33 @@ struct obs_value_traits<std::complex<T> >
   template <class X, class Y> static void copy(X& x,const Y& y) {x=y;}
   template <class X> static std::size_t size(const X&) { return 1;}
 
-  static inline covariance_type outer_product(result_type a, result_type b) {
+  template <class X>
+  static inline X outer_product(X a, X b) {
     return std::conj(a)*b;
   }
 
-  template <class X> static value_type convert(X x) { return static_cast<value_type>(x);}
-  static slice_iterator slice_begin(const value_type&) { return 0;}
-  static slice_iterator slice_end(const value_type&) { return 1;}
-  static std::string slice_name(const value_type& ,slice_iterator) { return ""; }
-  static element_type slice_value(const value_type& x, int) { return x;}
-  static element_type& slice_value(value_type& x, int) { return x;}
+  template <class X> static T convert(X x) { return static_cast<T>(x);}
 };
 
 #ifdef ALPS_HAVE_VALARRAY
 template <class T>
 struct obs_value_traits<std::valarray<T> >
 {
-  typedef std::valarray<T> value_type;
-  typedef T element_type;
-  typedef double count_type;
-  typedef unsigned int index_type;
-  typedef std::size_t size_type;
-  typedef std::valarray<double> time_type;
-  typedef double time_element_type;
-  BOOST_STATIC_CONSTANT(bool, array_valued = true);
-  
-  typedef std::valarray<typename type_traits<T>::average_t> result_type;
-  typedef std::valarray<int> convergence_type;
-  typedef typename boost::numeric::ublas::matrix<typename type_traits<T>::average_t> covariance_type;  
-  BOOST_STATIC_CONSTANT(uint32_t, magic_id = 256+type_traits<T>::type_tag);
-  typedef std::vector<std::string> label_type;
+  BOOST_STATIC_CONSTANT(uint32_t, magic_id = 256+type_tag<T>::value);
 
-  template <class X> static inline void check_for_max(std::valarray<T>& a,const std::valarray<X>& b) 
+  static void fix_negative(std::valarray<T>& a) 
   {
     for(int32_t i=0;i!=(int32_t)a.size();++i)
-      obs_value_traits<T>::check_for_max(a[i],b[i]);
-  }   
-
-  template <class X> static inline void check_for_max(std::valarray<T>& a,const X& b) 
-  {
-    for(int32_t i=0;i!=(int32_t)a.size();++i)
-      obs_value_traits<T>::check_for_max(a[i],b);
-  }   
- 
-  template <class X> static inline void check_for_min(std::valarray<T>& a,const std::valarray<X>& b) 
-  {
-    for(int32_t i=0;i!=(int32_t)a.size();++i)
-      obs_value_traits<T>::check_for_min(a[i],b[i]);
-  }    
-
-  template <class X> static inline void check_for_min(std::valarray<T>& a,const X& b) 
-  {
-    for(int32_t i=0;i!=(int32_t)a.size();++i)
-      obs_value_traits<T>::check_for_min(a[i],b);
-  }   
-
-  static void fix_negative(value_type& a) 
-  {
-    for(int32_t i=0;i!=(int32_t)a.size();++i)
-      obs_value_traits<element_type>::fix_negative(a[i]);
+      obs_value_traits<typename element_type<T>::type>::fix_negative(a[i]);
   }
-  static element_type min BOOST_PREVENT_MACRO_SUBSTITUTION () {return obs_value_traits<T>::min BOOST_PREVENT_MACRO_SUBSTITUTION ();}
-  static element_type max BOOST_PREVENT_MACRO_SUBSTITUTION () {return obs_value_traits<T>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();}
-  static element_type epsilon() { return obs_value_traits<T>::epsilon();}
 
-  static time_element_type t_max() {return obs_value_traits<T>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();}
-
-  static inline result_type check_divide(const result_type& a,const result_type& b) 
+  template <class X>
+  static inline X check_divide(const X& a,const X& b) 
   {
-    result_type retval;
+    X retval;
     resize_same_as(retval,b);
     for(int32_t i(0);i<(int32_t)b.size();++i)
-      retval[i] = obs_value_traits<element_type>::check_divide(a[i],b[i]);
+      retval[i] = obs_value_traits<typename element_type<X>::type>::check_divide(a[i],b[i]);
     return retval;
   }
 
@@ -269,9 +175,10 @@ struct obs_value_traits<std::valarray<T> >
   template <class X> static std::size_t size(const X& a) { return a.size();}
   template <class X> static void resize(X& a, std::size_t s) {a.resize(s);}
 
-  static covariance_type outer_product(result_type a, result_type b) 
+  template <class X>
+  static boost::numeric::ublas::matrix<typename average_type<T>::type> outer_product(X a, X b) 
   {
-    boost::numeric::ublas::vector<typename type_traits<T>::average_t> vec1(a.size()), vec2(b.size());
+    boost::numeric::ublas::vector<typename average_type<T>::type> vec1(a.size()), vec2(b.size());
     for (int i=0; i<a.size(); ++i)
       vec1[i] = a[i];
     for (int i=0; i<b.size(); ++i)
@@ -279,14 +186,6 @@ struct obs_value_traits<std::valarray<T> >
     return boost::numeric::ublas::outer_prod(vec1, vec2);
 
   }
-
-  typedef uint32_t slice_iterator;
-  static slice_iterator slice_begin(const value_type&) { return 0;}
-  static slice_iterator slice_end(const value_type& x) { return x.size();}
-  static std::string slice_name(const value_type& ,slice_iterator i) 
-    { return boost::lexical_cast<std::string,int>(i); }
-  static element_type slice_value(const value_type& x, slice_iterator i) { return x[i];}
-  static element_type& slice_value(value_type& x, slice_iterator i) { return  x[i];}
  
   static std::valarray<T> const& convert(const std::valarray<T>& x)
   {
@@ -307,20 +206,10 @@ struct obs_value_traits<std::valarray<T> >
 template <class T>
 struct obs_value_traits<std::vector<T> >
 {
-  typedef std::vector<T> value_type;
-  typedef T element_type;
   template <class X, class Y> static void resize_same_as(X& a, const Y& y) {a.resize(y.size());}
   template <class X, class Y> static void copy(X& x,const Y& y) {x.resize(y.size()); for (int i=0;i<y.size();++i) x[i]=y[i];}
   template <class X> static std::size_t size(const X& a) { return a.size();}
   template <class X> static void resize(X& a, std::size_t s) {a.resize(s);}
-
-  typedef uint32_t slice_iterator;
-  static slice_iterator slice_begin(const value_type&) { return 0;}
-  static slice_iterator slice_end(const value_type& x) { return x.size();}
-  static std::string slice_name(const value_type& ,slice_iterator i) 
-    { return boost::lexical_cast<std::string,int>(i); }
-  static element_type slice_value(const value_type& x, slice_iterator i) { return (i<x.size()) ? x[i] : element_type();}
-  static element_type& slice_value(value_type& x, slice_iterator i) { return (i<x.size()) ? x[i] : element_type();}
 
   static std::vector<T> const& convert(const std::vector<T>& x)
   {
@@ -336,25 +225,6 @@ struct obs_value_traits<std::vector<T> >
 
 
 };
-
-template <class T,class I>
-struct obs_value_slice
-{                               
-  BOOST_STATIC_CONSTANT(bool, sliceable=false);
-};                                            
-
-#ifdef ALPS_HAVE_VALARRAY
-template <class T, class I>                           
-struct obs_value_slice<std::valarray<T>,I>  
-{                                           
-  BOOST_STATIC_CONSTANT(bool, sliceable=true);       
-  typedef T value_type;                  
-  typedef T result_type;                
-  typedef const std::valarray<T>& first_argument_type;
-  typedef I second_argument_type;            
-  T operator()(const std::valarray<T>& x, const I i) const { return x[i];}
-};                                             
-#endif
 
 } // end namespace alps
 

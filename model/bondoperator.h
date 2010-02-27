@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2009 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2003-2010 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -32,6 +32,7 @@
 #define ALPS_MODEL_BONDOPERATOR_H
 
 #include <alps/config.h>
+#include <alps/type_traits/is_complex.hpp>
 #include <alps/model/operator.h>
 #include <alps/model/siteoperator.h>
 #include <alps/model/sitestate.h>
@@ -233,7 +234,7 @@ BondOperator::matrix(const SiteBasisDescriptor<I>& b1,
             }
             else
               mat[i1][i2][j1][j2].second=evaluator.fermionic();
-            if (boost::is_arithmetic<T>::value || type_traits<T>::is_complex)
+            if (boost::is_arithmetic<T>::value || is_complex<T>::value)
               if (!can_evaluate(boost::lexical_cast<std::string>(term)))
                 boost::throw_exception(std::runtime_error("Cannot evaluate expression " + boost::lexical_cast<std::string>(term)));
             mat[i1][i2][j1][j2].first += evaluate<T>(term);

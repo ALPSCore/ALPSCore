@@ -45,6 +45,9 @@
 #include <alps/alea/nan.h>
 #include <alps/alea/simpleobservable.h>
 #include <alps/numeric/vector_functions.hpp>
+#include <alps/type_traits/change_value_type.hpp>
+#include <alps/type_traits/average_type.hpp>
+#include <alps/type_traits/covariance_type.hpp>
 
 #include <boost/config.hpp>
 #include <boost/functional.hpp>
@@ -55,61 +58,33 @@
 #include <numeric>
 #include <vector>
 
-//
-// // depreciating... (1)
-// #include <valarray>
-//
 
-
-/*
- * // depreciating... (2)
- *
- * #ifdef ALPS_HAVE_VALARRAY
- * template <class T> std::ostream& operator<<(std::ostream& o, const std::valarray<T>&) { return o;}
- * #endif
- * 
- */
-
-
-namespace alps {
-
-//
-// // use alps::alea namepace rather than alps namespace ? ... (3)
-// namespace alea {
-//
+namespace alps { namespace alea {
 
 using namespace boost::lambda;
 
 template <class T>
-class obsbinneddata {
+class binned_data {
 public:
   template <class X>
-  friend class obsbinneddata;    // significance? ... (4)
+  friend class binned_data;    // significance? ... (4)
 
-  typedef typename obs_value_traits<T>::value_type       value_type;
-  typedef typename obs_value_traits<T>::time_type        time_type;
-  typedef typename obs_value_traits<T>::size_type        size_type;
-  typedef typename obs_value_traits<T>::count_type       count_type;
-  typedef typename obs_value_traits<T>::result_type      result_type;
-  typedef typename obs_value_traits<T>::convergence_type convergence_type;
-  typedef typename obs_value_traits<T>::label_type       label_type;
-  typedef typename obs_value_traits<T>::covariance_type  covariance_type;
+  typedef T                                              value_type;
+  typedef typename change_value_type<T,double>::type     time_type;
+  typedef std::size_t                                    size_type;
+  typedef double                                         count_type;
+  typedef typename average_type<T>::type                 result_type;
+  typedef typename change_value_type<T,int>::type        convergence_type;
+  typedef typename change_value_type_replace_valarray<value_type,std::string>::type label_type;
+  typedef typename covariance_type<T>::type              covariance_type;
 
   // constructors
-  obsbinneddata();
+  binned_data();
   template <class U, class S>
-  //obsbinneddata(const obsbinneddata<U>& x, S s);
-  //obsbinneddata(const AbstractSimpleObservable<value_type>& obs);
+  //binned_data(const binned_data<U>& x, S s);
+  //binned_data(const AbstractSimpleObservable<value_type>& obs);
 
 
-
-/* 
-  // ...(5a) -- this function is similar to 5b , except "const"
-  template <class S>
-  obsbinneddata<typename obs_value_slice<T,S>::value_type> slice(S s) {
-    return obsbinneddata<typename obs_value_slice<T,S>::value_type>(*this, s);
-  }
-*/
 
   //
   // ...(7) Shouldn't we replace uint64_t by std::size_t  ?
@@ -124,7 +99,7 @@ public:
   inline const boost::optional<time_type>& tau() const;
 
 /*    
-  covariance_type covariance(const obsbinneddata<T>) const;
+  covariance_type covariance(const binned_data<T>) const;
 
   uint64_t bin_size() const { return binsize_;}
   uint64_t bin_number() const { return values_.size()-discardedbins_;}
@@ -132,11 +107,10 @@ public:
     return values_[i+discardedbins_];
   }
 
-  // ...(5b) -- this function is similar to 5a , except "const"
   template <class S>
-  obsbinneddata<typename obs_value_slice<T,S>::value_type> slice(S s) const
+  binned_data<typename element_type<T>::type> slice(S s) const
   {
-    return obsbinneddata<typename obs_value_slice<T,S>::value_type>(*this,s);
+    return binned_data<typename element_type<T>::type>(*this,s);
   }
 */
 
@@ -152,28 +126,28 @@ public:
   inline void set_bin_number(uint64_t);
  
   // collect information from many data objects
-  void collect_from(const std::vector<obsbinneddata<T> >& runs);
+  void collect_from(const std::vector<binned_data<T> >& runs);
 */
 
 /*
   // unary operation: negation
-  obsbinneddata<T>& operator-();
+  binned_data<T>& operator-();
 
   // operations with constant
-  template <class X> obsbinneddata<T>& operator+=(X);
-  template <class X> obsbinneddata<T>& operator-=(X);
-  template <class X> obsbinneddata<T>& operator*=(X);
-  template <class X> obsbinneddata<T>& operator/=(X);
+  template <class X> binned_data<T>& operator+=(X);
+  template <class X> binned_data<T>& operator-=(X);
+  template <class X> binned_data<T>& operator*=(X);
+  template <class X> binned_data<T>& operator/=(X);
   template<class X> void subtract_from(const X& x);
   template<class X> void divide(const X& x);
   
   // operations with another observable
-  obsbinneddata<T>& operator+=(const obsbinneddata<T>&);
-  obsbinneddata<T>& operator-=(const obsbinneddata<T>&);
+  binned_data<T>& operator+=(const binned_data<T>&);
+  binned_data<T>& operator-=(const binned_data<T>&);
   template <class X>
-  obsbinneddata<T>& operator*=(const obsbinneddata<X>&);
+  binned_data<T>& operator*=(const binned_data<X>&);
   template <class X>
-  obsbinneddata<T>& operator/=(const obsbinneddata<X>&);
+  binned_data<T>& operator/=(const binned_data<X>&);
 
   template <class OP> void transform(OP op);
 */
@@ -189,7 +163,7 @@ public:
 
 /*
   template <class X, class OP>
-  void transform(const obsbinneddata<X>& x, OP op, double factor=1.);
+  void transform(const binned_data<X>& x, OP op, double factor=1.);
 
   template <class OP> 
   void transform_linear(OP op);
@@ -234,7 +208,7 @@ public:
 
 
 template <class T>
-obsbinneddata<T>::obsbinneddata()
+binned_data<T>::binned_data()
   : count_(0)
   , binsize_(0)
   , changed_(false)
@@ -255,25 +229,25 @@ obsbinneddata<T>::obsbinneddata()
 template <class T>
 template <class U, class S>
 inline
-obsbinneddata<T>::obsbinneddata(const obsbinneddata<U>& x, S s)
+binned_data<T>::binned_data(const binned_data<U>& x, S s)
  : count_(x.count_),          
    binsize_(x.binsize_),
    changed_(x.changed_),
    valid_(x.valid_),
    jack_valid_(x.jack_valid_),
    nonlinear_operations_(x.nonlinear_operations_),
-   mean_(obs_value_slice<typename obs_value_traits<U>::result_type,S>()(x.mean_, s)),
-   error_(obs_value_slice<typename obs_value_traits<U>::result_type,S>()(x.error_, s)),
+   mean_(slice_value(x.mean_, s)),
+   error_(slice_value(x.error_, s)),
 
   
    /// ***
    /// has to change... Boost documentation...
    ///
    variance_(x.variance_ ? 
-               boost::optional<result_type>(obs_value_slice<typename obs_value_traits<U>::result_type,S>()(*x.variance_, s)) : 
+               boost::optional<result_type>(slice_value(*x.variance_, s)) : 
                boost::optional<result_type>()),
    tau_(has_tau_ ?   **COPY**
-               obs_value_slice<typename obs_value_traits<U>::time_type,S>()(x.tau_, s) : time_type()),
+               slice_value(x.tau_, s) : time_type()),
    /// 
    /// ***
   
@@ -284,17 +258,17 @@ obsbinneddata<T>::obsbinneddata(const obsbinneddata<U>& x, S s)
 {
   values_.resize(x.values_.size());
   std::transform(x.values_.begin(), x.values_.end(), values_.begin(),
-                 boost::bind2nd(obs_value_slice<U,S>(),s));
+                 boost::bind2nd(slice_it(),s));
     if (jack_valid_) {
     jack_.resize(x.jack_.size());
     std::transform(x.jack_.begin(), x.jack_.end(), jack_.begin(),
-                   boost::bind2nd(obs_value_slice<U,S>(),s));
+                   boost::bind2nd(slice_it(),s));
   }
 }
 
 
 template <class T>
-obsbinneddata<T>::obsbinneddata(const AbstractSimpleObservable<T>& obs)
+binned_data<T>::binned_data(const AbstractSimpleObservable<T>& obs)
  : count_(obs.count()),
    binsize_(obs.bin_size()),
    changed_(false),
@@ -332,7 +306,7 @@ obsbinneddata<T>::obsbinneddata(const AbstractSimpleObservable<T>& obs)
 
 /*
 template <class T> 
-obsbinneddata<T>& obsbinneddata<T>::operator+=(const obsbinneddata<T>& x)
+binned_data<T>& binned_data<T>::operator+=(const binned_data<T>& x)
 {
   using std::sqrt;
   if(count() && x.count()) {
@@ -349,7 +323,7 @@ obsbinneddata<T>& obsbinneddata<T>::operator+=(const obsbinneddata<T>& x)
 }
 
 template <class T>
-obsbinneddata<T>& obsbinneddata<T>::operator-=(const obsbinneddata<T>& x)
+binned_data<T>& binned_data<T>::operator-=(const binned_data<T>& x)
 {
   using std::sqrt;
   if(count() && x.count()) {
@@ -365,13 +339,13 @@ obsbinneddata<T>& obsbinneddata<T>::operator-=(const obsbinneddata<T>& x)
 
 template <class T>
 template<class X>
-obsbinneddata<T>& obsbinneddata<T>::operator*=(const obsbinneddata<X>& x)
+binned_data<T>& binned_data<T>::operator*=(const binned_data<X>& x)
 {
   using std::sqrt;
   if(count() && x.count()) {
     error_=error()*error();
     error_*=x.mean()*x.mean();
-    typename obsbinneddata<X>::result_type tmp(x.error());
+    typename binned_data<X>::result_type tmp(x.error());
     tmp *=tmp;
     result_type tmp2(mean_);
     tmp2 *= tmp2*tmp;
@@ -386,14 +360,14 @@ obsbinneddata<T>& obsbinneddata<T>::operator*=(const obsbinneddata<X>& x)
 
 template <class T>
 template<class X>
-obsbinneddata<T>& obsbinneddata<T>::operator/=(const obsbinneddata<X>& x)
+binned_data<T>& binned_data<T>::operator/=(const binned_data<X>& x)
 {
   using std::sqrt;
   if(count() && x.count()) {
     error_=error()*error();
-    typename obsbinneddata<X>::result_type m(x.mean());
+    typename binned_data<X>::result_type m(x.mean());
     m *=m;
-    typename obsbinneddata<X>::result_type tmp(x.error());
+    typename binned_data<X>::result_type tmp(x.error());
     tmp *=m;
     tmp *=x.error()*m;
     error_ +=tmp;
@@ -408,7 +382,7 @@ obsbinneddata<T>& obsbinneddata<T>::operator/=(const obsbinneddata<X>& x)
 
 template <class T>
 template <class X, class OP>
-void obsbinneddata<T>::transform(const obsbinneddata<X>& x, OP op, double factor)
+void binned_data<T>::transform(const binned_data<X>& x, OP op, double factor)
 {
   if ((count()==0) || (x.count()==0))
     boost::throw_exception(std::runtime_error("both observables need measurements"));
@@ -435,7 +409,7 @@ void obsbinneddata<T>::transform(const obsbinneddata<X>& x, OP op, double factor
 
 template <class T> 
 template <class OP>
-void obsbinneddata<T>::transform_linear(OP op)
+void binned_data<T>::transform_linear(OP op)
 {
   mean_ = op(mean_);
   std::transform(values_.begin(), values_.end(), values_.begin(), op);
@@ -448,7 +422,7 @@ void obsbinneddata<T>::transform_linear(OP op)
 //
 template <class T> 
 template <class OP>
-void obsbinneddata<T>::transform(OP op)
+void binned_data<T>::transform(OP op)
 {
   valid_ = false;
   nonlinear_operations_ = true;
@@ -472,7 +446,7 @@ void obsbinneddata<T>::transform(OP op)
   
   
 template <class T>
-obsbinneddata<T>& obsbinneddata<T>::operator-()
+binned_data<T>& binned_data<T>::operator-()
 {
   if (count()) {
     transform_linear(-_1);
@@ -481,7 +455,7 @@ obsbinneddata<T>& obsbinneddata<T>::operator-()
 }
 
 template <class T> template <class X>
-obsbinneddata<T>& obsbinneddata<T>::operator+=(X x)
+binned_data<T>& binned_data<T>::operator+=(X x)
 {
   if (count()) {
     transform_linear(_1 + x);
@@ -490,7 +464,7 @@ obsbinneddata<T>& obsbinneddata<T>::operator+=(X x)
 }
 
 template <class T> template <class X>
-obsbinneddata<T>& obsbinneddata<T>::operator-=(X x)
+binned_data<T>& binned_data<T>::operator-=(X x)
 {
   if(count()) {
     if (has_minmax_) {
@@ -505,7 +479,7 @@ obsbinneddata<T>& obsbinneddata<T>::operator-=(X x)
 }
 
 template <class T> template <class X>
-void obsbinneddata<T>::subtract_from(const X& x)
+void binned_data<T>::subtract_from(const X& x)
 {
   if (count()) {
     if(has_minmax_) {
@@ -519,7 +493,7 @@ void obsbinneddata<T>::subtract_from(const X& x)
 }
 
 template <class T> template <class X>
-obsbinneddata<T>& obsbinneddata<T>::operator*=(X x)
+binned_data<T>& binned_data<T>::operator*=(X x)
 {
   if (count()) {
     error_ *= x;
@@ -534,7 +508,7 @@ obsbinneddata<T>& obsbinneddata<T>::operator*=(X x)
 }
 
 template <class T> template <class X>
-obsbinneddata<T>& obsbinneddata<T>::operator/=(X x)
+binned_data<T>& binned_data<T>::operator/=(X x)
 {
   if (count()) {
     error_ /= x;
@@ -549,7 +523,7 @@ obsbinneddata<T>& obsbinneddata<T>::operator/=(X x)
 }
 
 template <class T> template <class X>
-void obsbinneddata<T>::divide(const X& x)
+void binned_data<T>::divide(const X& x)
 {
   if (count()) {
     error_ = x *error_/mean_/mean_;
@@ -575,7 +549,7 @@ void obsbinneddata<T>::divide(const X& x)
 /*
   
 template <class T>
-void obsbinneddata<T>::collect_from(const std::vector<obsbinneddata<T> >& runs)
+void binned_data<T>::collect_from(const std::vector<binned_data<T> >& runs)
 {
   bool got_data = false;
 
@@ -593,7 +567,7 @@ void obsbinneddata<T>::collect_from(const std::vector<obsbinneddata<T> >& runs)
   // find smallest and largest bin sizes
   uint64_t minsize = std::numeric_limits<uint64_t>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();
   uint64_t maxsize = 0;
-  for (typename std::vector<obsbinneddata<T> >::const_iterator
+  for (typename std::vector<binned_data<T> >::const_iterator
          r = runs.begin(); r != runs.end(); ++r) {
     if (r->count()) {
       if (r->bin_size() < minsize) minsize = r->bin_size();
@@ -603,7 +577,7 @@ void obsbinneddata<T>::collect_from(const std::vector<obsbinneddata<T> >& runs)
 
   binsize_ = maxsize;
   
-  for (typename std::vector<obsbinneddata<T> >::const_iterator
+  for (typename std::vector<binned_data<T> >::const_iterator
          r = runs.begin(); r != runs.end(); ++r) {
     if (r->count()) {
       if (!got_data) {
@@ -624,7 +598,7 @@ void obsbinneddata<T>::collect_from(const std::vector<obsbinneddata<T> >& runs)
           values_ = r->values_;
           jack_ = r->jack_;
         } else {
-          obsbinneddata<T> tmp(*r);
+          binned_data<T> tmp(*r);
           tmp.set_bin_size(maxsize);
           tmp.fill_jack();
           values_ = tmp.values_;
@@ -659,7 +633,7 @@ void obsbinneddata<T>::collect_from(const std::vector<obsbinneddata<T> >& runs)
           std::copy(r->values2_.begin(), r->values2_.end(),
                     std::back_inserter(values2_));
         } else {
-          obsbinneddata<T> tmp(*r);
+          binned_data<T> tmp(*r);
           tmp.set_bin_size(maxsize);
           std::copy(tmp.values_.begin(), tmp.values_.end(),
                     std::back_inserter(values_));
@@ -678,7 +652,7 @@ void obsbinneddata<T>::collect_from(const std::vector<obsbinneddata<T> >& runs)
 
 /*
 #ifdef ALPS_HAVE_HDF5
-template <typename T> void obsbinneddata<T>::serialize(hdf5::oarchive & ar) const {
+template <typename T> void binned_data<T>::serialize(hdf5::oarchive & ar) const {
   ar << make_pvp("count", count_);
   if (valid_)
   { 
@@ -693,13 +667,13 @@ template <typename T> void obsbinneddata<T>::serialize(hdf5::oarchive & ar) cons
   }
 }
 
-template <typename T> void obsbinneddata<T>::serialize(hdf5::iarchive & ar) const {}
+template <typename T> void binned_data<T>::serialize(hdf5::iarchive & ar) const {}
 #endif
 */
   
 /*  
 template <class T>
-void obsbinneddata<T>::fill_jack() const
+void binned_data<T>::fill_jack() const
 {
   // build jackknife data structure
   if (bin_number() && !jack_valid_) {
@@ -729,7 +703,7 @@ void obsbinneddata<T>::fill_jack() const
 
 
 template <class T>
-void obsbinneddata<T>::analyze() const
+void binned_data<T>::analyze() const
 {
   return;
 
@@ -751,7 +725,7 @@ void obsbinneddata<T>::analyze() const
 
 /*
 template <class T>
-void obsbinneddata<T>::jackknife() const
+void binned_data<T>::jackknife() const
 {
   fill_jack();
 
@@ -788,8 +762,8 @@ void obsbinneddata<T>::jackknife() const
 
 
 template<class T>
-typename obsbinneddata<T>::covariance_type 
-obsbinneddata<T>::covariance(const obsbinneddata<T> obs2) const
+typename binned_data<T>::covariance_type 
+binned_data<T>::covariance(const binned_data<T> obs2) const
 {
   fill_jack();
   obs2.fill_jack();
@@ -829,7 +803,7 @@ obsbinneddata<T>::covariance(const obsbinneddata<T> obs2) const
 /*
 // add collect_bins again ... 
 template <class T>
-void obsbinneddata<T>::collect_bins(uint64_t howmany)
+void binned_data<T>::collect_bins(uint64_t howmany)
 {
   if (nonlinear_operations_)
     boost::throw_exception(std::runtime_error("cannot change bins after nonlinear operations"));
@@ -857,14 +831,14 @@ void obsbinneddata<T>::collect_bins(uint64_t howmany)
 }
 
 template <class T>
-void obsbinneddata<T>::set_bin_size(uint64_t s)
+void binned_data<T>::set_bin_size(uint64_t s)
 {
   collect_bins((s-1)/binsize_+1);
   binsize_=s;
 }
 
 template <class T>
-void obsbinneddata<T>::set_bin_number(uint64_t binnum)
+void binned_data<T>::set_bin_number(uint64_t binnum)
 {
   collect_bins((values_.size()-1)/binnum+1);
 }
@@ -872,7 +846,7 @@ void obsbinneddata<T>::set_bin_number(uint64_t binnum)
 
 
 template <class T>
-const typename obsbinneddata<T>::result_type& obsbinneddata<T>::mean() const
+const typename binned_data<T>::result_type& binned_data<T>::mean() const
 {
   if (count() == 0) boost::throw_exception(NoMeasurementsError());
   analyze();
@@ -880,7 +854,7 @@ const typename obsbinneddata<T>::result_type& obsbinneddata<T>::mean() const
 }
 
 template <class T>
-const typename obsbinneddata<T>::result_type& obsbinneddata<T>::error() const
+const typename binned_data<T>::result_type& binned_data<T>::error() const
 {
   if (count() == 0) boost::throw_exception(NoMeasurementsError());
   analyze();
@@ -889,7 +863,7 @@ const typename obsbinneddata<T>::result_type& obsbinneddata<T>::error() const
 
 
 template <class T>
-const typename boost::optional<typename obsbinneddata<T>::result_type>& obsbinneddata<T>::variance() const
+const typename boost::optional<typename binned_data<T>::result_type>& binned_data<T>::variance() const
 {
   if (count() == 0) boost::throw_exception(NoMeasurementsError());
   if (!variance_opt_)
@@ -906,7 +880,7 @@ const typename boost::optional<typename obsbinneddata<T>::result_type>& obsbinne
 
 template <class T>
 inline
-const typename boost::optional<typename obsbinneddata<T>::time_type>& obsbinneddata<T>::tau() const
+const typename boost::optional<typename binned_data<T>::time_type>& binned_data<T>::tau() const
 {
   if (count() == 0) boost::throw_exception(NoMeasurementsError());
   if (!tau_opt_)
@@ -924,7 +898,7 @@ const typename boost::optional<typename obsbinneddata<T>::time_type>& obsbinnedd
 
 
 template <class T>
-std::ostream& operator<< (std::ostream &out, obsbinneddata<T> obj)
+std::ostream& operator<< (std::ostream &out, binned_data<T> obj)
 {
 /*
   out << "\ncount:\t"                << obj.count_   
@@ -951,12 +925,9 @@ std::ostream& operator<< (std::ostream &out, obsbinneddata<T> obj)
 
 
 
-//
-// // cont'd ... (3)
-// } // end namespace alea
-//
+} // end namespace alea
 
-} // end namespace alps
+} // end namespace alp
 
 
 // 1) get the operators +,-,*,/,.... and functions from simpleobseval.h

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2009 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2010 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Fabian Stoeckli <fabstoec@phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
@@ -35,6 +35,7 @@
 #include <alps/config.h>
 #include <alps/alea/histogram.h>
 #include <alps/alea/histogramdata.h>
+#include <alps/type_traits/type_tag.hpp>
 #include <alps/parser/parser.h>
 
 #include <algorithm>
@@ -64,8 +65,8 @@ public:
   typedef typename std::vector<HistogramObservableData<T> >::iterator iterator;
   typedef typename std::vector<HistogramObservableData<T> >::const_iterator const_iterator;
 
-  BOOST_STATIC_CONSTANT(uint32_t, version = type_traits<T>::type_tag
-    + (type_traits<integer_type>::type_tag << 8) + (6<<16));
+  BOOST_STATIC_CONSTANT(uint32_t, version = type_tag<T>::value
+    + (type_tag<integer_type>::value << 8) + (6<<16));
 
   //constructors
   HistogramObservableEvaluator(const std::string& n="");

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2009 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2010 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
@@ -37,6 +37,8 @@
 #include <alps/alea/observable.h>
 #include <alps/alea/simpleobservable.h>
 #include <alps/alea/simplebinning.h>
+#include <alps/type_traits/change_value_type.hpp>
+#include <alps/type_traits/average_type.hpp>
 #include <boost/config.hpp>
 
 #ifdef ALPS_HAVE_VALARRAY
@@ -55,10 +57,9 @@ template <class T=double>
 class BasicDetailedBinning : public SimpleBinning<T> {
 public:
   typedef T value_type;  
-  typedef typename obs_value_traits<T>::time_type time_type;
-  typedef typename obs_value_traits<T>::size_type size_type;
-  typedef typename obs_value_traits<T>::count_type count_type;
-  typedef typename obs_value_traits<T>::result_type result_type;
+  typedef typename change_value_type<T,double>::type time_type;
+  typedef std::size_t size_type;
+  typedef typename average_type<T>::type result_type;
 
   BOOST_STATIC_CONSTANT(bool, has_tau=true);
   BOOST_STATIC_CONSTANT(int, magic_id=3);

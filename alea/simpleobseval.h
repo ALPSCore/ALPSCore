@@ -39,8 +39,13 @@
 #include <alps/parser/parser.h>
 #include <alps/encode.hpp>
 #include <alps/math.hpp>
+#include <alps/type_traits/is_scalar.hpp>
+#include <alps/type_traits/change_value_type.hpp>
+#include <alps/type_traits/average_type.hpp>
+
 #include <boost/config.hpp>
 #include <boost/functional.hpp>
+
 #include <algorithm>
 #include <iostream>
 
@@ -90,15 +95,15 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
   friend class RealVectorObsevaluatorXMLHandler;
 
   typedef T value_type;
-  typedef typename obs_value_traits<T>::time_type time_type;
+  typedef typename change_value_type<T,double>::type time_type;
   typedef typename AbstractSimpleObservable<T>::result_type result_type;
-  typedef typename obs_value_traits<T>::convergence_type convergence_type;
+  typedef typename change_value_type<T,int>::type convergence_type;
+  typedef typename AbstractSimpleObservable<T>::label_type label_type;
   // typedef std::size_t count_type;
   // *** we may need more than 32 Bit
   typedef uint64_t count_type;
   typedef typename SimpleObservableData<T>::covariance_type covariance_type;
 
-  typedef typename AbstractSimpleObservable<T>::label_type label_type;
 
   enum { version = obs_value_traits<T>::magic_id + (6 << 16) };
   uint32_t version_id() const { return version; }
@@ -116,8 +121,6 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
 
   SimpleObservableEvaluator(const std::string& n, std::istream&, const XMLTag&);
   // /** needed for silcing: */
-  // template<class S>
-  // friend SimpleObservabelEvaluator<typename obs_value_slice<T,S>::value_type>
 
   /** assign an observable, replacing all observables in the class */
   const SimpleObservableEvaluator<T>& operator=(const SimpleObservableEvaluator<T>& eval);
@@ -202,11 +205,11 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
   void output_vector(std::ostream&) const;
 
   template <class S>
-  SimpleObservableEvaluator<typename obs_value_slice<T,S>::value_type>
+  SimpleObservableEvaluator<typename element_type<T>::type>
     slice(const S& ,const std::string&) const;
 
   template <class S>
-  SimpleObservableEvaluator<typename obs_value_slice<T,S>::value_type>
+  SimpleObservableEvaluator<typename element_type<T>::type>
     slice(const S&) const;
 
   void operator<<(const SimpleObservableData<T>& obs);
@@ -423,10 +426,10 @@ inline void SimpleObservableEvaluator<T>::merge(const Observable& o)
 
 template <class T>
 template <class S>
-inline SimpleObservableEvaluator<typename obs_value_slice<T,S>::value_type>
+inline SimpleObservableEvaluator<typename element_type<T>::type>
 SimpleObservableEvaluator<T>::slice(const S& sl, const std::string& n) const
 {
-  SimpleObservableEvaluator<typename obs_value_slice<T,S>::value_type>
+  SimpleObservableEvaluator<typename element_type<T>::type>
      res(n.length()==0 ? super_type::name()+boost::lexical_cast<std::string,S>(sl) : n);
   res << all_.slice(sl);
   return res;
@@ -434,12 +437,12 @@ SimpleObservableEvaluator<T>::slice(const S& sl, const std::string& n) const
 
 template <class T>
 template <class S>
-inline SimpleObservableEvaluator<typename obs_value_slice<T,S>::value_type>
+inline SimpleObservableEvaluator<typename element_type<T>::type>
 SimpleObservableEvaluator<T>::slice(const S& sl) const
 {
-  SimpleObservableEvaluator<typename obs_value_slice<T,S>::value_type>
+  SimpleObservableEvaluator<typename element_type<T>::type>
      res(super_type::name()+boost::lexical_cast<std::string,S>(sl));
-
+  res << all_.slice(sl);
   return res;
 }
 
@@ -460,7 +463,7 @@ inline ALPS_DUMMY_VOID SimpleObservableEvaluator<T>::compact()
 template <class T>
 ALPS_DUMMY_VOID SimpleObservableEvaluator<T>::output(std::ostream& out) const
 {
-  output_helper<obs_value_traits<T>::array_valued>::output(*this,out);
+  output_helper<typename is_scalar<T>::type>::output(*this,out);
   ALPS_RETURN_VOID
 }
 
@@ -501,26 +504,24 @@ void SimpleObservableEvaluator<T>::output_vector(std::ostream& out) const
     time_type tau_;
     if (has_tau())
       obs_value_traits<value_type>::copy(tau_,tau());
-    typename obs_value_traits<label_type>::slice_iterator it2=obs_value_traits<label_type>::slice_begin(super_type::label());
-    for (typename obs_value_traits<result_type>::slice_iterator sit=
-           obs_value_traits<result_type>::slice_begin(value_);
-          sit!=obs_value_traits<result_type>::slice_end(value_);++sit,++it2)
+    typename slice_index<label_type>::type it2=slices(this->label()).first;
+    for (typename slice_index<result_type>::type sit= slices(value_).first;
+          sit!=slices(value_).second;++sit,++it2)
     {
-      std::string lab=obs_value_traits<label_type>::slice_value(super_type::label(),it2);
+      std::string lab=slice_value(this->label(),it2);
       if (lab=="")
-        lab=obs_value_traits<result_type>::slice_name(value_,sit);
+        lab=slice_name(value_,sit);
       out << "Entry[" << lab << "]: "
-          << alps::round<2>(obs_value_traits<result_type>::slice_value(value_,sit)) << " +/- "
-          << alps::round<2>(obs_value_traits<result_type>::slice_value(error_,sit));
+          << alps::round<2>(slice_value(value_,sit)) << " +/- "
+          << alps::round<2>(slice_value(error_,sit));
       if(has_tau())
-        out << "; tau = " << (alps::is_nonzero<2>(obs_value_traits<result_type>::slice_value(error_,sit)) ? obs_value_traits<time_type>::slice_value(tau_,sit) : 0);
-      if (alps::is_nonzero<2>(obs_value_traits<result_type>::slice_value(error_,sit))) {
-        if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==MAYBE_CONVERGED)
+        out << "; tau = " << (alps::is_nonzero<2>(slice_value(error_,sit)) ? slice_value(tau_,sit) : 0);
+      if (alps::is_nonzero<2>(slice_value(error_,sit))) {
+        if (slice_value(conv_,sit)==MAYBE_CONVERGED)
           out << " WARNING: check error convergence";
-        if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==NOT_CONVERGED)
+        if (slice_value(conv_,sit)==NOT_CONVERGED)
           out << " WARNING: ERRORS NOT CONVERGED!!!";
-        if (error_underflow(obs_value_traits<result_type>::slice_value(value_,sit),
-                            obs_value_traits<result_type>::slice_value(error_,sit)))
+        if (error_underflow(slice_value(value_,sit),slice_value(error_,sit)))
           out << " Warning: potential error underflow. Errors might be smaller";
       }
       out << std::endl;
@@ -745,7 +746,7 @@ template <class T> struct function_##F : public std::unary_function<T,T> \
 } \
 template <class T> alps::SimpleObservableEvaluator<T> \
 F(const alps::SimpleObservableEvaluator<T>& x) \
-{ return alps::SimpleObservableEvaluator<T>(x).transform(alps::detail::function_##F<T>(), /* alps::detail::function_##F<typename alps::obs_value_traits<T>::result_type>(), */ #F"("+x.name()+")"); }
+{ return alps::SimpleObservableEvaluator<T>(x).transform(alps::detail::function_##F<T>(), #F"("+x.name()+")"); }
 
 OBSERVABLE_FUNCTION(exp)
 OBSERVABLE_FUNCTION(log)

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2006 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2003-2010 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -36,6 +36,7 @@
 #include <alps/model/sitebasisstates.h>
 #include <alps/expression.h>
 #include <alps/multi_array.hpp>
+#include <alps/type_traits/is_complex.hpp>
 #include <alps/parameter.h>
 
 namespace alps {
@@ -198,7 +199,7 @@ SiteOperator::matrix(const SiteBasisDescriptor<I>& b,  const Parameters& p) cons
           }
           else
             mat[i][j].second=evaluator.fermionic();
-          if (boost::is_arithmetic<T>::value || type_traits<T>::is_complex)
+          if (boost::is_arithmetic<T>::value || is_complex<T>::value)
             if (!can_evaluate(boost::lexical_cast<std::string>(term)))
               boost::throw_exception(std::runtime_error("Cannot evaluate expression " + boost::lexical_cast<std::string>(term)));
           mat[i][j].first += evaluate<T>(term);

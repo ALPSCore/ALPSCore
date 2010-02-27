@@ -4,7 +4,9 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2010 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2010 by Matthias Troyer <troyer@comp-phys.org>,
+*                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
+*                            Andreas Laeuchli <laeuchli@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -26,50 +28,23 @@
 *
 *****************************************************************************/
 
-/* $Id$ */
+/* $Id: obsvalue.h 3435 2009-11-28 14:45:38Z troyer $ */
 
-#ifndef ALPS_EXPRESSION_NUMBER_H
-#define ALPS_EXPRESSION_NUMBER_H
+#ifndef ALPS_ALEA_CONVERGENCE_H
 
-#include <alps/expression/expression_fwd.h>
-#include <alps/expression/evaluate_helper.h>
-#include <alps/type_traits/real_type.hpp>
-#include <boost/call_traits.hpp>
+#include <alps/config.h>
+#include <string>
+
 
 namespace alps {
-namespace expression {
 
-template<class T>
-class Number : public Evaluatable<T> {
-public:
-  typedef T value_type;
-  typedef typename alps::real_type<T>::type real_type;
+enum error_convergence {CONVERGED, MAYBE_CONVERGED, NOT_CONVERGED};
 
-  Number(typename boost::call_traits<value_type>::param_type x) : val_(x) {}
-  value_type value(const Evaluator<T>& =Evaluator<T>(), bool=false) const;
-  bool can_evaluate(const Evaluator<T>& =Evaluator<T>(), bool=false) const { return true; }
-  void output(std::ostream&) const;
-  Evaluatable<T>* clone() const { return new Number<T>(*this); }
-private:
-  value_type val_;
-};
-
-template<class T>
-typename Number<T>::value_type Number<T>::value(const Evaluator<T>&, bool) const
+inline std::string convergence_to_text(int c)
 {
-  return val_;
+  return (c==CONVERGED ? "yes" : c==MAYBE_CONVERGED ? "maybe" : c==NOT_CONVERGED ? "no" : "");
 }
 
-template<class T>
-void Number<T>::output(std::ostream& os) const
-{
-  if (evaluate_helper<T>::imag(val_) == 0)
-    os << evaluate_helper<T>::real(val_);
-  else
-    os << val_;
-}
-
-} // end namespace expression
 } // end namespace alps
 
-#endif // ! ALPS_EXPRESSION_IMPL_H
+#endif // ALPS_ALEA_CONVERGENCE_H

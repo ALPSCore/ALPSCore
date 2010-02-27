@@ -33,6 +33,7 @@
 
 #include <alps/config.h>
 #include <alps/numeric/vector_functions.hpp>
+#include <alps/type_traits/element_type.hpp>
 
 #ifdef ALPS_HAVE_PYTHON
 #include <boost/python.hpp>
@@ -49,19 +50,6 @@
 
 
 namespace alps { 
-
-  // implement trait techniques to set element_type  -- very cool, amazing, awesome, better and better...
-  template <typename T>
-  struct element_type 
-    : public boost::remove_cv<T>
-  {
-    typedef T type;
-  };  
-
-  template <typename T>
-  struct element_type<std::vector<T> >
-    : public element_type<T>
-  {}; 
 
   namespace alea {
 

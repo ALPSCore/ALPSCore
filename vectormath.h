@@ -39,7 +39,6 @@
 
 
 #include <alps/config.h>
-#include <alps/typetraits.h>
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/bind.hpp>
 #include <cassert>

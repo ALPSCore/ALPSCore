@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2005 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2001-2010 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -36,6 +36,7 @@
 #include <alps/expression/number.h>
 #include <alps/expression/block.h>
 #include <alps/expression/function.h>
+#include <alps/type_traits/norm_type.hpp>
 #include <boost/call_traits.hpp>
 
 namespace alps {
@@ -45,7 +46,7 @@ template<class T>
 class SimpleFactor : public Evaluatable<T> {
 public:
   typedef T value_type;
-  typedef typename type_traits<T>::norm_t norm_type;
+  typedef typename alps::norm_type<T>::type norm_type;
   
   SimpleFactor(std::istream&);
   SimpleFactor(typename boost::call_traits<value_type>::param_type x)
@@ -84,7 +85,7 @@ class Factor : public SimpleFactor<T> {
 public:
   typedef T value_type;
   typedef SimpleFactor<T> super_type;
-  typedef typename type_traits<T>::norm_t norm_type;
+  typedef typename alps::norm_type<T>::type norm_type;
   
   Factor(std::istream&, bool inverse = false);
   Factor(typename boost::call_traits<value_type>::param_type x)

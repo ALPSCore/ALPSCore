@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
@@ -37,6 +37,9 @@
 #include <alps/alea/abstractbinning.h>
 #include <alps/alea/recordableobservable.h>
 #include <alps/alea/output_helper.h>
+#include <alps/type_traits/is_scalar.hpp>
+#include <alps/type_traits/change_value_type.hpp>
+#include <alps/type_traits/average_type.hpp>
 #include <boost/config.hpp>
 
 namespace alps {
@@ -45,7 +48,7 @@ template <class T>
 inline bool error_underflow(T mean, T error)
 {
   return ((error!= 0. && mean != 0.)  && (std::abs(mean) * 10.
-             *std::sqrt(type_traits<T>::epsilon()) > std::abs(error)));
+             *std::sqrt(std::numeric_limits<T>::epsilon()) > std::abs(error)));
 }
 
 class RealVectorObsevaluatorXMLHandler;
@@ -69,19 +72,17 @@ public:
   typedef T value_type;
 
   /// the data type of averages and errors
-  typedef typename obs_value_traits<T>::result_type result_type;
+  typedef typename average_type<T>::type result_type;
 
-  typedef typename obs_value_traits<result_type>::slice_iterator slice_iterator;
+  typedef typename alps::slice_index<result_type>::type slice_index;
   /// the count data type: an integral type
   // typedef std::size_t count_type;
   typedef uint64_t count_type;
 
   /// the data type for autocorrelation times
-  typedef typename obs_value_traits<T>::time_type time_type;
-
-  typedef typename obs_value_traits<T>::convergence_type convergence_type;
-
-  typedef typename obs_value_traits<value_type>::label_type label_type;
+  typedef typename change_value_type<T,double>::type time_type;
+  typedef typename change_value_type<T,int>::type convergence_type;
+  typedef typename change_value_type_replace_valarray<value_type,std::string>::type label_type;
 
   AbstractSimpleObservable(const std::string& name="", const label_type& l=label_type())
    : Observable(name), label_(l) {}
@@ -143,11 +144,11 @@ public:
                      same name as the original observable
       */
   template <class S>
-  SimpleObservableEvaluator<typename obs_value_slice<T,S>::value_type>
+  SimpleObservableEvaluator<typename element_type<T>::type>
     slice(S s, const std::string& newname="") const;
 
   template <class S>
-  SimpleObservableEvaluator<typename obs_value_slice<T,S>::value_type>
+  SimpleObservableEvaluator<typename element_type<T>::type>
     operator[](S s) const { return slice(s);}
 
 #ifndef ALPS_WITHOUT_OSIRIS
@@ -224,7 +225,7 @@ private:
   }
   friend class SimpleObservableEvaluator<value_type>;
 
-  virtual void write_more_xml(oxstream&, slice_iterator = slice_iterator()) const {}
+  virtual void write_more_xml(oxstream&, slice_index = slice_index()) const {}
 
   label_type label_;
 };
@@ -237,7 +238,7 @@ private:
 template <class T>
 void AbstractSimpleObservable<T>::write_xml(oxstream& oxs, const boost::filesystem::path& fn_hdf5) const
 {
-  output_helper<obs_value_traits<T>::array_valued>::write_xml(*this, oxs, fn_hdf5);
+  output_helper<typename is_scalar<T>::type>::write_xml(*this, oxs, fn_hdf5);
 }
 
 template <class T>
@@ -345,44 +346,44 @@ void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, const boost::f
     if (is_signed())
       oxs << attribute("signed","true");
 
-    typename obs_value_traits<result_type>::slice_iterator it=obs_value_traits<result_type>::slice_begin(mean_);
-    typename obs_value_traits<result_type>::slice_iterator end=obs_value_traits<result_type>::slice_end(mean_);
-    typename obs_value_traits<label_type>::slice_iterator it2=obs_value_traits<label_type>::slice_begin(label());
+    slice_index it,end;
+    boost::tie(it,end) = slices(mean_);
+    typename alps::slice_index<label_type>::type it2=slices(label()).first;
     while (it!=end)
     {
-      std::string lab=obs_value_traits<label_type>::slice_value(label(),it2);
+      std::string lab=slice_value(label(),it2);
       if (lab=="")
-        lab=obs_value_traits<result_type>::slice_name(mean_,it);
+        lab=slice_name(mean_,it);
       oxs << start_tag("SCALAR_AVERAGE")
           << attribute("indexvalue",lab);
       oxs << start_tag("COUNT");
       oxs << no_linebreak;
       oxs << count();
       oxs << end_tag("COUNT");
-      int prec=(count()==1) ? 19 : int(4-std::log10(std::abs(obs_value_traits<result_type>::slice_value(error_,it)/obs_value_traits<result_type>::slice_value(mean_,it))));
+      int prec=(count()==1) ? 19 : int(4-std::log10(std::abs(slice_value(error_,it)/slice_value(mean_,it))));
       prec = (prec>=3 && prec<20 ? prec : 8);
       oxs << start_tag("MEAN") << no_linebreak;
       if (mm != "") oxs << attribute("method", mm);
-      oxs << precision(obs_value_traits<result_type>::slice_value(mean_, it), prec)
+      oxs << precision(slice_value(mean_, it), prec)
           << end_tag("MEAN");
 
-      oxs << start_tag("ERROR") << attribute("converged", convergence_to_text(obs_value_traits<convergence_type>::slice_value(conv_,it))) << no_linebreak;
-      if (error_underflow( obs_value_traits<result_type>::slice_value(mean_, it), obs_value_traits<result_type>::slice_value(error_, it)))
+      oxs << start_tag("ERROR") << attribute("converged", convergence_to_text(slice_value(conv_,it))) << no_linebreak;
+      if (error_underflow(slice_value(mean_, it),slice_value(error_, it)))
         oxs << attribute("underflow","true");
       if (em != "") oxs << attribute("method", em);
-      oxs << precision(obs_value_traits<result_type>::slice_value(error_, it), 3)
+      oxs << precision(slice_value(error_, it), 3)
           << end_tag("ERROR");
 
       if (has_variance()) {
         oxs << start_tag("VARIANCE") << no_linebreak;
         if (vm != "") oxs << attribute("method", vm);
-        oxs << precision(obs_value_traits<result_type>::slice_value(variance_, it), 3)
+        oxs << precision(slice_value(variance_, it), 3)
             << end_tag("VARIANCE");
       }
       if (has_tau()) {
         oxs << start_tag("AUTOCORR") << no_linebreak;
         if (tm != "") oxs << attribute("method", tm);
-        oxs << precision(obs_value_traits<time_type>::slice_value(tau_, it), 3)
+        oxs << precision(slice_value(tau_, it), 3)
             << end_tag("AUTOCORR");
       }
 
@@ -423,7 +424,7 @@ void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, const boost::f
 namespace alps {
 
 template <class T> template <class S>
-inline SimpleObservableEvaluator<typename obs_value_slice<T,S>::value_type>
+inline SimpleObservableEvaluator<typename element_type<T>::type>
 AbstractSimpleObservable<T>::slice (S s, const std::string& n) const
 {
   if (dynamic_cast<const SimpleObservableEvaluator<T>*>(this)!=0)

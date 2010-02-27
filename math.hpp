@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1999-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1999-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -38,7 +38,7 @@
 #define ALPS_MATH_HPP
 
 #include <alps/config.h>
-#include <alps/typetraits.h>
+#include <alps/type_traits/norm_type.hpp>
 #include <boost/call_traits.hpp>
 #include <boost/numeric/conversion/converter.hpp>
 #include <boost/type_traits.hpp>
@@ -126,11 +126,11 @@ inline std::size_t binomial(std::size_t l, std::size_t n)
 /// It is optimized by specialization for complex numbers.
 /// \return the square of the absolute value of the argument
 template <class T>
-inline typename type_traits<T>::norm_t abs2(T x, typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0) {
+inline typename norm_type<T>::type abs2(T x, typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0) {
   return x * x;
 }
 template <class T>
-inline typename type_traits<T>::norm_t abs2(const T& x, typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0) {
+inline typename norm_type<T>::type abs2(const T& x, typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0) {
   return std::abs(x)*std::abs(x);
 }
 

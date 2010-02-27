@@ -38,6 +38,10 @@
 #include <alps/alea/nan.h>
 #include <alps/alea/simpleobservable.h>
 #include <alps/parser/parser.h>
+#include <alps/type_traits/is_scalar.hpp>
+#include <alps/type_traits/change_value_type.hpp>
+#include <alps/type_traits/average_type.hpp>
+#include <alps/type_traits/covariance_type.hpp>
 
 #include <boost/lambda/lambda.hpp>
 #include <boost/functional.hpp>
@@ -82,13 +86,13 @@ public:
   friend class RealVectorObsevaluatorXMLHandler;
 
   typedef T value_type;
-  typedef typename obs_value_traits<T>::time_type time_type;
-  typedef typename obs_value_traits<T>::size_type size_type;
-  typedef typename obs_value_traits<T>::count_type count_type;
-  typedef typename obs_value_traits<T>::result_type result_type;
-  typedef typename obs_value_traits<T>::convergence_type convergence_type;
-  typedef typename obs_value_traits<T>::label_type label_type;
-  typedef typename obs_value_traits<T>::covariance_type covariance_type;
+  typedef typename change_value_type<T,double>::type time_type;
+  typedef std::size_t size_type;
+  typedef alps::alea::count_type count_type;
+  typedef typename average_type<T>::type result_type;
+  typedef typename change_value_type<T,int>::type convergence_type;
+  typedef typename change_value_type_replace_valarray<value_type,std::string>::type label_type;
+  typedef typename covariance_type<T>::type covariance_type;
 
   // constructors
   SimpleObservableData();
@@ -96,11 +100,6 @@ public:
   SimpleObservableData(const SimpleObservableData<U>& x, S s);
   SimpleObservableData(const AbstractSimpleObservable<value_type>& obs);
   SimpleObservableData(std::istream&, const XMLTag&, label_type& );
-
-  template <class S>
-  SimpleObservableData<typename obs_value_slice<T,S>::value_type> slice(S s) {
-    return SimpleObservableData<typename obs_value_slice<T,S>::value_type>(*this, s);
-  }
 
   SimpleObservableData const& operator=(const SimpleObservableData& x);
 
@@ -136,10 +135,10 @@ public:
   }
 
   template <class S>
-    SimpleObservableData<typename obs_value_slice<T,S>::value_type> slice(S s) const
-      {
-        return SimpleObservableData<typename obs_value_slice<T,S>::value_type>(*this,s);
-      }
+  SimpleObservableData<typename element_type<T>::type> slice(S s) const
+  {
+    return SimpleObservableData<typename element_type<T>::type>(*this,s);
+  }
 
   ALPS_DUMMY_VOID compact();
 
@@ -264,26 +263,23 @@ SimpleObservableData<T>::SimpleObservableData(const SimpleObservableData<U>& x, 
    valid_(x.valid_),
    jack_valid_(x.jack_valid_),
    nonlinear_operations_(x.nonlinear_operations_),
-   mean_(obs_value_slice<typename obs_value_traits<U>::result_type,S>()(x.mean_, s)),
-   error_(obs_value_slice<typename obs_value_traits<U>::result_type,S>()(x.error_, s)),
-   variance_(has_variance_ ? obs_value_slice<typename obs_value_traits<U>::result_type,S>()(x.variance_, s) : result_type()),
-   tau_(has_tau_ ? obs_value_slice<typename obs_value_traits<U>::time_type,S>()(x.tau_, s) : time_type()),
+   mean_(slice_value(x.mean_, s)),
+   error_(slice_value(x.error_, s)),
+   variance_(has_variance_ ? slice_value(x.variance_, s) : result_type()),
+   tau_(has_tau_ ? slice_value(x.tau_, s) : time_type()),
    values_(x.values_.size()),
    values2_(x.values2_.size()),
    jack_(x.jack_.size()),
-   converged_errors_(obs_value_slice<typename obs_value_traits<U>::convergence_type,S>()(x.converged_errors_,s)),
-   any_converged_errors_(obs_value_slice<typename obs_value_traits<U>::convergence_type,S>()(x.any_converged_errors_,s))
+   converged_errors_(slice_value(x.converged_errors_,s)),
+   any_converged_errors_(slice_value(x.any_converged_errors_,s))
 {
-  values_.resize(x.values_.size());
   std::transform(x.values_.begin(), x.values_.end(), values_.begin(),
-                 boost::bind2nd(obs_value_slice<U,S>(),s));
-  values2_.resize(x.values2_.size());
+                 boost::bind2nd(slice_it<U>(),s));
   std::transform(x.values2_.begin(), x.values2_.end(), values2_.begin(),
-                 boost::bind2nd(obs_value_slice<U,S>(),s));
+                 boost::bind2nd(slice_it<U>(),s));
   if (jack_valid_) {
-    jack_.resize(x.jack_.size());
     std::transform(x.jack_.begin(), x.jack_.end(), jack_.begin(),
-                   boost::bind2nd(obs_value_slice<U,S>(),s));
+                   boost::bind2nd(slice_it<U>(),s));
   }
 }
 
@@ -518,9 +514,9 @@ void SimpleObservableData<T>::read_xml_vector(std::istream& infile, const XMLTag
 
 namespace detail {
 
-template <bool arrayvalued> struct input_helper {};
+template <class F> struct input_helper {};
 
-template <> struct input_helper<true>
+template <> struct input_helper<boost::mpl::false_>
 {
   template <class T, class L>
   static void read_xml(SimpleObservableData<T>& obs, std::istream& infile, const XMLTag& tag, L& l) {
@@ -528,7 +524,7 @@ template <> struct input_helper<true>
   }
 };
 
-template <> struct input_helper<false>
+template <> struct input_helper<boost::mpl::true_>
 {
   template <class T, class L>
   static void read_xml(SimpleObservableData<T>& obs, std::istream& infile, const XMLTag& tag,L&) {
@@ -541,7 +537,7 @@ template <> struct input_helper<false>
 template <class T>
 inline void SimpleObservableData<T>::read_xml(std::istream& infile, const XMLTag& intag, label_type& l)
 {
-  detail::input_helper<obs_value_traits<T>::array_valued>::read_xml(*this,infile,intag,l);
+  detail::input_helper<typename is_scalar<T>::type>::read_xml(*this,infile,intag,l);
 }
 
 template <class T>
@@ -822,9 +818,9 @@ template <class T> SimpleObservableData<T> & SimpleObservableData<T>::operator<<
       has_tau_ = has_tau_ && run.has_tau_;
       can_set_thermal_ = can_set_thermal_ && run.can_set_thermal_;
       nonlinear_operations_ = nonlinear_operations_ || run.nonlinear_operations_;
-      changed_ = changed_ && run.changed_;
-      obs_value_traits<convergence_type>::check_for_max(converged_errors_, run.converged_errors_);
-      obs_value_traits<convergence_type>::check_for_min(any_converged_errors_, run.any_converged_errors_);
+      changed_ = changed_ || run.changed_;
+      update_max(converged_errors_, run.converged_errors_);
+      update_min(any_converged_errors_, run.any_converged_errors_);
 
       mean_ *= double(count_);
       mean_ += double(run.count_)*run.mean_;

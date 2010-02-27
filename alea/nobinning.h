@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
@@ -38,11 +38,12 @@
 #include <alps/alea/abstractbinning.h>
 #include <alps/alea/nan.h>
 #include <alps/math.hpp>
+#include <alps/type_traits/change_value_type.hpp>
+#include <alps/type_traits/average_type.hpp>
+
 #include <boost/config.hpp>
 
-#ifdef ALPS_HAVE_VALARRAY
-# include <valarray>
-#endif
+#include <valarray>
 
 //=======================================================================
 // NoBinning
@@ -58,10 +59,10 @@ class NoBinning : public AbstractBinning<T>
   typedef AbstractBinning<T> super_type;
  public:
   typedef T value_type;
-  typedef typename obs_value_traits<T>::size_type size_type;
-  typedef typename obs_value_traits<T>::count_type count_type;
-  typedef typename obs_value_traits<T>::result_type result_type;
-  typedef typename obs_value_traits<T>::convergence_type convergence_type;
+  typedef std::size_t size_type;
+  typedef alea::count_type count_type;
+  typedef typename average_type<T>::type result_type;
+  typedef typename change_value_type<T,int>::type convergence_type;
 
   BOOST_STATIC_CONSTANT(bool, has_tau=false);
   BOOST_STATIC_CONSTANT(int, magic_id=1);
@@ -140,11 +141,9 @@ typename NoBinning<T>::convergence_type NoBinning<T>::converged_errors() const
 {
   convergence_type conv;
   obs_value_traits<T>::resize_same_as(conv,sum_);
-  typename obs_value_traits<convergence_type>::slice_iterator it;
-
-  for (it= obs_value_traits<convergence_type>::slice_begin(conv);
-       it!= obs_value_traits<convergence_type>::slice_end(conv); ++it)
-    obs_value_traits<convergence_type>::slice_value(conv,it) = CONVERGED;
+  for (typename slice_index<convergence_type>::type it= slices(conv).first; 
+       it!= slices(conv).second; ++it)
+    slice_value(conv,it) = CONVERGED;
   return conv;
 }
 
@@ -170,10 +169,9 @@ void NoBinning<T>::operator<<(const T& x)
 template <class T>
 inline typename NoBinning<T>::result_type NoBinning<T>::mean() const
 {
-  typedef typename obs_value_traits<T>::count_type count_type;
 
   if (count())
-    return obs_value_traits<result_type>::convert(sum_)/count_type(count());
+    return obs_value_traits<result_type>::convert(sum_)/double(count());
   else
     boost::throw_exception(NoMeasurementsError());
   return result_type();
@@ -183,7 +181,6 @@ template <class T>
 inline typename NoBinning<T>::result_type NoBinning<T>::variance() const
 {
   using std::abs;
-  typedef typename obs_value_traits<T>::count_type count_type;
 
   if(count()==0)
     boost::throw_exception(NoMeasurementsError());
@@ -196,10 +193,10 @@ inline typename NoBinning<T>::result_type NoBinning<T>::variance() const
       return retval;
     } // no data collected
   result_type tmp(obs_value_traits<result_type>::convert(sum_));
-  tmp *= tmp/ count_type(count_);
+  tmp *= tmp/ double(count_);
   tmp = obs_value_traits<result_type>::convert(sum2_) - tmp;
   obs_value_traits<result_type>::fix_negative(tmp);
-  return tmp / count_type(count_-1);
+  return tmp / double(count_-1);
 }
 
 template <class T>
@@ -231,19 +228,18 @@ inline void NoBinning<T>::output_vector(std::ostream& out, const L& label) const
     result_type error_(error());
 
     out << ":\n";
-    typename obs_value_traits<L>::slice_iterator it2=obs_value_traits<L>::slice_begin(label);
-    for (typename obs_value_traits<result_type>::slice_iterator sit=
-           obs_value_traits<result_type>::slice_begin(mean_);
-          sit!=obs_value_traits<result_type>::slice_end(mean_);++sit,++it2) {
-      std::string lab=obs_value_traits<L>::slice_value(label,it2);
+    typename alps::slice_index<L>::type it2=slices(label).first;
+    for (typename alps::slice_index<result_type>::type sit= slices(mean_).first;
+         sit!=slices(mean_).second;++sit,++it2) {
+      std::string lab=slice_value(label,it2);
       if (lab=="")
-        lab=obs_value_traits<result_type>::slice_name(mean_,sit);
+        lab=slice_name(mean_,sit);
       out << "Entry[" << lab << "]: "
-          << alps::round<2>(obs_value_traits<result_type>::slice_value(mean_,sit)) << " +/- "
-          << alps::round<2>(obs_value_traits<result_type>::slice_value(error_,sit));
-      if (alps::is_nonzero<2>(obs_value_traits<result_type>::slice_value(error_,sit)) &&
-          error_underflow(obs_value_traits<result_type>::slice_value(mean_,sit),
-                          obs_value_traits<result_type>::slice_value(error_,sit)))
+          << alps::round<2>(slice_value(mean_,sit)) << " +/- "
+          << alps::round<2>(slice_value(error_,sit));
+      if (alps::is_nonzero<2>(slice_value(error_,sit)) &&
+          error_underflow(slice_value(mean_,sit),
+                          slice_value(error_,sit)))
       out << " Warning: potential error underflow. Errors might be smaller";
       out << std::endl;
     }

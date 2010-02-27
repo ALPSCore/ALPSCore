@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2008 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
@@ -35,6 +35,8 @@
 
 #include <alps/alea/abstractsimpleobservable.h>
 #include <alps/alea/recordableobservable.h>
+#include <alps/type_traits/change_value_type.hpp>
+#include <alps/type_traits/is_scalar.hpp>
 
 namespace alps {
 
@@ -53,9 +55,9 @@ public:
   typedef typename AbstractSimpleObservable<T>::time_type time_type;
   typedef typename AbstractSimpleObservable<T>::count_type count_type;
   typedef typename AbstractSimpleObservable<T>::result_type result_type;
-  typedef typename AbstractSimpleObservable<T>::slice_iterator slice_iterator;
+  typedef typename AbstractSimpleObservable<T>::slice_index slice_index;
   typedef typename AbstractSimpleObservable<T>::label_type label_type;
-  typedef typename obs_value_traits<T>::convergence_type convergence_type;
+  typedef typename change_value_type<T,int>::type convergence_type;
   typedef BINNING binning_type;
 
   BOOST_STATIC_CONSTANT(int,version=(obs_value_traits<T>::magic_id+ (binning_type::magic_id << 16)));
@@ -131,7 +133,7 @@ public:
 
 private:
   Observable* convert_mergeable() const;
-  void write_more_xml(oxstream& oxs, slice_iterator it) const;
+  void write_more_xml(oxstream& oxs, slice_index it) const;
   binning_type b_;
 };
 
@@ -158,14 +160,14 @@ SimpleObservable<T,BINNING>::output(std::ostream& o) const
   if(count()!=0)
   {
     o << super_type::name ();
-    output_helper<obs_value_traits<T>::array_valued>::output(b_,o,super_type::label());
+    output_helper<typename is_scalar<T>::type>::output(b_,o,super_type::label());
   }
 }
 
 template <class T,class BINNING>
-void SimpleObservable<T,BINNING>::write_more_xml(oxstream& oxs, slice_iterator it) const
+void SimpleObservable<T,BINNING>::write_more_xml(oxstream& oxs, slice_index it) const
 {
-  output_helper<obs_value_traits<T>::array_valued>::write_more_xml(b_, oxs, it);
+  output_helper<typename is_scalar<T>::type>::write_more_xml(b_, oxs, it);
 }
 
 #ifndef ALPS_WITHOUT_OSIRIS

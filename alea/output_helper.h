@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
@@ -36,12 +36,15 @@
 #include <alps/config.h>
 #include <alps/xml.h>
 #include <boost/filesystem/path.hpp>
+#include <boost/mpl/bool.hpp>
 #include <iostream>
 
 namespace alps {
+template <typename FLAG> struct output_helper {};
 
-template <bool ARRAY_VALUED>
-struct output_helper
+
+template <>
+struct output_helper<boost::mpl::true_>
 {
   template <class X, class L> static void output(const X& b, std::ostream& out, const L&)
   {
@@ -64,7 +67,7 @@ struct output_helper
 };
 
 template <>
-struct output_helper<true>
+struct output_helper<boost::mpl::false_>
 {
   template <class T, class L> static void output(const T& b, std::ostream& out, const L& label)
   {

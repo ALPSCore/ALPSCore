@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2010 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1999-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -28,48 +28,44 @@
 
 /* $Id$ */
 
-#ifndef ALPS_EXPRESSION_NUMBER_H
-#define ALPS_EXPRESSION_NUMBER_H
+#ifndef ALPS_TYPE_TRAITS_TYPE_TAG_H
+#define ALPS_TYPE_TRAITS_TYPE_TAG_H
 
-#include <alps/expression/expression_fwd.h>
-#include <alps/expression/evaluate_helper.h>
-#include <alps/type_traits/real_type.hpp>
-#include <boost/call_traits.hpp>
+#include <alps/config.h>
+#include <boost/mpl/int.hpp>
+#include <complex>
+#include <string>
 
 namespace alps {
-namespace expression {
 
-template<class T>
-class Number : public Evaluatable<T> {
-public:
-  typedef T value_type;
-  typedef typename alps::real_type<T>::type real_type;
+template <class T>
+struct type_tag /* : public boost::mpl::int_<-1> */ {};
 
-  Number(typename boost::call_traits<value_type>::param_type x) : val_(x) {}
-  value_type value(const Evaluator<T>& =Evaluator<T>(), bool=false) const;
-  bool can_evaluate(const Evaluator<T>& =Evaluator<T>(), bool=false) const { return true; }
-  void output(std::ostream&) const;
-  Evaluatable<T>* clone() const { return new Number<T>(*this); }
-private:
-  value_type val_;
-};
+#define DEFINE_TYPE_TAG(TYPE,TAG) \
+template<> struct type_tag< TYPE > : public boost::mpl::int_<TAG> {};
 
-template<class T>
-typename Number<T>::value_type Number<T>::value(const Evaluator<T>&, bool) const
-{
-  return val_;
-}
+DEFINE_TYPE_TAG(float,0)
+DEFINE_TYPE_TAG(double,1)
+DEFINE_TYPE_TAG(long double,2)
+DEFINE_TYPE_TAG(std::complex<float>,3)
+DEFINE_TYPE_TAG(std::complex<double>,4)
+DEFINE_TYPE_TAG(std::complex<long double>,5)
+DEFINE_TYPE_TAG(int16_t,6)
+DEFINE_TYPE_TAG(int32_t,7)
+#ifndef BOOST_NO_INT64_T
+DEFINE_TYPE_TAG(int64_t,8)
+#endif
+DEFINE_TYPE_TAG(uint16_t,9)
+DEFINE_TYPE_TAG(uint32_t,10)
+#ifndef BOOST_NO_INT64_T
+DEFINE_TYPE_TAG(uint64_t,11)
+#endif
+DEFINE_TYPE_TAG(int8_t,12)
+DEFINE_TYPE_TAG(uint8_t,13)
+DEFINE_TYPE_TAG(std::string,14)
+DEFINE_TYPE_TAG(bool,15)
+#undef DEFINE_TYPE_TAG
 
-template<class T>
-void Number<T>::output(std::ostream& os) const
-{
-  if (evaluate_helper<T>::imag(val_) == 0)
-    os << evaluate_helper<T>::real(val_);
-  else
-    os << val_;
-}
+} // namespace alps
 
-} // end namespace expression
-} // end namespace alps
-
-#endif // ! ALPS_EXPRESSION_IMPL_H
+#endif // ALPS_TYPE_TRAITS_TYPE_TAG_H

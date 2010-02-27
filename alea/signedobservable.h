@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -30,6 +30,9 @@
 #define ALPS_ALEA_SIGNEDOBSERVABLE_H
 
 #include <alps/alea/simpleobseval.h>
+#include <alps/type_traits/is_scalar.hpp>
+#include <alps/type_traits/change_value_type.hpp>
+#include <alps/type_traits/average_type.hpp>
 #include <alps/math.hpp>
 
 namespace alps {
@@ -49,17 +52,15 @@ class AbstractSignedObservable
 public:
   typedef OBS observable_type;
   typedef SIGN sign_type;
-  typedef typename observable_type::value_type obs_value_type;
-  typedef typename obs_value_traits<obs_value_type>::result_type obs_result_type;
-  typedef obs_result_type result_type;
-  typedef obs_value_type value_type;
-  typedef AbstractSimpleObservable<obs_value_type> base_type;
-  typedef typename obs_value_traits<result_type>::slice_iterator slice_iterator;
+  typedef typename observable_type::value_type value_type;
+  typedef typename average_type<value_type>::type result_type;
+  typedef AbstractSimpleObservable<value_type> base_type;
+  typedef typename slice_index<result_type>::type slice_index;
   // typedef std::size_t count_type;
   // *** we may need more than 32 Bit
   typedef uint64_t count_type;
-  typedef typename obs_value_traits<value_type>::time_type time_type;
-  typedef typename obs_value_traits<value_type>::convergence_type convergence_type;
+  typedef typename change_value_type<value_type,double>::type time_type;
+  typedef typename change_value_type<value_type,int>::type convergence_type;
   typedef typename super_type::label_type label_type;
 
   template <class X, class Y> friend class AbstractSignedObservable;
@@ -93,7 +94,7 @@ public:
 
   ALPS_DUMMY_VOID output(std::ostream& out) const
   {
-    output_helper<obs_value_traits<value_type>::array_valued>::output(*this,out);
+    output_helper<typename alps::is_scalar<value_type>::type>::output(*this,out);
     obs_.output(out); ALPS_RETURN_VOID;
   }
   void output_scalar(std::ostream&) const;
@@ -119,10 +120,10 @@ public:
   }
 
   template <class S>
-  AbstractSignedObservable<SimpleObservableEvaluator<typename obs_value_slice<value_type,S>::value_type>,SIGN>
+  AbstractSignedObservable<SimpleObservableEvaluator<typename element_type<value_type>::type>,SIGN>
     slice(S s, const std::string& newname="") const
   {
-    AbstractSignedObservable<SimpleObservableEvaluator<typename obs_value_slice<value_type,S>::value_type>,SIGN> result(super_type::name());
+    AbstractSignedObservable<SimpleObservableEvaluator<typename element_type<value_type>::type>,SIGN> result(super_type::name());
     result.sign_=sign_;
     result.sign_name_=sign_name_;
     if(!newname.empty())
@@ -133,7 +134,7 @@ public:
   }
 
   template <class S>
-  AbstractSignedObservable<SimpleObservableEvaluator<typename obs_value_slice<value_type,S>::value_type>,SIGN>
+  AbstractSignedObservable<SimpleObservableEvaluator<typename element_type<value_type>::type>,SIGN>
     operator[](S s) const { return slice(s);}
 
 #ifndef ALPS_WITHOUT_OSIRIS
@@ -163,7 +164,7 @@ protected:
   Observable* convert_mergeable() const
   { return new AbstractSignedObservable<SimpleObservableEvaluator<value_type>,SIGN>(*this);}
 
-  void write_more_xml(oxstream& oxs, slice_iterator it) const;
+  void write_more_xml(oxstream& oxs, slice_index it) const;
 
   void merge(const Observable& o) { obs_.merge(o.signed_observable());}
   bool can_merge() const { return obs_.can_merge();}
@@ -193,10 +194,9 @@ public:
   typedef SIGN sign_type;
   typedef AbstractSignedObservable<OBS,SIGN> base_type;
   typedef typename observable_type::value_type value_type;
-  typedef typename obs_value_traits<value_type>::result_type result_type;
-  typedef typename obs_value_traits<value_type>::element_type element_type;
+  typedef typename average_type<value_type>::type result_type;
   typedef std::size_t count_type;
-  typedef typename obs_value_traits<value_type>::time_type time_type;
+  typedef typename change_value_type<value_type,double>::type time_type;
   typedef typename super_type::label_type label_type;
 
   SignedObservable(const OBS& obs, const std::string& s="Sign") : base_type(obs,s) {}
@@ -214,7 +214,7 @@ public:
 
   void operator<<(const value_type& x) { super_type::obs_ << x;}
   void add(const value_type& x) { operator<<(x);}
-  void add(const value_type& x, sign_type s) { add(x*static_cast<element_type>(s));}
+  void add(const value_type& x, sign_type s) { add(x*static_cast<typename element_type<value_type>::type >(s));}
 #ifdef ALPS_HAVE_HDF5
   void write_hdf5(const boost::filesystem::path& fn_hdf, std::size_t realization=0, std::size_t clone=0) const;
   void read_hdf5 (const boost::filesystem::path& fn_hdf, std::size_t realization=0, std::size_t clone=0);
@@ -313,7 +313,7 @@ void AbstractSignedObservable<OBS,SIGN>::load(IDump& dump)
 #endif
 
 template <class OBS, class SIGN>
-void AbstractSignedObservable<OBS,SIGN>::write_more_xml(oxstream& oxs, slice_iterator) const
+void AbstractSignedObservable<OBS,SIGN>::write_more_xml(oxstream& oxs, slice_index) const
 {
   oxs << start_tag("SIGN") << attribute("signed_observable",obs_.name());
   if (!sign_name_.empty())
@@ -369,24 +369,22 @@ void AbstractSignedObservable<OBS,SIGN>::output_vector(std::ostream& out) const
     result_type value_(mean());
     result_type error_(error());
     convergence_type conv_(converged_errors());
-    typename obs_value_traits<label_type>::slice_iterator it2=obs_value_traits<label_type>::slice_begin(super_type::label());
-    for (typename obs_value_traits<result_type>::slice_iterator sit=
-           obs_value_traits<result_type>::slice_begin(value_);
-          sit!=obs_value_traits<result_type>::slice_end(value_);++sit,++it2)
+    typename alps::slice_index<label_type>::type it2=slices(this->label()).first;
+    for (typename alps::slice_index<result_type>::type sit = slices(value_).first;
+          sit!=slices(value_).second;++sit,++it2)
     {
-      std::string lab=obs_value_traits<label_type>::slice_value(super_type::label(),it2);
+      std::string lab=slice_value(super_type::label(),it2);
       if (lab=="")
-        lab=obs_value_traits<result_type>::slice_name(value_,sit);
+        lab=slice_name(value_,sit);
       out << "Entry[" <<lab << "]: "
-          << alps::round<2>(obs_value_traits<result_type>::slice_value(value_,sit)) << " +/- "
-          << alps::round<2>(obs_value_traits<result_type>::slice_value(error_,sit));
-      if (alps::is_nonzero<2>(obs_value_traits<result_type>::slice_value(error_,sit))) {
-        if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==MAYBE_CONVERGED)
+          << alps::round<2>(slice_value(value_,sit)) << " +/- "
+          << alps::round<2>(slice_value(error_,sit));
+      if (alps::is_nonzero<2>(slice_value(error_,sit))) {
+        if (slice_value(conv_,sit)==MAYBE_CONVERGED)
           out << " WARNING: check error convergence";
-        if (obs_value_traits<convergence_type>::slice_value(conv_,sit)==NOT_CONVERGED)
+        if (slice_value(conv_,sit)==NOT_CONVERGED)
           out << " WARNING: ERRORS NOT CONVERGED!!!";
-        if (error_underflow(obs_value_traits<result_type>::slice_value(value_,sit),
-                            obs_value_traits<result_type>::slice_value(error_,sit)))
+        if (error_underflow(slice_value(value_,sit),slice_value(error_,sit)))
           out << " Warning: potential error underflow. Errors might be smaller";
       }
       out << std::endl;

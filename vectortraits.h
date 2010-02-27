@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1999-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1999-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -40,7 +40,6 @@
 #ifdef HAVE_CONFIG_H
 # include <alps/config.h>
 #endif
-#include <alps/typetraits.h>
 #include <alps/functional.h>
 
 // #include <boost/lambda/lambda.hpp>

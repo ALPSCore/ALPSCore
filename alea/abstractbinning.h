@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2004 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
@@ -35,6 +35,7 @@
 
 #include <alps/osiris/dump.h>
 #include <alps/alea/obsvalue.h>
+#include <alps/type_traits/change_value_type.hpp>
 
 namespace alps {
 
@@ -46,8 +47,8 @@ template <class T>
 class AbstractBinning {
  public: 
   typedef T value_type;
-  typedef typename obs_value_traits<T>::time_type time_type;
-  typedef typename obs_value_traits<T>::convergence_type convergence_type;
+  typedef typename change_value_type<T,double>::type time_type;
+  typedef typename change_value_type<T,int>::type convergence_type;
   AbstractBinning(std::size_t=0) {}
 
   time_type tau()                  const { boost::throw_exception(std::logic_error("Called non-implemented function of AbstractBinning")); return time_type(); }
