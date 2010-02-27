@@ -44,7 +44,7 @@ try {
   alps::ObservableSet obs_2;
   for (int i = 0; i < 100; ++i) {
     alps::ObservableSet obs;
-    obs << alps::RealObservable("obs");
+    obs << alps::RealObservable("obs",10000);
     obs.reset(true);
     for (int j = 0; j < 100; ++j)
       obs["obs"] << (double)i;
@@ -52,6 +52,7 @@ try {
   }
   std::cout << dynamic_cast<alps::RealObsevaluator&>(obs_2["obs"]).mean() << " +/- "
             << dynamic_cast<alps::RealObsevaluator&>(obs_2["obs"]).error() << std::endl;
+    
 
   alps::ObservableSet obs_3;
   for (int i = 0; i < 100; ++i) {

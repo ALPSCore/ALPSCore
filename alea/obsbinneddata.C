@@ -40,10 +40,9 @@
 
 int main(int argc, char** argv)
 {
-  using namespace alps;   // ... (3) 
 
   // empty constructor
-  obsbinneddata<double> data;
+  alps::alea::binned_data<double> data;
   std::cout << data << std::endl;
 
 
