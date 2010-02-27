@@ -36,12 +36,16 @@
 #include <alps/alea/convergence.hpp>
 #include <alps/type_traits/slice.hpp>
 #include <alps/type_traits/average_type.hpp>
+#include <alps/type_traits/is_sequence.hpp>
 #include <alps/type_traits/type_tag.hpp>
 #include <alps/config.h>
 
 #include <boost/config.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/lambda/lambda.hpp>
+#include <boost/utility/enable_if.hpp>
+#include <boost/mpl/and.hpp>
+#include <boost/mpl/or.hpp>
 
 #include <complex>
 #include <cstddef>
@@ -71,12 +75,6 @@ struct plain_return_type_2<arithmetic_action<Act>, U, std::valarray<T> > {
 
 namespace alps {
 
-namespace alea {
-
-  typedef double count_type;
-
-}
-
 template <class T>
 void update_max(T& lhs, T const& rhs)
 {
@@ -95,24 +93,116 @@ void update_min(T& lhs, T const& rhs)
       slice_value(lhs,it) = slice_value(rhs,it);
 }
 
+
+
+
+
+
+template <class T>
+inline typename boost::disable_if<is_sequence<T>,void>::type
+set_negative_0(T& x)
+{
+  if (x<T()) 
+    x=T();
+}
+
+template <class T>
+inline void set_negative_0(std::complex<T>& x)
+{ 
+  if (std::real(x)<0. || std::imag(x)<0.) 
+    x=0.;
+}
+
+template <class T>
+inline typename boost::enable_if<is_sequence<T>,void>::type
+set_negative_0(T& a) 
+{
+  for(std::size_t i=0; i!=a.size(); ++i)
+    set_negative_0(a[i]);
+}
+
+
+
+
+
+template <class T>
+inline typename boost::disable_if<is_sequence<T>,T>::type
+checked_divide(const T& a,const T& b) 
+{
+  return (b==T() && a==T()? 1. : a/b); 
+}
+
+template <class T>
+inline typename boost::enable_if<is_sequence<T>,T>::type
+checked_divide(T a,const T& b) 
+{
+  for(std::size_t i=0;i<b.size();++i)
+    a[i] = checked_divide(a[i],b[i]);
+  return a;
+}
+
+
+template <class X, class Y> 
+inline void assign(X& x,const Y& y) 
+{
+  x=y;
+}
+
+template <class X, class Y> 
+inline void assign(std::valarray<X>& x, std::valarray<Y> const& y) 
+{
+  x.resize(y.size()); 
+  for (std::size_t i=0;i<y.size();++i) 
+    x[i]=y[i];
+}
+
+template <class X> 
+inline void assign(std::valarray<X>& x, std::valarray<X> const& y) 
+{
+  x.resize(y.size()); 
+  x=y;
+}
+
+
+
+
+
+
+template <class X, class Y> 
+inline typename boost::disable_if<boost::mpl::or_<is_sequence<X>,is_sequence<Y> >,void>::type
+resize_same_as(X&, const Y&) {}
+
+template <class X, class Y> 
+inline typename boost::enable_if<boost::mpl::and_<is_sequence<X>,is_sequence<Y> >,void>::type
+resize_same_as(X& a, const Y& y) 
+{
+  a.resize(y.size());
+}
+
+
+
+
+
+template <class T>
+inline typename boost::disable_if<is_sequence<T>,std::size_t>::type
+size(T const& a) 
+{
+  return 1;
+}
+
+template <class T>
+inline typename boost::enable_if<is_sequence<T>,std::size_t>::type
+size(T const& a) 
+{
+  return a.size();
+}
+
+
+
+
 template <class T>
 struct obs_value_traits
 {
-  BOOST_STATIC_CONSTANT( uint32_t, magic_id = type_tag<T>::value);
-
-  template <class X>
-  static inline X check_divide(const X& a,const X& b) 
-    {
-      return (b==0 && a==0? 1. : a/b); 
-    }
-    
-  static void fix_negative(T& x) { if (x<0.) x=0.;}
-
-  /* resize a to the lenth size */
-  template <class X, class Y> static void resize_same_as(X&,const Y&) {}
-  template <class X, class Y> static void copy(X& x,const Y& y) {x=y;}
-  template <class X> static std::size_t size(const X&) { return 1;}
-  
   template <class X>
   static inline X outer_product(X a, X b) {
     return a*b;
@@ -124,21 +214,6 @@ struct obs_value_traits
 template <class T>
 struct obs_value_traits<std::complex<T> >
 {
-  BOOST_STATIC_CONSTANT(uint32_t, magic_id = type_tag<T>::value);
-
-  static void fix_negative(T& x) { if (std::real(x)<0. || std::imag(x)<0.) x=0.;}
-
-  template <class X>
-  static inline X check_divide(const X& a,const X& b)
-    {
-      return (b==0. && a==0. ? 1. : a/b); 
-    }
-
-  /** resize a to the lenth size */
-  template <class X, class Y> static void resize_same_as(X&,const Y&) {}
-  template <class X, class Y> static void copy(X& x,const Y& y) {x=y;}
-  template <class X> static std::size_t size(const X&) { return 1;}
-
   template <class X>
   static inline X outer_product(X a, X b) {
     return std::conj(a)*b;
@@ -147,34 +222,9 @@ struct obs_value_traits<std::complex<T> >
   template <class X> static T convert(X x) { return static_cast<T>(x);}
 };
 
-#ifdef ALPS_HAVE_VALARRAY
 template <class T>
 struct obs_value_traits<std::valarray<T> >
 {
-  BOOST_STATIC_CONSTANT(uint32_t, magic_id = 256+type_tag<T>::value);
-
-  static void fix_negative(std::valarray<T>& a) 
-  {
-    for(int32_t i=0;i!=(int32_t)a.size();++i)
-      obs_value_traits<typename element_type<T>::type>::fix_negative(a[i]);
-  }
-
-  template <class X>
-  static inline X check_divide(const X& a,const X& b) 
-  {
-    X retval;
-    resize_same_as(retval,b);
-    for(int32_t i(0);i<(int32_t)b.size();++i)
-      retval[i] = obs_value_traits<typename element_type<X>::type>::check_divide(a[i],b[i]);
-    return retval;
-  }
-
-  /** resize a to given size */
-  template <class X, class Y> static void resize_same_as(X& a, const Y& y) {a.resize(y.size());}
-  template <class X, class Y> static void copy(X& x,const Y& y) {x.resize(y.size()); for (int i=0;i<(int)y.size();++i) x[i]=y[i];}
-  template <class X> static std::size_t size(const X& a) { return a.size();}
-  template <class X> static void resize(X& a, std::size_t s) {a.resize(s);}
-
   template <class X>
   static boost::numeric::ublas::matrix<typename average_type<T>::type> outer_product(X a, X b) 
   {
@@ -194,23 +244,18 @@ struct obs_value_traits<std::valarray<T> >
   
   template <class X> static std::valarray<T> convert(const std::valarray<X>& x) 
   { 
-    std::valarray<T> res;
-    copy(res,x);
+    std::valarray<T> res(x.size());
+    for (std::size_t i=0; i<x.size();++i)
+      res[i]=x[i];
     return res;
   }
 
 };
 
-#endif
 
 template <class T>
 struct obs_value_traits<std::vector<T> >
 {
-  template <class X, class Y> static void resize_same_as(X& a, const Y& y) {a.resize(y.size());}
-  template <class X, class Y> static void copy(X& x,const Y& y) {x.resize(y.size()); for (int i=0;i<y.size();++i) x[i]=y[i];}
-  template <class X> static std::size_t size(const X& a) { return a.size();}
-  template <class X> static void resize(X& a, std::size_t s) {a.resize(s);}
-
   static std::vector<T> const& convert(const std::vector<T>& x)
   {
     return x;
@@ -218,9 +263,7 @@ struct obs_value_traits<std::vector<T> >
   
   template <class X> static std::vector<T> convert(const std::vector<X>& x) 
   { 
-    std::vector<T> res;
-    copy(res,x);
-    return res;
+    return std::vector<T>(x.begin(),x.end());
   }
 
 

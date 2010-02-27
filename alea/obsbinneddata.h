@@ -683,11 +683,11 @@ void binned_data<T>::fill_jack() const
     jack_.resize(bin_number() + 1);
 
     // Order-N initialization of jackknife data structure
-    obs_value_traits<result_type>::resize_same_as(jack_[0], bin_value(0));
+    resize_same_as(jack_[0], bin_value(0));
     for(uint64_t i = 0; i < bin_number(); ++i) 
       jack_[0] += obs_value_traits<result_type>::convert(bin_value(i)) / count_type(bin_size());
     for(uint64_t i = 0; i < bin_number(); ++i) {
-      obs_value_traits<result_type>::resize_same_as(jack_[i+1], jack_[0]);
+      resize_same_as(jack_[i+1], jack_[0]);
       result_type tmp(obs_value_traits<result_type>::convert(bin_value(i)));
       tmp /= count_type(bin_size());
       jack_[i+1] = jack_[0]
@@ -734,9 +734,9 @@ void binned_data<T>::jackknife() const
     converged_errors_=any_converged_errors_;
     
     result_type rav;
-    obs_value_traits<result_type>::resize_same_as(mean_, jack_[0]);  
-    obs_value_traits<result_type>::resize_same_as(error_, jack_[0]);  
-    obs_value_traits<result_type>::resize_same_as(rav, jack_[0]);  
+    resize_same_as(mean_, jack_[0]);  
+    resize_same_as(error_, jack_[0]);  
+    resize_same_as(rav, jack_[0]);  
     unsigned int k = jack_.size()-1;
 
     rav = 0;
@@ -770,8 +770,8 @@ binned_data<T>::covariance(const binned_data<T> obs2) const
   if (jack_.size() && obs2.jack_.size()) {
     result_type rav1;
     result_type rav2;
-    obs_value_traits<result_type>::resize_same_as(rav1, jack_[0]);  
-    obs_value_traits<result_type>::resize_same_as(rav2, obs2.jack_[0]);  
+    resize_same_as(rav1, jack_[0]);  
+    resize_same_as(rav2, obs2.jack_[0]);  
     if (jack_.size() != obs2.jack_.size()) 
       boost::throw_exception(std::runtime_error("unequal number of bins in calculation of covariance matrix"));
     uint32_t k = jack_.size()-1;

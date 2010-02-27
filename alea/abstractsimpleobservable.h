@@ -332,17 +332,17 @@ void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, const boost::f
     result_type tau_;
     if(has_tau())
     {
-      obs_value_traits<T>::resize_same_as(tau_,mean_);
-      obs_value_traits<T>::copy(tau_,tau());
+      resize_same_as(tau_,mean_);
+      assign(tau_,tau());
     }
     if(has_variance())
     {
-      obs_value_traits<T>::resize_same_as(variance_,mean_);
-      obs_value_traits<T>::copy(variance_,variance());
+      resize_same_as(variance_,mean_);
+      assign(variance_,variance());
     }
 
     oxs << start_tag("VECTOR_AVERAGE")<< attribute("name", name())
-        << attribute("nvalues", obs_value_traits<T>::size(mean()));
+        << attribute("nvalues", alps::size(mean()));
     if (is_signed())
       oxs << attribute("signed","true");
 

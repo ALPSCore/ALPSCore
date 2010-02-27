@@ -37,6 +37,7 @@
 #include <alps/alea/recordableobservable.h>
 #include <alps/type_traits/change_value_type.hpp>
 #include <alps/type_traits/is_scalar.hpp>
+#include <alps/alea/type_tag.hpp>
 
 namespace alps {
 
@@ -60,7 +61,7 @@ public:
   typedef typename change_value_type<T,int>::type convergence_type;
   typedef BINNING binning_type;
 
-  BOOST_STATIC_CONSTANT(int,version=(obs_value_traits<T>::magic_id+ (binning_type::magic_id << 16)));
+  BOOST_STATIC_CONSTANT(int,version=(type_tag<T>::value+ (binning_type::magic_id << 16)));
   /// the constructor needs a name and optionally specifications for the binning strategy
   SimpleObservable(const std::string& name=std::string(), const label_type& l=label_type())
    : AbstractSimpleObservable<T>(name,l) {}

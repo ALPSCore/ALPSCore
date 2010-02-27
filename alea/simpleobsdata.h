@@ -88,7 +88,7 @@ public:
   typedef T value_type;
   typedef typename change_value_type<T,double>::type time_type;
   typedef std::size_t size_type;
-  typedef alps::alea::count_type count_type;
+  typedef double count_type;
   typedef typename average_type<T>::type result_type;
   typedef typename change_value_type<T,int>::type convergence_type;
   typedef typename change_value_type_replace_valarray<value_type,std::string>::type label_type;
@@ -300,16 +300,16 @@ SimpleObservableData<T> const& SimpleObservableData<T>::operator=(const SimpleOb
    valid_=x.valid_;
    jack_valid_=x.jack_valid_;
    nonlinear_operations_=x.nonlinear_operations_;
-   obs_value_traits<result_type>::copy(mean_,x.mean_);
-   obs_value_traits<result_type>::copy(error_,x.error_);
-   obs_value_traits<result_type>::copy(variance_,x.variance_);
-   obs_value_traits<time_type>::copy(tau_,x.tau_);
+   assign(mean_,x.mean_);
+   assign(error_,x.error_);
+   assign(variance_,x.variance_);
+   assign(tau_,x.tau_);
    values_=x.values_;
    values2_=x.values2_;
    jack_=x.jack_;
 
-   obs_value_traits<convergence_type>::copy(converged_errors_,x.converged_errors_);
-   obs_value_traits<convergence_type>::copy(any_converged_errors_,x.any_converged_errors_);
+   assign(converged_errors_,x.converged_errors_);
+   assign(any_converged_errors_,x.any_converged_errors_);
 
   return *this;
 }
@@ -338,19 +338,19 @@ SimpleObservableData<T>::SimpleObservableData(const AbstractSimpleObservable<T>&
    jack_()
 {
   if (count()) {
-    obs_value_traits<result_type>::copy(mean_, obs.mean());
-    obs_value_traits<result_type>::copy(error_, obs.error());
+    assign(mean_, obs.mean());
+    assign(error_, obs.error());
     if (has_variance())
-      obs_value_traits<result_type>::copy(variance_, obs.variance());
+      assign(variance_, obs.variance());
     if (has_tau())
-      obs_value_traits<time_type>::copy(tau_, obs.tau());
+      assign(tau_, obs.tau());
 
     for (std::size_t i = 0; i < obs.bin_number(); ++i)
       values_.push_back(obs.bin_value(i));
     for (std::size_t i = 0; i < obs.bin_number2(); ++i)
       values2_.push_back(obs.bin_value2(i));
-    obs_value_traits<convergence_type>::copy(converged_errors_, obs.converged_errors());
-    obs_value_traits<convergence_type>::copy(any_converged_errors_, obs.converged_errors());
+    assign(converged_errors_, obs.converged_errors());
+    assign(any_converged_errors_, obs.converged_errors());
 
     if (bin_size() != 1 && bin_number() > max_bin_number_) set_bin_number(max_bin_number_);
   }
@@ -451,13 +451,13 @@ void SimpleObservableData<T>::read_xml_vector(std::istream& infile, const XMLTag
     return;
   XMLTag tag(intag);
   std::size_t s = boost::lexical_cast<std::size_t,std::string>(tag.attributes["nvalues"]);
-  obs_value_traits<result_type>::resize(mean_,s);
-  obs_value_traits<result_type>::resize(error_,s);
-  obs_value_traits<result_type>::resize(variance_,s);
-  obs_value_traits<time_type>::resize(tau_,s);
-  obs_value_traits<convergence_type>::resize(converged_errors_,s);
-  obs_value_traits<convergence_type>::resize(any_converged_errors_,s);
-  obs_value_traits<label_type>::resize(label,s);
+  mean_.resize(s);
+  error_.resize(s);
+  variance_.resize(s);
+  tau_.resize(s);
+  converged_errors_.resize(s);
+  any_converged_errors_.resize(s);
+  label.resize(s);
 
   tag = parse_tag(infile);
   int i=0;
@@ -795,14 +795,14 @@ template <class T> SimpleObservableData<T> & SimpleObservableData<T>::operator<<
       can_set_thermal_ = run.can_set_thermal_;
       nonlinear_operations_ = run.nonlinear_operations_;
       changed_ = run.changed_;
-      obs_value_traits<result_type>::copy(mean_,run.mean_);
-      obs_value_traits<result_type>::copy(error_,run.error_);
-      obs_value_traits<convergence_type>::copy(converged_errors_,run.converged_errors_);
-      obs_value_traits<convergence_type>::copy(any_converged_errors_,run.any_converged_errors_);
+      assign(mean_,run.mean_);
+      assign(error_,run.error_);
+      assign(converged_errors_,run.converged_errors_);
+      assign(any_converged_errors_,run.any_converged_errors_);
       if(has_variance_)
-        obs_value_traits<result_type>::copy(variance_,run.variance_);
+        assign(variance_,run.variance_);
       if(has_tau_)
-        obs_value_traits<time_type>::copy(tau_,run.tau_);
+        assign(tau_,run.tau_);
       discardedmeas_ = run.discardedmeas_;
       count_ = run.count();
 
@@ -1021,11 +1021,11 @@ void SimpleObservableData<T>::fill_jack() const
     jack_.resize(bin_number() + 1);
 
     // Order-N initialization of jackknife data structure
-    obs_value_traits<result_type>::resize_same_as(jack_[0], bin_value(0));
+    resize_same_as(jack_[0], bin_value(0));
     for(std::size_t i = 0; i < bin_number(); ++i)
       jack_[0] += obs_value_traits<result_type>::convert(bin_value(i)) / count_type(bin_size());
     for(std::size_t i = 0; i < bin_number(); ++i) {
-      obs_value_traits<result_type>::resize_same_as(jack_[i+1], jack_[0]);
+      resize_same_as(jack_[i+1], jack_[0]);
       result_type tmp(obs_value_traits<result_type>::convert(bin_value(i)));
       tmp /= count_type(bin_size());
       jack_[i+1] = jack_[0]
@@ -1054,7 +1054,7 @@ void SimpleObservableData<T>::analyze() const
     if (!values2_.empty()) {
       has_variance_ = true;
       has_tau_ = true;
-      obs_value_traits<result_type>::resize_same_as(variance_, bin_value2(0));
+      resize_same_as(variance_, bin_value2(0));
       variance_ = 0.;
       for (std::size_t i=0;i<values2_.size();++i)
         variance_+=obs_value_traits<result_type>::convert(values2_[i]);
@@ -1063,7 +1063,7 @@ void SimpleObservableData<T>::analyze() const
       mean2*=mean_*count_type(count());
       variance_ -= mean2;
       variance_ /= count_type(count()-1);
-      obs_value_traits<result_type>::resize_same_as(tau_, error_);
+      resize_same_as(tau_, error_);
       tau_=std::abs(error_);
       tau_*=std::abs(error_)*count_type(count());
       tau_/=std::abs(variance_);
@@ -1087,9 +1087,9 @@ void SimpleObservableData<T>::jackknife() const
     converged_errors_=any_converged_errors_;
 
     result_type rav;
-    obs_value_traits<result_type>::resize_same_as(mean_, jack_[0]);
-    obs_value_traits<result_type>::resize_same_as(error_, jack_[0]);
-    obs_value_traits<result_type>::resize_same_as(rav, jack_[0]);
+    resize_same_as(mean_, jack_[0]);
+    resize_same_as(error_, jack_[0]);
+    resize_same_as(rav, jack_[0]);
     unsigned int k = jack_.size()-1;
 
     rav = 0;
@@ -1125,8 +1125,8 @@ SimpleObservableData<T>::covariance(const SimpleObservableData<T> obs2) const
   if (jack_.size() && obs2.jack_.size()) {
     result_type rav1;
     result_type rav2;
-    obs_value_traits<result_type>::resize_same_as(rav1, jack_[0]);
-    obs_value_traits<result_type>::resize_same_as(rav2, obs2.jack_[0]);
+    resize_same_as(rav1, jack_[0]);
+    resize_same_as(rav2, obs2.jack_[0]);
     if (jack_.size() != obs2.jack_.size())
       boost::throw_exception(std::runtime_error("unequal number of bins in calculation of covariance matrix"));
     uint32_t k = jack_.size()-1;

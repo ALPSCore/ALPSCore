@@ -60,7 +60,7 @@ class NoBinning : public AbstractBinning<T>
  public:
   typedef T value_type;
   typedef std::size_t size_type;
-  typedef alea::count_type count_type;
+  typedef double count_type;
   typedef typename average_type<T>::type result_type;
   typedef typename change_value_type<T,int>::type convergence_type;
 
@@ -140,7 +140,7 @@ template <class T>
 typename NoBinning<T>::convergence_type NoBinning<T>::converged_errors() const
 {
   convergence_type conv;
-  obs_value_traits<T>::resize_same_as(conv,sum_);
+  resize_same_as(conv,sum_);
   for (typename slice_index<convergence_type>::type it= slices(conv).first; 
        it!= slices(conv).second; ++it)
     slice_value(conv,it) = CONVERGED;
@@ -152,11 +152,11 @@ void NoBinning<T>::operator<<(const T& x)
 {
   if(count_==0)
   {
-    obs_value_traits<T>::resize_same_as(sum_,x);
-    obs_value_traits<T>::resize_same_as(sum2_,x);
+    resize_same_as(sum_,x);
+    resize_same_as(sum2_,x);
   }
 
-  if(obs_value_traits<T>::size(x)!=obs_value_traits<T>::size(sum_))
+  if(size(x)!=size(sum_))
     boost::throw_exception(std::runtime_error("Size of argument does not match in NoBinning<T>::add"));
 
   value_type y=x*x;
@@ -188,14 +188,14 @@ inline typename NoBinning<T>::result_type NoBinning<T>::variance() const
   if(count_<2)
     {
       result_type retval;
-      obs_value_traits<T>::resize_same_as(retval,sum_);
+      resize_same_as(retval,sum_);
       retval=inf();
       return retval;
     } // no data collected
   result_type tmp(obs_value_traits<result_type>::convert(sum_));
   tmp *= tmp/ double(count_);
   tmp = obs_value_traits<result_type>::convert(sum2_) - tmp;
-  obs_value_traits<result_type>::fix_negative(tmp);
+  set_negative_0(tmp);
   return tmp / double(count_-1);
 }
 

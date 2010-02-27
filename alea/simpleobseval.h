@@ -42,6 +42,7 @@
 #include <alps/type_traits/is_scalar.hpp>
 #include <alps/type_traits/change_value_type.hpp>
 #include <alps/type_traits/average_type.hpp>
+#include <alps/alea/type_tag.hpp>
 
 #include <boost/config.hpp>
 #include <boost/functional.hpp>
@@ -105,7 +106,7 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
   typedef typename SimpleObservableData<T>::covariance_type covariance_type;
 
 
-  enum { version = obs_value_traits<T>::magic_id + (6 << 16) };
+  enum { version = type_tag<T>::value + (6 << 16) };
   uint32_t version_id() const { return version; }
 
   /** almost default constructor */
@@ -503,7 +504,7 @@ void SimpleObservableEvaluator<T>::output_vector(std::ostream& out) const
     convergence_type conv_(converged_errors());
     time_type tau_;
     if (has_tau())
-      obs_value_traits<value_type>::copy(tau_,tau());
+      assign(tau_,tau());
     typename slice_index<label_type>::type it2=slices(this->label()).first;
     for (typename slice_index<result_type>::type sit= slices(value_).first;
           sit!=slices(value_).second;++sit,++it2)

@@ -59,7 +59,7 @@ class SimpleBinning : public AbstractBinning<T>
   typedef T value_type;
   typedef typename change_value_type<T,double>::type time_type;
   typedef std::size_t size_type;
-  typedef alea::count_type count_type;
+  typedef double count_type;
   typedef typename average_type<T>::type result_type;
   typedef typename change_value_type<T,int>::type convergence_type;
 
@@ -89,7 +89,7 @@ class SimpleBinning : public AbstractBinning<T>
   uint32_t binning_depth() const;
     // depth of logarithmic binning hierarchy = log2(measurements())
 
-  std::size_t size() const { return sum_.size()==0?0:obs_value_traits<T>::size(sum_[0]);}
+  std::size_t size() const { return sum_.size()==0 ? 0 : alps::size(sum_[0]);}
 
   void output_scalar(std::ostream& out) const;
   template <class L> void output_vector(std::ostream& out, const L&) const;
@@ -157,12 +157,12 @@ inline void SimpleBinning<T>::operator<<(const T& x)
     sum_.resize(1);
     sum2_.resize(1);
     bin_entries_.resize(1);
-    obs_value_traits<result_type>::resize_same_as(last_bin_[0],x);
-    obs_value_traits<result_type>::resize_same_as(sum_[0],x);
-    obs_value_traits<result_type>::resize_same_as(sum2_[0],x);
+    resize_same_as(last_bin_[0],x);
+    resize_same_as(sum_[0],x);
+    resize_same_as(sum2_[0],x);
   }
-  if(obs_value_traits<T>::size(x)!=size()) {
-    std::cerr << "Size is " << size() << " while new size is " << obs_value_traits<T>::size(x) << "\n";
+  if(alps::size(x)!=size()) {
+    std::cerr << "Size is " << size() << " while new size is " << alps::size(x) << "\n";
     boost::throw_exception(std::runtime_error("Size of argument does not match in SimpleBinning<T>::add"));
   }
 
@@ -192,9 +192,9 @@ inline void SimpleBinning<T>::operator<<(const T& x)
             sum2_.resize(std::max BOOST_PREVENT_MACRO_SUBSTITUTION (bin+1,sum2_.size()));
             bin_entries_.resize(std::max BOOST_PREVENT_MACRO_SUBSTITUTION (bin+1,bin_entries_.size()));
 
-            obs_value_traits<result_type>::resize_same_as(last_bin_[bin],x);
-            obs_value_traits<result_type>::resize_same_as(sum_[bin],x);
-            obs_value_traits<result_type>::resize_same_as(sum2_[bin],x);
+            resize_same_as(last_bin_[bin],x);
+            resize_same_as(sum_[bin],x);
+            resize_same_as(sum2_[bin],x);
           }
 
           result_type x1=(sum_[0]-sum_[bin]);
@@ -221,13 +221,13 @@ template <> inline void SimpleBinning<std::valarray<double> >::operator<<(const 
     sum_.resize(1);
     sum2_.resize(1);
     bin_entries_.resize(1);
-    obs_value_traits<result_type>::resize_same_as(last_bin_[0],x);
-    obs_value_traits<result_type>::resize_same_as(sum_[0],x);
-    obs_value_traits<result_type>::resize_same_as(sum2_[0],x);
+    resize_same_as(last_bin_[0],x);
+    resize_same_as(sum_[0],x);
+    resize_same_as(sum2_[0],x);
   }
 
-  if(obs_value_traits<std::valarray<double> >::size(x)!=size()) {
-    std::cerr << "Size is " << size() << " while new size is " << obs_value_traits<std::valarray<double> >::size(x) << "\n";
+  if(alps::size(x)!=size()) {
+    std::cerr << "Size is " << size() << " while new size is " << alps::size(x) << "\n";
     boost::throw_exception(std::runtime_error("Size of argument does not match in SimpleBinning<T>::add"));
   }
 
@@ -259,9 +259,9 @@ template <> inline void SimpleBinning<std::valarray<double> >::operator<<(const 
             sum2_.resize(std::max BOOST_PREVENT_MACRO_SUBSTITUTION (bin+1,sum2_.size()));
             bin_entries_.resize(std::max BOOST_PREVENT_MACRO_SUBSTITUTION (bin+1,bin_entries_.size()));
 
-            obs_value_traits<result_type>::resize_same_as(last_bin_[bin],x);
-            obs_value_traits<result_type>::resize_same_as(sum_[bin],x);
-            obs_value_traits<result_type>::resize_same_as(sum2_[bin],x);
+            resize_same_as(last_bin_[bin],x);
+            resize_same_as(sum_[bin],x);
+            resize_same_as(sum2_[bin],x);
           }
 
           result_type x1=(sum_[0]-sum_[bin]);
@@ -291,7 +291,7 @@ typename SimpleBinning<T>::convergence_type SimpleBinning<T>::converged_errors()
 {
   convergence_type conv;
   result_type err=error();
-  obs_value_traits<T>::resize_same_as(conv,err);
+  resize_same_as(conv,err);
   const unsigned int range=4;
   typename slice_index<convergence_type>::type it;
   if (binning_depth()<range) {
@@ -387,14 +387,14 @@ inline typename SimpleBinning<T>::result_type SimpleBinning<T>::variance() const
   if(count()<2)
     {
       result_type retval;
-      obs_value_traits<T>::resize_same_as(retval,sum_[0]);
+      resize_same_as(retval,sum_[0]);
       retval=inf();
       return retval;
     }
   result_type tmp(sum_[0]);
   tmp *= tmp/count_type(count());
   tmp = sum2_[0] -tmp;
-  obs_value_traits<result_type>::fix_negative(tmp);
+  set_negative_0(tmp);
   return tmp/count_type(count()-1);
 }
 // VARIANCE for an element of a vector
@@ -419,7 +419,7 @@ inline double SimpleBinning<std::valarray<double> >::variance_element(std::size_
   double tmp(sum_[0][element]);
   tmp *= tmp/count_type(count());
   tmp = sum2_[0][element] -tmp;
-  obs_value_traits<double>::fix_negative(tmp);
+  set_negative_0(tmp);
   return tmp/count_type(count()-1);
 }
 
@@ -438,7 +438,7 @@ inline typename SimpleBinning<T>::result_type SimpleBinning<T>::error(std::size_
 
   uint64_t binsize_ = bin_entries_[i];
 
-  result_type correction = obs_value_traits<result_type>::check_divide(binvariance(i),binvariance(0));
+  result_type correction = checked_divide(binvariance(i),binvariance(0));
   using std::sqrt;
   correction *=(variance()/count_type(binsize_-1));
   return sqrt(correction);
@@ -487,7 +487,7 @@ inline typename SimpleBinning<T>::time_type SimpleBinning<T>::tau() const
   else
   {
     time_type retval;
-    obs_value_traits<T>::resize_same_as(retval,sum_[0]);
+    resize_same_as(retval,sum_[0]);
     retval=inf();
     return retval;
   }

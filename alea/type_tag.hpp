@@ -28,9 +28,25 @@
 *
 *****************************************************************************/
 
-/* $Id: obsvalue.h 3435 2009-11-28 14:45:38Z troyer $ */
+/* $Id$ */
 
-#ifndef ALPS_ALEA_OBSERVABLE_TRAITS_H
-#define ALPS_ALEA_OBSERVABLE_TRAITS_H
+#ifndef ALPS_ALEA_TYPE_TAG_H
+#define ALPS_ALEA_TYPE_TAG_H
 
-#endif // ALPS_ALEA_OBSERVABLE_TRAITS_H
+#include <alps/type_traits/type_tag.hpp>
+#include <vector>
+#include <valarray>
+
+namespace alps {
+
+template <class T>
+struct type_tag<std::valarray<T> >
+ : public boost::mpl::int_<256 + type_tag<T>::value> {};
+
+template <class T>
+struct type_tag<std::vector<T> >
+ : public boost::mpl::int_<256 + type_tag<T>::value> {};
+
+} // end namespace alps
+
+#endif // ALPS_ALEA_TYPE_TAG_H
