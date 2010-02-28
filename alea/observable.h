@@ -40,7 +40,6 @@
 #define ALPS_ALEA_OBSERVABLE_H
 
 #include <alps/config.h>
-#include <alps/alea/obsvalue.h>
 #include <alps/alea/recordableobservable.h>
 #include <alps/xml.h>
 

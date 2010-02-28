@@ -33,7 +33,6 @@
 #include <alps/lattice/latticegraph.h>
 #include <alps/lattice/unitcell.h>
 #include <alps/lattice/lattice.h>
-#include <alps/vectorio.h>
 
 #include <iostream>
 

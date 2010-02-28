@@ -34,7 +34,7 @@
 #include <alps/config.h>
 #include <alps/lattice/lattice.h>
 #include <alps/lattice/coordinate_traits.h>
-#include <alps/vectorio.h>
+#include <alps/utility/vectorio.hpp>
 #include <alps/vectormath.h>
 #include <boost/utility.hpp>
 #include <cmath>

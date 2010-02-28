@@ -27,8 +27,8 @@
 
 /* $Id: obsvalue.h 3435 2009-11-28 14:45:38Z troyer $ */
 
-#ifndef ALPS_TYPE_TRAITS_SLICE_H
-#define ALPS_TYPE_TRAITS_SLICE_H
+#ifndef ALPS_TYPE_TRAITS_SLICE_HPP
+#define ALPS_TYPE_TRAITS_SLICE_HPP
 
 #include <alps/type_traits/element_type.hpp>
 #include <boost/utility/enable_if.hpp>

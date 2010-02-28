@@ -83,10 +83,6 @@ struct vector_traits<std::valarray<T> > {
 /// This will hopefully soon be replaced by a nice Boost library
 namespace vectorops {
 
-/// returns the size of a vector
-template <class C>
-inline typename vector_traits<C>::size_type size(const C& c) { return c.size();}
-
 /// returns a pointer to the start of storage of a vector
 template <class C>
 inline typename vector_traits<C>::value_type* data(C& c) { return &c[0];}

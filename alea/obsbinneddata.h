@@ -45,9 +45,12 @@
 #include <alps/alea/nan.h>
 #include <alps/alea/simpleobservable.h>
 #include <alps/numeric/vector_functions.hpp>
+#include <alps/numeric/outer_product.hpp>
 #include <alps/type_traits/change_value_type.hpp>
 #include <alps/type_traits/average_type.hpp>
 #include <alps/type_traits/covariance_type.hpp>
+#include <alps/utility/numeric_cast.hpp>
+#include <alps/utility/resize.hpp>
 
 #include <boost/config.hpp>
 #include <boost/functional.hpp>
@@ -685,14 +688,14 @@ void binned_data<T>::fill_jack() const
     // Order-N initialization of jackknife data structure
     resize_same_as(jack_[0], bin_value(0));
     for(uint64_t i = 0; i < bin_number(); ++i) 
-      jack_[0] += obs_value_traits<result_type>::convert(bin_value(i)) / count_type(bin_size());
+      jack_[0] += alps::numeric_cast<result_type>(bin_value(i)) / count_type(bin_size());
     for(uint64_t i = 0; i < bin_number(); ++i) {
       resize_same_as(jack_[i+1], jack_[0]);
-      result_type tmp(obs_value_traits<result_type>::convert(bin_value(i)));
+      result_type tmp(alps::numeric_cast<result_type>(bin_value(i)));
       tmp /= count_type(bin_size());
       jack_[i+1] = jack_[0]
           - tmp;
-//        - (obs_value_traits<result_type>::convert(bin_value(i)) / count_type(bin_size()));
+//        - (alps::numeric_cast<result_type>(bin_value(i)) / count_type(bin_size()));
       jack_[i+1] /= count_type(bin_number() - 1);
     }
     jack_[0] /= count_type(bin_number());
@@ -783,12 +786,12 @@ binned_data<T>::covariance(const binned_data<T> obs2) const
     rav1 /= count_type(k);
     rav2 /= count_type(k);
     
-    covariance_type cov = obs_value_traits<T>::outer_product(jack_[1],obs2.jack_[1]);
+    covariance_type cov = numeric::outer_product(jack_[1],obs2.jack_[1]);
     for (uint32_t i = 2; i < jack_.size(); ++i)
-      cov += obs_value_traits<T>::outer_product(jack_[i],obs2.jack_[i]);
+      cov += numeric::outer_product(jack_[i],obs2.jack_[i]);
     
     cov/=count_type(k);
-    cov-= obs_value_traits<T>::outer_product(rav1, rav2);
+    cov-= numeric::outer_product(rav1, rav2);
     cov *= count_type(k - 1);
     return cov;
   } else {

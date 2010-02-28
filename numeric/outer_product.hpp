@@ -4,7 +4,10 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2010 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2010 by Matthias Troyer <troyer@comp-phys.org>,
+*                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
+*                            Andreas Laeuchli <laeuchli@comp-phys.org>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -25,33 +28,52 @@
 *
 *****************************************************************************/
 
-/* $Id: obsvalue.h 3435 2009-11-28 14:45:38Z troyer $ */
+/* $Id$ */
 
-#ifndef ALPS_TYPE_TRAITS_COVARIANCE_TYPE_H
-#define ALPS_TYPE_TRAITS_COVARIANCE_TYPE_H
+#ifndef ALPS_NUMERIC_OUTER_PRODUCT_HPP
+#define ALPS_NUMERIC_OUTER_PRODUCT_HPP
 
 #include <alps/type_traits/average_type.hpp>
 #include <alps/type_traits/element_type.hpp>
 #include <alps/type_traits/is_sequence.hpp>
-#include <boost/numeric/ublas/matrix.hpp>
-#include <boost/mpl/if.hpp>
+#include <alps/type_traits/covariance_type.hpp>
 
+#include <boost/utility/enable_if.hpp>
 
-namespace alps {
+#include <complex>
+
+namespace alps { namespace numeric {
 
 template <class T>
-struct covariance_type
+inline 
+typename boost::disable_if<is_sequence<T>,typename covariance_type<T>::type>::type 
+outer_product(T a, T b) 
 {
- typedef typename boost::mpl::if_<
-     is_sequence<T>,
-     typename boost::numeric::ublas::matrix<
-       typename average_type<typename element_type<T>::type>::type
-     >,
-     typename average_type<T>::type
-   >::type type;
-};
+  return a*b;
+}
 
 
-} // end namespace alps
+template <class T>
+inline std::complex<T> outer_product(std::complex<T> const& a, std::complex<T> const& b) 
+{
+  return std::conj(a)*b;
+}
 
-#endif // ALPS_TYPE_TRAITS_COVARIANCE_TYPE_H
+
+template <class T>
+inline 
+typename boost::enable_if<is_sequence<T>,typename covariance_type<T>::type>::type 
+outer_product(T a, T b) 
+{
+  typedef typename average_type<typename element_type<T>::type>::type value_type;
+  boost::numeric::ublas::vector<value_type> vec1(a.size()), vec2(b.size());
+  for (int i=0; i<a.size(); ++i)
+    vec1[i] = a[i];
+  for (int i=0; i<b.size(); ++i)
+    vec2[i] = b[i];
+  return boost::numeric::ublas::outer_prod(vec1, vec2);
+}
+
+} } // end namespace alps::numeric
+
+#endif // ALPS_NUMERIC_OUTER_PRODUCT_HPP

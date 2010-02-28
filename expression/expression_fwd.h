@@ -38,7 +38,7 @@
 #include <alps/parameter.h>
 #include <alps/random.h>
 #include <alps/parser/parser.h>
-#include <alps/vectorio.h>
+#include <alps/utility/vectorio.hpp>
 
 #include <boost/call_traits.hpp>
 #include <boost/smart_ptr.hpp>

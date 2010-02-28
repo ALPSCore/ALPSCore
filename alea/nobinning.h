@@ -37,9 +37,13 @@
 #include <alps/alea/simpleobservable.h>
 #include <alps/alea/abstractbinning.h>
 #include <alps/alea/nan.h>
+#include <alps/numeric/set_negative_0.hpp>
 #include <alps/math.hpp>
 #include <alps/type_traits/change_value_type.hpp>
 #include <alps/type_traits/average_type.hpp>
+#include <alps/utility/numeric_cast.hpp>
+#include <alps/utility/resize.hpp>
+#include <alps/utility/size.hpp>
 
 #include <boost/config.hpp>
 
@@ -171,7 +175,7 @@ inline typename NoBinning<T>::result_type NoBinning<T>::mean() const
 {
 
   if (count())
-    return obs_value_traits<result_type>::convert(sum_)/double(count());
+    return alps::numeric_cast<result_type>(sum_)/double(count());
   else
     boost::throw_exception(NoMeasurementsError());
   return result_type();
@@ -192,10 +196,10 @@ inline typename NoBinning<T>::result_type NoBinning<T>::variance() const
       retval=inf();
       return retval;
     } // no data collected
-  result_type tmp(obs_value_traits<result_type>::convert(sum_));
+  result_type tmp(alps::numeric_cast<result_type>(sum_));
   tmp *= tmp/ double(count_);
-  tmp = obs_value_traits<result_type>::convert(sum2_) - tmp;
-  set_negative_0(tmp);
+  tmp = alps::numeric_cast<result_type>(sum2_) - tmp;
+  numeric::set_negative_0(tmp);
   return tmp / double(count_-1);
 }
 

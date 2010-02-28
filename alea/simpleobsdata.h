@@ -36,31 +36,34 @@
 
 #include <alps/config.h>
 #include <alps/alea/nan.h>
+#include <alps/alea/convergence.hpp>
 #include <alps/alea/simpleobservable.h>
 #include <alps/parser/parser.h>
 #include <alps/type_traits/is_scalar.hpp>
 #include <alps/type_traits/change_value_type.hpp>
 #include <alps/type_traits/average_type.hpp>
 #include <alps/type_traits/covariance_type.hpp>
+#include <alps/numeric/update_minmax.hpp>
+#include <alps/numeric/outer_product.hpp>
+#include <alps/utility/numeric_cast.hpp>
+#include <alps/utility/resize.hpp>
+#include <alps/utility/assign.hpp>
+#include <alps/lambda.hpp>
 
 #include <boost/lambda/lambda.hpp>
 #include <boost/functional.hpp>
+
 #include <iostream>
 #include <numeric>
 #include <vector>
 #include <boost/config.hpp>
-
-#ifdef ALPS_HAVE_VALARRAY
-# include <valarray>
-#endif
+#include <valarray>
 
 #ifndef ALPS_WITHOUT_OSIRIS
 # include <alps/osiris/std/valarray.h>
 #endif
 
-#ifdef ALPS_HAVE_VALARRAY
 template <class T> std::ostream& operator<<(std::ostream& o, const std::valarray<T>&) { return o;}
-#endif
 
 namespace alps {
 
@@ -819,8 +822,8 @@ template <class T> SimpleObservableData<T> & SimpleObservableData<T>::operator<<
       can_set_thermal_ = can_set_thermal_ && run.can_set_thermal_;
       nonlinear_operations_ = nonlinear_operations_ || run.nonlinear_operations_;
       changed_ = changed_ || run.changed_;
-      update_max(converged_errors_, run.converged_errors_);
-      update_min(any_converged_errors_, run.any_converged_errors_);
+      numeric::update_max(converged_errors_, run.converged_errors_);
+      numeric::update_min(any_converged_errors_, run.any_converged_errors_);
 
       mean_ *= double(count_);
       mean_ += double(run.count_)*run.mean_;
@@ -1023,14 +1026,14 @@ void SimpleObservableData<T>::fill_jack() const
     // Order-N initialization of jackknife data structure
     resize_same_as(jack_[0], bin_value(0));
     for(std::size_t i = 0; i < bin_number(); ++i)
-      jack_[0] += obs_value_traits<result_type>::convert(bin_value(i)) / count_type(bin_size());
+      jack_[0] += alps::numeric_cast<result_type>(bin_value(i)) / count_type(bin_size());
     for(std::size_t i = 0; i < bin_number(); ++i) {
       resize_same_as(jack_[i+1], jack_[0]);
-      result_type tmp(obs_value_traits<result_type>::convert(bin_value(i)));
+      result_type tmp(alps::numeric_cast<result_type>(bin_value(i)));
       tmp /= count_type(bin_size());
       jack_[i+1] = jack_[0]
           - tmp;
-//        - (obs_value_traits<result_type>::convert(bin_value(i)) / count_type(bin_size()));
+//        - (alps::numeric_cast<result_type>(bin_value(i)) / count_type(bin_size()));
       jack_[i+1] /= count_type(bin_number() - 1);
     }
     jack_[0] /= count_type(bin_number());
@@ -1057,7 +1060,7 @@ void SimpleObservableData<T>::analyze() const
       resize_same_as(variance_, bin_value2(0));
       variance_ = 0.;
       for (std::size_t i=0;i<values2_.size();++i)
-        variance_+=obs_value_traits<result_type>::convert(values2_[i]);
+        variance_+=alps::numeric_cast<result_type>(values2_[i]);
       // was: variance_ = std::accumulate(values2_.begin(), values2_.end(), variance_);
       result_type mean2(mean_);
       mean2*=mean_*count_type(count());
@@ -1138,12 +1141,12 @@ SimpleObservableData<T>::covariance(const SimpleObservableData<T> obs2) const
     rav1 /= count_type(k);
     rav2 /= count_type(k);
 
-    covariance_type cov = obs_value_traits<T>::outer_product(jack_[1],obs2.jack_[1]);
+    covariance_type cov = numeric::outer_product(jack_[1],obs2.jack_[1]);
     for (uint32_t i = 2; i < jack_.size(); ++i)
-      cov += obs_value_traits<T>::outer_product(jack_[i],obs2.jack_[i]);
+      cov += numeric::outer_product(jack_[i],obs2.jack_[i]);
 
     cov/=count_type(k);
-    cov-= obs_value_traits<T>::outer_product(rav1, rav2);
+    cov-= numeric::outer_product(rav1, rav2);
     cov *= count_type(k - 1);
     return cov;
   } else {

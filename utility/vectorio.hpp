@@ -41,6 +41,7 @@
 #include <alps/config.h>
 #include <alps/parser/parser.h>
 #include <alps/vectortraits.h>
+#include <alps/utility/size.hpp>
 
 #include <boost/throw_exception.hpp>
 #include <iomanip>
@@ -68,7 +69,7 @@ inline void read_vector_resize (std::istream& in, CONTAINER& v)
   std::vector<value_type> tmp;
   std::copy(std::istream_iterator<value_type>(in),std::istream_iterator<value_type>(),std::back_inserter(tmp));
   vectorops::resize(v,tmp.size());
-  for (std::size_t i=0;i<vectorops::size(v);++i)
+  for (std::size_t i=0;i<size(v);++i)
     v[i]=tmp[i];
 }
 
@@ -80,7 +81,7 @@ template <class CONTAINER>
 inline void read_vector (std::istream& in, CONTAINER& v)
 {
   typename vector_traits<CONTAINER>::size_type i=0;
-  while (i!=vectorops::size(v))
+  while (i!=alps::size(v))
     in >> v[i++];
 }
 
@@ -188,9 +189,9 @@ inline std::string write_vector(const CONTAINER& v, const std::string& delim=" "
 {
   std::ostringstream str;
   str << std::setprecision(prec);
-  for (std::size_t i=0;i<vectorops::size(v);++i) {
+  for (std::size_t i=0;i<alps::size(v);++i) {
     str << v[i];
-    if (i!=vectorops::size(v)-1)
+    if (i!=alps::size(v)-1)
       str << delim;
   }
   return str.str();

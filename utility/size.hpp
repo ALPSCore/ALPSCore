@@ -4,7 +4,9 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2002 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2010 by Matthias Troyer <troyer@comp-phys.org>,
+*                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
+*                            Andreas Laeuchli <laeuchli@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -28,43 +30,28 @@
 
 /* $Id$ */
 
-#ifndef ALPS_LATTICE_SIMPLECELL_H
-#define ALPS_LATTICE_SIMPLECELL_H
+#ifndef ALPS_UTILITY_SIZE_HPP
+#define ALPS_UTILITY_SIZE_HPP
 
-#include <alps/config.h>
-#include <alps/lattice/unitcell.h>
-#include <alps/lattice/graph_traits.h>
-#include <alps/lattice/dimensional_traits.h>
-#include <alps/lattice/cell_traits.h>
-#include <alps/utility/vectorio.hpp>
+#include <alps/type_traits/is_sequence.hpp>
+#include <boost/utility/enable_if.hpp>
 
 namespace alps {
 
-template <class UnitCell=EmptyUnitCell, class Offset=typename std::vector<int> >
-class simple_cell  {
-public:
-  typedef Offset offset_type;
-  typedef UnitCell unit_cell_type;
-  typedef typename alps::dimensional_traits<UnitCell>::dimension_type dimension_type;
-
-  simple_cell() : dim_(0) {}
-  simple_cell(const unit_cell_type& u, const offset_type& o)
-   : dim_(alps::dimension(u)), offset_(o) {}
-  
-  const offset_type& offset() const { return offset_;}
-  dimension_type dimension() { return dim_;}
-private:
-  dimension_type dim_;
-  offset_type offset_;
-};
-
-template <class UnitCell,class Offset>
-inline typename simple_cell<UnitCell,Offset>::dimension_type
-dimension(const simple_cell<UnitCell,Offset>& c)
+template <class T>
+inline typename boost::disable_if<is_sequence<T>,std::size_t>::type
+size(T const& a) 
 {
-  return c.dimension();
+  return 1;
+}
+
+template <class T>
+inline typename boost::enable_if<is_sequence<T>,std::size_t>::type
+size(T const& a) 
+{
+  return a.size();
 }
 
 } // end namespace alps
 
-#endif // ALPS_LATTICE_SIMPLECELL_H
+#endif // ALPS_UTILITY_SIZE_HPP

@@ -34,7 +34,6 @@
 #define ALPS_ALEA_ABSTRACTBINNING_H
 
 #include <alps/osiris/dump.h>
-#include <alps/alea/obsvalue.h>
 #include <alps/type_traits/change_value_type.hpp>
 
 namespace alps {

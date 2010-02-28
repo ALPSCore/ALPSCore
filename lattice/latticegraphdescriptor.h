@@ -39,7 +39,7 @@
 #include <alps/lattice/latticedescriptor.h>
 #include <alps/lattice/hypercubic.h>
 #include <alps/lattice/coordinatelattice.h>
-#include <alps/vectorio.h>
+#include <alps/utility/vectorio.hpp>
 
 #include <iostream>
 

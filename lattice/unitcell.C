@@ -33,7 +33,7 @@
 #ifndef ALPS_WITHOUT_XML
 
 #include <alps/lattice/unitcell.h>
-#include <alps/vectorio.h>
+#include <alps/utility/vectorio.hpp>
 
 #include <boost/lexical_cast.hpp>
 

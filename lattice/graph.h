@@ -38,7 +38,7 @@
 #include <alps/lattice/graph_traits.h>
 #include <alps/lattice/coordinate_traits.h>
 #include <alps/lattice/propertymap.h>
-#include <alps/vectorio.h>
+#include <alps/utility/vectorio.hpp>
 
 #include <boost/pending/property.hpp>
 #include <boost/graph/adjacency_list.hpp>

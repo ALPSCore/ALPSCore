@@ -34,13 +34,19 @@
 #define ALPS_ALEA_SIMPLEBINNING_H
 
 #include <alps/config.h>
-#include <alps/alea/obsvalue.h>
 #include <alps/alea/abstractbinning.h>
 #include <alps/alea/nan.h>
 #include <alps/math.hpp>
 #include <alps/xml.h>
 #include <alps/type_traits/change_value_type.hpp>
 #include <alps/type_traits/average_type.hpp>
+#include <alps/type_traits/slice.hpp>
+#include <alps/numeric/checked_divide.hpp>
+#include <alps/numeric/set_negative_0.hpp>
+#include <alps/utility/numeric_cast.hpp>
+#include <alps/utility/resize.hpp>
+#include <alps/utility/size.hpp>
+
 #include <boost/config.hpp>
 
 //=======================================================================
@@ -167,9 +173,9 @@ inline void SimpleBinning<T>::operator<<(const T& x)
   }
 
   // store x, x^2
-  last_bin_[0]=obs_value_traits<result_type>::convert(x);
-  sum_[0]+=obs_value_traits<result_type>::convert(x);
-  sum2_[0]+=obs_value_traits<result_type>::convert(x)*obs_value_traits<result_type>::convert(x);
+  last_bin_[0]=alps::numeric_cast<result_type>(x);
+  sum_[0]+=alps::numeric_cast<result_type>(x);
+  sum2_[0]+=alps::numeric_cast<result_type>(x)*alps::numeric_cast<result_type>(x);
 
   uint64_t i=count_;
   count_++;
@@ -394,7 +400,7 @@ inline typename SimpleBinning<T>::result_type SimpleBinning<T>::variance() const
   result_type tmp(sum_[0]);
   tmp *= tmp/count_type(count());
   tmp = sum2_[0] -tmp;
-  set_negative_0(tmp);
+  numeric::set_negative_0(tmp);
   return tmp/count_type(count()-1);
 }
 // VARIANCE for an element of a vector
@@ -419,7 +425,7 @@ inline double SimpleBinning<std::valarray<double> >::variance_element(std::size_
   double tmp(sum_[0][element]);
   tmp *= tmp/count_type(count());
   tmp = sum2_[0][element] -tmp;
-  set_negative_0(tmp);
+  numeric::set_negative_0(tmp);
   return tmp/count_type(count()-1);
 }
 
@@ -438,7 +444,7 @@ inline typename SimpleBinning<T>::result_type SimpleBinning<T>::error(std::size_
 
   uint64_t binsize_ = bin_entries_[i];
 
-  result_type correction = checked_divide(binvariance(i),binvariance(0));
+  result_type correction = numeric::checked_divide(binvariance(i),binvariance(0));
   using std::sqrt;
   correction *=(variance()/count_type(binsize_-1));
   return sqrt(correction);
