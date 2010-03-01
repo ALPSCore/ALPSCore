@@ -37,12 +37,8 @@
 #ifndef ALPS_VECTORTRAITS_H
 #define ALPS_VECTORTRAITS_H
 
-#ifdef HAVE_CONFIG_H
-# include <alps/config.h>
-#endif
 #include <alps/functional.h>
-
-// #include <boost/lambda/lambda.hpp>
+#include <alps/type_traits/element_type.hpp>
 
 #include <algorithm>
 #include <cassert>
@@ -61,20 +57,16 @@ namespace alps {
 template <class CONTAINER> 
 struct vector_traits
 {
-  typedef typename CONTAINER::value_type value_type;
   typedef typename CONTAINER::iterator iterator;
   typedef typename CONTAINER::const_iterator const_iterator;
-  typedef typename CONTAINER::size_type size_type;
 };
 
 
 /// specialization of vector_traits to std::valarray<T>
 template <class T> 
 struct vector_traits<std::valarray<T> > {
-  typedef T value_type;
   typedef T* iterator; 
   typedef const T* const_iterator; 
-  typedef std::size_t size_type;
 };
 
 
@@ -85,28 +77,19 @@ namespace vectorops {
 
 /// returns a pointer to the start of storage of a vector
 template <class C>
-inline typename vector_traits<C>::value_type* data(C& c) { return &c[0];}
+inline typename element_type<C>::type* data(C& c) { return &c[0];}
 
 /// returns a pointer to the start of storage of a vector
 template <class C>
-inline const typename vector_traits<C>::value_type* data(const C& c) { return &c[0];}
-
-/// resizes the vector, not necessarily keeping the contents
-template <class C>
-inline void resize(C& c, std::size_t n) 
-{
-  if(c.size()!=n)
-           c.resize(n);
-}
+inline const typename element_type<C>::type* data(const C& c) { return &c[0];}
 
 /// calculates the scalar product of two vectors
 template <class C>
-inline typename vector_traits<C>::value_type scalar_product(const C& c1, const C& c2) 
+inline typename element_type<C>::type scalar_product(const C& c1, const C& c2) 
 {
   return std::inner_product(c1.begin(),c1.end(),c2.begin(),typename C::value_type(),
                               std::plus<typename C::value_type>(),conj_mult<typename C::value_type>());
 }
-
 
 /// \overload
 template <class T>

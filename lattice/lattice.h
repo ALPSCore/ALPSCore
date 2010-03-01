@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2001-2009 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2001-2010 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -35,7 +35,7 @@
 #include <alps/lattice/unitcell.h>
 #include <alps/lattice/coordinate_traits.h>
 #include <alps/utility/vectorio.hpp>
-#include <alps/vectortraits.h>
+#include <alps/type_traits/element_type.hpp>
 
 namespace alps {
 
@@ -198,7 +198,7 @@ extent(const Lattice& l)
 }
 
 template <class Lattice>
-inline typename vector_traits<typename lattice_traits<Lattice>::extent_type>::value_type
+inline typename element_type<typename lattice_traits<Lattice>::extent_type>::type
 extent(const Lattice& l, unsigned int d)
 {
   return l.extent(d);

@@ -42,6 +42,7 @@
 #include <alps/parser/parser.h>
 #include <alps/vectortraits.h>
 #include <alps/utility/size.hpp>
+#include <alps/type_traits/element_type.hpp>
 
 #include <boost/throw_exception.hpp>
 #include <iomanip>
@@ -65,10 +66,10 @@ namespace alps {
 template <class CONTAINER>
 inline void read_vector_resize (std::istream& in, CONTAINER& v)
 {
-  typedef typename vector_traits<CONTAINER>::value_type value_type;
+  typedef typename element_type<CONTAINER>::type value_type;
   std::vector<value_type> tmp;
   std::copy(std::istream_iterator<value_type>(in),std::istream_iterator<value_type>(),std::back_inserter(tmp));
-  vectorops::resize(v,tmp.size());
+  v.resize(tmp.size());
   for (std::size_t i=0;i<size(v);++i)
     v[i]=tmp[i];
 }
@@ -80,7 +81,7 @@ inline void read_vector_resize (std::istream& in, CONTAINER& v)
 template <class CONTAINER>
 inline void read_vector (std::istream& in, CONTAINER& v)
 {
-  typename vector_traits<CONTAINER>::size_type i=0;
+  std::size_t i=0;
   while (i!=alps::size(v))
     in >> v[i++];
 }
@@ -90,10 +91,9 @@ inline void read_vector (std::istream& in, CONTAINER& v)
 /// \param v the vector to be read
 /// \param n the number of elements to be read
 template <class CONTAINER>
-inline void read_vector (std::istream& in, CONTAINER& v,
-         typename vector_traits<CONTAINER>::size_type n)
+inline void read_vector (std::istream& in, CONTAINER& v, std::size_t n)
 {
-  vectorops::resize(v,n);
+  v.resize(n);
   read_vector(in,v);
 }
 
@@ -124,8 +124,7 @@ inline void read_vector (const std::string& s, CONTAINER& v)
 /// \param v the vector to be read
 /// \param n the number of elements to be read
 template <class CONTAINER>
-inline void read_vector (const std::string& s, CONTAINER& v,
-         typename vector_traits<CONTAINER>::size_type n)
+inline void read_vector (const std::string& s, CONTAINER& v, std::size_t n)
 {
   std::istringstream in(s.c_str());
   read_vector(in,v,n);
@@ -137,8 +136,7 @@ inline void read_vector (const std::string& s, CONTAINER& v,
 /// \param n the number of elements to be read
 /// \return the vector to be read
 template <class CONTAINER>
-inline CONTAINER read_vector (std::istream& in,
-         typename vector_traits<CONTAINER>::size_type n)
+inline CONTAINER read_vector (std::istream& in, std::size_t n)
 {
   CONTAINER v;
   read_vector(in,v,n);
@@ -172,8 +170,7 @@ inline CONTAINER read_vector (std::istream& in)
 /// \param n the number of elements to be read
 /// \return the vector read from the string
 template <class CONTAINER>
-inline CONTAINER read_vector (const std::string& s,
-         typename vector_traits<CONTAINER>::size_type n)
+inline CONTAINER read_vector (const std::string& s, std::size_t n)
 {
   CONTAINER v;
   read_vector(s,v,n);
