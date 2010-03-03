@@ -407,7 +407,7 @@ void MCSimulation::serialize(hdf5::oarchive & ar) const {
                 }
                 ar 
                     << make_pvp("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/results", measurements)
-                    << make_pvp("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/log", get_info())
+                    << make_pvp("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/log", runs[i]->get_info())
                 ;
             }
         if(remote_runs.size()) {
