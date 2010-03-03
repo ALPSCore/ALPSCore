@@ -450,7 +450,9 @@ void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::pa
       out << alps::end_tag("CHECKPOINT");
       runfiles[i].in=optional_complete(runfiles[i].out,dir);
       if(workerstatus[i] == LocalRun || workerstatus[i] == RemoteRun) {
+#ifndef ALPS_ONE_CHECKPOINT_ONLY
         runs[i]->save_to_file(optional_complete(runfiles[i].out,dir),optional_complete(runfiles[i].hdf5out,dir));
+#endif
       } else if (workerstatus[i] == RunOnDump) {
         if(optional_complete(runfiles[i].out,dir).string()!=runfiles[i].in.string()) {
           boost::filesystem::remove(boost::filesystem::complete(runfiles[i].out,dir));
