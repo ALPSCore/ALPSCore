@@ -407,13 +407,13 @@ void MCSimulation::serialize(hdf5::oarchive & ar) const {
                     (all_measurements.rbegin() + 1)->second << all_measurements.back().second;
                     all_measurements.pop_back();
                 }
-                std::ostringstream rngstream;
-                rngstream << *(runs[i]->engine_ptr);
+//TODO:                std::ostringstream rngstream;
+//TODO:                rngstream << *(runs[i]->engine_ptr);
                 ar 
                     << make_pvp("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/results", measurements)
                     << make_pvp("/log/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/alps", runs[i]->get_info())
-                    << make_pvp("/rng/realizations/0/clones/" + boost::lexical_cast<std::string>(index++), rngstream.str())
-                    << make_pvp("/rng/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/@name", runs[i]->rng_name())
+//TODO:                    << make_pvp("/rng/realizations/0/clones/" + boost::lexical_cast<std::string>(index++), rngstream.str())
+//TODO:                    << make_pvp("/rng/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/@name", runs[i]->rng_name())
                 ;
             }
         if(remote_runs.size()) {
@@ -424,25 +424,23 @@ void MCSimulation::serialize(hdf5::oarchive & ar) const {
                 ObservableSet measurements;
                 receive >> measurements;
                 all_measurements.push_back(make_pair(1, measurements));
-                    while (all_measurements.size() > 1 && all_measurements.back().first == (all_measurements.rbegin() + 1)->first) {
-                        (all_measurements.rbegin() + 1)->first *= 2;
-                        (all_measurements.rbegin() + 1)->second << all_measurements.back().second;
-                        all_measurements.pop_back();
-                    }
-                    TaskInfo infos;
-                    receive >> infos;
-                    std::string rng_engine;
-//TODO:                    receive >> rng_engine;
-                    std::string rng_name;
-//TODO:                    receive >> rng_name;
-                    ar
-                        << make_pvp("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/results", measurements)
-                        << make_pvp("/log/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/alps", info)
-                        << make_pvp("/rng/realizations/0/clones/" + boost::lexical_cast<std::string>(index++), rng_engine)
-                        << make_pvp("/rng/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/@name", rng_name)
-                    
-                    ;
+                while (all_measurements.size() > 1 && all_measurements.back().first == (all_measurements.rbegin() + 1)->first) {
+                    (all_measurements.rbegin() + 1)->first *= 2;
+                    (all_measurements.rbegin() + 1)->second << all_measurements.back().second;
+                    all_measurements.pop_back();
                 }
+                TaskInfo infos;
+                receive >> infos;
+//TODO:                std::string rng_engine;
+//TODO:                receive >> rng_engine;
+//TODO:                std::string rng_name;
+//TODO:                receive >> rng_name;
+                ar
+                    << make_pvp("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/results", measurements)
+                    << make_pvp("/log/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/alps", info)
+//TODO:                    << make_pvp("/rng/realizations/0/clones/" + boost::lexical_cast<std::string>(index++), rng_engine)
+//TODO:                    << make_pvp("/rng/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/@name", rng_name)
+                ;
             }
         }
         for (std::size_t i = all_measurements.size() - 1; i > 0; --i)
