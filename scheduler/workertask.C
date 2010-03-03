@@ -443,7 +443,12 @@ void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::pa
         runfiles[i].hdf5out = boost::filesystem::path(name+".h5");
 #endif
       }
-      std::string infostring = runs[i]->get_info();
+      out << alps::start_tag(worker_tag());
+      out << runs[i]->get_info();
+      out << alps::start_tag("CHECKPOINT") << alps::attribute("format","osiris")
+          << alps::attribute("file",runfiles[i].out.native_file_string());
+      out << alps::end_tag("CHECKPOINT");
+      runfiles[i].in=optional_complete(runfiles[i].out,dir);
       if(workerstatus[i] == LocalRun || workerstatus[i] == RemoteRun) {
         runs[i]->save_to_file(optional_complete(runfiles[i].out,dir),optional_complete(runfiles[i].hdf5out,dir));
       } else if (workerstatus[i] == RunOnDump) {
@@ -462,12 +467,6 @@ void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::pa
       }
       else
         boost::throw_exception(std::logic_error("incorrect status of run"));
-      out << alps::start_tag(worker_tag());
-      out << infostring;
-      out << alps::start_tag("CHECKPOINT") << alps::attribute("format","osiris")
-          << alps::attribute("file",runfiles[i].out.native_file_string());
-      out << alps::end_tag("CHECKPOINT");
-      runfiles[i].in=optional_complete(runfiles[i].out,dir);
 #ifdef ALPS_HAVE_HDF5
       if (!runfiles[i].hdf5out.empty())
         runfiles[i].hdf5in=optional_complete(runfiles[i].hdf5out,dir);
