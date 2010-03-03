@@ -300,11 +300,6 @@ bool Worker::handle_message(const Process& master,int32_t tag) {
       load_from_file(boost::filesystem::path(name1),boost::filesystem::path(name2));
       break;
           
-    case MCMP_set_run_file_names:
-      message.receive(master,MCMP_set_run_file_names);
-      message >> fnpath_ >> hdf5path_;
-      return true;
-      
     case MCMP_save_run_to_file:
       message.receive(master,MCMP_save_run_to_file);
       message >> name1 >> name2;
