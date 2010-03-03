@@ -307,10 +307,8 @@ bool Worker::handle_message(const Process& master,int32_t tag) {
       
     case MCMP_save_run_to_file:
       message.receive(master,MCMP_save_run_to_file);
-#ifndef ALPS_SAVE_RUNS_ASYNC
-      message >> fnpath_ >> hdf5path_;
-#endif
-      save_to_file(boost::filesystem::path(fnpath_),boost::filesystem::path(hdf5path_));
+      message >> name1 >> name2;
+      save_to_file(boost::filesystem::path(name1),boost::filesystem::path(name2));
       return true;
 
     case MCMP_get_run_work:

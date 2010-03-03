@@ -64,14 +64,13 @@ public:
   BOOST_STATIC_CONSTANT(bool, has_tau=true);
   BOOST_STATIC_CONSTANT(int, magic_id=3);
 
-  BasicDetailedBinning(uint32_t binsize=1, uint32_t binnum=std::numeric_limits<uint32_t>::max BOOST_PREVENT_MACRO_SUBSTITUTION (), uint32_t mergedbinnum = 0);
+  BasicDetailedBinning(uint32_t binsize=1, uint32_t binnum=std::numeric_limits<uint32_t>::max BOOST_PREVENT_MACRO_SUBSTITUTION ());
 
   void reset(bool=false);
   void operator<<(const T& x);
 
   
   uint32_t max_bin_number() const { return maxbinnum_;}
-  uint32_t max_merged_bin_number() const { return maxmergedbinnum_;}
   uint32_t bin_number() const;
   uint32_t filled_bin_number() const;
   uint32_t filled_bin_number2() const 
@@ -107,7 +106,6 @@ private:
   uint32_t binsize_;       // number of measurements per bin
   uint32_t minbinsize_;    // minimum number of measurements per bin
   uint32_t maxbinnum_;      // maximum number of bins 
-  uint32_t maxmergedbinnum_;      // maximum number of bins 
   uint32_t  binentries_; // number of measurements in last bin
   std::vector<value_type> values_; // bin values
   std::vector<value_type> values2_; // bin values of squares
@@ -122,8 +120,8 @@ template<class T> class DetailedBinning : public BasicDetailedBinning<T>
 public:
   typedef T value_type;
   BOOST_STATIC_CONSTANT(int, magic_id=4);
-  DetailedBinning(uint32_t binnum=128, uint32_t mergedbinnum = 0) 
-  : BasicDetailedBinning<T>(1,binnum==0 ? 128 : binnum,mergedbinnum==0 ? binnum : mergedbinnum) {}
+  DetailedBinning(uint32_t binnum=128) 
+  : BasicDetailedBinning<T>(1,binnum==0 ? 128 : binnum) {}
 };
 
 template<class T> class FixedBinning : public BasicDetailedBinning<T>
@@ -161,9 +159,9 @@ typedef SimpleObservable< std::valarray<double> ,
 
 
 template <class T>
-inline BasicDetailedBinning<T>::BasicDetailedBinning(uint32_t binsize, uint32_t binnum, uint32_t mergedbinnum)
+inline BasicDetailedBinning<T>::BasicDetailedBinning(uint32_t binsize, uint32_t binnum)
  : SimpleBinning<T>(),
-   binsize_(0), minbinsize_(binsize), maxbinnum_(binnum), maxmergedbinnum_(mergedbinnum == 0 ? binnum : mergedbinnum), binentries_(0)    
+   binsize_(0), minbinsize_(binsize), maxbinnum_(binnum), binentries_(0)    
 {
   reset();
 }

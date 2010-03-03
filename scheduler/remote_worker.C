@@ -69,11 +69,7 @@ void RemoteWorker::save_to_file(const boost::filesystem::path& fn, const boost::
   // let the remote process write the run into the file
   OMPDump send;
   send << fn.string () << hdf5fn.string();
-#ifdef ALPS_SAVE_RUNS_ASYNC
-  send.send(where,MCMP_set_run_file_names);
-#else
   send.send(where,MCMP_save_run_to_file);
-#endif
 }
 
 void RemoteWorker::load_from_file(const boost::filesystem::path& fn, const boost::filesystem::path& hdf5fn)

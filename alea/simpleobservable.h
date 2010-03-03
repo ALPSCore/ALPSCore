@@ -109,7 +109,6 @@ public:
   count_type bin_number2() const { return b_.filled_bin_number2();}
   /// get the maximum number of bins
   count_type max_bin_number() const { return b_.max_bin_number();}
-  count_type max_merged_bin_number() const { return b_.max_merged_bin_number();}
   /** set the maximum number of bins
       This will be the maximum number from now on if additional measurements are performed.
    */

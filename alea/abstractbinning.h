@@ -52,7 +52,6 @@ class AbstractBinning {
 
   time_type tau()                  const { boost::throw_exception(std::logic_error("Called non-implemented function of AbstractBinning")); return time_type(); }
   uint32_t max_bin_number()        const { return 0; }
-  uint32_t max_merged_bin_number() const { return 0; }
   uint32_t bin_number()            const { return 0; }
   uint32_t filled_bin_number()     const { return 0; }
   uint32_t filled_bin_number2()     const { return 0; }

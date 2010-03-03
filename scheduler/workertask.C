@@ -482,20 +482,7 @@ void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::pa
       out << alps::end_tag(worker_tag());
     }
   }
-#ifdef ALPS_SAVE_RUNS_ASYNC
-  ProcessList remote_runs;
-  for (unsigned int i=0;i<runs.size();i++)
-    if(workerstatus[i]==RemoteRun)
-      remote_runs.push_back(Process(dynamic_cast<const RemoteWorker*>(runs[i])->process()));
-  if(remote_runs.size()) {
-    OMPDump send;
-    send.send(remote_runs, MCMP_save_run_to_file);
-  }
-#endif
 }
-
-
-
 
 } // namespace scheduler
 } // namespace alps

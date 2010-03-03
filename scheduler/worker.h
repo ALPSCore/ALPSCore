@@ -171,7 +171,6 @@ private:
   std::string rng_name() const { return parms.value_or_default("RNG","mt19937");}
   TaskInfo info;
   int halted,started;
-  std::string fnpath_, hdf5path_;
 };
 
 
