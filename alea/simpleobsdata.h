@@ -325,7 +325,7 @@ SimpleObservableData<T>::SimpleObservableData(const AbstractSimpleObservable<T>&
    has_tau_(obs.has_tau()),
    can_set_thermal_(true),
    binsize_(obs.bin_size()),
-   max_bin_number_(obs.max_bin_number()),
+   max_bin_number_(obs.max_merged_bin_number()),
    discardedmeas_(0),
    discardedbins_(0),
    changed_(false),

@@ -131,6 +131,7 @@ public:
   virtual count_type bin_number() const { return 0;}
   /// the number of bins
   virtual count_type max_bin_number() const { return 0;}
+  virtual count_type max_merged_bin_number() const { return 0;}
   /// the number of measurements per bin
   virtual count_type bin_size() const { return 0;}
   /// the value of a bin

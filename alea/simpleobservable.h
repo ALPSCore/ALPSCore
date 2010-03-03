@@ -72,6 +72,8 @@ public:
   SimpleObservable(const std::string& name,uint32_t s, const label_type& l=label_type())
    : AbstractSimpleObservable<T>(name,l), b_(s) {}
 
+  SimpleObservable(const std::string& name,uint32_t s,uint32_t a, const label_type& l=label_type())
+   : AbstractSimpleObservable<T>(name,l), b_(s, a) {}
 
   uint32_t version_id() const { return version;}
 
@@ -107,6 +109,7 @@ public:
   count_type bin_number2() const { return b_.filled_bin_number2();}
   /// get the maximum number of bins
   count_type max_bin_number() const { return b_.max_bin_number();}
+  count_type max_merged_bin_number() const { return b_.max_merged_bin_number();}
   /** set the maximum number of bins
       This will be the maximum number from now on if additional measurements are performed.
    */
