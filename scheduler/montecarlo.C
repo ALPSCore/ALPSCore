@@ -318,6 +318,11 @@ bool MCRun::handle_message(const Process& runmaster,int32_t tag)
       dump << get_measurements();
     dump.send(runmaster,MCMP_measurements);
     return true;
+  case MCMP_get_measurements_and_infos:
+    message.receive(runmaster, MCMP_get_measurements_and_infos);
+    dump << get_measurements() << get_info();
+    dump.send(runmaster,MCMP_measurements_and_infos);
+    return true;
   case MCMP_get_observable:
     message.receive(runmaster, MCMP_get_observable);
     message >> compactit;
@@ -400,23 +405,32 @@ void MCSimulation::serialize(hdf5::oarchive & ar) const {
                     (all_measurements.rbegin() + 1)->second << all_measurements.back().second;
                     all_measurements.pop_back();
                 }
-                ar << make_pvp("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/results", measurements);
+                ar 
+                    << make_pvp("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/results", measurements)
+                    << make_pvp("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/log", get_info())
+                ;
             }
         if(remote_runs.size()) {
             OMPDump send;
-            send << false;
-            send.send(remote_runs, MCMP_get_measurements);
+            send.send(remote_runs, MCMP_get_measurements_and_infos);
             for (unsigned int i = 0; i < remote_runs.size(); ++i) {
-                IMPDump receive(MCMP_measurements);
-                ObservableSet measurements;
-                receive >> measurements;
-                all_measurements.push_back(make_pair(1, measurements));
-                while (all_measurements.size() > 1 && all_measurements.back().first == (all_measurements.rbegin() + 1)->first) {
-                    (all_measurements.rbegin() + 1)->first *= 2;
-                    (all_measurements.rbegin() + 1)->second << all_measurements.back().second;
-                    all_measurements.pop_back();
+                IMPDump receive(MCMP_measurements_and_infos);
+                {
+                    ObservableSet measurements;
+                    receive >> measurements;
+                    all_measurements.push_back(make_pair(1, measurements));
+                    while (all_measurements.size() > 1 && all_measurements.back().first == (all_measurements.rbegin() + 1)->first) {
+                        (all_measurements.rbegin() + 1)->first *= 2;
+                        (all_measurements.rbegin() + 1)->second << all_measurements.back().second;
+                        all_measurements.pop_back();
+                    }
+                    ar << make_pvp("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/results", measurements);
                 }
-                ar << make_pvp("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/results", measurements);
+                {
+                    TaskInfo infos;
+                    receive >> infos;
+                    ar << make_pvp("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/log", infos);
+                }
             }
         }
         for (std::size_t i = all_measurements.size() - 1; i > 0; --i)

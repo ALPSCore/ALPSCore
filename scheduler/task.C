@@ -265,6 +265,7 @@ void Task::checkpoint(const boost::filesystem::path& fn, bool writeallxml) const
   
 #endif
 
+#ifndef ALPS_ONE_CHECKPOINT_ONLY
   boost::filesystem::path filename = (make_backup ? dir/(fn.leaf()+".bak") : fn);
   {
     alps::oxstream out (filename);
@@ -273,11 +274,14 @@ void Task::checkpoint(const boost::filesystem::path& fn, bool writeallxml) const
     write_xml_body(out,fn,writeallxml);
     write_xml_trailer(out);
   } // close file
+#endif
 
   if(make_backup) {
     if (boost::filesystem::exists(fn))
       boost::filesystem::remove(fn);
+#ifndef ALPS_ONE_CHECKPOINT_ONLY
     boost::filesystem::rename(filename,fn);
+#endif
 #ifdef ALPS_HAVE_HDF5
     if (boost::filesystem::exists(task_path))
       boost::filesystem::remove(task_path);

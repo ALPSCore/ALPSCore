@@ -103,6 +103,8 @@ enum MCMP_Tags {
   MCMP_load_run_from_file          = 212,
   MCMP_get_run_work                = 215,
   MCMP_set_parameters              = 216,
+  MCMP_get_measurements_and_infos  = 217,
+
 // astreich, 06/22
   MCMP_get_summary                 = 220,
 
@@ -113,6 +115,7 @@ enum MCMP_Tags {
   MCMP_measurements                = 303,
   MCMP_task_finished               = 304,
   MCMP_observable                  = 305,
+  MCMP_measurements_and_infos      = 306,
   MCMP_work                        = 311,
   MCMP_run_work                    = 315,
   MCMP_summary                     = 320,
