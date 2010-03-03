@@ -437,7 +437,7 @@ void MCSimulation::serialize(hdf5::oarchive & ar) const {
 //TODO:                receive >> rng_name;
                 ar
                     << make_pvp("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/results", measurements)
-                    << make_pvp("/log/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/alps", info)
+                    << make_pvp("/log/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/alps", infos)
 //TODO:                    << make_pvp("/rng/realizations/0/clones/" + boost::lexical_cast<std::string>(index++), rng_engine)
 //TODO:                    << make_pvp("/rng/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/@name", rng_name)
                 ;
