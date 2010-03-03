@@ -320,8 +320,10 @@ bool MCRun::handle_message(const Process& runmaster,int32_t tag)
     return true;
   case MCMP_get_measurements_and_infos:
     message.receive(runmaster, MCMP_get_measurements_and_infos);
-    dump << get_measurements() << get_info();
-    dump.send(runmaster,MCMP_measurements_and_infos);
+//TODO:    std::ostringstream rngstream;
+//TODO:    rngstream << *(runs[i]->engine_ptr);
+    dump << get_measurements() << get_info() /*<< rngstream.str() << rng_name()*/;
+    dump.send(runmaster, MCMP_measurements_and_infos);
     return true;
   case MCMP_get_observable:
     message.receive(runmaster, MCMP_get_observable);
@@ -405,9 +407,13 @@ void MCSimulation::serialize(hdf5::oarchive & ar) const {
                     (all_measurements.rbegin() + 1)->second << all_measurements.back().second;
                     all_measurements.pop_back();
                 }
+                std::ostringstream rngstream;
+                rngstream << *(runs[i]->engine_ptr);
                 ar 
                     << make_pvp("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/results", measurements)
-                    << make_pvp("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/log", runs[i]->get_info())
+                    << make_pvp("/log/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/alps", runs[i]->get_info())
+                    << make_pvp("/rng/realizations/0/clones/" + boost::lexical_cast<std::string>(index++), rngstream.str())
+                    << make_pvp("/rng/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/@name", runs[i]->rng_name())
                 ;
             }
         if(remote_runs.size()) {
@@ -415,21 +421,27 @@ void MCSimulation::serialize(hdf5::oarchive & ar) const {
             send.send(remote_runs, MCMP_get_measurements_and_infos);
             for (unsigned int i = 0; i < remote_runs.size(); ++i) {
                 IMPDump receive(MCMP_measurements_and_infos);
-                {
-                    ObservableSet measurements;
-                    receive >> measurements;
-                    all_measurements.push_back(make_pair(1, measurements));
+                ObservableSet measurements;
+                receive >> measurements;
+                all_measurements.push_back(make_pair(1, measurements));
                     while (all_measurements.size() > 1 && all_measurements.back().first == (all_measurements.rbegin() + 1)->first) {
                         (all_measurements.rbegin() + 1)->first *= 2;
                         (all_measurements.rbegin() + 1)->second << all_measurements.back().second;
                         all_measurements.pop_back();
                     }
-                    ar << make_pvp("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/results", measurements);
-                }
-                {
                     TaskInfo infos;
                     receive >> infos;
-                    ar << make_pvp("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/log", infos);
+                    std::string rng_engine;
+//TODO:                    receive >> rng_engine;
+                    std::string rng_name;
+//TODO:                    receive >> rng_name;
+                    ar
+                        << make_pvp("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/results", measurements)
+                        << make_pvp("/log/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/alps", info)
+                        << make_pvp("/rng/realizations/0/clones/" + boost::lexical_cast<std::string>(index++), rng_engine)
+                        << make_pvp("/rng/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/@name", rng_name)
+                    
+                    ;
                 }
             }
         }
