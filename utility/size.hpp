@@ -40,7 +40,7 @@ namespace alps {
 
 template <class T>
 inline typename boost::disable_if<is_sequence<T>,std::size_t>::type
-size(T const& a) 
+size(T const&) 
 {
   return 1;
 }

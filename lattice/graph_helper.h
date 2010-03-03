@@ -71,9 +71,9 @@ void throw_if_xyz_defined(const Parameters& p, const G& graph)
   // check whether x, y, or z is set
   unsigned int dim = detail::graph_dimension_helper<
     has_property<dimension_t, G>::graph_property>::dimension(graph);
-  if (dim >= 1 && p.defined("x") ||
-      dim >= 2 && p.defined("y") ||
-      dim >= 3 && p.defined("z"))
+  if ((dim >= 1 && p.defined("x")) ||
+      (dim >= 2 && p.defined("y")) ||
+      (dim >= 3 && p.defined("z")))
     boost::throw_exception(std::runtime_error(
       "x, y or z is predefined as parameter and used as coordinate"));
 }
