@@ -125,6 +125,7 @@ public:
 #endif
 
 private:
+  void accumulate_measurements(std::vector<std::pair<std::size_t, ObservableSet> > & all_measurements, ObservableSet const & measurements) const;
   std::string worker_tag() const;
   void write_xml_body(alps::oxstream&, boost::filesystem::path const& fn, bool) const;
   virtual void handle_tag(std::istream&, const XMLTag&);

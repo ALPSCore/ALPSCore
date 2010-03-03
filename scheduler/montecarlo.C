@@ -77,11 +77,19 @@ ResultType MCSimulation::get_summary() const
   return get_summary(theName);
 }
 
+void MCSimulation::accumulate_measurements(std::vector<std::pair<std::size_t, ObservableSet> > & all_measurements, ObservableSet const & measurements) const {
+    all_measurements.push_back(make_pair(1, measurements));
+    while (all_measurements.size() > 1 && all_measurements.back().first == (all_measurements.rbegin() + 1)->first) {
+        (all_measurements.rbegin() + 1)->first *= 2;
+        (all_measurements.rbegin() + 1)->second << all_measurements.back().second;
+        all_measurements.pop_back();
+    }
+}
+
 // collect all measurements
 ObservableSet MCSimulation::get_measurements(bool compactit) const
 {
-  // old measurements
-  ObservableSet all_measurements;
+  std::vector<std::pair<std::size_t, ObservableSet> > all_measurements;
   
   ProcessList where_master;
   int remote_runs=0;
@@ -95,9 +103,9 @@ ObservableSet MCSimulation::get_measurements(bool compactit) const
     }
     else if(runs[i]) {
       if (compactit)
-        all_measurements << dynamic_cast<const MCRun*>(runs[i])->get_compacted_measurements();
+        accumulate_measurements(all_measurements, dynamic_cast<const MCRun*>(runs[i])->get_compacted_measurements());
       else
-        all_measurements << dynamic_cast<const MCRun*>(runs[i])->get_measurements();
+        accumulate_measurements(all_measurements, dynamic_cast<const MCRun*>(runs[i])->get_measurements());
     }
   }
   // adding measurements from remote runs:
@@ -112,15 +120,17 @@ ObservableSet MCSimulation::get_measurements(bool compactit) const
       IMPDump receive(MCMP_measurements);
       ObservableSet m;
       receive >> m;
-      all_measurements << m;
+      accumulate_measurements(all_measurements, m);
     }
   }
+  for (std::size_t i = all_measurements.size() - 1; i > 0; --i)
+      all_measurements[i - 1].second << all_measurements[i].second;
   for (ObservableSet::const_iterator it=measurements.begin();it!=measurements.end();++it)
-    if (!all_measurements.has(it->first))
-      all_measurements << *(it->second);
+    if (!all_measurements[0].second.has(it->first))
+      all_measurements[0].second << *(it->second);
   if (compactit)
-    all_measurements.compact();
-  return all_measurements;
+    all_measurements[0].second.compact();
+  return all_measurements[0].second;
 }
 
 
