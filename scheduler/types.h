@@ -103,6 +103,7 @@ enum MCMP_Tags {
   MCMP_load_run_from_file          = 212,
   MCMP_get_run_work                = 215,
   MCMP_set_parameters              = 216,
+  MCMP_set_run_file_names          = 217,
 // astreich, 06/22
   MCMP_get_summary                 = 220,
 
