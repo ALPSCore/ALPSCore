@@ -415,7 +415,7 @@ void MCSimulation::serialize(hdf5::oarchive & ar) const {
 //TODO:             << make_pvp("/rng/realizations/0/clones/" + boost::lexical_cast<std::string>(index++), rngstream.str())
 //TODO:             << make_pvp("/rng/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/@name", runs[i]->rng_name())
                 ;
-                ++infos;
+                ++index;
             }
         if(remote_runs.size()) {
             OMPDump send;
@@ -442,7 +442,7 @@ void MCSimulation::serialize(hdf5::oarchive & ar) const {
 //TODO:             << make_pvp("/rng/realizations/0/clones/" + boost::lexical_cast<std::string>(index++), rng_engine)
 //TODO:             << make_pvp("/rng/realizations/0/clones/" + boost::lexical_cast<std::string>(index++) + "/@name", rng_name)
                 ;
-                ++infos;
+                ++index;
             }
         }
         for (std::size_t i = all_measurements.size() - 1; i > 0; --i)
