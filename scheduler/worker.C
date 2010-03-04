@@ -302,8 +302,8 @@ bool Worker::handle_message(const Process& master,int32_t tag) {
           
     case MCMP_save_run_to_file:
       message.receive(master,MCMP_save_run_to_file);
-      message >> name1 >> name2;
-      save_to_file(boost::filesystem::path(name1),boost::filesystem::path(name2));
+      message >> file_name1 >> file_name2;
+      save_to_file(boost::filesystem::path(file_name1),boost::filesystem::path(file_name2));
       return true;
 
     case MCMP_get_run_work:
@@ -322,7 +322,7 @@ bool Worker::handle_message(const Process& master,int32_t tag) {
 
     case MCMP_get_run_info:
       message.receive(master,MCMP_get_run_info);
-      dump << get_info();
+      dump << get_info() << file_name1 << file_name2;
       dump.send(master,MCMP_run_info);
       return true;
       

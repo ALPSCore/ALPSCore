@@ -470,13 +470,11 @@ void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::pa
 #endif
     }
   }
-  std::vector<std::size_t> queue;
   ProcessList remote_runs;
   for (unsigned int i = 0; i < runs.size(); ++i) {
-    if(workerstatus[i] == RemoteRun) {
-      queue.push_back(i);
+    if(workerstatus[i] == RemoteRun)
       remote_runs.push_back( Process(dynamic_cast<const RemoteWorker*>(runs[i])->process()));
-    } else {
+    else {
       out << alps::start_tag(worker_tag())
           << runs[i]->get_info()
           << alps::start_tag("CHECKPOINT") << alps::attribute("format","osiris")
@@ -499,17 +497,19 @@ void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::pa
     for (std::size_t i = 0; i < remote_runs.size(); ++i) {
       IMPDump receive(MCMP_run_info);
       TaskInfo infos;
-      std::size_t index = queue[i];
+      std::string name1, name2;
+      receive >> infos >> name1 >> name2;
       out << alps::start_tag(worker_tag())
           << infos
-          << alps::start_tag("CHECKPOINT") << alps::attribute("format","osiris")
-          << alps::attribute("file",runfiles[index].out.native_file_string())
+          << alps::start_tag("CHECKPOINT")
+          << alps::attribute("format","osiris")
+          << alps::attribute("file",name1)
           << alps::end_tag("CHECKPOINT");
 #ifdef ALPS_HAVE_HDF5
-      if (boost::filesystem::exists(runfiles[index].hdf5in)) {
+      if (boost::filesystem::exists(name2)) {
         out << alps::start_tag("CHECKPOINT")
             << alps::attribute("format","hdf5")
-            << alps::attribute("file",runfiles[index].hdf5out.native_file_string())
+            << alps::attribute("file", name2)
             << alps::end_tag("CHECKPOINT");
       }
 #endif
