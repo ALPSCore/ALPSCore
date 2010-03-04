@@ -90,7 +90,6 @@ void MCSimulation::accumulate_measurements(std::vector<std::pair<std::size_t, Ob
 ObservableSet MCSimulation::get_measurements(bool compactit) const
 {
   std::vector<std::pair<std::size_t, ObservableSet> > all_measurements;
-  
   ProcessList where_master;
   int remote_runs=0;
   // add runs stored locally
@@ -384,15 +383,14 @@ ResultType DummyMCRun::get_summary() const
 #ifdef ALPS_HAVE_HDF5
 void MCSimulation::serialize(hdf5::iarchive & ar) {
     WorkerTask::serialize(ar);
-#ifdef ALPS_ONLY_HDF5
-    if (ar.is_group("/simulation/results"))
-        ar >> make_pvp("/simulation/results", measurements);
-#endif
+    #ifdef ALPS_ONLY_HDF5
+        if (ar.is_group("/simulation/results"))
+            ar >> make_pvp("/simulation/results", measurements);
+    #endif
 }
-
 void MCSimulation::serialize(hdf5::oarchive & ar) const {
     WorkerTask::serialize(ar);
-    #ifdef ALPS_ONE_CHECKPOINT_ONLY
+    #ifdef ALPS_ONE_CHECKPOINT_FILE_ONLY
         std::vector<std::pair<std::size_t, ObservableSet> > all_measurements;
         ProcessList remote_runs;
         std::size_t index = 0;
@@ -407,8 +405,8 @@ void MCSimulation::serialize(hdf5::oarchive & ar) const {
                     (all_measurements.rbegin() + 1)->second << all_measurements.back().second;
                     all_measurements.pop_back();
                 }
-//TODO:             std::ostringstream rngstream;
-//TODO:             rngstream << *(runs[i]->engine_ptr);
+//TODO:         std::ostringstream rngstream;
+//TODO:         rngstream << *(runs[i]->engine_ptr);
                 ar
                     << make_pvp("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(index) + "/results", measurements)
                     << make_pvp("/log/realizations/0/clones/" + boost::lexical_cast<std::string>(index) + "/alps", runs[i]->get_info())

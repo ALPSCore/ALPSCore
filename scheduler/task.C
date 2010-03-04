@@ -154,14 +154,11 @@ Parameters Task::parse_ext_task_file(std::string infilename)
 }
 
 #ifdef ALPS_HAVE_HDF5
-void Task::serialize(hdf5::iarchive & ar) 
-{
-  ar >> make_pvp("/parameters", parms);
+void Task::serialize(hdf5::iarchive & ar) {
+    ar >> make_pvp("/parameters", parms);
 }
-
-void Task::serialize(hdf5::oarchive & ar) const
-{
-  ar << make_pvp("/parameters", parms);
+void Task::serialize(hdf5::oarchive & ar) const {
+    ar << make_pvp("/parameters", parms);
 }
 #endif
 
@@ -265,7 +262,7 @@ void Task::checkpoint(const boost::filesystem::path& fn, bool writeallxml) const
   
 #endif
 
-#ifndef ALPS_ONE_CHECKPOINT_ONLY
+#ifndef ALPS_ONE_CHECKPOINT_FILE_ONLY
   boost::filesystem::path filename = (make_backup ? dir/(fn.leaf()+".bak") : fn);
   {
     alps::oxstream out (filename);
@@ -279,7 +276,7 @@ void Task::checkpoint(const boost::filesystem::path& fn, bool writeallxml) const
   if(make_backup) {
     if (boost::filesystem::exists(fn))
       boost::filesystem::remove(fn);
-#ifndef ALPS_ONE_CHECKPOINT_ONLY
+#ifndef ALPS_ONE_CHECKPOINT_FILE_ONLY
     boost::filesystem::rename(filename,fn);
 #endif
 #ifdef ALPS_HAVE_HDF5

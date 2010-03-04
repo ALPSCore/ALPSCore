@@ -443,11 +443,6 @@ void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::pa
         runfiles[i].hdf5out = boost::filesystem::path(name+".h5");
 #endif
       }
-      out << alps::start_tag(worker_tag());
-      out << runs[i]->get_info();
-      out << alps::start_tag("CHECKPOINT") << alps::attribute("format","osiris")
-          << alps::attribute("file",runfiles[i].out.native_file_string());
-      out << alps::end_tag("CHECKPOINT");
       runfiles[i].in=optional_complete(runfiles[i].out,dir);
       if(workerstatus[i] == LocalRun || workerstatus[i] == RemoteRun) {
         runs[i]->save_to_file(optional_complete(runfiles[i].out,dir),optional_complete(runfiles[i].hdf5out,dir));
@@ -472,10 +467,50 @@ void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::pa
         runfiles[i].hdf5in=optional_complete(runfiles[i].hdf5out,dir);
       else
         runfiles[i].hdf5in=boost::filesystem::path();
+#endif
+    }
+  }
+  std::vector<std::size_t> queue;
+  ProcessList remote_runs;
+  for (unsigned int i = 0; i < runs.size(); ++i) {
+    if(workerstatus[i] == RemoteRun) {
+      queue.push_back(i);
+      remote_runs.push_back( Process(dynamic_cast<const RemoteWorker*>(runs[i])->process()));
+    } else {
+      out << alps::start_tag(worker_tag())
+          << runs[i]->get_info()
+          << alps::start_tag("CHECKPOINT") << alps::attribute("format","osiris")
+          << alps::attribute("file",runfiles[i].out.native_file_string())
+          << alps::end_tag("CHECKPOINT");
+#ifdef ALPS_HAVE_HDF5
       if (boost::filesystem::exists(runfiles[i].hdf5in)) {
-        out << alps::start_tag("CHECKPOINT") << alps::attribute("format","hdf5")
-            << alps::attribute("file",runfiles[i].hdf5out.native_file_string());
-        out << alps::end_tag("CHECKPOINT");
+        out << alps::start_tag("CHECKPOINT")
+            << alps::attribute("format","hdf5")
+            << alps::attribute("file",runfiles[i].hdf5out.native_file_string())
+            << alps::end_tag("CHECKPOINT");
+      }
+#endif
+      out << alps::end_tag(worker_tag());
+    }
+  }
+  if(remote_runs.size()) {
+    OMPDump send;
+    send.send(remote_runs, MCMP_get_run_info);
+    for (std::size_t i = 0; i < remote_runs.size(); ++i) {
+      IMPDump receive(MCMP_run_info);
+      TaskInfo infos;
+      std::size_t index = queue[i];
+      out << alps::start_tag(worker_tag())
+          << infos
+          << alps::start_tag("CHECKPOINT") << alps::attribute("format","osiris")
+          << alps::attribute("file",runfiles[index].out.native_file_string())
+          << alps::end_tag("CHECKPOINT");
+#ifdef ALPS_HAVE_HDF5
+      if (boost::filesystem::exists(runfiles[index].hdf5in)) {
+        out << alps::start_tag("CHECKPOINT")
+            << alps::attribute("format","hdf5")
+            << alps::attribute("file",runfiles[index].hdf5out.native_file_string())
+            << alps::end_tag("CHECKPOINT");
       }
 #endif
       out << alps::end_tag(worker_tag());
