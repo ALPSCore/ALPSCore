@@ -28,7 +28,7 @@
 
 /* $Id: nobinning.h 3520 2009-12-11 16:49:53Z gamperl $ */
 
-#include <alps/numeric/vector_valarray_conversion.h>
+#include <alps/numeric/vector_valarray_conversion.hpp>
 #include <iostream>
 #include <iterator>
 #include <iomanip>

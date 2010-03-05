@@ -2,7 +2,7 @@
 #include <iostream>
 #include <algorithm>
 #include <alps/hdf5.hpp>
-#include <alps/encode.hpp>
+#include <alps/utility/encode.hpp>
 #include <boost/filesystem.hpp>
 
 const int length = 15;
