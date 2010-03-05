@@ -243,6 +243,9 @@
   <SITEOPERATOR name="double_occupancy" site="x">
     n(x)*(n(x)-1)/2
   </SITEOPERATOR>
+  <BONDOPERATOR name="biquadratic" source="x" target="y">
+    (exchange_xy(i,j)+Sz(i)*Sz(j))*(exchange_xy(i,j)+Sz(i)*Sz(j))
+  </BONDOPERATOR>
   <BONDOPERATOR name="boson_hop" source="x" target="y">
     bdag(x)*b(y)+bdag(y)*b(x)
   </BONDOPERATOR>
@@ -461,6 +464,7 @@
     <PARAMETER name="h" default="0"/>
     <PARAMETER name="Gamma" default="0"/>
     <PARAMETER name="D" default="0"/>
+    <PARAMETER name="K" default="0"/>
     <BASIS ref="spin"/>
     <SITETERM site="i">
       <PARAMETER name="h#" default="h"/>
@@ -472,7 +476,7 @@
       <PARAMETER name="J#" default="0"/>
       <PARAMETER name="Jz#" default="J#"/>
       <PARAMETER name="Jxy#" default="J#"/>
-      Jz#*Sz(i)*Sz(j)+Jxy#*exchange_xy(i,j)
+      Jz#*Sz(i)*Sz(j)+Jxy#*exchange_xy(i,j)+K*biquadratic(i,j)
     </BONDTERM>
   </HAMILTONIAN>
   <HAMILTONIAN name="spinless fermions">
