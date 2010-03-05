@@ -25,7 +25,7 @@
 *
 *****************************************************************************/
 
-#include <../legacy/alps/osiris/os.h>
+#include <alps/utility/os.hpp>
 #include <alps/version.h>
 #include <iostream>
 

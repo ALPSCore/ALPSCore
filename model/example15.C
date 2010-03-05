@@ -27,6 +27,7 @@
 
 /* $Id$ */
 
+#include <alps/numeric/round.hpp>
 #include <alps/model.h>
 #include <alps/model/blochbasisstates.h>
 #include <iostream>
@@ -54,7 +55,7 @@ int main()
       std::vector<std::pair<std::complex<double>,std::vector<std::size_t> > > trans = lattices.translations(k[ik]);
       for (int i=0;i<trans.size();++i) {
         std::cout << "Translation " << i << " with phase "
-                  << alps::round<1>(trans[i].first) << " maps ";
+                  << alps::numeric::round<1>(trans[i].first) << " maps ";
         for (int j=0;j<trans[i].second.size();++j)
           std::cout << j << "->" << trans[i].second[j] << " "; 
         std::cout << "\n";
