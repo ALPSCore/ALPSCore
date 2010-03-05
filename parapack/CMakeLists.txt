@@ -8,6 +8,8 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 include_directories(${PROJECT_SOURCE_DIR}/tool)
 include_directories(${Boost_ROOT_DIR})
 
+IF(NOT ALPS_LLVM_WORKAROUND)
+
 #define tests here. Each test neet ${name}.C ${name}.input ${name}.output
 FOREACH (name clone_info clone_phase clone_timer exmc_optimize exp_number footprint info_test integer_range linear_regression merge percentage temperature_scan time version wl_weight)
 
@@ -35,3 +37,5 @@ FOREACH (name clone_info clone_phase clone_timer exmc_optimize exp_number footpr
 			-P ${PROJECT_SOURCE_DIR}/config/CMake/run_test.cmake
 	)
 ENDFOREACH(name)
+
+ENDIF(NOT ALPS_LLVM_WORKAROUND)

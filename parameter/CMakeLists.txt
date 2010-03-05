@@ -8,6 +8,8 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 include_directories(${PROJECT_SOURCE_DIR}/tool)
 include_directories(${Boost_ROOT_DIR})
 
+IF(NOT ALPS_LLVM_WORKAROUND)
+
 #define tests here. Each test neet ${name}.C ${name}.input ${name}.output
 FOREACH (name expression expression2 flatten parameter parameterlist parameterlist_xml parameters parameters_xml parameters_hdf5)
 
@@ -34,3 +36,5 @@ FOREACH (name expression expression2 flatten parameter parameterlist parameterli
 			-P ${PROJECT_SOURCE_DIR}/config/CMake/run_test.cmake
 	)
 ENDFOREACH(name)
+
+ENDIF(NOT ALPS_LLVM_WORKAROUND)

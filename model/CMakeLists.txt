@@ -8,6 +8,8 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 include_directories(${PROJECT_SOURCE_DIR}/tool)
 include_directories(${Boost_ROOT_DIR})
 
+IF(NOT ALPS_LLVM_WORKAROUND)
+
 #define tests here. Each test neet ${name}.C ${name}.input ${name}.output
 FOREACH (name example1 example2 example3 example4 example5 example6 example7 example8 example9 example10 example11 example12 example13 example14 example15 example16 example17 example18)
 
@@ -34,3 +36,5 @@ FOREACH (name example1 example2 example3 example4 example5 example6 example7 exa
 			-P ${PROJECT_SOURCE_DIR}/config/CMake/run_test.cmake
 	)
 ENDFOREACH(name)
+
+ENDIF(NOT ALPS_LLVM_WORKAROUND)
