@@ -33,7 +33,7 @@
 #include "integer_range.h"
 #include "montecarlo.h"
 #include <alps/alea.h>
-#include <alps/math.hpp>
+#include <alps/numeric/double2int.hpp>
 #include <alps/osiris.h>
 #include <boost/filesystem/operations.hpp>
 
@@ -171,10 +171,10 @@ public:
   }
   static void save_weight(ObservableSet const& obs, Parameters const& params) {
     typedef RealObsevaluator eval_t;
-    range_t walk(double2int(eval_t(obs["Lower Bound of Random Walk"]).mean()),
-                 double2int(eval_t(obs["Upper Bound of Random Walk"]).mean()));
-    range_t measure(double2int(eval_t(obs["Lower Bound of Measurement"]).mean()),
-                    double2int(eval_t(obs["Upper Bound of Measurement"]).mean()));
+    range_t walk(numeric::double2int(eval_t(obs["Lower Bound of Random Walk"]).mean()),
+                 numeric::double2int(eval_t(obs["Upper Bound of Random Walk"]).mean()));
+    range_t measure(numeric::double2int(eval_t(obs["Lower Bound of Measurement"]).mean()),
+                    numeric::double2int(eval_t(obs["Upper Bound of Measurement"]).mean()));
     std::valarray<double> weight = RealVectorObsevaluator(obs["Log(g)"]).mean();
     std::valarray<double> logg(measure.size());
     for (int bin = measure.min(); bin <= measure.max(); ++bin)
@@ -330,7 +330,7 @@ public:
   wanglandau_steps(Parameters const& p)
     : mcs_(p), stage_(0), interval_(16384), factor_(std::exp(1.0)), final_(1.00000001), flatness_(0.95) {
     if (p.defined("CHECK_INTERVAL"))
-      interval_ = double2int(evaluate("CHECK_INTERVAL", p));
+      interval_ = numeric::double2int(evaluate("CHECK_INTERVAL", p));
     if (p.defined("INITIAL_UPDATE_FACTOR"))
       factor_ = evaluate("INITIAL_UPDATE_FACTOR", p);
     if (p.defined("FINAL_UPDATE_FACTOR"))
