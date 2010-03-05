@@ -4,7 +4,8 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -25,12 +26,26 @@
 *
 *****************************************************************************/
 
-#include "version.h"
-#include <alps/utility/copyright.hpp>
+/* $Id$ */
 
-std::string alps::parapack_copyright() {
-  return "ALPS/parapack scheduler\n" \
-    "  a Monte Carlo scheduler for multiple-level parallelization\n"    \
-    "  available from http://wistaria.comp-phys.org/alps-parapack/\n"   \
-    "  copyright (c) 1997-" + alps::year() + " by Synge Todo <wistaria@comp-phys.org>\n";
-}
+#ifndef ALPS_UTILITY_OS_HPP
+#define ALPS_UTILITY_OS_HPP
+
+//=======================================================================
+// This file includes low level functions which depend on the OS used
+//=======================================================================
+
+#include <alps/config.h>
+#include <string>
+
+namespace alps {
+
+/// returns the hostname
+ALPS_DECL std::string hostname();
+
+/// returns the username
+ALPS_DECL std::string username();
+
+} // end namespace
+
+#endif // ALPS_UTILITY_OS_HPP

@@ -28,8 +28,7 @@
 
 /* $Id$ */
 
-#include <alps/osiris/os.h>
-
+#include <alps/utility/os.hpp>
 #include <boost/throw_exception.hpp>
 #include <stdexcept>
 

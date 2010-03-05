@@ -33,7 +33,7 @@
 
 #include <alps/expression/expression_fwd.h>
 #include <alps/expression/traits.h>
-#include <alps/math.hpp>
+#include <alps/numeric/is_nonzero.hpp>
 
 namespace alps {
 namespace expression {
@@ -49,7 +49,7 @@ struct numeric_cast_helper {
 template<typename U, typename T>
 struct numeric_cast_helper<U, std::complex<T> > {
   static U value(const std::complex<T>& x) {
-    if (is_nonzero(x.imag()))
+    if (numeric::is_nonzero(x.imag()))
       boost::throw_exception(std::runtime_error("can not convert complex number into real one"));
     return x.real();
   }

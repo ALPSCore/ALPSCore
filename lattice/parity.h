@@ -32,7 +32,6 @@
 #define ALPS_LATTICE_PARITY_H
 
 #include <alps/config.h>
-#include <alps/math.hpp>
 #include <alps/lattice/graphproperties.h>
 #include <boost/classic_spirit.hpp>
 #include <boost/graph/filtered_graph.hpp>

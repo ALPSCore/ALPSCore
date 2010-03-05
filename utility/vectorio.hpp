@@ -40,7 +40,6 @@
 
 #include <alps/config.h>
 #include <alps/parser/parser.h>
-#include <alps/vectortraits.h>
 #include <alps/utility/size.hpp>
 #include <alps/type_traits/element_type.hpp>
 

@@ -28,6 +28,9 @@
 
 /* $Id: nobinning.h 3520 2009-12-11 16:49:53Z gamperl $ */
 
+#ifndef ALPS_NUMERIC_VECTOR_FUNCTIONS_HPP
+#define ALPS_NUMERIC_VECTOR_FUNCTIONS_HPP
+
 
 #include <alps/numeric/special_functions.hpp>
 
@@ -137,6 +140,7 @@ namespace alps {
   }
 }
 
+#endif // ALPS_NUMERIC_VECTOR_FUNCTIONS_HPP
 
 
 

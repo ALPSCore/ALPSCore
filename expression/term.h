@@ -34,6 +34,8 @@
 #include <alps/expression/expression_fwd.h>
 #include <alps/expression/factor.h>
 #include <boost/call_traits.hpp>
+#include <alps/numeric/is_zero.hpp>
+#include <alps/numeric/is_nonzero.hpp>
 
 namespace alps {
 namespace expression {
@@ -159,16 +161,16 @@ typename Term<T>::value_type Term<T>::value(const Evaluator<T>& p, bool isarg) c
 {
   value_type val(1.);
   if (p.direction() == Evaluator<T>::left_to_right)  {
-    for (unsigned int i = 0; i < terms_.size() && is_nonzero(val); ++i)
+    for (unsigned int i = 0; i < terms_.size() && numeric::is_nonzero(val); ++i)
       val *= terms_[i].value(p,isarg);
 }
   else {
-    for (int i = int(terms_.size())-1; i >= 0 && is_nonzero(val); --i) {
+    for (int i = int(terms_.size())-1; i >= 0 && numeric::is_nonzero(val); --i) {
       value_type tmp=terms_[i].value(p,isarg);
       val *=tmp;
     }
   }
-  if (is_negative() && is_nonzero(val))
+  if (is_negative() && numeric::is_nonzero(val))
     val = val*(-1.);
   return val;
 }
@@ -184,7 +186,7 @@ void Term<T>::partial_evaluate(const Evaluator<T>& p, bool isarg)
       for (unsigned int i=0; i<terms_.size(); ++i) {
         if (terms_[i].can_evaluate(p,isarg)) {
           val *= terms_[i].value(p,isarg);
-          if (is_zero(val))
+          if (numeric::is_zero(val))
             break;
           terms_.erase(terms_.begin()+i);
           --i;
@@ -196,14 +198,14 @@ void Term<T>::partial_evaluate(const Evaluator<T>& p, bool isarg)
       for (int i = int(terms_.size())-1; i >= 0; --i) {
         if (terms_[i].can_evaluate(p,isarg)) {
           val *= terms_[i].value(p,isarg);
-          if (is_zero(val))
+          if (numeric::is_zero(val))
             break;
           terms_.erase(terms_.begin()+i);
         } else
           terms_[i].partial_evaluate(p,isarg);
       }
     }
-    if (is_zero(val))
+    if (numeric::is_zero(val))
       (*this) = Term<T>(value_type(0.));
     else {
       if (evaluate_helper<T>::real(val) < 0.) {

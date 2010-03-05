@@ -34,7 +34,9 @@
 #include <alps/config.h>
 #include <alps/lattice/unitcell.h>
 #include <alps/lattice/coordinate_traits.h>
+
 #include <alps/utility/vectorio.hpp>
+#include <alps/numeric/vector_functions.hpp>
 #include <alps/type_traits/element_type.hpp>
 
 namespace alps {
@@ -125,6 +127,8 @@ inline typename lattice_traits<Lattice>::vector_type
 coordinate(const typename lattice_traits<Lattice>::cell_descriptor& c, 
        const typename lattice_traits<Lattice>::vector_type& p, const Lattice& l)
 {
+  using boost::numeric::operators::operator+;
+  using boost::numeric::operators::operator*;
   typename lattice_traits<Lattice>::basis_vector_iterator first, last;
   typedef typename coordinate_traits<typename lattice_traits<Lattice>::offset_type
     >::const_iterator offset_iterator;

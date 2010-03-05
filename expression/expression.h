@@ -34,6 +34,7 @@
 #include <alps/expression/expression_fwd.h>
 #include <alps/expression/term.h>
 #include <boost/call_traits.hpp>
+#include <alps/numeric/is_zero.hpp>
 
 namespace alps {
 namespace expression {
@@ -222,7 +223,7 @@ void Expression<T>::sort()
       ++it;
     }
     else {
-      if (added && is_zero(prev_term.first))
+      if (added && numeric::is_zero(prev_term.first))
         terms_.erase(prev);
       else {
         prev=it;
@@ -232,7 +233,7 @@ void Expression<T>::sort()
     }
     added=false;
   }
-  if (added && is_zero(prev_term.first))
+  if (added && numeric::is_zero(prev_term.first))
     terms_.erase(prev);
 }
 

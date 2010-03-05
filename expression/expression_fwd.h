@@ -34,7 +34,6 @@
 #include <alps/config.h>
 
 #include <alps/cctype.h>
-#include <alps/math.hpp>
 #include <alps/parameter.h>
 #include <alps/random.h>
 #include <alps/parser/parser.h>

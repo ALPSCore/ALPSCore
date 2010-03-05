@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2010 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1999-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -28,38 +28,42 @@
 
 /* $Id$ */
 
-#include <alps/config.h>
-#include <alps/copyright.h>
-#include <alps/version.h>
+#ifndef ALPS_NUMERIC_REAL_HPP
+#define ALPS_NUMERIC_REAL_HPP
 
-void alps::print_copyright(std::ostream& out) {
-  out << "based on the ALPS libraries version " << ALPS_VERSION << "\n";
-  out << "  available from http://alps.comp-phys.org/\n";
-  out << "  copyright (c) 1994-" << ALPS_YEAR
-      << " by the ALPS collaboration.\n";
-  out << "  Consult the web page for license details.\n";
-  out << "  For details see the publication: \n"
-      << "  A.F. Albuquerque et al., J. of Magn. and Magn. Materials 310, 1187 (2007).\n\n";
+#include <algorithm>
+#include <complex>
+#include <vector>
+
+namespace alps { namespace numeric {
+
+
+template <class T>
+inline T real(T x) { return x;}
+
+template <class T>
+inline T real(std::complex<T> x) { return std::real(x);}
+
+template <class T>
+inline std::vector<T> real(std::vector<std::complex<T> > x) 
+{
+  std::vector<T> re;
+  re.reserve(x.size());
+  std::transform(x.begin(),x.end(),std::back_inserter(re),
+                 static_cast<T (*)(std::complex<T>)>(&real));
+  return re;
 }
 
-void alps::print_license(std::ostream& out) {
-  out << "Please look at the file LICENSE.txt for the license conditions\n";
+template <class T>
+std::vector<std::vector<T> > real(std::vector<std::vector<std::complex<T> > >const & x) 
+{
+  std::vector<std::vector< T > > re;
+  re.reserve(x.size());
+  std::transform(x.begin(),x.end(),std::back_inserter(re),
+                 static_cast<std::vector<T> (*)(std::vector<std::complex<T> >)>(&real));
+  return re;
 }
 
-std::string alps::version() { return ALPS_VERSION; }
+} }  // end namespace alps::numeric
 
-std::string alps::version_string() { return ALPS_VERSION_STRING; }
-
-std::string alps::year() { return ALPS_YEAR; }
-
-std::string alps::config_host() { return ALPS_CONFIG_HOST; }
-
-std::string alps::config_user() { return ALPS_CONFIG_USER; }
-
-std::string alps::compile_date() {
-#if defined(__DATE__) && defined(__TIME__)
-  return __DATE__ " " __TIME__;
-#else
-  return "unknown";
-#endif
-}
+#endif // ALPS_MATH_HPP

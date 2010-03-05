@@ -30,7 +30,7 @@
 
 #include <alps/scheduler/scheduler.h>
 #include <boost/assert.hpp>
-#include <alps/copyright.h>
+#include <alps/utility/copyright.hpp>
 #include <alps/osiris/comm.h>
 
 namespace alps {

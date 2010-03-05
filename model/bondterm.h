@@ -33,6 +33,7 @@
 
 #include <alps/model/bondoperator.h>
 #include <alps/model/siteoperator.h>
+#include <alps/numeric/is_nonzero.hpp>
 
 namespace alps {
 
@@ -125,7 +126,7 @@ expression::Expression<T> BondOperatorEvaluator<I,T,STATE1,STATE2>::partial_eval
     if (arg==site1_.site()) {
       f = site1_.fermionic();
       e =  site1_.partial_evaluate_function(name,site1_.site(),isarg);
-      if (f != site1_.fermionic() && is_nonzero(e) && site2_.fermionic()) // for normal ordering
+      if (f != site1_.fermionic() && numeric::is_nonzero(e) && site2_.fermionic()) // for normal ordering
         e.negate();
     }
     else  if (arg==site2_.site())

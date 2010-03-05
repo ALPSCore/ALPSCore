@@ -28,60 +28,18 @@
 
 /* $Id$ */
 
-/// \file vectortraits.h
-/// \brief traits classes and generic programming support for 1D container
-/// 
-/// This header contains traits and generic algorithms for containers.
-/// It should be replaced by an extended version of boost collection traits or something similar at some time.
-
-#ifndef ALPS_VECTORTRAITS_H
-#define ALPS_VECTORTRAITS_H
+#ifndef ALPS_NUMERIC_SCALAR_PRODUCT_HPP
+#define ALPS_NUMERIC_SCALAR_PRODUCT_HPP
 
 #include <alps/functional.h>
 #include <alps/type_traits/element_type.hpp>
 
 #include <algorithm>
-#include <cassert>
 #include <functional>
-#include <iostream>
 #include <numeric>
-#include <vector>
 #include <valarray>
 
-namespace alps {
-
-// using namespace boost::lambda;
-
-/// \brief traits for containers
-/// @param CONTAINER the type of container
-template <class CONTAINER> 
-struct vector_traits
-{
-  typedef typename CONTAINER::iterator iterator;
-  typedef typename CONTAINER::const_iterator const_iterator;
-};
-
-
-/// specialization of vector_traits to std::valarray<T>
-template <class T> 
-struct vector_traits<std::valarray<T> > {
-  typedef T* iterator; 
-  typedef const T* const_iterator; 
-};
-
-
-/// \brief the namespace for vector operations.
-///  
-/// This will hopefully soon be replaced by a nice Boost library
-namespace vectorops {
-
-/// returns a pointer to the start of storage of a vector
-template <class C>
-inline typename element_type<C>::type* data(C& c) { return &c[0];}
-
-/// returns a pointer to the start of storage of a vector
-template <class C>
-inline const typename element_type<C>::type* data(const C& c) { return &c[0];}
+namespace alps { namespace numeric {
 
 /// calculates the scalar product of two vectors
 template <class C>
@@ -98,8 +56,6 @@ inline T scalar_product(const std::valarray<T>& c1, const std::valarray<T>& c2)
   return std::inner_product(data(c1),data(c1)+c1.size(),data(c2),T(), std::plus<T>(),conj_mult<T>());
 }
 
+} } // namespace alps::numeric
 
-} // namespace vectorops
-} // namespace alps
-
-#endif // ALPS_VECTORTRAITS_H
+#endif // ALPS_NUMERIC_SCALAR_PRODUCT_HPP

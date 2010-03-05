@@ -38,12 +38,13 @@
 #include <alps/alea/abstractbinning.h>
 #include <alps/alea/nan.h>
 #include <alps/numeric/set_negative_0.hpp>
-#include <alps/math.hpp>
 #include <alps/type_traits/change_value_type.hpp>
 #include <alps/type_traits/average_type.hpp>
 #include <alps/utility/numeric_cast.hpp>
 #include <alps/utility/resize.hpp>
 #include <alps/utility/size.hpp>
+#include <alps/numeric/round.hpp>
+#include <alps/numeric/is_nonzero.hpp>
 
 #include <boost/config.hpp>
 
@@ -217,8 +218,8 @@ template <class T>
 inline void NoBinning<T>::output_scalar(std::ostream& out) const
 {
   if(count()) {
-    out << ": " << alps::round<2>(mean()) << " +/- " << alps::round<2>(error());
-    if (alps::is_nonzero<2>(error()) && error_underflow(mean(),error()))
+    out << ": " << alps::numeric::round<2>(mean()) << " +/- " << alps::numeric::round<2>(error());
+    if (alps::numeric::is_nonzero<2>(error()) && error_underflow(mean(),error()))
       out << " Warning: potential error underflow. Errors might be smaller";
     out << std::endl;
   }
@@ -239,9 +240,9 @@ inline void NoBinning<T>::output_vector(std::ostream& out, const L& label) const
       if (lab=="")
         lab=slice_name(mean_,sit);
       out << "Entry[" << lab << "]: "
-          << alps::round<2>(slice_value(mean_,sit)) << " +/- "
-          << alps::round<2>(slice_value(error_,sit));
-      if (alps::is_nonzero<2>(slice_value(error_,sit)) &&
+          << alps::numeric::round<2>(slice_value(mean_,sit)) << " +/- "
+          << alps::numeric::round<2>(slice_value(error_,sit));
+      if (alps::numeric::is_nonzero<2>(slice_value(error_,sit)) &&
           error_underflow(slice_value(mean_,sit),
                           slice_value(error_,sit)))
       out << " Warning: potential error underflow. Errors might be smaller";

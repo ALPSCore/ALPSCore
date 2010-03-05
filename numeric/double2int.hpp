@@ -4,7 +4,8 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1999-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -25,12 +26,31 @@
 *
 *****************************************************************************/
 
-#include "version.h"
-#include <alps/utility/copyright.hpp>
+/* $Id$ */
 
-std::string alps::parapack_copyright() {
-  return "ALPS/parapack scheduler\n" \
-    "  a Monte Carlo scheduler for multiple-level parallelization\n"    \
-    "  available from http://wistaria.comp-phys.org/alps-parapack/\n"   \
-    "  copyright (c) 1997-" + alps::year() + " by Synge Todo <wistaria@comp-phys.org>\n";
+#ifndef ALPS_NUMERIC_DOUBLE2INT_HPP
+#define ALPS_NUMERIC_DOUBLE2INT_HPP
+
+#include <boost/numeric/conversion/converter.hpp>
+
+namespace alps { namespace numeric {
+
+//
+// double2int
+//
+
+/// \brief rounds a floating point value to the nearest integer
+/// ex) double2int(3.6) -> 3
+///     double2int(1.2) -> 1
+///     duoble2int(-0.7) -> -1 (!= int(-0.7 + 0.5))
+///
+/// \return nearest integer of the input
+inline int double2int(double in) {
+  typedef boost::numeric::converter<int, double, boost::numeric::conversion_traits<int, double>,
+    boost::numeric::def_overflow_handler, boost::numeric::RoundEven<double> > converter;
+  return converter::convert(in);
 }
+
+} } // end namespace alps::numeric
+
+#endif // ALPS_NUMERIC_DOUBLE2INT_HPP

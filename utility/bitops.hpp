@@ -36,8 +36,8 @@
 /// intrinsics.  On Cray machines they are replaced by the intrinsic
 /// functions with the same name.
 
-#ifndef ALPS_SRC_ALPS_BITOPS_H
-#define ALPS_SRC_ALPS_BITOPS_H
+#ifndef ALPS_UTILITY_BITOPS_HPP
+#define ALPS_UTILITY_BITOPS_HPP
 
 #include <alps/config.h>
 
@@ -146,4 +146,4 @@ template <class T, class U, class V>
 inline T ibset(T i, U p, V b) { return i & (~(1 << p)) | ((b & 1) << p); }
 
 } // end namespace alps
-#endif // ALPS_SRC_ALPS_BITOPS_H
+#endif // ALPS_UTILITY_BITOPS_HPP

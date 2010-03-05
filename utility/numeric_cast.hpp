@@ -56,14 +56,14 @@ struct numeric_cast<T,T>
 };
 
 template <class T, class U>
-struct numeric_cast<std::valarray<T>,U> 
+struct numeric_cast<std::valarray<T>,std::valarray<U> > 
 {
   typedef std::valarray<T> return_type;
   
-  static return_type cast(U const& x) {
+  static return_type cast(std::valarray<U> const& x) {
     return_type res(x.size());
     for (std::size_t i=0; i<x.size();++i)
-      res[i]=x[i];
+      res[i]=numeric_cast<T,U>::cast(x[i]);
     return res;
   }
 };
@@ -84,9 +84,23 @@ struct numeric_cast<std::vector<T>,std::vector<U> >
 
   static return_type cast(std::vector<U> const& x)
   { 
-    return return_type(x.begin(),x.end());
+    return_type res;
+    res.reserve(x.size());
+    for (typename std::vector<U>::const_iterator it = x.begin(); it != x.end() ; ++it)
+      res.push_back(numeric_cast<T,U>::cast(*it));
+    return res;
   }
 };
+
+
+template <class T>
+struct numeric_cast<std::vector<T>,std::vector<T> >
+{ 
+  typedef std::vector<T> const& return_type;
+
+  static return_type cast(return_type u) { return u;}
+};
+
 
 }
 

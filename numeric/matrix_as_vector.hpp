@@ -28,7 +28,7 @@
 
 /* $Id$ */
 
-/// \file matrix_as_vector.h
+/// \file matrix_as_vector.hpp
 /// \brief using matrices as vectors in generic algorithms
 /// 
 /// This header contains a wrapper class that allows to use a matrix
@@ -38,12 +38,12 @@
 /// matrix_as_vector class can record these actions into a matrix.
 
 
-#ifndef ALPS_MATRIX_AS_VECTOR_H
-#define ALPS_MATRIX_AS_VECTOR_H
+#ifndef ALPS_NUMERIC_MATRIX_AS_VECTOR_HPP
+#define ALPS_NUMERIC_MATRIX_AS_VECTOR_HPP
 
 #include <alps/config.h>
 
-namespace alps {
+namespace alps { namespace numeric {
 
 namespace detail {
 
@@ -133,10 +133,10 @@ private:
   matrix_type& matrix_;
 };
 
-} // end namespace
+} } // end namespace alps::numeric
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-namespace alps { namespace detail {
+namespace alps {  namespace numeric  {namespace detail {
 #endif
 
 /// \brief multiplication of an element_proxy with a scalar
@@ -145,7 +145,8 @@ namespace alps { namespace detail {
 /// \param y the scalar
 /// \returns the result of x *= y
 template <class M, class T>
-alps::detail::element_proxy<M> operator*(alps::detail::element_proxy<M> x, T y)
+alps::numeric::detail::element_proxy<M> operator*(alps::numeric::
+detail::element_proxy<M> x, T y)
 {
   return x *= y;
 }
@@ -156,13 +157,13 @@ alps::detail::element_proxy<M> operator*(alps::detail::element_proxy<M> x, T y)
 /// \param y the vector element proxy
 /// \returns the result of y *= x
 template <class M, class T>
-alps::detail::element_proxy<M> operator*(T x, alps::detail::element_proxy<M> y)
+alps::numeric::detail::element_proxy<M> operator*(T x, alps::numeric::detail::element_proxy<M> y)
 {
   return y *= x;
 }
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-} }
+} } }
 #endif
 
-#endif // ALPS_MATRIX_AS_VECTOR_H
+#endif // ALPS_NUMERIC_MATRIX_AS_VECTOR_HPP

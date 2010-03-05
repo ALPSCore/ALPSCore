@@ -33,7 +33,8 @@
 #include <alps/type_traits/is_scalar.hpp>
 #include <alps/type_traits/change_value_type.hpp>
 #include <alps/type_traits/average_type.hpp>
-#include <alps/math.hpp>
+#include <alps/numeric/round.hpp>
+#include <alps/numeric/is_nonzero.hpp>
 
 namespace alps {
 
@@ -340,8 +341,8 @@ void AbstractSignedObservable<OBS,SIGN>::output_scalar(std::ostream& out) const
   if(count()==0)
     out << " no measurements.\n";
   else {
-    out << ": " << alps::round<2>(mean()) << " +/- " << alps::round<2>(error());
-    if (alps::is_nonzero<2>(error())) {
+    out << ": " << alps::numeric::round<2>(mean()) << " +/- " << alps::numeric::round<2>(error());
+    if (alps::numeric::is_nonzero<2>(error())) {
       if (!sign_name_.empty())
         out << "; sign in observable \"" << sign_name_ << "\"";
       if (converged_errors()==MAYBE_CONVERGED)
@@ -377,9 +378,9 @@ void AbstractSignedObservable<OBS,SIGN>::output_vector(std::ostream& out) const
       if (lab=="")
         lab=slice_name(value_,sit);
       out << "Entry[" <<lab << "]: "
-          << alps::round<2>(slice_value(value_,sit)) << " +/- "
-          << alps::round<2>(slice_value(error_,sit));
-      if (alps::is_nonzero<2>(slice_value(error_,sit))) {
+          << alps::numeric::round<2>(slice_value(value_,sit)) << " +/- "
+          << alps::numeric::round<2>(slice_value(error_,sit));
+      if (alps::numeric::is_nonzero<2>(slice_value(error_,sit))) {
         if (slice_value(conv_,sit)==MAYBE_CONVERGED)
           out << " WARNING: check error convergence";
         if (slice_value(conv_,sit)==NOT_CONVERGED)

@@ -36,7 +36,6 @@
 #include <alps/osiris/archivedump.h>
 #include <alps/osiris/dumparchive.h>
 #include <alps/osiris/mpdump.h>
-#include <alps/osiris/os.h>
 #include <alps/osiris/process.h>
 #include <alps/osiris/xdrdump.h>
 #include <alps/osiris/std/list.h>

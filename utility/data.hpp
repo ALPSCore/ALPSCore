@@ -4,7 +4,8 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1999-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -25,12 +26,24 @@
 *
 *****************************************************************************/
 
-#include "version.h"
-#include <alps/utility/copyright.hpp>
+/* $Id$ */
 
-std::string alps::parapack_copyright() {
-  return "ALPS/parapack scheduler\n" \
-    "  a Monte Carlo scheduler for multiple-level parallelization\n"    \
-    "  available from http://wistaria.comp-phys.org/alps-parapack/\n"   \
-    "  copyright (c) 1997-" + alps::year() + " by Synge Todo <wistaria@comp-phys.org>\n";
-}
+
+#ifndef ALPS_UTILITY_DATA_HPP
+#define ALPS_UTILITY_DATA_HPP
+
+#include <alps/type_traits/element_type.hpp>
+
+namespace alps {
+
+/// returns a pointer to the start of storage of a vector
+template <class C>
+inline typename element_type<C>::type* data(C& c) { return &c[0];}
+
+/// returns a pointer to the start of storage of a vector
+template <class C>
+inline const typename element_type<C>::type* data(const C& c) { return &c[0];}
+
+} // namespace alps
+
+#endif // ALPS_UTILITY_DATA_HPP

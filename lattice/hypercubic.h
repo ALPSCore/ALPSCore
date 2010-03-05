@@ -34,11 +34,14 @@
 #include <alps/config.h>
 #include <alps/lattice/lattice.h>
 #include <alps/lattice/coordinate_traits.h>
-#include <alps/utility/vectorio.hpp>
-#include <alps/vectormath.h>
-#include <boost/utility.hpp>
-#include <cmath>
 
+#include <alps/utility/vectorio.hpp>
+#include <alps/numeric/vector_functions.hpp>
+#include <alps/numeric/scalar_product.hpp>
+
+#include <boost/utility.hpp>
+
+#include <cmath>
 #include <vector>
 
 #ifndef M_PI
@@ -265,6 +268,7 @@ public:
 
   std::pair<bool,boundary_crossing_type> shift(offset_type& o,const offset_type& s) const
   {
+    using boost::numeric::operators::operator+;
     o=o+s;
     typedef typename coordinate_traits<offset_type>::iterator IT;
     typedef typename coordinate_traits<extent_type>::const_iterator CIT;
@@ -368,7 +372,7 @@ public:
     const vector_type* operator->() const { set_k(); return &k_; }
     std::complex<double> phase(const vector_type& pos) const {
       set_k();
-      double phase=vectorops::scalar_product(k_,pos);
+      double phase=numeric::scalar_product(k_,pos);
       return std::complex<double>(std::cos(phase),std::sin(phase));
     }
     const momentum_iterator& operator++() { 

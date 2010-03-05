@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2003 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1999-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -28,24 +28,37 @@
 
 /* $Id$ */
 
-#ifndef ALPS_OS_H
-#define ALPS_OS_H
+#ifndef ALPS_TYPE_TRAITS_ITERATOR_TYPE_HPP
+#define ALPS_TYPE_TRAITS_ITERATOR_TYPE_HPP
 
-//=======================================================================
-// This file includes low level functions which depend on the OS used
-//=======================================================================
-
-#include <alps/config.h>
-#include <string>
+#include <valarray>
 
 namespace alps {
 
-/// returns the hostname
-ALPS_DECL std::string hostname();
+template <class Collection> 
+struct iterator_type
+{
+  typedef typename Collection::iterator type;
+};
 
-/// returns the username
-ALPS_DECL std::string username();
+template <class Collection> 
+struct const_iterator_type
+{
+  typedef typename Collection::iterator type;
+};
 
-} // end namespace
+template <class T> 
+struct iterator_type<std::valarray<T> >
+{
+  typedef T* type;
+};
 
-#endif // ALPS_OS_H
+template <class T> 
+struct const_iterator_type<std::valarray<T> >
+{
+  typedef T const * type;
+};
+
+} // namespace alps
+
+#endif // ALPS_TYPE_TRAITS_ITERATOR_TYPE_HPP

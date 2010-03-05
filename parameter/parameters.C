@@ -142,7 +142,7 @@ void Parameters::serialize(hdf5::oarchive & ar) const {
             expression::Expression<double> expr(it->value());
             if (expr.can_evaluate(*this)) {
                 double value = expr.value(*this);
-                if (is_zero(value - static_cast<double>(static_cast<int>(value)))) 
+                if (numeric::is_zero(value - static_cast<double>(static_cast<int>(value)))) 
                     ar << make_pvp(it->key(), static_cast<int>(value));
                 else 
                     ar << make_pvp(it->key(), value);

@@ -33,6 +33,7 @@
 
 #include <alps/config.h>
 #include <alps/type_traits/is_complex.hpp>
+#include <alps/numeric/is_nonzero.hpp>
 #include <alps/model/operator.h>
 #include <alps/model/siteoperator.h>
 #include <alps/model/sitestate.h>
@@ -224,8 +225,8 @@ BondOperator::matrix(const SiteBasisDescriptor<I>& b1,
           term.partial_evaluate(evaluator);
           unsigned int j1=states1.index(evaluator.state().first);
           unsigned int j2=states2.index(evaluator.state().second);
-          if (is_nonzero(term) && j1<dim1 && j2<dim2) {
-            if (is_nonzero(mat[i1][i2][j1][j2].first)) {
+          if (numeric::is_nonzero(term) && j1<dim1 && j2<dim2) {
+            if (numeric::is_nonzero(mat[i1][i2][j1][j2].first)) {
               if (mat[i1][i2][j1][j2].second != evaluator.fermionic())
               boost::throw_exception(std::runtime_error("Inconsistent fermionic nature of a matrix element: "
                                     + boost::lexical_cast<std::string>(*tit) + " is inconsistent with "

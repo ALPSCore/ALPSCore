@@ -35,9 +35,9 @@
 #include "version.h"
 
 #include <alps/config.h>
-#include <alps/copyright.h>
+#include <alps/utility/copyright.hpp>
+#include <alps/utility/os.hpp>
 #include <alps/osiris/comm.h>
-#include <alps/copyright.h>
 #include <boost/config.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/foreach.hpp>

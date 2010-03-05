@@ -34,7 +34,7 @@
 #include <alps/scheduler/types.h>
 #include <alps/parameter.h>
 #include <alps/config.h>
-#include <alps/copyright.h>
+#include <alps/utility/copyright.hpp>
 #include <alps/osiris/comm.h>
 #include <alps/osiris/mpdump.h>
 

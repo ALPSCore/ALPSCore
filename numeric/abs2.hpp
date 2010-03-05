@@ -4,7 +4,8 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1999-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -25,12 +26,34 @@
 *
 *****************************************************************************/
 
-#include "version.h"
-#include <alps/utility/copyright.hpp>
+/* $Id$ */
 
-std::string alps::parapack_copyright() {
-  return "ALPS/parapack scheduler\n" \
-    "  a Monte Carlo scheduler for multiple-level parallelization\n"    \
-    "  available from http://wistaria.comp-phys.org/alps-parapack/\n"   \
-    "  copyright (c) 1997-" + alps::year() + " by Synge Todo <wistaria@comp-phys.org>\n";
+#ifndef ALPS_NUMERIC_ABS2_HPP
+#define ALPS_NUMERIC_ABS2_HPP
+
+#include <complex>
+#include <cmath>
+
+namespace alps { namepsace numeric {
+
+/// \brief calculate the square of the absolute value.
+/// It is optimized by specialization for complex numbers.
+/// \return the square of the absolute value of the argument
+template <class T>
+inline typename norm_type<T>::type abs2(T x, typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0) {
+  return x * x;
 }
+template <class T>
+inline typename norm_type<T>::type abs2(const T& x, typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0) {
+  return std::abs(x)*std::abs(x);
+}
+
+template <class T>
+inline T abs2(const std::complex<T>& x) {
+  return x.real()*x.real()+x.imag()*x.imag();
+}
+
+
+} } // end namespace
+
+#endif // ALPS_NUMERIC_ABS2_HPP

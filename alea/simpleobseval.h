@@ -37,8 +37,9 @@
 #include <alps/alea/simpleobservable.h>
 #include <alps/alea/simpleobsdata.h>
 #include <alps/parser/parser.h>
-#include <alps/encode.hpp>
-#include <alps/math.hpp>
+#include <alps/utility/encode.hpp>
+#include <alps/numeric/round.hpp>
+#include <alps/numeric/is_nonzero.hpp>
 #include <alps/type_traits/is_scalar.hpp>
 #include <alps/type_traits/change_value_type.hpp>
 #include <alps/type_traits/average_type.hpp>
@@ -476,11 +477,11 @@ void SimpleObservableEvaluator<T>::output_scalar(std::ostream& out) const
     out << " no measurements.\n";
   else
   {
-    out << ": " << std::setprecision(6) << alps::round<2>(mean()) << " +/- "
-        << std::setprecision(3) << alps::round<2>(error());
+    out << ": " << std::setprecision(6) << alps::numeric::round<2>(mean()) << " +/- "
+        << std::setprecision(3) << alps::numeric::round<2>(error());
     if(has_tau())
-      out << std::setprecision(3) <<  "; tau = " << (alps::is_nonzero<2>(error()) ? tau() : 0);
-    if (alps::is_nonzero<2>(error())) {
+      out << std::setprecision(3) <<  "; tau = " << (alps::numeric::is_nonzero<2>(error()) ? tau() : 0);
+    if (alps::numeric::is_nonzero<2>(error())) {
       if (converged_errors()==MAYBE_CONVERGED)
         out << " WARNING: check error convergence";
       if (converged_errors()==NOT_CONVERGED)
@@ -513,11 +514,11 @@ void SimpleObservableEvaluator<T>::output_vector(std::ostream& out) const
       if (lab=="")
         lab=slice_name(value_,sit);
       out << "Entry[" << lab << "]: "
-          << alps::round<2>(slice_value(value_,sit)) << " +/- "
-          << alps::round<2>(slice_value(error_,sit));
+          << alps::numeric::round<2>(slice_value(value_,sit)) << " +/- "
+          << alps::numeric::round<2>(slice_value(error_,sit));
       if(has_tau())
-        out << "; tau = " << (alps::is_nonzero<2>(slice_value(error_,sit)) ? slice_value(tau_,sit) : 0);
-      if (alps::is_nonzero<2>(slice_value(error_,sit))) {
+        out << "; tau = " << (alps::numeric::is_nonzero<2>(slice_value(error_,sit)) ? slice_value(tau_,sit) : 0);
+      if (alps::numeric::is_nonzero<2>(slice_value(error_,sit))) {
         if (slice_value(conv_,sit)==MAYBE_CONVERGED)
           out << " WARNING: check error convergence";
         if (slice_value(conv_,sit)==NOT_CONVERGED)

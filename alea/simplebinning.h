@@ -36,7 +36,6 @@
 #include <alps/config.h>
 #include <alps/alea/abstractbinning.h>
 #include <alps/alea/nan.h>
-#include <alps/math.hpp>
 #include <alps/xml.h>
 #include <alps/type_traits/change_value_type.hpp>
 #include <alps/type_traits/average_type.hpp>
@@ -46,6 +45,8 @@
 #include <alps/utility/numeric_cast.hpp>
 #include <alps/utility/resize.hpp>
 #include <alps/utility/size.hpp>
+#include <alps/numeric/round.hpp>
+#include <alps/numeric/is_nonzero.hpp>
 
 #include <boost/config.hpp>
 
@@ -505,11 +506,11 @@ void SimpleBinning<T>::output_scalar(std::ostream& out) const
 {
   if(count())
   {
-    out << ": " << std::setprecision(6) << alps::round<2>(mean()) << " +/- "
-        << std::setprecision(3) << alps::round<2>(error()) << "; tau = "
-        << std::setprecision(3) << (alps::is_nonzero<2>(error()) ? tau() : 0)
+    out << ": " << std::setprecision(6) << alps::numeric::round<2>(mean()) << " +/- "
+        << std::setprecision(3) << alps::numeric::round<2>(error()) << "; tau = "
+        << std::setprecision(3) << (alps::numeric::is_nonzero<2>(error()) ? tau() : 0)
         << std::setprecision(6);
-    if (alps::is_nonzero<2>(error())) {
+    if (alps::numeric::is_nonzero<2>(error())) {
       if (converged_errors()==MAYBE_CONVERGED)
         out << " WARNING: check error convergence";
       if (converged_errors()==NOT_CONVERGED)
@@ -525,7 +526,7 @@ void SimpleBinning<T>::output_scalar(std::ostream& out) const
       for(unsigned int i=0;i<binning_depth();i++)
         out << "    bin #" << std::setw(3) <<  i+1
             << " : " << std::setw(8) << count()/(1ll<<i)
-            << " entries: error = " << alps::round<2>(error(i)) << std::endl;
+            << " entries: error = " << alps::numeric::round<2>(error(i)) << std::endl;
       out.setf(oldflags);
     }
   }
@@ -600,10 +601,10 @@ inline void SimpleBinning<T>::output_vector(std::ostream& out, const L& label) c
       if (lab=="")
         lab = slice_name(mean_,sit);
       out << "Entry[" << lab << "]: "
-          << alps::round<2>(slice_value(mean_,sit)) << " +/- "
-          << alps::round<2>(slice_value(error_,sit))
-          << "; tau = " << (alps::is_nonzero<2>(slice_value(error_,sit)) ? slice_value(tau_,sit) : 0);
-      if (alps::is_nonzero<2>(slice_value(error_,sit))) {
+          << alps::numeric::round<2>(slice_value(mean_,sit)) << " +/- "
+          << alps::numeric::round<2>(slice_value(error_,sit))
+          << "; tau = " << (alps::numeric::is_nonzero<2>(slice_value(error_,sit)) ? slice_value(tau_,sit) : 0);
+      if (alps::numeric::is_nonzero<2>(slice_value(error_,sit))) {
         if (slice_value(conv_,sit)==MAYBE_CONVERGED)
           out << " WARNING: check error convergence";
         if (slice_value(conv_,sit)==NOT_CONVERGED)

@@ -29,6 +29,7 @@
 
 #include <alps/expression/evaluator.h>
 #include <alps/expression/evaluate.h>
+#include <alps/numeric/is_zero.hpp>
 
 namespace alps {
 
@@ -61,7 +62,7 @@ StringValue simplify_value(StringValue const& val, Parameters const& parms)
     expression::Expression<double> expr(val);
     if (expr.can_evaluate(parms)) {
         double value = expr.value(parms);
-        if (is_zero(value - static_cast<double>(static_cast<int>(value)))) 
+        if (numeric::is_zero(value - static_cast<double>(static_cast<int>(value)))) 
             return static_cast<int>(value);
         else 
             return value;
