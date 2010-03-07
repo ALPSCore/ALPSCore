@@ -48,29 +48,29 @@
 namespace alps {
     namespace hdf5 {
         namespace detail {
-            #define HDF5_ADD_CV(callback, T)                                                                                                   \
-                callback(T)                                                                                                                    \
-                callback(T &)                                                                                                                  \
-                callback(T const)                                                                                                              \
-                callback(T const &)                                                                                                            \
-                callback(T volatile)                                                                                                           \
-                callback(T volatile &)                                                                                                         \
-                callback(T const volatile)                                                                                                     \
+            #define HDF5_ADD_CV(callback, T)     \
+                callback(T)                      \
+                callback(T &)                    \
+                callback(T const)                \
+                callback(T const &)              \
+                callback(T volatile)             \
+                callback(T volatile &)           \
+                callback(T const volatile)       \
                 callback(T const volatile &)
-            #define HDF5_FOREACH_SCALAR(callback)                                                                                              \
-                callback(char)                                                                                                                 \
-                callback(signed char)                                                                                                          \
-                callback(unsigned char)                                                                                                        \
-                callback(short)                                                                                                                \
-                callback(unsigned short)                                                                                                       \
-                callback(int)                                                                                                                  \
-                callback(unsigned int)                                                                                                         \
-                callback(long)                                                                                                                 \
-                callback(unsigned long)                                                                                                        \
-                callback(long long)                                                                                                            \
-                callback(unsigned long long)                                                                                                   \
-                callback(float)                                                                                                                \
-                callback(double)                                                                                                               \
+            #define HDF5_FOREACH_SCALAR(callback)\
+                callback(char)                   \
+                callback(signed char)            \
+                callback(unsigned char)          \
+                callback(short)                  \
+                callback(unsigned short)         \
+                callback(int)                    \
+                callback(unsigned int)           \
+                callback(long)                   \
+                callback(unsigned long)          \
+                callback(long long)              \
+                callback(unsigned long long)     \
+                callback(float)                  \
+                callback(double)                 \
                 callback(long double)
             struct scalar_tag {};
             struct stl_complex_tag {};
@@ -97,16 +97,16 @@ namespace alps {
             template<typename T> struct is_writable<std::list<T> > : boost::mpl::true_ { typedef stl_container_of_unknown_tag category; };
             template<> struct is_writable<std::vector<std::string> > : boost::mpl::true_ { typedef stl_container_of_string_tag category; };
             template<> struct is_writable<std::valarray<std::string> > : boost::mpl::true_ { typedef stl_container_of_string_tag category; };
-            #define HDF5_CONTAINER_OF_SCALAR_CV(T)                                                                                                                 \
+            #define HDF5_CONTAINER_OF_SCALAR_CV(T)                   \
                 template<> struct is_writable<std::vector<T> > : boost::mpl::true_ { typedef stl_container_of_scalar_tag category; };                              \
                 template<> struct is_writable<boost::numeric::ublas::vector<T> > : boost::mpl::true_ { typedef stl_container_of_scalar_tag category; };            \
                 template<> struct is_writable<std::valarray<T> > : boost::mpl::true_ { typedef stl_container_of_scalar_tag category; };                            \
                 template<> struct is_writable<std::vector<std::complex<T> > > : boost::mpl::true_ { typedef stl_container_of_complex_tag category; };              \
                 template<> struct is_writable<std::vector<std::valarray<T> > > : boost::mpl::true_ { typedef stl_container_of_container_of_scalar_tag category; }; \
                 template<> struct is_writable<std::vector<std::vector<T> > > : boost::mpl::true_ { typedef stl_container_of_container_of_scalar_tag category; };
-            #define HDF5_CONTAINER_OF_SCALAR(T)                                                                                                                    \
+            #define HDF5_CONTAINER_OF_SCALAR(T)                      \
                 HDF5_ADD_CV(HDF5_CONTAINER_OF_SCALAR_CV, T)
-            HDF5_FOREACH_SCALAR(HDF5_CONTAINER_OF_SCALAR)
+            HDF5_FOREACH_SCALAR(HDF5_CONTAINER_OF_SCALAR_CV)
             #undef HDF5_CONTAINER_OF_SCALAR
             template<typename T> struct is_writable<std::vector<std::valarray<std::complex<T> > > > : boost::mpl::true_ { typedef stl_container_of_container_of_complex_tag category; };
             template<typename T> struct is_writable<std::vector<std::vector<std::complex<T> > > > : boost::mpl::true_ { typedef stl_container_of_container_of_complex_tag category; };
@@ -495,9 +495,9 @@ namespace alps {
                                 attribute_type new_id = H5Acreate2(dest_id, it->c_str(), _state_id, space_type(H5Screate(H5S_SCALAR)), H5P_DEFAULT, H5P_DEFAULT);
                                 check_error(H5Awrite(new_id, _state_id, &v));
                             }
-                            #define HDF5_COPY_ATTR(T)                                                                                                                  \
+                            #define HDF5_COPY_ATTR(T)                    \
                                 else if (check_error(H5Tequal(type_type(H5Tcopy(type_id)), type_type(get_native_type<T>(0)))) > 0) {                                   \
-                                    T v;                                                                                                                               \
+                                    T v;                                 \
                                     check_error(H5Aread(attr_id, type_type(H5Tcopy(type_id)), &v));                                                                    \
                                     attribute_type new_id = H5Acreate2(dest_id, it->c_str(), type_id, space_type(H5Screate(H5S_SCALAR)), H5P_DEFAULT, H5P_DEFAULT);    \
                                     check_error(H5Awrite(new_id, type_id, &v));                                                                                        \
@@ -640,11 +640,11 @@ namespace alps {
                             #define HDF5_GET_STRING(T)                                                                                         \
                                 else if (check_error(H5Tequal(                                                                                 \
                                     type_type(H5Tcopy(native_id)), type_type(get_native_type<T>(0))                                            \
-                                )) > 0) {                                                                                                      \
-                                    T t;                                                                                                       \
+                                )) > 0) {        \
+                                    T t;         \
                                     check_error(H5Dread(                                                                                       \
                                         data_id, type_type(H5Tcopy(type_id)), H5S_ALL, H5S_ALL, H5P_DEFAULT, &t                                \
-                                    ));                                                                                                        \
+                                    ));          \
                                     v = boost::lexical_cast<std::string>(t);                                                                   \
                                 }
                             HDF5_FOREACH_SCALAR(HDF5_GET_STRING)
@@ -788,9 +788,9 @@ namespace alps {
                         #define HDF5_GET_STRING(T)                                                                                             \
                             else if (check_error(H5Tequal(                                                                                     \
                                 check_type(H5Tcopy(native_id)), check_type(get_native_type<T>(0))                                              \
-                            )) > 0) {                                                                                                          \
-                                T t;                                                                                                           \
-                                get_data(p, &t);                                                                                               \
+                            )) > 0) {            \
+                                T t;             \
+                                get_data(p, &t); \
                                 check_error(H5Aread(attr_id, type_id, &t));                                                                    \
                                 v = boost::lexical_cast<std::string>(t);                                                                       \
                             }
@@ -1029,22 +1029,22 @@ namespace alps {
     template <typename T> hdf5::detail::pvp<T const &, hdf5::detail::plain> make_pvp(std::string const & p, T const & v) {
         return hdf5::detail::pvp<T const &, hdf5::detail::plain>(p, v);
     }
-    #define HDF5_MAKE_PVP(ref_type)                                                                                                            \
+    #define HDF5_MAKE_PVP(ref_type)              \
         template <typename T> hdf5::detail::pvp<T, hdf5::detail::ptr> make_pvp(std::string const & p, T * ref_type v) {                        \
             return hdf5::detail::pvp<T, hdf5::detail::ptr>(p, v);                                                                              \
-        }                                                                                                                                      \
+        }                                        \
         template <typename T> hdf5::detail::pvp<T, hdf5::detail::ptr> make_pvp(std::string const & p, boost::shared_ptr<T> ref_type v) {       \
             return hdf5::detail::pvp<T, hdf5::detail::ptr>(p, v.get());                                                                        \
-        }                                                                                                                                      \
+        }                                        \
         template <typename T> hdf5::detail::pvp<T, hdf5::detail::ptr> make_pvp(std::string const & p, std::auto_ptr<T> ref_type v) {           \
             return hdf5::detail::pvp<T, hdf5::detail::ptr>(p, v.get());                                                                        \
-        }                                                                                                                                      \
+        }                                        \
         template <typename T> hdf5::detail::pvp<T, hdf5::detail::ptr> make_pvp(std::string const & p, boost::weak_ptr<T> ref_type v) {         \
             return hdf5::detail::pvp<T, hdf5::detail::ptr>(p, v.get());                                                                        \
-        }                                                                                                                                      \
+        }                                        \
         template <typename T> hdf5::detail::pvp<T, hdf5::detail::ptr> make_pvp(std::string const & p, boost::intrusive_ptr<T> ref_type v) {    \
             return hdf5::detail::pvp<T, hdf5::detail::ptr>(p, v.get());                                                                        \
-        }                                                                                                                                      \
+        }                                        \
         template <typename T> hdf5::detail::pvp<T, hdf5::detail::ptr> make_pvp(std::string const & p, boost::scoped_ptr<T> ref_type v) {       \
             return hdf5::detail::pvp<T, hdf5::detail::ptr>(p, v.get());                                                                        \
         }
