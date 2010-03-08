@@ -70,7 +70,7 @@ template <class T>
 class binned_data {
 public:
   template <class X>
-  friend class binned_data;    // significance? ... (4)
+  friend class binned_data;
 
   typedef T                                              value_type;
   typedef typename change_value_type<T,double>::type     time_type;
@@ -86,12 +86,6 @@ public:
   template <class U, class S>
   //binned_data(const binned_data<U>& x, S s);
   //binned_data(const AbstractSimpleObservable<value_type>& obs);
-
-
-
-  //
-  // ...(7) Shouldn't we replace uint64_t by std::size_t  ?
-  //
 
   //uint64_t count() const { return changed_ ? (bin_size()*bin_number() == 0 ? count_ : bin_size()*bin_number()) : count_;}
   uint64_t count() const { return count_; }
@@ -118,18 +112,9 @@ public:
 */
 
 /*
-#ifdef ALPS_HAVE_HDF5
-  void serialize(hdf5::oarchive & ar) const;
-  void serialize(hdf5::iarchive & ar) const;
-#endif
-*/
-
-/*
   inline void set_bin_size(uint64_t);
   inline void set_bin_number(uint64_t);
  
-  // collect information from many data objects
-  void collect_from(const std::vector<binned_data<T> >& runs);
 */
 
 /*
@@ -543,135 +528,6 @@ void binned_data<T>::divide(const X& x)
   }
 }
 
-*/
-
-  
-  
-/// Merges the bins...
-
-/*
-  
-template <class T>
-void binned_data<T>::collect_from(const std::vector<binned_data<T> >& runs)
-{
-  bool got_data = false;
-
-  count_ = 0;
-
-  changed_ = false;
-  valid_ = false;
-  jack_valid_ = false;
-  nonlinear_operations_ = false;
-
-
-  values_.clear();
-  jack_.clear();
-
-  // find smallest and largest bin sizes
-  uint64_t minsize = std::numeric_limits<uint64_t>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();
-  uint64_t maxsize = 0;
-  for (typename std::vector<binned_data<T> >::const_iterator
-         r = runs.begin(); r != runs.end(); ++r) {
-    if (r->count()) {
-      if (r->bin_size() < minsize) minsize = r->bin_size();
-      if (r->bin_size() > maxsize) maxsize = r->bin_size();
-    }
-  }
-
-  binsize_ = maxsize;
-  
-  for (typename std::vector<binned_data<T> >::const_iterator
-         r = runs.begin(); r != runs.end(); ++r) {
-    if (r->count()) {
-      if (!got_data) {
-        // initialize
-        jack_valid_ = true;
-
-    
-        nonlinear_operations_ = r->nonlinear_operations_;
-        changed_ = r->changed_;
-        mean_ = r->mean_;
-        error_= r->error_;
-        variance_=r->variance_;
-        tau_=r->tau_;
-        count_ = r->count();
-
-        if (r->bin_size() == maxsize) {
-          r->fill_jack();
-          values_ = r->values_;
-          jack_ = r->jack_;
-        } else {
-          binned_data<T> tmp(*r);
-          tmp.set_bin_size(maxsize);
-          tmp.fill_jack();
-          values_ = tmp.values_;
-          jack_ = tmp.jack_;
-        }
-        got_data=true;
-      } else {
-        // add
-        jack_valid_ = false;
-
-        nonlinear_operations_ = nonlinear_operations_ || r->nonlinear_operations_;
-        changed_ = changed_ && r->changed_;
-        mean_ = (double(count_)*mean_+double(r->count_)*r->mean_)
-                / double(count_ + r->count_);
-        using std::sqrt;
-
-        error_ = sqrt(double(count_)*double(count_)*error_*error_
-                      +double(r->count_)*double(r->count_)*r->error_*r->error_)
-          / double(count_ + r->count_);
-        if(variance_)
-          variance_ = (double(count_)* *variance_+double(r->count_)* *(r->variance_))
-            / double(count_ + r->count_);
-        if(tau_)
-          tau_ = (double(count_)* *tau_+double(r->count_)* *(r->tau_))
-            / double(count_ + r->count_);
-
-        count_ += r->count();
-
-        if (r->bin_size() == maxsize) {
-          std::copy(r->values_.begin(), r->values_.end(),
-                    std::back_inserter(values_));
-          std::copy(r->values2_.begin(), r->values2_.end(),
-                    std::back_inserter(values2_));
-        } else {
-          binned_data<T> tmp(*r);
-          tmp.set_bin_size(maxsize);
-          std::copy(tmp.values_.begin(), tmp.values_.end(),
-                    std::back_inserter(values_));
-          std::copy(tmp.values2_.begin(), tmp.values2_.end(),
-                    std::back_inserter(values2_));
-        }
-      }
-    }
-  }
-
-  analyze();
-}
-
-*/
-
-
-/*
-#ifdef ALPS_HAVE_HDF5
-template <typename T> void binned_data<T>::serialize(hdf5::oarchive & ar) const {
-  ar << make_pvp("count", count_);
-  if (valid_)
-  { 
-    ar << make_pvp("mean/value", mean_) << make_pvp("mean/error", error_);
-    if (variance_)
-      ar << make_pvp("variance/value", *variance_);
-    if (tau_)
-      ar << make_pvp("tau/value", *tau_);
-    ar << make_pvp("timeseries/data", values_) << make_pvp("timeseries/data/@binningtype", "linear");
-    if (jack_valid_)
-      ar << make_pvp("jacknife/data", jack_) << make_pvp("jacknife/data/@binningtype", "linear");
-  }
-}
-
-template <typename T> void binned_data<T>::serialize(hdf5::iarchive & ar) const {}
-#endif
 */
   
 /*  
