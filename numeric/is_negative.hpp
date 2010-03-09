@@ -31,7 +31,7 @@
 #ifndef ALPS_NUMERIC_IS_NEGATIVE_HPP
 #define ALPS_NUMERIC_IS_NEGATIVE_HPP
 
-#include <alps/numeric/is_znonero.hpp>
+#include <alps/numeric/is_nonzero.hpp>
 
 namespace alps { namespace numeric {
 

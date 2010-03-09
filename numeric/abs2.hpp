@@ -34,7 +34,7 @@
 #include <complex>
 #include <cmath>
 
-namespace alps { namepsace numeric {
+namespace alps { namespace numeric {
 
 /// \brief calculate the square of the absolute value.
 /// It is optimized by specialization for complex numbers.
