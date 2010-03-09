@@ -38,11 +38,52 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/throw_exception.hpp>
+#include <alps/hdf5.hpp>
 #include <fstream>
 #include <stdexcept>
 
+// an ugly hack for now - this needs to be refactord, see ticket #185
+#include <boost/numeric/ublas/matrix.hpp>
+#include "../../../applications/diag/diag.h"
+
 namespace alps {
+
+void convert_spectrum(const std::string& inname) 
+{
+  boost::filesystem::path p(inname, boost::filesystem::native);
+  alps::ProcessList nowhere;
+  DiagMatrix<double,boost::numeric::ublas::matrix<double,boost::numeric::ublas::column_major> > sim(nowhere,p);
+  sim.checkpoint(p,true);
+}
+
+void convert_mc(const std::string& inname) 
+{
+  alps::scheduler::SimpleMCFactory<alps::scheduler::DummyMCRun> factory;
+  alps::scheduler::init(factory);
+  boost::filesystem::path p(inname, boost::filesystem::native);
+  alps::ProcessList nowhere;
+  alps::scheduler::MCSimulation sim(nowhere,p);
+  sim.checkpoint(p,true);
+}
  
+void convert_xml(const std::string& inname)
+{
+  bool is_spectrum=false;
+  std::string h5name = inname.substr(0, inname.find_last_of('.')) + ".h5";
+  if (boost::filesystem::exists(boost::filesystem::path(h5name,boost::filesystem::native))) 
+  {
+    hdf5::iarchive ar(h5name);
+    if (ar.is_group("/spectrum"))
+      is_spectrum=true;
+  }
+  if (is_spectrum)
+    convert_spectrum(inname);
+  else
+    convert_mc(inname);
+}
+
+
+
 void convert_params(const std::string& inname)
 {
   alps::ParameterList list;
@@ -200,7 +241,19 @@ std::string convert2xml(std::string const& inname)
       convert_run(inname);
       return inname+".xml";
     default:
-      convert_params(inname);
+      {
+        bool isxml=false;
+        {
+          std::ifstream is(inname.c_str());
+          char c1=is.get();
+          char c2=is.get();
+          isxml = (c1=='<' && c2 =='?');
+        }
+        if (isxml)
+          convert_xml(inname);
+        else
+          convert_params(inname);
+      }
     }
   return inname+".in.xml";
 }

@@ -287,6 +287,59 @@ void Task::checkpoint(const boost::filesystem::path& fn, bool writeallxml) const
   }
 }
 
+void Task::checkpoint_hdf5(const boost::filesystem::path& fn) const
+{
+#ifdef ALPS_HAVE_HDF5
+  boost::filesystem::path dir=fn.branch_path();
+  bool make_backup = boost::filesystem::exists(fn);
+
+  std::string task_path = fn.file_string().substr(0, fn.file_string().find_last_of('.')) + ".h5";
+  std::string task_backup = fn.file_string().substr(0, fn.file_string().find_last_of('.')) + ".h5.bak";
+  bool task_exists = boost::filesystem::exists(task_path);
+  if (boost::filesystem::exists(task_backup))
+      boost::filesystem::remove(task_backup);
+
+  make_backup = make_backup || task_exists; 
+
+  {
+    hdf5::oarchive ar(make_backup ? task_backup : task_path);
+    ar << make_pvp("/",this);
+  } // close file
+  
+  if(make_backup) {
+    if (boost::filesystem::exists(task_path))
+      boost::filesystem::remove(task_path);
+    boost::filesystem::rename(task_backup, task_path);
+  }
+#endif
+}
+
+// checkpoint: save into a file
+void Task::checkpoint_xml(const boost::filesystem::path& fn, bool writeallxml) const
+{
+  boost::filesystem::path dir=fn.branch_path();
+  bool make_backup = boost::filesystem::exists(fn);
+
+#ifndef ALPS_ONE_CHECKPOINT_FILE_ONLY
+  boost::filesystem::path filename = (make_backup ? dir/(fn.leaf()+".bak") : fn);
+  {
+    alps::oxstream out (filename);
+    write_xml_header(out);
+    out << parms;
+    write_xml_body(out,fn,writeallxml);
+    write_xml_trailer(out);
+  } // close file
+#endif
+
+  if(make_backup) {
+    if (boost::filesystem::exists(fn))
+      boost::filesystem::remove(fn);
+#ifndef ALPS_ONE_CHECKPOINT_FILE_ONLY
+    boost::filesystem::rename(filename,fn);
+#endif
+  }
+}
+
 
 } // namespace scheduler
 } // namespace alps

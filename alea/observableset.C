@@ -124,7 +124,7 @@ void ObservableSet::load(IDump& dump)
                     }
                 }
                 ar 
-                    >> make_pvp(obsname, operator[](*it))
+                    >> make_pvp(*it, operator[](obsname))
                 ;
             }
         }

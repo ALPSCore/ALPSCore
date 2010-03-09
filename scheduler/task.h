@@ -138,6 +138,8 @@ public:
   virtual void construct(); // needs to be called to finish construction
 
   void checkpoint(const boost::filesystem::path&, bool = ALPS_WRITE_ALL_XML) const; // write into a file
+  void checkpoint_hdf5(const boost::filesystem::path&) const; // write into a file
+  void checkpoint_xml(const boost::filesystem::path&, bool = ALPS_WRITE_ALL_XML) const; // write into a file
 
   void add_process(const Process&);
 
