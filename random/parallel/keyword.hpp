@@ -6,6 +6,9 @@
 *
  */
 
+/// \file keyword.hpp
+/// \brief This file defines the named parameter keywords for the random library
+
 #include <boost/parameter/keyword.hpp>
 #include <boost/parameter/parameters.hpp>
 #include <boost/type_traits/is_convertible.hpp>
@@ -19,7 +22,6 @@
 #define ALPS_RANDOM_MAXARITY 5
 #endif
 
-///@file This file defines the named parameter keywords for the random library
 
 namespace alps { namespace random { namespace parallel {
   using boost::mpl::placeholders::_;
