@@ -240,8 +240,7 @@ void WorkerTask::add_process(const Process& p)
     workerstatus[j] = RemoteRun;
     if(started())
       runs[j]->start_worker();
-  }
-  else {// continue old run
+  } else {// continue old run
 #ifdef ALPS_TRACE
     std::cerr  << "Loading additional run " << j << " remote on Host: " << p << "\n";
 #endif
@@ -506,12 +505,11 @@ void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::pa
           << alps::attribute("file",name1)
           << alps::end_tag("CHECKPOINT");
 #ifdef ALPS_HAVE_HDF5
-      if (boost::filesystem::exists(name2)) {
+      if (boost::filesystem::exists(name2))
         out << alps::start_tag("CHECKPOINT")
             << alps::attribute("format","hdf5")
             << alps::attribute("file", name2)
             << alps::end_tag("CHECKPOINT");
-      }
 #endif
       out << alps::end_tag(worker_tag());
     }

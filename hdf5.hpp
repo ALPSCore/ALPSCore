@@ -27,6 +27,7 @@
 #include <valarray>
 #include <iostream>
 
+#include <boost/array.hpp>
 #include <boost/config.hpp>
 #include <boost/mpl/or.hpp>
 #include <boost/mpl/if.hpp>
@@ -35,6 +36,7 @@
 #include <boost/weak_ptr.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/multi_array.hpp>
 #include <boost/type_traits.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/static_assert.hpp>
@@ -45,42 +47,120 @@
 
 #include <hdf5.h>
 
+#ifdef ALPS_DOXYGEN
+  
 namespace alps {
     namespace hdf5 {
         namespace detail {
-            #define HDF5_ADD_CV(callback, T)     \
-                callback(T)                      \
-                callback(T &)                    \
-                callback(T const)                \
-                callback(T const &)              \
-                callback(T volatile)             \
-                callback(T volatile &)           \
-                callback(T const volatile)       \
+            UNSPECIFIED_TYPE unspecified_type;
+        }
+        struct write {};
+        struct read {};
+        template <typename Tag> class archive: boost::noncopyable {
+            public:
+                /// @file path to the hdf5 file to build the archive from. In case of iarchive, the file is opend in read only mode
+                archive(std::string const & file);
+                ~archive();
+                /// @return return the filename of the file, the arive ist based on
+                std::string const & filename() const;
+                /// create a checkpoint of the data.
+                void commit(std::string const & name = "");
+                /// @return list of all checkpoints with name and time 
+                std::vector<std::pair<std::string, std::string> > list_revisions() const;
+                /// export a checkpoint to a separat file
+                void export_revision(std::size_t revision, std::string const & file) const;
+                /// get the current context of the archive
+                std::string get_context() const;
+                /// set the context of the archive
+                void set_context(std::string const & context);
+                /// compute the absolte path given a path relative to the context
+                std::string compute_path(std::string const & path) const;
+                /// checks if a group is located at the given path
+                bool is_group(std::string const & path) const;
+                /// checks if a dataset is located at the given path
+                bool is_data(std::string const & path) const;
+                /// checks if a dataset containing a scalar is located at the given path
+                bool is_scalar(std::string const & path) const;
+                /// checks if a dataset containing a null pinter is located at the given path
+                bool is_null(std::string const & path) const;
+                /// checks if a attribute located at the given path. An attribute is addressed with a path of the form /path/to/@attribute
+                bool is_attribute(std::string const & p) const;
+                /// @return extents of the dataset located at the given path. extend(...).size() == dimensions(...) always holds
+                std::vector<std::size_t> extent(std::string const & path) const;
+                /// number of dimensions of the dataset located at the given path
+                std::size_t dimensions(std::string const & path) const;
+                /// list of all child segments of the given path
+                std::vector<std::string> list_children(std::string const & path) const;
+                /// list of all attributes of the fiven path
+                std::vector<std::string> list_attr(std::string const & path) const;
+                /// if T is a registred type, value is [de]serialized (depending if the archive ist in read or write mode) else T::serialize is called
+                void serialize(std::string const & path, T & value);
+                /// create a group at the given path
+                void set_group(std::string const & path) const;
+                /// reads the data from path. T needs to be a scalar or std::complex of scalar
+                template<typename T> void get_data(std::string const & path, T * value) const;
+                /// writes the data to path. T needs to be a scalar or std::complex of scalar
+                template<typename T> void set_data(std::string const & path, T const * value, hsize_t size) const;
+        };
+        /// input archive
+        typedef archive<read> iarchive;
+        /// output archive
+        typedef archive<write> oarchive;
+        /// global hook to deserialize an arbitrary object less intrusive
+        template <typename T> iarchive & serialize(iarchive & archive, std::string const & path, T & value);
+        /// global hook to serialize an arbitrary object less intrusive
+        template <typename T> oarchive & serialize(oarchive & archive, std::string const & path, T const & value);
+        /// operator to serialize data to hdf5
+        template <typename T> oarchive & operator<< (oarchive & archive, unspecified_type value);
+        /// operator to deserialize data from hdf5
+        template <typename T> iarchive & operator>> (iarchive & archive, unspecified_type value);
+        /// create a path-value-pair
+        template <typename T> unspecified_type make_pvp(std::string const & path, T value);
+        /// create a path-value-pair
+        template <typename T> unspecified_type make_pvp(std::string const & path, T * value, std::size_t size);
+    }
+}
+
+#else
+
+namespace alps {
+    namespace hdf5 {
+        namespace detail {
+            #define HDF5_ADD_CV(callback, T)                                     \
+                callback(T)                                                      \
+                callback(T &)                                                    \
+                callback(T const)                                                \
+                callback(T const &)                                              \
+                callback(T volatile)                                             \
+                callback(T volatile &)                                           \
+                callback(T const volatile)                                       \
                 callback(T const volatile &)
-            #define HDF5_FOREACH_SCALAR(callback)\
-                callback(char)                   \
-                callback(signed char)            \
-                callback(unsigned char)          \
-                callback(short)                  \
-                callback(unsigned short)         \
-                callback(int)                    \
-                callback(unsigned int)           \
-                callback(long)                   \
-                callback(unsigned long)          \
-                callback(long long)              \
-                callback(unsigned long long)     \
-                callback(float)                  \
-                callback(double)                 \
+            #define HDF5_FOREACH_SCALAR(callback)                                \
+                callback(char)                                                   \
+                callback(signed char)                                            \
+                callback(unsigned char)                                          \
+                callback(short)                                                  \
+                callback(unsigned short)                                         \
+                callback(int)                                                    \
+                callback(unsigned int)                                           \
+                callback(long)                                                   \
+                callback(unsigned long)                                          \
+                callback(long long)                                              \
+                callback(unsigned long long)                                     \
+                callback(float)                                                  \
+                callback(double)                                                 \
                 callback(long double)
             struct scalar_tag {};
-            struct stl_complex_tag {};
+            struct boost_multi_array_of_complex_tag {};
             struct stl_pair_tag {};
-            struct stl_container_of_unknown_tag {};
+            struct stl_complex_tag {};
             struct stl_container_of_string_tag {};
             struct stl_container_of_scalar_tag {};
             struct stl_container_of_complex_tag {};
+            struct stl_container_of_unknown_tag {};
             struct stl_container_of_container_of_scalar_tag {};
             struct stl_container_of_container_of_complex_tag {};
+            struct stl_container_of_container_of_container_of_complex_tag {};
             struct stl_string_tag {};
             struct c_string_tag {};
             struct enum_tag {};
@@ -110,9 +190,12 @@ namespace alps {
             #undef HDF5_CONTAINER_OF_SCALAR
             template<typename T> struct is_writable<std::vector<std::valarray<std::complex<T> > > > : boost::mpl::true_ { typedef stl_container_of_container_of_complex_tag category; };
             template<typename T> struct is_writable<std::vector<std::vector<std::complex<T> > > > : boost::mpl::true_ { typedef stl_container_of_container_of_complex_tag category; };
+            template<typename T> struct is_writable<std::vector<std::vector<std::valarray<std::complex<T> > > > > : boost::mpl::true_ { typedef stl_container_of_container_of_container_of_complex_tag category; };
+            template<typename T> struct is_writable<std::vector<std::vector<std::vector<std::complex<T> > > > > : boost::mpl::true_ { typedef stl_container_of_container_of_container_of_complex_tag category; };
             template<typename T, typename C, typename A> struct is_writable<std::set<T, C, A> > : boost::mpl::true_ { typedef stl_container_of_unknown_tag category; };
             template<typename K, typename D, typename C, typename A> struct is_writable<std::map<K, D, C, A> > : boost::mpl::true_ { typedef stl_container_of_unknown_tag category; };
             template<> struct is_writable<std::string> : boost::mpl::true_ { typedef stl_string_tag category; };
+            template<typename T, std::size_t N, typename A> struct is_writable<boost::multi_array<std::complex<T>, N, A> > : boost::mpl::true_ { typedef boost_multi_array_of_complex_tag category; };
             template<> struct is_writable<char const *> : boost::mpl::true_ { typedef c_string_tag category; };
             template<std::size_t N> struct is_writable<const char [N]> : boost::mpl::true_ { typedef c_string_tag category; };
             template<std::size_t N> struct is_writable<char [N]> : boost::mpl::true_ { typedef c_string_tag category; };
@@ -259,11 +342,11 @@ namespace alps {
                         delete[] v.time;
                         delete[] v.name;
                     }
-                    std::vector<std::pair<std::string, std::size_t> > list_revisions() {
+                    std::vector<std::pair<std::string, std::string> > list_revisions() const {
                         // TODO: implement
                         return std::vector<std::pair<std::string, std::size_t> >();
                     }
-                    void export_revision(std::size_t revision, std::string const & file) {
+                    void export_revision(std::size_t revision, std::string const & file) const {
                         // TODO: implement
                     }
                     std::string get_context() const {
@@ -718,6 +801,31 @@ namespace alps {
                             }
                         }
                     }
+                    template<typename T> void get_data(std::string const & p, T & v, stl_container_of_container_of_complex_tag) const {
+                        throw std::runtime_error("Not implemented");
+                    }
+                    template<typename T> void get_data(std::string const & p, T & v, stl_container_of_container_of_container_of_complex_tag) const {
+                        throw std::runtime_error("Not implemented");
+                    }
+                    template<typename T> void get_data(std::string const & p, T & v, boost_multi_array_of_complex_tag) const {
+                        boost::array<typename T::index, T::dimensionality> e;
+                        if (!is_null(p)) {
+                            if (dimensions(p) != T::dimensionality)
+                                throw std::runtime_error("the path " + p + " has the wrong number of dimensions");
+                            data_type data_id(H5Dopen2(_file, p.c_str(), H5P_DEFAULT));
+                            type_type type_id(H5Dget_type(data_id));
+                            if (!check_error(H5Tequal(_complex_id, type_type(H5Tcopy(type_id)))))
+                                throw std::runtime_error("invalid type");
+                            std::vector<std::size_t> s = extent(p);
+                            std::vector<internal_complex_type> w(std::inner_product(s.begin(), s.end(), s.begin(), 0));
+                            check_error(H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(w[0])));
+                            std::copy(s.begin(), s.end(), e.begin());
+                            v.resize(e);
+                            for (std::vector<internal_complex_type>::const_iterator it = w.begin(); it != w.end(); ++it)
+                                v.data()[it - w.begin()] = typename T::element(it->r, it->i);
+                        } else
+                            v.resize(e);
+                    }
                     template<typename T> void get_data(std::string const & p, T & v, c_string_tag) const {
                         std::string s;
                         get_data(p, s, stl_string_tag());
@@ -746,6 +854,15 @@ namespace alps {
                         throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
                     }
                     template<typename T> void get_attr(std::string const &, std::string const & p, T &, stl_container_of_container_of_scalar_tag) const {
+                        throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
+                    }
+                    template<typename T> void get_attr(std::string const &, std::string const & p, T &, stl_container_of_container_of_complex_tag) const {
+                        throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
+                    }
+                    template<typename T> void get_attr(std::string const &, std::string const & p, T &, stl_container_of_container_of_container_of_complex_tag) const {
+                        throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
+                    }
+                    template<typename T> void get_attr(std::string const &, std::string const & p, T &, boost_multi_array_of_complex_tag) const {
                         throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
                     }
                     template<typename T> void get_attr(std::string const &, std::string const & p, T &, stl_pair_tag) const {
@@ -883,6 +1000,15 @@ namespace alps {
                                 }
                         }
                     }
+                    template<typename T> void set_data(std::string const & p, T const & v, stl_container_of_container_of_complex_tag) const {
+                        throw std::runtime_error("Not implemented");
+                    }
+                    template<typename T> void set_data(std::string const & p, T const & v, stl_container_of_container_of_container_of_complex_tag) const {
+                        throw std::runtime_error("Not implemented");
+                    }
+                    template<typename T> void set_data(std::string const & p, T const & v, boost_multi_array_of_complex_tag) const {
+                        throw std::runtime_error("Not implemented");
+                    }
                     template<typename T> void set_data(std::string const & p, T v, internal_state_tag) const {
                         data_type data_id(create_path(p, _state_id, H5Screate(H5S_SCALAR), 0));
                         check_error(H5Dwrite(data_id, _state_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &v));
@@ -903,6 +1029,15 @@ namespace alps {
                         throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
                     }
                     template<typename T> void set_attr(std::string const &, std::string const & p, T const &, stl_container_of_container_of_scalar_tag) const {
+                        throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
+                    }
+                    template<typename T> void set_attr(std::string const &, std::string const & p, T const &, stl_container_of_container_of_complex_tag) const {
+                        throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
+                    }
+                    template<typename T> void set_attr(std::string const &, std::string const & p, T const &, stl_container_of_container_of_container_of_complex_tag) const {
+                        throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
+                    }
+                    template<typename T> void set_attr(std::string const &, std::string const & p, T const &, boost_multi_array_of_complex_tag) const {
                         throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
                     }
                     template<typename T> void set_attr(std::string const &, std::string const & p, T const &, stl_container_of_unknown_tag) const {
@@ -1055,4 +1190,7 @@ namespace alps {
         return hdf5::detail::pvp<T, hdf5::detail::array>(p, v, s);
     }
 }
+
+#endif
+
 #endif
