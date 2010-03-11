@@ -7,6 +7,11 @@
  *
  */
 
+/// \file parallel/lcg64.hpp
+/// 
+/// contains a parallel 64-bit generator template and three good choices
+/// of parameters.
+
 #ifndef ALPS_RANDOM_PARALLEL_LCG64_HPP
 #define ALPS_RANDOM_PARALLEL_LCG64_HPP
 

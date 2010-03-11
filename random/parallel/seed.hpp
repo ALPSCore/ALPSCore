@@ -10,7 +10,9 @@
 #include <boost/throw_exception.hpp>
 #include <alps/random/parallel/keyword.hpp>
 
-/// @file This header provides default implementations of the parallel seeding functions.
+/// @file parallel/seed.hpp
+/// 
+/// This header provides default implementations of the parallel seeding functions.
 
 #ifndef ALPS_RANDOM_PARALLEL_SEED_HPP
 #define ALPS_RANDOM_PARALLEL_SEED_HPP

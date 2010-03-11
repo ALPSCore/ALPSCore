@@ -9,10 +9,14 @@
 #ifndef ALPS_RANDOM_SPRNG_LCG64_HPP
 #define ALPS_RANDOM_SPRNG_LCG64_HPP
 
+/// \file alps/random/sprng/lcg_64.hpp
+///
+/// A wrapper for the SPRNG 64-bit linear congruential generator
+
 #ifdef ALPS_DOXYGEN
 
 namespace alps { namespace random { namespace sprng {
-  /// @brief Wrapper for the SPRNG PMLCG random number generator
+  /// @brief Wrapper for the SPRNG lcg64 random number generator
   ///
   ///  Wrapper for the SPRNG lcg64 random number generator
 
