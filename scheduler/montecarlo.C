@@ -89,6 +89,8 @@ void MCSimulation::accumulate_measurements(std::vector<std::pair<std::size_t, Ob
 // collect all measurements
 ObservableSet MCSimulation::get_measurements(bool compactit) const
 {
+  if (runs.empty())
+    return ObservableSet();
   std::vector<std::pair<std::size_t, ObservableSet> > all_measurements;
   ProcessList where_master;
   int remote_runs=0;

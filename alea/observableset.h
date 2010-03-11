@@ -147,7 +147,7 @@ class ALPS_DECL ObservableSet: public std::map<std::string,Observable*>
     }
 
       /** get an observable with the given name and type
-      @@throws throws a std::runtime_error if no observable exists with the given name
+      @throws throws a std::runtime_error if no observable exists with the given name
   */
 
   template <class T>
@@ -163,7 +163,7 @@ class ALPS_DECL ObservableSet: public std::map<std::string,Observable*>
     }
 
   /** get an observable with the given name and type
-      @@throws throws a std::runtime_error if no observable exists with the given name
+      @throws throws a std::runtime_error if no observable exists with the given name
   */
 
   template <class T>
