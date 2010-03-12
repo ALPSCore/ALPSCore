@@ -67,10 +67,6 @@ class AbstractBinning {
 #ifndef ALPS_WITHOUT_OSIRIS
   void extract_timeseries(ODump& dump) const { dump << 0 << 0 << 0;}
 #endif
-#ifdef ALPS_HAVE_HDF5
-  template<typename E> void read_hdf5 (const E &engine);
-  template<typename E> void write_hdf5 (const E &engine)const;
-#endif
 
   bool has_variance() const { return true;} // for now
   void write_scalar_xml(oxstream&) const {}

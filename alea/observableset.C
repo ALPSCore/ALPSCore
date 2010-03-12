@@ -590,31 +590,4 @@ void ObservableSetXMLHandler::end_child(std::string const& name,
   }
 }
 
-#ifdef ALPS_HAVE_HDF5
-
-void ObservableSet::write_hdf5(boost::filesystem::path const & path, std::size_t realization, std::size_t clone) const {
-  mocasito::io::container<mocasito::io::hdf5> container(path.string());
-  std::stringstream set_path;
-  set_path<<"/simulation/realizations/"<<realization<<"/clones/"<<clone<<"/results";
-  assign(container[set_path.str()],*this);
-  for(ObservableSet::const_iterator it=begin();it!=end();++it)
-//    if (it->second->count() > 0)
-      it->second->write_hdf5(path, realization, clone);
-}
-void ObservableSet::read_hdf5(boost::filesystem::path const & path, std::size_t realization, std::size_t clone){
-  mocasito::io::container<mocasito::io::hdf5> container(path.string());
-  std::stringstream set_path;
-  set_path<<"/simulation/realizations/"<<realization<<"/clones/"<<clone<<"/results";
-  assign(*this,container[set_path.str()]);
-  for(ObservableSet::iterator it=begin();it!=end();++it){ //this reads in all the observables
-//    std::stringstream obs_path;
-//    obs_path<<"/simulation/realizations/"<<realization<<"/clones/"<<clone<<"/results/"<<it->second->name();
-//    if (container.is_group(obs_path.str()) || container.is_data(obs_path.str()))
-      it->second->read_hdf5(path, realization, clone);
-  }
-  //once we're done we need to update the sign pointers
-  update_signs();
-}
-#endif
-
 } // namespace alps

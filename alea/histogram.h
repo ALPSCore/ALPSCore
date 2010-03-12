@@ -35,7 +35,6 @@
 #include <alps/alea/observable.h>
 #include <alps/alea/recordableobservable.h>
 #include <alps/alea/output_helper.h>
-#include <alps/alea/hdf5.h>
 
 #include <vector>
 

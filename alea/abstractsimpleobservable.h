@@ -162,10 +162,6 @@ public:
 #endif
 
   void write_xml(oxstream&, const boost::filesystem::path& = boost::filesystem::path()) const;
-#ifdef ALPS_HAVE_HDF5
-  virtual void write_hdf5(const boost::filesystem::path& fn_hdf, std::size_t realization = 0, std::size_t clone = 0) const;
-  virtual void read_hdf5 (const boost::filesystem::path& /* fn_hdf */, std::size_t /* realization */ = 0, std::size_t /* clone */ = 0) {};
-#endif
   void write_xml_scalar(oxstream&, const boost::filesystem::path&) const;
   void write_xml_vector(oxstream&, const boost::filesystem::path&) const;
 
@@ -248,12 +244,7 @@ void AbstractSimpleObservable<T>::write_xml(oxstream& oxs, const boost::filesyst
 }
 
 template <class T>
-#ifdef ALPS_HAVE_HDF5_CPP
-void AbstractSimpleObservable<T>::write_xml_scalar(oxstream& oxs, const boost::filesystem::path& fn_hdf5) const
-#else
-void AbstractSimpleObservable<T>::write_xml_scalar(oxstream& oxs, const boost::filesystem::path&) const
-#endif
-{
+void AbstractSimpleObservable<T>::write_xml_scalar(oxstream& oxs, const boost::filesystem::path&) const {
   if (count())
   {
     std::string mm = evaluation_method(Mean);
@@ -293,38 +284,13 @@ void AbstractSimpleObservable<T>::write_xml_scalar(oxstream& oxs, const boost::f
       if (tm != "") oxs << attribute("method", tm);
       oxs << precision(tau(), 3) << end_tag("AUTOCORR");
     }
-
-#ifdef ALPS_HAVE_HDF5_CPP
-    if (!fn_hdf5.empty() && bin_size() == 1) {
-      //write tag for timeseries and the hdf5-file
-      oxs << start_tag("TIMESERIES") << attribute("format", "HDF5")
-          << attribute("file", fn_hdf5.leaf()) << attribute("set", name())
-          << end_tag;
-
-      //open the hdf5 file and write data
-      H5File hdf5(fn_hdf5.native_file_string().c_str(),H5F_ACC_CREAT | H5F_ACC_RDWR);
-      hsize_t dims[1];
-      dims[0]=bin_number();
-      DataSpace dataspace(1,dims);
-      IntType datatype(HDF5Traits<T>::pred_type());
-      DataSet dataset=hdf5.createDataSet(name().c_str(),datatype,dataspace);
-      vector<T> data(bin_number());
-      for(int j=0;j<bin_number();j++) data[j]=bin_value(j);
-      dataset.write(&(data[0]),HDF5Traits<T>::pred_type());
-    }
-#endif
     write_more_xml(oxs);
     oxs << end_tag("SCALAR_AVERAGE");
   }
 }
 
 template <class T>
-#ifdef ALPS_HAVE_HDF5_CPP
-void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, const boost::filesystem::path& fn_hdf5) const
-#else
-void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, const boost::filesystem::path&) const
-#endif
-{
+void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, const boost::filesystem::path&) const {
   if(count())
   {
     std::string mm = evaluation_method(Mean);
@@ -392,28 +358,7 @@ void AbstractSimpleObservable<T>::write_xml_vector(oxstream& oxs, const boost::f
         oxs << precision(slice_value(tau_, it), 3)
             << end_tag("AUTOCORR");
       }
-
-#ifdef ALPS_HAVE_HDF5_CPP
-      if(!fn_hdf5.empty() && bin_size() == 1) {
-        //write tag for timeseries and the hdf5-file
-        oxs << start_tag("TIMESERIES") << attribute("format", "HDF5")
-            << attribute("file", fn_hdf5.leaf()) << attribute("set", name())
-            << end_tag;
-
-        //open the hdf5 file and write data
-        H5File hdf5(fn_hdf5.native_file_string().c_str(),H5F_ACC_CREAT | H5F_ACC_RDWR);
-        hsize_t dims[1];
-        dims[0]=bin_number();
-        DataSpace dataspace(1,dims);
-        IntType datatype(HDF5Traits<T>::pred_type());
-        DataSet dataset=hdf5.createDataSet(name().c_str(),datatype,dataspace);
-        vector<T> data(bin_number());
-        for(int j=0;j<bin_number();j++) data[j]=bin_value(j)[it];
-        dataset.write(&(data[0]),HDF5Traits<T>::pred_type());
-      }
-#endif
       write_more_xml(oxs,it);
-
       ++it;
       ++it2;
       oxs << end_tag("SCALAR_AVERAGE");

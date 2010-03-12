@@ -129,9 +129,6 @@ class ALPS_DECL Observable {
 
   /** output the result */
   virtual void write_xml(oxstream& oxs, const boost::filesystem::path& fn_hdf5=boost::filesystem::path()) const;
-  virtual void write_hdf5(const boost::filesystem::path& fn_hdf, std::size_t realization=0, std::size_t clone=0) const;
-  virtual void read_hdf5 (const boost::filesystem::path& fn_hdf, std::size_t realization=0, std::size_t clone=0);
-
 
 #ifndef ALPS_WITHOUT_OSIRIS
   /// return a version ID uniquely identifying the class

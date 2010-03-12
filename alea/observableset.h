@@ -44,14 +44,15 @@
 #include <alps/osiris/archivedump.h>
 #include <alps/parser/parser.h>
 #include <alps/xml.h>
+#include <alps/alea.h>
 
 #include <boost/functional.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/serialization/split_member.hpp>
 #include <map>
+
 #ifdef ALPS_HAVE_HDF5
 #include <alps/hdf5.hpp>
-#include <alps/alea/hdf5.h>
 #endif
 
 namespace alps {

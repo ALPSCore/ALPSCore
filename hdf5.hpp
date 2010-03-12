@@ -93,14 +93,11 @@ namespace alps {
                 std::vector<std::string> list_children(std::string const & path) const;
                 /// list of all attributes of the fiven path
                 std::vector<std::string> list_attr(std::string const & path) const;
-                /// if T is a registred type, value is [de]serialized (depending if the archive ist in read or write mode) else T::serialize is called
-                void serialize(std::string const & path, T & value);
-                /// create a group at the given path
-                void set_group(std::string const & path) const;
-                /// reads the data from path. T needs to be a scalar or std::complex of scalar
-                template<typename T> void get_data(std::string const & path, T * value) const;
-                /// writes the data to path. T needs to be a scalar or std::complex of scalar
-                template<typename T> void set_data(std::string const & path, T const * value, hsize_t size) const;
+                void serialize(std::string const & p, T const & v);
+                void serialize(std::string const & p, T & v);
+                void serialize(std::string const & p, T const * v, std::size_t s)
+                void serialize(std::string const & p, T * v);
+                void serialize(std::string const & p);
         };
         /// input archive
         typedef archive<read> iarchive;
@@ -151,6 +148,7 @@ namespace alps {
                 callback(double)                                                 \
                 callback(long double)
             struct scalar_tag {};
+            struct boost_multi_array_of_scalar_tag {};
             struct boost_multi_array_of_complex_tag {};
             struct stl_pair_tag {};
             struct stl_complex_tag {};
@@ -177,14 +175,15 @@ namespace alps {
             template<typename T> struct is_writable<std::list<T> > : boost::mpl::true_ { typedef stl_container_of_unknown_tag category; };
             template<> struct is_writable<std::vector<std::string> > : boost::mpl::true_ { typedef stl_container_of_string_tag category; };
             template<> struct is_writable<std::valarray<std::string> > : boost::mpl::true_ { typedef stl_container_of_string_tag category; };
-            #define HDF5_CONTAINER_OF_SCALAR_CV(T)                   \
+            #define HDF5_CONTAINER_OF_SCALAR_CV(T)                                                                                                                 \
                 template<> struct is_writable<std::vector<T> > : boost::mpl::true_ { typedef stl_container_of_scalar_tag category; };                              \
                 template<> struct is_writable<boost::numeric::ublas::vector<T> > : boost::mpl::true_ { typedef stl_container_of_scalar_tag category; };            \
                 template<> struct is_writable<std::valarray<T> > : boost::mpl::true_ { typedef stl_container_of_scalar_tag category; };                            \
                 template<> struct is_writable<std::vector<std::complex<T> > > : boost::mpl::true_ { typedef stl_container_of_complex_tag category; };              \
                 template<> struct is_writable<std::vector<std::valarray<T> > > : boost::mpl::true_ { typedef stl_container_of_container_of_scalar_tag category; }; \
-                template<> struct is_writable<std::vector<std::vector<T> > > : boost::mpl::true_ { typedef stl_container_of_container_of_scalar_tag category; };
-            #define HDF5_CONTAINER_OF_SCALAR(T)                      \
+                template<> struct is_writable<std::vector<std::vector<T> > > : boost::mpl::true_ { typedef stl_container_of_container_of_scalar_tag category; };   \
+                template<std::size_t N, typename A> struct is_writable<boost::multi_array<T, N, A> > : boost::mpl::true_ { typedef boost_multi_array_of_scalar_tag category; };
+            #define HDF5_CONTAINER_OF_SCALAR(T)                                                                                                                    \
                 HDF5_ADD_CV(HDF5_CONTAINER_OF_SCALAR_CV, T)
             HDF5_FOREACH_SCALAR(HDF5_CONTAINER_OF_SCALAR_CV)
             #undef HDF5_CONTAINER_OF_SCALAR
@@ -807,6 +806,9 @@ namespace alps {
                     template<typename T> void get_data(std::string const & p, T & v, stl_container_of_container_of_container_of_complex_tag) const {
                         throw std::runtime_error("Not implemented");
                     }
+                    template<typename T> void get_data(std::string const & p, T & v, boost_multi_array_of_scalar_tag) const {
+                        throw std::runtime_error("Not implemented");
+                    }
                     template<typename T> void get_data(std::string const & p, T & v, boost_multi_array_of_complex_tag) const {
                         boost::array<typename T::index, T::dimensionality> e;
                         if (!is_null(p)) {
@@ -860,6 +862,9 @@ namespace alps {
                         throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
                     }
                     template<typename T> void get_attr(std::string const &, std::string const & p, T &, stl_container_of_container_of_container_of_complex_tag) const {
+                        throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
+                    }
+                    template<typename T> void get_attr(std::string const &, std::string const & p, T &, boost_multi_array_of_scalar_tag) const {
                         throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
                     }
                     template<typename T> void get_attr(std::string const &, std::string const & p, T &, boost_multi_array_of_complex_tag) const {
@@ -1006,8 +1011,22 @@ namespace alps {
                     template<typename T> void set_data(std::string const & p, T const & v, stl_container_of_container_of_container_of_complex_tag) const {
                         throw std::runtime_error("Not implemented");
                     }
-                    template<typename T> void set_data(std::string const & p, T const & v, boost_multi_array_of_complex_tag) const {
+                    template<typename T> void set_data(std::string const & p, T const & v, boost_multi_array_of_scalar_tag) const {
                         throw std::runtime_error("Not implemented");
+                    }
+                    template<typename T> void set_data(std::string const & p, T const & v, boost_multi_array_of_complex_tag) const {
+                        if (!v.size())
+                            set_data(p, static_cast<typename T::element const *>(NULL), 0);
+                        else {
+                            std::vector<internal_complex_type> w;
+                            for (typename T::element* it = v.data(); it != v.data() + v.num_elements(); ++it)
+                                w.push_back({it->real(), it->imag()});
+                            type_type type_id(H5Tcopy(_complex_id));
+                            std::vector<std::size_t> s(T::dimensionality);
+                            std::copy(v.shape(), v.shape() + T::dimensionality, s.begin());
+                            data_type data_id(save_comitted_data(p, type_id, H5Screate_simple(T::dimensionality, &(s[0]), NULL), T::dimensionality, &(s[0])));
+                            check_error(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, v));
+                        }
                     }
                     template<typename T> void set_data(std::string const & p, T v, internal_state_tag) const {
                         data_type data_id(create_path(p, _state_id, H5Screate(H5S_SCALAR), 0));
@@ -1035,6 +1054,9 @@ namespace alps {
                         throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
                     }
                     template<typename T> void set_attr(std::string const &, std::string const & p, T const &, stl_container_of_container_of_container_of_complex_tag) const {
+                        throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
+                    }
+                    template<typename T> void set_attr(std::string const &, std::string const & p, T const &, boost_multi_array_of_scalar_tag) const {
                         throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
                     }
                     template<typename T> void set_attr(std::string const &, std::string const & p, T const &, boost_multi_array_of_complex_tag) const {
