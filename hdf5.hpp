@@ -1019,8 +1019,10 @@ namespace alps {
                             set_data(p, static_cast<typename T::element const *>(NULL), 0);
                         else {
                             std::vector<internal_complex_type> w;
-                            for (typename T::element* it = v.data(); it != v.data() + v.num_elements(); ++it)
-                                w.push_back({it->real(), it->imag()});
+                            for (typename T::element* it = v.data(); it != v.data() + v.num_elements(); ++it) {
+                                internal_complex_type c = {it->real(), it->imag()};
+                                w.push_back(c);
+                            }
                             type_type type_id(H5Tcopy(_complex_id));
                             std::vector<std::size_t> s(T::dimensionality);
                             std::copy(v.shape(), v.shape() + T::dimensionality, s.begin());
