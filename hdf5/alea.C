@@ -100,13 +100,10 @@ int main(void){
   }
   boost::filesystem::remove(boost::filesystem::path("alea.h5"));
 
-  //SimpleObservable<double,DetailedBinning<double> >dd_obs("double_detailed");
-  /*SimpleObservable<double,SimpleBinning<double> >ds_obs("double_simple");
+  /*SimpleObservable<double,DetailedBinning<double> >dd_obs("double_detailed");
+  SimpleObservable<double,SimpleBinning<double> >ds_obs("double_simple");
   SimpleObservable<double,NoBinning<double> > dn_obs("double_none");*/
  
-  //dd_obs.read_hdf5("/tmp/rugu.hdf5");
-  //std::cout<<"dd obs: "<<dd_obs.mean()<<" "<<dd_obs.error()<<std::endl;
-
   RealObsevaluator double_detailed_eval_1(measurements["double_detailed"]);
   RealObsevaluator double_detailed_eval_2(measurements2["double_detailed"]);
   RealObsevaluator double_simple_eval_1(measurements["double_simple"]);
