@@ -229,7 +229,11 @@ void clone_info::init(Parameters const& params, std::string const& dump) {
 
   if (params.defined("SEED")) {
     seed_t baseseed = static_cast<seed_t>(params["SEED"]);
-    disorder_seed_ = baseseed ^ hash(clone_id_ * (np + 1) + 1);
+    if (params.defined("DISORDER_SEED")) {
+      disorder_seed_ = static_cast<seed_t>(params["DISORDER_SEED"]);
+    } else {
+      disorder_seed_ = baseseed ^ hash(clone_id_ * (np + 1) + 1);
+    }
     if (pid == 0)
       for (int p = 0; p < np; ++p)
         worker_seed_.push_back(baseseed ^ hash(clone_id_ * (np + 1) + p + 2));
