@@ -23,7 +23,7 @@ if HAVE_BOOST_MPI
 endif
 TESTS_MOCASITO =
 if HAVE_HDF5
-TESTS_MOCASITO += hdf5/io hdf5/alea_mocasito hdf5/alea2
+TESTS_MOCASITO += hdf5/io hdf5/alea hdf5/alea2
 endif
 TESTS_LATTICE = lattice/example1 lattice/example2 lattice/example3 lattice/example4 lattice/example5 lattice/example6 lattice/example7 lattice/example8 lattice/example9 lattice/example10 lattice/coloring lattice/label lattice/parity
 TESTS_MODEL = model/example1 model/example2 model/example3 model/example4 model/example5 model/example6 model/example7 model/example8 model/example9 model/example10 model/example11 model/example12 model/example13 model/example14 model/example15 model/example16 model/example17 model/example18

@@ -6,13 +6,13 @@ LDADD = $(top_builddir)/lib/alps/libalps.la $(BOOST_LIBS) $(SQLITE_LIBS) $(XML_L
 check_PROGRAMS =
 if HAVE_HDF5
 check_PROGRAMS += io
-check_PROGRAMS += alea_mocasito alea2
+check_PROGRAMS += alea alea2
 endif
 io_SOURCES = io.C
-alea_mocasito_SOURCES = alea_mocasito.C
+alea_SOURCES = alea.C
 alea2_SOURCES = alea2.C
 
-dist_noinst_DATA = alea_mocasito.output
+dist_noinst_DATA = io.output alea.output
 
 .PHONY : test tests example examples
 test tests : check
