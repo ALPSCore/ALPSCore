@@ -33,7 +33,7 @@ set(ALPS_SOURCES
     parser/parser.C parser/xmlattributes.C parser/xmlhandler.C parser/xmlparser.C
     parser/xmlstream.C parser/xslt_path.C
     # random
-    random/rngfactory.C
+    random/rngfactory.C random/parallel/get_prime.cpp random/parallel/primelist_64.cpp
     # scheduler
     scheduler/abstract_task.C scheduler/convertxdr.C scheduler/factory.C scheduler/info.C
     scheduler/master_scheduler.C scheduler/measurement_operators.C

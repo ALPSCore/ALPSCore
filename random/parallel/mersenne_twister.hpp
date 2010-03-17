@@ -24,7 +24,7 @@ void seed(
   , unsigned int total
 )
   {
-	lcg64a seeder;
+    lcg64a seeder;
     seed(prng, num, total, seeder);
   }
 
@@ -37,7 +37,7 @@ void seed(
   , SeedType const& the_seed
       )
   {
-	lcg64a seeder(the_seed);
+    lcg64a seeder(the_seed);
     seed(prng, num, total, seeder);
   }
 
@@ -50,17 +50,17 @@ void seed(
       , lcg64a & engine
       )
   {
-	 //seeds the seeder, which in turn gives the seedvalue for the mersenne_twister-rng
-	typedef boost::uniform_int<unsigned int> dist_t;	
-	boost::variate_generator<lcg64a&, dist_t> rng(engine, dist_t(0u, std::numeric_limits<unsigned int>::max()));
+     //seeds the seeder, which in turn gives the seedvalue for the mersenne_twister-rng
+    typedef boost::uniform_int<unsigned int> dist_t;    
+    boost::variate_generator<lcg64a&, dist_t> rng(engine, dist_t(0u, std::numeric_limits<unsigned int>::max()));
 
-	//warm-up to improve decorrelations
+    //warm-up to improve decorrelations
     for(unsigned int i = 0; i < 1000; i++)
       rng();
       
     std::vector<UIntType> buffer;
     for (int i = 0; i < 2*n; i++) 
-     	buffer.push_back(rng());
+         buffer.push_back(rng());
     
     // seed the generator
     typename std::vector<UIntType>::iterator first=buffer.begin();

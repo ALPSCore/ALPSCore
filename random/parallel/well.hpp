@@ -121,8 +121,8 @@ class well
         BOOST_STATIC_CONSTANT(bool, has_fixed_range = true);
 /// INTERNAL ONLY
         BOOST_STATIC_CONSTANT(typename RNG::result_type, max_streams = RNG::max_streams);
-		
-	
+        
+    
 #ifdef ALPS_DOXYGEN
 
   /// @brief the constructors
@@ -144,19 +144,19 @@ class well
 
 #else
 
-	// forward seeding functions with iterator buffers to named versions
+    // forward seeding functions with iterator buffers to named versions
   ALPS_RANDOM_PARALLEL_ITERATOR_SEED()
   {
     unsigned int num = p[stream_number|0u];
     unsigned int total=p[total_streams|1u];
     BOOST_ASSERT(num < total);
   
-    p[first] += num*statesize; 						  
-    unsigned int j;						  			  
+    p[first] += num*statesize;                           
+    unsigned int j;                                        
     for(j = 0; j < statesize && p[first] != p[last]; ++j, ++p[first])  
         state[j] = *p[first];
-      if(p[first] == p[last] && j < statesize*total)			  
-        throw std::invalid_argument("well::seed");			  
+      if(p[first] == p[last] && j < statesize*total)              
+        throw std::invalid_argument("well::seed");              
       state_i = 0;
   }
 
@@ -171,17 +171,17 @@ class well
 
     
     //seeds the seeder, which in turn gives the seedvalue for the well-rng
-    typedef boost::uniform_int<typename RNG::result_type> dist_t;	
+    typedef boost::uniform_int<typename RNG::result_type> dist_t;    
     RNG engine(stream_number=stream, global_seed=s, total_streams=total);
     boost::variate_generator<RNG , dist_t> rng(engine, dist_t(min(),max()));
 
     //warm-up to improve decorrelations
     for(unsigned int i = 0; i < 1000; i++)
-    	rng();
+        rng();
       
      // seed the generator
      for (int i = 0; i < statesize; i++) 
-     	state[i] = rng();
+         state[i] = rng();
       state_i = 0;
     
   }
@@ -231,7 +231,7 @@ class well
         
         template<class CharT, class Traits>
         friend std::basic_istream<CharT,Traits>&
-        operator>>(std::basic_istream<CharT,Traits>& is, well& w)	
+        operator>>(std::basic_istream<CharT,Traits>& is, well& w)    
         {
             for(int j = 0; j < statesize; j++)
               is >> w.state[j] >> std::ws;

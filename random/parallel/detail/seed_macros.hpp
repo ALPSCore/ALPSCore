@@ -20,7 +20,7 @@
 
 #include <alps/random/parallel/keyword.hpp>
 
-#define ALPS_RANDOM_PARALLEL_CONSTRUCTOR(z, n, P)                          \
+#define ALPS_RANDOM_PARALLEL_CONSTRUCTOR(z, n, P)                           \
   BOOST_PP_IF(n,template <, BOOST_PP_EMPTY())                               \
   BOOST_PP_ENUM_PARAMS(n,class T) BOOST_PP_IF(n,>, BOOST_PP_EMPTY() )       \
   BOOST_PP_ARRAY_ELEM(0,P) (BOOST_PP_ENUM_BINARY_PARAMS(n,T,const& x))      \
@@ -44,28 +44,28 @@
     seed_named(BOOST_PP_ENUM_PARAMS(n,x) );                                 \
   }
 
-#define ALPS_RANDOM_PARALLEL_ITERATOR_SEED_DEFAULT_IMPL(z, n, unused)      \
+#define ALPS_RANDOM_PARALLEL_ITERATOR_SEED_DEFAULT_IMPL(z, n, unused)       \
   template <class It BOOST_PP_COMMA_IF(n) BOOST_PP_ENUM_PARAMS(n,class T)>  \
   void seed(It& f, It const& l BOOST_PP_COMMA_IF(n)                         \
                BOOST_PP_ENUM_BINARY_PARAMS(n,T,const& x))                   \
   {                                                                         \
     if(f == l)                                                              \
       throw std::invalid_argument("invalid seeding argument");              \
-    seed(alps::random::parallel::global_seed=*f++                          \
+    seed(alps::random::parallel::global_seed=*f++                           \
          BOOST_PP_COMMA_IF(n) BOOST_PP_ENUM_PARAMS(n,x) );                  \
   }
    
 #define ALPS_RANDOM_PARALLEL_ITERATOR_SEED_IMPL(z, n, unused)               \
-  template <class It BOOST_PP_COMMA_IF(n) BOOST_PP_ENUM_PARAMS(n,class T)>   \
-  void seed(It& f, It const& l BOOST_PP_COMMA_IF(n)                          \
-               BOOST_PP_ENUM_BINARY_PARAMS(n,T,const& x))    {               \
-	 iterator_seed_named(alps::random::parallel::first=f                    \
+  template <class It BOOST_PP_COMMA_IF(n) BOOST_PP_ENUM_PARAMS(n,class T)>  \
+  void seed(It& f, It const& l BOOST_PP_COMMA_IF(n)                         \
+               BOOST_PP_ENUM_BINARY_PARAMS(n,T,const& x))    {              \
+     iterator_seed_named(alps::random::parallel::first=f                    \
                         , alps::random::parallel::last=l                    \
-                        BOOST_PP_COMMA_IF(n) BOOST_PP_ENUM_PARAMS(n,x) );    \
-  }					  					                                     \
-	   
+                        BOOST_PP_COMMA_IF(n) BOOST_PP_ENUM_PARAMS(n,x) );   \
+  }                                                                         \
+       
 
-#define ALPS_RANDOM_PARALLEL_SEED_PARAMS(RNG,PARAMS,INIT)                                            \
+#define ALPS_RANDOM_PARALLEL_SEED_PARAMS(RNG,PARAMS,INIT)                                           \
   BOOST_PP_REPEAT_FROM_TO(0, ALPS_RANDOM_MAXARITY, ALPS_RANDOM_PARALLEL_CONSTRUCTOR,(2,(RNG,INIT))) \
   BOOST_PARAMETER_MEMFUN(void,seed_named,0,ALPS_RANDOM_MAXARITY,PARAMS)     
 
