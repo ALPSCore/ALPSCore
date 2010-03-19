@@ -55,13 +55,15 @@ try {
 
   {
     std::ofstream of("textdump.dump");
-    boost::archive::text_oarchive oa(of,boost::archive::no_header);
+	if (!of)
+		std::cerr << "Issue\n";
+	boost::archive::text_oarchive oa(of);//of,boost::archive::no_codecvt);
     alps::archive_odump<boost::archive::text_oarchive> od(oa);
     od << o1 << o2 << o3 << o4 << o5 << o6 << o7 << o8 << o9 << o10 << o11;
   }
 
   std::ifstream inf("textdump.dump");
-  boost::archive::text_iarchive ia(inf,boost::archive::no_header);
+  boost::archive::text_iarchive ia(inf);
   alps::archive_idump<boost::archive::text_iarchive> id(ia);
 
   std::cout << id.get<bool>() << ' ';

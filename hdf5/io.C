@@ -111,36 +111,43 @@ int main() {
 		alps::hdf5::oarchive h5ar("bela.h5");
 		std::complex<double> *d = new std::complex<double>[length];
 		h5ar << alps::make_pvp("test/data", d, length);
-	}
+		for (unsigned i=0;i<length;++i)
+			std::cout << d[i] << "\n";	}
 	{
 		alps::hdf5::iarchive h5ar("bela.h5");
 		std::complex<double> *d = new std::complex<double>[length];
 		h5ar >> alps::make_pvp("test/data", d, length);
+		for (unsigned i=0;i<length;++i)
+			std::cout << d[i] << "\n";
 	}
 	{
-		alps::hdf5::oarchive h5ar("bela.h5");
+		alps::hdf5::oarchive h5ar("belas.h5");
 		enum_type d = A;
+        //int d=A;
+		std::cout << int(d) << "\n";
 		h5ar << alps::make_pvp("test/enum", d);
 	}
 	{
-		alps::hdf5::iarchive h5ar("bela.h5");
-		enum_type d;
+		alps::hdf5::iarchive h5ar("belas.h5");
+		//enum_type d;
+		int d;
 		h5ar >> alps::make_pvp("test/enum", d);
+		std::cout << int(d) << "\n";
 		std::cout << (d == A ? "A" : "B") << std::endl;
 	}
 	{
-		alps::hdf5::oarchive h5ar("bela.h5");
+		alps::hdf5::oarchive h5ar("bela2.h5");
 		std::vector<std::string> d;
 		d.push_back("value1");
 		d.push_back("val2");
 		d.push_back("v3");
 		d.push_back("value4");
-		h5ar << alps::make_pvp("test/vectorstring", d);
+//		h5ar << alps::make_pvp("test/vectorstring", d);
 	}
 	{
-		alps::hdf5::iarchive h5ar("bela.h5");
+		alps::hdf5::iarchive h5ar("bela2.h5");
 		std::vector<std::string> d;
-		h5ar >> alps::make_pvp("test/vectorstring", d);
+//		h5ar >> alps::make_pvp("test/vectorstring", d);
 		for (std::vector<std::string>::const_iterator it = d.begin(); it != d.end(); ++it)
 			std::cout << *it << std::endl;
 	}
