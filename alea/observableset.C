@@ -590,4 +590,5 @@ void ObservableSetXMLHandler::end_child(std::string const& name,
   }
 }
 
+
 } // namespace alps

@@ -506,8 +506,8 @@ void SimpleObservableEvaluator<T>::output_vector(std::ostream& out) const
     time_type tau_;
     if (has_tau())
       assign(tau_,tau());
-    typename slice_index<label_type>::type it2=slices(this->label()).first;
-    for (typename slice_index<result_type>::type sit= slices(value_).first;
+	typename alps::slice_index<label_type>::type it2=slices(this->label()).first;
+	for (typename alps::slice_index<result_type>::type sit= slices(value_).first;
           sit!=slices(value_).second;++sit,++it2)
     {
       std::string lab=slice_value(this->label(),it2);

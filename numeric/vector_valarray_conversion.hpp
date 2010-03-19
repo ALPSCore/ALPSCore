@@ -14,7 +14,7 @@ namespace alps {
     {
       std::vector<T> to;
       to.reserve(from.size());
-      std::copy(&from[0],&from[0]+from.size(),std::back_inserter(to));
+	  std::copy(&const_cast<std::valarray<T>&>(from)[0],&const_cast<std::valarray<T>&>(from)[0]+from.size(),std::back_inserter(to));
       return to;
     }
 

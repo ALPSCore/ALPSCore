@@ -56,7 +56,7 @@ public:
   typedef typename observable_type::value_type value_type;
   typedef typename average_type<value_type>::type result_type;
   typedef AbstractSimpleObservable<value_type> base_type;
-  typedef typename slice_index<result_type>::type slice_index;
+  typedef typename alps::slice_index<result_type>::type slice_index;
   // typedef std::size_t count_type;
   // *** we may need more than 32 Bit
   typedef uint64_t count_type;
