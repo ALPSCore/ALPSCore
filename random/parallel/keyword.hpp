@@ -26,25 +26,25 @@
 namespace alps { namespace random { namespace parallel {
   using boost::mpl::placeholders::_;
   
+  BOOST_PARAMETER_KEYWORD(random_tag,global_seed)
   BOOST_PARAMETER_KEYWORD(random_tag,stream_number)
   BOOST_PARAMETER_KEYWORD(random_tag,total_streams)
-  BOOST_PARAMETER_KEYWORD(random_tag,global_seed)
   BOOST_PARAMETER_KEYWORD(random_tag,first)
   BOOST_PARAMETER_KEYWORD(random_tag,last)
 
   /// INTERNAL ONLY
   typedef boost::parameter::parameters<
-      boost::parameter::optional<random_tag::stream_number, boost::is_convertible<_,unsigned int> >
+      boost::parameter::optional<random_tag::global_seed>
+    , boost::parameter::optional<random_tag::stream_number, boost::is_convertible<_,unsigned int> >
     , boost::parameter::optional<random_tag::total_streams, boost::is_convertible<_,unsigned int> >
-    , boost::parameter::optional<random_tag::global_seed>
   > seed_params;
 
   /// INTERNAL ONLY
   typedef boost::parameter::parameters<
-      boost::parameter::optional<random_tag::stream_number, boost::is_convertible<_,unsigned int> >
-    , boost::parameter::optional<random_tag::total_streams, boost::is_convertible<_,unsigned int> >
-    , boost::parameter::required<random_tag::first>
+      boost::parameter::required<random_tag::first>
     , boost::parameter::required<random_tag::last>
+    , boost::parameter::optional<random_tag::stream_number, boost::is_convertible<_,unsigned int> >
+    , boost::parameter::optional<random_tag::total_streams, boost::is_convertible<_,unsigned int> >
   > iterator_seed_params;
 
 } } } // namespace alps::random::parallel

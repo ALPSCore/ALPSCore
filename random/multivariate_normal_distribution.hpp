@@ -136,7 +136,7 @@ public:
   {
     if(ptr_ == buffer_.end()) {
       boost::variate_generator<Engine&,boost::normal_distribution<RealType> > 
-	    gen(eng,boost::normal_distribution<RealType>());
+        gen(eng,boost::normal_distribution<RealType>());
       std::generate(buffer_.begin(),buffer_.end(),gen);
       buffer_=boost::numeric::ublas::prod(cholesky_,buffer_)+mean_;
       ptr_ = buffer_.begin();
