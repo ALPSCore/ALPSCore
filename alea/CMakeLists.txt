@@ -11,7 +11,7 @@ include_directories(${Boost_ROOT_DIR})
 #define tests here. Each test neet ${name}.C ${name}.input ${name}.output
 
 IF(NOT ALPS_LLVM_WORKAROUND)
-FOREACH (name detailedbinning histogram signed simpleobseval testobservableset observableset_xml vectorobseval obsbinneddata value_with_error.test)
+FOREACH (name detailedbinning histogram signed simpleobseval testobservableset observableset_xml vectorobseval binned_data.test value_with_error.test)
 
 	add_executable(${name} ${name}.C)
 	add_dependencies(${name} alps)

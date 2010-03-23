@@ -26,11 +26,14 @@
 *
 *****************************************************************************/
 
-/* $Id: nobinning.h 3520 2009-12-11 16:49:53Z gamperl $ */
+/* $Id: nobinning.h 3520 2010-03-21 10:00:00Z gamperl $ */
 
-#include <alps/alea/obsbinneddata.h>
+#include <alps/alea.h>
+#include <alps/alea/binned_data.h>
 
 #include <iostream>
+#include <sstream>
+#include <fstream>
 #include <iomanip>
 #include <cmath>
 #include <valarray>
@@ -40,12 +43,24 @@
 
 int main(int argc, char** argv)
 {
+  std::ifstream inFile;
+
+//### CONSTRUCTORS
 
   // empty constructor
-  alps::alea::binned_data<double> data;
-  std::cout << data << std::endl;
+  alps::alea::binned_data<double> data1;
+  std::cout << "\ndata1 :\n" << data1 << "\n";
 
-
+  // constructor from AbstractSimpleObservable
+  alps::RealObservable obs3("obs3");
+  obs3.reset(true);
+  inFile.open("binned_data.test.input",std::ios::in);
+  std::string obs3_elem_str;  while (std::getline(inFile,obs3_elem_str))  {  std::istringstream iss(obs3_elem_str);  double obs3_elem;  iss >> obs3_elem;  obs3 << obs3_elem; } 
+  inFile.close();
+  std::cout << "\nobs3: \n" << obs3 << "\n";
+  
+  alps::alea::binned_data<double> data3(obs3);
+  std::cout << "data3 :\n" << data3 << "\n";
 
   return 0;
 }
