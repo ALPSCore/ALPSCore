@@ -52,15 +52,19 @@ int main(int argc, char** argv)
   std::cout << "\ndata1 :\n" << data1 << "\n";
 
   // constructor from AbstractSimpleObservable
-  alps::RealObservable obs3("obs3");
-  obs3.reset(true);
+  alps::RealObservable obs2("obs2");
+  obs2.reset(true);
   inFile.open("binned_data.test.input",std::ios::in);
-  std::string obs3_elem_str;  while (std::getline(inFile,obs3_elem_str))  {  std::istringstream iss(obs3_elem_str);  double obs3_elem;  iss >> obs3_elem;  obs3 << obs3_elem; } 
+  std::string obs2_elem_str;  while (std::getline(inFile,obs2_elem_str))  {  std::istringstream iss(obs2_elem_str);  double obs2_elem;  iss >> obs2_elem;  obs2 << obs2_elem; } 
   inFile.close();
-  std::cout << "\nobs3: \n" << obs3 << "\n";
+  std::cout << "\nobs2: \n" << obs2 << "\n";
   
-  alps::alea::binned_data<double> data3(obs3);
-  std::cout << "data3 :\n" << data3 << "\n";
+  alps::alea::binned_data<double> data2(obs2);
+  std::cout << "data2 :\n" << data2 << "\n";
+
+  // constructor from a slice of binned_data
+  alps::alea::binned_data<double> data3(data2,1);
+  std::cout << "\ndata3: \n" << data3 << "\n";
 
   return 0;
 }
