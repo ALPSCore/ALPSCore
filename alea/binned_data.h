@@ -79,8 +79,12 @@ public:
   typedef typename covariance_type<T>::type                                         covariance_type;
 
   //get functions
-  //uint64_t count() const { return is_bin_changed_ ? (bin_size()*bin_number() == 0 ? count_ : bin_size()*bin_number()) : count_;}
-  uint64_t count() const { return count_; }
+  uint64_t count()      const  { return is_bin_changed_ ? (bin_size()*bin_number() == 0 ? count_ : bin_size()*bin_number()) : count_;}
+  uint64_t bin_size()   const  { return binsize_;}
+  uint64_t bin_number() const  { return values_.size(); }      // *** Question (1) : discardedbins are thrown away for now, are we sure?
+
+  const value_type& bin_value(uint64_t i) const  {  return values_[i];  }
+
   inline const result_type& mean()  const;
   inline const result_type& error() const;
   inline const boost::optional<result_type>& variance() const;
@@ -107,9 +111,9 @@ private:
 public:
   // constructors
   binned_data();
-  template <class U, class S>
-  binned_data(const binned_data<U>& x, S s);
   binned_data(AbstractSimpleObservable<value_type> const & obs);
+  template <class X, class S>
+  binned_data(const binned_data<X>& my_binned_data, S s);
 
   // friend class of itself
   template <class X>
@@ -122,12 +126,6 @@ public:
 
 /*    
   covariance_type covariance(const binned_data<T>) const;
-
-  uint64_t bin_size() const { return binsize_;}
-  uint64_t bin_number() const { return values_.size()-discardedbins_;}
-  const value_type& bin_value(uint64_t i) const {
-    return values_[i+discardedbins_];
-  }
 
   template <class S>
   binned_data<typename element_type<T>::type> slice(S s) const
@@ -238,49 +236,6 @@ binned_data<T>::binned_data()
 {}
 
 
-/* 
-template <class T>
-template <class U, class S>
-inline
-binned_data<T>::binned_data(const binned_data<U>& x, S s)
- : count_(x.count_),
- , binsize_(x.binsize_)
- , is_bin_changed_(x.is_bin_changed_)
- , is_statistics_valid_(x.is_statistics_valid_)
- , is_jacknife_bins_filled_correctly_(x.is_jacknife_bins_filled_correctly_)
- , is_nonlinear_operations_performed_(x.is_nonlinear_operations_performed_)
- , mean_(slice_value(x.mean_, s))
- , error_(slice_value(x.error_, s))
-
-
-   /// ***
-   /// has to change... Boost documentation...
-   ///
-   variance_(x.variance_ ?
-               boost::optional<result_type>(slice_value(*x.variance_, s)) :
-               boost::optional<result_type>()),
-   tau_(has_tau_ ?   **COPY**
-               slice_value(x.tau_, s) : time_type()),
-   ///
-   /// ***
-
-
-   values_(x.values_.size()),
-   jack_(x.jack_.size())
-
-{
-  values_.resize(x.values_.size());
-  std::transform(x.values_.begin(), x.values_.end(), values_.begin(),
-                 boost::bind2nd(slice_it(),s));
-    if (is_jacknife_bins_filled_correctly_) {
-    jack_.resize(x.jack_.size());
-    std::transform(x.jack_.begin(), x.jack_.end(), jack_.begin(),
-                   boost::bind2nd(slice_it(),s));
-  }
-}
-*/
-
-
 template <class T>
 binned_data<T>::binned_data(AbstractSimpleObservable<T> const & obs)
  : count_(obs.count())
@@ -305,10 +260,49 @@ binned_data<T>::binned_data(AbstractSimpleObservable<T> const & obs)
     for (uint64_t i = 0; i < obs.bin_number(); ++i)  {  values_.push_back(obs.bin_value(i));  }
 
     /*
-     * Question (1) what about "if (bin_size() != 1 && bin_number() > max_bin_number_) set_bin_number(max_bin_number_);"  ?
+     * Question (2) what about "if (bin_size() != 1 && bin_number() > max_bin_number_) set_bin_number(max_bin_number_);"  ?
      */
 
   }
+}
+
+
+template <class T>
+template <class X, class S>
+binned_data<T>::binned_data(const binned_data<X>& my_binned_data, S s)
+  : count_(my_binned_data.count_)
+  , binsize_(my_binned_data.binsize_)
+  , is_bin_changed_(my_binned_data.is_bin_changed_)
+  , is_statistics_valid_(my_binned_data.is_statistics_valid_)
+  , is_jacknife_bins_filled_correctly_(my_binned_data.is_jacknife_bins_filled_correctly_)
+  , is_nonlinear_operations_performed_(my_binned_data.is_nonlinear_operations_performed_)
+  , mean_()              
+  , error_()
+  , variance_opt_()  
+  , tau_opt_()
+  , values_()
+  , jack_()
+{
+  mean_  = slice_value(my_binned_data.mean_, s);              
+  error_ = slice_value(my_binned_data.error_, s);
+  if (my_binned_data.variance_opt_)   {  variance_opt_ = slice_value(*(my_binned_data.variance_opt_), s);  }
+  if (my_binned_data.tau_opt_)        {  tau_opt_      = slice_value(*(my_binned_data.tau_opt_), s);  }
+
+  values_.reserve(my_binned_data.values_.size());
+  std::transform(my_binned_data.values_.begin(), my_binned_data.values_.end(), std::back_inserter(values_), boost::bind2nd(slice_it<X>(),s));
+
+  if (my_binned_data.is_jacknife_bins_filled_correctly_)
+  {
+    jack_.reserve(my_binned_data.jack_.size());
+    std::transform(my_binned_data.jack_.begin(), my_binned_data.jack_.end(), std::back_inserter(jack_), boost::bind2nd(slice_it<X>(),s));
+  }
+
+  /*
+   * Question (3) : How does boost::bind2nd work?  How does slice_it work ?  
+   * Question (4) : How does slicing work ?
+   * Question (5) : Why is the mean, error, etc still remain to be the same after a slice is taken out ?
+   */
+
 }
 
 
