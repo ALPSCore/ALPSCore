@@ -63,7 +63,7 @@ int main(int argc, char** argv)
   std::cout << "data2 :\n" << data2 << "\n";
 
   // constructor from a slice of binned_data
-  alps::alea::binned_data<double> data3(data2,1);
+  alps::alea::binned_data<double> data3(data2,2);
   std::cout << "\ndata3: \n" << data3 << "\n";
 
   return 0;
