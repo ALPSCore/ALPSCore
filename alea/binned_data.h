@@ -560,7 +560,7 @@ void binned_data<T>::divide(const X& x)
     has_tau_ = false;
     is_nonlinear_operations_performed_ = true;
     is_bin_changed_ = true;
-	mean_ = x/mean_;
+    mean_ = x/mean_;
     std::transform(values_.begin(), values_.end(), values_.begin(), (x*bin_size()*bin_size())/_1);
     fill_jack();
     std::transform(jack_.begin(), jack_.end(), jack_.begin(), x/_1);

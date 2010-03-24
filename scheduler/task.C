@@ -73,6 +73,12 @@ Task::~Task()
 {
 }
 
+const Parameters& Task::get_parameters() const 
+{ 
+  return parms;
+}
+
+
 void Task::parse_task_file(bool read_parms_only)
 {
   bool read_xml = true;

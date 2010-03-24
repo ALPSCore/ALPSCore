@@ -33,6 +33,7 @@
 
 #include <alps/expression/expression_fwd.h>
 #include <alps/expression/term.h>
+#include <alps/expression/term.h>
 #include <boost/call_traits.hpp>
 #include <alps/numeric/is_zero.hpp>
 
@@ -80,25 +81,56 @@ public:
   void output(std::ostream& os) const;
 
   Evaluatable<T>* clone() const { return new Expression<T>(*this); }
+
   std::pair<term_iterator,term_iterator> terms() const
   {
     return std::make_pair(terms_.begin(),terms_.end());
   }
   void flatten(); // multiply out all blocks
+
   boost::shared_ptr<Expression> flatten_one_expression();
+
   const Expression& operator+=(const Term<T>& term)
   {
     terms_.push_back(term);
+    partial_evaluate(Evaluator<T>(false));
     return *this;
   }
+
+  const Expression& operator-=(Term<T> term)
+  {
+    term.negate();
+    terms_.push_back(term);
+    partial_evaluate(Evaluator<T>(false));
+    return *this;
+  }
+
   const Expression& operator+=(const Expression& e)
   {
     std::copy(e.terms_.begin(),e.terms_.end(),std::back_inserter(terms_));
     partial_evaluate(Evaluator<T>(false));
     return *this;
   }
+
+  const Expression& operator-=(Expression const& e)
+  {
+    return operator+=(-e);
+  }
+
+  const Expression& operator*=(const Expression<T>& e)
+  {
+    Term<T> newt(Factor<T>(Block<T>(*this)));
+    newt *= Factor<T>(Block<T>(e));
+    terms_.clear();
+    newt.remove_superfluous_parentheses();
+    terms_.push_back(newt);
+    partial_evaluate(Evaluator<T>(false));
+    return *this;
+  }
+  
+  
   void simplify();
-  void remove_spurious_parentheses();
+  void remove_superfluous_parentheses();
 
   bool is_single_term() const { return terms_.size() == 1; }
   Term<T> term() const;
@@ -131,11 +163,11 @@ bool Expression<T>::depends_on(const std::string& s) const {
 }
 
 template<class T>
-void Expression<T>::remove_spurious_parentheses()
+void Expression<T>::remove_superfluous_parentheses()
 {
   for (typename std::vector<Term<T> >::iterator it=terms_.begin();
        it!=terms_.end(); ++it)
-    it->remove_spurious_parentheses();
+    it->remove_superfluous_parentheses();
 }
 
 template<class T>

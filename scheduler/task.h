@@ -145,7 +145,7 @@ public:
 
   uint32_t cpus() const {return 1;}
   bool local() {return (where.size() ? 1 : 0);} 
-  const alps::Parameters& get_parameters() const { return parms;}
+  const alps::Parameters& get_parameters() const;
 
   void start(); // start simulation
   void run(); // run a few steps and return control

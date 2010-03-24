@@ -4,8 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2010 by Ping Nang Ma <pingnang@itp.phys.ethz.ch>,
-*                            Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 2010 by Matthias Troyer <troyer@comp-phys.org>,
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -16,7 +15,7 @@
 * the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
 * available from http://alps.comp-phys.org/.
 *
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
 * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
 * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
@@ -26,38 +25,21 @@
 *
 *****************************************************************************/
 
+/* $Id: is_symbolic.hpp 3435 2009-11-28 14:45:38Z troyer $ */
 
-/* $Id: nobinning.h 3520 2009-12-11 16:49:53Z gamperl $ */
+#ifndef ALPS_TYPE_TRAITS_IS_SYMBOLIC_H
+#define ALPS_TYPE_TRAITS_IS_SYMBOLIC_H
 
-#ifndef ALPS_VECTOR_VALARRAY_CONVERSION
-#define ALPS_VECTOR_VALARRAY_CONVERSION
+#include <boost/mpl/bool.hpp>
 
-#include <vector>
-#include <valarray>
-#include <algorithm>
-
+// maybe we can automate this by checking for the existence of a value_type member
 
 namespace alps {
-  namespace numeric {
 
-    template<class T>
-    std::vector<T> valarray2vector(std::valarray<T> const & from)
-    {
-      std::vector<T> to;
-      to.reserve(from.size());
-	  std::copy(&const_cast<std::valarray<T>&>(from)[0],&const_cast<std::valarray<T>&>(from)[0]+from.size(),std::back_inserter(to));
-      return to;
-    }
+template <class T>
+struct is_symbolic : public boost::mpl::false_ {};
 
-    template<class T>
-    std::valarray<T> vector2valarray(std::vector<T> const & from)
-    {
-      std::valarray<T> to(from.size());
-      std::copy(from.begin(),from.end(),&to[0]);
-      return to;
-    }
 
-  }
-}
+} // end namespace alps
 
-#endif
+#endif // ALPS_TYPE_TRAITS_IS_SYMBOLIC_H

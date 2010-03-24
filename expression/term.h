@@ -70,13 +70,15 @@ public:
     terms_.push_back(v);
     return *this;
   }
+
+
   const Term& operator*=(const std::string& s)
   {
     return operator*=(Factor<T>(s));
   }
   
   void simplify();
-  void remove_spurious_parentheses();
+  void remove_superfluous_parentheses();
 
   virtual std::pair<factor_iterator,factor_iterator> factors() const
   {
@@ -115,7 +117,7 @@ void Term<T>::simplify()
 }
 
 template<class T>
-void Term<T>::remove_spurious_parentheses()
+void Term<T>::remove_superfluous_parentheses()
 {
   std::vector<Factor<T> > s;
   for (typename std::vector<Factor<T> >::iterator it = terms_.begin();
@@ -216,7 +218,7 @@ void Term<T>::partial_evaluate(const Evaluator<T>& p, bool isarg)
         terms_.insert(terms_.begin(), Factor<T>(val));
     }
   }
-  remove_spurious_parentheses();
+  remove_superfluous_parentheses();
 }
 
 template<class T>

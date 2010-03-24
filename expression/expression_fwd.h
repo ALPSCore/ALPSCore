@@ -38,6 +38,7 @@
 #include <alps/random.h>
 #include <alps/parser/parser.h>
 #include <alps/utility/vectorio.hpp>
+#include <alps/type_traits/is_symbolic.hpp>
 
 #include <boost/call_traits.hpp>
 #include <boost/smart_ptr.hpp>
@@ -45,6 +46,7 @@
 #include <boost/type_traits/is_arithmetic.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/random.hpp>
+#include <boost/mpl/bool.hpp>
 
 #include <cmath>
 #include <complex>
@@ -72,6 +74,26 @@ typedef expression::Term<> Term;
 typedef expression::Factor<> Factor;
 typedef expression::Evaluator<> Evaluator;
 typedef expression::ParameterEvaluator<> ParameterEvaluator;
+
+template <class T>
+struct is_symbolic<expression::Expression<T> > : public boost::mpl::true_ {};
+
+template <class T>
+struct is_symbolic<expression::Term<T> > : public boost::mpl::true_ {};
+
+template <class T>
+struct is_symbolic<expression::Factor<T> > : public boost::mpl::true_ {};
+
+template <class T>
+struct is_symbolic<expression::Block<T> > : public boost::mpl::true_ {};
+
+template <class T>
+struct is_symbolic<expression::Function<T> > : public boost::mpl::true_ {};
+
+template <class T>
+struct is_symbolic<expression::Symbol<T> > : public boost::mpl::true_ {};
+
+
 
 }
 

@@ -306,10 +306,10 @@ void AbstractSignedObservable<OBS,SIGN>::load(IDump& dump)
     template <class OBS, class SIGN> void AbstractSignedObservable<OBS,SIGN>::serialize(hdf5::oarchive & ar) const {
         super_type::serialize(ar);
         if (obs_.count())
-			ar
-				<< make_pvp("@sign", sign_name_)
-				<< make_pvp("../" + obs_.name(), obs_)
-			;
+            ar
+                << make_pvp("@sign", sign_name_)
+                << make_pvp("../" + obs_.name(), obs_)
+            ;
     }
 #endif
 

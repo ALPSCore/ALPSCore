@@ -33,6 +33,7 @@
 #ifndef ALPS_UTILITY_NUMERIC_CAST_HPP
 #define ALPS_UTILITY_NUMERIC_CAST_HPP
 
+#include <alps/numeric/real.hpp>
 #include <vector>
 #include <valarray>
 
@@ -54,6 +55,28 @@ struct numeric_cast<T,T>
   typedef T const& return_type;
   static return_type cast(T const& u) { return u;}
 };
+
+template <class T, class U>
+struct numeric_cast<T,std::complex<U> >
+{
+  typedef T return_type;
+  static return_type cast( std::complex<U> const& u) { return alps::numeric::real(u);}
+};
+
+template <class T, class U >
+struct numeric_cast <std::complex<T>,std::complex<U> >
+{
+  typedef std::complex<T> return_type;
+  static return_type cast(U const& u) { return static_cast<return_type>(u);}
+};
+
+template <class T>
+struct numeric_cast<std::complex<T>,std::complex<T> > 
+{
+  typedef std::complex<T> const& return_type;
+  static return_type cast(return_type u) { return u;}
+};
+
 
 template <class T, class U>
 struct numeric_cast<std::valarray<T>,std::valarray<U> > 
