@@ -27,7 +27,7 @@ int main() {
 	{
 		alps::hdf5::oarchive h5ar("bela.h5");
 		std::cout << alps::hdf5_name_encode("a/b/c&c/d/e") << " " 
-                  << alps::hdf5_name_decode(alps::hdf5_name_encode("a/b/c&c/d/e")) << std::endl;
+				  << alps::hdf5_name_decode(alps::hdf5_name_encode("a/b/c&c/d/e")) << std::endl;
 	}
 	{
 		alps::hdf5::oarchive h5ar("bela.h5");
@@ -73,6 +73,11 @@ int main() {
 		h5ar >> alps::make_pvp("/foo/bar2", d);
 		std::copy (d.begin(), d.end(), std::ostream_iterator<int, char, std::char_traits<char> >(std::cout, " "));
 		std::cout << std::endl;
+	}
+	{
+		alps::hdf5::oarchive h5ar("bela.h5");
+		h5ar.delete_data("/foo/bar2");
+		std::cout << h5ar.is_data("/foo/bar2") << std::endl;
 	}
 	{
 		alps::hdf5::oarchive h5ar("bela.h5");
