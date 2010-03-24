@@ -84,7 +84,9 @@ namespace alps {
                 /// checks if a dataset containing a null pinter is located at the given path
                 bool is_null(std::string const & path) const;
                 /// checks if a attribute located at the given path. An attribute is addressed with a path of the form /path/to/@attribute
-                bool is_attribute(std::string const & p) const;
+                bool is_attribute(std::string const & path) const;
+                /// deletes a dataset
+                void delete_data(std::string const & path) const;
                 /// @return extents of the dataset located at the given path. extend(...).size() == dimensions(...) always holds
                 std::vector<std::size_t> extent(std::string const & path) const;
                 /// number of dimensions of the dataset located at the given path
@@ -95,7 +97,7 @@ namespace alps {
                 std::vector<std::string> list_attr(std::string const & path) const;
                 void serialize(std::string const & p, T const & v);
                 void serialize(std::string const & p, T & v);
-                void serialize(std::string const & p, T const * v, std::size_t s)
+                void serialize(std::string const & p, T const * v, std::size_t s);
                 void serialize(std::string const & p, T * v);
                 void serialize(std::string const & p);
         };
@@ -473,6 +475,13 @@ namespace alps {
                             throw std::runtime_error("error reading class " + complete_path(p));
                         return type == H5S_NULL;
                     }
+                    void delete_data(std::string const & p) {
+                        if (is_data(p))
+                            // TODO: implement provenance
+                            check_error(H5Ldelete(_file, complete_path(p).c_str(), H5P_DEFAULT));
+                        else
+                            throw std::runtime_error("the path does not exists: " + p);
+                    }
                     std::vector<std::string> list_children(std::string const & p) const {
                         std::vector<std::string> list;
                         group_type group_id(H5Gopen2(_file, complete_path(p).c_str(), H5P_DEFAULT));
@@ -835,7 +844,7 @@ namespace alps {
                     }
                     template<typename T> typename boost::enable_if<boost::is_scalar<T> >::type get_data(std::string const & p, std::complex<T> * v) const {
                         get_data(p, reinterpret_cast<T *>(v));
-                    }                    
+                    }
                     template<typename T> void get_attr(std::string const &, std::string const & p, T &, stl_container_of_scalar_tag) const {
                         throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
                     }
