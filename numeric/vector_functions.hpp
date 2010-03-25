@@ -135,8 +135,6 @@ namespace alps {
       std::copy(vec.begin(),vec.end(),std::ostream_iterator<T>(out,"\t"));
       return out;
     }
-
-    
   }
 }
 
