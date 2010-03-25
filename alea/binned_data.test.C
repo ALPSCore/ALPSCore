@@ -38,12 +38,20 @@
 #include <cmath>
 #include <valarray>
 #include <vector>
+#include <alps/numeric/vector_functions.hpp>
+#include <alps/numeric/valarray_functions.hpp>
+#include <alps/numeric/vector_valarray_conversion.hpp>
 #include <algorithm>
+
 
 
 int main(int argc, char** argv)
 {
   std::ifstream inFile;
+
+  using std::operator<<;
+  using alps::numeric::operator<<;
+
 
 //### CONSTRUCTORS
 
@@ -51,20 +59,61 @@ int main(int argc, char** argv)
   alps::alea::binned_data<double> data1;
   std::cout << "\ndata1 :\n" << data1 << "\n";
 
-  // constructor from AbstractSimpleObservable
+
+//### Goal: Testing alps::alea::binned_data<std::valarray<double> >
+  typedef alps::RealVectorObservable RealValarrayObservable;
+
+  // constructor from AbstractSimpleObservable 
   alps::RealObservable obs2("obs2");
   obs2.reset(true);
-  inFile.open("binned_data.test.input",std::ios::in);
+  inFile.open("binned_data.test.input1",std::ios::in);
   std::string obs2_elem_str;  while (std::getline(inFile,obs2_elem_str))  {  std::istringstream iss(obs2_elem_str);  double obs2_elem;  iss >> obs2_elem;  obs2 << obs2_elem; } 
   inFile.close();
   std::cout << "\nobs2: \n" << obs2 << "\n";
   
   alps::alea::binned_data<double> data2(obs2);
-  std::cout << "data2 :\n" << data2 << "\n";
+  std::cout << "data2 (valarray):\n" << data2 << "\n";
 
   // constructor from a slice of binned_data
-  alps::alea::binned_data<double> data3(data2,2);
-  std::cout << "\ndata3: \n" << data3 << "\n";
+  RealValarrayObservable OBS3("OBS3");
+  OBS3.reset(true);
+  inFile.open("binned_data.test.input2",std::ios::in);
+  std::string OBS3_elem_str;
+  while (std::getline(inFile,OBS3_elem_str))  
+  {  
+    double dummy;
+
+    std::vector<double>   OBS3_elem_vec;
+    OBS3_elem_vec.clear();
+
+    std::istringstream iss(OBS3_elem_str);  
+    while (iss >> dummy)  {  OBS3_elem_vec.push_back(dummy);  }  
+    std::valarray<double> OBS3_elem = alps::numeric::vector2valarray<double>(OBS3_elem_vec);
+
+    OBS3 << OBS3_elem;
+  }
+  std::cout << "\nOBS3: \n" << OBS3 << "\n";
+
+  alps::alea::binned_data<std::valarray<double> > data3(OBS3);
+
+  alps::alea::binned_data<double> data3_0(data3,0);
+  std::cout << "\ndata3_0 : \n" << data3_0 << "\n";
+
+  alps::alea::binned_data<double> data3_1(data3,1);
+  std::cout << "\ndata3_1 : \n" << data3_1 << "\n";
+
+  alps::alea::binned_data<double> data2x = data2;
+  std::cout << "\ndata2x (valarray) (= data2):\n " << data2x << std::endl;
+
+  alps::alea::binned_data<std::valarray<double> > data3x = data3;
+
+  alps::alea::binned_data<double> data3x_0 = data3.slice(0);
+  std::cout << "\ndata3x_0 (= data3_0):\n" << data3x_0 << std::endl;
+  
+  alps::alea::binned_data<double> data3x_1 = data3.slice(1);  
+  std::cout << "\ndata3x_1 (= data3_1):\n" << data3x_1 << std::endl;
+
+
 
   return 0;
 }
