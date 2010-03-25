@@ -62,11 +62,10 @@ int main(int argc, char** argv)
 
 
   std::vector<double>   vecB;
-  std::valarray<double> valB;
 
   for (int i=0; i < 10; ++i)  {  vecB.push_back(10-i);  }
   
-  valB = vector2valarray<double>(vecB);
+  std::valarray<double> valB = vector2valarray<double>(vecB);
 
   std::cout << "Vector -> Valarray\n";
   std::cout << "------------------\n";
