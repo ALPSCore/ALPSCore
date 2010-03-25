@@ -38,7 +38,6 @@
 #include <alps/alea/simpleobsdata.h>
 #include <alps/parser/parser.h>
 #include <alps/osiris/std/vector.h>
-#include <alps/math.hpp>
 #include <alps/utility/encode.hpp>
 #include <alps/numeric/round.hpp>
 #include <alps/numeric/is_nonzero.hpp>
