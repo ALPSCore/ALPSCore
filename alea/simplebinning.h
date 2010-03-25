@@ -100,10 +100,8 @@ class SimpleBinning : public AbstractBinning<T>
 
   void output_scalar(std::ostream& out) const;
   template <class L> void output_vector(std::ostream& out, const L&) const;
-#ifndef ALPS_WITHOUT_OSIRIS
   void save(ODump& dump) const;
   void load(IDump& dump);
-#endif
 
 #ifdef ALPS_HAVE_HDF5
   void serialize(hdf5::oarchive &) const;
@@ -625,8 +623,6 @@ inline void SimpleBinning<T>::output_vector(std::ostream& out, const L& label) c
   }
 }
 
-#ifndef ALPS_WITHOUT_OSIRIS
-
 template <class T>
 inline void SimpleBinning<T>::save(ODump& dump) const
 {
@@ -663,7 +659,6 @@ inline void SimpleBinning<T>::load(IDump& dump)
     bin_entries_.assign(bin_entries_tmp.begin(), bin_entries_tmp.end());
    }
 }
-#endif
 
 #ifdef ALPS_HAVE_HDF5
     template <class T> inline void SimpleBinning<T>::serialize(hdf5::iarchive & ar) {

@@ -39,6 +39,7 @@
 #include <alps/alea/convergence.hpp>
 #include <alps/alea/simpleobservable.h>
 #include <alps/parser/parser.h>
+#include <alps/osiris/std/valarray.h>
 #include <alps/type_traits/is_scalar.hpp>
 #include <alps/type_traits/change_value_type.hpp>
 #include <alps/type_traits/average_type.hpp>
@@ -58,10 +59,6 @@
 #include <vector>
 #include <boost/config.hpp>
 #include <valarray>
-
-#ifndef ALPS_WITHOUT_OSIRIS
-# include <alps/osiris/std/valarray.h>
-#endif
 
 template <class T> std::ostream& operator<<(std::ostream& o, const std::valarray<T>&) { return o;}
 
@@ -145,11 +142,9 @@ public:
 
   ALPS_DUMMY_VOID compact();
 
-#ifndef ALPS_WITHOUT_OSIRIS
   void extract_timeseries(ODump& dump) const;
   void save(ODump& dump) const;
   void load(IDump& dump);
-#endif
 
 #ifdef ALPS_HAVE_HDF5
     void serialize(hdf5::iarchive &);
@@ -882,7 +877,6 @@ template <class T> SimpleObservableData<T> & SimpleObservableData<T>::operator<<
   return *this;
 }
 
-#ifndef ALPS_WITHOUT_OSIRIS
 
 template <class T>
 void SimpleObservableData<T>::extract_timeseries(ODump& dump) const
@@ -935,8 +929,6 @@ void SimpleObservableData<T>::load(IDump& dump)
   if (dump.version() >= 400 || dump.version() == 0)
     dump >> max_bin_number_;
 }
-
-#endif
 
 #ifdef ALPS_HAVE_HDF5
     template <typename T> void SimpleObservableData<T>::serialize(hdf5::iarchive & ar) {

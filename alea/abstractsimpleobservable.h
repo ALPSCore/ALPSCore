@@ -157,9 +157,7 @@ public:
   SimpleObservableEvaluator<typename element_type<T>::type>
     operator[](S s) const { return slice(s);}
 
-#ifndef ALPS_WITHOUT_OSIRIS
   void extract_timeseries(ODump& dump) const;
-#endif
 
   void write_xml(oxstream&, const boost::filesystem::path& = boost::filesystem::path()) const;
   void write_xml_scalar(oxstream&, const boost::filesystem::path&) const;

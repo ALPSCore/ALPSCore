@@ -87,11 +87,9 @@ public:
   
   void compact();
   
-#ifndef ALPS_WITHOUT_OSIRIS
   void save(ODump& dump) const;
   void load(IDump& dump);
   void extract_timeseries(ODump& dump) const { dump << binsize_ << values_.size() << binentries_ << values_;}
-#endif
 
 #ifdef ALPS_HAVE_HDF5
     void serialize(hdf5::oarchive &) const;
@@ -290,7 +288,6 @@ inline uint32_t BasicDetailedBinning<T>::filled_bin_number() const
   else return values_.size() + (binentries_ ==binsize_ ? 0 : -1);
 }
 
-#ifndef ALPS_WITHOUT_OSIRIS
 template <class T>
 inline void BasicDetailedBinning<T>::save(ODump& dump) const
 {
@@ -306,7 +303,6 @@ inline void BasicDetailedBinning<T>::load(IDump& dump)
   dump >> binsize_ >> minbinsize_ >> maxbinnum_ >> binentries_ >> values_
        >> values2_;
 }
-#endif
 
 #ifdef ALPS_HAVE_HDF5
     template <class T> inline void BasicDetailedBinning<T>::serialize(hdf5::iarchive & ar) {

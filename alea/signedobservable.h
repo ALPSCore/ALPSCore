@@ -138,10 +138,8 @@ public:
   AbstractSignedObservable<SimpleObservableEvaluator<typename element_type<value_type>::type>,SIGN>
     operator[](S s) const { return slice(s);}
 
-#ifndef ALPS_WITHOUT_OSIRIS
   void save(ODump& dump) const;
   void load(IDump& dump);
-#endif
 
 #ifdef ALPS_HAVE_HDF5
   void serialize(hdf5::iarchive & ar);

@@ -282,32 +282,5 @@ private:
 };
 
 } // end namespace alps
-/*
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-namespace alps {
-#endif
-
-
-template <class T>
-inline alps::ODump& operator<<(alps::ODump& dump, const T& x)
-{
-  odump_archive ar(dump);
-  ar << x;
-  return dump;
-}
-
-template <class T>
-inline alps::IDump& operator>>(alps::IDump& dump, T& x)
-{
-  idump_archive ar(dump);
-  ar >> x;
-  return dump;
-}
-
-
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-} // end namespace alps
-#endif
-*/
 
 #endif // ALPS_OSIRIS_DUMPARCHIVE_H

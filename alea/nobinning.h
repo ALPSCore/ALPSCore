@@ -87,10 +87,8 @@ class NoBinning : public AbstractBinning<T>
 
   void output_scalar(std::ostream& out) const;
   template <class L> void output_vector(std::ostream& out, const L& l) const;
-#ifndef ALPS_WITHOUT_OSIRIS
   void save(ODump& dump) const;
   void load(IDump& dump);
-#endif
 
 #ifdef ALPS_HAVE_HDF5
     void serialize(hdf5::iarchive &);
@@ -247,8 +245,6 @@ inline void NoBinning<T>::output_vector(std::ostream& out, const L& label) const
   }
 }
 
-#ifndef ALPS_WITHOUT_OSIRIS
-
 template <class T>
 inline void NoBinning<T>::save(ODump& dump) const
 {
@@ -270,8 +266,6 @@ inline void NoBinning<T>::load(IDump& dump)
   else
     dump >> sum_ >> sum2_ >> count_ >> thermal_count_ >> min_ >> max_;
 }
-
-#endif
 
 #ifdef ALPS_HAVE_HDF5
     template <class T> inline void NoBinning<T>::serialize(hdf5::iarchive & ar) {

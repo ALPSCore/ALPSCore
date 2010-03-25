@@ -126,14 +126,6 @@ inline alps::IDump& operator>>(alps::IDump& id, alps::Parameter& p) {
   return id;
 }
 
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-} // end namespace alps
-#endif
-
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-namespace alps {
-#endif
-
 /// \brief XML output of a parameter value
 ///
 /// follows the schema on http://xml.comp-phys.org/

@@ -121,38 +121,11 @@ inline alps::oxstream& operator<<(alps::oxstream& o,const alps::scheduler::Info&
   return o;
 }
 
-inline alps::IDump& operator>>(alps::IDump& dump, alps::scheduler::Info& i)
-{
-  i.load(dump);
-  return dump;
-}
-
-inline alps::ODump& operator<< (alps::ODump& dump, const alps::scheduler::Info& info)
-{
-  info.save(dump);
-  return dump;
-}
-
-
 inline alps::oxstream& operator<<(alps::oxstream& o,const alps::scheduler::TaskInfo& i)
 {
   i.write_xml(o);
   return o;
 }
-
-
-inline alps::IDump& operator>>(alps::IDump& dump, alps::scheduler::TaskInfo& i)
-{
-  i.load(dump);
-  return dump;
-}
-
-inline alps::ODump& operator<< (alps::ODump& dump, const alps::scheduler::TaskInfo& info)
-{
-  info.save(dump);
-  return dump;
-}
-
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // namespace scheduler

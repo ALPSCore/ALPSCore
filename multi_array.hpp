@@ -45,16 +45,12 @@
 #include <cmath>
 #include <stdexcept>
 
-#ifndef ALPS_WITHOUT_OSIRIS
 # include <alps/osiris/dump.h>
 # include <alps/osiris/std/vector.h>
-#endif
 
 //
 // OSIRIS support
 //
-
-#ifndef ALPS_WITHOUT_OSIRIS
 
 namespace alps {
 
@@ -115,15 +111,11 @@ template <> struct MultiArrayHelper<true>
 
 } // namespace alps
 
-#endif
-
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 namespace alps {
 #endif
 
 
-
-#ifndef ALPS_WITHOUT_OSIRIS
 
 /// \brief ALPS de-serialization support for boost::multi_array
 template <class T, std::size_t NumDims, class Allocator>
@@ -148,8 +140,6 @@ alps::ODump& operator<<(alps::ODump& dump, const boost::multi_array<T, NumDims, 
   return dump;
 }          
 
-
-#endif // !ALPS_WITHOUT_OSIRIS
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // end namespace boost

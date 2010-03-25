@@ -116,11 +116,9 @@ public:
   const value_type& bin_value(count_type n) const {return b_.bin_value(n);}
   const value_type& bin_value2(count_type n) const {return b_.bin_value2(n);}
 
-#ifndef ALPS_WITHOUT_OSIRIS
   virtual void save(ODump& dump) const;
   virtual void load(IDump& dump);
   void extract_timeseries(ODump& dump) const { b_.extract_timeseries(dump);}
-#endif
 
 #ifdef ALPS_HAVE_HDF5
   virtual void serialize(hdf5::iarchive &);
@@ -169,8 +167,6 @@ void SimpleObservable<T,BINNING>::write_more_xml(oxstream& oxs, slice_index it) 
   output_helper<typename is_scalar<T>::type>::write_more_xml(b_, oxs, it);
 }
 
-#ifndef ALPS_WITHOUT_OSIRIS
-
 template <class T,class BINNING>
 inline void SimpleObservable<T,BINNING>::save(ODump& dump) const
 {
@@ -184,8 +180,6 @@ inline void SimpleObservable<T,BINNING>::load(IDump& dump)
   AbstractSimpleObservable<T>::load(dump);
   dump >> b_;
 }
-
-#endif
 
 #ifdef ALPS_HAVE_HDF5
   template <class T,class BINNING> inline void SimpleObservable<T,BINNING>::serialize(hdf5::iarchive & ar) {

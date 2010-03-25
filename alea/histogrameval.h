@@ -114,11 +114,9 @@ public:
 
   void operator<<(const HistogramObservableData<T>& obs);
 
-#ifndef ALPS_WITHOUT_OSIRIS
   virtual uint32_t version_id() const { return version; }
   virtual void save(ODump& dump) const;
   virtual void load(IDump& dump);
-#endif
 
   void merge(const Observable&);
   bool can_merge() const { return true; }
@@ -138,8 +136,6 @@ private:
 typedef HistogramObservableEvaluator<int32_t> IntHistogramObsevaluator;
 typedef HistogramObservableEvaluator<double> RealHistogramObsevaluator;
 
-#ifndef ALPS_WITHOUT_OSIRIS
-
 template <class T>
 inline void HistogramObservableEvaluator<T>::save(ODump& dump) const
 {
@@ -153,8 +149,6 @@ inline void HistogramObservableEvaluator<T>::load(IDump& dump)
   Observable::load(dump);
   dump >> runs_ >> all_;
 }
-
-#endif
 
 template<class T>
 inline void HistogramObservableEvaluator<T>::collect() const

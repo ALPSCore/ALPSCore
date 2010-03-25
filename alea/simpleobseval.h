@@ -37,6 +37,8 @@
 #include <alps/alea/simpleobservable.h>
 #include <alps/alea/simpleobsdata.h>
 #include <alps/parser/parser.h>
+#include <alps/osiris/std/vector.h>
+#include <alps/math.hpp>
 #include <alps/utility/encode.hpp>
 #include <alps/numeric/round.hpp>
 #include <alps/numeric/is_nonzero.hpp>
@@ -50,10 +52,6 @@
 
 #include <algorithm>
 #include <iostream>
-
-#ifndef ALPS_WITHOUT_OSIRIS
-# include <alps/osiris/std/vector.h>
-#endif
 
 namespace alps {
 
@@ -219,11 +217,9 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
   template <class OPV /* , class OPR */>
   const SimpleObservableEvaluator<T>& transform(OPV opv /* , OPR opr */, const std::string&);
 
-#ifndef ALPS_WITHOUT_OSIRIS
   void extract_timeseries(ODump& dump) const;
   void save(ODump& dump) const;
   void load(IDump& dump);
-#endif
 
 #ifdef ALPS_HAVE_HDF5
     inline void serialize(hdf5::iarchive &);
@@ -348,8 +344,6 @@ inline void SimpleObservableEvaluator<T>::divide(const X& x)
     Observable::rename(ObservableNamingHelper::generate(x) + " / (" + super_type::name() + ")");
 }
 
-#ifndef ALPS_WITHOUT_OSIRIS
-
 template <class T>
 inline void SimpleObservableEvaluator<T>::extract_timeseries(ODump& dump) const
 {
@@ -374,7 +368,6 @@ inline void SimpleObservableEvaluator<T>::load(IDump& dump)
   }
   dump >> all_;
 }
-#endif
 
 #ifdef ALPS_HAVE_HDF5
 template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::iarchive & ar) {

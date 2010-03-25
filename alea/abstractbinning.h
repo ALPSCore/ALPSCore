@@ -64,15 +64,13 @@ class AbstractBinning {
     boost::throw_exception(std::logic_error("Binning is not supported for this observable"));
     return *(new value_type); // dummy return
   } 
-#ifndef ALPS_WITHOUT_OSIRIS
   void extract_timeseries(ODump& dump) const { dump << 0 << 0 << 0;}
-#endif
+
 
   bool has_variance() const { return true;} // for now
   void write_scalar_xml(oxstream&) const {}
   template <class IT> void write_vector_xml(oxstream&, IT) const {}
 
-#ifndef ALPS_WITHOUT_OSIRIS
   void save(ODump& /* dump */) const {}
   void load(IDump& dump) 
   { 
@@ -80,7 +78,6 @@ class AbstractBinning {
     if (dump.version() < 306 && dump.version() != 0) 
       dump >> thermalized_;
   }
-#endif
 
 #ifdef ALPS_HAVE_HDF5
   void serialize(hdf5::oarchive &, bool = false) const {};

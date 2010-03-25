@@ -92,18 +92,4 @@ private:
 
 } // end namespace alps
 
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-namespace alps {
-#endif
-
-inline alps::ODump& operator<<(alps::ODump& dump, const alps::boundary_crossing& b)
-{ b.save(dump); return dump;}
-
-inline alps::IDump& operator>>(alps::IDump& dump, alps::boundary_crossing& b)
-{ b.load(dump); return dump;}
-
-#ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
-}
-#endif
-
 #endif // ALPS_LATTICE_GRAPH_PROPERTIES_H

@@ -35,13 +35,11 @@
 #include <alps/alea/observable.h>
 #include <alps/alea/recordableobservable.h>
 #include <alps/alea/output_helper.h>
+#include <alps/osiris/dump.h>
+#include <alps/osiris/std/vector.h>
 
 #include <vector>
 
-#ifndef ALPS_WITHOUT_OSIRIS
-# include <alps/osiris/dump.h>
-# include <alps/osiris/std/vector.h>
-#endif
 
 namespace alps {
 
@@ -72,11 +70,9 @@ public:
   virtual ALPS_DUMMY_VOID reset(bool forthermalization=false);
   virtual ALPS_DUMMY_VOID output(std::ostream&) const;
 
-#ifndef ALPS_WITHOUT_OSIRIS
   virtual uint32_t version_id() const { return version; }
   virtual void save(ODump& dump) const;
   virtual void load(IDump& dump);
-#endif
 
   /** add a simple T-value to the Observable */
   void add(const T& x); // { b_.add(x); }
@@ -226,8 +222,6 @@ HistogramObservable<T>::output(std::ostream& out) const
   ALPS_RETURN_VOID
 }
 
-#ifndef ALPS_WITHOUT_OSIRIS
-
 template <class T>
 inline void HistogramObservable<T>::save(ODump& dump) const
 {
@@ -248,7 +242,6 @@ inline void HistogramObservable<T>::load(IDump& dump)
     dump >> thermalized_ >> thermalcount_ >> count_ >> min_ >> max_ >> stepsize_ >> histogram_;
 }
 
-#endif
 }
 
 #include <alps/alea/histogrameval.h>

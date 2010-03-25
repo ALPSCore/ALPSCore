@@ -90,12 +90,6 @@ inline std::ostream& operator<<(std::ostream& out, const alps::Process& p)
   return out;
 }
 
-inline alps::ODump& operator<<(alps::ODump& od, const alps::Process& p)
-{ p.save(od); return od; }
-
-inline alps::IDump& operator>>(alps::IDump& id, alps::Process& p)
-{ p.load(id); return id; }
-
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // end namespace alps
 #endif
