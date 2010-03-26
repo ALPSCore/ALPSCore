@@ -41,9 +41,9 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/intrusive_ptr.hpp>
+#include <boost/numeric/ublas/vector.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/numeric/ublas/vector.hpp>
 
 #include <hdf5.h>
 
