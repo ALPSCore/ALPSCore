@@ -1,0 +1,117 @@
+
+data1 :
+
+count:	0
+binsize:	0
+changed:	0
+valid:	1
+jack_valid:	1
+nonlinear_operations:	0
+mean:	0
+error:	0
+variance:	4.19978e-315
+tau:	0
+values:	
+jack:	
+
+obs2: 
+obs2: 0.443743 +/- 0.109; tau = inf WARNING: check error convergence
+
+data2 (valarray):
+
+count:	10
+binsize:	1
+changed:	0
+valid:	0
+jack_valid:	0
+nonlinear_operations:	0
+mean:	0.443743
+error:	0.108836
+variance:	0.106608
+tau:	inf
+values:	7.8259e-06	0.131538	0.755605	0.45865	0.532767	0.218959	0.0470446	0.678865	0.679296	0.934693	
+jack:	
+
+OBS3: 
+OBS3
+Entry[0]: 4.5 +/- 1.00922; tau = inf WARNING: check error convergence
+Entry[1]: 4.5 +/- 1.00922; tau = inf WARNING: check error convergence
+Entry[2]: 4.5 +/- 1.00922; tau = inf WARNING: check error convergence
+Entry[3]: 4.5 +/- 1.00922; tau = inf WARNING: check error convergence
+Entry[4]: 4.5 +/- 1.00922; tau = inf WARNING: check error convergence
+
+
+data3_0 : 
+
+count:	10
+binsize:	1
+changed:	0
+valid:	0
+jack_valid:	0
+nonlinear_operations:	0
+mean:	4.5
+error:	1.00922
+variance:	9.16667
+tau:	inf
+values:	0	1	2	3	4	5	6	7	8	9	
+jack:	
+
+data3_1 : 
+
+count:	10
+binsize:	1
+changed:	0
+valid:	0
+jack_valid:	0
+nonlinear_operations:	0
+mean:	4.5
+error:	1.00922
+variance:	9.16667
+tau:	inf
+values:	0	1	2	3	4	5	6	7	8	9	
+jack:	
+
+data2x (valarray) (= data2):
+ 
+count:	10
+binsize:	1
+changed:	0
+valid:	0
+jack_valid:	0
+nonlinear_operations:	0
+mean:	0.443743
+error:	0.108836
+variance:	0.106608
+tau:	inf
+values:	7.8259e-06	0.131538	0.755605	0.45865	0.532767	0.218959	0.0470446	0.678865	0.679296	0.934693	
+jack:	
+
+data3x_0 (= data3_0):
+
+count:	10
+binsize:	1
+changed:	0
+valid:	0
+jack_valid:	0
+nonlinear_operations:	0
+mean:	4.5
+error:	1.00922
+variance:	9.16667
+tau:	inf
+values:	0	1	2	3	4	5	6	7	8	9	
+jack:	
+
+data3x_1 (= data3_1):
+
+count:	10
+binsize:	1
+changed:	0
+valid:	0
+jack_valid:	0
+nonlinear_operations:	0
+mean:	4.5
+error:	1.00922
+variance:	9.16667
+tau:	inf
+values:	0	1	2	3	4	5	6	7	8	9	
+jack:	
