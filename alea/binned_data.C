@@ -40,13 +40,18 @@
 #include <vector>
 #include <alps/numeric/vector_functions.hpp>
 #include <alps/numeric/valarray_functions.hpp>
-#include <alps/numeric/vector_valarray_conversion.hpp>
+#include <boost/random.hpp>
 #include <algorithm>
 
 
 
 int main(int argc, char** argv)
 {
+  typedef boost::minstd_rand0 random_base_type;
+  typedef boost::uniform_01<random_base_type> random_type;
+  random_base_type random_int;
+  random_type random(random_int);
+
   std::ifstream inFile;
 
   using std::operator<<;
@@ -66,9 +71,8 @@ int main(int argc, char** argv)
   // constructor from AbstractSimpleObservable 
   alps::RealObservable obs2("obs2");
   obs2.reset(true);
-  inFile.open("binned_data.test.input1",std::ios::in);
-  std::string obs2_elem_str;  while (std::getline(inFile,obs2_elem_str))  {  std::istringstream iss(obs2_elem_str);  double obs2_elem;  iss >> obs2_elem;  obs2 << obs2_elem; } 
-  inFile.close();
+  for (int i=0; i < 10; ++i)  {  obs2 << random();  }
+
   std::cout << "\nobs2: \n" << obs2 << "\n";
   
   alps::alea::binned_data<double> data2(obs2);
@@ -77,19 +81,10 @@ int main(int argc, char** argv)
   // constructor from a slice of binned_data
   RealValarrayObservable OBS3("OBS3");
   OBS3.reset(true);
-  inFile.open("binned_data.test.input2",std::ios::in);
-  std::string OBS3_elem_str;
-  while (std::getline(inFile,OBS3_elem_str))  
-  {  
-    double dummy;
-
-    std::vector<double>   OBS3_elem_vec;
-    OBS3_elem_vec.clear();
-
-    std::istringstream iss(OBS3_elem_str);  
-    while (iss >> dummy)  {  OBS3_elem_vec.push_back(dummy);  }  
-    std::valarray<double> OBS3_elem = alps::numeric::vector2valarray<double>(OBS3_elem_vec);
-
+  for (int i=0; i < 10; ++i)  
+  {
+    std::valarray<double> OBS3_elem(5);
+    std::fill(&OBS3_elem[0],&OBS3_elem[5],static_cast<double>(i));
     OBS3 << OBS3_elem;
   }
   std::cout << "\nOBS3: \n" << OBS3 << "\n";
