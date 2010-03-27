@@ -42,7 +42,7 @@ try {
 
   alps::ObservableSet obs1;
   obs1 << alps::SimpleRealObservable("scalar 1");
-  obs1 << alps::HistogramObservable<int>("histogram 1", 0, 10);
+  obs1 << alps::HistogramObservable<alps::int32_t>("histogram 1", 0, 10);
   obs1 << alps::HistogramObservable<double>("histogram 2", 0, 1, 0.1);
 
   for (int i=0; i < (1<<12); ++i) {
