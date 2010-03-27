@@ -14,7 +14,7 @@
 namespace alps { namespace random { namespace detail {
 
 // get a prime number to be used as additive constant in a 64-bit LCG generator
-uint64_t get_prime_64(unsigned int);
+	boost::uint64_t get_prime_64(unsigned int);
 
 } } } // namespace alps::random::detail
 

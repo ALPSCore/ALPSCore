@@ -65,7 +65,7 @@ private:
 static primes_storage primes;
 
 
-uint64_t get_prime_64(unsigned int offset)
+boost::uint64_t get_prime_64(unsigned int offset)
 {
   BOOST_ASSERT(offset <= MAXPRIMEOFFSET);
 
