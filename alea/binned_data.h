@@ -223,10 +223,12 @@ std::ostream& operator<< (std::ostream &out, const binned_data<T> obj)
       << "\njack_valid:\t"           << obj.is_jacknife_bins_filled_correctly_
       << "\nnonlinear_operations:\t" << obj.is_nonlinear_operations_performed_
       << "\nmean:\t"                 << obj.mean_
-      << "\nerror:\t"                << obj.error_
-      << "\nvariance:\t"             << *(obj.variance_opt_)
-      << "\ntau:\t"                  << *(obj.tau_opt_)
-      << "\nvalues:\t"               << obj.values_
+      << "\nerror:\t"                << obj.error_;
+  if (obj.variance_opt_)
+    out << "\nvariance:\t"             << *(obj.variance_opt_);
+  if (obj.tau_opt_)
+    out  << "\ntau:\t"                  << *(obj.tau_opt_);
+  out << "\nvalues:\t"               << obj.values_
       << "\njack:\t"                 << obj.jack_;
 
   return out;
