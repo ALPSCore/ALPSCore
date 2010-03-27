@@ -48,7 +48,7 @@ try {
   for (int i=0; i < (1<<12); ++i) {
     double r = random();
     obs1["scalar 1"] << r*r;
-    obs1["histogram 1"] << static_cast<int>(10*r);
+	obs1["histogram 1"] << static_cast<alps::int32_t>(10*r);
     obs1["histogram 2"] << r*r;
   }
   
@@ -57,13 +57,13 @@ try {
 
   alps::ObservableSet obs2;
   obs2 << alps::SimpleRealObservable("scalar 1");
-  obs2 << alps::HistogramObservable<int>("histogram 1", 0, 10);
+  obs2 << alps::HistogramObservable<alps::int32_t>("histogram 1", 0, 10);
   obs2 << alps::HistogramObservable<double>("histogram 2", 0, 1, 0.1);
 
   for (int i=0; i < (1<<10); ++i) {
     double r = random();
     obs2["scalar 1"] << r*r;
-    obs2["histogram 1"] << static_cast<int>(10*r);
+	obs2["histogram 1"] << static_cast<alps::int32_t>(10*r);
     obs2["histogram 2"] << r*r;
   }
   
