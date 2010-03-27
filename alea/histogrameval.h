@@ -65,8 +65,8 @@ public:
   typedef typename std::vector<HistogramObservableData<T> >::iterator iterator;
   typedef typename std::vector<HistogramObservableData<T> >::const_iterator const_iterator;
 
-  BOOST_STATIC_CONSTANT(uint32_t, version = type_tag<T>::type::value
-	  + (type_tag<integer_type>::type::value << 8) + (6<<16));
+  BOOST_STATIC_CONSTANT(uint32_t, version = alps::type_tag<T>::type::value
+	  + (alps::type_tag<integer_type>::type::value << 8) + (6<<16));
 
   //constructors
   HistogramObservableEvaluator(const std::string& n="");

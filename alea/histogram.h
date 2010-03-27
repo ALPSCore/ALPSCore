@@ -59,8 +59,8 @@ public:
   typedef typename std::vector<integer_type>::const_reverse_iterator const_reverse_iterator;
   typedef typename std::vector<integer_type>::size_type size_type;
 
-  BOOST_STATIC_CONSTANT(uint32_t, version = type_tag<T>::type::value
-    + (type_tag<integer_type>::value << 8) + (2<<16));
+  BOOST_STATIC_CONSTANT(uint32_t, version = alps::type_tag<T>::type::value
+	  + (alps::type_tag<integer_type>::value << 8) + (2<<16));
 
   HistogramObservable(const std::string& n="");
   HistogramObservable(const std::string& n, T min, T max, T stepsize=1);
