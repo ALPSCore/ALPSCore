@@ -352,6 +352,8 @@ BOOST_PYTHON_MODULE(pyalea)
 
     .def("__repr__", &print_vector_of_value_with_error<double>)
 
+    .def("__deepcopy__", &alps::make_copy<std::vector<value_with_error<double> > >)
+
     .def(self + std::vector<value_with_error<double> >())
     .def(self + double())
     .def(double() + self)
