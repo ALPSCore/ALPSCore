@@ -31,7 +31,7 @@
 #define PY_ARRAY_UNIQUE_SYMBOL pyalea_PyArrayHandle
 
 #include <alps/alea/value_with_error.h>
-#include <alps/utility/make_copy.hpp>
+#include <alps/python/make_copy.hpp>
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <numpy/arrayobject.h>
@@ -217,7 +217,7 @@ BOOST_PYTHON_MODULE(pyalea)
 
     .def("__repr__", &print_value_with_error<double>)
 
-    .def("__deepcopy__", &alps::make_copy<value_with_error<double> >)
+    .def("__deepcopy__", &alps::python::make_copy<value_with_error<double> >)
 
     .def(+self)
     .def(-self)
@@ -284,7 +284,7 @@ BOOST_PYTHON_MODULE(pyalea)
 
     .def("__repr__", &print_vector_with_error<double>)
     
-    .def("__deepcopy__", &alps::make_copy<value_with_error<std::vector<double> > >)
+    .def("__deepcopy__", &alps::python::make_copy<value_with_error<std::vector<double> > >)
 
 
     .def("__len__",&value_with_error<std::vector<double> >::size)         
@@ -352,7 +352,7 @@ BOOST_PYTHON_MODULE(pyalea)
 
     .def("__repr__", &print_vector_of_value_with_error<double>)
 
-    .def("__deepcopy__", &alps::make_copy<std::vector<value_with_error<double> > >)
+    .def("__deepcopy__", &alps::python::make_copy<std::vector<value_with_error<double> > >)
 
     .def(self + std::vector<value_with_error<double> >())
     .def(self + double())
