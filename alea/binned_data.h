@@ -608,8 +608,9 @@ void binned_data<T>::analyze() const
     jackknife();
 
     /*
-     * Question : In <simpleobsdata.h>, we have has_variance_ and has_tau_ to be set false.
-     *            What about here?
+     * Question (1): A) In <simpleobsdata.h>, we have has_variance_ and has_tau_ to be set false.
+     *                  What about here?
+     *               B) How to reset a boost optional variable?  -- can anyone have quick and good solution?
      */
 
   }
@@ -624,11 +625,12 @@ void binned_data<T>::fill_jack() const
   if (bin_number() && !is_jacknife_bins_filled_correctly_) {
     if (is_nonlinear_operations_performed_)
       boost::throw_exception(std::runtime_error("Cannot rebuild jackknife data structure after nonlinear operations"));
+
     jack_.clear();
     jack_.resize(bin_number() + 1);
 
     // Order-N initialization of jackknife data structure
-    resize_same_as(jack_[0], bin_value(0));
+    resize_same_as(jack_[0], bin_value(0));     
     for(uint64_t i = 0; i < bin_number(); ++i) 
       jack_[0] += alps::numeric_cast<result_type>(bin_value(i)) / count_type(bin_size());
     for(uint64_t i = 0; i < bin_number(); ++i) {
