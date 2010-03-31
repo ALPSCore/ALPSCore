@@ -809,7 +809,18 @@ namespace alps {
                         throw std::runtime_error("Not implemented");
                     }
                     template<typename T> void get_data(std::string const & p, T & v, boost_multi_array_of_scalar_tag) const {
-                        throw std::runtime_error("Not implemented");
+                        boost::array<typename T::index, T::dimensionality> e;
+                        if (!is_null(p)) {
+                            if (dimensions(p) != T::dimensionality)
+                                throw std::runtime_error("the path " + p + " has the wrong number of dimensions");
+                            data_type data_id(H5Dopen2(_file, p.c_str(), H5P_DEFAULT));
+                            type_type type_id(get_native_type(typename T::element()));
+                            std::vector<std::size_t> s = extent(p);
+                            std::copy(s.begin(), s.end(), e.begin());
+                            v.resize(e);
+                            check_error(H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, v.data()));
+                        } else
+                            v.resize(e);
                     }
                     template<typename T> void get_data(std::string const & p, T & v, boost_multi_array_of_complex_tag) const {
                         boost::array<typename T::index, T::dimensionality> e;
@@ -1014,7 +1025,15 @@ namespace alps {
                         throw std::runtime_error("Not implemented");
                     }
                     template<typename T> void set_data(std::string const & p, T const & v, boost_multi_array_of_scalar_tag) const {
-                        throw std::runtime_error("Not implemented");
+                        if (!v.size())
+                            set_data(p, static_cast<typename T::element const *>(NULL), 0);
+                        else {
+                            type_type type_id(get_native_type(typename T::element()));
+                            std::vector<hsize_t> s(T::dimensionality);
+                            std::copy(v.shape(), v.shape() + T::dimensionality, s.begin());
+                            data_type data_id(save_comitted_data(p, type_id, H5Screate_simple(T::dimensionality, &(s[0]), NULL), T::dimensionality, &(s[0])));
+                            check_error(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, v.data()));
+                        }
                     }
                     template<typename T> void set_data(std::string const & p, T const & v, boost_multi_array_of_complex_tag) const {
                         if (!v.size())
@@ -1023,7 +1042,7 @@ namespace alps {
                             type_type complex_id = H5Tcreate(H5T_COMPOUND, sizeof(std::complex<typename T::element::value_type>));
                             check_error(H5Tinsert(complex_id, "r", HOFFSET(typename T::element::value_type, r), type_type(get_native_type<typename T::element::value_type>(0))));
                             check_error(H5Tinsert(complex_id, "i", HOFFSET(typename T::element::value_type, i), type_type(get_native_type<typename T::element::value_type>(0))));
-                            std::vector<std::size_t> s(T::dimensionality);
+                            std::vector<hsize_t> s(T::dimensionality);
                             std::copy(v.shape(), v.shape() + T::dimensionality, s.begin());
                             data_type data_id(save_comitted_data(p, complex_id, H5Screate_simple(T::dimensionality, &(s[0]), NULL), T::dimensionality, &(s[0])));
                             check_error(H5Dwrite(data_id, complex_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, v.data()));
