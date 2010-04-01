@@ -9,8 +9,6 @@ jack_valid:	1
 nonlinear_operations:	0
 mean:	0
 error:	0
-variance:	4.19978e-315
-tau:	0
 values:	
 jack:	
 
