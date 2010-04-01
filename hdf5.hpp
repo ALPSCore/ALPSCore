@@ -702,9 +702,9 @@ namespace alps {
                                 throw std::runtime_error("the path " + p + " has not dimension 1");
                             data_type data_id(H5Dopen2(_file, p.c_str(), H5P_DEFAULT));
                             type_type type_id(H5Dget_type(data_id));
-                            type_type complex_id = H5Tcreate(H5T_COMPOUND, sizeof(std::complex<typename T::value_type::value_type>));
-                            check_error(H5Tinsert(complex_id, "r", HOFFSET(typename T::value_type::value_type, r), type_type(get_native_type<typename T::value_type::value_type>(0))));
-                            check_error(H5Tinsert(complex_id, "i", HOFFSET(typename T::value_type::value_type, i), type_type(get_native_type<typename T::value_type::value_type>(0))));
+                            type_type complex_id = H5Tcreate(H5T_COMPOUND, sizeof(typename T::element));
+                            check_error(H5Tinsert(complex_id, "r", HOFFSET(typename T::element, r), type_type(get_native_type(typename T::element()))));
+                            check_error(H5Tinsert(complex_id, "i", HOFFSET(typename T::element, i), type_type(get_native_type(typename T::element()))));
                             if (!check_error(H5Tequal(complex_id, type_type(H5Tcopy(type_id)))))
                                 throw std::runtime_error("invalid type");
                             check_error(H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(v[0])));
@@ -829,9 +829,9 @@ namespace alps {
                                 throw std::runtime_error("the path " + p + " has the wrong number of dimensions");
                             data_type data_id(H5Dopen2(_file, p.c_str(), H5P_DEFAULT));
                             type_type type_id(H5Dget_type(data_id));
-                            type_type complex_id = H5Tcreate(H5T_COMPOUND, sizeof(std::complex<typename T::element::value_type>));
-                            check_error(H5Tinsert(complex_id, "r", HOFFSET(typename T::element::value_type, r), type_type(get_native_type<typename T::element::value_type>(0))));
-                            check_error(H5Tinsert(complex_id, "i", HOFFSET(typename T::element::value_type, i), type_type(get_native_type<typename T::element::value_type>(0))));
+                            type_type complex_id = H5Tcreate(H5T_COMPOUND, sizeof(typename T::element));
+                            check_error(H5Tinsert(complex_id, "r", HOFFSET(typename T::element, r), type_type(get_native_type(typename T::element()))));
+                            check_error(H5Tinsert(complex_id, "i", HOFFSET(typename T::element, i), type_type(get_native_type(typename T::element()))));
                             if (!check_error(H5Tequal(complex_id, type_type(H5Tcopy(type_id)))))
                                 throw std::runtime_error("invalid type");
                             std::vector<std::size_t> s = extent(p);
@@ -1039,9 +1039,9 @@ namespace alps {
                         if (!v.size())
                             set_data(p, static_cast<typename T::element const *>(NULL), 0);
                         else {
-                            type_type complex_id = H5Tcreate(H5T_COMPOUND, sizeof(std::complex<typename T::element::value_type>));
-                            check_error(H5Tinsert(complex_id, "r", HOFFSET(typename T::element::value_type, r), type_type(get_native_type<typename T::element::value_type>(0))));
-                            check_error(H5Tinsert(complex_id, "i", HOFFSET(typename T::element::value_type, i), type_type(get_native_type<typename T::element::value_type>(0))));
+                            type_type complex_id = H5Tcreate(H5T_COMPOUND, sizeof(typename T::element));
+                            check_error(H5Tinsert(complex_id, "r", HOFFSET(typename T::element, r), type_type(get_native_type(typename T::element()))));
+                            check_error(H5Tinsert(complex_id, "i", HOFFSET(typename T::element, i), type_type(get_native_type(typename T::element()))));
                             std::vector<hsize_t> s(T::dimensionality);
                             std::copy(v.shape(), v.shape() + T::dimensionality, s.begin());
                             data_type data_id(save_comitted_data(p, complex_id, H5Screate_simple(T::dimensionality, &(s[0]), NULL), T::dimensionality, &(s[0])));
