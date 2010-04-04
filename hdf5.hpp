@@ -127,13 +127,7 @@ namespace alps {
         namespace detail {
             #define HDF5_ADD_CV(callback, T)                                     \
                 callback(T)                                                      \
-                callback(T &)                                                    \
-                callback(T const)                                                \
-                callback(T const &)                                              \
-                callback(T volatile)                                             \
-                callback(T volatile &)                                           \
-                callback(T const volatile)                                       \
-                callback(T const volatile &)
+                callback(T const)
             #define HDF5_FOREACH_SCALAR(callback)                                \
                 callback(char)                                                   \
                 callback(signed char)                                            \
@@ -154,6 +148,8 @@ namespace alps {
             struct boost_multi_array_of_complex_tag {};
             struct stl_pair_tag {};
             struct stl_complex_tag {};
+            struct stl_pair_of_scalar_and_dimensions_tag {};
+            struct stl_pair_of_complex_and_dimensions_tag {};
             struct stl_container_of_string_tag {};
             struct stl_container_of_scalar_tag {};
             struct stl_container_of_complex_tag {};
@@ -177,17 +173,19 @@ namespace alps {
             template<typename T> struct is_writable<std::list<T> > : boost::mpl::true_ { typedef stl_container_of_unknown_tag category; };
             template<> struct is_writable<std::vector<std::string> > : boost::mpl::true_ { typedef stl_container_of_string_tag category; };
             template<> struct is_writable<std::valarray<std::string> > : boost::mpl::true_ { typedef stl_container_of_string_tag category; };
-            #define HDF5_CONTAINER_OF_SCALAR_CV(T)                                                                                                                 \
+            #define HDF5_CONTAINER_OF_SCALAR_CV(T)                                                                                                                    \
                 template<> struct is_writable<std::vector<T> > : boost::mpl::true_ { typedef stl_container_of_scalar_tag category; };                              \
                 template<> struct is_writable<boost::numeric::ublas::vector<T> > : boost::mpl::true_ { typedef stl_container_of_scalar_tag category; };            \
                 template<> struct is_writable<std::valarray<T> > : boost::mpl::true_ { typedef stl_container_of_scalar_tag category; };                            \
                 template<> struct is_writable<std::vector<std::complex<T> > > : boost::mpl::true_ { typedef stl_container_of_complex_tag category; };              \
                 template<> struct is_writable<std::vector<std::valarray<T> > > : boost::mpl::true_ { typedef stl_container_of_container_of_scalar_tag category; }; \
                 template<> struct is_writable<std::vector<std::vector<T> > > : boost::mpl::true_ { typedef stl_container_of_container_of_scalar_tag category; };   \
-                template<std::size_t N, typename A> struct is_writable<boost::multi_array<T, N, A> > : boost::mpl::true_ { typedef boost_multi_array_of_scalar_tag category; };
+                template<std::size_t N, typename A> struct is_writable<boost::multi_array<T, N, A> > : boost::mpl::true_ { typedef boost_multi_array_of_scalar_tag category; }; \
+                template<> struct is_writable<std::pair<T *, std::vector<std::size_t> > > : boost::mpl::true_ { typedef stl_pair_of_scalar_and_dimensions_tag category; }; \
+                template<> struct is_writable<std::pair<T *, std::vector<int> > > : boost::mpl::true_ { typedef stl_pair_of_scalar_and_dimensions_tag category; };
             #define HDF5_CONTAINER_OF_SCALAR(T)                                                                                                                    \
                 HDF5_ADD_CV(HDF5_CONTAINER_OF_SCALAR_CV, T)
-            HDF5_FOREACH_SCALAR(HDF5_CONTAINER_OF_SCALAR_CV)
+            HDF5_FOREACH_SCALAR(HDF5_CONTAINER_OF_SCALAR)
             #undef HDF5_CONTAINER_OF_SCALAR
             template<typename T> struct is_writable<std::vector<std::valarray<std::complex<T> > > > : boost::mpl::true_ { typedef stl_container_of_container_of_complex_tag category; };
             template<typename T> struct is_writable<std::vector<std::vector<std::complex<T> > > > : boost::mpl::true_ { typedef stl_container_of_container_of_complex_tag category; };
@@ -197,6 +195,8 @@ namespace alps {
             template<typename K, typename D, typename C, typename A> struct is_writable<std::map<K, D, C, A> > : boost::mpl::true_ { typedef stl_container_of_unknown_tag category; };
             template<> struct is_writable<std::string> : boost::mpl::true_ { typedef stl_string_tag category; };
             template<typename T, std::size_t N, typename A> struct is_writable<boost::multi_array<std::complex<T>, N, A> > : boost::mpl::true_ { typedef boost_multi_array_of_complex_tag category; };
+            template<typename T> struct is_writable<std::pair<std::complex<T> *, std::vector<std::size_t> > > : boost::mpl::true_ { typedef stl_pair_of_complex_and_dimensions_tag category; };
+            template<typename T> struct is_writable<std::pair<std::complex<T> *, std::vector<int> > > : boost::mpl::true_ { typedef stl_pair_of_complex_and_dimensions_tag category; };
             template<> struct is_writable<char const *> : boost::mpl::true_ { typedef c_string_tag category; };
             template<std::size_t N> struct is_writable<const char [N]> : boost::mpl::true_ { typedef c_string_tag category; };
             template<std::size_t N> struct is_writable<char [N]> : boost::mpl::true_ { typedef c_string_tag category; };
@@ -842,6 +842,34 @@ namespace alps {
                         } else
                             v.resize(e);
                     }
+                    template<typename T> void get_data(std::string const & p, T & v, stl_pair_of_scalar_and_dimensions_tag) const {
+                        if (!is_null(p)) {
+                            data_type data_id(H5Dopen2(_file, p.c_str(), H5P_DEFAULT));
+                            type_type type_id(get_native_type(typename boost::remove_pointer<typename T::first_type>::type()));
+                            v.second.resize(dimensions(p));
+                            std::vector<std::size_t> s = extent(p);
+                            std::copy(s.begin(), s.end(), v.second.begin());
+                            check_error(H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, v.first));
+                        } else {
+                            v.first = NULL;
+                            v.second.clear();
+                        }
+                    }
+                    template<typename T> void get_data(std::string const & p, T & v, stl_pair_of_complex_and_dimensions_tag) const {
+                        if (!is_null(p)) {
+                            data_type data_id(H5Dopen2(_file, p.c_str(), H5P_DEFAULT));
+                            type_type type_id(H5Dget_type(data_id));
+                            if (!check_error(H5Tequal(_complex_id, type_type(H5Tcopy(type_id)))))
+                                throw std::runtime_error("invalid type");
+                            std::vector<std::size_t> s = extent(p);
+                            v.second.resize(dimensions(p));
+                            std::copy(s.begin(), s.end(), v.second.begin());
+                            check_error(H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, v.first));
+                        } else {
+                            v.first = NULL;
+                            v.second.clear();
+                        }
+                    }
                     template<typename T> void get_data(std::string const & p, T & v, c_string_tag) const {
                         std::string s;
                         get_data(p, s, stl_string_tag());
@@ -882,6 +910,12 @@ namespace alps {
                         throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
                     }
                     template<typename T> void get_attr(std::string const &, std::string const & p, T &, boost_multi_array_of_complex_tag) const {
+                        throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
+                    }
+                    template<typename T> void get_attr(std::string const &, std::string const & p, T &, stl_pair_of_scalar_and_dimensions_tag) const {
+                        throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
+                    }
+                    template<typename T> void get_attr(std::string const &, std::string const & p, T &, stl_pair_of_complex_and_dimensions_tag) const {
                         throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
                     }
                     template<typename T> void get_attr(std::string const &, std::string const & p, T &, stl_pair_tag) const {
@@ -1054,13 +1088,40 @@ namespace alps {
                         else {
                             std::vector<internal_complex_type> w;
                             for (typename T::element const * it = v.data(); it != v.data() + v.num_elements(); ++it) {
-                                internal_complex_type c = {it->real(), it->imag()};
+                                internal_complex_type c = { it->real(), it->imag() };
                                 w.push_back(c);
                             }
                             type_type type_id(H5Tcopy(_complex_id));
                             std::vector<hsize_t> s(T::dimensionality);
                             std::copy(v.shape(), v.shape() + T::dimensionality, s.begin());
                             data_type data_id(save_comitted_data(p, type_id, H5Screate_simple(T::dimensionality, &(s[0]), NULL), T::dimensionality, &(s[0])));
+                            check_error(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(w[0])));
+                        }
+                    }
+                    template<typename T> void set_data(std::string const & p, T const & v, stl_pair_of_scalar_and_dimensions_tag) const {
+                        if (!v.second.size())
+                            set_data(p, static_cast<typename T::first_type>(NULL), 0);
+                        else {
+                            type_type type_id(get_native_type(typename boost::remove_pointer<typename T::first_type>::type()));
+                            std::vector<hsize_t> s(v.second.size());
+                            std::copy(v.second.begin(), v.second.end(), s.begin());
+                            data_type data_id(save_comitted_data(p, type_id, H5Screate_simple(s.size(), &(s[0]), NULL), s.size(), &(s[0])));
+                            check_error(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, v.first));
+                        }
+                    }
+                    template<typename T> void set_data(std::string const & p, T const & v, stl_pair_of_complex_and_dimensions_tag) const {
+                        if (!v.second.size())
+                            set_data(p, static_cast<typename T::first_type>(NULL), 0);
+                        else {
+                            std::vector<internal_complex_type> w;
+                            for (typename T::second_type::value_type i = 0; i < std::inner_product(v.second.begin(), v.second.end(), v.second.begin(), 0); ++i) {
+                                internal_complex_type c = { (v.first + i)->real(), (v.first + i)->imag() };
+                                w.push_back(c);
+                            }
+                            type_type type_id(H5Tcopy(_complex_id));
+                            std::vector<hsize_t> s(v.second.size());
+                            std::copy(v.second.begin(), v.second.end(), s.begin());
+                            data_type data_id(save_comitted_data(p, type_id, H5Screate_simple(v.second.size(), &(s[0]), NULL), v.second.size(), &(s[0])));
                             check_error(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(w[0])));
                         }
                     }
@@ -1096,6 +1157,12 @@ namespace alps {
                         throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
                     }
                     template<typename T> void set_attr(std::string const &, std::string const & p, T const &, boost_multi_array_of_complex_tag) const {
+                        throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
+                    }
+                    template<typename T> void set_attr(std::string const &, std::string const & p, T const &, stl_pair_of_scalar_and_dimensions_tag) const {
+                        throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
+                    }
+                    template<typename T> void set_attr(std::string const &, std::string const & p, T const &, stl_pair_of_complex_and_dimensions_tag) const {
                         throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
                     }
                     template<typename T> void set_attr(std::string const &, std::string const & p, T const &, stl_container_of_unknown_tag) const {
@@ -1222,22 +1289,22 @@ namespace alps {
     template <typename T> hdf5::detail::pvp<T const &, hdf5::detail::plain> make_pvp(std::string const & p, T const & v) {
         return hdf5::detail::pvp<T const &, hdf5::detail::plain>(p, v);
     }
-    #define HDF5_MAKE_PVP(ref_type)              \
+    #define HDF5_MAKE_PVP(ref_type)                                                                                                            \
         template <typename T> hdf5::detail::pvp<T, hdf5::detail::ptr> make_pvp(std::string const & p, T * ref_type v) {                        \
             return hdf5::detail::pvp<T, hdf5::detail::ptr>(p, v);                                                                              \
-        }                                        \
+        }                                                                                                                                      \
         template <typename T> hdf5::detail::pvp<T, hdf5::detail::ptr> make_pvp(std::string const & p, boost::shared_ptr<T> ref_type v) {       \
             return hdf5::detail::pvp<T, hdf5::detail::ptr>(p, v.get());                                                                        \
-        }                                        \
+        }                                                                                                                                      \
         template <typename T> hdf5::detail::pvp<T, hdf5::detail::ptr> make_pvp(std::string const & p, std::auto_ptr<T> ref_type v) {           \
             return hdf5::detail::pvp<T, hdf5::detail::ptr>(p, v.get());                                                                        \
-        }                                        \
+        }                                                                                                                                      \
         template <typename T> hdf5::detail::pvp<T, hdf5::detail::ptr> make_pvp(std::string const & p, boost::weak_ptr<T> ref_type v) {         \
             return hdf5::detail::pvp<T, hdf5::detail::ptr>(p, v.get());                                                                        \
-        }                                        \
+        }                                                                                                                                      \
         template <typename T> hdf5::detail::pvp<T, hdf5::detail::ptr> make_pvp(std::string const & p, boost::intrusive_ptr<T> ref_type v) {    \
             return hdf5::detail::pvp<T, hdf5::detail::ptr>(p, v.get());                                                                        \
-        }                                        \
+        }                                                                                                                                      \
         template <typename T> hdf5::detail::pvp<T, hdf5::detail::ptr> make_pvp(std::string const & p, boost::scoped_ptr<T> ref_type v) {       \
             return hdf5::detail::pvp<T, hdf5::detail::ptr>(p, v.get());                                                                        \
         }
