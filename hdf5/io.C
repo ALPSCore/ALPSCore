@@ -209,5 +209,18 @@ int main() {
 		h5ar.serialize("/path/to/group/to/set/attr");
 		h5ar << alps::make_pvp("/path/to/group/to/set/attr/@version", 1);
 	}
-	boost::filesystem::remove(boost::filesystem::path("bela.h5"));
+	{
+		alps::hdf5::oarchive h5ar("bela.h5");
+		std::pair<double *, std::vector<std::size_t> > data(make_pair(new double[4], std::vector<std::size_t>(2)));
+		data.second[0] = data.second[1] = 2;
+		h5ar << alps::make_pvp("/test/pair", data);
+		delete[] data.first;
+	}
+/*	{
+		alps::hdf5::iarchive h5ar("bela.h5");
+		std::pair<double *, std::vector<std::size_t> > data;
+		h5ar >> alps::make_pvp("/test/pair", data);
+		std::cout << data.second.size() << std::endl;
+	}
+*/	boost::filesystem::remove(boost::filesystem::path("bela.h5"));
 }
