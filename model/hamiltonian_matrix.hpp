@@ -391,18 +391,20 @@ void hamiltonian_matrix<M,G>::apply_operator(const GlobalOperator& op, const V& 
 template <class M, class G>
 void hamiltonian_matrix<M,G>::build_basis() const
 {
-  std::vector<Expression> k;
-  read_vector_resize(parms["TOTAL_MOMENTUM"],k);
-  ParameterEvaluator eval(parms);
-  vector_type total_momentum;
-  for (unsigned i=0;i<k.size();++i)
-    total_momentum.push_back(std::real(k[i].value(eval)));
-  basis_ = basis_states_descriptor<short>(model_.basis(),graph_.graph());
-  if (uses_translation_invariance())
+  basis_descriptor_type b = model_.basis();
+  b.set_parameters(parms);
+  basis_ = basis_states_descriptor<short>(b,graph_.graph());
+  if (uses_translation_invariance()) {
+    std::vector<Expression> k;
+    read_vector_resize(parms["TOTAL_MOMENTUM"],k);
+    ParameterEvaluator eval(parms);
+    vector_type total_momentum;
+    for (unsigned i=0;i<k.size();++i)
+      total_momentum.push_back(std::real(k[i].value(eval)));
     bloch_states = bloch_basis_states_type(basis_,graph_.translations(total_momentum));
+  }
   else
     states = basis_states_type(basis_);
-
   built_basis_ = true;
 }    
 
@@ -413,7 +415,6 @@ void hamiltonian_matrix<M,G>::build() const
   if (!built_basis_)
     build_basis();
   Disorder::seed(parms.value_or_default("DISORDER_SEED",0));
-  //std::cerr << "Building matrix\n";
   matrix_ = matrix_type(dimension(),dimension());
   matrix_.clear();
   built_matrix_ = true;
