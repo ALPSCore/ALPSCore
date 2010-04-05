@@ -51,12 +51,12 @@ std::string alps::xslt_path(const std::string& stylefile) {
 }
 
 
-boost::filesystem::path alps::search_xml_library_path(const std::string& file)
+std::string alps::search_xml_library_path(const std::string& file)
 {
   // check whether this is a full path and the file exists 
   boost::filesystem::path path(file,boost::filesystem::native);
   if (boost::filesystem::exists(path))
-    return path;
+    return path.file_string();
     
   char* p = getenv("ALPS_XML_PATH");
   if (p != 0)
@@ -75,7 +75,7 @@ boost::filesystem::path alps::search_xml_library_path(const std::string& file)
   }
   if (!boost::filesystem::exists(path))
     boost::throw_exception(std::runtime_error("Cannot find file " + file ));
-  return path;
+  return path.file_string();
 }
 
 void alps::copy_stylesheet(boost::filesystem::path const& dir)

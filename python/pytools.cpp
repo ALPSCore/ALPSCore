@@ -33,6 +33,7 @@
 #include <boost/python.hpp>
 #include <alps/scheduler/convert.h>
 #include <alps/utility/encode.hpp>
+#include <alps/parser/xslt_path.h>
 
 
 BOOST_PYTHON_MODULE(pytools)
@@ -41,5 +42,6 @@ BOOST_PYTHON_MODULE(pytools)
   def("convert2xml", alps::convert2xml);
   def("hdf5_name_encode", alps::hdf5_name_encode);
   def("hdf5_name_decode", alps::hdf5_name_decode);
+  def("search_xml_library_path", alps::search_xml_library_path);
 }
 

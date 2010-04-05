@@ -61,7 +61,7 @@ extern ALPS_DECL std::string xslt_path(const std::string& stylefile);
 /// The function prepends the path to the ALPS XML/XSLT library
 /// directory to the specified filename.  \throw \c std::runtime_error
 /// if the file does not exist in the ALPS XML/XSLT library directory.
-extern ALPS_DECL boost::filesystem::path search_xml_library_path(const std::string& file);
+extern ALPS_DECL std::string search_xml_library_path(const std::string& file);
   
 /// \brief copies the ALPS.xsl stylesheet to the specifeid directory
 ///

@@ -83,8 +83,8 @@ public:
   //get functions
   inline uint64_t                            count()                             const  { return is_bin_changed_ ? (bin_size()*bin_number() == 0 ? count_ : bin_size()*bin_number()) : count_;}
   inline uint64_t                            bin_size()                          const  { return binsize_;}
-  inline uint64_t                            bin_number()                        const  { return values_.size(); }      
-  inline const value_type&                   bin_value(uint64_t i)               const  { return values_[i];  }
+  inline std::size_t                         bin_number()                        const  { return values_.size(); }      
+  inline const value_type&                   bin_value(std::size_t i)            const  { return values_[i];  }
   inline const result_type&                  mean()                              const;
   inline const result_type&                  error()                             const;
   inline const boost::optional<result_type>& variance()                          const;
