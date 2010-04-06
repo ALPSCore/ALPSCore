@@ -84,6 +84,8 @@ public:
 
   const value_type& bin_value(uint32_t i) const { return values_[i];}
   const value_type& bin_value2(uint32_t i) const { return values2_[i];}
+    
+  const std::vector<value_type>& bins() const { return values_;}  
   
   void compact();
   

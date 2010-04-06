@@ -30,13 +30,12 @@
 
 #define PY_ARRAY_UNIQUE_SYMBOL pyalea_PyArrayHandle
 
+#include <alps/alea/detailedbinning.h>
 #include <alps/alea/value_with_error.h>
 #include <alps/python/make_copy.hpp>
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <numpy/arrayobject.h>
-
-
 
 using namespace boost::python;
 
@@ -160,7 +159,13 @@ namespace alps {
     { \
        return convert2numpy_array(_error); \
     } \
-
+    
+    template< class T >
+    boost::python::object bins_nparray(T const &x)
+    {
+        return convert2numpy_array(x.bins());
+    }
+    
     IMPLEMENT_VECTOR_WITH_ERROR_GET(int)
     IMPLEMENT_VECTOR_WITH_ERROR_GET(long int)
     IMPLEMENT_VECTOR_WITH_ERROR_GET(double)
@@ -412,11 +417,24 @@ BOOST_PYTHON_MODULE(pyalea)
 
     .def("__repr__", &print_vector_list<double>)
     ;
-
+    
+  class_< alps::RealObservable >("RealObservable", init<std::string, optional<int> >())
+    .def("__deepcopy__",  &alps::python::make_copy<alps::RealObservable>)
+    .def("__repr__", &alps::RealObservable::representation)
+    .def("__lshift__", &alps::RealObservable::operator<<)
+    .add_property("mean", &alps::RealObservable::mean)
+    .add_property("error", static_cast<alps::RealObservable::result_type(alps::RealObservable::*)() const>(&alps::RealObservable::error))
+    .add_property("tau",&alps::RealObservable::tau)
+    .add_property("variance",&alps::RealObservable::variance)
+    .add_property("count",&alps::RealObservable::count)    
+    ;
+    
   boost::python::def("convert2numpy_array_float",&convert2numpy_array<double>);
   boost::python::def("convert2numpy_array_int",&convert2numpy_array<int>);
 
   boost::python::def("convert2vector_double",&convert2vector<double>);
   boost::python::def("convert2vector_int",&convert2vector<int>);
+    
+  boost::python::def("binsOfRealObservable",&bins_nparray<alps::RealObservable>);
 
 }

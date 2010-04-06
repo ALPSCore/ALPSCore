@@ -64,6 +64,10 @@ class AbstractBinning {
     boost::throw_exception(std::logic_error("Binning is not supported for this observable"));
     return *(new value_type); // dummy return
   } 
+  const std::vector<value_type>& bins() const {
+    boost::throw_exception(std::logic_error("Binning is not supported for this observable"));
+    return *(new std::vector<value_type>); // dummy return
+  }
   void extract_timeseries(ODump& dump) const { dump << 0 << 0 << 0;}
 
 

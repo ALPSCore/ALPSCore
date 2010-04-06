@@ -95,7 +95,9 @@ public:
   count_type count() const {return b_.count();}
   bool has_tau() const { return b_.has_tau;}
   time_type tau() const  { return b_.tau();}
-
+  std::string representation() const { return super_type::name (); }    // add other things later
+    
+    
   void operator<<(const T& x) { b_ << x;}
 
 
@@ -115,6 +117,8 @@ public:
   void set_bin_number(count_type n) {b_.set_bin_number(n);}
   const value_type& bin_value(count_type n) const {return b_.bin_value(n);}
   const value_type& bin_value2(count_type n) const {return b_.bin_value2(n);}
+    
+  const std::vector<value_type>& bins() const {return b_.bins();} 
 
   virtual void save(ODump& dump) const;
   virtual void load(IDump& dump);
@@ -160,7 +164,7 @@ SimpleObservable<T,BINNING>::output(std::ostream& o) const
     output_helper<typename is_scalar<T>::type>::output(b_,o,super_type::label());
   }
 }
-
+    
 template <class T,class BINNING>
 void SimpleObservable<T,BINNING>::write_more_xml(oxstream& oxs, slice_index it) const
 {
