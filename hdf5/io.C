@@ -241,5 +241,25 @@ int main() {
 		std::cout << data.second.size() << std::endl;
 		delete data.first;
 	}
+	{
+		alps::hdf5::oarchive h5ar("test.h5");
+		std::complex<double> data[2][2][500];
+		h5ar << alps::make_pvp("/test/complexvector", &data[0][0][0], 2 * 2 * 500);
+	}
+	{
+		alps::hdf5::iarchive h5ar("test.h5");
+		std::complex<double> data[2][2][500];
+		h5ar >> alps::make_pvp("/test/complexvector", &data[0][0][0], 2 * 2 * 500);
+	}
+	{
+		alps::hdf5::oarchive h5ar("test.h5");
+		std::complex<double> data;
+		h5ar << alps::make_pvp("/test/complexvalue", data);
+	}
+	{
+		alps::hdf5::iarchive h5ar("test.h5");
+		std::complex<double> data;
+		h5ar >> alps::make_pvp("/test/complexvalue", data);
+	}
 	boost::filesystem::remove(boost::filesystem::path("test.h5"));
 }
