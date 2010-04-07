@@ -690,7 +690,7 @@ namespace alps {
                         const_cast<archive<Tag> &>(*this) >> make_pvp(p + "/second", v.second);
                     }
                     template<typename T> void get_data(std::string const & p, T & v, stl_complex_tag) const {
-                        get_data(p, static_cast<typename T::value_type *>(&v));
+                        get_data(p, &v);
                     }
                     template<typename T> void get_data(std::string const & p, T & v, stl_container_of_scalar_tag) const {
                         if (is_null(p))
@@ -883,7 +883,14 @@ namespace alps {
                         }
                     }
                     template<typename T> typename boost::enable_if<boost::is_scalar<T> >::type get_data(std::string const & p, std::complex<T> * v) const {
-                        get_data(p, reinterpret_cast<T *>(v));
+                        if (!is_null(p)) {
+                            data_type data_id(H5Dopen2(_file, p.c_str(), H5P_DEFAULT));
+                            type_type type_id(H5Dget_type(data_id));
+                            if (!check_error(H5Tequal(_complex_id, type_type(H5Tcopy(type_id)))))
+                                throw std::runtime_error("invalid type");
+                            check_error(H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(v[0])));
+                        } else
+                            v = NULL;
                     }
                     template<typename T> void get_attr(std::string const &, std::string const & p, T &, stl_container_of_scalar_tag) const {
                         throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
@@ -1016,7 +1023,7 @@ namespace alps {
                         const_cast<archive<Tag> &>(*this) << make_pvp(p + "/second", v.second);
                     }
                     template<typename T> void set_data(std::string const & p, T const & v, stl_complex_tag) const {
-                        set_data(p, reinterpret_cast<typename T::value_type const *>(&v), 2);
+                        set_data(p, &v, 1);
                     }
                     template<typename T> void set_data(std::string const & p, T const & v, stl_container_of_unknown_tag) const {
                         if (!v.size())
@@ -1136,7 +1143,18 @@ namespace alps {
                             check_error(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, v));
                     }
                     template<typename T> typename boost::enable_if<boost::is_scalar<T> >::type set_data(std::string const & p, std::complex<T> const * v, hsize_t s) const {
-                        set_data(p, reinterpret_cast<T const *>(v), 2 * s);
+                        if (!s)
+                            set_data(p, static_cast<T const *>(NULL), 0);
+                        else {
+                            std::vector<internal_complex_type> w;
+                            for (std::complex<T> const * it = v; it != v + s; ++it) {
+                                internal_complex_type c = {it->real(), it->imag()};
+                                w.push_back(c);
+                            }
+                            type_type type_id(H5Tcopy(_complex_id));
+                            data_type data_id(save_comitted_data(p, type_id, H5Screate_simple(1, &s, NULL), 1, &s));
+                            check_error(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(w[0])));
+                        }
                     }
                     template<typename T> void set_attr(std::string const &, std::string const & p, T const &, stl_container_of_scalar_tag) const {
                         throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
