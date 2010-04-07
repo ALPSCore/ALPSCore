@@ -33,7 +33,7 @@ FOREACH (name detailedbinning histogram signed simpleobseval testobservableset o
 			-Dinput=${name}.input
 			-Doutput=${name}.output
 			-Dtimeout=600
-			-P ${PROJECT_SOURCE_DIR}/config/CMake/run_test.cmake
+			-P ${PROJECT_SOURCE_DIR}/config/run_test.cmake
 	)
 ENDFOREACH(name)
 ENDIF(NOT ALPS_LLVM_WORKAROUND)

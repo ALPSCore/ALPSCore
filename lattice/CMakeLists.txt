@@ -32,7 +32,7 @@ FOREACH (name example1 example2 example3 example4 example5 example6 example7 exa
 			-Dinput=${name}.input
 			-Doutput=${name}.output
 			-Dtimeout=600
-			-P ${PROJECT_SOURCE_DIR}/config/CMake/run_test.cmake
+			-P ${PROJECT_SOURCE_DIR}/config/run_test.cmake
 	)
 ENDFOREACH(name)
 
@@ -58,7 +58,7 @@ FOREACH (name coloring parity)
 			-Dinput=${name}.input
 			-Doutput=${name}.output
 			-Dtimeout=600
-			-P ${PROJECT_SOURCE_DIR}/config/CMake/run_test.cmake
+			-P ${PROJECT_SOURCE_DIR}/config/run_test.cmake
 	)
 ENDFOREACH(name)
 ENDIF(NOT ALPS_LLVM_WORKAROUND)

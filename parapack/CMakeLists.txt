@@ -34,7 +34,7 @@ FOREACH (name clone_info clone_phase clone_timer exmc_optimize exp_number footpr
 			-Dinput=${name}.ip
 			-Doutput=${name}.op
 			-Dtimeout=600
-			-P ${PROJECT_SOURCE_DIR}/config/CMake/run_test.cmake
+			-P ${PROJECT_SOURCE_DIR}/config/run_test.cmake
 	)
 ENDFOREACH(name)
 
