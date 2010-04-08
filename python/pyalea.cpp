@@ -216,7 +216,7 @@ using namespace alps::alea;
 
 BOOST_PYTHON_MODULE(pyalea)
 {
-  class_<value_with_error<double> >("sampling_value",init<optional<double,double> >())
+  class_<value_with_error<double> >("value_with_error",init<optional<double,double> >())
     .add_property("mean", &value_with_error<double>::mean)
     .add_property("error",&value_with_error<double>::error)  
 
@@ -276,7 +276,7 @@ BOOST_PYTHON_MODULE(pyalea)
     .def_pickle(value_with_error_pickle_suite<double>())
     ;
 
-  class_<value_with_error<std::vector<double> > >("sampling_vector",init<boost::python::object,boost::python::object>())
+  class_<value_with_error<std::vector<double> > >("vector_with_error",init<boost::python::object,boost::python::object>())
     .def(init<optional<std::vector<double>,std::vector<double> > >())
 
     .add_property("mean",&value_with_error<std::vector<double> >::mean_nparray)
@@ -352,7 +352,7 @@ BOOST_PYTHON_MODULE(pyalea)
     ;
 
 
-  class_<std::vector<value_with_error<double> > >("vector_of_sampling_value")
+  class_<std::vector<value_with_error<double> > >("vector_of_value_with_error")
     .def(vector_indexing_suite<std::vector<value_with_error<double> > >())
 
     .def("__repr__", &print_vector_of_value_with_error<double>)

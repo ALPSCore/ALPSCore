@@ -702,15 +702,13 @@ binned_data<T>::covariance(const binned_data<T> obs2) const
     unbiased_mean1_ /= count_type(bin_number());
     unbiased_mean2_ /= count_type(obs2.bin_number());
 
-    /*
-     * To be confirmed:  alps::numeric::outer_product ???
-     */
-    
-    covariance_type cov = alps::numeric::outer_product(jack_[1],obs2.jack_[1]);
+    using alps::numeric::outer_product;
+
+    covariance_type cov = outer_product(jack_[1],obs2.jack_[1]);
     for (uint32_t i = 1; i < bin_number(); ++i)
-      cov += alps::numeric::outer_product(jack_[i+1],obs2.jack_[i+1]);
+      cov += outer_product(jack_[i+1],obs2.jack_[i+1]);
     cov /= count_type(bin_number());
-    cov -= alps::numeric::outer_product(unbiased_mean1_, unbiased_mean2_);
+    cov -= outer_product(unbiased_mean1_, unbiased_mean2_);
     cov *= count_type(bin_number() - 1);
 
     return cov;
