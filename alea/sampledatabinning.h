@@ -33,8 +33,8 @@
 /* $Id: simpleobsdata.h 3545 2010-03-22 10:00:00Z tamama $ */
 
 
-#ifndef ALPS_ALEA_BINNED_DATA_H
-#define ALPS_ALEA_BINNED_DATA_H
+#ifndef ALPS_ALEA_SAMPLEDATABINNING_H
+#define ALPS_ALEA_SAMPLEDATABINNING_H
 
 
 #include <alps/config.h>
@@ -68,7 +68,7 @@ using namespace boost::lambda;
 
 
 template <class T>
-class binned_data {
+class sampledatabinning {
 public:
   //typedefs
   typedef T                                                                         value_type;
@@ -89,7 +89,7 @@ public:
   inline const result_type&                  error()                             const;
   inline const boost::optional<result_type>& variance()                          const;
   inline const boost::optional<time_type>&   tau()                               const;
-  //covariance_type                            covariance(const binned_data<T>)  const;
+  //covariance_type                            covariance(const sampledatabinning<T>)  const;
 
   //set functions
   inline void set_bin_size(uint64_t binsize)        {   collect_bins((binsize-1)/binsize_+1);  binsize_=binsize;  }
@@ -97,7 +97,7 @@ public:
 
   //i/o operator
   template <class X>
-  friend std::ostream& operator<< (std::ostream &out, const binned_data<X> obj);
+  friend std::ostream& operator<< (std::ostream &out, const sampledatabinning<X> obj);
 
 
 private:
@@ -119,39 +119,39 @@ private:
 
 public:
   template <class X>
-  friend class binned_data;
+  friend class sampledatabinning;
 
-  binned_data();
-  binned_data(AbstractSimpleObservable<value_type> const & obs);
+  sampledatabinning();
+  sampledatabinning(AbstractSimpleObservable<value_type> const & obs);
   template <class X, class S>
-  binned_data(binned_data<X> const & my_binned_data, S s);
+  sampledatabinning(sampledatabinning<X> const & my_sampledatabinning, S s);
 
   template <class X>
-  binned_data const & operator=(binned_data<X> const & my_binned_data);
+  sampledatabinning const & operator=(sampledatabinning<X> const & my_sampledatabinning);
 
   template <class S>
-  binned_data<typename element_type<T>::type> slice(S s) const  {  return binned_data<typename element_type<T>::type>(*this,s);  }
+  sampledatabinning<typename element_type<T>::type> slice(S s) const  {  return sampledatabinning<typename element_type<T>::type>(*this,s);  }
 
 
 /*
   // unary operation: negation
-  binned_data<T>& operator-();
+  sampledatabinning<T>& operator-();
 
   // operations with constant
-  template <class X> binned_data<T>& operator+=(X);
-  template <class X> binned_data<T>& operator-=(X);
-  template <class X> binned_data<T>& operator*=(X);
-  template <class X> binned_data<T>& operator/=(X);
+  template <class X> sampledatabinning<T>& operator+=(X);
+  template <class X> sampledatabinning<T>& operator-=(X);
+  template <class X> sampledatabinning<T>& operator*=(X);
+  template <class X> sampledatabinning<T>& operator/=(X);
   template<class X> void subtract_from(const X& x);
   template<class X> void divide(const X& x);
   
   // operations with another observable
-  binned_data<T>& operator+=(const binned_data<T>&);
-  binned_data<T>& operator-=(const binned_data<T>&);
+  sampledatabinning<T>& operator+=(const sampledatabinning<T>&);
+  sampledatabinning<T>& operator-=(const sampledatabinning<T>&);
   template <class X>
-  binned_data<T>& operator*=(const binned_data<X>&);
+  sampledatabinning<T>& operator*=(const sampledatabinning<X>&);
   template <class X>
-  binned_data<T>& operator/=(const binned_data<X>&);
+  sampledatabinning<T>& operator/=(const sampledatabinning<X>&);
 
   template <class OP> void transform(OP op);
 */
@@ -165,7 +165,7 @@ protected:
 
 /*
   template <class X, class OP>
-  void transform(const binned_data<X>& x, OP op, double factor=1.);
+  void transform(const sampledatabinning<X>& x, OP op, double factor=1.);
 
   template <class OP> 
   void transform_linear(OP op);
@@ -176,21 +176,21 @@ protected:
 
 // ### GET FUNCTIONS
 template <class T>
-const typename binned_data<T>::result_type& binned_data<T>::mean() const
+const typename sampledatabinning<T>::result_type& sampledatabinning<T>::mean() const
 {
   if (count() == 0) boost::throw_exception(NoMeasurementsError());
   analyze();  return mean_;
 }
 
 template <class T>
-const typename binned_data<T>::result_type& binned_data<T>::error() const
+const typename sampledatabinning<T>::result_type& sampledatabinning<T>::error() const
 {
   if (count() == 0) boost::throw_exception(NoMeasurementsError());
   analyze();   return error_;
 }
 
 template <class T>
-const typename boost::optional<typename binned_data<T>::result_type>& binned_data<T>::variance() const
+const typename boost::optional<typename sampledatabinning<T>::result_type>& sampledatabinning<T>::variance() const
 {
   if (count() == 0) boost::throw_exception(NoMeasurementsError());
   if (!variance_opt_)
@@ -200,7 +200,7 @@ const typename boost::optional<typename binned_data<T>::result_type>& binned_dat
 
 template <class T>
 inline
-const typename boost::optional<typename binned_data<T>::time_type>& binned_data<T>::tau() const
+const typename boost::optional<typename sampledatabinning<T>::time_type>& sampledatabinning<T>::tau() const
 {
   if (count() == 0) boost::throw_exception(NoMeasurementsError());
   if (!tau_opt_)
@@ -211,7 +211,7 @@ const typename boost::optional<typename binned_data<T>::time_type>& binned_data<
 
 // ### i/o
 template <class T>
-std::ostream& operator<< (std::ostream &out, const binned_data<T> obj)
+std::ostream& operator<< (std::ostream &out, const sampledatabinning<T> obj)
 {
   using std::operator<<;
   using alps::numeric::operator<<;
@@ -237,7 +237,7 @@ std::ostream& operator<< (std::ostream &out, const binned_data<T> obj)
 
 // ### CONSTRUCTORS
 template <class T>
-binned_data<T>::binned_data()
+sampledatabinning<T>::sampledatabinning()
   : count_(0)
   , binsize_(0)
   , is_bin_changed_(false)
@@ -254,7 +254,7 @@ binned_data<T>::binned_data()
 
 
 template <class T>
-binned_data<T>::binned_data(AbstractSimpleObservable<T> const & obs)
+sampledatabinning<T>::sampledatabinning(AbstractSimpleObservable<T> const & obs)
  : count_(obs.count())
  , binsize_(obs.bin_size())
  , is_bin_changed_(false)
@@ -281,13 +281,13 @@ binned_data<T>::binned_data(AbstractSimpleObservable<T> const & obs)
 
 template <class T>
 template <class X, class S>
-binned_data<T>::binned_data(binned_data<X> const & my_binned_data, S s)
-  : count_(my_binned_data.count_)
-  , binsize_(my_binned_data.binsize_)
-  , is_bin_changed_(my_binned_data.is_bin_changed_)
-  , is_statistics_valid_(my_binned_data.is_statistics_valid_)
-  , is_jacknife_bins_filled_correctly_(my_binned_data.is_jacknife_bins_filled_correctly_)
-  , is_nonlinear_operations_performed_(my_binned_data.is_nonlinear_operations_performed_)
+sampledatabinning<T>::sampledatabinning(sampledatabinning<X> const & my_sampledatabinning, S s)
+  : count_(my_sampledatabinning.count_)
+  , binsize_(my_sampledatabinning.binsize_)
+  , is_bin_changed_(my_sampledatabinning.is_bin_changed_)
+  , is_statistics_valid_(my_sampledatabinning.is_statistics_valid_)
+  , is_jacknife_bins_filled_correctly_(my_sampledatabinning.is_jacknife_bins_filled_correctly_)
+  , is_nonlinear_operations_performed_(my_sampledatabinning.is_nonlinear_operations_performed_)
   , mean_()              
   , error_()
   , variance_opt_()  
@@ -295,38 +295,38 @@ binned_data<T>::binned_data(binned_data<X> const & my_binned_data, S s)
   , values_()
   , jack_()
 {
-  mean_  = slice_value(my_binned_data.mean_, s);              
-  error_ = slice_value(my_binned_data.error_, s);
-  if (my_binned_data.variance_opt_)   {  variance_opt_ = slice_value(*(my_binned_data.variance_opt_), s);  }
-  if (my_binned_data.tau_opt_)        {  tau_opt_      = slice_value(*(my_binned_data.tau_opt_), s);  }
+  mean_  = slice_value(my_sampledatabinning.mean_, s);              
+  error_ = slice_value(my_sampledatabinning.error_, s);
+  if (my_sampledatabinning.variance_opt_)   {  variance_opt_ = slice_value(*(my_sampledatabinning.variance_opt_), s);  }
+  if (my_sampledatabinning.tau_opt_)        {  tau_opt_      = slice_value(*(my_sampledatabinning.tau_opt_), s);  }
 
-  values_.reserve(my_binned_data.values_.size());
-  std::transform(my_binned_data.values_.begin(), my_binned_data.values_.end(), std::back_inserter(values_), boost::bind2nd(slice_it<X>(),s));
+  values_.reserve(my_sampledatabinning.values_.size());
+  std::transform(my_sampledatabinning.values_.begin(), my_sampledatabinning.values_.end(), std::back_inserter(values_), boost::bind2nd(slice_it<X>(),s));
 
-  if (my_binned_data.is_jacknife_bins_filled_correctly_)
+  if (my_sampledatabinning.is_jacknife_bins_filled_correctly_)
   {
-    jack_.reserve(my_binned_data.jack_.size());
-    std::transform(my_binned_data.jack_.begin(), my_binned_data.jack_.end(), std::back_inserter(jack_), boost::bind2nd(slice_it<X>(),s));
+    jack_.reserve(my_sampledatabinning.jack_.size());
+    std::transform(my_sampledatabinning.jack_.begin(), my_sampledatabinning.jack_.end(), std::back_inserter(jack_), boost::bind2nd(slice_it<X>(),s));
   }
 }
 
 
 template <class T>
 template <class X>
-binned_data<T> const & binned_data<T>::operator=(binned_data<X> const & my_binned_data)
+sampledatabinning<T> const & sampledatabinning<T>::operator=(sampledatabinning<X> const & my_sampledatabinning)
 {
-  count_                             = my_binned_data.count_;
-  binsize_                           = my_binned_data.binsize_;
-  is_bin_changed_                    = my_binned_data.is_bin_changed_;
-  is_statistics_valid_               = my_binned_data.is_statistics_valid_;
-  is_jacknife_bins_filled_correctly_ = my_binned_data.is_jacknife_bins_filled_correctly_;
-  is_nonlinear_operations_performed_ = my_binned_data.is_nonlinear_operations_performed_;
-  assign(mean_,my_binned_data.mean_);
-  assign(error_,my_binned_data.error_);
-  assign(variance_opt_,my_binned_data.variance_opt_);
-  assign(tau_opt_,my_binned_data.tau_opt_);
-  values_                            = my_binned_data.values_;
-  jack_                              = my_binned_data.jack_;
+  count_                             = my_sampledatabinning.count_;
+  binsize_                           = my_sampledatabinning.binsize_;
+  is_bin_changed_                    = my_sampledatabinning.is_bin_changed_;
+  is_statistics_valid_               = my_sampledatabinning.is_statistics_valid_;
+  is_jacknife_bins_filled_correctly_ = my_sampledatabinning.is_jacknife_bins_filled_correctly_;
+  is_nonlinear_operations_performed_ = my_sampledatabinning.is_nonlinear_operations_performed_;
+  assign(mean_,my_sampledatabinning.mean_);
+  assign(error_,my_sampledatabinning.error_);
+  assign(variance_opt_,my_sampledatabinning.variance_opt_);
+  assign(tau_opt_,my_sampledatabinning.tau_opt_);
+  values_                            = my_sampledatabinning.values_;
+  jack_                              = my_sampledatabinning.jack_;
 
   return *this;
 }
@@ -334,7 +334,7 @@ binned_data<T> const & binned_data<T>::operator=(binned_data<X> const & my_binne
 
 /*
 template <class T> 
-binned_data<T>& binned_data<T>::operator+=(const binned_data<T>& x)
+sampledatabinning<T>& sampledatabinning<T>::operator+=(const sampledatabinning<T>& x)
 {
   using std::sqrt;
   if(count() && x.count()) {
@@ -351,7 +351,7 @@ binned_data<T>& binned_data<T>::operator+=(const binned_data<T>& x)
 }
 
 template <class T>
-binned_data<T>& binned_data<T>::operator-=(const binned_data<T>& x)
+sampledatabinning<T>& sampledatabinning<T>::operator-=(const sampledatabinning<T>& x)
 {
   using std::sqrt;
   if(count() && x.count()) {
@@ -367,13 +367,13 @@ binned_data<T>& binned_data<T>::operator-=(const binned_data<T>& x)
 
 template <class T>
 template<class X>
-binned_data<T>& binned_data<T>::operator*=(const binned_data<X>& x)
+sampledatabinning<T>& sampledatabinning<T>::operator*=(const sampledatabinning<X>& x)
 {
   using std::sqrt;
   if(count() && x.count()) {
     error_=error()*error();
     error_*=x.mean()*x.mean();
-    typename binned_data<X>::result_type tmp(x.error());
+    typename sampledatabinning<X>::result_type tmp(x.error());
     tmp *=tmp;
     result_type tmp2(mean_);
     tmp2 *= tmp2*tmp;
@@ -388,14 +388,14 @@ binned_data<T>& binned_data<T>::operator*=(const binned_data<X>& x)
 
 template <class T>
 template<class X>
-binned_data<T>& binned_data<T>::operator/=(const binned_data<X>& x)
+sampledatabinning<T>& sampledatabinning<T>::operator/=(const sampledatabinning<X>& x)
 {
   using std::sqrt;
   if(count() && x.count()) {
     error_=error()*error();
-    typename binned_data<X>::result_type m(x.mean());
+    typename sampledatabinning<X>::result_type m(x.mean());
     m *=m;
-    typename binned_data<X>::result_type tmp(x.error());
+    typename sampledatabinning<X>::result_type tmp(x.error());
     tmp *=m;
     tmp *=x.error()*m;
     error_ +=tmp;
@@ -410,7 +410,7 @@ binned_data<T>& binned_data<T>::operator/=(const binned_data<X>& x)
 
 template <class T>
 template <class X, class OP>
-void binned_data<T>::transform(const binned_data<X>& x, OP op, double factor)
+void sampledatabinning<T>::transform(const sampledatabinning<X>& x, OP op, double factor)
 {
   if ((count()==0) || (x.count()==0))
     boost::throw_exception(std::runtime_error("both observables need measurements"));
@@ -437,7 +437,7 @@ void binned_data<T>::transform(const binned_data<X>& x, OP op, double factor)
 
 template <class T> 
 template <class OP>
-void binned_data<T>::transform_linear(OP op)
+void sampledatabinning<T>::transform_linear(OP op)
 {
   mean_ = op(mean_);
   std::transform(values_.begin(), values_.end(), values_.begin(), op);
@@ -450,7 +450,7 @@ void binned_data<T>::transform_linear(OP op)
 //
 template <class T> 
 template <class OP>
-void binned_data<T>::transform(OP op)
+void sampledatabinning<T>::transform(OP op)
 {
   is_statistics_valid_ = false;
   is_nonlinear_operations_performed_ = true;
@@ -474,7 +474,7 @@ void binned_data<T>::transform(OP op)
   
   
 template <class T>
-binned_data<T>& binned_data<T>::operator-()
+sampledatabinning<T>& sampledatabinning<T>::operator-()
 {
   if (count()) {
     transform_linear(-_1);
@@ -483,7 +483,7 @@ binned_data<T>& binned_data<T>::operator-()
 }
 
 template <class T> template <class X>
-binned_data<T>& binned_data<T>::operator+=(X x)
+sampledatabinning<T>& sampledatabinning<T>::operator+=(X x)
 {
   if (count()) {
     transform_linear(_1 + x);
@@ -492,7 +492,7 @@ binned_data<T>& binned_data<T>::operator+=(X x)
 }
 
 template <class T> template <class X>
-binned_data<T>& binned_data<T>::operator-=(X x)
+sampledatabinning<T>& sampledatabinning<T>::operator-=(X x)
 {
   if(count()) {
     if (has_minmax_) {
@@ -507,7 +507,7 @@ binned_data<T>& binned_data<T>::operator-=(X x)
 }
 
 template <class T> template <class X>
-void binned_data<T>::subtract_from(const X& x)
+void sampledatabinning<T>::subtract_from(const X& x)
 {
   if (count()) {
     if(has_minmax_) {
@@ -521,7 +521,7 @@ void binned_data<T>::subtract_from(const X& x)
 }
 
 template <class T> template <class X>
-binned_data<T>& binned_data<T>::operator*=(X x)
+sampledatabinning<T>& sampledatabinning<T>::operator*=(X x)
 {
   if (count()) {
     error_ *= x;
@@ -536,7 +536,7 @@ binned_data<T>& binned_data<T>::operator*=(X x)
 }
 
 template <class T> template <class X>
-binned_data<T>& binned_data<T>::operator/=(X x)
+sampledatabinning<T>& sampledatabinning<T>::operator/=(X x)
 {
   if (count()) {
     error_ /= x;
@@ -551,7 +551,7 @@ binned_data<T>& binned_data<T>::operator/=(X x)
 }
 
 template <class T> template <class X>
-void binned_data<T>::divide(const X& x)
+void sampledatabinning<T>::divide(const X& x)
 {
   if (count()) {
     error_ = x *error_/mean_/mean_;
@@ -572,7 +572,7 @@ void binned_data<T>::divide(const X& x)
 
 
 template <class T>
-void binned_data<T>::collect_bins(uint64_t howmany)
+void sampledatabinning<T>::collect_bins(uint64_t howmany)
 {
   if (is_nonlinear_operations_performed_)
     boost::throw_exception(std::runtime_error("cannot change bins after nonlinear operations"));
@@ -596,7 +596,7 @@ void binned_data<T>::collect_bins(uint64_t howmany)
 
 
 template <class T>
-void binned_data<T>::analyze() const
+void sampledatabinning<T>::analyze() const
 {
   if (is_statistics_valid_) return;
 
@@ -619,7 +619,7 @@ void binned_data<T>::analyze() const
 
   
 template <class T>
-void binned_data<T>::fill_jack() const
+void sampledatabinning<T>::fill_jack() const
 {
   // build jackknife data structure
   if (bin_number() && !is_jacknife_bins_filled_correctly_) {
@@ -649,7 +649,7 @@ void binned_data<T>::fill_jack() const
 
 
 template <class T>
-void binned_data<T>::jackknife() const
+void sampledatabinning<T>::jackknife() const
 {
   fill_jack();
 
@@ -684,8 +684,8 @@ void binned_data<T>::jackknife() const
 
 /*
 template<class T>
-typename binned_data<T>::covariance_type 
-binned_data<T>::covariance(const binned_data<T> obs2) const
+typename sampledatabinning<T>::covariance_type 
+sampledatabinning<T>::covariance(const sampledatabinning<T> obs2) const
 {
   fill_jack();
   obs2.fill_jack();
@@ -732,4 +732,4 @@ binned_data<T>::covariance(const binned_data<T> obs2) const
 
 
 
-#endif // ALPS_ALEA_BINNED_DATA_H
+#endif // ALPS_ALEA_SAMPLEDATABINNING_H
