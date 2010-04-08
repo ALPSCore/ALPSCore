@@ -28,7 +28,7 @@
 
 /* $Id: nobinning.h 3520 2009-12-11 16:49:53Z gamperl $ */
 
-#include <alps/alea/sampledata.h>
+#include <alps/alea/value_with_error.h>
 #include <iostream>
 #include <cmath>
 #include <vector>
@@ -40,15 +40,15 @@ int main(int argc, char** argv)
 {
   using namespace alps::alea;
 
-  // test: sampledata<double>
+  // test: value_with_error<double>
 
-  sampledata<double> a(0.81,0.1);
+  value_with_error<double> a(0.81,0.1);
   std::cout << "\na: \t" << a << "\n";
 
-  sampledata<double> b = sampledata<double>(1.21,0.2);
+  value_with_error<double> b = value_with_error<double>(1.21,0.2);
   std::cout << "\nb: \t" << b << "\n";
 
-  sampledata<double> c = sampledata<double>(4.5,0.3);
+  value_with_error<double> c = value_with_error<double>(4.5,0.3);
   std::cout << "\nb: \t" << c << "\n";
 
 
@@ -58,7 +58,7 @@ int main(int argc, char** argv)
   std::cout << "\n abs(c): \t" << abs(c) << "\n";
 
   // operation-assign
-  sampledata<double> e = a;
+  value_with_error<double> e = a;
 
   a = e;
   a += b;
@@ -113,7 +113,7 @@ int main(int argc, char** argv)
 
   // (pow, sq, sqrt, cb, cbrt, exp, log) operations
 
-  sampledata<double> res;
+  value_with_error<double> res;
 
   res = pow(a,2.71);
   std::cout << "\na^(2.71): \t";
@@ -142,15 +142,15 @@ int main(int argc, char** argv)
   std::cout << "\natanh(a): \t" << atanh(a) << "\n";
 
 
-  // test: sampledata<std::vector<double> >
+  // test: value_with_error<std::vector<double> >
 
-  sampledata<std::vector<double> > vecA(std::vector<double>(10,0.81),std::vector<double>(10,0.1));
+  value_with_error<std::vector<double> > vecA(std::vector<double>(10,0.81),std::vector<double>(10,0.1));
   std::cout << "\nA: \n" << vecA << "\n"; 
 
-  sampledata<std::vector<double> > vecB(std::vector<double>(10,1.21),std::vector<double>(10,0.2));
+  value_with_error<std::vector<double> > vecB(std::vector<double>(10,1.21),std::vector<double>(10,0.2));
   std::cout << "\nB: \n" << vecB << "\n";
 
-  sampledata<std::vector<double> > vecC(std::vector<double>(10,-4.5),std::vector<double>(10,0.3));
+  value_with_error<std::vector<double> > vecC(std::vector<double>(10,-4.5),std::vector<double>(10,0.3));
   std::cout << "\nC: \n" << vecC << "\n";         
 
   std::vector<double> vec2(10,2.);
@@ -165,7 +165,7 @@ int main(int argc, char** argv)
 
 
   // operation-assign
-  sampledata<std::vector<double> > vecE = vecA;
+  value_with_error<std::vector<double> > vecE = vecA;
 
   vecA =  vecE;
   vecA += vecB;
@@ -229,7 +229,7 @@ int main(int argc, char** argv)
 
   // (pow, sq, sqrt, cb, cbrt, exp, log) operations
 
-  sampledata<std::vector<double> > resV;
+  value_with_error<std::vector<double> > resV;
 
   resV = pow(vecA,2.71);
   std::cout << "\nA^(2.71): \n";
@@ -272,7 +272,7 @@ int main(int argc, char** argv)
   std::cout << "\nvecA.clear() \n";
   std::cout << "\n(A): \t" << vecA << "\n";
   
-  sampledata<std::vector<double> > vecX;
+  value_with_error<std::vector<double> > vecX;
   vecX.push_back(a);
   vecX.push_back(b);
   vecX.push_back(c);
@@ -292,22 +292,22 @@ int main(int argc, char** argv)
 
 
   // testing interface interchange
-  std::vector<sampledata<double> > vec_of_vwe;
-  sampledata<std::vector<double> > vec_with_error;
+  std::vector<value_with_error<double> > vec_of_vwe;
+  value_with_error<std::vector<double> > vec_with_error;
 
   vec_with_error = vecX;
-  vec_of_vwe = obtain_vector_of_sampledata_from_vector_with_error<double>(vec_with_error);
+  vec_of_vwe = obtain_vector_of_value_with_error_from_vector_with_error<double>(vec_with_error);
 
   std::cout << "\nSuccessful converting from vec_with_error: \n" << vec_with_error << "to vec_of_vwe: \n";
-  std::copy(vec_of_vwe.begin(),vec_of_vwe.end(),std::ostream_iterator<sampledata<double> >(std::cout,"\n"));
+  std::copy(vec_of_vwe.begin(),vec_of_vwe.end(),std::ostream_iterator<value_with_error<double> >(std::cout,"\n"));
 
   std::cout << std::endl;
 
   vec_with_error.clear();
-  vec_with_error = obtain_vector_with_error_from_vector_of_sampledata(vec_of_vwe);
+  vec_with_error = obtain_vector_with_error_from_vector_of_value_with_error(vec_of_vwe);
 
   std::cout << "\nSuccessful converting from vec_of_vwe: \n";
-  std::copy(vec_of_vwe.begin(),vec_of_vwe.end(),std::ostream_iterator<sampledata<double> >(std::cout,"\n"));
+  std::copy(vec_of_vwe.begin(),vec_of_vwe.end(),std::ostream_iterator<value_with_error<double> >(std::cout,"\n"));
   std::cout << "to vec_with_error:\n" << vec_with_error;
   
 
