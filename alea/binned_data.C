@@ -64,9 +64,23 @@ int main(int argc, char** argv)
   alps::alea::binned_data<double> data1;
   std::cout << "\ndata1 :\n" << data1 << "\n";
 
-
-//### Goal: Testing alps::alea::binned_data<std::valarray<double> >
   typedef alps::RealVectorObservable RealValarrayObservable;
+
+  // constructor from std::vector
+  std::vector<double> vec4;
+  for (int i=0; i < 30; ++i)  {  vec4.push_back(i);  }
+  std::cout << "\nvec4:\t" << vec4 << "\n";
+
+  alps::alea::binned_data<double> data4(vec4);
+  std::cout << "\nalps::alea::binned_data<double> data4(vec4)\ndata4 : \n" << data4 << std::endl;
+
+  data4.set_bin_number(10);
+  std::cout << "\ndata4.set_bin_number(10)\ndata4 : \n" << data4 << std::endl;
+
+  alps::alea::binned_data<double> data4a(vec4,10);
+  std::cout << "\nalps::alea::binned_data<double> data4a(vec4,10)\ndata4a : \n" << data4a << std::endl;
+
+  std::cout << "\nJackknife mean and error of data4a : \t" << data4a.mean() << "\t" << data4a.error() << "\n";
 
   // constructor from AbstractSimpleObservable 
   alps::RealObservable obs2("obs2");
@@ -108,7 +122,7 @@ int main(int argc, char** argv)
   alps::alea::binned_data<double> data3x_1 = data3.slice(1);  
   std::cout << "\ndata3x_1 (= data3_1):\n" << data3x_1 << std::endl;
 
-//### testing analyze()
+  
 
 
   return 0;
