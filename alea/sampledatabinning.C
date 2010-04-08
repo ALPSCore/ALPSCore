@@ -29,7 +29,7 @@
 /* $Id: nobinning.h 3520 2010-03-21 10:00:00Z gamperl $ */
 
 #include <alps/alea.h>
-#include <alps/alea/binned_data.h>
+#include <alps/alea/sampledatabinning.h>
 
 #include <iostream>
 #include <sstream>
@@ -61,11 +61,11 @@ int main(int argc, char** argv)
 //### CONSTRUCTORS
 
   // empty constructor
-  alps::alea::binned_data<double> data1;
+  alps::alea::sampledatabinning<double> data1;
   std::cout << "\ndata1 :\n" << data1 << "\n";
 
 
-//### Goal: Testing alps::alea::binned_data<std::valarray<double> >
+//### Goal: Testing alps::alea::sampledatabinning<std::valarray<double> >
   typedef alps::RealVectorObservable RealValarrayObservable;
 
   // constructor from AbstractSimpleObservable 
@@ -75,10 +75,10 @@ int main(int argc, char** argv)
 
   std::cout << "\nobs2: \n" << obs2 << "\n";
   
-  alps::alea::binned_data<double> data2(obs2);
+  alps::alea::sampledatabinning<double> data2(obs2);
   std::cout << "data2 (valarray):\n" << data2 << "\n";
 
-  // constructor from a slice of binned_data
+  // constructor from a slice of sampledatabinning
   RealValarrayObservable OBS3("OBS3");
   OBS3.reset(true);
   for (int i=0; i < 10; ++i)  
@@ -89,23 +89,23 @@ int main(int argc, char** argv)
   }
   std::cout << "\nOBS3: \n" << OBS3 << "\n";
 
-  alps::alea::binned_data<std::valarray<double> > data3(OBS3);
+  alps::alea::sampledatabinning<std::valarray<double> > data3(OBS3);
 
-  alps::alea::binned_data<double> data3_0(data3,0);
+  alps::alea::sampledatabinning<double> data3_0(data3,0);
   std::cout << "\ndata3_0 : \n" << data3_0 << "\n";
 
-  alps::alea::binned_data<double> data3_1(data3,1);
+  alps::alea::sampledatabinning<double> data3_1(data3,1);
   std::cout << "\ndata3_1 : \n" << data3_1 << "\n";
 
-  alps::alea::binned_data<double> data2x = data2;
+  alps::alea::sampledatabinning<double> data2x = data2;
   std::cout << "\ndata2x (valarray) (= data2):\n " << data2x << std::endl;
 
-  alps::alea::binned_data<std::valarray<double> > data3x = data3;
+  alps::alea::sampledatabinning<std::valarray<double> > data3x = data3;
 
-  alps::alea::binned_data<double> data3x_0 = data3.slice(0);
+  alps::alea::sampledatabinning<double> data3x_0 = data3.slice(0);
   std::cout << "\ndata3x_0 (= data3_0):\n" << data3x_0 << std::endl;
   
-  alps::alea::binned_data<double> data3x_1 = data3.slice(1);  
+  alps::alea::sampledatabinning<double> data3x_1 = data3.slice(1);  
   std::cout << "\ndata3x_1 (= data3_1):\n" << data3x_1 << std::endl;
 
 
