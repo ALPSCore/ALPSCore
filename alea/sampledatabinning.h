@@ -156,7 +156,6 @@ public:
   template <class OP> void transform(OP op);
 */
 
-
 protected: 
   void collect_bins(uint64_t);
   void analyze() const;
@@ -605,14 +604,10 @@ void sampledatabinning<T>::analyze() const
     count_ = bin_size()*bin_number();
 
     // calculate mean and error
-    jackknife();
+    jackknife();   // commented out for debugging...
 
-    /*
-     * Question (1): A) In <simpleobsdata.h>, we have has_variance_ and has_tau_ to be set false.
-     *                  What about here?
-     *               B) How to reset a boost optional variable?  -- can anyone have quick and good solution?
-     */
-
+    variance_opt_ = boost::none_t();   // variance is lost after jacknife operation
+    tau_opt_      = boost::none_t();   // tau is lost after jacknife operation
   }
   is_statistics_valid_ = true;
 }
@@ -633,6 +628,7 @@ void sampledatabinning<T>::fill_jack() const
     resize_same_as(jack_[0], bin_value(0));     
     for(uint64_t i = 0; i < bin_number(); ++i) 
       jack_[0] += alps::numeric_cast<result_type>(bin_value(i)) / count_type(bin_size());
+
     for(uint64_t i = 0; i < bin_number(); ++i) {
       resize_same_as(jack_[i+1], jack_[0]);
       result_type tmp(alps::numeric_cast<result_type>(bin_value(i)));
