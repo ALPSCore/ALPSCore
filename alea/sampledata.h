@@ -54,7 +54,7 @@ namespace alps {
   namespace alea {
 
     template<class T> 
-    class value_with_error 
+    class sampledata 
     {
     public:
       typedef T                                     value_type;
@@ -70,14 +70,14 @@ namespace alps {
     public:
       // constructors, assignment operator
 #ifdef ALPS_HAVE_PYTHON
-      value_with_error(boost::python::object const & mean_nparray, boost::python::object const & error_nparray);
+      sampledata(boost::python::object const & mean_nparray, boost::python::object const & error_nparray);
 #endif
-      value_with_error(value_type mean =value_type(), value_type error =value_type())
+      sampledata(value_type mean =value_type(), value_type error =value_type())
         : _mean(mean)
         , _error(error) 
       {}
     
-      inline value_with_error<value_type>& operator= (value_with_error<value_type> const rhs)
+      inline sampledata<value_type>& operator= (sampledata<value_type> const rhs)
       {
         _mean  = rhs._mean;
         _error = rhs._error;
@@ -93,12 +93,12 @@ namespace alps {
       boost::python::object error_nparray() const;
 #endif    
       // comparison
-      inline bool operator==(value_with_error const & rhs)
+      inline bool operator==(sampledata const & rhs)
       {  return ((_mean == rhs._mean) && (_error == rhs._error));  }
     
     
       // intrinsic operations: ( += , -= , *= , /= )
-      inline value_with_error<value_type>& operator+=(value_with_error<value_type> const & rhs)
+      inline sampledata<value_type>& operator+=(sampledata<value_type> const & rhs)
       {
         using std::sqrt;
         using alps::numeric::sq;
@@ -110,7 +110,7 @@ namespace alps {
         return *this;
       }
     
-      inline value_with_error<value_type>& operator+=(value_type const & rhs)
+      inline sampledata<value_type>& operator+=(value_type const & rhs)
       {
         using boost::numeric::operators::operator+;
        
@@ -118,7 +118,7 @@ namespace alps {
         return *this;
       }
     
-      inline value_with_error<value_type>& operator-=(value_with_error const & rhs)
+      inline sampledata<value_type>& operator-=(sampledata const & rhs)
       {
         using std::sqrt;
         using alps::numeric::sq;
@@ -131,7 +131,7 @@ namespace alps {
         return *this;
       }
     
-      inline value_with_error<value_type>& operator-=(value_type const & rhs)
+      inline sampledata<value_type>& operator-=(value_type const & rhs)
       {
         using boost::numeric::operators::operator-;
 
@@ -139,7 +139,7 @@ namespace alps {
         return *this;
       }
     
-      inline value_with_error<value_type>& operator*=(value_with_error<value_type> const & rhs)
+      inline sampledata<value_type>& operator*=(sampledata<value_type> const & rhs)
       {
         using std::sqrt;
         using alps::numeric::sq;
@@ -152,7 +152,7 @@ namespace alps {
         return *this;
       }
     
-      inline value_with_error<value_type>& operator*=(value_type const & rhs)
+      inline sampledata<value_type>& operator*=(value_type const & rhs)
       {
         using std::abs;
         using alps::numeric::abs;
@@ -163,7 +163,7 @@ namespace alps {
         return *this;
       }
     
-      inline value_with_error<value_type>& operator/=(value_with_error<value_type> const & rhs)
+      inline sampledata<value_type>& operator/=(sampledata<value_type> const & rhs)
       {
         using std::sqrt;
         using alps::numeric::sq;
@@ -178,7 +178,7 @@ namespace alps {
         return *this;
       }
     
-      inline value_with_error<value_type>& operator/=(value_type const & rhs)
+      inline sampledata<value_type>& operator/=(value_type const & rhs)
       {
         using std::abs;
         using alps::numeric::abs;
@@ -196,7 +196,7 @@ namespace alps {
         return (_mean.size());
       }
 
-      void push_back(value_with_error<element_type> const & rhs)
+      void push_back(sampledata<element_type> const & rhs)
       {
         _mean.push_back(rhs.mean());
         _error.push_back(rhs.error());
@@ -215,7 +215,7 @@ namespace alps {
         _error.clear();
       }
 
-      void insert(index_type const & index, value_with_error<element_type> const & value)
+      void insert(index_type const & index, sampledata<element_type> const & value)
       {
         assert((_mean.size() > index) && (_error.size() > index));
         _mean.insert(_mean.begin()+index,value.mean());
@@ -229,23 +229,23 @@ namespace alps {
         _error.erase(_error.begin()+index);
       }
 
-      value_with_error<element_type> at(index_type const & index)
+      sampledata<element_type> at(index_type const & index)
       {
-        return value_with_error<element_type>(_mean[index],_error[index]);
+        return sampledata<element_type>(_mean[index],_error[index]);
       }
     };
     
     
     // i/o operators
     template <class T>
-    std::ostream& operator<< (std::ostream &out, value_with_error<T> const& value)
+    std::ostream& operator<< (std::ostream &out, sampledata<T> const& value)
     {
       out << value.mean() << " +/- " << value.error();
       return out;
     }
     
     template <class T>
-    std::ostream& operator<< (std::ostream &out, value_with_error<std::vector<T> > const & vec)
+    std::ostream& operator<< (std::ostream &out, sampledata<std::vector<T> > const & vec)
     {
       for (std::size_t index=0; index < vec.size(); ++index)  
       {
@@ -257,40 +257,40 @@ namespace alps {
     
     // positivity operation, declaration of negativity and absolute declaration
     template <class T>
-    inline value_with_error<T>& operator+(value_with_error<T>& rhs)  
+    inline sampledata<T>& operator+(sampledata<T>& rhs)  
     {  
       return rhs;  
     }
     
     template <class T>
-    inline value_with_error<T> operator-(value_with_error<T> rhs)
+    inline sampledata<T> operator-(sampledata<T> rhs)
     {
       using boost::numeric::operators::operator-;
-      return value_with_error<T>(-(rhs.mean()),rhs.error());
+      return sampledata<T>(-(rhs.mean()),rhs.error());
     }
     
     template <class T>
-    inline value_with_error<T> abs(value_with_error<T> rhs)
+    inline sampledata<T> abs(sampledata<T> rhs)
     {
       using std::abs;
       using alps::numeric::abs;
       
-      return value_with_error<T>(abs(rhs.mean()),rhs.error());  
+      return sampledata<T>(abs(rhs.mean()),rhs.error());  
     }
     
     
     // ( + , - , * , / ) operators
     #define IMPLEMENT_OPERATION(OPERATOR_NAME,OPERATOR_ASSIGN) \
     template<class T> \
-    inline value_with_error<T> OPERATOR_NAME(value_with_error<T> lhs, value_with_error<T> const & rhs) \
+    inline sampledata<T> OPERATOR_NAME(sampledata<T> lhs, sampledata<T> const & rhs) \
     {  return lhs OPERATOR_ASSIGN rhs;  } \
     \
     template <class T> \
-    inline value_with_error<T> OPERATOR_NAME(value_with_error<T> lhs, T const & rhs) \
+    inline sampledata<T> OPERATOR_NAME(sampledata<T> lhs, T const & rhs) \
     {  return lhs OPERATOR_ASSIGN rhs;  } \
     \
     template <class T> \
-    inline value_with_error<std::vector<T> > OPERATOR_NAME(value_with_error<std::vector<T> > lhs, typename value_with_error<std::vector<T> >::element_type const & rhs_elem) \
+    inline sampledata<std::vector<T> > OPERATOR_NAME(sampledata<std::vector<T> > lhs, typename sampledata<std::vector<T> >::element_type const & rhs_elem) \
     { \
       std::vector<T> rhs(lhs.size(),rhs_elem); \
       return lhs OPERATOR_ASSIGN rhs; \
@@ -302,19 +302,19 @@ namespace alps {
     IMPLEMENT_OPERATION(operator/,/=)
     
     template <class T>
-    inline value_with_error<T> operator+(T const & lhs, value_with_error<T> rhs)
+    inline sampledata<T> operator+(T const & lhs, sampledata<T> rhs)
     {  return rhs += lhs;  }
     
     template <class T>
-    inline value_with_error<T> operator-(T const & lhs, value_with_error<T> rhs)
+    inline sampledata<T> operator-(T const & lhs, sampledata<T> rhs)
     { return -rhs + lhs;  }
     
     template <class T>
-    inline value_with_error<T> operator*(T const & lhs, value_with_error<T> rhs)
+    inline sampledata<T> operator*(T const & lhs, sampledata<T> rhs)
     {  return rhs *= lhs;  }
     
     template <class T>
-    inline value_with_error<T> operator/(T const & lhs, value_with_error<T> const & rhs)
+    inline sampledata<T> operator/(T const & lhs, sampledata<T> const & rhs)
     {
       using std::abs;
       using alps::numeric::abs;
@@ -322,12 +322,12 @@ namespace alps {
       using boost::numeric::operators::operator/;
 
       T inverse_mean = lhs/rhs.mean();
-      return value_with_error<T>(inverse_mean,abs(inverse_mean*rhs.error()/rhs.mean()));
+      return sampledata<T>(inverse_mean,abs(inverse_mean*rhs.error()/rhs.mean()));
     }
 
     #define IMPLEMENT_OPERATION2(OPERATOR_NAME,OPERATOR_ASSIGN) \
     template <class T> \
-    inline value_with_error<std::vector<T> > OPERATOR_NAME(typename value_with_error<std::vector<T> >::element_type const & lhs_elem, value_with_error<std::vector<T> > rhs) \
+    inline sampledata<std::vector<T> > OPERATOR_NAME(typename sampledata<std::vector<T> >::element_type const & lhs_elem, sampledata<std::vector<T> > rhs) \
     { \
       std::vector<T> lhs(rhs.size(),lhs_elem); \
       return lhs OPERATOR_ASSIGN rhs; \
@@ -340,7 +340,7 @@ namespace alps {
 
     // pow, sq, sqrt, cb, cbrt, exp, log    
     template <class T>
-    inline value_with_error<T> pow(value_with_error<T> rhs, typename value_with_error<T>::element_type const & exponent)
+    inline sampledata<T> pow(sampledata<T> rhs, typename sampledata<T>::element_type const & exponent)
     {
       if (exponent == 1.)
       {
@@ -356,13 +356,13 @@ namespace alps {
         using boost::numeric::operators::operator*;
 
         T dummy = pow(rhs.mean(),exponent-1.);
-        return value_with_error<T>(dummy*rhs.mean(),abs(exponent*dummy*rhs.error()));
+        return sampledata<T>(dummy*rhs.mean(),abs(exponent*dummy*rhs.error()));
       }
     }
 
 
     template<class T>
-    inline value_with_error<T> sq(value_with_error<T> rhs)
+    inline sampledata<T> sq(sampledata<T> rhs)
     {
       using alps::numeric::sq;
       using std::abs;
@@ -370,11 +370,11 @@ namespace alps {
       using alps::numeric::operator*;
       using boost::numeric::operators::operator*;
 
-      return value_with_error<T>(sq(rhs.mean()),abs(2.*rhs.mean()*rhs.error()));
+      return sampledata<T>(sq(rhs.mean()),abs(2.*rhs.mean()*rhs.error()));
     }
     
     template<class T>
-    value_with_error<T> cb(value_with_error<T> rhs)
+    sampledata<T> cb(sampledata<T> rhs)
     {
       using alps::numeric::sq;
       using std::abs;
@@ -382,11 +382,11 @@ namespace alps {
       using alps::numeric::operator*;
       using boost::numeric::operators::operator*;
 
-      return value_with_error<T>((sq(rhs.mean()))*rhs.mean(),abs(3.*(sq(rhs.mean()))*rhs.error()));
+      return sampledata<T>((sq(rhs.mean()))*rhs.mean(),abs(3.*(sq(rhs.mean()))*rhs.error()));
     }
     
     template<class T>
-    value_with_error<T> sqrt(value_with_error<T> rhs)
+    sampledata<T> sqrt(sampledata<T> rhs)
     {
       using std::sqrt;
       using alps::numeric::sqrt;
@@ -395,11 +395,11 @@ namespace alps {
       using alps::numeric::operator*;
       using boost::numeric::operators::operator/;
 
-      return value_with_error<T>(sqrt(rhs.mean()),abs(rhs.error()/(2.*sqrt(rhs.mean()))));
+      return sampledata<T>(sqrt(rhs.mean()),abs(rhs.error()/(2.*sqrt(rhs.mean()))));
     }
     
     template<class T>
-    value_with_error<T> cbrt(value_with_error<T> rhs)
+    sampledata<T> cbrt(sampledata<T> rhs)
     {
       using alps::numeric::sq;
       using std::abs;
@@ -410,22 +410,22 @@ namespace alps {
       using boost::numeric::operators::operator/;
 
       T dummy = pow(rhs.mean(),1./3);
-      return value_with_error<T>(dummy,abs(rhs.error()/(3.*sq(dummy))));
+      return sampledata<T>(dummy,abs(rhs.error()/(3.*sq(dummy))));
     }
     
     template<class T>
-    value_with_error<T> exp(value_with_error<T> rhs)
+    sampledata<T> exp(sampledata<T> rhs)
     {
       using std::exp;
       using alps::numeric::exp;
       using boost::numeric::operators::operator*;
 
       T dummy = exp(rhs.mean());
-      return value_with_error<T>(dummy,dummy*rhs.error());
+      return sampledata<T>(dummy,dummy*rhs.error());
     }
     
     template<class T>
-    value_with_error<T> log(value_with_error<T> rhs)
+    sampledata<T> log(sampledata<T> rhs)
     {
       using std::log;
       using alps::numeric::log;
@@ -433,13 +433,13 @@ namespace alps {
       using alps::numeric::abs;
       using boost::numeric::operators::operator/;
 
-      return value_with_error<T>(log(rhs.mean()),abs(rhs.error()/rhs.mean()));
+      return sampledata<T>(log(rhs.mean()),abs(rhs.error()/rhs.mean()));
     }
 
   
     // ( sin, ... , atanh ) operations
     template<class T>
-    inline value_with_error<T> sin(value_with_error<T> rhs)
+    inline sampledata<T> sin(sampledata<T> rhs)
     {
       using std::abs;
       using alps::numeric::abs;
@@ -450,11 +450,11 @@ namespace alps {
       using boost::numeric::operators::operator*;
 
       T derivative = cos(rhs.mean());
-      return value_with_error<T>(sin(rhs.mean()),abs(derivative*rhs.error()));
+      return sampledata<T>(sin(rhs.mean()),abs(derivative*rhs.error()));
     }
     
     template<class T>
-    value_with_error<T> cos(value_with_error<T> rhs)
+    sampledata<T> cos(sampledata<T> rhs)
     {
       using std::abs;
       using alps::numeric::abs;
@@ -466,11 +466,11 @@ namespace alps {
       using boost::numeric::operators::operator*;
 
       T derivative = -sin(rhs.mean());
-      return value_with_error<T>(cos(rhs.mean()),abs(derivative*rhs.error()));
+      return sampledata<T>(cos(rhs.mean()),abs(derivative*rhs.error()));
     }
     
     template<class T>
-    value_with_error<T> tan(value_with_error<T> rhs)
+    sampledata<T> tan(sampledata<T> rhs)
     {
       using std::abs;
       using alps::numeric::abs;
@@ -482,11 +482,11 @@ namespace alps {
       using alps::numeric::operator/;
 
       T derivative = 1./(cos(rhs.mean())*cos(rhs.mean()));
-      return value_with_error<T>(tan(rhs.mean()),abs(derivative*rhs.error()));
+      return sampledata<T>(tan(rhs.mean()),abs(derivative*rhs.error()));
     }
     
     template<class T>
-    value_with_error<T> sinh(value_with_error<T> rhs)
+    sampledata<T> sinh(sampledata<T> rhs)
     {
       using std::abs;
       using alps::numeric::abs;
@@ -497,11 +497,11 @@ namespace alps {
       using boost::numeric::operators::operator*;
 
       T derivative = cosh(rhs.mean());
-      return value_with_error<T>(sinh(rhs.mean()),abs(derivative*rhs.error()));
+      return sampledata<T>(sinh(rhs.mean()),abs(derivative*rhs.error()));
     }
     
     template<class T>
-    value_with_error<T> cosh(value_with_error<T> rhs)
+    sampledata<T> cosh(sampledata<T> rhs)
     {
       using std::abs;
       using alps::numeric::abs;
@@ -512,11 +512,11 @@ namespace alps {
       using boost::numeric::operators::operator*;
 
       T derivative = sinh(rhs.mean());
-      return value_with_error<T>(cosh(rhs.mean()),abs(derivative*rhs.error()));
+      return sampledata<T>(cosh(rhs.mean()),abs(derivative*rhs.error()));
     }
     
     template<class T>
-    value_with_error<T> tanh(value_with_error<T> rhs)
+    sampledata<T> tanh(sampledata<T> rhs)
     {
       using std::abs;
       using alps::numeric::abs;
@@ -528,11 +528,11 @@ namespace alps {
       using alps::numeric::operator/;
 
       T derivative = 1./(cosh(rhs.mean())*cosh(rhs.mean()));
-      return value_with_error<T>(tanh(rhs.mean()),abs(derivative*rhs.error()));
+      return sampledata<T>(tanh(rhs.mean()),abs(derivative*rhs.error()));
     }
     
     template<class T>
-    value_with_error<T> asin(value_with_error<T> rhs)
+    sampledata<T> asin(sampledata<T> rhs)
     {
       using std::abs;
       using alps::numeric::abs;
@@ -545,11 +545,11 @@ namespace alps {
       using alps::numeric::operator/;
 
       T derivative = 1./sqrt(1. - rhs.mean()*rhs.mean());
-      return value_with_error<T>(asin(rhs.mean()),abs(derivative*rhs.error()));
+      return sampledata<T>(asin(rhs.mean()),abs(derivative*rhs.error()));
     }
     
     template<class T>
-    value_with_error<T> acos(value_with_error<T> rhs)
+    sampledata<T> acos(sampledata<T> rhs)
     {
       using std::abs;
       using alps::numeric::abs;
@@ -563,11 +563,11 @@ namespace alps {
       using alps::numeric::operator/;
 
       T derivative = -1./sqrt(1. - rhs.mean()*rhs.mean());
-      return value_with_error<T>(acos(rhs.mean()),abs(derivative*rhs.error()));
+      return sampledata<T>(acos(rhs.mean()),abs(derivative*rhs.error()));
     }
     
     template<class T>
-    value_with_error<T> atan(value_with_error<T> rhs)
+    sampledata<T> atan(sampledata<T> rhs)
     {
       using std::abs;
       using alps::numeric::abs;
@@ -578,11 +578,11 @@ namespace alps {
       using alps::numeric::operator/;
 
       T derivative = 1./(1. + rhs.mean()*rhs.mean());
-      return value_with_error<T>(atan(rhs.mean()),abs(derivative*rhs.error()));
+      return sampledata<T>(atan(rhs.mean()),abs(derivative*rhs.error()));
     }
     
     template<class T>
-    value_with_error<T> asinh(value_with_error<T> rhs)
+    sampledata<T> asinh(sampledata<T> rhs)
     {
       using std::abs;
       using alps::numeric::abs;
@@ -595,11 +595,11 @@ namespace alps {
       using alps::numeric::operator/;
 
       T derivative = 1./sqrt(rhs.mean()*rhs.mean() + 1.);
-      return value_with_error<T>(asinh(rhs.mean()),abs(derivative*rhs.error()));
+      return sampledata<T>(asinh(rhs.mean()),abs(derivative*rhs.error()));
     }
     
     template<class T>
-    value_with_error<T> acosh(value_with_error<T> rhs)
+    sampledata<T> acosh(sampledata<T> rhs)
     {
       using std::abs;
       using alps::numeric::abs;
@@ -612,11 +612,11 @@ namespace alps {
       using alps::numeric::operator/;
 
       T derivative = 1./sqrt(rhs.mean()*rhs.mean() - 1.);
-      return value_with_error<T>(acosh(rhs.mean()),abs(derivative*rhs.error()));
+      return sampledata<T>(acosh(rhs.mean()),abs(derivative*rhs.error()));
     }
     
     template<class T>
-    value_with_error<T> atanh(value_with_error<T> rhs)
+    sampledata<T> atanh(sampledata<T> rhs)
     {
       using std::abs;
       using alps::numeric::abs;
@@ -628,162 +628,162 @@ namespace alps {
 
 
       T derivative = 1./(1. - rhs.mean()*rhs.mean());
-      return value_with_error<T>(atanh(rhs.mean()),abs(derivative*rhs.error()));
+      return sampledata<T>(atanh(rhs.mean()),abs(derivative*rhs.error()));
     }
 
 
-    // extended support for std::vector<value_with_error<T> >    
+    // extended support for std::vector<sampledata<T> >    
     template<class T>
-    inline std::vector<value_with_error<T> > operator+(std::vector<value_with_error<T> > const & lhs, std::vector<value_with_error<T> > const & rhs)
+    inline std::vector<sampledata<T> > operator+(std::vector<sampledata<T> > const & lhs, std::vector<sampledata<T> > const & rhs)
     {
-      return boost::numeric::operators::operator+ <value_with_error<T>, value_with_error<T> > (lhs,rhs);
+      return boost::numeric::operators::operator+ <sampledata<T>, sampledata<T> > (lhs,rhs);
     }
 
     template<class T>
-    inline std::vector<value_with_error<T> > operator+(std::vector<value_with_error<T> > const & lhs, T const & rhs)
+    inline std::vector<sampledata<T> > operator+(std::vector<sampledata<T> > const & lhs, T const & rhs)
     {
       std::vector<T> rhs_vector;
       rhs_vector.resize(lhs.size());
       std::fill(rhs_vector.begin(),rhs_vector.end(),rhs);
 
-      return boost::numeric::operators::operator+ <value_with_error<T>, T> (lhs,rhs_vector);
+      return boost::numeric::operators::operator+ <sampledata<T>, T> (lhs,rhs_vector);
     }
 
     template<class T>
-    inline std::vector<value_with_error<T> > operator+(T const & lhs, std::vector<value_with_error<T> > const & rhs)
+    inline std::vector<sampledata<T> > operator+(T const & lhs, std::vector<sampledata<T> > const & rhs)
     {
       std::vector<T> lhs_vector;
       lhs_vector.resize(rhs.size());
       std::fill(lhs_vector.begin(),lhs_vector.end(),lhs);
 
-      return boost::numeric::operators::operator+ <T, value_with_error<T> > (lhs_vector,rhs);
+      return boost::numeric::operators::operator+ <T, sampledata<T> > (lhs_vector,rhs);
     }
 
     template<class T>
-    inline std::vector<value_with_error<T> > operator+(std::vector<value_with_error<T> > const & lhs, std::vector<T> const & rhs)
+    inline std::vector<sampledata<T> > operator+(std::vector<sampledata<T> > const & lhs, std::vector<T> const & rhs)
     {
-      return boost::numeric::operators::operator+<value_with_error<T>, T> (lhs,rhs);
+      return boost::numeric::operators::operator+<sampledata<T>, T> (lhs,rhs);
     }
 
     template<class T>
-    inline std::vector<value_with_error<T> > operator+(std::vector<T> const & lhs, std::vector<value_with_error<T> > const & rhs)
+    inline std::vector<sampledata<T> > operator+(std::vector<T> const & lhs, std::vector<sampledata<T> > const & rhs)
     {
-      return boost::numeric::operators::operator+ <T, value_with_error<T> > (lhs,rhs);
+      return boost::numeric::operators::operator+ <T, sampledata<T> > (lhs,rhs);
     }
 
     template<class T>
-    inline std::vector<value_with_error<T> > operator-(std::vector<value_with_error<T> > const & lhs, std::vector<value_with_error<T> > const & rhs)
+    inline std::vector<sampledata<T> > operator-(std::vector<sampledata<T> > const & lhs, std::vector<sampledata<T> > const & rhs)
     {
-      return boost::numeric::operators::operator- <value_with_error<T>, value_with_error<T> > (lhs,rhs);
+      return boost::numeric::operators::operator- <sampledata<T>, sampledata<T> > (lhs,rhs);
     }
 
     
     template<class T>
-    inline std::vector<value_with_error<T> > operator-(std::vector<value_with_error<T> > const & lhs, T const & rhs)
+    inline std::vector<sampledata<T> > operator-(std::vector<sampledata<T> > const & lhs, T const & rhs)
     {
       std::vector<T> rhs_vector; 
       rhs_vector.resize(lhs.size());
       std::fill(rhs_vector.begin(),rhs_vector.end(),rhs);
 
-      return boost::numeric::operators::operator- <value_with_error<T>, T> (lhs,rhs_vector);
+      return boost::numeric::operators::operator- <sampledata<T>, T> (lhs,rhs_vector);
     }
     
     template<class T>
-    inline std::vector<value_with_error<T> > operator-(T const & lhs, std::vector<value_with_error<T> > const & rhs)
+    inline std::vector<sampledata<T> > operator-(T const & lhs, std::vector<sampledata<T> > const & rhs)
     {
       std::vector<T> lhs_vector;
       lhs_vector.resize(rhs.size());
       std::fill(lhs_vector.begin(),lhs_vector.end(),lhs);
 
-      return boost::numeric::operators::operator- <T, value_with_error<T> > (lhs_vector,rhs);
+      return boost::numeric::operators::operator- <T, sampledata<T> > (lhs_vector,rhs);
     }
 
     template<class T>
-    inline std::vector<value_with_error<T> > operator-(std::vector<value_with_error<T> > const & lhs, std::vector<T> const & rhs)
+    inline std::vector<sampledata<T> > operator-(std::vector<sampledata<T> > const & lhs, std::vector<T> const & rhs)
     {
-      return boost::numeric::operators::operator- <value_with_error<T>, T> (lhs,rhs);
+      return boost::numeric::operators::operator- <sampledata<T>, T> (lhs,rhs);
     }
    
     template<class T>
-    inline std::vector<value_with_error<T> > operator-(std::vector<T> const & lhs, std::vector<value_with_error<T> > const & rhs)
+    inline std::vector<sampledata<T> > operator-(std::vector<T> const & lhs, std::vector<sampledata<T> > const & rhs)
     {
-      return boost::numeric::operators::operator- <T, value_with_error<T> > (lhs,rhs);
+      return boost::numeric::operators::operator- <T, sampledata<T> > (lhs,rhs);
     }
     
     template<class T>
-    inline std::vector<value_with_error<T> > operator*(std::vector<value_with_error<T> > const & lhs, std::vector<value_with_error<T> > const & rhs)
+    inline std::vector<sampledata<T> > operator*(std::vector<sampledata<T> > const & lhs, std::vector<sampledata<T> > const & rhs)
     {
-      return boost::numeric::operators::operator* <value_with_error<T>, value_with_error<T> > (lhs,rhs);
+      return boost::numeric::operators::operator* <sampledata<T>, sampledata<T> > (lhs,rhs);
     }
     
     template<class T>
-    inline std::vector<value_with_error<T> > operator*(std::vector<value_with_error<T> > const & lhs, T const & rhs)
+    inline std::vector<sampledata<T> > operator*(std::vector<sampledata<T> > const & lhs, T const & rhs)
     {
       std::vector<T> rhs_vector;
       rhs_vector.resize(lhs.size());
       std::fill(rhs_vector.begin(),rhs_vector.end(),rhs);
 
-      return boost::numeric::operators::operator* <value_with_error<T>, T> (lhs,rhs_vector);
+      return boost::numeric::operators::operator* <sampledata<T>, T> (lhs,rhs_vector);
     }
     
     template<class T>
-    inline std::vector<value_with_error<T> > operator*(T const & lhs, std::vector<value_with_error<T> > const & rhs)
+    inline std::vector<sampledata<T> > operator*(T const & lhs, std::vector<sampledata<T> > const & rhs)
     {
       std::vector<T> lhs_vector;
       lhs_vector.resize(rhs.size());
       std::fill(lhs_vector.begin(),lhs_vector.end(),lhs);
 
-      return boost::numeric::operators::operator* <T, value_with_error<T> > (lhs_vector,rhs);
+      return boost::numeric::operators::operator* <T, sampledata<T> > (lhs_vector,rhs);
     }
     
     template<class T>
-    inline std::vector<value_with_error<T> > operator*(std::vector<value_with_error<T> > const & lhs, std::vector<T> const & rhs)
+    inline std::vector<sampledata<T> > operator*(std::vector<sampledata<T> > const & lhs, std::vector<T> const & rhs)
     {
-      return boost::numeric::operators::operator* <value_with_error<T>, T> (lhs,rhs);
+      return boost::numeric::operators::operator* <sampledata<T>, T> (lhs,rhs);
     }
 
     template<class T>
-    inline std::vector<value_with_error<T> > operator*(std::vector<T> const & lhs, std::vector<value_with_error<T> > const & rhs)
+    inline std::vector<sampledata<T> > operator*(std::vector<T> const & lhs, std::vector<sampledata<T> > const & rhs)
     {
-      return boost::numeric::operators::operator* <T, value_with_error<T> > (lhs,rhs);
+      return boost::numeric::operators::operator* <T, sampledata<T> > (lhs,rhs);
     }
 
     template<class T>
-    inline std::vector<value_with_error<T> > operator/(std::vector<value_with_error<T> > const & lhs, std::vector<value_with_error<T> > const & rhs)
+    inline std::vector<sampledata<T> > operator/(std::vector<sampledata<T> > const & lhs, std::vector<sampledata<T> > const & rhs)
     {
-      return boost::numeric::operators::operator/ <value_with_error<T>, value_with_error<T> > (lhs,rhs);
+      return boost::numeric::operators::operator/ <sampledata<T>, sampledata<T> > (lhs,rhs);
     }
     
     template<class T>
-    inline std::vector<value_with_error<T> > operator/(std::vector<value_with_error<T> > const & lhs, T const & rhs)
+    inline std::vector<sampledata<T> > operator/(std::vector<sampledata<T> > const & lhs, T const & rhs)
     {
       std::vector<T> rhs_vector;
       rhs_vector.resize(lhs.size());
       std::fill(rhs_vector.begin(),rhs_vector.end(),rhs);
 
-      return boost::numeric::operators::operator/ <value_with_error<T>, T> (lhs,rhs_vector);
+      return boost::numeric::operators::operator/ <sampledata<T>, T> (lhs,rhs_vector);
     }
     
     template<class T>
-    inline std::vector<value_with_error<T> > operator/(T const & lhs, std::vector<value_with_error<T> > const & rhs)
+    inline std::vector<sampledata<T> > operator/(T const & lhs, std::vector<sampledata<T> > const & rhs)
     {
       std::vector<T> lhs_vector;
       lhs_vector.resize(rhs.size());
       std::fill(lhs_vector.begin(),lhs_vector.end(),lhs);
 
-      return boost::numeric::operators::operator/ <T, value_with_error<T> > (lhs_vector,rhs);
+      return boost::numeric::operators::operator/ <T, sampledata<T> > (lhs_vector,rhs);
     }
 
     template<class T>
-    inline std::vector<value_with_error<T> > operator/(std::vector<value_with_error<T> > const & lhs, std::vector<T> const & rhs)
+    inline std::vector<sampledata<T> > operator/(std::vector<sampledata<T> > const & lhs, std::vector<T> const & rhs)
     {
-      return boost::numeric::operators::operator/ <value_with_error<T>, T> (lhs,rhs);
+      return boost::numeric::operators::operator/ <sampledata<T>, T> (lhs,rhs);
     } 
    
     template<class T>
-    inline std::vector<value_with_error<T> > operator/(std::vector<T> const & lhs, std::vector<value_with_error<T> > const & rhs)
+    inline std::vector<sampledata<T> > operator/(std::vector<T> const & lhs, std::vector<sampledata<T> > const & rhs)
     {
-      return boost::numeric::operators::operator/ <T, value_with_error<T> > (lhs,rhs);
+      return boost::numeric::operators::operator/ <T, sampledata<T> > (lhs,rhs);
     } 
 
     template<class T>
@@ -795,11 +795,11 @@ namespace alps {
 
 
     template<class T>
-    inline static std::vector<value_with_error<T> > vec_pow(std::vector<value_with_error<T> > const & rhs, T const & exponent)
+    inline static std::vector<sampledata<T> > vec_pow(std::vector<sampledata<T> > const & rhs, T const & exponent)
     {
       std::vector<T> exponent_vec;
       exponent_vec.resize(rhs.size(),exponent);
-      std::vector<value_with_error<T> > res;
+      std::vector<sampledata<T> > res;
       res.reserve(rhs.size());
       std::transform(rhs.begin(),rhs.end(),exponent_vec.begin(),std::back_inserter(res),pow<T>);
       return res;
@@ -807,9 +807,9 @@ namespace alps {
 
     #define IMPLEMENT_VECTOR_OF_VALUE_WITH_ERROR_FUNCTION(NAME1,NAME2) \
     template<class T> \
-    std::vector<value_with_error<T> > NAME1(std::vector<value_with_error<T> > const & rhs) \
+    std::vector<sampledata<T> > NAME1(std::vector<sampledata<T> > const & rhs) \
     { \
-      std::vector<value_with_error<T> > res; \
+      std::vector<sampledata<T> > res; \
       res.reserve(rhs.size()); \
       std::transform(rhs.begin(),rhs.end(),std::back_inserter(res),NAME2<T>); \
       return res; \
@@ -836,11 +836,11 @@ namespace alps {
     IMPLEMENT_VECTOR_OF_VALUE_WITH_ERROR_FUNCTION(vec_atanh,atanh)
 
 
-    // std::vector<value_with_error<T> >  interchanging with  value_with_error<std::vector<T> >
+    // std::vector<sampledata<T> >  interchanging with  sampledata<std::vector<T> >
     template <class T>
-    std::vector<value_with_error<T> > obtain_vector_of_value_with_error_from_vector_with_error(value_with_error<std::vector<T> > vec_with_error)
+    std::vector<sampledata<T> > obtain_vector_of_sampledata_from_vector_with_error(sampledata<std::vector<T> > vec_with_error)
     {
-      std::vector<value_with_error<T> > res;
+      std::vector<sampledata<T> > res;
       for (std::size_t index=0; index < vec_with_error.size(); ++index)
       {
         res.push_back(vec_with_error.at(index));
@@ -849,12 +849,12 @@ namespace alps {
     }
 
     template <class T>
-    value_with_error<std::vector<T> > obtain_vector_with_error_from_vector_of_value_with_error(std::vector<value_with_error<T> > vec_of_value_with_error)
+    sampledata<std::vector<T> > obtain_vector_with_error_from_vector_of_sampledata(std::vector<sampledata<T> > vec_of_sampledata)
     {
-      value_with_error<std::vector<T> > res;
-      for (std::size_t index=0; index < vec_of_value_with_error.size(); ++index)
+      sampledata<std::vector<T> > res;
+      for (std::size_t index=0; index < vec_of_sampledata.size(); ++index)
       {
-        res.push_back(vec_of_value_with_error[index]);
+        res.push_back(vec_of_sampledata[index]);
       }
       return res;
     }

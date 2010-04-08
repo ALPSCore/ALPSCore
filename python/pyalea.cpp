@@ -31,7 +31,7 @@
 #define PY_ARRAY_UNIQUE_SYMBOL pyalea_PyArrayHandle
 
 #include <alps/alea/detailedbinning.h>
-#include <alps/alea/value_with_error.h>
+#include <alps/alea/sampledata.h>
 #include <alps/python/make_copy.hpp>
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
@@ -45,13 +45,13 @@ namespace alps {
 
     // for printing support
     template <class T>
-    inline static boost::python::str print_value_with_error(value_with_error<T> const & self)
+    inline static boost::python::str print_sampledata(sampledata<T> const & self)
     {
       return boost::python::str(boost::python::str(self.mean()) + " +/- " + boost::python::str(self.error()));
     }
 
     template <class T>
-    static boost::python::str print_vector_with_error(value_with_error<std::vector<T> > self)
+    static boost::python::str print_vector_with_error(sampledata<std::vector<T> > self)
     {
       boost::python::str s;
       for (std::size_t index=0; index < self.size(); ++index)
@@ -63,14 +63,14 @@ namespace alps {
     }
 
     template<class T>
-    inline static boost::python::str print_vector_of_value_with_error(std::vector<value_with_error<T> > const & self)
+    inline static boost::python::str print_vector_of_sampledata(std::vector<sampledata<T> > const & self)
     {
-      typename std::vector<value_with_error<T> >::const_iterator it;
+      typename std::vector<sampledata<T> >::const_iterator it;
 
       boost::python::str s;
       for (it = self.begin(); it != self.end(); ++it)
       {
-        s += print_value_with_error(*it);
+        s += print_sampledata(*it);
         if (it != (self.end()-1))  {  s += '\n';  }
       }
       return s;
@@ -137,7 +137,7 @@ namespace alps {
     // loading and extracting numpy arrays into vector_with_error
     #define IMPLEMENT_VECTOR_WITH_ERROR_CONSTRUCTION(TYPE) \
     template<> \
-    value_with_error<std::vector<TYPE> >::value_with_error(boost::python::object const & mean_nparray, boost::python::object const & error_nparray) \
+    sampledata<std::vector<TYPE> >::sampledata(boost::python::object const & mean_nparray, boost::python::object const & error_nparray) \
       : _mean(convert2vector<TYPE>(mean_nparray)) \
       , _error(convert2vector<TYPE>(error_nparray)) \
     {}
@@ -149,13 +149,13 @@ namespace alps {
 
     #define IMPLEMENT_VECTOR_WITH_ERROR_GET(TYPE) \
     template<> \
-    boost::python::object value_with_error<std::vector<TYPE> >::mean_nparray() const \
+    boost::python::object sampledata<std::vector<TYPE> >::mean_nparray() const \
     { \
        return convert2numpy_array(_mean); \
     } \
     \
     template<> \
-    boost::python::object value_with_error<std::vector<TYPE> >::error_nparray() const \
+    boost::python::object sampledata<std::vector<TYPE> >::error_nparray() const \
     { \
        return convert2numpy_array(_error); \
     } \
@@ -174,9 +174,9 @@ namespace alps {
 
     // for pickling support
     template<class T>
-    struct value_with_error_pickle_suite : boost::python::pickle_suite
+    struct sampledata_pickle_suite : boost::python::pickle_suite
     {
-      static boost::python::tuple getinitargs(const value_with_error<T>& v)
+      static boost::python::tuple getinitargs(const sampledata<T>& v)
       {   
         return boost::python::make_tuple(v.mean(),v.error());
       }   
@@ -185,25 +185,25 @@ namespace alps {
     template<class T>
     struct vector_with_error_pickle_suite : boost::python::pickle_suite
     {
-      static boost::python::tuple getinitargs(const value_with_error<std::vector<T> >& v)
+      static boost::python::tuple getinitargs(const sampledata<std::vector<T> >& v)
       {
         return boost::python::make_tuple(v.mean_nparray(),v.error_nparray());
       }
     };
 
     template<class T>
-    struct vector_of_value_with_error_pickle_suite : boost::python::pickle_suite
+    struct vector_of_sampledata_pickle_suite : boost::python::pickle_suite
     {
-      static boost::python::tuple getstate(const std::vector<value_with_error<T> > vec_of) 
+      static boost::python::tuple getstate(const std::vector<sampledata<T> > vec_of) 
       {
-        value_with_error<std::vector<T> > vec_with = obtain_vector_with_error_from_vector_of_value_with_error<T>(vec_of);
+        sampledata<std::vector<T> > vec_with = obtain_vector_with_error_from_vector_of_sampledata<T>(vec_of);
         return boost::python::make_tuple(vec_with.mean_nparray(),vec_with.error_nparray());
       }
 
-      static void setstate(std::vector<value_with_error<T> > & vec_of, boost::python::tuple state)
+      static void setstate(std::vector<sampledata<T> > & vec_of, boost::python::tuple state)
       {
-        value_with_error<std::vector<T> > vec_with(state[0],state[1]);
-        vec_of = obtain_vector_of_value_with_error_from_vector_with_error<T>(vec_with); 
+        sampledata<std::vector<T> > vec_with(state[0],state[1]);
+        vec_of = obtain_vector_of_sampledata_from_vector_with_error<T>(vec_with); 
       }
     };
 
@@ -216,38 +216,38 @@ using namespace alps::alea;
 
 BOOST_PYTHON_MODULE(pyalea)
 {
-  class_<value_with_error<double> >("value_with_error",init<optional<double,double> >())
-    .add_property("mean", &value_with_error<double>::mean)
-    .add_property("error",&value_with_error<double>::error)  
+  class_<sampledata<double> >("sampledata",init<optional<double,double> >())
+    .add_property("mean", &sampledata<double>::mean)
+    .add_property("error",&sampledata<double>::error)  
 
-    .def("__repr__", &print_value_with_error<double>)
+    .def("__repr__", &print_sampledata<double>)
 
-    .def("__deepcopy__", &alps::python::make_copy<value_with_error<double> >)
+    .def("__deepcopy__", &alps::python::make_copy<sampledata<double> >)
 
     .def(+self)
     .def(-self)
     .def("__abs__",&abs<double>)
-    .def(self == value_with_error<double>())
+    .def(self == sampledata<double>())
 
-    .def(self += value_with_error<double>())
+    .def(self += sampledata<double>())
     .def(self += double())
-    .def(self -= value_with_error<double>())
+    .def(self -= sampledata<double>())
     .def(self -= double())
-    .def(self *= value_with_error<double>())
+    .def(self *= sampledata<double>())
     .def(self *= double())
-    .def(self /= value_with_error<double>())
+    .def(self /= sampledata<double>())
     .def(self /= double())
 
-    .def(self + value_with_error<double>())
+    .def(self + sampledata<double>())
     .def(self + double())
     .def(double() + self)
-    .def(self - value_with_error<double>())
+    .def(self - sampledata<double>())
     .def(self - double())
     .def(double() - self)
-    .def(self * value_with_error<double>())
+    .def(self * sampledata<double>())
     .def(self * double())
     .def(double() * self)
-    .def(self / value_with_error<double>())
+    .def(self / sampledata<double>())
     .def(self / double())
     .def(double() / self)
 
@@ -273,14 +273,14 @@ BOOST_PYTHON_MODULE(pyalea)
     .def("acosh",&acosh<double>)
     .def("atanh",&atanh<double>)
 
-    .def_pickle(value_with_error_pickle_suite<double>())
+    .def_pickle(sampledata_pickle_suite<double>())
     ;
 
-  class_<value_with_error<std::vector<double> > >("vector_with_error",init<boost::python::object,boost::python::object>())
+  class_<sampledata<std::vector<double> > >("vector_with_error",init<boost::python::object,boost::python::object>())
     .def(init<optional<std::vector<double>,std::vector<double> > >())
 
-    .add_property("mean",&value_with_error<std::vector<double> >::mean_nparray)
-    .add_property("error",&value_with_error<std::vector<double> >::error_nparray)
+    .add_property("mean",&sampledata<std::vector<double> >::mean_nparray)
+    .add_property("error",&sampledata<std::vector<double> >::error_nparray)
 
 
 
@@ -289,34 +289,34 @@ BOOST_PYTHON_MODULE(pyalea)
 
     .def("__repr__", &print_vector_with_error<double>)
     
-    .def("__deepcopy__", &alps::python::make_copy<value_with_error<std::vector<double> > >)
+    .def("__deepcopy__", &alps::python::make_copy<sampledata<std::vector<double> > >)
 
 
-    .def("__len__",&value_with_error<std::vector<double> >::size)         
-    .def("append",&value_with_error<std::vector<double> >::push_back)     
-    .def("push_back",&value_with_error<std::vector<double> >::push_back)  
-    .def("insert",&value_with_error<std::vector<double> >::insert)    
-    .def("pop_back",&value_with_error<std::vector<double> >::pop_back)   
-    .def("erase",&value_with_error<std::vector<double> >::erase)        
-    .def("clear",&value_with_error<std::vector<double> >::clear)         
-    .def("at",&value_with_error<std::vector<double> >::at)
+    .def("__len__",&sampledata<std::vector<double> >::size)         
+    .def("append",&sampledata<std::vector<double> >::push_back)     
+    .def("push_back",&sampledata<std::vector<double> >::push_back)  
+    .def("insert",&sampledata<std::vector<double> >::insert)    
+    .def("pop_back",&sampledata<std::vector<double> >::pop_back)   
+    .def("erase",&sampledata<std::vector<double> >::erase)        
+    .def("clear",&sampledata<std::vector<double> >::clear)         
+    .def("at",&sampledata<std::vector<double> >::at)
 
-    .def(self + value_with_error<std::vector<double> >())
+    .def(self + sampledata<std::vector<double> >())
     .def(self + double())
     .def(double() + self)
     .def(self + std::vector<double>())
     .def(std::vector<double>() + self)
-    .def(self - value_with_error<std::vector<double> >())
+    .def(self - sampledata<std::vector<double> >())
     .def(self - double())
     .def(double() - self)
     .def(self - std::vector<double>())
     .def(std::vector<double>() - self)
-    .def(self * value_with_error<std::vector<double> >())
+    .def(self * sampledata<std::vector<double> >())
     .def(self * double())
     .def(double() * self)
     .def(self * std::vector<double>())
     .def(std::vector<double>() * self)
-    .def(self / value_with_error<std::vector<double> >())
+    .def(self / sampledata<std::vector<double> >())
     .def(self / double())
     .def(double() / self)
     .def(self / std::vector<double>())
@@ -352,29 +352,29 @@ BOOST_PYTHON_MODULE(pyalea)
     ;
 
 
-  class_<std::vector<value_with_error<double> > >("vector_of_value_with_error")
-    .def(vector_indexing_suite<std::vector<value_with_error<double> > >())
+  class_<std::vector<sampledata<double> > >("vector_of_sampledata")
+    .def(vector_indexing_suite<std::vector<sampledata<double> > >())
 
-    .def("__repr__", &print_vector_of_value_with_error<double>)
+    .def("__repr__", &print_vector_of_sampledata<double>)
 
-    .def("__deepcopy__", &alps::python::make_copy<std::vector<value_with_error<double> > >)
+    .def("__deepcopy__", &alps::python::make_copy<std::vector<sampledata<double> > >)
 
-    .def(self + std::vector<value_with_error<double> >())
+    .def(self + std::vector<sampledata<double> >())
     .def(self + double())
     .def(double() + self)
     .def(self + std::vector<double>())
     .def(std::vector<double>() + self)
-    .def(self - std::vector<value_with_error<double> >())
+    .def(self - std::vector<sampledata<double> >())
     .def(self - double())
     .def(double() - self)
     .def(self - std::vector<double>())
     .def(std::vector<double>() - self)
-    .def(self * std::vector<value_with_error<double> >())
+    .def(self * std::vector<sampledata<double> >())
     .def(self * double())
     .def(double() * self)
     .def(self * std::vector<double>())
     .def(std::vector<double>() * self)
-    .def(self / std::vector<value_with_error<double> >())
+    .def(self / std::vector<sampledata<double> >())
     .def(self / double())
     .def(double() / self)
     .def(self / std::vector<double>())
@@ -405,12 +405,12 @@ BOOST_PYTHON_MODULE(pyalea)
     .def("acosh",&vec_acosh<double>)
     .def("atanh",&vec_atanh<double>)
 
-    .def_pickle(vector_of_value_with_error_pickle_suite<double>())
+    .def_pickle(vector_of_sampledata_pickle_suite<double>())
 
     ;
 
-  boost::python::def("convert2vector_with_error",&obtain_vector_with_error_from_vector_of_value_with_error<double>);
-  boost::python::def("convert2vector_of_value_with_error",&obtain_vector_of_value_with_error_from_vector_with_error<double>);
+  boost::python::def("convert2vector_with_error",&obtain_vector_with_error_from_vector_of_sampledata<double>);
+  boost::python::def("convert2vector_of_sampledata",&obtain_vector_of_sampledata_from_vector_with_error<double>);
 
   class_<std::vector<double> >("vector")
     .def(vector_indexing_suite<std::vector<double> >())
