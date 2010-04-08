@@ -56,6 +56,11 @@
 #include <boost/lambda/lambda.hpp>
 #include <boost/optional/optional.hpp>
 
+#ifdef ALPS_HAVE_PYTHON
+#include <boost/python.hpp>
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+#endif
+
 #include <iostream>
 #include <numeric>
 #include <vector>
@@ -122,6 +127,12 @@ public:
   friend class binned_data;
 
   binned_data();
+  template <class X>
+  binned_data(std::vector<X> const & timeseries_measurements, uint64_t const desired_bin_number);
+#ifdef ALPS_HAVE_PYTHON
+  template <class X>
+  binned_data(boost::python::object const & timeseries_measurements_nparray, uint64_t const desired_bin_number);
+#endif
   binned_data(AbstractSimpleObservable<value_type> const & obs);
   template <class X, class S>
   binned_data(binned_data<X> const & my_binned_data, S s);
@@ -156,8 +167,7 @@ public:
   template <class OP> void transform(OP op);
 */
 
-//protected: 
-public:
+protected: 
   void collect_bins(uint64_t);
   void analyze() const;
   void fill_jack() const;
@@ -251,6 +261,29 @@ binned_data<T>::binned_data()
   , values_() 
   , jack_() 
 {}
+
+
+template <class T>
+template <class X>
+binned_data<T>::binned_data(std::vector<X> const & timeseries_measurements, uint64_t const desired_bin_number=0)
+  : count_(timeseries_measurements.size())
+  , binsize_(1)
+  , is_bin_changed_(false)
+  , is_statistics_valid_(false)
+  , is_jacknife_bins_filled_correctly_(false)
+  , is_nonlinear_operations_performed_(false)
+  , mean_()
+  , error_()
+  , variance_opt_()
+  , tau_opt_()
+  , values_()
+  , jack_()
+{
+  if (count()) {
+    values_ = timeseries_measurements;
+    if (desired_bin_number >= 1)  {  set_bin_number(desired_bin_number);  }
+  }
+}
 
 
 template <class T>
