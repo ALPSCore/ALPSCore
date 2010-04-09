@@ -105,10 +105,12 @@ namespace alps {
     // for interchanging purpose between numpy array and std::vector
     template <class T>  PyArray_TYPES getEnum();
 
-    template <>   PyArray_TYPES getEnum<double>()       {  return PyArray_DOUBLE;      }
-    template <>   PyArray_TYPES getEnum<long double>()  {  return PyArray_LONGDOUBLE;  }
-    template <>   PyArray_TYPES getEnum<int>()          {  return PyArray_INT;         }
-    template <>   PyArray_TYPES getEnum<long>()         {  return PyArray_LONG;        }
+    template <>   PyArray_TYPES getEnum<double>()              {  return PyArray_DOUBLE;      }
+    template <>   PyArray_TYPES getEnum<long double>()         {  return PyArray_LONGDOUBLE;  }
+    template <>   PyArray_TYPES getEnum<int>()                 {  return PyArray_INT;         }
+    template <>   PyArray_TYPES getEnum<long>()                {  return PyArray_LONG;        }
+    template <>   PyArray_TYPES getEnum<long long>()           {  return PyArray_LONG;        }
+    template <>   PyArray_TYPES getEnum<unsigned long long>()  {  return PyArray_LONG;        }
 
     void import_numpy_array()               
     {  
@@ -119,20 +121,33 @@ namespace alps {
         inited = true;
       }
     }
-
+      
+    template <class T>
+    boost::python::numeric::array convert2numpy_scalar(T value)
+    {
+        import_numpy_array();                 // ### WARNING: forgetting this will end up in segmentation fault!
+          
+        npy_intp arr_size= 1;   // ### NOTE: npy_intp is nothing but just signed size_t
+        boost::python::object obj(boost::python::handle<>(PyArray_SimpleNew(1, &arr_size, getEnum<T>())));  // ### NOTE: PyArray_SimpleNew is the new version of PyArray_FromDims
+        void *arr_data= PyArray_DATA((PyArrayObject*) obj.ptr());
+        memcpy(arr_data, &value, PyArray_ITEMSIZE((PyArrayObject*) obj.ptr()) * arr_size);
+          
+        return boost::python::extract<boost::python::numeric::array>(obj);
+    }
+      
     template <class T>
     boost::python::numeric::array convert2numpy_array(std::vector<T> vec)
     {
-      import_numpy_array();                 // ### WARNING: forgetting this will end up in segmentation fault!
-
-      npy_intp arr_size= vec.size();   // ### NOTE: npy_intp is nothing but just signed size_t
-      boost::python::object obj(boost::python::handle<>(PyArray_SimpleNew(1, &arr_size, getEnum<T>())));  // ### NOTE: PyArray_SimpleNew is the new version of PyArray_FromDims
-      void *arr_data= PyArray_DATA((PyArrayObject*) obj.ptr());
-      memcpy(arr_data, &vec.front(), PyArray_ITEMSIZE((PyArrayObject*) obj.ptr()) * arr_size);
-
-      return boost::python::extract<boost::python::numeric::array>(obj);
+        import_numpy_array();                 // ### WARNING: forgetting this will end up in segmentation fault!
+          
+        npy_intp arr_size= vec.size();   // ### NOTE: npy_intp is nothing but just signed size_t
+        boost::python::object obj(boost::python::handle<>(PyArray_SimpleNew(1, &arr_size, getEnum<T>())));  // ### NOTE: PyArray_SimpleNew is the new version of PyArray_FromDims
+        void *arr_data= PyArray_DATA((PyArrayObject*) obj.ptr());
+        memcpy(arr_data, &vec.front(), PyArray_ITEMSIZE((PyArrayObject*) obj.ptr()) * arr_size);
+          
+        return boost::python::extract<boost::python::numeric::array>(obj);
     }
-
+      
     template <class T>
     std::vector<T> convert2vector(boost::python::object arr)
     {
@@ -204,13 +219,32 @@ namespace alps {
     IMPLEMENT_VECTOR_WITH_ERROR_GET(double)
     IMPLEMENT_VECTOR_WITH_ERROR_GET(long double)
     
-    template< class T >
-    boost::python::object bins_nparray(T const &x)
-    {
-        return convert2numpy_array(x.bins());
-    }
-    
 
+    #define ALPS_PY_EXPORT_OBSERVABLE_METHOD(method, base_t)                    \
+      template <typename T>                                                     \
+      typename boost::enable_if<boost::is_scalar<typename T:: base_t >, boost::python::object>::type  \
+      method ## _nparray(T const &x)                                            \
+      {                                                                         \
+          return convert2numpy_scalar(x. method ());                            \
+      }                                                                         \
+      template <typename T>                                                     \
+      typename boost::disable_if<boost::is_scalar<typename T:: base_t >, boost::python::object>::type \
+      method ## _nparray(T const &x)                                            \
+      {                                                                         \
+          std::valarray<typename T:: base_t ::value_type> value = x. method (); \
+          /* I hate valarrays!!! */                                             \
+          return convert2numpy_array(std::vector<typename T:: base_t ::value_type >(&value[0], &value[0] + value.size()));  \
+      }
+      
+      ALPS_PY_EXPORT_OBSERVABLE_METHOD(count, count_type)
+      ALPS_PY_EXPORT_OBSERVABLE_METHOD(mean, result_type)
+      ALPS_PY_EXPORT_OBSERVABLE_METHOD(error, result_type)
+      ALPS_PY_EXPORT_OBSERVABLE_METHOD(tau, time_type)
+      ALPS_PY_EXPORT_OBSERVABLE_METHOD(variance, result_type)
+      
+#undef ALPS_PY_EXPORT_OBSERVABLE_METHOD    
+      
+      
     // for pickling support
     template<class T>
     struct value_with_error_pickle_suite : boost::python::pickle_suite
@@ -469,24 +503,39 @@ BOOST_PYTHON_MODULE(pyalea)
 
     .def("__repr__", &print_vector_list<double>)
     ;
+
+#define ALPS_PY_EXPORT_OBSERVABLE(class_name)                                                                                       \
+  class_< alps:: class_name >(#class_name, init<std::string, optional<int> >())                                                     \
+    .def("__deepcopy__",  &alps::python::make_copy<alps:: class_name >)                                                             \
+    .def("__repr__", &alps:: class_name ::representation)                                                                           \
+    .def("__lshift__", &alps:: class_name ::operator<<)                                                                             \
+    .add_property("mean", &alps:: class_name ::mean)                                                                                \
+    .add_property("error", static_cast<alps:: class_name ::result_type(alps:: class_name ::*)() const>(&alps:: class_name ::error)) \
+    .add_property("tau",&alps:: class_name ::tau)                                                                                   \
+    .add_property("variance",&alps:: class_name ::variance)                                                                         \
+    .add_property("count",&alps:: class_name ::count)                                                                               \
+    ;                                                                                                                               \
+   boost::python::def((std::string("countOf") +  #class_name).c_str(), & count_nparray<alps:: class_name >);                        \
+   boost::python::def((std::string("meanOf") +  #class_name).c_str(), & mean_nparray<alps:: class_name >);                          \
+   boost::python::def((std::string("errorOf") +  #class_name).c_str(), & error_nparray<alps:: class_name >);                        \
+   boost::python::def((std::string("tauOf") +  #class_name).c_str(), & tau_nparray<alps:: class_name >);                            \
+   boost::python::def((std::string("varianceOf") +  #class_name).c_str(), & variance_nparray<alps:: class_name >);
     
-  class_< alps::RealObservable >("RealObservable", init<std::string, optional<int> >())
-    .def("__deepcopy__",  &alps::python::make_copy<alps::RealObservable>)
-    .def("__repr__", &alps::RealObservable::representation)
-    .def("__lshift__", &alps::RealObservable::operator<<)
-    .add_property("mean", &alps::RealObservable::mean)
-    .add_property("error", static_cast<alps::RealObservable::result_type(alps::RealObservable::*)() const>(&alps::RealObservable::error))
-    .add_property("tau",&alps::RealObservable::tau)
-    .add_property("variance",&alps::RealObservable::variance)
-    .add_property("count",&alps::RealObservable::count)    
-    ;
+ALPS_PY_EXPORT_OBSERVABLE(RealObservable)
+ALPS_PY_EXPORT_OBSERVABLE(IntObservable)
+ALPS_PY_EXPORT_OBSERVABLE(RealTimeSeriesObservable)
+ALPS_PY_EXPORT_OBSERVABLE(IntTimeSeriesObservable)
+#ifdef ALPS_HAVE_VALARRAY
+ALPS_PY_EXPORT_OBSERVABLE(IntVectorObservable)
+ALPS_PY_EXPORT_OBSERVABLE(RealVectorObservable)
+ALPS_PY_EXPORT_OBSERVABLE(IntVectorTimeSeriesObservable)
+ALPS_PY_EXPORT_OBSERVABLE(RealVectorTimeSeriesObservable)
+#endif
+#undef ALPS_PY_EXPORT_OBSERVABLE
     
   boost::python::def("convert2numpy_array_float",&convert2numpy_array<double>);
   boost::python::def("convert2numpy_array_int",&convert2numpy_array<int>);
 
   boost::python::def("convert2vector_double",&convert2vector<double>);
-  boost::python::def("convert2vector_int",&convert2vector<int>);
-    
-  boost::python::def("binsOfRealObservable",&bins_nparray<alps::RealObservable>);
-
+  boost::python::def("convert2vector_int",&convert2vector<int>);    
 }
