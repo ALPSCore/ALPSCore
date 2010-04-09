@@ -128,10 +128,10 @@ public:
 
   binned_data();
   template <class X>
-  binned_data(std::vector<X> const & timeseries_measurements, uint64_t const desired_bin_number);
+  binned_data(std::vector<X> const & timeseries_measurements, uint64_t const desired_bin_number=0);
 #ifdef ALPS_HAVE_PYTHON
   template <class X>
-  binned_data(boost::python::object const & timeseries_measurements_nparray, uint64_t const desired_bin_number);
+  binned_data(boost::python::object const & timeseries_measurements_nparray, uint64_t const desired_bin_number=0);
 #endif
   binned_data(AbstractSimpleObservable<value_type> const & obs);
   template <class X, class S>
@@ -143,29 +143,38 @@ public:
   template <class S>
   binned_data<typename element_type<T>::type> slice(S s) const  {  return binned_data<typename element_type<T>::type>(*this,s);  }
 
+  // comparison operators
+  template <class X>
+  bool operator==(binned_data<X> const & my_binned_data);
+
+  // arithmetic operators
+  
+  /*
+   * Question (1) : Why doesn't  template <class X>  appear in operator+=() and operator-=() <class X> ?
+   */
+
+  binned_data<T>& operator+=(binned_data<T> const & rhs);         
+  binned_data<T>& operator-=(binned_data<T> const & rhs);
+  template <class X>
+  binned_data<T>& operator*=(binned_data<X> const & rhs);
+  template <class X>
+  binned_data<T>& operator/=(binned_data<X> const & rhs);
 
 /*
-  // unary operation: negation
-  binned_data<T>& operator-();
-
-  // operations with constant
-  template <class X> binned_data<T>& operator+=(X);
-  template <class X> binned_data<T>& operator-=(X);
-  template <class X> binned_data<T>& operator*=(X);
-  template <class X> binned_data<T>& operator/=(X);
-  template<class X> void subtract_from(const X& x);
-  template<class X> void divide(const X& x);
-  
-  // operations with another observable
-  binned_data<T>& operator+=(const binned_data<T>&);
-  binned_data<T>& operator-=(const binned_data<T>&);
-  template <class X>
-  binned_data<T>& operator*=(const binned_data<X>&);
-  template <class X>
-  binned_data<T>& operator/=(const binned_data<X>&);
-
-  template <class OP> void transform(OP op);
+  template <class X> 
+  binned_data<T>& operator+=(X const & rhs);
+  template <class X> 
+  binned_data<T>& operator-=(X const & rhs);
+  template <class X> 
+  binned_data<T>& operator*=(X const & rhs);
+  template <class X> 
+  binned_data<T>& operator/=(X const & rhs);
 */
+  //template<class X> void subtract_from(const X& x);
+  //template<class X> void divide(const X& x);
+
+  //binned_data<T>& operator-();
+
 
 protected: 
   void collect_bins(uint64_t);
@@ -174,13 +183,13 @@ protected:
   void jackknife() const;
 
 /*
+  template <class OP>
+  void transform_linear(OP op);
+  template <class OP>
+  void transform(OP op);
+*/
   template <class X, class OP>
   void transform(const binned_data<X>& x, OP op, double factor=1.);
-
-  template <class OP> 
-  void transform_linear(OP op);
-*/
-
 };
 
 
@@ -265,7 +274,7 @@ binned_data<T>::binned_data()
 
 template <class T>
 template <class X>
-binned_data<T>::binned_data(std::vector<X> const & timeseries_measurements, uint64_t const desired_bin_number=0)
+binned_data<T>::binned_data(std::vector<X> const & timeseries_measurements, uint64_t const desired_bin_number)
   : count_(timeseries_measurements.size())
   , binsize_(1)
   , is_bin_changed_(false)
@@ -365,108 +374,31 @@ binned_data<T> const & binned_data<T>::operator=(binned_data<X> const & my_binne
 }
 
 
+template <class T>
+template <class X>
+bool binned_data<T>::operator==(binned_data<X> const & my_binned_data)
+{
+  bool result = true;
+
+  if (count_                             != my_binned_data.count_)                              {  result = false;  }
+  if (binsize_                           != my_binned_data.binsize_)                            {  result = false;  }
+  if (is_bin_changed_                    != my_binned_data.is_bin_changed_)                     {  result = false;  }
+  if (is_statistics_valid_               != my_binned_data.is_statistics_valid_)                {  result = false;  }
+  if (is_jacknife_bins_filled_correctly_ != my_binned_data.is_jacknife_bins_filled_correctly_)  {  result = false;  }
+  if (is_nonlinear_operations_performed_ != my_binned_data.is_nonlinear_operations_performed_)  {  result = false;  }
+  if (mean_                              != my_binned_data.mean_)                               {  result = false;  }
+  if (error_                             != my_binned_data.error_)                              {  result = false;  }
+  if (variance_opt_                      != my_binned_data.variance_opt_)                       {  result = false;  }
+  if (tau_opt_                           != my_binned_data.tau_opt_)                            {  result = false;  }
+  if (values_                            != my_binned_data.values_)                             {  result = false;  }
+  if (jack_                              != my_binned_data.jack_)                               {  result = false;  }
+  
+  return result;
+}
+
+
 /*
-template <class T> 
-binned_data<T>& binned_data<T>::operator+=(const binned_data<T>& x)
-{
-  using std::sqrt;
-  if(count() && x.count()) {
-    mean_ += x.mean();
-    
-    // leave this right now...
-    error_ *= error_;
-    error_ += x.error()*x.error();
-    error_ = sqrt(error_);
-    // error_=sqrt(error_*error_+x.error()*x.error());
-  }
-  transform(x, _1+_2);
-  return (*this);
-}
-
 template <class T>
-binned_data<T>& binned_data<T>::operator-=(const binned_data<T>& x)
-{
-  using std::sqrt;
-  if(count() && x.count()) {
-    mean_ -= x.mean();
-    error_ *= error_;
-    error_ += x.error()*x.error();
-    error_ = sqrt(error_);
-    //error_=sqrt(error_*error_+x.error()*x.error());
-  }
-  transform(x,_1-_2);
-  return (*this);
-}
-
-template <class T>
-template<class X>
-binned_data<T>& binned_data<T>::operator*=(const binned_data<X>& x)
-{
-  using std::sqrt;
-  if(count() && x.count()) {
-    error_=error()*error();
-    error_*=x.mean()*x.mean();
-    typename binned_data<X>::result_type tmp(x.error());
-    tmp *=tmp;
-    result_type tmp2(mean_);
-    tmp2 *= tmp2*tmp;
-    error_ += tmp2;
-    error_ = sqrt(error_);
-    mean_ *= x.mean();
-    //error_=sqrt(error()*error()*x.mean()*x.mean()+mean()*mean()*x.error()*x.error());
-  }
-  transform(x,_1*_2,1./x.bin_size());
-  return (*this);
-}
-
-template <class T>
-template<class X>
-binned_data<T>& binned_data<T>::operator/=(const binned_data<X>& x)
-{
-  using std::sqrt;
-  if(count() && x.count()) {
-    error_=error()*error();
-    typename binned_data<X>::result_type m(x.mean());
-    m *=m;
-    typename binned_data<X>::result_type tmp(x.error());
-    tmp *=m;
-    tmp *=x.error()*m;
-    error_ +=tmp;
-    error_ /=m;
-    error_ = sqrt(error_);
-    mean_ /= x.mean();
-    //error_ = sqrt((error()*error()+mean()*mean()*x.error()*x.error()/x.mean()/x.mean())/x.mean()/x.mean());
-  }
-  transform(x,_1/_2,x.bin_size());
-  return (*this);
-}
-
-template <class T>
-template <class X, class OP>
-void binned_data<T>::transform(const binned_data<X>& x, OP op, double factor)
-{
-  if ((count()==0) || (x.count()==0))
-    boost::throw_exception(std::runtime_error("both observables need measurements"));
-    
-  if(!is_jacknife_bins_filled_correctly_) fill_jack();
-  if(!x.is_jacknife_bins_filled_correctly_) x.fill_jack();
-
-  is_statistics_valid_ = false;
-  is_nonlinear_operations_performed_ = true;
-  is_bin_changed_ = true;
-  
-  tau_      = boost::detail::none_t;
-  variance_ = boost::detail::none_t;
-  
-  
-  for (uint64_t i = 0; i < bin_number(); ++i)
-    values_[i] = op(values_[i], x.values_[i])*factor;
-  for (uint64_t i = 0; i < jack_.size(); ++i)
-    jack_[i] = op(jack_[i], x.jack_[i]);
-}
-
-
-template <class T> 
 template <class OP>
 void binned_data<T>::transform_linear(OP op)
 {
@@ -479,7 +411,7 @@ void binned_data<T>::transform_linear(OP op)
 
 // *** change as the one above...
 //
-template <class T> 
+template <class T>
 template <class OP>
 void binned_data<T>::transform(OP op)
 {
@@ -490,9 +422,9 @@ void binned_data<T>::transform(OP op)
   has_tau_ = false;
   values2_.clear();
   has_minmax_ = false;
- 
+
   // we should store bin means instead of bin sums in values...
-  
+
   std::transform(values_.begin(), values_.end(), values_.begin(),_1/double(bin_size()));
   std::transform(values_.begin(), values_.end(), values_.begin(), op);
   std::transform(values_.begin(), values_.end(), values_.begin(),_1*double(bin_size()));
@@ -501,20 +433,119 @@ void binned_data<T>::transform(OP op)
 }
 //
 // ***
-  
-  
-  
+
+*/
+
+
 template <class T>
-binned_data<T>& binned_data<T>::operator-()
+template <class X, class OP>
+void binned_data<T>::transform(const binned_data<X>& x, OP op, double factor)
 {
-  if (count()) {
-    transform_linear(-_1);
+  if ((count()==0) || (x.count()==0))
+    boost::throw_exception(std::runtime_error("both observables need measurements"));
+   
+  if(!is_jacknife_bins_filled_correctly_)   fill_jack();
+  if(!x.is_jacknife_bins_filled_correctly_) x.fill_jack();
+
+  is_statistics_valid_               = false;
+  is_nonlinear_operations_performed_ = true;
+  is_bin_changed_                    = true;
+
+  variance_opt_ = boost::none_t();
+  tau_opt_      = boost::none_t();
+  
+  
+  for (uint64_t i = 0; i < bin_number(); ++i)
+    values_[i] = op(values_[i], x.values_[i])*factor;
+  for (uint64_t i = 0; i < jack_.size(); ++i)
+    jack_[i] = op(jack_[i], x.jack_[i]);
+}
+
+
+template <class T>
+binned_data<T>& binned_data<T>::operator+=(binned_data<T> const & rhs)
+{
+  using std::sqrt;
+  using alps::numeric::sq;
+  using alps::numeric::sqrt;
+  using boost::numeric::operators::operator+;
+
+  if(count() && rhs.count()) {
+    error_ = sqrt(sq(error_)+sq(rhs.error_));
+    mean_  = mean_ + rhs.mean_;
+
+    //transform(rhs, _1+_2);
+  }
+
+  return *this;
+}
+
+
+template <class T>
+binned_data<T>& binned_data<T>::operator-=(binned_data<T> const & rhs)
+{
+  using std::sqrt;
+  using alps::numeric::sq;
+  using alps::numeric::sqrt;
+  using boost::numeric::operators::operator+;
+  using boost::numeric::operators::operator-;
+
+  if (count() && rhs.count()) {
+    error_ = sqrt(sq(error_)+sq(rhs.error_));
+    mean_  = mean_ - rhs.mean_;
+
+    //transform(rhs,_1-_2);
+  }
+
+  return *this;
+}
+
+template <class T>
+template<class X>
+binned_data<T>& binned_data<T>::operator*=(binned_data<X> const & rhs)
+{
+  using std::sqrt;
+  using alps::numeric::sq;
+  using alps::numeric::sqrt;
+  using boost::numeric::operators::operator+;
+  using boost::numeric::operators::operator*;
+
+  if(count() && rhs.count()) {
+    error_ =  sqrt(sq(rhs.mean_)*sq(error_) + sq(mean_)*sq(rhs.error_));
+    mean_  = mean_ * rhs.mean_;
+
+    //transform(rhs,_1*_2,1./rhs.bin_size());
+  }
+
+  return *this;
+}
+
+template <class T>
+template<class X>
+binned_data<T>& binned_data<T>::operator/=(binned_data<X> const & rhs)
+{
+  using std::sqrt;
+  using alps::numeric::sq;
+  using alps::numeric::sqrt;
+  using boost::numeric::operators::operator+;
+  using boost::numeric::operators::operator*;
+  using boost::numeric::operators::operator/;
+
+  if(count() && rhs.count()) {
+    error_ = sqrt(sq(rhs.mean_)*sq(error_) + sq(mean_)*sq(rhs.error_));
+    error_ = error_ / sq(rhs.mean_);
+    mean_  = mean_  /rhs.mean_;
+
+    //transform(rhs,_1/_2,rhs.bin_size());
   }
   return *this;
 }
 
-template <class T> template <class X>
-binned_data<T>& binned_data<T>::operator+=(X x)
+
+/*
+template <class T> 
+template <class X>
+binned_data<T>& binned_data<T>::operator+=(X const & rhs)
 {
   if (count()) {
     transform_linear(_1 + x);
@@ -522,8 +553,9 @@ binned_data<T>& binned_data<T>::operator+=(X x)
   return *this;
 }
 
-template <class T> template <class X>
-binned_data<T>& binned_data<T>::operator-=(X x)
+template <class T> 
+template <class X>
+binned_data<T>& binned_data<T>::operator-=(X const & rhs)
 {
   if(count()) {
     if (has_minmax_) {
@@ -538,20 +570,6 @@ binned_data<T>& binned_data<T>::operator-=(X x)
 }
 
 template <class T> template <class X>
-void binned_data<T>::subtract_from(const X& x)
-{
-  if (count()) {
-    if(has_minmax_) {
-      min_ = x-max_;
-      max_ = x-min_;
-    }
-    transform_linear(x-_1);
-    for (int i=0;i<values2_.size();++i)
-      values2_[i] += -2.*values_[i]*x+x*x;
-  }
-}
-
-template <class T> template <class X>
 binned_data<T>& binned_data<T>::operator*=(X x)
 {
   if (count()) {
@@ -559,7 +577,7 @@ binned_data<T>& binned_data<T>::operator*=(X x)
     if(has_variance_)
       variance_ *= x*x;
     has_minmax_ = false;
-    
+
     transform_linear(_1*x);
     std::transform(values2_.begin(),values2_.end(),values2_.begin(),_1*(x*x));
   }
@@ -574,12 +592,30 @@ binned_data<T>& binned_data<T>::operator/=(X x)
     if(has_variance_)
       variance_ /= x*x;
     has_minmax_ = false;
-    
+
     transform_linear(_1/x);
     std::transform(values2_.begin(),values2_.end(),values2_.begin(),_1/(x*x));
   }
   return (*this);
 }
+*/
+
+
+/*
+template <class T> template <class X>
+void binned_data<T>::subtract_from(const X& x)
+{
+  if (count()) {
+    if(has_minmax_) {
+      min_ = x-max_;
+      max_ = x-min_;
+    }
+    transform_linear(x-_1);
+    for (int i=0;i<values2_.size();++i)
+      values2_[i] += -2.*values_[i]*x+x*x;
+  }
+}
+
 
 template <class T> template <class X>
 void binned_data<T>::divide(const X& x)
@@ -597,6 +633,16 @@ void binned_data<T>::divide(const X& x)
     fill_jack();
     std::transform(jack_.begin(), jack_.end(), jack_.begin(), x/_1);
   }
+}
+
+
+template <class T>
+binned_data<T>& binned_data<T>::operator-()
+{
+  if (count()) {
+    transform_linear(-_1);
+  }
+  return *this;
 }
 
 */
