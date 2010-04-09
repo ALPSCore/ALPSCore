@@ -777,6 +777,399 @@ binned_data<T>::covariance(const binned_data<T> obs2) const
 }
 
 
+#define IMPLEMENT_OPERATION(OPERATOR_NAME,OPERATOR_ASSIGN) \
+template<class T> \
+inline binned_data<T> OPERATOR_NAME(binned_data<T> lhs, binned_data<T> const & rhs) \
+{  return lhs OPERATOR_ASSIGN rhs;  } \
+\
+template <class T> \
+inline binned_data<T> OPERATOR_NAME(binned_data<T> lhs, T const & rhs) \
+{  return lhs OPERATOR_ASSIGN rhs;  } \    \
+template <class T> \
+inline binned_data<std::vector<T> > OPERATOR_NAME(binned_data<std::vector<T> > lhs, typename binned_data<std::vector<T> >::element_type c
+onst & rhs_elem) \
+{ \
+  std::vector<T> rhs(lhs.size(),rhs_elem); \
+  return lhs OPERATOR_ASSIGN rhs; \
+}
+
+IMPLEMENT_OPERATION(operator+,+=)
+IMPLEMENT_OPERATION(operator-,-=)
+IMPLEMENT_OPERATION(operator*,*=)
+IMPLEMENT_OPERATION(operator/,/=)
+
+template <class T>
+inline binned_data<T> operator+(T const & lhs, binned_data<T> rhs)
+{  return rhs += lhs;  }
+   
+template <class T>
+inline binned_data<T> operator-(T const & lhs, binned_data<T> rhs)
+{ return -rhs + lhs;  }
+   
+template <class T>
+inline binned_data<T> operator*(T const & lhs, binned_data<T> rhs)
+{  return rhs *= lhs;  }
+   
+template <class T>
+inline binned_data<T> operator/(T const & lhs, binned_data<T> const & rhs)
+{
+  using std::abs;
+  using alps::numeric::abs;
+  using boost::numeric::operators::operator*;
+  using boost::numeric::operators::operator/;
+
+  T inverse_mean = lhs/rhs.mean();
+
+  transform(_1/_2);
+  return ...
+  //return binned_data<T>(inverse_mean,abs(inverse_mean*rhs.error()/rhs.mean()));
+}
+
+#define IMPLEMENT_OPERATION2(OPERATOR_NAME,OPERATOR_ASSIGN) \
+template <class T> \
+inline binned_data<std::vector<T> > OPERATOR_NAME(typename binned_data<std::vector<T> >::element_type const & lhs_elem, binned_data<std::vector<T> > rhs) \
+{ \
+  std::vector<T> lhs(rhs.size(),lhs_elem); \
+  return lhs OPERATOR_ASSIGN rhs; \
+}
+
+IMPLEMENT_OPERATION2(operator+,+)
+IMPLEMENT_OPERATION2(operator-,-)
+IMPLEMENT_OPERATION2(operator*,*)
+IMPLEMENT_OPERATION2(operator/,/)
+
+// pow, sq, sqrt, cb, cbrt, exp, log 
+template <class T>
+inline binned_data<T> pow(binned_data<T> rhs, typename binned_data<T>::element_type const & exponent)
+{
+  if (exponent == 1.)
+  {
+    return rhs;
+  }
+  else
+  {
+    using std::pow;
+    using std::abs;
+    using alps::numeric::pow;
+    using alps::numeric::abs;
+    using boost::numeric::operators::operator-;
+    using boost::numeric::operators::operator*;
+
+    T dummy = pow(rhs.mean(),exponent-1.);
+
+    transform(pow(_1,_2));
+    return ... // *this;
+    //return binned_data<T>(dummy*rhs.mean(),abs(exponent*dummy*rhs.error()));
+  }
+}
+
+template<class T>
+inline binned_data<T> sq(binned_data<T> rhs)
+{
+  using alps::numeric::sq;
+  using std::abs;
+  using alps::numeric::abs;
+  using alps::numeric::operator*;
+  using boost::numeric::operators::operator*;
+
+  transform(sq(_1));
+  return ... // *this  //binned_data<T>(sq(rhs.mean()),abs(2.*rhs.mean()*rhs.error()));
+}
+   
+template<class T>
+binned_data<T> cb(binned_data<T> rhs)
+{
+  using alps::numeric::sq;
+  using std::abs;
+  using alps::numeric::abs;
+  using alps::numeric::operator*;
+  using boost::numeric::operators::operator*;
+
+  transform(cb(_1));
+  return ... // *this  //binned_data<T>((sq(rhs.mean()))*rhs.mean(),abs(3.*(sq(rhs.mean()))*rhs.error()));
+}
+   
+template<class T>
+binned_data<T> sqrt(binned_data<T> rhs)
+{
+  using std::sqrt;
+  using alps::numeric::sqrt;
+  using std::abs;
+  using alps::numeric::abs;
+  using alps::numeric::operator*;
+  using boost::numeric::operators::operator/;
+
+  transform(sqrt(_1));
+  return ... // *this  //binned_data<T>(sqrt(rhs.mean()),abs(rhs.error()/(2.*sqrt(rhs.mean()))));
+}
+   
+template<class T>
+binned_data<T> cbrt(binned_data<T> rhs)
+{
+  using alps::numeric::sq;
+  using std::abs;
+  using alps::numeric::abs;
+  using std::pow;
+  using alps::numeric::pow;
+  using alps::numeric::operator*;
+  using boost::numeric::operators::operator/;
+
+  T dummy = pow(rhs.mean(),1./3);
+
+  transform(cbrt(_1));
+  return ... // *this  //binned_data<T>(dummy,abs(rhs.error()/(3.*sq(dummy))));
+}
+   
+template<class T>
+binned_data<T> exp(binned_data<T> rhs)
+{
+  using std::exp;
+  using alps::numeric::exp;
+  using boost::numeric::operators::operator*;
+
+  T dummy = exp(rhs.mean());
+
+  transform(exp(_1));
+  return ... // *this  //binned_data<T>(dummy,dummy*rhs.error());
+}
+   
+template<class T>
+binned_data<T> log(binned_data<T> rhs)
+{
+  using std::log;
+  using alps::numeric::log;
+  using std::abs;
+  using alps::numeric::abs;
+  using boost::numeric::operators::operator/;
+
+  transform(log(_1));
+  return ... // *this  //binned_data<T>(log(rhs.mean()),abs(rhs.error()/rhs.mean()));
+}
+
+// ( sin, ... , atanh ) operations
+template<class T>
+inline binned_data<T> sin(binned_data<T> rhs)
+{
+  using std::abs;
+  using alps::numeric::abs;
+  using std::sin;
+  using alps::numeric::sin;
+  using std::cos;
+  using alps::numeric::cos;
+  using boost::numeric::operators::operator*;
+
+  T derivative = cos(rhs.mean());
+
+  transform(sin(_1));
+  return ... // *this  //binned_data<T>(sin(rhs.mean()),abs(derivative*rhs.error()));
+}
+   
+template<class T>
+binned_data<T> cos(binned_data<T> rhs)
+{
+  using std::abs;
+  using alps::numeric::abs;
+  using std::sin;
+  using alps::numeric::sin;
+  using std::cos;
+  using alps::numeric::cos;
+  using boost::numeric::operators::operator-;
+  using boost::numeric::operators::operator*;
+
+  T derivative = -sin(rhs.mean());
+
+  transform(cos(_1));
+  return ... // *this  //binned_data<T>(cos(rhs.mean()),abs(derivative*rhs.error()));
+}
+   
+template<class T>
+binned_data<T> tan(binned_data<T> rhs)
+{
+  using std::abs;
+  using alps::numeric::abs;
+  using std::tan;
+  using alps::numeric::tan;
+  using std::cos;
+  using alps::numeric::cos;
+  using boost::numeric::operators::operator*;
+  using alps::numeric::operator/;
+
+  T derivative = 1./(cos(rhs.mean())*cos(rhs.mean()));
+
+  transform(tan(_1));
+  return ... // *this  //binned_data<T>(tan(rhs.mean()),abs(derivative*rhs.error()));
+}
+   
+template<class T>
+binned_data<T> sinh(binned_data<T> rhs)
+{
+  using std::abs;
+  using alps::numeric::abs;
+  using std::sinh;
+  using alps::numeric::sinh;
+  using std::cosh;
+  using alps::numeric::cosh;
+  using boost::numeric::operators::operator*;
+
+  T derivative = cosh(rhs.mean());
+
+  transform(sinh(_1));
+  return ... // *this  //binned_data<T>(sinh(rhs.mean()),abs(derivative*rhs.error()));
+}
+   
+template<class T>
+binned_data<T> cosh(binned_data<T> rhs)
+{
+  using std::abs;
+  using alps::numeric::abs;
+  using std::sinh;
+  using alps::numeric::sinh;
+  using std::cosh;
+  using alps::numeric::cosh;
+  using boost::numeric::operators::operator*;
+
+  T derivative = sinh(rhs.mean());
+
+
+  transform(cosh(_1));
+  return ... // *this  //binned_data<T>(cosh(rhs.mean()),abs(derivative*rhs.error()));
+}
+   
+template<class T>
+binned_data<T> tanh(binned_data<T> rhs)
+{
+  using std::abs;
+  using alps::numeric::abs;
+  using std::cosh;
+  using alps::numeric::cosh;
+  using std::tanh;
+  using alps::numeric::tanh;
+  using boost::numeric::operators::operator*;
+  using alps::numeric::operator/;
+
+  T derivative = 1./(cosh(rhs.mean())*cosh(rhs.mean()));
+
+  transform(tanh(_1));
+  return ... // *this  //binned_data<T>(tanh(rhs.mean()),abs(derivative*rhs.error()));
+}
+   
+template<class T>
+binned_data<T> asin(binned_data<T> rhs)
+{
+  using std::abs;
+  using alps::numeric::abs;
+  using std::sqrt;
+  using alps::numeric::sqrt;
+  using std::asin;
+  using alps::numeric::asin;
+  using alps::numeric::operator-;
+  using boost::numeric::operators::operator*;
+  using alps::numeric::operator/;
+
+  T derivative = 1./sqrt(1. - rhs.mean()*rhs.mean());
+
+  transform(asin(_1));
+  return ... // *this  //binned_data<T>(asin(rhs.mean()),abs(derivative*rhs.error()));
+}
+   
+template<class T>
+binned_data<T> acos(binned_data<T> rhs)
+{
+  using std::abs;
+  using alps::numeric::abs;
+  using std::sqrt;
+  using alps::numeric::sqrt;
+  using std::acos;
+  using alps::numeric::acos;
+  using alps::numeric::operator-;
+  using boost::numeric::operators::operator-;
+  using boost::numeric::operators::operator*;
+  using alps::numeric::operator/;
+
+  T derivative = -1./sqrt(1. - rhs.mean()*rhs.mean());
+
+  transform(acos(_1));
+  return ... // *this  //binned_data<T>(acos(rhs.mean()),abs(derivative*rhs.error()));
+}
+   
+template<class T>
+binned_data<T> atan(binned_data<T> rhs)
+{
+  using std::abs;
+  using alps::numeric::abs;
+  using std::atan;
+  using alps::numeric::atan;
+  using alps::numeric::operator+;
+  using boost::numeric::operators::operator*;
+  using alps::numeric::operator/;
+
+  T derivative = 1./(1. + rhs.mean()*rhs.mean());
+  transform(atan(_1));
+
+  return ... // *this  //binned_data<T>(atan(rhs.mean()),abs(derivative*rhs.error()));
+}
+   
+template<class T>
+binned_data<T> asinh(binned_data<T> rhs)
+{
+  using std::abs;
+  using alps::numeric::abs;
+  using std::sqrt;
+  using alps::numeric::sqrt;
+  using boost::math::asinh;
+  using alps::numeric::asinh;
+  using alps::numeric::operator+;
+  using boost::numeric::operators::operator*;
+  using alps::numeric::operator/;
+
+  T derivative = 1./sqrt(rhs.mean()*rhs.mean() + 1.);
+  transform(asinh(_1));
+  return ... // *this  //binned_data<T>(asinh(rhs.mean()),abs(derivative*rhs.error()));
+}
+   
+template<class T>
+binned_data<T> acosh(binned_data<T> rhs)
+{
+  using std::abs;
+  using alps::numeric::abs;
+  using std::sqrt;
+  using alps::numeric::sqrt;
+  using boost::math::acosh;
+  using alps::numeric::acosh;
+  using alps::numeric::operator-;
+  using boost::numeric::operators::operator*;
+  using alps::numeric::operator/;
+
+  T derivative = 1./sqrt(rhs.mean()*rhs.mean() - 1.);
+
+  transform(acosh(_1));
+  return ... // *this  //binned_data<T>(acosh(rhs.mean()),abs(derivative*rhs.error()));
+}
+   
+template<class T>
+binned_data<T> atanh(binned_data<T> rhs)
+{
+  using std::abs;
+  using alps::numeric::abs;
+  using boost::math::atanh;
+  using alps::numeric::atanh;
+  using alps::numeric::operator-;
+  using boost::numeric::operators::operator*;
+  using alps::numeric::operator/;
+
+
+  T derivative = 1./(1. - rhs.mean()*rhs.mean());
+
+
+  transform(atanh(_1));
+  return ... // *this  //binned_data<T>(atanh(rhs.mean()),abs(derivative*rhs.error()));
+}
+
+
+
+
+
+
 
 } // end namespace alea
 } // end namespace alps
