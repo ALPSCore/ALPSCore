@@ -180,13 +180,13 @@ data5 += data5 , data5 :
 count:	30
 binsize:	3
 changed:	1
-valid:	1
+valid:	0
 jack_valid:	1
-nonlinear_operations:	0
+nonlinear_operations:	1
 mean:	29
 error:	4.06202
-values:	3	12	21	30	39	48	57	66	75	84	
-jack:	14.5	16	15.6667	15.3333	15	14.6667	14.3333	14	13.6667	13.3333	13	
+values:	6	24	42	60	78	96	114	132	150	168	
+jack:	29	32	31.3333	30.6667	30	29.3333	28.6667	28	27.3333	26.6667	26	
 
 data5 :
 
@@ -206,13 +206,13 @@ data5 -= data5 , data5 :
 count:	30
 binsize:	3
 changed:	1
-valid:	1
+valid:	0
 jack_valid:	1
-nonlinear_operations:	0
+nonlinear_operations:	1
 mean:	0
 error:	4.06202
-values:	3	12	21	30	39	48	57	66	75	84	
-jack:	14.5	16	15.6667	15.3333	15	14.6667	14.3333	14	13.6667	13.3333	13	
+values:	0	0	0	0	0	0	0	0	0	0	
+jack:	0	0	0	0	0	0	0	0	0	0	0	
 
 data5 :
 
@@ -232,13 +232,13 @@ data5 *= data5 , data5 :
 count:	30
 binsize:	3
 changed:	1
-valid:	1
+valid:	0
 jack_valid:	1
-nonlinear_operations:	0
+nonlinear_operations:	1
 mean:	210.25
 error:	58.8993
-values:	3	12	21	30	39	48	57	66	75	84	
-jack:	14.5	16	15.6667	15.3333	15	14.6667	14.3333	14	13.6667	13.3333	13	
+values:	3	48	147	300	507	768	1083	1452	1875	2352	
+jack:	210.25	256	245.444	235.111	225	215.111	205.444	196	186.778	177.778	169	
 
 data5 :
 
@@ -258,10 +258,10 @@ data5 /= data5 , data5 :
 count:	30
 binsize:	3
 changed:	1
-valid:	1
+valid:	0
 jack_valid:	1
-nonlinear_operations:	0
+nonlinear_operations:	1
 mean:	1
 error:	0.280139
-values:	3	12	21	30	39	48	57	66	75	84	
-jack:	14.5	16	15.6667	15.3333	15	14.6667	14.3333	14	13.6667	13.3333	13	
+values:	3	3	3	3	3	3	3	3	3	3	
+jack:	1	1	1	1	1	1	1	1	1	1	1	
