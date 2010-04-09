@@ -151,8 +151,25 @@ int main(int argc, char** argv)
   data5 /= data5;
   std::cout << "\ndata5 /= data5 , data5 :\n" << data5 << "\n";
   
+  data5 = data4a;
+  std::cout << "\ndata5 :\n" << data5 << "\n";
+  data5 += 2.;
+  std::cout << "\ndata5 += 2. , data5 :\n" << data5 << "\n";
 
+  data5 = data4a;
+  std::cout << "\ndata5 :\n" << data5 << "\n";
+  data5 -= 3.;
+  std::cout << "\ndata5 -= 3. , data5 :\n" << data5 << "\n";
 
+  data5 = data4a;
+  std::cout << "\ndata5 :\n" << data5 << "\n";
+  data5 *= -2.;
+  std::cout << "\ndata5 *= -2. , data5 :\n" << data5 << "\n";
+
+  data5 = data4a;
+  std::cout << "\ndata5 :\n" << data5 << "\n";
+  data5 /= 4.;
+  std::cout << "\ndata5 /= 4. , data5 :\n" << data5 << "\n";
 
 
   return 0;
