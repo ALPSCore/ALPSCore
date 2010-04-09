@@ -123,6 +123,36 @@ int main(int argc, char** argv)
   std::cout << "\ndata3x_1 (= data3_1):\n" << data3x_1 << std::endl;
 
   
+//### comparison operator 
+  if (data4 == data4a)   {  std::cout << "\ndata4 == data4a\n";  }
+  else                   {  std::cout << "\ndata4 != data4a\n";  }
+
+
+//### numerical operators
+  alps::alea::binned_data<double> data5;
+
+  data5 = data4a;
+  std::cout << "\ndata5 :\n" << data5 << "\n";
+  data5 += data5;
+  std::cout << "\ndata5 += data5 , data5 :\n" << data5 << "\n";
+
+  data5 = data4a;
+  std::cout << "\ndata5 :\n" << data5 << "\n";
+  data5 -= data5;
+  std::cout << "\ndata5 -= data5 , data5 :\n" << data5 << "\n";
+
+  data5 = data4a;
+  std::cout << "\ndata5 :\n" << data5 << "\n";
+  data5 *= data5;
+  std::cout << "\ndata5 *= data5 , data5 :\n" << data5 << "\n";
+
+  data5 = data4a;
+  std::cout << "\ndata5 :\n" << data5 << "\n";
+  data5 /= data5;
+  std::cout << "\ndata5 /= data5 , data5 :\n" << data5 << "\n";
+  
+
+
 
 
   return 0;
