@@ -454,7 +454,6 @@ void binned_data<T>::transform(const binned_data<X>& x, OP op, double factor)
   variance_opt_ = boost::none_t();
   tau_opt_      = boost::none_t();
   
-  
   for (uint64_t i = 0; i < bin_number(); ++i)
     values_[i] = op(values_[i], x.values_[i])*factor;
   for (uint64_t i = 0; i < jack_.size(); ++i)
@@ -469,12 +468,14 @@ binned_data<T>& binned_data<T>::operator+=(binned_data<T> const & rhs)
   using alps::numeric::sq;
   using alps::numeric::sqrt;
   using boost::numeric::operators::operator+;
+  using boost::lambda::_1;
+  using boost::lambda::_2;
 
   if(count() && rhs.count()) {
     error_ = sqrt(sq(error_)+sq(rhs.error_));
     mean_  = mean_ + rhs.mean_;
 
-    //transform(rhs, _1+_2);
+    transform(rhs, _1+_2);
   }
 
   return *this;
@@ -489,12 +490,14 @@ binned_data<T>& binned_data<T>::operator-=(binned_data<T> const & rhs)
   using alps::numeric::sqrt;
   using boost::numeric::operators::operator+;
   using boost::numeric::operators::operator-;
+  using boost::lambda::_1;
+  using boost::lambda::_2;
 
   if (count() && rhs.count()) {
     error_ = sqrt(sq(error_)+sq(rhs.error_));
     mean_  = mean_ - rhs.mean_;
 
-    //transform(rhs,_1-_2);
+    transform(rhs,_1-_2);
   }
 
   return *this;
@@ -509,12 +512,14 @@ binned_data<T>& binned_data<T>::operator*=(binned_data<X> const & rhs)
   using alps::numeric::sqrt;
   using boost::numeric::operators::operator+;
   using boost::numeric::operators::operator*;
+  using boost::lambda::_1;
+  using boost::lambda::_2;
 
   if(count() && rhs.count()) {
-    error_ =  sqrt(sq(rhs.mean_)*sq(error_) + sq(mean_)*sq(rhs.error_));
+    error_ = sqrt(sq(rhs.mean_)*sq(error_) + sq(mean_)*sq(rhs.error_));
     mean_  = mean_ * rhs.mean_;
 
-    //transform(rhs,_1*_2,1./rhs.bin_size());
+    transform(rhs,_1*_2,1./rhs.bin_size());
   }
 
   return *this;
@@ -530,13 +535,15 @@ binned_data<T>& binned_data<T>::operator/=(binned_data<X> const & rhs)
   using boost::numeric::operators::operator+;
   using boost::numeric::operators::operator*;
   using boost::numeric::operators::operator/;
+  using boost::lambda::_1;
+  using boost::lambda::_2;
 
   if(count() && rhs.count()) {
     error_ = sqrt(sq(rhs.mean_)*sq(error_) + sq(mean_)*sq(rhs.error_));
     error_ = error_ / sq(rhs.mean_);
     mean_  = mean_  /rhs.mean_;
 
-    //transform(rhs,_1/_2,rhs.bin_size());
+    transform(rhs,_1/_2,rhs.bin_size());
   }
   return *this;
 }
