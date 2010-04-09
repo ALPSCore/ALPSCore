@@ -97,6 +97,12 @@ public:
   covariance_type                            covariance(const binned_data<T>)  const;
 
   //set functions
+
+  /* 
+   * Question (1) :  in set_bin_size(...) , we update binsize_ even if we don't do anything ?
+   */ 
+
+
   inline void set_bin_size(uint64_t binsize)        {   collect_bins((binsize-1)/binsize_+1);  binsize_=binsize;  }
   inline void set_bin_number(uint64_t bin_number)   {   collect_bins((values_.size()-1)/bin_number+1);  }
 
@@ -150,7 +156,7 @@ public:
   // arithmetic operators
   
   /*
-   * Question (1) : Why doesn't  template <class X>  appear in operator+=() and operator-=() <class X> ?
+   * Question (2) : Why doesn't  template <class X>  appear in operator+=() and operator-=() <class X> ?
    */
 
   binned_data<T>& operator+=(binned_data<T> const & rhs);         
@@ -160,7 +166,6 @@ public:
   template <class X>
   binned_data<T>& operator/=(binned_data<X> const & rhs);
 
-/*
   template <class X> 
   binned_data<T>& operator+=(X const & rhs);
   template <class X> 
@@ -169,7 +174,7 @@ public:
   binned_data<T>& operator*=(X const & rhs);
   template <class X> 
   binned_data<T>& operator/=(X const & rhs);
-*/
+
   //template<class X> void subtract_from(const X& x);
   //template<class X> void divide(const X& x);
 
@@ -182,12 +187,10 @@ protected:
   void fill_jack() const;
   void jackknife() const;
 
-/*
   template <class OP>
   void transform_linear(OP op);
   template <class OP>
   void transform(OP op);
-*/
   template <class X, class OP>
   void transform(const binned_data<X>& x, OP op, double factor=1.);
 };
@@ -397,44 +400,34 @@ bool binned_data<T>::operator==(binned_data<X> const & my_binned_data)
 }
 
 
-/*
 template <class T>
 template <class OP>
 void binned_data<T>::transform_linear(OP op)
 {
-  mean_ = op(mean_);
   std::transform(values_.begin(), values_.end(), values_.begin(), op);
   fill_jack();
   std::transform(jack_.begin(), jack_.end(), jack_.begin(), op);
 }
 
 
-// *** change as the one above...
-//
 template <class T>
 template <class OP>
 void binned_data<T>::transform(OP op)
 {
-  is_statistics_valid_ = false;
+  is_statistics_valid_               = false;
   is_nonlinear_operations_performed_ = true;
-  is_bin_changed_ = true;
-  has_variance_ = false;
-  has_tau_ = false;
-  values2_.clear();
-  has_minmax_ = false;
+  is_bin_changed_                    = true;
 
-  // we should store bin means instead of bin sums in values...
+  variance_opt_ = boost::none_t();
+  tau_opt_      = boost::none_t();
 
+  using boost::lambda::_1;
   std::transform(values_.begin(), values_.end(), values_.begin(),_1/double(bin_size()));
   std::transform(values_.begin(), values_.end(), values_.begin(), op);
   std::transform(values_.begin(), values_.end(), values_.begin(),_1*double(bin_size()));
   fill_jack();
   std::transform(jack_.begin(), jack_.end(), jack_.begin(), op);
 }
-//
-// ***
-
-*/
 
 
 template <class T>
@@ -444,9 +437,6 @@ void binned_data<T>::transform(const binned_data<X>& x, OP op, double factor)
   if ((count()==0) || (x.count()==0))
     boost::throw_exception(std::runtime_error("both observables need measurements"));
    
-  if(!is_jacknife_bins_filled_correctly_)   fill_jack();
-  if(!x.is_jacknife_bins_filled_correctly_) x.fill_jack();
-
   is_statistics_valid_               = false;
   is_nonlinear_operations_performed_ = true;
   is_bin_changed_                    = true;
@@ -456,6 +446,10 @@ void binned_data<T>::transform(const binned_data<X>& x, OP op, double factor)
   
   for (uint64_t i = 0; i < bin_number(); ++i)
     values_[i] = op(values_[i], x.values_[i])*factor;
+
+  if(!is_jacknife_bins_filled_correctly_)   fill_jack();
+  if(!x.is_jacknife_bins_filled_correctly_) x.fill_jack();
+
   for (uint64_t i = 0; i < jack_.size(); ++i)
     jack_[i] = op(jack_[i], x.jack_[i]);
 }
@@ -502,6 +496,14 @@ binned_data<T>& binned_data<T>::operator-=(binned_data<T> const & rhs)
 
   return *this;
 }
+
+
+/*
+ *
+ * Question (3) : jack_ bins not updated correctly...
+ *
+ */
+
 
 template <class T>
 template<class X>
@@ -550,12 +552,21 @@ binned_data<T>& binned_data<T>::operator/=(binned_data<X> const & rhs)
 
 
 /*
+ *
+ * Question (4) :  Please confirm:   transform  or  transform_linear   in the following ?
+ *
+ */
+
+
 template <class T> 
 template <class X>
 binned_data<T>& binned_data<T>::operator+=(X const & rhs)
 {
+  using boost::numeric::operators::operator+;
+  using boost::lambda::_1;
   if (count()) {
-    transform_linear(_1 + x);
+    mean_ = mean_ + rhs;
+    transform_linear(_1+rhs);
   }
   return *this;
 }
@@ -564,48 +575,51 @@ template <class T>
 template <class X>
 binned_data<T>& binned_data<T>::operator-=(X const & rhs)
 {
+  using boost::numeric::operators::operator-;
+  using boost::lambda::_1;
   if(count()) {
-    if (has_minmax_) {
-      min_ -= x;
-      max_ -= x;
-    }
-    transform_linear(_1-x);
-    for (int i=0;i<values2_.size();++i)
-      values2_[i] += -2.*values_[i]*x+x*x;
+    mean_  = mean_ - rhs;
+    transform_linear(_1-rhs);
   }
   return (*this);
 }
 
-template <class T> template <class X>
-binned_data<T>& binned_data<T>::operator*=(X x)
+template <class T> 
+template <class X>
+binned_data<T>& binned_data<T>::operator*=(X const & rhs)
 {
+  using std::abs;
+  using alps::numeric::abs;
+  using boost::numeric::operators::operator*;
+  using boost::lambda::_1;
   if (count()) {
-    error_ *= x;
-    if(has_variance_)
-      variance_ *= x*x;
-    has_minmax_ = false;
-
-    transform_linear(_1*x);
-    std::transform(values2_.begin(),values2_.end(),values2_.begin(),_1*(x*x));
+    error_ = abs(error_ * rhs);
+    mean_  = mean_  * rhs;
+    if(variance_opt_)
+      variance_opt_ = error_*error_;
+    transform_linear(_1*rhs);
   }
   return (*this);
 }
 
-template <class T> template <class X>
-binned_data<T>& binned_data<T>::operator/=(X x)
+template <class T> 
+template <class X>
+binned_data<T>& binned_data<T>::operator/=(X const & rhs)
 {
+  using std::abs;
+  using alps::numeric::abs;
+  using boost::numeric::operators::operator/;
+  using boost::lambda::_1;
   if (count()) {
-    error_ /= x;
-    if(has_variance_)
-      variance_ /= x*x;
-    has_minmax_ = false;
-
-    transform_linear(_1/x);
-    std::transform(values2_.begin(),values2_.end(),values2_.begin(),_1/(x*x));
+    error_ = abs(error_ / rhs);
+    mean_  = mean_  / rhs;
+    if(variance_opt_)
+      variance_opt_ = error_*error_;
+    transform_linear(_1/rhs);
   }
   return (*this);
 }
-*/
+
 
 
 /*
