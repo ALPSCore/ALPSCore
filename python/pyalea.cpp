@@ -33,7 +33,7 @@
 
 #include <alps/alea/detailedbinning.h>
 #include <alps/alea/value_with_error.h>
-#include <alps/alea/binned_data.h>
+//#include <alps/alea/binned_data.h>
 #include <alps/python/make_copy.hpp>
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
@@ -46,6 +46,7 @@ namespace alps {
   namespace alea {
 
     // for printing support
+/*
     template <class T>
     inline static boost::python::str print_binned_data(binned_data<T> const & self)
     {
@@ -54,6 +55,7 @@ namespace alps {
       s += boost::python::str("Jacknife error : \t" + boost::python::str(self.error()) + "\n");
       return s;
     }
+*/
 
     template <class T>
     inline static boost::python::str print_value_with_error(value_with_error<T> const & self)
@@ -144,7 +146,7 @@ namespace alps {
       return vec;
     }
 
-
+/*
     // loading arrays into binned_data
     template<>
     binned_data<double>::binned_data(boost::python::object const & timeseries_measurements_nparray, uint64_t const desired_bin_number)
@@ -169,7 +171,7 @@ namespace alps {
         if (desired_bin_number >= 1)  {  set_bin_number(desired_bin_number);  }
       }
     }
-
+*/
 
     // loading and extracting numpy arrays into vector_with_error
     #define IMPLEMENT_VECTOR_WITH_ERROR_CONSTRUCTION(TYPE) \
@@ -253,7 +255,7 @@ using namespace alps::alea;
 
 BOOST_PYTHON_MODULE(pyalea)
 {
-
+/*
   class_<binned_data<double> >("binned_data")
     .def(init<std::vector<double>, uint64_t>())
     //.def(init<boost::python::object, uint64_t>())
@@ -264,7 +266,7 @@ BOOST_PYTHON_MODULE(pyalea)
     .def("__repr__", &print_binned_data<double>)
 
     ;
-
+*/
 
 
 
