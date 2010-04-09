@@ -90,8 +90,8 @@ public:
   inline uint64_t                            bin_size()                          const  { return binsize_;}
   inline uint64_t                            bin_number()                        const  { return values_.size(); }      
   inline const value_type&                   bin_value(std::size_t i)            const  { return values_[i];  }
-  inline const result_type&                  mean()                              const;
-  inline const result_type&                  error()                             const;
+  inline const result_type                   mean()                              const;
+  inline const result_type                   error()                             const;
   inline const boost::optional<result_type>& variance()                          const;
   inline const boost::optional<time_type>&   tau()                               const;
   covariance_type                            covariance(const binned_data<T>)  const;
@@ -136,7 +136,6 @@ public:
   template <class X>
   binned_data(std::vector<X> const & timeseries_measurements, uint64_t const desired_bin_number=0);
 #ifdef ALPS_HAVE_PYTHON
-  template <class X>
   binned_data(boost::python::object const & timeseries_measurements_nparray, uint64_t const desired_bin_number=0);
 #endif
   binned_data(AbstractSimpleObservable<value_type> const & obs);
@@ -198,14 +197,14 @@ protected:
 
 // ### GET FUNCTIONS
 template <class T>
-const typename binned_data<T>::result_type& binned_data<T>::mean() const
+const typename binned_data<T>::result_type binned_data<T>::mean() const
 {
   if (count() == 0) boost::throw_exception(NoMeasurementsError());
   analyze();  return mean_;
 }
 
 template <class T>
-const typename binned_data<T>::result_type& binned_data<T>::error() const
+const typename binned_data<T>::result_type binned_data<T>::error() const
 {
   if (count() == 0) boost::throw_exception(NoMeasurementsError());
   analyze();   return error_;

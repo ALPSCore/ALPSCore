@@ -26,12 +26,14 @@
 *
 *****************************************************************************/
 
-/* $Id: nobinning.h 3520 2009-12-11 16:49:53Z gamperl $ */
+/* $Id: pyalea.cpp 3520 2010-04-09 16:49:53Z tamama $ */
+
 
 #define PY_ARRAY_UNIQUE_SYMBOL pyalea_PyArrayHandle
 
 #include <alps/alea/detailedbinning.h>
 #include <alps/alea/value_with_error.h>
+#include <alps/alea/binned_data.h>
 #include <alps/python/make_copy.hpp>
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
@@ -44,6 +46,15 @@ namespace alps {
   namespace alea {
 
     // for printing support
+    template <class T>
+    inline static boost::python::str print_binned_data(binned_data<T> const & self)
+    {
+      boost::python::str s;
+      s += boost::python::str("Jacknife mean  : \t" + boost::python::str(self.mean()) + "\n");
+      s += boost::python::str("Jacknife error : \t" + boost::python::str(self.error()) + "\n");
+      return s;
+    }
+
     template <class T>
     inline static boost::python::str print_value_with_error(value_with_error<T> const & self)
     {
@@ -134,6 +145,32 @@ namespace alps {
     }
 
 
+    // loading arrays into binned_data
+    template<>
+    binned_data<double>::binned_data(boost::python::object const & timeseries_measurements_nparray, uint64_t const desired_bin_number)
+      : count_()
+      , binsize_(1)
+      , is_bin_changed_(false)
+      , is_statistics_valid_(false)
+      , is_jacknife_bins_filled_correctly_(false)
+      , is_nonlinear_operations_performed_(false)
+      , mean_()
+      , error_()
+      , variance_opt_()
+      , tau_opt_()
+      , values_()
+      , jack_()
+    {
+      std::vector<double> timeseries_measurements = convert2vector<double>(timeseries_measurements_nparray);
+      count_ = timeseries_measurements.size();
+
+      if (count()) {
+        values_ = timeseries_measurements;
+        if (desired_bin_number >= 1)  {  set_bin_number(desired_bin_number);  }
+      }
+    }
+
+
     // loading and extracting numpy arrays into vector_with_error
     #define IMPLEMENT_VECTOR_WITH_ERROR_CONSTRUCTION(TYPE) \
     template<> \
@@ -159,6 +196,11 @@ namespace alps {
     { \
        return convert2numpy_array(_error); \
     } \
+
+    IMPLEMENT_VECTOR_WITH_ERROR_GET(int)
+    IMPLEMENT_VECTOR_WITH_ERROR_GET(long int)
+    IMPLEMENT_VECTOR_WITH_ERROR_GET(double)
+    IMPLEMENT_VECTOR_WITH_ERROR_GET(long double)
     
     template< class T >
     boost::python::object bins_nparray(T const &x)
@@ -166,11 +208,6 @@ namespace alps {
         return convert2numpy_array(x.bins());
     }
     
-    IMPLEMENT_VECTOR_WITH_ERROR_GET(int)
-    IMPLEMENT_VECTOR_WITH_ERROR_GET(long int)
-    IMPLEMENT_VECTOR_WITH_ERROR_GET(double)
-    IMPLEMENT_VECTOR_WITH_ERROR_GET(long double)
- 
 
     // for pickling support
     template<class T>
@@ -216,6 +253,21 @@ using namespace alps::alea;
 
 BOOST_PYTHON_MODULE(pyalea)
 {
+
+  class_<binned_data<double> >("binned_data")
+    .def(init<std::vector<double>, uint64_t>())
+    //.def(init<boost::python::object, uint64_t>())
+
+    .add_property("mean",&binned_data<double>::mean)
+    .add_property("error",&binned_data<double>::error)
+
+    .def("__repr__", &print_binned_data<double>)
+
+    ;
+
+
+
+
   class_<value_with_error<double> >("value_with_error",init<optional<double,double> >())
     .add_property("mean", &value_with_error<double>::mean)
     .add_property("error",&value_with_error<double>::error)  
@@ -281,8 +333,6 @@ BOOST_PYTHON_MODULE(pyalea)
 
     .add_property("mean",&value_with_error<std::vector<double> >::mean_nparray)
     .add_property("error",&value_with_error<std::vector<double> >::error_nparray)
-
-
 
 //    .add_property("mean",&mean_numpyarray<double>)
 //    .add_property("error",&error_numpyarray<double>)
