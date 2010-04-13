@@ -29,117 +29,6 @@
 #ifndef ALPS_CONFIG_H
 #define ALPS_CONFIG_H
 
-// Define to 1 if configuration is done by autoconf configure script
-#undef ALPS_AUTOCONF_CONFIGURE
-
-#ifdef ALPS_AUTOCONF_CONFIGURE
-
-//
-// configured by autoconf
-//
-
-
-//
-// C headers
-//
-
-// Define to 1 if you have rpc/rpc.h and rpc/xdr.h
-#undef ALPS_HAVE_RPC_XDR_H
-
-// Define to 1 if you have the <stdarg.h> header file.
-#undef ALPS_HAVE_STDARG_H
-
-// Define to 1 if you have the <sys/stat.h> header file.
-#undef ALPS_HAVE_SYS_STAT_H
-
-// Define to 1 if you have the <sys/systeminfo.h> header file.
-#undef ALPS_HAVE_SYS_SYSTEMINFO_H
-
-// Define to 1 if you have the <sys/types.h> header file.
-#undef ALPS_HAVE_SYS_TYPES_H
-
-// Define to 1 if you have the <unistd.h> header file.
-#undef ALPS_HAVE_UNISTD_H
-
-// Define to 1 if you have the <windows.h> header file.
-#undef ALPS_HAVE_WINDOWS_H
-
-//
-// C++ headers
-//
-
-// Define to 1 if you have valarray<T>.
-#undef ALPS_HAVE_VALARRAY
-
-//
-// Libraries
-//
-
-// Define to 1 if you have the PTHREAD library
-#undef ALPS_HAVE_PTHREAD
-
-// Define to 1 if you have the MPI library
-#undef ALPS_HAVE_MPI
-
-// Define to 1 if you have the HDF5 library
-#undef ALPS_HAVE_HDF5
-
-// Define to 1 if you have the Boost.MPI library
-#undef ALPS_HAVE_BOOST_MPI
-
-// Define to 1 if you have the Boost.Signals library
-#undef ALPS_HAVE_BOOST_SIGNALS
-
-// Define to 1 if you have the Boost.ThreadMPI library
-#undef ALPS_HAVE_BOOST_THREAD
-
-// Define to 1 if you have wchar support in Boost.Regex and Boost.Serialization
-#undef ALPS_HAVE_BOOST_WCHAR
-
-//
-// BLAS and LAPACK
-//
-
-// Define if you have BLAS library
-#undef ALPS_HAVE_BLAS
-
-// Define if you have LAPACK library
-#undef ALPS_HAVE_LAPACK
-
-// Define if you have Intel Math Kernel Library
-#undef ALPS_HAVE_MKL
-
-// Define if you have the Digital Extended Math Library
-#undef ALPS_HAVE_DXML
-
-// Define if you have SGI SCSL Library
-#undef ALPS_HAVE_SCSL
-
-// Define if you have Mac OS X vecLib framework
-#undef ALPS_HAVE_VECLIB
-
-// Define if you have IBM ESSL Library
-#undef ALPS_HAVE_ESSL
-
-// Define if you have ATLAS library
-#undef ALPS_HAVE_ATLAS
-
-//
-// XML parser
-//
-
-// Define to 1 if you use Expat XML parser by James Clark.
-#undef ALPS_HAVE_EXPAT_PARSER
-
-// Define to 1 if you use Xerces C++ XML parser by Apache Software Foundation.
-#undef ALPS_HAVE_XERCES_PARSER
-
-#else // ALPS_AUTOCONF_CONFIGURE
-
-//
-// configured by cmake
-//
-
 //
 // C headers
 //
@@ -244,9 +133,6 @@
 
 // Define to 1 if you have Python on your system.
 #cmakedefine ALPS_HAVE_PYTHON
-
-
-#endif // ALPS_AUTOCONF_CONFIGURE
 
 //
 // Introduce [int,uint]*_t into alps namespace

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2009 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -28,45 +28,6 @@
 
 #ifndef ALPS_VERSION_H
 #define ALPS_VERSION_H
-
-// Define to 1 if configuration is done by autoconf configure script
-#undef ALPS_AUTOCONF_CONFIGURE
-
-#ifdef ALPS_AUTOCONF_CONFIGURE
-
-//
-// configured by autoconf
-//
-
-// ALPS version
-#undef ALPS_VERSION
-
-// ALPS version (full string)
-#undef ALPS_VERSION_STRING
-
-// latest publish year of ALPS
-#undef ALPS_YEAR
-
-// install path of ALPS
-#undef ALPS_PREFIX
-
-// source directory of ALPS
-#undef ALPS_SRCDIR
-
-// XSLT PATH
-#undef ALPS_XML_DIR
-
-// hostname where configure script was executed
-#undef ALPS_CONFIG_HOST
-
-// username who executed configure script
-#undef ALPS_CONFIG_USER
-
-#else // ALPS_AUTOCONF_CONFIGURE
-
-//
-// configured by cmake
-//
 
 // ALPS version
 #cmakedefine ALPS_VERSION "@ALPS_VERSION@"
@@ -92,8 +53,5 @@
 
 // username who executed configure script
 #cmakedefine ALPS_CONFIG_USER "@ALPS_CONFIG_USER@"
-
-
-#endif // ALPS_AUTOCONF_CONFIGURE
 
 #endif // ALPS_VERSION_H
