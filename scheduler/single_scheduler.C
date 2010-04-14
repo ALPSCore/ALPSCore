@@ -151,11 +151,11 @@ SingleScheduler* start_single(const Factory& p, int argc, char** argv)
 }
 
 
-void stop_single()
+void stop_single( bool exit_)
 {  
   if (theScheduler)
     delete theScheduler; 
-  alps::comm_exit();
+  if (exit_) alps::comm_exit();
 }
 
 

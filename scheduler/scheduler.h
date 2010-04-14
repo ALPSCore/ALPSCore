@@ -252,7 +252,7 @@ ALPS_DECL void init(const Factory&);
 
 // initialize a scheduler for real work, parsing the command line
 ALPS_DECL SingleScheduler* start_single(const Factory& p, int argc=0, char** argv=0);
-ALPS_DECL void stop_single();
+ALPS_DECL void stop_single(bool exit_=true);
 
 
 // the scheduler on this node
