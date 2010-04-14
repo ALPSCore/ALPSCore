@@ -122,6 +122,7 @@ namespace alps {
       }
     }
       
+    
     template <class T>
     boost::python::numeric::array convert2numpy_scalar(T value)
     {
@@ -149,6 +150,19 @@ namespace alps {
     }
       
     template <class T>
+    boost::python::numeric::array convertvalarray2numpy_array(std::valarray<T> vec)
+    {
+        import_numpy_array();                 // ### WARNING: forgetting this will end up in segmentation fault!
+          
+        npy_intp arr_size= vec.size();   // ### NOTE: npy_intp is nothing but just signed size_t
+        boost::python::object obj(boost::python::handle<>(PyArray_SimpleNew(1, &arr_size, getEnum<T>())));  // ### NOTE: PyArray_SimpleNew is the new version of PyArray_FromDims
+        void *arr_data= PyArray_DATA((PyArrayObject*) obj.ptr());
+        memcpy(arr_data, &vec[0], PyArray_ITEMSIZE((PyArrayObject*) obj.ptr()) * arr_size);
+        
+        return boost::python::extract<boost::python::numeric::array>(obj);
+    }
+      
+    template <class T>
     std::vector<T> convert2vector(boost::python::object arr)
     {
       import_numpy_array();                 // ### WARNING: forgetting this will end up in segmentation fault!
@@ -160,7 +174,18 @@ namespace alps {
       memcpy(&vec.front(),data, PyArray_ITEMSIZE((PyArrayObject*) arr.ptr()) * vec_size);
       return vec;
     }
-
+      
+      template <typename T>
+      std::valarray<T> convert2valarray(boost::python::object arr)
+      {
+          import_numpy_array();                 // ### WARNING: forgetting this will end up in segmentation fault!
+          
+          std::size_t vec_size = PyArray_Size(arr.ptr());
+          T * data = (T *) PyArray_DATA(arr.ptr());
+          std::valarray<T> vec(vec_size);
+          memcpy(&vec[0],data, PyArray_ITEMSIZE((PyArrayObject*) arr.ptr()) * vec_size);
+          return vec;
+      }
 /*
     // loading arrays into binned_data
     template<>
@@ -218,33 +243,22 @@ namespace alps {
     IMPLEMENT_VECTOR_WITH_ERROR_GET(long int)
     IMPLEMENT_VECTOR_WITH_ERROR_GET(double)
     IMPLEMENT_VECTOR_WITH_ERROR_GET(long double)
-    
-
-    #define ALPS_PY_EXPORT_OBSERVABLE_METHOD(method, base_t)                    \
-      template <typename T>                                                     \
-      typename boost::enable_if<boost::is_scalar<typename T:: base_t >, boost::python::object>::type  \
-      method ## _nparray(T const &x)                                            \
-      {                                                                         \
-          return convert2numpy_scalar(x. method ());                            \
-      }                                                                         \
-      template <typename T>                                                     \
-      typename boost::disable_if<boost::is_scalar<typename T:: base_t >, boost::python::object>::type \
-      method ## _nparray(T const &x)                                            \
-      {                                                                         \
-          std::valarray<typename T:: base_t ::value_type> value = x. method (); \
-          /* I hate valarrays!!! */                                             \
-          return convert2numpy_array(std::vector<typename T:: base_t ::value_type >(&value[0], &value[0] + value.size()));  \
-      }
+        
       
-      ALPS_PY_EXPORT_OBSERVABLE_METHOD(count, count_type)
-      ALPS_PY_EXPORT_OBSERVABLE_METHOD(mean, result_type)
-      ALPS_PY_EXPORT_OBSERVABLE_METHOD(error, result_type)
-      ALPS_PY_EXPORT_OBSERVABLE_METHOD(tau, time_type)
-      ALPS_PY_EXPORT_OBSERVABLE_METHOD(variance, result_type)
+  /*   
+#define IMPLEMENT_VECTOR_WITH_ERROR_CONSTRUCTION(TYPE) \
+template<> \
+value_with_error<std::valarray<TYPE> >::value_with_error(boost::python::object const & mean_nparray, std::valarray) \
+: _mean(convert2vector<TYPE>(mean_nparray)) \
+, _error(convert2vector<TYPE>(error_nparray)) \
+{}
       
-#undef ALPS_PY_EXPORT_OBSERVABLE_METHOD    
-      
-      
+      IMPLEMENT_VECTOR_WITH_ERROR_CONSTRUCTION(int)
+      IMPLEMENT_VECTOR_WITH_ERROR_CONSTRUCTION(long int)
+      IMPLEMENT_VECTOR_WITH_ERROR_CONSTRUCTION(double)
+      IMPLEMENT_VECTOR_WITH_ERROR_CONSTRUCTION(long double)    
+   
+*/      
     // for pickling support
     template<class T>
     struct value_with_error_pickle_suite : boost::python::pickle_suite
@@ -279,7 +293,54 @@ namespace alps {
         vec_of = obtain_vector_of_value_with_error_from_vector_with_error<T>(vec_with); 
       }
     };
-
+      
+    template<typename T>
+    class WrappedValarrayObservable
+    {
+        public:
+        WrappedValarrayObservable(const std::string& name, int s=0)
+        : obs(name,s)
+        {}
+        void operator<<(const boost::python::object& arr)
+        {
+            std::valarray< typename T:: value_type ::value_type > obj=convert2valarray<typename T:: value_type ::value_type >(arr);
+            obs << obj;
+        }
+        std::string representation() const
+        {
+            return obs.representation();
+        }
+        
+        boost::python::numeric::array mean() const 
+        {
+            std::valarray<typename T:: result_type ::value_type > mean = obs.mean();
+            return convertvalarray2numpy_array<typename T:: result_type ::value_type >(mean);
+        }
+        
+        boost::python::numeric::array error() const 
+        {
+            std::valarray<typename T:: result_type ::value_type > error = obs.error();
+            return convertvalarray2numpy_array<typename T:: result_type ::value_type >(error);
+        }
+        boost::python::numeric::array tau() const 
+        {
+            std::valarray<typename T:: time_type ::value_type> tau = obs.tau();
+            return convertvalarray2numpy_array<typename T:: result_type ::value_type >(tau);
+        }
+        boost::python::numeric::array variance() const 
+        {
+            std::valarray<typename T:: result_type ::value_type > variance = obs.variance();
+            return convertvalarray2numpy_array<typename T:: result_type ::value_type >(variance);
+        }
+        typename T::count_type count() const 
+        {
+            return obs.count();
+        }
+        
+        private:
+        T obs;
+        
+    };
   }
 }
 
@@ -503,8 +564,25 @@ BOOST_PYTHON_MODULE(pyalea)
 
     .def("__repr__", &print_vector_list<double>)
     ;
-
-#define ALPS_PY_EXPORT_OBSERVABLE(class_name)                                                                                       \
+    
+#define ALPS_PY_EXPORT_VECTOROBSERVABLE(class_name)                                                                             \
+  class_<WrappedValarrayObservable< alps:: class_name > >(#class_name, init<std::string, optional<int> >())                     \
+    .def("__repr__", &WrappedValarrayObservable< alps:: class_name >::representation)                                           \
+    .def("__deepcopy__",  &alps::python::make_copy<WrappedValarrayObservable< alps::class_name > >)                             \
+    .def("__lshift__", &WrappedValarrayObservable< alps::class_name >::operator<<)                                              \
+    .add_property("mean", &WrappedValarrayObservable< alps::class_name >::mean)                                                 \
+    .add_property("error", &WrappedValarrayObservable< alps::class_name >::error)                                               \
+    .add_property("tau", &WrappedValarrayObservable< alps::class_name >::tau)                                                   \
+    .add_property("variance", &WrappedValarrayObservable< alps::class_name >::variance)                                         \
+    .add_property("count", &WrappedValarrayObservable< alps::class_name >::count)                                               \
+    ;
+ALPS_PY_EXPORT_VECTOROBSERVABLE(IntVectorObservable)
+ALPS_PY_EXPORT_VECTOROBSERVABLE(RealVectorObservable)
+ALPS_PY_EXPORT_VECTOROBSERVABLE(IntVectorTimeSeriesObservable)
+ALPS_PY_EXPORT_VECTOROBSERVABLE(RealVectorTimeSeriesObservable)
+#undef ALPS_PY_EXPORT_VECTOROBSERVABLE
+    
+#define ALPS_PY_EXPORT_SIMPLEOBSERVABLE(class_name)                                                                                 \
   class_< alps:: class_name >(#class_name, init<std::string, optional<int> >())                                                     \
     .def("__deepcopy__",  &alps::python::make_copy<alps:: class_name >)                                                             \
     .def("__repr__", &alps:: class_name ::representation)                                                                           \
@@ -515,27 +593,17 @@ BOOST_PYTHON_MODULE(pyalea)
     .add_property("variance",&alps:: class_name ::variance)                                                                         \
     .add_property("count",&alps:: class_name ::count)                                                                               \
     ;                                                                                                                               \
-   boost::python::def((std::string("countOf") +  #class_name).c_str(), & count_nparray<alps:: class_name >);                        \
-   boost::python::def((std::string("meanOf") +  #class_name).c_str(), & mean_nparray<alps:: class_name >);                          \
-   boost::python::def((std::string("errorOf") +  #class_name).c_str(), & error_nparray<alps:: class_name >);                        \
-   boost::python::def((std::string("tauOf") +  #class_name).c_str(), & tau_nparray<alps:: class_name >);                            \
-   boost::python::def((std::string("varianceOf") +  #class_name).c_str(), & variance_nparray<alps:: class_name >);
-    
-ALPS_PY_EXPORT_OBSERVABLE(RealObservable)
-ALPS_PY_EXPORT_OBSERVABLE(IntObservable)
-ALPS_PY_EXPORT_OBSERVABLE(RealTimeSeriesObservable)
-ALPS_PY_EXPORT_OBSERVABLE(IntTimeSeriesObservable)
-#ifdef ALPS_HAVE_VALARRAY
-ALPS_PY_EXPORT_OBSERVABLE(IntVectorObservable)
-ALPS_PY_EXPORT_OBSERVABLE(RealVectorObservable)
-ALPS_PY_EXPORT_OBSERVABLE(IntVectorTimeSeriesObservable)
-ALPS_PY_EXPORT_OBSERVABLE(RealVectorTimeSeriesObservable)
-#endif
-#undef ALPS_PY_EXPORT_OBSERVABLE
+       
+ALPS_PY_EXPORT_SIMPLEOBSERVABLE(RealObservable)
+ALPS_PY_EXPORT_SIMPLEOBSERVABLE(IntObservable)
+ALPS_PY_EXPORT_SIMPLEOBSERVABLE(RealTimeSeriesObservable)
+ALPS_PY_EXPORT_SIMPLEOBSERVABLE(IntTimeSeriesObservable)
+
+#undef ALPS_PY_EXPORT_SIMPLEOBSERVABLE
     
   boost::python::def("convert2numpy_array_float",&convert2numpy_array<double>);
   boost::python::def("convert2numpy_array_int",&convert2numpy_array<int>);
 
   boost::python::def("convert2vector_double",&convert2vector<double>);
-  boost::python::def("convert2vector_int",&convert2vector<int>);    
+  boost::python::def("convert2vector_int",&convert2vector<int>);  
 }
