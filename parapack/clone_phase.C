@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -43,25 +43,36 @@ try {
   parser.parse(std::cin);
 
   alps::oxstream ox(std::cout);
-  boost::filesystem::path path("clone_phase.dump", boost::filesystem::native);
 
   ox << phase;
 
+  boost::filesystem::path xdrpath("clone_phase.xdr", boost::filesystem::native);
   {
-    alps::OXDRFileDump dp(path);
+    alps::OXDRFileDump dp(xdrpath);
     dp << phase;
   }
-
   phase = alps::clone_phase();
-
   {
-    alps::IXDRFileDump dp(path);
+    alps::IXDRFileDump dp(xdrpath);
     dp >> phase;
   }
-
   ox << phase;
+  boost::filesystem::remove(xdrpath);
 
-  boost::filesystem::remove(path);
+  boost::filesystem::path h5path("clone_phase.h5", boost::filesystem::native);
+  #pragma omp critical (hdf5io)
+  {
+    alps::hdf5::oarchive ar(h5path.native_file_string());
+    ar << make_pvp("/phase", phase);
+  }
+  phase = alps::clone_phase();
+  #pragma omp critical (hdf5io)
+  {
+    alps::hdf5::iarchive ar(h5path.native_file_string());
+    ar >> make_pvp("/phase", phase);
+  }
+  ox << phase;
+  boost::filesystem::remove(h5path);
 
 #ifndef BOOST_NO_EXCEPTIONS
 }
