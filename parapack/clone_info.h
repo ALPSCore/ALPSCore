@@ -30,6 +30,7 @@
 
 #include "process.h"
 #include "types.h"
+#include <alps/hdf5.hpp>
 #include <alps/parser/xmlstream.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <vector>
@@ -70,6 +71,8 @@ public:
     startt_ = boost::posix_time::time_from_string(start_str);
     stopt_ = boost::posix_time::time_from_string(stop_str);
   }
+  void serialize(hdf5::oarchive& ar) const;
+  void serialize(hdf5::iarchive& ar);
 
 private:
   friend class clone_phase_xml_handler;
@@ -89,9 +92,9 @@ namespace alps {
 
 ALPS_DECL alps::oxstream& operator<<(alps::oxstream& os, alps::clone_phase const& phase);
 
-ALPS_DECL alps::ODump& operator<<(alps::ODump& dump, alps::clone_phase const& phase);
+// ALPS_DECL alps::ODump& operator<<(alps::ODump& dump, alps::clone_phase const& phase);
 
-ALPS_DECL alps::IDump& operator>>(alps::IDump& dump, alps::clone_phase& phase);
+// ALPS_DECL alps::IDump& operator>>(alps::IDump& dump, alps::clone_phase& phase);
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 } // namespace alps
@@ -143,6 +146,8 @@ public:
   void serialize(Archive & ar, const unsigned int) {
     ar & clone_id_ & progress_ & phases_ & dumpfiles_ & worker_seed_ & disorder_seed_;
   }
+  void serialize(hdf5::oarchive& ar) const;
+  void serialize(hdf5::iarchive& ar);
 
 protected:
   void init(Parameters const& params, std::string const& dump);
