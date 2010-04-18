@@ -59,7 +59,7 @@ void ObservableSet::save(ODump& dump) const
 void ObservableSet::load(IDump& dump)
 {
   uint32_t n(dump);
-  for (int i = 0; i < n; ++i) {
+  for (unsigned i = 0; i < n; ++i) {
     uint32_t v(dump);
     Observable* obs = factory_.create(v);
     dump >> *obs;
