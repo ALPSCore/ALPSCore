@@ -26,60 +26,75 @@
 *****************************************************************************/
 
 #include "clone.h"
-#ifdef ALPS_HAVE_HDF5
-# include <alps/hdf5.hpp>
-#endif
 #include <boost/filesystem/operations.hpp>
 
 namespace alps {
 
-bool load_observable(IDump& dp, Parameters& params, clone_info& info,
-  std::vector<ObservableSet>& obs) {
-  int32_t tag;
-  dp >> tag;
-  if (tag != parapack_dump::run_master && tag != parapack_dump::run_slave) {
-    std::cerr << "dump does not contain a master/slave clone\n";
-    return false;
-  }
+void save_observable(alps::hdf5::oarchive& ar, std::string const& prefix,
+                     std::vector<ObservableSet> const& obs) {
+  if (obs.size() == 1)
+    ar << make_pvp(prefix, obs[0]);
+  else
+    for (int m = 0; m < obs.size(); ++m)
+      ar << make_pvp(prefix + "/sections/" + boost::lexical_cast<std::string>(m), obs[m]);
+}
 
-  int32_t version, np, rank;
-  dp >> version >> np >> rank;
-  // dp.set_version(version); /* this line causes a segmentation fault */
-  if (version < parapack_dump::initial_version || version > parapack_dump::current_version) {
-    std::cerr << "The clone on dump is version " << version
-              << " but this program can read only versions between "
-              << parapack_dump::initial_version << " and " << parapack_dump::current_version
-              << std::endl;
-    return false;
-  }
+void save_observable(alps::hdf5::oarchive& ar, std::vector<ObservableSet> const& obs) {
+  save_observable(ar, "simulation/results", obs);
+}
 
-  if (version >= 304) {
-    dp >> params >> info >> obs;
+void save_observable(alps::hdf5::oarchive& ar, cid_t cid, std::vector<ObservableSet> const& obs) {
+  save_observable(ar, "simulation/realizations/" + boost::lexical_cast<std::string>(0) +
+                  "/clones/" + boost::lexical_cast<std::string>(cid) + "/results", obs);
+}
+
+void save_observable(alps::hdf5::oarchive& ar, cid_t cid, int rank,
+                     std::vector<ObservableSet> const& obs) {
+  save_observable(ar, "simulation/realizations/" + boost::lexical_cast<std::string>(0) +
+                  "/clones/" + boost::lexical_cast<std::string>(cid) +
+                  "/workers/" + boost::lexical_cast<std::string>(rank) + "/results", obs);
+}
+
+bool load_observable(alps::hdf5::iarchive& ar, std::string const& prefix,
+                     std::vector<ObservableSet>& obs) {
+  obs.clear();
+  if (ar.is_group(prefix)) {
+    if (!ar.is_group(prefix + "/sections/0")) {
+      obs.resize(1);
+      ar >> make_pvp(prefix, obs[0]);
+    } else {
+      for (int m = 0; ; ++m) {
+        std::string p = prefix + "/sections/" + boost::lexical_cast<std::string>(m);
+        if (ar.is_group(p)) {
+          obs.push_back(ObservableSet());
+          ar >> make_pvp(p, obs[m]);
+        } else {
+          break;
+        }
+      }
+    }
+    return true;
   } else {
-    obs.resize(1);
-    dp >> params >> info >> obs[0];
+    return false;
   }
-  return true;
 }
 
-bool load_observable(boost::filesystem::path const& file, Parameters& params, clone_info& info,
-  std::vector<ObservableSet>& obs) {
-  if (!exists(file)) return false;
-  IXDRFileDump dp(file);
-  return load_observable(dp, params, info, obs);
+bool load_observable(alps::hdf5::iarchive& ar, std::vector<ObservableSet>& obs) {
+  return load_observable(ar, "simulation/results", obs);
 }
 
-bool load_observable(IDump& dp, std::vector<ObservableSet>& obs) {
-  Parameters params;
-  clone_info info;
-  return load_observable(dp, params, info, obs);
+bool load_observable(alps::hdf5::iarchive& ar, cid_t cid, std::vector<ObservableSet>& obs) {
+  return load_observable(ar, "simulation/realizations/" + boost::lexical_cast<std::string>(0) +
+                         "/clones/" + boost::lexical_cast<std::string>(cid) + "/results", obs);
 }
 
-bool load_observable(boost::filesystem::path const& file, std::vector<ObservableSet>& obs) {
-  if (!exists(file)) return false;
-  IXDRFileDump dp(file);
-  return load_observable(dp, obs);
+bool load_observable(alps::hdf5::iarchive& ar, cid_t cid, int rank,
+                       std::vector<ObservableSet>& obs) {
+  return load_observable(ar, "simulation/realizations/" + boost::lexical_cast<std::string>(0) +
+                         "/clones/" + boost::lexical_cast<std::string>(cid) +
+                         "/workers/" + boost::lexical_cast<std::string>(rank) + "/results", obs);
 }
+
 
 //
 // clone
@@ -145,53 +160,40 @@ bool clone::halted() const { return !worker_; }
 clone_info const& clone::info() const { return info_; }
 
 void clone::load() {
-  IXDRFileDump dp(complete(boost::filesystem::path(info_.dumpfile()), basedir_));
-  load_observable(dp, params_, info_, measurements_);
-  bool full_dump(dp);
-  if (full_dump) worker_->load_worker(dp);
+  {
+    IXDRFileDump dp(complete(boost::filesystem::path(info_.dumpfile()), basedir_));
+    worker_->load_worker(dp);
+  }
+  #pragma omp critical (hdf5io)
+  {
+    hdf5::iarchive h5(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_));
+    h5 >> make_pvp("/", this);
+  }
 }
 
 void clone::save() const{
-  boost::filesystem::path fn = complete(boost::filesystem::path(info_.dumpfile()), basedir_);
-  OXDRFileDump dp(fn);
-  dp << static_cast<int32_t>(parapack_dump::run_master)
-     << static_cast<int32_t>(parapack_dump::current_version)
-     << static_cast<int32_t>(1)
-     << static_cast<int32_t>(0);
-  dp << params_ << info_ << measurements_;
-  bool full_dump = false;
-  full_dump =
-    (info_.progress() < 1) || params_.value_or_default("SCHEDULER_KEEP_FULL_DUMP", false);
-  dp << full_dump;
-  if (full_dump) worker_->save_worker(dp);
-// #ifdef ALPS_HAVE_HDF5
-//   #pragma omp critical (hdf5io)
-//   {
-//     hdf5::oarchive h5(fn.file_string() + ".h5");
-//     h5 << make_pvp("/", this);
-//   }
-// #endif
+  {
+    OXDRFileDump dp(complete(boost::filesystem::path(info_.dumpfile()), basedir_));
+    worker_->save_worker(dp);
+  }
+  #pragma omp critical (hdf5io)
+  {
+    hdf5::oarchive h5(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_));
+    h5 << make_pvp("/", this);
+  }
 }
 
-#ifdef ALPS_HAVE_HDF5
-
-void clone::serialize(hdf5::iarchive& /* ar */) {
-  // TODO: implement
+void clone::serialize(hdf5::iarchive& ar) {
+  ar >> make_pvp("parameters", params_)
+     >> make_pvp("log/alps", info_);
+  load_observable(ar, clone_id_, measurements_);
 }
 
 void clone::serialize(hdf5::oarchive& ar) const {
-//   ar << make_pvp("/parameters", params_);
-//   for (int m = 0; m < measurements_.size(); ++m) {
-//     // TODO: check hdf5 section name conventions
-//     ar << make_pvp("/simulation/realizations/" + boost::lexical_cast<std::string>(0) +
-//                    "/clones/" + boost::lexical_cast<std::string>(clone_id_) +
-//                    "/results/" + boost::lexical_cast<std::string>(m) +
-//                    "/worker/" + boost::lexical_cast<std::string>(0),
-//                    measurements_[m]);
-//   }
+  ar << make_pvp("parameters", params_)
+     << make_pvp("log/alps", info_);
+  save_observable(ar, clone_id_, measurements_);
 }
-
-#endif
 
 void clone::checkpoint() {
   if (info_.progress() < 1) info_.stop();
@@ -371,102 +373,40 @@ bool clone_mpi::halted() const { return !worker_; }
 clone_info const& clone_mpi::info() const { return info_; }
 
 void clone_mpi::load() {
-  IXDRFileDump dp(complete(boost::filesystem::path(info_.dumpfile()), basedir_));
-  int32_t tag;
-  dp >> tag;
-  if (work_.rank() == 0) {
-    if (tag != parapack_dump::run_master) {
-      std::cerr << "dump does not contain a master clone\n";
-      boost::throw_exception(std::runtime_error("dump does not contain a master clone"));
-    }
-  } else {
-    if (tag != parapack_dump::run_slave) {
-      std::cerr << "dump does not contain a slave clone\n";
-      boost::throw_exception(std::runtime_error("dump does not contain a slave clone"));
-    }
+  {
+    IXDRFileDump dp(complete(boost::filesystem::path(info_.dumpfile()), basedir_));
+    worker_->load_worker(dp);
   }
-
-  int32_t version, np, rank;
-  dp >> version >> np >> rank;
-  // dp.set_version(version); /* this line causes a segmentation fault */
-
-  if (version < parapack_dump::initial_version || version > parapack_dump::current_version) {
-    std::cerr << "The clone on dump is version " << version
-              << " but this program can read only versions between "
-              << parapack_dump::initial_version <<  " and "
-              << parapack_dump::current_version << std::endl;
-    boost::throw_exception(std::runtime_error("The clone on dump is version " +
-      boost::lexical_cast<std::string>(version) +
-      " but this program can read only versions between " +
-      boost::lexical_cast<std::string>(parapack_dump::initial_version) + " and " +
-      boost::lexical_cast<std::string>(parapack_dump::current_version)));
+  #pragma omp critical (hdf5io)
+  {
+    hdf5::iarchive h5(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_));
+    h5 >> make_pvp("/", this);
   }
-  if (np != work_.size()) {
-    std::cerr << "inconsistent number of processes\n";
-    boost::throw_exception(std::runtime_error("inconsistent number of processes"));
-  }
-  if (rank != work_.rank()) {
-    std::cerr << "inconsistent rank of process\n";
-    boost::throw_exception(std::runtime_error("inconsistent rank of process"));
-  }
-  if (version >= 304) {
-    dp >> params_ >> info_ >> measurements_;
-  } else {
-    measurements_.resize(1);
-    dp >> params_ >> info_ >> measurements_[0];
-  }
-
-  bool full_dump(dp);
-  if (full_dump) worker_->load_worker(dp);
 }
 
 void clone_mpi::save() const{
-  boost::filesystem::path fn = complete(boost::filesystem::path(info_.dumpfile()), basedir_);
-  OXDRFileDump dp(fn);
-  if (work_.rank() == 0)
-    dp << static_cast<int32_t>(parapack_dump::run_master);
-  else
-    dp << static_cast<int32_t>(parapack_dump::run_slave);
-  dp << static_cast<int32_t>(parapack_dump::current_version)
-     << static_cast<int32_t>(work_.size())
-     << static_cast<int32_t>(work_.rank());
-  dp << params_ << info_ << measurements_;
-  bool full_dump = false;
-  if (work_.rank() == 0)
-    full_dump =
-      (info_.progress() < 1) || params_.value_or_default("SCHEDULER_KEEP_FULL_DUMP", false);
-  broadcast(work_, full_dump, 0);
-  dp << full_dump;
-  if (full_dump) worker_->save_worker(dp);
-
-// #ifdef ALPS_HAVE_HDF5
-//   #pragma omp critical (hdf5io)
-//   {
-//     hdf5::oarchive h5(fn.file_string() + ".h5");
-//     h5 << make_pvp("/", this);
-//   }
-// #endif
+  {
+    OXDRFileDump dp(complete(boost::filesystem::path(info_.dumpfile()), basedir_));
+    worker_->save_worker(dp);
+  }
+  #pragma omp critical (hdf5io)
+  {
+    hdf5::oarchive h5(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_));
+    h5 << make_pvp("/", this);
+  }
 }
 
-#ifdef ALPS_HAVE_HDF5
-
-void clone_mpi::serialize(hdf5::iarchive& /* ar */) {
-  // TODO: implement
+void clone_mpi::serialize(hdf5::iarchive& ar) {
+  ar >> make_pvp("parameters", params_)
+     >> make_pvp("log/alps", info_);
+  load_observable(ar, clone_id_, work_.rank(), measurements_);
 }
 
 void clone_mpi::serialize(hdf5::oarchive& ar) const {
-//   ar << make_pvp("/parameters", params_);
-//   for (int m = 0; m < measurements_.size(); ++m) {
-//     // TODO: check hdf5 section name conventions
-//     ar << make_pvp("/simulation/realizations/" + boost::lexical_cast<std::string>(0) +
-//                    "/clones/" + boost::lexical_cast<std::string>(clone_id_) +
-//                    "/results/" + boost::lexical_cast<std::string>(m) +
-//                    "/worker/" + boost::lexical_cast<std::string>(work_.rank()),
-//                    measurements_[m]);
-//   }
+  ar << make_pvp("parameters", params_)
+     << make_pvp("log/alps", info_);
+  save_observable(ar, clone_id_, work_.rank(), measurements_);
 }
-
-#endif
 
 void clone_mpi::output() const{
   std::cout << params_;

@@ -245,9 +245,9 @@ void clone_info::init(Parameters const& params, std::string const& dump) {
   std::string f = dump + ".clone" + id2string(clone_id_+1);
   if (np > 1) {
     if (pid == 0)
-      for (int p = 0; p < np; ++p) dumpfiles_.push_back(f + '.' + id2string(p+1));
+      for (int p = 0; p < np; ++p) dumpfiles_.push_back(f + ".worker" + id2string(p+1));
     else
-      dumpfiles_.push_back(f + '.' + id2string(pid+1));
+      dumpfiles_.push_back(f + ".worker" + id2string(pid+1));
   } else {
     // no process id suffix for single clone
     dumpfiles_.push_back(f);

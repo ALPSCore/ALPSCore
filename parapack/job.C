@@ -30,9 +30,7 @@
 #include "filelock.h"
 #include "measurement.h"
 #include "simulation_p.h"
-#ifdef ALPS_HAVE_HDF5
-# include <alps/hdf5.hpp>
-#endif
+#include <alps/hdf5.hpp>
 #include <boost/config.hpp>
 #include <boost/foreach.hpp>
 #include <boost/regex.hpp>
@@ -169,12 +167,11 @@ void task::save_observable(std::vector<std::vector<ObservableSet> > const& oss) 
       if (obs_.size() > 1 && !params_tmp.defined("NUM_REPLICAS"))
         params_tmp["NUM_REPLICAS"] = obs_.size();
       simulation_xml_writer(file_out, true, params_tmp, obs_, clone_info_tmp);
-#ifdef ALPS_HAVE_HDF5
       if (obs_.size() == 1) {
         #pragma omp critical (hdf5io)
         {
           boost::filesystem::path file = complete(boost::filesystem::path(base_ + ".out.h5"), basedir_);
-          hdf5::oarchive h5(file.native_file_string());
+          hdf5::oarchive h5(file);
           h5 << make_pvp("/parameters", params_tmp);
           h5 << make_pvp("/simulation/results", obs_[0]);
           for (int n = 0; n < oss.size(); ++n)
@@ -189,7 +186,7 @@ void task::save_observable(std::vector<std::vector<ObservableSet> > const& oss) 
           {
             boost::filesystem::path file = complete(boost::filesystem::path(
               base_ + ".replica" + boost::lexical_cast<std::string>(i+1) + ".h5"), basedir_);
-            hdf5::oarchive h5(file.native_file_string());
+            hdf5::oarchive h5(file);
             h5 << make_pvp("/parameters", p);
             h5 << make_pvp("/simulation/results", obs_[i]);
             for (int n = 0; n < oss.size(); ++n)
@@ -198,7 +195,6 @@ void task::save_observable(std::vector<std::vector<ObservableSet> > const& oss) 
           }
         }
       }
-#endif
     } else {
       boost::throw_exception(std::logic_error("task::save_observable()"));
     }
@@ -365,14 +361,27 @@ void task::evaluate() {
   BOOST_FOREACH(cid_t cid, clones) {
     std::cout << (cid+1) << ' ' << std::flush;
     std::vector<ObservableSet> os;
-    for (unsigned int w = 0; w < clone_info_[cid].checkpoints().size(); ++w) {
-      IXDRFileDump dp(complete(clone_info_[cid].checkpoints()[w], basedir_));
+    if (clone_info_[cid].checkpoints().size() == 1) {
+      std::string p = clone_info_[cid].checkpoints()[0] + ".h5";
+      hdf5::iarchive h5(complete(p, basedir_));
       std::vector<ObservableSet> o;
-      if (!load_observable(dp, o)) {
-        std::cerr << "error while reading " << clone_info_[cid].checkpoints()[w] << std::endl;
+      if (!load_observable(h5, cid, o)) {
+        std::cerr << "error while reading " << p << std::endl;
       } else {
         evaluator->load(o, os);
         evaluator->load(o, obs_);
+      }
+    } else {
+      for (unsigned int w = 0; w < clone_info_[cid].checkpoints().size(); ++w) {
+        std::string p = clone_info_[cid].checkpoints()[w] + ".h5";
+        hdf5::iarchive h5(complete(p, basedir_));
+        std::vector<ObservableSet> o;
+        if (!load_observable(h5, cid, w, o)) {
+          if (w == 0) std::cerr << "error while reading " << p << std::endl;
+        } else {
+          evaluator->load(o, os);
+          evaluator->load(o, obs_);
+        }
       }
     }
     oss.push_back(os);

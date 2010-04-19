@@ -117,6 +117,7 @@ public:
 
   cid_t clone_id() const { return clone_id_; }
   std::string const& dumpfile() const { return dumpfiles_[0]; }
+  std::string dumpfile_h5() const { return dumpfile() + ".h5"; }
 
   bool has_seed() const;
   seed_t worker_seed() const;
