@@ -44,6 +44,7 @@
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/filesystem/path.hpp>
 
 #include <hdf5.h>
 
@@ -59,7 +60,7 @@ namespace alps {
         template <typename Tag> class archive: boost::noncopyable {
             public:
                 /// @file path to the hdf5 file to build the archive from. In case of iarchive, the file is opend in read only mode
-                archive(std::string const & file);
+                archive(boost::filesystem::path const& path);
                 ~archive();
                 /// @return return the filename of the file, the arive ist based on
                 std::string const & filename() const;
@@ -276,13 +277,13 @@ namespace alps {
                         boost::posix_time::ptime time;
                         std::string name;
                     };
-                    archive(std::string const & file): _revision(0), _state_id(-1), _log_id(-1), _filename(file) {
+                    archive(boost::filesystem::path const& path): _revision(0), _state_id(-1), _log_id(-1), _filename(path.native_file_string()) {
                         H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
                         if (boost::is_same<Tag, write>::value) {
-                            if (H5Fis_hdf5(file.c_str()) == 0)
-                                throw std::runtime_error("no valid hdf5 file " + file);
-                            hid_t id = H5Fopen(file.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
-                            _file = (id < 0 ? H5Fcreate(file.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT) : id);
+                            if (H5Fis_hdf5(_filename.c_str()) == 0)
+                                throw std::runtime_error("no valid hdf5 file " + _filename);
+                            hid_t id = H5Fopen(_filename.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
+                            _file = (id < 0 ? H5Fcreate(_filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT) : id);
                             if (!is_group("/revisions")) {
                                 set_group("/revisions");
                                 set_attr("/revisions", "last", _revision, scalar_tag());
@@ -301,9 +302,9 @@ namespace alps {
                                 check_error(H5Tcommit2(_file, "log_type", log_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
                             }
                         } else {
-                            if (check_error(H5Fis_hdf5(file.c_str())) == 0)
-                                throw std::runtime_error("no valid hdf5 file " + file);
-                            _file = H5Fopen(file.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+                            if (check_error(H5Fis_hdf5(_filename.c_str())) == 0)
+                                throw std::runtime_error("no valid hdf5 file " + _filename);
+                            _file = H5Fopen(_filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
                         }
                         _complex_id = H5Tcreate (H5T_COMPOUND, sizeof(internal_complex_type));
                         check_error(H5Tinsert(_complex_id, "r", HOFFSET(internal_complex_type, r), H5T_NATIVE_DOUBLE));
