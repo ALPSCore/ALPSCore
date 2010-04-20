@@ -170,7 +170,7 @@ void IDump::read_string(std::string& s)
     if(t[sz]!=char(0))
       boost::throw_exception(std::runtime_error("string on dump not terminating with '\\0'"));
         s=t;
-    delete t;
+    delete[] t;
     if(s.length()!=sz)
       boost::throw_exception(std::runtime_error("string on dump has incorrect length"));
   } 
