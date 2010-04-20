@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2009 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2003-2010 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -202,7 +202,7 @@ inline bool is_odd(T x)
 template <class I>
 inline bool is_odd(const half_integer<I>& x)
 {
-  return (std::abs(x.get_twice())%4==2);
+  return (x.abs().get_twice()%4 == 2);
 }
 
 template <class I>
