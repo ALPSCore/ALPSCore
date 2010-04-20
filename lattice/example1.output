@@ -173,6 +173,11 @@
     <EDGE type="0" vector="1 0"><SOURCE vertex="1" offset="0 0"/><TARGET vertex="1" offset="1 0"/></EDGE>
     <EDGE type="1" vector="0 1"><SOURCE vertex="1" offset="0 0"/><TARGET vertex="1" offset="0 1"/></EDGE>
   </UNITCELL>
+  <UNITCELL name="complex1d" dimension="1" vertices="1">
+    <VERTEX id="1" type="0"/>
+    <EDGE type="0" vector="1"><SOURCE vertex="1" offset="0"/><TARGET vertex="1" offset="1"/></EDGE>
+    <EDGE type="1" vector="2"><SOURCE vertex="1" offset="0"/><TARGET vertex="1" offset="2"/></EDGE>
+  </UNITCELL>
   <UNITCELL name="coupled ladders" dimension="2" vertices="2">
     <VERTEX id="1" type="0"/>
     <VERTEX id="2" type="0"/>
@@ -343,6 +348,22 @@
       <BOUNDARY dimension="2" type="open"/>
     </FINITELATTICE>
     <UNITCELL ref="anisotropic2d"/>
+  </LATTICEGRAPH>
+  <LATTICEGRAPH name="nnn chain lattice">
+    <FINITELATTICE>
+      <LATTICE ref="chain lattice"/>
+      <EXTENT dimension="1" size="L"/>
+      <BOUNDARY dimension="1" type="periodic"/>
+    </FINITELATTICE>
+    <UNITCELL ref="complex1d"/>
+  </LATTICEGRAPH>
+  <LATTICEGRAPH name="nnn open chain lattice">
+    <FINITELATTICE>
+      <LATTICE ref="chain lattice"/>
+      <EXTENT dimension="1" size="L"/>
+      <BOUNDARY dimension="1" type="open"/>
+    </FINITELATTICE>
+    <UNITCELL ref="complex1d"/>
   </LATTICEGRAPH>
   <LATTICEGRAPH name="open chain lattice">
     <FINITELATTICE>
