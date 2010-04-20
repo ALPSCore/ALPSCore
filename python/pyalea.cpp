@@ -39,6 +39,11 @@
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <numpy/arrayobject.h>
 
+#include <boost/random.hpp>
+#include<boost/random/uniform_01.hpp>
+
+typedef boost::variate_generator<boost::mt19937&, boost::uniform_01<double> > random_01;
+
 using namespace boost::python;
 
 
@@ -600,6 +605,21 @@ ALPS_PY_EXPORT_SIMPLEOBSERVABLE(RealTimeSeriesObservable)
 ALPS_PY_EXPORT_SIMPLEOBSERVABLE(IntTimeSeriesObservable)
 
 #undef ALPS_PY_EXPORT_SIMPLEOBSERVABLE
+    
+    class_<boost::mt19937>("engine")
+    .def("__deepcopy__",  &alps::python::make_copy<boost::mt19937>)
+    .def("random", &boost::mt19937::operator())
+    .def("max", &boost::mt19937::max )
+    ;
+    
+    class_<boost::uniform_01<double> >("uniform")
+    .def("__deepcopy__",  &alps::python::make_copy<boost::uniform_01<double> >)
+    ;
+    
+    class_<random_01 >("random", init< boost::mt19937& , boost::uniform_01<double> >())
+    .def("__deepcopy__",  &alps::python::make_copy<random_01 >)
+    .def("random", static_cast<random_01::result_type(random_01::*)()>(&random_01::operator()))
+    ;
     
   boost::python::def("convert2numpy_array_float",&convert2numpy_array<double>);
   boost::python::def("convert2numpy_array_int",&convert2numpy_array<int>);
