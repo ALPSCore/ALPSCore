@@ -31,6 +31,5 @@
 std::string alps::parapack_copyright() {
   return "ALPS/parapack scheduler\n" \
     "  a Monte Carlo scheduler for multiple-level parallelization\n"    \
-    "  available from http://wistaria.comp-phys.org/alps-parapack/\n"   \
     "  copyright (c) 1997-" + alps::year() + " by Synge Todo <wistaria@comp-phys.org>\n";
 }
