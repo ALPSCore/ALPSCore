@@ -1,64 +1,23 @@
-#  Copyright Matthias Troyer 2009 - 2010.
+#  Copyright Matthias Troyer and Synge Todo 2009 - 2010.
 #  Distributed under the Boost Software License, Version 1.0.
 #      (See accompanying file LICENSE_1_0.txt or copy at
 #          http://www.boost.org/LICENSE_1_0.txt)
 
 include_directories(${PROJECT_BINARY_DIR}/src)
 include_directories(${PROJECT_SOURCE_DIR}/src)
-include_directories(${PROJECT_SOURCE_DIR}/tool)
 include_directories(${Boost_ROOT_DIR})
 
 IF(NOT ALPS_LLVM_WORKAROUND)
-#define tests here. Each test needs ${name}.C ${name}.input ${name}.output
-FOREACH (name example1 example2 example3 example4 example5 example6 example7 example8 example9 example10 example11 label)
-
-	add_executable(lattice_${name} ${name}.C)
-	add_dependencies(lattice_${name} alps)
-	target_link_libraries(lattice_${name} alps)
-	# install(TARGETS lattice_${name} RUNTIME DESTINATION bin)
-        if(MSVC)
-          get_target_property(EXE_NAME lattice_${name} LOCATION)
-          add_custom_command(TARGET lattice_${name} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy ${EXE_NAME} ${PROJECT_BINARY_DIR}/bin)
-        endif(MSVC)
-	
-	ADD_TEST(
-		lattice_${name} 
-		${CMAKE_COMMAND}
-			-Dcmd=lattice_${name}
-                        -Dsourcedir=${CMAKE_CURRENT_SOURCE_DIR}
-                        -Dbinarydir=${CMAKE_CURRENT_BINARY_DIR}
-                        -Ddllexedir=${PROJECT_BINARY_DIR}/bin
-			-Dinput=${name}.input
-			-Doutput=${name}.output
-			-Dtimeout=600
-			-P ${PROJECT_SOURCE_DIR}/config/run_test.cmake
-	)
-ENDFOREACH(name)
-
-FOREACH (name coloring parity)
-
-	add_executable(${name} ${name}.C)
-	add_dependencies(${name} alps)
-	target_link_libraries(${name} alps)
-	# install(TARGETS ${name} RUNTIME DESTINATION bin)
-        if(MSVC)
-          get_target_property(EXE_NAME ${name} LOCATION)
-          add_custom_command(TARGET ${name} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy ${EXE_NAME} ${PROJECT_BINARY_DIR}/bin)
-        endif(MSVC)
-	
-	ADD_TEST(
-		${name} 
-		${CMAKE_COMMAND}
-			-Dcmd=${name}
-                        -Dsourcedir=${CMAKE_CURRENT_SOURCE_DIR}
-                        -Dbinarydir=${CMAKE_CURRENT_BINARY_DIR}
-                        -Ddllexedir=${PROJECT_BINARY_DIR}/bin
-			-Dinput=${name}.input
-			-Doutput=${name}.output
-			-Dtimeout=600
-			-P ${PROJECT_SOURCE_DIR}/config/run_test.cmake
-	)
-ENDFOREACH(name)
+  FOREACH (name example1 example2 example3 example4 example5 example6 example7 example8 example9 example10 example11 label)
+    add_executable(lattice_${name} ${name}.C)
+    add_dependencies(lattice_${name} alps)
+    target_link_libraries(lattice_${name} alps)
+    add_alps_test(lattice_${name} ${name})	
+  ENDFOREACH(name)
+  FOREACH (name coloring parity)
+    add_executable(${name} ${name}.C)
+    add_dependencies(${name} alps)
+    target_link_libraries(${name} alps)
+    add_alps_test(${name})
+  ENDFOREACH(name)
 ENDIF(NOT ALPS_LLVM_WORKAROUND)
