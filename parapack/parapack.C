@@ -301,6 +301,12 @@ int run_sequential(int argc, char **argv) {
       "Usage: " + std::string(argv[0]) + " [paramfile]"));
   }
 
+#ifdef _OPENMP
+  // set default number of threads to 1
+  char* p = getenv("OMP_NUM_THREADS");
+  if (p == 0) omp_set_num_threads(1);
+#endif
+
   for (int i = 0; i < parameterlist.size(); ++i) {
     alps::Parameters p = parameterlist[i];
     boost::timer tm;
