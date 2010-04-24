@@ -44,7 +44,7 @@ template <class T, class Sequence>
 inline alps::IDump& operator>>(alps::IDump& dump, std::stack<T,Sequence>& x)
 {
   Sequence helper;
-  alps::detail::loadContainer(helper,x);
+  alps::detail::loadContainer(dump,helper);
   while(!helper.empty()) {
       x.push(helper.back());
     helper.pop_back();
