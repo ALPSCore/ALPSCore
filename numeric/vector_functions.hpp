@@ -79,8 +79,24 @@ namespace alps {
 
     IMPLEMENT_ALPS_VECTOR_SCALAR_OPERATION(operator+,+)
     IMPLEMENT_ALPS_VECTOR_SCALAR_OPERATION(operator-,-)
-    IMPLEMENT_ALPS_VECTOR_SCALAR_OPERATION(operator*,*)
-    IMPLEMENT_ALPS_VECTOR_SCALAR_OPERATION(operator/,/)
+    
+// the following two may not be defined as they are already defined by Boost
+//    IMPLEMENT_ALPS_VECTOR_SCALAR_OPERATION(operator*,*)
+//    IMPLEMENT_ALPS_VECTOR_SCALAR_OPERATION(operator/,/)
+
+    template<class T> 
+    inline std::vector<T> operator/(T const & scalar, std::vector<T> vector) 
+    { 
+      std::vector<T> res; 
+      res.reserve(vector.size()); 
+      for (typename std::vector<T>::iterator it=vector.begin(); it != vector.end(); ++it) 
+      { 
+        res.push_back(scalar / (*it)); 
+      } 
+      return res; 
+    } 
+
+
     
 
     // include important functions for vectors
