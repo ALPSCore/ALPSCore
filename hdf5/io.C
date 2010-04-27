@@ -190,7 +190,7 @@ int main() {
 		for (std::vector<std::valarray<int> >::const_iterator it = d.begin(); it != d.end(); ++it)
 			std::cout << it->size() << " " << (it->size() ? (*it)[0] : 0) << std::endl;
 	}
-	{
+/*	{
 		alps::hdf5::oarchive h5ar("test.h5");
 		std::map<std::string, std::vector<int> > d;
 		d["foo"] = std::vector<int>(1, 2);
@@ -204,7 +204,7 @@ int main() {
 		for (std::map<std::string, std::vector<int> >::const_iterator it = d.begin(); it != d.end(); ++it)
 			std::cout << it->first << " " << it->second.size() << std::endl;
 	}
-	{
+*/	{
 		alps::hdf5::oarchive h5ar("test.h5");
 		h5ar.serialize("/path/to/group/to/set/attr");
 		h5ar << alps::make_pvp("/path/to/group/to/set/attr/@version", 1);
@@ -218,12 +218,11 @@ int main() {
 	}
 	{
 		alps::hdf5::iarchive h5ar("test.h5");
-		std::pair<double *, std::vector<std::size_t> > data;
-		std::vector<std::size_t> s = h5ar.extent("/test/scalarpair");
-		data.first = new double[std::inner_product(s.begin(), s.end(), s.begin(), 0)];
+		std::pair<double *, std::vector<std::size_t> > data(NULL, h5ar.extent("/test/scalarpair"));
+		data.first = new double[std::accumulate(data.second.begin(), data.second.end(), 1, std::multiplies<std::size_t>())];
 		h5ar >> alps::make_pvp("/test/scalarpair", data);
 		std::cout << data.second.size() << std::endl;
-		delete data.first;
+		delete[] data.first;
 	}
 	{
 		alps::hdf5::oarchive h5ar("test.h5");
@@ -234,12 +233,11 @@ int main() {
 	}
 	{
 		alps::hdf5::iarchive h5ar("test.h5");
-		std::pair<std::complex<double> *, std::vector<std::size_t> > data;
-		std::vector<std::size_t> s = h5ar.extent("/test/complexpair");
-		data.first = new std::complex<double>[std::inner_product(s.begin(), s.end(), s.begin(), 0)];
+		std::pair<std::complex<double> *, std::vector<std::size_t> > data(NULL, h5ar.extent("/test/complexpair"));
+		data.first = new std::complex<double>[std::accumulate(data.second.begin(), data.second.end(), 1, std::multiplies<std::size_t>())];
 		h5ar >> alps::make_pvp("/test/complexpair", data);
 		std::cout << data.second.size() << std::endl;
-		delete data.first;
+		delete[] data.first;
 	}
 	{
 		alps::hdf5::oarchive h5ar("test.h5");
