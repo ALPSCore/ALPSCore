@@ -166,8 +166,8 @@ void clone::load() {
   }
   #pragma omp critical (hdf5io)
   {
-    hdf5::iarchive h5(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_));
-    h5 >> make_pvp("/", this);
+    hdf5::iarchive h5(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_).file_string());
+    h5 >> make_pvp("/", *this);
   }
 }
 
@@ -178,8 +178,8 @@ void clone::save() const{
   }
   #pragma omp critical (hdf5io)
   {
-    hdf5::oarchive h5(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_));
-    h5 << make_pvp("/", this);
+    hdf5::oarchive h5(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_).file_string());
+    h5 << make_pvp("/", *this);
   }
 }
 
@@ -379,8 +379,8 @@ void clone_mpi::load() {
   }
   #pragma omp critical (hdf5io)
   {
-    hdf5::iarchive h5(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_));
-    h5 >> make_pvp("/", this);
+    hdf5::iarchive h5(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_).file_string());
+    h5 >> make_pvp("/", *this);
   }
 }
 
@@ -391,8 +391,8 @@ void clone_mpi::save() const{
   }
   #pragma omp critical (hdf5io)
   {
-    hdf5::oarchive h5(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_));
-    h5 << make_pvp("/", this);
+    hdf5::oarchive h5(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_).file_string());
+    h5 << make_pvp("/", *this);
   }
 }
 

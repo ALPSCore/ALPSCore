@@ -97,7 +97,7 @@ void Task::parse_task_file(bool read_parms_only)
     if (read_parms_only)
       ar >> make_pvp("/parameters",parms);
     else 
-      ar >> make_pvp("", this);
+      ar >> make_pvp("", *this);
   } 
 #endif
   if (read_xml) {

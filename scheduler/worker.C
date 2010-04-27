@@ -237,7 +237,7 @@ void Worker::load_from_file(const boost::filesystem::path& fn,const boost::files
 #ifdef ALPS_HAVE_HDF5
   if (boost::filesystem::exists(hdf5path)) {
       hdf5::iarchive ar(hdf5path.file_string());
-      ar >> make_pvp("/", this);
+      ar >> make_pvp("/", *this);
   }
 #endif
   IXDRFileDump dump(fn);
@@ -257,7 +257,7 @@ void Worker::save_to_file(const boost::filesystem::path& fnpath, const boost::fi
     if (boost::filesystem::exists(p))
       boost::filesystem::remove(p);
     hdf5::oarchive worker_ar(p.string());
-    worker_ar << make_pvp("/", this);
+    worker_ar << make_pvp("/", *this);
   } // close file
   if (backup) {
     if (boost::filesystem::exists(hdf5path))

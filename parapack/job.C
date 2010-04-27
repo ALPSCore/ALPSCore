@@ -171,7 +171,7 @@ void task::save_observable(std::vector<std::vector<ObservableSet> > const& oss) 
         #pragma omp critical (hdf5io)
         {
           boost::filesystem::path file = complete(boost::filesystem::path(base_ + ".out.h5"), basedir_);
-          hdf5::oarchive h5(file);
+          hdf5::oarchive h5(file.file_string());
           h5 << make_pvp("/parameters", params_tmp);
           h5 << make_pvp("/simulation/results", obs_[0]);
           for (int n = 0; n < oss.size(); ++n)
@@ -186,7 +186,7 @@ void task::save_observable(std::vector<std::vector<ObservableSet> > const& oss) 
           {
             boost::filesystem::path file = complete(boost::filesystem::path(
               base_ + ".replica" + boost::lexical_cast<std::string>(i+1) + ".h5"), basedir_);
-            hdf5::oarchive h5(file);
+            hdf5::oarchive h5(file.file_string());
             h5 << make_pvp("/parameters", p);
             h5 << make_pvp("/simulation/results", obs_[i]);
             for (int n = 0; n < oss.size(); ++n)
@@ -363,7 +363,7 @@ void task::evaluate() {
     std::vector<ObservableSet> os;
     if (clone_info_[cid].checkpoints().size() == 1) {
       std::string p = clone_info_[cid].checkpoints()[0] + ".h5";
-      hdf5::iarchive h5(complete(p, basedir_));
+      hdf5::iarchive h5(complete(p, basedir_).file_string());
       std::vector<ObservableSet> o;
       if (!load_observable(h5, cid, o)) {
         std::cerr << "error while reading " << p << std::endl;
@@ -374,7 +374,7 @@ void task::evaluate() {
     } else {
       for (unsigned int w = 0; w < clone_info_[cid].checkpoints().size(); ++w) {
         std::string p = clone_info_[cid].checkpoints()[w] + ".h5";
-        hdf5::iarchive h5(complete(p, basedir_));
+        hdf5::iarchive h5(complete(p, basedir_).file_string());
         std::vector<ObservableSet> o;
         if (!load_observable(h5, cid, w, o)) {
           if (w == 0) std::cerr << "error while reading " << p << std::endl;

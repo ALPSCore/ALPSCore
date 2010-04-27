@@ -134,7 +134,7 @@ void ObservableSet::load(IDump& dump)
         for(base_type::const_iterator it = base_type::begin(); it != base_type::end(); ++it)
             if(it->second)
                 ar 
-                    << make_pvp(hdf5_name_encode(it->second->name()), it->second)
+                    << make_pvp(hdf5_name_encode(it->second->name()), *it->second)
                 ;
     }
 #endif
