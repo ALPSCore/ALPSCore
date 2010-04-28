@@ -46,7 +46,7 @@
 typedef boost::variate_generator<boost::mt19937&, boost::uniform_01<double> > random_01;
 
 using namespace boost::python;
-
+using namespace alps::alea;
 
 namespace alps { 
   namespace alea {
