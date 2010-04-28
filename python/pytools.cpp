@@ -35,6 +35,27 @@
 #include <alps/utility/encode.hpp>
 #include <alps/parser/xslt_path.h>
 
+#include <alps/python/make_copy.hpp>
+#include <boost/python.hpp>
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+
+#include <boost/random.hpp>
+#include<boost/random/uniform_01.hpp>
+
+typedef boost::variate_generator<boost::mt19937&, boost::uniform_01<double> > random_01;
+
+class WrappedRNG : public random_01
+{
+public:
+    WrappedRNG(int seed=0)
+    :eng(seed), dist(), random_01(eng, dist)
+    {
+    }
+    unsigned int seed;
+    boost::mt19937 eng;
+    boost::uniform_01<double> dist;
+    
+};
 
 BOOST_PYTHON_MODULE(pytools)
 {
@@ -43,5 +64,10 @@ BOOST_PYTHON_MODULE(pytools)
   def("hdf5_name_encode", alps::hdf5_name_encode);
   def("hdf5_name_decode", alps::hdf5_name_decode);
   def("search_xml_library_path", alps::search_xml_library_path);
+    
+    class_<WrappedRNG>("rng", init<optional<int> >() )
+    .def("__deepcopy__",  &alps::python::make_copy<WrappedRNG>)
+    .def("__call__", static_cast<WrappedRNG::result_type(WrappedRNG::*)()>(&WrappedRNG::operator()))
+    ;
 }
 
