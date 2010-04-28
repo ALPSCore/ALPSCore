@@ -1071,13 +1071,15 @@ namespace alps {
                             _v.resize(children.size());                                                                                                    \
                             for (std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)                               \
                                 ar >> ::alps::make_pvp(ar.complete_path(_p) + "/" + *it, _v[it - children.begin()]);                                       \
-                        }                                                                                                                                  \
+ 		                    return ar;                                                                                                                     \
+                       }                                                                                                                                   \
                         ::alps::hdf5::oarchive & serialize(::alps::hdf5::oarchive & ar) const {                                                            \
                             if (!_v.size())                                                                                                                \
                                 ar << ::alps::make_pvp(ar.complete_path(_p), std::vector<int>(0));                                                         \
                             else                                                                                                                           \
                                 for (std::size_t i = 0; i < _v.size(); ++i)                                                                                \
                                     ar << ::alps::make_pvp(ar.complete_path(_p) + "/" + boost::lexical_cast<std::string>(i), _v[i]);                       \
+		                    return ar;                                                                                                                     \
                         }                                                                                                                                  \
                     private:                                                                                                                               \
                         std::string _p;                                                                                                                    \
