@@ -19,19 +19,5 @@ FOREACH (name h5vector h5ptr h5valarray h5ublasvector h5scalar h5attribute h5dis
     add_executable(${name} ${name}.cpp)
     add_dependencies(${name} boost)
     target_link_libraries(${name} boost)
-    if(MSVC)
-        get_target_property(EXE_NAME ${name} LOCATION)
-        add_custom_command(TARGET ${name} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${EXE_NAME} ${PROJECT_BINARY_DIR}/bin)
-    endif(MSVC)
-    ADD_TEST(
-        ${name} 
-        ${CMAKE_COMMAND}
-            -Dcmd=${name}
-            -Dsourcedir=${CMAKE_CURRENT_SOURCE_DIR}
-            -Dbinarydir=${CMAKE_CURRENT_BINARY_DIR}
-            -Ddllexedir=${PROJECT_BINARY_DIR}/bin
-            -Doutput=${name}.output
-            -Dtimeout=600
-            -P ${PROJECT_SOURCE_DIR}/config/run_test.cmake
-    )
+    add_alps_test(${name})
 ENDFOREACH(name)
