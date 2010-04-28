@@ -218,6 +218,10 @@ using boost::uint_fast64_t;
 #define BIND_FORTRAN_INTEGER_8
 #endif
 
+#ifdef BOOST_MSVC
+#define BOOST_NUMERIC_BINDINGS_USE_COMPLEX_STRUCT
+#endif
+
 // workaround for a potentially missing include
 #include <boost/numeric/bindings/detail/config/fortran.hpp>
 
