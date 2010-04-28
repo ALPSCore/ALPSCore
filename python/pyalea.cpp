@@ -35,6 +35,7 @@
 #include <alps/alea/value_with_error.h>
 //#include <alps/alea/binned_data.h>
 #include <alps/python/make_copy.hpp>
+#include <alps/python/save_observable_to_hdf5.hpp>
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <numpy/arrayobject.h>
@@ -337,6 +338,10 @@ value_with_error<std::valarray<TYPE> >::value_with_error(boost::python::object c
             std::valarray<typename T:: result_type ::value_type > variance = obs.variance();
             return convertvalarray2numpy_array<typename T:: result_type ::value_type >(variance);
         }
+        void save(std::string const & filename) const {
+            hdf5::oarchive ar(filename);
+            ar << make_pvp("/simulation/results", obs);
+        }
         typename T::count_type count() const 
         {
             return obs.count();
@@ -575,6 +580,7 @@ BOOST_PYTHON_MODULE(pyalea)
     .def("__repr__", &WrappedValarrayObservable< alps:: class_name >::representation)                                           \
     .def("__deepcopy__",  &alps::python::make_copy<WrappedValarrayObservable< alps::class_name > >)                             \
     .def("__lshift__", &WrappedValarrayObservable< alps::class_name >::operator<<)                                              \
+    .def("save", &WrappedValarrayObservable< alps::class_name >::save)                                                          \
     .add_property("mean", &WrappedValarrayObservable< alps::class_name >::mean)                                                 \
     .add_property("error", &WrappedValarrayObservable< alps::class_name >::error)                                               \
     .add_property("tau", &WrappedValarrayObservable< alps::class_name >::tau)                                                   \
@@ -592,6 +598,7 @@ ALPS_PY_EXPORT_VECTOROBSERVABLE(RealVectorTimeSeriesObservable)
     .def("__deepcopy__",  &alps::python::make_copy<alps:: class_name >)                                                             \
     .def("__repr__", &alps:: class_name ::representation)                                                                           \
     .def("__lshift__", &alps:: class_name ::operator<<)                                                                             \
+    .def("save", &alps::python::save_observable_to_hdf5<alps:: class_name >)                                                        \
     .add_property("mean", &alps:: class_name ::mean)                                                                                \
     .add_property("error", static_cast<alps:: class_name ::result_type(alps:: class_name ::*)() const>(&alps:: class_name ::error)) \
     .add_property("tau",&alps:: class_name ::tau)                                                                                   \
