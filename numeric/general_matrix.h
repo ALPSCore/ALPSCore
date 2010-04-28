@@ -115,18 +115,12 @@ namespace blas{
             std::swap(x.total_memory_size_, y.total_memory_size_);
         }
         
-        general_matrix& operator=(const general_matrix &rhs)
+        general_matrix& operator=(general_matrix rhs)
         {
-            general_matrix temp(rhs);
-            swap(temp, *this);
+            swap(rhs, *this);
 			return *this;
         }
-        
-        general_matrix(general_matrix const& rhs)
-        : size1_(rhs.size1_), size2_(rhs.size2_), total_memory_size_(rhs.total_memory_size_), values_(rhs.values_)
-        {
-        } 
-        
+                
         inline const std::vector<T> values() const
         {
             return values_; 
