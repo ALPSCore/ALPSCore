@@ -1,6 +1,7 @@
 #include <string>
 #include <iostream>
 #include <algorithm>
+#include <utility>
 #include <alps/hdf5.hpp>
 #include <alps/utility/encode.hpp>
 #include <boost/filesystem.hpp>
@@ -211,7 +212,7 @@ int main() {
 	}
 	{
 		alps::hdf5::oarchive h5ar("test.h5");
-		std::pair<double *, std::vector<std::size_t> > data(make_pair(new double[4], std::vector<std::size_t>(2)));
+		std::pair<double *, std::vector<std::size_t> > data(std::make_pair(new double[4], std::vector<std::size_t>(2)));
 		data.second[0] = data.second[1] = 2;
 		h5ar << alps::make_pvp("/test/scalarpair", data);
 		delete[] data.first;
@@ -226,7 +227,7 @@ int main() {
 	}
 	{
 		alps::hdf5::oarchive h5ar("test.h5");
-		std::pair<std::complex<double> *, std::vector<std::size_t> > data(make_pair(new std::complex<double>[4], std::vector<std::size_t>(2)));
+		std::pair<std::complex<double> *, std::vector<std::size_t> > data(std::make_pair(new std::complex<double>[4], std::vector<std::size_t>(2)));
 		data.second[0] = data.second[1] = 2;
 		h5ar << alps::make_pvp("/test/complexpair", data);
 		delete[] data.first;
