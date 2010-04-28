@@ -117,6 +117,9 @@
 // Define if you have ATLAS library
 #cmakedefine ALPS_HAVE_ATLAS
 
+// Set 8-byte integers for Boost bindings if needed
+#cmakedefine BIND_FORTRAN_INTEGER_8
+
 //
 // XML parser
 //
@@ -212,17 +215,9 @@ using boost::uint_fast64_t;
 #  define ALPS_ONLY_HDF5
 #endif
 
-// Set 8-byte integers for Boost bindings if needed
-
-#if defined(__LP64) || defined(__LP64__) || defined(__ptr64) || defined(__x86_64__) || defined(__amd64__) || defined(__64BIT__)
-#define BIND_FORTRAN_INTEGER_8
-#endif
 
 #ifdef BOOST_MSVC
 #define BOOST_NUMERIC_BINDINGS_USE_COMPLEX_STRUCT
 #endif
-
-// workaround for a potentially missing include
-#include <boost/numeric/bindings/detail/config/fortran.hpp>
 
 #endif // ALPS_CONFIG_H

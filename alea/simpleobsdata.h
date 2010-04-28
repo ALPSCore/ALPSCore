@@ -67,7 +67,6 @@ namespace alps {
 class RealObsevaluatorXMLHandler;
 class RealVectorObsevaluatorXMLHandler;
 
-using namespace boost::lambda;
 
 //=======================================================================
 // SimpleObservableData
@@ -556,6 +555,7 @@ std::string SimpleObservableData<T>::evaluation_method(Target t) const
 template <class T>
 SimpleObservableData<T>& SimpleObservableData<T>::operator+=(const SimpleObservableData<T>& x)
 {
+  using namespace boost::lambda;
   using std::sqrt;
   if(count() && x.count()) {
     mean_ += x.mean();
@@ -571,6 +571,7 @@ SimpleObservableData<T>& SimpleObservableData<T>::operator+=(const SimpleObserva
 template <class T>
 SimpleObservableData<T>& SimpleObservableData<T>::operator-=(const SimpleObservableData<T>& x)
 {
+  using namespace boost::lambda;
   using std::sqrt;
   if(count() && x.count()) {
     mean_ -= x.mean();
@@ -587,6 +588,7 @@ template <class T>
 template<class X>
 SimpleObservableData<T>& SimpleObservableData<T>::operator*=(const SimpleObservableData<X>& x)
 {
+  using namespace boost::lambda;
   using std::sqrt;
   if(count() && x.count()) {
     error_=error()*error();
@@ -608,6 +610,7 @@ template <class T>
 template<class X>
 SimpleObservableData<T>& SimpleObservableData<T>::operator/=(const SimpleObservableData<X>& x)
 {
+  using namespace boost::lambda;
   using std::sqrt;
   if(count() && x.count()) {
     error_=error()*error();
@@ -680,6 +683,7 @@ template <class T>
 template <class OP>
 void SimpleObservableData<T>::transform(OP op)
 {
+  using namespace boost::lambda;
   valid_ = false;
   nonlinear_operations_ = true;
   changed_ = true;
@@ -696,6 +700,7 @@ void SimpleObservableData<T>::transform(OP op)
 template <class T>
 void SimpleObservableData<T>::negate()
 {
+  using namespace boost::lambda;
   if (count())
     transform_linear(-_1);
 }
@@ -703,6 +708,7 @@ void SimpleObservableData<T>::negate()
 template <class T> template <class X>
 SimpleObservableData<T>& SimpleObservableData<T>::operator+=(X x)
 {
+  using namespace boost::lambda;
   if (count()) {
     transform_linear(_1 + x);
     for (int i=0;i<values2_.size();++i)
@@ -714,6 +720,7 @@ SimpleObservableData<T>& SimpleObservableData<T>::operator+=(X x)
 template <class T> template <class X>
 SimpleObservableData<T>& SimpleObservableData<T>::operator-=(X x)
 {
+  using namespace boost::lambda;
   if(count()) {
     transform_linear(_1-x);
     for (int i=0;i<values2_.size();++i)
@@ -725,6 +732,7 @@ SimpleObservableData<T>& SimpleObservableData<T>::operator-=(X x)
 template <class T> template <class X>
 void SimpleObservableData<T>::subtract_from(const X& x)
 {
+  using namespace boost::lambda;
   if (count()) {
     transform_linear(x-_1);
     for (int i=0;i<values2_.size();++i)
@@ -735,6 +743,7 @@ void SimpleObservableData<T>::subtract_from(const X& x)
 template <class T> template <class X>
 SimpleObservableData<T>& SimpleObservableData<T>::operator*=(X x)
 {
+  using namespace boost::lambda;
   if (count()) {
     error_ *= x;
     if(has_variance_)
@@ -749,6 +758,7 @@ SimpleObservableData<T>& SimpleObservableData<T>::operator*=(X x)
 template <class T> template <class X>
 SimpleObservableData<T>& SimpleObservableData<T>::operator/=(X x)
 {
+  using namespace boost::lambda;
   if (count()) {
     error_ /= x;
     if(has_variance_)
@@ -763,6 +773,7 @@ SimpleObservableData<T>& SimpleObservableData<T>::operator/=(X x)
 template <class T> template <class X>
 void SimpleObservableData<T>::divide(const X& x)
 {
+  using namespace boost::lambda;
   if (count()) {
     error_ = x *error_/mean_/mean_;
     has_variance_ = false;

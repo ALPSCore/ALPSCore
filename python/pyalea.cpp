@@ -31,13 +31,13 @@
 
 #define PY_ARRAY_UNIQUE_SYMBOL pyalea_PyArrayHandle
 
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+
 #include <alps/alea/detailedbinning.h>
 #include <alps/alea/value_with_error.h>
-//#include <alps/alea/binned_data.h>
 #include <alps/python/make_copy.hpp>
 #include <alps/python/save_observable_to_hdf5.hpp>
 #include <boost/python.hpp>
-#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <numpy/arrayobject.h>
 
 #include <boost/random.hpp>
@@ -355,7 +355,7 @@ value_with_error<std::valarray<TYPE> >::value_with_error(boost::python::object c
 }
 
 
-using namespace alps::alea;
+using alps::alea::value_with_error;
 
 
 BOOST_PYTHON_MODULE(pyalea)
