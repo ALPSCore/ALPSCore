@@ -277,9 +277,9 @@ namespace alps {
                         buffer_type & m, C <T> const & v, std::vector<hsize_t> const & s, std::vector<hsize_t> const & = std::vector<hsize_t>()            \
                     ) {                                                                                                                                    \
                         if (matrix_type<T>::scalar::value)                                                                                                 \
-                            return matrix_type<T>::get(m, v[s[0]], std::vector<hsize_t>(s.begin() + 1, s.end()), size(v));                                 \
+                            return matrix_type<T>::get(m, const_cast<C <T> &>(v)[s[0]], std::vector<hsize_t>(s.begin() + 1, s.end()), size(v));            \
                         else                                                                                                                               \
-                            return matrix_type<T>::get(m, v[s[0]], std::vector<hsize_t>(s.begin() + 1, s.end()));                                          \
+                            return matrix_type<T>::get(m, const_cast<C <T> &>(v)[s[0]], std::vector<hsize_t>(s.begin() + 1, s.end()));                     \
                     }                                                                                                                                      \
                     template<typename U> static void set(                                                                                                  \
                         C <T> & v, std::vector<U> const & u, std::size_t o, std::vector<hsize_t> const & s, std::vector<hsize_t> const & c                 \
@@ -1071,7 +1071,7 @@ namespace alps {
                             _v.resize(children.size());                                                                                                    \
                             for (std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)                               \
                                 ar >> ::alps::make_pvp(ar.complete_path(_p) + "/" + *it, _v[it - children.begin()]);                                       \
- 		                    return ar;                                                                                                                     \
+                            return ar;                                                                                                                     \
                        }                                                                                                                                   \
                         ::alps::hdf5::oarchive & serialize(::alps::hdf5::oarchive & ar) const {                                                            \
                             if (!_v.size())                                                                                                                \
@@ -1079,7 +1079,7 @@ namespace alps {
                             else                                                                                                                           \
                                 for (std::size_t i = 0; i < _v.size(); ++i)                                                                                \
                                     ar << ::alps::make_pvp(ar.complete_path(_p) + "/" + boost::lexical_cast<std::string>(i), _v[i]);                       \
-		                    return ar;                                                                                                                     \
+                            return ar;                                                                                                                     \
                         }                                                                                                                                  \
                     private:                                                                                                                               \
                         std::string _p;                                                                                                                    \
