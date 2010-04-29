@@ -11,9 +11,10 @@
 
 
 #ifdef BOOST_MSVC
-  #include <fcntl.h>
+#include <fcntl.h>
+#include <io.h>
 #else
-  #include <unistd.h>
+#include <unistd.h>
 #endif
 
 
@@ -23,7 +24,7 @@ namespace alps {
     name +="XXXXXX";
 #ifdef BOOST_MSVC
     mktemp(const_cast<char*>(name.c_str())); 
-    ret=open(tmpl,O_RDWR|O_BINARY|O_CREAT|O_EXCL|_O_SHORT_LIVED, 128|256);
+    int res=open(name.c_str(),O_RDWR|O_BINARY|O_CREAT|O_EXCL|_O_SHORT_LIVED, 128|256);
 #else
     int res = mkstemp(const_cast<char*>(name.c_str()));
 #endif
