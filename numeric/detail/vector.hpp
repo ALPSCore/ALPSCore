@@ -1,0 +1,223 @@
+/*****************************************************************************
+ *
+ * ALPS DMFT Project - BLAS Compatibility headers
+ *  Square Matrix Class
+ *
+ * Copyright (C) 2005 - 2009 by 
+ *                              Emanuel Gull <gull@phys.columbia.edu>,
+ *                              Brigitte Surer <surerb@phys.ethz.ch>
+ *
+ *
+ * THIS SOFTWARE NEEDS AN APPROPRIATE LICENSE BLOCK HERE
+ *****************************************************************************/
+ 
+#ifndef BLAS_VECTOR
+#define BLAS_VECTOR
+
+#include "./blasheader.hpp"
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <cassert>
+#include <alps/hdf5.hpp>
+
+inline double expfunc(double entry)
+{
+    return std::exp(entry);
+}
+
+namespace blas{
+    
+  //simple BLAS vector that uses BLAS calls for operations.
+  class vector{
+    public:
+      vector(int size=0, double initial_value=0.)
+      : values_(size, initial_value), size_(size)
+      {
+      }
+      
+      vector(const vector &rhs)
+      : values_(rhs.values_), size_(rhs.size_)
+      {
+      }
+      
+      friend void swap(vector& x,vector& y)
+      {
+          std::swap(x.values_, y.values_);
+          std::swap(x.size_, y.size_);
+      }
+      
+      vector& operator=(const vector &rhs)
+      {
+        vector temp(rhs);
+        swap(temp, *this);
+        return *this;
+      }
+      
+      inline double &operator()(const unsigned int i)
+      {
+        assert((i < size_));
+        return values_[i];
+      }
+      
+      inline const double &operator()(const unsigned int i) const 
+      {
+        assert((i < size_));
+        return values_[i];
+      }
+    
+      inline const int size() const
+      {
+        return size_;
+      }
+      
+      inline double operator*(const vector &v2)
+      {
+          int inc=1;
+          return ddot_(&size_, &values_[0],&inc,&v2.values_[0],&inc);
+      }
+      
+      vector & operator+=(const vector &rhs) 
+      {
+        assert(rhs.size() == size_);
+        std::vector<double> temp = rhs.values();
+        transform(values_.begin(), values_.end(), temp.begin(), values_.begin(), std::plus<double>());
+        return *this;
+      }
+      
+      vector & operator-=(const vector &rhs) 
+      {
+          assert(rhs.size() == size_);
+          std::vector<double> temp = rhs.values();
+          transform(values_.begin(), values_.end(), temp.begin(), values_.begin(), std::minus<double>());
+          return *this;
+      }
+      
+      const vector operator+(const vector &other) const {
+          assert(other.size() == size_);
+          vector result(*this);     
+          result += other;           
+          return result;              
+      }
+      
+      const vector operator-(const vector &other) const {
+          assert(other.size() == size_);
+          vector result(*this);     
+          result -= other;           
+          return result;              
+      }
+      
+      bool operator==(const vector &other) const {
+          return (values_ == other.values());
+      }
+      
+      bool operator!=(const vector &other) const {
+          return !(*this == other);
+      }
+      
+      inline double dot(const vector &v2)
+      {   
+        return (*this)*v2; 
+      }
+      
+      //multiply vector by constant
+      inline vector operator *=(double lambda)
+      {
+          int inc=1;
+          dscal_(&size_, &lambda, &values_[0], &inc);
+          return *this;
+      }
+      
+      void clear(){
+          values_.clear();
+          values_.resize(size_,0.);
+      }
+      
+      inline const std::vector<double> values() const
+      {
+          return values_; 
+      }
+      
+      inline std::vector<double> &values() 
+      {
+          return values_; 
+      }
+      
+      void exp( double c)
+      {
+#ifdef VECLIB
+          //osx veclib exp
+          int one=1;
+          blas::dscal_(&size_,&c,&values_[0],&one);
+          vecLib::vvexp(&values_[0], &values_[0], &size_); 
+#else
+#ifdef ACML
+          //amd acml vector exp
+          std::vector<double> scaled_values(size_);
+          daxpy_(&size_, &c, &values_[0], &inc, &scaled_values[0], &inc);
+          acml::vrda_exp(size_, &scaled_values[0], &values_[0]);
+#else
+#ifdef MKL
+          //intel MKL vector exp
+          std::vector<double> scaled_values(size_);
+          int inc=1;
+          daxpy_(&size_, &c, &values_[0], &inc, &scaled_values[0], &inc);
+          mkl::vdExp(size_,  &scaled_values[0], &values_[0]);
+#else
+          //pedestrian method
+          *this *= c;
+          std::transform(values_.begin(), values_.end(), values_.begin(), expfunc);
+#endif
+#endif
+#endif
+      }
+    
+      void exp(double c, const vector &v)
+      {
+          vector temp(v);
+          temp.exp(c);
+          swap(temp, *this);
+      }
+      
+      void resize(int new_size)
+      {
+          values_.resize(new_size);
+          size_=new_size;
+      }
+      
+      void insert(double value, unsigned int i)
+      {
+          assert((i <= size_));
+          resize(size_+1);
+          std::vector<double>::iterator it = values_.begin();
+          values_.insert(it+i,value);
+      }
+      void serialize(alps::hdf5::iarchive &ar)
+      {
+          using namespace alps;
+          resize(ar.extent("")[0]);
+          ar >> make_pvp("", &values_.front(), std::vector<std::size_t>(1, size_));
+      }
+      void serialize(alps::hdf5::oarchive &ar) const
+      {
+          using namespace alps;
+          ar << make_pvp("", &values_.front(), std::vector<std::size_t>(1, size_));
+      }
+      
+    private:
+      std::vector<double> values_;
+      int size_; 
+  };
+    
+  inline std::ostream &operator<<(std::ostream &os, const vector&M)
+  {
+    os<<"[ ";
+    for(int i=0;i<M.size();++i){
+      os<<M(i)<<" ";
+    }
+    os<<"]"<<std::endl;
+    return os;
+  }
+} //namespace
+
+#endif 
