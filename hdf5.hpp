@@ -851,7 +851,7 @@ namespace alps {
                            data_type data_id(H5Dopen2(_file, p.c_str(), H5P_DEFAULT));
                            type_type type_id(H5Dget_type(data_id));
                            type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));
-                           {
+                           if (size.size()) {
                                space_type space_id(H5Dget_space(data_id));
                                check_error(H5Sget_simple_extent_dims(space_id, &size.front(), NULL));
                            }
