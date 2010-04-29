@@ -122,11 +122,6 @@ namespace blas{
 			return *this;
         }
         
-        general_matrix(general_matrix const& rhs)
-        : size1_(rhs.size1_), size2_(rhs.size2_), total_memory_size_(rhs.total_memory_size_), values_(rhs.values_)
-        {
-        } 
-        
         inline const std::vector<T> values() const
         {
             return values_; 
