@@ -61,7 +61,7 @@
     callback(long double)
 int main() {
     {
-        alps::hdf5::oarchive oar("vector.h5");
+        alps::hdf5::oarchive oar("valarray.h5");
         HDF5_FOREACH(HDF5_WRITE)
         {
             std::valarray<std::string> value("Im a Test string", 2);
@@ -74,7 +74,7 @@ int main() {
         }
     }
     {
-        alps::hdf5::iarchive iar("vector.h5");
+        alps::hdf5::iarchive iar("valarray.h5");
         HDF5_FOREACH(HDF5_READ)
         {
             std::valarray<std::string> value;
@@ -90,5 +90,5 @@ int main() {
             std::cout << "std::string-null (" << value.size() << ")" << std::endl;
         }
     }
-    boost::filesystem::remove(boost::filesystem::path("vector.h5"));
+    boost::filesystem::remove(boost::filesystem::path("valarray.h5"));
 }
