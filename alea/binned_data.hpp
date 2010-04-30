@@ -82,9 +82,6 @@ namespace alps {
                     , jacknife_bins_valid_(true)
                     , cannot_rebin_(false)
                 {}
-
-//                template <class X> binned_data(std::vector<X> const & bins);
-
                 template <class X, class S> binned_data(binned_data<X> const & rhs, S s)
                   : count_(rhs.count_)
                   , binsize_(rhs.binsize_)
@@ -129,30 +126,58 @@ namespace alps {
                 inline std::size_t bin_number() const { 
                     return values_.size(); 
                 }
-                inline const std::vector<value_type>& bins() const { 
+                inline std::vector<value_type> const & bins() const { 
                     return values_;  
                 }
-                inline const result_type mean() const {
+                inline result_type const mean() const {
                     analyze();
                     return mean_;
                 }
-                inline const result_type error() const {
+                inline result_type const error() const {
                     analyze();
                     return error_;
                 }
-                inline result_type const& variance() const {
+                inline result_type const & variance() const {
                     analyze();  
                     if (!variance_opt_)
                         boost::throw_exception(std::logic_error("observable does not have variance"));
                     return *variance_opt_;
                 };
-                inline const time_type& tau() const {
+                inline time_type const & tau() const {
                     analyze();  
                     if (!tau_opt_)
                         boost::throw_exception(std::logic_error("observable does not have autocorrelation information"));
                     return *tau_opt_;
                 }
-                covariance_type covariance(const binned_data<T>) const;
+                covariance_type covariance(binned_data<T> const & obs) const {
+                    fill_jack();
+                    obs.fill_jack();
+                    if (jack_.size() && obs.jack_.size()) {
+                        result_type unbiased_mean1_;
+                        result_type unbiased_mean2_;
+                        resize_same_as(unbiased_mean1_, jack_[0]);
+                        resize_same_as(unbiased_mean2_, obs.jack_[0]);
+                        if (jack_.size() != obs.jack_.size()) 
+                            boost::throw_exception(std::runtime_error("unequal number of bins in calculation of covariance matrix"));
+                        unbiased_mean1_ = 0;
+                        unbiased_mean2_ = 0;
+                        unbiased_mean1_ = std::accumulate(jack_.begin()+1, jack_.end(), unbiased_mean1_);
+                        unbiased_mean2_ = std::accumulate(obs.jack_.begin()+1, obs.jack_.end(), unbiased_mean2_);
+                        unbiased_mean1_ /= count_type(bin_number());
+                        unbiased_mean2_ /= count_type(obs.bin_number());
+                        using alps::numeric::outer_product;
+                        covariance_type cov = outer_product(jack_[1],obs.jack_[1]);
+                        for (uint32_t i = 1; i < bin_number(); ++i)
+                            cov += outer_product(jack_[i+1],obs.jack_[i+1]);
+                        cov /= count_type(bin_number());
+                        cov -= outer_product(unbiased_mean1_, unbiased_mean2_);
+                        cov *= count_type(bin_number() - 1);
+                        return cov;
+                    } else {
+                        boost::throw_exception(std::runtime_error ("no binning information available for calculation of covariances"));
+                        return covariance_type();
+                    }
+                }
                 inline void set_bin_size(uint64_t binsize) {
                     collect_bins(( binsize - 1 ) / binsize_ + 1 );
                     binsize_ = binsize;
@@ -160,9 +185,10 @@ namespace alps {
                 inline void set_bin_number(uint64_t bin_number) {
                     collect_bins(( values_.size() - 1 ) / bin_number + 1 );
                 }
-                
                 template <class X> binned_data const & operator=(binned_data<X> const & rhs);
-                template <class S> binned_data<typename element_type<T>::type> slice(S s) const {  return binned_data<typename element_type<T>::type>(*this,s);  }
+                template <class S> binned_data<typename element_type<T>::type> slice(S s) const {
+                    return binned_data<typename element_type<T>::type>(*this,s);
+                }
                 // wtf? check why!!! (after 2.0b1)
                 template <class X> bool operator==(binned_data<X> const & rhs) {
                     return count_ == rhs.count_
@@ -181,12 +207,7 @@ namespace alps {
                     using boost::numeric::operators::operator+;
                     using boost::lambda::_1;
                     using boost::lambda::_2;
-                    if(count() && rhs.count()) {
-                        error_ = sqrt(sq(error_) + sq(rhs.error_));
-                        mean_ = mean_ + rhs.mean_;
-                        transform(rhs, _1 + _2);
-                    }
-                    return *this;
+                    transform(rhs, _1 + _2, sqrt(sq(error_) + sq(rhs.error_)));
                 }
                 binned_data<T> & operator-=(binned_data<T> const & rhs) {
                     using std::sqrt;
@@ -196,14 +217,10 @@ namespace alps {
                     using boost::numeric::operators::operator-;
                     using boost::lambda::_1;
                     using boost::lambda::_2;
-                    if (count() && rhs.count()) {
-                        error_ = sqrt(sq(error_) + sq(rhs.error_));
-                        mean_ = mean_ - rhs.mean_;
-                        transform(rhs, _1 - _2);
-                    }
+                    transform(rhs, _1 - _2, sqrt(sq(error_) + sq(rhs.error_)));
                     return *this;
                 }
-                template <class X> binned_data<T>& operator*=(binned_data<X> const & rhs) {
+                template <class X> binned_data<T> & operator*=(binned_data<X> const & rhs) {
                     using std::sqrt;
                     using alps::numeric::sq;
                     using alps::numeric::sqrt;
@@ -211,14 +228,10 @@ namespace alps {
                     using boost::numeric::operators::operator*;
                     using boost::lambda::_1;
                     using boost::lambda::_2;
-                    if(count() && rhs.count()) {
-                        error_ = sqrt(sq(rhs.mean_) * sq(error_) + sq(mean_) * sq(rhs.error_));
-                        mean_ = mean_ * rhs.mean_;
-                        transform(rhs, _1 * _2);
-                    }
+                    transform(rhs, _1 * _2, sqrt(sq(rhs.mean_) * sq(error_) + sq(mean_) * sq(rhs.error_)));
                     return *this;
                 }
-                template <class X> binned_data<T>& operator/=(binned_data<X> const & rhs) {
+                template <class X> binned_data<T> & operator/=(binned_data<X> const & rhs) {
                     using std::sqrt;
                     using alps::numeric::sq;
                     using alps::numeric::sqrt;
@@ -227,80 +240,73 @@ namespace alps {
                     using boost::numeric::operators::operator/;
                     using boost::lambda::_1;
                     using boost::lambda::_2;
-                    if(count() && rhs.count()) {
-                        error_ = sqrt(sq(rhs.mean_) * sq(error_) + sq(mean_) * sq(rhs.error_));
-                        error_ = error_ / sq(rhs.mean_);
-                        mean_ = mean_ / rhs.mean_;
-                        transform(rhs,_1/_2);
-                    }
+                    transform(rhs, _1 / _2, sqrt(sq(rhs.mean_) * sq(error_) + sq(mean_) * sq(rhs.error_)) / sq(rhs.mean_));
                     return *this;
                 }
-                template <class X> binned_data<T>& operator+=(X const & rhs) {
+                template <class X> binned_data<T> & operator+=(X const & rhs) {
                     using boost::numeric::operators::operator+;
                     using boost::lambda::_1;
-                    if (count()) {
-                        mean_ = mean_ + rhs;
-                        transform_linear(_1 + rhs);
-                    }
+                    transform_linear(_1 + rhs, error_, variance_opt_);
                     return *this;
                 }
-                template <class X> binned_data<T>& operator-=(X const & rhs) {
+                template <class X> binned_data<T> & operator-=(X const & rhs) {
                     using boost::numeric::operators::operator-;
                     using boost::lambda::_1;
-                    if (count()) {
-                        mean_ = mean_ - rhs;
-                        transform_linear(_1 - rhs);
-                    }
-                    return (*this);
+                    transform_linear(_1 - rhs, error_, variance_opt_);
+                    return *this;
                 }
-                template <class X> binned_data<T>& operator*=(X const & rhs) {
+                template <class X> binned_data<T> & operator*=(X const & rhs) {
                     using std::abs;
                     using alps::numeric::abs;
                     using boost::numeric::operators::operator*;
                     using boost::lambda::_1;
-                    if (count()) {
-                        error_ = abs(error_ * rhs);
-                        mean_ = mean_  * rhs;
-                        if(variance_opt_)
-                            variance_opt_ = *variance_opt_ * rhs * rhs;
-                        transform_linear(_1 * rhs);
-                    }
-                    return (*this);
+                    transform_linear(_1 * rhs, abs(error_ * rhs), variance_opt_ ? *variance_opt_ * rhs * rhs : boost::none_t);
+                    return *this;
                 }
-                template <class X> binned_data<T>& operator/=(X const & rhs) {
+                template <class X> binned_data<T> & operator/=(X const & rhs) {
                     using std::abs;
                     using alps::numeric::abs;
                     using boost::numeric::operators::operator/;
                     using boost::lambda::_1;
-                    if (count()) {
-                        error_ = abs(error_ / rhs);
-                        mean_ = mean_ / rhs;
-                        if(variance_opt_)
-                            variance_opt_ = *variance_opt_ / ( rhs * rhs );
-                        transform_linear(_1/rhs);
-                    }
+                    transform_linear(_1 / rhs, abs(error_ / rhs), variance_opt_ ? *variance_opt_ / ( rhs * rhs ) : boost::none_t);
                     return (*this);
                 }
-                // subtract from, ....
-                
-            private:
-                void collect_bins(uint64_t);
-                void analyze() const;
-                void fill_jack() const;
-                void jackknife() const;
-                // transform gets the newerror and optionally variance
-                // mean is calculated using the function
-                // similar for other transforms
-                template <class OP> void transform_linear(OP op, value_type const& new_error, optional<....> new_variance=boost::none_t) {
-                    std::transform(values_.begin(), values_.end(), values_.begin(), op);
+                template <class T> binned_data<T> & operator-() {
+                    transform_linear(-_1);
+                    return *this;
+                }
+                template <class X> void subtract_from(X const & x) {
+                    using boost::lambda::_1;
+                    using boost::numeric::operators::operator-;
+                    transform_linear(x - _1, error_, variance_opt_);
+                }
+                template <class X> void divide(X const & x) {
+                    using boost::lambda::_1;
+                    error_ = x * error_ / mean_ / mean_;
+                    cannot_rebin_ = true;
+                    mean_ = x / mean_;
+                    std::transform(values_.begin(), values_.end(), values_.begin(), ( x * bin_size() * bin_size() ) / _1);
+                    fill_jack();
+                    std::transform(jack_.begin(), jack_.end(), jack_.begin(), x / _1);
+                }
+                // why do we need this funciton?
+                template <class OP> void transform_linear(OP op, value_type const & error, optional<result_type> variance_opt = boost::none_t()) {
+                    if (count() == 0)
+                        boost::throw_exception(std::runtime_error("the observable needs measurements"));
+                    std::transform(values_.begin(), values_.end(), values_.begin(), op, error, variance_opt);
                     if (jacknife_bins_valid_)
                         std::transform(jack_.begin(), jack_.end(), jack_.begin(), op);
                 }
-                template <class OP> void transform(OP op) {
+                template <class OP> void transform(OP op, value_type const & error, optional<result_type> variance_opt = boost::none_t()) {
+                    if (count() == 0)
+                        boost::throw_exception(std::runtime_error("the observable needs measurements"));
                     data_is_analyzed_ = false;
                     cannot_rebin_ = true;
-                    variance_opt_ = boost::none_t();
-                    tau_opt_ = boost::none_t();
+                    mean_ = op(mean_);
+                    error_ = error;
+                    variance_opt_ = variance_opt_;
+                    if (!variance_opt_)
+                        tau_opt_ = boost::none_t();
                     // CHANGE THE SEMANTICS OF THE BINS THROUGHOUT!
                     // bins should contain the bin mean and not bin sum!
                     // the constructor has to divide by bin size for now
@@ -310,17 +316,89 @@ namespace alps {
                     if (jacknife_bins_valid_)
                        std::transform(jack_.begin(), jack_.end(), jack_.begin(), op);
                 }
-                template <class X, class OP> void transform(binned_data<X> const & rhs, OP op) {
+                template <class X, class OP> void transform(binned_data<X> const & rhs, OP op, value_type const & error, optional<result_type> variance_opt = boost::none_t) {
                     if (count() == 0 || x.count() == 0)
                         boost::throw_exception(std::runtime_error("both observables need measurements"));
                     data_is_analyzed_= false;
                     cannot_rebin_ = true;
-                    variance_opt_ = boost::none_t();
-                    tau_opt_ = boost::none_t();
-                    for (std::size_t i = 0; i < bin_number(); ++i)
-                        values_[i] = op(values_[i], x.values_[i]);
+                    mean_ = op(mean_, rhs.mean_);
+                    error_ = error;
+                    variance_opt_ = variance_opt_;
+                    if (!variance_opt_)
+                        tau_opt_ = boost::none_t();
+                    std::transform(values_.begin(), values_.end(), rhs.values_.begin(), values_.begin(), op);
                     if (rhs.jacknife_bins_valid_ && jacknife_bins_valid_)
-                        jack_[i] = op(jack_[i], x.jack_[i]);
+	                    std::transform(jack_.begin(), jack_.end(), rhs.jack_.begin(), jack_.begin(), op);
+                }
+            private:
+                void collect_bins(uint64_t howmany) {
+                    if (cannot_rebin_)
+                        boost::throw_exception(std::runtime_error("cannot change bins after nonlinear operations"));
+                    if (values_.empty() || howmany <= 1) 
+                        return;
+                    uint64_t newbins = values_.size() / howmany;
+                    for (uint64_t i = 0; i < newbins; ++i) {
+                        values_[i] = values_[howmany * i];
+                        for (uint64_t j = 1; j < howmany; ++j)
+                            values_[i] += values_[howmany * i + j];
+                    }
+                    values_.resize(newbins);
+                    binsize_ *= howmany;
+                    jacknife_bins_valid_ = false;
+                    data_is_analyzed_ = false;
+                }
+                void fill_jack() const {
+                    // build jackknife data structure
+                    if (bin_number() && !jacknife_bins_valid_) {
+                        if (cannot_rebin_)
+                          boost::throw_exception(std::runtime_error("Cannot rebuild jackknife data structure after nonlinear operations"));
+                        jack_.clear();
+                        jack_.resize(bin_number() + 1);
+                        // Order-N initialization of jackknife data structure
+                        resize_same_as(jack_[0], bin_value(0));
+                        for(uint64_t j = 0; j < bin_number(); ++j) // to this point, jack_[0] = \sum_{j} x_j   (Note: x_j = (bin_value(j) / bin_size()))
+                            jack_[0] += alps::numeric_cast<result_type>(values_[j]);
+                        for(uint64_t i = 0; i < bin_number(); ++i) // to this point, jack_[i+1] = \sum_{j != i} x_j   (Note: x_j = (bin_value(j) / bin_size()))
+                            jack_[i+1] = jack_[0] - alps::numeric_cast<result_type>(values_[i]);
+                        /*  
+                         *  Next, we want the following:
+                         *    a)  jack_[0]   =  <x>
+                         *    b)  jack_[i+1] =  <x_i>_{jacknife}
+                         */
+                        jack_[0] /= count_type(bin_number()); // up to this point, jack_[0] is the jacknife mean...
+                        for (uint64_t j = 0; j < bin_number(); ++j)  
+                            jack_[j+1] /= count_type(bin_number() - 1);
+                    }
+                    jacknife_bins_valid_ = true;
+                }
+                void analyze() const {
+                    if (count() == 0)
+                        boost::throw_exception(NoMeasurementsError());
+                    if (data_is_analyzed_) 
+                        return;
+                    if (bin_number()) {
+                        count_ = bin_size() * bin_number();
+                        fill_jack();
+                        if (jack_.size()) {
+                            resize_same_as(mean_, jack_[0]);
+                            resize_same_as(error_, jack_[0]);
+                            result_type unbiased_mean_;
+                            resize_same_as(unbiased_mean_, jack_[0]);  
+                            unbiased_mean_ = 0;
+                            unbiased_mean_ = std::accumulate(jack_.begin() + 1, jack_.end(), unbiased_mean_);
+                            unbiased_mean_ /= count_type(bin_number());
+                            mean_ = jack_[0] - (unbiased_mean_ - jack_[0]) * (count_type(bin_number() - 1));
+                            error_ = 0.;
+                            for (uint64_t i = 0; i < bin_number(); ++i) 
+                                error_ += (jack_[i + 1] - unbiased_mean_) * (jack_[i+1] - unbiased_mean_);
+                            error_ /= count_type(bin_number());
+                            error_ *= count_type(bin_number() - 1);
+                            error_ = std::sqrt(error_);
+                        }
+                        variance_opt_ = boost::none_t();
+                        tau_opt_ = boost::none_t();
+                    }
+                    data_is_analyzed_ = true;
                 }
                 mutable uint64_t count_;
                 mutable uint64_t binsize_;
@@ -333,268 +411,42 @@ namespace alps {
                 mutable boost::optional<time_type> tau_opt_;
                 mutable std::vector<value_type> values_;
                 mutable std::vector<result_type> jack_;
-            };
-
-
-
-
-
-/*
-template <class T> template <class X>
-void binned_data<T>::subtract_from(const X& x)
-{
-  if (count()) {
-    if(has_minmax_) {
-      min_ = x-max_;
-      max_ = x-min_;
-    }
-    transform_linear(x-_1);
-    for (int i=0;i<values2_.size();++i)
-      values2_[i] += -2.*values_[i]*x+x*x;
-  }
-}
-
-
-template <class T> template <class X>
-void binned_data<T>::divide(const X& x)
-{
-  if (count()) {
-    error_ = x *error_/mean_/mean_;
-    has_minmax_ = false;
-    has_variance_ = false;
-    values2_.clear();
-    has_tau_ = false;
-    cannot_rebin_ = true;
-    mean_ = x/mean_;
-    std::transform(values_.begin(), values_.end(), values_.begin(), (x*bin_size()*bin_size())/_1);
-    fill_jack();
-    std::transform(jack_.begin(), jack_.end(), jack_.begin(), x/_1);
-  }
-}
-
-
-template <class T>
-binned_data<T>& binned_data<T>::operator-()
-{
-  if (count()) {
-    transform_linear(-_1);
-  }
-  return *this;
-}
-
-*/
-
-
-template <class T>
-void binned_data<T>::collect_bins(uint64_t howmany)
-{
-  if (cannot_rebin_)
-    boost::throw_exception(std::runtime_error("cannot change bins after nonlinear operations"));
-  if (values_.empty() || howmany <= 1) return;
-
-  // fill bins
-  uint64_t newbins = values_.size() / howmany;
-  for (uint64_t i = 0; i < newbins; ++i) {
-    values_[i] = values_[howmany * i];
-    for (uint64_t j = 1; j < howmany; ++j) {
-      values_[i] += values_[howmany * i + j];
-    }
-  }
-  values_.resize(newbins);
-  binsize_ *= howmany;
-
-  jacknife_bins_valid_ = false;
-  data_is_analyzed_               = false;
-}
-
-
-template <class T>
-void binned_data<T>::analyze() const
-{
-  if (count() == 0) 
-    boost::throw_exception(NoMeasurementsError());
-
-  if (data_is_analyzed_) return;
-
-  if (bin_number())
-  {
-    count_ = bin_size()*bin_number();
-
-    // calculate mean and error
-    jackknife();   
-
-    variance_opt_ = boost::none_t();   // variance is lost after jacknife operation
-    tau_opt_      = boost::none_t();   // tau is lost after jacknife operation
-  }
-  data_is_analyzed_ = true;
-}
-
-  
-template <class T>
-void binned_data<T>::fill_jack() const
-{
-  // build jackknife data structure
-  if (bin_number() && !jacknife_bins_valid_) {
-    if (cannot_rebin_)
-      boost::throw_exception(std::runtime_error("Cannot rebuild jackknife data structure after nonlinear operations"));
-
-    jack_.clear();
-    jack_.resize(bin_number() + 1);
-
-    // Order-N initialization of jackknife data structure
-    resize_same_as(jack_[0], bin_value(0));     
-    for(uint64_t j = 0; j < bin_number(); ++j) { 
-      jack_[0] += alps::numeric_cast<result_type>(values_[j]);     
-    }  // to this point, jack_[0] = \sum_{j} x_j   (Note: x_j = (bin_value(j) / bin_size()))!!!
-
-    for(uint64_t i = 0; i < bin_number(); ++i) {
-      jack_[i+1] = jack_[0] - alps::numeric_cast<result_type>(values_[i]);
-    }  // to this point, jack_[i+1] = \sum_{j != i} x_j   (Note: x_j = (bin_value(j) / bin_size()))!!!
-
-    /*  
-     *  Next, we want the following:
-     *    a)  jack_[0]   =  <x>
-     *    b)  jack_[i+1] =  <x_i>_{jacknife}
-     */
-
-    jack_[0] /= count_type(bin_number());      // up to this point, jack_[0] is the jacknife mean...
-    for (uint64_t j = 0; j < bin_number(); ++j)  
-      jack_[j+1] /= count_type(bin_number() - 1);
-
-  }
-  jacknife_bins_valid_ = true;
-}
-
-
-template <class T>
-void binned_data<T>::jackknife() const
-{
-  fill_jack();
-
-  if (jack_.size()) {
-    // if any run is converged the errors will be OK
-    resize_same_as(mean_, jack_[0]);  
-    resize_same_as(error_, jack_[0]);  
-
-    result_type unbiased_mean_;
-    resize_same_as(unbiased_mean_, jack_[0]);  
-    unbiased_mean_ = 0;
-    unbiased_mean_ = std::accumulate(jack_.begin()+1, jack_.end(), unbiased_mean_);
-    unbiased_mean_ /= count_type(bin_number());
-    
-    mean_ = jack_[0] - (unbiased_mean_-jack_[0])*(count_type(bin_number() - 1));   // evaluating biased mean...
-
-    error_ = 0.;
-    for (uint64_t i = 0; i < bin_number(); ++i)  {  error_ += (jack_[i+1] - unbiased_mean_)*(jack_[i+1] - unbiased_mean_);  }
-    error_ /= count_type(bin_number());
-    error_ *= count_type(bin_number() - 1);
-    error_ = std::sqrt(error_);
-  }
-}
-
-
-template<class T>
-typename binned_data<T>::covariance_type 
-binned_data<T>::covariance(const binned_data<T> obs2) const
-{
-  fill_jack();
-  obs2.fill_jack();
-  if (jack_.size() && obs2.jack_.size()) 
-  {
-    result_type unbiased_mean1_;
-    result_type unbiased_mean2_;
-    resize_same_as(unbiased_mean1_, jack_[0]);  
-    resize_same_as(unbiased_mean2_, obs2.jack_[0]);  
-    if (jack_.size() != obs2.jack_.size()) 
-      boost::throw_exception(std::runtime_error("unequal number of bins in calculation of covariance matrix"));
-
-    unbiased_mean1_ = 0;
-    unbiased_mean2_ = 0;
-    unbiased_mean1_ = std::accumulate(jack_.begin()+1, jack_.end(), unbiased_mean1_);
-    unbiased_mean2_ = std::accumulate(obs2.jack_.begin()+1, obs2.jack_.end(), unbiased_mean2_);
-    unbiased_mean1_ /= count_type(bin_number());
-    unbiased_mean2_ /= count_type(obs2.bin_number());
-
-    using alps::numeric::outer_product;
-
-    covariance_type cov = outer_product(jack_[1],obs2.jack_[1]);
-    for (uint32_t i = 1; i < bin_number(); ++i)
-      cov += outer_product(jack_[i+1],obs2.jack_[i+1]);
-    cov /= count_type(bin_number());
-    cov -= outer_product(unbiased_mean1_, unbiased_mean2_);
-    cov *= count_type(bin_number() - 1);
-
-    return cov;
-  } 
-  else 
-  {
-    boost::throw_exception(std::runtime_error ("no binning information available for calculation of covariances"));
-    covariance_type dummy;
-    return dummy;
-  }
-}
-
-
-#define IMPLEMENT_OPERATION(OPERATOR_NAME,OPERATOR_ASSIGN) \
-template<class T> \
-inline binned_data<T> OPERATOR_NAME(binned_data<T> lhs, binned_data<T> const & rhs) \
-{  return lhs OPERATOR_ASSIGN rhs;  } \
-\
-template <class T> \
-inline binned_data<T> OPERATOR_NAME(binned_data<T> lhs, T const & rhs) \
-{  return lhs OPERATOR_ASSIGN rhs;  } \    \
-template <class T> \
-inline binned_data<std::vector<T> > OPERATOR_NAME(binned_data<std::vector<T> > lhs, typename binned_data<std::vector<T> >::element_type const & rhs_elem) \
-{ \
-  std::vector<T> rhs(lhs.size(),rhs_elem); \
-  return lhs OPERATOR_ASSIGN rhs; \
-}
-
-IMPLEMENT_OPERATION(operator+,+=)
-IMPLEMENT_OPERATION(operator-,-=)
-IMPLEMENT_OPERATION(operator*,*=)
-IMPLEMENT_OPERATION(operator/,/=)
-
-template <class T>
-inline binned_data<T> operator+(T const & lhs, binned_data<T> rhs)
-{  return rhs += lhs;  }
-   
-template <class T>
-inline binned_data<T> operator-(T const & lhs, binned_data<T> rhs)
-{ 
-  // call subtract_from
-return -rhs + lhs;  }
-   
-template <class T>
-inline binned_data<T> operator*(T const & lhs, binned_data<T> rhs)
-{  return rhs *= lhs;  }
-   
-template <class T>
-inline binned_data<T> operator/(T const & lhs, binned_data<T> const & rhs)
-{
- // call divide
-  using std::abs;
-  using alps::numeric::abs;
-  using boost::numeric::operators::operator*;
-  using boost::numeric::operators::operator/;
-
-  T inverse_mean = lhs/rhs.mean();
-
-  transform(_1/_2);
-  return ...
-  //return binned_data<T>(inverse_mean,abs(inverse_mean*rhs.error()/rhs.mean()));
-}
-
-// als drittes oben hin
-#define IMPLEMENT_OPERATION2(OPERATOR_NAME,OPERATOR_ASSIGN) \
-template <class T> \
-inline binned_data<std::vector<T> > OPERATOR_NAME(typename binned_data<std::vector<T> >::element_type const & lhs_elem, binned_data<std::vector<T> > rhs) \
-{ \
-  std::vector<T> lhs(rhs.size(),lhs_elem); \
-  return lhs OPERATOR_ASSIGN rhs; \
-}
-
-// pow, sq, sqrt, cb, cbrt, exp, log 
+        };
+        #define IMPLEMENT_OPERATION(OPERATOR_NAME, OPERATOR_ASSIGN, OPERATOR_ASSIGN2)                                                                      \
+            template<class T> inline binned_data<T> OPERATOR_NAME(binned_data<T> lhs, binned_data<T> const & rhs) {                                        \
+                return lhs OPERATOR_ASSIGN rhs;                                                                                                            \
+            }                                                                                                                                              \
+            template <class T> inline binned_data<T> OPERATOR_NAME(binned_data<T> lhs, T const & rhs) {                                                    \
+                return lhs OPERATOR_ASSIGN rhs;                                                                                                            \
+            }                                                                                                                                              \
+        template <class T> inline binned_data<std::vector<T> > OPERATOR_NAME(                                                                              \
+            binned_data<std::vector<T> > lhs, typename binned_data<std::vector<T> >::element_type const & rhs_elem                                         \
+        ) {                                                                                                                                                \
+          std::vector<T> rhs(lhs.size(),rhs_elem);                                                                                                         \
+          return lhs OPERATOR_ASSIGN rhs;                                                                                                                  \
+        }                                                                                                                                                  \
+        template <class T> inline binned_data<std::vector<T> > OPERATOR_NAME(                                                                              \
+            typename binned_data<std::vector<T> >::element_type const & lhs_elem, binned_data<std::vector<T> > rhs                                         \
+        ) {                                                                                                                                                \
+          std::vector<T> lhs(rhs.size(),lhs_elem);                                                                                                         \
+          return lhs OPERATOR_ASSIGN2 rhs;                                                                                                                 \
+        }
+        IMPLEMENT_OPERATION(operator+,+=,+)
+        IMPLEMENT_OPERATION(operator-,-=,-)
+        IMPLEMENT_OPERATION(operator*,*=,*)
+        IMPLEMENT_OPERATION(operator/,/=,/)
+        template <class T> inline binned_data<T> operator+(T const & lhs, binned_data<T> rhs) {
+            return rhs += lhs;
+        }
+        template <class T> inline binned_data<T> operator-(T const & lhs, binned_data<T> rhs) {
+            return rhs.subtract_from(lhs);
+        }
+        template <class T> inline binned_data<T> operator*(T const & lhs, binned_data<T> rhs) {
+            return rhs *= lhs;
+        }
+        template <class T>  inline binned_data<T> operator/(T const & lhs, binned_data<T> const & rhs) {
+            return rhs.divide(lhs);
+        }
         template <class T> inline binned_data<T> pow(binned_data<T> rhs, typename binned_data<T>::element_type const & exponent) {
             if (exponent == 1.)
               return rhs;
@@ -605,320 +457,209 @@ inline binned_data<std::vector<T> > OPERATOR_NAME(typename binned_data<std::vect
                 using alps::numeric::abs;
                 using boost::numeric::operators::operator-;
                 using boost::numeric::operators::operator*;
-                T derivative = exponent*pow(rhs.mean(), exponent - 1.);
-                transform(pow(_1,_2));
-                //return binned_data<T>(dummy*rhs.mean(),abs(derivative*rhs.error()));
+                rhs.transform(pow(_1,_2), abs(exponent * pow(rhs.mean(), exponent - 1.) * rhs.error()));
+                return rhs;
             }
         }
-
-template<class T>
-inline binned_data<T> sq(binned_data<T> rhs)
-{
-  using alps::numeric::sq;
-  using std::abs;
-  using alps::numeric::abs;
-  using alps::numeric::operator*;
-  using boost::numeric::operators::operator*;
-
-  rhs.transform(sq(_1),sq(rhs.mean()),abs(2.*rhs.mean()*rhs.error()));
-  return rhs; //... // *this  //binned_data<T>(sq(rhs.mean()),abs(2.*rhs.mean()*rhs.error()));
-}
-   
-template<class T>
-binned_data<T> cb(binned_data<T> rhs)
-{
-  using alps::numeric::sq;
-  using std::abs;
-  using alps::numeric::abs;
-  using alps::numeric::operator*;
-  using boost::numeric::operators::operator*;
-
-  transform(cb(_1));
-  return ... // *this  //binned_data<T>((sq(rhs.mean()))*rhs.mean(),abs(3.*(sq(rhs.mean()))*rhs.error()));
-}
-   
-template<class T>
-binned_data<T> sqrt(binned_data<T> rhs)
-{
-  using std::sqrt;
-  using alps::numeric::sqrt;
-  using std::abs;
-  using alps::numeric::abs;
-  using alps::numeric::operator*;
-  using boost::numeric::operators::operator/;
-
-  transform(sqrt(_1));
-  return ... // *this  //binned_data<T>(sqrt(rhs.mean()),abs(rhs.error()/(2.*sqrt(rhs.mean()))));
-}
-   
-template<class T>
-binned_data<T> cbrt(binned_data<T> rhs)
-{
-  using alps::numeric::sq;
-  using std::abs;
-  using alps::numeric::abs;
-  using std::pow;
-  using alps::numeric::pow;
-  using alps::numeric::operator*;
-  using boost::numeric::operators::operator/;
-
-  T dummy = pow(rhs.mean(),1./3);
-
-  transform(cbrt(_1));
-  return ... // *this  //binned_data<T>(dummy,abs(rhs.error()/(3.*sq(dummy))));
-}
-   
-template<class T>
-binned_data<T> exp(binned_data<T> rhs)
-{
-  using std::exp;
-  using alps::numeric::exp;
-  using boost::numeric::operators::operator*;
-
-  T dummy = exp(rhs.mean());
-
-  transform(exp(_1));
-  return ... // *this  //binned_data<T>(dummy,dummy*rhs.error());
-}
-   
-template<class T>
-binned_data<T> log(binned_data<T> rhs)
-{
-  using std::log;
-  using alps::numeric::log;
-  using std::abs;
-  using alps::numeric::abs;
-  using boost::numeric::operators::operator/;
-
-  transform(log(_1));
-  return ... // *this  //binned_data<T>(log(rhs.mean()),abs(rhs.error()/rhs.mean()));
-}
-
-// ( sin, ... , atanh ) operations
-template<class T>
-inline binned_data<T> sin(binned_data<T> rhs)
-{
-  using std::abs;
-  using alps::numeric::abs;
-  using std::sin;
-  using alps::numeric::sin;
-  using std::cos;
-  using alps::numeric::cos;
-  using boost::numeric::operators::operator*;
-
-  T derivative = cos(rhs.mean());
-
-  transform(sin(_1));
-  return ... // *this  //binned_data<T>(sin(rhs.mean()),abs(derivative*rhs.error()));
-}
-   
-template<class T>
-binned_data<T> cos(binned_data<T> rhs)
-{
-  using std::abs;
-  using alps::numeric::abs;
-  using std::sin;
-  using alps::numeric::sin;
-  using std::cos;
-  using alps::numeric::cos;
-  using boost::numeric::operators::operator-;
-  using boost::numeric::operators::operator*;
-
-  T derivative = -sin(rhs.mean());
-
-  transform(cos(_1));
-  return ... // *this  //binned_data<T>(cos(rhs.mean()),abs(derivative*rhs.error()));
-}
-   
-template<class T>
-binned_data<T> tan(binned_data<T> rhs)
-{
-  using std::abs;
-  using alps::numeric::abs;
-  using std::tan;
-  using alps::numeric::tan;
-  using std::cos;
-  using alps::numeric::cos;
-  using boost::numeric::operators::operator*;
-  using alps::numeric::operator/;
-
-  T derivative = 1./(cos(rhs.mean())*cos(rhs.mean()));
-
-  transform(tan(_1));
-  return ... // *this  //binned_data<T>(tan(rhs.mean()),abs(derivative*rhs.error()));
-}
-   
-template<class T>
-binned_data<T> sinh(binned_data<T> rhs)
-{
-  using std::abs;
-  using alps::numeric::abs;
-  using std::sinh;
-  using alps::numeric::sinh;
-  using std::cosh;
-  using alps::numeric::cosh;
-  using boost::numeric::operators::operator*;
-
-  T derivative = cosh(rhs.mean());
-
-  transform(sinh(_1));
-  return ... // *this  //binned_data<T>(sinh(rhs.mean()),abs(derivative*rhs.error()));
-}
-   
-template<class T>
-binned_data<T> cosh(binned_data<T> rhs)
-{
-  using std::abs;
-  using alps::numeric::abs;
-  using std::sinh;
-  using alps::numeric::sinh;
-  using std::cosh;
-  using alps::numeric::cosh;
-  using boost::numeric::operators::operator*;
-
-  T derivative = sinh(rhs.mean());
-
-
-  transform(cosh(_1));
-  return ... // *this  //binned_data<T>(cosh(rhs.mean()),abs(derivative*rhs.error()));
-}
-   
-template<class T>
-binned_data<T> tanh(binned_data<T> rhs)
-{
-  using std::abs;
-  using alps::numeric::abs;
-  using std::cosh;
-  using alps::numeric::cosh;
-  using std::tanh;
-  using alps::numeric::tanh;
-  using boost::numeric::operators::operator*;
-  using alps::numeric::operator/;
-
-  T derivative = 1./(cosh(rhs.mean())*cosh(rhs.mean()));
-
-  transform(tanh(_1));
-  return ... // *this  //binned_data<T>(tanh(rhs.mean()),abs(derivative*rhs.error()));
-}
-   
-template<class T>
-binned_data<T> asin(binned_data<T> rhs)
-{
-  using std::abs;
-  using alps::numeric::abs;
-  using std::sqrt;
-  using alps::numeric::sqrt;
-  using std::asin;
-  using alps::numeric::asin;
-  using alps::numeric::operator-;
-  using boost::numeric::operators::operator*;
-  using alps::numeric::operator/;
-
-  T derivative = 1./sqrt(1. - rhs.mean()*rhs.mean());
-
-  transform(asin(_1));
-  return ... // *this  //binned_data<T>(asin(rhs.mean()),abs(derivative*rhs.error()));
-}
-   
-template<class T>
-binned_data<T> acos(binned_data<T> rhs)
-{
-  using std::abs;
-  using alps::numeric::abs;
-  using std::sqrt;
-  using alps::numeric::sqrt;
-  using std::acos;
-  using alps::numeric::acos;
-  using alps::numeric::operator-;
-  using boost::numeric::operators::operator-;
-  using boost::numeric::operators::operator*;
-  using alps::numeric::operator/;
-
-  T derivative = -1./sqrt(1. - rhs.mean()*rhs.mean());
-
-  transform(acos(_1));
-  return ... // *this  //binned_data<T>(acos(rhs.mean()),abs(derivative*rhs.error()));
-}
-   
-template<class T>
-binned_data<T> atan(binned_data<T> rhs)
-{
-  using std::abs;
-  using alps::numeric::abs;
-  using std::atan;
-  using alps::numeric::atan;
-  using alps::numeric::operator+;
-  using boost::numeric::operators::operator*;
-  using alps::numeric::operator/;
-
-  T derivative = 1./(1. + rhs.mean()*rhs.mean());
-  transform(atan(_1));
-
-  return ... // *this  //binned_data<T>(atan(rhs.mean()),abs(derivative*rhs.error()));
-}
-   
-template<class T>
-binned_data<T> asinh(binned_data<T> rhs)
-{
-  using std::abs;
-  using alps::numeric::abs;
-  using std::sqrt;
-  using alps::numeric::sqrt;
-  using boost::math::asinh;
-  using alps::numeric::asinh;
-  using alps::numeric::operator+;
-  using boost::numeric::operators::operator*;
-  using alps::numeric::operator/;
-
-  T derivative = 1./sqrt(rhs.mean()*rhs.mean() + 1.);
-  transform(asinh(_1));
-  return ... // *this  //binned_data<T>(asinh(rhs.mean()),abs(derivative*rhs.error()));
-}
-   
-template<class T>
-binned_data<T> acosh(binned_data<T> rhs)
-{
-  using std::abs;
-  using alps::numeric::abs;
-  using std::sqrt;
-  using alps::numeric::sqrt;
-  using boost::math::acosh;
-  using alps::numeric::acosh;
-  using alps::numeric::operator-;
-  using boost::numeric::operators::operator*;
-  using alps::numeric::operator/;
-
-  T derivative = 1./sqrt(rhs.mean()*rhs.mean() - 1.);
-
-  transform(acosh(_1));
-  return ... // *this  //binned_data<T>(acosh(rhs.mean()),abs(derivative*rhs.error()));
-}
-   
-template<class T>
-binned_data<T> atanh(binned_data<T> rhs)
-{
-  using std::abs;
-  using alps::numeric::abs;
-  using boost::math::atanh;
-  using alps::numeric::atanh;
-  using alps::numeric::operator-;
-  using boost::numeric::operators::operator*;
-  using alps::numeric::operator/;
-
-
-  T derivative = 1./(1. - rhs.mean()*rhs.mean());
-
-
-  transform(atanh(_1));
-  return ... // *this  //binned_data<T>(atanh(rhs.mean()),abs(derivative*rhs.error()));
-}
-
-
-
-
-
-
-
+        template<class T> inline binned_data<T> sq(binned_data<T> rhs) {
+            using alps::numeric::sq;
+            using std::abs;
+            using alps::numeric::abs;
+            using alps::numeric::operator*;
+            using boost::numeric::operators::operator*;
+            rhs.transform(sq(_1), abs(2. * rhs.mean() * rhs.error()));
+            return rhs;
+        }
+        template<class T> binned_data<T> cb(binned_data<T> rhs) {
+            using alps::numeric::sq;
+            using std::abs;
+            using alps::numeric::abs;
+            using alps::numeric::operator*;
+            using boost::numeric::operators::operator*;
+            rhs.transform(cb(_1), abs(3. * sq(rhs.mean()) * rhs.error()));
+            return rhs;
+        }
+        template<class T> binned_data<T> sqrt(binned_data<T> rhs) {
+            using std::sqrt;
+            using alps::numeric::sqrt;
+            using std::abs;
+            using alps::numeric::abs;
+            using alps::numeric::operator*;
+            using boost::numeric::operators::operator/;
+            rhs.transform(sqrt(_1), abs(rhs.error() / (2. * sqrt(rhs.mean()))));
+            return rhs;
+        }
+        template<class T> binned_data<T> cbrt(binned_data<T> rhs) {
+            using alps::numeric::sq;
+            using std::abs;
+            using alps::numeric::abs;
+            using std::pow;
+            using alps::numeric::pow;
+            using alps::numeric::operator*;
+            using boost::numeric::operators::operator/;
+            rhs.transform(cbrt(_1), abs(rhs.error() / (3. * sq(pow(rhs.mean(), 1. / 3)))));
+            return rhs;
+        }
+        template<class T> binned_data<T> exp(binned_data<T> rhs) {
+            using std::exp;
+            using alps::numeric::exp;
+            using boost::numeric::operators::operator*;
+            rhs.transform(exp(_1), exp(rhs.mean()) * rhs.error());
+            return rhs;
+        }
+        template<class T> binned_data<T> log(binned_data<T> rhs) {
+            using std::log;
+            using alps::numeric::log;
+            using std::abs;
+            using alps::numeric::abs;
+            using boost::numeric::operators::operator/;
+            rhs.transform(log(_1), abs(rhs.error() / rhs.mean()));
+            return rhs;
+        }
+        template<class T> inline binned_data<T> sin(binned_data<T> rhs) {
+            using std::abs;
+            using alps::numeric::abs;
+            using std::sin;
+            using alps::numeric::sin;
+            using std::cos;
+            using alps::numeric::cos;
+            using boost::numeric::operators::operator*;
+            rhs.transform(sin(_1), abs(cos(rhs.mean()) * rhs.error()));
+            return rhs;
+        }
+        template<class T> binned_data<T> cos(binned_data<T> rhs) {
+            using std::abs;
+            using alps::numeric::abs;
+            using std::sin;
+            using alps::numeric::sin;
+            using std::cos;
+            using alps::numeric::cos;
+            using boost::numeric::operators::operator-;
+            using boost::numeric::operators::operator*;
+            rhs.transform(cos(_1), abs(-sin(rhs.mean()) * rhs.error()));
+            return rhs;
+        }
+        template<class T> binned_data<T> tan(binned_data<T> rhs) {
+            using std::abs;
+            using alps::numeric::abs;
+            using std::tan;
+            using alps::numeric::tan;
+            using std::cos;
+            using alps::numeric::cos;
+            using boost::numeric::operators::operator*;
+            using alps::numeric::operator/;
+            rhs.transform(tan(_1), abs(1./(cos(rhs.mean()) * cos(rhs.mean())) * rhs.error()));
+            return rhs;
+        }
+        template<class T> binned_data<T> sinh(binned_data<T> rhs) {
+            using std::abs;
+            using alps::numeric::abs;
+            using std::sinh;
+            using alps::numeric::sinh;
+            using std::cosh;
+            using alps::numeric::cosh;
+            using boost::numeric::operators::operator*;
+            rhs.transform(sinh(_1), abs(cosh(rhs.mean()) * rhs.error()));
+            return rhs;
+        }
+        template<class T> binned_data<T> cosh(binned_data<T> rhs) {
+            using std::abs;
+            using alps::numeric::abs;
+            using std::sinh;
+            using alps::numeric::sinh;
+            using std::cosh;
+            using alps::numeric::cosh;
+            using boost::numeric::operators::operator*;
+            rhs.transform(cosh(_1), abs(sinh(rhs.mean()) * rhs.error()));
+            return rhs;
+        }
+        template<class T> binned_data<T> tanh(binned_data<T> rhs) {
+            using std::abs;
+            using alps::numeric::abs;
+            using std::cosh;
+            using alps::numeric::cosh;
+            using std::tanh;
+            using alps::numeric::tanh;
+            using boost::numeric::operators::operator*;
+            using alps::numeric::operator/;
+            rhs.transform(tanh(_1), abs(1. / (cosh(rhs.mean()) * cosh(rhs.mean())) * rhs.error()));
+            return rhs;
+        }
+        template<class T> binned_data<T> asin(binned_data<T> rhs) {
+            using std::abs;
+            using alps::numeric::abs;
+            using std::sqrt;
+            using alps::numeric::sqrt;
+            using std::asin;
+            using alps::numeric::asin;
+            using alps::numeric::operator-;
+            using boost::numeric::operators::operator*;
+            using alps::numeric::operator/;
+            rhs.transform(asin(_1), abs(1. / sqrt(1. - rhs.mean() * rhs.mean()) * rhs.error()));
+            return rhs;
+        }
+        template<class T> binned_data<T> acos(binned_data<T> rhs) {
+            using std::abs;
+            using alps::numeric::abs;
+            using std::sqrt;
+            using alps::numeric::sqrt;
+            using std::acos;
+            using alps::numeric::acos;
+            using alps::numeric::operator-;
+            using boost::numeric::operators::operator-;
+            using boost::numeric::operators::operator*;
+            using alps::numeric::operator/;
+            rhs.transform(acos(_1), abs(-1. / sqrt(1. - rhs.mean() * rhs.mean()) * rhs.error()));
+            return rhs;
+        }
+        template<class T> binned_data<T> atan(binned_data<T> rhs) {
+            using std::abs;
+            using alps::numeric::abs;
+            using std::atan;
+            using alps::numeric::atan;
+            using alps::numeric::operator+;
+            using boost::numeric::operators::operator*;
+            using alps::numeric::operator/;
+            rhs.transform(atan(_1), abs(1. / (1. + rhs.mean() * rhs.mean()) * rhs.error()));
+            return rhs;
+        }
+        template<class T> binned_data<T> asinh(binned_data<T> rhs) {
+            using std::abs;
+            using alps::numeric::abs;
+            using std::sqrt;
+            using alps::numeric::sqrt;
+            using boost::math::asinh;
+            using alps::numeric::asinh;
+            using alps::numeric::operator+;
+            using boost::numeric::operators::operator*;
+            using alps::numeric::operator/;
+            rhs.transform(asinh(_1), abs(1. / sqrt(rhs.mean() * rhs.mean() + 1.) * rhs.error()));
+            return rhs;
+        }
+        template<class T> binned_data<T> acosh(binned_data<T> rhs) {
+            using std::abs;
+            using alps::numeric::abs;
+            using std::sqrt;
+            using alps::numeric::sqrt;
+            using boost::math::acosh;
+            using alps::numeric::acosh;
+            using alps::numeric::operator-;
+            using boost::numeric::operators::operator*;
+            using alps::numeric::operator/;
+            rhs.transform(acosh(_1), abs(1. / sqrt(rhs.mean() * rhs.mean() - 1.) * rhs.error()));
+            return rhs;
+        }
+        template<class T> binned_data<T> atanh(binned_data<T> rhs) {
+            using std::abs;
+            using alps::numeric::abs;
+            using boost::math::atanh;
+            using alps::numeric::atanh;
+            using alps::numeric::operator-;
+            using boost::numeric::operators::operator*;
+            using alps::numeric::operator/;
+            rhs.transform(atanh(_1), abs(1./(1. - rhs.mean() * rhs.mean()) * rhs.error()));
+            return rhs;
+        }
     }
 }
 
