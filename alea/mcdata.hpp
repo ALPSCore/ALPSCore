@@ -655,6 +655,7 @@ namespace alps {
         template<typename T> mcdata<T> exp(mcdata<T> rhs) {
             using std::exp;
             using boost::lambda::_1;
+            using boost::lambda::bind;
             using alps::numeric::exp;
             using boost::numeric::operators::operator*;
             rhs.transform(bind<T>(exp<typename mcdata<T>::value_type>, _1), exp(rhs.mean()) * rhs.error());
