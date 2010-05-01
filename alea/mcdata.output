@@ -1,0 +1,48 @@
+observable a: 0.497211 +/- 0.00485; tau = 0.0679
+    bin #1   : 4096     entries: error = 0.00455021
+    bin #2   : 2048     entries: error = 0.00455922
+    bin #3   : 1024     entries: error = 0.00457997
+    bin #4   : 512      entries: error = 0.00463017
+    bin #5   : 256      entries: error = 0.00479441
+    bin #6   : 128      entries: error = 0.00484938
+observable b: 1.50455 +/- 0.0047; tau = 0.049
+    bin #1   : 4096     entries: error = 0.00448764
+    bin #2   : 2048     entries: error = 0.00457509
+    bin #3   : 1024     entries: error = 0.00454425
+    bin #4   : 512      entries: error = 0.00455364
+    bin #5   : 256      entries: error = 0.00459102
+    bin #6   : 128      entries: error = 0.00470255
+observable c: 1.49876 +/- 0.00256; tau = -0.0185
+    bin #1   : 12288    entries: error = 0.00260463
+    bin #2   : 6144     entries: error = 0.00261035
+    bin #3   : 3072     entries: error = 0.00263224
+    bin #4   : 1536     entries: error = 0.00257175
+    bin #5   : 768      entries: error = 0.00260109
+    bin #6   : 384      entries: error = 0.00263753
+    bin #7   : 192      entries: error = 0.00255591
+Jackknife analysis
+observable a: 0.497211 +/- 0.00485; tau = 0.0679
+  count = 4096, bin size = 32, number of bins = 128
+observable b: 1.50455 +/- 0.0047; tau = 0.049
+  count = 4096, bin size = 32, number of bins = 128
+observable c: 1.49876 +/- 0.0027; tau = 0.0381
+  count = 12288, bin size = 128, number of bins = 96
+observable d no measurements.
+  count = 0, bin size = 0, number of bins = 0
+five different methods to construct RealObsevaluator
+  (observable b) / (observable a): 3.02568 +/- 0.031
+  (observable b) / (observable a): 3.02568 +/- 0.031
+  obseval_e: 3.02568 +/- 0.031
+  obseval_f: 3.02568 +/- 0.031
+  obseval_g: 3.02568 +/- 0.031
+  count = 4096, bin size = 32, number of bins = 128
+merging observables b and c
+  obseval_5: 1.50021 +/- 0.00247; tau = 0.101
+  count = 16384, bin size = 128, number of bins = 128
+merging observables b and d
+  obseval_6: 1.50455 +/- 0.0047; tau = 0.049
+  count = 4096, bin size = 32, number of bins = 128
+1 / (observable a): 2.01122 +/- 0.0196
+1 / (observable b): 0.664652 +/- 0.00208
+pow(observable a,3.3): 0.0996385 +/- 0.00321
+(obseval_6) / (obseval_6): 1 +/- 0
