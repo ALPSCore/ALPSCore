@@ -34,6 +34,9 @@
 #define ALPS_UTILITY_RESIZE_HPP
 
 #include <alps/type_traits/is_sequence.hpp>
+
+#include <boost/mpl/or.hpp>
+#include <boost/mpl/and.hpp>
 #include <boost/utility/enable_if.hpp>
 
 namespace alps {

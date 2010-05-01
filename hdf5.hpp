@@ -23,6 +23,7 @@
 #include <sstream>
 #include <cstring>
 #include <cstdlib>
+#include <cassert>
 #include <stdexcept>
 #include <valarray>
 #include <iostream>
@@ -132,6 +133,21 @@ namespace alps {
 namespace alps {
     namespace hdf5 {
         namespace detail {
+            #define HDF5_FOREACH_SCALAR(callback)                                                                                                          \
+                callback(char)                                                                                                                             \
+                callback(signed char)                                                                                                                      \
+                callback(unsigned char)                                                                                                                    \
+                callback(short)                                                                                                                            \
+                callback(unsigned short)                                                                                                                   \
+                callback(int)                                                                                                                              \
+                callback(unsigned int)                                                                                                                     \
+                callback(long)                                                                                                                             \
+                callback(unsigned long)                                                                                                                    \
+                callback(long long)                                                                                                                        \
+                callback(unsigned long long)                                                                                                               \
+                callback(float)                                                                                                                            \
+                callback(double)                                                                                                                           \
+                callback(long double)
             struct write {};
             struct read {};
             namespace internal_state_type {
@@ -145,6 +161,125 @@ namespace alps {
                double r;
                double i; 
             };
+// = = = = = = = = = = P L A Y   G R O U N D = = = = = = = = = =
+#ifdef USE_HDF5_PLAYGROUND
+            template<typename T, typename U> class iterator_type {
+                public:
+                    typedef T native_type;
+                    typedef U * pointer_type;
+                    typedef typename boost::is_scalar<T>::type scalar;
+                    iterator_type(T & v): _v(v), _u(&v) {}
+                    iterator_type(T & v, std::vector<std::size_t> s): _v(v), _u(&v) { assert(s.size() == 1 && s[0] == 1); }
+                    ~iterator_type() { if (!boost::is_same<T, U>::value) _v = *_u; }
+                    std::size_t size() { return 1; }
+                    bool is_continous() { return true; }
+                    pointer_type operator*() { return _u; }
+                    iterator_type<T, U> & operator++() { is_end = true; return *this; }
+                    bool operator==(iterator_type const & rhs) { return is_end ? rhs.is_end == is_end : !rhs.is_end && rhs._v == _v; }
+                private:
+                    bool is_end;
+                    T & _v;
+                    pointer_type _u;
+            };
+            
+            // string
+            // complex
+            // char const *
+            
+            
+            
+            #define C std::vector
+            
+            
+            
+            // assume T is scalar
+            template<typename T, typename U> class iterator_type< C <T>, U> {
+                public:
+                    iterator_type(C <T> & v): _v(v) {}
+                    iterator_type(T & v, std::vector<std::size_t> s): _v(v) {
+                        assert(s.size() == 1);
+                        _v.resize(s[0]);
+                    }
+                    ~iterator_type() {
+                        save();
+                    }
+                    std::size_t slab_size() {
+                        return _v.size();
+                    }
+                    pointer_type operator*() { 
+                        save();
+                        _u.resize(slab_size());
+                        return &_u[0];
+                    }
+                    pointer_type const operator*() const { 
+                        return &const_cast<C <T> &>(_v)[0];
+                    }
+                    iterator_type<C <T>, U> & operator++() { 
+                        is_end = true; 
+                        return *this;
+                    }
+                    bool operator==(iterator_type<C <T>, U> const & rhs) { 
+                        return is_end ? rhs.is_end == is_end : !rhs.is_end && &rhs._v == &_v;
+                    }
+                private:
+                    void save() {
+                         if (_u.size())
+                             std::copy(_u.begin(), _u.end(), _v);
+                         _u.clear();
+                    }
+                    bool is_end;
+                    C <T> & _v;
+                    std::vector<U> _u;
+            };
+            // T is not scalar
+            template<typename T, typename U> class iterator_type< C <T>, U> {
+                public:
+                    iterator_type(C <T> & v): _v(v), _i(_v.begin()) {}
+                    iterator_type(T & v, std::vector<std::size_t> s): _v(v) {
+                        assert(s.size() >= 1);
+                        _v.resize(s[0]);
+                        
+                        
+                    }
+                    ~iterator_type() {
+                        save();
+                    }
+                    std::size_t slab_size() {
+                        return _v.size();
+                    }
+                    pointer_type operator*() { 
+                        save();
+                        _u.resize(slab_size());
+                        return &_u[0];
+                    }
+                    pointer_type const operator*() const { 
+                        return &const_cast<C <T> &>(_v)[0];
+                    }
+                    iterator_type<C <T>, U> & operator++() { 
+                        ++_i;
+                        return *this;
+                    }
+                    bool operator==(iterator_type<C <T>, U> const & rhs) { 
+                        return _i == rhs._i;
+                    }
+                private:
+                    void save() {
+                         if (_u.size())
+                             std::copy(_u.begin(), _u.end(), _v);
+                         _u.clear();
+                    }
+                    bool is_end;
+                    C <T> & _v;
+                    typename C <T>::iterator _i;
+                    std::vector<U> _u;
+            };
+            
+            
+            #undef C
+            
+            
+#endif
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
             template<typename T> struct matrix_type : public boost::is_scalar<T>::type {
                 typedef T native_type;
                 typedef T const * pointer_type;
@@ -363,21 +498,6 @@ namespace alps {
             };
             //TODO: boost::multiarray implementieren
             #undef HDF5_DEFINE_MATRIX_TYPE
-            #define HDF5_FOREACH_SCALAR(callback)                                                                                                          \
-                callback(char)                                                                                                                             \
-                callback(signed char)                                                                                                                      \
-                callback(unsigned char)                                                                                                                    \
-                callback(short)                                                                                                                            \
-                callback(unsigned short)                                                                                                                   \
-                callback(int)                                                                                                                              \
-                callback(unsigned int)                                                                                                                     \
-                callback(long)                                                                                                                             \
-                callback(unsigned long)                                                                                                                    \
-                callback(long long)                                                                                                                        \
-                callback(unsigned long long)                                                                                                               \
-                callback(float)                                                                                                                            \
-                callback(double)                                                                                                                           \
-                callback(long double)
             class error {
                 public:
                     static herr_t noop(hid_t) { return 0; }
@@ -1097,8 +1217,5 @@ namespace alps {
         }
     }
 }
-
-
 #endif
-
 #endif

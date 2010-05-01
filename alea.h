@@ -31,6 +31,8 @@
 /// \file alea.h
 /// \brief includes all headers in the alps/alea directory
 
+#include <alps/alea/mcdata.hpp>
+
 #include <alps/alea/detailedbinning.h>
 #include <alps/alea/histogram.h>
 #include <alps/alea/nobinning.h>
