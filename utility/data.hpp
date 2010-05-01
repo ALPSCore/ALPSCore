@@ -36,13 +36,13 @@
 
 namespace alps {
 
-/// returns a pointer to the start of storage of a vector
+/// returns a pointer to the start of storage of a container
 template <class C>
 inline typename element_type<C>::type* data(C& c) { return &c[0];}
 
-/// returns a pointer to the start of storage of a vector
+/// returns a pointer to the start of storage of a container
 template <class C>
-inline const typename element_type<C>::type* data(const C& c) { return &c[0];}
+inline const typename element_type<C>::type* data(const C& c) { return &const_cast<C&>(c)[0];}
 
 } // namespace alps
 

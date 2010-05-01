@@ -55,11 +55,6 @@
 #include <boost/lambda/lambda.hpp>
 #include <boost/optional/optional.hpp>
 
-#ifdef ALPS_HAVE_PYTHON
-    #include <boost/python.hpp>
-    #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
-#endif
-
 #include <iostream>
 #include <numeric>
 #include <vector>
@@ -289,7 +284,7 @@ namespace alps {
                     fill_jack();
                     std::transform(jack_.begin(), jack_.end(), jack_.begin(), x / _1);
                 }
-                // why do we need this funciton?
+
                 template <class OP> void transform_linear(OP op, value_type const & error, optional<result_type> variance_opt = boost::none_t()) {
                     if (count() == 0)
                         boost::throw_exception(std::runtime_error("the observable needs measurements"));
