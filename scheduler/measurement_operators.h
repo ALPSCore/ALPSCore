@@ -107,6 +107,8 @@ public:
   std::map<std::string,std::vector<std::vector<value_type> > > local_values;
   std::map<std::string,std::vector<std::vector<value_type> > > correlation_values;
   std::map<std::string,std::vector<std::vector<value_type> > > structurefactor_values;
+  
+  bool empty() const { return average_values.empty() && local_values.empty() && correlation_values.empty() && structurefactor_values.empty();}
 };
 
 
