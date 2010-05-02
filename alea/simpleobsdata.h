@@ -590,8 +590,6 @@ template <class T>
 template<class X>
 SimpleObservableData<T>& SimpleObservableData<T>::operator*=(const SimpleObservableData<X>& x)
 {
-  using boost::lambda::_1;
-  using boost::lambda::_2;
   using std::sqrt;
   if(count() && x.count()) {
     error_=error()*error();
@@ -605,7 +603,7 @@ SimpleObservableData<T>& SimpleObservableData<T>::operator*=(const SimpleObserva
     mean_ *= x.mean();
     //error_=sqrt(error()*error()*x.mean()*x.mean()+mean()*mean()*x.error()*x.error());
   }
-  transform(x,_1*_2,1./x.bin_size());
+  transform(x,boost::lambda::_1*boost::lambda::_2,1./x.bin_size());
   return (*this);
 }
 
@@ -613,8 +611,6 @@ template <class T>
 template<class X>
 SimpleObservableData<T>& SimpleObservableData<T>::operator/=(const SimpleObservableData<X>& x)
 {
-  using boost::lambda::_1;
-  using boost::lambda::_2;
   using std::sqrt;
   if(count() && x.count()) {
     error_=error()*error();
@@ -629,7 +625,7 @@ SimpleObservableData<T>& SimpleObservableData<T>::operator/=(const SimpleObserva
     mean_ /= x.mean();
     //error_ = sqrt((error()*error()+mean()*mean()*x.error()*x.error()/x.mean()/x.mean())/x.mean()/x.mean());
   }
-  transform(x,_1/_2,x.bin_size());
+  transform(x,boost::lambda::_1/boost::lambda::_2,x.bin_size());
   return (*this);
 }
 
