@@ -76,7 +76,7 @@ endif(MSVC)
 
 # Set soversion for library
 if(NOT WIN32 AND NOT APPLE)
-  set_target_properties(TARGET alps
+  set_target_properties(alps
     PROPERTIES
     SOVERSION "${ALPS_VERSION_MAJOR}"
     VERSION "${ALPS_VERSION_MAJOR}.${ALPS_VERSION_MINOR}.${ALPS_VERSION_PATCH}" )
