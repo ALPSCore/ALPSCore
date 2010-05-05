@@ -48,6 +48,8 @@
         std::cout << "...]" << std::endl;                                                                                                                  \
     }
 #define HDF5_FOREACH(callback)                                                                                                                             \
+    callback(char)                                                                                                                                         \
+    callback(unsigned char)                                                                                                                                \
     callback(short)                                                                                                                                        \
     callback(unsigned short)                                                                                                                               \
     callback(int)                                                                                                                                          \
@@ -58,7 +60,16 @@
     callback(unsigned long long)                                                                                                                           \
     callback(float)                                                                                                                                        \
     callback(double)                                                                                                                                       \
-    callback(long double)
+    callback(long double)                                                                                                                                  \
+    callback(short)                                                                                                                                        \
+    callback(int8_t)                                                                                                                                       \
+    callback(uint8_t)                                                                                                                                      \
+    callback(int16_t)                                                                                                                                      \
+    callback(uint16_t)                                                                                                                                     \
+    callback(int32_t)                                                                                                                                      \
+    callback(uint32_t)                                                                                                                                     \
+    callback(int64_t)                                                                                                                                      \
+    callback(uint64_t)
 int main() {
     {
         alps::hdf5::oarchive oar("vector.h5");
