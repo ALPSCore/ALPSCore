@@ -153,8 +153,8 @@ try {
   obseval_j = pow(obseval_a, 3.3);
   std::cout << obseval_j;
 
-  alps::alea::mcdata<double> obseval_k = obseval_6 / obseval_6;
-  std::cout << obseval_k;
+//  alps::alea::mcdata<double> obseval_k = obseval_6 / obseval_6;
+//  std::cout << obseval_k;
 
 //  alps::RealVectorObsevaluator obseval_v = obs_d;
 //  obseval_v /= obseval_i;

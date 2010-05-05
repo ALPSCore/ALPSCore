@@ -21,7 +21,14 @@ const std::size_t length = dim1 * dim2 * dim3;
         oar << alps::make_pvp("/pair/" + oar.encode_segment(#T) + "/scalar", value);                                                                       \
     }                                                                                                                                                      \
     {                                                                                                                                                      \
-        std::pair<T*, std::vector<std::size_t> > value(NULL, std::vector<std::size_t>(3, 0));                                                              \
+        T data[length];                                                                                                                                    \
+        for (std::size_t i = 0; i < length; ++i)                                                                                                           \
+            data[i] = i;                                                                                                                                   \
+        std::pair<T const *, std::vector<std::size_t> > value(data, size);                                                                                 \
+        oar << alps::make_pvp("/pair/" + oar.encode_segment(#T) + "/const-scalar", value);                                                                 \
+    }                                                                                                                                                      \
+    {                                                                                                                                                      \
+        std::pair<T const *, std::vector<std::size_t> > value(NULL, std::vector<std::size_t>(3, 0));                                                       \
         oar << alps::make_pvp("/pair/" + oar.encode_segment(#T) + "/null", value);                                                                         \
     }                                                                                                                                                      \
     {                                                                                                                                                      \
@@ -37,6 +44,15 @@ const std::size_t length = dim1 * dim2 * dim3;
         T data[length];                                                                                                                                    \
         std::pair<T*, std::vector<std::size_t> > value(data, size);                                                                                        \
         iar >> alps::make_pvp("/pair/" + iar.encode_segment(#T) + "/scalar", value);                                                                       \
+        std::cout << #T << "-scalar: [";                                                                                                                   \
+        for (std::size_t i = 0; i < 20;  ++i)                                                                                                              \
+            std::cout << value.first[i] << ", ";                                                                                                           \
+        std::cout << "...]" << std::endl;                                                                                                                  \
+    }                                                                                                                                                      \
+    {                                                                                                                                                      \
+        T data[length];                                                                                                                                    \
+        std::pair<T*, std::vector<std::size_t> > value(data, size);                                                                                        \
+        iar >> alps::make_pvp("/pair/" + iar.encode_segment(#T) + "/const-scalar", value);                                                                 \
         std::cout << #T << "-scalar: [";                                                                                                                   \
         for (std::size_t i = 0; i < 20;  ++i)                                                                                                              \
             std::cout << value.first[i] << ", ";                                                                                                           \

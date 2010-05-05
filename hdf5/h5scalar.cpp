@@ -125,6 +125,7 @@ int test_main() {
         std::cout << "(" << value.real() << ", " << value.imag() << "), " << std::endl;                                                                    \
     }
 #define HDF5_FOREACH(callback)                                                                                                                             \
+    callback(bool)                                                                                                                                         \
     callback(char)                                                                                                                                         \
     callback(unsigned char)                                                                                                                                \
     callback(short)                                                                                                                                        \
