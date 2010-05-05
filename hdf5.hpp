@@ -35,6 +35,7 @@
 #include <boost/mpl/if.hpp>
 #include <boost/utility.hpp>
 #include <boost/mpl/and.hpp>
+#include <boost/integer.hpp>
 #include <boost/optional.hpp>
 #include <boost/weak_ptr.hpp>
 #include <boost/scoped_ptr.hpp>
@@ -151,15 +152,24 @@ namespace alps {
         template <typename T> detail::archive<detail::read> & serialize(detail::archive<detail::read> & ar, std::string const & p, T & v);
         template <typename T> detail::archive<detail::write> & serialize(detail::archive<detail::write> & ar, std::string const & p, T const & v);
         namespace detail {
+            template<typename T> struct writable_type {
+                typedef T type;
+            };
+            template<> struct writable_type<bool> {
+                typedef boost::uint_t<sizeof(bool)>::least type;
+            };
+            template<> struct writable_type<bool const> {
+                typedef boost::uint_t<sizeof(bool)>::least const type;
+            };
             template<typename T> struct matrix_type : public boost::is_scalar<T>::type {
                 typedef T native_type;
-                typedef T const writable_type;
-                typedef std::vector<T> buffer_type;
+                typedef typename writable_type<T>::type writable_type;
+                typedef std::vector<writable_type> buffer_type;
                 typedef boost::mpl::true_ scalar;
                 // TODO: start, count und size sollten auch fuer die skalardimension einen Eintrag haben also vector<int>(5) hat size [5, 1]
                 static std::vector<hsize_t> count(T const & v) { return size(v); }
                 static std::vector<hsize_t> size(T const & v) { return std::vector<hsize_t>(1, 1); }
-                static writable_type * get(buffer_type & m, T const & v, std::vector<hsize_t> const &, std::vector<hsize_t> const & = std::vector<hsize_t>()) {
+                static writable_type const * get(buffer_type & m, T const & v, std::vector<hsize_t> const &, std::vector<hsize_t> const & = std::vector<hsize_t>()) {
                     m.resize(1);
                     return &(m[0] = v);
                 }
@@ -197,7 +207,7 @@ namespace alps {
                     template<typename Archive, typename U> static void serialize(Archive & ar, std::string const & p, U & v, boost::mpl::false_) {
                         std::string c = ar.get_context();
                         ar.set_context(ar.complete_path(p));
-                        serialize(ar, p, v);
+                        v.serialize(ar);
                         ar.set_context(c);
                     }
             };
@@ -208,7 +218,7 @@ namespace alps {
                 typedef boost::mpl::true_ scalar;
                 static std::vector<hsize_t> count(std::string const & v) { return size(v); }
                 static std::vector<hsize_t> size(std::string const & v) { return std::vector<hsize_t>(1, 1); }
-                static writable_type * get(buffer_type & m, std::string const & v, std::vector<hsize_t> const &, std::vector<hsize_t> const & = std::vector<hsize_t>()) {
+                static writable_type const * get(buffer_type & m, std::string const & v, std::vector<hsize_t> const &, std::vector<hsize_t> const & = std::vector<hsize_t>()) {
                     m.resize(1);
                     return &(m[0] = v.c_str());
                 }
@@ -240,7 +250,7 @@ namespace alps {
                 typedef boost::mpl::true_ scalar;
                 static std::vector<hsize_t> count(std::complex<T> const & v) { return size(v); }
                 static std::vector<hsize_t> size(std::complex<T> const & v) { return std::vector<hsize_t>(1, 1); }
-                static writable_type * get(buffer_type & m, std::complex<T> const & v, std::vector<hsize_t> const &, std::vector<hsize_t> const & t = std::vector<hsize_t>(1, 1)) {
+                static writable_type const * get(buffer_type & m, std::complex<T> const & v, std::vector<hsize_t> const &, std::vector<hsize_t> const & t = std::vector<hsize_t>(1, 1)) {
                     if (t.size() != 1 || t[0] == 0) throw std::range_error("invalid data size");
                     m.resize(t[0]);
                     for (std::complex<T> const * u = &v; u != &v + t[0]; ++u) {
@@ -266,7 +276,7 @@ namespace alps {
             template<> struct matrix_type<char const *> : public matrix_type<std::string> {
                 typedef matrix_type<std::string>::writable_type writable_type;
                 typedef matrix_type<std::string>::buffer_type buffer_type;
-                template <typename T> static writable_type * get(buffer_type & m, T const & v, std::vector<hsize_t> const &, std::vector<hsize_t> const & = std::vector<hsize_t>()) {
+                template <typename T> static writable_type const * get(buffer_type & m, T const & v, std::vector<hsize_t> const &, std::vector<hsize_t> const & = std::vector<hsize_t>()) {
                     m.resize(1);
                     return &(m[0] = v);
                 }
@@ -287,7 +297,7 @@ namespace alps {
                 typedef boost::mpl::true_ scalar;
                 static std::vector<hsize_t> count(internal_state_type::type const & v) { return size(v); }
                 static std::vector<hsize_t> size(internal_state_type::type const & v) { return std::vector<hsize_t>(1, 1); }
-                static writable_type * get(buffer_type & m, internal_state_type::type const & v, std::vector<hsize_t> const &, std::vector<hsize_t> const & = std::vector<hsize_t>()) {
+                static writable_type const * get(buffer_type & m, internal_state_type::type const & v, std::vector<hsize_t> const &, std::vector<hsize_t> const & = std::vector<hsize_t>()) {
                     m.resize(1);
                     return &(m[0] = v);
                 }
@@ -328,7 +338,7 @@ namespace alps {
                         }                                                                                                                                  \
                         return s;                                                                                                                          \
                     }                                                                                                                                      \
-                    static writable_type * get(                                                                                                            \
+                    static writable_type const * get(                                                                                                      \
                         buffer_type & m, C <T> const & v, std::vector<hsize_t> const & s, std::vector<hsize_t> const & = std::vector<hsize_t>()            \
                     ) {                                                                                                                                    \
                         if (matrix_type<T>::scalar::value)                                                                                                 \
@@ -380,9 +390,9 @@ namespace alps {
             HDF5_DEFINE_MATRIX_TYPE(boost::numeric::ublas::vector)
             #undef HDF5_DEFINE_MATRIX_TYPE
             template<typename T> struct matrix_type< std::pair<T *, std::vector<std::size_t> > > : public matrix_type<T> {
-                typedef typename matrix_type<T>::native_type native_type;
-                typedef typename matrix_type<T>::writable_type writable_type;
-                typedef typename matrix_type<T>::buffer_type buffer_type;
+                typedef typename matrix_type<typename boost::remove_const<T>::type>::native_type native_type;
+                typedef typename matrix_type<typename boost::remove_const<T>::type>::writable_type writable_type;
+                typedef typename matrix_type<typename boost::remove_const<T>::type>::buffer_type buffer_type;
                 typedef boost::mpl::false_ scalar;
                 static std::vector<hsize_t> count(std::pair<T *, std::vector<std::size_t> > const & v) {
                     if (matrix_type<T>::scalar::value && boost::is_same<native_type, std::string>::value)
@@ -406,16 +416,16 @@ namespace alps {
                     }
                     return s;
                 }
-                static writable_type * get(buffer_type & m, std::pair<T *, std::vector<std::size_t> > const & v, std::vector<hsize_t> const & s, std::vector<hsize_t> const & = std::vector<hsize_t>()) {
-                    if (matrix_type<T>::scalar::value)
-                        return matrix_type<T>::get(
+                static writable_type const * get(buffer_type & m, std::pair<T *, std::vector<std::size_t> > const & v, std::vector<hsize_t> const & s, std::vector<hsize_t> const & = std::vector<hsize_t>()) {
+                    if (matrix_type<typename boost::remove_const<T>::type>::scalar::value)
+                        return matrix_type<typename boost::remove_const<T>::type>::get(
                               m
                             , *(v.first + std::accumulate(s.begin(), s.begin() + v.second.size(), 1, std::multiplies<hsize_t>()))
                             , std::vector<hsize_t>(s.begin() + v.second.size(), s.end())
                             , std::vector<hsize_t>(1, std::accumulate(v.second.begin(), v.second.end(), 1, std::multiplies<hsize_t>()))
                         );
                     else
-                        return matrix_type<T>::get(
+                        return matrix_type<typename boost::remove_const<T>::type>::get(
                               m
                             , *(v.first + std::accumulate(s.begin(), s.begin() + v.second.size(), 1, std::multiplies<hsize_t>()))
                             , std::vector<hsize_t>(s.begin() + v.second.size(), s.end())
@@ -652,13 +662,8 @@ namespace alps {
                             #endif
                                     get_data(complete_path(p), v);
                     }
-                    template<typename T> typename boost::disable_if<typename matrix_type<T>::type>::type serialize(std::string const & p, T const & v) {
-                        matrix_type<T>::serialize(*this, p, v, Tag());
-                    }
-                    template<typename T> typename boost::enable_if<
-                        typename boost::mpl::and_<boost::mpl::bool_<!matrix_type<T>::value>, typename boost::is_same<Tag, read>::type >
-                    >::type serialize(std::string const & p, T const & v) {
-                        matrix_type<T>::serialize(*this, p, v, read());
+                    template<typename T> typename boost::disable_if<typename matrix_type<T>::type>::type serialize(std::string const & p, T & v) {
+                        matrix_type<typename boost::remove_const<T>::type>::serialize(*this, p, v, Tag());
                     }
                     void serialize(std::string const & p) {
                         if (p.find_last_of('@') != std::string::npos)
@@ -944,8 +949,8 @@ namespace alps {
                                 get_helper<T, char *>(v, data_id, type_id, false);
                             else if (check_error(H5Tequal(type_type(H5Tcopy(_complex_id)), type_type(H5Tcopy(type_id)))))
                                 get_helper<T, std::complex<double> >(v, data_id, type_id, false);
-                            #define HDF5_GET_STRING(U)                                                                                                      \
-                                else if (check_error(H5Tequal(type_type(H5Tcopy(native_id)), type_type(get_native_type(static_cast<U>(0))))) > 0)           \
+                            #define HDF5_GET_STRING(U)                                                                                                     \
+                                else if (check_error(H5Tequal(type_type(H5Tcopy(native_id)), type_type(get_native_type(static_cast<U>(0))))) > 0)          \
                                     get_helper<T, U>(v, data_id, type_id, false);
                             HDF5_FOREACH_SCALAR(HDF5_GET_STRING)
                             #undef HDF5_GET_STRING
@@ -969,8 +974,8 @@ namespace alps {
                             get_helper<T, char *>(v, attr_id, type_id, true);
                         else if (check_error(H5Tequal(type_type(H5Tcopy(_complex_id)), type_type(H5Tcopy(type_id)))))
                             get_helper<T, std::complex<double> >(v, attr_id, type_id, true);
-                        #define HDF5_GET_ATTR(U)                                                                                                            \
-                            else if (check_error(H5Tequal(type_type(H5Tcopy(native_id)), type_type(get_native_type(static_cast<U>(0))))) > 0)               \
+                        #define HDF5_GET_ATTR(U)                                                                                                           \
+                            else if (check_error(H5Tequal(type_type(H5Tcopy(native_id)), type_type(get_native_type(static_cast<U>(0))))) > 0)              \
                                 get_helper<T, U>(v, attr_id, type_id, true);
                         HDF5_FOREACH_SCALAR(HDF5_GET_ATTR)
                         #undef HDF5_GET_ATTR
@@ -1109,40 +1114,29 @@ namespace alps {
             template <typename T> archive<read> & operator>> (archive<read> & ar, pvp<T> const & v) { return v.apply(ar); }
         }
     }
-    #define HDF5_MAKE_PVP(ref_type)                                                                                                                        \
-        template <typename T> hdf5::detail::pvp<T ref_type> make_pvp(std::string const & p, T ref_type v) {                                                \
-            return hdf5::detail::pvp<T ref_type>(p, v);                                                                                                    \
+    template <typename T> hdf5::detail::pvp<T &> make_pvp(std::string const & p, T & v) {
+        return hdf5::detail::pvp<T &>(p, v);
+    }
+    template <typename T> hdf5::detail::pvp<T const &> make_pvp(std::string const & p, T const & v) {
+        return hdf5::detail::pvp<T const &>(p, v);
+    }
+    #define HDF5_MAKE_PVP(ptr_type, arg_type)                                                                                                              \
+        template <typename T> hdf5::detail::pvp<std::pair<ptr_type, std::vector<std::size_t> > > make_pvp(std::string const & p, arg_type v, std::size_t s) { \
+            return hdf5::detail::pvp<std::pair<ptr_type, std::vector<std::size_t> > >(p, std::make_pair(&*v, std::vector<std::size_t>(1, s)));             \
         }                                                                                                                                                  \
-        template <typename T> hdf5::detail::pvp<T ref_type> make_pvp(std::string const & p, boost::shared_ptr<T> ref_type v) {                             \
-            return hdf5::detail::pvp<T ref_type>(p, *v);                                                                                                   \
-        }                                                                                                                                                  \
-        template <typename T> hdf5::detail::pvp<T ref_type> make_pvp(std::string const & p, std::auto_ptr<T> ref_type v) {                                 \
-            return hdf5::detail::pvp<T ref_type>(p, *v);                                                                                                   \
-        }                                                                                                                                                  \
-        template <typename T> hdf5::detail::pvp<T ref_type> make_pvp(std::string const & p, boost::weak_ptr<T> ref_type v) {                               \
-            return hdf5::detail::pvp<T ref_type>(p, *v);                                                                                                   \
-        }                                                                                                                                                  \
-        template <typename T> hdf5::detail::pvp<T ref_type> make_pvp(std::string const & p, boost::intrusive_ptr<T> ref_type v) {                          \
-            return hdf5::detail::pvp<T ref_type>(p, *v);                                                                                                   \
-        }                                                                                                                                                  \
-        template <typename T> hdf5::detail::pvp<T ref_type> make_pvp(std::string const & p, boost::scoped_ptr<T> ref_type v) {                             \
-            return hdf5::detail::pvp<T ref_type>(p, *v);                                                                                                   \
+        template <typename T> hdf5::detail::pvp<std::pair<ptr_type, std::vector<std::size_t> > > make_pvp(std::string const & p, arg_type v, std::vector<std::size_t> const & s) { \
+            return hdf5::detail::pvp<std::pair<ptr_type, std::vector<std::size_t> > >(p, std::make_pair(&*v, s));                                          \
         }
-    HDF5_MAKE_PVP(&)
-    HDF5_MAKE_PVP(const &)
+    HDF5_MAKE_PVP(T *, T *)
+    HDF5_MAKE_PVP(T *, boost::shared_ptr<T> &)
+    HDF5_MAKE_PVP(T const *, boost::shared_ptr<T> const &)
+    HDF5_MAKE_PVP(T *, std::auto_ptr<T> &)
+    HDF5_MAKE_PVP(T const *, std::auto_ptr<T> const &)
+    HDF5_MAKE_PVP(T *, boost::weak_ptr<T> &)
+    HDF5_MAKE_PVP(T const *, boost::weak_ptr<T> const &)
+    HDF5_MAKE_PVP(T *, boost::scoped_ptr<T> &)
+    HDF5_MAKE_PVP(T const *, boost::scoped_ptr<T> const &)
     #undef HDF5_MAKE_PVP
-    template <typename T> hdf5::detail::pvp<std::pair<T *, std::vector<std::size_t> > > make_pvp(std::string const & p, T * v, std::size_t s) {
-        return hdf5::detail::pvp<std::pair<T *, std::vector<std::size_t> > >(p, std::make_pair(v, std::vector<std::size_t>(1, s)));
-    }
-    template <typename T> hdf5::detail::pvp<std::pair<T const *, std::vector<std::size_t> > > make_pvp(std::string const & p, T const * v, std::size_t s) {
-        return hdf5::detail::pvp<std::pair<T const *, std::vector<std::size_t> > >(p, std::make_pair(v, std::vector<std::size_t>(1, s)));
-    }
-    template <typename T> hdf5::detail::pvp<std::pair<T *, std::vector<std::size_t> > > make_pvp(std::string const & p, T * v, std::vector<std::size_t> const & s) {
-        return hdf5::detail::pvp<std::pair<T *, std::vector<std::size_t> > >(p, std::make_pair(v, s));
-    }
-    template <typename T> hdf5::detail::pvp<std::pair<T const *, std::vector<std::size_t> > > make_pvp(std::string const & p, T const * v, std::vector<std::size_t> const & s) {
-        return hdf5::detail::pvp<std::pair<T const *, std::vector<std::size_t> > >(p, std::make_pair(v, s));
-    }
 }
 #endif
 #endif
