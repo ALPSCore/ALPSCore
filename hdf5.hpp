@@ -133,21 +133,6 @@ namespace alps {
 namespace alps {
     namespace hdf5 {
         namespace detail {
-            #define HDF5_FOREACH_SCALAR(callback)                                                                                                          \
-                callback(char)                                                                                                                             \
-                callback(signed char)                                                                                                                      \
-                callback(unsigned char)                                                                                                                    \
-                callback(short)                                                                                                                            \
-                callback(unsigned short)                                                                                                                   \
-                callback(int)                                                                                                                              \
-                callback(unsigned int)                                                                                                                     \
-                callback(long)                                                                                                                             \
-                callback(unsigned long)                                                                                                                    \
-                callback(long long)                                                                                                                        \
-                callback(unsigned long long)                                                                                                               \
-                callback(float)                                                                                                                            \
-                callback(double)                                                                                                                           \
-                callback(long double)
             struct write {};
             struct read {};
             namespace internal_state_type {
@@ -161,161 +146,69 @@ namespace alps {
                double r;
                double i; 
             };
-// = = = = = = = = = = P L A Y   G R O U N D = = = = = = = = = =
-#ifdef USE_HDF5_PLAYGROUND
-            template<typename T, typename U> class iterator_type {
-                public:
-                    typedef T native_type;
-                    typedef U * pointer_type;
-                    typedef typename boost::is_scalar<T>::type scalar;
-                    iterator_type(T & v): _v(v), _u(&v) {}
-                    iterator_type(T & v, std::vector<std::size_t> s): _v(v), _u(&v) { assert(s.size() == 1 && s[0] == 1); }
-                    ~iterator_type() { if (!boost::is_same<T, U>::value) _v = *_u; }
-                    std::size_t size() { return 1; }
-                    bool is_continous() { return true; }
-                    pointer_type operator*() { return _u; }
-                    iterator_type<T, U> & operator++() { is_end = true; return *this; }
-                    bool operator==(iterator_type const & rhs) { return is_end ? rhs.is_end == is_end : !rhs.is_end && rhs._v == _v; }
-                private:
-                    bool is_end;
-                    T & _v;
-                    pointer_type _u;
-            };
-            
-            // string
-            // complex
-            // char const *
-            
-            
-            
-            #define C std::vector
-            
-            
-            
-            // assume T is scalar
-            template<typename T, typename U> class iterator_type< C <T>, U> {
-                public:
-                    iterator_type(C <T> & v): _v(v) {}
-                    iterator_type(T & v, std::vector<std::size_t> s): _v(v) {
-                        assert(s.size() == 1);
-                        _v.resize(s[0]);
-                    }
-                    ~iterator_type() {
-                        save();
-                    }
-                    std::size_t slab_size() {
-                        return _v.size();
-                    }
-                    pointer_type operator*() { 
-                        save();
-                        _u.resize(slab_size());
-                        return &_u[0];
-                    }
-                    pointer_type const operator*() const { 
-                        return &const_cast<C <T> &>(_v)[0];
-                    }
-                    iterator_type<C <T>, U> & operator++() { 
-                        is_end = true; 
-                        return *this;
-                    }
-                    bool operator==(iterator_type<C <T>, U> const & rhs) { 
-                        return is_end ? rhs.is_end == is_end : !rhs.is_end && &rhs._v == &_v;
-                    }
-                private:
-                    void save() {
-                         if (_u.size())
-                             std::copy(_u.begin(), _u.end(), _v);
-                         _u.clear();
-                    }
-                    bool is_end;
-                    C <T> & _v;
-                    std::vector<U> _u;
-            };
-            // T is not scalar
-            template<typename T, typename U> class iterator_type< C <T>, U> {
-                public:
-                    iterator_type(C <T> & v): _v(v), _i(_v.begin()) {}
-                    iterator_type(T & v, std::vector<std::size_t> s): _v(v) {
-                        assert(s.size() >= 1);
-                        _v.resize(s[0]);
-                        
-                        
-                    }
-                    ~iterator_type() {
-                        save();
-                    }
-                    std::size_t slab_size() {
-                        return _v.size();
-                    }
-                    pointer_type operator*() { 
-                        save();
-                        _u.resize(slab_size());
-                        return &_u[0];
-                    }
-                    pointer_type const operator*() const { 
-                        return &const_cast<C <T> &>(_v)[0];
-                    }
-                    iterator_type<C <T>, U> & operator++() { 
-                        ++_i;
-                        return *this;
-                    }
-                    bool operator==(iterator_type<C <T>, U> const & rhs) { 
-                        return _i == rhs._i;
-                    }
-                private:
-                    void save() {
-                         if (_u.size())
-                             std::copy(_u.begin(), _u.end(), _v);
-                         _u.clear();
-                    }
-                    bool is_end;
-                    C <T> & _v;
-                    typename C <T>::iterator _i;
-                    std::vector<U> _u;
-            };
-            
-            
-            #undef C
-            
-            
-#endif
-// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+            template <typename Tag> class archive;
+        }
+        template <typename T> detail::archive<detail::read> & serialize(detail::archive<detail::read> & ar, std::string const & p, T & v);
+        template <typename T> detail::archive<detail::write> & serialize(detail::archive<detail::write> & ar, std::string const & p, T const & v);
+        namespace detail {
             template<typename T> struct matrix_type : public boost::is_scalar<T>::type {
                 typedef T native_type;
-                typedef T const * pointer_type;
-                typedef T const * buffer_type;
+                typedef T const writable_type;
+                typedef std::vector<T> buffer_type;
                 typedef boost::mpl::true_ scalar;
                 // TODO: start, count und size sollten auch fuer die skalardimension einen Eintrag haben also vector<int>(5) hat size [5, 1]
                 static std::vector<hsize_t> count(T const & v) { return size(v); }
                 static std::vector<hsize_t> size(T const & v) { return std::vector<hsize_t>(1, 1); }
-                static pointer_type get(buffer_type & m, T const & v, std::vector<hsize_t> const &, std::vector<hsize_t> const & = std::vector<hsize_t>()) {
-                    return m = &v; 
+                static writable_type * get(buffer_type & m, T const & v, std::vector<hsize_t> const &, std::vector<hsize_t> const & = std::vector<hsize_t>()) {
+                    m.resize(1);
+                    return &(m[0] = v);
                 }
                 // TODO: es sollte ein set geben fuer T == U, das einen m-ptr zuruckgibt ...
                 // TODO: make a nicer syntax for set(T & v, vec<size_t> s, vec<U> u, size_t o, size_t c)
                 template<typename U> static typename boost::disable_if<typename boost::mpl::or_<
-                    typename boost::is_same<U, std::complex<double> >::type,
-                    typename boost::is_same<U, char *>::type
+                      typename boost::is_same<U, std::complex<double> >::type
+                    , typename boost::is_same<U, char *>::type
+                    , typename boost::is_enum<T>::type
+                    , typename boost::mpl::not_<typename boost::is_scalar<T>::type>::type
                 >::type>::type set(T & v, std::vector<U> const & u, std::size_t o, std::vector<hsize_t> const & s, std::vector<hsize_t> const & c) {
                     if (s.size() != 1 || c.size() != 1 || c[0] == 0 || u.size() < o + c[0]) throw std::range_error("invalid data size");
                     std::copy(u.begin() + o, u.begin() + o + c[0], &v + s[0]);
                 }
                 template<typename U> static typename boost::enable_if<typename boost::mpl::or_<
-                    typename boost::is_same<U, std::complex<double> >::type,
-                    typename boost::is_same<U, char *>::type
+                      typename boost::is_same<U, std::complex<double> >::type
+                    , typename boost::is_same<U, char *>::type
+                    , typename boost::is_enum<T>::type
+                    , typename boost::mpl::not_<typename boost::is_scalar<T>::type>::type
                 >::type>::type set(T &, std::vector<U> const &, std::size_t, std::vector<hsize_t> const &, std::vector<hsize_t> const &) { 
                     throw std::runtime_error("invalid type conversion"); 
                 }
                 static void resize(T &, std::vector<std::size_t> const &) {}
+                static bool is_vectorizable(T const &) { return true; }
+                template<typename Archive> static void serialize(Archive & ar, std::string const & p, T & v, read) {
+                    serialize(ar, p, v, typename boost::is_scalar<T>::type());
+                }
+                template<typename Archive> static void serialize(Archive & ar, std::string const & p, T const & v, write) {
+                    serialize(ar, p, v, typename boost::is_scalar<T>::type());
+                }
+                private:
+                    template<typename Archive, typename U> static void serialize(Archive & ar, std::string const & p, U & v, boost::mpl::true_) {
+                        ar.serialize(p, v);
+                    }
+                    template<typename Archive, typename U> static void serialize(Archive & ar, std::string const & p, U & v, boost::mpl::false_) {
+                        std::string c = ar.get_context();
+                        ar.set_context(ar.complete_path(p));
+                        serialize(ar, p, v);
+                        ar.set_context(c);
+                    }
             };
             template<> struct matrix_type<std::string> : public boost::mpl::true_ {
                 typedef std::string native_type;
-                typedef char const * * pointer_type;
+                typedef char const * writable_type;
                 typedef std::vector<char const *> buffer_type;
                 typedef boost::mpl::true_ scalar;
                 static std::vector<hsize_t> count(std::string const & v) { return size(v); }
                 static std::vector<hsize_t> size(std::string const & v) { return std::vector<hsize_t>(1, 1); }
-                static pointer_type get(buffer_type & m, std::string const & v, std::vector<hsize_t> const &, std::vector<hsize_t> const & = std::vector<hsize_t>()) {
+                static writable_type * get(buffer_type & m, std::string const & v, std::vector<hsize_t> const &, std::vector<hsize_t> const & = std::vector<hsize_t>()) {
                     m.resize(1);
                     return &(m[0] = v.c_str());
                 }
@@ -336,15 +229,18 @@ namespace alps {
                     throw std::runtime_error("invalid type conversion"); 
                 }
                 static void resize(std::string &, std::vector<std::size_t> const &) {}
+                static bool is_vectorizable(std::string const &) { return true; }
+                template<typename Archive> static void serialize(Archive & ar, std::string const & p, std::string & v, read) {}
+                template<typename Archive> static void serialize(Archive & ar, std::string const & p, std::string const & v, write) {}
             };
             template<typename T> struct matrix_type<std::complex<T> > : public boost::mpl::true_ {
                 typedef std::complex<T> native_type;
-                typedef internal_complex_type * pointer_type;
+                typedef internal_complex_type writable_type;
                 typedef std::vector<internal_complex_type> buffer_type;
                 typedef boost::mpl::true_ scalar;
                 static std::vector<hsize_t> count(std::complex<T> const & v) { return size(v); }
                 static std::vector<hsize_t> size(std::complex<T> const & v) { return std::vector<hsize_t>(1, 1); }
-                static pointer_type get(buffer_type & m, std::complex<T> const & v, std::vector<hsize_t> const &, std::vector<hsize_t> const & t = std::vector<hsize_t>(1, 1)) {
+                static writable_type * get(buffer_type & m, std::complex<T> const & v, std::vector<hsize_t> const &, std::vector<hsize_t> const & t = std::vector<hsize_t>(1, 1)) {
                     if (t.size() != 1 || t[0] == 0) throw std::range_error("invalid data size");
                     m.resize(t[0]);
                     for (std::complex<T> const * u = &v; u != &v + t[0]; ++u) {
@@ -363,11 +259,14 @@ namespace alps {
                     std::copy(u.begin() + o, u.begin() + o + c[0], &v + s[0]);
                 }
                 static void resize(std::complex<T> &, std::vector<std::size_t> const &) {}
+                static bool is_vectorizable(std::complex<T> const &) { return true; }
+                template<typename Archive> static void serialize(Archive & ar, std::string const & p, std::complex<T> & v, read) {}
+                template<typename Archive> static void serialize(Archive & ar, std::string const & p, std::complex<T> const & v, write) {}
             };
             template<> struct matrix_type<char const *> : public matrix_type<std::string> {
-                typedef matrix_type<std::string>::pointer_type pointer_type;
+                typedef matrix_type<std::string>::writable_type writable_type;
                 typedef matrix_type<std::string>::buffer_type buffer_type;
-                template <typename T> static pointer_type get(buffer_type & m, T const & v, std::vector<hsize_t> const &, std::vector<hsize_t> const & = std::vector<hsize_t>()) {
+                template <typename T> static writable_type * get(buffer_type & m, T const & v, std::vector<hsize_t> const &, std::vector<hsize_t> const & = std::vector<hsize_t>()) {
                     m.resize(1);
                     return &(m[0] = v);
                 }
@@ -375,13 +274,34 @@ namespace alps {
                     throw std::runtime_error("no setter implemented"); 
                 }
                 template <typename T> static void resize(T &, std::vector<std::size_t> const &) {}
+                template <typename T> static bool is_vectorizable(T const &) { return true; }
+                template<typename Archive, typename T> static void serialize(Archive & ar, std::string const & p, T & v, read) {}
+                template<typename Archive, typename T> static void serialize(Archive & ar, std::string const & p, T const & v, write) {}
             };
             template<std::size_t N> struct matrix_type<char [N]> : public matrix_type<char const *> {};
             template<std::size_t N> struct matrix_type<char const [N]> : public matrix_type<char const *> {};
+            template<> struct matrix_type<internal_state_type::type> : public boost::mpl::true_ {
+                typedef internal_state_type::type native_type;
+                typedef internal_state_type::type writable_type;
+                typedef std::vector<internal_state_type::type> buffer_type;
+                typedef boost::mpl::true_ scalar;
+                static std::vector<hsize_t> count(internal_state_type::type const & v) { return size(v); }
+                static std::vector<hsize_t> size(internal_state_type::type const & v) { return std::vector<hsize_t>(1, 1); }
+                static writable_type * get(buffer_type & m, internal_state_type::type const & v, std::vector<hsize_t> const &, std::vector<hsize_t> const & = std::vector<hsize_t>()) {
+                    m.resize(1);
+                    return &(m[0] = v);
+                }
+                template<typename T> void set(internal_state_type::type & v, std::vector<T> const & u, std::size_t, std::vector<hsize_t> const & s, std::vector<hsize_t> const &) {
+                    v = u.front();
+                }
+                static void resize(internal_state_type::type &, std::vector<std::size_t> const &) {}
+                static bool is_vectorizable(internal_state_type::type const &) { return true; }
+                template<typename Archive, typename T, typename Tag> static void serialize(Archive & ar, std::string const & p, T & v, Tag) {}
+            };
             #define HDF5_DEFINE_MATRIX_TYPE(C)                                                                                                             \
                 template<typename T> struct matrix_type< C <T> > : public matrix_type<T> {                                                                 \
                     typedef typename matrix_type<T>::native_type native_type;                                                                              \
-                    typedef typename matrix_type<T>::pointer_type pointer_type;                                                                            \
+                    typedef typename matrix_type<T>::writable_type writable_type;                                                                          \
                     typedef typename matrix_type<T>::buffer_type buffer_type;                                                                              \
                     typedef boost::mpl::false_ scalar;                                                                                                     \
                     static std::vector<hsize_t> count( C <T> const & v) {                                                                                  \
@@ -408,7 +328,7 @@ namespace alps {
                         }                                                                                                                                  \
                         return s;                                                                                                                          \
                     }                                                                                                                                      \
-                    static pointer_type get(                                                                                                               \
+                    static writable_type * get(                                                                                                            \
                         buffer_type & m, C <T> const & v, std::vector<hsize_t> const & s, std::vector<hsize_t> const & = std::vector<hsize_t>()            \
                     ) {                                                                                                                                    \
                         if (matrix_type<T>::scalar::value)                                                                                                 \
@@ -435,13 +355,33 @@ namespace alps {
                             for (std::size_t i = 0; i < s[0]; ++i)                                                                                         \
                                 matrix_type<T>::resize(v[i], std::vector<std::size_t>(s.begin() + 1, s.end()));                                            \
                     }                                                                                                                                      \
+                    static bool is_vectorizable( C <T> const & v) {                                                                                        \
+                        for(std::size_t i = 0; i < v.size(); ++i)                                                                                          \
+                            if (!matrix_type<T>::is_vectorizable(v[i]))                                                                                    \
+                                return false;                                                                                                              \
+                        return true;                                                                                                                       \
+                    }                                                                                                                                      \
+                    template<typename Archive> static void serialize(Archive & ar, std::string const & p, C <T> & v, read) {                               \
+                        std::vector<std::string> children = ar.list_children(p);                                                                           \
+                        v.resize(children.size());                                                                                                         \
+                        for (std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)                                   \
+                            matrix_type<T>::serialize(ar, p + "/" + *it, v[it - children.begin()], read());                                                \
+                    }                                                                                                                                      \
+                    template<typename Archive> static void serialize(Archive & ar, std::string const & p, C <T> const & v, write) {                        \
+                        if (!v.size())                                                                                                                     \
+                            ar.serialize(p, std::vector<int>(0));                                                                                          \
+                        else                                                                                                                               \
+                            for (std::size_t i = 0; i < v.size(); ++i)                                                                                     \
+                                matrix_type<T>::serialize(ar, p + "/" + boost::lexical_cast<std::string>(i), v[i], write());                               \
+                    }                                                                                                                                      \
                 };
             HDF5_DEFINE_MATRIX_TYPE(std::vector)
             HDF5_DEFINE_MATRIX_TYPE(std::valarray)
             HDF5_DEFINE_MATRIX_TYPE(boost::numeric::ublas::vector)
+            #undef HDF5_DEFINE_MATRIX_TYPE
             template<typename T> struct matrix_type< std::pair<T *, std::vector<std::size_t> > > : public matrix_type<T> {
                 typedef typename matrix_type<T>::native_type native_type;
-                typedef typename matrix_type<T>::pointer_type pointer_type;
+                typedef typename matrix_type<T>::writable_type writable_type;
                 typedef typename matrix_type<T>::buffer_type buffer_type;
                 typedef boost::mpl::false_ scalar;
                 static std::vector<hsize_t> count(std::pair<T *, std::vector<std::size_t> > const & v) {
@@ -466,7 +406,7 @@ namespace alps {
                     }
                     return s;
                 }
-                static pointer_type get(buffer_type & m, std::pair<T *, std::vector<std::size_t> > const & v, std::vector<hsize_t> const & s, std::vector<hsize_t> const & = std::vector<hsize_t>()) {
+                static writable_type * get(buffer_type & m, std::pair<T *, std::vector<std::size_t> > const & v, std::vector<hsize_t> const & s, std::vector<hsize_t> const & = std::vector<hsize_t>()) {
                     if (matrix_type<T>::scalar::value)
                         return matrix_type<T>::get(
                               m
@@ -495,9 +435,16 @@ namespace alps {
                         for (std::size_t i = 0; i < std::accumulate(v.second.begin(), v.second.end(), 1, std::multiplies<hsize_t>()); ++i)
                             matrix_type<T>::resize(*(v.first + i), std::vector<std::size_t>(s.begin() + v.second.size(), s.end()));
                 }
+                static bool is_vectorizable(std::pair<T *, std::vector<std::size_t> > const & v) {
+                    for (std::size_t i = 0; i < std::accumulate(v.second.begin(), v.second.end(), 1, std::multiplies<hsize_t>()); ++i)
+                        if (!matrix_type<T>::is_vectorizable(*(v.first + i)))
+                            return false;
+                    return true;
+                }
+                template<typename Archive> static void serialize(Archive & ar, std::string const & p, std::pair<T *, std::vector<std::size_t> > & v, read) {}
+                template<typename Archive> static void serialize(Archive & ar, std::string const & p, std::pair<T *, std::vector<std::size_t> > const & v, write) {}
             };
             //TODO: boost::multiarray implementieren
-            #undef HDF5_DEFINE_MATRIX_TYPE
             class error {
                 public:
                     static herr_t noop(hid_t) { return 0; }
@@ -555,6 +502,21 @@ namespace alps {
             template <typename T> T check_type(T id) { type_type unused(id); return unused; }
             template <typename T> T check_property(T id) { property_type unused(id); return unused; }
             template <typename T> T check_error(T id) { error_type unused(id); return unused; }
+            #define HDF5_FOREACH_SCALAR(callback)                                                                                                          \
+                callback(char)                                                                                                                             \
+                callback(signed char)                                                                                                                      \
+                callback(unsigned char)                                                                                                                    \
+                callback(short)                                                                                                                            \
+                callback(unsigned short)                                                                                                                   \
+                callback(int)                                                                                                                              \
+                callback(unsigned int)                                                                                                                     \
+                callback(long)                                                                                                                             \
+                callback(unsigned long)                                                                                                                    \
+                callback(long long)                                                                                                                        \
+                callback(unsigned long long)                                                                                                               \
+                callback(float)                                                                                                                            \
+                callback(double)                                                                                                                           \
+                callback(long double)
             template <typename Tag> class archive: boost::noncopyable {
                 public:
                     struct log_type {
@@ -670,7 +632,7 @@ namespace alps {
                     }
                     template<typename T> typename boost::enable_if<
                         typename boost::mpl::and_<typename matrix_type<T>::type, typename boost::is_same<Tag, write>::type >
-                    >::type serialize(std::string const & p, T const & v) {
+                    >::type serialize(std::string const & p, T const & v) const {
                         if (p.find_last_of('@') != std::string::npos)
                             set_attr(complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1), p.substr(p.find_last_of('@') + 1), v);
                         else
@@ -678,7 +640,7 @@ namespace alps {
                     }
                     template<typename T> typename boost::enable_if<
                         typename boost::mpl::and_<typename matrix_type<T>::type, typename boost::is_same<Tag, read>::type >
-                    >::type serialize(std::string const & p, T & v) {
+                    >::type serialize(std::string const & p, T & v) const {
                         if (p.find_last_of('@') != std::string::npos) {
                             #ifdef ALPS_HDF5_READ_GREEDY
                                 if (is_attribute(p))
@@ -690,11 +652,13 @@ namespace alps {
                             #endif
                                     get_data(complete_path(p), v);
                     }
-                    template<typename T> typename boost::disable_if<typename matrix_type<T>::type >::type serialize(std::string const & p, T & v) {
-                        std::string c = get_context();
-                        set_context(complete_path(p));
-                        v.serialize(*this);
-                        set_context(c);
+                    template<typename T> typename boost::disable_if<typename matrix_type<T>::type>::type serialize(std::string const & p, T const & v) {
+                        matrix_type<T>::serialize(*this, p, v, Tag());
+                    }
+                    template<typename T> typename boost::enable_if<
+                        typename boost::mpl::and_<boost::mpl::bool_<!matrix_type<T>::value>, typename boost::is_same<Tag, read>::type >
+                    >::type serialize(std::string const & p, T const & v) {
+                        matrix_type<T>::serialize(*this, p, v, read());
                     }
                     void serialize(std::string const & p) {
                         if (p.find_last_of('@') != std::string::npos)
@@ -959,64 +923,64 @@ namespace alps {
                         if (boost::is_same<T, char *>::value)
                             check_error(H5Dvlen_reclaim(type_id, space_type(H5Dget_space(data_id)), H5P_DEFAULT, &data.front()));
                     }
-                   template<typename T> void get_data(std::string const & p, T & v) const {
-                       if (is_scalar(p) != matrix_type<T>::scalar::value)
-                           throw std::runtime_error("scalar - vector conflict");
-                       else if (matrix_type<T>::scalar::value && is_null(p))
-                           throw std::runtime_error("scalars cannot be null");
-                       else if (is_null(p))
-                           matrix_type<T>::resize(v, std::vector<std::size_t>(1, 0));
-                       else {
-                           std::vector<hsize_t> size(dimensions(p), 0);
-                           data_type data_id(H5Dopen2(_file, p.c_str(), H5P_DEFAULT));
-                           type_type type_id(H5Dget_type(data_id));
-                           type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));
-                           if (size.size()) {
-                               space_type space_id(H5Dget_space(data_id));
-                               check_error(H5Sget_simple_extent_dims(space_id, &size.front(), NULL));
-                           }
-                           matrix_type<T>::resize(v, std::vector<std::size_t>(size.begin(), size.end()));
-                           if (H5Tget_class(native_id) == H5T_STRING)
-                               get_helper<T, char *>(v, data_id, type_id, false);
-                           else if (check_error(H5Tequal(type_type(H5Tcopy(_complex_id)), type_type(H5Tcopy(type_id)))))
-                               get_helper<T, std::complex<double> >(v, data_id, type_id, false);
-                           #define HDF5_GET_STRING(U)                                                                                                      \
-                               else if (check_error(H5Tequal(type_type(H5Tcopy(native_id)), type_type(get_native_type(static_cast<U>(0))))) > 0)           \
-                                   get_helper<T, U>(v, data_id, type_id, false);
-                           HDF5_FOREACH_SCALAR(HDF5_GET_STRING)
-                           #undef HDF5_GET_STRING
-                           else throw std::runtime_error("invalid type");
-                       }
-                   }
-                   template<typename T> void get_attr(std::string const & p, std::string const & s, T & v) const {
-                       hid_t parent_id;
-                       if (!matrix_type<T>::scalar::value)
-                           throw std::runtime_error("attributes need to be scalar");
-                       else if (is_group(p))
-                           parent_id = H5Gopen2(_file, p.c_str(), H5P_DEFAULT);
-                       else if (is_data(p))
-                           parent_id = H5Dopen2(_file, p.c_str(), H5P_DEFAULT);
-                       else
-                           throw std::runtime_error("invalid path");
-                       attribute_type attr_id(H5Aopen(parent_id, s.c_str(), H5P_DEFAULT));
-                       type_type type_id(H5Aget_type(attr_id));
-                       type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));
-                       if (H5Tget_class(native_id) == H5T_STRING)
-                           get_helper<T, char *>(v, attr_id, type_id, true);
-                       else if (check_error(H5Tequal(type_type(H5Tcopy(_complex_id)), type_type(H5Tcopy(type_id)))))
-                           get_helper<T, std::complex<double> >(v, attr_id, type_id, true);
-                       #define HDF5_GET_ATTR(U)                                                                                                            \
-                           else if (check_error(H5Tequal(type_type(H5Tcopy(native_id)), type_type(get_native_type(static_cast<U>(0))))) > 0)               \
-                               get_helper<T, U>(v, attr_id, type_id, true);
-                       HDF5_FOREACH_SCALAR(HDF5_GET_ATTR)
-                       #undef HDF5_GET_ATTR
-                       else throw std::runtime_error("invalid type");
-                       if (is_group(p))
-                           check_group(parent_id);
-                       else
-                           check_data(parent_id);
-                   }
-                  template<typename T> void set_data(std::string const & p, T const & v) const {
+                    template<typename T> void get_data(std::string const & p, T & v) const {
+                        if (is_scalar(p) != matrix_type<T>::scalar::value)
+                            throw std::runtime_error("scalar - vector conflict");
+                        else if (matrix_type<T>::scalar::value && is_null(p))
+                            throw std::runtime_error("scalars cannot be null");
+                        else if (is_null(p))
+                            matrix_type<T>::resize(v, std::vector<std::size_t>(1, 0));
+                        else {
+                            std::vector<hsize_t> size(dimensions(p), 0);
+                            data_type data_id(H5Dopen2(_file, p.c_str(), H5P_DEFAULT));
+                            type_type type_id(H5Dget_type(data_id));
+                            type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));
+                            if (size.size()) {
+                                space_type space_id(H5Dget_space(data_id));
+                                check_error(H5Sget_simple_extent_dims(space_id, &size.front(), NULL));
+                            }
+                            matrix_type<T>::resize(v, std::vector<std::size_t>(size.begin(), size.end()));
+                            if (H5Tget_class(native_id) == H5T_STRING)
+                                get_helper<T, char *>(v, data_id, type_id, false);
+                            else if (check_error(H5Tequal(type_type(H5Tcopy(_complex_id)), type_type(H5Tcopy(type_id)))))
+                                get_helper<T, std::complex<double> >(v, data_id, type_id, false);
+                            #define HDF5_GET_STRING(U)                                                                                                      \
+                                else if (check_error(H5Tequal(type_type(H5Tcopy(native_id)), type_type(get_native_type(static_cast<U>(0))))) > 0)           \
+                                    get_helper<T, U>(v, data_id, type_id, false);
+                            HDF5_FOREACH_SCALAR(HDF5_GET_STRING)
+                            #undef HDF5_GET_STRING
+                            else throw std::runtime_error("invalid type");
+                        }
+                    }
+                    template<typename T> void get_attr(std::string const & p, std::string const & s, T & v) const {
+                        hid_t parent_id;
+                        if (!matrix_type<T>::scalar::value)
+                            throw std::runtime_error("attributes need to be scalar");
+                        else if (is_group(p))
+                            parent_id = H5Gopen2(_file, p.c_str(), H5P_DEFAULT);
+                        else if (is_data(p))
+                            parent_id = H5Dopen2(_file, p.c_str(), H5P_DEFAULT);
+                        else
+                            throw std::runtime_error("invalid path");
+                        attribute_type attr_id(H5Aopen(parent_id, s.c_str(), H5P_DEFAULT));
+                        type_type type_id(H5Aget_type(attr_id));
+                        type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));
+                        if (H5Tget_class(native_id) == H5T_STRING)
+                            get_helper<T, char *>(v, attr_id, type_id, true);
+                        else if (check_error(H5Tequal(type_type(H5Tcopy(_complex_id)), type_type(H5Tcopy(type_id)))))
+                            get_helper<T, std::complex<double> >(v, attr_id, type_id, true);
+                        #define HDF5_GET_ATTR(U)                                                                                                            \
+                            else if (check_error(H5Tequal(type_type(H5Tcopy(native_id)), type_type(get_native_type(static_cast<U>(0))))) > 0)               \
+                                get_helper<T, U>(v, attr_id, type_id, true);
+                        HDF5_FOREACH_SCALAR(HDF5_GET_ATTR)
+                        #undef HDF5_GET_ATTR
+                        else throw std::runtime_error("invalid type");
+                        if (is_group(p))
+                            check_group(parent_id);
+                        else
+                            check_data(parent_id);
+                    }
+                    template<typename T> void set_data(std::string const & p, T const & v) const {
                         type_type type_id(get_native_type(typename matrix_type<T>::native_type()));
                         std::vector<hsize_t> size(matrix_type<T>::size(v)), start(size.size(), 0), count(matrix_type<T>::count(v));
                         typename matrix_type<T>::buffer_type mem;
@@ -1025,7 +989,7 @@ namespace alps {
                             check_error(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, matrix_type<T>::get(mem, v, start)));
                         } else if (std::accumulate(size.begin(), size.end(), 0) == 0)
                             check_data(save_comitted_data(p, type_id, H5Screate(H5S_NULL), 0, NULL, !boost::is_same<typename matrix_type<T>::native_type, std::string>::value));
-                        else {
+                        else if (matrix_type<T>::is_vectorizable(v)) {
                             data_type data_id(save_comitted_data(p, type_id, H5Screate_simple(size.size(), &size.front(), NULL), size.size(), &size.front(), !boost::is_same<typename matrix_type<T>::native_type, std::string>::value));
                             if (std::equal(count.begin(), count.end(), size.begin()))
                                 check_error(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, matrix_type<T>::get(mem, v, start)));
@@ -1045,7 +1009,8 @@ namespace alps {
                                     }
                                 } while (start[0] < size[0]);
                             }
-                        }
+                        } else
+                            matrix_type<T>::serialize(*this, p, v, write());
                     }
                     template<typename T> void set_attr(std::string const & p, std::string const & s, T const & v) const {
                         hid_t parent_id;
@@ -1118,6 +1083,7 @@ namespace alps {
                     std::string _filename;
                     file_type _file;
             };
+            #undef HDF5_FOREACH_SCALAR
         }
         typedef detail::archive<detail::read> iarchive;
         typedef detail::archive<detail::write> oarchive;
@@ -1130,91 +1096,52 @@ namespace alps {
             return ar;
         }
         namespace detail {
-            template <typename T, bool B> class pvp;
-            template <typename T, bool B> archive<write> & operator<< (archive<write> & ar, pvp<T, B> const & v) { return v.serialize(ar); }
-            template <typename T, bool B> archive<read> & operator>> (archive<read> & ar, pvp<T, B> const & v) { return v.serialize(ar); }
-        }
-    }
-    #define HDF5_MAKE_PVP(ref_type)                                                                                                                        \
-        template <typename T> hdf5::detail::pvp<T ref_type, hdf5::detail::matrix_type<T>::value> make_pvp(std::string const & p, T ref_type v) {           \
-            return hdf5::detail::pvp<T ref_type, hdf5::detail::matrix_type<T>::value>(p, v);                                                               \
-        }                                                                                                                                                  \
-        template <typename T> hdf5::detail::pvp<T ref_type, hdf5::detail::matrix_type<T>::value> make_pvp(std::string const & p, boost::shared_ptr<T> ref_type v) { \
-            return hdf5::detail::pvp<T ref_type, hdf5::detail::matrix_type<T>::value>(p, *v);                                                              \
-        }                                                                                                                                                  \
-        template <typename T> hdf5::detail::pvp<T ref_type, hdf5::detail::matrix_type<T>::value> make_pvp(std::string const & p, std::auto_ptr<T> ref_type v) { \
-            return hdf5::detail::pvp<T ref_type, hdf5::detail::matrix_type<T>::value>(p, *v);                                                              \
-        }                                                                                                                                                  \
-        template <typename T> hdf5::detail::pvp<T ref_type, hdf5::detail::matrix_type<T>::value> make_pvp(std::string const & p, boost::weak_ptr<T> ref_type v) { \
-            return hdf5::detail::pvp<T ref_type, hdf5::detail::matrix_type<T>::value>(p, *v);                                                              \
-        }                                                                                                                                                  \
-        template <typename T> hdf5::detail::pvp<T ref_type, hdf5::detail::matrix_type<T>::value> make_pvp(std::string const & p, boost::intrusive_ptr<T> ref_type v) { \
-            return hdf5::detail::pvp<T ref_type, hdf5::detail::matrix_type<T>::value>(p, *v);                                                              \
-        }                                                                                                                                                  \
-        template <typename T> hdf5::detail::pvp<T ref_type, hdf5::detail::matrix_type<T>::value> make_pvp(std::string const & p, boost::scoped_ptr<T> ref_type v) { \
-            return hdf5::detail::pvp<T ref_type, hdf5::detail::matrix_type<T>::value>(p, *v);                                                              \
-        }
-    HDF5_MAKE_PVP(&)
-    HDF5_MAKE_PVP(const &)
-    #undef HDF5_MAKE_PVP
-    template <typename T> hdf5::detail::pvp<std::pair<T *, std::vector<std::size_t> >, hdf5::detail::matrix_type<T>::value> make_pvp(std::string const & p, T * v, std::size_t s) {
-        return hdf5::detail::pvp<std::pair<T *, std::vector<std::size_t> >, hdf5::detail::matrix_type<T>::value>(p, std::make_pair(v, std::vector<std::size_t>(1, s)));
-    }
-    template <typename T> hdf5::detail::pvp<std::pair<T const *, std::vector<std::size_t> >, hdf5::detail::matrix_type<T>::value> make_pvp(std::string const & p, T const * v, std::size_t s) {
-        return hdf5::detail::pvp<std::pair<T const *, std::vector<std::size_t> >, hdf5::detail::matrix_type<T>::value>(p, std::make_pair(v, std::vector<std::size_t>(1, s)));
-    }
-    template <typename T> hdf5::detail::pvp<std::pair<T *, std::vector<std::size_t> >, hdf5::detail::matrix_type<T>::value> make_pvp(std::string const & p, T * v, std::vector<std::size_t> const & s) {
-        return hdf5::detail::pvp<std::pair<T *, std::vector<std::size_t> >, hdf5::detail::matrix_type<T>::value>(p, std::make_pair(v, s));
-    }
-    template <typename T> hdf5::detail::pvp<std::pair<T const *, std::vector<std::size_t> >, hdf5::detail::matrix_type<T>::value> make_pvp(std::string const & p, T const * v, std::vector<std::size_t> const & s) {
-        return hdf5::detail::pvp<std::pair<T const *, std::vector<std::size_t> >, hdf5::detail::matrix_type<T>::value>(p, std::make_pair(v, s));
-    }
-    namespace hdf5 {
-        namespace detail {
-            template <typename T, bool B> class pvp {
+            template <typename T> class pvp {
                 public:
                     pvp(std::string const & p, T v): _p(p), _v(v) {}
-                    pvp(pvp<T, B> const & c): _p(c._p), _v(c._v) {}
-                    template<typename Tag> archive<Tag> & serialize(archive<Tag> & ar) const { return ::alps::hdf5::serialize(ar, _p, _v); }
+                    pvp(pvp<T> const & c): _p(c._p), _v(c._v) {}
+                    template<typename Tag> archive<Tag> & apply(archive<Tag> & ar) const { return serialize(ar, _p, _v); }
                 private:
                     std::string _p;
                     mutable T _v;
             };
-            // TODO: wenn man den generic_type als Skalar behandelt, dann sollte man eigentlich mit der normalen architektur durchkommen ....
-            #define HDF5_DEFINE_GENERIC_TYPE(C, ref_type)                                                                                                  \
-                template <typename T> class pvp < C <T> ref_type, false> {                                                                                 \
-                    public:                                                                                                                                \
-                        pvp(std::string const & p, C <T> ref_type v): _p(p), _v(v) {}                                                                      \
-                        pvp(pvp<C <T>, false> const & c): _p(c._p), _v(c._v) {}                                                                            \
-                        ::alps::hdf5::iarchive & serialize(::alps::hdf5::iarchive & ar) const {                                                            \
-                            std::vector<std::string> children = ar.list_children(ar.complete_path(_p));                                                    \
-                            _v.resize(children.size());                                                                                                    \
-                            for (std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)                               \
-                                ar >> ::alps::make_pvp(ar.complete_path(_p) + "/" + *it, _v[it - children.begin()]);                                       \
-                            return ar;                                                                                                                     \
-                       }                                                                                                                                   \
-                        ::alps::hdf5::oarchive & serialize(::alps::hdf5::oarchive & ar) const {                                                            \
-                            if (!_v.size())                                                                                                                \
-                                ar << ::alps::make_pvp(ar.complete_path(_p), std::vector<int>(0));                                                         \
-                            else                                                                                                                           \
-                                for (std::size_t i = 0; i < _v.size(); ++i)                                                                                \
-                                    ar << ::alps::make_pvp(ar.complete_path(_p) + "/" + boost::lexical_cast<std::string>(i), _v[i]);                       \
-                            return ar;                                                                                                                     \
-                        }                                                                                                                                  \
-                    private:                                                                                                                               \
-                        std::string _p;                                                                                                                    \
-                        mutable C <T> ref_type _v;                                                                                                         \
-                };
-            #define HDF5_DEFINE_GENERIC_TYPE_CONST(ref_type)                                                                                               \
-                HDF5_DEFINE_GENERIC_TYPE(std::vector, ref_type)                                                                                            \
-                HDF5_DEFINE_GENERIC_TYPE(std::valarray, ref_type)                                                                                          \
-                HDF5_DEFINE_GENERIC_TYPE(boost::numeric::ublas::vector, ref_type)
-            HDF5_DEFINE_GENERIC_TYPE_CONST(&)
-            HDF5_DEFINE_GENERIC_TYPE_CONST(const &)
-            #undef HDF5_DEFINE_GENERIC_TYPE_CONST
-            #undef HDF5_DEFINE_GENERIC_TYPE
-            #undef HDF5_FOREACH_SCALAR
+            template <typename T> archive<write> & operator<< (archive<write> & ar, pvp<T> const & v) { return v.apply(ar); }
+            template <typename T> archive<read> & operator>> (archive<read> & ar, pvp<T> const & v) { return v.apply(ar); }
         }
+    }
+    #define HDF5_MAKE_PVP(ref_type)                                                                                                                        \
+        template <typename T> hdf5::detail::pvp<T ref_type> make_pvp(std::string const & p, T ref_type v) {                                                \
+            return hdf5::detail::pvp<T ref_type>(p, v);                                                                                                    \
+        }                                                                                                                                                  \
+        template <typename T> hdf5::detail::pvp<T ref_type> make_pvp(std::string const & p, boost::shared_ptr<T> ref_type v) {                             \
+            return hdf5::detail::pvp<T ref_type>(p, *v);                                                                                                   \
+        }                                                                                                                                                  \
+        template <typename T> hdf5::detail::pvp<T ref_type> make_pvp(std::string const & p, std::auto_ptr<T> ref_type v) {                                 \
+            return hdf5::detail::pvp<T ref_type>(p, *v);                                                                                                   \
+        }                                                                                                                                                  \
+        template <typename T> hdf5::detail::pvp<T ref_type> make_pvp(std::string const & p, boost::weak_ptr<T> ref_type v) {                               \
+            return hdf5::detail::pvp<T ref_type>(p, *v);                                                                                                   \
+        }                                                                                                                                                  \
+        template <typename T> hdf5::detail::pvp<T ref_type> make_pvp(std::string const & p, boost::intrusive_ptr<T> ref_type v) {                          \
+            return hdf5::detail::pvp<T ref_type>(p, *v);                                                                                                   \
+        }                                                                                                                                                  \
+        template <typename T> hdf5::detail::pvp<T ref_type> make_pvp(std::string const & p, boost::scoped_ptr<T> ref_type v) {                             \
+            return hdf5::detail::pvp<T ref_type>(p, *v);                                                                                                   \
+        }
+    HDF5_MAKE_PVP(&)
+    HDF5_MAKE_PVP(const &)
+    #undef HDF5_MAKE_PVP
+    template <typename T> hdf5::detail::pvp<std::pair<T *, std::vector<std::size_t> > > make_pvp(std::string const & p, T * v, std::size_t s) {
+        return hdf5::detail::pvp<std::pair<T *, std::vector<std::size_t> > >(p, std::make_pair(v, std::vector<std::size_t>(1, s)));
+    }
+    template <typename T> hdf5::detail::pvp<std::pair<T const *, std::vector<std::size_t> > > make_pvp(std::string const & p, T const * v, std::size_t s) {
+        return hdf5::detail::pvp<std::pair<T const *, std::vector<std::size_t> > >(p, std::make_pair(v, std::vector<std::size_t>(1, s)));
+    }
+    template <typename T> hdf5::detail::pvp<std::pair<T *, std::vector<std::size_t> > > make_pvp(std::string const & p, T * v, std::vector<std::size_t> const & s) {
+        return hdf5::detail::pvp<std::pair<T *, std::vector<std::size_t> > >(p, std::make_pair(v, s));
+    }
+    template <typename T> hdf5::detail::pvp<std::pair<T const *, std::vector<std::size_t> > > make_pvp(std::string const & p, T const * v, std::vector<std::size_t> const & s) {
+        return hdf5::detail::pvp<std::pair<T const *, std::vector<std::size_t> > >(p, std::make_pair(v, s));
     }
 }
 #endif
