@@ -340,7 +340,7 @@ value_with_error<std::valarray<TYPE> >::value_with_error(boost::python::object c
         }
         void save(std::string const & filename) const {
             hdf5::oarchive ar(filename);
-            ar << make_pvp("/simulation/results", obs);
+            ar << make_pvp("/simulation/results/"+obs.representation(), obs);
         }
         typename T::count_type count() const 
         {
@@ -628,6 +628,7 @@ ALPS_PY_EXPORT_SIMPLEOBSERVABLE(IntTimeSeriesObservable)
     .def("random", static_cast<random_01::result_type(random_01::*)()>(&random_01::operator()))
     ;
     
+   
   boost::python::def("convert2numpy_array_float",&convert2numpy_array<double>);
   boost::python::def("convert2numpy_array_int",&convert2numpy_array<int>);
 
