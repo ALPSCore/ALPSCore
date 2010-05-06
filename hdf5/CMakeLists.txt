@@ -14,8 +14,7 @@ FOREACH (name alea alea2 io)
   add_alps_test(${name})
 ENDFOREACH(name)
 
-#  h5multiarray h5groups h5alea h5overwrite h5boostarray h5carray h5enum
-FOREACH (name h5vector h5ptr h5valarray h5ublasvector h5scalar h5attribute h5discontinous h5class h5pair)
+FOREACH (name h5vector h5ptr h5valarray h5ublasvector h5scalar h5attribute h5discontinous h5class h5pair h5multiarray h5groups h5alea h5overwrite h5boostarray h5carray h5enum h5string)
     add_executable(${name} ${name}.cpp)
     add_dependencies(${name} boost)
     target_link_libraries(${name} boost)

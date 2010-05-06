@@ -139,7 +139,6 @@ int test_main() {
     callback(float)                                                                                                                                        \
     callback(double)                                                                                                                                       \
     callback(long double)                                                                                                                                  \
-    callback(short)                                                                                                                                        \
     callback(boost::int8_t)                                                                                                                                       \
     callback(boost::uint8_t)                                                                                                                                      \
     callback(boost::int16_t)                                                                                                                                      \

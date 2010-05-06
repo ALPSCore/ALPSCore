@@ -21,12 +21,12 @@ const std::size_t length = dim1 * dim2 * dim3;
         oar << alps::make_pvp("/ptr-n/" + oar.encode_segment(#T) + "/scalar", value, size);                                                                \
     }                                                                                                                                                      \
     {                                                                                                                                                      \
-        T* value=0;                                                                                                                                          \
+        T* value=0;                                                                                                                                        \
         oar << alps::make_pvp("/ptr-1/" + oar.encode_segment(#T) + "/null", value, 0);                                                                     \
         oar << alps::make_pvp("/ptr-n/" + oar.encode_segment(#T) + "/null", value, std::vector<std::size_t>(3, 0));                                        \
     }                                                                                                                                                      \
     {                                                                                                                                                      \
-        std::complex< T > value[length];                                                                                                                     \
+        std::complex< T > value[length];                                                                                                                   \
         value[0] = std::complex<T>(1, 2);                                                                                                                  \
         value[1] = std::complex<T>(static_cast<T>(-1), 2);                                                                                                 \
         value[2] = std::complex<T>(static_cast<T>(1.2342), static_cast<T>(-2.93845));                                                                      \
@@ -51,12 +51,12 @@ const std::size_t length = dim1 * dim2 * dim3;
         std::cout << "...]" << std::endl;                                                                                                                  \
     }                                                                                                                                                      \
     {                                                                                                                                                      \
-        T * value=0;                                                                                                                                         \
+        T * value=0;                                                                                                                                       \
         iar >> alps::make_pvp("/ptr-1/" + iar.encode_segment(#T) + "/null", value, 0);                                                                     \
         std::cout << #T << "-1-null" << std::endl;                                                                                                         \
     }                                                                                                                                                      \
     {                                                                                                                                                      \
-        T * value=0;                                                                                                                                         \
+        T * value=0;                                                                                                                                       \
         iar >> alps::make_pvp("/ptr-n/" + iar.encode_segment(#T) + "/null", value,  std::vector<std::size_t>(3, 0));                                       \
         std::cout << #T << "-n-null" << std::endl;                                                                                                         \
     }                                                                                                                                                      \
@@ -77,6 +77,9 @@ const std::size_t length = dim1 * dim2 * dim3;
         std::cout << "...]" << std::endl;                                                                                                                  \
     }
 #define HDF5_FOREACH(callback)                                                                                                                             \
+    callback(bool)                                                                                                                                         \
+    callback(char)                                                                                                                                         \
+    callback(unsigned char)                                                                                                                                \
     callback(short)                                                                                                                                        \
     callback(unsigned short)                                                                                                                               \
     callback(int)                                                                                                                                          \
@@ -87,10 +90,16 @@ const std::size_t length = dim1 * dim2 * dim3;
     callback(unsigned long long)                                                                                                                           \
     callback(float)                                                                                                                                        \
     callback(double)                                                                                                                                       \
-    callback(long double)
+    callback(long double)                                                                                                                                  \
+    callback(int8_t)                                                                                                                                       \
+    callback(uint8_t)                                                                                                                                      \
+    callback(int16_t)                                                                                                                                      \
+    callback(uint16_t)                                                                                                                                     \
+    callback(int32_t)                                                                                                                                      \
+    callback(uint32_t)                                                                                                                                     \
+    callback(int64_t)                                                                                                                                      \
+    callback(uint64_t)
 int main() {
-
-	try {
     std::vector<std::size_t> size(3, dim1);
     size[1] = dim2;
     size[2] = dim3;
@@ -98,7 +107,7 @@ int main() {
         alps::hdf5::oarchive oar("ptr.h5");
         HDF5_FOREACH(HDF5_WRITE)
         {
-			std::vector<std::string> value(2);
+            std::vector<std::string> value(2);
             value[0] = "Im a Test string";
             value[1] = "me 2";
             oar << alps::make_pvp("/ptr/std::string/scalar", &value[0], 2);
@@ -123,10 +132,4 @@ int main() {
         }
     }
     boost::filesystem::remove(boost::filesystem::path("ptr.h5"));
-	} 
-	catch (std::exception const& e)
-	{
-		std::cerr << e.what() << "\n";
-		return -1;
-	}
 }
