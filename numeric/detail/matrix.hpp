@@ -64,17 +64,21 @@ namespace blas{
         {
         }
         
+        void swap(matrix& rhs)
+        {
+            std::swap(values_, rhs.values_);
+            std::swap(size_, rhs.size_);
+        }
         friend void swap(matrix& x,matrix& y)
         {
             std::swap(x.values_, y.values_);
             std::swap(x.size_, y.size_);
         }
         
-        matrix& operator=(const matrix &rhs)
+        matrix& operator=(matrix rhs)
         {
-            matrix temp(rhs);
-            swap(temp, *this);
-			return *this;
+            swap(rhs);
+	    return *this;
         }
         
         inline double &operator()(const unsigned int i, const unsigned int j)
@@ -252,7 +256,7 @@ namespace blas{
                     new_matrix(i,j)=operator()(k, l);
                 }
             }
-            swap(*this,new_matrix);
+            swap(new_matrix);
         }
         
         inline void remove_row_column_last(){
