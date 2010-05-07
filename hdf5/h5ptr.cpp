@@ -1,3 +1,5 @@
+#include <alps/config.h>
+
 #include <string>
 #include <vector>
 #include <iostream>
@@ -91,14 +93,14 @@ const std::size_t length = dim1 * dim2 * dim3;
     callback(float)                                                                                                                                        \
     callback(double)                                                                                                                                       \
     callback(long double)                                                                                                                                  \
-    callback(int8_t)                                                                                                                                       \
-    callback(uint8_t)                                                                                                                                      \
-    callback(int16_t)                                                                                                                                      \
-    callback(uint16_t)                                                                                                                                     \
-    callback(int32_t)                                                                                                                                      \
-    callback(uint32_t)                                                                                                                                     \
-    callback(int64_t)                                                                                                                                      \
-    callback(uint64_t)
+    callback(alps::int8_t)                                              \
+    callback(alps::uint8_t)                                             \
+    callback(alps::int16_t)                                                                                                                                      \
+    callback(alps::uint16_t)                                                                                                                                     \
+    callback(alps::int32_t)                                                                                                                                      \
+    callback(alps::uint32_t)                                                                                                                                     \
+    callback(alps::int64_t)                                                                                                                                      \
+    callback(alps::uint64_t)
 int main() {
     std::vector<std::size_t> size(3, dim1);
     size[1] = dim2;

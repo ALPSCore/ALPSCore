@@ -11,7 +11,7 @@
 int main() {
     {
         alps::hdf5::oarchive oar("string.h5");
-        std::vector<uint8_t> vec(10, 2);
+        std::vector<alps::uint8_t> vec(10, 2);
         oar << alps::make_pvp("/string/vector", vec);
         oar << alps::make_pvp("/string/c_str", "...");
     }
