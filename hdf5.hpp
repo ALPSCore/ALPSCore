@@ -1098,10 +1098,10 @@ namespace alps {
                 public:
                     pvp(std::string const & p, T v): _p(p), _v(v) {}
                     pvp(pvp<T> const & c): _p(c._p), _v(c._v) {}
-                    template<typename Tag> archive<Tag> & apply(archive<Tag> & ar) const { return serialize(ar, _p, _v); }
+                    template<typename Tag> archive<Tag> & apply(archive<Tag> & ar) const { return serialize(ar, _p, const_cast<T&>(_v));}
                 private:
                     std::string _p;
-                    mutable T _v;
+                    T _v;
             };
             template <typename T> archive<write> & operator<< (archive<write> & ar, pvp<T> const & v) { return v.apply(ar); }
             template <typename T> archive<read> & operator>> (archive<read> & ar, pvp<T> const & v) { return v.apply(ar); }
