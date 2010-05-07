@@ -123,6 +123,14 @@ int main() {
             std::string value;
             oar << alps::make_pvp("/attribute/std::string/@empty", value);
         }
+        oar.serialize("/attribute/std::string_const");
+        {
+            oar << alps::make_pvp("/attribute/std::string_const/@value", std::string("me 2"));
+        }
+        {
+            std::string value;
+            oar << alps::make_pvp("/attribute/std::string_const/@emtpy", std::string(""));
+        }
         oar.serialize("/attribute/c_string");
         {
             oar << alps::make_pvp("/attribute/c_string/@value", "me 2");
@@ -154,6 +162,16 @@ int main() {
             std::string value;
             iar >> alps::make_pvp("/attribute/c_string/@emtpy", value);
             std::cout << "c_string-empty (" << value.size() << ") " << value << std::endl;
+        }
+        {
+            std::string value;
+            iar >> alps::make_pvp("/attribute/std::string_const/@value", value);
+            std::cout << "std::string const-value (" << value.size() << "): " << value << std::endl;
+        }
+        {
+            std::string value;
+            iar >> alps::make_pvp("/attribute/std::string_const/@emtpy", value);
+            std::cout << "std::string const-empty (" << value.size() << ") " << value << std::endl;
         }
     }
     boost::filesystem::remove(boost::filesystem::path("attribute.h5"));

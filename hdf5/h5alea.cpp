@@ -31,5 +31,5 @@ int main() {
         iar >> make_pvp("/test/0/result", measurement);
         std::cout << measurement;
     }
-    boost::filesystem::remove(boost::filesystem::path("alea.h5"));
+//    boost::filesystem::remove(boost::filesystem::path("alea.h5"));
 }
