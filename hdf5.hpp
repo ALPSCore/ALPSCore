@@ -773,7 +773,7 @@ namespace alps {
                         return 0;
                     }
                     hid_t create_path(std::string const & p, hid_t type_id, hid_t space_id, hsize_t d, hsize_t const * s = NULL, bool set_prop = true) const {
-                        hid_t data_id = H5Dopen2(_file, p.c_str(), H5P_DEFAULT), tmp_id;
+                        hid_t data_id = H5Dopen2(_file, p.c_str(), H5P_DEFAULT), tmp_id = 0;
                         if (data_id < 0) {
                             if (p.find_last_of('/') < std::string::npos && p.find_last_of('/') > 0)
                                 set_group(p.substr(0, p.find_last_of('/')));
