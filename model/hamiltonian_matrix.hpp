@@ -300,8 +300,8 @@ void hamiltonian_matrix<M,G>::apply_operator(const STATES& states, const boost::
     state_type state=states[i];                   // get source state
     int is1=state[s1];                            // get source site states
     int is2=state[s2];
-    for (int js1=0;js1<basis_[s1].size();++js1) { // loop over target site states
-      for (int js2=0;js2<basis_[s2].size();++js2) {
+    for (unsigned int js1=0;js1<basis_[s1].size();++js1) { // loop over target site states
+      for (unsigned int js2=0;js2<basis_[s2].size();++js2) {
         value_type val=mat[is1][is2][js1][js2].first;      // get matrix element
         if (numeric::is_nonzero(val)) {              // if nonzero matrix element
           state_type newstate=state;              // prepare target state

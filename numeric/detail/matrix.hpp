@@ -267,7 +267,6 @@ namespace blas{
         {
             assert((c1 < size_) && (c2 < size_));
             if(c1==c2) return;
-            int one=1;
             dswap_(&size_, &(values_[c1]), &size_, &(values_[c2]), &size_);
         }
         
