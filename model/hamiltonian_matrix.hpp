@@ -258,10 +258,10 @@ template <class M, class G> template <class STATES, class V, class W>
 void hamiltonian_matrix<M,G>::apply_operator(const STATES& states, const SiteOperator& op, site_descriptor s, const V& x, W& y) const
 {
   boost::multi_array<value_type,2> mat = local_matrix(op,s);
-  for (int i=0;i<dimension();++i) {           // loop basis states
+  for (unsigned int i=0;i<dimension();++i) {           // loop basis states
     state_type state=states[i];               // get source state
     int is=state[s];                          // get site basis index
-    for (int js=0;js<basis_[s].size();++js) { // loop over target site states
+    for (unsigned int js=0;js<basis_[s].size();++js) { // loop over target site states
       value_type val=mat[is][js];                      // get matrix element
       if (numeric::is_nonzero(val)) {   // if matrix element is nonzero
         state_type newstate=state;            // prepare target state
