@@ -27,9 +27,18 @@ int main() {
     }
     {
         alps::ObservableSet measurement;
+        measurement << alps::make_observable(alps::SimpleRealObservable("Test"), true)
+                    << alps::RealObservable("Sign")
+                    << alps::RealObservable("No Measurements");
         alps::hdf5::iarchive iar("alea.h5");
         iar >> make_pvp("/test/0/result", measurement);
         std::cout << measurement;
     }
-//    boost::filesystem::remove(boost::filesystem::path("alea.h5"));
+    {
+        alps::ObservableSet measurement;
+        alps::hdf5::iarchive iar("alea.h5");
+        iar >> make_pvp("/test/0/result", measurement);
+        std::cout << measurement;
+    }
+    boost::filesystem::remove(boost::filesystem::path("alea.h5"));
 }

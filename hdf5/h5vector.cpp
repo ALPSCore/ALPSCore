@@ -61,13 +61,13 @@
     callback(float)                                                                                                                                        \
     callback(double)                                                                                                                                       \
     callback(long double)                                                                                                                                  \
-	callback(boost::int8_t)                                                                                                                                       \
-    callback(boost::uint8_t)                                                                                                                                      \
-    callback(boost::int16_t)                                                                                                                                      \
-    callback(boost::uint16_t)                                                                                                                                     \
-    callback(boost::int32_t)                                                                                                                                      \
-    callback(boost::uint32_t)                                                                                                                                     \
-    callback(boost::int64_t)                                                                                                                                      \
+	callback(boost::int8_t)                                                                                                                                \
+    callback(boost::uint8_t)                                                                                                                               \
+    callback(boost::int16_t)                                                                                                                               \
+    callback(boost::uint16_t)                                                                                                                              \
+    callback(boost::int32_t)                                                                                                                               \
+    callback(boost::uint32_t)                                                                                                                              \
+    callback(boost::int64_t)                                                                                                                               \
     callback(boost::uint64_t)
 int main() {
     {
