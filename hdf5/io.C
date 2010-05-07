@@ -9,11 +9,11 @@
 const int length = 15;
 typedef enum { A, B } enum_type;
 
-oarchive & serialize(oarchive & ar, std::string const & p, enum_type const & v) {
+alps::hdf5::oarchive & serialize(alps::hdf5::oarchive & ar, std::string const & p, enum_type const & v) {
 	ar << alps::make_pvp(p, v == A ? 0 : 1);
 	return ar;
 }
-iarchive & serialize(iarchive & ar, std::string const & p, enum_type & v) {
+alps::hdf5::iarchive & serialize(alps::hdf5::iarchive & ar, std::string const & p, enum_type & v) {
 	int t;
 	ar >> alps::make_pvp(p, t);
 	v = t ? A : B;
