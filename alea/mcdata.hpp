@@ -589,6 +589,14 @@ namespace alps {
             rhs.divide(lhs);
             return rhs;
         }
+        template <typename T> inline mcdata<T> abs(mcdata<T> rhs) {
+            using std::abs;
+            using alps::numeric::abs;
+            using boost::lambda::_1;
+            using boost::lambda::bind;
+            rhs.transform(bind<T>(abs<typename mcdata<T>::value_type>, _1), rhs.error());
+            return rhs;
+        }
         template <typename T> mcdata<T> pow(mcdata<T> rhs, double exponent) {
             if (exponent == 1.)
               return rhs;

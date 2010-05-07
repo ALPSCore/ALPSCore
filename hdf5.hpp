@@ -152,26 +152,18 @@ namespace alps {
             // todo: move from detail to alsp::hdf5
             template <typename T> archive<read> & serialize(archive<read> & ar, std::string const & p, T & v);
             template <typename T> archive<write> & serialize(archive<write> & ar, std::string const & p, T const & v);
-            template<typename T> struct serializable_type {
-                typedef T type;
-            };
-            template<> struct serializable_type<bool> {
-                typedef boost::uint_t<sizeof(bool)>::least type;
-            };
-            template<> struct serializable_type<bool const> {
-                typedef boost::uint_t<sizeof(bool)>::least const type;
-            };
             template<typename T> struct matrix_type : public boost::is_scalar<T>::type {
                 typedef T native_type;
-                typedef typename serializable_type<T>::type writable_type;
+                // TODO: rename to serializable_type
+                typedef T writable_type;
+                // TODO: remove! this is always std::vector<writable_type>
                 typedef std::vector<writable_type> buffer_type;
                 typedef boost::mpl::true_ scalar;
                 // TODO: start, count und size sollten auch fuer die skalardimension einen Eintrag haben also vector<int>(5) hat size [5, 1]
                 static std::vector<hsize_t> count(T const & v) { return size(v); }
                 static std::vector<hsize_t> size(T const & v) { return std::vector<hsize_t>(1, 1); }
                 static writable_type const * get(buffer_type & m, T const & v, std::vector<hsize_t> const &, std::vector<hsize_t> const & = std::vector<hsize_t>()) {
-                    m.resize(1);
-                    return &(m[0] = v);
+                    return &v;
                 }
                 // TODO: es sollte ein set geben fuer T == U, das einen m-ptr zuruckgibt ...
                 // TODO: make a nicer syntax for set(T & v, vec<size_t> s, vec<U> u, size_t o, size_t c)
@@ -218,6 +210,7 @@ namespace alps {
                 typedef boost::mpl::true_ scalar;
                 static std::vector<hsize_t> count(std::string const & v) { return size(v); }
                 static std::vector<hsize_t> size(std::string const & v) { return std::vector<hsize_t>(1, 1); }
+                // TODO: make sure vector<string>, pair<string * ...>, ... are done correctly
                 static writable_type const * get(buffer_type & m, std::string const & v, std::vector<hsize_t> const &, std::vector<hsize_t> const & = std::vector<hsize_t>()) {
                     m.resize(1);
                     return &(m[0] = v.c_str());
@@ -1131,8 +1124,8 @@ namespace alps {
     template <typename T> typename boost::enable_if<typename boost::mpl::and_<
           typename boost::is_same<typename boost::remove_cv<typename boost::remove_all_extents<T>::type>::type, char>::type
         , typename boost::is_array<T>::type
-    >::type, hdf5::detail::pvp<std::string const &> >::type make_pvp(std::string const & p, T const & v) {
-        return hdf5::detail::pvp<std::string const &>(p, v);
+    >::type, hdf5::detail::pvp<std::string const> >::type make_pvp(std::string const & p, T const & v) {
+        return hdf5::detail::pvp<std::string const>(p, v);
     }
     #define HDF5_MAKE_PVP(ptr_type, arg_type)                                                                                                              \
         template <typename T> hdf5::detail::pvp<std::pair<ptr_type, std::vector<std::size_t> > > make_pvp(std::string const & p, arg_type v, std::size_t s) { \
