@@ -392,7 +392,7 @@ namespace alps {
                     if (!matrix_type<T>::scalar::value && v.second.size()) {
                         std::vector<hsize_t> t(matrix_type<T>::size(*v.first));
                         std::copy(t.begin(), t.end(), std::back_inserter(s));
-                        for (std::size_t i = 1; i < std::accumulate(s.begin(), s.end(), 1, std::multiplies<hsize_t>()); ++i)
+                        for (std::size_t i = 1; i < std::accumulate(s.begin(), s.end(), std::size_t(1), std::multiplies<hsize_t>()); ++i)
                             if (!std::equal(t.begin(), t.end(), matrix_type<T>::size(*(v.first + i)).begin()))
                                 throw std::range_error("no rectengual matrix");
                     }
@@ -424,11 +424,11 @@ namespace alps {
                     if (!(s.size() == 1 && s[0] == 0 && std::accumulate(v.second.begin(), v.second.end(), 0) == 0) && !std::equal(v.second.begin(), v.second.end(), s.begin()))
                         throw std::range_error("invalid data size");
                     if (!matrix_type<T>::scalar::value && s.size() > v.second.size())
-                        for (std::size_t i = 0; i < std::accumulate(v.second.begin(), v.second.end(), 1, std::multiplies<hsize_t>()); ++i)
+                        for (std::size_t i = 0; i < std::accumulate(v.second.begin(), v.second.end(), std::size_t(1), std::multiplies<hsize_t>()); ++i)
                             matrix_type<T>::resize(*(v.first + i), std::vector<std::size_t>(s.begin() + v.second.size(), s.end()));
                 }
                 static bool is_vectorizable(std::pair<T *, std::vector<std::size_t> > const & v) {
-                    for (std::size_t i = 0; i < std::accumulate(v.second.begin(), v.second.end(), 1, std::multiplies<hsize_t>()); ++i)
+                    for (std::size_t i = 0; i < std::accumulate(v.second.begin(), v.second.end(), std::size_t(1), std::multiplies<hsize_t>()); ++i)
                         if (!matrix_type<T>::is_vectorizable(*(v.first + i)))
                             return false;
                     return true;
