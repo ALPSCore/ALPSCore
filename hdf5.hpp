@@ -891,18 +891,27 @@ namespace alps {
                     // TODO: optimize for T == U
                     template<typename T, typename U> void get_helper(T & v, hid_t data_id, hid_t type_id, bool is_attr) const {
                         std::vector<hsize_t> size(matrix_type<T>::size(v)), start(size.size(), 0), count(matrix_type<T>::count(v));
-                        std::vector<U> data(std::accumulate(count.begin(), count.end(), 1, std::multiplies<std::size_t>()));
-                        if (is_attr) {
-                            check_error(H5Aread(data_id, type_id, &data.front()));
-                            matrix_type<T>::set(v, data, start, count);
-                            if (boost::is_same<T, char *>::value)
-                                check_error(H5Dvlen_reclaim(type_id, space_type(H5Dget_space(data_id)), H5P_DEFAULT, &data.front()));
-                        } else if (std::equal(count.begin(), count.end(), size.begin())) {
-                            check_error(H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &data.front()));
+                        if (
+                               (is_attr || std::equal(count.begin(), count.end(), size.begin()))
+                            && H5Tget_class(type_id) == H5T_STRING && !check_error(H5Tis_variable_str(type_id))
+                        ) {
+                            std::string data(H5Tget_size(type_id) + 1, '\0');
+                            if (is_attr)
+                                check_error(H5Aread(data_id, type_id, &data[0]));
+                            else
+                                check_error(H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &data[0]));
+                            matrix_type<T>::set(v, std::vector<char *>(1, &data[0]), start, count);
+                        } else if (is_attr || std::equal(count.begin(), count.end(), size.begin())) {
+                            std::vector<U> data(std::accumulate(count.begin(), count.end(), 1, std::multiplies<std::size_t>()));
+                            if (is_attr)
+                                check_error(H5Aread(data_id, type_id, &data.front()));
+                            else
+                                check_error(H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &data.front()));
                             matrix_type<T>::set(v, data, start, count);
                             if (boost::is_same<T, char *>::value)
                                 check_error(H5Dvlen_reclaim(type_id, space_type(H5Dget_space(data_id)), H5P_DEFAULT, &data.front()));
                         } else {
+                            std::vector<U> data(std::accumulate(count.begin(), count.end(), 1, std::multiplies<std::size_t>()));
                             std::size_t last = count.size() - 1, pos;
                             for(;count[last] == size[last]; --last);
                             do {
