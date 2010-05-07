@@ -148,10 +148,10 @@ namespace alps {
                double i; 
             };
             template <typename Tag> class archive;
-        }
-        template <typename T> detail::archive<detail::read> & serialize(detail::archive<detail::read> & ar, std::string const & p, T & v);
-        template <typename T> detail::archive<detail::write> & serialize(detail::archive<detail::write> & ar, std::string const & p, T const & v);
-        namespace detail {
+            // TODO: make iarchive and oarchive inherited classes from archive<Tag>
+            // todo: move from detail to alsp::hdf5
+            template <typename T> archive<read> & serialize(archive<read> & ar, std::string const & p, T & v);
+            template <typename T> archive<write> & serialize(archive<write> & ar, std::string const & p, T const & v);
             template<typename T> struct serializable_type {
                 typedef T type;
             };
@@ -358,22 +358,20 @@ namespace alps {
                         std::vector<std::string> children = ar.list_children(p);                                                                           \
                         v.resize(children.size());                                                                                                         \
                         for (std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)                                   \
-/*                            if (matrix_type<T>::scalar::value) {                                                                                           \
-                                using namespace ::alps::hdf5;                                                                                              \
+                            if (matrix_type<T>::scalar::value) {                                                                                           \
                                 serialize(ar, p, v[it - children.begin()]);                                                                                \
                             } else                                                                                                                         \
-*/                                matrix_type<T>::apply(ar, p + "/" + *it, v[it - children.begin()], read());                                                \
+                                matrix_type<T>::apply(ar, p + "/" + *it, v[it - children.begin()], read());                                                \
                     }                                                                                                                                      \
                     template<typename Archive> static void apply(Archive & ar, std::string const & p, C <T> const & v, write) {                            \
                         if (!v.size())                                                                                                                     \
                             ar.serialize(p, std::vector<int>(0));                                                                                          \
                         else                                                                                                                               \
                             for (std::size_t i = 0; i < v.size(); ++i)                                                                                     \
-/*                                if (matrix_type<T>::scalar::value) {                                                                                       \
-                                    using namespace ::alps::hdf5;                                                                                          \
+                                if (matrix_type<T>::scalar::value) {                                                                                       \
                                     serialize(ar, p, v[i]);                                                                                                \
                                 } else                                                                                                                     \
-*/                                    matrix_type<T>::apply(ar, p + "/" + boost::lexical_cast<std::string>(i), v[i], write());                               \
+                                    matrix_type<T>::apply(ar, p + "/" + boost::lexical_cast<std::string>(i), v[i], write());                               \
                     }                                                                                                                                      \
                 };
             HDF5_DEFINE_MATRIX_TYPE(std::vector)
@@ -654,7 +652,7 @@ namespace alps {
                                     get_data(complete_path(p), v);
                     }
                     template<typename T> typename boost::disable_if<typename matrix_type<typename boost::remove_const<T>::type>::type>::type serialize(std::string const & p, T & v) {
-                        matrix_type<typename boost::remove_const<T>::type>::apply(*this, p, v, Tag());
+                        matrix_type<typename boost::remove_const<T>::type>::apply(const_cast<archive<Tag> &>(*this), p, v, Tag());
                     }
                     void serialize(std::string const & p) {
                         if (p.find_last_of('@') != std::string::npos)
@@ -950,7 +948,7 @@ namespace alps {
                             matrix_type<T>::resize(v, std::vector<std::size_t>(size.begin(), size.end()));
                             // TODO: this check is bs!
                             if (!matrix_type<T>::is_vectorizable(v))
-                                matrix_type<T>::apply(*this, p, v, read());
+                                matrix_type<T>::apply(const_cast<archive<Tag> &>(*this), p, v, read());
                             else if (H5Tget_class(native_id) == H5T_STRING)
                                 get_helper<T, char *>(v, data_id, type_id, false);
                             else if (check_error(H5Tequal(type_type(H5Tcopy(_complex_id)), type_type(H5Tcopy(type_id)))))
@@ -1021,7 +1019,7 @@ namespace alps {
                                 } while (start[0] < size[0]);
                             }
                         } else
-                            matrix_type<T>::apply(*this, p, v, write());
+                            matrix_type<T>::apply(const_cast<archive<Tag> &>(*this), p, v, write());
                     }
                     template<typename T> void set_attr(std::string const & p, std::string const & s, T const & v) const {
                         hid_t parent_id;
@@ -1095,18 +1093,14 @@ namespace alps {
                     file_type _file;
             };
             #undef HDF5_FOREACH_SCALAR
-        }
-        typedef detail::archive<detail::read> iarchive;
-        typedef detail::archive<detail::write> oarchive;
-        template <typename T> iarchive & serialize(iarchive & ar, std::string const & p, T & v) {
-            ar.serialize(p, v);
-            return ar;
-        }
-        template <typename T> oarchive & serialize(oarchive & ar, std::string const & p, T const & v) {
-            ar.serialize(p, v);
-            return ar;
-        }
-        namespace detail {
+            template <typename T> archive<read> & serialize(archive<read> & ar, std::string const & p, T & v) {
+                ar.serialize(p, v);
+                return ar;
+            }
+            template <typename T> archive<write> & serialize(archive<write> & ar, std::string const & p, T const & v) {
+                ar.serialize(p, v);
+                return ar;
+            }
             template <typename T> class pvp {
                 public:
                     pvp(std::string const & p, T v): _p(p), _v(v) {}
@@ -1119,6 +1113,8 @@ namespace alps {
             template <typename T> archive<write> & operator<< (archive<write> & ar, pvp<T> const & v) { return v.apply(ar); }
             template <typename T> archive<read> & operator>> (archive<read> & ar, pvp<T> const & v) { return v.apply(ar); }
         }
+        typedef detail::archive<detail::read> iarchive;
+        typedef detail::archive<detail::write> oarchive;
     }
     template <typename T> typename boost::disable_if<typename boost::mpl::and_<
           typename boost::is_same<typename boost::remove_cv<typename boost::remove_all_extents<T>::type>::type, char>::type
