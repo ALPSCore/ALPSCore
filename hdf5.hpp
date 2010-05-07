@@ -48,7 +48,7 @@
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-
+#include <boost/type_traits/add_reference.hpp>
 #include <hdf5.h>
 
 #ifdef ALPS_DOXYGEN
@@ -1098,7 +1098,9 @@ namespace alps {
                 public:
                     pvp(std::string const & p, T v): _p(p), _v(v) {}
                     pvp(pvp<T> const & c): _p(c._p), _v(c._v) {}
-                    template<typename Tag> archive<Tag> & apply(archive<Tag> & ar) const { return serialize(ar, _p, const_cast<T&>(_v));}
+                    template<typename Tag> archive<Tag> & apply(archive<Tag> & ar) const { 
+                      return serialize(ar, _p, const_cast<typename boost::add_reference<T>::type>(_v));
+                    }
                 private:
                     std::string _p;
                     T _v;
