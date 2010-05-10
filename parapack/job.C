@@ -363,9 +363,14 @@ void task::evaluate() {
     std::vector<ObservableSet> os;
     if (clone_info_[cid].checkpoints().size() == 1) {
       std::string p = clone_info_[cid].checkpoints()[0] + ".h5";
-      hdf5::iarchive h5(complete(p, basedir_).file_string());
       std::vector<ObservableSet> o;
-      if (!load_observable(h5, cid, o)) {
+      bool success;
+      #pragma omp critical (hdf5io)
+      {
+        hdf5::iarchive h5(complete(p, basedir_).file_string());
+        success = load_observable(h5, cid, o);
+      }
+      if (!success) {
         std::cerr << "error while reading " << p << std::endl;
       } else {
         evaluator->load(o, os);
@@ -374,9 +379,14 @@ void task::evaluate() {
     } else {
       for (unsigned int w = 0; w < clone_info_[cid].checkpoints().size(); ++w) {
         std::string p = clone_info_[cid].checkpoints()[w] + ".h5";
-        hdf5::iarchive h5(complete(p, basedir_).file_string());
         std::vector<ObservableSet> o;
-        if (!load_observable(h5, cid, w, o)) {
+        bool success;
+        #pragma omp critical (hdf5io)
+        {
+          hdf5::iarchive h5(complete(p, basedir_).file_string());
+          success = load_observable(h5, cid, w, o);
+        }
+        if (!success) {
           if (w == 0) std::cerr << "error while reading " << p << std::endl;
         } else {
           evaluator->load(o, os);
