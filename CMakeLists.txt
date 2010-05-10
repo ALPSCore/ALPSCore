@@ -54,12 +54,13 @@ endif(NOT ALPS_FOR_VISTRAILS)
 
 add_library(alps ${ALPS_SOURCES})
 
+find_package(HDF5)
 if (Boost_FOUND)
   # link to ${Boost_LIBRARIES} when precompiled Boost libraries found
-  target_link_libraries(alps ${Boost_LIBRARIES} ${LINK_LIBRARIES})
+  target_link_libraries(alps ${Boost_LIBRARIES} ${HDF5_LIBRARIES}) # ${SZIP_LIBRARIES} ${ZLIB_LIBRARIES})
 else (Boost_FOUND)
   # "boost" target available when Boost libraries are built from source
-  target_link_libraries(alps boost ${LINK_LIBRARIES})
+  target_link_libraries(alps boost ${HDF5_LIBRARIES}) # ${SZIP_LIBRARIES} ${ZLIB_LIBRARIES})
 endif (Boost_FOUND)
 
 if(BUILD_SHARED_LIBS)
