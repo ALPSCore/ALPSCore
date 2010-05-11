@@ -140,7 +140,7 @@ typename NoBinning<T>::convergence_type NoBinning<T>::converged_errors() const
 {
   convergence_type conv;
   resize_same_as(conv,sum_);
-  for (typename slice_index<convergence_type>::type it= slices(conv).first; 
+  for (typename slice_index<convergence_type>::type it= slices(conv).first;
        it!= slices(conv).second; ++it)
     slice_value(conv,it) = CONVERGED;
   return conv;
@@ -212,7 +212,8 @@ template <class T>
 inline void NoBinning<T>::output_scalar(std::ostream& out) const
 {
   if(count()) {
-    out << ": " << alps::numeric::round<2>(mean()) << " +/- " << alps::numeric::round<2>(error());
+    out << ": " << precision(alps::numeric::round<2>(mean()), 6) << " +/- "
+        << precision(alps::numeric::round<2>(error()), 3);
     if (alps::numeric::is_nonzero<2>(error()) && error_underflow(mean(),error()))
       out << " Warning: potential error underflow. Errors might be smaller";
     out << std::endl;
@@ -234,8 +235,8 @@ inline void NoBinning<T>::output_vector(std::ostream& out, const L& label) const
       if (lab=="")
         lab=slice_name(mean_,sit);
       out << "Entry[" << lab << "]: "
-          << alps::numeric::round<2>(slice_value(mean_,sit)) << " +/- "
-          << alps::numeric::round<2>(slice_value(error_,sit));
+          << precision(alps::numeric::round<2>(slice_value(mean_,sit)), 6) << " +/- "
+          << precision(alps::numeric::round<2>(slice_value(error_,sit)), 3);
       if (alps::numeric::is_nonzero<2>(slice_value(error_,sit)) &&
           error_underflow(slice_value(mean_,sit),
                           slice_value(error_,sit)))
@@ -255,8 +256,8 @@ inline void NoBinning<T>::save(ODump& dump) const
 template <class T>
 inline void NoBinning<T>::load(IDump& dump)
 {
-  uint32_t thermal_count_; 
-  value_type min_,max_; 
+  uint32_t thermal_count_;
+  value_type min_,max_;
   AbstractBinning<T>::load(dump);
   if(dump.version() >= 306 || dump.version() == 0 /* version is not set */) {
     dump >> sum_ >> sum2_ >> count_;
