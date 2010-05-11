@@ -28,6 +28,7 @@
 #ifndef PARAPACK_WORKER_H
 #define PARAPACK_WORKER_H
 
+#include "measurement.h"
 #include "worker_factory.h"
 #include "rng_helper.h"
 #include <alps/config.h>

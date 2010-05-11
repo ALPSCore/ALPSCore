@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -36,6 +36,12 @@ ALPS_DECL void merge_clone(alps::ObservableSet& total, alps::ObservableSet const
   bool same_weight);
 
 ALPS_DECL void merge_random_clone(alps::ObservableSet& total, alps::ObservableSet const& clone);
+
+template<typename T>
+void add_constant(Observable& obs, T const& val) {
+  if (dynamic_cast<SimpleRealObservable*>(&obs) &&
+      dynamic_cast<SimpleRealObservable*>(&obs)->count() < 2) obs << val;
+}
 
 } // end namespace alps
 

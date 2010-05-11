@@ -676,8 +676,8 @@ public:
 
     int nrep = beta_.size();
     for (int p = 0; p < nrep; ++p) {
-      obs[p]["EXMC: Temperature"] << 1. / beta_[p];
-      obs[p]["EXMC: Inverse Temperature"] << beta_[p];
+      add_constant(obs[p]["EXMC: Temperature"], 1 / beta_[p]);
+      add_constant(obs[p]["EXMC: Inverse Temperature"], beta_[p]);
     }
 
     // MC update of each replica
@@ -1024,8 +1024,8 @@ public:
 
     if (comm_.rank() == 0) {
       for (int p = 0; p < nrep; ++p) {
-        obs[p]["EXMC: Temperature"] << 1. / beta_[p];
-        obs[p]["EXMC: Inverse Temperature"] << beta_[p];
+        add_constant(obs[p]["EXMC: Temperature"], 1. / beta_[p]);
+        add_constant(obs[p]["EXMC: Inverse Temperature"], beta_[p]);
       }
     }
 
