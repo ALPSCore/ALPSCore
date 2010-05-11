@@ -286,7 +286,7 @@ namespace alps {
                     using std::sqrt;
                     using alps::numeric::sq;
                     using alps::numeric::sqrt;
-                    if (rhs.count())
+                    if (rhs.count()) {
                         if (count()) {
                             jacknife_bins_valid_ = false;
                             data_is_analyzed_ = data_is_analyzed_ && rhs.data_is_analyzed_;
@@ -325,6 +325,7 @@ namespace alps {
 //                              set_bin_number(max_bin_number_);
                             } else
                                 *this = rhs;
+                        }
                     return *this;
                 }
                 mcdata<T> & operator=(mcdata<T> rhs) {
