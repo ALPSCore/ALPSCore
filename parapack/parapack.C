@@ -307,7 +307,7 @@ int run_sequential(int argc, char **argv) {
   if (p == 0) omp_set_num_threads(1);
 #endif
 
-  for (int i = 0; i < parameterlist.size(); ++i) {
+  for (std::size_t i = 0; i < parameterlist.size(); ++i) {
     alps::Parameters p = parameterlist[i];
     boost::timer tm;
     if (!p.defined("DIR_NAME")) p["DIR_NAME"] = ".";
@@ -321,11 +321,11 @@ int run_sequential(int argc, char **argv) {
       worker = worker_factory::make_worker(p);
     worker->init_observables(p, obs);
     bool thermalized = worker->is_thermalized();
-    if (thermalized) for (int i = 0; i < obs.size(); ++i) obs[i].reset(true);
+    if (thermalized) for (std::size_t r = 0; r < obs.size(); ++r) obs[r].reset(true);
     while (worker->progress() < 1.0) {
       worker->run(obs);
       if (!thermalized && worker->is_thermalized()) {
-        for (int i = 0; i < obs.size(); ++i) obs[i].reset(true);
+        for (std::size_t r = 0; r < obs.size(); ++r) obs[r].reset(true);
         thermalized = true;
       }
     }
@@ -339,8 +339,8 @@ int run_sequential(int argc, char **argv) {
     if (obs_out.size() == 1) {
       std::cout << obs_out[0];
     } else {
-      for (int i = 0; i < obs_out.size(); ++i)
-        std::cout << "[[replica " << i << "]]\n" << obs_out[i];
+      for (std::size_t r = 0; r < obs_out.size(); ++r)
+        std::cout << "[[replica " << r << "]]\n" << obs_out[r];
     }
   }
 

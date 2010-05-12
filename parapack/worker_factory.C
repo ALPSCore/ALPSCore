@@ -71,7 +71,7 @@ void abstract_evaluator::load(std::vector<ObservableSet> const& obs_in,
   if (obs_out.size() == 0) obs_out.resize(obs_in.size());
   if (obs_out.size() != obs_in.size())
     boost::throw_exception(std::runtime_error("inconsistent size of ObservableSet"));
-  for (int i = 0; i < obs_out.size(); ++i) this->load(obs_in[i], obs_out[i]);
+  for (std::size_t r = 0; r < obs_out.size(); ++r) this->load(obs_in[r], obs_out[r]);
 }
 
 void abstract_evaluator::evaluate(ObservableSet&) const {
@@ -79,7 +79,7 @@ void abstract_evaluator::evaluate(ObservableSet&) const {
 }
 
 void abstract_evaluator::evaluate(std::vector<ObservableSet>& obs_out) const {
-  for (int i = 0; i < obs_out.size(); ++i) this->evaluate(obs_out[i]);
+  BOOST_FOREACH(ObservableSet& m, obs_out) { this->evaluate(m); }
 }
 
 //
