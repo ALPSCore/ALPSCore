@@ -152,7 +152,7 @@ namespace alps {
             // todo: move from detail to alsp::hdf5
             template <typename T> archive<read> & serialize(archive<read> & ar, std::string const & p, T & v);
             template <typename T> archive<write> & serialize(archive<write> & ar, std::string const & p, T const & v);
-            template<typename T> struct matrix_type : public boost::is_scalar<T>::type {
+            template<typename T> struct matrix_type : public boost::mpl::bool_<boost::is_scalar<T>::value && !boost::is_enum<T>::value>::type {
                 typedef T native_type;
                 // TODO: rename to serializable_type
                 typedef T writable_type;
@@ -185,7 +185,7 @@ namespace alps {
                     throw std::runtime_error("invalid type conversion"); 
                 }
                 static void resize(T &, std::vector<std::size_t> const &) {}
-                static bool is_vectorizable(T const &) { return true; }
+                static bool is_vectorizable(T const &) { return boost::is_scalar<T>::value && !boost::is_enum<T>::value; }
                 template<typename Archive> static void apply(Archive & ar, std::string const & p, T & v, read) {
                     apply(ar, p, v, typename boost::is_scalar<T>::type());
                 }
@@ -348,22 +348,22 @@ namespace alps {
                         return true;                                                                                                                       \
                     }                                                                                                                                      \
                     template<typename Archive> static void apply(Archive & ar, std::string const & p, C <T> & v, read) {                                   \
-                        std::vector<std::string> children = ar.list_children(p);                                                                           \
-                        v.resize(children.size());                                                                                                         \
-                        for (std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)                                   \
-                            if (matrix_type<T>::scalar::value) {                                                                                           \
-                                serialize(ar, p, v[it - children.begin()]);                                                                                \
-                            } else                                                                                                                         \
-                                matrix_type<T>::apply(ar, p + "/" + *it, v[it - children.begin()], read());                                                \
+                            std::vector<std::string> children = ar.list_children(p);                                                                       \
+                            v.resize(children.size());                                                                                                     \
+                            for (std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)                               \
+                                if (matrix_type<T>::scalar::value)                                                                                         \
+                                    serialize(ar, p + "/" + *it, v[it - children.begin()]);                                                                \
+                                else                                                                                                                       \
+                                    matrix_type<T>::apply(ar, p + "/" + *it, v[it - children.begin()], read());                                            \
                     }                                                                                                                                      \
                     template<typename Archive> static void apply(Archive & ar, std::string const & p, C <T> const & v, write) {                            \
                         if (!v.size())                                                                                                                     \
                             ar.serialize(p, std::vector<int>(0));                                                                                          \
                         else                                                                                                                               \
                             for (std::size_t i = 0; i < v.size(); ++i)                                                                                     \
-                                if (matrix_type<T>::scalar::value) {                                                                                       \
-                                    serialize(ar, p, v[i]);                                                                                                \
-                                } else                                                                                                                     \
+                                if (matrix_type<T>::scalar::value)                                                                                         \
+                                    serialize(ar, p + "/" + boost::lexical_cast<std::string>(i), v[i]);                                                    \
+                                else                                                                                                                       \
                                     matrix_type<T>::apply(ar, p + "/" + boost::lexical_cast<std::string>(i), v[i], write());                               \
                     }                                                                                                                                      \
                 };
