@@ -33,7 +33,7 @@
 
 #include <alps/alea/detailedbinning.h>
 #include <alps/alea/value_with_error.h>
-//#include <alps/alea/mcdata.hpp>
+#include <alps/alea/mcdata.hpp>
 #include <alps/python/make_copy.hpp>
 #include <alps/python/save_observable_to_hdf5.hpp>
 #include <boost/python.hpp>
@@ -52,17 +52,6 @@ namespace alps {
   namespace alea {
 
     // for printing support
-/*
-    template <class T>
-    inline static boost::python::str print_binned_data(binned_data<T> const & self)
-    {
-      boost::python::str s;
-      s += boost::python::str("Jacknife mean  : \t" + boost::python::str(self.mean()) + "\n");
-      s += boost::python::str("Jacknife error : \t" + boost::python::str(self.error()) + "\n");
-      return s;
-    }
-*/
-
     template <class T>
     inline static boost::python::str print_value_with_error(value_with_error<T> const & self)
     {
@@ -127,7 +116,7 @@ namespace alps {
         inited = true;
       }
     }
-      
+    
     
     template <class T>
     boost::python::numeric::array convert2numpy_scalar(T value)
@@ -192,32 +181,6 @@ namespace alps {
           memcpy(&vec[0],data, PyArray_ITEMSIZE((PyArrayObject*) arr.ptr()) * vec_size);
           return vec;
       }
-/*
-    // loading arrays into binned_data
-    template<>
-    binned_data<double>::binned_data(boost::python::object const & timeseries_measurements_nparray, uint64_t const desired_bin_number)
-      : count_()
-      , binsize_(1)
-      , is_bin_changed_(false)
-      , is_statistics_valid_(false)
-      , is_jacknife_bins_filled_correctly_(false)
-      , is_nonlinear_operations_performed_(false)
-      , mean_()
-      , error_()
-      , variance_opt_()
-      , tau_opt_()
-      , values_()
-      , jack_()
-    {
-      std::vector<double> timeseries_measurements = convert2vector<double>(timeseries_measurements_nparray);
-      count_ = timeseries_measurements.size();
-
-      if (count()) {
-        values_ = timeseries_measurements;
-        if (desired_bin_number >= 1)  {  set_bin_number(desired_bin_number);  }
-      }
-    }
-*/
 
     // loading and extracting numpy arrays into vector_with_error
     #define IMPLEMENT_VECTOR_WITH_ERROR_CONSTRUCTION(TYPE) \
@@ -351,29 +314,142 @@ value_with_error<std::valarray<TYPE> >::value_with_error(boost::python::object c
         T obs;
         
     };
-  }
+    
+        #define ALPS_PY_MCDATA_WRAPPER(member_name)                                                                                                        \
+            template <class T> typename boost::enable_if<typename boost::is_scalar<T>::type, T>::type wrap_ ## member_name(mcdata<T> const & value) {      \
+                return value. member_name ();                                                                                                              \
+            }                                                                                                                                              \
+            template <class T> boost::python::numeric::array wrap_ ## member_name(mcdata<std::vector<T> > const & value) {                                 \
+                return convert2numpy_array(value. member_name ());                                                                                         \
+            }
+        ALPS_PY_MCDATA_WRAPPER(mean)
+        ALPS_PY_MCDATA_WRAPPER(error)
+        ALPS_PY_MCDATA_WRAPPER(tau)
+        ALPS_PY_MCDATA_WRAPPER(variance)
+        #undef ALPS_PY_MCDATA_WRAPPER
+        template <typename  T> boost::python::str print_mcdata(mcdata<T> const & self) {
+            return boost::python::str(boost::python::str(self.mean()) + " +/- " + boost::python::str(self.error()));
+        }
+    }
 }
-
 
 using namespace alps::alea;
 
-
-BOOST_PYTHON_MODULE(pyalea)
-{
-/*
-  class_<binned_data<double> >("binned_data")
-    .def(init<std::vector<double>, uint64_t>())
-    //.def(init<boost::python::object, uint64_t>())
-
-    .add_property("mean",&binned_data<double>::mean)
-    .add_property("error",&binned_data<double>::error)
-
-    .def("__repr__", &print_binned_data<double>)
-
+BOOST_PYTHON_MODULE(pyalea) {
+    class_<mcdata<double> >("MCScalarData")
+        .add_property("mean", static_cast<double(*)(mcdata<double> const &)>(&wrap_mean))
+        .add_property("error", static_cast<double(*)(mcdata<double> const &)>(&wrap_error))
+        .add_property("tau", static_cast<double(*)(mcdata<double> const &)>(&wrap_tau))
+        .add_property("variance", static_cast<double(*)(mcdata<double> const &)>(&wrap_variance))
+        .add_property("count", &mcdata<double>::count)
+        .def("__repr__", static_cast<boost::python::str(*)(mcdata<double> const &)>(&print_mcdata))
+        .def("__deepcopy__", &alps::python::make_copy<mcdata<double> >)
+        .def("__abs__", static_cast<mcdata<double>(*)(mcdata<double>)>(&abs))
+        .def("__pow__", static_cast<mcdata<double>(*)(mcdata<double>, mcdata<double>::element_type const &)>(&pow))
+        .def(+self)
+        .def(-self)
+        .def(self == mcdata<double>())
+        .def(self += mcdata<double>())
+        .def(self += double())
+        .def(self -= mcdata<double>())
+        .def(self -= double())
+        .def(self *= mcdata<double>())
+        .def(self *= double())
+        .def(self /= mcdata<double>())
+        .def(self /= double())
+        .def(self + mcdata<double>())
+        .def(self + double())
+        .def(double() + self)
+        .def(self - mcdata<double>())
+        .def(self - double())
+        .def(double() - self)
+        .def(self * mcdata<double>())
+        .def(self * double())
+        .def(double() * self)
+        .def(self / mcdata<double>())
+        .def(self / double())
+        .def(double() / self)
+        .def("sq", static_cast<mcdata<double>(*)(mcdata<double>)>(&sq))
+        .def("cb", static_cast<mcdata<double>(*)(mcdata<double>)>(&cb))
+        .def("sqrt", static_cast<mcdata<double>(*)(mcdata<double>)>(&sqrt))
+        .def("cbrt", static_cast<mcdata<double>(*)(mcdata<double>)>(&cbrt))
+        .def("exp", static_cast<mcdata<double>(*)(mcdata<double>)>(&exp))
+        .def("log", static_cast<mcdata<double>(*)(mcdata<double>)>(&log))
+        .def("sin", static_cast<mcdata<double>(*)(mcdata<double>)>(&sin))
+        .def("cos", static_cast<mcdata<double>(*)(mcdata<double>)>(&cos))
+        .def("tan", static_cast<mcdata<double>(*)(mcdata<double>)>(&tan))
+        .def("asin", static_cast<mcdata<double>(*)(mcdata<double>)>(&asin))
+        .def("acos", static_cast<mcdata<double>(*)(mcdata<double>)>(&acos))
+        .def("atan", static_cast<mcdata<double>(*)(mcdata<double>)>(&atan))
+        .def("sinh", static_cast<mcdata<double>(*)(mcdata<double>)>(&sinh))
+        .def("cosh", static_cast<mcdata<double>(*)(mcdata<double>)>(&cosh))
+        .def("tanh", static_cast<mcdata<double>(*)(mcdata<double>)>(&tanh))
+        .def("asinh", static_cast<mcdata<double>(*)(mcdata<double>)>(&asinh))
+        .def("acosh", static_cast<mcdata<double>(*)(mcdata<double>)>(&acosh))
+        .def("atanh", static_cast<mcdata<double>(*)(mcdata<double>)>(&atanh))
+        .def("save", &mcdata<double>::save)
+        .def("load", &mcdata<double>::load)
     ;
+    class_<mcdata<std::vector<double> > >("MCVectorData")
+        .add_property("mean", static_cast<boost::python::numeric::array(*)(mcdata<std::vector<double> > const &)>(&wrap_mean))
+        .add_property("error", static_cast<boost::python::numeric::array(*)(mcdata<std::vector<double> > const &)>(&wrap_error))
+        .add_property("tau", static_cast<boost::python::numeric::array(*)(mcdata<std::vector<double> > const &)>(&wrap_tau))
+        .add_property("variance", static_cast<boost::python::numeric::array	(*)(mcdata<std::vector<double> > const &)>(&wrap_variance))
+        .add_property("count", &mcdata<std::vector<double> >::count)
+        .def("__repr__", static_cast<boost::python::str(*)(mcdata<std::vector<double> > const &)>(&print_mcdata))
+        .def("__deepcopy__", &alps::python::make_copy<mcdata<std::vector<double> > >)
+        .def("__abs__", static_cast<mcdata<std::vector<double> >(*)(mcdata<std::vector<double> >)>(&abs))
+        .def("__pow__", static_cast<mcdata<std::vector<double> >(*)(mcdata<std::vector<double> >, mcdata<double>::element_type const &)>(&pow))
+        .def(+self)
+        .def(-self)
+        .def(self == mcdata<std::vector<double> >())
+        .def(self += mcdata<std::vector<double> >())
+        .def(self += std::vector<double>())
+        .def(self -= mcdata<std::vector<double> >())
+        .def(self -= std::vector<double>())
+        .def(self *= mcdata<std::vector<double> >())
+        .def(self *= std::vector<double>())
+        .def(self /= mcdata<std::vector<double> >())
+        .def(self /= std::vector<double>())
+        .def(self + mcdata<std::vector<double> >())
+        .def(self + std::vector<double>())
+        .def(std::vector<double>() + self)
+        .def(self - mcdata<std::vector<double> >())
+        .def(self - std::vector<double>())
+        .def(std::vector<double>() - self)
+        .def(self * mcdata<std::vector<double> >())
+        .def(self * std::vector<double>())
+        .def(std::vector<double>() * self)
+        .def(self / mcdata<std::vector<double> >())
+        .def(self / std::vector<double>())
+        .def(std::vector<double>() / self)
+/*
+        .def(self * double())
+        .def(double() * self)
+        .def(self / double())
+        .def(double() / self)
 */
-
-
+        .def("sq", static_cast<mcdata<std::vector<double>(*)(mcdata<std::vector<double>)>(&sq))
+        .def("cb", static_cast<mcdata<std::vector<double>(*)(mcdata<std::vector<double>)>(&cb))
+        .def("sqrt", static_cast<mcdata<std::vector<double>(*)(mcdata<std::vector<double>)>(&sqrt))
+        .def("cbrt", static_cast<mcdata<std::vector<double>(*)(mcdata<std::vector<double>)>(&cbrt))
+        .def("exp", static_cast<mcdata<std::vector<double>(*)(mcdata<std::vector<double>)>(&exp))
+        .def("log", static_cast<mcdata<std::vector<double>(*)(mcdata<std::vector<double>)>(&log))
+        .def("sin", static_cast<mcdata<std::vector<double>(*)(mcdata<std::vector<double>)>(&sin))
+        .def("cos", static_cast<mcdata<std::vector<double>(*)(mcdata<std::vector<double>)>(&cos))
+        .def("tan", static_cast<mcdata<std::vector<double>(*)(mcdata<std::vector<double>)>(&tan))
+        .def("asin", static_cast<mcdata<std::vector<double>(*)(mcdata<std::vector<double>)>(&asin))
+        .def("acos", static_cast<mcdata<std::vector<double>(*)(mcdata<std::vector<double>)>(&acos))
+        .def("atan", static_cast<mcdata<std::vector<double>(*)(mcdata<std::vector<double>)>(&atan))
+        .def("sinh", static_cast<mcdata<std::vector<double>(*)(mcdata<std::vector<double>)>(&sinh))
+        .def("cosh", static_cast<mcdata<std::vector<double>(*)(mcdata<std::vector<double>)>(&cosh))
+        .def("tanh", static_cast<mcdata<std::vector<double>(*)(mcdata<std::vector<double>)>(&tanh))
+        .def("asinh", static_cast<mcdata<std::vector<double>(*)(mcdata<std::vector<double>)>(&asinh))
+        .def("acosh", static_cast<mcdata<std::vector<double>(*)(mcdata<std::vector<double>)>(&acosh))
+        .def("atanh", static_cast<mcdata<std::vector<double>(*)(mcdata<std::vector<double>)>(&atanh))
+        .def("save", &mcdata<std::vector<double>::save)
+        .def("load", &mcdata<std::vector<double>::load)
+    ;
 
   class_<value_with_error<double> >("value_with_error",init<optional<double,double> >())
     .add_property("mean", &value_with_error<double>::mean)
@@ -385,7 +461,7 @@ BOOST_PYTHON_MODULE(pyalea)
 
     .def(+self)
     .def(-self)
-    .def("__abs__",&abs<double>)
+    .def("__abs__", static_cast<value_with_error<double>(*)(value_with_error<double>)>(&abs<double>))
     .def(self == value_with_error<double>())
 
     .def(self += value_with_error<double>())
@@ -410,27 +486,26 @@ BOOST_PYTHON_MODULE(pyalea)
     .def(self / double())
     .def(double() / self)
 
+    .def("__pow__", static_cast<value_with_error<double>(*)(value_with_error<double>, value_with_error<double>::element_type const &)>(&pow<double>))
+    .def("sq", static_cast<value_with_error<double>(*)(value_with_error<double>)>(&sq<double>))
+    .def("cb", static_cast<value_with_error<double>(*)(value_with_error<double>)>(&cb<double>))
+    .def("sqrt", static_cast<value_with_error<double>(*)(value_with_error<double>)>(&sqrt<double>))
+    .def("cbrt", static_cast<value_with_error<double>(*)(value_with_error<double>)>(&cbrt<double>))
+    .def("exp", static_cast<value_with_error<double>(*)(value_with_error<double>)>(&exp<double>))
+    .def("log", static_cast<value_with_error<double>(*)(value_with_error<double>)>(&log<double>))
 
-    .def("__pow__",&pow<double>)
-    .def("sq",&sq<double>)
-    .def("cb",&cb<double>)
-    .def("sqrt",&sqrt<double>)
-    .def("cbrt",&cbrt<double>)
-    .def("exp",&exp<double>)
-    .def("log",&log<double>)
-
-    .def("sin",&sin<double>)
-    .def("cos",&cos<double>)
-    .def("tan",&tan<double>)
-    .def("asin",&asin<double>)
-    .def("acos",&acos<double>)
-    .def("atan",&atan<double>)
-    .def("sinh",&sinh<double>)
-    .def("cosh",&cosh<double>)
-    .def("tanh",&tanh<double>)
-    .def("asinh",&asinh<double>)
-    .def("acosh",&acosh<double>)
-    .def("atanh",&atanh<double>)
+    .def("sin", static_cast<value_with_error<double>(*)(value_with_error<double>)>(&sin<double>))
+    .def("cos", static_cast<value_with_error<double>(*)(value_with_error<double>)>(&cos<double>))
+    .def("tan", static_cast<value_with_error<double>(*)(value_with_error<double>)>(&tan<double>))
+    .def("asin", static_cast<value_with_error<double>(*)(value_with_error<double>)>(&asin<double>))
+    .def("acos", static_cast<value_with_error<double>(*)(value_with_error<double>)>(&acos<double>))
+    .def("atan", static_cast<value_with_error<double>(*)(value_with_error<double>)>(&atan<double>))
+    .def("sinh", static_cast<value_with_error<double>(*)(value_with_error<double>)>(&sinh<double>))
+    .def("cosh", static_cast<value_with_error<double>(*)(value_with_error<double>)>(&cosh<double>))
+    .def("tanh", static_cast<value_with_error<double>(*)(value_with_error<double>)>(&tanh<double>))
+    .def("asinh", static_cast<value_with_error<double>(*)(value_with_error<double>)>(&asinh<double>))
+    .def("acosh", static_cast<value_with_error<double>(*)(value_with_error<double>)>(&acosh<double>))
+    .def("atanh", static_cast<value_with_error<double>(*)(value_with_error<double>)>(&atanh<double>))
 
     .def_pickle(value_with_error_pickle_suite<double>())
     ;
@@ -481,28 +556,27 @@ BOOST_PYTHON_MODULE(pyalea)
 
     .def(+self)
     .def(-self)
-    .def("__abs__",&abs<std::vector<double> >)
+    .def("__abs__", static_cast<value_with_error<std::vector<double> >(*)(value_with_error<std::vector<double> >)>(&abs<std::vector<double> >))
+    .def("__pow__", static_cast<value_with_error<std::vector<double> >(*)(value_with_error<std::vector<double> >, value_with_error<std::vector<double> >::element_type const &)>(&pow<std::vector<double> >))
+    .def("sq", static_cast<value_with_error<std::vector<double> >(*)(value_with_error<std::vector<double> >)>(&sq<std::vector<double> >))
+    .def("cb", static_cast<value_with_error<std::vector<double> >(*)(value_with_error<std::vector<double> >)>(&cb<std::vector<double> >))
+    .def("sqrt", static_cast<value_with_error<std::vector<double> >(*)(value_with_error<std::vector<double> >)>(&sqrt<std::vector<double> >))
+    .def("cbrt", static_cast<value_with_error<std::vector<double> >(*)(value_with_error<std::vector<double> >)>(&cbrt<std::vector<double> >))
+    .def("exp", static_cast<value_with_error<std::vector<double> >(*)(value_with_error<std::vector<double> >)>(&exp<std::vector<double> >))
+    .def("log", static_cast<value_with_error<std::vector<double> >(*)(value_with_error<std::vector<double> >)>(&log<std::vector<double> >))
 
-    .def("__pow__",&pow<std::vector<double> >)
-    .def("sq",&sq<std::vector<double> >)
-    .def("cb",&cb<std::vector<double> >)
-    .def("sqrt",&sqrt<std::vector<double> >)
-    .def("cbrt",&cbrt<std::vector<double> >)
-    .def("exp",&exp<std::vector<double> >)
-    .def("log",&log<std::vector<double> >)
-
-    .def("sin",&sin<std::vector<double> >)
-    .def("cos",&cos<std::vector<double> >)
-    .def("tan",&tan<std::vector<double> >)
-    .def("asin",&asin<std::vector<double> >)
-    .def("acos",&acos<std::vector<double> >)
-    .def("atan",&atan<std::vector<double> >)
-    .def("sinh",&sinh<std::vector<double> >)
-    .def("cosh",&cosh<std::vector<double> >)
-    .def("tanh",&tanh<std::vector<double> >)
-    .def("asinh",&asinh<std::vector<double> >)
-    .def("acosh",&acosh<std::vector<double> >)
-    .def("atanh",&atanh<std::vector<double> >)
+    .def("sin", static_cast<value_with_error<std::vector<double> >(*)(value_with_error<std::vector<double> >)>(&sin<std::vector<double> >))
+    .def("cos", static_cast<value_with_error<std::vector<double> >(*)(value_with_error<std::vector<double> >)>(&cos<std::vector<double> >))
+    .def("tan", static_cast<value_with_error<std::vector<double> >(*)(value_with_error<std::vector<double> >)>(&tan<std::vector<double> >))
+    .def("asin", static_cast<value_with_error<std::vector<double> >(*)(value_with_error<std::vector<double> >)>(&asin<std::vector<double> >))
+    .def("acos", static_cast<value_with_error<std::vector<double> >(*)(value_with_error<std::vector<double> >)>(&acos<std::vector<double> >))
+    .def("atan", static_cast<value_with_error<std::vector<double> >(*)(value_with_error<std::vector<double> >)>(&atan<std::vector<double> >))
+    .def("sinh", static_cast<value_with_error<std::vector<double> >(*)(value_with_error<std::vector<double> >)>(&sinh<std::vector<double> >))
+    .def("cosh", static_cast<value_with_error<std::vector<double> >(*)(value_with_error<std::vector<double> >)>(&cosh<std::vector<double> >))
+    .def("tanh", static_cast<value_with_error<std::vector<double> >(*)(value_with_error<std::vector<double> >)>(&tanh<std::vector<double> >))
+    .def("asinh", static_cast<value_with_error<std::vector<double> >(*)(value_with_error<std::vector<double> >)>(&asinh<std::vector<double> >))
+    .def("acosh", static_cast<value_with_error<std::vector<double> >(*)(value_with_error<std::vector<double> >)>(&acosh<std::vector<double> >))
+    .def("atanh", static_cast<value_with_error<std::vector<double> >(*)(value_with_error<std::vector<double> >)>(&atanh<std::vector<double> >))
 
     .def_pickle(vector_with_error_pickle_suite<double>())
 
@@ -575,6 +649,7 @@ BOOST_PYTHON_MODULE(pyalea)
     .def("__repr__", &print_vector_list<double>)
     ;
     
+// TODO: use boost::lambda
 #define ALPS_PY_EXPORT_VECTOROBSERVABLE(class_name)                                                                             \
   class_<WrappedValarrayObservable< alps:: class_name > >(#class_name, init<std::string, optional<int> >())                     \
     .def("__repr__", &WrappedValarrayObservable< alps:: class_name >::representation)                                           \
@@ -633,5 +708,5 @@ ALPS_PY_EXPORT_SIMPLEOBSERVABLE(IntTimeSeriesObservable)
   boost::python::def("convert2numpy_array_int",&convert2numpy_array<int>);
 
   boost::python::def("convert2vector_double",&convert2vector<double>);
-  boost::python::def("convert2vector_int",&convert2vector<int>);  
+  boost::python::def("convert2vector_int",&convert2vector<int>);
 }

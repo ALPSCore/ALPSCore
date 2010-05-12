@@ -4,8 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2004 by Synge Todo <wistaria@comp-phys.org>,
-*                            Matthias Troyer <troyer@comp-phys.org>
+* Copyright (C) 2010 by Matthias Troyer <troyer@comp-phys.org>,
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -26,14 +25,24 @@
 *
 *****************************************************************************/
 
-/* $Id$ */
+/* $Id: obsvalue.h 3435 2009-11-28 14:45:38Z troyer $ */
 
-/// \file alea.h
-/// \brief includes all headers in the alps/alea directory
+#ifndef ALPS_TYPE_TRAITS_PARAM_TYPE_H
+#define ALPS_TYPE_TRAITS_PARAM_TYPE_H
 
-//#include <alps/alea/mcdata.hpp>
-#include <alps/alea/detailedbinning.h>
-#include <alps/alea/histogram.h>
-#include <alps/alea/nobinning.h>
-#include <alps/alea/observableset.h>
-#include <alps/alea/signedobservable.h>
+#include <alps/type_traits/is_scalar.hpp>
+
+// maybe we can automate this by checking for the existence of a value_type member
+
+namespace alps {
+
+template <typename T> 
+struct param_type : public boost::mpl::if_<
+      typename is_scalar<typename boost::remove_cv<T>::type>::type
+    , T
+    , typename boost::add_reference<typename boost::add_const<T>::type>::type
+> {};
+
+} // end namespace alps
+
+#endif // ALPS_TYPE_TRAITS_NORM_TYPE_H
