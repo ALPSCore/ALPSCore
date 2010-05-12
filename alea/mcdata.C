@@ -29,6 +29,7 @@
 /* $Id: simpleobseval.C 3654 2010-01-06 23:47:46Z troyer $ */
 
 #include <alps/alea.h>
+#include <alps/alea/mcdata.hpp>
 #include <boost/random.hpp>
 #include <iostream>
 #include <iomanip>
