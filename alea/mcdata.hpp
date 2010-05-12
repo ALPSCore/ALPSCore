@@ -112,7 +112,8 @@ namespace alps {
                     if (rhs.jacknife_bins_valid_)
                         std::transform(rhs.jack_.begin(), rhs.jack_.end(), std::back_inserter(jack_), boost::bind2nd(slice_it<X>(), s));
                 }
-                mcdata(AbstractSimpleObservable<value_type> const & obs)
+				template <class X>
+                mcdata(AbstractSimpleObservable<X> const & obs)
                     : count_(obs.count())
                     , binsize_(obs.bin_size())
                     , data_is_analyzed_(false)
@@ -380,6 +381,7 @@ namespace alps {
                     using boost::lambda::_1;
                     using boost::lambda::_2;
                     transform(rhs, alps::numeric::plus<T>(), sqrt(sq(error_) + sq(rhs.error_)));
+					return *this;
                 }
                 mcdata<T> & operator-=(mcdata<T> const & rhs) {
                     using std::sqrt;
@@ -666,7 +668,7 @@ namespace alps {
             rhs.transform(static_cast<typename mcdata<T>::value_type(*)(typename param_type<typename mcdata<T>::value_type>::type)>(&abs), rhs.error());
             return rhs;
         }
-        template <typename T> mcdata<T> pow(mcdata<T> rhs, typename mcdata<T>::element_type const & exponent) {
+        template <typename T> mcdata<T> pow(mcdata<T> rhs, typename mcdata<T>::element_type exponent) {
             if (exponent == 1.)
               return rhs;
             else {

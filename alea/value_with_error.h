@@ -340,7 +340,7 @@ namespace alps {
 
     // pow, sq, sqrt, cb, cbrt, exp, log    
     template <class T>
-    inline value_with_error<T> pow(value_with_error<T> rhs, typename value_with_error<T>::element_type const & exponent)
+    inline value_with_error<T> pow(value_with_error<T> rhs, typename value_with_error<T>::element_type exponent)
     {
       if (exponent == 1.)
       {
@@ -801,7 +801,7 @@ namespace alps {
       exponent_vec.resize(rhs.size(),exponent);
       std::vector<value_with_error<T> > res;
       res.reserve(rhs.size());
-      std::transform(rhs.begin(),rhs.end(),exponent_vec.begin(),std::back_inserter(res),pow<T>);
+	  std::transform(rhs.begin(),rhs.end(),exponent_vec.begin(),std::back_inserter(res),static_cast<value_with_error<T>(*)(value_with_error<T>,T)>(&pow));
       return res;
     }
 
@@ -811,7 +811,7 @@ namespace alps {
     { \
       std::vector<value_with_error<T> > res; \
       res.reserve(rhs.size()); \
-      std::transform(rhs.begin(),rhs.end(),std::back_inserter(res),NAME2<T>); \
+      std::transform(rhs.begin(),rhs.end(),std::back_inserter(res),static_cast<value_with_error<T>(*)(value_with_error<T>)>(&NAME2)); \
       return res; \
     }
 
