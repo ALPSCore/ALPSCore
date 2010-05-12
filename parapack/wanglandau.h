@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -149,7 +149,7 @@ public:
   void write_observables(ObservableSet& obs) const {
     std::valarray<double> w(size());
     for (int i = 0; i < size(); ++i) w[i] = log(weight_[i]);
-    for (int i = 0; i < size(); ++i) obs["Log(g)"] << w;
+    obs["Log(g)"] << w;
     obs["Lower Bound of Random Walk"] << 1.0 * walk_range_.min();
     obs["Upper Bound of Random Walk"] << 1.0 * walk_range_.max();
     obs["Lower Bound of Measurement"] << 1.0 * measure_range_.min();
