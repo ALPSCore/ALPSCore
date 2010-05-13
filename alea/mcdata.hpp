@@ -43,6 +43,7 @@
 #include <alps/numeric/functional.hpp>
 #include <alps/alea/simpleobservable.h>
 #include <alps/utility/numeric_cast.hpp>
+#include <alps/utility/set_zero.hpp>
 #include <alps/numeric/outer_product.hpp>
 #include <alps/type_traits/param_type.hpp>
 #include <alps/type_traits/average_type.hpp>
@@ -130,6 +131,7 @@ namespace alps {
                             tau_opt_ = obs.tau();
                         for (std::size_t i = 0; i < obs.bin_number(); ++i)
                             values_.push_back(obs.bin_value(i) / double(binsize_));
+
                     }
                 }
                 void swap(mcdata<T> & rhs) {
@@ -543,10 +545,15 @@ namespace alps {
                         jack_.resize(bin_number() + 1);
                         // Order-N initialization of jackknife data structure
                         resize_same_as(jack_[0], values_[0]);
-                        for(std::size_t j = 0; j < bin_number(); ++j) // to this point, jack_[0] = \sum_{j} x_j   (Note: x_j = (values_[j] / bin_size()))
-                            jack_[0] = jack_[0] + alps::numeric_cast<result_type>(values_[j] * binsize_);
-                        for(std::size_t i = 0; i < bin_number(); ++i) // to this point, jack_[i+1] = \sum_{j != i} x_j   (Note: x_j = (values_[j] / bin_size()))
-                            jack_[i+1] = jack_[0] - alps::numeric_cast<result_type>(values_[i] * binsize_);
+                        set_zero(jack_[0]);
+                        for(std::size_t j = 0; j < bin_number(); ++j) // to this point, jack_[0] = \sum_{j} values_[j] 
+                            jack_[0] = jack_[0] + alps::numeric_cast<result_type>(values_[j]);
+                        double sum2 = 0.;
+                        for(std::size_t i = 0; i < bin_number(); ++i) {// to this point, jack_[i+1] = \sum_{j != i} values_[j]  
+                            jack_[i+1] = jack_[0] - alps::numeric_cast<result_type>(values_[i]);
+                            double dx = (slice_value(values_[i],0) - slice_value(jack_[0]/ count_type(bin_number()),0));
+                            sum2 +=  dx*dx;
+                        }
                         //  Next, we want the following:
                         //    a)  jack_[0]   =  <x>
                         //    b)  jack_[i+1] =  <x_i>_{jacknife}
@@ -574,6 +581,8 @@ namespace alps {
                             result_type unbiased_mean_;
                             resize_same_as(error_, jack_[0]);
                             resize_same_as(unbiased_mean_, jack_[0]);
+                            set_zero(unbiased_mean_);
+                            set_zero(error_);
                             for (typename std::vector<result_type>::const_iterator it = jack_.begin() + 1; it != jack_.end(); ++it)
                                 unbiased_mean_ = unbiased_mean_ + *it / count_type(bin_number());
                             mean_ = jack_[0] - (unbiased_mean_ - jack_[0]) * (count_type(bin_number() - 1));

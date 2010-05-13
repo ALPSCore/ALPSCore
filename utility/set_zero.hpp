@@ -30,28 +30,27 @@
 
 /* $Id$ */
 
-#ifndef ALPS_UTILITY_RESIZE_HPP
-#define ALPS_UTILITY_RESIZE_HPP
+#ifndef ALPS_UTILITY_SET_ZERO_HPP
+#define ALPS_UTILITY_SET_ZERO_HPP
 
 #include <alps/type_traits/is_sequence.hpp>
+#include <alps/type_traits/element_type.hpp>
 
-#include <boost/mpl/or.hpp>
-#include <boost/mpl/and.hpp>
 #include <boost/utility/enable_if.hpp>
 
 #include <algorithm>
 
 namespace alps {
 
-template <class X, class Y> 
-inline typename boost::disable_if<boost::mpl::or_<is_sequence<X>,is_sequence<Y> >,void>::type
-resize_same_as(X&, const Y&) {}
+template <class X> 
+inline typename boost::disable_if<is_sequence<X>,void>::type
+set_zero(X& x) { x=X();}
 
-template <class X, class Y> 
-inline typename boost::enable_if<boost::mpl::and_<is_sequence<X>,is_sequence<Y> >,void>::type
-resize_same_as(X& a, const Y& y) 
+template <class X> 
+inline typename boost::enable_if<is_sequence<X>,void>::type
+set_zero(X& x) 
 {
-  a.resize(y.size());
+  std::fill(x.begin(),x.end(),typename element_type<X>::type());
 }
 
 
