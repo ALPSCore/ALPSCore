@@ -526,6 +526,7 @@ namespace alps {
                         values_[i] = values_[howmany * i];
                         for (uint64_t j = 1; j < howmany; ++j)
                             values_[i] += values_[howmany * i + j];
+                        values_[i]/=count_type(howmany);
                     }
                     values_.resize(newbins);
                     binsize_ *= howmany;
