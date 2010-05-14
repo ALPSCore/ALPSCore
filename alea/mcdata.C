@@ -154,8 +154,10 @@ try {
   obseval_j = pow(obseval_a, 3.3);
   std::cout << obseval_j;
 
-//  alps::alea::mcdata<double> obseval_k = obseval_6 / obseval_6;
-//  std::cout << obseval_k;
+  std::cerr << (obseval_6.can_rebin() ? "can" : "cannot");
+  alps::alea::mcdata<double> obseval_k = obseval_6 / obseval_6;
+  std::cerr << (obseval_k.can_rebin() ? "can" : "cannot");
+  std::cout << obseval_k;
 
 //  alps::RealVectorObsevaluator obseval_v = obs_d;
 //  obseval_v /= obseval_i;
