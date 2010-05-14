@@ -133,7 +133,7 @@ namespace alps {
 
     #define IMPLEMENT_ALPS_VECTOR_FUNCTION2(LIB_HEADER,FUNCTION_NAME) \
     template<class T> \
-    static std::vector<T> FUNCTION_NAME(std::vector<T> const & vec, T const & index) \
+    static std::vector<T> FUNCTION_NAME(std::vector<T> const & vec, T index) \
     { \
       std::vector<T> index_vec(vec.size(),index); \
       std::vector<T> res; \

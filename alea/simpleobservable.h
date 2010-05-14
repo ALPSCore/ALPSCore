@@ -38,6 +38,10 @@
 #include <alps/type_traits/change_value_type.hpp>
 #include <alps/type_traits/is_scalar.hpp>
 #include <alps/alea/type_tag.hpp>
+#include <alps/utility/encode.hpp>
+#ifdef ALPS_HAVE_HDF5
+#include <alps/hdf5.hpp>
+#endif
 
 namespace alps {
 
@@ -50,7 +54,6 @@ namespace alps {
 template <class T,class BINNING>
 class SimpleObservable: public AbstractSimpleObservable<T>, public RecordableObservable<T>
 {
-  typedef AbstractSimpleObservable<T> super_type;
 public:
   typedef typename AbstractSimpleObservable<T>::value_type value_type;
   typedef typename AbstractSimpleObservable<T>::time_type time_type;
@@ -95,7 +98,7 @@ public:
   count_type count() const {return b_.count();}
   bool has_tau() const { return b_.has_tau;}
   time_type tau() const  { return b_.tau();}
-  std::string representation() const { return super_type::name (); }    // add other things later
+  std::string representation() const { return hdf5_name_encode(this->name()); } 
     
     
   void operator<<(const T& x) { b_ << x;}
@@ -160,8 +163,8 @@ SimpleObservable<T,BINNING>::output(std::ostream& o) const
 {
   if(count()!=0)
   {
-    o << super_type::name ();
-    output_helper<typename is_scalar<T>::type>::output(b_,o,super_type::label());
+    o << this->name ();
+    output_helper<typename is_scalar<T>::type>::output(b_,o,this->label());
   }
 }
     
@@ -186,13 +189,29 @@ inline void SimpleObservable<T,BINNING>::load(IDump& dump)
 }
 
 #ifdef ALPS_HAVE_HDF5
-  template <class T,class BINNING> inline void SimpleObservable<T,BINNING>::serialize(hdf5::iarchive & ar) {
+  template <class T,class BINNING> 
+  inline void SimpleObservable<T,BINNING>::serialize(hdf5::iarchive & ar) 
+  {
     AbstractSimpleObservable<T>::serialize(ar);
     ar >> make_pvp("", b_);
   }
-  template <class T,class BINNING> inline void SimpleObservable<T,BINNING>::serialize(hdf5::oarchive & ar) const {
+  template <class T,class BINNING> 
+  inline void SimpleObservable<T,BINNING>::serialize(hdf5::oarchive & ar) const 
+  {
     AbstractSimpleObservable<T>::serialize(ar);
     ar << make_pvp("", b_);
+  }
+
+  template <class T,class BINNING> 
+  inline hdf5::oarchive & operator<<(hdf5::oarchive & ar,  SimpleObservable<T,BINNING> const& obs) 
+  {
+    return ar << make_pvp("/simulation/results/"+obs.representation(), obs);
+  }
+
+  template <class T,class BINNING> 
+  inline hdf5::iarchive & operator>>(hdf5::iarchive & ar,  SimpleObservable<T,BINNING>& obs) 
+  {
+    return ar >> make_pvp("/simulation/results/"+obs.representation(), obs);
   }
 #endif
 

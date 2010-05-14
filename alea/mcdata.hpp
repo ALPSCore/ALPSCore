@@ -698,7 +698,6 @@ namespace alps {
                 using boost::lambda::bind;
                 using boost::numeric::operators::operator-;
                 using boost::numeric::operators::operator*;
-            // TODO: fixit? MT: this was commented out. What needs to be fixed?
                 rhs.transform(bind<T>(static_cast<
                     typename mcdata<T>::value_type(*)(typename param_type<typename mcdata<T>::value_type>::type, typename param_type<typename mcdata<T>::element_type>::type)
                 >(&pow), _1, exponent), abs(exponent * pow(rhs.mean(), exponent - 1.) * rhs.error()));
@@ -737,8 +736,7 @@ namespace alps {
             using alps::numeric::abs;
             using alps::numeric::operator*;
             using boost::numeric::operators::operator/;
-            // TODO: MT: this was commented out. what is todo here?
-            rhs.transform(static_cast<typename mcdata<T>::value_type(*)(typename mcdata<T>::value_type)>(&sqrt), abs(rhs.error() / (2. * sqrt(rhs.mean()))));
+            rhs.transform(static_cast<typename mcdata<T>::value_type(*)(typename param_type<typename mcdata<T>::value_type>::type)>(&sqrt), abs(rhs.error() / (2. * sqrt(rhs.mean()))));
             return rhs;
         }
         template<typename T> mcdata<T> cbrt(mcdata<T> rhs) {
