@@ -135,6 +135,7 @@ namespace alps {
                     }
                 }
                 bool can_rebin() const { return !cannot_rebin_;}
+                bool jackknife_valid() const { return jacknife_bins_valid_;}
                 void swap(mcdata<T> & rhs) {
                     std::swap(count_, rhs.count_);
                     std::swap(mean_, rhs.mean_);
@@ -492,6 +493,8 @@ namespace alps {
                     if (count() == 0)
                         boost::throw_exception(std::runtime_error("the observable needs measurements"));
                     data_is_analyzed_ = false;
+                    if (!jacknife_bins_valid_)
+                      fill_jack();
                     cannot_rebin_ = true;
                     mean_ = op(mean_);
                     error_ = error;
@@ -505,6 +508,10 @@ namespace alps {
                 template <typename X, typename OP> void transform(mcdata<X> const & rhs, OP op, value_type const & error, boost::optional<result_type> variance_opt = boost::none_t()) {
                     if (count() == 0 || rhs.count() == 0)
                         boost::throw_exception(std::runtime_error("both observables need measurements"));
+                    if (!jacknife_bins_valid_)
+                      fill_jack();
+                    if (!rhs.jacknife_bins_valid_)
+                      rhs.fill_jack();
                     data_is_analyzed_= false;
                     cannot_rebin_ = true;
                     mean_ = op(mean_, rhs.mean_);
@@ -691,12 +698,10 @@ namespace alps {
                 using boost::lambda::bind;
                 using boost::numeric::operators::operator-;
                 using boost::numeric::operators::operator*;
-            // TODO: fixit
-/*
+            // TODO: fixit? MT: this was commented out. What needs to be fixed?
                 rhs.transform(bind<T>(static_cast<
                     typename mcdata<T>::value_type(*)(typename param_type<typename mcdata<T>::value_type>::type, typename param_type<typename mcdata<T>::element_type>::type)
                 >(&pow), _1, exponent), abs(exponent * pow(rhs.mean(), exponent - 1.) * rhs.error()));
-*/
                 return rhs;
             }
         }
@@ -732,7 +737,7 @@ namespace alps {
             using alps::numeric::abs;
             using alps::numeric::operator*;
             using boost::numeric::operators::operator/;
-            // TODO:
+            // TODO: MT: this was commented out. what is todo here?
             rhs.transform(static_cast<typename mcdata<T>::value_type(*)(typename mcdata<T>::value_type)>(&sqrt), abs(rhs.error() / (2. * sqrt(rhs.mean()))));
             return rhs;
         }
