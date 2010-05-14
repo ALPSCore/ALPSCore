@@ -28,7 +28,7 @@ Jackknife analysis
   count = 4096, bin size = 32, number of bins = 128
 1.49876 +/- 0.0027
   count = 12288, bin size = 128, number of bins = 96
-0.664328 +/- 0.142
+observable d:0.664328 +/- 0.14194
   count = 4, bin size = 1, number of bins = 4
 four different methods to construct RealObsevaluator
   3.02568 +/- 0.031
