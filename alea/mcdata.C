@@ -102,7 +102,7 @@ try {
             << ", number of bins = " << obseval_d.bin_number()
             << std::endl;
 
-  std::cout << "five different methods to construct RealObsevaluator\n";
+  std::cout << "four different methods to construct RealObsevaluator\n";
 
   alps::alea::mcdata<double> obseval_0 = obseval_b / obseval_a;
   std::cout << "  " << obseval_0;
@@ -116,15 +116,6 @@ try {
   alps::alea::mcdata<double> obseval_3;
   obseval_3 = (obseval_b / obseval_a);
   std::cout << "  " << obseval_3;
-
-  alps::alea::mcdata<double> obseval_4;
-  obseval_4 << (obseval_b / obseval_a);
-  std::cout << "  " << obseval_4;
-
-  std::cout << "  count = " << obseval_4.count()
-            << ", bin size = " << obseval_4.bin_size()
-            << ", number of bins = " << obseval_4.bin_number()
-            << std::endl;
 
   std::cout << "merging observables b and c\n";
   alps::alea::mcdata<double> obseval_5;
