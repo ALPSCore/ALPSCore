@@ -78,7 +78,11 @@ namespace alps {
                 typedef typename change_value_type<T,int>::type convergence_type;
                 typedef typename covariance_type<T>::type covariance_type;
                 mcdata()
-                    : data_is_analyzed_(true)
+                    :  count_(0)
+                    , mean_()
+                    , error_()
+                    , binsize_(0)
+					, data_is_analyzed_(true)
                     , jacknife_bins_valid_(true)
                     , cannot_rebin_(false)
                 {}
