@@ -69,7 +69,7 @@ try {
   std::cout << obs_a;
   std::cout << obs_b;
   std::cout << obs_c;
-  std::cout << obs_d;
+  std::cout << "observable d:" << obs_d.mean() << " +/- " <<  obs_d.error() << std::endl;
 
   //JACKKNIVE ANALYSIS
   //------------------
@@ -96,7 +96,7 @@ try {
             << ", number of bins = " << obseval_c.bin_number()
             << std::endl;
   alps::alea::mcdata<double> obseval_d(obs_d);
-  std::cout << "observable d:" << obseval_d.mean() << " +/- " <<  obseval_d.error() << std::endl;
+  std::cout << obseval_d;
   std::cout << "  count = " << obseval_d.count()
             << ", bin size = " << obseval_d.bin_size()
             << ", number of bins = " << obseval_d.bin_number()
