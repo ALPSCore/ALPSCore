@@ -134,6 +134,7 @@ namespace alps {
 
                     }
                 }
+                bool can_rebin() const { return !cannot_rebin_;}
                 void swap(mcdata<T> & rhs) {
                     std::swap(count_, rhs.count_);
                     std::swap(mean_, rhs.mean_);
@@ -732,7 +733,7 @@ namespace alps {
             using alps::numeric::operator*;
             using boost::numeric::operators::operator/;
             // TODO:
-//            rhs.transform(static_cast<typename mcdata<T>::value_type(*)(typename mcdata<T>::value_type)>(&sqrt), abs(rhs.error() / (2. * sqrt(rhs.mean()))));
+            rhs.transform(static_cast<typename mcdata<T>::value_type(*)(typename mcdata<T>::value_type)>(&sqrt), abs(rhs.error() / (2. * sqrt(rhs.mean()))));
             return rhs;
         }
         template<typename T> mcdata<T> cbrt(mcdata<T> rhs) {
