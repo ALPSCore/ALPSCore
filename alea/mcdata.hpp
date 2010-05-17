@@ -82,7 +82,7 @@ namespace alps {
                     , mean_()
                     , error_()
                     , binsize_(0)
-					, data_is_analyzed_(true)
+                    , data_is_analyzed_(true)
                     , jacknife_bins_valid_(true)
                     , cannot_rebin_(false)
                 {}
@@ -117,9 +117,11 @@ namespace alps {
                     if (rhs.jacknife_bins_valid_)
                         std::transform(rhs.jack_.begin(), rhs.jack_.end(), std::back_inserter(jack_), boost::bind2nd(slice_it<X>(), s));
                 }
-				template <class X>
+                template <typename X>
                 mcdata(AbstractSimpleObservable<X> const & obs)
                     : count_(obs.count())
+                    // TODO:
+                    // mean_(replace_valarray_by_vector(obs.mean())) ...
                     , binsize_(obs.bin_size())
                     , data_is_analyzed_(false)
                     , jacknife_bins_valid_(false)
@@ -266,6 +268,7 @@ namespace alps {
                         ;
                     ar
                         >> make_pvp("timeseries/data", values_)
+// TODO: implement
 //                        >> make_pvp("timeseries/data/@maxbinnum", max_bin_number_)
                     ;
                     if (ar.is_attribute("timeseries/data/@binsize"))
@@ -300,6 +303,7 @@ namespace alps {
                     ar
                         << make_pvp("timeseries/data", values_)
                         << make_pvp("timeseries/data/@binsize", binsize_)
+// TODO: implement
 //                        << make_pvp("timeseries/data/@maxbinnum", max_bin_number_)
                         << make_pvp("timeseries/data/@binningtype", "linear")
                     ;
@@ -356,6 +360,7 @@ namespace alps {
                                 tmp.set_bin_size(binsize_);
                                 std::copy(tmp.values_.begin(), tmp.values_.end(), std::back_inserter(values_));
                             }
+// TODO: implement
 //                            if (max_bin_number_ && max_bin_number_ < bin_number())
 //                              set_bin_number(max_bin_number_);
                             } else
@@ -389,7 +394,7 @@ namespace alps {
                     using boost::lambda::_1;
                     using boost::lambda::_2;
                     transform(rhs, alps::numeric::plus<T>(), sqrt(sq(error_) + sq(rhs.error_)));
-					return *this;
+                    return *this;
                 }
                 mcdata<T> & operator-=(mcdata<T> const & rhs) {
                     using std::sqrt;
@@ -525,7 +530,7 @@ namespace alps {
                         tau_opt_ = boost::none_t();
                     std::transform(values_.begin(), values_.end(), rhs.values_.begin(), values_.begin(), op);
                     if (rhs.jacknife_bins_valid_ && jacknife_bins_valid_)
-	                    std::transform(jack_.begin(), jack_.end(), rhs.jack_.begin(), jack_.begin(), op);
+                        std::transform(jack_.begin(), jack_.end(), rhs.jack_.begin(), jack_.begin(), op);
                 }
             private:
                 void collect_bins(uint64_t howmany) {
@@ -609,7 +614,7 @@ namespace alps {
                     data_is_analyzed_ = true;
                 }
                 friend class boost::serialization::access;
-                template <class Archive> void serialize(Archive & ar, const unsigned int version) {
+                template <typename Archive> void serialize(Archive & ar, const unsigned int version) {
                     ar & count_;
                     ar & binsize_;
                     ar & data_is_analyzed_;
@@ -639,13 +644,13 @@ namespace alps {
             return out;
         }
         #define ALPS_ALEA_MCDATA_IMPLEMENT_OPERATION(OPERATOR_NAME, OPERATOR_ASSIGN)                                                                       \
-            template<class T> inline mcdata<T> OPERATOR_NAME(mcdata<T> lhs, mcdata<T> const & rhs) {                                                       \
+            template <typename T> inline mcdata<T> OPERATOR_NAME(mcdata<T> lhs, mcdata<T> const & rhs) {                                                    \
                 return lhs OPERATOR_ASSIGN rhs;                                                                                                            \
             }                                                                                                                                              \
-            template <class T> inline mcdata<T> OPERATOR_NAME(mcdata<T> lhs, T const & rhs) {                                                              \
+            template <typename T> inline mcdata<T> OPERATOR_NAME(mcdata<T> lhs, T const & rhs) {                                                           \
                 return lhs OPERATOR_ASSIGN rhs;                                                                                                            \
             }                                                                                                                                              \
-            template <class T> inline mcdata<std::vector<T> > OPERATOR_NAME(                                                                               \
+            template <typename T> inline mcdata<std::vector<T> > OPERATOR_NAME(                                                                            \
                 mcdata<std::vector<T> > lhs, typename mcdata<std::vector<T> >::element_type const & rhs_elem                                               \
             ) {                                                                                                                                            \
                 std::vector<T> rhs(lhs.size(),rhs_elem);                                                                                                   \
@@ -671,7 +676,7 @@ namespace alps {
             return rhs;
         }
         #define ALPS_ALEA_MCDATA_IMPLEMENT_OPERATION(OPERATOR_NAME,OPERATOR_ASSIGN)                                                                        \
-            template <class T> inline mcdata<std::vector<T> > OPERATOR_NAME(                                                                               \
+            template <typename T> inline mcdata<std::vector<T> > OPERATOR_NAME(                                                                            \
                 typename mcdata<std::vector<T> >::element_type const & lhs_elem, mcdata<std::vector<T> > rhs                                               \
             ) {                                                                                                                                            \
                 std::vector<T> lhs(rhs.size(),lhs_elem);                                                                                                   \
@@ -682,14 +687,6 @@ namespace alps {
         ALPS_ALEA_MCDATA_IMPLEMENT_OPERATION(operator*,*)
         ALPS_ALEA_MCDATA_IMPLEMENT_OPERATION(operator/,/)
         #undef ALPS_ALEA_MCDATA_IMPLEMENT_OPERATION
-        template <typename T> inline mcdata<T> abs(mcdata<T> rhs) {
-            using std::abs;
-            using alps::numeric::abs;
-            using boost::lambda::_1;
-            using boost::lambda::bind;
-            rhs.transform(static_cast<typename mcdata<T>::value_type(*)(typename param_type<typename mcdata<T>::value_type>::type)>(&abs), rhs.error());
-            return rhs;
-        }
         template <typename T> mcdata<T> pow(mcdata<T> rhs, typename mcdata<T>::element_type exponent) {
             if (exponent == 1.)
               return rhs;
@@ -703,248 +700,94 @@ namespace alps {
                 using boost::numeric::operators::operator-;
                 using boost::numeric::operators::operator*;
                 rhs.transform(bind<T>(static_cast<
-                    typename mcdata<T>::value_type(*)(typename param_type<typename mcdata<T>::value_type>::type, typename param_type<typename mcdata<T>::element_type>::type)
+                    typename mcdata<T>::value_type(*)(typename mcdata<T>::value_type, typename mcdata<T>::element_type)
                 >(&pow), _1, exponent), abs(exponent * pow(rhs.mean(), exponent - 1.) * rhs.error()));
                 return rhs;
             }
         }
-        template<typename T> inline mcdata<T> sq(mcdata<T> rhs) {
-            using alps::numeric::sq;
-            using std::abs;
-            using boost::lambda::_1;
-            using boost::lambda::bind;
-            using alps::numeric::abs;
-            using alps::numeric::operator*;
-            using boost::numeric::operators::operator*;
-           rhs.transform(static_cast<typename mcdata<T>::value_type(*)(typename param_type<typename mcdata<T>::value_type>::type)>(&sq), abs(2. * rhs.mean() * rhs.error()));
-            return rhs;
-        }
-        template<typename T> mcdata<T> cb(mcdata<T> rhs) {
-            using alps::numeric::sq;
-            using alps::numeric::cb;
-            using std::abs;
-            using boost::lambda::_1;
-            using boost::lambda::bind;
-            using alps::numeric::abs;
-            using alps::numeric::operator*;
-            using boost::numeric::operators::operator*;
-            rhs.transform(static_cast<typename mcdata<T>::value_type(*)(typename param_type<typename mcdata<T>::value_type>::type)>(&cb), abs(3. * sq(rhs.mean()) * rhs.error()));
-            return rhs;
-        }
-        template<typename T> mcdata<T> sqrt(mcdata<T> rhs) {
-            using std::sqrt;
-            using alps::numeric::sqrt;
-            using std::abs;
-            using boost::lambda::_1;
-            using boost::lambda::bind;
-            using alps::numeric::abs;
-            using alps::numeric::operator*;
-            using boost::numeric::operators::operator/;
-            rhs.transform(static_cast<typename mcdata<T>::value_type(*)(typename param_type<typename mcdata<T>::value_type>::type)>(&sqrt), abs(rhs.error() / (2. * sqrt(rhs.mean()))));
-            return rhs;
-        }
-        template<typename T> mcdata<T> cbrt(mcdata<T> rhs) {
-            using alps::numeric::sq;
-            using alps::numeric::cbrt;
-            using std::abs;
-            using alps::numeric::abs;
+        template <typename T> std::vector<mcdata<T> > pow(std::vector<mcdata<T> > rhs, typename mcdata<T>::element_type exponent) {
             using std::pow;
             using boost::lambda::_1;
             using boost::lambda::bind;
-            using alps::numeric::pow;
-            using alps::numeric::operator*;
-            using boost::numeric::operators::operator/;
-            rhs.transform(static_cast<typename mcdata<T>::value_type(*)(typename param_type<typename mcdata<T>::value_type>::type)>(&cbrt), abs(rhs.error() / (3. * sq(pow(rhs.mean(), 1. / 3)))));
+            std::transform(rhs.begin(), rhs.end(), rhs.begin(), bind<mcdata<T> >(static_cast<mcdata<T> (*)(mcdata<T> rhs, typename mcdata<T>::element_type)>(&pow), _1, exponent));
             return rhs;
         }
-        template<typename T> mcdata<T> exp(mcdata<T> rhs) {
-            using std::exp;
-            using boost::lambda::_1;
-            using boost::lambda::bind;
-            using alps::numeric::exp;
-            using boost::numeric::operators::operator*;
-            rhs.transform(static_cast<typename mcdata<T>::value_type(*)(typename param_type<typename mcdata<T>::value_type>::type)>(&exp), exp(rhs.mean()) * rhs.error());
-            return rhs;
-        }
-        template<typename T> mcdata<T> log(mcdata<T> rhs) {
-            using std::log;
-            using alps::numeric::log;
-            using std::abs;
-            using boost::lambda::_1;
-            using boost::lambda::bind;
-            using alps::numeric::abs;
-            using boost::numeric::operators::operator/;
-            rhs.transform(static_cast<typename mcdata<T>::value_type(*)(typename param_type<typename mcdata<T>::value_type>::type)>(&log), abs(rhs.error() / rhs.mean()));
-            return rhs;
-        }
-        template<typename T> inline mcdata<T> sin(mcdata<T> rhs) {
-            using std::abs;
-            using alps::numeric::abs;
-            using std::sin;
-            using alps::numeric::sin;
-            using boost::lambda::_1;
-            using boost::lambda::bind;
-            using std::cos;
-            using alps::numeric::cos;
-            using boost::numeric::operators::operator*;
-            rhs.transform(static_cast<typename mcdata<T>::value_type(*)(typename param_type<typename mcdata<T>::value_type>::type)>(&sin), abs(cos(rhs.mean()) * rhs.error()));
-            return rhs;
-        }
-        template<typename T> mcdata<T> cos(mcdata<T> rhs) {
-            using std::abs;
-            using alps::numeric::abs;
-            using std::sin;
-            using alps::numeric::sin;
-            using std::cos;
-            using boost::lambda::_1;
-            using boost::lambda::bind;
-            using alps::numeric::cos;
-            using boost::numeric::operators::operator-;
-            using boost::numeric::operators::operator*;
-            rhs.transform(static_cast<typename mcdata<T>::value_type(*)(typename param_type<typename mcdata<T>::value_type>::type)>(&cos), abs(-sin(rhs.mean()) * rhs.error()));
-            return rhs;
-        }
-        template<typename T> mcdata<T> tan(mcdata<T> rhs) {
-            using std::abs;
-            using alps::numeric::abs;
-            using std::tan;
-            using alps::numeric::tan;
-            using std::cos;
-            using boost::lambda::_1;
-            using boost::lambda::bind;
-            using alps::numeric::cos;
-            using boost::numeric::operators::operator*;
-            using alps::numeric::operator/;
-            rhs.transform(static_cast<typename mcdata<T>::value_type(*)(typename param_type<typename mcdata<T>::value_type>::type)>(&tan), abs(1./(cos(rhs.mean()) * cos(rhs.mean())) * rhs.error()));
-            return rhs;
-        }
-        template<typename T> mcdata<T> sinh(mcdata<T> rhs) {
-            using std::abs;
-            using alps::numeric::abs;
-            using std::sinh;
-            using alps::numeric::sinh;
-            using std::cosh;
-            using boost::lambda::_1;
-            using boost::lambda::bind;
-            using alps::numeric::cosh;
-            using boost::numeric::operators::operator*;
-            rhs.transform(static_cast<typename mcdata<T>::value_type(*)(typename param_type<typename mcdata<T>::value_type>::type)>(&sinh), abs(cosh(rhs.mean()) * rhs.error()));
-            return rhs;
-        }
-        template<typename T> mcdata<T> cosh(mcdata<T> rhs) {
-            using std::abs;
-            using alps::numeric::abs;
-            using std::sinh;
-            using alps::numeric::sinh;
-            using std::cosh;
-            using boost::lambda::_1;
-            using boost::lambda::bind;
-            using alps::numeric::cosh;
-            using boost::numeric::operators::operator*;
-            rhs.transform(static_cast<typename mcdata<T>::value_type(*)(typename param_type<typename mcdata<T>::value_type>::type)>(&cosh), abs(sinh(rhs.mean()) * rhs.error()));
-            return rhs;
-        }
-        template<typename T> mcdata<T> tanh(mcdata<T> rhs) {
-            using std::abs;
-            using alps::numeric::abs;
-            using std::cosh;
-            using alps::numeric::cosh;
-            using std::tanh;
-            using boost::lambda::_1;
-            using boost::lambda::bind;
-            using alps::numeric::tanh;
-            using boost::numeric::operators::operator*;
-            using alps::numeric::operator/;
-            rhs.transform(static_cast<typename mcdata<T>::value_type(*)(typename param_type<typename mcdata<T>::value_type>::type)>(&tanh), abs(1. / (cosh(rhs.mean()) * cosh(rhs.mean())) * rhs.error()));
-            return rhs;
-        }
-        template<typename T> mcdata<T> asin(mcdata<T> rhs) {
-            using std::abs;
-            using alps::numeric::abs;
-            using std::sqrt;
-            using alps::numeric::sqrt;
-            using std::asin;
-            using boost::lambda::_1;
-            using boost::lambda::bind;
-            using alps::numeric::asin;
-            using alps::numeric::operator-;
-            using boost::numeric::operators::operator*;
-            using alps::numeric::operator/;
-            rhs.transform(static_cast<typename mcdata<T>::value_type(*)(typename param_type<typename mcdata<T>::value_type>::type)>(&asin), abs(1. / sqrt(1. - rhs.mean() * rhs.mean()) * rhs.error()));
-            return rhs;
-        }
-        template<typename T> mcdata<T> acos(mcdata<T> rhs) {
-            using std::abs;
-            using alps::numeric::abs;
-            using std::sqrt;
-            using alps::numeric::sqrt;
-            using std::acos;
-            using boost::lambda::_1;
-            using boost::lambda::bind;
-            using alps::numeric::acos;
-            using alps::numeric::operator-;
-            using boost::numeric::operators::operator-;
-            using boost::numeric::operators::operator*;
-            using alps::numeric::operator/;
-            rhs.transform(static_cast<typename mcdata<T>::value_type(*)(typename param_type<typename mcdata<T>::value_type>::type)>(&acos), abs(-1. / sqrt(1. - rhs.mean() * rhs.mean()) * rhs.error()));
-            return rhs;
-        }
-        template<typename T> mcdata<T> atan(mcdata<T> rhs) {
-            using std::abs;
-            using alps::numeric::abs;
-            using std::atan;
-            using boost::lambda::_1;
-            using boost::lambda::bind;
-            using alps::numeric::atan;
-            using alps::numeric::operator+;
-            using boost::numeric::operators::operator*;
-            using alps::numeric::operator/;
-            rhs.transform(static_cast<typename mcdata<T>::value_type(*)(typename param_type<typename mcdata<T>::value_type>::type)>(&atan), abs(1. / (1. + rhs.mean() * rhs.mean()) * rhs.error()));
-            return rhs;
-        }
-        template<typename T> mcdata<T> asinh(mcdata<T> rhs) {
-            using std::abs;
-            using alps::numeric::abs;
-            using std::sqrt;
-            using boost::lambda::_1;
-            using boost::lambda::bind;
-            using alps::numeric::sqrt;
-            using boost::math::asinh;
-            using alps::numeric::asinh;
-            using alps::numeric::operator+;
-            using boost::numeric::operators::operator*;
-            using alps::numeric::operator/;
-            rhs.transform(static_cast<typename mcdata<T>::value_type(*)(typename param_type<typename mcdata<T>::value_type>::type)>(&asinh), abs(1. / sqrt(rhs.mean() * rhs.mean() + 1.) * rhs.error()));
-            return rhs;
-        }
-        template<typename T> mcdata<T> acosh(mcdata<T> rhs) {
-            using std::abs;
-            using alps::numeric::abs;
-            using std::sqrt;
-            using boost::lambda::_1;
-            using boost::lambda::bind;
-            using alps::numeric::sqrt;
-            using boost::math::acosh;
-            using alps::numeric::acosh;
-            using alps::numeric::operator-;
-            using boost::numeric::operators::operator*;
-            using alps::numeric::operator/;
-            rhs.transform(static_cast<typename mcdata<T>::value_type(*)(typename param_type<typename mcdata<T>::value_type>::type)>(&acosh), abs(1. / sqrt(rhs.mean() * rhs.mean() - 1.) * rhs.error()));
-            return rhs;
-        }
-        template<typename T> mcdata<T> atanh(mcdata<T> rhs) {
-            using std::abs;
-            using boost::lambda::_1;
-            using boost::lambda::bind;
-            using alps::numeric::abs;
-            using boost::math::atanh;
-            using alps::numeric::atanh;
-            using alps::numeric::operator-;
-            using boost::numeric::operators::operator*;
-            using alps::numeric::operator/;
-            rhs.transform(static_cast<typename mcdata<T>::value_type(*)(typename param_type<typename mcdata<T>::value_type>::type)>(&atanh), abs(1./(1. - rhs.mean() * rhs.mean()) * rhs.error()));
-            return rhs;
-        }
+        #define ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(FUNCTION_NAME, ERROR)                                                                                  \
+            template <typename T> inline mcdata<T> FUNCTION_NAME (mcdata<T> rhs) {                                                                         \
+                using alps::numeric::sq;                                                                                                                   \
+                using alps::numeric::cbrt;                                                                                                                 \
+                using alps::numeric::cb;                                                                                                                   \
+                using std::sqrt;                                                                                                                           \
+                using alps::numeric::sqrt;                                                                                                                 \
+                using std::exp;                                                                                                                            \
+                using alps::numeric::exp;                                                                                                                  \
+                using std::log;                                                                                                                            \
+                using alps::numeric::log;                                                                                                                  \
+                using std::abs;                                                                                                                            \
+                using alps::numeric::abs;                                                                                                                  \
+                using std::sqrt;                                                                                                                           \
+                using alps::numeric::sqrt;                                                                                                                 \
+                using std::sin;                                                                                                                            \
+                using alps::numeric::pow;                                                                                                                  \
+                using std::pow;                                                                                                                            \
+                using alps::numeric::sin;                                                                                                                  \
+                using std::cos;                                                                                                                            \
+                using alps::numeric::cos;                                                                                                                  \
+                using std::tan;                                                                                                                            \
+                using alps::numeric::tan;                                                                                                                  \
+                using std::sinh;                                                                                                                           \
+                using alps::numeric::sinh;                                                                                                                 \
+                using std::cosh;                                                                                                                           \
+                using alps::numeric::cosh;                                                                                                                 \
+                using std::tanh;                                                                                                                           \
+                using alps::numeric::tanh;                                                                                                                 \
+                using std::asin;                                                                                                                           \
+                using alps::numeric::asin;                                                                                                                 \
+                using std::acos;                                                                                                                           \
+                using alps::numeric::acos;                                                                                                                 \
+                using std::atan;                                                                                                                           \
+                using alps::numeric::atan;                                                                                                                 \
+                using boost::math::asinh;                                                                                                                  \
+                using alps::numeric::asinh;                                                                                                                \
+                using boost::math::acosh;                                                                                                                  \
+                using alps::numeric::acosh;                                                                                                                \
+                using boost::math::atanh;                                                                                                                  \
+                using alps::numeric::atanh;                                                                                                                \
+                using boost::numeric::operators::operator+;                                                                                                \
+                using boost::numeric::operators::operator-;                                                                                                \
+                using boost::numeric::operators::operator*;                                                                                                \
+                using boost::numeric::operators::operator/;                                                                                                \
+                using alps::numeric::operator+;                                                                                                            \
+                using alps::numeric::operator-;                                                                                                            \
+                using alps::numeric::operator*;                                                                                                            \
+                using alps::numeric::operator/;                                                                                                            \
+                rhs.transform(static_cast<typename mcdata<T>::value_type(*)(typename mcdata<T>::value_type)>(&FUNCTION_NAME), ERROR);                      \
+                return rhs;                                                                                                                                \
+            }                                                                                                                                              \
+            template <typename T> std::vector<mcdata<T> > FUNCTION_NAME(std::vector<mcdata<T> > rhs) {                                                      \
+                std::transform(rhs.begin(), rhs.end(), rhs.begin(), static_cast<mcdata<T> (*)(mcdata<T>)>(&FUNCTION_NAME));                                \
+                return rhs;                                                                                                                                \
+            }
+        ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(sin, abs(cos(rhs.mean()) * rhs.error()))
+        ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(cos, abs(-sin(rhs.mean()) * rhs.error()))
+        ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(tan, abs(1. / (cos(rhs.mean()) * cos(rhs.mean())) * rhs.error()))
+        ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(sinh, abs(cosh(rhs.mean()) * rhs.error()))
+        ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(cosh, abs(sinh(rhs.mean()) * rhs.error()))
+        ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(tanh, abs(1. / (cosh(rhs.mean()) * cosh(rhs.mean())) * rhs.error()))
+        ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(asin, abs(1. / sqrt(1. - rhs.mean() * rhs.mean()) * rhs.error()))
+        ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(acos, abs(-1. / sqrt(1. - rhs.mean() * rhs.mean()) * rhs.error()));
+        ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(atan, abs(1. / (1. + rhs.mean() * rhs.mean()) * rhs.error()));
+        ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(asinh, abs(1. / sqrt(rhs.mean() * rhs.mean() + 1.) * rhs.error()));
+        ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(acosh, abs(1. / sqrt(rhs.mean() * rhs.mean() - 1.) * rhs.error()));
+        ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(atanh, abs(1./(1. - rhs.mean() * rhs.mean()) * rhs.error()));
+        ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(abs, rhs.error());
+        ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(sq, abs(2. * rhs.mean() * rhs.error()));
+        ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(cb, abs(3. * sq(rhs.mean()) * rhs.error()));
+        ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(sqrt, abs(rhs.error() / (2. * sqrt(rhs.mean()))));
+        ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(cbrt, abs(rhs.error() / (3. * sq(pow(rhs.mean(), 1. / 3)))));
+        ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(exp, exp(rhs.mean()) * rhs.error());
+        ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(log, abs(rhs.error() / rhs.mean()));
+        #undef ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION
     }
 }
 #endif

@@ -37,7 +37,8 @@
 #include <alps/boost/accumulators/numeric/functional/vector.hpp>
 #include <alps/boost/accumulators/numeric/functional.hpp>
 
-
+#include <boost/lambda/bind.hpp>
+#include <boost/lambda/lambda.hpp>
 
 namespace alps { 
   namespace numeric {
@@ -102,13 +103,11 @@ namespace alps {
     // include important functions for vectors
     #define IMPLEMENT_ALPS_VECTOR_FUNCTION(LIB_HEADER,FUNCTION_NAME) \
     template<class T> \
-    std::vector<T> FUNCTION_NAME(std::vector<T> const & vec) \
+    std::vector<T> FUNCTION_NAME(std::vector<T> vec) \
     { \
-      std::vector<T> res; \
-      res.reserve(vec.size()); \
       using LIB_HEADER::FUNCTION_NAME; \
-      std::transform(vec.begin(),vec.end(),std::back_inserter(res),static_cast<T (*)(T)>(&FUNCTION_NAME)); \
-      return res; \
+      std::transform(vec.begin(), vec.end(), vec.begin(), static_cast<T (*)(T)>(&FUNCTION_NAME)); \
+      return vec; \
     }
 
     IMPLEMENT_ALPS_VECTOR_FUNCTION(std,abs)
@@ -133,14 +132,13 @@ namespace alps {
 
     #define IMPLEMENT_ALPS_VECTOR_FUNCTION2(LIB_HEADER,FUNCTION_NAME) \
     template<class T> \
-    static std::vector<T> FUNCTION_NAME(std::vector<T> const & vec, T index) \
+    static std::vector<T> FUNCTION_NAME(std::vector<T> vec, T index) \
     { \
-      std::vector<T> index_vec(vec.size(),index); \
-      std::vector<T> res; \
-      res.reserve(vec.size()); \
       using LIB_HEADER::FUNCTION_NAME; \
-      std::transform(vec.begin(),vec.end(),index_vec.begin(),std::back_inserter(res),static_cast<T (*)(T,T)>(&FUNCTION_NAME)); \
-      return res; \
+      using boost::lambda::_1; \
+      using boost::lambda::bind; \
+      std::transform(vec.begin(), vec.end(), vec.begin(), bind<T>(static_cast<T (*)(T, T)>(&FUNCTION_NAME), _1, index)); \
+      return vec; \
     }
 
     IMPLEMENT_ALPS_VECTOR_FUNCTION2(std,pow)
