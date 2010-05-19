@@ -352,7 +352,7 @@ namespace alps {
                             v.resize(children.size());                                                                                                     \
                             for (std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)                               \
                                 if (matrix_type<T>::scalar::value)                                                                                         \
-                                    serialize(ar, p + "/" + *it, v[it - children.begin()]);                                                                \
+                                    serialize(ar, p + "/" + *it, v[boost::lexical_cast<std::size_t>(*it)]);                                                \
                                 else                                                                                                                       \
                                     matrix_type<T>::apply(ar, p + "/" + *it, v[it - children.begin()], read());                                            \
                     }                                                                                                                                      \
