@@ -120,8 +120,7 @@ namespace alps {
                     if (rhs.jacknife_bins_valid_)
                         std::transform(rhs.jack_.begin(), rhs.jack_.end(), std::back_inserter(jack_), boost::bind2nd(slice_it<X>(), s));
                 }
-                template <typename X>
-                mcdata(AbstractSimpleObservable<X> const & obs)
+                template <typename X> mcdata(AbstractSimpleObservable<X> const & obs)
                     : count_(obs.count())
                     , binsize_(obs.bin_size())
                     , max_bin_number_(obs.max_bin_number())
@@ -141,6 +140,18 @@ namespace alps {
                             values_.push_back(obs.bin_value(i) / double(binsize_));
                     }
                 }
+                mcdata(int64_t count, value_type const & mean, value_type const & error, value_type const & variance, uint64_t binsize, std::vector<value_type> const & values)
+                    : count_(count)
+                    , mean_(mean)
+                    , error_(error)
+                    , variance_opt_(variance)
+                    , binsize_(binsize)
+                    , max_bin_number_(0)
+                    , data_is_analyzed_(false)
+                    , jacknife_bins_valid_(false)
+                    , cannot_rebin_(false)
+                    , values_(values)
+                {}
                 bool can_rebin() const { return !cannot_rebin_;}
                 bool jackknife_valid() const { return jacknife_bins_valid_;}
                 void swap(mcdata<T> & rhs) {
@@ -323,6 +334,19 @@ namespace alps {
                 void load(std::string const & filename, std::string const & path) {
                     hdf5::iarchive ar(filename);
                     ar >> make_pvp(path, *this);
+                }
+                boost::tuple<int64_t, value_type, value_type, value_type, value_type> get_reduceable_data(std::size_t numbins) {
+                    using alps::numeric::sq;
+                    T binvalue = 0.;
+                    for (std::size_t i = 0; i < numbins; ++i)
+                        binvalue += values_[i];
+                    return boost::tuple<int64_t, value_type, value_type, value_type, value_type>(
+                        count_, 
+                        mean_ * double(count_), 
+                        error_ * error_ * sq(double(count_)), 
+                        *variance_opt_ * double(count_),
+                        binvalue / count_type(numbins)
+                    );
                 }
                 mcdata<T> & operator<<(mcdata<T> const & rhs) {
                     using std::sqrt;
