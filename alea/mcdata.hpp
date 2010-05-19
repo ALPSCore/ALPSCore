@@ -82,6 +82,7 @@ namespace alps {
                     , mean_()
                     , error_()
                     , binsize_(0)
+                    , max_bin_number_(0)
                     , data_is_analyzed_(true)
                     , jacknife_bins_valid_(true)
                     , cannot_rebin_(false)
@@ -91,6 +92,7 @@ namespace alps {
                   , mean_(rhs.mean_)
                   , error_(rhs.error_)
                   , binsize_(rhs.binsize_)
+                  , max_bin_number_(rhs.max_bin_number_)
                   , data_is_analyzed_(rhs.data_is_analyzed_)
                   , jacknife_bins_valid_(rhs.jacknife_bins_valid_)
                   , cannot_rebin_(rhs.cannot_rebin_)
@@ -102,6 +104,7 @@ namespace alps {
                 template <typename X, typename S> mcdata(mcdata<X> const & rhs, S s)
                   : count_(rhs.count_)
                   , binsize_(rhs.binsize_)
+                  , max_bin_number_(rhs.max_bin_number_)
                   , data_is_analyzed_(rhs.data_is_analyzed_)
                   , jacknife_bins_valid_(rhs.jacknife_bins_valid_)
                   , cannot_rebin_(rhs.cannot_rebin_)
@@ -120,24 +123,22 @@ namespace alps {
                 template <typename X>
                 mcdata(AbstractSimpleObservable<X> const & obs)
                     : count_(obs.count())
-                    // TODO:
-                    // mean_(replace_valarray_by_vector(obs.mean())) ...
                     , binsize_(obs.bin_size())
+                    , max_bin_number_(obs.max_bin_number())
                     , data_is_analyzed_(false)
                     , jacknife_bins_valid_(false)
                     , cannot_rebin_(false)
                 {
                     using boost::numeric::operators::operator/;
                     if (count()) {
-                        mean_ = obs.mean();
-                        error_ = obs.error();
+                        mean_ = replace_valarray_by_vector(obs.mean());
+                        error_ = replace_valarray_by_vector(obs.error());
                         if (obs.has_variance())
-                            variance_opt_ = obs.variance();
+                            variance_opt_ = replace_valarray_by_vector(obs.variance());
                         if (obs.has_tau())
-                            tau_opt_ = obs.tau();
+                            tau_opt_ = replace_valarray_by_vector(obs.tau());
                         for (std::size_t i = 0; i < obs.bin_number(); ++i)
                             values_.push_back(obs.bin_value(i) / double(binsize_));
-
                     }
                 }
                 bool can_rebin() const { return !cannot_rebin_;}
@@ -147,6 +148,7 @@ namespace alps {
                     std::swap(mean_, rhs.mean_);
                     std::swap(error_, rhs.error_);
                     std::swap(binsize_, rhs.binsize_);
+                    std::swap(rhs.max_bin_number_, rhs.max_bin_number_);
                     std::swap(data_is_analyzed_, rhs.data_is_analyzed_);
                     std::swap(jacknife_bins_valid_, rhs.jacknife_bins_valid_);
                     std::swap(cannot_rebin_, rhs.cannot_rebin_);
@@ -160,6 +162,9 @@ namespace alps {
                 }
                 inline uint64_t bin_size() const { 
                     return binsize_;
+                }
+                inline uint64_t max_bin_number() const {
+                    return max_bin_number_;
                 }
                 inline std::size_t bin_number() const { 
                     return values_.size(); 
@@ -268,8 +273,7 @@ namespace alps {
                         ;
                     ar
                         >> make_pvp("timeseries/data", values_)
-// TODO: implement
-//                        >> make_pvp("timeseries/data/@maxbinnum", max_bin_number_)
+                        >> make_pvp("timeseries/data/@maxbinnum", max_bin_number_)
                     ;
                     if (ar.is_attribute("timeseries/data/@binsize"))
                         ar
@@ -303,8 +307,7 @@ namespace alps {
                     ar
                         << make_pvp("timeseries/data", values_)
                         << make_pvp("timeseries/data/@binsize", binsize_)
-// TODO: implement
-//                        << make_pvp("timeseries/data/@maxbinnum", max_bin_number_)
+                        << make_pvp("timeseries/data/@maxbinnum", max_bin_number_)
                         << make_pvp("timeseries/data/@binningtype", "linear")
                     ;
                     if (jacknife_bins_valid_)
@@ -338,7 +341,7 @@ namespace alps {
                             tmp2 *= rhs.error_ * sq(double(rhs.count_));
                             error_ = sqrt(tmp + tmp2);
                             error_ /= double(count_ + rhs.count_);
-                            if(variance_opt_) {
+                            if(variance_opt_ && rhs.variance_opt_) {
                                 *variance_opt_ *= double(count_);
                                 *variance_opt_ += double(rhs.count_) * *rhs.variance_opt_;
                                 *variance_opt_ /= double(count_ + rhs.count_);
@@ -360,11 +363,10 @@ namespace alps {
                                 tmp.set_bin_size(binsize_);
                                 std::copy(tmp.values_.begin(), tmp.values_.end(), std::back_inserter(values_));
                             }
-// TODO: implement
-//                            if (max_bin_number_ && max_bin_number_ < bin_number())
-//                              set_bin_number(max_bin_number_);
-                            } else
-                                *this = rhs;
+                            if (max_bin_number_ && max_bin_number_ < bin_number())
+                                set_bin_number(max_bin_number_);
+                        } else
+                            *this = rhs;
                     }
                     return *this;
                 }
@@ -373,12 +375,13 @@ namespace alps {
                     return *this;
                 }
                 template <typename S> element_type slice(S s) const {
-                    return element_type(*this,s);
+                    return element_type(*this, s);
                 }
                 // wtf? check why!!! (after 2.0b1)
                 template <typename X> bool operator==(mcdata<X> const & rhs) {
                     return count_ == rhs.count_
                         && binsize_ == rhs.binsize_
+                        && max_bin_number_ == rhs.max_bin_number_
                         && mean_ == rhs.mean_
                         && error_ == rhs.error_
                         && variance_opt_ == rhs.variance_opt_
@@ -533,6 +536,14 @@ namespace alps {
                         std::transform(jack_.begin(), jack_.end(), rhs.jack_.begin(), jack_.begin(), op);
                 }
             private:
+                T const & replace_valarray_by_vector(T const & value) {
+                    return value;
+                }
+                template <typename X> std::vector<X> replace_valarray_by_vector(std::valarray<X> const & value) {
+                    std::vector<X> res;
+                    std::copy(&value[0], &value[0] + value.size(), std::back_inserter(res));
+                    return res;
+                }
                 void collect_bins(uint64_t howmany) {
                     if (cannot_rebin_)
                         boost::throw_exception(std::runtime_error("cannot change bins after nonlinear operations"));
@@ -569,7 +580,7 @@ namespace alps {
                         double sum2 = 0.;
                         for(std::size_t i = 0; i < bin_number(); ++i) {// to this point, jack_[i+1] = \sum_{j != i} values_[j]  
                             jack_[i+1] = jack_[0] - alps::numeric_cast<result_type>(values_[i]);
-                            double dx = (slice_value(values_[i],0) - slice_value(jack_[0]/ count_type(bin_number()),0));
+                            double dx = (slice_value(values_[i], 0) - slice_value(jack_[0] / count_type(bin_number()),0));
                             sum2 +=  dx*dx;
                         }
                         //  Next, we want the following:
@@ -617,6 +628,7 @@ namespace alps {
                 template <typename Archive> void serialize(Archive & ar, const unsigned int version) {
                     ar & count_;
                     ar & binsize_;
+                    ar & max_bin_number_;
                     ar & data_is_analyzed_;
                     ar & jacknife_bins_valid_;
                     ar & cannot_rebin_;
@@ -629,6 +641,7 @@ namespace alps {
                 }
                 mutable uint64_t count_;
                 mutable uint64_t binsize_;
+                mutable uint64_t max_bin_number_;
                 mutable bool data_is_analyzed_;
                 mutable bool jacknife_bins_valid_;
                 mutable bool cannot_rebin_;
@@ -644,43 +657,76 @@ namespace alps {
             return out;
         }
         #define ALPS_ALEA_MCDATA_IMPLEMENT_OPERATION(OPERATOR_NAME, OPERATOR_ASSIGN)                                                                       \
-            template <typename T> inline mcdata<T> OPERATOR_NAME(mcdata<T> lhs, mcdata<T> const & rhs) {                                                    \
-                return lhs OPERATOR_ASSIGN rhs;                                                                                                            \
+            template <typename T> inline mcdata<T> OPERATOR_NAME(mcdata<T> arg1, mcdata<T> const & arg2) {                                                 \
+                return arg1 OPERATOR_ASSIGN arg2;                                                                                                          \
             }                                                                                                                                              \
-            template <typename T> inline mcdata<T> OPERATOR_NAME(mcdata<T> lhs, T const & rhs) {                                                           \
-                return lhs OPERATOR_ASSIGN rhs;                                                                                                            \
-            }                                                                                                                                              \
-            template <typename T> inline mcdata<std::vector<T> > OPERATOR_NAME(                                                                            \
-                mcdata<std::vector<T> > lhs, typename mcdata<std::vector<T> >::element_type const & rhs_elem                                               \
-            ) {                                                                                                                                            \
-                std::vector<T> rhs(lhs.size(),rhs_elem);                                                                                                   \
-                return lhs OPERATOR_ASSIGN rhs;                                                                                                            \
+            template <typename T> inline mcdata<T> OPERATOR_NAME(mcdata<T> arg1, T const & arg2) {                                                         \
+                return arg1 OPERATOR_ASSIGN arg2;                                                                                                          \
             }
         ALPS_ALEA_MCDATA_IMPLEMENT_OPERATION(operator+,+=)
         ALPS_ALEA_MCDATA_IMPLEMENT_OPERATION(operator-,-=)
         ALPS_ALEA_MCDATA_IMPLEMENT_OPERATION(operator*,*=)
         ALPS_ALEA_MCDATA_IMPLEMENT_OPERATION(operator/,/=)
         #undef ALPS_ALEA_MCDATA_IMPLEMENT_OPERATION
-        template <typename T> inline mcdata<T> operator+(T const & lhs, mcdata<T> rhs) {
-            return rhs += lhs;
+        template <typename T> inline mcdata<T> operator+(T const & arg1, mcdata<T> arg2) {
+            return arg2 += arg1;
         }
-        template <typename T> inline mcdata<T> operator-(T const & lhs, mcdata<T> rhs) {
-            rhs.subtract_from(lhs);
-            return rhs;
+        template <typename T> inline mcdata<T> operator-(T const & arg1, mcdata<T> arg2) {
+            arg2.subtract_from(arg1);
+            return arg2;
         }
-        template <typename T> inline mcdata<T> operator*(T const & lhs, mcdata<T> rhs) {
-            return rhs *= lhs;
+        template <typename T> inline mcdata<T> operator*(T const & arg1, mcdata<T> arg2) {
+            return arg2 *= arg1;
         }
-        template <typename T>  inline mcdata<T> operator/(T const & lhs, mcdata<T> rhs) {
-            rhs.divide(lhs);
-            return rhs;
+        template <typename T>  inline mcdata<T> operator/(T const & arg1, mcdata<T> arg2) {
+            arg2.divide(arg1);
+            return arg2;
         }
-        #define ALPS_ALEA_MCDATA_IMPLEMENT_OPERATION(OPERATOR_NAME,OPERATOR_ASSIGN)                                                                        \
+        #define ALPS_ALEA_MCDATA_IMPLEMENT_OPERATION(OPERATOR_NAME, OPERATOR_ASSIGN)                                                                       \
             template <typename T> inline mcdata<std::vector<T> > OPERATOR_NAME(                                                                            \
-                typename mcdata<std::vector<T> >::element_type const & lhs_elem, mcdata<std::vector<T> > rhs                                               \
+                typename mcdata<std::vector<T> >::element_type const & elem, mcdata<std::vector<T> > const & arg2                                          \
             ) {                                                                                                                                            \
-                std::vector<T> lhs(rhs.size(),lhs_elem);                                                                                                   \
-                return lhs OPERATOR_ASSIGN rhs;                                                                                                            \
+                std::vector<T> arg1(arg2.mean().size(), elem);                                                                                             \
+                return arg1 OPERATOR_ASSIGN arg2;                                                                                                          \
+            }                                                                                                                                              \
+            template <typename T> inline mcdata<std::vector<T> > OPERATOR_NAME(                                                                            \
+                mcdata<std::vector<T> > const & arg1, typename mcdata<std::vector<T> >::element_type const & elem                                          \
+            ) {                                                                                                                                            \
+                std::vector<T> arg2(arg1.mean().size(), elem);                                                                                             \
+                return arg1 OPERATOR_ASSIGN arg2;                                                                                                          \
+            }                                                                                                                                              \
+            template <typename T> inline std::vector<mcdata<T> > OPERATOR_NAME(                                                                            \
+                typename std::vector<mcdata<T> > arg1, std::vector<mcdata<T> > const & arg2                                                                \
+            ) {                                                                                                                                            \
+                std::transform(                                                                                                                            \
+                    arg1.begin(), arg1.end(), arg2.begin(), arg1.begin(), static_cast<mcdata<T> (*)(mcdata<T>, mcdata<T> const &)>(&OPERATOR_NAME)         \
+                );                                                                                                                                         \
+                return arg1;                                                                                                                               \
+            }                                                                                                                                              \
+            template <typename T> inline std::vector<mcdata<T> > OPERATOR_NAME(                                                                            \
+                typename std::vector<mcdata<T> > arg1, std::vector<T> const & arg2                                                                         \
+            ) {                                                                                                                                            \
+                std::transform(                                                                                                                            \
+                    arg1.begin(), arg1.end(), arg2.begin(), arg1.begin(), static_cast<mcdata<T> (*)(mcdata<T>, T const &)>(&OPERATOR_NAME)                 \
+                );                                                                                                                                         \
+                return arg1;                                                                                                                               \
+            }                                                                                                                                              \
+            template <typename T> inline std::vector<mcdata<T> > OPERATOR_NAME(                                                                            \
+                typename std::vector<T> const & arg1, std::vector<mcdata<T> > arg2                                                                         \
+            ) {                                                                                                                                            \
+                return arg2 OPERATOR_ASSIGN arg1;                                                                                                          \
+            }                                                                                                                                              \
+            template <typename T> inline std::vector<mcdata<T> > OPERATOR_NAME(                                                                            \
+                typename std::vector<mcdata<T> > arg1, typename mcdata<T>::element_type const & elem                                                       \
+            ) {                                                                                                                                            \
+                std::vector<T> arg2(arg1.size(), elem);                                                                                                    \
+                return arg1 OPERATOR_ASSIGN arg2;                                                                                                          \
+            }                                                                                                                                              \
+            template <typename T> inline std::vector<mcdata<T> > OPERATOR_NAME(                                                                            \
+                typename mcdata<T>::element_type const & elem, typename std::vector<mcdata<T> > arg2                                                       \
+            ) {                                                                                                                                            \
+                std::vector<T> arg1(arg2.size(), elem);                                                                                                    \
+                return arg1 OPERATOR_ASSIGN arg2;                                                                                                          \
             }
         ALPS_ALEA_MCDATA_IMPLEMENT_OPERATION(operator+,+)
         ALPS_ALEA_MCDATA_IMPLEMENT_OPERATION(operator-,-)
@@ -709,7 +755,7 @@ namespace alps {
             using std::pow;
             using boost::lambda::_1;
             using boost::lambda::bind;
-            std::transform(rhs.begin(), rhs.end(), rhs.begin(), bind<mcdata<T> >(static_cast<mcdata<T> (*)(mcdata<T> rhs, typename mcdata<T>::element_type)>(&pow), _1, exponent));
+            std::transform(rhs.begin(), rhs.end(), rhs.begin(), bind<mcdata<T> >(static_cast<mcdata<T>(*)(mcdata<T>, typename mcdata<T>::element_type)>(&pow), _1, exponent));
             return rhs;
         }
         #define ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(FUNCTION_NAME, ERROR)                                                                                  \
