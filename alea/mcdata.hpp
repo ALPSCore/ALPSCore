@@ -268,10 +268,15 @@ namespace alps {
                     data_is_analyzed_ = true;
                     ar
                         >> make_pvp("count", count_)
-                        >> make_pvp(ar.is_attribute("@nonlinearoperations") ? "@nonlinearoperations" : "@cannotrebin", cannot_rebin_)
                         >> make_pvp("mean/value", mean_)
                         >> make_pvp("mean/error", error_)
                     ;
+                    if (ar.is_attribute("@nonlinearoperations"))
+                        ar >> make_pvp("@nonlinearoperations", cannot_rebin_);
+                    else if (ar.is_attribute("@cannotrebin"))
+                        ar >> make_pvp("@cannotrebin", cannot_rebin_);
+                    else
+                        cannot_rebin_ = false;
                     if (ar.is_data("variance/value"))
                         ar
                             >> make_pvp("variance/value", *variance_opt_)
@@ -292,7 +297,7 @@ namespace alps {
                         ;
                     else
                         binsize_ = count_ / values_.size();
-                    if (ar.is_attribute("@nonlinearoperations"))
+                    if (!ar.is_attribute("@cannotrebin"))
                         values_ = values_ / double(binsize_);
                     if ((jacknife_bins_valid_ = ar.is_data("jacknife/data")))
                         ar

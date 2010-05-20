@@ -561,13 +561,15 @@ namespace alps {
                             check_type(_state_id);
                         if (_log_id > -1)
                             check_type(_log_id);
-                        if (
-                               H5Fget_obj_count(_file, H5F_OBJ_DATATYPE) > (_state_id == -1 ? 0 : 1) + (_log_id == -1 ? 0 : 1)
-                            || H5Fget_obj_count(_file, H5F_OBJ_ALL) - H5Fget_obj_count(_file, H5F_OBJ_FILE) - H5Fget_obj_count(_file, H5F_OBJ_DATATYPE) > 0
-                        ) {
-                            std::cerr << "Not all resources closed" << std::endl;
-                            std::abort();
-                        }
+                        #ifndef ALPS_HDF5_CLOSE_GREEDY
+                            if (
+                                H5Fget_obj_count(_file, H5F_OBJ_DATATYPE) > (_state_id == -1 ? 0 : 1) + (_log_id == -1 ? 0 : 1)
+                                || H5Fget_obj_count(_file, H5F_OBJ_ALL) - H5Fget_obj_count(_file, H5F_OBJ_FILE) - H5Fget_obj_count(_file, H5F_OBJ_DATATYPE) > 0
+                            ) {
+                                std::cerr << "Not all resources closed" << std::endl;
+                                std::abort();
+                            }
+                        #endif
                     }
                     std::string const & filename() const {
                         return _filename;
