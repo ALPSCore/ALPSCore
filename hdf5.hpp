@@ -24,9 +24,9 @@
 #include <cstring>
 #include <cstdlib>
 #include <cassert>
-#include <stdexcept>
 #include <valarray>
 #include <iostream>
+#include <stdexcept>
 
 #include <boost/any.hpp>
 #include <boost/array.hpp>
@@ -46,9 +46,11 @@
 #include <boost/static_assert.hpp>
 #include <boost/intrusive_ptr.hpp>
 #include <boost/numeric/ublas/vector.hpp>
+#include <boost/type_traits/add_reference.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/type_traits/add_reference.hpp>
+//#include <boost/numeric/bindings/traits/ublas_matrix.hpp>
+
 #include <hdf5.h>
 
 #ifdef ALPS_DOXYGEN
