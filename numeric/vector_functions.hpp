@@ -135,9 +135,7 @@ namespace alps {
     static std::vector<T> FUNCTION_NAME(std::vector<T> vec, T index) \
     { \
       using LIB_HEADER::FUNCTION_NAME; \
-      using boost::lambda::_1; \
-      using boost::lambda::bind; \
-      std::transform(vec.begin(), vec.end(), vec.begin(), bind<T>(static_cast<T (*)(T, T)>(&FUNCTION_NAME), _1, index)); \
+      std::transform(vec.begin(), vec.end(), vec.begin(), boost::lambda::bind<T>(static_cast<T (*)(T, T)>(&FUNCTION_NAME), boost::lambda::_1, index)); \
       return vec; \
     }
 

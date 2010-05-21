@@ -277,16 +277,20 @@ namespace alps {
                         ar >> make_pvp("@cannotrebin", cannot_rebin_);
                     else
                         cannot_rebin_ = false;
-                    if (ar.is_data("variance/value"))
+                    if (ar.is_data("variance/value")) {
+                        variance_opt_.reset(result_type());
                         ar
                             >> make_pvp("variance/value", *variance_opt_)
                         ;
+                    }
                     else
                         variance_opt_ = boost::none_t();
-                    if (ar.is_data("tau/value"))
+                    if (ar.is_data("tau/value")) {
+                        tau_opt_.reset(time_type());
                         ar
                             >> make_pvp("tau/value", *tau_opt_)
                         ;
+                    }
                     ar
                         >> make_pvp("timeseries/data", values_)
                         >> make_pvp("timeseries/data/@maxbinnum", max_bin_number_)
@@ -423,8 +427,6 @@ namespace alps {
                     using alps::numeric::sq;
                     using alps::numeric::sqrt;
                     using boost::numeric::operators::operator+;
-                    using boost::lambda::_1;
-                    using boost::lambda::_2;
                     transform(rhs, alps::numeric::plus<T>(), sqrt(sq(error_) + sq(rhs.error_)));
                     return *this;
                 }
@@ -434,8 +436,6 @@ namespace alps {
                     using alps::numeric::sqrt;
                     using boost::numeric::operators::operator+;
                     using boost::numeric::operators::operator-;
-                    using boost::lambda::_1;
-                    using boost::lambda::_2;
                     transform(rhs, alps::numeric::minus<T>(), sqrt(sq(error_) + sq(rhs.error_)));
                     return *this;
                 }
@@ -445,8 +445,6 @@ namespace alps {
                     using alps::numeric::sqrt;
                     using boost::numeric::operators::operator+;
                     using boost::numeric::operators::operator*;
-                    using boost::lambda::_1;
-                    using boost::lambda::_2;
                     transform(rhs, alps::numeric::multiplies<T>(), sqrt(sq(rhs.mean_) * sq(error_) + sq(mean_) * sq(rhs.error_)));
                     return *this;
                 }
@@ -457,29 +455,24 @@ namespace alps {
                     using boost::numeric::operators::operator+;
                     using boost::numeric::operators::operator*;
                     using boost::numeric::operators::operator/;
-                    using boost::lambda::_1;
-                    using boost::lambda::_2;
                     transform(rhs, alps::numeric::divides<T>(), sqrt(sq(rhs.mean_) * sq(error_) + sq(mean_) * sq(rhs.error_)) / sq(rhs.mean_));
                     return *this;
                 }
                 template <typename X> mcdata<T> & operator+=(X const & rhs) {
                     using boost::numeric::operators::operator+;
-                    using boost::lambda::_1;
-                    transform_linear(boost::lambda::bind(alps::numeric::plus<X>(), _1, rhs), error_, variance_opt_);
+                    transform_linear(boost::lambda::bind(alps::numeric::plus<X>(), boost::lambda::_1, rhs), error_, variance_opt_);
                     return *this;
                 }
                 template <typename X> mcdata<T> & operator-=(X const & rhs) {
                     using boost::numeric::operators::operator-;
-                    using boost::lambda::_1;
-                    transform_linear(boost::lambda::bind(alps::numeric::minus<X>(), _1, rhs), error_, variance_opt_);
+                    transform_linear(boost::lambda::bind(alps::numeric::minus<X>(), boost::lambda::_1, rhs), error_, variance_opt_);
                     return *this;
                 }
                 template <typename X> mcdata<T> & operator*=(X const & rhs) {
                     using std::abs;
                     using alps::numeric::abs;
                     using boost::numeric::operators::operator*;
-                    using boost::lambda::_1;
-                    transform_linear(boost::lambda::bind(alps::numeric::multiplies<X>(), _1, rhs), abs(error_ * rhs), variance_opt_ ? boost::optional<result_type>(*variance_opt_ * rhs * rhs) : boost::none_t());
+                    transform_linear(boost::lambda::bind(alps::numeric::multiplies<X>(), boost::lambda::_1, rhs), abs(error_ * rhs), variance_opt_ ? boost::optional<result_type>(*variance_opt_ * rhs * rhs) : boost::none_t());
                     return *this;
                 }
                 template <typename X> mcdata<T> & operator/=(X const & rhs) {
@@ -487,38 +480,32 @@ namespace alps {
                     using alps::numeric::abs;
                     using boost::numeric::operators::operator/;
                     using boost::numeric::operators::operator*;
-                    using boost::lambda::_1;
-                    transform_linear(boost::lambda::bind(alps::numeric::divides<X>(), _1, rhs), abs(error_ / rhs), variance_opt_ ? boost::optional<result_type>(*variance_opt_ / ( rhs * rhs )) : boost::none_t());
+                    transform_linear(boost::lambda::bind(alps::numeric::divides<X>(), boost::lambda::_1, rhs), abs(error_ / rhs), variance_opt_ ? boost::optional<result_type>(*variance_opt_ / ( rhs * rhs )) : boost::none_t());
                     return (*this);
                 }
                 mcdata<T> & operator+() {
                     return *this;
                 }
                 mcdata<T> & operator-() {
-                    using boost::lambda::_1;
-                    using boost::lambda::bind;
                     // TODO: this is ugly
                     T zero;
                     resize_same_as(zero, error_);
-                    transform_linear(boost::lambda::bind(alps::numeric::minus<T>(), zero, _1), error_, variance_opt_);
+                    transform_linear(boost::lambda::bind(alps::numeric::minus<T>(), zero, boost::lambda::_1), error_, variance_opt_);
                     return *this;
                 }
                 template <typename X> void subtract_from(X const & x) {
-                    using boost::lambda::_1;
-                    using boost::lambda::bind;
                     using boost::numeric::operators::operator-;
-                    transform_linear(boost::lambda::bind(alps::numeric::minus<X>(), x, _1), error_, variance_opt_);
+                    transform_linear(boost::lambda::bind(alps::numeric::minus<X>(), x, boost::lambda::_1), error_, variance_opt_);
                 }
                 template <typename X> void divide(X const & x) {
-                    using boost::lambda::_1;
                     using boost::numeric::operators::operator*;
                     using boost::numeric::operators::operator/;
                     error_ = x * error_ / mean_ / mean_;
                     cannot_rebin_ = true;
                     mean_ = x / mean_;
-                    std::transform(values_.begin(), values_.end(), values_.begin(), boost::lambda::bind(alps::numeric::divides<X>(), x * bin_size() * bin_size(), _1));
+                    std::transform(values_.begin(), values_.end(), values_.begin(), boost::lambda::bind(alps::numeric::divides<X>(), x * bin_size() * bin_size(), boost::lambda::_1));
                     fill_jack();
-                    std::transform(jack_.begin(), jack_.end(), jack_.begin(), boost::lambda::bind(alps::numeric::divides<X>(), x, _1));
+                    std::transform(jack_.begin(), jack_.end(), jack_.begin(), boost::lambda::bind(alps::numeric::divides<X>(), x, boost::lambda::_1));
                 }
                 template <typename OP> void transform_linear(OP op, value_type const & error, boost::optional<result_type> variance_opt = boost::none_t()) {
                     if (count() == 0)
@@ -770,21 +757,18 @@ namespace alps {
                 using std::abs;
                 using alps::numeric::pow;
                 using alps::numeric::abs;
-                using boost::lambda::_1;
                 using boost::lambda::bind;
                 using boost::numeric::operators::operator-;
                 using boost::numeric::operators::operator*;
                 rhs.transform(bind<T>(static_cast<
                     typename mcdata<T>::value_type(*)(typename mcdata<T>::value_type, typename mcdata<T>::element_type)
-                >(&pow), _1, exponent), abs(exponent * pow(rhs.mean(), exponent - 1.) * rhs.error()));
+                >(&pow), boost::lambda::_1, exponent), abs(exponent * pow(rhs.mean(), exponent - 1.) * rhs.error()));
                 return rhs;
             }
         }
         template <typename T> std::vector<mcdata<T> > pow(std::vector<mcdata<T> > rhs, typename mcdata<T>::element_type exponent) {
             using std::pow;
-            using boost::lambda::_1;
-            using boost::lambda::bind;
-            std::transform(rhs.begin(), rhs.end(), rhs.begin(), bind<mcdata<T> >(static_cast<mcdata<T>(*)(mcdata<T>, typename mcdata<T>::element_type)>(&pow), _1, exponent));
+            std::transform(rhs.begin(), rhs.end(), rhs.begin(), boost::lambda::bind<mcdata<T> >(static_cast<mcdata<T>(*)(mcdata<T>, typename mcdata<T>::element_type)>(&pow), boost::lambda::_1, exponent));
             return rhs;
         }
         #define ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(FUNCTION_NAME, ERROR)                                                                                  \
