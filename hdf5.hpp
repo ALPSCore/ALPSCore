@@ -46,15 +46,15 @@
 #include <boost/static_assert.hpp>
 #include <boost/intrusive_ptr.hpp>
 #include <boost/numeric/ublas/vector.hpp>
+#include <boost/numeric/bindings/ublas.hpp>
 #include <boost/type_traits/add_reference.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-//#include <boost/numeric/bindings/traits/ublas_matrix.hpp>
 
 #include <hdf5.h>
 
 #ifdef ALPS_DOXYGEN
-  
+
 namespace alps {
     namespace hdf5 {
         namespace detail {
@@ -439,6 +439,13 @@ namespace alps {
                 template<typename Archive> static void apply(Archive & ar, std::string const & p, std::pair<T *, std::vector<std::size_t> > const & v, write) {}
             };
             //TODO: boost::multiarray implementieren
+            
+/* TODO:
+
+typedef boost::numeric::ublas::matrix<double,boost::numeric::ublas::column_major> dense_matrix;
+
+*/
+            
             class error {
                 public:
                     static herr_t noop(hid_t) { return 0; }

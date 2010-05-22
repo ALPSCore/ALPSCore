@@ -66,7 +66,12 @@
 
 namespace alps { 
     namespace alea {
-        template <typename T> class mcdata {
+        class mcany {
+            public:
+                virtual void serialize(hdf5::iarchive & ar) { throw std::logic_error("not Impl"); }
+                virtual void serialize(hdf5::oarchive & ar) const { throw std::logic_error("not Impl"); }
+        };
+        template <typename T> class mcdata : public mcany {
             public:
                 template <typename X> friend class mcdata;
                 typedef T value_type;
@@ -78,7 +83,7 @@ namespace alps {
                 typedef typename change_value_type<T,int>::type convergence_type;
                 typedef typename covariance_type<T>::type covariance_type;
                 mcdata()
-                    :  count_(0)
+                    : count_(0)
                     , mean_()
                     , error_()
                     , binsize_(0)
@@ -121,10 +126,10 @@ namespace alps {
                         std::transform(rhs.jack_.begin(), rhs.jack_.end(), std::back_inserter(jack_), boost::bind2nd(slice_it<X>(), s));
                 }
                 template <typename X> mcdata(AbstractSimpleObservable<X> const & obs)
-                    : count_(obs.count())
+	                : count_(obs.count())
                     , binsize_(obs.bin_size())
                     , max_bin_number_(obs.max_bin_number())
-                    , data_is_analyzed_(false)
+                    , data_is_analyzed_(true)
                     , jacknife_bins_valid_(false)
                     , cannot_rebin_(false)
                 {
@@ -137,17 +142,26 @@ namespace alps {
                         if (obs.has_tau())
                             tau_opt_ = replace_valarray_by_vector(obs.tau());
                         for (std::size_t i = 0; i < obs.bin_number(); ++i)
-                            values_.push_back(obs.bin_value(i) / double(binsize_));
+                            values_.push_back(replace_valarray_by_vector(obs.bin_value(i)) / double(binsize_));
                     }
                 }
-                mcdata(int64_t count, value_type const & mean, value_type const & error, value_type const & variance, uint64_t binsize, std::vector<value_type> const & values)
+                mcdata(
+                      int64_t count
+                    , value_type const & mean
+                    , value_type const & error
+                    , value_type const & variance
+                    , value_type const & tau
+                    , uint64_t binsize
+                    , std::vector<value_type> const & values
+                )
                     : count_(count)
                     , mean_(mean)
                     , error_(error)
                     , variance_opt_(variance)
+                    , tau_opt_(tau)
                     , binsize_(binsize)
                     , max_bin_number_(0)
-                    , data_is_analyzed_(false)
+                    , data_is_analyzed_(true)
                     , jacknife_bins_valid_(false)
                     , cannot_rebin_(false)
                     , values_(values)
@@ -192,13 +206,13 @@ namespace alps {
                     return error_;
                 }
                 inline result_type const & variance() const {
-                    analyze();  
+                    analyze();
                     if (!variance_opt_)
                         boost::throw_exception(std::logic_error("observable does not have variance"));
                     return *variance_opt_;
                 };
                 inline time_type const & tau() const {
-                    analyze();  
+                    analyze();
                     if (!tau_opt_)
                         boost::throw_exception(std::logic_error("observable does not have autocorrelation information"));
                     return *tau_opt_;
@@ -346,16 +360,21 @@ namespace alps {
                     hdf5::iarchive ar(filename);
                     ar >> make_pvp(path, *this);
                 }
-                boost::tuple<int64_t, value_type, value_type, value_type, value_type> get_reduceable_data(std::size_t numbins) {
+                boost::tuple<int64_t, value_type, value_type, value_type, value_type, value_type> get_reduceable_data(std::size_t numbins) {
                     using alps::numeric::sq;
-                    T binvalue = 0.;
-                    for (std::size_t i = 0; i < numbins; ++i)
-                        binvalue += values_[i];
-                    return boost::tuple<int64_t, value_type, value_type, value_type, value_type>(
+                    using boost::numeric::operators::operator+;
+                    using boost::numeric::operators::operator*;
+                    using boost::numeric::operators::operator/;
+                    analyze();
+                    T binvalue = values_[0];
+                    for (std::size_t i = 1; i < numbins; ++i)
+                        binvalue = binvalue + values_[i];
+                    return boost::tuple<int64_t, value_type, value_type, value_type, value_type, value_type>(
                         count_, 
                         mean_ * double(count_), 
                         error_ * error_ * sq(double(count_)), 
-                        *variance_opt_ * double(count_),
+                        (variance_opt_ ? *variance_opt_ * double(count_) : value_type()),
+                        (tau_opt_ ? *tau_opt_ * double(count_) : value_type()),
                         binvalue / count_type(numbins)
                     );
                 }
@@ -376,17 +395,13 @@ namespace alps {
                             tmp2 *= rhs.error_ * sq(double(rhs.count_));
                             error_ = sqrt(tmp + tmp2);
                             error_ /= double(count_ + rhs.count_);
-                            if(variance_opt_ && rhs.variance_opt_) {
-                                *variance_opt_ *= double(count_);
-                                *variance_opt_ += double(rhs.count_) * *rhs.variance_opt_;
-                                *variance_opt_ /= double(count_ + rhs.count_);
-                            } else
+                            if(variance_opt_ && rhs.variance_opt_)
+                                *variance_opt_ = (*variance_opt_ * double(count_) + double(rhs.count_) * *rhs.variance_opt_) / double(count_ + rhs.count_);
+                            else
                                 variance_opt_ = boost::none_t();
-                            if(tau_opt_ && rhs.tau_opt_) {
-                                *tau_opt_ *= double(count_);
-                                *tau_opt_ += double(rhs.count_) * *rhs.tau_opt_;
-                                *tau_opt_ /= double(count_ + rhs.count_);
-                            } else
+                            if(tau_opt_ && rhs.tau_opt_)
+                                *tau_opt_ = (*tau_opt_ * double(count_) + double(rhs.count_) * *rhs.tau_opt_) / double(count_ + rhs.count_);
+                            else
                                 tau_opt_ = boost::none_t();
                             count_ += rhs.count();
                             if (binsize_ <= rhs.bin_size()) {
@@ -542,7 +557,7 @@ namespace alps {
                       fill_jack();
                     if (!rhs.jacknife_bins_valid_)
                       rhs.fill_jack();
-                    data_is_analyzed_= false;
+                    data_is_analyzed_ = false;
                     cannot_rebin_ = true;
                     mean_ = op(mean_, rhs.mean_);
                     error_ = error;
@@ -558,11 +573,11 @@ namespace alps {
                     return value;
                 }
                 template <typename X> std::vector<X> replace_valarray_by_vector(std::valarray<X> const & value) {
-                    std::vector<X> res;
-                    std::copy(&value[0], &value[0] + value.size(), std::back_inserter(res));
-                    return res;
+                    return std::vector<X>(&value[0], &value[0] + value.size());
                 }
                 void collect_bins(uint64_t howmany) {
+                    using boost::numeric::operators::operator+;
+                    using boost::numeric::operators::operator/;
                     if (cannot_rebin_)
                         boost::throw_exception(std::runtime_error("cannot change bins after nonlinear operations"));
                     if (values_.empty() || howmany <= 1) 
@@ -571,8 +586,8 @@ namespace alps {
                     for (uint64_t i = 0; i < newbins; ++i) {
                         values_[i] = values_[howmany * i];
                         for (uint64_t j = 1; j < howmany; ++j)
-                            values_[i] += values_[howmany * i + j];
-                        values_[i]/=count_type(howmany);
+                            values_[i] = values_[i] + values_[howmany * i + j];
+                        values_[i] = values_[i] / count_type(howmany);
                     }
                     values_.resize(newbins);
                     binsize_ *= howmany;
@@ -619,7 +634,7 @@ namespace alps {
                     using boost::numeric::operators::operator-;
                     if (count() == 0)
                         boost::throw_exception(NoMeasurementsError());
-                    if (data_is_analyzed_) 
+                    if (data_is_analyzed_)
                         return;
                     if (bin_number()) {
                         count_ = bin_size() * bin_number();
