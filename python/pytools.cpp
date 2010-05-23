@@ -57,7 +57,7 @@ public:
     
 };
 
-BOOST_PYTHON_MODULE(pytools)
+BOOST_PYTHON_MODULE(pytools_c)
 {
   using namespace boost::python;
   def("convert2xml", alps::convert2xml);

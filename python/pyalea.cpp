@@ -351,7 +351,7 @@ value_with_error<std::valarray<TYPE> >::value_with_error(boost::python::object c
 using namespace alps::alea;
 using namespace alps::numeric;
 
-BOOST_PYTHON_MODULE(pyalea) {
+BOOST_PYTHON_MODULE(pyalea_c) {
     class_<mcdata<double> >("MCScalarData")
         .add_property("mean", static_cast<double(*)(mcdata<double> const &)>(&wrap_mean))
         .add_property("error", static_cast<double(*)(mcdata<double> const &)>(&wrap_error))
