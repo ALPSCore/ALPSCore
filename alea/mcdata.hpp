@@ -518,10 +518,10 @@ namespace alps {
                     using boost::numeric::operators::operator*;
                     using boost::numeric::operators::operator/;
                     error_ = x * error_ / mean_ / mean_;
+                    fill_jack();
                     cannot_rebin_ = true;
                     mean_ = x / mean_;
                     std::transform(values_.begin(), values_.end(), values_.begin(), boost::lambda::bind(alps::numeric::divides<X>(), x * bin_size() * bin_size(), boost::lambda::_1));
-                    fill_jack();
                     std::transform(jack_.begin(), jack_.end(), jack_.begin(), boost::lambda::bind(alps::numeric::divides<X>(), x, boost::lambda::_1));
                 }
                 template <typename OP> void transform_linear(OP op, value_type const & error, boost::optional<result_type> variance_opt = boost::none_t()) {
@@ -538,8 +538,7 @@ namespace alps {
                     if (count() == 0)
                         boost::throw_exception(std::runtime_error("the observable needs measurements"));
                     data_is_analyzed_ = false;
-                    if (!jacknife_bins_valid_)
-                      fill_jack();
+                    fill_jack();
                     cannot_rebin_ = true;
                     mean_ = op(mean_);
                     error_ = error;
@@ -553,10 +552,8 @@ namespace alps {
                 template <typename X, typename OP> void transform(mcdata<X> const & rhs, OP op, value_type const & error, boost::optional<result_type> variance_opt = boost::none_t()) {
                     if (count() == 0 || rhs.count() == 0)
                         boost::throw_exception(std::runtime_error("both observables need measurements"));
-                    if (!jacknife_bins_valid_)
-                      fill_jack();
-                    if (!rhs.jacknife_bins_valid_)
-                      rhs.fill_jack();
+                    fill_jack();
+                    rhs.fill_jack();
                     data_is_analyzed_ = false;
                     cannot_rebin_ = true;
                     mean_ = op(mean_, rhs.mean_);
