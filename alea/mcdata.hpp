@@ -259,8 +259,8 @@ namespace alps {
                     else {
                         out << std::setprecision(6) << alps::numeric::round<2>(mean()) << " +/- "
                             << std::setprecision(3) << alps::numeric::round<2>(error());
-                        if(tau_opt_)
-                            out << std::setprecision(3) <<  "; tau = " << (alps::numeric::is_nonzero<2>(error()) ? *tau_opt_ : 0);
+                        //if(tau_opt_)
+                        //    out << std::setprecision(3) <<  "; tau = " << (alps::numeric::is_nonzero<2>(error()) ? *tau_opt_ : 0);
                         out << std::setprecision(6) << std::endl;
                     }
                 }
@@ -272,8 +272,8 @@ namespace alps {
                             out << "Entry[" << slice_name(mean_, it) << "]: "
                                 << alps::numeric::round<2>(slice_value(mean_, it)) << " +/- "
                                 << alps::numeric::round<2>(slice_value(error_, it));
-                            if(tau_opt_)
-                                out << "; tau = " << (alps::numeric::is_nonzero<2>(slice_value(error_, it)) ? slice_value(*tau_opt_, it) : 0);
+                            //if(tau_opt_)
+                            //    out << "; tau = " << (alps::numeric::is_nonzero<2>(slice_value(error_, it)) ? slice_value(*tau_opt_, it) : 0);
                             out << std::endl;
                         }
                 }
