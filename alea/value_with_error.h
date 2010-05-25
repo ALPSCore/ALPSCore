@@ -801,7 +801,7 @@ namespace alps {
       exponent_vec.resize(rhs.size(),exponent);
       std::vector<value_with_error<T> > res;
       res.reserve(rhs.size());
-	  std::transform(rhs.begin(),rhs.end(),exponent_vec.begin(),std::back_inserter(res),static_cast<value_with_error<T>(*)(value_with_error<T>,T)>(&pow));
+      std::transform(rhs.begin(),rhs.end(),exponent_vec.begin(),std::back_inserter(res),static_cast<value_with_error<T>(*)(value_with_error<T>,T)>(&pow));
       return res;
     }
 

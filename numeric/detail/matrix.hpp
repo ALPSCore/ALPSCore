@@ -78,7 +78,7 @@ namespace blas{
         matrix& operator=(matrix rhs)
         {
             swap(rhs);
-	    return *this;
+            return *this;
         }
         
         inline double &operator()(const unsigned int i, const unsigned int j)

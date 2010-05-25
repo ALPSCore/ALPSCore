@@ -414,7 +414,7 @@ BOOST_PYTHON_MODULE(pyalea_c) {
         .add_property("mean", static_cast<boost::python::numeric::array(*)(mcdata<std::vector<double> > const &)>(&wrap_mean))
         .add_property("error", static_cast<boost::python::numeric::array(*)(mcdata<std::vector<double> > const &)>(&wrap_error))
         .add_property("tau", static_cast<boost::python::numeric::array(*)(mcdata<std::vector<double> > const &)>(&wrap_tau))
-        .add_property("variance", static_cast<boost::python::numeric::array	(*)(mcdata<std::vector<double> > const &)>(&wrap_variance))
+        .add_property("variance", static_cast<boost::python::numeric::array(*)(mcdata<std::vector<double> > const &)>(&wrap_variance))
         .add_property("count", &mcdata<std::vector<double> >::count)
         .def("__repr__", static_cast<boost::python::str(*)(mcdata<std::vector<double> > const &)>(&print_mcdata))
         .def("__deepcopy__", &alps::python::make_copy<mcdata<std::vector<double> > >)

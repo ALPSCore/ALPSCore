@@ -135,7 +135,7 @@ namespace blas{
         {
             general_matrix temp(rhs);
             swap(temp, *this);
-			return *this;
+            return *this;
         }
         
         inline const std::vector<T> values() const
@@ -290,7 +290,7 @@ namespace blas{
         inline void right_multiply(const vector &v1, vector &v2) const
         { //perform v2[i]=M[ij]v1[j]
             assert(size1_==size2_);
-	    //call the BLAS routine for matrix vector multiplication:
+        //call the BLAS routine for matrix vector multiplication:
             char trans='T';
             double alpha=1., beta=0.;       //no need to multiply a constant or add a vector
             int inc=1;

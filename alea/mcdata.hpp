@@ -126,7 +126,7 @@ namespace alps {
                         std::transform(rhs.jack_.begin(), rhs.jack_.end(), std::back_inserter(jack_), boost::bind2nd(slice_it<X>(), s));
                 }
                 template <typename X> mcdata(AbstractSimpleObservable<X> const & obs)
-	                : count_(obs.count())
+                    : count_(obs.count())
                     , binsize_(obs.bin_size())
                     , max_bin_number_(obs.max_bin_number())
                     , data_is_analyzed_(true)
