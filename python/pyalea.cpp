@@ -30,6 +30,7 @@
 
 
 #define PY_ARRAY_UNIQUE_SYMBOL pyalea_PyArrayHandle
+#define ALPS_HDF5_CLOSE_GREEDY
 
 #include <alps/alea/detailedbinning.h>
 #include <alps/alea/value_with_error.h>
