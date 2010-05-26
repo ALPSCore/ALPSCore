@@ -90,6 +90,7 @@ namespace blas{
       inline double operator*(const vector &v2)
       {
           int inc=1;
+		  if (!size()) return 0.;
           return ddot_(&size_, &values_[0],&inc,&v2.values_[0],&inc);
       }
       
@@ -140,7 +141,8 @@ namespace blas{
       inline vector operator *=(double lambda)
       {
           int inc=1;
-          dscal_(&size_, &lambda, &values_[0], &inc);
+		  if (size())
+            dscal_(&size_, &lambda, &values_[0], &inc);
           return *this;
       }
       
@@ -161,6 +163,7 @@ namespace blas{
       
       void exp( double c)
       {
+		  if (!size()) return;
 #ifdef VECLIB
           //osx veclib exp
           int one=1;
