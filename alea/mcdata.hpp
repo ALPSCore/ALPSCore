@@ -66,12 +66,7 @@
 
 namespace alps { 
     namespace alea {
-        class mcany {
-            public:
-                virtual void serialize(hdf5::iarchive & ar) { throw std::logic_error("not Impl"); }
-                virtual void serialize(hdf5::oarchive & ar) const { throw std::logic_error("not Impl"); }
-        };
-        template <typename T> class mcdata : public mcany {
+        template <typename T> class mcdata {
             public:
                 template <typename X> friend class mcdata;
                 typedef T value_type;
@@ -149,16 +144,16 @@ namespace alps {
                       int64_t count
                     , value_type const & mean
                     , value_type const & error
-                    , value_type const & variance
-                    , value_type const & tau
+                    , boost::optional<result_type> const & variance_opt
+                    , boost::optional<time_type> const & tau_opt
                     , uint64_t binsize
                     , std::vector<value_type> const & values
                 )
                     : count_(count)
                     , mean_(mean)
                     , error_(error)
-                    , variance_opt_(variance)
-                    , tau_opt_(tau)
+                    , variance_opt_(variance_opt)
+                    , tau_opt_(tau_opt)
                     , binsize_(binsize)
                     , max_bin_number_(0)
                     , data_is_analyzed_(true)
@@ -205,12 +200,18 @@ namespace alps {
                     analyze();
                     return error_;
                 }
+                inline bool has_variance() const {
+                    return variance_opt_;
+                }
                 inline result_type const & variance() const {
                     analyze();
                     if (!variance_opt_)
                         boost::throw_exception(std::logic_error("observable does not have variance"));
                     return *variance_opt_;
                 };
+                inline bool has_tau() const {
+                    return tau_opt_;
+                }
                 inline time_type const & tau() const {
                     analyze();
                     if (!tau_opt_)
@@ -359,24 +360,6 @@ namespace alps {
                 void load(std::string const & filename, std::string const & path) {
                     hdf5::iarchive ar(filename);
                     ar >> make_pvp(path, *this);
-                }
-                boost::tuple<int64_t, value_type, value_type, value_type, value_type, value_type> get_reduceable_data(std::size_t numbins) {
-                    using alps::numeric::sq;
-                    using boost::numeric::operators::operator+;
-                    using boost::numeric::operators::operator*;
-                    using boost::numeric::operators::operator/;
-                    analyze();
-                    T binvalue = values_[0];
-                    for (std::size_t i = 1; i < numbins; ++i)
-                        binvalue = binvalue + values_[i];
-                    return boost::tuple<int64_t, value_type, value_type, value_type, value_type, value_type>(
-                        count_, 
-                        mean_ * double(count_), 
-                        error_ * error_ * sq(double(count_)), 
-                        (variance_opt_ ? *variance_opt_ * double(count_) : value_type()),
-                        (tau_opt_ ? *tau_opt_ * double(count_) : value_type()),
-                        binvalue / count_type(numbins)
-                    );
                 }
                 mcdata<T> & operator<<(mcdata<T> const & rhs) {
                     using std::sqrt;
