@@ -537,9 +537,9 @@ namespace alps {
             boost::variate_generator<boost::mt19937, boost::uniform_real<> > random;
     };
 
-    class mcdepreciated : public mcbase {
+    class mcdeprecated : public mcbase {
         public:
-            mcdepreciated(parameters_type const & p)
+            mcdeprecated(parameters_type const & p)
                 : mcbase(p)
                 , parms(make_alps_parameters(p))
                 , measurements(results)
