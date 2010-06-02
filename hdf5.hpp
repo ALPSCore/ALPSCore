@@ -95,7 +95,7 @@ namespace alps {
                 bool is_attribute(std::string const & path) const;
                 /// deletes a dataset
                 void delete_data(std::string const & path) const;
-                /// @return extents of the dataset located at the given path. extend(...).size() == dimensions(...) always holds
+                /// @return extents of the dataset located at the given path. extent(...).size() == dimensions(...) always holds
                 std::vector<std::size_t> extent(std::string const & path) const;
                 /// number of dimensions of the dataset located at the given path
                 std::size_t dimensions(std::string const & path) const;
@@ -145,13 +145,62 @@ namespace alps {
                 char * time;
                 char * name;
             };
-            struct internal_complex_type { 
+            struct internal_complex_type {
                double r;
-               double i; 
+               double i;
             };
+        }
+// TODO: move to hdf5/scalar.hpp
+        template<typename T> struct serializable_type { typedef T type; };
+        template<typename T> struct native_type { typedef T type; };
+        // TODO: start, count und size sollten auch fuer die skalardimension einen Eintrag haben also vector<int>(5) hat size [5, 1]
+        template<typename T> std::vector<hsize_t> get_extent(T const &) { return std::vector<hsize_t>(1, 1); }
+        template<typename T> void set_extent(T &, std::vector<std::size_t> const &) {}
+        template<typename T> std::vector<hsize_t> offset(T const &) { return std::vector<hsize_t>(1, 1); }
+        template<typename T> bool is_scalar(T const &) { return boost::is_scalar<T>::value && !boost::is_enum<T>::value; }
+        template<typename T> bool is_vectorizable(T const) { return boost::is_scalar<T>::value && !boost::is_enum<T>::value; }
+        template<typename T> typename serializable_type<T>::type const * get_data(
+              std::vector<typename serializable_type<T>::type> & m
+            , T const & v
+            , std::vector<hsize_t> const &
+            , std::vector<hsize_t> const & = std::vector<hsize_t>()
+        ) {
+            return &v;
+        }
+        // TODO: es sollte ein set geben fuer T == U, das einen m-ptr zuruckgibt ...
+        // TODO: make a nicer syntax for set(T & v, vec<size_t> s, vec<U> u, size_t o, size_t c)
+        template<typename T, typename Other> typename boost::disable_if<typename boost::mpl::or_<
+              typename boost::is_same<Other, std::complex<double> >::type
+            , typename boost::is_same<Other, char *>::type
+            , typename boost::is_enum<T>::type
+            , typename boost::mpl::not_<typename boost::is_scalar<T>::type>::type
+        >::type>::type set_data(T & v, std::vector<Other> const & u, std::vector<hsize_t> const & s, std::vector<hsize_t> const & c) {
+            if (s.size() != 1 || c.size() != 1 || c[0] == 0 || u.size() < c[0])
+                throw std::range_error("invalid data size");
+            std::copy(u.begin(), u.begin() + c[0], &v + s[0]);
+        }
+        template<typename T, typename Other> static typename boost::enable_if<typename boost::mpl::or_<
+              typename boost::is_same<Other, std::complex<double> >::type
+            , typename boost::is_same<Other, char *>::type
+            , typename boost::is_enum<T>::type
+            , typename boost::mpl::not_<typename boost::is_scalar<T>::type>::type
+        >::type>::type set_data(T &, std::vector<Other> const &, std::vector<hsize_t> const &, std::vector<hsize_t> const &) { 
+            throw std::runtime_error("invalid type conversion");
+        }
+        template<typename T, typename Archive, typename Tag> static void apply(Archive & ar, std::string const & p, T & v, Tag) {
+            if (boost::is_scalar<T>::value)
+                ar.serialize(p, v);
+            else {
+                std::string c = ar.get_context();
+                ar.set_context(ar.complete_path(p));
+                v.serialize(ar);
+                ar.set_context(c);
+            }
+        }
+        namespace detail {
             template <typename Tag> class archive;
             // TODO: make iarchive and oarchive inherited classes from archive<Tag>
-            // todo: move from detail to alsp::hdf5
+            // todo: move from detail to alps::hdf5
             template <typename T> archive<read> & serialize(archive<read> & ar, std::string const & p, T & v);
             template <typename T> archive<write> & serialize(archive<write> & ar, std::string const & p, T const & v);
             template<typename T> struct matrix_type : public boost::mpl::bool_<boost::is_scalar<T>::value && !boost::is_enum<T>::value>::type {
@@ -345,7 +394,7 @@ namespace alps {
                     }                                                                                                                                      \
                     static bool is_vectorizable( C <T> const & v) {                                                                                        \
                         for(std::size_t i = 0; i < v.size(); ++i)                                                                                          \
-                            if (!matrix_type<T>::is_vectorizable(v[i]))                                                                                    \
+                            if (!matrix_type<T>::is_vectorizable(v[i]) || matrix_type<T>::size(v[0])[0] != matrix_type<T>::size(v[i])[0])                  \
                                 return false;                                                                                                              \
                         return true;                                                                                                                       \
                     }                                                                                                                                      \
@@ -704,9 +753,9 @@ typedef boost::numeric::ublas::matrix<double,boost::numeric::ublas::column_major
                             space_type space_id(H5Dget_space(data_id));
                             check_error(H5Sget_simple_extent_dims(space_id, &buffer.front(), NULL));
                         }
-                        std::vector<std::size_t> extend(buffer.size(), 0);
-                        std::copy(buffer.begin(), buffer.end(), extend.begin());
-                        return extend;
+                        std::vector<std::size_t> extent(buffer.size(), 0);
+                        std::copy(buffer.begin(), buffer.end(), extent.begin());
+                        return extent;
                     }
                     std::size_t dimensions(std::string const & p) const {
                         data_type data_id(H5Dopen2(_file, complete_path(p).c_str(), H5P_DEFAULT));
@@ -934,7 +983,9 @@ typedef boost::numeric::ublas::matrix<double,boost::numeric::ublas::column_major
                         }
                     }
                     template<typename T> void get_data(std::string const & p, T & v) const {
-                        if (is_scalar(p) != matrix_type<T>::scalar::value)
+                        if (is_group(p))
+                            matrix_type<T>::apply(const_cast<archive<Tag> &>(*this), p, v, read());
+                        else if (is_scalar(p) != matrix_type<T>::scalar::value)
                             throw std::runtime_error("scalar - vector conflict");
                         else if (matrix_type<T>::scalar::value && is_null(p))
                             throw std::runtime_error("scalars cannot be null");
@@ -950,10 +1001,7 @@ typedef boost::numeric::ublas::matrix<double,boost::numeric::ublas::column_major
                                 check_error(H5Sget_simple_extent_dims(space_id, &size.front(), NULL));
                             }
                             matrix_type<T>::resize(v, std::vector<std::size_t>(size.begin(), size.end()));
-                            // TODO: this check is bs!
-                            if (!matrix_type<T>::is_vectorizable(v))
-                                matrix_type<T>::apply(const_cast<archive<Tag> &>(*this), p, v, read());
-                            else if (H5Tget_class(native_id) == H5T_STRING)
+                            if (H5Tget_class(native_id) == H5T_STRING)
                                 get_helper<T, char *>(v, data_id, type_id, false);
                             else if (check_error(H5Tequal(type_type(H5Tcopy(_complex_id)), type_type(H5Tcopy(type_id)))))
                                 get_helper<T, std::complex<double> >(v, data_id, type_id, false);
@@ -995,35 +1043,38 @@ typedef boost::numeric::ublas::matrix<double,boost::numeric::ublas::column_major
                     }
                     template<typename T> void set_data(std::string const & p, T const & v) const {
                         type_type type_id(get_native_type(typename matrix_type<T>::native_type()));
-                        std::vector<hsize_t> size(matrix_type<T>::size(v)), start(size.size(), 0), count(matrix_type<T>::count(v));
-                        typename matrix_type<T>::buffer_type data;
-                        if (matrix_type<T>::scalar::value) {
-                            data_type data_id(save_comitted_data(p, type_id, H5Screate(H5S_SCALAR), 0, NULL, !boost::is_same<typename matrix_type<T>::native_type, std::string>::value));
-                            check_error(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, matrix_type<T>::get(data, v, start)));
-                        } else if (std::accumulate(size.begin(), size.end(), 0) == 0)
-                            check_data(save_comitted_data(p, type_id, H5Screate(H5S_NULL), 0, NULL, !boost::is_same<typename matrix_type<T>::native_type, std::string>::value));
-                        else if (matrix_type<T>::is_vectorizable(v)) {
-                            data_type data_id(save_comitted_data(p, type_id, H5Screate_simple(size.size(), &size.front(), NULL), size.size(), &size.front(), !boost::is_same<typename matrix_type<T>::native_type, std::string>::value));
-                            if (std::equal(count.begin(), count.end(), size.begin()))
-                                check_error(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, matrix_type<T>::get(data, v, start)));
-                            else {
-                                std::size_t last = count.size() - 1, pos;
-                                for(;count[last] == size[last]; --last);
-                                do {
-                                    space_type space_id(H5Dget_space(data_id));
-                                    check_error(H5Sselect_hyperslab(space_id, H5S_SELECT_SET, &start.front(), NULL, &count.front(), NULL));
-                                    space_type mem_id(H5Screate_simple(count.size(), &count.front(), NULL));
-                                    check_error(H5Dwrite(data_id, type_id, mem_id, space_id, H5P_DEFAULT, matrix_type<T>::get(data, v, start)));
-                                    if (++start[last] == size[last] && last) {
-                                        for (pos = last; pos && start[pos] == size[pos]; --pos);
-                                        ++start[pos];
-                                        for (++pos; pos <= last; ++pos)
-                                            start[pos] = 0;
-                                    }
-                                } while (start[0] < size[0]);
-                            }
-                        } else
+                        if (!matrix_type<T>::is_vectorizable(v))
                             matrix_type<T>::apply(const_cast<archive<Tag> &>(*this), p, v, write());
+                        else {
+                            std::vector<hsize_t> size(matrix_type<T>::size(v)), start(size.size(), 0), count(matrix_type<T>::count(v));
+                            typename matrix_type<T>::buffer_type data;
+                            if (matrix_type<T>::scalar::value) {
+                                data_type data_id(save_comitted_data(p, type_id, H5Screate(H5S_SCALAR), 0, NULL, !boost::is_same<typename matrix_type<T>::native_type, std::string>::value));
+                                check_error(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, matrix_type<T>::get(data, v, start)));
+                            } else if (std::accumulate(size.begin(), size.end(), 0) == 0)
+                                check_data(save_comitted_data(p, type_id, H5Screate(H5S_NULL), 0, NULL, !boost::is_same<typename matrix_type<T>::native_type, std::string>::value));
+                            else {
+                                data_type data_id(save_comitted_data(p, type_id, H5Screate_simple(size.size(), &size.front(), NULL), size.size(), &size.front(), !boost::is_same<typename matrix_type<T>::native_type, std::string>::value));
+                                if (std::equal(count.begin(), count.end(), size.begin()))
+                                    check_error(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, matrix_type<T>::get(data, v, start)));
+                                else {
+                                    std::size_t last = count.size() - 1, pos;
+                                    for(;count[last] == size[last]; --last);
+                                    do {
+                                        space_type space_id(H5Dget_space(data_id));
+                                        check_error(H5Sselect_hyperslab(space_id, H5S_SELECT_SET, &start.front(), NULL, &count.front(), NULL));
+                                        space_type mem_id(H5Screate_simple(count.size(), &count.front(), NULL));
+                                        check_error(H5Dwrite(data_id, type_id, mem_id, space_id, H5P_DEFAULT, matrix_type<T>::get(data, v, start)));
+                                        if (++start[last] == size[last] && last) {
+                                            for (pos = last; pos && start[pos] == size[pos]; --pos);
+                                            ++start[pos];
+                                            for (++pos; pos <= last; ++pos)
+                                                start[pos] = 0;
+                                        }
+                                    } while (start[0] < size[0]);
+                                }
+                            }
+                        }
                     }
                     template<typename T> void set_attr(std::string const & p, std::string const & s, T const & v) const {
                         hid_t parent_id;
