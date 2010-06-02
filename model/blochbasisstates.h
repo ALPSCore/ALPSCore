@@ -264,7 +264,7 @@ void bloch_basis_states<I,S,SS>::build(const translation_type& trans, const std:
           std::cerr << "Strange weight: " << w << " " << found_same << "\n";
         if (storeit) {
           normalization_.push_back(w/l);
-          push_back(idx);
+          std::vector<S>::push_back(idx);
         }
       }
       

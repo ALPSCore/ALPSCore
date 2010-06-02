@@ -37,6 +37,7 @@
 #include <alps/alea/abstractbinning.h>
 #include <alps/alea/recordableobservable.h>
 #include <alps/alea/output_helper.h>
+#include <alps/alea/convergence.hpp>
 #include <alps/type_traits/is_scalar.hpp>
 #include <alps/type_traits/change_value_type.hpp>
 #include <alps/type_traits/average_type.hpp>

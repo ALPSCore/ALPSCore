@@ -95,7 +95,7 @@ void Block<T>::output(std::ostream& os) const
 template<class T>
 Evaluatable<T>* Block<T>::partial_evaluate_replace(const Evaluator<T>& p, bool isarg)
 {
-  partial_evaluate(p,isarg);
+  Expression<T>::partial_evaluate(p,isarg);
   return this;
 }
 

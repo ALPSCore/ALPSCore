@@ -233,7 +233,7 @@ SiteBasisDescriptor<I>::SiteBasisDescriptor(const XMLTag& intag, std::istream& i
         tag = parse_tag(is);
       }
       while (tag.name=="QUANTUMNUMBER") {
-        push_back(QuantumNumberDescriptor<I>(tag,is));
+        std::vector<QuantumNumberDescriptor<I> >::push_back(QuantumNumberDescriptor<I>(tag,is));
         if (tag.type!=XMLTag::SINGLE)
           tag = parse_tag(is);
         tag = parse_tag(is);

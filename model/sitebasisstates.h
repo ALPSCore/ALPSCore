@@ -102,7 +102,7 @@ site_basis<I,STATE>::site_basis(const SiteBasisDescriptor<I>& b)
     quantumnumbers[it-b.begin()]=s.top().second;
     s.pop();
     if(it==b.end()-1) 
-      push_back(state_type(quantumnumbers));
+      std::vector<STATE>::push_back(state_type(quantumnumbers));
     else {
       ++it;
       Parameters p=b.get_parameters(true);

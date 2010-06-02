@@ -31,6 +31,7 @@
 /* $Id: obsvalue.h 3435 2009-11-28 14:45:38Z troyer $ */
 
 #ifndef ALPS_ALEA_CONVERGENCE_H
+#define ALPS_ALEA_CONVERGENCE_H
 
 #include <alps/config.h>
 #include <string>

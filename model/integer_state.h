@@ -52,7 +52,7 @@ public:
     reference& operator=(T x)
     {
       state_ &= ~(mask<<shift_);
-      state |= ((mask & x)<<shift_);
+      state_ |= ((mask & x)<<shift_);
       return *this;
     }
   private:

@@ -44,7 +44,7 @@ public:
   typedef TERM term_type;
   DefaultTermDescriptor() {}
   DefaultTermDescriptor(const XMLTag& tag, std::istream& in) : term_type(tag,in) {}
-  operator term_type() const { return static_cast<term_type const&>(*this);}
+  // operator term_type() const { return static_cast<term_type const&>(*this);}
   term_type get(unsigned int type) const;
   Parameters parms(unsigned int type) const { return substitute(TERM::parms(),type); }
 };

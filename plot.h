@@ -181,7 +181,7 @@ public:
     : name_(name), parms(p), show_legend_(show_legend) {};
   
   /// add a set to the plot
-  Plot<C>& operator<<(const Set<C>& s) { push_back(s); return *this; }
+  Plot<C>& operator<<(const Set<C>& s) { std::vector<Set<C> >::push_back(s); return *this; }
   /// set the title
   Plot<C>& operator<<(const std::string& name) { name_=name; return *this; } 
   
@@ -278,7 +278,7 @@ inline Set<C>& Set<C>::operator<<(const boost::tuples::tuple<C,C>& t) {
   NewPoint.clear();
   NewPoint.push_back(boost::tuples::get<0>(t));
   NewPoint.push_back(boost::tuples::get<1>(t));
-  push_back(NewPoint);
+  std::vector<Point<C> >::push_back(NewPoint);
   return *this;   
 }   // operator<<
 
@@ -287,7 +287,7 @@ inline Set<C>& Set<C>::operator<<(const boost::tuples::tuple<C,C,C>& t) {
   NewPoint.clear();
   NewPoint.push_back(boost::tuples::get<0>(t));
   NewPoint.push_back(boost::tuples::get<1>(t));
-  switch(type) {
+  switch(type()) {
     case xdxy:
     case xdxydy:
       NewPoint.push_back(boost::tuples::get<2>(t));
@@ -298,7 +298,7 @@ inline Set<C>& Set<C>::operator<<(const boost::tuples::tuple<C,C,C>& t) {
       NewPoint.push_back(boost::tuples::get<2>(t));
       break;        
   }
-  push_back(NewPoint);
+  std::vector<Point<C> >::push_back(NewPoint);
   return *this;   
 }   // operator<<
 
@@ -309,7 +309,7 @@ inline Set<C>& Set<C>::operator<<(const boost::tuples::tuple<C,C,C,C>& t) {
   NewPoint.push_back(boost::tuples::get<1>(t));
   NewPoint.push_back(boost::tuples::get<2>(t));
   NewPoint.push_back(boost::tuples::get<3>(t));
-  push_back(NewPoint);
+  std::vector<Point<C> >::push_back(NewPoint);
   return *this;   
 }   // operator<<
 

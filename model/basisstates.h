@@ -162,7 +162,7 @@ basis_states_descriptor<I,S>::basis_states_descriptor(const BasisDescriptor<I>& 
   for (typename boost::graph_traits<G>::vertex_iterator it=sites(g).first;it!=sites(g).second ; ++it) {
     const SiteBasisDescriptor<I>& sb=basis_descriptor_.site_basis(site_type[*it]);
     site_basis_descriptor_.push_back(sb);
-    push_back(site_basis_type(sb));
+    std::vector<site_basis<I,S> >::push_back(site_basis_type(sb));
   }
 }
 
@@ -280,7 +280,7 @@ void basis_states<I,S,SS>::build(const std::vector<std::pair<std::string,half_in
       satisfies = satisfies && satisfies_quantumnumbers(idx,constraints[i]);
 
     if (satisfies) {
-      push_back(idx);
+      std::vector<S>::push_back(idx);
         }
     ++idx[last];
   }

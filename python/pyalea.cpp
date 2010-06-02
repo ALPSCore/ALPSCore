@@ -335,8 +335,8 @@ value_with_error<std::valarray<TYPE> >::value_with_error(boost::python::object c
         template <typename T> boost::python::str print_mcdata(std::vector<mcdata<T> > const & self) {
             boost::python::str mean, error;
             for (typename std::vector<mcdata<T> >::const_iterator it = self.begin(); it != self.end(); ++it) {
-                mean += (it != self.begin() ? ", " : "") + boost::python::str(it->mean());
-                error += (it != self.begin() ? ", " : "") + boost::python::str(it->error());
+                mean += boost::python::str(it != self.begin() ? ", " : "") + boost::python::str(it->mean());
+                error += boost::python::str(it != self.begin() ? ", " : "") + boost::python::str(it->error());
             }
             return boost::python::str(boost::python::str(mean) + " +/- " + (error));
         }

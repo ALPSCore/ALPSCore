@@ -228,7 +228,7 @@ BasisDescriptor<I>::BasisDescriptor(const XMLTag& intag, std::istream& is, const
           default_site_basis_=sb;
       }
       else
-        push_back(sb);
+        std::vector<site_basis_match<I> >::push_back(sb);
       tag = parse_tag(is);
     }
     while (tag.name=="CONSTRAINT") {

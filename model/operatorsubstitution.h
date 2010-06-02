@@ -77,7 +77,7 @@ template <class T>
 bool OperatorSubstitution<T>::correct_arguments(const std::vector<expression::Expression<T> >& args) const
 {
   std::vector<expression::Expression<T> > evalargs(args);
-  partial_evaluate_expressions(evalargs,true);
+  expression::ParameterEvaluator<T>::partial_evaluate_expressions(evalargs,true);
   for (typename std::vector<expression::Expression<T> >::const_iterator it=evalargs.begin();it!=evalargs.end();++it)
     if (std::find(sites_.begin(),sites_.end(),*it) == sites_.end())
       return false;
@@ -96,7 +96,7 @@ template <class T>
 expression::Expression<T> OperatorSubstitution<T>::partial_evaluate_function(const std::string& name,const std::vector<expression::Expression<T> >& args, bool isarg) const
 {
   std::vector<expression::Expression<T> > evalargs(args);
-  partial_evaluate_expressions(evalargs,true);
+  expression::ParameterEvaluator<T>::partial_evaluate_expressions(evalargs,true);
   bool correctargs=correct_arguments(evalargs);
     
   if (correctargs && args.size()==2) {
