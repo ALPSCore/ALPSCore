@@ -99,6 +99,12 @@
 int main() {
     {
         alps::hdf5::oarchive oar("vector.h5");
+        {
+            std::vector<std::vector<int> > value;
+            value.push_back(std::vector<int>(2));
+            value.push_back(std::vector<int>(3));
+            oar << alps::make_pvp("/vector/nomatrix", value);
+        }
         HDF5_FOREACH(HDF5_WRITE)
         {
             std::vector<std::string> value(1, "Im a Test string");
@@ -112,6 +118,10 @@ int main() {
     }
     {
         alps::hdf5::iarchive iar("vector.h5");
+        {
+            std::vector<std::vector<int> > value;
+            iar >> alps::make_pvp("/vector/nomatrix", value);
+        }
         HDF5_FOREACH(HDF5_READ)
         {
             std::vector<std::string> value;
