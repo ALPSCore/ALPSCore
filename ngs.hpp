@@ -78,7 +78,7 @@ namespace alps {
                 if (!(valid = !vm.count("help")))
                     std::cout << desc << std::endl;
                 else if (input_file.empty())
-                    boost::throw_exception(std::runtime_error("No job file specified"));
+                    throw std::invalid_argument("No job file specified");
                 if (vm.count("threaded"))
                     type = THREADED;
                 else if (vm.count("mpi"))
@@ -479,7 +479,7 @@ namespace alps {
 
             virtual double fraction_completed() const = 0;
 
-            void save(boost::filesystem::path const & path) const {
+            virtual void save(boost::filesystem::path const & path) const {
                 boost::filesystem::path original = path.parent_path() / (path.filename() + ".h5");
                 boost::filesystem::path backup = path.parent_path() / (path.filename() + ".bak");
                 if (boost::filesystem::exists(backup))
@@ -495,7 +495,7 @@ namespace alps {
                 boost::filesystem::rename(backup, original);
             }
 
-            void load(boost::filesystem::path const & path) { 
+            virtual void load(boost::filesystem::path const & path) { 
                 hdf5::iarchive ar(path.file_string());
                 ar >> make_pvp("/simulation/realizations/0/clones/0/results", results);
             }
@@ -527,7 +527,7 @@ namespace alps {
                     else if (dynamic_cast<AbstractSimpleObservable<std::valarray<double> > const *>(&results[*it]) != NULL)
                         boost::assign::ptr_map_insert<mcdata<std::vector<double> > >(partial_results)(*it, *dynamic_cast<AbstractSimpleObservable<std::valarray<double> > const *>(&results[*it]));
                     else
-                        boost::throw_exception(std::runtime_error("unknown observable type"));
+                        throw std::runtime_error("unknown observable type");
                 return partial_results;
             }
      
@@ -604,30 +604,35 @@ namespace alps {
                 : Impl(p)
                 , stop_flag(false)
             {}
-            
-            bool run(boost::function<bool ()> const & stop_callback) {
-                boost::thread thread(boost::bind(&mcthreadsim<Impl>::thread_callback, this, stop_callback));
-                Impl::run(boost::bind(&mcthreadsim<Impl>::run_callback, this));
+
+            bool run(boost::function<bool ()> const & callback) {
+                boost::thread thread(boost::bind<void>(&mcthreadsim<Impl>::runner, this));
+                stop_callback(callback);
                 thread.join();
                 return stop_flag;
             }
-            
+
+        protected:
             virtual bool run_callback() {
                 return stop_flag;
             }
-            
-            virtual void thread_callback(boost::function<bool ()> const & stop_callback) {
+
+            virtual void stop_callback(boost::function<bool ()> const & callback) {
                 while (true) {
                     usleep(0.1 * 1e6);
-                    if (stop_flag = stop_callback())
+                    if (stop_flag = callback())
                         return;
                 }
             }
 
-        protected:
             mcatomic<bool> stop_flag;
             // boost::mutex mutex;
             // measurements and configuration need to be locked separately
+
+        private:
+            void runner() {
+                Impl::run(boost::bind(&mcthreadsim<Impl>::run_callback, this));
+            }
     };
     template<typename Impl> class mcmpisim : public mcthreadsim<Impl> {
         public:
@@ -679,7 +684,7 @@ namespace alps {
                     }
                 return partial_results;
             }
-            
+
             typename mcthreadsim<Impl>::results_type collect_local_results() const {
                 return collect_local_results(mcthreadsim<Impl>::result_names());
             }
@@ -695,9 +700,9 @@ namespace alps {
                 }
             }
 
-            void thread_callback(boost::function<bool ()> const & stop_callback) {
+            void stop_callback(boost::function<bool ()> const & callback) {
                 if (communicator.rank() == 0) {
-                    for (bool flag = false; !flag && !stop_callback(); ) {
+                    for (bool flag = false; !flag && !callback(); ) {
                         usleep(0.1 * 1e6);
                         if (!flag && boost::posix_time::second_clock::local_time() > check_time) {
                             double fraction = fraction_completed();
