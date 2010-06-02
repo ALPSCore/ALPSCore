@@ -658,7 +658,7 @@ typedef boost::numeric::ublas::matrix<double,boost::numeric::ublas::column_major
                     }
                     std::vector<std::pair<std::string, std::string> > list_revisions() const {
                         // TODO: implement
-                        return std::vector<std::pair<std::string, std::size_t> >();
+                        return std::vector<std::pair<std::string, std::string> >();
                     }
                     void export_revision(std::size_t revision, std::string const & file) const {
                         // TODO: implement
