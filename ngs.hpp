@@ -31,7 +31,6 @@
 
 #include <boost/mpi.hpp>
 #include <boost/bind.hpp>
-#include <boost/thread.hpp>
 #include <boost/utility.hpp>
 #include <boost/function.hpp>
 #include <boost/lexical_cast.hpp>
@@ -58,13 +57,13 @@
 namespace alps {
     class mcoptions {
         public:
-            typedef enum { SINGLE, THREADED, MPI } execution_types;
+            typedef enum { SINGLE, MPI } execution_types;
+
             mcoptions(int argc, char* argv[]) : valid(false), type(SINGLE) {
                 boost::program_options::options_description desc("Allowed options");
                 desc.add_options()
                     ("help", "produce help message")
-                    ("single", "run a single thread") 
-                    ("threaded", "runing multiple threads") 
+                    ("single", "run single process")
                     ("mpi", "run in parallel using MPI") 
                     ("time-limit,T", boost::program_options::value<std::size_t>(&time_limit)->default_value(0), "time limit for the simulation")
                     ("input-file", boost::program_options::value<std::string>(&input_file), "input file in hdf5 format")
@@ -79,11 +78,10 @@ namespace alps {
                     std::cout << desc << std::endl;
                 else if (input_file.empty())
                     throw std::invalid_argument("No job file specified");
-                if (vm.count("threaded"))
-                    type = THREADED;
-                else if (vm.count("mpi"))
+                if (vm.count("mpi"))
                     type = MPI;
             }
+
             bool valid;
             std::size_t time_limit;
             std::string input_file;
@@ -95,20 +93,25 @@ namespace alps {
     class mcparamvalue : public std::string {
         public:
             mcparamvalue() {}
+
             template <typename T> mcparamvalue(mcparamvalue const & v)
                 : std::string(v) 
             {}
+
             template <typename T> mcparamvalue(T const & v)
                 : std::string(boost::lexical_cast<std::string>(v)) 
             {}
+
             template <typename T> typename boost::disable_if<typename boost::is_base_of<std::string, T>::type, mcparamvalue &>::type operator=(T const & v) {
                 std::string::operator=(boost::lexical_cast<std::string>(v));
                 return *this;
             }
+
             template <typename T> typename boost::enable_if<typename boost::is_base_of<std::string, T>::type, mcparamvalue &>::type operator=(T const & v) {
                 std::string::operator=(v);
                 return *this;
             }
+
             template <typename T> operator T() const {
                 return boost::lexical_cast<T, std::string>(*this);
             }
@@ -156,7 +159,7 @@ namespace alps {
             }
     };
 
-    template<typename unused = void> class mcsignal_impl{
+    template<typename Unused = void> class mcsignal_impl{
         public:
             mcsignal_impl() {
                 static bool initialized;
@@ -164,7 +167,7 @@ namespace alps {
                     static struct sigaction action;
                     initialized = true;
                     memset(&action, 0, sizeof(action));
-                    action.sa_handler = &mcsignal_impl<unused>::slot;
+                    action.sa_handler = &mcsignal_impl<Unused>::slot;
                     sigaction(SIGINT, &action, NULL);
                     sigaction(SIGTERM, &action, NULL);
                     sigaction(SIGXCPU, &action, NULL);
@@ -173,16 +176,15 @@ namespace alps {
                     sigaction(SIGUSR2, &action, NULL);
                 }
             }
-            operator bool() const { return which; }
-            static int code() { return which; }
+            operator bool() const { return abort; }
             static void slot(int signal) { 
                 std::cerr << "Killed by signal " << signal << std::endl;
-                which = signal;
+                abort = true;
             }
         private:
-            static int which;
+            static bool abort;
     };
-    template<typename unused> int mcsignal_impl<unused>::which = 0;
+    template<typename Unused> bool mcsignal_impl<Unused>::abort = false;
     typedef mcsignal_impl<> mcsignal;
 
     template <typename T> void mcmpierror(T code) {
@@ -404,7 +406,6 @@ namespace alps {
             }
 
         private:
-        
             std::size_t partition_bins (std::vector<result_type> & bins, boost::mpi::communicator const & communicator) {
                 using boost::numeric::operators::operator+;
                 alea::mcdata<T>::set_bin_size(boost::mpi::all_reduce(communicator, alea::mcdata<T>::bin_size(), boost::mpi::maximum<std::size_t>()));
@@ -414,6 +415,8 @@ namespace alps {
                 for (std::vector<int>::const_iterator it = buffer.begin(); it != buffer.end(); it += 2)
                     index[*it] = *(it + 1);
                 int perbin = std::accumulate(index.begin(), index.end(), 0) / bins.size();
+                if (perbin == 0)
+                    throw std::runtime_error("not enough data for the required binnumber");
                 int start = std::accumulate(index.begin(), index.begin() + communicator.rank(), 0);
                 for (int i = start / perbin, j = start - i, k = 0; i < bins.size() && k < alea::mcdata<T>::bin_number(); ++k) {
                     bins[i] = bins[i] + alea::mcdata<T>::bins()[k];
@@ -470,6 +473,9 @@ namespace alps {
 
             mcbase(parameters_type const & p)
                 : params(p)
+                , next_check(8)
+                , start_time(boost::posix_time::second_clock::local_time())
+                , check_time(boost::posix_time::second_clock::local_time() + boost::posix_time::seconds(next_check))
                 , random(boost::mt19937(), boost::uniform_real<>())
             {}
 
@@ -479,7 +485,7 @@ namespace alps {
 
             virtual double fraction_completed() const = 0;
 
-            virtual void save(boost::filesystem::path const & path) const {
+            void save(boost::filesystem::path const & path) const {
                 boost::filesystem::path original = path.parent_path() / (path.filename() + ".h5");
                 boost::filesystem::path backup = path.parent_path() / (path.filename() + ".bak");
                 if (boost::filesystem::exists(backup))
@@ -495,17 +501,42 @@ namespace alps {
                 boost::filesystem::rename(backup, original);
             }
 
-            virtual void load(boost::filesystem::path const & path) { 
+            void load(boost::filesystem::path const & path) { 
                 hdf5::iarchive ar(path.file_string());
                 ar >> make_pvp("/simulation/realizations/0/clones/0/results", results);
             }
 
+            void save_collected(boost::filesystem::path const & path) {
+                results_type collected_results = collect_results();
+                if (collected_results.size()) {
+                    boost::filesystem::path original = path.parent_path() / (path.filename() + ".h5");
+                    boost::filesystem::path backup = path.parent_path() / (path.filename() + ".bak");
+                    if (boost::filesystem::exists(backup))
+                        boost::filesystem::remove(backup);
+                    {
+                        hdf5::oarchive ar(backup.file_string());
+                        ar << make_pvp("/parameters", params);
+                        for (results_type::const_iterator it = collected_results.begin(); it != collected_results.end(); ++it)
+                            if (it->second->count() > 0)
+                                ar << alps::make_pvp("/simulation/results/" + it->first, *(it->second));
+                    }
+                    if (boost::filesystem::exists(original))
+                        boost::filesystem::remove(original);
+                    boost::filesystem::rename(backup, original);
+                }
+            }
+
             bool run(boost::function<bool ()> const & stop_callback) {
+                double fraction = 0.;
                 do {
                     do_update();
                     do_measurements();
-                } while(!stop_callback() && fraction_completed() < 1);
-                return fraction_completed() >= 1;
+                    if (boost::posix_time::second_clock::local_time() > check_time) {
+                        fraction = fraction_completed();
+                        next_check = std::min(2. * next_check, std::max(double(next_check), 0.8 * (boost::posix_time::second_clock::local_time() - start_time).total_seconds() / fraction * (1 - fraction)));
+                        check_time = boost::posix_time::second_clock::local_time() + boost::posix_time::seconds(next_check);
+                    }
+                } while(!stop_callback() && fraction < 1.);
             }
 
             result_names_type result_names() const {
@@ -515,11 +546,15 @@ namespace alps {
                 return names;
             }
 
-            result_names_type unsaved_result_names() const { return result_names_type(); }
+            result_names_type unsaved_result_names() const {
+                return result_names_type(); 
+            }
 
-            results_type collect_results() const { return collect_results(result_names_type()); }
+            results_type collect_results() const {
+                return collect_results(result_names());
+            }
 
-            results_type collect_results(result_names_type const & names) const {
+            virtual results_type collect_results(result_names_type const & names) const {
                 results_type partial_results;
                 for(result_names_type::const_iterator it = names.begin(); it != names.end(); ++it)
                     if (dynamic_cast<AbstractSimpleObservable<double> const *>(&results[*it]) != NULL)
@@ -530,11 +565,17 @@ namespace alps {
                         throw std::runtime_error("unknown observable type");
                 return partial_results;
             }
-     
+
         protected:
+
             parameters_type params;
             ObservableSet results;
             boost::variate_generator<boost::mt19937, boost::uniform_real<> > random;
+            
+        private:
+            std::size_t next_check;
+            boost::posix_time::ptime start_time;
+            boost::posix_time::ptime check_time;
     };
 
     class mcdeprecated : public mcbase {
@@ -546,10 +587,6 @@ namespace alps {
                 , random_01(random)
             {}
 
-            void do_update() {}
-
-            void do_measurements() {}
-
             double fraction_completed() const { work_done(); }
 
             virtual double work_done() const = 0;
@@ -558,12 +595,11 @@ namespace alps {
 
             double random_real(double a = 0., double b = 1.) { return a + b * random(); }
 
-            bool run(boost::function<bool ()> const & stop_callback) {
-                do {
-                    dostep();
-                } while(!stop_callback() && fraction_completed() < 1);
-                return fraction_completed() >= 1;
+            virtual void do_update() {
+                dostep();
             }
+
+            virtual void do_measurements() {}
 
         protected:
             Parameters parms;
@@ -578,176 +614,33 @@ namespace alps {
                 return p;
             }
     };
-    
-    template<typename T> class mcatomic {
-        public:
-            mcatomic() {}
-            mcatomic(T const & v): value(v) {}
-            mcatomic(mcatomic const & v): value(v.value) {}
-            
-            mcatomic & operator=(mcatomic const & v) {
-                boost::lock_guard<boost::mutex> lock(mutex);
-                value = v;
-            }
 
-            operator T() const { 
-                boost::lock_guard<boost::mutex> lock(mutex);
-                return value; 
-            }
-        private:
-            T volatile value;
-            boost::mutex mutable mutex;
-    };
-    template<typename Impl> class mcthreadsim : public Impl {
+    template<typename Impl> class mcmpisim : public Impl {
         public:
-            mcthreadsim(typename Impl::parameters_type const & p)
+            mcmpisim(typename parameters_type<Impl>::type const & p, boost::mpi::communicator const & c) 
                 : Impl(p)
-                , stop_flag(false)
-            {}
-
-            bool run(boost::function<bool ()> const & callback) {
-                boost::thread thread(boost::bind<void>(&mcthreadsim<Impl>::runner, this));
-                stop_callback(callback);
-                thread.join();
-                return stop_flag;
-            }
-
-        protected:
-            virtual bool run_callback() {
-                return stop_flag;
-            }
-
-            virtual void stop_callback(boost::function<bool ()> const & callback) {
-                while (true) {
-                    usleep(0.1 * 1e6);
-                    if (stop_flag = callback())
-                        return;
-                }
-            }
-
-            mcatomic<bool> stop_flag;
-            // boost::mutex mutex;
-            // measurements and configuration need to be locked separately
-
-        private:
-            void runner() {
-                Impl::run(boost::bind(&mcthreadsim<Impl>::run_callback, this));
-            }
-    };
-    template<typename Impl> class mcmpisim : public mcthreadsim<Impl> {
-        public:
-            enum {
-                MPI_get_fraction    = 1,
-                MPI_stop            = 2,
-                MPI_collect         = 3,
-                MPI_terminate       = 4
-            };
-
-            mcmpisim(typename mcthreadsim<Impl>::parameters_type const & p, boost::mpi::communicator const & c) 
-                : mcthreadsim<Impl>(p)
-                , next_check(8)
-                , start_time(boost::posix_time::second_clock::local_time())
-                , check_time(boost::posix_time::second_clock::local_time() + boost::posix_time::seconds(next_check))
                 , communicator(c)
-                , binnumber(p.value_or_default("binnumber", 2))
+                , binnumber(p.value_or_default("binnumber", std::min(128, 2 * c.size())))
             {
                 MPI_Errhandler_set(communicator, MPI_ERRORS_RETURN);
             }
 
             double fraction_completed() {
-                assert(communicator.rank() == 0);
-                double fraction = mcthreadsim<Impl>::fraction_completed();
-                int action = MPI_get_fraction;
-                boost::mpi::broadcast(communicator, action, 0);
-                boost::mpi::reduce(communicator, mcthreadsim<Impl>::fraction_completed(), fraction, std::plus<double>(), 0);
-                return fraction;
+                return boost::mpi::all_reduce(communicator, Impl::fraction_completed(), std::plus<double>());
             }
 
-            typename mcthreadsim<Impl>::results_type collect_results() const {
-                assert(communicator.rank() == 0);
-                return collect_results(mcthreadsim<Impl>::result_names());
-            }
-
-            typename mcthreadsim<Impl>::results_type collect_results(typename mcthreadsim<Impl>::result_names_type const & names) const {
-                typename mcthreadsim<Impl>::results_type local_results = collect_local_results(names), partial_results;
-                for(typename mcthreadsim<Impl>::results_type::iterator it = local_results.begin(); it != local_results.end(); ++it)
-                    if (it->second->count() > 0) {
-                        assert(it->first.size() < 255);
-                        int action = MPI_collect;
-                        boost::mpi::broadcast(communicator, action, 0);
-                        {
-                            char name[255];
-                            std::strcpy(name, it->first.c_str());
-                            boost::mpi::broadcast(communicator, name, 0);
-                        }
+            virtual typename results_type<Impl>::type collect_results(typename result_names_type<Impl>::type const & names) const {
+                typename results_type<Impl>::type local_results = Impl::collect_results(names), partial_results;
+                for(typename results_type<Impl>::type::iterator it = local_results.begin(); it != local_results.end(); ++it)
+                
+                    if (it->second->count() > 0 && communicator.rank() == 0)
                         it->second->reduce_master(partial_results, it->first, communicator, binnumber);
-                    }
+                    else if (it->second->count() > 0)
+                        it->second->reduce_slave(communicator, binnumber);
                 return partial_results;
             }
 
-            typename mcthreadsim<Impl>::results_type collect_local_results() const {
-                return collect_local_results(mcthreadsim<Impl>::result_names());
-            }
-
-            typename mcthreadsim<Impl>::results_type collect_local_results(typename mcthreadsim<Impl>::result_names_type const & names) const {
-                return mcthreadsim<Impl>::collect_results(names);
-            }
-
-            void terminate() const {
-                if (communicator.rank() == 0) {
-                    int action = MPI_terminate;
-                    boost::mpi::broadcast(communicator, action, 0);
-                }
-            }
-
-            void stop_callback(boost::function<bool ()> const & callback) {
-                if (communicator.rank() == 0) {
-                    for (bool flag = false; !flag && !callback(); ) {
-                        usleep(0.1 * 1e6);
-                        if (!flag && boost::posix_time::second_clock::local_time() > check_time) {
-                            double fraction = fraction_completed();
-                            flag = (fraction >= 1.);
-                            next_check = std::min(2. * next_check, std::max(double(next_check), 0.8 * (boost::posix_time::second_clock::local_time() - start_time).total_seconds() / fraction * (1 - fraction)));
-                            check_time = boost::posix_time::second_clock::local_time() + boost::posix_time::seconds(next_check);
-                            std::cerr << std::fixed << std::setprecision(1) << fraction * 100 << "% done next check in " << next_check << "s" << std::endl;
-                        }
-                    }
-                    mcthreadsim<Impl>::stop_flag = true;
-                    int action = MPI_stop;
-                    boost::mpi::broadcast(communicator, action, 0);
-                } else
-                    process_requests();
-            }
-
-            void process_requests() {
-                assert(communicator.rank() > 0);
-                while (true) {
-                    int action;
-                    boost::mpi::broadcast(communicator, action, 0);
-                    switch (action) {
-                        case MPI_get_fraction:
-                            boost::mpi::reduce(communicator, mcthreadsim<Impl>::fraction_completed(), std::plus<double>(), 0);
-                            break;
-                        case MPI_collect:
-                            {
-                                char name[255];
-                                boost::mpi::broadcast(communicator, name, 0);
-                                typename mcthreadsim<Impl>::results_type local_results = mcthreadsim<Impl>::collect_results(typename result_names_type<mcthreadsim<Impl> >::type(1, name));
-                                local_results.begin()->second->reduce_slave(communicator, binnumber);
-                            }
-                            break;
-                        case MPI_stop:
-                        case MPI_terminate:
-                            mcthreadsim<Impl>::stop_flag = true;
-                            return;
-                    }
-                }
-            }
-
         private:
-            int next_check;
-            boost::posix_time::ptime start_time;
-            boost::posix_time::ptime check_time;
             boost::mpi::communicator communicator;
             std::size_t binnumber;
     };
