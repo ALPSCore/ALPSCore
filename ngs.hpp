@@ -617,6 +617,7 @@ namespace alps {
 
     template<typename Impl> class mcmpisim : public Impl {
         public:
+            using Impl::collect_results;
             mcmpisim(typename parameters_type<Impl>::type const & p, boost::mpi::communicator const & c) 
                 : Impl(p)
                 , communicator(c)
