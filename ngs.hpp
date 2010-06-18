@@ -32,7 +32,10 @@
 #include <boost/mpi.hpp>
 #include <boost/bind.hpp>
 #include <boost/utility.hpp>
+#include <boost/variant.hpp>
 #include <boost/function.hpp>
+#include <boost/mpl/vector.hpp>
+#include <boost/mpl/contains.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/program_options.hpp>
@@ -89,31 +92,43 @@ namespace alps {
             execution_types type;
     };
 
-    // TODO: use boost::variant instead of string
-    class mcparamvalue : public std::string {
+    namespace detail {
+        typedef boost::mpl::vector<std::string, int, double> mcparamvalue_types;
+        typedef boost::make_variant_over<mcparamvalue_types>::type mcparamvalue_base;
+
+        template<typename T> struct mcparamvalue_reader : public boost::static_visitor<> {
+            template <typename U> void operator()(U & v) const { value = boost::lexical_cast<T, U>(v); }
+            void operator()(T & v) const { value = v; }
+            mutable T value;
+        };
+
+        struct mcparamvalue_serializer: public boost::static_visitor<> {
+            mcparamvalue_serializer(hdf5::oarchive & a, std::string const & p) : ar(a), path(p) {}
+            template<typename T> void operator()(T & v) const { ar << make_pvp(path, v); }
+            hdf5::oarchive & ar;
+            std::string const & path;
+        };
+    }
+    class mcparamvalue : public detail::mcparamvalue_base {
         public:
             mcparamvalue() {}
+            template <typename T> mcparamvalue(T const & v): detail::mcparamvalue_base(v) {}
+            mcparamvalue(mcparamvalue const & v): detail::mcparamvalue_base(static_cast<detail::mcparamvalue_base const &>(v)) {}
 
-            template <typename T> mcparamvalue(mcparamvalue const & v)
-                : std::string(v) 
-            {}
-
-            template <typename T> mcparamvalue(T const & v)
-                : std::string(boost::lexical_cast<std::string>(v)) 
-            {}
-
-            template <typename T> typename boost::disable_if<typename boost::is_base_of<std::string, T>::type, mcparamvalue &>::type operator=(T const & v) {
-                std::string::operator=(boost::lexical_cast<std::string>(v));
+            template <typename T> typename boost::enable_if<typename boost::mpl::contains<detail::mcparamvalue_types, T>::type, mcparamvalue &>::type operator=(T const & v) {
+                detail::mcparamvalue_base::operator=(v);
                 return *this;
             }
 
-            template <typename T> typename boost::enable_if<typename boost::is_base_of<std::string, T>::type, mcparamvalue &>::type operator=(T const & v) {
-                std::string::operator=(v);
+            template <typename T> typename boost::disable_if<typename boost::mpl::contains<detail::mcparamvalue_types, T>::type, mcparamvalue &>::type operator=(T const & v) {
+                detail::mcparamvalue_base::operator=(boost::lexical_cast<std::string>(v));
                 return *this;
             }
 
             template <typename T> operator T() const {
-                return boost::lexical_cast<T, std::string>(*this);
+                detail::mcparamvalue_reader<T> visitor;
+                boost::apply_visitor(visitor, *this);
+                return visitor.value;
             }
     };
 
@@ -146,7 +161,7 @@ namespace alps {
 
             void serialize(hdf5::oarchive & ar) const {
                 for (const_iterator it = begin(); it != end(); ++it)
-                    ar << make_pvp(it->first, static_cast<std::string>(it->second));
+                    boost::apply_visitor(detail::mcparamvalue_serializer(ar, it->first), it->second);
             }
 
             void serialize(hdf5::iarchive & ar) {
@@ -161,6 +176,7 @@ namespace alps {
 
     template<typename Unused = void> class mcsignal_impl{
         public:
+
             mcsignal_impl() {
                 static bool initialized;
                 if (!initialized) {
@@ -176,15 +192,22 @@ namespace alps {
                     sigaction(SIGUSR2, &action, NULL);
                 }
             }
-            operator bool() const { return abort; }
+
+            operator bool() const { 
+                return occured; 
+            }
+
             static void slot(int signal) { 
                 std::cerr << "Killed by signal " << signal << std::endl;
-                abort = true;
+                occured = true;
             }
+
         private:
-            static bool abort;
+            static bool occured;
     };
-    template<typename Unused> bool mcsignal_impl<Unused>::abort = false;
+
+    template<typename Unused> bool mcsignal_impl<Unused>::occured = false;
+
     typedef mcsignal_impl<> mcsignal;
 
     template <typename T> void mcmpierror(T code) {
@@ -313,6 +336,7 @@ namespace alps {
                 alea::mcdata<T>::serialize(ar);
             }
 
+            // TODO: reduce communication of mean/error/variance to one call
             void reduce_master(boost::ptr_map<std::string, mcany> & results, std::string const & name, boost::mpi::communicator const & communicator, std::size_t binnumber) {
                 using std::sqrt;
                 using alps::numeric::sq;
@@ -471,12 +495,13 @@ namespace alps {
             typedef boost::ptr_map<std::string, mcany> results_type;
             typedef std::vector<std::string> result_names_type;
 
-            mcbase(parameters_type const & p)
+            mcbase(parameters_type const & p, std::size_t seed_offset = 0)
                 : params(p)
                 , next_check(8)
                 , start_time(boost::posix_time::second_clock::local_time())
                 , check_time(boost::posix_time::second_clock::local_time() + boost::posix_time::seconds(next_check))
-                , random(boost::mt19937(), boost::uniform_real<>())
+// TODO: this ist not the best solution
+                , random(boost::mt19937(static_cast<std::size_t>(p.value_or_default("SEED", 42)) + seed_offset), boost::uniform_real<>())
             {}
 
             virtual void do_update() = 0;
@@ -533,7 +558,13 @@ namespace alps {
                     do_measurements();
                     if (boost::posix_time::second_clock::local_time() > check_time) {
                         fraction = fraction_completed();
-                        next_check = std::min(2. * next_check, std::max(double(next_check), 0.8 * (boost::posix_time::second_clock::local_time() - start_time).total_seconds() / fraction * (1 - fraction)));
+                        next_check = std::min(
+                            2. * next_check, 
+                            std::max(
+                                double(next_check), 
+                                0.8 * (boost::posix_time::second_clock::local_time() - start_time).total_seconds() / fraction * (1 - fraction)
+                            )
+                        );
                         check_time = boost::posix_time::second_clock::local_time() + boost::posix_time::seconds(next_check);
                     }
                 } while(!stop_callback() && fraction < 1.);
@@ -558,9 +589,13 @@ namespace alps {
                 results_type partial_results;
                 for(result_names_type::const_iterator it = names.begin(); it != names.end(); ++it)
                     if (dynamic_cast<AbstractSimpleObservable<double> const *>(&results[*it]) != NULL)
-                        boost::assign::ptr_map_insert<mcdata<double> >(partial_results)(*it, *dynamic_cast<AbstractSimpleObservable<double> const *>(&results[*it]));
+                        boost::assign::ptr_map_insert<mcdata<double> >(partial_results)(
+                            *it, dynamic_cast<AbstractSimpleObservable<double> const &>(results[*it])
+                        );
                     else if (dynamic_cast<AbstractSimpleObservable<std::valarray<double> > const *>(&results[*it]) != NULL)
-                        boost::assign::ptr_map_insert<mcdata<std::vector<double> > >(partial_results)(*it, *dynamic_cast<AbstractSimpleObservable<std::valarray<double> > const *>(&results[*it]));
+                        boost::assign::ptr_map_insert<mcdata<std::vector<double> > >(partial_results)(
+                            *it, dynamic_cast<AbstractSimpleObservable<std::valarray<double> > const &>(results[*it])
+                        );
                     else
                         throw std::runtime_error("unknown observable type");
                 return partial_results;
@@ -580,8 +615,8 @@ namespace alps {
 
     class mcdeprecated : public mcbase {
         public:
-            mcdeprecated(parameters_type const & p)
-                : mcbase(p)
+            mcdeprecated(parameters_type const & p, std::size_t seed_offset = 0)
+                : mcbase(p, seed_offset)
                 , parms(make_alps_parameters(p))
                 , measurements(results)
                 , random_01(random)
@@ -610,7 +645,8 @@ namespace alps {
             static Parameters make_alps_parameters(parameters_type const & s) {
                 Parameters p;
                 for (parameters_type::const_iterator it = s.begin(); it != s.end(); ++it)
-                    p.push_back(it->first, static_cast<std::string>(it->second));
+// TODO: why does static_cast<std::string>(it->second) not word?
+                    p.push_back(it->first, it->second.operator std::string());
                 return p;
             }
     };
@@ -619,7 +655,7 @@ namespace alps {
         public:
             using Impl::collect_results;
             mcmpisim(typename parameters_type<Impl>::type const & p, boost::mpi::communicator const & c) 
-                : Impl(p)
+                : Impl(p, c.rank())
                 , communicator(c)
                 , binnumber(p.value_or_default("binnumber", std::min(128, 2 * c.size())))
             {
