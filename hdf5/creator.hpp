@@ -238,7 +238,7 @@ template<typename T, typename U> struct creator<std::pair<T *, std::vector<U> > 
         return std::make_pair(static_cast<typename boost::remove_const<T>::type *>(NULL), std::vector<U>()); 
     }
     static base_type special(alps::hdf5::iarchive & iar) {
-        return std::make_pair(new typename boost::remove_const<T>::type[MATRIX_SIZE * MATRIX_SIZE * MATRIX_SIZE], std::vector<U>(3, VECTOR_SIZE));
+        return std::make_pair(new typename boost::remove_const<T>::type[MATRIX_SIZE * MATRIX_SIZE * MATRIX_SIZE], std::vector<U>(3, MATRIX_SIZE));
     }
 };
 template<typename T, typename U> struct destructor<std::pair<T *, std::vector<U> > > {
