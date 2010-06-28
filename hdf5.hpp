@@ -53,91 +53,9 @@
 
 #include <hdf5.h>
 
-#ifdef ALPS_DOXYGEN
-
 namespace alps {
     namespace hdf5 {
         namespace detail {
-            UNSPECIFIED_TYPE unspecified_type;
-        }
-        struct write {};
-        struct read {};
-        template <typename Tag> class archive: boost::noncopyable {
-            public:
-                /// @file path to the hdf5 file to build the archive from. In case of iarchive, the file is opend in read only mode
-                archive(std::string const & file);
-                ~archive();
-                /// @return return the filename of the file, the arive ist based on
-                std::string const & filename() const;
-                std::string encode_segment(std::string const & s);
-                std::string decode_segment(std::string const & s);
-                /// create a checkpoint of the data.
-                void commit(std::string const & name = "");
-                /// @return list of all checkpoints with name and time 
-                std::vector<std::pair<std::string, std::string> > list_revisions() const;
-                /// export a checkpoint to a separat file
-                void export_revision(std::size_t revision, std::string const & file) const;
-                /// get the current context of the archive
-                std::string get_context() const;
-                /// set the context of the archive
-                void set_context(std::string const & context);
-                /// compute the absolte path given a path relative to the context
-                std::string compute_path(std::string const & path) const;
-                /// checks if a group is located at the given path
-                bool is_group(std::string const & path) const;
-                /// checks if a dataset is located at the given path
-                bool is_data(std::string const & path) const;
-                /// checks if a dataset containing a scalar is located at the given path
-                bool is_scalar(std::string const & path) const;
-                /// checks if a dataset containing a null pinter is located at the given path
-                bool is_null(std::string const & path) const;
-                /// checks if a attribute located at the given path. An attribute is addressed with a path of the form /path/to/@attribute
-                bool is_attribute(std::string const & path) const;
-                /// deletes a dataset
-                void delete_data(std::string const & path) const;
-                /// @return extents of the dataset located at the given path. extent(...).size() == dimensions(...) always holds
-                std::vector<std::size_t> extent(std::string const & path) const;
-                /// number of dimensions of the dataset located at the given path
-                std::size_t dimensions(std::string const & path) const;
-                /// list of all child segments of the given path
-                std::vector<std::string> list_children(std::string const & path) const;
-                /// list of all attributes of the fiven path
-                std::vector<std::string> list_attr(std::string const & path) const;
-                /// write data to archive
-                template<typename T> void serialize(std::string const & p, T const & v);
-                /// read data from archive
-                template<typename T> void serialize(std::string const & p, T & v);
-                /// create group at given path
-                void serialize(std::string const & p);
-        };
-        /// input archive
-        typedef archive<read> iarchive;
-        /// output archive
-        typedef archive<write> oarchive;
-        /// global hook to deserialize an arbitrary object less intrusive
-        template <typename T> iarchive & serialize(iarchive & archive, std::string const & path, T & value);
-        /// global hook to serialize an arbitrary object less intrusive
-        template <typename T> oarchive & serialize(oarchive & archive, std::string const & path, T const & value);
-        /// operator to serialize data to hdf5
-        template <typename T> oarchive & operator<< (oarchive & archive, unspecified_type value);
-        /// operator to deserialize data from hdf5
-        template <typename T> iarchive & operator>> (iarchive & archive, unspecified_type value);
-        /// create a path-value-pair
-        template <typename T> unspecified_type make_pvp(std::string const & path, T value);
-        /// create a path-value-pair
-        template <typename T> unspecified_type make_pvp(std::string const & path, T * value, std::size_t size);
-        /// create a path-value-pair
-        template <typename T> unspecified_type make_pvp(std::string const & path, T * value, std::vector<std::size_t> size);
-    }
-}
-
-#else
-
-namespace alps {
-    namespace hdf5 {
-        namespace detail {
-            struct write {};
-            struct read {};
             namespace internal_state_type {
                 typedef enum { CREATE, PLACEHOLDER } type;
             }
@@ -150,16 +68,29 @@ namespace alps {
                double i;
             };
         }
-// TODO: move to hdf5/scalar.hpp
+
+        template<typename T, typename U> U const * call_get_data(
+              std::vector<U> &
+            , T const &
+            , std::vector<hsize_t> const &
+            , boost::optional<std::vector<hsize_t> > const & t = boost::none_t()
+        );
+        template<typename T, typename U> void call_set_data(T &, std::vector<U> const &, std::vector<hsize_t> const &, std::vector<hsize_t> const &);
+
         template<typename T> struct serializable_type { typedef T type; };
         template<typename T> struct native_type { typedef T type; };
-        // TODO: start, count und size sollten auch fuer die skalardimension einen Eintrag haben also vector<int>(5) hat size [5, 1]
+        template<typename T> struct is_native : public boost::mpl::and_<
+            typename boost::is_scalar<T>::type,
+            typename boost::mpl::not_<typename boost::is_enum<T>::type>::type
+        >::type {};
         template<typename T> std::vector<hsize_t> get_extent(T const &) { return std::vector<hsize_t>(1, 1); }
         template<typename T> void set_extent(T &, std::vector<std::size_t> const &) {}
-        template<typename T> std::vector<hsize_t> offset(T const &) { return std::vector<hsize_t>(1, 1); }
-        template<typename T> bool is_scalar(T const &) { return boost::is_scalar<T>::value && !boost::is_enum<T>::value; }
-        template<typename T> bool is_vectorizable(T const) { return boost::is_scalar<T>::value && !boost::is_enum<T>::value; }
-        template<typename T> typename serializable_type<T>::type const * get_data(
+        template<typename T> std::vector<hsize_t> get_offset(T const &) { return std::vector<hsize_t>(1, 1); }
+        template<typename T> bool is_vectorizable(T const &) { 
+            return boost::is_same<T, std::string>::value || boost::is_same<T, detail::internal_state_type::type>::value || (boost::is_scalar<T>::value && !boost::is_enum<T>::value); }
+        template<typename T> typename boost::disable_if<typename boost::mpl::or_<
+            typename boost::is_same<T, std::string>::type, typename boost::is_same<T, detail::internal_state_type::type>::type
+        >::type, typename serializable_type<T>::type const *>::type get_data(
               std::vector<typename serializable_type<T>::type> & m
             , T const & v
             , std::vector<hsize_t> const &
@@ -167,334 +98,261 @@ namespace alps {
         ) {
             return &v;
         }
-        // TODO: es sollte ein set geben fuer T == U, das einen m-ptr zuruckgibt ...
-        // TODO: make a nicer syntax for set(T & v, vec<size_t> s, vec<U> u, size_t o, size_t c)
-        template<typename T, typename Other> typename boost::disable_if<typename boost::mpl::or_<
-              typename boost::is_same<Other, std::complex<double> >::type
-            , typename boost::is_same<Other, char *>::type
-            , typename boost::is_enum<T>::type
-            , typename boost::mpl::not_<typename boost::is_scalar<T>::type>::type
-        >::type>::type set_data(T & v, std::vector<Other> const & u, std::vector<hsize_t> const & s, std::vector<hsize_t> const & c) {
+        namespace detail {
+            template<typename T, typename U> void set_data_impl(T & v, std::vector<U> const & u, std::vector<hsize_t> const & s, std::vector<hsize_t> const & c, boost::mpl::false_) {
+                if (s.size() != 1 || c.size() != 1 || c[0] == 0 || u.size() < c[0])
+                    throw std::range_error("invalid data size");
+                std::copy(u.begin(), u.begin() + c[0], &v + s[0]);
+            }
+            template<typename T, typename U> void set_data_impl(T &, std::vector<U> const &, std::vector<hsize_t> const &, std::vector<hsize_t> const &, boost::mpl::true_) { 
+                throw std::runtime_error("invalid type conversion");
+            }
+        }
+        template<typename T, typename U> void set_data(T & v, std::vector<U> const & u, std::vector<hsize_t> const & s, std::vector<hsize_t> const & c) {
+            detail::set_data_impl(v, u, s, c, typename boost::mpl::or_<
+                  typename boost::is_same<U, std::complex<double> >::type
+                , typename boost::is_same<U, char *>::type
+                , typename boost::is_enum<T>::type
+                , typename boost::mpl::not_<typename boost::is_scalar<T>::type>::type
+            >::type());
+        }
+
+        template<> struct serializable_type<std::string> { typedef char const * type; };
+        template<> struct native_type<std::string> { typedef std::string type; };
+        template<> struct is_native<std::string> : public boost::mpl::true_ {};
+        template<> struct is_native<std::string const> : public boost::mpl::true_ {};
+        template<typename T> typename boost::enable_if<
+            typename boost::is_same<T, std::string>::type, typename serializable_type<T>::type const *
+        >::type get_data(
+              std::vector<serializable_type<std::string>::type> & m
+            , T const & v
+            , std::vector<hsize_t> const &
+            , std::vector<hsize_t> const & = std::vector<hsize_t>()
+        ) {
+            m.resize(1);
+            return &(m[0] = v.c_str());
+        }
+        template<typename T> typename boost::disable_if<typename boost::mpl::or_<
+            typename boost::is_same<T, std::complex<double> >::type,
+            typename boost::is_same<T, char *>::type
+        >::type>::type set_data(std::string & v, std::vector<T> const & u, std::vector<hsize_t> const & s, std::vector<hsize_t> const & c) { 
+            if (s.size() != 1 || c.size() != 1 || c[0] == 0 || u.size() < c[0])
+                throw std::range_error("invalid data size");
+            for (std::string * w = &v + s[0]; w != &v + s[0] + c[0]; ++w)
+                *w = boost::lexical_cast<std::string>(u[s[0] + (w - &v)]);
+        }
+        template<typename T> typename boost::enable_if<
+            typename boost::is_same<T, char *>::type
+        >::type set_data(std::string & v, std::vector<T> const & u, std::vector<hsize_t> const & s, std::vector<hsize_t> const & c) { 
+            if (s.size() != 1 || c.size() != 1 || c[0] == 0 || u.size() < c[0])
+                throw std::range_error("invalid data size");
+            std::copy(u.begin(), u.begin() + c[0], &v);
+        }
+        template<typename T> typename boost::enable_if<
+            typename boost::is_same<T, std::complex<double> >::type
+        >::type set_data(std::string &, std::vector<T> const &, std::vector<hsize_t> const &, std::vector<hsize_t> const &) { 
+            throw std::runtime_error("invalid type conversion");
+        }
+
+        template<> struct serializable_type<detail::internal_state_type::type> { typedef detail::internal_state_type::type type; };
+        template<> struct native_type<detail::internal_state_type::type> { typedef detail::internal_state_type::type type; };
+        template<> struct is_native<detail::internal_state_type::type> : public boost::mpl::true_ {};
+        template<> struct is_native<detail::internal_state_type::type const> : public boost::mpl::true_ {};
+        template<typename T> typename boost::enable_if<
+            typename boost::is_same<T, detail::internal_state_type::type>::type, typename serializable_type<T>::type const *
+        >::type get_data(
+              std::vector<serializable_type<detail::internal_state_type::type>::type> & m
+            , T const & v
+            , std::vector<hsize_t> const &
+            , std::vector<hsize_t> const & = std::vector<hsize_t>()
+        ) {
+            m.resize(1);
+            return &(m[0] = v);
+        }
+        template<typename T> void set_data(detail::internal_state_type::type & v, std::vector<T> const & u, std::vector<hsize_t> const & s, std::vector<hsize_t> const &) {
+            v = u.front();
+        }
+
+        template<typename T> struct serializable_type<std::complex<T> > { typedef detail::internal_complex_type type; };
+        template<typename T> struct native_type<std::complex<T> > { typedef std::complex<T> type; };
+        template<typename T> struct is_native<std::complex<T> > : public boost::mpl::true_ {};
+        template<typename T> struct is_native<std::complex<T> const > : public boost::mpl::true_ {};
+        template<typename T> std::vector<hsize_t> get_extent(std::complex<T> const &) { return std::vector<hsize_t>(1, 1); }
+        template<typename T> void set_extent(std::complex<T>  &, std::vector<std::size_t> const &) {}
+        template<typename T> std::vector<hsize_t> get_offset(std::complex<T> const &) { return std::vector<hsize_t>(1, 1); }
+        template<typename T> bool is_vectorizable(std::complex<T> const &) { return true; }
+        template<typename T> typename serializable_type<std::complex<T> >::type const * get_data(
+              std::vector<typename serializable_type<std::complex<T> >::type> & m
+            , std::complex<T> const & v
+            , std::vector<hsize_t> const &
+            , std::vector<hsize_t> const & t = std::vector<hsize_t>(1, 1)
+        ) {
+            if (t.size() != 1 || t[0] == 0)
+                throw std::range_error("invalid data size");
+            m.resize(t[0]);
+            for (std::complex<T> const * u = &v; u != &v + t[0]; ++u) {
+                detail::internal_complex_type c = { u->real(), u->imag() };
+                m[u - &v] = c;
+            }
+            return &m[0];
+        }
+        template<typename T, typename U> typename boost::disable_if<
+            typename boost::is_same<U, std::complex<double> >::type
+        >::type set_data(std::complex<T> &, std::vector<U> const &, std::vector<hsize_t> const &, std::vector<hsize_t> const &) {
+            throw std::runtime_error("invalid type conversion"); 
+        }
+        template<typename T> void set_data(std::complex<T> & v, std::vector<std::complex<double> > const & u, std::vector<hsize_t> const & s, std::vector<hsize_t> const & c) {
             if (s.size() != 1 || c.size() != 1 || c[0] == 0 || u.size() < c[0])
                 throw std::range_error("invalid data size");
             std::copy(u.begin(), u.begin() + c[0], &v + s[0]);
         }
-        template<typename T, typename Other> static typename boost::enable_if<typename boost::mpl::or_<
-              typename boost::is_same<Other, std::complex<double> >::type
-            , typename boost::is_same<Other, char *>::type
-            , typename boost::is_enum<T>::type
-            , typename boost::mpl::not_<typename boost::is_scalar<T>::type>::type
-        >::type>::type set_data(T &, std::vector<Other> const &, std::vector<hsize_t> const &, std::vector<hsize_t> const &) { 
-            throw std::runtime_error("invalid type conversion");
+
+        #define HDF5_DEFINE_VECTOR_TYPE(C)                                                                                                                 \
+            template<typename T> struct serializable_type< C <T> > {                                                                                       \
+                typedef typename serializable_type<typename boost::remove_const<T>::type>::type type;                                                      \
+            };                                                                                                                                             \
+            template<typename T> struct native_type< C <T> > { typedef typename native_type<typename boost::remove_const<T>::type>::type type; };          \
+            template<typename T> std::vector<hsize_t> get_extent( C <T> const & v) {                                                                       \
+                std::vector<hsize_t> s(1, v.size());                                                                                                       \
+                if (!is_native<T>::value && v.size()) {                                                                                                    \
+                    std::vector<hsize_t> t(get_extent(v[0]));                                                                                              \
+                    std::copy(t.begin(), t.end(), std::back_inserter(s));                                                                                  \
+                    for (std::size_t i = 1; i < v.size(); ++i)                                                                                             \
+                        if (!std::equal(t.begin(), t.end(), get_extent(v[i]).begin()))                                                                     \
+                            throw std::range_error("no rectengual matrix");                                                                                \
+                }                                                                                                                                          \
+                return s;                                                                                                                                  \
+            }                                                                                                                                              \
+            template<typename T> void set_extent( C <T> & v, std::vector<std::size_t> const & s) {                                                         \
+                if(                                                                                                                                        \
+                       !(s.size() == 1 && s[0] == 0)                                                                                                       \
+                    && ((is_native<T>::value && s.size() != 1) || (!is_native<T>::value && s.size() < 2))                                                  \
+                )                                                                                                                                          \
+                    throw std::range_error("invalid data size");                                                                                           \
+                v.resize(s[0]);                                                                                                                            \
+                if (!is_native<T>::value)                                                                                                                  \
+                    for (std::size_t i = 0; i < s[0]; ++i)                                                                                                 \
+                        set_extent(v[i], std::vector<std::size_t>(s.begin() + 1, s.end()));                                                                \
+            }                                                                                                                                              \
+            template<typename T> std::vector<hsize_t> get_offset( C <T> const & v) {                                                                       \
+                if (v.size() == 0)                                                                                                                         \
+                    return std::vector<hsize_t>(1, 0);                                                                                                     \
+                else if (is_native<T>::value && boost::is_same<typename native_type<T>::type, std::string>::value)                                         \
+                    return std::vector<hsize_t>(1, 1);                                                                                                     \
+                else if (is_native<T>::value)                                                                                                              \
+                    return get_extent(v);                                                                                                                  \
+                else {                                                                                                                                     \
+                    std::vector<hsize_t> c(1, 1), d(get_offset(v[0]));                                                                                     \
+                    std::copy(d.begin(), d.end(), std::back_inserter(c));                                                                                  \
+                    return c;                                                                                                                              \
+                }                                                                                                                                          \
+            }                                                                                                                                              \
+            template<typename T> bool is_vectorizable( C <T> const & v) {                                                                                  \
+                for(std::size_t i = 0; i < v.size(); ++i)                                                                                                  \
+                    if (!is_vectorizable(v[i]) || get_extent(v[0])[0] != get_extent(v[i])[0])                                                              \
+                        return false;                                                                                                                      \
+                    return true;                                                                                                                           \
+            }                                                                                                                                              \
+            template<typename T> typename serializable_type< C <T> >::type const * get_data(                                                               \
+                  std::vector<typename serializable_type< C <T> >::type> & m                                                                               \
+                ,  C <T> const & v                                                                                                                         \
+                , std::vector<hsize_t> const & s                                                                                                           \
+                , std::vector<hsize_t> const & = std::vector<hsize_t>()                                                                                    \
+            ) {                                                                                                                                            \
+                if (is_native<T>::value)                                                                                                                   \
+                    return call_get_data(m, (const_cast< C <T> &>(v))[s[0]], std::vector<hsize_t>(s.begin() + 1, s.end()), get_extent(v));                 \
+                else                                                                                                                                       \
+                    return call_get_data(m, (const_cast< C <T> &>(v))[s[0]], std::vector<hsize_t>(s.begin() + 1, s.end()));                                \
+            }                                                                                                                                              \
+            template<typename T, typename U> void set_data(                                                                                                \
+                C <T> & v, std::vector<U> const & u, std::vector<hsize_t> const & s, std::vector<hsize_t> const & c                                        \
+            ) {                                                                                                                                            \
+                if (is_native<T>::value)                                                                                                                   \
+                    call_set_data(v[s[0]], u, s, c);                                                                                                       \
+                else                                                                                                                                       \
+                    call_set_data(v[s[0]], u, std::vector<hsize_t>(s.begin() + 1, s.end()), std::vector<hsize_t>(c.begin() + 1, c.end()));                 \
+            }
+        HDF5_DEFINE_VECTOR_TYPE(std::vector)
+        HDF5_DEFINE_VECTOR_TYPE(std::valarray)
+        HDF5_DEFINE_VECTOR_TYPE(boost::numeric::ublas::vector)
+        #undef HDF5_DEFINE_VECTOR_TYPE
+
+        template<typename T> struct serializable_type<std::pair<T *, std::vector<std::size_t> > > { typedef typename serializable_type<typename boost::remove_const<T>::type>::type type; };
+        template<typename T> struct native_type<std::pair<T *, std::vector<std::size_t> > > { typedef typename native_type<typename boost::remove_const<T>::type>::type type; };
+        template<typename T> std::vector<hsize_t> get_extent(std::pair<T *, std::vector<std::size_t> > const & v) {
+            std::vector<hsize_t> s(v.second.begin(), v.second.end());
+            if (!is_native<T>::value && v.second.size()) {
+                 std::vector<hsize_t> t(get_extent(*v.first));
+                 std::copy(t.begin(), t.end(), std::back_inserter(s));
+                 for (std::size_t i = 1; i < std::accumulate(v.second.begin(), v.second.end(), std::size_t(1), std::multiplies<std::size_t>()); ++i)
+                     if (!std::equal(t.begin(), t.end(), get_extent(*(v.first + i)).begin()))
+                         throw std::range_error("no rectengual matrix");
+            }
+            return s;
         }
-        template<typename T, typename Archive, typename Tag> static void apply(Archive & ar, std::string const & p, T & v, Tag) {
-            if (boost::is_scalar<T>::value)
-                ar.serialize(p, v);
+        template<typename T> void set_extent(std::pair<T *, std::vector<std::size_t> > & v, std::vector<std::size_t> const & s) {
+            if (!(s.size() == 1 && s[0] == 0 && std::accumulate(v.second.begin(), v.second.end(), 0) == 0) && !std::equal(v.second.begin(), v.second.end(), s.begin()))
+                throw std::range_error("invalid data size");
+            if (!is_native<T>::value && s.size() > v.second.size())
+                for (std::size_t i = 0; i < std::accumulate(v.second.begin(), v.second.end(), std::size_t(1), std::multiplies<hsize_t>()); ++i)
+                    set_extent(*(v.first + i), std::vector<std::size_t>(s.begin() + v.second.size(), s.end()));
+        }
+        template<typename T> std::vector<hsize_t> get_offset(std::pair<T *, std::vector<std::size_t> > const & v) {
+            if (is_native<T>::value && boost::is_same<typename native_type<std::pair<T *, std::vector<std::size_t> > >::type, std::string>::value)
+                return std::vector<hsize_t>(v.second.size(), 1);
+            else if (is_native<T>::value)
+                return std::vector<hsize_t>(v.second.begin(), v.second.end());
             else {
-                std::string c = ar.get_context();
-                ar.set_context(ar.complete_path(p));
-                v.serialize(ar);
-                ar.set_context(c);
+                std::vector<hsize_t> c(v.second.size(), 1), d(get_offset(*v.first));
+                std::copy(d.begin(), d.end(), std::back_inserter(c));
+                return c;
             }
         }
+        template<typename T> bool is_vectorizable(std::pair<T *, std::vector<std::size_t> > const & v) {
+            for (std::size_t i = 0; i < std::accumulate(v.second.begin(), v.second.end(), std::size_t(1), std::multiplies<hsize_t>()); ++i)
+                if (!is_vectorizable(v.first[i]) || get_extent(v.first[0])[0] != get_extent(v.first[i])[0])
+                    return false;
+            return true;
+        }
+        template<typename T> typename serializable_type<std::pair<T *, std::vector<std::size_t> > >::type const * get_data(
+              std::vector<typename serializable_type<std::pair<T *, std::vector<std::size_t> > >::type> & m
+            , std::pair<T *, std::vector<std::size_t> > const & v
+            , std::vector<hsize_t> const & s
+            , std::vector<hsize_t> const & = std::vector<hsize_t>()
+        ) {
+            hsize_t start = 0;
+            for (std::size_t i = 0; i < v.second.size(); ++i)
+                start += s[i] * std::accumulate(v.second.begin() + i + 1, v.second.end(), 1, std::multiplies<hsize_t>());
+            if (is_native<T>::value)
+                return call_get_data(
+                       m
+                    , v.first[start]
+                    , std::vector<hsize_t>(s.begin() + v.second.size(), s.end())
+                    , std::vector<hsize_t>(1, std::accumulate(v.second.begin(), v.second.end(), 1, std::multiplies<hsize_t>()))
+                );
+            else
+                return call_get_data(
+                       m
+                     , v.first[start]
+                     , std::vector<hsize_t>(s.begin() + v.second.size(), s.end())
+                );
+        }
+        template<typename T, typename U> void set_data(std::pair<T *, std::vector<std::size_t> > & v, std::vector<U> const & u, std::vector<hsize_t> const & s, std::vector<hsize_t> const & c) {
+            std::vector<hsize_t> start(1, 0);
+            for (std::size_t i = 0; i < v.second.size(); ++i)
+                start[0] += s[i] * std::accumulate(v.second.begin() + i + 1, v.second.end(), 1, std::multiplies<hsize_t>());
+            std::copy(s.begin() + v.second.size(), s.end(), std::back_inserter(start));
+            if (is_native<T>::value)
+                call_set_data(v.first[start[0]], u, start, std::vector<hsize_t>(1, std::accumulate(v.second.begin(), v.second.end(), 1, std::multiplies<hsize_t>())));
+            else
+                call_set_data(v.first[start[0]], u, std::vector<hsize_t>(start.begin() + 1, start.end()), std::vector<hsize_t>(c.begin() + v.second.size(), c.end()));
+        }
+
         namespace detail {
-            template <typename Tag> class archive;
-            // TODO: make iarchive and oarchive inherited classes from archive<Tag>
-            // todo: move from detail to alps::hdf5
-            template <typename T> archive<read> & serialize(archive<read> & ar, std::string const & p, T & v);
-            template <typename T> archive<write> & serialize(archive<write> & ar, std::string const & p, T const & v);
-            template<typename T> struct matrix_type : public boost::mpl::bool_<boost::is_scalar<T>::value && !boost::is_enum<T>::value>::type {
-                typedef T native_type;
-                // TODO: rename to serializable_type
-                typedef T writable_type;
-                // TODO: remove! this is always std::vector<writable_type>
-                typedef std::vector<writable_type> buffer_type;
-                typedef boost::mpl::true_ scalar;
-                // TODO: start, count und size sollten auch fuer die skalardimension einen Eintrag haben also vector<int>(5) hat size [5, 1]
-                static std::vector<hsize_t> count(T const & v) { return size(v); }
-                static std::vector<hsize_t> size(T const & v) { return std::vector<hsize_t>(1, 1); }
-                static writable_type const * get(buffer_type & m, T const & v, std::vector<hsize_t> const &, std::vector<hsize_t> const & = std::vector<hsize_t>()) {
-                    return &v;
-                }
-                // TODO: es sollte ein set geben fuer T == U, das einen m-ptr zuruckgibt ...
-                // TODO: make a nicer syntax for set(T & v, vec<size_t> s, vec<U> u, size_t o, size_t c)
-                template<typename U> static typename boost::disable_if<typename boost::mpl::or_<
-                      typename boost::is_same<U, std::complex<double> >::type
-                    , typename boost::is_same<U, char *>::type
-                    , typename boost::is_enum<T>::type
-                    , typename boost::mpl::not_<typename boost::is_scalar<T>::type>::type
-                >::type>::type set(T & v, std::vector<U> const & u, std::vector<hsize_t> const & s, std::vector<hsize_t> const & c) {
-                    if (s.size() != 1 || c.size() != 1 || c[0] == 0 || u.size() < c[0]) throw std::range_error("invalid data size");
-                    std::copy(u.begin(), u.begin() + c[0], &v + s[0]);
-                }
-                template<typename U> static typename boost::enable_if<typename boost::mpl::or_<
-                      typename boost::is_same<U, std::complex<double> >::type
-                    , typename boost::is_same<U, char *>::type
-                    , typename boost::is_enum<T>::type
-                    , typename boost::mpl::not_<typename boost::is_scalar<T>::type>::type
-                >::type>::type set(T &, std::vector<U> const &, std::vector<hsize_t> const &, std::vector<hsize_t> const &) { 
-                    throw std::runtime_error("invalid type conversion"); 
-                }
-                static void resize(T &, std::vector<std::size_t> const &) {}
-                static bool is_vectorizable(T const &) { return boost::is_scalar<T>::value && !boost::is_enum<T>::value; }
-                template<typename Archive> static void apply(Archive & ar, std::string const & p, T & v, read) {
-                    apply(ar, p, v, typename boost::is_scalar<T>::type());
-                }
-                template<typename Archive> static void apply(Archive & ar, std::string const & p, T const & v, write) {
-                    apply(ar, p, v, typename boost::is_scalar<T>::type());
-                }
-                private:
-                    template<typename Archive, typename U> static void apply(Archive & ar, std::string const & p, U & v, boost::mpl::true_) {
-                        ar.serialize(p, v);
-                    }
-                    template<typename Archive, typename U> static void apply(Archive & ar, std::string const & p, U & v, boost::mpl::false_) {
-                        std::string c = ar.get_context();
-                        ar.set_context(ar.complete_path(p));
-                        v.serialize(ar);
-                        ar.set_context(c);
-                    }
-            };
-            template<> struct matrix_type<std::string> : public boost::mpl::true_ {
-                typedef std::string native_type;
-                typedef char const * writable_type;
-                typedef std::vector<char const *> buffer_type;
-                typedef boost::mpl::true_ scalar;
-                static std::vector<hsize_t> count(std::string const & v) { return size(v); }
-                static std::vector<hsize_t> size(std::string const & v) { return std::vector<hsize_t>(1, 1); }
-                // TODO: make sure vector<string>, pair<string * ...>, ... are done correctly
-                static writable_type const * get(buffer_type & m, std::string const & v, std::vector<hsize_t> const &, std::vector<hsize_t> const & = std::vector<hsize_t>()) {
-                    m.resize(1);
-                    return &(m[0] = v.c_str());
-                }
-                template<typename T> static typename boost::disable_if<typename boost::mpl::or_<
-                    typename boost::is_same<T, std::complex<double> >::type,
-                    typename boost::is_same<T, char *>::type
-                >::type>::type set(std::string & v, std::vector<T> const & u, std::vector<hsize_t> const & s, std::vector<hsize_t> const & c) { 
-                    if (s.size() != 1 || c.size() != 1 || c[0] == 0 || u.size() < c[0]) throw std::range_error("invalid data size");
-                    for (std::string * w = &v + s[0]; w != &v + s[0] + c[0]; ++w)
-                        *w = boost::lexical_cast<std::string>(u[s[0] + (w - &v)]);
-                }
-                // TODO: string als skalar behandeln
-                static void set(std::string & v, std::vector<char *> const & u, std::vector<hsize_t> const & s, std::vector<hsize_t> const & c) { 
-                    if (s.size() != 1 || c.size() != 1 || c[0] == 0 || u.size() < c[0]) throw std::range_error("invalid data size");
-                    std::copy(u.begin(), u.begin() + c[0], &v);
-                }
-                static void set(std::string &, std::vector<std::complex<double> > const &, std::vector<hsize_t> const &, std::vector<hsize_t> const &) { 
-                    throw std::runtime_error("invalid type conversion"); 
-                }
-                static void resize(std::string &, std::vector<std::size_t> const &) {}
-                static bool is_vectorizable(std::string const &) { return true; }
-                template<typename Archive> static void apply(Archive & ar, std::string const & p, std::string & v, read) {}
-                template<typename Archive> static void apply(Archive & ar, std::string const & p, std::string const & v, write) {}
-            };
-            template<typename T> struct matrix_type<std::complex<T> > : public boost::mpl::true_ {
-                typedef std::complex<T> native_type;
-                typedef internal_complex_type writable_type;
-                typedef std::vector<internal_complex_type> buffer_type;
-                typedef boost::mpl::true_ scalar;
-                static std::vector<hsize_t> count(std::complex<T> const & v) { return size(v); }
-                static std::vector<hsize_t> size(std::complex<T> const & v) { return std::vector<hsize_t>(1, 1); }
-                static writable_type const * get(buffer_type & m, std::complex<T> const & v, std::vector<hsize_t> const &, std::vector<hsize_t> const & t = std::vector<hsize_t>(1, 1)) {
-                    if (t.size() != 1 || t[0] == 0) throw std::range_error("invalid data size");
-                    m.resize(t[0]);
-                    for (std::complex<T> const * u = &v; u != &v + t[0]; ++u) {
-                        internal_complex_type c = { u->real(), u->imag() };
-                        m[u - &v] = c;
-                    }
-                    return &m[0];
-                }
-                template<typename U> static typename boost::disable_if<
-                    typename boost::is_same<U, std::complex<double> >::type
-                >::type set(std::complex<T> &, std::vector<U> const &, std::vector<hsize_t> const &, std::vector<hsize_t> const &) { 
-                    throw std::runtime_error("invalid type conversion"); 
-                }
-                static void set(std::complex<T> & v, std::vector<std::complex<double> > const & u, std::vector<hsize_t> const & s, std::vector<hsize_t> const & c) { 
-                    if (s.size() != 1 || c.size() != 1 || c[0] == 0 || u.size() < c[0]) throw std::range_error("invalid data size");
-                    std::copy(u.begin(), u.begin() + c[0], &v + s[0]);
-                }
-                static void resize(std::complex<T> &, std::vector<std::size_t> const &) {}
-                static bool is_vectorizable(std::complex<T> const &) { return true; }
-                template<typename Archive> static void apply(Archive & ar, std::string const & p, std::complex<T> & v, read) {}
-                template<typename Archive> static void apply(Archive & ar, std::string const & p, std::complex<T> const & v, write) {}
-            };
-            template<> struct matrix_type<internal_state_type::type> : public boost::mpl::true_ {
-                typedef internal_state_type::type native_type;
-                typedef internal_state_type::type writable_type;
-                typedef std::vector<internal_state_type::type> buffer_type;
-                typedef boost::mpl::true_ scalar;
-                static std::vector<hsize_t> count(internal_state_type::type const & v) { return size(v); }
-                static std::vector<hsize_t> size(internal_state_type::type const & v) { return std::vector<hsize_t>(1, 1); }
-                static writable_type const * get(buffer_type & m, internal_state_type::type const & v, std::vector<hsize_t> const &, std::vector<hsize_t> const & = std::vector<hsize_t>()) {
-                    m.resize(1);
-                    return &(m[0] = v);
-                }
-                template<typename T> void set(internal_state_type::type & v, std::vector<T> const & u, std::vector<hsize_t> const & s, std::vector<hsize_t> const &) {
-                    v = u.front();
-                }
-                static void resize(internal_state_type::type &, std::vector<std::size_t> const &) {}
-                static bool is_vectorizable(internal_state_type::type const &) { return true; }
-                template<typename Archive, typename T, typename Tag> static void apply(Archive & ar, std::string const & p, T & v, Tag) {}
-            };
-            #define HDF5_DEFINE_MATRIX_TYPE(C)                                                                                                             \
-                template<typename T> struct matrix_type< C <T> > : public matrix_type<T> {                                                                 \
-                    typedef typename matrix_type<T>::native_type native_type;                                                                              \
-                    typedef typename matrix_type<T>::writable_type writable_type;                                                                          \
-                    typedef typename matrix_type<T>::buffer_type buffer_type;                                                                              \
-                    typedef boost::mpl::false_ scalar;                                                                                                     \
-                    static std::vector<hsize_t> count( C <T> const & v) {                                                                                  \
-                        if (v.size() == 0)                                                                                                                 \
-                            return std::vector<hsize_t>(1, 0);                                                                                             \
-                        else if (matrix_type<T>::scalar::value && boost::is_same<native_type, std::string>::value)                                         \
-                            return std::vector<hsize_t>(1, 1);                                                                                             \
-                        else if (matrix_type<T>::scalar::value)                                                                                            \
-                            return size(v);                                                                                                                \
-                        else {                                                                                                                             \
-                            std::vector<hsize_t> c(1, 1), d(matrix_type<T>::count(v[0]));                                                                  \
-                            std::copy(d.begin(), d.end(), std::back_inserter(c));                                                                          \
-                            return c;                                                                                                                      \
-                        }                                                                                                                                  \
-                    }                                                                                                                                      \
-                    static std::vector<hsize_t> size( C <T> const & v) {                                                                                   \
-                        std::vector<hsize_t> s(1, v.size());                                                                                               \
-                        if (!matrix_type<T>::scalar::value && v.size()) {                                                                                  \
-                            std::vector<hsize_t> t(matrix_type<T>::size(v[0]));                                                                            \
-                            std::copy(t.begin(), t.end(), std::back_inserter(s));                                                                          \
-                            for (std::size_t i = 1; i < v.size(); ++i)                                                                                     \
-                                if (!std::equal(t.begin(), t.end(), matrix_type<T>::size(v[i]).begin()))                                                   \
-                                    throw std::range_error("no rectengual matrix");                                                                        \
-                        }                                                                                                                                  \
-                        return s;                                                                                                                          \
-                    }                                                                                                                                      \
-                    static writable_type const * get(                                                                                                      \
-                        buffer_type & m, C <T> const & v, std::vector<hsize_t> const & s, std::vector<hsize_t> const & = std::vector<hsize_t>()            \
-                    ) {                                                                                                                                    \
-                        if (matrix_type<T>::scalar::value)                                                                                                 \
-                            return matrix_type<T>::get(m, const_cast<C <T> &>(v)[s[0]], std::vector<hsize_t>(s.begin() + 1, s.end()), size(v));            \
-                        else                                                                                                                               \
-                            return matrix_type<T>::get(m, const_cast<C <T> &>(v)[s[0]], std::vector<hsize_t>(s.begin() + 1, s.end()));                     \
-                    }                                                                                                                                      \
-                    template<typename U> static void set(                                                                                                  \
-                        C <T> & v, std::vector<U> const & u, std::vector<hsize_t> const & s, std::vector<hsize_t> const & c                                \
-                    ) {                                                                                                                                    \
-                        if (matrix_type<T>::scalar::value)                                                                                                 \
-                            matrix_type<T>::set(v[s[0]], u, s, c);                                                                                         \
-                        else                                                                                                                               \
-                            matrix_type<T>::set(v[s[0]], u, std::vector<hsize_t>(s.begin() + 1, s.end()), std::vector<hsize_t>(c.begin() + 1, c.end()));   \
-                    }                                                                                                                                      \
-                    static void resize( C <T> & v, std::vector<std::size_t> const & s) {                                                                   \
-                        if(                                                                                                                                \
-                               !(s.size() == 1 && s[0] == 0)                                                                                               \
-                            && ((matrix_type<T>::scalar::value && s.size() != 1) || (!matrix_type<T>::scalar::value && s.size() < 2))                      \
-                        )                                                                                                                                  \
-                            throw std::range_error("invalid data size");                                                                                   \
-                        v.resize(s[0]);                                                                                                                    \
-                        if (!matrix_type<T>::scalar::value)                                                                                                \
-                            for (std::size_t i = 0; i < s[0]; ++i)                                                                                         \
-                                matrix_type<T>::resize(v[i], std::vector<std::size_t>(s.begin() + 1, s.end()));                                            \
-                    }                                                                                                                                      \
-                    static bool is_vectorizable( C <T> const & v) {                                                                                        \
-                        for(std::size_t i = 0; i < v.size(); ++i)                                                                                          \
-                            if (!matrix_type<T>::is_vectorizable(v[i]) || matrix_type<T>::size(v[0])[0] != matrix_type<T>::size(v[i])[0])                  \
-                                return false;                                                                                                              \
-                        return true;                                                                                                                       \
-                    }                                                                                                                                      \
-                    template<typename Archive> static void apply(Archive & ar, std::string const & p, C <T> & v, read) {                                   \
-                            std::vector<std::string> children = ar.list_children(p);                                                                       \
-                            v.resize(children.size());                                                                                                     \
-                            for (std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)                               \
-                                if (matrix_type<T>::scalar::value)                                                                                         \
-                                    serialize(ar, p + "/" + *it, v[boost::lexical_cast<std::size_t>(*it)]);                                                \
-                                else                                                                                                                       \
-                                    matrix_type<T>::apply(ar, p + "/" + *it, v[it - children.begin()], read());                                            \
-                    }                                                                                                                                      \
-                    template<typename Archive> static void apply(Archive & ar, std::string const & p, C <T> const & v, write) {                            \
-                        if (!v.size())                                                                                                                     \
-                            ar.serialize(p, std::vector<int>(0));                                                                                          \
-                        else                                                                                                                               \
-                            for (std::size_t i = 0; i < v.size(); ++i)                                                                                     \
-                                if (matrix_type<T>::scalar::value)                                                                                         \
-                                    serialize(ar, p + "/" + boost::lexical_cast<std::string>(i), v[i]);                                                    \
-                                else                                                                                                                       \
-                                    matrix_type<T>::apply(ar, p + "/" + boost::lexical_cast<std::string>(i), v[i], write());                               \
-                    }                                                                                                                                      \
-                };
-            HDF5_DEFINE_MATRIX_TYPE(std::vector)
-            HDF5_DEFINE_MATRIX_TYPE(std::valarray)
-            HDF5_DEFINE_MATRIX_TYPE(boost::numeric::ublas::vector)
-            #undef HDF5_DEFINE_MATRIX_TYPE
-            template<typename T> struct matrix_type< std::pair<T *, std::vector<std::size_t> > > : public matrix_type<T> {
-                typedef typename matrix_type<typename boost::remove_const<T>::type>::native_type native_type;
-                typedef typename matrix_type<typename boost::remove_const<T>::type>::writable_type writable_type;
-                typedef typename matrix_type<typename boost::remove_const<T>::type>::buffer_type buffer_type;
-                typedef boost::mpl::false_ scalar;
-                static std::vector<hsize_t> count(std::pair<T *, std::vector<std::size_t> > const & v) {
-                    if (matrix_type<T>::scalar::value && boost::is_same<native_type, std::string>::value)
-                        return std::vector<hsize_t>(v.second.size(), 1);
-                    else if (matrix_type<T>::scalar::value)
-                        return std::vector<hsize_t>(v.second.begin(), v.second.end());
-                    else {
-                        std::vector<hsize_t> c(v.second.size(), 1), d(matrix_type<T>::count(*v.first));
-                        std::copy(d.begin(), d.end(), std::back_inserter(c));
-                        return c;
-                    }
-                }
-                static std::vector<hsize_t> size(std::pair<T *, std::vector<std::size_t> > const & v) {
-                    std::vector<hsize_t> s(v.second.begin(), v.second.end());
-                    if (!matrix_type<T>::scalar::value && v.second.size()) {
-                        std::vector<hsize_t> t(matrix_type<T>::size(*v.first));
-                        std::copy(t.begin(), t.end(), std::back_inserter(s));
-                        for (std::size_t i = 1; i < std::accumulate(s.begin(), s.end(), std::size_t(1), std::multiplies<hsize_t>()); ++i)
-                            if (!std::equal(t.begin(), t.end(), matrix_type<T>::size(*(v.first + i)).begin()))
-                                throw std::range_error("no rectengual matrix");
-                    }
-                    return s;
-                }
-                static writable_type const * get(buffer_type & m, std::pair<T *, std::vector<std::size_t> > const & v, std::vector<hsize_t> const & s, std::vector<hsize_t> const & = std::vector<hsize_t>()) {
-                    if (matrix_type<typename boost::remove_const<T>::type>::scalar::value)
-                        return matrix_type<typename boost::remove_const<T>::type>::get(
-                              m
-                            , *(v.first + std::accumulate(s.begin(), s.begin() + v.second.size(), 1, std::multiplies<hsize_t>()))
-                            , std::vector<hsize_t>(s.begin() + v.second.size(), s.end())
-                            , std::vector<hsize_t>(1, std::accumulate(v.second.begin(), v.second.end(), 1, std::multiplies<hsize_t>()))
-                        );
-                    else
-                        return matrix_type<typename boost::remove_const<T>::type>::get(
-                              m
-                            , *(v.first + std::accumulate(s.begin(), s.begin() + v.second.size(), 1, std::multiplies<hsize_t>()))
-                            , std::vector<hsize_t>(s.begin() + v.second.size(), s.end())
-                        );
-                }
-                template<typename U> static void set(std::pair<T *, std::vector<std::size_t> > & v, std::vector<U> const & u, std::vector<hsize_t> const & s, std::vector<hsize_t> const & c) {
-                    std::vector<hsize_t> start(1, std::accumulate(s.begin(), s.begin() + v.second.size(), 1, std::multiplies<hsize_t>()));
-                    std::copy(s.begin() + v.second.size(), s.end(), std::back_inserter(start));
-                    std::vector<hsize_t> count(1, std::accumulate(c.begin(), c.begin() + v.second.size(), 1, std::multiplies<hsize_t>()));
-                    std::copy(c.begin() + v.second.size(), c.end(), std::back_inserter(count));
-                    matrix_type<T>::set(*v.first, u, start, count);
-                }
-                static void resize(std::pair<T *, std::vector<std::size_t> > & v, std::vector<std::size_t> const & s) {
-                    if (!(s.size() == 1 && s[0] == 0 && std::accumulate(v.second.begin(), v.second.end(), 0) == 0) && !std::equal(v.second.begin(), v.second.end(), s.begin()))
-                        throw std::range_error("invalid data size");
-                    if (!matrix_type<T>::scalar::value && s.size() > v.second.size())
-                        for (std::size_t i = 0; i < std::accumulate(v.second.begin(), v.second.end(), std::size_t(1), std::multiplies<hsize_t>()); ++i)
-                            matrix_type<T>::resize(*(v.first + i), std::vector<std::size_t>(s.begin() + v.second.size(), s.end()));
-                }
-                static bool is_vectorizable(std::pair<T *, std::vector<std::size_t> > const & v) {
-                    for (std::size_t i = 0; i < std::accumulate(v.second.begin(), v.second.end(), std::size_t(1), std::multiplies<hsize_t>()); ++i)
-                        if (!matrix_type<T>::is_vectorizable(*(v.first + i)))
-                            return false;
-                    return true;
-                }
-                template<typename Archive> static void apply(Archive & ar, std::string const & p, std::pair<T *, std::vector<std::size_t> > & v, read) {}
-                template<typename Archive> static void apply(Archive & ar, std::string const & p, std::pair<T *, std::vector<std::size_t> > const & v, write) {}
-            };
-            //TODO: boost::multiarray implementieren
-            
+//TODO: boost::multiarray implementieren
 /* TODO:
-
 typedef boost::numeric::ublas::matrix<double,boost::numeric::ublas::column_major> dense_matrix;
-
 */
-            
             class error {
                 public:
                     static herr_t noop(hid_t) { return 0; }
@@ -567,636 +425,781 @@ typedef boost::numeric::ublas::matrix<double,boost::numeric::ublas::column_major
                 callback(float)                                                                                                                            \
                 callback(double)                                                                                                                           \
                 callback(long double)
-            template <typename Tag> class archive: boost::noncopyable {
-                public:
-                    struct log_type {
-                        boost::posix_time::ptime time;
-                        std::string name;
-                    };
-                    archive(std::string const & file): _revision(0), _state_id(-1), _log_id(-1), _filename(file) {
-                        H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
-                        if (boost::is_same<Tag, write>::value) {
-                            if (H5Fis_hdf5(file.c_str()) == 0)
-                                throw std::runtime_error("no valid hdf5 file " + file);
-                            hid_t id = H5Fopen(file.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
-                            _file = (id < 0 ? H5Fcreate(file.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT) : id);
-                            if (!is_group("/revisions")) {
-                                set_group("/revisions");
-                                set_attr("/revisions", "last", _revision);
-                                internal_state_type::type v;
-                                type_type state_id = H5Tenum_create(H5T_NATIVE_SHORT);
-                                check_error(H5Tenum_insert(state_id, "CREATE", &(v = internal_state_type::CREATE)));
-                                check_error(H5Tenum_insert(state_id, "PLACEHOLDER", &(v = internal_state_type::PLACEHOLDER)));
-                                check_error(H5Tcommit2(_file, "state_type", state_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
-                                type_type log_id = H5Tcreate (H5T_COMPOUND, sizeof(internal_log_type));
-                                type_type time_id(H5Tcopy(H5T_C_S1));
-                                check_error(H5Tset_size(time_id, H5T_VARIABLE));
-                                check_error(H5Tinsert(log_id, "time", HOFFSET(internal_log_type, time), time_id));
-                                type_type name_id(H5Tcopy(H5T_C_S1));
-                                check_error(H5Tset_size(name_id, H5T_VARIABLE));
-                                check_error(H5Tinsert(log_id, "log", HOFFSET(internal_log_type, name), name_id));
-                                check_error(H5Tcommit2(_file, "log_type", log_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
-                            }
-                        } else {
-                            if (check_error(H5Fis_hdf5(file.c_str())) == 0)
-                                throw std::runtime_error("no valid hdf5 file " + file);
-                            _file = H5Fopen(file.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
-                        }
-                        _complex_id = H5Tcreate (H5T_COMPOUND, sizeof(internal_complex_type));
-                        check_error(H5Tinsert(_complex_id, "r", HOFFSET(internal_complex_type, r), H5T_NATIVE_DOUBLE));
-                        check_error(H5Tinsert(_complex_id, "i", HOFFSET(internal_complex_type, i), H5T_NATIVE_DOUBLE));
-                        if (is_group("/revisions")) {
-                            get_attr("/revisions", "last", _revision);
-                            _log_id = check_error(H5Topen2(_file, "log_type", H5P_DEFAULT));
-                            _state_id = check_error(H5Topen2(_file, "state_type", H5P_DEFAULT));
-                        }
-                    }
-                    ~archive() {
-                        H5Fflush(_file, H5F_SCOPE_GLOBAL);
-                        if (_state_id > -1)
-                            check_type(_state_id);
-                        if (_log_id > -1)
-                            check_type(_log_id);
-                        #ifndef ALPS_HDF5_CLOSE_GREEDY
-                            if (
-                                H5Fget_obj_count(_file, H5F_OBJ_DATATYPE) > (_state_id == -1 ? 0 : 1) + (_log_id == -1 ? 0 : 1)
-                                || H5Fget_obj_count(_file, H5F_OBJ_ALL) - H5Fget_obj_count(_file, H5F_OBJ_FILE) - H5Fget_obj_count(_file, H5F_OBJ_DATATYPE) > 0
-                            ) {
-                                std::cerr << "Not all resources closed" << std::endl;
-                                std::abort();
-                            }
-                        #endif
-                    }
-                    std::string const & filename() const {
-                        return _filename;
-                    }
-                    std::string encode_segment(std::string const & s) {
-                        std::string r = s;
-                        char chars[] = {'&', '/'};
-                        for (std::size_t i = 0; i < sizeof(chars); ++i)
-                            for (std::size_t pos = r.find_first_of(chars[i]); pos < std::string::npos; pos = r.find_first_of(chars[i], pos + 1))
-                                r = r.substr(0, pos) + "&#" + boost::lexical_cast<std::string, int>(chars[i]) + ";" + r.substr(pos + 1);
-                        return r;
-                    }
-                    std::string decode_segment(std::string const & s) {
-                        std::string r = s;
-                        for (std::size_t pos = r.find_first_of('&'); pos < std::string::npos; pos = r.find_first_of('&', pos + 1))
-                            r = r.substr(0, pos) + static_cast<char>(boost::lexical_cast<int>(r.substr(pos + 2, r.find_first_of(';', pos) - pos - 2))) + r.substr(r.find_first_of(';', pos) + 1);
-                        return r;
-                    }
-                    void commit(std::string const & name = "") {
-                        set_attr("/revisions", "last", ++_revision);
-                        set_group("/revisions/" + boost::lexical_cast<std::string>(_revision));
-                        std::string time = boost::posix_time::to_iso_string(boost::posix_time::second_clock::local_time());
-                        internal_log_type v = {
-                            std::strcpy(new char[time.size() + 1], time.c_str()),
-                            std::strcpy(new char[name.size() + 1], name.c_str())
-                        };
-                        set_attr("/revisions/" + boost::lexical_cast<std::string>(_revision), "info", v);
-                        delete[] v.time;
-                        delete[] v.name;
-                    }
-                    std::vector<std::pair<std::string, std::string> > list_revisions() const {
-                        // TODO: implement
-                        return std::vector<std::pair<std::string, std::string> >();
-                    }
-                    void export_revision(std::size_t revision, std::string const & file) const {
-                        // TODO: implement
-                    }
-                    std::string get_context() const {
-                        return _context;
-                    }
-                    void set_context(std::string const & context) {
-                        _context = context;
-                    }
-                    std::string complete_path(std::string const & p) const {
-                        if (p.size() && p[0] == '/')
-                            return p;
-                        else if (p.size() < 2 || p.substr(0, 2) != "..")
-                            return _context + (_context.size() == 1 || !p.size() ? "" : "/") + p;
-                        else {
-                            std::string s = _context;
-                            std::size_t i = 0;
-                            for (; s.size() && p.substr(i, 2) == ".."; i += 3)
-                                s = s.substr(0, s.find_last_of('/'));
-                            return s + (s.size() == 1 || !p.substr(i).size() ? "" : "/") + p.substr(i);
-                        }
-                    }
-                    template<typename T> typename boost::enable_if<
-                        typename boost::mpl::and_<typename matrix_type<typename boost::remove_const<T>::type>::type, typename boost::is_same<Tag, write>::type >
-                    >::type serialize(std::string const & p, T const & v) const {
-                        if (p.find_last_of('@') != std::string::npos)
-                            set_attr(complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1), p.substr(p.find_last_of('@') + 1), v);
-                        else
-                            set_data(complete_path(p), v);
-                    }
-                    template<typename T> typename boost::enable_if<
-                        typename boost::mpl::and_<typename matrix_type<typename boost::remove_const<T>::type>::type, typename boost::is_same<Tag, read>::type >
-                    >::type serialize(std::string const & p, T & v) const {
-                        if (p.find_last_of('@') != std::string::npos) {
-                            #ifdef ALPS_HDF5_READ_GREEDY
-                                if (is_attribute(p))
-                            #endif
-                                    get_attr(complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1), p.substr(p.find_last_of('@') + 1), v);
-                        } else
-                            #ifdef ALPS_HDF5_READ_GREEDY
-                                if (is_data(p))
-                            #endif
-                                    get_data(complete_path(p), v);
-                    }
-                    template<typename T> typename boost::disable_if<typename matrix_type<typename boost::remove_const<T>::type>::type>::type serialize(std::string const & p, T & v) {
-                        matrix_type<typename boost::remove_const<T>::type>::apply(const_cast<archive<Tag> &>(*this), p, v, Tag());
-                    }
-                    void serialize(std::string const & p) {
-                        if (p.find_last_of('@') != std::string::npos)
-                            throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
-                        else
-                            set_group(complete_path(p));
-                    }
-                    bool is_group(std::string const & p) const {
-                        hid_t id = H5Gopen2(_file, complete_path(p).c_str(), H5P_DEFAULT);
-                        return id < 0 ? false : check_group(id) != 0;
-                    }
-                    bool is_data(std::string const & p) const {
-                        hid_t id = H5Dopen2(_file, complete_path(p).c_str(), H5P_DEFAULT);
-                        return id < 0 ? false : check_data(id) != 0;
-                    }
-                    bool is_attribute(std::string const & p) const {
-                        if (p.find_last_of('@') == std::string::npos)
-                            throw std::runtime_error("no attribute paht: " + complete_path(p));
-                        hid_t parent_id;
-                        if (is_group(complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1)))
-                            parent_id = check_error(H5Gopen2(_file, complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1).c_str(), H5P_DEFAULT));
-                        else if (is_data(complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1)))
-                            parent_id = check_error(H5Dopen2(_file, complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1).c_str(), H5P_DEFAULT));
-                        else
-                            #ifdef ALPS_HDF5_READ_GREEDY
-                                return false;
-                            #else
-                                throw std::runtime_error("unknown path: " + complete_path(p));
-                            #endif
-                        bool exists = check_error(H5Aexists(parent_id, p.substr(p.find_last_of('@') + 1).c_str()));
-                        if (is_group(complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1)))
-                            check_group(parent_id);
-                        else
-                            check_data(parent_id);
-                        return exists;
-                    }
-                    std::vector<std::size_t> extent(std::string const & p) const {
-                        if (is_null(p))
-                            return std::vector<std::size_t>(1, 0);
-                        else if (is_scalar(p))
-                            return std::vector<std::size_t>(1, 1);
-                        std::vector<hsize_t> buffer(dimensions(p), 0);
-                        {
-                            data_type data_id(H5Dopen2(_file, complete_path(p).c_str(), H5P_DEFAULT));
-                            space_type space_id(H5Dget_space(data_id));
-                            check_error(H5Sget_simple_extent_dims(space_id, &buffer.front(), NULL));
-                        }
-                        std::vector<std::size_t> extent(buffer.size(), 0);
-                        std::copy(buffer.begin(), buffer.end(), extent.begin());
-                        return extent;
-                    }
-                    std::size_t dimensions(std::string const & p) const {
-                        data_type data_id(H5Dopen2(_file, complete_path(p).c_str(), H5P_DEFAULT));
-                        space_type space_id(H5Dget_space(data_id));
-                        return static_cast<hid_t>(check_error(H5Sget_simple_extent_dims(space_id, NULL, NULL)));
-                    }
-                    bool is_scalar(std::string const & p) const {
-                        data_type data_id(H5Dopen2(_file, complete_path(p).c_str(), H5P_DEFAULT));
-                        space_type space_id(H5Dget_space(data_id));
-                        H5S_class_t type = H5Sget_simple_extent_type(space_id);
-                        if (type == H5S_NO_CLASS)
-                            throw std::runtime_error("error reading class " + complete_path(p));
-                        return type == H5S_SCALAR;
-                    }
-                    bool is_null(std::string const & p) const {
-                        data_type data_id(H5Dopen2(_file, complete_path(p).c_str(), H5P_DEFAULT));
-                        space_type space_id(H5Dget_space(data_id));
-                        H5S_class_t type = H5Sget_simple_extent_type(space_id);
-                        if (type == H5S_NO_CLASS)
-                            throw std::runtime_error("error reading class " + complete_path(p));
-                        return type == H5S_NULL;
-                    }
-                    void delete_data(std::string const & p) {
-                        if (is_data(p))
-                            // TODO: implement provenance
-                            check_error(H5Ldelete(_file, complete_path(p).c_str(), H5P_DEFAULT));
-                        else
-                            throw std::runtime_error("the path does not exists: " + p);
-                    }
-                    std::vector<std::string> list_children(std::string const & p) const {
-                        std::vector<std::string> list;
-                        group_type group_id(H5Gopen2(_file, complete_path(p).c_str(), H5P_DEFAULT));
-                        check_error(H5Literate(group_id, H5_INDEX_NAME, H5_ITER_NATIVE, NULL, child_visitor, reinterpret_cast<void *>(&list)));
-                        return list;
-                    }
-                    std::vector<std::string> list_attr(std::string const & p) const {
-                        std::vector<std::string> list;
-                        if (is_group(p)) {
-                            group_type id(H5Gopen2(_file, complete_path(p).c_str(), H5P_DEFAULT));
-                            check_error(H5Aiterate2(id, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, NULL, attr_visitor, reinterpret_cast<void *>(&list)));
-                        } else {
-                            data_type id(H5Dopen2(_file, complete_path(p).c_str(), H5P_DEFAULT));
-                            check_error(H5Aiterate2(id, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, NULL, attr_visitor, reinterpret_cast<void *>(&list)));
-                        }
-                        return list;
-                    }
-                private:
-                    hid_t get_native_type(char) const { return H5Tcopy(H5T_NATIVE_CHAR); }
-                    hid_t get_native_type(signed char) const { return H5Tcopy(H5T_NATIVE_SCHAR); }
-                    hid_t get_native_type(unsigned char) const { return H5Tcopy(H5T_NATIVE_UCHAR); }
-                    hid_t get_native_type(short) const { return H5Tcopy(H5T_NATIVE_SHORT); }
-                    hid_t get_native_type(unsigned short) const { return H5Tcopy(H5T_NATIVE_USHORT); }
-                    hid_t get_native_type(int) const { return H5Tcopy(H5T_NATIVE_INT); }
-                    hid_t get_native_type(unsigned) const { return H5Tcopy(H5T_NATIVE_UINT); }
-                    hid_t get_native_type(long) const { return H5Tcopy(H5T_NATIVE_LONG); }
-                    hid_t get_native_type(unsigned long) const { return H5Tcopy(H5T_NATIVE_ULONG); }
-                    hid_t get_native_type(long long) const { return H5Tcopy(H5T_NATIVE_LLONG); }
-                    hid_t get_native_type(unsigned long long) const { return H5Tcopy(H5T_NATIVE_ULLONG); }
-                    hid_t get_native_type(float) const { return H5Tcopy(H5T_NATIVE_FLOAT); }
-                    hid_t get_native_type(double) const { return H5Tcopy(H5T_NATIVE_DOUBLE); }
-                    hid_t get_native_type(long double) const { return H5Tcopy(H5T_NATIVE_LDOUBLE); }
-                    hid_t get_native_type(bool) const { return H5Tcopy(H5T_NATIVE_HBOOL); }
-                    template<typename T> hid_t get_native_type(std::complex<T>) const { return H5Tcopy(_complex_id); }
-                    hid_t get_native_type(std::string) const { 
-                        hid_t type_id = H5Tcopy(H5T_C_S1);
-                        check_error(H5Tset_size(type_id, H5T_VARIABLE));
-                        return type_id;
-                    }
-                    static herr_t child_visitor(hid_t, char const * n, const H5L_info_t *, void * d) {
-                        reinterpret_cast<std::vector<std::string> *>(d)->push_back(n);
-                        return 0;
-                    }
-                    static herr_t attr_visitor(hid_t, char const * n, const H5A_info_t *, void * d) {
-                        reinterpret_cast<std::vector<std::string> *>(d)->push_back(n);
-                        return 0;
-                    }
-                    hid_t create_path(std::string const & p, hid_t type_id, hid_t space_id, hsize_t d, hsize_t const * s = NULL, bool set_prop = true) const {
-                        hid_t data_id = H5Dopen2(_file, p.c_str(), H5P_DEFAULT), tmp_id = 0;
-                        if (data_id < 0) {
-                            if (p.find_last_of('/') < std::string::npos && p.find_last_of('/') > 0)
-                                set_group(p.substr(0, p.find_last_of('/')));
-                            data_id = create_dataset(p, type_id, space_id, d, s, set_prop);
-                        } else if (
-                               (d > 0 && s[0] > 0 && is_null(p)) 
-                            || (d > 0 && s[0] == 0 && !is_null(p)) 
-                            || !check_error(H5Tequal(type_type(H5Dget_type(data_id)), type_type(H5Tcopy(type_id))))
-                            || (d > 0 && s[0] > 0 && H5Dset_extent(data_id, s) < 0)
-                        ) {
-                            std::vector<std::string> names = list_attr(p);
-                            if (names.size()) {
-                                tmp_id = H5Gcreate2(_file, "/revisions/waitingroom", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-                                copy_attributes(tmp_id, data_id, names);
-                            }
-                            check_data(data_id);
-                            check_error(H5Ldelete(_file, p.c_str(), H5P_DEFAULT));
-                            data_id = create_dataset(p, type_id, space_id, d, s, set_prop);
-                            if (names.size()) {
-                                copy_attributes(data_id, tmp_id, names);
-                                check_group(tmp_id);
-                                check_error(H5Ldelete(_file, "/revisions/waitingroom", H5P_DEFAULT));
-                            }
-                        }
-                        return data_id;
-                    }
-                    hid_t create_dataset(std::string const & p, hid_t type_id, hid_t space_id, hsize_t d, hsize_t const * s = NULL, bool set_prop = true) const {
-                        if (set_prop) {
-                            property_type prop_id(H5Pcreate(H5P_DATASET_CREATE));
-                            check_error(H5Pset_fill_time(prop_id, H5D_FILL_TIME_NEVER));
-                            if (d > 0)
-                                check_error(H5Pset_chunk(prop_id, d, s));
-                            return H5Dcreate2(_file, p.c_str(), type_id, space_type(space_id), H5P_DEFAULT, prop_id, H5P_DEFAULT);
-                        } else
-                            return H5Dcreate2(_file, p.c_str(), type_id, space_type(space_id), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-                    }
-                    void copy_attributes(hid_t dest_id, hid_t source_id, std::vector<std::string> const & names) const {
-                        for (std::vector<std::string>::const_iterator it = names.begin(); it != names.end(); ++it) {
-                            attribute_type attr_id = H5Aopen(source_id, it->c_str(), H5P_DEFAULT);
-                            type_type type_id = H5Aget_type(attr_id);
-                            if (H5Tget_class(type_id) == H5T_STRING) {
-                                std::string v;
-                                v.resize(H5Tget_size(type_id));
-                                check_error(H5Aread(attr_id, type_type(H5Tcopy(type_id)), &v[0]));
-                                attribute_type new_id = H5Acreate2(dest_id, it->c_str(), type_id, space_type(H5Screate(H5S_SCALAR)), H5P_DEFAULT, H5P_DEFAULT);
-                                check_error(H5Awrite(new_id, type_id, &v[0]));
-                            } else if (check_error(H5Tequal(type_type(H5Tcopy(type_id)), type_type(H5Tcopy(_state_id)))) > 0) {
-                                internal_state_type::type v;
-                                check_error(H5Aread(attr_id, _state_id, &v));
-                                attribute_type new_id = H5Acreate2(dest_id, it->c_str(), _state_id, space_type(H5Screate(H5S_SCALAR)), H5P_DEFAULT, H5P_DEFAULT);
-                                check_error(H5Awrite(new_id, _state_id, &v));
-                            }
-                            #define HDF5_COPY_ATTR(T)                                                                                                      \
-                                else if (check_error(H5Tequal(type_type(H5Tcopy(type_id)), type_type(get_native_type(static_cast<T>(0))))) > 0) {          \
-                                    T v;                                                                                                                   \
-                                    check_error(H5Aread(attr_id, type_type(H5Tcopy(type_id)), &v));                                                        \
-                                    attribute_type new_id = H5Acreate2(                                                                                    \
-                                        dest_id, it->c_str(), type_id, space_type(H5Screate(H5S_SCALAR)), H5P_DEFAULT, H5P_DEFAULT                         \
-                                    );                                                                                                                     \
-                                    check_error(H5Awrite(new_id, type_id, &v));                                                                            \
-                                }
-                            HDF5_FOREACH_SCALAR(HDF5_COPY_ATTR)
-                            #undef HDF5_COPY_ATTR
-                            else throw std::runtime_error("error in copying attribute: " + *it);
-                        }
-                    }
-                    hid_t save_comitted_data(std::string const & p, hid_t type_id, hid_t space_id, hsize_t d, hsize_t const * s = NULL, bool set_prop = true) const {
-                        std::string rev_path = "/revisions/" + boost::lexical_cast<std::string>(_revision) + p;
-                        if (_revision && !is_data(p))
-                            set_data(rev_path, internal_state_type::CREATE);
-                        else if (_revision) {
-                            hid_t data_id = H5Dopen2(_file, rev_path.c_str(), H5P_DEFAULT);
-                            std::vector<std::string> revision_names;
-                            if (data_id > 0 && check_error(H5Tequal(type_type(H5Dget_type(data_id)), type_type(H5Tcopy(_state_id)))) > 0) {
-                                internal_state_type::type v;
-                                check_error(H5Dread(data_id, _state_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &v));
-                                if (v == internal_state_type::PLACEHOLDER) {
-                                    if ((revision_names = list_attr(rev_path)).size()) {
-                                        group_type tmp_id = H5Gcreate2(_file, "/revisions/waitingroom", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-                                        copy_attributes(tmp_id, data_id, revision_names);
-                                    }
-                                    check_data(data_id);
-                                    check_error(H5Ldelete(_file, rev_path.c_str(), H5P_DEFAULT));
-                                } else
-                                    check_data(data_id);
-                            } else if (data_id >= 0)
-                                check_data(data_id);
-                            if (!is_data(rev_path)) {
-                                set_group(rev_path.substr(0, rev_path.find_last_of('/')));
-                                check_error(H5Lmove(_file, p.c_str(), H5L_SAME_LOC, (rev_path).c_str(), H5P_DEFAULT, H5P_DEFAULT));
-                                hid_t new_id = create_path(p, type_id, space_id, d, s, set_prop);
-                                std::vector<std::string> current_names = list_attr(rev_path);
-                                data_type data_id(H5Dopen2(_file, rev_path.c_str(), H5P_DEFAULT));
-                                copy_attributes(new_id, data_id, current_names); 
-                                for (std::vector<std::string>::const_iterator it = current_names.begin(); it != current_names.end(); ++it)
-                                    H5Adelete(data_id, it->c_str());
-                                if (revision_names.size()) {
-                                    copy_attributes(data_id, group_type(H5Gopen2(_file, "/revisions/waitingroom", H5P_DEFAULT)), revision_names);
-                                    check_error(H5Ldelete(_file, "/revisions/waitingroom", H5P_DEFAULT));
-                                }
-                                return new_id;
-                            }
-                        }
-                        return create_path(p, type_id, space_id, d, s, set_prop);
-                    }
-                    // TODO: optimize for T == U
-                    template<typename T, typename U> void get_helper(T & v, hid_t data_id, hid_t type_id, bool is_attr) const {
-                        std::vector<hsize_t> size(matrix_type<T>::size(v)), start(size.size(), 0), count(matrix_type<T>::count(v));
+        }
+
+        template<typename T, typename U> U const * call_get_data(
+              std::vector<U> & m
+            , T const & v
+            , std::vector<hsize_t> const & s
+            , boost::optional<std::vector<hsize_t> > const & c
+        ) {
+            return c ? get_data(m, v, s, *c) : get_data(m, v, s);
+        }
+        template<typename T, typename U> void call_set_data(T & v, std::vector<U> const & u, std::vector<hsize_t> const & s, std::vector<hsize_t> const & c) {
+            return set_data(v, u, s, c);
+        }
+
+        class archive: boost::noncopyable {
+            public:
+                struct log_type {
+                    boost::posix_time::ptime time;
+                    std::string name;
+                };
+                ~archive() {
+                    H5Fflush(_file, H5F_SCOPE_GLOBAL);
+                    if (_state_id > -1)
+                        detail::check_type(_state_id);
+                    if (_log_id > -1)
+                        detail::check_type(_log_id);
+                    #ifndef ALPS_HDF5_CLOSE_GREEDY
                         if (
-                               (is_attr || std::equal(count.begin(), count.end(), size.begin()))
-                            && H5Tget_class(type_id) == H5T_STRING && !check_error(H5Tis_variable_str(type_id))
+                            H5Fget_obj_count(_file, H5F_OBJ_DATATYPE) > (_state_id == -1 ? 0 : 1) + (_log_id == -1 ? 0 : 1)
+                            || H5Fget_obj_count(_file, H5F_OBJ_ALL) - H5Fget_obj_count(_file, H5F_OBJ_FILE) - H5Fget_obj_count(_file, H5F_OBJ_DATATYPE) > 0
                         ) {
-                            std::string data(H5Tget_size(type_id) + 1, '\0');
-                            if (is_attr)
-                                check_error(H5Aread(data_id, type_id, &data[0]));
-                            else
-                                check_error(H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &data[0]));
-                            matrix_type<T>::set(v, std::vector<char *>(1, &data[0]), start, count);
-                        } else if (is_attr || std::equal(count.begin(), count.end(), size.begin())) {
-                            std::vector<U> data(std::accumulate(count.begin(), count.end(), 1, std::multiplies<std::size_t>()));
-                            if (is_attr)
-                                check_error(H5Aread(data_id, type_id, &data.front()));
-                            else
-                                check_error(H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &data.front()));
-                            matrix_type<T>::set(v, data, start, count);
+                            std::cerr << "Not all resources closed" << std::endl;
+                            std::abort();
+                        }
+                    #endif
+                }
+                std::string const & filename() const {
+                    return _filename;
+                }
+                std::string encode_segment(std::string const & s) {
+                    std::string r = s;
+                    char chars[] = {'&', '/'};
+                    for (std::size_t i = 0; i < sizeof(chars); ++i)
+                        for (std::size_t pos = r.find_first_of(chars[i]); pos < std::string::npos; pos = r.find_first_of(chars[i], pos + 1))
+                            r = r.substr(0, pos) + "&#" + boost::lexical_cast<std::string, int>(chars[i]) + ";" + r.substr(pos + 1);
+                    return r;
+                }
+                std::string decode_segment(std::string const & s) {
+                    std::string r = s;
+                    for (std::size_t pos = r.find_first_of('&'); pos < std::string::npos; pos = r.find_first_of('&', pos + 1))
+                        r = r.substr(0, pos) + static_cast<char>(boost::lexical_cast<int>(r.substr(pos + 2, r.find_first_of(';', pos) - pos - 2))) + r.substr(r.find_first_of(';', pos) + 1);
+                    return r;
+                }
+                void commit(std::string const & name = "") {
+                    set_attr("/revisions", "last", ++_revision);
+                    set_group("/revisions/" + boost::lexical_cast<std::string>(_revision));
+                    std::string time = boost::posix_time::to_iso_string(boost::posix_time::second_clock::local_time());
+                    detail::internal_log_type v = {
+                        std::strcpy(new char[time.size() + 1], time.c_str()),
+                        std::strcpy(new char[name.size() + 1], name.c_str())
+                    };
+                    set_attr("/revisions/" + boost::lexical_cast<std::string>(_revision), "info", v);
+                    delete[] v.time;
+                    delete[] v.name;
+                }
+                std::vector<std::pair<std::string, std::string> > list_revisions() const {
+                    // TODO: implement
+                    return std::vector<std::pair<std::string, std::string> >();
+                }
+                void export_revision(std::size_t revision, std::string const & file) const {
+                    // TODO: implement
+                }
+                std::string get_context() const {
+                    return _context;
+                }
+                void set_context(std::string const & context) {
+                    _context = context;
+                }
+                std::string complete_path(std::string const & p) const {
+                    if (p.size() && p[0] == '/')
+                        return p;
+                    else if (p.size() < 2 || p.substr(0, 2) != "..")
+                        return _context + (_context.size() == 1 || !p.size() ? "" : "/") + p;
+                    else {
+                        std::string s = _context;
+                        std::size_t i = 0;
+                        for (; s.size() && p.substr(i, 2) == ".."; i += 3)
+                            s = s.substr(0, s.find_last_of('/'));
+                        return s + (s.size() == 1 || !p.substr(i).size() ? "" : "/") + p.substr(i);
+                    }
+                }
+                bool is_group(std::string const & p) const {
+                    hid_t id = H5Gopen2(_file, complete_path(p).c_str(), H5P_DEFAULT);
+                    return id < 0 ? false : detail::check_group(id) != 0;
+                }
+                bool is_data(std::string const & p) const {
+                    hid_t id = H5Dopen2(_file, complete_path(p).c_str(), H5P_DEFAULT);
+                    return id < 0 ? false : detail::check_data(id) != 0;
+                }
+                bool is_attribute(std::string const & p) const {
+                    if (p.find_last_of('@') == std::string::npos)
+                        throw std::runtime_error("no attribute paht: " + complete_path(p));
+                    hid_t parent_id;
+                    if (is_group(complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1)))
+                        parent_id = detail::check_error(H5Gopen2(_file, complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1).c_str(), H5P_DEFAULT));
+                    else if (is_data(complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1)))
+                        parent_id = detail::check_error(H5Dopen2(_file, complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1).c_str(), H5P_DEFAULT));
+                    else
+                        #ifdef ALPS_HDF5_READ_GREEDY
+                            return false;
+                        #else
+                            throw std::runtime_error("unknown path: " + complete_path(p));
+                        #endif
+                    bool exists = detail::check_error(H5Aexists(parent_id, p.substr(p.find_last_of('@') + 1).c_str()));
+                    if (is_group(complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1)))
+                        detail::check_group(parent_id);
+                    else
+                        detail::check_data(parent_id);
+                    return exists;
+                }
+                std::vector<std::size_t> extent(std::string const & p) const {
+                    if (is_null(p))
+                        return std::vector<std::size_t>(1, 0);
+                    else if (is_scalar(p))
+                        return std::vector<std::size_t>(1, 1);
+                    std::vector<hsize_t> buffer(dimensions(p), 0);
+                    {
+                        detail::data_type data_id(H5Dopen2(_file, complete_path(p).c_str(), H5P_DEFAULT));
+                        detail::space_type space_id(H5Dget_space(data_id));
+                        detail::check_error(H5Sget_simple_extent_dims(space_id, &buffer.front(), NULL));
+                    }
+                    std::vector<std::size_t> extent(buffer.size(), 0);
+                    std::copy(buffer.begin(), buffer.end(), extent.begin());
+                    return extent;
+                }
+                std::size_t dimensions(std::string const & p) const {
+                    detail::data_type data_id(H5Dopen2(_file, complete_path(p).c_str(), H5P_DEFAULT));
+                    detail::space_type space_id(H5Dget_space(data_id));
+                    return static_cast<hid_t>(detail::check_error(H5Sget_simple_extent_dims(space_id, NULL, NULL)));
+                }
+                bool is_scalar(std::string const & p) const {
+                    detail::data_type data_id(H5Dopen2(_file, complete_path(p).c_str(), H5P_DEFAULT));
+                    detail::space_type space_id(H5Dget_space(data_id));
+                    H5S_class_t type = H5Sget_simple_extent_type(space_id);
+                    if (type == H5S_NO_CLASS)
+                        throw std::runtime_error("error reading class " + complete_path(p));
+                    return type == H5S_SCALAR;
+                }
+                bool is_null(std::string const & p) const {
+                    detail::data_type data_id(H5Dopen2(_file, complete_path(p).c_str(), H5P_DEFAULT));
+                    detail::space_type space_id(H5Dget_space(data_id));
+                    H5S_class_t type = H5Sget_simple_extent_type(space_id);
+                    if (type == H5S_NO_CLASS)
+                        throw std::runtime_error("error reading class " + complete_path(p));
+                    return type == H5S_NULL;
+                }
+                void delete_data(std::string const & p) const {
+                    if (is_data(p))
+                        // TODO: implement provenance
+                        detail::check_error(H5Ldelete(_file, complete_path(p).c_str(), H5P_DEFAULT));
+                    else
+                        throw std::runtime_error("the path does not exists: " + p);
+                }
+                void delete_group(std::string const & p) const {
+                    if (is_group(p))
+                        // TODO: implement provenance
+                        detail::check_error(H5Ldelete(_file, complete_path(p).c_str(), H5P_DEFAULT));
+                    else
+                        throw std::runtime_error("the path does not exists: " + p);
+                }
+                std::vector<std::string> list_children(std::string const & p) const {
+                    std::vector<std::string> list;
+                    detail::group_type group_id(H5Gopen2(_file, complete_path(p).c_str(), H5P_DEFAULT));
+                    detail::check_error(H5Literate(group_id, H5_INDEX_NAME, H5_ITER_NATIVE, NULL, child_visitor, reinterpret_cast<void *>(&list)));
+                    return list;
+                }
+                std::vector<std::string> list_attr(std::string const & p) const {
+                    std::vector<std::string> list;
+                    if (is_group(p)) {
+                        detail::group_type id(H5Gopen2(_file, complete_path(p).c_str(), H5P_DEFAULT));
+                        detail::check_error(H5Aiterate2(id, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, NULL, attr_visitor, reinterpret_cast<void *>(&list)));
+                    } else {
+                        detail::data_type id(H5Dopen2(_file, complete_path(p).c_str(), H5P_DEFAULT));
+                        detail::check_error(H5Aiterate2(id, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, NULL, attr_visitor, reinterpret_cast<void *>(&list)));
+                    }
+                    return list;
+                }
+            protected:
+                archive(std::string const & file): _revision(0), _state_id(-1), _log_id(-1), _filename(file) {
+                    H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
+                }
+                void set_file_id(hid_t file_id) {
+                    _file = file_id;
+                }
+                void initialize() {
+                    _complex_id = H5Tcreate (H5T_COMPOUND, sizeof(detail::internal_complex_type));
+                    detail::check_error(H5Tinsert(_complex_id, "r", HOFFSET(detail::internal_complex_type, r), H5T_NATIVE_DOUBLE));
+                    detail::check_error(H5Tinsert(_complex_id, "i", HOFFSET(detail::internal_complex_type, i), H5T_NATIVE_DOUBLE));
+                    if (is_group("/revisions")) {
+                        get_attr("/revisions", "last", _revision);
+                        _log_id = detail::check_error(H5Topen2(_file, "log_type", H5P_DEFAULT));
+                        _state_id = detail::check_error(H5Topen2(_file, "state_type", H5P_DEFAULT));
+                    }
+                }
+                void create_provenance() {
+                    set_group("/revisions");
+                    set_attr("/revisions", "last", _revision);
+                    detail::internal_state_type::type v;
+                    detail::type_type state_id = H5Tenum_create(H5T_NATIVE_SHORT);
+                    detail::check_error(H5Tenum_insert(state_id, "CREATE", &(v = detail::internal_state_type::CREATE)));
+                    detail::check_error(H5Tenum_insert(state_id, "PLACEHOLDER", &(v = detail::internal_state_type::PLACEHOLDER)));
+                    detail::check_error(H5Tcommit2(_file, "state_type", state_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
+                    detail::type_type log_id = H5Tcreate (H5T_COMPOUND, sizeof(detail::internal_log_type));
+                    detail::type_type time_id(H5Tcopy(H5T_C_S1));
+                    detail::check_error(H5Tset_size(time_id, H5T_VARIABLE));
+                    detail::check_error(H5Tinsert(log_id, "time", HOFFSET(detail::internal_log_type, time), time_id));
+                    detail::type_type name_id(H5Tcopy(H5T_C_S1));
+                    detail::check_error(H5Tset_size(name_id, H5T_VARIABLE));
+                    detail::check_error(H5Tinsert(log_id, "log", HOFFSET(detail::internal_log_type, name), name_id));
+                    detail::check_error(H5Tcommit2(_file, "log_type", log_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
+                }
+                template<typename T> hid_t get_native_type(T) const {
+                    throw std::runtime_error(std::string("no native type passed: ") + typeid(T).name());
+                }
+                hid_t get_native_type(char) const { return H5Tcopy(H5T_NATIVE_CHAR); }
+                hid_t get_native_type(signed char) const { return H5Tcopy(H5T_NATIVE_SCHAR); }
+                hid_t get_native_type(unsigned char) const { return H5Tcopy(H5T_NATIVE_UCHAR); }
+                hid_t get_native_type(short) const { return H5Tcopy(H5T_NATIVE_SHORT); }
+                hid_t get_native_type(unsigned short) const { return H5Tcopy(H5T_NATIVE_USHORT); }
+                hid_t get_native_type(int) const { return H5Tcopy(H5T_NATIVE_INT); }
+                hid_t get_native_type(unsigned) const { return H5Tcopy(H5T_NATIVE_UINT); }
+                hid_t get_native_type(long) const { return H5Tcopy(H5T_NATIVE_LONG); }
+                hid_t get_native_type(unsigned long) const { return H5Tcopy(H5T_NATIVE_ULONG); }
+                hid_t get_native_type(long long) const { return H5Tcopy(H5T_NATIVE_LLONG); }
+                hid_t get_native_type(unsigned long long) const { return H5Tcopy(H5T_NATIVE_ULLONG); }
+                hid_t get_native_type(float) const { return H5Tcopy(H5T_NATIVE_FLOAT); }
+                hid_t get_native_type(double) const { return H5Tcopy(H5T_NATIVE_DOUBLE); }
+                hid_t get_native_type(long double) const { return H5Tcopy(H5T_NATIVE_LDOUBLE); }
+                hid_t get_native_type(bool) const { return H5Tcopy(H5T_NATIVE_HBOOL); }
+                template<typename T> hid_t get_native_type(std::complex<T>) const { return H5Tcopy(_complex_id); }
+                hid_t get_native_type(detail::internal_log_type) const { return H5Tcopy(_log_id); }
+                hid_t get_native_type(std::string) const { 
+                    hid_t type_id = H5Tcopy(H5T_C_S1);
+                    detail::check_error(H5Tset_size(type_id, H5T_VARIABLE));
+                    return type_id;
+                }
+                static herr_t child_visitor(hid_t, char const * n, const H5L_info_t *, void * d) {
+                    reinterpret_cast<std::vector<std::string> *>(d)->push_back(n);
+                    return 0;
+                }
+                static herr_t attr_visitor(hid_t, char const * n, const H5A_info_t *, void * d) {
+                    reinterpret_cast<std::vector<std::string> *>(d)->push_back(n);
+                    return 0;
+                }
+                hid_t create_path(std::string const & p, hid_t type_id, hid_t space_id, hsize_t d, hsize_t const * s = NULL, bool set_prop = true) const {
+                    hid_t data_id = H5Dopen2(_file, p.c_str(), H5P_DEFAULT), tmp_id = 0;
+                    if (data_id < 0) {
+                        if (p.find_last_of('/') < std::string::npos && p.find_last_of('/') > 0)
+                            set_group(p.substr(0, p.find_last_of('/')));
+                        data_id = create_dataset(p, type_id, space_id, d, s, set_prop);
+                    } else if (
+                           (d > 0 && s[0] > 0 && is_null(p)) 
+                        || (d > 0 && s[0] == 0 && !is_null(p)) 
+                        || !detail::check_error(H5Tequal(detail::type_type(H5Dget_type(data_id)), detail::type_type(H5Tcopy(type_id))))
+                        || (d > 0 && s[0] > 0 && H5Dset_extent(data_id, s) < 0)
+                    ) {
+                        std::vector<std::string> names = list_attr(p);
+                        if (names.size()) {
+                            tmp_id = H5Gcreate2(_file, "/revisions/waitingroom", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                            copy_attributes(tmp_id, data_id, names);
+                        }
+                        detail::check_data(data_id);
+                        detail::check_error(H5Ldelete(_file, p.c_str(), H5P_DEFAULT));
+                        data_id = create_dataset(p, type_id, space_id, d, s, set_prop);
+                        if (names.size()) {
+                            copy_attributes(data_id, tmp_id, names);
+                            detail::check_group(tmp_id);
+                            detail::check_error(H5Ldelete(_file, "/revisions/waitingroom", H5P_DEFAULT));
+                        }
+                    }
+                    return data_id;
+                }
+                hid_t create_dataset(std::string const & p, hid_t type_id, hid_t space_id, hsize_t d, hsize_t const * s = NULL, bool set_prop = true) const {
+                    if (set_prop) {
+                        detail::property_type prop_id(H5Pcreate(H5P_DATASET_CREATE));
+                        detail::check_error(H5Pset_fill_time(prop_id, H5D_FILL_TIME_NEVER));
+                        if (d > 0)
+                            detail::check_error(H5Pset_chunk(prop_id, d, s));
+                        return H5Dcreate2(_file, p.c_str(), type_id, detail::space_type(space_id), H5P_DEFAULT, prop_id, H5P_DEFAULT);
+                    } else
+                        return H5Dcreate2(_file, p.c_str(), type_id, detail::space_type(space_id), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                }
+                void copy_attributes(hid_t dest_id, hid_t source_id, std::vector<std::string> const & names) const {
+                    for (std::vector<std::string>::const_iterator it = names.begin(); it != names.end(); ++it) {
+                        detail::attribute_type attr_id = H5Aopen(source_id, it->c_str(), H5P_DEFAULT);
+                        detail::type_type type_id = H5Aget_type(attr_id);
+                        if (H5Tget_class(type_id) == H5T_STRING) {
+                            std::string v;
+                            v.resize(H5Tget_size(type_id));
+                            detail::check_error(H5Aread(attr_id, detail::type_type(H5Tcopy(type_id)), &v[0]));
+                            detail::attribute_type new_id = H5Acreate2(dest_id, it->c_str(), type_id, detail::space_type(H5Screate(H5S_SCALAR)), H5P_DEFAULT, H5P_DEFAULT);
+                            detail::check_error(H5Awrite(new_id, type_id, &v[0]));
+                        } else if (detail::check_error(H5Tequal(detail::type_type(H5Tcopy(type_id)), detail::type_type(H5Tcopy(_state_id)))) > 0) {
+                            detail::internal_state_type::type v;
+                            detail::check_error(H5Aread(attr_id, _state_id, &v));
+                            detail::attribute_type new_id = H5Acreate2(dest_id, it->c_str(), _state_id, detail::space_type(H5Screate(H5S_SCALAR)), H5P_DEFAULT, H5P_DEFAULT);
+                            detail::check_error(H5Awrite(new_id, _state_id, &v));
+                        }
+                        #define HDF5_COPY_ATTR(T)                                                                                                          \
+                            else if (detail::check_error(                                                                                                  \
+                                H5Tequal(detail::type_type(H5Tcopy(type_id)), detail::type_type(get_native_type(static_cast<T>(0))))                       \
+                            ) > 0) {                                                                                                                       \
+                                T v;                                                                                                                       \
+                                detail::check_error(H5Aread(attr_id, detail::type_type(H5Tcopy(type_id)), &v));                                            \
+                                detail::attribute_type new_id = H5Acreate2(                                                                                \
+                                    dest_id, it->c_str(), type_id, detail::space_type(H5Screate(H5S_SCALAR)), H5P_DEFAULT, H5P_DEFAULT                     \
+                                );                                                                                                                         \
+                                detail::check_error(H5Awrite(new_id, type_id, &v));                                                                        \
+                            }
+                        HDF5_FOREACH_SCALAR(HDF5_COPY_ATTR)
+                        #undef HDF5_COPY_ATTR
+                        else throw std::runtime_error("error in copying attribute: " + *it);
+                    }
+                }
+                hid_t save_comitted_data(std::string const & p, hid_t type_id, hid_t space_id, hsize_t d, hsize_t const * s = NULL, bool set_prop = true) const {
+                    std::string rev_path = "/revisions/" + boost::lexical_cast<std::string>(_revision) + p;
+                    if (_revision && !is_data(p))
+                        set_data(rev_path, detail::internal_state_type::CREATE);
+                    else if (_revision) {
+                        hid_t data_id = H5Dopen2(_file, rev_path.c_str(), H5P_DEFAULT);
+                        std::vector<std::string> revision_names;
+                        if (data_id > 0 && detail::check_error(H5Tequal(detail::type_type(H5Dget_type(data_id)), detail::type_type(H5Tcopy(_state_id)))) > 0) {
+                            detail::internal_state_type::type v;
+                            detail::check_error(H5Dread(data_id, _state_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &v));
+                            if (v == detail::internal_state_type::PLACEHOLDER) {
+                                if ((revision_names = list_attr(rev_path)).size()) {
+                                    detail::group_type tmp_id = H5Gcreate2(_file, "/revisions/waitingroom", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                                    copy_attributes(tmp_id, data_id, revision_names);
+                                }
+                                detail::check_data(data_id);
+                                detail::check_error(H5Ldelete(_file, rev_path.c_str(), H5P_DEFAULT));
+                            } else
+                                detail::check_data(data_id);
+                        } else if (data_id >= 0)
+                            detail::check_data(data_id);
+                        if (!is_data(rev_path)) {
+                            set_group(rev_path.substr(0, rev_path.find_last_of('/')));
+                            detail::check_error(H5Lmove(_file, p.c_str(), H5L_SAME_LOC, (rev_path).c_str(), H5P_DEFAULT, H5P_DEFAULT));
+                            hid_t new_id = create_path(p, type_id, space_id, d, s, set_prop);
+                            std::vector<std::string> current_names = list_attr(rev_path);
+                            detail::data_type data_id(H5Dopen2(_file, rev_path.c_str(), H5P_DEFAULT));
+                            copy_attributes(new_id, data_id, current_names); 
+                            for (std::vector<std::string>::const_iterator it = current_names.begin(); it != current_names.end(); ++it)
+                                H5Adelete(data_id, it->c_str());
+                            if (revision_names.size()) {
+                                copy_attributes(data_id, detail::group_type(H5Gopen2(_file, "/revisions/waitingroom", H5P_DEFAULT)), revision_names);
+                                detail::check_error(H5Ldelete(_file, "/revisions/waitingroom", H5P_DEFAULT));
+                            }
+                            return new_id;
+                        }
+                    }
+                    return create_path(p, type_id, space_id, d, s, set_prop);
+                }
+                // TODO: write test for T != U (cast_type in creator.hpp)
+                // TODO: write tests for boost::shared_ptr<T>, std::auto_ptr<T>, boost::weak_ptr<T> and boost::scoped_ptr<T>
+                // TODO: optimize for T == U
+                template<typename T, typename U> void get_helper(T & v, hid_t data_id, hid_t type_id, bool is_attr) const {
+                    std::vector<hsize_t> size(get_extent(v)), start(size.size(), 0), count(get_offset(v));
+                    if (
+                           (is_attr || std::equal(count.begin(), count.end(), size.begin()))
+                        && H5Tget_class(type_id) == H5T_STRING && !detail::check_error(H5Tis_variable_str(type_id))
+                    ) {
+                        std::string data(H5Tget_size(type_id) + 1, '\0');
+                        if (is_attr)
+                            detail::check_error(H5Aread(data_id, type_id, &data[0]));
+                        else
+                            detail::check_error(H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &data[0]));
+                        call_set_data(v, std::vector<char *>(1, &data[0]), start, count);
+                    } else if (is_attr || std::equal(count.begin(), count.end(), size.begin())) {
+                        std::vector<U> data(std::accumulate(count.begin(), count.end(), 1, std::multiplies<std::size_t>()));
+                        if (is_attr)
+                            detail::check_error(H5Aread(data_id, type_id, &data.front()));
+                        else
+                            detail::check_error(H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &data.front()));
+                        call_set_data(v, data, start, count);
+                        if (boost::is_same<T, char *>::value)
+                            detail::check_error(H5Dvlen_reclaim(type_id, detail::space_type(H5Dget_space(data_id)), H5P_DEFAULT, &data.front()));
+                    } else {
+                        std::vector<U> data(std::accumulate(count.begin(), count.end(), 1, std::multiplies<std::size_t>()));
+                        std::size_t last = count.size() - 1, pos;
+                        for(;count[last] == size[last]; --last);
+                        do {
+                            detail::space_type space_id(H5Dget_space(data_id));
+                            detail::check_error(H5Sselect_hyperslab(space_id, H5S_SELECT_SET, &start.front(), NULL, &count.front(), NULL));
+                            detail::space_type mem_id(H5Screate_simple(count.size(), &count.front(), NULL));
+                            detail::check_error(H5Dread(data_id, type_id, mem_id, space_id, H5P_DEFAULT, &data.front()));
+                            call_set_data(v, data, start, count);
+                            if (start[last] + 1 == size[last] && last) {
+                                for (pos = last; ++start[pos] == size[pos] && pos; --pos);
+                                for (++pos; pos <= last; ++pos)
+                                    start[pos] = 0;
+                            } else
+                                ++start[last];
                             if (boost::is_same<T, char *>::value)
-                                check_error(H5Dvlen_reclaim(type_id, space_type(H5Dget_space(data_id)), H5P_DEFAULT, &data.front()));
-                        } else {
-                            std::vector<U> data(std::accumulate(count.begin(), count.end(), 1, std::multiplies<std::size_t>()));
+                                detail::check_error(H5Dvlen_reclaim(type_id, detail::space_type(H5Dget_space(data_id)), H5P_DEFAULT, &data.front()));
+                        } while (start[0] < size[0]);
+                    }
+                }
+                template<typename T> void get_data(std::string const & p, T & v) const {
+                    if (is_scalar(p) != is_native<T>::value)
+                        throw std::runtime_error("scalar - vector conflict");
+                    else if (is_native<T>::value && is_null(p))
+                        throw std::runtime_error("scalars cannot be null");
+                    else if (is_null(p)) {
+                        if (get_extent(v).size())
+                            set_extent(v, std::vector<std::size_t>(1, 0));
+                    } else {
+                        std::vector<hsize_t> size(dimensions(p), 0);
+                        detail::data_type data_id(H5Dopen2(_file, p.c_str(), H5P_DEFAULT));
+                        detail::type_type type_id(H5Dget_type(data_id));
+                        detail::type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));
+                        if (size.size()) {
+                            detail::space_type space_id(H5Dget_space(data_id));
+                            detail::check_error(H5Sget_simple_extent_dims(space_id, &size.front(), NULL));
+                        }
+                        set_extent(v, std::vector<std::size_t>(size.begin(), size.end()));
+                        if (H5Tget_class(native_id) == H5T_STRING)
+                            get_helper<T, char *>(v, data_id, type_id, false);
+                        else if (detail::check_error(H5Tequal(detail::type_type(H5Tcopy(_complex_id)), detail::type_type(H5Tcopy(type_id)))))
+                            get_helper<T, std::complex<double> >(v, data_id, type_id, false);
+                        #define HDF5_GET_STRING(U)                                                                                                          \
+                            else if (detail::check_error(                                                                                                   \
+                                H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(get_native_type(static_cast<U>(0))))                      \
+                            ) > 0)                                                                                                                          \
+                                get_helper<T, U>(v, data_id, type_id, false);
+                        HDF5_FOREACH_SCALAR(HDF5_GET_STRING)
+                        #undef HDF5_GET_STRING
+                        else throw std::runtime_error("invalid type");
+                    }
+                }
+                template<typename T> void get_attr(std::string const & p, std::string const & s, T & v) const {
+                    hid_t parent_id;
+                    if (!is_native<T>::value)
+                        throw std::runtime_error("attributes need to be scalar");
+                    else if (is_group(p))
+                        parent_id = H5Gopen2(_file, p.c_str(), H5P_DEFAULT);
+                    else if (is_data(p))
+                        parent_id = H5Dopen2(_file, p.c_str(), H5P_DEFAULT);
+                    else
+                        throw std::runtime_error("invalid path");
+                    detail::attribute_type attr_id(H5Aopen(parent_id, s.c_str(), H5P_DEFAULT));
+                    detail::type_type type_id(H5Aget_type(attr_id));
+                    detail::type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));
+                    if (H5Tget_class(native_id) == H5T_STRING)
+                        get_helper<T, char *>(v, attr_id, type_id, true);
+                    else if (detail::check_error(H5Tequal(detail::type_type(H5Tcopy(_complex_id)), detail::type_type(H5Tcopy(type_id)))))
+                        get_helper<T, std::complex<double> >(v, attr_id, type_id, true);
+                    #define HDF5_GET_ATTR(U)                                                                                                                \
+                        else if (detail::check_error(                                                                                                       \
+                            H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(get_native_type(static_cast<U>(0))))                          \
+                        ) > 0)                                                                                                                              \
+                            get_helper<T, U>(v, attr_id, type_id, true);
+                    HDF5_FOREACH_SCALAR(HDF5_GET_ATTR)
+                    #undef HDF5_GET_ATTR
+                    else throw std::runtime_error("invalid type");
+                    if (is_group(p))
+                        detail::check_group(parent_id);
+                    else
+                        detail::check_data(parent_id);
+                }
+                template<typename T> void set_data(std::string const & p, T const & v) const {
+                    if (is_group(p))
+                        delete_group(p);
+                    detail::type_type type_id(get_native_type(typename native_type<T>::type()));
+                    std::vector<hsize_t> size(get_extent(v)), start(size.size(), 0), count(get_offset(v));
+                    std::vector<typename serializable_type<T>::type> data;
+                    if (is_native<T>::value) {
+                        detail::data_type data_id(save_comitted_data(p, type_id, H5Screate(H5S_SCALAR), 0, NULL, !boost::is_same<typename native_type<T>::type, std::string>::value));
+                        detail::check_error(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, call_get_data(data, v, start)));
+                    } else if (std::accumulate(size.begin(), size.end(), 0) == 0)
+                        detail::check_data(save_comitted_data(p, type_id, H5Screate(H5S_NULL), 0, NULL, !boost::is_same<typename native_type<T>::type, std::string>::value));
+                    else {
+                        detail::data_type data_id(save_comitted_data(p, type_id, H5Screate_simple(size.size(), &size.front(), NULL), size.size(), &size.front(), !boost::is_same<typename native_type<T>::type, std::string>::value));
+                        if (std::equal(count.begin(), count.end(), size.begin()))
+                            detail::check_error(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, call_get_data(data, v, start)));
+                        else {
                             std::size_t last = count.size() - 1, pos;
                             for(;count[last] == size[last]; --last);
                             do {
-                                space_type space_id(H5Dget_space(data_id));
-                                check_error(H5Sselect_hyperslab(space_id, H5S_SELECT_SET, &start.front(), NULL, &count.front(), NULL));
-                                space_type mem_id(H5Screate_simple(count.size(), &count.front(), NULL));
-                                check_error(H5Dread(data_id, type_id, mem_id, space_id, H5P_DEFAULT, &data.front()));
-                                matrix_type<T>::set(v, data, start, count);
-                                if (++start[last] == size[last] && last) {
-                                    for (pos = last; pos && start[pos] == size[pos]; --pos);
-                                    ++start[pos];
+                                detail::space_type space_id(H5Dget_space(data_id));
+                                detail::check_error(H5Sselect_hyperslab(space_id, H5S_SELECT_SET, &start.front(), NULL, &count.front(), NULL));
+                                detail::space_type mem_id(H5Screate_simple(count.size(), &count.front(), NULL));
+                                detail::check_error(H5Dwrite(data_id, type_id, mem_id, space_id, H5P_DEFAULT, call_get_data(data, v, start)));
+                                if (start[last] + 1 == size[last] && last) {
+                                    for (pos = last; ++start[pos] == size[pos] && pos; --pos);
                                     for (++pos; pos <= last; ++pos)
                                         start[pos] = 0;
-                                }
-                                if (boost::is_same<T, char *>::value)
-                                    check_error(H5Dvlen_reclaim(type_id, space_type(H5Dget_space(data_id)), H5P_DEFAULT, &data.front()));
+                                } else
+                                    ++start[last];
                             } while (start[0] < size[0]);
                         }
-                    }
-                    template<typename T> void get_data(std::string const & p, T & v) const {
+                     }
+                }
+                template<typename T> void set_attr(std::string const & p, std::string const & s, T const & v) const {
+                    hid_t parent_id;
+                    std::string rev_path = "/revisions/" + boost::lexical_cast<std::string>(_revision) + p;
+                    if (!is_native<T>::value)
+                        throw std::runtime_error("attributes need to be scalar");
+                    else if (is_group(p)) {
+                        parent_id = detail::check_error(H5Gopen2(_file, p.c_str(), H5P_DEFAULT));
+                        if (_revision && p.substr(0, std::strlen("/revisions")) != "/revisions" && !is_group(rev_path))
+                            set_group(rev_path);
+                    } else if (is_data(p)) {
+                        parent_id = detail::check_error(H5Dopen2(_file, p.c_str(), H5P_DEFAULT));
+                        if (_revision && p.substr(0, std::strlen("/revisions")) != "/revisions" && !is_data(rev_path))
+                            set_data(rev_path, detail::internal_state_type::PLACEHOLDER);
+                    } else
+                        throw std::runtime_error("unknown path: " + p);
+                    if (_revision && p.substr(0, std::strlen("/revisions")) != "/revisions" && !detail::check_error(H5Aexists(parent_id, s.c_str())))
+                        set_attr(rev_path, s, detail::internal_state_type::CREATE);
+                    else if (_revision && p.substr(0, std::strlen("/revisions")) != "/revisions") {
+                        hid_t data_id = (is_group(rev_path) ? H5Gopen2(_file, rev_path.c_str(), H5P_DEFAULT) : H5Dopen2(_file, rev_path.c_str(), H5P_DEFAULT));
+                        if (detail::check_error(H5Aexists(data_id, s.c_str())) && detail::check_error(H5Tequal(detail::type_type(H5Aget_type(detail::attribute_type(H5Aopen(data_id, s.c_str(), H5P_DEFAULT)))), detail::type_type(H5Tcopy(_state_id)))) > 0)
+                            H5Adelete(data_id, s.c_str());
+                        if (!detail::check_error(H5Aexists(data_id, s.c_str())))
+                            copy_attributes(data_id, parent_id, std::vector<std::string>(1, s));
                         if (is_group(p))
-                            matrix_type<T>::apply(const_cast<archive<Tag> &>(*this), p, v, read());
-                        else if (is_scalar(p) != matrix_type<T>::scalar::value)
-                            throw std::runtime_error("scalar - vector conflict");
-                        else if (matrix_type<T>::scalar::value && is_null(p))
-                            throw std::runtime_error("scalars cannot be null");
-                        else if (is_null(p))
-                            matrix_type<T>::resize(v, std::vector<std::size_t>(1, 0));
-                        else {
-                            std::vector<hsize_t> size(dimensions(p), 0);
-                            data_type data_id(H5Dopen2(_file, p.c_str(), H5P_DEFAULT));
-                            type_type type_id(H5Dget_type(data_id));
-                            type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));
-                            if (size.size()) {
-                                space_type space_id(H5Dget_space(data_id));
-                                check_error(H5Sget_simple_extent_dims(space_id, &size.front(), NULL));
-                            }
-                            matrix_type<T>::resize(v, std::vector<std::size_t>(size.begin(), size.end()));
-                            if (H5Tget_class(native_id) == H5T_STRING)
-                                get_helper<T, char *>(v, data_id, type_id, false);
-                            else if (check_error(H5Tequal(type_type(H5Tcopy(_complex_id)), type_type(H5Tcopy(type_id)))))
-                                get_helper<T, std::complex<double> >(v, data_id, type_id, false);
-                            #define HDF5_GET_STRING(U)                                                                                                     \
-                                else if (check_error(H5Tequal(type_type(H5Tcopy(native_id)), type_type(get_native_type(static_cast<U>(0))))) > 0)          \
-                                    get_helper<T, U>(v, data_id, type_id, false);
-                            HDF5_FOREACH_SCALAR(HDF5_GET_STRING)
-                            #undef HDF5_GET_STRING
-                            else throw std::runtime_error("invalid type");
-                        }
-                    }
-                    template<typename T> void get_attr(std::string const & p, std::string const & s, T & v) const {
-                        hid_t parent_id;
-                        if (!matrix_type<T>::scalar::value)
-                            throw std::runtime_error("attributes need to be scalar");
-                        else if (is_group(p))
-                            parent_id = H5Gopen2(_file, p.c_str(), H5P_DEFAULT);
-                        else if (is_data(p))
-                            parent_id = H5Dopen2(_file, p.c_str(), H5P_DEFAULT);
+                            detail::check_group(data_id);
                         else
-                            throw std::runtime_error("invalid path");
-                        attribute_type attr_id(H5Aopen(parent_id, s.c_str(), H5P_DEFAULT));
-                        type_type type_id(H5Aget_type(attr_id));
-                        type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));
-                        if (H5Tget_class(native_id) == H5T_STRING)
-                            get_helper<T, char *>(v, attr_id, type_id, true);
-                        else if (check_error(H5Tequal(type_type(H5Tcopy(_complex_id)), type_type(H5Tcopy(type_id)))))
-                            get_helper<T, std::complex<double> >(v, attr_id, type_id, true);
-                        #define HDF5_GET_ATTR(U)                                                                                                           \
-                            else if (check_error(H5Tequal(type_type(H5Tcopy(native_id)), type_type(get_native_type(static_cast<U>(0))))) > 0)              \
-                                get_helper<T, U>(v, attr_id, type_id, true);
-                        HDF5_FOREACH_SCALAR(HDF5_GET_ATTR)
-                        #undef HDF5_GET_ATTR
-                        else throw std::runtime_error("invalid type");
-                        if (is_group(p))
-                            check_group(parent_id);
-                        else
-                            check_data(parent_id);
+                            detail::check_data(data_id);
                     }
-                    template<typename T> void set_data(std::string const & p, T const & v) const {
-                        type_type type_id(get_native_type(typename matrix_type<T>::native_type()));
-                        if (!matrix_type<T>::is_vectorizable(v))
-                            matrix_type<T>::apply(const_cast<archive<Tag> &>(*this), p, v, write());
-                        else {
-                            std::vector<hsize_t> size(matrix_type<T>::size(v)), start(size.size(), 0), count(matrix_type<T>::count(v));
-                            typename matrix_type<T>::buffer_type data;
-                            if (matrix_type<T>::scalar::value) {
-                                data_type data_id(save_comitted_data(p, type_id, H5Screate(H5S_SCALAR), 0, NULL, !boost::is_same<typename matrix_type<T>::native_type, std::string>::value));
-                                check_error(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, matrix_type<T>::get(data, v, start)));
-                            } else if (std::accumulate(size.begin(), size.end(), 0) == 0)
-                                check_data(save_comitted_data(p, type_id, H5Screate(H5S_NULL), 0, NULL, !boost::is_same<typename matrix_type<T>::native_type, std::string>::value));
-                            else {
-                                data_type data_id(save_comitted_data(p, type_id, H5Screate_simple(size.size(), &size.front(), NULL), size.size(), &size.front(), !boost::is_same<typename matrix_type<T>::native_type, std::string>::value));
-                                if (std::equal(count.begin(), count.end(), size.begin()))
-                                    check_error(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, matrix_type<T>::get(data, v, start)));
-                                else {
-                                    std::size_t last = count.size() - 1, pos;
-                                    for(;count[last] == size[last]; --last);
-                                    do {
-                                        space_type space_id(H5Dget_space(data_id));
-                                        check_error(H5Sselect_hyperslab(space_id, H5S_SELECT_SET, &start.front(), NULL, &count.front(), NULL));
-                                        space_type mem_id(H5Screate_simple(count.size(), &count.front(), NULL));
-                                        check_error(H5Dwrite(data_id, type_id, mem_id, space_id, H5P_DEFAULT, matrix_type<T>::get(data, v, start)));
-                                        if (++start[last] == size[last] && last) {
-                                            for (pos = last; pos && start[pos] == size[pos]; --pos);
-                                            ++start[pos];
-                                            for (++pos; pos <= last; ++pos)
-                                                start[pos] = 0;
-                                        }
-                                    } while (start[0] < size[0]);
-                                }
-                            }
-                        }
+                    hid_t id = H5Aopen(parent_id, s.c_str(), H5P_DEFAULT);
+                    detail::type_type type_id(get_native_type(typename native_type<T>::type()));
+                    if (id >= 0 && detail::check_error(H5Tequal(detail::type_type(H5Aget_type(id)), detail::type_type(H5Tcopy(type_id)))) == 0) {
+                        detail::check_attribute(id);
+                        H5Adelete(parent_id, s.c_str());
+                        id = -1;
                     }
-                    template<typename T> void set_attr(std::string const & p, std::string const & s, T const & v) const {
-                        hid_t parent_id;
-                        std::string rev_path = "/revisions/" + boost::lexical_cast<std::string>(_revision) + p;
-                        if (!matrix_type<T>::scalar::value)
-                            throw std::runtime_error("attributes need to be scalar");
-                        else if (is_group(p)) {
-                            parent_id = check_error(H5Gopen2(_file, p.c_str(), H5P_DEFAULT));
-                            if (_revision && p.substr(0, std::strlen("/revisions")) != "/revisions" && !is_group(rev_path))
-                                set_group(rev_path);
-                        } else if (is_data(p)) {
-                            parent_id = check_error(H5Dopen2(_file, p.c_str(), H5P_DEFAULT));
-                            if (_revision && p.substr(0, std::strlen("/revisions")) != "/revisions" && !is_data(rev_path))
-                                set_data(rev_path, internal_state_type::PLACEHOLDER);
-                        } else
-                            throw std::runtime_error("unknown path: " + p);
-                        if (_revision && p.substr(0, std::strlen("/revisions")) != "/revisions" && !check_error(H5Aexists(parent_id, s.c_str())))
-                            set_attr(rev_path, s, internal_state_type::CREATE);
-                        else if (_revision && p.substr(0, std::strlen("/revisions")) != "/revisions") {
-                            hid_t data_id = (is_group(rev_path) ? H5Gopen2(_file, rev_path.c_str(), H5P_DEFAULT) : H5Dopen2(_file, rev_path.c_str(), H5P_DEFAULT));
-                            if (check_error(H5Aexists(data_id, s.c_str())) && check_error(H5Tequal(type_type(H5Aget_type(attribute_type(H5Aopen(data_id, s.c_str(), H5P_DEFAULT)))), type_type(H5Tcopy(_state_id)))) > 0)
-                                H5Adelete(data_id, s.c_str());
-                            if (!check_error(H5Aexists(data_id, s.c_str())))
-                                copy_attributes(data_id, parent_id, std::vector<std::string>(1, s));
-                            if (is_group(p))
-                                check_group(data_id);
-                            else
-                                check_data(data_id);
+                    if (id < 0)
+                        id = H5Acreate2(parent_id, s.c_str(), type_id, detail::space_type(H5Screate(H5S_SCALAR)), H5P_DEFAULT, H5P_DEFAULT);
+                    detail::attribute_type attr_id(id);
+                    std::vector<typename serializable_type<T>::type> data;
+                    detail::check_error(H5Awrite(attr_id, type_id, call_get_data(data, v, std::vector<hsize_t>(1, 1))));
+                    if (is_group(p))
+                        detail::check_group(parent_id);
+                    else
+                        detail::check_data(parent_id);
+                }
+                void set_group(std::string const & p) const {
+                    if (!is_group(p)) {
+                        std::size_t pos;
+                        hid_t group_id = -1;
+                        for (pos = p.find_last_of('/'); group_id < 0 && pos > 0 && pos < std::string::npos; pos = p.find_last_of('/', pos - 1))
+                            group_id = H5Gopen2(_file, p.substr(0, pos).c_str(), H5P_DEFAULT);
+                        if (group_id < 0) {
+                            if ((pos = p.find_first_of('/', 1)) != std::string::npos)
+                                detail::check_group(H5Gcreate2(_file, p.substr(0, pos).c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
+                        } else {
+                            pos = p.find_first_of('/', pos + 1);
+                            detail::check_group(group_id);
                         }
-                        hid_t id = H5Aopen(parent_id, s.c_str(), H5P_DEFAULT);
-                        type_type type_id(get_native_type(typename matrix_type<T>::native_type()));
-                        if (id >= 0 && check_error(H5Tequal(type_type(H5Aget_type(id)), type_type(H5Tcopy(type_id)))) == 0) {
-                            check_attribute(id);
-                            H5Adelete(parent_id, s.c_str());
-                            id = -1;
-                        }
-                        if (id < 0)
-                            id = H5Acreate2(parent_id, s.c_str(), type_id, space_type(H5Screate(H5S_SCALAR)), H5P_DEFAULT, H5P_DEFAULT);
-                        attribute_type attr_id(id);
-                        typename matrix_type<T>::buffer_type data;
-                        check_error(H5Awrite(attr_id, type_id, matrix_type<T>::get(data, v, std::vector<hsize_t>(1, 1))));
-                        if (is_group(p))
-                            check_group(parent_id);
-                        else
-                            check_data(parent_id);
+                        while (pos != std::string::npos && (pos = p.find_first_of('/', pos + 1)) != std::string::npos && pos > 0)
+                            detail::check_group(H5Gcreate2(_file, p.substr(0, pos).c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
+                        detail::check_group(H5Gcreate2(_file, p.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
                     }
-                    void set_group(std::string const & p) const {
-                        if (!is_group(p)) {
-                            std::size_t pos;
-                            hid_t group_id = -1;
-                            for (pos = p.find_last_of('/'); group_id < 0 && pos > 0 && pos < std::string::npos; pos = p.find_last_of('/', pos - 1))
-                                group_id = H5Gopen2(_file, p.substr(0, pos).c_str(), H5P_DEFAULT);
-                            if (group_id < 0) {
-                                if ((pos = p.find_first_of('/', 1)) != std::string::npos)
-                                    check_group(H5Gcreate2(_file, p.substr(0, pos).c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
-                            } else {
-                                pos = p.find_first_of('/', pos + 1);
-                                check_group(group_id);
-                            }
-                            while (pos != std::string::npos && (pos = p.find_first_of('/', pos + 1)) != std::string::npos && pos > 0)
-                                check_group(H5Gcreate2(_file, p.substr(0, pos).c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
-                            check_group(H5Gcreate2(_file, p.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
-                        }
-                    }
-                    int _revision;
-                    hid_t _state_id;
-                    hid_t _log_id;
-                    hid_t _complex_id;
-                    std::string _context;
-                    std::string _filename;
-                    file_type _file;
-            };
-            #undef HDF5_FOREACH_SCALAR
-            template <typename T> archive<read> & serialize(archive<read> & ar, std::string const & p, T & v) {
+                }
+            private:
+                int _revision;
+                hid_t _state_id;
+                hid_t _log_id;
+                hid_t _complex_id;
+                std::string _context;
+                std::string _filename;
+                detail::file_type _file;
+        };
+        #undef HDF5_FOREACH_SCALAR
+
+        class iarchive : public archive {
+            public:
+                iarchive(std::string const & file) : archive(file) {
+                    if (detail::check_error(H5Fis_hdf5(file.c_str())) == 0)
+                        throw std::runtime_error("no valid hdf5 file " + file);
+                    set_file_id(H5Fopen(file.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT));
+                    initialize();
+                }
+                template<typename T> void serialize(std::string const & p, T & v) const {
+                    if (p.find_last_of('@') != std::string::npos) {
+                        #ifdef ALPS_HDF5_READ_GREEDY
+                            if (is_attribute(p))
+                        #endif
+                                get_attr(complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1), p.substr(p.find_last_of('@') + 1), v);
+                    } else
+                        #ifdef ALPS_HDF5_READ_GREEDY
+                            if (is_data(p))
+                        #endif
+                                get_data(complete_path(p), v);
+                }
+        };
+
+        class oarchive : public archive {
+            public:
+                oarchive(std::string const & file) : archive(file) {
+                    hid_t file_id = H5Fopen(file.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
+                    set_file_id(file_id = (file_id < 0 ? H5Fcreate(file.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT) : file_id));
+                    if (!is_group("/revisions"))
+                        create_provenance();
+                    initialize();
+                }
+                template<typename T> void serialize(std::string const & p, T const & v) const {
+                    if (p.find_last_of('@') != std::string::npos)
+                        set_attr(complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1), p.substr(p.find_last_of('@') + 1), v);
+                    else
+                        set_data(complete_path(p), v);
+                }
+                void serialize(std::string const & p) {
+                    if (p.find_last_of('@') != std::string::npos)
+                        throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
+                    else
+                        set_group(complete_path(p));
+                }
+        };
+
+        namespace detail {
+            template<typename A, typename T> A & serialize_impl(A & ar, std::string const & p, T & v, boost::mpl::true_) {
                 ar.serialize(p, v);
                 return ar;
             }
-            template <typename T> archive<write> & serialize(archive<write> & ar, std::string const & p, T const & v) {
-                ar.serialize(p, v);
+            template<typename A, typename T> A & serialize_impl(A & ar, std::string const & p, T & v, boost::mpl::false_) {
+                std::string c = ar.get_context();
+                ar.set_context(ar.complete_path(p));
+                v.serialize(ar);
+                ar.set_context(c);
                 return ar;
             }
-            template <typename T> class pvp {
-                public:
-                    pvp(std::string const & p, T v): _p(p), _v(v) {}
-                    pvp(pvp<T> const & c): _p(c._p), _v(c._v) {}
-                    template<typename Tag> archive<Tag> & apply(archive<Tag> & ar) const { 
-                      return serialize(ar, _p, const_cast<typename boost::add_reference<T>::type>(_v));
-                    }
-                private:
-                    std::string _p;
-                    T _v;
-            };
-            template <typename T> archive<write> & operator<< (archive<write> & ar, pvp<T> const & v) { return v.apply(ar); }
-            template <typename T> archive<read> & operator>> (archive<read> & ar, pvp<T> const & v) { return v.apply(ar); }
         }
-        typedef detail::archive<detail::read> iarchive;
-        typedef detail::archive<detail::write> oarchive;
+
+        template<typename T> iarchive & call_serialize(iarchive & ar, std::string const & p, T & v);
+        template<typename T> oarchive & call_serialize(oarchive & ar, std::string const & p, T const & v);
+
+        template<typename A, typename T> A & serialize(A & ar, std::string const & p, T & v) {
+            return detail::serialize_impl(ar, p, v, is_native<T>());
+        }
+
+        #define HDF5_DEFINE_VECTOR_TYPE(C)                                                                                                                  \
+            template<typename T> iarchive & serialize(iarchive & ar, std::string const & p, C <T> & v) {                                                    \
+                if (ar.is_group(p)) {                                                                                                                       \
+                    std::vector<std::string> children = ar.list_children(p);                                                                                \
+                    v.resize(children.size());                                                                                                              \
+                    for (std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)                                        \
+                        call_serialize(ar, p + "/" + *it, v[boost::lexical_cast<std::size_t>(*it)]);                                                        \
+                } else                                                                                                                                      \
+                    ar.serialize(p, v);                                                                                                                     \
+                return ar;                                                                                                                                  \
+            }                                                                                                                                               \
+            template<typename T> oarchive & serialize(oarchive & ar, std::string const & p, C <T> const & v) {                                              \
+                if (ar.is_group(p))                                                                                                                         \
+                    ar.delete_group(p);                                                                                                                     \
+                if (!v.size())                                                                                                                              \
+                    ar.serialize(p, C <int>(0));                                                                                                            \
+                else if (is_vectorizable(v))                                                                                                                \
+                    ar.serialize(p, v);                                                                                                                     \
+                else {                                                                                                                                      \
+                    if (ar.is_data(p))                                                                                                                      \
+                        ar.delete_data(p);                                                                                                                  \
+                    for (std::size_t i = 0; i < v.size(); ++i)                                                                                              \
+                        call_serialize(ar, p + "/" + boost::lexical_cast<std::string>(i), v[i]);                                                            \
+                }                                                                                                                                           \
+                return ar;                                                                                                                                  \
+            }
+        HDF5_DEFINE_VECTOR_TYPE(std::vector)
+        HDF5_DEFINE_VECTOR_TYPE(std::valarray)
+        HDF5_DEFINE_VECTOR_TYPE(boost::numeric::ublas::vector)
+        #undef HDF5_DEFINE_VECTOR_TYPE
+
+        template<typename T> iarchive & serialize(iarchive & ar, std::string const & p, std::pair<T *, std::vector<std::size_t> > & v) {
+            if (ar.is_group(p)) {
+                std::vector<std::size_t> start(v.second.size(), 0);
+                do {
+                    std::size_t last = start.size() - 1, pos = 0;
+                    std::string path = "";
+                    for (std::vector<std::size_t>::const_iterator it = start.begin(); it != start.end(); ++it) {
+                        path += "/" + boost::lexical_cast<std::string>(*it);
+                        pos += *it * std::accumulate(v.second.begin() + (it - start.begin()) + 1, v.second.end(), 1, std::multiplies<std::size_t>());
+                    }
+                    call_serialize(ar, p + path, v.first[pos]);
+                    if (++start[last] == v.second[last] && last) {
+                        for (pos = last; pos && start[pos] == v.second[pos]; --pos);
+                        ++start[pos];
+                        for (++pos; pos <= last; ++pos)
+                            start[pos] = 0;
+                    }
+                } while (start[0] < v.second[0]);
+            } else
+                detail::serialize_impl(ar, p, v, boost::mpl::true_());
+            return ar;
+        }
+        template<typename T> oarchive & serialize(oarchive & ar, std::string const & p, std::pair<T *, std::vector<std::size_t> > const & v) {
+            if (ar.is_group(p))
+                ar.delete_group(p);
+            if (!v.second.size())
+               ar.serialize(p, make_pair(static_cast<int *>(NULL), v.second));
+            else if (is_vectorizable(v))
+                detail::serialize_impl(ar, p, v, boost::mpl::true_());
+            else {
+                if (ar.is_data(p))
+                    ar.delete_data(p);
+                std::vector<std::size_t> start(v.second.size(), 0);
+                do {
+                    std::size_t last = start.size() - 1, pos = 0;
+                    std::string path = "";
+                    for (std::vector<std::size_t>::const_iterator it = start.begin(); it != start.end(); ++it) {
+                        path += "/" + boost::lexical_cast<std::string>(*it);
+                        pos += *it * std::accumulate(v.second.begin() + (it - start.begin()) + 1, v.second.end(), 1, std::multiplies<std::size_t>());
+                    }
+                    call_serialize(ar, p + path, v.first[pos]);
+                    if (++start[last] == v.second[last] && last) {
+                        for (pos = last; pos && start[pos] == v.second[pos]; --pos);
+                        ++start[pos];
+                        for (++pos; pos <= last; ++pos)
+                            start[pos] = 0;
+                    }
+                } while (start[0] < v.second[0]);
+            }
+            return ar;
+        }
+
+        template<typename T> iarchive & call_serialize(iarchive & ar, std::string const & p, T & v) { 
+            return serialize(ar, p, v); 
+        }
+        template<typename T> oarchive & call_serialize(oarchive & ar, std::string const & p, T const & v) { 
+            return serialize(ar, p, v); 
+        }
+        template <typename T> class pvp {
+            public:
+                pvp(std::string const & p, T v): _p(p), _v(v) {}
+                pvp(pvp<T> const & c): _p(c._p), _v(c._v) {}
+                template<typename A> A & serialize(A & ar) const {
+                    return call_serialize(ar, _p, const_cast<typename boost::add_reference<T>::type>(_v));
+                }
+            private:
+                std::string _p;
+                T _v;
+        };
+
+        template <typename T> iarchive & operator>> (iarchive & ar, pvp<T> const & v) { return v.serialize(ar); }
+        template <typename T> oarchive & operator<< (oarchive & ar, pvp<T> const & v) { return v.serialize(ar); }
+    }
+
+    template <typename T> typename boost::disable_if<typename boost::mpl::and_<
+          typename boost::is_same<typename boost::remove_cv<typename boost::remove_all_extents<T>::type>::type, char>::type
+        , typename boost::is_array<T>::type
+    >::type, hdf5::pvp<T &> >::type make_pvp(std::string const & p, T & v) {
+        return hdf5::pvp<T &>(p, v);
     }
     template <typename T> typename boost::disable_if<typename boost::mpl::and_<
           typename boost::is_same<typename boost::remove_cv<typename boost::remove_all_extents<T>::type>::type, char>::type
         , typename boost::is_array<T>::type
-    >::type, hdf5::detail::pvp<T &> >::type make_pvp(std::string const & p, T & v) {
-        return hdf5::detail::pvp<T &>(p, v);
-    }
-    template <typename T> typename boost::disable_if<typename boost::mpl::and_<
-          typename boost::is_same<typename boost::remove_cv<typename boost::remove_all_extents<T>::type>::type, char>::type
-        , typename boost::is_array<T>::type
-    >::type, hdf5::detail::pvp<T const &> >::type make_pvp(std::string const & p, T const & v) {
-        return hdf5::detail::pvp<T const &>(p, v);
+    >::type, hdf5::pvp<T const &> >::type make_pvp(std::string const & p, T const & v) {
+        return hdf5::pvp<T const &>(p, v);
     }
     template <typename T> typename boost::enable_if<typename boost::mpl::and_<
           typename boost::is_same<typename boost::remove_cv<typename boost::remove_all_extents<T>::type>::type, char>::type
         , typename boost::is_array<T>::type
-    >::type, hdf5::detail::pvp<std::string const> >::type make_pvp(std::string const & p, T const & v) {
-        return hdf5::detail::pvp<std::string const>(p, v);
+    >::type, hdf5::pvp<std::string const> >::type make_pvp(std::string const & p, T const & v) {
+        return hdf5::pvp<std::string const>(p, v);
     }
-    #define HDF5_MAKE_PVP(ptr_type, arg_type)                                                                                                              \
-        template <typename T> hdf5::detail::pvp<std::pair<ptr_type, std::vector<std::size_t> > > make_pvp(std::string const & p, arg_type v, std::size_t s) { \
-            return hdf5::detail::pvp<std::pair<ptr_type, std::vector<std::size_t> > >(p, std::make_pair(&*v, std::vector<std::size_t>(1, s)));             \
-        }                                                                                                                                                  \
-        template <typename T> hdf5::detail::pvp<std::pair<ptr_type, std::vector<std::size_t> > > make_pvp(std::string const & p, arg_type v, std::vector<std::size_t> const & s) { \
-            return hdf5::detail::pvp<std::pair<ptr_type, std::vector<std::size_t> > >(p, std::make_pair(&*v, s));                                          \
+
+    #define HDF5_MAKE_PVP(ptr_type, arg_type)                                                                                                               \
+        template <typename T> hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > > make_pvp(std::string const & p, arg_type v, std::size_t s) {       \
+            return hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > >(p, std::make_pair(&*v, std::vector<std::size_t>(1, s)));                      \
+        }                                                                                                                                                   \
+        template <typename T> hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > > make_pvp(                                                          \
+            std::string const & p, arg_type v, std::vector<std::size_t> const & s                                                                           \
+        ) {                                                                                                                                                 \
+            return hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > >(p, std::make_pair(&*v, s));                                                   \
         }
     HDF5_MAKE_PVP(T *, T *)
     HDF5_MAKE_PVP(T *, boost::shared_ptr<T> &)
@@ -1209,5 +1212,4 @@ typedef boost::numeric::ublas::matrix<double,boost::numeric::ublas::column_major
     HDF5_MAKE_PVP(T const *, boost::scoped_ptr<T> const &)
     #undef HDF5_MAKE_PVP
 }
-#endif
 #endif

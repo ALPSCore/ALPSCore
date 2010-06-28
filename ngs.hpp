@@ -645,7 +645,7 @@ namespace alps {
             static Parameters make_alps_parameters(parameters_type const & s) {
                 Parameters p;
                 for (parameters_type::const_iterator it = s.begin(); it != s.end(); ++it)
-// TODO: why does static_cast<std::string>(it->second) not word?
+// TODO: why does static_cast<std::string>(it->second) not work?
                     p.push_back(it->first, it->second.operator std::string());
                 return p;
             }
