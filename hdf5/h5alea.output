@@ -1,0 +1,20 @@
+Sign: 1 +/- 0; tau = 0
+    bin #1   : 10000    entries: error = 0
+    bin #2   : 5000     entries: error = 0
+    bin #3   : 2500     entries: error = 0
+    bin #4   : 1250     entries: error = 0
+    bin #5   : 625      entries: error = 0
+    bin #6   : 312      entries: error = 0
+    bin #7   : 156      entries: error = 0
+Test: 0.501827 +/- 0.00289227; sign in observable "Sign"
+Sign * Test: 0.501827 +/- 0.00289
+Sign: 1 +/- 0; tau = 0
+    bin #1   : 10000    entries: error = 0
+    bin #2   : 5000     entries: error = 0
+    bin #3   : 2500     entries: error = 0
+    bin #4   : 1250     entries: error = 0
+    bin #5   : 625      entries: error = 0
+    bin #6   : 312      entries: error = 0
+    bin #7   : 156      entries: error = 0
+Test: 0.501827 +/- 0.00289227; sign in observable "Sign"
+Sign * Test: 0.501827 +/- 0.00289
