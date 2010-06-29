@@ -57,7 +57,7 @@ void rng_helper::init(const Parameters& p) {
   seed = static_cast<uint32_t>(p["WORKER_SEED"]);
   disorder_seed = static_cast<uint32_t>(p["DISORDER_SEED"]);
   alps::pseudo_des inigen(seed);
-  for (int r = 0; r < engines_.size(); ++r) {
+  for (unsigned int r = 0; r < engines_.size(); ++r) {
     engines_[r]->seed(inigen);
   }
   Disorder::seed(disorder_seed);
@@ -66,7 +66,7 @@ void rng_helper::init(const Parameters& p) {
 void rng_helper::load(IDump& dp) {
   std::string state;
   dp >> seed >> disorder_seed;
-  for (int r = 0; r < engines_.size(); ++r) {
+  for (unsigned int r = 0; r < engines_.size(); ++r) {
     dp >> state;
     std::stringstream rngstream(state);
     engines_[r]->read_all(rngstream);
@@ -77,7 +77,7 @@ void rng_helper::load(IDump& dp) {
 void rng_helper::save(ODump& dp) const {
   dp << seed << disorder_seed;
   std::ostringstream rngstream;
-  for (int r = 0; r < engines_.size(); ++r) {
+  for (unsigned int r = 0; r < engines_.size(); ++r) {
     engines_[r]->write_all(rngstream);
     dp << rngstream.str();
   }

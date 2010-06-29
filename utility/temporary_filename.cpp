@@ -23,8 +23,7 @@
 namespace alps {
   std::string temporary_filename(std::string name)
   {
-    static int cnt=0;
-	name +=boost::lexical_cast<std::string>(++cnt)+"XXXXXX";
+	name +="XXXXXX";
 
 #ifdef BOOST_MSVC
 	name = _mktemp(const_cast<char*>(name.c_str()));
