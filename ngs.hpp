@@ -130,6 +130,12 @@ namespace alps {
                 boost::apply_visitor(visitor, *this);
                 return visitor.value;
             }
+
+            operator std::string() const {
+                detail::mcparamvalue_reader<std::string> visitor;
+                boost::apply_visitor(visitor, *this);
+                return visitor.value;
+            }
     };
 
     class mcparams : public std::map<std::string, mcparamvalue> {
