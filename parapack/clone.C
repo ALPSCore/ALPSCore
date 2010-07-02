@@ -399,13 +399,19 @@ void clone_mpi::save() const{
 void clone_mpi::serialize(hdf5::iarchive& ar) {
   ar >> make_pvp("parameters", params_)
      >> make_pvp("log/alps", info_);
-  load_observable(ar, clone_id_, work_.rank(), measurements_);
+  if (work_.size() == 1)
+    load_observable(ar, clone_id_, measurements_);
+  else
+    load_observable(ar, clone_id_, work_.rank(), measurements_);
 }
 
 void clone_mpi::serialize(hdf5::oarchive& ar) const {
   ar << make_pvp("parameters", params_)
      << make_pvp("log/alps", info_);
-  save_observable(ar, clone_id_, work_.rank(), measurements_);
+  if (work_.size() == 1)
+    save_observable(ar, clone_id_, measurements_);
+  else
+    save_observable(ar, clone_id_, work_.rank(), measurements_);
 }
 
 void clone_mpi::output() const{
