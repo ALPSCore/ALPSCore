@@ -69,10 +69,17 @@ int start(int argc, char **argv) {
 
     option opt(argc, argv);
     int ret;
-    if (!opt.use_mpi)
-      ret = start_sgl(argc, argv);
-    else
-      ret = start_mpi(argc, argv);
+    if (opt.jobfiles.size() == 0) {
+      if (!opt.use_mpi)
+        ret = run_sequential(argc, argv);
+      else
+        ret = run_sequential_mpi(argc, argv);
+    } else {
+      if (!opt.use_mpi)
+        ret = start_sgl(argc, argv);
+      else
+        ret = start_mpi(argc, argv);
+    }
     return ret;
 
   #ifndef BOOST_NO_EXCEPTIONS
@@ -287,19 +294,7 @@ int run_sequential(int argc, char **argv) {
 #endif
 
   alps::ParameterList parameterlist;
-  switch (argc) {
-  case 1:
-    std::cin >> parameterlist;
-    break;
-  case 2: {
-    boost::filesystem::ifstream is(argv[1]);
-    is >> parameterlist;
-    break;
-  }
-  default:
-    boost::throw_exception(std::invalid_argument(
-      "Usage: " + std::string(argv[0]) + " [paramfile]"));
-  }
+  std::cin >> parameterlist;
 
 #ifdef _OPENMP
   // set default number of threads to 1
@@ -412,29 +407,27 @@ int start_sgl(int argc, char** argv) {
     //
 
     if (opt.evaluate_only) {
-      if (is_master()) {
-        std::clog << logger::header() << "starting evaluation on " << alps::hostname() << std::endl;
-        int t = load_filename(file, file_in_str, file_out_str);
-        if (t == 1) {
-          file_in = complete(boost::filesystem::path(file_in_str), basedir);
-          file_out = complete(boost::filesystem::path(file_out_str), basedir);
-          std::string simname;
-          load_tasks(file_in, file_out, basedir, /* check_parameter = */ false,
-                                simname, tasks);
-          std::clog << "  master input file  = " << file_in.native_file_string() << std::endl
-                    << "  master output file = " << file_out.native_file_string() << std::endl;
-          print_taskinfo(std::clog, tasks);
-          #pragma omp parallel for
-          for (int t = 0; t < tasks.size(); ++t) {
-            tasks[t].evaluate();
-          }
-        } else {
-          // process one task
-          task t(file);
-          t.evaluate();
+      std::clog << logger::header() << "starting evaluation on " << alps::hostname() << std::endl;
+      int t = load_filename(file, file_in_str, file_out_str);
+      if (t == 1) {
+        file_in = complete(boost::filesystem::path(file_in_str), basedir);
+        file_out = complete(boost::filesystem::path(file_out_str), basedir);
+        std::string simname;
+        load_tasks(file_in, file_out, basedir, /* check_parameter = */ false,
+                   simname, tasks);
+        std::clog << "  master input file  = " << file_in.native_file_string() << std::endl
+                  << "  master output file = " << file_out.native_file_string() << std::endl;
+        print_taskinfo(std::clog, tasks);
+        #pragma omp parallel for
+        for (int t = 0; t < tasks.size(); ++t) {
+          tasks[t].evaluate();
         }
-        std::clog << logger::header() << "all tasks evaluated\n";
+      } else {
+        // process one task
+        task t(file);
+        t.evaluate();
       }
+      std::clog << logger::header() << "all tasks evaluated\n";
       return 0;
     }
 
@@ -442,56 +435,54 @@ int start_sgl(int argc, char** argv) {
     // rum simulations
     //
 
-    if (is_master()) {
-      std::clog << logger::header() << "starting scheduler on " << alps::hostname() << std::endl;
+    std::clog << logger::header() << "starting scheduler on " << alps::hostname() << std::endl;
 
-      if (load_filename(file, file_in_str, file_out_str) != 1) {
-        std::cerr << "invalid master file: " << file.native_file_string() << std::endl;
-        process.halt();
-      }
-      file_in = complete(boost::filesystem::path(file_in_str), basedir);
-      file_out = complete(boost::filesystem::path(file_out_str), basedir);
-      file_term = complete(boost::filesystem::path(regex_replace(file_out_str,
-                    boost::regex("\\.out\\.xml$"), ".term")), basedir);
-
-      master_lock.set_file(file_out);
-      master_lock.lock(0);
-      if (!master_lock.locked()) {
-        std::cerr << "Error: master file (" << file_out.native_file_string()
-                  << ") is being used by other scheduler.  Skip this file.\n";
-        continue;
-      }
-
-      std::clog << "  master input file  = " << file_in.native_file_string() << std::endl
-                << "  master output file = " << file_out.native_file_string() << std::endl
-                << "  termination file   = " << file_term.native_file_string() << std::endl
-                << "  total number of thread(s) = " << num_total_threads << std::endl
-                << "  thread(s) per clone       = " << opt.threads_per_clone << std::endl
-                << "  number of thread group(s) = " << num_groups << std::endl
-                << "  check parameter = " << (opt.check_parameter ? "yes" : "no") << std::endl
-                << "  auto evaluation = " << (opt.auto_evaluate ? "yes" : "no") << std::endl;
-      if (opt.has_time_limit)
-        std::clog << "  time limit = " << opt.time_limit.total_seconds() << " seconds\n";
-      else
-        std::clog << "  time limit = unlimited\n";
-      std::clog << "  interval between checkpointing  = "
-                << opt.checkpoint_interval.total_seconds() << " seconds\n"
-                << "  interval between progress report = "
-                << opt.report_interval.total_seconds() << " seconds\n";
-
-      load_tasks(file_in, file_out, basedir, opt.check_parameter, simname, tasks);
-      if (simname != "")
-        std::clog << "  simulation name = " << simname << std::endl;
-      BOOST_FOREACH(task const& t, tasks) {
-        if (t.status() == task_status::NotStarted || t.status() == task_status::Suspended ||
-            t.status() == task_status::Finished)
-          task_queue.push(task_queue_t::value_type(t));
-        if (t.status() == task_status::Finished || t.status() == task_status::Completed)
-          ++num_finished_tasks;
-      }
-      print_taskinfo(std::clog, tasks);
-      if (tasks.size() == 0) std::clog << "Warning: no tasks found\n";
+    if (load_filename(file, file_in_str, file_out_str) != 1) {
+      std::cerr << "invalid master file: " << file.native_file_string() << std::endl;
+      process.halt();
     }
+    file_in = complete(boost::filesystem::path(file_in_str), basedir);
+    file_out = complete(boost::filesystem::path(file_out_str), basedir);
+    file_term = complete(boost::filesystem::path(regex_replace(file_out_str,
+                  boost::regex("\\.out\\.xml$"), ".term")), basedir);
+
+    master_lock.set_file(file_out);
+    master_lock.lock(0);
+    if (!master_lock.locked()) {
+      std::cerr << "Error: master file (" << file_out.native_file_string()
+                << ") is being used by other scheduler.  Skip this file.\n";
+      continue;
+    }
+
+    std::clog << "  master input file  = " << file_in.native_file_string() << std::endl
+              << "  master output file = " << file_out.native_file_string() << std::endl
+              << "  termination file   = " << file_term.native_file_string() << std::endl
+              << "  total number of thread(s) = " << num_total_threads << std::endl
+              << "  thread(s) per clone       = " << opt.threads_per_clone << std::endl
+              << "  number of thread group(s) = " << num_groups << std::endl
+              << "  check parameter = " << (opt.check_parameter ? "yes" : "no") << std::endl
+              << "  auto evaluation = " << (opt.auto_evaluate ? "yes" : "no") << std::endl;
+    if (opt.has_time_limit)
+      std::clog << "  time limit = " << opt.time_limit.total_seconds() << " seconds\n";
+    else
+      std::clog << "  time limit = unlimited\n";
+    std::clog << "  interval between checkpointing  = "
+              << opt.checkpoint_interval.total_seconds() << " seconds\n"
+              << "  interval between progress report = "
+              << opt.report_interval.total_seconds() << " seconds\n";
+
+    load_tasks(file_in, file_out, basedir, opt.check_parameter, simname, tasks);
+    if (simname != "")
+      std::clog << "  simulation name = " << simname << std::endl;
+    BOOST_FOREACH(task const& t, tasks) {
+      if (t.status() == task_status::NotStarted || t.status() == task_status::Suspended ||
+          t.status() == task_status::Finished)
+        task_queue.push(task_queue_t::value_type(t));
+      if (t.status() == task_status::Finished || t.status() == task_status::Completed)
+        ++num_finished_tasks;
+    }
+    print_taskinfo(std::clog, tasks);
+    if (tasks.size() == 0) std::clog << "Warning: no tasks found\n";
 
     #pragma omp parallel num_threads(num_groups)
     {
@@ -677,25 +668,16 @@ int run_sequential_mpi(int argc, char** argv) {
   try {
 #endif
 
+#ifdef _OPENMP
+  // set default number of threads to 1
+  char* p = getenv("OMP_NUM_THREADS");
+  if (p == 0) omp_set_num_threads(1);
+#endif
+
   boost::mpi::environment env(argc, argv);
   boost::mpi::communicator world;
-
   alps::ParameterList parameterlist;
-  if (is_master()) {
-    switch (argc) {
-    case 1:
-      std::cin >> parameterlist;
-      break;
-    case 2: {
-      boost::filesystem::ifstream is(argv[1]);
-      is >> parameterlist;
-      break;
-    }
-    default:
-      boost::throw_exception(std::invalid_argument(
-        "Usage: " + std::string(argv[0]) + " [paramfile]"));
-    }
-  }
+  if (world.rank() == 0) std::cin >> parameterlist;
   broadcast(world, parameterlist, 0);
 
   for (int i = 0; i < parameterlist.size(); ++i) {
@@ -707,7 +689,7 @@ int run_sequential_mpi(int argc, char** argv) {
     if (!p.defined("SEED")) p["SEED"] = static_cast<unsigned int>(time(0));
     p["WORKER_SEED"] = static_cast<unsigned int>(p["SEED"]) ^ (world.rank() << 11);
     p["DISORDER_SEED"] = p["SEED"];
-    if (is_master()) std::cout << "[input parameters]\n" << p;
+    if (world.rank() == 0) std::cout << "[input parameters]\n" << p;
     std::vector<alps::ObservableSet> obs;
     boost::shared_ptr<alps::parapack::abstract_worker>
       worker = parallel_worker_factory::make_worker(world, p);
@@ -723,7 +705,7 @@ int run_sequential_mpi(int argc, char** argv) {
         thermalized = true;
       }
     }
-    // if (is_master()) {
+    // if (world.rank() == 0) {
     //   std::vector<alps::ObservableSet> obs_slave;
     //   for (int p = 1; p < world.size(); ++p) {
     //     world.recv(p, 0, obs_slave);
@@ -732,7 +714,7 @@ int run_sequential_mpi(int argc, char** argv) {
     // } else {
     //   world.send(0, 0, obs);
     //}
-    if (is_master()) {
+    if (world.rank() == 0) {
       std::vector<alps::ObservableSet> obs_out;
       boost::shared_ptr<alps::parapack::abstract_evaluator>
         evaluator = evaluator_factory::make_evaluator(p);
