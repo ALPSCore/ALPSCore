@@ -125,17 +125,25 @@ namespace alps {
                 return *this;
             }
 
-            template <typename T> operator T() const {
-                detail::mcparamvalue_reader<T> visitor;
-                boost::apply_visitor(visitor, *this);
-                return visitor.value;
-            }
-
-            operator std::string() const {
-                detail::mcparamvalue_reader<std::string> visitor;
-                boost::apply_visitor(visitor, *this);
-                return visitor.value;
-            }
+            #define ALPS_NGS_CAST_OPERATOR(T)                                                                                                              \
+                operator T () const {                                                                                                                      \
+                    detail::mcparamvalue_reader< T > visitor;                                                                                              \
+                    boost::apply_visitor(visitor, *this);                                                                                                  \
+                    return visitor.value;                                                                                                                  \
+                }
+            ALPS_NGS_CAST_OPERATOR(boost::int8_t)
+            ALPS_NGS_CAST_OPERATOR(boost::uint8_t)
+            ALPS_NGS_CAST_OPERATOR(boost::int16_t)
+            ALPS_NGS_CAST_OPERATOR(boost::uint16_t)
+            ALPS_NGS_CAST_OPERATOR(boost::int32_t)
+            ALPS_NGS_CAST_OPERATOR(boost::uint32_t)
+            ALPS_NGS_CAST_OPERATOR(boost::int64_t)
+            ALPS_NGS_CAST_OPERATOR(boost::uint64_t)
+            ALPS_NGS_CAST_OPERATOR(float)
+            ALPS_NGS_CAST_OPERATOR(double)
+            ALPS_NGS_CAST_OPERATOR(std::size_t)
+            ALPS_NGS_CAST_OPERATOR(std::string)
+            #undef ALPS_NGS_CAST_OPERATOR
     };
 
     class mcparams : public std::map<std::string, mcparamvalue> {
