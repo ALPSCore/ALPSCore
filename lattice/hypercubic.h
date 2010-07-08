@@ -183,8 +183,6 @@ public:
     std::fill(coordinates(begin).first,coordinates(begin).second,0);
     if (coordinates(end).first != coordinates(end).second)
       std::fill(coordinates(end).first+1,coordinates(end).second,0);
-    else
-      std::cerr << "Strange extent: " << write_vector(extent_) << "\n";
     return std::make_pair(cell_iterator(*this,begin),cell_iterator(*this,end));
   }
 
