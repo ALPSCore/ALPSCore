@@ -3,7 +3,8 @@
 * ALPS Project Applications
 *
 * Copyright (C) 1994-2010 by Matthias Troyer <troyer@comp-phys.org>,
-*                            Andreas Honecker <ahoneck@uni-goettingen.de>
+*                            Andreas Honecker <ahoneck@uni-goettingen.de>,
+*                            Ryo IGARASHI <rigarash@hosi.phys.s.u-tokyo.ac.jp>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -68,6 +69,10 @@ public:
   
   hamiltonian_matrix (Parameters const& parms);
   void set_parameters(Parameters const& p) { parms << p ; built_basis_=false; built_matrix_=false;}
+  basis_states_type& states_vector() { if (!built_basis_) build_basis(); return states; }
+  const basis_states_type& states_vector() const {if (!built_basis_) build_basis(); return states; }
+  bloch_basis_states_type& bloch_states_vector() { if (!built_basis_) build_basis(); return bloch_states; }
+  const bloch_basis_states_type& bloch_states_vector() const { if (!built_basis_) build_basis(); return bloch_states; }
   matrix_type& matrix() {if (!built_matrix_) build(); return matrix_;}
   const matrix_type& matrix() const {if (!built_matrix_) build(); return matrix_;}
   std::size_t dimension() const { if (!built_basis_) build_basis(); return uses_translation_invariance() ? bloch_states.size() : states.size();}
@@ -189,11 +194,11 @@ public:
   template <class V, class W> 
   void apply_operator(const std::string& name, const V& x, W& y) const;
 
+  bool uses_translation_invariance() const { return parms.defined("TOTAL_MOMENTUM") && !static_cast<std::string>(parms["TOTAL_MOMENTUM"]).empty();}
 
 protected:
   void build() const;
   void build_basis() const;
-  bool uses_translation_invariance() const { return parms.defined("TOTAL_MOMENTUM") && !static_cast<std::string>(parms["TOTAL_MOMENTUM"]).empty();}
 
   mutable basis_states_type states;
   mutable bloch_basis_states_type bloch_states;
