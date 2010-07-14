@@ -89,7 +89,7 @@ void MasterScheduler::set_new_jobfile(const boost::filesystem::path& jobfilename
   tasks.resize(taskfiles.size());
   sim_results.resize(taskfiles.size());
 
-  std::cerr << "parsing task files ... \n";
+  std::cout << "parsing task files ... \n";
   for (unsigned int i=0; i<taskfiles.size(); i++) {
 #ifndef BOOST_NO_EXCEPTIONS
     try {
@@ -98,7 +98,7 @@ void MasterScheduler::set_new_jobfile(const boost::filesystem::path& jobfilename
       if (tasks[i] && 
           taskstatus[i]!= TaskFinished && tasks[i]->finished_notime())  {
         tasks[i]->start();
-        std::cerr << "Task " << i+1 << " is actually finished.\n";
+        std::cout << "Task " << i+1 << " is actually finished.\n";
         finish_task(i);
       }
 
@@ -106,8 +106,8 @@ void MasterScheduler::set_new_jobfile(const boost::filesystem::path& jobfilename
     }
     catch (const std::runtime_error& err) // file does not exist
     {
-      std::cerr << err.what() << "\n";
-      std::cerr  << "Cannot open simulation file " << taskfiles[i].in.string() 
+      std::cout << err.what() << "\n";
+      std::cout  << "Cannot open simulation file " << taskfiles[i].in.string() 
                  << ".\n";
       tasks[i]=0;
       taskstatus[i] = TaskNotExisting;
@@ -232,7 +232,7 @@ void MasterScheduler::checkpoint()
             << start_tag("INPUT") 
             << attribute("file",task_path)
             << end_tag() << end_tag();
-        std::cerr  << "Checkpointing Simulation " << i+1 << "\n";
+        std::cout  << "Checkpointing Simulation " << i+1 << "\n";
         if (tasks[i]!=0 && boost::filesystem::complete(taskfiles[i].out,dir).string()!=taskfiles[i].in.string()) {          
           tasks[i]->checkpoint(boost::filesystem::complete(taskfiles[i].out,dir),write_xml);
           taskfiles[i].in=boost::filesystem::complete(taskfiles[i].out,dir);
@@ -245,7 +245,7 @@ void MasterScheduler::checkpoint()
         out << start_tag("TASK") << attribute("status","finished")
             << start_tag("INPUT") << attribute("file",taskfiles[i].in.native_file_string())
             << end_tag() << end_tag();
-        std::cerr  << "Task# " << i+1 << " does not exist\n";
+        std::cout  << "Task# " << i+1 << " does not exist\n";
       } 
       else {
         out << start_tag("TASK") 
@@ -253,7 +253,7 @@ void MasterScheduler::checkpoint()
             << start_tag("INPUT") << attribute("file",task_path)
             << end_tag() << end_tag();
         if(theTask != tasks[i]) {
-          std::cerr  << "Checkpointing Simulation " << i+1 << "\n";
+          std::cout  << "Checkpointing Simulation " << i+1 << "\n";
           tasks[i]->checkpoint(boost::filesystem::complete(taskfiles[i].out,dir),write_xml);
                 taskfiles[i].in=boost::filesystem::complete(taskfiles[i].out,dir);
         }
@@ -262,7 +262,7 @@ void MasterScheduler::checkpoint()
       }
     }
     if(local_sim>=0) {
-      std::cerr  << "Checkpointing Simulation " << local_sim+1 << "\n";
+      std::cout  << "Checkpointing Simulation " << local_sim+1 << "\n";
       tasks[local_sim]->checkpoint(boost::filesystem::complete(taskfiles[local_sim].out,dir),write_xml);
       taskfiles[local_sim].in=boost::filesystem::complete(taskfiles[local_sim].out,dir);
     }
@@ -282,7 +282,7 @@ void MasterScheduler::finish_task(int i)
     return;
   tasks[i]->halt();
   taskstatus[i] = TaskHalted;
-  std::cerr  << "Halted Simulation " << i+1 << "\n";
+  std::cout  << "Halted Simulation " << i+1 << "\n";
   if (make_summary) {
     sim_results[i] = tasks[i]->get_summary();
   }

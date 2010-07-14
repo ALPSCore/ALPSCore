@@ -108,31 +108,31 @@ public:
     void save_override(const boost::archive::version_type & t, int){
       if (!compatible_) {  // upto 255 versions
         // note:t.t resolves borland ambguity
-        uint16_t x = t.t;
+        uint16_t x = t;
         * this->This() << x;
       }
     }
     void save_override(const boost::archive::class_id_type & t, int){
       if (!compatible_) {   // upto 32K classes
-        int_least16_t x = t.t;
+        int_least16_t x = t;
         * this->This() << x;
       }
     }
     void save_override(const boost::archive::class_id_reference_type & t, int){
       if (!compatible_) {  // upto 32K classes
-        int_least16_t x = t.t;
+        int_least16_t x = t;
         * this->This() << x;
       }
     }
     void save_override(const boost::archive::object_id_type & t, int){
       if (!compatible_) {  // upto 2G objects
-        uint_least32_t x = t.t;
+        uint_least32_t x = t;
         * this->This() << x;
       }
     }
     void save_override(const boost::archive::object_reference_type & t, int){
         // upto 2G objects
-        uint_least32_t x = t.t;
+        uint_least32_t x = t;
         * this->This() << x;
     }
     void save_override(const boost::archive::tracking_type & t, int){
@@ -235,7 +235,7 @@ public:
       if (!compatible_) {   // upto 32K classes
         int_least16_t x;
         * this->This() >> x;
-        t = boost::archive::class_id_reference_type(x);
+        t = boost::archive::class_id_reference_type(boost::archive::class_id_type(x));
       }
     }
     void load_override(boost::archive::object_id_type & t, int){
@@ -249,7 +249,7 @@ public:
       if (!compatible_) {   // upto 2G objects
         uint_least32_t x;
         * this->This() >> x;
-        t = boost::archive::object_reference_type(x);
+        t = boost::archive::object_reference_type(boost::archive::object_id_type(x));
       }
     }
     void load_override(boost::archive::tracking_type & t, int){

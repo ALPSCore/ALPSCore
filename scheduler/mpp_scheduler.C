@@ -72,7 +72,7 @@ int MPPScheduler::run()
 
   ptime last_checkpoint=second_clock::local_time();
   if(time_limit>0.)
-      std::cerr << "Will run " << time_limit << " seconds.\n";
+      std::cout << "Will run " << time_limit << " seconds.\n";
   determine_active();
   assign_processes(free);
 
@@ -97,7 +97,7 @@ int MPPScheduler::run()
           check_tasks(free);
         freen=free.size();
       } 
-      std::cerr  << "Assigning " << free.size() << " processes\n" ;
+      std::cout  << "Assigning " << free.size() << " processes\n" ;
       assign_processes(free);
     } 
     total_free=free.size();
@@ -124,24 +124,24 @@ int MPPScheduler::run()
         last_checkpoint+seconds(long(checkpoint_time)))&&
        ((time_limit<=0)||(second_clock::local_time()<end_time))) {
         // make regular checkpoints if not yet finished
-      std::cerr  << "Making regular checkpoint.\n" ;
+      std::cout  << "Making regular checkpoint.\n" ;
       last_checkpoint = second_clock::local_time();
       checkpoint();
-      std::cerr  << "Done with checkpoint.\n" ;
+      std::cout  << "Done with checkpoint.\n" ;
     }
   }
   
   checkpoint();
   if(active.size()) {
     if(all_done)
-      std::cerr  << "Remaining " << active.size() << " tasks need more than " 
+      std::cout  << "Remaining " << active.size() << " tasks need more than " 
                  << free.size() << " processes.\n";
     else
-      std::cerr  << "Reached time limit.\n" ;
+      std::cout  << "Reached time limit.\n" ;
     return 1;
   }
   else
-    std::cerr  << "Finished with all tasks.\n" ;
+    std::cout  << "Finished with all tasks.\n" ;
   return 0;
 }
 
@@ -183,7 +183,7 @@ void MPPScheduler::assign_processes(ProcessList& free)
 
       // don't use local process if no new tasks are started
       if( first_new<0 && free_processes && free[0].local()) {
-        std::cerr  << "No work for master process\n" ;
+        std::cout  << "No work for master process\n" ;
         free_processes--;
         free.erase(free.begin());
       }
@@ -234,13 +234,13 @@ void MPPScheduler::assign_processes(ProcessList& free)
           std::copy(free.begin(),free.begin()+w.size(),w.begin());
           if(active[i].where.size()) {
             // add more processes
-            std::cerr  << "Adding " << w.size() << " processes to simulation " << active[i].number+1 << "\n";
+            std::cout  << "Adding " << w.size() << " processes to simulation " << active[i].number+1 << "\n";
             tasks[active[i].number]->add_processes(w);
             active[i].next_check=second_clock::local_time(); // need new estimated
             free.erase(free.begin(),free.begin()+w.size());
           }
         else if(create_task(i,w)) {
-          std::cerr  << "Created a new simulation: " << active[i].number+1 
+          std::cout  << "Created a new simulation: " << active[i].number+1 
                      << " on " <<  more_processes[i] << " processes\n";
           free.erase(free.begin(),free.begin()+more_processes[i]);
         }
@@ -250,7 +250,7 @@ void MPPScheduler::assign_processes(ProcessList& free)
       }
       
       if(first_new>=0) {
-        std::cerr << "Creating a new simulation: "
+        std::cout << "Creating a new simulation: "
                   << active[first_new].number+1
                   << " on " << w1.size()  << " processes\n";
 
@@ -264,11 +264,11 @@ void MPPScheduler::assign_processes(ProcessList& free)
       }
 
       if((free_processes==free.size())&&(free_processes!=0)) {
-        std::cerr << "No work for " << free_processes << ".\n";
+        std::cout << "No work for " << free_processes << ".\n";
         free_processes=0;
       }
     } 
-  std::cerr << "All processes have been assigned\n";
+  std::cout << "All processes have been assigned\n";
 }
 
 
@@ -298,13 +298,13 @@ int MPPScheduler::check_tasks(ProcessList& free)
          (more_time > max_check_time ? max_check_time : more_time));
       active[i].next_check=second_clock::local_time()+seconds(long(more_time));
       if(!simfinished)
-        std::cerr  << "Checking if Simulation " << active[i].number+1
+        std::cout  << "Checking if Simulation " << active[i].number+1
                    << " is finished: "
                    << "not yet, next check in " << int(more_time)
                    << " seconds ( "
                    << static_cast<int>(100.*percentage) << "% done).\n";
       else { 
-        std::cerr  << "Checking if Simulation " << active[i].number+1
+        std::cout  << "Checking if Simulation " << active[i].number+1
                    << " is finished: "
                    << "Finished\n";
         running_tasks--;
@@ -366,9 +366,9 @@ void MPPScheduler::determine_active()
   int j=0;
   for(int i=0;i<tasks.size();i++) {
     if(taskstatus[i]==TaskFinished)
-        std::cerr  << "Simulation " << i+1 << " finished.\n";
+        std::cout  << "Simulation " << i+1 << " finished.\n";
     else if(taskstatus[i]==TaskNotExisting)
-        std::cerr  << "Simulation " << i+1 << " does not exist.\n";
+        std::cout  << "Simulation " << i+1 << " does not exist.\n";
     else if(taskstatus[i]==TaskNotStarted || taskstatus[i]==TaskRunning ||
             (taskstatus[i]==TaskHalted && !tasks[i]->finished_notime()))
       { // create new copy in memory (new start)

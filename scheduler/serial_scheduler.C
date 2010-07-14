@@ -68,16 +68,16 @@ int SerialScheduler::run()
     if(time_limit>0. && second_clock::local_time()>end_time)
       return 1;
     if(taskstatus[i]==TaskFinished)
-      std::cerr << "Task " << i+1 << " finished.\n";
+      std::cout << "Task " << i+1 << " finished.\n";
     else if(taskstatus[i]==TaskNotExisting)
-      std::cerr  << "Task " << i+1 << " does not exist.\n";
+      std::cout  << "Task " << i+1 << " does not exist.\n";
     else if(taskstatus[i]==TaskNotStarted || taskstatus[i]==TaskRunning ||
             (taskstatus[i]==TaskHalted)) {
       int n=tasks[i]->cpus();
       if(n<1)
         boost::throw_exception(std::logic_error("at least one node required for a run!"));
       if(n>processes.size())
-        std::cerr  << "Task " << i+1 << " needs more nodes than available and will not run.\n";
+        std::cout  << "Task " << i+1 << " needs more nodes than available and will not run.\n";
       else {
         // create new Task in memory (new start)
         remake_task(processes,i);
@@ -89,7 +89,7 @@ int SerialScheduler::run()
     if(taskstatus[i]==TaskNotStarted || taskstatus[i]==TaskRunning || (taskstatus[i]==TaskHalted)) { 
       // do work with this Task
       taskstatus[i] = TaskRunning;
-      std::cerr  << "Starting task " << i+1 << ".\n";
+      std::cout  << "Starting task " << i+1 << ".\n";
       tasks[i]->start();
 
       task_time = second_clock::local_time();
@@ -107,7 +107,7 @@ int SerialScheduler::run()
         theTask->run();
           
         if(time_limit >0. && second_clock::local_time()>end_time) {
-          std::cerr << "Time limit exceeded\n";
+          std::cout << "Time limit exceeded\n";
           if (theTask->finished_notime())
             finish_task(i);
           else
@@ -117,7 +117,7 @@ int SerialScheduler::run()
         }
           
         if(second_clock::local_time()>next_check) {
-          std::cerr  << "Checking if it is finished: " << std::flush;
+          std::cout  << "Checking if it is finished: " << std::flush;
           double more_time=0;
           double percentage=0.;
           task_finished=theTask->finished(more_time,percentage);
@@ -126,24 +126,24 @@ int SerialScheduler::run()
           more_time= (more_time < min_check_time ? min_check_time :
                       (more_time > max_check_time ? max_check_time : more_time));
           next_check=second_clock::local_time()+seconds(int(more_time));
-          std::cerr  << "not yet, next check in " << int(more_time) << " seconds ( "
+          std::cout  << "not yet, next check in " << int(more_time) << " seconds ( "
             << static_cast<int>(100.*percentage) << "% done).\n";
         }
         if((!task_finished)&&(second_clock::local_time()>last_checkpoint+seconds(int(checkpoint_time)))) {
           // make regular checkpoints if not yet finished
-          std::cerr  << "Making regular checkpoint.\n";
+          std::cout  << "Making regular checkpoint.\n";
           checkpoint();
           last_checkpoint=second_clock::local_time();
-          std::cerr  << "Done with checkpoint.\n";
+          std::cout  << "Done with checkpoint.\n";
         }
       } while (!task_finished);
             
       finish_task(i);
-      std::cerr  << "This task took " << (second_clock::local_time()-task_time).total_seconds() << " seconds.\n";
+      std::cout  << "This task took " << (second_clock::local_time()-task_time).total_seconds() << " seconds.\n";
       checkpoint();
     }
   }
-  std::cerr << "Finished with everything.\n";
+  std::cout << "Finished with everything.\n";
   return 0;
 }
 

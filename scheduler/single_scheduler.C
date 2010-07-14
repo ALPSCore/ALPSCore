@@ -74,7 +74,7 @@ int SingleScheduler::run()
 {
   BOOST_ASSERT(theTask != 0);
   ptime task_time(second_clock::local_time());
-  std::cerr << "Starting task.\n";
+  std::cout << "Starting task.\n";
   
   theTask->start();
 
@@ -89,12 +89,12 @@ int SingleScheduler::run()
     theTask->run();
           
     if(time_limit >0. && second_clock::local_time()>end_time) {
-      std::cerr << "Time limit exceeded\n";
+      std::cout << "Time limit exceeded\n";
       break;
     }
           
     if(second_clock::local_time()>next_check) {
-      std::cerr  << "Checking if it is finished: " << std::flush;
+      std::cout  << "Checking if it is finished: " << std::flush;
       double more_time=0;
       double percentage=0.;
       task_finished=theTask->finished(more_time,percentage);
@@ -104,20 +104,18 @@ int SingleScheduler::run()
                   (more_time > max_check_time ? max_check_time : more_time));
       next_check=second_clock::local_time()+seconds(int(more_time));
       if(!task_finished)
-        std::cerr  << "not yet, next check in " << int(more_time) << " seconds ( "
+        std::cout  << "not yet, next check in " << int(more_time) << " seconds ( "
         << static_cast<int>(100.*percentage) << "% done).\n";
     }
     if((!task_finished)&&(second_clock::local_time()>last_checkpoint+seconds(int(checkpoint_time)))) {
       // make regular checkpoints if not yet finished
-      //std::cerr  << "Making regular checkpoint.\n";
       checkpoint();
       last_checkpoint=second_clock::local_time();
-      //std::cerr  << "Done with checkpoint.\n";
     }
   } while (!task_finished);
             
   theTask->halt();
-  std::cerr  << "This task took " << (second_clock::local_time()-task_time).total_seconds() << " seconds.\n";
+  std::cout  << "This task took " << (second_clock::local_time()-task_time).total_seconds() << " seconds.\n";
   return task_finished ? 0 : -1;
 }
 
@@ -126,9 +124,9 @@ SingleScheduler* start_single(const Factory& p, int argc, char** argv)
 {
   alps::comm_init(argc,argv,false);
   if (is_master()) {
-    p.print_copyright(std::cerr);
-    alps::scheduler::print_copyright(std::cerr);
-    alps::print_copyright(std::cerr);
+    p.print_copyright(std::cout);
+    alps::scheduler::print_copyright(std::cout);
+    alps::print_copyright(std::cout);
   }
   
   NoJobfileOptions opt;

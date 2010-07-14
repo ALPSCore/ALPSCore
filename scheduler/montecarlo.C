@@ -68,9 +68,9 @@ ResultType MCSimulation::get_summary() const
       theName = parms["SUMMARY_VARIABLE"];
     else
       theName = parms["ERROR_VARIABLE"];
-  std::cerr << "\nMaking summary for the observable " << theName << "\n";
+  std::cout << "\nMaking summary for the observable " << theName << "\n";
   if (theName.length() == 0) {
-    std::cerr << "cannot find the tag ERROR_VARIABLE in the parameter set\n"
+    std::cout << "cannot find the tag ERROR_VARIABLE in the parameter set\n"
               << "so summary can be made\n";
     boost::throw_exception(std::runtime_error("no variable name to make summary after"));
   }

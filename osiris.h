@@ -33,8 +33,6 @@
 
 #include <alps/osiris/comm.h>
 #include <alps/osiris/dump.h>
-#include <alps/osiris/archivedump.h>
-#include <alps/osiris/dumparchive.h>
 #include <alps/osiris/mpdump.h>
 #include <alps/osiris/process.h>
 #include <alps/osiris/xdrdump.h>

@@ -235,9 +235,9 @@ int start(int argc, char** argv, const Factory& p)
   Options opt(argc,argv);
   comm_init(argc,argv,opt.use_mpi);
   if (is_master() || !runs_parallel()) {
-    p.print_copyright(std::cerr);
-    alps::scheduler::print_copyright(std::cerr);
-    alps::print_copyright(std::cerr);
+    p.print_copyright(std::cout);
+    alps::scheduler::print_copyright(std::cout);
+    alps::print_copyright(std::cout);
   }
   
   int res=0;
@@ -276,18 +276,18 @@ int Scheduler::check_signals()
       
     case SignalHandler::USER1:
     case SignalHandler::USER2:
-      std::cerr << "Checkpointing...\n";
+      std::cout << "Checkpointing...\n";
       checkpoint();
       break;
       
     case SignalHandler::STOP:
-      std::cerr  << "Checkpointing and stopping...\n";
+      std::cout  << "Checkpointing and stopping...\n";
       checkpoint();
       sig.stopprocess(); // stop the process
       break;
 
     case SignalHandler::TERMINATE:
-      std::cerr  << "Checkpointing and exiting...\n";
+      std::cout  << "Checkpointing and exiting...\n";
       return SignalHandler::TERMINATE;
       
     default:
