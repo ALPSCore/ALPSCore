@@ -148,7 +148,7 @@ public:
     return map_.find(k)->second->value();
   }
 
-  /// \brief erase a parameter with a specific key (this takes O(N) time)
+   /// \brief erase a parameter with a specific key (this takes O(N) time)
   /// \param k the parameter key (name)
   void erase(key_type const& k) {
     map_type::iterator itr = map_.find(k);
@@ -166,6 +166,16 @@ public:
   /// \return if a parameter with the given name \a k exists, its value is returned, otherwise the default v
   value_type value_or_default(const key_type& k, const value_type& v) const {
     return defined(k) ? (*this)[k] : v;
+  }
+
+  /// \brief returns the value or a default
+  /// \param k the key (name) of the parameter
+  /// \param v the default value
+  /// \return if a parameter with the given name \a k exists, its value is returned, otherwise the default v
+  value_type required_value(const key_type& k) const {
+    if (!defined(k))
+      boost::throw_exception(std::runtime_error("parameter " + k + " not defined"));
+    return map_.find(k)->second->value();
   }
 
   /// an iterator pointing to the beginning of the parameters
