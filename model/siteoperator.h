@@ -216,12 +216,12 @@ template <class T>
 std::vector<boost::tuple<expression::Term<T>,SiteOperator> > alps::SiteOperator::templated_split(const Parameters& p) const
 {
   std::vector<boost::tuple<expression::Term<T>,SiteOperator> > terms;
-  Expression ex(term());
+  expression::Expression<T> ex(term());
   ex.flatten();
   ex.simplify();
   SiteBasisDescriptor<short> b;
-  for (typename Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
-    SiteOperatorSplitter<short> evaluator(b,site(),p);
+  for (typename expression::Expression<T>::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
+    SiteOperatorSplitter<short,T> evaluator(b,site(),p);
     expression::Term<T> term(*tit);
     term.partial_evaluate(evaluator);
     term.simplify();

@@ -250,12 +250,12 @@ template <class T, class I>
 std::vector<boost::tuple<expression::Term<T>,SiteOperator,SiteOperator> > alps::BondOperator::templated_split(SiteBasisDescriptor<I> const& b1, SiteBasisDescriptor<I> const& b2,const Parameters& p) const
 {
   std::vector<boost::tuple<expression::Term<T>,SiteOperator,SiteOperator> > terms;
-  Expression ex(term());
+  expression::Expression<T> ex(term());
   ex.flatten();
   ex.simplify();
 
-  for (typename Expression::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
-    BondOperatorSplitter<short> evaluator(b1,b2,source(),target(),p);
+  for (typename expression::Expression<T>::term_iterator tit = ex.terms().first; tit !=ex.terms().second; ++tit) {
+    BondOperatorSplitter<short,T> evaluator(b1,b2,source(),target(),p);
     expression::Term<T> term(*tit);
     term.partial_evaluate(evaluator);
     term.simplify();
