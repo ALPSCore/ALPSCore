@@ -338,7 +338,7 @@ namespace blas{
         
         void clear(){
             values_.clear();
-            values_.resize(size_,0.);
+            values_.resize(size_*size_,0.);
         }
         
         //Mres=this*M2
