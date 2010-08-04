@@ -40,6 +40,7 @@
 #include <boost/weak_ptr.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/shared_array.hpp>
 #include <boost/multi_array.hpp>
 #include <boost/type_traits.hpp>
 #include <boost/lexical_cast.hpp>
@@ -69,6 +70,10 @@ namespace alps {
             };
         }
 
+        template<typename T> std::vector<hsize_t> call_get_extent(T const &);
+        template<typename T> void call_set_extent(T &, std::vector<std::size_t> const &);
+        template<typename T> std::vector<hsize_t> call_get_offset(T const &);
+        template<typename T> bool call_is_vectorizable(T const &);
         template<typename T, typename U> U const * call_get_data(
               std::vector<U> &
             , T const &
@@ -215,10 +220,10 @@ namespace alps {
             template<typename T> std::vector<hsize_t> get_extent( C <T> const & v) {                                                                       \
                 std::vector<hsize_t> s(1, v.size());                                                                                                       \
                 if (!is_native<T>::value && v.size()) {                                                                                                    \
-                    std::vector<hsize_t> t(get_extent(v[0]));                                                                                              \
+                    std::vector<hsize_t> t(call_get_extent(v[0]));                                                                                         \
                     std::copy(t.begin(), t.end(), std::back_inserter(s));                                                                                  \
                     for (std::size_t i = 1; i < v.size(); ++i)                                                                                             \
-                        if (!std::equal(t.begin(), t.end(), get_extent(v[i]).begin()))                                                                     \
+                        if (!std::equal(t.begin(), t.end(), call_get_extent(v[i]).begin()))                                                                \
                             throw std::range_error("no rectengual matrix");                                                                                \
                 }                                                                                                                                          \
                 return s;                                                                                                                                  \
@@ -232,7 +237,7 @@ namespace alps {
                 v.resize(s[0]);                                                                                                                            \
                 if (!is_native<T>::value)                                                                                                                  \
                     for (std::size_t i = 0; i < s[0]; ++i)                                                                                                 \
-                        set_extent(v[i], std::vector<std::size_t>(s.begin() + 1, s.end()));                                                                \
+                        call_set_extent(v[i], std::vector<std::size_t>(s.begin() + 1, s.end()));                                                           \
             }                                                                                                                                              \
             template<typename T> std::vector<hsize_t> get_offset( C <T> const & v) {                                                                       \
                 if (v.size() == 0)                                                                                                                         \
@@ -240,18 +245,18 @@ namespace alps {
                 else if (is_native<T>::value && boost::is_same<typename native_type<T>::type, std::string>::value)                                         \
                     return std::vector<hsize_t>(1, 1);                                                                                                     \
                 else if (is_native<T>::value)                                                                                                              \
-                    return get_extent(v);                                                                                                                  \
+                    return call_get_extent(v);                                                                                                             \
                 else {                                                                                                                                     \
-                    std::vector<hsize_t> c(1, 1), d(get_offset(v[0]));                                                                                     \
+                   std::vector<hsize_t> c(1, 1), d(call_get_offset(v[0]));                                                                                \
                     std::copy(d.begin(), d.end(), std::back_inserter(c));                                                                                  \
                     return c;                                                                                                                              \
                 }                                                                                                                                          \
             }                                                                                                                                              \
             template<typename T> bool is_vectorizable( C <T> const & v) {                                                                                  \
                 for(std::size_t i = 0; i < v.size(); ++i)                                                                                                  \
-                    if (!is_vectorizable(v[i]) || get_extent(v[0])[0] != get_extent(v[i])[0])                                                              \
+                    if (!call_is_vectorizable(v[i]) || call_get_extent(v[0])[0] != call_get_extent(v[i])[0])                                               \
                         return false;                                                                                                                      \
-                    return true;                                                                                                                           \
+                return true;                                                                                                                               \
             }                                                                                                                                              \
             template<typename T> typename serializable_type< C <T> >::type const * get_data(                                                               \
                   std::vector<typename serializable_type< C <T> >::type> & m                                                                               \
@@ -260,7 +265,7 @@ namespace alps {
                 , std::vector<hsize_t> const & = std::vector<hsize_t>()                                                                                    \
             ) {                                                                                                                                            \
                 if (is_native<T>::value)                                                                                                                   \
-                    return call_get_data(m, (const_cast< C <T> &>(v))[s[0]], std::vector<hsize_t>(s.begin() + 1, s.end()), get_extent(v));                 \
+                    return call_get_data(m, (const_cast< C <T> &>(v))[s[0]], std::vector<hsize_t>(s.begin() + 1, s.end()), call_get_extent(v));            \
                 else                                                                                                                                       \
                     return call_get_data(m, (const_cast< C <T> &>(v))[s[0]], std::vector<hsize_t>(s.begin() + 1, s.end()));                                \
             }                                                                                                                                              \
@@ -282,10 +287,10 @@ namespace alps {
         template<typename T> std::vector<hsize_t> get_extent(std::pair<T *, std::vector<std::size_t> > const & v) {
             std::vector<hsize_t> s(v.second.begin(), v.second.end());
             if (!is_native<T>::value && v.second.size()) {
-                 std::vector<hsize_t> t(get_extent(*v.first));
+                 std::vector<hsize_t> t(call_get_extent(*v.first));
                  std::copy(t.begin(), t.end(), std::back_inserter(s));
                  for (std::size_t i = 1; i < std::accumulate(v.second.begin(), v.second.end(), std::size_t(1), std::multiplies<std::size_t>()); ++i)
-                     if (!std::equal(t.begin(), t.end(), get_extent(*(v.first + i)).begin()))
+                     if (!std::equal(t.begin(), t.end(), call_get_extent(*(v.first + i)).begin()))
                          throw std::range_error("no rectengual matrix");
             }
             return s;
@@ -293,9 +298,11 @@ namespace alps {
         template<typename T> void set_extent(std::pair<T *, std::vector<std::size_t> > & v, std::vector<std::size_t> const & s) {
             if (!(s.size() == 1 && s[0] == 0 && std::accumulate(v.second.begin(), v.second.end(), 0) == 0) && !std::equal(v.second.begin(), v.second.end(), s.begin()))
                 throw std::range_error("invalid data size");
-            if (!is_native<T>::value && s.size() > v.second.size())
+            if (s.size() == 1 && s[0] == 0)
+                v.first = NULL;
+            else if (!is_native<T>::value && s.size() > v.second.size())
                 for (std::size_t i = 0; i < std::accumulate(v.second.begin(), v.second.end(), std::size_t(1), std::multiplies<hsize_t>()); ++i)
-                    set_extent(*(v.first + i), std::vector<std::size_t>(s.begin() + v.second.size(), s.end()));
+                    call_set_extent(*(v.first + i), std::vector<std::size_t>(s.begin() + v.second.size(), s.end()));
         }
         template<typename T> std::vector<hsize_t> get_offset(std::pair<T *, std::vector<std::size_t> > const & v) {
             if (is_native<T>::value && boost::is_same<typename native_type<std::pair<T *, std::vector<std::size_t> > >::type, std::string>::value)
@@ -303,14 +310,14 @@ namespace alps {
             else if (is_native<T>::value)
                 return std::vector<hsize_t>(v.second.begin(), v.second.end());
             else {
-                std::vector<hsize_t> c(v.second.size(), 1), d(get_offset(*v.first));
+                std::vector<hsize_t> c(v.second.size(), 1), d(call_get_offset(*v.first));
                 std::copy(d.begin(), d.end(), std::back_inserter(c));
                 return c;
             }
         }
         template<typename T> bool is_vectorizable(std::pair<T *, std::vector<std::size_t> > const & v) {
             for (std::size_t i = 0; i < std::accumulate(v.second.begin(), v.second.end(), std::size_t(1), std::multiplies<hsize_t>()); ++i)
-                if (!is_vectorizable(v.first[i]) || get_extent(v.first[0])[0] != get_extent(v.first[i])[0])
+                if (!call_is_vectorizable(v.first[i]) || call_get_extent(v.first[0])[0] != call_get_extent(v.first[i])[0])
                     return false;
             return true;
         }
@@ -343,16 +350,12 @@ namespace alps {
                 start[0] += s[i] * std::accumulate(v.second.begin() + i + 1, v.second.end(), 1, std::multiplies<hsize_t>());
             std::copy(s.begin() + v.second.size(), s.end(), std::back_inserter(start));
             if (is_native<T>::value)
-                call_set_data(v.first[start[0]], u, start, std::vector<hsize_t>(1, std::accumulate(v.second.begin(), v.second.end(), 1, std::multiplies<hsize_t>())));
+                call_set_data(v.first[start[0]], u, start, std::vector<hsize_t>(1, std::accumulate(c.begin(), c.end(), 1, std::multiplies<hsize_t>())));
             else
                 call_set_data(v.first[start[0]], u, std::vector<hsize_t>(start.begin() + 1, start.end()), std::vector<hsize_t>(c.begin() + v.second.size(), c.end()));
         }
 
         namespace detail {
-//TODO: boost::multiarray implementieren
-/* TODO:
-typedef boost::numeric::ublas::matrix<double,boost::numeric::ublas::column_major> dense_matrix;
-*/
             class error {
                 public:
                     static herr_t noop(hid_t) { return 0; }
@@ -427,6 +430,18 @@ typedef boost::numeric::ublas::matrix<double,boost::numeric::ublas::column_major
                 callback(long double)
         }
 
+        template<typename T> std::vector<hsize_t> call_get_extent(T const & v) {
+            return get_extent(v);
+        }
+        template<typename T> void call_set_extent(T & v, std::vector<std::size_t> const & s) {
+            return set_extent(v, s);
+        }
+        template<typename T> std::vector<hsize_t> call_get_offset(T const & v) {
+            return get_offset(v);
+        }
+        template<typename T> bool call_is_vectorizable(T const & v) {
+            return is_vectorizable(v);
+        }
         template<typename T, typename U> U const * call_get_data(
               std::vector<U> & m
             , T const & v
@@ -613,7 +628,12 @@ typedef boost::numeric::ublas::matrix<double,boost::numeric::ublas::column_major
                     return list;
                 }
             protected:
-                archive(std::string const & file): _revision(0), _state_id(-1), _log_id(-1), _filename(file) {
+                archive(std::string const & file, bool compress = false): _compress(compress), _revision(0), _state_id(-1), _log_id(-1), _filename(file) {
+                    if (_compress) {
+                        unsigned int flag;
+                        detail::check_error(H5Zget_filter_info(H5Z_FILTER_SZIP, &flag));
+                        _compress = flag & H5Z_FILTER_CONFIG_ENCODE_ENABLED;
+                    }
                     H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
                 }
                 void set_file_id(hid_t file_id) {
@@ -711,8 +731,11 @@ typedef boost::numeric::ublas::matrix<double,boost::numeric::ublas::column_major
                     if (set_prop) {
                         detail::property_type prop_id(H5Pcreate(H5P_DATASET_CREATE));
                         detail::check_error(H5Pset_fill_time(prop_id, H5D_FILL_TIME_NEVER));
-                        if (d > 0)
+                        if (d > 0) {
                             detail::check_error(H5Pset_chunk(prop_id, d, s));
+                            if (_compress)
+                                detail::check_error(H5Pset_szip(prop_id, H5_SZIP_NN_OPTION_MASK, 32));
+                        }
                         return H5Dcreate2(_file, p.c_str(), type_id, detail::space_type(space_id), H5P_DEFAULT, prop_id, H5P_DEFAULT);
                     } else
                         return H5Dcreate2(_file, p.c_str(), type_id, detail::space_type(space_id), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
@@ -788,11 +811,8 @@ typedef boost::numeric::ublas::matrix<double,boost::numeric::ublas::column_major
                     }
                     return create_path(p, type_id, space_id, d, s, set_prop);
                 }
-                // TODO: write test for T != U (cast_type in creator.hpp)
-                // TODO: write tests for boost::shared_ptr<T>, std::auto_ptr<T>, boost::weak_ptr<T> and boost::scoped_ptr<T>
-                // TODO: optimize for T == U
                 template<typename T, typename U> void get_helper(T & v, hid_t data_id, hid_t type_id, bool is_attr) const {
-                    std::vector<hsize_t> size(get_extent(v)), start(size.size(), 0), count(get_offset(v));
+                    std::vector<hsize_t> size(call_get_extent(v)), start(size.size(), 0), count(call_get_offset(v));
                     if (
                            (is_attr || std::equal(count.begin(), count.end(), size.begin()))
                         && H5Tget_class(type_id) == H5T_STRING && !detail::check_error(H5Tis_variable_str(type_id))
@@ -839,8 +859,7 @@ typedef boost::numeric::ublas::matrix<double,boost::numeric::ublas::column_major
                     else if (is_native<T>::value && is_null(p))
                         throw std::runtime_error("scalars cannot be null");
                     else if (is_null(p)) {
-                        if (get_extent(v).size())
-                            set_extent(v, std::vector<std::size_t>(1, 0));
+                        call_set_extent(v, std::vector<std::size_t>(1, 0));
                     } else {
                         std::vector<hsize_t> size(dimensions(p), 0);
                         detail::data_type data_id(H5Dopen2(_file, p.c_str(), H5P_DEFAULT));
@@ -850,7 +869,7 @@ typedef boost::numeric::ublas::matrix<double,boost::numeric::ublas::column_major
                             detail::space_type space_id(H5Dget_space(data_id));
                             detail::check_error(H5Sget_simple_extent_dims(space_id, &size.front(), NULL));
                         }
-                        set_extent(v, std::vector<std::size_t>(size.begin(), size.end()));
+                        call_set_extent(v, std::vector<std::size_t>(size.begin(), size.end()));
                         if (H5Tget_class(native_id) == H5T_STRING)
                             get_helper<T, char *>(v, data_id, type_id, false);
                         else if (detail::check_error(H5Tequal(detail::type_type(H5Tcopy(_complex_id)), detail::type_type(H5Tcopy(type_id)))))
@@ -899,7 +918,7 @@ typedef boost::numeric::ublas::matrix<double,boost::numeric::ublas::column_major
                     if (is_group(p))
                         delete_group(p);
                     detail::type_type type_id(get_native_type(typename native_type<T>::type()));
-                    std::vector<hsize_t> size(get_extent(v)), start(size.size(), 0), count(get_offset(v));
+                    std::vector<hsize_t> size(call_get_extent(v)), start(size.size(), 0), count(call_get_offset(v));
                     std::vector<typename serializable_type<T>::type> data;
                     if (is_native<T>::value) {
                         detail::data_type data_id(save_comitted_data(p, type_id, H5Screate(H5S_SCALAR), 0, NULL, !boost::is_same<typename native_type<T>::type, std::string>::value));
@@ -992,6 +1011,7 @@ typedef boost::numeric::ublas::matrix<double,boost::numeric::ublas::column_major
                     }
                 }
             private:
+                bool _compress;
                 int _revision;
                 hid_t _state_id;
                 hid_t _log_id;
@@ -1026,7 +1046,7 @@ typedef boost::numeric::ublas::matrix<double,boost::numeric::ublas::column_major
 
         class oarchive : public archive {
             public:
-                oarchive(std::string const & file) : archive(file) {
+                oarchive(std::string const & file, bool compress = false) : archive(file, compress) {
                     hid_t file_id = H5Fopen(file.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
                     set_file_id(file_id = (file_id < 0 ? H5Fcreate(file.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT) : file_id));
                     if (!is_group("/revisions"))
@@ -1084,7 +1104,7 @@ typedef boost::numeric::ublas::matrix<double,boost::numeric::ublas::column_major
                     ar.delete_group(p);                                                                                                                     \
                 if (!v.size())                                                                                                                              \
                     ar.serialize(p, C <int>(0));                                                                                                            \
-                else if (is_vectorizable(v))                                                                                                                \
+                else if (call_is_vectorizable(v))                                                                                                           \
                     ar.serialize(p, v);                                                                                                                     \
                 else {                                                                                                                                      \
                     if (ar.is_data(p))                                                                                                                      \
@@ -1110,12 +1130,12 @@ typedef boost::numeric::ublas::matrix<double,boost::numeric::ublas::column_major
                         pos += *it * std::accumulate(v.second.begin() + (it - start.begin()) + 1, v.second.end(), 1, std::multiplies<std::size_t>());
                     }
                     call_serialize(ar, p + path, v.first[pos]);
-                    if (++start[last] == v.second[last] && last) {
-                        for (pos = last; pos && start[pos] == v.second[pos]; --pos);
-                        ++start[pos];
+                    if (start[last] + 1 == v.second[last] && last) {
+                        for (pos = last; ++start[pos] == v.second[pos] && pos; --pos);
                         for (++pos; pos <= last; ++pos)
                             start[pos] = 0;
-                    }
+                    } else
+                        ++start[last];
                 } while (start[0] < v.second[0]);
             } else
                 detail::serialize_impl(ar, p, v, boost::mpl::true_());
@@ -1126,7 +1146,7 @@ typedef boost::numeric::ublas::matrix<double,boost::numeric::ublas::column_major
                 ar.delete_group(p);
             if (!v.second.size())
                ar.serialize(p, make_pair(static_cast<int *>(NULL), v.second));
-            else if (is_vectorizable(v))
+            else if (call_is_vectorizable(v))
                 detail::serialize_impl(ar, p, v, boost::mpl::true_());
             else {
                 if (ar.is_data(p))
@@ -1140,14 +1160,39 @@ typedef boost::numeric::ublas::matrix<double,boost::numeric::ublas::column_major
                         pos += *it * std::accumulate(v.second.begin() + (it - start.begin()) + 1, v.second.end(), 1, std::multiplies<std::size_t>());
                     }
                     call_serialize(ar, p + path, v.first[pos]);
-                    if (++start[last] == v.second[last] && last) {
-                        for (pos = last; pos && start[pos] == v.second[pos]; --pos);
-                        ++start[pos];
+                    if (start[last] + 1 == v.second[last] && last) {
+                        for (pos = last; ++start[pos] == v.second[pos] && pos; --pos);
                         for (++pos; pos <= last; ++pos)
                             start[pos] = 0;
-                    }
+                    } else
+                        ++start[last];
                 } while (start[0] < v.second[0]);
             }
+            return ar;
+        }
+
+        template<typename T, std::size_t N, typename A> iarchive & serialize(iarchive & ar, std::string const & p, boost::multi_array<T, N, A> & v) {
+            std::pair<T *, std::vector<std::size_t> > d(v.data(), std::vector<std::size_t>(boost::multi_array<T, N, A>::dimensionality));
+            std::copy(v.shape(), v.shape() + boost::multi_array<T, N, A>::dimensionality, d.second.begin());
+            detail::serialize_impl(ar, p, d, boost::mpl::true_());
+            return ar;
+        }
+        template<typename T, std::size_t N, typename A> oarchive & serialize(oarchive & ar, std::string const & p, boost::multi_array<T, N, A> const & v) {
+            std::pair<T const *, std::vector<std::size_t> > d(v.data(), std::vector<std::size_t>(boost::multi_array<T, N, A>::dimensionality));
+            detail::serialize_impl(ar, p, d, boost::mpl::true_());
+            return ar;
+        }
+
+        template<typename T> iarchive & serialize(iarchive & ar, std::string const & p, boost::numeric::ublas::matrix<T ,boost::numeric::ublas::column_major> & v) {
+            std::pair<T *, std::vector<std::size_t> > d(&v(0,0), std::vector<std::size_t>(2, v.size1()));
+            d.second[1] = v.size2();
+            detail::serialize_impl(ar, p, d, boost::mpl::true_());
+            return ar;
+        }
+        template<typename T> oarchive & serialize(oarchive & ar, std::string const & p, boost::numeric::ublas::matrix<T ,boost::numeric::ublas::column_major> const & v) {
+            std::pair<T const *, std::vector<std::size_t> > d(&v(0,0), std::vector<std::size_t>(2, v.size1()));
+            d.second[1] = v.size2();
+            detail::serialize_impl(ar, p, d, boost::mpl::true_());
             return ar;
         }
 
@@ -1191,6 +1236,13 @@ typedef boost::numeric::ublas::matrix<double,boost::numeric::ublas::column_major
     >::type, hdf5::pvp<std::string const> >::type make_pvp(std::string const & p, T const & v) {
         return hdf5::pvp<std::string const>(p, v);
     }
+    
+    template <typename T> hdf5::pvp<std::pair<T *, std::vector<std::size_t> > > make_pvp(std::string const & p, T * v, std::size_t s) {
+        return hdf5::pvp<std::pair<T *, std::vector<std::size_t> > >(p, std::make_pair(boost::ref(v), std::vector<std::size_t>(1, s)));
+    }
+    template <typename T> hdf5::pvp<std::pair<T *, std::vector<std::size_t> > > make_pvp(std::string const & p, T * v, std::vector<std::size_t> const & s) {
+        return hdf5::pvp<std::pair<T *, std::vector<std::size_t> > >(p, std::make_pair(boost::ref(v), s));
+    }
 
     #define HDF5_MAKE_PVP(ptr_type, arg_type)                                                                                                               \
         template <typename T> hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > > make_pvp(std::string const & p, arg_type v, std::size_t s) {       \
@@ -1201,7 +1253,6 @@ typedef boost::numeric::ublas::matrix<double,boost::numeric::ublas::column_major
         ) {                                                                                                                                                 \
             return hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > >(p, std::make_pair(&*v, s));                                                   \
         }
-    HDF5_MAKE_PVP(T *, T *)
     HDF5_MAKE_PVP(T *, boost::shared_ptr<T> &)
     HDF5_MAKE_PVP(T const *, boost::shared_ptr<T> const &)
     HDF5_MAKE_PVP(T *, std::auto_ptr<T> &)
@@ -1211,5 +1262,19 @@ typedef boost::numeric::ublas::matrix<double,boost::numeric::ublas::column_major
     HDF5_MAKE_PVP(T *, boost::scoped_ptr<T> &)
     HDF5_MAKE_PVP(T const *, boost::scoped_ptr<T> const &)
     #undef HDF5_MAKE_PVP
+
+    #define HDF5_MAKE_ARRAY_PVP(ptr_type, arg_type)                                                                                                         \
+        template <typename T> hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > > make_pvp(std::string const & p, arg_type v, std::size_t s) {       \
+            return hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > >(p, std::make_pair(v.get(), std::vector<std::size_t>(1, s)));                  \
+        }                                                                                                                                                   \
+        template <typename T> hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > > make_pvp(                                                          \
+            std::string const & p, arg_type v, std::vector<std::size_t> const & s                                                                           \
+        ) {                                                                                                                                                 \
+            return hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > >(p, std::make_pair(v.get(), s));                                               \
+        }
+    HDF5_MAKE_ARRAY_PVP(T *, boost::shared_array<T> &)
+    HDF5_MAKE_ARRAY_PVP(T const *, boost::shared_array<T> const &)
+    #undef HDF5_MAKE_ARRAY_PVP
 }
 #endif
+
