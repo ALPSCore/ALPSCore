@@ -39,6 +39,7 @@
 #include <alps/hdf5.hpp>
 
 typedef enum { PLUS, MINUS } enum_type;
+template<typename T> struct creator;
 template<typename T> class userdefined_class;
 template<typename T, typename U> class cast_type;
 
@@ -64,6 +65,8 @@ void initialize(enum_type & v) {
 template<typename T> void initialize(userdefined_class<T> & v) {}
 
 template<typename T, typename U> void initialize(cast_type<T, U> & v) {}
+
+template<typename T> bool equal(T const & a, T const & b);
 
 template<typename T> class userdefined_class {
     public:
@@ -96,11 +99,9 @@ template<typename T> class userdefined_class {
         enum_type c;
 };
 
-template<typename T, typename U> class cast_type {
+template<typename T, typename U> class cast_type_base {
     public:
-        cast_type(): has_u(false) {
-            initialize(t);
-        }
+        cast_type_base(T const & v = T()): has_u(false), t(v) {}
         void serialize(alps::hdf5::iarchive & ar) {
             has_u = true;
             ar
@@ -112,13 +113,68 @@ template<typename T, typename U> class cast_type {
                 << alps::make_pvp("t", t)
             ;
         }
-        bool operator==(cast_type<T, U> const & v) const {
-            return (has_u ? u : boost::lexical_cast<U>(t)) == (v.has_u ? v.u : boost::lexical_cast<U>(v.t));
-        }
-    private:
+    protected:
         bool has_u;
         T t;
         U u;
+};
+
+template<typename T, typename U> class cast_type : public cast_type_base<T, U> {
+    public:
+        typedef cast_type_base<T, U> base_type;
+        cast_type(): base_type() {
+            initialize(base_type::t);
+        }
+        bool operator==(cast_type<T, U> const & v) const {
+            return (base_type::has_u ? base_type::u : boost::lexical_cast<U>(base_type::t)) == (v.has_u ? v.u : boost::lexical_cast<U>(v.t));
+        }
+};
+
+#define HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(C, D)                                                  \
+template<typename T, typename U> class cast_type< C <T>, D <U> >                                   \
+    : public cast_type_base< C <T>, D <U> >                                                        \
+{                                                                                                  \
+    public:                                                                                        \
+        typedef cast_type_base<C <T>, D <U> > base_type;                                           \
+        cast_type(): base_type(creator< C <T> >::random()) {}                                      \
+        bool operator==(cast_type< C <T>, D <U> > const & v) const {                               \
+            if (base_type::has_u && !v.has_u)                                                      \
+                return std::equal(&base_type::u[0], &base_type::u[0] + base_type::u.size(), &v.t[0]);\
+            else if (!base_type::has_u && v.has_u)                                                 \
+                return std::equal(&base_type::t[0], &base_type::t[0] + base_type::t.size(), &v.u[0]);\
+            else                                                                                   \
+                return false;                                                                      \
+        }                                                                                          \
+};
+HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(std::valarray, std::vector)
+HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(std::vector, std::valarray)
+HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(std::valarray, boost::numeric::ublas::vector)
+HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(boost::numeric::ublas::vector, std::valarray)
+HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(boost::numeric::ublas::vector, std::vector)
+HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(std::vector, boost::numeric::ublas::vector)
+#undef HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE
+
+template<typename T, typename U> class cast_type< std::pair<T *, std::vector<std::size_t> >, std::vector<std::vector<std::vector<U> > > >
+    : public cast_type_base< std::pair<T *, std::vector<std::size_t> >, std::vector<std::vector<std::vector<U> > > >
+{
+    public:
+        typedef cast_type_base< std::pair<T *, std::vector<std::size_t> >, std::vector<std::vector<std::vector<U> > > > base_type;
+        cast_type(): base_type(creator<std::pair<T *, std::vector<std::size_t> > >::special()) {}
+        bool operator==(cast_type<std::pair<T *, std::vector<std::size_t> >, std::vector<std::vector<std::vector<U> > > > const & v) const {
+            if (base_type::has_u == v.has_u)
+                return false;
+            if (base_type::has_u)
+                return v == *this;
+            else if (base_type::t.second.size() == 3 && base_type::t.second[0] == v.u.size() && base_type::t.second[1] == v.u[0].size() && base_type::t.second[2] == v.u[0][0].size()) {
+                for (std::size_t i = 0; i < v.u.size(); ++i)
+                    for (std::size_t j = 0; j < v.u[i].size(); ++j)
+                        for (std::size_t k = 0; k < v.u[i][j].size(); ++k)
+                            if (base_type::t.first[(i * v.u[i].size() + j) * v.u[i][j].size() + k] != v.u[i][j][k])
+                                return false;
+                return true;
+            } else
+                return false;
+        }
 };
 
 inline alps::hdf5::oarchive & serialize(alps::hdf5::oarchive & ar, std::string const & p, enum_type const & v) {
@@ -255,6 +311,58 @@ template<typename T, typename U> bool equal(std::pair<T *, std::vector<U> > cons
         return true;
     } else
         return false;
+}
+
+template<typename T, typename A> struct creator<boost::multi_array<T, 2, A> > {
+    typedef boost::multi_array<T, 2, A> base_type;
+    static base_type random() {
+        base_type value(boost::extents[MATRIX_SIZE][MATRIX_SIZE]);
+        for (std::size_t i = 0; i < MATRIX_SIZE; ++i)
+            for (std::size_t j = 0; j < MATRIX_SIZE; ++j)
+                if (boost::is_scalar<T>::value)
+                    initialize(value[i][j]);
+                else
+                    value[i][j] = creator<T>::random();
+        return value;
+    }
+    static base_type empty() { return base_type(boost::extents[2][2]); }
+    static base_type special() { return base_type(boost::extents[2][2]); }
+    static base_type random(alps::hdf5::iarchive & iar) { return base_type(boost::extents[2][2]); }
+    static base_type empty(alps::hdf5::iarchive & iar) { return base_type(boost::extents[2][2]); }
+    static base_type special(alps::hdf5::iarchive & iar) { return base_type(boost::extents[2][2]); }
+};
+template<typename T, typename A> bool equal(boost::multi_array<T, 2, A> const & a,  boost::multi_array<T, 2, A> const & b) {
+    for (std::size_t i = 0; i < MATRIX_SIZE; ++i)
+        for (std::size_t j = 0; j < MATRIX_SIZE; ++j)
+            if (!equal(a[i][j], b[i][j]))
+                return false;
+    return true;
+}
+
+template<typename T> struct creator<boost::numeric::ublas::matrix<T, boost::numeric::ublas::column_major> > {
+    typedef boost::numeric::ublas::matrix<T, boost::numeric::ublas::column_major> base_type;
+    static base_type random() {
+        base_type value (MATRIX_SIZE, MATRIX_SIZE);
+        for (std::size_t i = 0; i < MATRIX_SIZE; ++i)
+            for (std::size_t j = 0; j < MATRIX_SIZE; ++j)
+                if (boost::is_scalar<T>::value)
+                    initialize(value(i, j));
+                else
+                    value(i, j) = creator<T>::random();
+        return value;
+    }
+    static base_type empty() { return base_type(MATRIX_SIZE, MATRIX_SIZE); }
+    static base_type special() { return base_type(MATRIX_SIZE, MATRIX_SIZE); }
+    static base_type random(alps::hdf5::iarchive & iar) { return base_type(MATRIX_SIZE, MATRIX_SIZE); }
+    static base_type empty(alps::hdf5::iarchive & iar) { return base_type(MATRIX_SIZE, MATRIX_SIZE); }
+    static base_type special(alps::hdf5::iarchive & iar) { return base_type(MATRIX_SIZE, MATRIX_SIZE); }
+};
+template<typename T> bool equal(boost::numeric::ublas::matrix<T, boost::numeric::ublas::column_major> const & a, boost::numeric::ublas::matrix<T, boost::numeric::ublas::column_major> const & b) {
+    for (std::size_t i = 0; i < MATRIX_SIZE; ++i)
+        for (std::size_t j = 0; j < MATRIX_SIZE; ++j)
+            if (!equal(a(i, j), b(i, j)))
+                return false;
+    return true;
 }
 
 #define HDF5_DEFINE_VECTOR_VECTOR_TYPE(C, D)                                                       \
