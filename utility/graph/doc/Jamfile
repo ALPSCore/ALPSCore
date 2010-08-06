@@ -1,0 +1,43 @@
+# Copyright (C) 2007 Lukas Gamper <gamperl@gmail.com>
+
+using quickbook ;
+
+using xsltproc ;
+
+using boostbook
+    : "/opt/local/share/xsl/docbook-xsl"
+    : "/opt/local/share/xml/docbook/4.2"
+    ;
+
+boostbook manual 
+    : manual.qbk
+    # Uncomment this line when generating PDF output
+    # <xsl:param>max-columns=66
+    : <xsl:param>boost.root=/Users/gamperl/eclipse/boost
+      <xsl:param>boost.libraries=/Users/gamperl/eclipse/boost/libs/libraries.htm
+    ;
+    
+exe embedding_counter
+    : embedding.counter.cpp
+    : <include>/Users/gamperl/eclipse/boost
+    ;
+
+exe nauty_simple 
+    : nauty.simple.cpp
+    : <include>/Users/gamperl/eclipse/boost
+    ;
+
+exe nisy_coloring 
+    : nisy.coloring.cpp
+    : <include>/Users/gamperl/eclipse/boost
+    ;
+
+exe nisy_generator 
+    : nisy.generator.cpp
+    : <include>/Users/gamperl/eclipse/boost
+    ;
+             
+exe embedding_list
+    : embedding.list.cpp
+    : <include>/Users/gamperl/eclipse/boost
+    ;
