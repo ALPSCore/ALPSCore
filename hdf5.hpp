@@ -33,6 +33,7 @@
 #include <boost/config.hpp>
 #include <boost/mpl/or.hpp>
 #include <boost/mpl/if.hpp>
+#include <boost/ref.hpp>
 #include <boost/utility.hpp>
 #include <boost/mpl/and.hpp>
 #include <boost/integer.hpp>
