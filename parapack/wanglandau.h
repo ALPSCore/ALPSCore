@@ -354,7 +354,8 @@ public:
 
   exp_double const& factor() const { return factor_; }
 
-  bool check_flatness(ObservableSet& obs, wanglandau_weight const& weight, bool verbose = true) {
+  bool check_flatness(ObservableSet& obs, wanglandau_weight const& weight) {
+    bool verbose = true;
     int num = 0;
     double mean = 0;
     double hist_min = -1;
@@ -400,6 +401,19 @@ public:
       }
     }
     return true;
+  }
+  template<typename COMMUNICATOR>
+  bool check_flatness(ObservableSet& obs, wanglandau_weight& weight, COMMUNICATOR& comm) {
+    bool finished = false;
+    if (comm.rank() == 0) {
+      finished = check_flatness(obs, weight);
+      broadcast(comm, finished, 0);
+    } else {
+      broadcast(comm, finished, 0);
+      if (!finished)
+        mcs_.set_sweeps(mcs_.sweeps().min() + interval_);
+    }
+    return finished;
   }
 
   void save(ODump& dp) const {
