@@ -105,6 +105,10 @@ public:
 
   operator HistogramObservableEvaluator<T> () const { return make_evaluator();}
 
+#ifdef ALPS_HAVE_HDF5
+    void serialize(hdf5::oarchive &) const;
+    void serialize(hdf5::iarchive &);
+#endif
 
 private:
   Observable* convert_mergeable() const;
@@ -241,6 +245,25 @@ inline void HistogramObservable<T>::load(IDump& dump)
   else
     dump >> thermalized_ >> thermalcount_ >> count_ >> min_ >> max_ >> stepsize_ >> histogram_;
 }
+
+#ifdef ALPS_HAVE_HDF5
+    template <class T> inline void HistogramObservable<T>::serialize(hdf5::iarchive & ar) {
+        ar 
+            >> make_pvp("size", size_)
+            >> make_pvp("min", min_)
+            >> make_pvp("max", max_)
+            >> make_pvp("stepsize", stepsize_)
+        ;
+    }
+    template <class T> inline void HistogramObservable<T>::serialize(hdf5::oarchive & ar) const {
+        ar 
+            << make_pvp("size", size_)
+            << make_pvp("min", min_)
+            << make_pvp("max", max_)
+            << make_pvp("stepsize", stepsize_)
+        ;
+    }
+#endif
 
 }
 
