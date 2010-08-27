@@ -70,15 +70,49 @@ int start(int argc, char **argv) {
     option opt(argc, argv);
     int ret;
     if (opt.jobfiles.size() == 0) {
-      if (!opt.use_mpi)
+      if (!opt.use_mpi) {
+        if (opt.show_help) {
+          opt.print(std::cout);
+          return 0;
+        }
+        if (opt.show_license) {
+          print_copyright(std::cout);
+          print_license(std::cout);
+          return 0;
+        }
         ret = run_sequential(argc, argv);
-      else
+      } else {
+#ifdef ALPS_HAVE_MPI
+        if (opt.show_help || opt.show_license) {
+          boost::mpi::environment env(argc, argv);
+          boost::mpi::communicator world;
+          if (world.rank() == 0) {
+            if (opt.show_help) {
+              opt.print(std::cout);
+            } else {
+              print_copyright(std::cout);
+              print_license(std::cout);
+            }
+          }
+          return 0;
+        }
         ret = run_sequential_mpi(argc, argv);
+#else
+        std::cerr << "ERROR: MPI is not supported\n";
+        return -1;
+#endif
+      }
     } else {
-      if (!opt.use_mpi)
+      if (!opt.use_mpi) {
         ret = start_sgl(argc, argv);
-      else
+      } else {
+#ifdef ALPS_HAVE_MPI
         ret = start_mpi(argc, argv);
+#else
+        std::cerr << "ERROR: MPI is not supported\n";
+        return -1;
+#endif
+      }
     }
     return ret;
 
