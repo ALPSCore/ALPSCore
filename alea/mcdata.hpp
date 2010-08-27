@@ -66,17 +66,52 @@
 
 namespace alps { 
     namespace alea {
+
         template <typename T> class mcdata {
             public:
                 template <typename X> friend class mcdata;
                 typedef T value_type;
                 typedef typename alps::element_type<T>::type element_type;
-                typedef typename change_value_type<T,double>::type time_type;
+                typedef typename change_value_type<T, double>::type time_type;
                 typedef std::size_t size_type;
                 typedef double count_type;
                 typedef typename average_type<T>::type result_type;
                 typedef typename change_value_type<T,int>::type convergence_type;
                 typedef typename covariance_type<T>::type covariance_type;
+
+                class const_iterator
+                    : public boost::forward_iterator_helper<
+                        const_iterator
+                      , mcdata<typename T::value_type>
+                      , std::ptrdiff_t
+                      , mcdata<typename T::value_type> *
+                      , mcdata<typename T::value_type> &
+                    >
+                {
+
+                    public:
+
+                        const_iterator(mcdata<T> const & data, std::size_t index): data_(data), index_(index) {}
+
+                        const_iterator(const_iterator const & it): data_(it.data_), index_(it.index_) {}
+
+                        mcdata<typename T::value_type> operator*() const {
+                            return mcdata<typename T::value_type>(data_, index_);
+                        }
+
+                        void operator++() {
+                            ++index_;
+                        }
+
+                        bool operator==(const_iterator const & rhs) const {
+                            return index_ == rhs.index_ && data_ == rhs.data_;
+                        }
+
+                    private:
+                        mcdata<T> const & data_;
+                        std::size_t index_;
+                };
+                
                 mcdata()
                     : count_(0)
                     , mean_()
@@ -87,6 +122,7 @@ namespace alps {
                     , jacknife_bins_valid_(true)
                     , cannot_rebin_(false)
                 {}
+
                 template <typename X> mcdata(mcdata<X> const & rhs)
                   : count_(rhs.count_)
                   , mean_(rhs.mean_)
@@ -101,6 +137,7 @@ namespace alps {
                   , values_(rhs.values_)
                   , jack_(rhs.jack_)
                 {}
+
                 template <typename X, typename S> mcdata(mcdata<X> const & rhs, S s)
                   : count_(rhs.count_)
                   , binsize_(rhs.binsize_)
@@ -111,7 +148,7 @@ namespace alps {
                 {
                     mean_ = slice_value(rhs.mean_, s);
                     error_ = slice_value(rhs.error_, s);
-                    if (rhs.variance_opt_) 
+                    if (rhs.variance_opt_)
                         variance_opt_ = slice_value(*(rhs.variance_opt_), s);
                     if (rhs.tau_opt_)
                         tau_opt_ = slice_value(*(rhs.tau_opt_), s);
@@ -120,6 +157,29 @@ namespace alps {
                     if (rhs.jacknife_bins_valid_)
                         std::transform(rhs.jack_.begin(), rhs.jack_.end(), std::back_inserter(jack_), boost::bind2nd(slice_it<X>(), s));
                 }
+
+                template <typename X, typename S> mcdata(mcdata<X> const & rhs, S from, S to)
+                  : count_(rhs.count_)
+                  , binsize_(rhs.binsize_)
+                  , max_bin_number_(rhs.max_bin_number_)
+                  , data_is_analyzed_(rhs.data_is_analyzed_)
+                  , jacknife_bins_valid_(rhs.jacknife_bins_valid_)
+                  , cannot_rebin_(rhs.cannot_rebin_)
+                {
+                    mean_ = result_type(rhs.mean_.begin() + from, rhs.mean_.begin() + to);
+                    error_ = result_type(rhs.error_.begin() + from, rhs.error_.begin() + to);
+                    if (rhs.variance_opt_)
+                        variance_opt_ = result_type(rhs.variance_opt_->begin() + from, rhs.variance_opt_->begin() + to);
+                    if (rhs.tau_opt_)
+                        tau_opt_ = time_type(rhs.tau_opt_->begin() + from, rhs.tau_opt_->begin() + to);
+                    values_.reserve(rhs.values_.size());
+                    for (typename std::vector<value_type>::const_iterator it = rhs.values_.begin(); it != rhs.values_.end(); ++it)
+                        values_.push_back(value_type(it->begin() + from, it->begin() + to));
+                    if (rhs.jacknife_bins_valid_)
+                        for (typename std::vector<result_type>::const_iterator it = rhs.jack_.begin(); it != rhs.jack_.end(); ++it)
+                            jack_.push_back(result_type(it->begin() + from, it->begin() + to));
+                }
+
                 template <typename X> mcdata(AbstractSimpleObservable<X> const & obs)
                     : count_(obs.count())
                     , binsize_(obs.bin_size())
@@ -140,6 +200,8 @@ namespace alps {
                             values_.push_back(replace_valarray_by_vector(obs.bin_value(i)) / double(binsize_));
                     }
                 }
+
+                // TODO: used in ngs, remove
                 mcdata(
                       int64_t count
                     , value_type const & mean
@@ -161,8 +223,19 @@ namespace alps {
                     , cannot_rebin_(false)
                     , values_(values)
                 {}
+
+                const_iterator begin() const {
+                    return const_iterator(*this, 0);
+                }
+
+                const_iterator end() const  {
+                    return const_iterator(*this, mean().size());
+                }
+
                 bool can_rebin() const { return !cannot_rebin_;}
+
                 bool jackknife_valid() const { return jacknife_bins_valid_;}
+
                 void swap(mcdata<T> & rhs) {
                     std::swap(count_, rhs.count_);
                     std::swap(mean_, rhs.mean_);
@@ -177,47 +250,59 @@ namespace alps {
                     std::swap(values_, rhs.values_);
                     std::swap(jack_, rhs.jack_);
                 }
+
                 inline uint64_t count() const { 
                     return count_;
                 }
+
                 inline uint64_t bin_size() const { 
                     return binsize_;
                 }
+
                 inline uint64_t max_bin_number() const {
                     return max_bin_number_;
                 }
+
                 inline std::size_t bin_number() const { 
                     return values_.size(); 
                 }
+
                 inline std::vector<value_type> const & bins() const { 
                     return values_;  
                 }
+
                 inline result_type const & mean() const {
                     analyze();
                     return mean_;
                 }
+
                 inline result_type const & error() const {
                     analyze();
                     return error_;
                 }
+
                 inline bool has_variance() const {
                     return variance_opt_;
                 }
+
                 inline result_type const & variance() const {
                     analyze();
                     if (!variance_opt_)
                         boost::throw_exception(std::logic_error("observable does not have variance"));
                     return *variance_opt_;
                 };
+
                 inline bool has_tau() const {
                     return tau_opt_;
                 }
+
                 inline time_type const & tau() const {
                     analyze();
                     if (!tau_opt_)
                         boost::throw_exception(std::logic_error("observable does not have autocorrelation information"));
                     return *tau_opt_;
                 }
+
                 covariance_type covariance(mcdata<T> const & obs) const {
                     fill_jack();
                     obs.fill_jack();
@@ -247,24 +332,28 @@ namespace alps {
                         return covariance_type();
                     }
                 }
+
                 inline void set_bin_size(uint64_t binsize) {
                     collect_bins(( binsize - 1 ) / binsize_ + 1 );
                     binsize_ = binsize;
                 }
+
                 inline void set_bin_number(uint64_t bin_number) {
                     collect_bins(( values_.size() - 1 ) / bin_number + 1 );
                 }
+
                 void output(std::ostream& out, boost::mpl::true_) const {
                     if(count() == 0)
                         out << "no measurements" << std::endl;
                     else {
                         out << std::setprecision(6) << alps::numeric::round<2>(mean()) << " +/- "
                             << std::setprecision(3) << alps::numeric::round<2>(error());
-                        //if(tau_opt_)
-                        //    out << std::setprecision(3) <<  "; tau = " << (alps::numeric::is_nonzero<2>(error()) ? *tau_opt_ : 0);
+                        if(tau_opt_)
+                            out << std::setprecision(3) <<  "; tau = " << (alps::numeric::is_nonzero<2>(error()) ? *tau_opt_ : 0);
                         out << std::setprecision(6) << std::endl;
                     }
                 }
+
                 void output_vector(std::ostream& out, boost::mpl::false_) const {
                     if(count() == 0)
                         out << "no measurements" << std::endl;
@@ -273,11 +362,12 @@ namespace alps {
                             out << "Entry[" << slice_name(mean_, it) << "]: "
                                 << alps::numeric::round<2>(slice_value(mean_, it)) << " +/- "
                                 << alps::numeric::round<2>(slice_value(error_, it));
-                            //if(tau_opt_)
-                            //    out << "; tau = " << (alps::numeric::is_nonzero<2>(slice_value(error_, it)) ? slice_value(*tau_opt_, it) : 0);
+                            if(tau_opt_)
+                                out << "; tau = " << (alps::numeric::is_nonzero<2>(slice_value(error_, it)) ? slice_value(*tau_opt_, it) : 0);
                             out << std::endl;
                         }
                 }
+
                 void serialize(hdf5::iarchive & ar) {
                     using boost::numeric::operators::operator/;
                     data_is_analyzed_ = true;
@@ -325,6 +415,7 @@ namespace alps {
                             >> make_pvp("jacknife/data", jack_)
                         ;
                 }
+
                 void serialize(hdf5::oarchive & ar) const {
                     analyze();
                     ar
@@ -353,14 +444,17 @@ namespace alps {
                             << make_pvp("jacknife/data/@binningtype", "linear")
                         ;
                 }
+
                 void save(std::string const & filename, std::string const & path) const {
                     hdf5::oarchive ar(filename);
                     ar << make_pvp(path, *this);
                 }
+
                 void load(std::string const & filename, std::string const & path) {
                     hdf5::iarchive ar(filename);
                     ar >> make_pvp(path, *this);
                 }
+
                 mcdata<T> & operator<<(mcdata<T> const & rhs) {
                     using std::sqrt;
                     using alps::numeric::sq;
@@ -403,25 +497,45 @@ namespace alps {
                     }
                     return *this;
                 }
+
                 mcdata<T> & operator=(mcdata<T> rhs) {
                     rhs.swap(*this);
                     return *this;
                 }
+
                 template <typename S> element_type slice(S s) const {
                     return element_type(*this, s);
                 }
-                // wtf? check why!!! (after 2.0b1)
-                template <typename X> bool operator==(mcdata<X> const & rhs) {
-                    return count_ == rhs.count_
+
+                template <typename X> bool operator==(mcdata<X> const & rhs) const {
+                    return boost::is_same<T, X>::value
+                        && count_ == rhs.count_
                         && binsize_ == rhs.binsize_
                         && max_bin_number_ == rhs.max_bin_number_
                         && mean_ == rhs.mean_
                         && error_ == rhs.error_
-                        && variance_opt_ == rhs.variance_opt_
-                        && tau_opt_ == rhs.tau_opt_
-                        && values_ == rhs.values_
+                        && (!variance_opt_ == !rhs.variance_opt_ || (!!variance_opt_ == !!rhs.variance_opt_ && *variance_opt_ == *rhs.variance_opt_))
+                        && (!tau_opt_ == !rhs.tau_opt_ || (!!tau_opt_ == !!rhs.tau_opt_ && *tau_opt_ == *rhs.tau_opt_))
+                        && std::equal(values_.begin(), values_.end(), rhs.values_.begin())
                     ;
                 }
+
+                template <typename X> bool operator==(mcdata<std::vector<X> > const & rhs) const {
+                    bool match = (boost::is_same<T, X>::value && values_.size() == rhs.values_.size());
+                    for (typename std::vector<value_type>::const_iterator it = values_.begin(), jt = rhs.values_.begin(); match && it != values_.end(); ++it, ++jt)
+                        match = std::equal(it->begin(), it->end(), jt->begin());
+                    return boost::is_same<T, X>::value
+                        && count_ == rhs.count_
+                        && binsize_ == rhs.binsize_
+                        && max_bin_number_ == rhs.max_bin_number_
+                        && std::equal(mean_.begin(), mean_.end(), rhs.mean_.begin())
+                        && std::equal(error_.begin(), error_.end(), rhs.error_.begin())
+                        && (!variance_opt_ == !rhs.variance_opt_ || (!!variance_opt_ == !!rhs.variance_opt_ && std::equal(variance_opt_->begin(), variance_opt_->end(), rhs.variance_opt_->begin())))
+                        && (!tau_opt_ == !rhs.tau_opt_ || (!!tau_opt_ == !!rhs.tau_opt_ && std::equal(tau_opt_->begin(), tau_opt_->end(), rhs.tau_opt_->begin())))
+                        && match
+                    ;
+                }
+
                 mcdata<T> & operator+=(mcdata<T> const & rhs) {
                     using std::sqrt;
                     using alps::numeric::sq;
@@ -430,6 +544,7 @@ namespace alps {
                     transform(rhs, alps::numeric::plus<T>(), sqrt(sq(error_) + sq(rhs.error_)));
                     return *this;
                 }
+
                 mcdata<T> & operator-=(mcdata<T> const & rhs) {
                     using std::sqrt;
                     using alps::numeric::sq;
@@ -439,6 +554,7 @@ namespace alps {
                     transform(rhs, alps::numeric::minus<T>(), sqrt(sq(error_) + sq(rhs.error_)));
                     return *this;
                 }
+
                 template <typename X> mcdata<T> & operator*=(mcdata<X> const & rhs) {
                     using std::sqrt;
                     using alps::numeric::sq;
@@ -448,6 +564,7 @@ namespace alps {
                     transform(rhs, alps::numeric::multiplies<T>(), sqrt(sq(rhs.mean_) * sq(error_) + sq(mean_) * sq(rhs.error_)));
                     return *this;
                 }
+
                 template <typename X> mcdata<T> & operator/=(mcdata<X> const & rhs) {
                     using std::sqrt;
                     using alps::numeric::sq;
@@ -458,16 +575,19 @@ namespace alps {
                     transform(rhs, alps::numeric::divides<T>(), sqrt(sq(rhs.mean_) * sq(error_) + sq(mean_) * sq(rhs.error_)) / sq(rhs.mean_));
                     return *this;
                 }
+
                 template <typename X> mcdata<T> & operator+=(X const & rhs) {
                     using boost::numeric::operators::operator+;
                     transform_linear(boost::lambda::bind(alps::numeric::plus<X>(), boost::lambda::_1, rhs), error_, variance_opt_);
                     return *this;
                 }
+
                 template <typename X> mcdata<T> & operator-=(X const & rhs) {
                     using boost::numeric::operators::operator-;
                     transform_linear(boost::lambda::bind(alps::numeric::minus<X>(), boost::lambda::_1, rhs), error_, variance_opt_);
                     return *this;
                 }
+
                 template <typename X> mcdata<T> & operator*=(X const & rhs) {
                     using std::abs;
                     using alps::numeric::abs;
@@ -475,6 +595,7 @@ namespace alps {
                     transform_linear(boost::lambda::bind(alps::numeric::multiplies<X>(), boost::lambda::_1, rhs), abs(error_ * rhs), variance_opt_ ? boost::optional<result_type>(*variance_opt_ * rhs * rhs) : boost::none_t());
                     return *this;
                 }
+
                 template <typename X> mcdata<T> & operator/=(X const & rhs) {
                     using std::abs;
                     using alps::numeric::abs;
@@ -483,9 +604,11 @@ namespace alps {
                     transform_linear(boost::lambda::bind(alps::numeric::divides<X>(), boost::lambda::_1, rhs), abs(error_ / rhs), variance_opt_ ? boost::optional<result_type>(*variance_opt_ / ( rhs * rhs )) : boost::none_t());
                     return (*this);
                 }
+
                 mcdata<T> & operator+() {
                     return *this;
                 }
+
                 mcdata<T> & operator-() {
                     // TODO: this is ugly
                     T zero;
@@ -493,10 +616,12 @@ namespace alps {
                     transform_linear(boost::lambda::bind(alps::numeric::minus<T>(), zero, boost::lambda::_1), error_, variance_opt_);
                     return *this;
                 }
+
                 template <typename X> void subtract_from(X const & x) {
                     using boost::numeric::operators::operator-;
                     transform_linear(boost::lambda::bind(alps::numeric::minus<X>(), x, boost::lambda::_1), error_, variance_opt_);
                 }
+
                 template <typename X> void divide(X const & x) {
                     using boost::numeric::operators::operator*;
                     using boost::numeric::operators::operator/;
@@ -507,6 +632,7 @@ namespace alps {
                     std::transform(values_.begin(), values_.end(), values_.begin(), boost::lambda::bind(alps::numeric::divides<X>(), x * bin_size() * bin_size(), boost::lambda::_1));
                     std::transform(jack_.begin(), jack_.end(), jack_.begin(), boost::lambda::bind(alps::numeric::divides<X>(), x, boost::lambda::_1));
                 }
+
                 template <typename OP> void transform_linear(OP op, value_type const & error, boost::optional<result_type> variance_opt = boost::none_t()) {
                     if (count() == 0)
                         boost::throw_exception(std::runtime_error("the observable needs measurements"));
@@ -517,6 +643,7 @@ namespace alps {
                     if (jacknife_bins_valid_)
                         std::transform(jack_.begin(), jack_.end(), jack_.begin(), op);
                 }
+
                 template <typename OP> void transform(OP op, value_type const & error, boost::optional<result_type> variance_opt = boost::none_t()) {
                     if (count() == 0)
                         boost::throw_exception(std::runtime_error("the observable needs measurements"));
@@ -532,6 +659,7 @@ namespace alps {
                     if (jacknife_bins_valid_)
                        std::transform(jack_.begin(), jack_.end(), jack_.begin(), op);
                 }
+
                 template <typename X, typename OP> void transform(mcdata<X> const & rhs, OP op, value_type const & error, boost::optional<result_type> variance_opt = boost::none_t()) {
                     if (count() == 0 || rhs.count() == 0)
                         boost::throw_exception(std::runtime_error("both observables need measurements"));
@@ -548,13 +676,17 @@ namespace alps {
                     if (rhs.jacknife_bins_valid_ && jacknife_bins_valid_)
                         std::transform(jack_.begin(), jack_.end(), rhs.jack_.begin(), jack_.begin(), op);
                 }
+
             private:
+
                 T const & replace_valarray_by_vector(T const & value) {
                     return value;
                 }
+
                 template <typename X> std::vector<X> replace_valarray_by_vector(std::valarray<X> const & value) {
                     return std::vector<X>(&value[0], &value[0] + value.size());
                 }
+
                 void collect_bins(uint64_t howmany) {
                     using boost::numeric::operators::operator+;
                     using boost::numeric::operators::operator/;
@@ -574,6 +706,7 @@ namespace alps {
                     jacknife_bins_valid_ = false;
                     data_is_analyzed_ = false;
                 }
+
                 void fill_jack() const {
                     using boost::numeric::operators::operator-;
                     using boost::numeric::operators::operator+;
@@ -605,6 +738,7 @@ namespace alps {
                     }
                     jacknife_bins_valid_ = true;
                 }
+
                 void analyze() const {
                     using std::sqrt;
                     using alps::numeric::sqrt;
@@ -637,6 +771,7 @@ namespace alps {
                     }
                     data_is_analyzed_ = true;
                 }
+
                 friend class boost::serialization::access;
                 template <typename Archive> void serialize(Archive & ar, const unsigned int version) {
                     ar & count_;
@@ -652,6 +787,7 @@ namespace alps {
                     ar & values_;
                     ar & jack_;
                 }
+
                 mutable uint64_t count_;
                 mutable uint64_t binsize_;
                 mutable uint64_t max_bin_number_;
@@ -665,10 +801,12 @@ namespace alps {
                 mutable std::vector<value_type> values_;
                 mutable std::vector<result_type> jack_;
         };
+
         template <typename T> inline std::ostream& operator<<(std::ostream & out, mcdata<T> const & obs) {
             obs.output(out, typename boost::is_scalar<T>::type());
             return out;
         }
+
         #define ALPS_ALEA_MCDATA_IMPLEMENT_OPERATION(OPERATOR_NAME, OPERATOR_ASSIGN)                                                                       \
             template <typename T> inline mcdata<T> OPERATOR_NAME(mcdata<T> arg1, mcdata<T> const & arg2) {                                                 \
                 return arg1 OPERATOR_ASSIGN arg2;                                                                                                          \
@@ -681,20 +819,25 @@ namespace alps {
         ALPS_ALEA_MCDATA_IMPLEMENT_OPERATION(operator*,*=)
         ALPS_ALEA_MCDATA_IMPLEMENT_OPERATION(operator/,/=)
         #undef ALPS_ALEA_MCDATA_IMPLEMENT_OPERATION
+
         template <typename T> inline mcdata<T> operator+(T const & arg1, mcdata<T> arg2) {
             return arg2 += arg1;
         }
+
         template <typename T> inline mcdata<T> operator-(T const & arg1, mcdata<T> arg2) {
             arg2.subtract_from(arg1);
             return arg2;
         }
+
         template <typename T> inline mcdata<T> operator*(T const & arg1, mcdata<T> arg2) {
             return arg2 *= arg1;
         }
+
         template <typename T>  inline mcdata<T> operator/(T const & arg1, mcdata<T> arg2) {
             arg2.divide(arg1);
             return arg2;
         }
+
         #define ALPS_ALEA_MCDATA_IMPLEMENT_OPERATION(OPERATOR_NAME, OPERATOR_ASSIGN)                                                                       \
             template <typename T> inline mcdata<std::vector<T> > OPERATOR_NAME(                                                                            \
                 typename mcdata<std::vector<T> >::element_type const & elem, mcdata<std::vector<T> > const & arg2                                          \
@@ -746,6 +889,7 @@ namespace alps {
         ALPS_ALEA_MCDATA_IMPLEMENT_OPERATION(operator*,*)
         ALPS_ALEA_MCDATA_IMPLEMENT_OPERATION(operator/,/)
         #undef ALPS_ALEA_MCDATA_IMPLEMENT_OPERATION
+
         template <typename T> mcdata<T> pow(mcdata<T> rhs, typename mcdata<T>::element_type exponent) {
             if (exponent == 1.)
               return rhs;
@@ -763,11 +907,13 @@ namespace alps {
                 return rhs;
             }
         }
+
         template <typename T> std::vector<mcdata<T> > pow(std::vector<mcdata<T> > rhs, typename mcdata<T>::element_type exponent) {
             using std::pow;
             std::transform(rhs.begin(), rhs.end(), rhs.begin(), boost::lambda::bind<mcdata<T> >(static_cast<mcdata<T>(*)(mcdata<T>, typename mcdata<T>::element_type)>(&pow), boost::lambda::_1, exponent));
             return rhs;
         }
+
         #define ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(FUNCTION_NAME, ERROR)                                                                                  \
             template <typename T> inline mcdata<T> FUNCTION_NAME (mcdata<T> rhs) {                                                                         \
                 using alps::numeric::sq;                                                                                                                   \

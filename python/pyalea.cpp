@@ -38,17 +38,17 @@
 #include <alps/numeric/vector_functions.hpp>
 #include <alps/python/make_copy.hpp>
 #include <alps/python/save_observable_to_hdf5.hpp>
-#include <boost/python.hpp>
-#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
-#include <numpy/arrayobject.h>
 
+#include <boost/python.hpp>
 #include <boost/random.hpp>
-#include<boost/random/uniform_01.hpp>
+#include <boost/random/uniform_01.hpp>
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+
+#include <numpy/arrayobject.h>
 
 typedef boost::variate_generator<boost::mt19937&, boost::uniform_01<double> > random_01;
 
 using namespace boost::python;
-
 
 namespace alps { 
   namespace alea {
@@ -317,6 +317,57 @@ value_with_error<std::valarray<TYPE> >::value_with_error(boost::python::object c
         
     };
     
+        template<typename T> std::size_t size(alps::alea::mcdata<T> & data) {
+            return data.mean().size();
+        }
+        template<typename T> boost::python::object get_item(boost::python::back_reference<alps::alea::mcdata<T> &> data, PyObject* i) {
+            if (PySlice_Check(i)) {
+                PySliceObject * slice = static_cast<PySliceObject *>(static_cast<void *>(i));
+                if (Py_None != slice->step) {
+                    PyErr_SetString(PyExc_IndexError, "slice step size not supported.");
+                    boost::python::throw_error_already_set();
+                }
+                long from = (Py_None == slice->start ? 0 : extract<long>(slice->start)());
+                if (from < 0)
+                    from += size(data.get());
+                from = std::max<long>(std::min<long>(from, size(data.get())), 0);
+                long to = (Py_None == slice->stop ? 0 : extract<long>(slice->stop)());
+                if (to < 0)
+                    to += size(data.get());
+                to = std::max<long>(std::min<long>(to, size(data.get())), 0);
+                if (from > to)
+                    return boost::python::object(alps::alea::mcdata<T>());
+                else
+                    return boost::python::object(alps::alea::mcdata<T>(data.get(), from, to));
+            } else {
+                long index = 0;
+                if (boost::python::extract<long>(i).check()) {
+                    index = boost::python::extract<long>(i)();
+                    if (index < 0)
+                        index += size(data.get());
+                    if (index >= size(data.get()) || index < 0) {
+                        PyErr_SetString(PyExc_IndexError, "Index out of range");
+                        boost::python::throw_error_already_set();
+                    }
+                } else {
+                    PyErr_SetString(PyExc_TypeError, "Invalid index type");
+                    boost::python::throw_error_already_set();
+                }
+                return boost::python::object(alps::alea::mcdata<typename T::value_type>(data.get(), index));
+            }
+        }
+        template<typename T> bool contains(alps::alea::mcdata<T> & data, PyObject* key) {
+            boost::python::extract<alps::alea::mcdata<typename T::value_type> const &> x(key);
+            if (x.check())
+                return std::find(data.begin(), data.end(), x()) != data.end();
+            else {
+                boost::python::extract<alps::alea::mcdata<typename T::value_type> > x(key);
+                if (x.check())
+                    return std::find(data.begin(), data.end(), x()) != data.end();
+                else
+                    return false;
+            }
+        }
         #define ALPS_PY_MCDATA_WRAPPER(member_name)                                                                                                        \
             template <class T> typename boost::enable_if<typename boost::is_scalar<T>::type, T>::type wrap_ ## member_name(mcdata<T> const & value) {      \
                 return value. member_name ();                                                                                                              \
@@ -340,6 +391,7 @@ value_with_error<std::valarray<TYPE> >::value_with_error(boost::python::object c
             }
             return boost::python::str(boost::python::str(mean) + " +/- " + (error));
         }
+        // TODO: remove
         template <class T> std::vector<mcdata<T> > mcdata2vector_of_mcdata(mcdata<std::vector<T> > arg) {
             std::vector<mcdata<T> > res;
             for (std::size_t i = 0; i < arg.mean().size(); ++i)
@@ -411,6 +463,11 @@ BOOST_PYTHON_MODULE(pyalea_c) {
         .def("load", &mcdata<double>::load)
     ;
     class_<mcdata<std::vector<double> > >("MCVectorData")
+        .def("__len__", static_cast<std::size_t(*)(alps::alea::mcdata<std::vector<double> > &)>(&size))
+        .def("__getitem__", static_cast<boost::python::object(*)(boost::python::back_reference<alps::alea::mcdata<std::vector<double> > & >, PyObject *)>(&get_item))
+        .def("__contains__", static_cast<bool(*)(alps::alea::mcdata<std::vector<double> > &, PyObject *)>(&contains))
+//      TODO: fix it
+//      .def("__iter__", boost::python::iterator<alps::alea::mcdata<std::vector<double> > const>())
         .add_property("mean", static_cast<boost::python::numeric::array(*)(mcdata<std::vector<double> > const &)>(&wrap_mean))
         .add_property("error", static_cast<boost::python::numeric::array(*)(mcdata<std::vector<double> > const &)>(&wrap_error))
         .add_property("tau", static_cast<boost::python::numeric::array(*)(mcdata<std::vector<double> > const &)>(&wrap_tau))
@@ -476,6 +533,7 @@ BOOST_PYTHON_MODULE(pyalea_c) {
         .def("save", &mcdata<std::vector<double> >::save)
         .def("load", &mcdata<std::vector<double> >::load)
     ;
+    // TODO: remove
     class_<std::vector<mcdata<double> > >("VectorOfMCData")
         .def(vector_indexing_suite<std::vector<mcdata<double> > >())
         .def("__repr__", static_cast<boost::python::str(*)(std::vector<mcdata<double> > const &)>(&print_mcdata))
@@ -726,7 +784,6 @@ BOOST_PYTHON_MODULE(pyalea_c) {
     .def("__repr__", &print_vector_list<double>)
     ;
     
-// TODO: use boost::lambda
 #define ALPS_PY_EXPORT_VECTOROBSERVABLE(class_name)                                                                             \
   class_<WrappedValarrayObservable< alps:: class_name > >(#class_name, init<std::string, optional<int> >())                     \
     .def("__repr__", &WrappedValarrayObservable< alps:: class_name >::representation)                                           \
