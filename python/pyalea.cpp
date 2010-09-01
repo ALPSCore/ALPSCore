@@ -32,6 +32,12 @@
 #define PY_ARRAY_UNIQUE_SYMBOL pyalea_PyArrayHandle
 #define ALPS_HDF5_CLOSE_GREEDY
 
+namespace alps { 
+	namespace alea {
+		void import_numpy_array();
+	}
+}
+
 #include <alps/alea/detailedbinning.h>
 #include <alps/alea/value_with_error.h>
 #include <alps/alea/mcdata.hpp>
@@ -109,16 +115,15 @@ namespace alps {
     template <>   PyArray_TYPES getEnum<long long>()           {  return PyArray_LONG;        }
     template <>   PyArray_TYPES getEnum<unsigned long long>()  {  return PyArray_LONG;        }
 
-    void import_numpy_array()               
-    {  
+    void import_numpy_array()
+    {
       static bool inited = false;
       if (!inited) {
         import_array();  
-        boost::python::numeric::array::set_module_and_type("numpy", "ndarray");  
+        boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
         inited = true;
       }
     }
-    
     
     template <class T>
     boost::python::numeric::array convert2numpy_scalar(T value)
@@ -184,6 +189,7 @@ namespace alps {
           return vec;
       }
 
+    // TODO: WTF! THIS IS BULLSHIT! MOVE TO OBJECT, NOT HERE!
     // loading and extracting numpy arrays into vector_with_error
     #define IMPLEMENT_VECTOR_WITH_ERROR_CONSTRUCTION(TYPE) \
     template<> \
@@ -197,6 +203,7 @@ namespace alps {
     IMPLEMENT_VECTOR_WITH_ERROR_CONSTRUCTION(double)
     IMPLEMENT_VECTOR_WITH_ERROR_CONSTRUCTION(long double)
 
+    // TODO: WTF! THIS IS BULLSHIT! MOVE TO OBJECT, NOT HERE!
     #define IMPLEMENT_VECTOR_WITH_ERROR_GET(TYPE) \
     template<> \
     boost::python::object value_with_error<std::vector<TYPE> >::mean_nparray() const \
@@ -217,6 +224,7 @@ namespace alps {
         
       
   /*   
+    // TODO: WTF! THIS IS BULLSHIT! MOVE TO OBJECT, NOT HERE!
 #define IMPLEMENT_VECTOR_WITH_ERROR_CONSTRUCTION(TYPE) \
 template<> \
 value_with_error<std::valarray<TYPE> >::value_with_error(boost::python::object const & mean_nparray, std::valarray) \
@@ -405,7 +413,7 @@ using namespace alps::alea;
 using namespace alps::numeric;
 
 BOOST_PYTHON_MODULE(pyalea_c) {
-    class_<mcdata<double> >("MCScalarData")
+    class_<mcdata<double> >("MCScalarData", init<optional<double, double> >())
         .add_property("mean", static_cast<double(*)(mcdata<double> const &)>(&wrap_mean))
         .add_property("error", static_cast<double(*)(mcdata<double> const &)>(&wrap_error))
         .add_property("tau", static_cast<double(*)(mcdata<double> const &)>(&wrap_tau))
@@ -462,7 +470,7 @@ BOOST_PYTHON_MODULE(pyalea_c) {
         .def("save", &mcdata<double>::save)
         .def("load", &mcdata<double>::load)
     ;
-    class_<mcdata<std::vector<double> > >("MCVectorData")
+    class_<mcdata<std::vector<double> > >("MCVectorData", init<optional<boost::python::object, boost::python::object> >())
         .def("__len__", static_cast<std::size_t(*)(alps::alea::mcdata<std::vector<double> > &)>(&size))
         .def("__getitem__", static_cast<boost::python::object(*)(boost::python::back_reference<alps::alea::mcdata<std::vector<double> > & >, PyObject *)>(&get_item))
         .def("__contains__", static_cast<bool(*)(alps::alea::mcdata<std::vector<double> > &, PyObject *)>(&contains))

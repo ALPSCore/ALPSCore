@@ -64,6 +64,11 @@
 #include <numeric>
 #include <iostream>
 
+#ifdef PY_ARRAY_UNIQUE_SYMBOL
+    #include <boost/python.hpp>
+    #include <numpy/arrayobject.h>
+#endif
+
 namespace alps { 
     namespace alea {
 
@@ -122,6 +127,47 @@ namespace alps {
                     , jacknife_bins_valid_(true)
                     , cannot_rebin_(false)
                 {}
+
+                mcdata(result_type mean, result_type error = result_type())
+                    : count_(1)
+                    , mean_(mean)
+                    , error_(error)
+                    , binsize_(0)
+                    , max_bin_number_(0)
+                    , data_is_analyzed_(true)
+                    , jacknife_bins_valid_(true)
+                    , cannot_rebin_(false)
+                {}
+
+                #ifdef PY_ARRAY_UNIQUE_SYMBOL
+                    mcdata(boost::python::object const & mean)
+                        : count_(1)
+                        , binsize_(0)
+                        , max_bin_number_(0)
+                        , data_is_analyzed_(true)
+                        , jacknife_bins_valid_(true)
+                        , cannot_rebin_(false)
+                    {
+                        import_numpy_array();
+                        mean_.resize(PyArray_Size(mean.ptr()));
+                        memcpy(&mean_.front(), static_cast<result_type *>(PyArray_DATA(mean.ptr())), PyArray_ITEMSIZE((PyArrayObject *)mean.ptr()) * mean_.size());
+                    }
+
+                    mcdata(boost::python::object const & mean, boost::python::object const & error)
+                        : count_(1)
+                        , binsize_(0)
+                        , max_bin_number_(0)
+                        , data_is_analyzed_(true)
+                        , jacknife_bins_valid_(true)
+                        , cannot_rebin_(false)
+                    {
+                        import_numpy_array();
+                        mean_.resize(PyArray_Size(mean.ptr()));
+                        memcpy(&mean_.front(), static_cast<result_type *>(PyArray_DATA(mean.ptr())), PyArray_ITEMSIZE((PyArrayObject *)mean.ptr()) * mean_.size());
+                        error_.resize(PyArray_Size(error.ptr()));
+                        memcpy(&error_.front(), static_cast<result_type *>(PyArray_DATA(mean.ptr())), PyArray_ITEMSIZE((PyArrayObject *)error.ptr()) * error_.size());
+                    }
+                #endif
 
                 template <typename X> mcdata(mcdata<X> const & rhs)
                   : count_(rhs.count_)
