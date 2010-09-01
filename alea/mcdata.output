@@ -22,13 +22,13 @@ observable c: 1.49876 +/- 0.00256; tau = -0.0185
     bin #7   : 192      entries: error = 0.00255591
 observable d:0.664328 +/- 0.163898
 Jackknife analysis
-0.497211 +/- 0.00485
+0.497211 +/- 0.00485; tau = 0.0679
   count = 4096, bin size = 32, number of bins = 128
-1.50455 +/- 0.0047
+1.50455 +/- 0.0047; tau = 0.049
   count = 4096, bin size = 32, number of bins = 128
-1.49876 +/- 0.00256
+1.49876 +/- 0.00256; tau = -0.0185
   count = 12288, bin size = 128, number of bins = 96
-0.664328 +/- 0.164
+0.664328 +/- 0.164; tau = inf
   count = 4, bin size = 1, number of bins = 4
 four different methods to construct RealObsevaluator
   3.02568 +/- 0.031
@@ -39,9 +39,9 @@ merging observables b and c
   1.50021 +/- 0.00247
   count = 16384, bin size = 128, number of bins = 128
 merging observables b and d
-  1.50373 +/- 0.0047
+  1.50373 +/- 0.0047; tau = inf
   count = 4100, bin size = 32, number of bins = 128
-2.01122 +/- 0.0196
-0.664652 +/- 0.00208
+2.01122 +/- 0.0196; tau = 0.0679
+0.664652 +/- 0.00208; tau = 0.049
 0.0996385 +/- 0.00321
 1 +/- 0
