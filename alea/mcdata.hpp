@@ -400,7 +400,7 @@ namespace alps {
                     }
                 }
 
-                void output_vector(std::ostream& out, boost::mpl::false_) const {
+                void output(std::ostream& out, boost::mpl::false_) const {
                     if(count() == 0)
                         out << "no measurements" << std::endl;
                     else

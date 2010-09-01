@@ -28,12 +28,12 @@
 #include <iostream>
 #include <stdexcept>
 
+#include <boost/ref.hpp>
 #include <boost/any.hpp>
 #include <boost/array.hpp>
 #include <boost/config.hpp>
 #include <boost/mpl/or.hpp>
 #include <boost/mpl/if.hpp>
-#include <boost/ref.hpp>
 #include <boost/utility.hpp>
 #include <boost/mpl/and.hpp>
 #include <boost/integer.hpp>
@@ -248,7 +248,7 @@ namespace alps {
                 else if (is_native<T>::value)                                                                                                              \
                     return call_get_extent(v);                                                                                                             \
                 else {                                                                                                                                     \
-                   std::vector<hsize_t> c(1, 1), d(call_get_offset(v[0]));                                                                                \
+                   std::vector<hsize_t> c(1, 1), d(call_get_offset(v[0]));                                                                                 \
                     std::copy(d.begin(), d.end(), std::back_inserter(c));                                                                                  \
                     return c;                                                                                                                              \
                 }                                                                                                                                          \
@@ -1239,10 +1239,12 @@ namespace alps {
     }
     
     template <typename T> hdf5::pvp<std::pair<T *, std::vector<std::size_t> > > make_pvp(std::string const & p, T * v, std::size_t s) {
-        return hdf5::pvp<std::pair<T *, std::vector<std::size_t> > >(p, std::make_pair(boost::ref(v), std::vector<std::size_t>(1, s)));
+        using namespace boost;
+        return hdf5::pvp<std::pair<T *, std::vector<std::size_t> > >(p, std::make_pair(ref(v), std::vector<std::size_t>(1, s)));
     }
     template <typename T> hdf5::pvp<std::pair<T *, std::vector<std::size_t> > > make_pvp(std::string const & p, T * v, std::vector<std::size_t> const & s) {
-        return hdf5::pvp<std::pair<T *, std::vector<std::size_t> > >(p, std::make_pair(boost::ref(v), s));
+        using namespace boost;
+        return hdf5::pvp<std::pair<T *, std::vector<std::size_t> > >(p, std::make_pair(ref(v), s));
     }
 
     #define HDF5_MAKE_PVP(ptr_type, arg_type)                                                                                                               \
