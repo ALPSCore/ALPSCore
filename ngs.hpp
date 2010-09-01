@@ -184,41 +184,42 @@ namespace alps {
             }
     };
 
-    template<typename Unused = void> class mcsignal_impl{
-        public:
+    namespace detail {
+        template<typename Unused = void> class mcsignal_impl{
+            public:
 
-            mcsignal_impl() {
-                static bool initialized;
-                if (!initialized) {
-                    static struct sigaction action;
-                    initialized = true;
-                    memset(&action, 0, sizeof(action));
-                    action.sa_handler = &mcsignal_impl<Unused>::slot;
-                    sigaction(SIGINT, &action, NULL);
-                    sigaction(SIGTERM, &action, NULL);
-                    sigaction(SIGXCPU, &action, NULL);
-                    sigaction(SIGQUIT, &action, NULL);
-                    sigaction(SIGUSR1, &action, NULL);
-                    sigaction(SIGUSR2, &action, NULL);
+                mcsignal_impl() {
+                    static bool initialized;
+                    if (!initialized) {
+                        static struct sigaction action;
+                        initialized = true;
+                        memset(&action, 0, sizeof(action));
+                        action.sa_handler = &mcsignal_impl<Unused>::slot;
+                        sigaction(SIGINT, &action, NULL);
+                        sigaction(SIGTERM, &action, NULL);
+                        sigaction(SIGXCPU, &action, NULL);
+                        sigaction(SIGQUIT, &action, NULL);
+                        sigaction(SIGUSR1, &action, NULL);
+                        sigaction(SIGUSR2, &action, NULL);
+                    }
                 }
-            }
 
-            operator bool() const { 
-                return occured; 
-            }
+                operator bool() const { 
+                    return occured; 
+                }
 
-            static void slot(int signal) { 
-                std::cerr << "Killed by signal " << signal << std::endl;
-                occured = true;
-            }
+                static void slot(int signal) { 
+                    std::cerr << "Killed by signal " << signal << std::endl;
+                    occured = true;
+                }
 
-        private:
-            static bool occured;
-    };
+            private:
+                static bool occured;
+        };
+        template<typename Unused> bool mcsignal_impl<Unused>::occured = false;
+    }
 
-    template<typename Unused> bool mcsignal_impl<Unused>::occured = false;
-
-    typedef mcsignal_impl<> mcsignal;
+    typedef detail::mcsignal_impl<> mcsignal;
 
     template <typename T> void mcmpierror(T code) {
         if (code != MPI_SUCCESS) {

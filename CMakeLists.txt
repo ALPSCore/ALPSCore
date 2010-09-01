@@ -58,9 +58,9 @@ find_package(HDF5)
 if (Boost_FOUND)
   # link to ${Boost_LIBRARIES} when precompiled Boost libraries found
   if(PYTHONLIBS_FOUND)
-    target_link_libraries(alps ${Boost_LIBRARIES} ${PYTHON_LIBRARY} ${PYTHON_EXTRA_LIBS} ${HDF5_LIBRARIES}) # ${SZIP_LIBRARIES} ${ZLIB_LIBRARIES})
+    target_link_libraries(alps ${Boost_LIBRARIES} ${PYTHON_LIBRARY} ${PYTHON_EXTRA_LIBS} ${HDF5_LIBRARIES}) # ${SZIP_LIBRARIES} ${ZLIB_LIBRARIES} ${MPI_LIBRARIES})
   else(PYTHONLIBS_FOUND)
-    target_link_libraries(alps ${Boost_LIBRARIES} ${HDF5_LIBRARIES}) # ${SZIP_LIBRARIES} ${ZLIB_LIBRARIES})
+    target_link_libraries(alps ${Boost_LIBRARIES} ${HDF5_LIBRARIES}) # ${SZIP_LIBRARIES} ${ZLIB_LIBRARIES} ${MPI_LIBRARIES})
   endif(PYTHONLIBS_FOUND)
 else (Boost_FOUND)
   # "boost" target available when Boost libraries are built from source
