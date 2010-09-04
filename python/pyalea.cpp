@@ -400,29 +400,28 @@ value_with_error<std::valarray<TYPE> >::value_with_error(boost::python::object c
                         ++mem[path].second;
                 }
                 ~hdf5_owrapper() {
-                    if (!--mem[path_].second)
+                    if (!--mem[path_].second) {
                         delete mem[path_].first;
+                        mem.erase(path_);
+                    }
                 }
-                alps::hdf5::oarchive & operator()() {
-                    return *mem[path_].first;
+                void write(boost::python::object path, boost::python::object data) {
+                    import_numpy_array();
+                    boost::python::extract<std::string> path_(path);
+                    if (!path_.check()) {
+                        PyErr_SetString(PyExc_TypeError, "Invalid path");
+                        boost::python::throw_error_already_set();
+                    }
+                    std::size_t size = PyArray_Size(data.ptr());
+                    double * data_ = static_cast<double *>(PyArray_DATA(data.ptr()));
+                    using namespace alps;
+                    *mem[path_].first << make_pvp(path_(), data_, size);
                 }
             private:
                 std::string path_;
                 static std::map<std::string, std::pair<alps::hdf5::oarchive *, std::size_t> > mem;
         };
         std::map<std::string, std::pair<alps::hdf5::oarchive *, std::size_t> > hdf5_owrapper::mem;
-        void hdf5_write(hdf5_owrapper & ar, boost::python::object path, boost::python::object data) {
-            import_numpy_array();
-            boost::python::extract<std::string> path_(path);
-            if (!path_.check()) {
-                PyErr_SetString(PyExc_TypeError, "Invalid path");
-                boost::python::throw_error_already_set();
-            }
-            std::size_t size = PyArray_Size(data.ptr());
-            double * data_ = static_cast<double *>(PyArray_DATA(data.ptr()));
-            using namespace alps;
-            ar() << make_pvp(path_(), data_, size);
-        }
         struct hdf5_iwrapper {
             public:
                 hdf5_iwrapper(std::string const & path) {
@@ -432,32 +431,31 @@ value_with_error<std::valarray<TYPE> >::value_with_error(boost::python::object c
                         ++mem[path].second;
                 }
                 ~hdf5_iwrapper() {
-                    if (!--mem[path_].second)
+                    if (!--mem[path_].second) {
                         delete mem[path_].first;
+                        mem.erase(path_);
+                    }
                 }
-                alps::hdf5::iarchive & operator()() {
-                    return *mem[path_].first;
+                boost::python::numeric::array hdf5_read(boost::python::object path) {
+                    import_numpy_array();
+                    boost::python::extract<std::string> path_(path);
+                    if (!path_.check()) {
+                        PyErr_SetString(PyExc_TypeError, "Invalid path");
+                        boost::python::throw_error_already_set();
+                    }
+                    std::vector<double> data;
+                    *mem[path_].first >> make_pvp(path_(), data);
+                    npy_intp size = data.size();
+                    boost::python::object obj(boost::python::handle<>(PyArray_SimpleNew(1, &size, PyArray_DOUBLE)));
+                    void * data_ = PyArray_DATA((PyArrayObject *)obj.ptr());
+                    memcpy(data_, &data.front(), PyArray_ITEMSIZE((PyArrayObject *)obj.ptr()) * size);
+                    return boost::python::extract<boost::python::numeric::array>(obj);
                 }
             private:
                 std::string path_;
                 static std::map<std::string, std::pair<alps::hdf5::iarchive *, std::size_t> > mem;
         };
         std::map<std::string, std::pair<alps::hdf5::iarchive *, std::size_t> > hdf5_iwrapper::mem;
-        boost::python::numeric::array hdf5_read(hdf5_iwrapper & ar, boost::python::object path) {
-            import_numpy_array();
-            boost::python::extract<std::string> path_(path);
-            if (!path_.check()) {
-                PyErr_SetString(PyExc_TypeError, "Invalid path");
-                boost::python::throw_error_already_set();
-            }
-            std::vector<double> data;
-            ar() >> make_pvp(path_(), data);
-            npy_intp size = data.size();
-            boost::python::object obj(boost::python::handle<>(PyArray_SimpleNew(1, &size, PyArray_DOUBLE)));
-            void * data_ = PyArray_DATA((PyArrayObject *)obj.ptr());
-            memcpy(data_, &data.front(), PyArray_ITEMSIZE((PyArrayObject *)obj.ptr()) * size);
-            return boost::python::extract<boost::python::numeric::array>(obj);
-        }
         // TODO: remove
         template <typename T> boost::python::str print_mcdata(std::vector<mcdata<T> > const & self) {
             boost::python::str mean, error;
@@ -610,10 +608,10 @@ BOOST_PYTHON_MODULE(pyalea_c) {
         .def("load", &mcdata<std::vector<double> >::load)
     ;
     class_<hdf5_owrapper>("h5OAr", init<std::string>())
-        .def("write", &hdf5_write)
+        .def("write", &hdf5_owrapper::write)
     ;
     class_<hdf5_iwrapper>("h5IAr", init<std::string>())
-        .def("read", &hdf5_read)
+        .def("read", &hdf5_iwrapper::read)
     ;
     // TODO: remove
     class_<std::vector<mcdata<double> > >("VectorOfMCData")

@@ -290,7 +290,7 @@ namespace alps {
             }
     };
 
-    inline std::ostream & operator<<(std::ostream & os, boost::ptr_map<std::string, mcany>  const & results) {
+    inline std::ostream & operator<<(std::ostream & os, boost::ptr_map<std::string, mcany> const & results) {
         for (boost::ptr_map<std::string, mcany>::const_iterator it = results.begin(); it != results.end(); ++it)
             std::cout << std::fixed << std::setprecision(5) << it->first << ": " << it->second->to_string() << std::endl;
         return os;
