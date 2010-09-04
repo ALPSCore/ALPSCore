@@ -436,7 +436,7 @@ value_with_error<std::valarray<TYPE> >::value_with_error(boost::python::object c
                         mem.erase(path_);
                     }
                 }
-                boost::python::numeric::array hdf5_read(boost::python::object path) {
+                boost::python::numeric::array read(boost::python::object path) {
                     import_numpy_array();
                     boost::python::extract<std::string> path_(path);
                     if (!path_.check()) {
