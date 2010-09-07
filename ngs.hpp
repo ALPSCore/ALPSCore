@@ -323,6 +323,10 @@ namespace alps {
             inline result_type const & mean() const {
                 return alea::mcdata<T>::mean();
             }
+            
+            inline result_type const & tau() const {
+                return alea::mcdata<T>::tau();
+            }
 
             inline result_type const & error() const {
                 return alea::mcdata<T>::error();
