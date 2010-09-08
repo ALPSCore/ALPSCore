@@ -323,13 +323,17 @@ namespace alps {
             inline result_type const & mean() const {
                 return alea::mcdata<T>::mean();
             }
-            
-            inline result_type const & tau() const {
-                return alea::mcdata<T>::tau();
-            }
 
             inline result_type const & error() const {
                 return alea::mcdata<T>::error();
+            }
+
+            inline typename alea::mcdata<T>::time_type const & tau() const {
+                return alea::mcdata<T>::tau();
+            }
+
+            inline result_type const & variance() const {
+                return alea::mcdata<T>::variance();
             }
 
             typename std::string to_string() const {
