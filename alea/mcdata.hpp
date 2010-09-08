@@ -40,10 +40,10 @@
 #include <alps/alea/nan.h>
 #include <alps/parser/parser.h>
 #include <alps/utility/resize.hpp>
+#include <alps/utility/set_zero.hpp>
 #include <alps/numeric/functional.hpp>
 #include <alps/alea/simpleobservable.h>
 #include <alps/utility/numeric_cast.hpp>
-#include <alps/utility/set_zero.hpp>
 #include <alps/numeric/outer_product.hpp>
 #include <alps/type_traits/param_type.hpp>
 #include <alps/type_traits/average_type.hpp>
@@ -64,9 +64,12 @@
 #include <numeric>
 #include <iostream>
 
-#ifdef PY_ARRAY_UNIQUE_SYMBOL
+#ifdef ALPS_HAVE_PYTHON
+
+    #include <alps/python/numpy_array.hpp>
+
     #include <boost/python.hpp>
-    #include <numpy/arrayobject.h>
+
 #endif
 
 namespace alps { 
@@ -139,7 +142,7 @@ namespace alps {
                     , cannot_rebin_(false)
                 {}
 
-                #ifdef PY_ARRAY_UNIQUE_SYMBOL
+                #ifdef ALPS_HAVE_PYTHON
                     mcdata(boost::python::object const & mean)
                         : count_(1)
                         , binsize_(0)
@@ -148,9 +151,7 @@ namespace alps {
                         , jacknife_bins_valid_(true)
                         , cannot_rebin_(false)
                     {
-                        import_numpy_array();
-                        mean_.resize(PyArray_Size(mean.ptr()));
-                        memcpy(&mean_.front(), static_cast<result_type *>(PyArray_DATA(mean.ptr())), PyArray_ITEMSIZE((PyArrayObject *)mean.ptr()) * mean_.size());
+                        alps::python::convert_numpy_array(mean, mean_);
                     }
 
                     mcdata(boost::python::object const & mean, boost::python::object const & error)
@@ -161,11 +162,8 @@ namespace alps {
                         , jacknife_bins_valid_(true)
                         , cannot_rebin_(false)
                     {
-                        import_numpy_array();
-                        mean_.resize(PyArray_Size(mean.ptr()));
-                        memcpy(&mean_.front(), static_cast<result_type *>(PyArray_DATA(mean.ptr())), PyArray_ITEMSIZE((PyArrayObject *)mean.ptr()) * mean_.size());
-                        error_.resize(PyArray_Size(error.ptr()));
-                        memcpy(&error_.front(), static_cast<result_type *>(PyArray_DATA(mean.ptr())), PyArray_ITEMSIZE((PyArrayObject *)error.ptr()) * error_.size());
+                        alps::python::convert_numpy_array(mean, mean_);
+                        alps::python::convert_numpy_array(error, error_);
                     }
                 #endif
 

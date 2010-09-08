@@ -30,6 +30,8 @@
 
 #include <alps/scheduler/measurement_operators.h>
 
+#include <boost/regex.hpp> 
+
 alps::MeasurementOperators::MeasurementOperators (Parameters const& parms)
 {
   boost::regex expression("^MEASURE_AVERAGE\\[(.*)]$");

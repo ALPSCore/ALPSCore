@@ -688,7 +688,6 @@ namespace alps {
             virtual typename results_type<Impl>::type collect_results(typename result_names_type<Impl>::type const & names) const {
                 typename results_type<Impl>::type local_results = Impl::collect_results(names), partial_results;
                 for(typename results_type<Impl>::type::iterator it = local_results.begin(); it != local_results.end(); ++it)
-                
                     if (it->second->count() > 0 && communicator.rank() == 0)
                         it->second->reduce_master(partial_results, it->first, communicator, binnumber);
                     else if (it->second->count() > 0)

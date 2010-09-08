@@ -37,7 +37,6 @@
 #include <alps/utility/encode.hpp>
 #include <alps/utility/numeric_cast.hpp>
 #include <alps/numeric/real.hpp>
-#include <boost/regex.hpp> 
 #include <boost/foreach.hpp>
 #include <vector>
 #include <string>
