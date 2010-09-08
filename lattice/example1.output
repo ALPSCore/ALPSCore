@@ -188,10 +188,10 @@
   </UNITCELL>
   <UNITCELL name="honeycomb" dimension="2" vertices="2">
     <VERTEX id="1" type="0" coordinate="0 0"/>
-    <VERTEX id="2" type="0" coordinate="0 0.5"/>
-    <EDGE type="0" vector="0 0.5"><SOURCE vertex="1" offset="0 0"/><TARGET vertex="2" offset="0 0"/></EDGE>
-    <EDGE type="0" vector="1 -0.5"><SOURCE vertex="1" offset="0 0"/><TARGET vertex="2" offset="1 -1"/></EDGE>
-    <EDGE type="0" vector="0 0.5"><SOURCE vertex="2" offset="0 0"/><TARGET vertex="1" offset="0 1"/></EDGE>
+    <VERTEX id="2" type="0" coordinate="-0.28867500000000001492 0.57735000000000002984"/>
+    <EDGE type="0" vector="-0.28867500000000001492 0.57735000000000002984"><SOURCE vertex="1" offset="0 0"/><TARGET vertex="2" offset="0 0"/></EDGE>
+    <EDGE type="0" vector="0.71132499999999998508 -0.42264999999999997016"><SOURCE vertex="1" offset="0 0"/><TARGET vertex="2" offset="1 -1"/></EDGE>
+    <EDGE type="0" vector="0.28867500000000001492 0.42264999999999997016"><SOURCE vertex="2" offset="0 0"/><TARGET vertex="1" offset="0 1"/></EDGE>
   </UNITCELL>
   <UNITCELL name="isolated" dimension="1" vertices="1">
     <VERTEX id="1" type="0"/>
