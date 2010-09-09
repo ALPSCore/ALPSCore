@@ -15,6 +15,8 @@
   <PARAMETER name="Gamma" default="0"/>
   <PARAMETER name="D" default="0"/>
   <PARAMETER name="K" default="0"/>
+  <PARAMETER name="K0" default="K"/>
+  <PARAMETER name="K1" default="K"/>
   <PARAMETER name="h0" default="h"/>
   <PARAMETER name="Gamma0" default="Gamma"/>
   <PARAMETER name="D0" default="D"/>
@@ -32,10 +34,10 @@
     <PARAMETER name="J#" default="0"/>
     <PARAMETER name="Jz#" default="J#"/>
     <PARAMETER name="Jxy#" default="J#"/>
-    0.5 * Jxy# * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz# * Sz(i) * Sz(j) + K * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
+    0.5 * Jxy# * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz# * Sz(i) * Sz(j) + K# * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
   </BONDTERM>
   <BONDTERM type="0" source="i" target="j">
-    0.5 * Jxy0 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz0 * Sz(i) * Sz(j) + K * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
+    0.5 * Jxy0 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz0 * Sz(i) * Sz(j) + K0 * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
   </BONDTERM>
 </HAMILTONIAN>
 <HAMILTONIAN name="spin">
@@ -55,6 +57,8 @@
   <PARAMETER name="Gamma" default="0"/>
   <PARAMETER name="D" default="0"/>
   <PARAMETER name="K" default="0"/>
+  <PARAMETER name="K0" default="K"/>
+  <PARAMETER name="K1" default="K"/>
   <PARAMETER name="h0" default="h"/>
   <PARAMETER name="Gamma0" default="Gamma"/>
   <PARAMETER name="D0" default="D"/>
@@ -72,13 +76,13 @@
     <PARAMETER name="J#" default="0"/>
     <PARAMETER name="Jz#" default="J#"/>
     <PARAMETER name="Jxy#" default="J#"/>
-    0.5 * Jxy# * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz# * Sz(i) * Sz(j) + K * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
+    0.5 * Jxy# * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz# * Sz(i) * Sz(j) + K# * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
   </BONDTERM>
   <BONDTERM type="0" source="i" target="j">
-    0.5 * Jxy0 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz0 * Sz(i) * Sz(j) + K * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
+    0.5 * Jxy0 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz0 * Sz(i) * Sz(j) + K0 * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
   </BONDTERM>
   <BONDTERM type="1" source="i" target="j">
-    0.5 * Jxy1 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz1 * Sz(i) * Sz(j) + K * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
+    0.5 * Jxy1 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz1 * Sz(i) * Sz(j) + K1 * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
   </BONDTERM>
 </HAMILTONIAN>
 <HAMILTONIAN name="spin">
@@ -98,6 +102,8 @@
   <PARAMETER name="Gamma" default="0"/>
   <PARAMETER name="D" default="0"/>
   <PARAMETER name="K" default="0"/>
+  <PARAMETER name="K0" default="K"/>
+  <PARAMETER name="K1" default="K"/>
   <PARAMETER name="h0" default="h"/>
   <PARAMETER name="Gamma0" default="Gamma"/>
   <PARAMETER name="D0" default="D"/>
@@ -115,13 +121,13 @@
     <PARAMETER name="J#" default="0"/>
     <PARAMETER name="Jz#" default="J#"/>
     <PARAMETER name="Jxy#" default="J#"/>
-    0.5 * Jxy# * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz# * Sz(i) * Sz(j) + K * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
+    0.5 * Jxy# * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz# * Sz(i) * Sz(j) + K# * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
   </BONDTERM>
   <BONDTERM type="0" source="i" target="j">
-    0.5 * Jxy0 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz0 * Sz(i) * Sz(j) + K * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
+    0.5 * Jxy0 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz0 * Sz(i) * Sz(j) + K0 * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
   </BONDTERM>
   <BONDTERM type="1" source="i" target="j">
-    0.5 * Jxy1 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz1 * Sz(i) * Sz(j) + K * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
+    0.5 * Jxy1 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz1 * Sz(i) * Sz(j) + K1 * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
   </BONDTERM>
 </HAMILTONIAN>
 <HAMILTONIAN name="spin">
@@ -141,6 +147,8 @@
   <PARAMETER name="Gamma" default="0"/>
   <PARAMETER name="D" default="0"/>
   <PARAMETER name="K" default="0"/>
+  <PARAMETER name="K0" default="K"/>
+  <PARAMETER name="K1" default="K"/>
   <PARAMETER name="h0" default="h"/>
   <PARAMETER name="Gamma0" default="Gamma"/>
   <PARAMETER name="D0" default="D"/>
@@ -158,13 +166,13 @@
     <PARAMETER name="J#" default="0"/>
     <PARAMETER name="Jz#" default="J#"/>
     <PARAMETER name="Jxy#" default="J#"/>
-    0.5 * Jxy# * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz# * Sz(i) * Sz(j) + K * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
+    0.5 * Jxy# * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz# * Sz(i) * Sz(j) + K# * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
   </BONDTERM>
   <BONDTERM type="0" source="i" target="j">
-    0.5 * Jxy0 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz0 * Sz(i) * Sz(j) + K * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
+    0.5 * Jxy0 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz0 * Sz(i) * Sz(j) + K0 * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
   </BONDTERM>
   <BONDTERM type="1" source="i" target="j">
-    0.5 * Jxy1 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz1 * Sz(i) * Sz(j) + K * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
+    0.5 * Jxy1 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz1 * Sz(i) * Sz(j) + K1 * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
   </BONDTERM>
 </HAMILTONIAN>
 <HAMILTONIAN name="spin">
@@ -184,6 +192,8 @@
   <PARAMETER name="Gamma" default="0"/>
   <PARAMETER name="D" default="0"/>
   <PARAMETER name="K" default="0"/>
+  <PARAMETER name="K0" default="K"/>
+  <PARAMETER name="K1" default="K"/>
   <PARAMETER name="h0" default="h"/>
   <PARAMETER name="Gamma0" default="Gamma"/>
   <PARAMETER name="D0" default="D"/>
@@ -201,10 +211,10 @@
     <PARAMETER name="J#" default="0"/>
     <PARAMETER name="Jz#" default="J#"/>
     <PARAMETER name="Jxy#" default="J#"/>
-    0.5 * Jxy# * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz# * Sz(i) * Sz(j) + K * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
+    0.5 * Jxy# * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz# * Sz(i) * Sz(j) + K# * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
   </BONDTERM>
   <BONDTERM type="0" source="i" target="j">
-    0.5 * Jxy0 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz0 * Sz(i) * Sz(j) + K * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
+    0.5 * Jxy0 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz0 * Sz(i) * Sz(j) + K0 * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
   </BONDTERM>
 </HAMILTONIAN>
 <HAMILTONIAN name="spin">
@@ -224,6 +234,8 @@
   <PARAMETER name="Gamma" default="0"/>
   <PARAMETER name="D" default="0"/>
   <PARAMETER name="K" default="0"/>
+  <PARAMETER name="K0" default="K"/>
+  <PARAMETER name="K1" default="K"/>
   <PARAMETER name="h0" default="h"/>
   <PARAMETER name="Gamma0" default="Gamma"/>
   <PARAMETER name="D0" default="D"/>
@@ -241,10 +253,10 @@
     <PARAMETER name="J#" default="0"/>
     <PARAMETER name="Jz#" default="J#"/>
     <PARAMETER name="Jxy#" default="J#"/>
-    0.5 * Jxy# * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz# * Sz(i) * Sz(j) + K * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
+    0.5 * Jxy# * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz# * Sz(i) * Sz(j) + K# * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
   </BONDTERM>
   <BONDTERM type="0" source="i" target="j">
-    0.5 * Jxy0 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz0 * Sz(i) * Sz(j) + K * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
+    0.5 * Jxy0 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz0 * Sz(i) * Sz(j) + K0 * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
   </BONDTERM>
 </HAMILTONIAN>
 <HAMILTONIAN name="spin">
@@ -264,6 +276,8 @@
   <PARAMETER name="Gamma" default="0"/>
   <PARAMETER name="D" default="0"/>
   <PARAMETER name="K" default="0"/>
+  <PARAMETER name="K0" default="K"/>
+  <PARAMETER name="K1" default="K"/>
   <PARAMETER name="h0" default="h"/>
   <PARAMETER name="Gamma0" default="Gamma"/>
   <PARAMETER name="D0" default="D"/>
@@ -281,10 +295,10 @@
     <PARAMETER name="J#" default="0"/>
     <PARAMETER name="Jz#" default="J#"/>
     <PARAMETER name="Jxy#" default="J#"/>
-    0.5 * Jxy# * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz# * Sz(i) * Sz(j) + K * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
+    0.5 * Jxy# * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz# * Sz(i) * Sz(j) + K# * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
   </BONDTERM>
   <BONDTERM type="0" source="i" target="j">
-    0.5 * Jxy0 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz0 * Sz(i) * Sz(j) + K * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
+    0.5 * Jxy0 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz0 * Sz(i) * Sz(j) + K0 * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
   </BONDTERM>
 </HAMILTONIAN>
 <HAMILTONIAN name="spin">
@@ -304,6 +318,8 @@
   <PARAMETER name="Gamma" default="0"/>
   <PARAMETER name="D" default="0"/>
   <PARAMETER name="K" default="0"/>
+  <PARAMETER name="K0" default="K"/>
+  <PARAMETER name="K1" default="K"/>
   <PARAMETER name="h0" default="h"/>
   <PARAMETER name="Gamma0" default="Gamma"/>
   <PARAMETER name="D0" default="D"/>
@@ -321,9 +337,9 @@
     <PARAMETER name="J#" default="0"/>
     <PARAMETER name="Jz#" default="J#"/>
     <PARAMETER name="Jxy#" default="J#"/>
-    0.5 * Jxy# * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz# * Sz(i) * Sz(j) + K * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
+    0.5 * Jxy# * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz# * Sz(i) * Sz(j) + K# * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
   </BONDTERM>
   <BONDTERM type="0" source="i" target="j">
-    0.5 * Jxy0 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz0 * Sz(i) * Sz(j) + K * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
+    0.5 * Jxy0 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Jz0 * Sz(i) * Sz(j) + K0 * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j)) * (0.5 * (Splus(i) * Sminus(j) + Sminus(i) * Splus(j)) + Sz(i) * Sz(j))
   </BONDTERM>
 </HAMILTONIAN>
