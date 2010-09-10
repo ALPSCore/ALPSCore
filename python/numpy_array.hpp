@@ -38,11 +38,15 @@
 
 namespace alps { 
     namespace python {
+        namespace numpy {
 
-        void import_numpy_array();
+            void import();
 
-        void convert_numpy_array(boost::python::object const & source, std::vector<double> & target);
+            void convert(boost::python::object const & source, std::vector<double> & target);
 
+            boost::python::numeric::array convert(std::vector<double> const & source);
+
+        }
     }
 }
 

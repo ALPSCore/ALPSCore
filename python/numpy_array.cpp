@@ -35,18 +35,31 @@
 
 namespace alps { 
     namespace python {
-        void import_numpy_array() {
-            static bool inited = false;
-            if (!inited) {
-                import_array();  
-                boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
-                inited = true;
+        namespace numpy {
+
+            void import() {
+                static bool inited = false;
+                if (!inited) {
+                    import_array();  
+                    boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
+                    inited = true;
+                }
             }
-        }
-        void convert_numpy_array(boost::python::object const & source, std::vector<double> & target) {
-            import_numpy_array();
-            target.resize(PyArray_Size(source.ptr()));
-            memcpy(&target.front(), static_cast<double *>(PyArray_DATA(source.ptr())), PyArray_ITEMSIZE((PyArrayObject *)source.ptr()) * target.size());
+
+            void convert(boost::python::object const & source, std::vector<double> & target) {
+                import();
+                target.resize(PyArray_Size(source.ptr()));
+                memcpy(&target.front(), static_cast<double *>(PyArray_DATA(source.ptr())), PyArray_ITEMSIZE((PyArrayObject *)source.ptr()) * target.size());
+            }
+
+            boost::python::numeric::array convert(std::vector<double> const & source) {
+                import();
+                npy_intp size = source.size();
+                boost::python::object obj(boost::python::handle<>(PyArray_SimpleNew(1, &size, PyArray_DOUBLE)));
+                void * ptr = PyArray_DATA((PyArrayObject*) obj.ptr());
+                memcpy(ptr, &source.front(), PyArray_ITEMSIZE((PyArrayObject*) obj.ptr()) * size);
+                return boost::python::extract<boost::python::numeric::array>(obj);
+            }
         }
     }
 }

@@ -151,7 +151,7 @@ namespace alps {
                         , jacknife_bins_valid_(true)
                         , cannot_rebin_(false)
                     {
-                        alps::python::convert_numpy_array(mean, mean_);
+                        alps::python::numpy::convert(mean, mean_);
                     }
 
                     mcdata(boost::python::object const & mean, boost::python::object const & error)
@@ -162,8 +162,8 @@ namespace alps {
                         , jacknife_bins_valid_(true)
                         , cannot_rebin_(false)
                     {
-                        alps::python::convert_numpy_array(mean, mean_);
-                        alps::python::convert_numpy_array(error, error_);
+                        alps::python::numpy::convert(mean, mean_);
+                        alps::python::numpy::convert(error, error_);
                     }
                 #endif
 

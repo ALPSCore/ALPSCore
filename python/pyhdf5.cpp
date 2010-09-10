@@ -28,9 +28,11 @@
 
 /* $Id: pyalea.cpp 3520 2010-04-09 16:49:53Z gamperl $ */
 
+#define PY_ARRAY_UNIQUE_SYMBOL pyalea_PyArrayHandle
 #define ALPS_HDF5_CLOSE_GREEDY
 
 #include <alps/hdf5.hpp>
+#include <alps/python/make_copy.hpp>
 #include <alps/python/numpy_array.hpp>
 
 #include <boost/python.hpp>
@@ -117,7 +119,7 @@ namespace alps {
                 pyoarchive(std::string const & filename): pyarchive<alps::hdf5::oarchive>(filename) {}
 
                 void write(boost::python::object path, boost::python::object const & data) {
-                    alps::python::import_numpy_array();
+                    alps::python::numpy::import();
                     std::size_t size = PyArray_Size(data.ptr());
                     double * data_ = static_cast<double *>(PyArray_DATA(data.ptr()));
                     using namespace alps;
@@ -131,7 +133,7 @@ namespace alps {
                 pyiarchive(std::string const & filename): pyarchive<alps::hdf5::iarchive>(filename) {}
 
                 boost::python::numeric::array read(boost::python::object const & path) {
-                    alps::python::import_numpy_array();
+                    alps::python::numpy::import();
                     std::vector<double> data;
                     *mem[filename_].first >> make_pvp(extrace_path(path), data);
                     npy_intp size = data.size();
@@ -145,33 +147,32 @@ namespace alps {
     }
 }
 
-using namespace boost::python;
-using namespace alps::hdf5;
-
 BOOST_PYTHON_MODULE(pyhdf5_c) {
 
-    class_<pyoarchive>("h5OAr", init<std::string>())
-        .def("is_group", &pyoarchive::is_group)
-        .def("is_data", &pyoarchive::is_data)
-        .def("is_attribute", &pyoarchive::extent)
-        .def("extent", &pyoarchive::dimensions)
-        .def("dimensions", &pyoarchive::dimensions)
-        .def("is_scalar", &pyoarchive::is_scalar)
-        .def("is_null", &pyoarchive::is_null)
-        .def("list_children", &pyoarchive::list_children)
-        .def("write", &pyoarchive::write)
+    boost::python::class_<alps::hdf5::pyoarchive>("h5OAr", boost::python::init<std::string>())
+        .def("__deepcopy__", &alps::python::make_copy<alps::hdf5::pyoarchive>)
+        .def("is_group", &alps::hdf5::pyoarchive::is_group)
+        .def("is_data", &alps::hdf5::pyoarchive::is_data)
+        .def("is_attribute", &alps::hdf5::pyoarchive::extent)
+        .def("extent", &alps::hdf5::pyoarchive::dimensions)
+        .def("dimensions", &alps::hdf5::pyoarchive::dimensions)
+        .def("is_scalar", &alps::hdf5::pyoarchive::is_scalar)
+        .def("is_null", &alps::hdf5::pyoarchive::is_null)
+        .def("list_children", &alps::hdf5::pyoarchive::list_children)
+        .def("write", &alps::hdf5::pyoarchive::write)
     ;
 
-    class_<pyiarchive>("h5IAr", init<std::string>())
-        .def("is_group", &pyiarchive::is_group)
-        .def("is_data", &pyiarchive::is_data)
-        .def("is_attribute", &pyiarchive::extent)
-        .def("extent", &pyiarchive::dimensions)
-        .def("dimensions", &pyiarchive::dimensions)
-        .def("is_scalar", &pyiarchive::is_scalar)
-        .def("is_null", &pyiarchive::is_null)
-        .def("list_children", &pyiarchive::list_children)
-        .def("read", &pyiarchive::read)
+    boost::python::class_<alps::hdf5::pyiarchive>("h5IAr", boost::python::init<std::string>())
+        .def("__deepcopy__", &alps::python::make_copy<alps::hdf5::pyiarchive>)
+        .def("is_group", &alps::hdf5::pyiarchive::is_group)
+        .def("is_data", &alps::hdf5::pyiarchive::is_data)
+        .def("is_attribute", &alps::hdf5::pyiarchive::extent)
+        .def("extent", &alps::hdf5::pyiarchive::dimensions)
+        .def("dimensions", &alps::hdf5::pyiarchive::dimensions)
+        .def("is_scalar", &alps::hdf5::pyiarchive::is_scalar)
+        .def("is_null", &alps::hdf5::pyiarchive::is_null)
+        .def("list_children", &alps::hdf5::pyiarchive::list_children)
+        .def("read", &alps::hdf5::pyiarchive::read)
     ;
 
 }
