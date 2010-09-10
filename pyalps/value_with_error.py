@@ -26,7 +26,7 @@
 # 
 # ****************************************************************************
 
-from pyalea import *
+from pyalps.pyalea import *
 
 print "\nTesting value_with_error"
 print "\n------------------------\n"
