@@ -30,7 +30,13 @@
 #include "filelock.h"
 #include "measurement.h"
 #include "simulation_p.h"
+
 #include <alps/hdf5.hpp>
+
+// some file (probably a python header) defines a tolower macro ...
+#undef tolower
+#undef toupper
+
 #include <boost/config.hpp>
 #include <boost/foreach.hpp>
 #include <boost/regex.hpp>

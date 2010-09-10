@@ -30,6 +30,10 @@
 
 #include <alps/scheduler/measurement_operators.h>
 
+// some file (probably a python header) defines a tolower macro ...
+#undef tolower
+#undef toupper
+
 #include <boost/regex.hpp> 
 
 alps::MeasurementOperators::MeasurementOperators (Parameters const& parms)

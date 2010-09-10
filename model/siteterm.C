@@ -29,6 +29,11 @@
 
 #include <alps/model/siteterm.h>
 #include <alps/model/operatorsubstitution.h>
+
+// some file (probably a python header) defines a tolower macro ...
+#undef tolower
+#undef toupper
+
 #include <boost/regex.hpp> 
 
 #ifndef ALPS_WITHOUT_XML

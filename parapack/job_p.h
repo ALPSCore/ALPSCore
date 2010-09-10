@@ -31,6 +31,10 @@
 #include "job.h"
 #include "util.h"
 
+// some file (probably a python header) defines a tolower macro ...
+#undef tolower
+#undef toupper
+
 #include <boost/filesystem/operations.hpp>
 #include <boost/regex.hpp>
 #include <vector>

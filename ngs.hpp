@@ -62,12 +62,13 @@ namespace alps {
         public:
             typedef enum { SINGLE, MPI } execution_types;
 
-            mcoptions(int argc, char* argv[]) : valid(false), type(SINGLE) {
+            mcoptions(int argc, char* argv[]) : valid(false), reload(false), type(SINGLE) {
                 boost::program_options::options_description desc("Allowed options");
                 desc.add_options()
                     ("help", "produce help message")
                     ("single", "run single process")
-                    ("mpi", "run in parallel using MPI") 
+                    ("mpi", "run in parallel using MPI")
+                    ("reload", "load simulation from checkpoint")
                     ("time-limit,T", boost::program_options::value<std::size_t>(&time_limit)->default_value(0), "time limit for the simulation")
                     ("input-file", boost::program_options::value<std::string>(&input_file), "input file in hdf5 format")
                     ("output-file", boost::program_options::value<std::string>(&output_file)->default_value("sim.h5"), "output file in hdf5 format");
@@ -83,9 +84,12 @@ namespace alps {
                     throw std::invalid_argument("No job file specified");
                 if (vm.count("mpi"))
                     type = MPI;
+                if (vm.count("reload"))
+                    reload = true;
             }
 
             bool valid;
+            bool reload;
             std::size_t time_limit;
             std::string input_file;
             std::string output_file;
@@ -545,8 +549,8 @@ namespace alps {
                 boost::filesystem::rename(backup, original);
             }
 
-            void load(boost::filesystem::path const & path) { 
-                hdf5::iarchive ar(path.file_string());
+            void load(boost::filesystem::path const & path) {
+                hdf5::iarchive ar(path.file_string() + ".h5");
                 ar >> make_pvp("/simulation/realizations/0/clones/0/results", results);
             }
 

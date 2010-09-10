@@ -38,11 +38,17 @@
 #include <alps/utility/copyright.hpp>
 #include <alps/utility/os.hpp>
 #include <alps/osiris/comm.h>
+
+// some file (probably a python header) defines a tolower macro ...
+#undef tolower
+#undef toupper
+
 #include <boost/config.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/foreach.hpp>
 #include <boost/regex.hpp>
 #include <boost/timer.hpp>
+
 #include <iostream>
 #include <string>
 #include <vector>

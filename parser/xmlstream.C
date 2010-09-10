@@ -29,6 +29,10 @@
 
 #include <alps/parser/xmlstream.h>
 
+// some file (probably a python header) defines a tolower macro ...
+#undef tolower
+#undef toupper
+
 #include <boost/regex.hpp>
 #include <boost/throw_exception.hpp>
 #include <stdexcept>
