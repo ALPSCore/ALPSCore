@@ -41,9 +41,12 @@
 
 namespace alps { 
     namespace python {
+
         template<typename T> std::size_t size(alps::alea::mcdata<T> & data) {
             return data.mean().size();
+
         }
+
         template<typename T> boost::python::object get_item(boost::python::back_reference<alps::alea::mcdata<T> &> data, PyObject* i) {
             if (PySlice_Check(i)) {
                 PySliceObject * slice = static_cast<PySliceObject *>(static_cast<void *>(i));
@@ -80,6 +83,7 @@ namespace alps {
                 return boost::python::object(alps::alea::mcdata<typename T::value_type>(data.get(), index));
             }
         }
+
         template<typename T> bool contains(alps::alea::mcdata<T> & data, PyObject* key) {
             boost::python::extract<alps::alea::mcdata<typename T::value_type> const &> x(key);
             if (x.check())
@@ -92,6 +96,7 @@ namespace alps {
                     return false;
             }
         }
+
         #define ALPS_PY_MCDATA_WRAPPER(member_name)                                                                                                               \
             template <class T> typename boost::enable_if<typename boost::is_scalar<T>::type, T>::type wrap_ ## member_name(alps::alea::mcdata<T> const & value) { \
                 return value. member_name ();                                                                                                                     \
@@ -99,14 +104,17 @@ namespace alps {
             template <class T> boost::python::numeric::array wrap_ ## member_name(alps::alea::mcdata<std::vector<T> > const & value) {                            \
                 return alps::python::numpy::convert(value. member_name ());                                                                                       \
             }
+
         ALPS_PY_MCDATA_WRAPPER(mean)
         ALPS_PY_MCDATA_WRAPPER(error)
         ALPS_PY_MCDATA_WRAPPER(tau)
         ALPS_PY_MCDATA_WRAPPER(variance)
         #undef ALPS_PY_MCDATA_WRAPPER
+
         template <typename T> boost::python::str print_mcdata(alps::alea::mcdata<T> const & self) {
             return boost::python::str(boost::python::str(self.mean()) + " +/- " + boost::python::str(self.error()));
         }
+
     }
 }
 
@@ -114,6 +122,7 @@ using namespace alps::alea;
 using namespace boost::python;
 
 BOOST_PYTHON_MODULE(pymcdata_c) {
+
     class_<mcdata<double> >("MCScalarData", init<optional<double, double> >())
         .add_property("mean", static_cast<double(*)(mcdata<double> const &)>(&alps::python::wrap_mean))
         .add_property("error", static_cast<double(*)(mcdata<double> const &)>(&alps::python::wrap_error))
@@ -171,6 +180,7 @@ BOOST_PYTHON_MODULE(pymcdata_c) {
         .def("save", &mcdata<double>::save)
         .def("load", &mcdata<double>::load)
     ;
+
     class_<mcdata<std::vector<double> > >("MCVectorData", init<optional<object, object> >())
         .def("__len__", static_cast<std::size_t(*)(alps::alea::mcdata<std::vector<double> > &)>(&alps::python::size))
         .def("__getitem__", static_cast<object(*)(back_reference<alps::alea::mcdata<std::vector<double> > & >, PyObject *)>(&alps::python::get_item))

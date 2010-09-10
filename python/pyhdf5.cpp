@@ -28,7 +28,7 @@
 
 /* $Id: pyalea.cpp 3520 2010-04-09 16:49:53Z gamperl $ */
 
-#define PY_ARRAY_UNIQUE_SYMBOL pyalea_PyArrayHandle
+#define PY_ARRAY_UNIQUE_SYMBOL pyhdf5_PyArrayHandle
 #define ALPS_HDF5_CLOSE_GREEDY
 
 #include <alps/hdf5.hpp>
@@ -42,13 +42,15 @@
 namespace alps { 
     namespace hdf5 {
 
-        std::string extrace_path(boost::python::object const & path) {
-            boost::python::extract<std::string> path_(path);
-            if (!path_.check()) {
-                PyErr_SetString(PyExc_TypeError, "Invalid path");
-                boost::python::throw_error_already_set();
+        namespace detail {
+            std::string extract_string(boost::python::object const & obj) {
+                boost::python::extract<std::string> str(obj);
+                if (!str.check()) {
+                    PyErr_SetString(PyExc_RuntimeError, "Invalid path");
+                    boost::python::throw_error_already_set();
+                }
+                return str();
             }
-            return path_();
         }
 
         template<typename Archive> struct pyarchive {
@@ -69,39 +71,39 @@ namespace alps {
                 }
 
                 boost::python::object is_group(boost::python::object const & path) const {
-                    return boost::python::object(mem[filename_].first->is_group(extrace_path(path)));
+                    return boost::python::object(mem[filename_].first->is_group(detail::extract_string(path)));
                 }
 
                 boost::python::object is_data(boost::python::object const & path) const {
-                    return boost::python::object(mem[filename_].first->is_data(extrace_path(path)));
+                    return boost::python::object(mem[filename_].first->is_data(detail::extract_string(path)));
                 }
 
                 boost::python::object is_attribute(boost::python::object const & path) const {
-                    return boost::python::object(mem[filename_].first->is_attribute(extrace_path(path)));
+                    return boost::python::object(mem[filename_].first->is_attribute(detail::extract_string(path)));
                 }
 
                 boost::python::list extent(boost::python::object const & path) const {
-                    return boost::python::list(mem[filename_].first->extent(extrace_path(path)));
+                    return boost::python::list(mem[filename_].first->extent(detail::extract_string(path)));
                 }
 
                 boost::python::object dimensions(boost::python::object const & path) const {
-                    return boost::python::object(mem[filename_].first->dimensions(extrace_path(path)));
+                    return boost::python::object(mem[filename_].first->dimensions(detail::extract_string(path)));
                 }
 
                 boost::python::object is_scalar(boost::python::object const & path) const {
-                    return boost::python::object(mem[filename_].first->is_scalar(extrace_path(path)));
+                    return boost::python::object(mem[filename_].first->is_scalar(detail::extract_string(path)));
                 }
 
                 boost::python::object is_null(boost::python::object const & path) const {
-                    return boost::python::object(mem[filename_].first->is_null(extrace_path(path)));
+                    return boost::python::object(mem[filename_].first->is_null(detail::extract_string(path)));
                 }
 
                 boost::python::list list_children(boost::python::object const & path) const {
-                    return boost::python::list(mem[filename_].first->list_children(extrace_path(path)));
+                    return boost::python::list(mem[filename_].first->list_children(detail::extract_string(path)));
                 }
 
                 boost::python::list list_attr(boost::python::object const & path) const {
-                    return boost::python::list(mem[filename_].first->list_attr(extrace_path(path)));
+                    return boost::python::list(mem[filename_].first->list_attr(detail::extract_string(path)));
                 }
 
             protected:
@@ -123,7 +125,7 @@ namespace alps {
                     std::size_t size = PyArray_Size(data.ptr());
                     double * data_ = static_cast<double *>(PyArray_DATA(data.ptr()));
                     using namespace alps;
-                    *mem[filename_].first << make_pvp(extrace_path(path), data_, size);
+                    *mem[filename_].first << make_pvp(detail::extract_string(path), data_, size);
                 }
         };
 
@@ -135,7 +137,7 @@ namespace alps {
                 boost::python::numeric::array read(boost::python::object const & path) {
                     alps::python::numpy::import();
                     std::vector<double> data;
-                    *mem[filename_].first >> make_pvp(extrace_path(path), data);
+                    *mem[filename_].first >> make_pvp(detail::extract_string(path), data);
                     npy_intp size = data.size();
                     boost::python::object obj(boost::python::handle<>(PyArray_SimpleNew(1, &size, PyArray_DOUBLE)));
                     void * data_ = PyArray_DATA((PyArrayObject *)obj.ptr());
