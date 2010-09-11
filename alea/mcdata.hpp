@@ -107,7 +107,7 @@ namespace alps {
                             return mcdata<typename T::value_type>(data_, index_);
                         }
 
-                        mcdata<typename T::value_type> & operator=(mcdata<typename T::value_type> const & rhs) {
+                        const_iterator & operator=(const_iterator const & rhs) {
                             if (data_ =! rhs.data_)
                                 boost::throw_exception(std::logic_error("different data objects"));
                             index_ = rhs.index_;
