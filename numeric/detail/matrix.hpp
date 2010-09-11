@@ -3,7 +3,7 @@
  * ALPS DMFT Project - BLAS Compatibility headers
  *  Square Matrix Class
  *
- * Copyright (C) 2005 - 2009 by 
+ * Copyright (C) 2005 - 2010 by 
  *                              Emanuel Gull <gull@phys.columbia.edu>,
  *                              Brigitte Surer <surerb@phys.ethz.ch>
  *
@@ -59,11 +59,6 @@ namespace blas{
         {
         }
         
-        matrix(matrix const& rhs)
-        : values_(rhs.values_), size_(rhs.size_)
-        {
-        }
-        
         void swap(matrix& rhs)
         {
             std::swap(values_, rhs.values_);
@@ -75,6 +70,8 @@ namespace blas{
             std::swap(x.size_, y.size_);
         }
         
+        // we keep this to ensure the strong exception guarantee, the default
+        // one would only satisfy the weak one
         matrix& operator=(matrix rhs)
         {
             swap(rhs);
