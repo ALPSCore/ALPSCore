@@ -99,17 +99,18 @@ namespace alps {
 
                     public:
 
-                        const_iterator(mcdata<T> const & data, std::size_t index): data_(data), index_(index) {}
+                        const_iterator(): data_(NULL) {}
+
+                        const_iterator(mcdata<T> const & data, std::size_t index): data_(&data), index_(index) {}
 
                         const_iterator(const_iterator const & it): data_(it.data_), index_(it.index_) {}
 
                         mcdata<typename T::value_type> operator*() const {
-                            return mcdata<typename T::value_type>(data_, index_);
+                            return mcdata<typename T::value_type>(*data_, index_);
                         }
 
                         const_iterator & operator=(const_iterator const & rhs) {
-                            if (&data_ != &rhs.data_)
-                                boost::throw_exception(std::logic_error("different data objects"));
+                            data_ = rhs.data_;
                             index_ = rhs.index_;
                             return *this;
                         }
@@ -123,7 +124,7 @@ namespace alps {
                         }
 
                     private:
-                        mcdata<T> const & data_;
+                        mcdata<T> const * data_;
                         std::size_t index_;
                 };
                 
@@ -585,6 +586,10 @@ namespace alps {
                         && (!tau_opt_ == !rhs.tau_opt_ || (!!tau_opt_ == !!rhs.tau_opt_ && std::equal(tau_opt_->begin(), tau_opt_->end(), rhs.tau_opt_->begin())))
                         && match
                     ;
+                }
+
+                template <typename X> bool operator!=(mcdata<X> const & rhs) const {
+                    return !(*this == rhs);
                 }
 
                 mcdata<T> & operator+=(mcdata<T> const & rhs) {
