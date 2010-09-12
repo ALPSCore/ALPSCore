@@ -108,7 +108,7 @@ namespace alps {
                         }
 
                         const_iterator & operator=(const_iterator const & rhs) {
-                            if (data_ =! rhs.data_)
+                            if (&data_ != &rhs.data_)
                                 boost::throw_exception(std::logic_error("different data objects"));
                             index_ = rhs.index_;
                             return *this;
