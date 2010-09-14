@@ -465,8 +465,6 @@
     <PARAMETER name="Gamma" default="0"/>
     <PARAMETER name="D" default="0"/>
     <PARAMETER name="K" default="0"/>
-    <PARAMETER name="K0" default="K"/>
-    <PARAMETER name="K1" default="K"/>
     <BASIS ref="spin"/>
     <SITETERM site="i">
       <PARAMETER name="h#" default="h"/>
@@ -478,6 +476,7 @@
       <PARAMETER name="J#" default="0"/>
       <PARAMETER name="Jz#" default="J#"/>
       <PARAMETER name="Jxy#" default="J#"/>
+      <PARAMETER name="K#" default="0"/>
       Jz#*Sz(i)*Sz(j)+Jxy#*exchange_xy(i,j)+K#*biquadratic(i,j)
     </BONDTERM>
   </HAMILTONIAN>
