@@ -5,6 +5,7 @@
 # ALPS Libraries
 # 
 # Copyright (C) 2010 by Ping Nang Ma <pingnang@itp.phys.ethz.ch> ,
+#                       Lukas Gamper <gamperl@gmail.com>
 #                       Matthias Troyer <troyer@itp.phys.ethz.ch>
 #
 # This software is part of the ALPS libraries, published under the ALPS

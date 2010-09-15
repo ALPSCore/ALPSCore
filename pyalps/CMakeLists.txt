@@ -8,14 +8,17 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 include_directories(${Boost_ROOT_DIR})
 
 if (ALPS_BUILD_PYTHON)
-    FOREACH (name value_with_error mcdata)
+    enable_testing()
+    FOREACH (name binned_data_test hlist_test mcdata loadobs)
         add_test(python_${name}
             ${CMAKE_COMMAND}
                 -Dcmd=${name}.py
+                -Dinput=${name}
+                -Doutput=${name}
                 -Dsourcedir=${PROJECT_SOURCE_DIR}
                 -Dbinarydir=${PROJECT_BINARY_DIR}
                 -Dcmddir=${CMAKE_CURRENT_SOURCE_DIR}
                 -P ${PROJECT_SOURCE_DIR}/config/run_python_test.cmake
         )
-  ENDFOREACH(name)
+    ENDFOREACH(name)
 ENDIF(ALPS_BUILD_PYTHON)
