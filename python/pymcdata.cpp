@@ -44,7 +44,6 @@ namespace alps {
 
         template<typename T> std::size_t size(alps::alea::mcdata<T> & data) {
             return data.mean().size();
-
         }
 
         template<typename T> boost::python::object get_item(boost::python::back_reference<alps::alea::mcdata<T> &> data, PyObject* i) {
@@ -113,6 +112,13 @@ namespace alps {
 
         template <typename T> boost::python::str print_mcdata(alps::alea::mcdata<T> const & self) {
             return boost::python::str(boost::python::str(self.mean()) + " +/- " + boost::python::str(self.error()));
+        }
+
+        template <typename T> boost::python::str print_mcdata(alps::alea::mcdata<std::vector<T> > const & self) {
+            boost::python::str str;
+            for (typename alps::alea::mcdata<std::vector<T> >::const_iterator it = self.begin(); it != self.end(); ++it)
+                str += print_mcdata(*it) + (it + 1 != self.end() ? "\n" : "");
+            return str;
         }
 
     }

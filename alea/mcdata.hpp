@@ -88,7 +88,7 @@ namespace alps {
                 typedef typename covariance_type<T>::type covariance_type;
 
                 class const_iterator
-                    : public boost::forward_iterator_helper<
+                    : public boost::random_access_iterator_helper<
                         const_iterator
                       , mcdata<typename T::value_type>
                       , std::ptrdiff_t
@@ -123,11 +123,24 @@ namespace alps {
                             return index_ == rhs.index_ && data_ == rhs.data_;
                         }
 
+                        const_iterator & operator+=(std::ptrdiff_t n) {
+                            index_ += n;
+                            return *this;
+                        }
+
+                        bool operator<(const_iterator const & rhs) const {
+                            return index_ < rhs.index_; 
+                        }
+
+                        std::ptrdiff_t operator-(const_iterator const & rhs) {
+                            return index_ - rhs.index_; 
+                        }
+
                     private:
                         mcdata<T> const * data_;
                         std::size_t index_;
                 };
-                
+
                 mcdata()
                     : count_(0)
                     , mean_()
