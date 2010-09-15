@@ -36,6 +36,7 @@
 #include <alps/python/numpy_array.hpp>
 
 #include <boost/python.hpp>
+#include <boost/shared_ptr.hpp>
 
 #include <numpy/arrayobject.h>
 
@@ -56,46 +57,43 @@ namespace alps {
         template<typename Archive> struct pyarchive {
             public:
 
-                pyarchive(std::string const & filename): archive_(create_archive(filename)) {}
+                pyarchive(std::string const & filename): archive_(new Archive(filename)) {}
+                
+                pyarchive(pyarchive<Archive> const & rhs): archive_(rhs.archive_) {}
 
-                virtual ~pyarchive() {
-                    if (!--mem[filename_].second) {
-                        delete mem[filename_].first;
-                        mem.erase(filename_);
-                    }
-                }
+                virtual ~pyarchive() {}
 
                 boost::python::object is_group(boost::python::object const & path) const {
-                    return boost::python::object(archive_.is_group(detail::extract_string(path)));
+                    return boost::python::object(archive_->is_group(detail::extract_string(path)));
                 }
 
                 boost::python::object is_data(boost::python::object const & path) const {
-                    return boost::python::object(archive_.is_data(detail::extract_string(path)));
+                    return boost::python::object(archive_->is_data(detail::extract_string(path)));
                 }
 
                 boost::python::object is_attribute(boost::python::object const & path) const {
-                    return boost::python::object(archive_.is_attribute(detail::extract_string(path)));
+                    return boost::python::object(archive_->is_attribute(detail::extract_string(path)));
                 }
 
                 boost::python::list extent(boost::python::object const & path) const {
-                    return boost::python::list(archive_.extent(detail::extract_string(path)));
+                    return boost::python::list(archive_->extent(detail::extract_string(path)));
                 }
 
                 boost::python::object dimensions(boost::python::object const & path) const {
-                    return boost::python::object(archive_.dimensions(detail::extract_string(path)));
+                    return boost::python::object(archive_->dimensions(detail::extract_string(path)));
                 }
 
                 boost::python::object is_scalar(boost::python::object const & path) const {
-                    return boost::python::object(archive_.is_scalar(detail::extract_string(path)));
+                    return boost::python::object(archive_->is_scalar(detail::extract_string(path)));
                 }
 
                 boost::python::object is_null(boost::python::object const & path) const {
-                    return boost::python::object(archive_.is_null(detail::extract_string(path)));
+                    return boost::python::object(archive_->is_null(detail::extract_string(path)));
                 }
 
                 boost::python::list list_children(boost::python::object const & path) const {
                     boost::python::list result;
-                    std::vector<std::string> children = archive_.list_children(detail::extract_string(path));
+                    std::vector<std::string> children = archive_->list_children(detail::extract_string(path));
                     for (std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)
                         result.append(boost::python::str(*it));
                     return result;
@@ -103,7 +101,7 @@ namespace alps {
 
                 boost::python::list list_attr(boost::python::object const & path) const {
                     boost::python::list result;
-                    std::vector<std::string> children = archive_.list_attr(detail::extract_string(path));
+                    std::vector<std::string> children = archive_->list_attr(detail::extract_string(path));
                     for (std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)
                         result.append(boost::python::str(*it));
                     return result;
@@ -111,37 +109,23 @@ namespace alps {
 
             protected:
 
-                Archive & archive_;
-
-            private:
-
-                Archive & create_archive(std::string const & filename) {
-                    filename_ = filename;
-                    if (mem.find(filename_) == mem.end())
-                        mem[filename_] = std::make_pair(new Archive(filename_), 1);
-                    else
-                        ++mem[filename_].second;
-                    return *mem[filename_].first;
-                }
-
-                std::string filename_;
-                static std::map<std::string, std::pair<Archive *, std::size_t> > mem;
+                boost::shared_ptr<Archive> archive_;
 
         };
-
-        template<typename Archive> std::map<std::string, std::pair<Archive *, std::size_t> > pyarchive<Archive>::mem;
 
         struct pyoarchive : public pyarchive<alps::hdf5::oarchive> {
             public:
 
                 pyoarchive(std::string const & filename): pyarchive<alps::hdf5::oarchive>(filename) {}
 
+                pyoarchive(pyoarchive const & rhs): pyarchive<alps::hdf5::oarchive>(rhs) {}
+
                 void write(boost::python::object path, boost::python::object const & data) {
                     alps::python::numpy::import();
                     std::size_t size = PyArray_Size(data.ptr());
                     double * data_ = static_cast<double *>(PyArray_DATA(data.ptr()));
                     using namespace alps;
-                    archive_ << make_pvp(detail::extract_string(path), data_, size);
+                    *archive_ << make_pvp(detail::extract_string(path), data_, size);
                 }
         };
 
@@ -150,10 +134,12 @@ namespace alps {
 
                 pyiarchive(std::string const & filename): pyarchive<alps::hdf5::iarchive>(filename) {}
 
+                pyiarchive(pyiarchive const & rhs): pyarchive<alps::hdf5::iarchive>(rhs) {}
+
                 boost::python::numeric::array read(boost::python::object const & path) {
                     alps::python::numpy::import();
                     std::vector<double> data;
-                    archive_ >> make_pvp(detail::extract_string(path), data);
+                    *archive_ >> make_pvp(detail::extract_string(path), data);
                     npy_intp size = data.size();
                     boost::python::object obj(boost::python::handle<>(PyArray_SimpleNew(1, &size, PyArray_DOUBLE)));
                     void * data_ = PyArray_DATA((PyArrayObject *)obj.ptr());
