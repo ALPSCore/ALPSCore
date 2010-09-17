@@ -140,11 +140,7 @@ namespace alps {
                     alps::python::numpy::import();
                     std::vector<double> data;
                     *archive_ >> make_pvp(detail::extract_string(path), data);
-                    npy_intp size = data.size();
-                    boost::python::object obj(boost::python::handle<>(PyArray_SimpleNew(1, &size, PyArray_DOUBLE)));
-                    void * data_ = PyArray_DATA((PyArrayObject *)obj.ptr());
-                    memcpy(data_, &data.front(), PyArray_ITEMSIZE((PyArrayObject *)obj.ptr()) * size);
-                    return boost::python::extract<boost::python::numeric::array>(obj);
+                    return alps::python::numpy::convert(data);
                 }
 
         };

@@ -97,10 +97,10 @@ namespace alps {
         }
 
         #define ALPS_PY_MCDATA_WRAPPER(member_name)                                                                                                               \
-            template <class T> typename boost::enable_if<typename boost::is_scalar<T>::type, T>::type wrap_ ## member_name(alps::alea::mcdata<T> const & value) { \
+            template <class T> typename alps::alea::mcdata<T>::result_type wrap_ ## member_name(alps::alea::mcdata<T> const & value) {                            \
                 return value. member_name ();                                                                                                                     \
             }                                                                                                                                                     \
-            template <class T> boost::python::numeric::array wrap_ ## member_name(alps::alea::mcdata<std::vector<T> > const & value) {                            \
+            template <class T> boost::python::numeric::array wrap_ ## member_name(alps::alea::mcdata<T> const & value) {                                          \
                 return alps::python::numpy::convert(value. member_name ());                                                                                       \
             }
 
@@ -108,6 +108,7 @@ namespace alps {
         ALPS_PY_MCDATA_WRAPPER(error)
         ALPS_PY_MCDATA_WRAPPER(tau)
         ALPS_PY_MCDATA_WRAPPER(variance)
+        ALPS_PY_MCDATA_WRAPPER(bins)
         #undef ALPS_PY_MCDATA_WRAPPER
 
         template <typename T> boost::python::str print_mcdata(alps::alea::mcdata<T> const & self) {
@@ -134,6 +135,7 @@ BOOST_PYTHON_MODULE(pymcdata_c) {
         .add_property("error", static_cast<double(*)(mcdata<double> const &)>(&alps::python::wrap_error))
         .add_property("tau", static_cast<double(*)(mcdata<double> const &)>(&alps::python::wrap_tau))
         .add_property("variance", static_cast<double(*)(mcdata<double> const &)>(&alps::python::wrap_variance))
+        .add_property("bins", static_cast<numeric::array(*)(mcdata<double> const &)>(&alps::python::wrap_bins))
         .add_property("count", &mcdata<double>::count)
         .def("__repr__", static_cast<str(*)(mcdata<double> const &)>(&alps::python::print_mcdata))
         .def("__deepcopy__", &alps::python::make_copy<mcdata<double> >)
@@ -195,6 +197,7 @@ BOOST_PYTHON_MODULE(pymcdata_c) {
         .add_property("error", static_cast<numeric::array(*)(mcdata<std::vector<double> > const &)>(&alps::python::wrap_error))
         .add_property("tau", static_cast<numeric::array(*)(mcdata<std::vector<double> > const &)>(&alps::python::wrap_tau))
         .add_property("variance", static_cast<numeric::array(*)(mcdata<std::vector<double> > const &)>(&alps::python::wrap_variance))
+        .add_property("bins", static_cast<numeric::array(*)(mcdata<std::vector<double> > const &)>(&alps::python::wrap_bins))
         .add_property("count", &mcdata<std::vector<double> >::count)
         .def("__repr__", static_cast<str(*)(mcdata<std::vector<double> > const &)>(&alps::python::print_mcdata))
         .def("__deepcopy__", &alps::python::make_copy<mcdata<std::vector<double> > >)

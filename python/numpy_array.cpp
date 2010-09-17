@@ -52,12 +52,26 @@ namespace alps {
                 memcpy(&target.front(), static_cast<double *>(PyArray_DATA(source.ptr())), PyArray_ITEMSIZE((PyArrayObject *)source.ptr()) * target.size());
             }
 
+            boost::python::numeric::array convert(double source) {
+                return convert(std::vector<double>(1, source));
+            }
+
             boost::python::numeric::array convert(std::vector<double> const & source) {
                 import();
                 npy_intp size = source.size();
                 boost::python::object obj(boost::python::handle<>(PyArray_SimpleNew(1, &size, PyArray_DOUBLE)));
                 void * ptr = PyArray_DATA((PyArrayObject*) obj.ptr());
                 memcpy(ptr, &source.front(), PyArray_ITEMSIZE((PyArrayObject*) obj.ptr()) * size);
+                return boost::python::extract<boost::python::numeric::array>(obj);
+            }
+
+            boost::python::numeric::array convert(std::vector<std::vector<double> > const & source) {
+                import();
+                npy_intp size[2] = {source.size(), source[0].size() };
+                boost::python::object obj(boost::python::handle<>(PyArray_SimpleNew(2, size, PyArray_DOUBLE)));
+                void * ptr = PyArray_DATA((PyArrayObject*) obj.ptr());
+                for (std::size_t i = 0; i < source.size(); ++i)
+                    memcpy(ptr + i * size[1], &source[i].front(), PyArray_ITEMSIZE((PyArrayObject*) obj.ptr()) * size[1]);
                 return boost::python::extract<boost::python::numeric::array>(obj);
             }
         }
