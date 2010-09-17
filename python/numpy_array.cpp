@@ -71,7 +71,7 @@ namespace alps {
                 boost::python::object obj(boost::python::handle<>(PyArray_SimpleNew(2, size, PyArray_DOUBLE)));
                 void * ptr = PyArray_DATA((PyArrayObject*) obj.ptr());
                 for (std::size_t i = 0; i < source.size(); ++i)
-                    memcpy(ptr + i * size[1], &source[i].front(), PyArray_ITEMSIZE((PyArrayObject*) obj.ptr()) * size[1]);
+                    memcpy(static_cast<double *>(ptr) + i * size[1], &source[i].front(), PyArray_ITEMSIZE((PyArrayObject*) obj.ptr()) * size[1]);
                 return boost::python::extract<boost::python::numeric::array>(obj);
             }
         }
