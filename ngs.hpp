@@ -4,7 +4,8 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2010 by Lukas Gamper <gamperl -at- gmail.com>
+* Copyright (C) 2010 by Lukas Gamper <gamperl@gmail.com>
+*                       Matthias Troyer <troyer@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -84,7 +85,7 @@ namespace alps {
                     throw std::invalid_argument("No job file specified");
                 if (vm.count("mpi"))
                     type = MPI;
-                if (vm.count("reload"))
+                if (vm.count("reload")) // CHANGE: continue
                     reload = true;
             }
 
@@ -113,6 +114,8 @@ namespace alps {
             std::string const & path;
         };
     }
+    
+    
     class mcparamvalue : public detail::mcparamvalue_base {
         public:
             mcparamvalue() {}
@@ -146,6 +149,7 @@ namespace alps {
             #undef ALPS_NGS_CAST_OPERATOR
     };
 
+    // can we keep parameter ordering? like in curent class
     class mcparams : public std::map<std::string, mcparamvalue> {
         public: 
             mcparams(std::string const & input_file) {
@@ -189,6 +193,7 @@ namespace alps {
     };
 
     namespace detail {
+        // GET RID OF Unused and write a 1-line .cpp file!
         template<typename Unused = void> class mcsignal_impl{
             public:
 
@@ -205,6 +210,8 @@ namespace alps {
                         sigaction(SIGQUIT, &action, NULL);
                         sigaction(SIGUSR1, &action, NULL);
                         sigaction(SIGUSR2, &action, NULL);
+                        // SIGSTOP is missing
+                        // need to know which signal occured!
                     }
                 }
 
@@ -225,6 +232,7 @@ namespace alps {
 
     typedef detail::mcsignal_impl<> mcsignal;
 
+    // relace this by BOOST_MPI_CHECK_RESULT
     template <typename T> void mcmpierror(T code) {
         if (code != MPI_SUCCESS) {
             char buffer[BUFSIZ];
@@ -553,7 +561,7 @@ namespace alps {
                 hdf5::iarchive ar(path.file_string() + ".h5");
                 ar >> make_pvp("/simulation/realizations/0/clones/0/results", results);
             }
-
+            // free function save_results(path,collected_results); or similar
             void save_collected(boost::filesystem::path const & path) {
                 results_type collected_results = collect_results();
                 if (collected_results.size()) {
