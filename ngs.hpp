@@ -140,6 +140,7 @@ namespace alps {
                 }
             ALPS_NGS_CAST_OPERATOR(short)
             ALPS_NGS_CAST_OPERATOR(int)
+            ALPS_NGS_CAST_OPERATOR(unsigned int)
             ALPS_NGS_CAST_OPERATOR(long)
             ALPS_NGS_CAST_OPERATOR(float)
             ALPS_NGS_CAST_OPERATOR(double)

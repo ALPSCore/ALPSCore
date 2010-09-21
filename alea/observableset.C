@@ -309,16 +309,16 @@ ObservableFactory ObservableSet::factory_;
 void ObservableSet::write_xml(oxstream& oxs, const boost::filesystem::path& fn_hdf5) const
 {
   oxs << start_tag("AVERAGES");
-  for(const_iterator i = begin(); i != end(); ++i)
-    i->second->write_xml(oxs, fn_hdf5);
+  for(const_iterator i = begin(); i != end(); ++i) ; //do nothing
+    //i->second->write_xml(oxs, fn_hdf5);
   oxs << end_tag("AVERAGES");
 }
 
 void ObservableSet::write_xml_with_id(oxstream& oxs, int id,
   const boost::filesystem::path& fn_hdf5) const {
   oxs << start_tag("AVERAGES") << attribute("id", id);
-  for(const_iterator i = begin(); i != end(); ++i)
-    i->second->write_xml(oxs, fn_hdf5);
+  for(const_iterator i = begin(); i != end(); ++i) ; //do nothing
+    //i->second->write_xml(oxs, fn_hdf5);
   oxs << end_tag("AVERAGES");
 }
 
