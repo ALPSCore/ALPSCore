@@ -27,8 +27,8 @@
 *****************************************************************************/
 
 #include <alps/alea.h>
-#include <alps/parameter.h>
 #include <alps/hdf5.hpp>
+#include <alps/parameter.h>
 
 #include <boost/mpi.hpp>
 #include <boost/bind.hpp>
@@ -599,6 +599,7 @@ namespace alps {
                         check_time = boost::posix_time::second_clock::local_time() + boost::posix_time::seconds(next_check);
                     }
                 } while(!stop_callback() && fraction < 1.);
+                return !(fraction < 1.);
             }
 
             result_names_type result_names() const {
@@ -653,7 +654,7 @@ namespace alps {
                 , random_01(random)
             {}
 
-            double fraction_completed() const { work_done(); }
+            double fraction_completed() const { return work_done(); }
 
             virtual double work_done() const = 0;
 
