@@ -23,6 +23,8 @@ set(ALPS_SOURCES
     lattice/latticelibrary.C lattice/unitcell.C
     # model
     model/bondterm.C model/globaloperator.C model/modellibrary.C model/siteterm.C
+    # ng
+    ng/signal.cpp 
     # osiris
     osiris/buffer.C osiris/dump.C osiris/dumparchive.C osiris/process.C osiris/comm.C
     osiris/mpdump.C osiris/xdrdump.C osiris/xdrcore.C

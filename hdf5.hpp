@@ -57,6 +57,17 @@
 
 namespace alps {
     namespace hdf5 {
+        #define ALPS_HDF5_THROW_ERROR(error, message)                                                                                                      \
+            {                                                                                                                                              \
+                std::ostringstream buffer;                                                                                                                 \
+                buffer << "Error in " << __FILE__ << " on " << __LINE__ << " in " << __FUNCTION__ << ":" << std::endl << message;                          \
+                throw ( error (buffer.str()));                                                                                                             \
+            }
+        #define ALPS_HDF5_THROW_RUNTIME_ERROR(message)                                                                                                     \
+            ALPS_HDF5_THROW_ERROR(std::runtime_error, message)
+        #define ALPS_HDF5_THROW_RANGE_ERROR(message)                                                                                                       \
+            ALPS_HDF5_THROW_ERROR(std::range_error, message)
+
         namespace detail {
             namespace internal_state_type {
                 typedef enum { CREATE, PLACEHOLDER } type;
@@ -107,11 +118,11 @@ namespace alps {
         namespace detail {
             template<typename T, typename U> void set_data_impl(T & v, std::vector<U> const & u, std::vector<hsize_t> const & s, std::vector<hsize_t> const & c, boost::mpl::false_) {
                 if (s.size() != 1 || c.size() != 1 || c[0] == 0 || u.size() < c[0])
-                    throw std::range_error("invalid data size");
+                    ALPS_HDF5_THROW_RANGE_ERROR("invalid data size")
                 std::copy(u.begin(), u.begin() + c[0], &v + s[0]);
             }
             template<typename T, typename U> void set_data_impl(T &, std::vector<U> const &, std::vector<hsize_t> const &, std::vector<hsize_t> const &, boost::mpl::true_) { 
-                throw std::runtime_error("invalid type conversion");
+                ALPS_HDF5_THROW_RUNTIME_ERROR("invalid type conversion")
             }
         }
         template<typename T, typename U> void set_data(T & v, std::vector<U> const & u, std::vector<hsize_t> const & s, std::vector<hsize_t> const & c) {
@@ -143,7 +154,7 @@ namespace alps {
             typename boost::is_same<T, char *>::type
         >::type>::type set_data(std::string & v, std::vector<T> const & u, std::vector<hsize_t> const & s, std::vector<hsize_t> const & c) { 
             if (s.size() != 1 || c.size() != 1 || c[0] == 0 || u.size() < c[0])
-                throw std::range_error("invalid data size");
+                ALPS_HDF5_THROW_RANGE_ERROR("invalid data size")
             for (std::string * w = &v + s[0]; w != &v + s[0] + c[0]; ++w)
                 *w = boost::lexical_cast<std::string>(u[s[0] + (w - &v)]);
         }
@@ -151,13 +162,13 @@ namespace alps {
             typename boost::is_same<T, char *>::type
         >::type set_data(std::string & v, std::vector<T> const & u, std::vector<hsize_t> const & s, std::vector<hsize_t> const & c) { 
             if (s.size() != 1 || c.size() != 1 || c[0] == 0 || u.size() < c[0])
-                throw std::range_error("invalid data size");
+                ALPS_HDF5_THROW_RANGE_ERROR("invalid data size")
             std::copy(u.begin(), u.begin() + c[0], &v);
         }
         template<typename T> typename boost::enable_if<
             typename boost::is_same<T, std::complex<double> >::type
         >::type set_data(std::string &, std::vector<T> const &, std::vector<hsize_t> const &, std::vector<hsize_t> const &) { 
-            throw std::runtime_error("invalid type conversion");
+            ALPS_HDF5_THROW_RUNTIME_ERROR("invalid type conversion")
         }
 
         template<> struct serializable_type<detail::internal_state_type::type> { typedef detail::internal_state_type::type type; };
@@ -194,7 +205,7 @@ namespace alps {
             , std::vector<hsize_t> const & t = std::vector<hsize_t>(1, 1)
         ) {
             if (t.size() != 1 || t[0] == 0)
-                throw std::range_error("invalid data size");
+                ALPS_HDF5_THROW_RANGE_ERROR("invalid data size")
             m.resize(t[0]);
             for (std::complex<T> const * u = &v; u != &v + t[0]; ++u) {
                 detail::internal_complex_type c = { u->real(), u->imag() };
@@ -205,11 +216,11 @@ namespace alps {
         template<typename T, typename U> typename boost::disable_if<
             typename boost::is_same<U, std::complex<double> >::type
         >::type set_data(std::complex<T> &, std::vector<U> const &, std::vector<hsize_t> const &, std::vector<hsize_t> const &) {
-            throw std::runtime_error("invalid type conversion"); 
+            ALPS_HDF5_THROW_RUNTIME_ERROR("invalid type conversion")
         }
         template<typename T> void set_data(std::complex<T> & v, std::vector<std::complex<double> > const & u, std::vector<hsize_t> const & s, std::vector<hsize_t> const & c) {
             if (s.size() != 1 || c.size() != 1 || c[0] == 0 || u.size() < c[0])
-                throw std::range_error("invalid data size");
+                ALPS_HDF5_THROW_RANGE_ERROR("invalid data size")
             std::copy(u.begin(), u.begin() + c[0], &v + s[0]);
         }
 
@@ -225,7 +236,7 @@ namespace alps {
                     std::copy(t.begin(), t.end(), std::back_inserter(s));                                                                                  \
                     for (std::size_t i = 1; i < v.size(); ++i)                                                                                             \
                         if (!std::equal(t.begin(), t.end(), call_get_extent(v[i]).begin()))                                                                \
-                            throw std::range_error("no rectengual matrix");                                                                                \
+                            ALPS_HDF5_THROW_RANGE_ERROR("no rectengual matrix")                                                                            \
                 }                                                                                                                                          \
                 return s;                                                                                                                                  \
             }                                                                                                                                              \
@@ -234,7 +245,7 @@ namespace alps {
                        !(s.size() == 1 && s[0] == 0)                                                                                                       \
                     && ((is_native<T>::value && s.size() != 1) || (!is_native<T>::value && s.size() < 2))                                                  \
                 )                                                                                                                                          \
-                    throw std::range_error("invalid data size");                                                                                           \
+                    ALPS_HDF5_THROW_RANGE_ERROR("invalid data size")                                                                                       \
                 v.resize(s[0]);                                                                                                                            \
                 if (!is_native<T>::value)                                                                                                                  \
                     for (std::size_t i = 0; i < s[0]; ++i)                                                                                                 \
@@ -292,13 +303,13 @@ namespace alps {
                  std::copy(t.begin(), t.end(), std::back_inserter(s));
                  for (std::size_t i = 1; i < std::accumulate(v.second.begin(), v.second.end(), std::size_t(1), std::multiplies<std::size_t>()); ++i)
                      if (!std::equal(t.begin(), t.end(), call_get_extent(*(v.first + i)).begin()))
-                         throw std::range_error("no rectengual matrix");
+                         ALPS_HDF5_THROW_RANGE_ERROR("no rectengual matrix")
             }
             return s;
         }
         template<typename T> void set_extent(std::pair<T *, std::vector<std::size_t> > & v, std::vector<std::size_t> const & s) {
             if (!(s.size() == 1 && s[0] == 0 && std::accumulate(v.second.begin(), v.second.end(), 0) == 0) && !std::equal(v.second.begin(), v.second.end(), s.begin()))
-                throw std::range_error("invalid data size");
+                ALPS_HDF5_THROW_RANGE_ERROR("invalid data size")
             if (s.size() == 1 && s[0] == 0)
                 v.first = NULL;
             else if (!is_native<T>::value && s.size() > v.second.size())
@@ -376,7 +387,7 @@ namespace alps {
                     ressource(): _id(-1) {}
                     ressource(hid_t id): _id(id) {
                         if (_id < 0)
-                            throw std::runtime_error(error::invoke(_id)); 
+                            ALPS_HDF5_THROW_RUNTIME_ERROR(error::invoke(_id))
                         H5Eclear2(H5E_DEFAULT);
                     }
                     ~ressource() {
@@ -391,7 +402,7 @@ namespace alps {
                     }
                     ressource<F> & operator=(hid_t id) { 
                         if ((_id = id) < 0) 
-                            throw std::runtime_error(error::invoke(_id)); 
+                            ALPS_HDF5_THROW_RUNTIME_ERROR(error::invoke(_id))
                         H5Eclear2(H5E_DEFAULT); 
                         return *this; 
                     }
@@ -558,7 +569,7 @@ namespace alps {
                 }
                 bool is_attribute(std::string const & p) const {
                     if (p.find_last_of('@') == std::string::npos)
-                        throw std::runtime_error("no attribute paht: " + complete_path(p));
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("no attribute paht: " + complete_path(p))
                     hid_t parent_id;
                     if (is_group(complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1)))
                         parent_id = detail::check_error(H5Gopen2(_pool[_filename].first, complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1).c_str(), H5P_DEFAULT));
@@ -568,7 +579,7 @@ namespace alps {
                         #ifdef ALPS_HDF5_READ_GREEDY
                             return false;
                         #else
-                            throw std::runtime_error("unknown path: " + complete_path(p));
+                            ALPS_HDF5_THROW_RUNTIME_ERROR("unknown path: " + complete_path(p))
                         #endif
                     bool exists = detail::check_error(H5Aexists(parent_id, p.substr(p.find_last_of('@') + 1).c_str()));
                     if (is_group(complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1)))
@@ -602,15 +613,13 @@ namespace alps {
                     detail::space_type space_id(H5Dget_space(data_id));
                     H5S_class_t type = H5Sget_simple_extent_type(space_id);
                     if (type == H5S_NO_CLASS)
-                        throw std::runtime_error("error reading class " + complete_path(p));
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("error reading class " + complete_path(p))
                     return type == H5S_SCALAR;
                 }
                 bool is_string(std::string const & p) const {
+                    if (!is_scalar(p))
+                        return false;
                     detail::data_type data_id(H5Dopen2(_pool[_filename].first, complete_path(p).c_str(), H5P_DEFAULT));
-                    detail::space_type space_id(H5Dget_space(data_id));
-                    H5S_class_t type = H5Sget_simple_extent_type(space_id);
-                    if (type == H5S_NO_CLASS)
-                        throw std::runtime_error("error reading class " + complete_path(p));
                     detail::type_type type_id(H5Dget_type(data_id));
                     detail::type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));
                     return H5Tget_class(native_id) == H5T_STRING;
@@ -620,7 +629,7 @@ namespace alps {
                     detail::space_type space_id(H5Dget_space(data_id));
                     H5S_class_t type = H5Sget_simple_extent_type(space_id);
                     if (type == H5S_NO_CLASS)
-                        throw std::runtime_error("error reading class " + complete_path(p));
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("error reading class " + complete_path(p))
                     return type == H5S_NULL;
                 }
                 void delete_data(std::string const & p) const {
@@ -628,14 +637,14 @@ namespace alps {
                         // TODO: implement provenance
                         detail::check_error(H5Ldelete(_pool[_filename].first, complete_path(p).c_str(), H5P_DEFAULT));
                     else
-                        throw std::runtime_error("the path does not exists: " + p);
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("the path does not exists: " + p)
                 }
                 void delete_group(std::string const & p) const {
                     if (is_group(p))
                         // TODO: implement provenance
                         detail::check_error(H5Ldelete(_pool[_filename].first, complete_path(p).c_str(), H5P_DEFAULT));
                     else
-                        throw std::runtime_error("the path does not exists: " + p);
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("the path does not exists: " + p)
                 }
                 std::vector<std::string> list_children(std::string const & p) const {
                     std::vector<std::string> list;
@@ -694,7 +703,7 @@ namespace alps {
                     detail::check_error(H5Tcommit2(_pool[_filename].first, "log_type", log_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
                 }
                 template<typename T> hid_t get_native_type(T) const {
-                    throw std::runtime_error(std::string("no native type passed: ") + typeid(T).name());
+                    ALPS_HDF5_THROW_RUNTIME_ERROR(std::string("no native type passed: ") + typeid(T).name())
                 }
                 hid_t get_native_type(char) const { return H5Tcopy(H5T_NATIVE_CHAR); }
                 hid_t get_native_type(signed char) const { return H5Tcopy(H5T_NATIVE_SCHAR); }
@@ -796,7 +805,7 @@ namespace alps {
                             }
                         HDF5_FOREACH_SCALAR(HDF5_COPY_ATTR)
                         #undef HDF5_COPY_ATTR
-                        else throw std::runtime_error("error in copying attribute: " + *it);
+                        else ALPS_HDF5_THROW_RUNTIME_ERROR("error in copying attribute: " + *it)
                     }
                 }
                 hid_t save_comitted_data(std::string const & p, hid_t type_id, hid_t space_id, hsize_t d, hsize_t const * s = NULL, bool set_prop = true) const {
@@ -882,9 +891,9 @@ namespace alps {
                 }
                 template<typename T> void get_data(std::string const & p, T & v) const {
                     if (is_scalar(p) != is_native<T>::value)
-                        throw std::runtime_error("scalar - vector conflict");
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("scalar - vector conflict")
                     else if (is_native<T>::value && is_null(p))
-                        throw std::runtime_error("scalars cannot be null");
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("scalars cannot be null")
                     else if (is_null(p)) {
                         call_set_extent(v, std::vector<std::size_t>(1, 0));
                     } else {
@@ -908,19 +917,19 @@ namespace alps {
                                 get_helper<T, U>(v, data_id, type_id, false);
                         HDF5_FOREACH_SCALAR(HDF5_GET_STRING)
                         #undef HDF5_GET_STRING
-                        else throw std::runtime_error("invalid type");
+                        else ALPS_HDF5_THROW_RUNTIME_ERROR("invalid type")
                     }
                 }
                 template<typename T> void get_attr(std::string const & p, std::string const & s, T & v) const {
                     hid_t parent_id;
                     if (!is_native<T>::value)
-                        throw std::runtime_error("attributes need to be scalar");
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("attributes need to be scalar")
                     else if (is_group(p))
                         parent_id = H5Gopen2(_pool[_filename].first, p.c_str(), H5P_DEFAULT);
                     else if (is_data(p))
                         parent_id = H5Dopen2(_pool[_filename].first, p.c_str(), H5P_DEFAULT);
                     else
-                        throw std::runtime_error("invalid path");
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("invalid path")
                     detail::attribute_type attr_id(H5Aopen(parent_id, s.c_str(), H5P_DEFAULT));
                     detail::type_type type_id(H5Aget_type(attr_id));
                     detail::type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));
@@ -935,7 +944,7 @@ namespace alps {
                             get_helper<T, U>(v, attr_id, type_id, true);
                     HDF5_FOREACH_SCALAR(HDF5_GET_ATTR)
                     #undef HDF5_GET_ATTR
-                    else throw std::runtime_error("invalid type");
+                    else ALPS_HDF5_THROW_RUNTIME_ERROR("invalid type")
                     if (is_group(p))
                         detail::check_group(parent_id);
                     else
@@ -978,7 +987,7 @@ namespace alps {
                     hid_t parent_id;
                     std::string rev_path = "/revisions/" + boost::lexical_cast<std::string>(_revision) + p;
                     if (!is_native<T>::value)
-                        throw std::runtime_error("attributes need to be scalar");
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("attributes need to be scalar")
                     else if (is_group(p)) {
                         parent_id = detail::check_error(H5Gopen2(_pool[_filename].first, p.c_str(), H5P_DEFAULT));
                         if (_revision && p.substr(0, std::strlen("/revisions")) != "/revisions" && !is_group(rev_path))
@@ -988,7 +997,7 @@ namespace alps {
                         if (_revision && p.substr(0, std::strlen("/revisions")) != "/revisions" && !is_data(rev_path))
                             set_data(rev_path, detail::internal_state_type::PLACEHOLDER);
                     } else
-                        throw std::runtime_error("unknown path: " + p);
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("unknown path: " + p)
                     if (_revision && p.substr(0, std::strlen("/revisions")) != "/revisions" && !detail::check_error(H5Aexists(parent_id, s.c_str())))
                         set_attr(rev_path, s, detail::internal_state_type::CREATE);
                     else if (_revision && p.substr(0, std::strlen("/revisions")) != "/revisions") {
@@ -1054,7 +1063,7 @@ namespace alps {
             struct creator {
                 static hid_t open_reading(std::string const & file) {
                     if (detail::check_error(H5Fis_hdf5(file.c_str())) == 0)
-                        throw std::runtime_error("no valid hdf5 file " + file);
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("no valid hdf5 file: " + file)
                     return H5Fopen(file.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
                 }
                 static hid_t open_writing(std::string const & file) {
@@ -1100,7 +1109,7 @@ namespace alps {
                 }
                 void serialize(std::string const & p) {
                     if (p.find_last_of('@') != std::string::npos)
-                        throw std::runtime_error("attributes needs to be a scalar type or a string" + p);
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("attributes needs to be a scalar type or a string" + p)
                     else
                         set_group(complete_path(p));
                 }
@@ -1316,6 +1325,10 @@ namespace alps {
     HDF5_MAKE_ARRAY_PVP(T *, boost::shared_array<T> &)
     HDF5_MAKE_ARRAY_PVP(T const *, boost::shared_array<T> const &)
     #undef HDF5_MAKE_ARRAY_PVP
+
+    #undef ALPS_HDF5_THROW_ERROR
+    #undef ALPS_HDF5_THROW_RUNTIME_ERROR
+    #undef ALPS_HDF5_THROW_RANGE_ERROR
 }
 #endif
 
