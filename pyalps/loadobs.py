@@ -26,8 +26,8 @@
 # 
 # ****************************************************************************
 
-import pyalps.pyhdf5 as h5
-import pyalps.pyalea as pa
+import pyalps.hdf5 as h5
+import pyalps.alea as pa
 
 iar = h5.iArchive('ising.h5')
 

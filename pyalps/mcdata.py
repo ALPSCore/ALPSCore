@@ -27,7 +27,7 @@
 # 
 # ****************************************************************************
 
-from pyalps.pyalea import *
+from pyalps.alea import *
 import numpy as np 
 
 print "\nTesting MCScalarData"

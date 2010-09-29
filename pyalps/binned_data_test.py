@@ -26,7 +26,7 @@
 # 
 # ****************************************************************************
 
-from pyalea import *
+from pyalps.alea import *
 import numpy as np
 
 print "\nTesting binned_data"
