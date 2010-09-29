@@ -57,10 +57,12 @@
 
 namespace alps {
     namespace hdf5 {
+        #define ALPS_HDF5_STRINGIFY(arg) ALPS_HDF5_STRINGIFY_HELPER(arg)
+        #define ALPS_HDF5_STRINGIFY_HELPER(arg) #arg
         #define ALPS_HDF5_THROW_ERROR(error, message)                                                                                                      \
             {                                                                                                                                              \
                 std::ostringstream buffer;                                                                                                                 \
-                buffer << "Error in " << __FILE__ << " on " << __LINE__ << " in " << __FUNCTION__ << ":" << std::endl << message;                          \
+                buffer << "Error in " << __FILE__ << " on " << ALPS_HDF5_STRINGIFY(__LINE__) << " in " << __FUNCTION__ << ":" << std::endl << message;     \
                 throw ( error (buffer.str()));                                                                                                             \
             }
         #define ALPS_HDF5_THROW_RUNTIME_ERROR(message)                                                                                                     \
@@ -372,14 +374,21 @@ namespace alps {
                 public:
                     static herr_t noop(hid_t) { return 0; }
                     static herr_t callback(unsigned n, H5E_error2_t const * desc, void * buffer) {
-                        *reinterpret_cast<std::ostringstream *>(buffer) << "    #" << n << " " << desc->file_name << " line " << desc->line << " in " << desc->func_name << "(): " << desc->desc << std::endl;
+                        *reinterpret_cast<std::ostringstream *>(buffer) << "    #" << to_string(n) << " " << desc->file_name << " line " << to_string(desc->line) << " in " << desc->func_name << "(): " << desc->desc << std::endl;
                         return 0;
                     }
                     static std::string invoke(hid_t id) {
                         std::ostringstream buffer;
-                        buffer << "HDF5 error: " << id << std::endl;
+                        buffer << "HDF5 error: " << to_string(id) << std::endl;
                         H5Ewalk2(H5E_DEFAULT, H5E_WALK_DOWNWARD, callback, &buffer);
                         return buffer.str();
+                    }
+                private:
+                    static std::string to_string(int arg) {
+                        char buffer[255];
+                        if (sprintf(buffer, "HDF5 error: %i", arg) < 0)
+                            ALPS_HDF5_THROW_RUNTIME_ERROR("error converting int to string");
+                        return buffer;
                     }
             };
             template<herr_t(*F)(hid_t)> class ressource {
@@ -388,14 +397,12 @@ namespace alps {
                     ressource(hid_t id): _id(id) {
                         if (_id < 0)
                             ALPS_HDF5_THROW_RUNTIME_ERROR(error::invoke(_id))
-                        H5Eclear2(H5E_DEFAULT);
                     }
                     ~ressource() {
                         if(_id < 0 || (_id = F(_id)) < 0) {
                             std::cerr << error::invoke(_id) << std::endl;
                             std::abort();
                         }
-                        H5Eclear2(H5E_DEFAULT); 
                     }
                     operator hid_t() const { 
                         return _id; 
@@ -403,7 +410,6 @@ namespace alps {
                     ressource<F> & operator=(hid_t id) { 
                         if ((_id = id) < 0) 
                             ALPS_HDF5_THROW_RUNTIME_ERROR(error::invoke(_id))
-                        H5Eclear2(H5E_DEFAULT); 
                         return *this; 
                     }
                 private:
@@ -483,26 +489,20 @@ namespace alps {
                     , _filename(rhs._filename)
                 {}
                 ~archive() {
-                    H5Fflush(_pool[_filename].first, H5F_SCOPE_GLOBAL);
+                    H5Fflush(*_file, H5F_SCOPE_GLOBAL);
                     if (_state_id > -1)
                         detail::check_type(_state_id);
                     if (_log_id > -1)
                         detail::check_type(_log_id);
-                    if (!--_pool[_filename].second) {
-                        #ifndef ALPS_HDF5_CLOSE_GREEDY
-                            if (
-                                H5Fget_obj_count(_pool[_filename].first, H5F_OBJ_DATATYPE) > (_state_id == -1 ? 0 : 1) + (_log_id == -1 ? 0 : 1)
-                                || H5Fget_obj_count(_pool[_filename].first, H5F_OBJ_ALL) 
-                                    - H5Fget_obj_count(_pool[_filename].first, H5F_OBJ_FILE) 
-                                    - H5Fget_obj_count(_pool[_filename].first, H5F_OBJ_DATATYPE) > 0
-                            ) {
-                                std::cerr << "Not all resources closed" << std::endl;
-                                std::abort();
-                            }
-                        #endif
-                        detail::check_file(_pool[_filename].first);
-                        _pool.erase(_filename);
-                    }
+                    #ifndef ALPS_HDF5_CLOSE_GREEDY
+                        if (
+                            H5Fget_obj_count(*_file, H5F_OBJ_DATATYPE) > (_state_id == -1 ? 0 : 1) + (_log_id == -1 ? 0 : 1)
+                            || H5Fget_obj_count(*_file, H5F_OBJ_ALL) - H5Fget_obj_count(*_file, H5F_OBJ_FILE) - H5Fget_obj_count(*_file, H5F_OBJ_DATATYPE) > 0
+                        ) {
+                            std::cerr << "Not all resources closed" << std::endl;
+                            std::abort();
+                        }
+                    #endif
                 }
                 std::string const & filename() const {
                     return _filename;
@@ -560,11 +560,11 @@ namespace alps {
                     }
                 }
                 bool is_group(std::string const & p) const {
-                    hid_t id = H5Gopen2(_pool[_filename].first, complete_path(p).c_str(), H5P_DEFAULT);
+                    hid_t id = H5Gopen2(*_file, complete_path(p).c_str(), H5P_DEFAULT);
                     return id < 0 ? false : detail::check_group(id) != 0;
                 }
                 bool is_data(std::string const & p) const {
-                    hid_t id = H5Dopen2(_pool[_filename].first, complete_path(p).c_str(), H5P_DEFAULT);
+                    hid_t id = H5Dopen2(*_file, complete_path(p).c_str(), H5P_DEFAULT);
                     return id < 0 ? false : detail::check_data(id) != 0;
                 }
                 bool is_attribute(std::string const & p) const {
@@ -572,9 +572,9 @@ namespace alps {
                         ALPS_HDF5_THROW_RUNTIME_ERROR("no attribute paht: " + complete_path(p))
                     hid_t parent_id;
                     if (is_group(complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1)))
-                        parent_id = detail::check_error(H5Gopen2(_pool[_filename].first, complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1).c_str(), H5P_DEFAULT));
+                        parent_id = detail::check_error(H5Gopen2(*_file, complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1).c_str(), H5P_DEFAULT));
                     else if (is_data(complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1)))
-                        parent_id = detail::check_error(H5Dopen2(_pool[_filename].first, complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1).c_str(), H5P_DEFAULT));
+                        parent_id = detail::check_error(H5Dopen2(*_file, complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1).c_str(), H5P_DEFAULT));
                     else
                         #ifdef ALPS_HDF5_READ_GREEDY
                             return false;
@@ -595,7 +595,7 @@ namespace alps {
                         return std::vector<std::size_t>(1, 1);
                     std::vector<hsize_t> buffer(dimensions(p), 0);
                     {
-                        detail::data_type data_id(H5Dopen2(_pool[_filename].first, complete_path(p).c_str(), H5P_DEFAULT));
+                        detail::data_type data_id(H5Dopen2(*_file, complete_path(p).c_str(), H5P_DEFAULT));
                         detail::space_type space_id(H5Dget_space(data_id));
                         detail::check_error(H5Sget_simple_extent_dims(space_id, &buffer.front(), NULL));
                     }
@@ -604,12 +604,12 @@ namespace alps {
                     return extent;
                 }
                 std::size_t dimensions(std::string const & p) const {
-                    detail::data_type data_id(H5Dopen2(_pool[_filename].first, complete_path(p).c_str(), H5P_DEFAULT));
+                    detail::data_type data_id(H5Dopen2(*_file, complete_path(p).c_str(), H5P_DEFAULT));
                     detail::space_type space_id(H5Dget_space(data_id));
                     return static_cast<hid_t>(detail::check_error(H5Sget_simple_extent_dims(space_id, NULL, NULL)));
                 }
                 bool is_scalar(std::string const & p) const {
-                    detail::data_type data_id(H5Dopen2(_pool[_filename].first, complete_path(p).c_str(), H5P_DEFAULT));
+                    detail::data_type data_id(H5Dopen2(*_file, complete_path(p).c_str(), H5P_DEFAULT));
                     detail::space_type space_id(H5Dget_space(data_id));
                     H5S_class_t type = H5Sget_simple_extent_type(space_id);
                     if (type == H5S_NO_CLASS)
@@ -619,13 +619,13 @@ namespace alps {
                 bool is_string(std::string const & p) const {
                     if (!is_scalar(p))
                         return false;
-                    detail::data_type data_id(H5Dopen2(_pool[_filename].first, complete_path(p).c_str(), H5P_DEFAULT));
+                    detail::data_type data_id(H5Dopen2(*_file, complete_path(p).c_str(), H5P_DEFAULT));
                     detail::type_type type_id(H5Dget_type(data_id));
                     detail::type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));
                     return H5Tget_class(native_id) == H5T_STRING;
                 }
                 bool is_null(std::string const & p) const {
-                    detail::data_type data_id(H5Dopen2(_pool[_filename].first, complete_path(p).c_str(), H5P_DEFAULT));
+                    detail::data_type data_id(H5Dopen2(*_file, complete_path(p).c_str(), H5P_DEFAULT));
                     detail::space_type space_id(H5Dget_space(data_id));
                     H5S_class_t type = H5Sget_simple_extent_type(space_id);
                     if (type == H5S_NO_CLASS)
@@ -635,45 +635,54 @@ namespace alps {
                 void delete_data(std::string const & p) const {
                     if (is_data(p))
                         // TODO: implement provenance
-                        detail::check_error(H5Ldelete(_pool[_filename].first, complete_path(p).c_str(), H5P_DEFAULT));
+                        detail::check_error(H5Ldelete(*_file, complete_path(p).c_str(), H5P_DEFAULT));
                     else
                         ALPS_HDF5_THROW_RUNTIME_ERROR("the path does not exists: " + p)
                 }
                 void delete_group(std::string const & p) const {
                     if (is_group(p))
                         // TODO: implement provenance
-                        detail::check_error(H5Ldelete(_pool[_filename].first, complete_path(p).c_str(), H5P_DEFAULT));
+                        detail::check_error(H5Ldelete(*_file, complete_path(p).c_str(), H5P_DEFAULT));
                     else
                         ALPS_HDF5_THROW_RUNTIME_ERROR("the path does not exists: " + p)
                 }
                 std::vector<std::string> list_children(std::string const & p) const {
                     std::vector<std::string> list;
-                    detail::group_type group_id(H5Gopen2(_pool[_filename].first, complete_path(p).c_str(), H5P_DEFAULT));
+                    detail::group_type group_id(H5Gopen2(*_file, complete_path(p).c_str(), H5P_DEFAULT));
                     detail::check_error(H5Literate(group_id, H5_INDEX_NAME, H5_ITER_NATIVE, NULL, child_visitor, reinterpret_cast<void *>(&list)));
                     return list;
                 }
                 std::vector<std::string> list_attr(std::string const & p) const {
                     std::vector<std::string> list;
                     if (is_group(p)) {
-                        detail::group_type id(H5Gopen2(_pool[_filename].first, complete_path(p).c_str(), H5P_DEFAULT));
+                        detail::group_type id(H5Gopen2(*_file, complete_path(p).c_str(), H5P_DEFAULT));
                         detail::check_error(H5Aiterate2(id, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, NULL, attr_visitor, reinterpret_cast<void *>(&list)));
                     } else {
-                        detail::data_type id(H5Dopen2(_pool[_filename].first, complete_path(p).c_str(), H5P_DEFAULT));
+                        detail::data_type id(H5Dopen2(*_file, complete_path(p).c_str(), H5P_DEFAULT));
                         detail::check_error(H5Aiterate2(id, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, NULL, attr_visitor, reinterpret_cast<void *>(&list)));
                     }
                     return list;
                 }
             protected:
-                archive(std::string const & file, bool compress = false): _compress(compress), _revision(0), _state_id(-1), _log_id(-1), _filename(file) {
+                archive(std::string const & file, bool compress = false)
+                    : _compress(compress)
+                    , _revision(0)
+                    , _state_id(-1)
+                    , _log_id(-1)
+                    , _filename(file)
+                    , _file(_pool.find(_filename) == _pool.end() || _pool[_filename].expired() 
+                        ? new detail::file_type(F(_filename))
+                        : _pool[_filename].lock().get()
+                      )
+                {
+                    H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
+                    if (_pool.find(_filename) == _pool.end() || _pool[_filename].expired())
+                        _pool[_filename] = _file;
                     if (_compress) {
                         unsigned int flag;
                         detail::check_error(H5Zget_filter_info(H5Z_FILTER_SZIP, &flag));
                         _compress = flag & H5Z_FILTER_CONFIG_ENCODE_ENABLED;
                     }
-                    H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
-                    if (_pool.find(_filename) == _pool.end())
-                        _pool.insert(std::make_pair(_filename, std::make_pair(F(_filename), 0)));
-                    ++_pool[_filename].second;
                 }
                 void initialize() {
                     _complex_id = H5Tcreate (H5T_COMPOUND, sizeof(detail::internal_complex_type));
@@ -681,8 +690,8 @@ namespace alps {
                     detail::check_error(H5Tinsert(_complex_id, "i", HOFFSET(detail::internal_complex_type, i), H5T_NATIVE_DOUBLE));
                     if (is_group("/revisions")) {
                         get_attr("/revisions", "last", _revision);
-                        _log_id = detail::check_error(H5Topen2(_pool[_filename].first, "log_type", H5P_DEFAULT));
-                        _state_id = detail::check_error(H5Topen2(_pool[_filename].first, "state_type", H5P_DEFAULT));
+                        _log_id = detail::check_error(H5Topen2(*_file, "log_type", H5P_DEFAULT));
+                        _state_id = detail::check_error(H5Topen2(*_file, "state_type", H5P_DEFAULT));
                     }
                 }
                 void create_provenance() {
@@ -692,7 +701,7 @@ namespace alps {
                     detail::type_type state_id = H5Tenum_create(H5T_NATIVE_SHORT);
                     detail::check_error(H5Tenum_insert(state_id, "CREATE", &(v = detail::internal_state_type::CREATE)));
                     detail::check_error(H5Tenum_insert(state_id, "PLACEHOLDER", &(v = detail::internal_state_type::PLACEHOLDER)));
-                    detail::check_error(H5Tcommit2(_pool[_filename].first, "state_type", state_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
+                    detail::check_error(H5Tcommit2(*_file, "state_type", state_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
                     detail::type_type log_id = H5Tcreate (H5T_COMPOUND, sizeof(detail::internal_log_type));
                     detail::type_type time_id(H5Tcopy(H5T_C_S1));
                     detail::check_error(H5Tset_size(time_id, H5T_VARIABLE));
@@ -700,7 +709,7 @@ namespace alps {
                     detail::type_type name_id(H5Tcopy(H5T_C_S1));
                     detail::check_error(H5Tset_size(name_id, H5T_VARIABLE));
                     detail::check_error(H5Tinsert(log_id, "log", HOFFSET(detail::internal_log_type, name), name_id));
-                    detail::check_error(H5Tcommit2(_pool[_filename].first, "log_type", log_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
+                    detail::check_error(H5Tcommit2(*_file, "log_type", log_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
                 }
                 template<typename T> hid_t get_native_type(T) const {
                     ALPS_HDF5_THROW_RUNTIME_ERROR(std::string("no native type passed: ") + typeid(T).name())
@@ -736,7 +745,7 @@ namespace alps {
                     return 0;
                 }
                 hid_t create_path(std::string const & p, hid_t type_id, hid_t space_id, hsize_t d, hsize_t const * s = NULL, bool set_prop = true) const {
-                    hid_t data_id = H5Dopen2(_pool[_filename].first, p.c_str(), H5P_DEFAULT), tmp_id = 0;
+                    hid_t data_id = H5Dopen2(*_file, p.c_str(), H5P_DEFAULT), tmp_id = 0;
                     if (data_id < 0) {
                         if (p.find_last_of('/') < std::string::npos && p.find_last_of('/') > 0)
                             set_group(p.substr(0, p.find_last_of('/')));
@@ -749,16 +758,16 @@ namespace alps {
                     ) {
                         std::vector<std::string> names = list_attr(p);
                         if (names.size()) {
-                            tmp_id = H5Gcreate2(_pool[_filename].first, "/revisions/waitingroom", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                            tmp_id = H5Gcreate2(*_file, "/revisions/waitingroom", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
                             copy_attributes(tmp_id, data_id, names);
                         }
                         detail::check_data(data_id);
-                        detail::check_error(H5Ldelete(_pool[_filename].first, p.c_str(), H5P_DEFAULT));
+                        detail::check_error(H5Ldelete(*_file, p.c_str(), H5P_DEFAULT));
                         data_id = create_dataset(p, type_id, space_id, d, s, set_prop);
                         if (names.size()) {
                             copy_attributes(data_id, tmp_id, names);
                             detail::check_group(tmp_id);
-                            detail::check_error(H5Ldelete(_pool[_filename].first, "/revisions/waitingroom", H5P_DEFAULT));
+                            detail::check_error(H5Ldelete(*_file, "/revisions/waitingroom", H5P_DEFAULT));
                         }
                     }
                     return data_id;
@@ -772,9 +781,9 @@ namespace alps {
                             if (_compress)
                                 detail::check_error(H5Pset_szip(prop_id, H5_SZIP_NN_OPTION_MASK, 32));
                         }
-                        return H5Dcreate2(_pool[_filename].first, p.c_str(), type_id, detail::space_type(space_id), H5P_DEFAULT, prop_id, H5P_DEFAULT);
+                        return H5Dcreate2(*_file, p.c_str(), type_id, detail::space_type(space_id), H5P_DEFAULT, prop_id, H5P_DEFAULT);
                     } else
-                        return H5Dcreate2(_pool[_filename].first, p.c_str(), type_id, detail::space_type(space_id), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                        return H5Dcreate2(*_file, p.c_str(), type_id, detail::space_type(space_id), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
                 }
                 void copy_attributes(hid_t dest_id, hid_t source_id, std::vector<std::string> const & names) const {
                     for (std::vector<std::string>::const_iterator it = names.begin(); it != names.end(); ++it) {
@@ -813,34 +822,34 @@ namespace alps {
                     if (_revision && !is_data(p))
                         set_data(rev_path, detail::internal_state_type::CREATE);
                     else if (_revision) {
-                        hid_t data_id = H5Dopen2(_pool[_filename].first, rev_path.c_str(), H5P_DEFAULT);
+                        hid_t data_id = H5Dopen2(*_file, rev_path.c_str(), H5P_DEFAULT);
                         std::vector<std::string> revision_names;
                         if (data_id > 0 && detail::check_error(H5Tequal(detail::type_type(H5Dget_type(data_id)), detail::type_type(H5Tcopy(_state_id)))) > 0) {
                             detail::internal_state_type::type v;
                             detail::check_error(H5Dread(data_id, _state_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &v));
                             if (v == detail::internal_state_type::PLACEHOLDER) {
                                 if ((revision_names = list_attr(rev_path)).size()) {
-                                    detail::group_type tmp_id = H5Gcreate2(_pool[_filename].first, "/revisions/waitingroom", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                                    detail::group_type tmp_id = H5Gcreate2(*_file, "/revisions/waitingroom", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
                                     copy_attributes(tmp_id, data_id, revision_names);
                                 }
                                 detail::check_data(data_id);
-                                detail::check_error(H5Ldelete(_pool[_filename].first, rev_path.c_str(), H5P_DEFAULT));
+                                detail::check_error(H5Ldelete(*_file, rev_path.c_str(), H5P_DEFAULT));
                             } else
                                 detail::check_data(data_id);
                         } else if (data_id >= 0)
                             detail::check_data(data_id);
                         if (!is_data(rev_path)) {
                             set_group(rev_path.substr(0, rev_path.find_last_of('/')));
-                            detail::check_error(H5Lmove(_pool[_filename].first, p.c_str(), H5L_SAME_LOC, (rev_path).c_str(), H5P_DEFAULT, H5P_DEFAULT));
+                            detail::check_error(H5Lmove(*_file, p.c_str(), H5L_SAME_LOC, (rev_path).c_str(), H5P_DEFAULT, H5P_DEFAULT));
                             hid_t new_id = create_path(p, type_id, space_id, d, s, set_prop);
                             std::vector<std::string> current_names = list_attr(rev_path);
-                            detail::data_type data_id(H5Dopen2(_pool[_filename].first, rev_path.c_str(), H5P_DEFAULT));
+                            detail::data_type data_id(H5Dopen2(*_file, rev_path.c_str(), H5P_DEFAULT));
                             copy_attributes(new_id, data_id, current_names); 
                             for (std::vector<std::string>::const_iterator it = current_names.begin(); it != current_names.end(); ++it)
                                 H5Adelete(data_id, it->c_str());
                             if (revision_names.size()) {
-                                copy_attributes(data_id, detail::group_type(H5Gopen2(_pool[_filename].first, "/revisions/waitingroom", H5P_DEFAULT)), revision_names);
-                                detail::check_error(H5Ldelete(_pool[_filename].first, "/revisions/waitingroom", H5P_DEFAULT));
+                                copy_attributes(data_id, detail::group_type(H5Gopen2(*_file, "/revisions/waitingroom", H5P_DEFAULT)), revision_names);
+                                detail::check_error(H5Ldelete(*_file, "/revisions/waitingroom", H5P_DEFAULT));
                             }
                             return new_id;
                         }
@@ -898,7 +907,7 @@ namespace alps {
                         call_set_extent(v, std::vector<std::size_t>(1, 0));
                     } else {
                         std::vector<hsize_t> size(dimensions(p), 0);
-                        detail::data_type data_id(H5Dopen2(_pool[_filename].first, p.c_str(), H5P_DEFAULT));
+                        detail::data_type data_id(H5Dopen2(*_file, p.c_str(), H5P_DEFAULT));
                         detail::type_type type_id(H5Dget_type(data_id));
                         detail::type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));
                         if (size.size()) {
@@ -925,9 +934,9 @@ namespace alps {
                     if (!is_native<T>::value)
                         ALPS_HDF5_THROW_RUNTIME_ERROR("attributes need to be scalar")
                     else if (is_group(p))
-                        parent_id = H5Gopen2(_pool[_filename].first, p.c_str(), H5P_DEFAULT);
+                        parent_id = H5Gopen2(*_file, p.c_str(), H5P_DEFAULT);
                     else if (is_data(p))
-                        parent_id = H5Dopen2(_pool[_filename].first, p.c_str(), H5P_DEFAULT);
+                        parent_id = H5Dopen2(*_file, p.c_str(), H5P_DEFAULT);
                     else
                         ALPS_HDF5_THROW_RUNTIME_ERROR("invalid path")
                     detail::attribute_type attr_id(H5Aopen(parent_id, s.c_str(), H5P_DEFAULT));
@@ -989,11 +998,11 @@ namespace alps {
                     if (!is_native<T>::value)
                         ALPS_HDF5_THROW_RUNTIME_ERROR("attributes need to be scalar")
                     else if (is_group(p)) {
-                        parent_id = detail::check_error(H5Gopen2(_pool[_filename].first, p.c_str(), H5P_DEFAULT));
+                        parent_id = detail::check_error(H5Gopen2(*_file, p.c_str(), H5P_DEFAULT));
                         if (_revision && p.substr(0, std::strlen("/revisions")) != "/revisions" && !is_group(rev_path))
                             set_group(rev_path);
                     } else if (is_data(p)) {
-                        parent_id = detail::check_error(H5Dopen2(_pool[_filename].first, p.c_str(), H5P_DEFAULT));
+                        parent_id = detail::check_error(H5Dopen2(*_file, p.c_str(), H5P_DEFAULT));
                         if (_revision && p.substr(0, std::strlen("/revisions")) != "/revisions" && !is_data(rev_path))
                             set_data(rev_path, detail::internal_state_type::PLACEHOLDER);
                     } else
@@ -1001,7 +1010,7 @@ namespace alps {
                     if (_revision && p.substr(0, std::strlen("/revisions")) != "/revisions" && !detail::check_error(H5Aexists(parent_id, s.c_str())))
                         set_attr(rev_path, s, detail::internal_state_type::CREATE);
                     else if (_revision && p.substr(0, std::strlen("/revisions")) != "/revisions") {
-                        hid_t data_id = (is_group(rev_path) ? H5Gopen2(_pool[_filename].first, rev_path.c_str(), H5P_DEFAULT) : H5Dopen2(_pool[_filename].first, rev_path.c_str(), H5P_DEFAULT));
+                        hid_t data_id = (is_group(rev_path) ? H5Gopen2(*_file, rev_path.c_str(), H5P_DEFAULT) : H5Dopen2(*_file, rev_path.c_str(), H5P_DEFAULT));
                         if (detail::check_error(H5Aexists(data_id, s.c_str())) && detail::check_error(H5Tequal(detail::type_type(H5Aget_type(detail::attribute_type(H5Aopen(data_id, s.c_str(), H5P_DEFAULT)))), detail::type_type(H5Tcopy(_state_id)))) > 0)
                             H5Adelete(data_id, s.c_str());
                         if (!detail::check_error(H5Aexists(data_id, s.c_str())))
@@ -1033,17 +1042,17 @@ namespace alps {
                         std::size_t pos;
                         hid_t group_id = -1;
                         for (pos = p.find_last_of('/'); group_id < 0 && pos > 0 && pos < std::string::npos; pos = p.find_last_of('/', pos - 1))
-                            group_id = H5Gopen2(_pool[_filename].first, p.substr(0, pos).c_str(), H5P_DEFAULT);
+                            group_id = H5Gopen2(*_file, p.substr(0, pos).c_str(), H5P_DEFAULT);
                         if (group_id < 0) {
                             if ((pos = p.find_first_of('/', 1)) != std::string::npos)
-                                detail::check_group(H5Gcreate2(_pool[_filename].first, p.substr(0, pos).c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
+                                detail::check_group(H5Gcreate2(*_file, p.substr(0, pos).c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
                         } else {
                             pos = p.find_first_of('/', pos + 1);
                             detail::check_group(group_id);
                         }
                         while (pos != std::string::npos && (pos = p.find_first_of('/', pos + 1)) != std::string::npos && pos > 0)
-                            detail::check_group(H5Gcreate2(_pool[_filename].first, p.substr(0, pos).c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
-                        detail::check_group(H5Gcreate2(_pool[_filename].first, p.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
+                            detail::check_group(H5Gcreate2(*_file, p.substr(0, pos).c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
+                        detail::check_group(H5Gcreate2(*_file, p.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
                     }
                 }
             private:
@@ -1054,9 +1063,10 @@ namespace alps {
                 hid_t _complex_id;
                 std::string _context;
                 std::string _filename;
-                static std::map<std::string, std::pair<hid_t, std::size_t> > _pool;
+                boost::shared_ptr<detail::file_type> _file;
+                static std::map<std::string, boost::weak_ptr<detail::file_type> > _pool;
         };
-        template<hid_t(* F )(std::string const &)> std::map<std::string, std::pair<hid_t, std::size_t> > archive<F>::_pool;
+        template<hid_t(* F )(std::string const &)> std::map<std::string, boost::weak_ptr<detail::file_type> > archive<F>::_pool;
         #undef HDF5_FOREACH_SCALAR
 
         namespace detail {
@@ -1326,6 +1336,8 @@ namespace alps {
     HDF5_MAKE_ARRAY_PVP(T const *, boost::shared_array<T> const &)
     #undef HDF5_MAKE_ARRAY_PVP
 
+    #undef ALPS_HDF5_STRINGIFY
+    #undef ALPS_HDF5_STRINGIFY_HELPER
     #undef ALPS_HDF5_THROW_ERROR
     #undef ALPS_HDF5_THROW_RUNTIME_ERROR
     #undef ALPS_HDF5_THROW_RANGE_ERROR
