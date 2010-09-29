@@ -9,7 +9,7 @@ include_directories(${Boost_ROOT_DIR})
 
 if (ALPS_BUILD_PYTHON)
     enable_testing()
-    FOREACH (name binned_data_test hlist_test mcdata loadobs)
+    FOREACH (name hlist_test mcdata loadobs)
         add_test(python_${name}
             ${CMAKE_COMMAND}
                 -Dcmd=${name}.py

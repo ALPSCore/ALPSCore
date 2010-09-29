@@ -29,13 +29,15 @@
 import pyalps.hdf5 as h5
 import pyalps.alea as pa
 
-iar = h5.iArchive('ising.h5')
+iar = h5.iArchive('loadobs.h5')
 
 for name in iar.list_children('/simulation/results'):
-    if iar.is_scalar('/simulation/results/Energy/mean/value'):
+    
+    print name
+    
+    if iar.is_scalar('/simulation/results/' + pyalps.hdf5_name_encode(name) + '/mean/value'):
         obs = pa.MCScalarData()
     else:
         obs = pa.MCVectorData()
-    obs.load('ising.h5', '/simulation/results/Energy')
-
+    obs.load('loadobs.h5', '/simulation/results/' + pyalps.hdf5_name_encode(name))
     print name + ": " + str(obs)
