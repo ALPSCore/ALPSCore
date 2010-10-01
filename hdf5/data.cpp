@@ -32,7 +32,7 @@
 #endif
 
 template<typename base_type> struct test {
-    static bool run(std::string const & filename, boost::mpl::true_) {
+    static bool run(std::string const & filename, boost::true_type) {
         std::vector<std::size_t> size_0;
         base_type* write_0_value = NULL;
         std::size_t length = MATRIX_SIZE;
