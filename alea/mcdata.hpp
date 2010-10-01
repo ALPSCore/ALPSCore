@@ -679,10 +679,8 @@ namespace alps {
                 }
 
                 mcdata<T> & operator-() {
-                    // TODO: this is ugly
-                    T zero;
-                    resize_same_as(zero, error_);
-                    transform_linear(boost::lambda::bind(alps::numeric::minus<T>(), zero, boost::lambda::_1), error_, variance_opt_);
+                    mcdata<T> result(*this);
+                    result.transform_linear(alps::numeric::unary_minus<T>(), error_, variance_opt_);
                     return *this;
                 }
 

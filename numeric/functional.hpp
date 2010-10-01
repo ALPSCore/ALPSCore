@@ -37,6 +37,12 @@
 
 namespace alps { 
     namespace numeric {
+        template <typename T> struct unary_minus : public std::unary_function<T, T> {
+            T operator()(T const & x) const {
+                using boost::numeric::operators::operator-;
+                return -x; 
+            }
+        };
         template <typename T> struct plus : public std::binary_function<T, T, T> {
             T operator()(T const & x, T const & y) const {
                 using boost::numeric::operators::operator+;
