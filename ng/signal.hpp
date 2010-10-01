@@ -30,6 +30,8 @@
 #include <cstring>
 #include <iostream>
 #include <signal.h>
+#include <boost/config.hpp>
+
 
 
 #ifndef ALPS_NG_SIGNAL_HPP
@@ -41,6 +43,7 @@ namespace alps {
             public:
 
                 signal() {
+#ifndef BOOST_MSVC
                     static bool initialized;
                     if (!initialized) {
                         static struct sigaction action;
@@ -55,6 +58,7 @@ namespace alps {
                         sigaction(SIGUSR2, &action, NULL);
                         sigaction(SIGSTOP, &action, NULL);
                     }
+#endif
                 }
 
                 bool empty() {
