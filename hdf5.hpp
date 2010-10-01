@@ -386,7 +386,7 @@ namespace alps {
                 private:
                     static std::string to_string(int arg) {
                         char buffer[255];
-                        if (sprintf(buffer, "HDF5 error: %i", arg) < 0)
+                        if (sprintf(buffer, "%i", arg) < 0)
                             ALPS_HDF5_THROW_RUNTIME_ERROR("error converting int to string");
                         return buffer;
                     }
@@ -670,12 +670,12 @@ namespace alps {
                     , _state_id(-1)
                     , _log_id(-1)
                     , _filename(file)
+                    , _error_handler_id(H5Eset_auto2(H5E_DEFAULT, NULL, NULL))
                     , _file(_pool.find(_filename) == _pool.end() || _pool[_filename].expired() 
                         ? new detail::file_type(F(_filename))
                         : _pool[_filename].lock().get()
                       )
                 {
-                    H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
                     if (_pool.find(_filename) == _pool.end() || _pool[_filename].expired())
                         _pool[_filename] = _file;
                     if (_compress) {
@@ -1063,6 +1063,7 @@ namespace alps {
                 hid_t _complex_id;
                 std::string _context;
                 std::string _filename;
+                detail::error_type _error_handler_id;
                 boost::shared_ptr<detail::file_type> _file;
                 static std::map<std::string, boost::weak_ptr<detail::file_type> > _pool;
         };
