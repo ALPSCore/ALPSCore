@@ -9,6 +9,7 @@
 #include <boost/throw_exception.hpp>
 #include <boost/assert.hpp>
 #include <stdexcept>
+#include <string>
 
 // taken from SPRNG implementation
 
@@ -94,7 +95,8 @@ boost::uint64_t get_prime_64(unsigned int offset)
       return largest;
   }
   
-  boost::throw_exception(std::runtime_error("Insufficient number of primes"));
+  // Casting to std::string is a workaround for Fujitsu FCC Compiler
+  boost::throw_exception(std::runtime_error(std::string("Insufficient number of primes")));
   return 0; // dummy return
 
 }
