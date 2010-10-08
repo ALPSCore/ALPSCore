@@ -131,45 +131,12 @@ struct fourier_real
 			std::vector<T>	C = alps::numeric::cos(_2PInx_over_N);
 			std::vector<T>	S = alps::numeric::sin(_2PInx_over_N);
 
+			using alps::numeric::operator*;
+
+			C = C * A;
+			S = S * B;
+
 			return ( std::accumulate(C.begin(), C.end(), 0.) +  std::accumulate(S.begin()+1, S.end(), 0.) );
-
-/*
-			C.reserve(A.size());
-			S.reserve(B.size());
-
-			std::transform
-				(	A.begin()
-				, A.end()
-				, _2PInx_over_N.begin()
-				, std::back_inserter(C)
-				, boost::bind
-					(	std::multiplies<T>()
-					, boost::lambda::_1
-					,	boost::bind
-						(	&alps::numeric::fourier_real::cos<T>
-					  ,	boost::lambda::_2
-						)
-					)
-				);
-
-			std::transform
-				(	B.begin()
-				, B.end()
-				, _2PInx_over_N.begin()
-				, std::back_inserter(S)
-				, boost::bind
-					(	std::multiplies<T>()
-					, boost::lambda::_1
-					,	boost::bind
-						(	&alps::numeric::fourier_real::sin<T>
-					  ,	boost::lambda::_2
-						)
-					)
-				);
-
-			return ( std::accumulate(C.begin(), C.end(), 0.) +	std::accumulate(S.begin()+1, S.end(), 0.)	);
-*/
-
 		} // objective:	F(x) = a0 + a1 * cos(2\pix/N) + a2 * cos(4\pix/N) + ... + b1 * sin(2\pix/N) + b2 * sin(4\pix/N) + ...
 };
 
