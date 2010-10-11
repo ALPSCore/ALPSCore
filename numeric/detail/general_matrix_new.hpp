@@ -8,25 +8,10 @@
 namespace blas {
 
     template <typename T>
-	struct vector : public std::vector<T>
-    {
-	const T& operator() (unsigned int i) const
-	{
-	    return this->at(i);
-	}
-
-	T& operator() (unsigned int i)
-	{
-	    return this->at(i);
-	}
-
-    };
-
-    template <typename T>
     class general_matrix {
     public:
 	typedef T value_type;
-
+        // alignment!
         general_matrix(std::size_t size1, std::size_t size2, T init_value = T(0) )
         : size1_(size1), size2_(size2), reserved_size2_(size2), values_(size1*size2, init_value)
         {
@@ -80,7 +65,7 @@ namespace blas {
             return values_; 
         }
         */
-
+        // change to column major
         inline T &operator()(const unsigned i, const unsigned j)
         {
             assert((i < size1_) && (j < size2_));
@@ -93,6 +78,7 @@ namespace blas {
             return values_[i*reserved_size2_+j];
         }
         
+        // num_rows/ num_cols
 	inline const std::size_t &size1() const 
         {
             return size1_;
@@ -109,6 +95,8 @@ namespace blas {
             assert(size1_ == size2_);
             return size1_;
         }
+        
+        // free function!!!
         void set_to_identity()
         {
             assert(size1_==size2_);
@@ -191,6 +179,7 @@ namespace blas {
 	    return std::pair<std::size_t,std::size_t>( (values_.capacity()/reserved_size2_) , reserved_size2_);
 	}
 
+    // remove
 	inline void shrink_to_fit()
 	{
 	    general_matrix tmp(*this);
@@ -206,7 +195,7 @@ namespace blas {
 	    size2_ = 0;
         }
 
-
+    // hooks, and make it a free function
 	vector<T> get_row(unsigned int i) const
 	{
 	    assert(i < size1_);

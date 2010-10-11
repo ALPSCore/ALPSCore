@@ -66,17 +66,16 @@ namespace blas{
         return this->at(i);
       }
       
-      inline const T &operator()(const unsigned int i) const 
+      inline const T &operator()(std::size_t i) const 
       {
         assert((i < this->size()));
         return this->at(i);
       }
     
-      vector<T> & operator+=(const vector<T> rhs) 
+      vector<T> & operator+=(const vector<T>& rhs) 
       {
         assert(rhs.size() == this->size());
-        std::vector<T> temp(rhs);
-        transform(this->begin(), this->end(), temp.begin(), this->begin(), std::plus<T>());
+        add_assign(this->begin(), this->end(), rhs.begin()
         return *this;
       }
       
@@ -88,13 +87,15 @@ namespace blas{
           return *this;
       }
    
-      void insert(T value, unsigned int i)
+      // free function
+      void insert(T value, std::size_t i)
       {
           assert((i <= this->size()));
           resize(this->size()+1);
           this->std::vector<T>::insert(this->begin()+i,value);
       }
       
+      // free function
       void exp( double c)
       {
           if (!(this->size())) return;
@@ -127,16 +128,39 @@ namespace blas{
 #endif
 #endif
       }
-  };
+  };  
+  
+
+template <class ForwardIterator, class InputIterator>
+void add_assign(ForwardIterator start1, ForwardIterator end1, InputIterator start2) 
+{
+          transform(start1, end1, start2, start1, std::plus<std::iterator_traits<ForwardIterator>::value_type >());
+}
+
+/*
+void add_assign(double* start1, double* end1, double* start2) 
+{
+  // call right blas function daxpy
+}
+
+void add_assign(float* start1, float* end1, float* start2) 
+{
+  // call right blas function daxpy
+}
+*/
+
+  
     
     // return type of alps::numeric::scalar_product???
+    // throw this out
     template<typename T>
     inline T operator*(const vector<T> v1, const vector<T> v2)
     {
         return alps::numeric::scalar_product(v1,v2);
     }
     
-    
+    // specialize it for other types as well, like we did for add_assign
+
     template<>
     inline double operator*(const vector<double> v1, const vector<double> v2)
     {
@@ -165,6 +189,7 @@ namespace blas{
         return result;              
     }  
     
+    // rename to scalar_product
     template<typename T>
     inline T dot(const vector<T> v1, const vector<T> v2)
     {   
@@ -179,7 +204,7 @@ namespace blas{
         return v;
     }
     
-    
+    // needs to be a member function
     template<>
     inline vector<double> operator *=(vector<double> &v, double lambda)
     {
@@ -190,6 +215,7 @@ namespace blas{
         return v;
     }
     
+    // return the exp(c*v) instead of modifying the argument
     template<typename T>
     void exp(T c, vector<T> &v)
     {
