@@ -36,6 +36,7 @@
 #include <alps/expression/number.h>
 #include <alps/expression/block.h>
 #include <alps/expression/function.h>
+#include <alps/expression/evaluator.h>
 #include <alps/type_traits/norm_type.hpp>
 #include <boost/call_traits.hpp>
 

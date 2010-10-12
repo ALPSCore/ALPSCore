@@ -102,7 +102,7 @@ public:
   /// constructor from a character sequence
   template<class InputItr>
   lexical_cast_string(InputItr first, InputItr last) 
-#if BOOST_WORKAROUND(__IBMCPP__, <= 800)
+#if BOOST_WORKAROUND(__IBMCPP__, <= 1200)
   {
     while (first!=last)
       (*this) += *first++;
