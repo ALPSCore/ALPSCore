@@ -44,13 +44,11 @@ inline T expfunc(T entry)
 }
 
 namespace blas{
-    
-  //simple BLAS vector that uses BLAS calls for operations.
   template<typename T>
-  class vector : public std::vector<T>
+  class vector : public std::vector<T>  
   {
     public:
-      vector(unsigned int size=0, T initial_value=0.)
+      vector(std::size_t size=0, T initial_value=0.)
       : std::vector<T>(size, initial_value)
       {
       }
@@ -60,116 +58,67 @@ namespace blas{
           std::swap(x, y);
       }
       
-      inline T &operator()(const unsigned int i)
+      inline T &operator()(const std::size_t i)
       {
-        assert((i < this->size()));
-        return this->at(i);
+          assert((i < this->size()));
+          return this->operator[](i);
       }
       
       inline const T &operator()(std::size_t i) const 
       {
-        assert((i < this->size()));
-        return this->at(i);
+          assert((i < this->size()));
+          return this->operator[](i);
       }
     
       vector<T> & operator+=(const vector<T>& rhs) 
       {
-        assert(rhs.size() == this->size());
-        add_assign(this->begin(), this->end(), rhs.begin()
-        return *this;
+          assert(rhs.size() == this->size());
+          add_assign(this->begin(), this->end(), rhs.begin());
+          return *this;
       }
       
       vector<T> & operator-=(const vector<T> rhs) 
       {
           assert(rhs.size() == this->size());
-          std::vector<T> temp(rhs);
-          transform(this->begin(), this->end(), temp.begin(), this->begin(), std::minus<T>());
+          minus_assign(this->begin(), this->end(), rhs.begin());
           return *this;
       }
-   
-      // free function
-      void insert(T value, std::size_t i)
-      {
-          assert((i <= this->size()));
-          resize(this->size()+1);
-          this->std::vector<T>::insert(this->begin()+i,value);
-      }
       
-      // free function
-      void exp( double c)
+      vector<T> & operator*=(const T lambda) 
       {
-          if (!(this->size())) return;
-#ifdef VECLIB
-          //osx veclib exp
-          int one=1;
-          int s=this->size();
-          blas::dscal_(&s, &c, &this->at(0),&one);
-          vecLib::vvexp(&this->at(0), &this->at(0), &s); 
-#else
-#ifdef ACML
-          //amd acml vector exp
-          std::vector<double> scaled_values(size());
-          int s=this->size();
-          daxpy_(&s, &c, &(this->at(0)), &inc, &scaled_values[0], &inc);
-          acml::vrda_exp(s, &scaled_values[0], &(this->at(0)));
-#else
-#ifdef MKL
-          //intel MKL vector exp
-          std::vector<double> scaled_values(size());
-          int inc=1;
-          int s=this->size();
-          daxpy_(&s, &c, &(this->at(0)), &inc, &scaled_values[0], &inc);
-          mkl::vdExp(s,  &scaled_values[0], &(this->at(0)));
-#else
-          //pedestrian method
-          *this *= c;
-          std::transform(this->begin(), this->end(), this->begin(), expfunc<T>);
-#endif
-#endif
-#endif
+          multiplication_assign(this->begin(), this->end(), lambda);
+          return *this;
       }
   };  
-  
-
-template <class ForwardIterator, class InputIterator>
-void add_assign(ForwardIterator start1, ForwardIterator end1, InputIterator start2) 
-{
-          transform(start1, end1, start2, start1, std::plus<std::iterator_traits<ForwardIterator>::value_type >());
-}
-
-/*
-void add_assign(double* start1, double* end1, double* start2) 
-{
-  // call right blas function daxpy
-}
-
-void add_assign(float* start1, float* end1, float* start2) 
-{
-  // call right blas function daxpy
-}
-*/
-
-  
     
-    // return type of alps::numeric::scalar_product???
-    // throw this out
     template<typename T>
-    inline T operator*(const vector<T> v1, const vector<T> v2)
+    void insert(vector<T> v, T value, std::size_t i)
     {
-        return alps::numeric::scalar_product(v1,v2);
+        assert((i <= v.size()));
+        v.insert(v.begin()+i,value);
     }
     
-    // specialize it for other types as well, like we did for add_assign
-
-    template<>
-    inline double operator*(const vector<double> v1, const vector<double> v2)
+    template <class InputIterator1, class InputIterator2>
+    void add_assign(InputIterator1 first1, InputIterator1 last1, InputIterator2 first2) 
+    {
+        std::transform(first1, last1, first2, first1, std::plus<typename std::iterator_traits<InputIterator2>::value_type >());
+    }
+    
+    void add_assign(double* first1, double* last1, double* first2) 
     {
         int inc=1;
-        int size=v1.size();
-        if (v1.empty() || v2.empty()) return 0.;
-        return ddot_(&size, &v1[0],&inc,&v2[0],&inc);
+        int s=(last1-first1);
+        double alpha=1.;
+        daxpy_(&s, &alpha, first1, &inc, first2, &inc);
     }
     
+    void add_assign(float* first1, float* last1, float* first2) 
+    {
+        int inc=1;
+        int s=(last1-first1);
+        float alpha=1.;
+        saxpy_(&s, &alpha, first1, &inc, first2, &inc);
+    }    
     
     template<typename T>
     vector<T> operator+(const vector<T> v1, const vector<T> v2)  
@@ -180,6 +129,28 @@ void add_assign(float* start1, float* end1, float* start2)
         return result;              
     }
     
+    template <class InputIterator1, class InputIterator2>
+    void minus_assign(InputIterator1 first1, InputIterator1 last1, InputIterator2 first2) 
+    {
+        std::transform(first1, last1, first2, first1, std::minus<typename std::iterator_traits<InputIterator2>::value_type >());
+    }
+    
+    void minus_assign(double* first1, double* last1, double* first2) 
+    {
+        int inc=1;
+        int s=(last1-first1);
+        double alpha=-1.;
+        daxpy_(&s, &alpha, first2, &inc, first1, &inc);
+    }
+    
+    void minus_assign(float* first1, float* last1, float* first2) 
+    {
+        int inc=1;
+        int s=(last1-first1);
+        float alpha=-1.;
+        saxpy_(&s, &alpha, first2, &inc, first1, &inc);
+    }
+    
     template<typename T>
     vector<T> operator-(const vector<T> v1, const vector<T> v2)  
     {
@@ -188,40 +159,80 @@ void add_assign(float* start1, float* end1, float* start2)
         result -= v2;           
         return result;              
     }  
-    
-    // rename to scalar_product
-    template<typename T>
-    inline T dot(const vector<T> v1, const vector<T> v2)
-    {   
-        return v1*v2; 
-    }
-    
-    //multiply vector by constant
-    template<typename T>
-    inline vector<T> operator *=(vector<T> &v, T lambda)
+
+    template <class ForwardIterator, typename T>
+    void multiplication_assign(ForwardIterator start1, ForwardIterator end1, T lambda) 
     {
-        transform(v.begin(), v.end(), v.begin(), std::bind2nd(std::multiplies<T>(), lambda));
-        return v;
+        std::transform(start1, end1, start1, std::bind2nd(std::multiplies<T>(), lambda));
+    }
+
+    void multiplication_assign(double* start1, double* end1, double lambda) 
+    { 
+        int inc=1;
+        int size=(end1-start1); 
+        if (size!=0)
+            dscal_(&size, &lambda, start1, &inc);
     }
     
-    // needs to be a member function
+    void multiplication_assign(float* start1, float* end1, float lambda) 
+    { 
+        int inc=1;
+        int size=(end1-start1); 
+        if (size!=0)
+            sscal_(&size, &lambda, start1, &inc);
+    }
+    
+    template<typename T>
+    inline T scalar_product(const vector<T> v1, const vector<T> v2)
+    {   
+        return alps::numeric::scalar_product(v1,v2);
+    }
+    
     template<>
-    inline vector<double> operator *=(vector<double> &v, double lambda)
+    inline double scalar_product(const vector<double> v1, const vector<double> v2)
     {
         int inc=1;
-        int size=v.size();
-        if (!v.empty())
-            dscal_(&size, &lambda, &v[0], &inc);
-        return v;
+        int size=v1.size();
+        if (v1.empty() || v2.empty()) return 0.;
+        return ddot_(&size, &v1[0],&inc,&v2[0],&inc);
     }
     
-    // return the exp(c*v) instead of modifying the argument
-    template<typename T>
-    void exp(T c, vector<T> &v)
+    template<>
+    inline float scalar_product(const vector<float> v1, const vector<float> v2)
     {
-        vector<T> temp(v);
-        temp.exp(c);
-        swap(temp,v);
+        int inc=1;
+        int size=v1.size();
+        if (v1.empty() || v2.empty()) return 0.;
+        return sdot_(&size, &v1[0],&inc,&v2[0],&inc);
+    }
+    
+    template<typename T>
+    inline vector<T> exp(T c, vector<T> v)
+    {
+        vector<T> result(v);
+        v*=c;
+        std::transform(v.begin(), v.end(), result.begin(), expfunc<T>);
+        return result;
+    }
+    
+    template<>
+    inline vector<double> exp(double c, vector<double> v)
+    {
+        int s=v.size();
+        vector<double> result(s);
+        v*=c;
+#ifdef VECLIB
+        vecLib::vvexp(&result[0], &v[0], &s); 
+#else
+#ifdef ACML
+        acml::vrda_exp(s, &v[0], &result[0]);
+#else
+#ifdef MKL
+        mkl::vdExp(s,  &v[0], &result[0]);
+#endif
+#endif
+#endif  
+        return result;
     }
 
   template<typename T>
