@@ -33,11 +33,6 @@ import pyalps.alea as alea
 iar = h5.iArchive('loadobs.h5')
 
 for name in iar.list_children('/simulation/results'):
-    
-    print name
-    
-    print '/simulation/results/' + alps.hdf5_name_decode(name) + '/mean/value'
-    
     if iar.is_scalar('/simulation/results/' + alps.hdf5_name_encode(name) + '/mean/value'):
         obs = alea.MCScalarData()
     else:
