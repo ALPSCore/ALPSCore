@@ -30,8 +30,7 @@
 #ifndef BLAS_VECTOR
 #define BLAS_VECTOR
 
-#include "blasheader.hpp"
-#include <numeric/bindings/blas.hpp>
+#include "detail/blasmacros.h"
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -93,29 +92,13 @@ namespace blas{
         assert((i <= v.size()));
         v.insert(v.begin()+i,value);
     }
-    
+
     template <class InputIterator1, class InputIterator2>
     void plus_assign(InputIterator1 first1, InputIterator1 last1, InputIterator2 first2) 
     {
         std::transform(first1, last1, first2, first1, std::plus<typename std::iterator_traits<InputIterator2>::value_type >());
     }
-    
-    void plus_assign(double* first1, double* last1, double* first2) 
-    {
-        fortran_int_t inc=1;
-        fortran_int_t s=(last1-first1);
-        double alpha=1.;
-        daxpy_(&s, &alpha, first1, &inc, first2, &inc);
-    }
-    
-    void plus_assign(float* first1, float* last1, float* first2) 
-    {
-        fortran_int_t inc=1;
-        fortran_int_t s=(last1-first1);
-        float alpha=1.;
-        saxpy_(&s, &alpha, first1, &inc, first2, &inc);
-    }    
-    
+   
     template<typename T>
     vector<T> operator+(const vector<T> v1, const vector<T> v2)  
     {
@@ -131,31 +114,6 @@ namespace blas{
         std::transform(first1, last1, first2, first1, std::minus<typename std::iterator_traits<InputIterator2>::value_type >());
     }
     
-    void minus_assign(double* first1, double* last1, double* first2) 
-    {
-        axpy(last1-first1, -1., first2, 1, first1, 1);
-    }
-    
-    void minus_assign(float* first1, float* last1, float* first2) 
-    {
-        axpy(last1-first1, -1.f, first2, 1, first1, 1);
-    }
- 
-    // #define IMPLEMENT_FOR_REAL_BLAS_TYPES(F) F(float) F(double)
-    // #define IMPLEMENT_FOR_COMPLEX_BLAS_TYPES(F) \
-               F(std::complex<float>) \
-               F(std::complex<double>)
-    // #define IMPLEMENT_FOR_ALL_BLAS_TYPES(F) \
-               IMPLEMENT_FOR_REAL_BLAS_TYPES(F) \
-               IMPLEMENT_FOR_COMPLEX_BLAS_TYPES(F) 
-               
-    // provide overloads for types where blas can be used        
-    // #define MINUS_ASSIGN(T) \
-    void minus_assign(T* first1, T* last1, T* first2) \
-    { axpy(last1-first1, -1., first2, 1, first1, 1);}
-    // IMPLEMENT_FOR_ALL_BLAS_TYPES(MINUS_ASSIGN)
-    // #undef MINUS_ASSIGN
-               
     template<typename T>
     vector<T> operator-(const vector<T> v1, const vector<T> v2)  
     {
@@ -170,45 +128,11 @@ namespace blas{
     {
         std::transform(start1, end1, start1, std::bind2nd(std::multiplies<T>(), lambda));
     }
-
-    void multiplies_assign(double* start1, double* end1, double lambda) 
-    { 
-        fortran_int_t inc=1;
-        fortran_int_t size=(end1-start1); 
-        if (size!=0)
-            dscal_(&size, &lambda, start1, &inc);
-    }
-    
-    void multiplies_assign(float* start1, float* end1, float lambda) 
-    { 
-        fortran_int_t inc=1;
-        fortran_int_t size=(end1-start1); 
-        if (size!=0)
-            sscal_(&size, &lambda, start1, &inc);
-    }
     
     template<typename T>
     inline T scalar_product(const vector<T> v1, const vector<T> v2)
     {   
         return alps::numeric::scalar_product(v1,v2);
-    }
-    
-    template<>
-    inline double scalar_product(const vector<double> v1, const vector<double> v2)
-    {
-        fortran_int_t inc=1;
-        fortran_int_t size=v1.size();
-        if (v1.empty() || v2.empty()) return 0.;
-        return ddot_(&size, &v1[0],&inc,&v2[0],&inc);
-    }
-    
-    template<>
-    inline float scalar_product(const vector<float> v1, const vector<float> v2)
-    {
-        fortran_int_t inc=1;
-        fortran_int_t size=v1.size();
-        if (v1.empty() || v2.empty()) return 0.;
-        return sdot_(&size, &v1[0],&inc,&v2[0],&inc);
     }
     
     template<typename T>
@@ -217,7 +141,7 @@ namespace blas{
         using std::exp;
         vector<T> result(v);
         v*=c;
-        std::transform(v.begin(), v.end(), result.begin(), static_cast<(T*)(T)> (&exp));
+        std::transform(v.begin(), v.end(), result.begin(), static_cast<T(*)(T)> (&exp));
         return result;
     }
     
@@ -236,7 +160,8 @@ namespace blas{
 #ifdef MKL
         mkl::vdExp(s,  &v[0], &result[0]);
 #else
-        std::transform(v.begin(), v.end(), result.begin(), static_cast<(T*)(T)> (&exp));
+        using std::exp;
+        std::transform(v.begin(), v.end(), result.begin(), static_cast<double(*)(double)> (&exp));
 #endif
 #endif
 #endif  
