@@ -11,6 +11,7 @@ namespace blas {
     class general_matrix {
     public:
         typedef T value_type;
+
         //TODO: alignment!
         general_matrix(std::size_t size1, std::size_t size2, T init_value = T(0) )
         : size1_(size1), size2_(size2), reserved_size1_(size1), values_(size1*size2, init_value)
@@ -22,7 +23,7 @@ namespace blas {
         {
         }    
         
-        general_matrix(const general_matrix& mat)
+        general_matrix(general_matrix const& mat)
         : size1_(mat.size1_), size2_(mat.size2_), reserved_size1_(mat.size1_), values_(mat.size1_*mat.size2_)
         {
             // If the size of the matrix corresponds to the allocated size of the matrix...
@@ -33,7 +34,7 @@ namespace blas {
             else
             {
                 // copy only a shrinked to size version of the original matrix
-                for(unsigned int j=0; j < mat.size2_; ++j)
+                for(std::size_t j=0; j < mat.size2_; ++j)
                     std::copy( mat.values_.begin()+j*mat.reserved_size1_, mat.values_.begin()+j*mat.reserved_size1_+mat.size1_, values_.begin() );
             }
         }
@@ -66,13 +67,13 @@ namespace blas {
         }
         */
 
-        inline T &operator()(const unsigned i, const unsigned j)
+        inline T &operator()(const std::size_t i, const std::size_t j)
         {
             assert((i < size1_) && (j < size2_));
             return values_[j*reserved_size1_+i];
         }
         
-        inline const T &operator()(const unsigned i, const unsigned j) const 
+        inline const T &operator()(const std::size_t i, const std::size_t j) const 
         {
             assert((i < size1_) && (j < size2_));
             return values_[j*reserved_size1_+i];
@@ -99,20 +100,6 @@ namespace blas {
             return size2_;
         }
        
-        // SQUARE MATRIX These functions make only sense for square matrices
-
-        // free function!!!
-        void set_to_identity()
-        {
-            assert(size1_==size2_);
-            clear();
-            for(unsigned int i=0;i<size1_;++i)
-            {
-                operator()(i,i)=T(1);
-            }
-        }
-        // SQUARE MATRIX END
-
         inline void resize(std::size_t size1, std::size_t size2, T init_value = T())
         {
            // Resizes the matrix to the size1 and size2 and allocates enlarges the vector if needed
@@ -130,7 +117,7 @@ namespace blas {
                 {
                     // Reset all new elements which are in already reserved rows of already existing columns to init_value
                     // For all elements of new columns this is already done by values_.resize()
-                    for(unsigned int j=0; j < size2_; ++j)
+                    for(std::size_t j=0; j < size2_; ++j)
                     {
                         std::fill(values_.begin()+j*reserved_size1_ + size1_, values_.begin()+j*reserved_size1_ + size1, init_value);
                     }
@@ -140,7 +127,7 @@ namespace blas {
             else // size1 > reserved_size1_
             {
                 std::vector<T> tmp(size1*size2,init_value);
-                for(unsigned int j=0; j < size2_; ++j)
+                for(std::size_t j=0; j < size2_; ++j)
                 {
                     // Copy column by column
                     std::copy( values_.begin()+j*reserved_size1_, values_.begin()+j*reserved_size1_+size1_, tmp.begin()+j*size1);
@@ -161,7 +148,7 @@ namespace blas {
             if(size1 > reserved_size1_)
             {
                 std::vector<T> tmp(size1*size2);
-                for(unsigned int j=0; j < size2_; ++j)
+                for(std::size_t j=0; j < size2_; ++j)
                 {
                     // Copy column by column
                     std::copy( values_.begin()+j*reserved_size1_, values_.begin()+j*reserved_size1_+size1_, tmp.begin()+j*size1);
@@ -171,7 +158,7 @@ namespace blas {
             }
         }
 
-        std::pair<std::size_t,std::size_t> capacity()
+        std::pair<std::size_t,std::size_t> capacity() const
         {
             assert( values_.capacity() % reserved_size1_ == 0 );
             // Evaluate the maximal number of columns (with size reserved_size1_) that the underlying vector could hold.
@@ -195,36 +182,36 @@ namespace blas {
 
     // hooks, and make it a free function
 
-        vector<T> get_column(unsigned int j) const
+        vector<T> get_column(std::size_t j) const
         {
             assert(j < size2_);
             return vector<T>(values_.begin()+j*reserved_size1_,values_.begin()+j*reserved_size1_+size1_);
         }
 
-        vector<T> get_row(unsigned int i) const
+        vector<T> get_row(std::size_t i) const
         {
             assert(i < size1_);
             vector<T> result(size2_);
-            for(unsigned int j=0; j < size2_; ++j)
+            for(std::size_t j=0; j < size2_; ++j)
             {
                 result(j) = operator()(i,j);
             }
             return result;
         }
 
-        void set_column(unsigned int j, vector<T> const& v)
+        void set_column(std::size_t j, vector<T> const& v)
         {
             assert( j < size2_ );
             assert( v.size() == size1_ );
             std::copy(v.begin(),v.end(),values_.begin()+j*reserved_size1_);
         }
 
-        void set_row(unsigned int i, vector<T> const& v)
+        void set_row(std::size_t i, vector<T> const& v)
         {
             assert( i < size1_ );
             assert( v.size() == size2_ );
             // TODO better implementation
-            for(unsigned int j=0; j < size1_; ++j)
+            for(std::size_t j=0; j < size1_; ++j)
             {
                 operator()(i,j) = v(j);
             }
@@ -233,7 +220,7 @@ namespace blas {
         void append_column(vector<T> const& v)
         {
             assert( v.size() == size1_ );
-            unsigned int insert_position = size2_;
+            std::size_t insert_position = size2_;
             resize(size1_,size2_+1);
             std::copy(v.begin(),v.end(),values_.begin()+reserved_size1_*size2_);
         }
@@ -241,15 +228,15 @@ namespace blas {
         void apped_row(vector<T> const& v)
         {
             assert( v.size() == size2_ );
-            unsigned int insert_position = size1_;
+            std::size_t insert_position = size1_;
             resize(size1_+1,size2_);
-            for(unsigned int j=0; j < size2_; ++j)
+            for(std::size_t j=0; j < size2_; ++j)
             {
                 operator()(insert_position,j) = v(j);
             }
         }
 
-        void insert_row(unsigned int i, vector<T> const& v)
+        void insert_row(std::size_t i, vector<T> const& v)
         {
             assert( i <= size1_ );
             assert( v.size() == size2_ );
@@ -258,13 +245,13 @@ namespace blas {
             append_row(v);
 
             // Move the row through the matrix to the right possition
-            for(unsigned int k=size1_-1; k>i; ++k)
+            for(std::size_t k=size1_-1; k>i; ++k)
             {
                 swap_rows(k,k-1);
             }
         }
 
-        void insert_column(unsigned int j, vector<T> const& v)
+        void insert_column(std::size_t j, vector<T> const& v)
         {
             assert( j <= size2_);
             assert( v.size() == size1_ );
@@ -273,48 +260,27 @@ namespace blas {
             append_column(v);
 
             // Move the column through the matrix to the right possition
-            for(unsigned int k=size2_-1; k>j; ++k)
+            for(std::size_t k=size2_-1; k>j; ++k)
             {
                 swap_columns(k,k-1);
             }
 
         }
 
-        void swap_columns(unsigned int j1, unsigned int j2)
+        void swap_columns(std::size_t j1, std::size_t j2)
         {
             assert( j1 < size2_ && j2 < size2_ );
             std::swap_ranges(values_.begin()+j1*reserved_size1_,values_.begin()+j1*reserved_size1_+size1_, values_.begin()+j2*reserved_size1_);
         }
         
-        void swap_rows(unsigned int i1, unsigned int i2)
+        void swap_rows(std::size_t i1, std::size_t i2)
         {
             assert( i1 < size1_ && i2 < size1_ );
             // TODO find a better implementation
-            for(unsigned int j=0; j < size2_; ++j)
+            for(std::size_t j=0; j < size2_; ++j)
             {
                 std::swap(values_[j*reserved_size1_+i1], values_[j*reserved_size1_+i2]);
             }
-        }
-
-        inline const T trace() const
-        {
-            assert(size1_==size2_);
-            T tr= T(0);
-            for(unsigned int i=0; i<size1_; ++i) tr+=operator()(i,i);
-            return tr;
-        }
-        
-        void transpose() 
-        {
-            // TODO: perhaps this could be reimplemented as a free function returning a proxy object
-            if(size1_==0 || size2_==0) return;
-            general_matrix tmp(size2_,size1_);
-            for(unsigned int i=0;i<size1_;++i){
-                for(unsigned int j=0;j<size2_;++j){
-                    tmp(j,i) = operator()(i,j);
-                }
-            }
-            std::swap(tmp,*this);
         }
 
         T max() const
@@ -347,7 +313,7 @@ namespace blas {
             }
         }
         
-        general_matrix<T>& operator += (const general_matrix &rhs) 
+        general_matrix<T>& operator += (general_matrix const& rhs) 
         {
             assert((rhs.size1() == size1_) && (rhs.size2() == size2_));
             if(!(this->is_shrinkable() || rhs->is_shrinkable()) )
@@ -357,7 +323,7 @@ namespace blas {
             else
             {
                 // Do the operation column by column
-                for(unsigned int j=0; j < size2_; ++j)
+                for(std::size_t j=0; j < size2_; ++j)
                 {
                     std::transform(values_.begin()+j*reserved_size1_, values_.begin()+j*reserved_size1_+size1_, rhs.values_.begin()+j*rhs.reserved_size1_, values_.begin()+j*reserved_size1_, std::plus<T>());
                 }
@@ -365,7 +331,7 @@ namespace blas {
             return *this;
         }
         
-        general_matrix<T>& operator -= (const general_matrix &rhs) 
+        general_matrix<T>& operator -= (general_matrix const& rhs) 
         {
             assert((rhs.size1() == size1_) && (rhs.size2() == size2_));
             if(!(this->is_shrinkable() || rhs->is_shrinkable()) )
@@ -375,7 +341,7 @@ namespace blas {
             else
             {
                 // Do the operation column by column
-                for(unsigned int j=0; j < size2_; ++j)
+                for(std::size_t j=0; j < size2_; ++j)
                 {
                     std::transform(values_.begin()+j*reserved_size1_, values_.begin()+j*reserved_size1_+size1_, rhs.values_.begin()+j*rhs.reserved_size1_, values_.begin()+j*reserved_size1_, std::minus<T>());
                 }
@@ -383,7 +349,6 @@ namespace blas {
             return *this;
         }
         
-
         general_matrix<T>& operator *= (T const& t)
         {
             if(!(this->is_shrinkable()) )
@@ -393,7 +358,7 @@ namespace blas {
             else
             {
                 // Do the operation column by column
-                for(unsigned int j=0; j < size2_; ++j)
+                for(std::size_t j=0; j < size2_; ++j)
                 {
                     std::transform(values_.begin()+j*reserved_size1_, values_.begin()+j*reserved_size1_+size1_, rhs.values_.begin()+j*rhs.reserved_size1_, values_.begin()+j*reserved_size1_, binder1st(std::multiplies<T>(),t));
                 }
@@ -401,17 +366,17 @@ namespace blas {
             return *this;
         }
         
-        general_matrix<T>& operator *= (const general_matrix &rhs) 
+        general_matrix<T>& operator *= (general_matrix const& rhs) 
         {
             assert( size2_ == rhs.size1() );
 
             // Simple matrix matrix multiplication
             general_matrix<T> tmp(size1_,rhs.size2());
-            for(unsigned int i=0; i < size1_; ++i)
+            for(std::size_t i=0; i < size1_; ++i)
             {
-                for(unsigned int j=0; j<rhs.size2(); ++j)
+                for(std::size_t j=0; j<rhs.size2(); ++j)
                 {
-                    for(unsigned int k=0; k<size2_; ++k)
+                    for(std::size_t k=0; k<size2_; ++k)
                     {
                             tmp(i,j) += operator()(i,k) * rhs(k,j);
                     }
@@ -422,7 +387,7 @@ namespace blas {
         }
 
     private:
-        bool is_shrinkable()
+        bool is_shrinkable() const
         {
             // This assertion should actually never fail
             assert( reserved_size1_*size2_ == values_.size() );
@@ -438,16 +403,38 @@ namespace blas {
         
         std::vector<T> values_;
     };
-
+        
+    template <typename matrix_type>
+    matrix_type transpose(matrix_type const& m) 
+    {
+        // TODO: perhaps this could return a proxy object
+        matrix_type tmp(m.size2(),m.size1());
+        for(std::size_t i=0;i<m.size1();++i){
+            for(std::size_t j=0;j<m.size2();++j){
+                tmp(j,i) = m()(i,j);
+            }
+        }
+        return tmp;
+    }
+    
+    template <typename matrix_type>
+    const typename matrix_type::value_type trace(matrix_type const& m) const
+    {
+        assert(m.size1() == m.size2());
+        typename matrix_type::value_type tr = typename matrix_type::value_type(0);
+        for(std::size_t i=0; i<m.size1(); ++i) tr+=m(i,i);
+        return tr;
+    }
+        
     template<typename T>
     const vector<T> operator * (general_matrix<T> const& m, vector<T> const& v)
     {
         assert( m.size2() == v.size() );
         vector<T> result(m.size1());
         // Simple Matrix * Vector
-        for(unsigned int i = 0; i < m.size1(); ++i)
+        for(std::size_t i = 0; i < m.size1(); ++i)
         {
-            for(unsigned int j=0; j <m.size2(); ++j)
+            for(std::size_t j=0; j <m.size2(); ++j)
             {
                 result(i) = m(i,j) * v(j);
             }
