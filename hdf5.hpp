@@ -39,6 +39,7 @@
 #include <boost/integer.hpp>
 #include <boost/optional.hpp>
 #include <boost/weak_ptr.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/multi_array.hpp>
@@ -78,6 +79,7 @@ namespace alps {
                 char * time;
                 char * name;
             };
+            // TODO: ask olivier how save complex data
             struct internal_complex_type {
                double r;
                double i;
@@ -391,23 +393,23 @@ namespace alps {
                         return buffer;
                     }
             };
-            template<herr_t(*F)(hid_t)> class ressource {
+            template<herr_t(*F)(hid_t)> class resource {
                 public:
-                    ressource(): _id(-1) {}
-                    ressource(hid_t id): _id(id) {
+                    resource(): _id(-1) {}
+                    resource(hid_t id): _id(id) {
                         if (_id < 0)
                             ALPS_HDF5_THROW_RUNTIME_ERROR(error::invoke(_id))
                     }
-                    ~ressource() {
+                    ~resource() {
                         if(_id < 0 || (_id = F(_id)) < 0) {
-                            std::cerr << error::invoke(_id) << std::endl;
+                            std::cerr << "Error in " << __FILE__ << " on " << ALPS_HDF5_STRINGIFY(__LINE__) << " in " << __FUNCTION__ << ":" << std::endl << error::invoke(_id) << std::endl;
                             std::abort();
                         }
                     }
                     operator hid_t() const { 
                         return _id; 
                     }
-                    ressource<F> & operator=(hid_t id) { 
+                    resource<F> & operator=(hid_t id) { 
                         if ((_id = id) < 0) 
                             ALPS_HDF5_THROW_RUNTIME_ERROR(error::invoke(_id))
                         return *this; 
@@ -415,14 +417,14 @@ namespace alps {
                 private:
                     hid_t _id;
             };
-            typedef ressource<H5Fclose> file_type;
-            typedef ressource<H5Gclose> group_type;
-            typedef ressource<H5Dclose> data_type;
-            typedef ressource<H5Aclose> attribute_type;
-            typedef ressource<H5Sclose> space_type;
-            typedef ressource<H5Tclose> type_type;
-            typedef ressource<H5Pclose> property_type;
-            typedef ressource<error::noop> error_type;
+            typedef resource<H5Fclose> file_type;
+            typedef resource<H5Gclose> group_type;
+            typedef resource<H5Dclose> data_type;
+            typedef resource<H5Aclose> attribute_type;
+            typedef resource<H5Sclose> space_type;
+            typedef resource<H5Tclose> type_type;
+            typedef resource<H5Pclose> property_type;
+            typedef resource<error::noop> error_type;
             template <typename T> T check_file(T id) { file_type unused(id); return unused; }
             template <typename T> T check_group(T id) { group_type unused(id); return unused; }
             template <typename T> T check_data(T id) { data_type unused(id); return unused; }
@@ -671,11 +673,14 @@ namespace alps {
                     , _log_id(-1)
                     , _filename(file)
                     , _error_handler_id(H5Eset_auto2(H5E_DEFAULT, NULL, NULL))
-                    , _file(_pool.find(_filename) == _pool.end() || _pool[_filename].expired() 
-                        ? new detail::file_type(F(_filename))
-                        : _pool[_filename].lock().get()
-                      )
+                    , _file(boost::filesystem::exists(_filename) ? (
+                        _pool.find(_filename) == _pool.end() || _pool[_filename].expired()
+                            ? new detail::file_type(F(_filename))
+                            : _pool[_filename].lock().get()
+                      ) : NULL)
                 {
+                    if (!boost::filesystem::exists(_filename))
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("file does not exists: " + _filename)
                     if (_pool.find(_filename) == _pool.end() || _pool[_filename].expired())
                         _pool[_filename] = _file;
                     if (_compress) {
