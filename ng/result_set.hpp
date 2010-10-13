@@ -26,12 +26,21 @@
  *
  *****************************************************************************/
 
-#include <alps/ng/api.hpp>
-#include <alps/ng/alea.hpp>
-#include <alps/ng/boost.hpp>
-#include <alps/ng/signal.hpp>
-#include <alps/ng/options.hpp>
-#include <alps/ng/parameters.hpp>
-#include <alps/ng/scheduler/single.hpp>
-#include <alps/ng/scheduler/deprecated.hpp>
-#include <alps/ng/scheduler/mpi.hpp>
+#ifndef ALPS_NG_RESULT_SET_HPP
+#define ALPS_NG_RESULT_SET_HPP
+
+#include <alps/ng/observables/base.hpp>
+
+#include <boost/shared_ptr.hpp>
+
+#include <map>
+
+namespace alps {
+    namespace ng {
+
+        class result_set : public std::map<std::string, boost::shared_ptr<observables::base> > {};
+
+    }
+}
+
+#endif

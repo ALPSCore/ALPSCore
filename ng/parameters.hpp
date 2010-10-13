@@ -78,7 +78,7 @@ namespace alps {
 
                 #define ALPS_NGS_CAST_OPERATOR(T)                                                                                                              \
                     operator T () const {                                                                                                                      \
-                        detail::parameter_value_reader< T > visitor;                                                                                              \
+                        detail::parameter_value_reader< T > visitor;                                                                                           \
                         boost::apply_visitor(visitor, *this);                                                                                                  \
                         return visitor.value;                                                                                                                  \
                     }

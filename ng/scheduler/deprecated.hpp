@@ -28,12 +28,13 @@
 
 #include <alps/hdf5.hpp>
 #include <alps/ng/api.hpp>
-#include <alps/ng/alea.hpp>
 #include <alps/parameter.h>
 #include <alps/ng/boost.hpp>
 #include <alps/ng/signal.hpp>
 #include <alps/ng/parameters.hpp>
-#include <alps/ng/single_simulation.hpp>
+#include <alps/ng/scheduler/single.hpp>
+#include <alps/ng/observables/base.hpp>
+#include <alps/ng/observables/evaluator.hpp>
 
 #include <boost/mpi.hpp>
 #include <boost/bind.hpp>
@@ -46,9 +47,7 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/program_options.hpp>
 #include <boost/random/uniform_real.hpp>
-#include <boost/ptr_container/ptr_map.hpp>
 #include <boost/random/mersenne_twister.hpp>
-#include <boost/assign/ptr_map_inserter.hpp>
 #include <boost/random/variate_generator.hpp>
 
 #include <map>
@@ -60,50 +59,53 @@
 #include <signal.h>
 #include <algorithm>
 
-#ifndef ALPS_NG_DEPRECATED_SIMULATION_HPP
-#define ALPS_NG_DEPRECATED_SIMULATION_HPP
+#ifndef ALPS_NG_SCHEDULER_DEPRECATED_HPP
+#define ALPS_NG_SCHEDULER_DEPRECATED_HPP
 
 namespace alps {
     namespace ng {
+        namespace scheduler {
 
-        class deprecated_simulation : public singe_simulation {
-            public:
-                deprecated_simulation(parameters_type const & p, std::size_t seed_offset = 0)
-                    : singe_simulation(p, seed_offset)
-                    , parms(make_alps_parameters(p))
-                    , measurements(results)
-                    , random_01(random)
-                {}
+            // TODO: rename and move in scheduler namespace
+            class deprecated : public single {
+                public:
+                    deprecated(parameters_type const & p, std::size_t seed_offset = 0)
+                        : single(p, seed_offset)
+                        , parms(make_alps_parameters(p))
+                        , measurements(results)
+                        , random_01(random)
+                    {}
 
-                double fraction_completed() const { return work_done(); }
+                    double fraction_completed() const { return work_done(); }
 
-                virtual double work_done() const = 0;
+                    virtual double work_done() const = 0;
 
-                virtual void dostep() = 0;
+                    virtual void dostep() = 0;
 
-                double random_real(double a = 0., double b = 1.) { return a + b * random(); }
+                    double random_real(double a = 0., double b = 1.) { return a + b * random(); }
 
-                virtual void do_update() {
-                    dostep();
-                }
+                    virtual void do_update() {
+                        dostep();
+                    }
 
-                virtual void do_measurements() {}
+                    virtual void do_measurements() {}
 
-            protected:
-                Parameters parms;
-                ObservableSet & measurements;
-                boost::variate_generator<boost::mt19937, boost::uniform_real<> > & random_01;
+                protected:
+                    Parameters parms;
+                    ObservableSet & measurements;
+                    boost::variate_generator<boost::mt19937, boost::uniform_real<> > & random_01;
 
-            private:
-                static Parameters make_alps_parameters(parameters_type const & s) {
-                    Parameters p;
-                    for (parameters_type::const_iterator it = s.begin(); it != s.end(); ++it)
+                private:
+                    static Parameters make_alps_parameters(parameters_type const & s) {
+                        Parameters p;
+                        for (parameters_type::const_iterator it = s.begin(); it != s.end(); ++it)
 // TODO: why does static_cast<std::string>(it->second) not work?
-                        p.push_back(it->first, it->second.operator std::string());
-                    return p;
-                }
-        };
+                            p.push_back(it->first, it->second.operator std::string());
+                        return p;
+                    }
+            };
 
+        }
     }
 }
 

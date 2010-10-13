@@ -26,38 +26,7 @@
  *
  *****************************************************************************/
 
-#include <alps/hdf5.hpp>
-#include <alps/ng/alea.hpp>
-#include <alps/parameter.h>
-#include <alps/ng/boost.hpp>
-#include <alps/ng/signal.hpp>
-#include <alps/ng/options.hpp>
-#include <alps/ng/parameters.hpp>
-
-#include <boost/mpi.hpp>
-#include <boost/bind.hpp>
-#include <boost/utility.hpp>
-#include <boost/variant.hpp>
-#include <boost/function.hpp>
-#include <boost/mpl/vector.hpp>
-#include <boost/mpl/contains.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/filesystem/path.hpp>
-#include <boost/program_options.hpp>
-#include <boost/random/uniform_real.hpp>
-#include <boost/ptr_container/ptr_map.hpp>
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/assign/ptr_map_inserter.hpp>
-#include <boost/random/variate_generator.hpp>
-
-#include <map>
-#include <vector>
-#include <iomanip>
-#include <sstream>
-#include <cstring>
-#include <iomanip>
-#include <signal.h>
-#include <algorithm>
+#include <string>
 
 #ifndef ALPS_NG_API_HPP
 #define ALPS_NG_API_HPP

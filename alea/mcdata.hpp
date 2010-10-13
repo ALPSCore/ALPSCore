@@ -188,21 +188,6 @@ namespace alps {
                     }
                 #endif
 
-                template <typename X> mcdata(mcdata<X> const & rhs)
-                  : count_(rhs.count_)
-                  , mean_(rhs.mean_)
-                  , error_(rhs.error_)
-                  , binsize_(rhs.binsize_)
-                  , max_bin_number_(rhs.max_bin_number_)
-                  , data_is_analyzed_(rhs.data_is_analyzed_)
-                  , jacknife_bins_valid_(rhs.jacknife_bins_valid_)
-                  , cannot_rebin_(rhs.cannot_rebin_)
-                  , variance_opt_(rhs.variance_opt_)
-                  , tau_opt_(rhs.tau_opt_)
-                  , values_(rhs.values_)
-                  , jack_(rhs.jack_)
-                {}
-
                 template <typename X, typename S> mcdata(mcdata<X> const & rhs, S s)
                   : count_(rhs.count_)
                   , binsize_(rhs.binsize_)
@@ -265,29 +250,6 @@ namespace alps {
                             values_.push_back(replace_valarray_by_vector(obs.bin_value(i)) / double(binsize_));
                     }
                 }
-
-                // TODO: used in ngs, remove
-                mcdata(
-                      int64_t count
-                    , value_type const & mean
-                    , value_type const & error
-                    , boost::optional<result_type> const & variance_opt
-                    , boost::optional<time_type> const & tau_opt
-                    , uint64_t binsize
-                    , std::vector<value_type> const & values
-                )
-                    : count_(count)
-                    , mean_(mean)
-                    , error_(error)
-                    , variance_opt_(variance_opt)
-                    , tau_opt_(tau_opt)
-                    , binsize_(binsize)
-                    , max_bin_number_(0)
-                    , data_is_analyzed_(true)
-                    , jacknife_bins_valid_(false)
-                    , cannot_rebin_(false)
-                    , values_(values)
-                {}
 
                 const_iterator begin() const {
                     return const_iterator(*this, 0);
@@ -743,6 +705,31 @@ namespace alps {
                     if (rhs.jacknife_bins_valid_ && jacknife_bins_valid_)
                         std::transform(jack_.begin(), jack_.end(), rhs.jack_.begin(), jack_.begin(), op);
                 }
+
+            protected:
+
+                // TODO: used in ngs, remove
+                mcdata(
+                      int64_t count
+                    , value_type const & mean
+                    , value_type const & error
+                    , boost::optional<result_type> const & variance_opt
+                    , boost::optional<time_type> const & tau_opt
+                    , uint64_t binsize
+                    , std::vector<value_type> const & values
+                )
+                    : count_(count)
+                    , mean_(mean)
+                    , error_(error)
+                    , variance_opt_(variance_opt)
+                    , tau_opt_(tau_opt)
+                    , binsize_(binsize)
+                    , max_bin_number_(0)
+                    , data_is_analyzed_(true)
+                    , jacknife_bins_valid_(false)
+                    , cannot_rebin_(false)
+                    , values_(values)
+                {}
 
             private:
 

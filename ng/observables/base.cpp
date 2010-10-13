@@ -26,12 +26,17 @@
  *
  *****************************************************************************/
 
-#include <alps/ng/api.hpp>
-#include <alps/ng/alea.hpp>
-#include <alps/ng/boost.hpp>
-#include <alps/ng/signal.hpp>
-#include <alps/ng/options.hpp>
-#include <alps/ng/parameters.hpp>
-#include <alps/ng/scheduler/single.hpp>
-#include <alps/ng/scheduler/deprecated.hpp>
-#include <alps/ng/scheduler/mpi.hpp>
+#include <alps/ng/observables/base.hpp>
+#include <alps/ng/observables/evaluator.hpp>
+
+namespace alps {
+    namespace ng {
+        namespace observables {
+
+            template<typename T> base::operator ::alps::alea::mcdata<T>() const {
+               return dynamic_cast<evaluator<T> const & >(*this).get_mcdata();
+            }
+
+        }
+    }
+}

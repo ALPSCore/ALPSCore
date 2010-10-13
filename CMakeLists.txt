@@ -24,7 +24,7 @@ set(ALPS_SOURCES
     # model
     model/bondterm.C model/globaloperator.C model/modellibrary.C model/siteterm.C
     # ng
-    ng/signal.cpp 
+    ng/signal.cpp ng/observables/base.cpp 
     # osiris
     osiris/buffer.C osiris/dump.C osiris/dumparchive.C osiris/process.C osiris/comm.C
     osiris/mpdump.C osiris/xdrdump.C osiris/xdrcore.C
