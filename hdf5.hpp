@@ -673,14 +673,11 @@ namespace alps {
                     , _log_id(-1)
                     , _filename(file)
                     , _error_handler_id(H5Eset_auto2(H5E_DEFAULT, NULL, NULL))
-                    , _file(boost::filesystem::exists(_filename) ? (
-                        _pool.find(_filename) == _pool.end() || _pool[_filename].expired()
-                            ? new detail::file_type(F(_filename))
-                            : _pool[_filename].lock().get()
-                      ) : NULL)
+                    , _file(_pool.find(_filename) == _pool.end() || _pool[_filename].expired()
+                        ? new detail::file_type(F(_filename))
+                        : _pool[_filename].lock().get()
+                      )
                 {
-                    if (!boost::filesystem::exists(_filename))
-                        ALPS_HDF5_THROW_RUNTIME_ERROR("file does not exists: " + _filename)
                     if (_pool.find(_filename) == _pool.end() || _pool[_filename].expired())
                         _pool[_filename] = _file;
                     if (_compress) {
@@ -1078,6 +1075,8 @@ namespace alps {
         namespace detail {
             struct creator {
                 static hid_t open_reading(std::string const & file) {
+                    if (!boost::filesystem::exists(file))
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("file does not exists: " + file)
                     if (detail::check_error(H5Fis_hdf5(file.c_str())) == 0)
                         ALPS_HDF5_THROW_RUNTIME_ERROR("no valid hdf5 file: " + file)
                     return H5Fopen(file.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
