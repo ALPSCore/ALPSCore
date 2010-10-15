@@ -43,7 +43,7 @@ set(ALPS_SOURCES
 )
 
 if (ALPS_BUILD_NG)
-  set(ALPS_SOURCES ALPS_SOURCES ng/signal.cpp ng/observables/base.cpp)
+  set(ALPS_SOURCES ${ALPS_SOURCES} ng/signal.cpp ng/observables/base.cpp)
 endif (ALPS_BUILD_NG)
 
 if (NOT ALPS_FOR_VISTRAILS)
