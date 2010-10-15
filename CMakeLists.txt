@@ -23,8 +23,6 @@ set(ALPS_SOURCES
     lattice/latticelibrary.C lattice/unitcell.C
     # model
     model/bondterm.C model/globaloperator.C model/modellibrary.C model/siteterm.C
-    # ng
-    ng/signal.cpp ng/observables/base.cpp 
     # osiris
     osiris/buffer.C osiris/dump.C osiris/dumparchive.C osiris/process.C osiris/comm.C
     osiris/mpdump.C osiris/xdrdump.C osiris/xdrcore.C
@@ -43,6 +41,10 @@ set(ALPS_SOURCES
     scheduler/serial_scheduler.C scheduler/signal.C scheduler/single_scheduler.C
     scheduler/slave_task.C scheduler/task.C scheduler/worker.C scheduler/workertask.C
 )
+
+if (ALPS_BUILD_NG)
+  set(ALPS_SOURCES ALPS_SOURCES ng/signal.cpp ng/observables/base.cpp)
+endif (ALPS_BUILD_NG)
 
 if (NOT ALPS_FOR_VISTRAILS)
   set(ALPS_SOURCES ${ALPS_SOURCES} 
