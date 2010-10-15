@@ -25,6 +25,7 @@
 #include <cstdlib>
 #include <cassert>
 #include <valarray>
+#include <typeinfo>
 #include <iostream>
 #include <stdexcept>
 
@@ -902,9 +903,9 @@ namespace alps {
                 }
                 template<typename T> void get_data(std::string const & p, T & v) const {
                     if (is_scalar(p) != is_native<T>::value)
-                        ALPS_HDF5_THROW_RUNTIME_ERROR("scalar - vector conflict")
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("scalar - vector conflict in path: " + p)
                     else if (is_native<T>::value && is_null(p))
-                        ALPS_HDF5_THROW_RUNTIME_ERROR("scalars cannot be null")
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("scalars cannot be null in path: " + p)
                     else if (is_null(p)) {
                         call_set_extent(v, std::vector<std::size_t>(1, 0));
                     } else {
@@ -934,13 +935,13 @@ namespace alps {
                 template<typename T> void get_attr(std::string const & p, std::string const & s, T & v) const {
                     hid_t parent_id;
                     if (!is_native<T>::value)
-                        ALPS_HDF5_THROW_RUNTIME_ERROR("attributes need to be scalar")
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("attributes need to be scalar in path: " + p)
                     else if (is_group(p))
                         parent_id = H5Gopen2(*_file, p.c_str(), H5P_DEFAULT);
                     else if (is_data(p))
                         parent_id = H5Dopen2(*_file, p.c_str(), H5P_DEFAULT);
                     else
-                        ALPS_HDF5_THROW_RUNTIME_ERROR("invalid path")
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("invalid path: " + p)
                     detail::attribute_type attr_id(H5Aopen(parent_id, s.c_str(), H5P_DEFAULT));
                     detail::type_type type_id(H5Aget_type(attr_id));
                     detail::type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));
@@ -998,7 +999,7 @@ namespace alps {
                     hid_t parent_id;
                     std::string rev_path = "/revisions/" + boost::lexical_cast<std::string>(_revision) + p;
                     if (!is_native<T>::value)
-                        ALPS_HDF5_THROW_RUNTIME_ERROR("attributes need to be scalar")
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("attributes need to be scalar in path " + p + ", in segment: " + s)
                     else if (is_group(p)) {
                         parent_id = detail::check_error(H5Gopen2(*_file, p.c_str(), H5P_DEFAULT));
                         if (_revision && p.substr(0, std::strlen("/revisions")) != "/revisions" && !is_group(rev_path))
@@ -1270,7 +1271,11 @@ namespace alps {
                 pvp(std::string const & p, T v): _p(p), _v(v) {}
                 pvp(pvp<T> const & c): _p(c._p), _v(c._v) {}
                 template<typename A> A & serialize(A & ar) const {
-                    return call_serialize(ar, _p, const_cast<typename boost::add_reference<T>::type>(_v));
+                    try {
+                        return call_serialize(ar, _p, const_cast<typename boost::add_reference<T>::type>(_v));
+                    } catch (std::exception & ex) {
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("HDF5 Error in path '" + _p + "' on type '" + typeid(_v).name() + "'\nPrevious error:\n" + ex.what())
+                    }
                 }
             private:
                 std::string _p;
