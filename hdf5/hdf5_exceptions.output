@@ -1,0 +1,9 @@
+Error in /Users/gamperl/eclipse/alps/src/alps/hdf5.hpp on 1277 in serialize:
+HDF5 Error in path '/not/existing/path' on type 'd'
+Previous error:
+Error in /Users/gamperl/eclipse/alps/src/alps/hdf5.hpp on 402 in resource:
+HDF5 error: -1
+    #0 H5D.c line 320 in H5Dopen2(): not found
+    #1 H5Gloc.c line 480 in H5G_loc_find(): can't find object
+    #2 H5Gtraverse.c line 952 in H5G_traverse(): internal path traversal failed
+    #3 H5Gtraverse.c line 851 in H5G_traverse_real(): component not found
