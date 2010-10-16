@@ -32,6 +32,7 @@
 
 #include <alps/config.h>
 #include <boost/mpl/bool.hpp>
+#include <alps/type_traits/has_value_type.hpp>
 #include <valarray>
 #include <vector>
 
@@ -40,10 +41,7 @@
 namespace alps {
 
 template <class T>
-struct is_sequence : public boost::mpl::false_ {};
-
-template <class T>
-struct is_sequence<std::vector<T> > : public boost::mpl::true_ {};
+struct is_sequence : public alps::has_value_type<T> {};
 
 template <class T>
 struct is_sequence<std::valarray<T> > : public boost::mpl::true_ {};

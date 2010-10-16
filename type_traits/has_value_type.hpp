@@ -27,21 +27,17 @@
 
 /* $Id: obsvalue.h 3435 2009-11-28 14:45:38Z troyer $ */
 
-#ifndef ALPS_TYPE_TRAITS_ELEMENT_TYPE_H
-#define ALPS_TYPE_TRAITS_ELEMENT_TYPE_H
+#ifndef ALPS_TYPE_TRAITS_HAS_VALUE_TYPE_H
+#define ALPS_TYPE_TRAITS_HAS_VALUE_TYPE_H
 
-#include <alps/type_traits/has_value_type.hpp>
-#include <boost/mpl/if.hpp>
+#include <boost/mpl/has_xxx.hpp>
 
 // maybe we can automate this by checking for the existence of a value_type member
 
 namespace alps {
 
-template <class T>
-struct element_type
- : public detail::element_type_helper<T> : boost::mpl::if_<
-      alps::has_value_type<T>,typename T::value_type,T>::type {};
+BOOST_MPL_HAS_XXX_TRAIT_DEF(value_type)
 
 } // end namespace alps
 
-#endif // ALPS_TYPE_TRAITS_ELEMENT_TYPE_H
+#endif // ALPS_TYPE_TRAITS_HAS_VALUE_TYPE_H
