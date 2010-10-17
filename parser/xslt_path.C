@@ -74,7 +74,7 @@ std::string alps::search_xml_library_path(const std::string& file)
     }
   }
   if (!boost::filesystem::exists(path))
-    boost::throw_exception(std::runtime_error("Cannot find file " + file ));
+    boost::throw_exception(std::runtime_error("Cannot find file " + file + ", failed to find it at " + path.native_file_string()));
   return path.file_string();
 }
 
