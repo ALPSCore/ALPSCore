@@ -37,18 +37,21 @@
 #include <algorithm>
 
 int main() {
+    std::string const filename = "test.h5";
+    if (boost::filesystem::exists(boost::filesystem::path(filename)))
+        boost::filesystem::remove(boost::filesystem::path(filename));
     {
-        alps::hdf5::oarchive("exceptions.h5");
+        alps::hdf5::oarchive oar(filename);
     }
     {
         using namespace alps;
-        alps::hdf5::iarchive iar("exceptions.h5");
+        alps::hdf5::iarchive iar(filename);
         double test;
         try {
             iar >> make_pvp("/not/existing/path", test);
         } catch (std::exception& ex) {
-            std::cerr << ex.what();
+            std::cout << ex.what();
         }
     }
-    boost::filesystem::remove(boost::filesystem::path("exceptions.h5"));
+    boost::filesystem::remove(boost::filesystem::path(filename));
 }

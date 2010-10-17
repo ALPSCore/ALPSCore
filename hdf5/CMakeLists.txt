@@ -25,7 +25,7 @@ IF (ALPS_BUILD_HDF5_TESTS)
     FOREACH (name hdf5_exceptions)
         add_executable(${name} ${name}.cpp)
         if (Boost_FOUND)
-            target_link_libraries(${name} ${Boost_LIBRARIES} ${PYTHON_LIBRARY} ${PYTHON_EXTRA_LIBS} ${HDF5_LIBRARIES}) 
+            target_link_libraries(${name} ${Boost_LIBRARIES} ${HDF5_LIBRARIES}) 
         else(Boost_FOUND) 
             add_dependencies(${name} boost) 
             target_link_libraries(${name} boost ${HDF5_LIBRARIES})
@@ -80,22 +80,36 @@ IF (ALPS_BUILD_HDF5_TESTS)
         add_executable(hdf5_data_szip_${test_name} data.cpp)
         SET_TARGET_PROPERTIES(hdf5_data_szip_${test_name} PROPERTIES COMPILE_FLAGS "-DTYPE='${type}' -DVECTOR_SIZE=25 -DMATRIX_SIZE=5 -DSEED=42 -DSZIP_COMPRESS=true")
         
+        add_executable(hdf5_data_pycplx_${test_name} data.cpp)
+        SET_TARGET_PROPERTIES(hdf5_data_pycplx_${test_name} PROPERTIES COMPILE_FLAGS "-DTYPE='${type}' -DVECTOR_SIZE=25 -DMATRIX_SIZE=5 -DSEED=42 -DALPS_HDF5_WRITE_PYTHON_COMPATIBLE_COMPLEX")
+        
         if (Boost_FOUND)
-            if (PYTHONLIBS_FOUND)
-                target_link_libraries(hdf5_data_${test_name} ${Boost_LIBRARIES} ${PYTHON_LIBRARY} ${PYTHON_EXTRA_LIBS} ${HDF5_LIBRARIES}) 
-                target_link_libraries(hdf5_data_szip_${test_name} ${Boost_LIBRARIES} ${PYTHON_LIBRARY} ${PYTHON_EXTRA_LIBS} ${HDF5_LIBRARIES}) 
-            else(PYTHONLIBS_FOUND)
-                target_link_libraries(hdf5_data_${test_name} ${Boost_LIBRARIES} ${HDF5_LIBRARIES}) 
-                target_link_libraries(hdf5_data_szip_${test_name} ${Boost_LIBRARIES} ${HDF5_LIBRARIES}) 
-            endif(PYTHONLIBS_FOUND)
+
+            target_link_libraries(hdf5_data_${test_name} ${Boost_LIBRARIES} ${HDF5_LIBRARIES}) 
+
+            target_link_libraries(hdf5_data_szip_${test_name} ${Boost_LIBRARIES} ${HDF5_LIBRARIES}) 
+
+            target_link_libraries(hdf5_data_pycplx_${test_name} ${Boost_LIBRARIES} ${HDF5_LIBRARIES}) 
+
         else(Boost_FOUND) 
-            add_dependencies(hdf5_data_${test_name} boost) 
-            add_dependencies(hdf5_data_szip_${test_name} boost) 
+
+            add_dependencies(hdf5_data_${test_name} boost)
             target_link_libraries(hdf5_data_${test_name} boost ${HDF5_LIBRARIES})
+
+            add_dependencies(hdf5_data_szip_${test_name} boost) 
             target_link_libraries(hdf5_data_szip_${test_name} boost ${HDF5_LIBRARIES})
+
+            add_dependencies(hdf5_data_pycplx_${test_name} boost) 
+            target_link_libraries(hdf5_data_pycplx_${test_name} boost ${HDF5_LIBRARIES})
+
         endif(Boost_FOUND) 
+
         add_alps_test(hdf5_data_${test_name})
+
         add_alps_test(hdf5_data_szip_${test_name})
+
+        add_alps_test(hdf5_data_pycplx_${test_name})
+
     ENDFOREACH(type)
 
     SET(ALPS_HDF5_ATTR_TYPES
@@ -105,21 +119,36 @@ IF (ALPS_BUILD_HDF5_TESTS)
     )
 
     FOREACH (type ${ALPS_HDF5_ATTR_TYPES})
+
         STRING(REGEX REPLACE "(::)|<|>| |\\*|\\," "_" test_name ${type})
         STRING(REGEX REPLACE "__+" "_" test_name ${test_name})
+
         add_executable(hdf5_attr_${test_name} attr.cpp)
         SET_TARGET_PROPERTIES(hdf5_attr_${test_name} PROPERTIES COMPILE_FLAGS "-DTYPE='${type}' -DVECTOR_SIZE=25 -DMATRIX_SIZE=5 -DSEED=42")
+
+        add_executable(hdf5_attr_pycplx_${test_name} attr.cpp)
+        SET_TARGET_PROPERTIES(hdf5_attr_pycplx_${test_name} PROPERTIES COMPILE_FLAGS "-DTYPE='${type}' -DVECTOR_SIZE=25 -DMATRIX_SIZE=5 -DSEED=42 -DALPS_HDF5_WRITE_PYTHON_COMPATIBLE_COMPLEX")
+
         if (Boost_FOUND)
-            if (PYTHONLIBS_FOUND)
-                target_link_libraries(hdf5_attr_${test_name} ${Boost_LIBRARIES} ${PYTHON_LIBRARY} ${PYTHON_EXTRA_LIBS} ${HDF5_LIBRARIES}) 
-            else(PYTHONLIBS_FOUND)
-                target_link_libraries(hdf5_attr_${test_name} ${Boost_LIBRARIES} ${HDF5_LIBRARIES}) 
-            endif(PYTHONLIBS_FOUND)
+
+            target_link_libraries(hdf5_attr_${test_name} ${Boost_LIBRARIES} ${HDF5_LIBRARIES}) 
+
+            target_link_libraries(hdf5_attr_pycplx_${test_name} ${Boost_LIBRARIES} ${HDF5_LIBRARIES}) 
+
         else(Boost_FOUND) 
+
             add_dependencies(hdf5_attr_${test_name} boost) 
             target_link_libraries(hdf5_attr_${test_name} boost ${HDF5_LIBRARIES})
+
+            add_dependencies(hdf5_attr_pycplx_${test_name} boost) 
+            target_link_libraries(hdf5_attr_pycplx_${test_name} boost ${HDF5_LIBRARIES})
+
         endif(Boost_FOUND) 
+
         add_alps_test(hdf5_attr_${test_name})
+
+        add_alps_test(hdf5_attr_pycplx_${test_name})
+
     ENDFOREACH(type)
 
 ENDIF (ALPS_BUILD_HDF5_TESTS)

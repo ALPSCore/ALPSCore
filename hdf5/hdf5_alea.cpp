@@ -38,6 +38,9 @@
 #include <algorithm>
 
 int main() {
+    std::string const filename = "test.h5";
+    if (boost::filesystem::exists(boost::filesystem::path(filename)))
+        boost::filesystem::remove(boost::filesystem::path(filename));
     {
         boost::minstd_rand0 engine;
         boost::uniform_01<boost::minstd_rand0> random(engine);
@@ -49,7 +52,7 @@ int main() {
             measurement["Test"] << random();
             measurement["Sign"] << 1.0;
         }
-        alps::hdf5::oarchive oar("alea.h5");
+        alps::hdf5::oarchive oar(filename);
         oar << make_pvp("/test/0/result", measurement);
     }
     {
@@ -57,15 +60,15 @@ int main() {
         measurement << alps::make_observable(alps::SimpleRealObservable("Test"), true)
                     << alps::RealObservable("Sign")
                     << alps::RealObservable("No Measurements");
-        alps::hdf5::iarchive iar("alea.h5");
+        alps::hdf5::iarchive iar(filename);
         iar >> make_pvp("/test/0/result", measurement);
         std::cout << measurement;
     }
     {
         alps::ObservableSet measurement;
-        alps::hdf5::iarchive iar("alea.h5");
+        alps::hdf5::iarchive iar(filename);
         iar >> make_pvp("/test/0/result", measurement);
         std::cout << measurement;
     }
-    boost::filesystem::remove(boost::filesystem::path("alea.h5"));
+    boost::filesystem::remove(boost::filesystem::path(filename));
 }
