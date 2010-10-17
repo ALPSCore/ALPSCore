@@ -80,7 +80,6 @@ namespace alps {
                 char * time;
                 char * name;
             };
-            // TODO: ask olivier how save complex data
             struct internal_complex_type {
                double r;
                double i;
@@ -195,33 +194,75 @@ namespace alps {
             v = u.front();
         }
 
-        template<typename T> struct serializable_type<std::complex<T> > { typedef detail::internal_complex_type type; };
-        template<typename T> struct native_type<std::complex<T> > { typedef std::complex<T> type; };
-        template<typename T> struct is_native<std::complex<T> > : public boost::mpl::true_ {};
-        template<typename T> struct is_native<std::complex<T> const > : public boost::mpl::true_ {};
-        template<typename T> std::vector<hsize_t> get_extent(std::complex<T> const &) { return std::vector<hsize_t>(1, 1); }
-        template<typename T> void set_extent(std::complex<T>  &, std::vector<std::size_t> const &) {}
-        template<typename T> std::vector<hsize_t> get_offset(std::complex<T> const &) { return std::vector<hsize_t>(1, 1); }
         template<typename T> bool is_vectorizable(std::complex<T> const &) { return true; }
-        template<typename T> typename serializable_type<std::complex<T> >::type const * get_data(
-              std::vector<typename serializable_type<std::complex<T> >::type> & m
-            , std::complex<T> const & v
-            , std::vector<hsize_t> const &
-            , std::vector<hsize_t> const & t = std::vector<hsize_t>(1, 1)
-        ) {
-            if (t.size() != 1 || t[0] == 0)
-                ALPS_HDF5_THROW_RANGE_ERROR("invalid data size")
-            m.resize(t[0]);
-            for (std::complex<T> const * u = &v; u != &v + t[0]; ++u) {
-                detail::internal_complex_type c = { u->real(), u->imag() };
-                m[u - &v] = c;
+        #ifdef ALPS_HDF5_WRITE_PYTHON_COMPATIBLE_COMPLEX
+            template<typename T> struct serializable_type<std::complex<T> > { typedef detail::internal_complex_type type; };
+            template<typename T> struct native_type<std::complex<T> > { typedef std::complex<T> type; };
+            template<typename T> struct is_native<std::complex<T> > : public boost::mpl::true_ {};
+            template<typename T> struct is_native<std::complex<T> const > : public boost::mpl::true_ {};
+            template<typename T> std::vector<hsize_t> get_offset(std::complex<T> const &) { return std::vector<hsize_t>(1, 1); }
+            template<typename T> void set_extent(std::complex<T>  &, std::vector<std::size_t> const & s) {
+                if (!is_native<T>::value)
+                    ALPS_HDF5_THROW_RUNTIME_ERROR("complex can only be build over scalar data types")
+                if(s.size() > 0)
+                    ALPS_HDF5_THROW_RANGE_ERROR("invalid data size")
             }
-            return &m[0];
-        }
-        template<typename T, typename U> typename boost::disable_if<
-            typename boost::is_same<U, std::complex<double> >::type
-        >::type set_data(std::complex<T> &, std::vector<U> const &, std::vector<hsize_t> const &, std::vector<hsize_t> const &) {
+            template<typename T> std::vector<hsize_t> get_extent(std::complex<T> const &) { return std::vector<hsize_t>(1, 1); }
+            template<typename T> typename serializable_type<std::complex<T> >::type const * get_data(
+                  std::vector<typename serializable_type<std::complex<T> >::type> & m
+                , std::complex<T> const & v
+                , std::vector<hsize_t> const &
+                , std::vector<hsize_t> const & t = std::vector<hsize_t>(1, 1)
+            ) {
+                if (t.size() != 1 || t[0] == 0)
+                    ALPS_HDF5_THROW_RANGE_ERROR("invalid data size")
+                m.resize(t[0]);
+                for (std::complex<T> const * u = &v; u != &v + t[0]; ++u) {
+                    detail::internal_complex_type c = { u->real(), u->imag() };
+                    m[u - &v] = c;
+                }
+                return &m[0];
+            }
+        #else
+            template<typename T> struct serializable_type<std::complex<T> > {
+                typedef typename serializable_type<typename boost::remove_const<T>::type>::type type;
+            };
+            template<typename T> struct native_type<std::complex<T> > {
+                typedef typename native_type<typename boost::remove_const<T>::type>::type type;
+            };
+            template<typename T> struct is_native<std::complex<T> > : public boost::mpl::false_ {};
+            template<typename T> struct is_native<std::complex<T> const > : public boost::mpl::false_ {};
+            template<typename T> std::vector<hsize_t> get_offset(std::complex<T> const &) { return std::vector<hsize_t>(1, 2); }
+            template<typename T> void set_extent(std::complex<T>  &, std::vector<std::size_t> const & s) {
+                if (!is_native<T>::value)
+                    ALPS_HDF5_THROW_RUNTIME_ERROR("complex can only be build over scalar data types")
+                if(s.size() != 1)
+                    ALPS_HDF5_THROW_RANGE_ERROR("invalid data size")
+            }
+            template<typename T> std::vector<hsize_t> get_extent(std::complex<T> const & v) {
+                if (!is_native<T>::value)
+                    ALPS_HDF5_THROW_RUNTIME_ERROR("complex can only be build over scalar data types")
+                return std::vector<hsize_t>(1, 2);
+            }
+            template<typename T> typename serializable_type<std::complex<T> >::type const * get_data(
+                  std::vector<typename serializable_type<std::complex<T> >::type> & m
+                , std::complex<T> const & v
+                , std::vector<hsize_t> const & s
+                , std::vector<hsize_t> const & = std::vector<hsize_t>()
+            ) {
+                return reinterpret_cast<typename serializable_type<std::complex<T> >::type const *> (&v);
+            }
+        #endif
+        template<typename T, typename U> typename boost::disable_if<typename boost::mpl::or_<
+            typename boost::is_same<U, T>::type,
+            typename boost::is_same<U, std::complex<T> >::type
+        >::type>::type set_data(std::complex<T> &, std::vector<U> const &, std::vector<hsize_t> const &, std::vector<hsize_t> const &) {
             ALPS_HDF5_THROW_RUNTIME_ERROR("invalid type conversion")
+        }
+        template<typename T> void set_data(std::complex<T> & v, std::vector<T> const & u, std::vector<hsize_t> const & s, std::vector<hsize_t> const & c) {
+            if (s.size() != 1 || c.size() != 1 || c[0] == 0 || u.size() < c[0])
+                ALPS_HDF5_THROW_RANGE_ERROR("invalid data size")
+            std::copy(u.begin(), u.begin() + c[0], reinterpret_cast<T *>(&v) + s[0]);
         }
         template<typename T> void set_data(std::complex<T> & v, std::vector<std::complex<double> > const & u, std::vector<hsize_t> const & s, std::vector<hsize_t> const & c) {
             if (s.size() != 1 || c.size() != 1 || c[0] == 0 || u.size() < c[0])
@@ -492,20 +533,25 @@ namespace alps {
                     , _filename(rhs._filename)
                 {}
                 ~archive() {
-                    H5Fflush(*_file, H5F_SCOPE_GLOBAL);
-                    if (_state_id > -1)
-                        detail::check_type(_state_id);
-                    if (_log_id > -1)
-                        detail::check_type(_log_id);
-                    #ifndef ALPS_HDF5_CLOSE_GREEDY
-                        if (
-                            H5Fget_obj_count(*_file, H5F_OBJ_DATATYPE) > (_state_id == -1 ? 0 : 1) + (_log_id == -1 ? 0 : 1)
-                            || H5Fget_obj_count(*_file, H5F_OBJ_ALL) - H5Fget_obj_count(*_file, H5F_OBJ_FILE) - H5Fget_obj_count(*_file, H5F_OBJ_DATATYPE) > 0
-                        ) {
-                            std::cerr << "Not all resources closed" << std::endl;
-                            std::abort();
-                        }
-                    #endif
+                    try {
+                        H5Fflush(*_file, H5F_SCOPE_GLOBAL);
+                        if (_state_id > -1)
+                            detail::check_type(_state_id);
+                        if (_log_id > -1)
+                            detail::check_type(_log_id);
+                        #ifndef ALPS_HDF5_CLOSE_GREEDY
+                            if (
+                                H5Fget_obj_count(*_file, H5F_OBJ_DATATYPE) > (_state_id == -1 ? 0 : 1) + (_log_id == -1 ? 0 : 1)
+                                || H5Fget_obj_count(*_file, H5F_OBJ_ALL) - H5Fget_obj_count(*_file, H5F_OBJ_FILE) - H5Fget_obj_count(*_file, H5F_OBJ_DATATYPE) > 0
+                            ) {
+                                std::cerr << "Not all resources closed in file '" << _filename << "'" << std::endl;
+                                std::abort();
+                            }
+                        #endif
+                    } catch (std::exception & ex) {
+                        std::cerr << "Error destructing archive of file '" << _filename << "'\n" << ex.what() << std::endl;
+                        std::abort();
+                    }
                 }
                 std::string const & filename() const {
                     return _filename;
@@ -732,7 +778,9 @@ namespace alps {
                 hid_t get_native_type(double) const { return H5Tcopy(H5T_NATIVE_DOUBLE); }
                 hid_t get_native_type(long double) const { return H5Tcopy(H5T_NATIVE_LDOUBLE); }
                 hid_t get_native_type(bool) const { return H5Tcopy(H5T_NATIVE_HBOOL); }
-                template<typename T> hid_t get_native_type(std::complex<T>) const { return H5Tcopy(_complex_id); }
+                #ifdef ALPS_HDF5_WRITE_PYTHON_COMPATIBLE_COMPLEX
+                    template<typename T> hid_t get_native_type(std::complex<T>) const { return H5Tcopy(_complex_id); }
+                #endif
                 hid_t get_native_type(detail::internal_log_type) const { return H5Tcopy(_log_id); }
                 hid_t get_native_type(std::string) const { 
                     hid_t type_id = H5Tcopy(H5T_C_S1);
@@ -906,9 +954,9 @@ namespace alps {
                         ALPS_HDF5_THROW_RUNTIME_ERROR("scalar - vector conflict in path: " + p)
                     else if (is_native<T>::value && is_null(p))
                         ALPS_HDF5_THROW_RUNTIME_ERROR("scalars cannot be null in path: " + p)
-                    else if (is_null(p)) {
+                    else if (is_null(p))
                         call_set_extent(v, std::vector<std::size_t>(1, 0));
-                    } else {
+                    else {
                         std::vector<hsize_t> size(dimensions(p), 0);
                         detail::data_type data_id(H5Dopen2(*_file, p.c_str(), H5P_DEFAULT));
                         detail::type_type type_id(H5Dget_type(data_id));
@@ -1152,6 +1200,15 @@ namespace alps {
             return detail::serialize_impl(ar, p, v, is_native<T>());
         }
 
+        template<typename T> iarchive & serialize(iarchive & ar, std::string const & p, std::complex<T> & v) {
+            ar.serialize(p, v);
+            return ar;
+        }
+        template<typename T> oarchive & serialize(oarchive & ar, std::string const & p, std::complex<T> const & v) {
+            ar.serialize(p, v);
+            return ar;
+        }
+
         #define HDF5_DEFINE_VECTOR_TYPE(C)                                                                                                                  \
             template<typename T> iarchive & serialize(iarchive & ar, std::string const & p, C <T> & v) {                                                    \
                 if (ar.is_group(p)) {                                                                                                                       \
@@ -1274,7 +1331,7 @@ namespace alps {
                     try {
                         return call_serialize(ar, _p, const_cast<typename boost::add_reference<T>::type>(_v));
                     } catch (std::exception & ex) {
-                        ALPS_HDF5_THROW_RUNTIME_ERROR("HDF5 Error in path '" + _p + "' on type '" + typeid(_v).name() + "'\nPrevious error:\n" + ex.what())
+                        throw std::runtime_error("HDF5 Error " + std::string(boost::is_same<A, iarchive>::value ? "reading" : "writing") + " path '" + _p + "' on type '" + typeid(_v).name() + "':\n" + ex.what());
                     }
                 }
             private:
