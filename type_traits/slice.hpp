@@ -30,11 +30,10 @@
 #ifndef ALPS_TYPE_TRAITS_SLICE_HPP
 #define ALPS_TYPE_TRAITS_SLICE_HPP
 
+#include <alps/type_traits/is_sequence.hpp>
 #include <alps/type_traits/element_type.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/lexical_cast.hpp>
-
-// maybe we can automate this by checking for the existence of a value_type member
 
 namespace alps {
 

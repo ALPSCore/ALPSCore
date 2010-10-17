@@ -31,17 +31,35 @@
 #define ALPS_TYPE_TRAITS_ELEMENT_TYPE_H
 
 #include <alps/type_traits/has_value_type.hpp>
-#include <boost/mpl/if.hpp>
+#include <boost/mpl/eval_if.hpp>
+#include <boost/mpl/bool.hpp>
+ 
+ namespace alps {
+ 
+namespace detail {
 
-// maybe we can automate this by checking for the existence of a value_type member
-
-namespace alps {
+template <class T, class F>
+struct element_type_helper {};
+  
+ template <class T>
+struct element_type_helper<T,boost::mpl::false_> 
+{
+  typedef T type;
+};
 
 template <class T>
-struct element_type
- : public detail::element_type_helper<T> : boost::mpl::if_<
-      alps::has_value_type<T>,typename T::value_type,T>::type {};
+struct element_type_helper<T,boost::mpl::true_> 
+{
+  typedef typename T::value_type type;
+};
 
-} // end namespace alps
 
+}
+
+template <class T>
+ struct element_type
+ : public detail::element_type_helper<T,typename has_value_type<T>::type > {};
+
+}
+ 
 #endif // ALPS_TYPE_TRAITS_ELEMENT_TYPE_H
