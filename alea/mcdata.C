@@ -96,7 +96,7 @@ try {
             << ", number of bins = " << obseval_c.bin_number()
             << std::endl;
   alps::alea::mcdata<double> obseval_d(obs_d);
-  std::cout << obseval_d;
+  std::cout << obseval_d.mean() << " +/- " <<  obseval_d.error() << std::endl;
   std::cout << "  count = " << obseval_d.count()
             << ", bin size = " << obseval_d.bin_size()
             << ", number of bins = " << obseval_d.bin_number()
@@ -129,7 +129,7 @@ try {
   std::cout << "merging observables b and d\n";
   alps::alea::mcdata<double> obseval_6;
   obseval_6 << obseval_b << obseval_d;
-  std::cout << "  " << obseval_6;
+  std::cout << "  " << obseval_6.mean() << " +/- " <<  obseval_6.error() << std::endl;
   std::cout << "  count = " << obseval_6.count()
             << ", bin size = " << obseval_6.bin_size()
             << ", number of bins = " << obseval_6.bin_number()
