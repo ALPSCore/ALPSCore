@@ -28,8 +28,8 @@
 
 
 
-#ifndef ALPS_NUMERIC_BASIS_FUNCTIONS_HPP
-#define ALPS_NUMERIC_BASIS_FUNCTIONS_HPP
+#ifndef ALPS_NUMERIC_POLYNOMIAL_HPP
+#define ALPS_NUMERIC_POLYNOMIAL_HPP
 
 #include <alps/numeric/vector_functions.hpp>
 
@@ -84,60 +84,6 @@ struct polynomial
 
 			return std::inner_product(C_prime.begin(), C_prime.end(), X.begin(), 0.);
 		}	
-};
-
-
-struct fourier_real
-{
-	template <class T>
-	static T
-		cos
-		(	T & x
-		)
-	{
-		return std::cos(x);
-	}
-
-	template <class T>
-	static T
-		sin
-		(	T & x
-		)
-	{
-		return std::sin(x);
-	}
-
-
-	template <class S, class T>
-	static T
-		evaluate
-			(	std::vector<T>	const &	A		//	[a0, a1, a2,...]
-			,	std::vector<T>	const &	B		//	[b0, b1, b2,...]
-			,	T								const &	x		//	x
-			,	S								const & N		//	N
-			)
-		{
-			T	_2PIx_over_N	=	((M_2PI * x) / N);
-
-			std::vector<T>	_2PInx_over_N;
-			_2PInx_over_N.reserve(A.size());
-			std::transform
-				(	boost::counting_iterator<T>(0)
-				,	boost::counting_iterator<T>(A.size())
-				,	std::back_inserter(_2PInx_over_N)
-				, boost::lambda::_1 * _2PIx_over_N
-				);	
-
-			std::vector<T>	C = alps::numeric::cos(_2PInx_over_N);
-			std::vector<T>	S = alps::numeric::sin(_2PInx_over_N);
-
-			using alps::numeric::operator*;
-
-			C = C * A;
-			S = S * B;
-
-			return ( std::accumulate(C.begin(), C.end(), 0.) +  std::accumulate(S.begin()+1, S.end(), 0.) );
-		} // objective:	F(x) = a0 + a1 * cos(2\pix/N) + a2 * cos(4\pix/N) + ... + b1 * sin(2\pix/N) + b2 * sin(4\pix/N) + ...
 };
 
 
