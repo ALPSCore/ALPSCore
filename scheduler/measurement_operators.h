@@ -42,6 +42,10 @@
 #include <string>
 #include <map> 
 
+#ifdef ALPS_HAVE_HDF5
+# include <alps/hdf5.hpp>
+#endif
+
 namespace alps{
 
 class ALPS_DECL MeasurementOperators

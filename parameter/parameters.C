@@ -36,6 +36,9 @@
 #include <streambuf>
 
 #include <alps/expression.h>
+#ifdef ALPS_HAVE_HDF5
+#include <alps/hdf5.hpp>
+#endif ALPS_HAVE_HDF5
 
 namespace bs = boost::spirit;
 
