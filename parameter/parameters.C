@@ -38,7 +38,7 @@
 #include <alps/expression.h>
 #ifdef ALPS_HAVE_HDF5
 #include <alps/hdf5.hpp>
-#endif ALPS_HAVE_HDF5
+#endif
 
 namespace bs = boost::spirit;
 
