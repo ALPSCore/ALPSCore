@@ -56,18 +56,19 @@ void Disorder::seed_if_unseeded(const alps::Parameters& p)
     seed(s);
 }
 
-StringValue simplify_value(StringValue const& val, Parameters const& parms)
+StringValue simplify_value(StringValue const& val, Parameters const& parms, bool eval_random)
 {
   try {
+    expression::ParameterEvaluator<double> eval(parms,eval_random);
     expression::Expression<double> expr(val);
-    if (expr.can_evaluate(parms)) {
-        double value = expr.value(parms);
+    if (expr.can_evaluate(eval)) {
+        double value = expr.value(eval);
         if (numeric::is_zero(value - static_cast<double>(static_cast<int>(value)))) 
             return static_cast<int>(value);
         else 
             return value;
     } else {
-        expr.partial_evaluate(parms);
+        expr.partial_evaluate(eval);
         return boost::lexical_cast<std::string>(expr);
     }
   } catch(...) {

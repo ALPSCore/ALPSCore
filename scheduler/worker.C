@@ -351,7 +351,10 @@ void Worker::set_parameters(const alps::Parameters& p)
       simplify_value(parms[it->key()],parms) != simplify_value(it->value(),p)) {
       if(!(change_parameter(it->key(), it->value()) ||
           Worker::change_parameter(it->key(), it->value()))) {
-        std::cerr << "parameters do not match: " << it->key() << ", value: " << simplify_value(parms[it->key()],parms) << ", value2: " << simplify_value(it->value(),p) << std::endl;
+        std::cerr << "parameters do not match: " << it->key() << ", value: " 
+        << parms[it->key()] << " [= " << simplify_value(parms[it->key()],parms)
+        << "], value2: " 
+        << it->value() << " [= " << simplify_value(it->value(),p) << "]" << std::endl;
         boost::throw_exception(std::runtime_error("Cannot change parameter " + it->key()));
       }
       parms[it->key()]=it->value();
