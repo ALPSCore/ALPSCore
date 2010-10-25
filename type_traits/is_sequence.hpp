@@ -35,6 +35,7 @@
 #include <alps/type_traits/has_value_type.hpp>
 #include <valarray>
 #include <vector>
+#include <complex>
 
 // maybe we can automate this by checking for the existence of a value_type member
 
@@ -45,6 +46,9 @@ struct is_sequence : public alps::has_value_type<T> {};
 
 template <class T>
 struct is_sequence<std::valarray<T> > : public boost::mpl::true_ {};
+
+template <class T>
+struct is_sequence<std::complex<T> > : public boost::mpl::false_ {};
  
 
 } // end namespace alps
