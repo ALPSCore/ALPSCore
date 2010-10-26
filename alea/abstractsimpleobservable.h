@@ -58,6 +58,12 @@ inline bool error_underflow(T mean, T error)
              *std::sqrt(std::numeric_limits<T>::epsilon()) > std::abs(error)));
 }
 
+template <class T>
+inline bool error_underflow(std::complex<T> mean, std::complex<T> error)
+{
+  return false;
+}
+
 class RealVectorObsevaluatorXMLHandler;
 
 

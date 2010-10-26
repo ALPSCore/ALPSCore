@@ -308,7 +308,7 @@ typename SimpleBinning<T>::convergence_type SimpleBinning<T>::converged_errors()
       for (it= slices(conv).first; it!= slices(conv).second; ++it)
         if (std::abs(slice_value(this_err,it)) >= std::abs(slice_value(err,it)))
           slice_value(conv,it)=CONVERGED;
-        else if (std::abs(slice_value(this_err,it)) < 0.824 * slice_value(err,it))
+        else if (std::abs(slice_value(this_err,it)) < 0.824 * std::abs(slice_value(err,it)))
           slice_value(conv,it)=NOT_CONVERGED;
         else if (std::abs(slice_value(this_err,it)) <0.9* std::abs(slice_value(err,it))  &&
             slice_value(conv,it)!=NOT_CONVERGED)
