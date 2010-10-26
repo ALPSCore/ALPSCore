@@ -56,6 +56,12 @@ namespace alps {
                 return convert(std::vector<double>(1, source));
             }
 
+            std::vector<double> convert(boost::python::object const & source) {
+               std::vector<double> target;
+               convert(source, target);
+               return target;
+            }
+
             boost::python::numeric::array convert(std::vector<double> const & source) {
                 import();
                 npy_intp size = source.size();
