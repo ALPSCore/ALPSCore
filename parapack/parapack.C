@@ -74,6 +74,11 @@ int start(int argc, char **argv) {
   #endif
 
     option opt(argc, argv);
+    if (!opt.valid) {
+      std::cerr << "Error: unknown command line option(s)\n";
+      opt.print(std::cerr);
+      return -1;
+    }
     int ret;
     if (opt.jobfiles.size() == 0) {
       if (!opt.use_mpi) {
