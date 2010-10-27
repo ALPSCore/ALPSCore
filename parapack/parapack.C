@@ -174,8 +174,7 @@ int evaluate(int argc, char **argv) {
         boost::filesystem::path file_in = complete(boost::filesystem::path(file_in_str), basedir);
         boost::filesystem::path file_out = complete(boost::filesystem::path(file_out_str), basedir);
         std::string simname;
-        load_tasks(file_in, file_out, basedir, /* check_parameter = */ false,
-                              simname, tasks);
+        load_tasks(file_in, file_out, basedir, simname, tasks, false);
         std::clog << "  master input file  = " << file_in.native_file_string() << std::endl
                   << "  master output file = " << file_out.native_file_string() << std::endl;
         print_taskinfo(std::clog, tasks);
@@ -279,44 +278,45 @@ void load_version(boost::filesystem::path const& file,
   parser.parse(file);
 }
 
-void load_tasks(boost::filesystem::path const& file_in,
-  boost::filesystem::path const& file_out, boost::filesystem::path const& basedir,
-  bool check_parameter, std::string& simname, std::vector<alps::task>& tasks) {
+void load_tasks(boost::filesystem::path const& file_in, boost::filesystem::path const& file_out,
+  boost::filesystem::path const& basedir, std::string& simname, std::vector<alps::task>& tasks,
+  bool check_parameter) {
   tasks.clear();
-  alps::job_tasks_xml_handler handler(simname, tasks, basedir);
-  alps::XMLParser parser(handler);
-  if (check_parameter || !exists(file_out))
+  if (!exists(file_out)) {
+    alps::job_tasks_xml_handler handler(simname, tasks, basedir);
+    alps::XMLParser parser(handler);
     parser.parse(file_in);
-  else
-    parser.parse(file_out);
-
-  if (check_parameter && exists(file_out)) {
-    std::vector<alps::task> tasks_out;
-    alps::job_tasks_xml_handler handler_out(simname, tasks_out, basedir);
+  } else {
+    alps::job_tasks_xml_handler handler_out(simname, tasks, basedir);
     alps::XMLParser parser_out(handler_out);
     parser_out.parse(file_out);
 
-    if (tasks.size() == tasks_out.size()) {
-    } else if (tasks.size() > tasks_out.size()) {
-      std::clog << "Info: number of parameter sets has been increased from " << tasks_out.size()
-                << " to " << tasks.size() << std::endl;
-    } else {
-      std::clog << "Warning: number of parameter sets has been decreased from " << tasks_out.size()
-                << " to " << tasks.size() << std::endl;
-    }
+    if (check_parameter) {
+      std::vector<alps::task> tasks_in;
+      alps::job_tasks_xml_handler handler_in(simname, tasks_in, basedir);
+      alps::XMLParser parser_in(handler_in);
+      parser_in.parse(file_in);
 
-    int nc = std::min BOOST_PREVENT_MACRO_SUBSTITUTION (tasks.size(), tasks_out.size());
-    for (int i = 0; i < nc; ++i) {
-      if (tasks[i].file_in_str() != tasks_out[i].file_in_str()) {
-        std::cerr << "Error: input XML filename of task[" << i << "] has been modified\n";
-        boost::throw_exception(std::runtime_error("check parameter"));
+      int nc = std::min BOOST_PREVENT_MACRO_SUBSTITUTION (tasks_in.size(), tasks.size());
+      for (int i = 0; i < nc; ++i) {
+        if (tasks_in[i].file_in_str() != tasks[i].file_in_str() ||
+            tasks_in[i].file_out_str() != tasks[i].file_out_str()) {
+          std::clog << "Info: input/output XML filename of " << logger::task(i)
+                    << " has been modified" << std::endl;
+          tasks[i] = tasks_in[i];
+        }
+        tasks[i].check_parameter();
       }
-      if (tasks[i].file_out_str() != tasks_out[i].file_out_str()) {
-        std::cerr << "Error: output XML filename of task[" << i << "] has been modified\n";
-        boost::throw_exception(std::runtime_error("check parameter"));
+      if (tasks_in.size() > tasks.size()) {
+        std::clog << "Info: number of parameter sets has been increased from " << tasks.size()
+                  << " to " << tasks_in.size() << std::endl;
+        for (int i = tasks.size(); i < tasks_in.size(); ++i) tasks.push_back(tasks_in[i]);
+      } else if (tasks_in.size() < tasks.size()) {
+        std::clog << "Info: number of parameter sets has been decreased from " << tasks.size()
+                  << " to " << tasks_in.size() << std::endl;
+        tasks.resize(tasks_in.size());
       }
     }
-    BOOST_FOREACH(alps::task& t, tasks) t.check_parameter();
   }
 }
 
@@ -453,8 +453,7 @@ int start_sgl(int argc, char** argv) {
         file_in = complete(boost::filesystem::path(file_in_str), basedir);
         file_out = complete(boost::filesystem::path(file_out_str), basedir);
         std::string simname;
-        load_tasks(file_in, file_out, basedir, /* check_parameter = */ false,
-                   simname, tasks);
+        load_tasks(file_in, file_out, basedir, simname, tasks, false);
         std::clog << "  master input file  = " << file_in.native_file_string() << std::endl
                   << "  master output file = " << file_out.native_file_string() << std::endl;
         print_taskinfo(std::clog, tasks);
@@ -500,7 +499,6 @@ int start_sgl(int argc, char** argv) {
               << "  total number of thread(s) = " << num_total_threads << std::endl
               << "  thread(s) per clone       = " << opt.threads_per_clone << std::endl
               << "  number of thread group(s) = " << num_groups << std::endl
-              << "  check parameter = " << (opt.check_parameter ? "yes" : "no") << std::endl
               << "  auto evaluation = " << (opt.auto_evaluate ? "yes" : "no") << std::endl;
     if (opt.has_time_limit)
       std::clog << "  time limit = " << opt.time_limit.total_seconds() << " seconds\n";
@@ -511,7 +509,7 @@ int start_sgl(int argc, char** argv) {
               << "  interval between progress report = "
               << opt.report_interval.total_seconds() << " seconds\n";
 
-    load_tasks(file_in, file_out, basedir, opt.check_parameter, simname, tasks);
+    load_tasks(file_in, file_out, basedir, simname, tasks);
     if (simname != "")
       std::clog << "  simulation name = " << simname << std::endl;
     BOOST_FOREACH(task const& t, tasks) {
@@ -535,7 +533,7 @@ int start_sgl(int argc, char** argv) {
         std::clog << logger::header() << "starting " << num_groups << " threadgroup(s)\n";
       }
 
-      check_queue_t check_queue; // check_queue is theread private
+      check_queue_t check_queue; // check_queue is thread private
       #pragma omp master
       {
         check_queue.push(next_taskinfo(opt.checkpoint_interval / 10));
@@ -680,11 +678,10 @@ int start_sgl(int argc, char** argv) {
 
         }
       }
-
-      std::clog << logger::header() << logger::group(group) << " halted\n";
     } // end omp parallel
 
     print_taskinfo(std::clog, tasks);
+    std::clog << logger::header() << "all threads halted\n";
     if (opt.auto_evaluate) {
       std::clog << logger::header() << "starting evaluation on "
                 << alps::hostname() << std::endl;
@@ -871,8 +868,7 @@ int start_mpi(int argc, char** argv) {
           file_in = complete(boost::filesystem::path(file_in_str), basedir);
           file_out = complete(boost::filesystem::path(file_out_str), basedir);
           std::string simname;
-          load_tasks(file_in, file_out, basedir, /* check_parameter = */ false,
-                                simname, tasks);
+          load_tasks(file_in, file_out, basedir, simname, tasks);
           std::clog << "  master input file  = " << file_in.native_file_string() << std::endl
                     << "  master output file = " << file_out.native_file_string() << std::endl;
           print_taskinfo(std::clog, tasks);
@@ -920,7 +916,6 @@ int start_mpi(int argc, char** argv) {
                 << process.num_procs_per_group() << "/" << opt.threads_per_clone << std::endl
                 << "  number of process group(s)            = "
                 << process.num_groups() << std::endl
-                << "  check parameter = " << (opt.check_parameter ? "yes" : "no") << std::endl
                 << "  auto evaluation = " << (opt.auto_evaluate ? "yes" : "no") << std::endl;
       if (opt.time_limit != boost::posix_time::time_duration())
         std::clog << "  time limit = " << opt.time_limit.total_seconds() << " seconds\n";
@@ -931,7 +926,7 @@ int start_mpi(int argc, char** argv) {
                 << "  interval between progress report = "
                 << opt.report_interval.total_seconds() << " seconds\n";
 
-      load_tasks(file_in, file_out, basedir, opt.check_parameter, simname, tasks);
+      load_tasks(file_in, file_out, basedir, simname, tasks);
       if (simname != "")
         std::clog << "  simulation name = " << simname << std::endl;
       BOOST_FOREACH(task const& t, tasks) {

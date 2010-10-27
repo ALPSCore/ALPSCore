@@ -37,7 +37,7 @@ option::option(int argc, char** argv)
   : desc("Allowed options"), has_time_limit(false), time_limit(), check_interval(pt::millisec(100)),
     checkpoint_interval(pt::seconds(3600)), report_interval(pt::seconds(600)),
     default_total_threads(true), auto_total_threads(false), num_total_threads(1),
-    threads_per_clone(1), check_parameter(false), auto_evaluate(false), evaluate_only(false),
+    threads_per_clone(1), auto_evaluate(false), evaluate_only(false),
     use_mpi(false), jobfiles(), valid(true), show_help(false), show_license(false) {
   desc.add_options()
     ("help,h", "produce help message")
@@ -83,8 +83,6 @@ option::option(int argc, char** argv)
     show_license = true;
   if (vm.count("auto-evaluate"))
     auto_evaluate = true;
-  if (vm.count("check-parameter"))
-    check_parameter = true;
   if (vm.count("check-interval"))
     check_interval = pt::millisec(vm["check-interval"].as<int>());
   if (vm.count("checkpoint-interval"))

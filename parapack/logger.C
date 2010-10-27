@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -32,6 +32,9 @@ namespace alps {
 
 std::string logger::header() {
   return std::string("[") + to_simple_string(boost::posix_time::second_clock::local_time()) + "]: ";
+}
+std::string logger::task(alps::tid_t tid) {
+  return std::string("task[") + boost::lexical_cast<std::string>(tid+1) + ']';
 }
 std::string logger::clone(alps::tid_t tid, alps::cid_t cid) {
   return std::string("clone[") + boost::lexical_cast<std::string>(tid+1) + ',' +

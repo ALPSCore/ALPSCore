@@ -94,11 +94,9 @@ uint32_t task::num_started() const {
 
 void task::load() {
   if (on_memory()) boost::throw_exception(std::logic_error("task::load() task already loaded"));
-
   params_.clear();
   obs_.clear();
   clone_info_.clear();
-
   boost::filesystem::path file_in = complete(boost::filesystem::path(file_in_str_), basedir_);
   boost::filesystem::path file_out = complete(boost::filesystem::path(file_out_str_), basedir_);
   simulation_xml_handler handler(params_, obs_, clone_info_);
@@ -239,6 +237,10 @@ void task::halt() {
 }
 
 void task::check_parameter() {
+  // change in NUM_CLONES : keep old calculations and add new ones
+  // change in SEED : ignored
+  // change in other parameters : throw away all the old clones
+
   boost::filesystem::path file_in = complete(boost::filesystem::path(file_in_str_), basedir_);
   boost::filesystem::path file_out = complete(boost::filesystem::path(file_out_str_), basedir_);
   if (exists(file_out)) {
@@ -253,51 +255,38 @@ void task::check_parameter() {
     if (params_.defined("SEED")) params_in["SEED"] = params_["SEED"];
 
     bool changed = false;
-
-    // check parameter "NUM_CLONES"
-    if (params_in.defined("NUM_CLONES")) {
-      if (params_.defined("NUM_CLONES")) {
-        if (params_in["NUM_CLONES"] != params_["NUM_CLONES"]) {
-          changed = true;
-          std::clog << "Info: task[" << task_id_ << "]: number of clones is reset from \""
-                    << params_["NUM_CLONES"] << "\" to \"" << params_in["NUM_CLONES"] << "\"\n";
-        }
-      } else {
-        changed = true;
-        std::clog << "Info: task[" << task_id_ << "]: number of clones is set to \""
-                  << params_in["NUM_CLONES"] << "\"\n";
-      }
-    } else {
-      if (params_.defined("NUM_CLONES")) {
-        changed = true;
-        std::clog << "Info: task[" << task_id_ << "]: number of clones is reset from \""
-                  << params_["NUM_CLONES"] << "\" to the default value\n";
-      }
-    }
-
-    // check other parameters
     BOOST_FOREACH(Parameter const& p, params_) {
-      if (p.key() != "NUM_CLONES" && p.key() != "SEED") {
-        if (!params_in.defined(p.key()) || params_in[p.key()] != p.value()) {
-          std::cerr << "Error: task[" << task_id_ << "]: the value of parameter \"" << p.key()
-                    << "\" is changed\n";
-          boost::throw_exception(std::runtime_error("check parameter"));
-        }
-      }
+      if (p.key() != "NUM_CLONES")
+        if (!params_in.defined(p.key()) || params_in[p.key()] != p.value()) changed = true;
     }
     BOOST_FOREACH(Parameter const& p, params_in) {
-      if (p.key() != "NUM_CLONES") {
-        if (!params_.defined(p.key())) {
-          std::cerr << "Error: task[" << task_id_ << "]: the value of parameter \"" << p.key()
-                    << "\" is changed\n";
-          boost::throw_exception(std::runtime_error("check parameter"));
-        }
+      if (p.key() != "NUM_CLONES")
+        if (!params_.defined(p.key())) changed = true;
+    }
+    if (changed) {
+      std::clog << "Info: parameters in " << logger::task(task_id_) << " have been changed. "
+                << "All the clones are being thrown away." << std::endl;
+      params_ = params_in;
+      obs_.clear();
+      clone_info_.clear();
+      clone_status_.clear();
+      clone_master_.clear();
+      running_.clear();
+      suspended_.clear();
+      finished_.clear();
+    } else if (params_in.defined("NUM_CLONES")) {
+      if ((params_.defined("NUM_CLONES") && params_in["NUM_CLONES"] != params_["NUM_CLONES"]) ||
+          !params_.defined("NUM_CLONES")) {
+        std::clog << "Info: number of clones in " << logger::task(task_id_) << " has been changed."
+                  << std::endl;
+        params_["NUM_CLONES"] = params_in["NUM_CLONES"];
+        changed = true;
       }
     }
 
     if (changed) {
-      params_ = params_in;
       num_clones_ = range_type(params_.value_or_default("NUM_CLONES", "1"), params_);
+      progress_ = calc_progress();
       boost::tie(weight_, dump_weight_) = calc_weight();
       status_ = calc_status();
       save();

@@ -41,7 +41,7 @@ struct option {
   boost::posix_time::time_duration time_limit, check_interval, checkpoint_interval, report_interval;
   bool default_total_threads, auto_total_threads;
   int num_total_threads, threads_per_clone;
-  bool check_parameter, auto_evaluate, evaluate_only;
+  bool auto_evaluate, evaluate_only;
   bool use_mpi;
   std::vector<std::string> jobfiles;
   bool valid, show_help, show_license;

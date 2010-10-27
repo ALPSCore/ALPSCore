@@ -70,7 +70,7 @@ ALPS_DECL void load_version(boost::filesystem::path const& file,
 
 ALPS_DECL void load_tasks(boost::filesystem::path const& file_in,
   boost::filesystem::path const& file_out, boost::filesystem::path const& basedir,
-  bool check_parameter, std::string& simname, std::vector<alps::task>& tasks);
+  std::string& simname, std::vector<alps::task>& tasks, bool check_parameter = true);
 
 ALPS_DECL void save_tasks(boost::filesystem::path const& file, std::string const& simname,
   std::string const& file_in_str, std::string const& file_out_str, std::vector<alps::task>& tasks);
