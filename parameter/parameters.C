@@ -140,17 +140,18 @@ void Parameters::replace_envvar() {
 
 #ifdef ALPS_HAVE_HDF5
 void Parameters::serialize(hdf5::oarchive & ar) const {
+    expression::ParameterEvaluator<double> eval(*this,false);
     for (const_iterator it = begin(); it != end(); ++it) {
         try {
             expression::Expression<double> expr(it->value());
-            if (expr.can_evaluate(*this)) {
-                double value = expr.value(*this);
+            if (expr.can_evaluate(eval)) {
+                double value = expr.value(eval);
                 if (numeric::is_zero(value - static_cast<double>(static_cast<int>(value)))) 
-                    ar << make_pvp(it->key(), static_cast<int>(value));
+                    ar << make_pvp(it->key(), static_cast<int>(value+0.25));
                 else 
                     ar << make_pvp(it->key(), value);
             } else {
-                expr.partial_evaluate(*this);
+                expr.partial_evaluate(eval);
                 ar << make_pvp(it->key(), boost::lexical_cast<std::string>(expr));
             }
         } catch(...) {
