@@ -33,6 +33,17 @@
 // for MSVC
 #if defined(_MSC_VER)
 # pragma warning(disable:4251)
+#include <complex>
+template <class T>
+bool _isnan(std::complex<T> const& x)
+{
+  return _isnan(x.real()) || _isnan(x.imag());
+}
+template <class T>
+bool _finite(std::complex<T> const& x)
+{
+  return _finite(x.real()) || _isnan(x.imag());
+}
 #endif
 
 #include <alps/config.h>
@@ -245,7 +256,7 @@ inline std::string precision(const T& d, int n)
     if (_isnan(d)) {
       stream << "nan";
     } else {
-      stream << (d > 0 ? "inf" : "-inf");
+      stream << "inf"; // (d > 0 ? "inf" : "-inf");
     }
   }
 #endif
