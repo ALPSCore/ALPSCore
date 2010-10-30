@@ -29,7 +29,6 @@
 /* $Id: pyalea.cpp 3520 2010-04-09 16:49:53Z gamperl $ */
 
 #define PY_ARRAY_UNIQUE_SYMBOL pyhdf5_PyArrayHandle
-#define ALPS_HDF5_CLOSE_GREEDY
 
 #include <alps/hdf5.hpp>
 #include <alps/python/make_copy.hpp>
@@ -62,6 +61,10 @@ namespace alps {
                 pyarchive(pyarchive<Archive> const & rhs): archive_(rhs.archive_) {}
 
                 virtual ~pyarchive() {}
+
+                boost::python::str filename() const {
+                    return boost::python::str(archive_.filename());
+                }
 
                 boost::python::object is_group(boost::python::object const & path) const {
                     return boost::python::object(archive_.is_group(detail::extract_string(path)));
@@ -167,6 +170,7 @@ BOOST_PYTHON_MODULE(pyhdf5_c) {
 
     boost::python::class_<alps::hdf5::pyoarchive>("oArchive", boost::python::init<std::string>())
         .def("__deepcopy__", &alps::python::make_copy<alps::hdf5::pyoarchive>)
+        .def("filename", &alps::hdf5::pyoarchive::filename)
         .def("is_group", &alps::hdf5::pyoarchive::is_group)
         .def("is_data", &alps::hdf5::pyoarchive::is_data)
         .def("is_attribute", &alps::hdf5::pyoarchive::extent)
@@ -180,6 +184,7 @@ BOOST_PYTHON_MODULE(pyhdf5_c) {
 
     boost::python::class_<alps::hdf5::pyiarchive>("iArchive", boost::python::init<std::string>())
         .def("__deepcopy__", &alps::python::make_copy<alps::hdf5::pyiarchive>)
+        .def("filename", &alps::hdf5::pyiarchive::filename)
         .def("is_group", &alps::hdf5::pyiarchive::is_group)
         .def("is_data", &alps::hdf5::pyiarchive::is_data)
         .def("is_attribute", &alps::hdf5::pyiarchive::extent)
@@ -192,4 +197,3 @@ BOOST_PYTHON_MODULE(pyhdf5_c) {
     ;
 
 }
-

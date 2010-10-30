@@ -29,9 +29,7 @@
 
 /* $Id: pyalea.cpp 3520 2010-04-09 16:49:53Z tamama $ */
 
-
 #define PY_ARRAY_UNIQUE_SYMBOL pyalea_PyArrayHandle
-#define ALPS_HDF5_CLOSE_GREEDY
 
 #include <alps/alea/mcdata.hpp>
 #include <alps/python/make_copy.hpp>
