@@ -26,7 +26,6 @@
 *****************************************************************************/
 
 #include <alps/hdf5.hpp>
-#include <alps/alea.h>
 
 #include <boost/filesystem.hpp>
 #include <boost/random.hpp>

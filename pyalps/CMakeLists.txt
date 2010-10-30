@@ -7,6 +7,11 @@ include_directories(${PROJECT_BINARY_DIR}/src)
 include_directories(${PROJECT_SOURCE_DIR}/src)
 include_directories(${Boost_ROOT_DIR})
 
+#add_executable(loadobs loadobs.cpp)
+#add_dependencies(loadobs alps)
+#target_link_libraries(loadobs alps)
+#add_alps_test(loadobs)
+
 enable_testing()
 if (ALPS_BUILD_PYTHON)
 #    FOREACH (name hlist_test mcdata loadobs)

@@ -31,8 +31,12 @@
     #define SZIP_COMPRESS false
 #endif
 
+#ifndef IS_ATTRIBUTE
+    #define IS_ATTRIBUTE false
+#endif
+
 template<typename base_type> struct test {
-    static bool run(std::string const & filename, boost::true_type) {
+    static bool write(std::string const & filename, boost::true_type) {
         std::vector<std::size_t> size_0;
         base_type* write_0_value = NULL;
         std::size_t length = MATRIX_SIZE;
@@ -52,12 +56,16 @@ template<typename base_type> struct test {
         }
         {
             alps::hdf5::oarchive oar(filename, SZIP_COMPRESS);
+            if (IS_ATTRIBUTE)
+                oar
+                    << alps::make_pvp("/data", 0)
+                ;
             oar
-                << alps::make_pvp("/len", &write_1_value[0], length)
-                << alps::make_pvp("/ptr_0", write_0_value, size_0)
-                << alps::make_pvp("/ptr_1", &write_1_value[0], size_1)
-                << alps::make_pvp("/ptr_2", &write_2_value[0][0], size_2)
-                << alps::make_pvp("/ptr_3", &write_3_value[0][0][0], size_3)
+                << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "len", &write_1_value[0], length)
+                << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_0", write_0_value, size_0)
+                << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_1", &write_1_value[0], size_1)
+                << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_2", &write_2_value[0][0], size_2)
+                << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_3", &write_3_value[0][0][0], size_3)
             ;
         }
         {
@@ -67,11 +75,11 @@ template<typename base_type> struct test {
             base_type read_3_value[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE];
             alps::hdf5::iarchive iar(filename);
             iar
-                >> alps::make_pvp("/len", &read_1_len_value[0], length)
-                >> alps::make_pvp("/ptr_0", read_0_value, size_0)
-                >> alps::make_pvp("/ptr_1", &read_1_value[0], size_1)
-                >> alps::make_pvp("/ptr_2", &read_2_value[0][0], size_2)
-                >> alps::make_pvp("/ptr_3", &read_3_value[0][0][0], size_3)
+                >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "len", &read_1_len_value[0], length)
+                >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_0", read_0_value, size_0)
+                >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_1", &read_1_value[0], size_1)
+                >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_2", &read_2_value[0][0], size_2)
+                >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_3", &read_3_value[0][0][0], size_3)
             ;
             return write_0_value == read_0_value
                 && equal(&write_1_value[0], &read_1_len_value[0], length)
@@ -81,17 +89,21 @@ template<typename base_type> struct test {
             ;
         }
     }
-    static bool run(std::string const & filename, boost::false_type) {
+    static bool write(std::string const & filename, boost::false_type) {
         base_type random_write(creator<base_type>::random());
         base_type empty_write(creator<base_type>::empty());
         base_type special_write(creator<base_type>::special());
         bool result;
         {
             alps::hdf5::oarchive oar(filename, SZIP_COMPRESS);
+            if (IS_ATTRIBUTE)
+                oar
+                    << alps::make_pvp("/data", 0)
+                ;
             oar
-                << alps::make_pvp("/random", random_write)
-                << alps::make_pvp("/empty", empty_write)
-                << alps::make_pvp("/special", special_write)
+                << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "random", random_write)
+                << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "empty", empty_write)
+                << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "special", special_write)
             ;
         }
         {
@@ -100,9 +112,9 @@ template<typename base_type> struct test {
             base_type empty_read(creator<base_type>::empty(iar));
             base_type special_read(creator<base_type>::special(iar));
             iar
-                >> alps::make_pvp("/random", random_read)
-                >> alps::make_pvp("/empty", empty_read)
-                >> alps::make_pvp("/special", special_read)
+                >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "random", random_read)
+                >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "empty", empty_read)
+                >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "special", special_read)
             ;
             result = equal(random_write, random_read) && equal(empty_write, empty_read) && equal(special_write, special_read);
             destructor<base_type>::apply(random_read);
@@ -114,10 +126,52 @@ template<typename base_type> struct test {
         destructor<base_type>::apply(special_write);
         return result;
     }
+    template<typename data_type> static bool overwrite_helper(std::string const & filename) {
+        data_type random_write(creator<data_type>::random());
+        bool result;
+        {
+            alps::hdf5::oarchive oar(filename, SZIP_COMPRESS);
+            if (IS_ATTRIBUTE)
+                oar
+                    << alps::make_pvp("/data", 0)
+                ;
+            oar
+                << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "overwrite", random_write)
+            ;
+        }
+        {
+            alps::hdf5::iarchive iar(filename);
+            data_type random_read(creator<data_type>::random(iar));
+            iar
+                >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "overwrite", random_read)
+            ;
+            result = equal(random_write, random_read);
+            destructor<data_type>::apply(random_read);
+        }
+        destructor<data_type>::apply(random_write);
+        return result;
+    }
+    template<typename unused> static bool overwrite(std::string const & filename, unused) {
+        {
+            using namespace alps::hdf5;
+            if (IS_ATTRIBUTE && !is_vectorizable(creator<base_type>::empty()))
+                return true;
+        }
+        return overwrite_helper<int>(filename);
+        return overwrite_helper<base_type>(filename);
+        return overwrite_helper<std::complex<double> >(filename);
+        return overwrite_helper<base_type>(filename);
+        return overwrite_helper<double>(filename);
+        return overwrite_helper<base_type>(filename);
+        return overwrite_helper<std::vector<double> >(filename);
+        return overwrite_helper<base_type>(filename);
+        return overwrite_helper<std::string>(filename);
+        return overwrite_helper<base_type>(filename);
+    }
 };
 
 template<typename T> struct test<boost::shared_array<T> > {
-    static bool run(std::string const & filename, boost::mpl::false_) {
+    static bool write(std::string const & filename, boost::mpl::false_) {
         std::size_t length = MATRIX_SIZE;
         std::vector<std::size_t> size_1(1, MATRIX_SIZE);
         boost::shared_array<T> write_1_value(new T[MATRIX_SIZE]);
@@ -135,11 +189,15 @@ template<typename T> struct test<boost::shared_array<T> > {
         }
         {
             alps::hdf5::oarchive oar(filename, SZIP_COMPRESS);
+            if (IS_ATTRIBUTE)
+                oar
+                    << alps::make_pvp("/data", 0)
+                ;
             oar
-                << alps::make_pvp("/len", write_1_value, length)
-                << alps::make_pvp("/ptr_1", write_1_value, size_1)
-                << alps::make_pvp("/ptr_2", write_2_value, size_2)
-                << alps::make_pvp("/ptr_3", write_3_value, size_3)
+                << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "len", write_1_value, length)
+                << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_1", write_1_value, size_1)
+                << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_2", write_2_value, size_2)
+                << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_3", write_3_value, size_3)
             ;
         }
         {
@@ -148,10 +206,10 @@ template<typename T> struct test<boost::shared_array<T> > {
             boost::shared_array<T> read_3_value(new T[MATRIX_SIZE * MATRIX_SIZE * MATRIX_SIZE]);
             alps::hdf5::iarchive iar(filename);
             iar
-                >> alps::make_pvp("/len", read_1_len_value, length)
-                >> alps::make_pvp("/ptr_1", read_1_value, size_1)
-                >> alps::make_pvp("/ptr_2", read_2_value, size_2)
-                >> alps::make_pvp("/ptr_3", read_3_value, size_3)
+                >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "len", read_1_len_value, length)
+                >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_1", read_1_value, size_1)
+                >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_2", read_2_value, size_2)
+                >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_3", read_3_value, size_3)
             ;
             return equal(write_1_value.get(), read_1_len_value.get(), length)
                 && equal(write_1_value.get(), read_1_value.get(), size_1[0])
@@ -159,6 +217,10 @@ template<typename T> struct test<boost::shared_array<T> > {
                 && equal(write_3_value.get(), read_3_value.get(), size_3[0] * size_3[1] * size_3[2])
             ;
         }
+    }
+    static bool overwrite(std::string const & filename, boost::mpl::false_) {
+        // TODO: implement test for write type A and overwrite with type B
+        return true;
     }
 };
 
@@ -168,7 +230,9 @@ int main() {
         boost::filesystem::remove(boost::filesystem::path(filename));
     bool result = true;
     for (std::size_t i = 32; i && result; --i)
-        result = test<boost::remove_pointer< TYPE >::type >::run(filename, boost::is_pointer< TYPE >::type());
+        result = test<boost::remove_pointer< TYPE >::type >::write(filename, boost::is_pointer< TYPE >::type());
+    for (std::size_t i = 32; i && result; --i)
+        result = test<boost::remove_pointer< TYPE >::type >::overwrite(filename, boost::is_pointer< TYPE >::type());
     boost::filesystem::remove(boost::filesystem::path(filename));
     std::cout << (result ? "SUCCESS" : "FAILURE") << std::endl;
     return result ? EXIT_SUCCESS : EXIT_FAILURE;

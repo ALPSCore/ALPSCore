@@ -25,49 +25,50 @@
 *
 *****************************************************************************/
 
-#include "creator.hpp"
+#include <alps/hdf5.hpp>
+
+#include <boost/filesystem.hpp>
+#include <boost/random.hpp>
+
+#include <string>
+#include <vector>
+#include <iostream>
+#include <algorithm>
 
 int main() {
     std::string const filename = "test.h5";
     if (boost::filesystem::exists(boost::filesystem::path(filename)))
         boost::filesystem::remove(boost::filesystem::path(filename));
-    bool result = true;
     {
+        using namespace alps;
         alps::hdf5::oarchive oar(filename);
-        oar.serialize("/data");
+        oar << make_pvp("/data", 42);
     }
-    for (std::size_t i = 0; result && i < 32; ++i) {
-        TYPE random_write(creator< TYPE >::random());
-        TYPE empty_write(creator< TYPE >::empty());
-        TYPE special_write(creator< TYPE >::special());
+    {
+        using namespace alps;
+        alps::hdf5::iarchive iar(filename);
+        int test;
+        iar >> make_pvp("/data", test);
         {
-            alps::hdf5::oarchive oar(filename);
-            oar
-                << alps::make_pvp("/data/@random", random_write)
-                << alps::make_pvp("/data/@empty", empty_write)
-                << alps::make_pvp("/data/@special", special_write)
-            ;
+            alps::hdf5::iarchive iar2(filename);
+            int test2;
+            iar2 >> make_pvp("/data", test2);
+            iar >> make_pvp("/data", test);
         }
+        iar >> make_pvp("/data", test);
         {
-            alps::hdf5::iarchive iar(filename);
-            TYPE random_read(creator<TYPE>::random(iar));
-            TYPE empty_read(creator<TYPE>::empty(iar));
-            TYPE special_read(creator<TYPE>::special(iar));
-            iar
-                >> alps::make_pvp("/data/@random", random_read)
-                >> alps::make_pvp("/data/@empty", empty_read)
-                >> alps::make_pvp("/data/@special", special_read)
-            ;
-            result = equal(random_write, random_read) && equal(empty_write, empty_read) && equal(special_write, special_read);
-            destructor<TYPE>::apply(random_read);
-            destructor<TYPE>::apply(empty_read);
-            destructor<TYPE>::apply(special_read);
+            alps::hdf5::iarchive iar3(filename);
+            int test3;
+            iar >> make_pvp("/data", test);
+            iar3 >> make_pvp("/data", test3);
         }
-        destructor<TYPE>::apply(random_write);
-        destructor<TYPE>::apply(empty_write);
-        destructor<TYPE>::apply(special_write);
+        iar >> make_pvp("/data", test);
+    }
+    {
+        using namespace alps;
+        alps::hdf5::iarchive iar4(filename);
+        int test4;
+        iar4 >> make_pvp("/data", test4);
     }
     boost::filesystem::remove(boost::filesystem::path(filename));
-    std::cout << (result ? "SUCCESS" : "FAILURE") << std::endl;
-    return result ? EXIT_SUCCESS : EXIT_FAILURE;
 }

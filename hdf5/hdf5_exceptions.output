@@ -1,7 +1,5 @@
-Error in /Users/gamperl/eclipse/alps/src/alps/hdf5.hpp on 1277 in serialize:
-HDF5 Error in path '/not/existing/path' on type 'd'
-Previous error:
-Error in /Users/gamperl/eclipse/alps/src/alps/hdf5.hpp on 402 in resource:
+HDF5 Error reading path '/not/existing/path' on type 'd':
+Error in /Users/gamperl/eclipse/alps/src/alps/hdf5.hpp on 443 in resource:
 HDF5 error: -1
     #0 H5D.c line 320 in H5Dopen2(): not found
     #1 H5Gloc.c line 480 in H5G_loc_find(): can't find object
