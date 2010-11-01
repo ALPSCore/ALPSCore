@@ -4,14 +4,15 @@
 #include "blasmacros.h"
 #include "matrix_iterators.hpp"
 #include "../vector.hpp"
+
 #include <ostream>
 #include <vector>
 #include <algorithm>
 #include <functional>
+
 #include <boost/numeric/bindings/detail/adaptor.hpp>
 #include <boost/numeric/bindings/detail/if_row_major.hpp>
-
-
+#include <boost/numeric/bindings/lapack/driver/gesdd.hpp>
 
 // general_matrix template class
 namespace blas {
@@ -46,12 +47,12 @@ namespace blas {
 
 
         //TODO: alignment!
-        general_matrix(std::size_t size1, std::size_t size2, T init_value = T(0) )
+        general_matrix(std::size_t size1 = 0, std::size_t size2 = 0, T init_value = T(0) )
         : size1_(size1), size2_(size2), reserved_size1_(size1), values_(size1*size2, init_value)
         {
         }
 
-        general_matrix(general_matrix const& mat)
+        general_matrix(general_matrix<T> const& mat)
         : size1_(mat.size1_), size2_(mat.size2_), reserved_size1_(mat.size1_), values_(mat.size1_*mat.size2_)
         {
             // If the size of the matrix corresponds to the allocated size of the matrix...
@@ -67,7 +68,7 @@ namespace blas {
             }
         }
 
-        void swap(general_matrix& r)
+        void swap(general_matrix<T> & r)
         {
             std::swap(values_, r.values_);
             std::swap(size1_, r.size1_);
@@ -75,14 +76,15 @@ namespace blas {
             std::swap(reserved_size1_,r.reserved_size1_);
         }
         
-        friend void swap(general_matrix& x,general_matrix& y)
+        friend void swap(general_matrix<T> & x, general_matrix<T> & y)
         {
             x.swap(y);
         }
         
-        general_matrix& operator = (general_matrix rhs)
+        general_matrix& operator = (general_matrix<T> rhs)
         {
-            swap(rhs, *this);
+            // swap(rhs, *this); // anyone have any idea why this doesn't work?
+            this->swap(rhs);
             return *this;
         }
 
@@ -413,14 +415,14 @@ namespace blas {
         {
             if(!(is_shrinkable()) )
             {
-                std::transform(values_.begin(),values_.end(),values_.begin(), binder1st(std::multiplies<T>(),t));
+                std::transform(values_.begin(),values_.end(),values_.begin(), bind1st(std::multiplies<T>(),t));
             }
             else
             {
                 // Do the operation column by column
                 for(std::size_t j=0; j < num_columns(); ++j)
                 {
-                    std::transform(rows_begin(j), rows_end(j), rows_begin(j), binder1st(std::multiplies<T>(),t));
+                    std::transform(rows_begin(j), rows_end(j), rows_begin(j), bind1st(std::multiplies<T>(),t));
                 }
             }
         }
@@ -576,7 +578,16 @@ void multiplies_assign(general_matrix<T>& m, T const& t) \
         m.multiplies_assign(t);
     }
 
-
+    template<typename T, class DoubleVector>
+    void svd(general_matrix<T> & M, general_matrix<T> & U, general_matrix<T> & V, DoubleVector & S)
+    {
+        std::size_t K = std::min(M.num_rows(), M.num_columns());
+        U.resize(M.num_rows(), K);
+        V.resize(K, M.num_columns());
+        S.resize(K);
+        
+        boost::numeric::bindings::lapack::gesdd('S', M, S, U, V);
+    }
 
 
     // 
@@ -625,6 +636,12 @@ void multiplies_assign(general_matrix<T>& m, T const& t) \
     const general_matrix<T> operator * (general_matrix<T> const& m1, general_matrix<T> const& m2)
     {
         return matrix_matrix_multiply(m1,m2);
+    }
+    
+    template<typename T>
+    void gemm(general_matrix<T> const & A, general_matrix<T> const & B, general_matrix<T> & C)
+    {
+        C = matrix_matrix_multiply(A, B);
     }
     
     template <typename T>
