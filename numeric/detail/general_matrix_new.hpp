@@ -1,16 +1,49 @@
 #ifndef __ALPS_GENERAL_MATRIX_HPP__
 #define __ALPS_GENERAL_MATRIX_HPP__
 
+#include "blasmacros.h"
+#include "matrix_iterators.hpp"
+#include "../vector.hpp"
+#include <ostream>
 #include <vector>
 #include <algorithm>
 #include <functional>
+#include <boost/numeric/bindings/detail/adaptor.hpp>
+#include <boost/numeric/bindings/detail/if_row_major.hpp>
 
+
+
+// general_matrix template class
 namespace blas {
 
     template <typename T>
     class general_matrix {
     public:
-        typedef T value_type;
+        // typedefs required for a std::container concept
+        typedef T                       value_type;
+        typedef T&                      reference;
+        typedef T const&                const_reference;
+        typedef std::size_t             size_type;
+        typedef size_type               difference_type;
+
+        // TODO
+        // for compliance with an std::container one would alos need
+        // -operators == != < > <= >=
+        // -size()
+        // -typedefs iterator, const_iterator
+        // is it useful to implement this?
+
+        // typedefs for matrix specific iterators
+        // row_iterator: iterates over the rows of a specific column
+        typedef matrix_row_iterator<general_matrix,value_type>                  row_iterator;
+        typedef matrix_row_iterator<const general_matrix,const value_type>      const_row_iterator;
+        // column_iterator: iterates over the columns of a specific row
+        typedef matrix_column_iterator<general_matrix,value_type>               column_iterator;
+        typedef matrix_column_iterator<const general_matrix,const value_type>   const_column_iterator;
+
+
+
+
 
         //TODO: alignment!
         general_matrix(std::size_t size1, std::size_t size2, T init_value = T(0) )
@@ -18,11 +51,6 @@ namespace blas {
         {
         }
 
-        general_matrix(std::size_t size=0, T init_value = T(0) )
-        : size1_(size), size2_(size), reserved_size1_(size), values_(size*size, T(0))
-        {
-        }    
-        
         general_matrix(general_matrix const& mat)
         : size1_(mat.size1_), size2_(mat.size2_), reserved_size1_(mat.size1_), values_(mat.size1_*mat.size2_)
         {
@@ -39,12 +67,17 @@ namespace blas {
             }
         }
 
+        void swap(general_matrix& r)
+        {
+            std::swap(values_, r.values_);
+            std::swap(size1_, r.size1_);
+            std::swap(size2_, r.size2_);
+            std::swap(reserved_size1_,r.reserved_size1_);
+        }
+        
         friend void swap(general_matrix& x,general_matrix& y)
         {
-            std::swap(x.values_, y.values_);
-            std::swap(x.size1_, y.size1_);
-            std::swap(x.size2_, y.size2_);
-            std::swap(x.reserved_size1_,y.reserved_size1_);
+            x.swap(y);
         }
         
         general_matrix& operator = (general_matrix rhs)
@@ -70,13 +103,18 @@ namespace blas {
         inline T &operator()(const std::size_t i, const std::size_t j)
         {
             assert((i < size1_) && (j < size2_));
-            return values_[j*reserved_size1_+i];
+            return values_[i+j*reserved_size1_];
         }
         
         inline const T &operator()(const std::size_t i, const std::size_t j) const 
         {
             assert((i < size1_) && (j < size2_));
-            return values_[j*reserved_size1_+i];
+            return values_[i+j*reserved_size1_];
+        }
+
+        inline const bool empty() const
+        {
+            return (size1_ == 0 || size2_ == 0);
         }
 
         inline const std::size_t num_rows() const
@@ -84,7 +122,7 @@ namespace blas {
             return size1_;
         }
 
-        inline const std::size_t num_cols() const
+        inline const std::size_t num_columns() const
         {
             return size2_;
         }
@@ -166,10 +204,18 @@ namespace blas {
             // the requested amount of memory exactly
             // values_.capacity() % reserved_size1_ == 0 should hold.
             // However these functions guarantee to allocate _at least_ the requested amount.
-            // TODO: perhaps there is a better implementation
             std::size_t reserved_size2_ = values_.capacity() - (values_.capacity() % reserved_size1_) / reserved_size1_;
             return std::pair<std::size_t,std::size_t>( reserved_size1_, reserved_size2_ );
         }
+        
+        bool is_shrinkable() const
+        {
+            // This assertion should actually never fail
+            assert( reserved_size1_*size2_ == values_.size() );
+            if(size1_ < reserved_size1_) return true;
+            else return false;
+        }
+
         
         void clear()
         {
@@ -182,39 +228,67 @@ namespace blas {
 
     // hooks, and make it a free function
 
-        vector<T> get_column(std::size_t j) const
+        /*
+        std::pair<row_iterator,row_iterator> column(std::size_t column=0);
         {
-            assert(j < size2_);
-            return vector<T>(values_.begin()+j*reserved_size1_,values_.begin()+j*reserved_size1_+size1_);
+            assert( column < size2_ );
+            return std::pair<row_iterator,row_iterator>(row_iterator(this,0,column),row_iterator(this,size1_,column));
         }
 
-        vector<T> get_row(std::size_t i) const
+        std::pair<column_iterator,column_iterator> row(std::size_t row=0);
         {
-            assert(i < size1_);
-            vector<T> result(size2_);
-            for(std::size_t j=0; j < size2_; ++j)
-            {
-                result(j) = operator()(i,j);
-            }
-            return result;
+            assert( row < size1_ );
+            return std::pair<column_iterator,column_iterator>(column_iterator(this,row,0),column_iterator(this,row,size2_));
+        }
+        */
+        
+        // Alternative iterator functions
+        row_iterator rows_begin(std::size_t column=0)
+        {
+            assert( column < size2_);
+            return row_iterator(this,0,column);
         }
 
-        void set_column(std::size_t j, vector<T> const& v)
+        const_row_iterator rows_begin(std::size_t column=0) const
         {
-            assert( j < size2_ );
-            assert( v.size() == size1_ );
-            std::copy(v.begin(),v.end(),values_.begin()+j*reserved_size1_);
+            assert( column < size2_);
+            return const_row_iterator(this,0,column);
         }
 
-        void set_row(std::size_t i, vector<T> const& v)
+        row_iterator rows_end(std::size_t column=0)
         {
-            assert( i < size1_ );
-            assert( v.size() == size2_ );
-            // TODO better implementation
-            for(std::size_t j=0; j < size1_; ++j)
-            {
-                operator()(i,j) = v(j);
-            }
+            assert( column < size2_);
+            return row_iterator(this,size1_,column);
+        }
+        
+        const_row_iterator rows_end(std::size_t column=0) const
+        {
+            assert( column < size2_);
+            return const_row_iterator(this,size1_,column);
+        }
+        
+        column_iterator columns_begin(std::size_t row=0)
+        {
+            assert( row < size1_ );
+            return column_iterator(this,row,0);
+        }
+
+        const_column_iterator columns_begin(std::size_t row=0) const
+        {
+            assert( row < size1_ );
+            return const_column_iterator(this,row,0);
+        }
+
+        column_iterator columns_end(std::size_t row=0)
+        {
+            assert( row < size1_ );
+            return column_iterator(this,row,size2_);
+        }
+        
+        const_column_iterator columns_end(std::size_t row=0) const
+        {
+            assert( row < size1_ );
+            return const_column_iterator(this,row,size2_);
         }
 
         void append_column(vector<T> const& v)
@@ -283,36 +357,16 @@ namespace blas {
             }
         }
 
-        T max() const
+        bool operator == (general_matrix const& rhs)
         {
-            if(!is_shrinkable())
-            {
-                    return *max_element(values_.begin(), values_.end());
-            }
-            else
-            {
-                // Create a (shrinked) copy of the matrix and do the operation on the copy
-                general_matrix tmp(*this);
-                assert(tmp.is_shrinkable() == false);
-                return tmp.max();
-            }
+            if(size1_ != rhs.size1_ || size2_ != rhs.size2_) return false;
+            // TODO: reimplement - this is just a quick ugly implementation
+            for(std::size_t j=0; j < size2_; ++j)
+                for(std::size_t i=0; i< size1_; ++i)
+                    if(operator()(i,j) != rhs(i,j)) return false;
+            return true;
         }
-        
-        T min() const
-        {
-            if(!is_shrinkable())
-            {
-                    return *min_element(values_.begin(), values_.end());
-            }
-            else
-            {
-                // Create a (shrinked) copy of the matrix and do the operation on the copy
-                general_matrix tmp(*this);
-                assert(tmp.is_shrinkable() == false);
-                return tmp.min();
-            }
-        }
-        
+
         general_matrix<T>& operator += (general_matrix const& rhs) 
         {
             assert((rhs.size1() == size1_) && (rhs.size2() == size2_));
@@ -351,49 +405,41 @@ namespace blas {
         
         general_matrix<T>& operator *= (T const& t)
         {
-            if(!(this->is_shrinkable()) )
+            multiplies_assign(*this, t);
+            return *this;
+        }
+
+        void multiplies_assign (T const& t)
+        {
+            if(!(is_shrinkable()) )
             {
                 std::transform(values_.begin(),values_.end(),values_.begin(), binder1st(std::multiplies<T>(),t));
             }
             else
             {
                 // Do the operation column by column
-                for(std::size_t j=0; j < size2_; ++j)
+                for(std::size_t j=0; j < num_columns(); ++j)
                 {
-                    std::transform(values_.begin()+j*reserved_size1_, values_.begin()+j*reserved_size1_+size1_, rhs.values_.begin()+j*rhs.reserved_size1_, values_.begin()+j*reserved_size1_, binder1st(std::multiplies<T>(),t));
+                    std::transform(rows_begin(j), rows_end(j), rows_begin(j), binder1st(std::multiplies<T>(),t));
                 }
             }
-            return *this;
         }
         
         general_matrix<T>& operator *= (general_matrix const& rhs) 
         {
-            assert( size2_ == rhs.size1() );
-
-            // Simple matrix matrix multiplication
-            general_matrix<T> tmp(size1_,rhs.size2());
-            for(std::size_t i=0; i < size1_; ++i)
-            {
-                for(std::size_t j=0; j<rhs.size2(); ++j)
-                {
-                    for(std::size_t k=0; k<size2_; ++k)
-                    {
-                            tmp(i,j) += operator()(i,k) * rhs(k,j);
-                    }
-                }
-            }
+            // It is unconventional to implement a *= operator in terms of a * operator,
+            // but a temporary object has to be created to store the result anyway
+            // so it seems reasonable.
+            general_matrix<T> tmp = (*this) * rhs;
             std::swap(tmp,*this);
             return *this;
         }
 
     private:
-        bool is_shrinkable() const
-        {
-            // This assertion should actually never fail
-            assert( reserved_size1_*size2_ == values_.size() );
-            if(size1_ < reserved_size1_) return true;
-            else return false;
-        }
+        //friend general_matrix<T> blas::matrix_matrix_multiply(general_matrix<T> const&, general_matrix<T> const&);
+        //friend void blas::multiplies_assign(general_matrix<T>& , T const&);
+        friend class boost::numeric::bindings::detail::adaptor<general_matrix<T>,const general_matrix<T>, void>;
+        friend class boost::numeric::bindings::detail::adaptor<general_matrix<T>,general_matrix<T>, void>;
 
 
         std::size_t size1_;
@@ -403,7 +449,137 @@ namespace blas {
         
         std::vector<T> values_;
     };
+} // namespace blas
+
+// An adaptor for the matrix to the boost::numeric::bindings
+namespace boost { namespace numeric { namespace bindings { namespace detail {
         
+    /*
+    template <typename T, typename Id, typename Enable>
+        struct adaptor1
+        {
+            typedef mpl::map<
+                mpl::pair< tag::value_type, void >
+                > property_map;
+        };
+        */
+    template <typename T, typename Id, typename Enable>
+    struct adaptor< ::blas::general_matrix<T>, Id, Enable>
+    {
+        typedef typename copy_const< Id, T >::type              value_type;
+        // TODO: fix the types of size and stride -> currently it's a workaround, since std::size_t causes problems with boost::numeric::bindings
+        //typedef typename ::blas::general_matrix<T>::size_type         size_type;
+        //typedef typename ::blas::general_matrix<T>::difference_type   difference_type;
+        typedef std::ptrdiff_t  size_type;
+        typedef std::ptrdiff_t  difference_type;
+
+        typedef mpl::map<
+            mpl::pair< tag::value_type,      value_type >,
+            mpl::pair< tag::entity,          tag::matrix >,
+            mpl::pair< tag::size_type<1>,    size_type >,
+            mpl::pair< tag::size_type<2>,    size_type >,
+            mpl::pair< tag::data_structure,  tag::linear_array >,
+            mpl::pair< tag::data_order,      tag::column_major >,
+            mpl::pair< tag::stride_type<1>,  tag::contiguous >,
+            mpl::pair< tag::stride_type<2>,  difference_type >
+        > property_map;
+
+        static size_type size1( const Id& id ) {
+            return id.num_rows();
+        }
+
+        static size_type size2( const Id& id ) {
+            return id.num_columns();
+        }
+
+        static value_type* begin_value( Id& id ) {
+            return &(*id.rows_begin(0));
+        }
+
+        static value_type* end_value( Id& id ) {
+            return &(*(id.rows_end(id.num_columns()-1)-1));
+        }
+
+        static difference_type stride1( const Id& id ) {
+            return 1;
+        }
+
+        static difference_type stride2( const Id& id ) {
+           return id.reserved_size1_;
+        }
+
+    };
+}}}}
+
+// Free general matrix functions
+namespace blas {
+
+#define MATRIX_MATRIX_MULTIPLY(T) \
+const general_matrix<T> matrix_matrix_multiply(general_matrix<T> const& lhs, general_matrix<T> const& rhs) \
+    { \
+        assert( lhs.num_columns() == rhs.num_rows() ); \
+        general_matrix<T> result(lhs.num_rows(),rhs.num_columns()); \
+        boost::numeric::bindings::blas::gemm \
+            ( \
+               general_matrix<T>::value_type(1), \
+               lhs, \
+               rhs, \
+               general_matrix<T>::value_type(1), \
+               result \
+            ); \
+        return result; \
+    }
+IMPLEMENT_FOR_ALL_BLAS_TYPES(MATRIX_MATRIX_MULTIPLY)
+#undef MATRIX_MATRIX_MULTIPLY
+
+    template <typename T>
+    const general_matrix<T> matrix_matrix_multiply(general_matrix<T> const& lhs, general_matrix<T> const& rhs)
+    {
+        assert( lhs.num_columns() == rhs.num_rows() );
+
+        // Simple matrix matrix multiplication
+        general_matrix<T> result(lhs.num_rows(),rhs.num_columns());
+        for(std::size_t i=0; i < lhs.num_rows(); ++i)
+        {
+            for(std::size_t j=0; j<rhs.num_columns(); ++j)
+            {
+                for(std::size_t k=0; k<lhs.num_columns(); ++k)
+                {
+                        result(i,j) += lhs(i,k) * rhs(k,j);
+                }
+            }
+        }
+        return result;
+    } 
+
+        // This seems to be the best solution even though it calls a function within the detail namespace
+#define MULTIPLIES_ASSIGN(T) \
+void multiplies_assign(general_matrix<T>& m, T const& t) \
+    { \
+        if( !(m.is_shrinkable()) ) \
+        { \
+            boost::numeric::bindings::blas::detail::scal( m.num_rows()*m.num_columns(), t, &(*m.rows_begin()), 1 ); \
+        } \
+        else \
+        { \
+            for(std::size_t j=0; j <m.num_columns(); ++j) \
+                boost::numeric::bindings::blas::detail::scal( m.num_rows(), t, &(*m.rows_begin(j)), 1 ); \
+        } \
+    }
+    IMPLEMENT_FOR_ALL_BLAS_TYPES(MULTIPLIES_ASSIGN)
+#undef MULTIPLIES_ASSIGN
+
+
+    template <typename T>    
+    void multiplies_assign(general_matrix<T>& m, T const& t)
+    {
+        m.multiplies_assign(t);
+    }
+
+
+
+
+    // 
     template <typename matrix_type>
     matrix_type transpose(matrix_type const& m) 
     {
@@ -418,7 +594,7 @@ namespace blas {
     }
     
     template <typename matrix_type>
-    const typename matrix_type::value_type trace(matrix_type const& m) const
+    const typename matrix_type::value_type trace(matrix_type const& m)
     {
         assert(m.size1() == m.size2());
         typename matrix_type::value_type tr = typename matrix_type::value_type(0);
@@ -444,13 +620,24 @@ namespace blas {
    
     // TODO: adj(Vector) * Matrix, where adj is a proxy object
 
+
     template<typename T>
-    const general_matrix<T> operator * (general_matrix<T> m1, general_matrix<T> const& m2)
+    const general_matrix<T> operator * (general_matrix<T> const& m1, general_matrix<T> const& m2)
     {
-        m1 *= m2;
-        return m1;
+        return matrix_matrix_multiply(m1,m2);
     }
     
+    template <typename T>
+    std::ostream& operator << (std::ostream& o, general_matrix<T> const& rhs)
+    {
+        for(std::size_t i=0; i< rhs.size1(); ++i)
+        {
+            for(std::size_t j=0; j < rhs.size2(); ++j)
+                o<<rhs(i,j)<<" ";
+            o<<std::endl;
+        }
+        return o;
+    }
 
     //TODO Check whether this compiles or there are problems with T being a general_matrix
     template<typename T>
@@ -464,6 +651,51 @@ namespace blas {
     {
         return m*=t;
     }
+        
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    /* make external
+        T max() const
+        {
+            if(!is_shrinkable())
+            {
+                    return *max_element(values_.begin(), values_.end());
+            }
+            else
+            {
+                // Create a (shrinked) copy of the matrix and do the operation on the copy
+                general_matrix tmp(*this);
+                assert(tmp.is_shrinkable() == false);
+                return tmp.max();
+            }
+        }
+        
+        T min() const
+        {
+            if(!is_shrinkable())
+            {
+                    return *min_element(values_.begin(), values_.end());
+            }
+            else
+            {
+                // Create a (shrinked) copy of the matrix and do the operation on the copy
+                general_matrix tmp(*this);
+                assert(tmp.is_shrinkable() == false);
+                return tmp.min();
+            }
+        }
+*/
 } // namespace blas
 
 #endif //__ALPS_GENERAL_MATRIX_HPP__
