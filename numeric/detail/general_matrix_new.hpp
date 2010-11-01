@@ -516,6 +516,17 @@ namespace boost { namespace numeric { namespace bindings { namespace detail {
 // Free general matrix functions
 namespace blas {
 
+template<typename T>
+std::ostream& operator<<(std::ostream& os, general_matrix<T> const & M)
+{
+    for (std::size_t r = 0; r < M.num_rows(); ++r) {
+        for (std::size_t c = 0; c < M.num_columns(); ++c)
+            os << M(r,c) << " ";
+        os << std::endl;
+    }
+    return os;
+}
+
 #define MATRIX_MATRIX_MULTIPLY(T) \
 const general_matrix<T> matrix_matrix_multiply(general_matrix<T> const& lhs, general_matrix<T> const& rhs) \
     { \
@@ -588,7 +599,6 @@ void multiplies_assign(general_matrix<T>& m, T const& t) \
         
         boost::numeric::bindings::lapack::gesdd('S', M, S, U, V);
     }
-
 
     // 
     template <typename matrix_type>
@@ -668,19 +678,6 @@ void multiplies_assign(general_matrix<T>& m, T const& t) \
     {
         return m*=t;
     }
-        
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     /* make external
         T max() const
