@@ -14,7 +14,9 @@
 #include <boost/numeric/bindings/detail/if_row_major.hpp>
 #include <boost/numeric/bindings/lapack/driver/gesdd.hpp>
 
+//
 // general_matrix template class
+//
 namespace blas {
 
     template <typename T>
@@ -64,7 +66,7 @@ namespace blas {
             {
                 // copy only a shrinked to size version of the original matrix
                 for(std::size_t j=0; j < mat.size2_; ++j)
-                    std::copy( mat.values_.begin()+j*mat.reserved_size1_, mat.values_.begin()+j*mat.reserved_size1_+mat.size1_, values_.begin() );
+                    std::copy( mat.rows_begin(j), mat.rows_end(j), this->rows_begin(j) );
             }
         }
 
@@ -129,7 +131,7 @@ namespace blas {
             return size2_;
         }
         
-        //TODO: shall these functions be kept for compatibility or can we drop them?
+        //TODO: shall these two functions be kept for compatibility or can we drop them?
         inline const std::size_t size1() const 
         {
             return size1_;
@@ -218,7 +220,6 @@ namespace blas {
             else return false;
         }
 
-        
         void clear()
         {
             // Clear the values vector and ensure the reserved size stays the way it was
@@ -228,23 +229,6 @@ namespace blas {
             size2_ = 0;
         }
 
-    // hooks, and make it a free function
-
-        /*
-        std::pair<row_iterator,row_iterator> column(std::size_t column=0);
-        {
-            assert( column < size2_ );
-            return std::pair<row_iterator,row_iterator>(row_iterator(this,0,column),row_iterator(this,size1_,column));
-        }
-
-        std::pair<column_iterator,column_iterator> row(std::size_t row=0);
-        {
-            assert( row < size1_ );
-            return std::pair<column_iterator,column_iterator>(column_iterator(this,row,0),column_iterator(this,row,size2_));
-        }
-        */
-        
-        // Alternative iterator functions
         row_iterator rows_begin(std::size_t column=0)
         {
             assert( column < size2_);
@@ -297,19 +281,16 @@ namespace blas {
         {
             assert( v.size() == size1_ );
             std::size_t insert_position = size2_;
-            resize(size1_,size2_+1);
-            std::copy(v.begin(),v.end(),values_.begin()+reserved_size1_*size2_);
+            resize(size1_,size2_+1);    // This call modifies size2_ !
+            std::copy( v.begin(), v.end(), rows_begin(insert_position) );
         }
 
         void apped_row(vector<T> const& v)
         {
             assert( v.size() == size2_ );
             std::size_t insert_position = size1_;
-            resize(size1_+1,size2_);
-            for(std::size_t j=0; j < size2_; ++j)
-            {
-                operator()(insert_position,j) = v(j);
-            }
+            resize(size1_+1,size2_);   // This call modifies size1_ !
+            std::copy( v.begin(), v.end(), columns_begin(insert_position) );
         }
 
         void insert_row(std::size_t i, vector<T> const& v)
@@ -346,17 +327,14 @@ namespace blas {
         void swap_columns(std::size_t j1, std::size_t j2)
         {
             assert( j1 < size2_ && j2 < size2_ );
-            std::swap_ranges(values_.begin()+j1*reserved_size1_,values_.begin()+j1*reserved_size1_+size1_, values_.begin()+j2*reserved_size1_);
+            std::swap_ranges(rows_begin(j1), rows_end(j1), rows_begin(j2) );
         }
         
         void swap_rows(std::size_t i1, std::size_t i2)
         {
             assert( i1 < size1_ && i2 < size1_ );
             // TODO find a better implementation
-            for(std::size_t j=0; j < size2_; ++j)
-            {
-                std::swap(values_[j*reserved_size1_+i1], values_[j*reserved_size1_+i2]);
-            }
+            std::swap_ranges( columns_begin(j1), columns_end(j1), columns_begin(j2) );
         }
 
         bool operator == (general_matrix const& rhs)
@@ -371,37 +349,13 @@ namespace blas {
 
         general_matrix<T>& operator += (general_matrix const& rhs) 
         {
-            assert((rhs.size1() == size1_) && (rhs.size2() == size2_));
-            if(!(this->is_shrinkable() || rhs->is_shrinkable()) )
-            {
-                std::transform(values_.begin(),values_.end(),rhs.values_.begin(),values_.begin(), std::plus<T>());
-            }
-            else
-            {
-                // Do the operation column by column
-                for(std::size_t j=0; j < size2_; ++j)
-                {
-                    std::transform(values_.begin()+j*reserved_size1_, values_.begin()+j*reserved_size1_+size1_, rhs.values_.begin()+j*rhs.reserved_size1_, values_.begin()+j*reserved_size1_, std::plus<T>());
-                }
-            }
+            plus_assign(*this,rhs);
             return *this;
         }
         
         general_matrix<T>& operator -= (general_matrix const& rhs) 
         {
-            assert((rhs.size1() == size1_) && (rhs.size2() == size2_));
-            if(!(this->is_shrinkable() || rhs->is_shrinkable()) )
-            {
-                std::transform(values_.begin(),values_.end(),rhs.values_.begin(),values_.begin(), std::minus<T>());
-            }
-            else
-            {
-                // Do the operation column by column
-                for(std::size_t j=0; j < size2_; ++j)
-                {
-                    std::transform(values_.begin()+j*reserved_size1_, values_.begin()+j*reserved_size1_+size1_, rhs.values_.begin()+j*rhs.reserved_size1_, values_.begin()+j*reserved_size1_, std::minus<T>());
-                }
-            }
+            minus_assign(*this,rhs);
             return *this;
         }
         
@@ -411,6 +365,37 @@ namespace blas {
             return *this;
         }
 
+        // Default implementations
+        void plus_assign(general_matrix const& rhs)
+        {
+            assert((rhs.size1() == size1_) && (rhs.size2() == size2_));
+            if(!(this->is_shrinkable() || rhs.is_shrinkable()) )
+            {
+                std::transform(this->values_.begin(),this->values_.end(),rhs.values_.begin(),this->values_.begin(), std::plus<T>());
+            }
+            else
+            {
+                // Do the operation column by column
+                for(std::size_t j=0; j < size2_; ++j)
+                    std::transform(this->rows_begin(j), this->rows_end(j), rhs.rows_begin(j), this->rows_begin(j), std::plus<T>());
+            }
+        }
+
+        void minus_assign(general_matrix const& rhs)
+        {
+            assert((rhs.size1() == size1_) && (rhs.size2() == size2_));
+            if(!(this->is_shrinkable() || rhs.is_shrinkable()) )
+            {
+                std::transform(this->values_.begin(),this->values_.end(),rhs.values_.begin(),this->values_.begin(), std::minus<T>());
+            }
+            else
+            {
+                // Do the operation column by column
+                for(std::size_t j=0; j < size2_; ++j)
+                    std::transform(this->rows_begin(j), this->rows_end(j), rhs.rows_begin(j), this->rows_begin(j), std::minus<T>());
+            }
+        }
+        
         void multiplies_assign (T const& t)
         {
             if(!(is_shrinkable()) )
@@ -420,16 +405,14 @@ namespace blas {
             else
             {
                 // Do the operation column by column
-                for(std::size_t j=0; j < num_columns(); ++j)
-                {
+                for(std::size_t j=0; j < size2_; ++j)
                     std::transform(rows_begin(j), rows_end(j), rows_begin(j), bind1st(std::multiplies<T>(),t));
-                }
             }
         }
         
         general_matrix<T>& operator *= (general_matrix const& rhs) 
         {
-            // It is unconventional to implement a *= operator in terms of a * operator,
+            // It's not common to implement a *= operator in terms of a * operator,
             // but a temporary object has to be created to store the result anyway
             // so it seems reasonable.
             general_matrix<T> tmp = (*this) * rhs;
@@ -438,8 +421,6 @@ namespace blas {
         }
 
     private:
-        //friend general_matrix<T> blas::matrix_matrix_multiply(general_matrix<T> const&, general_matrix<T> const&);
-        //friend void blas::multiplies_assign(general_matrix<T>& , T const&);
         friend class boost::numeric::bindings::detail::adaptor<general_matrix<T>,const general_matrix<T>, void>;
         friend class boost::numeric::bindings::detail::adaptor<general_matrix<T>,general_matrix<T>, void>;
 
@@ -453,18 +434,11 @@ namespace blas {
     };
 } // namespace blas
 
+//
 // An adaptor for the matrix to the boost::numeric::bindings
+//
 namespace boost { namespace numeric { namespace bindings { namespace detail {
         
-    /*
-    template <typename T, typename Id, typename Enable>
-        struct adaptor1
-        {
-            typedef mpl::map<
-                mpl::pair< tag::value_type, void >
-                > property_map;
-        };
-        */
     template <typename T, typename Id, typename Enable>
     struct adaptor< ::blas::general_matrix<T>, Id, Enable>
     {
@@ -513,22 +487,13 @@ namespace boost { namespace numeric { namespace bindings { namespace detail {
     };
 }}}}
 
-// Free general matrix functions
-namespace blas {
-
-template<typename T>
-std::ostream& operator<<(std::ostream& os, general_matrix<T> const & M)
-{
-    for (std::size_t r = 0; r < M.num_rows(); ++r) {
-        for (std::size_t c = 0; c < M.num_columns(); ++c)
-            os << M(r,c) << " ";
-        os << std::endl;
-    }
-    return os;
-}
+//
+// Hooked general matrix functions
+//
+namespace blas { namespace detail {
 
 #define MATRIX_MATRIX_MULTIPLY(T) \
-const general_matrix<T> matrix_matrix_multiply(general_matrix<T> const& lhs, general_matrix<T> const& rhs) \
+    const general_matrix<T> matrix_matrix_multiply(general_matrix<T> const& lhs, general_matrix<T> const& rhs) \
     { \
         assert( lhs.num_columns() == rhs.num_rows() ); \
         general_matrix<T> result(lhs.num_rows(),rhs.num_columns()); \
@@ -565,7 +530,41 @@ IMPLEMENT_FOR_ALL_BLAS_TYPES(MATRIX_MATRIX_MULTIPLY)
         return result;
     } 
 
-        // This seems to be the best solution even though it calls a function within the detail namespace
+// This seems to be the best solution for the *_ASSIGN dispatchers at the moment even though they call functions within the detail namespace
+#define PLUS_MINUS_ASSIGN(T) \
+    void plus_and_minus_assign_impl(general_matrix<T>, general_matrix<T> const& rhs, general_matrix<T>::value_type const& sign) \
+    { \
+        assert( m.num_columns() == rhs.num_columns() && m.num_rows() == rhs.num_rows() ); \
+        if(!(m.is_shrinkable() || rhs.is_shrinkable()) ) \
+        { \
+            boost::numeric::bindings::blas::detail::axpy( m.num_rows() * m.num_columns(), sign, &(*rhs.rows_begin(0)), 1, &(*m.rows_begin(0)), 1); \
+        } \
+        else \
+        { \
+            for(std::size_t j=0; j < size2_; ++j) \
+                boost::numeric::bindings::blas::detail::axpy( m.num_rows(), sign, &(*rhs.rows_begin(j)), 1, &(*m.rows_begin(j)), 1); \
+        } \
+    } \
+    void plus_assign(general_matrix<T> m, general_matrix<T> const& rhs) \
+    { \ plus_and_minus_assign_impl(m,rhs,general_matrix<T>::value_type(1)); } \
+    void minus_assign(general_matrix<T> m, general_matrix<T> const& rhs) \
+    { \ plus_and_minus_assign_impl(m,rhs,general_matrix<T>::value_type(-1)); }
+IMPLEMENT_FOR_ALL_BLAS_TYPES(PLUS_MINUS_ASSIGN)
+#undef PLUS_MINUS_ASSIGN
+
+    template <typename T>
+    void plus_assign(general_matrix<T>& m, general_matrix<T> const& rhs)
+    {
+        m.plus_assign(rhs);
+    }
+
+    template <typename T>
+    void minus_assign(general_matrix<T>& m, general_matrix<T> const& rhs)
+    {
+        m.minus_assign(rhs);
+    }
+
+
 #define MULTIPLIES_ASSIGN(T) \
 void multiplies_assign(general_matrix<T>& m, T const& t) \
     { \
@@ -589,6 +588,12 @@ void multiplies_assign(general_matrix<T>& m, T const& t) \
         m.multiplies_assign(t);
     }
 
+}} // namespace detail, namespace blas
+
+//
+// Free general matrix functions
+//
+namespace blas {
     template<typename T, class DoubleVector>
     void svd(general_matrix<T> M, general_matrix<T> & U, general_matrix<T> & V, DoubleVector & S)
     {
@@ -599,6 +604,7 @@ void multiplies_assign(general_matrix<T>& m, T const& t) \
         
         boost::numeric::bindings::lapack::gesdd('S', M, S, U, V);
     }
+
 
     // 
     template <typename matrix_type>
@@ -643,17 +649,29 @@ void multiplies_assign(general_matrix<T>& m, T const& t) \
 
 
     template<typename T>
+    const general_matrix<T> operator * (general_matrix<T> m, T const& t)
+    {
+        return m*=t;
+    }
+    
+    template<typename T>
+    const general_matrix<T> operator * (T const& t,general_matrix<T> m)
+    {
+        return m*=t;
+    }
+
+    template<typename T>
     const general_matrix<T> operator * (general_matrix<T> const& m1, general_matrix<T> const& m2)
     {
         return matrix_matrix_multiply(m1,m2);
     }
-    
+
     template<typename T>
     void gemm(general_matrix<T> const & A, general_matrix<T> const & B, general_matrix<T> & C)
     {
         C = matrix_matrix_multiply(A, B);
     }
-    
+
     template <typename T>
     std::ostream& operator << (std::ostream& o, general_matrix<T> const& rhs)
     {
@@ -665,19 +683,18 @@ void multiplies_assign(general_matrix<T>& m, T const& t) \
         }
         return o;
     }
-
-    //TODO Check whether this compiles or there are problems with T being a general_matrix
-    template<typename T>
-    const general_matrix<T> operator * (general_matrix<T> m, T const& t)
-    {
-        return m*=t;
-    }
     
-    template<typename T>
-    const general_matrix<T> operator * (T const& t,general_matrix<T> m)
-    {
-        return m*=t;
-    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     /* make external
         T max() const
