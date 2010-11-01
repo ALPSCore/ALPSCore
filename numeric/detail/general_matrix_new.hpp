@@ -579,7 +579,7 @@ void multiplies_assign(general_matrix<T>& m, T const& t) \
     }
 
     template<typename T, class DoubleVector>
-    void svd(general_matrix<T> & M, general_matrix<T> & U, general_matrix<T> & V, DoubleVector & S)
+    void svd(general_matrix<T> M, general_matrix<T> & U, general_matrix<T> & V, DoubleVector & S)
     {
         std::size_t K = std::min(M.num_rows(), M.num_columns());
         U.resize(M.num_rows(), K);
