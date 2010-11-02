@@ -8,24 +8,27 @@ template <typename matrix_type, typename value_t>
 class matrix_column_iterator;
 
 template <typename matrix_type, typename value_t>
-class matrix_row_iterator : public boost::iterator_facade< matrix_row_iterator<matrix_type,value_t>,
+class matrix_row_iterator : public boost::iterator_facade<
+                                matrix_row_iterator<matrix_type,value_t>,
                                 value_t,
                                 boost::random_access_traversal_tag,
                                 value_t&,
-                                typename matrix_type::difference_type>
+                                typename matrix_type::difference_type
+                                >
 {
     // iterates over matrix elements within the same column
 
-    // The value_type of the iterator must be the value_type of the matrix or const matrix_type::value_type
-    BOOST_STATIC_ASSERT( (boost::is_same<typename matrix_type::value_type, value_t>::value
-                            || boost::is_same<const typename matrix_type::value_type,value_t>::value) );
 
     public:
         typedef value_t value_type;
 
         matrix_row_iterator(matrix_type* matrix,typename matrix_type::size_type row, typename matrix_type::size_type col)
             : m(matrix), row_pos(row), col_pos(col)
-            {}
+        {
+            // The value_type of the iterator must be the value_type of the matrix or const matrix_type::value_type
+            BOOST_STATIC_ASSERT( (boost::is_same<typename matrix_type::value_type, value_t>::value
+                                 || boost::is_same<const typename matrix_type::value_type,value_t>::value) );
+        }
 
         template<typename other_matrix_type, typename other_value_type>
         matrix_row_iterator(matrix_row_iterator<other_matrix_type,other_value_type> const& r)
@@ -71,7 +74,7 @@ class matrix_row_iterator : public boost::iterator_facade< matrix_row_iterator<m
         template <typename other_value_type>
         typename matrix_type::difference_type distance_to(matrix_row_iterator<matrix_type,other_value_type> const& z) const
         {
-            return (this->row_pos) - z.row_pos;
+            return z.row_pos - row_pos;
         }
 
 
@@ -82,24 +85,27 @@ class matrix_row_iterator : public boost::iterator_facade< matrix_row_iterator<m
 };
 
 template <typename matrix_type, typename value_t>
-class matrix_column_iterator : public boost::iterator_facade< matrix_column_iterator<matrix_type,value_t>,
-                                value_t,
-                                boost::random_access_traversal_tag,
-                                value_t&,
-                                typename matrix_type::difference_type>
+class matrix_column_iterator : public boost::iterator_facade<
+                                   matrix_column_iterator<matrix_type,value_t>,
+                                   value_t,
+                                   boost::random_access_traversal_tag,
+                                   value_t&,
+                                   typename matrix_type::difference_type
+                                   >
 {
     // iterates over matrix elements within the same row
     
-    // The value_type of the iterator must be the value_type of the matrix or const matrix_type::value_type
-    BOOST_STATIC_ASSERT( (boost::is_same<typename matrix_type::value_type, value_t>::value
-                            || boost::is_same<const typename matrix_type::value_type,value_t>::value) );
 
     public:
         typedef value_t value_type;
 
         matrix_column_iterator(matrix_type* matrix,typename matrix_type::size_type row, typename matrix_type::size_type col)
             : m(matrix), row_pos(row), col_pos(col)
-            {}
+            {
+                // The value_type of the iterator must be the value_type of the matrix or const matrix_type::value_type
+                BOOST_STATIC_ASSERT( (boost::is_same<typename matrix_type::value_type, value_t>::value
+                                     || boost::is_same<const typename matrix_type::value_type,value_t>::value) );
+            }
 
         template<typename other_matrix_type, typename other_value_type>
         explicit matrix_column_iterator(matrix_row_iterator<other_matrix_type,other_value_type> const& row_iter)
@@ -143,7 +149,7 @@ class matrix_column_iterator : public boost::iterator_facade< matrix_column_iter
         template <typename other_value_type>
         typename matrix_type::difference_type distance_to(matrix_column_iterator<matrix_type,other_value_type> const& z) const
         {
-            return (this->col_pos) - z.col_pos;
+            return z.col_pos - col_pos;
         }
         
         typename matrix_type::size_type row_pos;
