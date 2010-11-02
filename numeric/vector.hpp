@@ -87,7 +87,7 @@ namespace blas{
   };  
     
     template<typename T>
-    void insert(vector<T> v, T value, std::size_t i)
+    void insert(vector<T>& v, T value, std::size_t i)
     {
         assert((i <= v.size()));
         v.insert(v.begin()+i,value);
@@ -100,12 +100,11 @@ namespace blas{
     }
    
     template<typename T>
-    vector<T> operator+(const vector<T> v1, const vector<T> v2)  
+    vector<T> operator+(vector<T> v1, const vector<T>& v2)  
     {
         assert(v1.size() == v2.size());
-        vector<T> result(v1);     
-        result += v2;           
-        return result;              
+        v1 += v2;
+        return v1;
     }
     
     template <class InputIterator1, class InputIterator2>
@@ -115,12 +114,11 @@ namespace blas{
     }
     
     template<typename T>
-    vector<T> operator-(const vector<T> v1, const vector<T> v2)  
+    vector<T> operator-(vector<T> v1, const vector<T>& v2)
     {
         assert(v1.size() == v2.size());
-        vector<T> result(v1);     
-        result -= v2;           
-        return result;              
+        v1 -= v2;
+        return v1;
     }  
 
     template <class ForwardIterator, typename T>
@@ -130,7 +128,7 @@ namespace blas{
     }
     
     template<typename T>
-    inline T scalar_product(const vector<T> v1, const vector<T> v2)
+    inline T scalar_product(const vector<T>& v1, const vector<T>& v2)
     {   
         return alps::numeric::scalar_product(v1,v2);
     }
@@ -199,7 +197,7 @@ void multiplies_assign(std::vector<T>::iterator start1, std::vector<T>::iterator
 #undef MULTIPLIES_ASSIGN
     
 #define SCALAR_PRODUCT(T) \
-inline T scalar_product(const std::vector<T> v1, const std::vector<T> v2)                                              \
+inline T scalar_product(const std::vector<T>& v1, const std::vector<T>& v2)                                              \
     { return boost::numeric::bindings::blas::detail::dot(v1.size(), &v1[0],1,&v2[0],1);}
     IMPLEMENT_FOR_ALL_BLAS_TYPES(SCALAR_PRODUCT)
 #undef SCALAR_PRODUCT
