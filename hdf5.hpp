@@ -1385,13 +1385,13 @@ namespace alps {
             return ar;
         }
 
-        template<typename T> iarchive & serialize(iarchive & ar, std::string const & p, bool & v) {
+        iarchive & serialize(iarchive & ar, std::string const & p, bool & v) {
             boost::int8_t d;
             call_serialize(ar, p, d);
             v = d;
             return ar;
         }
-        template<typename T> oarchive & serialize(oarchive & ar, std::string const & p, bool const & v) {
+        oarchive & serialize(oarchive & ar, std::string const & p, bool const & v) {
             boost::int8_t d = v;
             return ar;
         }
