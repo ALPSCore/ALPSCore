@@ -138,6 +138,22 @@ namespace alps {
             >::type());
         }
 
+        template<> struct serializable_type<bool> { typedef boost::int8_t type; };
+        template<> struct native_type<bool> { typedef boost::int8_t type; };
+        template<> struct is_native<bool> : public boost::mpl::true_ {};
+        template<> struct is_native<bool const> : public boost::mpl::true_ {};
+        template<typename T> typename boost::enable_if<
+            typename boost::is_same<T, bool>::type, typename serializable_type<T>::type const *
+        >::type get_data(
+              std::vector<serializable_type<bool>::type> & m
+            , T const & v
+            , std::vector<hsize_t> const &
+            , std::vector<hsize_t> const & = std::vector<hsize_t>()
+        ) {
+            m.resize(1);
+            return &(m[0] = v);
+        }
+
         template<> struct serializable_type<std::string> { typedef char const * type; };
         template<> struct native_type<std::string> { typedef std::string type; };
         template<> struct is_native<std::string> : public boost::mpl::true_ {};
@@ -1382,17 +1398,6 @@ namespace alps {
         }
         template<typename T> oarchive & serialize(oarchive & ar, std::string const & p, std::complex<T> const & v) {
             ar.serialize(p, v);
-            return ar;
-        }
-
-        iarchive & serialize(iarchive & ar, std::string const & p, bool & v) {
-            boost::int8_t d;
-            call_serialize(ar, p, d);
-            v = d;
-            return ar;
-        }
-        oarchive & serialize(oarchive & ar, std::string const & p, bool const & v) {
-            boost::int8_t d = v;
             return ar;
         }
 
