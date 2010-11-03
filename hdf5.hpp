@@ -1385,6 +1385,17 @@ namespace alps {
             return ar;
         }
 
+        template<typename T> iarchive & serialize(iarchive & ar, std::string const & p, bool & v) {
+            boost::int8_t d;
+            call_serialize(ar, p, d);
+            v = d;
+            return ar;
+        }
+        template<typename T> oarchive & serialize(oarchive & ar, std::string const & p, bool const & v) {
+            boost::int8_t d = v;
+            return ar;
+        }
+
         #define HDF5_DEFINE_VECTOR_TYPE(C)                                                                                                                  \
             template<typename T> iarchive & serialize(iarchive & ar, std::string const & p, C <T> & v) {                                                    \
                 if (ar.is_group(p)) {                                                                                                                       \
@@ -1415,6 +1426,19 @@ namespace alps {
         HDF5_DEFINE_VECTOR_TYPE(std::valarray)
         HDF5_DEFINE_VECTOR_TYPE(boost::numeric::ublas::vector)
         #undef HDF5_DEFINE_VECTOR_TYPE
+
+        template<typename T> iarchive & serialize(iarchive & ar, std::string const & p, std::deque<T> & v) {
+            std::vector<T> d;
+            call_serialize(ar, p, d);
+            v.resize(d.size());
+            std::copy(d.begin(), d.end(), v.begin());
+            return ar;
+        }
+        template<typename T> oarchive & serialize(oarchive & ar, std::string const & p, std::deque<T> const & v) {
+            std::vector<T> d(v.begin(), v.end());
+            call_serialize(ar, p, d);
+            return ar;
+        }
 
         template<typename T> iarchive & serialize(iarchive & ar, std::string const & p, std::pair<T *, std::vector<std::size_t> > & v) {
             if (ar.is_group(p)) {
@@ -1470,13 +1494,13 @@ namespace alps {
 
         template<typename T, std::size_t N, typename A> iarchive & serialize(iarchive & ar, std::string const & p, boost::multi_array<T, N, A> & v) {
             std::pair<T *, std::vector<std::size_t> > d(v.data(), std::vector<std::size_t>(boost::multi_array<T, N, A>::dimensionality));
-            std::copy(v.shape(), v.shape() + boost::multi_array<T, N, A>::dimensionality, d.second.begin());
-            detail::serialize_impl(ar, p, d, boost::mpl::true_());
+            call_serialize(ar, p, d);
             return ar;
         }
         template<typename T, std::size_t N, typename A> oarchive & serialize(oarchive & ar, std::string const & p, boost::multi_array<T, N, A> const & v) {
             std::pair<T const *, std::vector<std::size_t> > d(v.data(), std::vector<std::size_t>(boost::multi_array<T, N, A>::dimensionality));
-            detail::serialize_impl(ar, p, d, boost::mpl::true_());
+            std::copy(v.shape(), v.shape() + boost::multi_array<T, N, A>::dimensionality, d.second.begin());
+            call_serialize(ar, p, d);
             return ar;
         }
 
