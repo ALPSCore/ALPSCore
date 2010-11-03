@@ -35,16 +35,20 @@ IF (ALPS_BUILD_HDF5_TESTS)
 
     # texting type serialization
     SET(ALPS_HDF5_DATA_TYPES
-        int short long float double
+        bool int short long float double
         std::size_t std::string std::complex<int> "std::complex<long long>" std::complex<double> "std::complex<long double>"
         boost::int8_t boost::uint8_t boost::int16_t boost::uint16_t boost::int32_t boost::uint32_t boost::int64_t boost::uint64_t
         std::vector<std::size_t> std::vector<short> std::vector<int> std::vector<long> std::vector<float> std::vector<double> "std::vector<std::complex<int> >" "std::vector<std::complex<double> >" std::vector<std::string>
+        std::deque<std::size_t> std::deque<short> std::deque<int> std::deque<long> std::deque<float> std::deque<double> "std::deque<std::complex<int> >" "std::deque<std::complex<double> >" std::deque<std::string>
         std::valarray<int> std::valarray<double> "std::valarray<std::complex<int> >" "std::valarray<std::complex<double> >" std::valarray<std::string>
         boost::numeric::ublas::vector<int> boost::numeric::ublas::vector<double> "boost::numeric::ublas::vector<std::complex<int> >" "boost::numeric::ublas::vector<std::complex<double> >"
         "std::pair<int *, std::vector<std::size_t> >" "std::pair<double *, std::vector<std::size_t> >" "std::pair<std::complex<int> *,std::vector<std::size_t> >" "std::pair<std::complex<double> *,std::vector<std::size_t> >" "std::pair<std::string *,std::vector<std::size_t> >"
         "std::vector<std::vector<int> >" "std::vector<std::vector<double> >" "std::vector<std::vector<std::complex<double> > >" "std::vector<std::vector<std::string> >"
         "std::vector<std::vector<std::vector<int> > >" "std::vector<std::vector<std::vector<double> > >" "std::vector<std::vector<std::vector<std::complex<double> > > >" "std::vector<std::vector<std::vector<std::string> > >"
         "std::vector<std::valarray<int> >" "std::valarray<std::vector<double> >" "std::vector<boost::numeric::ublas::vector<std::complex<double> > >" "boost::numeric::ublas::vector<std::valarray<std::string> >"
+        "std::deque<std::deque<int> >" "std::deque<std::deque<double> >" "std::deque<std::deque<std::complex<double> > >" "std::deque<std::deque<std::string> >"
+        "std::deque<std::deque<std::deque<int> > >" "std::deque<std::deque<std::deque<double> > >" "std::deque<std::deque<std::deque<std::complex<double> > > >" "std::deque<std::deque<std::deque<std::string> > >"
+        "std::vector<std::deque<short> >" "std::deque<std::valarray<int> >" "std::valarray<std::deque<double> >" "std::deque<boost::numeric::ublas::vector<std::complex<double> > >" "boost::numeric::ublas::vector<std::deque<std::string> >"
         "std::pair<std::vector<int> *, std::vector<std::size_t> >" "std::pair<std::vector<double> *, std::vector<std::size_t> >" "std::pair<std::vector<std::complex<double> > *, std::vector<std::size_t> >" "std::pair<std::vector<std::string> *, std::vector<std::size_t> >"
         enum_type std::vector<enum_type> "std::vector<std::vector<enum_type> >" "std::pair<enum_type *, std::vector<std::size_t> >" "std::vector<std::valarray<enum_type> >"
         "std::pair<std::vector<enum_type> *, std::vector<std::size_t> >" "std::pair<std::vector<std::vector<enum_type> > *, std::vector<std::size_t> >"

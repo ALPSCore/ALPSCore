@@ -25,6 +25,7 @@
 *
 *****************************************************************************/
 
+#include <deque>
 #include <string>
 #include <vector>
 #include <complex>
@@ -148,10 +149,17 @@ template<typename T, typename U> class cast_type< C <T>, D <U> >                
 };
 HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(std::valarray, std::vector)
 HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(std::vector, std::valarray)
+HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(std::deque, std::vector)
+HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(std::vector, std::deque)
+HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(std::deque, std::valarray)
+HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(std::valarray, std::deque)
 HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(std::valarray, boost::numeric::ublas::vector)
 HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(boost::numeric::ublas::vector, std::valarray)
 HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(boost::numeric::ublas::vector, std::vector)
 HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(std::vector, boost::numeric::ublas::vector)
+HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(std::deque, boost::numeric::ublas::vector)
+HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(boost::numeric::ublas::vector, std::deque)
+
 #undef HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE
 
 template<typename T, typename U> class cast_type< std::pair<T *, std::vector<std::size_t> >, std::vector<std::vector<std::vector<U> > > >
@@ -261,6 +269,7 @@ template<typename T, typename U> bool equal(                                    
 }
 HDF5_DEFINE_VECTOR_TYPE(std::vector)
 HDF5_DEFINE_VECTOR_TYPE(std::valarray)
+HDF5_DEFINE_VECTOR_TYPE(std::deque)
 HDF5_DEFINE_VECTOR_TYPE(boost::numeric::ublas::vector)
 #undef HDF5_DEFINE_VECTOR_TYPE
 
@@ -406,6 +415,13 @@ HDF5_DEFINE_VECTOR_VECTOR_TYPE(boost::numeric::ublas::vector, std::valarray)
 HDF5_DEFINE_VECTOR_VECTOR_TYPE(boost::numeric::ublas::vector, boost::numeric::ublas::vector)
 HDF5_DEFINE_VECTOR_VECTOR_TYPE(boost::numeric::ublas::vector, std::vector)
 HDF5_DEFINE_VECTOR_VECTOR_TYPE(std::vector, boost::numeric::ublas::vector)
+HDF5_DEFINE_VECTOR_VECTOR_TYPE(std::deque, std::deque)
+HDF5_DEFINE_VECTOR_VECTOR_TYPE(std::deque, std::vector)
+HDF5_DEFINE_VECTOR_VECTOR_TYPE(std::vector, std::deque)
+HDF5_DEFINE_VECTOR_VECTOR_TYPE(std::valarray, std::deque)
+HDF5_DEFINE_VECTOR_VECTOR_TYPE(std::deque, std::valarray)
+HDF5_DEFINE_VECTOR_VECTOR_TYPE(boost::numeric::ublas::vector, std::deque)
+HDF5_DEFINE_VECTOR_VECTOR_TYPE(std::deque, boost::numeric::ublas::vector)
 #undef HDF5_DEFINE_VECTOR_VECTOR_TYPE
 
 #define HDF5_DEFINE_VECTOR_VECTOR_VECTOR_TYPE(C, D, E)                                             \
