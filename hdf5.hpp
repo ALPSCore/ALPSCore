@@ -354,7 +354,7 @@ namespace alps {
             return s;
         }
         template<typename T> void set_extent(std::pair<T *, std::vector<std::size_t> > & v, std::vector<std::size_t> const & s) {
-            if (!(s.size() == 1 && s[0] == 0 && std::accumulate(v.second.begin(), v.second.end(), 0) == 0) && !std::equal(v.second.begin(), v.second.end(), s.begin()))
+            if (!(s.size() == 1 && s[0] == 0 && std::accumulate(v.second.begin(), v.second.end(), std::size_t(0)) == 0) && !std::equal(v.second.begin(), v.second.end(), s.begin()))
                 ALPS_HDF5_THROW_RANGE_ERROR("invalid data size")
             if (s.size() == 1 && s[0] == 0)
                 v.first = NULL;
@@ -387,13 +387,13 @@ namespace alps {
         ) {
             hsize_t start = 0;
             for (std::size_t i = 0; i < v.second.size(); ++i)
-                start += s[i] * std::accumulate(v.second.begin() + i + 1, v.second.end(), 1, std::multiplies<hsize_t>());
+                start += s[i] * std::accumulate(v.second.begin() + i + 1, v.second.end(), hsize_t(1), std::multiplies<hsize_t>());
             if (is_native<T>::value)
                 return call_get_data(
                        m
                     , v.first[start]
                     , std::vector<hsize_t>(s.begin() + v.second.size(), s.end())
-                    , std::vector<hsize_t>(1, std::accumulate(v.second.begin(), v.second.end(), 1, std::multiplies<hsize_t>()))
+                    , std::vector<hsize_t>(1, std::accumulate(v.second.begin(), v.second.end(), hsize_t(1), std::multiplies<hsize_t>()))
                 );
             else
                 return call_get_data(
@@ -405,10 +405,10 @@ namespace alps {
         template<typename T, typename U> void set_data(std::pair<T *, std::vector<std::size_t> > & v, std::vector<U> const & u, std::vector<hsize_t> const & s, std::vector<hsize_t> const & c) {
             std::vector<hsize_t> start(1, 0);
             for (std::size_t i = 0; i < v.second.size(); ++i)
-                start[0] += s[i] * std::accumulate(v.second.begin() + i + 1, v.second.end(), 1, std::multiplies<hsize_t>());
+                start[0] += s[i] * std::accumulate(v.second.begin() + i + 1, v.second.end(), hsize_t(1), std::multiplies<hsize_t>());
             std::copy(s.begin() + v.second.size(), s.end(), std::back_inserter(start));
             if (is_native<T>::value)
-                call_set_data(v.first[start[0]], u, start, std::vector<hsize_t>(1, std::accumulate(c.begin(), c.end(), 1, std::multiplies<hsize_t>())));
+                call_set_data(v.first[start[0]], u, start, std::vector<hsize_t>(1, std::accumulate(c.begin(), c.end(), hsize_t(1), std::multiplies<hsize_t>())));
             else
                 call_set_data(v.first[start[0]], u, std::vector<hsize_t>(start.begin() + 1, start.end()), std::vector<hsize_t>(c.begin() + v.second.size(), c.end()));
         }
@@ -1044,23 +1044,27 @@ namespace alps {
                         detail::check_error(is_attr ? H5Aread(data_id, type_id, &data[0]) : H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &data[0]));
                         call_set_data(v, std::vector<char *>(1, &data[0]), start, count);
                     } else if (std::equal(count.begin(), count.end(), size.begin())) {
-                        std::vector<U> data(std::accumulate(count.begin(), count.end(), 1, std::multiplies<std::size_t>()));
+                        std::vector<U> data(std::accumulate(count.begin(), count.end(), std::size_t(1), std::multiplies<std::size_t>()));
                         detail::check_error(is_attr ? H5Aread(data_id, type_id, &data.front()) : H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &data.front()));
                         call_set_data(v, data, start, count);
-                        if (boost::is_same<T, char *>::value)
+                        if (!is_attr && boost::is_same<T, char *>::value)
                             detail::check_error(H5Dvlen_reclaim(type_id, detail::space_type(H5Dget_space(data_id)), H5P_DEFAULT, &data.front()));
-                    } else {
-                        if (is_attr)
-                            ALPS_HDF5_THROW_RUNTIME_ERROR("attribute data needs to be continous")
-                        std::vector<U> data(std::accumulate(count.begin(), count.end(), 1, std::multiplies<std::size_t>()));
+                    } else if (is_attr) {
                         std::size_t last = count.size() - 1, pos;
                         for(;count[last] == size[last]; --last);
+                        std::vector<U> data(std::accumulate(size.begin(), size.end(), hsize_t(1), std::multiplies<hsize_t>()));
+                        std::vector<U> chunk(std::accumulate(count.begin(), count.end(), hsize_t(1), std::multiplies<hsize_t>()));
+                        detail::check_error(H5Aread(data_id, type_id, &data.front()));
                         do {
-                            detail::space_type space_id(H5Dget_space(data_id));
-                            detail::check_error(H5Sselect_hyperslab(space_id, H5S_SELECT_SET, &start.front(), NULL, &count.front(), NULL));
-                            detail::space_type mem_id(H5Screate_simple(count.size(), &count.front(), NULL));
-                            detail::check_error(H5Dread(data_id, type_id, mem_id, space_id, H5P_DEFAULT, &data.front()));
-                            call_set_data(v, data, start, count);
+                            std::size_t sum = 0;
+                            for (std::vector<hsize_t>::const_iterator it = start.begin(); it != start.end(); ++it)
+                                sum += *it * std::accumulate(size.begin() + (it - start.begin()) + 1, size.end(), hsize_t(1), std::multiplies<hsize_t>());
+                            std::copy(
+                                data.begin() + sum,
+                                data.begin() + sum + chunk.size(),
+                                chunk.begin()
+                            );
+                            call_set_data(v, chunk, start, count);
                             if (start[last] + 1 == size[last] && last) {
                                 for (pos = last; ++start[pos] == size[pos] && pos; --pos);
                                 for (++pos; pos <= last; ++pos)
@@ -1069,6 +1073,25 @@ namespace alps {
                                 ++start[last];
                             if (boost::is_same<T, char *>::value)
                                 detail::check_error(H5Dvlen_reclaim(type_id, detail::space_type(H5Dget_space(data_id)), H5P_DEFAULT, &data.front()));
+                        } while (start[0] < size[0]);
+                    } else {
+                        std::size_t last = count.size() - 1, pos;
+                        for(;count[last] == size[last]; --last);
+                        std::vector<U> data(std::accumulate(count.begin(), count.end(), std::size_t(1), std::multiplies<std::size_t>()));
+                        do {
+                            detail::space_type space_id(H5Dget_space(data_id));
+                            detail::check_error(H5Sselect_hyperslab(space_id, H5S_SELECT_SET, &start.front(), NULL, &count.front(), NULL));
+                            detail::space_type mem_id(H5Screate_simple(count.size(), &count.front(), NULL));
+                            detail::check_error(H5Dread(data_id, type_id, mem_id, space_id, H5P_DEFAULT, &data.front()));
+                            call_set_data(v, data, start, count);
+                            if (boost::is_same<T, char *>::value)
+                                detail::check_error(H5Dvlen_reclaim(type_id, mem_id, H5P_DEFAULT, &data.front()));
+                            if (start[last] + 1 == size[last] && last) {
+                                for (pos = last; ++start[pos] == size[pos] && pos; --pos);
+                                for (++pos; pos <= last; ++pos)
+                                    start[pos] = 0;
+                            } else
+                                ++start[last];
                         } while (start[0] < size[0]);
                     }
                 }
@@ -1118,7 +1141,7 @@ namespace alps {
                     if (is_native<T>::value) {
                         detail::data_type data_id(save_comitted_data(p, type_id, H5Screate(H5S_SCALAR), 0, NULL, !boost::is_same<typename native_type<T>::type, std::string>::value));
                         detail::check_error(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, call_get_data(data, v, start)));
-                    } else if (std::accumulate(size.begin(), size.end(), 0) == 0)
+                    } else if (std::accumulate(size.begin(), size.end(), hsize_t(0)) == 0)
                         detail::check_data(save_comitted_data(p, type_id, H5Screate(H5S_NULL), 0, NULL, !boost::is_same<typename native_type<T>::type, std::string>::value));
                     else {
                         detail::data_type data_id(save_comitted_data(p, type_id, H5Screate_simple(size.size(), &size.front(), NULL), size.size(), &size.front(), !boost::is_same<typename native_type<T>::type, std::string>::value));
@@ -1198,7 +1221,7 @@ namespace alps {
                         if (id < 0)
                             id = H5Acreate2(parent_id, p.substr(p.find_last_of('@') + 1).c_str(), type_id, detail::space_type(H5Screate(H5S_SCALAR)), H5P_DEFAULT, H5P_DEFAULT);
                         detail::check_error(H5Awrite(id, type_id, call_get_data(data, v, start)));
-                    } else if (std::accumulate(size.begin(), size.end(), 0) == 0) {
+                    } else if (std::accumulate(size.begin(), size.end(), hsize_t(0)) == 0) {
                         if (id < 0)
                             id = H5Acreate2(parent_id, p.substr(p.find_last_of('@') + 1).c_str(), type_id, detail::space_type(H5Screate(H5S_NULL)), H5P_DEFAULT, H5P_DEFAULT);
                     } else {
@@ -1206,8 +1229,28 @@ namespace alps {
                             id = H5Acreate2(parent_id, p.substr(p.find_last_of('@') + 1).c_str(), type_id, detail::space_type(H5Screate_simple(size.size(), &size.front(), NULL)), H5P_DEFAULT, H5P_DEFAULT);
                         if (std::equal(count.begin(), count.end(), size.begin()))
                             detail::check_error(H5Awrite(id, type_id, call_get_data(data, v, start)));
-                        else
-                            ALPS_HDF5_THROW_RUNTIME_ERROR("attribute data needs to be continous " + p)
+                        else {
+                            std::vector<typename native_type<T>::type> continous(std::accumulate(size.begin(), size.end(), hsize_t(1), std::multiplies<hsize_t>()));
+                            std::size_t last = count.size() - 1, pos;
+                            for(;count[last] == size[last]; --last);
+                            do {
+                                std::size_t sum = 0;
+                                for (std::vector<hsize_t>::const_iterator it = start.begin(); it != start.end(); ++it)
+                                    sum += *it * std::accumulate(size.begin() + (it - start.begin()) + 1, size.end(), hsize_t(1), std::multiplies<hsize_t>());
+                                std::memcpy(
+                                    &continous.front() + sum,
+                                    call_get_data(data, v, start),
+                                    std::accumulate(count.begin(), count.end(), hsize_t(1), std::multiplies<hsize_t>()) * sizeof(typename native_type<T>::type)
+                                );
+                                if (start[last] + 1 == size[last] && last) {
+                                    for (pos = last; ++start[pos] == size[pos] && pos; --pos);
+                                    for (++pos; pos <= last; ++pos)
+                                        start[pos] = 0;
+                                } else
+                                    ++start[last];
+                            } while (start[0] < size[0]);
+                            detail::check_error(H5Awrite(id, type_id, &continous.front()));
+                        }
                     }
                     detail::attribute_type attr_id(id);
                     if (is_group(p.substr(0, p.find_last_of('@') - 1)))
@@ -1381,7 +1424,7 @@ namespace alps {
                     std::string path = "";
                     for (std::vector<std::size_t>::const_iterator it = start.begin(); it != start.end(); ++it) {
                         path += "/" + boost::lexical_cast<std::string>(*it);
-                        pos += *it * std::accumulate(v.second.begin() + (it - start.begin()) + 1, v.second.end(), 1, std::multiplies<std::size_t>());
+                        pos += *it * std::accumulate(v.second.begin() + (it - start.begin()) + 1, v.second.end(), std::size_t(1), std::multiplies<std::size_t>());
                     }
                     call_serialize(ar, p + path, v.first[pos]);
                     if (start[last] + 1 == v.second[last] && last) {
@@ -1411,7 +1454,7 @@ namespace alps {
                     std::string path = "";
                     for (std::vector<std::size_t>::const_iterator it = start.begin(); it != start.end(); ++it) {
                         path += "/" + boost::lexical_cast<std::string>(*it);
-                        pos += *it * std::accumulate(v.second.begin() + (it - start.begin()) + 1, v.second.end(), 1, std::multiplies<std::size_t>());
+                        pos += *it * std::accumulate(v.second.begin() + (it - start.begin()) + 1, v.second.end(), std::size_t(1), std::multiplies<std::size_t>());
                     }
                     call_serialize(ar, p + path, v.first[pos]);
                     if (start[last] + 1 == v.second[last] && last) {
