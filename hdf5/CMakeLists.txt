@@ -57,7 +57,6 @@ IF (ALPS_BUILD_HDF5_TESTS)
         "boost::multi_array<double, 1>" "boost::multi_array<int, 1>" "boost::multi_array<std::complex<double>, 1>" "boost::multi_array<std::string, 1>"
         "boost::multi_array<double, 2>" "boost::multi_array<int, 2>" "boost::multi_array<std::complex<double>, 2>" "boost::multi_array<std::string, 2>"
         "boost::multi_array<double, 3>" "boost::multi_array<int, 3>" "boost::multi_array<std::complex<double>, 3>" "boost::multi_array<std::string, 3>"
-        "boost::multi_array<boost::multi_array<double, 2>, 1>" "boost::multi_array<std::vector<double>, 1>" "std::vector<boost::multi_array<std::complex<double>, 1> >" "std::pair<boost::multi_array<std::string, 1> *, std::vector<std::size_t> >"
         "boost::numeric::ublas::matrix<double, boost::numeric::ublas::column_major>" "boost::numeric::ublas::matrix<std::complex<double>, boost::numeric::ublas::column_major>"
         "int *" "short *" "long *" "float *" "double *"
         "std::size_t *" "std::string *" "std::complex<int> *" "std::complex<double> *"
