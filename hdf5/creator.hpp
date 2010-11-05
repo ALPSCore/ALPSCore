@@ -336,7 +336,7 @@ template<typename T, typename A> struct creator<boost::multi_array<T, 1, A> > {
     static base_type empty() { return base_type(boost::extents[0]); }
     static base_type special() { return base_type(boost::extents[VECTOR_SIZE]); }
     static base_type random(alps::hdf5::iarchive & iar) { return base_type(boost::extents[VECTOR_SIZE]); }
-    static base_type empty(alps::hdf5::iarchive & iar) { return base_type(boost::extents[0][0]); }
+    static base_type empty(alps::hdf5::iarchive & iar) { return base_type(boost::extents[0]); }
     static base_type special(alps::hdf5::iarchive & iar) { return base_type(boost::extents[VECTOR_SIZE]); }
 };
 template<typename T, typename A> bool equal(boost::multi_array<T, 1, A> const & a,  boost::multi_array<T, 1, A> const & b) {
