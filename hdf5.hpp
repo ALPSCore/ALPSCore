@@ -60,6 +60,7 @@
 namespace alps {
     #ifndef ALPS_HDF5_SZIP_BLOCK_SIZE
         #define ALPS_HDF5_SZIP_BLOCK_SIZE 32
+    #endif
 
     namespace hdf5 {
         #define ALPS_HDF5_STRINGIFY(arg) ALPS_HDF5_STRINGIFY_HELPER(arg)
@@ -954,8 +955,9 @@ namespace alps {
                         detail::check_error(H5Pset_fill_time(prop_id, H5D_FILL_TIME_NEVER));
                         if (d > 0) {
                             detail::check_error(H5Pset_chunk(prop_id, d, s));
-                            if (compress() && std::size_t n = std::accumulate(s, s + d, std::size_t(0)) > ALPS_HDF5_SZIP_BLOCK_SIZE)
-                                detail::check_error(H5Pset_szip(prop_id, H5_SZIP_NN_OPTION_MASK, ALPS_HDF5_SZIP_BLOCK_SIZE);
+                            std::size_t n = std::accumulate(s, s + d, std::size_t(0));
+                            if (compress() && n > ALPS_HDF5_SZIP_BLOCK_SIZE)
+                                detail::check_error(H5Pset_szip(prop_id, H5_SZIP_NN_OPTION_MASK, ALPS_HDF5_SZIP_BLOCK_SIZE));
                         }
                         return H5Dcreate2(file_id(), p.c_str(), type_id, detail::space_type(space_id), H5P_DEFAULT, prop_id, H5P_DEFAULT);
                     } else
