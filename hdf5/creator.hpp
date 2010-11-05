@@ -322,6 +322,32 @@ template<typename T, typename U> bool equal(std::pair<T *, std::vector<U> > cons
         return false;
 }
 
+template<typename T, typename A> struct creator<boost::multi_array<T, 1, A> > {
+    typedef boost::multi_array<T, 1, A> base_type;
+    static base_type random() {
+        base_type value(boost::extents[VECTOR_SIZE]);
+        for (std::size_t i = 0; i < VECTOR_SIZE; ++i)
+            if (boost::is_scalar<T>::value)
+                initialize(value[i]);
+            else
+                value[i] = creator<T>::random();
+        return value;
+    }
+    static base_type empty() { return base_type(boost::extents[0]); }
+    static base_type special() { return base_type(boost::extents[VECTOR_SIZE]); }
+    static base_type random(alps::hdf5::iarchive & iar) { return base_type(boost::extents[VECTOR_SIZE]); }
+    static base_type empty(alps::hdf5::iarchive & iar) { return base_type(boost::extents[0][0]); }
+    static base_type special(alps::hdf5::iarchive & iar) { return base_type(boost::extents[VECTOR_SIZE]); }
+};
+template<typename T, typename A> bool equal(boost::multi_array<T, 1, A> const & a,  boost::multi_array<T, 1, A> const & b) {
+    if (!std::equal(a.shape(), a.shape() + boost::multi_array<T, 1, A>::dimensionality, b.shape()))
+        return false;
+    for (std::size_t i = 0; i < a.shape()[0]; ++i)
+        if (!equal(a[i], b[i]))
+            return false;
+    return true;
+}
+
 template<typename T, typename A> struct creator<boost::multi_array<T, 2, A> > {
     typedef boost::multi_array<T, 2, A> base_type;
     static base_type random() {
@@ -334,17 +360,49 @@ template<typename T, typename A> struct creator<boost::multi_array<T, 2, A> > {
                     value[i][j] = creator<T>::random();
         return value;
     }
-    static base_type empty() { return base_type(boost::extents[2][2]); }
-    static base_type special() { return base_type(boost::extents[2][2]); }
-    static base_type random(alps::hdf5::iarchive & iar) { return base_type(boost::extents[2][2]); }
-    static base_type empty(alps::hdf5::iarchive & iar) { return base_type(boost::extents[2][2]); }
-    static base_type special(alps::hdf5::iarchive & iar) { return base_type(boost::extents[2][2]); }
+    static base_type empty() { return base_type(boost::extents[0][0]); }
+    static base_type special() { return base_type(boost::extents[MATRIX_SIZE][MATRIX_SIZE]); }
+    static base_type random(alps::hdf5::iarchive & iar) { return base_type(boost::extents[5][5]); }
+    static base_type empty(alps::hdf5::iarchive & iar) { return base_type(boost::extents[0][0]); }
+    static base_type special(alps::hdf5::iarchive & iar) { return base_type(boost::extents[MATRIX_SIZE][MATRIX_SIZE]); }
 };
 template<typename T, typename A> bool equal(boost::multi_array<T, 2, A> const & a,  boost::multi_array<T, 2, A> const & b) {
-    for (std::size_t i = 0; i < MATRIX_SIZE; ++i)
-        for (std::size_t j = 0; j < MATRIX_SIZE; ++j)
+    if (!std::equal(a.shape(), a.shape() + boost::multi_array<T, 2, A>::dimensionality, b.shape()))
+        return false;
+    for (std::size_t i = 0; i < a.shape()[0]; ++i)
+        for (std::size_t j = 0; j < a.shape()[1]; ++j)
             if (!equal(a[i][j], b[i][j]))
                 return false;
+    return true;
+}
+
+template<typename T, typename A> struct creator<boost::multi_array<T, 3, A> > {
+    typedef boost::multi_array<T, 3, A> base_type;
+    static base_type random() {
+        base_type value(boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]);
+        for (std::size_t i = 0; i < MATRIX_SIZE; ++i)
+            for (std::size_t j = 0; j < MATRIX_SIZE; ++j)
+                for (std::size_t k = 0; k < MATRIX_SIZE; ++k)
+                    if (boost::is_scalar<T>::value)
+                        initialize(value[i][j][k]);
+                    else
+                        value[i][j][k] = creator<T>::random();
+        return value;
+    }
+    static base_type empty() { return base_type(boost::extents[0][0][0]); }
+    static base_type special() { return base_type(boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]); }
+    static base_type random(alps::hdf5::iarchive & iar) { return base_type(boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]); }
+    static base_type empty(alps::hdf5::iarchive & iar) { return base_type(boost::extents[0][0][0]); }
+    static base_type special(alps::hdf5::iarchive & iar) { return base_type(boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]); }
+};
+template<typename T, typename A> bool equal(boost::multi_array<T, 3, A> const & a,  boost::multi_array<T, 3, A> const & b) {
+    if (!std::equal(a.shape(), a.shape() + boost::multi_array<T, 3, A>::dimensionality, b.shape()))
+        return false;
+    for (std::size_t i = 0; i < a.shape()[0]; ++i)
+        for (std::size_t j = 0; j < a.shape()[1]; ++j)
+            for (std::size_t k = 0; k < a.shape()[2]; ++j)
+                if (!equal(a[i][j][k], b[i][j][k]))
+                    return false;
     return true;
 }
 
