@@ -235,13 +235,17 @@ template<typename T> struct test<boost::shared_array<T> > {
 template<typename T> struct skip_attribute: public boost::mpl::false_ {};
 template<typename T> struct skip_attribute<userdefined_class<T> >: public boost::mpl::true_ {};
 template<typename T> struct skip_attribute<std::vector<userdefined_class<T> > >: public boost::mpl::true_ {};
+template<typename T, typename U> struct skip_attribute<cast_type<T, U> >: public boost::mpl::true_ {};
+template<typename T, typename U> struct skip_attribute<std::vector<cast_type<T, U> > >: public boost::mpl::true_ {};
+template<typename T, typename U> struct skip_attribute<std::pair<cast_type<T, U> *, std::vector<std::size_t> > >: public boost::mpl::true_ {};
+template<typename T, typename U> struct skip_attribute<boost::shared_array<cast_type<T, U> > >: public boost::mpl::true_ {};
 
 int main() {
     std::string const filename = "test.h5";
     if (boost::filesystem::exists(boost::filesystem::path(filename)))
         boost::filesystem::remove(boost::filesystem::path(filename));
     bool result = true;
-    if (skip_attribute< TYPE >::value)
+    if (IS_ATTRIBUTE && skip_attribute< TYPE >::value)
         std::cout << "SKIP" << std::endl;
     else {
         for (std::size_t i = 32; i && result; --i)
