@@ -1420,7 +1420,9 @@ namespace alps {
                 else if (call_is_vectorizable(v))                                                                                                           \
                     ar.serialize(p, v);                                                                                                                     \
                 else {                                                                                                                                      \
-                    if (ar.is_data(p))                                                                                                                      \
+                    if (p.find_last_of('@') != std::string::npos)                                                                                           \
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("attributes needs to be vectorizable: " + ar.complete_path(p))                                        \
+                    else if (ar.is_data(p))                                                                                                                 \
                         ar.delete_data(p);                                                                                                                  \
                     for (std::size_t i = 0; i < v.size(); ++i)                                                                                              \
                         call_serialize(ar, p + "/" + boost::lexical_cast<std::string>(i), v[i]);                                                            \
@@ -1475,6 +1477,8 @@ namespace alps {
             else if (call_is_vectorizable(v))
                 detail::serialize_impl(ar, p, v, boost::mpl::true_());
             else {
+                if (p.find_last_of('@') != std::string::npos)
+                    ALPS_HDF5_THROW_RUNTIME_ERROR("attributes needs to be vectorizable: " + ar.complete_path(p))
                 if (ar.is_data(p))
                     ar.delete_data(p);
                 std::vector<std::size_t> start(v.second.size(), 0);
