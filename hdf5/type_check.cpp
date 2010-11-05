@@ -103,8 +103,11 @@ template<typename base_type> struct test {
             oar
                 << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "random", random_write)
                 << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "empty", empty_write)
-                << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "special", special_write)
             ;
+            if (!IS_ATTRIBUTE)
+                oar
+                    << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "special", special_write)
+                ;
         }
         {
             alps::hdf5::iarchive iar(filename);
@@ -114,16 +117,21 @@ template<typename base_type> struct test {
             iar
                 >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "random", random_read)
                 >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "empty", empty_read)
-                >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "special", special_read)
             ;
-            result = equal(random_write, random_read) && equal(empty_write, empty_read) && equal(special_write, special_read);
+            if (!IS_ATTRIBUTE)
+                iar
+                    >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "special", special_read)
+                ;
+            result = equal(random_write, random_read) && equal(empty_write, empty_read) && (IS_ATTRIBUTE || equal(special_write, special_read));
             destructor<base_type>::apply(random_read);
             destructor<base_type>::apply(empty_read);
-            destructor<base_type>::apply(special_read);
+            if (!IS_ATTRIBUTE)
+                destructor<base_type>::apply(special_read);
         }
         destructor<base_type>::apply(random_write);
         destructor<base_type>::apply(empty_write);
-        destructor<base_type>::apply(special_write);
+        if (!IS_ATTRIBUTE)
+            destructor<base_type>::apply(special_write);
         return result;
     }
     template<typename data_type> static bool overwrite_helper(std::string const & filename) {
@@ -224,16 +232,24 @@ template<typename T> struct test<boost::shared_array<T> > {
     }
 };
 
+template<typename T> struct skip_attribute: public boost::mpl::false_ {};
+template<typename T> struct skip_attribute<userdefined_class<T> >: public boost::mpl::true_ {};
+template<typename T> struct skip_attribute<std::vector<userdefined_class<T> > >: public boost::mpl::true_ {};
+
 int main() {
     std::string const filename = "test.h5";
     if (boost::filesystem::exists(boost::filesystem::path(filename)))
         boost::filesystem::remove(boost::filesystem::path(filename));
     bool result = true;
-    for (std::size_t i = 32; i && result; --i)
-        result = test<boost::remove_pointer< TYPE >::type >::write(filename, boost::is_pointer< TYPE >::type());
-    for (std::size_t i = 32; i && result; --i)
-        result = test<boost::remove_pointer< TYPE >::type >::overwrite(filename, boost::is_pointer< TYPE >::type());
-    boost::filesystem::remove(boost::filesystem::path(filename));
-    std::cout << (result ? "SUCCESS" : "FAILURE") << std::endl;
+    if (skip_attribute< TYPE >::value)
+        std::cout << "SKIP" << std::endl;
+    else {
+        for (std::size_t i = 32; i && result; --i)
+            result = test<boost::remove_pointer< TYPE >::type >::write(filename, boost::is_pointer< TYPE >::type());
+        for (std::size_t i = 32; i && result; --i)
+            result = test<boost::remove_pointer< TYPE >::type >::overwrite(filename, boost::is_pointer< TYPE >::type());
+        boost::filesystem::remove(boost::filesystem::path(filename));
+        std::cout << (result ? "SUCCESS" : "FAILURE") << std::endl;
+    }
     return result ? EXIT_SUCCESS : EXIT_FAILURE;
 }

@@ -84,7 +84,7 @@ template<typename T> class userdefined_class {
                 >> alps::make_pvp("c", c)
             ;
         }
-        void serialize(alps::hdf5::oarchive & ar) const { 
+        void serialize(alps::hdf5::oarchive & ar) const {
             ar
                 << alps::make_pvp("a", a)
                 << alps::make_pvp("b", b)
