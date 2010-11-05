@@ -58,6 +58,9 @@
 #include <hdf5.h>
 
 namespace alps {
+    #ifndef ALPS_HDF5_SZIP_BLOCK_SIZE
+        #define ALPS_HDF5_SZIP_BLOCK_SIZE 32
+
     namespace hdf5 {
         #define ALPS_HDF5_STRINGIFY(arg) ALPS_HDF5_STRINGIFY_HELPER(arg)
         #define ALPS_HDF5_STRINGIFY_HELPER(arg) #arg
@@ -951,8 +954,8 @@ namespace alps {
                         detail::check_error(H5Pset_fill_time(prop_id, H5D_FILL_TIME_NEVER));
                         if (d > 0) {
                             detail::check_error(H5Pset_chunk(prop_id, d, s));
-                            if (compress())
-                                detail::check_error(H5Pset_szip(prop_id, H5_SZIP_NN_OPTION_MASK, 32));
+                            if (compress() && std::size_t n = std::accumulate(s, s + d, std::size_t(0)) > ALPS_HDF5_SZIP_BLOCK_SIZE)
+                                detail::check_error(H5Pset_szip(prop_id, H5_SZIP_NN_OPTION_MASK, ALPS_HDF5_SZIP_BLOCK_SIZE);
                         }
                         return H5Dcreate2(file_id(), p.c_str(), type_id, detail::space_type(space_id), H5P_DEFAULT, prop_id, H5P_DEFAULT);
                     } else
@@ -1502,13 +1505,12 @@ namespace alps {
         }
 
         template<typename T, std::size_t N, typename A> iarchive & serialize(iarchive & ar, std::string const & p, boost::multi_array<T, N, A> & v) {
-            std::pair<T *, std::vector<std::size_t> > d(v.data(), std::vector<std::size_t>(boost::multi_array<T, N, A>::dimensionality));
+            std::pair<T *, std::vector<std::size_t> > d(v.data(), std::vector<std::size_t>(v.shape(), v.shape() + boost::multi_array<T, N, A>::dimensionality));
             call_serialize(ar, p, d);
             return ar;
         }
         template<typename T, std::size_t N, typename A> oarchive & serialize(oarchive & ar, std::string const & p, boost::multi_array<T, N, A> const & v) {
-            std::pair<T const *, std::vector<std::size_t> > d(v.data(), std::vector<std::size_t>(boost::multi_array<T, N, A>::dimensionality));
-            std::copy(v.shape(), v.shape() + boost::multi_array<T, N, A>::dimensionality, d.second.begin());
+            std::pair<T const *, std::vector<std::size_t> > d(v.data(), std::vector<std::size_t>(v.shape(), v.shape() + boost::multi_array<T, N, A>::dimensionality));
             call_serialize(ar, p, d);
             return ar;
         }
