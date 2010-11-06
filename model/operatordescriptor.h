@@ -96,7 +96,7 @@ OperatorDescriptor<I>::apply(STATE state, const SiteBasisDescriptor<I>& basis, c
 {
   // set quantum numbers as parameters
   Parameters p=eval.parameters();
-  p.copy_undefined(basis.get_parameters());
+  p.copy_undefined(basis.get_parameters(false));
   for (std::size_t i=0;i<basis.size();++i) {
     if (p.defined(basis[i].name()))
       boost::throw_exception(std::runtime_error(basis[i].name()+" exists as quantum number and as parameter"));

@@ -13,17 +13,17 @@
 * Library License; you can use, redistribute it and/or modify it under
 * the terms of the license, either version 1 or (at your option) any later
 * version.
-* 
+*
 * You should have received a copy of the ALPS Library License along with
 * the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
 * available from http://alps.comp-phys.org/.
 *
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-* FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
-* SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
-* FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
-* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+* SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+* FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 * DEALINGS IN THE SOFTWARE.
 *
 *****************************************************************************/
@@ -615,116 +615,130 @@ namespace alps {
 
 /// sum of two observables
 template <class T, class U>
-inline alps::SimpleObservableEvaluator<T> operator+(alps::SimpleObservableEvaluator<T> x, const alps::SimpleObservableEvaluator<U>& y)
+inline alps::SimpleObservableEvaluator<T> operator+(alps::SimpleObservableEvaluator<T> const& x, const alps::SimpleObservableEvaluator<U>& y)
 {
-  x += y;
-  return x;
+  alps::SimpleObservableEvaluator<T> res(x);
+  res += y;
+  return res;
 }
 
 /// sum of observable and number
 template <class T, class Y>
-inline alps::SimpleObservableEvaluator<T> operator+(alps::SimpleObservableEvaluator<T> x, const Y& y)
+inline alps::SimpleObservableEvaluator<T> operator+(alps::SimpleObservableEvaluator<T> const& x, const Y& y)
 {
-  x += y;
-  return x;
+  alps::SimpleObservableEvaluator<T> res(x);
+  res += y;
+  return res;
 }
 
 /// sum of observable and number
 template <class T, class Y>
-inline alps::SimpleObservableEvaluator<T> operator+(const Y& y, alps::SimpleObservableEvaluator<T> x)
+inline alps::SimpleObservableEvaluator<T> operator+(const Y& y, alps::SimpleObservableEvaluator<T> const& x)
 {
-  x.add_to(y);
-  return x;
+  alps::SimpleObservableEvaluator<T> res(x);
+  res.add_to(y);
+  return res;
 }
 
-/// difference of two observables
+/// difference of two observables (IBM AIX workaround)
 template <class T, class U>
-inline alps::SimpleObservableEvaluator<T> operator-(alps::SimpleObservableEvaluator<T> x, const alps::SimpleObservableEvaluator<U>& y)
+inline alps::SimpleObservableEvaluator<T> operator-(const alps::SimpleObservableEvaluator<T>& x, const alps::SimpleObservableEvaluator<U>& y)
 {
-  x -= y;
-  return x;
+  alps::SimpleObservableEvaluator<T> res(x);
+  res -= y;
+  return res;
 }
 
 /// difference of observable and number
 template <class T, class Y>
-inline alps::SimpleObservableEvaluator<T> operator-(alps::SimpleObservableEvaluator<T> x, const Y& y)
+inline alps::SimpleObservableEvaluator<T> operator-(alps::SimpleObservableEvaluator<T> const& x, const Y& y)
 {
-  x -= y;
-  return x;
+  alps::SimpleObservableEvaluator<T> res(x);
+  res -= y;
+  return res;
 }
 
 /// difference of observable and number
 template <class T, class Y>
-inline alps::SimpleObservableEvaluator<T> operator-(const Y& y, alps::SimpleObservableEvaluator<T> x)
+inline alps::SimpleObservableEvaluator<T> operator-(const Y& y, alps::SimpleObservableEvaluator<T> const& x)
 {
-  x.subtract_from(y);
-  return x;
+  alps::SimpleObservableEvaluator<T> res(x);
+  res.subtract_from(y);
+  return res;
 }
 
 
-/// product of two observables
+/// product of two observables (IBM AIX workaround)
 template <class T, class U>
-inline alps::SimpleObservableEvaluator<T> operator*(alps::SimpleObservableEvaluator<T> x, const alps::SimpleObservableEvaluator<U>& y)
+inline alps::SimpleObservableEvaluator<T> operator*(const alps::SimpleObservableEvaluator<T>& x, const alps::SimpleObservableEvaluator<U>& y)
 {
-  x *= y;
-  return x;
+  alps::SimpleObservableEvaluator<T> res(x);
+  res *= y;
+  return res;
 }
 
 /// product of observable and number
 template <class T, class Y>
-inline alps::SimpleObservableEvaluator<T> operator*(alps::SimpleObservableEvaluator<T> x, const Y& y)
+inline alps::SimpleObservableEvaluator<T> operator*(alps::SimpleObservableEvaluator<T> const& x, const Y& y)
 {
-  x *= y;
-  return x;
+  alps::SimpleObservableEvaluator<T> res(x);
+  res *= y;
+  return res;
 }
 
 /// product of observable and number
 template <class T, class Y>
-inline alps::SimpleObservableEvaluator<T> operator*(const Y& y, alps::SimpleObservableEvaluator<T> x)
+inline alps::SimpleObservableEvaluator<T> operator*(const Y& y, alps::SimpleObservableEvaluator<T> const& x)
 {
-  x.multiply_to(y);
-  return x;
+  alps::SimpleObservableEvaluator<T> res(x);
+  res.multiply_to(y);
+  return res;
 }
 
 /// product of vector and scalar observable
 template <class T>
-inline alps::SimpleObservableEvaluator<std::valarray<T> > operator*(alps::SimpleObservableEvaluator<std::valarray<T> > x, const alps::SimpleObservableEvaluator<T>& y)
+inline alps::SimpleObservableEvaluator<std::valarray<T> > operator*(alps::SimpleObservableEvaluator<std::valarray<T> > const& x, const alps::SimpleObservableEvaluator<T>& y)
 {
-  x *= y;
-  return x;
+  alps::SimpleObservableEvaluator<T> res(x);
+  res *= y;
+  return res;
 }
 
 /// product of vector and scalar observable
 template <class T>
-inline alps::SimpleObservableEvaluator<std::valarray<T> > operator*(const alps::SimpleObservableEvaluator<T>& y, alps::SimpleObservableEvaluator<std::valarray<T> > x)
+inline alps::SimpleObservableEvaluator<std::valarray<T> > operator*(const alps::SimpleObservableEvaluator<T>& y, alps::SimpleObservableEvaluator<std::valarray<T> > const& x)
 {
-  x *= y;
-  return x;
+  alps::SimpleObservableEvaluator<T> res(x);
+  res *= y;
+  return res;
 }
 
 
-/// ratio of two observables
+/// ratio of two observables (IBM AIX workaround)
 template <class T, class U>
-inline alps::SimpleObservableEvaluator<T> operator/(alps::SimpleObservableEvaluator<T> x, const alps::SimpleObservableEvaluator<U>& y)
+inline alps::SimpleObservableEvaluator<T> operator/(const alps::SimpleObservableEvaluator<T>& x, const alps::SimpleObservableEvaluator<U>& y)
 {
-  x /= y;
-  return x;
+  alps::SimpleObservableEvaluator<T> res(x);
+  res /= y;
+  return res;
 }
 
 /// ratio of observable and number
 template <class T, class Y>
-inline alps::SimpleObservableEvaluator<T> operator/(alps::SimpleObservableEvaluator<T> x, const Y& y)
+inline alps::SimpleObservableEvaluator<T> operator/(alps::SimpleObservableEvaluator<T> const& x, const Y& y)
 {
-  x /= y;
-  return x;
+  alps::SimpleObservableEvaluator<T> res(x);
+  res /= y;
+  return res;
 }
 
 /// ratio of number and observable
 template <class T, class Y>
-inline alps::SimpleObservableEvaluator<T> operator/(const Y& x, alps::SimpleObservableEvaluator<T> y)
+inline alps::SimpleObservableEvaluator<T> operator/(const Y& x, alps::SimpleObservableEvaluator<T> const& y)
 {
-  y.divide(x);
-  return y;
+  alps::SimpleObservableEvaluator<T> res(y);
+  res.divide(x);
+  return res;
 }
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
