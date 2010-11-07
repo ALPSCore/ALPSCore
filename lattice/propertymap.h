@@ -35,6 +35,7 @@
 #include <boost/limits.hpp>
 #include <boost/pending/property.hpp>
 #include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/graph_traits.hpp>
 #include <boost/any.hpp>
 #include <boost/mpl/if.hpp>
 
@@ -203,7 +204,7 @@ struct property_map
 {
   typedef 
     typename boost::mpl::if_c<has_property<P,G>::graph_property,
-      typename has_property<P,G>::graph_property_type&,
+      typename boost::graph_property<G,P>::type&,
       typename boost::mpl::if_c<has_property<P,G>::any_property,
         typename boost::property_map<G,P>::type,
         singleton_property_map<Default> 
@@ -212,7 +213,7 @@ struct property_map
 
   typedef
     typename boost::mpl::if_c<has_property<P,G>::graph_property,
-      const typename has_property<P,G>::graph_property_type&,
+      typename boost::graph_property<G,P>::type const&,
       typename boost::mpl::if_c<has_property<P,G>::any_property,
         typename boost::property_map<G,P>::const_type,
         singleton_property_map<Default>
@@ -225,7 +226,7 @@ struct property_map<P, const G, Default>
 {
   typedef
     typename boost::mpl::if_c<has_property<P,G>::graph_property,
-      const typename has_property<P,G>::graph_property_type&,
+      typename boost::graph_property<G,P>::type const&,
       typename boost::mpl::if_c<has_property<P,G>::any_property,
         typename boost::property_map<G,P>::const_type,
         singleton_property_map<Default>

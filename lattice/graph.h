@@ -76,9 +76,6 @@ inline void write_graph_xml(oxstream& out, const GRAPH& g, const std::string& n=
   typename property_map<edge_vector_t,graph_type,coordinate_type>::const_type
     edgevector = get_or_default(edge_vector_t(),g,coordinate_type(0));
 
-  typename property_map<dimension_t,graph_type,uint32_t>::const_type
-    graphdimension = get_or_default(dimension_t(),g,uint32_t(0));
-
   out << start_tag("GRAPH");
 
   std::string name(n);
@@ -87,7 +84,7 @@ inline void write_graph_xml(oxstream& out, const GRAPH& g, const std::string& n=
   if(name!="")
     out << attribute("name", name);
 
-  uint32_t dim = graphdimension;
+  uint32_t dim = get_or_default(dimension_t(),g,uint32_t(0));
   if (dim>0)
     out << attribute("dimension", dim);
 
@@ -155,9 +152,6 @@ inline std::string read_graph_xml(const XMLTag& intag, std::istream& p, GRAPH& g
   typename property_map<coordinate_t,graph_type,std::vector<double> >::type
     vertexcoordinate = get_or_default(coordinate_t(),g,std::vector<double>());
 
-  typename property_map<dimension_t,graph_type,uint32_t>::type
-    graphdimension = get_or_default(dimension_t(),g,uint32_t(0));
-
   typedef typename boost::graph_traits<graph_type>::vertex_iterator vertex_iterator;
 
   XMLTag tag(intag);
@@ -172,7 +166,7 @@ inline std::string read_graph_xml(const XMLTag& intag, std::istream& p, GRAPH& g
     for (vertex_iterator it = boost::vertices(g).first ; it !=  boost::vertices(g).second ; ++it)
       vertextype[*it]=0;
   }
-  graphdimension = (tag.attributes["dimension"]=="" ? 0 :
+  get_or_default(dimension_t(),g,uint32_t(0))  = (tag.attributes["dimension"]=="" ? 0 :
     boost::lexical_cast<uint32_t, std::string>(tag.attributes["dimension"]));
   name = tag.attributes["name"];
   get_or_default(graph_name_t(),g,std::string()) = name;
