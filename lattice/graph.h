@@ -180,7 +180,9 @@ inline std::string read_graph_xml(const XMLTag& intag, std::istream& p, GRAPH& g
   }
   graphdimension = (tag.attributes["dimension"]=="" ? 0 :
     boost::lexical_cast<uint32_t, std::string>(tag.attributes["dimension"]));
-  graphname = name = tag.attributes["name"];
+  name = tag.attributes["name"];
+  //graphname = name;
+   get_or_default(graph_name_t(),g,std:sss:string()) = name;
 
   if (tag.type !=XMLTag::SINGLE)
   while(true) {
