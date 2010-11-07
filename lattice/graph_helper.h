@@ -219,6 +219,8 @@ public:
   {
     d_.disorder_vertices(graph(),inhomogeneous_vertex_type_map_);
     d_.disorder_edges(graph(),inhomogeneous_edge_type_map_);
+    if (!this->num_vertices())
+      boost::throw_exception(std::runtime_error("Empty graph specified in parameters\n"));
   }
 
 
