@@ -76,9 +76,6 @@ inline void write_graph_xml(oxstream& out, const GRAPH& g, const std::string& n=
   typename property_map<edge_vector_t,graph_type,coordinate_type>::const_type
     edgevector = get_or_default(edge_vector_t(),g,coordinate_type(0));
 
-  typename property_map<graph_name_t,graph_type,std::string>::const_type
-    graphname = get_or_default(graph_name_t(),g,std::string());
-
   typename property_map<dimension_t,graph_type,uint32_t>::const_type
     graphdimension = get_or_default(dimension_t(),g,uint32_t(0));
 
@@ -86,7 +83,7 @@ inline void write_graph_xml(oxstream& out, const GRAPH& g, const std::string& n=
 
   std::string name(n);
   if (name=="")
-    name=graphname;
+    name=get_or_default(graph_name_t(),g,std::string());
   if(name!="")
     out << attribute("name", name);
 
@@ -158,9 +155,6 @@ inline std::string read_graph_xml(const XMLTag& intag, std::istream& p, GRAPH& g
   typename property_map<coordinate_t,graph_type,std::vector<double> >::type
     vertexcoordinate = get_or_default(coordinate_t(),g,std::vector<double>());
 
-  typename property_map<graph_name_t,graph_type,std::string>::type
-    graphname = get_or_default(graph_name_t(),g,std::string());
-
   typename property_map<dimension_t,graph_type,uint32_t>::type
     graphdimension = get_or_default(dimension_t(),g,uint32_t(0));
 
@@ -181,8 +175,7 @@ inline std::string read_graph_xml(const XMLTag& intag, std::istream& p, GRAPH& g
   graphdimension = (tag.attributes["dimension"]=="" ? 0 :
     boost::lexical_cast<uint32_t, std::string>(tag.attributes["dimension"]));
   name = tag.attributes["name"];
-  //graphname = name;
-   get_or_default(graph_name_t(),g,std::string()) = name;
+  get_or_default(graph_name_t(),g,std::string()) = name;
 
   if (tag.type !=XMLTag::SINGLE)
   while(true) {
@@ -315,20 +308,11 @@ inline void copy_graph(const SRC& src, DST& dst)
   }
 //  copy_property(dimension_t(),src,dst);
 //  copy_property(graph_name_t(),src,dst);
-  typename property_map<graph_name_t,DST,std::string>::type
-    graphname_dst = get_or_default(graph_name_t(),dst,std::string());
 
-  typename property_map<dimension_t,DST,uint32_t>::type
-    graphdimension_dst = get_or_default(dimension_t(),dst,uint32_t(0));
-
-  typename property_map<graph_name_t,SRC,std::string>::const_type
-    graphname_src = get_or_default(graph_name_t(),src,std::string());
-
-  typename property_map<dimension_t,SRC,uint32_t>::const_type
-    graphdimension_src = get_or_default(dimension_t(),src,uint32_t(0));
-  
-  graphdimension_dst = static_cast<uint32_t>(graphdimension_src);
-  graphname_dst = static_cast<std::string>(graphname_src);
+  get_or_default(dimension_t(),dst,uint32_t(0)) = 
+    static_cast<uint32_t>(get_or_default(dimension_t(),src,uint32_t(0)));
+  get_or_default(graph_name_t(),dst,std::string()) = 
+    static_cast<std::string>(get_or_default(graph_name_t(),src,std::string()));
 }
 
 template <class G>
