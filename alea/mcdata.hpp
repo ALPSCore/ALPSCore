@@ -955,7 +955,7 @@ namespace alps {
                 using boost::lambda::bind;
                 using boost::numeric::operators::operator-;
                 using boost::numeric::operators::operator*;
-                rhs.transform(bind<T>(static_cast<
+                rhs.transform(boost::lambda::bind<T>(static_cast<
                     typename mcdata<T>::value_type(*)(typename mcdata<T>::value_type, typename mcdata<T>::element_type)
                 >(&pow), boost::lambda::_1, exponent), abs(exponent * pow(rhs.mean(), exponent - 1.) * rhs.error()));
                 return rhs;

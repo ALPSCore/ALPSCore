@@ -1579,11 +1579,11 @@ namespace alps {
     
     template <typename T> hdf5::pvp<std::pair<T *, std::vector<std::size_t> > > make_pvp(std::string const & p, T * v, std::size_t s) {
         using namespace boost;
-        return hdf5::pvp<std::pair<T *, std::vector<std::size_t> > >(p, std::make_pair(ref(v), std::vector<std::size_t>(1, s)));
+        return hdf5::pvp<std::pair<T *, std::vector<std::size_t> > >(p, std::make_pair(boost::ref(v), std::vector<std::size_t>(1, s)));
     }
     template <typename T> hdf5::pvp<std::pair<T *, std::vector<std::size_t> > > make_pvp(std::string const & p, T * v, std::vector<std::size_t> const & s) {
         using namespace boost;
-        return hdf5::pvp<std::pair<T *, std::vector<std::size_t> > >(p, std::make_pair(ref(v), s));
+        return hdf5::pvp<std::pair<T *, std::vector<std::size_t> > >(p, std::make_pair(boost::ref(v), s));
     }
 
     #define HDF5_MAKE_PVP(ptr_type, arg_type)                                                                                                               \
