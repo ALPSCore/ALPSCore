@@ -539,7 +539,7 @@ namespace blas{
         int *ipiv=new int[size1_];
         int info;
         B.set_to_identity();
-        lapack::zgesv_(&size1_, &size1_, &values_[0], &size1_, ipiv, &(B(0,0)), &size1_, &info);
+        FORTRAN_ID(zgesv)(&size1_, &size1_, &values_[0], &size1_, ipiv, &(B(0,0)), &size1_, &info);
         delete[] ipiv;
         if(info){ throw(std::logic_error("in dgesv: info was not zero.")); }
         swap(B, *this);
@@ -552,7 +552,7 @@ namespace blas{
         int *ipiv=new int[size1_];
         int info;
         B.set_to_identity();
-        lapack::dgesv_(&size1_, &size1_, &values_[0], &size1_, ipiv, &(B(0,0)), &size1_, &info);
+        FORTRAN_ID(dgesv)(&size1_, &size1_, &values_[0], &size1_, ipiv, &(B(0,0)), &size1_, &info);
         delete[] ipiv;
         if(info){ throw(std::logic_error("in dgesv: info was not zero.")); }
         swap(B, *this);

@@ -141,7 +141,7 @@ namespace blas{
         {
             int inc=1;
             if(size_>1){
-                dger_(&size_, &size_, &alpha,&v2.values()[0], &inc, &v1.values()[0], &inc, &values_[0], &size_); 
+                FORTRAN_ID(dger)(&size_, &size_, &alpha,&v2.values()[0], &inc, &v1.values()[0], &inc, &values_[0], &size_); 
             }else if(size_==1){
                 values_[0]+=alpha*v1(0)*v2(0);  
             }else
@@ -158,8 +158,8 @@ namespace blas{
             int oldsize=size_;
             resize(size_+1);
             int one=1;
-            dcopy_(&oldsize, &(col.values()[0]), &one, &(values_[oldsize     ]), &size_); //copy in row (careful: col. major)
-            dcopy_(&oldsize, &(row.values()[0]), &one, &(values_[oldsize*size_]), &one         );   //copy in column
+            FORTRAN_ID(dcopy)(&oldsize, &(col.values()[0]), &one, &(values_[oldsize     ]), &size_); //copy in row (careful: col. major)
+            FORTRAN_ID(dcopy)(&oldsize, &(row.values()[0]), &one, &(values_[oldsize*size_]), &one         );   //copy in column
             operator()(oldsize, oldsize)=Mkk;
         }
         
@@ -167,7 +167,7 @@ namespace blas{
         {
             assert((k < size_));
             int one=1;
-            dcopy_(&size_, &(values_[k*size_]), &one, row, &one);
+            FORTRAN_ID(dcopy)(&size_, &(values_[k*size_]), &one, row, &one);
         }
         
         blas::vector getrow(int k) const
@@ -175,7 +175,7 @@ namespace blas{
             assert((k < size_));
             blas::vector row(size_);
             int one=1;
-            dcopy_(&size_, &(values_[k*size_]), &one, &row.values()[0], &one);
+            FORTRAN_ID(dcopy)(&size_, &(values_[k*size_]), &one, &row.values()[0], &one);
             return row;
         }
         
@@ -183,7 +183,7 @@ namespace blas{
         {
             assert((k < size_));
             int one=1;
-            dcopy_(&size_, &(values_[k]), &size_, col, &one);
+            FORTRAN_ID(dcopy)(&size_, &(values_[k]), &size_, col, &one);
         }
         
         blas::vector getcol(int k) const
@@ -191,7 +191,7 @@ namespace blas{
             assert((k < size_));
             blas::vector col(size_);
             int one=1;
-            dcopy_(&size_, &(values_[k]), &size_,  &col.values()[0], &one);
+            FORTRAN_ID(dcopy)(&size_, &(values_[k]), &size_,  &col.values()[0], &one);
             return col;
         }
         
@@ -200,26 +200,26 @@ namespace blas{
         {
             assert((k < size_));
             int one=1;
-            dcopy_(&size_, row, &one, &(values_[k*size_]), &one);
+            FORTRAN_ID(dcopy)(&size_, row, &one, &(values_[k*size_]), &one);
         }
         
         inline void setrow(int k, const blas::vector row){
             assert((k < size_));
             int one=1;
-            dcopy_(&size_, &row.values()[0], &one, &(values_[k*size_]), &one);
+            FORTRAN_ID(dcopy)(&size_, &row.values()[0], &one, &(values_[k*size_]), &one);
         }
     
         inline void setcol(int k, const double *col)
         {
             assert((k < size_));
             int one=1;
-            dcopy_(&size_, col, &one, &(values_[k]), &size_);
+            FORTRAN_ID(dcopy)(&size_, col, &one, &(values_[k]), &size_);
         }
         
         inline void setcol(int k, const blas::vector col){
             assert((k < size_));
             int one=1;
-            dcopy_(&size_, &col.values()[0], &one, &(values_[k]), &size_);
+            FORTRAN_ID(dcopy)(&size_, &col.values()[0], &one, &(values_[k]), &size_);
         }
         
         inline void insert_row_column(blas::vector &row, blas::vector &col, double Mkk, int k)
@@ -264,7 +264,7 @@ namespace blas{
         {
             assert((c1 < size_) && (c2 < size_));
             if(c1==c2) return;
-            dswap_(&size_, &(values_[c1]), &size_, &(values_[c2]), &size_);
+            FORTRAN_ID(dswap)(&size_, &(values_[c1]), &size_, &(values_[c2]), &size_);
         }
         
         inline void swap_rows(int c1, int c2)
@@ -272,7 +272,7 @@ namespace blas{
             assert((c1 < size_) && (c2 < size_));
             if(c1==c2) return;
             int one=1;
-            dswap_(&size_, &(values_[c1*size_]), &one, &(values_[c2*size_]), &one);
+            FORTRAN_ID(dswap)(&size_, &(values_[c1*size_]), &one, &(values_[c2*size_]), &one);
         }
         
         inline void swap_row_column(int c1, int c2)
@@ -304,7 +304,7 @@ namespace blas{
             char trans='T';
             double alpha=1., beta=0.;        //no need to multiply a constant or add a vector
             int inc=1;
-            dgemv_(&trans, &size_, &size_, &alpha, &values_[0], &size_, &v1.values()[0], &inc, &beta, &v2.values()[0], &inc);
+            FORTRAN_ID(dgemv)(&trans, &size_, &size_, &alpha, &values_[0], &size_, &v1.values()[0], &inc, &beta, &v2.values()[0], &inc);
         }
                
         vector right_multiply(const vector &v1) const
@@ -323,7 +323,7 @@ namespace blas{
             char trans='N';
             double alpha=1., beta=0.;       //no need to multiply a constant or add a vector
             int inc=1;
-            dgemv_(&trans, &size_, &size_, &alpha, &values_[0], &size_, &v1.values()[0], &inc, &beta, &v2.values()[0], &inc);
+            FORTRAN_ID(dgemv)(&trans, &size_, &size_, &alpha, &values_[0], &size_, &v1.values()[0], &inc, &beta, &v2.values()[0], &inc);
         }
         
         vector left_multiply(const vector &v1) const
@@ -348,7 +348,7 @@ namespace blas{
             double zero_double=0.;
             char notrans='N';
             //Mres.clear(); //to satisfy valgrind on hreidar / acml
-            dgemm_(&notrans, &notrans, &size_, &size_, &size_, &one_double, &M2.values_[0], &size_, &values_[0], &size_, &zero_double, &Mres.values_[0], &size_);
+            FORTRAN_ID(dgemm)(&notrans, &notrans, &size_, &size_, &size_, &one_double, &M2.values_[0], &size_, &values_[0], &size_, &zero_double, &Mres.values_[0], &size_);
         }
         
         inline void matrix_right_multiply(const blas::general_matrix<double> &M2,  blas::general_matrix<double>&Mres) const
@@ -360,7 +360,7 @@ namespace blas{
             char notrans='N';
             Mres.clear(); 
             int M2_size2=M2.size2();
-            dgemm_(&notrans, &notrans, &M2_size2, &size_, &size_, 
+            FORTRAN_ID(dgemm)(&notrans, &notrans, &M2_size2, &size_, &size_, 
                    &one_double, &(M2(0,0)), &(M2.size2()), &values_[0],
                    &size_, &zero_double, &(Mres(0,0)), &(Mres.size2()));
         }
@@ -407,7 +407,7 @@ namespace blas{
             matrix det_matrix(*this);
         
             //LU factorization
-            lapack::dgesv_(&size_, &size_, &det_matrix.values_[0], &size_, ipiv, &identity.values_[0], &size_,&info);
+            FORTRAN_ID(dgesv)(&size_, &size_, &det_matrix.values_[0], &size_, ipiv, &identity.values_[0], &size_,&info);
             if(info < 0) {
                 std::cout << "LAPACK ERROR IN APPLY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
                 std::cout << "INFO:" << info << std::endl;
@@ -507,10 +507,10 @@ namespace blas{
             char jobs='V';
             char uplo='L';
             //get optimal size for work
-            lapack::dsyev_(&jobs, &uplo, &size_, &eigenvectors.values_[0], &size_, &(eigenvalues.values()[0]),&work_size, &lwork, &info); 
+            FORTRAN_ID(dsyev)(&jobs, &uplo, &size_, &eigenvectors.values_[0], &size_, &(eigenvalues.values()[0]),&work_size, &lwork, &info); 
             lwork=(int)work_size;
             double *work=new double[lwork];
-            lapack::dsyev_(&jobs, &uplo, &size_, &eigenvectors.values_[0], &size_, &(eigenvalues.values()[0]),work, &lwork, &info); 
+            FORTRAN_ID(dsyev)(&jobs, &uplo, &size_, &eigenvectors.values_[0], &size_, &(eigenvalues.values()[0]),work, &lwork, &info); 
             delete[] work;
         }
           
@@ -611,7 +611,7 @@ inline complex_dense_matrix mult(const complex_dense_matrix &A, const blas::matr
     std::complex<double> one_complex=1.;
     std::complex<double> zero_complex=0.;
     char notrans='N';
-    blas::zgemm_(&notrans, &notrans, &size, &size, &size, &one_complex, (void*)&(A(0,0)), &size, (void*)&(B_complex(0,0)), &size,(void*) &zero_complex,(void*) &(D(0,0)), &size);
+    FORTRAN_ID(zgemm)(&notrans, &notrans, &size, &size, &size, &one_complex, (void*)&(A(0,0)), &size, (void*)&(B_complex(0,0)), &size,(void*) &zero_complex,(void*) &(D(0,0)), &size);
     return D;
 }
 inline complex_dense_matrix mult(const blas::matrix &A, const complex_dense_matrix &B){ //slow matrix multiplication real & complex.
@@ -629,7 +629,7 @@ inline complex_dense_matrix mult(const blas::matrix &A, const complex_dense_matr
     std::complex<double> one_complex=1.;
     std::complex<double> zero_complex=0.;
     char notrans='N';
-    blas::zgemm_(&notrans, &notrans, &size, &size, &size, &one_complex, (void*)&(A_complex(0,0)), &size, (void*)&(B(0,0)), &size,(void*) &zero_complex,(void*) &(D(0,0)), &size);
+    FORTRAN_ID(zgemm)(&notrans, &notrans, &size, &size, &size, &one_complex, (void*)&(A_complex(0,0)), &size, (void*)&(B(0,0)), &size,(void*) &zero_complex,(void*) &(D(0,0)), &size);
     return D;
 }
 inline complex_dense_matrix mult(const complex_dense_matrix &A, const complex_dense_matrix &B){ //slow matrix multiplication real & complex.
@@ -642,7 +642,7 @@ inline complex_dense_matrix mult(const complex_dense_matrix &A, const complex_de
     std::complex<double> one_complex=1.;
     std::complex<double> zero_complex=0.;
     char notrans='N';
-    blas::zgemm_(&notrans, &notrans, &size, &size, &size, &one_complex, (void*)&(A(0,0)), &size, (void*)&(B(0,0)), &size,(void*) &zero_complex,(void*) &(D(0,0)), &size);
+    FORTRAN_ID(zgemm)(&notrans, &notrans, &size, &size, &size, &one_complex, (void*)&(A(0,0)), &size, (void*)&(B(0,0)), &size,(void*) &zero_complex,(void*) &(D(0,0)), &size);
     return D;
 }
 #endif //UBLAS

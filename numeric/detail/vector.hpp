@@ -91,7 +91,7 @@ namespace blas{
       {
           int inc=1;
           if (!size()) return 0.;
-          return ddot_(&size_, &values_[0],&inc,&v2.values_[0],&inc);
+          return FORTRAN_ID(ddot)(&size_, &values_[0],&inc,&v2.values_[0],&inc);
       }
       
       vector & operator+=(const vector &rhs) 
@@ -142,7 +142,7 @@ namespace blas{
       {
           int inc=1;
           if (size())
-            dscal_(&size_, &lambda, &values_[0], &inc);
+            FORTRAN_ID(dscal)(&size_, &lambda, &values_[0], &inc);
           return *this;
       }
       
