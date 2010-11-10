@@ -36,7 +36,7 @@ IF (ALPS_BUILD_HDF5_TESTS)
     # texting type serialization
     SET(ALPS_HDF5_DATA_TYPES
         bool int short long float double
-        std::size_t std::string std::complex<int> "std::complex<long long>" std::complex<double> "std::complex<long double>"
+        std::size_t std::string std::complex<float> std::complex<double> "std::complex<long double>"
         boost::int8_t boost::uint8_t boost::int16_t boost::uint16_t boost::int32_t boost::uint32_t boost::int64_t boost::uint64_t
         std::vector<std::size_t> std::vector<short> std::vector<int> std::vector<long> std::vector<float> std::vector<double> "std::vector<std::complex<int> >" "std::vector<std::complex<double> >" std::vector<std::string>
         std::deque<std::size_t> std::deque<short> std::deque<int> std::deque<long> std::deque<float> std::deque<double> "std::deque<std::complex<int> >" "std::deque<std::complex<double> >" std::deque<std::string>
@@ -54,9 +54,9 @@ IF (ALPS_BUILD_HDF5_TESTS)
         "cast_type<int, long>" "cast_type<int, double>" "cast_type<double, std::string>" "cast_type<int, std::string>" "cast_type<float, double>" "cast_type<short, float>"
         "std::vector<cast_type<int, double> >" "std::vector<std::vector<cast_type<int, double> > >" "std::pair<cast_type<int, double> *, std::vector<std::size_t> >" "std::vector<std::valarray<cast_type<int, double> > >"
         "std::vector<cast_type<double, std::string> >" "std::vector<std::vector<cast_type<double, std::string> > >" "std::pair<cast_type<double, std::string> *, std::vector<std::size_t> >" "std::vector<std::valarray<cast_type<double, std::string> > >"
-        "boost::multi_array<double, 1>" "boost::multi_array<int, 1>" "boost::multi_array<std::complex<double>, 1>" "boost::multi_array<std::string, 1>"
-        "boost::multi_array<double, 2>" "boost::multi_array<int, 2>" "boost::multi_array<std::complex<double>, 2>" "boost::multi_array<std::string, 2>"
-        "boost::multi_array<double, 3>" "boost::multi_array<int, 3>" "boost::multi_array<std::complex<double>, 3>" "boost::multi_array<std::string, 3>"
+#        "boost::multi_array<double, 1>" "boost::multi_array<int, 1>" "boost::multi_array<std::complex<double>, 1>" "boost::multi_array<std::string, 1>"
+#        "boost::multi_array<double, 2>" "boost::multi_array<int, 2>" "boost::multi_array<std::complex<double>, 2>" "boost::multi_array<std::string, 2>"
+#        "boost::multi_array<double, 3>" "boost::multi_array<int, 3>" "boost::multi_array<std::complex<double>, 3>" "boost::multi_array<std::string, 3>"
         "boost::numeric::ublas::matrix<double, boost::numeric::ublas::column_major>" "boost::numeric::ublas::matrix<std::complex<double>, boost::numeric::ublas::column_major>"
         "int *" "short *" "long *" "float *" "double *"
         "std::size_t *" "std::string *" "std::complex<int> *" "std::complex<double> *"

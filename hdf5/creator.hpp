@@ -438,7 +438,7 @@ template<typename T> struct creator< C < D <T> > > {                            
     static base_type random() {                                                                    \
         base_type value(MATRIX_SIZE);                                                              \
         for (std::size_t i = 0; i < value.size(); ++i) {                                           \
-            value[i] = D <T>(MATRIX_SIZE);                                                         \
+            value[i].resize(MATRIX_SIZE);                                                          \
             for (std::size_t j = 0; j < value[i].size(); ++j)                                      \
                 initialize(value[i][j]);                                                           \
         }                                                                                          \
@@ -448,7 +448,7 @@ template<typename T> struct creator< C < D <T> > > {                            
     static base_type special() {                                                                   \
         base_type value(MATRIX_SIZE);                                                              \
         for (std::size_t i = 0; i < value.size(); ++i) {                                           \
-            value[i] = D <T>(1 + static_cast<std::size_t>(rng()) % (2 * MATRIX_SIZE));             \
+            value[i].resize(1 + static_cast<std::size_t>(rng()) % (2 * MATRIX_SIZE));              \
             for (std::size_t j = 0; j < value[i].size(); ++j)                                      \
                 initialize(value[i][j]);                                                           \
         }                                                                                          \
