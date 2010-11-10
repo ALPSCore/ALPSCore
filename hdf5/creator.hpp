@@ -46,7 +46,7 @@ template<typename T, typename U> class cast_type;
 
 double rng() {
     static boost::mt19937 rng(SEED);
-    static boost::uniform_real<> dist_real(0.,1e12);
+    static boost::uniform_real<> dist_real(0., 1e12);
     static boost::variate_generator<boost::mt19937, boost::uniform_real<> > random_real(rng, dist_real);
     return random_real();
 }

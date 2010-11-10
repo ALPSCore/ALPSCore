@@ -1,5 +1,6 @@
-HDF5 Error reading path '/not/existing/path' on type 'd':
-Error in /Users/gamperl/eclipse/alps/src/alps/hdf5.hpp on 443 in resource:
+Error in /Users/gamperl/eclipse/alps/src/alps/hdf5.hpp on 753 in is_scalar:
+file: test.h5, path: /not/existing/path
+Error in /Users/gamperl/eclipse/alps/src/alps/hdf5.hpp on 465 in resource:
 HDF5 error: -1
     #0 H5D.c line 320 in H5Dopen2(): not found
     #1 H5Gloc.c line 480 in H5G_loc_find(): can't find object
