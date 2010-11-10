@@ -1187,7 +1187,7 @@ namespace alps {
                     }
                 }
                 template<typename I, typename O> void set_attr_copy(I i, O o, std::size_t n, std::size_t s) const {
-                    std::memcpy(&*o, i, n + s);
+                    std::memcpy(&*o, i, n * s);
                 }
                 void set_attr_copy(
                     typename serializable_type<std::string>::type const * i, 
