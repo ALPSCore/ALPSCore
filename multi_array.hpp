@@ -149,7 +149,7 @@ alps::ODump& operator<<(alps::ODump& dump, const boost::multi_array<T, NumDims, 
 template <class T, class Allocator>
 std::ostream& operator<<(std::ostream& out, const boost::multi_array<T, 2, Allocator>& x)
 {
-	std::vector<unsigned> ex(x.shape(), x.shape() + x.num_dimensions());
+  std::vector<unsigned> ex(x.shape(), x.shape() + x.num_dimensions());
   out << "{";
   for (unsigned i=0;i<ex[0];++i) {
     out << "{";
@@ -170,7 +170,7 @@ std::ostream& operator<<(std::ostream& out, const boost::multi_array<T, 2, Alloc
 template <class T, class Allocator>
 std::ostream& operator<<(std::ostream& out, const boost::multi_array<T, 4, Allocator>& x)
 {
-	std::vector<unsigned> ex(x.shape(), x.shape() + x.num_dimensions());
+  std::vector<unsigned> ex(x.shape(), x.shape() + x.num_dimensions());
   out << "{";
   for (int i=0;i<ex[0];++i) {
     out << "{";

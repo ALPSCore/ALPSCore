@@ -49,12 +49,12 @@ namespace alps {
     template<class T>
     inline T cbrt(T value)  { return std::pow(value,1./3); }
 
-		// define norm and r
-		template <class T>
-		inline T norm(T x, T y=T(), T z=T())	{	return (sq(x) + sq(y) + sq(z)); }
+    // define norm and r
+    template <class T>
+    inline T norm(T x, T y=T(), T z=T())  {  return (sq(x) + sq(y) + sq(z)); }
     
-		template <class T>
-		inline T r(T x, T y=T(), T z=T())			{	return std::sqrt(norm(x,y,z)); }
+    template <class T>
+    inline T r(T x, T y=T(), T z=T())      {  return std::sqrt(norm(x,y,z)); }
   }
 }
 

@@ -1,3 +1,30 @@
+/*****************************************************************************
+*
+* ALPS Project: Algorithms and Libraries for Physics Simulations
+*
+* ALPS Libraries
+*
+* Copyright (C) 2010 by Lukas Gamper
+*
+* This software is part of the ALPS libraries, published under the ALPS
+* Library License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+* 
+* You should have received a copy of the ALPS Library License along with
+* the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+* FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
+* SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
+* FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
+* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+* DEALINGS IN THE SOFTWARE.
+*
+*****************************************************************************/
+
 #ifndef EMBEDDING_HPP
 #define EMBEDDING_HPP
 
@@ -130,7 +157,8 @@ template<
       return T.closed_ ? closed_ : false;
     }
     base_type & operator=(base_type const & T) {
-      closed_ = T.closed_;      fixed_graph_vertex_ = T.fixed_graph_vertex_;
+      closed_ = T.closed_;
+      fixed_graph_vertex_ = T.fixed_graph_vertex_;
       trace_ = T.trace_;
       visited_ = T.visited_;
       occupied_ = T.occupied_;
@@ -167,12 +195,12 @@ template<
     ) {
       BOOST_STATIC_ASSERT((boost::is_same<
           typename detail::coloring_tag<
-	          boost::is_same<subgraph_vertex_coloring_type, boost::no_property>::value
-	        , boost::is_same<subgraph_edge_coloring_type, boost::no_property>::value
+              boost::is_same<subgraph_vertex_coloring_type, boost::no_property>::value
+            , boost::is_same<subgraph_edge_coloring_type, boost::no_property>::value
           >::type
         , typename detail::coloring_tag<
-	          boost::is_same<graph_vertex_coloring_type, boost::no_property>::value
-	        , boost::is_same<graph_edge_coloring_type, boost::no_property>::value
+              boost::is_same<graph_vertex_coloring_type, boost::no_property>::value
+            , boost::is_same<graph_edge_coloring_type, boost::no_property>::value
           >::type
       >::value)); 
       closed_ = true;
@@ -201,12 +229,12 @@ template<
     ) {
       BOOST_STATIC_ASSERT((boost::is_same<
           typename detail::coloring_tag<
-	          boost::is_same<subgraph_vertex_coloring_type, boost::no_property>::value
-	        , boost::is_same<subgraph_edge_coloring_type, boost::no_property>::value
+              boost::is_same<subgraph_vertex_coloring_type, boost::no_property>::value
+            , boost::is_same<subgraph_edge_coloring_type, boost::no_property>::value
           >::type
         , typename detail::coloring_tag<
-	          boost::is_same<graph_vertex_coloring_type, boost::no_property>::value
-	        , boost::is_same<graph_edge_coloring_type, boost::no_property>::value
+              boost::is_same<graph_vertex_coloring_type, boost::no_property>::value
+            , boost::is_same<graph_edge_coloring_type, boost::no_property>::value
           >::type
       >::value)); 
       fixed_graph_vertex_ = true;
@@ -329,7 +357,7 @@ template<
         ).first);
       std::sort(label.begin(), label.end());
       if (visited_.find(label) != visited_.end())
-      	return false;
+          return false;
       visited_.insert(label);
       return true;
     }    
@@ -363,13 +391,13 @@ template<
       return true;
     }    
     inline bool has_equal_coloring(detail::vertex_coloring_tag) {
-    	return has_equal_vertex_coloring();
+        return has_equal_vertex_coloring();
     }    
     inline bool has_equal_coloring(detail::edge_coloring_tag) {
-    	return has_equal_edge_coloring();
+        return has_equal_edge_coloring();
     }    
     inline bool has_equal_coloring(detail::vertex_edge_coloring_tag) {
-    	return has_equal_vertex_coloring() && has_equal_edge_coloring();
+        return has_equal_vertex_coloring() && has_equal_edge_coloring();
     }
     bool closed_;
     bool fixed_graph_vertex_;

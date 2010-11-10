@@ -26,6 +26,9 @@
 *
 *****************************************************************************/
 
+#ifndef BOOST_NUMERIC_DETAIL_BLASHEADER_HPP
+#define BOOST_NUMERIC_DETAIL_BLASHEADER_HPP
+
 #include <boost/numeric/bindings/blas.hpp>
 #include <boost/numeric/bindings/lapack.hpp>
 
@@ -42,3 +45,5 @@ extern "C" void vdExp(const int, const double *, double *);
 extern "C" void vfExp(const int, const float *, float *);
 extern "C" void vzmul_(const int*, const std::complex<double>*, const std::complex<double> *, std::complex<double> *);
 }
+
+#endif
