@@ -1186,6 +1186,17 @@ namespace alps {
                         }
                     }
                 }
+                template<typename I, typename O> void set_attr_copy(I i, O o, std::size_t n, std::size_t s) const {
+                    std::memcpy(&*o, i, n + s);
+                }
+                void set_attr_copy(
+                    typename serializable_type<std::string>::type const * i, 
+                    std::vector<typename native_type<std::string>::type>::iterator o, 
+                    std::size_t n, 
+                    std::size_t s
+                ) const {
+                    std::copy(i, i + n, o);
+                }
                 template<typename T> void set_attr(std::string const & p, T const & v) const {
                     hid_t parent_id;
                     std::string rev_path = "/revisions/" + boost::lexical_cast<std::string>(revision()) + p;
@@ -1258,11 +1269,11 @@ namespace alps {
                                 std::size_t sum = 0;
                                 for (std::vector<hsize_t>::const_iterator it = start.begin(); it != start.end(); ++it)
                                     sum += *it * std::accumulate(size.begin() + (it - start.begin()) + 1, size.end(), hsize_t(1), std::multiplies<hsize_t>());
-                                typename serializable_type<T>::type const * begin = call_get_data(data, v, start);
-                                std::copy(
-                                    begin,
-                                    begin + std::accumulate(count.begin(), count.end(), hsize_t(1), std::multiplies<hsize_t>()),
-                                    continous.begin() + sum
+                                set_attr_copy(
+                                    call_get_data(data, v, start),
+                                    continous.begin() + sum,
+                                    std::accumulate(count.begin(), count.end(), hsize_t(1), std::multiplies<hsize_t>()),
+                                    sizeof(typename native_type<T>::type)
                                 );
                                 if (start[last] + 1 == size[last] && last) {
                                     for (pos = last; ++start[pos] == size[pos] && pos; --pos);
