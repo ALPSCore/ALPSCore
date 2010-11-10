@@ -1553,11 +1553,11 @@ namespace alps {
                 pvp(std::string const & p, T v): _p(p), _v(v) {}
                 pvp(pvp<T> const & c): _p(c._p), _v(c._v) {}
                 template<typename A> A & serialize(A & ar) const {
-//                    try {
+                    try {
                         return call_serialize(ar, _p, const_cast<typename boost::add_reference<T>::type>(_v));
-//                    } catch (std::exception & ex) {
-//                        throw std::runtime_error("HDF5 Error " + std::string(boost::is_same<A, iarchive>::value ? "reading" : "writing") + " path '" + _p + "' on type '" + typeid(_v).name() + "':\n" + ex.what());
-//                    }
+                    } catch (std::exception & ex) {
+                        throw std::runtime_error("HDF5 Error " + std::string(boost::is_same<A, iarchive>::value ? "reading" : "writing") + " path '" + _p + "' on type '" + typeid(_v).name() + "':\n" + ex.what());
+                    }
                 }
             private:
                 std::string _p;
