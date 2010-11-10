@@ -952,7 +952,6 @@ namespace alps {
                 using std::abs;
                 using alps::numeric::pow;
                 using alps::numeric::abs;
-                using boost::lambda::bind;
                 using boost::numeric::operators::operator-;
                 using boost::numeric::operators::operator*;
                 rhs.transform(boost::lambda::bind<T>(static_cast<

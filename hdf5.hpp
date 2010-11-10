@@ -170,7 +170,7 @@ namespace alps {
               std::vector<serializable_type<std::string>::type> & m
             , T const & v
             , std::vector<hsize_t> const &
-            , std::vector<hsize_t> const & = std::vector<hsize_t>()
+            , std::vector<hsize_t> const & t = std::vector<hsize_t>()
         ) {
             m.resize(1);
             return &(m[0] = v.c_str());
@@ -1070,7 +1070,7 @@ namespace alps {
                         std::vector<U> data(std::accumulate(count.begin(), count.end(), std::size_t(1), std::multiplies<std::size_t>()));
                         detail::check_error(is_attr ? H5Aread(data_id, type_id, &data.front()) : H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &data.front()));
                         call_set_data(v, data, start, count);
-                        if (!is_attr && boost::is_same<T, char *>::value)
+                        if (!is_attr && boost::is_same<U, char *>::value)
                             detail::check_error(H5Dvlen_reclaim(type_id, detail::space_type(H5Dget_space(data_id)), H5P_DEFAULT, &data.front()));
                     } else if (is_attr) {
                         std::size_t last = count.size() - 1, pos;
@@ -1094,8 +1094,6 @@ namespace alps {
                                     start[pos] = 0;
                             } else
                                 ++start[last];
-                            if (boost::is_same<T, char *>::value)
-                                detail::check_error(H5Dvlen_reclaim(type_id, detail::space_type(H5Dget_space(data_id)), H5P_DEFAULT, &data.front()));
                         } while (start[0] < size[0]);
                     } else {
                         std::size_t last = count.size() - 1, pos;
@@ -1107,7 +1105,7 @@ namespace alps {
                             detail::space_type mem_id(H5Screate_simple(count.size(), &count.front(), NULL));
                             detail::check_error(H5Dread(data_id, type_id, mem_id, space_id, H5P_DEFAULT, &data.front()));
                             call_set_data(v, data, start, count);
-                            if (boost::is_same<T, char *>::value)
+                            if (boost::is_same<U, char *>::value)
                                 detail::check_error(H5Dvlen_reclaim(type_id, mem_id, H5P_DEFAULT, &data.front()));
                             if (start[last] + 1 == size[last] && last) {
                                 for (pos = last; ++start[pos] == size[pos] && pos; --pos);
@@ -1260,10 +1258,11 @@ namespace alps {
                                 std::size_t sum = 0;
                                 for (std::vector<hsize_t>::const_iterator it = start.begin(); it != start.end(); ++it)
                                     sum += *it * std::accumulate(size.begin() + (it - start.begin()) + 1, size.end(), hsize_t(1), std::multiplies<hsize_t>());
-                                std::memcpy(
-                                    &continous.front() + sum,
-                                    call_get_data(data, v, start),
-                                    std::accumulate(count.begin(), count.end(), hsize_t(1), std::multiplies<hsize_t>()) * sizeof(typename native_type<T>::type)
+                                typename serializable_type<T>::type const * begin = call_get_data(data, v, start);
+                                std::copy(
+                                    begin,
+                                    begin + std::accumulate(count.begin(), count.end(), hsize_t(1), std::multiplies<hsize_t>()),
+                                    continous.begin() + sum
                                 );
                                 if (start[last] + 1 == size[last] && last) {
                                     for (pos = last; ++start[pos] == size[pos] && pos; --pos);
@@ -1576,13 +1575,11 @@ namespace alps {
     >::type, hdf5::pvp<std::string const> >::type make_pvp(std::string const & p, T const & v) {
         return hdf5::pvp<std::string const>(p, v);
     }
-    
+
     template <typename T> hdf5::pvp<std::pair<T *, std::vector<std::size_t> > > make_pvp(std::string const & p, T * v, std::size_t s) {
-        using namespace boost;
         return hdf5::pvp<std::pair<T *, std::vector<std::size_t> > >(p, std::make_pair(boost::ref(v), std::vector<std::size_t>(1, s)));
     }
     template <typename T> hdf5::pvp<std::pair<T *, std::vector<std::size_t> > > make_pvp(std::string const & p, T * v, std::vector<std::size_t> const & s) {
-        using namespace boost;
         return hdf5::pvp<std::pair<T *, std::vector<std::size_t> > >(p, std::make_pair(boost::ref(v), s));
     }
 
