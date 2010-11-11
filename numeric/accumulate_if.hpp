@@ -38,7 +38,7 @@ namespace alps {
 namespace numeric {
 
 
-template <class InputIterator, class BinaryOperation, class Predicate, class T>
+template <class InputIterator, class BinaryOperation, class BinaryPredicate, class T>
 T
   accumulate_if
     (  InputIterator    first
@@ -58,7 +58,7 @@ T
   }
 
 
-template <class InputIterator, class Predicate, class T>
+template <class InputIterator, class BinaryPredicate, class T>
 T
   accumulate_if
     (  InputIterator    first
