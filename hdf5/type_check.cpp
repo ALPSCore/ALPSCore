@@ -106,7 +106,7 @@ template<typename base_type> struct test {
             ;
             if (!IS_ATTRIBUTE)
                 oar
-                    << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "special", special_write)
+                    << alps::make_pvp("/special", special_write)
                 ;
         }
         {
@@ -120,7 +120,7 @@ template<typename base_type> struct test {
             ;
             if (!IS_ATTRIBUTE)
                 iar
-                    >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "special", special_read)
+                    >> alps::make_pvp("/special", special_read)
                 ;
             result = equal(random_write, random_read) && equal(empty_write, empty_read) && (IS_ATTRIBUTE || equal(special_write, special_read));
             destructor<base_type>::apply(random_read);
@@ -160,11 +160,6 @@ template<typename base_type> struct test {
         return result;
     }
     template<typename unused> static bool overwrite(std::string const & filename, unused) {
-        {
-            using namespace alps::hdf5;
-            if (IS_ATTRIBUTE && !is_vectorizable(creator<base_type>::empty()))
-                return true;
-        }
         return overwrite_helper<int>(filename);
         return overwrite_helper<base_type>(filename);
         return overwrite_helper<std::complex<double> >(filename);
