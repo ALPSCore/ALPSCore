@@ -114,8 +114,7 @@ namespace alps {
             std::string const & path;
         };
     }
-    
-    
+
     class mcparamvalue : public detail::mcparamvalue_base {
         public:
             mcparamvalue() {}
