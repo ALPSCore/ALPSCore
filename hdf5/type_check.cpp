@@ -234,11 +234,14 @@ template<typename T> struct test<boost::shared_array<T> > {
 
 template<typename T> struct skip_attribute: public boost::mpl::false_ {};
 template<typename T> struct skip_attribute<userdefined_class<T> >: public boost::mpl::true_ {};
-template<typename T> struct skip_attribute<std::vector<userdefined_class<T> > >: public boost::mpl::true_ {};
 template<typename T, typename U> struct skip_attribute<cast_type<T, U> >: public boost::mpl::true_ {};
-template<typename T, typename U> struct skip_attribute<std::vector<cast_type<T, U> > >: public boost::mpl::true_ {};
-template<typename T, typename U> struct skip_attribute<std::pair<cast_type<T, U> *, std::vector<std::size_t> > >: public boost::mpl::true_ {};
-template<typename T, typename U> struct skip_attribute<boost::shared_array<cast_type<T, U> > >: public boost::mpl::true_ {};
+template<> struct skip_attribute<enum_type>: public boost::mpl::true_ {};
+
+template<typename T> struct skip_attribute<T *>: public skip_attribute<T> {};
+template<typename T> struct skip_attribute<std::vector<T> >: public skip_attribute<T> {};
+template<typename T> struct skip_attribute<std::valarray<T> >: public skip_attribute<T> {};
+template<typename T> struct skip_attribute<std::pair<T *, std::vector<std::size_t> > >: public skip_attribute<T> {};
+template<typename T> struct skip_attribute<boost::shared_array<T> >: public skip_attribute<T> {};
 
 int main() {
     std::string const filename = "test.h5";
