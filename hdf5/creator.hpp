@@ -127,7 +127,14 @@ template<typename T, typename U> class cast_type : public cast_type_base<T, U> {
             initialize(base_type::t);
         }
         bool operator==(cast_type<T, U> const & v) const {
-            return (base_type::has_u ? base_type::u : boost::lexical_cast<U>(base_type::t)) == (v.has_u ? v.u : boost::lexical_cast<U>(v.t));
+            if (
+                   (boost::is_same<T, double>::value || boost::is_same<T, float>::value)
+                && (boost::is_same<U, double>::value || boost::is_same<U, float>::value)
+            ) {
+                U diff = (base_type::has_u ? base_type::u : boost::lexical_cast<U>(base_type::t)) - (v.has_u ? v.u : boost::lexical_cast<U>(v.t));
+                return (diff > 0 ? diff : -diff) / ((base_type::has_u ? base_type::u : boost::lexical_cast<U>(base_type::t)) + (v.has_u ? v.u : boost::lexical_cast<U>(v.t))) / 2 < 1e-4;
+            } else
+                return (base_type::has_u ? base_type::u : boost::lexical_cast<U>(base_type::t)) == (v.has_u ? v.u : boost::lexical_cast<U>(v.t));
         }
 };
 
