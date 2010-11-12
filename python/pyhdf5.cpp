@@ -155,11 +155,38 @@ namespace alps {
                             archive_ >> make_pvp(detail::extract_string(path), data);
                             return boost::python::object(data);
                         }
-                    } else {
-                        std::vector<double> data;
+                    } else if (archive_.is_string(detail::extract_string(path))) {
+                        if (archive_.dimensions(detail::extract_string(path)) != 1)
+                            std::runtime_error("More than 1 Dimension is not supported.");
+                        boost::python::list result;
+                        std::vector<std::string> data;
                         archive_ >> make_pvp(detail::extract_string(path), data);
-                        return alps::python::numpy::convert(data);
-                    }
+                        for (std::vector<std::string>::const_iterator it = data.begin(); it != data.end(); ++it)
+                            result.append(boost::python::str(*it));
+                        return result;
+                    } else
+                        switch (archive_.dimensions(detail::extract_string(path))) {
+                            case 1:
+                                {
+                                    std::vector<double> data;
+                                    archive_ >> make_pvp(detail::extract_string(path), data);
+                                    return alps::python::numpy::convert(data);
+                                }
+                            case 2:
+                                {
+                                    std::vector<std::vector<double> > data;
+                                    archive_ >> make_pvp(detail::extract_string(path), data);
+                                    return alps::python::numpy::convert(data);
+                                }
+                            case 3:
+                                {
+                                    std::vector<std::vector<std::vector<double> > > data;
+                                    archive_ >> make_pvp(detail::extract_string(path), data);
+                                    return alps::python::numpy::convert(data);
+                                }
+                            default:
+                                std::runtime_error("More than 2 Dimensions are not implemented.");
+                        }
                 }
 
         };

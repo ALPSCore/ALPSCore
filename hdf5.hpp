@@ -756,8 +756,6 @@ namespace alps {
                 bool is_string(std::string const & p) const {
                     try {
                         hid_t type_id;
-                        if (!is_scalar(p))
-                            return false;
                         if (p.find_last_of('@') != std::string::npos) {
                             detail::attribute_type attr_id(open_attribute(complete_path(p)));
                             type_id = H5Aget_type(attr_id);

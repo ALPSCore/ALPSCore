@@ -49,6 +49,8 @@ namespace alps {
             boost::python::numeric::array convert(std::vector<double> const & source);
 
             boost::python::numeric::array convert(std::vector<std::vector<double> > const & source);
+            
+            boost::python::numeric::array convert(std::vector<std::vector<std::vector<double> > > const & source);
 
         }
     }
