@@ -25,6 +25,12 @@
 *
 *****************************************************************************/
 
+#define VECTOR_SIZE 25
+#define MATRIX_SIZE 5
+#define SEED 42
+
+#define TYPE @HDF5_TEST_TYPE@
+
 #include "creator.hpp"
 
 #ifndef SZIP_COMPRESS

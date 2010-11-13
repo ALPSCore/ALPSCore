@@ -76,21 +76,28 @@ IF (ALPS_BUILD_HDF5_TESTS)
         STRING(REGEX REPLACE "\\*" "p" test_name ${type})
         STRING(REGEX REPLACE "(::)|<|>| |\\," "_" test_name ${test_name})
         STRING(REGEX REPLACE "__+" "_" test_name ${test_name})
-
-        add_executable(hdf5_data_${test_name} type_check.cpp)
-        SET_TARGET_PROPERTIES(hdf5_data_${test_name} PROPERTIES COMPILE_FLAGS "-DTYPE='${type}' -DVECTOR_SIZE=25 -DMATRIX_SIZE=5 -DSEED=42")
         
-        add_executable(hdf5_data_szip_${test_name} type_check.cpp)
-        SET_TARGET_PROPERTIES(hdf5_data_szip_${test_name} PROPERTIES COMPILE_FLAGS "-DTYPE='${type}' -DVECTOR_SIZE=25 -DMATRIX_SIZE=5 -DSEED=42 -DSZIP_COMPRESS=true")
+        set(HDF5_TEST_TYPE ${type})
+        include_directories(.)
         
-        add_executable(hdf5_data_pycplx_${test_name} type_check.cpp)
-        SET_TARGET_PROPERTIES(hdf5_data_pycplx_${test_name} PROPERTIES COMPILE_FLAGS "-DTYPE='${type}' -DVECTOR_SIZE=25 -DMATRIX_SIZE=5 -DSEED=42 -DALPS_HDF5_WRITE_PYTHON_COMPATIBLE_COMPLEX")
+        configure_file(type_check.cpp.in ${PROJECT_BINARY_DIR}/test/hdf5/hdf5_data_${test_name}.cpp)
+        add_executable(hdf5_data_${test_name} ${PROJECT_BINARY_DIR}/test/hdf5/hdf5_data_${test_name}.cpp)
+        
+        configure_file(type_check.cpp.in ${PROJECT_BINARY_DIR}/test/hdf5/hdf5_data_szip_${test_name}.cpp)
+        add_executable(hdf5_data_szip_${test_name} ${PROJECT_BINARY_DIR}/test/hdf5/hdf5_data_szip_${test_name}.cpp)
+        SET_TARGET_PROPERTIES(hdf5_data_szip_${test_name} PROPERTIES COMPILE_FLAGS "-DSZIP_COMPRESS=true")
+        
+        configure_file(type_check.cpp.in ${PROJECT_BINARY_DIR}/test/hdf5/hdf5_data_pycplx_${test_name}.cpp)
+        add_executable(hdf5_data_pycplx_${test_name} ${PROJECT_BINARY_DIR}/test/hdf5/hdf5_data_pycplx_${test_name}.cpp)
+        SET_TARGET_PROPERTIES(hdf5_data_pycplx_${test_name} PROPERTIES COMPILE_FLAGS "-DALPS_HDF5_WRITE_PYTHON_COMPATIBLE_COMPLEX")
 
-        add_executable(hdf5_attr_${test_name} type_check.cpp)
-        SET_TARGET_PROPERTIES(hdf5_attr_${test_name} PROPERTIES COMPILE_FLAGS "-DTYPE='${type}' -DVECTOR_SIZE=25 -DMATRIX_SIZE=5 -DIS_ATTRIBUTE=true -DSEED=42")
+        configure_file(type_check.cpp.in ${PROJECT_BINARY_DIR}/test/hdf5/hdf5_attr_${test_name}.cpp)
+        add_executable(hdf5_attr_${test_name} ${PROJECT_BINARY_DIR}/test/hdf5/hdf5_attr_${test_name}.cpp)
+        SET_TARGET_PROPERTIES(hdf5_attr_${test_name} PROPERTIES COMPILE_FLAGS "-DIS_ATTRIBUTE=true")
 
-        add_executable(hdf5_attr_pycplx_${test_name} type_check.cpp)
-        SET_TARGET_PROPERTIES(hdf5_attr_pycplx_${test_name} PROPERTIES COMPILE_FLAGS "-DTYPE='${type}' -DVECTOR_SIZE=25 -DMATRIX_SIZE=5 -DSEED=42 -DIS_ATTRIBUTE=true -DALPS_HDF5_WRITE_PYTHON_COMPATIBLE_COMPLEX")
+        configure_file(type_check.cpp.in ${PROJECT_BINARY_DIR}/test/hdf5/hdf5_attr_pycplx_${test_name}.cpp)
+        add_executable(hdf5_attr_pycplx_${test_name} ${PROJECT_BINARY_DIR}/test/hdf5/hdf5_attr_pycplx_${test_name}.cpp)
+        SET_TARGET_PROPERTIES(hdf5_attr_pycplx_${test_name} PROPERTIES COMPILE_FLAGS "-DIS_ATTRIBUTE=true -DALPS_HDF5_WRITE_PYTHON_COMPATIBLE_COMPLEX")
 
         if (Boost_FOUND)
 
