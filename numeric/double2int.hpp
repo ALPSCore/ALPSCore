@@ -51,16 +51,6 @@ inline int double2int(double in) {
   return converter::convert(in);
 }
 
-//
-// double2roundoffdouble
-//
-
-inline double double2roundoffdouble(double in, const unsigned int nr_precision) {
-  int magnifier = std::pow(10, nr_precision);
-  int in_as_int = double2int(in * magnifier);
-  return (static_cast<double>(in_as_int) / magnifier);  
-}
-
 } } // end namespace alps::numeric
 
 #endif // ALPS_NUMERIC_DOUBLE2INT_HPP
