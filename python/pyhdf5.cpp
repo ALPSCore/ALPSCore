@@ -30,6 +30,8 @@
 
 #define PY_ARRAY_UNIQUE_SYMBOL pyhdf5_PyArrayHandle
 
+#define ALPS_HDF5_NO_LEXICAL_CAST
+
 #include <alps/hdf5.hpp>
 #include <alps/python/make_copy.hpp>
 #include <alps/python/numpy_array.hpp>
