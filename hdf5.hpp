@@ -109,14 +109,16 @@ namespace alps {
                 ALPS_HDF5_CONVERT_STRING(short, "hd")
                 ALPS_HDF5_CONVERT_STRING(int, "d")
                 ALPS_HDF5_CONVERT_STRING(long, "ld")
-                ALPS_HDF5_CONVERT_STRING(long long, "Ld")
                 ALPS_HDF5_CONVERT_STRING(unsigned short, "hu")
                 ALPS_HDF5_CONVERT_STRING(unsigned int, "u")
                 ALPS_HDF5_CONVERT_STRING(unsigned long, "lu")
-                ALPS_HDF5_CONVERT_STRING(unsigned long long, "Lu")
                 ALPS_HDF5_CONVERT_STRING(float, "f")
                 ALPS_HDF5_CONVERT_STRING(double, "lf")
                 ALPS_HDF5_CONVERT_STRING(long double, "Lf")
+                #ifndef BOOST_NO_LONG_LONG
+                    ALPS_HDF5_CONVERT_STRING(long long, "Ld")
+                    ALPS_HDF5_CONVERT_STRING(unsigned long long, "Lu")
+                #endif
                 #undef ALPS_HDF5_CONVERT_STRING
                 #define ALPS_HDF5_CONVERT_STRING_CHAR(T, U)                                                                                                \
                     template<> inline std::string convert<std::string, T >( T arg) {                                                                       \
@@ -590,7 +592,7 @@ namespace alps {
                 std::string _filename;
                 file_type _file_id;
             };
-            #define HDF5_FOREACH_SCALAR(callback)                                                                                                          \
+            #define HDF5_FOREACH_SCALAR_NO_LONG_LONG(callback)                                                                                             \
                 callback(char)                                                                                                                             \
                 callback(signed char)                                                                                                                      \
                 callback(unsigned char)                                                                                                                    \
@@ -600,11 +602,18 @@ namespace alps {
                 callback(unsigned int)                                                                                                                     \
                 callback(long)                                                                                                                             \
                 callback(unsigned long)                                                                                                                    \
-                callback(long long)                                                                                                                        \
-                callback(unsigned long long)                                                                                                               \
                 callback(float)                                                                                                                            \
                 callback(double)                                                                                                                           \
                 callback(long double)
+            #ifndef BOOST_NO_LONG_LONG
+                #define HDF5_FOREACH_SCALAR(callback)                                                                                                      \
+                    HDF5_FOREACH_SCALAR_NO_LONG_LONG(callback)                                                                                             \
+                    callback(long long)                                                                                                                    \
+                    callback(unsigned long long)
+            #else
+                #define HDF5_FOREACH_SCALAR(callback)                                                                                                      \
+                    HDF5_FOREACH_SCALAR_NO_LONG_LONG(callback)
+            #endif
         }
 
         template<typename T> std::vector<hsize_t> call_get_extent(T const & v) {
@@ -946,8 +955,10 @@ namespace alps {
                 hid_t get_native_type(unsigned) const { return H5Tcopy(H5T_NATIVE_UINT); }
                 hid_t get_native_type(long) const { return H5Tcopy(H5T_NATIVE_LONG); }
                 hid_t get_native_type(unsigned long) const { return H5Tcopy(H5T_NATIVE_ULONG); }
-                hid_t get_native_type(long long) const { return H5Tcopy(H5T_NATIVE_LLONG); }
-                hid_t get_native_type(unsigned long long) const { return H5Tcopy(H5T_NATIVE_ULLONG); }
+                #ifndef BOOST_NO_LONG_LONG
+                    hid_t get_native_type(long long) const { return H5Tcopy(H5T_NATIVE_LLONG); }
+                    hid_t get_native_type(unsigned long long) const { return H5Tcopy(H5T_NATIVE_ULLONG); }
+                #endif
                 hid_t get_native_type(float) const { return H5Tcopy(H5T_NATIVE_FLOAT); }
                 hid_t get_native_type(double) const { return H5Tcopy(H5T_NATIVE_DOUBLE); }
                 hid_t get_native_type(long double) const { return H5Tcopy(H5T_NATIVE_LDOUBLE); }
@@ -969,7 +980,7 @@ namespace alps {
                     reinterpret_cast<std::vector<std::string> *>(d)->push_back(n);
                     return 0;
                 }
-                hid_t create_path(std::string const & p, hid_t type_id, hid_t space_id, hsize_t d, hsize_t const * s = NULL, bool set_prop = true) const {
+                hid_t create_path(std::string const & p, hid_t type_id, hid_t space_id, int d, hsize_t const * s = NULL, bool set_prop = true) const {
                     hid_t data_id = H5Dopen2(file_id(), p.c_str(), H5P_DEFAULT), tmp_id = 0;
                     if (data_id < 0) {
                         if (p.find_last_of('/') < std::string::npos && p.find_last_of('/') > 0)
@@ -997,7 +1008,7 @@ namespace alps {
                     }
                     return data_id;
                 }
-                hid_t create_dataset(std::string const & p, hid_t type_id, hid_t space_id, hsize_t d, hsize_t const * s = NULL, bool set_prop = true) const {
+                hid_t create_dataset(std::string const & p, hid_t type_id, hid_t space_id, int d, hsize_t const * s = NULL, bool set_prop = true) const {
                     if (set_prop) {
                         detail::property_type prop_id(H5Pcreate(H5P_DATASET_CREATE));
                         detail::check_error(H5Pset_fill_time(prop_id, H5D_FILL_TIME_NEVER));
@@ -1043,7 +1054,7 @@ namespace alps {
                         else ALPS_HDF5_THROW_RUNTIME_ERROR("error in copying attribute: " + *it)
                     }
                 }
-                hid_t save_comitted_data(std::string const & p, hid_t type_id, hid_t space_id, hsize_t d, hsize_t const * s = NULL, bool set_prop = true) const {
+                hid_t save_comitted_data(std::string const & p, hid_t type_id, hid_t space_id, int d, hsize_t const * s = NULL, bool set_prop = true) const {
                     std::string rev_path = "/revisions/" + detail::convert<std::string>(revision()) + p;
                     if (revision() && !is_data(p))
                         set_data(rev_path, detail::internal_state_type::CREATE);
@@ -1148,7 +1159,7 @@ namespace alps {
                         do {
                             detail::space_type space_id(H5Dget_space(data_id));
                             detail::check_error(H5Sselect_hyperslab(space_id, H5S_SELECT_SET, &start.front(), NULL, &count.front(), NULL));
-                            detail::space_type mem_id(H5Screate_simple(count.size(), &count.front(), NULL));
+                            detail::space_type mem_id(H5Screate_simple(static_cast<int>(count.size()), &count.front(), NULL));
                             detail::check_error(H5Dread(data_id, type_id, mem_id, space_id, H5P_DEFAULT, &data.front()));
                             call_set_data(v, data, start, count);
                             if (boost::is_same<U, char *>::value)
@@ -1211,7 +1222,7 @@ namespace alps {
                     } else if (std::accumulate(size.begin(), size.end(), hsize_t(0)) == 0)
                         detail::check_data(save_comitted_data(p, type_id, H5Screate(H5S_NULL), 0, NULL, !boost::is_same<typename native_type<T>::type, std::string>::value));
                     else {
-                        detail::data_type data_id(save_comitted_data(p, type_id, H5Screate_simple(size.size(), &size.front(), NULL), size.size(), &size.front(), !boost::is_same<typename native_type<T>::type, std::string>::value));
+                        detail::data_type data_id(save_comitted_data(p, type_id, H5Screate_simple(static_cast<int>(size.size()), &size.front(), NULL), static_cast<int>(size.size()), &size.front(), !boost::is_same<typename native_type<T>::type, std::string>::value));
                         if (std::equal(count.begin(), count.end(), size.begin()))
                             detail::check_error(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, call_get_data(data, v, start)));
                         else {
@@ -1220,7 +1231,7 @@ namespace alps {
                             do {
                                 detail::space_type space_id(H5Dget_space(data_id));
                                 detail::check_error(H5Sselect_hyperslab(space_id, H5S_SELECT_SET, &start.front(), NULL, &count.front(), NULL));
-                                detail::space_type mem_id(H5Screate_simple(count.size(), &count.front(), NULL));
+                                detail::space_type mem_id(H5Screate_simple(static_cast<int>(count.size()), &count.front(), NULL));
                                 detail::check_error(H5Dwrite(data_id, type_id, mem_id, space_id, H5P_DEFAULT, call_get_data(data, v, start)));
                                 if (start[last] + 1 == size[last] && last) {
                                     for (pos = last; ++start[pos] == size[pos] && pos; --pos);
@@ -1304,7 +1315,7 @@ namespace alps {
                             id = H5Acreate2(parent_id, p.substr(p.find_last_of('@') + 1).c_str(), type_id, detail::space_type(H5Screate(H5S_NULL)), H5P_DEFAULT, H5P_DEFAULT);
                     } else {
                         if (id < 0)
-                            id = H5Acreate2(parent_id, p.substr(p.find_last_of('@') + 1).c_str(), type_id, detail::space_type(H5Screate_simple(size.size(), &size.front(), NULL)), H5P_DEFAULT, H5P_DEFAULT);
+                            id = H5Acreate2(parent_id, p.substr(p.find_last_of('@') + 1).c_str(), type_id, detail::space_type(H5Screate_simple(static_cast<int>(size.size()), &size.front(), NULL)), H5P_DEFAULT, H5P_DEFAULT);
                         if (std::equal(count.begin(), count.end(), size.begin()))
                             detail::check_error(H5Awrite(id, type_id, call_get_data(data, v, start)));
                         else {
@@ -1380,6 +1391,7 @@ namespace alps {
                 static std::map<std::pair<std::string, bool>, boost::weak_ptr<detail::hdf5_context> > _pool;
         };
         template<hid_t(* F )(std::string const &)> std::map<std::pair<std::string, bool>, boost::weak_ptr<detail::hdf5_context> > archive<F>::_pool;
+        #undef HDF5_FOREACH_SCALAR_NO_LONG_LONG
         #undef HDF5_FOREACH_SCALAR
 
         namespace detail {
