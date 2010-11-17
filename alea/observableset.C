@@ -257,8 +257,10 @@ void ObservableSet::removeObservable(const std::string& name)
     // remove its sign entry
     for (signmap::iterator is=signs_.lower_bound(it->second->sign_name());
       is != signs_.upper_bound(it->second->sign_name()); ++is)
-      if(is->second == name)
+	  if(is->second == name) {
         signs_.erase(is);
+		break;
+	  }
   }
 
 #ifndef ALPS_NO_DELETE

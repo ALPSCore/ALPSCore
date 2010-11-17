@@ -32,6 +32,12 @@
 #include <boost/throw_exception.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <stdexcept>
+#include <vector>
+
+#ifndef BOOST_POSIX_API
+#include <windows.h>
+#endif
+
 
 #if defined(ALPS_HAVE_SYS_SYSTEMINFO_H)
 # include <sys/systeminfo.h> // for sysinfo()
@@ -111,9 +117,9 @@ boost::filesystem::path temp_directory_path()
     
 #   else  // Windows
 
-    std::vector<path::value_type> buf(GetTempPathW(0, NULL));
+    std::vector<path::value_type> buf(GetTempPath(0, NULL));
 
-    if (buf.empty() || GetTempPathW(buf.size(), &buf[0])==0)
+    if (buf.empty() || GetTempPath(buf.size(), &buf[0])==0)
       return path(".");
         
     buf.pop_back();

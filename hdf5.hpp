@@ -1132,13 +1132,13 @@ namespace alps {
                     } else if (is_attr) {
                         std::size_t last = count.size() - 1, pos;
                         for(;count[last] == size[last]; --last);
-                        std::vector<U> data(std::accumulate(size.begin(), size.end(), hsize_t(1), std::multiplies<hsize_t>()));
-                        std::vector<U> chunk(std::accumulate(count.begin(), count.end(), hsize_t(1), std::multiplies<hsize_t>()));
+						std::vector<U> data(std::accumulate(size.begin(), size.end(), std::size_t(1), std::multiplies<std::size_t>()));
+                        std::vector<U> chunk(std::accumulate(count.begin(), count.end(), std::size_t(1), std::multiplies<std::size_t>()));
                         detail::check_error(H5Aread(data_id, type_id, &data.front()));
                         do {
                             std::size_t sum = 0;
                             for (std::vector<hsize_t>::const_iterator it = start.begin(); it != start.end(); ++it)
-                                sum += *it * std::accumulate(size.begin() + (it - start.begin()) + 1, size.end(), hsize_t(1), std::multiplies<hsize_t>());
+                                sum += *it * std::accumulate(size.begin() + (it - start.begin()) + 1, size.end(), std::size_t(1), std::multiplies<std::size_t>());
                             std::copy(
                                 data.begin() + sum,
                                 data.begin() + sum + chunk.size(),
@@ -1319,17 +1319,17 @@ namespace alps {
                         if (std::equal(count.begin(), count.end(), size.begin()))
                             detail::check_error(H5Awrite(id, type_id, call_get_data(data, v, start)));
                         else {
-                            std::vector<typename native_type<T>::type> continous(std::accumulate(size.begin(), size.end(), hsize_t(1), std::multiplies<hsize_t>()));
+							std::vector<typename native_type<T>::type> continous(std::accumulate(size.begin(), size.end(), std::size_t(1), std::multiplies<std::size_t>()));
                             std::size_t last = count.size() - 1, pos;
                             for(;count[last] == size[last]; --last);
                             do {
-                                std::size_t sum = 0;
+                                hsize_t sum = 0;
                                 for (std::vector<hsize_t>::const_iterator it = start.begin(); it != start.end(); ++it)
-                                    sum += *it * std::accumulate(size.begin() + (it - start.begin()) + 1, size.end(), hsize_t(1), std::multiplies<hsize_t>());
+									sum += *it * std::accumulate(size.begin() + (it - start.begin()) + 1, size.end(), hsize_t(1), std::multiplies<hsize_t>());
                                 set_attr_copy(
                                     call_get_data(data, v, start),
-                                    continous.begin() + sum,
-                                    std::accumulate(count.begin(), count.end(), hsize_t(1), std::multiplies<hsize_t>()),
+									continous.begin() + static_cast<std::size_t>(sum),
+                                    static_cast<std::size_t>(std::accumulate(count.begin(), count.end(), hsize_t(1), std::multiplies<hsize_t>())),
                                     sizeof(typename native_type<T>::type)
                                 );
                                 if (start[last] + 1 == size[last] && last) {
