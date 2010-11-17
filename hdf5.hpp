@@ -94,25 +94,22 @@ namespace alps {
                     return static_cast<U>(arg);
                 }
                 #define ALPS_HDF5_CONVERT_STRING(T, c)                                                                                                     \
-                template<> inline std::string convert<std::string, T >(T arg) {                                                                            \
-                    char buffer[255];                                                                                                                      \
-                    if (sprintf(buffer, "%" c, arg) < 0)                                                                                                   \
-                        ALPS_HDF5_THROW_RUNTIME_ERROR("error converting to string");                                                                       \
-                    return buffer;                                                                                                                         \
-                }                                                                                                                                          \
-                template<> inline T convert<T, std::string>(std::string arg) {                                                                             \
-                    T value;                                                                                                                               \
-                    if (sscanf(arg.c_str(), "%" c, &value) < 0)                                                                                            \
-                        ALPS_HDF5_THROW_RUNTIME_ERROR("error converting from to string");                                                                  \
-                    return value;                                                                                                                          \
-                }
-                ALPS_HDF5_CONVERT_STRING(char, "hd")
-                ALPS_HDF5_CONVERT_STRING(signed char, "hd")
+                    template<> inline std::string convert<std::string, T >( T arg) {                                                                       \
+                        char buffer[255];                                                                                                                  \
+                        if (sprintf(buffer, "%" c, arg) < 0)                                                                                               \
+                            ALPS_HDF5_THROW_RUNTIME_ERROR("error converting to string");                                                                   \
+                        return buffer;                                                                                                                     \
+                    }                                                                                                                                      \
+                    template<> inline T convert< T, std::string>(std::string arg) {                                                                        \
+                        T value;                                                                                                                           \
+                        if (sscanf(arg.c_str(), "%" c, &value) < 0)                                                                                        \
+                            ALPS_HDF5_THROW_RUNTIME_ERROR("error converting from to string");                                                              \
+                        return value;                                                                                                                      \
+                    }
                 ALPS_HDF5_CONVERT_STRING(short, "hd")
                 ALPS_HDF5_CONVERT_STRING(int, "d")
                 ALPS_HDF5_CONVERT_STRING(long, "ld")
                 ALPS_HDF5_CONVERT_STRING(long long, "Ld")
-                ALPS_HDF5_CONVERT_STRING(unsigned char, "hu")
                 ALPS_HDF5_CONVERT_STRING(unsigned short, "hu")
                 ALPS_HDF5_CONVERT_STRING(unsigned int, "u")
                 ALPS_HDF5_CONVERT_STRING(unsigned long, "lu")
@@ -121,6 +118,17 @@ namespace alps {
                 ALPS_HDF5_CONVERT_STRING(double, "lf")
                 ALPS_HDF5_CONVERT_STRING(long double, "Lf")
                 #undef ALPS_HDF5_CONVERT_STRING
+                #define ALPS_HDF5_CONVERT_STRING_CHAR(T, U)                                                                                                \
+                    template<> inline std::string convert<std::string, T >( T arg) {                                                                       \
+                        return convert<std::string>(static_cast< U >(arg));                                                                                \
+                    }                                                                                                                                      \
+                    template<> inline T convert<T, std::string>(std::string arg) {                                                                         \
+                        return static_cast< T >(convert< U >(arg));                                                                                        \
+                    }
+                ALPS_HDF5_CONVERT_STRING_CHAR(char, short)
+                ALPS_HDF5_CONVERT_STRING_CHAR(signed char, short)
+                ALPS_HDF5_CONVERT_STRING_CHAR(unsigned char, unsigned short)
+                #undef ALPS_HDF5_CONVERT_STRING_CHAR
             #else
                 template<typename U, typename T> inline U convert(T arg) {
                     return boost::lexical_cast<U>(arg);
