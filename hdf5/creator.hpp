@@ -92,7 +92,7 @@ template<typename T> class userdefined_class {
             ;
         }
         bool operator==(userdefined_class<T> const & v) const {
-            return a == v.a && b.size() == v.b.size() && std::equal(b.begin(), b.end(), v.b.begin()) && c == v.c;
+            return a == v.a && b.size() == v.b.size() && (b.size() == 0 || std::equal(b.begin(), b.end(), v.b.begin())) && c == v.c;
         }
     private:
         T a;
@@ -151,9 +151,15 @@ template<typename T, typename U> class cast_type< C <T>, D <U> >                
         cast_type(): base_type(creator< C <T> >::random()) {}                                      \
         bool operator==(cast_type< C <T>, D <U> > const & v) const {                               \
             if (base_type::has_u && !v.has_u)                                                      \
-                return std::equal(&base_type::u[0], &base_type::u[0] + base_type::u.size(), &v.t[0]);\
+                return base_type::u.size() == v.t.size() && (                                      \
+                       v.t.size() == 0                                                             \
+                    || std::equal(&base_type::u[0], &base_type::u[0] + base_type::u.size(), &v.t[0])\
+                );                                                                                 \
             else if (!base_type::has_u && v.has_u)                                                 \
-                return std::equal(&base_type::t[0], &base_type::t[0] + base_type::t.size(), &v.u[0]);\
+                return base_type::t.size() == v.u.size() && (                                      \
+                       v.u.size() == 0                                                             \
+                    || std::equal(&base_type::t[0], &base_type::t[0] + base_type::t.size(), &v.u[0])\
+                );                                                                                 \
             else                                                                                   \
                 return false;                                                                      \
         }                                                                                          \
@@ -246,7 +252,7 @@ template<typename T> struct creator< C <T> > {                                  
     static base_type special(alps::hdf5::iarchive & iar) { return base_type(); }                   \
 };                                                                                                 \
 template<typename T> bool equal( C <T> const & a,  C <T> const & b) {                              \
-    return std::equal(&a[0], &a[0] + a.size(), &b[0]);                                             \
+    return a.size() == b.size() && (a.size() == 0 || std::equal(&a[0], &a[0] + a.size(), &b[0]));  \
 }                                                                                                  \
 template<typename T, typename U> struct creator< C < std::pair<T, U> > > {                         \
     typedef C < std::pair<T, U> > base_type;                                                       \
@@ -471,7 +477,9 @@ template<typename T> struct creator< C < D <T> > > {                            
 };                                                                                                 \
 template<typename T> bool equal( C < D <T> > const & a,  C < D <T> > const & b) {                  \
     for (std::size_t i = 0; i < a.size(); ++i)                                                     \
-        if (!std::equal(&a[i][0], &a[i][0] + a[i].size(), &b[i][0]))                               \
+        if (a[i].size() != b[i].size() || (                                                        \
+            a[i].size() > 0 && !std::equal(&a[i][0], &a[i][0] + a[i].size(), &b[i][0])             \
+        )                                                                                          \
             return false;                                                                          \
     return true;                                                                                   \
 }
@@ -528,7 +536,9 @@ template<typename T> struct creator< C < D < E <T> > > > {                      
 template<typename T> bool equal( C < D < E <T> > > const & a,  C < D < E <T> > > const & b) {      \
     for (std::size_t i = 0; i < a.size(); ++i)                                                     \
         for (std::size_t j = 0; j < a[i].size(); ++j)                                              \
-            if (!std::equal(&a[i][j][0], &a[i][j][0] + a[i][j].size(), &b[i][j][0]))               \
+            if (a[i][j].size() != b[i][j].size() || (                                              \
+                a[i][j].size() > 0 && !std::equal(&a[i][j][0], &a[i][j][0] + a[i][j].size(), &b[i][j][0]) \
+            )                                                                                      \
                 return false;                                                                      \
     return true;                                                                                   \
 }
