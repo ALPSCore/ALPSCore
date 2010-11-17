@@ -127,13 +127,22 @@ namespace alps {
 
                 pyoarchive(pyoarchive const & rhs): pyarchive<alps::hdf5::oarchive>(rhs) {}
 
-                void write(boost::python::object path, boost::python::object const & data) {
-                    alps::python::numpy::import();
-                    std::size_t size = PyArray_Size(data.ptr());
-                    double * data_ = static_cast<double *>(PyArray_DATA(data.ptr()));
-                    using namespace alps;
-                    archive_ << make_pvp(detail::extract_string(path), data_, size);
+                void write(boost::python::object const & path, boost::python::object const & data) {
+                    using alps::make_pvp;
+                    if (boost::python::extract<long>(data).check())
+                        archive_ << make_pvp(detail::extract_string(path), boost::python::extract<long>(data)());
+                    else if (boost::python::extract<double>(data).check())
+                        archive_ << make_pvp(detail::extract_string(path), boost::python::extract<double>(data)());
+                    else if (boost::python::extract<std::string>(data).check())
+                        archive_ << make_pvp(detail::extract_string(path), boost::python::extract<std::string>(data)());
+                    else {
+                        alps::python::numpy::import();
+                        std::size_t size = PyArray_Size(data.ptr());
+                        double * data_ = static_cast<double *>(PyArray_DATA(data.ptr()));
+                        archive_ << make_pvp(detail::extract_string(path), data_, size);
+                    }
                 }
+
         };
 
         struct pyiarchive : public pyarchive<alps::hdf5::iarchive> {

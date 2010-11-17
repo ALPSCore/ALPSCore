@@ -45,7 +45,6 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/multi_array.hpp>
 #include <boost/type_traits.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/shared_array.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/intrusive_ptr.hpp>
@@ -88,6 +87,38 @@ namespace alps {
                double r;
                double i;
             };
+
+            template<typename U, typename T> U convert(T arg) {
+                return static_cast<U>(arg);
+            }
+            #define ALPS_HDF5_CONVERT_STRING(T, c)                                                                                                         \
+            template<> std::string convert<std::string, T >(T arg) {                                                                                       \
+                char buffer[255];                                                                                                                          \
+                if (sprintf(buffer, "%" c, arg) < 0)                                                                                                       \
+                    ALPS_HDF5_THROW_RUNTIME_ERROR("error converting to string");                                                                           \
+                return buffer;                                                                                                                             \
+            }                                                                                                                                              \
+            template<> T convert<T, std::string>(std::string arg) {                                                                                        \
+                T value;                                                                                                                                   \
+                if (sscanf(arg.c_str(), "%" c, &value) < 0)                                                                                                \
+                    ALPS_HDF5_THROW_RUNTIME_ERROR("error converting from to string");                                                                      \
+                return value;                                                                                                                              \
+            }
+            ALPS_HDF5_CONVERT_STRING(char, "dh")
+            ALPS_HDF5_CONVERT_STRING(signed char, "dh")
+            ALPS_HDF5_CONVERT_STRING(short, "dh")
+            ALPS_HDF5_CONVERT_STRING(int, "d")
+            ALPS_HDF5_CONVERT_STRING(long, "dl")
+            ALPS_HDF5_CONVERT_STRING(long long, "dl")
+            ALPS_HDF5_CONVERT_STRING(unsigned char, "dh")
+            ALPS_HDF5_CONVERT_STRING(unsigned short, "uh")
+            ALPS_HDF5_CONVERT_STRING(unsigned int, "u")
+            ALPS_HDF5_CONVERT_STRING(unsigned long, "ul")
+            ALPS_HDF5_CONVERT_STRING(unsigned long long, "ul")
+            ALPS_HDF5_CONVERT_STRING(float, "f")
+            ALPS_HDF5_CONVERT_STRING(double, "fL")
+            ALPS_HDF5_CONVERT_STRING(long double, "fL")
+            #undef ALPS_HDF5_CONVERT_STRING
         }
 
         template<typename T> std::vector<hsize_t> call_get_extent(T const &);
@@ -182,7 +213,7 @@ namespace alps {
             if (s.size() != 1 || c.size() != 1 || c[0] == 0 || u.size() < c[0])
                 ALPS_HDF5_THROW_RANGE_ERROR("invalid data size")
             for (std::string * w = &v + s[0]; w != &v + s[0] + c[0]; ++w)
-                *w = boost::lexical_cast<std::string>(u[s[0] + (w - &v)]);
+                *w = detail::convert<std::string>(u[s[0] + (w - &v)]);
         }
         template<typename T> typename boost::enable_if<
             typename boost::is_same<T, char *>::type
@@ -436,26 +467,28 @@ namespace alps {
         }
 
         namespace detail {
-            class error {
-                public:
-                    static herr_t noop(hid_t) { return 0; }
-                    static herr_t callback(unsigned n, H5E_error2_t const * desc, void * buffer) {
-                        *reinterpret_cast<std::ostringstream *>(buffer) << "    #" << to_string(n) << " " << desc->file_name << " line " << to_string(desc->line) << " in " << desc->func_name << "(): " << desc->desc << std::endl;
-                        return 0;
-                    }
-                    static std::string invoke(hid_t id) {
-                        std::ostringstream buffer;
-                        buffer << "HDF5 error: " << to_string(id) << std::endl;
-                        H5Ewalk2(H5E_DEFAULT, H5E_WALK_DOWNWARD, callback, &buffer);
-                        return buffer.str();
-                    }
-                private:
-                    static std::string to_string(int arg) {
-                        char buffer[255];
-                        if (sprintf(buffer, "%i", arg) < 0)
-                            ALPS_HDF5_THROW_RUNTIME_ERROR("error converting int to string");
-                        return buffer;
-                    }
+            struct error {
+                static herr_t noop(hid_t) { return 0; }
+                static herr_t callback(unsigned n, H5E_error2_t const * desc, void * buffer) {
+                    *reinterpret_cast<std::ostringstream *>(buffer) 
+                        << "    #" 
+                        << convert<std::string>(n) 
+                        << " " << desc->file_name 
+                        << " line " 
+                        << convert<std::string>(desc->line) 
+                        << " in " 
+                        << desc->func_name 
+                        << "(): " 
+                        << desc->desc 
+                        << std::endl;
+                    return 0;
+                }
+                static std::string invoke(hid_t id) {
+                    std::ostringstream buffer;
+                    buffer << "HDF5 error: " << convert<std::string>(id) << std::endl;
+                    H5Ewalk2(H5E_DEFAULT, H5E_WALK_DOWNWARD, callback, &buffer);
+                    return buffer.str();
+                }
             };
             template<herr_t(*F)(hid_t)> class resource {
                 public:
@@ -609,24 +642,24 @@ namespace alps {
                     char chars[] = {'&', '/'};
                     for (std::size_t i = 0; i < sizeof(chars); ++i)
                         for (std::size_t pos = r.find_first_of(chars[i]); pos < std::string::npos; pos = r.find_first_of(chars[i], pos + 1))
-                            r = r.substr(0, pos) + "&#" + boost::lexical_cast<std::string, int>(chars[i]) + ";" + r.substr(pos + 1);
+                            r = r.substr(0, pos) + "&#" + detail::convert<std::string>(static_cast<int>(chars[i])) + ";" + r.substr(pos + 1);
                     return r;
                 }
                 std::string decode_segment(std::string const & s) {
                     std::string r = s;
                     for (std::size_t pos = r.find_first_of('&'); pos < std::string::npos; pos = r.find_first_of('&', pos + 1))
-                        r = r.substr(0, pos) + static_cast<char>(boost::lexical_cast<int>(r.substr(pos + 2, r.find_first_of(';', pos) - pos - 2))) + r.substr(r.find_first_of(';', pos) + 1);
+                        r = r.substr(0, pos) + static_cast<char>(detail::convert<int>(r.substr(pos + 2, r.find_first_of(';', pos) - pos - 2))) + r.substr(r.find_first_of(';', pos) + 1);
                     return r;
                 }
                 void commit(std::string const & name = "") {
                     set_attr("/revisions/@last", ++_hdf5_context->_revision);
-                    set_group("/revisions/" + boost::lexical_cast<std::string>(revision()));
+                    set_group("/revisions/" + detail::convert<std::string>(revision()));
                     std::string time = boost::posix_time::to_iso_string(boost::posix_time::second_clock::local_time());
                     detail::internal_log_type v = {
                         std::strcpy(new char[time.size() + 1], time.c_str()),
                         std::strcpy(new char[name.size() + 1], name.c_str())
                     };
-                    set_attr("/revisions/" + boost::lexical_cast<std::string>(revision()) + "/@info", v);
+                    set_attr("/revisions/" + detail::convert<std::string>(revision()) + "/@info", v);
                     delete[] v.time;
                     delete[] v.name;
                 }
@@ -996,7 +1029,7 @@ namespace alps {
                     }
                 }
                 hid_t save_comitted_data(std::string const & p, hid_t type_id, hid_t space_id, hsize_t d, hsize_t const * s = NULL, bool set_prop = true) const {
-                    std::string rev_path = "/revisions/" + boost::lexical_cast<std::string>(revision()) + p;
+                    std::string rev_path = "/revisions/" + detail::convert<std::string>(revision()) + p;
                     if (revision() && !is_data(p))
                         set_data(rev_path, detail::internal_state_type::CREATE);
                     else if (revision()) {
@@ -1197,7 +1230,7 @@ namespace alps {
                 }
                 template<typename T> void set_attr(std::string const & p, T const & v) const {
                     hid_t parent_id;
-                    std::string rev_path = "/revisions/" + boost::lexical_cast<std::string>(revision()) + p;
+                    std::string rev_path = "/revisions/" + detail::convert<std::string>(revision()) + p;
                     if (is_group(p.substr(0, p.find_last_of('@') - 1))) {
                         parent_id = detail::check_error(H5Gopen2(file_id(), p.substr(0, p.find_last_of('@') - 1).c_str(), H5P_DEFAULT));
                         if (revision() && p.substr(0, p.find_last_of('@') - 1).substr(0, std::strlen("/revisions")) != "/revisions" && !is_group(rev_path))
@@ -1422,7 +1455,7 @@ namespace alps {
                     std::vector<std::string> children = ar.list_children(p);                                                                                \
                     v.resize(children.size());                                                                                                              \
                     for (std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)                                        \
-                        call_serialize(ar, p + "/" + *it, v[boost::lexical_cast<std::size_t>(*it)]);                                                        \
+                        call_serialize(ar, p + "/" + *it, v[detail::convert<std::size_t>(*it)]);                                                            \
                 } else                                                                                                                                      \
                     ar.serialize(p, v);                                                                                                                     \
                 return ar;                                                                                                                                  \
@@ -1440,7 +1473,7 @@ namespace alps {
                     else if (ar.is_data(p))                                                                                                                 \
                         ar.delete_data(p);                                                                                                                  \
                     for (std::size_t i = 0; i < v.size(); ++i)                                                                                              \
-                        call_serialize(ar, p + "/" + boost::lexical_cast<std::string>(i), v[i]);                                                            \
+                        call_serialize(ar, p + "/" + detail::convert<std::string>(i), v[i]);                                                                \
                 }                                                                                                                                           \
                 return ar;                                                                                                                                  \
             }
@@ -1469,7 +1502,7 @@ namespace alps {
                     std::size_t last = start.size() - 1, pos = 0;
                     std::string path = "";
                     for (std::vector<std::size_t>::const_iterator it = start.begin(); it != start.end(); ++it) {
-                        path += "/" + boost::lexical_cast<std::string>(*it);
+                        path += "/" + detail::convert<std::string>(*it);
                         pos += *it * std::accumulate(v.second.begin() + (it - start.begin()) + 1, v.second.end(), std::size_t(1), std::multiplies<std::size_t>());
                     }
                     call_serialize(ar, p + path, v.first[pos]);
@@ -1501,7 +1534,7 @@ namespace alps {
                     std::size_t last = start.size() - 1, pos = 0;
                     std::string path = "";
                     for (std::vector<std::size_t>::const_iterator it = start.begin(); it != start.end(); ++it) {
-                        path += "/" + boost::lexical_cast<std::string>(*it);
+                        path += "/" + detail::convert<std::string>(*it);
                         pos += *it * std::accumulate(v.second.begin() + (it - start.begin()) + 1, v.second.end(), std::size_t(1), std::multiplies<std::size_t>());
                     }
                     call_serialize(ar, p + path, v.first[pos]);
