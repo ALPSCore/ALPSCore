@@ -55,7 +55,7 @@ namespace alps {
             }
         }
 
-        template<typename Archive> struct pyarchive {
+        template<typename Archive> class pyarchive {
             public:
 
                 pyarchive(std::string const & filename): archive_(filename) {}
@@ -123,82 +123,80 @@ namespace alps {
         };
 
         struct pyoarchive : public pyarchive<alps::hdf5::oarchive> {
-            public:
 
-                pyoarchive(std::string const & filename): pyarchive<alps::hdf5::oarchive>(filename) {}
+            pyoarchive(std::string const & filename): pyarchive<alps::hdf5::oarchive>(filename) {}
 
-                pyoarchive(pyoarchive const & rhs): pyarchive<alps::hdf5::oarchive>(rhs) {}
+            pyoarchive(pyoarchive const & rhs): pyarchive<alps::hdf5::oarchive>(rhs) {}
 
-                void write(boost::python::object const & path, boost::python::object const & data) {
-                    using alps::make_pvp;
-                    if (boost::python::extract<long>(data).check())
-                        archive_ << make_pvp(detail::extract_string(path), boost::python::extract<long>(data)());
-                    else if (boost::python::extract<double>(data).check())
-                        archive_ << make_pvp(detail::extract_string(path), boost::python::extract<double>(data)());
-                    else if (boost::python::extract<std::string>(data).check())
-                        archive_ << make_pvp(detail::extract_string(path), boost::python::extract<std::string>(data)());
-                    else {
-                        alps::python::numpy::import();
-                        std::size_t size = PyArray_Size(data.ptr());
-                        double * data_ = static_cast<double *>(PyArray_DATA(data.ptr()));
-                        archive_ << make_pvp(detail::extract_string(path), data_, size);
-                    }
+            void write(boost::python::object const & path, boost::python::object const & data) {
+                using alps::make_pvp;
+                if (boost::python::extract<long>(data).check())
+                    archive_ << make_pvp(detail::extract_string(path), boost::python::extract<long>(data)());
+                else if (boost::python::extract<double>(data).check())
+                    archive_ << make_pvp(detail::extract_string(path), boost::python::extract<double>(data)());
+                 else if (boost::python::extract<std::string>(data).check())
+                    archive_ << make_pvp(detail::extract_string(path), boost::python::extract<std::string>(data)());
+                else {
+                    alps::python::numpy::import();
+                    std::size_t size = PyArray_Size(data.ptr());
+                    double * data_ = static_cast<double *>(PyArray_DATA(data.ptr()));
+                    archive_ << make_pvp(detail::extract_string(path), data_, size);
                 }
+            }
 
         };
 
         struct pyiarchive : public pyarchive<alps::hdf5::iarchive> {
-            public:
 
-                pyiarchive(std::string const & filename): pyarchive<alps::hdf5::iarchive>(filename) {}
+            pyiarchive(std::string const & filename): pyarchive<alps::hdf5::iarchive>(filename) {}
 
-                pyiarchive(pyiarchive const & rhs): pyarchive<alps::hdf5::iarchive>(rhs) {}
+            pyiarchive(pyiarchive const & rhs): pyarchive<alps::hdf5::iarchive>(rhs) {}
 
-                boost::python::object read(boost::python::object const & path) {
-                    alps::python::numpy::import();
-                    if (archive_.is_scalar(detail::extract_string(path))) {
-                        if (archive_.is_string(detail::extract_string(path))) {
-                            std::string data;
-                            archive_ >> make_pvp(detail::extract_string(path), data);
-                            return boost::python::str(data);
-                        } else {
-                            double data;
-                            archive_ >> make_pvp(detail::extract_string(path), data);
-                            return boost::python::object(data);
-                        }
-                    } else if (archive_.is_string(detail::extract_string(path))) {
-                        if (archive_.dimensions(detail::extract_string(path)) != 1)
-                            std::runtime_error("More than 1 Dimension is not supported.");
-                        boost::python::list result;
-                        std::vector<std::string> data;
+            boost::python::object read(boost::python::object const & path) {
+                alps::python::numpy::import();
+                if (archive_.is_scalar(detail::extract_string(path))) {
+                    if (archive_.is_string(detail::extract_string(path))) {
+                        std::string data;
                         archive_ >> make_pvp(detail::extract_string(path), data);
-                        for (std::vector<std::string>::const_iterator it = data.begin(); it != data.end(); ++it)
-                            result.append(boost::python::str(*it));
-                        return result;
-                    } else
-                        switch (archive_.dimensions(detail::extract_string(path))) {
-                            case 1:
-                                {
-                                    std::vector<double> data;
-                                    archive_ >> make_pvp(detail::extract_string(path), data);
-                                    return alps::python::numpy::convert(data);
-                                }
-                            case 2:
-                                {
-                                    std::vector<std::vector<double> > data;
-                                    archive_ >> make_pvp(detail::extract_string(path), data);
-                                    return alps::python::numpy::convert(data);
-                                }
-                            case 3:
-                                {
-                                    std::vector<std::vector<std::vector<double> > > data;
-                                    archive_ >> make_pvp(detail::extract_string(path), data);
-                                    return alps::python::numpy::convert(data);
-                                }
-                            default:
-                                std::runtime_error("More than 2 Dimensions are not implemented.");
-                        }
-                }
+                        return boost::python::str(data);
+                    } else {
+                        double data;
+                        archive_ >> make_pvp(detail::extract_string(path), data);
+                        return boost::python::object(data);
+                    }
+                } else if (archive_.is_string(detail::extract_string(path))) {
+                    if (archive_.dimensions(detail::extract_string(path)) != 1)
+                        std::runtime_error("More than 1 Dimension is not supported.");
+                    boost::python::list result;
+                    std::vector<std::string> data;
+                    archive_ >> make_pvp(detail::extract_string(path), data);
+                    for (std::vector<std::string>::const_iterator it = data.begin(); it != data.end(); ++it)
+                         result.append(boost::python::str(*it));
+                    return result;
+                } else
+                    switch (archive_.dimensions(detail::extract_string(path))) {
+                        case 1:
+                            {
+                                std::vector<double> data;
+                                archive_ >> make_pvp(detail::extract_string(path), data);
+                                return alps::python::numpy::convert(data);
+                            }
+                         case 2:
+                             {
+                                std::vector<std::vector<double> > data;
+                                archive_ >> make_pvp(detail::extract_string(path), data);
+                                return alps::python::numpy::convert(data);
+                            }
+                        case 3:
+                            {
+                                std::vector<std::vector<std::vector<double> > > data;
+                                archive_ >> make_pvp(detail::extract_string(path), data);
+                                return alps::python::numpy::convert(data);
+                            }
+                        default:
+                            std::runtime_error("More than 3 Dimensions are not implemented.");
+                    }
+            }
 
         };
     }
