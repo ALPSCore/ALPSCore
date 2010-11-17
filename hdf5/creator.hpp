@@ -479,7 +479,7 @@ template<typename T> bool equal( C < D <T> > const & a,  C < D <T> > const & b) 
     for (std::size_t i = 0; i < a.size(); ++i)                                                     \
         if (a[i].size() != b[i].size() || (                                                        \
             a[i].size() > 0 && !std::equal(&a[i][0], &a[i][0] + a[i].size(), &b[i][0])             \
-        )                                                                                          \
+        ))                                                                                         \
             return false;                                                                          \
     return true;                                                                                   \
 }
@@ -538,7 +538,7 @@ template<typename T> bool equal( C < D < E <T> > > const & a,  C < D < E <T> > >
         for (std::size_t j = 0; j < a[i].size(); ++j)                                              \
             if (a[i][j].size() != b[i][j].size() || (                                              \
                 a[i][j].size() > 0 && !std::equal(&a[i][j][0], &a[i][j][0] + a[i][j].size(), &b[i][j][0]) \
-            )                                                                                      \
+            ))                                                                                     \
                 return false;                                                                      \
     return true;                                                                                   \
 }
