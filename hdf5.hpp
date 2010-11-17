@@ -93,18 +93,18 @@ namespace alps {
                 template<typename U, typename T> inline U convert(T arg) {
                     return static_cast<U>(arg);
                 }
-                #define ALPS_HDF5_CONVERT_STRING(T, c)                                                                                                         \
-                template<> inline std::string convert<std::string, T >(T arg) {                                                                                       \
-                    char buffer[255];                                                                                                                          \
-                    if (sprintf(buffer, "%" c, arg) < 0)                                                                                                       \
-                        ALPS_HDF5_THROW_RUNTIME_ERROR("error converting to string");                                                                           \
-                    return buffer;                                                                                                                             \
-                }                                                                                                                                              \
-                template<> inline T convert<T, std::string>(std::string arg) {                                                                                        \
-                    T value;                                                                                                                                   \
-                    if (sscanf(arg.c_str(), "%" c, &value) < 0)                                                                                                \
-                        ALPS_HDF5_THROW_RUNTIME_ERROR("error converting from to string");                                                                      \
-                    return value;                                                                                                                              \
+                #define ALPS_HDF5_CONVERT_STRING(T, c)                                                                                                     \
+                template<> inline std::string convert<std::string, T >(T arg) {                                                                            \
+                    char buffer[255];                                                                                                                      \
+                    if (sprintf(buffer, "%" c, arg) < 0)                                                                                                   \
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("error converting to string");                                                                       \
+                    return buffer;                                                                                                                         \
+                }                                                                                                                                          \
+                template<> inline T convert<T, std::string>(std::string arg) {                                                                             \
+                    T value;                                                                                                                               \
+                    if (sscanf(arg.c_str(), "%" c, &value) < 0)                                                                                            \
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("error converting from to string");                                                                  \
+                    return value;                                                                                                                          \
                 }
                 ALPS_HDF5_CONVERT_STRING(char, "hd")
                 ALPS_HDF5_CONVERT_STRING(signed char, "hd")
