@@ -30,6 +30,7 @@
 
 #include <alps/utility/os.hpp>
 #include <boost/throw_exception.hpp>
+#include <boost/filesystem/operations.hpp>
 #include <stdexcept>
 
 #if defined(ALPS_HAVE_SYS_SYSTEMINFO_H)
@@ -87,5 +88,46 @@ std::string username() {
   return std::string("unknown");
 #endif
 }
+
+
+   // contributed by Jeff Flinn, from Boost 1.46
+boost::filesystem::path temp_directory_path()
+{
+  using namespace boost::filesystem;
+#   ifdef BOOST_POSIX_API
+    const char* val = 0;
+    
+    (val = std::getenv("TMPDIR" )) ||
+    (val = std::getenv("TMP"    )) ||
+    (val = std::getenv("TEMP"   )) ||
+    (val = std::getenv("TEMPDIR"));
+    
+    path p((val!=0) ? val : "/tmp");
+    
+    if (p.empty() || !is_directory(p))
+      p=path(".");
+      
+    return p;
+    
+#   else  // Windows
+
+    std::vector<path::value_type> buf(GetTempPathW(0, NULL));
+
+    if (buf.empty() || GetTempPathW(buf.size(), &buf[0])==0)
+      return path(".");
+        
+    buf.pop_back();
+    
+    path p(buf.begin(), buf.end());
+        
+    if (!is_directory(p))
+      p=path(".");
+
+    
+    return p;
+#   endif
+}
+
+
 
 } // end namespace alps

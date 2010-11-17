@@ -36,6 +36,7 @@
 //=======================================================================
 
 #include <alps/config.h>
+#include <boost/filesystem/path.hpp>
 #include <string>
 
 namespace alps {
@@ -45,6 +46,9 @@ ALPS_DECL std::string hostname();
 
 /// returns the username
 ALPS_DECL std::string username();
+
+/// returns the username
+ALPS_DECL boost::filesystem::path temp_directory_path();
 
 } // end namespace
 
