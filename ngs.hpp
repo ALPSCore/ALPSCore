@@ -138,11 +138,16 @@ namespace alps {
                     return visitor.value;                                                                                                                  \
                 }
             ALPS_NGS_CAST_OPERATOR(short)
+            ALPS_NGS_CAST_OPERATOR(unsigned short)
             ALPS_NGS_CAST_OPERATOR(int)
             ALPS_NGS_CAST_OPERATOR(unsigned int)
             ALPS_NGS_CAST_OPERATOR(long)
+            ALPS_NGS_CAST_OPERATOR(unsigned long)
+            ALPS_NGS_CAST_OPERATOR(long long)
+            ALPS_NGS_CAST_OPERATOR(unsigned long long)
             ALPS_NGS_CAST_OPERATOR(float)
             ALPS_NGS_CAST_OPERATOR(double)
+            ALPS_NGS_CAST_OPERATOR(long double)
             ALPS_NGS_CAST_OPERATOR(bool)
             ALPS_NGS_CAST_OPERATOR(std::size_t)
             ALPS_NGS_CAST_OPERATOR(std::string)
