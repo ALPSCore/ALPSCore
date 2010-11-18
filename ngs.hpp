@@ -149,7 +149,6 @@ namespace alps {
             ALPS_NGS_CAST_OPERATOR(double)
             ALPS_NGS_CAST_OPERATOR(long double)
             ALPS_NGS_CAST_OPERATOR(bool)
-            ALPS_NGS_CAST_OPERATOR(std::size_t)
             ALPS_NGS_CAST_OPERATOR(std::string)
             #undef ALPS_NGS_CAST_OPERATOR
     };
