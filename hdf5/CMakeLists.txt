@@ -39,21 +39,20 @@ IF (ALPS_BUILD_HDF5_TESTS)
         std::size_t std::string std::complex<float> std::complex<double> "std::complex<long double>"
         boost::int8_t boost::uint8_t boost::int16_t boost::uint16_t boost::int32_t boost::uint32_t boost::int64_t boost::uint64_t
         std::vector<std::size_t> std::vector<short> std::vector<int> std::vector<long> std::vector<float> std::vector<double> "std::vector<std::complex<double> >" std::vector<std::string>
-        std::deque<std::size_t> std::deque<short> std::deque<int> std::deque<long> std::deque<float> std::deque<double> "std::deque<std::complex<double> >" std::deque<std::string>
-        std::valarray<int> std::valarray<double> "std::valarray<std::complex<double> >" std::valarray<std::string>
+        std::valarray<int> std::valarray<double> "std::valarray<std::complex<double> >" 
         boost::numeric::ublas::vector<int> boost::numeric::ublas::vector<double> "boost::numeric::ublas::vector<std::complex<double> >"
         "std::pair<int *, std::vector<std::size_t> >" "std::pair<double *, std::vector<std::size_t> >" "std::pair<std::complex<double> *,std::vector<std::size_t> >" "std::pair<std::string *,std::vector<std::size_t> >"
         "std::vector<std::vector<int> >" "std::vector<std::vector<double> >" "std::vector<std::vector<std::complex<double> > >" "std::vector<std::vector<std::string> >"
         "std::vector<std::vector<std::vector<int> > >" "std::vector<std::vector<std::vector<double> > >" "std::vector<std::vector<std::vector<std::complex<double> > > >" "std::vector<std::vector<std::vector<std::string> > >"
-        "std::vector<std::valarray<int> >" "std::valarray<std::vector<double> >" "std::vector<boost::numeric::ublas::vector<std::complex<double> > >" "boost::numeric::ublas::vector<std::valarray<std::string> >"
+        "std::vector<std::valarray<int> >" "std::valarray<std::vector<double> >" "std::vector<boost::numeric::ublas::vector<std::complex<double> > >"
         "std::pair<std::vector<int> *, std::vector<std::size_t> >" "std::pair<std::vector<double> *, std::vector<std::size_t> >" "std::pair<std::vector<std::complex<double> > *, std::vector<std::size_t> >" "std::pair<std::vector<std::string> *, std::vector<std::size_t> >"
         enum_type std::vector<enum_type> "std::vector<std::vector<enum_type> >" "std::pair<enum_type *, std::vector<std::size_t> >" "std::vector<std::valarray<enum_type> >"
         "std::pair<std::vector<enum_type> *, std::vector<std::size_t> >" "std::pair<std::vector<std::vector<enum_type> > *, std::vector<std::size_t> >"
         userdefined_class<std::size_t> userdefined_class<short> userdefined_class<int> userdefined_class<long> userdefined_class<float> userdefined_class<double> "userdefined_class<std::complex<double> >" userdefined_class<std::string>
-        "std::vector<userdefined_class<double> >" "std::vector<std::vector<userdefined_class<double> > >" "std::pair<userdefined_class<double> *, std::vector<std::size_t> >" "std::vector<std::valarray<userdefined_class<double> > >"
+        "std::vector<userdefined_class<double> >" "std::vector<std::vector<userdefined_class<double> > >" "std::pair<userdefined_class<double> *, std::vector<std::size_t> >" 
         "cast_type<int, long>" "cast_type<int, double>" "cast_type<double, std::string>" "cast_type<int, std::string>" "cast_type<float, double>" "cast_type<short, float>"
         "std::vector<cast_type<int, double> >" "std::vector<std::vector<cast_type<int, double> > >" "std::pair<cast_type<int, double> *, std::vector<std::size_t> >" "std::vector<std::valarray<cast_type<int, double> > >"
-        "std::vector<cast_type<double, std::string> >" "std::vector<std::vector<cast_type<double, std::string> > >" "std::pair<cast_type<double, std::string> *, std::vector<std::size_t> >" "std::vector<std::valarray<cast_type<double, std::string> > >"
+        "std::vector<cast_type<double, std::string> >" "std::vector<std::vector<cast_type<double, std::string> > >" "std::pair<cast_type<double, std::string> *, std::vector<std::size_t> >" 
 #        "boost::multi_array<double, 1>" "boost::multi_array<int, 1>" "boost::multi_array<std::complex<double>, 1>" "boost::multi_array<std::string, 1>"
 #        "boost::multi_array<double, 2>" "boost::multi_array<int, 2>" "boost::multi_array<std::complex<double>, 2>" "boost::multi_array<std::string, 2>"
 #        "boost::multi_array<double, 3>" "boost::multi_array<int, 3>" "boost::multi_array<std::complex<double>, 3>" "boost::multi_array<std::string, 3>"
