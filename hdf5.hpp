@@ -177,7 +177,7 @@ namespace alps {
             template<typename T, typename U> void set_data_impl(T & v, std::vector<U> const & u, std::vector<hsize_t> const & s, std::vector<hsize_t> const & c, boost::mpl::false_) {
                 if (s.size() != 1 || c.size() != 1 || c[0] == 0 || u.size() < c[0])
                     ALPS_HDF5_THROW_RANGE_ERROR("invalid data size")
-                std::copy(u.begin(), u.begin() + c[0], &v + s[0]);
+                std::copy(u.begin(), u.begin() + static_cast<std::size_t>(c[0]), &v + static_cast<std::size_t>(s[0]));
             }
             template<typename T, typename U> void set_data_impl(T &, std::vector<U> const &, std::vector<hsize_t> const &, std::vector<hsize_t> const &, boost::mpl::true_) { 
                 ALPS_HDF5_THROW_RUNTIME_ERROR("invalid type conversion")
@@ -393,9 +393,14 @@ namespace alps {
                 , std::vector<hsize_t> const & = std::vector<hsize_t>()                                                                                    \
             ) {                                                                                                                                            \
                 if (is_native<T>::value)                                                                                                                   \
-                    return call_get_data(m, (const_cast< C <T> &>(v))[s[0]], std::vector<hsize_t>(s.begin() + 1, s.end()), call_get_extent(v));            \
+                    return call_get_data(                                                                                                                  \
+                          m                                                                                                                                \
+                        , (const_cast< C <T> &>(v))[static_cast<std::size_t>(s[0])]                                                                        \
+                        , std::vector<hsize_t>(s.begin() + 1, s.end())                                                                                     \
+                        , call_get_extent(v)                                                                                                               \
+                    );                                                                                                                                     \
                 else                                                                                                                                       \
-                    return call_get_data(m, (const_cast< C <T> &>(v))[s[0]], std::vector<hsize_t>(s.begin() + 1, s.end()));                                \
+                    return call_get_data(m, (const_cast< C <T> &>(v))[static_cast<std::size_t>(s[0])], std::vector<hsize_t>(s.begin() + 1, s.end()));      \
             }                                                                                                                                              \
             template<typename T, typename U> void set_data(                                                                                                \
                 C <T> & v, std::vector<U> const & u, std::vector<hsize_t> const & s, std::vector<hsize_t> const & c                                        \
@@ -1132,13 +1137,13 @@ namespace alps {
                     } else if (is_attr) {
                         std::size_t last = count.size() - 1, pos;
                         for(;count[last] == size[last]; --last);
-						std::vector<U> data(std::accumulate(size.begin(), size.end(), std::size_t(1), std::multiplies<std::size_t>()));
-                        std::vector<U> chunk(std::accumulate(count.begin(), count.end(), std::size_t(1), std::multiplies<std::size_t>()));
+                        std::vector<U> data(std::accumulate(size.begin(), size.end(), hsize_t(1), std::multiplies<hsize_t>()));
+                        std::vector<U> chunk(std::accumulate(count.begin(), count.end(), hsize_t(1), std::multiplies<hsize_t>()));
                         detail::check_error(H5Aread(data_id, type_id, &data.front()));
                         do {
                             std::size_t sum = 0;
                             for (std::vector<hsize_t>::const_iterator it = start.begin(); it != start.end(); ++it)
-                                sum += *it * std::accumulate(size.begin() + (it - start.begin()) + 1, size.end(), std::size_t(1), std::multiplies<std::size_t>());
+                                sum += static_cast<std::size_t>(*it * std::accumulate(size.begin() + (it - start.begin()) + 1, size.end(), hsize_t(1), std::multiplies<hsize_t>()));
                             std::copy(
                                 data.begin() + sum,
                                 data.begin() + sum + chunk.size(),
@@ -1319,17 +1324,17 @@ namespace alps {
                         if (std::equal(count.begin(), count.end(), size.begin()))
                             detail::check_error(H5Awrite(id, type_id, call_get_data(data, v, start)));
                         else {
-							std::vector<typename native_type<T>::type> continous(std::accumulate(size.begin(), size.end(), std::size_t(1), std::multiplies<std::size_t>()));
+                            std::vector<typename native_type<T>::type> continous(static_cast<std::size_t>(std::accumulate(size.begin(), size.end(), hsize_t(1), std::multiplies<hsize_t>())));
                             std::size_t last = count.size() - 1, pos;
                             for(;count[last] == size[last]; --last);
                             do {
-                                hsize_t sum = 0;
+                                std::size_t sum = 0;
                                 for (std::vector<hsize_t>::const_iterator it = start.begin(); it != start.end(); ++it)
-									sum += *it * std::accumulate(size.begin() + (it - start.begin()) + 1, size.end(), hsize_t(1), std::multiplies<hsize_t>());
+                                    sum += *it * std::accumulate(size.begin() + (it - start.begin()) + 1, size.end(), hsize_t(1), std::multiplies<hsize_t>());
                                 set_attr_copy(
                                     call_get_data(data, v, start),
-									continous.begin() + static_cast<std::size_t>(sum),
-                                    static_cast<std::size_t>(std::accumulate(count.begin(), count.end(), hsize_t(1), std::multiplies<hsize_t>())),
+                                    continous.begin() + sum,
+                                    std::accumulate(count.begin(), count.end(), hsize_t(1), std::multiplies<hsize_t>()),
                                     sizeof(typename native_type<T>::type)
                                 );
                                 if (start[last] + 1 == size[last] && last) {
