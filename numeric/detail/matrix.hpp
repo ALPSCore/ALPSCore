@@ -139,7 +139,7 @@ namespace blas{
         }
         inline void add_outer_product(const blas::vector &v1, const blas::vector &v2, double alpha=1.)
         {
-            int inc=1;
+            fortran_int_t inc=1;
             if(size_>1){
                 FORTRAN_ID(dger)(&size_, &size_, &alpha,&v2.values()[0], &inc, &v1.values()[0], &inc, &values_[0], &size_); 
             }else if(size_==1){
@@ -155,9 +155,9 @@ namespace blas{
         
         inline void insert_row_column_last(blas::vector &row, blas::vector &col, double Mkk)
         {
-            int oldsize=size_;
+            fortran_int_t oldsize=size_;
             resize(size_+1);
-            int one=1;
+            fortran_int_t one=1;
             FORTRAN_ID(dcopy)(&oldsize, &(col.values()[0]), &one, &(values_[oldsize     ]), &size_); //copy in row (careful: col. major)
             FORTRAN_ID(dcopy)(&oldsize, &(row.values()[0]), &one, &(values_[oldsize*size_]), &one         );   //copy in column
             operator()(oldsize, oldsize)=Mkk;
@@ -166,7 +166,7 @@ namespace blas{
         inline void getrow(int k, double *row) const
         {
             assert((k < size_));
-            int one=1;
+            fortran_int_t one=1;
             FORTRAN_ID(dcopy)(&size_, &(values_[k*size_]), &one, row, &one);
         }
         
@@ -174,7 +174,7 @@ namespace blas{
         {
             assert((k < size_));
             blas::vector row(size_);
-            int one=1;
+            fortran_int_t one=1;
             FORTRAN_ID(dcopy)(&size_, &(values_[k*size_]), &one, &row.values()[0], &one);
             return row;
         }
@@ -182,7 +182,7 @@ namespace blas{
         inline void getcol(int k, double *col) const
         {
             assert((k < size_));
-            int one=1;
+            fortran_int_t one=1;
             FORTRAN_ID(dcopy)(&size_, &(values_[k]), &size_, col, &one);
         }
         
@@ -190,7 +190,7 @@ namespace blas{
         {
             assert((k < size_));
             blas::vector col(size_);
-            int one=1;
+            fortran_int_t one=1;
             FORTRAN_ID(dcopy)(&size_, &(values_[k]), &size_,  &col.values()[0], &one);
             return col;
         }
@@ -199,26 +199,26 @@ namespace blas{
         inline void setrow(int k, const double *row)
         {
             assert((k < size_));
-            int one=1;
+            fortran_int_t one=1;
             FORTRAN_ID(dcopy)(&size_, row, &one, &(values_[k*size_]), &one);
         }
         
         inline void setrow(int k, const blas::vector row){
             assert((k < size_));
-            int one=1;
+            fortran_int_t one=1;
             FORTRAN_ID(dcopy)(&size_, &row.values()[0], &one, &(values_[k*size_]), &one);
         }
     
         inline void setcol(int k, const double *col)
         {
             assert((k < size_));
-            int one=1;
+            fortran_int_t one=1;
             FORTRAN_ID(dcopy)(&size_, col, &one, &(values_[k]), &size_);
         }
         
         inline void setcol(int k, const blas::vector col){
             assert((k < size_));
-            int one=1;
+            fortran_int_t one=1;
             FORTRAN_ID(dcopy)(&size_, &col.values()[0], &one, &(values_[k]), &size_);
         }
         
@@ -271,7 +271,7 @@ namespace blas{
         {
             assert((c1 < size_) && (c2 < size_));
             if(c1==c2) return;
-            int one=1;
+            fortran_int_t one=1;
             FORTRAN_ID(dswap)(&size_, &(values_[c1*size_]), &one, &(values_[c2*size_]), &one);
         }
         
@@ -303,7 +303,7 @@ namespace blas{
             assert((v1.size() == size_) && (v2.size() == size_));
             char trans='T';
             double alpha=1., beta=0.;        //no need to multiply a constant or add a vector
-            int inc=1;
+            fortran_int_t inc=1;
             FORTRAN_ID(dgemv)(&trans, &size_, &size_, &alpha, &values_[0], &size_, &v1.values()[0], &inc, &beta, &v2.values()[0], &inc);
         }
                
@@ -322,7 +322,7 @@ namespace blas{
             assert((v1.size() == size_) && (v2.size() == size_));
             char trans='N';
             double alpha=1., beta=0.;       //no need to multiply a constant or add a vector
-            int inc=1;
+            fortran_int_t inc=1;
             FORTRAN_ID(dgemv)(&trans, &size_, &size_, &alpha, &values_[0], &size_, &v1.values()[0], &inc, &beta, &v2.values()[0], &inc);
         }
         
@@ -359,7 +359,7 @@ namespace blas{
             double zero_double=0.;
             char notrans='N';
             Mres.clear(); 
-            int M2_size2=M2.size2();
+            fortran_int_t M2_size2=M2.size2();
             FORTRAN_ID(dgemm)(&notrans, &notrans, &M2_size2, &size_, &size_, 
                    &one_double, &(M2(0,0)), &(M2.size2()), &values_[0],
                    &size_, &zero_double, &(Mres(0,0)), &(Mres.size2()));
@@ -400,8 +400,8 @@ namespace blas{
             if(size_==0) return 1;
             if(size_==1) return values_[0];
             if(size_==2) return values_[0]*values_[3]-values_[1]*values_[2];
-            int info=0;
-            int *ipiv = new int[size_];
+            fortran_int_t info=0;
+            fortran_int_t *ipiv = new fortran_int_t[size_];
             matrix identity(size_);
             identity.set_to_identity();
             matrix det_matrix(*this);
@@ -448,8 +448,8 @@ namespace blas{
     
         matrix &operator *=(double lambda)
         {
-            int inc=1;
-            int total_size=size_*size_;
+            fortran_int_t inc=1;
+            fortran_int_t total_size=size_*size_;
             dscal_(&total_size, &lambda, &values_[0], &inc);
             return *this;
         }
@@ -501,8 +501,8 @@ namespace blas{
             //EIGENVECTORS ARE STORED IN ROWS!
             //perform dsyev call (LAPACK)
             eigenvectors=*this;
-            int lwork=-1;
-            int info;
+            fortran_int_t lwork=-1;
+            fortran_int_t info;
             double work_size;
             char jobs='V';
             char uplo='L';
@@ -518,7 +518,7 @@ namespace blas{
         //vector.
         void multiply_diagonal_matrix(const blas::vector &diagonal_matrix)
         {
-            int inc=1;
+            fortran_int_t inc=1;
             for(int i=0;i<size_;++i){
                 dscal_(&size_, &diagonal_matrix(i), &values_[i*size_], &inc);
             }
@@ -545,7 +545,7 @@ namespace blas{
         }
     private:
         std::vector<double> values_;
-        int size_;
+        fortran_int_t size_;
   };
     
     inline vector operator*(const matrix &M, const vector &v1)

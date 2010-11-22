@@ -166,23 +166,23 @@ namespace blas{
             values_[i*size2_+j] = value;
         }
         
-        inline const int &size1() const 
+        inline const fortran_int_t &size1() const 
         {
             return size1_;
         }
   
-        inline const int &size2() const
+        inline const fortran_int_t &size2() const
         { 
             return size2_;
         }
         
-        inline const int &size() const
+        inline const fortran_int_t &size() const
         { 
             assert(size1_ == size2_);
             return size1_;
         }
         
-        inline void resize(int size1, int size2)
+        inline void resize(fortran_int_t size1, fortran_int_t size2)
         {
             values_.resize(size1*size2); //set to zero?
             size1_=size1;
@@ -218,8 +218,8 @@ namespace blas{
         //multiply matrix by value.
         general_matrix<T> &operator *=(double lambda)
         {
-            int inc=1;
-            int total_size=size1_*size2_;
+            fortran_int_t inc=1;
+            fortran_int_t total_size=size1_*size2_;
             dscal_(&total_size, &lambda, &values_[0], &inc);
             return *this;
         }
@@ -272,7 +272,7 @@ namespace blas{
         void left_multiply_diagonal_matrix(const blas::vector &diagonal_matrix)
         {
             assert(size1_==diagonal_matrix.size()); 
-            int inc=1;
+            fortran_int_t inc=1;
             for(int i=0;i<size1_;++i){ //for each col: multiply col. with constant
                 dscal_(&size2_, &diagonal_matrix(i), &values_[i*size2_], &inc);
             }     
@@ -293,13 +293,13 @@ namespace blas{
         //call the BLAS routine for matrix vector multiplication:
             char trans='T';
             double alpha=1., beta=0.;       //no need to multiply a constant or add a vector
-            int inc=1;
+            fortran_int_t inc=1;
             dgemv_(&trans, &size1_, &size1_, &alpha, &values_[0], &size1_, &(v1(0)), &inc, &beta, &(v2(0)), &inc);
         }
 
         inline void multiply_row(const int i, const T&val)
         { 
-            int inc=1;
+            fortran_int_t inc=1;
             dscal_(&size2_, &val, &values_[i*size2_], &inc);
         }
         
@@ -380,9 +380,9 @@ namespace blas{
             ar << make_pvp("", &values_.front(), std::vector<std::size_t>(2, size1_,size2_));
         }
     private:
-        int size1_; //current size of matrix
-        int size2_; //current size of matrix
-        int total_memory_size_; //total memory allocated for this matrix
+        fortran_int_t size1_; //current size of matrix
+        fortran_int_t size2_; //current size of matrix
+        fortran_int_t total_memory_size_; //total memory allocated for this matrix
         std::vector<T> values_;
   };
   
@@ -486,8 +486,8 @@ namespace blas{
     template<> inline double general_matrix<std::complex<double> >::max()const
     {
         int max_index;
-        int total_size=size1_*size2_;
-        int inc=1;
+        fortran_int_t total_size=size1_*size2_;
+        fortran_int_t inc=1;
         if(total_size==0) return 0;
         if(total_size==1) return std::abs(values_[0]);
         else
@@ -536,8 +536,8 @@ namespace blas{
     template<> inline general_matrix<std::complex<double> >& general_matrix<std::complex<double> >::invert()
     {
         general_matrix<std::complex<double> > B(size1_, size1_);
-        int *ipiv=new int[size1_];
-        int info;
+        fortran_int_t *ipiv=new fortran_int_t[size1_];
+        fortran_int_t info;
         B.set_to_identity();
         FORTRAN_ID(zgesv)(&size1_, &size1_, &values_[0], &size1_, ipiv, &(B(0,0)), &size1_, &info);
         delete[] ipiv;
@@ -549,8 +549,8 @@ namespace blas{
     template<> inline general_matrix<double >& general_matrix<double >::invert()
     {
         general_matrix<double> B(size1_, size1_);
-        int *ipiv=new int[size1_];
-        int info;
+        fortran_int_t *ipiv=new fortran_int_t[size1_];
+        fortran_int_t info;
         B.set_to_identity();
         FORTRAN_ID(dgesv)(&size1_, &size1_, &values_[0], &size1_, ipiv, &(B(0,0)), &size1_, &info);
         delete[] ipiv;

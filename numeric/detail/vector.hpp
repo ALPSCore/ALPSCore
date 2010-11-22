@@ -89,7 +89,7 @@ namespace blas{
       
       inline double operator*(const vector &v2)
       {
-          int inc=1;
+          fortran_int_t inc=1;
           if (!size()) return 0.;
           return FORTRAN_ID(ddot)(&size_, &values_[0],&inc,&v2.values_[0],&inc);
       }
@@ -140,7 +140,7 @@ namespace blas{
       //multiply vector by constant
       inline vector operator *=(double lambda)
       {
-          int inc=1;
+          fortran_int_t inc=1;
           if (size())
             FORTRAN_ID(dscal)(&size_, &lambda, &values_[0], &inc);
           return *this;
@@ -166,7 +166,7 @@ namespace blas{
           if (!size()) return;
 #ifdef VECLIB
           //osx veclib exp
-          int one=1;
+          fortran_int_t one=1;
           blas::dscal_(&size_,&c,&values_[0],&one);
           vecLib::vvexp(&values_[0], &values_[0], &size_); 
 #else
@@ -179,7 +179,7 @@ namespace blas{
 #ifdef MKL
           //intel MKL vector exp
           std::vector<double> scaled_values(size_);
-          int inc=1;
+          fortran_int_t inc=1;
           daxpy_(&size_, &c, &values_[0], &inc, &scaled_values[0], &inc);
           mkl::vdExp(size_,  &scaled_values[0], &values_[0]);
 #else
@@ -225,7 +225,7 @@ namespace blas{
       
     private:
       std::vector<double> values_;
-      int size_; 
+      fortran_int_t size_; 
   };
     
   inline std::ostream &operator<<(std::ostream &os, const vector&M)
