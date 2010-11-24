@@ -13,7 +13,7 @@ include_directories(${Boost_ROOT_DIR})
 #add_alps_test(loadobs)
 
 enable_testing()
-if (ALPS_BUILD_PYTHON)
+if (ALPS_BUILD_PYTHON AND BUILD_SHARED_LIBS)
 #    FOREACH (name hlist_test mcdata loadobs)
     FOREACH (name hlist_test mcdata)
         add_test(python_${name}
@@ -27,4 +27,4 @@ if (ALPS_BUILD_PYTHON)
                 -P ${PROJECT_SOURCE_DIR}/config/run_python_test.cmake
         )
     ENDFOREACH(name)
-ENDIF(ALPS_BUILD_PYTHON)
+ENDIF(ALPS_BUILD_PYTHON AND BUILD_SHARED_LIBS)
