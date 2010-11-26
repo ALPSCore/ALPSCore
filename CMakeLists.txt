@@ -42,10 +42,6 @@ set(ALPS_SOURCES
     scheduler/slave_task.C scheduler/task.C scheduler/worker.C scheduler/workertask.C
 )
 
-if (ALPS_BUILD_NG)
-  set(ALPS_SOURCES ${ALPS_SOURCES} ng/signal.cpp ng/observables/base.cpp)
-endif (ALPS_BUILD_NG)
-
 if (NOT ALPS_FOR_VISTRAILS)
   set(ALPS_SOURCES ${ALPS_SOURCES} 
       # parapack
