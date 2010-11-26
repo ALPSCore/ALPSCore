@@ -52,7 +52,7 @@ namespace detail {
       typedef typename std::list<cell_type> partition_type;
       typedef typename partition_type::iterator partition_iterator_type;
       typedef typename canonical_label_type<vertex_color_type, edge_color_type>::type canonical_label_type;
-      typedef canonical_ordering_iterator<partition_type> canonical_ordering_iterator;
+      typedef canonical_ordering_iterator<partition_type> canonical_ordering_iterator_type;
       nisy_base(
           graph_type const & graph
       )
@@ -63,12 +63,12 @@ namespace detail {
       inline void invalidate() const {
         state_ = CLEARED;
       }
-      inline std::pair<canonical_ordering_iterator, canonical_ordering_iterator> get_canonical_ordering() const {
+      inline std::pair<canonical_ordering_iterator_type, canonical_ordering_iterator_type> get_canonical_ordering() const {
         if (state_ != CACHING)
           build_cache();
         return std::make_pair(
-            canonical_ordering_iterator(canonical_partition_.begin())
-          , canonical_ordering_iterator(canonical_partition_.end())
+            canonical_ordering_iterator_type(canonical_partition_.begin())
+          , canonical_ordering_iterator_type(canonical_partition_.end())
         );
       }
       inline canonical_label_type const & get_canonical_label() const {

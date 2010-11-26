@@ -37,7 +37,7 @@
 #include <boost/graph/graph_traits.hpp>
 #include <boost/dynamic_bitset.hpp>
 #include <boost/graph/adjacency_list.hpp>
-#include <boost/property_map.hpp>
+#include <boost/property_map/property_map.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
