@@ -63,13 +63,13 @@ namespace alps {
         public:
             typedef enum { SINGLE, MPI } execution_types;
 
-            mcoptions(int argc, char* argv[]) : valid(false), reload(false), type(SINGLE) {
+            mcoptions(int argc, char* argv[]) : valid(false), continueing(false), type(SINGLE) {
                 boost::program_options::options_description desc("Allowed options");
                 desc.add_options()
                     ("help", "produce help message")
                     ("single", "run single process")
                     ("mpi", "run in parallel using MPI")
-                    ("reload", "load simulation from checkpoint")
+                    ("continue", "load simulation from checkpoint")
                     ("time-limit,T", boost::program_options::value<std::size_t>(&time_limit)->default_value(0), "time limit for the simulation")
                     ("input-file", boost::program_options::value<std::string>(&input_file), "input file in hdf5 format")
                     ("output-file", boost::program_options::value<std::string>(&output_file)->default_value("sim.h5"), "output file in hdf5 format");
@@ -85,12 +85,12 @@ namespace alps {
                     throw std::invalid_argument("No job file specified");
                 if (vm.count("mpi"))
                     type = MPI;
-                if (vm.count("reload")) // CHANGE: continue
-                    reload = true;
+                if (vm.count("continue"))
+                    continueing = true;
             }
 
             bool valid;
-            bool reload;
+            bool continueing;
             std::size_t time_limit;
             std::string input_file;
             std::string output_file;
@@ -200,87 +200,103 @@ namespace alps {
         // GET RID OF Unused and write a 1-line .cpp file!
         template<typename Unused = void> class mcsignal_impl{
             public:
-
                 mcsignal_impl() {
-                    static bool initialized;
-                    if (!initialized) {
-                        static struct sigaction action;
-                        initialized = true;
-                        memset(&action, 0, sizeof(action));
-                        action.sa_handler = &mcsignal_impl<Unused>::slot;
-                        sigaction(SIGINT, &action, NULL);
-                        sigaction(SIGTERM, &action, NULL);
-                        sigaction(SIGXCPU, &action, NULL);
-                        sigaction(SIGQUIT, &action, NULL);
-                        sigaction(SIGUSR1, &action, NULL);
-                        sigaction(SIGUSR2, &action, NULL);
-                        // SIGSTOP is missing
-                        // need to know which signal occured!
-                    }
+                    #ifndef BOOST_MSVC
+                        static bool initialized;
+                        if (!initialized) {
+                            static struct sigaction action;
+                            initialized = true;
+                            memset(&action, 0, sizeof(action));
+                            action.sa_handler = &mcsignal_impl::slot;
+                            sigaction(SIGINT, &action, NULL);
+                            sigaction(SIGTERM, &action, NULL);
+                            sigaction(SIGXCPU, &action, NULL);
+                            sigaction(SIGQUIT, &action, NULL);
+                            sigaction(SIGUSR1, &action, NULL);
+                            sigaction(SIGUSR2, &action, NULL);
+                            sigaction(SIGSTOP, &action, NULL);
+                        }
+                    #endif
                 }
 
-                operator bool() const { 
-                    return occured; 
+                bool empty() {
+                    return !signals_.size();
                 }
 
-                static void slot(int signal) { 
-                    std::cerr << "Killed by signal " << signal << std::endl;
-                    occured = true;
+                int top() {
+                    return signals_.back();
+                }
+
+                void pop() {
+                    return signals_.pop_back();
+                }
+
+                static void slot(int signal) {
+                    std::cerr << "Received signal " << signal << std::endl;
+                    signals_.push_back(signal);
                 }
 
             private:
-                static bool occured;
+
+                static std::vector<int> signals_;
         };
-        template<typename Unused> bool mcsignal_impl<Unused>::occured = false;
+        template<typename Unused> std::vector<int> mcsignal_impl<Unused>::signals_;
     }
 
     typedef detail::mcsignal_impl<> mcsignal;
 
-    // relace this by BOOST_MPI_CHECK_RESULT
-    template <typename T> void mcmpierror(T code) {
-        if (code != MPI_SUCCESS) {
-            char buffer[BUFSIZ];
-            int size;
-            MPI_Error_string(code, buffer, &size);
-            throw std::logic_error(std::string("MPI Error: ") + buffer); 
+    namespace detail {
+        template<typename T> struct short_print_proxy {
+            public:
+                explicit short_print_proxy(T const & v): value(v) {};
+                short_print_proxy(short_print_proxy<T> const & rhs): value(rhs.value) {};
+                T const & value;
+        };
+    }
+
+    template<typename T> detail::short_print_proxy<T const> short_print(T const & v) {
+        return detail::short_print_proxy<T const>(v);
+    }
+
+    template <typename T> std::ostream & operator<<(std::ostream & os, detail::short_print_proxy<T> const & v) {
+        return os << v.value;
+     }
+
+    template <typename T> std::ostream & operator<<(std::ostream & os, detail::short_print_proxy<std::vector<T> const> const & v) {
+        switch (v.value.size()) {
+            case 0: 
+                return os << "[]";
+            case 1: 
+                return os << "[" << short_print(v.value.front()) << "]";
+            case 2: 
+                return os << "[" << short_print(v.value.front()) << "," << short_print(v.value.back()) << "]";
+            default: 
+                return os << "[" << short_print(v.value.front()) << ",.." << short_print(v.value.size()) << "..," << short_print(v.value.back()) << "]";
         }
     }
 
-    template <typename T> std::ostream & operator<<(std::ostream & os, std::vector<T> const & value) {
-        switch (value.size()) {
-            case 0: os << "[]"; break;
-            case 1: os << "[" << value.front() << "]"; break;
-            case 2: os << "[" << value.front() << "," << value.back() << "]"; break;
-            default: os << "[" << value.front() << ",.." << value.size() << "..," << value.back() << "]";
+}
+
+namespace boost {
+    namespace mpi {
+
+        template<typename T, typename Op> void reduce(const communicator & comm, std::vector<T> const & in_values, Op op, int root) {
+            reduce(comm, &in_values.front(), in_values.size(), op, root);
         }
-        return os;
-    }
 
-    template <typename T> std::size_t mcsize(T const & value) { 
-        return 1; 
-    }
+        template<typename T, typename Op> void reduce(const communicator & comm, std::vector<T> const & in_values, std::vector<T> & out_values, Op op, int root) {
+            out_values.resize(in_values.size());
+            reduce(comm, &in_values.front(), in_values.size(), &out_values.front(), op, root);
+        }
 
-    template <typename T> std::size_t mcsize(std::vector<T> const & value) { 
-        return value.size(); 
     }
+}
 
-    template <typename T> void mcresize(T & value, std::size_t size) {}
-
-    template <typename T> void mcresize(std::vector<T> & value, std::size_t size) { 
-        return value.resize(size);
-    }
-
-    template <typename T> typename alps::element_type<T>::type * mcpointer(T & value) { 
-        return &value; 
-    }
-
-    template <typename T> typename alps::element_type<T>::type * mcpointer(std::vector<T> & value) {
-        return &value.front(); 
-    }
+namespace alps {
 
     class mcany {
         public:
-        
+
             virtual uint64_t count() const { 
                 throw std::logic_error("not Impl"); 
             }
@@ -292,6 +308,8 @@ namespace alps {
             virtual void serialize(hdf5::oarchive & ar) const { 
                 throw std::logic_error("not Impl"); 
             }
+
+            template<typename T> operator alea::mcdata<T>() const;
 
             virtual std::string to_string() const { 
                 throw std::logic_error("not Impl"); 
@@ -316,6 +334,9 @@ namespace alps {
         public:
             typedef typename alea::mcdata<T>::value_type value_type;
             typedef typename alea::mcdata<T>::result_type result_type;
+            // TODO: only support double!
+            typedef typename alps::element_type<T>::type element_type;
+            typedef typename change_value_type<T, double>::type time_type;
 
             mcdata(): alea::mcdata<T>() {}
             template <typename X> mcdata(mcdata<X> const & rhs): alea::mcdata<T>(rhs) {}
@@ -336,29 +357,13 @@ namespace alps {
                 return alea::mcdata<T>::count();
             }
 
-            inline result_type const & mean() const {
-                return alea::mcdata<T>::mean();
-            }
-
-            inline result_type const & error() const {
-                return alea::mcdata<T>::error();
-            }
-
-            inline typename alea::mcdata<T>::time_type const & tau() const {
-                return alea::mcdata<T>::tau();
-            }
-
-            inline result_type const & variance() const {
-                return alea::mcdata<T>::variance();
-            }
-
             typename std::string to_string() const {
                 if (count() == 0)
                     return "No Measurements";
                 else {
                     std::stringstream s;
-                    s << std::fixed << std::setprecision(5) << alea::mcdata<T>::mean() << "(" << count() << ") +/-" << alea::mcdata<T>::error() << " "
-                      << alea::mcdata<T>::bins() << "#" << alea::mcdata<T>::bin_size();
+                    s << std::fixed << std::setprecision(5) << short_print(alea::mcdata<T>::mean()) << "(" << count() << ") +/-" << short_print(alea::mcdata<T>::error()) << " "
+                      << short_print(alea::mcdata<T>::bins()) << "#" << alea::mcdata<T>::bin_size();
                     return s.str();
                 }
             }
@@ -371,113 +376,177 @@ namespace alps {
                 alea::mcdata<T>::serialize(ar);
             }
 
-            // TODO: reduce communication of mean/error/variance to one call
-            void reduce_master(boost::ptr_map<std::string, mcany> & results, std::string const & name, boost::mpi::communicator const & communicator, std::size_t binnumber) {
+            void reduce_master(
+                  boost::ptr_map<std::string, mcany> & results
+                , std::string const & name
+                , boost::mpi::communicator const & communicator
+                , std::size_t binnumber
+            ) {
+                reduce_master_impl(results, name, communicator, binnumber, typename boost::is_scalar<T>::type());
+            }
+            
+            void reduce_slave(boost::mpi::communicator const & communicator, std::size_t binnumber) { 
+                reduce_slave_impl(communicator, binnumber, typename boost::is_scalar<T>::type());
+            }
+
+        private:
+
+            void reduce_master_impl(
+                  boost::ptr_map<std::string, mcany> & results
+                , std::string const & name
+                , boost::mpi::communicator const & communicator
+                , std::size_t binnumber
+                , boost::mpl::true_
+            ) {
                 using std::sqrt;
+                using alps::numeric::sq;
+                uint64_t global_count;
+                boost::mpi::reduce(communicator, count(), global_count, std::plus<uint64_t>(), 0);
+                std::vector<result_type> local(2, 0), global(alea::mcdata<T>::has_variance() ? 3 : 2, 0);
+                local[0] = alea::mcdata<T>::mean() * static_cast<element_type>(count());
+                local[1] = sq(alea::mcdata<T>::error()) * sq(static_cast<element_type>(count()));
+                if (alea::mcdata<T>::has_variance())
+                    local.push_back(alea::mcdata<T>::variance() * static_cast<element_type>(count()));
+                boost::mpi::reduce(communicator, local, global, std::plus<element_type>(), 0);
+                boost::optional<result_type> global_variance_opt;
+                if (alea::mcdata<T>::has_variance())
+                    global_variance_opt = global[2] / static_cast<element_type>(global_count);
+                boost::optional<time_type> global_tau_opt;
+                if (alea::mcdata<T>::has_tau()) {
+                    time_type global_tau;
+                    boost::mpi::reduce(communicator, alea::mcdata<T>::tau() * static_cast<double>(count()), global_tau, std::plus<double>(), 0);
+                    global_tau_opt = global_tau / static_cast<double>(global_count);
+                }
+                std::vector<result_type> global_bins(alea::mcdata<T>::bin_number() > 0 ? binnumber : 0);
+                std::size_t binsize = 0;
+                if (alea::mcdata<T>::bin_number() > 0) {
+                    std::vector<result_type> local_bins(binnumber);
+                    binsize = partition_bins(local_bins, communicator);
+                    boost::mpi::reduce(communicator, local_bins, global_bins, std::plus<result_type>(), 0);
+                }
+                boost::assign::ptr_map_insert<mcdata<value_type> >(results)(name, mcdata<value_type>(
+                      global_count
+                    , global[0] / static_cast<element_type>(global_count)
+                    , sqrt(global[1]) / static_cast<element_type>(global_count)
+                    , global_variance_opt
+                    , global_tau_opt
+                    , binsize
+                    , global_bins
+                ));
+            }
+
+            void reduce_master_impl(
+                  boost::ptr_map<std::string, mcany> & results
+                , std::string const & name
+                , boost::mpi::communicator const & communicator
+                , std::size_t binnumber
+                , boost::mpl::false_
+            ) {
                 using alps::numeric::sq;
                 using alps::numeric::sqrt;
                 using boost::numeric::operators::operator*;
                 using boost::numeric::operators::operator/;
-                uint64_t count_all;
-                boost::mpi::reduce(communicator, count(), count_all, std::plus<uint64_t>(), 0);
-                result_type mean = alea::mcdata<T>::mean() * static_cast<typename alea::mcdata<T>::element_type>(count()), mean_all;
-                mcresize(mean_all, mcsize(mean));
-                mcmpierror(MPI_Reduce(mcpointer(mean), mcpointer(mean_all), mcsize(mean), boost::mpi::get_mpi_datatype(typename alea::mcdata<T>::element_type()), MPI_SUM, 0, communicator));
-                result_type error = sq(alea::mcdata<T>::error()) * sq(static_cast<typename alea::mcdata<T>::element_type>(count())), error_all;
-                mcresize(error_all, mcsize(error));
-                mcmpierror(MPI_Reduce(mcpointer(error), mcpointer(error_all), mcsize(error), boost::mpi::get_mpi_datatype(typename alea::mcdata<T>::element_type()), MPI_SUM, 0, communicator));
-                boost::optional<typename alea::mcdata<T>::result_type> variance_all_opt;
+                uint64_t global_count;
+                boost::mpi::reduce(communicator, count(), global_count, std::plus<uint64_t>(), 0);
+                result_type global_mean, global_error, global_variance;
+                boost::mpi::reduce(communicator, alea::mcdata<T>::mean() * static_cast<element_type>(count()), global_mean, std::plus<element_type>(), 0);
+                boost::mpi::reduce(communicator, sq(alea::mcdata<T>::error()) * sq(static_cast<element_type>(count())), global_error, std::plus<element_type>(), 0);
+                boost::optional<result_type> global_variance_opt;
                 if (alea::mcdata<T>::has_variance()) {
-                    result_type variance = alea::mcdata<T>::variance() * static_cast<typename alea::mcdata<T>::element_type>(count()), variance_all;
-                    mcresize(variance_all, mcsize(variance));
-                    mcmpierror(MPI_Reduce(mcpointer(variance), mcpointer(variance_all), mcsize(variance), boost::mpi::get_mpi_datatype(typename alea::mcdata<T>::element_type()), MPI_SUM, 0, communicator));
-                    variance_all_opt = variance_all / static_cast<typename alea::mcdata<T>::element_type>(count_all);
+                    boost::mpi::reduce(communicator, alea::mcdata<T>::variance() * static_cast<element_type>(count()), global_variance, std::plus<element_type>(), 0);
+                    global_variance_opt = global_variance / static_cast<element_type>(global_count);
                 }
-                boost::optional<typename alea::mcdata<T>::time_type> tau_all_opt;
+                boost::optional<time_type> global_tau_opt;
                 if (alea::mcdata<T>::has_tau()) {
-                    result_type tau = alea::mcdata<T>::tau() * static_cast<typename alea::mcdata<T>::element_type>(count()), tau_all;
-                    mcresize(tau_all, mcsize(tau));
-                    mcmpierror(MPI_Reduce(mcpointer(tau), mcpointer(tau_all), mcsize(tau), boost::mpi::get_mpi_datatype(typename alea::mcdata<T>::element_type()), MPI_SUM, 0, communicator));
-                    tau_all_opt = tau_all / static_cast<typename alea::mcdata<T>::element_type>(count_all);
+                    time_type global_tau;
+                    boost::mpi::reduce(communicator, alea::mcdata<T>::tau() * static_cast<double>(count()), global_tau, std::plus<double>(), 0);
+                    global_tau_opt = global_tau / static_cast<double>(global_count);
                 }
-                std::vector<result_type> bins;
-                std::size_t binsize = 0;
+                std::vector<result_type> global_bins(alea::mcdata<T>::bin_number() > 0 ? binnumber : 0);
+                std::size_t binsize = 0, elementsize = alea::mcdata<T>::mean().size();
                 if (alea::mcdata<T>::bin_number() > 0) {
-                    std::vector<result_type> local_bins(binnumber);
-                    for (typename std::vector<result_type>::iterator it = local_bins.begin(); it != local_bins.end(); ++it)
-                        mcresize(*it, mcsize(mean));
+                    std::vector<result_type> local_bins(binnumber, result_type(elementsize));
                     binsize = partition_bins(local_bins, communicator);
-                    bins.resize(binnumber);
-                    if (boost::is_scalar<result_type>::value) {
-                        mcmpierror(MPI_Reduce(&local_bins.front(), &bins.front(), binnumber, boost::mpi::get_mpi_datatype(typename alea::mcdata<T>::element_type()), MPI_SUM, 0, communicator));
-                    } else {
-                        std::vector<typename alea::mcdata<T>::element_type> raw_local_bins(binnumber * mcsize(mean)), raw_bins(binnumber * mcsize(mean));
-                        for (typename std::vector<result_type>::iterator it = local_bins.begin(); it != local_bins.end(); ++it)
-                            std::copy(mcpointer(*it), mcpointer(*it) + mcsize(*it), mcpointer(raw_local_bins[(it - local_bins.begin()) * mcsize(mean)]));
-                        mcmpierror(MPI_Reduce(&raw_local_bins.front(), &raw_bins.front(), binnumber * mcsize(mean), boost::mpi::get_mpi_datatype(typename alea::mcdata<T>::element_type()), MPI_SUM, 0, communicator));
-                        for (typename std::vector<result_type>::iterator it = bins.begin(); it != bins.end(); ++it) {
-                            mcresize(*it, mcsize(mean));
-                            std::copy(raw_bins.begin() + (it - bins.begin()) * mcsize(mean), raw_bins.begin() + (it - bins.begin() + 1) * mcsize(mean), mcpointer(*it));
-                        }
+                    std::vector<typename alea::mcdata<T>::element_type> local_raw_bins(binnumber * elementsize), global_raw_bins(binnumber * elementsize);
+                    for (typename std::vector<result_type>::iterator it = local_bins.begin(); it != local_bins.end(); ++it)
+                        std::copy(it->begin(), it->end(), local_raw_bins.begin() + ((it - local_bins.begin()) * elementsize));
+                    boost::mpi::reduce(communicator, local_raw_bins, global_raw_bins, std::plus<element_type>(), 0);
+                    for (typename std::vector<result_type>::iterator it = global_bins.begin(); it != global_bins.end(); ++it) {
+                        it->resize(elementsize);
+                        std::copy(global_raw_bins.begin() + (it - global_bins.begin()) * elementsize, global_raw_bins.begin() + (it - global_bins.begin() + 1) * elementsize, it->begin());
                     }
                 }
                 boost::assign::ptr_map_insert<mcdata<value_type> >(results)(name, mcdata<value_type>(
-                      count_all
-                    , mean_all / typename alea::mcdata<T>::element_type(count_all)
-                    , sqrt(error_all) / typename alea::mcdata<T>::element_type(count_all)
-                    , variance_all_opt
-                    , tau_all_opt
-                    , mcsize(mean) * binsize
-                    , bins
+                      global_count
+                    , global_mean / static_cast<element_type>(global_count)
+                    , sqrt(global_error) / static_cast<element_type>(global_count)
+                    , global_variance_opt
+                    , global_tau_opt
+                    , elementsize * binsize
+                    , global_bins
                 ));
             }
 
-            void reduce_slave(boost::mpi::communicator const & communicator, std::size_t binnumber) {
+            void reduce_slave_impl(
+                  boost::mpi::communicator const & communicator
+                , std::size_t binnumber
+                , boost::mpl::true_
+            ) {
                 using alps::numeric::sq;
-                using boost::numeric::operators::operator*;
                 boost::mpi::reduce(communicator, count(), std::plus<uint64_t>(), 0);
-                result_type mean = alea::mcdata<T>::mean() * static_cast<typename alea::mcdata<T>::element_type>(count());
-                mcmpierror(MPI_Reduce(mcpointer(mean), NULL, mcsize(mean), boost::mpi::get_mpi_datatype(typename alea::mcdata<T>::element_type()), MPI_SUM, 0, communicator));
-                result_type error = sq(alea::mcdata<T>::error()) * sq(static_cast<typename alea::mcdata<T>::element_type>(count()));
-                mcmpierror(MPI_Reduce(mcpointer(error), NULL, mcsize(error), boost::mpi::get_mpi_datatype(typename alea::mcdata<T>::element_type()), MPI_SUM, 0, communicator));
-                if (alea::mcdata<T>::has_variance()) {
-                    result_type variance = alea::mcdata<T>::variance() * static_cast<typename alea::mcdata<T>::element_type>(count());
-                    mcmpierror(MPI_Reduce(mcpointer(variance), NULL, mcsize(variance), boost::mpi::get_mpi_datatype(typename alea::mcdata<T>::element_type()), MPI_SUM, 0, communicator));
-                }
-                if (alea::mcdata<T>::has_tau()) {
-                    result_type tau = alea::mcdata<T>::tau() * static_cast<typename alea::mcdata<T>::element_type>(count());
-                    mcmpierror(MPI_Reduce(mcpointer(tau), NULL, mcsize(tau), boost::mpi::get_mpi_datatype(typename alea::mcdata<T>::element_type()), MPI_SUM, 0, communicator));
-                }
+                std::vector<result_type> local(2, 0);
+                local[0] = alea::mcdata<T>::mean() * static_cast<element_type>(count());
+                local[1] = sq(alea::mcdata<T>::error()) * sq(static_cast<element_type>(count()));
+                if (alea::mcdata<T>::has_variance())
+                    local.push_back(alea::mcdata<T>::variance() * static_cast<element_type>(count()));
+                boost::mpi::reduce(communicator, local, std::plus<element_type>(), 0);
+                if (alea::mcdata<T>::has_tau())
+                    boost::mpi::reduce(communicator, alea::mcdata<T>::tau() * static_cast<double>(count()), std::plus<double>(), 0);
                 if (alea::mcdata<T>::bin_number() > 0) {
                     std::vector<result_type> local_bins(binnumber);
-                    for (typename std::vector<result_type>::iterator it = local_bins.begin(); it != local_bins.end(); ++it)
-                        mcresize(*it, mcsize(mean));
                     partition_bins(local_bins, communicator);
-                    if (boost::is_scalar<result_type>::value)
-                        mcmpierror(MPI_Reduce(&local_bins.front(), NULL, binnumber, boost::mpi::get_mpi_datatype(typename alea::mcdata<T>::element_type()), MPI_SUM, 0, communicator));
-                    else {
-                        std::vector<typename alea::mcdata<T>::element_type> raw_local_bins(binnumber * mcsize(mean));
-                        for (typename std::vector<result_type>::iterator it = local_bins.begin(); it != local_bins.end(); ++it)
-                            std::copy(mcpointer(*it), mcpointer(*it) + mcsize(*it), mcpointer(raw_local_bins[(it - local_bins.begin()) * mcsize(mean)]));
-                        mcmpierror(MPI_Reduce(&raw_local_bins.front(), NULL, binnumber * mcsize(mean), boost::mpi::get_mpi_datatype(typename alea::mcdata<T>::element_type()), MPI_SUM, 0, communicator));
-                    }
+                    boost::mpi::reduce(communicator, local_bins, std::plus<element_type>(), 0);
                 }
             }
 
-        private:
+            void reduce_slave_impl(
+                  boost::mpi::communicator const & communicator
+                , std::size_t binnumber
+                , boost::mpl::false_
+            ) {
+                using alps::numeric::sq;
+                using boost::numeric::operators::operator*;
+                boost::mpi::reduce(communicator, count(), std::plus<uint64_t>(), 0);
+                boost::mpi::reduce(communicator, alea::mcdata<T>::mean() * static_cast<element_type>(count()), std::plus<element_type>(), 0);
+                boost::mpi::reduce(communicator, sq(alea::mcdata<T>::error()) * sq(static_cast<element_type>(count())), std::plus<element_type>(), 0);
+                if (alea::mcdata<T>::has_variance())
+                    boost::mpi::reduce(communicator, alea::mcdata<T>::variance() * static_cast<element_type>(count()), std::plus<element_type>(), 0);
+                if (alea::mcdata<T>::has_tau())
+                    boost::mpi::reduce(communicator, alea::mcdata<T>::tau() * static_cast<double>(count()), std::plus<double>(), 0);
+                std::size_t elementsize = alea::mcdata<T>::mean().size();
+                if (alea::mcdata<T>::bin_number() > 0) {
+                    std::vector<result_type> local_bins(binnumber, result_type(elementsize));
+                    partition_bins(local_bins, communicator);
+                    std::vector<typename alea::mcdata<T>::element_type> local_raw_bins(binnumber * elementsize);
+                    for (typename std::vector<result_type>::iterator it = local_bins.begin(); it != local_bins.end(); ++it)
+                        std::copy(it->begin(), it->end(), local_raw_bins.begin() + ((it - local_bins.begin()) * elementsize));
+                    boost::mpi::reduce(communicator, local_raw_bins, std::plus<element_type>(), 0);
+                }
+            }
+
             std::size_t partition_bins (std::vector<result_type> & bins, boost::mpi::communicator const & communicator) {
                 using boost::numeric::operators::operator+;
                 alea::mcdata<T>::set_bin_size(boost::mpi::all_reduce(communicator, alea::mcdata<T>::bin_size(), boost::mpi::maximum<std::size_t>()));
                 std::vector<int> buffer(2 * communicator.size()), index(communicator.size());
                 int data[2] = {communicator.rank(), alea::mcdata<T>::bin_number()};
-                MPI_Allgather (data, 2, MPI_INT, &buffer.front(), 2, MPI_INT, communicator);
+                boost::mpi::all_gather(communicator, data, 2, buffer);
                 for (std::vector<int>::const_iterator it = buffer.begin(); it != buffer.end(); it += 2)
                     index[*it] = *(it + 1);
                 int perbin = std::accumulate(index.begin(), index.end(), 0) / bins.size();
                 if (perbin == 0)
                     throw std::runtime_error("not enough data for the required binnumber");
                 int start = std::accumulate(index.begin(), index.begin() + communicator.rank(), 0);
-                for (int i = start / perbin, j = start - i, k = 0; i < bins.size() && k < alea::mcdata<T>::bin_number(); ++k) {
+                for (int i = start / perbin, j = start % perbin, k = 0; i < bins.size() && k < alea::mcdata<T>::bin_number(); ++k) {
                     bins[i] = bins[i] + alea::mcdata<T>::bins()[k];
                     if (++j == perbin) {
                         ++i;
@@ -487,6 +556,10 @@ namespace alps {
                 return perbin;
             }
     };
+    
+    template<typename T> mcany::operator alea::mcdata<T>() const {
+       return static_cast<alea::mcdata<T> >(dynamic_cast<mcdata<T> const & >(*this));
+    }
 
     template<typename S> struct result_names_type {
         typedef typename S::result_names_type type;
