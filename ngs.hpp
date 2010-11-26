@@ -312,7 +312,7 @@ namespace alps {
             }
 
             template<typename T> alea::mcdata<T> const & get_mcdata() const {
-               return static_cast<alea::mcdata<T> const &>(dynamic_cast<alea::mcdata<T> const & >(*this));
+               return dynamic_cast<mcdata<T> const & >(*this).get_mcdata();
             }
 
             virtual std::string to_string() const { 
@@ -356,6 +356,10 @@ namespace alps {
                 , uint64_t binsize
                 , std::vector<value_type> const & values
             ): alea::mcdata<T>(count, mean, error, variance, tau, binsize, values) {}
+
+            alea::mcdata<T> const & get_mcdata() const {
+               return static_cast<alea::mcdata<T> const &>(*this);
+            }
 
             inline uint64_t count() const { 
                 return alea::mcdata<T>::count();
