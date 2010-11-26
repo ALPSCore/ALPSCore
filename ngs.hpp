@@ -294,6 +294,8 @@ namespace boost {
 
 namespace alps {
 
+    template <typename T> class mcdata;
+
     class mcany {
         public:
 
@@ -309,7 +311,9 @@ namespace alps {
                 throw std::logic_error("not Impl"); 
             }
 
-            template<typename T> operator alea::mcdata<T>() const;
+            template<typename T> alea::mcdata<T> const & get_mcdata() const {
+               return static_cast<alea::mcdata<T> const &>(dynamic_cast<alea::mcdata<T> const & >(*this));
+            }
 
             virtual std::string to_string() const { 
                 throw std::logic_error("not Impl"); 
@@ -557,10 +561,6 @@ namespace alps {
             }
     };
     
-    template<typename T> mcany::operator alea::mcdata<T>() const {
-       return static_cast<alea::mcdata<T> >(dynamic_cast<mcdata<T> const & >(*this));
-    }
-
     template<typename S> struct result_names_type {
         typedef typename S::result_names_type type;
     };
