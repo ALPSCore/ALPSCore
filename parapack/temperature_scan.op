@@ -1,3 +1,6 @@
+TEMPSCAN: number of temperatures = 5
+TEMPSCAN: initial temperature = 0.1
+TEMPSCAN: final temperature = 0.5
 0, T = 0.1, progress = 0.0133
 1, T = 0.1, progress = 0.0267
 2, T = 0.1, progress = 0.04
