@@ -264,7 +264,7 @@ void task::check_parameter() {
         if (!params_.defined(p.key())) changed = true;
     }
     if (changed) {
-      std::clog << "Info: parameters in " << logger::task(task_id_) << " have been changed. "
+      std::cout << "Info: parameters in " << logger::task(task_id_) << " have been changed. "
                 << "All the clones are being thrown away." << std::endl;
       params_ = params_in;
       obs_.clear();
@@ -277,7 +277,7 @@ void task::check_parameter() {
     } else if (params_in.defined("NUM_CLONES")) {
       if ((params_.defined("NUM_CLONES") && params_in["NUM_CLONES"] != params_["NUM_CLONES"]) ||
           !params_.defined("NUM_CLONES")) {
-        std::clog << "Info: number of clones in " << logger::task(task_id_) << " has been changed."
+        std::cout << "Info: number of clones in " << logger::task(task_id_) << " has been changed."
                   << std::endl;
         params_["NUM_CLONES"] = params_in["NUM_CLONES"];
         changed = true;

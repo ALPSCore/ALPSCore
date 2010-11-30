@@ -370,23 +370,23 @@ public:
     }
     if (num > 0) mean /= num;
     if (num == 0) {
-      if (verbose) std::clog << "stage " << stage_ << ": " << mcs_()
+      if (verbose) std::cout << "stage " << stage_ << ": " << mcs_()
                              << ": no count in the target energy range)\n";
       mcs_.set_sweeps(mcs_.sweeps().min() + interval_);
       return false;
     } else if (hist_min < flatness_ * mean) {
-      if (verbose) std::clog << "stage " << stage_ << ": " << mcs_()
+      if (verbose) std::cout << "stage " << stage_ << ": " << mcs_()
                              << ": flatness check FAILED (mean = " << mean << ", Hmin = "
                              << hist_min << ", ratio = " << hist_min / mean << ")\n";
       mcs_.set_sweeps(mcs_.sweeps().min() + interval_);
       return false;
     } else {
-      if (verbose) std::clog << "stage " << stage_ << ": " << mcs_()
+      if (verbose) std::cout << "stage " << stage_ << ": " << mcs_()
                              << ": flatness check PASSED (mean = " << mean << ", Hmin = "
                              << hist_min << ", ratio = " << hist_min / mean << ")\n";
       if (factor_ > final_) {
         factor_ = sqrt(factor_);
-        if (verbose) std::clog << "stage " << stage_ << ": " << mcs_()
+        if (verbose) std::cout << "stage " << stage_ << ": " << mcs_()
                                << ": update factor is reduced to " << factor_
                                << " (target = " << final_ << ")\n";
         mcs_.set_sweeps(mcs_.sweeps().min() + interval_);
@@ -394,7 +394,7 @@ public:
         ++stage_;
         return false;
       } else {
-        if (verbose) std::clog << "stage " << stage_ << ": " << mcs_()
+        if (verbose) std::cout << "stage " << stage_ << ": " << mcs_()
                                << ": Wang-Landau optimization done\n";
         ++stage_;
         factor_ = 1;
@@ -505,7 +505,7 @@ public:
         dp << true << obs_map;
         ++count_;
       } else {
-        std::cerr << "No count in observable. Skipped. ";
+        std::cout << "No count in observable. Skipped. ";
       }
     }
   }

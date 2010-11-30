@@ -102,10 +102,10 @@ public:
     boost::tie(weight_, dump_weight_) = calc_weight();
     status_ = calc_status();
     if (is_new) {
-      std::clog << logger::header() << "dispatching a new " << logger::clone(task_id_, cid)
+      std::cout << logger::header() << "dispatching a new " << logger::clone(task_id_, cid)
                 << " on " << logger::group(group) << std::endl;
     } else {
-      std::clog << logger::header() << "resuming a suspended " << logger::clone(task_id_, cid)
+      std::cout << logger::header() << "resuming a suspended " << logger::clone(task_id_, cid)
                 << " on " << logger::group(group) << std::endl;
       report(proxy, cid);
     }
@@ -122,7 +122,7 @@ public:
       proxy.checkpoint(clone_master_[cid]);
       if (proxy.is_local(clone_master_[cid])) {
         clone_info const& info = proxy.info(clone_master_[cid]);
-        std::clog << logger::header() << "regular checkpoint: "
+        std::cout << logger::header() << "regular checkpoint: "
                   << logger::clone(task_id_, cid) << " is " << info.phase()
                   << " (" << precision(info.progress() * 100, 3) << "% done)\n";
         info_updated(cid, info);
@@ -137,7 +137,7 @@ public:
       proxy.update_info(clone_master_[cid]);
       if (proxy.is_local(clone_master_[cid])) {
         clone_info const& info = proxy.info(clone_master_[cid]);
-        std::clog << logger::header() << "progress report: "
+        std::cout << logger::header() << "progress report: "
                   << logger::clone(task_id_, cid) << " is " << info.phase()
                   << " (" << precision(info.progress() * 100, 3) << "% done)\n";
       }
@@ -178,7 +178,7 @@ public:
   template<typename PROXY, typename GROUP>
   void halt_clone(PROXY& proxy, cid_t cid, GROUP const& g) {
     if (clone_status_[cid] == clone_status::Idling) {
-      std::clog << logger::header() << logger::clone(task_id_, cid) << " finished"
+      std::cout << logger::header() << logger::clone(task_id_, cid) << " finished"
                 << " on " << logger::group(g) << std::endl;
       clone_status_[cid] = clone_status::Stopping;
       proxy.halt(clone_master_[cid]);
@@ -199,7 +199,7 @@ public:
   void clone_suspended(cid_t cid, GROUP const& g, clone_info const& info) {
     if (clone_status_[cid] != clone_status::Stopping)
       boost::throw_exception(std::logic_error("clone is not stopping"));
-    std::clog << logger::header() << logger::clone(task_id_, cid)
+    std::cout << logger::header() << logger::clone(task_id_, cid)
               << " suspended (" << precision(info.progress() * 100, 3)
               << "% done)" << " on " << logger::group(g) << std::endl;
     clone_info_[cid] = info;

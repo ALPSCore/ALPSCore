@@ -177,11 +177,11 @@ worker_factory::creator_pointer_type worker_factory::make_creator(Parameters con
     algoname = params["ALGORITHM"];
   } else if (params.defined("WORKER")) {
     algoname = params["WORKER"];
-    std::clog << "Warning: parameter WORKER is obsolete.  Please use ALGORITHM instead.\n";
+    std::cout << "Warning: parameter WORKER is obsolete.  Please use ALGORITHM instead.\n";
   }
   if (worker_creators_.size() == 1) {
     if (algoname != "" && worker_creators_.begin()->first != algoname) {
-      std::clog << "Warning: unknown algorithm: \"" << algoname
+      std::cout << "Warning: unknown algorithm: \"" << algoname
                 << "\".  The only algorithm \"" << worker_creators_.begin()->first
                 << "\" will be used instead.\n";
     }
@@ -243,28 +243,28 @@ evaluator_factory::make_creator(Parameters const& params) const {
       algoname = params["ALGORITHM"];
     } else if (params.defined("WORKER")) {
       algoname = params["WORKER"];
-      std::clog << "Warning: parameter WORKER is obsolete.  Please use ALGORITHM instead.\n";
+      std::cout << "Warning: parameter WORKER is obsolete.  Please use ALGORITHM instead.\n";
     }
   }
   if (evalname == "default") {
     // return default evaluator
   } else if (evaluator_creators_.size() == 0) {
     if (evalname != "") {
-      std::clog << "Warning: unknown evaluator: " << evalname
+      std::cout << "Warning: unknown evaluator: " << evalname
                 << ".  The default evaluator will be used instead\n";
     } else if (algoname != "") {
-      std::clog << "Warning: unknown evaluator: " << algoname
+      std::cout << "Warning: unknown evaluator: " << algoname
                 << ".  The default evaluator will be used instead\n";
     } else {
-      std::clog << "Info: no evaluator registered.  The default evaluator will be used";
+      std::cout << "Info: no evaluator registered.  The default evaluator will be used";
     }
   } else if (evaluator_creators_.size() == 1) {
     if (evalname != "" && evaluator_creators_.begin()->first != evalname) {
-      std::clog << "Warning: unknown evaluator: \"" << evalname
+      std::cout << "Warning: unknown evaluator: \"" << evalname
                 << "\".  The only evaluator \"" << evaluator_creators_.begin()->first
                 << "\" will be used instead.\n";
     } else if (algoname != "" && evaluator_creators_.begin()->first != algoname) {
-      std::clog << "Warning: unknown evaluator: \"" << algoname
+      std::cout << "Warning: unknown evaluator: \"" << algoname
                 << "\".  The only evaluator \"" << evaluator_creators_.begin()->first
                 << "\" will be used instead.\n";
     }
@@ -274,28 +274,28 @@ evaluator_factory::make_creator(Parameters const& params) const {
     if (itr != evaluator_creators_.end() && itr->second != 0) {
       return itr->second;
     } else {
-      std::cerr << "Warning: unknown evaluator: \"" << evalname
+      std::cout << "Warning: unknown evaluator: \"" << evalname
                 << "\" (registered evaluators: ";
       for (creator_map_type::const_iterator itr = evaluator_creators_.begin();
            itr != evaluator_creators_.end(); ++itr) {
-        if (itr != evaluator_creators_.begin()) std::cerr << ", ";
-        std::cerr << "\"" << itr->first << "\"";
+        if (itr != evaluator_creators_.begin()) std::cout << ", ";
+        std::cout << "\"" << itr->first << "\"";
       }
-      std::cerr << ").  The default evaluator will be used instead.\n";
+      std::cout << ").  The default evaluator will be used instead.\n";
     }
   } else if (algoname != "") {
     creator_map_type::const_iterator itr = evaluator_creators_.find(algoname);
     if (itr != evaluator_creators_.end() && itr->second != 0) {
       return itr->second;
     } else {
-      std::cerr << "Warning: unknown evaluator: \"" << algoname
+      std::cout << "Warning: unknown evaluator: \"" << algoname
                 << "\" (registered evaluators: ";
       for (creator_map_type::const_iterator itr = evaluator_creators_.begin();
            itr != evaluator_creators_.end(); ++itr) {
-        if (itr != evaluator_creators_.begin()) std::cerr << ", ";
-        std::cerr << "\"" << itr->first << "\"";
+        if (itr != evaluator_creators_.begin()) std::cout << ", ";
+        std::cout << "\"" << itr->first << "\"";
       }
-      std::cerr << ").  The default evaluator will be used instead.\n";
+      std::cout << ").  The default evaluator will be used instead.\n";
     }
   }
   // default evaluator
@@ -337,11 +337,11 @@ parallel_worker_factory::make_creator(Parameters const& params) const {
     algoname = params["ALGORITHM"];
   } else if (params.defined("WORKER")) {
     algoname = params["WORKER"];
-    std::clog << "Warning: parameter WORKER is obsolete.  Please use ALGORITHM instead.\n";
+    std::cout << "Warning: parameter WORKER is obsolete.  Please use ALGORITHM instead.\n";
   }
   if (worker_creators_.size() == 1) {
     if (algoname != "" && worker_creators_.begin()->first != algoname) {
-      std::clog << "Warning: unknown algorithm: \"" << algoname
+      std::cout << "Warning: unknown algorithm: \"" << algoname
                 << "\".  The only algorithm \"" << worker_creators_.begin()->first
                 << "\" will be used instead.\n";
     }

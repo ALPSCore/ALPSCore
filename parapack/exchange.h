@@ -611,8 +611,8 @@ public:
     : super_type(params), init_(params), beta_(params), mcs_(params), num_returnee_(0) {
 
     int nrep = beta_.size();
-    std::clog << "EXMC: number of replicas = " << nrep << std::endl;
-    std::clog << "EXMC: initial inverse temperature set = " << write_vector(beta_, " ", 5)
+    std::cout << "EXMC: number of replicas = " << nrep << std::endl;
+    std::cout << "EXMC: initial inverse temperature set = " << write_vector(beta_, " ", 5)
               << std::endl;
 
     // initialize walkers
@@ -771,12 +771,12 @@ public:
             accept_[p] =
               reinterpret_cast<SimpleRealObservable&>(obs[p]["EXMC: Acceptance Rate"]).mean();
           for (int p = 0; p < nrep; ++p) wp_[p] = weight_parameters_[p] / mcs_.stage_count();
-          std::clog << "EXMC stage " << mcs_.stage() << ": acceptance rate = "
+          std::cout << "EXMC stage " << mcs_.stage() << ": acceptance rate = "
                     << write_vector(accept_, " ", 5) << std::endl;
 
           if (mcs_.stage() != 0) {
             beta_.optimize_h1999(wp_);
-            std::clog << "EXMC stage " << mcs_.stage() << ": optimized inverse temperature set = "
+            std::cout << "EXMC stage " << mcs_.stage() << ": optimized inverse temperature set = "
                       << write_vector(beta_, " ", 5) << std::endl;
           }
           mcs_.next_stage();
@@ -810,7 +810,7 @@ public:
             accept_[p] = reinterpret_cast<SimpleRealObservable&>(
               obs[p]["EXMC: Acceptance Rate"]).mean();
 
-          std::clog << "EXMC stage " << mcs_.stage()
+          std::cout << "EXMC stage " << mcs_.stage()
                     << ": stage count = " << mcs_.stage_count() << '\n'
                     << "EXMC stage " << mcs_.stage()
                     << ": number of returned walkers = " << num_returnee_ << '\n'
@@ -826,9 +826,9 @@ public:
           if (mcs_.stage() != 0 && success) success = beta_.optimize2(upward_);
 
           if (success) {
-            std::clog << "EXMC stage " << mcs_.stage() << ": DONE" << std::endl;
+            std::cout << "EXMC stage " << mcs_.stage() << ": DONE" << std::endl;
             if (mcs_.stage() > 0)
-              std::clog << "EXMC stage " << mcs_.stage() << ": optimized inverse temperature set = "
+              std::cout << "EXMC stage " << mcs_.stage() << ": optimized inverse temperature set = "
                         << write_vector(beta_, " ", 5) << std::endl;
             mcs_.next_stage();
             for (int p = 0; p < nrep - 1; ++p) {
@@ -842,7 +842,7 @@ public:
           } else {
             // increase stage sweeps
             mcs_.continue_stage();
-            std::clog << "EXMC stage " << mcs_.stage() << ": NOT FINISHED\n"
+            std::cout << "EXMC stage " << mcs_.stage() << ": NOT FINISHED\n"
                       << "EXMC stage " << mcs_.stage() << ": increased number of sweeps to "
                       << mcs_.stage_sweeps() << std::endl;
           }
@@ -853,14 +853,14 @@ public:
       if (!mcs_.perform_optimization() && mcs_() == mcs_.thermalization()) {
         int nu = 0;
         for (int p = 0; p < nrep; ++p) if (direc_[p] == walker_direc::unlabeled) ++nu;
-        std::clog << "EXMC: thermalization count = " << mcs_() << '\n'
+        std::cout << "EXMC: thermalization count = " << mcs_() << '\n'
                   << "EXMC: number of returned walkers = " << num_returnee_ << '\n'
                   << "EXMC: number of unlabeled walkers = " << nu << std::endl;
         if ((num_returnee_ >= nrep) && (nu == 0)) {
-          std::clog << "EXMC: thermzlization DONE" << std::endl;
+          std::cout << "EXMC: thermzlization DONE" << std::endl;
         } else {
           mcs_.continue_stage();
-          std::clog << "EXMC: thermalization NOT FINISHED\n"
+          std::cout << "EXMC: thermalization NOT FINISHED\n"
                     << "EXMC: increased number of thermalization sweeps to "
                     << mcs_.thermalization() << std::endl;
         }
@@ -940,7 +940,7 @@ public:
         boost::tie(nreps_[p], offsets_[p]) = calc_nrep(p);
         nrep_max_ = std::max(nrep_max_, nreps_[p]);
       }
-      std::clog << "EXMC: number of replicas = " << nrep << std::endl
+      std::cout << "EXMC: number of replicas = " << nrep << std::endl
                 << "EXMC: number of replicas on each process = "
                 << write_vector(nreps_) << std::endl
                 << "EXMC: initial inverse temperature set = "
@@ -1128,12 +1128,12 @@ public:
               accept_[p] =
                 reinterpret_cast<SimpleRealObservable&>(obs[p]["EXMC: Acceptance Rate"]).mean();
             for (int p = 0; p < nrep; ++p) wp_[p] = weight_parameters_[p] / mcs_.stage_count();
-            std::clog << "EXMC stage " << mcs_.stage() << ": acceptance rate = "
+            std::cout << "EXMC stage " << mcs_.stage() << ": acceptance rate = "
                       << write_vector(accept_, " ", 5) << std::endl;
 
             if (mcs_.stage() != 0) {
               beta_.optimize_h1999(wp_);
-              std::clog << "EXMC stage " << mcs_.stage() << ": optimized inverse temperature set = "
+              std::cout << "EXMC stage " << mcs_.stage() << ": optimized inverse temperature set = "
                         << write_vector(beta_, " ", 5) << std::endl;
             }
             next_stage = true;
@@ -1167,7 +1167,7 @@ public:
               accept_[p] = reinterpret_cast<SimpleRealObservable&>(
                 obs[p]["EXMC: Acceptance Rate"]).mean();
 
-            std::clog << "EXMC stage " << mcs_.stage()
+            std::cout << "EXMC stage " << mcs_.stage()
                       << ": stage count = " << mcs_.stage_count() << '\n'
                       << "EXMC stage " << mcs_.stage()
                       << ": number of returned walkers = " << num_returnee_ << '\n'
@@ -1183,9 +1183,9 @@ public:
             if (mcs_.stage() != 0 && success) success = beta_.optimize2(upward_);
 
             if (success) {
-              std::clog << "EXMC stage " << mcs_.stage() << ": DONE" << std::endl;
+              std::cout << "EXMC stage " << mcs_.stage() << ": DONE" << std::endl;
               if (mcs_.stage() > 0)
-                std::clog << "EXMC stage " << mcs_.stage() << ": optimized inverse temperature set = "
+                std::cout << "EXMC stage " << mcs_.stage() << ": optimized inverse temperature set = "
                           << write_vector(beta_, " ", 5) << std::endl;
               next_stage = true;
               for (int p = 0; p < nrep - 1; ++p) {
@@ -1199,7 +1199,7 @@ public:
             } else {
               // increase stage sweeps
               continue_stage = true;
-              std::clog << "EXMC stage " << mcs_.stage() << ": NOT FINISHED\n"
+              std::cout << "EXMC stage " << mcs_.stage() << ": NOT FINISHED\n"
                         << "EXMC stage " << mcs_.stage() << ": increased number of sweeps to "
                         << mcs_.stage_sweeps() << std::endl;
             }
@@ -1209,14 +1209,14 @@ public:
           if (!mcs_.perform_optimization() && mcs_() == mcs_.thermalization()) {
             int nu = 0;
             for (int p = 0; p < nrep; ++p) if (direc_[p] == walker_direc::unlabeled) ++nu;
-            std::clog << "EXMC: thermalization count = " << mcs_() << '\n'
+            std::cout << "EXMC: thermalization count = " << mcs_() << '\n'
                       << "EXMC: number of returned walkers = " << num_returnee_ << '\n'
                       << "EXMC: number of unlabeled walkers = " << nu << std::endl;
             if ((num_returnee_ >= nrep) && (nu == 0)) {
-              std::clog << "EXMC: thermzlization DONE" << std::endl;
+              std::cout << "EXMC: thermzlization DONE" << std::endl;
             } else {
               continue_stage = true;
-              std::clog << "EXMC: thermalization NOT FINISHED\n"
+              std::cout << "EXMC: thermalization NOT FINISHED\n"
                         << "EXMC: increased number of thermalization sweeps to "
                         << mcs_.thermalization() << std::endl;
             }

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -55,9 +55,9 @@ public:
     if (params.defined("INITIAL_THERMALIZATION"))
       mcs_.set_thermalization(static_cast<int>(evaluate("INITIAL_THERMALIZATION", params)));
     worker_.reset(new worker_type(params));
-    std::clog << "TEMPSCAN: number of temperatures = " << num_temps_ << std::endl;
-    std::clog << "TEMPSCAN: initial temperature = " << temp_init_ << std::endl;
-    std::clog << "TEMPSCAN: final temperature = " << temp_init_ + (num_temps_ - 1) * temp_diff_
+    std::cout << "TEMPSCAN: number of temperatures = " << num_temps_ << std::endl;
+    std::cout << "TEMPSCAN: initial temperature = " << temp_init_ << std::endl;
+    std::cout << "TEMPSCAN: final temperature = " << temp_init_ + (num_temps_ - 1) * temp_diff_
               << std::endl;
   }
   virtual ~temperature_scan_adaptor() {}
