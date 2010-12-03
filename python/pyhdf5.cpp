@@ -45,7 +45,7 @@ namespace alps {
     namespace python {
         namespace hdf5 {
 
-            template<typename T> boost::python::str filename(T & self, std::string const & path) {
+            template<typename T> boost::python::str filename(T & self) {
                 return boost::python::str(self.filename());
             }
 
@@ -103,7 +103,9 @@ namespace alps {
                 PYHDF5_CHECK_SCALAR(std::complex<double>)
                 PYHDF5_CHECK_SCALAR(std::complex<long double>)
                 #undef PYHDF5_CHECK_SCALAR
-                if (PyArray_Check(data.ptr())) {
+                // TODO: why does that produce a segfault?
+//                else 
+//                if (PyArray_Check(data.ptr())) {
                     if (!PyArray_ISCONTIGUOUS(data.ptr()))
                         throw std::runtime_error("numpy array is not continous");
                     else if (!PyArray_ISNOTSWAPPED(data.ptr()))
@@ -139,8 +141,8 @@ namespace alps {
                     #undef PYHDF5_CHECK_SCALAR
                     else
                         throw std::runtime_error("unsupported numpy array type");
-                }
-                throw std::runtime_error("unsupported type");
+//                } else
+//                    throw std::runtime_error("unsupported type");
             }
 
             // TODO: allow more types
