@@ -42,194 +42,181 @@
 #include <numpy/arrayobject.h>
 
 namespace alps { 
-    namespace hdf5 {
+    namespace python {
+        namespace hdf5 {
 
-        namespace detail {
-            std::string extract_string(boost::python::object const & obj) {
-                boost::python::extract<std::string> str(obj);
-                if (!str.check()) {
-                    PyErr_SetString(PyExc_RuntimeError, "Invalid path");
-                    boost::python::throw_error_already_set();
-                }
-                return str();
+            template<typename T> boost::python::str filename(T & self, std::string const & path) {
+                return boost::python::str(self.filename());
             }
-        }
 
-        template<typename Archive> class pyarchive {
-            public:
 
-                pyarchive(std::string const & filename): archive_(filename) {}
+            template<typename T> boost::python::list list_children(T & self, std::string const & path) {
+                boost::python::list result;
+                std::vector<std::string> children = self.list_children(path);
+                for (std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)
+                    result.append(boost::python::str(*it));
+                return result;
+            }
 
-                pyarchive(pyarchive<Archive> const & rhs): archive_(rhs.archive_) {}
+            template<typename T> boost::python::list list_attr(T & self, std::string const & path) {
+                boost::python::list result;
+                std::vector<std::string> children = self.list_attr(path);
+                for (std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)
+                    result.append(boost::python::str(*it));
+                return result;
+            }
 
-                virtual ~pyarchive() {}
-
-                boost::python::str filename() const {
-                    return boost::python::str(archive_.filename());
-                }
-
-                boost::python::object is_group(boost::python::object const & path) const {
-                    return boost::python::object(archive_.is_group(detail::extract_string(path)));
-                }
-
-                boost::python::object is_data(boost::python::object const & path) const {
-                    return boost::python::object(archive_.is_data(detail::extract_string(path)));
-                }
-
-                boost::python::object is_attribute(boost::python::object const & path) const {
-                    return boost::python::object(archive_.is_attribute(detail::extract_string(path)));
-                }
-
-                boost::python::list extent(boost::python::object const & path) const {
-                    return boost::python::list(archive_.extent(detail::extract_string(path)));
-                }
-
-                boost::python::object dimensions(boost::python::object const & path) const {
-                    return boost::python::object(archive_.dimensions(detail::extract_string(path)));
-                }
-
-                boost::python::object is_scalar(boost::python::object const & path) const {
-                    return boost::python::object(archive_.is_scalar(detail::extract_string(path)));
-                }
-
-                boost::python::object is_string(boost::python::object const & path) const {
-                    return boost::python::object(archive_.is_string(detail::extract_string(path)));
-                }
-
-                boost::python::object is_null(boost::python::object const & path) const {
-                    return boost::python::object(archive_.is_null(detail::extract_string(path)));
-                }
-
-                boost::python::list list_children(boost::python::object const & path) const {
-                    boost::python::list result;
-                    std::vector<std::string> children = archive_.list_children(detail::extract_string(path));
-                    for (std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)
-                        result.append(boost::python::str(*it));
-                    return result;
-                }
-
-                boost::python::list list_attr(boost::python::object const & path) const {
-                    boost::python::list result;
-                    std::vector<std::string> children = archive_.list_attr(detail::extract_string(path));
-                    for (std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)
-                        result.append(boost::python::str(*it));
-                    return result;
-                }
-
-            protected:
-
-                Archive archive_;
-
-        };
-
-        struct pyoarchive : public pyarchive<alps::hdf5::oarchive> {
-
-            pyoarchive(std::string const & filename): pyarchive<alps::hdf5::oarchive>(filename) {}
-
-            pyoarchive(pyoarchive const & rhs): pyarchive<alps::hdf5::oarchive>(rhs) {}
-
-            void write(boost::python::object const & path, boost::python::object const & data) {
+            template<typename T> void write_scalar(alps::hdf5::oarchive & self, std::string const & path, T data) {
                 using alps::make_pvp;
-                if (boost::python::extract<long>(data).check())
-                    archive_ << make_pvp(detail::extract_string(path), boost::python::extract<long>(data)());
-                else if (boost::python::extract<double>(data).check())
-                    archive_ << make_pvp(detail::extract_string(path), boost::python::extract<double>(data)());
-                 else if (boost::python::extract<std::string>(data).check())
-                    archive_ << make_pvp(detail::extract_string(path), boost::python::extract<std::string>(data)());
-                else {
-                    alps::python::numpy::import();
-                    std::size_t size = PyArray_Size(data.ptr());
-                    double * data_ = static_cast<double *>(PyArray_DATA(data.ptr()));
-                    archive_ << make_pvp(detail::extract_string(path), data_, size);
-                }
+                self << make_pvp(path, data);
             }
 
-        };
-
-        struct pyiarchive : public pyarchive<alps::hdf5::iarchive> {
-
-            pyiarchive(std::string const & filename): pyarchive<alps::hdf5::iarchive>(filename) {}
-
-            pyiarchive(pyiarchive const & rhs): pyarchive<alps::hdf5::iarchive>(rhs) {}
-
-            boost::python::object read(boost::python::object const & path) {
+            template<typename T> void write_numpy(alps::hdf5::oarchive & self, std::string const & path, T const * data, std::vector<std::size_t> const & v) {
+                using alps::make_pvp;
                 alps::python::numpy::import();
-                if (archive_.is_scalar(detail::extract_string(path))) {
-                    if (archive_.is_string(detail::extract_string(path))) {
+                self << make_pvp(path, data, v);
+            }
+
+            void dispatch_write(alps::hdf5::oarchive & self, std::string const & path, boost::python::object const & data) {
+                if (false);
+                #define PYHDF5_CHECK_SCALAR(T)                                                                                                             \
+                    else if (boost::python::extract< T >(data).check())                                                                                    \
+                        write_scalar(self, path, boost::python::extract< T >(data)());
+                PYHDF5_CHECK_SCALAR(bool)
+                PYHDF5_CHECK_SCALAR(char)
+                PYHDF5_CHECK_SCALAR(signed char)
+                PYHDF5_CHECK_SCALAR(unsigned char)
+                PYHDF5_CHECK_SCALAR(short)
+                PYHDF5_CHECK_SCALAR(unsigned short)
+                PYHDF5_CHECK_SCALAR(int)
+                PYHDF5_CHECK_SCALAR(unsigned int)
+                PYHDF5_CHECK_SCALAR(long)
+                PYHDF5_CHECK_SCALAR(unsigned long)
+                #ifndef BOOST_NO_LONG_LONG
+                    PYHDF5_CHECK_SCALAR(long long)
+                    PYHDF5_CHECK_SCALAR(unsigned long long)
+                #endif
+                PYHDF5_CHECK_SCALAR(float)
+                PYHDF5_CHECK_SCALAR(double)
+                PYHDF5_CHECK_SCALAR(long double)
+                PYHDF5_CHECK_SCALAR(std::complex<float>)
+                PYHDF5_CHECK_SCALAR(std::complex<double>)
+                PYHDF5_CHECK_SCALAR(std::complex<long double>)
+                #undef PYHDF5_CHECK_SCALAR
+                if (PyArray_Check(data.ptr())) {
+                    if (!PyArray_ISCONTIGUOUS(data.ptr()))
+                        throw std::runtime_error("numpy array is not continous");
+                    else if (!PyArray_ISNOTSWAPPED(data.ptr()))
+                        throw std::runtime_error("numpy array is not native");
+                    #define PYHDF5_CHECK_NUMPY(T, N)                                                                                                       \
+                        else if (PyArray_TYPE(data.ptr()) == N)                                                                                            \
+                            write_numpy(                                                                                                                   \
+                                  self                                                                                                                     \
+                                , path                                                                                                                     \
+                                , static_cast< T const *>(PyArray_DATA(data.ptr()))                                                                        \
+                                , std::vector<std::size_t>(PyArray_DIMS(data.ptr()), PyArray_DIMS(data.ptr()) + PyArray_NDIM(data.ptr()))                  \
+                            );
+                    PYHDF5_CHECK_NUMPY(bool, PyArray_BOOL)
+                    PYHDF5_CHECK_NUMPY(char, PyArray_CHAR)
+                    PYHDF5_CHECK_NUMPY(signed char, PyArray_BYTE)
+                    PYHDF5_CHECK_NUMPY(unsigned char, PyArray_UBYTE)
+                    PYHDF5_CHECK_NUMPY(short, PyArray_SHORT)
+                    PYHDF5_CHECK_NUMPY(unsigned short, PyArray_USHORT)
+                    PYHDF5_CHECK_NUMPY(int, PyArray_INT)
+                    PYHDF5_CHECK_NUMPY(unsigned int, PyArray_UINT)
+                    PYHDF5_CHECK_NUMPY(long, PyArray_LONG)
+                    PYHDF5_CHECK_NUMPY(unsigned long, PyArray_ULONG)
+                    #ifndef BOOST_NO_LONG_LONG
+                        PYHDF5_CHECK_NUMPY(long long, PyArray_LONGLONG)
+                        PYHDF5_CHECK_NUMPY(unsigned long long, PyArray_ULONGLONG)
+                    #endif
+                    PYHDF5_CHECK_NUMPY(float, PyArray_FLOAT)
+                    PYHDF5_CHECK_NUMPY(double, PyArray_DOUBLE)
+                    PYHDF5_CHECK_NUMPY(long double, PyArray_LONGDOUBLE)
+                    PYHDF5_CHECK_NUMPY(std::complex<float>, PyArray_CFLOAT)
+                    PYHDF5_CHECK_NUMPY(std::complex<double>, PyArray_CDOUBLE)
+                    PYHDF5_CHECK_NUMPY(std::complex<long double>, PyArray_CLONGDOUBLE)
+                    #undef PYHDF5_CHECK_SCALAR
+                    else
+                        throw std::runtime_error("unsupported numpy array type");
+                }
+                throw std::runtime_error("unsupported type");
+            }
+
+            // TODO: allow more types
+            boost::python::object dispatch_read(alps::hdf5::iarchive & self, std::string const & path) {
+                if (self.is_scalar(path)) {
+                    if (self.is_string(path)) {
                         std::string data;
-                        archive_ >> make_pvp(detail::extract_string(path), data);
+                        self >> make_pvp(path, data);
                         return boost::python::str(data);
                     } else {
                         double data;
-                        archive_ >> make_pvp(detail::extract_string(path), data);
+                        self >> make_pvp(path, data);
                         return boost::python::object(data);
                     }
-                } else if (archive_.is_string(detail::extract_string(path))) {
-                    if (archive_.dimensions(detail::extract_string(path)) != 1)
+                } else if (self.is_string(path)) {
+                    if (self.dimensions(path) != 1)
                         std::runtime_error("More than 1 Dimension is not supported.");
                     boost::python::list result;
                     std::vector<std::string> data;
-                    archive_ >> make_pvp(detail::extract_string(path), data);
+                    self >> make_pvp(path, data);
                     for (std::vector<std::string>::const_iterator it = data.begin(); it != data.end(); ++it)
                          result.append(boost::python::str(*it));
                     return result;
-                } else
-                    switch (archive_.dimensions(detail::extract_string(path))) {
-                        case 1:
-                            {
-                                std::vector<double> data;
-                                archive_ >> make_pvp(detail::extract_string(path), data);
-                                return alps::python::numpy::convert(data);
-                            }
-                         case 2:
-                             {
-                                std::vector<std::vector<double> > data;
-                                archive_ >> make_pvp(detail::extract_string(path), data);
-                                return alps::python::numpy::convert(data);
-                            }
-                        case 3:
-                            {
-                                std::vector<std::vector<std::vector<double> > > data;
-                                archive_ >> make_pvp(detail::extract_string(path), data);
-                                return alps::python::numpy::convert(data);
-                            }
-                        default:
-                            std::runtime_error("More than 3 Dimensions are not implemented.");
+                } else {
+                    alps::python::numpy::import();
+                    std::pair<double *, std::vector<std::size_t> > data(NULL, self.extent(path));
+                    std::vector<npy_intp> npextent(data.second.begin(), data.second.end());
+                    boost::python::object obj(boost::python::handle<>(PyArray_SimpleNew(npextent.size(), &npextent.front(), PyArray_DOUBLE)));
+                    data.first = new double[std::accumulate(data.second.begin(), data.second.end(), std::size_t(1), std::multiplies<std::size_t>())];
+                    try {
+                        self >> make_pvp(path, data);
+                        memcpy(PyArray_DATA(obj.ptr()), data.first, PyArray_ITEMSIZE(obj.ptr()) * PyArray_SIZE(obj.ptr()));
+                        delete[] data.first;
+                    } catch (...) {
+                        delete[] data.first;
+                        throw;
                     }
+                    return obj;
+                }
             }
 
-        };
+
+        }
     }
 }
 
 BOOST_PYTHON_MODULE(pyhdf5_c) {
 
-    boost::python::class_<alps::hdf5::pyoarchive>("oArchive", boost::python::init<std::string>())
-        .def("__deepcopy__", &alps::python::make_copy<alps::hdf5::pyoarchive>)
-        .def("filename", &alps::hdf5::pyoarchive::filename)
-        .def("is_group", &alps::hdf5::pyoarchive::is_group)
-        .def("is_data", &alps::hdf5::pyoarchive::is_data)
-        .def("is_attribute", &alps::hdf5::pyoarchive::extent)
-        .def("extent", &alps::hdf5::pyoarchive::dimensions)
-        .def("dimensions", &alps::hdf5::pyoarchive::dimensions)
-        .def("is_scalar", &alps::hdf5::pyoarchive::is_scalar)
-        .def("is_null", &alps::hdf5::pyoarchive::is_null)
-        .def("list_children", &alps::hdf5::pyoarchive::list_children)
-        .def("write", &alps::hdf5::pyoarchive::write)
+    boost::python::class_<alps::hdf5::oarchive>("oArchive", boost::python::init<std::string>())
+        .def("__deepcopy__", &alps::python::make_copy<alps::hdf5::oarchive>)
+        .def("filename", &alps::python::hdf5::filename<alps::hdf5::oarchive>)
+        .def("is_group", &alps::hdf5::oarchive::is_group)
+        .def("is_data", &alps::hdf5::oarchive::is_data)
+        .def("is_attribute", &alps::hdf5::oarchive::extent)
+        .def("extent", &alps::hdf5::oarchive::dimensions)
+        .def("dimensions", &alps::hdf5::oarchive::dimensions)
+        .def("is_scalar", &alps::hdf5::oarchive::is_scalar)
+        .def("is_null", &alps::hdf5::oarchive::is_null)
+        .def("list_children", &alps::python::hdf5::list_children<alps::hdf5::oarchive>)
+        .def("list_attr", &alps::python::hdf5::list_attr<alps::hdf5::oarchive>)
+        .def("write", &alps::python::hdf5::dispatch_write)
     ;
 
-    boost::python::class_<alps::hdf5::pyiarchive>("iArchive", boost::python::init<std::string>())
-        .def("__deepcopy__", &alps::python::make_copy<alps::hdf5::pyiarchive>)
-        .def("filename", &alps::hdf5::pyiarchive::filename)
-        .def("is_group", &alps::hdf5::pyiarchive::is_group)
-        .def("is_data", &alps::hdf5::pyiarchive::is_data)
-        .def("is_attribute", &alps::hdf5::pyiarchive::extent)
-        .def("extent", &alps::hdf5::pyiarchive::dimensions)
-        .def("dimensions", &alps::hdf5::pyiarchive::dimensions)
-        .def("is_scalar", &alps::hdf5::pyiarchive::is_scalar)
-        .def("is_null", &alps::hdf5::pyiarchive::is_null)
-        .def("list_children", &alps::hdf5::pyiarchive::list_children)
-        .def("read", &alps::hdf5::pyiarchive::read)
+    boost::python::class_<alps::hdf5::iarchive>("iArchive", boost::python::init<std::string>())
+        .def("__deepcopy__", &alps::python::make_copy<alps::hdf5::iarchive>)
+        .def("filename", &alps::python::hdf5::filename<alps::hdf5::iarchive>)
+        .def("is_group", &alps::hdf5::iarchive::is_group)
+        .def("is_data", &alps::hdf5::iarchive::is_data)
+        .def("is_attribute", &alps::hdf5::iarchive::extent)
+        .def("extent", &alps::hdf5::iarchive::dimensions)
+        .def("dimensions", &alps::hdf5::iarchive::dimensions)
+        .def("is_scalar", &alps::hdf5::iarchive::is_scalar)
+        .def("is_null", &alps::hdf5::iarchive::is_null)
+        .def("list_children", &alps::python::hdf5::list_children<alps::hdf5::iarchive>)
+        .def("list_attr", &alps::python::hdf5::list_attr<alps::hdf5::iarchive>)
+        .def("read", &alps::python::hdf5::dispatch_read)
     ;
 
 }

@@ -50,6 +50,7 @@
 #include <boost/static_assert.hpp>
 #include <boost/intrusive_ptr.hpp>
 #include <boost/numeric/ublas/vector.hpp>
+#include <boost/ptr_container/ptr_map.hpp>
 #include <boost/numeric/bindings/ublas.hpp>
 #include <boost/type_traits/add_reference.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
@@ -597,7 +598,7 @@ namespace alps {
                 std::string _filename;
                 file_type _file_id;
             };
-            #define HDF5_FOREACH_SCALAR_NO_LONG_LONG(callback)                                                                                             \
+            #define ALPS_HDF5_FOREACH_SCALAR_NO_LONG_LONG(callback)                                                                                        \
                 callback(char)                                                                                                                             \
                 callback(signed char)                                                                                                                      \
                 callback(unsigned char)                                                                                                                    \
@@ -611,13 +612,13 @@ namespace alps {
                 callback(double)                                                                                                                           \
                 callback(long double)
             #ifndef BOOST_NO_LONG_LONG
-                #define HDF5_FOREACH_SCALAR(callback)                                                                                                      \
-                    HDF5_FOREACH_SCALAR_NO_LONG_LONG(callback)                                                                                             \
+                #define ALPS_HDF5_FOREACH_SCALAR(callback)                                                                                                 \
+                    ALPS_HDF5_FOREACH_SCALAR_NO_LONG_LONG(callback)                                                                                        \
                     callback(long long)                                                                                                                    \
                     callback(unsigned long long)
             #else
-                #define HDF5_FOREACH_SCALAR(callback)                                                                                                      \
-                    HDF5_FOREACH_SCALAR_NO_LONG_LONG(callback)
+                #define ALPS_HDF5_FOREACH_SCALAR(callback)                                                                                                 \
+                    ALPS_HDF5_FOREACH_SCALAR_NO_LONG_LONG(callback)
             #endif
         }
 
@@ -1043,7 +1044,7 @@ namespace alps {
                             detail::attribute_type new_id = H5Acreate2(dest_id, it->c_str(), state_id(), detail::space_type(H5Screate(H5S_SCALAR)), H5P_DEFAULT, H5P_DEFAULT);
                             detail::check_error(H5Awrite(new_id, state_id(), &v));
                         }
-                        #define HDF5_COPY_ATTR(T)                                                                                                          \
+                        #define ALPS_HDF5_COPY_ATTR(T)                                                                                                     \
                             else if (detail::check_error(                                                                                                  \
                                 H5Tequal(detail::type_type(H5Tcopy(type_id)), detail::type_type(get_native_type(static_cast<T>(0))))                       \
                             ) > 0) {                                                                                                                       \
@@ -1054,8 +1055,8 @@ namespace alps {
                                 );                                                                                                                         \
                                 detail::check_error(H5Awrite(new_id, type_id, &v));                                                                        \
                             }
-                        HDF5_FOREACH_SCALAR(HDF5_COPY_ATTR)
-                        #undef HDF5_COPY_ATTR
+                        ALPS_HDF5_FOREACH_SCALAR(ALPS_HDF5_COPY_ATTR)
+                        #undef ALPS_HDF5_COPY_ATTR
                         else ALPS_HDF5_THROW_RUNTIME_ERROR("error in copying attribute: " + *it)
                     }
                 }
@@ -1199,13 +1200,13 @@ namespace alps {
                             get_helper_read<T, char *>(v, data_id, type_id, is_attr);
                         else if (detail::check_error(H5Tequal(detail::type_type(H5Tcopy(complex_id())), detail::type_type(H5Tcopy(type_id)))))
                             get_helper_read<T, std::complex<double> >(v, data_id, type_id, is_attr);
-                        #define HDF5_GET_STRING(U)                                                                                                          \
+                        #define ALPS_HDF5_GET_STRING(U)                                                                                                      \
                             else if (detail::check_error(                                                                                                   \
                                 H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(get_native_type(static_cast<U>(0))))                      \
                             ) > 0)                                                                                                                          \
                                 get_helper_read<T, U>(v, data_id, type_id, is_attr);
-                        HDF5_FOREACH_SCALAR(HDF5_GET_STRING)
-                        #undef HDF5_GET_STRING
+                        ALPS_HDF5_FOREACH_SCALAR(ALPS_HDF5_GET_STRING)
+                        #undef ALPS_HDF5_GET_STRING
                         else ALPS_HDF5_THROW_RUNTIME_ERROR("invalid type")
                     }
                 }
@@ -1396,8 +1397,8 @@ namespace alps {
                 static std::map<std::pair<std::string, bool>, boost::weak_ptr<detail::hdf5_context> > _pool;
         };
         template<hid_t(* F )(std::string const &)> std::map<std::pair<std::string, bool>, boost::weak_ptr<detail::hdf5_context> > archive<F>::_pool;
-        #undef HDF5_FOREACH_SCALAR_NO_LONG_LONG
-        #undef HDF5_FOREACH_SCALAR
+        #undef ALPS_HDF5_FOREACH_SCALAR_NO_LONG_LONG
+        #undef ALPS_HDF5_FOREACH_SCALAR
 
         namespace detail {
             struct creator {
@@ -1481,7 +1482,7 @@ namespace alps {
             return ar;
         }
 
-        #define HDF5_DEFINE_VECTOR_TYPE(C)                                                                                                                  \
+        #define ALPS_HDF5_DEFINE_VECTOR_TYPE(C)                                                                                                             \
             template<typename T> iarchive & serialize(iarchive & ar, std::string const & p, C <T> & v) {                                                    \
                 if (ar.is_group(p)) {                                                                                                                       \
                     std::vector<std::string> children = ar.list_children(p);                                                                                \
@@ -1509,10 +1510,10 @@ namespace alps {
                 }                                                                                                                                           \
                 return ar;                                                                                                                                  \
             }
-        HDF5_DEFINE_VECTOR_TYPE(std::vector)
-        HDF5_DEFINE_VECTOR_TYPE(std::valarray)
-        HDF5_DEFINE_VECTOR_TYPE(boost::numeric::ublas::vector)
-        #undef HDF5_DEFINE_VECTOR_TYPE
+        ALPS_HDF5_DEFINE_VECTOR_TYPE(std::vector)
+        ALPS_HDF5_DEFINE_VECTOR_TYPE(std::valarray)
+        ALPS_HDF5_DEFINE_VECTOR_TYPE(boost::numeric::ublas::vector)
+        #undef ALPS_HDF5_DEFINE_VECTOR_TYPE
 
         template<typename T> iarchive & serialize(iarchive & ar, std::string const & p, std::deque<T> & v) {
             std::vector<T> d;
@@ -1657,7 +1658,7 @@ namespace alps {
         return hdf5::pvp<std::pair<T *, std::vector<std::size_t> > >(p, std::make_pair(boost::ref(v), s));
     }
 
-    #define HDF5_MAKE_PVP(ptr_type, arg_type)                                                                                                               \
+    #define ALPS_HDF5_MAKE_PVP(ptr_type, arg_type)                                                                                                          \
         template <typename T> hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > > make_pvp(std::string const & p, arg_type v, std::size_t s) {       \
             return hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > >(p, std::make_pair(&*v, std::vector<std::size_t>(1, s)));                      \
         }                                                                                                                                                   \
@@ -1666,17 +1667,17 @@ namespace alps {
         ) {                                                                                                                                                 \
             return hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > >(p, std::make_pair(&*v, s));                                                   \
         }
-    HDF5_MAKE_PVP(T *, boost::shared_ptr<T> &)
-    HDF5_MAKE_PVP(T const *, boost::shared_ptr<T> const &)
-    HDF5_MAKE_PVP(T *, std::auto_ptr<T> &)
-    HDF5_MAKE_PVP(T const *, std::auto_ptr<T> const &)
-    HDF5_MAKE_PVP(T *, boost::weak_ptr<T> &)
-    HDF5_MAKE_PVP(T const *, boost::weak_ptr<T> const &)
-    HDF5_MAKE_PVP(T *, boost::scoped_ptr<T> &)
-    HDF5_MAKE_PVP(T const *, boost::scoped_ptr<T> const &)
-    #undef HDF5_MAKE_PVP
+    ALPS_HDF5_MAKE_PVP(T *, boost::shared_ptr<T> &)
+    ALPS_HDF5_MAKE_PVP(T const *, boost::shared_ptr<T> const &)
+    ALPS_HDF5_MAKE_PVP(T *, std::auto_ptr<T> &)
+    ALPS_HDF5_MAKE_PVP(T const *, std::auto_ptr<T> const &)
+    ALPS_HDF5_MAKE_PVP(T *, boost::weak_ptr<T> &)
+    ALPS_HDF5_MAKE_PVP(T const *, boost::weak_ptr<T> const &)
+    ALPS_HDF5_MAKE_PVP(T *, boost::scoped_ptr<T> &)
+    ALPS_HDF5_MAKE_PVP(T const *, boost::scoped_ptr<T> const &)
+    #undef ALPS_HDF5_MAKE_PVP
 
-    #define HDF5_MAKE_ARRAY_PVP(ptr_type, arg_type)                                                                                                         \
+    #define ALPS_HDF5_MAKE_ARRAY_PVP(ptr_type, arg_type)                                                                                                    \
         template <typename T> hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > > make_pvp(std::string const & p, arg_type v, std::size_t s) {       \
             return hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > >(p, std::make_pair(v.get(), std::vector<std::size_t>(1, s)));                  \
         }                                                                                                                                                   \
@@ -1685,9 +1686,9 @@ namespace alps {
         ) {                                                                                                                                                 \
             return hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > >(p, std::make_pair(v.get(), s));                                               \
         }
-    HDF5_MAKE_ARRAY_PVP(T *, boost::shared_array<T> &)
-    HDF5_MAKE_ARRAY_PVP(T const *, boost::shared_array<T> const &)
-    #undef HDF5_MAKE_ARRAY_PVP
+    ALPS_HDF5_MAKE_ARRAY_PVP(T *, boost::shared_array<T> &)
+    ALPS_HDF5_MAKE_ARRAY_PVP(T const *, boost::shared_array<T> const &)
+    #undef ALPS_HDF5_MAKE_ARRAY_PVP
 
     #undef ALPS_HDF5_STRINGIFY
     #undef ALPS_HDF5_STRINGIFY_HELPER
