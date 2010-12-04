@@ -247,9 +247,9 @@ void FiniteLatticeDescriptor::write_xml(oxstream& xml) const
   for (Parameters::const_iterator it=flparms_.begin();it!=flparms_.end();++it)
     xml << start_tag("PARAMETER") << attribute("name", it->key())
         << attribute("default", it->value()) << end_tag("PARAMETER");
-  for (int i=0;i<dimension();++i)
+  for (unsigned int i=0;i<dimension();++i)
     xml << start_tag("EXTENT") << attribute("dimension", i+1) << attribute("size", extent_[i]) << end_tag();
-  for (int i=0;i<dimension();++i)
+  for (unsigned int i=0;i<dimension();++i)
     if (bc_[i] != "")
       xml  << start_tag("BOUNDARY") << attribute("dimension", i+1) << attribute("type", bc_[i]) << end_tag();
   xml << end_tag("FINITELATTICE");
@@ -269,7 +269,7 @@ void FiniteLatticeDescriptor::set_parameters(const Parameters& p)
   static_cast<base_base_type&>(*this) = lattice_;
   Parameters parms(flparms_);
   parms << p;
-  for (int i=0;i<bc_.size();++i) {
+  for (unsigned int i=0;i<bc_.size();++i) {
     if(bc_[i]!="")
       while (parms.defined(bc_[i]) && static_cast<std::string>(parms[bc_[i]]) != bc_[i])
         bc_[i] = static_cast<std::string>(parms[bc_[i]]);
