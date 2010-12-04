@@ -44,6 +44,15 @@
 namespace alps { 
     namespace python {
         namespace hdf5 {
+          
+            void import() {
+              static bool inited = false;
+              if (!inited) {
+                import_array();  
+                boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
+                inited = true;
+              }
+            }
 
             template<typename T> boost::python::str filename(T & self) {
                 return boost::python::str(self.filename());
@@ -166,12 +175,15 @@ namespace alps {
                     for (std::vector<std::string>::const_iterator it = data.begin(); it != data.end(); ++it)
                          result.append(boost::python::str(*it));
                     return result;
-                } else {
-                    alps::python::numpy::import();
-                    std::pair<double *, std::vector<std::size_t> > data(NULL, self.extent(path));
-                    std::vector<npy_intp> npextent(data.second.begin(), data.second.end());
-                    boost::python::object obj(boost::python::handle<>(PyArray_SimpleNew(npextent.size(), &npextent.front(), PyArray_DOUBLE)));
-                    data.first = new double[std::accumulate(data.second.begin(), data.second.end(), std::size_t(1), std::multiplies<std::size_t>())];
+                } 
+                else {
+                  import();
+                  std::pair<double *, std::vector<std::size_t> > data(0, self.extent(path));
+                  std::vector<npy_intp> npextent(data.second.begin(), data.second.end());
+                  std::size_t len = std::accumulate(data.second.begin(), data.second.end(), std::size_t(1), std::multiplies<std::size_t>());
+                  boost::python::object obj(boost::python::handle<>(PyArray_SimpleNew(npextent.size(), &npextent.front(), PyArray_DOUBLE)));
+                  if (len) {
+                    data.first = new double[len];
                     try {
                         self >> make_pvp(path, data);
                         memcpy(PyArray_DATA(obj.ptr()), data.first, PyArray_ITEMSIZE(obj.ptr()) * PyArray_SIZE(obj.ptr()));
@@ -180,7 +192,8 @@ namespace alps {
                         delete[] data.first;
                         throw;
                     }
-                    return obj;
+                  }
+                  return obj;
                 }
             }
 

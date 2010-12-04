@@ -30,7 +30,6 @@
 /* $Id: pyalea.cpp 3520 2010-04-09 16:49:53Z tamama $ */
 
 #include <alps/python/numpy_array.hpp>
-
 #include <numpy/arrayobject.h>
 
 namespace alps { 
