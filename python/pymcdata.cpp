@@ -126,15 +126,54 @@ namespace alps {
 using namespace alps::alea;
 using namespace boost::python;
 
+const char mcdata_docstring[] =
+"This class is used to evaluate Monte Carlo data and functions on them. "
+"Besides the documented functions and properties, the class supports the "
+"arithmetic operations +, -, *, /, +=, -=, *=, /=, and the functions "
+"abs, acos, acosh, asin, asinh, atan, atanh, cb, cbrt, cos, cosh, exp, log, "
+"pow, sin, sinh, sq, sqrt, tan and tanh.";
+
+
+const char init_docstring[] =
+"Optionally the constructor takes one argument for the mean values, "
+"and a second optional argumnt for the error.";
+
+const char save_docstring[] =
+"Saves the object into the HDF5 file specified as the first string argument, "
+"using as observable name the second string argument.";
+
+const char load_docstring[] =
+"Loads the object into from HDF5 file specified as the first string argument, "
+"using as observable name the second string argument.";
+
+const char mean_docstring[] =
+"the mean value of all measurements recorded.";
+
+const char error_docstring[] =
+"the error of all measurements recorded.";
+
+const char tau_docstring[] =
+"the autocorrelation time estimate of the recorded measurements.";
+
+const char variance_docstring[] =
+"the variance of all measurements recorded.";
+
+const char count_docstring[] =
+"the number of measurements recorded.";
+
+const char bins_docstring[] =
+"the number of bins recorded for a jackknife analysis.";
+
+
 BOOST_PYTHON_MODULE(pymcdata_c) {
 
-    class_<mcdata<double> >("MCScalarData", init<optional<double, double> >())
-        .add_property("mean", static_cast<double(*)(mcdata<double> const &)>(&alps::python::wrap_mean))
-        .add_property("error", static_cast<double(*)(mcdata<double> const &)>(&alps::python::wrap_error))
-        .add_property("tau", static_cast<double(*)(mcdata<double> const &)>(&alps::python::wrap_tau))
-        .add_property("variance", static_cast<double(*)(mcdata<double> const &)>(&alps::python::wrap_variance))
-        .add_property("bins", static_cast<numeric::array(*)(mcdata<double> const &)>(&alps::python::wrap_bins))
-        .add_property("count", &mcdata<double>::count)
+    class_<mcdata<double> >("MCScalarData", mcdata_docstring,init<optional<double, double> >(init_docstring))
+        .add_property("mean", static_cast<double(*)(mcdata<double> const &)>(&alps::python::wrap_mean),mean_docstring)
+        .add_property("error", static_cast<double(*)(mcdata<double> const &)>(&alps::python::wrap_error),error_docstring)
+        .add_property("tau", static_cast<double(*)(mcdata<double> const &)>(&alps::python::wrap_tau),tau_docstring)
+        .add_property("variance", static_cast<double(*)(mcdata<double> const &)>(&alps::python::wrap_variance),variance_docstring)
+        .add_property("bins", static_cast<numeric::array(*)(mcdata<double> const &)>(&alps::python::wrap_bins),bins_docstring)
+        .add_property("count", &mcdata<double>::count,count_docstring)
         .def("__repr__", static_cast<str(*)(mcdata<double> const &)>(&alps::python::print_mcdata))
         .def("__deepcopy__", &alps::python::make_copy<mcdata<double> >)
         .def("__abs__", static_cast<mcdata<double>(*)(mcdata<double>)>(&abs))
@@ -183,20 +222,20 @@ BOOST_PYTHON_MODULE(pymcdata_c) {
         .def("asinh", static_cast<mcdata<double>(*)(mcdata<double>)>(&asinh))
         .def("acosh", static_cast<mcdata<double>(*)(mcdata<double>)>(&acosh))
         .def("atanh", static_cast<mcdata<double>(*)(mcdata<double>)>(&atanh))
-        .def("save", &mcdata<double>::save)
-        .def("load", &mcdata<double>::load)
+        .def("save", &mcdata<double>::save,save_docstring)
+        .def("load", &mcdata<double>::load,load_docstring)
     ;
 
-    class_<mcdata<std::vector<double> > >("MCVectorData", init<optional<object, object> >())
+    class_<mcdata<std::vector<double> > >("MCVectorData", mcdata_docstring, init<optional<object, object> >(init_docstring))
         .def("__len__", static_cast<std::size_t(*)(alps::alea::mcdata<std::vector<double> > &)>(&alps::python::size))
         .def("__getitem__", static_cast<object(*)(back_reference<alps::alea::mcdata<std::vector<double> > & >, PyObject *)>(&alps::python::get_item))
         .def("__contains__", static_cast<bool(*)(alps::alea::mcdata<std::vector<double> > &, PyObject *)>(&alps::python::contains))
-        .add_property("mean", static_cast<numeric::array(*)(mcdata<std::vector<double> > const &)>(&alps::python::wrap_mean))
-        .add_property("error", static_cast<numeric::array(*)(mcdata<std::vector<double> > const &)>(&alps::python::wrap_error))
-        .add_property("tau", static_cast<numeric::array(*)(mcdata<std::vector<double> > const &)>(&alps::python::wrap_tau))
-        .add_property("variance", static_cast<numeric::array(*)(mcdata<std::vector<double> > const &)>(&alps::python::wrap_variance))
-        .add_property("bins", static_cast<numeric::array(*)(mcdata<std::vector<double> > const &)>(&alps::python::wrap_bins))
-        .add_property("count", &mcdata<std::vector<double> >::count)
+        .add_property("mean", static_cast<numeric::array(*)(mcdata<std::vector<double> > const &)>(&alps::python::wrap_mean),mean_docstring)
+        .add_property("error", static_cast<numeric::array(*)(mcdata<std::vector<double> > const &)>(&alps::python::wrap_error),error_docstring)
+        .add_property("tau", static_cast<numeric::array(*)(mcdata<std::vector<double> > const &)>(&alps::python::wrap_tau),tau_docstring)
+        .add_property("variance", static_cast<numeric::array(*)(mcdata<std::vector<double> > const &)>(&alps::python::wrap_variance),variance_docstring)
+        .add_property("bins", static_cast<numeric::array(*)(mcdata<std::vector<double> > const &)>(&alps::python::wrap_bins),bins_docstring)
+        .add_property("count", &mcdata<std::vector<double> >::count,count_docstring)
         .def("__repr__", static_cast<str(*)(mcdata<std::vector<double> > const &)>(&alps::python::print_mcdata))
         .def("__deepcopy__", &alps::python::make_copy<mcdata<std::vector<double> > >)
         .def("__abs__", static_cast<mcdata<std::vector<double> >(*)(mcdata<std::vector<double> >)>(&abs))
@@ -254,7 +293,7 @@ BOOST_PYTHON_MODULE(pymcdata_c) {
         .def("asinh", static_cast<mcdata<std::vector<double> >(*)(mcdata<std::vector<double> >)>(&asinh))
         .def("acosh", static_cast<mcdata<std::vector<double> >(*)(mcdata<std::vector<double> >)>(&acosh))
         .def("atanh", static_cast<mcdata<std::vector<double> >(*)(mcdata<std::vector<double> >)>(&atanh))
-        .def("save", &mcdata<std::vector<double> >::save)
-        .def("load", &mcdata<std::vector<double> >::load)
+        .def("save", &mcdata<std::vector<double> >::save,save_docstring)
+        .def("load", &mcdata<std::vector<double> >::load,load_docstring)
     ;
 }

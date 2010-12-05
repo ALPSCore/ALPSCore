@@ -67,9 +67,9 @@ namespace alps {
                 return result;
             }
 
-            template<typename T> boost::python::list list_attr(T & self, std::string const & path) {
+            template<typename T> boost::python::list list_attributes(T & self, std::string const & path) {
                 boost::python::list result;
-                std::vector<std::string> children = self.list_attr(path);
+                std::vector<std::string> children = self.list_attributes(path);
                 for (std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)
                     result.append(boost::python::str(*it));
                 return result;
@@ -270,7 +270,7 @@ BOOST_PYTHON_MODULE(pyhdf5_c) {
         .def("is_scalar", &alps::hdf5::oarchive::is_scalar,is_scalar_docstring)
         .def("is_null", &alps::hdf5::oarchive::is_null,is_null_docstring)
         .def("list_children", &alps::python::hdf5::list_children<alps::hdf5::oarchive>,list_children_docstring)
-        .def("list_attr", &alps::python::hdf5::list_attr<alps::hdf5::oarchive>,list_attr_docstring)
+        .def("list_attributes", &alps::python::hdf5::list_attributes<alps::hdf5::oarchive>,list_attr_docstring)
         .def("write", &alps::python::hdf5::dispatch_write,write_docstring)
     ;
 
@@ -289,7 +289,7 @@ BOOST_PYTHON_MODULE(pyhdf5_c) {
         .def("is_scalar", &alps::hdf5::iarchive::is_scalar,is_scalar_docstring)
         .def("is_null", &alps::hdf5::iarchive::is_null,is_null_docstring)
         .def("list_children", &alps::python::hdf5::list_children<alps::hdf5::iarchive>,list_children_docstring)
-        .def("list_attr", &alps::python::hdf5::list_attr<alps::hdf5::iarchive>,list_attr_docstring)
+        .def("list_attributes", &alps::python::hdf5::list_attributes<alps::hdf5::iarchive>,list_attr_docstring)
         .def("read", &alps::python::hdf5::dispatch_read,read_docstring)
     ;
 

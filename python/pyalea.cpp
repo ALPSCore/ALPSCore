@@ -141,7 +141,7 @@ const char error_docstring[] =
 "the error of all measurements recorded.";
 
 const char tau_docstring[] =
-"the autocorrealtion time estimate of the recorded measurements.";
+"the autocorrelation time estimate of the recorded measurements.";
 
 const char variance_docstring[] =
 "the variance of all measurements recorded.";
