@@ -30,7 +30,6 @@
 /* $Id: pyalea.cpp 3520 2010-04-09 16:49:53Z tamama $ */
 
 #include <alps/python/numpy_array.hpp>
-#include <numpy/arrayobject.h>
 
 namespace alps { 
     namespace python {
@@ -45,6 +44,21 @@ namespace alps {
                 }
             }
 
+            /*
+             template <class T>
+             static boost::python::str print_vector_list(std::vector<T> self)
+             {
+             boost::python::str s;
+             for (typename std::vector<T>::iterator it = self.begin(); it != self.end(); ++it)
+             {
+             s += boost::python::str(*it);
+             s += boost::python::str("\n");
+             }
+             return s;
+             }
+             
+             */
+          
             void convert(boost::python::object const & source, std::vector<double> & target) {
                 import();
                 target.resize(PyArray_Size(source.ptr()));

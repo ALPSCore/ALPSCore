@@ -44,150 +44,63 @@
 
 #include <numpy/arrayobject.h>
 
-typedef boost::variate_generator<boost::mt19937&, boost::uniform_01<double> > random_01;
-
 using namespace boost::python;
 
 namespace alps { 
   namespace alea {
 
-    template <class T>
-    static boost::python::str print_vector_list(std::vector<T> self)
-    {
-      boost::python::str s;
-      for (typename std::vector<T>::iterator it = self.begin(); it != self.end(); ++it)
-      {
-        s += boost::python::str(*it);
-        s += boost::python::str("\n");
-      }
-      return s;
-    }
-
-
-    // for interchanging purpose between numpy array and std::vector
-    template <class T>  PyArray_TYPES getEnum();
-
-    template <>   PyArray_TYPES getEnum<double>()              {  return PyArray_DOUBLE;      }
-    template <>   PyArray_TYPES getEnum<long double>()         {  return PyArray_LONGDOUBLE;  }
-    template <>   PyArray_TYPES getEnum<int>()                 {  return PyArray_INT;         }
-    template <>   PyArray_TYPES getEnum<long>()                {  return PyArray_LONG;        }
-    template <>   PyArray_TYPES getEnum<long long>()           {  return PyArray_LONG;        }
-    template <>   PyArray_TYPES getEnum<unsigned long long>()  {  return PyArray_LONG;        }
-
-    template <class T>
-    boost::python::numeric::array convert2numpy_scalar(T value)
-    {
-        alps::python::numpy::import();                 // ### WARNING: forgetting this will end up in segmentation fault!
-          
-        npy_intp arr_size= 1;   // ### NOTE: npy_intp is nothing but just signed size_t
-        boost::python::object obj(boost::python::handle<>(PyArray_SimpleNew(1, &arr_size, getEnum<T>())));  // ### NOTE: PyArray_SimpleNew is the new version of PyArray_FromDims
-        void *arr_data= PyArray_DATA((PyArrayObject*) obj.ptr());
-        memcpy(arr_data, &value, PyArray_ITEMSIZE((PyArrayObject*) obj.ptr()) * arr_size);
-          
-        return boost::python::extract<boost::python::numeric::array>(obj);
-    }
-      
-    template <class T>
-    boost::python::numeric::array convert2numpy_array(std::vector<T> vec)
-    {
-        alps::python::numpy::import();                 // ### WARNING: forgetting this will end up in segmentation fault!
-          
-        npy_intp arr_size= vec.size();   // ### NOTE: npy_intp is nothing but just signed size_t
-        boost::python::object obj(boost::python::handle<>(PyArray_SimpleNew(1, &arr_size, getEnum<T>())));  // ### NOTE: PyArray_SimpleNew is the new version of PyArray_FromDims
-        void *arr_data= PyArray_DATA((PyArrayObject*) obj.ptr());
-        memcpy(arr_data, &vec.front(), PyArray_ITEMSIZE((PyArrayObject*) obj.ptr()) * arr_size);
-          
-        return boost::python::extract<boost::python::numeric::array>(obj);
-    }
-      
-    template <class T>
-    boost::python::numeric::array convertvalarray2numpy_array(std::valarray<T> vec)
-    {
-        alps::python::numpy::import();                 // ### WARNING: forgetting this will end up in segmentation fault!
-          
-        npy_intp arr_size= vec.size();   // ### NOTE: npy_intp is nothing but just signed size_t
-        boost::python::object obj(boost::python::handle<>(PyArray_SimpleNew(1, &arr_size, getEnum<T>())));  // ### NOTE: PyArray_SimpleNew is the new version of PyArray_FromDims
-        void *arr_data= PyArray_DATA((PyArrayObject*) obj.ptr());
-        memcpy(arr_data, &vec[0], PyArray_ITEMSIZE((PyArrayObject*) obj.ptr()) * arr_size);
-        
-        return boost::python::extract<boost::python::numeric::array>(obj);
-    }
-      
-    template <class T>
-    std::vector<T> convert2vector(boost::python::object arr)
-    {
-      alps::python::numpy::import();                 // ### WARNING: forgetting this will end up in segmentation fault!
-
-      std::size_t vec_size = PyArray_Size(arr.ptr());
-      T * data = (T *) PyArray_DATA(arr.ptr());
-
-      std::vector<T> vec(vec_size);
-      memcpy(&vec.front(),data, PyArray_ITEMSIZE((PyArrayObject*) arr.ptr()) * vec_size);
-      return vec;
-    }
-      
-      template <typename T>
-      std::valarray<T> convert2valarray(boost::python::object arr)
-      {
-          alps::python::numpy::import();                 // ### WARNING: forgetting this will end up in segmentation fault!
-          
-          std::size_t vec_size = PyArray_Size(arr.ptr());
-          T * data = (T *) PyArray_DATA(arr.ptr());
-          std::valarray<T> vec(vec_size);
-          memcpy(&vec[0],data, PyArray_ITEMSIZE((PyArrayObject*) arr.ptr()) * vec_size);
-          return vec;
-      }
-
     template<typename T>
     class WrappedValarrayObservable
     {
-        public:
-        WrappedValarrayObservable(const std::string& name, int s=0)
-        : obs(name,s)
-        {}
-        void operator<<(const boost::python::object& arr)
-        {
-            std::valarray< typename T:: value_type ::value_type > obj=convert2valarray<typename T:: value_type ::value_type >(arr);
-            obs << obj;
-        }
-        std::string representation() const
-        {
-            return obs.representation();
-        }
-        
-        boost::python::numeric::array mean() const 
-        {
-            std::valarray<typename T:: result_type ::value_type > mean = obs.mean();
-            return convertvalarray2numpy_array<typename T:: result_type ::value_type >(mean);
-        }
-        
-        boost::python::numeric::array error() const 
-        {
-            std::valarray<typename T:: result_type ::value_type > error = obs.error();
-            return convertvalarray2numpy_array<typename T:: result_type ::value_type >(error);
-        }
-        boost::python::numeric::array tau() const 
-        {
-            std::valarray<typename T:: time_type ::value_type> tau = obs.tau();
-            return convertvalarray2numpy_array<typename T:: result_type ::value_type >(tau);
-        }
-        boost::python::numeric::array variance() const 
-        {
-            std::valarray<typename T:: result_type ::value_type > variance = obs.variance();
-            return convertvalarray2numpy_array<typename T:: result_type ::value_type >(variance);
-        }
-        void save(std::string const & filename) const {
-            hdf5::oarchive ar(filename);
-            ar << make_pvp("/simulation/results/"+obs.representation(), obs);
-        }
-        typename T::count_type count() const 
-        {
-            return obs.count();
-        }
-        
-        private:
-        T obs;
-        
+      typedef typename T::value_type::value_type element_type;
+    public:
+      WrappedValarrayObservable(const std::string& name, int s=0)
+      : obs(name,s)
+      {}
+      
+      void operator<<(const boost::python::object& arr)
+      {
+          obs << alps::python::numpy::convert2valarray<element_type>(arr);
+      }
+      
+      std::string representation() const
+      {
+          return obs.representation();
+      }
+      
+      boost::python::numeric::array mean() const 
+      {
+          return alps::python::numpy::convert2numpy(obs.mean());
+      }
+      
+      boost::python::numeric::array error() const 
+      {
+          return alps::python::numpy::convert2numpy(obs.error());
+      }
+      
+      boost::python::numeric::array tau() const 
+      {
+          return alps::python::numpy::convert2numpy(obs.tau());
+      }
+
+     boost::python::numeric::array variance() const 
+      {
+          return alps::python::numpy::convert2numpy(obs.variance());
+      }
+      
+      void save(std::string const & filename) const {
+          hdf5::oarchive ar(filename);
+          ar << make_pvp("/simulation/results/"+obs.representation(), obs);
+      }
+      
+      typename T::count_type count() const 
+      {
+          return obs.count();
+      }
+      
+    private:
+      T obs;
+      
     };
   }
 }
@@ -195,64 +108,81 @@ namespace alps {
 using namespace alps::alea;
 using namespace alps::numeric;
 
+const char constructor_docstring[] = 
+"The constructor takes two arguments: a string with the name of the observable "
+"and optionally a second integer argument specifying the number of bins to be "
+"stored.";
+
+const char timeseries_constructor_docstring[] = 
+"The constructor takes two arguments: a string with the name of the observable "
+"and optionally a second integer argument specifying the number of entries per " 
+"bin in the time series.";
+
+const char observable_docstring[] =
+"This class is an ALPS observable class to record results of Monte Carlo "
+"measurements and evaluate mean values, error, and autocorrelations.";
+
+const char timeseries_observable_docstring[] =
+"This class is an ALPS observable class to record results of Monte Carlo "
+"measurements and evaluate mean values, error, and autocorrelations. "
+"It records a full binned time series of measurements, where the number of "
+"elements per bin can be specified.";
+
+const char shift_docstring[] =
+"New measurements are added using the left shift operator <<.";
+
+const char save_docstring[] =
+"Save the obseravble into the HDF5 file specified as the argument.";
+
+const char mean_docstring[] =
+"the mean value of all measurements recorded.";
+
+const char error_docstring[] =
+"the error of all measurements recorded.";
+
+const char tau_docstring[] =
+"the autocorrealtion time estimate of the recorded measurements.";
+
+const char variance_docstring[] =
+"the variance of all measurements recorded.";
+
+const char count_docstring[] =
+"the number of measurements recorded.";
+
 BOOST_PYTHON_MODULE(pyalea_c) {
-#define ALPS_PY_EXPORT_VECTOROBSERVABLE(class_name)                                                                             \
-  class_<WrappedValarrayObservable< alps:: class_name > >(#class_name, init<std::string, optional<int> >())                     \
+#define ALPS_PY_EXPORT_VECTOROBSERVABLE(class_name, class_docstring, init_docstring)                                            \
+  class_<WrappedValarrayObservable< alps:: class_name > >(                                                                      \
+       #class_name, class_docstring, init<std::string, optional<int> >(init_docstring))                                         \
     .def("__repr__", &WrappedValarrayObservable< alps:: class_name >::representation)                                           \
     .def("__deepcopy__",  &alps::python::make_copy<WrappedValarrayObservable< alps::class_name > >)                             \
-    .def("__lshift__", &WrappedValarrayObservable< alps::class_name >::operator<<)                                              \
-    .def("save", &WrappedValarrayObservable< alps::class_name >::save)                                                          \
-    .add_property("mean", &WrappedValarrayObservable< alps::class_name >::mean)                                                 \
-    .add_property("error", &WrappedValarrayObservable< alps::class_name >::error)                                               \
-    .add_property("tau", &WrappedValarrayObservable< alps::class_name >::tau)                                                   \
-    .add_property("variance", &WrappedValarrayObservable< alps::class_name >::variance)                                         \
-    .add_property("count", &WrappedValarrayObservable< alps::class_name >::count)                                               \
+    .def("__lshift__", &WrappedValarrayObservable< alps::class_name >::operator<<,shift_docstring)                              \
+    .def("save", &WrappedValarrayObservable< alps::class_name >::save,save_docstring)                                           \
+    .add_property("mean", &WrappedValarrayObservable< alps::class_name >::mean,mean_docstring)                                  \
+    .add_property("error", &WrappedValarrayObservable< alps::class_name >::error,error_docstring)                               \
+    .add_property("tau", &WrappedValarrayObservable< alps::class_name >::tau,tau_docstring)                                     \
+    .add_property("variance", &WrappedValarrayObservable< alps::class_name >::variance,variance_docstring)                      \
+    .add_property("count", &WrappedValarrayObservable< alps::class_name >::count,count_docstring)                               \
     ;
-ALPS_PY_EXPORT_VECTOROBSERVABLE(IntVectorObservable)
-ALPS_PY_EXPORT_VECTOROBSERVABLE(RealVectorObservable)
-ALPS_PY_EXPORT_VECTOROBSERVABLE(IntVectorTimeSeriesObservable)
-ALPS_PY_EXPORT_VECTOROBSERVABLE(RealVectorTimeSeriesObservable)
+ALPS_PY_EXPORT_VECTOROBSERVABLE(RealVectorObservable,observable_docstring,constructor_docstring)
+ALPS_PY_EXPORT_VECTOROBSERVABLE(RealVectorTimeSeriesObservable,timeseries_observable_docstring,timeseries_constructor_docstring)
 #undef ALPS_PY_EXPORT_VECTOROBSERVABLE
     
-#define ALPS_PY_EXPORT_SIMPLEOBSERVABLE(class_name)                                                                                 \
-  class_< alps:: class_name >(#class_name, init<std::string, optional<int> >())                                                     \
+#define ALPS_PY_EXPORT_SIMPLEOBSERVABLE(class_name, class_docstring, init_docstring)                                                \
+  class_< alps:: class_name >(#class_name, class_docstring, init<std::string, optional<int> >(init_docstring))                      \
     .def("__deepcopy__",  &alps::python::make_copy<alps:: class_name >)                                                             \
     .def("__repr__", &alps:: class_name ::representation)                                                                           \
-    .def("__lshift__", &alps:: class_name ::operator<<)                                                                             \
-    .def("save", &alps::python::save_observable_to_hdf5<alps:: class_name >)                                                        \
-    .add_property("mean", &alps:: class_name ::mean)                                                                                \
-    .add_property("error", static_cast<alps:: class_name ::result_type(alps:: class_name ::*)() const>(&alps:: class_name ::error)) \
-    .add_property("tau",&alps:: class_name ::tau)                                                                                   \
-    .add_property("variance",&alps:: class_name ::variance)                                                                         \
-    .add_property("count",&alps:: class_name ::count)                                                                               \
+    .def("__lshift__", &alps:: class_name ::operator<<,shift_docstring)                                                             \
+    .def("save", &alps::python::save_observable_to_hdf5<alps:: class_name >,save_docstring)                                         \
+    .add_property("mean", &alps:: class_name ::mean,mean_docstring)                                                                 \
+    .add_property("error", static_cast<alps:: class_name ::result_type(alps:: class_name ::*)() const>(&alps:: class_name ::error),error_docstring) \
+    .add_property("tau",&alps:: class_name ::tau,tau_docstring)                                                                     \
+    .add_property("variance",&alps:: class_name ::variance,variance_docstring)                                                      \
+    .add_property("count",&alps:: class_name ::count,count_docstring)                                                               \
     ;                                                                                                                               \
        
-ALPS_PY_EXPORT_SIMPLEOBSERVABLE(RealObservable)
-ALPS_PY_EXPORT_SIMPLEOBSERVABLE(IntObservable)
-ALPS_PY_EXPORT_SIMPLEOBSERVABLE(RealTimeSeriesObservable)
-ALPS_PY_EXPORT_SIMPLEOBSERVABLE(IntTimeSeriesObservable)
+ALPS_PY_EXPORT_SIMPLEOBSERVABLE(RealObservable,observable_docstring,timeseries_constructor_docstring)
+ALPS_PY_EXPORT_SIMPLEOBSERVABLE(RealTimeSeriesObservable,timeseries_observable_docstring,timeseries_constructor_docstring)
 
 #undef ALPS_PY_EXPORT_SIMPLEOBSERVABLE
-    
-    class_<boost::mt19937>("engine")
-    .def("__deepcopy__",  &alps::python::make_copy<boost::mt19937>)
-    .def("random", &boost::mt19937::operator())
-    .def("max", &boost::mt19937::max )
-    ;
-    
-    class_<boost::uniform_01<double> >("uniform")
-    .def("__deepcopy__",  &alps::python::make_copy<boost::uniform_01<double> >)
-    ;
-    
-    class_<random_01 >("random", init< boost::mt19937& , boost::uniform_01<double> >())
-    .def("__deepcopy__",  &alps::python::make_copy<random_01 >)
-    .def("random", static_cast<random_01::result_type(random_01::*)()>(&random_01::operator()))
-    ;
-    
-   
-  boost::python::def("convert2numpy_array_float",&convert2numpy_array<double>);
-  boost::python::def("convert2numpy_array_int",&convert2numpy_array<int>);
 
-  boost::python::def("convert2vector_double",&convert2vector<double>);
-  boost::python::def("convert2vector_int",&convert2vector<int>);
 }

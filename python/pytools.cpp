@@ -97,6 +97,18 @@ namespace  {
     def("hdf5_name_encode", alps::hdf5_name_encode,hdf5_name_encode_docstring);
     def("hdf5_name_decode", alps::hdf5_name_decode,hdf5_name_decode_docstring);
     def("search_xml_library_path", alps::search_xml_library_path,search_xml_library_path_docstring);
+    /*
+     def("convert2numpy",
+     static_cast<boost::python::numeric::array(*)(std::vector<double> const& )>
+     (&convert2numpy));
+     def("convert2numpy",
+     static_cast<boost::python::numeric::array(*)(std::vector<int> const& )>
+     (&convert2numpy));
+     
+     def("convert2vector",&convert2vector<double>);
+     def("convert2vector",&convert2vector<int>);
+     */
+    
   }
   
   void wrap_without_signature()
@@ -118,4 +130,5 @@ BOOST_PYTHON_MODULE(pytools_c)
   wrap_with_signature();
   wrap_without_signature();
 }
+
 

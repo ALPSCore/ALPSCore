@@ -738,7 +738,7 @@ namespace alps {
                 bool is_attribute(std::string const & p) const {
                     try {
                         if (p.find_last_of('@') == std::string::npos)
-                            ALPS_HDF5_THROW_RUNTIME_ERROR("no attribute paht: " + complete_path(p))
+                            ALPS_HDF5_THROW_RUNTIME_ERROR("no attribute path: " + complete_path(p))
                         hid_t parent_id;
                         if (is_group(complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1)))
                             parent_id = detail::check_error(H5Gopen2(file_id(), complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1).c_str(), H5P_DEFAULT));

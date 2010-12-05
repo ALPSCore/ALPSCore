@@ -82,7 +82,7 @@ namespace alps {
 
             template<typename T> void write_numpy(alps::hdf5::oarchive & self, std::string const & path, T const * data, std::vector<std::size_t> const & v) {
                 using alps::make_pvp;
-                alps::python::numpy::import();
+                import();
                 self << make_pvp(path, data, v);
             }
 
@@ -202,36 +202,95 @@ namespace alps {
     }
 }
 
-BOOST_PYTHON_MODULE(pyhdf5_c) {
 
-    boost::python::class_<alps::hdf5::oarchive>("oArchive", boost::python::init<std::string>())
+const char archive_constructor_docstring[] =
+"the constructor takes a file path as argument";
+
+const char filename_docstring[] = 
+"the (read-only) file name of the archive";
+
+const char is_group_docstring[] = 
+"returns True if the given path is a group in the HDF5 file";
+
+const char is_data_docstring[] = 
+"returns True if the given path points to data in the HDF5 file";
+
+const char is_attribute_docstring[] = 
+"returns True if the given path points to an attribute in the HDF5 file";
+
+const char is_scalar_docstring[] = 
+"returns True if the given path points to scalar data in the HDF5 file";
+
+const char is_null_docstring[] = 
+"returns True if the given path points to an empty (null) node in the HDF5 file";
+
+const char extent_docstring[] = 
+"returns a list of the extents along any of the dimensions of an array "
+"at the specified path in the HDF5 file";
+
+const char dimensions_docstring[] = 
+"returns the number of dimensions of an array at the specified path in the HDF5 file";
+
+const char list_children_docstring[] =
+"returns a list with the relative paths of all child nodes "
+"relative to a given path in the HDF5 file";
+
+const char list_attr_docstring[] =
+"returns a list with the names of all the attributes "
+"of a given path in the HDF5 file";
+
+const char write_docstring[] =
+"writes an object into the specified path in the HDF5 file.\n"
+"Currently supported types are scalar types and numpy arrays of them.";
+
+const char read_docstring[] =
+"reads an object from the specified path in the HDF5 file.\n"
+"Currently supported types are scalar types and numpy arrays of them.";
+
+
+
+
+BOOST_PYTHON_MODULE(pyhdf5_c) {
+    using namespace boost::python;
+    docstring_options doc_options(true);
+    doc_options.disable_cpp_signatures();
+  
+    class_<alps::hdf5::oarchive>(
+          "oArchive", 
+          "an archive class to write HDF5 files", 
+          boost::python::init<std::string>(archive_constructor_docstring)
+        )
         .def("__deepcopy__", &alps::python::make_copy<alps::hdf5::oarchive>)
-        .def("filename", &alps::python::hdf5::filename<alps::hdf5::oarchive>)
-        .def("is_group", &alps::hdf5::oarchive::is_group)
-        .def("is_data", &alps::hdf5::oarchive::is_data)
-        .def("is_attribute", &alps::hdf5::oarchive::extent)
-        .def("extent", &alps::hdf5::oarchive::dimensions)
-        .def("dimensions", &alps::hdf5::oarchive::dimensions)
-        .def("is_scalar", &alps::hdf5::oarchive::is_scalar)
-        .def("is_null", &alps::hdf5::oarchive::is_null)
-        .def("list_children", &alps::python::hdf5::list_children<alps::hdf5::oarchive>)
-        .def("list_attr", &alps::python::hdf5::list_attr<alps::hdf5::oarchive>)
-        .def("write", &alps::python::hdf5::dispatch_write)
+        .add_property("filename", &alps::python::hdf5::filename<alps::hdf5::oarchive>,filename_docstring)
+        .def("is_group", &alps::hdf5::oarchive::is_group,is_group_docstring)
+        .def("is_data", &alps::hdf5::oarchive::is_data,is_data_docstring)
+        .def("is_attribute", &alps::hdf5::oarchive::is_attribute,is_attribute_docstring)
+        .def("extent", &alps::hdf5::oarchive::extent,extent_docstring)
+        .def("dimensions", &alps::hdf5::oarchive::dimensions,dimensions_docstring)
+        .def("is_scalar", &alps::hdf5::oarchive::is_scalar,is_scalar_docstring)
+        .def("is_null", &alps::hdf5::oarchive::is_null,is_null_docstring)
+        .def("list_children", &alps::python::hdf5::list_children<alps::hdf5::oarchive>,list_children_docstring)
+        .def("list_attr", &alps::python::hdf5::list_attr<alps::hdf5::oarchive>,list_attr_docstring)
+        .def("write", &alps::python::hdf5::dispatch_write,write_docstring)
     ;
 
-    boost::python::class_<alps::hdf5::iarchive>("iArchive", boost::python::init<std::string>())
+    class_<alps::hdf5::iarchive>(
+          "iArchive", 
+          "an archive class to read HDF5 files", 
+           boost::python::init<std::string>(archive_constructor_docstring)
+        )
         .def("__deepcopy__", &alps::python::make_copy<alps::hdf5::iarchive>)
-        .def("filename", &alps::python::hdf5::filename<alps::hdf5::iarchive>)
-        .def("is_group", &alps::hdf5::iarchive::is_group)
-        .def("is_data", &alps::hdf5::iarchive::is_data)
-        .def("is_attribute", &alps::hdf5::iarchive::extent)
-        .def("extent", &alps::hdf5::iarchive::dimensions)
-        .def("dimensions", &alps::hdf5::iarchive::dimensions)
-        .def("is_scalar", &alps::hdf5::iarchive::is_scalar)
-        .def("is_null", &alps::hdf5::iarchive::is_null)
-        .def("list_children", &alps::python::hdf5::list_children<alps::hdf5::iarchive>)
-        .def("list_attr", &alps::python::hdf5::list_attr<alps::hdf5::iarchive>)
-        .def("read", &alps::python::hdf5::dispatch_read)
+        .add_property("filename", &alps::python::hdf5::filename<alps::hdf5::iarchive>,filename_docstring)
+        .def("is_group", &alps::hdf5::iarchive::is_group,is_group_docstring)
+        .def("is_data", &alps::hdf5::iarchive::is_data,is_data_docstring)
+        .def("is_attribute", &alps::hdf5::iarchive::is_attribute,is_attribute_docstring)
+        .def("extent", &alps::hdf5::iarchive::extent,extent_docstring)
+        .def("dimensions", &alps::hdf5::iarchive::dimensions,dimensions_docstring)
+        .def("is_scalar", &alps::hdf5::iarchive::is_scalar,is_scalar_docstring)
+        .def("is_null", &alps::hdf5::iarchive::is_null,is_null_docstring)
+        .def("list_children", &alps::python::hdf5::list_children<alps::hdf5::iarchive>,list_children_docstring)
+        .def("list_attr", &alps::python::hdf5::list_attr<alps::hdf5::iarchive>,list_attr_docstring)
+        .def("read", &alps::python::hdf5::dispatch_read,read_docstring)
     ;
 
 }
