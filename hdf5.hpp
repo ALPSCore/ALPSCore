@@ -4,7 +4,7 @@
  *
  * ALPS Libraries
  *
- * Copyright (C) 2008-2018 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+ * Copyright (C) 2008-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
  *                            Lukas Gamper <gamperl -at- gmail.com>
  *
  * This software is part of the ALPS libraries, published under the ALPS
@@ -36,6 +36,22 @@
 # define _HDF5USEHLDLL_
 #endif
 
+#include <map>
+#include <set>
+#include <list>
+#include <deque>
+#include <vector>
+#include <string>
+#include <complex>
+#include <sstream>
+#include <cstring>
+#include <cstdlib>
+#include <cassert>
+#include <valarray>
+#include <typeinfo>
+#include <iostream>
+#include <stdexcept>
+
 #include <boost/ref.hpp>
 #include <boost/any.hpp>
 #include <boost/array.hpp>
@@ -47,6 +63,7 @@
 #include <boost/integer.hpp>
 #include <boost/optional.hpp>
 #include <boost/weak_ptr.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/multi_array.hpp>
@@ -55,28 +72,14 @@
 #include <boost/shared_array.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/intrusive_ptr.hpp>
+#include <boost/numeric/ublas/vector.hpp>
+#include <boost/ptr_container/ptr_map.hpp>
+#include <boost/numeric/bindings/ublas.hpp>
 #include <boost/type_traits/add_reference.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-#include <boost/numeric/ublas/vector.hpp>
-
 #include <hdf5.h>
-
-#include <map>
-#include <deque>
-#include <vector>
-#include <string>
-#include <complex>
-#include <sstream>
-#include <cstring>
-#include <cstdlib>
-#include <cassert>
-#include <typeinfo>
-#include <iostream>
-#include <stdexcept>
-#include <valarray>
-
 
 namespace alps {
     #ifndef ALPS_HDF5_SZIP_BLOCK_SIZE
@@ -177,6 +180,7 @@ namespace alps {
             typename boost::is_scalar<T>::type,
             typename boost::mpl::not_<typename boost::is_enum<T>::type>::type
         >::type {};
+        template<typename T> struct is_complex : public boost::mpl::false_ {};
         template<typename T> std::vector<hsize_t> get_extent(T const &) { return std::vector<hsize_t>(1, 1); }
         template<typename T> void set_extent(T &, std::vector<std::size_t> const &) {}
         template<typename T> std::vector<hsize_t> get_offset(T const &) { return std::vector<hsize_t>(1, 1); }
@@ -286,6 +290,7 @@ namespace alps {
         }
 
         template<typename T> bool is_vectorizable(std::complex<T> const &) { return true; }
+        template<typename T> struct is_complex<std::complex<T> > : public boost::mpl::true_ {};
         #ifdef ALPS_HDF5_WRITE_PYTHON_COMPATIBLE_COMPLEX
             template<typename T> struct serializable_type<std::complex<T> > { typedef detail::internal_complex_type type; };
             template<typename T> struct native_type<std::complex<T> > { typedef std::complex<T> type; };
@@ -361,7 +366,7 @@ namespace alps {
             std::copy(u.begin(), u.begin() + c[0], &v + s[0]);
         }
 
-        #define HDF5_DEFINE_VECTOR_TYPE(C)                                                                                                                 \
+        #define ALPS_HDF5_DEFINE_VECTOR_TYPE(C)                                                                                                            \
             template<typename T> struct serializable_type< C <T> > {                                                                                       \
                 typedef typename serializable_type<typename boost::remove_const<T>::type>::type type;                                                      \
             };                                                                                                                                             \
@@ -431,10 +436,11 @@ namespace alps {
                 else                                                                                                                                       \
                     call_set_data(v[s[0]], u, std::vector<hsize_t>(s.begin() + 1, s.end()), std::vector<hsize_t>(c.begin() + 1, c.end()));                 \
             }
-        HDF5_DEFINE_VECTOR_TYPE(std::vector)
-        HDF5_DEFINE_VECTOR_TYPE(std::valarray)
-        HDF5_DEFINE_VECTOR_TYPE(boost::numeric::ublas::vector)
-    
+        ALPS_HDF5_DEFINE_VECTOR_TYPE(std::vector)
+        ALPS_HDF5_DEFINE_VECTOR_TYPE(std::valarray)
+        ALPS_HDF5_DEFINE_VECTOR_TYPE(boost::numeric::ublas::vector)
+        #undef ALPS_HDF5_DEFINE_VECTOR_TYPE
+
         template<typename T> struct serializable_type<std::pair<T *, std::vector<std::size_t> > > { typedef typename serializable_type<typename boost::remove_const<T>::type>::type type; };
         template<typename T> struct native_type<std::pair<T *, std::vector<std::size_t> > > { typedef typename native_type<typename boost::remove_const<T>::type>::type type; };
         template<typename T> std::vector<hsize_t> get_extent(std::pair<T *, std::vector<std::size_t> > const & v) {
@@ -509,13 +515,29 @@ namespace alps {
         }
 
         namespace detail {
-          
             struct error {
-              static herr_t noop(hid_t) { return 0; }
-              static herr_t callback(unsigned n, H5E_error2_t const * desc, void * buffer);
-              static std::string invoke(hid_t id);
+                static herr_t noop(hid_t) { return 0; }
+                static herr_t callback(unsigned n, H5E_error2_t const * desc, void * buffer) {
+                    *reinterpret_cast<std::ostringstream *>(buffer) 
+                        << "    #" 
+                        << convert<std::string>(n) 
+                        << " " << desc->file_name 
+                        << " line " 
+                        << convert<std::string>(desc->line) 
+                        << " in " 
+                        << desc->func_name 
+                        << "(): " 
+                        << desc->desc 
+                        << std::endl;
+                    return 0;
+                }
+                static std::string invoke(hid_t id) {
+                    std::ostringstream buffer;
+                    buffer << "HDF5 error: " << convert<std::string>(id) << std::endl;
+                    H5Ewalk2(H5E_DEFAULT, H5E_WALK_DOWNWARD, callback, &buffer);
+                    return buffer.str();
+                }
             };
-          
             template<herr_t(*F)(hid_t)> class resource {
                 public:
                     resource(): _id(-1) {}
@@ -556,10 +578,42 @@ namespace alps {
             template <typename T> T check_type(T id) { type_type unused(id); return unused; }
             template <typename T> T check_property(T id) { property_type unused(id); return unused; }
             template <typename T> T check_error(T id) { error_type unused(id); return unused; }
-          
-            struct hdf5_context : boost::noncopyable {
-                hdf5_context(std::string const & filename, hid_t file_id, bool compress);
-                ~hdf5_context(); 
+            struct context : boost::noncopyable {
+                context(std::string const & filename, hid_t file_id, bool compress)
+                    : _compress(compress)
+                    , _revision(0)
+                    , _state_id(-1)
+                    , _log_id(-1)
+                    , _filename(filename)
+                    , _file_id(file_id)
+                {
+                    if (_compress) {
+                        unsigned int flag;
+                        detail::check_error(H5Zget_filter_info(H5Z_FILTER_SZIP, &flag));
+                        _compress = flag & H5Z_FILTER_CONFIG_ENCODE_ENABLED;
+                    }
+                }
+                ~context() {
+                    try {
+                        H5Fflush(_file_id, H5F_SCOPE_GLOBAL);
+                        if (_state_id > -1)
+                            detail::check_type(_state_id);
+                        if (_log_id > -1)
+                            detail::check_type(_log_id);
+                        #ifndef ALPS_HDF5_CLOSE_GREEDY
+                            if (
+                                H5Fget_obj_count(_file_id, H5F_OBJ_DATATYPE) > (_state_id == -1 ? 0 : 1) + (_log_id == -1 ? 0 : 1)
+                                || H5Fget_obj_count(_file_id, H5F_OBJ_ALL) - H5Fget_obj_count(_file_id, H5F_OBJ_FILE) - H5Fget_obj_count(_file_id, H5F_OBJ_DATATYPE) > 0
+                            ) {
+                                std::cerr << "Not all resources closed in file '" << _filename << "'" << std::endl;
+                                std::abort();
+                            }
+                        #endif
+                    } catch (std::exception & ex) {
+                        std::cerr << "Error destructing HDF5 context of file '" << _filename << "'\n" << ex.what() << std::endl;
+                        std::abort();
+                    }
+                }
                 bool _compress;
                 // TODO: this has to be checkd before every operation to make sure its still the same
                 int _revision;
@@ -569,7 +623,6 @@ namespace alps {
                 std::string _filename;
                 file_type _file_id;
             };
-          
             #define ALPS_HDF5_FOREACH_SCALAR_NO_LONG_LONG(callback)                                                                                        \
                 callback(char)                                                                                                                             \
                 callback(signed char)                                                                                                                      \
@@ -618,78 +671,469 @@ namespace alps {
             return set_data(v, u, s, c);
         }
 
-         class archive {
+         template<hid_t(* F )(std::string const &)> class archive {
             public:
                 struct log_type {
                     boost::posix_time::ptime time;
                     std::string name;
                 };
-           archive(archive const & rhs);
-           virtual ~archive(); 
-           std::string const & filename() const;
-           std::string encode_segment(std::string const & s);
-           std::string decode_segment(std::string const & s);
-           void commit(std::string const & name = "");
-           std::vector<std::pair<std::string, std::string> > list_revisions() const;
-           void export_revision(std::size_t revision, std::string const & file) const;
-           std::string get_context() const;
-           void set_context(std::string const & context);
-           std::string complete_path(std::string const & p) const;
-           bool is_group(std::string const & p) const;
-           bool is_data(std::string const & p) const;
-           bool is_attribute(std::string const & p) const;
-           std::vector<std::size_t> extent(std::string const & p) const;
-           std::size_t dimensions(std::string const & p) const;
-           bool is_scalar(std::string const & p) const;
-           bool is_string(std::string const & p) const;
-           bool is_null(std::string const & p) const;
-           void delete_data(std::string const & p) const;
-           void delete_group(std::string const & p) const;
-           void delete_attribute(std::string const & p) const;
-           std::vector<std::string> list_children(std::string const & p) const;
-           std::vector<std::string> list_attributes(std::string const & p) const;
-           protected:
-           archive(std::string const & filename, hid_t(* F )(std::string const &), bool compress = false);
-           
-                template<typename T> hid_t get_native_type(T) const {
-                    ALPS_HDF5_THROW_RUNTIME_ERROR(std::string("no native type passed: ") + typeid(T).name())
+                archive(archive<F> const & rhs)
+                    : _path_context(rhs._path_context)
+                    , _context(rhs._context)
+                {}
+                virtual ~archive() {
+                    try {
+                        H5Fflush(file_id(), H5F_SCOPE_GLOBAL);
+                    } catch (std::exception & ex) {
+                        std::cerr << "Error destructing archive of file '" << filename() << "'\n" << ex.what() << std::endl;
+                        std::abort();
+                    }
                 }
-                hid_t get_native_type(char) const { return H5Tcopy(H5T_NATIVE_CHAR); }
-                hid_t get_native_type(signed char) const { return H5Tcopy(H5T_NATIVE_SCHAR); }
-                hid_t get_native_type(unsigned char) const { return H5Tcopy(H5T_NATIVE_UCHAR); }
-                hid_t get_native_type(short) const { return H5Tcopy(H5T_NATIVE_SHORT); }
-                hid_t get_native_type(unsigned short) const { return H5Tcopy(H5T_NATIVE_USHORT); }
-                hid_t get_native_type(int) const { return H5Tcopy(H5T_NATIVE_INT); }
-                hid_t get_native_type(unsigned) const { return H5Tcopy(H5T_NATIVE_UINT); }
-                hid_t get_native_type(long) const { return H5Tcopy(H5T_NATIVE_LONG); }
-                hid_t get_native_type(unsigned long) const { return H5Tcopy(H5T_NATIVE_ULONG); }
-                #ifndef BOOST_NO_LONG_LONG
-                    hid_t get_native_type(long long) const { return H5Tcopy(H5T_NATIVE_LLONG); }
-                    hid_t get_native_type(unsigned long long) const { return H5Tcopy(H5T_NATIVE_ULLONG); }
-                #endif
-                hid_t get_native_type(float) const { return H5Tcopy(H5T_NATIVE_FLOAT); }
-                hid_t get_native_type(double) const { return H5Tcopy(H5T_NATIVE_DOUBLE); }
-                hid_t get_native_type(long double) const { return H5Tcopy(H5T_NATIVE_LDOUBLE); }
-                hid_t get_native_type(bool) const { return H5Tcopy(H5T_NATIVE_HBOOL); }
-                #ifdef ALPS_HDF5_WRITE_PYTHON_COMPATIBLE_COMPLEX
-                    template<typename T> hid_t get_native_type(std::complex<T>) const { return H5Tcopy(complex_id()); }
-                #endif
-                hid_t get_native_type(detail::internal_log_type) const { return H5Tcopy(log_id()); }
-                hid_t get_native_type(std::string) const;
-                static herr_t child_visitor(hid_t, char const * n, const H5L_info_t *, void * d) {
-                    reinterpret_cast<std::vector<std::string> *>(d)->push_back(n);
-                    return 0;
+                std::string const & filename() const {
+                    return _context->_filename;
                 }
-                static herr_t attr_visitor(hid_t, char const * n, const H5A_info_t *, void * d) {
-                    reinterpret_cast<std::vector<std::string> *>(d)->push_back(n);
-                    return 0;
+                std::string encode_segment(std::string const & s) {
+                    std::string r = s;
+                    char chars[] = {'&', '/'};
+                    for (std::size_t i = 0; i < sizeof(chars); ++i)
+                        for (std::size_t pos = r.find_first_of(chars[i]); pos < std::string::npos; pos = r.find_first_of(chars[i], pos + 1))
+                            r = r.substr(0, pos) + "&#" + detail::convert<std::string>(static_cast<int>(chars[i])) + ";" + r.substr(pos + 1);
+                    return r;
                 }
-           hid_t create_path(std::string const & p, hid_t type_id, hid_t space_id, int d, hsize_t const * s = NULL, bool set_prop = true) const;
-           hid_t create_dataset(std::string const & p, hid_t type_id, hid_t space_id, int d, hsize_t const * s = NULL, bool set_prop = true) const;
-           void copy_attributes(hid_t dest_id, hid_t source_id, std::vector<std::string> const & names) const;
-           hid_t save_comitted_data(std::string const & p, hid_t type_id, hid_t space_id, int d, hsize_t const * s = NULL, bool set_prop = true) const;
-           hid_t open_attribute(std::string const & p) const;
-           
+                std::string decode_segment(std::string const & s) {
+                    std::string r = s;
+                    for (std::size_t pos = r.find_first_of('&'); pos < std::string::npos; pos = r.find_first_of('&', pos + 1))
+                        r = r.substr(0, pos) + static_cast<char>(detail::convert<int>(r.substr(pos + 2, r.find_first_of(';', pos) - pos - 2))) + r.substr(r.find_first_of(';', pos) + 1);
+                    return r;
+                }
+                void commit(std::string const & name = "") {
+                    set_attribute("/revisions/@last", ++_context->_revision);
+                    set_group("/revisions/" + detail::convert<std::string>(revision()));
+                    std::string time = boost::posix_time::to_iso_string(boost::posix_time::second_clock::local_time());
+                    detail::internal_log_type v = {
+                        std::strcpy(new char[time.size() + 1], time.c_str()),
+                        std::strcpy(new char[name.size() + 1], name.c_str())
+                    };
+                    set_attribute("/revisions/" + detail::convert<std::string>(revision()) + "/@info", v);
+                    delete[] v.time;
+                    delete[] v.name;
+                }
+                std::vector<std::pair<std::string, std::string> > list_revisions() const {
+                    // TODO: implement
+                    return std::vector<std::pair<std::string, std::string> >();
+                }
+                void export_revision(std::size_t revision, std::string const & file) const {
+                    // TODO: implement
+                }
+                std::string get_context() const {
+                    return _path_context;
+                }
+                void set_context(std::string const & context) {
+                    _path_context = context;
+                }
+                std::string complete_path(std::string const & p) const {
+                    if (p.size() && p[0] == '/')
+                        return p;
+                    else if (p.size() < 2 || p.substr(0, 2) != "..")
+                        return _path_context + (_path_context.size() == 1 || !p.size() ? "" : "/") + p;
+                    else {
+                        std::string s = _path_context;
+                        std::size_t i = 0;
+                        for (; s.size() && p.substr(i, 2) == ".."; i += 3)
+                            s = s.substr(0, s.find_last_of('/'));
+                        return s + (s.size() == 1 || !p.substr(i).size() ? "" : "/") + p.substr(i);
+                    }
+                }
+                bool is_group(std::string const & p) const {
+                    try {
+                        hid_t id = H5Gopen2(file_id(), complete_path(p).c_str(), H5P_DEFAULT);
+                        return id < 0 ? false : detail::check_group(id) != 0;
+                    } catch (std::exception & ex) {
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("file: " + filename() + ", path: " + p + "\n" + ex.what());
+                    }
+                }
+                bool is_data(std::string const & p) const {
+                    try {
+                        hid_t id = H5Dopen2(file_id(), complete_path(p).c_str(), H5P_DEFAULT);
+                        return id < 0 ? false : detail::check_data(id) != 0;
+                    } catch (std::exception & ex) {
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("file: " + filename() + ", path: " + p + "\n" + ex.what());
+                    }
+                }
+                bool is_attribute(std::string const & p) const {
+                    try {
+                        if (p.find_last_of('@') == std::string::npos)
+                            ALPS_HDF5_THROW_RUNTIME_ERROR("no attribute path: " + complete_path(p))
+                        hid_t parent_id;
+                        if (is_group(complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1)))
+                            parent_id = detail::check_error(H5Gopen2(file_id(), complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1).c_str(), H5P_DEFAULT));
+                        else if (is_data(complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1)))
+                           parent_id = detail::check_error(H5Dopen2(file_id(), complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1).c_str(), H5P_DEFAULT));
+                        else
+                            #ifdef ALPS_HDF5_READ_GREEDY
+                                return false;
+                            #else
+                                ALPS_HDF5_THROW_RUNTIME_ERROR("unknown path: " + complete_path(p))
+                            #endif
+                        bool exists = detail::check_error(H5Aexists(parent_id, p.substr(p.find_last_of('@') + 1).c_str()));
+                        if (is_group(complete_path(p).substr(0, complete_path(p).find_last_of('@') - 1)))
+                            detail::check_group(parent_id);
+                        else
+                            detail::check_data(parent_id);
+                        return exists;
+                    } catch (std::exception & ex) {
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("file: " + filename() + ", path: " + p + "\n" + ex.what());
+                    }
+                }
+                std::vector<std::size_t> extent(std::string const & p) const {
+                    try {
+                        if (is_null(p))
+                            return std::vector<std::size_t>(1, 0);
+                        else if (is_scalar(p))
+                            return std::vector<std::size_t>(1, 1);
+                        std::vector<hsize_t> buffer(dimensions(p), 0);
+                        hid_t space_id;
+                        if (p.find_last_of('@') != std::string::npos) {
+                            detail::attribute_type attr_id(open_attribute(complete_path(p)));
+                            space_id = H5Aget_space(attr_id);
+                        } else {
+                            detail::data_type data_id(H5Dopen2(file_id(), complete_path(p).c_str(), H5P_DEFAULT));
+                            space_id = H5Dget_space(data_id);
+                        }
+                        detail::check_error(H5Sget_simple_extent_dims(space_id, &buffer.front(), NULL));
+                        detail::check_space(space_id);
+                        std::vector<std::size_t> extent(buffer.size(), 0);
+                        std::copy(buffer.begin(), buffer.end(), extent.begin());
+                        if (is_data(p) && is_attribute(p + "/@__complex__") && extent.back() == 2) {
+                            extent.pop_back();
+                            if (!extent.size())
+                                return std::vector<std::size_t>(1, 1);
+                        }
+                        return extent;
+                    } catch (std::exception & ex) {
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("file: " + filename() + ", path: " + p + "\n" + ex.what());
+                    }
+                }
+                std::size_t dimensions(std::string const & p) const {
+                    try {
+                        if (p.find_last_of('@') != std::string::npos) {
+                            detail::attribute_type attr_id(open_attribute(complete_path(p)));
+                            return static_cast<hid_t>(detail::check_error(H5Sget_simple_extent_dims(detail::space_type(H5Aget_space(attr_id)), NULL, NULL)));
+                        } else {
+                            detail::data_type data_id(H5Dopen2(file_id(), complete_path(p).c_str(), H5P_DEFAULT));
+                            return static_cast<hid_t>(detail::check_error(H5Sget_simple_extent_dims(detail::space_type(H5Dget_space(data_id)), NULL, NULL)));
+                        }
+                    } catch (std::exception & ex) {
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("file: " + filename() + ", path: " + p + "\n" + ex.what());
+                    }
+                }
+                bool is_scalar(std::string const & p) const {
+                    try {
+                        hid_t space_id;
+                        if (p.find_last_of('@') != std::string::npos) {
+                            detail::attribute_type attr_id(open_attribute(complete_path(p)));
+                            space_id = H5Aget_space(attr_id);
+                        } else {
+                            detail::data_type data_id(H5Dopen2(file_id(), complete_path(p).c_str(), H5P_DEFAULT));
+                            space_id = H5Dget_space(data_id);
+                        }
+                        H5S_class_t type = H5Sget_simple_extent_type(space_id);
+                        detail::check_space(space_id);
+                        if (type == H5S_NO_CLASS)
+                            ALPS_HDF5_THROW_RUNTIME_ERROR("error reading class " + complete_path(p))
+                        return type == H5S_SCALAR;
+                    } catch (std::exception & ex) {
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("file: " + filename() + ", path: " + p + "\n" + ex.what());
+                    }
+                }
+                bool is_string(std::string const & p) const {
+                    try {
+                        hid_t type_id;
+                        if (p.find_last_of('@') != std::string::npos) {
+                            detail::attribute_type attr_id(open_attribute(complete_path(p)));
+                            type_id = H5Aget_type(attr_id);
+                        } else {
+                            detail::data_type data_id(H5Dopen2(file_id(), complete_path(p).c_str(), H5P_DEFAULT));
+                            type_id = H5Dget_type(data_id);
+                        }
+                        detail::type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));
+                        detail::check_type(type_id);
+                        return H5Tget_class(native_id) == H5T_STRING;
+                    } catch (std::exception & ex) {
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("file: " + filename() + ", path: " + p + "\n" + ex.what());
+                    }
+                }
+                bool is_null(std::string const & p) const {
+                    try {
+                        hid_t space_id;
+                        if (p.find_last_of('@') != std::string::npos) {
+                            detail::attribute_type attr_id(open_attribute(complete_path(p)));
+                            space_id = H5Aget_space(attr_id);
+                        } else {
+                            detail::data_type data_id(H5Dopen2(file_id(), complete_path(p).c_str(), H5P_DEFAULT));
+                            space_id = H5Dget_space(data_id);
+                        }
+                        H5S_class_t type = H5Sget_simple_extent_type(space_id);
+                        detail::check_space(space_id);
+                        if (type == H5S_NO_CLASS)
+                            ALPS_HDF5_THROW_RUNTIME_ERROR("error reading class " + complete_path(p))
+                        return type == H5S_NULL;
+                    } catch (std::exception & ex) {
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("file: " + filename() + ", path: " + p + "\n" + ex.what());
+                    }
+                }
+                void serialize(std::string const & p) {
+                    if (p.find_last_of('@') != std::string::npos)
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("attributes needs to be a scalar type or a string" + p)
+                    else
+                        set_group(complete_path(p));
+                }
+                void delete_data(std::string const & p) const {
+                    try {
+                        if (is_data(p))
+                            // TODO: implement provenance
+                            detail::check_error(H5Ldelete(file_id(), complete_path(p).c_str(), H5P_DEFAULT));
+                        else
+                            ALPS_HDF5_THROW_RUNTIME_ERROR("the path does not exists: " + p)
+                    } catch (std::exception & ex) {
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("file: " + filename() + ", path: " + p + "\n" + ex.what());
+                    }
+                }
+                void delete_group(std::string const & p) const {
+                    try {
+                        if (is_group(p))
+                            // TODO: implement provenance
+                            detail::check_error(H5Ldelete(file_id(), complete_path(p).c_str(), H5P_DEFAULT));
+                        else
+                            ALPS_HDF5_THROW_RUNTIME_ERROR("the path does not exists: " + p)
+                    } catch (std::exception & ex) {
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("file: " + filename() + ", path: " + p + "\n" + ex.what());
+                    }
+                }
+                void delete_attribute(std::string const & p) const {
+                    try {
+                        // TODO: implement
+                    } catch (std::exception & ex) {
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("file: " + filename() + ", path: " + p + "\n" + ex.what());
+                    }
+                }
+                std::vector<std::string> list_children(std::string const & p) const {
+                    try {
+                        std::vector<std::string> list;
+                        if (!is_group(p))
+                            ALPS_HDF5_THROW_RUNTIME_ERROR("The group '" + p + "' does not exists.")
+                        detail::group_type group_id(H5Gopen2(file_id(), complete_path(p).c_str(), H5P_DEFAULT));
+                        detail::check_error(H5Literate(group_id, H5_INDEX_NAME, H5_ITER_NATIVE, NULL, child_visitor, reinterpret_cast<void *>(&list)));
+                        return list;
+                    } catch (std::exception & ex) {
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("file: " + filename() + ", path: " + p + "\n" + ex.what());
+                    }
+                }
+                std::vector<std::string> list_attributes(std::string const & p) const {
+                    try {
+                        std::vector<std::string> list;
+                        if (is_group(p)) {
+                            detail::group_type id(H5Gopen2(file_id(), complete_path(p).c_str(), H5P_DEFAULT));
+                            detail::check_error(H5Aiterate2(id, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, NULL, attr_visitor, reinterpret_cast<void *>(&list)));
+                        } else if(is_data(p)) {
+                            detail::data_type id(H5Dopen2(file_id(), complete_path(p).c_str(), H5P_DEFAULT));
+                            detail::check_error(H5Aiterate2(id, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, NULL, attr_visitor, reinterpret_cast<void *>(&list)));
+                        } else
+                            ALPS_HDF5_THROW_RUNTIME_ERROR("The path '" + p + "' does not exists.")
+                        return list;
+                    } catch (std::exception & ex) {
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("file: " + filename() + ", path: " + p + "\n" + ex.what());
+                    }
+                }
+                template<typename V> void visit(std::string const & p, V v) {
+                    if (p.find_last_of('@') != std::string::npos) {
+                        #ifdef ALPS_HDF5_READ_GREEDY
+                            if (is_attribute(p))
+                        #endif
+                        // TODO: implement
+;//                                visit_attribute(complete_path(p), v);
+                    } else
+                        #ifdef ALPS_HDF5_READ_GREEDY
+                            if (is_data(p))
+                        #endif
+                        // TODO: implement
+;//                                visit_data(complete_path(p), v);
+                }
+            protected:
+                archive(std::string const & filename, bool compress = false)
+                    : _error_handler_id(H5Eset_auto2(H5E_DEFAULT, NULL, NULL))
+                    , _context(_pool.find(make_pair(filename, compress)) == _pool.end() || _pool[make_pair(filename, compress)].expired()
+                        ? boost::shared_ptr<detail::context>(new detail::context(filename, F(filename), compress))
+                        : _pool[make_pair(filename, compress)].lock()
+                      )
+                {
+                    if (_pool.find(make_pair(filename, compress)) == _pool.end() || _pool[make_pair(filename, compress)].expired()) {
+                        _pool[make_pair(filename, compress)] = _context;
+                        if (!is_group("/revisions")) {
+                            hid_t group_id = H5Gcreate2(file_id(), "/revisions", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                            // TODO: do not add this to file, add this at commit, since this is not used now
+                            if (group_id > -1) {
+                                detail::check_group(group_id);
+                                set_attribute("/revisions/@last", revision());
+                                detail::internal_state_type::type v;
+                                detail::type_type state_id = H5Tenum_create(H5T_NATIVE_SHORT);
+                                detail::check_error(H5Tenum_insert(state_id, "CREATE", &(v = detail::internal_state_type::CREATE)));
+                                detail::check_error(H5Tenum_insert(state_id, "PLACEHOLDER", &(v = detail::internal_state_type::PLACEHOLDER)));
+                                detail::check_error(H5Tcommit2(file_id(), "state_type", state_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
+                                detail::type_type log_id = H5Tcreate (H5T_COMPOUND, sizeof(detail::internal_log_type));
+                                detail::type_type time_id(H5Tcopy(H5T_C_S1));
+                                detail::check_error(H5Tset_size(time_id, H5T_VARIABLE));
+                                detail::check_error(H5Tinsert(log_id, "time", HOFFSET(detail::internal_log_type, time), time_id));
+                                detail::type_type name_id(H5Tcopy(H5T_C_S1));
+                                detail::check_error(H5Tset_size(name_id, H5T_VARIABLE));
+                                detail::check_error(H5Tinsert(log_id, "log", HOFFSET(detail::internal_log_type, name), name_id));
+                                detail::check_error(H5Tcommit2(file_id(), "log_type", log_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
+                            }
+                        }
+                        _context->_complex_id = H5Tcreate (H5T_COMPOUND, sizeof(detail::internal_complex_type));
+                        detail::check_error(H5Tinsert(complex_id(), "r", HOFFSET(detail::internal_complex_type, r), H5T_NATIVE_DOUBLE));
+                        detail::check_error(H5Tinsert(complex_id(), "i", HOFFSET(detail::internal_complex_type, i), H5T_NATIVE_DOUBLE));
+                        if (is_group("/revisions")) {
+                            get_attribute("/revisions/@last", _context->_revision);
+                            _context->_log_id = detail::check_error(H5Topen2(file_id(), "log_type", H5P_DEFAULT));
+                            _context->_state_id = detail::check_error(H5Topen2(file_id(), "state_type", H5P_DEFAULT));
+                        }
+                    }
+                }
+                hid_t create_path(std::string const & p, hid_t type_id, hid_t space_id, int d, hsize_t const * s = NULL, bool set_prop = true) const {
+                    hid_t data_id = H5Dopen2(file_id(), p.c_str(), H5P_DEFAULT), tmp_id = 0;
+                    if (data_id < 0) {
+                        if (p.find_last_of('/') < std::string::npos && p.find_last_of('/') > 0)
+                            set_group(p.substr(0, p.find_last_of('/')));
+                        data_id = create_dataset(p, type_id, space_id, d, s, set_prop);
+                    } else if (
+                           (d > 0 && s[0] > 0 && is_null(p)) 
+                        || (d > 0 && s[0] == 0 && !is_null(p)) 
+                        || !detail::check_error(H5Tequal(detail::type_type(H5Dget_type(data_id)), detail::type_type(H5Tcopy(type_id))))
+                        || (d > 0 && s[0] > 0 && H5Dset_extent(data_id, s) < 0)
+                    ) {
+                        std::vector<std::string> names = list_attributes(p);
+                        if (names.size()) {
+                            tmp_id = H5Gcreate2(file_id(), "/revisions/waitingroom", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                            copy_attributes(tmp_id, data_id, names);
+                        }
+                        detail::check_data(data_id);
+                        detail::check_error(H5Ldelete(file_id(), p.c_str(), H5P_DEFAULT));
+                        data_id = create_dataset(p, type_id, space_id, d, s, set_prop);
+                        if (names.size()) {
+                            copy_attributes(data_id, tmp_id, names);
+                            detail::check_group(tmp_id);
+                            detail::check_error(H5Ldelete(file_id(), "/revisions/waitingroom", H5P_DEFAULT));
+                        }
+                    }
+                    return data_id;
+                }
+                hid_t create_dataset(std::string const & p, hid_t type_id, hid_t space_id, int d, hsize_t const * s = NULL, bool set_prop = true) const {
+                    if (set_prop) {
+                        detail::property_type prop_id(H5Pcreate(H5P_DATASET_CREATE));
+                        detail::check_error(H5Pset_fill_time(prop_id, H5D_FILL_TIME_NEVER));
+                        if (d > 0) {
+                            detail::check_error(H5Pset_chunk(prop_id, d, s));
+                            std::size_t n = std::accumulate(s, s + d, std::size_t(0));
+                            if (compress() && n > ALPS_HDF5_SZIP_BLOCK_SIZE)
+                                detail::check_error(H5Pset_szip(prop_id, H5_SZIP_NN_OPTION_MASK, ALPS_HDF5_SZIP_BLOCK_SIZE));
+                        }
+                        return H5Dcreate2(file_id(), p.c_str(), type_id, detail::space_type(space_id), H5P_DEFAULT, prop_id, H5P_DEFAULT);
+                    } else
+                        return H5Dcreate2(file_id(), p.c_str(), type_id, detail::space_type(space_id), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                }
+                void copy_attributes(hid_t dest_id, hid_t source_id, std::vector<std::string> const & names) const {
+                    for (std::vector<std::string>::const_iterator it = names.begin(); it != names.end(); ++it) {
+                        detail::attribute_type attr_id = H5Aopen(source_id, it->c_str(), H5P_DEFAULT);
+                        detail::type_type type_id = H5Aget_type(attr_id);
+                        if (H5Tget_class(type_id) == H5T_STRING) {
+                            std::string v;
+                            v.resize(H5Tget_size(type_id));
+                            detail::check_error(H5Aread(attr_id, detail::type_type(H5Tcopy(type_id)), &v[0]));
+                            detail::attribute_type new_id = H5Acreate2(dest_id, it->c_str(), type_id, detail::space_type(H5Screate(H5S_SCALAR)), H5P_DEFAULT, H5P_DEFAULT);
+                            detail::check_error(H5Awrite(new_id, type_id, &v[0]));
+                        } else if (detail::check_error(H5Tequal(detail::type_type(H5Tcopy(type_id)), detail::type_type(H5Tcopy(state_id())))) > 0) {
+                            detail::internal_state_type::type v;
+                            detail::check_error(H5Aread(attr_id, state_id(), &v));
+                            detail::attribute_type new_id = H5Acreate2(dest_id, it->c_str(), state_id(), detail::space_type(H5Screate(H5S_SCALAR)), H5P_DEFAULT, H5P_DEFAULT);
+                            detail::check_error(H5Awrite(new_id, state_id(), &v));
+                        }
+                        #define ALPS_HDF5_COPY_ATTR(T)                                                                                                     \
+                            else if (detail::check_error(                                                                                                  \
+                                H5Tequal(detail::type_type(H5Tcopy(type_id)), detail::type_type(get_native_type(static_cast<T>(0))))                       \
+                            ) > 0) {                                                                                                                       \
+                                T v;                                                                                                                       \
+                                detail::check_error(H5Aread(attr_id, detail::type_type(H5Tcopy(type_id)), &v));                                            \
+                                detail::attribute_type new_id = H5Acreate2(                                                                                \
+                                    dest_id, it->c_str(), type_id, detail::space_type(H5Screate(H5S_SCALAR)), H5P_DEFAULT, H5P_DEFAULT                     \
+                                );                                                                                                                         \
+                                detail::check_error(H5Awrite(new_id, type_id, &v));                                                                        \
+                            }
+                        ALPS_HDF5_FOREACH_SCALAR(ALPS_HDF5_COPY_ATTR)
+                        #undef ALPS_HDF5_COPY_ATTR
+                        else ALPS_HDF5_THROW_RUNTIME_ERROR("error in copying attribute: " + *it)
+                    }
+                }
+                hid_t save_comitted_data(std::string const & p, hid_t type_id, hid_t space_id, int d, hsize_t const * s = NULL, bool set_prop = true) const {
+                    std::string rev_path = "/revisions/" + detail::convert<std::string>(revision()) + p;
+                    if (revision() && !is_data(p))
+                        set_data(rev_path, detail::internal_state_type::CREATE);
+                    else if (revision()) {
+                        hid_t data_id = H5Dopen2(file_id(), rev_path.c_str(), H5P_DEFAULT);
+                        std::vector<std::string> revision_names;
+                        if (data_id > 0 && detail::check_error(H5Tequal(detail::type_type(H5Dget_type(data_id)), detail::type_type(H5Tcopy(state_id())))) > 0) {
+                            detail::internal_state_type::type v;
+                            detail::check_error(H5Dread(data_id, state_id(), H5S_ALL, H5S_ALL, H5P_DEFAULT, &v));
+                            if (v == detail::internal_state_type::PLACEHOLDER) {
+                                if ((revision_names = list_attributes(rev_path)).size()) {
+                                    detail::group_type tmp_id = H5Gcreate2(file_id(), "/revisions/waitingroom", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                                    copy_attributes(tmp_id, data_id, revision_names);
+                                }
+                                detail::check_data(data_id);
+                                detail::check_error(H5Ldelete(file_id(), rev_path.c_str(), H5P_DEFAULT));
+                            } else
+                                detail::check_data(data_id);
+                        } else if (data_id >= 0)
+                            detail::check_data(data_id);
+                        if (!is_data(rev_path)) {
+                            set_group(rev_path.substr(0, rev_path.find_last_of('/')));
+                            detail::check_error(H5Lmove(file_id(), p.c_str(), H5L_SAME_LOC, (rev_path).c_str(), H5P_DEFAULT, H5P_DEFAULT));
+                            hid_t new_id = create_path(p, type_id, space_id, d, s, set_prop);
+                            std::vector<std::string> current_names = list_attributes(rev_path);
+                            detail::data_type data_id(H5Dopen2(file_id(), rev_path.c_str(), H5P_DEFAULT));
+                            copy_attributes(new_id, data_id, current_names); 
+                            for (std::vector<std::string>::const_iterator it = current_names.begin(); it != current_names.end(); ++it)
+                                H5Adelete(data_id, it->c_str());
+                            if (revision_names.size()) {
+                                copy_attributes(data_id, detail::group_type(H5Gopen2(file_id(), "/revisions/waitingroom", H5P_DEFAULT)), revision_names);
+                                detail::check_error(H5Ldelete(file_id(), "/revisions/waitingroom", H5P_DEFAULT));
+                            }
+                            return new_id;
+                        }
+                    }
+                    return create_path(p, type_id, space_id, d, s, set_prop);
+                }
+                hid_t open_attribute(std::string const & p) const {
+                    hid_t parent_id, attr_id;
+                    if (p.find_last_of('@') == std::string::npos)
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("no valid attribute path " + p)
+                    else if (is_group(p.substr(0, p.find_last_of('@') - 1)))
+                        parent_id = detail::check_error(H5Gopen2(file_id(), p.substr(0, p.find_last_of('@') - 1).c_str(), H5P_DEFAULT));
+                    else if (is_data(p.substr(0, p.find_last_of('@') - 1)))
+                        parent_id = detail::check_error(H5Dopen2(file_id(), p.substr(0, p.find_last_of('@') - 1).c_str(), H5P_DEFAULT));
+                    else
+                        #ifdef ALPS_HDF5_READ_GREEDY
+                            return false;
+                        #else
+                            ALPS_HDF5_THROW_RUNTIME_ERROR("unknown path: " + p.substr(0, p.find_last_of('@') - 1))
+                        #endif
+                    attr_id = H5Aopen(parent_id, p.substr(p.find_last_of('@') + 1).c_str(), H5P_DEFAULT);
+                    if (is_group(p.substr(0, p.find_last_of('@') - 1)))
+                        detail::check_group(parent_id);
+                    else
+                        detail::check_data(parent_id);
+                    return attr_id;
+                }
                 template<typename T, typename U> void get_helper_read(T & v, hid_t data_id, hid_t type_id, bool is_attr) const {
                     std::vector<hsize_t> size(call_get_extent(v)), start(size.size(), 0), count(call_get_offset(v));
                     if (
@@ -823,11 +1267,13 @@ namespace alps {
                     std::memcpy(&*o, i, n * s);
                 }
                 void set_attr_copy(
-                    serializable_type<std::string>::type const * i, 
-                    std::vector<native_type<std::string>::type>::iterator o, 
+                    typename serializable_type<std::string>::type const * i, 
+                    std::vector<typename native_type<std::string>::type>::iterator o, 
                     std::size_t n, 
                     std::size_t s
-                                   ) const;
+                ) const {
+                    std::copy(i, i + n, o);
+                }
                 template<typename T> void set_attribute(std::string const & p, T const & v) const {
                     hid_t parent_id;
                     std::string rev_path = "/revisions/" + detail::convert<std::string>(revision()) + p;
@@ -941,41 +1387,90 @@ namespace alps {
                     }
                 }
             private:
+                template<typename T> hid_t get_native_type(T) const {
+                    ALPS_HDF5_THROW_RUNTIME_ERROR(std::string("no native type passed: ") + typeid(T).name())
+                }
+                hid_t get_native_type(char) const { return H5Tcopy(H5T_NATIVE_CHAR); }
+                hid_t get_native_type(signed char) const { return H5Tcopy(H5T_NATIVE_SCHAR); }
+                hid_t get_native_type(unsigned char) const { return H5Tcopy(H5T_NATIVE_UCHAR); }
+                hid_t get_native_type(short) const { return H5Tcopy(H5T_NATIVE_SHORT); }
+                hid_t get_native_type(unsigned short) const { return H5Tcopy(H5T_NATIVE_USHORT); }
+                hid_t get_native_type(int) const { return H5Tcopy(H5T_NATIVE_INT); }
+                hid_t get_native_type(unsigned) const { return H5Tcopy(H5T_NATIVE_UINT); }
+                hid_t get_native_type(long) const { return H5Tcopy(H5T_NATIVE_LONG); }
+                hid_t get_native_type(unsigned long) const { return H5Tcopy(H5T_NATIVE_ULONG); }
+                #ifndef BOOST_NO_LONG_LONG
+                    hid_t get_native_type(long long) const { return H5Tcopy(H5T_NATIVE_LLONG); }
+                    hid_t get_native_type(unsigned long long) const { return H5Tcopy(H5T_NATIVE_ULLONG); }
+                #endif
+                hid_t get_native_type(float) const { return H5Tcopy(H5T_NATIVE_FLOAT); }
+                hid_t get_native_type(double) const { return H5Tcopy(H5T_NATIVE_DOUBLE); }
+                hid_t get_native_type(long double) const { return H5Tcopy(H5T_NATIVE_LDOUBLE); }
+                hid_t get_native_type(bool) const { return H5Tcopy(H5T_NATIVE_HBOOL); }
+                #ifdef ALPS_HDF5_WRITE_PYTHON_COMPATIBLE_COMPLEX
+                    template<typename T> hid_t get_native_type(std::complex<T>) const { return H5Tcopy(complex_id()); }
+                #endif
+                hid_t get_native_type(detail::internal_log_type) const { return H5Tcopy(log_id()); }
+                hid_t get_native_type(std::string) const { 
+                    hid_t type_id = H5Tcopy(H5T_C_S1);
+                    detail::check_error(H5Tset_size(type_id, H5T_VARIABLE));
+                    return type_id;
+                }
+                static herr_t child_visitor(hid_t, char const * n, const H5L_info_t *, void * d) {
+                    reinterpret_cast<std::vector<std::string> *>(d)->push_back(n);
+                    return 0;
+                }
+                static herr_t attr_visitor(hid_t, char const * n, const H5A_info_t *, void * d) {
+                    reinterpret_cast<std::vector<std::string> *>(d)->push_back(n);
+                    return 0;
+                }
                 inline int compress() const {
-                    return _hdf5_context->_compress;
+                    return _context->_compress;
                 }
                 inline int revision() const {
-                    return _hdf5_context->_revision;
+                    return _context->_revision;
                 }
                 inline hid_t state_id() const {
-                    return _hdf5_context->_state_id;
+                    return _context->_state_id;
                 }
                 inline hid_t log_id() const {
-                    return _hdf5_context->_log_id;
+                    return _context->_log_id;
                 }
                 inline hid_t complex_id() const {
-                    return _hdf5_context->_complex_id;
+                    return _context->_complex_id;
                 }
                 inline hid_t file_id() const {
-                    return _hdf5_context->_file_id;
+                    return _context->_file_id;
                 }
                 std::string _path_context;
                 detail::error_type _error_handler_id;
-                boost::shared_ptr<detail::hdf5_context> _hdf5_context;
-                static std::map<std::pair<std::string, bool>, boost::weak_ptr<detail::hdf5_context> > _pool;
+                boost::shared_ptr<detail::context> _context;
+                static std::map<std::pair<std::string, bool>, boost::weak_ptr<detail::context> > _pool;
         };
+        template<hid_t(* F )(std::string const &)> std::map<std::pair<std::string, bool>, boost::weak_ptr<detail::context> > archive<F>::_pool;
+        #undef ALPS_HDF5_FOREACH_SCALAR_NO_LONG_LONG
+        #undef ALPS_HDF5_FOREACH_SCALAR
 
         namespace detail {
             struct creator {
-              static hid_t open_reading(std::string const & file);
-              static hid_t open_writing(std::string const & file);
+                static hid_t open_reading(std::string const & file) {
+                    if (!boost::filesystem::exists(file))
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("file does not exists: " + file)
+                    if (detail::check_error(H5Fis_hdf5(file.c_str())) == 0)
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("no valid hdf5 file: " + file)
+                    return H5Fopen(file.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+                }
+                static hid_t open_writing(std::string const & file) {
+                    hid_t file_id = H5Fopen(file.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
+                    return file_id < 0 ? H5Fcreate(file.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT) : file_id;
+                }
             };
         }
 
-        class iarchive : public archive {
+        class iarchive : public archive<&detail::creator::open_reading> {
             public:
-                iarchive(std::string const & file) : archive(file,&detail::creator::open_reading) {}
-                iarchive(iarchive const & rhs) : archive(rhs) {}
+                iarchive(std::string const & file) : archive<&detail::creator::open_reading>(file) {}
+                iarchive(iarchive const & rhs) : archive<&detail::creator::open_reading>(rhs) {}
                 template<typename T> void serialize(std::string const & p, T & v) const {
                     if (p.find_last_of('@') != std::string::npos) {
                         #ifdef ALPS_HDF5_READ_GREEDY
@@ -990,18 +1485,27 @@ namespace alps {
                 }
         };
 
-        class oarchive : public archive {
+        class oarchive : public archive<&detail::creator::open_writing> {
             public:
-                oarchive(std::string const & file, bool compress = false) 
-                  : archive(file, &detail::creator::open_writing,compress) {}
-                oarchive(oarchive const & rhs) : archive(rhs) {}
+                oarchive(std::string const & file, bool compress = false) : archive<&detail::creator::open_writing>(file, compress) {}
+                oarchive(oarchive const & rhs) : archive<&detail::creator::open_writing>(rhs) {}
                 template<typename T> void serialize(std::string const & p, T const & v) const {
                     if (p.find_last_of('@') != std::string::npos)
                         set_attribute(complete_path(p), v);
-                    else
+                    else {
+                        #ifndef ALPS_HDF5_WRITE_PYTHON_COMPATIBLE_COMPLEX
+                            if (is_complex<std::complex<T> >::value)
+                                set_attribute(complete_path(p) + "/@__complex__", true);
+                        #endif
                         set_data(complete_path(p), v);
+                    }
                 }
-                void serialize(std::string const & p);
+                void serialize(std::string const & p) {
+                    if (p.find_last_of('@') != std::string::npos)
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("attributes needs to be a scalar type or a string" + p)
+                    else
+                        set_group(complete_path(p));
+                }
         };
 
         namespace detail {
@@ -1063,7 +1567,9 @@ namespace alps {
                 return ar;                                                                                                                                  \
             }
         ALPS_HDF5_DEFINE_VECTOR_TYPE(std::vector)
-      //ALPS_HDF5_DEFINE_VECTOR_TYPE(std::valarray)
+        ALPS_HDF5_DEFINE_VECTOR_TYPE(std::valarray)
+        ALPS_HDF5_DEFINE_VECTOR_TYPE(boost::numeric::ublas::vector)
+        #undef ALPS_HDF5_DEFINE_VECTOR_TYPE
 
         template<typename T> iarchive & serialize(iarchive & ar, std::string const & p, std::deque<T> & v) {
             std::vector<T> d;
@@ -1143,6 +1649,19 @@ namespace alps {
             return ar;
         }
 
+        template<typename T> iarchive & serialize(iarchive & ar, std::string const & p, boost::numeric::ublas::matrix<T ,boost::numeric::ublas::column_major> & v) {
+            std::pair<T *, std::vector<std::size_t> > d(&v(0,0), std::vector<std::size_t>(2, v.size1()));
+            d.second[1] = v.size2();
+            detail::serialize_impl(ar, p, d, boost::mpl::true_());
+            return ar;
+        }
+        template<typename T> oarchive & serialize(oarchive & ar, std::string const & p, boost::numeric::ublas::matrix<T ,boost::numeric::ublas::column_major> const & v) {
+            std::pair<T const *, std::vector<std::size_t> > d(&v(0,0), std::vector<std::size_t>(2, v.size1()));
+            d.second[1] = v.size2();
+            detail::serialize_impl(ar, p, d, boost::mpl::true_());
+            return ar;
+        }
+
         template<typename T> iarchive & call_serialize(iarchive & ar, std::string const & p, T & v) { 
             return serialize(ar, p, v); 
         }
@@ -1194,5 +1713,43 @@ namespace alps {
     template <typename T> hdf5::pvp<std::pair<T *, std::vector<std::size_t> > > make_pvp(std::string const & p, T * v, std::vector<std::size_t> const & s) {
         return hdf5::pvp<std::pair<T *, std::vector<std::size_t> > >(p, std::make_pair(boost::ref(v), s));
     }
+
+    #define ALPS_HDF5_MAKE_PVP(ptr_type, arg_type)                                                                                                          \
+        template <typename T> hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > > make_pvp(std::string const & p, arg_type v, std::size_t s) {       \
+            return hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > >(p, std::make_pair(&*v, std::vector<std::size_t>(1, s)));                      \
+        }                                                                                                                                                   \
+        template <typename T> hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > > make_pvp(                                                          \
+            std::string const & p, arg_type v, std::vector<std::size_t> const & s                                                                           \
+        ) {                                                                                                                                                 \
+            return hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > >(p, std::make_pair(&*v, s));                                                   \
+        }
+    ALPS_HDF5_MAKE_PVP(T *, boost::shared_ptr<T> &)
+    ALPS_HDF5_MAKE_PVP(T const *, boost::shared_ptr<T> const &)
+    ALPS_HDF5_MAKE_PVP(T *, std::auto_ptr<T> &)
+    ALPS_HDF5_MAKE_PVP(T const *, std::auto_ptr<T> const &)
+    ALPS_HDF5_MAKE_PVP(T *, boost::weak_ptr<T> &)
+    ALPS_HDF5_MAKE_PVP(T const *, boost::weak_ptr<T> const &)
+    ALPS_HDF5_MAKE_PVP(T *, boost::scoped_ptr<T> &)
+    ALPS_HDF5_MAKE_PVP(T const *, boost::scoped_ptr<T> const &)
+    #undef ALPS_HDF5_MAKE_PVP
+
+    #define ALPS_HDF5_MAKE_ARRAY_PVP(ptr_type, arg_type)                                                                                                    \
+        template <typename T> hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > > make_pvp(std::string const & p, arg_type v, std::size_t s) {       \
+            return hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > >(p, std::make_pair(v.get(), std::vector<std::size_t>(1, s)));                  \
+        }                                                                                                                                                   \
+        template <typename T> hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > > make_pvp(                                                          \
+            std::string const & p, arg_type v, std::vector<std::size_t> const & s                                                                           \
+        ) {                                                                                                                                                 \
+            return hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > >(p, std::make_pair(v.get(), s));                                               \
+        }
+    ALPS_HDF5_MAKE_ARRAY_PVP(T *, boost::shared_array<T> &)
+    ALPS_HDF5_MAKE_ARRAY_PVP(T const *, boost::shared_array<T> const &)
+    #undef ALPS_HDF5_MAKE_ARRAY_PVP
+
+    #undef ALPS_HDF5_STRINGIFY
+    #undef ALPS_HDF5_STRINGIFY_HELPER
+    #undef ALPS_HDF5_THROW_ERROR
+    #undef ALPS_HDF5_THROW_RUNTIME_ERROR
+    #undef ALPS_HDF5_THROW_RANGE_ERROR
 }
 #endif
