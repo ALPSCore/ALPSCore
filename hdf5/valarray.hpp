@@ -28,7 +28,7 @@
 
 #ifndef ALPS_HDF5_VALARRAY_HPP
 #define ALPS_HDF5_VALARRAY_HPP
-
+/*
 #include <valarray>
 #include <boost/numeric/bindings/ublas.hpp>
 
@@ -38,5 +38,5 @@ namespace alps {
     ALPS_HDF5_DEFINE_VECTOR_TYPE(std::valarray)
   }
 }
-
+*/
 #endif

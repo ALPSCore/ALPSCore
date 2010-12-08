@@ -30,7 +30,7 @@
 #define ALPS_HDF5_SHARED_PTR_HPP
 
 #include <alps/hdf5.hpp>
-
+/*
 namespace alps {
 
 #define ALPS_HDF5_MAKE_PVP(ptr_type, arg_type)                                                                                                          \
@@ -65,4 +65,5 @@ namespace alps {
     ALPS_HDF5_MAKE_ARRAY_PVP(T const *, boost::shared_array<T> const &)
     #undef ALPS_HDF5_MAKE_ARRAY_PVP
 }
+*/
 #endif

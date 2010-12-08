@@ -31,7 +31,7 @@
 
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/bindings/ublas.hpp>
-
+/*
 namespace alps {
   namespace hdf5 {
     //HDF5_DEFINE_VECTOR_TYPE(boost::numeric::ublas::vector)
@@ -51,5 +51,5 @@ namespace alps {
     }
   }
 }
-
+*/
 #endif

@@ -34,7 +34,7 @@
 #define ALPS_ALEA_ABSTRACTSIMPLEOBSERVABLE_IPP
 
 #include <alps/alea/abstractsimpleobservable.h>
-//#include <alps/hdf5/valarray.hpp>
+#include <alps/hdf5/valarray.hpp>
 
 namespace alps {
 #ifdef ALPS_HAVE_HDF5

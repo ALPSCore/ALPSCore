@@ -28,7 +28,7 @@
 
 #include <alps/hdf5.hpp>
 #include <boost/filesystem.hpp>
-
+/*
 namespace alps {
   namespace hdf5 {
     namespace detail {
@@ -630,3 +630,4 @@ namespace alps {
 
   }    
 }
+*/

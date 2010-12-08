@@ -36,7 +36,7 @@
 
 #ifdef ALPS_HAVE_HDF5
 #include <alps/hdf5.hpp>
-//#include <alps/hdf5/ublas.hpp>
+#include <alps/hdf5/ublas.hpp>
 #endif
 
 namespace alps { namespace scheduler {
