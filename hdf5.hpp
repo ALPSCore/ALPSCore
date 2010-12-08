@@ -1493,11 +1493,11 @@ namespace alps {
                     if (p.find_last_of('@') != std::string::npos)
                         set_attribute(complete_path(p), v);
                     else {
+                        set_data(complete_path(p), v);
                         #ifndef ALPS_HDF5_WRITE_PYTHON_COMPATIBLE_COMPLEX
                             if (is_complex<std::complex<T> >::value)
                                 set_attribute(complete_path(p) + "/@__complex__", true);
                         #endif
-                        set_data(complete_path(p), v);
                     }
                 }
                 void serialize(std::string const & p) {
