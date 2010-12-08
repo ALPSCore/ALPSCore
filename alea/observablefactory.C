@@ -35,6 +35,10 @@
 #include "simpleobseval.h"
 #include "histogrameval.h"
 
+#include "simpleobseval.ipp"
+#include "abstractsimpleobservable.ipp"
+#include "simpleobservable.ipp"
+
 namespace alps {
 
 ObservableFactory::ObservableFactory()
@@ -44,10 +48,6 @@ ObservableFactory::ObservableFactory()
   register_observable<IntObservable>();
   register_observable<RealObservable>();
   register_observable<AbstractSignedObservable<RealObsevaluator> >();
-  //register_observable<AbstractSignedObservable<IntObsevaluator> >();
-  //register_observable<SignedObservable<SimpleIntObservable> >();
-  //register_observable<SignedObservable<IntObservable> >();
-  //register_observable<SignedObservable<IntTimeSeriesObservable> >();
   register_observable<SignedObservable<RealObservable> >();
   register_observable<SignedObservable<SimpleRealObservable> >();
   register_observable<SignedObservable<RealTimeSeriesObservable> >();
@@ -66,16 +66,12 @@ ObservableFactory::ObservableFactory()
   register_observable<SimpleIntVectorObservable>();
   register_observable<SimpleRealVectorObservable>();
   register_observable<AbstractSignedObservable<RealVectorObsevaluator> >();
-  //register_observable<AbstractSignedObservable<IntVectorObsevaluator> >();
   register_observable<SignedObservable<SimpleRealVectorObservable> >();
   register_observable<SignedObservable<RealVectorTimeSeriesObservable> >();
   register_observable<IntHistogramObservable>();
   register_observable<RealHistogramObservable>();
   register_observable<IntHistogramObsevaluator>();
   register_observable<RealHistogramObsevaluator>();
-  //register_observable<SignedObservable<SimpleIntVectorObservable> >();
-  //register_observable<SignedObservable<IntVectorObservable> >();
-  //register_observable<SignedObservable<IntVectorTimeSeriesObservable> >();
 #endif
 /*
   register_observable<HistogramObservable<int32_t> >();

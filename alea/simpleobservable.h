@@ -190,29 +190,10 @@ inline void SimpleObservable<T,BINNING>::load(IDump& dump)
 
 #ifdef ALPS_HAVE_HDF5
   template <class T,class BINNING> 
-  inline void SimpleObservable<T,BINNING>::serialize(hdf5::iarchive & ar) 
-  {
-    AbstractSimpleObservable<T>::serialize(ar);
-    ar >> make_pvp("", b_);
-  }
-  template <class T,class BINNING> 
-  inline void SimpleObservable<T,BINNING>::serialize(hdf5::oarchive & ar) const 
-  {
-    AbstractSimpleObservable<T>::serialize(ar);
-    ar << make_pvp("", b_);
-  }
+  hdf5::oarchive & operator<<(hdf5::oarchive & ar,  SimpleObservable<T,BINNING> const& obs);
 
   template <class T,class BINNING> 
-  inline hdf5::oarchive & operator<<(hdf5::oarchive & ar,  SimpleObservable<T,BINNING> const& obs) 
-  {
-    return ar << make_pvp("/simulation/results/"+obs.representation(), obs);
-  }
-
-  template <class T,class BINNING> 
-  inline hdf5::iarchive & operator>>(hdf5::iarchive & ar,  SimpleObservable<T,BINNING>& obs) 
-  {
-    return ar >> make_pvp("/simulation/results/"+obs.representation(), obs);
-  }
+  hdf5::iarchive & operator>>(hdf5::iarchive & ar,  SimpleObservable<T,BINNING>& obs);
 #endif
 
 } // end namespace alps

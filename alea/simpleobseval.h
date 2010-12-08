@@ -221,8 +221,8 @@ class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
   void load(IDump& dump);
 
 #ifdef ALPS_HAVE_HDF5
-    inline void serialize(hdf5::iarchive &);
-    inline void serialize(hdf5::oarchive &) const;
+  void serialize(hdf5::iarchive &);
+  void serialize(hdf5::oarchive &) const;
 #endif
 
   template<class X> void add_to(const X& x);
@@ -367,15 +367,6 @@ inline void SimpleObservableEvaluator<T>::load(IDump& dump)
   }
   dump >> all_;
 }
-
-#ifdef ALPS_HAVE_HDF5
-template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::iarchive & ar) {
-    ar >> make_pvp("", all_);
-}
-template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::oarchive & ar) const {
-    ar << make_pvp("", all_);
-}
-#endif
 
 template <class T>
 inline const SimpleObservableEvaluator<T>&  SimpleObservableEvaluator<T>::operator=(const SimpleObservableEvaluator<T>& eval)
