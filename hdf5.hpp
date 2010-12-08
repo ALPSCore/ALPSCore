@@ -1518,7 +1518,7 @@ namespace alps {
                     else {
                         set_data(complete_path(p), v);
                         #ifndef ALPS_HDF5_WRITE_PYTHON_COMPATIBLE_COMPLEX
-                            if (is_cplx<std::complex<T> >::value)
+                            if (is_cplx<T>::value)
                                 set_attribute(complete_path(p) + "/@__complex__", true);
                         #endif
                     }
