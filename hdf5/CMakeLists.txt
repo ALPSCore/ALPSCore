@@ -28,7 +28,7 @@ IF (ALPS_BUILD_HDF5_TESTS)
             target_link_libraries(${name} ${Boost_LIBRARIES} ${HDF5_LIBRARIES}) 
         else(Boost_FOUND) 
             add_dependencies(${name} boost) 
-            target_link_libraries(${name} boost ${HDF5_LIBRARIES})
+            target_link_libraries(${name} alps boost ${HDF5_LIBRARIES})
         endif(Boost_FOUND) 
         add_alps_test(${name})
     ENDFOREACH(name)
@@ -112,20 +112,20 @@ IF (ALPS_BUILD_HDF5_TESTS)
 
         else(Boost_FOUND) 
 
-            add_dependencies(hdf5_data_${test_name} boost)
-            target_link_libraries(hdf5_data_${test_name} boost ${HDF5_LIBRARIES})
+            add_dependencies(hdf5_data_${test_name} alps boost)
+            target_link_libraries(hdf5_data_${test_name} alps boost ${HDF5_LIBRARIES})
 
-            add_dependencies(hdf5_data_szip_${test_name} boost) 
-            target_link_libraries(hdf5_data_szip_${test_name} boost ${HDF5_LIBRARIES})
+            add_dependencies(hdf5_data_szip_${test_name} alps boost) 
+            target_link_libraries(hdf5_data_szip_${test_name} alps boost ${HDF5_LIBRARIES})
 
-            add_dependencies(hdf5_data_pycplx_${test_name} boost) 
-            target_link_libraries(hdf5_data_pycplx_${test_name} boost ${HDF5_LIBRARIES})
+            add_dependencies(hdf5_data_pycplx_${test_name} alps boost) 
+            target_link_libraries(hdf5_data_pycplx_${test_name} alps boost ${HDF5_LIBRARIES})
 
-            add_dependencies(hdf5_attr_${test_name} boost) 
-            target_link_libraries(hdf5_attr_${test_name} boost ${HDF5_LIBRARIES})
+            add_dependencies(hdf5_attr_${test_name} alps boost) 
+            target_link_libraries(hdf5_attr_${test_name} alps boost ${HDF5_LIBRARIES})
 
-            add_dependencies(hdf5_attr_pycplx_${test_name} boost) 
-            target_link_libraries(hdf5_attr_pycplx_${test_name} boost ${HDF5_LIBRARIES})
+            add_dependencies(hdf5_attr_pycplx_${test_name} alps boost) 
+            target_link_libraries(hdf5_attr_pycplx_${test_name} alps boost ${HDF5_LIBRARIES})
 
         endif(Boost_FOUND) 
 

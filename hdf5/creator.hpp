@@ -38,6 +38,9 @@
 #include <boost/lexical_cast.hpp>
 
 #include <alps/hdf5.hpp>
+#include <alps/hdf5/ublas.hpp>
+#include <alps/hdf5/valarray.hpp>
+#include <alps/hdf5/shared_ptr.hpp>
 
 typedef enum { PLUS, MINUS } enum_type;
 template<typename T> struct creator;
@@ -238,6 +241,7 @@ template<typename T> bool equal(T const & a, T const & b) {
     return a == b;
 }
 
+#undef HDF5_DEFINE_VECTOR_TYPE
 #define HDF5_DEFINE_VECTOR_TYPE(C)                                                                 \
 template<typename T> struct creator< C <T> > {                                                     \
     typedef C <T> base_type;                                                                       \
