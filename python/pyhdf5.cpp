@@ -80,6 +80,7 @@ namespace alps {
 
             void write(alps::hdf5::oarchive & self, std::string const & path, boost::python::object const & data) {
                 using alps::make_pvp;
+                import();
                 if (false);
                 #define PYHDF5_CHECK_SCALAR(T, F)                                                                                                          \
                     else if ( F (data.ptr()))                                                                                                              \
