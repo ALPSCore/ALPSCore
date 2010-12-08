@@ -180,7 +180,7 @@ namespace alps {
             typename boost::is_scalar<T>::type,
             typename boost::mpl::not_<typename boost::is_enum<T>::type>::type
         >::type {};
-        template<typename T> struct is_complex : public boost::mpl::false_ {};
+        template<typename T> struct is_cplx : public boost::mpl::false_ {};
         template<typename T> std::vector<hsize_t> get_extent(T const &) { return std::vector<hsize_t>(1, 1); }
         template<typename T> void set_extent(T &, std::vector<std::size_t> const &) {}
         template<typename T> std::vector<hsize_t> get_offset(T const &) { return std::vector<hsize_t>(1, 1); }
@@ -290,7 +290,7 @@ namespace alps {
         }
 
         template<typename T> bool is_vectorizable(std::complex<T> const &) { return true; }
-        template<typename T> struct is_complex<std::complex<T> > : public boost::mpl::true_ {};
+        template<typename T> struct is_cplx<std::complex<T> > : public boost::mpl::true_ {};
         #ifdef ALPS_HDF5_WRITE_PYTHON_COMPATIBLE_COMPLEX
             template<typename T> struct serializable_type<std::complex<T> > { typedef detail::internal_complex_type type; };
             template<typename T> struct native_type<std::complex<T> > { typedef std::complex<T> type; };
@@ -371,6 +371,7 @@ namespace alps {
                 typedef typename serializable_type<typename boost::remove_const<T>::type>::type type;                                                      \
             };                                                                                                                                             \
             template<typename T> struct native_type< C <T> > { typedef typename native_type<typename boost::remove_const<T>::type>::type type; };          \
+            template<typename T> struct is_cplx< C <T> > : public is_cplx<T> { };                                                                          \
             template<typename T> std::vector<hsize_t> get_extent( C <T> const & v) {                                                                       \
                 std::vector<hsize_t> s(1, v.size());                                                                                                       \
                 if (!is_native<T>::value && v.size()) {                                                                                                    \
@@ -443,6 +444,7 @@ namespace alps {
 
         template<typename T> struct serializable_type<std::pair<T *, std::vector<std::size_t> > > { typedef typename serializable_type<typename boost::remove_const<T>::type>::type type; };
         template<typename T> struct native_type<std::pair<T *, std::vector<std::size_t> > > { typedef typename native_type<typename boost::remove_const<T>::type>::type type; };
+        template<typename T> struct is_cplx<std::pair<T *, std::vector<std::size_t> > > : public is_cplx<T> { };
         template<typename T> std::vector<hsize_t> get_extent(std::pair<T *, std::vector<std::size_t> > const & v) {
             std::vector<hsize_t> s(v.second.begin(), v.second.end());
             if (!is_native<T>::value && v.second.size()) {
@@ -863,6 +865,22 @@ namespace alps {
                         ALPS_HDF5_THROW_RUNTIME_ERROR("file: " + filename() + ", path: " + p + "\n" + ex.what());
                     }
                 }
+                bool is_int(std::string const & p) const {
+                    return is_type<int>(p);
+                }
+                bool is_long(std::string const & p) const {
+                    return is_type<long>(p);
+                }
+                bool is_float(std::string const & p) const {
+                    return is_type<float>(p);
+                }
+                bool is_double(std::string const & p) const {
+                    return is_type<double>(p);
+                }
+                bool is_complex(std::string const & p) const {
+                    // TODO: implement!
+                    ALPS_HDF5_THROW_RUNTIME_ERROR("not impl");
+                }
                 bool is_null(std::string const & p) const {
                     try {
                         hid_t space_id;
@@ -944,20 +962,6 @@ namespace alps {
                     } catch (std::exception & ex) {
                         ALPS_HDF5_THROW_RUNTIME_ERROR("file: " + filename() + ", path: " + p + "\n" + ex.what());
                     }
-                }
-                template<typename V> void visit(std::string const & p, V v) {
-                    if (p.find_last_of('@') != std::string::npos) {
-                        #ifdef ALPS_HDF5_READ_GREEDY
-                            if (is_attribute(p))
-                        #endif
-                        // TODO: implement
-;//                                visit_attribute(complete_path(p), v);
-                    } else
-                        #ifdef ALPS_HDF5_READ_GREEDY
-                            if (is_data(p))
-                        #endif
-                        // TODO: implement
-;//                                visit_data(complete_path(p), v);
                 }
             protected:
                 archive(std::string const & filename, bool compress = false)
@@ -1214,7 +1218,7 @@ namespace alps {
                             get_helper_read<T, char *>(v, data_id, type_id, is_attr);
                         else if (detail::check_error(H5Tequal(detail::type_type(H5Tcopy(complex_id())), detail::type_type(H5Tcopy(type_id)))))
                             get_helper_read<T, std::complex<double> >(v, data_id, type_id, is_attr);
-                        #define ALPS_HDF5_GET_STRING(U)                                                                                                      \
+                        #define ALPS_HDF5_GET_STRING(U)                                                                                                     \
                             else if (detail::check_error(                                                                                                   \
                                 H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(get_native_type(static_cast<U>(0))))                      \
                             ) > 0)                                                                                                                          \
@@ -1424,6 +1428,25 @@ namespace alps {
                     reinterpret_cast<std::vector<std::string> *>(d)->push_back(n);
                     return 0;
                 }
+                template<typename T> bool is_type(std::string const & p) const {
+                    try {
+                        hid_t type_id;
+                        if (p.find_last_of('@') != std::string::npos) {
+                            detail::attribute_type attr_id(open_attribute(complete_path(p)));
+                            type_id = H5Aget_type(attr_id);
+                        } else {
+                            detail::data_type data_id(H5Dopen2(file_id(), complete_path(p).c_str(), H5P_DEFAULT));
+                            type_id = H5Dget_type(data_id);
+                        }
+                        detail::type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));
+                        detail::check_type(type_id);
+                        return detail::check_error(
+                            H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(get_native_type(static_cast<T>(0))))
+                        ) > 0;
+                    } catch (std::exception & ex) {
+                        ALPS_HDF5_THROW_RUNTIME_ERROR("file: " + filename() + ", path: " + p + "\n" + ex.what());
+                    }
+                }
                 inline int compress() const {
                     return _context->_compress;
                 }
@@ -1495,7 +1518,7 @@ namespace alps {
                     else {
                         set_data(complete_path(p), v);
                         #ifndef ALPS_HDF5_WRITE_PYTHON_COMPATIBLE_COMPLEX
-                            if (is_complex<std::complex<T> >::value)
+                            if (is_cplx<std::complex<T> >::value)
                                 set_attribute(complete_path(p) + "/@__complex__", true);
                         #endif
                     }
