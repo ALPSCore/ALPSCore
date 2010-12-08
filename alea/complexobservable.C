@@ -30,6 +30,9 @@
 #include <iostream>
 #include <alps/alea.h>
 #include <boost/random.hpp>
+#include <alps/alea/abstractsimpleobservable.ipp>
+#include <alps/alea/simpleobservable.ipp>
+#include <alps/alea/simpleobseval.ipp>
 
 int main()
 {
