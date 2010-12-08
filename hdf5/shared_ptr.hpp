@@ -30,18 +30,18 @@
 #define ALPS_HDF5_SHARED_PTR_HPP
 
 #include <alps/hdf5.hpp>
-/*
-namespace alps {
 
+namespace alps {
+    
 #define ALPS_HDF5_MAKE_PVP(ptr_type, arg_type)                                                                                                          \
-        template <typename T> hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > > make_pvp(std::string const & p, arg_type v, std::size_t s) {       \
-            return hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > >(p, std::make_pair(&*v, std::vector<std::size_t>(1, s)));                      \
-        }                                                                                                                                                   \
-        template <typename T> hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > > make_pvp(                                                          \
-            std::string const & p, arg_type v, std::vector<std::size_t> const & s                                                                           \
-        ) {                                                                                                                                                 \
-            return hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > >(p, std::make_pair(&*v, s));                                                   \
-        }
+template <typename T> hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > > make_pvp(std::string const & p, arg_type v, std::size_t s) {       \
+return hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > >(p, std::make_pair(&*v, std::vector<std::size_t>(1, s)));                      \
+}                                                                                                                                                   \
+template <typename T> hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > > make_pvp(                                                          \
+std::string const & p, arg_type v, std::vector<std::size_t> const & s                                                                           \
+) {                                                                                                                                                 \
+return hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > >(p, std::make_pair(&*v, s));                                                   \
+}
     ALPS_HDF5_MAKE_PVP(T *, boost::shared_ptr<T> &)
     ALPS_HDF5_MAKE_PVP(T const *, boost::shared_ptr<T> const &)
     ALPS_HDF5_MAKE_PVP(T *, std::auto_ptr<T> &)
@@ -50,20 +50,20 @@ namespace alps {
     ALPS_HDF5_MAKE_PVP(T const *, boost::weak_ptr<T> const &)
     ALPS_HDF5_MAKE_PVP(T *, boost::scoped_ptr<T> &)
     ALPS_HDF5_MAKE_PVP(T const *, boost::scoped_ptr<T> const &)
-    #undef ALPS_HDF5_MAKE_PVP
-
-    #define ALPS_HDF5_MAKE_ARRAY_PVP(ptr_type, arg_type)                                                                                                    \
-        template <typename T> hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > > make_pvp(std::string const & p, arg_type v, std::size_t s) {       \
-            return hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > >(p, std::make_pair(v.get(), std::vector<std::size_t>(1, s)));                  \
-        }                                                                                                                                                   \
-        template <typename T> hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > > make_pvp(                                                          \
-            std::string const & p, arg_type v, std::vector<std::size_t> const & s                                                                           \
-        ) {                                                                                                                                                 \
-            return hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > >(p, std::make_pair(v.get(), s));                                               \
-        }
+#undef ALPS_HDF5_MAKE_PVP
+    
+#define ALPS_HDF5_MAKE_ARRAY_PVP(ptr_type, arg_type)                                                                                                    \
+template <typename T> hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > > make_pvp(std::string const & p, arg_type v, std::size_t s) {       \
+return hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > >(p, std::make_pair(v.get(), std::vector<std::size_t>(1, s)));                  \
+}                                                                                                                                                   \
+template <typename T> hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > > make_pvp(                                                          \
+std::string const & p, arg_type v, std::vector<std::size_t> const & s                                                                           \
+) {                                                                                                                                                 \
+return hdf5::pvp<std::pair<ptr_type, std::vector<std::size_t> > >(p, std::make_pair(v.get(), s));                                               \
+}
     ALPS_HDF5_MAKE_ARRAY_PVP(T *, boost::shared_array<T> &)
     ALPS_HDF5_MAKE_ARRAY_PVP(T const *, boost::shared_array<T> const &)
-    #undef ALPS_HDF5_MAKE_ARRAY_PVP
+#undef ALPS_HDF5_MAKE_ARRAY_PVP
 }
-*/
+
 #endif

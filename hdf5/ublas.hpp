@@ -31,25 +31,25 @@
 
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/bindings/ublas.hpp>
-/*
-namespace alps {
-  namespace hdf5 {
-    //HDF5_DEFINE_VECTOR_TYPE(boost::numeric::ublas::vector)
-    ALPS_HDF5_DEFINE_VECTOR_TYPE(boost::numeric::ublas::vector)
 
-    template<typename T> iarchive & serialize(iarchive & ar, std::string const & p, boost::numeric::ublas::matrix<T ,boost::numeric::ublas::column_major> & v) {
-        std::pair<T *, std::vector<std::size_t> > d(&v(0,0), std::vector<std::size_t>(2, v.size1()));
-        d.second[1] = v.size2();
-        detail::serialize_impl(ar, p, d, boost::mpl::true_());
-        return ar;
-    }
-    template<typename T> oarchive & serialize(oarchive & ar, std::string const & p, boost::numeric::ublas::matrix<T ,boost::numeric::ublas::column_major> const & v) {
-        std::pair<T const *, std::vector<std::size_t> > d(&v(0,0), std::vector<std::size_t>(2, v.size1()));
-        d.second[1] = v.size2();
-        detail::serialize_impl(ar, p, d, boost::mpl::true_());
-        return ar;
-    }
-  }
+namespace alps {
+    namespace hdf5 {
+        //HDF5_DEFINE_VECTOR_TYPE(boost::numeric::ublas::vector)
+        ALPS_HDF5_DEFINE_VECTOR_TYPE2(boost::numeric::ublas::vector)
+
+        template<typename T> iarchive & serialize(iarchive & ar, std::string const & p, boost::numeric::ublas::matrix<T ,boost::numeric::ublas::column_major> & v) {
+            std::pair<T *, std::vector<std::size_t> > d(&v(0,0), std::vector<std::size_t>(2, v.size1()));
+            d.second[1] = v.size2();
+            detail::serialize_impl(ar, p, d, boost::mpl::true_());
+            return ar;
+        }
+        template<typename T> oarchive & serialize(oarchive & ar, std::string const & p, boost::numeric::ublas::matrix<T ,boost::numeric::ublas::column_major> const & v) {
+            std::pair<T const *, std::vector<std::size_t> > d(&v(0,0), std::vector<std::size_t>(2, v.size1()));
+            d.second[1] = v.size2();
+            detail::serialize_impl(ar, p, d, boost::mpl::true_());
+            return ar;
+        }
+    } 
 }
-*/
+
 #endif
