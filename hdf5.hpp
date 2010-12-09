@@ -78,6 +78,7 @@
 #include <boost/type_traits/add_reference.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <alps/config.h>
 
 #include <hdf5.h>
 
@@ -518,7 +519,7 @@ namespace alps {
 
         namespace detail {
             
-            struct error {
+            struct ALPS_DECL error {
                 static herr_t noop(hid_t) { return 0; }
                 static herr_t callback(unsigned n, H5E_error2_t const * desc, void * buffer);
                 static std::string invoke(hid_t id);
@@ -565,7 +566,7 @@ namespace alps {
             template <typename T> T check_property(T id) { property_type unused(id); return unused; }
             template <typename T> T check_error(T id) { error_type unused(id); return unused; }
             
-            struct context : boost::noncopyable {
+            struct ALPS_DECL context : boost::noncopyable {
                 context(std::string const & filename, hid_t file_id, bool compress);
                 ~context();
                 bool _compress;
@@ -625,7 +626,7 @@ namespace alps {
             return set_data(v, u, s, c);
         }
 
-        class archive {
+         class ALPS_DECL archive {
             public:
                 struct log_type {
                     boost::posix_time::ptime time;
@@ -996,13 +997,13 @@ namespace alps {
         };
 
         namespace detail {
-            struct creator {
+            struct ALPS_DECL creator {
                 static hid_t open_reading(std::string const & file);
                 static hid_t open_writing(std::string const & file);
             };
         }
 
-        class iarchive : public archive {
+        class ALPS_DECL iarchive : public archive {
             public:
                 iarchive(std::string const & file) : archive(file,&detail::creator::open_reading) {}
                 iarchive(iarchive const & rhs) : archive(rhs) {}
@@ -1020,7 +1021,7 @@ namespace alps {
                 }
         };
 
-        class oarchive : public archive {
+        class ALPS_DECL oarchive : public archive {
             public:
                 oarchive(std::string const & file, bool compress = false) : archive(file, &detail::creator::open_writing, compress) {}
                 oarchive(oarchive const & rhs) : archive(rhs) {}
