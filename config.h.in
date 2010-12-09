@@ -206,6 +206,7 @@ using boost::uint_fast64_t;
 #  define ALPS_TEMPL_DECL
 # endif
 #else
+# define ALPS_TEMPL_DECL
 # define ALPS_DECL
 #endif
 
