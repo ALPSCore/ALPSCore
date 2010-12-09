@@ -31,6 +31,7 @@
 
 #include <valarray>
 #include <boost/numeric/bindings/ublas.hpp>
+#include <alps/hdf5.hpp>
 
 namespace alps {
   namespace hdf5 {

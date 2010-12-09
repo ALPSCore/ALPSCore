@@ -29,6 +29,7 @@
 #ifndef ALPS_HDF5_UBLAS_HPP
 #define ALPS_HDF5_UBLAS_HPP
 
+#include <alps/hdf5.hpp>
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/bindings/ublas.hpp>
 
