@@ -52,7 +52,7 @@ namespace alps {
 //-----------------------------------------------------------------------
 
 template <class T,class BINNING>
-class ALPS_DECL SimpleObservable: public AbstractSimpleObservable<T>, public RecordableObservable<T>
+class ALPS_TEMPL_DECL SimpleObservable: public AbstractSimpleObservable<T>, public RecordableObservable<T>
 {
 public:
   typedef typename AbstractSimpleObservable<T>::value_type value_type;

@@ -200,8 +200,10 @@ using boost::uint_fast64_t;
 #if defined(BOOST_HAS_DECLSPEC)
 # if defined(ALPS_EXPORTS)
 #  define ALPS_DECL __declspec(dllexport)
+#  define ALPS_TEMPL_DECL __declspec(dllexport)
 # else
 #  define ALPS_DECL __declspec(dllimport)
+#  define ALPS_TEMPL_DECL
 # endif
 #else
 # define ALPS_DECL

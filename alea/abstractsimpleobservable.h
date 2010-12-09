@@ -73,10 +73,10 @@ class RealVectorObsevaluatorXMLHandler;
 // Observable class interface
 //-----------------------------------------------------------------------
 
-template <class T> class ALPS_DECL SimpleObservableEvaluator;
+template <class T> class ALPS_TEMPL_DECL SimpleObservableEvaluator;
 
 template <class T>
-class ALPS_DECL AbstractSimpleObservable: public Observable
+class ALPS_TEMPL_DECL AbstractSimpleObservable: public Observable
 {
 public:
   friend class RealVectorObsevaluatorXMLHandler;
