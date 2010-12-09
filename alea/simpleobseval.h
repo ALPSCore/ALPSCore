@@ -83,7 +83,7 @@ struct ObservableNamingHelper {
 //-----------------------------------------------------------------------
 
 template <class T>
-class SimpleObservableEvaluator : public AbstractSimpleObservable<T>
+class ALPS_DECL SimpleObservableEvaluator : public AbstractSimpleObservable<T>
 {
   typedef AbstractSimpleObservable<T> super_type;
  public:
