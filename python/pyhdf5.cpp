@@ -177,8 +177,16 @@ namespace alps {
                         return read_scalar<std::string>(self, path);
                     else if (self.is_int(path))
                         return read_scalar<int>(self, path);
+                    else if (self.is_uint(path))
+                        return read_scalar<unsigned int>(self, path);
                     else if (self.is_long(path))
                         return read_scalar<long>(self, path);
+                    else if (self.is_ulong(path))
+                        return read_scalar<unsigned long>(self, path);
+                    else if (self.is_longlong(path))
+                        return read_scalar<long long>(self, path);
+                    else if (self.is_ulonglong(path))
+                        return read_scalar<unsigned long long>(self, path);
                     else if (self.is_float(path) || self.is_double(path))
                         return read_scalar<double>(self, path);
                     else if (self.is_complex(path))
@@ -196,8 +204,16 @@ namespace alps {
                     return result;
                 } else if (self.is_int(path))
                     return read_numpy<int>(self, path, PyArray_INT);
+                else if (self.is_uint(path))
+                    return read_numpy<unsigned int>(self, path, PyArray_INT);
                 else if (self.is_long(path))
                     return read_numpy<long>(self, path, PyArray_LONG);
+                else if (self.is_ulong(path))
+                    return read_numpy<unsigned long>(self, path, PyArray_LONG);
+                else if (self.is_longlong(path))
+                    return read_numpy<long long>(self, path, PyArray_LONG);
+                else if (self.is_ulonglong(path))
+                    return read_numpy<unsigned long long>(self, path, PyArray_LONG);
                 else if (self.is_float(path) || self.is_double(path))
                     return read_numpy<double>(self, path, PyArray_DOUBLE);
                 else if (self.is_complex(path))

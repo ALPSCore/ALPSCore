@@ -652,7 +652,11 @@ namespace alps {
                 bool is_scalar(std::string const & p) const;
                 bool is_string(std::string const & p) const;
                 bool is_int(std::string const & p) const;
+                bool is_uint(std::string const & p) const;
                 bool is_long(std::string const & p) const;
+                bool is_ulong(std::string const & p) const;
+                bool is_longlong(std::string const & p) const;
+                bool is_ulonglong(std::string const & p) const;
                 bool is_float(std::string const & p) const;
                 bool is_double(std::string const & p) const;
                 bool is_complex(std::string const & p) const;

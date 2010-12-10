@@ -338,9 +338,29 @@ namespace alps {
           return is_type<int>(p);
       }
       
+      bool archive::is_uint(std::string const & p) const 
+      {
+          return is_type<unsigned int>(p);
+      }
+      
       bool archive::is_long(std::string const & p) const 
       {
           return is_type<long>(p);
+      }
+      
+      bool archive::is_ulong(std::string const & p) const 
+      {
+          return is_type<unsigned long>(p);
+      }
+      
+      bool archive::is_longlong(std::string const & p) const 
+      {
+          return is_type<long long>(p);
+      }
+      
+      bool archive::is_ulonglong(std::string const & p) const 
+      {
+          return is_type<unsigned long long>(p);
       }
       
       bool archive::is_float(std::string const & p) const 

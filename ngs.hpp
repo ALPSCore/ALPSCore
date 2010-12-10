@@ -34,7 +34,9 @@
     #include <boost/mpi.hpp>
 #endif
 #include <boost/bind.hpp>
-#include <boost/thread.hpp>
+#ifndef ALPS_NGS_SINGLE_THREAD
+    #include <boost/thread.hpp>
+#endif
 #include <boost/utility.hpp>
 #include <boost/variant.hpp>
 #include <boost/function.hpp>
@@ -71,8 +73,12 @@ namespace alps {
                 desc.add_options()
                     ("help", "produce help message")
                     ("single", "run single process")
-                    ("threaded", "run in multithread envirement")
-                    ("mpi", "run in parallel using MPI")
+                    #ifndef ALPS_NGS_SINGLE_THREAD
+                        ("threaded", "run in multithread envirement")
+                    #endif
+                    #ifdef ALPS_HAVE_MPI
+                        ("mpi", "run in parallel using MPI")
+                    #endif
                     ("continue", "load simulation from checkpoint")
                     ("time-limit,T", boost::program_options::value<std::size_t>(&time_limit)->default_value(0), "time limit for the simulation")
                     ("input-file", boost::program_options::value<std::string>(&input_file), "input file in hdf5 format")
@@ -90,6 +96,9 @@ namespace alps {
                 if (vm.count("threaded") && vm.count("mpi"))
                     type = HYBRID;
                 else if (vm.count("threaded"))
+                    #ifdef ALPS_NGS_SINGLE_THREAD
+                        throw std::logic_error("Not build with multithread support");
+                    #endif
                     type = THREADED;
                 else if (vm.count("mpi")) {
                     type = MPI;
@@ -809,42 +818,44 @@ namespace alps {
             boost::mutex mutable mutex;
     };
 
-    template<typename Impl> class mcthreadedsim : public Impl {
-        public:
-            mcthreadedsim(typename parameters_type<Impl>::type const & p)
-                : Impl(p)
-                , stop_flag(false)
-            {}
+    #ifndef ALPS_NGS_SINGLE_THREAD
+        template<typename Impl> class mcthreadedsim : public Impl {
+            public:
+                mcthreadedsim(typename parameters_type<Impl>::type const & p)
+                    : Impl(p)
+                    , stop_flag(false)
+                {}
 
-            bool run(boost::function<bool ()> const & stop_callback) {
-                boost::thread thread(boost::bind<bool>(&Impl::run, static_cast<Impl *>(this), &mcthreadedsim<Impl>::dummy_callback));
-                checker(stop_callback);
-                thread.join();
-                return !stop_callback();
-            }
-
-        protected:
-
-            virtual bool complete_callback(boost::function<bool ()> const &) {
-                return stop_flag;
-            }
-
-            virtual void checker(boost::function<bool ()> const & stop_callback) {
-                while (true) {
-                    usleep(0.1 * 1e6);
-                    if (stop_flag = Impl::complete_callback(stop_callback))
-                        return;
+                bool run(boost::function<bool ()> const & stop_callback) {
+                    boost::thread thread(boost::bind<bool>(&Impl::run, static_cast<Impl *>(this), &mcthreadedsim<Impl>::dummy_callback));
+                    checker(stop_callback);
+                    thread.join();
+                    return !stop_callback();
                 }
-            }
 
-            mcatomic<bool> stop_flag;
-            // boost::mutex mutex;
-            // measurements and configuration need to be locked separately
+            protected:
 
-        private:
+                virtual bool complete_callback(boost::function<bool ()> const &) {
+                    return stop_flag;
+                }
 
-            static bool dummy_callback() {}
-    };
+                virtual void checker(boost::function<bool ()> const & stop_callback) {
+                    while (true) {
+                        usleep(0.1 * 1e6);
+                        if (stop_flag = Impl::complete_callback(stop_callback))
+                            return;
+                    }
+                }
+
+                mcatomic<bool> stop_flag;
+                // boost::mutex mutex;
+                // measurements and configuration need to be locked separately
+
+            private:
+
+                static bool dummy_callback() {}
+        };
+    #endif
 
     #ifdef ALPS_HAVE_MPI
 
