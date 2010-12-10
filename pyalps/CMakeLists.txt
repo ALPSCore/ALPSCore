@@ -14,8 +14,8 @@ include_directories(${Boost_ROOT_DIR})
 
 enable_testing()
 if (ALPS_BUILD_PYTHON AND BUILD_SHARED_LIBS)
-#    FOREACH (name hlist_test mcdata loadobs)
-    FOREACH (name hlist_test mcdata)
+#    FOREACH (name hlist_test mcdata pyhdf5 loadobs)
+    FOREACH (name hlist_test mcdata pyhdf5)
         add_test(python_${name}
             ${CMAKE_COMMAND}
                 -Dcmd=${name}.py
