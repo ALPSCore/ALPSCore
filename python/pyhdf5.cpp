@@ -209,11 +209,11 @@ namespace alps {
                 else if (self.is_long(path))
                     return read_numpy<long>(self, path, PyArray_LONG);
                 else if (self.is_ulong(path))
-                    return read_numpy<unsigned long>(self, path, PyArray_LONG);
+                    return read_numpy<unsigned long>(self, path, PyArray_ULONG);
                 else if (self.is_longlong(path))
-                    return read_numpy<long long>(self, path, PyArray_LONG);
+                    return read_numpy<long long>(self, path, PyArray_LONGLONG);
                 else if (self.is_ulonglong(path))
-                    return read_numpy<unsigned long long>(self, path, PyArray_LONG);
+                    return read_numpy<unsigned long long>(self, path, PyArray_ULONGLONG);
                 else if (self.is_float(path) || self.is_double(path))
                     return read_numpy<double>(self, path, PyArray_DOUBLE);
                 else if (self.is_complex(path))
