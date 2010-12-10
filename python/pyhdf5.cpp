@@ -40,6 +40,9 @@
 
 #include <numpy/arrayobject.h>
 
+// !! This is very ugly - any ideas how to improve?
+#include <alps/hdf5/hdf5.cpp>
+
 namespace alps { 
     namespace python {
         namespace hdf5 {
@@ -55,6 +58,14 @@ namespace alps {
 
             template<typename T> boost::python::str filename(T & self) {
                 return boost::python::str(self.filename());
+            }
+
+            template<typename T> boost::python::list extent(T & self, std::string const & path) {
+                boost::python::list result;
+                std::vector<std::size_t> children = self.extent(path);
+                for (std::vector<std::size_t>::const_iterator it = children.begin(); it != children.end(); ++it)
+                    result.append(*it);
+                return result;
             }
 
             template<typename T> boost::python::list list_children(T & self, std::string const & path) {
@@ -130,6 +141,12 @@ namespace alps {
 
             template<typename T> boost::python::object read_scalar(alps::hdf5::iarchive & self, std::string const & path) {
                 T data;
+                self >> make_pvp(path, data);
+                return boost::python::object(data);
+            }
+
+            template<> boost::python::object read_scalar<std::string>(alps::hdf5::iarchive & self, std::string const & path) {
+                std::string data;
                 self >> make_pvp(path, data);
                 return boost::python::str(data);
             }
@@ -252,7 +269,7 @@ BOOST_PYTHON_MODULE(pyhdf5_c) {
         .def("is_group", &alps::hdf5::oarchive::is_group,is_group_docstring)
         .def("is_data", &alps::hdf5::oarchive::is_data,is_data_docstring)
         .def("is_attribute", &alps::hdf5::oarchive::is_attribute,is_attribute_docstring)
-        .def("extent", &alps::hdf5::oarchive::extent,extent_docstring)
+        .def("extent", &alps::python::hdf5::extent<alps::hdf5::oarchive>,extent_docstring)
         .def("dimensions", &alps::hdf5::oarchive::dimensions,dimensions_docstring)
         .def("is_scalar", &alps::hdf5::oarchive::is_scalar,is_scalar_docstring)
         .def("is_null", &alps::hdf5::oarchive::is_null,is_null_docstring)
@@ -271,7 +288,7 @@ BOOST_PYTHON_MODULE(pyhdf5_c) {
         .def("is_group", &alps::hdf5::iarchive::is_group,is_group_docstring)
         .def("is_data", &alps::hdf5::iarchive::is_data,is_data_docstring)
         .def("is_attribute", &alps::hdf5::iarchive::is_attribute,is_attribute_docstring)
-        .def("extent", &alps::hdf5::iarchive::extent,extent_docstring)
+        .def("extent", &alps::python::hdf5::extent<alps::hdf5::iarchive>,extent_docstring)
         .def("dimensions", &alps::hdf5::iarchive::dimensions,dimensions_docstring)
         .def("is_scalar", &alps::hdf5::iarchive::is_scalar,is_scalar_docstring)
         .def("is_null", &alps::hdf5::iarchive::is_null,is_null_docstring)

@@ -350,13 +350,14 @@ namespace alps {
       
       bool archive::is_double(std::string const & p) const 
       {
+          // TODO: check if __complex__ isset
           return is_type<double>(p);
       }
       
       bool archive::is_complex(std::string const & p) const 
       {
-          // TODO: implement!
-          ALPS_HDF5_THROW_RUNTIME_ERROR("not impl");
+          // TODO: implement! (__complex__)
+          return is_type<double>(p);
       }
       
       bool archive::is_null(std::string const & p) const 
