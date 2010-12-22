@@ -735,9 +735,13 @@ namespace alps {
                         } while (start[0] < size[0]);
                     }
                 }
-            
+
                 template<typename T, typename I> void get_helper(std::string const & p, T & v, bool is_attr) const {
-                    if (is_scalar(p) != is_native<T>::value)
+                    if (is_scalar(p) != is_native<T>::value
+                        #ifndef ALPS_HDF5_WRITE_PYTHON_COMPATIBLE_COMPLEX
+                            && (!is_complex(p) || !is_cplx<T>::value)
+                        #endif
+                    )
                         ALPS_HDF5_THROW_RUNTIME_ERROR("scalar - vector conflict in path: " + p)
                     else if (is_native<T>::value && is_null(p))
                         ALPS_HDF5_THROW_RUNTIME_ERROR("scalars cannot be null in path: " + p)
@@ -767,15 +771,15 @@ namespace alps {
                         else ALPS_HDF5_THROW_RUNTIME_ERROR("invalid type")
                     }
                 }
-            
+
                 template<typename T> void get_data(std::string const & p, T & v) const {
                     get_helper<T, detail::data_type>(p, v, false);
                 }
-            
+
                 template<typename T> void get_attribute(std::string const & p, T & v) const {
                     get_helper<T, detail::attribute_type>(p, v, true);
                 }
-            
+
                 template<typename T> void set_data(std::string const & p, T const & v) const {
                     if (is_group(p))
                         delete_group(p);

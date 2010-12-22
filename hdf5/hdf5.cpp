@@ -267,7 +267,7 @@ namespace alps {
               detail::check_space(space_id);
               std::vector<std::size_t> extent(buffer.size(), 0);
               std::copy(buffer.begin(), buffer.end(), extent.begin());
-              if (is_data(p) && is_attribute(p + "/@__complex__") && extent.back() == 2) {
+              if (is_data(p) && is_complex(p) && extent.back() == 2) {
                   extent.pop_back();
                   if (!extent.size())
                       return std::vector<std::size_t>(1, 1);
@@ -286,7 +286,7 @@ namespace alps {
                   return static_cast<hid_t>(detail::check_error(H5Sget_simple_extent_dims(detail::space_type(H5Aget_space(attr_id)), NULL, NULL)));
               } else {
                   detail::data_type data_id(H5Dopen2(file_id(), complete_path(p).c_str(), H5P_DEFAULT));
-                  return static_cast<hid_t>(detail::check_error(H5Sget_simple_extent_dims(detail::space_type(H5Dget_space(data_id)), NULL, NULL)));
+                  return detail::check_error(H5Sget_simple_extent_dims(detail::space_type(H5Dget_space(data_id)), NULL, NULL));
               }
           } catch (std::exception & ex) {
               ALPS_HDF5_THROW_RUNTIME_ERROR("file: " + filename() + ", path: " + p + "\n" + ex.what());
@@ -308,7 +308,7 @@ namespace alps {
               detail::check_space(space_id);
               if (type == H5S_NO_CLASS)
                   ALPS_HDF5_THROW_RUNTIME_ERROR("error reading class " + complete_path(p))
-                  return type == H5S_SCALAR;
+              return type == H5S_SCALAR || (is_complex(p) && dimensions(p) == 1);
           } catch (std::exception & ex) {
               ALPS_HDF5_THROW_RUNTIME_ERROR("file: " + filename() + ", path: " + p + "\n" + ex.what());
           }
@@ -370,14 +370,12 @@ namespace alps {
       
       bool archive::is_double(std::string const & p) const 
       {
-          // TODO: check if __complex__ isset
-          return is_type<double>(p);
+          return is_type<double>(p) && !is_complex(p);
       }
       
       bool archive::is_complex(std::string const & p) const 
       {
-          // TODO: implement! (__complex__)
-          return is_type<double>(p);
+          return is_type<double>(p) && p.find_last_of('@') == std::string::npos && is_attribute(p + "/@__complex__");
       }
       
       bool archive::is_null(std::string const & p) const 
