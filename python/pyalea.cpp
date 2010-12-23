@@ -49,6 +49,8 @@ using namespace boost::python;
 namespace alps { 
   namespace alea {
 
+
+
     template<typename T>
     class WrappedValarrayObservable
     {

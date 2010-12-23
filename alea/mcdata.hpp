@@ -66,8 +66,6 @@
 
 #ifdef ALPS_HAVE_PYTHON
 
-    #include <alps/python/numpy_array.hpp>
-
     #include <boost/python.hpp>
 
 #endif
@@ -164,28 +162,8 @@ namespace alps {
                 {}
 
                 #ifdef ALPS_HAVE_PYTHON
-                    mcdata(boost::python::object const & mean)
-                        : count_(1)
-                        , binsize_(0)
-                        , max_bin_number_(0)
-                        , data_is_analyzed_(true)
-                        , jacknife_bins_valid_(true)
-                        , cannot_rebin_(false)
-                    {
-                        alps::python::numpy::convert(mean, mean_);
-                    }
-
-                    mcdata(boost::python::object const & mean, boost::python::object const & error)
-                        : count_(1)
-                        , binsize_(0)
-                        , max_bin_number_(0)
-                        , data_is_analyzed_(true)
-                        , jacknife_bins_valid_(true)
-                        , cannot_rebin_(false)
-                    {
-                        alps::python::numpy::convert(mean, mean_);
-                        alps::python::numpy::convert(error, error_);
-                    }
+                    mcdata(boost::python::object const & mean);
+                    mcdata(boost::python::object const & mean, boost::python::object const & error);
                 #endif
 
                 template <typename X, typename S> mcdata(mcdata<X> const & rhs, S s)

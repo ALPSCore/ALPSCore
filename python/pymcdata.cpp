@@ -38,6 +38,36 @@
 #include <boost/python.hpp>
 
 namespace alps { 
+
+namespace alea {
+
+
+        template <typename T>
+        mcdata<T>::mcdata(boost::python::object const & mean)
+                            : count_(1)
+                            , binsize_(0)
+                            , max_bin_number_(0)
+                            , data_is_analyzed_(true)
+                            , jacknife_bins_valid_(true)
+                            , cannot_rebin_(false)
+                        {
+                            alps::python::numpy::convert(mean, mean_);
+                        }
+
+        template <typename T>
+        mcdata<T>::mcdata(boost::python::object const & mean, boost::python::object const & error)
+                            : count_(1)
+                            , binsize_(0)
+                            , max_bin_number_(0)
+                            , data_is_analyzed_(true)
+                            , jacknife_bins_valid_(true)
+                            , cannot_rebin_(false)
+                        {
+                            alps::python::numpy::convert(mean, mean_);
+                            alps::python::numpy::convert(error, error_);
+                        }
+    }
+
     namespace python {
 
         template<typename T> std::size_t size(alps::alea::mcdata<T> & data) {
