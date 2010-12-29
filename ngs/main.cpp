@@ -54,16 +54,20 @@ int main(int argc, char *argv[]) {
                 , options.time_limit
                 , options.resume
             );
-        } else if (options.type == alps::mcoptions::THREADED) {
-            alps::mcthreadedsim<simulation_type> simulation(parameters);
-            results = run_simulation(
-                  simulation
-                , checkpoint_path
-                , options.time_limit
-                , options.resume
-            );
+        }
+        #ifndef ALPS_NGS_SINGLE_THREAD
+            else if (options.type == alps::mcoptions::THREADED) {
+                alps::mcthreadedsim<simulation_type> simulation(parameters);
+                results = run_simulation(
+                      simulation
+                    , checkpoint_path
+                    , options.time_limit
+                    , options.resume
+                );
+            }
+        #endif
         #ifdef ALPS_HAVE_MPI
-            } else {
+            else {
                 boost::mpi::environment env(argc, argv);
                 boost::mpi::communicator communicator;
                 if (options.type == alps::mcoptions::MPI) {
