@@ -26,6 +26,11 @@
 *
 *****************************************************************************/
 
+/*
+create c file mit instanzierungen und einen fwd header, der nur deklarationen beinhaltet
+ptr_map rauskicken
+*/
+
 #include <alps/alea.h>
 #include <alps/hdf5.hpp>
 #include <alps/parameter.h>
@@ -98,8 +103,9 @@ namespace alps {
                 else if (vm.count("threaded"))
                     #ifdef ALPS_NGS_SINGLE_THREAD
                         throw std::logic_error("Not build with multithread support");
+                    #else
+                        type = THREADED;
                     #endif
-                    type = THREADED;
                 else if (vm.count("mpi")) {
                     type = MPI;
                     #ifndef ALPS_HAVE_MPI
@@ -798,27 +804,27 @@ namespace alps {
             }
     };
 
-    template<typename T> class mcatomic {
-        public:
-            mcatomic() {}
-            mcatomic(T const & v): value(v) {}
-            mcatomic(mcatomic const & v): value(v.value) {}
-            
-            mcatomic & operator=(mcatomic const & v) {
-                boost::lock_guard<boost::mutex> lock(mutex);
-                value = v;
-            }
-
-            operator T() const { 
-                boost::lock_guard<boost::mutex> lock(mutex);
-                return value; 
-            }
-        private:
-            T volatile value;
-            boost::mutex mutable mutex;
-    };
-
     #ifndef ALPS_NGS_SINGLE_THREAD
+        template<typename T> class mcatomic {
+            public:
+                mcatomic() {}
+                mcatomic(T const & v): value(v) {}
+                mcatomic(mcatomic const & v): value(v.value) {}
+
+                mcatomic & operator=(mcatomic const & v) {
+                    boost::lock_guard<boost::mutex> lock(mutex);
+                    value = v;
+                }
+
+                operator T() const { 
+                    boost::lock_guard<boost::mutex> lock(mutex);
+                    return value; 
+                }
+            private:
+                T volatile value;
+                boost::mutex mutable mutex;
+        };
+
         template<typename Impl> class mcthreadedsim : public Impl {
             public:
                 mcthreadedsim(typename parameters_type<Impl>::type const & p)
