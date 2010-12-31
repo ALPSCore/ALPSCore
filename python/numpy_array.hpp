@@ -132,6 +132,6 @@ namespace alps {
   }
 }
 
-#include "numpy_array.cpp"
+#include "numpy_array.ipp"
 
 #endif
