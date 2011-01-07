@@ -4,7 +4,7 @@
 #          http://www.boost.org/LICENSE_1_0.txt)
 
 if (MPI_FOUND)
-    add_executable(ngs main.cpp)
-    add_dependencies(ngs alps)
-    target_link_libraries(ngs alps)
+#    add_executable(test_ngs main.cpp)
+#    add_dependencies(test_ngs alps)
+#    target_link_libraries(test_ngs alps)
 endif(MPI_FOUND)
