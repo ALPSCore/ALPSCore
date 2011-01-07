@@ -26,20 +26,40 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_HPP
-#define ALPS_NGS_HPP
+#ifndef ALPS_NGS_MCRESULTS_HPP
+#define ALPS_NGS_MCRESULTS_HPP
 
-#include <alps/ngs/api.hpp>
-#include <alps/ngs/boost.hpp>
-#include <alps/ngs/mcbase.hpp>
-#include <alps/ngs/mcmpisim.hpp>
-#include <alps/ngs/mcparams.hpp>
-#include <alps/ngs/mcsignal.hpp>
 #include <alps/ngs/mcresult.hpp>
-#include <alps/ngs/mcresults.hpp>
-#include <alps/ngs/mcoptions.hpp>
-#include <alps/ngs/short_print.hpp>
-#include <alps/ngs/mcdeprecated.hpp>
-#include <alps/ngs/mcthreadedsim.hpp>
+
+#include <alps/config.h>
+#include <alps/hdf5_fwd.hpp>
+
+#include <map>
+#include <string>
+
+namespace alps {
+
+    class mcresults : public std::map<std::string, mcresult> {
+
+        public: 
+
+            mcresult & operator[](std::string const & name);
+
+            mcresult const & operator[](std::string const & name) const;
+
+            bool has(std::string const & name) const;
+
+            void insert(std::string const & name, mcresult res);
+
+            void serialize(hdf5::iarchive & ar);
+
+            void serialize(hdf5::oarchive & ar) const;
+
+            void output(std::ostream & os) const;
+
+    };
+
+    std::ostream & operator<<(std::ostream & os, mcresults const & mcresults);
+}
 
 #endif

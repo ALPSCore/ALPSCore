@@ -42,6 +42,9 @@ set(ALPS_SOURCES
     scheduler/remote_task.C scheduler/remote_worker.C scheduler/scheduler.C
     scheduler/serial_scheduler.C scheduler/signal.C scheduler/single_scheduler.C
     scheduler/slave_task.C scheduler/task.C scheduler/worker.C scheduler/workertask.C
+    #ngs
+    ngs/mcbase.cpp ngs/mcparams.cpp ngs/mcsignal.cpp ngs/mcoptions.cpp ngs/mcdeprecated.cpp 
+    ngs/mcresult.cpp ngs/mcresults.cpp
 )
 
 if (NOT ALPS_FOR_VISTRAILS)

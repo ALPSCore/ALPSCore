@@ -29,6 +29,7 @@
 /* $Id$ */
 
 #include <alps/alea/observable.h>
+#include <alps/hdf5.hpp>
 
 namespace alps {
 

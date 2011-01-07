@@ -26,20 +26,73 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_HPP
-#define ALPS_NGS_HPP
+#ifndef ALPS_NGS_MCTHREADEDSIM_HPP
+#define ALPS_NGS_MCTHREADEDSIM_HPP
 
-#include <alps/ngs/api.hpp>
-#include <alps/ngs/boost.hpp>
-#include <alps/ngs/mcbase.hpp>
-#include <alps/ngs/mcmpisim.hpp>
-#include <alps/ngs/mcparams.hpp>
-#include <alps/ngs/mcsignal.hpp>
-#include <alps/ngs/mcresult.hpp>
-#include <alps/ngs/mcresults.hpp>
-#include <alps/ngs/mcoptions.hpp>
-#include <alps/ngs/short_print.hpp>
-#include <alps/ngs/mcdeprecated.hpp>
-#include <alps/ngs/mcthreadedsim.hpp>
+#ifndef ALPS_NGS_SINGLE_THREAD
+    #include <boost/thread.hpp>
+#endif
+
+namespace alps {
+
+    #ifndef ALPS_NGS_SINGLE_THREAD
+        template<typename T> class mcatomic {
+            public:
+                mcatomic() {}
+                mcatomic(T const & v): value(v) {}
+                mcatomic(mcatomic const & v): value(v.value) {}
+
+                mcatomic & operator=(mcatomic const & v) {
+                    boost::lock_guard<boost::mutex> lock(mutex);
+                    value = v;
+                }
+
+                operator T() const { 
+                    boost::lock_guard<boost::mutex> lock(mutex);
+                    return value; 
+                }
+            private:
+                T volatile value;
+                boost::mutex mutable mutex;
+        };
+
+        template<typename Impl> class mcthreadedsim : public Impl {
+            public:
+                mcthreadedsim(typename parameters_type<Impl>::type const & p)
+                    : Impl(p)
+                    , stop_flag(false)
+                {}
+
+                bool run(boost::function<bool ()> const & stop_callback) {
+                    boost::thread thread(boost::bind<bool>(&Impl::run, static_cast<Impl *>(this), &mcthreadedsim<Impl>::dummy_callback));
+                    checker(stop_callback);
+                    thread.join();
+                    return !stop_callback();
+                }
+
+            protected:
+
+                virtual bool complete_callback(boost::function<bool ()> const &) {
+                    return stop_flag;
+                }
+
+                virtual void checker(boost::function<bool ()> const & stop_callback) {
+                    while (true) {
+                        usleep(0.1 * 1e6);
+                        if (stop_flag = Impl::complete_callback(stop_callback))
+                            return;
+                    }
+                }
+
+                mcatomic<bool> stop_flag;
+                // boost::mutex mutex;
+                // measurements and configuration need to be locked separately
+
+            private:
+
+                static bool dummy_callback() {}
+        };
+    #endif
+}
 
 #endif

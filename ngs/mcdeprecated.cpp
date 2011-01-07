@@ -26,20 +26,37 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_HPP
-#define ALPS_NGS_HPP
-
-#include <alps/ngs/api.hpp>
-#include <alps/ngs/boost.hpp>
-#include <alps/ngs/mcbase.hpp>
-#include <alps/ngs/mcmpisim.hpp>
-#include <alps/ngs/mcparams.hpp>
-#include <alps/ngs/mcsignal.hpp>
-#include <alps/ngs/mcresult.hpp>
-#include <alps/ngs/mcresults.hpp>
-#include <alps/ngs/mcoptions.hpp>
-#include <alps/ngs/short_print.hpp>
 #include <alps/ngs/mcdeprecated.hpp>
-#include <alps/ngs/mcthreadedsim.hpp>
 
-#endif
+namespace alps {
+
+    mcdeprecated::mcdeprecated(parameters_type const & p, std::size_t seed_offset)
+        : mcbase(p, seed_offset)
+        , parms(make_alps_parameters(p))
+        , measurements(results)
+        , random_01(random)
+    {}
+
+    double mcdeprecated::fraction_completed() const { 
+        return work_done(); 
+    }
+
+    double mcdeprecated::random_real(double a, double b) { 
+        return a + b * random(); 
+    }
+
+    void mcdeprecated::do_update() {
+        dostep();
+    }
+
+    void mcdeprecated::do_measurements() {}
+
+    Parameters mcdeprecated::make_alps_parameters(parameters_type const & s) {
+        Parameters p;
+        for (parameters_type::const_iterator it = s.begin(); it != s.end(); ++it)
+// TODO: why does static_cast<std::string>(it->second) not work?
+            p.push_back(it->first, it->second.operator std::string());
+        return p;
+    }
+
+}

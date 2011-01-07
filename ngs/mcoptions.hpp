@@ -26,20 +26,30 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_HPP
-#define ALPS_NGS_HPP
+#ifndef ALPS_NGS_MCOPTIONS_HPP
+#define ALPS_NGS_MCOPTIONS_HPP
 
-#include <alps/ngs/api.hpp>
-#include <alps/ngs/boost.hpp>
-#include <alps/ngs/mcbase.hpp>
-#include <alps/ngs/mcmpisim.hpp>
-#include <alps/ngs/mcparams.hpp>
-#include <alps/ngs/mcsignal.hpp>
-#include <alps/ngs/mcresult.hpp>
-#include <alps/ngs/mcresults.hpp>
-#include <alps/ngs/mcoptions.hpp>
-#include <alps/ngs/short_print.hpp>
-#include <alps/ngs/mcdeprecated.hpp>
-#include <alps/ngs/mcthreadedsim.hpp>
+#include <alps/config.h>
+
+#include <string>
+
+namespace alps {
+
+    class mcoptions {
+
+        public:
+
+            typedef enum { SINGLE, THREADED, MPI, HYBRID } execution_types;
+
+            mcoptions(int argc, char* argv[]);
+
+            bool valid;
+            bool resume;
+            std::size_t time_limit;
+            std::string input_file;
+            std::string output_file;
+            execution_types type;
+    };
+}
 
 #endif

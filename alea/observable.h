@@ -47,9 +47,7 @@
 #include <mpi.h>
 #endif
 
-#ifdef ALPS_HAVE_HDF5
-#include <alps/hdf5.hpp>
-#endif
+#include <alps/hdf5_fwd.hpp>
 
 #include <boost/filesystem/path.hpp>
 #include <boost/type_traits.hpp>

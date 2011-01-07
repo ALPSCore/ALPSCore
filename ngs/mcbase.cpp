@@ -26,20 +26,63 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_HPP
-#define ALPS_NGS_HPP
-
 #include <alps/ngs/api.hpp>
-#include <alps/ngs/boost.hpp>
 #include <alps/ngs/mcbase.hpp>
-#include <alps/ngs/mcmpisim.hpp>
-#include <alps/ngs/mcparams.hpp>
-#include <alps/ngs/mcsignal.hpp>
-#include <alps/ngs/mcresult.hpp>
-#include <alps/ngs/mcresults.hpp>
-#include <alps/ngs/mcoptions.hpp>
-#include <alps/ngs/short_print.hpp>
-#include <alps/ngs/mcdeprecated.hpp>
-#include <alps/ngs/mcthreadedsim.hpp>
 
-#endif
+namespace alps {
+
+    void mcbase::save(boost::filesystem::path const & path) const {
+        save_results(results, params, path, "/simulation/realizations/0/clones/0/results");
+    }
+
+    void mcbase::load(boost::filesystem::path const & path) {
+        hdf5::iarchive ar(path.file_string() + ".h5");
+        ar >> make_pvp("/simulation/realizations/0/clones/0/results", results);
+    }
+
+    bool mcbase::run(boost::function<bool ()> const & stop_callback) {
+        do {
+            do_update();
+            do_measurements();
+        } while(!complete_callback(stop_callback));
+        return !stop_callback();
+    }
+
+    mcbase::result_names_type mcbase::result_names() const {
+        result_names_type names;
+        for(ObservableSet::const_iterator it = results.begin(); it != results.end(); ++it)
+            names.push_back(it->first);
+        return names;
+    }
+
+    mcbase::result_names_type mcbase::unsaved_result_names() const {
+        return result_names_type(); 
+    }
+
+    mcbase::results_type mcbase::collect_results() const {
+        return collect_results(result_names());
+    }
+
+    mcbase::results_type mcbase::collect_results(result_names_type const & names) const {
+        results_type partial_results;
+        for(result_names_type::const_iterator it = names.begin(); it != names.end(); ++it)
+            partial_results.insert(*it, mcresult(&results[*it]));
+        return partial_results;
+    }
+
+    bool mcbase::complete_callback(boost::function<bool ()> const & stop_callback) {
+        if (boost::posix_time::second_clock::local_time() > check_time) {
+            fraction = fraction_completed();
+            next_check = std::min(
+                2. * next_check, 
+                std::max(
+                      double(next_check)
+                    , 0.8 * (boost::posix_time::second_clock::local_time() - start_time).total_seconds() / fraction * (1 - fraction)
+                )
+            );
+           check_time = boost::posix_time::second_clock::local_time() + boost::posix_time::seconds(next_check);
+        }
+        return (stop_callback() || fraction >= 1.);
+    }
+
+}

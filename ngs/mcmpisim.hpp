@@ -26,20 +26,44 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_HPP
-#define ALPS_NGS_HPP
+#ifndef ALPS_NGS_MCMPISIM_HPP
+#define ALPS_NGS_MCMPISIM_HPP
 
-#include <alps/ngs/api.hpp>
-#include <alps/ngs/boost.hpp>
-#include <alps/ngs/mcbase.hpp>
-#include <alps/ngs/mcmpisim.hpp>
-#include <alps/ngs/mcparams.hpp>
-#include <alps/ngs/mcsignal.hpp>
-#include <alps/ngs/mcresult.hpp>
-#include <alps/ngs/mcresults.hpp>
-#include <alps/ngs/mcoptions.hpp>
-#include <alps/ngs/short_print.hpp>
-#include <alps/ngs/mcdeprecated.hpp>
-#include <alps/ngs/mcthreadedsim.hpp>
+namespace alps {
+
+    #ifdef ALPS_HAVE_MPI
+
+        template<typename Impl> class mcmpisim : public Impl {
+            public:
+                using Impl::collect_results;
+                mcmpisim(typename parameters_type<Impl>::type const & p, boost::mpi::communicator const & c) 
+                    : Impl(p, c.rank())
+                    , communicator(c)
+                    , binnumber(p.value_or_default("binnumber", std::min(128, 2 * c.size())))
+                {
+                    MPI_Errhandler_set(communicator, MPI_ERRORS_RETURN);
+                }
+
+                double fraction_completed() {
+                    return boost::mpi::all_reduce(communicator, Impl::fraction_completed(), std::plus<double>());
+                }
+
+                virtual typename results_type<Impl>::type collect_results(typename result_names_type<Impl>::type const & names) const {
+                    typename results_type<Impl>::type local_results = Impl::collect_results(names), partial_results;
+                    for(typename results_type<Impl>::type::iterator it = local_results.begin(); it != local_results.end(); ++it)
+                        if (it->second.count())
+                            partial_results.insert(it->first, it->second.reduce(communicator, binnumber));
+                        else
+                            partial_results.insert(it->first, it->second);
+                    return partial_results;
+                }
+
+            private:
+                boost::mpi::communicator communicator;
+                std::size_t binnumber;
+        };
+
+    #endif
+}
 
 #endif

@@ -26,20 +26,55 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_HPP
-#define ALPS_NGS_HPP
-
-#include <alps/ngs/api.hpp>
-#include <alps/ngs/boost.hpp>
-#include <alps/ngs/mcbase.hpp>
-#include <alps/ngs/mcmpisim.hpp>
-#include <alps/ngs/mcparams.hpp>
-#include <alps/ngs/mcsignal.hpp>
-#include <alps/ngs/mcresult.hpp>
-#include <alps/ngs/mcresults.hpp>
 #include <alps/ngs/mcoptions.hpp>
-#include <alps/ngs/short_print.hpp>
-#include <alps/ngs/mcdeprecated.hpp>
-#include <alps/ngs/mcthreadedsim.hpp>
 
-#endif
+#include <boost/program_options.hpp>
+
+#include <iostream>
+
+namespace alps {
+
+    mcoptions::mcoptions(int argc, char* argv[]) : valid(false), resume(false), type(SINGLE) {
+        boost::program_options::options_description desc("Allowed options");
+        desc.add_options()
+            ("help", "produce help message")
+            ("single", "run single process")
+            #ifndef ALPS_NGS_SINGLE_THREAD
+                ("threaded", "run in multithread envirement")
+            #endif
+            #ifdef ALPS_HAVE_MPI
+                ("mpi", "run in parallel using MPI")
+            #endif
+            ("continue", "load simulation from checkpoint")
+            ("time-limit,T", boost::program_options::value<std::size_t>(&time_limit)->default_value(0), "time limit for the simulation")
+            ("input-file", boost::program_options::value<std::string>(&input_file), "input file in hdf5 format")
+            ("output-file", boost::program_options::value<std::string>(&output_file)->default_value("sim.h5"), "output file in hdf5 format");
+        boost::program_options::positional_options_description p;
+        p.add("input-file", 1);
+        p.add("output-file", 2);
+        boost::program_options::variables_map vm;
+        boost::program_options::store(boost::program_options::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
+        boost::program_options::notify(vm);
+        if (!(valid = !vm.count("help")))
+            std::cout << desc << std::endl;
+        else if (input_file.empty())
+            throw std::invalid_argument("No job file specified");
+        if (vm.count("threaded") && vm.count("mpi"))
+            type = HYBRID;
+        else if (vm.count("threaded"))
+            #ifdef ALPS_NGS_SINGLE_THREAD
+                throw std::logic_error("Not build with multithread support");
+            #else
+                type = THREADED;
+            #endif
+        else if (vm.count("mpi")) {
+            type = MPI;
+            #ifndef ALPS_HAVE_MPI
+                throw std::logic_error("Not build with MPI");
+            #endif
+        }
+        if (vm.count("continue"))
+            resume = true;
+    }
+
+}

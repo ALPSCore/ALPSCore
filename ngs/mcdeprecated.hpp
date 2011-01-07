@@ -26,20 +26,46 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_HPP
-#define ALPS_NGS_HPP
+#ifndef ALPS_NGS_MCDEPRECATED_HPP
+#define ALPS_NGS_MCDEPRECATED_HPP
 
-#include <alps/ngs/api.hpp>
-#include <alps/ngs/boost.hpp>
 #include <alps/ngs/mcbase.hpp>
-#include <alps/ngs/mcmpisim.hpp>
-#include <alps/ngs/mcparams.hpp>
-#include <alps/ngs/mcsignal.hpp>
-#include <alps/ngs/mcresult.hpp>
-#include <alps/ngs/mcresults.hpp>
-#include <alps/ngs/mcoptions.hpp>
-#include <alps/ngs/short_print.hpp>
-#include <alps/ngs/mcdeprecated.hpp>
-#include <alps/ngs/mcthreadedsim.hpp>
+
+#include <alps/config.h>
+#include <alps/parameter.h>
+
+namespace alps {
+
+    class mcdeprecated : public mcbase {
+
+        public:
+
+            mcdeprecated(parameters_type const & p, std::size_t seed_offset = 0);
+
+            double fraction_completed() const;
+
+            virtual double work_done() const = 0;
+
+            virtual void dostep() = 0;
+
+            double random_real(double a = 0., double b = 1.);
+
+            virtual void do_update();
+
+            virtual void do_measurements();
+
+        protected:
+
+            Parameters parms;
+            ObservableSet & measurements;
+            boost::variate_generator<boost::mt19937, boost::uniform_real<> > & random_01;
+
+        private:
+
+            static Parameters make_alps_parameters(parameters_type const & s);
+
+    };
+
+}
 
 #endif

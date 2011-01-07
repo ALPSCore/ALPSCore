@@ -26,20 +26,33 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_HPP
-#define ALPS_NGS_HPP
+#ifndef ALPS_NGS_MCSIGNAL_HPP
+#define ALPS_NGS_MCSIGNAL_HPP
 
-#include <alps/ngs/api.hpp>
-#include <alps/ngs/boost.hpp>
-#include <alps/ngs/mcbase.hpp>
-#include <alps/ngs/mcmpisim.hpp>
-#include <alps/ngs/mcparams.hpp>
-#include <alps/ngs/mcsignal.hpp>
-#include <alps/ngs/mcresult.hpp>
-#include <alps/ngs/mcresults.hpp>
-#include <alps/ngs/mcoptions.hpp>
-#include <alps/ngs/short_print.hpp>
-#include <alps/ngs/mcdeprecated.hpp>
-#include <alps/ngs/mcthreadedsim.hpp>
+#include <alps/config.h>
+
+#include <vector>
+
+namespace alps {
+
+class mcsignal{
+
+        public:
+
+            mcsignal();
+
+            bool empty();
+
+            int top();
+
+            void pop();
+
+            static void slot(int signal);
+
+        private:
+
+            static std::vector<int> signals_;
+    };
+}
 
 #endif

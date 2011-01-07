@@ -26,20 +26,70 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_HPP
-#define ALPS_NGS_HPP
+#ifndef ALPS_NGS_API_HPP
+#define ALPS_NGS_API_HPP
 
-#include <alps/ngs/api.hpp>
-#include <alps/ngs/boost.hpp>
-#include <alps/ngs/mcbase.hpp>
-#include <alps/ngs/mcmpisim.hpp>
-#include <alps/ngs/mcparams.hpp>
-#include <alps/ngs/mcsignal.hpp>
-#include <alps/ngs/mcresult.hpp>
-#include <alps/ngs/mcresults.hpp>
-#include <alps/ngs/mcoptions.hpp>
-#include <alps/ngs/short_print.hpp>
-#include <alps/ngs/mcdeprecated.hpp>
-#include <alps/ngs/mcthreadedsim.hpp>
+#include <alps/alea/observableset.h>
+
+#include <string>
+
+namespace alps {
+
+    template<typename S> struct result_names_type {
+        typedef typename S::result_names_type type;
+    };
+
+    template<typename S> struct results_type {
+        typedef typename S::results_type type;
+    };
+
+    template<typename S> struct parameters_type {
+        typedef typename S::parameters_type type;
+    };
+
+    template<typename S> typename result_names_type<S>::type result_names(S const & s) {
+        return s.result_names();
+    }
+
+    template<typename S> typename result_names_type<S>::type unsaved_result_names(S const & s) {
+        return s.unsaved_result_names();
+    }
+
+    template<typename S> typename results_type<S>::type collect_results(S const & s) {
+        return s.collect_results();
+    }
+
+    template<typename S> typename results_type<S>::type collect_results(S const & s, typename result_names_type<S>::type const & names) {
+        return s.collect_results(names);
+    }
+
+    template<typename S> typename results_type<S>::type collect_results(S const & s, std::string const & name) {
+        return collect_results(s, typename result_names_type<S>::type(1, name));
+    }
+
+    template<typename S> double fraction_completed(S const & s) {
+        return s.fraction_completed();
+    }
+
+    template<typename R, typename P> void save_results(R const & results, P const & params, boost::filesystem::path const & filename, std::string const & path) {
+        if (results.size()) {
+            boost::filesystem::path original = filename.parent_path() / (filename.filename() + ".h5");
+            boost::filesystem::path backup = filename.parent_path() / (filename.filename() + ".bak");
+            if (boost::filesystem::exists(backup))
+                boost::filesystem::remove(backup);
+            {
+                hdf5::oarchive ar(backup.file_string());
+                ar 
+                    << make_pvp("/parameters", params)
+                    << make_pvp(path, results)
+                ;
+            }
+            if (boost::filesystem::exists(original))
+                boost::filesystem::remove(original);
+            boost::filesystem::rename(backup, original);
+        }
+    }
+
+}
 
 #endif

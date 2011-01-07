@@ -997,7 +997,7 @@ namespace alps {
                 rhs.transform(static_cast<typename mcdata<T>::value_type(*)(typename mcdata<T>::value_type)>(&FUNCTION_NAME), ERROR);                      \
                 return rhs;                                                                                                                                \
             }                                                                                                                                              \
-            template <typename T> std::vector<mcdata<T> > FUNCTION_NAME(std::vector<mcdata<T> > rhs) {                                                      \
+            template <typename T> std::vector<mcdata<T> > FUNCTION_NAME(std::vector<mcdata<T> > rhs) {                                                     \
                 std::transform(rhs.begin(), rhs.end(), rhs.begin(), static_cast<mcdata<T> (*)(mcdata<T>)>(&FUNCTION_NAME));                                \
                 return rhs;                                                                                                                                \
             }

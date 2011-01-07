@@ -26,20 +26,28 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_HPP
-#define ALPS_NGS_HPP
+#ifndef ALPS_NGS_BOOST_HPP
+#define ALPS_NGS_BOOST_HPP
 
-#include <alps/ngs/api.hpp>
-#include <alps/ngs/boost.hpp>
-#include <alps/ngs/mcbase.hpp>
-#include <alps/ngs/mcmpisim.hpp>
-#include <alps/ngs/mcparams.hpp>
-#include <alps/ngs/mcsignal.hpp>
-#include <alps/ngs/mcresult.hpp>
-#include <alps/ngs/mcresults.hpp>
-#include <alps/ngs/mcoptions.hpp>
-#include <alps/ngs/short_print.hpp>
-#include <alps/ngs/mcdeprecated.hpp>
-#include <alps/ngs/mcthreadedsim.hpp>
+#ifdef ALPS_HAVE_MPI
+
+    #include <boost/mpi.hpp>
+
+    namespace boost {
+        namespace mpi {
+
+            template<typename T, typename Op> void reduce(const communicator & comm, std::vector<T> const & in_values, Op op, int root) {
+                reduce(comm, &in_values.front(), in_values.size(), op, root);
+            }
+
+            template<typename T, typename Op> void reduce(const communicator & comm, std::vector<T> const & in_values, std::vector<T> & out_values, Op op, int root) {
+                out_values.resize(in_values.size());
+                reduce(comm, &in_values.front(), in_values.size(), &out_values.front(), op, root);
+            }
+
+        }
+    }
+
+#endif
 
 #endif

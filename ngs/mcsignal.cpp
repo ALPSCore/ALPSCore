@@ -26,20 +26,50 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_HPP
-#define ALPS_NGS_HPP
-
-#include <alps/ngs/api.hpp>
-#include <alps/ngs/boost.hpp>
-#include <alps/ngs/mcbase.hpp>
-#include <alps/ngs/mcmpisim.hpp>
-#include <alps/ngs/mcparams.hpp>
 #include <alps/ngs/mcsignal.hpp>
-#include <alps/ngs/mcresult.hpp>
-#include <alps/ngs/mcresults.hpp>
-#include <alps/ngs/mcoptions.hpp>
-#include <alps/ngs/short_print.hpp>
-#include <alps/ngs/mcdeprecated.hpp>
-#include <alps/ngs/mcthreadedsim.hpp>
 
-#endif
+#include <cstring>
+#include <iostream>
+#include <signal.h>
+
+namespace alps {
+
+    mcsignal::mcsignal() {
+        #ifndef BOOST_MSVC
+            static bool initialized;
+            if (!initialized) {
+                static struct sigaction action;
+                initialized = true;
+                memset(&action, 0, sizeof(action));
+                action.sa_handler = &mcsignal::slot;
+                sigaction(SIGINT, &action, NULL);
+                sigaction(SIGTERM, &action, NULL);
+                sigaction(SIGXCPU, &action, NULL);
+                sigaction(SIGQUIT, &action, NULL);
+                sigaction(SIGUSR1, &action, NULL);
+                sigaction(SIGUSR2, &action, NULL);
+                sigaction(SIGSTOP, &action, NULL);
+            }
+        #endif
+    }
+
+    bool mcsignal::empty() {
+        return !signals_.size();
+    }
+
+    int mcsignal::top() {
+        return signals_.back();
+    }
+
+    void mcsignal::pop() {
+        return signals_.pop_back();
+    }
+
+    void mcsignal::slot(int signal) {
+        std::cerr << "Received signal " << signal << std::endl;
+        signals_.push_back(signal);
+    }
+
+    std::vector<int> mcsignal::signals_;
+
+}

@@ -26,20 +26,75 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_HPP
-#define ALPS_NGS_HPP
+#ifndef ALPS_NGS_MCBASE_HPP
+#define ALPS_NGS_MCBASE_HPP
 
-#include <alps/ngs/api.hpp>
-#include <alps/ngs/boost.hpp>
-#include <alps/ngs/mcbase.hpp>
-#include <alps/ngs/mcmpisim.hpp>
 #include <alps/ngs/mcparams.hpp>
-#include <alps/ngs/mcsignal.hpp>
-#include <alps/ngs/mcresult.hpp>
 #include <alps/ngs/mcresults.hpp>
-#include <alps/ngs/mcoptions.hpp>
-#include <alps/ngs/short_print.hpp>
-#include <alps/ngs/mcdeprecated.hpp>
-#include <alps/ngs/mcthreadedsim.hpp>
+
+#include <alps/config.h>
+#include <alps/alea/observableset.h>
+
+#include <boost/function.hpp>
+#include <boost/random/uniform_real.hpp>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/variate_generator.hpp>
+
+#include <vector>
+#include <string>
+
+namespace alps {
+    class mcbase {
+        public:
+            typedef mcparams parameters_type;
+            typedef mcresults results_type;
+            typedef std::vector<std::string> result_names_type;
+
+            mcbase(parameters_type const & p, std::size_t seed_offset = 0)
+                : params(p)
+                , fraction(0.)
+                , next_check(8)
+                , start_time(boost::posix_time::second_clock::local_time())
+                , check_time(boost::posix_time::second_clock::local_time() + boost::posix_time::seconds(next_check))
+// TODO: this ist not the best solution
+                , random(boost::mt19937(static_cast<std::size_t>(p.value_or_default("SEED", 42)) + seed_offset), boost::uniform_real<>())
+            {}
+
+            virtual void do_update() = 0;
+
+            virtual void do_measurements() = 0;
+
+            virtual double fraction_completed() const = 0;
+
+            void save(boost::filesystem::path const & path) const;
+
+            void load(boost::filesystem::path const & path);
+
+            bool run(boost::function<bool ()> const & stop_callback);
+
+            result_names_type result_names() const;
+
+            result_names_type unsaved_result_names() const;
+
+            results_type collect_results() const;
+
+            virtual results_type collect_results(result_names_type const & names) const;
+
+        protected:
+
+            virtual bool complete_callback(boost::function<bool ()> const & stop_callback);
+
+            parameters_type params;
+            ObservableSet results;
+            boost::variate_generator<boost::mt19937, boost::uniform_real<> > random;
+
+        private:
+
+            double fraction;
+            std::size_t next_check;
+            boost::posix_time::ptime start_time;
+            boost::posix_time::ptime check_time;
+    };
+}
 
 #endif
