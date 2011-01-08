@@ -52,6 +52,7 @@
 #include <alps/type_traits/covariance_type.hpp>
 #include <alps/type_traits/change_value_type.hpp>
 #include <alps/numeric/vector_valarray_conversion.hpp>
+#include <alps/utility/data.hpp>
 
 #include <boost/config.hpp>
 #include <boost/functional.hpp>
@@ -716,7 +717,7 @@ namespace alps {
                 }
 
                 template <typename X> std::vector<X> replace_valarray_by_vector(std::valarray<X> const & value) {
-                    return std::vector<X>(&value[0], &value[0] + value.size());
+                    return std::vector<X>(data(value), data(value) + value.size());
                 }
 
                 void collect_bins(uint64_t howmany) {
