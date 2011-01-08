@@ -47,6 +47,11 @@ set(ALPS_SOURCES
     ngs/mcresult.cpp ngs/mcresults.cpp
 )
 
+if (ALPS_BUILD_NGS)
+  set(ALPS_SOURCES ${ALPS_SOURCES} ngs/mcbase.cpp ngs/mcparams.cpp ngs/mcsignal.cpp ngs/mcoptions.cpp 
+      ngs/mcdeprecated.cpp ngs/mcresult.cpp ngs/mcresults.cpp)
+endif (ALPS_BUILD_NGS)
+
 if (NOT ALPS_FOR_VISTRAILS)
   set(ALPS_SOURCES ${ALPS_SOURCES} 
       # parapack
