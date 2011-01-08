@@ -153,7 +153,7 @@ template<typename T, typename U> class cast_type< C <T>, D <U> >                
         typedef cast_type_base<C <T>, D <U> > base_type;                                           \
         cast_type(): base_type(creator< C <T> >::random()) {}                                      \
         bool operator==(cast_type< C <T>, D <U> > const & vc)  const {                             \
-		     cast_type< C <T>, D <U> >& v = const_cast<cast_type< C <T>, D <U> > &>(vc);           \
+             cast_type< C <T>, D <U> >& v = const_cast<cast_type< C <T>, D <U> > &>(vc);           \
              base_type& nonconstbase(const_cast<cast_type< C <T>, D <U> > &>(*this));              \
             if (base_type::has_u && !v.has_u)                                                      \
                 return base_type::u.size() == v.t.size() && (                                      \
@@ -259,7 +259,7 @@ template<typename T> struct creator< C <T> > {                                  
 };                                                                                                 \
 template<typename T> bool equal( C <T> const & a,  C <T> const & b) {                              \
     return a.size() == b.size() && (a.size() == 0 ||                                               \
-		std::equal(&const_cast<C<T>&>(a)[0], &const_cast<C<T>&>(a)[0] + a.size(),                  \
+        std::equal(&const_cast<C<T>&>(a)[0], &const_cast<C<T>&>(a)[0] + a.size(),                  \
                       &const_cast<C<T>&>(b)[0]));                                                  \
 }                                                                                                  \
 template<typename T, typename U> struct creator< C < std::pair<T, U> > > {                         \
@@ -487,7 +487,7 @@ template<typename T> bool equal( C < D <T> > const & a,  C < D <T> > const & b) 
     for (std::size_t i = 0; i < a.size(); ++i)                                                     \
         if (a[i].size() != b[i].size() || (                                                        \
             a[i].size() > 0 &&  !std::equal(&const_cast<C<D<T> >&>(a)[i][0],                       \
-		                &const_cast<C<D<T> >&>(a)[i][0] + a[i].size(),                             \
+                        &const_cast<C<D<T> >&>(a)[i][0] + a[i].size(),                             \
                         &const_cast<C<D<T> >&>(b)[i][0])))                                         \
             return false;                                                                          \
     return true;                                                                                   \
