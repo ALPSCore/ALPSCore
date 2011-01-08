@@ -32,7 +32,7 @@
 #include <alps/ngs/mcresult.hpp>
 
 #include <alps/config.h>
-#include <alps/hdf5_fwd.hpp>
+#include <alps/hdf5/hdf5_fwd.hpp>
 
 #include <map>
 #include <string>

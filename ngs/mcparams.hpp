@@ -30,7 +30,7 @@
 #define ALPS_NGS_MCPARAMS_HPP
 
 #include <alps/config.h>
-#include <alps/hdf5_fwd.hpp>
+#include <alps/hdf5/hdf5_fwd.hpp>
 
 #include <boost/variant.hpp>
 #include <boost/mpl/vector.hpp>

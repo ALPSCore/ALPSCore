@@ -30,7 +30,7 @@
 #define ALPS_NGS_MCRESULT_HPP
 
 #include <alps/config.h>
-#include <alps/hdf5_fwd.hpp>
+#include <alps/hdf5/hdf5_fwd.hpp>
 #include <alps/alea/observable_fwd.hpp>
 
 #ifdef ALPS_HAVE_MPI
