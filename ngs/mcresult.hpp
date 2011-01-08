@@ -153,7 +153,7 @@ namespace alps {
             template <typename T> mcresult & operator-=(T const & rhs);
             template <typename T> mcresult & operator*=(T const & rhs);
             template <typename T> mcresult & operator/=(T const & rhs);
-			*/
+            */
             mcresult & operator+();
             mcresult & operator-();
 

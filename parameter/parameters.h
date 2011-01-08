@@ -50,7 +50,7 @@
 #include <string>
 
 #ifdef ALPS_HAVE_HDF5
-#include <alps/hdf5_fwd.hpp>
+#include <alps/hdf5/hdf5_fwd.hpp>
 #endif
 
 /// \file parameters.h

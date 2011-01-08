@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2005 by Matthias Troyer <troyer@itp.phys.ethz.ch>
+* Copyright (C) 1994-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -32,47 +32,20 @@
 /// 
 /// This header contains an implementation of an object factory
 
-#ifndef ALPS_FACTORY_H
-#define ALPS_FACTORY_H
+#ifndef ALPS_UTILITY_FACTORY_HPP
+#define ALPS_UTILITY_FACTORY_HPP
 
-#include <alps/config.h>
 #include <boost/shared_ptr.hpp>
 #include <boost/throw_exception.hpp>
+#include <boost/lambda/lambda.hpp>
+#include <boost/lambda/bind.hpp>
+#include <boost/lambda/construct.hpp>
+#include <boost/function.hpp>
+
 #include <map>
 #include <stdexcept>
 
 namespace alps {
-
-namespace detail {
-
-/// a class to construct objects derived from a given type
-/// \param BASE the base class for the objects created
-template <class BASE>
-class abstract_creator {
-public:
-/// the type of the abse class
-  typedef BASE base_type;
-  virtual ~abstract_creator() {}
-  /// a virtual function to create an object derived from \c base_type
-  virtual base_type* create() const =0;
-};
-
-/// a class to default-onstruct an object
-/// \param T the type of object to be constructed
-/// \param BASE the base class of the object
-template <class BASE, class T>
-class creator : public abstract_creator<BASE>
-{
-public:
-  /// the type of the abse class
-  typedef BASE base_type;
-  ~creator() {}
-  /// create and default-construct an object of type T
-  base_type* create() const { return new T();}
-};
-
-}
-
 
 /// a factory class
 /// \param KEY the key type used to identify concrete derived types
@@ -93,7 +66,6 @@ public:
   
   /// there is only a default constructor
   factory() {}
-  virtual ~factory() {}
 
   /// \brief register a type
   ///
@@ -104,7 +76,10 @@ public:
   template <class T>
   bool register_type(key_type k) {
     bool isnew=(creators_.find(k)==creators_.end());
-    creators_[k] = pointer_type(new detail::creator<BASE,T>());
+    creators_[k] =  function_type(boost::lambda::bind(
+                boost::lambda::constructor<boost::shared_ptr<base_type> >(), 
+                boost::lambda::bind(lambda::new_ptr<T>()
+              ));
     return isnew;
   }
 
@@ -115,7 +90,7 @@ public:
   /// \returns \c true if there was a type associated with the key.
   bool unregister_type(key_type k) 
   {
-    iterator it = creators_.find(k);
+    typename map_type::iterator it = creators_.find(k);
     if (it == creators_.end()) return false;
     creators_.erase(it);
     return true;
@@ -127,19 +102,17 @@ public:
   /// \param k the key referring to the object type
   /// \returns a pointer to a new object of the type registered with the key
   /// \throws \c std::runtime_error if no type was associated with the key
-  base_type* create(key_type k) const
+  base_type* operator()(key_type k) const
   {
-    const_iterator it = creators_.find(k);
-    if (it == creators_.end() || it->second == 0)
+    typename map_type::const_iterator it = creators_.find(k);
+    if (it == creators_.end())
       boost::throw_exception(std::runtime_error("Type not registered in alps::factory::create"));
-    return it->second->create();
+    return it->second();
   }
 
 private:
-  typedef boost::shared_ptr<detail::abstract_creator<base_type> > pointer_type;
-  typedef std::map<key_type,pointer_type> map_type;
-  typedef typename map_type::iterator iterator;
-  typedef typename map_type::const_iterator const_iterator;
+  typedef boost::function<boost::shared_ptr<base_type>(void) > function_type;
+  typedef std::map<key_type,function_type> map_type;
   map_type creators_;
 };
 
