@@ -81,7 +81,7 @@ namespace alps {
                 return *this;
             }
 
-            #define ALPS_NGS_MCPARAMS_CAST_OPERATOR_DECL(T)                                                                                                 \
+            #define ALPS_NGS_MCPARAMS_CAST_OPERATOR_DECL(T)    \
                 operator T () const;
             ALPS_NGS_MCPARAMS_CAST_OPERATOR_DECL(short)
             ALPS_NGS_MCPARAMS_CAST_OPERATOR_DECL(unsigned short)

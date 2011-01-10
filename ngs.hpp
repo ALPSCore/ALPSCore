@@ -39,7 +39,8 @@
 #include <alps/ngs/mcresults.hpp>
 #include <alps/ngs/mcoptions.hpp>
 #include <alps/ngs/short_print.hpp>
-#include <alps/ngs/mcdeprecated.hpp>
+#include <alps/ngs/mcobservable.hpp>
+#include <alps/ngs/mcobservables.hpp>
 #include <alps/ngs/mcthreadedsim.hpp>
 
 #endif

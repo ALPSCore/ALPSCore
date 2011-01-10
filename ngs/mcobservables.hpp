@@ -26,38 +26,51 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/ngs/mcdeprecated.hpp>
+#ifndef ALPS_NGS_MCOBSERVABLES_HPP
+#define ALPS_NGS_MCOBSERVABLES_HPP
+
+#include <alps/ngs/mcobservable.hpp>
+
+#include <alps/config.h>
+#include <alps/hdf5/hdf5_fwd.hpp>
+#include <alps/alea/observable_fwd.hpp>
+
+#include <map>
+#include <string>
 
 namespace alps {
 
-    mcdeprecated::mcdeprecated(parameters_type const & p, std::size_t seed_offset)
-        : mcbase(p, seed_offset)
-        , parms(make_alps_parameters(p))
-        // TODO: implement!
-//        , measurements(results)
-        , random_01(random)
-    {}
+    class mcobservables : public std::map<std::string, mcobservable> {
 
-    double mcdeprecated::fraction_completed() const { 
-        return work_done(); 
-    }
+        public: 
 
-    double mcdeprecated::random_real(double a, double b) { 
-        return a + b * random(); 
-    }
+            mcobservable & operator[](std::string const & name);
 
-    void mcdeprecated::do_update() {
-        dostep();
-    }
+            mcobservable const & operator[](std::string const & name) const;
 
-    void mcdeprecated::do_measurements() {}
+            bool has(std::string const & name) const;
 
-    Parameters mcdeprecated::make_alps_parameters(parameters_type const & s) {
-        Parameters p;
-        for (parameters_type::const_iterator it = s.begin(); it != s.end(); ++it)
-// TODO: why does static_cast<std::string>(it->second) not work?
-            p.push_back(it->first, it->second.operator std::string());
-        return p;
-    }
+            void insert(std::string const & name, mcobservable obs);
 
+            void insert(std::string const & name, Observable const * obs);
+
+            void serialize(hdf5::iarchive & ar);
+
+            void serialize(hdf5::oarchive & ar) const;
+
+            void output(std::ostream & os) const;
+
+            void create_RealObservable(std::string const & name);
+
+            void create_RealVectorObservable(std::string const & name);
+
+            void create_SimpleRealObservable(std::string const & name);
+
+            void create_SimpleRealVectorObservable(std::string const & name);
+
+    };
+
+    std::ostream & operator<<(std::ostream & os, mcobservables const & observables);
 }
+
+#endif

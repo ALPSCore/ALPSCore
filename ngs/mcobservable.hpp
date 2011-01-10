@@ -26,38 +26,50 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/ngs/mcdeprecated.hpp>
+#ifndef ALPS_NGS_MCOBSERVABLE_HPP
+#define ALPS_NGS_MCOBSERVABLE_HPP
+
+#include <alps/config.h>
+#include <alps/hdf5/hdf5_fwd.hpp>
+#include <alps/alea/observable_fwd.hpp>
+
+#include <map>
+#include <iostream>
 
 namespace alps {
 
-    mcdeprecated::mcdeprecated(parameters_type const & p, std::size_t seed_offset)
-        : mcbase(p, seed_offset)
-        , parms(make_alps_parameters(p))
-        // TODO: implement!
-//        , measurements(results)
-        , random_01(random)
-    {}
+    class mcobservable {
 
-    double mcdeprecated::fraction_completed() const { 
-        return work_done(); 
-    }
+        public:
 
-    double mcdeprecated::random_real(double a, double b) { 
-        return a + b * random(); 
-    }
+            mcobservable();
+            mcobservable(Observable const * obs);
+            mcobservable(mcobservable const & rhs);
 
-    void mcdeprecated::do_update() {
-        dostep();
-    }
+            virtual ~mcobservable();
 
-    void mcdeprecated::do_measurements() {}
+            mcobservable & operator=(mcobservable rhs);
 
-    Parameters mcdeprecated::make_alps_parameters(parameters_type const & s) {
-        Parameters p;
-        for (parameters_type::const_iterator it = s.begin(); it != s.end(); ++it)
-// TODO: why does static_cast<std::string>(it->second) not work?
-            p.push_back(it->first, it->second.operator std::string());
-        return p;
-    }
+            Observable * get_impl();
+
+            Observable const * get_impl() const;
+
+            template<typename T> mcobservable & operator<<(T const & value);
+
+            void serialize(hdf5::iarchive & ar);
+            void serialize(hdf5::oarchive & ar) const;
+
+            void output(std::ostream & os) const;
+
+        private:
+
+            Observable * impl_;
+            static std::map<Observable *, std::size_t> ref_cnt_;
+
+    };
+
+    std::ostream & operator<<(std::ostream & os, mcobservable const & obs);
 
 }
+
+#endif

@@ -26,38 +26,81 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/ngs/mcdeprecated.hpp>
+#include <alps/ngs/mcobservable.hpp>
+
+#include <alps/hdf5.hpp>
+#include <alps/alea/observable.h>
+
+#include <vector>
+#include <valarray>
+#include <iostream>
 
 namespace alps {
 
-    mcdeprecated::mcdeprecated(parameters_type const & p, std::size_t seed_offset)
-        : mcbase(p, seed_offset)
-        , parms(make_alps_parameters(p))
-        // TODO: implement!
-//        , measurements(results)
-        , random_01(random)
+    mcobservable::mcobservable()
+        : impl_(NULL) 
     {}
 
-    double mcdeprecated::fraction_completed() const { 
-        return work_done(); 
+    mcobservable::mcobservable(Observable const * obs) {
+        ref_cnt_[impl_ = obs->clone()] = 1;
     }
 
-    double mcdeprecated::random_real(double a, double b) { 
-        return a + b * random(); 
+    mcobservable::mcobservable(mcobservable const & rhs) {
+        ++ref_cnt_[impl_ = rhs.impl_];
     }
 
-    void mcdeprecated::do_update() {
-        dostep();
+    mcobservable::~mcobservable() {
+        if (impl_ && !--ref_cnt_[impl_])
+            delete impl_;
     }
 
-    void mcdeprecated::do_measurements() {}
+    mcobservable & mcobservable::operator=(mcobservable rhs) {
+        if (impl_ && !--ref_cnt_[impl_])
+            delete impl_;
+        ++ref_cnt_[impl_ = rhs.impl_];
+        return *this;
+    }
 
-    Parameters mcdeprecated::make_alps_parameters(parameters_type const & s) {
-        Parameters p;
-        for (parameters_type::const_iterator it = s.begin(); it != s.end(); ++it)
-// TODO: why does static_cast<std::string>(it->second) not work?
-            p.push_back(it->first, it->second.operator std::string());
-        return p;
+    Observable * mcobservable::get_impl() {
+        return impl_;
+    }
+
+    Observable const * mcobservable::get_impl() const {
+        return impl_;
+    }
+
+    template<> mcobservable & mcobservable::operator<< <double>(double const & value) {
+        (*impl_) << value;
+        return *this;
+    }
+
+    template<> mcobservable & mcobservable::operator<< <std::vector<double> >(std::vector<double>  const & value) {
+        (*impl_) << value;
+        return *this;
+    }
+
+    template<> mcobservable & mcobservable::operator<< <std::valarray<double> >(std::valarray<double>  const & value) {
+        (*impl_) << value;
+        return *this;
+    }
+
+    void mcobservable::serialize(hdf5::iarchive & ar) {
+        impl_->serialize(ar);
+    }
+
+    void mcobservable::serialize(hdf5::oarchive & ar) const {
+        impl_->serialize(ar);
+    }
+
+    void mcobservable::output(std::ostream & os) const {
+        os << *(impl_);
+    }
+
+    std::map<Observable *, std::size_t> mcobservable::ref_cnt_;
+
+    std::ostream & operator<<(std::ostream & os, mcobservable const & obs) {
+        obs.output(os);
+        return os;
     }
 
 }

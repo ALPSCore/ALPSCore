@@ -29,6 +29,8 @@
 #ifndef ALPS_NGS_MCRESULT_HPP
 #define ALPS_NGS_MCRESULT_HPP
 
+#include <alps/ngs/mcobservable.hpp>
+
 #include <alps/config.h>
 #include <alps/hdf5/hdf5_fwd.hpp>
 #include <alps/alea/observable_fwd.hpp>
@@ -101,6 +103,7 @@ namespace alps {
             mcresult();
             mcresult(Observable const * obs);
             mcresult(mcresult const & rhs);
+            mcresult(mcobservable const & rhs);
 
             virtual ~mcresult();
 
@@ -148,23 +151,25 @@ namespace alps {
             mcresult & operator-=(mcresult const & rhs);
             mcresult & operator*=(mcresult const & rhs);
             mcresult & operator/=(mcresult const & rhs);
-            /*
+/*
             template <typename T> mcresult & operator+=(T const & rhs);
             template <typename T> mcresult & operator-=(T const & rhs);
             template <typename T> mcresult & operator*=(T const & rhs);
             template <typename T> mcresult & operator/=(T const & rhs);
-            */
+*/
             mcresult & operator+();
             mcresult & operator-();
 
         private:
+
+            void construct(Observable const * obs);
 
             detail::mcresult_impl_base * impl_;
             static std::map<detail::mcresult_impl_base *, std::size_t> ref_cnt_;
 
     };
 
-    std::ostream & operator<<(std::ostream & os, mcresult const & result);
+    std::ostream & operator<<(std::ostream & os, mcresult const & res);
 /*
     #define ALPS_NGS_MCRESULT_OPERATOR(OPERATOR)                                                       \
         mcresult operator ## OPERATOR(mcresult lhs, mcresult  const & rhs);                            \

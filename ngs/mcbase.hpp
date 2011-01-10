@@ -31,14 +31,17 @@
 
 #include <alps/ngs/mcparams.hpp>
 #include <alps/ngs/mcresults.hpp>
+#include <alps/ngs/mcobservables.hpp>
 
 #include <alps/config.h>
-#include <alps/alea/observableset.h>
 
 #include <boost/function.hpp>
+#include <boost/filesystem/path.hpp>
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/variate_generator.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <vector>
 #include <string>
@@ -85,7 +88,7 @@ namespace alps {
             virtual bool complete_callback(boost::function<bool ()> const & stop_callback);
 
             parameters_type params;
-            ObservableSet results;
+            mcobservables results;
             boost::variate_generator<boost::mt19937, boost::uniform_real<> > random;
 
         private:

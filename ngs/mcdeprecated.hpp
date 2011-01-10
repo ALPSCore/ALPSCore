@@ -33,6 +33,7 @@
 
 #include <alps/config.h>
 #include <alps/parameter.h>
+#include <alps/alea/observableset.h>
 
 namespace alps {
 
@@ -57,7 +58,9 @@ namespace alps {
         protected:
 
             Parameters parms;
-            ObservableSet & measurements;
+// TODO: fix this!
+//            ObservableSet & measurements;
+            ObservableSet measurements;
             boost::variate_generator<boost::mt19937, boost::uniform_real<> > & random_01;
 
         private:

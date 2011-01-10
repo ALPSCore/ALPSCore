@@ -29,7 +29,13 @@
 #ifndef ALPS_NGS_API_HPP
 #define ALPS_NGS_API_HPP
 
-#include <alps/alea/observableset.h>
+#include <alps/ngs/mcparams.hpp>
+#include <alps/ngs/mcresults.hpp>
+#include <alps/ngs/mcobservables.hpp>
+
+#include <alps/config.h>
+
+#include <boost/filesystem/path.hpp>
 
 #include <string>
 
@@ -71,24 +77,9 @@ namespace alps {
         return s.fraction_completed();
     }
 
-    template<typename R, typename P> void save_results(R const & results, P const & params, boost::filesystem::path const & filename, std::string const & path) {
-        if (results.size()) {
-            boost::filesystem::path original = filename.parent_path() / (filename.filename() + ".h5");
-            boost::filesystem::path backup = filename.parent_path() / (filename.filename() + ".bak");
-            if (boost::filesystem::exists(backup))
-                boost::filesystem::remove(backup);
-            {
-                hdf5::oarchive ar(backup.file_string());
-                ar 
-                    << make_pvp("/parameters", params)
-                    << make_pvp(path, results)
-                ;
-            }
-            if (boost::filesystem::exists(original))
-                boost::filesystem::remove(original);
-            boost::filesystem::rename(backup, original);
-        }
-    }
+    void save_results(mcresults const & results, mcparams const & params, boost::filesystem::path const & filename, std::string const & path);
+
+    void save_results(mcobservables const & observables, mcparams const & params, boost::filesystem::path const & filename, std::string const & path);
 
 }
 

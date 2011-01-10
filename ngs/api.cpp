@@ -26,38 +26,39 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/ngs/mcdeprecated.hpp>
+#include <alps/ngs/api.hpp>
+
+#include <alps/hdf5.hpp>
 
 namespace alps {
 
-    mcdeprecated::mcdeprecated(parameters_type const & p, std::size_t seed_offset)
-        : mcbase(p, seed_offset)
-        , parms(make_alps_parameters(p))
-        // TODO: implement!
-//        , measurements(results)
-        , random_01(random)
-    {}
-
-    double mcdeprecated::fraction_completed() const { 
-        return work_done(); 
+    namespace detail {
+        template<typename R, typename P> void save_results_impl(R const & results, P const & params, boost::filesystem::path const & filename, std::string const & path) {
+            if (results.size()) {
+                boost::filesystem::path original = filename.parent_path() / (filename.filename() + ".h5");
+                boost::filesystem::path backup = filename.parent_path() / (filename.filename() + ".bak");
+                if (boost::filesystem::exists(backup))
+                    boost::filesystem::remove(backup);
+                {
+                    hdf5::oarchive ar(backup.file_string());
+                    ar 
+                        << make_pvp("/parameters", params)
+                        << make_pvp(path, results)
+                    ;
+                }
+                if (boost::filesystem::exists(original))
+                    boost::filesystem::remove(original);
+                boost::filesystem::rename(backup, original);
+            }
+        }
     }
 
-    double mcdeprecated::random_real(double a, double b) { 
-        return a + b * random(); 
+    void save_results(mcresults const & results, mcparams const & params, boost::filesystem::path const & filename, std::string const & path) {
+        detail::save_results_impl(results, params, filename, path);
     }
 
-    void mcdeprecated::do_update() {
-        dostep();
-    }
-
-    void mcdeprecated::do_measurements() {}
-
-    Parameters mcdeprecated::make_alps_parameters(parameters_type const & s) {
-        Parameters p;
-        for (parameters_type::const_iterator it = s.begin(); it != s.end(); ++it)
-// TODO: why does static_cast<std::string>(it->second) not work?
-            p.push_back(it->first, it->second.operator std::string());
-        return p;
+    void save_results(mcobservables const & observables, mcparams const & params, boost::filesystem::path const & filename, std::string const & path) {
+        detail::save_results_impl(observables, params, filename, path);
     }
 
 }

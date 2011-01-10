@@ -30,6 +30,7 @@
 #include <alps/ngs/mcresult_impl_base.ipp>
 #include <alps/ngs/mcresult_impl_derived.ipp>
 
+#include <alps/hdf5.hpp>
 #include <alps/alea/observable.h>
 #include <alps/alea/abstractsimpleobservable.h>
 
@@ -42,21 +43,15 @@ namespace alps {
     {}
 
     mcresult::mcresult(Observable const * obs) {
-        if (dynamic_cast<AbstractSimpleObservable<double> const *>(obs) != NULL)
-            impl_ = new detail::mcresult_impl_derived<detail::mcresult_impl_base, double>(
-                dynamic_cast<AbstractSimpleObservable<double> const &>(*obs)
-            );
-        else if (dynamic_cast<AbstractSimpleObservable<std::valarray<double> > const *>(obs) != NULL)
-            impl_ = new detail::mcresult_impl_derived<detail::mcresult_impl_base, std::vector<double> >(
-                dynamic_cast<AbstractSimpleObservable<std::valarray<double> > const &>(*obs)
-            );
-        else
-            throw std::runtime_error("unknown observable type");
-        ref_cnt_[impl_] = 1;
+        construct(obs);
     }
 
     mcresult::mcresult(mcresult const & rhs) {
         ++ref_cnt_[impl_ = rhs.impl_];
+    }
+
+    mcresult::mcresult(mcobservable const & obs) {
+        construct(obs.get_impl());
     }
 
     mcresult::~mcresult() {
@@ -168,12 +163,12 @@ namespace alps {
         impl_->operator/=(rhs.impl_);
         return *this;
     }
-    /*
+/*
     template <typename T> mcresult & mcresult::operator+=(T const & rhs);
     template <typename T> mcresult & mcresult::operator-=(T const & rhs);
     template <typename T> mcresult & mcresult::operator*=(T const & rhs);
     template <typename T> mcresult & mcresult::operator/=(T const & rhs);
-    */
+*/
     mcresult & mcresult::operator+() {
         impl_->operator-();
         return *this;
@@ -183,10 +178,24 @@ namespace alps {
         return *this;
     }
 
+    void mcresult::construct(Observable const * obs) {
+        if (dynamic_cast<AbstractSimpleObservable<double> const *>(obs) != NULL)
+            impl_ = new detail::mcresult_impl_derived<detail::mcresult_impl_base, double>(
+                dynamic_cast<AbstractSimpleObservable<double> const &>(*obs)
+            );
+        else if (dynamic_cast<AbstractSimpleObservable<std::valarray<double> > const *>(obs) != NULL)
+            impl_ = new detail::mcresult_impl_derived<detail::mcresult_impl_base, std::vector<double> >(
+                dynamic_cast<AbstractSimpleObservable<std::valarray<double> > const &>(*obs)
+            );
+        else
+            throw std::runtime_error("unknown observable type");
+        ref_cnt_[impl_] = 1;
+    }
+
     std::map<detail::mcresult_impl_base *, std::size_t> mcresult::ref_cnt_;
 
-    std::ostream & operator<<(std::ostream & os, mcresult const & result) {
-        result.output(os);
+    std::ostream & operator<<(std::ostream & os, mcresult const & res) {
+        res.output(os);
         return os;
     }
 

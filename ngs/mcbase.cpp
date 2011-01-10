@@ -29,6 +29,9 @@
 #include <alps/ngs/api.hpp>
 #include <alps/ngs/mcbase.hpp>
 
+#include <alps/hdf5.hpp>
+#include <alps/alea/observableset.h>
+
 namespace alps {
 
     void mcbase::save(boost::filesystem::path const & path) const {
@@ -50,7 +53,7 @@ namespace alps {
 
     mcbase::result_names_type mcbase::result_names() const {
         result_names_type names;
-        for(ObservableSet::const_iterator it = results.begin(); it != results.end(); ++it)
+        for(mcobservables::const_iterator it = results.begin(); it != results.end(); ++it)
             names.push_back(it->first);
         return names;
     }
@@ -66,7 +69,7 @@ namespace alps {
     mcbase::results_type mcbase::collect_results(result_names_type const & names) const {
         results_type partial_results;
         for(result_names_type::const_iterator it = names.begin(); it != names.end(); ++it)
-            partial_results.insert(*it, mcresult(&results[*it]));
+            partial_results.insert(*it, mcresult(results[*it]));
         return partial_results;
     }
 

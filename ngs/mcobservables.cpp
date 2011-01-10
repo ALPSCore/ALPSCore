@@ -26,58 +26,78 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/ngs/mcresults.hpp>
+#include <alps/ngs/mcobservables.hpp>
 
 #include <alps/hdf5.hpp>
+#include <alps/alea/observable.h>
 #include <alps/alea/observableset.h>
 
 #include <stdexcept>
 
 namespace alps {
 
-    mcresult & mcresults::operator[](std::string const & name) {
+    mcobservable & mcobservables::operator[](std::string const & name) {
         if (!has(name))
-            throw std::out_of_range("No result found with the name: " + name);
-        return std::map<std::string, mcresult>::find(name)->second;
+            throw std::out_of_range("No observable found with the name: " + name);
+        return std::map<std::string, mcobservable>::find(name)->second;
     }
 
-    mcresult const & mcresults::operator[](std::string const & name) const {
+    mcobservable const & mcobservables::operator[](std::string const & name) const {
         if (!has(name))
-            throw std::out_of_range("No result found with the name: " + name);
-        return std::map<std::string, mcresult>::find(name)->second;
+            throw std::out_of_range("No observable found with the name: " + name);
+        return std::map<std::string, mcobservable>::find(name)->second;
     }
 
-    bool mcresults::has(std::string const & name) const {
-        return std::map<std::string, mcresult>::find(name) != std::map<std::string, mcresult>::end();
+    bool mcobservables::has(std::string const & name) const {
+        return std::map<std::string, mcobservable>::find(name) != std::map<std::string, mcobservable>::end();
     }
 
-    void mcresults::insert(std::string const & name, mcresult res) {
+    void mcobservables::insert(std::string const & name, mcobservable obs) {
         if (has(name))
-            throw std::out_of_range("There exists alrady a result with the name: " + name);
-        std::map<std::string, mcresult>::insert(make_pair(name, res));
+            throw std::out_of_range("There exists alrady a observable with the name: " + name);
+        std::map<std::string, mcobservable>::insert(make_pair(name, obs));
     }
 
-    void mcresults::serialize(hdf5::iarchive & ar)  {
+    void mcobservables::insert(std::string const & name, Observable const * obs) {
+        insert(name, mcobservable(obs));
+    }
+
+    void mcobservables::serialize(hdf5::iarchive & ar)  {
         ObservableSet set;
         ar >> make_pvp("/simulation/realizations/0/clones/0/results", set);
         for(ObservableSet::const_iterator it = set.begin(); it != set.end(); ++it)
-            insert(it->first, mcresult(it->second));
+            insert(it->first, it->second);
     }
 
-    void mcresults::serialize(hdf5::oarchive & ar) const {
-        for(std::map<std::string, mcresult>::const_iterator it = std::map<std::string, mcresult>::begin(); it != std::map<std::string, mcresult>::end(); ++it)
-            if (it->second.count())
-                ar
-                    << make_pvp(ar.encode_segment(it->first), it->second)
-                ;
+    void mcobservables::serialize(hdf5::oarchive & ar) const {
+        for(std::map<std::string, mcobservable>::const_iterator it = std::map<std::string, mcobservable>::begin(); it != std::map<std::string, mcobservable>::end(); ++it)
+            ar
+                << make_pvp(ar.encode_segment(it->first), it->second)
+            ;
     }
 
-    void mcresults::output(std::ostream & os) const {
-        for(std::map<std::string, mcresult>::const_iterator it = std::map<std::string, mcresult>::begin(); it != std::map<std::string, mcresult>::end(); ++it)
+    void mcobservables::output(std::ostream & os) const {
+        for(std::map<std::string, mcobservable>::const_iterator it = std::map<std::string, mcobservable>::begin(); it != std::map<std::string, mcobservable>::end(); ++it)
             std::cout << std::fixed << std::setprecision(5) << it->first << ": " << it->second << std::endl;
     }
 
-    std::ostream & operator<<(std::ostream & os, mcresults const & results) {
+    void mcobservables::create_RealObservable(std::string const & name) {
+        insert(name, new RealObservable(name));
+    }
+
+    void mcobservables::create_RealVectorObservable(std::string const & name){
+        insert(name, new RealVectorObservable(name));
+    }
+
+    void mcobservables::create_SimpleRealObservable(std::string const & name){
+        insert(name, new SimpleRealObservable(name));
+    }
+
+    void mcobservables::create_SimpleRealVectorObservable(std::string const & name){
+        insert(name, new SimpleRealVectorObservable(name));
+    }
+
+    std::ostream & operator<<(std::ostream & os, mcobservables const & results) {
         results.output(os);
         return os;
     }
