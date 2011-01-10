@@ -54,8 +54,6 @@ namespace alps {
 
             Observable const * get_impl() const;
 
-// TODO: implement count()
-
             template<typename T> mcobservable & operator<<(T const & value);
 
             void serialize(hdf5::iarchive & ar);

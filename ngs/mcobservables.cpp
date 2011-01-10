@@ -62,6 +62,11 @@ namespace alps {
         insert(name, mcobservable(obs));
     }
 
+    void mcobservables::reset(bool equilibrated) {
+        for(std::map<std::string, mcobservable>::iterator it = std::map<std::string, mcobservable>::begin(); it != std::map<std::string, mcobservable>::end(); ++it)
+            it->second.get_impl()->reset(equilibrated);
+    }
+
     void mcobservables::serialize(hdf5::iarchive & ar)  {
         ObservableSet set;
         ar >> make_pvp("/simulation/realizations/0/clones/0/results", set);

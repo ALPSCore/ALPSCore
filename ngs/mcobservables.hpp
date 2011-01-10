@@ -54,6 +54,8 @@ namespace alps {
 
             void insert(std::string const & name, Observable const * obs);
 
+            void reset(bool equilibrated = false);
+
             void serialize(hdf5::iarchive & ar);
 
             void serialize(hdf5::oarchive & ar) const;
