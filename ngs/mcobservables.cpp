@@ -97,6 +97,22 @@ namespace alps {
         insert(name, new SimpleRealVectorObservable(name));
     }
 
+    void mcobservables::create_SignedRealObservable(std::string const & name){
+        insert(name, new SignedObservable<RealObservable>(name));
+    }
+
+    void mcobservables::create_SignedRealVectorObservable(std::string const & name){
+        insert(name, new SignedObservable<RealVectorObservable>(name));
+    }
+
+    void mcobservables::create_SignedSimpleRealObservable(std::string const & name){
+        insert(name, new SignedObservable<SimpleRealObservable>(name));
+    }
+
+    void mcobservables::create_SignedSimpleRealVectorObservable(std::string const & name){
+        insert(name, new SignedObservable<SimpleRealVectorObservable>(name));
+    }
+
     std::ostream & operator<<(std::ostream & os, mcobservables const & results) {
         results.output(os);
         return os;
