@@ -75,6 +75,9 @@ namespace alps {
                 operator[](it->first) = mcobservable(it->second);
             else
                 insert(it->first, it->second);
+        for(ObservableSet::const_iterator it = set.begin(); it != set.end(); ++it)
+            if (it->second->is_signed())
+                operator[](it->first).get_impl()->set_sign(*(operator[](it->second->sign_name()).get_impl()));
     }
 
     void mcobservables::serialize(hdf5::oarchive & ar) const {
