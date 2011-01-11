@@ -71,7 +71,10 @@ namespace alps {
         ObservableSet set;
         ar >> make_pvp("/simulation/realizations/0/clones/0/results", set);
         for(ObservableSet::const_iterator it = set.begin(); it != set.end(); ++it)
-            insert(it->first, it->second);
+            if (has(it->first))
+                operator[](it->first) = mcobservable(it->second);
+            else
+                insert(it->first, it->second);
     }
 
     void mcobservables::serialize(hdf5::oarchive & ar) const {
@@ -90,32 +93,36 @@ namespace alps {
         insert(name, new RealObservable(name));
     }
 
-    void mcobservables::create_RealVectorObservable(std::string const & name){
+    void mcobservables::create_RealVectorObservable(std::string const & name) {
         insert(name, new RealVectorObservable(name));
     }
 
-    void mcobservables::create_SimpleRealObservable(std::string const & name){
+    void mcobservables::create_SimpleRealObservable(std::string const & name) {
         insert(name, new SimpleRealObservable(name));
     }
 
-    void mcobservables::create_SimpleRealVectorObservable(std::string const & name){
+    void mcobservables::create_SimpleRealVectorObservable(std::string const & name) {
         insert(name, new SimpleRealVectorObservable(name));
     }
 
-    void mcobservables::create_SignedRealObservable(std::string const & name){
+    void mcobservables::create_SignedRealObservable(std::string const & name, std::string sign) {
         insert(name, new SignedObservable<RealObservable>(name));
+        operator[](name).get_impl()->set_sign(*(operator[](sign).get_impl()));
     }
 
-    void mcobservables::create_SignedRealVectorObservable(std::string const & name){
+    void mcobservables::create_SignedRealVectorObservable(std::string const & name, std::string sign) {
         insert(name, new SignedObservable<RealVectorObservable>(name));
+        operator[](name).get_impl()->set_sign(*(operator[](sign).get_impl()));
     }
 
-    void mcobservables::create_SignedSimpleRealObservable(std::string const & name){
+    void mcobservables::create_SignedSimpleRealObservable(std::string const & name, std::string sign) {
         insert(name, new SignedObservable<SimpleRealObservable>(name));
+        operator[](name).get_impl()->set_sign(*(operator[](sign).get_impl()));
     }
 
-    void mcobservables::create_SignedSimpleRealVectorObservable(std::string const & name){
+    void mcobservables::create_SignedSimpleRealVectorObservable(std::string const & name, std::string sign) {
         insert(name, new SignedObservable<SimpleRealVectorObservable>(name));
+        operator[](name).get_impl()->set_sign(*(operator[](sign).get_impl()));
     }
 
     std::ostream & operator<<(std::ostream & os, mcobservables const & results) {
