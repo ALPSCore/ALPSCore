@@ -298,6 +298,31 @@ HDF5_DEFINE_VECTOR_TYPE(std::deque)
 HDF5_DEFINE_VECTOR_TYPE(boost::numeric::ublas::vector)
 #undef HDF5_DEFINE_VECTOR_TYPE
 
+template<typename T, typename U> struct creator<std::pair<T, U> > {
+    typedef std::pair<T, U> base_type;
+    static base_type random() {
+        return std::make_pair(creator<T>::random(), creator<U>::random());
+    }
+    static base_type empty() {
+        return std::make_pair(creator<T>::empty(), creator<U>::empty());
+    }
+    static base_type special() {
+        return std::make_pair(creator<T>::special(), creator<U>::special());
+    }
+    static base_type random(alps::hdf5::iarchive & iar) {
+        return std::make_pair(creator<T>::random(iar), creator<U>::random(iar));
+    }
+    static base_type empty(alps::hdf5::iarchive & iar) {
+        return std::make_pair(creator<T>::empty(iar), creator<U>::empty(iar));
+    }
+    static base_type special(alps::hdf5::iarchive & iar) {
+        return std::make_pair(creator<T>::special(iar), creator<U>::special(iar));
+    }
+};
+template<typename T, typename U> bool equal(std::pair<T, U> const & a, std::pair<T, U> const & b) {
+    return equal(a.first, b.first) && equal(a.second, b.second);
+}
+
 template<typename T, typename U> struct creator<std::pair<T *, std::vector<U> > > {
     typedef std::pair<T *, std::vector<U> > base_type;
     static base_type random() {

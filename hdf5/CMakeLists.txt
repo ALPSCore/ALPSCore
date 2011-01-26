@@ -28,7 +28,7 @@ IF (ALPS_BUILD_HDF5_TESTS)
             target_link_libraries(${name} ${Boost_LIBRARIES} ${HDF5_LIBRARIES}) 
         else(Boost_FOUND) 
             add_dependencies(${name} boost) 
-            target_link_libraries(${name} alps boost ${HDF5_LIBRARIES})
+            target_link_libraries(${name} alps ${ALPS_BOOST_LIBRARY_NAME} ${HDF5_LIBRARIES})
         endif(Boost_FOUND) 
         add_alps_test(${name})
     ENDFOREACH(name)
@@ -69,6 +69,8 @@ IF (ALPS_BUILD_HDF5_TESTS)
         "cast_type<std::vector<int>, std::valarray<double> >" "cast_type<std::vector<int>, boost::numeric::ublas::vector<double> >"
         "cast_type<std::pair<int *, std::vector<std::size_t> >, std::vector<std::vector<std::vector<int> > > >" "cast_type<std::pair<int *, std::vector<std::size_t> >, std::vector<std::vector<std::vector<double> > > >"
         "std::pair<cast_type<std::vector<int>, std::valarray<long> > *, std::vector<std::size_t> >" "std::vector<cast_type<std::vector<int>, boost::numeric::ublas::vector<double> > >"
+        "std::pair<double, int>" "std::pair<double, std::complex<double> >" "std::pair<cast_type<int, std::string>, enum_type>" "std::pair<enum_type, cast_type<int, double> >" 
+        "std::pair<std::vector<cast_type<int, std::string> >, std::pair<double, int> >" "std::pair<std::pair<std::vector<enum_type> *, std::vector<std::size_t> >, enum_type>"
     )
     FOREACH (type ${ALPS_HDF5_DATA_TYPES})
 
@@ -113,19 +115,19 @@ IF (ALPS_BUILD_HDF5_TESTS)
         else(Boost_FOUND) 
 
             add_dependencies(hdf5_data_${test_name} alps boost)
-            target_link_libraries(hdf5_data_${test_name} alps boost ${HDF5_LIBRARIES})
+            target_link_libraries(hdf5_data_${test_name} alps ${ALPS_BOOST_LIBRARY_NAME} ${HDF5_LIBRARIES})
 
             add_dependencies(hdf5_data_szip_${test_name} alps boost) 
-            target_link_libraries(hdf5_data_szip_${test_name} alps boost ${HDF5_LIBRARIES})
+            target_link_libraries(hdf5_data_szip_${test_name} alps ${ALPS_BOOST_LIBRARY_NAME} ${HDF5_LIBRARIES})
 
             add_dependencies(hdf5_data_pycplx_${test_name} alps boost) 
-            target_link_libraries(hdf5_data_pycplx_${test_name} alps boost ${HDF5_LIBRARIES})
+            target_link_libraries(hdf5_data_pycplx_${test_name} alps ${ALPS_BOOST_LIBRARY_NAME} ${HDF5_LIBRARIES})
 
             add_dependencies(hdf5_attr_${test_name} alps boost) 
-            target_link_libraries(hdf5_attr_${test_name} alps boost ${HDF5_LIBRARIES})
+            target_link_libraries(hdf5_attr_${test_name} alps ${ALPS_BOOST_LIBRARY_NAME} ${HDF5_LIBRARIES})
 
             add_dependencies(hdf5_attr_pycplx_${test_name} alps boost) 
-            target_link_libraries(hdf5_attr_pycplx_${test_name} alps boost ${HDF5_LIBRARIES})
+            target_link_libraries(hdf5_attr_pycplx_${test_name} alps ${ALPS_BOOST_LIBRARY_NAME} ${HDF5_LIBRARIES})
 
         endif(Boost_FOUND) 
 
