@@ -66,16 +66,31 @@ namespace alps {
         return *this;
     }
 
-    #define ALPS_MCRESULT_TPL_IMPL(T)                                                                  \
-        template<> std::vector< T > const & mcresult::bins< T >() const { return impl_->bins< T >(); }            \
-        template<> T const & mcresult::mean< T >() const { return impl_->mean< T >(); }                           \
-        template<> T const & mcresult::error< T >() const { return impl_->error< T >(); }                         \
-        template<> T const & mcresult::variance< T >() const { return impl_->error< T >(); }                      \
-        template<> T const & mcresult::tau< T >() const { return impl_->error< T >(); }                           \
-        template<> T const & mcresult::covariance< T >() const { return impl_->error< T >(); }
+    #define ALPS_MCRESULT_TPL_IMPL(T)                                                                                     \
+        template<> std::vector< T > const & mcresult::bins< T >() const { return impl_->bins< T >(); }                    \
+        template<> T const & mcresult::mean< T >() const { return impl_->mean< T >(); }                                   \
+        template<> T const & mcresult::error< T >() const { return impl_->error< T >(); }                                 \
+        template<> T const & mcresult::variance< T >() const { return impl_->error< T >(); }                              \
+        template<> T const & mcresult::tau< T >() const { return impl_->error< T >(); }                                   \
+        template<> T const & mcresult::covariance< T >() const { return impl_->error< T >(); }                            \
+        template<> mcresult & mcresult::operator+=< T >( T const & rhs) { impl_->add_assign(rhs); return *this; }         \
+        template<> mcresult & mcresult::operator-=< T >( T const & rhs) { impl_->sub_assign(rhs); return *this; }         \
+        template<> mcresult & mcresult::operator*=< T >( T const & rhs) { impl_->mul_assign(rhs); return *this; }         \
+        template<> mcresult & mcresult::operator/=< T >( T const & rhs) { impl_->div_assign(rhs); return *this; }
     ALPS_MCRESULT_TPL_IMPL(double)
     ALPS_MCRESULT_TPL_IMPL(std::vector<double>)
     #undef ALPS_MCRESULT_TPL_IMPL
+
+    #define ALPS_NGS_MCRESULT_OPERATOR_IMPL(OP, NAME)         \
+        mcresult & mcresult:: OP (mcresult const & rhs) {     \
+            impl_-> NAME ## _assign (rhs.impl_);              \
+            return *this;                                     \
+        }
+    ALPS_NGS_MCRESULT_OPERATOR_IMPL(operator+=, add)
+    ALPS_NGS_MCRESULT_OPERATOR_IMPL(operator-=, sub)
+    ALPS_NGS_MCRESULT_OPERATOR_IMPL(operator*=, mul)
+    ALPS_NGS_MCRESULT_OPERATOR_IMPL(operator/=, add)
+    #undef ALPS_NGS_MCRESULT_OPERATOR_IMPL
 
     bool mcresult::can_rebin() const {
         return impl_->can_rebin();
@@ -139,36 +154,13 @@ namespace alps {
         }
     #endif
 
-    bool mcresult::operator== (mcresult const & rhs) const {  \
-        return impl_->operator== (rhs.impl_);                 \
+    bool mcresult::operator== (mcresult const & rhs) const {
+        return impl_->operator== (rhs.impl_);
     }
-    bool mcresult::operator!= (mcresult const & rhs) const {  \
-        return impl_->operator!= (rhs.impl_);                 \
+    bool mcresult::operator!= (mcresult const & rhs) const {
+        return impl_->operator!= (rhs.impl_);
     }
 
-
-    mcresult & mcresult::operator+=(mcresult const & rhs) {
-        impl_->operator+=(rhs.impl_);
-        return *this;
-    }
-    mcresult & mcresult::operator-=(mcresult const & rhs) {
-        impl_->operator-=(rhs.impl_);
-        return *this;
-    }
-    mcresult & mcresult::operator*=(mcresult const & rhs) {
-        impl_->operator*=(rhs.impl_);
-        return *this;
-    }
-    mcresult & mcresult::operator/=(mcresult const & rhs) {
-        impl_->operator/=(rhs.impl_);
-        return *this;
-    }
-/*
-    template <typename T> mcresult & mcresult::operator+=(T const & rhs);
-    template <typename T> mcresult & mcresult::operator-=(T const & rhs);
-    template <typename T> mcresult & mcresult::operator*=(T const & rhs);
-    template <typename T> mcresult & mcresult::operator/=(T const & rhs);
-*/
     mcresult & mcresult::operator+() {
         impl_->operator-();
         return *this;
@@ -231,15 +223,31 @@ namespace alps {
         lhs.ref_cnt_[lhs.impl_ = rhs.impl_->pow(exponent)] = 1;
         return lhs;
     }
-/*
-    #define ALPS_NGS_MCRESULT_OPERATOR(OPERATOR)                                                       \
-        mcresult operator ## OPERATOR(mcresult lhs, mcresult  const & rhs);                            \
-        template <typename T> mcresult operator ## OPERATOR(mcresult lhs, T const & rhs);              \
-        template <typename T> mcresult operator ## OPERATOR(T const & lhs, mcresult const & rhs);      \
-    ALPS_NGS_MCRESULT_OPERATOR(+)
-    ALPS_NGS_MCRESULT_OPERATOR(-)
-    ALPS_NGS_MCRESULT_OPERATOR(*)
-    ALPS_NGS_MCRESULT_OPERATOR(/)
-    #undef ALPS_NGS_MCRESULT_OPERATOR
-*/
+
+    #define ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_IMPL(T, OP, NAME)                  \
+        template <> mcresult OP < T >(mcresult const & lhs, T const & rhs) {       \
+            mcresult res;                                                          \
+            res.ref_cnt_[res.impl_ = lhs.impl_-> NAME (rhs)] = 1;                  \
+            return res;                                                            \
+        }                                                                          \
+        template <> mcresult OP < T >(T const & lhs, mcresult const & rhs) {       \
+            mcresult res;                                                          \
+            res.ref_cnt_[res.impl_ = rhs.impl_-> NAME ## _inverse (lhs)] = 1;      \
+            return res;                                                            \
+        }
+    #define ALPS_NGS_MCRESULT_FREE_OPERATOR_IMPL(OP, NAME)                         \
+        ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_IMPL(double, OP, NAME)                 \
+        ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_IMPL(std::vector<double>, OP, NAME)    \
+        mcresult OP (mcresult const & lhs, mcresult const & rhs) {                 \
+            mcresult res;                                                          \
+            res.ref_cnt_[res.impl_ = lhs.impl_-> NAME (rhs.impl_)] = 1;            \
+            return res;                                                            \
+        }
+    ALPS_NGS_MCRESULT_FREE_OPERATOR_IMPL(operator+, add)
+    ALPS_NGS_MCRESULT_FREE_OPERATOR_IMPL(operator-, sub)
+    ALPS_NGS_MCRESULT_FREE_OPERATOR_IMPL(operator*, mul)
+    ALPS_NGS_MCRESULT_FREE_OPERATOR_IMPL(operator/, add)
+    #undef ALPS_MCRESULT_OPERATOR_IMPL
+    #undef ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_IMPL
+
 }

@@ -74,6 +74,16 @@ namespace alps {
     mcresult log(mcresult rhs);
 
     mcresult pow(mcresult rhs, double exponent);
+    
+    #define ALPS_NGS_MCRESULT_FREE_OPERATOR_DECL(OP)                              \
+        template <typename T> mcresult OP(mcresult const & lhs, T const & rhs);   \
+        template <typename T> mcresult OP(T const & lhs, mcresult const & rhs);   \
+        mcresult OP (mcresult const & lhs, mcresult const & rhs);
+    ALPS_NGS_MCRESULT_FREE_OPERATOR_DECL(operator+)
+    ALPS_NGS_MCRESULT_FREE_OPERATOR_DECL(operator-)
+    ALPS_NGS_MCRESULT_FREE_OPERATOR_DECL(operator*)
+    ALPS_NGS_MCRESULT_FREE_OPERATOR_DECL(operator/)
+    #undef ALPS_NGS_MCRESULT_FREE_OPERATOR_DECL
 
     class mcresult {
 
@@ -98,7 +108,18 @@ namespace alps {
             friend mcresult cbrt(mcresult rhs);
             friend mcresult exp(mcresult rhs);
             friend mcresult log(mcresult rhs);
+
             friend mcresult pow(mcresult rhs, double exponent);
+
+            #define ALPS_NGS_MCRESULT_FREE_OPERATOR_FRIEND(OP)                                   \
+                template <typename T> friend mcresult OP(mcresult const & lhs, T const & rhs);   \
+                template <typename T> friend mcresult OP(T const & lhs, mcresult const & rhs);   \
+                friend mcresult OP (mcresult const & lhs, mcresult const & rhs);
+            ALPS_NGS_MCRESULT_FREE_OPERATOR_FRIEND(operator+)
+            ALPS_NGS_MCRESULT_FREE_OPERATOR_FRIEND(operator-)
+            ALPS_NGS_MCRESULT_FREE_OPERATOR_FRIEND(operator*)
+            ALPS_NGS_MCRESULT_FREE_OPERATOR_FRIEND(operator/)
+            #undef ALPS_NGS_MCRESULT_FREE_OPERATOR_FRIEND
 
             mcresult();
             mcresult(Observable const * obs);
@@ -132,6 +153,15 @@ namespace alps {
 
             template <typename T> T const & covariance() const;
 
+            #define ALPS_NGS_MCRESULT_ASSIGN_OPERATORS(OP)                                       \
+                template <typename T> mcresult & OP (T const & rhs);                             \
+                mcresult & OP (mcresult const & rhs);
+            ALPS_NGS_MCRESULT_ASSIGN_OPERATORS(operator+=)
+            ALPS_NGS_MCRESULT_ASSIGN_OPERATORS(operator-=)
+            ALPS_NGS_MCRESULT_ASSIGN_OPERATORS(operator*=)
+            ALPS_NGS_MCRESULT_ASSIGN_OPERATORS(operator/=)
+            #undef ALPS_NGS_MCRESULT_ASSIGN_OPERATORS
+
             void set_bin_size(uint64_t binsize);
             void set_bin_number(uint64_t bin_number);
 
@@ -146,17 +176,6 @@ namespace alps {
 
             bool operator==(mcresult const & rhs) const;
             bool operator!=(mcresult const & rhs) const;
-
-            mcresult & operator+=(mcresult const & rhs);
-            mcresult & operator-=(mcresult const & rhs);
-            mcresult & operator*=(mcresult const & rhs);
-            mcresult & operator/=(mcresult const & rhs);
-/*
-            template <typename T> mcresult & operator+=(T const & rhs);
-            template <typename T> mcresult & operator-=(T const & rhs);
-            template <typename T> mcresult & operator*=(T const & rhs);
-            template <typename T> mcresult & operator/=(T const & rhs);
-*/
             mcresult & operator+();
             mcresult & operator-();
 
@@ -170,17 +189,7 @@ namespace alps {
     };
 
     std::ostream & operator<<(std::ostream & os, mcresult const & res);
-/*
-    #define ALPS_NGS_MCRESULT_OPERATOR(OPERATOR)                                                       \
-        mcresult operator ## OPERATOR(mcresult lhs, mcresult  const & rhs);                            \
-        template <typename T> mcresult operator ## OPERATOR(mcresult lhs, T const & rhs);              \
-        template <typename T> mcresult operator ## OPERATOR(T const & lhs, mcresult const & rhs);      \
-    ALPS_NGS_MCRESULT_OPERATOR(+)
-    ALPS_NGS_MCRESULT_OPERATOR(-)
-    ALPS_NGS_MCRESULT_OPERATOR(*)
-    ALPS_NGS_MCRESULT_OPERATOR(/)
-    #undef ALPS_NGS_MCRESULT_OPERATOR
-*/
+
 }
 
 #endif

@@ -637,7 +637,7 @@ detail::check_error(H5Awrite(new_id, type_id, &v));                             
           }
           return create_path(p, type_id, space_id, d, s, set_prop);
       }
-      
+
       hid_t archive::open_attribute(std::string const & p) const {
           hid_t parent_id, attr_id;
           if (p.find_last_of('@') == std::string::npos)
@@ -680,7 +680,6 @@ detail::check_error(H5Awrite(new_id, type_id, &v));                             
           }
       }
 
-      
     void oarchive::serialize(std::string const & p) 
     {
         if (p.find_last_of('@') != std::string::npos)
@@ -691,5 +690,5 @@ detail::check_error(H5Awrite(new_id, type_id, &v));                             
 
     std::map<std::pair<std::string, bool>, boost::weak_ptr<detail::context> > archive::_pool;
 
-  }    
+  }
 }

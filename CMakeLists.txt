@@ -76,7 +76,7 @@ if (Boost_FOUND)
   target_link_libraries(alps ${ALPS_LINK_LIBS})
 else (Boost_FOUND)
   # "boost" target available when Boost libraries are built from source
-  target_link_libraries(alps boost ${HDF5_LIBRARIES}) # ${SZIP_LIBRARIES} ${ZLIB_LIBRARIES})
+  target_link_libraries(alps ${ALPS_BOOST_LIBRARY_NAME} ${HDF5_LIBRARIES}) # ${SZIP_LIBRARIES} ${ZLIB_LIBRARIES})
 endif (Boost_FOUND)
 
 if(BUILD_SHARED_LIBS)

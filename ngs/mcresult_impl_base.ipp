@@ -81,10 +81,52 @@ namespace alps {
                 template <typename T> T const & tau() const {
                     return dynamic_cast<mcresult_impl_derived<mcresult_impl_base, T> const &>(*this).tau();
                 }
-
-                template <typename T> T const & covariance() const {
-                    return dynamic_cast<mcresult_impl_derived<mcresult_impl_base, T> const &>(*this).covariance();
-                }
+                
+                #define ALPS_NGS_MCRESULT_IMPL_BASE_OPERATOR(NAME)                                                                             \
+                    template <typename T> typename boost::disable_if<                                                                          \
+                        boost::is_same<T, mcresult_impl_base *>                                                                                \
+                    >::type NAME ## _assign(T const & rhs) {                                                                                   \
+                        if (dynamic_cast<mcresult_impl_derived<mcresult_impl_base, T> const *>(this))                                          \
+                            dynamic_cast<mcresult_impl_derived<mcresult_impl_base, T> &>(*this). NAME ## _assign(rhs);                         \
+                        else                                                                                                                   \
+                            dynamic_cast<mcresult_impl_derived<mcresult_impl_base, std::vector<T> > &>(*this). NAME ## _assign(rhs);           \
+                    }                                                                                                                          \
+                                                                                                                                               \
+                    template <typename T> typename boost::enable_if<                                                                           \
+                        boost::is_same<T, mcresult_impl_base *>                                                                                \
+                    >::type NAME ## _assign(T const & rhs) {                                                                                   \
+                        return NAME ## _assign_virtual(rhs);                                                                                   \
+                    }                                                                                                                          \
+                                                                                                                                               \
+                    virtual void NAME ## _assign_virtual(mcresult_impl_base const * rhs) = 0;                                                  \
+                                                                                                                                               \
+                    template <typename T> typename boost::disable_if<                                                                          \
+                        boost::is_same<T, mcresult_impl_base *>, mcresult_impl_base *                                                          \
+                    >::type NAME (T const & rhs) const {                                                                                       \
+                        if (dynamic_cast<mcresult_impl_derived<mcresult_impl_base, T> const *>(this))                                          \
+                            return dynamic_cast<mcresult_impl_derived<mcresult_impl_base, T> const &>(*this). NAME (rhs);                      \
+                        else                                                                                                                   \
+                            return dynamic_cast<mcresult_impl_derived<mcresult_impl_base, std::vector<T> > const &>(*this). NAME (rhs);        \
+                    }                                                                                                                          \
+                    template <typename T> typename boost::enable_if<                                                                           \
+                        boost::is_same<T, mcresult_impl_base *>, mcresult_impl_base *                                                          \
+                    >::type NAME (T const & rhs) const {                                                                                       \
+                        return NAME ## _virtual(rhs);                                                                                          \
+                    }                                                                                                                          \
+                                                                                                                                               \
+                    virtual mcresult_impl_base * NAME ## _virtual(mcresult_impl_base const * rhs) const = 0;                                   \
+                                                                                                                                               \
+                    template <typename T> mcresult_impl_base * NAME ## _inverse(T const & lhs) {                                               \
+                        if (dynamic_cast<mcresult_impl_derived<mcresult_impl_base, T> const *>(this))                                          \
+                            return dynamic_cast<mcresult_impl_derived<mcresult_impl_base, T> &>(*this). NAME ## _inverse(lhs);                 \
+                        else                                                                                                                   \
+                            return dynamic_cast<mcresult_impl_derived<mcresult_impl_base, std::vector<T> > &>(*this). NAME ## _inverse(lhs);   \
+                    }
+                ALPS_NGS_MCRESULT_IMPL_BASE_OPERATOR(add)
+                ALPS_NGS_MCRESULT_IMPL_BASE_OPERATOR(sub)
+                ALPS_NGS_MCRESULT_IMPL_BASE_OPERATOR(mul)
+                ALPS_NGS_MCRESULT_IMPL_BASE_OPERATOR(div)
+                #undef ALPS_NGS_MCRESULT_IMPL_BASE_OPERATOR
 
                 virtual void set_bin_size(uint64_t binsize) = 0;
 
@@ -102,11 +144,6 @@ namespace alps {
 
                 virtual bool operator==(mcresult_impl_base const * rhs) const = 0;
                 virtual bool operator!=(mcresult_impl_base const * rhs) const = 0;
-
-                virtual void operator+=(mcresult_impl_base const * rhs) = 0;
-                virtual void operator-=(mcresult_impl_base const * rhs) = 0;
-                virtual void operator*=(mcresult_impl_base const * rhs) = 0;
-                virtual void operator/=(mcresult_impl_base const * rhs) = 0;
 
                 virtual void operator+() = 0;
                 virtual void operator-() = 0;

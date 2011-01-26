@@ -154,7 +154,7 @@ public:
         (*this==min BOOST_PREVENT_MACRO_SUBSTITUTION ()) !=
         (x==min BOOST_PREVENT_MACRO_SUBSTITUTION ()))
       return std::numeric_limits<I>::max BOOST_PREVENT_MACRO_SUBSTITUTION ();
-    assert(std::abs(val_)%2 == std::abs(x.get_twice())%2);
+    assert(static_cast<integer_type>(std::abs(val_)) % 2 == static_cast<integer_type>(std::abs(x.get_twice())) % 2);
     return (val_-x.get_twice())/2;
   }
   static half_integer max BOOST_PREVENT_MACRO_SUBSTITUTION ()

@@ -1122,6 +1122,17 @@ namespace alps {
             return ar;
         }
 
+        template<typename T, typename U> iarchive & serialize(iarchive & ar, std::string const & p, std::pair<T, U> & v) {
+            serialize(ar, p + "/first", v.first);
+            serialize(ar, p + "/second", v.second);
+            return ar;
+        }
+        template<typename T, typename U> oarchive & serialize(oarchive & ar, std::string const & p, std::pair<T, U> const & v) {
+            serialize(ar, p + "/first", v.first);
+            serialize(ar, p + "/second", v.second);
+            return ar;
+        }
+
         template<typename T> iarchive & serialize(iarchive & ar, std::string const & p, std::pair<T *, std::vector<std::size_t> > & v) {
             if (ar.is_group(p)) {
                 std::vector<std::size_t> start(v.second.size(), 0);
