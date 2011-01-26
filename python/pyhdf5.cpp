@@ -84,6 +84,10 @@ namespace alps {
                 return result;
             }
 
+            void create_group(alps::hdf5::oarchive & self, std::string const & path) {
+                self.serialize(path);
+            }
+
             void write(alps::hdf5::oarchive & self, std::string const & path, boost::python::object const & data) {
                 using alps::make_pvp;
                 import_numpy();
@@ -272,6 +276,18 @@ const char read_docstring[] =
 "reads an object from the specified path in the HDF5 file.\n"
 "Currently supported types are scalar types and numpy arrays of them.";
 
+const char create_group_docstring[] =
+"create a group at the specified path in the HDF5 file.";
+
+const char delete_data_docstring[] =
+"delete a dataset at the specified path in the HDF5 file.\n";
+
+const char delete_group_docstring[] =
+"delete a group at the specified path in the HDF5 file.\n";
+
+const char delete_attribute_docstring[] =
+"delete an attribute at the specified path in the HDF5 file.\n";
+
 BOOST_PYTHON_MODULE(pyhdf5_c) {
     using namespace boost::python;
     docstring_options doc_options(true);
@@ -294,6 +310,10 @@ BOOST_PYTHON_MODULE(pyhdf5_c) {
         .def("list_children", &alps::python::hdf5::list_children<alps::hdf5::oarchive>,list_children_docstring)
         .def("list_attributes", &alps::python::hdf5::list_attributes<alps::hdf5::oarchive>,list_attr_docstring)
         .def("write", &alps::python::hdf5::write, write_docstring)
+        .def("create_group", &alps::python::hdf5::create_group,create_group_docstring)
+        .def("delete_data", &alps::hdf5::oarchive::delete_data,delete_data_docstring)
+        .def("delete_group", &alps::hdf5::oarchive::delete_group,delete_group_docstring)
+        .def("delete_attribute", &alps::hdf5::oarchive::delete_attribute,delete_attribute_docstring)
     ;
 
     class_<alps::hdf5::iarchive>(

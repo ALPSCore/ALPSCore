@@ -372,7 +372,7 @@ namespace alps {
                 typedef typename serializable_type<typename boost::remove_const<T>::type>::type type;                                                      \
             };                                                                                                                                             \
             template<typename T> struct native_type< C <T> > { typedef typename native_type<typename boost::remove_const<T>::type>::type type; };          \
-            template<typename T> struct is_cplx< C <T> > : public is_cplx<T> { };                                                                          \
+            template<typename T> struct is_cplx< C <T> > : public is_cplx<typename boost::remove_const<T>::type> { };                                      \
             template<typename T> std::vector<hsize_t> get_extent( C <T> const & v) {                                                                       \
                 std::vector<hsize_t> s(1, v.size());                                                                                                       \
                 if (!is_native<T>::value && v.size()) {                                                                                                    \
@@ -445,7 +445,7 @@ namespace alps {
 
         template<typename T> struct serializable_type<std::pair<T *, std::vector<std::size_t> > > { typedef typename serializable_type<typename boost::remove_const<T>::type>::type type; };
         template<typename T> struct native_type<std::pair<T *, std::vector<std::size_t> > > { typedef typename native_type<typename boost::remove_const<T>::type>::type type; };
-        template<typename T> struct is_cplx<std::pair<T *, std::vector<std::size_t> > > : public is_cplx<T> { };
+        template<typename T> struct is_cplx<std::pair<T *, std::vector<std::size_t> > > : public is_cplx<typename boost::remove_const<T>::type> { };
         template<typename T> std::vector<hsize_t> get_extent(std::pair<T *, std::vector<std::size_t> > const & v) {
             std::vector<hsize_t> s(v.second.begin(), v.second.end());
             if (!is_native<T>::value && v.second.size()) {
