@@ -39,6 +39,13 @@ def write():
     ar.write("/str", "test")
     ar.write("/np/int", np.array([1, 2, 3]))
     ar.write("/np2/int", np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
+    ar.write("/np/cplx", np.array([[1 + 1j,2 +2j ],[3 + 3j,4 + 4j]]))
+    
+    ar.create_group("/my/group")
+    ar.write("/my/double", 9.123)
+    
+    ar.delete_group("/my/group")
+    ar.delete_data("/my/double")
 
 def read():
     ar = h5.iArchive("test.h5")
@@ -47,11 +54,14 @@ def read():
     c = ar.read("/cplx")
     s = ar.read("/str")
     n = ar.read("/np/int")
-    if ar.extent("/int")[0] != 1 or ar.extent("/cplx")[0] != 1 or  ar.extent("/np/int")[0] != 3:
+    x = ar.read("/np/cplx")
+    if ar.extent("/int")[0] != 1 or ar.extent("/cplx")[0] != 1 or ar.extent("/np/int")[0] != 3:
         raise Exception('invalid extent')
     if type(i) != int or type(d) != float or type(c) != complex or type(s) != str:
         raise Exception('invalid type')
     if i != 9 or d - 9.123 > 0.001 or s != "test" or np.any(n != np.array([1, 2, 3])):
+        raise Exception('invalid value')
+    if np.any(x[0] != np.array([1 + 1j,2 +2j])) or np.any(x[1] != np.array([3 + 3j,4 + 4j])):
         raise Exception('invalid value')
 
 try:
