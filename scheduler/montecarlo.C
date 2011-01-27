@@ -233,7 +233,7 @@ void MCRun::serialize(hdf5::oarchive & ar) const {
 void MCRun::serialize(hdf5::iarchive & ar) {
   Worker::serialize(ar);
 #ifdef ALPS_ONLY_HDF5
-  if(node==0)
+  if(node==0 && ar.is_group("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(node) + "/results"))
     ar >> make_pvp("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(node) + "/results", measurements);
 #endif
 }
