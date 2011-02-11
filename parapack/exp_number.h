@@ -143,6 +143,7 @@ public:
       return (sign_ == is_positive);
   }
 
+  bool operator==(int v) const { return this->operator==(static_cast<value_type>(v)); }
   bool operator==(value_type v) const {
     if (v > 0)
       return (sign_ == is_positive) ? (log_ == std::log(v)) : false;
@@ -161,6 +162,7 @@ public:
       return (sign_ == is_zero);
   }
 
+  self_& operator+=(int v) { return operator+=(static_cast<value_type>(v)); }
   self_& operator+=(value_type v) { return operator+=(self_(v)); }
   template<typename U>
   self_& operator+=(exp_number<U> const& rhs) {
@@ -204,10 +206,12 @@ public:
     return *this;
   }
 
+  self_& operator-=(int v) { return this->operator+=(-v); }
   self_& operator-=(value_type v) { return this->operator+=(-v); }
   template<typename U>
   self_& operator-=(exp_number<U> const& rhs) { return this->operator+=(-rhs); }
 
+  self_& operator*=(int v) { return this->operator*=(self_(v)); }
   self_& operator*=(value_type v) { return this->operator*=(self_(v)); }
   self_& operator*=(self_ const& rhs) {
     log_ += rhs.log_;
@@ -215,6 +219,7 @@ public:
     return *this;
   }
 
+  self_& operator/=(int v) { return this->operator/=(self_(v)); }
   self_& operator/=(value_type v) { return this->operator/=(self_(v)); }
   self_& operator/=(self_ const& rhs) {
     if (sign_ != is_zero) {
@@ -292,7 +297,7 @@ bool operator>(T x, alps::exp_number<T> const& y) {
 // opertor==
 //
 
-template<typename T>
+template<typename T, typename U>
 bool operator==(T x, alps::exp_number<T> const& y) {
   return (alps::exp_number<T>(x) == y);
 }
@@ -305,13 +310,14 @@ template<typename T, typename U>
 bool operator>=(alps::exp_number<T> const& x, alps::exp_number<U> const& y) {
   return (x > y) || (x == y);
 }
-template<typename T>
-bool operator>=(alps::exp_number<T> const& x, T y) {
+template<typename T, typename U>
+bool operator>=(alps::exp_number<T> const& x, U y) {
   return (x > y) || (x == y);
 }
-template<typename T>
-bool operator>=(T x, alps::exp_number<T> const& y) {
-  return (x > y) || (x == y);
+template<typename T, typename U>
+bool operator>=(U x, alps::exp_number<T> const& y) {
+  alps::exp_number<T> lhs(x);
+  return (lhs > y) || (lhs == y);
 }
 
 //
@@ -322,12 +328,12 @@ template<typename T, typename U>
 bool operator<(alps::exp_number<T> const& x, alps::exp_number<U> const& y) {
   return (y > x);
 }
-template<typename T>
-bool operator<(alps::exp_number<T> const& x, T y) {
+template<typename T, typename U>
+bool operator<(alps::exp_number<T> const& x, U y) {
   return (y > x);
 }
-template<typename T>
-bool operator<(T x, alps::exp_number<T> const& y) {
+template<typename T, typename U>
+bool operator<(U x, alps::exp_number<T> const& y) {
   return (y > x);
 }
 
@@ -339,13 +345,13 @@ template<typename T, typename U>
 bool operator<=(alps::exp_number<T> const& x, alps::exp_number<U> const& y) {
   return (y >= x);
 }
-template<typename T>
-bool operator<=(alps::exp_number<T> const& x, T y) {
+template<typename T, typename U>
+bool operator<=(alps::exp_number<T> const& x, U y) {
   alps::exp_number<T> z = y;
   return (z >= x);
 }
-template<typename T>
-bool operator<=(T x, alps::exp_number<T> const& y) {
+template<typename T, typename U>
+bool operator<=(U x, alps::exp_number<T> const& y) {
   return (y >= x);
 }
 
@@ -361,14 +367,14 @@ operator+(alps::exp_number<T> const& x, alps::exp_number<U> const& y) {
   res += y;
   return res;
 }
-template<typename T>
-alps::exp_number<T> operator+(alps::exp_number<T> const& x, T y) {
+template<typename T, typename U>
+alps::exp_number<T> operator+(alps::exp_number<T> const& x, U y) {
   alps::exp_number<T> res = x;
   res += y;
   return res;
 }
-template<typename T>
-alps::exp_number<T> operator+(T x, alps::exp_number<T> const& y) {
+template<typename T, typename U>
+alps::exp_number<T> operator+(U x, alps::exp_number<T> const& y) {
   alps::exp_number<T> res = x;
   res += y;
   return res;
@@ -386,14 +392,14 @@ operator-(alps::exp_number<T> const& x, alps::exp_number<U> const& y) {
   res -= y;
   return res;
 }
-template<typename T>
-alps::exp_number<T> operator-(alps::exp_number<T> const& x, T y) {
+template<typename T, typename U>
+alps::exp_number<T> operator-(alps::exp_number<T> const& x, U y) {
   alps::exp_number<T> res = x;
   res -= y;
   return res;
 }
-template<typename T>
-alps::exp_number<T> operator-(T x, alps::exp_number<T> const& y) {
+template<typename T, typename U>
+alps::exp_number<T> operator-(U x, alps::exp_number<T> const& y) {
   alps::exp_number<T> res = x;
   res -= y;
   return res;
@@ -411,16 +417,16 @@ operator*(alps::exp_number<T> const& x, alps::exp_number<U> const& y) {
   res *= y;
   return res;
 }
-template<typename T>
-alps::exp_number<T> operator*(alps::exp_number<T> const& x, T y) {
+template<typename T, typename U>
+alps::exp_number<T> operator*(alps::exp_number<T> const& x, U y) {
   alps::exp_number<T> res = x;
   res *= y;
   return res;
 }
-template<typename T>
-alps::exp_number<T> operator*(T x, alps::exp_number<T> const& y) {
-  alps::exp_number<T> res = x;
-  res *= y;
+template<typename T, typename U>
+alps::exp_number<T> operator*(U x, alps::exp_number<T> const& y) {
+  alps::exp_number<T> res = y;
+  res *= x;
   return res;
 }
 
@@ -436,14 +442,14 @@ operator/(alps::exp_number<T> const& x, alps::exp_number<U> const& y) {
   res /= y;
   return res;
 }
-template<typename T>
-alps::exp_number<T> operator/(alps::exp_number<T> const& x, T y) {
+template<typename T, typename U>
+alps::exp_number<T> operator/(alps::exp_number<T> const& x, U y) {
   alps::exp_number<T> res = x;
   res /= y;
   return res;
 }
-template<typename T>
-alps::exp_number<T> operator/(T x, alps::exp_number<T> const& y) {
+template<typename T, typename U>
+alps::exp_number<T> operator/(U x, alps::exp_number<T> const& y) {
   alps::exp_number<T> res = x;
   res /= y;
   return res;
