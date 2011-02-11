@@ -51,12 +51,18 @@ try {
   std::cout << "x - 1.2 = " << x - 1.2 << " = " << alps::precision(static_cast<double>(x - 1.2), 6) << std::endl;
   std::cout << "x - 3.5 = " << x - 3.5 << " = " << alps::precision(static_cast<double>(x - 3.5), 6) << std::endl;
   std::cout << "x * 1.2 = " << x * 1.2 << " = " << alps::precision(static_cast<double>(x * 1.2), 6) << std::endl;
+  std::cout << "x * 2 = " << x * 2 << " = " << alps::precision(static_cast<double>(x * 2), 6) << std::endl;
   std::cout << "x / 1.2 = " << x / 1.2 << " = " << alps::precision(static_cast<double>(x / 1.2), 6) << std::endl;
+  std::cout << "x / 3 = " << x / 3 << " = " << alps::precision(static_cast<double>(x / 3), 6) << std::endl;
   std::cout << "3.5 + x = " << 3.5 + x << " = " << alps::precision(static_cast<double>(3.5 + x), 6) << std::endl;
+  std::cout << "3 + x = " << 3 + x << " = " << alps::precision(static_cast<double>(3 + x), 6) << std::endl;
   std::cout << "3.5 - x = " << 3.5 - x << " = " << alps::precision(static_cast<double>(3.5 - x), 6) << std::endl;
+  std::cout << "4 - x = " << 4 - x << " = " << alps::precision(static_cast<double>(4 - x), 6) << std::endl;
   std::cout << "1.2 - x = " << 1.2 - x << " = " << alps::precision(static_cast<double>(1.2 - x), 6) << std::endl;
   std::cout << "3.5 * x = " << 3.5 * x << " = " << alps::precision(static_cast<double>(3.5 * x), 6) << std::endl;
+  std::cout << "3 * x = " << 3 * x << " = " << alps::precision(static_cast<double>(3 * x), 6) << std::endl;
   std::cout << "3.5 / x = " << 3.5 / x << " = " << alps::precision(static_cast<double>(3.5 / x), 6) << std::endl;
+  std::cout << "3 / x = " << 3 / x << " = " << alps::precision(static_cast<double>(3 / x), 6) << std::endl;
 
   std::cout << "v = " << v << " = " << alps::precision(static_cast<double>(v), 6) << std::endl;
   std::cout << "w = " << w << " = " << alps::precision(static_cast<double>(w), 6) << std::endl;
@@ -100,6 +106,11 @@ try {
   std::cout << "y < p = " << (y < p) << std::endl;
   std::cout << "p == p = " << (p == p) << std::endl;
   std::cout << "p == -p = " << (p == -p) << std::endl;
+  std::cout << "x > 2 = " << (x > 2) << std::endl;
+  std::cout << "x >= 2 = " << (x >= 2) << std::endl;
+  std::cout << "x == 2 = " << (x == 2) << std::endl;
+  std::cout << "x <= 2 = " << (x <= 2) << std::endl;
+  std::cout << "x < 2 = " << (x < 2) << std::endl;
 
 #ifndef BOOST_NO_EXCEPTIONS
 }
