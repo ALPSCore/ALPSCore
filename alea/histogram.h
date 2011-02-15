@@ -249,6 +249,8 @@ inline void HistogramObservable<T>::load(IDump& dump)
 #ifdef ALPS_HAVE_HDF5
     template <class T> inline void HistogramObservable<T>::serialize(hdf5::iarchive & ar) {
         ar 
+            >> make_pvp("histogram",histogram_)
+            >> make_pvp("count",count_)
             >> make_pvp("@size", size_)
             >> make_pvp("@min", min_)
             >> make_pvp("@max", max_)
@@ -257,6 +259,8 @@ inline void HistogramObservable<T>::load(IDump& dump)
     }
     template <class T> inline void HistogramObservable<T>::serialize(hdf5::oarchive & ar) const {
         ar 
+            << make_pvp("histogram",histogram_)
+            << make_pvp("count",count_)
             << make_pvp("@size", size_)
             << make_pvp("@min", min_)
             << make_pvp("@max", max_)
