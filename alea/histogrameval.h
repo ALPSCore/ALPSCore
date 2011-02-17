@@ -272,7 +272,7 @@ template <class T>
 inline HistogramObservableEvaluator<T>::HistogramObservableEvaluator(const Observable& b)
   : HistogramObservable<T>(b.name()), automatic_naming_(true)
 {
-  if (dynamic_cast<const HistogramObservable<T>*>(&b)==0)
+  if (dynamic_cast<const HistogramObservableEvaluator<T>*>(&b)!=0)
     merge(b);
   else
     (*this) = dynamic_cast<const HistogramObservable<T>&>(b).make_evaluator();
