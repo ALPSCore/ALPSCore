@@ -125,6 +125,7 @@ public:
   HistogramObservableEvaluator<T> make_evaluator() const { return *this; }
 
 private:
+  void update_super() const;
   void collect() const;
 
   //?   mutable bool valid_;
@@ -151,13 +152,19 @@ inline void HistogramObservableEvaluator<T>::load(IDump& dump)
 }
 
 template<class T>
+inline void HistogramObservableEvaluator<T>::update_super() const
+{
+    assert(supertype::histogram_.size()==all_.size());
+    supertype::count_=all_.count();
+    for (std::size_t i=0;i<all_.size();++i)
+        supertype::histogram_[i] = all_[i];
+}
+    
+template<class T>
 inline void HistogramObservableEvaluator<T>::collect() const
 {
   all_.collect_from(runs_);
-  supertype::count_=all_.count();
-  supertype::histogram_.resize(all_.size());
-  for (std::size_t i=0;i<all_.size();++i)
-    supertype::histogram_[i] = all_[i];
+  update_super();
 }
 
 template <class T>
@@ -166,6 +173,9 @@ inline const HistogramObservableEvaluator<T>& HistogramObservableEvaluator<T>::o
   runs_ = eval.runs_;
   all_ = eval.all_;
   if (automatic_naming_ && supertype::name() == "") Observable::rename(eval.name());
+  supertype::reset();
+  supertype::set_range(all_.min(),all_.max(),all_.stepsize());
+  update_super();
   return *this;
 }
 
@@ -211,6 +221,7 @@ inline uint32_t HistogramObservableEvaluator<T>::number_of_runs() const
 template <class T>
 inline ALPS_DUMMY_VOID HistogramObservableEvaluator<T>::reset(bool)
 {
+  supertype::reset();
   runs_.clear();
   all_ = HistogramObservableData<T>();
   ALPS_RETURN_VOID
@@ -258,13 +269,14 @@ inline HistogramObservableEvaluator<T>::HistogramObservableEvaluator(const char*
 
 template <class T>
 inline HistogramObservableEvaluator<T>::HistogramObservableEvaluator(const HistogramObservableEvaluator& eval)
-  : HistogramObservable<T>(eval.name()), automatic_naming_(true), runs_(eval.runs_), all_(eval.all_){}
+  : HistogramObservable<T>(eval), automatic_naming_(eval.automatic_naming_), runs_(eval.runs_), all_(eval.all_){}
 
 template <class T>
 inline HistogramObservableEvaluator<T>::HistogramObservableEvaluator(const Observable& b, const std::string& n)
-  : HistogramObservable<T>(n=="" ? b.name() : n),
+  : HistogramObservable<T>(dynamic_cast<const HistogramObservable<T>&>(b)),
     automatic_naming_(n=="")
 {
+  if(n!="") Observable::rename(n);
   merge(b);
 }
 
@@ -283,7 +295,10 @@ inline HistogramObservableEvaluator<T>::HistogramObservableEvaluator(const std::
   : HistogramObservable<T>(n),
     automatic_naming_(false),
     all_(infile,intag)
-{}
+{
+    supertype::set_range(all_.min(),all_.max(),all_.step_size());
+    update_super();
+}
 
 } //end namespace alps
 

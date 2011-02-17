@@ -117,7 +117,6 @@ private:
 
   friend class HistogramObservableEvaluator<T>;
 
-  uint32_t size_;
   range_type min_;
   range_type max_;
   range_type stepsize_;
@@ -141,7 +140,6 @@ inline Observable* HistogramObservable<T>::convert_mergeable() const
 template <class T>
 HistogramObservable<T>::HistogramObservable(const std::string& n)
  : Observable(n),
-   size_(0),
    min_(std::numeric_limits<T>::max BOOST_PREVENT_MACRO_SUBSTITUTION ()),
    max_(std::numeric_limits<T>::min BOOST_PREVENT_MACRO_SUBSTITUTION ()),
    stepsize_(0),
@@ -152,7 +150,6 @@ HistogramObservable<T>::HistogramObservable(const std::string& n)
 template <class T>
 inline HistogramObservable<T>::HistogramObservable(const std::string& n, T min, T max, T stepsize)
  : Observable(n),
-   size_(0),
    count_(0)
 {
   set_range(min,max,stepsize);
@@ -251,7 +248,6 @@ inline void HistogramObservable<T>::load(IDump& dump)
         ar 
             >> make_pvp("histogram",histogram_)
             >> make_pvp("count",count_)
-            >> make_pvp("@size", size_)
             >> make_pvp("@min", min_)
             >> make_pvp("@max", max_)
             >> make_pvp("@stepsize", stepsize_)
@@ -261,7 +257,6 @@ inline void HistogramObservable<T>::load(IDump& dump)
         ar 
             << make_pvp("histogram",histogram_)
             << make_pvp("count",count_)
-            << make_pvp("@size", size_)
             << make_pvp("@min", min_)
             << make_pvp("@max", max_)
             << make_pvp("@stepsize", stepsize_)
