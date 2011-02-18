@@ -40,10 +40,10 @@ namespace alps {
 
 
 #ifdef ALPS_HAVE_HDF5
-template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::iarchive & ar) {
+template <typename T> void SimpleObservableEvaluator<T>::serialize(hdf5::iarchive & ar) {
     ar >> make_pvp("", all_);
 }
-template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::oarchive & ar) const {
+template <typename T> void SimpleObservableEvaluator<T>::serialize(hdf5::oarchive & ar) const {
     ar << make_pvp("", all_);
 }
 #endif
