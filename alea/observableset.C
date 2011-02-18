@@ -95,7 +95,7 @@ void ObservableSet::load(IDump& dump)
                         ar >> make_pvp(*it + "/@sign", signname);
                     bool is_simple_real = ar.is_data((is_signed ? (signname + " * " + *it) : *it) + "/sum");
                     bool is_real = ar.is_data((is_signed ? (signname + " * " + *it) : *it) + "/timeseries/logbinning") && ar.is_data((is_signed ? (signname + " * " + *it) : *it) + "/timeseries/data");
-                    bool is_histogram = ar.is_attribute(*it + "/@size") && ar.is_attribute(*it + "/@min") && ar.is_attribute(*it + "/@max") && ar.is_attribute(*it + "/@stepsize");
+                    bool is_histogram = ar.is_attribute(*it + "/@min") && ar.is_attribute(*it + "/@max") && ar.is_attribute(*it + "/@stepsize");
                     if (is_histogram)
                         addObservable(RealHistogramObservable(obsname));
                     else if (is_scalar) {
