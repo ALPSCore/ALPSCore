@@ -47,10 +47,12 @@ int main() {
         alps::ObservableSet measurement;
         measurement << alps::make_observable(alps::SimpleRealObservable("Test"), true)
                     << alps::RealObservable("Sign")
-                    << alps::RealObservable("No Measurements");
+                    << alps::RealObservable("No Measurements")
+                    << alps::IntHistogramObservable("Histogram", 0, 10);
         for (int i = 0; i < 10000; ++i) {
             measurement["Test"] << random();
             measurement["Sign"] << 1.0;
+            measurement["Histogram"] << static_cast<int>(10*random());
         }
         alps::hdf5::oarchive oar(filename);
         oar << make_pvp("/test/0/result", measurement);
@@ -59,7 +61,8 @@ int main() {
         alps::ObservableSet measurement;
         measurement << alps::make_observable(alps::SimpleRealObservable("Test"), true)
                     << alps::RealObservable("Sign")
-                    << alps::RealObservable("No Measurements");
+                    << alps::RealObservable("No Measurements")
+                    << alps::IntHistogramObservable("Histogram", 0, 10);
         alps::hdf5::iarchive iar(filename);
         iar >> make_pvp("/test/0/result", measurement);
         std::cout << measurement;
