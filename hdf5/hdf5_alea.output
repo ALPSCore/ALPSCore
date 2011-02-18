@@ -1,3 +1,14 @@
+Histogram:
+0: 968 entries.
+1: 1043 entries.
+2: 979 entries.
+3: 999 entries.
+4: 1005 entries.
+5: 1022 entries.
+6: 1008 entries.
+7: 998 entries.
+8: 965 entries.
+9: 1013 entries.
 Sign: 1 +/- 0; tau = 0
     bin #1   : 10000    entries: error = 0
     bin #2   : 5000     entries: error = 0
@@ -6,8 +17,19 @@ Sign: 1 +/- 0; tau = 0
     bin #5   : 625      entries: error = 0
     bin #6   : 312      entries: error = 0
     bin #7   : 156      entries: error = 0
-Test: 0.501827 +/- 0.00289227; sign in observable "Sign"
-Sign * Test: 0.501827 +/- 0.00289
+Test: 0.499524 +/- 0.0028945; sign in observable "Sign"
+Sign * Test: 0.499524 +/- 0.00289
+Histogram:
+0: 968 entries.
+1: 1043 entries.
+2: 979 entries.
+3: 999 entries.
+4: 1005 entries.
+5: 1022 entries.
+6: 1008 entries.
+7: 998 entries.
+8: 965 entries.
+9: 1013 entries.
 Sign: 1 +/- 0; tau = 0
     bin #1   : 10000    entries: error = 0
     bin #2   : 5000     entries: error = 0
@@ -16,5 +38,5 @@ Sign: 1 +/- 0; tau = 0
     bin #5   : 625      entries: error = 0
     bin #6   : 312      entries: error = 0
     bin #7   : 156      entries: error = 0
-Test: 0.501827 +/- 0.00289227; sign in observable "Sign"
-Sign * Test: 0.501827 +/- 0.00289
+Test: 0.499524 +/- 0.0028945; sign in observable "Sign"
+Sign * Test: 0.499524 +/- 0.00289
