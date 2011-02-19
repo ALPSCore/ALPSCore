@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2003-2010 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 2003-2011 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -40,7 +40,7 @@ void alps::print_copyright(std::ostream& out) {
   out << "  Consult the web page for license details.\n";
   out << "  For details see the publications: \n"
       << "  A.F. Albuquerque et al., J. of Magn. and Magn. Materials 310, 1187 (2007).\n"
-      << "  B. Bauer et al., preprint (2010).\n\n";
+      << "  B. Bauer et al., arXiv: arXiv:1101.2646, submitted to JSTAT.\n\n";
 }
 
 void alps::print_license(std::ostream& out) {
