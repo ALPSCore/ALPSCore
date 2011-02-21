@@ -150,7 +150,7 @@ namespace blas{
        
         inline double sum()
         { 
-            return accumulate(values_.begin(), values_.end(), 0.);
+            return std::accumulate(values_.begin(), values_.end(), 0.);
         }
         
         inline void insert_row_column_last(blas::vector &row, blas::vector &col, double Mkk)
@@ -436,7 +436,7 @@ namespace blas{
             if(size_!=other.size_) return false;
             std::vector<double> diff(size_*size_);
             transform(values_.begin(), values_.end(), other.values_.begin(), diff.begin(), std::minus<double>());
-            std::vector<double>::iterator it= find_if(diff.begin(),diff.end(),deviates<double>);
+            std::vector<double>::iterator it= std::find_if(diff.begin(),diff.end(),deviates<double>);
             return (it == diff.end());
         }
         
@@ -486,12 +486,12 @@ namespace blas{
            
         double max() const
         {
-            return *max_element(values_.begin(), values_.end());        
+            return *std::max_element(values_.begin(), values_.end());        
         }
         
         double min() const
         {
-            return *min_element(values_.begin(), values_.end());        
+            return *std::min_element(values_.begin(), values_.end());        
         }
         
          
