@@ -56,6 +56,7 @@ int main() {
         }
         alps::hdf5::oarchive oar(filename);
         oar << make_pvp("/test/0/result", measurement);
+        alps::IntHistogramObsevaluator eval = measurement["Histogram"];
     }
     {
         alps::ObservableSet measurement;
@@ -66,12 +67,14 @@ int main() {
         alps::hdf5::iarchive iar(filename);
         iar >> make_pvp("/test/0/result", measurement);
         std::cout << measurement;
+        alps::IntHistogramObsevaluator eval = measurement["Histogram"];
     }
     {
         alps::ObservableSet measurement;
         alps::hdf5::iarchive iar(filename);
         iar >> make_pvp("/test/0/result", measurement);
         std::cout << measurement;
+        alps::IntHistogramObsevaluator eval = measurement["Histogram"];
     }
     boost::filesystem::remove(boost::filesystem::path(filename));
 }
