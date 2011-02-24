@@ -6,7 +6,6 @@
  * ALPS Libraries                                                                  *
  *                                                                                 *
  * Copyright (C) 2010 - 2011 by Lukas Gamper <gamperl@gmail.com>                   *
- *                           Matthias Troyer <troyer@comp-phys.org>                *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -31,9 +30,11 @@
 #define ALPS_NGS_MCRESULT_IMPL_DERIVED_HPP
 
 #include <alps/ngs/boost.hpp>
+#include <alps/ngs/macros.hpp>
 #include <alps/ngs/short_print.hpp>
 
 #include <alps/hdf5.hpp>
+
 #include <alps/alea/mcdata.hpp>
 
 #ifdef ALPS_HAVE_MPI
@@ -139,7 +140,7 @@ namespace alps {
                           typename boost::is_same<T, U >::type                                                                                 \
                       /*, typename boost::is_same<typename alea::mcdata<T>::element_type, U>::type*/                                           \
                     >::type NAME ## _assign (U const & rhs) {                                                                                  \
-                        throw std::runtime_error("Invalid cast");                                                                              \
+                        ALPS_NGS_THROW_RUNTIME_ERROR("Invalid cast");                                                                          \
                     }                                                                                                                          \
                                                                                                                                                \
                     void NAME ## _assign_virtual (B const * rhs) {                                                                             \
@@ -161,7 +162,7 @@ namespace alps {
                           typename boost::is_same<T, U>::type                                                                                  \
                       /* , typename boost::is_same<typename alea::mcdata<T>::element_type, U>::type*/                                          \
                     >::type, B *>::type NAME (U const & rhs) const {                                                                           \
-                        throw std::runtime_error("Invalid cast");                                                                              \
+                        ALPS_NGS_THROW_RUNTIME_ERROR("Invalid cast");                                                                          \
                         return NULL;                                                                                                           \
                     }                                                                                                                          \
                                                                                                                                                \
@@ -185,7 +186,7 @@ namespace alps {
                           typename boost::is_same<T, U>::type                                                                                  \
                       /*, typename boost::is_same<typename alea::mcdata<T>::element_type, U>::type*/                                           \
                     >::type, B *>::type NAME ## _inverse(U const & rhs) const {                                                                \
-                        throw std::runtime_error("Invalid cast");                                                                              \
+                        ALPS_NGS_THROW_RUNTIME_ERROR("Invalid cast");                                                                          \
                         return NULL;                                                                                                           \
                     }
                 ALPS_NGS_MCRESULT_IMPL_DERIVED_OPERATOR(add, +, +=)
@@ -292,7 +293,7 @@ namespace alps {
                     B * reduce_master(
                           boost::mpi::communicator const & communicator
                         , std::size_t binnumber
-                        , boost::mpl::true_
+                        , boost::true_type
                     ) {
                         using std::sqrt;
                         using alps::numeric::sq;
@@ -334,7 +335,7 @@ namespace alps {
                     B * reduce_master(
                           boost::mpi::communicator const & communicator
                         , std::size_t binnumber
-                        , boost::mpl::false_
+                        , boost::false_type
                     ) {
                         using alps::numeric::sq;
                         using alps::numeric::sqrt;
@@ -384,7 +385,7 @@ namespace alps {
                     void reduce_slave(
                           boost::mpi::communicator const & communicator
                         , std::size_t binnumber
-                        , boost::mpl::true_
+                        , boost::true_type
                     ) {
                         using alps::numeric::sq;
                         boost::mpi::reduce(communicator, count(), std::plus<uint64_t>(), 0);
@@ -406,7 +407,7 @@ namespace alps {
                     void reduce_slave(
                           boost::mpi::communicator const & communicator
                         , std::size_t binnumber
-                        , boost::mpl::false_
+                        , boost::false_type
                     ) {
                         using alps::numeric::sq;
                         using boost::numeric::operators::operator*;
@@ -438,7 +439,7 @@ namespace alps {
                             index[*it] = *(it + 1);
                         int perbin = std::accumulate(index.begin(), index.end(), 0) / bins.size();
                         if (perbin == 0)
-                            throw std::runtime_error("not enough data for the required binnumber");
+                            ALPS_NGS_THROW_RUNTIME_ERROR("not enough data for the required binnumber");
                         int start = std::accumulate(index.begin(), index.begin() + communicator.rank(), 0);
                         for (int i = start / perbin, j = start % perbin, k = 0; i < bins.size() && k < alea::mcdata<T>::bin_number(); ++k) {
                             bins[i] = bins[i] + alea::mcdata<T>::bins()[k];

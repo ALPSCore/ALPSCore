@@ -30,6 +30,11 @@
 #define ALPS_CONFIG_H
 
 //
+// use boost filesystem version 2 (nessesary from boost 1.46 upwards)
+//
+#define BOOST_FILESYSTEM_VERSION 2
+
+//
 // C headers
 //
 
@@ -136,6 +141,18 @@
 
 // Define to 1 if you have Python on your system.
 #cmakedefine ALPS_HAVE_PYTHON
+
+//
+// NGS
+//
+
+// Define to 1 if you build ngs.
+#cmakedefine ALPS_BUILD_NGS
+
+#ifdef ALPS_BUILD_NGS
+    #define ALPS_USE_NGS
+    #undef ALPS_BUILD_NGS
+#endif
 
 //
 // Introduce [int,uint]*_t into alps namespace

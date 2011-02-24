@@ -28,6 +28,8 @@
 #ifndef PARAPACK_FILELOCK_H
 #define PARAPACK_FILELOCK_H
 
+#include <alps/config.h>
+
 #include <boost/filesystem/path.hpp>
 
 namespace alps {

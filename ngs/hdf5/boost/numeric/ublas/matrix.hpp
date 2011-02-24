@@ -25,56 +25,55 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/ngs/macros.hpp>
-#include <alps/ngs/mcoptions.hpp>
+#ifndef ALPS_NGS_HDF5_BOOST_NUMERIC_UBLAS_MATRIX_HPP
+#define ALPS_NGS_HDF5_BOOST_NUMERIC_UBLAS_MATRIX_HPP
 
-#include <boost/program_options.hpp>
+#include <alps/ngs/mchdf5.hpp>
 
-#include <iostream>
+#include <boost/numeric/ublas/matrix.hpp>
+
+#include <iterator>
 
 namespace alps {
 
-    mcoptions::mcoptions(int argc, char* argv[]) : valid(false), resume(false), type(SINGLE) {
-        boost::program_options::options_description desc("Allowed options");
-        desc.add_options()
-            ("help", "produce help message")
-            ("single", "run single process")
-            #ifndef ALPS_NGS_SINGLE_THREAD
-                ("threaded", "run in multithread envirement")
-            #endif
-            #ifdef ALPS_HAVE_MPI
-                ("mpi", "run in parallel using MPI")
-            #endif
-            ("continue", "load simulation from checkpoint")
-            ("time-limit,T", boost::program_options::value<std::size_t>(&time_limit)->default_value(0), "time limit for the simulation")
-            ("input-file", boost::program_options::value<std::string>(&input_file), "input file in hdf5 format")
-            ("output-file", boost::program_options::value<std::string>(&output_file)->default_value("sim.h5"), "output file in hdf5 format");
-        boost::program_options::positional_options_description p;
-        p.add("input-file", 1);
-        p.add("output-file", 2);
-        boost::program_options::variables_map vm;
-        boost::program_options::store(boost::program_options::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
-        boost::program_options::notify(vm);
-        if (!(valid = !vm.count("help")))
-            std::cout << desc << std::endl;
-        else if (input_file.empty())
-            ALPS_NGS_THROW_INVALID_ARGUMENT("No job file specified");
-        if (vm.count("threaded") && vm.count("mpi"))
-            type = HYBRID;
-        else if (vm.count("threaded"))
-            #ifdef ALPS_NGS_SINGLE_THREAD
-                ALPS_NGS_THROW_LOGIC_ERROR("Not build with multithread support");
-            #else
-                type = THREADED;
-            #endif
-        else if (vm.count("mpi")) {
-            type = MPI;
-            #ifndef ALPS_HAVE_MPI
-                ALPS_NGS_THROW_LOGIC_ERROR("Not build with MPI");
-            #endif
-        }
-        if (vm.count("continue"))
-            resume = true;
+    template <typename T, typename F, typename A> struct has_complex_elements< boost::numeric::ublas::matrix<T, F, A> >
+        : public has_complex_elements<T>
+    {};
+
+    template <typename T, typename F, typename A> void serialize(
+          mchdf5 & ar
+        , std::string const & path
+        , boost::numeric::ublas::matrix<T, F, A> const & value
+        , std::vector<std::size_t> size = std::vector<std::size_t>()
+        , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+        , std::vector<std::size_t> offset = std::vector<std::size_t>()
+    ) {
+        size.push_back(value.size1());
+        size.push_back(value.size2());
+        chunk.push_back(1);
+        chunk.push_back(1);
+        offset.push_back(0);
+        offset.push_back(0);
+        ar.write(path, &value(0, 0), size, chunk, offset);
+    }
+
+    template <typename T, typename F, typename A> void unserialize(
+          mchdf5 & ar
+        , std::string const & path
+        , boost::numeric::ublas::matrix<T, F, A> & value
+        , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+        , std::vector<std::size_t> offset = std::vector<std::size_t>()
+    ) {
+        if (is_continous<T>::value) {
+            std::vector<std::size_t> size(ar.extent(path));
+            value.resize(size[chunk.size()], size[chunk.size() + 1], false);
+            std::copy(size.begin() + chunk.size(), size.end(), std::back_insert_iterator<std::vector<std::size_t> >(chunk));
+            std::fill_n(std::back_insert_iterator<std::vector<std::size_t> >(offset), size.size() - offset.size(), 0);
+            ar.read(path, &value(0, 0), chunk, offset);
+        } else
+            ALPS_NGS_THROW_RUNTIME_ERROR("invalid type")
     }
 
 }
+
+#endif

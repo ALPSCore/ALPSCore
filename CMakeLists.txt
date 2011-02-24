@@ -48,6 +48,7 @@ if (ALPS_BUILD_NGS)
   set(ALPS_SOURCES ${ALPS_SOURCES} 
     ngs/mcbase.cpp ngs/mcparams.cpp ngs/mcsignal.cpp ngs/mcoptions.cpp ngs/mcdeprecated.cpp 
     ngs/mcresult.cpp ngs/mcresults.cpp ngs/api.cpp ngs/mcobservables.cpp ngs/mcobservable.cpp
+    ngs/mchdf5.cpp
   )
 endif (ALPS_BUILD_NGS)
 

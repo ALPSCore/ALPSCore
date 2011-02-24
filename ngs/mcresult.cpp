@@ -5,7 +5,6 @@
  * ALPS Libraries                                                                  *
  *                                                                                 *
  * Copyright (C) 2010 - 2011 by Lukas Gamper <gamperl@gmail.com>                   *
- *                           Matthias Troyer <troyer@comp-phys.org>                *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -26,6 +25,7 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include <alps/ngs/macros.hpp>
 #include <alps/ngs/mcresult.hpp>
 #include <alps/ngs/mcresult_impl_base.ipp>
 #include <alps/ngs/mcresult_impl_derived.ipp>
@@ -180,7 +180,7 @@ namespace alps {
                 dynamic_cast<AbstractSimpleObservable<std::valarray<double> > const &>(*obs)
             );
         else
-            throw std::runtime_error("unknown observable type");
+            ALPS_NGS_THROW_RUNTIME_ERROR("unknown observable type");
         ref_cnt_[impl_] = 1;
     }
 

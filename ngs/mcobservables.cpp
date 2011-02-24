@@ -5,7 +5,6 @@
  * ALPS Libraries                                                                  *
  *                                                                                 *
  * Copyright (C) 2010 - 2011 by Lukas Gamper <gamperl@gmail.com>                   *
- *                           Matthias Troyer <troyer@comp-phys.org>                *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -26,6 +25,7 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include <alps/ngs/macros.hpp>
 #include <alps/ngs/mcobservables.hpp>
 
 #include <alps/hdf5.hpp>
@@ -38,13 +38,13 @@ namespace alps {
 
     mcobservable & mcobservables::operator[](std::string const & name) {
         if (!has(name))
-            throw std::out_of_range("No observable found with the name: " + name);
+            ALPS_NGS_THROW_OUT_OF_RANGE("No observable found with the name: " + name);
         return std::map<std::string, mcobservable>::find(name)->second;
     }
 
     mcobservable const & mcobservables::operator[](std::string const & name) const {
         if (!has(name))
-            throw std::out_of_range("No observable found with the name: " + name);
+            ALPS_NGS_THROW_OUT_OF_RANGE("No observable found with the name: " + name);
         return std::map<std::string, mcobservable>::find(name)->second;
     }
 
@@ -54,7 +54,7 @@ namespace alps {
 
     void mcobservables::insert(std::string const & name, mcobservable obs) {
         if (has(name))
-            throw std::out_of_range("There exists alrady a observable with the name: " + name);
+            ALPS_NGS_THROW_OUT_OF_RANGE("There exists alrady a observable with the name: " + name);
         std::map<std::string, mcobservable>::insert(make_pair(name, obs));
     }
 

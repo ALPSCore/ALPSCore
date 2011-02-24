@@ -474,8 +474,6 @@ namespace alps {
           }
       }
       
-      
-      
       archive::archive(std::string const & filename, hid_t(* F )(std::string const &), bool compress)
       : _error_handler_id(H5Eset_auto2(H5E_DEFAULT, NULL, NULL))
       , _context(_pool.find(make_pair(filename, compress)) == _pool.end() || _pool[make_pair(filename, compress)].expired()

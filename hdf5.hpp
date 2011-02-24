@@ -36,6 +36,8 @@
 # define _HDF5USEHLDLL_
 #endif
 
+#include <alps/config.h>
+
 #include <map>
 #include <set>
 #include <list>
@@ -78,7 +80,6 @@
 #include <boost/type_traits/add_reference.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <alps/config.h>
 
 #include <hdf5.h>
 

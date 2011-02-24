@@ -25,39 +25,36 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/ngs/api.hpp>
+#ifndef ALPS_NGS_MACROS_HPP
+#define ALPS_NGS_MACROS_HPP
 
-#include <alps/hdf5.hpp>
+#include <sstream>
+#include <stdexcept>
 
-namespace alps {
+#define ALPS_NGS_STRINGIFY(arg) ALPS_NGS_STRINGIFY_HELPER(arg)
 
-    namespace detail {
-        template<typename R, typename P> void save_results_impl(R const & results, P const & params, boost::filesystem::path const & filename, std::string const & path) {
-            if (results.size()) {
-                boost::filesystem::path original = filename.parent_path() / (filename.filename() + ".h5");
-                boost::filesystem::path backup = filename.parent_path() / (filename.filename() + ".bak");
-                if (boost::filesystem::exists(backup))
-                    boost::filesystem::remove(backup);
-                {
-                    hdf5::oarchive ar(backup.file_string());
-                    ar 
-                        << make_pvp("/parameters", params)
-                        << make_pvp(path, results)
-                    ;
-                }
-                if (boost::filesystem::exists(original))
-                    boost::filesystem::remove(original);
-                boost::filesystem::rename(backup, original);
-            }
-        }
-    }
+#define ALPS_NGS_STRINGIFY_HELPER(arg) #arg
 
-    void save_results(mcresults const & results, mcparams const & params, boost::filesystem::path const & filename, std::string const & path) {
-        detail::save_results_impl(results, params, filename, path);
-    }
+#define ALPS_NGS_THROW_ERROR(error, message)                                                                                                   \
+	{                                                                                                                                          \
+		std::ostringstream buffer;                                                                                                             \
+		buffer << "Error in " << __FILE__ << " on " << ALPS_NGS_STRINGIFY(__LINE__) << " in " << __FUNCTION__ << ":" << std::endl << message;  \
+		throw ( error (buffer.str()));                                                                                                         \
+	}
 
-    void save_results(mcobservables const & observables, mcparams const & params, boost::filesystem::path const & filename, std::string const & path) {
-        detail::save_results_impl(observables, params, filename, path);
-    }
+#define ALPS_NGS_THROW_OUT_OF_RANGE(message)                                                                                                   \
+	ALPS_NGS_THROW_ERROR(std::out_of_range, message)
 
-}
+#define ALPS_NGS_THROW_RANGE_ERROR(message)                                                                                                    \
+	ALPS_NGS_THROW_ERROR(std::range_error, message)
+
+#define ALPS_NGS_THROW_RUNTIME_ERROR(message)                                                                                                  \
+	ALPS_NGS_THROW_ERROR(std::runtime_error, message)
+
+#define ALPS_NGS_THROW_LOGIC_ERROR(message)                                                                                                    \
+	ALPS_NGS_THROW_ERROR(std::logic_error, message)
+
+#define ALPS_NGS_THROW_INVALID_ARGUMENT(message)                                                                                               \
+	ALPS_NGS_THROW_ERROR(std::invalid_argument, message)
+
+#endif

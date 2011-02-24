@@ -25,56 +25,40 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/ngs/macros.hpp>
-#include <alps/ngs/mcoptions.hpp>
+#ifndef ALPS_NGS_HDF5_STD_MAP
+#define ALPS_NGS_HDF5_STD_MAP
 
-#include <boost/program_options.hpp>
+#include <alps/ngs/mchdf5.hpp>
+#include <alps/ngs/convert.hpp>
 
-#include <iostream>
+#include <map>
 
 namespace alps {
 
-    mcoptions::mcoptions(int argc, char* argv[]) : valid(false), resume(false), type(SINGLE) {
-        boost::program_options::options_description desc("Allowed options");
-        desc.add_options()
-            ("help", "produce help message")
-            ("single", "run single process")
-            #ifndef ALPS_NGS_SINGLE_THREAD
-                ("threaded", "run in multithread envirement")
-            #endif
-            #ifdef ALPS_HAVE_MPI
-                ("mpi", "run in parallel using MPI")
-            #endif
-            ("continue", "load simulation from checkpoint")
-            ("time-limit,T", boost::program_options::value<std::size_t>(&time_limit)->default_value(0), "time limit for the simulation")
-            ("input-file", boost::program_options::value<std::string>(&input_file), "input file in hdf5 format")
-            ("output-file", boost::program_options::value<std::string>(&output_file)->default_value("sim.h5"), "output file in hdf5 format");
-        boost::program_options::positional_options_description p;
-        p.add("input-file", 1);
-        p.add("output-file", 2);
-        boost::program_options::variables_map vm;
-        boost::program_options::store(boost::program_options::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
-        boost::program_options::notify(vm);
-        if (!(valid = !vm.count("help")))
-            std::cout << desc << std::endl;
-        else if (input_file.empty())
-            ALPS_NGS_THROW_INVALID_ARGUMENT("No job file specified");
-        if (vm.count("threaded") && vm.count("mpi"))
-            type = HYBRID;
-        else if (vm.count("threaded"))
-            #ifdef ALPS_NGS_SINGLE_THREAD
-                ALPS_NGS_THROW_LOGIC_ERROR("Not build with multithread support");
-            #else
-                type = THREADED;
-            #endif
-        else if (vm.count("mpi")) {
-            type = MPI;
-            #ifndef ALPS_HAVE_MPI
-                ALPS_NGS_THROW_LOGIC_ERROR("Not build with MPI");
-            #endif
-        }
-        if (vm.count("continue"))
-            resume = true;
+    template <typename K, typename T, typename C, typename A> void serialize(
+          mchdf5 & ar
+        , std::string const & path
+        , std::map<K, T, C, A> const & value
+        , std::vector<std::size_t> size = std::vector<std::size_t>()
+        , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+        , std::vector<std::size_t> offset = std::vector<std::size_t>()
+    ) {
+        for(typename std::map<K, T, C, A>::const_iterator it = value.begin(); it != value.end(); ++it)
+            serialize(ar, path + "/" + convert<std::string>(it->first), it->second);
+    }
+
+    template <typename K, typename T, typename C, typename A> void unserialize(
+          mchdf5 & ar
+        , std::string const & path
+        , std::map<K, T, C, A> & value
+        , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+        , std::vector<std::size_t> offset = std::vector<std::size_t>()
+    ) {
+        std::vector<std::string> children = ar.list_children(path);
+        for (typename std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)
+            unserialize(ar, path + "/" + *it, value[convert<std::size_t>(*it)]);
     }
 
 }
+
+#endif

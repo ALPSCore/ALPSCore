@@ -29,17 +29,19 @@
 
 /* $Id: convert2xml.C 3523 2009-12-12 05:52:24Z troyer $ */
 
-#include <boost/filesystem/operations.hpp>
 
+#include <alps/hdf5.hpp>
 #include <alps/scheduler/convert.h>
 #include <alps/osiris/xdrdump.h>
 #include <alps/parser/xslt_path.h>
 #include <alps/scheduler/montecarlo.h>
 #include <alps/scheduler/diag.hpp>
+
 #include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/throw_exception.hpp>
-#include <alps/hdf5.hpp>
+
 #include <fstream>
 #include <stdexcept>
 

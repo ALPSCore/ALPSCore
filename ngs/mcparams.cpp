@@ -5,7 +5,6 @@
  * ALPS Libraries                                                                  *
  *                                                                                 *
  * Copyright (C) 2010 - 2011 by Lukas Gamper <gamperl@gmail.com>                   *
- *                           Matthias Troyer <troyer@comp-phys.org>                *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -26,6 +25,7 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include <alps/ngs/macros.hpp>
 #include <alps/ngs/mcparams.hpp>
 
 #include <alps/hdf5.hpp>
@@ -73,7 +73,7 @@ namespace alps {
 
     mcparamvalue const & mcparams::operator[](std::string const & k) const {
         if (find(k) == end())
-            throw std::invalid_argument("unknown argument: "  + k);
+            ALPS_NGS_THROW_INVALID_ARGUMENT("unknown argument: "  + k);
         return find(k)->second;
     }
 
