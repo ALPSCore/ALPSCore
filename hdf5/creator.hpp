@@ -25,22 +25,32 @@
 *
 *****************************************************************************/
 
+#ifdef USE_NG_ARCHIVE
+    #include <alps/ngs/mchdf5.hpp>
+    #include <alps/ngs/hdf5/std/map.hpp>
+    #include <alps/ngs/hdf5/std/pair.hpp>
+    #include <alps/ngs/hdf5/std/vector.hpp>
+    #include <alps/ngs/hdf5/std/complex.hpp>
+    #include <alps/ngs/hdf5/std/valarray.hpp>
+    #include <alps/ngs/hdf5/boost/multi_array.hpp>
+    #include <alps/ngs/hdf5/boost/shared_array.hpp>
+    #include <alps/ngs/hdf5/boost/numeric/ublas/matrix.hpp>
+    #include <alps/ngs/hdf5/boost/numeric/ublas/vector.hpp>
+#else
+    #include <alps/hdf5.hpp>
+    #include <alps/hdf5/ublas.hpp>
+    #include <alps/hdf5/valarray.hpp>
+    #include <alps/hdf5/shared_ptr.hpp>
+#endif
+
 #include <deque>
-#include <string>
-#include <vector>
-#include <complex>
-#include <valarray>
+#include <numeric>
 #include <iostream>
 #include <algorithm>
 
 #include <boost/random.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
-
-#include <alps/hdf5.hpp>
-#include <alps/hdf5/ublas.hpp>
-#include <alps/hdf5/valarray.hpp>
-#include <alps/hdf5/shared_ptr.hpp>
 
 typedef enum { PLUS, MINUS } enum_type;
 template<typename T> struct creator;
@@ -80,20 +90,22 @@ template<typename T> class userdefined_class {
                 initialize(b[i]);
             initialize(c);
         }
-        void serialize(alps::hdf5::iarchive & ar) {
-            ar
-                >> alps::make_pvp("a", a)
-                >> alps::make_pvp("b", b)
-                >> alps::make_pvp("c", c)
-            ;
-        }
-        void serialize(alps::hdf5::oarchive & ar) const {
-            ar
-                << alps::make_pvp("a", a)
-                << alps::make_pvp("b", b)
-                << alps::make_pvp("c", c)
-            ;
-        }
+        #ifndef USE_NG_ARCHIVE
+            void serialize(alps::hdf5::iarchive & ar) {
+                ar
+                    >> alps::make_pvp("a", a)
+                    >> alps::make_pvp("b", b)
+                    >> alps::make_pvp("c", c)
+                ;
+            }
+            void serialize(alps::hdf5::oarchive & ar) const {
+                ar
+                    << alps::make_pvp("a", a)
+                    << alps::make_pvp("b", b)
+                    << alps::make_pvp("c", c)
+                ;
+            }
+        #endif
         bool operator==(userdefined_class<T> const & v) const {
             return a == v.a && b.size() == v.b.size() && (b.size() == 0 || std::equal(b.begin(), b.end(), v.b.begin())) && c == v.c;
         }
@@ -106,17 +118,31 @@ template<typename T> class userdefined_class {
 template<typename T, typename U> class cast_type_base {
     public:
         cast_type_base(T const & v = T()): has_u(false), t(v) {}
-        void serialize(alps::hdf5::iarchive & ar) {
-            has_u = true;
-            ar
-                >> alps::make_pvp("t", u)
-            ;
-        }
-        void serialize(alps::hdf5::oarchive & ar) const { 
-            ar
-                << alps::make_pvp("t", t)
-            ;
-        }
+        #ifdef USE_NG_ARCHIVE
+            void serialize(alps::mchdf5 & ar) const {
+                ar
+                    << alps::make_pvp("t", t)
+                ;
+            }
+            void unserialize(alps::mchdf5 & ar) { 
+                has_u = true;
+                ar
+                    >> alps::make_pvp("t", u)
+                ;
+            }
+        #else
+            void serialize(alps::hdf5::iarchive & ar) {
+                has_u = true;
+                ar
+                    >> alps::make_pvp("t", u)
+                ;
+            }
+            void serialize(alps::hdf5::oarchive & ar) const { 
+                ar
+                    << alps::make_pvp("t", t)
+                ;
+            }
+        #endif
 
         bool has_u;
         T t;
@@ -206,20 +232,21 @@ template<typename T, typename U> class cast_type< std::pair<T *, std::vector<std
                 return false;
         }
 };
-
-inline alps::hdf5::oarchive & serialize(alps::hdf5::oarchive & ar, std::string const & p, enum_type const & v) {
-    switch (v) {
-        case PLUS: ar << alps::make_pvp(p, std::string("plus")); break;
-        case MINUS: ar << alps::make_pvp(p, std::string("minus")); break;
+#ifndef USE_NG_ARCHIVE
+    inline alps::hdf5::oarchive & serialize(alps::hdf5::oarchive & ar, std::string const & p, enum_type const & v) {
+        switch (v) {
+            case PLUS: ar << alps::make_pvp(p, std::string("plus")); break;
+            case MINUS: ar << alps::make_pvp(p, std::string("minus")); break;
+        }
+        return ar;
     }
-    return ar;
-}
-inline alps::hdf5::iarchive & serialize(alps::hdf5::iarchive & ar, std::string const & p, enum_type & v) {
-    std::string s;
-    ar >> alps::make_pvp(p, s);
-    v = (s == "plus" ? PLUS : MINUS);
-    return ar;
-}
+    inline alps::hdf5::iarchive & serialize(alps::hdf5::iarchive & ar, std::string const & p, enum_type & v) {
+        std::string s;
+        ar >> alps::make_pvp(p, s);
+        v = (s == "plus" ? PLUS : MINUS);
+        return ar;
+    }
+#endif
 
 template<typename T> struct creator {
     typedef T base_type;
@@ -230,9 +257,9 @@ template<typename T> struct creator {
     }
     static base_type empty() { return base_type(); }
     static base_type special() { return base_type(); }
-    static base_type random(alps::hdf5::iarchive & iar) { return base_type(); }
-    static base_type empty(alps::hdf5::iarchive & iar) { return base_type(); }
-    static base_type special(alps::hdf5::iarchive & iar) { return base_type(); }
+    template<typename X> static base_type random(X const &) { return base_type(); }
+    template<typename X> static base_type empty(X const &) { return base_type(); }
+    template<typename X> static base_type special(X const &) { return base_type(); }
 };
 template<typename T> struct destructor {
     static void apply(T & value) {}
@@ -253,9 +280,9 @@ template<typename T> struct creator< C <T> > {                                  
     }                                                                                              \
     static base_type empty() { return base_type(); }                                               \
     static base_type special() { return base_type(); }                                             \
-    static base_type random(alps::hdf5::iarchive & iar) { return base_type(); }                    \
-    static base_type empty(alps::hdf5::iarchive & iar) { return base_type(); }                     \
-    static base_type special(alps::hdf5::iarchive & iar) { return base_type(); }                   \
+    template<typename X> static base_type random(X const &) { return base_type(); }                \
+    template<typename X> static base_type empty(X const &) { return base_type(); }                 \
+    template<typename X> static base_type special(X const &) { return base_type(); }               \
 };                                                                                                 \
 template<typename T> bool equal( C <T> const & a,  C <T> const & b) {                              \
     return a.size() == b.size() && (a.size() == 0 ||                                               \
@@ -272,9 +299,9 @@ template<typename T, typename U> struct creator< C < std::pair<T, U> > > {      
     }                                                                                              \
     static base_type empty() { return base_type(); }                                               \
     static base_type special() { return base_type(); }                                             \
-    static base_type random(alps::hdf5::iarchive & iar) { return base_type(); }                    \
-    static base_type empty(alps::hdf5::iarchive & iar) { return base_type(); }                     \
-    static base_type special(alps::hdf5::iarchive & iar) { return base_type(); }                   \
+    template<typename X> static base_type random(X const &) { return base_type(); }                \
+    template<typename X> static base_type empty(X const &) { return base_type(); }                 \
+    template<typename X> static base_type special(X const &) { return base_type(); }               \
 };                                                                                                 \
 template<typename T, typename U> struct destructor<C < std::pair<T, U> > > {                       \
     static void apply(C < std::pair<T, U> > & value) {                                             \
@@ -309,14 +336,14 @@ template<typename T, typename U> struct creator<std::pair<T, U> > {
     static base_type special() {
         return std::make_pair(creator<T>::special(), creator<U>::special());
     }
-    static base_type random(alps::hdf5::iarchive & iar) {
-        return std::make_pair(creator<T>::random(iar), creator<U>::random(iar));
+    template<typename X> static base_type random(X const & x) {
+        return std::make_pair(creator<T>::random(x), creator<U>::random(x));
     }
-    static base_type empty(alps::hdf5::iarchive & iar) {
-        return std::make_pair(creator<T>::empty(iar), creator<U>::empty(iar));
+    template<typename X> static base_type empty(X const & x) {
+        return std::make_pair(creator<T>::empty(x), creator<U>::empty(x));
     }
-    static base_type special(alps::hdf5::iarchive & iar) {
-        return std::make_pair(creator<T>::special(iar), creator<U>::special(iar));
+    template<typename X> static base_type special(X const & x) {
+        return std::make_pair(creator<T>::special(x), creator<U>::special(x));
     }
 };
 template<typename T, typename U> bool equal(std::pair<T, U> const & a, std::pair<T, U> const & b) {
@@ -346,13 +373,13 @@ template<typename T, typename U> struct creator<std::pair<T *, std::vector<U> > 
                 const_cast<typename boost::remove_const<T>::type &>(value.first[i]) = creator<T>::random();
         return value;
     }
-    static base_type random(alps::hdf5::iarchive & iar) {
+    template<typename X> static base_type random(X const &) {
         return std::make_pair(new typename boost::remove_const<T>::type[VECTOR_SIZE], std::vector<U>(1, VECTOR_SIZE)); 
     }
-    static base_type empty(alps::hdf5::iarchive & iar) {
+    template<typename X> static base_type empty(X const &) {
         return std::make_pair(static_cast<typename boost::remove_const<T>::type *>(NULL), std::vector<U>()); 
     }
-    static base_type special(alps::hdf5::iarchive & iar) {
+    template<typename X> static base_type special(X const &) {
         return std::make_pair(new typename boost::remove_const<T>::type[MATRIX_SIZE * MATRIX_SIZE * MATRIX_SIZE], std::vector<U>(3, MATRIX_SIZE));
     }
 };
@@ -364,7 +391,7 @@ template<typename T, typename U> struct destructor<std::pair<T *, std::vector<U>
 };
 template<typename T, typename U> bool equal(std::pair<T *, std::vector<U> > const & a, std::pair<T *, std::vector<U> > const & b) {
     if (a.second.size() == b.second.size() && std::equal(a.second.begin(), a.second.end(), b.second.begin())) {
-        for (std::size_t i = 0; a.second.size() && i < std::accumulate(a.second.begin(), a.second.end(), hsize_t(1), std::multiplies<hsize_t>()); ++i)
+        for (std::size_t i = 0; a.second.size() && i < std::accumulate(a.second.begin(), a.second.end(), std::size_t(1), std::multiplies<std::size_t>()); ++i)
             if (!equal(a.first[i], b.first[i]))
                 return false;
         return true;
@@ -385,9 +412,9 @@ template<typename T, typename A> struct creator<boost::multi_array<T, 1, A> > {
     }
     static base_type empty() { return base_type(boost::extents[0]); }
     static base_type special() { return base_type(boost::extents[VECTOR_SIZE]); }
-    static base_type random(alps::hdf5::iarchive & iar) { return base_type(boost::extents[VECTOR_SIZE]); }
-    static base_type empty(alps::hdf5::iarchive & iar) { return base_type(boost::extents[0]); }
-    static base_type special(alps::hdf5::iarchive & iar) { return base_type(boost::extents[VECTOR_SIZE]); }
+    template<typename X> static base_type random(X const &) { return base_type(boost::extents[VECTOR_SIZE]); }
+    template<typename X> static base_type empty(X const &) { return base_type(boost::extents[0]); }
+    template<typename X> static base_type special(X const &) { return base_type(boost::extents[VECTOR_SIZE]); }
 };
 template<typename T, typename A> bool equal(boost::multi_array<T, 1, A> const & a,  boost::multi_array<T, 1, A> const & b) {
     if (!std::equal(a.shape(), a.shape() + boost::multi_array<T, 1, A>::dimensionality, b.shape()))
@@ -412,9 +439,9 @@ template<typename T, typename A> struct creator<boost::multi_array<T, 2, A> > {
     }
     static base_type empty() { return base_type(boost::extents[0][0]); }
     static base_type special() { return base_type(boost::extents[MATRIX_SIZE][MATRIX_SIZE]); }
-    static base_type random(alps::hdf5::iarchive & iar) { return base_type(boost::extents[5][5]); }
-    static base_type empty(alps::hdf5::iarchive & iar) { return base_type(boost::extents[0][0]); }
-    static base_type special(alps::hdf5::iarchive & iar) { return base_type(boost::extents[MATRIX_SIZE][MATRIX_SIZE]); }
+    template<typename X> static base_type random(X const &) { return base_type(boost::extents[5][5]); }
+    template<typename X> static base_type empty(X const &) { return base_type(boost::extents[0][0]); }
+    template<typename X> static base_type special(X const &) { return base_type(boost::extents[MATRIX_SIZE][MATRIX_SIZE]); }
 };
 template<typename T, typename A> bool equal(boost::multi_array<T, 2, A> const & a,  boost::multi_array<T, 2, A> const & b) {
     if (!std::equal(a.shape(), a.shape() + boost::multi_array<T, 2, A>::dimensionality, b.shape()))
@@ -441,9 +468,9 @@ template<typename T, typename A> struct creator<boost::multi_array<T, 3, A> > {
     }
     static base_type empty() { return base_type(boost::extents[0][0][0]); }
     static base_type special() { return base_type(boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]); }
-    static base_type random(alps::hdf5::iarchive & iar) { return base_type(boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]); }
-    static base_type empty(alps::hdf5::iarchive & iar) { return base_type(boost::extents[0][0][0]); }
-    static base_type special(alps::hdf5::iarchive & iar) { return base_type(boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]); }
+    template<typename X> static base_type random(X const &) { return base_type(boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]); }
+    template<typename X> static base_type empty(X const &) { return base_type(boost::extents[0][0][0]); }
+    template<typename X> static base_type special(X const &) { return base_type(boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]); }
 };
 template<typename T, typename A> bool equal(boost::multi_array<T, 3, A> const & a,  boost::multi_array<T, 3, A> const & b) {
     if (!std::equal(a.shape(), a.shape() + boost::multi_array<T, 3, A>::dimensionality, b.shape()))
@@ -470,9 +497,9 @@ template<typename T> struct creator<boost::numeric::ublas::matrix<T, boost::nume
     }
     static base_type empty() { return base_type(MATRIX_SIZE, MATRIX_SIZE); }
     static base_type special() { return base_type(MATRIX_SIZE, MATRIX_SIZE); }
-    static base_type random(alps::hdf5::iarchive & iar) { return base_type(MATRIX_SIZE, MATRIX_SIZE); }
-    static base_type empty(alps::hdf5::iarchive & iar) { return base_type(MATRIX_SIZE, MATRIX_SIZE); }
-    static base_type special(alps::hdf5::iarchive & iar) { return base_type(MATRIX_SIZE, MATRIX_SIZE); }
+    template<typename X> static base_type random(X const &) { return base_type(MATRIX_SIZE, MATRIX_SIZE); }
+    template<typename X> static base_type empty(X const &) { return base_type(MATRIX_SIZE, MATRIX_SIZE); }
+    template<typename X> static base_type special(X const &) { return base_type(MATRIX_SIZE, MATRIX_SIZE); }
 };
 template<typename T> bool equal(boost::numeric::ublas::matrix<T, boost::numeric::ublas::column_major> const & a, boost::numeric::ublas::matrix<T, boost::numeric::ublas::column_major> const & b) {
     for (std::size_t i = 0; i < MATRIX_SIZE; ++i)
@@ -504,9 +531,9 @@ template<typename T> struct creator< C < D <T> > > {                            
         }                                                                                          \
         return value;                                                                              \
     }                                                                                              \
-    static base_type random(alps::hdf5::iarchive & iar) { return base_type(); }                    \
-    static base_type empty(alps::hdf5::iarchive & iar) { return base_type(); }                     \
-    static base_type special(alps::hdf5::iarchive & iar) { return base_type(); }                   \
+    template<typename X> static base_type random(X const &) { return base_type(); }                \
+    template<typename X> static base_type empty(X const &) { return base_type(); }                 \
+    template<typename X> static base_type special(X const &) { return base_type(); }               \
 };                                                                                                 \
 template<typename T> bool equal( C < D <T> > const & a,  C < D <T> > const & b) {                  \
     for (std::size_t i = 0; i < a.size(); ++i)                                                     \
@@ -563,9 +590,9 @@ template<typename T> struct creator< C < D < E <T> > > > {                      
         }                                                                                          \
         return value;                                                                              \
     }                                                                                              \
-    static base_type random(alps::hdf5::iarchive & iar) { return base_type(); }                    \
-    static base_type empty(alps::hdf5::iarchive & iar) { return base_type(); }                     \
-    static base_type special(alps::hdf5::iarchive & iar) { return base_type(); }                   \
+    template<typename X> static base_type random(X const &) { return base_type(); }                \
+    template<typename X> static base_type empty(X const &) { return base_type(); }                 \
+    template<typename X> static base_type special(X const &) { return base_type(); }               \
 };                                                                                                 \
 template<typename T> bool equal( C < D < E <T> > > const & a,  C < D < E <T> > > const & b) {      \
     for (std::size_t i = 0; i < a.size(); ++i)                                                     \

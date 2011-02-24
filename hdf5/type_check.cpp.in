@@ -61,7 +61,11 @@ template<typename base_type> struct test {
             }
         }
         {
-            alps::hdf5::oarchive oar(filename, SZIP_COMPRESS);
+            #ifdef USE_NG_ARCHIVE
+                alps::mchdf5 oar(filename, alps::mchdf5::WRITE | (SZIP_COMPRESS ? alps::mchdf5::COMPRESS : 0x00));
+            #else
+                alps::hdf5::oarchive oar(filename, SZIP_COMPRESS);
+            #endif
             if (IS_ATTRIBUTE)
                 oar
                     << alps::make_pvp("/data", 0)
@@ -79,7 +83,11 @@ template<typename base_type> struct test {
             base_type read_1_len_value[MATRIX_SIZE], read_1_value[MATRIX_SIZE];
             base_type read_2_value[MATRIX_SIZE][MATRIX_SIZE];
             base_type read_3_value[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE];
-            alps::hdf5::iarchive iar(filename);
+            #ifdef USE_NG_ARCHIVE
+                alps::mchdf5 iar(filename, alps::mchdf5::READ | (SZIP_COMPRESS ? alps::mchdf5::COMPRESS : 0x00));
+            #else
+                alps::hdf5::iarchive iar(filename);
+            #endif
             iar
                 >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "len", &read_1_len_value[0], length)
                 >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_0", read_0_value, size_0)
@@ -101,7 +109,11 @@ template<typename base_type> struct test {
         base_type special_write(creator<base_type>::special());
         bool result;
         {
-            alps::hdf5::oarchive oar(filename, SZIP_COMPRESS);
+            #ifdef USE_NG_ARCHIVE
+                alps::mchdf5 oar(filename, alps::mchdf5::WRITE | (SZIP_COMPRESS ? alps::mchdf5::COMPRESS : 0x00));
+            #else
+                alps::hdf5::oarchive oar(filename, SZIP_COMPRESS);
+            #endif
             if (IS_ATTRIBUTE)
                 oar
                     << alps::make_pvp("/data", 0)
@@ -116,7 +128,11 @@ template<typename base_type> struct test {
                 ;
         }
         {
-            alps::hdf5::iarchive iar(filename);
+            #ifdef USE_NG_ARCHIVE
+                alps::mchdf5 iar(filename);
+            #else
+                alps::hdf5::iarchive iar(filename);
+            #endif
             base_type random_read(creator<base_type>::random(iar));
             base_type empty_read(creator<base_type>::empty(iar));
             base_type special_read(creator<base_type>::special(iar));
@@ -144,7 +160,11 @@ template<typename base_type> struct test {
         data_type random_write(creator<data_type>::random());
         bool result;
         {
-            alps::hdf5::oarchive oar(filename, SZIP_COMPRESS);
+            #ifdef USE_NG_ARCHIVE
+                alps::mchdf5 oar(filename, alps::mchdf5::WRITE | (SZIP_COMPRESS ? alps::mchdf5::COMPRESS : 0x00));
+            #else
+                alps::hdf5::oarchive oar(filename, SZIP_COMPRESS);
+            #endif
             if (IS_ATTRIBUTE)
                 oar
                     << alps::make_pvp("/data", 0)
@@ -154,7 +174,11 @@ template<typename base_type> struct test {
             ;
         }
         {
-            alps::hdf5::iarchive iar(filename);
+            #ifdef USE_NG_ARCHIVE
+                alps::mchdf5 iar(filename);
+            #else
+                alps::hdf5::iarchive iar(filename);
+            #endif
             data_type random_read(creator<data_type>::random(iar));
             iar
                 >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "overwrite", random_read)
@@ -197,7 +221,11 @@ template<typename T> struct test<boost::shared_array<T> > {
             }
         }
         {
-            alps::hdf5::oarchive oar(filename, SZIP_COMPRESS);
+            #ifdef USE_NG_ARCHIVE
+                alps::mchdf5 oar(filename, alps::mchdf5::WRITE | (SZIP_COMPRESS ? alps::mchdf5::COMPRESS : 0x00));
+            #else
+                alps::hdf5::oarchive oar(filename, SZIP_COMPRESS);
+            #endif
             if (IS_ATTRIBUTE)
                 oar
                     << alps::make_pvp("/data", 0)
@@ -213,7 +241,11 @@ template<typename T> struct test<boost::shared_array<T> > {
             boost::shared_array<T> read_1_len_value(new T[MATRIX_SIZE]), read_1_value(new T[MATRIX_SIZE]);
             boost::shared_array<T> read_2_value(new T[MATRIX_SIZE * MATRIX_SIZE]);
             boost::shared_array<T> read_3_value(new T[MATRIX_SIZE * MATRIX_SIZE * MATRIX_SIZE]);
-            alps::hdf5::iarchive iar(filename);
+            #ifdef USE_NG_ARCHIVE
+                alps::mchdf5 iar(filename);
+            #else
+                alps::hdf5::iarchive iar(filename);
+            #endif
             iar
                 >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "len", read_1_len_value, length)
                 >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_1", read_1_value, size_1)

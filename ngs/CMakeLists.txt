@@ -3,6 +3,18 @@
 #      (See accompanying file LICENSE_1_0.txt or copy at
 #          http://www.boost.org/LICENSE_1_0.txt)
 
+
+include_directories(${PROJECT_BINARY_DIR}/src)
+include_directories(${PROJECT_SOURCE_DIR}/src)
+include_directories(${Boost_ROOT_DIR})
+
+FOREACH (name mchdf5)
+    add_executable(${name} ${name}.cpp)
+    add_dependencies(${name} alps)
+    target_link_libraries(${name} alps)
+    add_alps_test(${name})
+ENDFOREACH(name)
+
 if (MPI_FOUND)
 #    add_executable(test_ngs main.cpp)
 #    add_dependencies(test_ngs alps)
