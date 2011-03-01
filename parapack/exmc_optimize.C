@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2011 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -55,7 +55,7 @@ try {
   params["BETA_MIN"] = 1;
   params["NUM_REPLICAS"] = n;
 
-  alps::parapack::exmc::inverse_temperature_set<dummy> beta_set(params);
+  alps::parapack::exmc::inverse_temperature_set beta_set(params);
 
   std::vector<double> beta(n);
   std::vector<dummy::weight_parameter_type> gw(n);
@@ -76,17 +76,17 @@ try {
                    dummy::log_weight(gw[i-1], beta_set[i])))
               << std::endl;
 
-  std::cout << "Wg[2.33] = " << beta_set.interpolate(beta, gw, 2.33) << std::endl;
-  std::cout << "Wg[3.52] = " << beta_set.interpolate(beta, gw, 3.52) << std::endl;
+  std::cout << "Wg[2.33] = " << beta_set.interpolate<dummy>(beta, gw, 2.33) << std::endl;
+  std::cout << "Wg[3.52] = " << beta_set.interpolate<dummy>(beta, gw, 3.52) << std::endl;
 
-  beta_set.optimize_h1999(gw);
+  beta_set.optimize_h1999<dummy>(gw);
 
   std::cout << "[after optimization]\n";
   std::cout << "beta\tenergy\tC\n";
   std::cout << beta_set[0] << '\t' << gw[0] << std::endl;
   for (int i = 1; i < n; ++i) {
-    double w0 = beta_set.interpolate(beta, gw, beta_set[i-1]);
-    double w1 = beta_set.interpolate(beta, gw, beta_set[i]);
+    double w0 = beta_set.interpolate<dummy>(beta, gw, beta_set[i-1]);
+    double w1 = beta_set.interpolate<dummy>(beta, gw, beta_set[i]);
 
     std::cout << beta_set[i] << '\t' << gw[i] << '\t'
               << ((dummy::log_weight(w0, beta_set[i-1]) +

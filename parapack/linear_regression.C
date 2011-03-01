@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2011 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -30,19 +30,12 @@
 #include <iostream>
 #include <boost/random.hpp>
 
-struct dummy {
-  typedef double weight_parameter_type;
-  static double log_weight(weight_parameter_type gw, double beta) {
-    return beta * gw;
-  }
-};
-
 int main() {
 #ifndef BOOST_NO_EXCEPTIONS
 try {
 #endif
 
-  typedef alps::parapack::exmc::inverse_temperature_set<dummy> inverse_temperature_set;
+  typedef alps::parapack::exmc::inverse_temperature_set inverse_temperature_set;
 
   boost::mt19937 eng;
   boost::variate_generator<boost::mt19937&, boost::uniform_real<> >
