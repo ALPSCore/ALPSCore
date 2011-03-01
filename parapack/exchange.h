@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2011 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -107,7 +107,6 @@ struct initializer_helper {
 // temperature set
 //
 
-template<typename WALKER>
 class inverse_temperature_set {
 public:
   typedef double value_type;
@@ -115,18 +114,9 @@ public:
   typedef std::vector<double>::iterator iterator;
   typedef std::vector<double>::const_iterator const_iterator;
 
-  typedef WALKER walker_type;
-  typedef typename walker_type::weight_parameter_type weight_parameter_type;
-
   inverse_temperature_set(alps::Parameters const& params) { init(params); }
-
-  std::size_t size() const { return beta_.size(); }
-  double operator[](std::size_t i) const { return beta_[i]; }
-
   void init(alps::Parameters const& params) {
-
     using std::sqrt;
-
     int dist = -1;
     // 0 : explicit
     // 1 : equidistance in beta
@@ -142,7 +132,6 @@ public:
     if (params.defined("INVERSE_TEMPERATURE_SET") || params.defined("TEMPERATURE_SET")) dist = 0;
     if (dist < 0 || dist > 3)
       boost::throw_exception(std::invalid_argument("illegal temperature distribution"));
-
     if (params.defined("INVERSE_TEMPERATURE_SET")) {
       read_vector_resize(params["INVERSE_TEMPERATURE_SET"], beta_);
     } else if (params.defined("TEMPERATURE_SET")) {
@@ -179,34 +168,28 @@ public:
     } else {
       boost::throw_exception(std::invalid_argument("temperature set not defined"));
     }
-
     std::sort(beta_.begin(), beta_.end());
-
-    // working space
-    diffusivity_.resize(size() - 1);
-    accum_.resize(size() - 1);
-    oldbeta_.resize(size());
   }
+  std::size_t size() const { return beta_.size(); }
+  double operator[](std::size_t i) const { return beta_[i]; }
 
   bool optimize(std::vector<double> const& population) {
     // population : population ratio of UPWARD walkers at each level
-
     using std::pow; using std::sqrt;
-
     for (int p = 0; p < size() - 1; ++p)
       if (population[p+1] - population[p] <= 0) return false;
-
+    diffusivity_.resize(size() - 1);
     for (int p = 0; p < size() - 1; ++p)
       diffusivity_[p] = pow(beta_[p+1] - beta_[p], 2.) / (population[p+1] - population[p]);
-
     // optimize inverse temperatures
+    accum_.resize(size() - 1);
     double c = 0;
     for (int p = 0; p < size() - 1; ++p) {
       c += (beta_[p+1] - beta_[p]) / sqrt(diffusivity_[p]);
       accum_[p] = c;
     }
     c /= (size() - 1);
-
+    oldbeta_.resize(size());
     std::copy(beta_.begin(), beta_.end(), oldbeta_.begin());
     beta_.front() = oldbeta_.front();
     int q = 0;
@@ -216,41 +199,32 @@ public:
       beta_[p] = oldbeta_[q+1] - sqrt(diffusivity_[q]) * (accum_[q] - t);
     }
     beta_.back() = oldbeta_.back();
-
     return true;
   }
 
   bool optimize2(std::vector<double> const& population) {
     // population : population ratio of UPWARD walkers at each level
-
     using std::pow; using std::sqrt;
-
     for (int p = 0; p < size() - 1; ++p)
       if (population[p+1] - population[p] <= 0) return false;
-
     // original temperature set
     std::vector<double> T;
     std::vector<double> deltaT;
-
     // optimized temperature set
     std::vector<double> T_prime;
     std::vector<double> deltaT_prime;
-
     // some more stuff
     std::vector<double> Fraction;
     std::vector<double> Derivative;
     std::vector<double> Diffusivity;
-
     for (int p = 0; p < size(); ++p) {
       Fraction.push_back(population[size() - p - 1]);
       T.push_back(1. / beta_[size() - p - 1]);
     }
-
     // determine deltaT
     for(int i=0; i<T.size()-1; ++i) {
       deltaT.push_back(T[i+1]-T[i]);
     }
-
     // determine derivative of fraction
     for(int i=0; i<T.size()-1; ++i) {
       // regression with 3 points
@@ -258,17 +232,14 @@ public:
       boost::tie(a, b) = linear_regression(3, ((i == 0) ? 0 : i - 1), T, Fraction);
       Derivative.push_back(b);
     }
-
     // check if reweighting is possible
     for(int i=0; i<Derivative.size(); ++i)
       if(Derivative[i]>=0) return false;
-
     // feedback of local diffusivity
     const int N = T.size()-1;  // number of intervals
     for(int t=0; t<N; ++t) {
       deltaT_prime.push_back( 1./sqrt( -1. / deltaT[t] * Derivative[t] ) );
     }
-
     // determine normalization
     double C = .0;
     if(deltaT.size() != N) { std::cerr << "FEEDBACK ERROR: Inconsistent size of deltaT" << std::endl; exit(1); }
@@ -276,7 +247,6 @@ public:
       C += deltaT[t] / deltaT_prime[t];
     }
     C = N/C;
-
     // determine new temperature set
     T_prime.push_back( T[0] );
     double n = 0.;
@@ -307,22 +277,24 @@ public:
     return true;
   }
 
-  void optimize_h1999(std::vector<weight_parameter_type> const& wp) {
+  template<typename WALKER>
+  void optimize_h1999(std::vector<typename WALKER::weight_parameter_type> const& wp) {
     // optimization of temperature set based on energy mesurement (Hukushima PRE 60, 3606 (1999)
-
+    typedef WALKER walker_type;
+    typedef typename walker_type::weight_parameter_type weight_parameter_type;
     const int num_rep = 32;
     const double convergence = 0.01;
-
+    oldbeta_.resize(size());
     std::copy(beta_.begin(), beta_.end(), oldbeta_.begin());
     for (int rep = 0; rep < 2 * num_rep; ++rep) {
       for (int i = (rep % 2) + 1; i < (size() - 1); i += 2) {
-        const weight_parameter_type gm = interpolate(oldbeta_, wp, beta_[i-1]);
-        const weight_parameter_type gp = interpolate(oldbeta_, wp, beta_[i+1]);
+        const weight_parameter_type gm = interpolate<walker_type>(oldbeta_, wp, beta_[i-1]);
+        const weight_parameter_type gp = interpolate<walker_type>(oldbeta_, wp, beta_[i+1]);
         double bl = beta_[i-1];
         double b0 = beta_[i];
         double br = beta_[i+1];
         const double thresh = convergence * (br - bl);
-        weight_parameter_type g0 = interpolate(oldbeta_, wp, b0);
+        weight_parameter_type g0 = interpolate<walker_type>(oldbeta_, wp, b0);
         if (walker_type::log_weight(gm, beta_[i-1]) < walker_type::log_weight(g0, beta_[i-1]) &&
             walker_type::log_weight(g0, beta_[i+1]) < walker_type::log_weight(gp, beta_[i+1])) {
           while (true) {
@@ -337,7 +309,7 @@ public:
               b0 = (bl + b0) / 2;
             }
             if (br - bl < thresh) break;
-            g0 = interpolate(oldbeta_, wp, b0);
+            g0 = interpolate<walker_type>(oldbeta_, wp, b0);
           }
           beta_[i] = b0;
         }
@@ -346,43 +318,34 @@ public:
   }
 
   void save(alps::ODump& dp) const { dp << beta_; }
-  void load(alps::IDump& dp) {
-    dp >> beta_;
-    diffusivity_.resize(size() - 1);
-    accum_.resize(size() - 1);
-    oldbeta_.resize(size());
-  }
+  void load(alps::IDump& dp) { dp >> beta_; }
 
   static std::pair<double, double> linear_regression(const int num_points, const int offset,
     std::vector<double> const& x, std::vector<double> const& y) {
-
     double ss_xy = 0.0;
     double ss_xx = 0.0;
     double mean_x = 0.0;
     double mean_y = 0.0;
-
     for(int i = offset; i < offset + num_points; ++i) {
       mean_x += x[i];
       mean_y += y[i];
     }
     mean_x /= num_points;
     mean_y /= num_points;
-
     for(int i = offset; i < offset + num_points; ++i) {
       ss_xy += x[i]*y[i];
       ss_xx += x[i]*x[i];
     }
     ss_xy -= num_points * mean_x * mean_y;
     ss_xx -= num_points * mean_x * mean_x;
-
     const double b = ss_xy / ss_xx;       // slope
     const double a = mean_y - b * mean_x; // offset
-
     return std::make_pair(a, b);
   }
 
-  static weight_parameter_type interpolate(std::vector<double> const& beta,
-    std::vector<weight_parameter_type> const& func, double b) {
+  template<typename WALKER>
+  static typename WALKER::weight_parameter_type interpolate(std::vector<double> const& beta,
+    std::vector<typename WALKER::weight_parameter_type> const& func, double b) {
     if (b < beta.front() && b > beta.back())
       boost::throw_exception(std::range_error("interpolate"));
     int n = std::lower_bound(beta.begin(), beta.end(), b) - beta.begin();
@@ -393,13 +356,11 @@ public:
 
 private:
   std::vector<double> beta_;
-
   // working space
-  // std::vector<double> derivative_;
   std::vector<double> diffusivity_;
   std::vector<double> accum_;
   std::vector<double> oldbeta_;
-  };
+};
 
 } // end namespace exmc
 } // end namespace parapack
@@ -411,16 +372,14 @@ namespace parapack {
 namespace exmc {
 #endif
 
-template<typename WALKER>
 inline alps::ODump& operator<<(alps::ODump& dp,
-  alps::parapack::exmc::inverse_temperature_set<WALKER> const& beta) {
+  alps::parapack::exmc::inverse_temperature_set const& beta) {
   beta.save(dp);
   return dp;
 }
 
-template<typename WALKER>
 inline alps::IDump& operator>>(alps::IDump& dp,
-  alps::parapack::exmc::inverse_temperature_set<WALKER>& beta) {
+  alps::parapack::exmc::inverse_temperature_set& beta) {
   beta.load(dp);
   return dp;
 }
@@ -775,7 +734,7 @@ public:
                     << write_vector(accept_, " ", 5) << std::endl;
 
           if (mcs_.stage() != 0) {
-            beta_.optimize_h1999(wp_);
+            beta_.optimize_h1999<walker_type>(wp_);
             std::cout << "EXMC stage " << mcs_.stage() << ": optimized inverse temperature set = "
                       << write_vector(beta_, " ", 5) << std::endl;
           }
@@ -890,7 +849,7 @@ private:
   initializer_type init_;
   std::vector<boost::shared_ptr<walker_type> > walker_;
 
-  exmc::inverse_temperature_set<walker_type> beta_;
+  exmc::inverse_temperature_set beta_;
   exmc::exchange_steps mcs_;
   std::vector<int> tid_;     // temperature id of each walker (replica)
   std::vector<int> wid_;     // id of walker (replica) at each temperature
@@ -1132,7 +1091,7 @@ public:
                       << write_vector(accept_, " ", 5) << std::endl;
 
             if (mcs_.stage() != 0) {
-              beta_.optimize_h1999(wp_);
+              beta_.optimize_h1999<walker_type>(wp_);
               std::cout << "EXMC stage " << mcs_.stage() << ": optimized inverse temperature set = "
                         << write_vector(beta_, " ", 5) << std::endl;
             }
@@ -1283,7 +1242,7 @@ private:
   initializer_type init_;
   std::vector<boost::shared_ptr<walker_type> > walker_; // [0..nrep_local_)
 
-  exmc::inverse_temperature_set<walker_type> beta_;
+  exmc::inverse_temperature_set beta_;
   exmc::exchange_steps mcs_;
   std::vector<int> tid_local_; // temperature id of each walker (replica)
   std::vector<int> tid_;       // [master only] temperature id of each walker (replica)

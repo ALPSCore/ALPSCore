@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2011 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -118,6 +118,13 @@ public:
   }
   exp_double operator[](int bin) const {
     return walk_range_.is_included(bin) ? weight_[bin2index(bin)] : exp_double(0);
+  }
+  void set_weight(int bin, exp_double w) {
+    if (walk_range_.is_included(bin)) {
+      weight_[bin2index(bin)] = w;
+    } else {
+      boost::throw_exception(std::range_error("wanglandau_weight::set_weight()"));
+    }
   }
 
   void visit(ObservableSet& obs, int bin, exp_double const& factor) {
