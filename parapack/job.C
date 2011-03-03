@@ -365,9 +365,7 @@ void task::evaluate() {
         hdf5::iarchive h5(complete(p, basedir_).file_string());
         success = load_observable(h5, cid, o);
       }
-      if (!success) {
-        std::cerr << "error while reading " << p << std::endl;
-      } else {
+      if (success) {
         evaluator->load(o, os);
         evaluator->load(o, obs_);
       }
@@ -381,9 +379,7 @@ void task::evaluate() {
           hdf5::iarchive h5(complete(p, basedir_).file_string());
           success = load_observable(h5, cid, w, o);
         }
-        if (!success) {
-          if (w == 0) std::cerr << "error while reading " << p << std::endl;
-        } else {
+        if (success) {
           evaluator->load(o, os);
           evaluator->load(o, obs_);
         }
