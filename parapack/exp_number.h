@@ -29,6 +29,7 @@
 #define PARAPACK_EXP_NUMBER_H
 
 #include <alps/osiris/dump.h>
+#include <alps/numeric/is_zero.hpp>
 #include <boost/throw_exception.hpp>
 #include <cmath>
 #include <iostream>
@@ -216,6 +217,7 @@ public:
   self_& operator*=(self_ const& rhs) {
     log_ += rhs.log_;
     sign_ *= rhs.sign_;
+    if (alps::numeric::is_zero<1>(log_/rhs.log_)) log_ = 0;
     return *this;
   }
 
@@ -226,6 +228,7 @@ public:
       if (rhs.sign_ != is_zero) {
         log_ -= rhs.log_;
         sign_ *= rhs.sign_;
+        if (alps::numeric::is_zero<1>(log_/rhs.log_)) log_ = 0;
       } else {
         boost::throw_exception(std::range_error("exp_number::operator/=()"));
       }
@@ -406,7 +409,7 @@ alps::exp_number<T> operator-(U x, alps::exp_number<T> const& y) {
 }
 
 //
-// opertor*
+// operator*
 //
 
 template<typename T, typename U>
