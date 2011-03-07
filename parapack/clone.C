@@ -256,7 +256,11 @@ clone_mpi::clone_mpi(boost::mpi::communicator const& ctrl,
   if (work_.rank() == 0 && is_new && worker_->progress() >= 1) {
     info_.set_progress(worker_->progress());
     info_.stop();
-    send_info(mcmp_tag::clone_info);
+    if (group_id_ == 0) {
+      do_halt();
+    } else {
+      send_info(mcmp_tag::clone_info);
+    }
   }
 
   if (work_.rank() == 0 && !is_new) timer_.reset(worker_->progress());
@@ -296,7 +300,7 @@ void clone_mpi::run() {
         if (group_id_ == 0) {
           do_halt();
         } else {
-          if (work_.rank() == 0) send_info(mcmp_tag::clone_info);
+          send_info(mcmp_tag::clone_info);
         }
         return;
       }
