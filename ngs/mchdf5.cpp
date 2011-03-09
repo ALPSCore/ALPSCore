@@ -64,9 +64,30 @@ int main() {
      }
      {
           mchdf5 ar("test.h5", mchdf5::READ);
-          double value;
+          std::complex<double> value;
           ar >> make_pvp("/to/to", value);
+          std::cout << value.real() << " " << value.imag() << std::endl;
+     }
+
+     {
+          mchdf5 ar("test.h5", mchdf5::WRITE);
+          ar << make_pvp("/to/str", std::string("asdf"));
+     }
+     {
+          mchdf5 ar("test.h5", mchdf5::READ);
+          std::string value;
+          ar >> make_pvp("/to/str", value);
           std::cout << value << std::endl;
      }
 
+     {
+          mchdf5 ar("test.h5", mchdf5::WRITE);
+          ar << make_pvp("/to/char", "asdf");
+     }
+     {
+          mchdf5 ar("test.h5", mchdf5::READ);
+          std::string value;
+          ar >> make_pvp("/to/char", value);
+          std::cout << value << std::endl;
+     }
 }

@@ -27,6 +27,7 @@
 
 #ifdef USE_NG_ARCHIVE
     #include <alps/ngs/mchdf5.hpp>
+    #include <alps/ngs/hdf5/pointer.hpp>
     #include <alps/ngs/hdf5/std/map.hpp>
     #include <alps/ngs/hdf5/std/pair.hpp>
     #include <alps/ngs/hdf5/std/vector.hpp>
@@ -51,6 +52,41 @@
 #include <boost/random.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
+
+template<class T> class custom_allocator : public std::allocator<T> {
+    protected:
+        typedef std::allocator<T> alloc_t;
+
+    public:
+        typedef typename alloc_t::pointer pointer;
+        typedef typename alloc_t::const_pointer const_pointer;
+        typedef typename alloc_t::reference reference;
+        typedef typename alloc_t::const_reference const_reference;
+
+        typedef typename alloc_t::value_type value_type;
+        typedef typename alloc_t::size_type size_type;
+        typedef typename alloc_t::difference_type difference_type;
+
+        pointer allocate(size_type n) {
+            return alloc_t::allocate(n);
+        }
+
+        void deallocate(pointer p, size_type n) {
+            alloc_t::deallocate(p, n);
+        }
+
+        template <typename T2> struct rebind {
+            typedef custom_allocator<T2> other;
+        };
+
+        void construct(pointer p, const_reference val) {
+            alloc_t::construct(p, val);
+        }
+
+        void destroy(pointer p) {
+            alloc_t::destroy(p);
+        }
+};
 
 typedef enum { PLUS, MINUS } enum_type;
 template<typename T> struct creator;
@@ -90,7 +126,22 @@ template<typename T> class userdefined_class {
                 initialize(b[i]);
             initialize(c);
         }
-        #ifndef USE_NG_ARCHIVE
+        #ifdef USE_NG_ARCHIVE
+            void serialize(alps::mchdf5 & ar) const {
+                ar
+                    << alps::make_pvp("a", a)
+                    << alps::make_pvp("b", b)
+                    << alps::make_pvp("c", c)
+                ;
+            }
+            void unserialize(alps::mchdf5 & ar) { 
+                ar
+                    >> alps::make_pvp("a", a)
+                    >> alps::make_pvp("b", b)
+                    >> alps::make_pvp("c", c)
+                ;
+            }
+        #else
             void serialize(alps::hdf5::iarchive & ar) {
                 ar
                     >> alps::make_pvp("a", a)
@@ -232,7 +283,32 @@ template<typename T, typename U> class cast_type< std::pair<T *, std::vector<std
                 return false;
         }
 };
-#ifndef USE_NG_ARCHIVE
+#ifdef USE_NG_ARCHIVE
+    void serialize(
+          alps::mchdf5 & ar
+        , std::string const & path
+        , enum_type const & value
+        , std::vector<std::size_t> size = std::vector<std::size_t>()
+        , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+        , std::vector<std::size_t> offset = std::vector<std::size_t>()
+    ) {
+        switch (value) {
+            case PLUS: ar << alps::make_pvp(path, std::string("plus")); break;
+            case MINUS: ar << alps::make_pvp(path, std::string("minus")); break;
+        }
+    }
+    void unserialize(
+          alps::mchdf5 & ar
+        , std::string const & path
+        , enum_type & value
+        , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+        , std::vector<std::size_t> offset = std::vector<std::size_t>()
+    ) {
+        std::string s;
+        ar >> alps::make_pvp(path, s);
+        value = (s == "plus" ? PLUS : MINUS);
+    }
+#else
     inline alps::hdf5::oarchive & serialize(alps::hdf5::oarchive & ar, std::string const & p, enum_type const & v) {
         switch (v) {
             case PLUS: ar << alps::make_pvp(p, std::string("plus")); break;

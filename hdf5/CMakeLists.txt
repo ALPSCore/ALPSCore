@@ -54,9 +54,6 @@ IF (ALPS_BUILD_HDF5_TESTS)
         "cast_type<int, long>" "cast_type<int, double>" "cast_type<double, std::string>" "cast_type<int, std::string>" "cast_type<float, double>" "cast_type<short, float>"
         "std::vector<cast_type<int, double> >" "std::vector<std::vector<cast_type<int, double> > >" "std::pair<cast_type<int, double> *, std::vector<std::size_t> >" "std::vector<std::valarray<cast_type<int, double> > >"
         "std::vector<cast_type<double, std::string> >" "std::vector<std::vector<cast_type<double, std::string> > >" "std::pair<cast_type<double, std::string> *, std::vector<std::size_t> >" 
-#        "boost::multi_array<double, 1>" "boost::multi_array<int, 1>" "boost::multi_array<std::complex<double>, 1>" "boost::multi_array<std::string, 1>"
-#        "boost::multi_array<double, 2>" "boost::multi_array<int, 2>" "boost::multi_array<std::complex<double>, 2>" "boost::multi_array<std::string, 2>"
-#        "boost::multi_array<double, 3>" "boost::multi_array<int, 3>" "boost::multi_array<std::complex<double>, 3>" "boost::multi_array<std::string, 3>"
         "boost::numeric::ublas::matrix<double, boost::numeric::ublas::column_major>" "boost::numeric::ublas::matrix<std::complex<double>, boost::numeric::ublas::column_major>"
         "int *" "short *" "long *" "float *" "double *"
         "std::size_t *" "std::string *" "std::complex<double> *"
@@ -73,6 +70,20 @@ IF (ALPS_BUILD_HDF5_TESTS)
         "std::pair<double, int>" "std::pair<double, std::complex<double> >" "std::pair<cast_type<int, std::string>, enum_type>" "std::pair<enum_type, cast_type<int, double> >" 
         "std::pair<std::vector<cast_type<int, std::string> >, std::pair<double, int> >" "std::pair<std::pair<std::vector<enum_type> *, std::vector<std::size_t> >, enum_type>"
     )
+    if (ALPS_BUILD_NGS)
+        SET(ALPS_HDF5_DATA_TYPES ${ALPS_HDF5_DATA_TYPES}
+            "std::vector<std::size_t, std::allocator<std::size_t> >" "std::vector<short, std::allocator<short> >" "std::vector<int, std::allocator<int> >" "std::vector<long, std::allocator<long> >" 
+            "std::vector<float, std::allocator<float> >" "std::vector<double, std::allocator<double> >" "std::vector<std::complex<double>, std::allocator<std::complex<double> > >" "std::vector<std::string, std::allocator<std::string> >"
+            "std::vector<std::vector<int, std::allocator<int> > >" "std::vector<std::vector<double>, std::allocator<std::vector<double> > >"
+            "std::vector<std::vector<std::complex<double>, std::allocator<std::complex<double> > >, std::allocator<std::vector<std::complex<double>, std::allocator<std::complex<double> > > > >" 
+            "std::vector<std::vector<std::string, std::allocator<std::string> >, std::allocator<std::vector<std::string, std::allocator<std::string> > > >"
+            "boost::multi_array<double, 1>" "boost::multi_array<int, 1>" "boost::multi_array<std::complex<double>, 1>" "boost::multi_array<std::string, 1>"
+            "boost::multi_array<double, 2>" "boost::multi_array<int, 2>" "boost::multi_array<std::complex<double>, 2>" "boost::multi_array<std::string, 2>"
+            "boost::multi_array<double, 3>" "boost::multi_array<int, 3>" "boost::multi_array<std::complex<double>, 3>" "boost::multi_array<std::string, 3>"
+#           "std::vector<boost::multi_array<double, 2> >" "std::pair<boost::multi_array<std::complex<double>, 3> *, std::vector<std::size_t> >" "boost::multi_array<std::complex<double>, 1> *"
+        )
+    endif(ALPS_BUILD_NGS)
+    
     FOREACH (type ${ALPS_HDF5_DATA_TYPES})
 
         STRING(REGEX REPLACE "\\*" "p" test_name ${type})

@@ -31,8 +31,7 @@ import pyalps.hdf5 as h5
 import numpy as np
 import sys
 
-def write():
-    ar = h5.oArchive("test.h5")
+def write(ar):
     ar.write("/int", 9)
     ar.write("/double", 9.123)
     ar.write("/cplx", complex(1, 2))
@@ -47,8 +46,7 @@ def write():
     ar.delete_group("/my/group")
     ar.delete_data("/my/double")
 
-def read():
-    ar = h5.iArchive("test.h5")
+def read(ar):
     i = ar.read("/int")
     d = ar.read("/double")
     c = ar.read("/cplx")
@@ -65,8 +63,30 @@ def read():
         raise Exception('invalid value')
 
 try:
-    write();
-    read();
+    try:
+        oar = h5.oArchive("test.h5")
+        use_ngs = false
+    except: 
+        oar = h5.archive("test.h5")
+        use_ngs = true
+    write(oar)
+    del oar
+    
+    if use_ngs:
+        iar = h5.archive("test.h5")
+    else
+        iar = h5.iArchive("test.h5")
+    read()
+    del iar
+    
+    ignoreHDF5DestroyErrors();
+    
+    if use_ngs:
+        ar = h5.archive("test.h5")
+        write(ar)
+        read(ar)
+        del ar
+    
     print "SUCCESS"
 except Exception, e:
     print "ERROR"
