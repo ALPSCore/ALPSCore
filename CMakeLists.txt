@@ -64,7 +64,7 @@ endif(NOT ALPS_FOR_VISTRAILS)
 
 add_library(alps ${ALPS_SOURCES})
 
-# find_package(HDF5)
+find_package(HDF5)
 if (Boost_FOUND)
   # link to ${Boost_LIBRARIES} when precompiled Boost libraries found
   set(ALPS_LINK_LIBS ${Boost_LIBRARIES} ${HDF5_LIBRARIES}) # ${SZIP_LIBRARIES} ${ZLIB_LIBRARIES})
