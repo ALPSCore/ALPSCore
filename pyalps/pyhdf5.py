@@ -65,21 +65,21 @@ def read(ar):
 try:
     try:
         oar = h5.oArchive("test.h5")
-        use_ngs = false
+        use_ngs = False
     except: 
         oar = h5.archive("test.h5")
-        use_ngs = true
+        use_ngs = True
     write(oar)
     del oar
     
     if use_ngs:
         iar = h5.archive("test.h5")
-    else
+    else:
         iar = h5.iArchive("test.h5")
-    read()
+    read(iar)
     del iar
     
-    ignoreHDF5DestroyErrors();
+    h5.ignoreHDF5DestroyErrors();
     
     if use_ngs:
         ar = h5.archive("test.h5")
