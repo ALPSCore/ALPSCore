@@ -5,7 +5,8 @@
 * ALPS Libraries
 *
 * Copyright (C) 1994-2010 by Ping Nang Ma <pingnang@itp.phys.ethz.ch>,
-*                            Matthias Troyer <troyer@itp.phys.ethz.ch>,
+*                            Lukas Gamper <gamperl@gmail.com>,
+*                            Matthias Troyer <troyer@itp.phys.ethz.ch>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -32,7 +33,7 @@
 #ifndef ALPS_NUMERIC_SPECIAL_FUNCTIONS_HPP
 #define ALPS_NUMERIC_SPECIAL_FUNCTIONS_HPP
 
-
+#include <boost/accumulators/numeric/functional/vector.hpp>
 #include <boost/math/special_functions.hpp>
 
 
@@ -41,20 +42,33 @@ namespace alps {
     
     // define special powers
     template<class T> 
-    inline T sq(T value)    { return value*value; }
+    inline T sq(T value) {
+        using boost::numeric::operators::operator*;
+        return value * value; 
+    }
 
     template<class T>
-    inline T cb(T value)    { return value*value*value; }
+    inline T cb(T value) { 
+        using boost::numeric::operators::operator*;
+        return value * value * value; 
+    }
 
     template<class T>
-    inline T cbrt(T value)  { return std::pow(value,1./3); }
+    inline T cbrt(T value) { 
+        return std::pow(value,1./3); 
+    }
 
     // define norm and r
     template <class T>
-    inline T norm(T x, T y=T(), T z=T())  {  return (sq(x) + sq(y) + sq(z)); }
+    inline T norm(T x, T y=T(), T z=T()) {
+        using boost::numeric::operators::operator+;
+        return (sq(x) + sq(y) + sq(z));
+    }
     
     template <class T>
-    inline T r(T x, T y=T(), T z=T())      {  return std::sqrt(norm(x,y,z)); }
+    inline T r(T x, T y=T(), T z=T()) {
+        return std::sqrt(norm(x,y,z)); 
+    }
   }
 }
 

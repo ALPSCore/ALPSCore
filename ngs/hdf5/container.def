@@ -111,7 +111,7 @@ namespace alps {
         , std::vector<std::size_t> chunk = std::vector<std::size_t>()
         , std::vector<std::size_t> offset = std::vector<std::size_t>()
     ) {
-        if (value.size() == 0)
+        if (is_continous<T>::value && value.size() == 0)
             ar.write(path, static_cast<typename scalar_type< ALPS_NGS_HDF5_VECTOR_TEMPLATE_TYPE >::type const *>(NULL), std::vector<std::size_t>());
         else if (is_continous<T>::value) {
             std::vector<std::size_t> extent(get_extent(value));
@@ -119,7 +119,9 @@ namespace alps {
             std::copy(extent.begin(), extent.end(), std::back_insert_iterator<std::vector<std::size_t> >(chunk));
             std::fill_n(std::back_insert_iterator<std::vector<std::size_t> >(offset), extent.size(), 0);
             ar.write(path, get_pointer(value), size, chunk, offset);
-        } else if (is_vectorizable(value)) {
+        } else if (value.size() == 0)
+            ar.write(path, static_cast<int const *>(NULL), std::vector<std::size_t>());
+        else if (is_vectorizable(value)) {
             size.push_back(value.size());
             chunk.push_back(1);
             offset.push_back(0);
@@ -144,7 +146,7 @@ namespace alps {
             value.resize(children.size());
             for (typename std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)
                 unserialize(ar, path + "/" + *it, value[convert<std::size_t>(*it)]);
-        } else { 
+        } else {
             std::vector<std::size_t> size(ar.extent(path));
             if (is_continous<T>::value) {
                 set_extent(value, std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));
@@ -152,11 +154,12 @@ namespace alps {
                 std::fill_n(std::back_insert_iterator<std::vector<std::size_t> >(offset), size.size() - offset.size(), 0);
                 ar.read(path, get_pointer(value), chunk, offset);
             } else {
+                set_extent(value, std::vector<std::size_t>(1, *(size.begin() + chunk.size())));
                 chunk.push_back(1);
                 offset.push_back(0);
                 for(typename ALPS_NGS_HDF5_VECTOR_TEMPLATE_TYPE ::iterator it = value.begin(); it != value.end(); ++it) {
                     offset.back() = it - value.begin();
-                    serialize(ar, path, *it, chunk, offset);
+                    unserialize(ar, path, *it, chunk, offset);
                 }
             }
         }

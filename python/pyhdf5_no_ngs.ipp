@@ -52,6 +52,10 @@ namespace alps {
                 }
             }
 
+            void ignore_python_destruct_errors() {
+                alps::hdf5::detail::context::_ignore_python_destruct_error = true;
+            }
+
             template<typename T> boost::python::str filename(T & self) {
                 return boost::python::str(self.filename());
             }
@@ -220,13 +224,18 @@ namespace alps {
                     return read_numpy<double>(self, path, PyArray_DOUBLE);
                 else if (self.is_complex(path))
                     return read_numpy<std::complex<double> >(self, path, PyArray_CDOUBLE);
-                else
+                else {
                     std::runtime_error("Unsupported type.");
+                    return boost::python::object();
+                }
             }
 
         }
     }
 }
+
+const char ignore_python_destruct_errors_docstring[] =\
+"prevent python from throwing error on destoying hdf5 archives";
 
 const char archive_constructor_docstring[] =
 "the constructor takes a file path as argument";
@@ -288,7 +297,9 @@ BOOST_PYTHON_MODULE(pyhdf5_c) {
     using namespace boost::python;
     docstring_options doc_options(true);
     doc_options.disable_cpp_signatures();
-  
+
+    def("ignoreHDF5DestroyErrors", &alps::python::hdf5::ignore_python_destruct_errors, ignore_python_destruct_errors_docstring);
+
     class_<alps::hdf5::oarchive>(
           "oArchive", 
           "an archive class to write HDF5 files", 

@@ -48,7 +48,7 @@ namespace alps {
 
     namespace detail {
 
-        template<typename B, typename T> class mcresult_impl_derived : public B, alea::mcdata<T> {
+        template<typename B, typename T> class mcresult_impl_derived : public B, public alea::mcdata<T> {
 
             public:
 
@@ -167,12 +167,19 @@ namespace alps {
                     }                                                                                                                          \
                                                                                                                                                \
                     B * NAME ## _virtual (B const * rhs) const {                                                                               \
-                        return new mcresult_impl_derived<B, T>(                                                                                \
-                              static_cast<alea::mcdata<T> const &>(*this)                                                                      \
-                            OP static_cast<alea::mcdata<T> const &>(*dynamic_cast<mcresult_impl_derived<B, T> const *>(rhs))                   \
-                        );                                                                                                                     \
+                        if (dynamic_cast<mcresult_impl_derived<B, T> const *>(rhs))                                                            \
+                            return new mcresult_impl_derived<B, T>(                                                                            \
+                                  static_cast<alea::mcdata<T> const &>(*this)                                                                  \
+                                OP static_cast<alea::mcdata<T> const &>(dynamic_cast<mcresult_impl_derived<B, T> const &>(*rhs))               \
+                            );                                                                                                                 \
+                        else                                                                                                                   \
+                            return new mcresult_impl_derived<B, T>(                                                                            \
+                                   static_cast<alea::mcdata<T> const &>(*this)                                                                 \
+                                OP static_cast<alea::mcdata<typename alea::mcdata<T>::element_type> const &>(                                  \
+                                    dynamic_cast<mcresult_impl_derived<B, typename alea::mcdata<T>::element_type> const &>(*rhs)               \
+                                )                                                                                                              \
+                            );                                                                                                                 \
                     }                                                                                                                          \
-                                                                                                                                               \
                     template <typename U> typename boost::enable_if<typename boost::mpl::or_<                                                  \
                           typename boost::is_same<T, U>::type                                                                                  \
                       /*, typename boost::is_same<typename alea::mcdata<T>::element_type, U>::type*/                                           \

@@ -89,7 +89,7 @@ namespace alps {
     ALPS_NGS_MCRESULT_OPERATOR_IMPL(operator+=, add)
     ALPS_NGS_MCRESULT_OPERATOR_IMPL(operator-=, sub)
     ALPS_NGS_MCRESULT_OPERATOR_IMPL(operator*=, mul)
-    ALPS_NGS_MCRESULT_OPERATOR_IMPL(operator/=, add)
+    ALPS_NGS_MCRESULT_OPERATOR_IMPL(operator/=, div)
     #undef ALPS_NGS_MCRESULT_OPERATOR_IMPL
 
     bool mcresult::can_rebin() const {
@@ -246,7 +246,7 @@ namespace alps {
     ALPS_NGS_MCRESULT_FREE_OPERATOR_IMPL(operator+, add)
     ALPS_NGS_MCRESULT_FREE_OPERATOR_IMPL(operator-, sub)
     ALPS_NGS_MCRESULT_FREE_OPERATOR_IMPL(operator*, mul)
-    ALPS_NGS_MCRESULT_FREE_OPERATOR_IMPL(operator/, add)
+    ALPS_NGS_MCRESULT_FREE_OPERATOR_IMPL(operator/, div)
     #undef ALPS_MCRESULT_OPERATOR_IMPL
     #undef ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_IMPL
 

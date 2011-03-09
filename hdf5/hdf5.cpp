@@ -81,10 +81,10 @@ namespace alps {
               if (_log_id > -1)
                   detail::check_type(_log_id);
 #ifndef ALPS_HDF5_CLOSE_GREEDY
-              if (
+              if (!_ignore_python_destruct_error && (
                   H5Fget_obj_count(_file_id, H5F_OBJ_DATATYPE) > (_state_id == -1 ? 0 : 1) + (_log_id == -1 ? 0 : 1)
                   || H5Fget_obj_count(_file_id, H5F_OBJ_ALL) - H5Fget_obj_count(_file_id, H5F_OBJ_FILE) - H5Fget_obj_count(_file_id, H5F_OBJ_DATATYPE) > 0
-                  ) {
+				)) {
                   std::cerr << "Not all resources closed in file '" << _filename << "'" << std::endl;
                   std::abort();
               }
@@ -108,6 +108,8 @@ namespace alps {
             return file_id < 0 ? H5Fcreate(file.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT) : file_id;
         }
         
+		bool context::_ignore_python_destruct_error = false;
+		
     } // namespace detail
       
       

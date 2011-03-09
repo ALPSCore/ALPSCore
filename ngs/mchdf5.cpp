@@ -144,11 +144,11 @@ namespace alps {
                     }
                 }
 
-                operator hid_t() const { 
+                operator hid_t() const {
                     return _id; 
                 }
 
-                resource<F> & operator=(hid_t id) { 
+                resource<F> & operator=(hid_t id) {
                     if ((_id = id) < 0) 
                         ALPS_NGS_THROW_RUNTIME_ERROR(error().invoke(_id))
                     return *this; 
@@ -245,11 +245,6 @@ namespace alps {
                         ALPS_NGS_THROW_RUNTIME_ERROR("no valid hdf5 file: " + filename_)
                     file_id_ = H5Fopen(filename_.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
                 }
-                if (compress_) {
-                    unsigned int flag;
-                    detail::check_error(H5Zget_filter_info(H5Z_FILTER_SZIP, &flag));
-                    compress_ = flag & H5Z_FILTER_CONFIG_ENCODE_ENABLED;
-                }
             }
 
             ~mccontext() {
@@ -280,13 +275,20 @@ namespace alps {
 
     mchdf5::mchdf5(std::string const & filename, std::size_t props) {
         detail::check_error(H5Eset_auto2(H5E_DEFAULT, NULL, NULL));
+        if (props & COMPRESS) {
+            unsigned int flag;
+            detail::check_error(H5Zget_filter_info(H5Z_FILTER_SZIP, &flag));
+            props &= (flag & H5Z_FILTER_CONFIG_ENCODE_ENABLED ? ~0x00 : ~COMPRESS);
+        }
         if (ref_cnt_.find(file_key(filename, props & WRITE, props & COMPRESS)) == ref_cnt_.end())
             ref_cnt_.insert(std::make_pair(
                   file_key(filename, props & WRITE, props & COMPRESS)
-                , std::make_pair(context_ = new detail::mccontext(filename, props & WRITE, props & COMPRESS), 0)
+                , std::make_pair(context_ = new detail::mccontext(filename, props & WRITE, props & COMPRESS), 1)
             ));
-        else
+        else {
             context_ = ref_cnt_.find(file_key(filename, props & WRITE, props & COMPRESS))->second.first;
+            ++ref_cnt_.find(file_key(filename, props & WRITE, props & COMPRESS))->second.second;
+        }
     }
 
     mchdf5::mchdf5(mchdf5 const & arg)
@@ -380,7 +382,8 @@ namespace alps {
            try {
             if ((path = complete_path(path)).find_last_of('@') != std::string::npos)
                 ALPS_NGS_THROW_RUNTIME_ERROR("no data path: " + path)
-            hid_t id = H5Dopen2(context_->file_id_, path.c_str(), H5P_DEFAULT);
+                hid_t fid = context_->file_id_;
+                hid_t id = H5Dopen2(context_->file_id_, path.c_str(), H5P_DEFAULT);
             return id < 0 ? false : detail::check_data(id) != 0;
         } catch (std::exception & ex) {
             ALPS_NGS_THROW_RUNTIME_ERROR("file: " + context_->filename_ + ", path: " + path + "\n" + ex.what())
@@ -390,7 +393,7 @@ namespace alps {
     bool mchdf5::is_attribute(std::string path) const {
         try {
             if ((path = complete_path(path)).find_last_of('@') == std::string::npos)
-                ALPS_NGS_THROW_RUNTIME_ERROR("no attribute path: " + path)
+                return false;
             hid_t parent_id;
             if (is_group(path.substr(0, path.find_last_of('@') - 1)))
                 parent_id = detail::check_error(H5Gopen2(context_->file_id_, path.substr(0, path.find_last_of('@') - 1).c_str(), H5P_DEFAULT));
@@ -416,7 +419,7 @@ namespace alps {
     bool mchdf5::is_group(std::string path) const {
         try {
             if ((path = complete_path(path)).find_last_of('@') != std::string::npos)
-                ALPS_NGS_THROW_RUNTIME_ERROR("no group path: " + path)
+                return false;
             hid_t id = H5Gopen2(context_->file_id_, path.c_str(), H5P_DEFAULT);
             return id < 0 ? false : detail::check_group(id) != 0;
         } catch (std::exception & ex) {
@@ -674,9 +677,9 @@ namespace alps {
                         value = convert< T >(raw);                                                                                                                 \
                     } else if (H5Tget_class(native_id) == H5T_STRING) {                                                                                            \
                         char * raw;                                                                                                                                \
-                        detail::check_error(H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, raw));                                                        \
+                        detail::check_error(H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &raw));                                                       \
                         value = convert< T >(std::string(raw));                                                                                                    \
-                        detail::check_error(H5Dvlen_reclaim(type_id, detail::space_type(H5Dget_space(data_id)), H5P_DEFAULT, raw));                                \
+                        detail::check_error(H5Dvlen_reclaim(type_id, detail::space_type(H5Dget_space(data_id)), H5P_DEFAULT, &raw));                               \
                     ALPS_NGS_MCHDF5_FOREACH_NATIVE_TYPE_INTEGRAL(ALPS_NGS_MCHDF5_READ_SCALAR_DATA_HELPER, T)                                                       \
                     } else ALPS_NGS_THROW_RUNTIME_ERROR("invalid type")                                                                                            \
                 } else {                                                                                                                                           \
@@ -758,7 +761,7 @@ namespace alps {
                 if (data_size.size() != chunk.size() || data_size.size() != offset.size())                                                                         \
                     ALPS_NGS_THROW_RUNTIME_ERROR("wrong size or offset passed for path: " + path)                                                                  \
                 for (std::size_t i = 0; i < data_size.size(); ++i)                                                                                                 \
-                    if (data_size[i] < chunk[i] + offset[0])                                                                                                       \
+                    if (data_size[i] < chunk[i] + offset[i])                                                                                                       \
                         ALPS_NGS_THROW_RUNTIME_ERROR("passed size of offset exeed data size for path: " + path)                                                    \
                 if (is_null(path))                                                                                                                                 \
                     value = NULL;                                                                                                                                  \
@@ -775,10 +778,23 @@ namespace alps {
                         if (H5Tget_class(native_id) == H5T_STRING && !detail::check_error(H5Tis_variable_str(type_id)))                                            \
                             ALPS_NGS_THROW_RUNTIME_ERROR("multidimensional dataset of fixed string datas is not implemented (" + path + ")")                       \
                         else if (H5Tget_class(native_id) == H5T_STRING) {                                                                                          \
-                            char ** raw;                                                                                                                           \
-                            detail::check_error(H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, raw));                                                    \
-                            ALPS_NGS_THROW_RUNTIME_ERROR("multidimensional dataset of variable len string datas is not implemented (" + path + ")")                \
-                            detail::check_error(H5Dvlen_reclaim(type_id, detail::space_type(H5Dget_space(data_id)), H5P_DEFAULT, &raw[0]));                        \
+                            std::size_t len = std::accumulate(chunk.begin(), chunk.end(), std::size_t(1), std::multiplies<std::size_t>());                         \
+                            boost::scoped_ptr<char *> raw(                                                                                                         \
+                                new char * [len]                                                                                                                   \
+                            );                                                                                                                                     \
+                            if (std::equal(chunk.begin(), chunk.end(), data_size.begin())) {                                                                       \
+                                detail::check_error(H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, raw.get()));                                          \
+                                convert(raw.get(), raw.get() + len, value);                                                                                        \
+                            } else {                                                                                                                               \
+                                std::vector<hsize_t> offset_hid(offset.begin(), offset.end()),                                                                     \
+                                                     chunk_hid(chunk.begin(), chunk.end());                                                                        \
+                                detail::space_type space_id(H5Dget_space(data_id));                                                                                \
+                                detail::check_error(H5Sselect_hyperslab(space_id, H5S_SELECT_SET, &offset_hid.front(), NULL, &chunk_hid.front(), NULL));           \
+                                detail::space_type mem_id(H5Screate_simple(static_cast<int>(chunk_hid.size()), &chunk_hid.front(), NULL));                         \
+                                detail::check_error(H5Dread(data_id, type_id, mem_id, space_id, H5P_DEFAULT, raw.get()));                                          \
+                                convert(raw.get(), raw.get() + len, value);                                                                                        \
+                            }                                                                                                                                      \
+                            detail::check_error(H5Dvlen_reclaim(type_id, detail::space_type(H5Dget_space(data_id)), H5P_DEFAULT, raw.get()));                      \
                         ALPS_NGS_MCHDF5_FOREACH_NATIVE_TYPE_INTEGRAL(ALPS_NGS_MCHDF5_READ_VECTOR_DATA_HELPER, T)                                                   \
                         } else ALPS_NGS_THROW_RUNTIME_ERROR("invalid type")                                                                                        \
                     } else {                                                                                                                                       \
@@ -809,7 +825,7 @@ namespace alps {
                     }                                                                                                                                              \
                 }                                                                                                                                                  \
             } catch (std::exception & ex) {                                                                                                                        \
-                ALPS_NGS_THROW_RUNTIME_ERROR("file: " + context_->filename_ + ", path: " + path + "\n" + ex.what())                                                \
+                ALPS_NGS_THROW_RUNTIME_ERROR("file: " + context_->filename_ + ", path: " + path + ", type: " + typeid(T).name() + "\n" + ex.what())                \
             }                                                                                                                                                      \
         }
     ALPS_NGS_MCHDF5_FOREACH_NATIVE_TYPE(ALPS_NGS_MCHDF5_READ_VECTOR)
@@ -1013,8 +1029,8 @@ namespace alps {
                     if (std::accumulate(size.begin(), size.end(), std::size_t(0)) == 0) {                                                                          \
                         if (data_id < 0)                                                                                                                           \
                             detail::check_attribute(H5Acreate2(                                                                                                    \
-                                  context_->file_id_                                                                                                               \
-                                , path.c_str()                                                                                                                     \
+                                  parent_id                                                                                                                        \
+                                , path.substr(path.find_last_of('@') + 1).c_str()                                                                                  \
                                 , type_id                                                                                                                          \
                                 , detail::space_type(H5Screate(H5S_NULL))                                                                                          \
                                 , H5P_DEFAULT                                                                                                                      \

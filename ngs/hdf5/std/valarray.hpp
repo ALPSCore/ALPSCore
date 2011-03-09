@@ -49,6 +49,7 @@ namespace alps {
     
         template<typename T> struct get_extent<std::valarray<T> > {
             static std::vector<std::size_t> apply(std::valarray<T> const & value) {
+                using alps::get_extent;
                 std::vector<std::size_t> result(1, value.size())
                                        , extent(get_extent(const_cast<std::valarray<T> &>(value)[0]));
                 std::copy(extent.begin(), extent.end(), std::back_insert_iterator<std::vector<std::size_t> >(result));
@@ -58,6 +59,7 @@ namespace alps {
 
         template<typename T> struct set_extent<std::valarray<T> > {
             static void apply(std::valarray<T> & value, std::vector<std::size_t> const & extent) {
+                using alps::set_extent;
                 value.resize(extent[0]);
                 if (extent.size() > 1)
                     for(std::size_t i = 0; i < value.size(); ++i)
@@ -108,7 +110,7 @@ namespace alps {
         , std::vector<std::size_t> chunk = std::vector<std::size_t>()
         , std::vector<std::size_t> offset = std::vector<std::size_t>()
     ) {
-        if (value.size() == 0)
+        if (is_continous<T>::value && value.size() == 0)
             ar.write(path, static_cast<typename scalar_type<std::valarray<T> >::type const *>(NULL), std::vector<std::size_t>());
         else if (is_continous<T>::value) {
             std::vector<std::size_t> extent(get_extent(value));
@@ -116,7 +118,9 @@ namespace alps {
             std::copy(extent.begin(), extent.end(), std::back_insert_iterator<std::vector<std::size_t> >(chunk));
             std::fill_n(std::back_insert_iterator<std::vector<std::size_t> >(offset), extent.size(), 0);
             ar.write(path, get_pointer(value), size, chunk, offset);
-        } else if (is_vectorizable(value)) {
+        } else if (value.size() == 0)
+            ar.write(path, static_cast<int const *>(NULL), std::vector<std::size_t>());
+        else if (is_vectorizable(value)) {
             size.push_back(value.size());
             chunk.push_back(1);
             offset.push_back(0);
@@ -142,7 +146,7 @@ namespace alps {
             value.resize(children.size());
             for (typename std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)
                 unserialize(ar, path + "/" + *it, value[convert<std::size_t>(*it)]);
-        } else { 
+        } else {
             std::vector<std::size_t> size(ar.extent(path));
             if (is_continous<T>::value) {
                 set_extent(value, std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));
@@ -150,11 +154,12 @@ namespace alps {
                 std::fill_n(std::back_insert_iterator<std::vector<std::size_t> >(offset), size.size() - offset.size(), 0);
                 ar.read(path, get_pointer(value), chunk, offset);
             } else {
+                set_extent(value, std::vector<std::size_t>(1, *(size.begin() + chunk.size())));
                 chunk.push_back(1);
                 offset.push_back(0);
                 for(std::size_t i = 0; i < value.size(); ++i) {
                     offset.back() = i;
-                    serialize(ar, path, value[i], chunk, offset);
+                    unserialize(ar, path, value[i], chunk, offset);
                 }
             }
         }

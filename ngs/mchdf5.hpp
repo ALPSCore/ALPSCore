@@ -30,6 +30,7 @@
 
 #include <alps/ngs/macros.hpp>
 
+#include <boost/weak_ptr.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/remove_const.hpp>
 #include <boost/type_traits/integral_constant.hpp>
@@ -61,12 +62,7 @@
 namespace alps {
 
     namespace detail {
-
         struct mccontext;
-
-        template<int I> struct STATIC_FAILURE_TESTER {};
-        template<typename T> struct STATIC_FAILURE;
-
     }
 
     class mchdf5 {
@@ -161,6 +157,8 @@ namespace alps {
 
             std::string current_;
             detail::mccontext * context_;
+            static std::map<std::string, boost::weak_ptr<detail::mccontext> > _pool;
+
             static std::map<std::string, std::pair<detail::mccontext *, std::size_t> > ref_cnt_;
 
     };
@@ -315,14 +313,23 @@ namespace alps {
                 std::string path_;
                 T value_;
         };
+		
+		template<typename T> struct is_const_char_array : boost::false_type {};
+
+		template<std::size_t N> struct is_const_char_array<char const [N]> : boost::true_type {};
+		
     }
 
     template <typename T> typename boost::enable_if<
           has_complex_elements<typename boost::remove_const<T>::type>
         , mchdf5 &
     >::type operator<< (mchdf5 & ar, detail::make_pvp_proxy<T> const & proxy) {
-        ar.set_complex(proxy.path_);
-        serialize(ar, proxy.path_, proxy.value_);
+        try {
+            ar.set_complex(proxy.path_);
+            serialize(ar, proxy.path_, proxy.value_);
+        } catch (std::exception & ex) {
+            ALPS_NGS_THROW_RUNTIME_ERROR("path: " + proxy.path_ + ", type: " + typeid(T).name() + "\n" + ex.what())
+        }
         return ar;
     }
 
@@ -330,12 +337,20 @@ namespace alps {
           has_complex_elements<typename boost::remove_const<T>::type>
         , mchdf5 &
     >::type operator<< (mchdf5 & ar, detail::make_pvp_proxy<T> const & proxy) {
-        serialize(ar, proxy.path_, proxy.value_);
+        try {
+            serialize(ar, proxy.path_, proxy.value_);
+        } catch (std::exception & ex) {
+            ALPS_NGS_THROW_RUNTIME_ERROR("path: " + proxy.path_ + ", type: " + typeid(T).name() + "\n" + ex.what())
+        }
         return ar;
     }
 
     template <typename T> mchdf5 & operator>> (mchdf5 & ar, detail::make_pvp_proxy<T> proxy) {
-        unserialize(ar, proxy.path_, proxy.value_);
+        try {
+            unserialize(ar, proxy.path_, proxy.value_);
+        } catch (std::exception & ex) {
+            ALPS_NGS_THROW_RUNTIME_ERROR("path: " + proxy.path_ + ", type: " + typeid(T).name() + "\n" + ex.what())
+        }
         return ar;
     }
 
@@ -343,7 +358,17 @@ namespace alps {
         return detail::make_pvp_proxy<T &>(path, value);
     }
 
-    template <typename T> detail::make_pvp_proxy<T const &> make_pvp(std::string const & path, T const & value) {
+    template <typename T> typename boost::enable_if<
+          detail::is_const_char_array<T const>
+		, detail::make_pvp_proxy<std::string> 
+    >::type make_pvp(std::string const & path, T const & value) {
+        return detail::make_pvp_proxy<std::string>(path, value);
+    }
+
+    template <typename T> typename boost::disable_if<
+          detail::is_const_char_array<T const>
+		, detail::make_pvp_proxy<T const &>
+    >::type make_pvp(std::string const & path, T const & value) {
         return detail::make_pvp_proxy<T const &>(path, value);
     }
 

@@ -43,25 +43,53 @@ namespace alps {
                 return -x; 
             }
         };
-        template <typename T> struct plus : public std::binary_function<T, T, T> {
+
+        template <typename T, typename U, typename R> struct plus : public std::binary_function<T, U, R> {
+            R operator()(T const & x, U const & y) const {
+                using boost::numeric::operators::operator+;
+                return x + y; 
+            }
+        };
+        template <typename T> struct plus<T, T, T> : public std::binary_function<T, T, T> {
             T operator()(T const & x, T const & y) const {
                 using boost::numeric::operators::operator+;
                 return x + y; 
             }
         };
-        template <typename T> struct minus : public std::binary_function<T, T, T> {
+
+        template <typename T, typename U, typename R> struct minus : public std::binary_function<T, U, R> {
+            R operator()(T const & x, U const & y) const {
+                using boost::numeric::operators::operator-;
+                return x - y; 
+            }
+        };
+        template <typename T> struct minus<T, T, T> : public std::binary_function<T, T, T> {
             T operator()(T const & x, T const & y) const {
                 using boost::numeric::operators::operator-;
                 return x - y; 
             }
         };
-        template <typename T> struct multiplies : public std::binary_function<T, T, T> {
+
+        template <typename T, typename U, typename R> struct multiplies : public std::binary_function<T, U, R> {
+            R operator()(T const & x, U const & y) const {
+                using boost::numeric::operators::operator*;
+                return x * y; 
+            }
+        };
+        template <typename T> struct multiplies<T, T, T> : public std::binary_function<T, T, T> {
             T operator()(T const & x, T const & y) const {
                 using boost::numeric::operators::operator*;
                 return x * y; 
             }
         };
-        template <typename T> struct divides : public std::binary_function<T, T, T> {
+
+        template <typename T, typename U, typename R> struct divides : public std::binary_function<T, U, R> {
+            R operator()(T const & x, U const & y) const {
+                using boost::numeric::operators::operator/;
+                return x / y; 
+            }
+        };
+        template <typename T> struct divides<T, T, T> : public std::binary_function<T, T, T> {
             T operator()(T const & x, T const & y) const {
                 using boost::numeric::operators::operator/;
                 return x / y; 

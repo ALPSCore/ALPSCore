@@ -29,6 +29,7 @@
 #define ALPS_NGS_HDF5_STD_PAIR
 
 #include <alps/ngs/mchdf5.hpp>
+#include <alps/ngs/convert.hpp>
 
 #include <boost/type_traits/remove_const.hpp>
 
@@ -91,7 +92,7 @@ namespace alps {
                     ALPS_NGS_THROW_RUNTIME_ERROR("invalid data size")
                 if (!is_continous<T>::value && value.second.size() != size.size())
                     for (std::size_t i = 0; i < std::accumulate(value.second.begin(), value.second.end(), std::size_t(1), std::multiplies<std::size_t>()); ++i)
-                         set_extent(*(value.first + i), std::vector<std::size_t>(size.begin() + value.second.size(), size.end()));
+                         set_extent(value.first[i], std::vector<std::size_t>(size.begin() + value.second.size(), size.end()));
             }
         };
 
@@ -151,8 +152,28 @@ namespace alps {
                     ));
                 serialize(ar, path, value.first[i], size, chunk, local_offset);
             }
-        } else
-            ALPS_NGS_THROW_RUNTIME_ERROR("invalid type")
+        } else {
+            if (path.find_last_of('@') != std::string::npos)
+                ALPS_NGS_THROW_RUNTIME_ERROR("attributes needs to be vectorizable: " + path)
+            if (ar.is_data(path))
+                ar.delete_data(path);
+            offset = std::vector<std::size_t>(value.second.size(), 0);
+            do {
+                std::size_t last = offset.size() - 1, pos = 0;
+                std::string location = "";
+                for (std::vector<std::size_t>::const_iterator it = offset.begin(); it != offset.end(); ++it) {
+                    location += "/" + convert<std::string>(*it);
+                    pos += *it * std::accumulate(value.second.begin() + (it - offset.begin()) + 1, value.second.end(), std::size_t(1), std::multiplies<std::size_t>());
+                }
+                serialize(ar, path + location, value.first[pos]);
+                if (offset[last] + 1 == value.second[last] && last) {
+                    for (pos = last; ++offset[pos] == value.second[pos] && pos; --pos);
+                    for (++pos; pos <= last; ++pos)
+                        offset[pos] = 0;
+                } else
+                    ++offset[last];
+            } while (offset[0] < value.second[0]);
+        }
     }
 
     template<typename T> void unserialize(
@@ -162,9 +183,24 @@ namespace alps {
         , std::vector<std::size_t> chunk = std::vector<std::size_t>()
         , std::vector<std::size_t> offset = std::vector<std::size_t>()
     ) {
-        if (ar.is_group(path))
-            ALPS_NGS_THROW_RUNTIME_ERROR("invalid path")
-        else {
+        if (ar.is_group(path)) {
+            offset = std::vector<std::size_t>(value.second.size(), 0);
+            do {
+                std::size_t last = offset.size() - 1, pos = 0;
+                std::string location = "";
+                for (std::vector<std::size_t>::const_iterator it = offset.begin(); it != offset.end(); ++it) {
+                    location += "/" + convert<std::string>(*it);
+                    pos += *it * std::accumulate(value.second.begin() + (it - offset.begin()) + 1, value.second.end(), std::size_t(1), std::multiplies<std::size_t>());
+                }
+                unserialize(ar, path + location, value.first[pos]);
+                if (offset[last] + 1 == value.second[last] && last) {
+                    for (pos = last; ++offset[pos] == value.second[pos] && pos; --pos);
+                    for (++pos; pos <= last; ++pos)
+                        offset[pos] = 0;
+                } else
+                    ++offset[last];
+            } while (offset[0] < value.second[0]);
+        } else {
             std::vector<std::size_t> size(ar.extent(path));
             set_extent(value, std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));
             if (is_continous<T>::value) {

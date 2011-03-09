@@ -28,4 +28,30 @@
 #ifndef ALPS_NGS_HDF5_POINTER_HPP
 #define ALPS_NGS_HDF5_POINTER_HPP
 
+namespace alps {
+
+    template <typename T> detail::make_pvp_proxy<std::pair<T *, std::vector<std::size_t> > > make_pvp(
+          std::string const & path
+        , T * value
+        , std::size_t size
+    ) {
+        return detail::make_pvp_proxy<std::pair<T *, std::vector<std::size_t> > >(
+              path
+            , std::make_pair(value, std::vector<std::size_t>(1, size))
+        );
+    }
+
+    template <typename T> detail::make_pvp_proxy<std::pair<T *, std::vector<std::size_t> > > make_pvp(
+          std::string const & path
+        , T * value
+        , std::vector<std::size_t> const & size
+    ) {
+        return detail::make_pvp_proxy<std::pair<T *, std::vector<std::size_t> > >(
+              path
+            , std::make_pair(value, size)
+        );
+    }
+
+}
+
 #endif

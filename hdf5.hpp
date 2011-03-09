@@ -568,16 +568,17 @@ namespace alps {
             template <typename T> T check_error(T id) { error_type unused(id); return unused; }
             
             struct ALPS_DECL context : boost::noncopyable {
-                context(std::string const & filename, hid_t file_id, bool compress);
-                ~context();
-                bool _compress;
-                // TODO: this has to be checkd before every operation to make sure its still the same
-                int _revision;
-                hid_t _state_id;
-                hid_t _log_id;
-                hid_t _complex_id;
-                std::string _filename;
-                file_type _file_id;
+				context(std::string const & filename, hid_t file_id, bool compress);
+				~context();
+				bool _compress;
+				// TODO: this has to be checkd before every operation to make sure its still the same
+				int _revision;
+				hid_t _state_id;
+				hid_t _log_id;
+				hid_t _complex_id;
+				std::string _filename;
+				file_type _file_id;
+				static bool _ignore_python_destruct_error;
             };
             #define ALPS_HDF5_FOREACH_SCALAR_NO_LONG_LONG(callback)                                                                                        \
                 callback(char)                                                                                                                             \
