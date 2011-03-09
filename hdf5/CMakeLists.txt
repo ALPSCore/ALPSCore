@@ -87,10 +87,11 @@ IF (ALPS_BUILD_HDF5_TESTS)
             configure_file(type_check.cpp.in ${PROJECT_BINARY_DIR}/test/hdf5/ngs_hdf5_data_${test_name}.cpp)
             add_executable(ngs_hdf5_data_${test_name} ${PROJECT_BINARY_DIR}/test/hdf5/ngs_hdf5_data_${test_name}.cpp)
             SET_TARGET_PROPERTIES(ngs_hdf5_data_${test_name} PROPERTIES COMPILE_FLAGS "-DUSE_NG_ARCHIVE")
-
-            configure_file(type_check.cpp.in ${PROJECT_BINARY_DIR}/test/hdf5/ngs_hdf5_data_szip_${test_name}.cpp)
-            add_executable(ngs_hdf5_data_szip_${test_name} ${PROJECT_BINARY_DIR}/test/hdf5/ngs_hdf5_data_szip_${test_name}.cpp)
-            SET_TARGET_PROPERTIES(ngs_hdf5_data_szip_${test_name} PROPERTIES COMPILE_FLAGS "-DSZIP_COMPRESS=true -DUSE_NG_ARCHIVE")
+	    if (SZIP_FOUND)
+              configure_file(type_check.cpp.in ${PROJECT_BINARY_DIR}/test/hdf5/ngs_hdf5_data_szip_${test_name}.cpp)
+              add_executable(ngs_hdf5_data_szip_${test_name} ${PROJECT_BINARY_DIR}/test/hdf5/ngs_hdf5_data_szip_${test_name}.cpp)
+              SET_TARGET_PROPERTIES(ngs_hdf5_data_szip_${test_name} PROPERTIES COMPILE_FLAGS "-DSZIP_COMPRESS=true -DUSE_NG_ARCHIVE")
+            endif (SZIP_FOUND)
 
             configure_file(type_check.cpp.in ${PROJECT_BINARY_DIR}/test/hdf5/ngs_hdf5_attr_${test_name}.cpp)
             add_executable(ngs_hdf5_attr_${test_name} ${PROJECT_BINARY_DIR}/test/hdf5/ngs_hdf5_attr_${test_name}.cpp)
@@ -99,15 +100,19 @@ IF (ALPS_BUILD_HDF5_TESTS)
             add_dependencies(ngs_hdf5_data_${test_name} alps)
             target_link_libraries(ngs_hdf5_data_${test_name} alps)
 
-            add_dependencies(ngs_hdf5_data_szip_${test_name} alps)
-            target_link_libraries(ngs_hdf5_data_szip_${test_name} alps)
+            if (SZIP_FOUND)
+              add_dependencies(ngs_hdf5_data_szip_${test_name} alps)
+              target_link_libraries(ngs_hdf5_data_szip_${test_name} alps)
+            endif (SZIP_FOUND)
 
             add_dependencies(ngs_hdf5_attr_${test_name} alps)
             target_link_libraries(ngs_hdf5_attr_${test_name} alps)
 
             add_alps_test(ngs_hdf5_data_${test_name})
 
-            add_alps_test(ngs_hdf5_data_szip_${test_name})
+            if (SZIP_FOUND)
+              add_alps_test(ngs_hdf5_data_szip_${test_name})
+            endif (SZIP_FOUND)
 
            add_alps_test(ngs_hdf5_attr_${test_name})
 
@@ -116,9 +121,11 @@ IF (ALPS_BUILD_HDF5_TESTS)
 	        configure_file(type_check.cpp.in ${PROJECT_BINARY_DIR}/test/hdf5/hdf5_data_${test_name}.cpp)
 	        add_executable(hdf5_data_${test_name} ${PROJECT_BINARY_DIR}/test/hdf5/hdf5_data_${test_name}.cpp)
 
-	        configure_file(type_check.cpp.in ${PROJECT_BINARY_DIR}/test/hdf5/hdf5_data_szip_${test_name}.cpp)
-	        add_executable(hdf5_data_szip_${test_name} ${PROJECT_BINARY_DIR}/test/hdf5/hdf5_data_szip_${test_name}.cpp)
-	        SET_TARGET_PROPERTIES(hdf5_data_szip_${test_name} PROPERTIES COMPILE_FLAGS "-DSZIP_COMPRESS=true")
+                if (SZIP_FOUND)
+		  configure_file(type_check.cpp.in ${PROJECT_BINARY_DIR}/test/hdf5/hdf5_data_szip_${test_name}.cpp)
+	          add_executable(hdf5_data_szip_${test_name} ${PROJECT_BINARY_DIR}/test/hdf5/hdf5_data_szip_${test_name}.cpp)
+	          SET_TARGET_PROPERTIES(hdf5_data_szip_${test_name} PROPERTIES COMPILE_FLAGS "-DSZIP_COMPRESS=true")
+                endif (SZIP_FOUND)
 
 	        configure_file(type_check.cpp.in ${PROJECT_BINARY_DIR}/test/hdf5/hdf5_data_pycplx_${test_name}.cpp)
 	        add_executable(hdf5_data_pycplx_${test_name} ${PROJECT_BINARY_DIR}/test/hdf5/hdf5_data_pycplx_${test_name}.cpp)
@@ -136,7 +143,9 @@ IF (ALPS_BUILD_HDF5_TESTS)
 
 	            target_link_libraries(hdf5_data_${test_name} ${Boost_LIBRARIES} ${HDF5_LIBRARIES}) 
 
-	            target_link_libraries(hdf5_data_szip_${test_name} ${Boost_LIBRARIES} ${HDF5_LIBRARIES}) 
+		    if (SZIP_FOUND)
+	              target_link_libraries(hdf5_data_szip_${test_name} ${Boost_LIBRARIES} ${HDF5_LIBRARIES}) 
+		    endif (SZIP_FOUND)
 
 	            target_link_libraries(hdf5_data_pycplx_${test_name} ${Boost_LIBRARIES} ${HDF5_LIBRARIES}) 
 
@@ -149,8 +158,10 @@ IF (ALPS_BUILD_HDF5_TESTS)
 	            add_dependencies(hdf5_data_${test_name} alps boost)
 	            target_link_libraries(hdf5_data_${test_name} alps ${ALPS_BOOST_LIBRARY_NAME} ${HDF5_LIBRARIES})
 
-	            add_dependencies(hdf5_data_szip_${test_name} alps boost) 
-	            target_link_libraries(hdf5_data_szip_${test_name} alps ${ALPS_BOOST_LIBRARY_NAME} ${HDF5_LIBRARIES})
+		    if (SZIP_FOUND)
+	              add_dependencies(hdf5_data_szip_${test_name} alps boost) 
+	              target_link_libraries(hdf5_data_szip_${test_name} alps ${ALPS_BOOST_LIBRARY_NAME} ${HDF5_LIBRARIES})
+                    endif (SZIP_FOUND)
 
 	            add_dependencies(hdf5_data_pycplx_${test_name} alps boost) 
 	            target_link_libraries(hdf5_data_pycplx_${test_name} alps ${ALPS_BOOST_LIBRARY_NAME} ${HDF5_LIBRARIES})
@@ -165,7 +176,9 @@ IF (ALPS_BUILD_HDF5_TESTS)
 
 	        add_alps_test(hdf5_data_${test_name})
 
-	        add_alps_test(hdf5_data_szip_${test_name})
+                if (SZIP_FOUND)
+	          add_alps_test(hdf5_data_szip_${test_name})
+                endif (SZIP_FOUND)
 
 	        add_alps_test(hdf5_data_pycplx_${test_name})
 
