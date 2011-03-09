@@ -12,7 +12,7 @@ mark_as_advanced(ALPS_BUILD_HDF5_TESTS)
 
 IF (ALPS_BUILD_HDF5_TESTS)
 
-    # find_package(HDF5)
+    find_package(HDF5)
 
     # tests using ALPS
     FOREACH (name hdf5_alea)
