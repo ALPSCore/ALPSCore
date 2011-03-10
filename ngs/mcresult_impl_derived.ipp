@@ -172,14 +172,26 @@ namespace alps {
                                   static_cast<alea::mcdata<T> const &>(*this)                                                                  \
                                 OP static_cast<alea::mcdata<T> const &>(dynamic_cast<mcresult_impl_derived<B, T> const &>(*rhs))               \
                             );                                                                                                                 \
-                        else                                                                                                                   \
+                        else if (dynamic_cast<mcresult_impl_derived<B, typename alea::mcdata<T>::element_type> const *>(rhs))                  \
                             return new mcresult_impl_derived<B, T>(                                                                            \
                                    static_cast<alea::mcdata<T> const &>(*this)                                                                 \
                                 OP static_cast<alea::mcdata<typename alea::mcdata<T>::element_type> const &>(                                  \
-                                    dynamic_cast<mcresult_impl_derived<B, typename alea::mcdata<T>::element_type> const &>(*rhs)               \
-                                )                                                                                                              \
+                                       dynamic_cast<mcresult_impl_derived<B, typename alea::mcdata<T>::element_type> const &>(*rhs)            \
+                                   )                                                                                                           \
                             );                                                                                                                 \
+/*                       else if (dynamic_cast<mcresult_impl_derived<B, std::vector<T> > const *>(rhs))                                        \
+                            return static_cast<B *>(new mcresult_impl_derived<B, std::vector<T> >(                                             \
+                                   static_cast<alea::mcdata<T> const &>(*this)                                                                 \
+                                OP static_cast<alea::mcdata<std::vector<T> > const &>(                                                         \
+                                       dynamic_cast<mcresult_impl_derived<B, std::vector<T> > const &>(*rhs)                                   \
+                                   )                                                                                                           \
+                            ));                                                                                                                \
+*/                      else {                                                                                                                 \
+                            ALPS_NGS_THROW_RUNTIME_ERROR("Invalid cast");                                                                      \
+                            return new mcresult_impl_derived<B, T>(*this);                                                                     \
+                        }                                                                                                                      \
                     }                                                                                                                          \
+                                                                                                                                               \
                     template <typename U> typename boost::enable_if<typename boost::mpl::or_<                                                  \
                           typename boost::is_same<T, U>::type                                                                                  \
                       /*, typename boost::is_same<typename alea::mcdata<T>::element_type, U>::type*/                                           \

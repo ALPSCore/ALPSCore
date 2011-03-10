@@ -30,6 +30,8 @@
 
 #include <alps/ngs/macros.hpp>
 
+#include <stdio.h>
+
 namespace alps {
 
     template<typename U, typename T> inline U convert(T arg) {

@@ -935,20 +935,25 @@ namespace alps {
             boost::throw_exception(std::logic_error("NOT IMPLEMENTED"));
         }
 
-        template <typename T> inline mcdata<std::vector<T> > operator-(mcdata<T> arg1, mcdata<std::vector<T> > arg2) {
+        template <typename T> inline mcdata<std::vector<T> > operator-(mcdata<T> const & arg1, mcdata<std::vector<T> > arg2) {
             boost::throw_exception(std::logic_error("NOT IMPLEMENTED"));
         }
 
-        template <typename T> inline mcdata<std::vector<T> > operator*(mcdata<std::vector<T> > arg1, mcdata<T> arg2) {
+        template <typename T> inline mcdata<std::vector<T> > operator*(mcdata<std::vector<T> > arg1, mcdata<T> const & arg2) {
             return arg1 *= arg2;
         }
 
-        template <typename T> inline mcdata<std::vector<T> > operator*(mcdata<T> arg1, mcdata<std::vector<T> > arg2) {
+        template <typename T> inline mcdata<std::vector<T> > operator*(mcdata<T> const & arg1, mcdata<std::vector<T> > arg2) {
             return arg2 *= arg1;
         }
 
-        template <typename T>  inline mcdata<std::vector<T> > operator/(mcdata<std::vector<T> > arg1, mcdata<T> arg2) {
+        template <typename T>  inline mcdata<std::vector<T> > operator/(mcdata<std::vector<T> > arg1, mcdata<T> const & arg2) {
             return arg1 /= arg2;
+        }
+
+        template <typename T>  inline mcdata<std::vector<T> > operator/(mcdata<T> const & arg1, mcdata<std::vector<T> > arg2) {
+            arg2.divide(arg1);
+            return arg2;
         }
 
         template <typename T> mcdata<T> pow(mcdata<T> rhs, typename mcdata<T>::element_type exponent) {

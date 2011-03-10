@@ -725,7 +725,7 @@ namespace alps {
         ) > 0) {                                                                                                                                                   \
             std::size_t len = std::accumulate(chunk.begin(), chunk.end(), std::size_t(1), std::multiplies<std::size_t>());                                         \
             boost::scoped_ptr<U> raw(                                                                                                                              \
-                new typename detail::type_wrapper< U >::type[len]                                                                                                  \
+                new detail::type_wrapper< U >::type[len]                                                                                                           \
             );                                                                                                                                                     \
             if (std::equal(chunk.begin(), chunk.end(), data_size.begin())) {                                                                                       \
                 detail::check_error(H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, raw.get()));                                                          \
@@ -745,7 +745,7 @@ namespace alps {
         ) > 0) {                                                                                                                                                   \
             std::size_t len = std::accumulate(chunk.begin(), chunk.end(), std::size_t(1), std::multiplies<std::size_t>());                                         \
             boost::scoped_ptr<U> raw(                                                                                                                              \
-                new typename detail::type_wrapper< U >::type[len]                                                                                                  \
+                new detail::type_wrapper< U >::type[len]                                                                                                           \
             );                                                                                                                                                     \
             if (std::equal(chunk.begin(), chunk.end(), data_size.begin())) {                                                                                       \
                 detail::check_error(H5Aread(attribute_id, type_id, raw.get()));                                                                                    \
