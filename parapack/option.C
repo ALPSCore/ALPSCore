@@ -56,7 +56,7 @@ option::option(int argc, char** argv)
     ("report-interval", po::value<int>(),
      "time between progress report of clones [unit = sec; default = 600s]")
     ("time-limit,T", po::value<int>(),
-     "time limit for the simulation [unit = sec; defulat = no time limit]")
+     "time limit for the simulation [unit = sec; default = no time limit]")
     ("Tmin", "obsolete")
     ("Tmax", "obsolete")
     ("threads-per-clone,p", po::value<int>(),
