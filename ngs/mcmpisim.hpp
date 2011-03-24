@@ -43,7 +43,7 @@ namespace alps {
                     MPI_Errhandler_set(communicator, MPI_ERRORS_RETURN);
                 }
 
-                double fraction_completed() {
+                double fraction_completed() const {
                     return boost::mpi::all_reduce(communicator, Impl::fraction_completed(), std::plus<double>());
                 }
 
