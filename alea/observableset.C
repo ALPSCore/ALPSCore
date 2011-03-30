@@ -104,12 +104,12 @@ void ObservableSet::load(IDump& dump)
                     } else if (is_scalar) {
                         if (is_real) {
                             if (is_signed)
-                                addObservable(SignedObservable<RealObservable, double>(obsname));
+                                addObservable(SignedObservable<RealObservable, double>(obsname, signname));
                             else
                                 addObservable(RealObservable(obsname));
                         } else if (is_simple_real) {
                             if (is_signed)
-                                addObservable(SignedObservable<SimpleRealObservable, double>(obsname));
+                                addObservable(SignedObservable<SimpleRealObservable, double>(obsname, signname));
                             else
                                 addObservable(SimpleRealObservable(obsname));
                         } else
@@ -117,12 +117,12 @@ void ObservableSet::load(IDump& dump)
                     } else {
                         if (is_real) {
                             if (is_signed)
-                                addObservable(SignedObservable<RealVectorObservable, double>(obsname));
+                                addObservable(SignedObservable<RealVectorObservable, double>(obsname, signname));
                             else
                                 addObservable(RealVectorObservable(obsname));
                         } else if (is_simple_real) {
                             if (is_signed)
-                                addObservable(SignedObservable<SimpleRealVectorObservable, double>(obsname));
+                                addObservable(SignedObservable<SimpleRealVectorObservable, double>(obsname, signname));
                             else
                                 addObservable(SimpleRealVectorObservable(obsname));
                         } else
