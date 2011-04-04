@@ -25,17 +25,17 @@
 *
 *****************************************************************************/
 
-#include <alps/ngs/mchdf5.hpp>
-#include <alps/ngs/mchdf5/pointer.hpp>
-#include <alps/ngs/mchdf5/map.hpp>
-#include <alps/ngs/mchdf5/pair.hpp>
-#include <alps/ngs/mchdf5/vector.hpp>
-#include <alps/ngs/mchdf5/complex.hpp>
-#include <alps/ngs/mchdf5/valarray.hpp>
-#include <alps/ngs/mchdf5/multi_array.hpp>
-#include <alps/ngs/mchdf5/shared_array.hpp>
-#include <alps/ngs/mchdf5/ublas/matrix.hpp>
-#include <alps/ngs/mchdf5/ublas/vector.hpp>
+#include <alps/hdf5.hpp>
+#include <alps/hdf5/pointer.hpp>
+#include <alps/hdf5/map.hpp>
+#include <alps/hdf5/pair.hpp>
+#include <alps/hdf5/vector.hpp>
+#include <alps/hdf5/complex.hpp>
+#include <alps/hdf5/valarray.hpp>
+#include <alps/hdf5/multi_array.hpp>
+#include <alps/hdf5/shared_array.hpp>
+#include <alps/hdf5/ublas/matrix.hpp>
+#include <alps/hdf5/ublas/vector.hpp>
 
 #include <deque>
 #include <numeric>

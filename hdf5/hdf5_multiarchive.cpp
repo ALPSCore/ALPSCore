@@ -25,7 +25,7 @@
 *
 *****************************************************************************/
 
-#include <alps/ngs/mchdf5.hpp>
+#include <alps/hdf5.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/random.hpp>

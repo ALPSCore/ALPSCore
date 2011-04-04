@@ -28,7 +28,7 @@
 #include <alps/utility/encode.hpp>
 #include <alps/alea.h>
 
-#include <alps/ngs/mchdf5.hpp>
+#include <alps/hdf5.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/random.hpp>
