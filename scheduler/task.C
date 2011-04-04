@@ -93,7 +93,7 @@ void Task::parse_task_file(bool read_parms_only)
     h5name = infilename.file_string().substr(0, infilename.file_string().find_last_of('.')) + ".h5";
   
   if (boost::filesystem::exists(boost::filesystem::path(h5name,boost::filesystem::native))) {
-    hdf5::iarchive ar(h5name);
+    hdf5::archive ar(h5name);
     if (read_parms_only)
       ar >> make_pvp("/parameters",parms);
     else 
@@ -159,14 +159,12 @@ Parameters Task::parse_ext_task_file(std::string infilename)
   return res;
 }
 
-#ifdef ALPS_HAVE_HDF5
-void Task::serialize(hdf5::iarchive & ar) {
+void Task::load(hdf5::archive & ar) {
     ar >> make_pvp("/parameters", parms);
 }
-void Task::serialize(hdf5::oarchive & ar) const {
+void Task::save(hdf5::archive & ar) const {
     ar << make_pvp("/parameters", parms);
 }
-#endif
 
 void Task::handle_tag(std::istream& infile, const XMLTag& tag)
 {
@@ -262,7 +260,7 @@ void Task::checkpoint(const boost::filesystem::path& fn, bool writeallxml) const
   make_backup = make_backup || task_exists; 
 
   {
-    hdf5::oarchive ar(make_backup ? task_backup : task_path);
+    hdf5::archive ar(make_backup ? task_backup : task_path, hdf5::archive::WRITE);
     ar << make_pvp("/",*this);
   } // close file
   
@@ -308,7 +306,7 @@ void Task::checkpoint_hdf5(const boost::filesystem::path& fn) const
   make_backup = make_backup || task_exists; 
 
   {
-    hdf5::oarchive ar(make_backup ? task_backup : task_path);
+    hdf5::archive ar(make_backup ? task_backup : task_path, hdf5::archive::WRITE);
     ar << make_pvp("/",*this);
   } // close file
   

@@ -84,7 +84,7 @@ namespace alps {
               if (!_ignore_python_destruct_error && (
                   H5Fget_obj_count(_file_id, H5F_OBJ_DATATYPE) > (_state_id == -1 ? 0 : 1) + (_log_id == -1 ? 0 : 1)
                   || H5Fget_obj_count(_file_id, H5F_OBJ_ALL) - H5Fget_obj_count(_file_id, H5F_OBJ_FILE) - H5Fget_obj_count(_file_id, H5F_OBJ_DATATYPE) > 0
-				)) {
+                )) {
                   std::cerr << "Not all resources closed in file '" << _filename << "'" << std::endl;
                   std::abort();
               }
@@ -108,18 +108,16 @@ namespace alps {
             return file_id < 0 ? H5Fcreate(file.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT) : file_id;
         }
         
-		bool context::_ignore_python_destruct_error = false;
-		
+        bool context::_ignore_python_destruct_error = false;
+        
     } // namespace detail
       
-      
-      
-      archive::archive(archive const & rhs)
+      archive_base::archive_base(archive_base const & rhs)
       : _path_context(rhs._path_context)
       , _context(rhs._context)
       {}
       
-    archive::~archive() 
+    archive_base::~archive_base() 
       {
           try {
               H5Fflush(file_id(), H5F_SCOPE_GLOBAL);
@@ -129,12 +127,12 @@ namespace alps {
           }
       }
       
-      std::string const & archive::filename() const 
+      std::string const & archive_base::filename() const 
       {
           return _context->_filename;
       }
       
-      std::string archive::encode_segment(std::string const & s) 
+      std::string archive_base::encode_segment(std::string const & s) 
       {
           std::string r = s;
           char chars[] = {'&', '/'};
@@ -144,7 +142,7 @@ namespace alps {
           return r;
       }
       
-      std::string archive::decode_segment(std::string const & s) 
+      std::string archive_base::decode_segment(std::string const & s) 
       {
           std::string r = s;
           for (std::size_t pos = r.find_first_of('&'); pos < std::string::npos; pos = r.find_first_of('&', pos + 1))
@@ -152,7 +150,7 @@ namespace alps {
           return r;
       }
       
-      void archive::commit(std::string const & name) 
+      void archive_base::commit(std::string const & name) 
       {
           set_attribute("/revisions/@last", ++_context->_revision);
           set_group("/revisions/" + detail::convert<std::string>(revision()));
@@ -166,28 +164,28 @@ namespace alps {
           delete[] v.name;
       }
       
-      std::vector<std::pair<std::string, std::string> > archive::list_revisions() const 
+      std::vector<std::pair<std::string, std::string> > archive_base::list_revisions() const 
       {
           // TODO: implement
           return std::vector<std::pair<std::string, std::string> >();
       }
       
-      void archive::export_revision(std::size_t revision, std::string const & file) const 
+      void archive_base::export_revision(std::size_t revision, std::string const & file) const 
       {
           // TODO: implement
       }
       
-      std::string archive::get_context() const 
+      std::string archive_base::get_context() const 
       {
           return _path_context;
       }
       
-      void archive::set_context(std::string const & context) 
+      void archive_base::set_context(std::string const & context) 
       {
           _path_context = context;
       }
       
-      std::string archive::complete_path(std::string const & p) const 
+      std::string archive_base::complete_path(std::string const & p) const 
       {
           if (p.size() && p[0] == '/')
               return p;
@@ -202,7 +200,7 @@ namespace alps {
           }
       }
       
-      bool archive::is_group(std::string const & p) const 
+      bool archive_base::is_group(std::string const & p) const 
       {
           try {
               hid_t id = H5Gopen2(file_id(), complete_path(p).c_str(), H5P_DEFAULT);
@@ -212,7 +210,7 @@ namespace alps {
           }
       }
       
-      bool archive::is_data(std::string const & p) const 
+      bool archive_base::is_data(std::string const & p) const 
       {
           try {
               hid_t id = H5Dopen2(file_id(), complete_path(p).c_str(), H5P_DEFAULT);
@@ -222,7 +220,7 @@ namespace alps {
           }
       }
       
-      bool archive::is_attribute(std::string const & p) const 
+      bool archive_base::is_attribute(std::string const & p) const 
       {
           try {
               if (p.find_last_of('@') == std::string::npos)
@@ -249,7 +247,7 @@ namespace alps {
           }
       }
       
-      std::vector<std::size_t> archive::extent(std::string const & p) const 
+      std::vector<std::size_t> archive_base::extent(std::string const & p) const 
       {
           try {
               if (is_null(p))
@@ -280,7 +278,7 @@ namespace alps {
           }
       }
       
-      std::size_t archive::dimensions(std::string const & p) const 
+      std::size_t archive_base::dimensions(std::string const & p) const 
       {
           try {
               if (p.find_last_of('@') != std::string::npos) {
@@ -295,7 +293,7 @@ namespace alps {
           }
       }
       
-      bool archive::is_scalar(std::string const & p) const 
+      bool archive_base::is_scalar(std::string const & p) const 
       {
           try {
               hid_t space_id;
@@ -316,7 +314,7 @@ namespace alps {
           }
       }
       
-      bool archive::is_string(std::string const & p) const 
+      bool archive_base::is_string(std::string const & p) const 
       {
           try {
               hid_t type_id;
@@ -335,52 +333,52 @@ namespace alps {
           }
       }
       
-      bool archive::is_int(std::string const & p) const 
+      bool archive_base::is_int(std::string const & p) const 
       {
           return is_type<int>(p);
       }
       
-      bool archive::is_uint(std::string const & p) const 
+      bool archive_base::is_uint(std::string const & p) const 
       {
           return is_type<unsigned int>(p);
       }
       
-      bool archive::is_long(std::string const & p) const 
+      bool archive_base::is_long(std::string const & p) const 
       {
           return is_type<long>(p);
       }
       
-      bool archive::is_ulong(std::string const & p) const 
+      bool archive_base::is_ulong(std::string const & p) const 
       {
           return is_type<unsigned long>(p);
       }
       
-      bool archive::is_longlong(std::string const & p) const 
+      bool archive_base::is_longlong(std::string const & p) const 
       {
           return is_type<long long>(p);
       }
       
-      bool archive::is_ulonglong(std::string const & p) const 
+      bool archive_base::is_ulonglong(std::string const & p) const 
       {
           return is_type<unsigned long long>(p);
       }
       
-      bool archive::is_float(std::string const & p) const 
+      bool archive_base::is_float(std::string const & p) const 
       {
           return is_type<float>(p);
       }
       
-      bool archive::is_double(std::string const & p) const 
+      bool archive_base::is_double(std::string const & p) const 
       {
           return is_type<double>(p) && !is_complex(p);
       }
       
-      bool archive::is_complex(std::string const & p) const 
+      bool archive_base::is_complex(std::string const & p) const 
       {
           return is_type<double>(p) && p.find_last_of('@') == std::string::npos && is_attribute(p + "/@__complex__");
       }
       
-      bool archive::is_null(std::string const & p) const 
+      bool archive_base::is_null(std::string const & p) const 
       {
           try {
               hid_t space_id;
@@ -401,7 +399,7 @@ namespace alps {
           }
       }
       
-      void archive::serialize(std::string const & p) 
+      void archive_base::serialize(std::string const & p) 
       {
           if (p.find_last_of('@') != std::string::npos)
               ALPS_HDF5_THROW_RUNTIME_ERROR("attributes needs to be a scalar type or a string" + p)
@@ -409,7 +407,7 @@ namespace alps {
                   set_group(complete_path(p));
       }
       
-      void archive::delete_data(std::string const & p) const 
+      void archive_base::delete_data(std::string const & p) const 
       {
           try {
               if (is_data(p))
@@ -422,7 +420,7 @@ namespace alps {
                   }
       }
       
-      void archive::delete_group(std::string const & p) const 
+      void archive_base::delete_group(std::string const & p) const 
       {
           try {
               if (is_group(p))
@@ -435,7 +433,7 @@ namespace alps {
                   }
       }
       
-      void archive::delete_attribute(std::string const & p) const 
+      void archive_base::delete_attribute(std::string const & p) const 
       {
           try {
               // TODO: implement
@@ -444,7 +442,7 @@ namespace alps {
           }
       }
       
-      std::vector<std::string> archive::list_children(std::string const & p) const 
+      std::vector<std::string> archive_base::list_children(std::string const & p) const 
       {
           try {
               std::vector<std::string> list;
@@ -458,7 +456,7 @@ namespace alps {
           }
       }
       
-      std::vector<std::string> archive::list_attributes(std::string const & p) const 
+      std::vector<std::string> archive_base::list_attributes(std::string const & p) const 
       {
           try {
               std::vector<std::string> list;
@@ -476,7 +474,7 @@ namespace alps {
           }
       }
       
-      archive::archive(std::string const & filename, hid_t(* F )(std::string const &), bool compress)
+      archive_base::archive_base(std::string const & filename, hid_t(* F )(std::string const &), bool compress)
       : _error_handler_id(H5Eset_auto2(H5E_DEFAULT, NULL, NULL))
       , _context(_pool.find(make_pair(filename, compress)) == _pool.end() || _pool[make_pair(filename, compress)].expired()
                  ? boost::shared_ptr<detail::context>(new detail::context(filename, F(filename), compress))
@@ -517,7 +515,7 @@ namespace alps {
           }
       }
       
-      hid_t archive::create_path(std::string const & p, hid_t type_id, hid_t space_id, int d, hsize_t const * s , bool set_prop) const 
+      hid_t archive_base::create_path(std::string const & p, hid_t type_id, hid_t space_id, int d, hsize_t const * s , bool set_prop) const 
       {
           hid_t data_id = H5Dopen2(file_id(), p.c_str(), H5P_DEFAULT), tmp_id = 0;
           if (data_id < 0) {
@@ -547,7 +545,7 @@ namespace alps {
           return data_id;
       }
       
-      hid_t archive::create_dataset(std::string const & p, hid_t type_id, hid_t space_id, int d, hsize_t const * s, bool set_prop) const 
+      hid_t archive_base::create_dataset(std::string const & p, hid_t type_id, hid_t space_id, int d, hsize_t const * s, bool set_prop) const 
       {
           if (set_prop) {
               detail::property_type prop_id(H5Pcreate(H5P_DATASET_CREATE));
@@ -563,7 +561,7 @@ namespace alps {
               return H5Dcreate2(file_id(), p.c_str(), type_id, detail::space_type(space_id), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
       }
       
-      void archive::copy_attributes(hid_t dest_id, hid_t source_id, std::vector<std::string> const & names) const 
+      void archive_base::copy_attributes(hid_t dest_id, hid_t source_id, std::vector<std::string> const & names) const 
       {
           for (std::vector<std::string>::const_iterator it = names.begin(); it != names.end(); ++it) {
               detail::attribute_type attr_id = H5Aopen(source_id, it->c_str(), H5P_DEFAULT);
@@ -597,7 +595,7 @@ detail::check_error(H5Awrite(new_id, type_id, &v));                             
                   }
       }
       
-      hid_t archive::save_comitted_data(std::string const & p, hid_t type_id, hid_t space_id, int d, hsize_t const * s, bool set_prop) const 
+      hid_t archive_base::save_comitted_data(std::string const & p, hid_t type_id, hid_t space_id, int d, hsize_t const * s, bool set_prop) const 
       {
           std::string rev_path = "/revisions/" + detail::convert<std::string>(revision()) + p;
           if (revision() && !is_data(p))
@@ -638,7 +636,7 @@ detail::check_error(H5Awrite(new_id, type_id, &v));                             
           return create_path(p, type_id, space_id, d, s, set_prop);
       }
 
-      hid_t archive::open_attribute(std::string const & p) const {
+      hid_t archive_base::open_attribute(std::string const & p) const {
           hid_t parent_id, attr_id;
           if (p.find_last_of('@') == std::string::npos)
               ALPS_HDF5_THROW_RUNTIME_ERROR("no valid attribute path " + p)
@@ -660,7 +658,7 @@ detail::check_error(H5Awrite(new_id, type_id, &v));                             
           return attr_id;
       }
 
-      void archive::set_group(std::string const & p) const 
+      void archive_base::set_group(std::string const & p) const 
       {
           if (!is_group(p)) {
               std::size_t pos;
@@ -680,7 +678,7 @@ detail::check_error(H5Awrite(new_id, type_id, &v));                             
           }
       }
 
-    void oarchive::serialize(std::string const & p) 
+    void oarchive_base::serialize(std::string const & p) 
     {
         if (p.find_last_of('@') != std::string::npos)
             ALPS_HDF5_THROW_RUNTIME_ERROR("attributes needs to be a scalar type or a string" + p)
@@ -688,7 +686,7 @@ detail::check_error(H5Awrite(new_id, type_id, &v));                             
             set_group(complete_path(p));
     }
 
-    std::map<std::pair<std::string, bool>, boost::weak_ptr<detail::context> > archive::_pool;
+    std::map<std::pair<std::string, bool>, boost::weak_ptr<detail::context> > archive_base::_pool;
 
   }
 }

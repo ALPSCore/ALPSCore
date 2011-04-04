@@ -93,10 +93,8 @@ public:
   void load(IDump& dump);
   void extract_timeseries(ODump& dump) const { dump << binsize_ << values_.size() << binentries_ << values_;}
 
-#ifdef ALPS_HAVE_HDF5
-    void serialize(hdf5::oarchive &) const;
-    void serialize(hdf5::iarchive &);
-#endif
+  void save(hdf5::archive &) const;
+  void load(hdf5::archive &);
 
 private:
   uint32_t binsize_;       // number of measurements per bin
@@ -306,56 +304,54 @@ inline void BasicDetailedBinning<T>::load(IDump& dump)
        >> values2_;
 }
 
-#ifdef ALPS_HAVE_HDF5
-    template <class T> inline void BasicDetailedBinning<T>::serialize(hdf5::iarchive & ar) {
-        SimpleBinning<T>::serialize(ar);
-        ar 
-            >> make_pvp("timeseries/data", values_)
-            >> make_pvp("timeseries/data/@minbinsize", minbinsize_)
-            >> make_pvp("timeseries/data/@binsize", binsize_)
-            >> make_pvp("timeseries/data/@maxbinnum", maxbinnum_)
-            >> make_pvp("timeseries/data2", values2_)
+template <class T> inline void BasicDetailedBinning<T>::save(hdf5::archive & ar) const {
+    SimpleBinning<T>::save(ar);
+    if (values_.size() && values2_.size()) {
+        ar
+            << make_pvp("timeseries/partialbin", values_.back())
+            << make_pvp("timeseries/partialbin/@count", binentries_)
+            << make_pvp("timeseries/partialbin2", values2_.back())
+            << make_pvp("timeseries/partialbin2/@count", binentries_)
         ;
-        value_type value, value2;
-        ar 
-            >> make_pvp("timeseries/partialbin", value)
-            >> make_pvp("timeseries/partialbin2", value2)
-            >> make_pvp("timeseries/partialbin/@count", binentries_)
+        value_type value = values_.back();
+        const_cast<BasicDetailedBinning<T> *>(this)->values_.pop_back();
+        value_type value2 = values2_.back();
+        const_cast<BasicDetailedBinning<T> *>(this)->values2_.pop_back();
+        ar
+            << make_pvp("timeseries/data", values_)
+            << make_pvp("timeseries/data/@binningtype", "linear")
+            << make_pvp("timeseries/data/@minbinsize", minbinsize_)
+            << make_pvp("timeseries/data/@binsize", binsize_)
+            << make_pvp("timeseries/data/@maxbinnum", maxbinnum_)
+            << make_pvp("timeseries/data2", values2_)
+            << make_pvp("timeseries/data2/@binningtype", "linear")
+            << make_pvp("timeseries/data2/@minbinsize", minbinsize_)
+            << make_pvp("timeseries/data2/@binsize", binsize_)
+            << make_pvp("timeseries/data2/@maxbinnum", maxbinnum_)
         ;
-        values_.push_back(value);
-        values2_.push_back(value2);
+        const_cast<BasicDetailedBinning<T> *>(this)->values_.push_back(value);
+        const_cast<BasicDetailedBinning<T> *>(this)->values2_.push_back(value2);
     }
-    template <class T> inline void BasicDetailedBinning<T>::serialize(hdf5::oarchive & ar) const {
-        SimpleBinning<T>::serialize(ar);
-        if (values_.size() && values2_.size()) {
-            ar
-                << make_pvp("timeseries/partialbin", values_.back())
-                << make_pvp("timeseries/partialbin/@count", binentries_)
-                << make_pvp("timeseries/partialbin2", values2_.back())
-                << make_pvp("timeseries/partialbin2/@count", binentries_)
-            ;
-            value_type value = values_.back();
-            const_cast<BasicDetailedBinning<T> *>(this)->values_.pop_back();
-            value_type value2 = values2_.back();
-            const_cast<BasicDetailedBinning<T> *>(this)->values2_.pop_back();
-            ar
-                << make_pvp("timeseries/data", values_)
-                << make_pvp("timeseries/data/@binningtype", "linear")
-                << make_pvp("timeseries/data/@minbinsize", minbinsize_)
-                << make_pvp("timeseries/data/@binsize", binsize_)
-                << make_pvp("timeseries/data/@maxbinnum", maxbinnum_)
-                << make_pvp("timeseries/data2", values2_)
-                << make_pvp("timeseries/data2/@binningtype", "linear")
-                << make_pvp("timeseries/data2/@minbinsize", minbinsize_)
-                << make_pvp("timeseries/data2/@binsize", binsize_)
-                << make_pvp("timeseries/data2/@maxbinnum", maxbinnum_)
-            ;
-            const_cast<BasicDetailedBinning<T> *>(this)->values_.push_back(value);
-            const_cast<BasicDetailedBinning<T> *>(this)->values2_.push_back(value2);
-        }
-    }
-#endif
+}
 
+template <class T> inline void BasicDetailedBinning<T>::load(hdf5::archive & ar) {
+    SimpleBinning<T>::load(ar);
+    ar 
+        >> make_pvp("timeseries/data", values_)
+        >> make_pvp("timeseries/data/@minbinsize", minbinsize_)
+        >> make_pvp("timeseries/data/@binsize", binsize_)
+        >> make_pvp("timeseries/data/@maxbinnum", maxbinnum_)
+        >> make_pvp("timeseries/data2", values2_)
+    ;
+    value_type value, value2;
+    ar 
+        >> make_pvp("timeseries/partialbin", value)
+        >> make_pvp("timeseries/partialbin2", value2)
+        >> make_pvp("timeseries/partialbin/@count", binentries_)
+    ;
+    values_.push_back(value);
+    values2_.push_back(value2);
+}
 
 } // end namespace alps
 

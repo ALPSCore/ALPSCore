@@ -30,7 +30,7 @@
 
 namespace alps {
 
-void save_observable(alps::hdf5::oarchive& ar, std::string const& prefix,
+void save_observable(alps::hdf5::archive & ar, std::string const& prefix,
                      std::vector<ObservableSet> const& obs) {
   if (obs.size() == 1)
     ar << make_pvp(prefix, obs[0]);
@@ -39,23 +39,23 @@ void save_observable(alps::hdf5::oarchive& ar, std::string const& prefix,
       ar << make_pvp(prefix + "/sections/" + boost::lexical_cast<std::string>(m), obs[m]);
 }
 
-void save_observable(alps::hdf5::oarchive& ar, std::vector<ObservableSet> const& obs) {
+void save_observable(alps::hdf5::archive & ar, std::vector<ObservableSet> const& obs) {
   save_observable(ar, "simulation/results", obs);
 }
 
-void save_observable(alps::hdf5::oarchive& ar, cid_t cid, std::vector<ObservableSet> const& obs) {
+void save_observable(alps::hdf5::archive & ar, cid_t cid, std::vector<ObservableSet> const& obs) {
   save_observable(ar, "simulation/realizations/" + boost::lexical_cast<std::string>(0) +
                   "/clones/" + boost::lexical_cast<std::string>(cid) + "/results", obs);
 }
 
-void save_observable(alps::hdf5::oarchive& ar, cid_t cid, int rank,
+void save_observable(alps::hdf5::archive & ar, cid_t cid, int rank,
                      std::vector<ObservableSet> const& obs) {
   save_observable(ar, "simulation/realizations/" + boost::lexical_cast<std::string>(0) +
                   "/clones/" + boost::lexical_cast<std::string>(cid) +
                   "/workers/" + boost::lexical_cast<std::string>(rank) + "/results", obs);
 }
 
-bool load_observable(alps::hdf5::iarchive& ar, std::string const& prefix,
+bool load_observable(alps::hdf5::archive & ar, std::string const& prefix,
                      std::vector<ObservableSet>& obs) {
   obs.clear();
   if (ar.is_group(prefix)) {
@@ -79,16 +79,16 @@ bool load_observable(alps::hdf5::iarchive& ar, std::string const& prefix,
   }
 }
 
-bool load_observable(alps::hdf5::iarchive& ar, std::vector<ObservableSet>& obs) {
+bool load_observable(alps::hdf5::archive & ar, std::vector<ObservableSet>& obs) {
   return load_observable(ar, "simulation/results", obs);
 }
 
-bool load_observable(alps::hdf5::iarchive& ar, cid_t cid, std::vector<ObservableSet>& obs) {
+bool load_observable(alps::hdf5::archive & ar, cid_t cid, std::vector<ObservableSet>& obs) {
   return load_observable(ar, "simulation/realizations/" + boost::lexical_cast<std::string>(0) +
                          "/clones/" + boost::lexical_cast<std::string>(cid) + "/results", obs);
 }
 
-bool load_observable(alps::hdf5::iarchive& ar, cid_t cid, int rank,
+bool load_observable(alps::hdf5::archive & ar, cid_t cid, int rank,
                        std::vector<ObservableSet>& obs) {
   return load_observable(ar, "simulation/realizations/" + boost::lexical_cast<std::string>(0) +
                          "/clones/" + boost::lexical_cast<std::string>(cid) +
@@ -166,7 +166,7 @@ void clone::load() {
   }
   #pragma omp critical (hdf5io)
   {
-    hdf5::iarchive h5(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_).file_string());
+    hdf5::archive h5(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_).file_string());
     h5 >> make_pvp("/", *this);
   }
 }
@@ -178,18 +178,18 @@ void clone::save() const{
   }
   #pragma omp critical (hdf5io)
   {
-    hdf5::oarchive h5(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_).file_string());
+    hdf5::archive h5(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_).file_string(), hdf5::archive::WRITE);
     h5 << make_pvp("/", *this);
   }
 }
 
-void clone::serialize(hdf5::iarchive& ar) {
+void clone::load(hdf5::archive & ar) {
   ar >> make_pvp("parameters", params_)
      >> make_pvp("log/alps", info_);
   load_observable(ar, clone_id_, measurements_);
 }
 
-void clone::serialize(hdf5::oarchive& ar) const {
+void clone::save(hdf5::archive & ar) const {
   ar << make_pvp("parameters", params_)
      << make_pvp("log/alps", info_);
   save_observable(ar, clone_id_, measurements_);
@@ -383,7 +383,7 @@ void clone_mpi::load() {
   }
   #pragma omp critical (hdf5io)
   {
-    hdf5::iarchive h5(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_).file_string());
+    hdf5::archive h5(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_).file_string());
     h5 >> make_pvp("/", *this);
   }
 }
@@ -395,12 +395,12 @@ void clone_mpi::save() const{
   }
   #pragma omp critical (hdf5io)
   {
-    hdf5::oarchive h5(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_).file_string());
+    hdf5::archive h5(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_).file_string(), hdf5::archive::WRITE);
     h5 << make_pvp("/", *this);
   }
 }
 
-void clone_mpi::serialize(hdf5::iarchive& ar) {
+void clone_mpi::load(hdf5::archive & ar) {
   ar >> make_pvp("parameters", params_)
      >> make_pvp("log/alps", info_);
   if (work_.size() == 1)
@@ -409,7 +409,7 @@ void clone_mpi::serialize(hdf5::iarchive& ar) {
     load_observable(ar, clone_id_, work_.rank(), measurements_);
 }
 
-void clone_mpi::serialize(hdf5::oarchive& ar) const {
+void clone_mpi::save(hdf5::archive & ar) const {
   ar << make_pvp("parameters", params_)
      << make_pvp("log/alps", info_);
   if (work_.size() == 1)

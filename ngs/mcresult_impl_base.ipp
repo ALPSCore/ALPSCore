@@ -131,9 +131,9 @@ namespace alps {
 
                 virtual void set_bin_number(uint64_t bin_number) = 0;
 
-                virtual void serialize(hdf5::iarchive & ar) = 0;
+                virtual void save(hdf5::archive & ar) const = 0;
 
-                virtual void serialize(hdf5::oarchive & ar) const = 0;
+                virtual void load(hdf5::archive & ar) = 0;
 
                 virtual void output(std::ostream & os) const = 0;
 

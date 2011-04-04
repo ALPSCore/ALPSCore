@@ -39,9 +39,8 @@
 #include <alps/type_traits/is_scalar.hpp>
 #include <alps/alea/type_tag.hpp>
 #include <alps/utility/encode.hpp>
-#ifdef ALPS_HAVE_HDF5
-#include <alps/hdf5.hpp>
-#endif
+
+#include <alps/ngs/mchdf5.hpp>
 
 namespace alps {
 
@@ -127,10 +126,8 @@ public:
   virtual void load(IDump& dump);
   void extract_timeseries(ODump& dump) const { b_.extract_timeseries(dump);}
 
-#ifdef ALPS_HAVE_HDF5
-  virtual void serialize(hdf5::iarchive &);
-  virtual void serialize(hdf5::oarchive &) const;
-#endif
+  virtual void save(hdf5::archive &) const;
+  virtual void load(hdf5::archive &);
 
   virtual std::string evaluation_method(Target t) const
   { return (t==Mean || t== Variance) ? std::string("simple") : b_.evaluation_method();}
@@ -188,13 +185,12 @@ inline void SimpleObservable<T,BINNING>::load(IDump& dump)
   dump >> b_;
 }
 
-#ifdef ALPS_HAVE_HDF5
-  template <class T,class BINNING> 
-  hdf5::oarchive & operator<<(hdf5::oarchive & ar,  SimpleObservable<T,BINNING> const& obs);
 
-  template <class T,class BINNING> 
-  hdf5::iarchive & operator>>(hdf5::iarchive & ar,  SimpleObservable<T,BINNING>& obs);
-#endif
+template <class T,class BINNING> 
+hdf5::archive & operator<<(hdf5::archive & ar,  SimpleObservable<T,BINNING> const& obs);
+
+template <class T,class BINNING> 
+hdf5::archive & operator>>(hdf5::archive & ar,  SimpleObservable<T,BINNING>& obs);
 
 } // end namespace alps
 

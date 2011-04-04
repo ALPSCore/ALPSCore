@@ -31,7 +31,7 @@
 #include "measurement.h"
 #include "simulation_p.h"
 
-#include <alps/hdf5.hpp>
+#include <alps/ngs/mchdf5.hpp>
 
 // some file (probably a python header) defines a tolower macro ...
 #undef tolower
@@ -175,7 +175,7 @@ void task::save_observable(std::vector<std::vector<ObservableSet> > const& oss) 
         #pragma omp critical (hdf5io)
         {
           boost::filesystem::path file = complete(boost::filesystem::path(base_ + ".out.h5"), basedir_);
-          hdf5::oarchive h5(file.file_string());
+          hdf5::archive h5(file.file_string(), alps::hdf5::archive::WRITE);
           h5 << make_pvp("/parameters", params_tmp);
           h5 << make_pvp("/simulation/results", obs_[0]);
           for (int n = 0; n < oss.size(); ++n)
@@ -190,7 +190,7 @@ void task::save_observable(std::vector<std::vector<ObservableSet> > const& oss) 
           {
             boost::filesystem::path file = complete(boost::filesystem::path(
               base_ + ".replica" + boost::lexical_cast<std::string>(i+1) + ".h5"), basedir_);
-            hdf5::oarchive h5(file.file_string());
+            hdf5::archive h5(file.file_string(), alps::hdf5::archive::WRITE);
             h5 << make_pvp("/parameters", p);
             h5 << make_pvp("/simulation/results", obs_[i]);
             for (int n = 0; n < oss.size(); ++n)
@@ -362,7 +362,7 @@ void task::evaluate() {
       bool success;
       #pragma omp critical (hdf5io)
       {
-        hdf5::iarchive h5(complete(p, basedir_).file_string());
+        hdf5::archive h5(complete(p, basedir_).file_string());
         success = load_observable(h5, cid, o);
       }
       if (success) {
@@ -376,7 +376,7 @@ void task::evaluate() {
         bool success;
         #pragma omp critical (hdf5io)
         {
-          hdf5::iarchive h5(complete(p, basedir_).file_string());
+          hdf5::archive h5(complete(p, basedir_).file_string());
           success = load_observable(h5, cid, w, o);
         }
         if (success) {

@@ -30,7 +30,7 @@
 
 #include "process.h"
 #include "types.h"
-#include <alps/hdf5.hpp>
+#include <alps/ngs/mchdf5.hpp>
 #include <alps/parser/xmlstream.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <vector>
@@ -71,8 +71,8 @@ public:
     startt_ = boost::posix_time::time_from_string(start_str);
     stopt_ = boost::posix_time::time_from_string(stop_str);
   }
-  void serialize(hdf5::oarchive& ar) const;
-  void serialize(hdf5::iarchive& ar);
+  void save(hdf5::archive & ar) const;
+  void load(hdf5::archive & ar);
 
 private:
   friend class clone_phase_xml_handler;
@@ -147,8 +147,8 @@ public:
   void serialize(Archive & ar, const unsigned int) {
     ar & clone_id_ & progress_ & phases_ & dumpfiles_ & worker_seed_ & disorder_seed_;
   }
-  void serialize(hdf5::oarchive& ar) const;
-  void serialize(hdf5::iarchive& ar);
+  void save(hdf5::archive & ar) const;
+  void load(hdf5::archive & ar);
 
 protected:
   void init(Parameters const& params, std::string const& dump);

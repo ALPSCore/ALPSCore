@@ -69,81 +69,80 @@ void ObservableSet::load(IDump& dump)
 
 #endif
 
-#ifdef ALPS_HAVE_HDF5
-    void ObservableSet::serialize(hdf5::iarchive & ar) {
-        std::vector<std::string> list = ar.list_children(ar.get_context());
-        std::set<std::string> skip;
-        for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
-            std::string obsname = hdf5_name_decode(*it);
-            if (ar.is_attribute(*it + "/@sign")) {
+void ObservableSet::save(hdf5::archive & ar) const {
+    for(base_type::const_iterator it = base_type::begin(); it != base_type::end(); ++it)
+        if(it->second)
+            ar 
+                << make_pvp(hdf5_name_encode(it->second->name()), *it->second)
+            ;
+}
+
+void ObservableSet::load(hdf5::archive & ar) {
+    std::vector<std::string> list = ar.list_children(ar.get_context());
+    std::set<std::string> skip;
+    for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
+        std::string obsname = hdf5_name_decode(*it);
+        if (ar.is_attribute(*it + "/@sign")) {
+            std::string signname;
+            ar >> make_pvp(*it + "/@sign", signname);
+            skip.insert(signname + " * " + obsname);
+        }
+    }
+    for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
+        std::string obsname = hdf5_name_decode(*it);
+        if (skip.find(obsname) == skip.end()) {
+            if (!has(obsname)) {
+                bool is_scalar = (ar.is_data(*it + "/mean/value") 
+                    ? ar.is_scalar(*it + "/mean/value")
+                    : (ar.is_data(*it + "/timeseries/logbinning") ? ar.dimensions(*it + "/timeseries/logbinning") == 1 : false)
+                );
+                bool is_signed = ar.is_attribute(*it + "/@sign");
                 std::string signname;
-                ar >> make_pvp(*it + "/@sign", signname);
-                skip.insert(signname + " * " + obsname);
-            }
-        }
-        for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
-            std::string obsname = hdf5_name_decode(*it);
-            if (skip.find(obsname) == skip.end()) {
-                if (!has(obsname)) {
-                    bool is_scalar = (ar.is_data(*it + "/mean/value") 
-                        ? ar.is_scalar(*it + "/mean/value")
-                        : (ar.is_data(*it + "/timeseries/logbinning") ? ar.dimensions(*it + "/timeseries/logbinning") == 1 : false)
-                    );
-                    bool is_signed = ar.is_attribute(*it + "/@sign");
-                    std::string signname;
-                    if (is_signed)
-                        ar >> make_pvp(*it + "/@sign", signname);
-                    bool is_simple_real = ar.is_data((is_signed ? (signname + " * " + *it) : *it) + "/sum");
-                    bool is_real = ar.is_data((is_signed ? (signname + " * " + *it) : *it) + "/timeseries/logbinning") && ar.is_data((is_signed ? (signname + " * " + *it) : *it) + "/timeseries/data");
-                    bool is_histogram = ar.is_attribute(*it + "/@min") && ar.is_attribute(*it + "/@max") && ar.is_attribute(*it + "/@stepsize");
-                    if (is_histogram) {
-                        if (ar.is_double(*it + "/@min"))
-                            addObservable(RealHistogramObservable(obsname));
+                if (is_signed)
+                    ar >> make_pvp(*it + "/@sign", signname);
+                bool is_simple_real = ar.is_data((is_signed ? (signname + " * " + *it) : *it) + "/sum");
+                bool is_real = ar.is_data((is_signed ? (signname + " * " + *it) : *it) + "/timeseries/logbinning") && ar.is_data((is_signed ? (signname + " * " + *it) : *it) + "/timeseries/data");
+                bool is_histogram = ar.is_attribute(*it + "/@min") && ar.is_attribute(*it + "/@max") && ar.is_attribute(*it + "/@stepsize");
+                if (is_histogram) {
+                    if (ar.is_datatype<double>(*it + "/@min"))
+                        addObservable(RealHistogramObservable(obsname));
+                    else
+                        addObservable(IntHistogramObservable(obsname));
+                } else if (is_scalar) {
+                    if (is_real) {
+                        if (is_signed)
+                            addObservable(SignedObservable<RealObservable, double>(obsname));
                         else
-                            addObservable(IntHistogramObservable(obsname));
-                    } else if (is_scalar) {
-                        if (is_real) {
-                            if (is_signed)
-                                addObservable(SignedObservable<RealObservable, double>(obsname, signname));
-                            else
-                                addObservable(RealObservable(obsname));
-                        } else if (is_simple_real) {
-                            if (is_signed)
-                                addObservable(SignedObservable<SimpleRealObservable, double>(obsname, signname));
-                            else
-                                addObservable(SimpleRealObservable(obsname));
-                        } else
-                            addObservable(RealObsevaluator(obsname));
-                    } else {
-                        if (is_real) {
-                            if (is_signed)
-                                addObservable(SignedObservable<RealVectorObservable, double>(obsname, signname));
-                            else
-                                addObservable(RealVectorObservable(obsname));
-                        } else if (is_simple_real) {
-                            if (is_signed)
-                                addObservable(SignedObservable<SimpleRealVectorObservable, double>(obsname, signname));
-                            else
-                                addObservable(SimpleRealVectorObservable(obsname));
-                        } else
-                            addObservable(RealVectorObsevaluator(obsname));
-                    }
+                            addObservable(RealObservable(obsname));
+                    } else if (is_simple_real) {
+                        if (is_signed)
+                            addObservable(SignedObservable<SimpleRealObservable, double>(obsname));
+                        else
+                            addObservable(SimpleRealObservable(obsname));
+                    } else
+                        addObservable(RealObsevaluator(obsname));
+                } else {
+                    if (is_real) {
+                        if (is_signed)
+                            addObservable(SignedObservable<RealVectorObservable, double>(obsname));
+                        else
+                            addObservable(RealVectorObservable(obsname));
+                    } else if (is_simple_real) {
+                        if (is_signed)
+                            addObservable(SignedObservable<SimpleRealVectorObservable, double>(obsname));
+                        else
+                            addObservable(SimpleRealVectorObservable(obsname));
+                    } else
+                        addObservable(RealVectorObsevaluator(obsname));
                 }
-                ar 
-                    >> make_pvp(*it, operator[](obsname))
-                ;
             }
+            ar 
+                >> make_pvp(*it, operator[](obsname))
+            ;
         }
-        update_signs();
     }
-    void ObservableSet::serialize(hdf5::oarchive & ar) const {
-        for(base_type::const_iterator it = base_type::begin(); it != base_type::end(); ++it)
-            if(it->second)
-                ar 
-                    << make_pvp(hdf5_name_encode(it->second->name()), *it->second)
-                ;
-    }
-#endif
+    update_signs();
+}
 
 void ObservableSet::update_signs()
 {
@@ -260,10 +259,10 @@ void ObservableSet::removeObservable(const std::string& name)
     // remove its sign entry
     for (signmap::iterator is=signs_.lower_bound(it->second->sign_name());
       is != signs_.upper_bound(it->second->sign_name()); ++is)
-	  if(is->second == name) {
+      if(is->second == name) {
         signs_.erase(is);
-		break;
-	  }
+        break;
+      }
   }
 
 #ifndef ALPS_NO_DELETE

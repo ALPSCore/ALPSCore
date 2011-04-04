@@ -33,24 +33,18 @@
 #ifndef ALPS_ALEA_ABSTRACTSIMPLEOBSERVABLE_IPP
 #define ALPS_ALEA_ABSTRACTSIMPLEOBSERVABLE_IPP
 
+#include <alps/ngs/mchdf5.hpp>
+#include <alps/ngs/mchdf5/complex.hpp>
+#include <alps/ngs/mchdf5/valarray.hpp>
+
 #include <alps/alea/abstractsimpleobservable.h>
-#include <alps/hdf5/valarray.hpp>
 
 namespace alps {
-#ifdef ALPS_HAVE_HDF5
 
 template <class T>
-void AbstractSimpleObservable<T>::serialize(hdf5::iarchive & ar) 
+void AbstractSimpleObservable<T>::save(hdf5::archive & ar) const 
 {
-    Observable::serialize(ar);
-    if (ar.is_data("labels"))
-        ar >> make_pvp("labels", label_);
-}
-    
-template <class T>
-void AbstractSimpleObservable<T>::serialize(hdf5::oarchive & ar) const 
-{
-  Observable::serialize(ar);
+  Observable::save(ar);
   if (count() > 0) {
       if (label_.size())
           ar
@@ -76,6 +70,14 @@ void AbstractSimpleObservable<T>::serialize(hdf5::oarchive & ar) const
           ;
   }
 }
-#endif
+
+template <class T>
+void AbstractSimpleObservable<T>::load(hdf5::archive & ar) 
+{
+    Observable::load(ar);
+    if (ar.is_data("labels"))
+        ar >> make_pvp("labels", label_);
+}
+
 }
 #endif // ALPS_ALEA_ABSTRACTSIMPLEOBSERVABLE_IPP

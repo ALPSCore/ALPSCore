@@ -34,10 +34,8 @@
 #include <alps/lattice/graph_helper.h>
 #include <alps/scheduler/task.h>
 
-#ifdef ALPS_HAVE_HDF5
-#include <alps/hdf5.hpp>
-#include <alps/hdf5/ublas.hpp>
-#endif
+#include <alps/ngs/mchdf5.hpp>
+#include <alps/ngs/mchdf5/ublas/vector.hpp>
 
 namespace alps { namespace scheduler {
 
@@ -55,10 +53,9 @@ public:
   DiagTask (const ProcessList& where , const boost::filesystem::path& p,bool delay_construct=false);
 
   void dostep() { boost::throw_exception(std::logic_error("Cannot call dostep on the base class DiagTask")); }
-#ifdef ALPS_HAVE_HDF5
-  void serialize(hdf5::oarchive &) const;
-  void serialize(hdf5::iarchive &);
-#endif
+
+  void save(hdf5::archive &) const;
+  void load(hdf5::archive &);
 
 protected:
   void write_xml_body(oxstream&, const boost::filesystem::path&,bool) const;
@@ -86,10 +83,9 @@ DiagTask<T,G>::DiagTask(const ProcessList& where , const boost::filesystem::path
 }
 
 
-#ifdef ALPS_HAVE_HDF5
 template <class T, class G>
-void DiagTask<T,G>::serialize(hdf5::iarchive & ar) {
-  scheduler::Task::serialize(ar);
+void DiagTask<T,G>::load(hdf5::archive & ar) {
+  scheduler::Task::load(ar);
   if (ar.is_group("/spectrum/sectors")) {
       std::vector<std::string> list = ar.list_children("/spectrum/sectors");
       measurements_.resize(list.size(),EigenvectorMeasurements<value_type>(*this));
@@ -123,8 +119,8 @@ void DiagTask<T,G>::serialize(hdf5::iarchive & ar) {
 }
 
 template <class T, class G>
-void DiagTask<T,G>::serialize(hdf5::oarchive & ar) const {
-  scheduler::Task::serialize(ar);
+void DiagTask<T,G>::save(hdf5::archive & ar) const {
+  scheduler::Task::save(ar);
   for (unsigned  i=0;i<eigenvalues_.size();++i) {
     std::string sectorpath = "/spectrum/sectors/" + boost::lexical_cast<std::string>(i);
     for (unsigned j=0;j<this->quantumnumbervalues_[i].size();++j)
@@ -135,7 +131,6 @@ void DiagTask<T,G>::serialize(hdf5::oarchive & ar) const {
       ar << make_pvp(sectorpath,measurements_[i]);
   }
 }
-#endif
 
 
 template <class T, class G>

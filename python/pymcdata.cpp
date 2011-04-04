@@ -38,9 +38,7 @@
 #include <boost/python.hpp>
 
 namespace alps { 
-
-namespace alea {
-
+    namespace alea {
 
         template <typename T>
         mcdata<T>::mcdata(boost::python::object const & mean)
@@ -254,8 +252,8 @@ BOOST_PYTHON_MODULE(pymcdata_c) {
         .def("asinh", static_cast<mcdata<double>(*)(mcdata<double>)>(&asinh))
         .def("acosh", static_cast<mcdata<double>(*)(mcdata<double>)>(&acosh))
         .def("atanh", static_cast<mcdata<double>(*)(mcdata<double>)>(&atanh))
-        .def("save", &mcdata<double>::save,save_docstring)
-        .def("load", &mcdata<double>::load,load_docstring)
+        .def("save", static_cast<void(mcdata<double>::*)(std::string const &, std::string const &) const>(&mcdata<double>::save),save_docstring)
+        .def("load", static_cast<void(mcdata<double>::*)(std::string const &, std::string const &)>(&mcdata<double>::load),load_docstring)
     ;
 
     class_<mcdata<std::vector<double> > >("MCVectorData", mcdata_docstring, init<optional<object, object> >(init_docstring))
@@ -328,7 +326,7 @@ BOOST_PYTHON_MODULE(pymcdata_c) {
         .def("asinh", static_cast<mcdata<std::vector<double> >(*)(mcdata<std::vector<double> >)>(&asinh))
         .def("acosh", static_cast<mcdata<std::vector<double> >(*)(mcdata<std::vector<double> >)>(&acosh))
         .def("atanh", static_cast<mcdata<std::vector<double> >(*)(mcdata<std::vector<double> >)>(&atanh))
-        .def("save", &mcdata<std::vector<double> >::save,save_docstring)
-        .def("load", &mcdata<std::vector<double> >::load,load_docstring)
+        .def("save", static_cast<void(mcdata<std::vector<double> >::*)(std::string const &, std::string const &) const>(&mcdata<std::vector<double> >::save),save_docstring)
+        .def("load", static_cast<void(mcdata<std::vector<double> >::*)(std::string const &, std::string const &)>(&mcdata<std::vector<double> >::load),load_docstring)
     ;
 }

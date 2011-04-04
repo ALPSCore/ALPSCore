@@ -26,17 +26,23 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <alps/ngs/macros.hpp>
+#include <alps/ngs/mchdf5.hpp>
 #include <alps/ngs/mcparams.hpp>
-
-#include <alps/hdf5.hpp>
 
 namespace alps {
 
     namespace detail {
-        struct mcparamvalue_serializer: public boost::static_visitor<> {
-            mcparamvalue_serializer(hdf5::oarchive & a, std::string const & p) : ar(a), path(p) {}
-            template<typename T> void operator()(T & v) const { ar << make_pvp(path, v); }
-            hdf5::oarchive & ar;
+        struct mcparamvalue_saver: public boost::static_visitor<> {
+
+            mcparamvalue_saver(hdf5::archive & a, std::string const & p)
+                : ar(a), path(p) 
+            {}
+
+            template<typename T> void operator()(T & v) const {
+                ar << make_pvp(path, v);
+            }
+
+            hdf5::archive & ar;
             std::string const & path;
         };
     }
@@ -63,7 +69,7 @@ namespace alps {
     #undef ALPS_NGS_MCPARAMS_CAST_OPERATOR_IMPL
 
     mcparams::mcparams(std::string const & input_file) {
-        hdf5::iarchive ar(input_file);
+        hdf5::archive ar(input_file);
         ar >> make_pvp("/parameters", *this);
     }
 
@@ -87,12 +93,12 @@ namespace alps {
         return find(k) != end();
     }
 
-    void mcparams::serialize(hdf5::oarchive & ar) const {
+    void mcparams::save(hdf5::archive & ar) const {
         for (const_iterator it = begin(); it != end(); ++it)
-            boost::apply_visitor(detail::mcparamvalue_serializer(ar, it->first), it->second);
+            boost::apply_visitor(detail::mcparamvalue_saver(ar, it->first), it->second);
     }
 
-    void mcparams::serialize(hdf5::iarchive & ar) {
+    void mcparams::load(hdf5::archive & ar) {
         std::vector<std::string> list = ar.list_children(ar.get_context());
         for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
             std::string v;

@@ -49,9 +49,7 @@
 #include <stdexcept>
 #include <string>
 
-#ifdef ALPS_HAVE_HDF5
-#include <alps/hdf5/hdf5_fwd.hpp>
-#endif
+#include <alps/ngs/mchdf5.hpp>
 
 /// \file parameters.h
 /// \brief classes to store simulation parameters
@@ -234,10 +232,8 @@ public:
     for (iterator itr = list_.begin(); itr != list_.end(); ++itr) map_[itr->key()] = itr;
   }
 
-#ifdef ALPS_HAVE_HDF5
-    void serialize(hdf5::oarchive &) const;
-    void serialize(hdf5::iarchive &);
-#endif
+  void save(hdf5::archive &) const;
+  void load(hdf5::archive &);
 
 private:
   list_type list_;

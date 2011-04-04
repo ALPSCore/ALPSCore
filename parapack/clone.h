@@ -34,22 +34,22 @@
 #include "types.h"
 
 #include <alps/alea.h>
-#include <alps/hdf5.hpp>
+#include <alps/ngs/mchdf5.hpp>
 #include <alps/osiris.h>
 #include <alps/parameter.h>
 #include <alps/scheduler/info.h>
 
 namespace alps {
 
-ALPS_DECL void save_observable(hdf5::oarchive& ar, std::vector<ObservableSet> const& obs);
-ALPS_DECL void save_observable(hdf5::oarchive& ar, cid_t cid,
+ALPS_DECL void save_observable(hdf5::archive & ar, std::vector<ObservableSet> const& obs);
+ALPS_DECL void save_observable(hdf5::archive & ar, cid_t cid,
   std::vector<ObservableSet> const& obs);
-ALPS_DECL void save_observable(hdf5::oarchive& ar, cid_t cid, int rank,
+ALPS_DECL void save_observable(hdf5::archive& ar, cid_t cid, int rank,
   std::vector<ObservableSet> const& obs);
-ALPS_DECL bool load_observable(hdf5::iarchive& ar, std::vector<ObservableSet>& obs);
-ALPS_DECL bool load_observable(hdf5::iarchive& ar, cid_t cid,
+ALPS_DECL bool load_observable(hdf5::archive & ar, std::vector<ObservableSet>& obs);
+ALPS_DECL bool load_observable(hdf5::archive & ar, cid_t cid,
   std::vector<ObservableSet>& obs);
-ALPS_DECL bool load_observable(hdf5::iarchive& ar, cid_t cid, int rank,
+ALPS_DECL bool load_observable(hdf5::archive & ar, cid_t cid, int rank,
   std::vector<ObservableSet>& obs);
 
 class abstract_clone : public boost::noncopyable {
@@ -61,8 +61,8 @@ public:
 
   virtual void load() = 0;
   virtual void save() const = 0;
-  virtual void serialize(hdf5::iarchive&) = 0;
-  virtual void serialize(hdf5::oarchive&) const = 0;
+  virtual void load(hdf5::archive &) = 0;
+  virtual void save(hdf5::archive &) const = 0;
 
   virtual void checkpoint() = 0;
   virtual void suspend() = 0;
@@ -83,8 +83,8 @@ public:
 
   void load();
   void save() const;
-  void serialize(hdf5::iarchive& ar);
-  void serialize(hdf5::oarchive& ar) const;
+  void load(hdf5::archive & ar);
+  void save(hdf5::archive & ar) const;
 
   void checkpoint();
   void suspend();
@@ -177,8 +177,8 @@ public:
 
   void load();
   void save() const;
-  void serialize(hdf5::iarchive& ar);
-  void serialize(hdf5::oarchive& ar) const;
+  void load(hdf5::archive & ar);
+  void save(hdf5::archive & ar) const;
 
   void checkpoint();
   void suspend();

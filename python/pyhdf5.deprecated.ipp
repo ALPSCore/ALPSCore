@@ -29,6 +29,11 @@
 #define ALPS_HDF5_NO_LEXICAL_CAST
 
 #include <alps/hdf5.hpp>
+#ifdef ALPS_USE_NGS
+    #include <alps/ngs/mchdf5.hpp>
+    #include <alps/ngs/mchdf5/pointer.hpp>
+#endif
+
 #include <alps/python/make_copy.hpp>
 
 #include <boost/python.hpp>

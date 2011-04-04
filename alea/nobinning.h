@@ -90,10 +90,8 @@ class NoBinning : public AbstractBinning<T>
   void save(ODump& dump) const;
   void load(IDump& dump);
 
-#ifdef ALPS_HAVE_HDF5
-    void serialize(hdf5::iarchive &);
-    void serialize(hdf5::oarchive &) const;
-#endif
+  void save(hdf5::archive &) const;
+  void load(hdf5::archive &);
 
  private:
     value_type sum_;       // sum of measurements
@@ -268,25 +266,25 @@ inline void NoBinning<T>::load(IDump& dump)
     dump >> sum_ >> sum2_ >> count_ >> thermal_count_ >> min_ >> max_;
 }
 
-#ifdef ALPS_HAVE_HDF5
-    template <class T> inline void NoBinning<T>::serialize(hdf5::iarchive & ar) {
+
+template <class T> inline void NoBinning<T>::save(hdf5::archive & ar) const {
+  ar
+      << make_pvp("sum", sum_)
+      << make_pvp("sum2", sum2_)
+      << make_pvp("count", count_)
+  ;
+}
+
+template <class T> inline void NoBinning<T>::load(hdf5::archive & ar) {
+  ar
+      >> make_pvp("count", count_)
+  ;
+  if (count_ > 0)
       ar
-          >> make_pvp("count", count_)
+          >> make_pvp("sum", sum_)
+          >> make_pvp("sum2", sum2_)
       ;
-      if (count_ > 0)
-          ar
-              >> make_pvp("sum", sum_)
-              >> make_pvp("sum2", sum2_)
-          ;
-    }
-    template <class T> inline void NoBinning<T>::serialize(hdf5::oarchive & ar) const {
-      ar
-          << make_pvp("sum", sum_)
-          << make_pvp("sum2", sum2_)
-          << make_pvp("count", count_)
-      ;
-    }
-#endif
+}
 
 } // end namespace alps
 

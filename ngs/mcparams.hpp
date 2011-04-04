@@ -28,8 +28,9 @@
 #ifndef ALPS_NGS_MCPARAMS_HPP
 #define ALPS_NGS_MCPARAMS_HPP
 
+#include <alps/ngs/mchdf5.hpp>
+
 #include <alps/config.h>
-#include <alps/hdf5/hdf5_fwd.hpp>
 
 #include <boost/variant.hpp>
 #include <boost/mpl/vector.hpp>
@@ -113,9 +114,9 @@ namespace alps {
 
             bool defined(std::string const & k) const;
 
-            void serialize(hdf5::oarchive & ar) const;
+            void save(hdf5::archive & ar) const;
 
-            void serialize(hdf5::iarchive & ar);
+            void load(hdf5::archive & ar);
 
     };
 }

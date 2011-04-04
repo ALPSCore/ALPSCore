@@ -223,21 +223,19 @@ void MCRun::save_worker(ODump& dump) const
   save(dump);
 }
 
-#ifdef ALPS_HAVE_HDF5
-void MCRun::serialize(hdf5::oarchive & ar) const {
-  Worker::serialize(ar);
+void MCRun::save(hdf5::archive & ar) const {
+  Worker::save(ar);
   if(node==0)
     ar << make_pvp("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(node) + "/results", measurements);
 }
 
-void MCRun::serialize(hdf5::iarchive & ar) {
-  Worker::serialize(ar);
+void MCRun::load(hdf5::archive & ar) {
+  Worker::load(ar);
 #ifdef ALPS_ONLY_HDF5
   if(node==0 && ar.is_group("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(node) + "/results"))
     ar >> make_pvp("/simulation/realizations/0/clones/" + boost::lexical_cast<std::string>(node) + "/results", measurements);
 #endif
 }
-#endif
 
 void MCRun::save(ODump&) const
 {
@@ -383,15 +381,15 @@ ResultType DummyMCRun::get_summary() const
 }
 
 #ifdef ALPS_HAVE_HDF5
-void MCSimulation::serialize(hdf5::iarchive & ar) {
-    WorkerTask::serialize(ar);
+void MCSimulation::load(hdf5::archive & ar) {
+    WorkerTask::load(ar);
     #ifdef ALPS_ONLY_HDF5
         if (ar.is_group("/simulation/results"))
             ar >> make_pvp("/simulation/results", measurements);
     #endif
 }
-void MCSimulation::serialize(hdf5::oarchive & ar) const {
-    WorkerTask::serialize(ar);
+void MCSimulation::save(hdf5::archive & ar) const {
+    WorkerTask::save(ar);
     #ifdef ALPS_ONE_CHECKPOINT_FILE_ONLY
         std::vector<std::pair<std::size_t, ObservableSet> > all_measurements;
         ProcessList remote_runs;

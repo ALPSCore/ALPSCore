@@ -143,18 +143,6 @@
 #cmakedefine ALPS_HAVE_PYTHON
 
 //
-// NGS
-//
-
-// Define to 1 if you build ngs.
-#cmakedefine ALPS_BUILD_NGS
-
-#ifdef ALPS_BUILD_NGS
-    #define ALPS_USE_NGS
-    #undef ALPS_BUILD_NGS
-#endif
-
-//
 // Introduce [int,uint]*_t into alps namespace
 //
 

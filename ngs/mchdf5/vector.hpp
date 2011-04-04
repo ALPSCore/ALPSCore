@@ -25,33 +25,20 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_HDF5_POINTER_HPP
-#define ALPS_NGS_HDF5_POINTER_HPP
+#ifndef ALPS_NGS_HDF5_STD_VECTOR_HPP
+#define ALPS_NGS_HDF5_STD_VECTOR_HPP
 
-namespace alps {
+#include <alps/ngs/mchdf5.hpp>
+#include <alps/ngs/convert.hpp>
 
-    template <typename T> detail::make_pvp_proxy<std::pair<T *, std::vector<std::size_t> > > make_pvp(
-          std::string const & path
-        , T * value
-        , std::size_t size
-    ) {
-        return detail::make_pvp_proxy<std::pair<T *, std::vector<std::size_t> > >(
-              path
-            , std::make_pair(value, std::vector<std::size_t>(1, size))
-        );
-    }
+#include <vector>
 
-    template <typename T> detail::make_pvp_proxy<std::pair<T *, std::vector<std::size_t> > > make_pvp(
-          std::string const & path
-        , T * value
-        , std::vector<std::size_t> const & size
-    ) {
-        return detail::make_pvp_proxy<std::pair<T *, std::vector<std::size_t> > >(
-              path
-            , std::make_pair(value, size)
-        );
-    }
+#define ALPS_NGS_HDF5_VECTOR_TEMPLATE_ARGS typename T, typename A
+#define ALPS_NGS_HDF5_VECTOR_TEMPLATE_TYPE std::vector<T, A>
 
-}
+#include <alps/ngs/mchdf5/container.def>
+
+#undef ALPS_NGS_HDF5_VECTOR_TEMPLATE_ARGS
+#undef ALPS_NGS_HDF5_VECTOR_TEMPLATE_TYPE
 
 #endif

@@ -28,8 +28,9 @@
 #ifndef ALPS_NGS_MCOBSERVABLE_HPP
 #define ALPS_NGS_MCOBSERVABLE_HPP
 
+#include <alps/ngs/mchdf5.hpp>
+
 #include <alps/config.h>
-#include <alps/hdf5/hdf5_fwd.hpp>
 #include <alps/alea/observable_fwd.hpp>
 
 #include <map>
@@ -55,8 +56,8 @@ namespace alps {
 
             template<typename T> mcobservable & operator<<(T const & value);
 
-            void serialize(hdf5::iarchive & ar);
-            void serialize(hdf5::oarchive & ar) const;
+            void save(hdf5::archive & ar) const;
+            void load(hdf5::archive & ar);
 
             void output(std::ostream & os) const;
 

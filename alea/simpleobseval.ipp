@@ -34,19 +34,17 @@
 #define ALPS_ALEA_SIMPLEOBSEVAL_IPP
 
 #include <alps/alea/simpleobseval.h>
-#include <alps/hdf5/valarray.hpp>
+#include <alps/ngs/mchdf5/valarray.hpp>
 
 namespace alps {
 
-
-#ifdef ALPS_HAVE_HDF5
-template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::iarchive & ar) {
+template <typename T> inline void SimpleObservableEvaluator<T>::save(hdf5::archive & ar) const {
     ar >> make_pvp("", all_);
 }
-template <typename T> inline void SimpleObservableEvaluator<T>::serialize(hdf5::oarchive & ar) const {
+template <typename T> inline void SimpleObservableEvaluator<T>::load(hdf5::archive & ar) {
     ar << make_pvp("", all_);
 }
-#endif
+
 } // end namespace alps
 
 #endif // ALPS_ALEA_SIMPLEOBSEVAL_IPP

@@ -41,9 +41,7 @@
 #include <boost/smart_ptr.hpp>
 #include <alps/config.h>
 
-#ifdef ALPS_HAVE_HDF5
-#include <alps/hdf5.hpp>
-#endif
+#include <alps/ngs/mchdf5.hpp>
 
 namespace alps {
 namespace scheduler {
@@ -57,10 +55,10 @@ public:
 
   void save_worker(ODump&) const;
   void load_worker(IDump&);
-#ifdef ALPS_HAVE_HDF5
-  void serialize(hdf5::oarchive &) const;
-  void serialize(hdf5::iarchive &);
-#endif
+  
+  void save(hdf5::archive &) const;
+  void load(hdf5::archive &);
+
   virtual void save(ODump&) const;
   virtual void load(IDump&);
 
@@ -120,8 +118,8 @@ public:
   virtual ResultType get_summary(const std::string) const;
 
 #ifdef ALPS_HAVE_HDF5
-  void serialize(hdf5::oarchive &) const;
-  void serialize(hdf5::iarchive &);
+  void save(hdf5::archive &) const;
+  void load(hdf5::archive &);
 #endif
 
 private:

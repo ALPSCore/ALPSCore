@@ -29,7 +29,8 @@
 /* $Id$ */
 
 #include <alps/alea/observable.h>
-#include <alps/hdf5.hpp>
+
+#include <alps/ngs/mchdf5.hpp>
 
 namespace alps {
 
@@ -87,10 +88,8 @@ void Observable::save(ODump& dump) const
 
 #endif // !ALPS_WITHOUT_OSIRIS
 
-#ifdef ALPS_HAVE_HDF5
-	void Observable::serialize(hdf5::iarchive &) {};
-	void Observable::serialize(hdf5::oarchive & ar) const {};
-#endif
+void Observable::save(hdf5::archive & ar) const {};
+void Observable::load(hdf5::archive &) {};
 
 bool Observable::is_signed() const
 { return false;        }

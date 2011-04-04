@@ -28,10 +28,10 @@
 #ifndef ALPS_NGS_MCRESULT_HPP
 #define ALPS_NGS_MCRESULT_HPP
 
+#include <alps/ngs/mchdf5.hpp>
 #include <alps/ngs/mcobservable.hpp>
 
 #include <alps/config.h>
-#include <alps/hdf5/hdf5_fwd.hpp>
 #include <alps/alea/observable_fwd.hpp>
 
 #ifdef ALPS_HAVE_MPI
@@ -164,8 +164,8 @@ namespace alps {
             void set_bin_size(uint64_t binsize);
             void set_bin_number(uint64_t bin_number);
 
-            void serialize(hdf5::iarchive & ar);
-            void serialize(hdf5::oarchive & ar) const;
+            void save(hdf5::archive & ar) const;
+            void load(hdf5::archive & ar);
 
             void output(std::ostream & os) const;
 

@@ -28,10 +28,10 @@
 #ifndef ALPS_NGS_MCOBSERVABLES_HPP
 #define ALPS_NGS_MCOBSERVABLES_HPP
 
+#include <alps/ngs/mchdf5.hpp>
 #include <alps/ngs/mcobservable.hpp>
 
 #include <alps/config.h>
-#include <alps/hdf5/hdf5_fwd.hpp>
 #include <alps/alea/observable_fwd.hpp>
 
 #include <map>
@@ -55,9 +55,9 @@ namespace alps {
 
             void reset(bool equilibrated = false);
 
-            void serialize(hdf5::iarchive & ar);
+            void save(hdf5::archive & ar) const;
 
-            void serialize(hdf5::oarchive & ar) const;
+            void load(hdf5::archive & ar);
 
             void output(std::ostream & os) const;
 

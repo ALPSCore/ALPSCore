@@ -36,9 +36,8 @@
 #include <streambuf>
 
 #include <alps/expression.h>
-#ifdef ALPS_HAVE_HDF5
-#include <alps/hdf5.hpp>
-#endif
+
+#include <alps/ngs/mchdf5.hpp>
 
 namespace bs = boost::spirit;
 
@@ -138,8 +137,7 @@ void Parameters::replace_envvar() {
   BOOST_FOREACH(Parameter& p, list_) p.replace_envvar();
 }
 
-#ifdef ALPS_HAVE_HDF5
-void Parameters::serialize(hdf5::oarchive & ar) const {
+void Parameters::save(hdf5::archive & ar) const {
     expression::ParameterEvaluator<double> eval(*this,false);
     for (const_iterator it = begin(); it != end(); ++it) {
         try {
@@ -160,7 +158,7 @@ void Parameters::serialize(hdf5::oarchive & ar) const {
         }
     }
 }
-void Parameters::serialize(hdf5::iarchive & ar) {
+void Parameters::load(hdf5::archive & ar) {
     std::vector<std::string> list = ar.list_children(ar.get_context());
     for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
         std::string v;
@@ -168,7 +166,6 @@ void Parameters::serialize(hdf5::iarchive & ar) {
         operator[](*it) = v;
     }
 }
-#endif
 
 //
 // XML support

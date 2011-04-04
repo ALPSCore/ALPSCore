@@ -40,7 +40,9 @@
 #include <sys/types.h> //on osx for uint
 #include <vector>
 #include <numeric>
-#include <alps/hdf5.hpp>
+
+#include <alps/ngs/mchdf5.hpp>
+#include <alps/ngs/mchdf5/pointer.hpp>
 
 #ifdef UBLAS
 #include <boost/numeric/bindings/traits/ublas_matrix.hpp>
@@ -531,18 +533,20 @@ namespace blas{
                 dscal_(&size_, &diagonal_matrix(i), &values_[i], &size_);
             }
         }
-        
-        void serialize(alps::hdf5::iarchive &ar)
-        {
-            using namespace alps;
-            resize(ar.extent("")[0]);
-            ar >> make_pvp("", &values_.front(), std::vector<std::size_t>(2, size_));
-        }
-        void serialize(alps::hdf5::oarchive &ar) const
-        {
-            using namespace alps;
-            ar << make_pvp("", &values_.front(), std::vector<std::size_t>(2, size_));
-        }
+
+		void save(alps::hdf5::archive &ar) const
+		{
+			using namespace alps;
+			ar << make_pvp("", &values_.front(), std::vector<std::size_t>(2, size_));
+		}
+
+		void load(alps::hdf5::archive &ar)
+		{
+			using namespace alps;
+			resize(ar.extent("")[0]);
+			ar >> make_pvp("", &values_.front(), std::vector<std::size_t>(2, size_));
+		}
+
     private:
         std::vector<double> values_;
         fortran_int_t size_;

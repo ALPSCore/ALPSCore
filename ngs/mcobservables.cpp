@@ -26,11 +26,13 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <alps/ngs/macros.hpp>
+#include <alps/ngs/mchdf5.hpp>
 #include <alps/ngs/mcobservables.hpp>
 
-#include <alps/hdf5.hpp>
 #include <alps/alea/observable.h>
 #include <alps/alea/observableset.h>
+
+#include <boost/make_shared.hpp>
 
 #include <stdexcept>
 
@@ -67,7 +69,14 @@ namespace alps {
             it->second.get_impl()->reset(equilibrated);
     }
 
-    void mcobservables::serialize(hdf5::iarchive & ar)  {
+    void mcobservables::save(hdf5::archive & ar) const {
+        for(std::map<std::string, mcobservable>::const_iterator it = std::map<std::string, mcobservable>::begin(); it != std::map<std::string, mcobservable>::end(); ++it)
+            ar
+                << make_pvp(ar.encode_segment(it->first), it->second)
+            ;
+    }
+
+    void mcobservables::load(hdf5::archive & ar)  {
         ObservableSet set;
         ar >> make_pvp("/simulation/realizations/0/clones/0/results", set);
         for(ObservableSet::const_iterator it = set.begin(); it != set.end(); ++it)
@@ -80,51 +89,44 @@ namespace alps {
                 operator[](it->first).get_impl()->set_sign(*(operator[](it->second->sign_name()).get_impl()));
     }
 
-    void mcobservables::serialize(hdf5::oarchive & ar) const {
-        for(std::map<std::string, mcobservable>::const_iterator it = std::map<std::string, mcobservable>::begin(); it != std::map<std::string, mcobservable>::end(); ++it)
-            ar
-                << make_pvp(ar.encode_segment(it->first), it->second)
-            ;
-    }
-
     void mcobservables::output(std::ostream & os) const {
         for(std::map<std::string, mcobservable>::const_iterator it = std::map<std::string, mcobservable>::begin(); it != std::map<std::string, mcobservable>::end(); ++it)
             std::cout << std::fixed << std::setprecision(5) << it->first << ": " << it->second << std::endl;
     }
 
     void mcobservables::create_RealObservable(std::string const & name) {
-        insert(name, new RealObservable(name));
+        insert(name, boost::make_shared<RealObservable>(name).get());
     }
 
     void mcobservables::create_RealVectorObservable(std::string const & name) {
-        insert(name, new RealVectorObservable(name));
+        insert(name, boost::make_shared<RealVectorObservable>(name).get());
     }
 
     void mcobservables::create_SimpleRealObservable(std::string const & name) {
-        insert(name, new SimpleRealObservable(name));
+        insert(name, boost::make_shared<SimpleRealObservable>(name).get());
     }
 
     void mcobservables::create_SimpleRealVectorObservable(std::string const & name) {
-        insert(name, new SimpleRealVectorObservable(name));
+        insert(name, boost::make_shared<SimpleRealVectorObservable>(name).get());
     }
 
     void mcobservables::create_SignedRealObservable(std::string const & name, std::string sign) {
-        insert(name, new SignedObservable<RealObservable>(name));
+        insert(name, boost::make_shared<SignedObservable<RealObservable> >(name).get());
         operator[](name).get_impl()->set_sign(*(operator[](sign).get_impl()));
     }
 
     void mcobservables::create_SignedRealVectorObservable(std::string const & name, std::string sign) {
-        insert(name, new SignedObservable<RealVectorObservable>(name));
+        insert(name, boost::make_shared<SignedObservable<RealVectorObservable> >(name).get());
         operator[](name).get_impl()->set_sign(*(operator[](sign).get_impl()));
     }
 
     void mcobservables::create_SignedSimpleRealObservable(std::string const & name, std::string sign) {
-        insert(name, new SignedObservable<SimpleRealObservable>(name));
+        insert(name, boost::make_shared<SignedObservable<SimpleRealObservable> >(name).get());
         operator[](name).get_impl()->set_sign(*(operator[](sign).get_impl()));
     }
 
     void mcobservables::create_SignedSimpleRealVectorObservable(std::string const & name, std::string sign) {
-        insert(name, new SignedObservable<SimpleRealVectorObservable>(name));
+        insert(name, boost::make_shared<SignedObservable<SimpleRealVectorObservable> >(name).get());
         operator[](name).get_impl()->set_sign(*(operator[](sign).get_impl()));
     }
 

@@ -92,7 +92,7 @@ void clone_phase::save(ODump& dp) const {
   dp << hosts_ << user_ << phase_ << to_simple_string(startt_) << to_simple_string(stopt_);
 }
 
-void clone_phase::serialize(hdf5::oarchive& ar) const {
+void clone_phase::save(hdf5::archive & ar) const {
   ar << make_pvp("user", user_) << make_pvp("phase", phase_)
      << make_pvp("from", boost::posix_time::to_iso_string(startt_))
      << make_pvp("to", boost::posix_time::to_iso_string(stopt_));
@@ -100,7 +100,7 @@ void clone_phase::serialize(hdf5::oarchive& ar) const {
     ar << make_pvp("machine/" + boost::lexical_cast<std::string>(i) + "/name", hosts_[i]);
 }
 
-void clone_phase::serialize(hdf5::iarchive & ar) {
+void clone_phase::load(hdf5::archive & ar) {
   ar >> make_pvp("user", user_) >> make_pvp("phase", phase_);
   std::string start_str, stop_str;
   ar >> make_pvp("from", start_str) >> make_pvp("to", stop_str);
@@ -275,7 +275,7 @@ void clone_info::set_hosts(std::vector<std::string>& hosts, bool& is_master) {
   is_master = true;
 }
 
-void clone_info::serialize(hdf5::oarchive& ar) const {
+void clone_info::save(hdf5::archive & ar) const {
   ar << make_pvp("clone", clone_id_)
      << make_pvp("progress", progress_)
      << make_pvp("workerseed", worker_seed_)
@@ -286,7 +286,7 @@ void clone_info::serialize(hdf5::oarchive& ar) const {
     ar << make_pvp("dumpfile/" + boost::lexical_cast<std::string>(i), dumpfiles_[i]);
 }
 
-void clone_info::serialize(hdf5::iarchive& ar) {
+void clone_info::load(hdf5::archive & ar) {
   cid_t cid;
   ar >> make_pvp("clone", cid)
      >> make_pvp("progress", progress_)

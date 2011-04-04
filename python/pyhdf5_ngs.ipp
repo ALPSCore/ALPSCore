@@ -26,11 +26,14 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#define PY_ARRAY_UNIQUE_SYMBOL pyhdf5_PyArrayHandle
+
 #include <alps/ngs/mchdf5.hpp>
+#include <alps/ngs/mchdf5/pair.hpp>
+#include <alps/ngs/mchdf5/vector.hpp>
+#include <alps/ngs/mchdf5/complex.hpp>
+
 #include <alps/python/make_copy.hpp>
-#include <alps/ngs/hdf5/std/pair.hpp>
-#include <alps/ngs/hdf5/std/vector.hpp>
-#include <alps/ngs/hdf5/std/complex.hpp>
 
 #include <boost/python.hpp>
 #include <boost/scoped_ptr.hpp>
@@ -50,11 +53,11 @@ namespace alps {
                 }
             }
 
-            boost::python::str filename(alps::mchdf5 const & self) {
+            boost::python::str filename(alps::hdf5::archive const & self) {
                 return boost::python::str(self.get_filename());
             }
 
-            template<typename T> boost::python::list extent(T & self, std::string const & path) {
+            boost::python::list extent(alps::hdf5::archive & self, std::string const & path) {
                 boost::python::list result;
                 std::vector<std::size_t> children = self.extent(path);
                 for (std::vector<std::size_t>::const_iterator it = children.begin(); it != children.end(); ++it)
@@ -62,7 +65,7 @@ namespace alps {
                 return result;
             }
 
-            template<typename T> boost::python::list list_children(T & self, std::string const & path) {
+            boost::python::list list_children(alps::hdf5::archive & self, std::string const & path) {
                 boost::python::list result;
                 std::vector<std::string> children = self.list_children(path);
                 for (std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)
@@ -70,7 +73,7 @@ namespace alps {
                 return result;
             }
 
-            template<typename T> boost::python::list list_attributes(T & self, std::string const & path) {
+            boost::python::list list_attributes(alps::hdf5::archive & self, std::string const & path) {
                 boost::python::list result;
                 std::vector<std::string> children = self.list_attributes(path);
                 for (std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)
@@ -78,13 +81,25 @@ namespace alps {
                 return result;
             }
 
-            void write(alps::mchdf5 & self, std::string const & path, boost::python::object const & data) {
+            void write(alps::hdf5::archive & self, std::string const & path, boost::python::object const & data) {
                 using alps::make_pvp;
                 import_numpy();
                 if (false);
                 #define PYHDF5_CHECK_SCALAR(T, F)                                                                                                          \
                     else if ( F (data.ptr()))                                                                                                              \
-                        self << make_pvp(path, boost::python::extract< T >(data)());
+							\
+							\
+							{\
+							std::cerr << (alps::hdf5::has_complex_elements<T>::value ? "true" : "false") << " " << (boost::is_same<T, std::complex<double> >::value ? "true" : "false") << std::endl;\
+							\
+							\
+							\
+                        self << make_pvp(path, boost::python::extract< T >(data)());			\
+						\
+												\
+												}\
+												\
+						
                 PYHDF5_CHECK_SCALAR(int, PyInt_CheckExact)
                 PYHDF5_CHECK_SCALAR(long, PyLong_CheckExact)
                 PYHDF5_CHECK_SCALAR(double, PyFloat_CheckExact)
@@ -100,13 +115,24 @@ namespace alps {
                             throw std::runtime_error("numpy array is not native");
                         #define PYHDF5_CHECK_NUMPY(T, N)                                                                                                   \
                             else if (PyArray_TYPE(data.ptr()) == N)                                                                                        \
+							\
+							\
+							{\
+							std::cerr << (alps::hdf5::has_complex_elements<T>::value ? "true" : "false") << std::endl;\
+							\
+							\
+							\
                                 self << make_pvp(                                                                                                          \
                                       path                                                                                                                 \
                                     , std::make_pair(                                                                                                      \
                                           static_cast< T const *>(PyArray_DATA(data.ptr()))                                                                \
                                         , std::vector<std::size_t>(PyArray_DIMS(data.ptr()), PyArray_DIMS(data.ptr()) + PyArray_NDIM(data.ptr()))          \
                                     )                                                                                                                      \
-                                );
+                                );				\
+												\
+												}\
+												\
+												
                         PYHDF5_CHECK_NUMPY(bool, PyArray_BOOL)
                         PYHDF5_CHECK_NUMPY(char, PyArray_CHAR)
                         PYHDF5_CHECK_NUMPY(signed char, PyArray_BYTE)
@@ -133,19 +159,19 @@ namespace alps {
                 }
             }
 
-            template<typename T> boost::python::object read_scalar(alps::mchdf5 & self, std::string const & path) {
+            template<typename T> boost::python::object read_scalar(alps::hdf5::archive & self, std::string const & path) {
                 T data;
                 self >> make_pvp(path, data);
                 return boost::python::object(data);
             }
 
-            template<> boost::python::object read_scalar<std::string>(alps::mchdf5 & self, std::string const & path) {
+            template<> boost::python::object read_scalar<std::string>(alps::hdf5::archive & self, std::string const & path) {
                 std::string data;
                 self >> make_pvp(path, data);
                 return boost::python::str(data);
             }
 
-            template<typename T> boost::python::object read_numpy(alps::mchdf5 & self, std::string const & path, int type) {
+            template<typename T> boost::python::object read_numpy(alps::hdf5::archive & self, std::string const & path, int type) {
                 import_numpy();
                 std::vector<std::size_t> extent(self.extent(path));
                 std::vector<npy_intp> npextent(extent.begin(), extent.end());
@@ -160,7 +186,7 @@ namespace alps {
                 return obj;
             }
 
-            boost::python::object dispatch_read(alps::mchdf5 & self, std::string const & path) {
+            boost::python::object dispatch_read(alps::hdf5::archive & self, std::string const & path) {
                 if (self.is_scalar(path)) {
                     if (self.is_datatype<std::string>(path))
                         return read_scalar<std::string>(self, path);
@@ -220,7 +246,7 @@ namespace alps {
 }
 
 const char archive_constructor_docstring[] =
-"the constructor takes a file path as argument";
+"the constructor takes a file path the opening mode (read: 0, write: 1, write compressed: 3) as argument";
 
 const char filename_docstring[] = 
 "the (read-only) file name of the archive";
@@ -236,6 +262,9 @@ const char is_attribute_docstring[] =
 
 const char is_scalar_docstring[] = 
 "returns True if the given path points to scalar data in the HDF5 file";
+
+const char is_complex_docstring[] = 
+"returns True if the given path points to complex data in the HDF5 file";
 
 const char is_null_docstring[] = 
 "returns True if the given path points to an empty (null) node in the HDF5 file";
@@ -280,28 +309,29 @@ BOOST_PYTHON_MODULE(pyhdf5_c) {
     docstring_options doc_options(true);
     doc_options.disable_cpp_signatures();
 
-    class_<alps::mchdf5>(
+    class_<alps::hdf5::archive>(
           "archive", 
           "an archive class to read and write HDF5 files", 
-          boost::python::init<std::string>(archive_constructor_docstring)
+          boost::python::init<std::string, std::size_t>(archive_constructor_docstring)
     )
-        .def("__deepcopy__", &alps::python::make_copy<alps::mchdf5>)
+        .def("__deepcopy__", &alps::python::make_copy<alps::hdf5::archive>)
         .add_property("filename", &alps::python::hdf5::filename, filename_docstring)
-        .def("is_group", &alps::mchdf5::is_group, is_group_docstring)
-        .def("is_data", &alps::mchdf5::is_data, is_data_docstring)
-        .def("is_attribute", &alps::mchdf5::is_attribute, is_attribute_docstring)
-        .def("extent", &alps::python::hdf5::extent<alps::mchdf5>, extent_docstring)
-        .def("dimensions", &alps::mchdf5::dimensions, dimensions_docstring)
-        .def("is_scalar", &alps::mchdf5::is_scalar, is_scalar_docstring)
-        .def("is_null", &alps::mchdf5::is_null, is_null_docstring)
-        .def("list_children", &alps::python::hdf5::list_children<alps::mchdf5>, list_children_docstring)
-        .def("list_attributes", &alps::python::hdf5::list_attributes<alps::mchdf5>, list_attr_docstring)
+        .def("is_group", &alps::hdf5::archive::is_group, is_group_docstring)
+        .def("is_data", &alps::hdf5::archive::is_data, is_data_docstring)
+        .def("is_attribute", &alps::hdf5::archive::is_attribute, is_attribute_docstring)
+        .def("extent", &alps::python::hdf5::extent, extent_docstring)
+        .def("dimensions", &alps::hdf5::archive::dimensions, dimensions_docstring)
+        .def("is_scalar", &alps::hdf5::archive::is_scalar, is_scalar_docstring)
+        .def("is_complex", &alps::hdf5::archive::is_complex, is_complex_docstring)
+        .def("is_null", &alps::hdf5::archive::is_null, is_null_docstring)
+        .def("list_children", &alps::python::hdf5::list_children, list_children_docstring)
+        .def("list_attributes", &alps::python::hdf5::list_attributes, list_attr_docstring)
         .def("read", &alps::python::hdf5::dispatch_read, read_docstring)
         .def("write", &alps::python::hdf5::write, write_docstring)
-        .def("create_group", &alps::mchdf5::create_group, create_group_docstring)
-        .def("delete_data", &alps::mchdf5::delete_data, delete_data_docstring)
-        .def("delete_group", &alps::mchdf5::delete_group, delete_group_docstring)
-        .def("delete_attribute", &alps::mchdf5::delete_attribute, delete_attribute_docstring)
+        .def("create_group", &alps::hdf5::archive::create_group, create_group_docstring)
+        .def("delete_data", &alps::hdf5::archive::delete_data, delete_data_docstring)
+        .def("delete_group", &alps::hdf5::archive::delete_group, delete_group_docstring)
+        .def("delete_attribute", &alps::hdf5::archive::delete_attribute, delete_attribute_docstring)
     ;
 
 }

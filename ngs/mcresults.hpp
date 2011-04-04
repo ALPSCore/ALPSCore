@@ -28,10 +28,10 @@
 #ifndef ALPS_NGS_MCRESULTS_HPP
 #define ALPS_NGS_MCRESULTS_HPP
 
+#include <alps/ngs/mchdf5.hpp>
 #include <alps/ngs/mcresult.hpp>
 
 #include <alps/config.h>
-#include <alps/hdf5/hdf5_fwd.hpp>
 
 #include <map>
 #include <string>
@@ -50,9 +50,9 @@ namespace alps {
 
             void insert(std::string const & name, mcresult res);
 
-            void serialize(hdf5::iarchive & ar);
+            void save(hdf5::archive & ar) const;
 
-            void serialize(hdf5::oarchive & ar) const;
+            void load(hdf5::archive & ar);
 
             void output(std::ostream & os) const;
 

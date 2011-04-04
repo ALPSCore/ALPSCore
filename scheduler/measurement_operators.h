@@ -31,6 +31,9 @@
 #ifndef ALPS_MODEL_MEASUREMENT_OPERATORS_H
 #define ALPS_MODEL_MEASUREMENT_OPERATORS_H
 
+#include <alps/ngs/mchdf5.hpp>
+#include <alps/ngs/mchdf5/vector.hpp>
+
 #include <alps/parameter.h>
 #include <alps/xml.h>
 #include <alps/config.h>
@@ -41,10 +44,6 @@
 #include <vector>
 #include <string>
 #include <map> 
-
-#ifdef ALPS_HAVE_HDF5
-# include <alps/hdf5.hpp>
-#endif
 
 namespace alps{
 
@@ -101,11 +100,9 @@ public:
   void write_xml_one_vector(oxstream& out, const boost::filesystem::path&, int j) const;
   XMLTag handle_tag(std::istream& infile, const XMLTag& intag);
   
-#ifdef ALPS_HAVE_HDF5
-  void serialize(alps::hdf5::oarchive & ar) const;
-  void serialize(alps::hdf5::iarchive & ar);
-#endif
-  
+  virtual void save(hdf5::archive &) const;
+  virtual void load(hdf5::archive &);
+
   std::map<std::string,std::vector<value_type> > average_values;
   std::map<std::string,std::vector<std::vector<value_type> > > local_values;
   std::map<std::string,std::vector<std::vector<value_type> > > correlation_values;
@@ -139,9 +136,8 @@ EigenvectorMeasurements<ValueType>::EigenvectorMeasurements(LatticeModel const& 
 {
 }
 
-#ifdef ALPS_HAVE_HDF5
 template <class ValueType>
-void EigenvectorMeasurements<ValueType>::serialize(alps::hdf5::oarchive& ar) const
+void EigenvectorMeasurements<ValueType>::save(alps::hdf5::archive& ar) const
 {
 
   for (typename std::map<std::string,std::vector<value_type> >::const_iterator
@@ -178,7 +174,7 @@ void EigenvectorMeasurements<ValueType>::serialize(alps::hdf5::oarchive& ar) con
 }
 
 template <class ValueType>
-void EigenvectorMeasurements<ValueType>::serialize(alps::hdf5::iarchive& ar)
+void EigenvectorMeasurements<ValueType>::load(alps::hdf5::archive & ar)
 {
   std::vector<std::string> list = ar.list_children(ar.get_context()+"/results");
   for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
@@ -220,8 +216,6 @@ void EigenvectorMeasurements<ValueType>::serialize(alps::hdf5::iarchive& ar)
     }
   }
 }
-  
-#endif
 
 
 template <class ValueType>

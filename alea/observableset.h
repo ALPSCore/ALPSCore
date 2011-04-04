@@ -38,7 +38,9 @@
 # pragma warning(disable:4275)
 #endif
 
+
 #include <alps/config.h>
+#include <alps/ngs/mchdf5.hpp>
 #include <alps/alea/observable.h>
 #include <alps/alea/observablefactory.h>
 #include <alps/osiris/archivedump.h>
@@ -50,10 +52,6 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/serialization/split_member.hpp>
 #include <map>
-
-#ifdef ALPS_HAVE_HDF5
-#include <alps/hdf5.hpp>
-#endif
 
 namespace alps {
 
@@ -196,10 +194,8 @@ class ALPS_DECL ObservableSet: public std::map<std::string,Observable*>
   virtual void load(IDump& dump);
 #endif
 
-#ifdef ALPS_HAVE_HDF5
-        virtual void serialize(hdf5::iarchive &);
-        virtual void serialize(hdf5::oarchive &) const;
-#endif
+virtual void save(hdf5::archive &) const;
+virtual void load(hdf5::archive &);
 
   BOOST_SERIALIZATION_SPLIT_MEMBER()
 
@@ -230,10 +226,8 @@ class ALPS_DECL ObservableSet: public std::map<std::string,Observable*>
 
   void read_xml(std::istream& infile, const XMLTag& tag);
 
-#ifdef ALPS_HAVE_HDF5
   void write_hdf5(boost::filesystem::path const &, std::size_t realization=0, std::size_t clone=0) const;
   void read_hdf5(boost::filesystem::path const &, std::size_t realization=0, std::size_t clone=0);
-#endif
 
   void clear();
 

@@ -30,10 +30,9 @@
 #define ALPS_NGS_MCRESULT_IMPL_DERIVED_HPP
 
 #include <alps/ngs/boost.hpp>
+#include <alps/ngs/mchdf5.hpp>
 #include <alps/ngs/macros.hpp>
 #include <alps/ngs/short_print.hpp>
-
-#include <alps/hdf5.hpp>
 
 #include <alps/alea/mcdata.hpp>
 
@@ -47,6 +46,9 @@
 namespace alps {
 
     namespace detail {
+
+        template<typename T> struct is_std_vector : boost::false_type {};
+        template<typename T> struct is_std_vector<std::vector<T> > : boost::true_type {};
 
         template<typename B, typename T> class mcresult_impl_derived : public B, public alea::mcdata<T> {
 
@@ -166,30 +168,53 @@ namespace alps {
                         return NULL;                                                                                                           \
                     }                                                                                                                          \
                                                                                                                                                \
-                    B * NAME ## _virtual (B const * rhs) const {                                                                               \
-                        if (dynamic_cast<mcresult_impl_derived<B, T> const *>(rhs))                                                            \
-                            return new mcresult_impl_derived<B, T>(                                                                            \
-                                  static_cast<alea::mcdata<T> const &>(*this)                                                                  \
-                                OP static_cast<alea::mcdata<T> const &>(dynamic_cast<mcresult_impl_derived<B, T> const &>(*rhs))               \
+                    template<typename U> typename boost::enable_if<is_std_vector<U>, B *>::type NAME ## _virtual_impl (B const * rhs) const {  \
+                        if (dynamic_cast<mcresult_impl_derived<B, U> const *>(rhs))                                                            \
+                            return new mcresult_impl_derived<B, U>(                                                                            \
+                                  static_cast<alea::mcdata<U> const &>(*this)                                                                  \
+                                OP static_cast<alea::mcdata<U> const &>(dynamic_cast<mcresult_impl_derived<B, U> const &>(*rhs))               \
                             );                                                                                                                 \
-                        else if (dynamic_cast<mcresult_impl_derived<B, typename alea::mcdata<T>::element_type> const *>(rhs))                  \
-                            return new mcresult_impl_derived<B, T>(                                                                            \
-                                   static_cast<alea::mcdata<T> const &>(*this)                                                                 \
-                                OP static_cast<alea::mcdata<typename alea::mcdata<T>::element_type> const &>(                                  \
-                                       dynamic_cast<mcresult_impl_derived<B, typename alea::mcdata<T>::element_type> const &>(*rhs)            \
+                        else if (dynamic_cast<mcresult_impl_derived<B, typename alea::mcdata<U>::element_type> const *>(rhs))                  \
+                            return new mcresult_impl_derived<B, U>(                                                                            \
+                                   static_cast<alea::mcdata<U> const &>(*this)                                                                 \
+                                OP static_cast<alea::mcdata<typename alea::mcdata<U>::element_type> const &>(                                  \
+                                       dynamic_cast<mcresult_impl_derived<B, typename alea::mcdata<U>::element_type> const &>(*rhs)            \
                                    )                                                                                                           \
                             );                                                                                                                 \
-/*                       else if (dynamic_cast<mcresult_impl_derived<B, std::vector<T> > const *>(rhs))                                        \
-                            return static_cast<B *>(new mcresult_impl_derived<B, std::vector<T> >(                                             \
-                                   static_cast<alea::mcdata<T> const &>(*this)                                                                 \
-                                OP static_cast<alea::mcdata<std::vector<T> > const &>(                                                         \
-                                       dynamic_cast<mcresult_impl_derived<B, std::vector<T> > const &>(*rhs)                                   \
+                        else {                                                                                                                 \
+                            ALPS_NGS_THROW_RUNTIME_ERROR("Invalid cast");                                                                      \
+                            return new mcresult_impl_derived<B, U>(*this);                                                                     \
+                        }                                                                                                                      \
+                    }                                                                                                                          \
+                                                                                                                                               \
+                    template<typename U> typename boost::disable_if<is_std_vector<U>, B *>::type NAME ## _virtual_impl (B const * rhs) const { \
+                        if (dynamic_cast<mcresult_impl_derived<B, U> const *>(rhs))                                                            \
+                            return new mcresult_impl_derived<B, U>(                                                                            \
+                                  static_cast<alea::mcdata<U> const &>(*this)                                                                  \
+                                OP static_cast<alea::mcdata<U> const &>(dynamic_cast<mcresult_impl_derived<B, U> const &>(*rhs))               \
+                            );                                                                                                                 \
+                        else if (dynamic_cast<mcresult_impl_derived<B, typename alea::mcdata<U>::element_type> const *>(rhs))                  \
+                            return new mcresult_impl_derived<B, U>(                                                                            \
+                                   static_cast<alea::mcdata<U> const &>(*this)                                                                 \
+                                OP static_cast<alea::mcdata<typename alea::mcdata<U>::element_type> const &>(                                  \
+                                       dynamic_cast<mcresult_impl_derived<B, typename alea::mcdata<U>::element_type> const &>(*rhs)            \
+                                   )                                                                                                           \
+                            );                                                                                                                 \
+                        else if (dynamic_cast<mcresult_impl_derived<B, std::vector<U> > const *>(rhs))                                         \
+                            return static_cast<B *>(new mcresult_impl_derived<B, std::vector<U> >(                                             \
+                                   static_cast<alea::mcdata<U> const &>(*this)                                                                 \
+                                OP static_cast<alea::mcdata<std::vector<U> > const &>(                                                         \
+                                       dynamic_cast<mcresult_impl_derived<B, std::vector<U> > const &>(*rhs)                                   \
                                    )                                                                                                           \
                             ));                                                                                                                \
-*/                      else {                                                                                                                 \
+                        else {                                                                                                                 \
                             ALPS_NGS_THROW_RUNTIME_ERROR("Invalid cast");                                                                      \
-                            return new mcresult_impl_derived<B, T>(*this);                                                                     \
+                            return new mcresult_impl_derived<B, U>(*this);                                                                     \
                         }                                                                                                                      \
+                    }                                                                                                                          \
+                                                                                                                                               \
+                    B * NAME ## _virtual (B const * rhs) const {                                                                               \
+                        return NAME ## _virtual_impl<T>(rhs);                                                                                  \
                     }                                                                                                                          \
                                                                                                                                                \
                     template <typename U> typename boost::enable_if<typename boost::mpl::or_<                                                  \
@@ -222,14 +247,14 @@ namespace alps {
                     alea::mcdata<T>::set_bin_number(bin_number);
                 }
 
-                void serialize(hdf5::iarchive & ar) {
-                    alea::mcdata<T>::serialize(ar);
-                }
-
-                void serialize(hdf5::oarchive & ar) const {
+                void save(hdf5::archive & ar) const {
                     ar
                         << make_pvp(ar.get_context(), static_cast<alea::mcdata<T> const &>(*this))
                     ;
+                }
+
+                void load(hdf5::archive & ar) {
+                    alea::mcdata<T>::save(ar);
                 }
 
                 void output(std::ostream & os) const {

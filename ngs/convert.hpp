@@ -38,7 +38,7 @@ namespace alps {
         return static_cast<U>(arg);
     }
 
-    #define ALPS_HDF5_CONVERT_STRING(T, c)                                                                                                     \
+    #define ALPS_NGDS_CONVERT_STRING(T, c)                                                                                                     \
         template<> inline std::string convert<std::string, T >( T arg) {                                                                       \
             char buffer[255];                                                                                                                  \
             if (sprintf(buffer, "%" c, arg) < 0)                                                                                               \
@@ -51,37 +51,37 @@ namespace alps {
                 ALPS_NGS_THROW_RUNTIME_ERROR("error converting from to string");                                                               \
             return value;                                                                                                                      \
         }
-    ALPS_HDF5_CONVERT_STRING(short, "hd")
-    ALPS_HDF5_CONVERT_STRING(int, "d")
-    ALPS_HDF5_CONVERT_STRING(long, "ld")
-    ALPS_HDF5_CONVERT_STRING(unsigned short, "hu")
-    ALPS_HDF5_CONVERT_STRING(unsigned int, "u")
-    ALPS_HDF5_CONVERT_STRING(unsigned long, "lu")
-    ALPS_HDF5_CONVERT_STRING(float, "f")
-    ALPS_HDF5_CONVERT_STRING(double, "lf")
-    ALPS_HDF5_CONVERT_STRING(long double, "Lf")
-    ALPS_HDF5_CONVERT_STRING(long long, "Ld")
-    ALPS_HDF5_CONVERT_STRING(unsigned long long, "Lu")
-    #undef ALPS_HDF5_CONVERT_STRING
+    ALPS_NGDS_CONVERT_STRING(short, "hd")
+    ALPS_NGDS_CONVERT_STRING(int, "d")
+    ALPS_NGDS_CONVERT_STRING(long, "ld")
+    ALPS_NGDS_CONVERT_STRING(unsigned short, "hu")
+    ALPS_NGDS_CONVERT_STRING(unsigned int, "u")
+    ALPS_NGDS_CONVERT_STRING(unsigned long, "lu")
+    ALPS_NGDS_CONVERT_STRING(float, "f")
+    ALPS_NGDS_CONVERT_STRING(double, "lf")
+    ALPS_NGDS_CONVERT_STRING(long double, "Lf")
+    ALPS_NGDS_CONVERT_STRING(long long, "Ld")
+    ALPS_NGDS_CONVERT_STRING(unsigned long long, "Lu")
+    #undef ALPS_NGDS_CONVERT_STRING
 
-    #define ALPS_HDF5_CONVERT_STRING_CHAR(T, U)                                                                                                \
+    #define ALPS_NGDS_CONVERT_STRING_CHAR(T, U)                                                                                                \
         template<> inline std::string convert<std::string, T >( T arg) {                                                                       \
             return convert<std::string>(static_cast< U >(arg));                                                                                \
         }                                                                                                                                      \
         template<> inline T convert<T, std::string>(std::string arg) {                                                                         \
             return static_cast< T >(convert< U >(arg));                                                                                        \
         }
-    ALPS_HDF5_CONVERT_STRING_CHAR(bool, short)
-    ALPS_HDF5_CONVERT_STRING_CHAR(char, short)
-    ALPS_HDF5_CONVERT_STRING_CHAR(signed char, short)
-    ALPS_HDF5_CONVERT_STRING_CHAR(unsigned char, unsigned short)
-    #undef ALPS_HDF5_CONVERT_STRING_CHAR
+    ALPS_NGDS_CONVERT_STRING_CHAR(bool, short)
+    ALPS_NGDS_CONVERT_STRING_CHAR(char, short)
+    ALPS_NGDS_CONVERT_STRING_CHAR(signed char, short)
+    ALPS_NGDS_CONVERT_STRING_CHAR(unsigned char, unsigned short)
+    #undef ALPS_NGDS_CONVERT_STRING_CHAR
 
     template<typename U, typename T> inline void convert(U const * src, U const * end, T * dest) {
         std::copy(src, end, dest);
     }
 
-    #define ALPS_HDF5_CONVERT_STRING_POINTER(T)                                                                                                \
+    #define ALPS_NGDS_CONVERT_STRING_POINTER(T)                                                                                                \
         template<> inline void convert<std::string, T >(std::string const * src, std::string const * end, T * dest) {                          \
             for (std::string const * it = src; it != end; ++it)                                                                                \
                 dest[it - src] = convert<T>(*it);                                                                                              \
@@ -94,22 +94,22 @@ namespace alps {
             for (T const * it = src; it != end; ++it)                                                                                          \
                 dest[it - src] = convert<std::string>(*it);                                                                                    \
         }
-    ALPS_HDF5_CONVERT_STRING_POINTER(bool)
-    ALPS_HDF5_CONVERT_STRING_POINTER(char)
-    ALPS_HDF5_CONVERT_STRING_POINTER(signed char)
-    ALPS_HDF5_CONVERT_STRING_POINTER(unsigned char)
-    ALPS_HDF5_CONVERT_STRING_POINTER(short)
-    ALPS_HDF5_CONVERT_STRING_POINTER(unsigned short)
-    ALPS_HDF5_CONVERT_STRING_POINTER(int)
-    ALPS_HDF5_CONVERT_STRING_POINTER(unsigned)
-    ALPS_HDF5_CONVERT_STRING_POINTER(long)
-    ALPS_HDF5_CONVERT_STRING_POINTER(unsigned long)
-    ALPS_HDF5_CONVERT_STRING_POINTER(long long)
-    ALPS_HDF5_CONVERT_STRING_POINTER(unsigned long long)
-    ALPS_HDF5_CONVERT_STRING_POINTER(float)
-    ALPS_HDF5_CONVERT_STRING_POINTER(double)
-    ALPS_HDF5_CONVERT_STRING_POINTER(long double)
-    #undef ALPS_HDF5_CONVERT_STRING_POINTER
+    ALPS_NGDS_CONVERT_STRING_POINTER(bool)
+    ALPS_NGDS_CONVERT_STRING_POINTER(char)
+    ALPS_NGDS_CONVERT_STRING_POINTER(signed char)
+    ALPS_NGDS_CONVERT_STRING_POINTER(unsigned char)
+    ALPS_NGDS_CONVERT_STRING_POINTER(short)
+    ALPS_NGDS_CONVERT_STRING_POINTER(unsigned short)
+    ALPS_NGDS_CONVERT_STRING_POINTER(int)
+    ALPS_NGDS_CONVERT_STRING_POINTER(unsigned)
+    ALPS_NGDS_CONVERT_STRING_POINTER(long)
+    ALPS_NGDS_CONVERT_STRING_POINTER(unsigned long)
+    ALPS_NGDS_CONVERT_STRING_POINTER(long long)
+    ALPS_NGDS_CONVERT_STRING_POINTER(unsigned long long)
+    ALPS_NGDS_CONVERT_STRING_POINTER(float)
+    ALPS_NGDS_CONVERT_STRING_POINTER(double)
+    ALPS_NGDS_CONVERT_STRING_POINTER(long double)
+    #undef ALPS_NGDS_CONVERT_STRING_POINTER
 
 }
 

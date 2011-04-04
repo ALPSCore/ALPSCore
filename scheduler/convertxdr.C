@@ -29,8 +29,10 @@
 
 /* $Id: convert2xml.C 3523 2009-12-12 05:52:24Z troyer $ */
 
+#include <alps/config.h>
 
-#include <alps/hdf5.hpp>
+#include <alps/ngs/mchdf5.hpp>
+
 #include <alps/scheduler/convert.h>
 #include <alps/osiris/xdrdump.h>
 #include <alps/parser/xslt_path.h>
@@ -71,7 +73,7 @@ void convert_xml(const std::string& inname)
   std::string h5name = inname.substr(0, inname.find_last_of('.')) + ".h5";
   if (boost::filesystem::exists(boost::filesystem::path(h5name,boost::filesystem::native))) 
   {
-    hdf5::iarchive ar(h5name);
+    hdf5::archive ar(h5name);
     if (ar.is_group("/spectrum"))
       is_spectrum=true;
   }

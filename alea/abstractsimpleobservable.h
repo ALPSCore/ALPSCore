@@ -190,10 +190,8 @@ public:
       dump >> label_;
   }
   
-#ifdef ALPS_HAVE_HDF5
-  void serialize(hdf5::iarchive & ar);
-  void serialize(hdf5::oarchive & ar) const;
-#endif
+void save(hdf5::archive &) const;
+void load(hdf5::archive &);
 
 private:
   virtual SimpleObservableEvaluator<value_type> make_evaluator() const

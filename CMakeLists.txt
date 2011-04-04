@@ -32,7 +32,7 @@ set(ALPS_SOURCES
     parser/parser.C parser/xmlattributes.C parser/xmlhandler.C parser/xmlparser.C
     parser/xmlstream.C parser/xslt_path.C
     #hdf5
-    hdf5/hdf5.cpp
+    ngs/mchdf5.cpp
     # random
     random/rngfactory.C random/parallel/get_prime.cpp random/parallel/primelist_64.cpp
     # scheduler
@@ -48,7 +48,6 @@ if (ALPS_BUILD_NGS)
   set(ALPS_SOURCES ${ALPS_SOURCES} 
     ngs/mcbase.cpp ngs/mcparams.cpp ngs/mcsignal.cpp ngs/mcoptions.cpp ngs/mcdeprecated.cpp 
     ngs/mcresult.cpp ngs/mcresults.cpp ngs/api.cpp ngs/mcobservables.cpp ngs/mcobservable.cpp
-    ngs/mchdf5.cpp
   )
 endif (ALPS_BUILD_NGS)
 

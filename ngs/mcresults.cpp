@@ -25,10 +25,10 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include <alps/ngs/mchdf5.hpp>
 #include <alps/ngs/macros.hpp>
 #include <alps/ngs/mcresults.hpp>
 
-#include <alps/hdf5.hpp>
 #include <alps/alea/observableset.h>
 
 #include <stdexcept>
@@ -57,19 +57,19 @@ namespace alps {
         std::map<std::string, mcresult>::insert(make_pair(name, res));
     }
 
-    void mcresults::serialize(hdf5::iarchive & ar)  {
-        ObservableSet set;
-        ar >> make_pvp("/simulation/realizations/0/clones/0/results", set);
-        for(ObservableSet::const_iterator it = set.begin(); it != set.end(); ++it)
-            insert(it->first, mcresult(it->second));
-    }
-
-    void mcresults::serialize(hdf5::oarchive & ar) const {
+    void mcresults::save(hdf5::archive & ar) const {
         for(std::map<std::string, mcresult>::const_iterator it = std::map<std::string, mcresult>::begin(); it != std::map<std::string, mcresult>::end(); ++it)
             if (it->second.count())
                 ar
                     << make_pvp(ar.encode_segment(it->first), it->second)
                 ;
+    }
+
+    void mcresults::load(hdf5::archive & ar)  {
+        ObservableSet set;
+        ar >> make_pvp("/simulation/realizations/0/clones/0/results", set);
+        for(ObservableSet::const_iterator it = set.begin(); it != set.end(); ++it)
+            insert(it->first, mcresult(it->second));
     }
 
     void mcresults::output(std::ostream & os) const {

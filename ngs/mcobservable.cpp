@@ -25,9 +25,9 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include <alps/ngs/mchdf5.hpp>
 #include <alps/ngs/mcobservable.hpp>
 
-#include <alps/hdf5.hpp>
 #include <alps/alea/observable.h>
 
 #include <vector>
@@ -83,12 +83,12 @@ namespace alps {
         return *this;
     }
 
-    void mcobservable::serialize(hdf5::iarchive & ar) {
-        impl_->serialize(ar);
+    void mcobservable::save(hdf5::archive & ar) const {
+        impl_->save(ar);
     }
 
-    void mcobservable::serialize(hdf5::oarchive & ar) const {
-        impl_->serialize(ar);
+    void mcobservable::load(hdf5::archive & ar) {
+        impl_->save(ar);
     }
 
     void mcobservable::output(std::ostream & os) const {

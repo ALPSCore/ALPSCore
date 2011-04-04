@@ -40,6 +40,7 @@
 #include <alps/alea/nan.h>
 #include <alps/parser/parser.h>
 #include <alps/utility/resize.hpp>
+#include <alps/ngs/mchdf5/vector.hpp>
 #include <alps/utility/set_zero.hpp>
 #include <alps/numeric/functional.hpp>
 #include <alps/alea/simpleobservable.h>
@@ -374,7 +375,36 @@ namespace alps {
                         }
                 }
 
-                void serialize(hdf5::iarchive & ar) {
+                void save(hdf5::archive & ar) const {
+                    analyze();
+                    ar
+                        << make_pvp("count", count_)
+                        << make_pvp("@cannotrebin", cannot_rebin_)
+                        << make_pvp("mean/value", mean_)
+                        << make_pvp("mean/error", error_)
+                    ;
+                    if (variance_opt_)
+                        ar
+                            << make_pvp("variance/value", *variance_opt_)
+                        ;
+                    if (tau_opt_)
+                        ar
+                            << make_pvp("tau/value", *tau_opt_)
+                        ;
+                    ar
+                        << make_pvp("timeseries/data", values_)
+                        << make_pvp("timeseries/data/@binsize", binsize_)
+                        << make_pvp("timeseries/data/@maxbinnum", max_bin_number_)
+                        << make_pvp("timeseries/data/@binningtype", "linear")
+                    ;
+                    if (jacknife_bins_valid_)
+                        ar
+                            << make_pvp("jacknife/data", jack_)
+                            << make_pvp("jacknife/data/@binningtype", "linear")
+                        ;
+                }
+    
+                void load(hdf5::archive & ar) {
                     using boost::numeric::operators::operator/;
                     data_is_analyzed_ = true;
                     ar
@@ -422,42 +452,13 @@ namespace alps {
                         ;
                 }
 
-                void serialize(hdf5::oarchive & ar) const {
-                    analyze();
-                    ar
-                        << make_pvp("count", count_)
-                        << make_pvp("@cannotrebin", cannot_rebin_)
-                        << make_pvp("mean/value", mean_)
-                        << make_pvp("mean/error", error_)
-                    ;
-                    if (variance_opt_)
-                        ar
-                            << make_pvp("variance/value", *variance_opt_)
-                        ;
-                    if (tau_opt_)
-                        ar
-                            << make_pvp("tau/value", *tau_opt_)
-                        ;
-                    ar
-                        << make_pvp("timeseries/data", values_)
-                        << make_pvp("timeseries/data/@binsize", binsize_)
-                        << make_pvp("timeseries/data/@maxbinnum", max_bin_number_)
-                        << make_pvp("timeseries/data/@binningtype", "linear")
-                    ;
-                    if (jacknife_bins_valid_)
-                        ar
-                            << make_pvp("jacknife/data", jack_)
-                            << make_pvp("jacknife/data/@binningtype", "linear")
-                        ;
-                }
-
                 void save(std::string const & filename, std::string const & path) const {
-                    hdf5::oarchive ar(filename);
+                    hdf5::archive ar(filename, hdf5::archive::WRITE);
                     ar << make_pvp(path, *this);
                 }
 
                 void load(std::string const & filename, std::string const & path) {
-                    hdf5::iarchive ar(filename);
+                    hdf5::archive ar(filename);
                     ar >> make_pvp(path, *this);
                 }
 
@@ -952,8 +953,7 @@ namespace alps {
         }
 
         template <typename T>  inline mcdata<std::vector<T> > operator/(mcdata<T> const & arg1, mcdata<std::vector<T> > arg2) {
-            arg2.divide(arg1);
-            return arg2;
+            return static_cast<T>(1) / arg2 * arg1;
         }
 
         template <typename T> mcdata<T> pow(mcdata<T> rhs, typename mcdata<T>::element_type exponent) {

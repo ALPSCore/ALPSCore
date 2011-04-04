@@ -141,10 +141,8 @@ public:
   void save(ODump& dump) const;
   void load(IDump& dump);
 
-#ifdef ALPS_HAVE_HDF5
-  void serialize(hdf5::iarchive & ar);
-  void serialize(hdf5::oarchive & ar) const;
-#endif
+  void save(hdf5::archive &) const;
+  void load(hdf5::archive &);
 
   Observable* clone() const {return new AbstractSignedObservable<OBS,SIGN>(*this);}
 
@@ -214,10 +212,8 @@ public:
   void operator<<(const value_type& x) { super_type::obs_ << x;}
   void add(const value_type& x) { operator<<(x);}
   void add(const value_type& x, sign_type s) { add(x*static_cast<typename element_type<value_type>::type >(s));}
-#ifdef ALPS_HAVE_HDF5
   void write_hdf5(const boost::filesystem::path& fn_hdf, std::size_t realization=0, std::size_t clone=0) const;
   void read_hdf5 (const boost::filesystem::path& fn_hdf, std::size_t realization=0, std::size_t clone=0);
-#endif
 };
 
 
@@ -288,28 +284,26 @@ void AbstractSignedObservable<OBS,SIGN>::load(IDump& dump)
   clear_sign();
 }
 
-#ifdef ALPS_HAVE_HDF5
-    template <class OBS, class SIGN>
-    void AbstractSignedObservable<OBS,SIGN>::serialize(hdf5::iarchive & ar) {
-        super_type::serialize(ar);
+template <class OBS, class SIGN> void AbstractSignedObservable<OBS,SIGN>::save(hdf5::archive & ar) const {
+    super_type::save(ar);
+    if (obs_.count())
         ar
-            >> make_pvp("@sign", sign_name_)
+            << make_pvp("@sign", sign_name_)
+            << make_pvp("../" + obs_.name(), obs_)
         ;
-        obs_.rename(sign_name_ + " * " + super_type::name());
-        ar
-            >> make_pvp("../" + obs_.name(), obs_)
-        ;
-        clear_sign();
-    }
-    template <class OBS, class SIGN> void AbstractSignedObservable<OBS,SIGN>::serialize(hdf5::oarchive & ar) const {
-        super_type::serialize(ar);
-        if (obs_.count())
-            ar
-                << make_pvp("@sign", sign_name_)
-                << make_pvp("../" + obs_.name(), obs_)
-            ;
-    }
-#endif
+}
+template <class OBS, class SIGN>
+void AbstractSignedObservable<OBS,SIGN>::load(hdf5::archive & ar) {
+    super_type::load(ar);
+    ar
+        >> make_pvp("@sign", sign_name_)
+    ;
+    obs_.rename(sign_name_ + " * " + super_type::name());
+    ar
+        >> make_pvp("../" + obs_.name(), obs_)
+    ;
+    clear_sign();
+}
 
 template <class OBS, class SIGN>
 void AbstractSignedObservable<OBS,SIGN>::write_more_xml(oxstream& oxs, slice_index) const

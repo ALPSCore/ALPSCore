@@ -83,10 +83,9 @@ class AbstractBinning {
       dump >> thermalized_;
   }
 
-#ifdef ALPS_HAVE_HDF5
-  void serialize(hdf5::oarchive &, bool = false) const {};
-  void serialize(hdf5::iarchive &, bool = false) {};
-#endif
+
+  void save(hdf5::archive &) const {};
+  void load(hdf5::archive &) {};
 
   std::string evaluation_method() const { return "simple";}
 };

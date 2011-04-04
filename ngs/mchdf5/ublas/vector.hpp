@@ -25,40 +25,19 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_HDF5_STD_MAP
-#define ALPS_NGS_HDF5_STD_MAP
+#ifndef ALPS_NGS_HDF5_BOOST_NUMERIC_UBLAS_VECTOR_HPP
+#define ALPS_NGS_HDF5_BOOST_NUMERIC_UBLAS_VECTOR_HPP
 
 #include <alps/ngs/mchdf5.hpp>
-#include <alps/ngs/convert.hpp>
 
-#include <map>
+#include <boost/numeric/ublas/vector.hpp>
 
-namespace alps {
+#define ALPS_NGS_HDF5_VECTOR_TEMPLATE_ARGS typename T, typename A
+#define ALPS_NGS_HDF5_VECTOR_TEMPLATE_TYPE boost::numeric::ublas::vector<T, A>
 
-    template <typename K, typename T, typename C, typename A> void serialize(
-          mchdf5 & ar
-        , std::string const & path
-        , std::map<K, T, C, A> const & value
-        , std::vector<std::size_t> size = std::vector<std::size_t>()
-        , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-        , std::vector<std::size_t> offset = std::vector<std::size_t>()
-    ) {
-        for(typename std::map<K, T, C, A>::const_iterator it = value.begin(); it != value.end(); ++it)
-            serialize(ar, path + "/" + convert<std::string>(it->first), it->second);
-    }
+#include <alps/ngs/mchdf5/container.def>
 
-    template <typename K, typename T, typename C, typename A> void unserialize(
-          mchdf5 & ar
-        , std::string const & path
-        , std::map<K, T, C, A> & value
-        , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-        , std::vector<std::size_t> offset = std::vector<std::size_t>()
-    ) {
-        std::vector<std::string> children = ar.list_children(path);
-        for (typename std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)
-            unserialize(ar, path + "/" + *it, value[convert<std::size_t>(*it)]);
-    }
-
-}
+#undef ALPS_NGS_HDF5_VECTOR_TEMPLATE_ARGS
+#undef ALPS_NGS_HDF5_VECTOR_TEMPLATE_TYPE
 
 #endif

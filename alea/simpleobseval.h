@@ -220,10 +220,8 @@ class ALPS_TEMPL_DECL SimpleObservableEvaluator : public AbstractSimpleObservabl
   void save(ODump& dump) const;
   void load(IDump& dump);
 
-#ifdef ALPS_HAVE_HDF5
-  void serialize(hdf5::iarchive &);
-  void serialize(hdf5::oarchive &) const;
-#endif
+  void save(hdf5::archive &) const;
+  void load(hdf5::archive &);
 
   template<class X> void add_to(const X& x);
   template<class X> void subtract_from(const X& x);

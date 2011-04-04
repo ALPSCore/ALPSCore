@@ -25,54 +25,37 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_HDF5_BOOST_NUMERIC_UBLAS_MATRIX_HPP
-#define ALPS_NGS_HDF5_BOOST_NUMERIC_UBLAS_MATRIX_HPP
+#ifndef ALPS_NGS_HDF5_POINTER_HPP
+#define ALPS_NGS_HDF5_POINTER_HPP
 
-#include <alps/ngs/mchdf5.hpp>
-
-#include <boost/numeric/ublas/matrix.hpp>
-
-#include <iterator>
+#include <alps/ngs/mchdf5/pair.hpp>
 
 namespace alps {
 
-    template <typename T, typename F, typename A> struct has_complex_elements< boost::numeric::ublas::matrix<T, F, A> >
-        : public has_complex_elements<T>
-    {};
+	template <typename T> hdf5::detail::make_pvp_proxy<std::pair<T *, std::vector<std::size_t> > > make_pvp(
+		  std::string const & path
+		, T * value
+		, std::size_t size
+	) {
+		return hdf5::detail::make_pvp_proxy<std::pair<T *, std::vector<std::size_t> > >(
+			  path
+			, std::make_pair(value, size > 0 
+				? std::vector<std::size_t>(1, size)
+				: std::vector<std::size_t>()
+			)
+		);
+	}
 
-    template <typename T, typename F, typename A> void serialize(
-          mchdf5 & ar
-        , std::string const & path
-        , boost::numeric::ublas::matrix<T, F, A> const & value
-        , std::vector<std::size_t> size = std::vector<std::size_t>()
-        , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-        , std::vector<std::size_t> offset = std::vector<std::size_t>()
-    ) {
-        size.push_back(value.size1());
-        size.push_back(value.size2());
-        chunk.push_back(1);
-        chunk.push_back(1);
-        offset.push_back(0);
-        offset.push_back(0);
-        ar.write(path, &value(0, 0), size, chunk, offset);
-    }
-
-    template <typename T, typename F, typename A> void unserialize(
-          mchdf5 & ar
-        , std::string const & path
-        , boost::numeric::ublas::matrix<T, F, A> & value
-        , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-        , std::vector<std::size_t> offset = std::vector<std::size_t>()
-    ) {
-        if (is_continous<T>::value) {
-            std::vector<std::size_t> size(ar.extent(path));
-            value.resize(size[chunk.size()], size[chunk.size() + 1], false);
-            std::copy(size.begin() + chunk.size(), size.end(), std::back_insert_iterator<std::vector<std::size_t> >(chunk));
-            std::fill_n(std::back_insert_iterator<std::vector<std::size_t> >(offset), size.size() - offset.size(), 0);
-            ar.read(path, &value(0, 0), chunk, offset);
-        } else
-            ALPS_NGS_THROW_RUNTIME_ERROR("invalid type")
-    }
+	template <typename T> hdf5::detail::make_pvp_proxy<std::pair<T *, std::vector<std::size_t> > > make_pvp(
+		  std::string const & path
+		, T * value
+		, std::vector<std::size_t> const & size
+	) {
+		return hdf5::detail::make_pvp_proxy<std::pair<T *, std::vector<std::size_t> > >(
+			  path
+			, std::make_pair(value, size)
+		);
+	}
 
 }
 

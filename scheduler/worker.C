@@ -154,8 +154,7 @@ void Worker::save_worker(ODump& dump) const
   }
  }
  
-#ifdef ALPS_HAVE_HDF5
-void Worker::serialize(hdf5::iarchive & ar) 
+void Worker::load(hdf5::archive & ar) 
 {
   std::string state;
   std::string rngname;
@@ -172,7 +171,7 @@ void Worker::serialize(hdf5::iarchive & ar)
   Disorder::seed(parms.value_or_default("DISORDERSEED",0));
 }
 
-void Worker::serialize(hdf5::oarchive & ar) const 
+void Worker::save(hdf5::archive & ar) const 
 {
   std::ostringstream rngstream;
   rngstream << *engine_ptr;
@@ -182,7 +181,6 @@ void Worker::serialize(hdf5::oarchive & ar) const
   if(node == 0)
       ar << make_pvp("/log/alps", info);
 }
-#endif
 
 TaskInfo Worker::get_info() const
 {
@@ -236,7 +234,7 @@ void Worker::load_from_file(const boost::filesystem::path& fn,const boost::files
 {
 #ifdef ALPS_HAVE_HDF5
   if (boost::filesystem::exists(hdf5path)) {
-      hdf5::iarchive ar(hdf5path.file_string());
+      hdf5::archive ar(hdf5path.file_string());
       ar >> make_pvp("/", *this);
   }
 #endif
@@ -256,7 +254,7 @@ void Worker::save_to_file(const boost::filesystem::path& fnpath, const boost::fi
     boost::filesystem::path p = backup ? hdf5bakpath : hdf5path;
     if (boost::filesystem::exists(p))
       boost::filesystem::remove(p);
-    hdf5::oarchive worker_ar(p.string());
+    hdf5::archive worker_ar(p.string(), hdf5::archive::WRITE);
     worker_ar << make_pvp("/", *this);
   } // close file
   if (backup) {

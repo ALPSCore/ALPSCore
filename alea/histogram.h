@@ -38,6 +38,9 @@
 #include <alps/osiris/dump.h>
 #include <alps/osiris/std/vector.h>
 
+#include <alps/ngs/mchdf5.hpp>
+#include <alps/ngs/mchdf5/vector.hpp>
+
 #include <vector>
 
 
@@ -105,10 +108,8 @@ public:
 
   operator HistogramObservableEvaluator<T> () const { return make_evaluator();}
 
-#ifdef ALPS_HAVE_HDF5
-    void serialize(hdf5::oarchive &) const;
-    void serialize(hdf5::iarchive &);
-#endif
+  void save(hdf5::archive &) const;
+  void load(hdf5::archive &);
 
 private:
   Observable* convert_mergeable() const;
@@ -243,26 +244,25 @@ inline void HistogramObservable<T>::load(IDump& dump)
     dump >> thermalized_ >> thermalcount_ >> count_ >> min_ >> max_ >> stepsize_ >> histogram_;
 }
 
-#ifdef ALPS_HAVE_HDF5
-    template <class T> inline void HistogramObservable<T>::serialize(hdf5::iarchive & ar) {
-        ar 
-            >> make_pvp("histogram",histogram_)
-            >> make_pvp("count",count_)
-            >> make_pvp("@min", min_)
-            >> make_pvp("@max", max_)
-            >> make_pvp("@stepsize", stepsize_)
-        ;
-    }
-    template <class T> inline void HistogramObservable<T>::serialize(hdf5::oarchive & ar) const {
-        ar 
-            << make_pvp("histogram",histogram_)
-            << make_pvp("count",count_)
-            << make_pvp("@min", min_)
-            << make_pvp("@max", max_)
-            << make_pvp("@stepsize", stepsize_)
-        ;
-    }
-#endif
+template <class T> inline void HistogramObservable<T>::save(hdf5::archive & ar) const {
+    ar 
+        << make_pvp("histogram", histogram_)
+        << make_pvp("count",count_)
+        << make_pvp("@min", min_)
+        << make_pvp("@max", max_)
+        << make_pvp("@stepsize", stepsize_)
+    ;
+}
+
+template <class T> inline void HistogramObservable<T>::load(hdf5::archive & ar) {
+    ar 
+        >> make_pvp("histogram",histogram_)
+        >> make_pvp("count",count_)
+        >> make_pvp("@min", min_)
+        >> make_pvp("@max", max_)
+        >> make_pvp("@stepsize", stepsize_)
+    ;
+}
 
 }
 

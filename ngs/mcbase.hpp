@@ -58,7 +58,7 @@ namespace alps {
                 , next_check(8)
                 , start_time(boost::posix_time::second_clock::local_time())
                 , check_time(boost::posix_time::second_clock::local_time() + boost::posix_time::seconds(next_check))
-// TODO: this ist not the best solution
+                  // TODO: this ist not the best solution - any idea?
                 , random(boost::mt19937(static_cast<std::size_t>(p.value_or_default("SEED", 42)) + seed_offset), boost::uniform_real<>())
             {}
 

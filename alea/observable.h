@@ -47,7 +47,7 @@
 #include <mpi.h>
 #endif
 
-#include <alps/hdf5/hdf5_fwd.hpp>
+#include <alps/ngs/mchdf5.hpp>
 
 #include <boost/filesystem/path.hpp>
 #include <boost/type_traits.hpp>
@@ -136,10 +136,8 @@ class ALPS_DECL Observable {
   virtual void load(IDump& dump);
 #endif
 
-#ifdef ALPS_HAVE_HDF5
-    virtual void serialize(hdf5::iarchive &);
-    virtual void serialize(hdf5::oarchive &) const;
-#endif
+  virtual void save(hdf5::archive &) const;
+  virtual void load(hdf5::archive &);
 
   // Sign problem support
 

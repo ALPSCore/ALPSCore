@@ -160,10 +160,8 @@ public:
   virtual ResultType get_summary() const; 
   static Parameters parse_ext_task_file(std::string);
   
-#ifdef ALPS_HAVE_HDF5
-  virtual void serialize(hdf5::iarchive &);
-  virtual void serialize(hdf5::oarchive &) const;
-#endif
+  virtual void load(hdf5::archive &);
+  virtual void save(hdf5::archive &) const;
 
 protected:
   virtual void write_xml_header(alps::oxstream&) const;

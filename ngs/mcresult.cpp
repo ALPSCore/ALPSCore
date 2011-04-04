@@ -26,11 +26,11 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <alps/ngs/macros.hpp>
+#include <alps/ngs/mchdf5.hpp>
 #include <alps/ngs/mcresult.hpp>
 #include <alps/ngs/mcresult_impl_base.ipp>
 #include <alps/ngs/mcresult_impl_derived.ipp>
 
-#include <alps/hdf5.hpp>
 #include <alps/alea/observable.h>
 #include <alps/alea/abstractsimpleobservable.h>
 
@@ -132,12 +132,12 @@ namespace alps {
         impl_->set_bin_number(bin_number);
     }
 
-    void mcresult::serialize(hdf5::iarchive & ar) {
-        impl_->serialize(ar);
+    void mcresult::save(hdf5::archive & ar) const {
+        impl_->save(ar);
     }
 
-    void mcresult::serialize(hdf5::oarchive & ar) const {
-        impl_->serialize(ar);
+    void mcresult::load(hdf5::archive & ar) {
+        impl_->save(ar);
     }
 
     void mcresult::output(std::ostream & os) const {

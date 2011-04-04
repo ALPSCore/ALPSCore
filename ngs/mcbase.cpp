@@ -26,10 +26,8 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <alps/ngs/api.hpp>
+#include <alps/ngs/mchdf5.hpp>
 #include <alps/ngs/mcbase.hpp>
-
-#include <alps/hdf5.hpp>
-#include <alps/alea/observableset.h>
 
 namespace alps {
 
@@ -38,7 +36,7 @@ namespace alps {
     }
 
     void mcbase::load(boost::filesystem::path const & path) {
-        hdf5::iarchive ar(path.file_string() + ".h5");
+        hdf5::archive ar(path.file_string() + ".h5", hdf5::archive::READ);
         ar >> make_pvp("/simulation/realizations/0/clones/0/results", results);
     }
 

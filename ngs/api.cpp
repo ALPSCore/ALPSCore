@@ -26,8 +26,9 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <alps/ngs/api.hpp>
+#include <alps/ngs/mchdf5.hpp>
 
-#include <alps/hdf5.hpp>
+#include <boost/filesystem.hpp>
 
 namespace alps {
 
@@ -39,8 +40,8 @@ namespace alps {
                 if (boost::filesystem::exists(backup))
                     boost::filesystem::remove(backup);
                 {
-                    hdf5::oarchive ar(backup.file_string());
-                    ar 
+                    hdf5::archive ar(backup.file_string(), hdf5::archive::WRITE);
+                    ar
                         << make_pvp("/parameters", params)
                         << make_pvp(path, results)
                     ;

@@ -50,7 +50,7 @@
 #include <alps/utility/resize.hpp>
 #include <alps/utility/assign.hpp>
 #include <alps/lambda.hpp>
-#include <alps/hdf5.hpp>
+#include <alps/ngs/mchdf5.hpp>
 
 #include <boost/lambda/lambda.hpp>
 #include <boost/functional.hpp>
@@ -146,10 +146,8 @@ public:
   void save(ODump& dump) const;
   void load(IDump& dump);
 
-#ifdef ALPS_HAVE_HDF5
-    void serialize(hdf5::iarchive &);
-    void serialize(hdf5::oarchive &) const;
-#endif
+  void save(hdf5::archive &) const;
+  void load(hdf5::archive &);
 
   inline void set_bin_size(uint64_t);
   inline void set_bin_number(std::size_t);
@@ -930,81 +928,80 @@ void SimpleObservableData<T>::load(IDump& dump)
     dump >> max_bin_number_;
 }
 
-#ifdef ALPS_HAVE_HDF5
-    template <typename T> void SimpleObservableData<T>::serialize(hdf5::iarchive & ar) {
-        can_set_thermal_ = false;
-        discardedmeas_ = 0;
+template <typename T> void SimpleObservableData<T>::save(hdf5::archive & ar) const {
+    analyze();
+    ar
+        << make_pvp("count", count_)
+        << make_pvp("@changed", changed_)
+        << make_pvp("@nonlinearoperations", nonlinear_operations_)
+    ;
+    if (valid_) {
         ar
-            >> make_pvp("count", count_)
-            >> make_pvp("@changed", changed_)
-            >> make_pvp("@nonlinearoperations", nonlinear_operations_)
+            << make_pvp("mean/value", mean_)
+            << make_pvp("mean/error", error_)
+            << make_pvp("mean/error_convergence", converged_errors_)
         ;
-        if ((valid_ = ar.is_data("mean/value"))) {
+        if (has_variance_)
             ar
-                >> make_pvp("mean/value", mean_)
-                >> make_pvp("mean/error", error_)
-                >> make_pvp("mean/error_convergence", converged_errors_)
+                << make_pvp("variance/value", variance_)
             ;
-            if ((has_variance_ = ar.is_data("variance/value")))
-                ar
-                    >> make_pvp("variance/value", variance_)
-                ;
-            if ((has_tau_ = ar.is_data("tau/value")))
-                ar
-                    >> make_pvp("tau/value", tau_)
-                ;
+        if (has_tau_)
             ar
-                >> make_pvp("timeseries/data", values_)
-                >> make_pvp("timeseries/data/@discard", discardedbins_)
-                >> make_pvp("timeseries/data/@maxbinnum", max_bin_number_)
-                >> make_pvp("timeseries/data2", values2_)
+                << make_pvp("tau/value", tau_)
             ;
-            if ((jack_valid_ = ar.is_data("jacknife/data")))
-                ar
-                    >> make_pvp("jacknife/data", jack_)
-                ;
-        }
-    }
-    template <typename T> void SimpleObservableData<T>::serialize(hdf5::oarchive & ar) const {
-        analyze();
         ar
-            << make_pvp("count", count_)
-            << make_pvp("@changed", changed_)
-            << make_pvp("@nonlinearoperations", nonlinear_operations_)
+            << make_pvp("timeseries/data", values_)
+            << make_pvp("timeseries/data/@discard", discardedbins_)
+            << make_pvp("timeseries/data/@maxbinnum", max_bin_number_)
+            << make_pvp("timeseries/data/@binningtype", "linear")
+            
+            << make_pvp("timeseries/data2", values2_)
+            << make_pvp("timeseries/data2/@discard", discardedbins_)
+            << make_pvp("timeseries/data/@maxbinnum", max_bin_number_)
+            << make_pvp("timeseries/data2/@binningtype", "linear")
         ;
-        if (valid_) {
+        if (jack_valid_)
             ar
-                << make_pvp("mean/value", mean_)
-                << make_pvp("mean/error", error_)
-                << make_pvp("mean/error_convergence", converged_errors_)
+                << make_pvp("jacknife/data", jack_)
+                << make_pvp("jacknife/data/@binningtype", "linear")
             ;
-            if (has_variance_)
-                ar
-                    << make_pvp("variance/value", variance_)
-                ;
-            if (has_tau_)
-                ar
-                    << make_pvp("tau/value", tau_)
-                ;
-            ar
-                << make_pvp("timeseries/data", values_)
-                << make_pvp("timeseries/data/@discard", discardedbins_)
-                << make_pvp("timeseries/data/@maxbinnum", max_bin_number_)
-                << make_pvp("timeseries/data/@binningtype", "linear")
-                
-                << make_pvp("timeseries/data2", values2_)
-                << make_pvp("timeseries/data2/@discard", discardedbins_)
-                << make_pvp("timeseries/data/@maxbinnum", max_bin_number_)
-                << make_pvp("timeseries/data2/@binningtype", "linear")
-            ;
-            if (jack_valid_)
-                ar
-                    << make_pvp("jacknife/data", jack_)
-                    << make_pvp("jacknife/data/@binningtype", "linear")
-                ;
-        }
     }
-#endif
+}
+template <typename T> void SimpleObservableData<T>::load(hdf5::archive & ar) {
+    can_set_thermal_ = false;
+    discardedmeas_ = 0;
+    ar
+        >> make_pvp("count", count_)
+        >> make_pvp("@changed", changed_)
+        >> make_pvp("@nonlinearoperations", nonlinear_operations_)
+    ;
+    if ((valid_ = ar.is_data("mean/value"))) {
+        ar
+            >> make_pvp("mean/value", mean_)
+            >> make_pvp("mean/error", error_)
+            >> make_pvp("mean/error_convergence", converged_errors_)
+        ;
+        if ((has_variance_ = ar.is_data("variance/value")))
+            ar
+                >> make_pvp("variance/value", variance_)
+            ;
+        if ((has_tau_ = ar.is_data("tau/value")))
+            ar
+                >> make_pvp("tau/value", tau_)
+            ;
+        ar
+            >> make_pvp("timeseries/data", values_)
+            >> make_pvp("timeseries/data/@discard", discardedbins_)
+            >> make_pvp("timeseries/data/@maxbinnum", max_bin_number_)
+            >> make_pvp("timeseries/data2", values2_)
+        ;
+        if ((jack_valid_ = ar.is_data("jacknife/data")))
+            ar
+                >> make_pvp("jacknife/data", jack_)
+            ;
+    }
+}
+
 template <class T>
 void SimpleObservableData<T>::fill_jack() const
 {

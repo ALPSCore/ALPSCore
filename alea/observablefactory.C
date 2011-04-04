@@ -28,6 +28,8 @@
 
 /* $Id: observableset.C 3765 2010-01-22 14:58:52Z troyer $ */
 
+#include <alps/config.h>
+
 #include "observablefactory.h"
 #include "signedobservable.h"
 #include "nobinning.h"
