@@ -29,7 +29,7 @@
 #ifndef ALPS_NGS_MCRESULT_IMPL_BASE_HPP
 #define ALPS_NGS_MCRESULT_IMPL_BASE_HPP
 
-#include <alps/ngs/mcresult_impl_derived.ipp>
+#include <alps/ngs/lib/mcresult_impl_derived.ipp>
 
 #ifdef ALPS_HAVE_MPI
     #include <boost/mpi.hpp>
