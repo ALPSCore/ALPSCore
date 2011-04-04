@@ -25,7 +25,7 @@
 *
 *****************************************************************************/
 
-#include <alps/hdf5.hpp>
+#include <alps/ngs/mchdf5.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/random.hpp>
@@ -41,23 +41,23 @@ int main() {
         boost::filesystem::remove(boost::filesystem::path(filename));
     {
         using namespace alps;
-        alps::hdf5::oarchive oar(filename);
+        alps::hdf5::archive oar(filename, alps::hdf5::archive::WRITE);
         oar << make_pvp("/data", 42);
     }
     {
         using namespace alps;
-        alps::hdf5::iarchive iar(filename);
+        alps::hdf5::archive iar(filename, alps::hdf5::archive::READ);
         int test;
         iar >> make_pvp("/data", test);
         {
-            alps::hdf5::iarchive iar2(filename);
+            alps::hdf5::archive iar2(filename, alps::hdf5::archive::READ);
             int test2;
             iar2 >> make_pvp("/data", test2);
             iar >> make_pvp("/data", test);
         }
         iar >> make_pvp("/data", test);
         {
-            alps::hdf5::iarchive iar3(filename);
+            alps::hdf5::archive iar3(filename, alps::hdf5::archive::READ);
             int test3;
             iar >> make_pvp("/data", test);
             iar3 >> make_pvp("/data", test3);
@@ -66,7 +66,7 @@ int main() {
     }
     {
         using namespace alps;
-        alps::hdf5::iarchive iar4(filename);
+        alps::hdf5::archive iar4(filename, alps::hdf5::archive::READ);
         int test4;
         iar4 >> make_pvp("/data", test4);
     }

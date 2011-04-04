@@ -24,7 +24,7 @@ if (ALPS_BUILD_PYTHON AND BUILD_SHARED_LIBS)
                 -Dsourcedir=${PROJECT_SOURCE_DIR}
                 -Dbinarydir=${PROJECT_BINARY_DIR}
                 -Dcmddir=${CMAKE_CURRENT_SOURCE_DIR}
-                -P ${PROJECT_SOURCE_DIR}/config/run_python_test.cmake
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/run_python_test.cmake
         )
     ENDFOREACH(name)
 ENDIF(ALPS_BUILD_PYTHON AND BUILD_SHARED_LIBS)

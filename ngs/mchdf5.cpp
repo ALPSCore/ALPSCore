@@ -27,8 +27,8 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <alps/ngs/mchdf5.hpp>
-#include <alps/ngs/hdf5/std/vector.hpp>
-#include <alps/ngs/hdf5/std/complex.hpp>
+#include <alps/ngs/mchdf5/vector.hpp>
+#include <alps/ngs/mchdf5/complex.hpp>
 
 #include <iostream>
 
@@ -37,55 +37,55 @@ using namespace alps;
 int main() {
 
      {
-          mchdf5 ar("test.h5", mchdf5::WRITE);
+          hdf5::archive ar("test.h5", hdf5::archive::WRITE);
           ar << make_pvp("/to/to", 3.14159);
      }
      {
-          mchdf5 ar("test.h5", mchdf5::READ);
+          hdf5::archive ar("test.h5", hdf5::archive::READ);
           double value;
           ar >> make_pvp("/to/to", value);
           std::cout << value << std::endl;
      }
 
      {
-          mchdf5 ar("test.h5", mchdf5::WRITE);
+          hdf5::archive ar("test.h5", hdf5::archive::WRITE);
           ar << make_pvp("/to/my/vec/in/a/very/deep/path", std::vector<double>(17, 15.141));
      }
      {
-          mchdf5 ar("test.h5", mchdf5::READ);
+          hdf5::archive ar("test.h5", hdf5::archive::READ);
           std::vector<unsigned> value;
           ar >> make_pvp("/to/my/vec/in/a/very/deep/path", value);
           std::cout << value[0] << std::endl;
      }
 
      {
-          mchdf5 ar("test.h5", mchdf5::WRITE);
+          hdf5::archive ar("test.h5", hdf5::archive::WRITE);
           ar << make_pvp("/to/to", std::complex<double>(3.14159, 12.34));
      }
      {
-          mchdf5 ar("test.h5", mchdf5::READ);
+          hdf5::archive ar("test.h5", hdf5::archive::READ);
           std::complex<double> value;
           ar >> make_pvp("/to/to", value);
           std::cout << value.real() << " " << value.imag() << std::endl;
      }
 
      {
-          mchdf5 ar("test.h5", mchdf5::WRITE);
+          hdf5::archive ar("test.h5", hdf5::archive::WRITE);
           ar << make_pvp("/to/str", std::string("asdf"));
      }
      {
-          mchdf5 ar("test.h5", mchdf5::READ);
+          hdf5::archive ar("test.h5", hdf5::archive::READ);
           std::string value;
           ar >> make_pvp("/to/str", value);
           std::cout << value << std::endl;
      }
 
      {
-          mchdf5 ar("test.h5", mchdf5::WRITE);
+          hdf5::archive ar("test.h5", hdf5::archive::WRITE);
           ar << make_pvp("/to/char", "asdf");
      }
      {
-          mchdf5 ar("test.h5", mchdf5::READ);
+          hdf5::archive ar("test.h5", hdf5::archive::READ);
           std::string value;
           ar >> make_pvp("/to/char", value);
           std::cout << value << std::endl;

@@ -25,24 +25,17 @@
 *
 *****************************************************************************/
 
-#ifdef USE_NG_ARCHIVE
-    #include <alps/ngs/mchdf5.hpp>
-    #include <alps/ngs/hdf5/pointer.hpp>
-    #include <alps/ngs/hdf5/std/map.hpp>
-    #include <alps/ngs/hdf5/std/pair.hpp>
-    #include <alps/ngs/hdf5/std/vector.hpp>
-    #include <alps/ngs/hdf5/std/complex.hpp>
-    #include <alps/ngs/hdf5/std/valarray.hpp>
-    #include <alps/ngs/hdf5/boost/multi_array.hpp>
-    #include <alps/ngs/hdf5/boost/shared_array.hpp>
-    #include <alps/ngs/hdf5/boost/numeric/ublas/matrix.hpp>
-    #include <alps/ngs/hdf5/boost/numeric/ublas/vector.hpp>
-#else
-    #include <alps/hdf5.hpp>
-    #include <alps/hdf5/ublas.hpp>
-    #include <alps/hdf5/valarray.hpp>
-    #include <alps/hdf5/shared_ptr.hpp>
-#endif
+#include <alps/ngs/mchdf5.hpp>
+#include <alps/ngs/mchdf5/pointer.hpp>
+#include <alps/ngs/mchdf5/map.hpp>
+#include <alps/ngs/mchdf5/pair.hpp>
+#include <alps/ngs/mchdf5/vector.hpp>
+#include <alps/ngs/mchdf5/complex.hpp>
+#include <alps/ngs/mchdf5/valarray.hpp>
+#include <alps/ngs/mchdf5/multi_array.hpp>
+#include <alps/ngs/mchdf5/shared_array.hpp>
+#include <alps/ngs/mchdf5/ublas/matrix.hpp>
+#include <alps/ngs/mchdf5/ublas/vector.hpp>
 
 #include <deque>
 #include <numeric>
@@ -95,7 +88,7 @@ template<typename T, typename U> class cast_type;
 
 double rng() {
     static boost::mt19937 rng(SEED);
-    static boost::uniform_real<> dist_real(0., 1e12);
+    static boost::uniform_real<> dist_real(0., 1e9);
     static boost::variate_generator<boost::mt19937, boost::uniform_real<> > random_real(rng, dist_real);
     return random_real();
 }
@@ -112,11 +105,13 @@ void initialize(std::string & v) {
 void initialize(enum_type & v) {
     v = static_cast<std::size_t>(rng()) % 2 == 0 ? PLUS : MINUS;
 }
-template<typename T> void initialize(userdefined_class<T> & v) {}
+template<typename T> void initialize(userdefined_class<T> & v);
 
-template<typename T, typename U> void initialize(cast_type<T, U> & v) {}
+template<typename T, typename U> void initialize(cast_type<T, U> & v);
 
 template<typename T> bool equal(T const & a, T const & b);
+
+template<typename T> bool equal(T * const & a, T * const & b, std::size_t size);
 
 template<typename T> class userdefined_class {
     public:
@@ -126,37 +121,20 @@ template<typename T> class userdefined_class {
                 initialize(b[i]);
             initialize(c);
         }
-        #ifdef USE_NG_ARCHIVE
-            void serialize(alps::mchdf5 & ar) const {
-                ar
-                    << alps::make_pvp("a", a)
-                    << alps::make_pvp("b", b)
-                    << alps::make_pvp("c", c)
-                ;
-            }
-            void unserialize(alps::mchdf5 & ar) { 
-                ar
-                    >> alps::make_pvp("a", a)
-                    >> alps::make_pvp("b", b)
-                    >> alps::make_pvp("c", c)
-                ;
-            }
-        #else
-            void serialize(alps::hdf5::iarchive & ar) {
-                ar
-                    >> alps::make_pvp("a", a)
-                    >> alps::make_pvp("b", b)
-                    >> alps::make_pvp("c", c)
-                ;
-            }
-            void serialize(alps::hdf5::oarchive & ar) const {
-                ar
-                    << alps::make_pvp("a", a)
-                    << alps::make_pvp("b", b)
-                    << alps::make_pvp("c", c)
-                ;
-            }
-        #endif
+        void save(alps::hdf5::archive & ar) const {
+            ar
+                << alps::make_pvp("a", a)
+                << alps::make_pvp("b", b)
+                << alps::make_pvp("c", c)
+            ;
+        }
+        void load(alps::hdf5::archive & ar) { 
+            ar
+                >> alps::make_pvp("a", a)
+                >> alps::make_pvp("b", b)
+                >> alps::make_pvp("c", c)
+            ;
+        }
         bool operator==(userdefined_class<T> const & v) const {
             return a == v.a && b.size() == v.b.size() && (b.size() == 0 || std::equal(b.begin(), b.end(), v.b.begin())) && c == v.c;
         }
@@ -166,35 +144,24 @@ template<typename T> class userdefined_class {
         enum_type c;
 };
 
+template<typename T> void initialize(userdefined_class<T> & v) {
+    v = userdefined_class<T>();
+}
+
 template<typename T, typename U> class cast_type_base {
     public:
         cast_type_base(T const & v = T()): has_u(false), t(v) {}
-        #ifdef USE_NG_ARCHIVE
-            void serialize(alps::mchdf5 & ar) const {
-                ar
-                    << alps::make_pvp("t", t)
-                ;
-            }
-            void unserialize(alps::mchdf5 & ar) { 
-                has_u = true;
-                ar
-                    >> alps::make_pvp("t", u)
-                ;
-            }
-        #else
-            void serialize(alps::hdf5::iarchive & ar) {
-                has_u = true;
-                ar
-                    >> alps::make_pvp("t", u)
-                ;
-            }
-            void serialize(alps::hdf5::oarchive & ar) const { 
-                ar
-                    << alps::make_pvp("t", t)
-                ;
-            }
-        #endif
-
+        void save(alps::hdf5::archive & ar) const {
+            ar
+                << alps::make_pvp("t", t)
+            ;
+        }
+        void load(alps::hdf5::archive & ar) { 
+            has_u = true;
+            ar
+                >> alps::make_pvp("t", u)
+            ;
+        }
         bool has_u;
         T t;
         U u;
@@ -214,37 +181,41 @@ template<typename T, typename U> class cast_type : public cast_type_base<T, U> {
         }
     private:
         bool compare(cast_type<T, U> const & v, boost::mpl::true_) const {
-            U diff = (base_type::has_u ? base_type::u : boost::lexical_cast<U>(base_type::t)) - (v.has_u ? v.u : boost::lexical_cast<U>(v.t));
-            return (diff > 0 ? diff : -diff) / ((base_type::has_u ? base_type::u : boost::lexical_cast<U>(base_type::t)) + (v.has_u ? v.u : boost::lexical_cast<U>(v.t))) / 2 < 1e-4;
+            U diff = (base_type::has_u ? base_type::u : alps::convert<U>(base_type::t)) - (v.has_u ? v.u : alps::convert<U>(v.t));
+            return (diff > 0 ? diff : -diff) / ((base_type::has_u ? base_type::u : alps::convert<U>(base_type::t)) + (v.has_u ? v.u : alps::convert<U>(v.t))) / 2 < 1e-4;
         }
         bool compare(cast_type<T, U> const & v, boost::mpl::false_) const {
-            return (base_type::has_u ? base_type::u : boost::lexical_cast<U>(base_type::t)) == (v.has_u ? v.u : boost::lexical_cast<U>(v.t));
+            return (base_type::has_u ? base_type::u : alps::convert<U>(base_type::t)) == (v.has_u ? v.u : alps::convert<U>(v.t));
         }
 };
 
-#define HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(C, D)                                                  \
-template<typename T, typename U> class cast_type< C <T>, D <U> >                                   \
-    : public cast_type_base< C <T>, D <U> >                                                        \
-{                                                                                                  \
-    public:                                                                                        \
-        typedef cast_type_base<C <T>, D <U> > base_type;                                           \
-        cast_type(): base_type(creator< C <T> >::random()) {}                                      \
-        bool operator==(cast_type< C <T>, D <U> > const & vc)  const {                             \
-             cast_type< C <T>, D <U> >& v = const_cast<cast_type< C <T>, D <U> > &>(vc);           \
-             base_type& nonconstbase(const_cast<cast_type< C <T>, D <U> > &>(*this));              \
-            if (base_type::has_u && !v.has_u)                                                      \
-                return base_type::u.size() == v.t.size() && (                                      \
-                       v.t.size() == 0                                                             \
-                    || std::equal(&nonconstbase.u[0], &nonconstbase.u[0] +nonconstbase.u.size(), &v.t[0])\
-                );                                                                                 \
-            else if (!base_type::has_u && v.has_u)                                                 \
-                return base_type::t.size() == v.u.size() && (                                      \
-                       v.u.size() == 0                                                             \
-                    || std::equal(&nonconstbase.t[0], &nonconstbase.t[0] + nonconstbase.t.size(), &v.u[0])\
-                );                                                                                 \
-            else                                                                                   \
-                return false;                                                                      \
-        }                                                                                          \
+template<typename T, typename U> void initialize(cast_type<T, U> & v) {
+    v = cast_type<T, U>();
+}
+
+#define HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(C, D)                                                          \
+template<typename T, typename U> class cast_type< C <T>, D <U> >                                           \
+    : public cast_type_base< C <T>, D <U> >                                                                \
+{                                                                                                          \
+    public:                                                                                                \
+        typedef cast_type_base<C <T>, D <U> > base_type;                                                   \
+        cast_type(): base_type(creator< C <T> >::random()) {}                                              \
+        bool operator==(cast_type< C <T>, D <U> > const & vc)  const {                                     \
+             cast_type< C <T>, D <U> >& v = const_cast<cast_type< C <T>, D <U> > &>(vc);                   \
+             base_type& nonconstbase(const_cast<cast_type< C <T>, D <U> > &>(*this));                      \
+            if (base_type::has_u && !v.has_u)                                                              \
+                return base_type::u.size() == v.t.size() && (                                              \
+                       v.t.size() == 0                                                                     \
+                    || std::equal(&nonconstbase.u[0], &nonconstbase.u[0] +nonconstbase.u.size(), &v.t[0])  \
+                );                                                                                         \
+            else if (!base_type::has_u && v.has_u)                                                         \
+                return base_type::t.size() == v.u.size() && (                                              \
+                       v.u.size() == 0                                                                     \
+                    || std::equal(&nonconstbase.t[0], &nonconstbase.t[0] + nonconstbase.t.size(), &v.u[0]) \
+                );                                                                                         \
+            else                                                                                           \
+                return false;                                                                              \
+        }                                                                                                  \
 };
 HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(std::valarray, std::vector)
 HDF5_DEFINE_VECTOR_VECTOR_CAST_TYPE(std::vector, std::valarray)
@@ -283,46 +254,30 @@ template<typename T, typename U> class cast_type< std::pair<T *, std::vector<std
                 return false;
         }
 };
-#ifdef USE_NG_ARCHIVE
-    void serialize(
-          alps::mchdf5 & ar
-        , std::string const & path
-        , enum_type const & value
-        , std::vector<std::size_t> size = std::vector<std::size_t>()
-        , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-        , std::vector<std::size_t> offset = std::vector<std::size_t>()
-    ) {
-        switch (value) {
-            case PLUS: ar << alps::make_pvp(path, std::string("plus")); break;
-            case MINUS: ar << alps::make_pvp(path, std::string("minus")); break;
-        }
+void save(
+      alps::hdf5::archive & ar
+    , std::string const & path
+    , enum_type const & value
+    , std::vector<std::size_t> size = std::vector<std::size_t>()
+    , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+    , std::vector<std::size_t> offset = std::vector<std::size_t>()
+) {
+    switch (value) {
+        case PLUS: ar << alps::make_pvp(path, std::string("plus")); break;
+        case MINUS: ar << alps::make_pvp(path, std::string("minus")); break;
     }
-    void unserialize(
-          alps::mchdf5 & ar
-        , std::string const & path
-        , enum_type & value
-        , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-        , std::vector<std::size_t> offset = std::vector<std::size_t>()
-    ) {
-        std::string s;
-        ar >> alps::make_pvp(path, s);
-        value = (s == "plus" ? PLUS : MINUS);
-    }
-#else
-    inline alps::hdf5::oarchive & serialize(alps::hdf5::oarchive & ar, std::string const & p, enum_type const & v) {
-        switch (v) {
-            case PLUS: ar << alps::make_pvp(p, std::string("plus")); break;
-            case MINUS: ar << alps::make_pvp(p, std::string("minus")); break;
-        }
-        return ar;
-    }
-    inline alps::hdf5::iarchive & serialize(alps::hdf5::iarchive & ar, std::string const & p, enum_type & v) {
-        std::string s;
-        ar >> alps::make_pvp(p, s);
-        v = (s == "plus" ? PLUS : MINUS);
-        return ar;
-    }
-#endif
+}
+void load(
+      alps::hdf5::archive & ar
+    , std::string const & path
+    , enum_type & value
+    , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+    , std::vector<std::size_t> offset = std::vector<std::size_t>()
+) {
+    std::string s;
+    ar >> alps::make_pvp(path, s);
+    value = (s == "plus" ? PLUS : MINUS);
+}
 
 template<typename T> struct creator {
     typedef T base_type;
@@ -553,7 +508,7 @@ template<typename T, typename A> bool equal(boost::multi_array<T, 3, A> const & 
         return false;
     for (std::size_t i = 0; i < a.shape()[0]; ++i)
         for (std::size_t j = 0; j < a.shape()[1]; ++j)
-            for (std::size_t k = 0; k < a.shape()[2]; ++j)
+            for (std::size_t k = 0; k < a.shape()[2]; ++k)
                 if (!equal(a[i][j][k], b[i][j][k]))
                     return false;
     return true;
@@ -614,9 +569,10 @@ template<typename T> struct creator< C < D <T> > > {                            
 template<typename T> bool equal( C < D <T> > const & a,  C < D <T> > const & b) {                  \
     for (std::size_t i = 0; i < a.size(); ++i)                                                     \
         if (a[i].size() != b[i].size() || (                                                        \
-            a[i].size() > 0 &&  !std::equal(&const_cast<C<D<T> >&>(a)[i][0],                       \
-                        &const_cast<C<D<T> >&>(a)[i][0] + a[i].size(),                             \
-                        &const_cast<C<D<T> >&>(b)[i][0])))                                         \
+            a[i].size() > 0 &&  !equal(&const_cast<C<D<T> >&>(a)[i][0],                               \
+                        &const_cast<C<D<T> >&>(b)[i][0],                                           \
+                        a[i].size())                                                               \
+        ))                                                                                         \
             return false;                                                                          \
     return true;                                                                                   \
 }
@@ -638,46 +594,46 @@ HDF5_DEFINE_VECTOR_VECTOR_TYPE(boost::numeric::ublas::vector, std::deque)
 HDF5_DEFINE_VECTOR_VECTOR_TYPE(std::deque, boost::numeric::ublas::vector)
 #undef HDF5_DEFINE_VECTOR_VECTOR_TYPE
 
-#define HDF5_DEFINE_VECTOR_VECTOR_VECTOR_TYPE(C, D, E)                                             \
-template<typename T> struct creator< C < D < E <T> > > > {                                         \
-    typedef C < D < E <T> > > base_type;                                                           \
-    static base_type random() {                                                                    \
-        base_type value(MATRIX_SIZE);                                                              \
-        for (std::size_t i = 0; i < value.size(); ++i) {                                           \
-            value[i] = D < E <T> >(MATRIX_SIZE);                                                   \
-            for (std::size_t j = 0; j < value[i].size(); ++j) {                                    \
-                value[i][j] = D <T>(MATRIX_SIZE);                                                  \
-                for (std::size_t k = 0; k < value[i][j].size(); ++k)                               \
-                     initialize(value[i][j][k]);                                                   \
-            }                                                                                      \
-        }                                                                                          \
-        return value;                                                                              \
-    }                                                                                              \
-    static base_type empty() { return base_type(); }                                               \
-    static base_type special() {                                                                   \
-        base_type value(MATRIX_SIZE);                                                              \
-        for (std::size_t i = 0; i < value.size(); ++i) {                                           \
-            value[i] = D < E <T> >(1 + static_cast<std::size_t>(rng()) % (2 * MATRIX_SIZE));       \
-            for (std::size_t j = 0; j < value[i].size(); ++j) {                                    \
-                value[i][j] = E <T>(1 + static_cast<std::size_t>(rng()) % (2 * MATRIX_SIZE));      \
-                for (std::size_t k = 0; k < value[i][j].size(); ++k)                               \
-                    initialize(value[i][j][k]);                                                    \
-            }                                                                                      \
-        }                                                                                          \
-        return value;                                                                              \
-    }                                                                                              \
-    template<typename X> static base_type random(X const &) { return base_type(); }                \
-    template<typename X> static base_type empty(X const &) { return base_type(); }                 \
-    template<typename X> static base_type special(X const &) { return base_type(); }               \
-};                                                                                                 \
-template<typename T> bool equal( C < D < E <T> > > const & a,  C < D < E <T> > > const & b) {      \
-    for (std::size_t i = 0; i < a.size(); ++i)                                                     \
-        for (std::size_t j = 0; j < a[i].size(); ++j)                                              \
-            if (a[i][j].size() != b[i][j].size() || (                                              \
+#define HDF5_DEFINE_VECTOR_VECTOR_VECTOR_TYPE(C, D, E)                                                    \
+template<typename T> struct creator< C < D < E <T> > > > {                                                \
+    typedef C < D < E <T> > > base_type;                                                                  \
+    static base_type random() {                                                                           \
+        base_type value(MATRIX_SIZE);                                                                     \
+        for (std::size_t i = 0; i < value.size(); ++i) {                                                  \
+            value[i] = D < E <T> >(MATRIX_SIZE);                                                          \
+            for (std::size_t j = 0; j < value[i].size(); ++j) {                                           \
+                value[i][j] = D <T>(MATRIX_SIZE);                                                         \
+                for (std::size_t k = 0; k < value[i][j].size(); ++k)                                      \
+                     initialize(value[i][j][k]);                                                          \
+            }                                                                                             \
+        }                                                                                                 \
+        return value;                                                                                     \
+    }                                                                                                     \
+    static base_type empty() { return base_type(); }                                                      \
+    static base_type special() {                                                                          \
+        base_type value(MATRIX_SIZE);                                                                     \
+        for (std::size_t i = 0; i < value.size(); ++i) {                                                  \
+            value[i] = D < E <T> >(1 + static_cast<std::size_t>(rng()) % (2 * MATRIX_SIZE));              \
+            for (std::size_t j = 0; j < value[i].size(); ++j) {                                           \
+                value[i][j] = E <T>(1 + static_cast<std::size_t>(rng()) % (2 * MATRIX_SIZE));             \
+                for (std::size_t k = 0; k < value[i][j].size(); ++k)                                      \
+                    initialize(value[i][j][k]);                                                           \
+            }                                                                                             \
+        }                                                                                                 \
+        return value;                                                                                     \
+    }                                                                                                     \
+    template<typename X> static base_type random(X const &) { return base_type(); }                       \
+    template<typename X> static base_type empty(X const &) { return base_type(); }                        \
+    template<typename X> static base_type special(X const &) { return base_type(); }                      \
+};                                                                                                        \
+template<typename T> bool equal( C < D < E <T> > > const & a,  C < D < E <T> > > const & b) {             \
+    for (std::size_t i = 0; i < a.size(); ++i)                                                            \
+        for (std::size_t j = 0; j < a[i].size(); ++j)                                                     \
+            if (a[i][j].size() != b[i][j].size() || (                                                     \
                 a[i][j].size() > 0 && !std::equal(&a[i][j][0], &a[i][j][0] + a[i][j].size(), &b[i][j][0]) \
-            ))                                                                                     \
-                return false;                                                                      \
-    return true;                                                                                   \
+            ))                                                                                            \
+                return false;                                                                             \
+    return true;                                                                                          \
 }
 HDF5_DEFINE_VECTOR_VECTOR_VECTOR_TYPE(std::vector, std::vector, std::vector)
 #undef HDF5_DEFINE_VECTOR_VECTOR_VECTOR_TYPE

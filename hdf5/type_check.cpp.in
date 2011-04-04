@@ -61,17 +61,14 @@ template<typename base_type> struct test {
             }
         }
         {
-            #ifdef USE_NG_ARCHIVE
-                alps::mchdf5 oar(filename, alps::mchdf5::WRITE | (SZIP_COMPRESS ? alps::mchdf5::COMPRESS : 0x00));
-            #else
-                alps::hdf5::oarchive oar(filename, SZIP_COMPRESS);
-            #endif
+            alps::hdf5::archive oar(filename, alps::hdf5::archive::WRITE | (SZIP_COMPRESS ? alps::hdf5::archive::COMPRESS : 0x00));
             if (IS_ATTRIBUTE)
                 oar
                     << alps::make_pvp("/data", 0)
                 ;
             oar
                 << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "len", &write_1_value[0], length)
+                << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "len_0", write_0_value, 0)
                 << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_0", write_0_value, size_0)
                 << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_1", &write_1_value[0], size_1)
                 << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_2", &write_2_value[0][0], size_2)
@@ -83,13 +80,10 @@ template<typename base_type> struct test {
             base_type read_1_len_value[MATRIX_SIZE], read_1_value[MATRIX_SIZE];
             base_type read_2_value[MATRIX_SIZE][MATRIX_SIZE];
             base_type read_3_value[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE];
-            #ifdef USE_NG_ARCHIVE
-                alps::mchdf5 iar(filename, alps::mchdf5::READ | (SZIP_COMPRESS ? alps::mchdf5::COMPRESS : 0x00));
-            #else
-                alps::hdf5::iarchive iar(filename);
-            #endif
+            alps::hdf5::archive iar(filename, alps::hdf5::archive::READ | (SZIP_COMPRESS ? alps::hdf5::archive::COMPRESS : 0x00));
             iar
                 >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "len", &read_1_len_value[0], length)
+                >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "len_0", write_0_value, 0)
                 >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_0", read_0_value, size_0)
                 >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_1", &read_1_value[0], size_1)
                 >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_2", &read_2_value[0][0], size_2)
@@ -109,11 +103,7 @@ template<typename base_type> struct test {
         base_type special_write(creator<base_type>::special());
         bool result;
         {
-            #ifdef USE_NG_ARCHIVE
-                alps::mchdf5 oar(filename, alps::mchdf5::WRITE | (SZIP_COMPRESS ? alps::mchdf5::COMPRESS : 0x00));
-            #else
-                alps::hdf5::oarchive oar(filename, SZIP_COMPRESS);
-            #endif
+            alps::hdf5::archive oar(filename, alps::hdf5::archive::WRITE | (SZIP_COMPRESS ? alps::hdf5::archive::COMPRESS : 0x00));
             if (IS_ATTRIBUTE)
                 oar
                     << alps::make_pvp("/data", 0)
@@ -128,11 +118,7 @@ template<typename base_type> struct test {
                 ;
         }
         {
-            #ifdef USE_NG_ARCHIVE
-                alps::mchdf5 iar(filename);
-            #else
-                alps::hdf5::iarchive iar(filename);
-            #endif
+            alps::hdf5::archive iar(filename);
             base_type random_read(creator<base_type>::random(iar));
             base_type empty_read(creator<base_type>::empty(iar));
             base_type special_read(creator<base_type>::special(iar));
@@ -159,13 +145,8 @@ template<typename base_type> struct test {
     template<typename data_type> static bool overwrite_helper(std::string const & filename) {
         data_type random_write(creator<data_type>::random());
         bool result;
-        #ifdef USE_NG_ARCHIVE
-            alps::mchdf5 ar(filename, alps::mchdf5::WRITE | (SZIP_COMPRESS ? alps::mchdf5::COMPRESS : 0x00));
-        #endif
+        alps::hdf5::archive ar(filename, alps::hdf5::archive::WRITE | (SZIP_COMPRESS ? alps::hdf5::archive::COMPRESS : 0x00));
         {
-            #ifndef USE_NG_ARCHIVE
-                alps::hdf5::oarchive ar(filename, SZIP_COMPRESS);
-            #endif
             if (IS_ATTRIBUTE)
                 ar
                     << alps::make_pvp("/data", 0)
@@ -175,9 +156,6 @@ template<typename base_type> struct test {
             ;
         }
         {
-            #ifndef USE_NG_ARCHIVE
-                alps::hdf5::iarchive ar(filename);
-            #endif
             data_type random_read(creator<data_type>::random(ar));
             ar
                 >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "overwrite", random_read)
@@ -220,11 +198,7 @@ template<typename T> struct test<boost::shared_array<T> > {
             }
         }
         {
-            #ifdef USE_NG_ARCHIVE
-                alps::mchdf5 oar(filename, alps::mchdf5::WRITE | (SZIP_COMPRESS ? alps::mchdf5::COMPRESS : 0x00));
-            #else
-                alps::hdf5::oarchive oar(filename, SZIP_COMPRESS);
-            #endif
+            alps::hdf5::archive oar(filename, alps::hdf5::archive::WRITE | (SZIP_COMPRESS ? alps::hdf5::archive::COMPRESS : 0x00));
             if (IS_ATTRIBUTE)
                 oar
                     << alps::make_pvp("/data", 0)
@@ -240,11 +214,7 @@ template<typename T> struct test<boost::shared_array<T> > {
             boost::shared_array<T> read_1_len_value(new T[MATRIX_SIZE]), read_1_value(new T[MATRIX_SIZE]);
             boost::shared_array<T> read_2_value(new T[MATRIX_SIZE * MATRIX_SIZE]);
             boost::shared_array<T> read_3_value(new T[MATRIX_SIZE * MATRIX_SIZE * MATRIX_SIZE]);
-            #ifdef USE_NG_ARCHIVE
-                alps::mchdf5 iar(filename);
-            #else
-                alps::hdf5::iarchive iar(filename);
-            #endif
+            alps::hdf5::archive iar(filename);
             iar
                 >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "len", read_1_len_value, length)
                 >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_1", read_1_value, size_1)
@@ -270,10 +240,22 @@ template<typename T> struct skip_attribute<userdefined_class<T> >: public boost:
 template<typename T, typename U> struct skip_attribute<cast_type<T, U> >: public boost::mpl::true_ {};
 template<> struct skip_attribute<enum_type>: public boost::mpl::true_ {};
 
+template<typename T> struct skip_attribute<std::vector<std::vector<T> > >: public boost::mpl::true_ {}; 
+template<typename T> struct skip_attribute<std::valarray<std::vector<T> > >: public boost::mpl::true_ {}; 
+template<typename T> struct skip_attribute<std::vector<std::valarray<T> > >: public boost::mpl::true_ {}; 
+template<typename T> struct skip_attribute<std::valarray<std::valarray<T> > >: public boost::mpl::true_ {};
+template<typename T> struct skip_attribute<boost::numeric::ublas::vector<boost::numeric::ublas::vector<T> > >: public boost::mpl::true_ {};
+template<typename T> struct skip_attribute<std::valarray<boost::numeric::ublas::vector<T> > >: public boost::mpl::true_ {};
+template<typename T> struct skip_attribute<std::vector<boost::numeric::ublas::vector<T> > >: public boost::mpl::true_ {};
+template<typename T> struct skip_attribute<boost::numeric::ublas::vector<std::vector<T> > >: public boost::mpl::true_ {};
+template<typename T> struct skip_attribute<boost::numeric::ublas::vector<std::valarray<T> > >: public boost::mpl::true_ {};
+
 template<typename T> struct skip_attribute<T *>: public skip_attribute<T> {};
 template<typename T> struct skip_attribute<std::vector<T> >: public skip_attribute<T> {};
 template<typename T> struct skip_attribute<std::valarray<T> >: public skip_attribute<T> {};
+template<typename T, typename U> struct skip_attribute<std::pair<T, U> >: public boost::mpl::or_<skip_attribute<T>, skip_attribute<U> >::type {};
 template<typename T> struct skip_attribute<std::pair<T *, std::vector<std::size_t> > >: public skip_attribute<T> {};
+template<typename T> struct skip_attribute<std::pair<std::vector<T> *, std::vector<std::size_t> > >: public boost::mpl::true_ {};
 template<typename T> struct skip_attribute<boost::shared_array<T> >: public skip_attribute<T> {};
 
 int main() {
@@ -287,11 +269,9 @@ int main() {
         for (std::size_t i = 32; i && result; --i)
             result = test<boost::remove_pointer< TYPE >::type >::write(filename, boost::is_pointer< TYPE >::type());
         {
-            #ifdef USE_NG_ARCHIVE
-                alps::mchdf5 iar1(filename, alps::mchdf5::WRITE | (SZIP_COMPRESS ? alps::mchdf5::COMPRESS : 0x00));
-                alps::mchdf5 iar2(filename, alps::mchdf5::WRITE | (SZIP_COMPRESS ? alps::mchdf5::COMPRESS : 0x00));
-                alps::mchdf5 iar3 = iar1;
-            #endif
+            alps::hdf5::archive iar1(filename, alps::hdf5::archive::WRITE | (SZIP_COMPRESS ? alps::hdf5::archive::COMPRESS : 0x00));
+            alps::hdf5::archive iar2(filename, alps::hdf5::archive::WRITE | (SZIP_COMPRESS ? alps::hdf5::archive::COMPRESS : 0x00));
+            alps::hdf5::archive iar3 = iar1;
             for (std::size_t i = 32; i && result; --i)
                 result = test<boost::remove_pointer< TYPE >::type >::overwrite(filename, boost::is_pointer< TYPE >::type());
         }

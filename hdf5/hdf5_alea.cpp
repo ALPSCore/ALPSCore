@@ -25,9 +25,10 @@
 *
 *****************************************************************************/
 
-#include <alps/hdf5.hpp>
 #include <alps/utility/encode.hpp>
 #include <alps/alea.h>
+
+#include <alps/ngs/mchdf5.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/random.hpp>
@@ -54,8 +55,10 @@ int main() {
             measurement["Sign"] << 1.0;
             measurement["Histogram"] << static_cast<int>(10*random());
         }
-        alps::hdf5::oarchive oar(filename);
+        
+        alps::hdf5::archive oar(filename, alps::hdf5::archive::WRITE);
         oar << make_pvp("/test/0/result", measurement);
+        
         alps::IntHistogramObsevaluator eval = measurement["Histogram"];
     }
     {
@@ -64,14 +67,14 @@ int main() {
                     << alps::RealObservable("Sign")
                     << alps::RealObservable("No Measurements")
                     << alps::IntHistogramObservable("Histogram", 0, 10);
-        alps::hdf5::iarchive iar(filename);
+        alps::hdf5::archive iar(filename, alps::hdf5::archive::READ);
         iar >> make_pvp("/test/0/result", measurement);
         std::cout << measurement;
         alps::IntHistogramObsevaluator eval = measurement["Histogram"];
     }
     {
         alps::ObservableSet measurement;
-        alps::hdf5::iarchive iar(filename);
+        alps::hdf5::archive iar(filename, alps::hdf5::archive::READ);
         iar >> make_pvp("/test/0/result", measurement);
         std::cout << measurement;
         alps::IntHistogramObsevaluator eval = measurement["Histogram"];

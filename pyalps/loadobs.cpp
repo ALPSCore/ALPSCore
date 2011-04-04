@@ -43,11 +43,11 @@ int main() {
         iar.set_context("/simulation/results/" + iar.encode_segment(*it));
         if (iar.is_scalar("/simulation/results/" + iar.encode_segment(*it) + "/mean/value")) {
             alps::alea::mcdata<double> obs;
-            obs.serialize(iar);
+            obs.load(iar);
             std::cout << *it << " " << obs << std::endl;
         } else {
             alps::alea::mcdata<std::vector<double> > obs;
-            obs.serialize(iar);
+            obs.load(iar);
             std::cout << *it << " " << obs << std::endl;
         }
     }

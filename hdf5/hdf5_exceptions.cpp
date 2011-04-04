@@ -25,7 +25,7 @@
 *
 *****************************************************************************/
 
-#include <alps/hdf5.hpp>
+#include <alps/ngs/mchdf5.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/random.hpp>
@@ -40,11 +40,11 @@ int main() {
     if (boost::filesystem::exists(boost::filesystem::path(filename)))
         boost::filesystem::remove(boost::filesystem::path(filename));
     {
-        alps::hdf5::oarchive oar(filename);
+        alps::hdf5::archive oar(filename, alps::hdf5::archive::WRITE);
     }
     {
         using namespace alps;
-        alps::hdf5::iarchive iar(filename);
+        alps::hdf5::archive iar(filename, alps::hdf5::archive::READ);
         double test;
         try {
             iar >> make_pvp("/not/existing/path", test);
