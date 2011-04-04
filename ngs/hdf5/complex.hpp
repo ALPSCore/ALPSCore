@@ -28,12 +28,9 @@
 #ifndef ALPS_NGS_HDF5_STD_COMPLEX
 #define ALPS_NGS_HDF5_STD_COMPLEX
 
-#include <alps/ngs/mchdf5.hpp>
+#include <alps/hdf5.hpp>
 
 #include <complex>
-
-//TODO: remove
-#include <cxxabi.h>
 
 namespace alps {
 	namespace hdf5 {

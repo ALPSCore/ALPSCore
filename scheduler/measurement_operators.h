@@ -31,8 +31,8 @@
 #ifndef ALPS_MODEL_MEASUREMENT_OPERATORS_H
 #define ALPS_MODEL_MEASUREMENT_OPERATORS_H
 
-#include <alps/ngs/mchdf5.hpp>
-#include <alps/ngs/mchdf5/vector.hpp>
+#include <alps/hdf5.hpp>
+#include <alps/hdf5/vector.hpp>
 
 #include <alps/parameter.h>
 #include <alps/xml.h>

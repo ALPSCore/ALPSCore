@@ -28,7 +28,7 @@
 #ifndef ALPS_NGS_HDF5_BOOST_SHARED_ARRAY_HPP
 #define ALPS_NGS_HDF5_BOOST_SHARED_ARRAY_HPP
 
-#include <alps/ngs/mchdf5.hpp>
+#include <alps/hdf5.hpp>
 
 #include <boost/shared_array.hpp>
 

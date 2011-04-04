@@ -47,7 +47,7 @@
 #include <mpi.h>
 #endif
 
-#include <alps/ngs/mchdf5.hpp>
+#include <alps/hdf5.hpp>
 
 #include <boost/filesystem/path.hpp>
 #include <boost/type_traits.hpp>

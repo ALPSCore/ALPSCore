@@ -25,40 +25,81 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/ngs/api.hpp>
-#include <alps/ngs/mchdf5.hpp>
+#include <alps/hdf5.hpp>
+#include <alps/ngs/mcobservable.hpp>
 
-#include <boost/filesystem.hpp>
+#include <alps/alea/observable.h>
+
+#include <vector>
+#include <valarray>
+#include <iostream>
 
 namespace alps {
 
-    namespace detail {
-        template<typename R, typename P> void save_results_impl(R const & results, P const & params, boost::filesystem::path const & filename, std::string const & path) {
-            if (results.size()) {
-                boost::filesystem::path original = filename.parent_path() / (filename.filename() + ".h5");
-                boost::filesystem::path backup = filename.parent_path() / (filename.filename() + ".bak");
-                if (boost::filesystem::exists(backup))
-                    boost::filesystem::remove(backup);
-                {
-                    hdf5::archive ar(backup.file_string(), hdf5::archive::WRITE);
-                    ar
-                        << make_pvp("/parameters", params)
-                        << make_pvp(path, results)
-                    ;
-                }
-                if (boost::filesystem::exists(original))
-                    boost::filesystem::remove(original);
-                boost::filesystem::rename(backup, original);
-            }
-        }
+    mcobservable::mcobservable()
+        : impl_(NULL) 
+    {}
+
+    mcobservable::mcobservable(Observable const * obs) {
+        ref_cnt_[impl_ = obs->clone()] = 1;
     }
 
-    void save_results(mcresults const & results, mcparams const & params, boost::filesystem::path const & filename, std::string const & path) {
-        detail::save_results_impl(results, params, filename, path);
+    mcobservable::mcobservable(mcobservable const & rhs) {
+        ++ref_cnt_[impl_ = rhs.impl_];
     }
 
-    void save_results(mcobservables const & observables, mcparams const & params, boost::filesystem::path const & filename, std::string const & path) {
-        detail::save_results_impl(observables, params, filename, path);
+    mcobservable::~mcobservable() {
+        if (impl_ && !--ref_cnt_[impl_])
+            delete impl_;
+    }
+
+    mcobservable & mcobservable::operator=(mcobservable rhs) {
+        if (impl_ && !--ref_cnt_[impl_])
+            delete impl_;
+        ++ref_cnt_[impl_ = rhs.impl_];
+        return *this;
+    }
+
+    Observable * mcobservable::get_impl() {
+        return impl_;
+    }
+
+    Observable const * mcobservable::get_impl() const {
+        return impl_;
+    }
+
+    template<> mcobservable & mcobservable::operator<< <double>(double const & value) {
+        (*impl_) << value;
+        return *this;
+    }
+
+    template<> mcobservable & mcobservable::operator<< <std::vector<double> >(std::vector<double>  const & value) {
+        (*impl_) << value;
+        return *this;
+    }
+
+    template<> mcobservable & mcobservable::operator<< <std::valarray<double> >(std::valarray<double>  const & value) {
+        (*impl_) << value;
+        return *this;
+    }
+
+    void mcobservable::save(hdf5::archive & ar) const {
+        impl_->save(ar);
+    }
+
+    void mcobservable::load(hdf5::archive & ar) {
+        impl_->save(ar);
+    }
+
+    void mcobservable::output(std::ostream & os) const {
+        os << *(impl_);
+    }
+
+    std::map<Observable *, std::size_t> mcobservable::ref_cnt_;
+
+    std::ostream & operator<<(std::ostream & os, mcobservable const & obs) {
+        obs.output(os);
+        return os;
     }
 
 }

@@ -30,7 +30,7 @@
 #ifndef ALPS_PYTHON_VERY_LONG_FILENAME_FOR_SAVE_OBSERVABLE_TO_HDF5_HPP
 #define ALPS_PYTHON_VERY_LONG_FILENAME_FOR_SAVE_OBSERVABLE_TO_HDF5_HPP
 
-#include <alps/ngs/mchdf5.hpp>
+#include <alps/hdf5.hpp>
 
 namespace alps { namespace python {
     

@@ -25,38 +25,61 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_HDF5_POINTER_HPP
-#define ALPS_NGS_HDF5_POINTER_HPP
+#include <alps/hdf5.hpp>
+#include <alps/ngs/macros.hpp>
+#include <alps/ngs/mcresults.hpp>
 
-#include <alps/ngs/mchdf5/pair.hpp>
+#include <alps/alea/observableset.h>
+
+#include <stdexcept>
 
 namespace alps {
 
-	template <typename T> hdf5::detail::make_pvp_proxy<std::pair<T *, std::vector<std::size_t> > > make_pvp(
-		  std::string const & path
-		, T * value
-		, std::size_t size
-	) {
-		return hdf5::detail::make_pvp_proxy<std::pair<T *, std::vector<std::size_t> > >(
-			  path
-			, std::make_pair(value, size > 0 
-				? std::vector<std::size_t>(1, size)
-				: std::vector<std::size_t>()
-			)
-		);
-	}
+    mcresult & mcresults::operator[](std::string const & name) {
+        if (!has(name))
+            ALPS_NGS_THROW_OUT_OF_RANGE("No result found with the name: " + name);
+        return std::map<std::string, mcresult>::find(name)->second;
+    }
 
-	template <typename T> hdf5::detail::make_pvp_proxy<std::pair<T *, std::vector<std::size_t> > > make_pvp(
-		  std::string const & path
-		, T * value
-		, std::vector<std::size_t> const & size
-	) {
-		return hdf5::detail::make_pvp_proxy<std::pair<T *, std::vector<std::size_t> > >(
-			  path
-			, std::make_pair(value, size)
-		);
-	}
+    mcresult const & mcresults::operator[](std::string const & name) const {
+        if (!has(name))
+            ALPS_NGS_THROW_OUT_OF_RANGE("No result found with the name: " + name);
+        return std::map<std::string, mcresult>::find(name)->second;
+    }
+
+    bool mcresults::has(std::string const & name) const {
+        return std::map<std::string, mcresult>::find(name) != std::map<std::string, mcresult>::end();
+    }
+
+    void mcresults::insert(std::string const & name, mcresult res) {
+        if (has(name))
+            ALPS_NGS_THROW_OUT_OF_RANGE("There exists alrady a result with the name: " + name);
+        std::map<std::string, mcresult>::insert(make_pair(name, res));
+    }
+
+    void mcresults::save(hdf5::archive & ar) const {
+        for(std::map<std::string, mcresult>::const_iterator it = std::map<std::string, mcresult>::begin(); it != std::map<std::string, mcresult>::end(); ++it)
+            if (it->second.count())
+                ar
+                    << make_pvp(ar.encode_segment(it->first), it->second)
+                ;
+    }
+
+    void mcresults::load(hdf5::archive & ar)  {
+        ObservableSet set;
+        ar >> make_pvp("/simulation/realizations/0/clones/0/results", set);
+        for(ObservableSet::const_iterator it = set.begin(); it != set.end(); ++it)
+            insert(it->first, mcresult(it->second));
+    }
+
+    void mcresults::output(std::ostream & os) const {
+        for(std::map<std::string, mcresult>::const_iterator it = std::map<std::string, mcresult>::begin(); it != std::map<std::string, mcresult>::end(); ++it)
+            std::cout << std::fixed << std::setprecision(5) << it->first << ": " << it->second << std::endl;
+    }
+
+    std::ostream & operator<<(std::ostream & os, mcresults const & results) {
+        results.output(os);
+        return os;
+    }
 
 }
-
-#endif

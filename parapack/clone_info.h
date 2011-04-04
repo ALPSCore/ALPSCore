@@ -30,7 +30,7 @@
 
 #include "process.h"
 #include "types.h"
-#include <alps/ngs/mchdf5.hpp>
+#include <alps/hdf5.hpp>
 #include <alps/parser/xmlstream.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <vector>

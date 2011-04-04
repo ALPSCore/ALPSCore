@@ -26,7 +26,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <alps/ngs/api.hpp>
-#include <alps/ngs/mchdf5.hpp>
+#include <alps/hdf5.hpp>
 #include <alps/ngs/mcbase.hpp>
 
 namespace alps {

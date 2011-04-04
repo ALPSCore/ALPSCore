@@ -34,7 +34,7 @@
 #define ALPS_ALEA_SIMPLEOBSEVAL_IPP
 
 #include <alps/alea/simpleobseval.h>
-#include <alps/ngs/mchdf5/valarray.hpp>
+#include <alps/hdf5/valarray.hpp>
 
 namespace alps {
 

@@ -40,7 +40,7 @@
 #include <alps/alea/type_tag.hpp>
 #include <alps/utility/encode.hpp>
 
-#include <alps/ngs/mchdf5.hpp>
+#include <alps/hdf5.hpp>
 
 namespace alps {
 

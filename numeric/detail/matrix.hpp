@@ -41,8 +41,8 @@
 #include <vector>
 #include <numeric>
 
-#include <alps/ngs/mchdf5.hpp>
-#include <alps/ngs/mchdf5/pointer.hpp>
+#include <alps/hdf5.hpp>
+#include <alps/hdf5/pointer.hpp>
 
 #ifdef UBLAS
 #include <boost/numeric/bindings/traits/ublas_matrix.hpp>

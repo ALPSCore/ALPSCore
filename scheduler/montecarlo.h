@@ -41,7 +41,7 @@
 #include <boost/smart_ptr.hpp>
 #include <alps/config.h>
 
-#include <alps/ngs/mchdf5.hpp>
+#include <alps/hdf5.hpp>
 
 namespace alps {
 namespace scheduler {

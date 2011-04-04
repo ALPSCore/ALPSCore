@@ -37,7 +37,7 @@
 
 #include <alps/expression.h>
 
-#include <alps/ngs/mchdf5.hpp>
+#include <alps/hdf5.hpp>
 
 namespace bs = boost::spirit;
 

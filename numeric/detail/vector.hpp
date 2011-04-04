@@ -35,8 +35,8 @@
 #include <vector>
 #include <algorithm>
 #include <cassert>
-#include <alps/ngs/mchdf5.hpp>
-#include <alps/ngs/mchdf5/pointer.hpp>
+#include <alps/hdf5.hpp>
+#include <alps/hdf5/pointer.hpp>
 
 inline double expfunc(double entry)
 {

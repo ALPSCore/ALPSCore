@@ -49,7 +49,7 @@
 #include <stdexcept>
 #include <string>
 
-#include <alps/ngs/mchdf5.hpp>
+#include <alps/hdf5.hpp>
 
 /// \file parameters.h
 /// \brief classes to store simulation parameters

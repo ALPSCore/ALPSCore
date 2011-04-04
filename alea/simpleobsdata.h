@@ -50,7 +50,7 @@
 #include <alps/utility/resize.hpp>
 #include <alps/utility/assign.hpp>
 #include <alps/lambda.hpp>
-#include <alps/ngs/mchdf5.hpp>
+#include <alps/hdf5.hpp>
 
 #include <boost/lambda/lambda.hpp>
 #include <boost/functional.hpp>

@@ -25,19 +25,40 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_HDF5_BOOST_NUMERIC_UBLAS_VECTOR_HPP
-#define ALPS_NGS_HDF5_BOOST_NUMERIC_UBLAS_VECTOR_HPP
+#include <alps/ngs/api.hpp>
+#include <alps/hdf5.hpp>
 
-#include <alps/ngs/mchdf5.hpp>
+#include <boost/filesystem.hpp>
 
-#include <boost/numeric/ublas/vector.hpp>
+namespace alps {
 
-#define ALPS_NGS_HDF5_VECTOR_TEMPLATE_ARGS typename T, typename A
-#define ALPS_NGS_HDF5_VECTOR_TEMPLATE_TYPE boost::numeric::ublas::vector<T, A>
+    namespace detail {
+        template<typename R, typename P> void save_results_impl(R const & results, P const & params, boost::filesystem::path const & filename, std::string const & path) {
+            if (results.size()) {
+                boost::filesystem::path original = filename.parent_path() / (filename.filename() + ".h5");
+                boost::filesystem::path backup = filename.parent_path() / (filename.filename() + ".bak");
+                if (boost::filesystem::exists(backup))
+                    boost::filesystem::remove(backup);
+                {
+                    hdf5::archive ar(backup.file_string(), hdf5::archive::WRITE);
+                    ar
+                        << make_pvp("/parameters", params)
+                        << make_pvp(path, results)
+                    ;
+                }
+                if (boost::filesystem::exists(original))
+                    boost::filesystem::remove(original);
+                boost::filesystem::rename(backup, original);
+            }
+        }
+    }
 
-#include <alps/ngs/mchdf5/container.def>
+    void save_results(mcresults const & results, mcparams const & params, boost::filesystem::path const & filename, std::string const & path) {
+        detail::save_results_impl(results, params, filename, path);
+    }
 
-#undef ALPS_NGS_HDF5_VECTOR_TEMPLATE_ARGS
-#undef ALPS_NGS_HDF5_VECTOR_TEMPLATE_TYPE
+    void save_results(mcobservables const & observables, mcparams const & params, boost::filesystem::path const & filename, std::string const & path) {
+        detail::save_results_impl(observables, params, filename, path);
+    }
 
-#endif
+}

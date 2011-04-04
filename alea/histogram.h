@@ -38,8 +38,8 @@
 #include <alps/osiris/dump.h>
 #include <alps/osiris/std/vector.h>
 
-#include <alps/ngs/mchdf5.hpp>
-#include <alps/ngs/mchdf5/vector.hpp>
+#include <alps/hdf5.hpp>
+#include <alps/hdf5/vector.hpp>
 
 #include <vector>
 

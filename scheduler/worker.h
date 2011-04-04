@@ -43,7 +43,7 @@
 #include <cmath>
 #include <iostream>
 
-#include <alps/ngs/mchdf5.hpp>
+#include <alps/hdf5.hpp>
 
 namespace alps {
 

@@ -30,7 +30,7 @@
 #define ALPS_NGS_MCRESULT_IMPL_DERIVED_HPP
 
 #include <alps/ngs/boost.hpp>
-#include <alps/ngs/mchdf5.hpp>
+#include <alps/hdf5.hpp>
 #include <alps/ngs/macros.hpp>
 #include <alps/ngs/short_print.hpp>
 

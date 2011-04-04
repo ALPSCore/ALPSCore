@@ -29,7 +29,7 @@
 #ifndef ALPS_NGS_HDF5_STD_MAP
 #define ALPS_NGS_HDF5_STD_MAP
 
-#include <alps/ngs/mchdf5.hpp>
+#include <alps/hdf5.hpp>
 #include <alps/ngs/convert.hpp>
 
 #include <map>

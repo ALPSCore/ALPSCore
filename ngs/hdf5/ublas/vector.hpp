@@ -25,18 +25,17 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_HDF5_STD_VECTOR_HPP
-#define ALPS_NGS_HDF5_STD_VECTOR_HPP
+#ifndef ALPS_NGS_HDF5_BOOST_NUMERIC_UBLAS_VECTOR_HPP
+#define ALPS_NGS_HDF5_BOOST_NUMERIC_UBLAS_VECTOR_HPP
 
-#include <alps/ngs/mchdf5.hpp>
-#include <alps/ngs/convert.hpp>
+#include <alps/hdf5.hpp>
 
-#include <vector>
+#include <boost/numeric/ublas/vector.hpp>
 
 #define ALPS_NGS_HDF5_VECTOR_TEMPLATE_ARGS typename T, typename A
-#define ALPS_NGS_HDF5_VECTOR_TEMPLATE_TYPE std::vector<T, A>
+#define ALPS_NGS_HDF5_VECTOR_TEMPLATE_TYPE boost::numeric::ublas::vector<T, A>
 
-#include <alps/ngs/mchdf5/container.def>
+#include <alps/hdf5/container.def>
 
 #undef ALPS_NGS_HDF5_VECTOR_TEMPLATE_ARGS
 #undef ALPS_NGS_HDF5_VECTOR_TEMPLATE_TYPE

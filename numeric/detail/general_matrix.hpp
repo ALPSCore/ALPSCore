@@ -41,7 +41,7 @@
 #include <sys/types.h>
 #include <vector>
 
-#include <alps/ngs/mchdf5.hpp>
+#include <alps/hdf5.hpp>
 
 #ifdef USE_MATRIX_DISPATCH //use dispatch to tiny matrix functions for small matrices
 #undef __APPLE_CC__

@@ -34,7 +34,7 @@
 #include "types.h"
 
 #include <alps/alea.h>
-#include <alps/ngs/mchdf5.hpp>
+#include <alps/hdf5.hpp>
 #include <alps/osiris.h>
 #include <alps/parameter.h>
 #include <alps/scheduler/info.h>

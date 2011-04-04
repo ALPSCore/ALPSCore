@@ -33,9 +33,9 @@
 #ifndef ALPS_ALEA_ABSTRACTSIMPLEOBSERVABLE_IPP
 #define ALPS_ALEA_ABSTRACTSIMPLEOBSERVABLE_IPP
 
-#include <alps/ngs/mchdf5.hpp>
-#include <alps/ngs/mchdf5/complex.hpp>
-#include <alps/ngs/mchdf5/valarray.hpp>
+#include <alps/hdf5.hpp>
+#include <alps/hdf5/complex.hpp>
+#include <alps/hdf5/valarray.hpp>
 
 #include <alps/alea/abstractsimpleobservable.h>
 

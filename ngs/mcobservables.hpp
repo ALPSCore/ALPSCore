@@ -28,7 +28,7 @@
 #ifndef ALPS_NGS_MCOBSERVABLES_HPP
 #define ALPS_NGS_MCOBSERVABLES_HPP
 
-#include <alps/ngs/mchdf5.hpp>
+#include <alps/hdf5.hpp>
 #include <alps/ngs/mcobservable.hpp>
 
 #include <alps/config.h>

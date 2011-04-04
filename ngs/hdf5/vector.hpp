@@ -25,81 +25,20 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/ngs/mchdf5.hpp>
-#include <alps/ngs/mcobservable.hpp>
+#ifndef ALPS_NGS_HDF5_STD_VECTOR_HPP
+#define ALPS_NGS_HDF5_STD_VECTOR_HPP
 
-#include <alps/alea/observable.h>
+#include <alps/hdf5.hpp>
+#include <alps/ngs/convert.hpp>
 
 #include <vector>
-#include <valarray>
-#include <iostream>
 
-namespace alps {
+#define ALPS_NGS_HDF5_VECTOR_TEMPLATE_ARGS typename T, typename A
+#define ALPS_NGS_HDF5_VECTOR_TEMPLATE_TYPE std::vector<T, A>
 
-    mcobservable::mcobservable()
-        : impl_(NULL) 
-    {}
+#include <alps/hdf5/container.def>
 
-    mcobservable::mcobservable(Observable const * obs) {
-        ref_cnt_[impl_ = obs->clone()] = 1;
-    }
+#undef ALPS_NGS_HDF5_VECTOR_TEMPLATE_ARGS
+#undef ALPS_NGS_HDF5_VECTOR_TEMPLATE_TYPE
 
-    mcobservable::mcobservable(mcobservable const & rhs) {
-        ++ref_cnt_[impl_ = rhs.impl_];
-    }
-
-    mcobservable::~mcobservable() {
-        if (impl_ && !--ref_cnt_[impl_])
-            delete impl_;
-    }
-
-    mcobservable & mcobservable::operator=(mcobservable rhs) {
-        if (impl_ && !--ref_cnt_[impl_])
-            delete impl_;
-        ++ref_cnt_[impl_ = rhs.impl_];
-        return *this;
-    }
-
-    Observable * mcobservable::get_impl() {
-        return impl_;
-    }
-
-    Observable const * mcobservable::get_impl() const {
-        return impl_;
-    }
-
-    template<> mcobservable & mcobservable::operator<< <double>(double const & value) {
-        (*impl_) << value;
-        return *this;
-    }
-
-    template<> mcobservable & mcobservable::operator<< <std::vector<double> >(std::vector<double>  const & value) {
-        (*impl_) << value;
-        return *this;
-    }
-
-    template<> mcobservable & mcobservable::operator<< <std::valarray<double> >(std::valarray<double>  const & value) {
-        (*impl_) << value;
-        return *this;
-    }
-
-    void mcobservable::save(hdf5::archive & ar) const {
-        impl_->save(ar);
-    }
-
-    void mcobservable::load(hdf5::archive & ar) {
-        impl_->save(ar);
-    }
-
-    void mcobservable::output(std::ostream & os) const {
-        os << *(impl_);
-    }
-
-    std::map<Observable *, std::size_t> mcobservable::ref_cnt_;
-
-    std::ostream & operator<<(std::ostream & os, mcobservable const & obs) {
-        obs.output(os);
-        return os;
-    }
-
-}
+#endif

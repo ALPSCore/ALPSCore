@@ -34,8 +34,8 @@
 #include <alps/lattice/graph_helper.h>
 #include <alps/scheduler/task.h>
 
-#include <alps/ngs/mchdf5.hpp>
-#include <alps/ngs/mchdf5/ublas/vector.hpp>
+#include <alps/hdf5.hpp>
+#include <alps/hdf5/ublas/vector.hpp>
 
 namespace alps { namespace scheduler {
 

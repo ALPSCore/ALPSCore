@@ -30,8 +30,8 @@
 
 #include <alps/hdf5.hpp>
 #ifdef ALPS_USE_NGS
-    #include <alps/ngs/mchdf5.hpp>
-    #include <alps/ngs/mchdf5/pointer.hpp>
+    #include <alps/hdf5.hpp>
+    #include <alps/hdf5/pointer.hpp>
 #endif
 
 #include <alps/python/make_copy.hpp>

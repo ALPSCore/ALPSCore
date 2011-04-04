@@ -1,1 +1,1 @@
-#include <alps/ngs/mchdf5.hpp>
+#include <alps/ngs/hdf5.hpp>

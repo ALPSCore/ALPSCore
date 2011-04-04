@@ -28,7 +28,7 @@
 #ifndef ALPS_NGS_HDF5_STD_PAIR
 #define ALPS_NGS_HDF5_STD_PAIR
 
-#include <alps/ngs/mchdf5.hpp>
+#include <alps/hdf5.hpp>
 #include <alps/ngs/convert.hpp>
 
 #include <boost/type_traits/remove_const.hpp>

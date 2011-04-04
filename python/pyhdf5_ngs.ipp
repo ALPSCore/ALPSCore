@@ -28,10 +28,10 @@
 
 #define PY_ARRAY_UNIQUE_SYMBOL pyhdf5_PyArrayHandle
 
-#include <alps/ngs/mchdf5.hpp>
-#include <alps/ngs/mchdf5/pair.hpp>
-#include <alps/ngs/mchdf5/vector.hpp>
-#include <alps/ngs/mchdf5/complex.hpp>
+#include <alps/hdf5.hpp>
+#include <alps/hdf5/pair.hpp>
+#include <alps/hdf5/vector.hpp>
+#include <alps/hdf5/complex.hpp>
 
 #include <alps/python/make_copy.hpp>
 

@@ -78,7 +78,7 @@
   using boost::int32_t;
 # ifdef ALPS_HAVE_HDF5
     // hdf5 introduce its own uint32_t, int64_t, uint64_t
-#   include <alps/ngs/mchdf5.hpp>
+#   include <alps/hdf5.hpp>
 # else
     using boost::uint32_t;
     using boost::int64_t;

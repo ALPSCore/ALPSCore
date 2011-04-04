@@ -25,8 +25,8 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_MCHDF5_HPP
-#define ALPS_NGS_MCHDF5_HPP
+#ifndef ALPS_NGS_HDF5_HPP
+#define ALPS_NGS_HDF5_HPP
 
 #include <alps/ngs/macros.hpp>
 
@@ -45,7 +45,7 @@
 #include <iostream>
 #include <cxxabi.h>
 
-#define ALPS_NGS_MCHDF5_FOREACH_NATIVE_TYPE(CALLBACK)                                                                                                              \
+#define ALPS_NGS_HDF5_FOREACH_NATIVE_TYPE(CALLBACK)                                                                                                                \
     CALLBACK(char)                                                                                                                                                 \
     CALLBACK(signed char)                                                                                                                                          \
     CALLBACK(unsigned char)                                                                                                                                        \
@@ -137,7 +137,7 @@ namespace alps {
                     ALPS_NGS_THROW_RUNTIME_ERROR("Invalid type on path: " + path)
                 }
 
-                #define ALPS_NGS_MCHDF5_DEFINE_API(T)                                                                                                                  \
+                #define ALPS_NGS_HDF5_DEFINE_API(T)                                                                                                                    \
                     void read(std::string path, T & value) const;                                                                                                      \
                     void read(                                                                                                                                         \
                           std::string path                                                                                                                             \
@@ -153,8 +153,8 @@ namespace alps {
                         , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                  \
                         , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                 \
                     ) const;
-                ALPS_NGS_MCHDF5_FOREACH_NATIVE_TYPE(ALPS_NGS_MCHDF5_DEFINE_API)
-                #undef ALPS_NGS_MCHDF5_DEFINE_API
+                ALPS_NGS_HDF5_FOREACH_NATIVE_TYPE(ALPS_NGS_HDF5_DEFINE_API)
+                #undef ALPS_NGS_HDF5_DEFINE_API
 
             private:
 
@@ -263,7 +263,7 @@ namespace alps {
             ar.set_context(context);
         }
 
-        #define ALPS_NGS_MCHDF5_DEFINE_FREE_FUNCTIONS(T)                                                                                                               \
+        #define ALPS_NGS_HDF5_DEFINE_FREE_FUNCTIONS(T)                                                                                                                 \
             template<> struct is_continous< T >                                                                                                                        \
                 : public boost::true_type                                                                                                                              \
             {};                                                                                                                                                        \
@@ -298,8 +298,8 @@ namespace alps {
                 , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                          \
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                         \
             );
-        ALPS_NGS_MCHDF5_FOREACH_NATIVE_TYPE(ALPS_NGS_MCHDF5_DEFINE_FREE_FUNCTIONS)
-        #undef ALPS_NGS_MCHDF5_DEFINE_FREE_FUNCTIONS
+        ALPS_NGS_HDF5_FOREACH_NATIVE_TYPE(ALPS_NGS_HDF5_DEFINE_FREE_FUNCTIONS)
+        #undef ALPS_NGS_HDF5_DEFINE_FREE_FUNCTIONS
 
         namespace detail {
 
@@ -401,6 +401,6 @@ namespace alps {
 
 }
 
-#undef ALPS_NGS_MCHDF5_FOREACH_NATIVE_TYPE
+#undef ALPS_NGS_HDF5_FOREACH_NATIVE_TYPE
 
 #endif

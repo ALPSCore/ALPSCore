@@ -40,7 +40,7 @@
 #include <alps/alea/nan.h>
 #include <alps/parser/parser.h>
 #include <alps/utility/resize.hpp>
-#include <alps/ngs/mchdf5/vector.hpp>
+#include <alps/hdf5/vector.hpp>
 #include <alps/utility/set_zero.hpp>
 #include <alps/numeric/functional.hpp>
 #include <alps/alea/simpleobservable.h>

@@ -31,7 +31,7 @@
 
 #include <alps/config.h>
 
-#include <alps/ngs/mchdf5.hpp>
+#include <alps/hdf5.hpp>
 
 #include <alps/scheduler/convert.h>
 #include <alps/osiris/xdrdump.h>

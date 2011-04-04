@@ -40,7 +40,7 @@
 
 
 #include <alps/config.h>
-#include <alps/ngs/mchdf5.hpp>
+#include <alps/hdf5.hpp>
 #include <alps/alea/observable.h>
 #include <alps/alea/observablefactory.h>
 #include <alps/osiris/archivedump.h>

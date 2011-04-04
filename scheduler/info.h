@@ -36,7 +36,7 @@
 #endif
 
 #include <alps/osiris/dump.h>
-#include <alps/ngs/mchdf5.hpp>
+#include <alps/hdf5.hpp>
 #include <alps/scheduler/types.h>
 #include <alps/parser/xmlstream.h>
 
