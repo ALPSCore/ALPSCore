@@ -898,7 +898,7 @@ namespace alps {
                                 , H5P_DEFAULT                                                                                                                          \
                                 , H5P_DEFAULT                                                                                                                          \
                             );                                                                                                                                         \
-                        detail::native_ptr_converter<typename boost::remove_const<T>::type> converter(1);                                                              \
+                        detail::native_ptr_converter<boost::remove_const<T>::type> converter(1);                                                              \
                         detail::check_error(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, converter.apply(&value)));                                       \
                         detail::check_data(data_id);                                                                                                                   \
                     } else {                                                                                                                                           \
@@ -932,7 +932,7 @@ namespace alps {
                                 , H5P_DEFAULT                                                                                                                          \
                                 , H5P_DEFAULT                                                                                                                          \
                             );                                                                                                                                         \
-                        detail::native_ptr_converter<typename boost::remove_const<T>::type> converter(1);                                                              \
+                        detail::native_ptr_converter<boost::remove_const<T>::type> converter(1);                                                              \
                         detail::check_error(H5Awrite(data_id, type_id, converter.apply(&value)));                                                                      \
                         detail::attribute_type attr_id(data_id);                                                                                                       \
                         if (is_group(path.substr(0, path.find_last_of('@') - 1)))                                                                                      \
