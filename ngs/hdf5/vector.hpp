@@ -36,7 +36,7 @@
 #define ALPS_NGS_HDF5_VECTOR_TEMPLATE_ARGS typename T, typename A
 #define ALPS_NGS_HDF5_VECTOR_TEMPLATE_TYPE std::vector<T, A>
 
-#include <alps/hdf5/container.def>
+#include <alps/hdf5/container_impl.hpp>
 
 #undef ALPS_NGS_HDF5_VECTOR_TEMPLATE_ARGS
 #undef ALPS_NGS_HDF5_VECTOR_TEMPLATE_TYPE
