@@ -26,9 +26,11 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <alps/ngs/mcsignal.hpp>
+#include <alps/ngs/stacktrace.hpp>
 
 #include <cstring>
 #include <iostream>
+#include <sstream>
 #include <signal.h>
 
 namespace alps {
@@ -37,8 +39,9 @@ namespace alps {
         #ifndef BOOST_MSVC
             static bool initialized;
             if (!initialized) {
-                static struct sigaction action;
                 initialized = true;
+                
+                static struct sigaction action;
                 memset(&action, 0, sizeof(action));
                 action.sa_handler = &mcsignal::slot;
                 sigaction(SIGINT, &action, NULL);
@@ -48,6 +51,11 @@ namespace alps {
                 sigaction(SIGUSR1, &action, NULL);
                 sigaction(SIGUSR2, &action, NULL);
                 sigaction(SIGSTOP, &action, NULL);
+                
+                static struct sigaction segv;
+                memset(&segv, 0, sizeof(segv));
+                segv.sa_handler = &mcsignal::segfault;
+                sigaction(SIGSEGV, &segv, NULL);
             }
         #endif
     }
@@ -66,6 +74,14 @@ namespace alps {
 
     void mcsignal::slot(int signal) {
         std::cerr << "Received signal " << signal << std::endl;
+        signals_.push_back(signal);
+    }
+
+    void mcsignal::segfault(int signal) {
+        std::ostringstream buffer;
+        buffer << "Segfault(SIGSEGV) in:" << std::endl;
+        stacktrace(buffer);
+        std::cerr << buffer.str();
         signals_.push_back(signal);
     }
 

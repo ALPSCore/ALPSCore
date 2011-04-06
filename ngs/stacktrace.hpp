@@ -1,4 +1,3 @@
-
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                                 *
  * ALPS Project: Algorithms and Libraries for Physics Simulations                  *
@@ -26,42 +25,13 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_HDF5_STD_MAP
-#define ALPS_NGS_HDF5_STD_MAP
+#ifndef ALPS_NGS_STACKTRACE_HPP
+#define ALPS_NGS_STACKTRACE_HPP
 
-#include <alps/hdf5.hpp>
-#include <alps/ngs/convert.hpp>
+#define ALPS_NGS_MAX_FRAMES 63
 
-#include <map>
+#include <sstream>
 
-namespace alps {
-    namespace hdf5 {
-
-        template <typename K, typename T, typename C, typename A> void save(
-              archive & ar
-            , std::string const & path
-            , std::map<K, T, C, A> const & value
-            , std::vector<std::size_t> size = std::vector<std::size_t>()
-            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-            , std::vector<std::size_t> offset = std::vector<std::size_t>()
-        ) {
-            for(typename std::map<K, T, C, A>::const_iterator it = value.begin(); it != value.end(); ++it)
-                save(ar, path + "/" + convert<std::string>(it->first), it->second);
-        }
-
-        template <typename K, typename T, typename C, typename A> void load(
-              archive & ar
-            , std::string const & path
-            , std::map<K, T, C, A> & value
-            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-            , std::vector<std::size_t> offset = std::vector<std::size_t>()
-        ) {
-            std::vector<std::string> children = ar.list_children(path);
-            for (typename std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)
-                load(ar, path + "/" + *it, value[convert<std::size_t>(*it)]);
-        }
-
-    }
-}
+void stacktrace(std::ostringstream &);
 
 #endif

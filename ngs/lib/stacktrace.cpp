@@ -1,4 +1,3 @@
-
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                                 *
  * ALPS Project: Algorithms and Libraries for Physics Simulations                  *
@@ -26,42 +25,47 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_HDF5_STD_MAP
-#define ALPS_NGS_HDF5_STD_MAP
+#if defined(__GNUC__)
 
-#include <alps/hdf5.hpp>
-#include <alps/ngs/convert.hpp>
+    #include <alps/ngs/stacktrace.hpp>
 
-#include <map>
+    #include <execinfo.h>
+    #include <cxxabi.h>
+    #include <stdlib.h>
 
-namespace alps {
-    namespace hdf5 {
-
-        template <typename K, typename T, typename C, typename A> void save(
-              archive & ar
-            , std::string const & path
-            , std::map<K, T, C, A> const & value
-            , std::vector<std::size_t> size = std::vector<std::size_t>()
-            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-            , std::vector<std::size_t> offset = std::vector<std::size_t>()
-        ) {
-            for(typename std::map<K, T, C, A>::const_iterator it = value.begin(); it != value.end(); ++it)
-                save(ar, path + "/" + convert<std::string>(it->first), it->second);
+    void stacktrace(std::ostringstream & buffer) {
+        void * stack[ALPS_NGS_MAX_FRAMES + 1];
+        std::size_t depth = backtrace(stack, ALPS_NGS_MAX_FRAMES + 1);
+        if (!depth)
+            buffer << "  <empty, possibly corrupt>" << std::endl;
+        else {
+            char * * symbols = backtrace_symbols(stack, depth);
+            for (std::size_t i = 1; i < depth; ++i) {
+                std::string symbol = symbols[i];
+                if (symbol.find_first_of(' ', 59) != std::string::npos) {
+                    std::string name = symbol.substr(59, symbol.find_first_of(' ', 59) - 59);
+                    int status;
+                    char * demangled = abi::__cxa_demangle(name.c_str(), NULL, NULL, &status);
+                    if (!status) {
+                        buffer << "    " 
+                               << symbol.substr(0, 59) 
+                               << demangled
+                               << symbol.substr(59 + name.size())
+                               << std::endl;
+                        free(demangled);
+                    } else
+                        buffer << "    " << symbol << std::endl;
+                } else
+                    buffer << "    " << symbol << std::endl;
+            }
+            free(symbols);
         }
-
-        template <typename K, typename T, typename C, typename A> void load(
-              archive & ar
-            , std::string const & path
-            , std::map<K, T, C, A> & value
-            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-            , std::vector<std::size_t> offset = std::vector<std::size_t>()
-        ) {
-            std::vector<std::string> children = ar.list_children(path);
-            for (typename std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)
-                load(ar, path + "/" + *it, value[convert<std::size_t>(*it)]);
-        }
-
     }
-}
+
+#else
+    
+    void stacktrace(std::ostringstream & buffer) {
+        buffer << "stacktrace only available in gcc";
+    }
 
 #endif

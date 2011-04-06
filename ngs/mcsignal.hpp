@@ -48,6 +48,8 @@ namespace alps {
 
             static void slot(int signal);
 
+            static void segfault(int signal);
+
         private:
 
             static std::vector<int> signals_;

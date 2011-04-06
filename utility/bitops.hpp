@@ -81,6 +81,10 @@ inline static int BX_(long x) { return ((x) - (((x)>>1)&0x77777777)
                              - (((x)>>2)&0x33333333)
                              - (((x)>>3)&0x11111111)); }
 
+// TODO: use int __builtin_popcount (unsigned int x); in gcc
+// use http://graphics.stanford.edu/~seander/bithacks.html
+// for windwos use http://msdn.microsoft.com/en-us/library/bb385231.aspx
+
 /// \brief count the 1-bits in a word
 /// @param x the 32-bit word of which 1-bits should be counted
 /// @return the number of 1-bits in the word
