@@ -15,7 +15,7 @@ IF (ALPS_BUILD_HDF5_TESTS)
     find_package(HDF5)
 
     # tests using ALPS
-    FOREACH (name hdf5_alea)
+    FOREACH (name hdf5_alea hdf5_deprecated)
         add_executable(${name} ${name}.cpp)
         add_dependencies(${name} alps)
         target_link_libraries(${name} alps)
