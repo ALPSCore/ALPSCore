@@ -25,6 +25,8 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include <sstream>
+
 #if defined(__GNUC__)
 
     #include <alps/ngs/stacktrace.hpp>
