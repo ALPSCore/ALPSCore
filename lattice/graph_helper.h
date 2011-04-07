@@ -133,24 +133,32 @@ Parameters coordinate_as_parameter(const G& graph,
 
 
 template<typename G>
+std::string site_label(G const& g, typename graph_traits<G>::site_descriptor const & v, int precision = 0)
+{
+  return coordinate_to_string(get(coordinate_t(), g, v), precision);
+}
+template<typename G>
 std::vector<std::string> site_labels(G const& g, int precision = 0)
 {
   std::vector<std::string> label;
   typename alps::graph_traits<G>::vertex_iterator itr, itr_end;
   for (boost::tie(itr, itr_end) = vertices(g); itr != itr_end; ++itr)
-    label.push_back(coordinate_to_string(get(coordinate_t(), g, *itr), precision));
+    label.push_back(site_label(g, *itr, precision));
   return label;
 }
 
+template<typename G>
+std::string bond_label(G const& g, typename graph_traits<G>::bond_descriptor const & e, int precision = 0)
+{
+  return site_label(g, source(e, g), precision) + " -- " + site_label(g, target(e, g), precision);
+}
 template<typename G>
 std::vector<std::string> bond_labels(G const& g, int precision = 0)
 {
   std::vector<std::string> label;
   typename alps::graph_traits<G>::edge_iterator itr, itr_end;
   for (boost::tie(itr, itr_end) = edges(g); itr != itr_end; ++itr)
-    label.push_back(
-      coordinate_to_string(get(coordinate_t(), g, source(*itr, g)), precision) + " -- " +
-      coordinate_to_string(get(coordinate_t(), g, target(*itr, g)), precision));
+    label.push_back(bond_label(g, *itr, precision));
   return label;
 }
 
@@ -548,10 +556,16 @@ public:
     return label;
   }
 
+  std::string site_label(site_descriptor const & s, int precision = 0) const {
+    return alps::site_label(graph(), s, precision);
+  }
   std::vector<std::string> site_labels(int precision = 0) const {
     return alps::site_labels(graph(), precision);
   }
 
+  std::string bond_labels(bond_descriptor const & b, int precision = 0) const {
+    return alps::bond_labels(graph(), b, precision);
+  }
   std::vector<std::string> bond_labels(int precision = 0) const {
     return alps::bond_labels(graph(), precision);
   }
