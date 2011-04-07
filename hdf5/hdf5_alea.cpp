@@ -49,12 +49,21 @@ int main() {
         measurement << alps::make_observable(alps::SimpleRealObservable("Test"), true)
                     << alps::RealObservable("Sign")
                     << alps::RealObservable("No Measurements")
-                    << alps::IntHistogramObservable("Histogram", 0, 10);
+                    << alps::IntHistogramObservable("Histogram", 0, 10)
+                    << alps::RealObservable("Test 2")
+                    << alps::RealObservable("Test 3");
         for (int i = 0; i < 10000; ++i) {
             measurement["Test"] << random();
             measurement["Sign"] << 1.0;
             measurement["Histogram"] << static_cast<int>(10*random());
+            measurement["Test 2"] << random();
+            measurement["Test 3"] << random();
         }
+        alps::RealObsevaluator e2 = measurement["Test 2"];
+        alps::RealObsevaluator e4 = measurement["Test 3"];
+        alps::RealObsevaluator ratio("Ratio");
+        ratio = e2 / e4;
+        measurement.addObservable(ratio);
         
         alps::hdf5::archive oar(filename, alps::hdf5::archive::WRITE);
         oar << make_pvp("/test/0/result", measurement);
