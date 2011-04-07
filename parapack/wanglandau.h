@@ -501,8 +501,9 @@ public:
             std::vector<double>& obs_array = obs_map[name];
             obs_array.resize(size);
             for (int i = 0; i < size; ++i) {
-              if (dynamic_cast<const RealObsevaluator*>(&obs_in[i][name])!=0 &&
-                  dynamic_cast<const RealObservable*>(&obs_in[i][name])!=0) {
+              if (dynamic_cast<const RealObsevaluator*>(&obs_in[i][name])!=0 ||
+                  dynamic_cast<const RealObservable*>(&obs_in[i][name])!=0 ||
+                  dynamic_cast<const SimpleRealObservable*>(&obs_in[i][name])!=0) {
                 RealObsevaluator eval = obs_in[i][name];
                 obs_array[i] = (eval.count() ? eval.mean() : 0.0);
               } else {
