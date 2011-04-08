@@ -37,6 +37,24 @@
 
 #define ALPS_NGS_STRINGIFY_HELPER(arg) #arg
 
+#define ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(CALLBACK)                                                                                            \
+    CALLBACK(char)                                                                                                                             \
+    CALLBACK(signed char)                                                                                                                      \
+    CALLBACK(unsigned char)                                                                                                                    \
+    CALLBACK(short)                                                                                                                            \
+    CALLBACK(unsigned short)                                                                                                                   \
+    CALLBACK(int)                                                                                                                              \
+    CALLBACK(unsigned)                                                                                                                         \
+    CALLBACK(long)                                                                                                                             \
+    CALLBACK(unsigned long)                                                                                                                    \
+    CALLBACK(long long)                                                                                                                        \
+    CALLBACK(unsigned long long)                                                                                                               \
+    CALLBACK(float)                                                                                                                            \
+    CALLBACK(double)                                                                                                                           \
+    CALLBACK(long double)                                                                                                                      \
+    CALLBACK(bool)                                                                                                                             \
+    CALLBACK(std::string)
+
 #define ALPS_NGS_THROW_ERROR(error, message)                                                                                                   \
     {                                                                                                                                          \
         std::ostringstream buffer;                                                                                                             \

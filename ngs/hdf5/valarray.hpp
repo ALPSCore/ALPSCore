@@ -112,72 +112,84 @@ namespace alps {
             };
         }
 
-        template<typename T> void save(
-              archive & ar
-            , std::string const & path
-            , std::valarray<T> const & value
-            , std::vector<std::size_t> size = std::vector<std::size_t>()
-            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-            , std::vector<std::size_t> offset = std::vector<std::size_t>()
-        ) {
-            if (ar.is_group(path))
-                ar.delete_group(path);
-            if (is_continous<T>::value && value.size() == 0)
-                ar.write(path, static_cast<typename scalar_type<std::valarray<T> >::type const *>(NULL), std::vector<std::size_t>());
-            else if (is_continous<T>::value) {
-                std::vector<std::size_t> extent(get_extent(value));
-                std::copy(extent.begin(), extent.end(), std::back_inserter(size));
-                std::copy(extent.begin(), extent.end(), std::back_inserter(chunk));
-                std::fill_n(std::back_inserter(offset), extent.size(), 0);
-                ar.write(path, get_pointer(value), size, chunk, offset);
-            } else if (value.size() == 0)
-                ar.write(path, static_cast<int const *>(NULL), std::vector<std::size_t>());
-            else if (is_vectorizable(value)) {
-                size.push_back(value.size());
-                chunk.push_back(1);
-                offset.push_back(0);
-                for(std::size_t i = 0; i < value.size(); ++i) {
-                    offset.back() = i;
-                    save(ar, path, const_cast<std::valarray<T> &>(value)[i], size, chunk, offset);
-                }
-            } else {
-                if (ar.is_data(path))
-                    ar.delete_data(path);
-                for(std::size_t i = 0; i < value.size(); ++i)
-                    save(ar, path + "/" + convert<std::string>(i), const_cast<std::valarray<T> &>(value)[i]);
-            }
-        }
+		#define ALPS_NGS_HDF5_VALARRAY_IMPL_SAVE(ARCHIVE)																										\
+			template<typename T> void save(																														\
+				  ARCHIVE & ar																																	\
+				, std::string const & path																														\
+				, std::valarray<T> const & value																												\
+				, std::vector<std::size_t> size = std::vector<std::size_t>()																					\
+				, std::vector<std::size_t> chunk = std::vector<std::size_t>()																					\
+				, std::vector<std::size_t> offset = std::vector<std::size_t>()																					\
+			) {																																					\
+				if (ar.is_group(path))																															\
+					ar.delete_group(path);																														\
+				if (is_continous<T>::value && value.size() == 0)																								\
+					ar.write(path, static_cast<typename scalar_type<std::valarray<T> >::type const *>(NULL), std::vector<std::size_t>());						\
+				else if (is_continous<T>::value) {																												\
+					std::vector<std::size_t> extent(get_extent(value));																							\
+					std::copy(extent.begin(), extent.end(), std::back_inserter(size));																			\
+					std::copy(extent.begin(), extent.end(), std::back_inserter(chunk));																			\
+					std::fill_n(std::back_inserter(offset), extent.size(), 0);																					\
+					ar.write(path, get_pointer(value), size, chunk, offset);																					\
+				} else if (value.size() == 0)																													\
+					ar.write(path, static_cast<int const *>(NULL), std::vector<std::size_t>());																	\
+				else if (is_vectorizable(value)) {																												\
+					size.push_back(value.size());																												\
+					chunk.push_back(1);																															\
+					offset.push_back(0);																														\
+					for(std::size_t i = 0; i < value.size(); ++i) {																								\
+						offset.back() = i;																														\
+						save(ar, path, const_cast<std::valarray<T> &>(value)[i], size, chunk, offset);															\
+					}																																			\
+				} else {																																		\
+					if (ar.is_data(path))																														\
+						ar.delete_data(path);																													\
+					for(std::size_t i = 0; i < value.size(); ++i)																								\
+						save(ar, path + "/" + convert<std::string>(i), const_cast<std::valarray<T> &>(value)[i]);												\
+				}																																				\
+			}
+        ALPS_NGS_HDF5_VALARRAY_IMPL_SAVE(archive)
+		#ifdef ALPS_HDF5_HAVE_DEPRECATED
+			ALPS_NGS_HDF5_VALARRAY_IMPL_SAVE(iarchive)
+		#endif
+        #undef ALPS_NGS_HDF5_VALARRAY_IMPL_SAVE
 
-        template<typename T> void load(
-              archive & ar
-            , std::string const & path
-            , std::valarray<T> & value
-            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-            , std::vector<std::size_t> offset = std::vector<std::size_t>()
-        ) {
-            if (ar.is_group(path)) {
-                std::vector<std::string> children = ar.list_children(path);
-                value.resize(children.size());
-                for (typename std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)
-                    load(ar, path + "/" + *it, value[convert<std::size_t>(*it)]);
-            } else {
-                std::vector<std::size_t> size(ar.extent(path));
-                if (is_continous<T>::value) {
-                    set_extent(value, std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));
-                    std::copy(size.begin() + chunk.size(), size.end(), std::back_inserter(chunk));
-                    std::fill_n(std::back_inserter(offset), size.size() - offset.size(), 0);
-                    ar.read(path, get_pointer(value), chunk, offset);
-                } else {
-                    set_extent(value, std::vector<std::size_t>(1, *(size.begin() + chunk.size())));
-                    chunk.push_back(1);
-                    offset.push_back(0);
-                    for(std::size_t i = 0; i < value.size(); ++i) {
-                        offset.back() = i;
-                        load(ar, path, value[i], chunk, offset);
-                    }
-                }
-            }
-        }
+		#define ALPS_NGS_HDF5_VALARRAY_IMPL_LOAD(ARCHIVE)																										\
+			template<typename T> void load(																														\
+				  ARCHIVE & ar																																	\
+				, std::string const & path																														\
+				, std::valarray<T> & value																														\
+				, std::vector<std::size_t> chunk = std::vector<std::size_t>()																					\
+				, std::vector<std::size_t> offset = std::vector<std::size_t>()																					\
+			) {																																					\
+				if (ar.is_group(path)) {																														\
+					std::vector<std::string> children = ar.list_children(path);																					\
+					value.resize(children.size());																												\
+					for (typename std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)									\
+						load(ar, path + "/" + *it, value[convert<std::size_t>(*it)]);																			\
+				} else {																																		\
+					std::vector<std::size_t> size(ar.extent(path));																								\
+					if (is_continous<T>::value) {																												\
+						set_extent(value, std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));													\
+						std::copy(size.begin() + chunk.size(), size.end(), std::back_inserter(chunk));															\
+						std::fill_n(std::back_inserter(offset), size.size() - offset.size(), 0);																\
+						ar.read(path, get_pointer(value), chunk, offset);																						\
+					} else {																																	\
+						set_extent(value, std::vector<std::size_t>(1, *(size.begin() + chunk.size())));															\
+						chunk.push_back(1);																														\
+						offset.push_back(0);																													\
+						for(std::size_t i = 0; i < value.size(); ++i) {																							\
+							offset.back() = i;																													\
+							load(ar, path, value[i], chunk, offset);																							\
+						}																																		\
+					}																																			\
+				}																																				\
+			}
+        ALPS_NGS_HDF5_VALARRAY_IMPL_LOAD(archive)
+		#ifdef ALPS_HDF5_HAVE_DEPRECATED
+			ALPS_NGS_HDF5_VALARRAY_IMPL_LOAD(iarchive)
+		#endif
+        #undef ALPS_NGS_HDF5_VALARRAY_IMPL_LOAD
 
     }
 }

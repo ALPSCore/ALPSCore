@@ -30,34 +30,6 @@
 #define ALPS_NGS_HDF5_DEPRECATED
 
 #include <alps/hdf5.hpp>
-#include <alps/hdf5/map.hpp>
-#include <alps/hdf5/pair.hpp>
-#include <alps/hdf5/vector.hpp>
-#include <alps/hdf5/pointer.hpp>
-#include <alps/hdf5/complex.hpp>
-#include <alps/hdf5/valarray.hpp>
-#include <alps/hdf5/multi_array.hpp>
-#include <alps/hdf5/shared_array.hpp>
-#include <alps/hdf5/ublas/matrix.hpp>
-#include <alps/hdf5/ublas/vector.hpp>
-
-#define ALPS_NGS_HDF5_FOREACH_NATIVE_TYPE(CALLBACK)                                                                                                                \
-    CALLBACK(char)                                                                                                                                                 \
-    CALLBACK(signed char)                                                                                                                                          \
-    CALLBACK(unsigned char)                                                                                                                                        \
-    CALLBACK(short)                                                                                                                                                \
-    CALLBACK(unsigned short)                                                                                                                                       \
-    CALLBACK(int)                                                                                                                                                  \
-    CALLBACK(unsigned)                                                                                                                                             \
-    CALLBACK(long)                                                                                                                                                 \
-    CALLBACK(unsigned long)                                                                                                                                        \
-    CALLBACK(long long)                                                                                                                                            \
-    CALLBACK(unsigned long long)                                                                                                                                   \
-    CALLBACK(float)                                                                                                                                                \
-    CALLBACK(double)                                                                                                                                               \
-    CALLBACK(long double)                                                                                                                                          \
-    CALLBACK(bool)                                                                                                                                                 \
-    CALLBACK(std::string)
 
 namespace alps {
     namespace hdf5 {
@@ -81,6 +53,25 @@ namespace alps {
                     : archive(ar)
                 {}
         };
+
+    }
+}
+
+#define ALPS_HDF5_HAVE_DEPRECATED
+
+#include <alps/hdf5/map.hpp>
+#include <alps/hdf5/pair.hpp>
+#include <alps/hdf5/vector.hpp>
+#include <alps/hdf5/pointer.hpp>
+#include <alps/hdf5/complex.hpp>
+#include <alps/hdf5/valarray.hpp>
+#include <alps/hdf5/multi_array.hpp>
+#include <alps/hdf5/shared_array.hpp>
+#include <alps/hdf5/ublas/matrix.hpp>
+#include <alps/hdf5/ublas/vector.hpp>
+
+namespace alps {
+    namespace hdf5 {
 
         template<typename T> void save(
                oarchive & ar
@@ -134,7 +125,55 @@ namespace alps {
             ) {                                                                                                                                                        \
                 load(static_cast<archive &>(ar), path, value, chunk, offset);                                                                                          \
             }
-        ALPS_NGS_HDF5_FOREACH_NATIVE_TYPE(ALPS_NGS_HDF5_DEFINE_FREE_FUNCTIONS)
+        ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_DEFINE_FREE_FUNCTIONS)
+        #undef ALPS_NGS_HDF5_DEFINE_FREE_FUNCTIONS
+
+        template <typename T> typename boost::enable_if<
+              has_complex_elements<typename boost::remove_reference<typename boost::remove_cv<T>::type>::type>
+            , oarchive &
+        >::type operator<< (oarchive & ar, detail::make_pvp_proxy<T> const & proxy) {
+            save(ar, proxy.path_, proxy.value_);
+            ar.set_complex(proxy.path_);
+            return ar;
+        }
+
+        template <typename T> typename boost::disable_if<
+              has_complex_elements<typename boost::remove_reference<typename boost::remove_cv<T>::type>::type>
+            , oarchive &
+        >::type operator<< (oarchive & ar, detail::make_pvp_proxy<T> const & proxy) {
+            save(ar, proxy.path_, proxy.value_);
+            return ar;
+        }
+
+        template <typename T> iarchive & operator>> (iarchive & ar, detail::make_pvp_proxy<T> proxy) {
+            load(ar, proxy.path_, proxy.value_);
+            return ar;
+        }
+
+/*
+
+        #define ALPS_NGS_HDF5_DEFINE_FREE_FUNCTIONS(T)                                                                                                                 \
+            void save(                                                                                                                                                 \
+                  oarchive & ar                                                                                                                                        \
+                , std::string const & path                                                                                                                             \
+                , T const & value                                                                                                                                      \
+                , std::vector<std::size_t> size = std::vector<std::size_t>()                                                                                           \
+                , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                          \
+                , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                         \
+            ) {                                                                                                                                                        \
+                save(static_cast<archive &>(ar), path, value, size, chunk, offset);                                                                                    \
+            }                                                                                                                                                          \
+                                                                                                                                                                       \
+            void load(                                                                                                                                                 \
+                  iarchive & ar                                                                                                                                        \
+                , std::string const & path                                                                                                                             \
+                , T & value                                                                                                                                            \
+                , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                          \
+                , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                         \
+            ) {                                                                                                                                                        \
+                load(static_cast<archive &>(ar), path, value, chunk, offset);                                                                                          \
+            }
+        ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_DEFINE_FREE_FUNCTIONS)
         #undef ALPS_NGS_HDF5_DEFINE_FREE_FUNCTIONS
 
         template<typename T> void save(
@@ -327,10 +366,8 @@ namespace alps {
             load(ar, proxy.path_, proxy.value_);
             return ar;
         }
-
+*/
     }
 }
-
-#undef ALPS_NGS_HDF5_FOREACH_NATIVE_TYPE
 
 #endif

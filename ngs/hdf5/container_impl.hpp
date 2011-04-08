@@ -119,76 +119,88 @@ namespace alps {
 			};
 		}
 
-		template< ALPS_NGS_HDF5_VECTOR_TEMPLATE_ARGS > void save(
-			  archive & ar
-			, std::string const & path
-			, ALPS_NGS_HDF5_VECTOR_TEMPLATE_TYPE const & value
-			, std::vector<std::size_t> size = std::vector<std::size_t>()
-			, std::vector<std::size_t> chunk = std::vector<std::size_t>()
-			, std::vector<std::size_t> offset = std::vector<std::size_t>()
-		) {
-			using alps::convert;
-			if (ar.is_group(path))
-				ar.delete_group(path);
-			if (is_continous<T>::value && value.size() == 0)
-				ar.write(path, static_cast<typename scalar_type< ALPS_NGS_HDF5_VECTOR_TEMPLATE_TYPE >::type const *>(NULL), std::vector<std::size_t>());
-			else if (is_continous<T>::value) {
-				std::vector<std::size_t> extent(get_extent(value));
-				std::copy(extent.begin(), extent.end(), std::back_inserter(size));
-				std::copy(extent.begin(), extent.end(), std::back_inserter(chunk));
-				std::fill_n(std::back_inserter(offset), extent.size(), 0);
-				ar.write(path, get_pointer(value), size, chunk, offset);
-			} else if (value.size() == 0)
-				ar.write(path, static_cast<int const *>(NULL), std::vector<std::size_t>());
-			else if (is_vectorizable(value)) {
-				size.push_back(value.size());
-				chunk.push_back(1);
-				offset.push_back(0);
-				for(typename ALPS_NGS_HDF5_VECTOR_TEMPLATE_TYPE ::const_iterator it = value.begin(); it != value.end(); ++it) {
-					offset.back() = it - value.begin();
-					save(ar, path, *it, size, chunk, offset);
-				}
-			} else {
-				if (ar.is_data(path))
-					ar.delete_data(path);
-				for(typename ALPS_NGS_HDF5_VECTOR_TEMPLATE_TYPE ::const_iterator it = value.begin(); it != value.end(); ++it)
-					save(ar, path + "/" + convert<std::string>(it - value.begin()), *it);
+		#define ALPS_NGS_HDF5_CONTAINER_IMPL_SAVE(ARCHIVE)																										\
+			template< ALPS_NGS_HDF5_VECTOR_TEMPLATE_ARGS > void save(																							\
+				  ARCHIVE & ar																																	\
+				, std::string const & path																														\
+				, ALPS_NGS_HDF5_VECTOR_TEMPLATE_TYPE const & value																								\
+				, std::vector<std::size_t> size = std::vector<std::size_t>()																					\
+				, std::vector<std::size_t> chunk = std::vector<std::size_t>()																					\
+				, std::vector<std::size_t> offset = std::vector<std::size_t>()																					\
+			) {																																					\
+				using alps::convert;																															\
+				if (ar.is_group(path))																															\
+					ar.delete_group(path);																														\
+				if (is_continous<T>::value && value.size() == 0)																								\
+					ar.write(path, static_cast<typename scalar_type< ALPS_NGS_HDF5_VECTOR_TEMPLATE_TYPE >::type const *>(NULL), std::vector<std::size_t>());	\
+				else if (is_continous<T>::value) {																												\
+					std::vector<std::size_t> extent(get_extent(value));																							\
+					std::copy(extent.begin(), extent.end(), std::back_inserter(size));																			\
+					std::copy(extent.begin(), extent.end(), std::back_inserter(chunk));																			\
+					std::fill_n(std::back_inserter(offset), extent.size(), 0);																					\
+					ar.write(path, get_pointer(value), size, chunk, offset);																					\
+				} else if (value.size() == 0)																													\
+					ar.write(path, static_cast<int const *>(NULL), std::vector<std::size_t>());																	\
+				else if (is_vectorizable(value)) {																												\
+					size.push_back(value.size());																												\
+					chunk.push_back(1);																															\
+					offset.push_back(0);																														\
+					for(typename ALPS_NGS_HDF5_VECTOR_TEMPLATE_TYPE ::const_iterator it = value.begin(); it != value.end(); ++it) {								\
+						offset.back() = it - value.begin();																										\
+						save(ar, path, *it, size, chunk, offset);																								\
+					}																																			\
+				} else {																																		\
+					if (ar.is_data(path))																														\
+						ar.delete_data(path);																													\
+					for(typename ALPS_NGS_HDF5_VECTOR_TEMPLATE_TYPE ::const_iterator it = value.begin(); it != value.end(); ++it)								\
+						save(ar, path + "/" + convert<std::string>(it - value.begin()), *it);																	\
+				}																																				\
 			}
-		}
+        ALPS_NGS_HDF5_CONTAINER_IMPL_SAVE(archive)
+		#ifdef ALPS_HDF5_HAVE_DEPRECATED
+			ALPS_NGS_HDF5_CONTAINER_IMPL_SAVE(oarchive)
+		#endif
+        #undef ALPS_NGS_HDF5_CONTAINER_IMPL_SAVE
 
-		template< ALPS_NGS_HDF5_VECTOR_TEMPLATE_ARGS > void load(
-			  archive & ar
-			, std::string const & path
-			, ALPS_NGS_HDF5_VECTOR_TEMPLATE_TYPE & value
-			, std::vector<std::size_t> chunk = std::vector<std::size_t>()
-			, std::vector<std::size_t> offset = std::vector<std::size_t>()
-		) {
-			using alps::convert;
-			if (ar.is_group(path)) {
-				std::vector<std::string> children = ar.list_children(path);
-				value.resize(children.size());
-				for (typename std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)
-					load(ar, path + "/" + *it, value[convert<std::size_t>(*it)]);
-			} else {
-				std::vector<std::size_t> size(ar.extent(path));
-				if (is_continous<T>::value) {
-					set_extent(value, std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));
-					if (value.size()) {
-						std::copy(size.begin() + chunk.size(), size.end(), std::back_inserter(chunk));
-						std::fill_n(std::back_inserter(offset), size.size() - offset.size(), 0);
-						ar.read(path, get_pointer(value), chunk, offset);
-					}
-				} else {
-					set_extent(value, std::vector<std::size_t>(1, *(size.begin() + chunk.size())));
-					chunk.push_back(1);
-					offset.push_back(0);
-					for(typename ALPS_NGS_HDF5_VECTOR_TEMPLATE_TYPE ::iterator it = value.begin(); it != value.end(); ++it) {
-						offset.back() = it - value.begin();
-						load(ar, path, *it, chunk, offset);
-					}
-				}
+		#define ALPS_NGS_HDF5_CONTAINER_IMPL_LOAD(ARCHIVE)																										\
+			template< ALPS_NGS_HDF5_VECTOR_TEMPLATE_ARGS > void load(																							\
+				  ARCHIVE & ar																																	\
+				, std::string const & path																														\
+				, ALPS_NGS_HDF5_VECTOR_TEMPLATE_TYPE & value																									\
+				, std::vector<std::size_t> chunk = std::vector<std::size_t>()																					\
+				, std::vector<std::size_t> offset = std::vector<std::size_t>()																					\
+			) {																																					\
+				using alps::convert;																															\
+				if (ar.is_group(path)) {																														\
+					std::vector<std::string> children = ar.list_children(path);																					\
+					value.resize(children.size());																												\
+					for (typename std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)									\
+						load(ar, path + "/" + *it, value[convert<std::size_t>(*it)]);																			\
+				} else {																																		\
+					std::vector<std::size_t> size(ar.extent(path));																								\
+					if (is_continous<T>::value) {																												\
+						set_extent(value, std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));													\
+						if (value.size()) {																														\
+							std::copy(size.begin() + chunk.size(), size.end(), std::back_inserter(chunk));														\
+							std::fill_n(std::back_inserter(offset), size.size() - offset.size(), 0);															\
+							ar.read(path, get_pointer(value), chunk, offset);																					\
+						}																																		\
+					} else {																																	\
+						set_extent(value, std::vector<std::size_t>(1, *(size.begin() + chunk.size())));															\
+						chunk.push_back(1);																														\
+						offset.push_back(0);																													\
+						for(typename ALPS_NGS_HDF5_VECTOR_TEMPLATE_TYPE ::iterator it = value.begin(); it != value.end(); ++it) {								\
+							offset.back() = it - value.begin();																									\
+							load(ar, path, *it, chunk, offset);																									\
+						}																																		\
+					}																																			\
+				}																																				\
 			}
-		}
+        ALPS_NGS_HDF5_CONTAINER_IMPL_LOAD(archive)
+		#ifdef ALPS_HDF5_HAVE_DEPRECATED
+			ALPS_NGS_HDF5_CONTAINER_IMPL_LOAD(iarchive)
+		#endif
+        #undef ALPS_NGS_HDF5_CONTAINER_IMPL_LOAD
 
 	}
 }
