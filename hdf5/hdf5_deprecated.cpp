@@ -120,20 +120,27 @@ int main() {
     std::string const filename = "test.h5";
     if (boost::filesystem::exists(boost::filesystem::path(filename)))
         boost::filesystem::remove(boost::filesystem::path(filename));
-    userdefined_class<double> read, write;
+    userdefined_class<double> scalar_read, scalar_write;
+    std::vector<userdefined_class<double> > vector_read, vector_write;
     {
         alps::hdf5::oarchive oar(filename);
         oar
-            << alps::make_pvp("/data", write)
+            << alps::make_pvp("/data/scalar", scalar_write)
+            << alps::make_pvp("/data/vector", vector_write)
         ;
     }
     {
         alps::hdf5::iarchive iar(filename);
         iar
-            >> alps::make_pvp("/data", read)
+            >> alps::make_pvp("/data/scalar", scalar_read)
+            >> alps::make_pvp("/data/vector", vector_read)
         ;
     }
     boost::filesystem::remove(boost::filesystem::path(filename));
-    std::cout << (write == read ? "SUCCESS" : "FAILURE") << std::endl;
-    return write == read ? EXIT_SUCCESS : EXIT_FAILURE;
+    bool result =
+           scalar_write == scalar_read 
+        && vector_write.size() == vector_read.size()
+        && std::equal(vector_write.begin(), vector_write.end(), vector_read.begin());
+    std::cout << (result ? "SUCCESS" : "FAILURE") << std::endl;
+    return result ? EXIT_SUCCESS : EXIT_FAILURE;
 }
