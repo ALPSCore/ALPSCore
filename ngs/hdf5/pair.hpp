@@ -39,28 +39,40 @@
 namespace alps {
     namespace hdf5 {
 
-        template <typename T, typename U> void save(
-              archive & ar
-            , std::string const & path
-            , std::pair<T, U> const & value
-            , std::vector<std::size_t> size = std::vector<std::size_t>()
-            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-            , std::vector<std::size_t> offset = std::vector<std::size_t>()
-        ) {
-            save(ar, path + "/first", value.first);
-            save(ar, path + "/second", value.second);
-        }
+		#define ALPS_NGS_HDF5_PAIR_SAVE(ARCHIVE)																												\
+			template <typename T, typename U> void save(																										\
+				  ARCHIVE & ar																																	\
+				, std::string const & path																														\
+				, std::pair<T, U> const & value																													\
+				, std::vector<std::size_t> size = std::vector<std::size_t>()																					\
+				, std::vector<std::size_t> chunk = std::vector<std::size_t>()																					\
+				, std::vector<std::size_t> offset = std::vector<std::size_t>()																					\
+			) {																																					\
+				save(ar, path + "/first", value.first);																											\
+				save(ar, path + "/second", value.second);																										\
+			}
+        ALPS_NGS_HDF5_PAIR_SAVE(archive)
+		#ifdef ALPS_HDF5_HAVE_DEPRECATED
+			ALPS_NGS_HDF5_PAIR_SAVE(oarchive)
+		#endif
+        #undef ALPS_NGS_HDF5_PAIR_SAVE
 
-        template <typename T, typename U> void load(
-              archive & ar
-            , std::string const & path
-            , std::pair<T, U> & value
-            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-            , std::vector<std::size_t> offset = std::vector<std::size_t>()
-        ) {
-            load(ar, path + "/first", value.first);
-            load(ar, path + "/second", value.second);
-        }
+		#define ALPS_NGS_HDF5_PAIR_LOAD(ARCHIVE)																												\
+			template <typename T, typename U> void load(																										\
+				  ARCHIVE & ar																																	\
+				, std::string const & path																														\
+				, std::pair<T, U> & value																														\
+				, std::vector<std::size_t> chunk = std::vector<std::size_t>()																					\
+				, std::vector<std::size_t> offset = std::vector<std::size_t>()																					\
+			) {																																					\
+				load(ar, path + "/first", value.first);																											\
+				load(ar, path + "/second", value.second);																										\
+			}
+        ALPS_NGS_HDF5_PAIR_LOAD(archive)
+		#ifdef ALPS_HDF5_HAVE_DEPRECATED
+			ALPS_NGS_HDF5_PAIR_LOAD(oarchive)
+		#endif
+        #undef ALPS_NGS_HDF5_PAIR_LOAD
 
         template<typename T> struct scalar_type<std::pair<T *, std::vector<std::size_t> > > {
             typedef typename scalar_type<typename boost::remove_reference<typename boost::remove_cv<T>::type>::type>::type type;
@@ -126,7 +138,7 @@ namespace alps {
 
         }
 
-		#define ALPS_NGS_HDF5_PAIR_SAVE(ARCHIVE)																												\
+		#define ALPS_NGS_HDF5_PAIR_VECTOR_SAVE(ARCHIVE)																											\
 			template<typename T> void save(																														\
 				  ARCHIVE & ar																																	\
 				, std::string const & path																														\
@@ -191,13 +203,13 @@ namespace alps {
 					} while (offset[0] < value.second[0]);																										\
 				}																																				\
 			}
-        ALPS_NGS_HDF5_PAIR_SAVE(archive)
+        ALPS_NGS_HDF5_PAIR_VECTOR_SAVE(archive)
 		#ifdef ALPS_HDF5_HAVE_DEPRECATED
-			ALPS_NGS_HDF5_PAIR_SAVE(oarchive)
+			ALPS_NGS_HDF5_PAIR_VECTOR_SAVE(oarchive)
 		#endif
-        #undef ALPS_NGS_HDF5_PAIR_SAVE
+        #undef ALPS_NGS_HDF5_PAIR_VECTOR_SAVE
 
-		#define ALPS_NGS_HDF5_PAIR_LOAD(ARCHIVE)																												\
+		#define ALPS_NGS_HDF5_PAIR_VECTOR_LOAD(ARCHIVE)																											\
 			template<typename T> void load(																														\
 				  ARCHIVE & ar																																	\
 				, std::string const & path																														\
@@ -256,11 +268,11 @@ namespace alps {
 					}																																			\
 				}																																				\
 			}
-        ALPS_NGS_HDF5_PAIR_LOAD(archive)
+        ALPS_NGS_HDF5_PAIR_VECTOR_LOAD(archive)
 		#ifdef ALPS_HDF5_HAVE_DEPRECATED
-			ALPS_NGS_HDF5_PAIR_LOAD(oarchive)
+			ALPS_NGS_HDF5_PAIR_VECTOR_LOAD(oarchive)
 		#endif
-        #undef ALPS_NGS_HDF5_PAIR_SAVE
+        #undef ALPS_NGS_HDF5_PAIR_VECTOR_SAVE
 
     }
 }
