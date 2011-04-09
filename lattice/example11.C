@@ -48,7 +48,8 @@ int main()
     p["LATTICE"] = "chain lattice";
     p["L"] = 4;
     alps::graph_helper<> g(p);
-    BOOST_FOREACH(std::string const& s, g.momenta_labels()) std::cout << s << std::endl;
+    std::vector<std::string> labels = g.momenta_labels();
+    BOOST_FOREACH(std::string const& s, labels) std::cout << s << std::endl;
 
 #ifndef BOOST_NO_EXCEPTIONS
 }
