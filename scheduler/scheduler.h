@@ -120,8 +120,8 @@ protected:
   double max_check_time;           // maximum time between cehcks
   double checkpoint_time;          // time between cehckpoints
 
-  int min_cpus;                        // min number of runs of one simulation
-  int max_cpus;                        // max number of runs of one simulation
+  std::size_t min_cpus;            // min number of runs of one simulation
+  std::size_t max_cpus;            // max number of runs of one simulation
   double time_limit;                   // time limit for the simulation
   bool write_xml;                      // shall we write results to XML?
 };

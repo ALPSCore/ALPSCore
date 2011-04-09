@@ -63,7 +63,7 @@ Worker::Worker(const ProcessList& w,const alps::Parameters&  myparms,int32_t n)
     random_01(*engine_ptr, boost::uniform_real<>()),
     started(false)
 {
-  if( node<0||(node>=where.size()&&where.size()!=0))
+  if( node<0||(node>=(int32_t)where.size()&&where.size()!=0))
     boost::throw_exception(std::logic_error("illegal node number " + boost::lexical_cast<std::string,int>(n)+" in Worker::Worker"));
   
   // TODO: create slave runs
@@ -84,7 +84,7 @@ Worker::Worker(const alps::Parameters&  myparms,int32_t n)
     random_01(*engine_ptr, boost::uniform_real<>()),
     started(false)
 {
-  if( node<0||(node>=where.size()&&where.size()!=0))
+  if( node<0||(node>=(int32_t)where.size()&&where.size()!=0))
     boost::throw_exception(std::logic_error("illegal node number " + boost::lexical_cast<std::string,int>(n)+" in Worker::Worker"));
   
   // TODO: create slave runs

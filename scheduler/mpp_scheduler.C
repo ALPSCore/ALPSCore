@@ -64,7 +64,7 @@ MPPScheduler::MPPScheduler(const Options& opt,const Factory& p)
 int MPPScheduler::run()
 {
   ptime end_time=second_clock::local_time()+seconds(long(time_limit));
-  int total_free=0;
+  unsigned int total_free=0;
   ProcessList free(processes);
   running_tasks=0;
 
@@ -88,7 +88,7 @@ int MPPScheduler::run()
       return -1;
     }              
     
-    int freen=0;
+    unsigned int freen=0;
     if(free.size()!=total_free) {
       while(freen!=free.size()) { 
         // check once again, if more processes have become available
@@ -149,7 +149,7 @@ int MPPScheduler::run()
 // assign free processes to tasks
 void MPPScheduler::assign_processes(ProcessList& free)
 {
-  int free_processes=free.size();
+  std::size_t free_processes=free.size();
   while(free_processes&&active.size()) {
     int creation_failed=0;
     std::vector<int> more_processes(active.size());
@@ -283,7 +283,7 @@ int MPPScheduler::check_tasks(ProcessList& free)
   for (int i=0;i<active.size();i++)
     {
     */
-  unsigned int i=last_check;    
+  int i=last_check;    
   if(i<active.size()) {
     if(active[i].where.size() &&
        second_clock::local_time() > active[i].next_check) {
@@ -364,7 +364,7 @@ int MPPScheduler::create_task(int j,ProcessList& p)
 void MPPScheduler::determine_active()
 {
   int j=0;
-  for(int i=0;i<tasks.size();i++) {
+  for(std::size_t i=0;i<tasks.size();i++) {
     if(taskstatus[i]==TaskFinished)
         std::cout  << "Simulation " << i+1 << " finished.\n";
     else if(taskstatus[i]==TaskNotExisting)

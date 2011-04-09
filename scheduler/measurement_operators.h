@@ -97,7 +97,7 @@ public:
   template <class LatticeModel>
   EigenvectorMeasurements(LatticeModel const&);
   
-  void write_xml_one_vector(oxstream& out, const boost::filesystem::path&, int j) const;
+  void write_xml_one_vector(oxstream& out, const boost::filesystem::path&, std::size_t j) const;
   XMLTag handle_tag(std::istream& infile, const XMLTag& intag);
   
   virtual void save(hdf5::archive &) const;
@@ -220,7 +220,7 @@ void EigenvectorMeasurements<ValueType>::load(alps::hdf5::archive & ar)
 
 template <class ValueType>
 void EigenvectorMeasurements<ValueType>::write_xml_one_vector(
-    oxstream& out, const boost::filesystem::path&, int j) const
+    oxstream& out, const boost::filesystem::path&, std::size_t j) const
 {
   for (typename std::map<std::string,std::vector<value_type> >::const_iterator 
     it=average_values.begin();it!=average_values.end();++it)

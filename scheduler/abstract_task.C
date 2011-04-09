@@ -56,7 +56,7 @@ AbstractTask::~AbstractTask()
 void AbstractTask::add_processes(const ProcessList& p)
 {
   if(cpus()==1)
-    for (int i=0;i<p.size();i++)
+    for (std::size_t i=0;i<p.size();i++)
       add_process(p[i]);
   else
     boost::throw_exception(std::logic_error("adding processes to multiple-cpu tasks not yet implemented"));

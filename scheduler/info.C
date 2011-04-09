@@ -175,7 +175,7 @@ void TaskInfo::save (ODump& dump) const
 void TaskInfo::load(IDump& dump, int version)
 {
   resize(static_cast<int32_t>(dump));
-  for (unsigned i=0;i<size();++i)
+  for (unsigned int i=0;i<size();++i)
     operator[](i).load(dump,version);
   if (version<200) {
     std::string host_;
@@ -184,10 +184,10 @@ void TaskInfo::load(IDump& dump, int version)
     if(dummy)
       dump >> dummy;
     int find_thermalized=0;
-    for (unsigned i=0; i<size();++i)
+    for (unsigned int i=0; i<size();++i)
       if (at(i).phase_=="equlibrating")
         find_thermalized=i;
-    for (unsigned i=0;i<find_thermalized;++i)
+    for (int i=0;i<find_thermalized;++i)
       at(i).phase_="equlibrating";
   }
 }
