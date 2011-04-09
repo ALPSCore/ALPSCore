@@ -309,24 +309,24 @@ namespace alps {
             }
         }
 
-        #define ALPS_NGS_HDF5_IS_DATATYPE(T)                                                                                                                           \
-            template<> bool archive::is_datatype< T >(std::string path) const {                                                                                        \
-                hid_t type_id;                                                                                                                                     \
-                path = complete_path(path);                                                                                                                        \
-                if (path.find_last_of('@') != std::string::npos && is_attribute(path)) {                                                                           \
-                    detail::attribute_type attr_id(detail::open_attribute(*this, context_->file_id_, path));                                                       \
-                    type_id = H5Aget_type(attr_id);                                                                                                                \
-                } else if (path.find_last_of('@') == std::string::npos && is_data(path)) {                                                                         \
-                    detail::data_type data_id(H5Dopen2(context_->file_id_, path.c_str(), H5P_DEFAULT));                                                            \
-                    type_id = H5Dget_type(data_id);                                                                                                                \
-                } else                                                                                                                                             \
-                    ALPS_NGS_THROW_RUNTIME_ERROR("no valid path: " + path)                                                                                         \
-                detail::type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));                                                                          \
-                detail::check_type(type_id);                                                                                                                       \
-                return detail::check_error(                                                                                                                        \
-                    H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(detail::get_native_type(detail::type_wrapper< T >::type())))                 \
-                ) > 0;                                                                                                                                             \
-            }
+        template<typename T> bool archive::is_datatype(std::string path) const {
+            hid_t type_id;
+            path = complete_path(path);
+            if (path.find_last_of('@') != std::string::npos && is_attribute(path)) {
+                detail::attribute_type attr_id(detail::open_attribute(*this, context_->file_id_, path));
+                type_id = H5Aget_type(attr_id);
+            } else if (path.find_last_of('@') == std::string::npos && is_data(path)) {
+                detail::data_type data_id(H5Dopen2(context_->file_id_, path.c_str(), H5P_DEFAULT));
+                type_id = H5Dget_type(data_id);
+            } else
+                ALPS_NGS_THROW_RUNTIME_ERROR("no valid path: " + path)
+            detail::type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));
+            detail::check_type(type_id);
+            return detail::check_error(
+                H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(detail::get_native_type(typename detail::type_wrapper< T >::type())))
+            ) > 0;
+        }
+        #define ALPS_NGS_HDF5_IS_DATATYPE(T) template bool archive::is_datatype< T >(std::string path) const;
         ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_IS_DATATYPE)
         #undef ALPS_NGS_HDF5_IS_DATATYPE
     
