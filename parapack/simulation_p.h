@@ -53,9 +53,9 @@ struct simulation_xml_writer {
     if (obs.size() == 1) {
       obs[0].write_xml(os);
     } else {
-      for (int i = 0; i < obs.size(); ++i) obs[i].write_xml_with_id(os, i+1);
+      for (std::size_t i = 0; i < obs.size(); ++i) obs[i].write_xml_with_id(os, i+1);
     }
-    for (int i = 0; i < info.size(); ++i) os << info[i];
+    for (std::size_t i = 0; i < info.size(); ++i) os << info[i];
     os << end_tag("SIMULATION");
     if (make_backup && exists(file_bak)) remove(file_bak);
   }

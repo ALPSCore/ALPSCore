@@ -96,7 +96,7 @@ void clone_phase::save(hdf5::archive & ar) const {
   ar << make_pvp("user", user_) << make_pvp("phase", phase_)
      << make_pvp("from", boost::posix_time::to_iso_string(startt_))
      << make_pvp("to", boost::posix_time::to_iso_string(stopt_));
-  for (int i = 0; i < hosts_.size(); ++i)
+  for (std::size_t i = 0; i < hosts_.size(); ++i)
     ar << make_pvp("machine/" + boost::lexical_cast<std::string>(i) + "/name", hosts_[i]);
 }
 
@@ -204,7 +204,7 @@ void clone_info::write_xml(oxstream& os) const {
       os << start_tag("DISORDER_SEED")
          << attribute("value", disorder_seed_)
          << end_tag("DISORDER_SEED");
-      for (int p = 0; p < worker_seed_.size(); ++p)
+      for (std::size_t p = 0; p < worker_seed_.size(); ++p)
         os << start_tag("SEED")
            << attribute("id", p+1)
            << attribute("value", worker_seed_[p])
@@ -212,7 +212,7 @@ void clone_info::write_xml(oxstream& os) const {
     }
     BOOST_FOREACH(clone_phase const& p, phases_)
       os << p;
-    for (int p = 0; p < dumpfiles_.size(); ++p)
+    for (std::size_t p = 0; p < dumpfiles_.size(); ++p)
       os << start_tag("CHECKPOINT") << no_linebreak
          << attribute("id", p+1)
          << attribute("format", "osiris")
@@ -245,7 +245,7 @@ void clone_info::init(Parameters const& params, std::string const& dump) {
   std::string f = dump + ".clone" + id2string(clone_id_+1);
   if (np > 1) {
     if (pid == 0)
-      for (int p = 0; p < np; ++p) dumpfiles_.push_back(f + ".worker" + id2string(p+1));
+      for (unsigned int p = 0; p < np; ++p) dumpfiles_.push_back(f + ".worker" + id2string(p+1));
     else
       dumpfiles_.push_back(f + ".worker" + id2string(pid+1));
   } else {
@@ -261,7 +261,7 @@ void clone_info::init(Parameters const& params, std::string const& dump) {
       disorder_seed_ = baseseed ^ hash(clone_id_ * (np + 1) + 1);
     }
     if (pid == 0)
-      for (int p = 0; p < np; ++p)
+      for (unsigned int p = 0; p < np; ++p)
         worker_seed_.push_back(baseseed ^ hash(clone_id_ * (np + 1) + p + 2));
     else
       worker_seed_.push_back(baseseed ^ hash(clone_id_ * (np + 1) + pid + 2));
@@ -280,9 +280,9 @@ void clone_info::save(hdf5::archive & ar) const {
      << make_pvp("progress", progress_)
      << make_pvp("workerseed", worker_seed_)
      << make_pvp("disorderseed", disorder_seed_);
-  for (int i = 0 ;i < phases_.size() ;++i)
+  for (unsigned int i = 0 ;i < phases_.size() ;++i)
     ar << make_pvp(boost::lexical_cast<std::string>(i), phases_[i]);
-  for (int i = 0 ;i < dumpfiles_.size() ;++i)
+  for (unsigned int i = 0 ;i < dumpfiles_.size() ;++i)
     ar << make_pvp("dumpfile/" + boost::lexical_cast<std::string>(i), dumpfiles_[i]);
 }
 

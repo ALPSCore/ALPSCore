@@ -280,7 +280,7 @@ void Depletion::check(unsigned int site) const
 {
   if (site>=mapping.size())
     std::cerr << "Site out of range : " << site << " " << mapping.size() << "\n";
-int n=0;
+  unsigned int n=0;
   for (unsigned int i=0;i<mapping.size();++i)
     if (mapping[i])
       n++;

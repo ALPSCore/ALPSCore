@@ -70,7 +70,7 @@ GraphUnitCell::GraphUnitCell(const XMLTag& intag, std::istream& p)
       int id=tag.attributes["id"]=="" ? -1 : boost::lexical_cast<int,std::string>(tag.attributes["id"])-1;
       if (id==-1)
         id=vertex_number++;
-      if (id>=boost::num_vertices(graph_)) {
+      if (id>=(int)(boost::num_vertices(graph_))) {
         if (fixed_nvertices)
           boost::throw_exception(std::runtime_error("too many vertices"));
         for (int i=boost::num_vertices(graph_);i<=id;++i)

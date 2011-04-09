@@ -178,12 +178,12 @@ void task::save_observable(std::vector<std::vector<ObservableSet> > const& oss) 
           hdf5::archive h5(file.file_string(), alps::hdf5::archive::WRITE);
           h5 << make_pvp("/parameters", params_tmp);
           h5 << make_pvp("/simulation/results", obs_[0]);
-          for (int n = 0; n < oss.size(); ++n)
+          for (std::size_t n = 0; n < oss.size(); ++n)
             h5 << make_pvp("/simulation/realizations/0/clones/" +
                            boost::lexical_cast<std::string>(n) + "/results", oss[n][0]);
         }
       } else {
-        for (int i = 0; i < obs_.size(); ++i) {
+        for (std::size_t i = 0; i < obs_.size(); ++i) {
           Parameters p = params_tmp;
           if (!p.defined("REPLICA")) p["REPLICA"] = i+1;
           #pragma omp critical (hdf5io)
@@ -193,7 +193,7 @@ void task::save_observable(std::vector<std::vector<ObservableSet> > const& oss) 
             hdf5::archive h5(file.file_string(), alps::hdf5::archive::WRITE);
             h5 << make_pvp("/parameters", p);
             h5 << make_pvp("/simulation/results", obs_[i]);
-            for (int n = 0; n < oss.size(); ++n)
+            for (std::size_t n = 0; n < oss.size(); ++n)
               h5 << make_pvp("/simulation/realizations/0/clones/" +
                              boost::lexical_cast<std::string>(n) + "/results", oss[n][i]);
           }

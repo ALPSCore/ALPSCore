@@ -760,7 +760,7 @@ namespace alps {
                         double sum2 = 0.;
                         for(std::size_t i = 0; i < bin_number(); ++i) {// to this point, jack_[i+1] = \sum_{j != i} values_[j]  
                             jack_[i+1] = jack_[0] - alps::numeric_cast<result_type>(values_[i]);
-                            double dx = (slice_value(values_[i], 0) - slice_value(jack_[0] / count_type(bin_number()),0));
+                            double dx = (slice_value(values_[i], std::size_t(0)) - slice_value(jack_[0] / count_type(bin_number()),std::size_t(0)));
                             sum2 +=  dx*dx;
                         }
                         //  Next, we want the following:

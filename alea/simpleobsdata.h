@@ -703,7 +703,7 @@ SimpleObservableData<T>& SimpleObservableData<T>::operator+=(X x)
 {
   if (count()) {
     transform_linear(boost::lambda::_1 + x);
-    for (int i=0;i<values2_.size();++i)
+    for (std::size_t i=0;i<values2_.size();++i)
       values2_[i] += 2.*values_[i]*x+x*x;
   }
   return *this;
@@ -714,7 +714,7 @@ SimpleObservableData<T>& SimpleObservableData<T>::operator-=(X x)
 {
   if(count()) {
     transform_linear(boost::lambda::_1-x);
-    for (int i=0;i<values2_.size();++i)
+    for (std::size_t i=0;i<values2_.size();++i)
       values2_[i] += -2.*values_[i]*x+x*x;
   }
   return (*this);

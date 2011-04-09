@@ -183,7 +183,7 @@ inline std::string read_graph_xml(const XMLTag& intag, std::istream& p, GRAPH& g
       t = tag.attributes["type"]=="" ? boost::lexical_cast<type_type,int>(0) : boost::lexical_cast<type_type,std::string>(tag.attributes["type"]);
       id = tag.attributes["id"]=="" ? vertex_number++
            : boost::lexical_cast<int,std::string>(tag.attributes["id"])-1;
-      if (id>=boost::num_vertices(g)) {
+      if (id>=int(boost::num_vertices(g))) {
         if (fixed_nvertices)
           boost::throw_exception(std::runtime_error("too many vertices in <GRAPH>"));
         int oldsize=boost::num_vertices(g);

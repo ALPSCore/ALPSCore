@@ -97,7 +97,7 @@ namespace alps {
                     index = boost::python::extract<long>(i)();
                     if (index < 0)
                         index += size(data.get());
-                    if (index >= size(data.get()) || index < 0) {
+                    if (index >= (long)size(data.get()) || index < 0) {
                         PyErr_SetString(PyExc_IndexError, "Index out of range");
                         boost::python::throw_error_already_set();
                     }

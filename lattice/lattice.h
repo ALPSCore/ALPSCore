@@ -151,12 +151,12 @@ origin(const typename lattice_traits<Lattice>::cell_descriptor& c, const Lattice
   offset_iterator off = coordinates(offset(c,l)).first; 
   if (first!=last) {
     typename lattice_traits<Lattice>::vector_type v(*first);
-    for (int d=0; d<v.size(); ++d)
+    for (std::size_t d=0; d<v.size(); ++d)
       v[d]*=*off;
     ++first;
     ++off;
     for (; first!=last; ++first, ++off)
-      for (int d=0; d<v.size(); ++d)
+      for (std::size_t d=0; d<v.size(); ++d)
     v[d] += (*first)[d] * (*off);
     return v;
   }
@@ -182,11 +182,11 @@ momentum(const typename lattice_traits<Lattice>::vector_type& m, const Lattice& 
   boost::tie(first,last) = reciprocal_basis_vectors(l);
   if (first!=last) {
     typename lattice_traits<Lattice>::vector_type v(*first);
-    for (int j=0; j<v.size(); ++j)
+    for (std::size_t j=0; j<v.size(); ++j)
       v[j] *= m[0]/(2.*M_PI);
     ++first;
     for (int i=1; first!=last; ++first, ++i)
-      for (int j=0; j<v.size(); ++j)
+      for (std::size_t j=0; j<v.size(); ++j)
     v[j] = v[j] + (*first)[j] * m[i]/(2.*M_PI);
     return v;
   }

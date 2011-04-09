@@ -73,7 +73,7 @@ protected:
 
 private:
   clone_phase& phase_;
-  int np_;
+  std::size_t np_;
   std::string from_str_, to_str_;
   SimpleXMLHandler<std::string> from_handler_;
   SimpleXMLHandler<std::string> to_handler_;
@@ -133,7 +133,7 @@ protected:
 
 private:
   clone_info& info_;
-  int np_;
+  std::size_t np_;
   clone_phase phase_;
   clone_phase_xml_handler phase_handler_;
   std::string checkpoint_;

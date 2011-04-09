@@ -35,7 +35,7 @@ void save_observable(alps::hdf5::archive & ar, std::string const& prefix,
   if (obs.size() == 1)
     ar << make_pvp(prefix, obs[0]);
   else
-    for (int m = 0; m < obs.size(); ++m)
+    for (std::size_t m = 0; m < obs.size(); ++m)
       ar << make_pvp(prefix + "/sections/" + boost::lexical_cast<std::string>(m), obs[m]);
 }
 
