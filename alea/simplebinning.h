@@ -50,6 +50,11 @@
 
 #include <boost/config.hpp>
 
+// workaround for FCC
+#ifdef __FCC_VERSION
+using std::abs;
+#endif
+
 //=======================================================================
 // SimpleBinning
 //
