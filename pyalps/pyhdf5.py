@@ -26,7 +26,6 @@
 # 
 # ****************************************************************************
 
-
 import pyalps.hdf5 as h5
 import numpy as np
 import sys
@@ -63,41 +62,22 @@ def read(ar):
         raise Exception('invalid value')
 
 try:
-    try:
-        oar = h5.oArchive("test.h5")
-        use_ngs = False
-    except: 
-        oar = h5.archive("test.h5", 1) # TODO: this is ugly, remove the number
-        use_ngs = True
+    oar = h5.archive("test.h5", 1) # TODO: this is ugly, remove the number
     write(oar)
-    
     del oar
     
-    if use_ngs:
-        iar = h5.archive("test.h5", 0) # TODO: this is ugly, remove the number
-        
-            
-        print "TODO: fix complex!"
-        print iar.extent("/int")[0], iar.extent("/cplx")[0], iar.is_complex("/int"), iar.is_complex("/cplx"), iar.extent("/np/int")[0]
-    
-
-        
-        
-        if iar.is_complex("/int") or not iar.is_complex("/cplx") or not iar.extent("/np/cplx"):
-            raise Exception('invalid complex detection')
-        
-    else:
-        iar = h5.iArchive("test.h5")
+    iar = h5.archive("test.h5", 0) # TODO: this is ugly, remove the number
+    if iar.is_complex("/int") or not iar.is_complex("/cplx") or not iar.extent("/np/cplx"):
+        raise Exception('invalid complex detection')
     read(iar)
     del iar
     
     h5.ignoreHDF5DestroyErrors();
     
-    if use_ngs:
-        ar = h5.archive("test.h5", 1) # TODO: this is ugly, remove the number
-        write(ar)
-        read(ar)
-        del ar
+    ar = h5.archive("test.h5", 1) # TODO: this is ugly, remove the number
+    write(ar)
+    read(ar)
+    del ar
     
     print "SUCCESS"
 except Exception, e:

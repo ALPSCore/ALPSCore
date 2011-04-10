@@ -90,4 +90,9 @@ int main() {
           ar >> make_pvp("/to/char", value);
           std::cout << value << std::endl;
      }
+     {
+          hdf5::archive ar("test.h5", hdf5::archive::READ);
+          std::cout << (ar.is_datatype<double>("/to/to") ? "true" : "false") << std::endl;
+     
+     }
 }
