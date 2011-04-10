@@ -28,6 +28,7 @@
 #ifndef ALPS_NGS_HDF5_HPP
 #define ALPS_NGS_HDF5_HPP
 
+#include <alps/config.h>
 #include <alps/ngs/macros.hpp>
 
 #include <boost/mpl/and.hpp>
@@ -72,7 +73,7 @@ namespace alps {
             struct mccontext;
         }
 
-        class archive {
+        class ALPS_DECL archive {
 
             public:
 
@@ -184,37 +185,37 @@ namespace alps {
 
         namespace detail {
 
-            template<typename T> struct get_extent {
+             template<typename T> struct get_extent {
                 static std::vector<std::size_t> apply(T const & value) {
                     return std::vector<std::size_t>();
                 }
             };
 
             template<typename T> struct set_extent {
-                static void apply(T &, std::vector<std::size_t> const &) {}
+                 static void apply(T &, std::vector<std::size_t> const &) {}
             };
 
             template<typename T> struct is_vectorizable {
-                static bool apply(T const & value){
+                 static bool apply(T const & value){
                     return false;
                 }
             };
 
             template<typename T> struct get_pointer {
-                static typename alps::hdf5::scalar_type<T>::type * apply(T &) {
+                 static typename alps::hdf5::scalar_type<T>::type * apply(T &) {
                     return NULL;
                 }
             };
 
             template<typename T> struct get_pointer<T const> {
-                static typename alps::hdf5::scalar_type<T>::type const * apply(T const &) {
+                 static typename alps::hdf5::scalar_type<T>::type const * apply(T const &) {
                     return NULL;
                 }
             };
 
         }
 
-        template<typename T> typename scalar_type<T>::type * get_pointer(T & value) {
+         template<typename T> typename scalar_type<T>::type * get_pointer(T & value) {
             return detail::get_pointer<T>::apply(value);
         }
 
@@ -271,20 +272,20 @@ namespace alps {
             {};                                                                                                                                                        \
                                                                                                                                                                        \
             namespace detail {                                                                                                                                         \
-                template<> struct is_vectorizable< T > {                                                                                                               \
+                template<> struct ALPS_DECL is_vectorizable< T > {                                                                                                               \
                     static bool apply(T const & value);                                                                                                                \
                 };                                                                                                                                                     \
                                                                                                                                                                        \
-                template<> struct get_pointer< T > {                                                                                                                   \
+                template<> struct ALPS_DECL get_pointer< T > {                                                                                                                   \
                     static alps::hdf5::scalar_type< T >::type * apply( T & value);                                                                                     \
                 };                                                                                                                                                     \
                                                                                                                                                                        \
-                template<> struct get_pointer< T const > {                                                                                                             \
+                template<> struct ALPS_DECL get_pointer< T const > {                                                                                                             \
                     static alps::hdf5::scalar_type< T >::type const * apply( T const & value);                                                                         \
                 };                                                                                                                                                     \
             }                                                                                                                                                          \
                                                                                                                                                                        \
-            void save(                                                                                                                                                 \
+            ALPS_DECL void save(                                                                                                                                                 \
                   archive & ar                                                                                                                                         \
                 , std::string const & path                                                                                                                             \
                 , T const & value                                                                                                                                      \
@@ -293,7 +294,7 @@ namespace alps {
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                         \
             );                                                                                                                                                         \
                                                                                                                                                                        \
-            void load(                                                                                                                                                 \
+            ALPS_DECL void load(                                                                                                                                                 \
                   archive & ar                                                                                                                                         \
                 , std::string const & path                                                                                                                             \
                 , T & value                                                                                                                                            \
@@ -399,6 +400,8 @@ namespace alps {
         , typename boost::is_array<T>::type
     >::type, hdf5::detail::make_pvp_proxy<std::string const> >::type make_pvp(std::string const & path, T const & value) {
         return hdf5::detail::make_pvp_proxy<std::string const>(path, value);
+
+
     }
 
 }

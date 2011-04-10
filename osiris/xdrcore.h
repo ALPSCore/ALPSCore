@@ -76,14 +76,14 @@
   using boost::int16_t;
   using boost::uint16_t;
   using boost::int32_t;
-# ifdef ALPS_HAVE_HDF5
+//# ifdef ALPS_HAVE_HDF5
     // hdf5 introduce its own uint32_t, int64_t, uint64_t
-#   include <alps/hdf5.hpp>
-# else
+//#   include <alps/hdf5.hpp>
+//# else
     using boost::uint32_t;
     using boost::int64_t;
     using boost::uint64_t;
-# endif
+//# endif
 #endif
 
 #include <sys/types.h>
