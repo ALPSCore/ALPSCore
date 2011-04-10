@@ -37,6 +37,7 @@
 #include <hdf5.h>
 
 #include <iostream>
+#include <typeinfo>
 
 #ifndef ALPS_HDF5_SZIP_BLOCK_SIZE
     #define ALPS_HDF5_SZIP_BLOCK_SIZE 32
@@ -309,31 +310,10 @@ namespace alps {
             }
         }
 
-        template<typename T> bool archive::is_datatype(std::string path) const {
-            hid_t type_id;
-            path = complete_path(path);
-            if (path.find_last_of('@') != std::string::npos && is_attribute(path)) {
-                detail::attribute_type attr_id(detail::open_attribute(*this, context_->file_id_, path));
-                type_id = H5Aget_type(attr_id);
-            } else if (path.find_last_of('@') == std::string::npos && is_data(path)) {
-                detail::data_type data_id(H5Dopen2(context_->file_id_, path.c_str(), H5P_DEFAULT));
-                type_id = H5Dget_type(data_id);
-            } else
-                ALPS_NGS_THROW_RUNTIME_ERROR("no valid path: " + path)
-            detail::type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));
-            detail::check_type(type_id);
-            return detail::check_error(
-                H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(detail::get_native_type(typename detail::type_wrapper< T >::type())))
-            ) > 0;
-        }
-        #define ALPS_NGS_HDF5_IS_DATATYPE(T) template bool archive::is_datatype< T >(std::string path) const;
-        ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_IS_DATATYPE)
-        #undef ALPS_NGS_HDF5_IS_DATATYPE
-    
         std::string const & archive::get_filename() const {
             return context_->filename_;
         }
-    
+
         std::string archive::encode_segment(std::string segment) const {
             char chars[] = {'&', '/'};
             for (std::size_t i = 0; i < sizeof(chars); ++i)
@@ -341,7 +321,7 @@ namespace alps {
                     segment = segment.substr(0, pos) + "&#" + convert<std::string>(static_cast<int>(chars[i])) + ";" + segment.substr(pos + 1);
             return segment;
         }
-    
+
         std::string archive::decode_segment(std::string segment) const {
             for (std::size_t pos = segment.find_first_of('&'); pos < std::string::npos; pos = segment.find_first_of('&', pos + 1))
                 segment = segment.substr(0, pos) 
@@ -349,7 +329,7 @@ namespace alps {
                         + segment.substr(segment.find_first_of(';', pos) + 1);
             return segment;
         }
-    
+
         std::string archive::get_context() const {
             return current_;
         }
@@ -811,7 +791,7 @@ namespace alps {
                             , H5P_DEFAULT                                                                                                                          \
                             , H5P_DEFAULT                                                                                                                          \
                         );                                                                                                                                         \
-                    detail::native_ptr_converter<boost::remove_reference<boost::remove_cv<T>::type>::type> converter(1);                                                              \
+                    detail::native_ptr_converter<boost::remove_cv<boost::remove_reference<T>::type>::type> converter(1);                                                              \
                     detail::check_error(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, converter.apply(&value)));                                       \
                     detail::check_data(data_id);                                                                                                                   \
                 } else {                                                                                                                                           \
@@ -845,7 +825,7 @@ namespace alps {
                             , H5P_DEFAULT                                                                                                                          \
                             , H5P_DEFAULT                                                                                                                          \
                         );                                                                                                                                         \
-                    detail::native_ptr_converter<boost::remove_reference<boost::remove_cv<T>::type>::type> converter(1);                                                              \
+                    detail::native_ptr_converter<boost::remove_cv<boost::remove_reference<T>::type>::type> converter(1);                                                              \
                     detail::check_error(H5Awrite(data_id, type_id, converter.apply(&value)));                                                                      \
                     detail::attribute_type attr_id(data_id);                                                                                                       \
                     if (is_group(path.substr(0, path.find_last_of('@') - 1)))                                                                                      \
@@ -1057,7 +1037,27 @@ namespace alps {
         ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_IMPLEMENT_FREE_FUNCTIONS)
         #undef ALPS_NGS_HDF5_IMPLEMENT_FREE_FUNCTIONS
                 
-        #undef ALPS_NGS_HDF5_FOREACH_NATIVE_TYPE_INTEGRAL
+
+        #define ALPS_NGS_HDF5_IS_DATATYPE_IMPL_IMPL(T)                                                                                                                 \
+            bool archive::is_datatype_impl(std::string path, T) const {                                                                                                \
+                hid_t type_id;                                                                                                                                         \
+                path = complete_path(path);                                                                                                                            \
+                if (path.find_last_of('@') != std::string::npos && is_attribute(path)) {                                                                               \
+                    detail::attribute_type attr_id(detail::open_attribute(*this, context_->file_id_, path));                                                           \
+                    type_id = H5Aget_type(attr_id);                                                                                                                    \
+                } else if (path.find_last_of('@') == std::string::npos && is_data(path)) {                                                                             \
+                    detail::data_type data_id(H5Dopen2(context_->file_id_, path.c_str(), H5P_DEFAULT));                                                                \
+                    type_id = H5Dget_type(data_id);                                                                                                                    \
+                } else                                                                                                                                                 \
+                    ALPS_NGS_THROW_RUNTIME_ERROR("no valid path: " + path)                                                                                             \
+                detail::type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));                                                                              \
+                detail::check_type(type_id);                                                                                                                           \
+                return detail::check_error(                                                                                                                            \
+                    H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(detail::get_native_type(detail::type_wrapper< T >::type())))                     \
+                ) > 0;                                                                                                                                                 \
+            }
+        ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_IS_DATATYPE_IMPL_IMPL)
+        #undef ALPS_NGS_HDF5_IS_DATATYPE_IMPL_IMPL
 
         std::string archive::file_key(std::string filename, bool write, bool compress) const {
             return std::string(write ? "w" : "r") + (compress ? "c" : "_") + "@" + filename;
@@ -1066,3 +1066,5 @@ namespace alps {
         std::map<std::string, std::pair<detail::mccontext *, std::size_t> > archive::ref_cnt_;
     }
 }
+
+#undef ALPS_NGS_HDF5_FOREACH_NATIVE_TYPE_INTEGRAL

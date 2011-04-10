@@ -45,7 +45,7 @@ namespace alps {
 		};
 
 		template< ALPS_NGS_HDF5_VECTOR_TEMPLATE_ARGS > struct has_complex_elements< ALPS_NGS_HDF5_VECTOR_TEMPLATE_TYPE > 
-			: public has_complex_elements<typename ALPS_NGS_HDF5_VECTOR_TEMPLATE_TYPE ::value_type>
+			: public has_complex_elements<typename detail::remove_cvr<typename ALPS_NGS_HDF5_VECTOR_TEMPLATE_TYPE ::value_type>::type>
 		{};
 
 		namespace detail {

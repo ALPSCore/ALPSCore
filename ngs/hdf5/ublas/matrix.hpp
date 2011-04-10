@@ -42,7 +42,7 @@ namespace alps {
         };
 
         template <typename T, typename F, typename A> struct has_complex_elements<boost::numeric::ublas::matrix<T, F, A> >
-            : public has_complex_elements<T>
+            : public has_complex_elements<typename detail::remove_cvr<T>::type>
         {};
 
         namespace detail {

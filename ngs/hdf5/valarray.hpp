@@ -43,7 +43,7 @@ namespace alps {
         };
 
         template<typename T> struct has_complex_elements<std::valarray<T> > 
-            : public has_complex_elements<T>
+            : public has_complex_elements<typename detail::remove_cvr<T>::type>
         {};
 
         namespace detail {

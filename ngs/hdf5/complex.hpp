@@ -81,7 +81,7 @@ namespace alps {
             };
         }
 
-        #define ALPS_NGS_HDF5_COMPLEX_SAVE(ARCHIVE)																															\
+        #define ALPS_NGS_HDF5_COMPLEX_SAVE(ARCHIVE)																														\
 			template<typename T> void save(																																\
 				  ARCHIVE & ar																																			\
 				, std::string const & path																																\
@@ -104,7 +104,7 @@ namespace alps {
 		#endif
         #undef ALPS_NGS_HDF5_COMPLEX_SAVE
 
-        #define ALPS_NGS_HDF5_COMPLEX_LOAD(ARCHIVE)                                                                                                                 			\
+        #define ALPS_NGS_HDF5_COMPLEX_LOAD(ARCHIVE)                                                                                                                 	\
 			template<typename T> void load(																																\
 				  ARCHIVE & ar																																			\
 				, std::string const & path																																\

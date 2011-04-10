@@ -40,6 +40,9 @@
 
 #include <numpy/arrayobject.h>
 
+// TODO: remove
+#include <iostream>
+
 namespace alps { 
     namespace python {
         namespace hdf5 {
@@ -58,8 +61,14 @@ namespace alps {
             }
 
             boost::python::list extent(alps::hdf5::archive & self, std::string const & path) {
+			
+			
+			std::cout << path << " " << (self.is_complex(path) ? "true" : "false") << std::endl;
+			
                 boost::python::list result;
                 std::vector<std::size_t> children = self.extent(path);
+				if (self.is_complex(path))
+					children.back() = 1;
                 for (std::vector<std::size_t>::const_iterator it = children.begin(); it != children.end(); ++it)
                     result.append(*it);
                 return result;
@@ -164,7 +173,7 @@ namespace alps {
             }
 
             boost::python::object dispatch_read(alps::hdf5::archive & self, std::string const & path) {
-                if (self.is_scalar(path)) {
+                if (self.is_scalar(path) || (self.is_datatype<double>(path) && self.is_complex(path) && self.extent(path).size() == 1 && self.extent(path)[0] == 2)) {
                     if (self.is_datatype<std::string>(path))
                         return read_scalar<std::string>(self, path);
                     else if (self.is_datatype<int>(path))
@@ -181,10 +190,10 @@ namespace alps {
                         return read_scalar<unsigned long long>(self, path);
                     else if (self.is_datatype<float>(path))
                         return read_scalar<float>(self, path);
+                    else if (self.is_datatype<double>(path) && self.is_complex(path))
+                        return read_scalar<std::complex<double> >(self, path);
                     else if (self.is_datatype<double>(path))
                         return read_scalar<double>(self, path);
-                    else if (self.is_complex(path))
-                        return read_scalar<std::complex<double> >(self, path);
                     else
                         std::runtime_error("Unsupported type.");
                 } else if (self.is_datatype<std::string>(path)) {
@@ -208,10 +217,10 @@ namespace alps {
                     return read_numpy<long long>(self, path, PyArray_LONGLONG);
                 else if (self.is_datatype<unsigned long long>(path))
                     return read_numpy<unsigned long long>(self, path, PyArray_ULONGLONG);
+                else if ((self.is_datatype<float>(path) || self.is_datatype<double>(path)) && self.is_complex(path))
+                    return read_numpy<std::complex<double> >(self, path, PyArray_CDOUBLE);
                 else if (self.is_datatype<float>(path) || self.is_datatype<double>(path))
                     return read_numpy<double>(self, path, PyArray_DOUBLE);
-                else if (self.is_complex(path))
-                    return read_numpy<std::complex<double> >(self, path, PyArray_CDOUBLE);
                 else {
                     std::runtime_error("Unsupported type.");
                     return boost::python::object();

@@ -129,7 +129,7 @@ namespace alps {
         #undef ALPS_NGS_HDF5_DEFINE_FREE_FUNCTIONS
 
         template <typename T> typename boost::enable_if<
-              has_complex_elements<typename boost::remove_reference<typename boost::remove_cv<T>::type>::type>
+              has_complex_elements<typename detail::remove_cvr<T>::type>
             , oarchive &
         >::type operator<< (oarchive & ar, detail::make_pvp_proxy<T> const & proxy) {
             save(ar, proxy.path_, proxy.value_);
@@ -138,7 +138,7 @@ namespace alps {
         }
 
         template <typename T> typename boost::disable_if<
-              has_complex_elements<typename boost::remove_reference<typename boost::remove_cv<T>::type>::type>
+              has_complex_elements<typename detail::remove_cvr<T>::type>
             , oarchive &
         >::type operator<< (oarchive & ar, detail::make_pvp_proxy<T> const & proxy) {
             save(ar, proxy.path_, proxy.value_);
