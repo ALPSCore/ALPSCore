@@ -60,7 +60,7 @@ namespace alps {
                 template<typename A> struct is_datatype_caller<A, T > {                                                                                                \
                     static bool apply(A const & ar, std::string path) {                                                                                                \
                         T unused;                                                                                                                                      \
-                        ar.is_datatype_impl(path, unused);                                                                                                             \
+                        return ar.is_datatype_impl(path, unused);                                                                                                      \
                     }                                                                                                                                                  \
                 };
             ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_IS_DATATYPE_CALLER)
