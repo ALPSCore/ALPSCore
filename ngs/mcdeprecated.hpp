@@ -54,6 +54,7 @@ namespace alps {
 
             virtual void do_measurements();
 
+            static Parameters make_alps_parameters(parameters_type const & s);
         protected:
 
             Parameters parms;
@@ -62,9 +63,6 @@ namespace alps {
             ObservableSet measurements;
             boost::variate_generator<boost::mt19937, boost::uniform_real<> > & random_01;
 
-        private:
-
-            static Parameters make_alps_parameters(parameters_type const & s);
 
     };
 
