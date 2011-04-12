@@ -39,10 +39,10 @@
 namespace alps {
 
 template <typename T> inline void SimpleObservableEvaluator<T>::save(hdf5::archive & ar) const {
-    ar >> make_pvp("", all_);
+    ar << make_pvp("", all_);
 }
 template <typename T> inline void SimpleObservableEvaluator<T>::load(hdf5::archive & ar) {
-    ar << make_pvp("", all_);
+    ar >> make_pvp("", all_);
 }
 
 } // end namespace alps
