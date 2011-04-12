@@ -443,8 +443,18 @@ int start_sgl(int argc, char** argv) {
     task_queue_t task_queue;
     int num_finished_tasks = 0;
     int num_groups = num_total_threads / opt.threads_per_clone;
-#ifdef _OPENMP
+    if (num_groups < 1) {
+      boost::throw_exception(std::runtime_error("Invalid number of threads"));
+      return -1;
+    }
+#if defined(_OPENMP) && defined(ALPS_ENABLE_OPENMP_WORKER)
     omp_set_nested(true);
+#else
+    if (opt.threads_per_clone > 1) {
+      std::cerr << "OpenMP worker parallelization is not supported.  Please rebuild ALPS with -DALPS_PARAPACK_ENABLE_OPENMP_WORKER=ON.\n";
+      boost::throw_exception(std::runtime_error("OpenMP worker parallelization is not supported"));
+      return -1;
+    }
 #endif
 
     //
@@ -530,7 +540,7 @@ int start_sgl(int argc, char** argv) {
     #pragma omp parallel num_threads(num_groups)
     {
       thread_group group(thread_id());
-#ifdef _OPENMP
+#if defined(_OPENMP) && defined(ALPS_ENABLE_OPENMP_WORKER)
       omp_set_num_threads(opt.threads_per_clone);
 #endif
       #pragma omp master
@@ -857,9 +867,6 @@ int start_mpi(int argc, char** argv) {
     task_queue_t task_queue;
     check_queue_t check_queue;
     int num_finished_tasks = 0;
-#ifdef _OPENMP
-    omp_set_nested(true);
-#endif
 
     //
     // evaluation only
@@ -948,6 +955,7 @@ int start_mpi(int argc, char** argv) {
 
 #if defined(__APPLE_CC__) && __GNUC__ == 4 && __GNUC_MINOR__ == 2
     // g++ on Mac OS X Snow Leopard requires the following OpenMP directive
+    omp_set_nested(true);
     #pragma omp parallel num_threads(1)
 #endif
     {
@@ -1137,7 +1145,7 @@ int start_mpi(int argc, char** argv) {
           break;
         }
       }
-    } // end omp parallel
+    }
 
     if (world.rank() == 0) master_lock.release();
   }
