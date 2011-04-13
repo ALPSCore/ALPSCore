@@ -953,7 +953,7 @@ int start_mpi(int argc, char** argv) {
       check_queue.push(next_taskinfo(opt.checkpoint_interval / 10));
     }
 
-#if defined(__APPLE_CC__) && __GNUC__ == 4 && __GNUC_MINOR__ == 2
+#if defined(_OPENMP) && defined(__APPLE_CC__) && __GNUC__ == 4 && __GNUC_MINOR__ == 2
     // g++ on Mac OS X Snow Leopard requires the following OpenMP directive
     omp_set_nested(true);
     #pragma omp parallel num_threads(1)
