@@ -25,10 +25,11 @@
 *
 *****************************************************************************/
 
-bool stop_callback(boost::posix_time::ptime const & end_time) {
+bool stop_callback(boost::posix_time::ptime const & start_time, int time_limit) {
     static alps::mcsignal signal;
-    return !signal.empty() || boost::posix_time::second_clock::local_time() > end_time;
+    return !signal.empty() || (time_limit > 0 && boost::posix_time::second_clock::local_time() > start_time + boost::posix_time::seconds(time_limit));
 }
+
 int main(int argc, char *argv[]) {
     alps::mcoptions options(argc, argv);
     if (options.valid && options.type == alps::mcoptions::SINGLE) {
@@ -36,7 +37,7 @@ int main(int argc, char *argv[]) {
         simulation_type s(params);
         if (options.resume)
             s.load(static_cast<std::string>(params.value_or_default("DUMP", "dump")));
-        s.run(boost::bind(&stop_callback, boost::posix_time::second_clock::local_time() + boost::posix_time::seconds(options.time_limit)));
+        s.run(boost::bind(&stop_callback, boost::posix_time::second_clock::local_time(), options.time_limit));
         s.save(static_cast<std::string>(params.value_or_default("DUMP", "dump")));
         alps::results_type<alps::mcmpisim<simulation_type> >::type results = collect_results(s);
         std::cout << results;
@@ -63,7 +64,7 @@ int main(int argc, char *argv[]) {
             alps::mcmpisim<simulation_type> s(params, c);
             if (options.resume)
                 s.load(static_cast<std::string>(params.value_or_default("DUMP", "dump")) + boost::lexical_cast<std::string>(c.rank()));
-            s.run(boost::bind(&stop_callback, boost::posix_time::second_clock::local_time() + boost::posix_time::seconds(options.time_limit)));
+            s.run(boost::bind(&stop_callback, boost::posix_time::second_clock::local_time(), options.time_limit));
             s.save(static_cast<std::string>(params.value_or_default("DUMP", "dump")) + boost::lexical_cast<std::string>(c.rank()));
             alps::results_type<alps::mcmpisim<simulation_type> >::type results = collect_results(s);
             if (!c.rank()) {

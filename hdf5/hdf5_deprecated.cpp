@@ -122,11 +122,13 @@ int main() {
         boost::filesystem::remove(boost::filesystem::path(filename));
     userdefined_class<double> scalar_read, scalar_write;
     std::vector<userdefined_class<double> > vector_read, vector_write;
+    std::pair<userdefined_class<double>, unsigned long> pair_read, pair_write;
     {
         alps::hdf5::oarchive oar(filename);
         oar
             << alps::make_pvp("/data/scalar", scalar_write)
             << alps::make_pvp("/data/vector", vector_write)
+            << alps::make_pvp("/data/vector", pair_write)
         ;
     }
     {
@@ -134,13 +136,15 @@ int main() {
         iar
             >> alps::make_pvp("/data/scalar", scalar_read)
             >> alps::make_pvp("/data/vector", vector_read)
+            >> alps::make_pvp("/data/vector", pair_read)
         ;
     }
     boost::filesystem::remove(boost::filesystem::path(filename));
     bool result =
            scalar_write == scalar_read 
         && vector_write.size() == vector_read.size()
-        && std::equal(vector_write.begin(), vector_write.end(), vector_read.begin());
+        && std::equal(vector_write.begin(), vector_write.end(), vector_read.begin())
+        && pair_write.first == pair_read.first && pair_write.second == pair_read.second;
     std::cout << (result ? "SUCCESS" : "FAILURE") << std::endl;
     return result ? EXIT_SUCCESS : EXIT_FAILURE;
 }

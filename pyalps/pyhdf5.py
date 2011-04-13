@@ -52,14 +52,17 @@ def read(ar):
     s = ar.read("/str")
     n = ar.read("/np/int")
     x = ar.read("/np/cplx")
-    if ar.extent("/int")[0] != 1 or ar.extent("/cplx")[0] != 1 or ar.extent("/np/int")[0] != 3:
-        raise Exception('invalid extent')
+
+    if len(ar.extent("/int")) != 1 or ar.extent("/int")[0] != 1 or len(ar.extent("/cplx")) != 1 or ar.extent("/cplx")[0] != 1:
+        raise Exception('invalid scalar extent')
+    if len(ar.extent("/np/int")) != 1 or ar.extent("/cplx")[0] != 1 or len(ar.extent("/np/cplx")) != 2 or ar.extent("/np/cplx")[0] != 2 or ar.extent("/np/cplx")[1] != 2:
+        raise Exception('invalid array extent')
     if type(i) != int or type(d) != float or type(c) != complex or type(s) != str:
         raise Exception('invalid type')
     if i != 9 or d - 9.123 > 0.001 or s != "test" or np.any(n != np.array([1, 2, 3])):
-        raise Exception('invalid value')
+        raise Exception('invalid scalar value')
     if np.any(x[0] != np.array([1 + 1j,2 +2j])) or np.any(x[1] != np.array([3 + 3j,4 + 4j])):
-        raise Exception('invalid value')
+        raise Exception('invalid array value')
 
 try:
     oar = h5.archive("test.h5", 1) # TODO: this is ugly, remove the number
