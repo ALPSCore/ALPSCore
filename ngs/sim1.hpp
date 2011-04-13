@@ -40,16 +40,16 @@ class simulation_type : public alps::mcbase {
         {
             for(int i = 0; i < length; ++i)
                 spins[i] = (random() < 0.5 ? 1 : -1);
-            results << alps::ngs::RealObservable("Unused");
-            results.create_SimpleRealObservable("EnergySimple");
-            results << alps::ngs::RealObservable("Energy")
+            results << alps::ngs::RealObservable("Unused")
+                    << alps::ngs::SimpleRealObservable("EnergySimple")
+                    << alps::ngs::RealObservable("Energy")
                     << alps::ngs::RealObservable("Magnetization")
                     << alps::ngs::RealObservable("Magnetization^2")
-                    << alps::ngs::RealObservable("Magnetization^4");
-            results.create_SimpleRealVectorObservable("CorrelationsSimple");
-            results.create_RealVectorObservable("Correlations");
-            results << alps::ngs::RealObservable("Sign");
-            results.create_SignedRealObservable("SignedEnergy");
+                    << alps::ngs::RealObservable("Magnetization^4")
+                    << alps::ngs::SimpleRealVectorObservable("CorrelationsSimple")
+                    << alps::ngs::RealVectorObservable("Correlations")
+                    << alps::ngs::RealObservable("Sign")
+                    << alps::ngs::SignedRealObservable("SignedEnergy");
         }
         void do_update() {
             for (int j = 0; j < length; ++j) {
