@@ -60,8 +60,8 @@ namespace alps {
     ALPS_NGS_CONVERT_STRING(float, "f")
     ALPS_NGS_CONVERT_STRING(double, "lf")
     ALPS_NGS_CONVERT_STRING(long double, "Lf")
-    ALPS_NGS_CONVERT_STRING(long long, "Ld")
-    ALPS_NGS_CONVERT_STRING(unsigned long long, "Lu")
+    ALPS_NGS_CONVERT_STRING(long long, "lld")
+    ALPS_NGS_CONVERT_STRING(unsigned long long, "llu")
     #undef ALPS_NGS_CONVERT_STRING
 
     #define ALPS_NGS_CONVERT_STRING_CHAR(T, U)                                                                                                 \
