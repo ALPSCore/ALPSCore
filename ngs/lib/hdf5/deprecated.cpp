@@ -26,83 +26,10 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_HDF5_DEPRECATED
-#define ALPS_NGS_HDF5_DEPRECATED
-
-#include <alps/hdf5.hpp>
+#include <alps/ngs/hdf5/deprecated.hpp>
 
 namespace alps {
     namespace hdf5 {
-
-        class oarchive : public archive {
-            public:
-                oarchive(std::string const & file, bool compress = false) 
-                    : archive(file, archive::WRITE || (compress ? archive::COMPRESS : 0x00))
-                {}
-                oarchive(oarchive const & ar)
-                    : archive(ar)
-                {}
-        };
-
-        class iarchive : public archive {
-            public:
-                iarchive(std::string const & file, bool compress = false) 
-                    : archive(file, archive::READ || (compress ? archive::COMPRESS : 0x00))
-                {}
-                iarchive(oarchive const & ar)
-                    : archive(ar)
-                {}
-        };
-
-    }
-}
-
-#define ALPS_HDF5_HAVE_DEPRECATED
-
-#include <alps/hdf5/map.hpp>
-#include <alps/hdf5/pair.hpp>
-#include <alps/hdf5/vector.hpp>
-#include <alps/hdf5/pointer.hpp>
-#include <alps/hdf5/complex.hpp>
-#include <alps/hdf5/valarray.hpp>
-#include <alps/hdf5/multi_array.hpp>
-#include <alps/hdf5/shared_array.hpp>
-#include <alps/hdf5/ublas/matrix.hpp>
-#include <alps/hdf5/ublas/vector.hpp>
-
-namespace alps {
-    namespace hdf5 {
-
-        template<typename T> void save(
-               oarchive & ar
-             , std::string const & path
-             , T const & value
-             , std::vector<std::size_t> size = std::vector<std::size_t>()
-             , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-             , std::vector<std::size_t> offset = std::vector<std::size_t>()
-        ) {
-            if (chunk.size())
-                ALPS_NGS_THROW_RUNTIME_ERROR("user defined objects needs to be written continously");
-            std::string context = ar.get_context();
-            ar.set_context(ar.complete_path(path));
-            value.serialize(ar);
-            ar.set_context(context);
-        }
-
-        template<typename T> void load(
-               iarchive & ar
-             , std::string const & path
-             , T & value
-             , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-             , std::vector<std::size_t> offset = std::vector<std::size_t>()
-        ) {
-            if (chunk.size())
-                ALPS_NGS_THROW_RUNTIME_ERROR("user defined objects needs to be written continously");
-            std::string context = ar.get_context();
-            ar.set_context(ar.complete_path(path));
-            value.serialize(ar);
-            ar.set_context(context);
-        }
 
         #define ALPS_NGS_HDF5_DEFINE_FREE_FUNCTIONS(T)                                                                                                                 \
             void save(                                                                                                                                                 \
@@ -112,7 +39,9 @@ namespace alps {
                 , std::vector<std::size_t> size = std::vector<std::size_t>()                                                                                           \
                 , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                          \
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                         \
-            );                                                                                                                                                         \
+            ) {                                                                                                                                                        \
+                save(static_cast<archive &>(ar), path, value, size, chunk, offset);                                                                                    \
+            }                                                                                                                                                          \
                                                                                                                                                                        \
             void load(                                                                                                                                                 \
                   iarchive & ar                                                                                                                                        \
@@ -120,31 +49,11 @@ namespace alps {
                 , T & value                                                                                                                                            \
                 , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                          \
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                         \
-            );
+            ) {                                                                                                                                                        \
+                load(static_cast<archive &>(ar), path, value, chunk, offset);                                                                                          \
+            }
         ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_DEFINE_FREE_FUNCTIONS)
         #undef ALPS_NGS_HDF5_DEFINE_FREE_FUNCTIONS
-
-        template <typename T> typename boost::enable_if<
-              has_complex_elements<typename detail::remove_cvr<T>::type>
-            , oarchive &
-        >::type operator<< (oarchive & ar, detail::make_pvp_proxy<T> const & proxy) {
-            save(ar, proxy.path_, proxy.value_);
-            ar.set_complex(proxy.path_);
-            return ar;
-        }
-
-        template <typename T> typename boost::disable_if<
-              has_complex_elements<typename detail::remove_cvr<T>::type>
-            , oarchive &
-        >::type operator<< (oarchive & ar, detail::make_pvp_proxy<T> const & proxy) {
-            save(ar, proxy.path_, proxy.value_);
-            return ar;
-        }
-
-        template <typename T> iarchive & operator>> (iarchive & ar, detail::make_pvp_proxy<T> proxy) {
-            load(ar, proxy.path_, proxy.value_);
-            return ar;
-        }
 
     }
 }
