@@ -94,7 +94,9 @@ void ObservableSet::load(hdf5::archive & ar) {
             if (!has(obsname)) {
                 bool is_scalar = (ar.is_data(*it + "/mean/value") 
                     ? ar.is_scalar(*it + "/mean/value")
-                    : (ar.is_data(*it + "/timeseries/logbinning") ? ar.dimensions(*it + "/timeseries/logbinning") == 1 : false)
+                    : (ar.is_data(*it + "/timeseries/logbinning") ? ar.dimensions(*it + "/timeseries/logbinning") == 1 
+                    : (ar.is_data(*it + "/sum") ? ar.is_scalar(*it + "/sum") : false)
+                  )
                 );
                 bool is_signed = ar.is_attribute(*it + "/@sign");
                 std::string signname;
