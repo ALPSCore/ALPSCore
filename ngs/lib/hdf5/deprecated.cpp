@@ -36,9 +36,9 @@ namespace alps {
                   oarchive & ar                                                                                                                                        \
                 , std::string const & path                                                                                                                             \
                 , T const & value                                                                                                                                      \
-                , std::vector<std::size_t> size = std::vector<std::size_t>()                                                                                           \
-                , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                          \
-                , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                         \
+                , std::vector<std::size_t> size                                                                                                                        \
+                , std::vector<std::size_t> chunk                                                                                                                       \
+                , std::vector<std::size_t> offset                                                                                                                      \
             ) {                                                                                                                                                        \
                 save(static_cast<archive &>(ar), path, value, size, chunk, offset);                                                                                    \
             }                                                                                                                                                          \
@@ -47,15 +47,13 @@ namespace alps {
                   iarchive & ar                                                                                                                                        \
                 , std::string const & path                                                                                                                             \
                 , T & value                                                                                                                                            \
-                , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                          \
-                , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                         \
+                , std::vector<std::size_t> chunk                                                                                                                       \
+                , std::vector<std::size_t> offset                                                                                                                      \
             ) {                                                                                                                                                        \
                 load(static_cast<archive &>(ar), path, value, chunk, offset);                                                                                          \
             }
         ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_DEFINE_FREE_FUNCTIONS)
-        #undef ALPS_NGS_HDF5_DEFINE_FREE_FUNCTIONS
 
+        #undef ALPS_NGS_HDF5_DEFINE_FREE_FUNCTIONS
     }
 }
-
-#endif
