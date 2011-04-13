@@ -93,28 +93,28 @@ namespace alps {
 
         class SignedRealObservable : public detail::SignedObservableWapper {
             public:
-                SignedRealObservable(std::string const & name, std::string const & sign): SignedObservableWapper(name, sign) {}
+                SignedRealObservable(std::string const & name, std::string const & sign = "Sign"): SignedObservableWapper(name, sign) {}
         };
 
         alps::mcobservables & operator<< (alps::mcobservables & set, SignedRealObservable const & obs);
 
         class SignedRealVectorObservable : public detail::SignedObservableWapper {
             public:
-                SignedRealVectorObservable(std::string const & name, std::string const & sign): SignedObservableWapper(name, sign) {}
+                SignedRealVectorObservable(std::string const & name, std::string const & sign = "Sign"): SignedObservableWapper(name, sign) {}
         };
 
         alps::mcobservables & operator<< (alps::mcobservables & set, SignedRealVectorObservable const & obs);
 
         class SignedSimpleRealObservable : public detail::SignedObservableWapper {
             public:
-                SignedSimpleRealObservable(std::string const & name, std::string const & sign): SignedObservableWapper(name, sign) {}
+                SignedSimpleRealObservable(std::string const & name, std::string const & sign = "Sign"): SignedObservableWapper(name, sign) {}
         };
 
         alps::mcobservables & operator<< (alps::mcobservables & set, SignedSimpleRealObservable const & obs);
 
         class SignedSimpleRealVectorObservable : public detail::SignedObservableWapper {
             public:
-                SignedSimpleRealVectorObservable(std::string const & name, std::string const & sign): SignedObservableWapper(name, sign) {}
+                SignedSimpleRealVectorObservable(std::string const & name, std::string const & sign = "Sign"): SignedObservableWapper(name, sign) {}
         };
 
         alps::mcobservables & operator<< (alps::mcobservables & set, SignedSimpleRealVectorObservable const & obs);
