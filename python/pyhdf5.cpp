@@ -56,19 +56,23 @@ namespace alps {
                 }
             }
 
+            void ignore_python_destruct_errors() {
+                alps::hdf5::detail::ignore_python_destruct_errors::value = true;
+            }
+
             boost::python::str filename(alps::hdf5::archive const & self) {
                 return boost::python::str(self.get_filename());
             }
 
             boost::python::list extent(alps::hdf5::archive & self, std::string const & path) {
-			
-			
-			std::cout << path << " " << (self.is_complex(path) ? "true" : "false") << std::endl;
-			
                 boost::python::list result;
                 std::vector<std::size_t> children = self.extent(path);
-				if (self.is_complex(path))
-					children.back() = 1;
+                if (self.is_complex(path)) {
+                    if (children.size() > 1)
+                        children.pop_back();
+                    else
+                        children.back() = 1;
+                }
                 for (std::vector<std::size_t>::const_iterator it = children.begin(); it != children.end(); ++it)
                     result.append(*it);
                 return result;
@@ -160,6 +164,12 @@ namespace alps {
             template<typename T> boost::python::object read_numpy(alps::hdf5::archive & self, std::string const & path, int type) {
                 import_numpy();
                 std::vector<std::size_t> extent(self.extent(path));
+                if (type == PyArray_CFLOAT || type == PyArray_CDOUBLE || type == PyArray_CLONGDOUBLE) {
+                    if (extent.size() > 1)
+                        extent.pop_back();
+                    else
+                        extent.back() = 1;
+                }
                 std::vector<npy_intp> npextent(extent.begin(), extent.end());
                 std::size_t len = std::accumulate(extent.begin(), extent.end(), std::size_t(1), std::multiplies<std::size_t>());
                 boost::python::object obj(boost::python::handle<>(PyArray_SimpleNew(npextent.size(), &npextent.front(), type)));
@@ -217,10 +227,12 @@ namespace alps {
                     return read_numpy<long long>(self, path, PyArray_LONGLONG);
                 else if (self.is_datatype<unsigned long long>(path))
                     return read_numpy<unsigned long long>(self, path, PyArray_ULONGLONG);
-                else if ((self.is_datatype<float>(path) || self.is_datatype<double>(path)) && self.is_complex(path))
+                else if (self.is_datatype<float>(path) && self.is_complex(path))
+                    return read_numpy<std::complex<float> >(self, path, PyArray_CFLOAT);
+                else if (self.is_datatype<double>(path) && self.is_complex(path))
                     return read_numpy<std::complex<double> >(self, path, PyArray_CDOUBLE);
-                else if (self.is_datatype<float>(path) || self.is_datatype<double>(path))
-                    return read_numpy<double>(self, path, PyArray_DOUBLE);
+                else if (self.is_datatype<long double>(path) && self.is_complex(path))
+                    return read_numpy<std::complex<long double> >(self, path, PyArray_CLONGDOUBLE);
                 else {
                     std::runtime_error("Unsupported type.");
                     return boost::python::object();
@@ -230,6 +242,9 @@ namespace alps {
         }
     }
 }
+
+const char ignore_python_destruct_errors_docstring[] =\
+"prevent python from throwing error on destoying hdf5 archives";
 
 const char archive_constructor_docstring[] =
 "the constructor takes a file path the opening mode (read: 0, write: 1, write compressed: 3) as argument";
@@ -294,6 +309,8 @@ BOOST_PYTHON_MODULE(pyhdf5_c) {
     using namespace boost::python;
     docstring_options doc_options(true);
     doc_options.disable_cpp_signatures();
+
+    def("ignoreHDF5DestroyErrors", &alps::python::hdf5::ignore_python_destruct_errors, ignore_python_destruct_errors_docstring);
 
     class_<alps::hdf5::archive>(
           "archive", 

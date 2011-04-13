@@ -5,7 +5,6 @@
  * ALPS Libraries                                                                  *
  *                                                                                 *
  * Copyright (C) 2010 - 2011 by Lukas Gamper <gamperl@gmail.com>                   *
- *                           Matthias Troyer <troyer@comp-phys.org>                *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -26,22 +25,68 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_HPP
-#define ALPS_NGS_HPP
-
-#include <alps/ngs/api.hpp>
-#include <alps/ngs/boost.hpp>
-#include <alps/ngs/mcbase.hpp>
-#include <alps/ngs/mcmpisim.hpp>
-#include <alps/ngs/mcparams.hpp>
-#include <alps/ngs/mcsignal.hpp>
-#include <alps/ngs/mcresult.hpp>
-#include <alps/ngs/mcresults.hpp>
-#include <alps/ngs/mcoptions.hpp>
-#include <alps/ngs/short_print.hpp>
-#include <alps/ngs/mcobservable.hpp>
-#include <alps/ngs/mcobservables.hpp>
-#include <alps/ngs/mcthreadedsim.hpp>
 #include <alps/ngs/observablewrappers.hpp>
 
-#endif
+namespace alps {
+
+    namespace ngs {
+
+        namespace detail {
+
+            std::string ObservableWapper::getName() const {
+                return _name;
+            }
+
+            std::string SignedObservableWapper::getName() const {
+                return _name;
+            }
+
+            std::string SignedObservableWapper::getSign() const {
+                return _sign;
+            }
+
+        }
+
+        alps::mcobservables & operator<< (alps::mcobservables & set, RealObservable const & obs) {
+            set.create_RealObservable(obs.getName());
+            return set;
+        }
+
+        alps::mcobservables & operator<< (alps::mcobservables & set, RealVectorObservable const & obs) {
+            set.create_RealVectorObservable(obs.getName());
+            return set;
+        }
+
+        alps::mcobservables & operator<< (alps::mcobservables & set, SimpleRealObservable const & obs) {
+            set.create_SimpleRealObservable(obs.getName());
+            return set;
+        }
+
+        alps::mcobservables & operator<< (alps::mcobservables & set, SimpleRealVectorObservable const & obs) {
+            set.create_SimpleRealVectorObservable(obs.getName());
+            return set;
+        }
+
+        alps::mcobservables & operator<< (alps::mcobservables & set, SignedRealObservable const & obs) {
+            set.create_SignedRealObservable(obs.getName(), obs.getSign());
+            return set;
+        }
+
+        alps::mcobservables & operator<< (alps::mcobservables & set, SignedRealVectorObservable const & obs) {
+            set.create_SignedRealObservable(obs.getName(), obs.getSign());
+            return set;
+        }
+
+        alps::mcobservables & operator<< (alps::mcobservables & set, SignedSimpleRealObservable const & obs) {
+            set.create_SignedRealObservable(obs.getName(), obs.getSign());
+            return set;
+        }
+
+        alps::mcobservables & operator<< (alps::mcobservables & set, SignedSimpleRealVectorObservable const & obs) {
+            set.create_SignedRealObservable(obs.getName(), obs.getSign());
+            return set;
+        }
+
+    };
+
+}

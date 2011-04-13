@@ -61,20 +61,28 @@ namespace alps {
 
             void output(std::ostream & os) const;
 
+            // DO NOT USE! use set << ngs::RealObservable(name);
             void create_RealObservable(std::string const & name);
 
+            // DO NOT USE! use set << ngs::RealVectorObservable(name);
             void create_RealVectorObservable(std::string const & name);
 
+            // DO NOT USE! use set << ngs::SimpleRealObservable(name);
             void create_SimpleRealObservable(std::string const & name);
 
+            // DO NOT USE! use set << ngs::SimpleRealVectorObservable(name);
             void create_SimpleRealVectorObservable(std::string const & name);
 
+            // DO NOT USE! use set << ngs::SignedRealObservable(name, sign);
             void create_SignedRealObservable(std::string const & name, std::string sign = "Sign");
 
+            // DO NOT USE! use set << ngs::SignedRealVectorObservable(name, sign);
             void create_SignedRealVectorObservable(std::string const & name, std::string sign = "Sign");
 
+            // DO NOT USE! use set << ngs::SignedSimpleRealObservable(name, sign);
             void create_SignedSimpleRealObservable(std::string const & name, std::string sign = "Sign");
 
+            // DO NOT USE! use set << ngs::SignedSimpleRealVectorObservable(name, sign);
             void create_SignedSimpleRealVectorObservable(std::string const & name, std::string sign = "Sign");
 
     };

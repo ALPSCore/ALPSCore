@@ -66,6 +66,10 @@ namespace alps {
             ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_IS_DATATYPE_CALLER)
             #undef ALPS_NGS_HDF5_IS_DATATYPE_CALLER
 
+            struct ignore_python_destruct_errors {
+                 static bool value;
+            };
+
         }
 
         class ALPS_DECL archive {
