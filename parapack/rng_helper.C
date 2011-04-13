@@ -29,30 +29,6 @@
 
 namespace alps {
 
-rng_helper::rng_helper(const Parameters& p) {
-  int nr = max_threads();
-  engines_.resize(nr);
-  generators_.resize(nr);
-#if !(defined(__APPLE_CC__) && __GNUC__ == 4 && __GNUC_MINOR__ == 2)
-  // g++ with -fopenmp on Mac OS X Snow Leopard crashes with the following directive
-  #pragma omp parallel
-  {
-    for (int r = 0; r < nr; ++r) {
-      if (r == thread_id()) {
-        engines_[r].reset(rng_factory.create(p.value_or_default("RNG", "mt19937")));
-        generators_[r].reset(new generator_type(*engines_[r], boost::uniform_real<>()));
-      }
-    }
-  }
-#else
-  for (int r = 0; r < nr; ++r) {
-    engines_[r].reset(rng_factory.create(p.value_or_default("RNG", "mt19937")));
-    generators_[r].reset(new generator_type(*engines_[r], boost::uniform_real<>()));
-  }
-#endif
-  init(p);
-}
-
 void rng_helper::init(const Parameters& p) {
   seed = static_cast<uint32_t>(p["WORKER_SEED"]);
   disorder_seed = static_cast<uint32_t>(p["DISORDER_SEED"]);
