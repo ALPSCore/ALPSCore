@@ -8,7 +8,7 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 include_directories(${Boost_ROOT_DIR})
 
 IF(NOT ALPS_LLVM_WORKAROUND)
-  FOREACH (name complexobservable detailedbinning histogram signed simpleobseval testobservableset observableset_xml vectorobseval mcdata mcdata2)
+  FOREACH (name complexobservable detailedbinning histogram signed simpleobseval testobservableset observableset_hdf5 observableset_xml vectorobseval mcdata mcdata2)
     add_executable(${name} ${name}.C)
     add_dependencies(${name} alps)
     target_link_libraries(${name} alps)
