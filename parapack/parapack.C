@@ -344,7 +344,7 @@ int run_sequential(int argc, char **argv) {
 #ifdef _OPENMP
   // set default number of threads to 1
   char* p = getenv("OMP_NUM_THREADS");
-  if (p == 0) omp_set_num_threads(1);
+  if (p == 0 && omp_get_max_threads() != 1) omp_set_num_threads(1);
 #endif
 
   for (std::size_t i = 0; i < parameterlist.size(); ++i) {
@@ -541,7 +541,8 @@ int start_sgl(int argc, char** argv) {
     {
       thread_group group(thread_id());
 #if defined(_OPENMP) && defined(ALPS_ENABLE_OPENMP_WORKER)
-      omp_set_num_threads(opt.threads_per_clone);
+      if (omp_get_max_threads() != opt.threads_per_clone)
+        omp_set_num_threads(opt.threads_per_clone);
 #endif
       #pragma omp master
       {
@@ -723,7 +724,7 @@ int run_sequential_mpi(int argc, char** argv) {
 #ifdef _OPENMP
   // set default number of threads to 1
   char* p = getenv("OMP_NUM_THREADS");
-  if (p == 0) omp_set_num_threads(1);
+  if (p == 0 && omp_get_max_threads() != 1) omp_set_num_threads(1);
 #endif
 
   boost::mpi::environment env(argc, argv);
@@ -960,7 +961,8 @@ int start_mpi(int argc, char** argv) {
 #endif
     {
 #ifdef _OPENMP
-      omp_set_num_threads(num_total_threads / process.num_total_processes());
+      int p = num_total_threads / process.num_total_processes();
+      if (omp_get_max_threads() != p) omp_set_num_threads(p);
 #endif
 
       clone_mpi* clone_ptr = 0;
