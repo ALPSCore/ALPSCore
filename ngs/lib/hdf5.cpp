@@ -25,8 +25,8 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include <alps/ngs/hdf5.hpp>
 #include <alps/ngs/macros.hpp>
-#include <alps/hdf5.hpp>
 #include <alps/ngs/convert.hpp>
 
 #include <alps/config.h>
@@ -68,10 +68,6 @@ namespace alps {
             herr_t noop(hid_t) { 
                 return 0; 
             }
-
-            template<typename T> struct type_wrapper {
-                typedef T type;
-            };
 
             template<typename T> struct native_ptr_converter {
                             native_ptr_converter(std::size_t) {}
@@ -713,7 +709,7 @@ namespace alps {
                                 convert(raw.get(), raw.get() + len, value);                                                                                        \
                                                                 detail::check_error(H5Dvlen_reclaim(type_id, mem_id, H5P_DEFAULT, raw.get()));                     \
                             }                                                                                                                                      \
-                        ALPS_NGS_HDF5_FOREACH_NATIVE_TYPE_INTEGRAL(ALPS_NGS_HDF5_READ_VECTOR_DATA_HELPER, T)                                                   \
+                        ALPS_NGS_HDF5_FOREACH_NATIVE_TYPE_INTEGRAL(ALPS_NGS_HDF5_READ_VECTOR_DATA_HELPER, T)                                                       \
                         } else ALPS_NGS_THROW_RUNTIME_ERROR("invalid type")                                                                                        \
                     } else {                                                                                                                                       \
                         if (!is_attribute(path) || is_scalar(path))                                                                                                \
@@ -742,10 +738,10 @@ namespace alps {
                                 ALPS_NGS_THROW_RUNTIME_ERROR("non continous multidimensional dataset as attributes are not implemented (" + path + ")")            \
                             detail::check_error(H5Dvlen_reclaim(type_id, detail::space_type(H5Aget_space(attribute_id)), H5P_DEFAULT, raw.get()));                 \
                         } else if (H5Tget_class(native_id) == H5T_STRING) {                                                                                        \
-                            char ** raw;                                                                                                                           \
+                            char ** raw = NULL;                                                                                                                    \
                             detail::check_error(H5Aread(attribute_id, type_id, raw));                                                                              \
                             ALPS_NGS_THROW_RUNTIME_ERROR("multidimensional dataset of variable len string datas is not implemented (" + path + ")")                \
-                        ALPS_NGS_HDF5_FOREACH_NATIVE_TYPE_INTEGRAL(ALPS_NGS_HDF5_READ_VECTOR_ATTRIBUTE_HELPER, T)                                              \
+                        ALPS_NGS_HDF5_FOREACH_NATIVE_TYPE_INTEGRAL(ALPS_NGS_HDF5_READ_VECTOR_ATTRIBUTE_HELPER, T)                                                  \
                         } else ALPS_NGS_THROW_RUNTIME_ERROR("invalid type")                                                                                        \
                         if (is_group(path.substr(0, path.find_last_of('@') - 1)))                                                                                  \
                             detail::check_group(parent_id);                                                                                                        \

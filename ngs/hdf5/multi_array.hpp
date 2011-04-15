@@ -28,7 +28,7 @@
 #ifndef ALPS_NGS_HDF5_BOOST_MULTI_ARRAY_HPP
 #define ALPS_NGS_HDF5_BOOST_MULTI_ARRAY_HPP
 
-#include <alps/hdf5.hpp>
+#include <alps/ngs/hdf5.hpp>
 
 #include <boost/multi_array.hpp>
 

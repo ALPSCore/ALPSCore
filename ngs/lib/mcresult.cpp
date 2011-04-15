@@ -25,8 +25,8 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include <alps/ngs/hdf5.hpp>
 #include <alps/ngs/macros.hpp>
-#include <alps/hdf5.hpp>
 #include <alps/ngs/mcresult.hpp>
 #include <alps/ngs/lib/mcresult_impl_base.ipp>
 #include <alps/ngs/lib/mcresult_impl_derived.ipp>

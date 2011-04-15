@@ -28,7 +28,7 @@
 #ifndef ALPS_NGS_HDF5_STD_VALARRAY_HPP
 #define ALPS_NGS_HDF5_STD_VALARRAY_HPP
 
-#include <alps/hdf5.hpp>
+#include <alps/ngs/hdf5.hpp>
 #include <alps/ngs/convert.hpp>
 
 #include <valarray>

@@ -26,7 +26,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <alps/ngs/api.hpp>
-#include <alps/hdf5.hpp>
+#include <alps/ngs/hdf5.hpp>
 
 #include <boost/filesystem.hpp>
 

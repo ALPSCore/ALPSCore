@@ -49,6 +49,10 @@ namespace alps {
         namespace detail {
             struct mccontext;
 
+            template<typename T> struct type_wrapper {
+                typedef T type;
+            };
+
             template<typename A, typename T> struct is_datatype_caller {
                 static bool apply(A const & ar, std::string path) {
                     ALPS_NGS_THROW_RUNTIME_ERROR("only native datatypes can be probed: " + path)
@@ -58,8 +62,7 @@ namespace alps {
 
             #define ALPS_NGS_HDF5_IS_DATATYPE_CALLER(T)                                                                                                                \
                 template<typename A> struct is_datatype_caller<A, T > {                                                                                                \
-                    static bool apply(A const & ar, std::string path) {                                                                                                \
-                        T unused;                                                                                                                                      \
+                    static bool apply(A const & ar, std::string path, T unused = type_wrapper<T>::type()) {                                                            \
                         return ar.is_datatype_impl(path, unused);                                                                                                      \
                     }                                                                                                                                                  \
                 };
@@ -295,20 +298,20 @@ namespace alps {
             {};                                                                                                                                                        \
                                                                                                                                                                        \
             namespace detail {                                                                                                                                         \
-                template<> struct ALPS_DECL is_vectorizable< T > {                                                                                                               \
+                template<> struct ALPS_DECL is_vectorizable< T > {                                                                                                     \
                     static bool apply(T const & value);                                                                                                                \
                 };                                                                                                                                                     \
                                                                                                                                                                        \
-                template<> struct ALPS_DECL get_pointer< T > {                                                                                                                   \
+                template<> struct ALPS_DECL get_pointer< T > {                                                                                                         \
                     static alps::hdf5::scalar_type< T >::type * apply( T & value);                                                                                     \
                 };                                                                                                                                                     \
                                                                                                                                                                        \
-                template<> struct ALPS_DECL get_pointer< T const > {                                                                                                             \
+                template<> struct ALPS_DECL get_pointer< T const > {                                                                                                   \
                     static alps::hdf5::scalar_type< T >::type const * apply( T const & value);                                                                         \
                 };                                                                                                                                                     \
             }                                                                                                                                                          \
                                                                                                                                                                        \
-            ALPS_DECL void save(                                                                                                                                                 \
+            ALPS_DECL void save(                                                                                                                                       \
                   archive & ar                                                                                                                                         \
                 , std::string const & path                                                                                                                             \
                 , T const & value                                                                                                                                      \
@@ -317,7 +320,7 @@ namespace alps {
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                         \
             );                                                                                                                                                         \
                                                                                                                                                                        \
-            ALPS_DECL void load(                                                                                                                                                 \
+            ALPS_DECL void load(                                                                                                                                       \
                   archive & ar                                                                                                                                         \
                 , std::string const & path                                                                                                                             \
                 , T & value                                                                                                                                            \

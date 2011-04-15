@@ -28,14 +28,14 @@
 #ifndef ALPS_NGS_HDF5_BOOST_NUMERIC_UBLAS_VECTOR_HPP
 #define ALPS_NGS_HDF5_BOOST_NUMERIC_UBLAS_VECTOR_HPP
 
-#include <alps/hdf5.hpp>
+#include <alps/ngs/hdf5.hpp>
 
 #include <boost/numeric/ublas/vector.hpp>
 
 #define ALPS_NGS_HDF5_VECTOR_TEMPLATE_ARGS typename T, typename A
 #define ALPS_NGS_HDF5_VECTOR_TEMPLATE_TYPE boost::numeric::ublas::vector<T, A>
 
-#include <alps/hdf5/container_impl.hpp>
+#include <alps/ngs/hdf5/container_impl.hpp>
 
 #undef ALPS_NGS_HDF5_VECTOR_TEMPLATE_ARGS
 #undef ALPS_NGS_HDF5_VECTOR_TEMPLATE_TYPE

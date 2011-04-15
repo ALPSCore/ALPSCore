@@ -28,7 +28,7 @@
 #ifndef ALPS_NGS_HDF5_STD_PAIR
 #define ALPS_NGS_HDF5_STD_PAIR
 
-#include <alps/hdf5.hpp>
+#include <alps/ngs/hdf5.hpp>
 #include <alps/ngs/convert.hpp>
 
 #include <boost/type_traits/remove_cv.hpp>

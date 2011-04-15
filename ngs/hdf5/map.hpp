@@ -29,7 +29,7 @@
 #ifndef ALPS_NGS_HDF5_STD_MAP
 #define ALPS_NGS_HDF5_STD_MAP
 
-#include <alps/hdf5.hpp>
+#include <alps/ngs/hdf5.hpp>
 #include <alps/ngs/convert.hpp>
 
 #include <map>
@@ -37,40 +37,40 @@
 namespace alps {
     namespace hdf5 {
 
-		#define ALPS_NGS_HDF5_MAP_SAVE(ARCHIVE)																													\
-			template <typename K, typename T, typename C, typename A> void save(																				\
-				  ARCHIVE & ar																																	\
-				, std::string const & path																														\
-				, std::map<K, T, C, A> const & value																											\
-				, std::vector<std::size_t> size = std::vector<std::size_t>()																					\
-				, std::vector<std::size_t> chunk = std::vector<std::size_t>()																					\
-				, std::vector<std::size_t> offset = std::vector<std::size_t>()																					\
-			) {																																					\
-				for(typename std::map<K, T, C, A>::const_iterator it = value.begin(); it != value.end(); ++it)													\
-					save(ar, path + "/" + convert<std::string>(it->first), it->second);																			\
-			}
+        #define ALPS_NGS_HDF5_MAP_SAVE(ARCHIVE)                                                                                                                 \
+            template <typename K, typename T, typename C, typename A> void save(                                                                                \
+                  ARCHIVE & ar                                                                                                                                  \
+                , std::string const & path                                                                                                                      \
+                , std::map<K, T, C, A> const & value                                                                                                            \
+                , std::vector<std::size_t> size = std::vector<std::size_t>()                                                                                    \
+                , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                   \
+                , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
+            ) {                                                                                                                                                 \
+                for(typename std::map<K, T, C, A>::const_iterator it = value.begin(); it != value.end(); ++it)                                                  \
+                    save(ar, path + "/" + convert<std::string>(it->first), it->second);                                                                         \
+            }
         ALPS_NGS_HDF5_MAP_SAVE(archive)
-		#ifdef ALPS_HDF5_HAVE_DEPRECATED
-			ALPS_NGS_HDF5_MAP_SAVE(oarchive)
-		#endif
+        #ifdef ALPS_HDF5_HAVE_DEPRECATED
+            ALPS_NGS_HDF5_MAP_SAVE(oarchive)
+        #endif
         #undef ALPS_NGS_HDF5_MAP_SAVE
 
-		#define ALPS_NGS_HDF5_MAP_LOAD(ARCHIVE)																													\
-			template <typename K, typename T, typename C, typename A> void load(																				\
-				  ARCHIVE & ar																																	\
-				, std::string const & path																														\
-				, std::map<K, T, C, A> & value																													\
-				, std::vector<std::size_t> chunk = std::vector<std::size_t>()																					\
-				, std::vector<std::size_t> offset = std::vector<std::size_t>()																					\
-			) {																																					\
-				std::vector<std::string> children = ar.list_children(path);																						\
-				for (typename std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)										\
-					load(ar, path + "/" + *it, value[convert<std::size_t>(*it)]);																				\
-			}
+        #define ALPS_NGS_HDF5_MAP_LOAD(ARCHIVE)                                                                                                                 \
+            template <typename K, typename T, typename C, typename A> void load(                                                                                \
+                  ARCHIVE & ar                                                                                                                                  \
+                , std::string const & path                                                                                                                      \
+                , std::map<K, T, C, A> & value                                                                                                                  \
+                , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                   \
+                , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
+            ) {                                                                                                                                                 \
+                std::vector<std::string> children = ar.list_children(path);                                                                                     \
+                for (typename std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)                                       \
+                    load(ar, path + "/" + *it, value[convert<std::size_t>(*it)]);                                                                               \
+            }
         ALPS_NGS_HDF5_MAP_LOAD(archive)
-		#ifdef ALPS_HDF5_HAVE_DEPRECATED
-			ALPS_NGS_HDF5_MAP_LOAD(oarchive)
-		#endif
+        #ifdef ALPS_HDF5_HAVE_DEPRECATED
+            ALPS_NGS_HDF5_MAP_LOAD(oarchive)
+        #endif
         #undef ALPS_NGS_HDF5_MAP_LOAD
 
     }

@@ -25,8 +25,8 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include <alps/ngs/hdf5.hpp>
 #include <alps/ngs/macros.hpp>
-#include <alps/hdf5.hpp>
 #include <alps/ngs/mcobservables.hpp>
 
 #include <alps/alea/observable.h>
