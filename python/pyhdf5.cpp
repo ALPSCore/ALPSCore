@@ -233,6 +233,12 @@ namespace alps {
                     return read_numpy<std::complex<double> >(self, path, PyArray_CDOUBLE);
                 else if (self.is_datatype<long double>(path) && self.is_complex(path))
                     return read_numpy<std::complex<long double> >(self, path, PyArray_CLONGDOUBLE);
+                else if (self.is_datatype<float>(path))
+                    return read_numpy<std::complex<float> >(self, path, PyArray_FLOAT);
+                else if (self.is_datatype<double>(path))
+                    return read_numpy<std::complex<double> >(self, path, PyArray_DOUBLE);
+                else if (self.is_datatype<long double>(path))
+                    return read_numpy<std::complex<long double> >(self, path, PyArray_LONGDOUBLE);
                 else {
                     std::runtime_error("Unsupported type.");
                     return boost::python::object();
