@@ -89,7 +89,7 @@ namespace alps {
 
             private:
 
-                static bool dummy_callback() {}
+                static bool dummy_callback() { return false; }
         };
     #endif
 }
