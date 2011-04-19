@@ -41,6 +41,12 @@
     #define IS_ATTRIBUTE false
 #endif
 
+#if defined(__FCC_VERSION) && defined(main) // workaround for FCC with SSL2
+extern "C"{
+    extern void setrcd_(int *) ;
+};
+#endif
+
 template<typename base_type> struct test {
     static bool write(std::string const & filename, boost::true_type) {
         std::vector<std::size_t> size_0;
@@ -278,5 +284,9 @@ int main() {
         boost::filesystem::remove(boost::filesystem::path(filename));
         std::cout << (result ? "SUCCESS" : "FAILURE") << std::endl;
     }
+#if defined(__FCC_VERSION) && defined(main) // workaround for FCC with SSL2
+    int ret = result ? EXIT_SUCCESS : EXIT_FAILURE;
+    setrcd_(&ret) ;
+#endif
     return result ? EXIT_SUCCESS : EXIT_FAILURE;
 }

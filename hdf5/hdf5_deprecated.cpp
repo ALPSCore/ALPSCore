@@ -34,6 +34,12 @@
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 
+#if defined(__FCC_VERSION) && defined(main) // workaround for FCC with SSL2
+extern "C"{
+    extern void setrcd_(int *) ;
+};
+#endif
+
 double rng() {
     static boost::mt19937 rng(SEED);
     static boost::uniform_real<> dist_real(0., 1e9);
@@ -146,5 +152,9 @@ int main() {
         && std::equal(vector_write.begin(), vector_write.end(), vector_read.begin())
         && pair_write.first == pair_read.first && pair_write.second == pair_read.second;
     std::cout << (result ? "SUCCESS" : "FAILURE") << std::endl;
+#if defined(__FCC_VERSION) && defined(main) // workaround for FCC with SSL2
+    int ret = result ? EXIT_SUCCESS : EXIT_FAILURE;
+    setrcd_(&ret) ;
+#endif
     return result ? EXIT_SUCCESS : EXIT_FAILURE;
 }
