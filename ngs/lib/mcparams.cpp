@@ -63,6 +63,11 @@ namespace alps {
         };
     }
 
+    std::string mcparamvalue::str() const {
+        return static_cast<std::string>(*this);
+    }
+
+
     #define ALPS_NGS_MCPARAMS_CAST_OPERATOR_IMPL(T)                                                                                                        \
         mcparamvalue::operator T () const {                                                                                                                \
             detail::mcparamvalue_reader< T > visitor;                                                                                                      \

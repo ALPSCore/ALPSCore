@@ -35,10 +35,12 @@
 #include <boost/variant.hpp>
 #include <boost/mpl/vector.hpp>
 #include <boost/mpl/contains.hpp>
+// use alps::convert
 #include <boost/lexical_cast.hpp>
 
 #include <map>
 #include <vector>
+#include <string>
 
 namespace alps {
 
@@ -56,6 +58,8 @@ namespace alps {
             template <typename T> mcparamvalue(T const & v): detail::mcparamvalue_base(v) {}
 
             mcparamvalue(mcparamvalue const & v): detail::mcparamvalue_base(static_cast<detail::mcparamvalue_base const &>(v)) {}
+
+            std::string str() const;
 
             template <typename T> typename boost::enable_if<
                   typename boost::mpl::contains<detail::mcparamvalue_types, T>::type
