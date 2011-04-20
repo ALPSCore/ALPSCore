@@ -37,10 +37,14 @@ namespace alps {
                 return _name;
             }
 
+            uint32_t ObservableWapper::getBinnum() const {
+                return _binnum;
+            }
+
             std::string SignedObservableWapper::getName() const {
                 return _name;
             }
-
+            
             std::string SignedObservableWapper::getSign() const {
                 return _sign;
             }
@@ -48,12 +52,12 @@ namespace alps {
         }
 
         alps::mcobservables & operator<< (alps::mcobservables & set, RealObservable const & obs) {
-            set.create_RealObservable(obs.getName());
+            set.create_RealObservable(obs.getName(),obs.getBinnum());
             return set;
         }
 
         alps::mcobservables & operator<< (alps::mcobservables & set, RealVectorObservable const & obs) {
-            set.create_RealVectorObservable(obs.getName());
+            set.create_RealVectorObservable(obs.getName(),obs.getBinnum());
             return set;
         }
 

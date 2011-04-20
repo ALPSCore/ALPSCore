@@ -62,10 +62,10 @@ namespace alps {
             void output(std::ostream & os) const;
 
             // DO NOT USE! use set << ngs::RealObservable(name);
-            void create_RealObservable(std::string const & name);
+            void create_RealObservable(std::string const & name, uint32_t binnum=0);
 
             // DO NOT USE! use set << ngs::RealVectorObservable(name);
-            void create_RealVectorObservable(std::string const & name);
+            void create_RealVectorObservable(std::string const & name, uint32_t binnum=0);
 
             // DO NOT USE! use set << ngs::SimpleRealObservable(name);
             void create_SimpleRealObservable(std::string const & name);

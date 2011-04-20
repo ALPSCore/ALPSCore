@@ -41,11 +41,13 @@ namespace alps {
             class ObservableWapper {
                 public:
 
-                    ObservableWapper(std::string const & name): _name(name) {}
+                    ObservableWapper(std::string const & name, uint32_t binnum=0): _name(name), _binnum(binnum) {}
                     std::string getName() const;
+                    uint32_t getBinnum() const;
 
                 private:
                     std::string _name;
+                    uint32_t _binnum;
             };
 
 
@@ -65,14 +67,14 @@ namespace alps {
 
         class RealObservable : public detail::ObservableWapper {
             public:
-                RealObservable(std::string const & name): ObservableWapper(name) {}
+                RealObservable(std::string const & name, uint32_t binnum=0): ObservableWapper(name,binnum) {}
         };
 
         alps::mcobservables & operator<< (alps::mcobservables & set, RealObservable const & obs);
 
         class RealVectorObservable : public detail::ObservableWapper {
             public:
-                RealVectorObservable(std::string const & name): ObservableWapper(name) {}
+                RealVectorObservable(std::string const & name, uint32_t binnum=0): ObservableWapper(name,binnum) {}
         };
 
         alps::mcobservables & operator<< (alps::mcobservables & set, RealVectorObservable const & obs);

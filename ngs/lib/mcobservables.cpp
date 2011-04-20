@@ -94,12 +94,12 @@ namespace alps {
             std::cout << std::fixed << std::setprecision(5) << it->first << ": " << it->second << std::endl;
     }
 
-    void mcobservables::create_RealObservable(std::string const & name) {
-        insert(name, boost::make_shared<RealObservable>(name).get());
+    void mcobservables::create_RealObservable(std::string const & name, uint32_t binnum) {
+        insert(name, boost::make_shared<RealObservable>(name,binnum).get());
     }
 
-    void mcobservables::create_RealVectorObservable(std::string const & name) {
-        insert(name, boost::make_shared<RealVectorObservable>(name).get());
+    void mcobservables::create_RealVectorObservable(std::string const & name, uint32_t binnum) {
+        insert(name, boost::make_shared<RealVectorObservable>(name,binnum).get());
     }
 
     void mcobservables::create_SimpleRealObservable(std::string const & name) {
