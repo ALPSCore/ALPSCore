@@ -219,7 +219,10 @@ namespace alps {
                                                                                                                                                \
                     template <typename U> typename boost::enable_if<typename boost::mpl::or_<                                                  \
                           typename boost::is_same<T, U>::type                                                                                  \
-                      /*, typename boost::is_same<typename alea::mcdata<T>::element_type, U>::type*/                                           \
+						, typename boost::mpl::and_<																						   \
+							  typename boost::is_scalar<U>::type																			   \
+							, typename boost::is_same<typename alea::mcdata<T>::element_type, U>::type                                         \
+						>::type																												   \
                     >::type, B *>::type NAME ## _inverse(U const & lhs) const {                                                                \
                         return new mcresult_impl_derived<B, T>(                                                                                \
                             lhs OP static_cast<alea::mcdata<T> const &>(*this)                                                                 \
@@ -228,7 +231,10 @@ namespace alps {
                                                                                                                                                \
                     template <typename U> typename boost::disable_if<typename boost::mpl::or_<                                                 \
                           typename boost::is_same<T, U>::type                                                                                  \
-                      /*, typename boost::is_same<typename alea::mcdata<T>::element_type, U>::type*/                                           \
+						, typename boost::mpl::and_<																						   \
+							  typename boost::is_scalar<U>::type																			   \
+							, typename boost::is_same<typename alea::mcdata<T>::element_type, U>::type                                         \
+						>::type																												   \
                     >::type, B *>::type NAME ## _inverse(U const & rhs) const {                                                                \
                         ALPS_NGS_THROW_RUNTIME_ERROR("Invalid cast");                                                                          \
                         return NULL;                                                                                                           \
