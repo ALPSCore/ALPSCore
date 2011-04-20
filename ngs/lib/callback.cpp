@@ -25,78 +25,19 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_MCBASE_HPP
-#define ALPS_NGS_MCBASE_HPP
+#include <alps/ngs/mcsignal.hpp>
+#include <alps/ngs/callback.hpp>
 
-#include <alps/ngs/mcparams.hpp>
-#include <alps/ngs/mcresults.hpp>
-#include <alps/ngs/mcobservables.hpp>
-
-#include <alps/config.h>
-
-#include <boost/function.hpp>
-#include <boost/filesystem/path.hpp>
-#include <boost/random/uniform_real.hpp>
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/random/variate_generator.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-#include <vector>
-#include <string>
-
 namespace alps {
-    class mcbase {
-        public:
-            typedef mcparams parameters_type;
-            typedef mcresults results_type;
-            typedef std::vector<std::string> result_names_type;
 
-            mcbase(parameters_type const & p, std::size_t seed_offset = 0)
-                : params(p)
-                  // TODO: this ist not the best solution - any idea?
-                , random(boost::mt19937(static_cast<std::size_t>(p.value_or_default("SEED", 42)) + seed_offset), boost::uniform_real<>())
-                , fraction(0.)
-                , next_check(8)
-                , start_time(boost::posix_time::second_clock::local_time())
-                , check_time(boost::posix_time::second_clock::local_time() + boost::posix_time::seconds(next_check))
-            {}
+	bool basic_stop_callback(int time_limit) {
+		static alps::mcsignal signal;
+		static boost::posix_time::ptime start_time = boost::posix_time::second_clock::local_time();
+		return !signal.empty() 
+			|| (time_limit > 0 && boost::posix_time::second_clock::local_time() > start_time + boost::posix_time::seconds(time_limit));
+	}
 
-            virtual void do_update() = 0;
-
-            virtual void do_measurements() = 0;
-
-            virtual double fraction_completed() const = 0;
-
-            void save(boost::filesystem::path const & path) const;
-
-            void load(boost::filesystem::path const & path);
-
-            bool run(boost::function<bool ()> const & stop_callback);
-
-            result_names_type result_names() const;
-
-            result_names_type unsaved_result_names() const;
-
-            results_type collect_results() const;
-
-            virtual results_type collect_results(result_names_type const & names) const;
-
-        protected:
-
-            virtual bool complete_callback(boost::function<bool ()> const & stop_callback);
-
-            parameters_type params;
-            mcobservables measurements;
-            boost::variate_generator<boost::mt19937, boost::uniform_real<> > random;
-
-        private:
-
-            double fraction;
-            std::size_t next_check;
-            boost::posix_time::ptime start_time;
-            boost::posix_time::ptime check_time;
-    };
 }
-
-#endif

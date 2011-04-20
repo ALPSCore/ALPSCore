@@ -25,64 +25,13 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/ngs/api.hpp>
-#include <alps/ngs/hdf5.hpp>
-#include <alps/ngs/mcbase.hpp>
+#ifndef ALPS_NGS_CALLBACK_HPP
+#define ALPS_NGS_CALLBACK_HPP
 
 namespace alps {
 
-    void mcbase::save(boost::filesystem::path const & path) const {
-        save_results(measurements, params, path, "/simulation/realizations/0/clones/0/results");
-    }
-
-    void mcbase::load(boost::filesystem::path const & path) {
-        hdf5::archive ar(path.file_string() + ".h5", hdf5::archive::READ);
-        ar >> make_pvp("/simulation/realizations/0/clones/0/results", measurements);
-    }
-
-    bool mcbase::run(boost::function<bool ()> const & stop_callback) {
-        do {
-            do_update();
-            do_measurements();
-        } while(!complete_callback(stop_callback));
-        return !stop_callback();
-    }
-
-    mcbase::result_names_type mcbase::result_names() const {
-        result_names_type names;
-        for(mcobservables::const_iterator it = measurements.begin(); it != measurements.end(); ++it)
-            names.push_back(it->first);
-        return names;
-    }
-
-    mcbase::result_names_type mcbase::unsaved_result_names() const {
-        return result_names_type(); 
-    }
-
-    mcbase::results_type mcbase::collect_results() const {
-        return collect_results(result_names());
-    }
-
-    mcbase::results_type mcbase::collect_results(result_names_type const & names) const {
-        results_type partial_results;
-        for(result_names_type::const_iterator it = names.begin(); it != names.end(); ++it)
-            partial_results.insert(*it, mcresult(measurements[*it]));
-        return partial_results;
-    }
-
-    bool mcbase::complete_callback(boost::function<bool ()> const & stop_callback) {
-        if (boost::posix_time::second_clock::local_time() > check_time) {
-            fraction = fraction_completed();
-            next_check = std::min(
-                2. * next_check, 
-                std::max(
-                      double(next_check)
-                    , 0.8 * (boost::posix_time::second_clock::local_time() - start_time).total_seconds() / fraction * (1 - fraction)
-                )
-            );
-           check_time = boost::posix_time::second_clock::local_time() + boost::posix_time::seconds(next_check);
-        }
-        return (stop_callback() || fraction >= 1.);
-    }
+	bool basic_stop_callback(int time_limit = 0);
 
 }
+
+#endif

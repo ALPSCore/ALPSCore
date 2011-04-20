@@ -32,6 +32,7 @@
 #include <alps/ngs/api.hpp>
 #include <alps/ngs/boost.hpp>
 #include <alps/ngs/mcbase.hpp>
+#include <alps/ngs/callback.hpp>
 #include <alps/ngs/mcmpisim.hpp>
 #include <alps/ngs/mcparams.hpp>
 #include <alps/ngs/mcsignal.hpp>
