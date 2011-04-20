@@ -272,11 +272,6 @@ namespace alps {
         }
 
         archive::archive(std::string const & filename, std::size_t props) {
-		
-		
-		std::cout << __LINE__ << std::endl;
-
-		
             detail::check_error(H5Eset_auto2(H5E_DEFAULT, NULL, NULL));
             if (props & COMPRESS) {
                 unsigned int flag;
@@ -297,11 +292,6 @@ namespace alps {
         archive::archive(archive const & arg)
             : context_(arg.context_)
         {
-		
-		
-		std::cout << __LINE__ << std::endl;
-		
-
             ++ref_cnt_[file_key(context_->filename_, context_->write_, context_->compress_)].second;
         }
 
