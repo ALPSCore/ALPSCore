@@ -32,6 +32,22 @@
 namespace alps {
 
     namespace detail {
+        template<typename T> struct mcparamvalue_reader : public boost::static_visitor<> {
+
+            mcparamvalue_reader(): value() {}
+
+            template <typename U> void operator()(U & v) const { 
+                value = boost::lexical_cast<T, U>(v); 
+            }
+
+            void operator()(T & v) const { 
+                value = v; 
+            }
+
+            mutable T value;
+
+        };
+
         struct mcparamvalue_saver: public boost::static_visitor<> {
 
             mcparamvalue_saver(hdf5::archive & a, std::string const & p)

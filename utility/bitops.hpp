@@ -85,6 +85,20 @@ inline static int BX_(long x) { return ((x) - (((x)>>1)&0x77777777)
 // use http://graphics.stanford.edu/~seander/bithacks.html
 // for windwos use http://msdn.microsoft.com/en-us/library/bb385231.aspx
 
+inline bool poppar(uint32_t x) {
+    x ^= x >> 1;
+    x ^= x >> 2;
+    x = (x & 0x11111111U) * 0x11111111U;
+    return (x >> 28) & 1;
+}
+
+inline bool poppar(uint64_t x) {
+    x ^= x >> 1;
+    x ^= x >> 2;
+    x = (x & 0x1111111111111111UL) * 0x1111111111111111UL;
+    return (x >> 60) & 1;
+}
+
 /// \brief count the 1-bits in a word
 /// @param x the 32-bit word of which 1-bits should be counted
 /// @return the number of 1-bits in the word

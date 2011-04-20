@@ -45,20 +45,6 @@ namespace alps {
     namespace detail {
         typedef boost::mpl::vector<std::string, int, double> mcparamvalue_types;
         typedef boost::make_variant_over<mcparamvalue_types>::type mcparamvalue_base;
-
-        template<typename T> struct mcparamvalue_reader : public boost::static_visitor<> {
-
-            template <typename U> void operator()(U & v) const { 
-                value = boost::lexical_cast<T, U>(v); 
-            }
-
-            void operator()(T & v) const { 
-                value = v; 
-            }
-
-            mutable T value;
-
-        };
     }
 
     class mcparamvalue : public detail::mcparamvalue_base {
@@ -71,12 +57,18 @@ namespace alps {
 
             mcparamvalue(mcparamvalue const & v): detail::mcparamvalue_base(static_cast<detail::mcparamvalue_base const &>(v)) {}
 
-            template <typename T> typename boost::enable_if<typename boost::mpl::contains<detail::mcparamvalue_types, T>::type, mcparamvalue &>::type operator=(T const & v) {
+            template <typename T> typename boost::enable_if<
+                  typename boost::mpl::contains<detail::mcparamvalue_types, T>::type
+                , mcparamvalue &
+            >::type operator=(T const & v) {
                 detail::mcparamvalue_base::operator=(v);
                 return *this;
             }
 
-            template <typename T> typename boost::disable_if<typename boost::mpl::contains<detail::mcparamvalue_types, T>::type, mcparamvalue &>::type operator=(T const & v) {
+            template <typename T> typename boost::disable_if<
+                  typename boost::mpl::contains<detail::mcparamvalue_types, T>::type
+                , mcparamvalue &
+            >::type operator=(T const & v) {
                 detail::mcparamvalue_base::operator=(boost::lexical_cast<std::string>(v));
                 return *this;
             }
