@@ -65,7 +65,7 @@ namespace alps {
             ) {                                                                                                                                                 \
                 std::vector<std::string> children = ar.list_children(path);                                                                                     \
                 for (typename std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)                                       \
-                    load(ar, path + "/" + *it, value[convert<std::size_t>(*it)]);                                                                               \
+                    load(ar, path + "/" + *it, value[convert<K>(*it)]);                                                                               \
             }
         ALPS_NGS_HDF5_MAP_LOAD(archive)
         #ifdef ALPS_HDF5_HAVE_DEPRECATED
