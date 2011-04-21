@@ -111,6 +111,23 @@ try {
 
   boost::filesystem::remove(boost::filesystem::path("Observableset.dump",boost::filesystem::native));
 
+  // test for signed observable with custom sign name
+  measurement.clear();
+
+  //DEFINE OBSERVABLES
+  //------------------
+  measurement << alps::RealObservable("My Sign");
+  measurement << alps::SignedObservable<alps::RealObservable>("Observable a", "My Sign");
+
+  //ADD MEASUREMENTS TO THE OBSERVABLES
+  //-----------------------------------
+  for(uint32_t i = 0; i < number_of_steps; ++i){
+    double sign = (random() < 0.4 ? -1. : 1.);
+    measurement["My Sign"] << sign;
+    measurement["Observable a"] << sign*random();
+  }
+  measurement.write_xml(oxs);
+
 #ifndef BOOST_NO_EXCEPTIONS
 }
 catch (std::exception& exc) {
