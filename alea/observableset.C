@@ -227,10 +227,10 @@ void ObservableSet::addObservable(Observable* obs)
   if(obs->is_signed())
   {
     signs_.insert(std::make_pair(obs->sign_name(),obs->name()));
-
+    
     // set sign if possible
     if(has(obs->sign_name()))
-      obs->set_sign((*this)[obs->sign_name()]);
+      base_type::operator[](obs->name())->set_sign((*this)[obs->sign_name()]);
   }
 
   // set where this is sign
@@ -242,7 +242,8 @@ void ObservableSet::addObservable(Observable* obs)
 
 void ObservableSet::addObservable(const Observable& obs)
 {
-  addObservable(obs.clone());
+  Observable* p = obs.clone();
+  addObservable(p);
 }
 
 void ObservableSet::removeObservable(const std::string& name)

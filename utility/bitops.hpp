@@ -124,7 +124,7 @@ inline long popcnt(uint64_t x)
 /// \param p the position of the bit to be tested
 /// \return true if the p-th bit of i is set, false otherwise
 template <class T, class U>
-inline bool btest(T i, U p) { return gbit(i, p) == 1; }
+inline bool btest(T i, U p) { return i & (1<<p); }
 
 /// brief extract a bit from an integer
 /// \param i the integer from which a bit will be extracted

@@ -35,6 +35,7 @@
 #include <alps/type_traits/average_type.hpp>
 #include <alps/numeric/round.hpp>
 #include <alps/numeric/is_nonzero.hpp>
+#include <typeinfo>
 
 namespace alps {
 
@@ -70,18 +71,21 @@ public:
 
   AbstractSignedObservable(const OBS& obs, const std::string& s="Sign")
     : base_type(obs), obs_(obs), sign_name_(s), sign_(0)
-  {  obs_.rename(s + " * "+super_type::name()); }
+  {  obs_.rename(s + " * "+super_type::name());}
 
   AbstractSignedObservable(const std::string& name="", const std::string& s="Sign", const label_type& l=label_type())
-   : base_type(name,l), obs_(s +" * "+name), sign_name_(s), sign_(0) {}
+  : base_type(name,l), obs_(s +" * "+name), sign_name_(s), sign_(0) {}
+
+  AbstractSignedObservable(const std::string& name, const char* s, const label_type& l=label_type())
+  : base_type(name,l), obs_(std::string(s) +" * "+name), sign_name_(s), sign_(0) {}
 
   template <class OBS2>
   AbstractSignedObservable(const AbstractSignedObservable<OBS2,SIGN>& o)
-   : base_type(o.name(),o.label()), obs_(o.obs_), sign_name_(o.sign_name_), sign_(o.sign_) {}
+  : base_type(o.name(),o.label()), obs_(o.obs_), sign_name_(o.sign_name_), sign_(o.sign_) {}
 
   template <class ARG>
   AbstractSignedObservable(const std::string& name,const ARG& arg, const label_type& l=label_type())
-   : base_type(name,l), obs_("Sign * "+name,arg), sign_name_("Sign"), sign_(0) {}
+  : base_type(name,l), obs_("Sign * "+name,arg), sign_name_("Sign"), sign_(0) {}
 
   template <class ARG>
   AbstractSignedObservable(const std::string& name,std::string& s, const ARG& arg, const label_type& l=label_type())
@@ -144,7 +148,7 @@ public:
   void save(hdf5::archive &) const;
   void load(hdf5::archive &);
 
-  Observable* clone() const {return new AbstractSignedObservable<OBS,SIGN>(*this);}
+  Observable* clone() const { return new AbstractSignedObservable<OBS,SIGN>(*this);}
 
   bool is_signed() const { return true;}
   void set_sign_name(const std::string& signname) {sign_name_=signname;}
@@ -173,6 +177,7 @@ protected:
 };
 
 
+  class A {};
 //=======================================================================
 // SignedObservable
 //
@@ -198,16 +203,18 @@ public:
 
   SignedObservable(const OBS& obs, const std::string& s="Sign") : base_type(obs,s) {}
   SignedObservable(const std::string& name="", const std::string& s="Sign", const label_type& l=label_type())
-   : base_type(name,s,l) {}
+  : base_type(name,s,l) {}
+  SignedObservable(const std::string& name, const char * s, const label_type& l=label_type())
+  : base_type(name,s,l) {}
   template <class ARG>
   SignedObservable(const std::string& name,const ARG& arg, const label_type& l=label_type())
-   : base_type(name,arg,l) {}
+  : base_type(name,arg,l) {}
   template <class ARG>
   SignedObservable(const std::string& name,std::string& s, const ARG& arg, const label_type& l=label_type())
-   : base_type(name,s,arg,l) {}
+  : base_type(name,s,arg,l) {}
   ~SignedObservable() {}
 
-  Observable* clone() const {return new SignedObservable<OBS,SIGN>(*this);}
+  Observable* clone() const { return new SignedObservable<OBS,SIGN>(*this);}
 
   void operator<<(const value_type& x) { super_type::obs_ << x;}
   void add(const value_type& x) { operator<<(x);}
