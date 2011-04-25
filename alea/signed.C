@@ -117,14 +117,14 @@ try {
   //DEFINE OBSERVABLES
   //------------------
   measurement << alps::RealObservable("My Sign");
-  measurement << alps::SignedObservable<alps::RealObservable>("Observable a", "My Sign");
+  measurement << alps::SignedObservable<alps::RealObservable>("Observable c", "My Sign");
 
   //ADD MEASUREMENTS TO THE OBSERVABLES
   //-----------------------------------
   for(uint32_t i = 0; i < number_of_steps; ++i){
     double sign = (random() < 0.4 ? -1. : 1.);
     measurement["My Sign"] << sign;
-    measurement["Observable a"] << sign*random();
+    measurement["Observable c"] << sign*random();
   }
   measurement.write_xml(oxs);
 
