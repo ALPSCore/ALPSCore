@@ -62,10 +62,10 @@ namespace alps {
             void output(std::ostream & os) const;
 
             // DO NOT USE! use set << ngs::RealObservable(name);
-            void create_RealObservable(std::string const & name, uint32_t binnum=0);
+            void create_RealObservable(std::string const & name, uint32_t binnum = 0);
 
             // DO NOT USE! use set << ngs::RealVectorObservable(name);
-            void create_RealVectorObservable(std::string const & name, uint32_t binnum=0);
+            void create_RealVectorObservable(std::string const & name, uint32_t binnum = 0);
 
             // DO NOT USE! use set << ngs::SimpleRealObservable(name);
             void create_SimpleRealObservable(std::string const & name);
@@ -74,10 +74,10 @@ namespace alps {
             void create_SimpleRealVectorObservable(std::string const & name);
 
             // DO NOT USE! use set << ngs::SignedRealObservable(name, sign);
-            void create_SignedRealObservable(std::string const & name, std::string sign = "Sign");
+            void create_SignedRealObservable(std::string const & name, std::string sign = "Sign", uint32_t binnum = 0);
 
             // DO NOT USE! use set << ngs::SignedRealVectorObservable(name, sign);
-            void create_SignedRealVectorObservable(std::string const & name, std::string sign = "Sign");
+            void create_SignedRealVectorObservable(std::string const & name, std::string sign = "Sign", uint32_t binnum = 0);
 
             // DO NOT USE! use set << ngs::SignedSimpleRealObservable(name, sign);
             void create_SignedSimpleRealObservable(std::string const & name, std::string sign = "Sign");

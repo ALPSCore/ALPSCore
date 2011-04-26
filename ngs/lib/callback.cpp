@@ -33,11 +33,11 @@
 
 namespace alps {
 
-	bool basic_stop_callback(int time_limit) {
-		static alps::mcsignal signal;
-		static boost::posix_time::ptime start_time = boost::posix_time::second_clock::local_time();
-		return !signal.empty() 
-			|| (time_limit > 0 && boost::posix_time::second_clock::local_time() > start_time + boost::posix_time::seconds(time_limit));
-	}
+    bool basic_stop_callback(int time_limit) {
+        static alps::mcsignal signal;
+        static boost::posix_time::ptime start_time = boost::posix_time::second_clock::local_time();
+        return !signal.empty() 
+            || (time_limit > 0 && boost::posix_time::second_clock::local_time() > start_time + boost::posix_time::seconds(time_limit));
+    }
 
 }

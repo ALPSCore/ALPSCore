@@ -52,12 +52,12 @@ namespace alps {
         }
 
         alps::mcobservables & operator<< (alps::mcobservables & set, RealObservable const & obs) {
-            set.create_RealObservable(obs.getName(),obs.getBinnum());
+            set.create_RealObservable(obs.getName(), obs.getBinnum());
             return set;
         }
 
         alps::mcobservables & operator<< (alps::mcobservables & set, RealVectorObservable const & obs) {
-            set.create_RealVectorObservable(obs.getName(),obs.getBinnum());
+            set.create_RealVectorObservable(obs.getName(), obs.getBinnum());
             return set;
         }
 
@@ -72,22 +72,22 @@ namespace alps {
         }
 
         alps::mcobservables & operator<< (alps::mcobservables & set, SignedRealObservable const & obs) {
-            set.create_SignedRealObservable(obs.getName(), obs.getSign());
+            set.create_SignedRealObservable(obs.getName(), obs.getSign(), obs.getBinnum());
             return set;
         }
 
         alps::mcobservables & operator<< (alps::mcobservables & set, SignedRealVectorObservable const & obs) {
-            set.create_SignedRealObservable(obs.getName(), obs.getSign());
+            set.create_SignedRealVectorObservable(obs.getName(), obs.getSign(), obs.getBinnum());
             return set;
         }
 
         alps::mcobservables & operator<< (alps::mcobservables & set, SignedSimpleRealObservable const & obs) {
-            set.create_SignedRealObservable(obs.getName(), obs.getSign());
+            set.create_SignedSimpleRealObservable(obs.getName(), obs.getSign());
             return set;
         }
 
         alps::mcobservables & operator<< (alps::mcobservables & set, SignedSimpleRealVectorObservable const & obs) {
-            set.create_SignedRealObservable(obs.getName(), obs.getSign());
+            set.create_SignedSimpleRealVectorObservable(obs.getName(), obs.getSign());
             return set;
         }
 

@@ -41,25 +41,25 @@ namespace alps {
             class ObservableWapper {
                 public:
 
-                    ObservableWapper(std::string const & name, uint32_t binnum=0): _name(name), _binnum(binnum) {}
+                    ObservableWapper(std::string const & name, uint32_t binnum = 0): _name(name), _binnum(binnum) {}
                     std::string getName() const;
                     uint32_t getBinnum() const;
 
-                private:
+                protected:
+
                     std::string _name;
                     uint32_t _binnum;
             };
 
 
-            class SignedObservableWapper {
+            class SignedObservableWapper : public ObservableWapper {
                 public:
 
-                    SignedObservableWapper(std::string const & name, std::string const & sign): _name(name), _sign(sign) {}
-                    std::string getName() const;
+                    SignedObservableWapper(std::string const & name, std::string const & sign, uint32_t binnum = 0): ObservableWapper(name, binnum), _sign(sign) {}
                     std::string getSign() const;
 
                 private:
-                    std::string _name;
+
                     std::string _sign;
             };
 
@@ -67,14 +67,14 @@ namespace alps {
 
         class RealObservable : public detail::ObservableWapper {
             public:
-                RealObservable(std::string const & name, uint32_t binnum=0): ObservableWapper(name,binnum) {}
+                RealObservable(std::string const & name, uint32_t binnum = 0): ObservableWapper(name,binnum) {}
         };
 
         alps::mcobservables & operator<< (alps::mcobservables & set, RealObservable const & obs);
 
         class RealVectorObservable : public detail::ObservableWapper {
             public:
-                RealVectorObservable(std::string const & name, uint32_t binnum=0): ObservableWapper(name,binnum) {}
+                RealVectorObservable(std::string const & name, uint32_t binnum = 0): ObservableWapper(name,binnum) {}
         };
 
         alps::mcobservables & operator<< (alps::mcobservables & set, RealVectorObservable const & obs);
@@ -95,14 +95,14 @@ namespace alps {
 
         class SignedRealObservable : public detail::SignedObservableWapper {
             public:
-                SignedRealObservable(std::string const & name, std::string const & sign = "Sign"): SignedObservableWapper(name, sign) {}
+                SignedRealObservable(std::string const & name, std::string const & sign = "Sign", uint32_t binnum = 0): SignedObservableWapper(name, sign, binnum) {}
         };
 
         alps::mcobservables & operator<< (alps::mcobservables & set, SignedRealObservable const & obs);
 
         class SignedRealVectorObservable : public detail::SignedObservableWapper {
             public:
-                SignedRealVectorObservable(std::string const & name, std::string const & sign = "Sign"): SignedObservableWapper(name, sign) {}
+                SignedRealVectorObservable(std::string const & name, std::string const & sign = "Sign", uint32_t binnum = 0): SignedObservableWapper(name, sign, binnum) {}
         };
 
         alps::mcobservables & operator<< (alps::mcobservables & set, SignedRealVectorObservable const & obs);

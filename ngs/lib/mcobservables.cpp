@@ -110,13 +110,13 @@ namespace alps {
         insert(name, boost::make_shared<SimpleRealVectorObservable>(name).get());
     }
 
-    void mcobservables::create_SignedRealObservable(std::string const & name, std::string sign) {
-        insert(name, boost::make_shared<SignedObservable<RealObservable> >(name).get());
+    void mcobservables::create_SignedRealObservable(std::string const & name, std::string sign, uint32_t binnum) {
+        insert(name, boost::make_shared<SignedObservable<RealObservable> >(name, binnum).get());
         operator[](name).get_impl()->set_sign(*(operator[](sign).get_impl()));
     }
 
-    void mcobservables::create_SignedRealVectorObservable(std::string const & name, std::string sign) {
-        insert(name, boost::make_shared<SignedObservable<RealVectorObservable> >(name).get());
+    void mcobservables::create_SignedRealVectorObservable(std::string const & name, std::string sign, uint32_t binnum) {
+        insert(name, boost::make_shared<SignedObservable<RealVectorObservable> >(name, binnum).get());
         operator[](name).get_impl()->set_sign(*(operator[](sign).get_impl()));
     }
 
