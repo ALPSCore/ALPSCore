@@ -66,7 +66,7 @@
 #include <numeric>
 #include <iostream>
 
-#ifdef ALPS_HAVE_PYTHON
+#if defined(ALPS_HAVE_PYTHON) && ALPS_HAVE_PYTHON == 1
 
     #include <boost/python.hpp>
 
@@ -163,10 +163,10 @@ namespace alps {
                     , cannot_rebin_(false)
                 {}
 
-                #ifdef ALPS_HAVE_PYTHON
+#if defined(ALPS_HAVE_PYTHON) && ALPS_HAVE_PYTHON == 1
                     mcdata(boost::python::object const & mean);
                     mcdata(boost::python::object const & mean, boost::python::object const & error);
-                #endif
+#endif
 
                 template <typename X, typename S> mcdata(mcdata<X> const & rhs, S s)
                   : count_(rhs.count_)
