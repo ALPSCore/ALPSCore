@@ -41,10 +41,6 @@ namespace alps {
                 return _binnum;
             }
 
-            std::string SignedObservableWapper::getName() const {
-                return _name;
-            }
-            
             std::string SignedObservableWapper::getSign() const {
                 return _sign;
             }
