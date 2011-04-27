@@ -30,8 +30,6 @@
 
 #include <alps/alea/observable.h>
 
-#include <alps/hdf5.hpp>
-
 namespace alps {
 
 Observable::~Observable() {}
@@ -88,8 +86,9 @@ void Observable::save(ODump& dump) const
 
 #endif // !ALPS_WITHOUT_OSIRIS
 
-void Observable::save(hdf5::archive & ar) const {};
-void Observable::load(hdf5::archive &) {};
+void Observable::save(hdf5::archive &) const {}
+
+void Observable::load(hdf5::archive &) {}
 
 bool Observable::is_signed() const
 { return false;        }

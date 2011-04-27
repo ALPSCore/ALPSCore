@@ -36,6 +36,8 @@
 
 namespace alps {
 
+    Parameters make_alps_parameters(mcparams const & arg);
+
     class mcdeprecated : public mcbase {
 
         public:
@@ -54,7 +56,6 @@ namespace alps {
 
             virtual void do_measurements();
 
-            static Parameters make_alps_parameters(parameters_type const & s);
         protected:
 
             Parameters parms;

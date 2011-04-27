@@ -208,8 +208,7 @@ template<
       graph_vertex_properties_ = graph_vertex_properties;
       subgraph_edge_properties_ = subgraph_edge_properties;
       graph_edge_properties_ = graph_edge_properties;
-      vertex_it_ = vertices(*graph_).first;
-      vertex_end_ = vertices(*graph_).second;
+      boost::tie(vertex_it_, vertex_end_) = vertices(*graph_);
       if (vertex_it_ != vertex_end_) {
         initialize(*(vertices(subgraph).first), *vertex_it_);
         has_canonical_order();

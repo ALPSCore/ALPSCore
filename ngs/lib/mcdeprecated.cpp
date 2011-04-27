@@ -29,6 +29,14 @@
 
 namespace alps {
 
+    Parameters make_alps_parameters(mcparams const & arg) {
+        Parameters params;
+        for (mcparams::const_iterator it = arg.begin(); it != arg.end(); ++it)
+            params.push_back(it->first, it->second.str());
+        return params;
+    }
+
+
     mcdeprecated::mcdeprecated(parameters_type const & p, std::size_t seed_offset)
         : mcbase(p, seed_offset)
         , parms(make_alps_parameters(p))
@@ -50,13 +58,5 @@ namespace alps {
     }
 
     void mcdeprecated::do_measurements() {}
-
-    Parameters mcdeprecated::make_alps_parameters(parameters_type const & s) {
-        Parameters p;
-        for (parameters_type::const_iterator it = s.begin(); it != s.end(); ++it)
-// TODO: why does static_cast<std::string>(it->second) not work?
-            p.push_back(it->first, it->second.operator std::string());
-        return p;
-    }
 
 }
