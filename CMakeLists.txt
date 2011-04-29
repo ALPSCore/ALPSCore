@@ -6,7 +6,7 @@
 add_subdirectory(alea)
 add_subdirectory(fixed_capacity)
 add_subdirectory(lattice)
-#add_subdirectory(graph)
+add_subdirectory(graph)
 add_subdirectory(hdf5)
 add_subdirectory(model)
 if (ALPS_BUILD_NGS)

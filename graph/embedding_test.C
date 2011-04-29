@@ -98,7 +98,7 @@ void embedding_test1()
     add_edge(2,4,g);
 
     print(std::cout,g);
-/*
+
     std::cout<<"------------"<<std::endl;
 
     graph_type ha;
@@ -118,14 +118,14 @@ void embedding_test1()
     add_edge(2,3,hc);
     
     print_embedding(hc,g);
-*/
+
     graph_type hd;
     add_edge(0,1,hd);
     add_edge(1,2,hd);
     add_edge(1,3,hd);
     
     print_embedding(hd,g);
-    /*
+
     graph_type he;
     add_edge(0,1,he);
     add_edge(1,2,he);
@@ -157,7 +157,6 @@ void embedding_test1()
     add_edge(2,3,hi);
     
     print_embedding(hi,g);
-    */
 }
 
 void embedding_test2()
@@ -211,7 +210,7 @@ void embedding_test2()
 int main()
 {
     embedding_test1();
-//    embedding_test2();
+    embedding_test2();
     return 0;
 }
 
