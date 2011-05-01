@@ -79,7 +79,7 @@ public:
   GlobalOperator get_global_operator(const std::string& name) const { return model_library_.get_global_operator(name,parms_);}
   
   template <class OP>
-  void substitute_operators(OP& op, const Parameters& p) { op.substitute_operators(model_library_,p);}
+  void substitute_operators(OP& op, const Parameters& p) const { op.substitute_operators(model_library_,p);}
 private:
    ModelLibrary model_library_;
    HamiltonianDescriptor<I> model_;
