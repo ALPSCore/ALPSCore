@@ -40,7 +40,7 @@ void alps::print_copyright(std::ostream& out) {
   out << "  Consult the web page for license details.\n";
   out << "  For details see the publications: \n"
       << "  A.F. Albuquerque et al., J. of Magn. and Magn. Materials 310, 1187 (2007).\n"
-      << "  B. Bauer et al., arXiv: arXiv:1101.2646, submitted to JSTAT.\n\n";
+      << "  B. Bauer et al., J. Stat. Mech. (2011) P05001.\n\n";
 }
 
 void alps::print_license(std::ostream& out) {
