@@ -250,10 +250,17 @@ clone_mpi::clone_mpi(boost::mpi::communicator const& ctrl,
     worker_ = alps::parapack::parallel_worker_factory::make_worker(work_, params_);
   else
     worker_ = alps::parapack::worker_factory::make_worker(params_);
-  if (is_new) worker_->init_observables(params_, measurements_);
   if (!is_new) {
-    this->load();
+    if (boost::filesystem::exists(complete(boost::filesystem::path(info_.dumpfile()), basedir_)) &&
+        boost::filesystem::exists(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_))) {
+      this->load();
+    } else {
+      std::cerr << logger::header() << "warning: dump file not found. Restarting "
+                << logger::clone(task_id_, clone_id_) << std::endl;
+      is_new = true;
+    }
   }
+  if (is_new) worker_->init_observables(params_, measurements_);
 
   if (is_new && worker_->is_thermalized()) { // no thermalization steps
     BOOST_FOREACH(alps::ObservableSet& m, measurements_) { m.reset(true); }
