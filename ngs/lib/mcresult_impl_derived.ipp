@@ -364,11 +364,12 @@ namespace alps {
                             boost::mpi::reduce(communicator, alea::mcdata<T>::tau() * static_cast<double>(count()), global_tau, std::plus<double>(), 0);
                             global_tau_opt = global_tau / static_cast<double>(global_count);
                         }
-                        std::vector<T> global_bins(alea::mcdata<T>::bin_number() > 0 ? binnumber : 0);
+                        std::vector<T> global_bins;
                         std::size_t binsize = 0;
                         if (alea::mcdata<T>::bin_number() > 0) {
                             std::vector<T> local_bins(binnumber);
                             binsize = partition_bins(local_bins, communicator);
+                            global_bins.resize(local_bins.size());
                             boost::mpi::reduce(communicator, local_bins, global_bins, std::plus<T>(), 0);
                         }
                         return new mcresult_impl_derived<B, T>(
@@ -407,11 +408,13 @@ namespace alps {
                             boost::mpi::reduce(communicator, alea::mcdata<T>::tau() * static_cast<double>(count()), global_tau, std::plus<double>(), 0);
                             global_tau_opt = global_tau / static_cast<double>(global_count);
                         }
-                        std::vector<T> global_bins(alea::mcdata<T>::bin_number() > 0 ? binnumber : 0);
+                        std::vector<T> global_bins;
                         std::size_t binsize = 0, elementsize = alea::mcdata<T>::mean().size();
                         if (alea::mcdata<T>::bin_number() > 0) {
                             std::vector<T> local_bins(binnumber, T(elementsize));
                             binsize = partition_bins(local_bins, communicator);
+                            binnumber = local_bins.size(); // partition_bins() may reduce binnumber
+                            global_bins.resize(binnumber);
                             std::vector<double> local_raw_bins(binnumber * elementsize), global_raw_bins(binnumber * elementsize);
                             for (typename std::vector<T>::iterator it = local_bins.begin(); it != local_bins.end(); ++it)
                                 std::copy(it->begin(), it->end(), local_raw_bins.begin() + ((it - local_bins.begin()) * elementsize));
@@ -472,6 +475,7 @@ namespace alps {
                         if (alea::mcdata<T>::bin_number() > 0) {
                             std::vector<T> local_bins(binnumber, T(elementsize));
                             partition_bins(local_bins, communicator);
+                            binnumber = local_bins.size(); // partition_bins() may reduce binnumber
                             std::vector<double> local_raw_bins(binnumber * elementsize);
                             for (typename std::vector<T>::iterator it = local_bins.begin(); it != local_bins.end(); ++it)
                                 std::copy(it->begin(), it->end(), local_raw_bins.begin() + ((it - local_bins.begin()) * elementsize));
@@ -487,9 +491,10 @@ namespace alps {
                         boost::mpi::all_gather(communicator, data, 2, buffer);
                         for (std::vector<int>::const_iterator it = buffer.begin(); it != buffer.end(); it += 2)
                             index[*it] = *(it + 1);
-                        int perbin = std::accumulate(index.begin(), index.end(), 0) / bins.size();
-                        if (perbin == 0)
-                            ALPS_NGS_THROW_RUNTIME_ERROR("not enough data for the required binnumber");
+                        int total_bins = std::accumulate(index.begin(), index.end(), 0);
+                        if (total_bins < bins.size()) // limit binnumber to number of available bins
+                            bins.resize(total_bins);
+                        int perbin = total_bins / bins.size();
                         int start = std::accumulate(index.begin(), index.begin() + communicator.rank(), 0);
                         for (int i = start / perbin, j = start % perbin, k = 0; i < bins.size() && k < alea::mcdata<T>::bin_number(); ++k) {
                             bins[i] = bins[i] + alea::mcdata<T>::bins()[k];
