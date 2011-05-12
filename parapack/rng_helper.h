@@ -39,26 +39,7 @@ namespace alps {
 
 class rng_helper {
 public:
-  rng_helper(const Parameters& p) {
-#ifdef ALPS_ENABLE_OPENMP_WORKER
-    int nr = max_threads();
-    engines_.resize(nr);
-    generators_.resize(nr);
-    #pragma omp parallel
-    {
-      int r = thread_id();
-      engines_[r].reset(rng_factory.create(p.value_or_default("RNG", "mt19937")));
-      generators_[r].reset(new generator_type(*engines_[r], boost::uniform_real<>()));
-    }
-#else
-    engines_.resize(1);
-    generators_.resize(1);
-    engines_[0].reset(rng_factory.create(p.value_or_default("RNG", "mt19937")));
-    generators_[0].reset(new generator_type(*engines_[0], boost::uniform_real<>()));
-#endif
-    init(p);
-  }
-      
+  rng_helper(const Parameters& p);
   void init(const Parameters& p);
   void load(IDump& dp);
   void save(ODump& dp) const;
