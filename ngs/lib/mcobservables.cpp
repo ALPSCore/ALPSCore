@@ -89,6 +89,14 @@ namespace alps {
                 operator[](it->first).get_impl()->set_sign(*(operator[](it->second->sign_name()).get_impl()));
     }
 
+    void mcobservables::merge(mcobservables const & arg) {
+        for (std::map<std::string, mcobservable>::const_iterator it = arg.begin(); it != arg.end(); ++it)
+            if (has(it->first))
+                std::map<std::string, mcobservable>::find(it->first)->second.merge(it->second);
+            else
+                insert(it->first, it->second);
+    }
+
     void mcobservables::output(std::ostream & os) const {
         for(std::map<std::string, mcobservable>::const_iterator it = std::map<std::string, mcobservable>::begin(); it != std::map<std::string, mcobservable>::end(); ++it)
             std::cout << std::fixed << std::setprecision(5) << it->first << ": " << it->second << std::endl;

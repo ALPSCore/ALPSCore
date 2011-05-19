@@ -59,6 +59,8 @@ namespace alps {
 
             void load(hdf5::archive & ar);
 
+            void merge(mcobservables const &);
+
             void output(std::ostream & os) const;
 
             // DO NOT USE! use set << ngs::RealObservable(name);
