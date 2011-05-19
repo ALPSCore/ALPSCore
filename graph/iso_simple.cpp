@@ -85,9 +85,13 @@ int main() {
 		graph_label<graph_type>::type g_label;
 		partition_type<graph_type>::type g_orbit;
 		boost::tie(g_ordering, g_label, g_orbit) = canonical_properties(g);
-
+		
+		for (std::vector<boost::graph_traits<graph_type>::vertex_descriptor>::const_iterator it = g_ordering.begin(); it != g_ordering.end(); ++it)
+			std::cout << (it != g_ordering.begin() ? " " : "(") << *it;
+		std::cout << ")" << std::endl;
 		dump_partition(g_orbit);
-	
+		std::cout << g_label << std::endl;
+		
 	}
 	{
 		enum { A, B, C, D, N };
@@ -118,12 +122,18 @@ int main() {
 		boost::tie(g_ordering, g_label, g_orbit) = canonical_properties(g);
 		boost::tie(h_ordering, h_label, h_orbit) = canonical_properties(h);
 
+		for (std::vector<boost::graph_traits<graph_type>::vertex_descriptor>::const_iterator it = g_ordering.begin(); it != g_ordering.end(); ++it)
+			std::cout << (it != g_ordering.begin() ? " " : "(") << *it;
+		std::cout << ")" << std::endl;
+		for (std::vector<boost::graph_traits<graph_type>::vertex_descriptor>::const_iterator it = h_ordering.begin(); it != h_ordering.end(); ++it)
+			std::cout << (it != h_ordering.begin() ? " " : "(") << *it;
+		std::cout << ")" << std::endl;
+
 		dump_partition(g_orbit);
 		dump_partition(h_orbit);
 		
 		std::cout << g_label << std::endl;
 		std::cout << h_label << std::endl;
 	}
-
 	return EXIT_SUCCESS;	
 }
