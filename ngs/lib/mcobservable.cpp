@@ -91,6 +91,10 @@ namespace alps {
         impl_->save(ar);
     }
 
+    void mcobservable::merge(mcobservable const & obs) {
+        impl_->merge(*obs.get_impl());
+    }
+
     void mcobservable::output(std::ostream & os) const {
         os << *(impl_);
     }

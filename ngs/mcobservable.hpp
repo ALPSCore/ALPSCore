@@ -59,6 +59,8 @@ namespace alps {
             void save(hdf5::archive & ar) const;
             void load(hdf5::archive & ar);
 
+            void merge(mcobservable const &);
+
             void output(std::ostream & os) const;
 
         private:
