@@ -208,8 +208,7 @@ template<
       graph_vertex_properties_ = graph_vertex_properties;
       subgraph_edge_properties_ = subgraph_edge_properties;
       graph_edge_properties_ = graph_edge_properties;
-      boost::tie(vertex_it_, vertex_end_) = vertices(*graph_);
-      if (vertex_it_ != vertex_end_) {
+      for (boost::tie(vertex_it_, vertex_end_) = vertices(*graph_); closed_ && vertex_it_ != vertex_end_; ++vertex_it_) {
         initialize(*(vertices(subgraph).first), *vertex_it_);
         has_canonical_order();
       }
@@ -235,7 +234,7 @@ template<
               boost::is_same<graph_vertex_coloring_type, boost::no_property>::value
             , boost::is_same<graph_edge_coloring_type, boost::no_property>::value
           >::type
-      >::value)); 
+      >::value));
       fixed_graph_vertex_ = true;
       property_map_ = &property_map;
       subgraph_ = &subgraph;
@@ -250,6 +249,7 @@ template<
       subgraph_vertex_descriptor subgraph_vertex
       , graph_vertex_descriptor graph_vertex
     ) {
+	  trace_.clear();
       std::deque<search_node> stack;
       subgraph_adjacency_iterator sit, send, tend = adjacent_vertices(graph_vertex, *graph_).second;
       // create trace
@@ -305,7 +305,7 @@ template<
     }    
     void next_leaf(
       typename std::vector<search_node>::iterator & tit
-    ) {    
+    ) {
       subgraph_adjacency_iterator sit, send;
       while (tit != trace_.begin() && tit != trace_.end()) {
         do {

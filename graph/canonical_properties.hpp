@@ -75,36 +75,26 @@ namespace alps {
 			// Output: i, j; Vj shatters Vi and (i, j) is the minimum element of B under the lexicographic order
 			template<typename Graph> std::pair<std::size_t, std::size_t> shattering(
 				  typename partition_type<Graph>::type const & pi
-				, std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t> & I
+				, std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t> const & I
 				, Graph const & G
 			) {
 				using boost::make_tuple;
 				using std::make_pair;
 				// B = {(i, j): Vj shatters Vi}
-				std::vector<std::pair<std::size_t, std::size_t> > B;
 				for (typename partition_type<Graph>::type::const_iterator it = pi.begin(); it != pi.end(); ++it) {
 					std::vector<std::vector<std::size_t> > adjacent_numbers = std::vector<std::vector<std::size_t> >(pi.size(), std::vector<std::size_t>(it->size(), 0));
 					for (typename partition_type<Graph>::type::value_type::const_iterator jt = it->begin(); jt != it->end(); ++jt) {
 						typename boost::graph_traits<Graph>::adjacency_iterator ai, ae;
 						for (tie(ai, ae) = adjacent_vertices(*jt, G); ai != ae; ++ai)
-							++adjacent_numbers[I[*ai]][jt - it->begin()];
+							++adjacent_numbers[I.find(*ai)->second][jt - it->begin()];
 					}
 					for (std::vector<std::vector<std::size_t> >::const_iterator jt = adjacent_numbers.begin(); jt != adjacent_numbers.end(); ++jt)
 						if (!std::equal(jt->begin(), jt->end(), std::vector<std::size_t>(jt->size(), jt->front()).begin()))
-							B.push_back(make_pair(it - pi.begin(), jt - adjacent_numbers.begin()));
+							// Return the minimum element of B under the lexicographic order
+							return make_pair(it - pi.begin(), jt - adjacent_numbers.begin());
 				}
-				if (!B.size())
-					// no shattering found
-					return std::make_pair(pi.size(), 0);
-				// Let b = (i, j) be the minimum element of B under the lexicographic order
-				std::pair<std::size_t, std::size_t> b = B.front();
-				for (std::vector<std::pair<std::size_t, std::size_t> >::const_iterator it = B.begin(); it != B.end(); ++it)
-					if (
-						   pi[it->first][0] < pi[b.first][0]
-						|| (pi[it->first][0] == pi[b.first][0] && pi[it->second][0] < pi[b.second][0])
-					)
-						b = *it;
-				return b;
+				// no shattering found
+				return std::make_pair(pi.size(), 0);
 			}
 			
 			// Input: pi = (V1, V2, ..., Vr)
@@ -190,7 +180,7 @@ namespace alps {
 				// To reduce the branching factor, McKay actually chooses the ﬁrst smallest part of pi. The
 				// method of choosing the part for splitting pi is irrelevant as long as it is an isomorphism invariant
 				// of unordered partitions. That is to say, that if the i-th part of pi is chosen, then also the i-th part
-				// of π^ny is chosen for any nu element of Sigma_n.
+				// of pi^ny is chosen for any nu element of Sigma_n.
 				std::size_t n = num_vertices(G) + 1;
 				i = 0;
 				for (typename partition_type<Graph>::type::iterator it = pi.begin(); it != pi.end(); ++it)
@@ -198,13 +188,6 @@ namespace alps {
 						n = it->size();
 						i = it - pi.begin();
 					}
-					
-									
-					
-					
-					
-
-					
 				if (n < num_vertices(G) + 1) {
 					T.push_back(make_tuple(typename partition_type<Graph>::type(), i, 0));
 					terminal_node(T, G);
@@ -277,7 +260,7 @@ namespace alps {
 			using boost::get;
 			using boost::make_tuple;
 			typename partition_type<Graph>::type pi, orbit, canonical_partition, first_partition;
-			typename graph_label<Graph>::type canonical_label, first_label, next_label;
+			typename graph_label<Graph>::type canonical_label, first_label, current_label;
 			std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t> Io;
 			// Build inital partition pi.
 			// pi = (V1, V2, ..., Vr), Vi = (n1, n2, ..., nk), ni element of G
@@ -302,13 +285,24 @@ namespace alps {
 			// Initialize partitions and labels
 			first_partition = canonical_partition = get<0>(T.back());
 			detail::graph_label(canonical_label, canonical_partition, G);
-			first_label = next_label = canonical_label;
+			first_label = current_label = canonical_label;
 			while(true) {
 				// Find next node in the search tree T(G). The last node is always a leaf.
 				while(T.size() > 1)
 					if (get<2>(T.back()) + 1 < get<0>(*(T.rbegin() + 1))[get<1>(T.back())].size()) {
 						++get<2>(T.back());
-						break;
+						// Prune the search tree: if we have already visited a branch strating at an element in the 
+						// same part of the orbit, skip the current element
+						typename partition_type<Graph>::type::value_type & part = get<0>(*(T.rbegin() + 1))[get<1>(T.back())];
+						bool visited = false;
+						for (
+							typename partition_type<Graph>::type::value_type::const_iterator it = part.begin(); 
+							it != part.begin() + get<2>(T.back()); 
+							++it
+						)
+							visited = visited || (Io[*it] == Io[part[get<2>(T.back())]]);
+						if (!visited)
+							break;
 					} else
 						T.pop_back();
 				get<0>(T.back()).clear();
@@ -316,16 +310,17 @@ namespace alps {
 				if (T.size() == 1)
 					break;
 				detail::terminal_node(T, G);
-				detail::graph_label(next_label, get<0>(T.back()), G);
-				// Cl = min{ Gl: Gl graph label of G }
-				if (canonical_label > next_label) {
-					canonical_partition = get<0>(T.back());
-					canonical_label = next_label;
+				detail::graph_label(current_label, get<0>(T.back()), G);
 				// If two labels are the same, coarse orbit
-				} else if(first_label == next_label)
+				if(first_label == current_label)
 					detail::coarse_orbit(orbit, Io, first_partition, get<0>(T.back()), G);
-				else if(canonical_label == next_label)
+				else if(canonical_label == current_label)
 					detail::coarse_orbit(orbit, Io, canonical_partition, get<0>(T.back()), G);
+				// Cl = min{ Gl: Gl graph label of G }
+				if (canonical_label > current_label) {
+					canonical_partition = get<0>(T.back());
+					canonical_label = current_label;
+				}
 			}
 			std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> canonical_ordering;
 			for (typename partition_type<Graph>::type::const_iterator it = canonical_partition.begin(); it != canonical_partition.end(); ++it)
