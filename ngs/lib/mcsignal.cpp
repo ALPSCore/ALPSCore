@@ -29,8 +29,9 @@
 #include <alps/ngs/stacktrace.hpp>
 
 #include <cstring>
-#include <iostream>
 #include <sstream>
+#include <cstdlib>
+#include <iostream>
 #include <signal.h>
 
 namespace alps {
@@ -83,6 +84,7 @@ namespace alps {
         stacktrace(buffer);
         std::cerr << buffer.str();
         signals_.push_back(signal);
+        std::abort();
     }
 
     std::vector<int> mcsignal::signals_;

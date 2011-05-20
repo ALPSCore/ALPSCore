@@ -25,58 +25,41 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_MCTHREADEDSIM_HPP
-#define ALPS_NGS_MCTHREADEDSIM_HPP
-
-#include <alps/ngs/mcatomic.hpp>
+#ifndef ALPS_NGS_MCATOMIC_HPP
+#define ALPS_NGS_MCATOMIC_HPP
 
 #ifndef ALPS_NGS_SINGLE_THREAD
     #include <boost/thread.hpp>
+    #include <boost/thread/mutex.hpp>
 #endif
 
 namespace alps {
 
     #ifndef ALPS_NGS_SINGLE_THREAD
 
-        template<typename Impl> class mcthreadedsim : public Impl {
+        template<typename T> class mcatomic {
             public:
-                mcthreadedsim(typename parameters_type<Impl>::type const & p, std::size_t seed_offset = 0)
-                    : Impl(p, seed_offset)
-                    , stop_flag(false)
-                {}
 
-                bool run(boost::function<bool ()> const & stop_callback) {
-                    boost::thread thread(boost::bind<bool>(&Impl::run, static_cast<Impl *>(this), &mcthreadedsim<Impl>::dummy_callback));
-                    checker(stop_callback);
-                    thread.join();
-                    return !stop_callback();
+                mcatomic() {}
+                mcatomic(T const & v): value(v) {}
+                mcatomic(mcatomic<T> const & v): value(v.value) {}
+
+                mcatomic<T> & operator=(T const & v) {
+                    boost::lock_guard<boost::mutex> lock(mutex);
+                    value = v;
                 }
 
-            protected:
-
-                virtual bool complete_callback(boost::function<bool ()> const &) {
-                    return stop_flag;
+                operator T() const {
+                    boost::lock_guard<boost::mutex> lock(mutex);
+                    return value;
                 }
-
-                virtual void checker(boost::function<bool ()> const & stop_callback) {
-                    while (true) {
-                        usleep(0.1 * 1e6);
-                        // TODO: why does this produces a segfault?
-                        // if (stop_flag = Impl::complete_callback(stop_callback))
-                        stop_flag = Impl::complete_callback(stop_callback);
-                        if (stop_flag)
-                            return;
-                    }
-                }
-
-                mcatomic<bool> stop_flag;
-                // boost::mutex mutex;
-                // measurements and configuration need to be locked separately
 
             private:
 
-                static bool dummy_callback() { return false; }
+                T volatile value;
+                boost::mutex mutable mutex;
         };
+
     #endif
 }
 

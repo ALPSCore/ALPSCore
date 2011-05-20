@@ -210,7 +210,7 @@ namespace detail {
       ) {
         typename base::out_edge_iterator_type it1, it2, end1, end2;
         boost::tie(it1, end1) = boost::out_edges(T1, *this);
-        boost::tie(it2, end2) = boost::out_edges(T1, *this);
+        boost::tie(it2, end2) = boost::out_edges(T2, *this);
         for (; it1 != end1 && it2 != end2; ++it1, ++it2)
           if (boost::get(*edge_properties_, *it2) < boost::get(*edge_properties_, *it1))
             return false;
