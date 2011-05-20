@@ -113,8 +113,10 @@ clone::clone(tid_t tid, cid_t cid, Parameters const& params, boost::filesystem::
 
   worker_ = parapack::worker_factory::make_worker(params_);
   if (!is_new) {
-    if (boost::filesystem::exists(complete(boost::filesystem::path(info_.dumpfile()), basedir_)) &&
-        boost::filesystem::exists(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_))) {
+    bool exists = 
+      boost::filesystem::exists(complete(boost::filesystem::path(info_.dumpfile()), basedir_)) &&
+      boost::filesystem::exists(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_));
+    if (exists) {
       this->load();
     } else {
       std::cerr << logger::header() << "warning: dump file not found. Restarting "
@@ -251,12 +253,17 @@ clone_mpi::clone_mpi(boost::mpi::communicator const& ctrl,
   else
     worker_ = alps::parapack::worker_factory::make_worker(params_);
   if (!is_new) {
-    if (boost::filesystem::exists(complete(boost::filesystem::path(info_.dumpfile()), basedir_)) &&
-        boost::filesystem::exists(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_))) {
+    bool exists = 
+      boost::filesystem::exists(complete(boost::filesystem::path(info_.dumpfile()), basedir_)) &&
+      boost::filesystem::exists(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_));
+    exists = boost::mpi::all_reduce(work_, exists, boost::mpi::bitwise_and<bool>());
+    if (exists) {
       this->load();
     } else {
-      std::cerr << logger::header() << "warning: dump file not found. Restarting "
-                << logger::clone(task_id_, clone_id_) << std::endl;
+      if (work_.rank() == 0) {
+        std::cerr << logger::header() << "warning: dump file not found. Restarting "
+                  << logger::clone(task_id_, clone_id_) << std::endl;
+      }
       is_new = true;
     }
   }
