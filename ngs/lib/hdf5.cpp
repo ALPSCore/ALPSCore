@@ -31,7 +31,7 @@
 
 #include <alps/config.h>
 
-#include <boost/scoped_ptr.hpp>
+#include <boost/scoped_array.hpp>
 #include <boost/filesystem/operations.hpp>
 
 #include <hdf5.h>
@@ -638,7 +638,7 @@ namespace alps {
                 H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(detail::get_native_type(detail::type_wrapper< U >::type())))                         \
             ) > 0) {                                                                                                                                                   \
                 std::size_t len = std::accumulate(chunk.begin(), chunk.end(), std::size_t(1), std::multiplies<std::size_t>());                                         \
-                boost::scoped_ptr<U> raw(                                                                                                                              \
+                boost::scoped_array<U> raw(                                                                                                                            \
                     new detail::type_wrapper< U >::type[len]                                                                                                           \
                 );                                                                                                                                                     \
                 if (std::equal(chunk.begin(), chunk.end(), data_size.begin())) {                                                                                       \
@@ -658,7 +658,7 @@ namespace alps {
                 H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(detail::get_native_type(detail::type_wrapper< U >::type())))                         \
             ) > 0) {                                                                                                                                                   \
                 std::size_t len = std::accumulate(chunk.begin(), chunk.end(), std::size_t(1), std::multiplies<std::size_t>());                                         \
-                boost::scoped_ptr<U> raw(                                                                                                                              \
+                boost::scoped_array<U> raw(                                                                                                                            \
                     new detail::type_wrapper< U >::type[len]                                                                                                           \
                 );                                                                                                                                                     \
                 if (std::equal(chunk.begin(), chunk.end(), data_size.begin())) {                                                                                       \
@@ -692,7 +692,7 @@ namespace alps {
                             ALPS_NGS_THROW_RUNTIME_ERROR("multidimensional dataset of fixed string datas is not implemented (" + path + ")")                       \
                         else if (H5Tget_class(native_id) == H5T_STRING) {                                                                                          \
                             std::size_t len = std::accumulate(chunk.begin(), chunk.end(), std::size_t(1), std::multiplies<std::size_t>());                         \
-                            boost::scoped_ptr<char *> raw(                                                                                                         \
+                            boost::scoped_array<char *> raw(                                                                                                       \
                                 new char * [len]                                                                                                                   \
                             );                                                                                                                                     \
                             if (std::equal(chunk.begin(), chunk.end(), data_size.begin())) {                                                                       \
@@ -728,7 +728,7 @@ namespace alps {
                             ALPS_NGS_THROW_RUNTIME_ERROR("multidimensional dataset of fixed string datas is not implemented (" + path + ")")                       \
                         else if (H5Tget_class(native_id) == H5T_STRING) {                                                                                          \
                             std::size_t len = std::accumulate(chunk.begin(), chunk.end(), std::size_t(1), std::multiplies<std::size_t>());                         \
-                            boost::scoped_ptr<char *> raw(                                                                                                         \
+                            boost::scoped_array<char *> raw(                                                                                                       \
                                 new char * [len]                                                                                                                   \
                             );                                                                                                                                     \
                             if (std::equal(chunk.begin(), chunk.end(), data_size.begin())) {                                                                       \
