@@ -92,6 +92,13 @@ namespace alps {
     }
 
     void mcobservable::merge(mcobservable const & obs) {
+        if(!impl_->can_merge())
+        {
+            Observable* unmergeable = impl_;
+            ++ref_cnt_[impl_ = unmergeable->convert_mergeable()];
+            if (!--ref_cnt_[unmergeable])
+                delete unmergeable;
+        }
         impl_->merge(*obs.get_impl());
     }
 
