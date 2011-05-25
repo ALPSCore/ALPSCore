@@ -198,7 +198,7 @@ namespace alps {
 			// Input: pi = (V1, V2, ..., Vr)
 			// Output: comparable graph label l(pi)
 			template<typename Graph> void graph_label (
-				  typename graph_label<Graph>::type & l
+                                 typename ::alps::graph::graph_label<Graph>::type & l
 				, typename partition_type<Graph>::type const & pi
 				, Graph const & G
 			) {
