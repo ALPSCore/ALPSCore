@@ -27,6 +27,7 @@
 
 #include <alps/ngs/hdf5.hpp>
 #include <alps/ngs/macros.hpp>
+#include <alps/ngs/convert.hpp>
 #include <alps/ngs/mcparams.hpp>
 
 namespace alps {
@@ -37,7 +38,7 @@ namespace alps {
             mcparamvalue_reader(): value() {}
 
             template <typename U> void operator()(U & v) const { 
-                value = boost::lexical_cast<T, U>(v); 
+                value = convert<T>(v); 
             }
 
             void operator()(T & v) const { 
