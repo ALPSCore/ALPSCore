@@ -70,7 +70,7 @@ namespace alps {
             }
 
             template<typename T> struct native_ptr_converter {
-                            native_ptr_converter(std::size_t) {}
+                native_ptr_converter(std::size_t) {}
                 inline T const * apply(T const * v) {
                     return v;
                 }
@@ -78,11 +78,11 @@ namespace alps {
 
             template<> struct native_ptr_converter<std::string> {
                 std::vector<char const *> data;
-                            native_ptr_converter(std::size_t size): data(size) {}
-                                inline char const * const * apply(std::string const * v) {
-                                    for (std::vector<char const *>::iterator it = data.begin(); it != data.end(); ++it)
-                                            *it = v[it - data.begin()].c_str();
-                                    return &data[0];
+                    native_ptr_converter(std::size_t size): data(size) {}
+                        inline char const * const * apply(std::string const * v) {
+                            for (std::vector<char const *>::iterator it = data.begin(); it != data.end(); ++it)
+                                    *it = v[it - data.begin()].c_str();
+                            return &data[0];
                 }
             };
 
@@ -228,6 +228,7 @@ namespace alps {
             }
 
             struct ALPS_DECL mccontext : boost::noncopyable {
+
                 mccontext(std::string const & filename, bool write, bool compress)
                     : compress_(compress)
                     , write_(write)
@@ -306,6 +307,12 @@ namespace alps {
                 ref_cnt_.erase(file_key(context_->filename_, context_->write_, context_->compress_));
                 delete context_;
             }
+        }
+
+        void archive::abort() {
+            for (std::map<std::string, std::pair<detail::mccontext *, std::size_t> >::iterator it = ref_cnt_.begin(); it != ref_cnt_.end(); ++it)
+                delete it->second.first;
+            ref_cnt_.clear();
         }
 
         std::string const & archive::get_filename() const {

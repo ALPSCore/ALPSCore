@@ -32,7 +32,6 @@
 #include <alps/ngs/macros.hpp>
 
 #include <boost/mpl/and.hpp>
-#include <boost/weak_ptr.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/type_traits/is_array.hpp>
@@ -85,6 +84,7 @@ namespace alps {
                 archive(archive const & arg);
 
                 virtual ~archive();
+                static void abort();
 
                 std::string const & get_filename() const;
 
@@ -175,7 +175,6 @@ namespace alps {
 
                 std::string current_;
                 detail::mccontext * context_;
-                static std::map<std::string, boost::weak_ptr<detail::mccontext> > _pool;
 
                 static std::map<std::string, std::pair<detail::mccontext *, std::size_t> > ref_cnt_;
 

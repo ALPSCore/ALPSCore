@@ -27,6 +27,7 @@
 
 #include <alps/ngs/mcsignal.hpp>
 #include <alps/ngs/stacktrace.hpp>
+#include <alps/ngs/hdf5.hpp>
 
 #include <cstring>
 #include <sstream>
@@ -52,11 +53,13 @@ namespace alps {
                 sigaction(SIGUSR1, &action, NULL);
                 sigaction(SIGUSR2, &action, NULL);
                 sigaction(SIGSTOP, &action, NULL);
+                sigaction(SIGKILL, &action, NULL);
                 
                 static struct sigaction segv;
                 memset(&segv, 0, sizeof(segv));
                 segv.sa_handler = &mcsignal::segfault;
                 sigaction(SIGSEGV, &segv, NULL);
+                sigaction(SIGBUS, &segv, NULL);
             }
         #endif
     }
@@ -80,10 +83,11 @@ namespace alps {
 
     void mcsignal::segfault(int signal) {
         std::ostringstream buffer;
-        buffer << "Segfault(SIGSEGV) in:" << std::endl;
+        buffer << "Abort (" << signal << ", see 'man signal') in:" << std::endl;
         stacktrace(buffer);
         std::cerr << buffer.str();
         signals_.push_back(signal);
+        hdf5::archive::abort();
         std::abort();
     }
 
