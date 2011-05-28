@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2011 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -28,6 +28,20 @@
 #include "types.h"
 
 namespace alps {
+
+std::string dump_policy::to_string(dump_policy_t policy) {
+  switch (policy) {
+  case All:
+    return "all";
+  case RunningOnly:
+    return "running workers only";
+  case Never:
+    return "never";
+  default:
+    ;
+  }
+  return "undefined";
+}
 
 // task_status_t task_status::status(double progress, double max_work, bool on_memory) {
 //   if (on_memory)

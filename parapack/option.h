@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2011 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -30,6 +30,7 @@
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/program_options.hpp>
+#include "types.h"
 
 namespace alps {
 namespace parapack {
@@ -46,6 +47,7 @@ struct option {
   std::vector<std::string> jobfiles;
   bool valid, show_help, show_license;
   void print(std::ostream& os) const;
+  dump_policy_t dump_policy;
 };
 
 struct evaluate_option {

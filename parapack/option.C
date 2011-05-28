@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2011 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -38,7 +38,8 @@ option::option(int argc, char** argv)
     checkpoint_interval(pt::seconds(3600)), report_interval(pt::seconds(600)),
     default_total_threads(true), auto_total_threads(false), num_total_threads(1),
     threads_per_clone(1), auto_evaluate(true), evaluate_only(false),
-    use_mpi(false), jobfiles(), valid(true), show_help(false), show_license(false) {
+    use_mpi(false), jobfiles(), valid(true), show_help(false), show_license(false),
+    dump_policy(dump_policy::RunningOnly) {
   desc.add_options()
     ("help,h", "produce help message")
     ("license,l", "print license conditions")
@@ -48,6 +49,8 @@ option::option(int argc, char** argv)
      "time between internal status check [unit = millisec; default = 100ms]")
     ("checkpoint-interval", po::value<int>(),
      "time between checkpointing [unit = sec; default = 3600s]")
+    ("dump-policy", po::value<std::string>(),
+     "policy for dumping user checkpoint data [running (default), never, all]")
     ("evaluate", "evaluation mode")
     ("mpi", "run in parallel using MPI")
     ("Nmin", "obsolete")
@@ -90,6 +93,19 @@ option::option(int argc, char** argv)
     check_interval = pt::millisec(vm["check-interval"].as<int>());
   if (vm.count("checkpoint-interval"))
     checkpoint_interval = pt::seconds(vm["checkpoint-interval"].as<int>());
+  if (vm.count("dump-policy")) {
+    std::string value = vm["dump-policy"].as<std::string>();
+    if (value == "never")
+      dump_policy = dump_policy::Never;
+    else if (value == "running")
+      dump_policy = dump_policy::RunningOnly;
+    else if (value == "all")
+      dump_policy = dump_policy::All;
+    else {
+      valid = false;
+      return;
+    }
+  }
   if (vm.count("report-interval"))
     report_interval = pt::seconds(vm["report-interval"].as<int>());
   if (vm.count("mpi"))

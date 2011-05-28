@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2011 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -522,7 +522,9 @@ int start_sgl(int argc, char** argv) {
     std::cout << "  interval between checkpointing  = "
               << opt.checkpoint_interval.total_seconds() << " seconds\n"
               << "  interval between progress report = "
-              << opt.report_interval.total_seconds() << " seconds\n";
+              << opt.report_interval.total_seconds() << " seconds\n"
+              << "  worker dump policy = "
+              << dump_policy::to_string(opt.dump_policy) << std::endl;
 
     load_tasks(file_in, file_out, basedir, simname, tasks);
     if (simname != "")
@@ -556,7 +558,7 @@ int start_sgl(int argc, char** argv) {
       } // end omp master
 
       clone* clone_ptr = 0;
-      clone_proxy proxy(clone_ptr, opt.check_interval);
+      clone_proxy proxy(clone_ptr, basedir, opt.dump_policy, opt.checkpoint_interval);
 
       while (true) {
 
@@ -937,7 +939,9 @@ int start_mpi(int argc, char** argv) {
       std::cout << "  interval between checkpointing  = "
                 << opt.checkpoint_interval.total_seconds() << " seconds\n"
                 << "  interval between progress report = "
-                << opt.report_interval.total_seconds() << " seconds\n";
+                << opt.report_interval.total_seconds() << " seconds\n"
+                << "  worker dump policy = "
+                << dump_policy::to_string(opt.dump_policy) << std::endl;
 
       load_tasks(file_in, file_out, basedir, simname, tasks);
       if (simname != "")
@@ -970,8 +974,8 @@ int start_mpi(int argc, char** argv) {
 
         // server process
         if (world.rank() == 0) {
-          clone_proxy_mpi proxy(clone_ptr, opt.check_interval, process.comm_ctrl(),
-                                process.comm_work());
+          clone_proxy_mpi proxy(clone_ptr, process.comm_ctrl(), process.comm_work(), basedir,
+            opt.dump_policy, opt.checkpoint_interval);
 
           if (!process.is_halting()) {
             bool to_halt = false;
@@ -1127,7 +1131,8 @@ int start_mpi(int argc, char** argv) {
             // create a clone
             clone_create_msg_t msg;
             process.comm_ctrl().recv(0, mcmp_tag::clone_create, msg);
-            clone_ptr = new clone_mpi(process.comm_ctrl(), process.comm_work(), msg);
+            clone_ptr = new clone_mpi(process.comm_ctrl(), process.comm_work(), basedir,
+                                      opt.dump_policy, opt.checkpoint_interval, msg);
           }
 
         }

@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2011 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -70,8 +70,9 @@ public:
 
 class clone : public abstract_clone {
 public:
-  clone(tid_t tid, cid_t cid, Parameters const& params, boost::filesystem::path const& basedir,
-    std::string const& base, clone_timer::duration_t const& check_interval, bool is_new);
+  clone(boost::filesystem::path const& basedir, dump_policy_t dump_policy, 
+    clone_timer::duration_t const& check_interval, tid_t tid, cid_t cid, Parameters const& params,
+    std::string const& base, bool is_new);
   virtual ~clone();
 
   tid_t task_id() const { return task_id_; }
@@ -104,6 +105,7 @@ private:
   clone_info info_;
   std::vector<ObservableSet> measurements_;
 
+  dump_policy_t dump_policy_;
   clone_timer timer_;
   clone_timer::loops_t loops_;
 
@@ -114,29 +116,22 @@ private:
 
 struct clone_create_msg_t {
   clone_create_msg_t() {}
-  clone_create_msg_t(tid_t tid, cid_t cid, gid_t gid, Parameters const& p, std::string const& bsd,
-                     std::string const& bs, clone_timer::duration_t const& it, bool in)
-    : task_id(tid), clone_id(cid), group_id(gid), params(p), basedir(bsd), base(bs),
-      check_interval(it), is_new(in) {}
+  clone_create_msg_t(tid_t tid, cid_t cid, gid_t gid, Parameters const& p, std::string const& bs,
+    bool in) : task_id(tid), clone_id(cid), group_id(gid), params(p), base(bs), is_new(in) {}
   tid_t task_id;
   cid_t clone_id;
   gid_t group_id;
   Parameters params;
-  std::string basedir;
   std::string base;
-  clone_timer::duration_t check_interval;
   bool is_new;
   BOOST_SERIALIZATION_SPLIT_MEMBER()
   template<class Archive>
   void save(Archive & ar, const unsigned int) const {
-    long sec = check_interval.total_seconds();
-    ar & task_id & clone_id & group_id & params & basedir & base & sec & is_new;
+    ar & task_id & clone_id & group_id & params & base & is_new;
   }
   template<class Archive>
   void load(Archive & ar, const unsigned int) {
-    long sec;
-    ar & task_id & clone_id & group_id & params & basedir & base & sec & is_new;
-    check_interval = boost::posix_time::seconds(sec);
+    ar & task_id & clone_id & group_id & params & base & is_new;
   }
 };
 
@@ -165,7 +160,8 @@ struct clone_halt_msg_t {
 class clone_mpi : public abstract_clone {
 public:
   clone_mpi(boost::mpi::communicator const& ctrl, boost::mpi::communicator const& work,
-    clone_create_msg_t const& msg);
+    boost::filesystem::path const& basedir, dump_policy_t dump_policy,
+    clone_timer::duration_t const& check_interval, clone_create_msg_t const& msg);
   virtual ~clone_mpi();
 
   tid_t task_id() const { return task_id_; }
@@ -206,6 +202,7 @@ private:
   clone_info info_;
   std::vector<ObservableSet> measurements_;
 
+  dump_policy_t dump_policy_;
   clone_timer timer_;
   clone_timer::loops_t loops_;
 

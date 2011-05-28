@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2011 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -34,57 +34,49 @@ namespace alps {
 
 class clone_proxy {
 public:
-  clone_proxy(clone*& clone_ptr, clone_timer::duration_t const& check_interval)
-    : clone_ptr_(clone_ptr), interval_(check_interval) {}
-
+  clone_proxy(clone*& clone_ptr, boost::filesystem::path const& basedir, dump_policy_t dump_policy,
+    clone_timer::duration_t const& check_interval) : clone_ptr_(clone_ptr), basedir_(basedir),
+    dump_policy_(dump_policy), check_interval_(check_interval) {}
   bool is_local(Process const&) const { return true; }
-
   void start(tid_t tid, cid_t cid, thread_group const&, Parameters const& params,
-    boost::filesystem::path const& basedir, std::string const& base, bool is_new) {
-    clone_ptr_ = new clone(tid, cid, params, basedir, base, interval_, is_new);
+    std::string const& base, bool is_new) {
+    clone_ptr_ = new clone(basedir_, dump_policy_, check_interval_, tid, cid, params, base, is_new);
   }
-
   clone_info const& info(Process const&) const {
     if (!clone_ptr_)
       boost::throw_exception(std::logic_error("clone_proxy::info()"));
     return clone_ptr_->info();
   }
-
   void checkpoint(Process const&) { if (clone_ptr_) clone_ptr_->checkpoint(); }
-
   void update_info(Process const&) const {}
-
   void suspend(Process const&) { if (clone_ptr_) clone_ptr_->suspend(); }
-
   void halt(Process const&) { /* if (clone_ptr_) clone_ptr_->halt(); */ }
-
   void destroy(Process const&) {
     if (clone_ptr_) {
       delete clone_ptr_;
       clone_ptr_ = 0;
     }
   }
-
 private:
   clone*& clone_ptr_;
-  clone_timer::duration_t interval_;
+  boost::filesystem::path basedir_;
+  dump_policy_t dump_policy_;
+  clone_timer::duration_t check_interval_;
 };
 
 #ifdef ALPS_HAVE_MPI
 
 class clone_proxy_mpi {
 public:
-  clone_proxy_mpi(clone_mpi*& clone_ptr, clone_timer::duration_t const& check_interval,
-    boost::mpi::communicator const& comm_ctrl, boost::mpi::communicator const& comm_work)
-    : clone_ptr_(clone_ptr), interval_(check_interval),
-      comm_ctrl_(comm_ctrl), comm_work_(comm_work) {}
-
+  clone_proxy_mpi(clone_mpi*& clone_ptr, boost::mpi::communicator const& comm_ctrl,
+    boost::mpi::communicator const& comm_work, boost::filesystem::path const& basedir,
+    dump_policy_t dump_policy, clone_timer::duration_t const& check_interval)
+    : clone_ptr_(clone_ptr), comm_ctrl_(comm_ctrl), comm_work_(comm_work), basedir_(basedir),
+      dump_policy_(dump_policy), check_interval_(check_interval) {}
   bool is_local(Process const& proc) const { return proc == 0; }
-
   void start(tid_t tid, cid_t cid, process_group const& procs, Parameters const& params,
-    boost::filesystem::path const& basedir, std::string const& base, bool is_new) const {
-    clone_create_msg_t
-      msg(tid, cid, procs.group_id, params, basedir.native_file_string(), base, interval_, is_new);
+    std::string const& base, bool is_new) const {
+    clone_create_msg_t msg(tid, cid, procs.group_id, params, base, is_new);
     bool worker_on_master = false;
     BOOST_FOREACH(Process p, procs.process_list) {
       if (p == 0)
@@ -92,7 +84,9 @@ public:
       else
         comm_ctrl_.send(p, mcmp_tag::clone_create, msg);
     }
-    if (worker_on_master) clone_ptr_ = new clone_mpi(comm_ctrl_, comm_work_, msg);
+    if (worker_on_master)
+      clone_ptr_ =
+        new clone_mpi(comm_ctrl_, comm_work_, basedir_, dump_policy_, check_interval_, msg);
   }
 
   clone_info const& info(Process const& proc) const {
@@ -144,8 +138,10 @@ public:
 
 private:
   clone_mpi*& clone_ptr_;
-  clone_timer::duration_t interval_;
   boost::mpi::communicator comm_ctrl_, comm_work_;
+  boost::filesystem::path basedir_;
+  dump_policy_t dump_policy_;
+  clone_timer::duration_t check_interval_;
 };
 
 #endif // ALPS_HAVE_MPI

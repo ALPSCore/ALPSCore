@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2011 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -101,9 +101,11 @@ bool load_observable(alps::hdf5::archive & ar, cid_t cid, int rank,
 // clone
 //
 
-clone::clone(tid_t tid, cid_t cid, Parameters const& params, boost::filesystem::path const& basedir,
-  std::string const& base, clone_timer::duration_t const& check_interval, bool is_new)
-  : task_id_(tid), clone_id_(cid), params_(params), basedir_(basedir), timer_(check_interval) {
+clone::clone(boost::filesystem::path const& basedir, dump_policy_t dump_policy, 
+  clone_timer::duration_t const& check_interval, tid_t tid, cid_t cid, Parameters const& params,
+  std::string const& base, bool is_new)
+  : task_id_(tid), clone_id_(cid), params_(params), basedir_(basedir), dump_policy_(dump_policy),
+    timer_(check_interval) {
   params_["DIR_NAME"] = basedir_.native_file_string();
   params_["BASE_NAME"] = base;
 
@@ -170,26 +172,38 @@ bool clone::halted() const { return !worker_; }
 clone_info const& clone::info() const { return info_; }
 
 void clone::load() {
-  {
-    IXDRFileDump dp(complete(boost::filesystem::path(info_.dumpfile()), basedir_));
-    worker_->load_worker(dp);
-  }
+  boost::filesystem::path dump_h5 =
+    complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_);
   #pragma omp critical (hdf5io)
   {
-    hdf5::archive h5(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_).file_string());
+    hdf5::archive h5(dump_h5.file_string());
     h5 >> make_pvp("/", *this);
+  }
+  boost::filesystem::path dump = complete(boost::filesystem::path(info_.dumpfile()), basedir_);
+  bool workerdump = (dump_policy_ == dump_policy::All) ||
+    (dump_policy_ == dump_policy::RunningOnly && info_.progress() < 1);
+  if (workerdump) {
+    IXDRFileDump dp(dump);
+    worker_->load_worker(dp);
   }
 }
 
 void clone::save() const{
-  {
-    OXDRFileDump dp(complete(boost::filesystem::path(info_.dumpfile()), basedir_));
-    worker_->save_worker(dp);
-  }
+  boost::filesystem::path dump_h5 =
+    complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_);
   #pragma omp critical (hdf5io)
   {
-    hdf5::archive h5(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_).file_string(), hdf5::archive::WRITE);
+    hdf5::archive h5(dump_h5.file_string(), hdf5::archive::WRITE);
     h5 << make_pvp("/", *this);
+  }
+  boost::filesystem::path dump = complete(boost::filesystem::path(info_.dumpfile()), basedir_);
+  bool workerdump = (dump_policy_ == dump_policy::All) ||
+    (dump_policy_ == dump_policy::RunningOnly && info_.progress() < 1);
+  if (workerdump) {
+    OXDRFileDump dp(dump);
+    worker_->save_worker(dp);
+  } else {
+    if (exists(dump)) remove(dump);
   }
 }
 
@@ -234,14 +248,14 @@ void clone::output() const{
 // clone_mpi
 //
 
-clone_mpi::clone_mpi(boost::mpi::communicator const& ctrl,
-  boost::mpi::communicator const& work, clone_create_msg_t const& msg)
+clone_mpi::clone_mpi(boost::mpi::communicator const& ctrl, boost::mpi::communicator const& work,
+  boost::filesystem::path const& basedir, dump_policy_t dump_policy,
+  clone_timer::duration_t const& check_interval, clone_create_msg_t const& msg)
   : ctrl_(ctrl), work_(work), task_id_(msg.task_id), clone_id_(msg.clone_id),
-    group_id_(msg.group_id), params_(msg.params), basedir_(boost::filesystem::path(msg.basedir)),
-    timer_(msg.check_interval) {
+    group_id_(msg.group_id), params_(msg.params), basedir_(basedir),
+    dump_policy_(dump_policy), timer_(check_interval) {
   bool is_new = msg.is_new;
-
-  params_["DIR_NAME"] = msg.basedir;
+  params_["DIR_NAME"] = basedir;
   params_["BASE_NAME"] = msg.base;
 
   info_ = clone_info_mpi(work_, clone_id_, params_, msg.base);
@@ -399,26 +413,40 @@ bool clone_mpi::halted() const { return !worker_; }
 clone_info const& clone_mpi::info() const { return info_; }
 
 void clone_mpi::load() {
-  {
-    IXDRFileDump dp(complete(boost::filesystem::path(info_.dumpfile()), basedir_));
-    worker_->load_worker(dp);
-  }
+  boost::filesystem::path dump_h5 =
+    complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_);
   #pragma omp critical (hdf5io)
   {
-    hdf5::archive h5(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_).file_string());
+    hdf5::archive h5(dump_h5.file_string());
     h5 >> make_pvp("/", *this);
+  }
+  boost::filesystem::path dump = complete(boost::filesystem::path(info_.dumpfile()), basedir_);
+  bool workerdump = (dump_policy_ == dump_policy::All) ||
+    (dump_policy_ == dump_policy::RunningOnly && info_.progress() < 1);
+  broadcast(work_, workerdump, 0);
+  if (workerdump) {
+    IXDRFileDump dp(complete(boost::filesystem::path(info_.dumpfile()), basedir_));
+    worker_->load_worker(dp);
   }
 }
 
 void clone_mpi::save() const{
-  {
-    OXDRFileDump dp(complete(boost::filesystem::path(info_.dumpfile()), basedir_));
-    worker_->save_worker(dp);
-  }
+  boost::filesystem::path dump_h5 =
+    complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_);
   #pragma omp critical (hdf5io)
   {
-    hdf5::archive h5(complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_).file_string(), hdf5::archive::WRITE);
+    hdf5::archive h5(dump_h5.file_string(), hdf5::archive::WRITE);
     h5 << make_pvp("/", *this);
+  }
+  bool workerdump = (dump_policy_ == dump_policy::All) ||
+    (dump_policy_ == dump_policy::RunningOnly && info_.progress() < 1);
+  broadcast(work_, workerdump, 0);
+  boost::filesystem::path dump = complete(boost::filesystem::path(info_.dumpfile()), basedir_);
+  if (workerdump) {
+    OXDRFileDump dp(dump);
+    worker_->save_worker(dp);
+  } else {
+    if (exists(dump)) remove(dump);
   }
 }
 

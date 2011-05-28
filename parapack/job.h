@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2011 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -97,18 +97,13 @@ public:
       clone_master_.push_back(master);
       clone_info_.push_back(clone_info(cid));
     }
+    std::cout << logger::header() << (is_new ? "dispatching a new " : "resuming a suspended ")
+              << logger::clone(task_id_, cid) << " on " << logger::group(group) << std::endl;
     running_.insert(cid);
-    proxy.start(task_id_, cid, group, params_, basedir_, base_, is_new);
+    proxy.start(task_id_, cid, group, params_, base_, is_new);
     boost::tie(weight_, dump_weight_) = calc_weight();
     status_ = calc_status();
-    if (is_new) {
-      std::cout << logger::header() << "dispatching a new " << logger::clone(task_id_, cid)
-                << " on " << logger::group(group) << std::endl;
-    } else {
-      std::cout << logger::header() << "resuming a suspended " << logger::clone(task_id_, cid)
-                << " on " << logger::group(group) << std::endl;
-      report(proxy, cid);
-    }
+    if (!is_new) report(proxy, cid);
     return boost::optional<cid_t>(cid);
   }
 

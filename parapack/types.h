@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2008 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2011 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -55,6 +55,16 @@ struct parapack_dump {
   };
 };
 typedef parapack_dump::parapack_dump_t parapack_dump_t;
+
+struct dump_policy {
+  enum dump_policy_t {
+    Never,
+    RunningOnly, // default
+    All
+  };
+  static std::string to_string(dump_policy_t policy);
+};
+typedef dump_policy::dump_policy_t dump_policy_t;
 
 struct mcmp_tag {
   enum mcmp_tag_t {
