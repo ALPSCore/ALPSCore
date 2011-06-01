@@ -42,7 +42,7 @@ namespace alps {
             static bool initialized;
             if (!initialized) {
                 initialized = true;
-                
+
                 static struct sigaction action;
                 memset(&action, 0, sizeof(action));
                 action.sa_handler = &mcsignal::slot;
@@ -54,7 +54,7 @@ namespace alps {
                 sigaction(SIGUSR2, &action, NULL);
                 sigaction(SIGSTOP, &action, NULL);
                 sigaction(SIGKILL, &action, NULL);
-                
+
                 static struct sigaction segv;
                 memset(&segv, 0, sizeof(segv));
                 segv.sa_handler = &mcsignal::segfault;

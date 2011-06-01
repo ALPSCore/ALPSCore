@@ -26,8 +26,8 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_MCRESULT_IMPL_DERIVED_HPP
-#define ALPS_NGS_MCRESULT_IMPL_DERIVED_HPP
+#ifndef ALPS_NGS_MCRESULT_IMPL_DERIVED_IPP
+#define ALPS_NGS_MCRESULT_IMPL_DERIVED_IPP
 
 #include <alps/ngs/hdf5.hpp>
 #include <alps/ngs/boost.hpp>

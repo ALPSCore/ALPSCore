@@ -46,6 +46,7 @@ namespace alps {
                 {}
 
                 bool run(boost::function<bool ()> const & stop_callback) {
+                    // This should be moved to main
                     boost::thread thread(boost::bind<bool>(&Impl::run, static_cast<Impl *>(this), &mcthreadedsim<Impl>::dummy_callback));
                     checker(stop_callback);
                     thread.join();
@@ -70,8 +71,7 @@ namespace alps {
                 }
 
                 mcatomic<bool> stop_flag;
-                // boost::mutex mutex;
-                // measurements and configuration need to be locked separately
+                // measurements and configuration need to be locked separately: needs own measurements
 
             private:
 

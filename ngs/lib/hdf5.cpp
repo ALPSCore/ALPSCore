@@ -172,7 +172,10 @@ namespace alps {
             hid_t check_property(hid_t id) { property_type unused(id); return unused; }
             hid_t check_error(hid_t id) { error_type unused(id); return unused; }
 
-            bool ignore_python_destruct_errors::value = false;
+            bool ignore_python_destruct_errors = false;
+			void set_ignore_python_destruct_errors(bool value) {
+				ignore_python_destruct_errors = value;
+			}
 
             hid_t get_native_type(char) { return H5Tcopy(H5T_NATIVE_CHAR); }
             hid_t get_native_type(signed char) { return H5Tcopy(H5T_NATIVE_SCHAR); }
@@ -250,7 +253,7 @@ namespace alps {
                     try {
                         H5Fflush(file_id_, H5F_SCOPE_GLOBAL);
                         #ifndef ALPS_HDF5_CLOSE_GREEDY
-                            if (!ignore_python_destruct_errors::value && (
+                            if (!ignore_python_destruct_errors && (
                                    H5Fget_obj_count(file_id_, H5F_OBJ_DATATYPE) > 0
                                 || H5Fget_obj_count(file_id_, H5F_OBJ_ALL) - H5Fget_obj_count(file_id_, H5F_OBJ_FILE) > 0
                             )) {

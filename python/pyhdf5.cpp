@@ -40,9 +40,6 @@
 
 #include <numpy/arrayobject.h>
 
-// TODO: remove
-#include <iostream>
-
 namespace alps { 
     namespace python {
         namespace hdf5 {
@@ -56,8 +53,9 @@ namespace alps {
                 }
             }
 
+			// move to function in hdf5.hpp
             void ignore_python_destruct_errors() {
-                alps::hdf5::detail::ignore_python_destruct_errors::value = true;
+                alps::hdf5::detail::set_ignore_python_destruct_errors(true);
             }
 
             boost::python::str filename(alps::hdf5::archive const & self) {
@@ -144,7 +142,21 @@ namespace alps {
                         #undef PYHDF5_CHECK_NUMPY
                         else
                             throw std::runtime_error("unsupported numpy array type");
-                    } else
+                    } else if (boost::python::extract<boost::python::list>(data).check()) {
+						boost::python::list list = boost::python::extract<boost::python::list>(data)();
+						for (std::size_t i = 0; i < boost::python::len(list); ++i) {
+							if (false);
+							 #define PYHDF5_CHECK_LIST_SCALAR(T)                                                                                           \
+								else if (boost::python::extract< T >(list[i]).check())                                                                     \
+									self << make_pvp(path + "/" + convert<std::string>(i), boost::python::extract< T >(list[i])());
+							PYHDF5_CHECK_LIST_SCALAR(int)
+							PYHDF5_CHECK_LIST_SCALAR(long)
+							PYHDF5_CHECK_LIST_SCALAR(double)
+							PYHDF5_CHECK_LIST_SCALAR(std::complex<double>)
+							PYHDF5_CHECK_LIST_SCALAR(std::string)
+							#undef PYHDF5_CHECK_LIST_SCALAR
+						}
+					} else
                         throw std::runtime_error("unsupported type");
                 }
             }
