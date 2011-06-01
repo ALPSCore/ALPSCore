@@ -144,17 +144,48 @@ namespace alps {
                             throw std::runtime_error("unsupported numpy array type");
                     } else if (boost::python::extract<boost::python::list>(data).check()) {
 						boost::python::list list = boost::python::extract<boost::python::list>(data)();
+						int raw_type = 0;
 						for (std::size_t i = 0; i < boost::python::len(list); ++i) {
 							if (false);
-							 #define PYHDF5_CHECK_LIST_SCALAR(T)                                                                                           \
+							 #define PYHDF5_CHECK_LIST_SCALAR(T, S)                                                                                        \
 								else if (boost::python::extract< T >(list[i]).check())                                                                     \
-									self << make_pvp(path + "/" + convert<std::string>(i), boost::python::extract< T >(list[i])());
-							PYHDF5_CHECK_LIST_SCALAR(int)
-							PYHDF5_CHECK_LIST_SCALAR(long)
-							PYHDF5_CHECK_LIST_SCALAR(double)
-							PYHDF5_CHECK_LIST_SCALAR(std::complex<double>)
-							PYHDF5_CHECK_LIST_SCALAR(std::string)
+									raw_type |= 0x01 << S;
+							PYHDF5_CHECK_LIST_SCALAR(int, 0)
+							PYHDF5_CHECK_LIST_SCALAR(long, 1)
+							PYHDF5_CHECK_LIST_SCALAR(double, 2)
+							PYHDF5_CHECK_LIST_SCALAR(std::complex<double>, 3)
+							PYHDF5_CHECK_LIST_SCALAR(std::string, 4)
 							#undef PYHDF5_CHECK_LIST_SCALAR
+						}
+						switch (raw_type) {
+							#define PYHDF5_CHECK_LIST_SCALAR(T, S)                                                                                        \
+							case 0x01 << S :                                                                                                              \
+								{                                                                                                                         \
+									std::vector< T > vec;                                                                                                 \
+									for (std::size_t i = 0; i < boost::python::len(list); ++i)                                                            \
+										vec.push_back(boost::python::extract< T >(list[i])());                                                            \
+									self << make_pvp(path, vec);                                                                                          \
+								}																														  \
+								break;
+							PYHDF5_CHECK_LIST_SCALAR(int, 0)
+							PYHDF5_CHECK_LIST_SCALAR(long, 1)
+							PYHDF5_CHECK_LIST_SCALAR(double, 2)
+							PYHDF5_CHECK_LIST_SCALAR(std::complex<double>, 3)
+							PYHDF5_CHECK_LIST_SCALAR(std::string, 4)
+							#undef PYHDF5_CHECK_LIST_SCALAR
+							default:
+								for (std::size_t i = 0; i < boost::python::len(list); ++i) {
+									if (false);
+									 #define PYHDF5_CHECK_LIST_SCALAR(T)                                                                                  \
+										else if (boost::python::extract< T >(list[i]).check())                                                            \
+											self << make_pvp(path + "/" + convert<std::string>(i), boost::python::extract< T >(list[i])());
+									PYHDF5_CHECK_LIST_SCALAR(int)
+									PYHDF5_CHECK_LIST_SCALAR(long)
+									PYHDF5_CHECK_LIST_SCALAR(double)
+									PYHDF5_CHECK_LIST_SCALAR(std::complex<double>)
+									PYHDF5_CHECK_LIST_SCALAR(std::string)
+									#undef PYHDF5_CHECK_LIST_SCALAR
+								}
 						}
 					} else
                         throw std::runtime_error("unsupported type");
