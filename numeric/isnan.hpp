@@ -36,7 +36,7 @@
 
 namespace alps { namespace numeric {
 
-#ifdef _MSV_VER
+#ifdef BOOST_MSVC
   template <class T>
   bool isnan(T x) { return _isnan(x);}
 #else

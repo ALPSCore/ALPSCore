@@ -38,7 +38,7 @@ namespace alps { namespace numeric {
 
 #ifdef BOOST_MSVC
   template <class T>
-  bool isinf(T x) { return _isinf(x);}
+  bool isinf(T x) { return !_finite(x) && !_isnan(x);}
 #else
   using std::isinf;
 #endif
