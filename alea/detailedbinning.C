@@ -56,12 +56,12 @@ try {
   //READ PARAMETERS
   //---------------
   alps::Parameters parms(std::cin);
-  uint32_t thermalization_steps=parms.value_or_default("THERMALIZATION",1000);
-  uint32_t number_of_steps=parms.value_or_default("STEPS",10000);
+  unsigned thermalization_steps=parms.value_or_default("THERMALIZATION",1000);
+  unsigned number_of_steps=parms.value_or_default("STEPS",10000);
 
   //THERMALIZATION STEPS, NO MEASUREMENTS
   //-----------------------------------
-  for(uint32_t i = 0; i < thermalization_steps; ++i){
+  for(unsigned i = 0; i < thermalization_steps; ++i){
     random();
     random();
   }
@@ -69,7 +69,7 @@ try {
 
   //ADD MEASUREMENTS TO THE OBSERVABLES
   //-----------------------------------
-  for(uint32_t i = 0; i < number_of_steps; ++i){
+  for(unsigned i = 0; i < number_of_steps; ++i){
     obs_a << random();
     obs_b << random()+1;
     obs_c << 1.2;
