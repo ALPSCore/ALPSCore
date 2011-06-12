@@ -581,14 +581,14 @@ namespace alps {
                 H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(detail::get_native_type(detail::type_wrapper< U >::type())))                         \
             ) > 0) {                                                                                                                                                   \
                 U u;                                                                                                                                                   \
-                detail::check_error(H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &u));                                                                     \
+                detail::check_error(H5Dread(data_id, native_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &u));                                                                     \
                 value = convert< T >(u);
         #define ALPS_NGS_HDF5_READ_SCALAR_ATTRIBUTE_HELPER(U, T)                                                                                                       \
             } else if (detail::check_error(                                                                                                                            \
                 H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(detail::get_native_type(detail::type_wrapper< U >::type())))                         \
             ) > 0) {                                                                                                                                                   \
                 U u;                                                                                                                                                   \
-                detail::check_error(H5Aread(attribute_id, type_id, &u));                                                                                               \
+                detail::check_error(H5Aread(attribute_id, native_id, &u));                                                                                               \
                 value = convert< T >(u);
         #define ALPS_NGS_HDF5_READ_SCALAR(T)                                                                                                                           \
             void archive::read(std::string path, T & value) const {                                                                                                    \
@@ -600,11 +600,11 @@ namespace alps {
                     detail::type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));                                                                      \
                     if (H5Tget_class(native_id) == H5T_STRING && !detail::check_error(H5Tis_variable_str(type_id))) {                                              \
                         std::string raw(H5Tget_size(type_id) + 1, '\0');                                                                                           \
-                        detail::check_error(H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &raw[0]));                                                    \
+                        detail::check_error(H5Dread(data_id, native_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &raw[0]));                                                    \
                         value = convert< T >(raw);                                                                                                                 \
                     } else if (H5Tget_class(native_id) == H5T_STRING) {                                                                                            \
                         char * raw;                                                                                                                                \
-                        detail::check_error(H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &raw));                                                       \
+                        detail::check_error(H5Dread(data_id, native_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &raw));                                                       \
                         value = convert< T >(std::string(raw));                                                                                                    \
                         detail::check_error(H5Dvlen_reclaim(type_id, detail::space_type(H5Dget_space(data_id)), H5P_DEFAULT, &raw));                               \
                     ALPS_NGS_HDF5_FOREACH_NATIVE_TYPE_INTEGRAL(ALPS_NGS_HDF5_READ_SCALAR_DATA_HELPER, T)                                                       \
@@ -624,11 +624,11 @@ namespace alps {
                     detail::type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));                                                                      \
                     if (H5Tget_class(native_id) == H5T_STRING && !detail::check_error(H5Tis_variable_str(type_id))) {                                              \
                         std::string raw(H5Tget_size(type_id) + 1, '\0');                                                                                           \
-                        detail::check_error(H5Aread(attribute_id, type_id, &raw[0]));                                                                              \
+                        detail::check_error(H5Aread(attribute_id, native_id, &raw[0]));                                                                              \
                         value = convert< T >(raw);                                                                                                                 \
                     } else if (H5Tget_class(native_id) == H5T_STRING) {                                                                                            \
                         char * raw;                                                                                                                                \
-                        detail::check_error(H5Aread(attribute_id, type_id, &raw));                                                                                 \
+                        detail::check_error(H5Aread(attribute_id, native_id, &raw));                                                                                 \
                         value = convert< T >(std::string(raw));                                                                                                    \
                     ALPS_NGS_HDF5_FOREACH_NATIVE_TYPE_INTEGRAL(ALPS_NGS_HDF5_READ_SCALAR_ATTRIBUTE_HELPER, T)                                                      \
                     } else ALPS_NGS_THROW_RUNTIME_ERROR("invalid type")                                                                                            \
@@ -652,7 +652,7 @@ namespace alps {
                     new detail::type_wrapper< U >::type[len]                                                                                                           \
                 );                                                                                                                                                     \
                 if (std::equal(chunk.begin(), chunk.end(), data_size.begin())) {                                                                                       \
-                    detail::check_error(H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, raw.get()));                                                          \
+                    detail::check_error(H5Dread(data_id, native_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, raw.get()));                                                          \
                     convert(raw.get(), raw.get() + len, value);                                                                                                        \
                 } else {                                                                                                                                               \
                     std::vector<hsize_t> offset_hid(offset.begin(), offset.end()),                                                                                     \
@@ -660,7 +660,7 @@ namespace alps {
                     detail::space_type space_id(H5Dget_space(data_id));                                                                                                \
                     detail::check_error(H5Sselect_hyperslab(space_id, H5S_SELECT_SET, &offset_hid.front(), NULL, &chunk_hid.front(), NULL));                           \
                     detail::space_type mem_id(H5Screate_simple(static_cast<int>(chunk_hid.size()), &chunk_hid.front(), NULL));                                         \
-                    detail::check_error(H5Dread(data_id, type_id, mem_id, space_id, H5P_DEFAULT, raw.get()));                                                          \
+                    detail::check_error(H5Dread(data_id, native_id, mem_id, space_id, H5P_DEFAULT, raw.get()));                                                          \
                     convert(raw.get(), raw.get() + len, value);                                                                                                        \
                 }
         #define ALPS_NGS_HDF5_READ_VECTOR_ATTRIBUTE_HELPER(U, T)                                                                                                       \
@@ -672,7 +672,7 @@ namespace alps {
                     new detail::type_wrapper< U >::type[len]                                                                                                           \
                 );                                                                                                                                                     \
                 if (std::equal(chunk.begin(), chunk.end(), data_size.begin())) {                                                                                       \
-                    detail::check_error(H5Aread(attribute_id, type_id, raw.get()));                                                                                    \
+                    detail::check_error(H5Aread(attribute_id, native_id, raw.get()));                                                                                    \
                     convert(raw.get(), raw.get() + len, value);                                                                                                        \
                 } else                                                                                                                                                 \
                     ALPS_NGS_THROW_RUNTIME_ERROR("Not Implemented, path: " + path)
@@ -706,7 +706,7 @@ namespace alps {
                                 new char * [len]                                                                                                                   \
                             );                                                                                                                                     \
                             if (std::equal(chunk.begin(), chunk.end(), data_size.begin())) {                                                                       \
-                                detail::check_error(H5Dread(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, raw.get()));                                          \
+                                detail::check_error(H5Dread(data_id, native_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, raw.get()));                                          \
                                 convert(raw.get(), raw.get() + len, value);                                                                                        \
                                 detail::check_error(H5Dvlen_reclaim(type_id, detail::space_type(H5Dget_space(data_id)), H5P_DEFAULT, raw.get()));                  \
                             } else {                                                                                                                               \
@@ -715,7 +715,7 @@ namespace alps {
                                 detail::space_type space_id(H5Dget_space(data_id));                                                                                \
                                 detail::check_error(H5Sselect_hyperslab(space_id, H5S_SELECT_SET, &offset_hid.front(), NULL, &chunk_hid.front(), NULL));           \
                                 detail::space_type mem_id(H5Screate_simple(static_cast<int>(chunk_hid.size()), &chunk_hid.front(), NULL));                         \
-                                detail::check_error(H5Dread(data_id, type_id, mem_id, space_id, H5P_DEFAULT, raw.get()));                                          \
+                                detail::check_error(H5Dread(data_id, native_id, mem_id, space_id, H5P_DEFAULT, raw.get()));                                          \
                                 convert(raw.get(), raw.get() + len, value);                                                                                        \
                                                                 detail::check_error(H5Dvlen_reclaim(type_id, mem_id, H5P_DEFAULT, raw.get()));                     \
                             }                                                                                                                                      \
@@ -742,14 +742,14 @@ namespace alps {
                                 new char * [len]                                                                                                                   \
                             );                                                                                                                                     \
                             if (std::equal(chunk.begin(), chunk.end(), data_size.begin())) {                                                                       \
-                                detail::check_error(H5Aread(attribute_id, type_id, raw.get()));                                                                    \
+                                detail::check_error(H5Aread(attribute_id, native_id, raw.get()));                                                                    \
                                 convert(raw.get(), raw.get() + len, value);                                                                                        \
                             } else                                                                                                                                 \
                                 ALPS_NGS_THROW_RUNTIME_ERROR("non continous multidimensional dataset as attributes are not implemented (" + path + ")")            \
                             detail::check_error(H5Dvlen_reclaim(type_id, detail::space_type(H5Aget_space(attribute_id)), H5P_DEFAULT, raw.get()));                 \
                         } else if (H5Tget_class(native_id) == H5T_STRING) {                                                                                        \
                             char ** raw = NULL;                                                                                                                    \
-                            detail::check_error(H5Aread(attribute_id, type_id, raw));                                                                              \
+                            detail::check_error(H5Aread(attribute_id, native_id, raw));                                                                              \
                             ALPS_NGS_THROW_RUNTIME_ERROR("multidimensional dataset of variable len string datas is not implemented (" + path + ")")                \
                         ALPS_NGS_HDF5_FOREACH_NATIVE_TYPE_INTEGRAL(ALPS_NGS_HDF5_READ_VECTOR_ATTRIBUTE_HELPER, T)                                                  \
                         } else ALPS_NGS_THROW_RUNTIME_ERROR("invalid type")                                                                                        \
