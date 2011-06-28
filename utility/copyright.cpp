@@ -38,8 +38,7 @@ void alps::print_copyright(std::ostream& out) {
   out << "  copyright (c) 1994-" << ALPS_YEAR
       << " by the ALPS collaboration.\n";
   out << "  Consult the web page for license details.\n";
-  out << "  For details see the publications: \n"
-      << "  A.F. Albuquerque et al., J. of Magn. and Magn. Materials 310, 1187 (2007).\n"
+  out << "  For details see the publication: \n"
       << "  B. Bauer et al., J. Stat. Mech. (2011) P05001.\n\n";
 }
 
