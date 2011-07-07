@@ -76,7 +76,8 @@ namespace alps {
 
             public:
 
-                typedef enum { READ = 0x00, WRITE = 0x01, COMPRESS = 0x02 } properties;
+                // TODO: make option REPLACE: create temp file and replace old on close
+                typedef enum { READ = 0x00, WRITE = 0x01, REPLACE = 0x02, COMPRESS = 0x04 } properties;
 
                 archive(std::string const & filename, std::size_t props = READ);
                 archive(archive const & arg);
