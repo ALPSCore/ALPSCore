@@ -122,7 +122,7 @@ namespace alps {
             }
         ALPS_NGS_HDF5_COMPLEX_LOAD(archive)
         #ifdef ALPS_HDF5_HAVE_DEPRECATED
-            ALPS_NGS_HDF5_COMPLEX_LOAD(oarchive)
+            ALPS_NGS_HDF5_COMPLEX_LOAD(iarchive)
         #endif
         #undef ALPS_NGS_HDF5_COMPLEX_LOAD
 
