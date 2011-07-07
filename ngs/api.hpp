@@ -28,7 +28,6 @@
 #ifndef ALPS_NGS_API_HPP
 #define ALPS_NGS_API_HPP
 
-#include <alps/ngs/params.hpp>
 #include <alps/ngs/mcparams.hpp>
 #include <alps/ngs/mcresults.hpp>
 #include <alps/ngs/mcobservables.hpp>
@@ -76,10 +75,6 @@ namespace alps {
     template<typename S> double fraction_completed(S const & s) {
         return s.fraction_completed();
     }
-
-    void save_results(mcresults const & results, params const & params, boost::filesystem::path const & filename, std::string const & path);
-
-    void save_results(mcobservables const & observables, params const & params, boost::filesystem::path const & filename, std::string const & path);
 
     void save_results(mcresults const & results, mcparams const & params, boost::filesystem::path const & filename, std::string const & path);
 

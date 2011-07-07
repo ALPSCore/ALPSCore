@@ -64,35 +64,27 @@ namespace alps {
             void output(std::ostream & os) const;
 
             // DO NOT USE! use set << ngs::RealObservable(name);
-            // TODO: shold be solved using friends
             void create_RealObservable(std::string const & name, uint32_t binnum = 0);
 
             // DO NOT USE! use set << ngs::RealVectorObservable(name);
-            // TODO: shold be solved using friends
             void create_RealVectorObservable(std::string const & name, uint32_t binnum = 0);
 
             // DO NOT USE! use set << ngs::SimpleRealObservable(name);
-            // TODO: shold be solved using friends
             void create_SimpleRealObservable(std::string const & name);
 
             // DO NOT USE! use set << ngs::SimpleRealVectorObservable(name);
-            // TODO: shold be solved using friends
             void create_SimpleRealVectorObservable(std::string const & name);
 
             // DO NOT USE! use set << ngs::SignedRealObservable(name, sign);
-            // TODO: shold be solved using friends
             void create_SignedRealObservable(std::string const & name, std::string sign = "Sign", uint32_t binnum = 0);
 
             // DO NOT USE! use set << ngs::SignedRealVectorObservable(name, sign);
-            // TODO: shold be solved using friends
             void create_SignedRealVectorObservable(std::string const & name, std::string sign = "Sign", uint32_t binnum = 0);
 
             // DO NOT USE! use set << ngs::SignedSimpleRealObservable(name, sign);
-            // TODO: shold be solved using friends
             void create_SignedSimpleRealObservable(std::string const & name, std::string sign = "Sign");
 
             // DO NOT USE! use set << ngs::SignedSimpleRealVectorObservable(name, sign);
-            // TODO: shold be solved using friends
             void create_SignedSimpleRealVectorObservable(std::string const & name, std::string sign = "Sign");
 
     };

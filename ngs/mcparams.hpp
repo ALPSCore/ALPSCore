@@ -95,7 +95,6 @@ namespace alps {
             #undef ALPS_NGS_MCPARAMS_CAST_OPERATOR_DECL
     };
 
-    // TODO: make possible to toke any base: std::map, python dict ...
     // TODO: can we keep parameter ordering? like in curent class
     class mcparams : public std::map<std::string, mcparamvalue> {
 

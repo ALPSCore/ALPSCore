@@ -126,9 +126,9 @@ namespace alps {
                     return alea::mcdata<T>::tau();
                 }
 
-//                T const & covariance() const {
-//                    return alea::mcdata<T>::covariance();
-//                }
+                T const & covariance() const {
+                    return alea::mcdata<T>::covariance();
+                }
 
                 #define ALPS_NGS_MCRESULT_IMPL_DERIVED_OPERATOR(NAME, OP, OP_ASSIGN)                                                           \
                     template <typename U> typename boost::enable_if<                                                                           \
@@ -279,7 +279,7 @@ namespace alps {
                 }
 
                 #ifdef ALPS_HAVE_MPI
-                    B * reduce(boost::mpi::communicator const & communicator, std::size_t binnumber) {
+                    B *  reduce(boost::mpi::communicator const & communicator, std::size_t binnumber) {
                         if (communicator.rank() == 0)
                             return reduce_master(communicator, binnumber, typename boost::is_scalar<T>::type());
                         else {

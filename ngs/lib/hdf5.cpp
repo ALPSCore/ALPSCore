@@ -154,6 +154,7 @@ namespace alps {
                     hid_t _id;
             };
 
+            typedef resource<H5Fclose> file_type;
             typedef resource<H5Gclose> group_type;
             typedef resource<H5Dclose> data_type;
             typedef resource<H5Aclose> attribute_type;
@@ -162,6 +163,7 @@ namespace alps {
             typedef resource<H5Pclose> property_type;
             typedef resource<noop> error_type;
 
+            hid_t check_file(hid_t id) { file_type unused(id); return unused; }
             hid_t check_group(hid_t id) { group_type unused(id); return unused; }
             hid_t check_data(hid_t id) { data_type unused(id); return unused; }
             hid_t check_attribute(hid_t id) { attribute_type unused(id); return unused; }
@@ -171,9 +173,9 @@ namespace alps {
             hid_t check_error(hid_t id) { error_type unused(id); return unused; }
 
             bool ignore_python_destruct_errors = false;
-            void set_ignore_python_destruct_errors(bool value) {
-                ignore_python_destruct_errors = value;
-            }
+			void set_ignore_python_destruct_errors(bool value) {
+				ignore_python_destruct_errors = value;
+			}
 
             hid_t get_native_type(char) { return H5Tcopy(H5T_NATIVE_CHAR); }
             hid_t get_native_type(signed char) { return H5Tcopy(H5T_NATIVE_SCHAR); }
@@ -230,23 +232,20 @@ namespace alps {
 
             struct ALPS_DECL mccontext : boost::noncopyable {
 
-                mccontext(std::string const & filename, bool write, bool replace, bool compress)
+                mccontext(std::string const & filename, bool write, bool compress)
                     : compress_(compress)
-                    , write_(write || replace)
-                    , replace_(replace)
+                    , write_(write)
                     , filename_(filename)
                 {
-                    if (replace)
-                        for (std::size_t i = 0; boost::filesystem::exists(filename + (suffix_ = ".tmp." + convert<std::string>(i))); ++i);
-                    if (write_) {
-                        if ((file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDWR, H5P_DEFAULT)) < 0)
-                            file_id_ = H5Fcreate((filename_ + suffix_).c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+                    if (write) {
+                        hid_t raw_id = H5Fopen(filename_.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
+                        file_id_ = raw_id < 0 ? H5Fcreate(filename_.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT) : raw_id;
                     } else {
-                        if (!boost::filesystem::exists(filename_ + suffix_))
-                            ALPS_NGS_THROW_RUNTIME_ERROR("file does not exists: " + filename_ + suffix_)
-                        if (detail::check_error(H5Fis_hdf5((filename_ + suffix_).c_str())) == 0)
-                            ALPS_NGS_THROW_RUNTIME_ERROR("no valid hdf5 file: " + filename_ + suffix_)
-                        file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+                        if (!boost::filesystem::exists(filename_))
+                            ALPS_NGS_THROW_RUNTIME_ERROR("file does not exists: " + filename_)
+                        if (detail::check_error(H5Fis_hdf5(filename_.c_str())) == 0)
+                            ALPS_NGS_THROW_RUNTIME_ERROR("no valid hdf5 file: " + filename_)
+                        file_id_ = H5Fopen(filename_.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
                     }
                 }
 
@@ -258,38 +257,20 @@ namespace alps {
                                    H5Fget_obj_count(file_id_, H5F_OBJ_DATATYPE) > 0
                                 || H5Fget_obj_count(file_id_, H5F_OBJ_ALL) - H5Fget_obj_count(file_id_, H5F_OBJ_FILE) > 0
                             )) {
-                                std::cerr << "Not all resources closed in file '" << filename_ << suffix_ << "'" << std::endl;
+                                std::cerr << "Not all resources closed in file '" << filename_ << "'" << std::endl;
                                 std::abort();
                             }
                         #endif
-                        if (H5Fclose(file_id_) < 0)
-                            std::cerr << "Error in " 
-                                      << __FILE__ 
-                                      << " on " 
-                                      << ALPS_NGS_STRINGIFY(__LINE__) 
-                                      << " in " 
-                                      << __FUNCTION__ 
-                                      << ":" 
-                                      << std::endl
-                                      << error().invoke(file_id_)
-                                      << std::endl;
-                        if (replace_) {
-                            if (boost::filesystem::exists(filename_))
-                                boost::filesystem::remove(filename_);
-                            boost::filesystem::rename(filename_ + suffix_, filename_);
-                        }
                     } catch (std::exception & ex) {
-                        std::cerr << "Error destructing HDF5 context of file '" << filename_ << suffix_ << "'\n" << ex.what() << std::endl;
+                        std::cerr << "Error destructing HDF5 context of file '" << filename_ << "'\n" << ex.what() << std::endl;
                         std::abort();
                     }
                 }
 
                 bool compress_;
                 bool write_;
-                bool replace_;
                 std::string filename_;
-                std::string suffix_;
-                hid_t file_id_;
+                file_type file_id_;
             };
 
         }
@@ -301,14 +282,14 @@ namespace alps {
                 detail::check_error(H5Zget_filter_info(H5Z_FILTER_SZIP, &flag));
                 props &= (flag & H5Z_FILTER_CONFIG_ENCODE_ENABLED ? ~0x00 : ~COMPRESS);
             }
-            if (ref_cnt_.find(file_key(filename, props & (WRITE | REPLACE), props & COMPRESS)) == ref_cnt_.end())
+            if (ref_cnt_.find(file_key(filename, props & WRITE, props & COMPRESS)) == ref_cnt_.end())
                 ref_cnt_.insert(std::make_pair(
-                      file_key(filename, props & (WRITE | REPLACE), props & COMPRESS)
-                    , std::make_pair(context_ = new detail::mccontext(filename, props & WRITE, props & REPLACE, props & COMPRESS), 1)
+                      file_key(filename, props & WRITE, props & COMPRESS)
+                    , std::make_pair(context_ = new detail::mccontext(filename, props & WRITE, props & COMPRESS), 1)
                 ));
             else {
-                context_ = ref_cnt_.find(file_key(filename, props & (WRITE | REPLACE), props & COMPRESS))->second.first;
-                ++ref_cnt_.find(file_key(filename, props & (WRITE | REPLACE), props & COMPRESS))->second.second;
+                context_ = ref_cnt_.find(file_key(filename, props & WRITE, props & COMPRESS))->second.first;
+                ++ref_cnt_.find(file_key(filename, props & WRITE, props & COMPRESS))->second.second;
             }
         }
 

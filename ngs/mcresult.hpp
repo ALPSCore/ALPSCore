@@ -150,7 +150,7 @@ namespace alps {
             bool has_tau() const;
             template <typename T> T const & tau() const;
 
-//            template <typename T> T const & covariance() const;
+            template <typename T> T const & covariance() const;
 
             #define ALPS_NGS_MCRESULT_ASSIGN_OPERATORS(OP)                                       \
                 template <typename T> mcresult & OP (T const & rhs);                             \

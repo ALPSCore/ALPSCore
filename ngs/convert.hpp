@@ -38,7 +38,6 @@ namespace alps {
         return static_cast<U>(arg);
     }
 
-    // TODO: move imple to cpp file!
     #define ALPS_NGS_CONVERT_STRING(T, c)                                                                                                      \
         template<> inline std::string convert<std::string, T >( T arg) {                                                                       \
             char buffer[255];                                                                                                                  \

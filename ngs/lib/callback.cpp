@@ -40,16 +40,4 @@ namespace alps {
             || (time_limit > 0 && boost::posix_time::second_clock::local_time() > start_time + boost::posix_time::seconds(time_limit));
     }
 
-    #ifndef ALPS_NGS_SINGLE_THREAD
-
-        bool threaded_callback_wrapper::check() {
-            return stop_flag;
-        }
-
-        bool threaded_callback_wrapper::operator()() {
-            return (stop_flag = stop_callback());
-        }
-
-    #endif
-
 }
