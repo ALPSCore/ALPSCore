@@ -53,6 +53,14 @@ namespace alps {
         }
     }
 
+    void save_results(mcresults const & results, params const & params, boost::filesystem::path const & filename, std::string const & path) {
+        detail::save_results_impl(results, params, filename, path);
+    }
+
+    void save_results(mcobservables const & observables, params const & params, boost::filesystem::path const & filename, std::string const & path) {
+        detail::save_results_impl(observables, params, filename, path);
+    }
+
     void save_results(mcresults const & results, mcparams const & params, boost::filesystem::path const & filename, std::string const & path) {
         detail::save_results_impl(results, params, filename, path);
     }

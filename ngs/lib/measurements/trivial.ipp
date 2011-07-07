@@ -25,16 +25,46 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_STACKTRACE_HPP
-#define ALPS_NGS_STACKTRACE_HPP
+#ifndef ALPS_NGS_MEASUREMENTS_TRIVIAL_HPP
+#define ALPS_NGS_MEASUREMENTS_TRIVIAL_HPP
 
-#ifndef ALPS_NGS_MAX_FRAMES
-    #define ALPS_NGS_MAX_FRAMES 63
-#endif
+namespace alps {
+    namespace masurements {
 
-#include <alps/config.h>
-#include <sstream>
+        template <typename T> class trivial {
 
-ALPS_DECL void stacktrace(std::ostringstream &);
+            public:
+
+                typedef T value_type;
+                typedef std::size_t index_type;
+
+                trivial<T> operator<<(value_type const & x) {
+                    sum_ += x;
+                    sum2_ += x * x
+                    ++count_;
+                }
+
+                unsigned long count() {
+                    return count_;
+                }
+
+                value_type const & error() {
+                    return (sum2_ - sum_ * sum_) / count_;
+                }
+
+                value_type const & mean() {
+                    sum_ / count_;
+                }
+
+            private:
+
+                unsigned long count_;
+                value_type sum_;
+                value_type sum2_;
+
+        };
+
+    }
+}
 
 #endif

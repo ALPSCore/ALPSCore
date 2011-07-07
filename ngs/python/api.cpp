@@ -5,6 +5,7 @@
  * ALPS Libraries                                                                  *
  *                                                                                 *
  * Copyright (C) 2010 - 2011 by Lukas Gamper <gamperl@gmail.com>                   *
+ *                              Matthias Troyer <troyer@comp-phys.org>             *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -25,16 +26,33 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_STACKTRACE_HPP
-#define ALPS_NGS_STACKTRACE_HPP
+#define PY_ARRAY_UNIQUE_SYMBOL pyngsapi_PyArrayHandle
 
-#ifndef ALPS_NGS_MAX_FRAMES
-    #define ALPS_NGS_MAX_FRAMES 63
-#endif
+#include <alps/ngs/api.hpp>
+#include <alps/ngs/hdf5.hpp>
+#include <alps/ngs/base.hpp>
+#include <alps/ngs/params.hpp>
+#include <alps/ngs/mcresults.hpp>
 
-#include <alps/config.h>
-#include <sstream>
+namespace alps {
+	namespace detail {
 
-ALPS_DECL void stacktrace(std::ostringstream &);
+        void save_results_export(mcresults const & res, params const & par, alps::hdf5::archive & ar, std::string const & path) {
+            ar
+                << make_pvp("/parameters", par)
+            ;
+            if (res.size())
+                ar
+                    << make_pvp(path, res)
+                ;
+        }
+    }
+}
 
-#endif
+BOOST_PYTHON_MODULE(pyngsapi_c) {
+
+    boost::python::def("collectResults", &alps::collect_results<alps::base>);
+
+    boost::python::def("saveResults", &alps::detail::save_results_export);
+
+}

@@ -25,16 +25,23 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_STACKTRACE_HPP
-#define ALPS_NGS_STACKTRACE_HPP
+#ifndef ALPS_NGS_MEASUREMENTS_MATH_HPP
+#define ALPS_NGS_MEASUREMENTS_MATH_HPP
 
-#ifndef ALPS_NGS_MAX_FRAMES
-    #define ALPS_NGS_MAX_FRAMES 63
-#endif
+namespace alps {
+    namespace masurements {
 
-#include <alps/config.h>
-#include <sstream>
+        template <typename Base> class math {
 
-ALPS_DECL void stacktrace(std::ostringstream &);
+            public:
+
+                typename result_trait<Base>::type sin() {
+                    return sin(result_trait<Base>::type(*this));
+                }
+
+        };
+
+    }
+}
 
 #endif

@@ -25,42 +25,81 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_MCATOMIC_HPP
-#define ALPS_NGS_MCATOMIC_HPP
+#ifndef ALPS_NGS_PARAMS_HPP
+#define ALPS_NGS_PARAMS_HPP
 
-#ifndef ALPS_NGS_SINGLE_THREAD
-    #include <boost/thread.hpp>
-    #include <boost/thread/mutex.hpp>
+#include <alps/ngs/hdf5.hpp>
+#include <alps/ngs/param.hpp>
+#include <alps/ngs/config.hpp>
+#include <alps/ngs/detail/params_impl_base.hpp>
+
+#include <boost/scoped_ptr.hpp>
+
+#ifdef ALPS_HAVE_PYTHON
+    #include <alps/ngs/boost_python.hpp>
 #endif
+
+#include <string>
 
 namespace alps {
 
-    #ifndef ALPS_NGS_SINGLE_THREAD
+    namespace detail {
 
-        template<typename T> class mcatomic {
-            public:
+        class params_impl_base;
 
-                mcatomic() {}
-                mcatomic(T const & v): value(v) {}
-                mcatomic(mcatomic<T> const & v): value(v.value) {}
+    }
 
-                mcatomic<T> & operator=(T const & v) {
-                    boost::lock_guard<boost::mutex> lock(mutex);
-                    value = v;
-                }
+    class params {
 
-                operator T() const {
-                    boost::lock_guard<boost::mutex> lock(mutex);
-                    return value;
-                }
+        public:
 
-            private:
+            params(params const &);
 
-                T volatile value;
-                boost::mutex mutable mutex;
-        };
+            params(hdf5::archive &);
 
-    #endif
+            params(std::string const &);
+
+            #ifdef ALPS_HAVE_PYTHON
+                params(boost::python::object const & arg);
+            #endif
+
+            virtual ~params();
+
+            std::size_t size() const;
+
+            std::vector<std::string> keys() const;
+
+            param operator[](std::string const &);
+
+            param const operator[](std::string const &) const;
+
+            template<typename T> param value_or_default(std::string const & key, T const & value) const {
+                return defined(key) 
+                    ? operator[](key) 
+                    : param(convert<std::string>(value))
+                ;
+            }
+
+            bool defined(std::string const &) const;
+
+            void save(hdf5::archive &) const;
+
+            void load(hdf5::archive &);
+            
+            #ifdef ALPS_HAVE_PYTHON
+                // USE FOR PYTHON EXPORT ONLY!
+                detail::params_impl_base * get_impl();
+                detail::params_impl_base const * get_impl() const;
+            #endif
+            
+            // TODO: add boost serialization support
+
+        private:
+
+            boost::scoped_ptr<detail::params_impl_base> impl_;
+
+    };
+
 }
 
 #endif

@@ -25,16 +25,41 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_STACKTRACE_HPP
-#define ALPS_NGS_STACKTRACE_HPP
+#ifndef ALPS_NGS_ATOMIC_HPP
+#define ALPS_NGS_ATOMIC_HPP
 
-#ifndef ALPS_NGS_MAX_FRAMES
-    #define ALPS_NGS_MAX_FRAMES 63
+#ifdef ALPS_NGS_SINGLE_THREAD
+    #error alps::atomic is always multithreaded
 #endif
 
-#include <alps/config.h>
-#include <sstream>
 
-ALPS_DECL void stacktrace(std::ostringstream &);
+#include <boost/thread.hpp>
+#include <boost/thread/mutex.hpp>
+
+namespace alps {
+
+    template<typename T> class atomic {
+        public:
+
+            atomic() {}
+            atomic(T const & v): value(v) {}
+            atomic(atomic<T> const & v): value(v.value) {}
+
+            atomic<T> & operator=(T const & v) {
+                boost::lock_guard<boost::mutex> lock(mutex);
+                value = v;
+            }
+
+            operator T() const {
+                boost::lock_guard<boost::mutex> lock(mutex);
+                return value;
+            }
+
+        private:
+
+            T volatile value;
+            boost::mutex mutable mutex;
+    };
+}
 
 #endif

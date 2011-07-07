@@ -25,16 +25,35 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_STACKTRACE_HPP
-#define ALPS_NGS_STACKTRACE_HPP
+#ifndef ALPS_NGS_MEASUREMENTS_OPERATORS_HPP
+#define ALPS_NGS_MEASUREMENTS_OPERATORS_HPP
 
-#ifndef ALPS_NGS_MAX_FRAMES
-    #define ALPS_NGS_MAX_FRAMES 63
-#endif
+namespace alps {
+    namespace masurements {
 
-#include <alps/config.h>
-#include <sstream>
+        template <typename Base> class operators {
 
-ALPS_DECL void stacktrace(std::ostringstream &);
+            public:
+
+                typename result_trait<Base>::type operator+(Base const & arg) {
+                    return result_trait<Base>::type(*this) + result_trait<Base>::type(arg);
+                }
+
+                typename result_trait<Base>::type operator+(result_trait<Base>::type const & arg) {
+                    return result_trait<Base>::type(*this) + arg;
+                }
+
+                typename result_trait<Base>::type operator+(typename Base::value_type const & arg) {
+                    return result_trait<Base>::type(*this) + arg;
+                }
+
+                typename result_trait<Base>::type operator+(typename element_type<typename Base::value_type>::type const & arg) {
+                    return result_trait<Base>::type(*this) + arg;
+                }
+
+        };
+
+    }
+}
 
 #endif

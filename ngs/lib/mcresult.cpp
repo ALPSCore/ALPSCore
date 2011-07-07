@@ -70,10 +70,10 @@ namespace alps {
         template<> std::vector< T > const & mcresult::bins< T >() const { return impl_->bins< T >(); }                    \
         template<> T const & mcresult::mean< T >() const { return impl_->mean< T >(); }                                   \
         template<> T const & mcresult::error< T >() const { return impl_->error< T >(); }                                 \
-        template<> T const & mcresult::variance< T >() const { return impl_->variance< T >(); }                              \
+        template<> T const & mcresult::variance< T >() const { return impl_->variance< T >(); }                           \
         template<> T const & mcresult::tau< T >() const { return impl_->tau< T >(); }                                     \
-        template<> T const & mcresult::covariance< T >() const { return impl_->error< T >(); }                            \
-        template<> mcresult & mcresult::operator+=< T >( T const & rhs) { impl_->add_assign(rhs); return *this; }         \
+/*        template<> T const & mcresult::covariance< T >() const { return impl_->covariance< T >(); }                       \
+*/        template<> mcresult & mcresult::operator+=< T >( T const & rhs) { impl_->add_assign(rhs); return *this; }         \
         template<> mcresult & mcresult::operator-=< T >( T const & rhs) { impl_->sub_assign(rhs); return *this; }         \
         template<> mcresult & mcresult::operator*=< T >( T const & rhs) { impl_->mul_assign(rhs); return *this; }         \
         template<> mcresult & mcresult::operator/=< T >( T const & rhs) { impl_->div_assign(rhs); return *this; }

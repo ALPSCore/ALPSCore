@@ -25,16 +25,75 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_STACKTRACE_HPP
-#define ALPS_NGS_STACKTRACE_HPP
+#include <alps/ngs/params.hpp>
 
-#ifndef ALPS_NGS_MAX_FRAMES
-    #define ALPS_NGS_MAX_FRAMES 63
+#include <alps/ngs/lib/params_impl_map.ipp>
+#include <alps/ngs/lib/params_impl_ordred.ipp>
+
+#ifdef ALPS_HAVE_PYTHON
+    #include <alps/ngs/lib/params_impl_dict.ipp>
 #endif
 
-#include <alps/config.h>
-#include <sstream>
+namespace alps {
 
-ALPS_DECL void stacktrace(std::ostringstream &);
+    params::params(params const & arg)
+        : impl_(arg.impl_->clone())
+    {}
 
-#endif
+    params::params(hdf5::archive & arg)
+        : impl_(new detail::params_impl_map(arg))
+    {}
+
+    params::params(std::string const & arg)
+        : impl_(new detail::params_impl_ordred(arg))
+    {}
+
+    #ifdef ALPS_HAVE_PYTHON
+        params::params(boost::python::object const & arg)
+            : impl_(new detail::params_impl_dict(arg))
+        {}
+    #endif
+
+    params::~params() {}
+    
+    std::size_t params::size() const {
+        return impl_->size();
+    }
+
+    std::vector<std::string> params::keys() const {
+        return impl_->keys();
+    }
+
+    param params::operator[](std::string const & key) {
+        return (*impl_)[key];
+    }
+
+    param const params::operator[](std::string const & key) const {
+        return (*impl_)[key];
+    }
+
+    bool params::defined(std::string const & key) const {
+        return impl_->defined(key);
+    }
+
+    void params::save(hdf5::archive & ar) const {
+        return impl_->save(ar);
+    }
+
+    void params::load(hdf5::archive & ar) {
+        return impl_->load(ar);
+    }
+
+    #ifdef ALPS_HAVE_PYTHON
+
+        detail::params_impl_base * params::get_impl() {
+            return impl_.get();
+        }
+
+        detail::params_impl_base const * params::get_impl() const {
+            return impl_.get();
+        }
+
+    #endif
+
+}
