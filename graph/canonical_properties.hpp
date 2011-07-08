@@ -174,6 +174,8 @@ namespace alps {
 				pi.push_back(typename partition_type<Graph>::type::value_type(tau[i].begin(), tau[i].begin() + j));
 				if (j + 1 < tau[i].size())
 					std::copy(tau[i].begin() + j + 1, tau[i].end(), std::back_inserter(pi.back()));
+				if (!pi.back().size())
+					pi.pop_back();
 				if (i + 1 < tau.size())
 					std::copy(tau.begin() + i + 1, tau.end(), std::back_inserter(pi));
 				equitable_refinement(pi, G);
@@ -198,7 +200,7 @@ namespace alps {
 			// Input: pi = (V1, V2, ..., Vr)
 			// Output: comparable graph label l(pi)
 			template<typename Graph> void graph_label (
-                                 typename ::alps::graph::graph_label<Graph>::type & l
+                  typename ::alps::graph::graph_label<Graph>::type & l
 				, typename partition_type<Graph>::type const & pi
 				, Graph const & G
 			) {
@@ -211,9 +213,9 @@ namespace alps {
 				// I = {(ni, j) : ni element of Vj
 				partition_indeces(I, pi, G);
 				for (typename std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t>::const_iterator it = I.begin(); it != I.end(); ++it)
-					for (tie(ai, ae) = adjacent_vertices(it->second, G); ai != ae; ++ai)
-						if (I[*ai] < N - I[it->second])
-							l[I[it->second] * N - (I[it->second] - 1) * I[it->second] / 2 + I[*ai]] = true;
+					for (tie(ai, ae) = adjacent_vertices(it->first, G); ai != ae; ++ai)
+						if (I[*ai] < N - I[it->first])
+							l[I[it->first] * N - (I[it->first] - 1) * I[it->first] / 2 + I[*ai]] = true;
 			}
 
 			// If an ni
