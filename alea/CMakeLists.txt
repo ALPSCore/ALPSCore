@@ -15,3 +15,6 @@ IF(NOT ALPS_LLVM_WORKAROUND)
     add_alps_test(${name})
   ENDFOREACH(name)
 ENDIF(NOT ALPS_LLVM_WORKAROUND)
+
+add_executable(dumpbench dumpbench.C)
+target_link_libraries(dumpbench alps)
