@@ -64,13 +64,19 @@ int main() {
                 << alps::RealObservable("No Measurements")
                 << alps::IntHistogramObservable("Histogram", 0, 10)
                 << alps::RealObservable("Test 2")
-                << alps::RealObservable("Test 3");
-    for (int i = 0; i < 100000; ++i) {
+                << alps::RealObservable("Test 3")
+//                << alps::RealVectorObservable("Test 4")
+    ;
+    std::valarray<double> vec;
+    vec.resize(1000);
+    for (int i = 0; i < 1000000; ++i) {
+      vec[i % vec.size()] = random();
       measurement["Test"] << random();
       measurement["Sign"] << 1.0;
       measurement["Histogram"] << static_cast<int>(10*random());
       measurement["Test 2"] << random();
       measurement["Test 3"] << random();
+//      measurement["Test 4"] << vec;
     }
     alps::RealObsevaluator e2 = measurement["Test 2"];
     alps::RealObsevaluator e4 = measurement["Test 3"];
@@ -118,6 +124,6 @@ int main() {
     std::cerr << "Reading from XDR: " << get_time() - start << " sec\n";
   }
 
-//  boost::filesystem::remove(boost::filesystem::path(hdf5_filename));
-//  boost::filesystem::remove(boost::filesystem::path(xdr_filename));
+  boost::filesystem::remove(boost::filesystem::path(hdf5_filename));
+  boost::filesystem::remove(boost::filesystem::path(xdr_filename));
 }

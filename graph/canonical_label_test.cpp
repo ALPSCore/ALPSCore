@@ -1,12 +1,10 @@
-#include <iostream>
-
-
 #include <alps/graph/canonical_properties.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <iostream>
 
 int main() {
     using alps::graph::canonical_properties;
+
     typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS> graph_type;
     graph_type g;
 
