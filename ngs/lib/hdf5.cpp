@@ -677,7 +677,7 @@ namespace alps {
                     new detail::type_wrapper< U >::type[len]                                                                                                           \
                 );                                                                                                                                                     \
                 if (std::equal(chunk.begin(), chunk.end(), data_size.begin())) {                                                                                       \
-                    detail::check_error(H5Dread(data_id, native_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, raw.get()));                                                          \
+                    detail::check_error(H5Dread(data_id, native_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, raw.get()));                                                        \
                     convert(raw.get(), raw.get() + len, value);                                                                                                        \
                 } else {                                                                                                                                               \
                     std::vector<hsize_t> offset_hid(offset.begin(), offset.end()),                                                                                     \
@@ -685,7 +685,7 @@ namespace alps {
                     detail::space_type space_id(H5Dget_space(data_id));                                                                                                \
                     detail::check_error(H5Sselect_hyperslab(space_id, H5S_SELECT_SET, &offset_hid.front(), NULL, &chunk_hid.front(), NULL));                           \
                     detail::space_type mem_id(H5Screate_simple(static_cast<int>(chunk_hid.size()), &chunk_hid.front(), NULL));                                         \
-                    detail::check_error(H5Dread(data_id, native_id, mem_id, space_id, H5P_DEFAULT, raw.get()));                                                          \
+                    detail::check_error(H5Dread(data_id, native_id, mem_id, space_id, H5P_DEFAULT, raw.get()));                                                        \
                     convert(raw.get(), raw.get() + len, value);                                                                                                        \
                 }
         #define ALPS_NGS_HDF5_READ_VECTOR_ATTRIBUTE_HELPER(U, T)                                                                                                       \
@@ -697,7 +697,7 @@ namespace alps {
                     new detail::type_wrapper< U >::type[len]                                                                                                           \
                 );                                                                                                                                                     \
                 if (std::equal(chunk.begin(), chunk.end(), data_size.begin())) {                                                                                       \
-                    detail::check_error(H5Aread(attribute_id, native_id, raw.get()));                                                                                    \
+                    detail::check_error(H5Aread(attribute_id, native_id, raw.get()));                                                                                  \
                     convert(raw.get(), raw.get() + len, value);                                                                                                        \
                 } else                                                                                                                                                 \
                     ALPS_NGS_THROW_RUNTIME_ERROR("Not Implemented, path: " + path)
@@ -858,7 +858,7 @@ namespace alps {
                             , H5P_DEFAULT                                                                                                                          \
                             , H5P_DEFAULT                                                                                                                          \
                         );                                                                                                                                         \
-                    detail::native_ptr_converter<boost::remove_cv<boost::remove_reference<T>::type>::type> converter(1);                                                              \
+                    detail::native_ptr_converter<boost::remove_cv<boost::remove_reference<T>::type>::type> converter(1);                                           \
                     detail::check_error(H5Awrite(data_id, type_id, converter.apply(&value)));                                                                      \
                     detail::attribute_type attr_id(data_id);                                                                                                       \
                     if (is_group(path.substr(0, path.find_last_of('@') - 1)))                                                                                      \
@@ -870,10 +870,10 @@ namespace alps {
         ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_WRITE_SCALAR)
         #undef ALPS_NGS_HDF5_WRITE_SCALAR
     
-        #define ALPS_NGS_HDF5_WRITE_VECTOR(T)                                                                                                                          \
-            void archive::write(                                                                                                                                       \
-                std::string path, T const * value, std::vector<std::size_t> size, std::vector<std::size_t> chunk, std::vector<std::size_t> offset                      \
-            ) const {                                                                                                                                                  \
+        #define ALPS_NGS_HDF5_WRITE_VECTOR(T)                                                                                                                      \
+            void archive::write(                                                                                                                                   \
+                std::string path, T const * value, std::vector<std::size_t> size, std::vector<std::size_t> chunk, std::vector<std::size_t> offset                  \
+            ) const {                                                                                                                                              \
                 if (!context_->write_)                                                                                                                             \
                     ALPS_NGS_THROW_RUNTIME_ERROR("the archive is not writeable")                                                                                   \
                 if (chunk.size() == 0)                                                                                                                             \

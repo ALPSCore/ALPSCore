@@ -25,66 +25,85 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_API_HPP
-#define ALPS_NGS_API_HPP
+#ifndef ALPS_NGS_BASE_HPP
+#define ALPS_NGS_BASE_HPP
 
+#include <alps/ngs/hdf5.hpp>
 #include <alps/ngs/params.hpp>
-#include <alps/ngs/mcparams.hpp>
 #include <alps/ngs/mcresults.hpp>
 #include <alps/ngs/mcobservables.hpp>
 
 #include <alps/config.h>
 
+#include <boost/function.hpp>
 #include <boost/filesystem/path.hpp>
+#include <boost/random/uniform_real.hpp>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/variate_generator.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
+#include <vector>
 #include <string>
 
 namespace alps {
 
-    template<typename S> struct result_names_type {
-        typedef typename S::result_names_type type;
+    class base {
+
+        public:
+
+            typedef alps::params parameters_type;
+            typedef alps::mcresults results_type;
+            typedef std::vector<std::string> result_names_type;
+
+            base(parameters_type const & p, std::size_t seed_offset = 0)
+                : params(p)
+                  // TODO: this ist not the best solution - any idea?
+                , random(boost::mt19937(static_cast<std::size_t>(p.value_or_default("SEED", 42)) + seed_offset), boost::uniform_real<>())
+                , fraction(0.)
+                , next_check(8)
+                , start_time(boost::posix_time::second_clock::local_time())
+                , check_time(boost::posix_time::second_clock::local_time() + boost::posix_time::seconds(next_check))
+            {}
+
+            virtual ~base() {}
+
+            virtual void do_update() = 0;
+
+            virtual void do_measurements() = 0;
+
+            virtual double fraction_completed() const = 0;
+
+            void save(alps::hdf5::archive & ar) const;
+
+            void load(alps::hdf5::archive & ar);
+
+            bool run(boost::function<bool ()> const & stop_callback);
+
+            result_names_type result_names() const;
+
+            result_names_type unsaved_result_names() const;
+
+            results_type collect_results() const;
+
+            virtual results_type collect_results(result_names_type const & names) const;
+
+        protected:
+
+            virtual bool complete_callback(boost::function<bool ()> const & stop_callback);
+
+            parameters_type params;
+            mcobservables measurements;
+            boost::variate_generator<boost::mt19937, boost::uniform_real<> > random;
+
+        private:
+
+            double fraction;
+            std::size_t next_check;
+            boost::posix_time::ptime start_time;
+            boost::posix_time::ptime check_time;
+
     };
-
-    template<typename S> struct results_type {
-        typedef typename S::results_type type;
-    };
-
-    template<typename S> struct parameters_type {
-        typedef typename S::parameters_type type;
-    };
-
-    template<typename S> typename result_names_type<S>::type result_names(S const & s) {
-        return s.result_names();
-    }
-
-    template<typename S> typename result_names_type<S>::type unsaved_result_names(S const & s) {
-        return s.unsaved_result_names();
-    }
-
-    template<typename S> typename results_type<S>::type collect_results(S const & s) {
-        return s.collect_results();
-    }
-
-    template<typename S> typename results_type<S>::type collect_results(S const & s, typename result_names_type<S>::type const & names) {
-        return s.collect_results(names);
-    }
-
-    template<typename S> typename results_type<S>::type collect_results(S const & s, std::string const & name) {
-        return collect_results(s, typename result_names_type<S>::type(1, name));
-    }
-
-    template<typename S> double fraction_completed(S const & s) {
-        return s.fraction_completed();
-    }
-
-    void save_results(mcresults const & results, params const & params, boost::filesystem::path const & filename, std::string const & path);
-
-    void save_results(mcobservables const & observables, params const & params, boost::filesystem::path const & filename, std::string const & path);
-
-    void save_results(mcresults const & results, mcparams const & params, boost::filesystem::path const & filename, std::string const & path);
-
-    void save_results(mcobservables const & observables, mcparams const & params, boost::filesystem::path const & filename, std::string const & path);
-
 }
 
 #endif

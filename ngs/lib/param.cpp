@@ -25,16 +25,12 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_STACKTRACE_HPP
-#define ALPS_NGS_STACKTRACE_HPP
+#include <alps/ngs/param.hpp>
 
-#ifndef ALPS_NGS_MAX_FRAMES
-    #define ALPS_NGS_MAX_FRAMES 63
-#endif
+namespace alps {
 
-#include <alps/config.h>
-#include <sstream>
+    std::ostream & operator<<(std::ostream & os, param const & value) {
+        return os << value.str();
+    }
 
-ALPS_DECL void stacktrace(std::ostringstream &);
-
-#endif
+}

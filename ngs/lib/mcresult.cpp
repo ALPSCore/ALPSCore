@@ -65,12 +65,13 @@ namespace alps {
         ++ref_cnt_[impl_ = rhs.impl_];
         return *this;
     }
-
+	
     #define ALPS_MCRESULT_TPL_IMPL(T)                                                                                     \
+		template<> bool mcresult::is_type< T >() const { return impl_->is_type< T >(); }								  \
         template<> std::vector< T > const & mcresult::bins< T >() const { return impl_->bins< T >(); }                    \
         template<> T const & mcresult::mean< T >() const { return impl_->mean< T >(); }                                   \
         template<> T const & mcresult::error< T >() const { return impl_->error< T >(); }                                 \
-        template<> T const & mcresult::variance< T >() const { return impl_->variance< T >(); }                              \
+        template<> T const & mcresult::variance< T >() const { return impl_->variance< T >(); }                           \
         template<> T const & mcresult::tau< T >() const { return impl_->tau< T >(); }                                     \
         template<> T const & mcresult::covariance< T >() const { return impl_->error< T >(); }                            \
         template<> mcresult & mcresult::operator+=< T >( T const & rhs) { impl_->add_assign(rhs); return *this; }         \
@@ -225,12 +226,12 @@ namespace alps {
     }
 
     #define ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_IMPL(T, OP, NAME)                  \
-        template <> mcresult OP < T >(mcresult const & lhs, T const & rhs) {       \
+        mcresult OP(mcresult const & lhs, T const & rhs) {						   \
             mcresult res;                                                          \
             res.ref_cnt_[res.impl_ = lhs.impl_-> NAME (rhs)] = 1;                  \
             return res;                                                            \
         }                                                                          \
-        template <> mcresult OP < T >(T const & lhs, mcresult const & rhs) {       \
+        mcresult OP(T const & lhs, mcresult const & rhs) {						   \
             mcresult res;                                                          \
             res.ref_cnt_[res.impl_ = rhs.impl_-> NAME ## _inverse (lhs)] = 1;      \
             return res;                                                            \

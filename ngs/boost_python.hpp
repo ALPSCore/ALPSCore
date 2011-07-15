@@ -25,16 +25,17 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_STACKTRACE_HPP
-#define ALPS_NGS_STACKTRACE_HPP
+#ifndef ALPS_NGS_BOOST_PYTHON_HPP
+#define ALPS_NGS_BOOST_PYTHON_HPP
 
-#ifndef ALPS_NGS_MAX_FRAMES
-    #define ALPS_NGS_MAX_FRAMES 63
+#include <boost/python.hpp>
+
+#ifdef tolower
+	#undef tolower
 #endif
 
-#include <alps/config.h>
-#include <sstream>
-
-ALPS_DECL void stacktrace(std::ostringstream &);
+#ifdef toupper
+	#undef toupper
+#endif
 
 #endif

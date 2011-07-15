@@ -38,6 +38,7 @@ namespace alps {
         return static_cast<U>(arg);
     }
 
+    // TODO: move impl to cpp file!
     #define ALPS_NGS_CONVERT_STRING(T, c)                                                                                                      \
         template<> inline std::string convert<std::string, T >( T arg) {                                                                       \
             char buffer[255];                                                                                                                  \
@@ -48,7 +49,7 @@ namespace alps {
         template<> inline T convert< T, std::string>(std::string arg) {                                                                        \
             T value;                                                                                                                           \
             if (sscanf(arg.c_str(), "%" c, &value) < 0)                                                                                        \
-                ALPS_NGS_THROW_RUNTIME_ERROR("error converting from to string");                                                               \
+                ALPS_NGS_THROW_RUNTIME_ERROR("error converting from string " + arg);                                                           \
             return value;                                                                                                                      \
         }
     ALPS_NGS_CONVERT_STRING(short, "hd")
@@ -64,6 +65,7 @@ namespace alps {
     ALPS_NGS_CONVERT_STRING(unsigned long long, "llu")
     #undef ALPS_NGS_CONVERT_STRING
 
+    // TODO: move impl to cpp file!
     #define ALPS_NGS_CONVERT_STRING_CHAR(T, U)                                                                                                 \
         template<> inline std::string convert<std::string, T >( T arg) {                                                                       \
             return convert<std::string>(static_cast< U >(arg));                                                                                \

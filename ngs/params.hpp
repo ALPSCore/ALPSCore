@@ -25,16 +25,83 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_STACKTRACE_HPP
-#define ALPS_NGS_STACKTRACE_HPP
+#ifndef ALPS_NGS_PARAMS_HPP
+#define ALPS_NGS_PARAMS_HPP
 
-#ifndef ALPS_NGS_MAX_FRAMES
-    #define ALPS_NGS_MAX_FRAMES 63
+#include <alps/ngs/hdf5.hpp>
+#include <alps/ngs/param.hpp>
+#include <alps/ngs/config.hpp>
+#include <alps/ngs/detail/params_impl_base.hpp>
+
+#include <boost/scoped_ptr.hpp>
+
+#ifdef ALPS_HAVE_PYTHON
+    #include <alps/ngs/boost_python.hpp>
 #endif
 
-#include <alps/config.h>
-#include <sstream>
+#include <string>
 
-ALPS_DECL void stacktrace(std::ostringstream &);
+namespace alps {
+
+    namespace detail {
+
+        class params_impl_base;
+
+    }
+
+    class params {
+
+        public:
+
+            params();
+
+            params(params const &);
+
+            params(hdf5::archive &);
+
+            params(std::string const &);
+
+            #ifdef ALPS_HAVE_PYTHON
+                params(boost::python::object const & arg);
+            #endif
+
+            virtual ~params();
+
+            std::size_t size() const;
+
+            std::vector<std::string> keys() const;
+
+            param operator[](std::string const &);
+
+            param const operator[](std::string const &) const;
+
+            template<typename T> param value_or_default(std::string const & key, T const & value) const {
+                return defined(key) 
+                    ? operator[](key) 
+                    : param(convert<std::string>(value))
+                ;
+            }
+
+            bool defined(std::string const &) const;
+
+            void save(hdf5::archive &) const;
+
+            void load(hdf5::archive &);
+            
+            #ifdef ALPS_HAVE_PYTHON
+                // USE FOR PYTHON EXPORT ONLY!
+                detail::params_impl_base * get_impl();
+                detail::params_impl_base const * get_impl() const;
+            #endif
+            
+            // TODO: add boost serialization support
+
+        private:
+
+            boost::scoped_ptr<detail::params_impl_base> impl_;
+
+    };
+
+}
 
 #endif

@@ -47,7 +47,7 @@ namespace alps {
                     return boost::mpi::all_reduce(communicator, Impl::fraction_completed(), std::plus<double>());
                 }
 
-                virtual typename results_type<Impl>::type collect_results(typename result_names_type<Impl>::type const & names) const {
+                typename results_type<Impl>::type collect_results(typename result_names_type<Impl>::type const & names) const {
                     typename results_type<Impl>::type local_results = Impl::collect_results(names), partial_results;
                     for(typename results_type<Impl>::type::iterator it = local_results.begin(); it != local_results.end(); ++it)
                         if (it->second.count())

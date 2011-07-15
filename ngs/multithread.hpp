@@ -25,16 +25,66 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_STACKTRACE_HPP
-#define ALPS_NGS_STACKTRACE_HPP
+#ifndef ALPS_NGS_MULTITHREAD_HPP
+#define ALPS_NGS_MULTITHREAD_HPP
 
-#ifndef ALPS_NGS_MAX_FRAMES
-    #define ALPS_NGS_MAX_FRAMES 63
+#include <alps/ngs/atomic.hpp>
+
+#ifndef ALPS_NGS_SINGLE_THREAD
+    #include <boost/thread.hpp>
 #endif
 
-#include <alps/config.h>
-#include <sstream>
+namespace alps {
 
-ALPS_DECL void stacktrace(std::ostringstream &);
+    #ifndef ALPS_NGS_SINGLE_THREAD
+
+        template<typename Impl> class multithread : public Impl {
+            public:
+                multithread(typename parameters_type<Impl>::type const & p, std::size_t seed_offset = 0)
+                    : Impl(p, seed_offset)
+                {}
+
+                void save(alps::hdf5::archive & ar) const {
+                    boost::lock_guard<boost::mutex> glock(global_mutex);
+                    Impl::save(ar);
+                }
+
+                void load(alps::hdf5::archive & ar) {
+                    boost::lock_guard<boost::mutex> glock(global_mutex);
+                    Impl::load(ar);
+                }
+
+                void do_update() {
+                    boost::lock_guard<boost::mutex> glock(global_mutex);
+                    static_cast<Impl &>(*this).do_update();
+                }
+
+                void do_measurements() {
+                    boost::lock_guard<boost::mutex> mlock(measurements_mutex);
+                    boost::lock_guard<boost::mutex> glock(global_mutex);
+                    static_cast<Impl &>(*this).do_measurements();
+                }
+
+                using Impl::collect_results;
+
+                typename Impl::results_type collect_results(typename Impl::result_names_type const & names) const {
+                    boost::lock_guard<boost::mutex> mlock(measurements_mutex);
+                    boost::lock_guard<boost::mutex> glock(global_mutex);
+                    static_cast<Impl const &>(*this).collect_results();
+                }
+
+                double fraction_completed() const {
+                    boost::lock_guard<boost::mutex> glock(global_mutex);
+                    static_cast<Impl const &>(*this).fraction_completed();
+                }
+
+            private:
+
+                boost::mutex mutable global_mutex;
+                boost::mutex mutable measurements_mutex;
+
+        };
+    #endif
+}
 
 #endif

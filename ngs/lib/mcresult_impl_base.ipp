@@ -26,8 +26,8 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_MCRESULT_IMPL_BASE_HPP
-#define ALPS_NGS_MCRESULT_IMPL_BASE_HPP
+#ifndef ALPS_NGS_MCRESULT_IMPL_BASE_IPP
+#define ALPS_NGS_MCRESULT_IMPL_BASE_IPP
 
 #include <alps/ngs/lib/mcresult_impl_derived.ipp>
 
@@ -56,6 +56,10 @@ namespace alps {
                 virtual uint64_t max_bin_number() const = 0;
 
                 virtual std::size_t bin_number() const = 0;
+				
+				template <typename T> bool is_type() const {
+					return dynamic_cast<mcresult_impl_derived<mcresult_impl_base, T> const *>(this) != NULL;
+				}
 
                 template <typename T> std::vector<T> const & bins() const {
                     return dynamic_cast<mcresult_impl_derived<mcresult_impl_base, T> const &>(*this).bins();
@@ -80,6 +84,10 @@ namespace alps {
                 template <typename T> T const & tau() const {
                     return dynamic_cast<mcresult_impl_derived<mcresult_impl_base, T> const &>(*this).tau();
                 }
+
+//                template <typename T> T const & covariance() const {
+//                    return dynamic_cast<mcresult_impl_derived<mcresult_impl_base, T> const &>(*this).covariance();
+//                }
                 
                 #define ALPS_NGS_MCRESULT_IMPL_BASE_OPERATOR(NAME)                                                                             \
                     template <typename T> typename boost::disable_if<                                                                          \

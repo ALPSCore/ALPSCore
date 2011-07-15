@@ -25,16 +25,68 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_STACKTRACE_HPP
-#define ALPS_NGS_STACKTRACE_HPP
+#include <alps/ngs/api.hpp>
+#include <alps/ngs/hdf5.hpp>
+#include <alps/ngs/base.hpp>
 
-#ifndef ALPS_NGS_MAX_FRAMES
-    #define ALPS_NGS_MAX_FRAMES 63
-#endif
+namespace alps {
 
-#include <alps/config.h>
-#include <sstream>
+    void base::save(alps::hdf5::archive & ar) const {
+        ar
+            << make_pvp("/parameters", params)
+            << make_pvp("/simulation/realizations/0/clones/0/results", measurements)
+        ;
+    }
 
-ALPS_DECL void stacktrace(std::ostringstream &);
+    void base::load(alps::hdf5::archive  & ar) {
+        ar 
+            >> make_pvp("/simulation/realizations/0/clones/0/results", measurements)
+        ;
+    }
 
-#endif
+    bool base::run(boost::function<bool ()> const & stop_callback) {
+        do {
+            do_update();
+            do_measurements();
+        } while(!complete_callback(stop_callback));
+        return !stop_callback();
+    }
+
+    base::result_names_type base::result_names() const {
+        result_names_type names;
+        for(mcobservables::const_iterator it = measurements.begin(); it != measurements.end(); ++it)
+            names.push_back(it->first);
+        return names;
+    }
+
+    base::result_names_type base::unsaved_result_names() const {
+        return result_names_type(); 
+    }
+
+    base::results_type base::collect_results() const {
+        return collect_results(result_names());
+    }
+
+    base::results_type base::collect_results(result_names_type const & names) const {
+        results_type partial_results;
+        for(result_names_type::const_iterator it = names.begin(); it != names.end(); ++it)
+            partial_results.insert(*it, mcresult(measurements[*it]));
+        return partial_results;
+    }
+
+    bool base::complete_callback(boost::function<bool ()> const & stop_callback) {
+        if (boost::posix_time::second_clock::local_time() > check_time) {
+            fraction = fraction_completed();
+            next_check = std::min(
+                2. * next_check, 
+                std::max(
+                      double(next_check)
+                    , 0.8 * (boost::posix_time::second_clock::local_time() - start_time).total_seconds() / fraction * (1 - fraction)
+                )
+            );
+           check_time = boost::posix_time::second_clock::local_time() + boost::posix_time::seconds(next_check);
+        }
+        return (stop_callback() || fraction >= 1.);
+    }
+
+}

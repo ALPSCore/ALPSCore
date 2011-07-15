@@ -25,39 +25,46 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_MCATOMIC_HPP
-#define ALPS_NGS_MCATOMIC_HPP
-
-#ifndef ALPS_NGS_SINGLE_THREAD
-    #include <boost/thread.hpp>
-    #include <boost/thread/mutex.hpp>
-#endif
+#ifndef ALPS_NGS_PARALLEL_HPP
+#define ALPS_NGS_PARALLEL_HPP
 
 namespace alps {
 
-    #ifndef ALPS_NGS_SINGLE_THREAD
+    #ifdef ALPS_HAVE_MPI
 
-        template<typename T> class mcatomic {
+        template<typename Impl> class parallel : public Impl {
             public:
-
-                mcatomic() {}
-                mcatomic(T const & v): value(v) {}
-                mcatomic(mcatomic<T> const & v): value(v.value) {}
-
-                mcatomic<T> & operator=(T const & v) {
-                    boost::lock_guard<boost::mutex> lock(mutex);
-                    value = v;
+                using Impl::collect_results;
+                
+                parallel(typename parameters_type<Impl>::type const & p) {
+                    ALPS_NGS_THROW_RUNTIME_ERROR("No communicator passed");
                 }
 
-                operator T() const {
-                    boost::lock_guard<boost::mutex> lock(mutex);
-                    return value;
+                parallel(typename parameters_type<Impl>::type const & p, boost::mpi::communicator const & c) 
+                    : Impl(p, c.rank())
+                    , communicator(c)
+                    , binnumber(p.value_or_default("binnumber", std::min(128, 2 * c.size())))
+                {
+                    MPI_Errhandler_set(communicator, MPI_ERRORS_RETURN);
+                }
+
+                double fraction_completed() const {
+                    return boost::mpi::all_reduce(communicator, Impl::fraction_completed(), std::plus<double>());
+                }
+
+                typename results_type<Impl>::type collect_results(typename result_names_type<Impl>::type const & names) const {
+                    typename results_type<Impl>::type local_results = Impl::collect_results(names), partial_results;
+                    for(typename results_type<Impl>::type::iterator it = local_results.begin(); it != local_results.end(); ++it)
+                        if (it->second.count())
+                            partial_results.insert(it->first, it->second.reduce(communicator, binnumber));
+                        else
+                            partial_results.insert(it->first, it->second);
+                    return partial_results;
                 }
 
             private:
-
-                T volatile value;
-                boost::mutex mutable mutex;
+                boost::mpi::communicator communicator;
+                std::size_t binnumber;
         };
 
     #endif

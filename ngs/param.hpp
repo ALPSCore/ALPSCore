@@ -25,16 +25,67 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_STACKTRACE_HPP
-#define ALPS_NGS_STACKTRACE_HPP
+#ifndef ALPS_NGS_PARAM_HPP
+#define ALPS_NGS_PARAM_HPP
 
-#ifndef ALPS_NGS_MAX_FRAMES
-    #define ALPS_NGS_MAX_FRAMES 63
-#endif
+#include <alps/ngs/config.hpp>
+#include <alps/ngs/convert.hpp>
 
-#include <alps/config.h>
-#include <sstream>
+#include <boost/function.hpp>
+#include <boost/optional/optional.hpp>
 
-ALPS_DECL void stacktrace(std::ostringstream &);
+#include <string>
+#include <iostream>
+
+namespace alps {
+
+    class param {
+
+        public:
+
+            param(param const & arg)
+                : value_(arg.value_)
+                , getter_(arg.getter_)
+                , setter_(arg.setter_)
+            {}
+
+            param(std::string const & value)
+                : value_(value)
+            {}
+
+            param(
+                  boost::function<std::string()> const & getter
+                , boost::function<void(std::string)> const & setter
+            )
+                : value_(boost::none_t())
+                , getter_(getter)
+                , setter_(setter)
+            {}
+
+            template<typename T> operator T() const {
+                return convert<T>(value_ == boost::none_t() ? getter_() : *value_);
+            }
+
+            std::string str() const {
+                return value_ == boost::none_t() ? getter_() : *value_;
+            }
+
+            template<typename T> param operator=(T const & arg) {
+                if (value_ == boost::none_t())
+                    ALPS_NGS_THROW_RUNTIME_ERROR("No reference available");
+                setter_(convert<std::string>(arg));
+            }
+
+        private:
+
+            boost::optional<std::string> value_;
+            boost::function<std::string()> getter_;
+            boost::function<void(std::string)> setter_;
+
+    };
+
+    std::ostream & operator<<(std::ostream & os, param const & v);
+
+}
 
 #endif

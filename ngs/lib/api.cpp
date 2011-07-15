@@ -35,22 +35,21 @@ namespace alps {
     namespace detail {
         template<typename R, typename P> void save_results_impl(R const & results, P const & params, boost::filesystem::path const & filename, std::string const & path) {
             if (results.size()) {
-                boost::filesystem::path original = filename.parent_path() / (filename.filename() + ".h5");
-                boost::filesystem::path backup = filename.parent_path() / (filename.filename() + ".bak");
-                if (boost::filesystem::exists(backup))
-                    boost::filesystem::remove(backup);
-                {
-                    hdf5::archive ar(backup.file_string(), hdf5::archive::WRITE);
-                    ar
-                        << make_pvp("/parameters", params)
-                        << make_pvp(path, results)
-                    ;
-                }
-                if (boost::filesystem::exists(original))
-                    boost::filesystem::remove(original);
-                boost::filesystem::rename(backup, original);
+                hdf5::archive ar(filename.file_string(), hdf5::archive::REPLACE);
+                ar
+                    << make_pvp("/parameters", params)
+                    << make_pvp(path, results)
+                ;
             }
         }
+    }
+
+    void save_results(mcresults const & results, params const & params, boost::filesystem::path const & filename, std::string const & path) {
+        detail::save_results_impl(results, params, filename, path);
+    }
+
+    void save_results(mcobservables const & observables, params const & params, boost::filesystem::path const & filename, std::string const & path) {
+        detail::save_results_impl(observables, params, filename, path);
     }
 
     void save_results(mcresults const & results, mcparams const & params, boost::filesystem::path const & filename, std::string const & path) {

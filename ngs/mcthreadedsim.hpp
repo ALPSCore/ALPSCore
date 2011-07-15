@@ -28,7 +28,7 @@
 #ifndef ALPS_NGS_MCTHREADEDSIM_HPP
 #define ALPS_NGS_MCTHREADEDSIM_HPP
 
-#include <alps/ngs/mcatomic.hpp>
+#include <alps/ngs/atomic.hpp>
 
 #ifndef ALPS_NGS_SINGLE_THREAD
     #include <boost/thread.hpp>
@@ -42,40 +42,47 @@ namespace alps {
             public:
                 mcthreadedsim(typename parameters_type<Impl>::type const & p, std::size_t seed_offset = 0)
                     : Impl(p, seed_offset)
-                    , stop_flag(false)
                 {}
 
-                bool run(boost::function<bool ()> const & stop_callback) {
-                    // This should be moved to main
-                    boost::thread thread(boost::bind<bool>(&Impl::run, static_cast<Impl *>(this), &mcthreadedsim<Impl>::dummy_callback));
-                    checker(stop_callback);
-                    thread.join();
-                    return !stop_callback();
+                void save(boost::filesystem::path const & path) const {
+                    boost::lock_guard<boost::mutex> glock(global_mutex);
+                    Impl::save(path);
                 }
 
-            protected:
-
-                virtual bool complete_callback(boost::function<bool ()> const &) {
-                    return stop_flag;
+                void load(boost::filesystem::path const & path) {
+                    boost::lock_guard<boost::mutex> glock(global_mutex);
+                    Impl::load(path);
                 }
 
-                virtual void checker(boost::function<bool ()> const & stop_callback) {
-                    while (true) {
-                        usleep(0.1 * 1e6);
-                        // TODO: why does this produces a segfault?
-                        // if (stop_flag = Impl::complete_callback(stop_callback))
-                        stop_flag = Impl::complete_callback(stop_callback);
-                        if (stop_flag)
-                            return;
-                    }
+                void do_update() {
+                    boost::lock_guard<boost::mutex> glock(global_mutex);
+                    static_cast<Impl &>(*this).do_update();
                 }
 
-                mcatomic<bool> stop_flag;
-                // measurements and configuration need to be locked separately: needs own measurements
+                void do_measurements() {
+                    boost::lock_guard<boost::mutex> mlock(measurements_mutex);
+                    boost::lock_guard<boost::mutex> glock(global_mutex);
+                    static_cast<Impl &>(*this).do_measurements();
+                }
+
+                using Impl::collect_results;
+
+                typename Impl::results_type collect_results(typename Impl::result_names_type const & names) const {
+                    boost::lock_guard<boost::mutex> mlock(measurements_mutex);
+                    boost::lock_guard<boost::mutex> glock(global_mutex);
+                    static_cast<Impl const &>(*this).collect_results();
+                }
+
+                double fraction_completed() const {
+                    boost::lock_guard<boost::mutex> glock(global_mutex);
+                    static_cast<Impl const &>(*this).fraction_completed();
+                }
 
             private:
 
-                static bool dummy_callback() { return false; }
+                boost::mutex mutable global_mutex;
+                boost::mutex mutable measurements_mutex;
+
         };
     #endif
 }

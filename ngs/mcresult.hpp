@@ -74,15 +74,19 @@ namespace alps {
 
     mcresult pow(mcresult rhs, double exponent);
     
-    #define ALPS_NGS_MCRESULT_FREE_OPERATOR_DECL(OP)                              \
-        template <typename T> mcresult OP(mcresult const & lhs, T const & rhs);   \
-        template <typename T> mcresult OP(T const & lhs, mcresult const & rhs);   \
+    #define ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_DECL(OP, T)                             \
+        mcresult OP(mcresult const & lhs, T const & rhs);                               \
+        mcresult OP( T const & lhs, mcresult const & rhs);
+    #define ALPS_NGS_MCRESULT_FREE_OPERATOR_DECL(OP)                                    \
+        ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_DECL(OP, double)                            \
+        ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_DECL(OP, std::vector<double>)               \
         mcresult OP (mcresult const & lhs, mcresult const & rhs);
     ALPS_NGS_MCRESULT_FREE_OPERATOR_DECL(operator+)
     ALPS_NGS_MCRESULT_FREE_OPERATOR_DECL(operator-)
     ALPS_NGS_MCRESULT_FREE_OPERATOR_DECL(operator*)
     ALPS_NGS_MCRESULT_FREE_OPERATOR_DECL(operator/)
     #undef ALPS_NGS_MCRESULT_FREE_OPERATOR_DECL
+    #undef ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_DECL
 
     class mcresult {
 
@@ -110,15 +114,19 @@ namespace alps {
 
             friend mcresult pow(mcresult rhs, double exponent);
 
+            #define ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_FRIEND(OP, T)                            \
+                friend mcresult OP(mcresult const & lhs, T const & rhs);                         \
+                friend mcresult OP( T const & lhs, mcresult const & rhs);
             #define ALPS_NGS_MCRESULT_FREE_OPERATOR_FRIEND(OP)                                   \
-                template <typename T> friend mcresult OP(mcresult const & lhs, T const & rhs);   \
-                template <typename T> friend mcresult OP(T const & lhs, mcresult const & rhs);   \
+                ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_FRIEND(OP, double)                           \
+                ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_FRIEND(OP, std::vector<double>)              \
                 friend mcresult OP (mcresult const & lhs, mcresult const & rhs);
             ALPS_NGS_MCRESULT_FREE_OPERATOR_FRIEND(operator+)
             ALPS_NGS_MCRESULT_FREE_OPERATOR_FRIEND(operator-)
             ALPS_NGS_MCRESULT_FREE_OPERATOR_FRIEND(operator*)
             ALPS_NGS_MCRESULT_FREE_OPERATOR_FRIEND(operator/)
             #undef ALPS_NGS_MCRESULT_FREE_OPERATOR_FRIEND
+            #undef ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_FRIEND
 
             mcresult();
             mcresult(Observable const * obs);
@@ -137,6 +145,8 @@ namespace alps {
             uint64_t bin_size() const;
             uint64_t max_bin_number() const;
             std::size_t bin_number() const;
+
+            template <typename T> bool is_type() const;
 
             template <typename T> std::vector<T> const & bins() const;
 

@@ -58,7 +58,8 @@ namespace alps {
                 return os << "[" << short_print(v.value.front()) << "," << short_print(v.value.back()) << "]";
             default: 
                 return os << "[" << short_print(v.value.front()) << ",.." << short_print(v.value.size()) << "..," << short_print(v.value.back()) << "]";
-        }}
+        }
+    }
 }
 
 #endif

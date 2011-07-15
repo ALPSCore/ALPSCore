@@ -5,6 +5,7 @@
  * ALPS Libraries                                                                  *
  *                                                                                 *
  * Copyright (C) 2010 - 2011 by Lukas Gamper <gamperl@gmail.com>                   *
+ *                              Matthias Troyer <troyer@comp-phys.org>             *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -25,16 +26,36 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_STACKTRACE_HPP
-#define ALPS_NGS_STACKTRACE_HPP
+#define PY_ARRAY_UNIQUE_SYMBOL pyngsresults_PyArrayHandle
 
-#ifndef ALPS_NGS_MAX_FRAMES
-    #define ALPS_NGS_MAX_FRAMES 63
-#endif
+#include <alps/ngs/hdf5.hpp>
+#include <alps/ngs/mcresults.hpp>
 
-#include <alps/config.h>
-#include <sstream>
+#include <alps/ngs/boost_python.hpp>
+#include <boost/python/suite/indexing/map_indexing_suite.hpp>
 
-ALPS_DECL void stacktrace(std::ostringstream &);
+namespace alps {
+    namespace detail {
 
-#endif
+        void mcresults_load(alps::mcresults & self, alps::hdf5::archive & ar, std::string const & path) {
+            std::string current = ar.get_context();
+            ar.set_context(path);
+            self.load(ar);
+            ar.set_context(current);
+        }
+
+    }
+}
+
+BOOST_PYTHON_MODULE(pyngsresults_c) {
+
+    boost::python::class_<alps::mcresults>(
+        "results",
+        boost::python::no_init
+    )
+        .def(boost::python::map_indexing_suite<alps::mcresults>())
+        .def("save", &alps::mcresults::save)
+        .def("load", &alps::detail::mcresults_load)
+    ;
+
+}

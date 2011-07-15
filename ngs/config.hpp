@@ -25,16 +25,28 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_STACKTRACE_HPP
-#define ALPS_NGS_STACKTRACE_HPP
-
-#ifndef ALPS_NGS_MAX_FRAMES
-    #define ALPS_NGS_MAX_FRAMES 63
-#endif
+#ifndef ALPS_NGS_CONFIG_HPP
+#define ALPS_NGS_CONFIG_HPP
 
 #include <alps/config.h>
-#include <sstream>
 
-ALPS_DECL void stacktrace(std::ostringstream &);
+// if defined, no threading libraries are included
+// #define ALPS_NGS_SINGLE_THREAD
+
+// do not throw an error on accessing a not existing paht in a hdf5 file
+// #define ALPS_HDF5_READ_GREEDY
+
+// do not throw an error if closing a hdf5 gets dirty (e.g in Python)
+// #ifdef ALPS_HDF5_CLOSE_GREEDY
+
+// blocksize in compressed hdf5. Default: 23
+// #define ALPS_HDF5_SZIP_BLOCK_SIZE 32
+
+// maximal number of stack frames displayed in stacktrace. Default 63
+// #define ALPS_NGS_MAX_FRAMES 63
+
+// TODO: have_python
+// TODO: have_mpi
+// TODO: have_thread
 
 #endif
