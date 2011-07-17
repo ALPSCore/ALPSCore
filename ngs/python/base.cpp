@@ -53,7 +53,7 @@ namespace alps {
 			    #ifdef ALPS_HAVE_MPI
 
 					base_export(boost::python::object arg, std::size_t seed_offset = 42, boost::mpi::communicator = boost::mpi::communicator())
-						: base(typename base::parameters_type(arg), seed_offset)
+						: base(base::parameters_type(arg), seed_offset)
 					{}
 
                 #else
@@ -80,7 +80,7 @@ namespace alps {
                     base::run(boost::bind(base_export::callback_wrapper, stop_callback));
                 }
 
-                typename base::parameters_type & get_params() {
+                base::parameters_type & get_params() {
                     return base::params;
                 }
 
