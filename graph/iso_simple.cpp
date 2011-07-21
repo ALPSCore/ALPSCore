@@ -135,5 +135,77 @@ int main() {
 		std::cout << g_label << std::endl;
 		std::cout << h_label << std::endl;
 	}
+
+    {
+        /*
+                 F  
+                 |
+              E--A--B
+                / \
+               D   C
+               
+                vs.
+
+                  D
+                  |
+               A--B--C--E--F
+
+                vs.
+
+                   D
+                   |
+                A--B--C--F
+                   |
+                   E
+        */
+        enum { A, B, C, D, E, F, N};
+
+        graph_type g(N), h(N), i(N);
+
+        add_edge(A,B,g);
+        add_edge(A,C,g);
+        add_edge(A,D,g);
+        add_edge(A,E,g);
+        add_edge(A,F,g);
+
+        add_edge(A,B,h);
+        add_edge(B,C,h);
+        add_edge(B,D,h);
+        add_edge(C,E,h);
+        add_edge(E,F,h);
+
+        add_edge(A,B,i);
+        add_edge(B,C,i);
+        add_edge(B,D,i);
+        add_edge(B,E,i);
+        add_edge(C,F,i);
+		
+        std::vector<boost::graph_traits<graph_type>::vertex_descriptor> g_ordering, h_ordering, i_ordering;
+		graph_label<graph_type>::type g_label, h_label, i_label;
+		partition_type<graph_type>::type g_orbit, h_orbit, i_orbit;
+		boost::tie(g_ordering, g_label, g_orbit) = canonical_properties(g);
+		boost::tie(h_ordering, h_label, h_orbit) = canonical_properties(h);
+		boost::tie(i_ordering, i_label, i_orbit) = canonical_properties(i);
+
+		for (std::vector<boost::graph_traits<graph_type>::vertex_descriptor>::const_iterator it = g_ordering.begin(); it != g_ordering.end(); ++it)
+			std::cout << (it != g_ordering.begin() ? " " : "(") << *it;
+		std::cout << ")" << std::endl;
+		for (std::vector<boost::graph_traits<graph_type>::vertex_descriptor>::const_iterator it = h_ordering.begin(); it != h_ordering.end(); ++it)
+			std::cout << (it != h_ordering.begin() ? " " : "(") << *it;
+		std::cout << ")" << std::endl;
+		for (std::vector<boost::graph_traits<graph_type>::vertex_descriptor>::const_iterator it = i_ordering.begin(); it != i_ordering.end(); ++it)
+			std::cout << (it != i_ordering.begin() ? " " : "(") << *it;
+		std::cout << ")" << std::endl;
+
+		dump_partition(g_orbit);
+		dump_partition(h_orbit);
+		dump_partition(i_orbit);
+		
+		std::cout << g_label << std::endl;
+		std::cout << h_label << std::endl;
+		std::cout << i_label << std::endl;
+    }
+
+
 	return EXIT_SUCCESS;	
 }
