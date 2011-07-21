@@ -195,7 +195,7 @@ namespace alps {
 					terminal_node(T, G);
 				}
 			}
-			
+
 			// The graph label is a triangular bit matrix with a 
 			// Input: pi = (V1, V2, ..., Vr)
 			// Output: comparable graph label l(pi)
@@ -214,8 +214,8 @@ namespace alps {
 				partition_indeces(I, pi, G);
 				for (typename std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t>::const_iterator it = I.begin(); it != I.end(); ++it)
 					for (tie(ai, ae) = adjacent_vertices(it->first, G); ai != ae; ++ai)
-						if (I[*ai] < N - I[it->first])
-							l[I[it->first] * N - (I[it->first] - 1) * I[it->first] / 2 + I[*ai]] = true;
+						if (I[*ai] <= I[it->first])
+							l[I[*ai] * N - (I[*ai] - 1) * I[*ai] / 2 + I[it->first] - I[*ai]] = true;
 			}
 
 			// If an ni
@@ -323,6 +323,7 @@ namespace alps {
 					canonical_partition = get<0>(T.back());
 					canonical_label = current_label;
 				}
+				
 			}
 			std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> canonical_ordering;
 			for (typename partition_type<Graph>::type::const_iterator it = canonical_partition.begin(); it != canonical_partition.end(); ++it)
