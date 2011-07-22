@@ -283,7 +283,7 @@ int MPPScheduler::check_tasks(ProcessList& free)
   for (int i=0;i<active.size();i++)
     {
     */
-  int i=last_check;    
+  unsigned int i=last_check;    
   if(i<active.size()) {
     if(active[i].where.size() &&
        second_clock::local_time() > active[i].next_check) {

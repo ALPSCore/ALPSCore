@@ -73,7 +73,7 @@ int SerialScheduler::run()
       std::cout  << "Task " << i+1 << " does not exist.\n";
     else if(taskstatus[i]==TaskNotStarted || taskstatus[i]==TaskRunning ||
             (taskstatus[i]==TaskHalted)) {
-      int n=tasks[i]->cpus();
+      unsigned int n=tasks[i]->cpus();
       if(n<1)
         boost::throw_exception(std::logic_error("at least one node required for a run!"));
       if(n>processes.size())

@@ -332,8 +332,6 @@ void IMPDump::broadcast(const alps::Process &sender)
   // check for message and size
   int info;
 
-  MPI_Status status;
-
   // set the buffer to the apropriate length
   int cnt;
   if((info=MPI_Bcast(&cnt,1,MPI_INT,sender,MPI_COMM_WORLD))!=0)

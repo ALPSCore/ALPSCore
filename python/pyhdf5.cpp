@@ -145,7 +145,7 @@ namespace alps {
                     } else if (boost::python::extract<boost::python::list>(data).check()) {
 						boost::python::list list = boost::python::extract<boost::python::list>(data)();
 						int raw_type = 0;
-						for (std::size_t i = 0; i < boost::python::len(list); ++i) {
+						for (int i = 0; i < boost::python::len(list); ++i) {
 							if (false);
 							 #define PYHDF5_CHECK_LIST_SCALAR(T, S)                                                                                        \
 								else if (boost::python::extract< T >(list[i]).check())                                                                     \
@@ -174,7 +174,7 @@ namespace alps {
 							PYHDF5_CHECK_LIST_SCALAR(std::string, 4)
 							#undef PYHDF5_CHECK_LIST_SCALAR
 							default:
-								for (std::size_t i = 0; i < boost::python::len(list); ++i) {
+								for (int i = 0; i < boost::python::len(list); ++i) {
 									if (false);
 									 #define PYHDF5_CHECK_LIST_SCALAR(T)                                                                                  \
 										else if (boost::python::extract< T >(list[i]).check())                                                            \
