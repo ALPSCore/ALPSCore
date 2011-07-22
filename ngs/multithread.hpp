@@ -70,12 +70,12 @@ namespace alps {
                 typename Impl::results_type collect_results(typename Impl::result_names_type const & names) const {
                     boost::lock_guard<boost::mutex> mlock(measurements_mutex);
                     boost::lock_guard<boost::mutex> glock(global_mutex);
-                    static_cast<Impl const &>(*this).collect_results();
+                    return static_cast<Impl const &>(*this).collect_results();
                 }
 
                 double fraction_completed() const {
                     boost::lock_guard<boost::mutex> glock(global_mutex);
-                    static_cast<Impl const &>(*this).fraction_completed();
+                    return static_cast<Impl const &>(*this).fraction_completed();
                 }
 
             private:
