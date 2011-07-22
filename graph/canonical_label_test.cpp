@@ -3,6 +3,7 @@
 #include <iostream>
 
 int main() {
+    using boost::get;
     using alps::graph::canonical_properties;
 
     typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS> graph_type;
