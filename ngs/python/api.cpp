@@ -51,7 +51,7 @@ namespace alps {
 
 BOOST_PYTHON_MODULE(pyngsapi_c) {
 
-    boost::python::def("collectResults", &alps::collect_results<alps::base>);
+    boost::python::def("collectResults", static_cast<alps::results_type<alps::base>::type (*)(alps::base const &)>(&alps::collect_results<alps::base>));
 
     boost::python::def("saveResults", &alps::detail::save_results_export);
 
