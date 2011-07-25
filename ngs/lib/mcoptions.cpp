@@ -76,7 +76,7 @@ namespace alps {
         if (vm.count("continue"))
             resume = true;
         if (output_file == "<unspecified>")
-            output_file = input_file.substr(0,input_file.find_last_of('.'))+ ".out";
+            output_file = input_file.substr(0,input_file.find_last_of('.'))+ ".out.h5";
     }
 
 }
