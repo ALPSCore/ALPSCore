@@ -31,17 +31,10 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/random.hpp>
+#include <boost/timer.hpp>
 
 #include <string>
 #include <iostream>
-
-#include <sys/time.h> /* gettimeofday */
-
-inline double get_time() {
-  struct timeval tm;
-  gettimeofday(&tm, NULL);
-  return tm.tv_sec + tm.tv_usec * 1.0e-6;
-}
 
 int main() {
   int count = 100;
@@ -56,7 +49,7 @@ int main() {
 
   alps::ObservableSet measurement;
   {
-    start = get_time();
+    boost::timer t;
     boost::minstd_rand0 engine;
     boost::uniform_01<boost::minstd_rand0> random(engine);
     measurement << alps::make_observable(alps::SimpleRealObservable("Test"), true)
@@ -83,45 +76,45 @@ int main() {
     alps::RealObsevaluator ratio("Ratio");
     ratio = e2 / e4;
     measurement.addObservable(ratio);
-    std::cerr << "Generating mesurement: " << get_time() - start << " sec\n";
+    std::cerr << "Generating mesurement: " << t.elapsed() << " sec\n";
   }
   
   {
-    start = get_time();
+    boost::timer t;
     alps::hdf5::archive oar(hdf5_filename, alps::hdf5::archive::WRITE);
     for (int c = 0; c < count; ++c) {
       oar << make_pvp("/test/" + boost::lexical_cast<std::string>(c) + "/result", measurement);
     }
-    std::cerr << "Writing to HDF5: " << get_time() - start << " sec\n";
+    std::cerr << "Writing to HDF5: " << t.elapsed() << " sec\n";
   }
 
   {
-    start = get_time();
+    boost::timer t;
     alps::OXDRFileDump dump(boost::filesystem::path(xdr_filename, boost::filesystem::native));
     for (int c = 0; c < count; ++c) {
       dump << measurement;
     }
-    std::cerr << "Writing to XDR: " << get_time() - start << " sec\n";
+    std::cerr << "Writing to XDR: " << t.elapsed()<< " sec\n";
   }
 
   measurement.clear();
   {
-    start = get_time();
+    boost::timer t;
     alps::hdf5::archive iar(hdf5_filename, alps::hdf5::archive::READ);
     for (int c = 0; c < count; ++c) {
       iar >> make_pvp("/test/" + boost::lexical_cast<std::string>(c) + "/result", measurement);
     }
-    std::cerr << "Reading from HDF5: " << get_time() - start << " sec\n";
+    std::cerr << "Reading from HDF5: " << t.elapsed() << " sec\n";
   }
 
   measurement.clear();
   {
-    start = get_time();
+    boost::timer t;
     alps::IXDRFileDump dump(boost::filesystem::path(xdr_filename, boost::filesystem::native));
     for (int c = 0; c < count; ++c) {
       dump >> measurement;
     }
-    std::cerr << "Reading from XDR: " << get_time() - start << " sec\n";
+    std::cerr << "Reading from XDR: " << t.elapsed() << " sec\n";
   }
 
   boost::filesystem::remove(boost::filesystem::path(hdf5_filename));
