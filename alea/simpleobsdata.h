@@ -631,6 +631,13 @@ void SimpleObservableData<T>::transform(const SimpleObservableData<X>& x, OP op,
   if ((count()==0) || (x.count()==0))
     boost::throw_exception(std::runtime_error("both observables need measurements"));
 
+  bool delete_bins = (bin_number() != x.bin_number() ||
+                        bin_size() != x.bin_size() ||
+                        jack_.size() != x.jack_.size() );
+
+  if (delete_bins)
+        boost::throw_exception(std::runtime_error("both observables need same number of measurements and bins"));
+
   if(!jack_valid_) fill_jack();
   if(!x.jack_valid_) x.fill_jack();
 
@@ -640,9 +647,6 @@ void SimpleObservableData<T>::transform(const SimpleObservableData<X>& x, OP op,
   has_variance_ = false;
   has_tau_=false;
   values2_.clear();
-  bool delete_bins = (bin_number() != x.bin_number() ||
-                      bin_size() != x.bin_size() ||
-                      jack_.size() != x.jack_.size() );
   if (delete_bins) {
     values_.clear();
     jack_.clear();
