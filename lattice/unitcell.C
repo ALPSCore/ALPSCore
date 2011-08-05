@@ -34,7 +34,7 @@
 
 #include <alps/lattice/unitcell.h>
 #include <alps/utility/vectorio.hpp>
-
+#include <alps/expression.h>
 #include <boost/lexical_cast.hpp>
 
 namespace alps {
@@ -81,7 +81,11 @@ GraphUnitCell::GraphUnitCell(const XMLTag& intag, std::istream& p)
               tag = parse_tag(p);
         if(tag.name=="COORDINATE") {
           if (tag.type!=XMLTag::SINGLE) {
-            read_vector(parse_content(p),coord,dimension());
+            std::vector<std::string> v;
+            read_vector(parse_content(p),v,dimension());
+            for (int i=0;i<v.size();++i)
+              coord.push_back(alps::evaluate<double>(v[i]));
+            //read_vector(parse_content(p),coord,dimension());
             tag = parse_tag(p);
             if (tag.name!="/COORDINATE")
               boost::throw_exception(std::runtime_error("closing </COORDINATE> tag missing"));
