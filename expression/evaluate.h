@@ -187,6 +187,8 @@ void simplify(expression::Expression<T>& x) { x.simplify();}
 
 StringValue simplify_value(StringValue const& val, Parameters const& parms, bool eval_random=false);
 
+bool same_values(StringValue const& x, StringValue const& y, double eps=1e-15);
+
 } // end namespace alps
 
 #endif // ! ALPS_EXPRESSION_H
