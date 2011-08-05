@@ -49,7 +49,7 @@ void ParameterList::parse(std::istream& is, bool replace_env) {
   bs::parse_info<std::deque<char>::iterator> info = bs::parse(
     buff.begin(), buff.end(),
     plist_p >> bs::end_p,
-    bs::blank_p | bs::comment_p("//") | bs::comment_p("#") | bs::comment_p("/*", "*/"));
+    bs::blank_p | bs::comment_p("//") | bs::comment_p("/*", "*/"));
 
   /* // ST 2006.10.06: following in-situ version does not work with Intel C++ on IA64
   typedef bs::multi_pass<std::istreambuf_iterator<char> > iterator_t;
