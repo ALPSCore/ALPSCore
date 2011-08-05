@@ -164,7 +164,7 @@ void skip_comment(std::istream& in)
     in >> c;
     if(c=='-')
       ++dashcount;
-    else
+    else if (c != '>')
       dashcount=0;
     if(c=='"') read_until(in,'"');
   } while ((dashcount<2 || c!='>')&&in);
