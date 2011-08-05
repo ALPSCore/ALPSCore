@@ -159,10 +159,15 @@ void xml_close_single_tag(std::istream& in)
 void skip_comment(std::istream& in)
 {
   char c;
+  int dashcount =0;
   do {
     in >> c;
+    if(c=='-')
+      ++dashcount;
+    else
+      dashcount=0;
     if(c=='"') read_until(in,'"');
-  } while (c!='>'&&in);
+  } while ((dashcount<2 || c!='>')&&in);
 }
 
 } // namespace detail
