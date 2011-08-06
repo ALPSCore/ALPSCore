@@ -39,6 +39,7 @@
 #include <algorithm>
 
 int main() {
+  try {
     std::string const filename = "test.h5";
     if (boost::filesystem::exists(boost::filesystem::path(filename)))
         boost::filesystem::remove(boost::filesystem::path(filename));
@@ -46,18 +47,20 @@ int main() {
         boost::minstd_rand0 engine;
         boost::uniform_01<boost::minstd_rand0> random(engine);
         alps::ObservableSet measurement;
-        measurement << alps::make_observable(alps::SimpleRealObservable("Test"), true)
+        measurement << alps::make_observable(alps::RealObservable("Test"), true)
                     << alps::RealObservable("Sign")
                     << alps::RealObservable("No Measurements")
                     << alps::IntHistogramObservable("Histogram", 0, 10)
                     << alps::RealObservable("Test 2")
-                    << alps::RealObservable("Test 3");
+                    << alps::RealObservable("Test 3")
+                    << alps::SimpleRealObservable("Test 4");
         for (int i = 0; i < 10000; ++i) {
             measurement["Test"] << random();
             measurement["Sign"] << 1.0;
             measurement["Histogram"] << static_cast<int>(10*random());
             measurement["Test 2"] << random();
             measurement["Test 3"] << random();
+            measurement["Test 4"] << random();
         }
         alps::RealObsevaluator e2 = measurement["Test 2"];
         alps::RealObsevaluator e4 = measurement["Test 3"];
@@ -72,7 +75,7 @@ int main() {
     }
     {
         alps::ObservableSet measurement;
-        measurement << alps::make_observable(alps::SimpleRealObservable("Test"), true)
+        measurement << alps::make_observable(alps::RealObservable("Test"), true)
                     << alps::RealObservable("Sign")
                     << alps::RealObservable("No Measurements")
                     << alps::IntHistogramObservable("Histogram", 0, 10);
@@ -89,4 +92,8 @@ int main() {
         alps::IntHistogramObsevaluator eval = measurement["Histogram"];
     }
     boost::filesystem::remove(boost::filesystem::path(filename));
+  }
+  catch (std::exception& e) {
+    std::cerr << "Fatal error: " << e.what() << "\n"; 
+  }
 }
