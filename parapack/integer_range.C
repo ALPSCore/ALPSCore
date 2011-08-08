@@ -40,7 +40,7 @@ int main()
 
   std::cout << "Test for integer_range<int>:\n";
   while (std::getline(std::cin, str)) {
-    if (str[0] == '\0') break;
+    if (str.size() == 0 || str[0] == '\0') break;
     std::cout << "parse " << str << ": ";
     try {
       alps::integer_range<int> r(str, params);
