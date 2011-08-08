@@ -105,7 +105,7 @@ namespace alps {
         }
 
         #define ALPS_NGS_HDF5_DEFINE_FREE_FUNCTIONS(T)                                                                                                                 \
-            void save(                                                                                                                                                 \
+            ALPS_DECL void save(                                                                                                                                                 \
                   oarchive & ar                                                                                                                                        \
                 , std::string const & path                                                                                                                             \
                 , T const & value                                                                                                                                      \
@@ -114,7 +114,7 @@ namespace alps {
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                         \
             );                                                                                                                                                         \
                                                                                                                                                                        \
-            void load(                                                                                                                                                 \
+            ALPS_DECL void load(                                                                                                                                                 \
                   iarchive & ar                                                                                                                                        \
                 , std::string const & path                                                                                                                             \
                 , T & value                                                                                                                                            \

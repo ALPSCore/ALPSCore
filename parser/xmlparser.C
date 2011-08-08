@@ -323,7 +323,7 @@ void XMLParser::parse(std::istream& in)
       std::string t = parse_content(in);
       int pi = 0;
       for (std::size_t p = 0; p <= t.length(); ++p) {
-        if (t[p] == '\n' || p == t.length()) {
+        if ( p == t.length() || t[p] == '\n') {
           std::string s = t.substr(pi, p - pi);
           // remove preceding and following blanks
           s = s.erase(0, s.find_first_not_of(' '));
