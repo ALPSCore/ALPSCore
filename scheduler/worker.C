@@ -345,7 +345,6 @@ void Worker::set_parameters(const alps::Parameters& p)
 {
   for (Parameters::const_iterator it = p.begin(); it != p.end(); ++it) {
     if(it->key() != "SEED" && 
-    
       !same_values(simplify_value(parms[it->key()],parms),simplify_value(it->value(),p),1e-6)) {
       if(!(change_parameter(it->key(), it->value()) ||
           Worker::change_parameter(it->key(), it->value()))) {

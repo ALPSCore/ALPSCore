@@ -79,12 +79,17 @@ StringValue simplify_value(StringValue const& val, Parameters const& parms, bool
 
 bool same_values(StringValue const& x, StringValue const& y, double eps)
 {
-  //expression::ParameterEvaluator<double> eval();
-  expression::Expression<double> exprx(x);
-  expression::Expression<double> expry(y);
-  if (exprx.can_evaluate() && expry.can_evaluate()) {
-    return std::abs(exprx.value()-expry.value()) < eps*std::abs(exprx.value()) ;
-  } else {
+  try {
+    //expression::ParameterEvaluator<double> eval();
+    expression::Expression<double> exprx(x);
+    expression::Expression<double> expry(y);
+    if (exprx.can_evaluate() && expry.can_evaluate()) {
+      return std::abs(exprx.value()-expry.value()) < eps*std::abs(exprx.value()) ;
+    } else {
+      return x==y;
+    }
+  } catch(...) {
+    // we had a problem evaluating, use original full value
     return x==y;
   }
 }

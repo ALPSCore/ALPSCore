@@ -156,14 +156,16 @@ void xml_close_single_tag(std::istream& in)
 }
 
 /// skips over an XML comment or processing instruction
-void skip_comment(std::istream& in)
+void skip_comment(std::istream& in, bool processing=false)
 {
   char c;
   int dashcount =0;
   do {
     in >> c;
-    if(c=='-')
+    if(!processing && c=='-')
       ++dashcount;
+    else if(processing && c=='?')
+      dashcount=2;
     else if (c != '>')
       dashcount=0;
     if(c=='"') read_until(in,'"');
@@ -188,7 +190,7 @@ XMLTag parse_tag(std::istream& in, bool skip_comments)
       tag.attributes[n]=v;
       in >> c;
     }
-    detail::skip_comment(in);
+    detail::skip_comment(in,true);
   }
   else if( tag.name=="!") {
     tag.type=XMLTag::COMMENT;
