@@ -137,7 +137,8 @@ namespace alps {
 
                 template<typename T> void write(
                       std::string path
-                    , T const * value, std::vector<std::size_t> size
+                    , T const * value
+					, std::vector<std::size_t> size
                     , std::vector<std::size_t> chunk = std::vector<std::size_t>()
                     , std::vector<std::size_t> offset = std::vector<std::size_t>()
                 ) const {

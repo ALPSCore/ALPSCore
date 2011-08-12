@@ -189,7 +189,7 @@ namespace alps {
             hid_t get_native_type(float) { return H5Tcopy(H5T_NATIVE_FLOAT); }
             hid_t get_native_type(double) { return H5Tcopy(H5T_NATIVE_DOUBLE); }
             hid_t get_native_type(long double) { return H5Tcopy(H5T_NATIVE_LDOUBLE); }
-            hid_t get_native_type(bool) { return H5Tcopy(H5T_NATIVE_HBOOL); }
+            hid_t get_native_type(bool) { return H5Tcopy(H5T_NATIVE_SCHAR); }
             hid_t get_native_type(std::string) { 
                 hid_t type_id = H5Tcopy(H5T_C_S1);
                 detail::check_error(H5Tset_size(type_id, H5T_VARIABLE));
@@ -444,7 +444,7 @@ namespace alps {
                 ALPS_NGS_THROW_RUNTIME_ERROR("error reading class " + path)
             return type == H5S_SCALAR;
         }
-    
+
         bool archive::is_string(std::string path) const {
             hid_t type_id;
             path = complete_path(path);
@@ -789,8 +789,8 @@ namespace alps {
         #undef ALPS_NGS_HDF5_READ_VECTOR
         #undef ALPS_NGS_HDF5_READ_VECTOR_DATA_HELPER
     
-        #define ALPS_NGS_HDF5_WRITE_SCALAR(T)                                                                                                                          \
-            void archive::write(std::string path, T value) const {                                                                                                     \
+        #define ALPS_NGS_HDF5_WRITE_SCALAR(T)                                                                                                                      \
+            void archive::write(std::string path, T value) const {                                                                                                 \
                 if (!context_->write_)                                                                                                                             \
                     ALPS_NGS_THROW_RUNTIME_ERROR("the archive is not writeable")                                                                                   \
                 hid_t data_id;                                                                                                                                     \
@@ -824,7 +824,7 @@ namespace alps {
                             , H5P_DEFAULT                                                                                                                          \
                             , H5P_DEFAULT                                                                                                                          \
                         );                                                                                                                                         \
-                    detail::native_ptr_converter<boost::remove_cv<boost::remove_reference<T>::type>::type> converter(1);                                                              \
+                    detail::native_ptr_converter<boost::remove_cv<boost::remove_reference<T>::type>::type> converter(1);                                           \
                     detail::check_error(H5Dwrite(data_id, type_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, converter.apply(&value)));                                       \
                     detail::check_data(data_id);                                                                                                                   \
                 } else {                                                                                                                                           \
