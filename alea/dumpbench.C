@@ -36,8 +36,11 @@
 #include <string>
 #include <iostream>
 
+#include <hdf5.h>
+
 int main() {
   int count = 100;
+  int size = 10000;
   
   std::string const xdr_filename = "test.dump";
   std::string const hdf5_filename = "test.h5";
@@ -123,4 +126,59 @@ int main() {
 
   boost::filesystem::remove(boost::filesystem::path(hdf5_filename));
   boost::filesystem::remove(boost::filesystem::path(xdr_filename));
+
+  {
+    std::vector<double> data(size);
+    boost::posix_time::ptime start = boost::posix_time::microsec_clock::local_time();
+    alps::OXDRFileDump dump(boost::filesystem::path(xdr_filename, boost::filesystem::native));
+    for (int c = 0; c < count; ++c) {
+      dump << data;
+    }
+    std::cerr << "Writing Vector to XDR           : " << 0.001 * (stop - start).total_milliseconds() << " sec\n";
+  }
+  boost::filesystem::remove(boost::filesystem::path(xdr_filename));
+
+  {
+	using namespace alps;
+	std::vector<double> data(size);
+    boost::posix_time::ptime start = boost::posix_time::microsec_clock::local_time();
+	alps::hdf5::archive oar(hdf5_filename, alps::hdf5::archive::WRITE);
+    std::cerr << "Creating HDF5 Archive           : " << 0.001 * (stop - start).total_milliseconds() << " sec\n";
+    start = boost::posix_time::microsec_clock::local_time();
+	{
+		for (int c = 0; c < count; ++c) {
+		  oar << make_pvp("/vec", data);
+		}
+	}
+    std::cerr << "Writing Vector to HDF5 Archive  : " << 0.001 * (stop - start).total_milliseconds() << " sec\n";
+    start = boost::posix_time::microsec_clock::local_time();
+	{
+		for (int c = 0; c < count; ++c) {
+			oar.write("/vec", &data.front(), std::vector<std::size_t>(1, data.size()), std::vector<std::size_t>(1, data.size()), std::vector<std::size_t>(1, 0));
+		}
+	}
+	std::cerr << "Writing Pointer to HDF5 Archive : " << 0.001 * (stop - start).total_milliseconds() << " sec\n";
+
+  }
+
+  boost::filesystem::remove(boost::filesystem::path(hdf5_filename));
+  {
+	std::vector<double> data(size);
+    boost::posix_time::ptime start = boost::posix_time::microsec_clock::local_time();
+	hsize_t hsize = size;
+	hid_t fileId = H5Fcreate(hdf5_filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+    for (int c = 0; c < count; ++c) {
+		hid_t dataspaceId = H5Screate_simple(1, &hsize, NULL);
+		hid_t datatypeId = H5Tcopy(H5T_NATIVE_DOUBLE);
+		hid_t datasetId = H5Dcreate(fileId, "/vec", datatypeId, dataspaceId, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+		herr_t status = H5Dwrite(datasetId, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &data.front());
+		H5Sclose(dataspaceId);
+		H5Tclose(datatypeId);
+		H5Dclose(datasetId);
+	}
+	H5Fflush(fileId, H5F_SCOPE_GLOBAL);
+	H5Fclose(fileId);
+    std::cerr << "Writing Vector to HDF5 Native   : " << 0.001 * (stop - start).total_milliseconds() << " sec\n";
+  }
+  boost::filesystem::remove(boost::filesystem::path(hdf5_filename));
 }

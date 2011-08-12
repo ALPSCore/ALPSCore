@@ -134,7 +134,7 @@ int main() {
         oar
             << alps::make_pvp("/data/scalar", scalar_write)
             << alps::make_pvp("/data/vector", vector_write)
-            << alps::make_pvp("/data/vector", pair_write)
+            << alps::make_pvp("/data/pair", pair_write)
         ;
     }
     {
@@ -142,7 +142,7 @@ int main() {
         iar
             >> alps::make_pvp("/data/scalar", scalar_read)
             >> alps::make_pvp("/data/vector", vector_read)
-            >> alps::make_pvp("/data/vector", pair_read)
+            >> alps::make_pvp("/data/pair", pair_read)
         ;
     }
     boost::filesystem::remove(boost::filesystem::path(filename));
