@@ -31,14 +31,13 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/random.hpp>
-#include <boost/timer.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <string>
 #include <iostream>
 
 int main() {
   int count = 100;
-  double start = 0;
   
   std::string const xdr_filename = "test.dump";
   std::string const hdf5_filename = "test.h5";
@@ -49,10 +48,10 @@ int main() {
 
   alps::ObservableSet measurement;
   {
-    boost::timer t;
+    boost::posix_time::ptime start = boost::posix_time::microsec_clock::local_time();
     boost::minstd_rand0 engine;
     boost::uniform_01<boost::minstd_rand0> random(engine);
-    measurement << alps::make_observable(alps::SimpleRealObservable("Test"), true)
+    measurement << alps::make_observable(alps::RealObservable("Test"), true)
                 << alps::RealObservable("Sign")
                 << alps::RealObservable("No Measurements")
                 << alps::IntHistogramObservable("Histogram", 0, 10)
@@ -60,10 +59,10 @@ int main() {
                 << alps::RealObservable("Test 3")
 //                << alps::RealVectorObservable("Test 4")
     ;
-    std::valarray<double> vec;
-    vec.resize(1000);
+//     std::valarray<double> vec;
+//     vec.resize(1000);
     for (int i = 0; i < 1000000; ++i) {
-      vec[i % vec.size()] = random();
+//       vec[i % vec.size()] = random();
       measurement["Test"] << random();
       measurement["Sign"] << 1.0;
       measurement["Histogram"] << static_cast<int>(10*random());
@@ -76,45 +75,50 @@ int main() {
     alps::RealObsevaluator ratio("Ratio");
     ratio = e2 / e4;
     measurement.addObservable(ratio);
-    std::cerr << "Generating mesurement: " << t.elapsed() << " sec\n";
+    boost::posix_time::ptime stop = boost::posix_time::microsec_clock::local_time();
+    std::cerr << "Generating mesurement: " << 0.001 * (stop - start).total_milliseconds() << " sec\n";
   }
   
   {
-    boost::timer t;
+    boost::posix_time::ptime start = boost::posix_time::microsec_clock::local_time();
     alps::hdf5::archive oar(hdf5_filename, alps::hdf5::archive::WRITE);
     for (int c = 0; c < count; ++c) {
       oar << make_pvp("/test/" + boost::lexical_cast<std::string>(c) + "/result", measurement);
     }
-    std::cerr << "Writing to HDF5: " << t.elapsed() << " sec\n";
+    boost::posix_time::ptime stop = boost::posix_time::microsec_clock::local_time();
+    std::cerr << "Writing to HDF5: " << 0.001 * (stop - start).total_milliseconds() << " sec\n";
   }
 
   {
-    boost::timer t;
+    boost::posix_time::ptime start = boost::posix_time::microsec_clock::local_time();
     alps::OXDRFileDump dump(boost::filesystem::path(xdr_filename, boost::filesystem::native));
     for (int c = 0; c < count; ++c) {
       dump << measurement;
     }
-    std::cerr << "Writing to XDR: " << t.elapsed()<< " sec\n";
+    boost::posix_time::ptime stop = boost::posix_time::microsec_clock::local_time();
+    std::cerr << "Writing to XDR: " << 0.001 * (stop - start).total_milliseconds()<< " sec\n";
   }
 
   measurement.clear();
   {
-    boost::timer t;
+    boost::posix_time::ptime start = boost::posix_time::microsec_clock::local_time();
     alps::hdf5::archive iar(hdf5_filename, alps::hdf5::archive::READ);
     for (int c = 0; c < count; ++c) {
       iar >> make_pvp("/test/" + boost::lexical_cast<std::string>(c) + "/result", measurement);
     }
-    std::cerr << "Reading from HDF5: " << t.elapsed() << " sec\n";
+    boost::posix_time::ptime stop = boost::posix_time::microsec_clock::local_time();
+    std::cerr << "Reading from HDF5: " << 0.001 * (stop - start).total_milliseconds() << " sec\n";
   }
 
   measurement.clear();
   {
-    boost::timer t;
+    boost::posix_time::ptime start = boost::posix_time::microsec_clock::local_time();
     alps::IXDRFileDump dump(boost::filesystem::path(xdr_filename, boost::filesystem::native));
     for (int c = 0; c < count; ++c) {
       dump >> measurement;
     }
-    std::cerr << "Reading from XDR: " << t.elapsed() << " sec\n";
+    boost::posix_time::ptime stop = boost::posix_time::microsec_clock::local_time();
+    std::cerr << "Reading from XDR: " << 0.001 * (stop - start).total_milliseconds() << " sec\n";
   }
 
   boost::filesystem::remove(boost::filesystem::path(hdf5_filename));
