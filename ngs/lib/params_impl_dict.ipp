@@ -31,10 +31,10 @@
 #include <alps/ngs/hdf5.hpp>
 #include <alps/ngs/param.hpp>
 #include <alps/ngs/params.hpp>
+#include <alps/ngs/boost_python.hpp>
 #include <alps/ngs/detail/params_impl_base.hpp>
 
 #include <boost/bind.hpp>
-#include <boost/python.hpp>
 #include <boost/python/dict.hpp> 
 #include <boost/python/call_method.hpp> 
 #include <boost/python/stl_iterator.hpp>
