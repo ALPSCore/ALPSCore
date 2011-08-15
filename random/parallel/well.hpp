@@ -10,7 +10,7 @@
 #ifndef ALPS_RANDOM_PARALLEL_WELL_HPP
 #define ALPS_RANDOM_PARALLEL_WELL_HPP
 
-#include <boost/random/mersenne_twister.hpp>
+#include <alps/random/mersenne_twister.hpp>
 #include <boost/config.hpp>
 #include <boost/limits.hpp>
 #include <boost/static_assert.hpp>

@@ -10,7 +10,7 @@
 #ifndef ALPS_RANDOM_PARALLEL_MERSENNE_TWISTER_HPP
 #define ALPS_RANDOM_PARALLEL_MERSENNE_TWISTER_HPP
 
-#include <boost/random/mersenne_twister.hpp>
+#include <alps/random/mersenne_twister.hpp>
 #include <alps/random/parallel/lcg64.hpp>
 #include <alps/random/parallel/seed.hpp>
 

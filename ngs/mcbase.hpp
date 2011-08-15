@@ -37,7 +37,7 @@
 #include <boost/function.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/random/uniform_real.hpp>
-#include <boost/random/mersenne_twister.hpp>
+#include <alps/random/mersenne_twister.hpp>
 #include <boost/random/variate_generator.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>

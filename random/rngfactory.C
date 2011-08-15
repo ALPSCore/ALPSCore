@@ -28,6 +28,7 @@
 /* $Id$ */
 
 #include <alps/random/rngfactory.h>
+#include <alps/random/mersenne_twister.hpp>
 #include <boost/random.hpp>
 
 alps::RNGFactory::RNGFactory()
