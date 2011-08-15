@@ -33,13 +33,12 @@
 #include <boost/python.hpp>
 #include <alps/scheduler/convert.h>
 #include <alps/utility/encode.hpp>
+#include <alps/random.h>
 #include <alps/parser/xslt_path.h>
-
 #include <alps/python/make_copy.hpp>
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
-#include <boost/random.hpp>
 #include<boost/random/uniform_01.hpp>
 
 typedef boost::variate_generator<boost::mt19937&, boost::uniform_01<double> > random_01;

@@ -30,7 +30,6 @@
 #include <alps/lattice/disorder.h>
 #include <alps/expression.h>
 #include <boost/assert.hpp>
-#include <boost/random.hpp>
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 namespace alps {

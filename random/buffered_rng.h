@@ -39,9 +39,9 @@
 #include <alps/config.h>
 #include <alps/random/pseudo_des.h>
 #include <alps/random/seed.h>
+#include <alps/random/mersenne_twister.hpp>
 
 #include <boost/integer_traits.hpp>
-#include <boost/random.hpp>
 #include <boost/utility.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/type_traits.hpp>
@@ -49,6 +49,7 @@
 #include <boost/detail/workaround.hpp>
 
 #include <iostream>
+#include <vector>
 
 namespace alps {
 

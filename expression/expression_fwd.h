@@ -45,7 +45,6 @@
 #include <boost/throw_exception.hpp>
 #include <boost/type_traits/is_arithmetic.hpp>
 #include <boost/utility/enable_if.hpp>
-#include <boost/random.hpp>
 #include <boost/mpl/bool.hpp>
 
 #include <cmath>

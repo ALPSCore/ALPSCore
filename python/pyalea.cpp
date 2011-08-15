@@ -36,9 +36,9 @@
 #include <alps/alea/detailedbinning.h>
 #include <alps/numeric/vector_functions.hpp>
 #include <alps/python/save_observable_to_hdf5.hpp>
+#include <alps/random.h>
 
 #include <boost/python.hpp>
-#include <boost/random.hpp>
 #include <boost/random/uniform_01.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 

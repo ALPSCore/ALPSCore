@@ -31,3 +31,5 @@
 /// \brief includes all headers in the alps/random directory
 
 #include <alps/random/rngfactory.h>
+#include <alps/random/mersenne_twister.hpp>
+#include <boost/random.hpp>

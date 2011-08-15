@@ -34,9 +34,8 @@
 #include <alps/config.h>
 #include <alps/scheduler/info.h>
 #include <alps/parameter.h>
-#include <alps/random/rngfactory.h>
+#include <alps/random.h>
 #include <boost/smart_ptr.hpp>
-#include <boost/random.hpp>
 #include <boost/filesystem/path.hpp>
 #include <alps/osiris/process.h>
 #include <alps/osiris/dump.h>
