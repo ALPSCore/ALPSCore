@@ -105,7 +105,7 @@ int main() {
 
 		boost::property_map<colored_graph_type, boost::edge_name_t>::type h_edge_name = get(boost::edge_name_t(), h);
 		for (boost::tie(it, end) = edges(h); it != end; ++it)
-			h_edge_name[*it] = (source(*it, h) == B && target(*it, h) == C) ? 1 : 0;
+			h_edge_name[*it] = (source(*it, h) == C && target(*it, h) == D) ? 1 : 0;
 
 		std::vector<boost::graph_traits<colored_graph_type>::vertex_descriptor> g_ordering, h_ordering;
 		graph_label<colored_graph_type>::type g_label, h_label;
