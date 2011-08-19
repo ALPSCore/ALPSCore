@@ -86,14 +86,14 @@ IF (ALPS_BUILD_HDF5_TESTS)
     
     FOREACH (type ${ALPS_HDF5_DATA_TYPES})
 
-        STRING(REGEX REPLACE "\\*" "p" test_name ${type})
-        STRING(REGEX REPLACE "(::)|<|>| |\\," "_" test_name ${test_name})
-        STRING(REGEX REPLACE "__+" "_" test_name ${test_name})
-        
-        set(HDF5_TEST_TYPE ${type})
-        include_directories(.)
-        
         if (ALPS_BUILD_NGS)
+
+            STRING(REGEX REPLACE "\\*" "p" test_name ${type})
+            STRING(REGEX REPLACE "(::)|<|>| |\\," "_" test_name ${test_name})
+            STRING(REGEX REPLACE "__+" "_" test_name ${test_name})
+
+            set(HDF5_TEST_TYPE ${type})
+            include_directories(.)
 
             configure_file(type_check.cpp.in ${PROJECT_BINARY_DIR}/test/hdf5/ngs_hdf5_data_${test_name}.cpp)
             add_executable(ngs_hdf5_data_${test_name} ${PROJECT_BINARY_DIR}/test/hdf5/ngs_hdf5_data_${test_name}.cpp)
@@ -130,73 +130,107 @@ IF (ALPS_BUILD_HDF5_TESTS)
 
         else (ALPS_BUILD_NGS)
 
-            configure_file(type_check.cpp.in ${PROJECT_BINARY_DIR}/test/hdf5/hdf5_data_${test_name}.cpp)
-            add_executable(hdf5_data_${test_name} ${PROJECT_BINARY_DIR}/test/hdf5/hdf5_data_${test_name}.cpp)
+            STRING(REGEX REPLACE "\\*" "p" test_name "_${type}")
+            STRING(REGEX REPLACE "(::)|<|>| |\\," "_" test_name ${test_name})
+            STRING(REGEX REPLACE "__+" "_" test_name ${test_name})
+
+            STRING(REGEX REPLACE "_std_" "_" test_name ${test_name})
+            STRING(REGEX REPLACE "_vector_" "_vec_" test_name ${test_name})
+            STRING(REGEX REPLACE "_vector_" "_vec_" test_name ${test_name})
+            STRING(REGEX REPLACE "_matrix_" "_mtx_" test_name ${test_name})
+            STRING(REGEX REPLACE "_size_t_" "_szt_" test_name ${test_name})
+            STRING(REGEX REPLACE "_enum_type_" "_enm_" test_name ${test_name})
+            STRING(REGEX REPLACE "_boost_numeric_ublas_" "_nub_" test_name ${test_name})
+            STRING(REGEX REPLACE "_column_major_" "_clm_" test_name ${test_name})
+            STRING(REGEX REPLACE "_complex_" "_cpx_" test_name ${test_name})
+            STRING(REGEX REPLACE "_cast_type_" "_cst_" test_name ${test_name})
+            STRING(REGEX REPLACE "_valarray_" "_valarr_" test_name ${test_name})
+            STRING(REGEX REPLACE "_double_" "_dbl_" test_name ${test_name})
+            STRING(REGEX REPLACE "_float_" "_flt_" test_name ${test_name})
+            STRING(REGEX REPLACE "_long_" "_lng_" test_name ${test_name})
+            STRING(REGEX REPLACE "_string_" "_str_" test_name ${test_name})
+            STRING(REGEX REPLACE "_boost_shared_array_" "_shrdarr_" test_name ${test_name})
+            STRING(REGEX REPLACE "_boost_int" "_bint" test_name ${test_name})
+            STRING(REGEX REPLACE "_boost_uint" "_buint" test_name ${test_name})
+            STRING(REGEX REPLACE "_userdefined_class_" "_usrcls_" test_name ${test_name})
+            STRING(REGEX REPLACE "_pair_" "_pr_" test_name ${test_name})
+
+            set(HDF5_TEST_TYPE ${type})
+            include_directories(.)
+
+            configure_file(type_check.cpp.in ${PROJECT_BINARY_DIR}/test/hdf5/h5d${test_name}.cpp)
+            add_executable(h5d${test_name} ${PROJECT_BINARY_DIR}/test/hdf5/h5d${test_name}.cpp)
 
             if (SZIP_FOUND)
-                configure_file(type_check.cpp.in ${PROJECT_BINARY_DIR}/test/hdf5/hdf5_data_szip_${test_name}.cpp)
-                add_executable(hdf5_data_szip_${test_name} ${PROJECT_BINARY_DIR}/test/hdf5/hdf5_data_szip_${test_name}.cpp)
-                SET_TARGET_PROPERTIES(hdf5_data_szip_${test_name} PROPERTIES COMPILE_FLAGS "-DSZIP_COMPRESS=true")
+                configure_file(type_check.cpp.in ${PROJECT_BINARY_DIR}/test/hdf5/h5dz${test_name}.cpp)
+                add_executable(h5dz${test_name} ${PROJECT_BINARY_DIR}/test/hdf5/h5dz${test_name}.cpp)
+                SET_TARGET_PROPERTIES(h5dz${test_name} PROPERTIES COMPILE_FLAGS "-DSZIP_COMPRESS=true")
             endif (SZIP_FOUND)
 
-            configure_file(type_check.cpp.in ${PROJECT_BINARY_DIR}/test/hdf5/hdf5_data_pycplx_${test_name}.cpp)
-            add_executable(hdf5_data_pycplx_${test_name} ${PROJECT_BINARY_DIR}/test/hdf5/hdf5_data_pycplx_${test_name}.cpp)
-            SET_TARGET_PROPERTIES(hdf5_data_pycplx_${test_name} PROPERTIES COMPILE_FLAGS "-DALPS_HDF5_WRITE_PYTHON_COMPATIBLE_COMPLEX")
+            configure_file(type_check.cpp.in ${PROJECT_BINARY_DIR}/test/hdf5/h5dc${test_name}.cpp)
+            add_executable(h5dc${test_name} ${PROJECT_BINARY_DIR}/test/hdf5/h5dc${test_name}.cpp)
+            SET_TARGET_PROPERTIES(h5dc${test_name} PROPERTIES COMPILE_FLAGS "-DALPS_HDF5_WRITE_PYTHON_COMPATIBLE_COMPLEX")
 
-            configure_file(type_check.cpp.in ${PROJECT_BINARY_DIR}/test/hdf5/hdf5_attr_${test_name}.cpp)
-            add_executable(hdf5_attr_${test_name} ${PROJECT_BINARY_DIR}/test/hdf5/hdf5_attr_${test_name}.cpp)
-            SET_TARGET_PROPERTIES(hdf5_attr_${test_name} PROPERTIES COMPILE_FLAGS "-DIS_ATTRIBUTE=true")
+            configure_file(type_check.cpp.in ${PROJECT_BINARY_DIR}/test/hdf5/h5a${test_name}.cpp)
+            add_executable(h5a${test_name} ${PROJECT_BINARY_DIR}/test/hdf5/h5a${test_name}.cpp)
+            SET_TARGET_PROPERTIES(h5a${test_name} PROPERTIES COMPILE_FLAGS "-DIS_ATTRIBUTE=true")
 
-            configure_file(type_check.cpp.in ${PROJECT_BINARY_DIR}/test/hdf5/hdf5_attr_pycplx_${test_name}.cpp)
-            add_executable(hdf5_attr_pycplx_${test_name} ${PROJECT_BINARY_DIR}/test/hdf5/hdf5_attr_pycplx_${test_name}.cpp)
-            SET_TARGET_PROPERTIES(hdf5_attr_pycplx_${test_name} PROPERTIES COMPILE_FLAGS "-DIS_ATTRIBUTE=true -DALPS_HDF5_WRITE_PYTHON_COMPATIBLE_COMPLEX")
+            configure_file(type_check.cpp.in ${PROJECT_BINARY_DIR}/test/hdf5/h5ac${test_name}.cpp)
+            add_executable(h5ac${test_name} ${PROJECT_BINARY_DIR}/test/hdf5/h5ac${test_name}.cpp)
+            SET_TARGET_PROPERTIES(h5ac${test_name} PROPERTIES COMPILE_FLAGS "-DIS_ATTRIBUTE=true -DALPS_HDF5_WRITE_PYTHON_COMPATIBLE_COMPLEX")
 
             if (Boost_FOUND)
 
-                target_link_libraries(hdf5_data_${test_name} ${Boost_LIBRARIES} ${HDF5_LIBRARIES}) 
+                target_link_libraries(h5d${test_name} ${Boost_LIBRARIES} ${HDF5_LIBRARIES}) 
 
                 if (SZIP_FOUND)
-                    target_link_libraries(hdf5_data_szip_${test_name} ${Boost_LIBRARIES} ${HDF5_LIBRARIES}) 
+
+                    target_link_libraries(h5dz${test_name} ${Boost_LIBRARIES} ${HDF5_LIBRARIES}) 
+
                 endif (SZIP_FOUND)
 
-                target_link_libraries(hdf5_data_pycplx_${test_name} ${Boost_LIBRARIES} ${HDF5_LIBRARIES}) 
+                target_link_libraries(h5dc${test_name} ${Boost_LIBRARIES} ${HDF5_LIBRARIES}) 
 
-                target_link_libraries(hdf5_attr_${test_name} ${Boost_LIBRARIES} ${HDF5_LIBRARIES}) 
+                target_link_libraries(h5a${test_name} ${Boost_LIBRARIES} ${HDF5_LIBRARIES}) 
 
-                target_link_libraries(hdf5_attr_pycplx_${test_name} ${Boost_LIBRARIES} ${HDF5_LIBRARIES}) 
+                target_link_libraries(h5ac${test_name} ${Boost_LIBRARIES} ${HDF5_LIBRARIES}) 
 
             else(Boost_FOUND) 
 
-                add_dependencies(hdf5_data_${test_name} alps boost)
-                target_link_libraries(hdf5_data_${test_name} alps ${ALPS_BOOST_LIBRARY_NAME} ${HDF5_LIBRARIES})
+                add_dependencies(h5d${test_name} alps boost)
+                target_link_libraries(h5d${test_name} alps ${ALPS_BOOST_LIBRARY_NAME} ${HDF5_LIBRARIES})
 
                 if (SZIP_FOUND)
-                    add_dependencies(hdf5_data_szip_${test_name} alps boost) 
-                    target_link_libraries(hdf5_data_szip_${test_name} alps ${ALPS_BOOST_LIBRARY_NAME} ${HDF5_LIBRARIES})
+
+                    add_dependencies(h5dz${test_name} alps boost) 
+                    target_link_libraries(h5dz${test_name} alps ${ALPS_BOOST_LIBRARY_NAME} ${HDF5_LIBRARIES})
+
                 endif (SZIP_FOUND)
 
-                add_dependencies(hdf5_data_pycplx_${test_name} alps boost) 
-                target_link_libraries(hdf5_data_pycplx_${test_name} alps ${ALPS_BOOST_LIBRARY_NAME} ${HDF5_LIBRARIES})
+                add_dependencies(h5dc${test_name} alps boost) 
+                target_link_libraries(h5dc${test_name} alps ${ALPS_BOOST_LIBRARY_NAME} ${HDF5_LIBRARIES})
 
-                add_dependencies(hdf5_attr_${test_name} alps boost) 
-                target_link_libraries(hdf5_attr_${test_name} alps ${ALPS_BOOST_LIBRARY_NAME} ${HDF5_LIBRARIES})
+                add_dependencies(h5a${test_name} alps boost) 
+                target_link_libraries(h5a${test_name} alps ${ALPS_BOOST_LIBRARY_NAME} ${HDF5_LIBRARIES})
 
-                add_dependencies(hdf5_attr_pycplx_${test_name} alps boost) 
-                target_link_libraries(hdf5_attr_pycplx_${test_name} alps ${ALPS_BOOST_LIBRARY_NAME} ${HDF5_LIBRARIES})
+                add_dependencies(h5ac${test_name} alps boost) 
+                target_link_libraries(h5ac${test_name} alps ${ALPS_BOOST_LIBRARY_NAME} ${HDF5_LIBRARIES})
 
             endif(Boost_FOUND) 
 
-            add_alps_test(hdf5_data_${test_name})
+            add_alps_test(h5d${test_name})
 
-                if (SZIP_FOUND)
-              add_alps_test(hdf5_data_szip_${test_name})
-                endif (SZIP_FOUND)
+            if (SZIP_FOUND)
 
-            add_alps_test(hdf5_data_pycplx_${test_name})
+                add_alps_test(h5dz${test_name})
 
-            add_alps_test(hdf5_attr_${test_name})
+            endif (SZIP_FOUND)
 
-            add_alps_test(hdf5_attr_pycplx_${test_name})
+            add_alps_test(h5dc${test_name})
+
+            add_alps_test(h5a${test_name})
+
+            add_alps_test(h5ac${test_name})
 
         endif(ALPS_BUILD_NGS) 
 
