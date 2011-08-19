@@ -52,9 +52,18 @@ namespace alps {
                     using alps::hdf5::get_extent;
                     std::vector<std::size_t> extent(2, value.size1());
                     extent[1] = value.size2();
-                    if (!is_continous<T>::value) {
-                        std::vector<std::size_t> size(get_extent(value(0, 0)));
-                        std::copy(size.begin(), size.end(), std::back_inserter(extent));
+                    if (value.size1() + value.size2()) {
+                        std::vector<std::size_t> first(get_extent(value(0, 0)));
+                        for (std::size_t i = 0; i < value.size1(); ++i)
+                            for (std::size_t j = 0; j < value.size2(); ++j)  {
+                                std::vector<std::size_t> size(get_extent(value(i, j)));
+                                if (
+                                       first.size() != size.size()
+                                    || !std::equal(first.begin(), first.end(), size.begin())
+                                )
+                                    ALPS_NGS_THROW_RUNTIME_ERROR("no rectengual matrix")
+                            }
+                        std::copy(first.begin(), first.end(), std::back_inserter(extent));
                     }
                     return extent;
                 }
