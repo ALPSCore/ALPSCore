@@ -26,13 +26,23 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <alps/graph/canonical_properties.hpp>
+
 #include <boost/graph/adjacency_list.hpp>
+
 #include <iostream>
 #include <iterator>
 
 typedef boost::adjacency_list<
   boost::vecS, boost::vecS, boost::undirectedS
 > graph_type;
+
+typedef boost::adjacency_list<
+	  boost::vecS
+	, boost::vecS
+	, boost::undirectedS
+	, boost::property<boost::vertex_name_t, std::size_t>
+	, boost::property<boost::edge_name_t, std::size_t>
+> colored_graph_type;
 
 using namespace alps::graph;
 
@@ -44,13 +54,79 @@ template<class Partition> void dump_partition(Partition const & P) {
   for (it1 = P.begin(); it1 != P.end(); ++it1) {
     std::cout << "(";
     for (it2 = it1->begin(); it2 != it1->end(); ++it2)
-      std::cout << " " << *it2;
-    std::cout << " )";
+      std::cout << (it2 == it1->begin() ? "" : " ") << *it2;
+    std::cout << ")";
   }
   std::cout << "}" << std::endl;
 }
 
 int main() {
+
+	{
+		enum { A, B, C, D, N };
+
+		colored_graph_type g(N), h(N);
+		
+		/*
+			A - B       A   B
+			| / |  vs.  | X |
+			C - D       C - D
+		*/
+
+		add_edge(A, B, g);
+		add_edge(A, C, g);
+		add_edge(B, C, g);
+		add_edge(B, D, g);
+		add_edge(C, D, g);
+
+		add_edge(A, C, h);
+		add_edge(A, D, h);
+		add_edge(B, C, h);
+		add_edge(B, D, h);
+		add_edge(C, D, h);
+
+		boost::property_map<colored_graph_type, boost::vertex_name_t>::type g_vertex_name = get(boost::vertex_name_t(), g);
+		g_vertex_name[A] = 0;
+		g_vertex_name[B] = 1;
+		g_vertex_name[C] = 1;
+		g_vertex_name[D] = 0;
+
+		boost::property_map<colored_graph_type, boost::vertex_name_t>::type h_vertex_name = get(boost::vertex_name_t(), h);
+		h_vertex_name[A] = 0;
+		h_vertex_name[B] = 0;
+		h_vertex_name[C] = 1;
+		h_vertex_name[D] = 1;
+		
+		typename boost::graph_traits<colored_graph_type>::edge_iterator it, end;
+
+		boost::property_map<colored_graph_type, boost::edge_name_t>::type g_edge_name = get(boost::edge_name_t(), g);
+		for (boost::tie(it, end) = edges(g); it != end; ++it)
+			g_edge_name[*it] = (source(*it, g) == B && target(*it, g) == C) ? 1 : 0;
+
+		boost::property_map<colored_graph_type, boost::edge_name_t>::type h_edge_name = get(boost::edge_name_t(), h);
+		for (boost::tie(it, end) = edges(h); it != end; ++it)
+			h_edge_name[*it] = (source(*it, h) == B && target(*it, h) == C) ? 1 : 0;
+
+		std::vector<boost::graph_traits<colored_graph_type>::vertex_descriptor> g_ordering, h_ordering;
+		graph_label<colored_graph_type>::type g_label, h_label;
+		partition_type<colored_graph_type>::type g_orbit, h_orbit;
+		boost::tie(g_ordering, g_label, g_orbit) = canonical_properties(g);
+		boost::tie(h_ordering, h_label, h_orbit) = canonical_properties(h);
+
+		for (std::vector<boost::graph_traits<colored_graph_type>::vertex_descriptor>::const_iterator it = g_ordering.begin(); it != g_ordering.end(); ++it)
+			std::cout << (it != g_ordering.begin() ? " " : "(") << *it;
+		std::cout << ")" << std::endl;
+		for (std::vector<boost::graph_traits<colored_graph_type>::vertex_descriptor>::const_iterator it = h_ordering.begin(); it != h_ordering.end(); ++it)
+			std::cout << (it != h_ordering.begin() ? " " : "(") << *it;
+		std::cout << ")" << std::endl;
+
+		dump_partition(g_orbit);
+		dump_partition(h_orbit);
+		
+		std::cout << g_label << std::endl;
+		std::cout << h_label << std::endl;
+	}
+
 	{
 		enum {A, B, C, D, E, F, G, H, I, N};
 
@@ -93,6 +169,7 @@ int main() {
 		std::cout << g_label << std::endl;
 		
 	}
+
 	{
 		enum { A, B, C, D, N };
 
@@ -138,12 +215,12 @@ int main() {
 
     {
         /*
-                 F  
+                 F
                  |
               E--A--B
                 / \
                D   C
-               
+
                 vs.
 
                   D
@@ -205,7 +282,6 @@ int main() {
 		std::cout << h_label << std::endl;
 		std::cout << i_label << std::endl;
     }
-
 
 	return EXIT_SUCCESS;	
 }
