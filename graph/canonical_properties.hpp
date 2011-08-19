@@ -308,6 +308,38 @@ namespace alps {
 					terminal_node(T, G);
 				}
 			}
+
+			// Sort edges acoring to the given partition
+			template<typename Graph> struct assemble_label_edge_comp {
+			
+				// Input: pi = (V1, V2, ..., Vr)
+				assemble_label_edge_comp (typename partition_type<Graph>::type const & pi, Graph const & g): 
+					G(g)
+				{
+					for (typename partition_type<Graph>::type::const_iterator it = pi.begin(); it != pi.end(); ++it)
+						for (typename partition_type<Graph>::type::value_type::const_iterator jt = it->begin(); jt != it->end(); ++jt)
+							ordering.push_back(*jt);
+				}
+
+				// Comparison operator
+				bool operator() (
+					  typename boost::graph_traits<Graph>::edge_descriptor const & i
+					, typename boost::graph_traits<Graph>::edge_descriptor const & j
+				) {
+					std::size_t Ai, Bi, Aj, Bj;
+					Ai = std::find(ordering.begin(), ordering.end(), source(i, G)) - ordering.begin();
+					Bi = std::find(ordering.begin(), ordering.end(), target(i, G)) - ordering.begin();
+					Aj = std::find(ordering.begin(), ordering.end(), source(j, G)) - ordering.begin();
+					Bj = std::find(ordering.begin(), ordering.end(), target(j, G)) - ordering.begin();
+					return std::min(Ai, Bi) != std::min(Aj, Bj)
+						? (std::min(Ai, Bi) < std::min(Aj, Bj) ? std::min(Ai, Bi) : std::min(Aj, Bj))
+						: (std::max(Ai, Bi) < std::max(Aj, Bj) ? std::max(Ai, Bi) : std::max(Aj, Bj))
+					;
+				}
+				
+				Graph const & G;
+				std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> ordering;
+			};
 			
 			// The not colored graph label is a triangular bit matrix
 			// Input: pi = (V1, V2, ..., Vr)
@@ -341,13 +373,16 @@ namespace alps {
 				, graph_label_vertex_coloring_tag
 			) {
 				assemble_label_helper(l, pi, G, graph_label_no_coloring_tag());
-				typedef std::set<typename boost::property_map<Graph, boost::vertex_name_t>::type::value_type> color_set_type;
-				color_set_type colors;
+				std::set<typename boost::property_map<Graph, boost::vertex_name_t>::type::value_type> colors;
 				typename boost::graph_traits<Graph>::vertex_iterator it, end;
 				for (boost::tie(it, end) = vertices(G); it != end; ++it)
 					colors.insert(get(boost::vertex_name_t(), G)[*it]);
 				get<2>(l).clear();
-				for (typename color_set_type::const_iterator jt = colors.begin(); jt != colors.end(); ++jt)
+				for (
+					  typename std::set<typename boost::property_map<Graph, boost::vertex_name_t>::type::value_type>::const_iterator jt = colors.begin()
+					; jt != colors.end()
+					; ++jt
+				)
 					get<2>(l).push_back(*jt);
 				get<1>(l).clear();
 				get<1>(l).resize(num_vertices(G) * get<2>(l).size());
@@ -368,23 +403,26 @@ namespace alps {
 				, graph_label_edge_coloring_tag
 			) {
 				assemble_label_helper(l, pi, G, graph_label_no_coloring_tag());
-				typedef std::set<typename boost::property_map<Graph, boost::edge_name_t>::type::value_type> color_set_type;
-				color_set_type colors;
+				std::set<typename boost::property_map<Graph, boost::edge_name_t>::type::value_type> colors;
 				typename boost::graph_traits<Graph>::edge_iterator it, end;
-				for (boost::tie(it, end) = edges(G); it != end; ++it)
+				std::vector<typename boost::graph_traits<Graph>::edge_descriptor> edge_list;
+				for (boost::tie(it, end) = edges(G); it != end; ++it) {
 					colors.insert(get(boost::edge_name_t(), G)[*it]);
+					edge_list.push_back(*it);
+				}
 				get<4>(l).clear();
-				for (typename color_set_type::const_iterator jt = colors.begin(); jt != colors.end(); ++jt)
+				for (
+					  typename std::set<typename boost::property_map<Graph, boost::edge_name_t>::type::value_type>::const_iterator jt = colors.begin()
+					; jt != colors.end()
+					; ++jt
+				)
  					get<4>(l).push_back(*jt);
+				std::sort(edge_list.begin(), edge_list.end(), assemble_label_edge_comp<Graph>(pi, G));
 				get<3>(l).clear();
 				get<3>(l).resize(num_edges(G) * get<4>(l).size());
-				
-				
-				
-				std::size_t index = 0;
-//				for (typename partition_type<Graph>::type::const_iterator jt = pi.begin(); jt != pi.end(); ++jt)
-//					for (typename partition_type<Graph>::type::value_type::const_iterator kt = jt->begin(); kt != jt->end(); ++kt)
-//						get<3>(l)[(std::find(get<4>(l).begin(), get<4>(l).end(), get(boost::edge_name_t(), G)[*kt]) - get<4>(l).begin()) * num_edges(G) + index++] = true;
+
+				for (typename std::vector<typename boost::graph_traits<Graph>::edge_descriptor>::const_iterator jt = edge_list.begin(); jt != edge_list.end(); ++jt)
+					get<3>(l)[(std::find(get<4>(l).begin(), get<4>(l).end(), get(boost::edge_name_t(), G)[*jt]) - get<4>(l).begin()) * num_edges(G) + (jt - edge_list.begin())] = true;
 			}
 
 			// Vertex and Edge colored graph label
@@ -518,8 +556,8 @@ namespace alps {
 					canonical_partition = get<0>(T.back());
 					canonical_label = current_label;
 				}
-				
 			}
+			
 			std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> canonical_ordering;
 			for (typename partition_type<Graph>::type::const_iterator it = canonical_partition.begin(); it != canonical_partition.end(); ++it)
 				canonical_ordering.push_back((*it)[0]);
