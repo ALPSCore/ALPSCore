@@ -350,6 +350,7 @@ namespace alps {
 				, Graph const & G
 				, graph_label_no_coloring_tag
 			) {
+				using boost::get;
 				// N = #of parts of pi
 				get<0>(l).clear();
 				get<0>(l).resize(pi.size() * (pi.size() + 1) / 2);
@@ -372,6 +373,7 @@ namespace alps {
 				, Graph const & G
 				, graph_label_vertex_coloring_tag
 			) {
+				using boost::get;
 				assemble_label_helper(l, pi, G, graph_label_no_coloring_tag());
 				std::set<typename boost::property_map<Graph, boost::vertex_name_t>::type::value_type> colors;
 				typename boost::graph_traits<Graph>::vertex_iterator it, end;
@@ -402,6 +404,7 @@ namespace alps {
 				, Graph const & G
 				, graph_label_edge_coloring_tag
 			) {
+				using boost::get;
 				assemble_label_helper(l, pi, G, graph_label_no_coloring_tag());
 				std::set<typename boost::property_map<Graph, boost::edge_name_t>::type::value_type> colors;
 				typename boost::graph_traits<Graph>::edge_iterator it, end;
