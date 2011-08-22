@@ -97,7 +97,7 @@ int main() {
 		h_vertex_name[C] = 1;
 		h_vertex_name[D] = 1;
 		
-		typename boost::graph_traits<colored_graph_type>::edge_iterator it, end;
+		boost::graph_traits<colored_graph_type>::edge_iterator it, end;
 
 		boost::property_map<colored_graph_type, boost::edge_name_t>::type g_edge_name = get(boost::edge_name_t(), g);
 		for (boost::tie(it, end) = edges(g); it != end; ++it)
