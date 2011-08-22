@@ -190,7 +190,7 @@ namespace alps {
             hid_t get_native_type(double) { return H5Tcopy(H5T_NATIVE_DOUBLE); }
             hid_t get_native_type(long double) { return H5Tcopy(H5T_NATIVE_LDOUBLE); }
             hid_t get_native_type(bool) { return H5Tcopy(H5T_NATIVE_SCHAR); }
-            hid_t get_native_type(std::string) { 
+            hid_t get_native_type(std::string) {
                 hid_t type_id = H5Tcopy(H5T_C_S1);
                 detail::check_error(H5Tset_size(type_id, H5T_VARIABLE));
                 return type_id;
@@ -1069,7 +1069,6 @@ namespace alps {
             }
         ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_IMPLEMENT_FREE_FUNCTIONS)
         #undef ALPS_NGS_HDF5_IMPLEMENT_FREE_FUNCTIONS
-                
 
         #define ALPS_NGS_HDF5_IS_DATATYPE_IMPL_IMPL(T)                                                                                                                 \
             bool archive::is_datatype_impl(std::string path, T) const {                                                                                                \

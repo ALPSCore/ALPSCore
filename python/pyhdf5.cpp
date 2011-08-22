@@ -227,7 +227,7 @@ namespace alps {
 
             boost::python::object dispatch_read(alps::hdf5::archive & self, std::string const & path) {
                 if (self.is_scalar(path) || (self.is_datatype<double>(path) && self.is_complex(path) && self.extent(path).size() == 1 && self.extent(path)[0] == 2)) {
-                    if (self.is_datatype<std::string>(path))
+                    if (self.is_string(path))
                         return read_scalar<std::string>(self, path);
                     else if (self.is_datatype<int>(path))
                         return read_scalar<int>(self, path);
@@ -247,8 +247,10 @@ namespace alps {
                         return read_scalar<std::complex<double> >(self, path);
                     else if (self.is_datatype<double>(path))
                         return read_scalar<double>(self, path);
-                    else
+                    else {
                         std::runtime_error("Unsupported type.");
+						return boost::python::object();
+					}
                 } else if (self.is_datatype<std::string>(path)) {
                     if (self.dimensions(path) != 1)
                         std::runtime_error("More than 1 Dimension is not supported.");
