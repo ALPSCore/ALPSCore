@@ -54,19 +54,19 @@ int main() {
     boost::posix_time::ptime start = boost::posix_time::microsec_clock::local_time();
     boost::minstd_rand0 engine;
     boost::uniform_01<boost::minstd_rand0> random(engine);
-    measurement << alps::make_observable(alps::RealObservable("Test"), true)
+    measurement //<< alps::make_observable(alps::RealObservable("Test"), true)
                 << alps::RealObservable("Sign")
                 << alps::RealObservable("No Measurements")
                 << alps::IntHistogramObservable("Histogram", 0, 10)
                 << alps::RealObservable("Test 2")
                 << alps::RealObservable("Test 3")
-//                << alps::RealVectorObservable("Test 4")
+                << alps::RealVectorObservable("Test 4")
     ;
 //     std::valarray<double> vec;
 //     vec.resize(1000);
-    for (int i = 0; i < 1000000; ++i) {
-//       vec[i % vec.size()] = random();
-      measurement["Test"] << random();
+     for (int i = 0; i < 1000000; ++i) {
+//        vec[i % vec.size()] = random();
+//      measurement["Test"] << random();
       measurement["Sign"] << 1.0;
       measurement["Histogram"] << static_cast<int>(10*random());
       measurement["Test 2"] << random();
@@ -74,12 +74,12 @@ int main() {
 //      measurement["Test 4"] << vec;
     }
     alps::RealObsevaluator e2 = measurement["Test 2"];
-    alps::RealObsevaluator e4 = measurement["Test 3"];
+    alps::RealObsevaluator e3 = measurement["Test 3"];
     alps::RealObsevaluator ratio("Ratio");
-    ratio = e2 / e4;
-    measurement.addObservable(ratio);
+    ratio = e2 / e3;
+//    measurement.addObservable(ratio);
     boost::posix_time::ptime stop = boost::posix_time::microsec_clock::local_time();
-    std::cerr << "Generating mesurement: " << 0.001 * (stop - start).total_milliseconds() << " sec\n";
+    std::cerr << "Generating mesurement            : " << 0.001 * (stop - start).total_milliseconds() << " sec\n";
   }
   
   {
@@ -89,7 +89,7 @@ int main() {
       oar << make_pvp("/test/" + boost::lexical_cast<std::string>(c) + "/result", measurement);
     }
     boost::posix_time::ptime stop = boost::posix_time::microsec_clock::local_time();
-    std::cerr << "Writing to HDF5: " << 0.001 * (stop - start).total_milliseconds() << " sec\n";
+    std::cerr << "Writing to HDF5                  : " << 0.001 * (stop - start).total_milliseconds() << " sec\n";
   }
 
   {
@@ -99,7 +99,7 @@ int main() {
       dump << measurement;
     }
     boost::posix_time::ptime stop = boost::posix_time::microsec_clock::local_time();
-    std::cerr << "Writing to XDR: " << 0.001 * (stop - start).total_milliseconds()<< " sec\n";
+    std::cerr << "Writing to XDR                   : " << 0.001 * (stop - start).total_milliseconds()<< " sec\n";
   }
 
   measurement.clear();
@@ -110,7 +110,7 @@ int main() {
       iar >> make_pvp("/test/" + boost::lexical_cast<std::string>(c) + "/result", measurement);
     }
     boost::posix_time::ptime stop = boost::posix_time::microsec_clock::local_time();
-    std::cerr << "Reading from HDF5: " << 0.001 * (stop - start).total_milliseconds() << " sec\n";
+    std::cerr << "Reading from HDF5                : " << 0.001 * (stop - start).total_milliseconds() << " sec\n";
   }
 
   measurement.clear();
@@ -121,7 +121,7 @@ int main() {
       dump >> measurement;
     }
     boost::posix_time::ptime stop = boost::posix_time::microsec_clock::local_time();
-    std::cerr << "Reading from XDR: " << 0.001 * (stop - start).total_milliseconds() << " sec\n";
+    std::cerr << "Reading from XDR                 : " << 0.001 * (stop - start).total_milliseconds() << " sec\n";
   }
 
   boost::filesystem::remove(boost::filesystem::path(hdf5_filename));
@@ -135,34 +135,42 @@ int main() {
       dump << data;
     }
     boost::posix_time::ptime stop = boost::posix_time::microsec_clock::local_time();
-    std::cerr << "Writing Vector to XDR           : " << 0.001 * (stop - start).total_milliseconds() << " sec\n";
+    std::cerr << "Writing Vector to XDR            : " << 0.001 * (stop - start).total_milliseconds() << " sec\n";
   }
   boost::filesystem::remove(boost::filesystem::path(xdr_filename));
 
   {
 	using namespace alps;
 	std::vector<double> data(size);
-    boost::posix_time::ptime start = boost::posix_time::microsec_clock::local_time();
 	alps::hdf5::archive oar(hdf5_filename, alps::hdf5::archive::WRITE);
-    boost::posix_time::ptime stop = boost::posix_time::microsec_clock::local_time();
-    std::cerr << "Creating HDF5 Archive           : " << 0.001 * (stop - start).total_milliseconds() << " sec\n";
-    start = boost::posix_time::microsec_clock::local_time();
+    boost::posix_time::ptime start = boost::posix_time::microsec_clock::local_time();
 	{
 		for (int c = 0; c < count; ++c) {
 		  oar << make_pvp("/vec", data);
 		}
 	}
-    stop = boost::posix_time::microsec_clock::local_time();
-    std::cerr << "Writing Vector to HDF5 Archive  : " << 0.001 * (stop - start).total_milliseconds() << " sec\n";
+    boost::posix_time::ptime stop = boost::posix_time::microsec_clock::local_time();
+    std::cerr << "Writing Vector to HDF5 Archive   : " << 0.001 * (stop - start).total_milliseconds() << " sec\n";
     start = boost::posix_time::microsec_clock::local_time();
 	{
-		for (int c = 0; c < count; ++c) {
+		for (int c = 0; c < count; ++c)
 			oar.write("/vec", &data.front(), std::vector<std::size_t>(1, data.size()), std::vector<std::size_t>(1, data.size()), std::vector<std::size_t>(1, 0));
-		}
 	}
     stop = boost::posix_time::microsec_clock::local_time();
-	std::cerr << "Writing Pointer to HDF5 Archive : " << 0.001 * (stop - start).total_milliseconds() << " sec\n";
+	std::cerr << "Writing Pointer to HDF5 Archive  : " << 0.001 * (stop - start).total_milliseconds() << " sec\n";
+  }
 
+  {
+	using namespace alps;
+	std::vector<double> data;
+	alps::hdf5::archive iar(hdf5_filename, alps::hdf5::archive::READ);
+    boost::posix_time::ptime start = boost::posix_time::microsec_clock::local_time();
+	{
+		for (int c = 0; c < count; ++c)
+		  iar >> make_pvp("/vec", data);
+	}
+    boost::posix_time::ptime stop = boost::posix_time::microsec_clock::local_time();
+    std::cerr << "Reading Vector from HDF5 Archive : " << 0.001 * (stop - start).total_milliseconds() << " sec\n";
   }
 
   boost::filesystem::remove(boost::filesystem::path(hdf5_filename));
@@ -183,7 +191,7 @@ int main() {
 	H5Fflush(fileId, H5F_SCOPE_GLOBAL);
 	H5Fclose(fileId);
     boost::posix_time::ptime stop = boost::posix_time::microsec_clock::local_time();
-    std::cerr << "Writing Vector to HDF5 Native   : " << 0.001 * (stop - start).total_milliseconds() << " sec\n";
+    std::cerr << "Writing Vector to HDF5 Native    : " << 0.001 * (stop - start).total_milliseconds() << " sec\n";
   }
   boost::filesystem::remove(boost::filesystem::path(hdf5_filename));
 }
