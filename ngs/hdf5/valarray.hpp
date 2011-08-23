@@ -54,9 +54,10 @@ namespace alps {
                     std::vector<std::size_t> result(1, value.size());
                     if (value.size()) {
                         std::vector<std::size_t> extent(get_extent(const_cast<std::valarray<T> &>(value)[0]));
-                        for (std::size_t i = 1; i < value.size(); ++i)
-                            if (!std::equal(extent.begin(), extent.end(), get_extent(const_cast<std::valarray<T> &>(value)[i]).begin()))
-                                ALPS_NGS_THROW_RUNTIME_ERROR("no rectengual matrix")
+						if (!boost::is_scalar<typename std::valarray<T>::value_type>::value)
+							for (std::size_t i = 1; i < value.size(); ++i)
+								if (!std::equal(extent.begin(), extent.end(), get_extent(const_cast<std::valarray<T> &>(value)[i]).begin()))
+									ALPS_NGS_THROW_RUNTIME_ERROR("no rectengual matrix")
                         std::copy(extent.begin(), extent.end(), std::back_inserter(result));
                     }
                     return result;
@@ -81,17 +82,18 @@ namespace alps {
                         if (!is_vectorizable(const_cast<std::valarray<T> &>(value)[0]))
                             return false;
                         std::vector<std::size_t> first(get_extent(const_cast<std::valarray<T> &>(value)[0]));
-                        for(std::size_t i = 0; i < value.size(); ++i)
-                            if (!is_vectorizable(const_cast<std::valarray<T> &>(value)[i]))
-                                return false;
-                            else {
-                                std::vector<std::size_t> size(get_extent(const_cast<std::valarray<T> &>(value)[i]));
-                                if (
-                                       first.size() != size.size() 
-                                    || !std::equal(first.begin(), first.end(), size.begin())
-                                )
-                                    return false;
-                            }
+						if (!boost::is_scalar<typename std::valarray<T>::value_type>::value)
+							for(std::size_t i = 0; i < value.size(); ++i)
+								if (!is_vectorizable(const_cast<std::valarray<T> &>(value)[i]))
+									return false;
+								else {
+									std::vector<std::size_t> size(get_extent(const_cast<std::valarray<T> &>(value)[i]));
+									if (
+										   first.size() != size.size() 
+										|| !std::equal(first.begin(), first.end(), size.begin())
+									)
+										return false;
+								}
                     }
                     return true;
                 }

@@ -40,11 +40,13 @@
 #include <vector>
 #include <algorithm>
 
+#include <boost/mpl/not.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/dynamic_bitset.hpp>
 #include <boost/tuple/tuple_io.hpp>
 #include <boost/graph/properties.hpp>
 #include <boost/graph/graph_traits.hpp>
+#include <boost/type_traits/is_same.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
 
 namespace alps {
@@ -57,102 +59,69 @@ namespace alps {
 
 		namespace detail {
 		
+			// vertex coloring
+			template<typename PropertyMap> struct has_coloring : public boost::mpl::not_<typename boost::is_same<PropertyMap, boost::no_property>::type>::type {};
+		
 			// printable color list
-			template<typename Value> class graph_label_color_vec : public std::vector<Value> {};
+			template<typename Value> class graph_label_color_vector : public std::vector<Value> {};
 
-			template<typename Stream, typename Value> Stream & operator<< (Stream & os, graph_label_color_vec<Value> const & vec) {
+			template<typename Stream, typename Value> Stream & operator<< (Stream & os, graph_label_color_vector<Value> const & vec) {
 				os << "(";
-				for (typename graph_label_color_vec<Value>::const_iterator it = vec.begin(); it != vec.end(); ++it)
+				for (typename graph_label_color_vector<Value>::const_iterator it = vec.begin(); it != vec.end(); ++it)
 					os << (it == vec.begin() ? "" : " ") << *it;
 				os << ")";
 				return os;
 			}
-
-			// edge and vertex coloring
-			struct graph_label_vertex_edge_coloring_tag {};
-			template<typename VertexPropertyMap, typename EdgePropertyMap> struct graph_label_coloring_tag_helper {
-				typedef graph_label_vertex_edge_coloring_tag type;
-			};
-
-			// vertex coloring
-			struct graph_label_vertex_coloring_tag {};
-			template<typename VertexPropertyMap> struct graph_label_coloring_tag_helper<VertexPropertyMap, boost::no_property> {
-				typedef graph_label_vertex_coloring_tag type;
-			};
-
-			// edge coloring
-			struct graph_label_edge_coloring_tag {};
-			template<typename EdgePropertyMap> struct graph_label_coloring_tag_helper<boost::no_property, EdgePropertyMap> {
-				typedef graph_label_edge_coloring_tag type;
-			};
-
-			// no coloring
-			struct graph_label_no_coloring_tag {};
-			template<> struct graph_label_coloring_tag_helper<boost::no_property, boost::no_property> {
-				typedef graph_label_no_coloring_tag type;
-			};
 			
 			// invalid tag
-			template<typename Graph, typename Invalid> struct graph_label_helper {};
+			template<typename Graph, bool, bool> struct graph_label_helper {};
 
 			// no coloring
-			template<typename Graph> struct graph_label_helper<Graph, graph_label_no_coloring_tag> {
+			template<typename Graph> struct graph_label_helper<Graph, false, false> {
 				typedef boost::tuple<
-					  // #vertices * (#vertices + 1) / 2 bits: adjacency matrix
+					  // #vertices * (#vertices + 1) / 2 bits: triangular adjacency matrix
 					  boost::dynamic_bitset<>
 				> type;
 			};
 
 			// vertex coloring
-			template<typename Graph> struct graph_label_helper<Graph, graph_label_vertex_coloring_tag> {
+			template<typename Graph> struct graph_label_helper<Graph, true, false> {
 				typedef boost::tuple<
-					  // #vertices * (#vertices + 1) / 2 bits: adjacency matrix
+					  // #vertices * (#vertices + 1) / 2 bits: triangular adjacency matrix
 					  boost::dynamic_bitset<>
 					  // #vertices * (#vertex colors) bits: vertex vs color matrix
 					, boost::dynamic_bitset<>
 					  // vertex color list
-					, graph_label_color_vec<typename boost::vertex_property_type<Graph>::type::value_type>
+					, graph_label_color_vector<typename boost::vertex_property_type<Graph>::type::value_type>
 				> type;
 			};
 
 			// edge coloring
-			template<typename Graph> struct graph_label_helper<Graph, graph_label_edge_coloring_tag> {
+			template<typename Graph> struct graph_label_helper<Graph, false, true> {
 				typedef boost::tuple<
-					  // #vertices * (#vertices + 1) / 2 bits: adjacency matrix
+					  // #vertices * (#vertices + 1) / 2 bits: triangular adjacency matrix
 					  boost::dynamic_bitset<>
-					  // unused
-					, bool
-					  // unused
-					, bool
 					  // #edge * (#edge colors) bits: edge vs color matrix
 					, boost::dynamic_bitset<>
 					  // edge color list
-					, graph_label_color_vec<typename boost::edge_property_type<Graph>::type::value_type>
+					, graph_label_color_vector<typename boost::edge_property_type<Graph>::type::value_type>
 				> type;
 			};
 
 			// vertex and edge coloring
-			template<typename Graph> struct graph_label_helper<Graph, graph_label_vertex_edge_coloring_tag> {
+			template<typename Graph> struct graph_label_helper<Graph, true, true> {
 				typedef boost::tuple<
-					  // #vertices * (#vertices + 1) / 2 bits: adjacency matrix
+					  // #vertices * (#vertices + 1) / 2 bits: triangular adjacency matrix
 					  boost::dynamic_bitset<>
 					  // #vertices * (#vertex colors) bits: vertex vs color matrix
 					, boost::dynamic_bitset<>
 					  // vertex color list
-					, graph_label_color_vec<typename boost::vertex_property_type<Graph>::type::value_type>
+					, graph_label_color_vector<typename boost::vertex_property_type<Graph>::type::value_type>
 					  // #edge * (#edge colors) bits: edge vs color matrix
 					, boost::dynamic_bitset<>
 					  // edge color list
-					, graph_label_color_vec<typename boost::edge_property_type<Graph>::type::value_type>
+					, graph_label_color_vector<typename boost::edge_property_type<Graph>::type::value_type>
 				> type;
-			};
-
-			// coloring tag of a graph
-			template<typename Graph> struct graph_label_coloring_tag {
-				typedef typename graph_label_coloring_tag_helper<
-					typename boost::vertex_property_type<Graph>::type,
-					typename boost::edge_property_type<Graph>::type
-				>::type type;
 			};
 
 		}
@@ -164,7 +133,8 @@ namespace alps {
 		template<typename Graph> struct graph_label {
 			typedef typename detail::graph_label_helper<
 				  Graph
-				, typename detail::graph_label_coloring_tag<Graph>::type
+				, detail::has_coloring<typename boost::vertex_property_type<Graph>::type>::value
+				, detail::has_coloring<typename boost::edge_property_type<Graph>::type>::value
 			>::type type;
 		};
 
@@ -308,12 +278,62 @@ namespace alps {
 					terminal_node(T, G);
 				}
 			}
+			
+			// The not colored graph label is a triangular bit matrix
+			// Input: pi = (V1, V2, ..., Vr)
+			// Output: comparable graph label l(pi)
+			template<typename Graph> void apply_label_no_coloring (
+                  typename graph_label<Graph>::type & l
+				, typename partition_type<Graph>::type const & pi
+				, Graph const & G
+			) {
+				using boost::get;
+				// N = #of parts of pi
+				get<0>(l).clear();
+				get<0>(l).resize(pi.size() * (pi.size() + 1) / 2);
+				typename boost::graph_traits<Graph>::adjacency_iterator ai, ae;
+				std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t> I;
+				// I = {(ni, j) : ni element of Vj
+				partition_indeces(I, pi, G);
+				for (typename std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t>::const_iterator it = I.begin(); it != I.end(); ++it)
+					for (tie(ai, ae) = adjacent_vertices(it->first, G); ai != ae; ++ai)
+						if (I[*ai] <= I[it->first])
+							get<0>(l)[I[*ai] * pi.size() - (I[*ai] - 1) * I[*ai] / 2 + I[it->first] - I[*ai]] = true;
+			}
+			
+			// Vertex colored graph label
+			// Input: pi = (V1, V2, ..., Vr)
+			// Output: comparable graph label l(pi)
+			template<typename Graph> void apply_label_vertex_coloring (
+                  typename graph_label<Graph>::type & l
+				, typename partition_type<Graph>::type const & pi
+				, Graph const & G
+			) {
+				using boost::get;
+				std::set<typename boost::property_map<Graph, boost::vertex_name_t>::type::value_type> colors;
+				typename boost::graph_traits<Graph>::vertex_iterator it, end;
+				for (boost::tie(it, end) = vertices(G); it != end; ++it)
+					colors.insert(get(boost::vertex_name_t(), G)[*it]);
+				get<2>(l).clear();
+				for (
+					  typename std::set<typename boost::property_map<Graph, boost::vertex_name_t>::type::value_type>::const_iterator jt = colors.begin()
+					; jt != colors.end()
+					; ++jt
+				)
+					get<2>(l).push_back(*jt);
+				get<1>(l).clear();
+				get<1>(l).resize(num_vertices(G) * get<2>(l).size());
+				std::size_t index = 0;
+				for (typename partition_type<Graph>::type::const_iterator jt = pi.begin(); jt != pi.end(); ++jt)
+					for (typename partition_type<Graph>::type::value_type::const_iterator kt = jt->begin(); kt != jt->end(); ++kt)
+						get<1>(l)[(std::find(get<2>(l).begin(), get<2>(l).end(), get(boost::vertex_name_t(), G)[*kt]) - get<2>(l).begin()) * num_vertices(G) + index++] = true;
+			}
 
 			// Sort edges acoring to the given partition
-			template<typename Graph> struct assemble_label_edge_comp {
+			template<typename Graph> struct apply_label_edge_comp {
 			
 				// Input: pi = (V1, V2, ..., Vr)
-				assemble_label_edge_comp (typename partition_type<Graph>::type const & pi, Graph const & g): 
+				apply_label_edge_comp (typename partition_type<Graph>::type const & pi, Graph const & g): 
 					G(g)
 				{
 					for (typename partition_type<Graph>::type::const_iterator it = pi.begin(); it != pi.end(); ++it)
@@ -340,72 +360,16 @@ namespace alps {
 				Graph const & G;
 				std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> ordering;
 			};
-			
-			// The not colored graph label is a triangular bit matrix
-			// Input: pi = (V1, V2, ..., Vr)
-			// Output: comparable graph label l(pi)
-			template<typename Graph> void assemble_label_helper (
-                  typename graph_label<Graph>::type & l
-				, typename partition_type<Graph>::type const & pi
-				, Graph const & G
-				, graph_label_no_coloring_tag
-			) {
-				using boost::get;
-				// N = #of parts of pi
-				get<0>(l).clear();
-				get<0>(l).resize(pi.size() * (pi.size() + 1) / 2);
-				typename boost::graph_traits<Graph>::adjacency_iterator ai, ae;
-				std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t> I;
-				// I = {(ni, j) : ni element of Vj
-				partition_indeces(I, pi, G);
-				for (typename std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t>::const_iterator it = I.begin(); it != I.end(); ++it)
-					for (tie(ai, ae) = adjacent_vertices(it->first, G); ai != ae; ++ai)
-						if (I[*ai] <= I[it->first])
-							get<0>(l)[I[*ai] * pi.size() - (I[*ai] - 1) * I[*ai] / 2 + I[it->first] - I[*ai]] = true;
-			}
-
-			// Vertex colored graph label
-			// Input: pi = (V1, V2, ..., Vr)
-			// Output: comparable graph label l(pi)
-			template<typename Graph> void assemble_label_helper (
-                  typename graph_label<Graph>::type & l
-				, typename partition_type<Graph>::type const & pi
-				, Graph const & G
-				, graph_label_vertex_coloring_tag
-			) {
-				using boost::get;
-				assemble_label_helper(l, pi, G, graph_label_no_coloring_tag());
-				std::set<typename boost::property_map<Graph, boost::vertex_name_t>::type::value_type> colors;
-				typename boost::graph_traits<Graph>::vertex_iterator it, end;
-				for (boost::tie(it, end) = vertices(G); it != end; ++it)
-					colors.insert(get(boost::vertex_name_t(), G)[*it]);
-				get<2>(l).clear();
-				for (
-					  typename std::set<typename boost::property_map<Graph, boost::vertex_name_t>::type::value_type>::const_iterator jt = colors.begin()
-					; jt != colors.end()
-					; ++jt
-				)
-					get<2>(l).push_back(*jt);
-				get<1>(l).clear();
-				get<1>(l).resize(num_vertices(G) * get<2>(l).size());
-				std::size_t index = 0;
-				for (typename partition_type<Graph>::type::const_iterator jt = pi.begin(); jt != pi.end(); ++jt)
-					for (typename partition_type<Graph>::type::value_type::const_iterator kt = jt->begin(); kt != jt->end(); ++kt)
-						get<1>(l)[(std::find(get<2>(l).begin(), get<2>(l).end(), get(boost::vertex_name_t(), G)[*kt]) - get<2>(l).begin()) * num_vertices(G) + index++] = true;
-			}
 
 			// Edge colored graph label
 			// Input: pi = (V1, V2, ..., Vr)
 			// Output: comparable graph label l(pi)
-			// TODO: implement
-			template<typename Graph> void assemble_label_helper (
+			template<typename Graph, std::size_t Base> void apply_label_edge_coloring (
                   typename graph_label<Graph>::type & l
 				, typename partition_type<Graph>::type const & pi
 				, Graph const & G
-				, graph_label_edge_coloring_tag
 			) {
 				using boost::get;
-				assemble_label_helper(l, pi, G, graph_label_no_coloring_tag());
 				std::set<typename boost::property_map<Graph, boost::edge_name_t>::type::value_type> colors;
 				typename boost::graph_traits<Graph>::edge_iterator it, end;
 				std::vector<typename boost::graph_traits<Graph>::edge_descriptor> edge_list;
@@ -413,32 +377,66 @@ namespace alps {
 					colors.insert(get(boost::edge_name_t(), G)[*it]);
 					edge_list.push_back(*it);
 				}
-				get<4>(l).clear();
+				get<Base + 1>(l).clear();
 				for (
 					  typename std::set<typename boost::property_map<Graph, boost::edge_name_t>::type::value_type>::const_iterator jt = colors.begin()
 					; jt != colors.end()
 					; ++jt
 				)
- 					get<4>(l).push_back(*jt);
-				std::sort(edge_list.begin(), edge_list.end(), assemble_label_edge_comp<Graph>(pi, G));
-				get<3>(l).clear();
-				get<3>(l).resize(num_edges(G) * get<4>(l).size());
-
+ 					get<Base + 1>(l).push_back(*jt);
+				std::sort(edge_list.begin(), edge_list.end(), apply_label_edge_comp<Graph>(pi, G));
+				get<Base>(l).clear();
+				get<Base>(l).resize(num_edges(G) * get<Base + 1>(l).size());
 				for (typename std::vector<typename boost::graph_traits<Graph>::edge_descriptor>::const_iterator jt = edge_list.begin(); jt != edge_list.end(); ++jt)
-					get<3>(l)[(std::find(get<4>(l).begin(), get<4>(l).end(), get(boost::edge_name_t(), G)[*jt]) - get<4>(l).begin()) * num_edges(G) + (jt - edge_list.begin())] = true;
+					get<Base>(l)[(std::find(get<Base + 1>(l).begin(), get<Base + 1>(l).end(), get(boost::edge_name_t(), G)[*jt]) - get<Base + 1>(l).begin()) * num_edges(G) + (jt - edge_list.begin())] = true;
 			}
-
-			// Vertex and Edge colored graph label
-			// Input: pi = (V1, V2, ..., Vr)
-			// Output: comparable graph label l(pi)
+			
+			// Not colored graph label
 			template<typename Graph> void assemble_label_helper (
                   typename graph_label<Graph>::type & l
 				, typename partition_type<Graph>::type const & pi
 				, Graph const & G
-				, graph_label_vertex_edge_coloring_tag
+				, boost::mpl::false_
+				, boost::mpl::false_
 			) {
-				assemble_label_helper(l, pi, G, graph_label_vertex_coloring_tag());
-				assemble_label_helper(l, pi, G, graph_label_edge_coloring_tag());
+				apply_label_no_coloring(l, pi, G);
+			}
+			
+			// Vertex colored graph label
+			template<typename Graph> void assemble_label_helper (
+                  typename graph_label<Graph>::type & l
+				, typename partition_type<Graph>::type const & pi
+				, Graph const & G
+				, boost::mpl::true_
+				, boost::mpl::false_
+			) {
+				apply_label_no_coloring(l, pi, G);
+				apply_label_vertex_coloring(l, pi, G);
+			}
+			
+			// Edge colored graph label
+			template<typename Graph> void assemble_label_helper (
+                  typename graph_label<Graph>::type & l
+				, typename partition_type<Graph>::type const & pi
+				, Graph const & G
+				, boost::mpl::false_
+				, boost::mpl::true_
+			) {
+				apply_label_no_coloring(l, pi, G);
+				apply_label_edge_coloring<Graph, 1>(l, pi, G);
+			}
+			
+			// Vertex and Edge colored graph label
+			template<typename Graph> void assemble_label_helper (
+                  typename graph_label<Graph>::type & l
+				, typename partition_type<Graph>::type const & pi
+				, Graph const & G
+				, boost::mpl::true_
+				, boost::mpl::true_
+			) {
+				apply_label_no_coloring(l, pi, G);
+				apply_label_vertex_coloring(l, pi, G);
+				apply_label_edge_coloring<Graph, 3>(l, pi, G);
 			}
 
 			// The graph label is a triangular bit matrix with a 
@@ -449,7 +447,13 @@ namespace alps {
 				, typename partition_type<Graph>::type const & pi
 				, Graph const & G
 			) {
-				assemble_label_helper(l, pi, G, typename graph_label_coloring_tag<Graph>::type());
+				assemble_label_helper(
+					  l
+					, pi
+					, G
+					, typename detail::has_coloring<typename boost::vertex_property_type<Graph>::type>::type()
+					, typename detail::has_coloring<typename boost::edge_property_type<Graph>::type>::type()
+				);
 			}
 
 			// If an ni
@@ -477,6 +481,41 @@ namespace alps {
 							detail::partition_indeces(I, orbit, G);
 						}
 			}
+			
+			// uncolored initial partition
+			template<typename Graph> void initial_partition(
+				  Graph const & G
+				, typename partition_type<Graph>::type & pi
+				, boost::mpl::false_
+			) {
+				pi.resize(1);
+				typename boost::graph_traits<Graph>::vertex_iterator it, end;
+				for (tie(it, end) = vertices(G); it != end; ++it)
+					pi.front().push_back(*it);
+			}
+
+			// vertex colored initil partition
+			template<typename Graph> void initial_partition(
+				  Graph const & G
+				, typename partition_type<Graph>::type & pi
+				, boost::mpl::true_
+			) {
+				std::set<typename boost::property_map<Graph, boost::vertex_name_t>::type::value_type> color_set;
+				typename boost::graph_traits<Graph>::vertex_iterator it, end;
+				for (boost::tie(it, end) = vertices(G); it != end; ++it)
+					color_set.insert(get(boost::vertex_name_t(), G)[*it]);
+				std::vector<typename boost::property_map<Graph, boost::vertex_name_t>::type::value_type> color_vector;
+				for (
+					  typename std::set<typename boost::property_map<Graph, boost::vertex_name_t>::type::value_type>::const_iterator jt = color_set.begin()
+					; jt != color_set.end()
+					; ++jt
+				)
+					color_vector.push_back(*jt);
+				pi.resize(color_vector.size());	
+				for (tie(it, end) = vertices(G); it != end; ++it)
+					pi[std::find(color_vector.begin(), color_vector.end(), get(boost::vertex_name_t(), G)[*it]) - color_vector.begin()].push_back(*it);
+			}
+
 		}
 
 		// McKay’s canonical isomorph function Cm(G) is deﬁned to be
@@ -500,19 +539,15 @@ namespace alps {
 			typename partition_type<Graph>::type pi, orbit, canonical_partition, first_partition;
 			typename graph_label<Graph>::type canonical_label, first_label, current_label;
 			std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t> Io;
-			// Build inital partition pi.
 			// pi = (V1, V2, ..., Vr), Vi = (n1, n2, ..., nk), ni element of G
 			// uncolored graphs: pi is a unit partition (pi has only one part)
 			// vertex colored graphs: pi has for each color one part
-			// TODO: implement colored graphs
-			pi = typename partition_type<Graph>::type(1);
+			detail::initial_partition(G, pi, typename detail::has_coloring<typename boost::vertex_property_type<Graph>::type>::type());
+			// The orbit starts with a discrete partition (a partition with only trivial parts)
+			// orbit = (W1, W2, ..., Wr), Wi = (m1, m2, ..., mk), mi element of G
 			typename boost::graph_traits<Graph>::vertex_iterator vi, ve;
-			for (tie(vi, ve) = vertices(G); vi != ve; ++vi) {
-				pi.front().push_back(*vi);
-				// The orbit starts with a discrete partition (a partition with only trivial parts)
-				// orbit = (W1, W2, ..., Wr), Wi = (m1, m2, ..., mk), mi element of G
+			for (tie(vi, ve) = vertices(G); vi != ve; ++vi)
 				orbit.push_back(typename partition_type<Graph>::type::value_type(1, *vi));
-			}
 			// Io = {(mi, j) : ni element of Vj
 			detail::partition_indeces(Io, orbit, G);
 			// Build first node of the search tree T(G)
