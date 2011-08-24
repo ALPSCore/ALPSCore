@@ -38,7 +38,7 @@
 namespace alps {
 
     mcsignal::mcsignal() {
-        #ifndef BOOST_MSVC
+        #if not ( defined BOOST_MSVC || defined ALPS_NGS_NO_SIGNALS )
             static bool initialized;
             if (!initialized) {
                 initialized = true;

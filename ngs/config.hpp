@@ -37,13 +37,19 @@
 // #define ALPS_HDF5_READ_GREEDY
 
 // do not throw an error if closing a hdf5 gets dirty (e.g in Python)
-// #ifdef ALPS_HDF5_CLOSE_GREEDY
+// #define ALPS_HDF5_CLOSE_GREEDY
 
 // blocksize in compressed hdf5. Default: 23
 // #define ALPS_HDF5_SZIP_BLOCK_SIZE 32
 
 // maximal number of stack frames displayed in stacktrace. Default 63
 // #define ALPS_NGS_MAX_FRAMES 63
+
+// prevent the signal object from registering signals
+// #define ALPS_NGS_NO_SIGNALS
+
+// do not print a stacktrace in error messages
+// #define ALPS_NGS_NO_STACKTRACE
 
 // TODO: have_python
 // TODO: have_mpi
