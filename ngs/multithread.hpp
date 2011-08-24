@@ -28,10 +28,12 @@
 #ifndef ALPS_NGS_MULTITHREAD_HPP
 #define ALPS_NGS_MULTITHREAD_HPP
 
-#include <alps/ngs/atomic.hpp>
-
 #ifndef ALPS_NGS_SINGLE_THREAD
+
+    #include <alps/ngs/atomic.hpp>
+
     #include <boost/thread.hpp>
+
 #endif
 
 namespace alps {
