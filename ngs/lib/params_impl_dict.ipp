@@ -193,7 +193,21 @@ namespace alps {
                 }
 
                 std::string getter(std::string key) const {
-                    return PyString_AsString(boost::python::call_method<boost::python::object>(values_.ptr(), "__getitem__", key).ptr());
+                	boost::python::object value(boost::python::call_method<boost::python::object>(values_.ptr(), "__getitem__", key));
+                    if (std::string(value.ptr()->ob_type->tp_name) == "bool")
+                    	return convert<std::string>(boost::python::extract<bool>(value)());
+                    if (std::string(value.ptr()->ob_type->tp_name) == "int")
+                    	return convert<std::string>(boost::python::extract<int>(value)());
+                    else if (std::string(value.ptr()->ob_type->tp_name) == "long")
+                    	return convert<std::string>(boost::python::extract<long>(value)());
+                    else if (std::string(value.ptr()->ob_type->tp_name) == "float")
+                    	return convert<std::string>(boost::python::extract<double>(value)());
+                    else if (std::string(value.ptr()->ob_type->tp_name) == "str")
+                    	return boost::python::extract<std::string>(value)();
+                    else {
+                        ALPS_NGS_THROW_INVALID_ARGUMENT("unknown value type: "  + std::string(value.ptr()->ob_type->tp_name));
+                        return "";
+                    }
                 }
 
                 boost::python::object values_;

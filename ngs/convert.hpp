@@ -43,13 +43,13 @@ namespace alps {
         template<> inline std::string convert<std::string, T >( T arg) {                                                                       \
             char buffer[255];                                                                                                                  \
             if (sprintf(buffer, "%" c, arg) < 0)                                                                                               \
-                ALPS_NGS_THROW_RUNTIME_ERROR("error converting to string");                                                                    \
+                ALPS_NGS_THROW_RUNTIME_ERROR("error converting " #T " to string");                                                                    \
             return buffer;                                                                                                                     \
         }                                                                                                                                      \
         template<> inline T convert< T, std::string>(std::string arg) {                                                                        \
             T value;                                                                                                                           \
             if (sscanf(arg.c_str(), "%" c, &value) < 0)                                                                                        \
-                ALPS_NGS_THROW_RUNTIME_ERROR("error converting from string " + arg);                                                           \
+                ALPS_NGS_THROW_RUNTIME_ERROR("error converting from string to " #T ": " + arg);                                                           \
             return value;                                                                                                                      \
         }
     ALPS_NGS_CONVERT_STRING(short, "hd")
