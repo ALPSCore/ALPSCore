@@ -57,7 +57,7 @@ try {
   std::cout << "3.5 + x = " << 3.5 + x << " = " << alps::precision(static_cast<double>(3.5 + x), 6) << std::endl;
   std::cout << "3 + x = " << 3 + x << " = " << alps::precision(static_cast<double>(3 + x), 6) << std::endl;
   std::cout << "3.5 - x = " << 3.5 - x << " = " << alps::precision(static_cast<double>(3.5 - x), 6) << std::endl;
-  std::cout << "4 - x = " << 4 - x << " = " << alps::precision(static_cast<double>(4 - x), 6) << std::endl;
+  std::cout << "5 - x = " << 5 - x << " = " << alps::precision(static_cast<double>(4 - x), 6) << std::endl;
   std::cout << "1.2 - x = " << 1.2 - x << " = " << alps::precision(static_cast<double>(1.2 - x), 6) << std::endl;
   std::cout << "3.5 * x = " << 3.5 * x << " = " << alps::precision(static_cast<double>(3.5 * x), 6) << std::endl;
   std::cout << "3 * x = " << 3 * x << " = " << alps::precision(static_cast<double>(3 * x), 6) << std::endl;
