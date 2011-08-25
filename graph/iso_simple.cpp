@@ -46,18 +46,17 @@ typedef boost::adjacency_list<
 
 using namespace alps::graph;
 
-// Write a partition to cout
-template<class Partition> void dump_partition(Partition const & P) {
-  std::cout << "{";
-  typename Partition::const_iterator it1;
-  typename Partition::value_type::const_iterator it2;
-  for (it1 = P.begin(); it1 != P.end(); ++it1) {
-    std::cout << "(";
-    for (it2 = it1->begin(); it2 != it1->end(); ++it2)
-      std::cout << (it2 == it1->begin() ? "" : " ") << *it2;
-    std::cout << ")";
-  }
-  std::cout << "}" << std::endl;
+// ostream operator for partition_type
+template<typename Stream> Stream & operator<< (Stream & os, partition_type<colored_graph_type>::type const & pi) {
+	os << "(";
+	for (partition_type<colored_graph_type>::type::const_iterator it = pi.begin(); it != pi.end(); ++it) {
+		os << "(";
+		for (partition_type<colored_graph_type>::type::value_type::const_iterator jt = it->begin(); jt != it->end(); ++jt)
+			os << (jt == it->begin() ? "" : " ") << *jt;
+		os << ")";
+	}
+	os << ")";
+	return os;
 }
 
 int main() {
@@ -120,9 +119,9 @@ int main() {
 			std::cout << (it != h_ordering.begin() ? " " : "(") << *it;
 		std::cout << ")" << std::endl;
 
-		dump_partition(g_orbit);
-		dump_partition(h_orbit);
-		
+		std::cout << g_orbit << std::endl;
+		std::cout << h_orbit << std::endl;
+	
 		std::cout << g_label << std::endl;
 		std::cout << h_label << std::endl;
 	}
@@ -165,7 +164,8 @@ int main() {
 		for (std::vector<boost::graph_traits<graph_type>::vertex_descriptor>::const_iterator it = g_ordering.begin(); it != g_ordering.end(); ++it)
 			std::cout << (it != g_ordering.begin() ? " " : "(") << *it;
 		std::cout << ")" << std::endl;
-		dump_partition(g_orbit);
+
+		std::cout << g_orbit << std::endl;
 		std::cout << g_label << std::endl;
 		
 	}
@@ -206,8 +206,8 @@ int main() {
 			std::cout << (it != h_ordering.begin() ? " " : "(") << *it;
 		std::cout << ")" << std::endl;
 
-		dump_partition(g_orbit);
-		dump_partition(h_orbit);
+		std::cout << g_orbit << std::endl;
+		std::cout << h_orbit << std::endl;
 		
 		std::cout << g_label << std::endl;
 		std::cout << h_label << std::endl;
@@ -274,9 +274,9 @@ int main() {
 			std::cout << (it != i_ordering.begin() ? " " : "(") << *it;
 		std::cout << ")" << std::endl;
 
-		dump_partition(g_orbit);
-		dump_partition(h_orbit);
-		dump_partition(i_orbit);
+		std::cout << g_orbit << std::endl;
+		std::cout << h_orbit << std::endl;
+		std::cout << i_orbit << std::endl;
 		
 		std::cout << g_label << std::endl;
 		std::cout << h_label << std::endl;
