@@ -56,20 +56,7 @@ namespace alps {
 		template<typename Graph> struct partition_type {
 			typedef std::vector<std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> > type;
 		};
-/*
-		// ostream operator for partition_type
-		template<typename Stream, typename Graph> Stream & operator<< (Stream & os, typename partition_type<Graph>::type const & pi) {
-			os << "(";
-			for (typename partition_type<Graph>::type::const_iterator it = pi.begin(); it != pi.end(); ++it) {
-				os << "(";
-				for (typename partition_type<Graph>::type::value_type::const_iterator jt = jt->begin(); jt != it->end(); ++jt)
-					os << (jt == it->begin() ? "" : " ") << *jt;
-				os << ")";
-			}
-			os << ")";
-			return os;
-		}
-*/
+
 		namespace detail {
 		
 			// vertex coloring
