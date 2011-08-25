@@ -60,7 +60,7 @@ int main() {
                 << alps::IntHistogramObservable("Histogram", 0, 10)
                 << alps::RealObservable("Test 2")
                 << alps::RealObservable("Test 3")
-                << alps::RealVectorObservable("Test 4")
+//                << alps::RealVectorObservable("Test 4")
     ;
 //     std::valarray<double> vec;
 //     vec.resize(1000);
