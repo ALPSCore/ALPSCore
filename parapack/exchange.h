@@ -731,7 +731,7 @@ public:
               reinterpret_cast<SimpleRealObservable&>(obs[p]["EXMC: Acceptance Rate"]).mean();
           for (int p = 0; p < nrep; ++p) wp_[p] = weight_parameters_[p] / mcs_.stage_count();
           std::cout << "EXMC stage " << mcs_.stage() << ": acceptance rate = "
-                    << write_vector(accept_, " ", 5) << std::endl;
+                    << write_vector(accept_, " ", 3) << std::endl;
 
           if (mcs_.stage() != 0) {
             beta_.optimize_h1999<walker_type>(wp_);
@@ -779,7 +779,7 @@ public:
                     << ": population ratio of upward-moving walkers "
                     << write_vector(upward_, " ", 5) << '\n'
                     << "EXMC stage " << mcs_.stage()
-                    << ": acceptance rate " << write_vector(accept_, " ", 5) << std::endl;
+                    << ": acceptance rate " << write_vector(accept_, " ", 3) << std::endl;
 
           // preform optimization
           if (mcs_.stage() != 0 && success) success = beta_.optimize2(upward_);
@@ -1136,7 +1136,7 @@ public:
                       << ": population ratio of upward-moving walkers "
                       << write_vector(upward_, " ", 5) << '\n'
                       << "EXMC stage " << mcs_.stage()
-                      << ": acceptance rate " << write_vector(accept_, " ", 5) << std::endl;
+                      << ": acceptance rate " << write_vector(accept_, " ", 3) << std::endl;
 
             // preform optimization
             if (mcs_.stage() != 0 && success) success = beta_.optimize2(upward_);
