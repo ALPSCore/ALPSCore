@@ -18,6 +18,7 @@ if (ALPS_BUILD_PYTHON AND BUILD_SHARED_LIBS)
     FOREACH (name hlist_test mcdata pyhdf5)
         add_test(python_${name}
             ${CMAKE_COMMAND}
+                -Dpython_interpreter=${PYTHON_INTERPRETER}
                 -Dcmd=${name}.py
                 -Dinput=${name}
                 -Doutput=${name}
