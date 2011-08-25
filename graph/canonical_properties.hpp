@@ -35,11 +35,6 @@
 #ifndef ALPS_GRAPH_PROPERTIES
 #define ALPS_GRAPH_PROPERTIES
 
-#include <map>
-#include <set>
-#include <vector>
-#include <algorithm>
-
 #include <boost/mpl/not.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/dynamic_bitset.hpp>
@@ -49,6 +44,11 @@
 #include <boost/type_traits/is_same.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
 
+#include <map>
+#include <set>
+#include <vector>
+#include <algorithm>
+
 namespace alps {
 	namespace graph {
 	
@@ -56,7 +56,20 @@ namespace alps {
 		template<typename Graph> struct partition_type {
 			typedef std::vector<std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> > type;
 		};
-
+/*
+		// ostream operator for partition_type
+		template<typename Stream, typename Graph> Stream & operator<< (Stream & os, typename partition_type<Graph>::type const & pi) {
+			os << "(";
+			for (typename partition_type<Graph>::type::const_iterator it = pi.begin(); it != pi.end(); ++it) {
+				os << "(";
+				for (typename partition_type<Graph>::type::value_type::const_iterator jt = jt->begin(); jt != it->end(); ++jt)
+					os << (jt == it->begin() ? "" : " ") << *jt;
+				os << ")";
+			}
+			os << ")";
+			return os;
+		}
+*/
 		namespace detail {
 		
 			// vertex coloring
@@ -65,6 +78,7 @@ namespace alps {
 			// printable color list
 			template<typename Value> class graph_label_color_vector : public std::vector<Value> {};
 
+			// ostream operator for color list
 			template<typename Stream, typename Value> Stream & operator<< (Stream & os, graph_label_color_vector<Value> const & vec) {
 				os << "(";
 				for (typename graph_label_color_vector<Value>::const_iterator it = vec.begin(); it != vec.end(); ++it)
@@ -351,9 +365,9 @@ namespace alps {
 					Bi = std::find(ordering.begin(), ordering.end(), target(i, G)) - ordering.begin();
 					Aj = std::find(ordering.begin(), ordering.end(), source(j, G)) - ordering.begin();
 					Bj = std::find(ordering.begin(), ordering.end(), target(j, G)) - ordering.begin();
-					return std::min(Ai, Bi) != std::min(Aj, Bj)
-						? (std::min(Ai, Bi) < std::min(Aj, Bj) ? std::min(Ai, Bi) : std::min(Aj, Bj))
-						: (std::max(Ai, Bi) < std::max(Aj, Bj) ? std::max(Ai, Bi) : std::max(Aj, Bj))
+					return std::min(Ai, Bi) == std::min(Aj, Bj)
+						? std::max(Ai, Bi) < std::max(Aj, Bj)
+						: std::min(Ai, Bi) < std::min(Aj, Bj)
 					;
 				}
 				
@@ -494,7 +508,7 @@ namespace alps {
 					pi.front().push_back(*it);
 			}
 
-			// vertex colored initil partition
+			// vertex colored initial partition
 			template<typename Graph> void initial_partition(
 				  Graph const & G
 				, typename partition_type<Graph>::type & pi
@@ -582,6 +596,7 @@ namespace alps {
 				// all leafs have been checked
 				if (T.size() == 1)
 					break;
+				// TODO: add edge coloring to algorithym
 				detail::terminal_node(T, G);
 				detail::assemble_label(current_label, get<0>(T.back()), G);
 				// If two labels are the same, coarse orbit
