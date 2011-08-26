@@ -756,8 +756,8 @@ namespace alps {
                     using boost::numeric::operators::operator/;
                     // build jackknife data structure
                     if (bin_number() && !jacknife_bins_valid_) {
-                        if (cannot_rebin_)
-                          boost::throw_exception(std::runtime_error("Cannot rebuild jackknife data structure after nonlinear operations"));
+                      if (cannot_rebin_)
+                          boost::throw_exception(std::runtime_error("Cannot build jackknife data structure after nonlinear operations"));
                         jack_.clear();
                         jack_.resize(bin_number() + 1);
                         // Order-N initialization of jackknife data structure

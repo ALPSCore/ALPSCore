@@ -773,13 +773,13 @@ void SimpleObservableData<T>::divide(const X& x)
     has_variance_ = false;
     values2_.clear();
     has_tau_ = false;
-    nonlinear_operations_ = true;
     changed_ = true;
     mean_ = x/mean_;
     double f = bin_size() * bin_size();
-    std::transform(values_.begin(), values_.end(), values_.begin(), (x*f)/boost::lambda::_1);
     fill_jack();
+    std::transform(values_.begin(), values_.end(), values_.begin(), (x*f)/boost::lambda::_1);
     std::transform(jack_.begin(), jack_.end(), jack_.begin(), x/boost::lambda::_1);
+    nonlinear_operations_ = true;
   }
 }
 
