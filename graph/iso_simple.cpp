@@ -25,6 +25,7 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include <alps/graph/subgraphs.hpp>
 #include <alps/graph/canonical_properties.hpp>
 
 #include <boost/graph/adjacency_list.hpp>
@@ -60,7 +61,6 @@ template<typename Stream> Stream & operator<< (Stream & os, partition_type<color
 }
 
 int main() {
-
 	{
 		enum { A, B, C, D, N };
 
@@ -126,6 +126,8 @@ int main() {
 		std::cout << h_label << std::endl;
 	}
 
+	std::cout << std::endl;
+
 	{
 		enum {A, B, C, D, E, F, G, H, I, N};
 
@@ -167,8 +169,9 @@ int main() {
 
 		std::cout << g_orbit << std::endl;
 		std::cout << g_label << std::endl;
-		
 	}
+
+	std::cout << std::endl;
 
 	{
 		enum { A, B, C, D, N };
@@ -212,6 +215,8 @@ int main() {
 		std::cout << g_label << std::endl;
 		std::cout << h_label << std::endl;
 	}
+
+	std::cout << std::endl;
 
     {
         /*
@@ -282,6 +287,30 @@ int main() {
 		std::cout << h_label << std::endl;
 		std::cout << i_label << std::endl;
     }
+
+	std::cout << std::endl;
+
+	{
+		enum { A, B, C, N };
+
+		graph_type g(N);
+		std::set<boost::dynamic_bitset<> > g_sub;
+		
+		/*
+			A - B
+			| /
+			C
+		*/
+		
+		add_edge(A, B, g);
+		add_edge(A, C, g);
+		add_edge(B, C, g);
+		
+		subgraphs(g_sub, g);
+
+		for (std::set<boost::dynamic_bitset<> >::const_iterator it = g_sub.begin(); it != g_sub.end(); ++it)
+			std::cout << *it << std::endl;
+	}
 
 	return EXIT_SUCCESS;	
 }
