@@ -30,6 +30,9 @@
 
 #include "util.hpp"
 
+namespace alps {
+namespace graph {
+
 template<
     class property_map_type
   , class subgraph_type
@@ -596,4 +599,6 @@ template<
   );
 }
 
+} // namespace graph
+} // namespace alps
 #endif // EMBEDDING_HPP
