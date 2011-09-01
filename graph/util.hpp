@@ -48,6 +48,8 @@
 #include <boost/mpl/logical.hpp>
 #include <boost/mpl/if.hpp>
 
+namespace alps {
+namespace graph {
 namespace detail {
   struct embedding_moving_tag {};
   struct embedding_fixed_tag {};
@@ -186,6 +188,8 @@ namespace detail {
     private:
       typename partition_type::iterator it_;
   };
-} // detail
+} // namespace detail
+} // namespace graph
+} // namespace alps
 
 #endif // UTIL_HPP
