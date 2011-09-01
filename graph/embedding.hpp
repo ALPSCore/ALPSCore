@@ -251,7 +251,8 @@ template<
     ) {
 	  trace_.clear();
       std::deque<search_node> stack;
-      subgraph_adjacency_iterator sit, send, tend = adjacent_vertices(graph_vertex, *graph_).second;
+      subgraph_adjacency_iterator sit, send;
+      graph_adjacency_iterator tend = adjacent_vertices(graph_vertex, *graph_).second;
       // create trace
       stack.push_back(boost::make_tuple(subgraph_vertex, subgraph_vertex, tend, tend));
       placed_.insert(subgraph_vertex);
