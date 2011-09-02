@@ -523,18 +523,20 @@ namespace alps {
 		// Cm(G) = max{ Gpi: (pi, nu) is a leaf of T(G) }
 		// Input: graph G
 		// Output: canonical ordering, canonical label and orbit of G
-		template<
-			  typename Graph
-		> boost::tuple<
+        template<typename Graph> struct canonical_properties_type {
+		    typedef boost::tuple<
 			  // canonical ordering
 			  std::vector<typename boost::graph_traits<Graph>::vertex_descriptor>
 			  // canonical label
 			, typename graph_label<Graph>::type
 			  // orbit partition
 			, typename partition_type<Graph>::type
-		> canonical_properties(
-			  Graph const & G
-		) {
+            > type;
+        };
+
+		template<typename Graph>
+        typename canonical_properties_type<Graph>::type
+        canonical_properties( Graph const & G ) {
 			using boost::get;
 			using boost::make_tuple;
 			typename partition_type<Graph>::type pi, orbit, canonical_partition, first_partition;
