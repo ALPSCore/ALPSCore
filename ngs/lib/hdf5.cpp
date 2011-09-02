@@ -389,7 +389,7 @@ namespace alps {
         bool archive::is_data(std::string path) const {
             if ((path = complete_path(path)).find_last_of('@') != std::string::npos)
                 ALPS_NGS_THROW_RUNTIME_ERROR("no data path: " + path)
-                hid_t fid = context_->file_id_;
+                //hid_t fid = context_->file_id_;
                 hid_t id = H5Dopen2(context_->file_id_, path.c_str(), H5P_DEFAULT);
             return id < 0 ? false : detail::check_data(id) != 0;
         }

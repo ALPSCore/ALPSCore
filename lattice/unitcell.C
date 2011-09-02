@@ -83,7 +83,7 @@ GraphUnitCell::GraphUnitCell(const XMLTag& intag, std::istream& p)
           if (tag.type!=XMLTag::SINGLE) {
             std::vector<std::string> v;
             read_vector(parse_content(p),v,dimension());
-            for (int i=0;i<v.size();++i)
+            for (unsigned int i=0;i<v.size();++i)
               coord.push_back(alps::evaluate<double>(v[i]));
             //read_vector(parse_content(p),coord,dimension());
             tag = parse_tag(p);

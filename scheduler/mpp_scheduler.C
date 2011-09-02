@@ -275,10 +275,10 @@ void MPPScheduler::assign_processes(ProcessList& free)
 // check if tasks have finished
 int MPPScheduler::check_tasks(ProcessList& free)
 {
-  static int last_check=0;
+  static unsigned int last_check=0;
   int one_finished=0;
-  if(last_check<0)
-    last_check=0;
+  //if(last_check<0)
+  //  last_check=0;
   /*
   for (int i=0;i<active.size();i++)
     {
