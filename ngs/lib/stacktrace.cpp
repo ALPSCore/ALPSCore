@@ -27,7 +27,7 @@
 
 #include <alps/ngs/stacktrace.hpp>
 
-#if defined(__GNUC__) && !defined ALPS_NGS_NO_STACKTRACE
+#if defined(__GNUC__) && not defined ALPS_NGS_NO_STACKTRACE
 
 
     #include <execinfo.h>
