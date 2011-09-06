@@ -105,7 +105,7 @@ namespace alps {
 
                 template<typename T> bool is_datatype(std::string path) const {
                     return detail::is_datatype_caller<archive, T>::apply(*this, path);
-                };
+                }
 
                 std::vector<std::string> list_children(std::string path) const;
                 std::vector<std::string> list_attributes(std::string path) const;
