@@ -72,8 +72,8 @@ void rng_helper::load(IDump& dp) {
 
 void rng_helper::save(ODump& dp) const {
   dp << seed << disorder_seed;
-  std::ostringstream rngstream;
   for (unsigned int r = 0; r < engines_.size(); ++r) {
+    std::ostringstream rngstream;
     engines_[r]->write_all(rngstream);
     dp << rngstream.str();
   }
