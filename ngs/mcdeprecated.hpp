@@ -36,7 +36,7 @@
 
 namespace alps {
 
-    Parameters make_alps_parameters(mcparams const & arg);
+    Parameters make_alps_parameters(params const & arg);
 
     class mcdeprecated : public mcbase {
 

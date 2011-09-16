@@ -28,9 +28,7 @@
 #ifndef ALPS_NGS_CONVERT_HPP
 #define ALPS_NGS_CONVERT_HPP
 
-#include <alps/ngs/macros.hpp>
-
-#include <stdio.h>
+#include <string>
 
 namespace alps {
 
@@ -38,20 +36,9 @@ namespace alps {
         return static_cast<U>(arg);
     }
 
-    // TODO: move impl to cpp file!
     #define ALPS_NGS_CONVERT_STRING(T, c)                                                                                                      \
-        template<> inline std::string convert<std::string, T >( T arg) {                                                                       \
-            char buffer[255];                                                                                                                  \
-            if (sprintf(buffer, "%" c, arg) < 0)                                                                                               \
-                ALPS_NGS_THROW_RUNTIME_ERROR("error converting " #T " to string");                                                                    \
-            return buffer;                                                                                                                     \
-        }                                                                                                                                      \
-        template<> inline T convert< T, std::string>(std::string arg) {                                                                        \
-            T value;                                                                                                                           \
-            if (sscanf(arg.c_str(), "%" c, &value) < 0)                                                                                        \
-                ALPS_NGS_THROW_RUNTIME_ERROR("error converting from string to " #T ": " + arg);                                                           \
-            return value;                                                                                                                      \
-        }
+        template<> std::string convert<std::string, T >( T arg);																			   \
+        template<> T convert< T, std::string>(std::string arg);
     ALPS_NGS_CONVERT_STRING(short, "hd")
     ALPS_NGS_CONVERT_STRING(int, "d")
     ALPS_NGS_CONVERT_STRING(long, "ld")
@@ -65,14 +52,9 @@ namespace alps {
     ALPS_NGS_CONVERT_STRING(unsigned long long, "llu")
     #undef ALPS_NGS_CONVERT_STRING
 
-    // TODO: move impl to cpp file!
     #define ALPS_NGS_CONVERT_STRING_CHAR(T, U)                                                                                                 \
-        template<> inline std::string convert<std::string, T >( T arg) {                                                                       \
-            return convert<std::string>(static_cast< U >(arg));                                                                                \
-        }                                                                                                                                      \
-        template<> inline T convert<T, std::string>(std::string arg) {                                                                         \
-            return static_cast< T >(convert< U >(arg));                                                                                        \
-        }
+        template<> std::string convert<std::string, T >( T arg);                                                                               \
+        template<> T convert<T, std::string>(std::string arg);
     ALPS_NGS_CONVERT_STRING_CHAR(bool, short)
     ALPS_NGS_CONVERT_STRING_CHAR(char, short)
     ALPS_NGS_CONVERT_STRING_CHAR(signed char, short)
@@ -84,18 +66,9 @@ namespace alps {
     }
 
     #define ALPS_NGS_CONVERT_STRING_POINTER(T)                                                                                                 \
-        template<> inline void convert<std::string, T >(std::string const * src, std::string const * end, T * dest) {                          \
-            for (std::string const * it = src; it != end; ++it)                                                                                \
-                dest[it - src] = convert<T>(*it);                                                                                              \
-        }                                                                                                                                      \
-        template<> inline void convert<char *, T >(char * const * src, char * const * end, T * dest) {                                         \
-            for (char * const * it = src; it != end; ++it)                                                                                     \
-                dest[it - src] = convert<T>(std::string(*it));                                                                                 \
-        }                                                                                                                                      \
-        template<> inline void convert< T , std::string >(T const * src, T const * end, std::string * dest) {                                  \
-            for (T const * it = src; it != end; ++it)                                                                                          \
-                dest[it - src] = convert<std::string>(*it);                                                                                    \
-        }
+        template<> void convert<std::string, T >(std::string const * src, std::string const * end, T * dest);                                  \
+        template<> void convert<char *, T >(char * const * src, char * const * end, T * dest);                                                 \
+        template<> void convert< T , std::string >(T const * src, T const * end, std::string * dest);
     ALPS_NGS_CONVERT_STRING_POINTER(bool)
     ALPS_NGS_CONVERT_STRING_POINTER(char)
     ALPS_NGS_CONVERT_STRING_POINTER(signed char)

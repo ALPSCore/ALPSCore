@@ -77,7 +77,7 @@ namespace alps {
 
                 param const operator[](std::string const & key) const {
                     if (!defined(key))
-                        ALPS_NGS_THROW_INVALID_ARGUMENT("unknown argument: "  + key);
+                        ALPS_NGS_THROW_INVALID_ARGUMENT("unknown argument: "  + key)
                     return param(Base::find(key)->second);
                 }
 
@@ -102,6 +102,12 @@ namespace alps {
                 params_impl_base * clone() {
                     return new params_impl_ordred(*this);
                 }
+
+                #ifdef ALPS_HAVE_MPI
+                    void broadcast(int root) {
+                        ALPS_NGS_THROW_LOGIC_ERROR("no communicator available")
+                    }
+                #endif
 
             private:
 

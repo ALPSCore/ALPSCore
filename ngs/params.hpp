@@ -39,6 +39,10 @@
     #include <alps/ngs/boost_python.hpp>
 #endif
 
+#ifdef ALPS_HAVE_MPI
+	#include <boost/mpi.hpp>
+#endif
+
 #include <string>
 
 namespace alps {
@@ -65,6 +69,10 @@ namespace alps {
                 params(boost::python::object const & arg);
             #endif
 
+            #ifdef ALPS_HAVE_MPI
+                params(boost::mpi::communicator const & arg);
+            #endif
+
             virtual ~params();
 
             std::size_t size() const;
@@ -87,13 +95,17 @@ namespace alps {
             void save(hdf5::archive &) const;
 
             void load(hdf5::archive &);
-            
+
             #ifdef ALPS_HAVE_PYTHON
                 // USE FOR PYTHON EXPORT ONLY!
                 detail::params_impl_base * get_impl();
                 detail::params_impl_base const * get_impl() const;
             #endif
-            
+
+            #ifdef ALPS_HAVE_MPI
+                void broadcast(int root = 0);
+            #endif
+
             // TODO: add boost serialization support
 
         private:

@@ -180,6 +180,12 @@ namespace alps {
                         return boost::python::call_method<boost::python::object>(values_.ptr(), "__iter__");
                 }
 
+				#ifdef ALPS_HAVE_MPI
+					void broadcast(int root) {
+						ALPS_NGS_THROW_LOGIC_ERROR("no communicator available")
+					}
+				#endif
+
             private:
 
                 params_impl_dict(params_impl_dict const & arg)

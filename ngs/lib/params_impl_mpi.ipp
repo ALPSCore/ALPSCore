@@ -25,15 +25,17 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_PARAMS_IMPL_MAP_IPP
-#define ALPS_NGS_PARAMS_IMPL_MAP_IPP
+#ifndef ALPS_NGS_PARAMS_IMPL_MPI_IPP
+#define ALPS_NGS_PARAMS_IMPL_MPI_IPP
 
 #include <alps/ngs/hdf5.hpp>
 #include <alps/ngs/param.hpp>
 #include <alps/ngs/hdf5/map.hpp>
 #include <alps/ngs/detail/params_impl_base.hpp>
 
+#include <boost/mpi.hpp>
 #include <boost/bind.hpp>
+#include <boost/serialization/map.hpp>
 
 #include <string>
 
@@ -41,20 +43,15 @@ namespace alps {
 
     namespace detail {
 
-        class params_impl_map : public params_impl_base, std::map<std::string, std::string> {
+        class params_impl_mpi : public params_impl_base, std::map<std::string, std::string> {
 
             public:
 
                 typedef std::map<std::string, std::string> Base;
 
-                params_impl_map() {}
-
-                params_impl_map(hdf5::archive & ar) {
-                    std::string context = ar.get_context();
-                    ar.set_context("/parameters");
-                    load(ar);
-                    ar.set_context(context);
-                }
+				params_impl_mpi(boost::mpi::communicator const & comm)
+					: comm_(comm)
+				{}
 
                 std::size_t size() const {
                     return Base::size();
@@ -69,8 +66,8 @@ namespace alps {
 
                 param operator[](std::string const & key) {
                     return param(
-                        boost::bind(&params_impl_map::getter, boost::ref(*this), key),
-                        boost::bind(&params_impl_map::setter, boost::ref(*this), key, _1)
+                        boost::bind(&params_impl_mpi::getter, boost::ref(*this), key),
+                        boost::bind(&params_impl_mpi::setter, boost::ref(*this), key, _1)
                     );
                 }
 
@@ -98,19 +95,20 @@ namespace alps {
                 }
                 
                 params_impl_base * clone() {
-                    return new params_impl_map(*this);
+                    return new params_impl_mpi(*this);
                 }
 
 				#ifdef ALPS_HAVE_MPI
 					void broadcast(int root) {
-						ALPS_NGS_THROW_LOGIC_ERROR("no communicator available")
+						boost::mpi::broadcast(comm_, static_cast<Base &>(*this), root);
 					}
 				#endif
 
             private:
 
-                params_impl_map(params_impl_map const & arg)
+                params_impl_mpi(params_impl_mpi const & arg)
                     : Base(arg)
+					, comm_(arg.comm_)
                 {}
 
                 void setter(std::string key, std::string value) {
@@ -120,6 +118,8 @@ namespace alps {
                 std::string getter(std::string key) {
                     return Base::operator[](key);
                 }
+				
+				boost::mpi::communicator const & comm_;
         };
 
     }

@@ -29,10 +29,11 @@
 
 namespace alps {
 
-    Parameters make_alps_parameters(mcparams const & arg) {
+    Parameters make_alps_parameters(params const & arg) {
         Parameters params;
-        for (mcparams::const_iterator it = arg.begin(); it != arg.end(); ++it)
-            params.push_back(it->first, it->second.str());
+        std::vector<std::string> keys = arg.keys();
+        for (std::vector<std::string>::const_iterator it = keys.begin(); it != keys.end(); ++it)
+            params.push_back(*it, arg[*it].str());
         return params;
     }
 

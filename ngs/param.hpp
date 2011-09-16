@@ -28,6 +28,7 @@
 #ifndef ALPS_NGS_PARAM_HPP
 #define ALPS_NGS_PARAM_HPP
 
+#include <alps/ngs/macros.hpp>
 #include <alps/ngs/config.hpp>
 #include <alps/ngs/convert.hpp>
 
@@ -70,10 +71,11 @@ namespace alps {
                 return value_ == boost::none_t() ? getter_() : *value_;
             }
 
-            template<typename T> param operator=(T const & arg) {
-                if (value_ == boost::none_t())
+            template<typename T> param & operator=(T const & arg) {
+                if (value_ != boost::none_t())
                     ALPS_NGS_THROW_RUNTIME_ERROR("No reference available");
                 setter_(convert<std::string>(arg));
+                return *this;
             }
 
         private:

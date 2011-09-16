@@ -34,6 +34,10 @@
     #include <alps/ngs/lib/params_impl_dict.ipp>
 #endif
 
+#ifdef ALPS_HAVE_MPI
+    #include <alps/ngs/lib/params_impl_mpi.ipp>
+#endif
+
 namespace alps {
 
     params::params()
@@ -57,6 +61,12 @@ namespace alps {
             : impl_(new detail::params_impl_dict(arg))
         {}
     #endif
+
+	#ifdef ALPS_HAVE_MPI
+		params::params(boost::mpi::communicator const & arg)
+            : impl_(new detail::params_impl_mpi(arg))
+		{}
+	#endif
 
     params::~params() {}
     
@@ -100,4 +110,9 @@ namespace alps {
 
     #endif
 
+	#ifdef ALPS_HAVE_MPI
+		void params::broadcast(int root) {
+			impl_->broadcast(root);
+		}
+    #endif
 }

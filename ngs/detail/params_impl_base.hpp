@@ -54,6 +54,10 @@ namespace alps {
 				
 				virtual params_impl_base * clone() = 0;
 
+				#ifdef ALPS_HAVE_MPI
+					virtual void broadcast(int root) = 0;
+				#endif
+
         };
 
     }

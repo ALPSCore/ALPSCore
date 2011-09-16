@@ -28,7 +28,7 @@
 #ifndef ALPS_NGS_MCBASE_HPP
 #define ALPS_NGS_MCBASE_HPP
 
-#include <alps/ngs/mcparams.hpp>
+#include <alps/ngs/params.hpp>
 #include <alps/ngs/mcresults.hpp>
 #include <alps/ngs/mcobservables.hpp>
 
@@ -48,7 +48,7 @@
 namespace alps {
     class mcbase {
         public:
-            typedef mcparams parameters_type;
+            typedef alps::params parameters_type;
             typedef mcresults results_type;
             typedef std::vector<std::string> result_names_type;
 
