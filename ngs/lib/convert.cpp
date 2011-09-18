@@ -33,13 +33,13 @@
 namespace alps {
 
     #define ALPS_NGS_CONVERT_STRING(T, p, c)                                                                                                   \
-        template<> std::string convert<std::string, T >( T arg) {                                                                              \
+        template<> ALPS_DECL std::string convert<std::string, T >( T arg) {                                                                              \
             char buffer[255];                                                                                                                  \
             if (sprintf(buffer, "%" p "" c, arg) < 0)                                                                                          \
                 ALPS_NGS_THROW_RUNTIME_ERROR("error converting from " #T " to string");                                                        \
             return buffer;                                                                                                                     \
         }                                                                                                                                      \
-        template<> T convert< T, std::string>(std::string arg) {                                                                               \
+        template<> ALPS_DECL T convert< T, std::string>(std::string arg) {                                                                               \
             T value;                                                                                                                           \
             if (sscanf(arg.c_str(), "%" c, &value) < 0)                                                                                        \
                 ALPS_NGS_THROW_RUNTIME_ERROR("error converting from string to " #T ": " + arg);                                                \
@@ -59,10 +59,10 @@ namespace alps {
     #undef ALPS_NGS_CONVERT_STRING
 
     #define ALPS_NGS_CONVERT_STRING_CHAR(T, U)                                                                                                 \
-        template<> std::string convert<std::string, T >( T arg) {                                                                              \
+        template<> ALPS_DECL std::string convert<std::string, T >( T arg) {                                                                              \
             return convert<std::string>(static_cast< U >(arg));                                                                                \
         }                                                                                                                                      \
-        template<> T convert<T, std::string>(std::string arg) {                                                                                \
+        template<> ALPS_DECL T convert<T, std::string>(std::string arg) {                                                                                \
             return static_cast< T >(convert< U >(arg));                                                                                        \
         }
     ALPS_NGS_CONVERT_STRING_CHAR(bool, short)
@@ -72,15 +72,15 @@ namespace alps {
     #undef ALPS_NGS_CONVERT_STRING_CHAR
 
     #define ALPS_NGS_CONVERT_STRING_POINTER(T)                                                                                                 \
-        template<> void convert<std::string, T >(std::string const * src, std::string const * end, T * dest) {                                 \
+        template<> ALPS_DECL void convert<std::string, T >(std::string const * src, std::string const * end, T * dest) {                                 \
             for (std::string const * it = src; it != end; ++it)                                                                                \
                 dest[it - src] = convert<T>(*it);                                                                                              \
         }                                                                                                                                      \
-        template<> void convert<char *, T >(char * const * src, char * const * end, T * dest) {                                                \
+        template<> ALPS_DECL void convert<char *, T >(char * const * src, char * const * end, T * dest) {                                                \
             for (char * const * it = src; it != end; ++it)                                                                                     \
                 dest[it - src] = convert<T>(std::string(*it));                                                                                 \
         }                                                                                                                                      \
-        template<> void convert< T , std::string >(T const * src, T const * end, std::string * dest) {                                         \
+        template<> ALPS_DECL void convert< T , std::string >(T const * src, T const * end, std::string * dest) {                                         \
             for (T const * it = src; it != end; ++it)                                                                                          \
                 dest[it - src] = convert<std::string>(*it);                                                                                    \
         }
