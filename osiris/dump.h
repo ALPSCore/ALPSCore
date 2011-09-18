@@ -211,7 +211,7 @@ public:
 
   template <class T>
   void read_array(std::size_t n, std::complex<T>* p)
-  { read_array(2 * n, reinterpret_cast<float*>(p)); }
+  { read_array(2 * n, reinterpret_cast<T*>(p)); }
 
   virtual void read_string(std::size_t n, char* s);
   virtual void read_string(std::string&);
