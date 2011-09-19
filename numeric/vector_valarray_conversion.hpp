@@ -57,6 +57,14 @@ namespace alps {
       return to;
     }
 
+    template<class T1, class T2>
+    std::valarray<T2> vector2valarray(std::vector<T1> const & from)
+    {
+      std::valarray<T2> to(from.size());
+      std::copy(from.begin(),from.end(),&to[0]);
+      return to;
+    }
+
   }
 }
 
