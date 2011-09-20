@@ -305,6 +305,7 @@ namespace alps {
 			// Vertex colored graph label
 			// Input: pi = (V1, V2, ..., Vr)
 			// Output: comparable graph label l(pi)
+			// TODO: only one vertex per orbit in matrix
 			template<typename Graph> void apply_label_vertex_coloring (
                   typename graph_label<Graph>::type & l
 				, typename partition_type<Graph>::type const & pi
@@ -365,6 +366,7 @@ namespace alps {
 			// Edge colored graph label
 			// Input: pi = (V1, V2, ..., Vr)
 			// Output: comparable graph label l(pi)
+			// TODO: only add one edge from orbit to orbit not all edges
 			template<typename Graph, std::size_t Base> void apply_label_edge_coloring (
                   typename graph_label<Graph>::type & l
 				, typename partition_type<Graph>::type const & pi
