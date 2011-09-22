@@ -13,7 +13,7 @@ set(ALPS_STATIC_CPPFLAGS "")
 
 set(ALPS_SOURCES
     # utility
-    utility/encode.cpp utility/copyright.cpp utility/os.cpp utility/temporary_filename.cpp ngs/lib/convert.cpp
+    utility/encode.cpp utility/copyright.cpp utility/os.cpp utility/temporary_filename.cpp ngs/lib/convert.cpp ngs/lib/param.cpp
     # alea
     alea/nan.C alea/observable.C alea/observablefactory.C alea/observableset.C 
     # expression
@@ -49,7 +49,7 @@ if (ALPS_BUILD_NGS)
     ngs/lib/mcbase.cpp ngs/lib/mcparams.cpp ngs/lib/mcsignal.cpp ngs/lib/mcoptions.cpp ngs/lib/mcdeprecated.cpp 
     ngs/lib/mcresult.cpp ngs/lib/mcresults.cpp ngs/lib/api.cpp ngs/lib/mcobservables.cpp ngs/lib/mcobservable.cpp
     ngs/lib/observablewrappers.cpp ngs/lib/callback.cpp ngs/lib/signal.cpp 
-    ngs/lib/param.cpp ngs/lib/params.cpp ngs/lib/base.cpp
+    ngs/lib/params.cpp ngs/lib/base.cpp
   )
 endif (ALPS_BUILD_NGS)
 
