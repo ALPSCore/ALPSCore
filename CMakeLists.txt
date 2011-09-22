@@ -49,7 +49,7 @@ if (ALPS_BUILD_NGS)
     ngs/lib/mcbase.cpp ngs/lib/mcparams.cpp ngs/lib/mcsignal.cpp ngs/lib/mcoptions.cpp ngs/lib/mcdeprecated.cpp 
     ngs/lib/mcresult.cpp ngs/lib/mcresults.cpp ngs/lib/api.cpp ngs/lib/mcobservables.cpp ngs/lib/mcobservable.cpp
     ngs/lib/observablewrappers.cpp ngs/lib/callback.cpp ngs/lib/signal.cpp 
-    ngs/lib/params.cpp ngs/lib/base.cpp
+    ngs/lib/params.cpp ngs/lib/base.cpp ngs/lib/make_deprecated_parameters.cpp
   )
 endif (ALPS_BUILD_NGS)
 
