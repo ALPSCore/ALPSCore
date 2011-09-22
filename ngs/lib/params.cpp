@@ -48,8 +48,8 @@ namespace alps {
         : impl_(arg.impl_->clone())
     {}
 
-    params::params(hdf5::archive & arg)
-        : impl_(new detail::params_impl_map(arg))
+    params::params(hdf5::archive const & arg)
+        : impl_(new detail::params_impl_map(const_cast<hdf5::archive &>(arg)))
     {}
 
     params::params(std::string const & arg)

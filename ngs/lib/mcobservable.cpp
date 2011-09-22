@@ -74,7 +74,9 @@ namespace alps {
     }
 
     template<> mcobservable & mcobservable::operator<< <std::vector<double> >(std::vector<double>  const & value) {
-        (*impl_) << value;
+        std::valarray<double> varr(value.size());
+        std::copy(value.begin(), value.end(), &varr[0]);
+        (*impl_) << varr;
         return *this;
     }
 

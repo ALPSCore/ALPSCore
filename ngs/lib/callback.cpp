@@ -25,7 +25,7 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/ngs/mcsignal.hpp>
+#include <alps/ngs/signal.hpp>
 #include <alps/ngs/callback.hpp>
 
 #include <boost/date_time/gregorian/gregorian.hpp>
@@ -34,9 +34,9 @@
 namespace alps {
 
     bool basic_stop_callback(int time_limit) {
-        static alps::mcsignal signal;
+        static alps::signal signals;
         static boost::posix_time::ptime start_time = boost::posix_time::second_clock::local_time();
-        return !signal.empty() 
+        return !signals.empty() 
             || (time_limit > 0 && boost::posix_time::second_clock::local_time() > start_time + boost::posix_time::seconds(time_limit));
     }
 

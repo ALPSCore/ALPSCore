@@ -26,10 +26,9 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <alps/ngs/hdf5.hpp>
+#include <alps/ngs/config.hpp>
 #include <alps/ngs/macros.hpp>
 #include <alps/ngs/convert.hpp>
-
-#include <alps/config.h>
 
 #include <boost/scoped_array.hpp>
 #include <boost/filesystem/operations.hpp>
@@ -294,22 +293,12 @@ namespace alps {
 
         }
 
+		archive::archive(param const & filename, std::size_t props) {
+			construct(filename.str(), props);
+		}
+
         archive::archive(std::string const & filename, std::size_t props) {
-            detail::check_error(H5Eset_auto2(H5E_DEFAULT, NULL, NULL));
-            if (props & COMPRESS) {
-                unsigned int flag;
-                detail::check_error(H5Zget_filter_info(H5Z_FILTER_SZIP, &flag));
-                props &= (flag & H5Z_FILTER_CONFIG_ENCODE_ENABLED ? ~0x00 : ~COMPRESS);
-            }
-            if (ref_cnt_.find(file_key(filename, props & (WRITE | REPLACE), props & COMPRESS)) == ref_cnt_.end())
-                ref_cnt_.insert(std::make_pair(
-                      file_key(filename, props & (WRITE | REPLACE), props & COMPRESS)
-                    , std::make_pair(context_ = new detail::mccontext(filename, props & WRITE, props & REPLACE, props & COMPRESS), 1)
-                ));
-            else {
-                context_ = ref_cnt_.find(file_key(filename, props & (WRITE | REPLACE), props & COMPRESS))->second.first;
-                ++ref_cnt_.find(file_key(filename, props & (WRITE | REPLACE), props & COMPRESS))->second.second;
-            }
+			construct(filename, props);
         }
 
         archive::archive(archive const & arg)
@@ -1089,6 +1078,24 @@ namespace alps {
             }
         ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_IS_DATATYPE_IMPL_IMPL)
         #undef ALPS_NGS_HDF5_IS_DATATYPE_IMPL_IMPL
+
+        void archive::construct(std::string const & filename, std::size_t props) {
+            detail::check_error(H5Eset_auto2(H5E_DEFAULT, NULL, NULL));
+            if (props & COMPRESS) {
+                unsigned int flag;
+                detail::check_error(H5Zget_filter_info(H5Z_FILTER_SZIP, &flag));
+                props &= (flag & H5Z_FILTER_CONFIG_ENCODE_ENABLED ? ~0x00 : ~COMPRESS);
+            }
+            if (ref_cnt_.find(file_key(filename, props & (WRITE | REPLACE), props & COMPRESS)) == ref_cnt_.end())
+                ref_cnt_.insert(std::make_pair(
+                      file_key(filename, props & (WRITE | REPLACE), props & COMPRESS)
+                    , std::make_pair(context_ = new detail::mccontext(filename, props & WRITE, props & REPLACE, props & COMPRESS), 1)
+                ));
+            else {
+                context_ = ref_cnt_.find(file_key(filename, props & (WRITE | REPLACE), props & COMPRESS))->second.first;
+                ++ref_cnt_.find(file_key(filename, props & (WRITE | REPLACE), props & COMPRESS))->second.second;
+            }
+        }
 
         std::string archive::file_key(std::string filename, bool write, bool compress) const {
             return std::string(write ? "w" : "r") + (compress ? "c" : "_") + "@" + filename;

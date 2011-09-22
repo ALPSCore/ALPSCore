@@ -114,6 +114,8 @@ namespace alps {
             ) {                                                                                                                                                         \
                 if (ar.is_group(path) || !is_continous<T>::value)                                                                                                       \
                     ALPS_NGS_THROW_RUNTIME_ERROR("invalid path")                                                                                                        \
+                else if (!ar.is_complex(path))																															\
+                    ALPS_NGS_THROW_RUNTIME_ERROR("no complex value in archive")                                                                                         \
                 else {                                                                                                                                                  \
                     chunk.push_back(2);                                                                                                                                 \
                     offset.push_back(0);                                                                                                                                \

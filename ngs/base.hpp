@@ -33,7 +33,7 @@
 #include <alps/ngs/mcresults.hpp>
 #include <alps/ngs/mcobservables.hpp>
 
-#include <alps/config.h>
+#include <alps/ngs/config.hpp>
 
 #include <boost/function.hpp>
 #include <boost/filesystem/path.hpp>
@@ -73,6 +73,10 @@ namespace alps {
             virtual void do_measurements() = 0;
 
             virtual double fraction_completed() const = 0;
+
+            void save(std::string const & filename) const;
+
+            void load(std::string const & filename);
 
             void save(alps::hdf5::archive & ar) const;
 

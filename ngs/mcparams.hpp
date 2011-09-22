@@ -29,8 +29,7 @@
 #define ALPS_NGS_MCPARAMS_HPP
 
 #include <alps/ngs/hdf5.hpp>
-
-#include <alps/config.h>
+#include <alps/ngs/config.hpp>
 
 #include <boost/variant.hpp>
 #include <boost/mpl/vector.hpp>

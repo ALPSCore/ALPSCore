@@ -29,9 +29,8 @@
 #define ALPS_NGS_MCRESULTS_HPP
 
 #include <alps/ngs/hdf5.hpp>
+#include <alps/ngs/config.hpp>
 #include <alps/ngs/mcresult.hpp>
-
-#include <alps/config.h>
 
 #include <map>
 #include <string>

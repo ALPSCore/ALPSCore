@@ -29,7 +29,7 @@
 #define ALPS_NGS_CONVERT_HPP
 
 #include <string>
-#include <alps/config.h>
+#include <alps/ngs/config.hpp>
 
 namespace alps {
 

@@ -33,6 +33,7 @@
 #include <alps/ngs/base.hpp>
 #include <alps/ngs/boost.hpp>
 #include <alps/ngs/mcbase.hpp>
+#include <alps/ngs/signal.hpp>
 #include <alps/ngs/convert.hpp>
 #include <alps/ngs/parallel.hpp>
 #include <alps/ngs/callback.hpp>

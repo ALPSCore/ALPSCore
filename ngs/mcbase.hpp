@@ -29,10 +29,9 @@
 #define ALPS_NGS_MCBASE_HPP
 
 #include <alps/ngs/params.hpp>
+#include <alps/ngs/config.hpp>
 #include <alps/ngs/mcresults.hpp>
 #include <alps/ngs/mcobservables.hpp>
-
-#include <alps/config.h>
 
 #include <boost/function.hpp>
 #include <boost/filesystem/path.hpp>

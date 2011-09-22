@@ -25,62 +25,35 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_API_HPP
-#define ALPS_NGS_API_HPP
-
-#include <alps/ngs/params.hpp>
-#include <alps/ngs/params.hpp>
-#include <alps/ngs/mcresults.hpp>
-#include <alps/ngs/mcobservables.hpp>
+#ifndef ALPS_NGS_SIGNAL_HPP
+#define ALPS_NGS_SIGNAL_HPP
 
 #include <alps/ngs/config.hpp>
 
-#include <boost/filesystem/path.hpp>
-
-#include <string>
+#include <vector>
 
 namespace alps {
 
-    template<typename S> struct result_names_type {
-        typedef typename S::result_names_type type;
+    class signal{
+
+        public:
+
+            signal();
+
+            bool empty();
+
+            int top();
+
+            void pop();
+
+            static void slot(int signal);
+
+            static void segfault(int signal);
+
+        private:
+
+            static std::vector<int> signals_;
     };
-
-    template<typename S> struct results_type {
-        typedef typename S::results_type type;
-    };
-
-    template<typename S> struct parameters_type {
-        typedef typename S::parameters_type type;
-    };
-
-    template<typename S> typename result_names_type<S>::type result_names(S const & s) {
-        return s.result_names();
-    }
-
-    template<typename S> typename result_names_type<S>::type unsaved_result_names(S const & s) {
-        return s.unsaved_result_names();
-    }
-
-    template<typename S> typename results_type<S>::type collect_results(S const & s) {
-        return s.collect_results();
-    }
-
-    template<typename S> typename results_type<S>::type collect_results(S const & s, typename result_names_type<S>::type const & names) {
-        return s.collect_results(names);
-    }
-
-    template<typename S> typename results_type<S>::type collect_results(S const & s, std::string const & name) {
-        return collect_results(s, typename result_names_type<S>::type(1, name));
-    }
-
-    template<typename S> double fraction_completed(S const & s) {
-        return s.fraction_completed();
-    }
-
-    void save_results(mcresults const & results, params const & params, boost::filesystem::path const & filename, std::string const & path);
-
-    void save_results(mcobservables const & observables, params const & params, boost::filesystem::path const & filename, std::string const & path);
-
 }
 
 #endif

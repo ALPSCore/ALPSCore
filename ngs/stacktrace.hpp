@@ -32,7 +32,8 @@
     #define ALPS_NGS_MAX_FRAMES 63
 #endif
 
-#include <alps/config.h>
+#include <alps/ngs/config.hpp>
+
 #include <sstream>
 
 ALPS_DECL void stacktrace(std::ostringstream &);

@@ -28,7 +28,8 @@
 #ifndef ALPS_NGS_HDF5_HPP
 #define ALPS_NGS_HDF5_HPP
 
-#include <alps/config.h>
+#include <alps/ngs/param.hpp>
+#include <alps/ngs/config.hpp>
 #include <alps/ngs/macros.hpp>
 
 #include <boost/mpl/and.hpp>
@@ -80,6 +81,7 @@ namespace alps {
                 typedef enum { READ = 0x00, WRITE = 0x01, REPLACE = 0x02, COMPRESS = 0x04 } properties;
 
                 archive(std::string const & filename, std::size_t props = READ);
+                archive(param const & filename, std::size_t props = READ);
                 archive(archive const & arg);
 
                 virtual ~archive();
@@ -171,6 +173,7 @@ namespace alps {
 
             private:
 
+                void construct(std::string const & filename, std::size_t props = READ);
                 std::string file_key(std::string filename, bool writeable, bool compressed) const;
 
                 std::string current_;

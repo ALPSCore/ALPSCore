@@ -31,6 +31,20 @@
 
 namespace alps {
 
+    void base::save(std::string const & filename) const {
+        hdf5::archive ar(filename, hdf5::archive::REPLACE);
+        ar
+            << make_pvp("/checkpoint", *this)
+        ;
+    }
+
+    void base::load(std::string const & filename) {
+        hdf5::archive ar(filename);
+        ar 
+            >> make_pvp("/checkpoint", *this)
+        ;
+    }
+
     void base::save(alps::hdf5::archive & ar) const {
         ar
             << make_pvp("/parameters", params)
@@ -38,7 +52,7 @@ namespace alps {
         ;
     }
 
-    void base::load(alps::hdf5::archive  & ar) {
+    void base::load(alps::hdf5::archive & ar) {
         ar 
             >> make_pvp("/simulation/realizations/0/clones/0/results", measurements)
         ;

@@ -25,62 +25,75 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_API_HPP
-#define ALPS_NGS_API_HPP
+#include <alps/ngs/signal.hpp>
+#include <alps/ngs/stacktrace.hpp>
+#include <alps/ngs/hdf5.hpp>
 
-#include <alps/ngs/params.hpp>
-#include <alps/ngs/params.hpp>
-#include <alps/ngs/mcresults.hpp>
-#include <alps/ngs/mcobservables.hpp>
-
-#include <alps/ngs/config.hpp>
-
-#include <boost/filesystem/path.hpp>
-
-#include <string>
+#include <cstring>
+#include <sstream>
+#include <cstdlib>
+#include <iostream>
+#include <signal.h>
 
 namespace alps {
 
-    template<typename S> struct result_names_type {
-        typedef typename S::result_names_type type;
-    };
+    signal::signal() {
+        #if not ( defined BOOST_MSVC || defined ALPS_NGS_NO_SIGNALS )
+            static bool initialized;
+            if (!initialized) {
+                initialized = true;
 
-    template<typename S> struct results_type {
-        typedef typename S::results_type type;
-    };
+                static struct sigaction action;
+                memset(&action, 0, sizeof(action));
+                action.sa_handler = &signal::slot;
+                sigaction(SIGINT, &action, NULL);
+                sigaction(SIGTERM, &action, NULL);
+                sigaction(SIGXCPU, &action, NULL);
+                sigaction(SIGQUIT, &action, NULL);
+                sigaction(SIGUSR1, &action, NULL);
+                sigaction(SIGUSR2, &action, NULL);
+                sigaction(SIGSTOP, &action, NULL);
+                sigaction(SIGKILL, &action, NULL);
 
-    template<typename S> struct parameters_type {
-        typedef typename S::parameters_type type;
-    };
-
-    template<typename S> typename result_names_type<S>::type result_names(S const & s) {
-        return s.result_names();
+                static struct sigaction segv;
+                memset(&segv, 0, sizeof(segv));
+                segv.sa_handler = &signal::segfault;
+                sigaction(SIGSEGV, &segv, NULL);
+                sigaction(SIGBUS, &segv, NULL);
+            }
+        #endif
     }
 
-    template<typename S> typename result_names_type<S>::type unsaved_result_names(S const & s) {
-        return s.unsaved_result_names();
+    bool signal::empty() {
+        return !signals_.size();
     }
 
-    template<typename S> typename results_type<S>::type collect_results(S const & s) {
-        return s.collect_results();
+    int signal::top() {
+        return signals_.back();
     }
 
-    template<typename S> typename results_type<S>::type collect_results(S const & s, typename result_names_type<S>::type const & names) {
-        return s.collect_results(names);
+    void signal::pop() {
+        return signals_.pop_back();
     }
 
-    template<typename S> typename results_type<S>::type collect_results(S const & s, std::string const & name) {
-        return collect_results(s, typename result_names_type<S>::type(1, name));
+    void signal::slot(int signal) {
+        std::cerr << "Received signal " << signal << std::endl;
+        signals_.push_back(signal);
     }
 
-    template<typename S> double fraction_completed(S const & s) {
-        return s.fraction_completed();
+    void signal::segfault(int signal) {
+        std::ostringstream buffer;
+        buffer << "Abort (" << signal << ", see 'man signal') in:" << std::endl;
+        stacktrace(buffer);
+        std::cerr << buffer.str();
+        signals_.push_back(signal);
+        hdf5::archive::abort();
+        std::abort();
+        goto grats_you_found_the_easter_eggs;
+        grats_you_found_the_easter_eggs:
+        ; //svn blame will tell you to whom you need to report it ;)
     }
 
-    void save_results(mcresults const & results, params const & params, boost::filesystem::path const & filename, std::string const & path);
-
-    void save_results(mcobservables const & observables, params const & params, boost::filesystem::path const & filename, std::string const & path);
+    std::vector<int> signal::signals_;
 
 }
-
-#endif

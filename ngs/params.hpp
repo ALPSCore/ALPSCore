@@ -61,7 +61,7 @@ namespace alps {
 
             params(params const &);
 
-            params(hdf5::archive &);
+            params(hdf5::archive const &);
 
             params(std::string const &);
 

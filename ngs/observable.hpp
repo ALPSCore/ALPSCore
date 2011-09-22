@@ -48,7 +48,7 @@ namespace alps {
     };
     
     template <class Observable>
-    class observable_impl 
+    class observable_impl: public observable_base
     {
     public:
       std::string name() const { return obs.name();}
@@ -106,6 +106,9 @@ namespace alps {
     obs.output(os);
     return os;
   }
+  
+//  Observable: impl ..
+  
 }
 
 }

@@ -29,9 +29,9 @@
 #define ALPS_NGS_MCRESULT_HPP
 
 #include <alps/ngs/hdf5.hpp>
+#include <alps/ngs/config.hpp>
 #include <alps/ngs/mcobservable.hpp>
 
-#include <alps/config.h>
 #include <alps/alea/observable_fwd.hpp>
 
 #ifdef ALPS_HAVE_MPI

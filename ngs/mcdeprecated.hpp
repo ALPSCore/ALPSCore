@@ -29,8 +29,8 @@
 #define ALPS_NGS_MCDEPRECATED_HPP
 
 #include <alps/ngs/mcbase.hpp>
+#include <alps/ngs/config.hpp>
 
-#include <alps/config.h>
 #include <alps/parameter.h>
 #include <alps/alea/observableset.h>
 

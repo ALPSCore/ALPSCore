@@ -86,7 +86,13 @@ namespace alps {
 
     };
 
-    std::ostream & operator<<(std::ostream & os, param const & v);
+    std::ostream & operator<<(std::ostream & os, param const &);
+
+    std::string operator+(param const &, std::string const &);
+    std::string operator+(param const &, char const *);
+
+    std::string operator+(std::string const &, param const &);
+    std::string operator+(char const *, param const &);
 
 }
 
