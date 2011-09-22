@@ -33,6 +33,31 @@ namespace alps {
         return os << value.str();
     }
 
+	#define ALPS_NGS_PARAM_ADD_OPERATOR(T)								\
+		T operator+(param const & p, T const & s) {						\
+			return static_cast<T>(p) + s;								\
+		}																\
+		T operator+(T const & s, param const & p) {						\
+			return s + static_cast<T>(p);								\
+		}
+	ALPS_NGS_PARAM_ADD_OPERATOR(char)
+    ALPS_NGS_PARAM_ADD_OPERATOR(signed char)
+    ALPS_NGS_PARAM_ADD_OPERATOR(unsigned char)
+    ALPS_NGS_PARAM_ADD_OPERATOR(short)
+    ALPS_NGS_PARAM_ADD_OPERATOR(unsigned short)
+    ALPS_NGS_PARAM_ADD_OPERATOR(int)
+    ALPS_NGS_PARAM_ADD_OPERATOR(unsigned)
+    ALPS_NGS_PARAM_ADD_OPERATOR(long)
+    ALPS_NGS_PARAM_ADD_OPERATOR(unsigned long)
+    ALPS_NGS_PARAM_ADD_OPERATOR(long long)
+    ALPS_NGS_PARAM_ADD_OPERATOR(unsigned long long)
+    ALPS_NGS_PARAM_ADD_OPERATOR(float)
+    ALPS_NGS_PARAM_ADD_OPERATOR(double)
+    ALPS_NGS_PARAM_ADD_OPERATOR(long double)
+    ALPS_NGS_PARAM_ADD_OPERATOR(bool)
+    #undef ALPS_NGS_PARAM_ADD_OPERATOR
+
+
     std::string operator+(param const & p, std::string const & s) {
         return p.str() + s;
     }
