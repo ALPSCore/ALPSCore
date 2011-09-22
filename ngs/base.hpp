@@ -78,6 +78,10 @@ namespace alps {
 
             void load(std::string const & filename);
 
+            void save(alps::param const & filename) const;
+
+            void load(alps::param const & filename);
+
             void save(alps::hdf5::archive & ar) const;
 
             void load(alps::hdf5::archive & ar);

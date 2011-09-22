@@ -45,6 +45,14 @@ namespace alps {
         ;
     }
 
+    void base::save(alps::param const & filename) const {
+        save(filename.str());
+    }
+
+    void base::load(alps::param const & filename) {
+        load(filename.str());
+    }
+
     void base::save(alps::hdf5::archive & ar) const {
         ar
             << make_pvp("/parameters", params)
