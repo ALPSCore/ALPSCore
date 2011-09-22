@@ -59,7 +59,7 @@ namespace alps {
             base(parameters_type const & p, std::size_t seed_offset = 0)
                 : params(p)
                   // TODO: this ist not the best solution - any idea?
-                , random(boost::mt19937(static_cast<std::size_t>(p.value_or_default("SEED", 42)) + seed_offset), boost::uniform_real<>())
+                , random(boost::mt19937(p.value_or_default("SEED", 42) + seed_offset), boost::uniform_real<>())
                 , fraction(0.)
                 , next_check(8)
                 , start_time(boost::posix_time::second_clock::local_time())

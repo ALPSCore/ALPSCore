@@ -33,20 +33,4 @@ namespace alps {
         return os << value.str();
     }
 
-    std::string operator+(param const & p, std::string const & s) {
-        return p.str() + s;
-    }
-
-    std::string operator+(param const & p, char const * c) {
-        return p.str() + c;
-    }
-
-    std::string operator+(std::string const & s, param const & p) {
-        return p + s;
-    }
-
-    std::string operator+(char const * c, param const & p) {
-        return p + c;
-    }
-
 }

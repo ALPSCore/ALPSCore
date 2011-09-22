@@ -127,8 +127,8 @@ BOOST_PYTHON_MODULE(pyngsbase_c) {
         .def("do_update", boost::python::pure_virtual(&alps::detail::base_export::do_update))
         .def("do_measurements", boost::python::pure_virtual(&alps::detail::base_export::do_measurements))
         .def("fraction_completed", boost::python::pure_virtual(&alps::detail::base_export::fraction_completed))
-        .def("save", &alps::detail::base_export::save)
-        .def("load", &alps::detail::base_export::load)
+        .def("save", static_cast<void(alps::detail::base_export::*)(alps::hdf5::archive &) const>(&alps::detail::base_export::save))
+        .def("load", static_cast<void(alps::detail::base_export::*)(alps::hdf5::archive &, std::string const &)>(&alps::detail::base_export::load))
     ;
 
 }

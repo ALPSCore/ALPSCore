@@ -46,6 +46,9 @@ namespace alps {
                     : Impl(p, seed_offset)
                 {}
 
+                using Impl::save;
+                using Impl::load;
+
                 void save(alps::hdf5::archive & ar) const {
                     boost::lock_guard<boost::mutex> glock(global_mutex);
                     Impl::save(ar);

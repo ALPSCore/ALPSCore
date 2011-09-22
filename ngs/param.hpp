@@ -88,11 +88,14 @@ namespace alps {
 
     std::ostream & operator<<(std::ostream & os, param const &);
 
-    std::string operator+(param const &, std::string const &);
-    std::string operator+(param const &, char const *);
 
-    std::string operator+(std::string const &, param const &);
-    std::string operator+(char const *, param const &);
+    template<typename T> T operator+(param const & p, T const & s) {
+        return static_cast<T>(p) + s;
+    }
+
+    template<typename T> T operator+(T const & s, param const & p) {
+        return s + static_cast<T>(p);
+    }
 
 }
 
