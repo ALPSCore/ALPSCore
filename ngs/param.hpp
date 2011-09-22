@@ -110,9 +110,10 @@ namespace alps {
     ALPS_NGS_PARAM_ADD_OPERATOR(bool)
     #undef ALPS_NGS_PARAM_ADD_OPERATOR
 
+    std::string operator+(param const & p, char const * s);
+    std::string operator+(char const * s, param const & p);
 
     std::string operator+(param const & p, std::string const & s);
-
     std::string operator+(std::string const & s, param const & p);
 
 }
