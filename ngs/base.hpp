@@ -82,9 +82,9 @@ namespace alps {
 
             void load(alps::param const & filename);
 
-            void save(alps::hdf5::archive & ar) const;
+            virtual void save(alps::hdf5::archive & ar) const;
 
-            void load(alps::hdf5::archive & ar);
+            virtual void load(alps::hdf5::archive & ar);
 
             bool run(boost::function<bool ()> const & stop_callback);
 

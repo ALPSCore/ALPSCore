@@ -75,7 +75,7 @@ namespace alps {
                 typename Impl::results_type collect_results(typename Impl::result_names_type const & names) const {
                     boost::lock_guard<boost::mutex> mlock(measurements_mutex);
                     boost::lock_guard<boost::mutex> glock(global_mutex);
-                    return static_cast<Impl const &>(*this).collect_results();
+                    return Impl::collect_results(names);
                 }
 
                 double fraction_completed() const {

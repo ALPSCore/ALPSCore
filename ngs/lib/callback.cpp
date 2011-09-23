@@ -47,7 +47,8 @@ namespace alps {
         }
 
         bool threaded_callback_wrapper::operator()() {
-            return (stop_flag = stop_callback());
+            stop_flag = stop_callback();
+            return stop_flag;
         }
 
     #endif

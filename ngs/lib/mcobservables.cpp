@@ -99,7 +99,7 @@ namespace alps {
 
     void mcobservables::output(std::ostream & os) const {
         for(std::map<std::string, mcobservable>::const_iterator it = std::map<std::string, mcobservable>::begin(); it != std::map<std::string, mcobservable>::end(); ++it)
-            std::cout << std::fixed << std::setprecision(5) << it->first << ": " << it->second << std::endl;
+            os << std::fixed << std::setprecision(5) << it->first << ": " << it->second << std::endl;
     }
 
     void mcobservables::create_RealObservable(std::string const & name, uint32_t binnum) {

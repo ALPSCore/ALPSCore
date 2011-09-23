@@ -74,7 +74,7 @@ namespace alps {
 
     void mcresults::output(std::ostream & os) const {
         for(std::map<std::string, mcresult>::const_iterator it = std::map<std::string, mcresult>::begin(); it != std::map<std::string, mcresult>::end(); ++it)
-            std::cout << std::fixed << std::setprecision(5) << it->first << ": " << it->second << std::endl;
+            os << std::fixed << std::setprecision(5) << it->first << ": " << it->second << std::endl;
     }
 
     std::ostream & operator<<(std::ostream & os, mcresults const & results) {
