@@ -69,8 +69,11 @@ namespace alps {
 					if (!out_degree(s, G) || !out_degree(t, G) || is_connected(s, t, G)) {
 						boost::dynamic_bitset<> l(num_vertices(G) * (num_vertices(G) + 1) / 2);
 						typename boost::graph_traits<Graph>::edge_iterator ei, ee;
-						for	(boost::tie(ei, ee) = edges(G); ei != ee; ++ei)
-							l[source(*ei, G) * num_vertices(G) - (source(*ei, G) - 1) * source(*ei, G) / 2 + target(*ei, G) - source(*ei, G)] = true;
+						for	(boost::tie(ei, ee) = edges(G); ei != ee; ++ei) {
+                            graph_traits<Graph>::vertex_descriptor v1 = std::min(source(*ei,G),target(*ei,G));
+                            graph_traits<Graph>::vertex_descriptor v2 = std::max(source(*ei,G),target(*ei,G));
+							l[v1 * num_vertices(G) - (v1 - 1) * v1 / 2 + v2 - v1] = true;
+                        }
 						if (L.insert(l).second) {
 							typename boost::graph_traits<Graph>::edge_iterator ei, ee;
 							for	(boost::tie(ei, ee) = edges(G); ei != ee; ++ei)
