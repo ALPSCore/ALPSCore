@@ -70,8 +70,8 @@ namespace alps {
 						boost::dynamic_bitset<> l(num_vertices(G) * (num_vertices(G) + 1) / 2);
 						typename boost::graph_traits<Graph>::edge_iterator ei, ee;
 						for	(boost::tie(ei, ee) = edges(G); ei != ee; ++ei) {
-                            graph_traits<Graph>::vertex_descriptor v1 = std::min(source(*ei,G),target(*ei,G));
-                            graph_traits<Graph>::vertex_descriptor v2 = std::max(source(*ei,G),target(*ei,G));
+                            typename boost::graph_traits<Graph>::vertex_descriptor v1 = std::min(source(*ei,G),target(*ei,G));
+                            typename boost::graph_traits<Graph>::vertex_descriptor v2 = std::max(source(*ei,G),target(*ei,G));
 							l[v1 * num_vertices(G) - (v1 - 1) * v1 / 2 + v2 - v1] = true;
                         }
 						if (L.insert(l).second) {

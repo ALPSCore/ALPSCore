@@ -62,7 +62,7 @@ namespace alps {
             class graph_label_matrix_type : public boost::dynamic_bitset<>
             {
                 public:
-                    bool operator < (graph_label_type const& rhs) const
+                    bool operator < (graph_label_matrix_type const& rhs) const
                     {
                         return size() < rhs.size() || (!(rhs.size() < size()) &&  static_cast<boost::dynamic_bitset<> >(*this) < static_cast<boost::dynamic_bitset<> > (rhs) );
                     }
