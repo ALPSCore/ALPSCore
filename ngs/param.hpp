@@ -88,8 +88,6 @@ namespace alps {
 
     std::ostream & operator<<(std::ostream & os, param const &);
 
-    
-    
 	#define ALPS_NGS_PARAM_ADD_OPERATOR(T)								\
 		T operator+(param const & p, T const & s);						\
 		T operator+(T const & s, param const & p);

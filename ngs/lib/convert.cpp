@@ -33,15 +33,15 @@
 namespace alps {
 
     #define ALPS_NGS_CONVERT_STRING(T, p, c)                                                                                                   \
-        template<> ALPS_DECL std::string convert<std::string, T >( T arg) {                                                                              \
+        template<> ALPS_DECL std::string convert<std::string, T >( T arg) {                                                                    \
             char buffer[255];                                                                                                                  \
             if (sprintf(buffer, "%" p "" c, arg) < 0)                                                                                          \
                 ALPS_NGS_THROW_RUNTIME_ERROR("error converting from " #T " to string");                                                        \
             return buffer;                                                                                                                     \
         }                                                                                                                                      \
-        template<> ALPS_DECL T convert< T, std::string>(std::string arg) {                                                                               \
-            T value;                                                                                                                           \
-            if (sscanf(arg.c_str(), "%" c, &value) < 0)                                                                                        \
+        template<> ALPS_DECL T convert< T, std::string>(std::string arg) {                                                                     \
+            T value = 0;                                                                                                                       \
+            if (arg.size() && sscanf(arg.c_str(), "%" c, &value) < 0)                                                                          \
                 ALPS_NGS_THROW_RUNTIME_ERROR("error converting from string to " #T ": " + arg);                                                \
             return value;                                                                                                                      \
         }
