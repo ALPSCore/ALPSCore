@@ -48,8 +48,8 @@ namespace alps {
                 , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                   \
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
             ) {                                                                                                                                                 \
-                save(ar, path + "/first", value.first);                                                                                                         \
-                save(ar, path + "/second", value.second);                                                                                                       \
+                save(ar, ar.complete_path(path) + "/first", value.first);                                                                                       \
+                save(ar, ar.complete_path(path) + "/second", value.second);                                                                                     \
             }
         ALPS_NGS_HDF5_PAIR_SAVE(archive)
         #ifdef ALPS_HDF5_HAVE_DEPRECATED
@@ -65,8 +65,8 @@ namespace alps {
                 , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                   \
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
             ) {                                                                                                                                                 \
-                load(ar, path + "/first", value.first);                                                                                                         \
-                load(ar, path + "/second", value.second);                                                                                                       \
+                load(ar, ar.complete_path(path) + "/first", value.first);                                                                                       \
+                load(ar, ar.complete_path(path) + "/second", value.second);                                                                                     \
             }
         ALPS_NGS_HDF5_PAIR_LOAD(archive)
         #ifdef ALPS_HDF5_HAVE_DEPRECATED

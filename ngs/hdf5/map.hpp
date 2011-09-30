@@ -47,7 +47,7 @@ namespace alps {
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
             ) {                                                                                                                                                 \
                 for(typename std::map<K, T, C, A>::const_iterator it = value.begin(); it != value.end(); ++it)                                                  \
-                    save(ar, path + "/" + convert<std::string>(it->first), it->second);                                                                         \
+                    save(ar, ar.complete_path(path) + "/" + convert<std::string>(it->first), it->second);                                                       \
             }
         ALPS_NGS_HDF5_MAP_SAVE(archive)
         #ifdef ALPS_HDF5_HAVE_DEPRECATED
