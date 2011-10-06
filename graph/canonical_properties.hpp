@@ -62,14 +62,19 @@ namespace alps {
             class graph_label_matrix_type : public boost::dynamic_bitset<>
             {
                 public:
-                    bool operator < (graph_label_matrix_type const& rhs) const
+                    bool operator< (graph_label_matrix_type const & rhs) const
                     {
-                        return size() < rhs.size() || (!(rhs.size() < size()) &&  static_cast<boost::dynamic_bitset<> >(*this) < static_cast<boost::dynamic_bitset<> > (rhs) );
+                        return size() < rhs.size() || (
+                        	           !(rhs.size() < size()) 
+                        	       &&  static_cast<boost::dynamic_bitset<> >(*this) < static_cast<boost::dynamic_bitset<> > (rhs)
+                        	   );
                     }
             };
 
 			// vertex coloring
-			template<typename PropertyMap> struct has_coloring : public boost::mpl::not_<typename boost::is_same<PropertyMap, boost::no_property>::type>::type {};
+			template<typename PropertyMap> struct has_coloring 
+				: public boost::mpl::not_<typename boost::is_same<PropertyMap, boost::no_property>::type>::type 
+			{};
 		
 			// printable color list
 			template<typename Value> class graph_label_color_vector : public std::vector<Value> {};
@@ -83,11 +88,8 @@ namespace alps {
 				return os;
 			}
 			
-			// invalid tag
-			template<typename Graph, bool, bool> struct graph_label_helper {};
-
 			// no coloring
-			template<typename Graph> struct graph_label_helper<Graph, false, false> {
+			template<typename Graph, bool, bool> struct graph_label_helper {
 				typedef boost::tuple<
 					  // #vertices * (#vertices + 1) / 2 bits: triangular adjacency matrix
 					  graph_label_matrix_type
@@ -334,6 +336,7 @@ namespace alps {
 					get<2>(l).push_back(*jt);
 				get<1>(l).clear();
 				get<1>(l).resize(num_vertices(G) * get<2>(l).size());
+				// TODO: just make one row per orbit, not per vertex
 				std::size_t index = 0;
 				for (typename partition_type<Graph>::type::const_iterator jt = pi.begin(); jt != pi.end(); ++jt)
 					for (typename partition_type<Graph>::type::value_type::const_iterator kt = jt->begin(); kt != jt->end(); ++kt)
@@ -398,6 +401,7 @@ namespace alps {
  					get<Base + 1>(l).push_back(*jt);
 				std::sort(edge_list.begin(), edge_list.end(), apply_label_edge_comp<Graph>(pi, G));
 				get<Base>(l).clear();
+				// TODO: just make one row per orbit, not per vertex
 				get<Base>(l).resize(num_edges(G) * get<Base + 1>(l).size());
 				for (typename std::vector<typename boost::graph_traits<Graph>::edge_descriptor>::const_iterator jt = edge_list.begin(); jt != edge_list.end(); ++jt)
 					get<Base>(l)[(std::find(get<Base + 1>(l).begin(), get<Base + 1>(l).end(), get(boost::edge_name_t(), G)[*jt]) - get<Base + 1>(l).begin()) * num_edges(G) + (jt - edge_list.begin())] = true;
@@ -548,7 +552,7 @@ namespace alps {
 		// Output: canonical ordering, canonical label and orbit of G
 		template<typename Graph>
         typename canonical_properties_type<Graph>::type
-        canonical_properties( Graph const & G ) {
+        canonical_properties(Graph const & G) {
 			using boost::get;
 			using boost::make_tuple;
 			typename partition_type<Graph>::type pi, orbit, canonical_partition, first_partition;
