@@ -182,7 +182,7 @@ int main() {
     for (int c = 0; c < count; ++c) {
 		hid_t dataspaceId = H5Screate_simple(1, &hsize, NULL);
 		hid_t datatypeId = H5Tcopy(H5T_NATIVE_DOUBLE);
-		hid_t datasetId = H5Dcreate(fileId, "/vec", datatypeId, dataspaceId, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+		hid_t datasetId = H5Dcreate2(fileId, "/vec", datatypeId, dataspaceId, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 		herr_t status = H5Dwrite(datasetId, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &data.front());
 		H5Sclose(dataspaceId);
 		H5Tclose(datatypeId);
