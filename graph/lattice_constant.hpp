@@ -81,7 +81,7 @@ namespace alps {
 				ALPS_NGS_THROW_RUNTIME_ERROR("not Impl!")
 			// orbit index => vertices
 			std::set<std::map<unsigned, std::set<typename boost::graph_traits<Graph>::vertex_descriptor> > > matches;
-			typename partition_type<Graph>::type orbit = boost::get(canonical_properties(S));
+			typename partition_type<Graph>::type orbit = boost::get<2>(canonical_properties(S));
 			std::map<typename boost::graph_traits<Subgraph>::vertex_descriptor, std::size_t> I;
 			// Io = {(mi, j) : ni element of Vj
 			detail::partition_indeces(I, orbit, S);
