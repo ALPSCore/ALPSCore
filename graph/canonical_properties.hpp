@@ -69,6 +69,11 @@ namespace alps {
                         	       &&  static_cast<boost::dynamic_bitset<> >(*this) < static_cast<boost::dynamic_bitset<> > (rhs)
                         	   );
                     }
+                    bool operator == (graph_label_matrix_type const & rhs) const
+                    {
+                        return size() == rhs.size()
+                            && static_cast<boost::dynamic_bitset<> >(*this) == static_cast<boost::dynamic_bitset<> >(rhs);
+                    }
             };
 
 			// vertex coloring

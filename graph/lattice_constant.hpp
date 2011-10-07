@@ -63,8 +63,8 @@ namespace alps {
 					typename boost::graph_traits<Graph>::adjacency_iterator g_ai, g_ae;
 					for (tie(s_ai, s_ae) = adjacent_vertices(s, S); s_ai != s_ae; ++s_ai)
 						if (placed.find(*s_ai) == placed.end())
-							for (tie(g_ai, g_ae) = adjacent_vertices(s, S); g_ai != g_ae; ++g_ai)
-								if (visited.find(*s_ai) == visited.end())
+							for (tie(g_ai, g_ae) = adjacent_vertices(g, G); g_ai != g_ae; ++g_ai)
+								if (visited.find(*g_ai) == visited.end())
 									detail::lattice_constant_walker(*s_ai, *g_ai, S, G, I, matches, match, placed, visited);
 				}
 			}
@@ -82,7 +82,7 @@ namespace alps {
 			// orbit index => vertices
 			std::set<std::map<unsigned, std::set<typename boost::graph_traits<Graph>::vertex_descriptor> > > matches;
 			typename partition_type<Graph>::type orbit = boost::get(canonical_properties(S));
-			std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t> I;
+			std::map<typename boost::graph_traits<Subgraph>::vertex_descriptor, std::size_t> I;
 			// Io = {(mi, j) : ni element of Vj
 			detail::partition_indeces(I, orbit, S);
 			for (typename partition_type<Graph>::type::const_iterator it = orbit.begin(); it != orbit.end(); ++it) {
