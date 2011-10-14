@@ -59,18 +59,15 @@ namespace alps {
 
 		namespace detail {
 
-            class graph_label_matrix_type : public boost::dynamic_bitset<>
-            {
+            class graph_label_matrix_type : public boost::dynamic_bitset<> {
                 public:
-                    bool operator< (graph_label_matrix_type const & rhs) const
-                    {
+                    bool operator< (graph_label_matrix_type const & rhs) const {
                         return size() < rhs.size() || (
-                        	           !(rhs.size() < size()) 
-                        	       &&  static_cast<boost::dynamic_bitset<> >(*this) < static_cast<boost::dynamic_bitset<> > (rhs)
-                        	   );
+							   !(rhs.size() < size()) 
+							&& static_cast<boost::dynamic_bitset<> >(*this) < static_cast<boost::dynamic_bitset<> > (rhs)
+						);
                     }
-                    bool operator == (graph_label_matrix_type const & rhs) const
-                    {
+                    bool operator == (graph_label_matrix_type const & rhs) const {
                         return size() == rhs.size()
                             && static_cast<boost::dynamic_bitset<> >(*this) == static_cast<boost::dynamic_bitset<> >(rhs);
                     }
@@ -352,8 +349,8 @@ namespace alps {
 			template<typename Graph> struct apply_label_edge_comp {
 			
 				// Input: pi = (V1, V2, ..., Vr)
-				apply_label_edge_comp (typename partition_type<Graph>::type const & pi, Graph const & g): 
-					G(g)
+				apply_label_edge_comp (typename partition_type<Graph>::type const & pi, Graph const & g)
+					: G(g)
 				{
 					for (typename partition_type<Graph>::type::const_iterator it = pi.begin(); it != pi.end(); ++it)
 						for (typename partition_type<Graph>::type::value_type::const_iterator jt = it->begin(); jt != it->end(); ++jt)
