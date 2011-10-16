@@ -31,14 +31,20 @@
 #ifndef ALPS_NUMERIC_ISNAN_HPP
 #define ALPS_NUMERIC_ISNAN_HPP
 
-#include <alps/config.h>
 #include <cmath>
+#include <alps/config.h>
 
 namespace alps { namespace numeric {
 
-#ifdef BOOST_MSVC
+#ifdef isnan
+#undef isnan
+#endif
+
+#if defined(BOOST_MSVC)
   template <class T>
   bool isnan(T x) { return _isnan(x);}
+#elif defined(_CRAYC)
+  using ::isnan;
 #else
   using std::isnan;
 #endif

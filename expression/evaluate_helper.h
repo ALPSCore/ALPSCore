@@ -108,12 +108,12 @@ struct evaluate_helper<double>
   template<class R>
   static double value(const Term<R>& ex, const Evaluator<R>& ev=Evaluator<R>(), bool isarg=false)
   {
-    return numeric_cast<double>(ex.value(ev,isarg));
+    return alps::expression::numeric_cast<double>(ex.value(ev,isarg));
   }
   template<class R>
   static double value(const Expression<R>& ex, const Evaluator<R>& ev=Evaluator<R>(), bool isarg=false)
   {
-    return numeric_cast<double>(ex.value(ev,isarg));
+    return alps::expression::numeric_cast<double>(ex.value(ev,isarg));
   }
   static double real(double u) { return u; }
   static double imag(double) { return 0; }

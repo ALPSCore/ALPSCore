@@ -36,9 +36,15 @@
 
 namespace alps { namespace numeric {
 
-#ifdef BOOST_MSVC
+#ifdef isinf
+#undef isinf
+#endif
+
+#if defined( BOOST_MSVC)
   template <class T>
   bool isinf(T x) { return !_finite(x) && !_isnan(x);}
+#elif defined (_CRAYC)
+  using ::isinf;
 #else
   using std::isinf;
 #endif
