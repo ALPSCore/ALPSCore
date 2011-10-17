@@ -94,10 +94,15 @@ namespace alps {
           hdf5::archive ar(filename, hdf5::archive::WRITE);
           ar << make_pvp("/simulation/results/"+obs.representation(), obs);
       }
-      
+
       typename T::count_type count() const 
       {
           return obs.count();
+      }
+
+      typename T::convergence_type converged_errors() const
+      {
+          return obs.converged_errors();
       }
       
     private:
@@ -151,6 +156,10 @@ const char variance_docstring[] =
 const char count_docstring[] =
 "the number of measurements recorded.";
 
+const char converged_errors_docstring[] =
+" (0 -- data converged ; 1 -- data maybe converged ; 2 -- data not converged) ";
+
+
 BOOST_PYTHON_MODULE(pyalea_c) {
 #define ALPS_PY_EXPORT_VECTOROBSERVABLE(class_name, class_docstring, init_docstring)                                            \
   class_<WrappedValarrayObservable< alps:: class_name > >(                                                                      \
@@ -164,7 +173,9 @@ BOOST_PYTHON_MODULE(pyalea_c) {
     .add_property("tau", &WrappedValarrayObservable< alps::class_name >::tau,tau_docstring)                                     \
     .add_property("variance", &WrappedValarrayObservable< alps::class_name >::variance,variance_docstring)                      \
     .add_property("count", &WrappedValarrayObservable< alps::class_name >::count,count_docstring)                               \
-    ;
+    .add_property("converged_errors", &WrappedValarrayObservable< alps::class_name >::converged_errors,converged_errors_docstring) \
+    ;                                                                                                                           
+
 ALPS_PY_EXPORT_VECTOROBSERVABLE(RealVectorObservable,observable_docstring,constructor_docstring)
 ALPS_PY_EXPORT_VECTOROBSERVABLE(RealVectorTimeSeriesObservable,timeseries_observable_docstring,timeseries_constructor_docstring)
 #undef ALPS_PY_EXPORT_VECTOROBSERVABLE
@@ -180,6 +191,7 @@ ALPS_PY_EXPORT_VECTOROBSERVABLE(RealVectorTimeSeriesObservable,timeseries_observ
     .add_property("tau",&alps:: class_name ::tau,tau_docstring)                                                                     \
     .add_property("variance",&alps:: class_name ::variance,variance_docstring)                                                      \
     .add_property("count",&alps:: class_name ::count,count_docstring)                                                               \
+    .add_property("converged_errors", &alps:: class_name ::converged_errors,converged_errors_docstring)                             \
     ;                                                                                                                               \
        
 ALPS_PY_EXPORT_SIMPLEOBSERVABLE(RealObservable,observable_docstring,timeseries_constructor_docstring)
