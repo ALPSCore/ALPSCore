@@ -50,15 +50,14 @@ struct ALPS_DECL ParameterListParser : public bs::grammar<ParameterListParser> {
     definition(ParameterListParser const& self) {
       self.stop = false;
       parameterlist =
-        *bs::eol_p
-        >> +( self.global_p
+        +( self.global_p
             | ( bs::ch_p('{') >> *bs::eol_p >> bs::ch_p('}') >> *bs::eol_p
               )[bs::push_back_a(self.plist, self.global)]
             | ( bs::ch_p('{')[bs::assign_a(self.local, self.global)] >> *bs::eol_p
                 >> self.local_p >> bs::ch_p('}') >> *bs::eol_p
               )[bs::push_back_a(self.plist, self.local)]
             | ( bs::str_p("#clear") >> !bs::ch_p(";") >> *bs::eol_p )[bs::clear_a(self.global)]
-            )
+         )
         >> !( bs::str_p("#stop") >> !bs::ch_p(";") >> *bs::eol_p )[bs::increment_a(self.stop)];
     }
 
