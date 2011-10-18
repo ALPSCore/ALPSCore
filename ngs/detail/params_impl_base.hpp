@@ -37,6 +37,8 @@ namespace alps {
         class params_impl_base {
 
             public:
+                
+                virtual ~params_impl_base() {};
 			
 				virtual std::size_t size() const = 0;
 
