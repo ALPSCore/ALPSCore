@@ -470,23 +470,26 @@ namespace alps {
                     ar >> make_pvp(path, *this);
                 }
 
+                void merge(mcdata<T> const & rhs) {
+					*this << rhs;
+                }
+
                 mcdata<T> & operator<<(mcdata<T> const & rhs) {
                     using std::sqrt;
                     using alps::numeric::sq;
                     using alps::numeric::sqrt;
+                    using boost::numeric::operators::operator+;
+                    using boost::numeric::operators::operator*;
+                    using boost::numeric::operators::operator/;
                     if (rhs.count()) {
                         if (count()) {
                             jacknife_bins_valid_ = false;
                             data_is_analyzed_ = data_is_analyzed_ && rhs.data_is_analyzed_;
                             cannot_rebin_ = cannot_rebin_ && rhs.cannot_rebin_;
-                            mean_ *= double(count_);
-                            mean_ += double(rhs.count_) * rhs.mean_;
-                            mean_ /= double(count_ + rhs.count_);
-                            result_type tmp = error_, tmp2 = rhs.error_;
-                            tmp *= error_ * sq(double(count_));
-                            tmp2 *= rhs.error_ * sq(double(rhs.count_));
-                            error_ = sqrt(tmp + tmp2);
-                            error_ /= double(count_ + rhs.count_);
+                            mean_ = (mean_ * double(count_) + double(rhs.count_) * rhs.mean_) / double(count_ + rhs.count_);
+                            result_type tmp = error_ * error_ * sq(double(count_));
+                            result_type tmp2 = rhs.error_ * rhs.error_ * sq(double(rhs.count_));
+                            error_ = sqrt(tmp + tmp2) / double(count_ + rhs.count_);
                             if(variance_opt_ && rhs.variance_opt_)
                                 *variance_opt_ = (*variance_opt_ * double(count_) + double(rhs.count_) * *rhs.variance_opt_) / double(count_ + rhs.count_);
                             else

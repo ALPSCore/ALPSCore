@@ -252,6 +252,7 @@ BOOST_PYTHON_MODULE(pymcdata_c) {
         .def("asinh", static_cast<mcdata<double>(*)(mcdata<double>)>(&asinh))
         .def("acosh", static_cast<mcdata<double>(*)(mcdata<double>)>(&acosh))
         .def("atanh", static_cast<mcdata<double>(*)(mcdata<double>)>(&atanh))
+        .def("merge", static_cast<void(mcdata<double>::*)(mcdata<double> const &)>(&mcdata<double>::merge))
         .def("save", static_cast<void(mcdata<double>::*)(std::string const &, std::string const &) const>(&mcdata<double>::save),save_docstring)
         .def("load", static_cast<void(mcdata<double>::*)(std::string const &, std::string const &)>(&mcdata<double>::load),load_docstring)
     ;
@@ -326,6 +327,7 @@ BOOST_PYTHON_MODULE(pymcdata_c) {
         .def("asinh", static_cast<mcdata<std::vector<double> >(*)(mcdata<std::vector<double> >)>(&asinh))
         .def("acosh", static_cast<mcdata<std::vector<double> >(*)(mcdata<std::vector<double> >)>(&acosh))
         .def("atanh", static_cast<mcdata<std::vector<double> >(*)(mcdata<std::vector<double> >)>(&atanh))
+        .def("merge", static_cast<void(mcdata<std::vector<double> >::*)(mcdata<std::vector<double> > const &)>(&mcdata<std::vector<double> >::merge))
         .def("save", static_cast<void(mcdata<std::vector<double> >::*)(std::string const &, std::string const &) const>(&mcdata<std::vector<double> >::save),save_docstring)
         .def("load", static_cast<void(mcdata<std::vector<double> >::*)(std::string const &, std::string const &)>(&mcdata<std::vector<double> >::load),load_docstring)
     ;
