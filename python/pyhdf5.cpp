@@ -109,7 +109,7 @@ namespace alps {
                     import_numpy();
                     if (PyArray_Check(data.ptr())) {
                         if (!PyArray_ISCONTIGUOUS(data.ptr()))
-                            throw std::runtime_error("numpy array is not continous");
+                            throw std::runtime_error("numpy array is not continuous");
                         else if (!PyArray_ISNOTSWAPPED(data.ptr()))
                             throw std::runtime_error("numpy array is not native");
                         #define PYHDF5_CHECK_NUMPY(T, N)                                                                                                   \
