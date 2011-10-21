@@ -32,6 +32,7 @@ namespace alps {
 
     #ifdef ALPS_HAVE_MPI
 
+        // should be called 'bundle'?
         template<typename Impl> class parallel : public Impl {
             public:
                 using Impl::collect_results;
@@ -65,6 +66,34 @@ namespace alps {
             private:
                 boost::mpi::communicator communicator;
                 std::size_t binnumber;
+        };
+
+        // we should rename to a good one.  'parallel'?
+        template<typename Impl> class parallel2 : public Impl {
+            public:
+                using Impl::collect_results;
+                
+                parallel2(typename parameters_type<Impl>::type const & p) {
+                    ALPS_NGS_THROW_RUNTIME_ERROR("No communicator passed");
+                }
+
+                parallel2(typename parameters_type<Impl>::type const & p, boost::mpi::communicator const & c) 
+                    : Impl(p, c)
+                    , communicator(c)
+                {
+                    MPI_Errhandler_set(communicator, MPI_ERRORS_RETURN);
+                }
+
+                double fraction_completed() const {
+                    return Impl::fraction_completed();
+                }
+
+                typename results_type<Impl>::type collect_results(typename result_names_type<Impl>::type const & names) const {
+                    return Impl::collect_results(names);
+                }
+
+            private:
+                boost::mpi::communicator communicator;
         };
 
     #endif

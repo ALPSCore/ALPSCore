@@ -97,6 +97,7 @@ namespace alps {
     }
 
     bool base::complete_callback(boost::function<bool ()> const & stop_callback) {
+        // the following code should be moved into stop_callback
         if (boost::posix_time::second_clock::local_time() > check_time) {
             fraction = fraction_completed();
             next_check = std::min(
