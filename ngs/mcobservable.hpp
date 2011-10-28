@@ -54,6 +54,8 @@ namespace alps {
 
             Observable const * get_impl() const;
 
+            std::string const & name() const;
+
             template<typename T> mcobservable & operator<<(T const & value);
 
             void save(hdf5::archive & ar) const;

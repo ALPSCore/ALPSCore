@@ -68,6 +68,10 @@ namespace alps {
         return impl_;
     }
 
+    std::string const & mcobservable::name() const {
+        return impl_->name();
+    }
+
     template<> mcobservable & mcobservable::operator<< <double>(double const & value) {
         (*impl_) << value;
         return *this;

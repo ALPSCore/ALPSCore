@@ -107,7 +107,7 @@ namespace alps {
         private:
 
             double fraction;
-            std::size_t next_check;
+            boost::posix_time::seconds next_check;
             boost::posix_time::ptime start_time;
             boost::posix_time::ptime check_time;
 
