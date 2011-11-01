@@ -64,11 +64,11 @@ inline void make_graph_from_lattice(GRAPH& g,const LATTICE& l,
   typedef typename lattice_traits<lattice_type>::boundary_crossing_type boundary_crossing_type;
   typedef typename lattice_traits<lattice_type>::basis_vector_iterator basis_vector_iterator;
 
-  Depletion depletion(depl_desc,volume(l) * num_vertices(graph(unit_cell(l))));
+  Depletion depletion(depl_desc,volume(l) * num_vertices(graph::graph(unit_cell(l))));
   
   int num  = depletion.num_sites();
   
-  const unit_graph_type& ug(graph(unit_cell(l)));
+  const unit_graph_type& ug(graph::graph(unit_cell(l)));
   uint32_t unit_cell_vertices = num_vertices(ug);
   
   
@@ -270,7 +270,7 @@ public:
     translation_type trans = super_type::translations(k);
     translation_type graph_trans;
 
-    int vertices_in_cell = num_vertices(alps::graph(super_type::unit_cell()));
+    int vertices_in_cell = num_vertices(alps::graph::graph(super_type::unit_cell()));
     for (typename translation_type::const_iterator it=trans.begin();
          it!=trans.end(); ++it) {
       std::vector<std::size_t> shifted_vertices;
@@ -319,13 +319,21 @@ struct graph_traits<lattice_graph<L,G> >
 template<class L, class G>
 std::size_t dimension(const lattice_graph<L,G>& l) { return l.dimension(); }
 
+
+
+namespace graph {
+
 template<class L, class G>
 typename lattice_graph<L, G>::graph_type&
 graph(lattice_graph<L, G>& l) { return l.graph(); }
 
+
 template<class L, class G>
 const typename lattice_graph<L, G>::graph_type&
 graph(const lattice_graph<L, G>& l) { return l.graph(); }
+
+} // end namespace graph
+
 
 } // end namespace alps
 

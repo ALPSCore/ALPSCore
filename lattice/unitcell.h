@@ -99,11 +99,16 @@ inline dimensional_traits<GraphUnitCell>::dimension_type
 dimension(const GraphUnitCell& c)
 { return c.dimension(); }
 
+
+namespace graph{
+
 inline GraphUnitCell::graph_type&
 graph(GraphUnitCell& c) { return c.graph(); }
 
 inline const GraphUnitCell::graph_type&
 graph(const GraphUnitCell& c) { return c.graph(); }
+
+} // end namespace graph
 
 typedef std::map<std::string,GraphUnitCell> UnitCellMap;
 
