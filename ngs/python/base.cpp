@@ -59,7 +59,7 @@ namespace alps {
                 #else
 
 					base_export(boost::python::object arg, std::size_t seed_offset = 42)
-						: base(params(arg), seed_offset)
+						: base(base::parameters_type(arg), seed_offset)
 					{}
 
                 #endif
