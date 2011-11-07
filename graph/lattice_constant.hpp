@@ -30,6 +30,9 @@
 
 #include <alps/ngs/macros.hpp>
 
+#include <alps/lattice/graph_helper.h>
+#include <alps/lattice/graphproperties.h>
+#include <alps/numeric/vector_functions.hpp>
 #include <alps/graph/canonical_properties.hpp>
 
 #include <deque>
@@ -39,6 +42,26 @@ namespace alps {
 	
 		namespace detail {
 
+			template<typename Vertex> std::map<unsigned, std::set<Vertex> > lattice_constant_translations(
+				  unsigned int invalid
+				, std::vector<unsigned int> const & translation
+				, std::map<unsigned, std::set<Vertex> > match
+			) {
+				std::map<unsigned, std::set<Vertex> > moved;
+				do {
+					moved.clear();
+					for (typename std::map<unsigned, std::set<Vertex> >::const_iterator jt = match.begin(); jt != match.end(); ++jt) {
+						moved[jt->first] = std::set<Vertex>();
+						for (typename std::set<Vertex>::const_iterator kt = jt->second.begin(); kt != jt->second.end(); ++kt)
+							if (translation[*kt] == invalid)
+								return match;
+							else
+								moved[jt->first].insert(translation[*kt]);
+					}
+					swap(match, moved);
+				} while(true);
+			}
+
 			template<typename Subgraph, typename Graph> void lattice_constant_walker(
 				  typename boost::graph_traits<Subgraph>::vertex_descriptor const & s
 				, typename boost::graph_traits<Graph>::vertex_descriptor const & g
@@ -46,6 +69,7 @@ namespace alps {
 				, Graph const & G
 				, std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t> & I
 				, std::set<std::map<unsigned, std::set<typename boost::graph_traits<Graph>::vertex_descriptor> > > & matches
+				, std::vector<std::vector<unsigned int> > const & translations
 				, std::deque<std::pair<
 					  typename boost::graph_traits<Subgraph>::vertex_descriptor
 					, typename boost::graph_traits<Graph>::vertex_descriptor
@@ -88,27 +112,71 @@ namespace alps {
 					stack.pop_front();
 					for (; g_ai != g_ae; ++g_ai)
 						if (visited.find(*g_ai) == visited.end())
-							detail::lattice_constant_walker(t, *g_ai, S, G, I, matches, stack, match, placed, visited, pinning);
-				} else 
+							detail::lattice_constant_walker(t, *g_ai, S, G, I, matches, translations, stack, match, placed, visited, pinning);
+				} else {
+					for (std::vector<std::vector<unsigned int> >::const_iterator it = translations.begin(); it != translations.end(); ++it)
+						match = lattice_constant_translations(num_vertices(G), *it, match);
 					matches.insert(match);
+				}
 			}
 		}
 
 		// Input: Subgraph, Graph, vertices of G contained in mapping of S on G
 		// Output: lattice_constant of S in G containing v
-		template<typename Subgraph, typename Graph> std::size_t lattice_constant(
+		template<typename Subgraph, typename Graph, typename Lattice, typename LatticeGraph> std::size_t lattice_constant(
 			  Subgraph const & S
 			, Graph const & G
+			, Lattice const & L
+			, LatticeGraph const & LG
 			, std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> const & v
 		) {
+			typedef typename alps::graph_helper<Graph>::lattice_type lattice_type;
+			typedef typename alps::lattice_traits<lattice_type>::unit_cell_type::graph_type unit_cell_graph_type;
+
+			// TODO: implement that
 			if (v.size() != 1)
 				ALPS_NGS_THROW_RUNTIME_ERROR("not Impl!")
+
+			// Get the possible translation/coordination vectors from the unit cell
+			std::vector<std::vector<int> > coordination_vectors;
+			unit_cell_graph_type const unit_cell_graph = alps::graph::graph(unit_cell(L));
+			typename boost::graph_traits<unit_cell_graph_type>::edge_iterator it, et;
+			for(boost::tie(it, et) = edges(unit_cell_graph); it != et; ++it) {
+				using boost::numeric::operators::operator-;
+				const std::vector<int> source_offset = boost::get(alps::source_offset_t(), unit_cell_graph, *it);
+				const std::vector<int> target_offset = boost::get(alps::target_offset_t(), unit_cell_graph, *it);
+				if (target_offset != source_offset)
+					coordination_vectors.push_back(target_offset - source_offset);
+			}
+ 
+			// Create the translation table if we hit the boundary we set the entry to 'num_vertices' (an invalid vertex index)
+			std::vector<std::vector<unsigned int> > translations(
+				  coordination_vectors.size()
+				, std::vector<unsigned int>(num_vertices(G), num_vertices(G))
+			);
+			for (boost::tie(it, et) = edges(unit_cell_graph); it != et; ++it) {
+				using boost::numeric::operators::operator-;
+				// Get cell id (relies on vertex-index = cell-index * vertices_per_cell + vertex-index in cell)
+				typename alps::lattice_traits<lattice_type>::offset_type 
+					  source_offset = offset(L.cell(source(*it, LG) / num_vertices(unit_cell_graph)), L)
+					, target_offset = offset(L.cell(target(*it, LG) / num_vertices(unit_cell_graph)), L)
+					, offset_diff = target_offset - source_offset
+				;
+				for (std::vector<std::vector<int> >::const_iterator jt = coordination_vectors.begin(); jt != coordination_vectors.end(); ++jt) {
+					if(offset_diff == *jt)
+						translations[jt - coordination_vectors.begin()][source(*it, LG)] = target(*it, LG);
+					else if(-offset_diff == *jt)
+						translations[jt - coordination_vectors.begin()][target(*it, LG)] = source(*it, LG);
+				}
+			}
+
 			// orbit index => vertices
 			std::set<std::map<unsigned, std::set<typename boost::graph_traits<Graph>::vertex_descriptor> > > matches;
 			typename partition_type<Graph>::type orbit = boost::get<2>(canonical_properties(S));
 			std::map<typename boost::graph_traits<Subgraph>::vertex_descriptor, std::size_t> I;
 			// Io = {(mi, j) : ni element of Vj
 			detail::partition_indeces(I, orbit, S);
+
 			for (typename partition_type<Subgraph>::type::const_iterator it = orbit.begin(); it != orbit.end(); ++it)
 				if (out_degree(it->front(), S) <= out_degree(v.front(), G)) {
 					std::set<typename boost::graph_traits<Subgraph>::vertex_descriptor> placed;
@@ -122,7 +190,7 @@ namespace alps {
 						  typename boost::graph_traits<Subgraph>::vertex_descriptor
 						, typename boost::graph_traits<Graph>::vertex_descriptor
 					> pinning;
-					detail::lattice_constant_walker(it->front(), v.front(), S, G, I, matches, stack, match, placed, visited, pinning);
+					detail::lattice_constant_walker(it->front(), v.front(), S, G, I, matches, translations, stack, match, placed, visited, pinning);
 				}
 			return matches.size();
 		}
