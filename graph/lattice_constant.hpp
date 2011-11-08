@@ -159,11 +159,10 @@ namespace alps {
 
 		// Input: Subgraph, Graph, vertices of G contained in mapping of S on G
 		// Output: lattice_constant of S in G containing v
-		template<typename Subgraph, typename Graph, typename Lattice, typename LatticeGraph> std::size_t lattice_constant(
+		template<typename Subgraph, typename Graph, typename Lattice> std::size_t lattice_constant(
 			  Subgraph const & S
 			, Graph const & G
 			, Lattice const & L
-			, LatticeGraph const & LG
 			, std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> const & v
 		) {
 			typedef typename alps::graph_helper<Graph>::lattice_type lattice_type;
@@ -176,17 +175,6 @@ namespace alps {
 			// Get the possible translation in the lattice
 			std::vector<std::vector<unsigned int> > translations(detail::build_translation_table(G,L));
             
-            // DEBUG print them
-            for(std::vector<std::vector<unsigned int> >::iterator it = translations.begin(); it != translations.end(); ++it)
-            {
-                for(unsigned int v=0; v != it->size(); ++v)
-                {
-                    std::cout<<v<<" -> "<<(*it)[v]<<std::endl;
-                }
-                std::cout<<"-------------------------"<<std::endl;
-            }
-            // DEBUG END
-
 			// orbit index => vertices
 			std::set<std::map<unsigned, std::set<typename boost::graph_traits<Graph>::vertex_descriptor> > > matches;
 			typename partition_type<Graph>::type orbit = boost::get<2>(canonical_properties(S));
