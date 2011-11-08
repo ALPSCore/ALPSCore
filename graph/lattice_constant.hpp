@@ -159,10 +159,11 @@ namespace alps {
 
 		// Input: Subgraph, Graph, vertices of G contained in mapping of S on G
 		// Output: lattice_constant of S in G containing v
-		template<typename Subgraph, typename Graph, typename Lattice> std::size_t lattice_constant(
+		template<typename Subgraph, typename Graph, typename Lattice, typename LatticeGraph> std::size_t lattice_constant(
 			  Subgraph const & S
 			, Graph const & G
 			, Lattice const & L
+			, LatticeGraph const & LG
 			, std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> const & v
 		) {
 			typedef typename alps::graph_helper<Graph>::lattice_type lattice_type;
