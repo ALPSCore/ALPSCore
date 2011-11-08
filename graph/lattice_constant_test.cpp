@@ -43,6 +43,14 @@ int main() {
     g.push_back(std::make_pair(graph_type(),6));
     add_edge(0, 1,g.back().first);
     add_edge(0, 2,g.back().first);
+    
+    //
+    //  3---1---0---2
+    //
+    g.push_back(std::make_pair(graph_type(),18));
+    add_edge(0, 1,g.back().first);
+    add_edge(0, 2,g.back().first);
+    add_edge(1, 3,g.back().first);
 
     //
     //     3
@@ -56,6 +64,7 @@ int main() {
     add_edge(0, 2,g.back().first);
     add_edge(0, 3,g.back().first);
     add_edge(0, 4,g.back().first);
+
     //
     //   2       5
     //    \     /
