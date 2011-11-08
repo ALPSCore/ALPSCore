@@ -54,7 +54,7 @@ namespace alps {
             
             // Assume the vertex desciptor is an unsigned integer type (since we want to use it as an index for a vector)
             BOOST_STATIC_ASSERT((boost::is_unsigned<typename alps::graph_traits<graph_type>::vertex_descriptor>::value));
-            assert(num_vertices(graphhelper.graph()) > 0);
+            assert(num_vertices(graph) > 0);
 
 
             std::vector<std::vector<unsigned int> > result(dimension(lattice),std::vector<unsigned int>(num_vertices(graph),num_vertices(graph)));
