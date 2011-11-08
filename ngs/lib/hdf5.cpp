@@ -237,7 +237,7 @@ namespace alps {
                 {
                     if (replace)
                         for (std::size_t i = 0; boost::filesystem::exists(filename + (suffix_ = ".tmp." + convert<std::string>(i))); ++i);
-					if (write && replace)
+					if (write && replace && boost::filesystem::exists(filename_))
 						boost::filesystem::copy_file(filename_, filename_ + suffix_);
                     if (write_) {
                         if ((file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDWR, H5P_DEFAULT)) < 0)
