@@ -42,6 +42,42 @@ namespace alps {
 	
 		namespace detail {
 
+        template <typename Graph, typename Lattice>
+        std::vector<std::vector<unsigned int> > build_translation_table(Graph const& graph, Lattice const& lattice)
+        {
+            typedef Lattice lattice_type;
+            typedef Graph graph_type;
+
+            typedef typename alps::lattice_traits<lattice_type>::cell_iterator cell_iterator;
+            typedef typename alps::lattice_traits<lattice_type>::offset_type offset_type;
+            typedef typename alps::lattice_traits<lattice_type>::size_type cell_index_type;
+            
+            // Assume the vertex desciptor is an unsigned integer type (since we want to use it as an index for a vector)
+            BOOST_STATIC_ASSERT((boost::is_unsigned<typename alps::graph_traits<graph_type>::vertex_descriptor>::value));
+            assert(num_vertices(graphhelper.graph()) > 0);
+
+
+            std::vector<std::vector<unsigned int> > result(dimension(lattice),std::vector<unsigned int>(num_vertices(graph),num_vertices(graph)));
+            unsigned int vtcs_per_ucell = num_vertices(alps::graph::graph(unit_cell(lattice)));
+            for(std::size_t d = 0; d < dimension(lattice); ++d)
+            {
+                for(std::pair<cell_iterator,cell_iterator> c = cells(lattice); c.first != c.second; ++c.first)
+                {
+                    offset_type ofst = offset(*c.first,lattice);
+                    offset_type move(dimension(lattice));
+                    move[d] = -1;
+                    std::pair<bool,bool> on_lattice_pbc_crossing = shift(ofst,move,lattice);
+                    if(on_lattice_pbc_crossing.first && !on_lattice_pbc_crossing.second)
+                    {
+                        const cell_index_type cellidx = index(*c.first,lattice);
+                        const cell_index_type neighboridx = index(cell(ofst,lattice),lattice);
+                        for(unsigned int v = 0; v < vtcs_per_ucell; ++v)
+                            result[d][cellidx*vtcs_per_ucell+v] = neighboridx*vtcs_per_ucell + v;
+                    }
+                }
+            }
+            return result;
+        }
 			template<typename Vertex> std::map<unsigned, std::set<Vertex> > lattice_constant_translations(
 				  unsigned int invalid
 				, std::vector<unsigned int> const & translation
@@ -137,38 +173,19 @@ namespace alps {
 			if (v.size() != 1)
 				ALPS_NGS_THROW_RUNTIME_ERROR("not Impl!")
 
-			// Get the possible translation/coordination vectors from the unit cell
-			std::vector<std::vector<int> > coordination_vectors;
-			unit_cell_graph_type const unit_cell_graph = alps::graph::graph(unit_cell(L));
-			typename boost::graph_traits<unit_cell_graph_type>::edge_iterator it, et;
-			for(boost::tie(it, et) = edges(unit_cell_graph); it != et; ++it) {
-				using boost::numeric::operators::operator-;
-				const std::vector<int> source_offset = boost::get(alps::source_offset_t(), unit_cell_graph, *it);
-				const std::vector<int> target_offset = boost::get(alps::target_offset_t(), unit_cell_graph, *it);
-				if (target_offset != source_offset)
-					coordination_vectors.push_back(target_offset - source_offset);
-			}
- 
-			// Create the translation table if we hit the boundary we set the entry to 'num_vertices' (an invalid vertex index)
-			std::vector<std::vector<unsigned int> > translations(
-				  coordination_vectors.size()
-				, std::vector<unsigned int>(num_vertices(G), num_vertices(G))
-			);
-			for (boost::tie(it, et) = edges(unit_cell_graph); it != et; ++it) {
-				using boost::numeric::operators::operator-;
-				// Get cell id (relies on vertex-index = cell-index * vertices_per_cell + vertex-index in cell)
-				typename alps::lattice_traits<lattice_type>::offset_type 
-					  source_offset = offset(L.cell(source(*it, LG) / num_vertices(unit_cell_graph)), L)
-					, target_offset = offset(L.cell(target(*it, LG) / num_vertices(unit_cell_graph)), L)
-					, offset_diff = target_offset - source_offset
-				;
-				for (std::vector<std::vector<int> >::const_iterator jt = coordination_vectors.begin(); jt != coordination_vectors.end(); ++jt) {
-					if(offset_diff == *jt)
-						translations[jt - coordination_vectors.begin()][source(*it, LG)] = target(*it, LG);
-					else if(-offset_diff == *jt)
-						translations[jt - coordination_vectors.begin()][target(*it, LG)] = source(*it, LG);
-				}
-			}
+			// Get the possible translation in the lattice
+			std::vector<std::vector<unsigned int> > translations(detail::build_translation_table(G,L));
+            
+            // DEBUG print them
+            for(std::vector<std::vector<unsigned int> >::iterator it = translations.begin(); it != translations.end(); ++it)
+            {
+                for(unsigned int v=0; v != it->size(); ++v)
+                {
+                    std::cout<<v<<" -> "<<(*it)[v]<<std::endl;
+                }
+                std::cout<<"-------------------------"<<std::endl;
+            }
+            // DEBUG END
 
 			// orbit index => vertices
 			std::set<std::map<unsigned, std::set<typename boost::graph_traits<Graph>::vertex_descriptor> > > matches;
