@@ -57,6 +57,22 @@ namespace alps {
 				}
 				return false;
 			}
+			
+			template<typename Graph> bool no_disconnect(
+				  typename boost::graph_traits<Graph>::vertex_descriptor const & vd
+				, Graph G
+			) {
+				typename boost::graph_traits<Graph>::adjacency_iterator ai, aj, ae;
+				tie(ai, ae) = adjacent_vertices(vd, G);
+				clear_vertex( vd, G );
+				for( aj = ai++ ; ai != ae; ++ai )
+                {
+				    if( !is_connected( *ai, *aj, G ) )
+				        return false;
+				    ++aj;
+				}
+				return true;
+              }
 
 			template<typename Graph> void subgraphs_helper(
 				  std::set<boost::dynamic_bitset<> > & L
@@ -82,6 +98,35 @@ namespace alps {
 					}
 				}
 			}
+			
+			template<typename Graph> void subgraphs_helper_strong(
+				  std::set<boost::dynamic_bitset<> > & L
+				, typename boost::graph_traits<Graph>::vertex_descriptor const & vd
+				, Graph G
+			) {
+			    if (num_edges(G)>1)
+			    {
+			        if ( out_degree(vd, G)==1 || no_disconnect(vd, G) )
+			        {
+			           clear_vertex(vd, G);
+			           boost::dynamic_bitset<> l(num_vertices(G) * (num_vertices(G) + 1) / 2);
+				       typename boost::graph_traits<Graph>::edge_iterator ei, ee;
+				       for (boost::tie(ei, ee) = edges(G); ei != ee; ++ei) 
+				       {
+                           typename boost::graph_traits<Graph>::vertex_descriptor v1 = std::min(source(*ei,G),target(*ei,G));
+                           typename boost::graph_traits<Graph>::vertex_descriptor v2 = std::max(source(*ei,G),target(*ei,G));
+                           l[v1 * num_vertices(G) - (v1 - 1) * v1 / 2 + v2 - v1] = true;
+                       }
+				       if (L.insert(l).second) 
+				       {
+				    	    typename boost::graph_traits<Graph>::vertex_iterator vi, ve;
+				    		for(boost::tie(vi, ve) = vertices(G); vi != ve; ++vi)
+    				    	    if( out_degree(*vi, G) )
+    				    	        detail::subgraphs_helper_strong(L, *vi, G);
+				       }
+			        }
+			    }
+	        }
 
 		}
 
@@ -89,6 +134,12 @@ namespace alps {
 			typename boost::graph_traits<Graph>::edge_iterator it, end;
 			for (boost::tie(it, end) = edges(G); it != end; ++it)
 				detail::subgraphs_helper(L, source(*it, G), target(*it, G), G);
+		}
+		
+		template<typename Graph> void subgraphs_strong(std::set<boost::dynamic_bitset<> > & L, Graph const & G) {
+			typename boost::graph_traits<Graph>::vertex_iterator it, end;
+			for (boost::tie(it, end) = vertices(G); it != end; ++it)
+				detail::subgraphs_helper_strong(L, *it, G);
 		}
 
 	}
