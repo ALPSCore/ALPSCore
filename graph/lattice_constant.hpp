@@ -42,42 +42,44 @@ namespace alps {
 	
 		namespace detail {
 
-        template <typename Graph, typename Lattice>
-        std::vector<std::vector<unsigned int> > build_translation_table(Graph const& graph, Lattice const& lattice)
-        {
-            typedef Lattice lattice_type;
-            typedef Graph graph_type;
+			template <typename Graph, typename Lattice> std::vector<
+				std::vector<unsigned int> 
+			> build_translation_table(Graph const& graph, Lattice const& lattice)
+			{
+				typedef Lattice lattice_type;
+				typedef Graph graph_type;
 
-            typedef typename alps::lattice_traits<lattice_type>::cell_iterator cell_iterator;
-            typedef typename alps::lattice_traits<lattice_type>::offset_type offset_type;
-            typedef typename alps::lattice_traits<lattice_type>::size_type cell_index_type;
-            
-            // Assume the vertex desciptor is an unsigned integer type (since we want to use it as an index for a vector)
-            BOOST_STATIC_ASSERT((boost::is_unsigned<typename alps::graph_traits<graph_type>::vertex_descriptor>::value));
-            assert(num_vertices(graph) > 0);
+				typedef typename alps::lattice_traits<lattice_type>::cell_iterator cell_iterator;
+				typedef typename alps::lattice_traits<lattice_type>::offset_type offset_type;
+				typedef typename alps::lattice_traits<lattice_type>::size_type cell_index_type;
+				
+				// Assume the vertex desciptor is an unsigned integer type (since we want to use it as an index for a vector)
+				BOOST_STATIC_ASSERT((boost::is_unsigned<typename alps::graph_traits<graph_type>::vertex_descriptor>::value));
+				assert(num_vertices(graph) > 0);
 
 
-            std::vector<std::vector<unsigned int> > result(dimension(lattice),std::vector<unsigned int>(num_vertices(graph),num_vertices(graph)));
-            unsigned int vtcs_per_ucell = num_vertices(alps::graph::graph(unit_cell(lattice)));
-            for(std::size_t d = 0; d < dimension(lattice); ++d)
-            {
-                for(std::pair<cell_iterator,cell_iterator> c = cells(lattice); c.first != c.second; ++c.first)
-                {
-                    offset_type ofst = offset(*c.first,lattice);
-                    offset_type move(dimension(lattice));
-                    move[d] = -1;
-                    std::pair<bool,bool> on_lattice_pbc_crossing = shift(ofst,move,lattice);
-                    if(on_lattice_pbc_crossing.first && !on_lattice_pbc_crossing.second)
-                    {
-                        const cell_index_type cellidx = index(*c.first,lattice);
-                        const cell_index_type neighboridx = index(cell(ofst,lattice),lattice);
-                        for(unsigned int v = 0; v < vtcs_per_ucell; ++v)
-                            result[d][cellidx*vtcs_per_ucell+v] = neighboridx*vtcs_per_ucell + v;
-                    }
-                }
-            }
-            return result;
-        }
+				std::vector<std::vector<unsigned int> > result(dimension(lattice),std::vector<unsigned int>(num_vertices(graph),num_vertices(graph)));
+				unsigned int vtcs_per_ucell = num_vertices(alps::graph::graph(unit_cell(lattice)));
+				for(std::size_t d = 0; d < dimension(lattice); ++d)
+				{
+					for(std::pair<cell_iterator,cell_iterator> c = cells(lattice); c.first != c.second; ++c.first)
+					{
+						offset_type ofst = offset(*c.first,lattice);
+						offset_type move(dimension(lattice));
+						move[d] = -1;
+						std::pair<bool,bool> on_lattice_pbc_crossing = shift(ofst,move,lattice);
+						if(on_lattice_pbc_crossing.first && !on_lattice_pbc_crossing.second)
+						{
+							const cell_index_type cellidx = index(*c.first,lattice);
+							const cell_index_type neighboridx = index(cell(ofst,lattice),lattice);
+							for(unsigned int v = 0; v < vtcs_per_ucell; ++v)
+								result[d][cellidx*vtcs_per_ucell+v] = neighboridx*vtcs_per_ucell + v;
+						}
+					}
+				}
+				return result;
+			}
+
 			template<typename Vertex> std::map<unsigned, std::set<Vertex> > lattice_constant_translations(
 				  unsigned int invalid
 				, std::vector<unsigned int> const & translation
@@ -132,14 +134,11 @@ namespace alps {
 							return;
 					}
 				// TODO: check colored graphs ...
-                std::cout<<""<<pinning.size()<<" "<<visited.size()<<" "<<num_vertices(S)<<std::endl;
-                std::cout<<"+"<<s<<" "<<g<<std::endl;
 				visited.insert(g);
 				if (match.find(I[s]) == match.end())
 					match[I[s]] = std::set<typename boost::graph_traits<Graph>::vertex_descriptor>();
 				match[I[s]].insert(g);
 				pinning[s] = g;
-                std::cout<<"_"<<pinning.size()<<" "<<visited.size()<<" "<<num_vertices(S)<<std::endl;
 				if (visited.size() < num_vertices(S)) {
 					typename boost::graph_traits<Graph>::adjacency_iterator g_ai, g_ae;
 					for (tie(s_ai, s_ae) = adjacent_vertices(s, S); s_ai != s_ae; ++s_ai)
@@ -150,15 +149,14 @@ namespace alps {
 					typename boost::graph_traits<Subgraph>::vertex_descriptor t = stack[0].first;
 					tie(g_ai, g_ae) = adjacent_vertices(stack[0].second, G);
 					stack.pop_front();
-                    std::cout<<"__"<<pinning.size()<<" "<<visited.size()<<" "<<num_vertices(S)<<std::endl;
 					for (; g_ai != g_ae; ++g_ai)
 						if (visited.find(*g_ai) == visited.end())
 							detail::lattice_constant_walker(t, *g_ai, S, G, LG, I, matches, translations, stack, match, placed, visited, pinning);
 				} else {
 					for (std::vector<std::vector<unsigned int> >::const_iterator it = translations.begin(); it != translations.end(); ++it)
 						match = lattice_constant_translations(num_vertices(G), *it, match);
-					if(matches.insert(match).second);
-//                        print_embedding_from_pinning(pinning,S,G,LG);
+					if(matches.insert(match).second)
+;//                        print_embedding_from_pinning(pinning,S,G,LG);
 				}
 			}
             template<typename Subgraph, typename Graph, typename Lattice, typename LatticeGraph>
@@ -200,6 +198,7 @@ namespace alps {
                               typename boost::graph_traits<Subgraph>::vertex_descriptor
                             , typename boost::graph_traits<Graph>::vertex_descriptor
                         > pinning;
+						placed.insert(it->front());
                         detail::lattice_constant_walker(it->front(), v.front(), S, G, LG, I, matches, translations, stack, match, placed, visited, pinning);
                     }
                 return matches;
@@ -216,8 +215,7 @@ namespace alps {
 			, LatticeGraph const & LG
 			, std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> const & v
 		) {
-			std::set<std::map<unsigned, std::set<typename boost::graph_traits<Graph>::vertex_descriptor> > > matches = detail::lattice_embeddings(S,G,L,LG,v);
-
+			std::set<std::map<unsigned, std::set<typename boost::graph_traits<Graph>::vertex_descriptor> > > matches = detail::lattice_embeddings(S, G, L, LG, v);
 			return matches.size();
 		}
         
