@@ -36,21 +36,21 @@ int main() {
 //    add_edge(1, 3, g.back().first);
 //    add_edge(3, 2, g.back().first);
 //    add_edge(2, 0, g.back().first);
-
+//
 //    //
 //    //  1---0---2
 //    //
 //    g.push_back(std::make_pair(graph_type(),6));
 //    add_edge(0, 1,g.back().first);
 //    add_edge(0, 2,g.back().first);
-    
-    //
-    //  3---1---0---2
-    //
-    g.push_back(std::make_pair(graph_type(),18));
-    add_edge(0, 1,g.back().first);
-    add_edge(0, 2,g.back().first);
-    add_edge(1, 3,g.back().first);
+//    
+//    //
+//    //  3---1---0---2
+//    //
+//    g.push_back(std::make_pair(graph_type(),18));
+//    add_edge(0, 1,g.back().first);
+//    add_edge(0, 2,g.back().first);
+//    add_edge(1, 3,g.back().first);
 //
 //    //
 //    //     3
@@ -78,6 +78,28 @@ int main() {
 //    add_edge(0, 3,g.back().first);
 //    add_edge(1, 4,g.back().first);
 //    add_edge(1, 5,g.back().first);
+//
+    //
+    //           8
+    //           |
+    //           4
+    //           |
+    //   6---2---0---1---5
+    //           |
+    //           3
+    //           |
+    //           7
+    //
+    g.push_back(std::make_pair(graph_type(),47));
+    add_edge(0, 1,g.back().first);
+    add_edge(0, 2,g.back().first);
+    add_edge(0, 3,g.back().first);
+    add_edge(0, 4,g.back().first);
+    add_edge(1, 5,g.back().first);
+    add_edge(2, 6,g.back().first);
+    add_edge(3, 7,g.back().first);
+    add_edge(4, 8,g.back().first);
+
     int success = 0;
     for(std::vector<std::pair<graph_type,lc_type> >::iterator it= g.begin(); it != g.end(); ++it)
     {
@@ -90,8 +112,8 @@ int main() {
 		);
         if ( lc != it->second)
         {
-            std::cout<<"ERROR: lattice constant does not match!"<<std::endl;
-            std::cout<<"Calculated: "<<lc<<"\tReference: "<<it->second<<std::endl<<std::endl;
+            std::cerr<<"ERROR: lattice constant does not match!"<<std::endl;
+            std::cerr<<"Calculated: "<<lc<<"\tReference: "<<it->second<<std::endl<<std::endl;
             success = -1;
         }
     }
