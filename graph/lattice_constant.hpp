@@ -77,37 +77,44 @@ namespace alps {
 				return result;
 			}
 
-			template<typename Vertex> std::pair<
-				  std::map<unsigned, std::set<Vertex> >
-				, std::set<std::pair<Vertex, Vertex> >
-			> lattice_constant_translations(
+			template<typename Vertex> std::map<unsigned, std::set<Vertex> > lattice_constant_move_vertices(
 				  unsigned int invalid
 				, std::vector<unsigned int> const & translation
 				, std::map<unsigned, std::set<Vertex> > match
-				, std::set<std::pair<Vertex, Vertex> > edgecloud
 			) {
 				std::map<unsigned, std::set<Vertex> > moved;
-				std::set<std::pair<Vertex, Vertex> > movedcloud;
 				do {
 					moved.clear();
 					for (typename std::map<unsigned, std::set<Vertex> >::const_iterator it = match.begin(); it != match.end(); ++it) {
 						moved[it->first] = std::set<Vertex>();
 						for (typename std::set<Vertex>::const_iterator jt = it->second.begin(); jt != it->second.end(); ++jt)
 							if (translation[*jt] == invalid)
-								return make_pair(match, edgecloud);
+								return match;
 							else
 								moved[it->first].insert(translation[*jt]);
 					}
+					swap(match, moved);
+				} while(true);
+			}
+			
+			template<typename Vertex> std::set<std::pair<Vertex, Vertex> > lattice_constant_move_edges(
+				  unsigned int invalid
+				, std::vector<unsigned int> const & translation
+				, std::set<std::pair<Vertex, Vertex> > edgecloud
+			) {
+				std::set<std::pair<Vertex, Vertex> > movedcloud;
+				do {
 					movedcloud.clear();
 					for (typename std::set<std::pair<Vertex, Vertex> >::const_iterator it = edgecloud.begin(); it != edgecloud.end(); ++it)
 						if (translation[it->first] == invalid || translation[it->second] == invalid)
-							return make_pair(match, edgecloud);
-						else
+							return edgecloud;
+						else if (translation[it->first] < translation[it->second])
 							movedcloud.insert(std::make_pair(translation[it->first], translation[it->second]));
-					swap(match, moved);
+						else
+							movedcloud.insert(std::make_pair(translation[it->second], translation[it->first]));
 					swap(edgecloud, movedcloud);
 				} while(true);
-			}
+			}			
 
 			template<typename Subgraph, typename Graph, typename LatticeGraph> void lattice_constant_walker(
 				  typename boost::graph_traits<Subgraph>::vertex_descriptor const & s
@@ -172,8 +179,10 @@ namespace alps {
 							edgecloud.insert(std::make_pair(pinning[source(*s_et, S)], pinning[target(*s_et, S)]));
 						else
 							edgecloud.insert(std::make_pair(pinning[target(*s_et, S)], pinning[source(*s_et, S)]));
-					for (std::vector<std::vector<unsigned int> >::const_iterator it = translations.begin(); it != translations.end(); ++it)
-						boost::tie(match, edgecloud) = lattice_constant_translations(num_vertices(G), *it, match, edgecloud);
+					for (std::vector<std::vector<unsigned int> >::const_iterator it = translations.begin(); it != translations.end(); ++it) {
+						match = lattice_constant_move_vertices(num_vertices(G), *it, match);
+						edgecloud = lattice_constant_move_edges(num_vertices(G), *it, edgecloud);
+					}
 					if(matches.insert(make_pair(edgecloud, match)).second)
 ;//                        print_embedding_from_pinning(pinning,S,G,LG);
 				}
