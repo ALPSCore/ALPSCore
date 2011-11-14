@@ -26,59 +26,59 @@ int main() {
 
     std::vector<std::pair<graph_type,lc_type> > g;
 
-//    //
-//    //  0---1
-//    //  |   |
-//    //  2---3
-//    //
-//    g.push_back(std::make_pair(graph_type(), 1));
-//    add_edge(0, 1, g.back().first);
-//    add_edge(1, 3, g.back().first);
-//    add_edge(3, 2, g.back().first);
-//    add_edge(2, 0, g.back().first);
-//
-//    //
-//    //  1---0---2
-//    //
-//    g.push_back(std::make_pair(graph_type(),6));
-//    add_edge(0, 1,g.back().first);
-//    add_edge(0, 2,g.back().first);
-//    
-//    //
-//    //  3---1---0---2
-//    //
-//    g.push_back(std::make_pair(graph_type(),18));
-//    add_edge(0, 1,g.back().first);
-//    add_edge(0, 2,g.back().first);
-//    add_edge(1, 3,g.back().first);
-//
-//    //
-//    //     3
-//    //     |
-//    // 1---0---2
-//    //     |
-//    //     4
-//    //
-//    g.push_back(std::make_pair(graph_type(),1));
-//    add_edge(0, 1,g.back().first);
-//    add_edge(0, 2,g.back().first);
-//    add_edge(0, 3,g.back().first);
-//    add_edge(0, 4,g.back().first);
-//
-//    //
-//    //   2       5
-//    //    \     /
-//    //     0---1
-//    //    /     \
-//    //   3       4
-//    //
-//    g.push_back(std::make_pair(graph_type(),18));
-//    add_edge(0, 1,g.back().first);
-//    add_edge(0, 2,g.back().first);
-//    add_edge(0, 3,g.back().first);
-//    add_edge(1, 4,g.back().first);
-//    add_edge(1, 5,g.back().first);
-//
+    //
+    //  0---1
+    //  |   |
+    //  2---3
+    //
+    g.push_back(std::make_pair(graph_type(), 1));
+    add_edge(0, 1, g.back().first);
+    add_edge(1, 3, g.back().first);
+    add_edge(3, 2, g.back().first);
+    add_edge(2, 0, g.back().first);
+
+    //
+    //  1---0---2
+    //
+    g.push_back(std::make_pair(graph_type(),6));
+    add_edge(0, 1,g.back().first);
+    add_edge(0, 2,g.back().first);
+    
+    //
+    //  3---1---0---2
+    //
+    g.push_back(std::make_pair(graph_type(),18));
+    add_edge(0, 1,g.back().first);
+    add_edge(0, 2,g.back().first);
+    add_edge(1, 3,g.back().first);
+
+    //
+    //     3
+    //     |
+    // 1---0---2
+    //     |
+    //     4
+    //
+    g.push_back(std::make_pair(graph_type(),1));
+    add_edge(0, 1,g.back().first);
+    add_edge(0, 2,g.back().first);
+    add_edge(0, 3,g.back().first);
+    add_edge(0, 4,g.back().first);
+
+    //
+    //   2       5
+    //    \     /
+    //     0---1
+    //    /     \
+    //   3       4
+    //
+    g.push_back(std::make_pair(graph_type(),18));
+    add_edge(0, 1,g.back().first);
+    add_edge(0, 2,g.back().first);
+    add_edge(0, 3,g.back().first);
+    add_edge(1, 4,g.back().first);
+    add_edge(1, 5,g.back().first);
+
     //
     //           8
     //           |
