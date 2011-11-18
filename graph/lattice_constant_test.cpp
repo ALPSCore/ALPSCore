@@ -100,6 +100,24 @@ int main() {
     add_edge(3, 7,g.back().first);
     add_edge(4, 8,g.back().first);
 
+////    graph no. 32340
+////	14	15	1	64272
+    g.push_back(std::make_pair(graph_type(15),64272));
+    add_edge(13, 14,g.back().first);
+    add_edge(12, 14,g.back().first);
+    add_edge( 9, 14,g.back().first);
+    add_edge( 7, 14,g.back().first);
+    add_edge( 8, 13,g.back().first);
+    add_edge( 1, 13,g.back().first);
+    add_edge( 6, 12,g.back().first);
+    add_edge( 0, 12,g.back().first);
+    add_edge(10,  9,g.back().first);
+    add_edge( 2,  7,g.back().first);
+    add_edge(11,  8,g.back().first);
+    add_edge( 3,  6,g.back().first);
+    add_edge( 4, 10,g.back().first);
+    add_edge( 5, 11,g.back().first);
+
     int success = 0;
     for(std::vector<std::pair<graph_type,lc_type> >::iterator it= g.begin(); it != g.end(); ++it)
     {
