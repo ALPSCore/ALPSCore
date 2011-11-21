@@ -13,7 +13,7 @@ int main() {
     typedef alps::graph_helper<>::edge_iterator edge_iterator;
 
     alps::Parameters parm;
-	unsigned int side_length = 20;
+	unsigned int side_length = 28;
 	
     parm["LATTICE"] = "square lattice";
     parm["L"] = side_length;
@@ -100,8 +100,8 @@ int main() {
     add_edge(3, 7,g.back().first);
     add_edge(4, 8,g.back().first);
 
-////    graph no. 32340
-////	14	15	1	64272
+	// graph no. 32340
+	// 14	15	1	64272
     g.push_back(std::make_pair(graph_type(15),64272));
     add_edge(13, 14,g.back().first);
     add_edge(12, 14,g.back().first);
@@ -126,7 +126,7 @@ int main() {
 			, lattice_graph
 			, lattice.lattice()
 			, lattice.graph()
-			, std::vector<boost::graph_traits<graph_type>::vertex_descriptor>(1,side_length*side_length/2+side_length/2 - 1)
+			, std::vector<boost::graph_traits<graph_type>::vertex_descriptor>(1, side_length * side_length / 2 + side_length / 2 - 1)
 		);
         if ( lc != it->second)
         {
