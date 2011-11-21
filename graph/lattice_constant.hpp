@@ -42,79 +42,68 @@ namespace alps {
 	
 		namespace detail {
 
-			template <typename Graph, typename Lattice> std::vector<
-				std::vector<unsigned int> 
-			> build_translation_table(Graph const& graph, Lattice const& lattice)
-			{
+			template <typename Graph, typename Lattice> void build_translation_table(
+				  Graph const & graph
+				, Lattice const & lattice
+				, std::vector<std::vector<unsigned> > & translations
+				, std::vector<std::vector<unsigned> > & distance_to_boarder
+			) {
 				typedef typename alps::lattice_traits<Lattice>::cell_iterator cell_iterator;
 				typedef typename alps::lattice_traits<Lattice>::offset_type offset_type;
 				typedef typename alps::lattice_traits<Lattice>::size_type cell_index_type;
-				
+
 				// Assume the vertex desciptor is an unsigned integer type (since we want to use it as an index for a vector)
 				BOOST_STATIC_ASSERT((boost::is_unsigned<typename alps::graph_traits<Graph>::vertex_descriptor>::value));
 				assert(num_vertices(graph) > 0);
 
-
-				std::vector<std::vector<unsigned int> > result(dimension(lattice),std::vector<unsigned int>(num_vertices(graph),num_vertices(graph)));
-				unsigned int vtcs_per_ucell = num_vertices(alps::graph::graph(unit_cell(lattice)));
-				for(std::size_t d = 0; d < dimension(lattice); ++d)
-				{
-					for(std::pair<cell_iterator,cell_iterator> c = cells(lattice); c.first != c.second; ++c.first)
-					{
+				unsigned vtcs_per_ucell = num_vertices(alps::graph::graph(unit_cell(lattice)));
+				for(std::size_t d = 0; d < dimension(lattice); ++d) {
+					for(std::pair<cell_iterator,cell_iterator> c = cells(lattice); c.first != c.second; ++c.first) {
 						offset_type ofst = offset(*c.first,lattice);
 						offset_type move(dimension(lattice));
 						move[d] = -1;
 						std::pair<bool,bool> on_lattice_pbc_crossing = shift(ofst,move,lattice);
-						if(on_lattice_pbc_crossing.first && !on_lattice_pbc_crossing.second)
-						{
+						if(on_lattice_pbc_crossing.first && !on_lattice_pbc_crossing.second) {
 							const cell_index_type cellidx = index(*c.first,lattice);
-							const cell_index_type neighboridx = index(cell(ofst,lattice),lattice);
-							for(unsigned int v = 0; v < vtcs_per_ucell; ++v)
-								result[d][cellidx*vtcs_per_ucell+v] = neighboridx*vtcs_per_ucell + v;
+							const cell_index_type neighboridx = index(cell(ofst, lattice), lattice);
+							for(unsigned v = 0; v < vtcs_per_ucell; ++v)
+								translations[d][cellidx * vtcs_per_ucell + v] = neighboridx * vtcs_per_ucell + v;
 						}
 					}
+					unsigned v;
+					for (std::vector<unsigned>::const_iterator it = translations[d].begin(); it != translations[d].end(); ++it) {
+						distance_to_boarder[d][v = *it] = 0;
+						if (v != num_vertices(graph))
+							while ((v = translations[d][v]) != num_vertices(graph))
+								++distance_to_boarder[d][*it];
+					}
 				}
-				return result;
 			}
 
-			template<typename Vertex> std::map<unsigned, std::set<Vertex> > lattice_constant_move_vertices(
-				  unsigned int invalid
-				, std::vector<unsigned int> const & translation
-				, std::map<unsigned, std::set<Vertex> > match
+			template<typename Vertex> void lattice_constant_move_vertices(
+				  unsigned invalid
+				, std::vector<unsigned> const & translation
+				, std::vector<unsigned> const & distance_to_boarder
+				, std::map<unsigned, std::set<Vertex> > & match
+				, std::map<Vertex, Vertex> & moves
 			) {
-				std::map<unsigned, std::set<Vertex> > moved;
-				do {
-					moved.clear();
+				unsigned distance = invalid;
+				for (typename std::map<unsigned, std::set<Vertex> >::const_iterator it = match.begin(); it != match.end(); ++it)
+					for (typename std::set<Vertex>::const_iterator jt = it->second.begin(); jt != it->second.end(); ++jt)
+						distance = std::min(distance, distance_to_boarder[*jt]);
+				if (distance)
 					for (typename std::map<unsigned, std::set<Vertex> >::const_iterator it = match.begin(); it != match.end(); ++it) {
-						moved[it->first] = std::set<Vertex>();
-						for (typename std::set<Vertex>::const_iterator jt = it->second.begin(); jt != it->second.end(); ++jt)
-							if (translation[*jt] == invalid)
-								return match;
-							else
-								moved[it->first].insert(translation[*jt]);
+						std::set<Vertex> vertices;
+						for (typename std::set<Vertex>::const_iterator jt = it->second.begin(); jt != it->second.end(); ++jt) {
+							Vertex v = *jt;
+							for (std::size_t i = 0; i < distance; ++i)
+								v = translation[v];
+							moves[*jt] = v;
+							vertices.insert(v);
+						}
+						match[it->first] = vertices;
 					}
-					swap(match, moved);
-				} while(true);
 			}
-			
-			template<typename Vertex> std::set<std::pair<Vertex, Vertex> > lattice_constant_move_edges(
-				  unsigned int invalid
-				, std::vector<unsigned int> const & translation
-				, std::set<std::pair<Vertex, Vertex> > edgecloud
-			) {
-				std::set<std::pair<Vertex, Vertex> > movedcloud;
-				do {
-					movedcloud.clear();
-					for (typename std::set<std::pair<Vertex, Vertex> >::const_iterator it = edgecloud.begin(); it != edgecloud.end(); ++it)
-						if (translation[it->first] == invalid || translation[it->second] == invalid)
-							return edgecloud;
-						else if (translation[it->first] < translation[it->second])
-							movedcloud.insert(std::make_pair(translation[it->first], translation[it->second]));
-						else
-							movedcloud.insert(std::make_pair(translation[it->second], translation[it->first]));
-					swap(edgecloud, movedcloud);
-				} while(true);
-			}			
 
 			template<typename Subgraph, typename Graph, typename LatticeGraph> void lattice_constant_walker(
 				  typename boost::graph_traits<Subgraph>::vertex_descriptor const & s
@@ -127,7 +116,8 @@ namespace alps {
 					 std::set<std::pair<typename boost::graph_traits<Graph>::vertex_descriptor, typename boost::graph_traits<Graph>::vertex_descriptor> >
 					,std::map<unsigned, std::set<typename boost::graph_traits<Graph>::vertex_descriptor> > 
 				  > > & matches
-				, std::vector<std::vector<unsigned int> > const & translations
+				, std::vector<std::vector<unsigned> > const & translations
+				, std::vector<std::vector<unsigned> > const & distance_to_boarder
 				, std::deque<std::pair<
 					  typename boost::graph_traits<Subgraph>::vertex_descriptor
 					, typename boost::graph_traits<Graph>::vertex_descriptor
@@ -170,21 +160,28 @@ namespace alps {
 					stack.pop_front();
 					for (; g_ai != g_ae; ++g_ai)
 						if (visited.find(*g_ai) == visited.end())
-							detail::lattice_constant_walker(t, *g_ai, S, G, LG, I, matches, translations, stack, match, placed, visited, pinning);
+							detail::lattice_constant_walker(t, *g_ai, S, G, LG, I, matches, translations, distance_to_boarder, stack, match, placed, visited, pinning);
 				} else {
+					std::vector<std::map<typename boost::graph_traits<Graph>::vertex_descriptor, typename boost::graph_traits<Graph>::vertex_descriptor> > moves(translations.size());
+					for(std::size_t d = 0; d < translations.size(); ++d)
+						lattice_constant_move_vertices(num_vertices(G), translations[d], distance_to_boarder[d], match, moves[d]);
 					std::set<std::pair<typename boost::graph_traits<Graph>::vertex_descriptor, typename boost::graph_traits<Graph>::vertex_descriptor> > edgecloud;
+					for(std::size_t d = 1; d < translations.size(); ++d)
+						for (typename std::map<
+							  typename boost::graph_traits<Graph>::vertex_descriptor
+							, typename boost::graph_traits<Graph>::vertex_descriptor
+						>::iterator it = moves[0].begin(); it != moves[0].end(); ++it)
+							it->second = moves[d][it->second];
+					moves.resize(1);
 					typename boost::graph_traits<Subgraph>::edge_iterator s_et, s_ee;
 					for (boost::tie(s_et, s_ee) = edges(S); s_et != s_ee; ++s_et)
-						if (source(*s_et, S) < target(*s_et, S))
-							edgecloud.insert(std::make_pair(pinning[source(*s_et, S)], pinning[target(*s_et, S)]));
+						if (moves[0][pinning[source(*s_et, S)]] < moves[0][pinning[target(*s_et, S)]])
+							edgecloud.insert(std::make_pair(moves[0][pinning[source(*s_et, S)]], moves[0][pinning[target(*s_et, S)]]));
 						else
-							edgecloud.insert(std::make_pair(pinning[target(*s_et, S)], pinning[source(*s_et, S)]));
-					for (std::vector<std::vector<unsigned int> >::const_iterator it = translations.begin(); it != translations.end(); ++it) {
-						match = lattice_constant_move_vertices(num_vertices(G), *it, match);
-						edgecloud = lattice_constant_move_edges(num_vertices(G), *it, edgecloud);
-					}
-					if(matches.insert(make_pair(edgecloud, match)).second)
-;//                        print_embedding_from_pinning(pinning,S,G,LG);
+							edgecloud.insert(std::make_pair(moves[0][pinning[target(*s_et, S)]], moves[0][pinning[source(*s_et, S)]]));
+//					if(matches.insert(make_pair(edgecloud, match)).second)
+//						print_embedding_from_pinning(pinning,S,G,LG);
+					matches.insert(make_pair(edgecloud, match)).second;
 				}
 			}
 		}
@@ -192,6 +189,7 @@ namespace alps {
 		// Input: Subgraph, Graph, vertices of G contained in mapping of S on G
 		// Output: lattice_constant of S in G containing v
 		template<typename Subgraph, typename Graph, typename Lattice, typename LatticeGraph> std::size_t lattice_constant(
+		// TODO: can we remove LatticeGraph?
 			  Subgraph const & S
 			, Graph const & G
 			, Lattice const & L
@@ -206,7 +204,9 @@ namespace alps {
 				ALPS_NGS_THROW_RUNTIME_ERROR("not Impl!")
 
 			// Get the possible translation in the lattice
-			std::vector<std::vector<unsigned int> > translations(detail::build_translation_table(G,L));
+			std::vector<std::vector<unsigned> > translations(dimension(L), std::vector<unsigned>(num_vertices(G), num_vertices(G)));
+			std::vector<std::vector<unsigned> > distance_to_boarder(dimension(L), std::vector<unsigned>(num_vertices(G), num_vertices(G)));
+			detail::build_translation_table(G, L, translations, distance_to_boarder);
 			
 			// orbit index => vertices
 			typename partition_type<Graph>::type orbit = boost::get<2>(canonical_properties(S));
@@ -234,12 +234,14 @@ namespace alps {
 						, typename boost::graph_traits<Graph>::vertex_descriptor
 					> pinning;
 					placed.insert(it->front());
-					detail::lattice_constant_walker(it->front(), v.front(), S, G, LG, I, matches, translations, stack, match, placed, visited, pinning);
+					detail::lattice_constant_walker(it->front(), v.front(), S, G, LG, I, matches, translations, distance_to_boarder, stack, match, placed, visited, pinning);
+					break;
 				}
+
 			return matches.size();
 		}
         
-       /*
+       /* can this be removed?
        template <typename Subgraph, typename Graph, typename LatticeGraph> void print_embedding_from_match(
                  std::map<unsigned, std::set<typename boost::graph_traits<Graph>::vertex_descriptor> > const& mapping
                , Subgraph const& S
@@ -305,7 +307,7 @@ namespace alps {
        }
        */
        
-       
+	   // TODO: move this to detail
        template <typename Subgraph, typename Graph, typename LatticeGraph> void print_embedding_from_pinning(
 				 std::map<
 					  typename boost::graph_traits<Subgraph>::vertex_descriptor
