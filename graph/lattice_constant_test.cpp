@@ -118,35 +118,40 @@ int main() {
     add_edge( 4, 10,g.back().first);
     add_edge( 5, 11,g.back().first);
 
-//
-//    //
-//    //  0---1---...---18---19
-//    //
-////    g.push_back(std::make_pair(graph_type(15), 1187222));
-//    g.push_back(std::make_pair(graph_type(16), 3208298));
-////    g.push_back(std::make_pair(graph_type(17), 0));
-////    g.push_back(std::make_pair(graph_type(18), 0));
-////    g.push_back(std::make_pair(graph_type(19), 0));
-////    g.push_back(std::make_pair(graph_type(20), 0));
-//    add_edge( 0,  1, g.back().first);
-//    add_edge( 1,  2, g.back().first);
-//    add_edge( 2,  3, g.back().first);
-//    add_edge( 3,  4, g.back().first);
-//    add_edge( 4,  5, g.back().first);
-//    add_edge( 5,  6, g.back().first);
-//    add_edge( 6,  7, g.back().first);
-//    add_edge( 7,  8, g.back().first);
-//    add_edge( 8,  9, g.back().first);
-//    add_edge( 9, 10, g.back().first);
-//    add_edge(10, 11, g.back().first);
-//    add_edge(11, 12, g.back().first);
-//    add_edge(12, 13, g.back().first);
-//    add_edge(13, 14, g.back().first);
-//    add_edge(14, 15, g.back().first);
-////    add_edge(15, 16, g.back().first);
-////    add_edge(16, 17, g.back().first);
-////    add_edge(17, 18, g.back().first);
-////    add_edge(18, 19, g.back().first);
+
+    //
+    //  0---1---...---18---19
+    //
+//    g.push_back(std::make_pair(graph_type(10), 8134));
+//    g.push_back(std::make_pair(graph_type(11), 22050));
+//    g.push_back(std::make_pair(graph_type(12), 60146));
+//    g.push_back(std::make_pair(graph_type(13), 162466));
+//    g.push_back(std::make_pair(graph_type(14), 440750));
+//    g.push_back(std::make_pair(graph_type(15), 1187222));
+    g.push_back(std::make_pair(graph_type(16), 3208298)); // 2.53 GB
+//    g.push_back(std::make_pair(graph_type(17), 0)); // =     86'624'053 => 6.8 GB
+//    g.push_back(std::make_pair(graph_type(18), 0)); // =    233'884'943
+//    g.push_back(std::make_pair(graph_type(19), 0)); // =    631'489'348
+//    g.push_back(std::make_pair(graph_type(20), 0)); // = 17'050'212'141 == 5314 * G(16) => 13.4 TB
+    add_edge( 0,  1, g.back().first);
+    add_edge( 1,  2, g.back().first);
+    add_edge( 2,  3, g.back().first);
+    add_edge( 3,  4, g.back().first);
+    add_edge( 4,  5, g.back().first);
+    add_edge( 5,  6, g.back().first);
+    add_edge( 6,  7, g.back().first);
+    add_edge( 7,  8, g.back().first);
+    add_edge( 8,  9, g.back().first);
+    add_edge( 9, 10, g.back().first);
+    add_edge(10, 11, g.back().first);
+    add_edge(11, 12, g.back().first);
+    add_edge(12, 13, g.back().first);
+    add_edge(13, 14, g.back().first);
+    add_edge(14, 15, g.back().first);
+//    add_edge(15, 16, g.back().first);
+//    add_edge(16, 17, g.back().first);
+//    add_edge(17, 18, g.back().first);
+//    add_edge(18, 19, g.back().first);
 
     int success = 0;
     for(std::vector<std::pair<graph_type,lc_type> >::iterator it= g.begin(); it != g.end(); ++it)
