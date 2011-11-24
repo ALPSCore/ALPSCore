@@ -42,6 +42,9 @@ namespace alps {
         template<typename T> struct is_continous<std::complex<T> >
             : public is_continous<T>
         {};
+        template<typename T> struct is_continous<std::complex<T> const >
+            : public is_continous<T>
+        {};
 
         template<typename T> struct has_complex_elements<std::complex<T> >
             : public boost::true_type
@@ -59,8 +62,12 @@ namespace alps {
                 static void apply(std::complex<T> &, std::vector<std::size_t> const &) {}
             };
 
-        
             template<typename T> struct is_vectorizable<std::complex<T> > {
+                static bool apply(std::complex<T> const & value) {
+                    return true;
+                }
+            };
+            template<typename T> struct is_vectorizable<std::complex<T> const> {
                 static bool apply(std::complex<T> const & value) {
                     return true;
                 }
