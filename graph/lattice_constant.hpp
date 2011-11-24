@@ -237,10 +237,10 @@ namespace alps {
 		) {
 			// Assume the vertex desciptor is an unsigned integer type (since we want to use it as an index for a vector)
 			BOOST_STATIC_ASSERT((boost::is_unsigned<typename alps::graph_traits<Subgraph>::vertex_descriptor>::value));
-			assert(num_vertices(Subgraph) > 0);
+			assert(num_vertices(S) > 0);
 
 			BOOST_STATIC_ASSERT((boost::is_unsigned<typename alps::graph_traits<Graph>::vertex_descriptor>::value));
-			assert(num_vertices(graph) > 0);
+			assert(num_vertices(G) > 0);
 
 			typedef typename alps::graph_helper<Graph>::lattice_type lattice_type;
 			typedef typename alps::lattice_traits<lattice_type>::unit_cell_type::graph_type unit_cell_graph_type;
