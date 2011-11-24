@@ -77,10 +77,10 @@ namespace alps {
 
             public:
 
-                // TODO: make option REPLACE: create temp file and replace old on close
                 typedef enum { READ = 0x00, WRITE = 0x01, REPLACE = 0x02, COMPRESS = 0x04 } properties;
 
                 archive(std::string const & filename, std::size_t props = READ);
+				// TODO: remove that!
                 archive(param const & filename, std::size_t props = READ);
                 archive(archive const & arg);
 
@@ -140,7 +140,7 @@ namespace alps {
                 template<typename T> void write(
                       std::string path
                     , T const * value
-					, std::vector<std::size_t> size
+                    , std::vector<std::size_t> size
                     , std::vector<std::size_t> chunk = std::vector<std::size_t>()
                     , std::vector<std::size_t> offset = std::vector<std::size_t>()
                 ) const {
@@ -298,10 +298,16 @@ namespace alps {
             template<> struct is_continous< T >                                                                                                                        \
                 : public boost::true_type                                                                                                                              \
             {};                                                                                                                                                        \
+            template<> struct is_continous< T const >                                                                                                                  \
+                : public boost::true_type                                                                                                                              \
+            {};                                                                                                                                                        \
                                                                                                                                                                        \
             namespace detail {                                                                                                                                         \
                 template<> struct ALPS_DECL is_vectorizable< T > {                                                                                                     \
                     static bool apply(T const & value);                                                                                                                \
+                };                                                                                                                                                     \
+                template<> struct ALPS_DECL is_vectorizable< T const > {                                                                                               \
+                    static bool apply(T & value);                                                                                                                      \
                 };                                                                                                                                                     \
                                                                                                                                                                        \
                 template<> struct ALPS_DECL get_pointer< T > {                                                                                                         \

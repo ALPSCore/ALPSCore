@@ -1029,6 +1029,9 @@ namespace alps {
                 bool is_vectorizable< T >::apply(T const & value) {                                                                                                    \
                     return true;                                                                                                                                       \
                 }                                                                                                                                                      \
+                bool is_vectorizable< T const >::apply(T & value) {                                                                                                    \
+                    return true;                                                                                                                                       \
+                }                                                                                                                                                      \
             }                                                                                                                                                          \
                                                                                                                                                                        \
             void save(                                                                                                                                                 \
