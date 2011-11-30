@@ -140,8 +140,9 @@ Term<T>::Term(std::istream& in, bool negate) : is_negative_(negate)
   terms_.push_back(Factor<T>(in,is_inverse));
   while (true) {
     char c;
-    in >> c;
-    if (!in)
+    if (!(in>>c))
+      break;
+    if (in.eof())
       break;
     switch(c) {
       case '*':

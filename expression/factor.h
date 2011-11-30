@@ -141,7 +141,7 @@ SimpleFactor<T>::SimpleFactor(std::istream& in) : term_()
     if(in && c=='(')
       term_.reset(new Function<T>(in,name));
     else  {
-      if (in)
+      if (in && !in.eof())
         in.putback(c);
       term_.reset(new Symbol<T>(name));
     }

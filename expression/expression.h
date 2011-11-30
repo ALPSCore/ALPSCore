@@ -214,7 +214,8 @@ bool Expression<T>::parse(std::istream& is)
     is.putback(c);
   terms_.push_back(Term<T>(is,negate));
   while(true) {
-    is >> c;
+    if(!(is >> c))
+      return true;
     if (is.eof())
       return true;
     if (c=='-')
