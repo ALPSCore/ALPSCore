@@ -34,7 +34,7 @@
 
 namespace alps {
 
-    ALPS_DECL class mcsignal{
+     class ALPS_DECL mcsignal{
 
         public:
 

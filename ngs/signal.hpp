@@ -34,7 +34,7 @@
 
 namespace alps {
 
-    class signal{
+    class ALPS_DECL signal{
 
         public:
 

@@ -65,61 +65,61 @@ namespace alps {
 
         }
 
-        class RealObservable : public detail::ObservableWapper {
+        class ALPS_DECL RealObservable : public detail::ObservableWapper {
             public:
                 RealObservable(std::string const & name, uint32_t binnum = 0): ObservableWapper(name,binnum) {}
         };
 
-        alps::mcobservables & operator<< (alps::mcobservables & set, RealObservable const & obs);
+        ALPS_DECL alps::mcobservables & operator<< (alps::mcobservables & set, RealObservable const & obs);
 
-        class RealVectorObservable : public detail::ObservableWapper {
+        class ALPS_DECL RealVectorObservable : public detail::ObservableWapper {
             public:
                 RealVectorObservable(std::string const & name, uint32_t binnum = 0): ObservableWapper(name,binnum) {}
         };
 
-        alps::mcobservables & operator<< (alps::mcobservables & set, RealVectorObservable const & obs);
+        ALPS_DECL alps::mcobservables & operator<< (alps::mcobservables & set, RealVectorObservable const & obs);
 
-        class SimpleRealObservable : public detail::ObservableWapper {
+        class ALPS_DECL SimpleRealObservable : public detail::ObservableWapper {
             public:
                 SimpleRealObservable(std::string const & name): ObservableWapper(name) {}
         };
 
-        alps::mcobservables & operator<< (alps::mcobservables & set, SimpleRealObservable const & obs);
+        ALPS_DECL alps::mcobservables & operator<< (alps::mcobservables & set, SimpleRealObservable const & obs);
 
-        class SimpleRealVectorObservable : public detail::ObservableWapper {
+        class ALPS_DECL SimpleRealVectorObservable : public detail::ObservableWapper {
             public:
                 SimpleRealVectorObservable(std::string const & name): ObservableWapper(name) {}
         };
 
-        alps::mcobservables & operator<< (alps::mcobservables & set, SimpleRealVectorObservable const & obs);
+        ALPS_DECL alps::mcobservables & operator<< (alps::mcobservables & set, SimpleRealVectorObservable const & obs);
 
-        class SignedRealObservable : public detail::SignedObservableWapper {
+        class ALPS_DECL SignedRealObservable : public detail::SignedObservableWapper {
             public:
                 SignedRealObservable(std::string const & name, std::string const & sign = "Sign", uint32_t binnum = 0): SignedObservableWapper(name, sign, binnum) {}
         };
 
-        alps::mcobservables & operator<< (alps::mcobservables & set, SignedRealObservable const & obs);
+        ALPS_DECL alps::mcobservables & operator<< (alps::mcobservables & set, SignedRealObservable const & obs);
 
-        class SignedRealVectorObservable : public detail::SignedObservableWapper {
+        class ALPS_DECL SignedRealVectorObservable : public detail::SignedObservableWapper {
             public:
                 SignedRealVectorObservable(std::string const & name, std::string const & sign = "Sign", uint32_t binnum = 0): SignedObservableWapper(name, sign, binnum) {}
         };
 
-        alps::mcobservables & operator<< (alps::mcobservables & set, SignedRealVectorObservable const & obs);
+        ALPS_DECL alps::mcobservables & operator<< (alps::mcobservables & set, SignedRealVectorObservable const & obs);
 
-        class SignedSimpleRealObservable : public detail::SignedObservableWapper {
+        class ALPS_DECL SignedSimpleRealObservable : public detail::SignedObservableWapper {
             public:
                 SignedSimpleRealObservable(std::string const & name, std::string const & sign = "Sign"): SignedObservableWapper(name, sign) {}
         };
 
-        alps::mcobservables & operator<< (alps::mcobservables & set, SignedSimpleRealObservable const & obs);
+        ALPS_DECL alps::mcobservables & operator<< (alps::mcobservables & set, SignedSimpleRealObservable const & obs);
 
-        class SignedSimpleRealVectorObservable : public detail::SignedObservableWapper {
+        class ALPS_DECL SignedSimpleRealVectorObservable : public detail::SignedObservableWapper {
             public:
                 SignedSimpleRealVectorObservable(std::string const & name, std::string const & sign = "Sign"): SignedObservableWapper(name, sign) {}
         };
 
-        alps::mcobservables & operator<< (alps::mcobservables & set, SignedSimpleRealVectorObservable const & obs);
+        ALPS_DECL alps::mcobservables & operator<< (alps::mcobservables & set, SignedSimpleRealVectorObservable const & obs);
 
     };
 

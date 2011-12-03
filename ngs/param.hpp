@@ -40,7 +40,7 @@
 
 namespace alps {
 
-    class param {
+    class ALPS_DECL param {
 
         public:
 
