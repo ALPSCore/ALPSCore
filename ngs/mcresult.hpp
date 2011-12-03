@@ -50,7 +50,7 @@ namespace alps {
 
     }
 
-    ALPS_DECL class mcresult;
+    class ALPS_DECL mcresult;
 
     ALPS_DECL mcresult sin(mcresult rhs);
     ALPS_DECL mcresult cos(mcresult rhs);
@@ -88,7 +88,7 @@ namespace alps {
     #undef ALPS_NGS_MCRESULT_FREE_OPERATOR_DECL
     #undef ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_DECL
 
-    ALPS_DECL class mcresult {
+    class ALPS_DECL mcresult {
 
         public:
 
