@@ -38,7 +38,7 @@
 
 namespace alps {
 
-    class mcobservable {
+    class ALPS_DECL mcobservable {
 
         public:
 

@@ -37,7 +37,7 @@
 
 namespace alps {
 
-    class mcresults : public std::map<std::string, mcresult> {
+    class ALPS_DECL mcresults : public std::map<std::string, mcresult> {
 
         public: 
 

@@ -39,7 +39,7 @@
 
 namespace alps {
 
-    class mcobservables : public std::map<std::string, mcobservable> {
+    class ALPS_DECL mcobservables : public std::map<std::string, mcobservable> {
 
         public: 
 
