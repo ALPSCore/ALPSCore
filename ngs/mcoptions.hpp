@@ -34,7 +34,7 @@
 
 namespace alps {
 
-    class mcoptions {
+    ALPS_DECL class mcoptions {
 
         public:
 
