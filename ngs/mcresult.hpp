@@ -52,35 +52,35 @@ namespace alps {
 
     class mcresult;
 
-    mcresult sin(mcresult rhs);
-    mcresult cos(mcresult rhs);
-    mcresult tan(mcresult rhs);
-    mcresult sinh(mcresult rhs);
-    mcresult cosh(mcresult rhs);
-    mcresult tanh(mcresult rhs);
-    mcresult asin(mcresult rhs);
-    mcresult acos(mcresult rhs);
-    mcresult atan(mcresult rhs);
-    mcresult asinh(mcresult rhs);
-    mcresult acosh(mcresult rhs);
-    mcresult atanh(mcresult rhs);
-    mcresult abs(mcresult rhs);
-    mcresult sq(mcresult rhs);
-    mcresult cb(mcresult rhs);
-    mcresult sqrt(mcresult rhs);
-    mcresult cbrt(mcresult rhs);
-    mcresult exp(mcresult rhs);
-    mcresult log(mcresult rhs);
+    ALPS_DECL mcresult sin(mcresult rhs);
+    ALPS_DECL mcresult cos(mcresult rhs);
+    ALPS_DECL mcresult tan(mcresult rhs);
+    ALPS_DECL mcresult sinh(mcresult rhs);
+    ALPS_DECL mcresult cosh(mcresult rhs);
+    ALPS_DECL mcresult tanh(mcresult rhs);
+    ALPS_DECL mcresult asin(mcresult rhs);
+    ALPS_DECL mcresult acos(mcresult rhs);
+    ALPS_DECL mcresult atan(mcresult rhs);
+    ALPS_DECL mcresult asinh(mcresult rhs);
+    ALPS_DECL mcresult acosh(mcresult rhs);
+    ALPS_DECL mcresult atanh(mcresult rhs);
+    ALPS_DECL mcresult abs(mcresult rhs);
+    ALPS_DECL mcresult sq(mcresult rhs);
+    ALPS_DECL mcresult cb(mcresult rhs);
+    ALPS_DECL mcresult sqrt(mcresult rhs);
+    ALPS_DECL mcresult cbrt(mcresult rhs);
+    ALPS_DECL mcresult exp(mcresult rhs);
+    ALPS_DECL mcresult log(mcresult rhs);
 
-    mcresult pow(mcresult rhs, double exponent);
+    ALPS_DECL mcresult pow(mcresult rhs, double exponent);
     
     #define ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_DECL(OP, T)                             \
-        mcresult OP(mcresult const & lhs, T const & rhs);                               \
-        mcresult OP( T const & lhs, mcresult const & rhs);
+        ALPS_DECL mcresult OP(mcresult const & lhs, T const & rhs);                     \
+        ALPS_DECL mcresult OP( T const & lhs, mcresult const & rhs);
     #define ALPS_NGS_MCRESULT_FREE_OPERATOR_DECL(OP)                                    \
-        ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_DECL(OP, double)                            \
-        ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_DECL(OP, std::vector<double>)               \
-        mcresult OP (mcresult const & lhs, mcresult const & rhs);
+        ALPS_DECL ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_DECL(OP, double)                  \
+        ALPS_DECL ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_DECL(OP, std::vector<double>)     \
+        ALPS_DECL mcresult OP (mcresult const & lhs, mcresult const & rhs);
     ALPS_NGS_MCRESULT_FREE_OPERATOR_DECL(operator+)
     ALPS_NGS_MCRESULT_FREE_OPERATOR_DECL(operator-)
     ALPS_NGS_MCRESULT_FREE_OPERATOR_DECL(operator*)
@@ -88,7 +88,7 @@ namespace alps {
     #undef ALPS_NGS_MCRESULT_FREE_OPERATOR_DECL
     #undef ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_DECL
 
-    class mcresult {
+    ALPS_DECL class mcresult {
 
         public:
 
@@ -197,7 +197,7 @@ namespace alps {
 
     };
 
-    std::ostream & operator<<(std::ostream & os, mcresult const & res);
+    ALPS_DECL std::ostream & operator<<(std::ostream & os, mcresult const & res);
 
 }
 

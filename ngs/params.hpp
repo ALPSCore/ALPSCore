@@ -53,7 +53,7 @@ namespace alps {
 
     }
 
-    class params {
+    ALPS_DECL class params {
 
         public:
 
