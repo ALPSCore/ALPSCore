@@ -80,7 +80,7 @@ namespace alps {
     #define ALPS_NGS_MCRESULT_FREE_OPERATOR_DECL(OP)                                    \
         ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_DECL(OP, double)                  \
         ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_DECL(OP, std::vector<double>)     \
-        mcresult OP (mcresult const & lhs, mcresult const & rhs);
+        ALPS_DECL mcresult OP (mcresult const & lhs, mcresult const & rhs);
     ALPS_NGS_MCRESULT_FREE_OPERATOR_DECL(operator+)
     ALPS_NGS_MCRESULT_FREE_OPERATOR_DECL(operator-)
     ALPS_NGS_MCRESULT_FREE_OPERATOR_DECL(operator*)
@@ -92,35 +92,35 @@ namespace alps {
 
         public:
 
-            friend mcresult sin(mcresult rhs);
-            friend mcresult cos(mcresult rhs);
-            friend mcresult tan(mcresult rhs);
-            friend mcresult sinh(mcresult rhs);
-            friend mcresult cosh(mcresult rhs);
-            friend mcresult tanh(mcresult rhs);
-            friend mcresult asin(mcresult rhs);
-            friend mcresult acos(mcresult rhs);
-            friend mcresult atan(mcresult rhs);
-            friend mcresult asinh(mcresult rhs);
-            friend mcresult acosh(mcresult rhs);
-            friend mcresult atanh(mcresult rhs);
-            friend mcresult abs(mcresult rhs);
-            friend mcresult sq(mcresult rhs);
-            friend mcresult cb(mcresult rhs);
-            friend mcresult sqrt(mcresult rhs);
-            friend mcresult cbrt(mcresult rhs);
-            friend mcresult exp(mcresult rhs);
-            friend mcresult log(mcresult rhs);
+            friend ALPS_DECL mcresult sin(mcresult rhs);
+            friend ALPS_DECL mcresult cos(mcresult rhs);
+            friend ALPS_DECL mcresult tan(mcresult rhs);
+            friend ALPS_DECL mcresult sinh(mcresult rhs);
+            friend ALPS_DECL mcresult cosh(mcresult rhs);
+            friend ALPS_DECL mcresult tanh(mcresult rhs);
+            friend ALPS_DECL mcresult asin(mcresult rhs);
+            friend ALPS_DECL mcresult acos(mcresult rhs);
+            friend ALPS_DECL mcresult atan(mcresult rhs);
+            friend ALPS_DECL mcresult asinh(mcresult rhs);
+            friend ALPS_DECL mcresult acosh(mcresult rhs);
+            friend ALPS_DECL mcresult atanh(mcresult rhs);
+            friend ALPS_DECL mcresult abs(mcresult rhs);
+            friend ALPS_DECL mcresult sq(mcresult rhs);
+            friend ALPS_DECL mcresult cb(mcresult rhs);
+            friend ALPS_DECL mcresult sqrt(mcresult rhs);
+            friend ALPS_DECL mcresult cbrt(mcresult rhs);
+            friend ALPS_DECL mcresult exp(mcresult rhs);
+            friend ALPS_DECL mcresult log(mcresult rhs);
 
             friend mcresult pow(mcresult rhs, double exponent);
 
             #define ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_FRIEND(OP, T)                            \
-                friend mcresult OP(mcresult const & lhs, T const & rhs);                         \
-                friend mcresult OP( T const & lhs, mcresult const & rhs);
+                friend ALPS_DECL mcresult OP(mcresult const & lhs, T const & rhs);                         \
+                friend ALPS_DECL mcresult OP( T const & lhs, mcresult const & rhs);
             #define ALPS_NGS_MCRESULT_FREE_OPERATOR_FRIEND(OP)                                   \
                 ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_FRIEND(OP, double)                           \
                 ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_FRIEND(OP, std::vector<double>)              \
-                friend mcresult OP (mcresult const & lhs, mcresult const & rhs);
+                friend ALPS_DECL mcresult OP (mcresult const & lhs, mcresult const & rhs);
             ALPS_NGS_MCRESULT_FREE_OPERATOR_FRIEND(operator+)
             ALPS_NGS_MCRESULT_FREE_OPERATOR_FRIEND(operator-)
             ALPS_NGS_MCRESULT_FREE_OPERATOR_FRIEND(operator*)

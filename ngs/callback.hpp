@@ -38,7 +38,7 @@ namespace alps {
 
     #ifndef ALPS_NGS_SINGLE_THREAD
 
-        ALPS_DECL class threaded_callback_wrapper {
+        class ALPS_DECL threaded_callback_wrapper {
 
             public:
 
