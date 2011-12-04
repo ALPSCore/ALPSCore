@@ -78,9 +78,9 @@ namespace alps {
         ALPS_DECL mcresult OP(mcresult const & lhs, T const & rhs);                     \
         ALPS_DECL mcresult OP( T const & lhs, mcresult const & rhs);
     #define ALPS_NGS_MCRESULT_FREE_OPERATOR_DECL(OP)                                    \
-        ALPS_DECL ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_DECL(OP, double)                  \
-        ALPS_DECL ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_DECL(OP, std::vector<double>)     \
-        ALPS_DECL mcresult OP (mcresult const & lhs, mcresult const & rhs);
+        ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_DECL(OP, double)                  \
+        ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_DECL(OP, std::vector<double>)     \
+        mcresult OP (mcresult const & lhs, mcresult const & rhs);
     ALPS_NGS_MCRESULT_FREE_OPERATOR_DECL(operator+)
     ALPS_NGS_MCRESULT_FREE_OPERATOR_DECL(operator-)
     ALPS_NGS_MCRESULT_FREE_OPERATOR_DECL(operator*)
