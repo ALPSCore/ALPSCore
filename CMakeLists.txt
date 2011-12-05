@@ -101,6 +101,10 @@ if(NOT WIN32 AND NOT APPLE)
     VERSION "${ALPS_VERSION_MAJOR}.${ALPS_VERSION_MINOR}.${ALPS_VERSION_PATCH}" )
 endif(NOT WIN32 AND NOT APPLE)
 
+#boost librt linking
+if(NOT WIN32 AND NOT APPLE)
+    set(ALPS_LINK_LIBS ${ALPS_LINK_LIBS} rt)
+endif(NOT WIN32 AND NOT APPLE)
 #######################################################################
 # install
 #######################################################################
