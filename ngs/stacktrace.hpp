@@ -28,14 +28,16 @@
 #ifndef ALPS_NGS_STACKTRACE_HPP
 #define ALPS_NGS_STACKTRACE_HPP
 
-#ifndef ALPS_NGS_MAX_FRAMES
-    #define ALPS_NGS_MAX_FRAMES 63
-#endif
-
 #include <alps/ngs/config.hpp>
 
-#include <sstream>
+#include <string>
 
-ALPS_DECL void stacktrace(std::ostringstream &);
+namespace alps {
+	namespace ngs {
+
+		ALPS_DECL std::string stacktrace();
+
+	}
+}
 
 #endif

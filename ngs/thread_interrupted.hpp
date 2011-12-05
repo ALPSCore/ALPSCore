@@ -25,73 +25,21 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/ngs/mcsignal.hpp>
-#include <alps/ngs/stacktrace.hpp>
-#include <alps/ngs/hdf5.hpp>
+#if defined(ALPS_NGS_SINGLE_THREAD)
 
-#include <cstring>
-#include <sstream>
-#include <cstdlib>
-#include <iostream>
-#include <signal.h>
+#ifndef ALPS_NGS_THREAD_INTERRUPTED_HPP
+#define ALPS_NGS_THREAD_INTERRUPTED_HPP
 
-namespace alps {
+namespace boost {
 
-    mcsignal::mcsignal() {
-        #if not ( defined BOOST_MSVC || defined ALPS_NGS_NO_SIGNALS )
-            static bool initialized;
-            if (!initialized) {
-                initialized = true;
-
-                static struct sigaction action;
-                memset(&action, 0, sizeof(action));
-                action.sa_handler = &mcsignal::slot;
-                sigaction(SIGINT, &action, NULL);
-                sigaction(SIGTERM, &action, NULL);
-                sigaction(SIGXCPU, &action, NULL);
-                sigaction(SIGQUIT, &action, NULL);
-                sigaction(SIGUSR1, &action, NULL);
-                sigaction(SIGUSR2, &action, NULL);
-                sigaction(SIGSTOP, &action, NULL);
-                sigaction(SIGKILL, &action, NULL);
-
-                static struct sigaction segv;
-                memset(&segv, 0, sizeof(segv));
-                segv.sa_handler = &mcsignal::segfault;
-                sigaction(SIGSEGV, &segv, NULL);
-                sigaction(SIGBUS, &segv, NULL);
-            }
-        #endif
-    }
-
-    bool mcsignal::empty() {
-        return !signals_.size();
-    }
-
-    int mcsignal::top() {
-        return signals_.back();
-    }
-
-    void mcsignal::pop() {
-        return signals_.pop_back();
-    }
-
-    void mcsignal::slot(int signal) {
-        std::cerr << "Received signal " << signal << std::endl;
-        signals_.push_back(signal);
-    }
-
-    void mcsignal::segfault(int signal) {
-        std::cerr << "Abort (" << signal << ", see 'man signal') in:" << std::endl;
-        std::cerr << ngs::stacktrace();
-        signals_.push_back(signal);
-        hdf5::archive::abort();
-        std::abort();
-        goto grats_you_found_the_easter_eggs;
-        grats_you_found_the_easter_eggs:
-        ; //svn blame will tell you to whom you need to report it ;)
-    }
-
-    std::vector<int> mcsignal::signals_;
+    struct thread_interrupted {};
 
 }
+
+#endif
+
+#else
+
+	#include <boost/thread/exceptions.hpp>
+
+#endif

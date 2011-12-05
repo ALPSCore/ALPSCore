@@ -57,12 +57,11 @@
 
 #define ALPS_NGS_THROW_ERROR(error, message)                                                                                                   \
     {                                                                                                                                          \
-        std::ostringstream buffer;                                                                                                             \
-        buffer << "Error in " << __FILE__ << " on " << ALPS_NGS_STRINGIFY(__LINE__) << " in " << __FUNCTION__ << ":" << std::endl              \
-                << message << std::endl                                                                                                        \
-                << "stack trace:" << std::endl;                                                                                                \
-        stacktrace(buffer);                                                                                                                    \
-        throw ( error (buffer.str()));                                                                                                         \
+        throw ( error ( std::string("Error in ") + __FILE__ + " on " + ALPS_NGS_STRINGIFY(__LINE__) + " in " + __FUNCTION__ + ":\n"            \
+              + (message) + "\n"                                                                                                               \
+              + "stack trace:\n"                                                                                                               \
+              + ::alps::ngs::stacktrace()                                                                                                      \
+        ));                                                                                                                                    \
     }
 
 #define ALPS_NGS_THROW_OUT_OF_RANGE(message)                                                                                                   \

@@ -97,17 +97,17 @@ namespace alps {
     }
 
     bool base::complete_callback(boost::function<bool ()> const & stop_callback) {
-        boost::posix_time::ptime local_time = boost::posix_time::second_clock::local_time();
-        if (local_time > check_time) {
+        boost::chrono::high_resolution_clock::time_point now_time_point = boost::chrono::high_resolution_clock::now();
+        if (now_time_point - last_check_time_point > check_duration) {
             fraction = fraction_completed();
-            next_check = boost::posix_time::seconds(std::min(
-                2. * next_check.total_seconds(),
+            check_duration = boost::chrono::duration<double>(std::min(
+                2. *  check_duration.count(),
                 std::max(
-                      double(next_check.total_seconds())
-                    , 0.8 * (local_time - start_time).total_seconds() / fraction * (1 - fraction)
+                      double(check_duration.count())
+                    , 0.8 * (1 - fraction) / fraction * boost::chrono::duration_cast<boost::chrono::duration<double> >(now_time_point - start_time_point).count()
                 )
             ));
-            check_time = local_time + next_check;
+            last_check_time_point = now_time_point;
         }
         return (stop_callback() || fraction >= 1.);
     }

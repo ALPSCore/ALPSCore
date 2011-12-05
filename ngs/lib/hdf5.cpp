@@ -38,10 +38,6 @@
 #include <iostream>
 #include <typeinfo>
 
-#ifndef ALPS_HDF5_SZIP_BLOCK_SIZE
-    #define ALPS_HDF5_SZIP_BLOCK_SIZE 32
-#endif
-
 #define ALPS_NGS_HDF5_FOREACH_NATIVE_TYPE_INTEGRAL(CALLBACK, ARG)                                                                                                  \
     CALLBACK(char, ARG)                                                                                                                                            \
     CALLBACK(signed char, ARG)                                                                                                                                     \

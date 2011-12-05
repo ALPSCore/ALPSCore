@@ -36,64 +36,60 @@
 #include <signal.h>
 
 namespace alps {
+    namespace ngs {
 
-    signal::signal() {
-        #if not ( defined BOOST_MSVC || defined ALPS_NGS_NO_SIGNALS )
-            static bool initialized;
-            if (!initialized) {
-                initialized = true;
+        signal::signal() {
+            #if not ( defined BOOST_MSVC || defined ALPS_NGS_NO_SIGNALS )
+                static bool initialized;
+                if (!initialized) {
+                    initialized = true;
 
-                static struct sigaction action;
-                memset(&action, 0, sizeof(action));
-                action.sa_handler = &signal::slot;
-                sigaction(SIGINT, &action, NULL);
-                sigaction(SIGTERM, &action, NULL);
-                sigaction(SIGXCPU, &action, NULL);
-                sigaction(SIGQUIT, &action, NULL);
-                sigaction(SIGUSR1, &action, NULL);
-                sigaction(SIGUSR2, &action, NULL);
-                sigaction(SIGSTOP, &action, NULL);
-                sigaction(SIGKILL, &action, NULL);
+                    static struct sigaction action;
+                    memset(&action, 0, sizeof(action));
+                    action.sa_handler = &signal::slot;
+                    sigaction(SIGINT, &action, NULL);
+                    sigaction(SIGTERM, &action, NULL);
+                    sigaction(SIGXCPU, &action, NULL);
+                    sigaction(SIGQUIT, &action, NULL);
+                    sigaction(SIGUSR1, &action, NULL);
+                    sigaction(SIGUSR2, &action, NULL);
+                    sigaction(SIGSTOP, &action, NULL);
+                    sigaction(SIGKILL, &action, NULL);
 
-                static struct sigaction segv;
-                memset(&segv, 0, sizeof(segv));
-                segv.sa_handler = &signal::segfault;
-                sigaction(SIGSEGV, &segv, NULL);
-                sigaction(SIGBUS, &segv, NULL);
-            }
-        #endif
+                    static struct sigaction segv;
+                    memset(&segv, 0, sizeof(segv));
+                    segv.sa_handler = &signal::segfault;
+                    sigaction(SIGSEGV, &segv, NULL);
+                    sigaction(SIGBUS, &segv, NULL);
+                }
+            #endif
+        }
+
+        bool signal::empty() {
+            return !signals_.size();
+        }
+
+        int signal::top() {
+            return signals_.back();
+        }
+
+        void signal::pop() {
+            return signals_.pop_back();
+        }
+
+        void signal::slot(int signal) {
+            std::cerr << "Received signal " << signal << std::endl;
+            signals_.push_back(signal);
+        }
+
+        void signal::segfault(int signal) {
+            std::cerr << "Abort by signal " << signal << ":" << ngs::stacktrace() << std::endl;
+            signals_.push_back(signal);
+            hdf5::archive::abort();
+            std::abort();
+        }
+
+        std::vector<int> signal::signals_;
+
     }
-
-    bool signal::empty() {
-        return !signals_.size();
-    }
-
-    int signal::top() {
-        return signals_.back();
-    }
-
-    void signal::pop() {
-        return signals_.pop_back();
-    }
-
-    void signal::slot(int signal) {
-        std::cerr << "Received signal " << signal << std::endl;
-        signals_.push_back(signal);
-    }
-
-    void signal::segfault(int signal) {
-        std::ostringstream buffer;
-        buffer << "Abort (" << signal << ", see 'man signal') in:" << std::endl;
-        stacktrace(buffer);
-        std::cerr << buffer.str();
-        signals_.push_back(signal);
-        hdf5::archive::abort();
-        std::abort();
-        goto grats_you_found_the_easter_eggs;
-        grats_you_found_the_easter_eggs:
-        ; //svn blame will tell you to whom you need to report it ;)
-    }
-
-    std::vector<int> signal::signals_;
-
 }

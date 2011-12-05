@@ -25,8 +25,8 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_BOOST_HPP
-#define ALPS_NGS_BOOST_HPP
+#ifndef ALPS_NGS_BOOST_MPI_HPP
+#define ALPS_NGS_BOOST_MPI_HPP
 
 #ifdef ALPS_HAVE_MPI
 

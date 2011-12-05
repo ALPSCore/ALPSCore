@@ -33,27 +33,29 @@
 #include <vector>
 
 namespace alps {
+    namespace ngs {
 
-    class ALPS_DECL signal{
+        class ALPS_DECL signal{
 
-        public:
+            public:
 
-            signal();
+                signal();
 
-            bool empty();
+                bool empty();
 
-            int top();
+                int top();
 
-            void pop();
+                void pop();
 
-            static void slot(int signal);
+                static void slot(int signal);
 
-            static void segfault(int signal);
+                static void segfault(int signal);
 
-        private:
+            private:
 
-            static std::vector<int> signals_;
-    };
+                static std::vector<int> signals_;
+        };
+    }
 }
 
 #endif

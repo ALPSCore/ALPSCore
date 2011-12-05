@@ -30,8 +30,8 @@
 #define ALPS_NGS_MCRESULT_IMPL_DERIVED_IPP
 
 #include <alps/ngs/hdf5.hpp>
-#include <alps/ngs/boost.hpp>
 #include <alps/ngs/macros.hpp>
+#include <alps/ngs/boost_mpi.hpp>
 #include <alps/ngs/short_print.hpp>
 
 #include <alps/alea/mcdata.hpp>

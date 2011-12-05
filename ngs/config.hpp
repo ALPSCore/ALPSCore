@@ -40,10 +40,14 @@
 // #define ALPS_HDF5_CLOSE_GREEDY
 
 // blocksize in compressed hdf5. Default: 32
-// #define ALPS_HDF5_SZIP_BLOCK_SIZE 32
+#ifndef ALPS_HDF5_SZIP_BLOCK_SIZE
+	#define ALPS_HDF5_SZIP_BLOCK_SIZE 32
+#endif
 
 // maximal number of stack frames displayed in stacktrace. Default 63
-// #define ALPS_NGS_MAX_FRAMES 63
+#ifndef ALPS_NGS_MAX_FRAMES
+	#define ALPS_NGS_MAX_FRAMES 63
+#endif
 
 // prevent the signal object from registering signals
 #ifdef BOOST_MSVC

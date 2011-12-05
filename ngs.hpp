@@ -31,23 +31,26 @@
 
 #include <alps/ngs/api.hpp>
 #include <alps/ngs/base.hpp>
-#include <alps/ngs/boost.hpp>
-#include <alps/ngs/mcbase.hpp>
 #include <alps/ngs/signal.hpp>
 #include <alps/ngs/convert.hpp>
 #include <alps/ngs/parallel.hpp>
 #include <alps/ngs/callback.hpp>
+#include <alps/ngs/boost_mpi.hpp>
+#include <alps/ngs/multithread.hpp>
+#include <alps/ngs/short_print.hpp>
+#include <alps/ngs/thread_interrupted.hpp>
+#include <alps/ngs/observablewrappers.hpp>
+
+// TODO: remove these deprecated headers:
+#include <alps/ngs/mcbase.hpp>
 #include <alps/ngs/mcmpisim.hpp>
 #include <alps/ngs/mcparams.hpp>
 #include <alps/ngs/mcsignal.hpp>
 #include <alps/ngs/mcresult.hpp>
 #include <alps/ngs/mcresults.hpp>
 #include <alps/ngs/mcoptions.hpp>
-#include <alps/ngs/multithread.hpp>
-#include <alps/ngs/short_print.hpp>
 #include <alps/ngs/mcobservable.hpp>
 #include <alps/ngs/mcobservables.hpp>
 #include <alps/ngs/mcthreadedsim.hpp>
-#include <alps/ngs/observablewrappers.hpp>
 
 #endif

@@ -29,19 +29,18 @@
 #define ALPS_NGS_BASE_HPP
 
 #include <alps/ngs/hdf5.hpp>
+#include <alps/ngs/config.hpp>
 #include <alps/ngs/params.hpp>
 #include <alps/ngs/mcresults.hpp>
 #include <alps/ngs/mcobservables.hpp>
 
-#include <alps/ngs/config.hpp>
+#include <alps/random/mersenne_twister.hpp>
 
+#include <boost/chrono.hpp>
 #include <boost/function.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/random/uniform_real.hpp>
-#include <alps/random/mersenne_twister.hpp>
 #include <boost/random/variate_generator.hpp>
-#include <boost/date_time/gregorian/gregorian.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <vector>
 #include <string>
@@ -61,9 +60,9 @@ namespace alps {
                   // TODO: this ist not the best solution - any idea?
                 , random(boost::mt19937(p.value_or_default("SEED", 42) + seed_offset), boost::uniform_real<>())
                 , fraction(0.)
-                , next_check(8)
-                , start_time(boost::posix_time::second_clock::local_time())
-                , check_time(boost::posix_time::second_clock::local_time() + boost::posix_time::seconds(next_check))
+                , check_duration(8.)
+                , start_time_point(boost::chrono::high_resolution_clock::now())
+                , last_check_time_point(boost::chrono::high_resolution_clock::now())
             {}
 
             virtual ~base() {}
@@ -107,9 +106,9 @@ namespace alps {
         private:
 
             double fraction;
-            boost::posix_time::seconds next_check;
-            boost::posix_time::ptime start_time;
-            boost::posix_time::ptime check_time;
+            boost::chrono::duration<double> check_duration;
+            boost::chrono::high_resolution_clock::time_point start_time_point;
+            boost::chrono::high_resolution_clock::time_point last_check_time_point;
 
     };
 }
