@@ -37,6 +37,7 @@
 
 #include <iostream>
 #include <typeinfo>
+#include <sstream>
 
 #define ALPS_NGS_HDF5_FOREACH_NATIVE_TYPE_INTEGRAL(CALLBACK, ARG)                                                                                                  \
     CALLBACK(char, ARG)                                                                                                                                            \

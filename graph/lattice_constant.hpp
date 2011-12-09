@@ -167,6 +167,46 @@ namespace alps {
 				matches.insert(moved_match);
 			}
 
+			template<typename Subgraph, typename Graph> bool lattice_constant_vertex_equal(
+				  typename boost::graph_traits<Subgraph>::vertex_descriptor const & s
+				, typename boost::graph_traits<Graph>::vertex_descriptor const & g
+				, Subgraph const & S
+				, Graph const & G
+				, boost::mpl::true_
+			) {
+				return get(boost::vertex_name_t(), S)[s] == get(boost::vertex_name_t(), G)[g];
+			} 
+
+			template<typename Subgraph, typename Graph> bool lattice_constant_vertex_equal(
+				  typename boost::graph_traits<Subgraph>::vertex_descriptor const & s
+				, typename boost::graph_traits<Graph>::vertex_descriptor const & g
+				, Subgraph const & S
+				, Graph const & G
+				, boost::mpl::false_
+			) {
+				return true;
+			}
+
+			template<typename Subgraph, typename Graph> bool lattice_constant_edge_equal(
+				  typename boost::graph_traits<Subgraph>::edge_descriptor const & s_e
+				, typename boost::graph_traits<Graph>::edge_descriptor const & g_e
+				, Subgraph const & S
+				, Graph const & G
+				, boost::mpl::true_
+			) {
+				return get(boost::edge_name_t(), S)[s_e] == get(boost::edge_name_t(), G)[g_e];
+			}
+
+			template<typename Subgraph, typename Graph> bool lattice_constant_edge_equal(
+				  typename boost::graph_traits<Subgraph>::edge_descriptor const & s_e
+				, typename boost::graph_traits<Graph>::edge_descriptor const & g_e
+				, Subgraph const & S
+				, Graph const & G
+				, boost::mpl::false_
+			) {
+				return true;
+			}
+
 			template<typename Subgraph, typename Graph> void lattice_constant_walker(
 				  typename boost::graph_traits<Subgraph>::vertex_descriptor const & s
 				, typename boost::graph_traits<Graph>::vertex_descriptor const & g
@@ -193,17 +233,29 @@ namespace alps {
 
 				if (out_degree(s, S) > out_degree(g, G))
 					return;
+				if (!lattice_constant_vertex_equal(
+					  s
+					, g
+					, S
+					, G
+					, typename detail::has_coloring<typename boost::vertex_property_type<Graph>::type>::type())
+				)
+					return;
 				typename boost::graph_traits<Subgraph>::adjacency_iterator s_ai, s_ae;
 				for (tie(s_ai, s_ae) = adjacent_vertices(s, S); s_ai != s_ae; ++s_ai)
 					if (pinning[*s_ai] != num_vertices(G)) {
 						typename boost::graph_traits<Graph>::edge_descriptor e;
 						bool is_e;
 						tie(e, is_e) = edge(g, pinning[*s_ai], G);
-						// TODO: check colored graphs ...
-						if (!is_e)
+						if (!is_e or !lattice_constant_edge_equal(
+							  edge(s, *s_ai, S).first
+							, e
+							, S
+							, G
+							, typename detail::has_coloring<typename boost::edge_property_type<Graph>::type>::type())
+						)
 							return;
 					}
-				// TODO: check colored graphs ...
 				visited.insert(g);
 				match[I[s]].push_back(g);
 				pinning[s] = g;

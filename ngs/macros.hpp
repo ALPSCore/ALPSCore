@@ -30,7 +30,6 @@
 
 #include <alps/ngs/stacktrace.hpp>
 
-#include <sstream>
 #include <stdexcept>
 
 #define ALPS_NGS_STRINGIFY(arg) ALPS_NGS_STRINGIFY_HELPER(arg)
