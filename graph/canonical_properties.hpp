@@ -44,6 +44,8 @@
 #include <boost/type_traits/is_same.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
 
+#include <alps/lattice/graphproperties.h>
+
 #include <map>
 #include <set>
 #include <vector>
@@ -51,8 +53,9 @@
 
 namespace alps {
 	namespace graph {
-	
-		// pi = (V1, V2, ..., Vr), Vi = (n1, n2, ..., nk), ni element of G
+
+		
+        // pi = (V1, V2, ..., Vr), Vi = (n1, n2, ..., nk), ni element of G
 		template<typename Graph> struct partition_type {
 			typedef std::vector<std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> > type;
 		};
@@ -142,8 +145,8 @@ namespace alps {
 
 		// comparable graph label
 		// vertex coloring tag: vertex_name_t
-		// edge coloring tag: edge_name_t
-		// TODO: only specialize to vertex_name_t and edge_name_t, not to any properties
+		// edge coloring tag: edge_type_t
+		// TODO: only specialize to vertex_name_t and edge_type_t, not to any properties
 		template<typename Graph> struct graph_label {
 			typedef typename detail::graph_label_helper<
 				  Graph
@@ -387,16 +390,16 @@ namespace alps {
 				, Graph const & G
 			) {
 				using boost::get;
-				std::set<typename boost::property_map<Graph, boost::edge_name_t>::type::value_type> colors;
+				std::set<typename boost::property_map<Graph, alps::edge_type_t>::type::value_type> colors;
 				typename boost::graph_traits<Graph>::edge_iterator it, end;
 				std::vector<typename boost::graph_traits<Graph>::edge_descriptor> edge_list;
 				for (boost::tie(it, end) = edges(G); it != end; ++it) {
-					colors.insert(get(boost::edge_name_t(), G)[*it]);
+					colors.insert(get(alps::edge_type_t(), G)[*it]);
 					edge_list.push_back(*it);
 				}
 				get<Base + 1>(l).clear();
 				for (
-					  typename std::set<typename boost::property_map<Graph, boost::edge_name_t>::type::value_type>::const_iterator jt = colors.begin()
+					  typename std::set<typename boost::property_map<Graph, alps::edge_type_t>::type::value_type>::const_iterator jt = colors.begin()
 					; jt != colors.end()
 					; ++jt
 				)
@@ -406,7 +409,7 @@ namespace alps {
 				// TODO: just make one row per orbit, not per vertex
 				get<Base>(l).resize(num_edges(G) * get<Base + 1>(l).size());
 				for (typename std::vector<typename boost::graph_traits<Graph>::edge_descriptor>::const_iterator jt = edge_list.begin(); jt != edge_list.end(); ++jt)
-					get<Base>(l)[(std::find(get<Base + 1>(l).begin(), get<Base + 1>(l).end(), get(boost::edge_name_t(), G)[*jt]) - get<Base + 1>(l).begin()) * num_edges(G) + (jt - edge_list.begin())] = true;
+					get<Base>(l)[(std::find(get<Base + 1>(l).begin(), get<Base + 1>(l).end(), get(alps::edge_type_t(), G)[*jt]) - get<Base + 1>(l).begin()) * num_edges(G) + (jt - edge_list.begin())] = true;
 			}
 			
 			// Not colored graph label
@@ -547,6 +550,10 @@ namespace alps {
 			, typename partition_type<Graph>::type
             > type;
         };
+
+        // Enum to select the canonical properties with boost::get<enum>
+        // TODO should we put this in some struct/namespace 'properties'?
+        enum { ordering, label, partition };    
 
 		// McKay’s canonical isomorph function Cm(G) is deﬁned to be
 		// Cm(G) = max{ Gpi: (pi, nu) is a leaf of T(G) }

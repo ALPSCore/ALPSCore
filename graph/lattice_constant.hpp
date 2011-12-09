@@ -194,7 +194,7 @@ namespace alps {
 				, Graph const & G
 				, boost::mpl::true_
 			) {
-				return get(boost::edge_name_t(), S)[s_e] == get(boost::edge_name_t(), G)[g_e];
+				return get(alps::edge_type_t(), S)[s_e] == get(alps::edge_type_t(), G)[g_e];
 			}
 
 			template<typename Subgraph, typename Graph> bool lattice_constant_edge_equal(
