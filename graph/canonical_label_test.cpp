@@ -31,10 +31,8 @@ bool colored_edges_test()
     
     graph_type i(g);
     edge_color_map_type i_edge_color = get(alps::edge_type_t(),i);
-    e = edge(1,2,i).first;
-    boost::put(i_edge_color,e,1);
     e = edge(2,3,i).first;
-    boost::put(i_edge_color,e,1);
+    boost::put(i_edge_color,e,2);
 
     graph_type j(h);
     edge_color_map_type j_edge_color = get(alps::edge_type_t(),j);

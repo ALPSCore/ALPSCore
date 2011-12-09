@@ -100,6 +100,7 @@ int main() {
     add_edge(3, 7,g.back().first);
     add_edge(4, 8,g.back().first);
 
+    /*
 	// graph no. 32340
 	// 14	15	1	64272
     g.push_back(std::make_pair(graph_type(15),64272));
@@ -152,6 +153,7 @@ int main() {
 //    add_edge(16, 17, g.back().first);
 //    add_edge(17, 18, g.back().first);
 //    add_edge(18, 19, g.back().first);
+    */
 
     int success = 0;
     for(std::vector<std::pair<graph_type,lc_type> >::iterator it= g.begin(); it != g.end(); ++it)
