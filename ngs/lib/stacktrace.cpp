@@ -78,7 +78,7 @@ namespace alps {
 #else
 
 		std::string stacktrace() {
-			buffer << "stacktrace only available in gcc";
+			return  "stacktrace only available in gcc";
 		}
 
 #endif
