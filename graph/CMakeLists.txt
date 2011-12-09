@@ -8,7 +8,7 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 include_directories(${Boost_ROOT_DIR})
 
 # FOREACH (name non_iso_graph_generation_colored_edges embedding_test canonical_label_test lattice_constant_test)
-FOREACH (name iso_simple canonical_label_test lattice_constant_test)
+FOREACH (name iso_simple canonical_label_test lattice_constant_test colored_lattice_constant_test)
 # FOREACH (name iso_simple canonical_label_test)
   add_executable(${name} ${name}.cpp)
   add_dependencies(${name} alps)

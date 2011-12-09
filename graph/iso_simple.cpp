@@ -42,7 +42,7 @@ typedef boost::adjacency_list<
 	, boost::vecS
 	, boost::undirectedS
 	, boost::property<boost::vertex_name_t, std::size_t>
-	, boost::property<boost::edge_name_t, std::size_t>
+	, boost::property<alps::edge_type_t, std::size_t>
 > colored_graph_type;
 
 using namespace alps::graph;
@@ -98,11 +98,11 @@ int main() {
 		
 		boost::graph_traits<colored_graph_type>::edge_iterator it, end;
 
-		boost::property_map<colored_graph_type, boost::edge_name_t>::type g_edge_name = get(boost::edge_name_t(), g);
+		boost::property_map<colored_graph_type, alps::edge_type_t>::type g_edge_name = get(alps::edge_type_t(), g);
 		for (boost::tie(it, end) = edges(g); it != end; ++it)
 			g_edge_name[*it] = (source(*it, g) == B && target(*it, g) == C) ? 1 : 0;
 
-		boost::property_map<colored_graph_type, boost::edge_name_t>::type h_edge_name = get(boost::edge_name_t(), h);
+		boost::property_map<colored_graph_type, alps::edge_type_t>::type h_edge_name = get(alps::edge_type_t(), h);
 		for (boost::tie(it, end) = edges(h); it != end; ++it)
 			h_edge_name[*it] = (source(*it, h) == C && target(*it, h) == D) ? 1 : 0;
 
