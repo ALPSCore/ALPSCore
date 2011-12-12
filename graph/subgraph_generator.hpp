@@ -191,18 +191,18 @@ class subgraph_generator {
       */
     bool is_embeddable(subgraph_type const& g, typename canonical_properties_type<subgraph_type>::type const& prop) {
         bool result = true;
-        for(typename std::vector<subgraph_type>::iterator it= non_embeddable_graphs_.begin(); it != non_embeddable_graphs_.end(); ++it)
+        for(typename std::vector<subgraph_properties_pair_type>::iterator it= non_embeddable_graphs_.begin(); it != non_embeddable_graphs_.end(); ++it)
         {
             // If any of the non-embeddable graphs can be embedded
             // we can not embedd this graph either.
-            if(alps::graph::is_embeddable(*it,g,boost::get<2>(prop))) {
+            if(alps::graph::is_embeddable(it->first,g,boost::get<2>(it->second))) {
                 result = false;
                 break;
             }
         }
         result = result && alps::graph::is_embeddable(g,supergraph_,pin_,boost::get<2>(prop));
         if(!result && num_edges(g) < 9)
-            non_embeddable_graphs_.push_back(g);
+            non_embeddable_graphs_.push_back(std::make_pair(g,prop));
         return result;
     }
     
@@ -228,7 +228,7 @@ class subgraph_generator {
     /// properties of the supergraph for simple checks
     typename boost::graph_traits<supergraph_type>::degree_size_type max_degree_;
     /// A list of small non-embeddable graphs for quick embedding checks of larger graphs
-    std::vector<subgraph_type> non_embeddable_graphs_;
+    std::vector<subgraph_properties_pair_type> non_embeddable_graphs_;
     
     /// a list of canonical graph labels of graphs that were seen
     std::set<boost::tuple<std::size_t, typename graph_label<subgraph_type>::type> > labels_;
