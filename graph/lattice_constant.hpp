@@ -307,7 +307,7 @@ namespace alps {
 				, typename boost::graph_traits<Graph>::vertex_descriptor v
 				, std::vector<std::vector<unsigned> > const & translations
 				, std::vector<std::vector<unsigned> > const & distance_to_boarder
-				, typename partition_type<Graph>::type const & orbit
+				, typename partition_type<Subgraph>::type const & subtraph_orbit
 				, ExitOnMatch exit_on_match
 			) {
 				// Assume the vertex desciptor is an unsigned integer type (since we want to use it as an index for a vector)
@@ -320,7 +320,7 @@ namespace alps {
 				// orbit index => vertices
 				std::map<typename boost::graph_traits<Subgraph>::vertex_descriptor, std::size_t> I;
 				// Io = {(mi, j) : ni element of Vj
-				partition_indeces(I, orbit, S);
+				partition_indeces(I, subtraph_orbit, S);
 
 				// Matched embeddings
 				std::set<std::pair<
@@ -328,7 +328,7 @@ namespace alps {
 					, std::vector<std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> > 
 				  > > matches;
 
-				for (typename partition_type<Subgraph>::type::const_iterator it = orbit.begin(); it != orbit.end(); ++it)
+				for (typename partition_type<Subgraph>::type::const_iterator it = subtraph_orbit.begin(); it != subtraph_orbit.end(); ++it)
 					if (out_degree(it->front(), S) <= out_degree(v, G)) {
 						// TODO: use dynamicbitset
 						std::vector<bool> placed(num_vertices(S), false);
@@ -362,22 +362,22 @@ namespace alps {
 			std::vector<std::vector<unsigned> > distance_to_boarder(dimension(L), std::vector<unsigned>(num_vertices(G), num_vertices(G)));
 			detail::build_translation_table(G, L, translations, distance_to_boarder);
 			
-			typename partition_type<Graph>::type orbit = boost::get<2>(canonical_properties(S));
+			typename partition_type<Subgraph>::type subtraph_orbit = boost::get<2>(canonical_properties(S));
 
-			return detail::lattice_constant_impl(S, G, v, translations, distance_to_boarder, orbit, boost::mpl::false_());
+			return detail::lattice_constant_impl(S, G, v, translations, distance_to_boarder, subtraph_orbit, boost::mpl::false_());
 		}
 
 		template<typename Subgraph, typename Graph> bool is_embeddable(
 			  Subgraph const & S
 			, Graph const & G
 			, typename boost::graph_traits<Graph>::vertex_descriptor v
-			, typename partition_type<Graph>::type const & orbit			
+			, typename partition_type<Subgraph>::type const & subtraph_orbit			
 		) {
 			std::vector<std::vector<unsigned> > translations;
 			std::vector<std::vector<unsigned> > distance_to_boarder;
 
 			try {
-				detail::lattice_constant_impl(S, G, v, translations, distance_to_boarder, orbit, boost::mpl::true_());
+				detail::lattice_constant_impl(S, G, v, translations, distance_to_boarder, subtraph_orbit, boost::mpl::true_());
 				return false;
 			} catch (detail::embedding_found e) {
 				return true;
@@ -388,7 +388,7 @@ namespace alps {
 		template<typename Subgraph, typename Graph> bool is_embeddable(
 			  Subgraph const & S
 			, Graph const & G
-			, typename partition_type<Graph>::type const & orbit
+			, typename partition_type<Subgraph>::type const & subtraph_orbit
 		) {
 			std::vector<std::vector<unsigned> > translations;
 			std::vector<std::vector<unsigned> > distance_to_boarder;
@@ -396,7 +396,7 @@ namespace alps {
 			try {
 				typename boost::graph_traits<Graph>::vertex_iterator g_vt, g_ve;
 				for (boost::tie(g_vt, g_ve) = vertices(G); g_vt != g_ve; ++g_vt)
-					detail::lattice_constant_impl(S, G, *g_vt, translations, distance_to_boarder, orbit, boost::mpl::true_());
+					detail::lattice_constant_impl(S, G, *g_vt, translations, distance_to_boarder, subtraph_orbit, boost::mpl::true_());
 				return false;
 			} catch (detail::embedding_found e) {
 				return true;
