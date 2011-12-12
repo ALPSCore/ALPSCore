@@ -30,7 +30,7 @@ void subgraph_generator_test(unsigned int order_ )
                 );
     
     typedef alps::graph::subgraph_generator<Graph,Graph> graph_gen_type;
-    graph_gen_type graph_gen(lattice_,std::vector<typename boost::graph_traits<Graph>::vertex_descriptor>(1,2*order_*order_));
+    graph_gen_type graph_gen(lattice_,2*order_*order_);
     
     typename graph_gen_type::iterator it,end;
     boost::timer::auto_cpu_timer t;

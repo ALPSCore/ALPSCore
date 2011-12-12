@@ -166,7 +166,7 @@ int main() {
 			  it->first
 			, lattice_graph
 			, lattice.lattice()
-			, std::vector<boost::graph_traits<graph_type>::vertex_descriptor>(1, side_length * side_length / 2 + side_length / 2 - 1)
+			, side_length * side_length / 2 + side_length / 2 - 1
 		);
         if ( lc != it->second)
         {
