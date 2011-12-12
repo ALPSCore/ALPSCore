@@ -123,7 +123,7 @@ class subgraph_generator {
                 subgraph_type new_graph(it->first);
                 add_edge( v, add_vertex(new_graph), new_graph);
                 canonical_properties_type new_graph_prop = canonical_properties(new_graph);
-                if( is_unknown(new_graph_prop) && is_embeddable(new_graph) )
+                if( is_unknown(new_graph_prop) && is_embeddable(new_graph,new_graph_prop) )
                     result.push_back(std::make_pair(new_graph,new_graph_prop));
             
                 // Create a new graph by drawing edges between existing vertices
@@ -139,7 +139,7 @@ class subgraph_generator {
                         subgraph_type new_graph2(it->first);
                         add_edge( v2, v, new_graph2);
                         canonical_properties_type new_graph2_prop = canonical_properties(new_graph2);
-                        if( is_unknown(new_graph2_prop) && is_embeddable(new_graph2) )
+                        if( is_unknown(new_graph2_prop) && is_embeddable(new_graph2,new_graph2_prop) )
                             result.push_back(std::make_pair(new_graph2,new_graph2_prop));
                     }
                 }
@@ -154,7 +154,7 @@ class subgraph_generator {
                         subgraph_type new_graph2(it->first);
                         add_edge( v2, v, new_graph2);
                         canonical_properties_type new_graph2_prop = canonical_properties(new_graph2);
-                        if( is_unknown(new_graph2_prop) && is_embeddable(new_graph2) )
+                        if( is_unknown(new_graph2_prop) && is_embeddable(new_graph2,new_graph2_prop) )
                             result.push_back(std::make_pair(new_graph2,new_graph2_prop));
                     }
                 }
@@ -189,18 +189,18 @@ class subgraph_generator {
       * \param g the graph to be checked
       * \return true if g is embeddable, false if g is not embeddable
       */
-    bool is_embeddable(subgraph_type const& g) {
+    bool is_embeddable(subgraph_type const& g, typename canonical_properties_type<subgraph_type>::type const& prop) {
         bool result = true;
         for(typename std::vector<subgraph_type>::iterator it= non_embeddable_graphs_.begin(); it != non_embeddable_graphs_.end(); ++it)
         {
             // If any of the non-embeddable graphs can be embedded
             // we can not embedd this graph either.
-            if(alps::graph::is_embeddable(*it,g)) {
+            if(alps::graph::is_embeddable(*it,g,boost::get<2>(prop))) {
                 result = false;
                 break;
             }
         }
-        result = result && alps::graph::is_embeddable(g,supergraph_,pin_);
+        result = result && alps::graph::is_embeddable(g,supergraph_,pin_,boost::get<2>(prop));
         if(!result && num_edges(g) < 9)
             non_embeddable_graphs_.push_back(g);
         return result;
