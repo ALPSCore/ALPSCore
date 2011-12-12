@@ -31,8 +31,8 @@ class subgraph_generator {
       * \param supergraph the supergraph for which the graphs will be generated.
       * \param pins is a list of vertices of the supergraph. A subgraph is only embeddable if the subgraph can be embedded in such a way that all those vertices have corresponding vertices in the subgraph.
      */
-    subgraph_generator(supergraph_type const& supergraph, std::vector<typename boost::graph_traits<supergraph_type>::vertex_descriptor> const& pins)
-        :supergraph_(supergraph),graphs_(), max_degree_(0),non_embeddable_graphs_(),labels_(), pins_(pins) {
+    subgraph_generator(supergraph_type const& supergraph, typename boost::graph_traits<supergraph_type>::vertex_descriptor pin)
+        :supergraph_(supergraph),graphs_(), max_degree_(0),non_embeddable_graphs_(),labels_(), pin_(pin) {
         // We assume undirected graphs
         BOOST_STATIC_ASSERT(( boost::is_same<typename boost::graph_traits<subgraph_type>::directed_category, boost::undirected_tag>::value ));
         BOOST_STATIC_ASSERT(( boost::is_same<typename boost::graph_traits<supergraph_type>::directed_category, boost::undirected_tag>::value ));
@@ -200,7 +200,7 @@ class subgraph_generator {
                 break;
             }
         }
-        result = result && alps::graph::is_embeddable(g,supergraph_,pins_);
+        result = result && alps::graph::is_embeddable(g,supergraph_,pin_);
         if(!result && num_edges(g) < 9)
             non_embeddable_graphs_.push_back(g);
         return result;
@@ -233,7 +233,7 @@ class subgraph_generator {
     /// a list of canonical graph labels of graphs that were seen
     std::set<boost::tuple<std::size_t, typename graph_label<subgraph_type>::type> > labels_;
     /// A list of vertices of the supergraph which have to be found in an embeddable subgraph
-    std::vector<typename boost::graph_traits<SuperGraph>::vertex_descriptor> const pins_;
+    typename boost::graph_traits<SuperGraph>::vertex_descriptor pin_;
 };
 
 } // namespace graph
