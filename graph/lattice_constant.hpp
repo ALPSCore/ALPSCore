@@ -395,7 +395,7 @@ namespace alps {
 
 			try {
 				typename boost::graph_traits<Graph>::vertex_iterator g_vt, g_ve;
-				for (boost::tie(g_vt, g_ve) = edges(S); g_vt != g_ve; ++g_vt)
+				for (boost::tie(g_vt, g_ve) = vertices(G); g_vt != g_ve; ++g_vt)
 					detail::lattice_constant_impl(S, G, std::vector<typename boost::graph_traits<Graph>::vertex_descriptor>(1, *g_vt), translations, distance_to_boarder, boost::mpl::true_());
 				return false;
 			} catch (detail::embedding_found e) {

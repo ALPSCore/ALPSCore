@@ -3,7 +3,8 @@
 #include <alps/lattice/graph_traits.h>
 #include <alps/graph/canonical_properties.hpp>
 #include <boost/static_assert.hpp>
-#include <alps/graph/is_embeddable.hpp>
+//#include <alps/graph/is_embeddable.hpp>
+#include <alps/graph/lattice_constant.hpp>
 #include <vector>
 
 namespace alps {
@@ -15,25 +16,23 @@ namespace graph {
       * A class for generating subgraphs of an (super-)graph, e.g. a lattice.
       * \tparam SubGraph the type of the subgraphs to be generated. Has to fulfill boost::MutableGraph, boost::IncidenceGraph concepts and the concepts required by canonical_properties() and embedding().
       * \tparam SuperGraph the type of the (super-)graph for which the subgraphs are generated. Has to fulfill boost::IncidenceGraph, boost::EdgeListGraph, boost::VertexListGraph concepts and the concepts required by embedding().
-      * \tparam Pin an optional template class which pins/glues vertices of the subgraph and the supergraph together. The main purpose are performance improvements. Notice that defining a pin may influence the result. Default: no_pin
       */
-template <typename SubGraph, typename SuperGraph, template <typename, typename> class Pin = no_pin  >
+template <typename SubGraph, typename SuperGraph>
 class subgraph_generator {
   public:
     typedef SubGraph subgraph_type;
     typedef std::pair<subgraph_type,typename canonical_properties_type<subgraph_type>::type> subgraph_properties_pair_type;
     typedef SuperGraph supergraph_type;
-    typedef Pin<SubGraph,SuperGraph> pin_type;
     typedef typename std::vector<subgraph_properties_pair_type>::iterator iterator;
 
     /**
       * Constructor
       * Initializes all members and makes a call to analyse_supergraph()
       * \param supergraph the supergraph for which the graphs will be generated.
-      * \param pin an optional object that satisfies the Pin concept and pins/glues the initial vertex (0) of the subgraph to some vertex of the supergraph, which improves performance for big supergraphs
-      */
-    subgraph_generator(supergraph_type const& supergraph, pin_type const& pin = pin_type())
-        :supergraph_(supergraph),graphs_(), max_degree_(0),non_embeddable_graphs_(),labels_(), pin_(pin) {
+      * \param pins is a list of vertices of the supergraph. A subgraph is only embeddable if the subgraph can be embedded in such a way that all those vertices have corresponding vertices in the subgraph.
+     */
+    subgraph_generator(supergraph_type const& supergraph, std::vector<typename boost::graph_traits<supergraph_type>::vertex_descriptor> const& pins)
+        :supergraph_(supergraph),graphs_(), max_degree_(0),non_embeddable_graphs_(),labels_(), pins_(pins) {
         // We assume undirected graphs
         BOOST_STATIC_ASSERT(( boost::is_same<typename boost::graph_traits<subgraph_type>::directed_category, boost::undirected_tag>::value ));
         BOOST_STATIC_ASSERT(( boost::is_same<typename boost::graph_traits<supergraph_type>::directed_category, boost::undirected_tag>::value ));
@@ -201,7 +200,7 @@ class subgraph_generator {
                 break;
             }
         }
-        result = result && alps::graph::is_embeddable(g,supergraph_,pin_);
+        result = result && alps::graph::is_embeddable(g,supergraph_,pins_);
         if(!result && num_edges(g) < 9)
             non_embeddable_graphs_.push_back(g);
         return result;
@@ -233,8 +232,8 @@ class subgraph_generator {
     
     /// a list of canonical graph labels of graphs that were seen
     std::set<boost::tuple<std::size_t, typename graph_label<subgraph_type>::type> > labels_;
-    /// An (optional) pin object that pins the initial subgraph vertex to some vertex of the supergraph
-    pin_type pin_;
+    /// A list of vertices of the supergraph which have to be found in an embeddable subgraph
+    std::vector<typename boost::graph_traits<SuperGraph>::vertex_descriptor> const pins_;
 };
 
 } // namespace graph
