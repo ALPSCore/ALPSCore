@@ -384,6 +384,24 @@ namespace alps {
 				return true;
 			}
 		}
+		
+
+		template<typename Subgraph, typename Graph> bool is_embeddable(
+			  Subgraph const & S
+			, Graph const & G
+		) {
+			std::vector<std::vector<unsigned> > translations;
+			std::vector<std::vector<unsigned> > distance_to_boarder;
+
+			try {
+				typename boost::graph_traits<Graph>::vertex_iterator g_vt, g_ve;
+				for (boost::tie(g_vt, g_ve) = edges(S); g_vt != g_ve; ++g_vt)
+					detail::lattice_constant_impl(S, G, std::vector<typename boost::graph_traits<Graph>::vertex_descriptor>(1, *g_vt), translations, distance_to_boarder, boost::mpl::true_());
+				return false;
+			} catch (detail::embedding_found e) {
+				return true;
+			}
+		}		
 	}
 }
 #endif
