@@ -173,13 +173,8 @@ class subgraph_generator {
       */
     bool is_unknown(typename canonical_properties_type<subgraph_type>::type const& p) {
         typename graph_label<subgraph_type>::type const& label(get<1>(p));
-        
-        //Check if the labels has been found already
-        if( labels_.find(make_tuple(boost::get<0>(label).size(),label)) == labels_.end()) {
-            labels_.insert(make_tuple(boost::get<0>(label).size(),label));
-            return true;
-        }
-        return false;
+        // Try to insert the label and return true if it wasn't there yet
+        return labels_.insert(make_tuple(boost::get<0>(label).size(),label)).second;
     }
     
     /**
@@ -187,9 +182,11 @@ class subgraph_generator {
       * For small graphs g the graph may be added to an internal list of non-embeddable graphs if it is not embeddable.
       * All subsequent calls to this function will first check agains this list. If any of these non-embeddable small graphs is embeddable in g, g is obviously not embeddable in the supergraph either.
       * \param g the graph to be checked
+      * \param prop the canonical properties of g
       * \return true if g is embeddable, false if g is not embeddable
       */
     bool is_embeddable(subgraph_type const& g, typename canonical_properties_type<subgraph_type>::type const& prop) {
+        assert(prop == alps::graph::canonical_properties(g));
         bool result = true;
         for(typename std::vector<subgraph_properties_pair_type>::iterator it= non_embeddable_graphs_.begin(); it != non_embeddable_graphs_.end(); ++it)
         {
