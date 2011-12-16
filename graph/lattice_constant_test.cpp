@@ -1,6 +1,8 @@
 #include <alps/graph/lattice_constant.hpp>
 
+#include <boost/timer/timer.hpp>
 #include <boost/graph/adjacency_list.hpp>
+
 #include <iostream>
 
 int main() {
@@ -100,7 +102,6 @@ int main() {
     add_edge(3, 7,g.back().first);
     add_edge(4, 8,g.back().first);
 
-    /*
 	// graph no. 32340
 	// 14	15	1	64272
     g.push_back(std::make_pair(graph_type(15),64272));
@@ -119,7 +120,6 @@ int main() {
     add_edge( 4, 10,g.back().first);
     add_edge( 5, 11,g.back().first);
 
-
     //
     //  0---1---...---18---19
     //
@@ -129,11 +129,11 @@ int main() {
 //    g.push_back(std::make_pair(graph_type(13), 162466));
 //    g.push_back(std::make_pair(graph_type(14), 440750));
 //    g.push_back(std::make_pair(graph_type(15), 1187222));
-    g.push_back(std::make_pair(graph_type(16), 3208298)); // 2.53 GB
-//    g.push_back(std::make_pair(graph_type(17), 0)); // =     86'624'053 => 6.8 GB
-//    g.push_back(std::make_pair(graph_type(18), 0)); // =    233'884'943
-//    g.push_back(std::make_pair(graph_type(19), 0)); // =    631'489'348
-//    g.push_back(std::make_pair(graph_type(20), 0)); // = 17'050'212'141 == 5314 * G(16) => 13.4 TB
+    g.push_back(std::make_pair(graph_type(16), 3208298)); // 1.51 GB
+//    g.push_back(std::make_pair(graph_type(17), 8622666)); // 4.3 GB
+//    g.push_back(std::make_pair(graph_type(18), 0)); // =    233'884'943 => 5.3 GB
+//    g.push_back(std::make_pair(graph_type(19), 0)); // =    631'489'348 => 6.6 GB
+//    g.push_back(std::make_pair(graph_type(20), 0)); // = log(4*pow(3, 19))/log(2) < 17'050'212'141 == 5314 * G(16) => 272 GB why?
     add_edge( 0,  1, g.back().first);
     add_edge( 1,  2, g.back().first);
     add_edge( 2,  3, g.back().first);
@@ -153,23 +153,25 @@ int main() {
 //    add_edge(16, 17, g.back().first);
 //    add_edge(17, 18, g.back().first);
 //    add_edge(18, 19, g.back().first);
-    */
 
     int success = 0;
-    for(std::vector<std::pair<graph_type,lc_type> >::iterator it= g.begin(); it != g.end(); ++it)
-    {
-        lc_type lc = alps::graph::lattice_constant(
-			  it->first
-			, lattice_graph
-			, lattice.lattice()
-			, side_length * side_length / 2 + side_length / 2 - 1
-		);
-        if ( lc != it->second)
-        {
-            std::cerr<<"ERROR: lattice constant does not match!"<<std::endl;
-            std::cerr<<"Calculated: "<<lc<<"\tReference: "<<it->second<<std::endl<<std::endl;
-            success = -1;
-        }
+	{
+		boost::timer::auto_cpu_timer timer;
+		for(std::vector<std::pair<graph_type,lc_type> >::iterator it= g.begin(); it != g.end(); ++it)
+		{
+			lc_type lc = alps::graph::lattice_constant(
+				  it->first
+				, lattice_graph
+				, lattice.lattice()
+				, side_length * side_length / 2 + side_length / 2 - 1
+			);
+			if (lc != it->second) {
+				std::cerr<<"ERROR: lattice constant does not match!"<<std::endl;
+				std::cerr<<"Calculated: "<<lc<<"\tReference: "<<it->second<<std::endl<<std::endl;
+				success = -1;
+			} else
+				std::cerr<<"SUCCES: "<<it->second<<std::endl;
+		}
     }
     return success;
 }
