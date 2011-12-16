@@ -180,8 +180,8 @@ int evaluate(int argc, char **argv) {
         boost::filesystem::path file_out = complete(boost::filesystem::path(file_out_str), basedir);
         std::string simname;
         load_tasks(file_in, file_out, basedir, simname, tasks, false);
-        std::cout << "  master input file  = " << file_in.native_file_string() << std::endl
-                  << "  master output file = " << file_out.native_file_string() << std::endl;
+        std::cout << "  master input file  = " << file_in.string() << std::endl
+                  << "  master output file = " << file_out.string() << std::endl;
         print_taskinfo(std::cout, tasks);
         BOOST_FOREACH(task& t, tasks) t.evaluate();
       } else {
@@ -269,7 +269,7 @@ int load_filename(boost::filesystem::path const& file, std::string& file_in_str,
   parser.parse(file);
   if (is_master) {
     if (file_out_str.empty())
-      file_out_str = file.leaf();
+      file_out_str = file.filename().string();
     if (file_in_str.empty())
       file_in_str = regex_replace(file_out_str, boost::regex("\\.out\\.xml$"), ".in.xml");
   }
@@ -469,8 +469,8 @@ int start_sgl(int argc, char** argv) {
         file_out = complete(boost::filesystem::path(file_out_str), basedir);
         std::string simname;
         load_tasks(file_in, file_out, basedir, simname, tasks, false);
-        std::cout << "  master input file  = " << file_in.native_file_string() << std::endl
-                  << "  master output file = " << file_out.native_file_string() << std::endl;
+        std::cout << "  master input file  = " << file_in.string() << std::endl
+                  << "  master output file = " << file_out.string() << std::endl;
         print_taskinfo(std::cout, tasks);
         #pragma omp parallel for
         for (int t = 0; t < tasks.size(); ++t) {
@@ -492,7 +492,7 @@ int start_sgl(int argc, char** argv) {
     std::cout << logger::header() << "starting scheduler on " << alps::hostname() << std::endl;
 
     if (load_filename(file, file_in_str, file_out_str) != 1) {
-      std::cerr << "invalid master file: " << file.native_file_string() << std::endl;
+      std::cerr << "invalid master file: " << file.string() << std::endl;
       process.halt();
     }
     file_in = complete(boost::filesystem::path(file_in_str), basedir);
@@ -503,14 +503,14 @@ int start_sgl(int argc, char** argv) {
     master_lock.set_file(file_out);
     master_lock.lock(0);
     if (!master_lock.locked()) {
-      std::cerr << "Error: master file (" << file_out.native_file_string()
+      std::cerr << "Error: master file (" << file_out.string()
                 << ") is being used by other scheduler.  Skip this file.\n";
       continue;
     }
 
-    std::cout << "  master input file  = " << file_in.native_file_string() << std::endl
-              << "  master output file = " << file_out.native_file_string() << std::endl
-              << "  termination file   = " << file_term.native_file_string() << std::endl
+    std::cout << "  master input file  = " << file_in.string() << std::endl
+              << "  master output file = " << file_out.string() << std::endl
+              << "  termination file   = " << file_term.string() << std::endl
               << "  total number of thread(s) = " << num_total_threads << std::endl
               << "  thread(s) per clone       = " << opt.threads_per_clone << std::endl
               << "  number of thread group(s) = " << num_groups << std::endl
@@ -884,8 +884,8 @@ int start_mpi(int argc, char** argv) {
           file_out = complete(boost::filesystem::path(file_out_str), basedir);
           std::string simname;
           load_tasks(file_in, file_out, basedir, simname, tasks);
-          std::cout << "  master input file  = " << file_in.native_file_string() << std::endl
-                    << "  master output file = " << file_out.native_file_string() << std::endl;
+          std::cout << "  master input file  = " << file_in.string() << std::endl
+                    << "  master output file = " << file_out.string() << std::endl;
           print_taskinfo(std::cout, tasks);
           BOOST_FOREACH(task& t, tasks) t.evaluate();
         } else {
@@ -906,7 +906,7 @@ int start_mpi(int argc, char** argv) {
       std::cout << logger::header() << "starting scheduler on " << alps::hostname() << std::endl;
 
       if (load_filename(file, file_in_str, file_out_str) != 1) {
-        std::cerr << "invalid master file: " << file.native_file_string() << std::endl;
+        std::cerr << "invalid master file: " << file.string() << std::endl;
         process.halt();
       }
       file_in = complete(boost::filesystem::path(file_in_str), basedir);
@@ -917,14 +917,14 @@ int start_mpi(int argc, char** argv) {
       master_lock.set_file(file_out);
       master_lock.lock(0);
       if (!master_lock.locked()) {
-        std::cerr << "Error: master file (" << file_out.native_file_string()
+        std::cerr << "Error: master file (" << file_out.string()
                   << ") is being used by other scheduler.  Skip this file.\n";
         continue;
       }
 
-      std::cout << "  master input file  = " << file_in.native_file_string() << std::endl
-                << "  master output file = " << file_out.native_file_string() << std::endl
-                << "  termination file   = " << file_term.native_file_string() << std::endl
+      std::cout << "  master input file  = " << file_in.string() << std::endl
+                << "  master output file = " << file_out.string() << std::endl
+                << "  termination file   = " << file_term.string() << std::endl
                 << "  total number of process(es)/thread(s) = "
                 << process.num_total_processes() << "/" << num_total_threads << std::endl
                 << "  process(es)/thread(s) per clone       = "

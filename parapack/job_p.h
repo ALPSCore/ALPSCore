@@ -46,7 +46,7 @@ struct job_xml_writer {
     std::string const& file_in_str, std::string const& file_out_str,
     std::string const& alps_version_str, std::string const& application_version_str,
     std::vector<task> const& tasks, bool make_backup) {
-    boost::filesystem::path file_bak(file.branch_path() / (file.leaf() + ".bak"));
+    boost::filesystem::path file_bak(file.branch_path() / (file.filename().string() + ".bak"));
     if (make_backup && exists(file)) rename(file, file_bak);
     oxstream os(file);
     os << header("UTF-8")

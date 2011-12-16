@@ -54,28 +54,28 @@ std::string alps::xslt_path(const std::string& stylefile) {
 std::string alps::search_xml_library_path(const std::string& file)
 {
   // check whether this is a full path and the file exists 
-  boost::filesystem::path path(file,boost::filesystem::native);
+  boost::filesystem::path path(file);
   if (boost::filesystem::exists(path))
-    return path.file_string();
+    return path.string();
     
   char* p = getenv("ALPS_XML_PATH");
   if (p != 0)
-    path = boost::filesystem::path(p,boost::filesystem::native) /  file;
+    path = boost::filesystem::path(p) /  file;
   else { 
     p = getenv("ALPS_ROOT");
     if (p != 0) 
-      path = boost::filesystem::path(p,boost::filesystem::native) / "lib" / "xml" / file;
+      path = boost::filesystem::path(p) / "lib" / "xml" / file;
     else {
-      path = boost::filesystem::path(ALPS_XML_DIR,boost::filesystem::native) / file;
+      path = boost::filesystem::path(ALPS_XML_DIR) / file;
     #ifdef ALPS_XML_ALTERNATE_DIR
       if (!boost::filesystem::exists(path))
-        path = boost::filesystem::path(ALPS_XML_ALTERNATE_DIR,boost::filesystem::native) / file;
+        path = boost::filesystem::path(ALPS_XML_ALTERNATE_DIR) / file;
     #endif
     }
   }
   if (!boost::filesystem::exists(path))
-    boost::throw_exception(std::runtime_error("Cannot find file " + file + ", failed to find it at " + path.native_file_string()));
-  return path.file_string();
+    boost::throw_exception(std::runtime_error("Cannot find file " + file + ", failed to find it at " + path.string()));
+  return path.string();
 }
 
 void alps::copy_stylesheet(boost::filesystem::path const& dir)

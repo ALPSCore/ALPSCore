@@ -51,11 +51,11 @@ task::task() : status_(task_status::Undefined) {}
 
 task::task(boost::filesystem::path const& file) : status_(task_status::Undefined) {
   basedir_ = file.branch_path();
-  file_in_str_ = file.leaf();
-  file_out_str_ = regex_replace(file.leaf(), boost::regex("\\.in\\.xml$"), ".out.xml");
+  file_in_str_ = file.filename().string();
+  file_out_str_ = regex_replace(file.filename().string(), boost::regex("\\.in\\.xml$"), ".out.xml");
   if (file_in_str_ == file_out_str_) {
-    file_in_str_ = regex_replace(file.leaf(), boost::regex("\\.out\\.xml$"), ".in.xml");
-    file_out_str_ = file.leaf();
+    file_in_str_ = regex_replace(file.filename().string(), boost::regex("\\.out\\.xml$"), ".in.xml");
+    file_out_str_ = file.filename().string();
   }
 }
 
@@ -175,7 +175,7 @@ void task::save_observable(std::vector<std::vector<ObservableSet> > const& oss) 
         #pragma omp critical (hdf5io)
         {
           boost::filesystem::path file = complete(boost::filesystem::path(base_ + ".out.h5"), basedir_);
-          hdf5::archive h5(file.file_string(), alps::hdf5::archive::WRITE);
+          hdf5::archive h5(file.string(), alps::hdf5::archive::WRITE);
           h5 << make_pvp("/parameters", params_tmp);
           h5 << make_pvp("/simulation/results", obs_[0]);
           // for (std::size_t n = 0; n < oss.size(); ++n)
@@ -190,7 +190,7 @@ void task::save_observable(std::vector<std::vector<ObservableSet> > const& oss) 
           {
             boost::filesystem::path file = complete(boost::filesystem::path(
               base_ + ".replica" + boost::lexical_cast<std::string>(i+1) + ".h5"), basedir_);
-            hdf5::archive h5(file.file_string(), alps::hdf5::archive::WRITE);
+            hdf5::archive h5(file.string(), alps::hdf5::archive::WRITE);
             h5 << make_pvp("/parameters", p);
             h5 << make_pvp("/simulation/results", obs_[i]);
             // for (std::size_t n = 0; n < oss.size(); ++n)
@@ -345,7 +345,7 @@ void task::evaluate() {
   std::sort(clones.begin(), clones.end());
 
   alps::Parameters p = params_;
-  p["DIR_NAME"] = basedir_.native_file_string();
+  p["DIR_NAME"] = basedir_.string();
   p["BASE_NAME"] = base_;
 
   boost::shared_ptr<parapack::abstract_evaluator> evaluator
@@ -362,7 +362,7 @@ void task::evaluate() {
       bool success;
       #pragma omp critical (hdf5io)
       {
-        hdf5::archive h5(complete(p, basedir_).file_string());
+        hdf5::archive h5(complete(p, basedir_).string());
         success = load_observable(h5, cid, o);
       }
       if (success) {
@@ -376,7 +376,7 @@ void task::evaluate() {
         bool success;
         #pragma omp critical (hdf5io)
         {
-          hdf5::archive h5(complete(p, basedir_).file_string());
+          hdf5::archive h5(complete(p, basedir_).string());
           success = load_observable(h5, cid, w, o);
         }
         if (success) {

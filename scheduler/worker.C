@@ -234,7 +234,7 @@ void Worker::load_from_file(const boost::filesystem::path& fn,const boost::files
 {
 #ifdef ALPS_HAVE_HDF5
   if (boost::filesystem::exists(hdf5path)) {
-      hdf5::archive ar(hdf5path.file_string());
+      hdf5::archive ar(hdf5path.string());
       ar >> make_pvp("/", *this);
   }
 #endif
@@ -244,11 +244,11 @@ void Worker::load_from_file(const boost::filesystem::path& fn,const boost::files
 
 void Worker::save_to_file(const boost::filesystem::path& fnpath, const boost::filesystem::path& hdf5path) const
 {
-  boost::filesystem::path bakpath=fnpath.branch_path()/(fnpath.leaf()+".bak");
+  boost::filesystem::path bakpath=fnpath.branch_path()/(fnpath.filename().string()+".bak");
   bool backup=boost::filesystem::exists(fnpath);
   
 #ifdef ALPS_HAVE_HDF5
-  boost::filesystem::path hdf5bakpath =  fnpath.branch_path()/(hdf5path.leaf()+".bak");
+  boost::filesystem::path hdf5bakpath =  fnpath.branch_path()/(hdf5path.filename().string()+".bak");
   backup =  backup || boost::filesystem::exists(fnpath);
   {
     boost::filesystem::path p = backup ? hdf5bakpath : hdf5path;

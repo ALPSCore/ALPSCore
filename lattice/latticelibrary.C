@@ -47,7 +47,7 @@ LatticeLibrary::LatticeLibrary(const Parameters& parms)
   
   boost::filesystem::path p=search_xml_library_path(libname);
   
-  std::ifstream libfile(p.native_file_string().c_str());
+  std::ifstream libfile(p.string().c_str());
   if(!libfile)
     boost::throw_exception(std::runtime_error("Could not find lattice library file " + libname));
   read_xml(libfile);

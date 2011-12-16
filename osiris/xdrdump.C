@@ -337,7 +337,7 @@ void OXDRFileDump::open_file(const std::string& fn,bool append)
 // create a new dump file
 OXDRFileDump::OXDRFileDump(const boost::filesystem::path& fn, bool append)
 {
-  open_file(fn.native_file_string(),append);
+  open_file(fn.string(),append);
 }
 
 // destructor closes the stream and file
@@ -363,7 +363,7 @@ void OXDRFileDump::flush()
 // open a dump file
 IXDRFileDump::IXDRFileDump(const boost::filesystem::path& p)
 {
-  open_file(p.native_file_string());
+  open_file(p.string());
 }
 
 // open a file for reading at a specified position

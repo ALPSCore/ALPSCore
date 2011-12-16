@@ -41,7 +41,7 @@ struct simulation_xml_writer {
   simulation_xml_writer(boost::filesystem::path file, bool make_backup,
     Parameters const& params, std::vector<ObservableSet> const& obs,
     std::deque<clone_info> const& info) {
-    boost::filesystem::path file_bak(file.branch_path() / (file.leaf() + ".bak"));
+    boost::filesystem::path file_bak(file.branch_path() / (file.filename().string() + ".bak"));
     if (make_backup && exists(file)) rename(file, file_bak);
     oxstream os(file);
     os << header("UTF-8")

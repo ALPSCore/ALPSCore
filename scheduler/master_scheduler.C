@@ -80,8 +80,8 @@ void MasterScheduler::set_new_jobfile(const boost::filesystem::path& jobfilename
   outfilepath = jobfilename;
   infilepath = jobfilename;
   
-  infilepath=boost::filesystem::complete(infilepath);
-  outfilepath=boost::filesystem::complete(outfilepath);
+  infilepath=boost::filesystem::absolute(infilepath);
+  outfilepath=boost::filesystem::absolute(outfilepath);
 
   if (!jobfilename.empty())
     parse_job_file(infilepath);
@@ -126,9 +126,8 @@ void MasterScheduler::parse_job_file(const boost::filesystem::path& filename)
   tag=parse_tag(infile);
   if (tag.name=="OUTPUT") {
     if(tag.attributes["file"]!="")
-      outfilepath=boost::filesystem::complete(
-               boost::filesystem::path(tag.attributes["file"],
-               boost::filesystem::native),filename.branch_path());
+      outfilepath=boost::filesystem::absolute(
+               boost::filesystem::path(tag.attributes["file"]),filename.branch_path());
     else
       boost::throw_exception(std::runtime_error(
                "missing 'file' attribute in <OUTPUT> element in jobfile"));
@@ -150,8 +149,7 @@ void MasterScheduler::parse_job_file(const boost::filesystem::path& filename)
     tag=parse_tag(infile);
     CheckpointFiles files;
     if (tag.name=="INPUT") {
-      files.in=boost::filesystem::path(tag.attributes["file"],
-               boost::filesystem::native);
+      files.in=boost::filesystem::path(tag.attributes["file"]);
       if (files.in.empty())
         boost::throw_exception(std::runtime_error(
                "missing 'file' attribute in <INPUT> element in jobfile"));
@@ -163,8 +161,7 @@ void MasterScheduler::parse_job_file(const boost::filesystem::path& filename)
       boost::throw_exception(std::runtime_error(
                "missing <INPUT> element in jobfile"));
     if (tag.name=="OUTPUT") {
-      files.out=boost::filesystem::path(tag.attributes["file"],
-               boost::filesystem::native);
+      files.out=boost::filesystem::path(tag.attributes["file"]);
       if (files.out.empty())
         boost::throw_exception(std::runtime_error(
                "missing 'file' attribute in <OUTPUT> element in jobfile"));
@@ -174,7 +171,7 @@ void MasterScheduler::parse_job_file(const boost::filesystem::path& filename)
     }
     if (files.out.empty())
       files.out=files.in;
-    files.in=boost::filesystem::complete(files.in,filename.branch_path());
+    files.in=boost::filesystem::absolute(files.in,filename.branch_path());
     if (tag.name!="/TASK")
       boost::throw_exception(std::runtime_error(
                "missing </TASK> tag in jobfile"));
@@ -208,7 +205,7 @@ void MasterScheduler::checkpoint()
   boost::filesystem::path filename=outfilepath;
   boost::filesystem::path dir=outfilepath.branch_path();
   if (make_backup)
-    filename=dir/(filename.leaf()+".bak");
+    filename=dir/(filename.filename().string()+".bak");
   { // scope for out
     oxstream out(filename);
 
@@ -221,10 +218,10 @@ void MasterScheduler::checkpoint()
     
     for (unsigned int i=0; i<tasks.size();i++) {
 #ifdef ALPS_HAVE_HDF5
-		boost::filesystem::path task_path = taskfiles[i].out.native_file_string();
-//		boost::filesystem::path task_path = taskfiles[i].out.file_string().substr(0, taskfiles[i].out.file_string().find_last_of('.')) + ".h5";
+		boost::filesystem::path task_path = taskfiles[i].out.string();
+//		boost::filesystem::path task_path = taskfiles[i].out.string().substr(0, taskfiles[i].out.string().find_last_of('.')) + ".h5";
 #else
-		boost::filesystem::path task_path = taskfiles[i].out.native_file_string();
+		boost::filesystem::path task_path = taskfiles[i].out.string();
 #endif
 
       if (taskstatus[i]==TaskFinished) {
@@ -233,9 +230,9 @@ void MasterScheduler::checkpoint()
             << attribute("file",task_path)
             << end_tag() << end_tag();
         std::cout  << "Checkpointing Simulation " << i+1 << "\n";
-        if (tasks[i]!=0 && boost::filesystem::complete(taskfiles[i].out,dir).string()!=taskfiles[i].in.string()) {          
-          tasks[i]->checkpoint(boost::filesystem::complete(taskfiles[i].out,dir),write_xml);
-          taskfiles[i].in=boost::filesystem::complete(taskfiles[i].out,dir);
+        if (tasks[i]!=0 && boost::filesystem::absolute(taskfiles[i].out,dir).string()!=taskfiles[i].in.string()) {          
+          tasks[i]->checkpoint(boost::filesystem::absolute(taskfiles[i].out,dir),write_xml);
+          taskfiles[i].in=boost::filesystem::absolute(taskfiles[i].out,dir);
         }
         if (tasks[i]!=0) 
           delete tasks[i];
@@ -243,7 +240,7 @@ void MasterScheduler::checkpoint()
       }
       else if(taskstatus[i]==TaskNotExisting) {
         out << start_tag("TASK") << attribute("status","finished")
-            << start_tag("INPUT") << attribute("file",taskfiles[i].in.native_file_string())
+            << start_tag("INPUT") << attribute("file",taskfiles[i].in.string())
             << end_tag() << end_tag();
         std::cout  << "Task# " << i+1 << " does not exist\n";
       } 
@@ -254,8 +251,8 @@ void MasterScheduler::checkpoint()
             << end_tag() << end_tag();
         if(theTask != tasks[i]) {
           std::cout  << "Checkpointing Simulation " << i+1 << "\n";
-          tasks[i]->checkpoint(boost::filesystem::complete(taskfiles[i].out,dir),write_xml);
-                taskfiles[i].in=boost::filesystem::complete(taskfiles[i].out,dir);
+          tasks[i]->checkpoint(boost::filesystem::absolute(taskfiles[i].out,dir),write_xml);
+                taskfiles[i].in=boost::filesystem::absolute(taskfiles[i].out,dir);
         }
         else
           local_sim=i;
@@ -263,8 +260,8 @@ void MasterScheduler::checkpoint()
     }
     if(local_sim>=0) {
       std::cout  << "Checkpointing Simulation " << local_sim+1 << "\n";
-      tasks[local_sim]->checkpoint(boost::filesystem::complete(taskfiles[local_sim].out,dir),write_xml);
-      taskfiles[local_sim].in=boost::filesystem::complete(taskfiles[local_sim].out,dir);
+      tasks[local_sim]->checkpoint(boost::filesystem::absolute(taskfiles[local_sim].out,dir),write_xml);
+      taskfiles[local_sim].in=boost::filesystem::absolute(taskfiles[local_sim].out,dir);
     }
     out << end_tag("JOB");
   }
@@ -286,7 +283,7 @@ void MasterScheduler::finish_task(int i)
   if (make_summary) {
     sim_results[i] = tasks[i]->get_summary();
   }
-  tasks[i]->checkpoint(boost::filesystem::complete(taskfiles[i].out,outfilepath.branch_path()),write_xml);
+  tasks[i]->checkpoint(boost::filesystem::absolute(taskfiles[i].out,outfilepath.branch_path()),write_xml);
   delete tasks[i];
   tasks[i]=0;
   taskstatus[i] = TaskFinished;      

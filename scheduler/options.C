@@ -170,7 +170,7 @@ Options::Options(int argc, char** argv)
 #endif
 
   if (!filename.empty())
-    jobfilename=boost::filesystem::path(filename,boost::filesystem::native);
+    jobfilename=boost::filesystem::path(filename);
   else
     boost::throw_exception(std::runtime_error("No job file specified"));
     

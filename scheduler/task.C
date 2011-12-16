@@ -85,14 +85,14 @@ void Task::parse_task_file(bool read_parms_only)
 #ifdef ALPS_HAVE_HDF5
   std::string h5name;
   
-  if (infilename.file_string().substr(infilename.file_string().size() - 3) == ".h5") {
-    h5name=infilename.file_string();
+  if (infilename.string().substr(infilename.string().size() - 3) == ".h5") {
+    h5name=infilename.string();
     read_xml = false;
   }
   else
-    h5name = infilename.file_string().substr(0, infilename.file_string().find_last_of('.')) + ".h5";
+    h5name = infilename.string().substr(0, infilename.string().find_last_of('.')) + ".h5";
   
-  if (boost::filesystem::exists(boost::filesystem::path(h5name,boost::filesystem::native))) {
+  if (boost::filesystem::exists(boost::filesystem::path(h5name))) {
     hdf5::archive ar(h5name);
     if (read_parms_only)
       ar >> make_pvp("/parameters",parms);
@@ -251,8 +251,8 @@ void Task::checkpoint(const boost::filesystem::path& fn, bool writeallxml) const
   bool make_backup = boost::filesystem::exists(fn);
 
 #ifdef ALPS_HAVE_HDF5
-  std::string task_path = fn.file_string().substr(0, fn.file_string().find_last_of('.')) + ".h5";
-  std::string task_backup = fn.file_string().substr(0, fn.file_string().find_last_of('.')) + ".h5.bak";
+  std::string task_path = fn.string().substr(0, fn.string().find_last_of('.')) + ".h5";
+  std::string task_backup = fn.string().substr(0, fn.string().find_last_of('.')) + ".h5.bak";
   bool task_exists = boost::filesystem::exists(task_path);
   if (boost::filesystem::exists(task_backup))
       boost::filesystem::remove(task_backup);
@@ -267,7 +267,7 @@ void Task::checkpoint(const boost::filesystem::path& fn, bool writeallxml) const
 #endif
 
 #ifndef ALPS_ONE_CHECKPOINT_FILE_ONLY
-  boost::filesystem::path filename = (make_backup ? dir/(fn.leaf()+".bak") : fn);
+  boost::filesystem::path filename = (make_backup ? dir/(fn.filename().string()+".bak") : fn);
   {
     alps::oxstream out (filename);
     write_xml_header(out);
@@ -297,8 +297,8 @@ void Task::checkpoint_hdf5(const boost::filesystem::path& fn) const
   boost::filesystem::path dir=fn.branch_path();
   bool make_backup = boost::filesystem::exists(fn);
 
-  std::string task_path = fn.file_string().substr(0, fn.file_string().find_last_of('.')) + ".h5";
-  std::string task_backup = fn.file_string().substr(0, fn.file_string().find_last_of('.')) + ".h5.bak";
+  std::string task_path = fn.string().substr(0, fn.string().find_last_of('.')) + ".h5";
+  std::string task_backup = fn.string().substr(0, fn.string().find_last_of('.')) + ".h5.bak";
   bool task_exists = boost::filesystem::exists(task_path);
   if (boost::filesystem::exists(task_backup))
       boost::filesystem::remove(task_backup);
@@ -325,7 +325,7 @@ void Task::checkpoint_xml(const boost::filesystem::path& fn, bool writeallxml) c
   bool make_backup = boost::filesystem::exists(fn);
 
 #ifndef ALPS_ONE_CHECKPOINT_FILE_ONLY
-  boost::filesystem::path filename = (make_backup ? dir/(fn.leaf()+".bak") : fn);
+  boost::filesystem::path filename = (make_backup ? dir/(fn.filename().string()+".bak") : fn);
   {
     alps::oxstream out (filename);
     write_xml_header(out);

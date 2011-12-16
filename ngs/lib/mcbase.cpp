@@ -36,7 +36,7 @@ namespace alps {
     }
 
     void mcbase::load(boost::filesystem::path const & path) {
-        hdf5::archive ar(path.file_string(), hdf5::archive::READ);
+        hdf5::archive ar(path.string(), hdf5::archive::READ);
         ar >> make_pvp("/simulation/realizations/0/clones/0/results", measurements);
     }
 

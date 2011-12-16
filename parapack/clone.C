@@ -106,7 +106,7 @@ clone::clone(boost::filesystem::path const& basedir, dump_policy_t dump_policy,
   std::string const& base, bool is_new)
   : task_id_(tid), clone_id_(cid), params_(params), basedir_(basedir), dump_policy_(dump_policy),
     timer_(check_interval) {
-  params_["DIR_NAME"] = basedir_.native_file_string();
+  params_["DIR_NAME"] = basedir_.string();
   params_["BASE_NAME"] = base;
 
   info_ = clone_info(clone_id_, params_, base);
@@ -176,7 +176,7 @@ void clone::load() {
     complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_);
   #pragma omp critical (hdf5io)
   {
-    hdf5::archive h5(dump_h5.file_string());
+    hdf5::archive h5(dump_h5.string());
     h5 >> make_pvp("/", *this);
   }
   boost::filesystem::path dump = complete(boost::filesystem::path(info_.dumpfile()), basedir_);
@@ -193,7 +193,7 @@ void clone::save() const{
     complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_);
   #pragma omp critical (hdf5io)
   {
-    hdf5::archive h5(dump_h5.file_string(), hdf5::archive::WRITE);
+    hdf5::archive h5(dump_h5.string(), hdf5::archive::WRITE);
     h5 << make_pvp("/", *this);
   }
   boost::filesystem::path dump = complete(boost::filesystem::path(info_.dumpfile()), basedir_);
@@ -417,7 +417,7 @@ void clone_mpi::load() {
     complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_);
   #pragma omp critical (hdf5io)
   {
-    hdf5::archive h5(dump_h5.file_string());
+    hdf5::archive h5(dump_h5.string());
     h5 >> make_pvp("/", *this);
   }
   boost::filesystem::path dump = complete(boost::filesystem::path(info_.dumpfile()), basedir_);
@@ -435,7 +435,7 @@ void clone_mpi::save() const{
     complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_);
   #pragma omp critical (hdf5io)
   {
-    hdf5::archive h5(dump_h5.file_string(), hdf5::archive::WRITE);
+    hdf5::archive h5(dump_h5.string(), hdf5::archive::WRITE);
     h5 << make_pvp("/", *this);
   }
   bool workerdump = (dump_policy_ == dump_policy::All) ||

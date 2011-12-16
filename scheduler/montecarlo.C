@@ -276,8 +276,8 @@ bool MCRun::is_thermalized() const
 
 void MCRun::write_xml(const boost::filesystem::path& name) const
 {
-  oxstream xml(name.branch_path()/(name.leaf()+".xml"));
-  boost::filesystem::path fn_hdf5(name.branch_path()/(name.leaf()+".hdf"));
+  oxstream xml(name.branch_path()/(name.filename().string()+".xml"));
+  boost::filesystem::path fn_hdf5(name.branch_path()/(name.filename().string()+".hdf"));
 
   xml << header("UTF-8") << stylesheet(xslt_path("ALPS.xsl"));
   xml << start_tag("SIMULATION") << xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
@@ -286,11 +286,11 @@ void MCRun::write_xml(const boost::filesystem::path& name) const
   measurements.write_xml(xml);
   xml << start_tag("MCRUN");
   xml << start_tag("CHECKPOINT") << attribute("format","osiris")
-      << attribute("file", name.native_file_string())
+      << attribute("file", name.string())
       << end_tag("CHECKPOINT");
 #ifdef ALPS_HAVE_HDF5
   xml << start_tag("CHECKPOINT") << attribute("format","hdf5")
-      << attribute("file", fn_hdf5.native_file_string())
+      << attribute("file", fn_hdf5.string())
       << end_tag("CHECKPOINT");
 #endif
 

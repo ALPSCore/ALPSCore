@@ -93,11 +93,11 @@ void WorkerTask::handle_tag(std::istream& infile, const XMLTag& intag)
     if (tag.attributes["file"]=="")
       boost::throw_exception(std::runtime_error("file attribute missing in <CHECKPOINT> element in task file"));
     if (tag.attributes["format"]=="osiris")
-      files.in=boost::filesystem::complete(
-      boost::filesystem::path(tag.attributes["file"],boost::filesystem::native),infilename.branch_path());
+      files.in=boost::filesystem::absolute(
+      boost::filesystem::path(tag.attributes["file"]),infilename.branch_path());
     else if (tag.attributes["format"]=="hdf5")
-      files.hdf5in=boost::filesystem::complete(
-      boost::filesystem::path(tag.attributes["file"],boost::filesystem::native),infilename.branch_path());
+      files.hdf5in=boost::filesystem::absolute(
+      boost::filesystem::path(tag.attributes["file"]),infilename.branch_path());
     else
       boost::throw_exception(std::runtime_error("unknown format in <CHECKPOINT> element in task file"));
     skip_element(infile,tag);
@@ -398,7 +398,7 @@ inline boost::filesystem::path optional_complete(boost::filesystem::path const& 
   if (dir.empty() || p.empty())
     return p;
   else
-    return boost::filesystem::complete(p,dir);
+    return boost::filesystem::absolute(p,dir);
 }
 
 // checkpoint: save into a file
@@ -418,7 +418,7 @@ void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::pa
         if (!runfiles[i].hdf5out.empty())
           runfiles[i].hdf5in=optional_complete(runfiles[i].hdf5out,dir);
         else {
-          runfiles[i].hdf5in=runfiles[i].in.branch_path()/(runfiles[i].in.leaf()+".h5");
+          runfiles[i].hdf5in=runfiles[i].in.branch_path()/(runfiles[i].in.filename().string()+".h5");
         }
 #endif
       }
@@ -429,11 +429,11 @@ void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::pa
         std::string name;
         do {
           found = false;
-          name =fn.leaf();
+          name =fn.filename().string();
           name = name.substr(0, name.find_last_of('.'));
           name+= ".run" + boost::lexical_cast<std::string,int>(j+1);
           for (unsigned int k=0;k<runfiles.size();++k)
-          if(runfiles[k].out.leaf()==name)
+          if(runfiles[k].out.filename().string()==name)
             found=true;
           j++;
         } while (found);
@@ -447,8 +447,8 @@ void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::pa
         runs[i]->save_to_file(optional_complete(runfiles[i].out,dir),optional_complete(runfiles[i].hdf5out,dir));
       } else if (workerstatus[i] == RunOnDump) {
         if(optional_complete(runfiles[i].out,dir).string()!=runfiles[i].in.string()) {
-          boost::filesystem::remove(boost::filesystem::complete(runfiles[i].out,dir));
-          boost::filesystem::copy_file(boost::filesystem::complete(runfiles[i].in,dir),boost::filesystem::complete(runfiles[i].out,dir));
+          boost::filesystem::remove(boost::filesystem::absolute(runfiles[i].out,dir));
+          boost::filesystem::copy_file(boost::filesystem::absolute(runfiles[i].in,dir),boost::filesystem::absolute(runfiles[i].out,dir));
         }
 #ifdef ALPS_HAVE_HDF5
         if(optional_complete(runfiles[i].hdf5out,dir).string()!=runfiles[i].hdf5in.string()) {
@@ -477,13 +477,13 @@ void WorkerTask::write_xml_body(alps::oxstream& out, const boost::filesystem::pa
       out << alps::start_tag(worker_tag())
           << runs[i]->get_info()
           << alps::start_tag("CHECKPOINT") << alps::attribute("format","osiris")
-          << alps::attribute("file",runfiles[i].out.native_file_string())
+          << alps::attribute("file",runfiles[i].out.string())
           << alps::end_tag("CHECKPOINT");
 #ifdef ALPS_HAVE_HDF5
       if (boost::filesystem::exists(runfiles[i].hdf5in)) {
         out << alps::start_tag("CHECKPOINT")
             << alps::attribute("format","hdf5")
-            << alps::attribute("file",runfiles[i].hdf5out.native_file_string())
+            << alps::attribute("file",runfiles[i].hdf5out.string())
             << alps::end_tag("CHECKPOINT");
       }
 #endif

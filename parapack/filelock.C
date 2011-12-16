@@ -68,8 +68,8 @@ void filelock::set_file(boost::filesystem::path const& file) {
     std::cerr << "Warning: lock for \"" << file_ << "\" is being removed\n";
     release();
   }
-  file_ = file.native_file_string();
-  lock_ = file.branch_path() / (file.leaf() + ".lck");
+  file_ = file.string();
+  lock_ = file.branch_path() / (file.filename().string() + ".lck");
 }
 
 void filelock::lock(int wait) {
@@ -90,9 +90,9 @@ void filelock::lock(int wait) {
       //sleep(1);
     }
 #if defined(ALPS_HAVE_WINDOWS_H)
-    int fd = _open(lock_.native_file_string().c_str(), O_WRONLY | O_CREAT | O_EXCL , _S_IWRITE);
+    int fd = _open(lock_.string().c_str(), O_WRONLY | O_CREAT | O_EXCL , _S_IWRITE);
 #else
-    int fd = open(lock_.native_file_string().c_str(), O_WRONLY | O_CREAT | O_EXCL , S_IWRITE);
+    int fd = open(lock_.string().c_str(), O_WRONLY | O_CREAT | O_EXCL , S_IWRITE);
 #endif
 
     if (fd > 0) {

@@ -103,7 +103,7 @@ int Scheduler::run() // a slave scheduler
             message.receive(MCMP_make_task);
             simmaster = message.sender();
             message >> where >> filename;
-            theTask = make_task(where,boost::filesystem::path(filename,boost::filesystem::native));
+            theTask = make_task(where,boost::filesystem::path(filename));
             break;
          
           case MCMP_ready:

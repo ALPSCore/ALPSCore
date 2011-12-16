@@ -51,7 +51,7 @@ namespace alps {
 
 void convert_spectrum(const std::string& inname) 
 {
-  boost::filesystem::path p(inname, boost::filesystem::native);
+  boost::filesystem::path p(inname);
   ProcessList nowhere;
   scheduler::DiagTask<double> sim(nowhere,p);
   sim.checkpoint(p,true);
@@ -61,7 +61,7 @@ void convert_mc(const std::string& inname)
 {
   scheduler::SimpleMCFactory<scheduler::DummyMCRun> factory;
   scheduler::init(factory);
-  boost::filesystem::path p(inname, boost::filesystem::native);
+  boost::filesystem::path p(inname);
   ProcessList nowhere;
   scheduler::MCSimulation sim(nowhere,p);
   sim.checkpoint(p,true);
@@ -71,7 +71,7 @@ void convert_xml(const std::string& inname)
 {
   bool is_spectrum=false;
   std::string h5name = inname.substr(0, inname.find_last_of('.')) + ".h5";
-  if (boost::filesystem::exists(boost::filesystem::path(h5name,boost::filesystem::native))) 
+  if (boost::filesystem::exists(boost::filesystem::path(h5name))) 
   {
     hdf5::archive ar(h5name);
     if (ar.is_group("/spectrum"))
@@ -93,12 +93,11 @@ void convert_params(const std::string& inname)
     in >> list;
   }
 
-  std::string basename = boost::filesystem::path(inname,
-    boost::filesystem::native).leaf();
+  std::string basename = boost::filesystem::path(inname).filename().string();
   std::cout << "Converting parameter file " << inname << " to "
             <<  basename+".in.xml" << std::endl;
 
-  oxstream out(boost::filesystem::path((basename+".in.xml").c_str(),boost::filesystem::native));
+  oxstream out(boost::filesystem::path((basename+".in.xml").c_str()));
   out << header("UTF-8")
       << stylesheet(xslt_path("ALPS.xsl"))
       << start_tag("JOB")
@@ -121,7 +120,7 @@ void convert_params(const std::string& inname)
         << end_tag("OUTPUT")
         << end_tag("TASK");
     //      out << "    <CPUS min=\"1\">\n";
-    oxstream task(boost::filesystem::path((taskname+".in.xml").c_str(),boost::filesystem::native));
+    oxstream task(boost::filesystem::path((taskname+".in.xml").c_str()));
     task << header("UTF-8")
          << stylesheet(xslt_path("ALPS.xsl"));
     task << start_tag("SIMULATION")
@@ -138,8 +137,8 @@ void convert_params(const std::string& inname)
 
 void convert_run(const std::string& inname)
 {
-  boost::filesystem::path xdrpath(inname,boost::filesystem::native);
-  boost::filesystem::path hdfpath(inname + ".h5",boost::filesystem::native);
+  boost::filesystem::path xdrpath(inname);
+  boost::filesystem::path hdfpath(inname + ".h5");
   std::cout << "Converting run file " << inname << " to " <<  inname+".xml" <<std::endl;
   scheduler::DummyMCRun run;
   run.load_from_file(xdrpath,hdfpath);
@@ -148,12 +147,13 @@ void convert_run(const std::string& inname)
 
 void convert_simulation(const std::string& inname)
 {
-  IXDRFileDump dump(boost::filesystem::path(inname,boost::filesystem::native));
+  IXDRFileDump dump=IXDRFileDump(boost::filesystem::path(inname));
   if (static_cast<int>(dump)!=scheduler::MCDump_task)
     boost::throw_exception(std::runtime_error("did not get a simulation on dump"));
   std::string jobname=inname+".xml";
   std::cout << "Converting simulation file " << inname << " to " <<  jobname << std::endl;
-  oxstream out(boost::filesystem::path(jobname,boost::filesystem::native));
+  boost::filesystem::path pjobname(jobname);
+  oxstream out(pjobname);
   out << header("UTF-8") << stylesheet(xslt_path("ALPS.xsl"))
       << start_tag("SIMULATION") << xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
       << attribute("xsi:noNamespaceSchemaLocation","http://xml.comp-phys.org/2002/10/QMCXML.xsd");
@@ -193,12 +193,13 @@ void convert_scheduler(const std::string& inname)
   status_text[scheduler::MasterScheduler::TaskFromDump]="running";
   status_text[scheduler::MasterScheduler::TaskFinished]="finished";
 
-  IXDRFileDump dump(boost::filesystem::path(inname,boost::filesystem::native));
+  IXDRFileDump dump=IXDRFileDump(boost::filesystem::path(inname));
   if (static_cast<int>(dump)!=scheduler::MCDump_scheduler)
     boost::throw_exception(std::runtime_error("did not get scheduler on dump"));
   std::string jobname=inname+".xml";
   std::cout << "Converting scheduler file " << inname << " to " <<  jobname << std::endl;
-  oxstream out(boost::filesystem::path(jobname,boost::filesystem::native));
+  boost::filesystem::path pjobname(jobname);
+  oxstream out(pjobname);
   out << header("UTF-8") << stylesheet(xslt_path("ALPS.xsl"))
     << start_tag("JOB") << xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
     << attribute("xsi:noNamespaceSchemaLocation","http://xml.comp-phys.org/2003/8/job.xsd");
@@ -227,7 +228,7 @@ void convert_scheduler(const std::string& inname)
 
 std::string convert2xml(std::string const& inname)
 {
-    IXDRFileDump dump(boost::filesystem::path(inname,boost::filesystem::native));
+    IXDRFileDump dump=IXDRFileDump(boost::filesystem::path(inname));
     int type;
     dump >> type;
     switch (type) {
