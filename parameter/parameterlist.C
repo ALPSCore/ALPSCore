@@ -48,7 +48,7 @@ int main()
   _putenv("DIR=/home/alps");
 #endif
 
-  boost::filesystem::path path("parameterlist.dump", boost::filesystem::native);
+  boost::filesystem::path path("parameterlist.dump");
 
   alps::ParameterList params(std::cin);
   std::cout << params;

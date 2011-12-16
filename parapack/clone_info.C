@@ -46,7 +46,7 @@ try {
 
   ox << info;
 
-  boost::filesystem::path xdrpath("clone_info.xdr", boost::filesystem::native);
+  boost::filesystem::path xdrpath("clone_info.xdr");
   {
     alps::OXDRFileDump dp(xdrpath);
     dp << info;
@@ -59,16 +59,16 @@ try {
   ox << info;
   boost::filesystem::remove(xdrpath);
 
-  boost::filesystem::path h5path("clone_info.h5", boost::filesystem::native);
+  boost::filesystem::path h5path("clone_info.h5");
   #pragma omp critical (hdf5io)
   {
-    alps::hdf5::archive ar(h5path.native_file_string(), alps::hdf5::archive::WRITE);
+    alps::hdf5::archive ar(h5path.string(), alps::hdf5::archive::WRITE);
     ar << make_pvp("/info", info);
   }
   info = alps::clone_info();
   #pragma omp critical (hdf5io)
   {
-    alps::hdf5::archive ar(h5path.native_file_string());
+    alps::hdf5::archive ar(h5path.string());
     ar >> make_pvp("/info", info);
   }
   ox << info;

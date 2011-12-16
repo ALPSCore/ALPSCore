@@ -76,12 +76,12 @@ try {
 
   // SAVE and LOAD
   {
-    alps::OXDRFileDump dump(boost::filesystem::path("observableset.dump",boost::filesystem::native));
+    alps::OXDRFileDump dump(boost::filesystem::path("observableset.dump"));
     dump << measurement;
   }
   measurement.clear();
   {
-    alps::IXDRFileDump dump(boost::filesystem::path("observableset.dump",boost::filesystem::native));
+    alps::IXDRFileDump dump(boost::filesystem::path("observableset.dump"));
     dump >> measurement;
   }
 
@@ -93,19 +93,19 @@ try {
 
   // SAVE and LOAD
   {
-    alps::OXDRFileDump dump(boost::filesystem::path("observableset.dump",boost::filesystem::native));
+    alps::OXDRFileDump dump(boost::filesystem::path("observableset.dump"));
     dump << measurement;
   }
   measurement.clear();
   {
-    alps::IXDRFileDump dump(boost::filesystem::path("observableset.dump",boost::filesystem::native));
+    alps::IXDRFileDump dump(boost::filesystem::path("observableset.dump"));
     dump >> measurement;
   }
 
   alps::oxstream oxs;
   measurement.write_xml(oxs);
 
-  boost::filesystem::remove(boost::filesystem::path("observableset.dump",boost::filesystem::native));
+  boost::filesystem::remove(boost::filesystem::path("observableset.dump"));
 
 #ifndef BOOST_NO_EXCEPTIONS
 }

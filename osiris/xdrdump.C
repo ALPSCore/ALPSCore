@@ -53,11 +53,11 @@ try {
   std::complex<double> o13(1,2);
 
   {
-    alps::OXDRFileDump od(boost::filesystem::path("xdrdump.dump",boost::filesystem::native));
+    alps::OXDRFileDump od(boost::filesystem::path("xdrdump.dump"));
     od << o1 << o2 << o3 << o4 << o5 << o6 << o7 << o8 << o9 << o10 << o11 << o12 <<o13;
   }
   
-  alps::IXDRFileDump id(boost::filesystem::path("xdrdump.dump",boost::filesystem::native));
+  alps::IXDRFileDump id(boost::filesystem::path("xdrdump.dump"));
   std::cout << id.get<bool>() << ' ';
   std::cout << static_cast<int32_t>(id.get<int8_t>()) << ' ';
   std::cout << static_cast<int32_t>(id.get<uint8_t>()) << ' ';

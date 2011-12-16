@@ -81,12 +81,12 @@ try {
 
   // SAVE and LOAD
   {
-    alps::OXDRFileDump dump(boost::filesystem::path("Observableset.dump",boost::filesystem::native));
+    alps::OXDRFileDump dump(boost::filesystem::path("Observableset.dump"));
     dump << measurement;
   }
   measurement.clear();
   {
-    alps::IXDRFileDump dump(boost::filesystem::path("Observableset.dump",boost::filesystem::native));
+    alps::IXDRFileDump dump(boost::filesystem::path("Observableset.dump"));
     dump >> measurement;
   }
 
@@ -97,19 +97,19 @@ try {
 
   // SAVE and LOAD
   {
-    alps::OXDRFileDump dump(boost::filesystem::path("Observableset.dump",boost::filesystem::native));
+    alps::OXDRFileDump dump(boost::filesystem::path("Observableset.dump"));
     dump << measurement;
   }
   measurement.clear();
   {
-    alps::IXDRFileDump dump(boost::filesystem::path("Observableset.dump",boost::filesystem::native));
+    alps::IXDRFileDump dump(boost::filesystem::path("Observableset.dump"));
     dump >> measurement;
   }
 
   alps::oxstream oxs;
   measurement.write_xml(oxs);
 
-  boost::filesystem::remove(boost::filesystem::path("Observableset.dump",boost::filesystem::native));
+  boost::filesystem::remove(boost::filesystem::path("Observableset.dump"));
 
   // test for signed observable with custom sign name
   measurement.clear();

@@ -41,7 +41,7 @@ try {
   std::string file;
   std::cin >> file;
 
-  alps::IXDRFileDump id(boost::filesystem::path(file,boost::filesystem::native));
+  alps::IXDRFileDump id=alps::IXDRFileDump(boost::filesystem::path(file));
   alps::idump_archive ar(id);
   std::cout << alps::get<bool>(ar) << ' ';
   std::cout << static_cast<int32_t>(alps::get<int8_t>(ar)) << ' ';

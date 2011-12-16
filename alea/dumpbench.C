@@ -94,7 +94,7 @@ int main() {
 
   {
     boost::posix_time::ptime start = boost::posix_time::microsec_clock::local_time();
-    alps::OXDRFileDump dump(boost::filesystem::path(xdr_filename, boost::filesystem::native));
+    alps::OXDRFileDump dump=alps::OXDRFileDump(boost::filesystem::path(xdr_filename));
     for (int c = 0; c < count; ++c) {
       dump << measurement;
     }
@@ -116,7 +116,7 @@ int main() {
   measurement.clear();
   {
     boost::posix_time::ptime start = boost::posix_time::microsec_clock::local_time();
-    alps::IXDRFileDump dump(boost::filesystem::path(xdr_filename, boost::filesystem::native));
+    alps::IXDRFileDump dump=alps::IXDRFileDump(boost::filesystem::path(xdr_filename));
     for (int c = 0; c < count; ++c) {
       dump >> measurement;
     }
@@ -130,7 +130,7 @@ int main() {
   {
     std::vector<double> data(size);
     boost::posix_time::ptime start = boost::posix_time::microsec_clock::local_time();
-    alps::OXDRFileDump dump(boost::filesystem::path(xdr_filename, boost::filesystem::native));
+    alps::OXDRFileDump dump=alps::OXDRFileDump(boost::filesystem::path(xdr_filename));
     for (int c = 0; c < count; ++c) {
       dump << data;
     }

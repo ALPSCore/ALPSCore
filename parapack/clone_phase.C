@@ -46,7 +46,7 @@ try {
 
   ox << phase;
 
-  boost::filesystem::path xdrpath("clone_phase.xdr", boost::filesystem::native);
+  boost::filesystem::path xdrpath("clone_phase.xdr");
   {
     alps::OXDRFileDump dp(xdrpath);
     dp << phase;
@@ -59,16 +59,16 @@ try {
   ox << phase;
   boost::filesystem::remove(xdrpath);
 
-  boost::filesystem::path h5path("clone_phase.h5", boost::filesystem::native);
+  boost::filesystem::path h5path("clone_phase.h5");
   #pragma omp critical (hdf5io)
   {
-    alps::hdf5::archive ar(h5path.native_file_string(), alps::hdf5::archive::WRITE);
+    alps::hdf5::archive ar(h5path.string(), alps::hdf5::archive::WRITE);
     ar << make_pvp("/phase", phase);
   }
   phase = alps::clone_phase();
   #pragma omp critical (hdf5io)
   {
-    alps::hdf5::archive ar(h5path.native_file_string());
+    alps::hdf5::archive ar(h5path.string());
     ar >> make_pvp("/phase", phase);
   }
   ox << phase;
