@@ -49,37 +49,86 @@ namespace alps {
 	
 		namespace detail {
 		
-#if defined(USE_COMPRESSED_EMBEDDING)
-			struct embedding_type {
-				embedding_type() {
+#if defined(USE_COMPRESSED_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+			template<boost::uint16_t bits> class compressed_set {
+				public:
+					compressed_set()
+						: prefix(10) // take somthing around 16
+						// do we really want to take 8 bits ore are 4 enoght
+						, mem_size((bits - prefix + 8) * (0x01 << prefix - 3))
+						, mem(new boost::uint64_t[mem_size])
+					{
+					
+//					std::cout << prefix << " " << bits << " " << mem_size << " " << boost::uint64_t(std::ceil((bits - prefix) / 8.)) << " " << (0x01 << prefix) << std::endl;
+					
+					}
+				
+					~compressed_set() {
+						delete[] mem;
+					}
+					
+					bool insert(boost::array<boost::uint8_t, bits / 8> const & data) {
+						boost::uint64_t value;
+						std::memcpy(data.c_array(), &value, data.size());
+
+						boost::uint8_t ptr = memget<8>(value & ((0x01 << prefix) - 1));
+						boost::uint64_t suffix = memget<64>((value & ((0x01 << prefix) - 1)) + 8);
+
+					}
+
+				private:
+
+					compressed_set(compressed_set const &) {}
+
+					template<boost::uint64_t size> inline boost::uint64_t memget(boost::uint64_t index) {
+						boost::uint64_t giant = index * ((bits - prefix + 8) >> 6);
+						boost::uint64_t baby = index & 0x7F;
+						if (index + bits < 64)
+							return (mem[giant] >> baby) & ((0x01 << baby) - 1);
+						else
+							return (mem[giant] >> baby) & ((0x01 << baby) - 1) + ((mem[giant + 1] & ((0x01 << (64 - baby)) - 1)) << 64 - baby);
+					}
+
+					// #bits of prefix
+					boost::uint16_t prefix;
+					// size of mem
+					boost::uint64_t mem_size;
+					// data are stored here: 8 bits for relative ptr, rest for data
+					boost::uint64_t * mem;
+			};
+
+			struct embedding_2d_type {
+				embedding_2d_type() {
 					std::memset(data.c_array(), 0, data.size());
 				}
 				
-				embedding_type(embedding_type const & rhs) {
+				embedding_2d_type(embedding_2d_type const & rhs) {
 					std::memcpy(data.c_array(), &(rhs.data[0]), data.size());
 				}
 
-				bool operator == (embedding_type const & rhs) const {
+				bool operator == (embedding_2d_type const & rhs) const {
 					return !memcmp(&(data[0]), &(rhs.data[0]), data.size());
 				}
 				boost::array<boost::uint8_t, 6> data;
 			};
 
-			std::size_t hash_value(embedding_type const & value) {
+			std::size_t hash_value(embedding_2d_type const & value) {
 				using boost::hash_range;
 				return hash_range(value.data.begin(), value.data.end());
 			}
-#else
-			struct embedding_type {
+#endif
 
-				embedding_type(std::size_t vertices_size, std::size_t edges_size)
+#if !defined(USE_COMPRESSED_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+			struct embedding_generic_type {
+
+				embedding_generic_type(std::size_t vertices_size, std::size_t edges_size)
 					: hash(0)
 					, counter(new boost::uint8_t(1))
 					, vertices(new std::vector<std::vector<boost::uint16_t> >(vertices_size))
 					, edges(new std::vector<boost::uint64_t>((edges_size >> 6) + (edges_size & 0x7F == 0 ? 0 : 1)))
 				{}
 				
-				embedding_type(embedding_type const & rhs)
+				embedding_generic_type(embedding_generic_type const & rhs)
 					: hash(rhs.hash)
 					, counter(rhs.counter)
 					, vertices(rhs.vertices)
@@ -89,7 +138,7 @@ namespace alps {
 					++*counter;
 				}
 
-				~embedding_type() {
+				~embedding_generic_type() {
 					if (!--*counter) {
 						delete counter;
 						delete vertices;
@@ -97,7 +146,7 @@ namespace alps {
 					}
 				}
 
-				bool operator == (embedding_type const & rhs) const {
+				bool operator == (embedding_generic_type const & rhs) const {
 					return hash == rhs.hash
 						&& *edges == *rhs.edges
 						&& *vertices == *rhs.vertices
@@ -110,10 +159,10 @@ namespace alps {
 				std::vector<boost::uint64_t> * edges;
 
 				private:
-					embedding_type() {}
+					embedding_generic_type() {}
 			};
 
-			std::size_t hash_value(embedding_type const & value) {
+			std::size_t hash_value(embedding_generic_type const & value) {
 				return value.hash;
 			}
 #endif
@@ -159,7 +208,12 @@ namespace alps {
 				  Subgraph const & S
 				, Graph const & G
 				, std::vector<std::size_t> const & I
-				, boost::unordered_set<embedding_type> & matches
+#if defined(USE_COMPRESSED_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+				, boost::unordered_set<embedding_2d_type> & matches_2d
+#endif
+#if !defined(USE_COMPRESSED_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+				, boost::unordered_set<embedding_generic_type> & matches_generic
+#endif
 				, std::vector<std::vector<boost::uint_t<8>::fast> > const & distance_to_boarder
 				, std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> const & pinning
 				, typename partition_type<Subgraph>::type const & subgraph_orbit
@@ -173,26 +227,33 @@ namespace alps {
 				  Subgraph const & S
 				, Graph const & G
 				, std::vector<std::size_t> const & I
-				, boost::unordered_set<embedding_type> & matches
+#if defined(USE_COMPRESSED_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+				, boost::unordered_set<embedding_2d_type> & matches_2d
+#endif
+#if !defined(USE_COMPRESSED_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+				, boost::unordered_set<embedding_generic_type> & matches_generic
+#endif
 				, std::vector<std::vector<boost::uint_t<8>::fast> > const & distance_to_boarder
 				, std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> const & pinning
 				, typename partition_type<Subgraph>::type const & subgraph_orbit
 				, boost::mpl::false_
 			) {
-#if defined(USE_COMPRESSED_EMBEDDING)
-				embedding_type embedding;
+#if defined(USE_COMPRESSED_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+
+				embedding_2d_type embedding_2d;
 				// if S has more than 20 vertices, chane this
 				boost::array<boost::uint8_t, 20> ordred_vertices;
 				std::memset(ordred_vertices.c_array(), boost::uint8_t(num_vertices(S)), ordred_vertices.size());
 				boost::array<boost::uint8_t, 20> vertices_order;
-				std::vector<boost::array<boost::uint8_t, 3> > ordred_edges(num_edges(S));
+				boost::array<boost::uint_t<32>::fast, 20> ordred_edges;
+				std::memset(ordred_edges.c_array(), 0, num_edges(S));
 				// assume the lattice has only 2 axis
 				boost::array<boost::uint_t<8>::fast, 2> min_dist_to_boarder = { {
 					  boost::integer_traits<boost::uint8_t>::const_max - 1
 					, boost::integer_traits<boost::uint8_t>::const_max - 1
 				} };
 				// take offset to bottom of node most left
-				embedding.data[5] = boost::integer_traits<boost::uint8_t>::const_max - 1;
+				embedding_2d.data[5] = boost::integer_traits<boost::uint8_t>::const_max - 1;
 
 				// If the lattice has more than two dimensions, change that
 				for (boost::uint_t<8>::fast i = 0; i < pinning.size(); ++i) {
@@ -217,8 +278,8 @@ namespace alps {
 				}
 				for (boost::uint_t<8>::fast i = 0; i < pinning.size(); ++i)
 					if (distance_to_boarder[0][pinning[i]] == min_dist_to_boarder[0])
-						embedding.data[5] = std::min(embedding.data[5], distance_to_boarder[1][pinning[i]]);
-				embedding.data[5] -= min_dist_to_boarder[1];
+						embedding_2d.data[5] = std::min(embedding_2d.data[5], distance_to_boarder[1][pinning[i]]);
+				embedding_2d.data[5] -= min_dist_to_boarder[1];
 				
 				for (boost::uint_t<8>::fast i = 0; i < ordred_vertices.size(); ++i)
 					vertices_order[ordred_vertices[i]] = i;
@@ -229,38 +290,26 @@ namespace alps {
 					boost::uint_t<8>::fast vs = source(*ei, S), vt = target(*ei, S);
 					if (vertices_order[vs] < vertices_order[vt])
 						std::swap(vs, vt);
-					ordred_edges[pos][0] = vertices_order[vs];
-					ordred_edges[pos][1] = vertices_order[vt];
-					ordred_edges[pos][2] = distance_to_boarder[0][pinning[vs]] != distance_to_boarder[0][pinning[vt]]
+					ordred_edges[pos] = (vertices_order[vs] << 16) + (vertices_order[vt] << 8) + (distance_to_boarder[0][pinning[vs]] != distance_to_boarder[0][pinning[vt]]
 						? (distance_to_boarder[0][pinning[vs]] < distance_to_boarder[0][pinning[vt]] ? 0x00 : 0x01)
 						: (distance_to_boarder[1][pinning[vs]] < distance_to_boarder[1][pinning[vt]] ? 0x02 : 0x03)
-					;
+					);
 				}
-				std::sort(ordred_edges.begin(), ordred_edges.end());
-				for (std::size_t i = 0; i < ordred_edges.size(); ++i)
-					embedding.data[i >> 2] |= ordred_edges[i][2] << ((i << 1) & 0x07);
+				std::sort(ordred_edges.begin(), ordred_edges.begin() + num_edges(S));
+				for (std::size_t i = 0; i < num_edges(S); ++i)
+					embedding_2d.data[i >> 2] |= (ordred_edges[i] & 0x7F) << ((i << 1) & 0x07);
 
-				matches.insert(embedding);
+#ifndef CHECK_COMPRESSED_EMBEDDING
+				matches_2d.insert(embedding_2d);
+#endif
 
-//				if (matches.insert(embedding).second) {
-//					for (std::size_t i = 0; i < ordred_edges.size(); ++i) {
-//						std::cout << " " << unsigned(ordred_edges[i][0]) << "-" << unsigned(ordred_edges[i][1]) << " ";
-//						switch (unsigned(ordred_edges[i][2])) {
-//							case 0: std::cout << "->"; break;
-//							case 1: std::cout << "<-"; break;
-//							case 2: std::cout << "`|`"; break;
-//							case 3: std::cout << ".|."; break;
-//						}
-//						std::cout << std::endl;
-//					}
-//					std::cout << ":" << unsigned(embedding.data[5]) << std::endl << std::endl;
-//				}
-			
-#else
-				embedding_type embedding(subgraph_orbit.size(), num_vertices(S) * (num_vertices(S) + 1) / 2);
+#endif
+#if !defined(USE_COMPRESSED_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
 
-				for (std::vector<std::vector<boost::uint16_t> >::iterator it = embedding.vertices->begin(); it != embedding.vertices->end(); ++it)
-					it->reserve(subgraph_orbit[it - embedding.vertices->begin()].size());
+				embedding_generic_type embedding_generic(subgraph_orbit.size(), num_vertices(S) * (num_vertices(S) + 1) / 2);
+
+				for (std::vector<std::vector<boost::uint16_t> >::iterator it = embedding_generic.vertices->begin(); it != embedding_generic.vertices->end(); ++it)
+					it->reserve(subgraph_orbit[it - embedding_generic.vertices->begin()].size());
 
 				std::size_t bits_per_dim = 0;
 				while ((0x01 << ++bits_per_dim) < num_vertices(S));
@@ -278,22 +327,22 @@ namespace alps {
 						lattice_pinning[it - pinning.begin()] <<= bits_per_dim;
 						lattice_pinning[it - pinning.begin()] += distance_to_boarder[d][*it] - distances[d];
 					}
-					(*embedding.vertices)[I[it - pinning.begin()]].push_back(lattice_pinning[it - pinning.begin()]);
+					(*embedding_generic.vertices)[I[it - pinning.begin()]].push_back(lattice_pinning[it - pinning.begin()]);
 				}
 
-				for (std::vector<std::vector<boost::uint16_t> >::iterator it = embedding.vertices->begin(); it != embedding.vertices->end(); ++it) {
+				for (std::vector<std::vector<boost::uint16_t> >::iterator it = embedding_generic.vertices->begin(); it != embedding_generic.vertices->end(); ++it) {
 					using boost::hash_combine;
 					std::sort(it->begin(), it->end());
 					for (std::vector<boost::uint16_t>::const_iterator jt = it->begin(); jt != it->end(); ++jt)
-						hash_combine(embedding.hash, *jt);
+						hash_combine(embedding_generic.hash, *jt);
 				}
 
 				for (std::vector<boost::uint16_t>::iterator it = lattice_pinning.begin(); it != lattice_pinning.end(); ++it) {
-					std::vector<boost::uint16_t>::iterator jt = (*embedding.vertices)[I[it - lattice_pinning.begin()]].begin();
+					std::vector<boost::uint16_t>::iterator jt = (*embedding_generic.vertices)[I[it - lattice_pinning.begin()]].begin();
 					for (; *jt != *it; ++jt);
-					*it = jt - (*embedding.vertices)[I[it - lattice_pinning.begin()]].begin();
+					*it = jt - (*embedding_generic.vertices)[I[it - lattice_pinning.begin()]].begin();
 					for (std::size_t i = 0; i < I[it - lattice_pinning.begin()]; ++i)
-						*it += (*embedding.vertices)[i].size();
+						*it += (*embedding_generic.vertices)[i].size();
 				}
 
 				typename boost::graph_traits<Subgraph>::edge_iterator s_ei, s_ee;
@@ -301,13 +350,42 @@ namespace alps {
 					std::size_t v1 = std::min(lattice_pinning[source(*s_ei, S)], lattice_pinning[target(*s_ei, S)]);
 					std::size_t v2 = std::max(lattice_pinning[source(*s_ei, S)], lattice_pinning[target(*s_ei, S)]);
 					std::size_t index = v1 * num_vertices(S) - (v1 - 1) * v1 / 2 + v2 - v1;
-					(*embedding.edges)[index >> 6] |= 0x01 << (index & 0x7F);
+					(*embedding_generic.edges)[index >> 6] |= 0x01 << (index & 0x7F);
 				}
-				for (std::vector<boost::uint64_t>::const_iterator it = embedding.edges->begin(); it != embedding.edges->end(); ++it) {
+				for (std::vector<boost::uint64_t>::const_iterator it = embedding_generic.edges->begin(); it != embedding_generic.edges->end(); ++it) {
 					using boost::hash_combine;
-					hash_combine(embedding.hash, *it);
+					hash_combine(embedding_generic.hash, *it);
 				}
-				matches.insert(embedding)
+#ifndef CHECK_COMPRESSED_EMBEDDING
+				matches_generic.insert(embedding_generic);
+#endif
+
+#endif
+
+#ifdef CHECK_COMPRESSED_EMBEDDING
+				boost::unordered_set<embedding_2d_type>::const_iterator it_2d;
+				boost::unordered_set<embedding_generic_type>::const_iterator it_generic;
+				bool b_2d, b_generic;
+				boost::tie(it_2d, b_2d) = matches_2d.insert(embedding_2d);
+				boost::tie(it_generic, b_generic) = matches_generic.insert(embedding_generic);
+				
+				if (b_2d and !b_generic)
+					std::cout << "match on compressed, not in generic";
+				
+				if (!b_2d and b_generic) {
+					// TODO: also output the value stored in it_2d to see the other part ...
+					for (std::size_t i = 0; i < num_edges(S); ++i) {
+						std::cout << ((ordred_edges[i] >> 16) & 0x7F) << "-" << ((ordred_edges[i] >> 8) & 0x7F) << " ";
+						switch (ordred_edges[i] & 0x7F) {
+							case 0: std::cout << "->"; break;
+							case 1: std::cout << "<-"; break;
+							case 2: std::cout << "`|`"; break;
+							case 3: std::cout << ".|."; break;
+						}
+						std::cout << std::endl;
+					}
+					std::cout << ":" << unsigned(embedding_2d.data[5]) << std::endl << std::endl;
+				}
 #endif
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -681,7 +759,12 @@ embedding.data[0]
 				, Subgraph const & S
 				, Graph const & G
 				, std::vector<std::size_t> const & I
-				, boost::unordered_set<embedding_type> & matches
+#if defined(USE_COMPRESSED_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+				, boost::unordered_set<embedding_2d_type> & matches_2d
+#endif
+#if !defined(USE_COMPRESSED_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+				, boost::unordered_set<embedding_generic_type> & matches_generic
+#endif
 				, std::vector<std::vector<boost::uint_t<8>::fast> > const & distance_to_boarder
 				, std::deque<std::pair<
 					  typename boost::graph_traits<Subgraph>::vertex_descriptor
@@ -735,9 +818,42 @@ embedding.data[0]
 					stack.pop_front();
 					for (; g_ai != g_ae; ++g_ai)
 						if (!visited[*g_ai])
-							detail::lattice_constant_walker(t, *g_ai, S, G, I, matches, distance_to_boarder, stack, placed, visited, pinning, subgraph_orbit, exit_on_match);
+							detail::lattice_constant_walker(
+								  t
+								, *g_ai
+								, S
+								, G
+								, I
+#if defined(USE_COMPRESSED_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+								, matches_2d
+#endif
+#if !defined(USE_COMPRESSED_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+								, matches_generic
+#endif
+								, distance_to_boarder
+								, stack
+								, placed
+								, visited
+								, pinning
+								, subgraph_orbit
+								, exit_on_match
+							);
 				} else
-					lattice_constant_insert(S, G, I, matches, distance_to_boarder, pinning, subgraph_orbit, exit_on_match);
+					lattice_constant_insert(
+						  S
+						, G
+						, I
+#if defined(USE_COMPRESSED_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+						, matches_2d
+#endif
+#if !defined(USE_COMPRESSED_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+						, matches_generic
+#endif
+						, distance_to_boarder
+						, pinning
+						, subgraph_orbit
+						, exit_on_match
+					);
 				pinning[s] = num_vertices(G);
 				visited[g] = false;
 			}
@@ -776,7 +892,23 @@ embedding.data[0]
 						I[*jt] = it - subgraph_orbit.begin();
 
 				// Matched embeddings
-				boost::unordered_set<embedding_type> matches;
+#if defined(USE_COMPRESSED_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+
+
+
+
+				// TODO: fixit!
+				compressed_set<48> matches_2d_new;
+
+
+
+
+
+				boost::unordered_set<embedding_2d_type> matches_2d;
+#endif
+#if !defined(USE_COMPRESSED_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+				boost::unordered_set<embedding_generic_type> matches_generic;
+#endif
 
 				for (typename partition_type<Subgraph>::type::const_iterator it = subgraph_orbit.begin(); it != subgraph_orbit.end(); ++it)
 					if (out_degree(it->front(), S) <= out_degree(v, G)) {
@@ -789,11 +921,33 @@ embedding.data[0]
 						> > stack;
 						std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> pinning(num_vertices(S), num_vertices(G));
 						placed[it->front()] = true;
-						lattice_constant_walker(it->front(), v, S, G, I, matches, distance_to_boarder, stack, placed, visited, pinning, subgraph_orbit, exit_on_match);
+						lattice_constant_walker(
+							  it->front()
+							, v
+							, S
+							, G
+							, I 
+#if defined(USE_COMPRESSED_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+							, matches_2d
+#endif
+#if !defined(USE_COMPRESSED_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+							, matches_generic
+#endif
+							, distance_to_boarder
+							, stack
+							, placed
+							, visited
+							, pinning
+							, subgraph_orbit
+							, exit_on_match
+						);
 						break;
 					}
-
-				return matches.size();
+#if defined(USE_COMPRESSED_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+				return matches_2d.size();
+#else
+				return matches_generic.size();
+#endif
 			}
 		}
 
