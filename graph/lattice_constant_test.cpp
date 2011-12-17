@@ -1,3 +1,6 @@
+//#define USE_COMPRESSED_EMBEDDING
+//#define CHECK_COMPRESSED_EMBEDDING
+
 #include <alps/graph/lattice_constant.hpp>
 
 #include <boost/timer/timer.hpp>
@@ -129,8 +132,8 @@ int main() {
 //    g.push_back(std::make_pair(graph_type(13), 162466));
 //    g.push_back(std::make_pair(graph_type(14), 440750));
 //    g.push_back(std::make_pair(graph_type(15), 1187222));
-    g.push_back(std::make_pair(graph_type(16), 3208298)); // 1.51 GB
-//    g.push_back(std::make_pair(graph_type(17), 8622666)); // 4.3 GB
+    g.push_back(std::make_pair(graph_type(16), 3208298)); // 0.2 GB
+//    g.push_back(std::make_pair(graph_type(17), 8622666)); // 0.46 GB
 //    g.push_back(std::make_pair(graph_type(18), 0)); // =    233'884'943 => 5.3 GB
 //    g.push_back(std::make_pair(graph_type(19), 0)); // =    631'489'348 => 6.6 GB
 //    g.push_back(std::make_pair(graph_type(20), 0)); // = log(4*pow(3, 19))/log(2) < 17'050'212'141 == 5314 * G(16) => 272 GB why?
