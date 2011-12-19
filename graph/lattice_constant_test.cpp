@@ -1,4 +1,5 @@
 //#define USE_COMPRESSED_EMBEDDING
+//#define USE_COMPRESSED_EMBEDDING2
 //#define CHECK_COMPRESSED_EMBEDDING
 
 #include <alps/graph/lattice_constant.hpp>
