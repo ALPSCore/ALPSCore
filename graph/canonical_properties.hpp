@@ -53,7 +53,6 @@
 
 namespace alps {
 	namespace graph {
-
 		
         // pi = (V1, V2, ..., Vr), Vi = (n1, n2, ..., nk), ni element of G
 		template<typename Graph> struct partition_type {
