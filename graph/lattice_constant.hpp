@@ -125,6 +125,7 @@ namespace alps {
 					: hash(0)
 					, counter(new boost::uint8_t(1))
 					, vertices(new std::vector<std::vector<boost::uint16_t> >(vertices_size))
+					//warning: & has lower precedence than ==; == will be evaluated first [-Wparentheses]
 					, edges(new std::vector<boost::uint64_t>((edges_size >> 6) + (edges_size & 0x7F == 0 ? 0 : 1)))
 				{}
 				
