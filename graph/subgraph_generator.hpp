@@ -172,7 +172,7 @@ class subgraph_generator {
       * \return true is the graph(-label) was unknown, false if the label has been seen before.
       */
     bool is_unknown(typename canonical_properties_type<subgraph_type>::type const& p) {
-        typename graph_label<subgraph_type>::type const& label(get<1>(p));
+        typename graph_label<subgraph_type>::type const& label(boost::get<1>(p));
         // Try to insert the label and return true if it wasn't there yet
         return labels_.insert(make_tuple(boost::get<0>(label).size(),label)).second;
     }
