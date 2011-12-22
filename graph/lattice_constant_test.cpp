@@ -106,6 +106,23 @@ int main() {
     add_edge(3, 7,g.back().first);
     add_edge(4, 8,g.back().first);
 
+
+    //
+    //         3
+    //         |
+    //   6--2--0--1--4--7
+    //            |
+    //            5
+    //
+    g.push_back(std::make_pair(graph_type(),476));
+    add_edge(0, 1,g.back().first);
+    add_edge(0, 2,g.back().first);
+    add_edge(0, 3,g.back().first);
+    add_edge(1, 4,g.back().first);
+    add_edge(1, 5,g.back().first);
+    add_edge(2, 6,g.back().first);
+    add_edge(4, 7,g.back().first);
+
 	// graph no. 32340
 	// 14	15	1	64272
     g.push_back(std::make_pair(graph_type(15),64272));
