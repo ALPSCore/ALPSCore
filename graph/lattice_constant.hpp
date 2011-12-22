@@ -56,7 +56,7 @@ namespace alps {
 		
 #ifdef USE_COMPRESSED_EMBEDDING2
 
-			template<typename Value = boost::uint64_t, boost::uint64_t N = 2> class compressed_set {
+			template<boost::uint64_t N = 2> class compressed_set {
 
 				public:
 					compressed_set()
@@ -64,7 +64,7 @@ namespace alps {
 						, count(0)
 						, mask((0x01ul << prefix) - 1)
 						, mem(new boost::uint64_t[N * (0x01ul << prefix)])
-, avgwalk(0)
+//, avgwalk(0)
 					{
 						std::memset(mem, 0x00, (N * (0x01ul << prefix)) << 3);
 					}
@@ -76,10 +76,12 @@ namespace alps {
 					bool insert(boost::array<boost::uint64_t, N> const & data) {
 						boost::uint64_t index = (hash(&data[0], prefix) ^ (data[0] & mask)) << 0x01;
 						for (boost::uint64_t offset = 0; offset < mask; ++offset, index = (index + N) & ((mask << 0x01) | 0x01ul))
+//							if (!mem[index]) {
 							if ((mem[index] & mask) == 0) {
 								mem[index] = (offset + 1) | (data[0] & ~mask);
-								mem[index + 1] = data[1];				
-avgwalk += offset;
+								for (std::size_t i = 0; i < N; ++i)
+									mem[index + i] = data[i];
+//avgwalk += offset;
 								if (3 * (0x01ul << (prefix - 2)) < ++count)
 									grow();
 								return true;
@@ -92,23 +94,21 @@ avgwalk += offset;
 						return count;
 					}
 
-boost::uint64_t avgwalk;
+//boost::uint64_t avgwalk;
 
 				private:
 
 					compressed_set(compressed_set const &) {}
 					
 					void grow() {
-
-double avgdist = avgwalk / double(count);
-						
+//double avgdist = avgwalk / double(count);
 						boost::uint64_t * old_mem = mem;
 						boost::uint64_t old_mask = mask;
 						boost::array<boost::uint64_t, N> data;
 
 						++prefix;
 						count = 0;
-avgwalk = 0;
+//avgwalk = 0;
 						mask = (0x01ul << prefix) - 1;
 						mem = new boost::uint64_t[N * (0x01ul << prefix)];
 						std::memset(mem, 0x00, (N * (0x01ul << prefix)) << 3);
@@ -123,9 +123,7 @@ avgwalk = 0;
 								insert(data);
 							}
 						delete[] old_mem;
-
-std::cout << "resize to " << prefix << ", avg dist " << avgdist << ", avg dist in resize " << avgwalk / double(count) << std::endl; 
-
+//std::cout << "resize to " << prefix << ", avg dist " << avgdist << ", avg dist in resize " << avgwalk / double(count) << std::endl;
 					}
 
 					inline boost::uint64_t hash(boost::uint64_t const * data, boost::uint64_t size) {
@@ -928,8 +926,7 @@ std::cout << "resize to " << prefix << ", avg dist " << avgdist << ", avg dist i
 						break;
 					}
 #ifdef USE_COMPRESSED_EMBEDDING2
-				std::cout << "average walk: " << matches.avgwalk / double(matches.size()) << std::endl;
-
+//				std::cout << "average walk: " << matches.avgwalk / double(matches.size()) << std::endl;
 				return matches.size();
 #else
 #if defined(USE_COMPRESSED_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
