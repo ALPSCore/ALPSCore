@@ -76,10 +76,10 @@ namespace alps {
 					bool insert(boost::array<boost::uint64_t, N> const & data) {
 						boost::uint64_t index = (hash(&data[0], prefix) ^ (data[0] & mask)) << 0x01;
 						for (boost::uint64_t offset = 0; offset < mask; ++offset, index = (index + N) & ((mask << 0x01) | 0x01ul))
-//							if (!mem[index]) {
-							if ((mem[index] & mask) == 0) {
+							if (!mem[index]) {
+//							if ((mem[index] & mask) == 0) {
 								mem[index] = (offset + 1) | (data[0] & ~mask);
-								for (std::size_t i = 0; i < N; ++i)
+								for (std::size_t i = 1; i < N; ++i)
 									mem[index + i] = data[i];
 //avgwalk += offset;
 								if (3 * (0x01ul << (prefix - 2)) < ++count)
@@ -119,7 +119,8 @@ namespace alps {
 									: (0x01ul << (prefix + 1)) + (index >> 0x01) - (old_mem[index] & old_mask) + 1
 								;
 								data[0] = ((hash(old_mem + index, prefix - 1) ^ pfx) & old_mask) | (old_mem[index] & ~old_mask);
-								data[1] = old_mem[index + 1];
+								for (std::size_t i = 1; i < N; ++i)
+									data[i] = old_mem[index + i];
 								insert(data);
 							}
 						delete[] old_mem;
