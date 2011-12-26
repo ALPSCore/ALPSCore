@@ -1,5 +1,5 @@
 //#define USE_COMPRESSED_EMBEDDING
-//#define USE_COMPRESSED_EMBEDDING2
+#define USE_COMPRESSED_EMBEDDING2
 //#define CHECK_COMPRESSED_EMBEDDING
 
 #include <alps/graph/lattice_constant.hpp>
@@ -106,7 +106,6 @@ int main() {
     add_edge(3, 7,g.back().first);
     add_edge(4, 8,g.back().first);
 
-
     //
     //         3
     //         |
@@ -150,11 +149,11 @@ int main() {
 //    g.push_back(std::make_pair(graph_type(13), 162466));
 //    g.push_back(std::make_pair(graph_type(14), 440750));
 //    g.push_back(std::make_pair(graph_type(15), 1187222));
-    g.push_back(std::make_pair(graph_type(16), 3208298)); // 0.2 GB
-//    g.push_back(std::make_pair(graph_type(17), 8622666)); // 0.46 GB
-//    g.push_back(std::make_pair(graph_type(18), 0)); // =    233'884'943 => 5.3 GB
-//    g.push_back(std::make_pair(graph_type(19), 0)); // =    631'489'348 => 6.6 GB
-//    g.push_back(std::make_pair(graph_type(20), 0)); // = log(4*pow(3, 19))/log(2) < 17'050'212'141 == 5314 * G(16) => 272 GB why?
+    g.push_back(std::make_pair(graph_type(16), 3208298)); // 0.13 GB
+//    g.push_back(std::make_pair(graph_type(17), 8622666)); // 0.26 GB
+//    g.push_back(std::make_pair(graph_type(18), 23233338)); // 0.64 GB 
+//    g.push_back(std::make_pair(graph_type(19), 62329366)); // 2.13
+//    g.push_back(std::make_pair(graph_type(20), 0)); // 
     add_edge( 0,  1, g.back().first);
     add_edge( 1,  2, g.back().first);
     add_edge( 2,  3, g.back().first);
