@@ -112,7 +112,7 @@ namespace alps {
             friend ALPS_DECL mcresult exp(mcresult rhs);
             friend ALPS_DECL mcresult log(mcresult rhs);
 
-            friend mcresult pow(mcresult rhs, double exponent);
+            friend ALPS_DECL mcresult pow(mcresult rhs, double exponent);
 
             #define ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_FRIEND(OP, T)                            \
                 friend ALPS_DECL mcresult OP(mcresult const & lhs, T const & rhs);                         \

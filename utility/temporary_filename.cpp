@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <sys/stat.h>
 #include <iostream>
+#include <cstdlib>
 
 
 #ifdef BOOST_MSVC

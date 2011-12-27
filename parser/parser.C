@@ -69,7 +69,7 @@ std::string parse_parameter_name(std::istream& in)
   }
   if (!in.eof())
     in.putback(c);
-  return name;
+  return name;   	
 }
 
 std::string read_until(std::istream& in, char end) 
