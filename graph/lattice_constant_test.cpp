@@ -1,8 +1,5 @@
-//#define USE_COMPRESSED_EMBEDDING
-#define USE_COMPRESSED_EMBEDDING2
-//#define CHECK_COMPRESSED_EMBEDDING
 
-#include <alps/graph/lattice_constant.hpp>
+#include <alps/graph/lattice_constant_2d.hpp>
 
 #include <boost/timer/timer.hpp>
 #include <boost/graph/adjacency_list.hpp>
@@ -149,10 +146,10 @@ int main() {
 //    g.push_back(std::make_pair(graph_type(13), 162466));
 //    g.push_back(std::make_pair(graph_type(14), 440750));
 //    g.push_back(std::make_pair(graph_type(15), 1187222));
-    g.push_back(std::make_pair(graph_type(16), 3208298)); // 0.13 GB
+//    g.push_back(std::make_pair(graph_type(16), 3208298)); // 0.13 GB
 //    g.push_back(std::make_pair(graph_type(17), 8622666)); // 0.26 GB
 //    g.push_back(std::make_pair(graph_type(18), 23233338)); // 0.64 GB 
-//    g.push_back(std::make_pair(graph_type(19), 62329366)); // 2.13
+    g.push_back(std::make_pair(graph_type(19), 62329366)); // 2.13
 //    g.push_back(std::make_pair(graph_type(20), 0)); // 
     add_edge( 0,  1, g.back().first);
     add_edge( 1,  2, g.back().first);
@@ -169,9 +166,9 @@ int main() {
     add_edge(12, 13, g.back().first);
     add_edge(13, 14, g.back().first);
     add_edge(14, 15, g.back().first);
-//    add_edge(15, 16, g.back().first);
-//    add_edge(16, 17, g.back().first);
-//    add_edge(17, 18, g.back().first);
+    add_edge(15, 16, g.back().first);
+    add_edge(16, 17, g.back().first);
+    add_edge(17, 18, g.back().first);
 //    add_edge(18, 19, g.back().first);
 
     int success = 0;
