@@ -329,17 +329,29 @@ namespace alps {
 				}
 				
 				boost::uint64_t visited = 0x00;
-				for (std::size_t index = 0, vertex, next = 1; index < (num_vertices(S) << 0x02); index += 0x01 << 0x02) {
+				for (std::size_t index_sal6 = 0, index_and3F = 0, count = 0, next = 1, vertex; count < num_vertices(S); index_and3F += 0x01 << 0x02, ++count) {
+					if (index_and3F == 0x01 << 6) {
+						index_and3F = 0;
+						++index_sal6;
+					}
 					vertex = vertices[--next];
-					embedding[index >> 6] |= (
+					embedding[index_sal6] |= (
 						  (pinning[vertex][1] == 0xFF ? 0x00ul :  0x01ul         )
 						| (pinning[vertex][2] == 0xFF ? 0x00ul : (0x01ul << 0x01))
 						| (pinning[vertex][3] == 0xFF ? 0x00ul : (0x01ul << 0x02))
 						| (pinning[vertex][4] == 0xFF ? 0x00ul : (0x01ul << 0x03))
-					) << (index & 0x3F);
-					for (std::size_t i = 1; i < 5; ++i)
-						if (pinning[vertex][i] != 0xFF and ((visited >> pinning[vertex][i]) & 0x01ul) == 0)
-							visited |= 0x01ul << (vertices[next++] = pinning[vertex][i]);
+					) << index_and3F;
+//					for (std::size_t i = 1; i < 5; ++i)
+//						if (pinning[vertex][i] != 0xFF and ((visited >> pinning[vertex][i]) & 0x01ul) == 0)
+//							visited |= 0x01ul << (vertices[next++] = pinning[vertex][i]);
+					if (pinning[vertex][1] != 0xFF and ((visited >> pinning[vertex][1]) & 0x01ul) == 0)
+						visited |= 0x01ul << (vertices[next++] = pinning[vertex][1]);
+					if (pinning[vertex][2] != 0xFF and ((visited >> pinning[vertex][2]) & 0x01ul) == 0)
+						visited |= 0x01ul << (vertices[next++] = pinning[vertex][2]);
+					if (pinning[vertex][3] != 0xFF and ((visited >> pinning[vertex][3]) & 0x01ul) == 0)
+						visited |= 0x01ul << (vertices[next++] = pinning[vertex][3]);
+					if (pinning[vertex][4] != 0xFF and ((visited >> pinning[vertex][4]) & 0x01ul) == 0)
+						visited |= 0x01ul << (vertices[next++] = pinning[vertex][4]);
 				}
 				matches.insert(embedding);
 			}
