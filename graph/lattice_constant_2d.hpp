@@ -293,7 +293,7 @@ namespace alps {
 				, std::vector<std::size_t> const & I
 				, compressed_set<> & matches
 				, std::vector<std::vector<std::size_t> > const & distance_to_boarder
-				, std::vector<boost::array<std::size_t, 5> > const & pinning
+				, std::vector<boost::array<boost::uint16_t, 5> > const & pinning
 				, boost::mpl::true_
 			) {
 				throw embedding_found();
@@ -306,12 +306,12 @@ namespace alps {
 				, std::vector<std::size_t> const & I
 				, compressed_set<> & matches
 				, std::vector<std::vector<std::size_t> > const & distance_to_boarder
-				, std::vector<boost::array<std::size_t, 5> > const & pinning
+				, std::vector<boost::array<boost::uint16_t, 5> > const & pinning
 				// TODO: make argument, to pass SubVertexNum and CoordNum, so no explicit call is needed ...
 				, boost::mpl::false_
 			) {
-				boost::array<std::size_t, 20> vertices;
-				// TODO: figure out this number, only 40 bits are used per graph, only use one uint64_t!
+				boost::array<boost::uint16_t, 20> vertices;
+
 				boost::array<boost::uint64_t, 2> embedding;
 				std::memset(embedding.c_array(), 0x00, embedding.size() << 3);
 
@@ -322,37 +322,30 @@ namespace alps {
 					if (dist_i < dist_0)
 						vertices[0] = i;
 					else if (dist_i == dist_0) {
-						std::size_t dim = (distance_to_boarder[0][pinning[i][0]] + 0x01 - distance_to_boarder[0][pinning[vertices[0]][0]]) & 0x01;
+						std::size_t dim = distance_to_boarder[0][pinning[i][0]] == distance_to_boarder[0][pinning[vertices[0]][0]] ? 1 : 0;
 						if (distance_to_boarder[dim][pinning[i][0]] < distance_to_boarder[dim][pinning[vertices[0]][0]])
 							vertices[0] = i;
 					}
 				}
-				
-				boost::uint64_t visited = 0x00;
-				for (std::size_t index_sal6 = 0, index_and3F = 0, count = 0, next = 1, vertex; count < num_vertices(S); index_and3F += 0x01 << 0x02, ++count) {
-					if (index_and3F == 0x01 << 6) {
-						index_and3F = 0;
-						++index_sal6;
-					}
+
+				std::size_t visited = 0x00;
+				for (std::size_t index = 0, next = 1, vertex; index < num_vertices(S); ++index) {
 					vertex = vertices[--next];
-					embedding[index_sal6] |= (
-						  (pinning[vertex][1] == 0xFF ? 0x00ul :  0x01ul         )
-						| (pinning[vertex][2] == 0xFF ? 0x00ul : (0x01ul << 0x01))
-						| (pinning[vertex][3] == 0xFF ? 0x00ul : (0x01ul << 0x02))
-						| (pinning[vertex][4] == 0xFF ? 0x00ul : (0x01ul << 0x03))
-					) << index_and3F;
-//					for (std::size_t i = 1; i < 5; ++i)
-//						if (pinning[vertex][i] != 0xFF and ((visited >> pinning[vertex][i]) & 0x01ul) == 0)
-//							visited |= 0x01ul << (vertices[next++] = pinning[vertex][i]);
-					if (pinning[vertex][1] != 0xFF and ((visited >> pinning[vertex][1]) & 0x01ul) == 0)
-						visited |= 0x01ul << (vertices[next++] = pinning[vertex][1]);
-					if (pinning[vertex][2] != 0xFF and ((visited >> pinning[vertex][2]) & 0x01ul) == 0)
-						visited |= 0x01ul << (vertices[next++] = pinning[vertex][2]);
-					if (pinning[vertex][3] != 0xFF and ((visited >> pinning[vertex][3]) & 0x01ul) == 0)
-						visited |= 0x01ul << (vertices[next++] = pinning[vertex][3]);
-					if (pinning[vertex][4] != 0xFF and ((visited >> pinning[vertex][4]) & 0x01ul) == 0)
-						visited |= 0x01ul << (vertices[next++] = pinning[vertex][4]);
+					boost::uint64_t tmp = (*reinterpret_cast<boost::uint64_t const *>(&pinning[vertex][1]) & 0x8000800080008000ul) >> 15;
+					tmp |= tmp >> 31;
+					tmp |= tmp >> 14;
+					embedding[index >> 4] |= (tmp & 0x0Ful) << ((index & 0x0F) << 2);
+					std::size_t inc1 = (~tmp        & ~(visited >> pinning[vertex][1])) & 0x01;
+					std::size_t inc2 = (~(tmp >> 2) & ~(visited >> pinning[vertex][2])) & 0x01;
+					std::size_t inc3 = (~(tmp >> 1) & ~(visited >> pinning[vertex][3])) & 0x01;
+					std::size_t inc4 = (~(tmp >> 3) & ~(visited >> pinning[vertex][4])) & 0x01;
+					visited |= inc1 << (vertices[next        ] = pinning[vertex][1]);
+					visited |= inc2 << (vertices[next += inc1] = pinning[vertex][2]);
+					visited |= inc3 << (vertices[next += inc2] = pinning[vertex][3]);
+					visited |= inc4 << (vertices[next += inc3] = pinning[vertex][4]);
+					next += inc4;
 				}
+
 				matches.insert(embedding);
 			}
 
@@ -408,7 +401,7 @@ namespace alps {
 				, std::deque<std::pair<SubgraphVertex, GraphVertex> > & stack
 				, boost::uint32_t placed
 				, boost::dynamic_bitset<> & visited
-				, std::vector<boost::array<std::size_t, 5> > & pinning
+				, std::vector<boost::array<boost::uint16_t, 5> > & pinning
 				, ExitOnMatch exit_on_match
 			) {
 				typename boost::graph_traits<Subgraph>::adjacency_iterator s_ai, s_ae;
@@ -416,7 +409,7 @@ namespace alps {
 
 				visited[g_stack.back()] = true;
 				pinning[s_stack.back()][0] = g_stack.back();
-				pinning[s_stack.back()][1] = pinning[s_stack.back()][2] = pinning[s_stack.back()][3] = pinning[s_stack.back()][4] = 0xFF;
+				pinning[s_stack.back()][1] = pinning[s_stack.back()][2] = pinning[s_stack.back()][3] = pinning[s_stack.back()][4] = 0x8000;
 
 				for (tie(s_ai, s_ae) = adjacent_vertices(s_stack.back(), S); s_ai != s_ae; ++s_ai)
 					if (pinning[*s_ai][0] != num_vertices(G)) {
@@ -501,9 +494,9 @@ namespace alps {
 
 				visited[g_stack.back()] = false;
 				for (std::size_t i = 1; i < 5; ++i)
-					if (pinning[s_stack.back()][i] != 0xFF and pinning[pinning[s_stack.back()][i]][0] < num_vertices(G)) {
+					if (pinning[s_stack.back()][i] != 0x8000 and pinning[pinning[s_stack.back()][i]][0] < num_vertices(G)) {
 						std::size_t dim = (distance_to_boarder[0][pinning[pinning[s_stack.back()][i]][0]] + 0x01 - distance_to_boarder[0][g_stack.back()]) & 0x01;
-						pinning[pinning[s_stack.back()][i]][((dim << 0x01) | ((distance_to_boarder[dim][g_stack.back()] + 0x01 - distance_to_boarder[dim][pinning[pinning[s_stack.back()][i]][0]]) >> 0x01)) + 1] = 0xFF;
+						pinning[pinning[s_stack.back()][i]][((dim << 0x01) | ((distance_to_boarder[dim][g_stack.back()] + 0x01 - distance_to_boarder[dim][pinning[pinning[s_stack.back()][i]][0]]) >> 0x01)) + 1] = 0x8000;
 					}
 				pinning[s_stack.back()][0] = num_vertices(G);
 			}
@@ -552,8 +545,8 @@ namespace alps {
 							  typename boost::graph_traits<Subgraph>::vertex_descriptor
 							, typename boost::graph_traits<Graph>::vertex_descriptor
 						> > stack;
-						boost::array<std::size_t, 5> pinning_proto = { num_vertices(G), 0, 0, 0, 0 };
-						std::vector<boost::array<std::size_t, 5> > pinning(num_vertices(S), pinning_proto);
+						boost::array<boost::uint16_t, 5> pinning_proto = { num_vertices(G), 0, 0, 0, 0 };
+						std::vector<boost::array<boost::uint16_t, 5> > pinning(num_vertices(S), pinning_proto);
 						boost::uint32_t placed = 0x01ul << it->front();
 						std::vector<typename boost::graph_traits<Subgraph>::vertex_descriptor> s_stack(1, it->front());
 						std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> g_stack(1, v);
