@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1999-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1999-2011 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -43,7 +43,7 @@ namespace alps { namespace numeric {
 #if defined(BOOST_MSVC)
   template <class T>
   bool isnan(T x) { return _isnan(x);}
-#elif defined(_CRAYC)
+#elif defined(_CRAYC) || defined(__FCC_VERSION)
   using ::isnan;
 #else
   using std::isnan;
