@@ -48,7 +48,7 @@ public:
 # define ALPS_DUMP_DO_TYPE(T) void write_simple(T x) { archive_ << x;}
   ALPS_DUMP_DO_TYPE(bool)
   ALPS_DUMP_DO_TYPE(char)
-  ALPS_DUMP_DO_TYPE(signed char)
+  //  ALPS_DUMP_DO_TYPE(signed char)
   ALPS_DUMP_DO_TYPE(unsigned char)
   ALPS_DUMP_DO_TYPE(short)
   ALPS_DUMP_DO_TYPE(unsigned short)
@@ -87,7 +87,7 @@ public:
 # define ALPS_DUMP_DO_TYPE(T) void read_simple(T& x) { archive_ >> x;}
   ALPS_DUMP_DO_TYPE(bool)
   ALPS_DUMP_DO_TYPE(char)
-  ALPS_DUMP_DO_TYPE(signed char)
+  // ALPS_DUMP_DO_TYPE(signed char)
   ALPS_DUMP_DO_TYPE(unsigned char)
   ALPS_DUMP_DO_TYPE(short)
   ALPS_DUMP_DO_TYPE(unsigned short)
