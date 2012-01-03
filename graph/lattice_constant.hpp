@@ -1174,7 +1174,7 @@ std::cout << std::abs(int(distance_to_boarder[0][pinning[ordred_vertices[k]]]) -
 				, Graph const & G
 				, boost::mpl::true_
 			) {
-				return get(boost::vertex_name_t(), S)[s] == get(boost::vertex_name_t(), G)[g];
+				return get(alps::vertex_type_t(), S)[s] == get(alps::vertex_type_t(), G)[g];
 			} 
 
 			template<typename Subgraph, typename Graph> bool lattice_constant_edge_equal(
@@ -1300,7 +1300,7 @@ std::cout << std::abs(int(distance_to_boarder[0][pinning[ordred_vertices[k]]]) -
 								, exit_on_match
 							);
 				} else
-					lattice_constant_insert<Graph, Subgraph, 20, 2>(
+					lattice_constant_insert<Subgraph, Graph, 20, 2>(
 						  S
 						, G
 						, I
