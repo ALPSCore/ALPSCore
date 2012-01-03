@@ -41,8 +41,8 @@ typedef boost::adjacency_list<
 	  boost::vecS
 	, boost::vecS
 	, boost::undirectedS
-	, boost::property<boost::vertex_name_t, std::size_t>
-	, boost::property<alps::edge_type_t, std::size_t>
+	, boost::property<alps::vertex_type_t, alps::type_type>
+	, boost::property<alps::edge_type_t, alps::type_type>
 > colored_graph_type;
 
 using namespace alps::graph;
@@ -84,13 +84,13 @@ int main() {
 		add_edge(B, D, h);
 		add_edge(C, D, h);
 
-		boost::property_map<colored_graph_type, boost::vertex_name_t>::type g_vertex_name = get(boost::vertex_name_t(), g);
+		boost::property_map<colored_graph_type, alps::vertex_type_t>::type g_vertex_name = get(alps::vertex_type_t(), g);
 		g_vertex_name[A] = 0;
 		g_vertex_name[B] = 1;
 		g_vertex_name[C] = 1;
 		g_vertex_name[D] = 0;
 
-		boost::property_map<colored_graph_type, boost::vertex_name_t>::type h_vertex_name = get(boost::vertex_name_t(), h);
+		boost::property_map<colored_graph_type, alps::vertex_type_t>::type h_vertex_name = get(alps::vertex_type_t(), h);
 		h_vertex_name[A] = 0;
 		h_vertex_name[B] = 0;
 		h_vertex_name[C] = 1;
