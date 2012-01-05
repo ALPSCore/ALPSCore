@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2011 by Lukas Gamper <gamperl@gmail.com>                   *
+ * Copyright (C) 2010 - 2012 by Lukas Gamper <gamperl@gmail.com>                   *
  *                              Matthias Troyer <troyer@comp-phys.org>             *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
