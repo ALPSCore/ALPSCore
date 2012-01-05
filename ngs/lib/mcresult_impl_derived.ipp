@@ -507,7 +507,6 @@ namespace alps {
                     }
 
                 #endif
-
         };
     }
 }
