@@ -1,4 +1,4 @@
-#define USE_COMPRESSED_EMBEDDING2
+//#define USE_COMPRESSED_EMBEDDING2
 
 #include <alps/graph/subgraph_generator.hpp>
 #include <alps/lattice/graph_helper.h>
@@ -8,7 +8,7 @@
 #include <boost/timer/timer.hpp>
 
 
-enum { test_graph_size = 14 };
+enum { test_graph_size = 10 };
 
 template <typename Graph>
 void subgraph_generator_test(unsigned int order_ )
