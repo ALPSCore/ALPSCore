@@ -47,7 +47,7 @@
 
 namespace alps {
 
-    class base {
+    class ALPS_DECL base {
 
         public:
 
