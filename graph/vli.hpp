@@ -183,6 +183,11 @@ namespace alps {
 					data = arg.data;
 				}
 
+// []
+				inline boost::uint64_t & operator [](std::size_t index) {
+					return data[index];
+				}
+
 // ==
 				inline bool operator==(vli<N> const & arg) const {
 					return !(*this != arg);
@@ -211,6 +216,7 @@ namespace alps {
 				}
 
 // +
+				// TODO: use Two's-complement 
 				inline vli<N> operator+(vli<N> arg) const {
 					arg += *this;
 					return arg;
@@ -226,6 +232,7 @@ namespace alps {
 					tmp *= -1;
 					return tmp;
 				}
+				// TODO: use Two's-complement 
 				inline vli<N> operator-(vli<N> const & arg) const {
 					vli<N> tmp = *this;
 					(*add_sub_eq[1ULL ^ ((data.back() & arg.data.back()) >> 63)])(tmp.data, arg.data);
