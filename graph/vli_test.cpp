@@ -41,23 +41,23 @@ typedef boost::mpl::list<alps::graph::vli<2>, alps::graph::vli<4> >::type vli_ty
 boost::mt11213b rng;
 
 template <typename Vli>
-int rnd_valid_int()
+int64_t rnd_valid_int()
 {
-    static boost::uniform_int<int> rnd(0,(0x01LL<<62)-1);
+    static boost::uniform_int<int64_t> rnd(0,(0x01LL<<62)-1);
     return rnd(rng);
 }
 
 template <typename Vli>
-typename Vli::value_type rnd_digit()
+uint64_t rnd_digit()
 {
-    static boost::uniform_int<uint64_t> rnd(0,(0x01LL<<62)-1);
+    static boost::uniform_int<uint64_t> rnd(0,(0x01ULL<<62)-1);
     return rnd(rng);
 }
 
 template <typename Vli>
 void fill_random(Vli& v)
 {
-    for(size_t i=0; i < Vli::size; ++i)
+    for(size_t i=0; i < v.size(); ++i)
         v[i] = rnd_digit<Vli>();
 }
 
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( equal_operator, Vli, vli_types )
     Vli a(0);
     Vli b;
 
-    for(size_t i=0; i < Vli::size; ++i)
+    for(size_t i=0; i < a.size(); ++i)
     {
         b[i] = 1;
         BOOST_CHECK_EQUAL((a == b),false);
@@ -221,7 +221,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_minus_equivalence, Vli, vli_types )
     Vli ba = b - a;
     a -= b;
     BOOST_CHECK_EQUAL(a,ab);
-    a.negate();
+    a = a * (-1);
+    //a.negate();
     BOOST_CHECK_EQUAL(a,ba);
     
     //Check that b hasn't changed
@@ -285,7 +286,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_multiplies_equivalence_int, Vli
 BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_int, Vli, vli_types )
 {
     Vli a;
-    fill_random(a,Vli::size-1); 
+    fill_random(a,a.size()-1); 
     Vli a_orig(a);
     
     Vli b = a+a+a;
@@ -374,7 +375,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_int_gmp, Vli, vli_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( comparison_vli, Vli, vli_types )
 {
-    BOOST_STATIC_ASSERT(Vli::size > 1);
+    BOOST_STATIC_ASSERT(Vli::static_size > 1);
 
     Vli a(0);
     Vli b(0);
