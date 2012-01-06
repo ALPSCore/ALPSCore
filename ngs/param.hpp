@@ -86,11 +86,11 @@ namespace alps {
 
     };
 
-    std::ostream & operator<<(std::ostream & os, param const &);
+    ALPS_DECL std::ostream & operator<<(std::ostream & os, param const &);
 
 	#define ALPS_NGS_PARAM_ADD_OPERATOR(T)								\
-		T operator+(param const & p, T const & s);						\
-		T operator+(T const & s, param const & p);
+		ALPS_DECL T operator+(param const & p, T const & s);						\
+		ALPS_DECL T operator+(T const & s, param const & p);
 	ALPS_NGS_PARAM_ADD_OPERATOR(char)
     ALPS_NGS_PARAM_ADD_OPERATOR(signed char)
     ALPS_NGS_PARAM_ADD_OPERATOR(unsigned char)
@@ -108,11 +108,11 @@ namespace alps {
     ALPS_NGS_PARAM_ADD_OPERATOR(bool)
     #undef ALPS_NGS_PARAM_ADD_OPERATOR
 
-    std::string operator+(param const & p, char const * s);
-    std::string operator+(char const * s, param const & p);
+    ALPS_DECL std::string operator+(param const & p, char const * s);
+    ALPS_DECL std::string operator+(char const * s, param const & p);
 
-    std::string operator+(param const & p, std::string const & s);
-    std::string operator+(std::string const & s, param const & p);
+    ALPS_DECL std::string operator+(param const & p, std::string const & s);
+    ALPS_DECL std::string operator+(std::string const & s, param const & p);
 
 }
 
