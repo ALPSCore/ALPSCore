@@ -42,7 +42,7 @@ namespace alps {
 // = uint
 			template<std::size_t P, std::size_t N> struct vli_set {
 				static inline void apply(boost::array<boost::uint64_t, N> & lhs, boost::uint64_t) {
-					lhs[P] = 0;
+					lhs[P] = 0UL;
 					vli_set<P + 1, N>::apply(lhs, 0UL);
 				}
 			};
@@ -62,15 +62,15 @@ namespace alps {
 				static inline void apply(boost::array<boost::uint64_t, N> &, boost::uint64_t) {}
 			};
 
-// ==
-			template<std::size_t P, std::size_t N> struct vli_eq {
+// !=
+			template<std::size_t P, std::size_t N> struct vli_neq {
 				static inline bool apply(boost::array<boost::uint64_t, N> const & lhs, boost::array<boost::uint64_t, N> const & rhs) {
-					return lhs[P] == rhs[P] || vli_eq<P - 1, N>::apply(lhs, rhs);
+					return lhs[P] != rhs[P] || vli_neq<P - 1, N>::apply(lhs, rhs);
 				}
 			};
-			template<std::size_t N> struct vli_eq<0, N> {
+			template<std::size_t N> struct vli_neq<0, N> {
 				static inline bool apply(boost::array<boost::uint64_t, N> const & lhs, boost::array<boost::uint64_t, N> const & rhs) {
-					return lhs.front() == rhs.front();
+					return lhs.front() != rhs.front();
 				}
 			};
 
@@ -177,13 +177,17 @@ namespace alps {
 				inline vli(vli<N> const & arg) {
 					data = arg.data;
 				}
+// Assign
+				inline vli<N> & operator=(vli<N> const & arg) {
+					data = arg.data;
+				}
 
 // ==
-				inline bool operator!=(vli<N> const & arg) const {
-					return *this == arg;
-				}
 				inline bool operator==(vli<N> const & arg) const {
-					return detail::vli_eq<N - 1, N>(data, arg.data);
+					return !(*this != arg);
+				}
+				inline bool operator!=(vli<N> const & arg) const {
+					return detail::vli_neq<N - 1, N>::apply(data, arg.data);
 				}
 
 // <
@@ -194,7 +198,7 @@ namespace alps {
 					return arg <= *this;
 				}
 				inline bool operator<(vli<N> const & arg) const {
-					return detail::vli_less<N - 1, N>(data, arg.data);
+					return !!((data.back() ^ arg.data.back()) & 0x8000000000000000ULL) != detail::vli_less<N - 1, N>::apply(data, arg.data);
 				}
 				inline bool operator<=(vli<N> const & arg) const {
 					return *this < arg || *this == arg;
@@ -210,7 +214,7 @@ namespace alps {
 					arg += *this;
 					return arg;
 				}
-				inline vli<N> operator+=(vli<N> const & arg) {
+				inline vli<N> & operator+=(vli<N> const & arg) {
 					if (data.sign() == arg.sign())
 						detail::vli_add_eq<1, N>::apply(data, arg.data);
 					else
@@ -227,7 +231,7 @@ namespace alps {
 						detail::vli_add_eq<1, N>::apply(tmp.data, arg.data);
 					return *tmp;
 				}
-				inline vli<N> operator-=(vli<N> const & arg) {
+				inline vli<N> & operator-=(vli<N> const & arg) {
 					if (data.sign() == arg.sign())
 						detail::vli_sub_eq<1, N>::apply(data, arg.data);
 					else
@@ -240,17 +244,32 @@ namespace alps {
 					arg *= *this;
 					return arg;
 				}
-				inline vli<N> operator*=(vli<N> const & arg) {
+				inline vli<N> & operator*=(vli<N> const & arg) {
 					boost::array<boost::uint64_t, N> tmp;
 					detail::vli_mul_eq<0, 0, N, N + 1, 1>::apply(tmp, data, arg.data);
-					tmp.back() |= (tmp.back() ^ arg.back()) & 0x8000000000000000ULL;
+					tmp.back() |= (tmp.back() ^ arg.data.back()) & 0x8000000000000000ULL;
 					std::swap(data, tmp);
 					return *this;
 				}
 				
 // str()
 				std::string str() const {
-					return "<not impl>";
+					std::string res;
+					vli<N> value(*this);
+					if (sign()) {
+						res = "-";
+						value *= -1;
+					}
+					if (value == 0)
+						res += "0";
+					else {
+						vli<N> tmp;
+						std::size_t digit = 1;
+						for (vli<N> next(1); (next *= 10) < value; ++digit, tmp = next);
+						// TODO!
+						res += "<not Impl>";
+					}
+					return res;
 				}
 
 			private:
