@@ -30,6 +30,7 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <sstream>
 #include <iostream>
 
 #ifndef ALPS_GRAPH_VLI
@@ -96,7 +97,7 @@ namespace alps {
 				}
 			};
 			template<std::size_t N> struct vli_add_eq<N, N> {
-				template<typename T> static inline void apply(boost::array<boost::uint64_t, 0> & lhs, boost::array<boost::uint64_t, 0> const & rhs) {
+				static inline void apply(boost::array<boost::uint64_t, N> & lhs, boost::array<boost::uint64_t, N> const & rhs) {
 					((lhs.back() &= 0x3FFFFFFFFFFFFFFFULL) += (rhs.back() & 0x3FFFFFFFFFFFFFFFULL)) &= 0x3FFFFFFFFFFFFFFFULL;
 				}
 			};
@@ -110,20 +111,20 @@ namespace alps {
 				}
 			};
 			template<std::size_t N> struct vli_sub_eq<N, N> {
-				template<typename T> static inline void apply(boost::array<boost::uint64_t, N> & lhs, boost::array<boost::uint64_t, N> const & rhs) {
+				static inline void apply(boost::array<boost::uint64_t, N> & lhs, boost::array<boost::uint64_t, N> const & rhs) {
 					lhs.back() -= rhs.back() - ((lhs[N - 2] & 0x4000000000000000ULL) >> 62);
 					lhs[N - 2] &= 0x3FFFFFFFFFFFFFFFULL;
 					lhs.back() &= 0xBFFFFFFFFFFFFFFFULL;
 				}
 			};
 			template<std::size_t N> struct vli_sub_eq<1, N> {
-				template<typename T> static inline void apply(boost::array<boost::uint64_t, N> & lhs, boost::array<boost::uint64_t, N> const & rhs) {
+				static inline void apply(boost::array<boost::uint64_t, N> & lhs, boost::array<boost::uint64_t, N> const & rhs) {
 					lhs.front() -= rhs.front();
 					vli_sub_eq<2, N>::apply(lhs, rhs);
 				}
 			};
 			template<> struct vli_sub_eq<1, 1> {
-				template<typename T> static inline void apply(boost::array<boost::uint64_t, 1> & lhs, boost::array<boost::uint64_t, 1> const & rhs) {
+				static inline void apply(boost::array<boost::uint64_t, 1> & lhs, boost::array<boost::uint64_t, 1> const & rhs) {
 					lhs.front() -= rhs.front();
 				}
 			};
@@ -215,7 +216,7 @@ namespace alps {
 					return arg;
 				}
 				inline vli<N> & operator+=(vli<N> const & arg) {
-					if (data.sign() == arg.sign())
+					if (sign() == arg.sign())
 						detail::vli_add_eq<1, N>::apply(data, arg.data);
 					else
 						detail::vli_sub_eq<1, N>::apply(data, arg.data);
@@ -225,14 +226,14 @@ namespace alps {
 // -
 				inline vli<N> operator-(vli<N> const & arg) const {
 					vli<N> tmp = *this;
-					if (data.sign() == arg.sign())
+					if (sign() == arg.sign())
 						detail::vli_sub_eq<1, N>::apply(tmp.data, arg.data);
 					else
 						detail::vli_add_eq<1, N>::apply(tmp.data, arg.data);
 					return *tmp;
 				}
 				inline vli<N> & operator-=(vli<N> const & arg) {
-					if (data.sign() == arg.sign())
+					if (sign() == arg.sign())
 						detail::vli_sub_eq<1, N>::apply(data, arg.data);
 					else
 						detail::vli_add_eq<1, N>::apply(data, arg.data);
@@ -247,29 +248,35 @@ namespace alps {
 				inline vli<N> & operator*=(vli<N> const & arg) {
 					boost::array<boost::uint64_t, N> tmp;
 					detail::vli_mul_eq<0, 0, N, N + 1, 1>::apply(tmp, data, arg.data);
-					tmp.back() |= (tmp.back() ^ arg.data.back()) & 0x8000000000000000ULL;
+					tmp.back() |= (data.back() ^ arg.data.back()) & 0x8000000000000000ULL;
 					std::swap(data, tmp);
 					return *this;
 				}
 				
 // str()
 				std::string str() const {
-					std::string res;
+					std::ostringstream buffer;
 					vli<N> value(*this);
 					if (sign()) {
-						res = "-";
+						buffer << "-";
 						value *= -1;
 					}
 					if (value == 0)
-						res += "0";
+						buffer << 0;
 					else {
-						vli<N> tmp;
-						std::size_t digit = 1;
-						for (vli<N> next(1); (next *= 10) < value; ++digit, tmp = next);
-						// TODO!
-						res += "<not Impl>";
+						std::size_t digits = 1;
+						for (vli<N> next(1); (next *= 10) < value; ++digits);
+						do {
+							vli<N> tmp1(1);
+							for (std::size_t i = 1; i < digits; ++i, tmp1 *= 10);
+							vli<N> tmp2(tmp1);
+							std::size_t d;
+							for (d = 0; tmp2 <= value; ++d, tmp2 += tmp1);
+							value -= (tmp2 -= tmp1);
+							buffer << d;
+						} while(--digits);
 					}
-					return res;
+					return buffer.str();
 				}
 
 			private:
