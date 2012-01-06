@@ -97,7 +97,7 @@ namespace alps {
                             dynamic_cast<mcresult_impl_derived<mcresult_impl_base, T> &>(*this). NAME ## _assign(rhs);                         \
                         else                                                                                                                   \
                             dynamic_cast<typename boost::mpl::if_<																			   \
-								/* prevent windows from compiling mcresult_impl_derived<B, std::vector<std::vector<X>> >  */				   \
+								/* prevent windows from compiling mcresult_impl_derived<B, std::vector<std::vector<X> > >  */				   \
 								  is_std_vector<T>																							   \
 								, mcresult_impl_derived<mcresult_impl_base, T>																   \
 								, mcresult_impl_derived<mcresult_impl_base, std::vector<T> >												   \
@@ -119,7 +119,7 @@ namespace alps {
                             return dynamic_cast<mcresult_impl_derived<mcresult_impl_base, T> const &>(*this). NAME (rhs);                      \
                         else                                                                                                                   \
                             return dynamic_cast<typename boost::mpl::if_<																	   \
-								/* prevent windows from compiling mcresult_impl_derived<B, std::vector<std::vector<X>> >  */				   \
+								/* prevent windows from compiling mcresult_impl_derived<B, std::vector<std::vector<X> > >  */				   \
 								  is_std_vector<T>																							   \
 								, mcresult_impl_derived<mcresult_impl_base, T>																   \
 								, mcresult_impl_derived<mcresult_impl_base, std::vector<T> >												   \
@@ -138,7 +138,7 @@ namespace alps {
                             return dynamic_cast<mcresult_impl_derived<mcresult_impl_base, T> &>(*this). NAME ## _inverse(lhs);                 \
                         else                                                                                                                   \
                             return dynamic_cast<typename boost::mpl::if_<																	   \
-								/* prevent windows from compiling mcresult_impl_derived<B, std::vector<std::vector<X>> >  */				   \
+								/* prevent windows from compiling mcresult_impl_derived<B, std::vector<std::vector<X> > >  */				   \
 								  is_std_vector<T>																							   \
 								, mcresult_impl_derived<mcresult_impl_base, T>																   \
 								, mcresult_impl_derived<mcresult_impl_base, std::vector<T> >												   \

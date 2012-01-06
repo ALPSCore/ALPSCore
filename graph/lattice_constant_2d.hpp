@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2011 by Lukas Gamper <gamperl@gmail.com>                   *
+ * Copyright (C) 2010 - 2012 by Lukas Gamper <gamperl@gmail.com>                   *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -25,9 +25,6 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_GRAPH_LATTICE_CONSTANT_2D
-#define ALPS_GRAPH_LATTICE_CONSTANT_2D
-
 #include <alps/ngs/macros.hpp>
 
 #include <alps/lattice/graph_helper.h>
@@ -45,6 +42,9 @@
 #include <algorithm>
 
 //#include <emmintrin.h>
+
+#ifndef ALPS_GRAPH_LATTICE_CONSTANT_2D
+#define ALPS_GRAPH_LATTICE_CONSTANT_2D
 
 namespace alps {
 	namespace graph {
@@ -335,7 +335,7 @@ namespace alps {
 					tmp |= tmp >> 31;
 					tmp |= tmp >> 14;
 					embedding[index >> 4] |= (tmp & 0x0Ful) << ((index & 0x0F) << 2);
-					std::size_t inc1 = (~tmp        & ~(visited >> pinning[vertex][1])) & 0x01;
+					std::size_t inc1 = (~ tmp       & ~(visited >> pinning[vertex][1])) & 0x01;
 					std::size_t inc2 = (~(tmp >> 2) & ~(visited >> pinning[vertex][2])) & 0x01;
 					std::size_t inc3 = (~(tmp >> 1) & ~(visited >> pinning[vertex][3])) & 0x01;
 					std::size_t inc4 = (~(tmp >> 3) & ~(visited >> pinning[vertex][4])) & 0x01;
