@@ -28,13 +28,15 @@
 #ifndef ALPS_NGS_CALLBACK_HPP
 #define ALPS_NGS_CALLBACK_HPP
 
+#include <alps/config.hpp>
+
 #ifndef ALPS_NGS_SINGLE_THREAD
     #include <alps/ngs/atomic.hpp>
 #endif
 
 namespace alps {
 
-    bool basic_stop_callback(int time_limit = 0);
+    ALPS_DECL bool basic_stop_callback(int time_limit = 0);
 
     #ifndef ALPS_NGS_SINGLE_THREAD
 
