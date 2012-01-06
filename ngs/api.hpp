@@ -77,9 +77,9 @@ namespace alps {
         return s.fraction_completed();
     }
 
-    void save_results(mcresults const & results, params const & params, boost::filesystem::path const & filename, std::string const & path);
+    ALPS_DECL void save_results(mcresults const & results, params const & params, boost::filesystem::path const & filename, std::string const & path);
 
-    void save_results(mcobservables const & observables, params const & params, boost::filesystem::path const & filename, std::string const & path);
+    ALPS_DECL void save_results(mcobservables const & observables, params const & params, boost::filesystem::path const & filename, std::string const & path);
 
 }
 
