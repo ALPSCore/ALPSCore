@@ -222,10 +222,6 @@ namespace alps {
 
 // +
 				// TODO: use Two's-complement 
-				inline vli<N> operator+(vli<N> arg) const {
-					arg += *this;
-					return arg;
-				}
 				inline vli<N> & operator+=(vli<N> const & arg) {
 					(*add_sub_eq[(data.back() & arg.data.back()) >> 63])(data, arg.data);
 					return *this;
@@ -238,21 +234,12 @@ namespace alps {
 					return tmp;
 				}
 				// TODO: use Two's-complement 
-				inline vli<N> operator-(vli<N> const & arg) const {
-					vli<N> tmp = *this;
-					(*add_sub_eq[1ULL ^ ((data.back() & arg.data.back()) >> 63)])(tmp.data, arg.data);
-					return tmp;
-				}
 				inline vli<N> & operator-=(vli<N> const & arg) {
 					(*add_sub_eq[1ULL ^ ((data.back() & arg.data.back()) >> 63)])(data, arg.data);
 					return *this;
 				}
 
 // *
-				inline vli<N> operator*(vli<N> arg) const {
-					arg *= *this;
-					return arg;
-				}
 				inline vli<N> & operator*=(vli<N> const & arg) {
 					boost::array<boost::uint64_t, N> tmp;
 					detail::vli_mul_eq<0, 0, N, N + 1, 1>::apply(tmp, data, arg.data);
@@ -298,7 +285,41 @@ namespace alps {
 			  &detail::vli_add_eq<1, N>::apply
 			, &detail::vli_sub_eq<1, N>::apply
 		};
-		
+
+// +
+		template<std::size_t N> inline vli<N> operator+(vli<N> arg1, vli<N> const & arg2) {
+			return arg1 += arg2;
+		}
+		template<std::size_t N> inline vli<N> operator+(vli<N> arg1, boost::int64_t arg2) {
+			return arg1 += vli<N>(arg2);
+		}
+		template<std::size_t N> inline vli<N> operator+(boost::int64_t arg1, vli<N> const & arg2) {
+			return vli<N>(arg1) += arg2;
+		}
+
+// -
+		template<std::size_t N> inline vli<N> operator-(vli<N> arg1, vli<N> const & arg2) {
+			return arg1 -= arg2;
+		}
+		template<std::size_t N> inline vli<N> operator-(vli<N> arg1, boost::int64_t arg2) {
+			return arg1 -= vli<N>(arg2);
+		}
+		template<std::size_t N> inline vli<N> operator-(boost::int64_t arg1, vli<N> const & arg2) {
+			return vli<N>(arg1) -= arg2;
+		}
+
+// *
+		template<std::size_t N> inline vli<N> operator*(vli<N> arg1, vli<N> const & arg2) {
+			return arg1 *= arg2;
+		}
+		template<std::size_t N> inline vli<N> operator*(vli<N> arg1, boost::int64_t arg2) {
+			return arg1 *= vli<N>(arg2);
+		}
+		template<std::size_t N> inline vli<N> operator*(boost::int64_t arg1, vli<N> const & arg2) {
+			return vli<N>(arg1) *= arg2;
+		}
+
+// os <<
 		template<std::size_t N> std::ostream & operator<<(std::ostream & os, vli<N> const & arg) {
 			return os << arg.str();
 		}
