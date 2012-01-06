@@ -207,7 +207,7 @@ namespace alps {
 
 // sign
 				inline bool sign() const {
-					return (data.back() & 0x8000000000000000ULL) >> 62;
+					return (data.back() & 0x8000000000000000ULL) >> 63;
 				}
 
 // +
@@ -216,27 +216,23 @@ namespace alps {
 					return arg;
 				}
 				inline vli<N> & operator+=(vli<N> const & arg) {
-					if (sign() == arg.sign())
-						detail::vli_add_eq<1, N>::apply(data, arg.data);
-					else
-						detail::vli_sub_eq<1, N>::apply(data, arg.data);
+					(*add_sub_eq[(data.back() & arg.data.back()) >> 63])(data, arg.data);
 					return *this;
 				}
 
 // -
+				inline vli<N> operator-() const {
+					vli<N> tmp = *this;
+					tmp *= -1;
+					return tmp;
+				}
 				inline vli<N> operator-(vli<N> const & arg) const {
 					vli<N> tmp = *this;
-					if (sign() == arg.sign())
-						detail::vli_sub_eq<1, N>::apply(tmp.data, arg.data);
-					else
-						detail::vli_add_eq<1, N>::apply(tmp.data, arg.data);
-					return *tmp;
+					(*add_sub_eq[1ULL ^ ((data.back() & arg.data.back()) >> 63)])(tmp.data, arg.data);
+					return tmp;
 				}
 				inline vli<N> & operator-=(vli<N> const & arg) {
-					if (sign() == arg.sign())
-						detail::vli_sub_eq<1, N>::apply(data, arg.data);
-					else
-						detail::vli_add_eq<1, N>::apply(data, arg.data);
+					(*add_sub_eq[1ULL ^ ((data.back() & arg.data.back()) >> 63)])(data, arg.data);
 					return *this;
 				}
 
@@ -282,6 +278,13 @@ namespace alps {
 			private:
 
 				boost::array<boost::uint64_t, N> data;
+				
+				static void(* const add_sub_eq[2])(boost::array<boost::uint64_t, N> &, boost::array<boost::uint64_t, N> const &);
+		};
+		
+		template<std::size_t N> void(* const vli<N>::add_sub_eq[2])(boost::array<boost::uint64_t, N> &, boost::array<boost::uint64_t, N> const &) = {
+			  &detail::vli_add_eq<1, N>::apply
+			, &detail::vli_sub_eq<1, N>::apply
 		};
 		
 		template<std::size_t N> std::ostream & operator<<(std::ostream & os, vli<N> const & arg) {
