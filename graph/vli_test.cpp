@@ -31,7 +31,7 @@
 
 int main() {
 
-	alps::graph::vli<2> a(1);
-	std::cout << a << std::endl;
+	alps::graph::vli<2> a(1), b(8264);
+	std::cout << a << " " << b << std::endl;
 
 };
