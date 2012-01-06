@@ -164,7 +164,8 @@ namespace alps {
 		template<std::size_t N> class vli {
 
 			public:
-                static const std::size_t size = N;
+                static const std::size_t static_size = N;
+
 // Constructor
 				inline vli() {
 					detail::vli_set<0, N>::apply(data, 0UL);
@@ -182,6 +183,10 @@ namespace alps {
 				inline vli<N> & operator=(vli<N> const & arg) {
 					data = arg.data;
 				}
+// Size 
+                static inline std::size_t size(){
+                    return static_size;
+                }
 
 // []
 				inline boost::uint64_t & operator [](std::size_t index) {
