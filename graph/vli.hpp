@@ -164,7 +164,7 @@ namespace alps {
 		template<std::size_t N> class vli {
 
 			public:
-
+                static const std::size_t size = N;
 // Constructor
 				inline vli() {
 					detail::vli_set<0, N>::apply(data, 0UL);
