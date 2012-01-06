@@ -13,7 +13,7 @@
 #include <cstdlib>
 
 
-#ifdef BOOST_MSVC
+#ifdef BOOST_WINDOWS
 #include <fcntl.h>
 #include <io.h>
 #else

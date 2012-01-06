@@ -29,13 +29,13 @@
 #define ALPS_NGS_MCMPISIM_HPP
 
 namespace alps {
-
     #ifdef ALPS_HAVE_MPI
 
         template<typename Impl> class mcmpisim : public Impl {
             public:
                 using Impl::collect_results;
-                mcmpisim(typename parameters_type<Impl>::type const & p, boost::mpi::communicator const & c) 
+                mcmpisim(typename alps::parameters_type<Impl>::type const & p,
+			             boost::mpi::communicator const & c) 
                     : Impl(p, c.rank())
                     , communicator(c)
                     , binnumber(p.value_or_default("binnumber", std::min(128, 2 * c.size())))
@@ -47,9 +47,9 @@ namespace alps {
                     return boost::mpi::all_reduce(communicator, Impl::fraction_completed(), std::plus<double>());
                 }
 
-                typename results_type<Impl>::type collect_results(typename result_names_type<Impl>::type const & names) const {
-                    typename results_type<Impl>::type local_results = Impl::collect_results(names), partial_results;
-                    for(typename results_type<Impl>::type::iterator it = local_results.begin(); it != local_results.end(); ++it)
+                typename alps::results_type<Impl>::type collect_results(typename alps::result_names_type<Impl>::type const & names) const {
+                    typename alps::results_type<Impl>::type local_results = Impl::collect_results(names), partial_results;
+                    for(typename alps::results_type<Impl>::type::iterator it = local_results.begin(); it != local_results.end(); ++it)
                         if (it->second.count())
                             partial_results.insert(it->first, it->second.reduce(communicator, binnumber));
                         else

@@ -37,11 +37,11 @@ namespace alps {
             public:
                 using Impl::collect_results;
                 
-                parallel(typename parameters_type<Impl>::type const & p) {
+                parallel(typename alps::parameters_type<Impl>::type const & p) {
                     ALPS_NGS_THROW_RUNTIME_ERROR("No communicator passed");
                 }
 
-                parallel(typename parameters_type<Impl>::type const & p, boost::mpi::communicator const & c) 
+                parallel(typename alps::parameters_type<Impl>::type const & p, boost::mpi::communicator const & c) 
                     : Impl(p, c.rank())
                     , communicator(c)
                     , binnumber(p.value_or_default("binnumber", std::min(128, 2 * c.size())))
@@ -53,9 +53,9 @@ namespace alps {
                     return boost::mpi::all_reduce(communicator, Impl::fraction_completed(), std::plus<double>());
                 }
 
-                typename results_type<Impl>::type collect_results(typename result_names_type<Impl>::type const & names) const {
-                    typename results_type<Impl>::type local_results = Impl::collect_results(names), partial_results;
-                    for(typename results_type<Impl>::type::iterator it = local_results.begin(); it != local_results.end(); ++it)
+                typename alps::results_type<Impl>::type collect_results(typename alps::result_names_type<Impl>::type const & names) const {
+                    typename alps::results_type<Impl>::type local_results = Impl::collect_results(names), partial_results;
+                    for(typename alps::results_type<Impl>::type::iterator it = local_results.begin(); it != local_results.end(); ++it)
                         if (it->second.count())
                             partial_results.insert(it->first, it->second.reduce(communicator, binnumber));
                         else
@@ -73,11 +73,11 @@ namespace alps {
             public:
                 using Impl::collect_results;
                 
-                parallel2(typename parameters_type<Impl>::type const & p) {
+                parallel2(typename alps::parameters_type<Impl>::type const & p) {
                     ALPS_NGS_THROW_RUNTIME_ERROR("No communicator passed");
                 }
 
-                parallel2(typename parameters_type<Impl>::type const & p, boost::mpi::communicator const & c) 
+                parallel2(typename alps::parameters_type<Impl>::type const & p, boost::mpi::communicator const & c) 
                     : Impl(p, c)
                     , communicator(c)
                 {

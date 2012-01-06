@@ -67,6 +67,12 @@ namespace alps {
                 return convert<T>(value_ == boost::none_t() ? getter_() : *value_);
             }
 
+			template<typename T> T as() const {
+				 return convert<T>(value_ == boost::none_t() ? getter_() : *value_);
+            }
+
+			operator std::string() const { return str(); }
+
             std::string str() const {
                 return value_ == boost::none_t() ? getter_() : *value_;
             }

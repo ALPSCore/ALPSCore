@@ -67,7 +67,7 @@
 #ifndef ALPS_HAVE_RPC_XDR_H
 
 #include <boost/config.hpp>
-#ifdef BOOST_MSVC
+#ifdef BOOST_WINDOWS
 # include <boost/cstdint.hpp>
 # define __const const
   typedef char * caddr_t;
