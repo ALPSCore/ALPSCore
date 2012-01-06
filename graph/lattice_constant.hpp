@@ -8,19 +8,19 @@
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
- * the terms of the license, either version 1 or (at your option) any later        *
+ * the terms of the license, either version 1 || (at your option) any later        *
  * version.                                                                        *
  *                                                                                 *
  * You should have received a copy of the ALPS Library License along with          *
  * the ALPS Libraries; see the file LICENSE.txt. If not, the license is also       *
  * available from http://alps.comp-phys.org/.                                      *
  *                                                                                 *
- *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR     *
+ *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS ||     *
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        *
  * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT       *
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE       *
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,     *
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER     *
+ * SHALL THE COPYRIGHT HOLDERS || ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE       *
+ * FOR ANY DAMAGES || OTHER LIABILITY, WHETHER IN CONTRACT, TORT || OTHERWISE,     *
+ * ARISING FROM, OUT OF || IN CONNECTION WITH THE SOFTWARE || THE USE || OTHER     *
  * DEALINGS IN THE SOFTWARE.                                                       *
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -44,7 +44,7 @@
 #include <cstring>
 #include <algorithm>
 
-#if !defined(USE_COMPRESSED_EMBEDDING) and !defined(USE_COMPRESSED_EMBEDDING2) and !defined(USE_GENERIC_EMBEDDING)
+#if !defined(USE_COMPRESSED_EMBEDDING) && !defined(USE_COMPRESSED_EMBEDDING2) && !defined(USE_GENERIC_EMBEDDING)
 	#define USE_GENERIC_EMBEDDING
 #endif
 
@@ -226,7 +226,7 @@ namespace alps {
 			};
 #endif
 
-#if defined(USE_GENERIC_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+#if defined(USE_GENERIC_EMBEDDING) || defined(CHECK_COMPRESSED_EMBEDDING)
 			struct embedding_generic_type {
 
 				embedding_generic_type(std::size_t vertices_size, std::size_t edges_size)
@@ -284,7 +284,7 @@ namespace alps {
 			}
 #endif
 		
-#if defined(USE_COMPRESSED_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+#if defined(USE_COMPRESSED_EMBEDDING) || defined(CHECK_COMPRESSED_EMBEDDING)
 /*
 			struct embedding_2d_type {
 				embedding_2d_type() {
@@ -387,7 +387,7 @@ namespace alps {
 				boost::array<boost::uint8_t, 2 * CoordNum> stack;
 				std::memset(stack.c_array(), SubVertexNum, 2 * CoordNum);
 				typename boost::graph_traits<Subgraph>::adjacency_iterator s_ai, s_ae;
-				for (tie(s_ai, s_ae) = adjacent_vertices(s, S); s_ai != s_ae; ++s_ai)
+				for (boost::tie(s_ai, s_ae) = adjacent_vertices(s, S); s_ai != s_ae; ++s_ai)
 					// TODO: make expression tempalte ...
 					for (boost::uint_t<8>::fast j = 0; j < CoordNum; ++j)
 						if (int(distance_to_boarder[j][pinning[*s_ai]]) - int(distance_to_boarder[j][pinning[s]]) == -1) {
@@ -405,7 +405,7 @@ namespace alps {
 						lattice_constant_embedding<Subgraph, Graph, SubVertexNum, CoordNum>(*it, visited, index, embedding, S, distance_to_boarder, pinning);
 			}
 #endif
-#if defined(USE_COMPRESSED_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+#if defined(USE_COMPRESSED_EMBEDDING) || defined(CHECK_COMPRESSED_EMBEDDING)
 			template<typename Subgraph, typename Graph, unsigned SubVertexNum, unsigned CoordNum> void lattice_constant_embedding(
 				  std::size_t s
 				, boost::dynamic_bitset<> & visited
@@ -418,7 +418,7 @@ namespace alps {
 				boost::array<boost::uint8_t, 2 * CoordNum> stack;
 				std::memset(stack.c_array(), SubVertexNum, 2 * CoordNum);
 				typename boost::graph_traits<Subgraph>::adjacency_iterator s_ai, s_ae;
-				for (tie(s_ai, s_ae) = adjacent_vertices(s, S); s_ai != s_ae; ++s_ai)
+				for (boost::tie(s_ai, s_ae) = adjacent_vertices(s, S); s_ai != s_ae; ++s_ai)
 					for (boost::uint_t<8>::fast j = 0; j < CoordNum; ++j)
 						if (int(distance_to_boarder[j][pinning[*s_ai]]) - int(distance_to_boarder[j][pinning[s]]) == -1) {
 							data[(2 * index * CoordNum + j) >> 3] |= 0x01 << ((2 * index * CoordNum + j) & 0x07);
@@ -444,10 +444,10 @@ namespace alps {
 #ifdef USE_COMPRESSED_EMBEDDING2
 				, compressed_set<> & matches
 #endif
-#if defined(USE_COMPRESSED_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+#if defined(USE_COMPRESSED_EMBEDDING) || defined(CHECK_COMPRESSED_EMBEDDING)
 				, boost::unordered_set<embedding_2d_type> & matches_2d
 #endif
-#if defined(USE_GENERIC_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+#if defined(USE_GENERIC_EMBEDDING) || defined(CHECK_COMPRESSED_EMBEDDING)
 				, boost::unordered_set<embedding_generic_type> & matches_generic
 #endif
 				, std::vector<std::vector<boost::uint_t<8>::fast> > const & distance_to_boarder
@@ -466,10 +466,10 @@ namespace alps {
 #ifdef USE_COMPRESSED_EMBEDDING2
 				, compressed_set<> & matches
 #endif
-#if defined(USE_COMPRESSED_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+#if defined(USE_COMPRESSED_EMBEDDING) || defined(CHECK_COMPRESSED_EMBEDDING)
 				, boost::unordered_set<embedding_2d_type> & matches_2d
 #endif
-#if defined(USE_GENERIC_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+#if defined(USE_GENERIC_EMBEDDING) || defined(CHECK_COMPRESSED_EMBEDDING)
 				, boost::unordered_set<embedding_generic_type> & matches_generic
 #endif
 				, std::vector<std::vector<boost::uint_t<8>::fast> > const & distance_to_boarder
@@ -514,7 +514,7 @@ namespace alps {
 				boost::array<boost::uint8_t, SubVertexNum> ordred_vertices;
 				std::memset(ordred_vertices.c_array(), boost::uint8_t(num_vertices(S)), ordred_vertices.size());
 
-				// TODO: check if it gets faster if 32 or 64 bits are used ...
+				// TODO: check if it gets faster if 32 || 64 bits are used ...
 				for (boost::uint_t<8>::fast i = 0; i < pinning.size(); ++i) {
 					boost::uint_t<8>::fast index = 0, vertex = i;
 					// TODO: this can be done faster ...
@@ -537,7 +537,7 @@ namespace alps {
 				// TODO: use SubVertexNum if cooredt ...
 				typename boost::graph_traits<Subgraph>::adjacency_iterator s_ai, s_ae;
 				for (std::size_t i = 0; i < boost::uint8_t(num_vertices(S)); ++i)
-					for (tie(s_ai, s_ae) = adjacent_vertices(ordred_vertices[i], S); s_ai != s_ae; ++s_ai)
+					for (boost::tie(s_ai, s_ae) = adjacent_vertices(ordred_vertices[i], S); s_ai != s_ae; ++s_ai)
 						// TODO: make expression template ...
 						for (boost::uint_t<8>::fast j = 0; j < CoordNum; ++j)
 							if (distance_to_boarder[j][pinning[*s_ai]] - distance_to_boarder[j][pinning[ordred_vertices[i]]] == -1)
@@ -548,7 +548,7 @@ namespace alps {
 				matches.insert(embedding);
 #endif
 			
-#if defined(USE_COMPRESSED_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+#if defined(USE_COMPRESSED_EMBEDDING) || defined(CHECK_COMPRESSED_EMBEDDING)
 
 #ifdef CHECK_COMPRESSED_EMBEDDING
 				// if S has more than 20 vertices, chane this
@@ -761,7 +761,7 @@ std::cout << std::abs(int(distance_to_boarder[0][pinning[ordred_vertices[k]]]) -
 														
 				typename boost::graph_traits<Subgraph>::adjacency_iterator s_ai, s_ae;
 				for (boost::uint_t<8>::fast i = 0; i < boost::uint8_t(num_vertices(S)); ++i)
-					for (tie(s_ai, s_ae) = adjacent_vertices(ordred_vertices[i], S); s_ai != s_ae; ++s_ai)
+					for (boost::tie(s_ai, s_ae) = adjacent_vertices(ordred_vertices[i], S); s_ai != s_ae; ++s_ai)
 						// TODO: make expression template ...
 						for (boost::uint_t<8>::fast j = 0; j < CoordNum; ++j)
 							if (int(distance_to_boarder[j][pinning[*s_ai]]) - int(distance_to_boarder[j][pinning[ordred_vertices[i]]]) == -1)
@@ -770,7 +770,7 @@ std::cout << std::abs(int(distance_to_boarder[0][pinning[ordred_vertices[k]]]) -
 								embedding_2d.data[(2 * i * CoordNum + CoordNum  + j) >> 3] |= 0x01 << ((2 * i * CoordNum + CoordNum + j) & 0x07);
 								
 
-//if (occCnt == 85982 or occCnt == 68412)
+//if (occCnt == 85982 || occCnt == 68412)
 //std::cout << boost::dynamic_bitset<>(4 * num_vertices(S), *reinterpret_cast<uint64_t *>(embedding_2d.data.c_array()))  << " " << occCnt << std::endl;
 				*/
 				
@@ -778,7 +778,7 @@ std::cout << std::abs(int(distance_to_boarder[0][pinning[ordred_vertices[k]]]) -
 				/*  
 				
 				std::memset(ordred_vertices.c_array(), boost::uint8_t(num_vertices(S)), ordred_vertices.size());
-				// TODO: check if it gets faster if 32 or 64 bits are used ...
+				// TODO: check if it gets faster if 32 || 64 bits are used ...
 				for (boost::uint_t<8>::fast i = 0; i < pinning.size(); ++i) {
 					boost::uint_t<8>::fast index = 0, vertex = i;
 					// TODO: this can be done faster ...
@@ -836,7 +836,7 @@ std::cout << std::abs(int(distance_to_boarder[0][pinning[ordred_vertices[k]]]) -
 				}
 */				
 
-//if (occCnt == 85982 or occCnt == 68412) {
+//if (occCnt == 85982 || occCnt == 68412) {
 //					for (boost::uint_t<8>::fast i = 0; i < num_vertices(S); ++i)
 //						std::cout << unsigned(ordred_vertices[i]) << "(" << pinning[ordred_vertices[i]] << ") ";
 //
@@ -884,7 +884,7 @@ std::cout << std::abs(int(distance_to_boarder[0][pinning[ordred_vertices[k]]]) -
 				// TODO: use SubVertexNum
 				typename boost::graph_traits<Subgraph>::adjacency_iterator s_ai, s_ae;
 				for (boost::uint_t<8>::fast i = 0; i < boost::uint8_t(num_vertices(S)); ++i)
-					for (tie(s_ai, s_ae) = adjacent_vertices(ordred_vertices[i], S); s_ai != s_ae; ++s_ai)
+					for (boost::tie(s_ai, s_ae) = adjacent_vertices(ordred_vertices[i], S); s_ai != s_ae; ++s_ai)
 						// TODO: make expression template ...
 						for (boost::uint_t<8>::fast j = 0; j < CoordNum; ++j)
 							if (int(distance_to_boarder[j][pinning[*s_ai]]) - int(distance_to_boarder[j][pinning[ordred_vertices[i]]]) == -1)
@@ -899,7 +899,7 @@ std::cout << std::abs(int(distance_to_boarder[0][pinning[ordred_vertices[k]]]) -
 							}
 */							
 
-//if (occCnt == 1446 or occCnt == 1383)
+//if (occCnt == 1446 || occCnt == 1383)
 //std::cout << occCnt << " " << bitset << " " << *reinterpret_cast<uint64_t *>(embedding_2d.data.c_array()) << std::endl;
 
 							
@@ -912,7 +912,7 @@ std::cout << std::abs(int(distance_to_boarder[0][pinning[ordred_vertices[k]]]) -
 #endif
 
 #endif
-#if defined(USE_GENERIC_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+#if defined(USE_GENERIC_EMBEDDING) || defined(CHECK_COMPRESSED_EMBEDDING)
 
 				embedding_generic_type embedding_generic(subgraph_orbit.size(), num_vertices(S) * (num_vertices(S) + 1) / 2);
 
@@ -1083,7 +1083,7 @@ std::cout << std::abs(int(distance_to_boarder[0][pinning[ordred_vertices[k]]]) -
 						boost::dynamic_bitset<> bitset(80);
 						typename boost::graph_traits<Subgraph>::adjacency_iterator s_ai, s_ae;
 						for (boost::uint_t<8>::fast i = 0; i < boost::uint8_t(num_vertices(S)); ++i)
-							for (tie(s_ai, s_ae) = adjacent_vertices(ordred_vertices[i], S); s_ai != s_ae; ++s_ai)
+							for (boost::tie(s_ai, s_ae) = adjacent_vertices(ordred_vertices[i], S); s_ai != s_ae; ++s_ai)
 								// TODO: make expression template ...
 								for (boost::uint_t<8>::fast j = 0; j < CoordNum; ++j)
 									if (distance_to_boarder[j][pinning[*s_ai]] - distance_to_boarder[j][pinning[ordred_vertices[i]]] == -1)
@@ -1217,10 +1217,10 @@ std::cout << std::abs(int(distance_to_boarder[0][pinning[ordred_vertices[k]]]) -
 #ifdef USE_COMPRESSED_EMBEDDING2
 				, compressed_set<> & matches
 #endif
-#if defined(USE_COMPRESSED_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+#if defined(USE_COMPRESSED_EMBEDDING) || defined(CHECK_COMPRESSED_EMBEDDING)
 				, boost::unordered_set<embedding_2d_type> & matches_2d
 #endif
-#if defined(USE_GENERIC_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+#if defined(USE_GENERIC_EMBEDDING) || defined(CHECK_COMPRESSED_EMBEDDING)
 				, boost::unordered_set<embedding_generic_type> & matches_generic
 #endif
 				, std::vector<std::vector<boost::uint_t<8>::fast> > const & distance_to_boarder
@@ -1248,12 +1248,12 @@ std::cout << std::abs(int(distance_to_boarder[0][pinning[ordred_vertices[k]]]) -
 				)
 					return;
 				typename boost::graph_traits<Subgraph>::adjacency_iterator s_ai, s_ae;
-				for (tie(s_ai, s_ae) = adjacent_vertices(s, S); s_ai != s_ae; ++s_ai)
+				for (boost::tie(s_ai, s_ae) = adjacent_vertices(s, S); s_ai != s_ae; ++s_ai)
 					if (pinning[*s_ai] != num_vertices(G)) {
 						typename boost::graph_traits<Graph>::edge_descriptor e;
 						bool is_e;
-						tie(e, is_e) = edge(g, pinning[*s_ai], G);
-						if (!is_e or !lattice_constant_edge_equal(
+						boost::tie(e, is_e) = edge(g, pinning[*s_ai], G);
+						if (!is_e || !lattice_constant_edge_equal(
 							  edge(s, *s_ai, S).first
 							, e
 							, S
@@ -1266,13 +1266,13 @@ std::cout << std::abs(int(distance_to_boarder[0][pinning[ordred_vertices[k]]]) -
 				pinning[s] = g;
 				if (visited.count() < num_vertices(S)) {
 					typename boost::graph_traits<Graph>::adjacency_iterator g_ai, g_ae;
-					for (tie(s_ai, s_ae) = adjacent_vertices(s, S); s_ai != s_ae; ++s_ai)
+					for (boost::tie(s_ai, s_ae) = adjacent_vertices(s, S); s_ai != s_ae; ++s_ai)
 						if (!placed[*s_ai]) {
 							placed[*s_ai] = true;
 							stack.push_back(std::make_pair(*s_ai, g));
 						}
 					SubgraphVertex t = stack[0].first;
-					tie(g_ai, g_ae) = adjacent_vertices(stack[0].second, G);
+					boost::tie(g_ai, g_ae) = adjacent_vertices(stack[0].second, G);
 					stack.pop_front();
 					for (; g_ai != g_ae; ++g_ai)
 						if (!visited[*g_ai])
@@ -1285,10 +1285,10 @@ std::cout << std::abs(int(distance_to_boarder[0][pinning[ordred_vertices[k]]]) -
 #ifdef USE_COMPRESSED_EMBEDDING2
 								, matches
 #endif								
-#if defined(USE_COMPRESSED_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+#if defined(USE_COMPRESSED_EMBEDDING) || defined(CHECK_COMPRESSED_EMBEDDING)
 								, matches_2d
 #endif
-#if defined(USE_GENERIC_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+#if defined(USE_GENERIC_EMBEDDING) || defined(CHECK_COMPRESSED_EMBEDDING)
 								, matches_generic
 #endif
 								, distance_to_boarder
@@ -1307,10 +1307,10 @@ std::cout << std::abs(int(distance_to_boarder[0][pinning[ordred_vertices[k]]]) -
 #ifdef USE_COMPRESSED_EMBEDDING2
 						, matches
 #endif														
-#if defined(USE_COMPRESSED_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+#if defined(USE_COMPRESSED_EMBEDDING) || defined(CHECK_COMPRESSED_EMBEDDING)
 						, matches_2d
 #endif
-#if defined(USE_GENERIC_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+#if defined(USE_GENERIC_EMBEDDING) || defined(CHECK_COMPRESSED_EMBEDDING)
 						, matches_generic
 #endif
 						, distance_to_boarder
@@ -1360,10 +1360,10 @@ std::cout << std::abs(int(distance_to_boarder[0][pinning[ordred_vertices[k]]]) -
 				// TODO: use only 5 bits to save left offset -> 45 bits
 				compressed_set<> matches(num_vertices(S) + 1);
 #endif
-#if defined(USE_COMPRESSED_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+#if defined(USE_COMPRESSED_EMBEDDING) || defined(CHECK_COMPRESSED_EMBEDDING)
 				boost::unordered_set<embedding_2d_type> matches_2d;
 #endif
-#if defined(USE_GENERIC_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+#if defined(USE_GENERIC_EMBEDDING) || defined(CHECK_COMPRESSED_EMBEDDING)
 				boost::unordered_set<embedding_generic_type> matches_generic;
 #endif
 
@@ -1387,10 +1387,10 @@ std::cout << std::abs(int(distance_to_boarder[0][pinning[ordred_vertices[k]]]) -
 #ifdef USE_COMPRESSED_EMBEDDING2
 							, matches
 #endif
-#if defined(USE_COMPRESSED_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+#if defined(USE_COMPRESSED_EMBEDDING) || defined(CHECK_COMPRESSED_EMBEDDING)
 							, matches_2d
 #endif
-#if defined(USE_GENERIC_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+#if defined(USE_GENERIC_EMBEDDING) || defined(CHECK_COMPRESSED_EMBEDDING)
 							, matches_generic
 #endif
 							, distance_to_boarder
@@ -1407,7 +1407,7 @@ std::cout << std::abs(int(distance_to_boarder[0][pinning[ordred_vertices[k]]]) -
 //				std::cout << "average walk: " << matches.avgwalk / double(matches.size()) << std::endl;
 				return matches.size();
 #else
-#if defined(USE_COMPRESSED_EMBEDDING) or defined(CHECK_COMPRESSED_EMBEDDING)
+#if defined(USE_COMPRESSED_EMBEDDING) || defined(CHECK_COMPRESSED_EMBEDDING)
 				return matches_2d.size();
 #else
 				return matches_generic.size();

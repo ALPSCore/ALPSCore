@@ -48,6 +48,7 @@ namespace alps {
             atomic<T> & operator=(T const & v) {
                 boost::lock_guard<boost::mutex> lock(mutex);
                 value = v;
+				return *this;
             }
 
             operator T() const {

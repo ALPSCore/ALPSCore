@@ -86,11 +86,11 @@ namespace alps {
 //    IMPLEMENT_ALPS_VECTOR_SCALAR_OPERATION(operator/,/)
 
     template<class T> 
-    inline std::vector<T> operator/(T const & scalar, std::vector<T> vector) 
+    inline std::vector<T> operator/(T const & scalar, std::vector<T> const& vector) 
     { 
       std::vector<T> res; 
       res.reserve(vector.size()); 
-      for (typename std::vector<T>::iterator it=vector.begin(); it != vector.end(); ++it) 
+      for (typename std::vector<T>::const_iterator it=vector.begin(); it != vector.end(); ++it) 
       { 
         res.push_back(scalar / (*it)); 
       } 
@@ -134,11 +134,11 @@ namespace alps {
     IMPLEMENT_ALPS_VECTOR_FUNCTION(boost::math,atanh)
 
     #define IMPLEMENT_ALPS_VECTOR_FUNCTION2(LIB_HEADER,FUNCTION_NAME) \
-    template<class T> \
-    static std::vector<T> FUNCTION_NAME(std::vector<T> vec, T index) \
+    template<class T, class U> \
+    static std::vector<T> FUNCTION_NAME(std::vector<T> vec, U index) \
     { \
       using LIB_HEADER::FUNCTION_NAME; \
-      std::transform(vec.begin(), vec.end(), vec.begin(), boost::lambda::bind<T>(static_cast<T (*)(T, T)>(&FUNCTION_NAME), boost::lambda::_1, index)); \
+      std::transform(vec.begin(), vec.end(), vec.begin(), boost::lambda::bind<T>(static_cast<T (*)(T, U)>(&FUNCTION_NAME), boost::lambda::_1, index)); \
       return vec; \
     }
 

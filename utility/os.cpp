@@ -117,7 +117,7 @@ boost::filesystem::path temp_directory_path()
     
 #   else  // Windows
 
-    std::vector<path::value_type> buf(GetTempPath(0, NULL));
+    std::vector<TCHAR> buf(MAX_PATH);
 
     if (buf.empty() || GetTempPath(buf.size(), &buf[0])==0)
       return path(".");

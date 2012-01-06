@@ -264,17 +264,17 @@ public:
   }
 
   static boost::filesystem::path observable_dumpfile(Parameters const& params) {
-    boost::filesystem::path basedir = complete(boost::filesystem::path(params["DIR_NAME"]));
+	  boost::filesystem::path basedir = complete(boost::filesystem::path(static_cast<std::string>(params["DIR_NAME"])));
     boost::filesystem::path dumpfile;
     if (params.defined("OBSERVABLE_DUMP_FILE"))
-      dumpfile = complete(boost::filesystem::path(params["OBSERVABLE_DUMP_FILE"]), basedir);
+      dumpfile = complete(boost::filesystem::path(static_cast<std::string>(params["OBSERVABLE_DUMP_FILE"])), basedir);
     else
-      dumpfile = complete(boost::filesystem::path(params["BASE_NAME"] + ".observable"), basedir);
+      dumpfile = complete(boost::filesystem::path(static_cast<std::string>(params["BASE_NAME"]) + ".observable"), basedir);
     return dumpfile;
   }
 
   static std::vector<boost::filesystem::path> weight_dumpfiles(Parameters const& params) {
-    boost::filesystem::path basedir = complete(boost::filesystem::path(params["DIR_NAME"]));
+    boost::filesystem::path basedir = complete(boost::filesystem::path(static_cast<std::string>(params["DIR_NAME"])));
     std::vector<std::string> files;
     if (params.defined("WEIGHT_DUMP_FILE")) {
       read_vector_resize(params["WEIGHT_DUMP_FILE"], files);

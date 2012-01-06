@@ -28,10 +28,10 @@
 #ifndef ALPS_NGS_MULTITHREAD_HPP
 #define ALPS_NGS_MULTITHREAD_HPP
 
+#include <alps/ngs/api.hpp>
 #ifndef ALPS_NGS_SINGLE_THREAD
 
     #include <alps/ngs/atomic.hpp>
-
     #include <boost/thread.hpp>
 
 #endif
@@ -42,7 +42,7 @@ namespace alps {
 
         template<typename Impl> class multithread : public Impl {
             public:
-                multithread(typename parameters_type<Impl>::type const & p, std::size_t seed_offset = 0)
+				multithread(typename alps::parameters_type<Impl>::type const & p, std::size_t seed_offset = 0)
                     : Impl(p, seed_offset)
                 {}
 

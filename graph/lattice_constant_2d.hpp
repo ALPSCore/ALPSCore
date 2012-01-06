@@ -7,20 +7,20 @@
  * Copyright (C) 2010 - 2012 by Lukas Gamper <gamperl@gmail.com>                   *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
- * Library License; you can use, redistribute it and/or modify it under            *
- * the terms of the license, either version 1 or (at your option) any later        *
+ * Library License; you can use, redistribute it and/|| modify it under            *
+ * the terms of the license, either version 1 || (at your option) any later        *
  * version.                                                                        *
  *                                                                                 *
  * You should have received a copy of the ALPS Library License along with          *
  * the ALPS Libraries; see the file LICENSE.txt. If not, the license is also       *
  * available from http://alps.comp-phys.org/.                                      *
  *                                                                                 *
- *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR     *
+ *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS ||     *
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        *
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT       *
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE       *
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,     *
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER     *
+ * FITNESS for A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT       *
+ * SHALL THE COPYRIGHT HOLDERS || ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE       *
+ * for ANY DAMAGES || OTHER LIABILITY, WHETHER IN CONTRACT, TORT || OTHERWISE,     *
+ * ARISING FROM, OUT OF || IN CONNECTION WITH THE SOFTWARE || THE USE || OTHER     *
  * DEALINGS IN THE SOFTWARE.                                                       *
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -106,7 +106,7 @@ namespace alps {
 									grow();
 								return true;
 							} else if((mem[N * key] & mask) == offset + 1)
-								if ((data[0] & ~mask) == (mem[N * key] & ~mask) and data[1] == mem[N * key + 1])
+								if ((data[0] & ~mask) == (mem[N * key] & ~mask) && data[1] == mem[N * key + 1])
 									return false;
 					}
 
@@ -411,7 +411,7 @@ namespace alps {
 				pinning[s_stack.back()][0] = g_stack.back();
 				pinning[s_stack.back()][1] = pinning[s_stack.back()][2] = pinning[s_stack.back()][3] = pinning[s_stack.back()][4] = 0x8000;
 
-				for (tie(s_ai, s_ae) = adjacent_vertices(s_stack.back(), S); s_ai != s_ae; ++s_ai)
+				for (boost::tie(s_ai, s_ae) = adjacent_vertices(s_stack.back(), S); s_ai != s_ae; ++s_ai)
 					if (pinning[*s_ai][0] != num_vertices(G)) {
 						std::size_t dim = (distance_to_boarder[0][pinning[*s_ai][0]] + 0x01 - distance_to_boarder[0][g_stack.back()]) & 0x01;
 						pinning[s_stack.back()][((dim << 0x01) | ((distance_to_boarder[dim][pinning[*s_ai][0]] + 0x01 - distance_to_boarder[dim][g_stack.back()]) >> 0x01)) + 1] = *s_ai;
@@ -420,32 +420,32 @@ namespace alps {
 
 				// TODO: replace recursion by loop
 				if (s_stack.size() < num_vertices(S)) {
-					for (tie(s_ai, s_ae) = adjacent_vertices(s_stack.back(), S); s_ai != s_ae; ++s_ai)
+					for (boost::tie(s_ai, s_ae) = adjacent_vertices(s_stack.back(), S); s_ai != s_ae; ++s_ai)
 						if (((placed >> *s_ai) & 0x01) == 0) {
 							placed |= 0x01ul << *s_ai;
 							stack.push_back(std::make_pair(*s_ai, g_stack.back()));
 						}
 					std::pair<SubgraphVertex, GraphVertex> current = stack.front();
 					stack.pop_front();
-					for (tie(g_ai, g_ae) = adjacent_vertices(current.second, G); g_ai != g_ae; ++g_ai)
+					for (boost::tie(g_ai, g_ae) = adjacent_vertices(current.second, G); g_ai != g_ae; ++g_ai)
 						if (!visited[*g_ai]) {
 							bool is_valid = true;
-							for (tie(s_ai, s_ae) = adjacent_vertices(current.first, S); s_ai != s_ae; ++s_ai)
+							for (boost::tie(s_ai, s_ae) = adjacent_vertices(current.first, S); s_ai != s_ae; ++s_ai)
 								if (pinning[*s_ai][0] != num_vertices(G)) {
 									typename boost::graph_traits<Graph>::edge_descriptor e;
 									bool is_e;
-									tie(e, is_e) = edge(*g_ai, pinning[*s_ai][0], G);
+									boost::tie(e, is_e) = edge(*g_ai, pinning[*s_ai][0], G);
 									if (
 										   !is_e 
-										or !lattice_constant_edge_equal(
+										|| !lattice_constant_edge_equal(
 											  edge(current.first, *s_ai, S).first
 											, e
 											, S
 											, G
 											, typename detail::has_coloring<typename boost::edge_property_type<Graph>::type>::type()
 										)
-										or out_degree(current.first, S) > out_degree(*g_ai, G)
-										or !lattice_constant_vertex_equal(
+										|| out_degree(current.first, S) > out_degree(*g_ai, G)
+										|| !lattice_constant_vertex_equal(
 											  current.first
 											, *g_ai
 											, S
@@ -479,7 +479,7 @@ namespace alps {
 							}
 						}
 					stack.push_front(current);
-					while (stack.size() > 0 and stack.back().second == g_stack.back())
+					while (stack.size() > 0 && stack.back().second == g_stack.back())
 						stack.pop_back();
 				} else
 					lattice_constant_insert<Graph, Subgraph, 20, 2>(
@@ -494,7 +494,7 @@ namespace alps {
 
 				visited[g_stack.back()] = false;
 				for (std::size_t i = 1; i < 5; ++i)
-					if (pinning[s_stack.back()][i] != 0x8000 and pinning[pinning[s_stack.back()][i]][0] < num_vertices(G)) {
+					if (pinning[s_stack.back()][i] != 0x8000 && pinning[pinning[s_stack.back()][i]][0] < num_vertices(G)) {
 						std::size_t dim = (distance_to_boarder[0][pinning[pinning[s_stack.back()][i]][0]] + 0x01 - distance_to_boarder[0][g_stack.back()]) & 0x01;
 						pinning[pinning[s_stack.back()][i]][((dim << 0x01) | ((distance_to_boarder[dim][g_stack.back()] + 0x01 - distance_to_boarder[dim][pinning[pinning[s_stack.back()][i]][0]]) >> 0x01)) + 1] = 0x8000;
 					}

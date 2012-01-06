@@ -45,7 +45,7 @@
 #include <string>
 
 namespace alps {
-    class mcbase {
+     class ALPS_DECL mcbase {
         public:
             typedef alps::params parameters_type;
             typedef mcresults results_type;

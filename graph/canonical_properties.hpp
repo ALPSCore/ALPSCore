@@ -16,7 +16,7 @@
  * available from http://alps.comp-phys.org/.                                      *
  *                                                                                 *
  *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR     *
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        *
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANboost::tieS OF MERCHANTABILITY,        *
  * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT       *
  * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE       *
  * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,     *
@@ -32,8 +32,8 @@
  * the algorithm : http://www.math.unl.edu/~shartke2/math/papers/canonical.pdf     *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_GRAPH_PROPERTIES
-#define ALPS_GRAPH_PROPERTIES
+#ifndef ALPS_GRAPH_CANONICAL_PROPERSTIES
+#define ALPS_GRAPH_CANONICAL_PROPERSTIES
 
 #include <boost/mpl/not.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -184,7 +184,7 @@ namespace alps {
 					std::vector<std::vector<std::size_t> > adjacent_numbers = std::vector<std::vector<std::size_t> >(pi.size(), std::vector<std::size_t>(it->size(), 0));
 					for (typename partition_type<Graph>::type::value_type::const_iterator jt = it->begin(); jt != it->end(); ++jt) {
 						typename boost::graph_traits<Graph>::adjacency_iterator ai, ae;
-						for (tie(ai, ae) = adjacent_vertices(*jt, G); ai != ae; ++ai)
+						for (boost::tie(ai, ae) = adjacent_vertices(*jt, G); ai != ae; ++ai)
 							++adjacent_numbers[I.find(*ai)->second][jt - it->begin()];
 					}
 					for (std::vector<std::vector<std::size_t> >::const_iterator jt = adjacent_numbers.begin(); jt != adjacent_numbers.end(); ++jt)
@@ -210,7 +210,7 @@ namespace alps {
 						// I = {(ni, j) : ni element of Vj
 						partition_indeces(I, pi, G);
 						std::size_t i, j;
-						tie(i, j) = shattering(pi, I, G);
+						boost::tie(i, j) = shattering(pi, I, G);
 						// If B is empty, then stop, reporting pi as the output R(pi)
 						if (i == pi.size())
 							break;
@@ -223,7 +223,7 @@ namespace alps {
 						for (typename partition_type<Graph>::type::value_type::const_iterator it = pi[i].begin(); it != pi[i].end(); ++it) {
 							O.push_back(make_pair(0, *it));
 							typename boost::graph_traits<Graph>::adjacency_iterator ai, ae;
-							for (tie(ai, ae) = adjacent_vertices(*it, G); ai != ae; ++ai)
+							for (boost::tie(ai, ae) = adjacent_vertices(*it, G); ai != ae; ++ai)
 								if (I[*ai] == j)
 									++O.back().first;
 						}
@@ -290,7 +290,7 @@ namespace alps {
 						i = it - pi.begin();
 					}
 				if (n < num_vertices(G) + 1) {
-					T.push_back(make_tuple(typename partition_type<Graph>::type(), i, 0));
+					T.push_back(boost::make_tuple(typename partition_type<Graph>::type(), i, 0));
 					terminal_node(T, G);
 				}
 			}
@@ -312,7 +312,7 @@ namespace alps {
 				// I = {(ni, j) : ni element of Vj
 				partition_indeces(I, pi, G);
 				for (typename std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t>::const_iterator it = I.begin(); it != I.end(); ++it)
-					for (tie(ai, ae) = adjacent_vertices(it->first, G); ai != ae; ++ai)
+					for (boost::tie(ai, ae) = adjacent_vertices(it->first, G); ai != ae; ++ai)
 						if (I[*ai] <= I[it->first])
 							get<0>(l)[I[*ai] * pi.size() - (I[*ai] - 1) * I[*ai] / 2 + I[it->first] - I[*ai]] = true;
 			}
@@ -510,7 +510,7 @@ namespace alps {
 			) {
 				pi.resize(1);
 				typename boost::graph_traits<Graph>::vertex_iterator it, end;
-				for (tie(it, end) = vertices(G); it != end; ++it)
+				for (boost::tie(it, end) = vertices(G); it != end; ++it)
 					pi.front().push_back(*it);
 			}
 
@@ -532,7 +532,7 @@ namespace alps {
 				)
 					color_vector.push_back(*jt);
 				pi.resize(color_vector.size());	
-				for (tie(it, end) = vertices(G); it != end; ++it)
+				for (boost::tie(it, end) = vertices(G); it != end; ++it)
 					pi[std::find(color_vector.begin(), color_vector.end(), get(alps::vertex_type_t(), G)[*it]) - color_vector.begin()].push_back(*it);
 			}
 
@@ -573,14 +573,14 @@ namespace alps {
 			// The orbit starts with a discrete partition (a partition with only trivial parts)
 			// orbit = (W1, W2, ..., Wr), Wi = (m1, m2, ..., mk), mi element of G
 			typename boost::graph_traits<Graph>::vertex_iterator vi, ve;
-			for (tie(vi, ve) = vertices(G); vi != ve; ++vi)
+			for (boost::tie(vi, ve) = vertices(G); vi != ve; ++vi)
 				orbit.push_back(typename partition_type<Graph>::type::value_type(1, *vi));
 			// Io = {(mi, j) : ni element of Vj
 			detail::partition_indeces(Io, orbit, G);
 			// Build first node of the search tree T(G)
-			std::vector<boost::tuple<typename partition_type<Graph>::type, std::size_t, std::size_t> > T(1, make_tuple(pi, 0, 0));
+			std::vector<boost::tuple<typename partition_type<Graph>::type, std::size_t, std::size_t> > T(1, boost::make_tuple(pi, 0, 0));
 			detail::equitable_refinement(get<0>(T.back()), G);
-			T.push_back(make_tuple(typename partition_type<Graph>::type(), 0, 0));
+			T.push_back(boost::make_tuple(typename partition_type<Graph>::type(), 0, 0));
 			detail::terminal_node(T, G);
 			// Initialize partitions and labels
 			first_partition = canonical_partition = get<0>(T.back());
@@ -627,7 +627,7 @@ namespace alps {
 			std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> canonical_ordering;
 			for (typename partition_type<Graph>::type::const_iterator it = canonical_partition.begin(); it != canonical_partition.end(); ++it)
 				canonical_ordering.push_back((*it)[0]);
-			return make_tuple(
+			return boost::make_tuple(
 				  canonical_ordering
 				, canonical_label
 				, orbit

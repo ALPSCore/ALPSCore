@@ -77,7 +77,7 @@ namespace alps {
                 }
 
                 bool run(boost::python::object stop_callback) {
-                    base::run(boost::bind(base_export::callback_wrapper, stop_callback));
+                    return base::run(boost::bind(base_export::callback_wrapper, stop_callback));
                 }
 
                 base::parameters_type & get_params() {

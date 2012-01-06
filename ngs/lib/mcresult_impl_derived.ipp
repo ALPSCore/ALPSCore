@@ -65,7 +65,7 @@ namespace alps {
                 mcresult_impl_derived(
                       int64_t count
                     , T const & mean
-                    , T const & error
+                    , T const & 
                     , boost::optional<T> const & variance_opt
                     , boost::optional<T> const & tau_opt
                     , uint64_t binsize

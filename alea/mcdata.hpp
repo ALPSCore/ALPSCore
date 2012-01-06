@@ -87,7 +87,8 @@ namespace alps {
             public:
                 template <typename X> friend class mcdata;
                 typedef T value_type;
-                typedef typename alps::element_type<T>::type element_type;
+                typedef typename alps::element_type_recursive<T>::type recursive_element_type;
+				typedef typename alps::element_type<T>::type element_type;
                 typedef typename change_value_type<T, double>::type time_type;
                 typedef std::size_t size_type;
                 typedef double count_type;
@@ -768,11 +769,11 @@ namespace alps {
                         set_zero(jack_[0]);
                         for(std::size_t j = 0; j < bin_number(); ++j) // to this point, jack_[0] = \sum_{j} values_[j] 
                             jack_[0] = jack_[0] + alps::numeric_cast<result_type>(values_[j]);
-                        double sum2 = 0.;
+                       // double sum2 = 0.;
                         for(std::size_t i = 0; i < bin_number(); ++i) {// to this point, jack_[i+1] = \sum_{j != i} values_[j]  
                             jack_[i+1] = jack_[0] - alps::numeric_cast<result_type>(values_[i]);
-                            double dx = (slice_value(values_[i], std::size_t(0)) - slice_value(jack_[0] / count_type(bin_number()),std::size_t(0)));
-                            sum2 +=  dx*dx;
+                           // double dx = (slice_value(values_[i], std::size_t(0)) - slice_value(jack_[0] / count_type(bin_number()),std::size_t(0)));
+                           // sum2 +=  dx*dx;
                         }
                         //  Next, we want the following:
                         //    a)  jack_[0]   =  <x>
@@ -967,7 +968,7 @@ namespace alps {
             return static_cast<T>(1) / arg2 * arg1;
         }
 
-        template <typename T> mcdata<T> pow(mcdata<T> rhs, typename mcdata<T>::element_type exponent) {
+        template <typename T> mcdata<T> pow(mcdata<T> rhs, typename mcdata<T>::recursive_element_type exponent) {
             if (exponent == 1.)
               return rhs;
             else {

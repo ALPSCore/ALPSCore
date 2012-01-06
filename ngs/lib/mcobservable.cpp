@@ -72,19 +72,19 @@ namespace alps {
         return impl_->name();
     }
 
-    ALPS_DECL template<> mcobservable & mcobservable::operator<< <double>(double const & value) {
+     template<> ALPS_DECL mcobservable & mcobservable::operator<< <double>(double const & value) {
         (*impl_) << value;
         return *this;
     }
 
-    ALPS_DECL template<> mcobservable & mcobservable::operator<< <std::vector<double> >(std::vector<double>  const & value) {
+     template<> ALPS_DECL mcobservable & mcobservable::operator<< <std::vector<double> >(std::vector<double>  const & value) {
         std::valarray<double> varr(value.size());
         std::copy(value.begin(), value.end(), &varr[0]);
         (*impl_) << varr;
         return *this;
     }
 
-    ALPS_DECL template<> mcobservable & mcobservable::operator<< <std::valarray<double> >(std::valarray<double>  const & value) {
+     template<> ALPS_DECL mcobservable & mcobservable::operator<< <std::valarray<double> >(std::valarray<double>  const & value) {
         (*impl_) << value;
         return *this;
     }

@@ -36,6 +36,8 @@
  
  namespace alps {
  
+template <class T> struct element_type_recursive;
+
 namespace detail {
 
 template <class T, class F>
@@ -50,7 +52,22 @@ struct element_type_helper<T,boost::mpl::false_>
 template <class T>
 struct element_type_helper<T,boost::mpl::true_> 
 {
-  typedef typename T::value_type type;
+	typedef typename T::value_type type;
+};
+
+template <class T, class F>
+struct element_type_recursive_helper {};
+  
+ template <class T>
+struct element_type_recursive_helper<T,boost::mpl::false_> 
+{
+  typedef T type;
+};
+
+template <class T>
+struct element_type_recursive_helper<T,boost::mpl::true_> 
+	: element_type_recursive<typename T::value_type>
+{
 };
 
 
@@ -59,6 +76,10 @@ struct element_type_helper<T,boost::mpl::true_>
 template <class T>
  struct element_type
  : public detail::element_type_helper<T,typename has_value_type<T>::type > {};
+
+ template <class T>
+ struct element_type_recursive
+ : public detail::element_type_recursive_helper<T,typename has_value_type<T>::type > {};
 
 }
  

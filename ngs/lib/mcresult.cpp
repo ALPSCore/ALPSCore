@@ -67,17 +67,17 @@ namespace alps {
     }
 	
     #define ALPS_MCRESULT_TPL_IMPL(T)                                                                                     \
-		template<> bool mcresult::is_type< T >() const { return impl_->is_type< T >(); }								  \
-        template<> std::vector< T > const & mcresult::bins< T >() const { return impl_->bins< T >(); }                    \
-        template<> T const & mcresult::mean< T >() const { return impl_->mean< T >(); }                                   \
-        template<> T const & mcresult::error< T >() const { return impl_->error< T >(); }                                 \
-        template<> T const & mcresult::variance< T >() const { return impl_->variance< T >(); }                           \
-        template<> T const & mcresult::tau< T >() const { return impl_->tau< T >(); }                                     \
-        template<> T const & mcresult::covariance< T >() const { return impl_->error< T >(); }                            \
-        template<> mcresult & mcresult::operator+=< T >( T const & rhs) { impl_->add_assign(rhs); return *this; }         \
-        template<> mcresult & mcresult::operator-=< T >( T const & rhs) { impl_->sub_assign(rhs); return *this; }         \
-        template<> mcresult & mcresult::operator*=< T >( T const & rhs) { impl_->mul_assign(rhs); return *this; }         \
-        template<> mcresult & mcresult::operator/=< T >( T const & rhs) { impl_->div_assign(rhs); return *this; }
+		template<> ALPS_DECL bool mcresult::is_type< T >() const { return impl_->is_type< T >(); }								  \
+        template<> ALPS_DECL std::vector< T > const & mcresult::bins< T >() const { return impl_->bins< T >(); }                    \
+        template<> ALPS_DECL T const & mcresult::mean< T >() const { return impl_->mean< T >(); }                                   \
+        template<> ALPS_DECL T const & mcresult::error< T >() const { return impl_->error< T >(); }                                 \
+        template<> ALPS_DECL T const & mcresult::variance< T >() const { return impl_->variance< T >(); }                           \
+        template<> ALPS_DECL T const & mcresult::tau< T >() const { return impl_->tau< T >(); }                                     \
+        template<> ALPS_DECL T const & mcresult::covariance< T >() const { return impl_->error< T >(); }                            \
+        template<> ALPS_DECL mcresult & mcresult::operator+=< T >( T const & rhs) { impl_->add_assign(rhs); return *this; }         \
+        template<> ALPS_DECL mcresult & mcresult::operator-=< T >( T const & rhs) { impl_->sub_assign(rhs); return *this; }         \
+        template<> ALPS_DECL mcresult & mcresult::operator*=< T >( T const & rhs) { impl_->mul_assign(rhs); return *this; }         \
+        template<> ALPS_DECL mcresult & mcresult::operator/=< T >( T const & rhs) { impl_->div_assign(rhs); return *this; }
     ALPS_MCRESULT_TPL_IMPL(double)
     ALPS_MCRESULT_TPL_IMPL(std::vector<double>)
     #undef ALPS_MCRESULT_TPL_IMPL

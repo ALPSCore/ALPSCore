@@ -48,7 +48,7 @@ namespace alps {
 				std::deque<typename boost::graph_traits<Graph>::vertex_descriptor> S(1, s);
 				typename boost::graph_traits<Graph>::adjacency_iterator ai, ae;
 				while (S.size()) {
-					for (tie(ai, ae) = adjacent_vertices(S.front(), G); ai != ae; ++ai)
+					for (boost::tie(ai, ae) = adjacent_vertices(S.front(), G); ai != ae; ++ai)
 						if (*ai == t)
 							return true;
 						else if (V.insert(*ai).second)
@@ -63,7 +63,7 @@ namespace alps {
 				, Graph G
 			) {
 				typename boost::graph_traits<Graph>::adjacency_iterator ai, aj, ae;
-				tie(ai, ae) = adjacent_vertices(vd, G);
+				boost::tie(ai, ae) = adjacent_vertices(vd, G);
 				clear_vertex( vd, G );
 				for( aj = ai++ ; ai != ae; ++ai )
                 {
