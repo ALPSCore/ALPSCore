@@ -41,20 +41,20 @@ namespace alps {
 		namespace detail {
 // = uint
 			template<std::size_t P, std::size_t N> struct vli_set {
-				static inline void apply(boost::array<boost::uint64_t, N> & lhs, boost::uint64_t rhs, boost::uint64_t fill) {
-					lhs[P] = fill;
-					vli_set<P + 1, N>::apply(lhs, rhs, fill);
+				static inline void apply(boost::array<boost::uint64_t, N> & lhs, boost::uint64_t rhs) {
+					lhs[P] = rhs;
+					vli_set<P + 1, N>::apply(lhs, rhs);
 				}
 			};
 			template<std::size_t N> struct vli_set<0, N> {
-				static inline void apply(boost::array<boost::uint64_t, N> & lhs, boost::uint64_t rhs, boost::uint64_t fill) {
+				static inline void apply(boost::array<boost::uint64_t, N> & lhs, boost::uint64_t rhs) {
 					lhs.front() = rhs;
-					vli_set<1, N>::apply(lhs, rhs, fill);
+					vli_set<1, N>::apply(lhs, ((rhs & 0x8000000000000000ULL) >> 63) * 0xFFFFFFFFFFFFFFFFULL);
 				}
 			};
 			template<std::size_t N> struct vli_set<N, N> {
-				static inline void apply(boost::array<boost::uint64_t, N> & lhs, boost::uint64_t rhs, boost::uint64_t fill) {
-					lhs.back() = fill;
+				static inline void apply(boost::array<boost::uint64_t, N> & lhs, boost::uint64_t rhs) {
+					lhs.back() = rhs;
 				}
 			};
 // !=
@@ -126,10 +126,10 @@ namespace alps {
 					boost::uint64_t b11 = ((arg1[P] & 0xFFFFFFFF00000000ULL) >> 32) * ((arg2[Q] & 0xFFFFFFFF00000000ULL) >> 32);
 
 					boost::uint64_t lb0 = (lhs[P + Q] & 0x00000000FFFFFFFFULL) + (b00 & 0x00000000FFFFFFFFULL);
-					boost::uint64_t hb0 = ((lhs[P + Q] & 0xFFFFFFFF00000000ULL) >> 32) + ((b00 & 0xFFFFFFFF00000000ULL) >> 32) 
+					boost::uint64_t hb0 = ((lhs[P + Q] & 0xFFFFFFFF00000000ULL) >> 32) + ((b00 & 0xFFFFFFFF00000000ULL) >> 32)
 									    + (b01 & 0x00000000FFFFFFFFULL) + (b10 & 0x00000000FFFFFFFFULL) + ((lb0 & 0xFFFFFFFF00000000ULL) >> 32);
 
-					boost::uint64_t lb1 = (lhs[P + Q + 1] & 0x00000000FFFFFFFFULL) + ((b01 & 0xFFFFFFFF00000000ULL) >> 32) 
+					boost::uint64_t lb1 = (lhs[P + Q + 1] & 0x00000000FFFFFFFFULL) + ((b01 & 0xFFFFFFFF00000000ULL) >> 32)
 										+ ((b10 & 0xFFFFFFFF00000000ULL) >> 32) + (b11 & 0x00000000FFFFFFFFULL) + ((hb0 & 0xFFFFFFFF00000000ULL) >> 32);
 					boost::uint64_t hb1 = ((lhs[P + Q + 1] & 0xFFFFFFFF00000000ULL) >> 32) + ((b11 & 0xFFFFFFFF00000000ULL) >> 32) + ((lb1 & 0xFFFFFFFF00000000ULL) >> 32);
 
@@ -181,10 +181,10 @@ namespace alps {
 			public:
 // Constructor
 				inline vli() {
-					detail::vli_set<0, N>::apply(data, 0ULL, 0ULL);
+					detail::vli_set<0, N>::apply(data, 0ULL);
 				}
 				inline vli(boost::int64_t arg) {
-					detail::vli_set<0, N>::apply(data, static_cast<boost::uint64_t>(arg), arg < 0 ? 0xFFFFFFFFFFFFFFFFULL : 0ULL);
+					detail::vli_set<0, N>::apply(data, static_cast<boost::uint64_t>(arg));
 				}
 				inline vli(vli<N> const & arg) {
 					data = arg.data;
@@ -245,7 +245,7 @@ namespace alps {
 // *
 				inline vli<N> & operator*=(vli<N> const & arg) {
 					boost::array<boost::uint64_t, N> tmp;
-					detail::vli_set<0, N>::apply(tmp, 0ULL, 0ULL);
+					detail::vli_set<0, N>::apply(tmp, 0ULL);
 					detail::vli_mul_eq<N + 1>::apply(tmp, data, arg.data);
 					std::swap(data, tmp);
 					return *this;
@@ -275,6 +275,8 @@ namespace alps {
 				}
 			private:
 // raw data
+				// TODO: check if boost::array<boost::uint32_t, N> data; performs better
+				// since all operations of the form data[k] & 0x00000000FFFFFFFFULL are obsolete!
 				boost::array<boost::uint64_t, N> data;
 		};
 // +
