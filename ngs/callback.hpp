@@ -28,7 +28,7 @@
 #ifndef ALPS_NGS_CALLBACK_HPP
 #define ALPS_NGS_CALLBACK_HPP
 
-#include <alps/config.h>
+#include <alps/ngs/config.hpp>
 
 #ifndef ALPS_NGS_SINGLE_THREAD
     #include <alps/ngs/atomic.hpp>
