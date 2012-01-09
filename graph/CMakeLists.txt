@@ -15,3 +15,9 @@ FOREACH (name iso_simple canonical_label_test lattice_constant_test colored_latt
   target_link_libraries(${name} alps)
   add_alps_test(${name})
 ENDFOREACH(name)
+
+add_executable(vli32_test vli_test.cpp)
+SET_TARGET_PROPERTIES(vli32_test PROPERTIES COMPILE_FLAGS "-DUSE_VLI_32")
+add_dependencies(vli32_test alps)
+target_link_libraries(vli32_test alps)
+add_alps_test(vli32_test)
