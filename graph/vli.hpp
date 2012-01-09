@@ -58,9 +58,8 @@ namespace alps {
 			template<std::size_t N> struct vli_set<0, N> {
 				static inline void apply(vli_raw<N> & lhs, boost::uint64_t rhs) {
 #if defined(USE_VLI_32)
-					lhs.front() = rhs;
-					vli_set<1, N>::apply(lhs, rhs >> 32);
-					// TODO: set upper half of rhs to lhs[1]
+					*reinterpret_cast<boost::uint64_t *>(lhs.c_array()) = rhs;
+					vli_set<2, N>::apply(lhs, ((rhs & 0x8000000000000000ULL) >> 63) * 0xFFFFFFFFFFFFFFFFULL);
 #else
 					lhs.front() = rhs;
 					vli_set<1, N>::apply(lhs, ((rhs & 0x8000000000000000ULL) >> 63) * 0xFFFFFFFFFFFFFFFFULL);
@@ -68,10 +67,16 @@ namespace alps {
 				}
 			};
 			template<std::size_t N> struct vli_set<N, N> {
-				static inline void apply(vli_raw<N> & lhs, boost::uint64_t rhs) {
-					lhs.back() = rhs;
+				static inline void apply(vli_raw<N> & lhs, boost::uint64_t rhs) {}
+			};
+#if defined(USE_VLI_32)
+			template<> struct vli_set<0, 1> {
+				static inline void apply(vli_raw<1> & lhs, boost::uint64_t rhs) {
+					lhs.front() = rhs;
 				}
 			};
+#endif
+			
 // !=
 			template<std::size_t P, std::size_t N> struct vli_neq {
 				static inline bool apply(vli_raw<N> const & lhs, vli_raw<N> const & rhs) {
@@ -99,11 +104,11 @@ namespace alps {
 				static inline void apply(vli_raw<N> & lhs, vli_raw<N> const & rhs, typename vli_raw<N>::value_type carry = 0ULL) {
 #if defined(USE_VLI_32)
 					boost::uint64_t tmp = to64(lhs[P - 1]) + to64(rhs[P - 1]) + carry;
-					carry = (tmp >> 32) & 1;
+					carry = (tmp >> 32) & 0x00000001ULL;
 					lhs[P - 1] = tmp;
 #else
-					boost::uint64_t lb =  (lhs[P - 1] & 0x00000000FFFFFFFFULL)        +  (rhs[P - 1] & 0x00000000FFFFFFFFULL)        + carry;
-					boost::uint64_t hb = ((lhs[P - 1] & 0xFFFFFFFF00000000ULL) >> 32) + ((rhs[P - 1] & 0xFFFFFFFF00000000ULL) >> 32) + ((lb >> 32) & 0x0000000000000001ULL);
+					boost::uint64_t lb = ((lhs[P - 1] + rhs[P - 1]) & 0x00000000FFFFFFFFULL) + carry;
+					boost::uint64_t hb = ((lhs[P - 1] + rhs[P - 1]) >> 32) + ((lb >> 32) & 0x0000000000000001ULL);
 					carry = (hb >> 32) & 0x0000000000000001ULL;
 					lhs[P - 1] = (lb & 0x00000000FFFFFFFFULL) | (hb << 32);
 #endif
@@ -132,11 +137,11 @@ namespace alps {
 				static inline void apply(vli_raw<N> & lhs, vli_raw<N> const & rhs, typename vli_raw<N>::value_type borrow = 0ULL) {
 #if defined(USE_VLI_32)
 					boost::uint64_t tmp = to64(lhs[P - 1]) - to64(rhs[P - 1]) - borrow;
-					borrow = (tmp >> 32) & 1;
+					borrow = (tmp >> 32) & 0x00000001ULL;
 					lhs[P - 1] = tmp;
 #else
-					boost::uint64_t lb =  (lhs[P - 1] & 0x00000000FFFFFFFFULL)        -  (rhs[P - 1] & 0x00000000FFFFFFFFULL)        - borrow;
-					boost::uint64_t hb = ((lhs[P - 1] & 0xFFFFFFFF00000000ULL) >> 32) - ((rhs[P - 1] & 0xFFFFFFFF00000000ULL) >> 32) - ((lb >> 32) & 0x0000000000000001ULL);
+					boost::uint64_t lb = (lhs[P - 1] & 0x00000000FFFFFFFFULL) - (rhs[P - 1] & 0x00000000FFFFFFFFULL) - borrow;
+					boost::uint64_t hb = (lhs[P - 1] >> 32                  ) - (rhs[P - 1] >> 32                  ) - ((lb >> 32) & 0x0000000000000001ULL);
 					borrow = (hb >> 32) & 0x0000000000000001ULL;
 					lhs[P - 1] = (lb & 0x00000000FFFFFFFFULL) | (hb << 32);
 #endif
@@ -157,6 +162,17 @@ namespace alps {
 			template<std::size_t N> struct vli_mul_carry<N, N> {
 				static inline void apply(vli_raw<N> &, typename vli_raw<N>::value_type) {}
 			};
+#if defined(USE_VLI_32)
+			template<std::size_t N, std::size_t L> struct vli_mul_hb1 {
+				static inline void apply(vli_raw<N> & lhs, boost::uint64_t value) {
+					lhs[L] = (value += to64(lhs[L]));
+					vli_mul_carry<N, L + 1>::apply(lhs, value >> 32);
+				}
+			};
+			template<std::size_t N> struct vli_mul_hb1<N, N> {
+				static inline void apply(vli_raw<N> &, boost::uint64_t) {}
+			};
+#endif
 			template<std::size_t P, std::size_t Q, std::size_t N, std::size_t> struct vli_mul_calc {
 				static inline void apply(vli_raw<N> & lhs, vli_raw<N> const & arg1, vli_raw<N> const & arg2) {
 #if defined(USE_VLI_32)
@@ -168,32 +184,26 @@ namespace alps {
 					boost::uint64_t hb0 = to64(lhs[P + Q + 1]) + ((b00 & 0xFFFFFFFF00000000ULL) >> 32)
 									    + (b01 & 0x00000000FFFFFFFFULL) + (b10 & 0x00000000FFFFFFFFULL) + ((lb0 & 0xFFFFFFFF00000000ULL) >> 32);
 
-					boost::uint64_t lb1 = to64(lhs[P + Q + 2]) + ((b01 & 0xFFFFFFFF00000000ULL) >> 32) + ((b10 & 0xFFFFFFFF00000000ULL) >> 32)
-										+ ((hb0 & 0xFFFFFFFF00000000ULL) >> 32);
-
 					lhs[P + Q    ] = lb0;
 					lhs[P + Q + 1] = hb0;
-					lhs[P + Q + 2] = lb1;
-
-					vli_mul_carry<N, P + Q + 3>::apply(lhs, (lb1 & 0xFFFFFFFF00000000ULL) >> 32);
+					
+					vli_mul_hb1<N, P + Q + 2>::apply(lhs, ((b01 & 0xFFFFFFFF00000000ULL) >> 32) + ((b10 & 0xFFFFFFFF00000000ULL) >> 32) + ((hb0 & 0xFFFFFFFF00000000ULL) >> 32));
 #else
-					boost::uint64_t b00 =  (arg1[P] & 0x00000000FFFFFFFFULL)        *  (arg2[Q] & 0x00000000FFFFFFFFULL);
-					boost::uint64_t b01 =  (arg1[P] & 0x00000000FFFFFFFFULL)        * ((arg2[Q] & 0xFFFFFFFF00000000ULL) >> 32);
-					boost::uint64_t b10 = ((arg1[P] & 0xFFFFFFFF00000000ULL) >> 32) *  (arg2[Q] & 0x00000000FFFFFFFFULL);
-					boost::uint64_t b11 = ((arg1[P] & 0xFFFFFFFF00000000ULL) >> 32) * ((arg2[Q] & 0xFFFFFFFF00000000ULL) >> 32);
+					boost::uint64_t b00 = (arg1[P] & 0x00000000FFFFFFFFULL) * (arg2[Q] & 0x00000000FFFFFFFFULL);
+					boost::uint64_t b01 = (arg1[P] & 0x00000000FFFFFFFFULL) * (arg2[Q] >> 32                  );
+					boost::uint64_t b10 = (arg1[P] >> 32                  ) * (arg2[Q] & 0x00000000FFFFFFFFULL);
+					boost::uint64_t b11 = (arg1[P] >> 32                  ) * (arg2[Q] >> 32                  );
 
 					boost::uint64_t lb0 = (lhs[P + Q] & 0x00000000FFFFFFFFULL) + (b00 & 0x00000000FFFFFFFFULL);
-					boost::uint64_t hb0 = ((lhs[P + Q] & 0xFFFFFFFF00000000ULL) >> 32) + ((b00 & 0xFFFFFFFF00000000ULL) >> 32)
-									    + (b01 & 0x00000000FFFFFFFFULL) + (b10 & 0x00000000FFFFFFFFULL) + ((lb0 & 0xFFFFFFFF00000000ULL) >> 32);
+					boost::uint64_t hb0 = (lhs[P + Q] >> 32) + (b00 >> 32) + (b01 & 0x00000000FFFFFFFFULL) + (b10 & 0x00000000FFFFFFFFULL) + (lb0 >> 32);
 
-					boost::uint64_t lb1 = (lhs[P + Q + 1] & 0x00000000FFFFFFFFULL) + ((b01 & 0xFFFFFFFF00000000ULL) >> 32)
-										+ ((b10 & 0xFFFFFFFF00000000ULL) >> 32) + (b11 & 0x00000000FFFFFFFFULL) + ((hb0 & 0xFFFFFFFF00000000ULL) >> 32);
-					boost::uint64_t hb1 = ((lhs[P + Q + 1] & 0xFFFFFFFF00000000ULL) >> 32) + ((b11 & 0xFFFFFFFF00000000ULL) >> 32) + ((lb1 & 0xFFFFFFFF00000000ULL) >> 32);
+					boost::uint64_t lb1 = (lhs[P + Q + 1] & 0x00000000FFFFFFFFULL) + (b01 >> 32) + (b10 >> 32) + (b11 & 0x00000000FFFFFFFFULL) + (hb0 >> 32);
+					boost::uint64_t hb1 = (lhs[P + Q + 1] >> 32) + (b11 >> 32) + (lb1 >> 32);
 
 					lhs[P + Q    ] = (lb0 & 0x00000000FFFFFFFFULL) | (hb0 << 32);
 					lhs[P + Q + 1] = (lb1 & 0x00000000FFFFFFFFULL) | (hb1 << 32);
 
-					vli_mul_carry<N, P + Q + 2>::apply(lhs, (hb1 & 0xFFFFFFFF00000000ULL) >> 32);
+					vli_mul_carry<N, P + Q + 2>::apply(lhs, hb1 >> 32);
 #endif
 				}
 			};
@@ -344,7 +354,8 @@ namespace alps {
 							for (std::size_t i = 1; i < digits; ++i, tmp1 *= 10);
 							vli<B> tmp2(tmp1);
 							std::size_t d;
-							for (d = 0; tmp2 <= value; ++d, tmp2 += tmp1);
+							for (d = 0; tmp2 <= value; ++d, tmp2 += tmp1)
+								assert(d < 10);
 							value -= (tmp2 -= tmp1);
 							buffer << d;
 						} while(--digits);
