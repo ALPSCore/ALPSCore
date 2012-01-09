@@ -37,7 +37,7 @@ int main() {
 	}
 */
 	{
-		alps::graph::vli<128> f(72677163250000LL);
+		alps::graph::vli<64> f(72677163250000LL);
 		std::cout << f << std::endl;
 //		std::cout << (f += 18947077082LL) << std::endl;
 	}
