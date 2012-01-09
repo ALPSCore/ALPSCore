@@ -364,10 +364,12 @@ namespace alps {
 					}
 					unsigned v;
 					for (std::vector<unsigned>::const_iterator it = translations[d].begin(); it != translations[d].end(); ++it) {
-						distance_to_boarder[d][v = *it] = 0;
-						if (v != num_vertices(graph))
+						if (*it != num_vertices(graph))
+                        {
+						    distance_to_boarder[d][v = *it] = 0;
 							while ((v = translations[d][v]) != num_vertices(graph))
 								++distance_to_boarder[d][*it];
+                        }
 					}
 				}
 			}
