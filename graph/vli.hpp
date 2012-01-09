@@ -86,7 +86,7 @@ namespace alps {
 // <
 			template<std::size_t P, std::size_t N> struct vli_less {
 				static inline bool apply(vli_raw<N> const & lhs, vli_raw<N> const & rhs) {
-					return lhs[P] < rhs[P] || lhs[P] == rhs[P] && vli_less<P - 1, N>::apply(lhs, rhs);
+					return lhs[P] < rhs[P] || (lhs[P] == rhs[P] && vli_less<P - 1, N>::apply(lhs, rhs));
 				}
 			};
 			template<std::size_t N> struct vli_less<0, N> {
@@ -259,6 +259,7 @@ namespace alps {
 // Assign
 				inline vli<B> & operator=(vli<B> const & arg) {
 					data = arg.data;
+                    return *this;
 				}
 // []
 				inline typename detail::vli_raw<static_size>::value_type & operator [](std::size_t index) {
