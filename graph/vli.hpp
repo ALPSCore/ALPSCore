@@ -326,7 +326,7 @@ namespace alps {
 					return *this;
 				}
 // *
-				inline vli<B> operator*(vli<B> const & arg) {
+				inline vli<B> operator*(vli<B> const & arg) const {
 					vli<B> tmp;
 					detail::vli_mul<static_size + 1>::apply(tmp.data, data, arg.data);
 					return tmp;
