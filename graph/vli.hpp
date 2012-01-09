@@ -115,6 +115,18 @@ namespace alps {
 					lhs.back() += rhs.back() + carry;
 				}
 			};
+// invert
+			template<std::size_t P, std::size_t N> struct vli_invert {
+				static inline void apply(vli_raw<N> & lhs, vli_raw<N> const & rhs) {
+					lhs[P - 1] = ~rhs[P - 1];
+					vli_invert<P + 1, N>::apply(lhs, rhs);
+				}
+			};
+			template<std::size_t N> struct vli_invert<N, N> {
+				static inline void apply(vli_raw<N> & lhs, vli_raw<N> const & rhs) {
+					lhs.back() = ~rhs.back();
+				}
+			};
 // -=
 			template<std::size_t P, std::size_t N> struct vli_sub_eq {
 				static inline void apply(vli_raw<N> & lhs, vli_raw<N> const & rhs, typename vli_raw<N>::value_type borrow = 0ULL) {
@@ -137,15 +149,15 @@ namespace alps {
 				}
 			};
 // *=
-			template<std::size_t N, std::size_t L> struct vli_mul_eq_carry {
+			template<std::size_t N, std::size_t L> struct vli_mul_carry {
 				static inline void apply(vli_raw<N> & lhs, typename vli_raw<N>::value_type carry) {
 					lhs[L] += carry;
 				}
 			};
-			template<std::size_t N> struct vli_mul_eq_carry<N, N> {
+			template<std::size_t N> struct vli_mul_carry<N, N> {
 				static inline void apply(vli_raw<N> &, typename vli_raw<N>::value_type) {}
 			};
-			template<std::size_t P, std::size_t Q, std::size_t N, std::size_t> struct vli_mul_eq_calc {
+			template<std::size_t P, std::size_t Q, std::size_t N, std::size_t> struct vli_mul_calc {
 				static inline void apply(vli_raw<N> & lhs, vli_raw<N> const & arg1, vli_raw<N> const & arg2) {
 #if defined(USE_VLI_32)
 					boost::uint64_t b00 = to64(arg1[P    ]) * to64(arg2[Q    ]);
@@ -163,7 +175,7 @@ namespace alps {
 					lhs[P + Q + 1] = hb0;
 					lhs[P + Q + 2] = lb1;
 
-					vli_mul_eq_carry<N, P + Q + 3>::apply(lhs, (lb1 & 0xFFFFFFFF00000000ULL) >> 32);
+					vli_mul_carry<N, P + Q + 3>::apply(lhs, (lb1 & 0xFFFFFFFF00000000ULL) >> 32);
 #else
 					boost::uint64_t b00 =  (arg1[P] & 0x00000000FFFFFFFFULL)        *  (arg2[Q] & 0x00000000FFFFFFFFULL);
 					boost::uint64_t b01 =  (arg1[P] & 0x00000000FFFFFFFFULL)        * ((arg2[Q] & 0xFFFFFFFF00000000ULL) >> 32);
@@ -181,44 +193,44 @@ namespace alps {
 					lhs[P + Q    ] = (lb0 & 0x00000000FFFFFFFFULL) | (hb0 << 32);
 					lhs[P + Q + 1] = (lb1 & 0x00000000FFFFFFFFULL) | (hb1 << 32);
 
-					vli_mul_eq_carry<N, P + Q + 2>::apply(lhs, (hb1 & 0xFFFFFFFF00000000ULL) >> 32);
+					vli_mul_carry<N, P + Q + 2>::apply(lhs, (hb1 & 0xFFFFFFFF00000000ULL) >> 32);
 #endif
 				}
 			};
-			template<std::size_t P, std::size_t Q, std::size_t N> struct vli_mul_eq_calc<P, Q, N, N> {
+			template<std::size_t P, std::size_t Q, std::size_t N> struct vli_mul_calc<P, Q, N, N> {
 				static inline void apply(vli_raw<N> & lhs, vli_raw<N> const & arg1, vli_raw<N> const & arg2) {
 					lhs[P + Q] += arg1[P] * arg2[Q];
 				}
 			};
-			template<std::size_t P, std::size_t Q, std::size_t N, std::size_t L, std::size_t> struct vli_mul_eq_inc_q {
+			template<std::size_t P, std::size_t Q, std::size_t N, std::size_t L, std::size_t> struct vli_mul_inc_q {
 				static inline void apply(vli_raw<N> & lhs, vli_raw<N> const & arg1, vli_raw<N> const & arg2) {
-					vli_mul_eq_inc_q<P, Q + 1, N, L, P + Q + 1>::apply(lhs, arg1, arg2);
+					vli_mul_inc_q<P, Q + 1, N, L, P + Q + 1>::apply(lhs, arg1, arg2);
 				}
 			};
-			template<std::size_t P, std::size_t Q, std::size_t N, std::size_t L> struct vli_mul_eq_inc_q<P, Q, N, L, L> {
+			template<std::size_t P, std::size_t Q, std::size_t N, std::size_t L> struct vli_mul_inc_q<P, Q, N, L, L> {
 				static inline void apply(vli_raw<N> & lhs, vli_raw<N> const & arg1, vli_raw<N> const & arg2) {
-					vli_mul_eq_calc<P, Q, N, P + Q + 1>::apply(lhs, arg1, arg2);
+					vli_mul_calc<P, Q, N, P + Q + 1>::apply(lhs, arg1, arg2);
 				}
 			};
-			template<std::size_t P, std::size_t Q, std::size_t N, std::size_t L> struct vli_mul_eq_inc_q<P, Q, N, L, N> {
+			template<std::size_t P, std::size_t Q, std::size_t N, std::size_t L> struct vli_mul_inc_q<P, Q, N, L, N> {
 				static inline void apply(vli_raw<N> &, vli_raw<N> const &, vli_raw<N> const &) {}
 			};
-			template<std::size_t P, std::size_t N, std::size_t L, std::size_t> struct vli_mul_eq_inc_p {
+			template<std::size_t P, std::size_t N, std::size_t L, std::size_t> struct vli_mul_inc_p {
 				static inline void apply(vli_raw<N> & lhs, vli_raw<N> const & arg1, vli_raw<N> const & arg2) {
-					vli_mul_eq_inc_q<P, 0, N, L - 1, P>::apply(lhs, arg1, arg2);
-					vli_mul_eq_inc_p<P + 1, N, L, P>::apply(lhs, arg1, arg2);
+					vli_mul_inc_q<P, 0, N, L - 1, P>::apply(lhs, arg1, arg2);
+					vli_mul_inc_p<P + 1, N, L, P>::apply(lhs, arg1, arg2);
 				}
 			};
-			template<std::size_t P, std::size_t N, std::size_t L> struct vli_mul_eq_inc_p<P, N, L, L> {
+			template<std::size_t P, std::size_t N, std::size_t L> struct vli_mul_inc_p<P, N, L, L> {
 				static inline void apply(vli_raw<N> &, vli_raw<N> const &, vli_raw<N> const &) {}
 			};
-			template<std::size_t N, std::size_t L = 1> struct vli_mul_eq {
+			template<std::size_t N, std::size_t L = 1> struct vli_mul {
 				static inline void apply(vli_raw<N - 1> & lhs, vli_raw<N - 1> const & arg1, vli_raw<N - 1> const & arg2) {
-					vli_mul_eq_inc_p<0, N - 1, L, 0>::apply(lhs, arg1, arg2);
-					vli_mul_eq<N, L + 1>::apply(lhs, arg1, arg2);
+					vli_mul_inc_p<0, N - 1, L, 0>::apply(lhs, arg1, arg2);
+					vli_mul<N, L + 1>::apply(lhs, arg1, arg2);
 				}
 			};
-			template<std::size_t N> struct vli_mul_eq<N, N> {
+			template<std::size_t N> struct vli_mul<N, N> {
 				static inline void apply(vli_raw<N - 1> &, vli_raw<N - 1> const &, vli_raw<N - 1> const &) {}
 			};
 		}
@@ -294,17 +306,24 @@ namespace alps {
 				}
 // -
 				inline vli<B> operator-() const {
-					return vli<B>(*this) *= -1;
+					vli<B> tmp;
+					detail::vli_invert<1, static_size>::apply(tmp.data, data);
+					return tmp += 1;
 				}
 				inline vli<B> & operator-=(vli<B> const & arg) {
 					detail::vli_sub_eq<1, static_size>::apply(data, arg.data);
 					return *this;
 				}
 // *
+				inline vli<B> operator*(vli<B> const & arg) {
+					vli<B> tmp;
+					detail::vli_mul<static_size + 1>::apply(tmp.data, data, arg.data);
+					return tmp;
+				}
 				inline vli<B> & operator*=(vli<B> const & arg) {
 					detail::vli_raw<static_size> tmp;
 					detail::vli_set<0, static_size>::apply(tmp, 0ULL);
-					detail::vli_mul_eq<static_size + 1>::apply(tmp, data, arg.data);
+					detail::vli_mul<static_size + 1>::apply(tmp, data, arg.data);
 					std::swap(data, tmp);
 					return *this;
 				}
@@ -356,14 +375,11 @@ namespace alps {
 			return vli<N>(arg1) -= arg2;
 		}
 // *
-		template<std::size_t N> inline vli<N> operator*(vli<N> arg1, vli<N> const & arg2) {
-			return arg1 *= arg2;
-		}
 		template<std::size_t N> inline vli<N> operator*(vli<N> arg1, boost::int64_t arg2) {
-			return arg1 *= vli<N>(arg2);
+			return arg1 * vli<N>(arg2);
 		}
 		template<std::size_t N> inline vli<N> operator*(boost::int64_t arg1, vli<N> const & arg2) {
-			return vli<N>(arg1) *= arg2;
+			return vli<N>(arg1) * arg2;
 		}
 // os <<
 		template<std::size_t N> std::ostream & operator<<(std::ostream & os, vli<N> const & arg) {
