@@ -108,8 +108,14 @@ namespace alps {
 					carry = (tmp >> 32) & 0x00000001ULL;
 					lhs[P - 1] = tmp;
 #else
+/*
 					boost::uint64_t lb = ((lhs[P - 1] + rhs[P - 1]) & 0x00000000FFFFFFFFULL) + carry;
 					boost::uint64_t hb = ((lhs[P - 1] + rhs[P - 1]) >> 32) + ((lb >> 32) & 0x0000000000000001ULL);
+					carry = (hb >> 32) & 0x0000000000000001ULL;
+					lhs[P - 1] = (lb & 0x00000000FFFFFFFFULL) | (hb << 32);
+*/
+					boost::uint64_t lb =  (lhs[P - 1] & 0x00000000FFFFFFFFULL)        +  (rhs[P - 1] & 0x00000000FFFFFFFFULL)        + carry;
+					boost::uint64_t hb = ((lhs[P - 1] & 0xFFFFFFFF00000000ULL) >> 32) + ((rhs[P - 1] & 0xFFFFFFFF00000000ULL) >> 32) + ((lb >> 32) & 0x0000000000000001ULL);
 					carry = (hb >> 32) & 0x0000000000000001ULL;
 					lhs[P - 1] = (lb & 0x00000000FFFFFFFFULL) | (hb << 32);
 #endif
@@ -141,8 +147,14 @@ namespace alps {
 					borrow = (tmp >> 32) & 0x00000001ULL;
 					lhs[P - 1] = tmp;
 #else
+/*
 					boost::uint64_t lb = (lhs[P - 1] & 0x00000000FFFFFFFFULL) - (rhs[P - 1] & 0x00000000FFFFFFFFULL) - borrow;
 					boost::uint64_t hb = (lhs[P - 1] >> 32                  ) - (rhs[P - 1] >> 32                  ) - ((lb >> 32) & 0x0000000000000001ULL);
+					borrow = (hb >> 32) & 0x0000000000000001ULL;
+					lhs[P - 1] = (lb & 0x00000000FFFFFFFFULL) | (hb << 32);
+*/
+					boost::uint64_t lb =  (lhs[P - 1] & 0x00000000FFFFFFFFULL)        -  (rhs[P - 1] & 0x00000000FFFFFFFFULL)        - borrow;
+					boost::uint64_t hb = ((lhs[P - 1] & 0xFFFFFFFF00000000ULL) >> 32) - ((rhs[P - 1] & 0xFFFFFFFF00000000ULL) >> 32) - ((lb >> 32) & 0x0000000000000001ULL);
 					borrow = (hb >> 32) & 0x0000000000000001ULL;
 					lhs[P - 1] = (lb & 0x00000000FFFFFFFFULL) | (hb << 32);
 #endif
@@ -182,14 +194,14 @@ namespace alps {
 					boost::uint64_t b10 = to64(arg1[P + 1]) * to64(arg2[Q    ]);
 
 					boost::uint64_t lb0 = to64(lhs[P + Q    ]) +  (b00 & 0x00000000FFFFFFFFULL);
-					boost::uint64_t hb0 = to64(lhs[P + Q + 1]) + ((b00 & 0xFFFFFFFF00000000ULL) >> 32)
-									    + (b01 & 0x00000000FFFFFFFFULL) + (b10 & 0x00000000FFFFFFFFULL) + ((lb0 & 0xFFFFFFFF00000000ULL) >> 32);
+					boost::uint64_t hb0 = to64(lhs[P + Q + 1]) + (b00 >> 32) + (b01 & 0x00000000FFFFFFFFULL) + (b10 & 0x00000000FFFFFFFFULL) + (lb0 >> 32);
 
 					lhs[P + Q    ] = lb0;
 					lhs[P + Q + 1] = hb0;
 					
-					vli_mul_hb1<N, P + Q + 2>::apply(lhs, ((b01 & 0xFFFFFFFF00000000ULL) >> 32) + ((b10 & 0xFFFFFFFF00000000ULL) >> 32) + ((hb0 & 0xFFFFFFFF00000000ULL) >> 32));
+					vli_mul_hb1<N, P + Q + 2>::apply(lhs, (b01 >> 32) + (b10 >> 32) + (hb0 >> 32));
 #else
+/*
 					boost::uint64_t b00 = (arg1[P] & 0x00000000FFFFFFFFULL) * (arg2[Q] & 0x00000000FFFFFFFFULL);
 					boost::uint64_t b01 = (arg1[P] & 0x00000000FFFFFFFFULL) * (arg2[Q] >> 32                  );
 					boost::uint64_t b10 = (arg1[P] >> 32                  ) * (arg2[Q] & 0x00000000FFFFFFFFULL);
@@ -205,6 +217,24 @@ namespace alps {
 					lhs[P + Q + 1] = (lb1 & 0x00000000FFFFFFFFULL) | (hb1 << 32);
 
 					vli_mul_carry<N, P + Q + 2>::apply(lhs, hb1 >> 32);
+*/
+					boost::uint64_t b00 =  (arg1[P] & 0x00000000FFFFFFFFULL)        *  (arg2[Q] & 0x00000000FFFFFFFFULL);
+					boost::uint64_t b01 =  (arg1[P] & 0x00000000FFFFFFFFULL)        * ((arg2[Q] & 0xFFFFFFFF00000000ULL) >> 32);
+					boost::uint64_t b10 = ((arg1[P] & 0xFFFFFFFF00000000ULL) >> 32) *  (arg2[Q] & 0x00000000FFFFFFFFULL);
+					boost::uint64_t b11 = ((arg1[P] & 0xFFFFFFFF00000000ULL) >> 32) * ((arg2[Q] & 0xFFFFFFFF00000000ULL) >> 32);
+
+					boost::uint64_t lb0 = (lhs[P + Q] & 0x00000000FFFFFFFFULL) + (b00 & 0x00000000FFFFFFFFULL);
+					boost::uint64_t hb0 = ((lhs[P + Q] & 0xFFFFFFFF00000000ULL) >> 32) + ((b00 & 0xFFFFFFFF00000000ULL) >> 32)
+									    + (b01 & 0x00000000FFFFFFFFULL) + (b10 & 0x00000000FFFFFFFFULL) + ((lb0 & 0xFFFFFFFF00000000ULL) >> 32);
+
+					boost::uint64_t lb1 = (lhs[P + Q + 1] & 0x00000000FFFFFFFFULL) + ((b01 & 0xFFFFFFFF00000000ULL) >> 32)
+										+ ((b10 & 0xFFFFFFFF00000000ULL) >> 32) + (b11 & 0x00000000FFFFFFFFULL) + ((hb0 & 0xFFFFFFFF00000000ULL) >> 32);
+					boost::uint64_t hb1 = ((lhs[P + Q + 1] & 0xFFFFFFFF00000000ULL) >> 32) + ((b11 & 0xFFFFFFFF00000000ULL) >> 32) + ((lb1 & 0xFFFFFFFF00000000ULL) >> 32);
+
+					lhs[P + Q    ] = (lb0 & 0x00000000FFFFFFFFULL) | (hb0 << 32);
+					lhs[P + Q + 1] = (lb1 & 0x00000000FFFFFFFFULL) | (hb1 << 32);
+
+					vli_mul_carry<N, P + Q + 2>::apply(lhs, (hb1 & 0xFFFFFFFF00000000ULL) >> 32);
 #endif
 				}
 			};
