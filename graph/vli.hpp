@@ -39,87 +39,132 @@
 namespace alps {
 	namespace graph {
 		namespace detail {
+// raw type
+#if defined(USE_VLI_32)
+			template<std::size_t N> struct vli_raw : public boost::array<boost::uint32_t, N> {};
+			inline boost::uint64_t to64(boost::uint32_t data) {
+				return static_cast<boost::uint64_t>(data);
+			}
+#else
+			template<std::size_t N> struct vli_raw : public boost::array<boost::uint64_t, N> {};
+#endif
 // = uint
 			template<std::size_t P, std::size_t N> struct vli_set {
-				static inline void apply(boost::array<boost::uint64_t, N> & lhs, boost::uint64_t rhs) {
+				static inline void apply(vli_raw<N> & lhs, boost::uint64_t rhs) {
 					lhs[P] = rhs;
 					vli_set<P + 1, N>::apply(lhs, rhs);
 				}
 			};
 			template<std::size_t N> struct vli_set<0, N> {
-				static inline void apply(boost::array<boost::uint64_t, N> & lhs, boost::uint64_t rhs) {
+				static inline void apply(vli_raw<N> & lhs, boost::uint64_t rhs) {
+#if defined(USE_VLI_32)
+					lhs.front() = rhs;
+					vli_set<1, N>::apply(lhs, rhs >> 32);
+					// TODO: set upper half of rhs to lhs[1]
+#else
 					lhs.front() = rhs;
 					vli_set<1, N>::apply(lhs, ((rhs & 0x8000000000000000ULL) >> 63) * 0xFFFFFFFFFFFFFFFFULL);
+#endif
 				}
 			};
 			template<std::size_t N> struct vli_set<N, N> {
-				static inline void apply(boost::array<boost::uint64_t, N> & lhs, boost::uint64_t rhs) {
+				static inline void apply(vli_raw<N> & lhs, boost::uint64_t rhs) {
 					lhs.back() = rhs;
 				}
 			};
 // !=
 			template<std::size_t P, std::size_t N> struct vli_neq {
-				static inline bool apply(boost::array<boost::uint64_t, N> const & lhs, boost::array<boost::uint64_t, N> const & rhs) {
+				static inline bool apply(vli_raw<N> const & lhs, vli_raw<N> const & rhs) {
 					return lhs[P] != rhs[P] || vli_neq<P - 1, N>::apply(lhs, rhs);
 				}
 			};
 			template<std::size_t N> struct vli_neq<0, N> {
-				static inline bool apply(boost::array<boost::uint64_t, N> const & lhs, boost::array<boost::uint64_t, N> const & rhs) {
+				static inline bool apply(vli_raw<N> const & lhs, vli_raw<N> const & rhs) {
 					return lhs.front() != rhs.front();
 				}
 			};
 // <
 			template<std::size_t P, std::size_t N> struct vli_less {
-				static inline bool apply(boost::array<boost::uint64_t, N> const & lhs, boost::array<boost::uint64_t, N> const & rhs) {
+				static inline bool apply(vli_raw<N> const & lhs, vli_raw<N> const & rhs) {
 					return lhs[P] < rhs[P] || lhs[P] == rhs[P] && vli_less<P - 1, N>::apply(lhs, rhs);
 				}
 			};
 			template<std::size_t N> struct vli_less<0, N> {
-				static inline bool apply(boost::array<boost::uint64_t, N> const & lhs, boost::array<boost::uint64_t, N> const & rhs) {
+				static inline bool apply(vli_raw<N> const & lhs, vli_raw<N> const & rhs) {
 					return lhs.front() < rhs.front();
 				}
 			};
 // +=
 			template<std::size_t P, std::size_t N> struct vli_add_eq {
-				static inline void apply(boost::array<boost::uint64_t, N> & lhs, boost::array<boost::uint64_t, N> const & rhs, boost::uint64_t carry = 0UL) {
+				static inline void apply(vli_raw<N> & lhs, vli_raw<N> const & rhs, typename vli_raw<N>::value_type carry = 0ULL) {
+#if defined(USE_VLI_32)
+					boost::uint64_t tmp = to64(lhs[P - 1]) + to64(rhs[P - 1]) + carry;
+					carry = (tmp >> 32) & 1;
+					lhs[P - 1] = tmp;
+#else
 					boost::uint64_t lb =  (lhs[P - 1] & 0x00000000FFFFFFFFULL)        +  (rhs[P - 1] & 0x00000000FFFFFFFFULL)        + carry;
-					boost::uint64_t hb = ((lhs[P - 1] & 0xFFFFFFFF00000000ULL) >> 32) + ((rhs[P - 1] & 0xFFFFFFFF00000000ULL) >> 32) + ((lb & 0x0000000100000000ULL) >> 32);
-					carry = (hb & 0x0000000100000000ULL) >> 32;
+					boost::uint64_t hb = ((lhs[P - 1] & 0xFFFFFFFF00000000ULL) >> 32) + ((rhs[P - 1] & 0xFFFFFFFF00000000ULL) >> 32) + ((lb >> 32) & 0x0000000000000001ULL);
+					carry = (hb >> 32) & 0x0000000000000001ULL;
 					lhs[P - 1] = (lb & 0x00000000FFFFFFFFULL) | (hb << 32);
+#endif
 					vli_add_eq<P + 1, N>::apply(lhs, rhs, carry);
 				}
 			};
 			template<std::size_t N> struct vli_add_eq<N, N> {
-				static inline void apply(boost::array<boost::uint64_t, N> & lhs, boost::array<boost::uint64_t, N> const & rhs, boost::uint64_t carry = 0UL) {
+				static inline void apply(vli_raw<N> & lhs, vli_raw<N> const & rhs, typename vli_raw<N>::value_type carry = 0ULL) {
 					lhs.back() += rhs.back() + carry;
 				}
 			};
 // -=
 			template<std::size_t P, std::size_t N> struct vli_sub_eq {
-				static inline void apply(boost::array<boost::uint64_t, N> & lhs, boost::array<boost::uint64_t, N> const & rhs, boost::uint64_t borrow = 0UL) {
+				static inline void apply(vli_raw<N> & lhs, vli_raw<N> const & rhs, typename vli_raw<N>::value_type borrow = 0ULL) {
+#if defined(USE_VLI_32)
+					boost::uint64_t tmp = to64(lhs[P - 1]) - to64(rhs[P - 1]) - borrow;
+					borrow = (tmp >> 32) & 1;
+					lhs[P - 1] = tmp;
+#else
 					boost::uint64_t lb =  (lhs[P - 1] & 0x00000000FFFFFFFFULL)        -  (rhs[P - 1] & 0x00000000FFFFFFFFULL)        - borrow;
-					boost::uint64_t hb = ((lhs[P - 1] & 0xFFFFFFFF00000000ULL) >> 32) - ((rhs[P - 1] & 0xFFFFFFFF00000000ULL) >> 32) - ((lb & 0x0000000100000000ULL) >> 32);
-					borrow = (hb & 0x0000000100000000ULL) >> 32;
+					boost::uint64_t hb = ((lhs[P - 1] & 0xFFFFFFFF00000000ULL) >> 32) - ((rhs[P - 1] & 0xFFFFFFFF00000000ULL) >> 32) - ((lb >> 32) & 0x0000000000000001ULL);
+					borrow = (hb >> 32) & 0x0000000000000001ULL;
 					lhs[P - 1] = (lb & 0x00000000FFFFFFFFULL) | (hb << 32);
+#endif
 					vli_sub_eq<P + 1, N>::apply(lhs, rhs, borrow);
 				}
 			};
 			template<std::size_t N> struct vli_sub_eq<N, N> {
-				static inline void apply(boost::array<boost::uint64_t, N> & lhs, boost::array<boost::uint64_t, N> const & rhs, boost::uint64_t borrow = 0UL) {
+				static inline void apply(vli_raw<N> & lhs, vli_raw<N> const & rhs, typename vli_raw<N>::value_type borrow = 0ULL) {
 					lhs.back() -= rhs.back() + borrow;
 				}
 			};
 // *=
 			template<std::size_t N, std::size_t L> struct vli_mul_eq_carry {
-				static inline void apply(boost::array<boost::uint64_t, N> & lhs, boost::uint64_t carry) {
+				static inline void apply(vli_raw<N> & lhs, typename vli_raw<N>::value_type carry) {
 					lhs[L] += carry;
 				}
 			};
 			template<std::size_t N> struct vli_mul_eq_carry<N, N> {
-				static inline void apply(boost::array<boost::uint64_t, N> &, boost::uint64_t) {}
+				static inline void apply(vli_raw<N> &, typename vli_raw<N>::value_type) {}
 			};
 			template<std::size_t P, std::size_t Q, std::size_t N, std::size_t> struct vli_mul_eq_calc {
-				static inline void apply(boost::array<boost::uint64_t, N> & lhs, boost::array<boost::uint64_t, N> const & arg1, boost::array<boost::uint64_t, N> const & arg2) {
+				static inline void apply(vli_raw<N> & lhs, vli_raw<N> const & arg1, vli_raw<N> const & arg2) {
+#if defined(USE_VLI_32)
+					boost::uint64_t b00 = to64(arg1[P    ]) * to64(arg2[Q    ]);
+					boost::uint64_t b01 = to64(arg1[P    ]) * to64(arg2[Q + 1]);
+					boost::uint64_t b10 = to64(arg1[P + 1]) * to64(arg2[Q    ]);
+
+					boost::uint64_t lb0 = to64(lhs[P + Q    ]) +  (b00 & 0x00000000FFFFFFFFULL);
+					boost::uint64_t hb0 = to64(lhs[P + Q + 1]) + ((b00 & 0xFFFFFFFF00000000ULL) >> 32)
+									    + (b01 & 0x00000000FFFFFFFFULL) + (b10 & 0x00000000FFFFFFFFULL) + ((lb0 & 0xFFFFFFFF00000000ULL) >> 32);
+
+					boost::uint64_t lb1 = to64(lhs[P + Q + 2]) + ((b01 & 0xFFFFFFFF00000000ULL) >> 32) + ((b10 & 0xFFFFFFFF00000000ULL) >> 32)
+										+ ((hb0 & 0xFFFFFFFF00000000ULL) >> 32);
+
+					lhs[P + Q    ] = lb0;
+					lhs[P + Q + 1] = hb0;
+					lhs[P + Q + 2] = lb1;
+
+					vli_mul_eq_carry<N, P + Q + 3>::apply(lhs, (lb1 & 0xFFFFFFFF00000000ULL) >> 32);
+#else
 					boost::uint64_t b00 =  (arg1[P] & 0x00000000FFFFFFFFULL)        *  (arg2[Q] & 0x00000000FFFFFFFFULL);
 					boost::uint64_t b01 =  (arg1[P] & 0x00000000FFFFFFFFULL)        * ((arg2[Q] & 0xFFFFFFFF00000000ULL) >> 32);
 					boost::uint64_t b10 = ((arg1[P] & 0xFFFFFFFF00000000ULL) >> 32) *  (arg2[Q] & 0x00000000FFFFFFFFULL);
@@ -133,138 +178,151 @@ namespace alps {
 										+ ((b10 & 0xFFFFFFFF00000000ULL) >> 32) + (b11 & 0x00000000FFFFFFFFULL) + ((hb0 & 0xFFFFFFFF00000000ULL) >> 32);
 					boost::uint64_t hb1 = ((lhs[P + Q + 1] & 0xFFFFFFFF00000000ULL) >> 32) + ((b11 & 0xFFFFFFFF00000000ULL) >> 32) + ((lb1 & 0xFFFFFFFF00000000ULL) >> 32);
 
-					lhs[P + Q] = (lb0 & 0x00000000FFFFFFFFULL) | (hb0 << 32);
+					lhs[P + Q    ] = (lb0 & 0x00000000FFFFFFFFULL) | (hb0 << 32);
 					lhs[P + Q + 1] = (lb1 & 0x00000000FFFFFFFFULL) | (hb1 << 32);
 
 					vli_mul_eq_carry<N, P + Q + 2>::apply(lhs, (hb1 & 0xFFFFFFFF00000000ULL) >> 32);
+#endif
 				}
 			};
 			template<std::size_t P, std::size_t Q, std::size_t N> struct vli_mul_eq_calc<P, Q, N, N> {
-				static inline void apply(boost::array<boost::uint64_t, N> & lhs, boost::array<boost::uint64_t, N> const & arg1, boost::array<boost::uint64_t, N> const & arg2) {
+				static inline void apply(vli_raw<N> & lhs, vli_raw<N> const & arg1, vli_raw<N> const & arg2) {
 					lhs[P + Q] += arg1[P] * arg2[Q];
 				}
 			};
 			template<std::size_t P, std::size_t Q, std::size_t N, std::size_t L, std::size_t> struct vli_mul_eq_inc_q {
-				static inline void apply(boost::array<boost::uint64_t, N> & lhs, boost::array<boost::uint64_t, N> const & arg1, boost::array<boost::uint64_t, N> const & arg2) {
+				static inline void apply(vli_raw<N> & lhs, vli_raw<N> const & arg1, vli_raw<N> const & arg2) {
 					vli_mul_eq_inc_q<P, Q + 1, N, L, P + Q + 1>::apply(lhs, arg1, arg2);
 				}
 			};
 			template<std::size_t P, std::size_t Q, std::size_t N, std::size_t L> struct vli_mul_eq_inc_q<P, Q, N, L, L> {
-				static inline void apply(boost::array<boost::uint64_t, N> & lhs, boost::array<boost::uint64_t, N> const & arg1, boost::array<boost::uint64_t, N> const & arg2) {
+				static inline void apply(vli_raw<N> & lhs, vli_raw<N> const & arg1, vli_raw<N> const & arg2) {
 					vli_mul_eq_calc<P, Q, N, P + Q + 1>::apply(lhs, arg1, arg2);
 				}
 			};
 			template<std::size_t P, std::size_t Q, std::size_t N, std::size_t L> struct vli_mul_eq_inc_q<P, Q, N, L, N> {
-				static inline void apply(boost::array<boost::uint64_t, N> &, boost::array<boost::uint64_t, N> const &, boost::array<boost::uint64_t, N> const &) {}
+				static inline void apply(vli_raw<N> &, vli_raw<N> const &, vli_raw<N> const &) {}
 			};
 			template<std::size_t P, std::size_t N, std::size_t L, std::size_t> struct vli_mul_eq_inc_p {
-				static inline void apply(boost::array<boost::uint64_t, N> & lhs, boost::array<boost::uint64_t, N> const & arg1, boost::array<boost::uint64_t, N> const & arg2) {
+				static inline void apply(vli_raw<N> & lhs, vli_raw<N> const & arg1, vli_raw<N> const & arg2) {
 					vli_mul_eq_inc_q<P, 0, N, L - 1, P>::apply(lhs, arg1, arg2);
 					vli_mul_eq_inc_p<P + 1, N, L, P>::apply(lhs, arg1, arg2);
 				}
 			};
 			template<std::size_t P, std::size_t N, std::size_t L> struct vli_mul_eq_inc_p<P, N, L, L> {
-				static inline void apply(boost::array<boost::uint64_t, N> &, boost::array<boost::uint64_t, N> const &, boost::array<boost::uint64_t, N> const &) {}
+				static inline void apply(vli_raw<N> &, vli_raw<N> const &, vli_raw<N> const &) {}
 			};
 			template<std::size_t N, std::size_t L = 1> struct vli_mul_eq {
-				static inline void apply(boost::array<boost::uint64_t, N - 1> & lhs, boost::array<boost::uint64_t, N - 1> const & arg1, boost::array<boost::uint64_t, N - 1> const & arg2) {
+				static inline void apply(vli_raw<N - 1> & lhs, vli_raw<N - 1> const & arg1, vli_raw<N - 1> const & arg2) {
 					vli_mul_eq_inc_p<0, N - 1, L, 0>::apply(lhs, arg1, arg2);
 					vli_mul_eq<N, L + 1>::apply(lhs, arg1, arg2);
 				}
 			};
 			template<std::size_t N> struct vli_mul_eq<N, N> {
-				static inline void apply(boost::array<boost::uint64_t, N - 1> &, boost::array<boost::uint64_t, N - 1> const &, boost::array<boost::uint64_t, N - 1> const &) {}
+				static inline void apply(vli_raw<N - 1> &, vli_raw<N - 1> const &, vli_raw<N - 1> const &) {}
 			};
 		}
 // VLI
-		template<std::size_t N> class vli {
+		template<std::size_t B> class vli {
 			public:
-// Constructor
-				inline vli() {
-					detail::vli_set<0, N>::apply(data, 0ULL);
-				}
-				inline vli(boost::int64_t arg) {
-					detail::vli_set<0, N>::apply(data, static_cast<boost::uint64_t>(arg));
-				}
-				inline vli(vli<N> const & arg) {
-					data = arg.data;
-				}
-// Assign
-				inline vli<N> & operator=(vli<N> const & arg) {
-					data = arg.data;
-				}
 // Size
-                static const std::size_t static_size = N;
+#if defined(USE_VLI_32)
+                static const std::size_t static_size = B >> 5;
+#else
+                static const std::size_t static_size = B >> 6;
+#endif
                 static inline std::size_t size(){
                     return static_size;
                 }
+// Constructor
+				inline vli() {
+					detail::vli_set<0, static_size>::apply(data, 0ULL);
+				}
+				inline vli(boost::int64_t arg) {
+					detail::vli_set<0, static_size>::apply(data, static_cast<boost::uint64_t>(arg));
+				}
+				inline vli(vli<B> const & arg) {
+					data = arg.data;
+				}
+// Assign
+				inline vli<B> & operator=(vli<B> const & arg) {
+					data = arg.data;
+				}
 // []
-				inline boost::uint64_t & operator [](std::size_t index) {
+				inline typename detail::vli_raw<static_size>::value_type & operator [](std::size_t index) {
 					return data[index];
 				}
-				inline boost::uint64_t const & operator [](std::size_t index) const {
+				inline typename detail::vli_raw<static_size>::value_type const & operator [](std::size_t index) const {
 					return data[index];
 				}
 // ==
-				inline bool operator==(vli<N> const & arg) const {
+				inline bool operator==(vli<B> const & arg) const {
 					return !(*this != arg);
 				}
-				inline bool operator!=(vli<N> const & arg) const {
-					return detail::vli_neq<N - 1, N>::apply(data, arg.data);
+				inline bool operator!=(vli<B> const & arg) const {
+					return detail::vli_neq<static_size - 1, static_size>::apply(data, arg.data);
 				}
 // <
-				inline bool operator>(vli<N> const & arg) const {
+				inline bool operator>(vli<B> const & arg) const {
 					return arg < *this;
 				}
-				inline bool operator>=(vli<N> const & arg) const {
+				inline bool operator>=(vli<B> const & arg) const {
 					return arg <= *this;
 				}
-				inline bool operator<(vli<N> const & arg) const {
-					return !!((data.back() ^ arg.data.back()) & 0x8000000000000000ULL) != detail::vli_less<N - 1, N>::apply(data, arg.data);
+				inline bool operator<(vli<B> const & arg) const {
+#if defined(USE_VLI_32)
+					return !!((data.back() ^ arg.data.back()) & 0x80000000) != detail::vli_less<static_size - 1, static_size>::apply(data, arg.data);
+#else
+					return !!((data.back() ^ arg.data.back()) & 0x8000000000000000ULL) != detail::vli_less<static_size - 1, static_size>::apply(data, arg.data);
+#endif
 				}
-				inline bool operator<=(vli<N> const & arg) const {
+				inline bool operator<=(vli<B> const & arg) const {
 					return *this < arg || *this == arg;
 				}
 // sign
 				inline bool sign() const {
+#if defined(USE_VLI_32)
+					return data.back() & 0x80000000;
+#else
 					return data.back() & 0x8000000000000000ULL;
+#endif
 				}
 // +
-				inline vli<N> & operator+=(vli<N> const & arg) {
-					detail::vli_add_eq<1, N>::apply(data, arg.data);
+				inline vli<B> & operator+=(vli<B> const & arg) {
+					detail::vli_add_eq<1, static_size>::apply(data, arg.data);
 					return *this;
 				}
 // -
-				inline vli<N> operator-() const {
-					return vli<N>(*this) *= -1;
+				inline vli<B> operator-() const {
+					return vli<B>(*this) *= -1;
 				}
-				inline vli<N> & operator-=(vli<N> const & arg) {
-					detail::vli_sub_eq<1, N>::apply(data, arg.data);
+				inline vli<B> & operator-=(vli<B> const & arg) {
+					detail::vli_sub_eq<1, static_size>::apply(data, arg.data);
 					return *this;
 				}
 // *
-				inline vli<N> & operator*=(vli<N> const & arg) {
-					boost::array<boost::uint64_t, N> tmp;
-					detail::vli_set<0, N>::apply(tmp, 0ULL);
-					detail::vli_mul_eq<N + 1>::apply(tmp, data, arg.data);
+				inline vli<B> & operator*=(vli<B> const & arg) {
+					detail::vli_raw<static_size> tmp;
+					detail::vli_set<0, static_size>::apply(tmp, 0ULL);
+					detail::vli_mul_eq<static_size + 1>::apply(tmp, data, arg.data);
 					std::swap(data, tmp);
 					return *this;
 				}
 // str()
 				std::string str() const {
 					std::ostringstream buffer;
-					vli<N> value(sign() ? -*this : *this);
+					vli<B> value(sign() ? -*this : *this);
 					if (sign())
 						buffer << "-";
 					if (value == 0)
 						buffer << 0;
 					else {
 						std::size_t digits = 1;
-						for (vli<N> next(1); (next *= 10) <= value; ++digits);
+						for (vli<B> next(1); (next *= 10) <= value; ++digits);
 						do {
-							vli<N> tmp1(1);
+							vli<B> tmp1(1);
 							for (std::size_t i = 1; i < digits; ++i, tmp1 *= 10);
-							vli<N> tmp2(tmp1);
+							vli<B> tmp2(tmp1);
 							std::size_t d;
 							for (d = 0; tmp2 <= value; ++d, tmp2 += tmp1);
 							value -= (tmp2 -= tmp1);
@@ -275,9 +333,7 @@ namespace alps {
 				}
 			private:
 // raw data
-				// TODO: check if boost::array<boost::uint32_t, N> data; performs better
-				// since all operations of the form data[k] & 0x00000000FFFFFFFFULL are obsolete!
-				boost::array<boost::uint64_t, N> data;
+				detail::vli_raw<static_size> data;
 		};
 // +
 		template<std::size_t N> inline vli<N> operator+(vli<N> arg1, vli<N> const & arg2) {
