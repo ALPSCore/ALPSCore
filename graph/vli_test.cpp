@@ -36,7 +36,7 @@
 
 #include <iostream>
 
-typedef boost::mpl::list<alps::graph::vli<2>, alps::graph::vli<4> >::type vli_types;
+typedef boost::mpl::list<alps::graph::vli<128>, alps::graph::vli<256> >::type vli_types;
 
 boost::mt11213b rng;
 

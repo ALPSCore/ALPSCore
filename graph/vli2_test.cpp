@@ -31,11 +31,11 @@
 
 int main() {
 	{
-		alps::graph::vli<6> a(1), b(8264), c(-1), d(-862), e(100005), f(72677163250000LL);
+		alps::graph::vli<384> a(1), b(8264), c(-1), d(-862), e(100005), f(72677163250000LL);
 		std::cout << a << " " << b << " " << c << " " << d << " " << e << " " << (f += 18947077082LL) << std::endl;
 	}
 	{
-		alps::graph::vli<4> a(0);
+		alps::graph::vli<256> a(0);
 		a -= 854116085LL;
 		std::cout << a << std::endl;
 	}
