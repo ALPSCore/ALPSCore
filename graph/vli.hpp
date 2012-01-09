@@ -32,6 +32,7 @@
 #include <cstring>
 #include <sstream>
 #include <iostream>
+#include <cassert>
 
 #ifndef ALPS_GRAPH_VLI
 #define ALPS_GRAPH_VLI
