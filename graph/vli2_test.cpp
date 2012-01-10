@@ -30,20 +30,22 @@
 #include <iostream>
 
 int main() {
-/*
 	{
 		alps::graph::vli<384> a(10), b(4);
 		std::cout << (a < b ? "true" : "false") << " " << (a == b ? "true" : "false") << " " << (a <= b ? "true" : "false") << " " << std::endl;
 	}
-*/
 	{
-		alps::graph::vli<64> f(72677163250000LL);
+		alps::graph::vli<256> a(1LL), b(-1LL);
+		for (std::size_t i = 0; i < 75; ++i)
+			std::cout << i << ": " << (a *= 10LL) << " " << (b *= 10LL) << std::endl;
+		
+		alps::graph::vli<64> f(10000000000000LL);
 		std::cout << f << std::endl;
-//		std::cout << (f += 18947077082LL) << std::endl;
+		std::cout << (f += 18947077082LL) << std::endl;
+		std::cout << (f *= 2LL) << std::endl;
 	}
-/*
 	{
-		alps::graph::vli<128> a(114130849121512190392410), b(7501641761016051614121);
+		alps::graph::vli<128> a(1141308421510392410LL), b(750164176105114121LL);
 		alps::graph::vli<128> ba = b - a;
 		a -= b;
 		a = a * (-1);
@@ -58,5 +60,4 @@ int main() {
 		a -= 854116085LL;
 		std::cout << a << std::endl;
 	}
-	*/
 };
