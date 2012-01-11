@@ -768,13 +768,9 @@ int run_sequential_mpi(int argc, char** argv) {
       int d = 0;
       std::vector<alps::ObservableSet> obs_slave;
       for (int p = 1; p < world.size(); ++p) {
-        std::cerr << __LINE__ << ' ' << p << std::endl;
         world.send(p, 0, d);
-        std::cerr << __LINE__ << ' ' << p << std::endl;
         world.recv(p, 0, obs_slave);
-        std::cerr << __LINE__ << ' ' << p << std::endl;
         for (int j = 0; j < obs.size(); ++j) obs[j] << obs_slave[j];
-        std::cerr << __LINE__ << ' ' << p << std::endl;
       }
     } else {
       int d;
@@ -782,7 +778,6 @@ int run_sequential_mpi(int argc, char** argv) {
       world.send(0, 0, obs);
     }
     if (world.rank() == 0) {
-      std::cerr << __LINE__ << std::endl;
       std::vector<alps::ObservableSet> obs_out;
       boost::shared_ptr<alps::parapack::abstract_evaluator>
         evaluator = evaluator_factory::make_evaluator(p);
