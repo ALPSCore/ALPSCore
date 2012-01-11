@@ -575,29 +575,21 @@ namespace alps {
 				inline vli<256> & operator+=(vli<256> const & arg) {
 					asm (
 						"movq  %[lhs], %%r8						\n"
-						"movq  %[arg], %%r10					\n"
-						
 						"movq  0x08%[lhs], %%r9					\n"
-						"movq  0x08%[arg], %%r11				\n"
-						"addq  %%r10, %%r8						\n"
-
 						"movq  0x10%[lhs], %%rax				\n"
-						"movq  0x10%[arg], %%r12				\n"
-						"adcq  %%r11, %%r9						\n"
-						"movq  %%r8, %[lhs]						\n"
-
 						"movq  0x18%[lhs], %%rcx				\n"
-						"movq  0x18%[arg], %%r13				\n"
-						"adcq  %%r12, %%rax						\n"
+						"addq  %[arg], %%r8						\n"
+						"adcq  0x08%[arg], %%r9					\n"
+						"adcq  0x10%[arg], %%rax				\n"
+						"adcq  0x18%[arg], %%rcx				\n"
+						"movq  %%r8, %[lhs]						\n"
 						"movq  %%r9, 0x08%[lhs]					\n"
-						
-						"adcq  %%r13, %%rcx						\n"
 						"movq  %%rax, 0x10%[lhs]				\n"
 						"movq  %%rcx, 0x18%[lhs]				\n"
 
 						: [lhs] "+m" (data[0])
 						: [arg] "m" (arg.data[0])
-						: "rax", "rcx", "r8", "r9", "r10", "r11", "r12", "r13", "memory"
+						: "rax", "rcx", "r8", "r9", "memory"
 					);
 					return *this;
 				}
@@ -614,41 +606,38 @@ namespace alps {
 // *
 				inline vli<256> & operator*=(vli<256> const & arg) {
 					asm (
-							"movq  %[lhs3], %%rax				\n"
+							"movq  0x18%[lhs], %%r9				\n"
+							"movq  %[lhs2], %%rax				\n"
+							"movq  %[lhs2], %%rcx				\n"
 							// 3 * 0
-							"mulq  %[arg0]						\n"
-							"movq  %[lhs2], %%r8				\n"
-							"movq  %%rax, %[lhs3]				\n"
-							"movq  %%r8, %%rax					\n"
+							"imulq %[arg0], %%r9				\n"
 							// 2 * 0
 							"mulq  %[arg0]						\n"
 							"movq  %%rax, %[lhs2]				\n"
-							"addq  %%rdx, %[lhs3]				\n"
-							"movq  %%r8, %%rax					\n"
+							"addq  %%rdx, %%r9					\n"
 							// 2 * 1
-							"mulq  %[arg1]						\n"
-							"addq  %%rax, %[lhs3]				\n"
+							"imulq %[arg1], %%rcx				\n"
+							"addq  %%rcx, %%r9					\n"
 							"movq  %[lhs1], %%r8				\n"
 							"movq  %%r8, %%rax					\n"
 							// 1 * 0
 							"mulq  %[arg0]						\n"
 							"movq  %%rax, %[lhs1]				\n"
 							"addq  %%rdx, %[lhs2]				\n"
-							"adcq  $0, %[lhs3]					\n"
+							"adcq  $0, %%r9						\n"
 							"movq  %%r8, %%rax					\n"
 							// 1 * 1
 							"mulq  %[arg1]						\n"
 							"addq  %%rax, %[lhs2]				\n"
-							"adcq  %%rdx, %[lhs3]				\n"
-							"movq  %%r8, %%rax					\n"
+							"adcq  %%rdx, %%r9					\n"
 							// 1 * 2
-							"mulq  %[arg2]						\n"
-							"addq  %%rax, %[lhs3]				\n"
-							"movq  %[lhs0], %%r8				\n"
+							"imulq %[arg2], %%r8				\n"
+							"addq  %%r8, %%r9					\n"
+							"movq  %[lhs], %%r8					\n"
 							"movq  %%r8, %%rax					\n"
 							// 0 * 0
 							"mulq  %[arg0]						\n"
-							"movq  %%rax, %[lhs0]				\n"
+							"movq  %%rax, %[lhs]				\n"
 							"addq  %%rdx, %[lhs1]				\n"
 							"adcq  $0, %[lhs2]					\n"
 							"movq  %%r8, %%rax					\n"
@@ -661,20 +650,19 @@ namespace alps {
 							// 0 * 2
 							"mulq  %[arg2]						\n"
 							"addq  %%rax, %[lhs2]				\n"
-							"adcq  %%rdx, %[lhs3]				\n"
-							"movq  %%r8, %%rax					\n"
+							"adcq  %%rdx, %%r9					\n"
 							// 0 * 3
-							"mulq  %[arg3]						\n"
-							"addq  %%rax, %[lhs3]				\n"
-						: [lhs0] "+r" (data[0])
+							"imulq %[arg3], %%r8				\n"
+							"addq  %%r8, %%r9					\n"
+							"movq  %%r9, 0x18%[lhs]				\n"
+						: [lhs] "+m" (data[0])
 						, [lhs1] "+r" (data[1])
 						, [lhs2] "+r" (data[2])
-						, [lhs3] "+r" (data[3])
 						: [arg0] "r" (arg.data[0])
 						, [arg1] "r" (arg.data[1])
 						, [arg2] "r" (arg.data[2])
 						, [arg3] "r" (arg.data[3])
-						: "rax", "rdx", "r8"
+						: "rax", "rcx", "rdx", "r8", "r9", "memory"
 					);
 					return *this;
 				}
