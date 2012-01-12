@@ -25,13 +25,17 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/graph/vli.hpp>
 
 #include <iostream>
+#include <iomanip>
+
+
+#include <alps/graph/vli.hpp>
+
 
 int main() {
 	{
-		alps::graph::vli<384> a(10), b(4);
+		alps::graph::vli<256> a(10), b(4);
 		std::cout << (a < b ? "true" : "false") << " " << (a == b ? "true" : "false") << " " << (a <= b ? "true" : "false") << " " << std::endl;
 	}
 	{
@@ -39,20 +43,20 @@ int main() {
 		for (std::size_t i = 0; i < 75; ++i)
 			std::cout << i << ": " << (a *= 10LL) << " " << (b *= 10LL) << std::endl;
 		
-		alps::graph::vli<64> f(10000000000000LL);
+		alps::graph::vli<256> f(1000000000000000000);
 		std::cout << f << std::endl;
 		std::cout << (f += 18947077082LL) << std::endl;
 		std::cout << (f *= 2LL) << std::endl;
 	}
 	{
-		alps::graph::vli<128> a(1141308421510392410LL), b(750164176105114121LL);
-		alps::graph::vli<128> ba = b - a;
+		alps::graph::vli<256> a(1141308421510392410LL), b(750164176105114121LL);
+		alps::graph::vli<256> ba = b - a;
 		a -= b;
 		a = a * (-1);
 		std::cout << a << " " << ba << std::endl;
 	}
 	{
-		alps::graph::vli<384> a(1), b(8264), c(-1), d(-862), e(100005), f(72677163250000LL);
+		alps::graph::vli<256> a(1), b(8264), c(-1), d(-862), e(100005), f(72677163250000LL);
 		std::cout << a << " " << b << " " << c << " " << d << " " << e << " " << (f += 18947077082LL) << std::endl;
 	}
 	{
