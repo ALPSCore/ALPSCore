@@ -432,6 +432,11 @@ namespace alps {
 #endif
 				}
 // +
+				inline vli<B> operator+(vli<B> const & arg) const {
+					vli<B> tmp(*this);
+					tmp += arg;
+					return tmp;
+				}
 				inline vli<B> & operator+=(vli<B> const & arg) {
 					detail::vli_add_eq<1, static_size>::apply(data, arg.data);
 					return *this;
@@ -465,58 +470,16 @@ namespace alps {
 // raw data
 				detail::vli_raw<static_size> data;
 		};
-/*
-// VLI 128
-		template<> class vli<128> {
-			public:
-                static const std::size_t static_size = 2;
-                static inline std::size_t size(){
-                    return static_size;
-                }
-// Constructor
-				inline vli() {}
-				inline vli(boost::int64_t arg) { data._64[0] = arg; }
-				inline vli(vli<128> const & arg) { data._128 = arg.data._128; }
-// Assign
-				inline vli<128> & operator=(vli<128> const & arg) { data._128 = arg.data._128; return *this; }
-// []
-				inline boost::uint64_t & operator [](std::size_t index) {
-					return data._64[index];
-				}
-				inline boost::uint64_t operator [](std::size_t index) const {
-					return data._64[index];
-				}
-// ==
-				inline bool operator==(vli<128> const & arg) const { return data._128 == arg.data._128; }
-				inline bool operator!=(vli<128> const & arg) const { return data._128 != arg.data._128; }
-// <
-				inline bool operator>(vli<128> const & arg) const { return data._128 > arg.data._128; }
-				inline bool operator>=(vli<128> const & arg) const { return data._128 >= arg.data._128; }
-				inline bool operator<(vli<128> const & arg) const { return data._128 < arg.data._128; }
-				inline bool operator<=(vli<128> const & arg) const { return data._128 <= arg.data._128; }
-// sign
-				inline bool sign() const { return data._128 < 0; }
-// +
-				inline vli<128> & operator+=(vli<128> const & arg) { data._128 += arg.data._128; return *this; }
-// -
-				inline vli<128> operator-() const {
-					vli<128> lhs;
-					lhs.data._128 = -data._128;
-					return lhs;
-					
-				}
-				inline vli<128> & operator-=(vli<128> const & arg) { data._128 -= arg.data._128; return *this; }
-// *
-				inline vli<128> operator*(vli<128> const & arg) const { return data._128 * arg.data._128; }
-				inline vli<128> & operator*=(vli<128> const & arg) { data._128 *= arg.data._128; return *this; }
-// raw data
-			private:
-				union {
-					boost::uint64_t _64[2];
-					__uint128_t _128;
-				} data;
-		};
-*/
+// Converter
+		namespace detail {
+			inline __uint128_t & to128(boost::uint64_t * data) {
+				return *reinterpret_cast<__uint128_t *>(data);
+			}
+			inline __uint128_t const & to128(boost::uint64_t const * data) {
+				return *reinterpret_cast<__uint128_t const *>(data);
+			}
+		}
+
 // VLI
 		template<> class vli<256> {
 			public:
@@ -527,32 +490,42 @@ namespace alps {
                 }
 // Constructor
 				inline vli() {
-					detail::vli_set<0, static_size>::apply(data, 0ULL);
+					*this = 0LL;
 				}
 				inline vli(boost::int64_t arg) {
-					detail::vli_set<0, static_size>::apply(data, static_cast<boost::uint64_t>(arg));
+					*this = arg;
 				}
 				inline vli(vli<256> const & arg) {
-					data = arg.data;
+					*this = arg;
 				}
 // Assign
+				inline vli<256> & operator=(__int128_t arg) {
+					*reinterpret_cast<__int128_t *>(raw) = arg;
+					raw[3] = raw[2] = (raw[1] >> 63) * 0xFFFFFFFFFFFFFFFFULL;
+                    return *this;
+				}
 				inline vli<256> & operator=(vli<256> const & arg) {
-					data = arg.data;
+					using detail::to128;
+					to128(raw) = to128(arg.raw);
+					to128(raw + 2) = to128(arg.raw + 2);
                     return *this;
 				}
 // []
 				inline boost::uint64_t & operator [](std::size_t index) {
-					return data[index];
+					assert(index < static_size);
+					return raw[index];
 				}
 				inline boost::uint64_t operator [](std::size_t index) const {
-					return data[index];
+					assert(index < static_size);
+					return raw[index];
 				}
 // ==
 				inline bool operator==(vli<256> const & arg) const {
-					return !(*this != arg);
+					using detail::to128;
+					return to128(raw) == to128(arg.raw) && to128(raw + 2) == to128(arg.raw + 2);
 				}
 				inline bool operator!=(vli<256> const & arg) const {
-					return detail::vli_neq<static_size - 1, static_size>::apply(data, arg.data);
+					return !(arg == *this);
 				}
 // <
 				inline bool operator>(vli<256> const & arg) const {
@@ -562,113 +535,60 @@ namespace alps {
 					return arg <= *this;
 				}
 				inline bool operator<(vli<256> const & arg) const {
-					return !!((data.back() ^ arg.data.back()) & 0x8000000000000000ULL) != detail::vli_less<static_size - 1, static_size>::apply(data, arg.data);
+					using detail::to128;
+					return !!((raw[3] ^ arg.raw[3]) >> 63) != (to128(raw + 2) < to128(arg.raw + 2) 
+						|| (to128(raw + 2) == to128(arg.raw + 2) && to128(raw) < to128(arg.raw)));
 				}
 				inline bool operator<=(vli<256> const & arg) const {
 					return *this < arg || *this == arg;
 				}
 // sign
 				inline bool sign() const {
-					return data.back() & 0x8000000000000000ULL;
+					return raw[3] >> 63;
 				}
 // +
+				inline vli<256> operator+(vli<256> const & arg) const {
+					using detail::to128;
+					vli<256> tmp;
+					to128(tmp.raw) = (__uint128_t)raw[0] + arg.raw[0];
+					to128(tmp.raw + 1) += (__uint128_t)raw[1] + arg.raw[1];
+					to128(tmp.raw + 2) += to128(raw + 2) + to128(arg.raw + 2);
+					return tmp;
+				}
 				inline vli<256> & operator+=(vli<256> const & arg) {
-					asm (
-						"movq  %[lhs], %%r8						\n"
-						"movq  0x08%[lhs], %%r9					\n"
-						"movq  0x10%[lhs], %%rax				\n"
-						"movq  0x18%[lhs], %%rcx				\n"
-						"addq  %[arg], %%r8						\n"
-						"adcq  0x08%[arg], %%r9					\n"
-						"adcq  0x10%[arg], %%rax				\n"
-						"adcq  0x18%[arg], %%rcx				\n"
-						"movq  %%r8, %[lhs]						\n"
-						"movq  %%r9, 0x08%[lhs]					\n"
-						"movq  %%rax, 0x10%[lhs]				\n"
-						"movq  %%rcx, 0x18%[lhs]				\n"
-
-						: [lhs] "+m" (data[0])
-						: [arg] "m" (arg.data[0])
-						: "rax", "rcx", "r8", "r9", "memory"
-					);
-					return *this;
+					return *this = *this + arg;
 				}
 // -
 				inline vli<256> operator-() const {
-					vli<256> tmp;
-					detail::vli_invert<1, static_size>::apply(tmp.data, data);
-					return tmp += 1;
+					vli<256> tmp(*this);
+					return tmp *= -1;
 				}
 				inline vli<256> & operator-=(vli<256> const & arg) {
-					detail::vli_sub_eq<1, static_size>::apply(data, arg.data);
-					return *this;
+					return *this += -arg;
 				}
 // *
+				inline vli<256> operator*(vli<256> const & arg) const {
+					using detail::to128;
+					vli<256> tmp;
+					boost::uint64_t r01[2], r10[2];
+					to128(tmp.raw) = (__uint128_t)raw[0] * arg.raw[0];
+					to128(r01) = (__uint128_t)raw[0] * arg.raw[1];
+					to128(r10) = (__uint128_t)raw[1] * arg.raw[0];
+					to128(tmp.raw + 1) += (__uint128_t)r01[0] + r10[0];
+					to128(tmp.raw + 2) += (__uint128_t)raw[0] * arg.raw[2] 
+									   +  to128(raw + 1) * to128(arg.raw + 1)
+									   +  (__uint128_t)raw[2] * arg.raw[0]
+									   +  (__uint128_t)r01[1] + r10[1];
+					tmp.raw[3] += (__uint128_t)raw[0] * arg.raw[3] 
+							   +  (__uint128_t)raw[3] * arg.raw[0];
+					return tmp;
+				}
 				inline vli<256> & operator*=(vli<256> const & arg) {
-					asm (
-							"movq  0x18%[lhs], %%r9				\n"
-							"movq  %[lhs2], %%rax				\n"
-							"movq  %[lhs2], %%rcx				\n"
-							// 3 * 0
-							"imulq %[arg0], %%r9				\n"
-							// 2 * 0
-							"mulq  %[arg0]						\n"
-							"movq  %%rax, %[lhs2]				\n"
-							"addq  %%rdx, %%r9					\n"
-							// 2 * 1
-							"imulq %[arg1], %%rcx				\n"
-							"addq  %%rcx, %%r9					\n"
-							"movq  %[lhs1], %%r8				\n"
-							"movq  %%r8, %%rax					\n"
-							// 1 * 0
-							"mulq  %[arg0]						\n"
-							"movq  %%rax, %[lhs1]				\n"
-							"addq  %%rdx, %[lhs2]				\n"
-							"adcq  $0, %%r9						\n"
-							"movq  %%r8, %%rax					\n"
-							// 1 * 1
-							"mulq  %[arg1]						\n"
-							"addq  %%rax, %[lhs2]				\n"
-							"adcq  %%rdx, %%r9					\n"
-							// 1 * 2
-							"imulq %[arg2], %%r8				\n"
-							"addq  %%r8, %%r9					\n"
-							"movq  %[lhs], %%r8					\n"
-							"movq  %%r8, %%rax					\n"
-							// 0 * 0
-							"mulq  %[arg0]						\n"
-							"movq  %%rax, %[lhs]				\n"
-							"addq  %%rdx, %[lhs1]				\n"
-							"adcq  $0, %[lhs2]					\n"
-							"movq  %%r8, %%rax					\n"
-							// 0 * 1
-							"mulq  %[arg1]						\n"
-							"addq  %%rax, %[lhs1]				\n"
-							"adcq  %%rdx, %[lhs2]				\n"
-							"adcq  $0, %[lhs2]					\n"
-							"movq  %%r8, %%rax					\n"
-							// 0 * 2
-							"mulq  %[arg2]						\n"
-							"addq  %%rax, %[lhs2]				\n"
-							"adcq  %%rdx, %%r9					\n"
-							// 0 * 3
-							"imulq %[arg3], %%r8				\n"
-							"addq  %%r8, %%r9					\n"
-							"movq  %%r9, 0x18%[lhs]				\n"
-						: [lhs] "+m" (data[0])
-						, [lhs1] "+r" (data[1])
-						, [lhs2] "+r" (data[2])
-						: [arg0] "r" (arg.data[0])
-						, [arg1] "r" (arg.data[1])
-						, [arg2] "r" (arg.data[2])
-						, [arg3] "r" (arg.data[3])
-						: "rax", "rcx", "rdx", "r8", "r9", "memory"
-					);
-					return *this;
+					return *this = *this * arg;
 				}
 			private:
 // raw data
-				detail::vli_raw<static_size> data;
+				boost::uint64_t raw[4];
 		};
 // str()
 		template<std::size_t B> std::string str(vli<B> const & arg) {
@@ -696,9 +616,6 @@ namespace alps {
 			return buffer.str();
 		}
 // +
-		template<std::size_t N> inline vli<N> operator+(vli<N> arg1, vli<N> const & arg2) {
-			return arg1 += arg2;
-		}
 		template<std::size_t N> inline vli<N> operator+(vli<N> arg1, boost::int64_t arg2) {
 			return arg1 += vli<N>(arg2);
 		}
@@ -716,9 +633,6 @@ namespace alps {
 			return vli<N>(arg1) -= arg2;
 		}
 // *
-		template<std::size_t N> inline vli<N> operator*(vli<N> arg1, vli<N> const & arg2) {
-			return arg1 *= arg2;
-		}
 		template<std::size_t N> inline vli<N> operator*(vli<N> arg1, boost::int64_t arg2) {
 			return arg1 * vli<N>(arg2);
 		}
