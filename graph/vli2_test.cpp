@@ -35,6 +35,20 @@
 
 int main() {
 	{
+		alps::graph::vli<256> b, a;
+		for (std::size_t i = 0; i < 4; ++i)
+			for (std::size_t j = 0; j < 4; ++j) {
+				a[0] = 0; a[1] = 0; a[2] = 0; a[3] = 0;
+				b[0] = 0; b[1] = 0; b[2] = 0; b[3] = 0;
+				a[i] = 16;
+				b[j] = 16;
+				std::cout << "a: " << std::setbase(16) << a[0] << " " << a[1] << " " << a[2] << " " << a[3];
+				std::cout << ", b: " << std::setbase(16) << b[0] << " " << b[1] << " " << b[2] << " " << b[3];
+				a *= b;
+				std::cout << ", a*b: " << std::setbase(16) << a[0] << " " << a[1] << " " << a[2] << " " << a[3] << std::endl;
+			}
+	}
+	{
 		alps::graph::vli<256> a(10), b(4);
 		std::cout << (a < b ? "true" : "false") << " " << (a == b ? "true" : "false") << " " << (a <= b ? "true" : "false") << " " << std::endl;
 	}
