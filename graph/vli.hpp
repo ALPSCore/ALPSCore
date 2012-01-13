@@ -432,11 +432,6 @@ namespace alps {
 #endif
 				}
 // +
-				inline vli<B> operator+(vli<B> const & arg) const {
-					vli<B> tmp(*this);
-					tmp += arg;
-					return tmp;
-				}
 				inline vli<B> & operator+=(vli<B> const & arg) {
 					detail::vli_add_eq<1, static_size>::apply(data, arg.data);
 					return *this;
@@ -470,18 +465,15 @@ namespace alps {
 // raw data
 				detail::vli_raw<static_size> data;
 		};
-// Converter
-		namespace detail {
-			inline __uint128_t & to128(boost::uint64_t * data) {
-				return *reinterpret_cast<__uint128_t *>(data);
-			}
-			inline __uint128_t const & to128(boost::uint64_t const * data) {
-				return *reinterpret_cast<__uint128_t const *>(data);
-			}
-		}
 
 // VLI
 		template<> class vli<256> {
+			private:
+// raw types
+				template<std::size_t N> union raw_t {
+					boost::uint64_t _64[N >> 6];
+					__uint128_t _128[N >> 7];
+				} __attribute__ ((aligned (16)));
 			public:
 // Size
                 static const std::size_t static_size = 4;
@@ -492,7 +484,7 @@ namespace alps {
 				inline vli() {
 					*this = 0LL;
 				}
-				inline vli(boost::int64_t arg) {
+				inline vli(__int128_t arg) {
 					*this = arg;
 				}
 				inline vli(vli<256> const & arg) {
@@ -500,29 +492,27 @@ namespace alps {
 				}
 // Assign
 				inline vli<256> & operator=(__int128_t arg) {
-					*reinterpret_cast<__int128_t *>(raw) = arg;
-					raw[3] = raw[2] = (raw[1] >> 63) * 0xFFFFFFFFFFFFFFFFULL;
+					raw._128[0] = arg;
+					raw._64[2] = raw._64[3] = (raw._64[1] >> 63) * 0xFFFFFFFFFFFFFFFFULL;
                     return *this;
 				}
 				inline vli<256> & operator=(vli<256> const & arg) {
-					using detail::to128;
-					to128(raw) = to128(arg.raw);
-					to128(raw + 2) = to128(arg.raw + 2);
+					raw._128[0] = arg.raw._128[0];
+					raw._128[1] = arg.raw._128[1];
                     return *this;
 				}
 // []
 				inline boost::uint64_t & operator [](std::size_t index) {
 					assert(index < static_size);
-					return raw[index];
+					return raw._64[index];
 				}
 				inline boost::uint64_t operator [](std::size_t index) const {
 					assert(index < static_size);
-					return raw[index];
+					return raw._64[index];
 				}
 // ==
 				inline bool operator==(vli<256> const & arg) const {
-					using detail::to128;
-					return to128(raw) == to128(arg.raw) && to128(raw + 2) == to128(arg.raw + 2);
+					return raw._128[0] == arg.raw._128[0] && raw._128[1] == arg.raw._128[1];
 				}
 				inline bool operator!=(vli<256> const & arg) const {
 					return !(arg == *this);
@@ -535,60 +525,83 @@ namespace alps {
 					return arg <= *this;
 				}
 				inline bool operator<(vli<256> const & arg) const {
-					using detail::to128;
-					return !!((raw[3] ^ arg.raw[3]) >> 63) != (to128(raw + 2) < to128(arg.raw + 2) 
-						|| (to128(raw + 2) == to128(arg.raw + 2) && to128(raw) < to128(arg.raw)));
+					return !!((raw._64[3] ^ arg.raw._64[3]) >> 63) != (raw._128[1] < arg.raw._128[1] 
+						|| (raw._128[1] == arg.raw._128[1] && raw._128[0] < arg.raw._128[0]));
 				}
 				inline bool operator<=(vli<256> const & arg) const {
 					return *this < arg || *this == arg;
 				}
 // sign
 				inline bool sign() const {
-					return raw[3] >> 63;
+					return raw._64[3] >> 63;
 				}
 // +
-				inline vli<256> operator+(vli<256> const & arg) const {
-					using detail::to128;
-					vli<256> tmp;
-					to128(tmp.raw) = (__uint128_t)raw[0] + arg.raw[0];
-					to128(tmp.raw + 1) += (__uint128_t)raw[1] + arg.raw[1];
-					to128(tmp.raw + 2) += to128(raw + 2) + to128(arg.raw + 2);
-					return tmp;
-				}
 				inline vli<256> & operator+=(vli<256> const & arg) {
-					return *this = *this + arg;
+					raw_t<128> r00, r11;
+					r00._128[0] = (__uint128_t)raw._64[0] + arg.raw._64[0];
+					raw._64[0] = r00._64[0];
+					r11._128[0] = (__uint128_t)raw._64[1] + arg.raw._64[1] + r00._64[1];
+					raw._64[1] = r11._64[0];
+					raw._128[1] = raw._128[1] + arg.raw._128[1] + r11._64[1];
+					return *this;
 				}
 // -
 				inline vli<256> operator-() const {
-					vli<256> tmp(*this);
-					return tmp *= -1;
+					return *this * -1;
 				}
 				inline vli<256> & operator-=(vli<256> const & arg) {
-					return *this += -arg;
+					return *this += arg * -1;
 				}
 // *
 				inline vli<256> operator*(vli<256> const & arg) const {
-					using detail::to128;
 					vli<256> tmp;
-					boost::uint64_t r01[2], r10[2];
-					to128(tmp.raw) = (__uint128_t)raw[0] * arg.raw[0];
-					to128(r01) = (__uint128_t)raw[0] * arg.raw[1];
-					to128(r10) = (__uint128_t)raw[1] * arg.raw[0];
-					to128(tmp.raw + 1) += (__uint128_t)r01[0] + r10[0];
-					to128(tmp.raw + 2) += (__uint128_t)raw[0] * arg.raw[2] 
-									   +  to128(raw + 1) * to128(arg.raw + 1)
-									   +  (__uint128_t)raw[2] * arg.raw[0]
-									   +  (__uint128_t)r01[1] + r10[1];
-					tmp.raw[3] += (__uint128_t)raw[0] * arg.raw[3] 
-							   +  (__uint128_t)raw[3] * arg.raw[0];
+					raw_t<128> r01, r10, l1, m1, n1;
+					std::memcpy(&m1, &raw._64[1], 16);
+					std::memcpy(&n1, &arg.raw._64[1], 16);
+					tmp.raw._128[0] = (__uint128_t)raw._64[0] * arg.raw._64[0];
+					r01._128[0] = (__uint128_t)raw._64[0] * arg.raw._64[1];
+					r10._128[0] = (__uint128_t)raw._64[1] * arg.raw._64[0];
+					l1._128[0] = (__uint128_t)r01._64[0] + r10._64[0] + tmp.raw._64[1];
+					tmp.raw._64[1] = l1._64[0];
+					tmp.raw._128[1] += (__uint128_t)raw._64[0] * arg.raw._64[2] 
+									   +  m1._128[0] * n1._128[0]
+									   +  (__uint128_t)raw._64[2] * arg.raw._64[0]
+									   +  (__uint128_t)r01._64[1] + r10._64[1]
+									   + l1._64[1];
+					tmp.raw._64[3] += (__uint128_t)raw._64[0] * arg.raw._64[3] 
+							   +  (__uint128_t)raw._64[3] * arg.raw._64[0];
 					return tmp;
 				}
 				inline vli<256> & operator*=(vli<256> const & arg) {
 					return *this = *this * arg;
 				}
+/* Why is this so much slower?
+				inline vli<256> operator*(vli<256> arg) const {
+					return arg *= *this;
+				}
+				inline vli<256> & operator*=(vli<256> const & arg) {
+					raw_t<128> r01, r10, r11, a1, b1;
+					std::memcpy(a1._64, raw._64 + 1, 16);
+					std::memcpy(b1._64, arg.raw._64 + 1, 16);
+					boost::uint64_t r3 = raw._64[0] * arg.raw._64[3]
+									   + raw._64[3] * arg.raw._64[0];
+					r01._128[0] = (__uint128_t)raw._64[0] * arg.raw._64[1];
+					r10._128[0] = (__uint128_t)raw._64[1] * arg.raw._64[0];
+					raw._128[1] = (__uint128_t)raw._64[0] * arg.raw._64[2]
+									+ a1._128[0] * b1._128[0]
+									+ (__uint128_t)raw._64[2] * arg.raw._64[0]
+									+ r01._64[1] + r10._64[1];
+					raw._128[0] = (__uint128_t)raw._64[0] * arg.raw._64[0];
+					r11._128[0] = (__uint128_t)r01._64[0] + r10._64[0] + raw._64[1];
+					raw._64[1] = r11._64[0];
+					raw._128[1] += r11._64[1];
+					raw._64[3] += r3;
+					return *this;
+				}
+*/
 			private:
 // raw data
-				boost::uint64_t raw[4];
+				raw_t<256> raw;
 		};
 // str()
 		template<std::size_t B> std::string str(vli<B> const & arg) {
@@ -616,6 +629,9 @@ namespace alps {
 			return buffer.str();
 		}
 // +
+		template<std::size_t N> inline vli<N> operator+(vli<N> arg1, vli<N> const & arg2) {
+			return arg1 += arg2;
+		}
 		template<std::size_t N> inline vli<N> operator+(vli<N> arg1, boost::int64_t arg2) {
 			return arg1 += vli<N>(arg2);
 		}
