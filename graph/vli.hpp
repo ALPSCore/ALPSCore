@@ -465,7 +465,13 @@ namespace alps {
 // raw data
 				detail::vli_raw<static_size> data;
 		};
-
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+		
+		namespace detail {
+// ASM Functions
+			void vli256_add(boost::uint64_t *, boost::uint64_t const *);
+			void vli256_mul(boost::uint64_t *, boost::uint64_t const *);
+		}
 // VLI
 		template<> class vli<256> {
 			private:
@@ -537,12 +543,15 @@ namespace alps {
 				}
 // +
 				inline vli<256> & operator+=(vli<256> const & arg) {
+					detail::vli256_add(raw._64, arg.raw._64);
+					/*
 					raw_t<128> r00, r11;
 					r00._128[0] = (__uint128_t)raw._64[0] + arg.raw._64[0];
 					raw._64[0] = r00._64[0];
 					r11._128[0] = (__uint128_t)raw._64[1] + arg.raw._64[1] + r00._64[1];
 					raw._64[1] = r11._64[0];
 					raw._128[1] = raw._128[1] + arg.raw._128[1] + r11._64[1];
+					*/
 					return *this;
 				}
 // -
@@ -553,7 +562,7 @@ namespace alps {
 					return *this += arg * -1;
 				}
 // *
-				inline vli<256> operator*(vli<256> const & arg) const {
+/*				inline vli<256> operator*(vli<256> const & arg) const {
 					vli<256> tmp;
 					raw_t<128> r01, r10, l1, m1, n1;
 					std::memcpy(&m1, &raw._64[1], 16);
@@ -571,9 +580,14 @@ namespace alps {
 					tmp.raw._64[3] += (__uint128_t)raw._64[0] * arg.raw._64[3] 
 							   +  (__uint128_t)raw._64[3] * arg.raw._64[0];
 					return tmp;
+				}*/
+				inline vli<256> operator*(vli<256> arg) const {
+					return arg *= *this;
 				}
 				inline vli<256> & operator*=(vli<256> const & arg) {
-					return *this = *this * arg;
+					detail::vli256_mul(raw._64, arg.raw._64);
+					return *this;
+//					return *this = *this * arg;
 				}
 /* Why is this so much slower?
 				inline vli<256> operator*(vli<256> arg) const {
@@ -599,6 +613,10 @@ namespace alps {
 					return *this;
 				}
 */
+// Multiply and Add
+				inline vli<256> & MAdd(vli<256> const & arg1, vli<256> const arg2) {
+					return *this = arg1 * arg2;
+				}
 			private:
 // raw data
 				raw_t<256> raw;
