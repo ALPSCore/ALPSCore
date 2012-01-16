@@ -605,7 +605,9 @@ namespace alps {
         #define ALPS_NGS_HDF5_READ_SCALAR(T)                                                                                                                           \
             void archive::read(std::string path, T & value) const {                                                                                                    \
                 if ((path = complete_path(path)).find_last_of('@') == std::string::npos) {                                                                         \
-                    if (!is_data(path) || !is_scalar(path))                                                                                                        \
+                    if (!is_data(path))																																\
+                        ALPS_NGS_THROW_RUNTIME_ERROR("the path does not exists: " + path)																			\
+                    else if (!is_scalar(path))																														\
                         ALPS_NGS_THROW_RUNTIME_ERROR("scalar - vector conflict in path: " + path)                                                                  \
                     detail::data_type data_id(H5Dopen2(context_->file_id_, path.c_str(), H5P_DEFAULT));                                                            \
                     detail::type_type type_id(H5Dget_type(data_id));                                                                                               \
@@ -622,7 +624,9 @@ namespace alps {
                     ALPS_NGS_HDF5_FOREACH_NATIVE_TYPE_INTEGRAL(ALPS_NGS_HDF5_READ_SCALAR_DATA_HELPER, T)                                                           \
                     } else ALPS_NGS_THROW_RUNTIME_ERROR("invalid type")                                                                                            \
                 } else {                                                                                                                                           \
-                    if (!is_attribute(path) || !is_scalar(path))                                                                                                   \
+                    if (!is_attribute(path))																																\
+                        ALPS_NGS_THROW_RUNTIME_ERROR("the path does not exists: " + path)																			\
+                    else if (!is_scalar(path))																														\
                         ALPS_NGS_THROW_RUNTIME_ERROR("scalar - vector conflict in path: " + path)                                                                  \
                     hid_t parent_id;                                                                                                                               \
                     if (is_group(path.substr(0, path.find_last_of('@') - 1)))                                                                                      \
@@ -690,6 +694,8 @@ namespace alps {
                     ALPS_NGS_THROW_RUNTIME_ERROR("Not Implemented, path: " + path)
         #define ALPS_NGS_HDF5_READ_VECTOR(T)                                                                                                                           \
             void archive::read(std::string path, T * value, std::vector<std::size_t> chunk, std::vector<std::size_t> offset) const {                                   \
+			    if (!is_data(path) && !is_attribute(path))																																\
+					ALPS_NGS_THROW_RUNTIME_ERROR("the path does not exists: " + path)																				\
                 std::vector<std::size_t> data_size = extent(path);                                                                                                 \
                 if (offset.size() == 0)                                                                                                                            \
                     offset = std::vector<std::size_t>(dimensions(path), 0);                                                                                        \
