@@ -35,17 +35,20 @@
 
 int main() {
 	{
-		alps::graph::vli<256> b, a;
+		alps::graph::vli<256> b, a, c, d;
 		for (std::size_t i = 0; i < 4; ++i)
 			for (std::size_t j = 0; j < 4; ++j) {
 				a[0] = 0; a[1] = 0; a[2] = 0; a[3] = 0;
 				b[0] = 0; b[1] = 0; b[2] = 0; b[3] = 0;
+				d[0] = 0; d[1] = 0; d[2] = 0; d[3] = 0;
 				a[i] = 16;
 				b[j] = 16;
 				std::cout << "a: " << std::setbase(16) << a[0] << " " << a[1] << " " << a[2] << " " << a[3];
 				std::cout << ", b: " << std::setbase(16) << b[0] << " " << b[1] << " " << b[2] << " " << b[3];
-				a *= b;
-				std::cout << ", a*b: " << std::setbase(16) << a[0] << " " << a[1] << " " << a[2] << " " << a[3] << std::endl;
+				c = a * b;
+				d.madd(a, b);
+				std::cout << ", a*b: " << std::setbase(16) << c[0] << " " << c[1] << " " << c[2] << " " << c[3];
+				std::cout << ", a+=a*b: " << std::setbase(16) << d[0] << " " << d[1] << " " << d[2] << " " << d[3] << std::endl;
 			}
 	}
 	{
