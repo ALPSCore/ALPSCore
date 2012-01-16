@@ -471,6 +471,7 @@ namespace alps {
 // ASM Functions
 			void vli256_add(boost::uint64_t *, boost::uint64_t const *);
 			void vli256_mul(boost::uint64_t *, boost::uint64_t const *);
+			void vli256_madd(boost::uint64_t *, boost::uint64_t const *, boost::uint64_t const *);
 		}
 // VLI
 		template<> class vli<256> {
@@ -614,7 +615,9 @@ namespace alps {
 				}
 */
 // Multiply and Add
-				inline vli<256> & MAdd(vli<256> const & arg1, vli<256> const arg2) {
+				inline vli<256> & madd(vli<256> const & arg1, vli<256> const arg2) {
+//					detail::vli256_madd(raw._64, arg1.raw._64, arg2.raw._64);
+//					return *this;
 					return *this = arg1 * arg2;
 				}
 			private:
