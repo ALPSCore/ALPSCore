@@ -794,7 +794,7 @@ namespace alps {
                             detail::space_type current_space_id(H5Dget_space(data_id));                                                                            \
                             class_type = H5Sget_simple_extent_type(current_space_id);                                                                              \
                         }                                                                                                                                          \
-                        if (class_type != H5S_SCALAR) {                                                                                                            \
+                        if (class_type != H5S_SCALAR || !is_datatype<T>(path)) {                                                                                    \
                             detail::check_data(data_id);                                                                                                           \
                             detail::check_error(H5Ldelete(context_->file_id_, path.c_str(), H5P_DEFAULT));                                                         \
                             data_id = -1;                                                                                                                          \
@@ -829,7 +829,7 @@ namespace alps {
                             detail::space_type current_space_id(H5Aget_space(data_id));                                                                            \
                             class_type = H5Sget_simple_extent_type(current_space_id);                                                                              \
                         }                                                                                                                                          \
-                        if (class_type != H5S_SCALAR) {                                                                                                            \
+                        if (class_type != H5S_SCALAR || !is_datatype<T>(path)) {                                                                                   \
                             detail::check_attribute(data_id);                                                                                                      \
                             detail::check_error(H5Adelete(parent_id, path.substr(path.find_last_of('@') + 1).c_str()));                                            \
                             data_id = -1;                                                                                                                          \
@@ -883,7 +883,12 @@ namespace alps {
                             detail::space_type current_space_id(H5Dget_space(data_id));                                                                            \
                             class_type = H5Sget_simple_extent_type(current_space_id);                                                                              \
                         }                                                                                                                                          \
-                        if (class_type == H5S_SCALAR || dimensions(path) != size.size() || !std::equal(size.begin(), size.end(), extent(path).begin())) {          \
+                        if (																																	   \
+							   class_type == H5S_SCALAR 																										   \
+							|| dimensions(path) != size.size() 																									   \
+							|| !std::equal(size.begin(), size.end(), extent(path).begin())																		   \
+							|| !is_datatype<T>(path)																											   \
+						) {																																		   \
                             detail::check_data(data_id);                                                                                                           \
                             detail::check_error(H5Ldelete(context_->file_id_, path.c_str(), H5P_DEFAULT));                                                         \
                             data_id = -1;                                                                                                                          \
