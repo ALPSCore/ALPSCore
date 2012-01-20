@@ -25,6 +25,12 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifdef USE_LATTICE_CONSTANT_2D
+#include <alps/graph/lattice_constant_2d.hpp>
+#define ALPS_GRAPH_LATTICE_CONSTANT
+#endif // USE_LATTICE_CONSTANT_2D
+
+
 #ifndef ALPS_GRAPH_LATTICE_CONSTANT
 #define ALPS_GRAPH_LATTICE_CONSTANT
 
