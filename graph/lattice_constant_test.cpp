@@ -1,5 +1,7 @@
 
-#include <alps/graph/lattice_constant_2d.hpp>
+#define USE_LATTICE_CONSTANT_2D
+//#include <alps/graph/lattice_constant_2d.hpp>
+#include <alps/graph/lattice_constant.hpp>
 
 #include <boost/progress.hpp>
 #include <boost/graph/adjacency_list.hpp>
