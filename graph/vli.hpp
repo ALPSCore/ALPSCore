@@ -39,7 +39,6 @@
 #ifndef ALPS_GRAPH_VLI
 #define ALPS_GRAPH_VLI
 
-
 #ifdef __GNUG__
 	#define VLI_ALWAYS_INLINE __attribute__((always_inline))
 #else
