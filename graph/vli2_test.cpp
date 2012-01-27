@@ -25,13 +25,13 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+// atm vli only works with GCC
+#ifdef __GNUG__
 
 #include <iostream>
 #include <iomanip>
 
-
 #include <alps/graph/vli.hpp>
-
 
 int main() {
 	{
@@ -82,3 +82,5 @@ int main() {
 		std::cout << a << std::endl;
 	}
 };
+
+#endif

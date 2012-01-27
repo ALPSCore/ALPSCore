@@ -25,6 +25,9 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+// atm vli only works with GCC
+#ifdef __GNUG__
+
 #define BOOST_TEST_MODULE vli_cpu
 #include <boost/test/included/unit_test.hpp>
 #include <boost/mpl/list.hpp>
@@ -632,3 +635,5 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( two_times_not_equal_minus_one, Vli, vli_types )
     BOOST_CHECK_EQUAL((a == c), true);
 }
 */
+
+#endif
