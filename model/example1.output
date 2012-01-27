@@ -244,7 +244,7 @@
   <SITEOPERATOR name="double_occupancy" site="x">
     n(x)*(n(x)-1)/2
   </SITEOPERATOR>
-  <BONDOPERATOR name="biquadratic" source="x" target="y">
+  <BONDOPERATOR name="biquadratic" source="i" target="j">
     (exchange_xy(i,j)+Sz(i)*Sz(j))*(exchange_xy(i,j)+Sz(i)*Sz(j))
   </BONDOPERATOR>
   <BONDOPERATOR name="boson_hop" source="x" target="y">
