@@ -26,7 +26,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 // atm vli only works with GCC
-#ifdef __GNUG__
+#if defined(__GNUG__) && !defined(__ICC) && !defined(__FCC_VERSION)
 
 #include <iostream>
 #include <iomanip>
@@ -82,5 +82,9 @@ int main() {
 		std::cout << a << std::endl;
 	}
 };
+
+#else
+
+int main() {}
 
 #endif
