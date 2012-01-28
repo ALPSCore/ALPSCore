@@ -355,7 +355,7 @@ int run_sequential(int argc, char **argv) {
     if (!p.defined("SEED")) p["SEED"] = static_cast<unsigned int>(time(0));
     p["WORKER_SEED"] = p["SEED"];
     p["DISORDER_SEED"] = p["SEED"];
-    std::cout << "[input parameters]\n" << p;
+    std::cout << "[input parameters]\n" << p << std::flush;
     std::vector<alps::ObservableSet> obs;
     boost::shared_ptr<alps::parapack::abstract_worker>
       worker = worker_factory::make_worker(p);
@@ -382,6 +382,7 @@ int run_sequential(int argc, char **argv) {
       for (std::size_t r = 0; r < obs_out.size(); ++r)
         std::cout << "[[replica " << r << "]]\n" << obs_out[r];
     }
+    std::cout << std::flush;
   }
 
 #ifndef BOOST_NO_EXCEPTIONS
@@ -744,7 +745,7 @@ int run_sequential_mpi(int argc, char** argv) {
     if (!p.defined("SEED")) p["SEED"] = static_cast<unsigned int>(time(0));
     p["WORKER_SEED"] = static_cast<unsigned int>(p["SEED"]) ^ (world.rank() << 11);
     p["DISORDER_SEED"] = p["SEED"];
-    if (world.rank() == 0) std::cout << "[input parameters]\n" << p;
+    if (world.rank() == 0) std::cout << "[input parameters]\n" << p << std::flush;
     std::vector<alps::ObservableSet> obs;
     boost::shared_ptr<alps::parapack::abstract_worker>
       worker = parallel_worker_factory::make_worker(world, p);
@@ -762,36 +763,26 @@ int run_sequential_mpi(int argc, char** argv) {
     }
     world.barrier();
     if (world.rank() == 0) {
-      std::cerr << "[speed]\nelapsed time = " << tm.elapsed() << " sec\n";
+      std::cerr << "[speed]\nelapsed time = " << tm.elapsed() << " sec" << std::endl;
     }
-    if (world.rank() == 0) {
-      int d = 0;
-      std::vector<alps::ObservableSet> obs_slave;
-      for (int p = 1; p < world.size(); ++p) {
-        world.send(p, 0, d);
-        world.recv(p, 0, obs_slave);
-        for (int j = 0; j < obs.size(); ++j) obs[j] << obs_slave[j];
+    std::vector<alps::ObservableSet> obs_out;
+    boost::shared_ptr<alps::parapack::abstract_evaluator>
+      evaluator = evaluator_factory::make_evaluator(p);
+    evaluator->load(obs, obs_out);
+    evaluator->evaluate(obs_out);
+    for (int r = 0; r < world.size(); ++r) {
+      if (world.rank() == r) {
+        std::cout << "[results " << r << "]\n";
+        if (obs_out.size() == 1) {
+          std::cout << obs_out[0];
+        } else {
+          for (int i = 0; i < obs_out.size(); ++i)
+            std::cout << "[[replica " << i << "]]\n" << obs_out[i];
+        }
+        std::cout << std::flush;
       }
-    } else {
-      int d;
-      world.recv(0, 0, d);
-      world.send(0, 0, obs);
+      world.barrier();
     }
-    if (world.rank() == 0) {
-      std::vector<alps::ObservableSet> obs_out;
-      boost::shared_ptr<alps::parapack::abstract_evaluator>
-        evaluator = evaluator_factory::make_evaluator(p);
-      evaluator->load(obs, obs_out);
-      evaluator->evaluate(obs_out);
-      std::cout << "[results]\n";
-      if (obs_out.size() == 1) {
-        std::cout << obs_out[0];
-      } else {
-        for (int i = 0; i < obs_out.size(); ++i)
-          std::cout << "[[replica " << i << "]]\n" << obs_out[i];
-      }
-    }
-    world.barrier();
   }
 
 #ifndef BOOST_NO_EXCEPTIONS
