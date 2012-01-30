@@ -25,6 +25,9 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+// atm vli only works with GCC
+#if defined(__GNUG__) && !defined(__ICC) && !defined(__FCC_VERSION)
+
 #include <boost/cstdint.hpp>
 
 namespace alps {
@@ -199,3 +202,5 @@ namespace alps {
 		}
 	}
 }
+
+#endif
