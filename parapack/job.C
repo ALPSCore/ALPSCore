@@ -57,6 +57,7 @@ task::task(boost::filesystem::path const& file) : status_(task_status::Undefined
     file_in_str_ = regex_replace(file.filename().string(), boost::regex("\\.out\\.xml$"), ".in.xml");
     file_out_str_ = file.filename().string();
   }
+  base_ = regex_replace(file_out_str_, boost::regex("\\.out\\.xml$"), "");
 }
 
 bool task::on_memory() const {
