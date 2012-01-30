@@ -14,7 +14,23 @@ include_directories(${Boost_ROOT_DIR})
 
 enable_testing()
 if (ALPS_BUILD_PYTHON AND BUILD_SHARED_LIBS)
-#    FOREACH (name hlist_test mcdata pyhdf5 loadobs)
+    if (ALPS_BUILD_NGS)
+        FOREACH (name pyioarchive numpylarge)
+            add_test(python_${name}
+                ${CMAKE_COMMAND}
+                    -Dpython_interpreter=${PYTHON_INTERPRETER}
+                    -Dcmd=${name}.py
+                    -Dinput=${name}
+                    -Doutput=${name}
+                    -Dsourcedir=${PROJECT_SOURCE_DIR}
+                    -Dbinarydir=${PROJECT_BINARY_DIR}
+                    -Dcmddir=${CMAKE_CURRENT_SOURCE_DIR}
+                    -P ${CMAKE_CURRENT_SOURCE_DIR}/run_python_test.cmake
+            )
+        ENDFOREACH(name)
+    ENDIF(ALPS_BUILD_NGS)
+
+#    FOREACH (name hlist_test mcdata pyhdf5 loadobs pyioarchive)
     FOREACH (name hlist_test mcdata pyhdf5)
         add_test(python_${name}
             ${CMAKE_COMMAND}

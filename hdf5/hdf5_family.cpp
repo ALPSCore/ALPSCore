@@ -36,7 +36,7 @@
 #include <algorithm>
 
 int main() {
-    std::string const filename = "test.h5";
+    std::string const filename = "test%05d.h5";
     if (boost::filesystem::exists(boost::filesystem::path(filename)))
         boost::filesystem::remove(boost::filesystem::path(filename));
     {
