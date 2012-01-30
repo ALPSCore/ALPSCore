@@ -43,7 +43,6 @@
 
 #include <numpy/arrayobject.h>
 
-
 namespace alps {
     namespace detail {
 
@@ -77,8 +76,8 @@ namespace alps {
 
             public:
             
-                hdf5_archive_export(std::string const & filename, std::size_t props)
-                    : alps::hdf5::archive(filename, props)
+                hdf5_archive_export(std::string const & filename, std::string mode)
+                    : alps::hdf5::archive(filename, mode)
                 {}
 
                 boost::python::str py_filename() {
@@ -273,7 +272,7 @@ BOOST_PYTHON_MODULE(pyngshdf5_c) {
 
     boost::python::class_<alps::detail::hdf5_archive_export, boost::python::bases<alps::hdf5::archive> >(
           "hdf5_archive_impl",
-          boost::python::init<std::string, std::size_t>()
+          boost::python::init<std::string, std::string>()
     )
         .def("__deepcopy__", &alps::python::make_copy<alps::detail::hdf5_archive_export>)
         .add_property("filename", &alps::detail::hdf5_archive_export::py_filename)

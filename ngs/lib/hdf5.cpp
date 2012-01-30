@@ -74,11 +74,11 @@ namespace alps {
 
             template<> struct native_ptr_converter<std::string> {
                 std::vector<char const *> data;
-                    native_ptr_converter(std::size_t size): data(size) {}
-                        inline char const * const * apply(std::string const * v) {
-                            for (std::vector<char const *>::iterator it = data.begin(); it != data.end(); ++it)
-                                    *it = v[it - data.begin()].c_str();
-                            return &data[0];
+				native_ptr_converter(std::size_t size): data(size) {}
+				inline char const * const * apply(std::string const * v) {
+					for (std::vector<char const *>::iterator it = data.begin(); it != data.end(); ++it)
+							*it = v[it - data.begin()].c_str();
+					return &data[0];
                 }
             };
 
@@ -226,26 +226,75 @@ namespace alps {
 
             struct ALPS_DECL mccontext : boost::noncopyable {
 
-                mccontext(std::string const & filename, bool write, bool replace, bool compress)
+                mccontext(std::string const & filename, bool write, bool replace, bool compress, bool large, bool memory)
                     : compress_(compress)
                     , write_(write || replace)
-                    , replace_(replace)
+                    , replace_(!memory && replace)
+                    , large_(large)
+					, memory_(memory)
                     , filename_(filename)
                 {
-                    if (replace)
-                        for (std::size_t i = 0; boost::filesystem::exists(filename + (suffix_ = ".tmp." + convert<std::string>(i))); ++i);
-					if (write && replace && boost::filesystem::exists(filename_))
-						boost::filesystem::copy_file(filename_, filename_ + suffix_);
-                    if (write_) {
-                        if ((file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDWR, H5P_DEFAULT)) < 0)
-                            file_id_ = H5Fcreate((filename_ + suffix_).c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-                    } else {
-                        if (!boost::filesystem::exists(filename_ + suffix_))
-                            ALPS_NGS_THROW_RUNTIME_ERROR("file does not exists: " + filename_ + suffix_)
-                        if (detail::check_error(H5Fis_hdf5((filename_ + suffix_).c_str())) == 0)
-                            ALPS_NGS_THROW_RUNTIME_ERROR("no valid hdf5 file: " + filename_ + suffix_)
-                        file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
-                    }
+					if (memory && large)
+						ALPS_NGS_THROW_RUNTIME_ERROR("either memory or large file system can be used!")
+					else if (memory) {
+						detail::property_type prop_id(H5Pcreate(H5P_FILE_ACCESS));
+						detail::check_error(H5Pset_fapl_core(prop_id, 1 << 20, true));
+						#ifndef ALPS_HDF5_CLOSE_GREEDY
+							detail::check_error(H5Pset_fclose_degree(prop_id, H5F_CLOSE_SEMI));
+						#endif
+						if (write_) {
+							if ((file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDWR, prop_id)) < 0)
+								detail::check_error(file_id_ = H5Fcreate((filename_ + suffix_).c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, prop_id));
+						} else
+							detail::check_error(file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDONLY, prop_id));
+					} else {
+						if (replace_ && large)
+							ALPS_NGS_THROW_RUNTIME_ERROR("the combination 'wl' is not allowd!")
+						if (replace_)
+							for (std::size_t i = 0; boost::filesystem::exists(filename + (suffix_ = ".tmp." + convert<std::string>(i))); ++i);
+						if (write && replace && boost::filesystem::exists(filename_))
+							boost::filesystem::copy_file(filename_, filename_ + suffix_);
+						if (!write_) {
+							if (!boost::filesystem::exists(filename_ + suffix_))
+								ALPS_NGS_THROW_RUNTIME_ERROR("file does not exists: " + filename_ + suffix_)
+							if (detail::check_error(H5Fis_hdf5((filename_ + suffix_).c_str())) == 0)
+								ALPS_NGS_THROW_RUNTIME_ERROR("no valid hdf5 file: " + filename_ + suffix_)
+						}
+						if (large_) {
+							{
+								char filename0[4096], filename1[4096];
+								sprintf(filename0, filename.c_str(), 0);
+								sprintf(filename1, filename.c_str(), 1);
+								if (!strcmp(filename0, filename1))
+									ALPS_NGS_THROW_RUNTIME_ERROR("Large hdf5 archives need to have a '%d' part in the filename")
+							}
+							detail::property_type prop_id(H5Pcreate(H5P_FILE_ACCESS));
+							detail::check_error(H5Pset_fapl_family(prop_id, 1 << 30, H5P_DEFAULT));
+							#ifndef ALPS_HDF5_CLOSE_GREEDY
+								detail::check_error(H5Pset_fclose_degree(prop_id, H5F_CLOSE_SEMI));
+							#endif
+							if (write_) {
+								if ((file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDWR, prop_id)) < 0)
+									detail::check_error(file_id_ = H5Fcreate((filename_ + suffix_).c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, prop_id));
+							} else
+								detail::check_error(file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDONLY, prop_id));
+						} else {
+							#ifndef ALPS_HDF5_CLOSE_GREEDY
+								detail::property_type ALPS_HDF5_FILE_ACCESS(H5Pcreate(H5P_FILE_ACCESS));
+								detail::check_error(H5Pset_fclose_degree(ALPS_HDF5_FILE_ACCESS, H5F_CLOSE_SEMI));
+							#else
+								#define ALPS_HDF5_FILE_ACCESS H5P_DEFAULT
+							#endif
+							if (write_) {
+								if ((file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDWR, ALPS_HDF5_FILE_ACCESS)) < 0)
+									detail::check_error(file_id_ = H5Fcreate((filename_ + suffix_).c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, ALPS_HDF5_FILE_ACCESS));
+							} else
+								detail::check_error(file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDONLY, ALPS_HDF5_FILE_ACCESS));
+							#ifdef ALPS_HDF5_CLOSE_GREEDY
+								#undef(ALPS_HDF5_FILE_ACCESS)
+							#endif
+						}
+					}
                 }
 
                 ~mccontext() {
@@ -285,6 +334,8 @@ namespace alps {
                 bool compress_;
                 bool write_;
                 bool replace_;
+                bool large_;
+                bool memory_;
                 std::string filename_;
                 std::string suffix_;
                 hid_t file_id_;
@@ -300,10 +351,19 @@ namespace alps {
 			construct(filename, props);
         }
 
+        archive::archive(std::string const & filename, std::string mode) {
+			construct(filename,	(mode.find_last_of('w') == std::string::npos ? 0 : WRITE | REPLACE)
+				| (mode.find_last_of('a') == std::string::npos ? 0 : WRITE)
+				| (mode.find_last_of('c') == std::string::npos ? 0 : COMPRESS)
+				| (mode.find_last_of('l') == std::string::npos ? 0 : LARGE)
+				| (mode.find_last_of('m') == std::string::npos ? 0 : MEMORY)
+			);
+        }
+
         archive::archive(archive const & arg)
             : context_(arg.context_)
         {
-            ++ref_cnt_[file_key(context_->filename_, context_->write_, context_->compress_)].second;
+            ++ref_cnt_[file_key(context_->filename_, context_->write_, context_->compress_, context_->large_, context_->memory_)].second;
         }
 
         archive::~archive() {
@@ -313,8 +373,8 @@ namespace alps {
                 std::cerr << "Error destructing archive of file '" << context_->filename_ << "'\n" << ex.what() << std::endl;
                 std::abort();
             }
-            if (!--ref_cnt_[file_key(context_->filename_, context_->write_, context_->compress_)].second) {
-                ref_cnt_.erase(file_key(context_->filename_, context_->write_, context_->compress_));
+            if (!--ref_cnt_[file_key(context_->filename_, context_->write_, context_->compress_, context_->large_, context_->large_)].second) {
+                ref_cnt_.erase(file_key(context_->filename_, context_->write_, context_->compress_, context_->large_, context_->large_));
                 delete context_;
             }
         }
@@ -465,14 +525,14 @@ namespace alps {
         }
     
         bool archive::is_complex(std::string path) const {
-            if (is_datatype<double>(path)) {
-                if (path.find_last_of('@') != std::string::npos)
-                    return is_attribute(path.substr(0, path.find_last_of('@')) + "@__complex__:" + path.substr(path.find_last_of('@') + 1))
-                        && is_scalar(path.substr(0, path.find_last_of('@')) + "@__complex__:" + path.substr(path.find_last_of('@') + 1));
-                else
-                    return is_attribute(path + "/@__complex__") && is_scalar(path + "/@__complex__");
-            } else
-                return false;
+			if (path.find_last_of('@') != std::string::npos)
+				return is_attribute(path.substr(0, path.find_last_of('@')) + "@__complex__:" + path.substr(path.find_last_of('@') + 1))
+					&& is_scalar(path.substr(0, path.find_last_of('@')) + "@__complex__:" + path.substr(path.find_last_of('@') + 1));
+			else if (is_group(path)) {
+				std::vector<std::string> children = list_children(path);
+				return children.size() ? is_complex(path + "/" + children[0]) : false;
+			} else
+				return is_attribute(path + "/@__complex__") && is_scalar(path + "/@__complex__");
         }
     
         std::vector<std::string> archive::list_children(std::string path) const {
@@ -582,10 +642,16 @@ namespace alps {
         }
     
         void archive::set_complex(std::string path) {
-            if (path.find_last_of('@') != std::string::npos)
+			if (path.find_last_of('@') != std::string::npos)
                 write(path.substr(0, path.find_last_of('@')) + "@__complex__:" + path.substr(path.find_last_of('@') + 1), true);
-            else
+			else {
+				if (is_group(path)) {
+					std::vector<std::string> children = list_children(path);
+					if (children.size())
+						return set_complex(path + "/" + children[0]);
+				}
                 write(path + "/@__complex__", true);
+			}
         }
     
         #define ALPS_NGS_HDF5_READ_SCALAR_DATA_HELPER(U, T)                                                                                                            \
@@ -922,7 +988,7 @@ namespace alps {
                                            , chunk_hid(chunk.begin(), chunk.end());                                                                                \
                         if (data_id < 0) {                                                                                                                         \
                             if (boost::is_same< T , std::string>::value)                                                                                           \
-                                data_id = H5Dcreate2(                                                                                                              \
+                                detail::check_error(data_id = H5Dcreate2(                                                                                          \
                                       context_->file_id_                                                                                                           \
                                     , path.c_str()                                                                                                                 \
                                     , type_id                                                                                                                      \
@@ -930,14 +996,35 @@ namespace alps {
                                     , H5P_DEFAULT                                                                                                                  \
                                     , H5P_DEFAULT                                                                                                                  \
                                     , H5P_DEFAULT                                                                                                                  \
-                                );                                                                                                                                 \
+                                ));                                                                                                                                 \
                             else {                                                                                                                                 \
                                 detail::property_type prop_id(H5Pcreate(H5P_DATASET_CREATE));                                                                      \
                                 detail::check_error(H5Pset_fill_time(prop_id, H5D_FILL_TIME_NEVER));                                                               \
+								std::size_t dataset_size = std::accumulate(size.begin(), size.end(), std::size_t(sizeof( T )), std::multiplies<std::size_t>());		\
+								if (dataset_size < ALPS_HDF5_SZIP_BLOCK_SIZE)																						\
+									detail::check_error(H5Pset_layout(prop_id, H5D_COMPACT));																		\
+								else if (dataset_size < (1ULL<<32))																									\
+									detail::check_error(H5Pset_layout(prop_id, H5D_CONTIGUOUS));																	\
+								else {																																\
+									detail::check_error(H5Pset_layout(prop_id, H5D_CHUNKED));																		\
+									std::vector<hsize_t> max_chunk(size_hid);																						\
+									std::size_t index = 0;																											\
+									while (std::accumulate(																											\
+										  max_chunk.begin()																											\
+										, max_chunk.end()																											\
+										, std::size_t(sizeof( T ))																									\
+										, std::multiplies<std::size_t>()																							\
+									) > (1ULL<<32) - 1) {																											\
+										max_chunk[index] /= 2;																										\
+										if (max_chunk[index] == 1)																									\
+											++index;																												\
+									}																																\
+									detail::check_error(H5Pset_chunk(prop_id, static_cast<int>(max_chunk.size()), &max_chunk.front()));                            \
+								}																																	\
                                 detail::check_error(H5Pset_chunk(prop_id, static_cast<int>(size_hid.size()), &size_hid.front()));                                  \
-                                if (context_->compress_ && std::accumulate(size_hid.begin(), size_hid.end(), std::size_t(0)) > ALPS_HDF5_SZIP_BLOCK_SIZE)          \
+                                if (context_->compress_ && dataset_size > ALPS_HDF5_SZIP_BLOCK_SIZE)																\
                                     detail::check_error(H5Pset_szip(prop_id, H5_SZIP_NN_OPTION_MASK, ALPS_HDF5_SZIP_BLOCK_SIZE));                                  \
-                                data_id = H5Dcreate2(                                                                                                              \
+                                detail::check_error(data_id = H5Dcreate2(                                                                                          \
                                       context_->file_id_                                                                                                           \
                                     , path.c_str()                                                                                                                 \
                                     , type_id                                                                                                                      \
@@ -945,7 +1032,7 @@ namespace alps {
                                     , H5P_DEFAULT                                                                                                                  \
                                     , prop_id                                                                                                                      \
                                     , H5P_DEFAULT                                                                                                                  \
-                                );                                                                                                                                 \
+                                ));                                                                                                                                 \
                             }                                                                                                                                      \
                         }                                                                                                                                          \
                         detail::data_type raii_id(data_id);                                                                                                        \
@@ -998,14 +1085,14 @@ namespace alps {
                                            , offset_hid(offset.begin(), offset.end())                                                                                  \
                                            , chunk_hid(chunk.begin(), chunk.end());                                                                                    \
                         if (data_id < 0)                                                                                                                               \
-                            data_id = H5Acreate2(                                                                                                                      \
+                            data_id = detail::check_error(H5Acreate2(                                                                                                  \
                                   parent_id                                                                                                                            \
                                 , path.substr(path.find_last_of('@') + 1).c_str()                                                                                      \
                                 , type_id                                                                                                                              \
                                 , detail::space_type(H5Screate_simple(static_cast<int>(size_hid.size()), &size_hid.front(), NULL))                                     \
                                 , H5P_DEFAULT                                                                                                                          \
                                 , H5P_DEFAULT                                                                                                                          \
-                            );                                                                                                                                         \
+                            ));                                                                                                                                         \
                         {                                                                                                                                              \
                             detail::attribute_type raii_id(data_id);                                                                                                   \
                             if (std::equal(chunk.begin(), chunk.end(), size.begin())) {                                                                                \
@@ -1101,19 +1188,19 @@ namespace alps {
                 detail::check_error(H5Zget_filter_info(H5Z_FILTER_SZIP, &flag));
                 props &= (flag & H5Z_FILTER_CONFIG_ENCODE_ENABLED ? ~0x00 : ~COMPRESS);
             }
-            if (ref_cnt_.find(file_key(filename, props & (WRITE | REPLACE), props & COMPRESS)) == ref_cnt_.end())
+            if (ref_cnt_.find(file_key(filename, props & (WRITE | REPLACE), props & COMPRESS, props & LARGE, props & MEMORY)) == ref_cnt_.end())
                 ref_cnt_.insert(std::make_pair(
-                      file_key(filename, props & (WRITE | REPLACE), props & COMPRESS)
-                    , std::make_pair(context_ = new detail::mccontext(filename, props & WRITE, props & REPLACE, props & COMPRESS), 1)
+                      file_key(filename, props & (WRITE | REPLACE), props & COMPRESS, props & LARGE, props & MEMORY)
+                    , std::make_pair(context_ = new detail::mccontext(filename, props & WRITE, props & REPLACE, props & COMPRESS, props & LARGE, props & MEMORY), 1)
                 ));
             else {
-                context_ = ref_cnt_.find(file_key(filename, props & (WRITE | REPLACE), props & COMPRESS))->second.first;
-                ++ref_cnt_.find(file_key(filename, props & (WRITE | REPLACE), props & COMPRESS))->second.second;
+                context_ = ref_cnt_.find(file_key(filename, props & (WRITE | REPLACE), props & COMPRESS, props & LARGE, props & MEMORY))->second.first;
+                ++ref_cnt_.find(file_key(filename, props & (WRITE | REPLACE), props & COMPRESS, props & LARGE, props & MEMORY))->second.second;
             }
         }
 
-        std::string archive::file_key(std::string filename, bool write, bool compress) const {
-            return std::string(write ? "w" : "r") + (compress ? "c" : "_") + "@" + filename;
+        std::string archive::file_key(std::string filename, bool write, bool compress, bool large, bool memory) const {
+            return std::string(write ? "w" : "r") + (compress ? "c" : "_") + (large ? "l" : (memory ? "m" : "_")) + "@" + filename;
         }
     
         std::map<std::string, std::pair<detail::mccontext *, std::size_t> > archive::ref_cnt_;

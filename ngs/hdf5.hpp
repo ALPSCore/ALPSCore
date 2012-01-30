@@ -77,9 +77,11 @@ namespace alps {
 
             public:
 
-                typedef enum { READ = 0x00, WRITE = 0x01, REPLACE = 0x02, COMPRESS = 0x04 } properties;
+                typedef enum { READ = 0x00, WRITE = 0x01, REPLACE = 0x02, COMPRESS = 0x04, LARGE = 0x08, MEMORY = 0x10 } properties;
 
-                archive(std::string const & filename, std::size_t props = READ);
+                archive(std::string const & filename, std::string mode = "r");
+				// TODO: remove that!
+                archive(std::string const & filename, std::size_t props);
 				// TODO: remove that!
                 archive(param const & filename, std::size_t props = READ);
                 archive(archive const & arg);
@@ -174,7 +176,7 @@ namespace alps {
             private:
 
                 void construct(std::string const & filename, std::size_t props = READ);
-                std::string file_key(std::string filename, bool writeable, bool compressed) const;
+                std::string file_key(std::string filename, bool writeable, bool compressed, bool large, bool memory) const;
 
                 std::string current_;
                 detail::mccontext * context_;
