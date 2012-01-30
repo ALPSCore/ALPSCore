@@ -19,6 +19,72 @@ int main() {
     alps::Parameters parm;
 	unsigned int side_length = 40;
 	
+    parm["LATTICE"] = "coupled ladders";
+    parm["L"] = side_length;
+
+    parm["L"] = side_length;
+    alps::graph_helper<> lattice(parm);
+	
+	graph_type lattice_graph(num_vertices(lattice.graph()));
+	boost::graph_traits<alps::graph_helper<>::graph_type>::edge_iterator it, et;
+	for(boost::tie(it, et) = edges(lattice.graph()); it != et; ++it)
+    {
+//        std::cout<<source(*it, lattice.graph())<<" - "<<target(*it, lattice.graph())<<" t:";
+//        std::cout<<get(alps::edge_type_t(),lattice.graph(),*it)<<std::endl;
+        boost::graph_traits<graph_type>::edge_descriptor  e = add_edge(source(*it, lattice.graph()), target(*it, lattice.graph()), lattice_graph).first;
+        put(alps::edge_type_t(), lattice_graph, e, get(alps::edge_type_t(),lattice.graph(),*it) );
+    }
+    
+    std::vector<std::pair<graph_type,lc_type> > g;
+    //
+    //  0...1
+    //  |   |
+    //  2...3
+    //
+    g.push_back(std::make_pair(graph_type(), 1));
+    boost::graph_traits<graph_type>::edge_descriptor e = add_edge(0, 1, g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
+    e = add_edge(1, 3, g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 1);
+    e = add_edge(3, 2, g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
+    e = add_edge(2, 0, g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 1);
+    
+    //
+    //  0...1
+    //  .   |
+    //  2___3
+    //
+    g.push_back(std::make_pair(graph_type(), 0));
+    e = add_edge(0, 1, g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
+    e = add_edge(1, 3, g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 1);
+    e = add_edge(3, 2, g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 1);
+    e = add_edge(2, 0, g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
+
+    //
+    //  1___0___2
+    //
+    g.push_back(std::make_pair(graph_type(),6));
+    e = add_edge(0, 1,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
+    e = add_edge(0, 2,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
+
+    //
+    //  1...0___2
+    //
+    g.push_back(std::make_pair(graph_type(),6));
+    e = add_edge(0, 1,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
+    e = add_edge(0, 2,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 1);
+
+    /*
     parm["LATTICE"] = "anisotropic square lattice";
     parm["L"] = side_length;
     alps::graph_helper<> lattice(parm);
@@ -83,6 +149,7 @@ int main() {
     put(alps::edge_type_t(), g.back().first, e, 0);
     e = add_edge(0, 2,g.back().first).first;
     put(alps::edge_type_t(), g.back().first, e, 1);
+    */
 
 //    
 //    //
