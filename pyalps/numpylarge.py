@@ -31,7 +31,7 @@ import pyalps.ngs as ngs
 ar=ngs.h5ar('foo%d.h5', 'al')
 s=2**10
 
-while s <= 4*2**30:
+while s < 2**29:
     print s
     a = np.empty(s)
     ar[str(s)] = a
