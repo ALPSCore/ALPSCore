@@ -481,6 +481,8 @@ namespace alps {
 					__uint128_t _128[N >> 7];
 				} __attribute__ ((aligned (16)));
 			public:
+// Typedefs
+				typedef boost::uint64_t value_type;
 // Size
                 static const std::size_t static_size = 4;
                 static inline std::size_t size(){
@@ -508,11 +510,11 @@ namespace alps {
                     return *this;
 				}
 // []
-				inline boost::uint64_t & operator [](std::size_t index) {
+				inline boost::uint64_t & operator[](std::size_t index) {
 					assert(index < static_size);
 					return raw._64[index];
 				}
-				inline boost::uint64_t operator [](std::size_t index) const {
+				inline boost::uint64_t operator[](std::size_t index) const {
 					assert(index < static_size);
 					return raw._64[index];
 				}

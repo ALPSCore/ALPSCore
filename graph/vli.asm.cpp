@@ -132,7 +132,7 @@ namespace alps {
 					"mulq  %%r10							\n" // A[0] * B[2] -> rax, rdx
 					"imulq %%r10, %%r8						\n" // A[0] * B[3] -> r8
 
-					"movq  0X00(%%rdi), %%r12				\n" // C[0] -> r12
+					"movq  0x00(%%rdi), %%r12				\n" // C[0] -> r12
 					"movq  0x08(%%rdi), %%r13				\n" // C[1] -> r13
 					"movq  0x10(%%rdi), %%r14				\n" // C[2] -> r14
 					"movq  0x18(%%rdi), %%r15				\n" // C[3] -> r15
@@ -150,7 +150,7 @@ namespace alps {
 					"addq  %%rax, %%r14						\n" // C[2] += A[1] * B[1](0-63)
 					"adcq  %%rdx, %%r15						\n" // C[3] += A[1] * B[1](64-127) + CB
 
-					"imulq  %%r8, %%rbx						\n" // A[1] * B[2] -> rbx
+					"imulq %%r8, %%rbx						\n" // A[1] * B[2] -> rbx
 					"addq  %%rbx, %%r15						\n" // C[3] += A[1] * B[3]
 
 					"movq  0x08(%%rcx), %%rax				\n" // B[1] -> rax
