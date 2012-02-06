@@ -26,7 +26,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 // atm vli only works with GCC
-#if defined(__GNUG__) && !defined(__ICC) && !defined(__FCC_VERSION) && defined(_GLIBCXX_USE_INT128)
+#if defined(__GNUG__) && !defined(__ICC) && !defined(__FCC_VERSION)
 
 #include <boost/cstdint.hpp>
 
