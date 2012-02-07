@@ -1,5 +1,5 @@
 #include <alps/graph/lattice_constant.hpp>
-
+#include <alps/lattice/lattice.h>
 #include <boost/graph/adjacency_list.hpp>
 #include <iostream>
 
@@ -233,7 +233,7 @@ int main() {
 			  it->first
 			, lattice_graph
 			, lattice.lattice()
-			, side_length * side_length / 2 + side_length / 2 - 1
+			, alps::cell(std::vector<int>(2,side_length/2),lattice.lattice()) //side_length * side_length / 2 + side_length / 2 - 1
 		);
         if ( lc != it->second)
         {
