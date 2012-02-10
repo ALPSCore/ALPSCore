@@ -931,9 +931,10 @@ namespace alps {
 				// DEBUG!
 				{
 					{
-					std::cout << 1 << "->" << pinning[1] << "(" << (int)distance_to_boarder[0][1] << "," << (int)distance_to_boarder[1][1] << "), ";
-					std::cout << 0 << "->" << pinning[0] << "(" << (int)distance_to_boarder[0][0] << "," << (int)distance_to_boarder[1][0] << "), ";
-					std::cout << 2 << "->" << pinning[2] << "(" << (int)distance_to_boarder[0][2] << "," << (int)distance_to_boarder[1][2] << "), ";
+//					std::cout <<  << " ";
+					std::cout << 1 << "->" << pinning[1] << "(" << (int)distance_to_boarder[0][pinning[1]] << "," << (int)distance_to_boarder[1][pinning[1]] << "), ";
+					std::cout << 0 << "->" << pinning[0] << "(" << (int)distance_to_boarder[0][pinning[0]] << "," << (int)distance_to_boarder[1][pinning[0]] << "), ";
+					std::cout << 2 << "->" << pinning[2] << "(" << (int)distance_to_boarder[0][pinning[2]] << "," << (int)distance_to_boarder[1][pinning[2]] << "), ";
 					std::cout << get(alps::edge_type_t(), G, edge(pinning[0], pinning[1], G).first) << " " << get(alps::edge_type_t(), G, edge(pinning[0], pinning[2], G).first) << "; ";
 					std::cout << get(alps::edge_type_t(), S, edge(0, 1, S).first) << " " << get(alps::edge_type_t(), S, edge(0, 2, S).first);
 					std::cout << std::endl;
