@@ -639,7 +639,11 @@ namespace alps {
 				std::copy(pinning.begin(), pinning.end(), embedding_generic.pinning.begin());
 				embedding_generic.occCnt = occCnt;
 #else
-				matches_generic.insert(embedding_generic);
+//				matches_generic.insert(embedding_generic);
+				if(matches_generic.insert(embedding_generic).second)
+                {
+                    std::cout<< "NEW!"<<std::endl;
+                }
 #endif
 
 #endif
