@@ -238,6 +238,7 @@ namespace alps {
 					, counter(new boost::uint8_t(1))
 					, vertices(new std::vector<std::vector<boost::uint16_t> >(vertices_size))
 					, edges(new std::vector<boost::uint64_t>((edges_size >> 6) + ((edges_size & 0x3F) == 0 ? 0 : 1)))
+					, flavor(new boost::uint8_t(0))
 				{}
 				
 				embedding_generic_type(embedding_generic_type const & rhs)
@@ -245,6 +246,7 @@ namespace alps {
 					, counter(rhs.counter)
 					, vertices(rhs.vertices)
 					, edges(rhs.edges)
+					, flavor(rhs.flavor)
 #ifdef CHECK_COMPRESSED_EMBEDDING
 					, pinning(rhs.pinning)
 					, occCnt(rhs.occCnt)
@@ -259,6 +261,7 @@ namespace alps {
 						delete counter;
 						delete vertices;
 						delete edges;
+						delete flavor;
 					}
 				}
 
@@ -266,19 +269,20 @@ namespace alps {
 					return hash == rhs.hash
 						&& *edges == *rhs.edges
 						&& *vertices == *rhs.vertices
+						&& *flavor == *rhs.flavor
 					;
 				}
 
 				std::size_t hash;
 				boost::uint8_t * counter;
 				std::vector<std::vector<boost::uint16_t> > * vertices;
-				std::vector<boost::uint64_t> * edges;
+				std::vector<boost::uint64_t> * edges;				
+				boost::uint8_t * flavor;
 				
 #ifdef CHECK_COMPRESSED_EMBEDDING
 				std::vector<unsigned> pinning;
 				int occCnt;
 #endif
-
 				private:
 					embedding_generic_type() {}
 			};
@@ -584,7 +588,7 @@ namespace alps {
 #if defined(USE_GENERIC_EMBEDDING) || defined(CHECK_COMPRESSED_EMBEDDING)
 
 				embedding_generic_type embedding_generic(subgraph_orbit.size(), num_vertices(S) * (num_vertices(S) + 1) / 2);
-
+			
 				for (std::vector<std::vector<boost::uint16_t> >::iterator it = embedding_generic.vertices->begin(); it != embedding_generic.vertices->end(); ++it)
 					it->reserve(subgraph_orbit[it - embedding_generic.vertices->begin()].size());
 
@@ -593,9 +597,21 @@ namespace alps {
 				assert((0x01 << (distance_to_boarder.size() * bits_per_dim)) < boost::integer_traits<boost::uint16_t>::const_max);
 
 				std::vector<boost::uint_t<8>::fast> distances(distance_to_boarder.size(), num_vertices(G));
-				for (typename std::vector<typename boost::graph_traits<Graph>::vertex_descriptor>::const_iterator it = pinning.begin(); it != pinning.end(); ++it)
+				typename boost::graph_traits<Graph>::vertex_descriptor most_left_bottom = pinning.front();
+				for (typename std::vector<typename boost::graph_traits<Graph>::vertex_descriptor>::const_iterator it = pinning.begin(); it != pinning.end(); ++it) {
 					for(std::size_t d = 0; d < distance_to_boarder.size(); ++d)
 						distances[d] = std::min(distances[d], distance_to_boarder[d][*it]);
+					for(std::size_t d = 0; d < distance_to_boarder.size(); ++d)
+						if (distance_to_boarder[d][*it] < distance_to_boarder[d][most_left_bottom])
+							most_left_bottom = *it;
+						else if (distance_to_boarder[d][*it] > distance_to_boarder[d][most_left_bottom])
+							break;
+				}
+				// TODO: maybe there is a better way to hash that ...
+				{
+					using boost::hash;
+					embedding_generic.hash = *(embedding_generic.flavor) = most_left_bottom % 2;
+				}
 
 				std::vector<boost::uint16_t> lattice_pinning(pinning.size());
 				for (typename std::vector<typename boost::graph_traits<Graph>::vertex_descriptor>::const_iterator it = pinning.begin(); it != pinning.end(); ++it) {
