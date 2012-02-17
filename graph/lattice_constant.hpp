@@ -437,6 +437,7 @@ namespace alps {
 				, std::vector<std::vector<boost::uint_t<8>::fast> > const & distance_to_boarder
 				, std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> const & pinning
 				, typename partition_type<Subgraph>::type const & subgraph_orbit
+				, std::size_t unit_cell_size
 				, boost::mpl::true_
 			) {
 				throw embedding_found();
@@ -459,6 +460,7 @@ namespace alps {
 				, std::vector<std::vector<boost::uint_t<8>::fast> > const & distance_to_boarder
 				, std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> const & pinning
 				, typename partition_type<Subgraph>::type const & subgraph_orbit
+				, std::size_t unit_cell_size
 				// TODO: make argument, to pass SubVertexNum and CoordNum, so no explicit call is needed ...
 				, boost::mpl::false_
 			) {
@@ -597,8 +599,7 @@ namespace alps {
 						distances[d] = std::min(distances[d], distance_to_boarder[d][*it]);
 				std::vector<boost::uint16_t> lattice_pinning(pinning.size());
 				for (typename std::vector<typename boost::graph_traits<Graph>::vertex_descriptor>::const_iterator it = pinning.begin(); it != pinning.end(); ++it) {
-// TODO: get the number of vertices in unitcell
-					lattice_pinning[it - pinning.begin()] = *it % 2;
+					lattice_pinning[it - pinning.begin()] = *it % unit_cell_size;
 					for(std::size_t d = 0; d < distance_to_boarder.size(); ++d) {
 						lattice_pinning[it - pinning.begin()] <<= bits_per_dim;
 						lattice_pinning[it - pinning.begin()] += distance_to_boarder[d][*it] - distances[d];
@@ -852,6 +853,7 @@ namespace alps {
 				, boost::dynamic_bitset<> & visited
 				, std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> & pinning
 				, typename partition_type<Subgraph>::type const & subgraph_orbit
+				, std::size_t unit_cell_size
 				, ExitOnMatch exit_on_match
 			) {
 				typedef typename boost::graph_traits<Subgraph>::vertex_descriptor SubgraphVertex;
@@ -917,6 +919,7 @@ namespace alps {
 								, visited
 								, pinning
 								, subgraph_orbit
+								, unit_cell_size
 								, exit_on_match
 							);
 				} else
@@ -936,6 +939,7 @@ namespace alps {
 						, distance_to_boarder
 						, pinning
 						, subgraph_orbit
+						, unit_cell_size
 						, exit_on_match
 					);
 				pinning[s] = num_vertices(G);
@@ -950,6 +954,7 @@ namespace alps {
 				, std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> const & V
 				, std::vector<std::vector<boost::uint_t<8>::fast> > const & distance_to_boarder
 				, typename partition_type<Subgraph>::type const & subgraph_orbit
+				, std::size_t unit_cell_size
 				, ExitOnMatch exit_on_match
 			) {
 				// Assume the vertex desciptor is an unsigned integer type (since we want to use it as an index for a vector)
@@ -1020,6 +1025,7 @@ namespace alps {
 								, visited
 								, pinning
 								, subgraph_orbit
+								, unit_cell_size
 								, exit_on_match
 							);
 							break;
@@ -1055,11 +1061,12 @@ namespace alps {
 			typename partition_type<Subgraph>::type subgraph_orbit = boost::get<2>(canonical_properties(S));
 
 			const cell_index_type cell_id = index(c, L);
+			std::size_t unit_cell_size = num_vertices(alps::graph::graph(unit_cell(L)));
 			std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> V;
-			for(unsigned v = 0; v < num_vertices(alps::graph::graph(unit_cell(L))); ++v)
-				V.push_back(cell_id * num_vertices(alps::graph::graph(unit_cell(L))) + v);
+			for(unsigned v = 0; v < unit_cell_size; ++v)
+				V.push_back(cell_id * unit_cell_size + v);
 
-			return detail::lattice_constant_impl(S, G, V, distance_to_boarder, subgraph_orbit, boost::mpl::false_());
+			return detail::lattice_constant_impl(S, G, V, distance_to_boarder, subgraph_orbit, unit_cell_size, boost::mpl::false_());
 		}
 
 		template<typename Subgraph, typename Graph> bool is_embeddable(
@@ -1072,7 +1079,7 @@ namespace alps {
 
 			try {
 				std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> V(1, v);
-				detail::lattice_constant_impl(S, G, V, distance_to_boarder, subgraph_orbit, boost::mpl::true_());
+				detail::lattice_constant_impl(S, G, V, distance_to_boarder, subgraph_orbit, 1, boost::mpl::true_());
 				return false;
 			} catch (detail::embedding_found e) {
 				return true;
@@ -1090,7 +1097,7 @@ namespace alps {
 				typename boost::graph_traits<Graph>::vertex_iterator vt, ve;
 				for (boost::tie(vt, ve) = vertices(G); vt != ve; ++vt) {
 					std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> V(1, *vt);
-					detail::lattice_constant_impl(S, G, V, distance_to_boarder, subgraph_orbit, boost::mpl::true_());
+					detail::lattice_constant_impl(S, G, V, distance_to_boarder, subgraph_orbit, 1, boost::mpl::true_());
 				}
 				return false;
 			} catch (detail::embedding_found e) {
