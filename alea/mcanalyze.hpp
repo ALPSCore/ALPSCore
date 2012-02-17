@@ -261,25 +261,33 @@ size_t size(const TimeseriesType& timeseries){
 
 
 // Cut Head / Tail
-#define ALPS_ALEA_CUT_HEAD_TAIL_IMPL(name)              \
-template <class TimeseriesType, class ArgumentPack>   \
-mctimeseries_view<typename TimeseriesType::value_type > name (const TimeseriesType& timeseries, ArgumentPack const& arg) {  \
-  mctimeseries_view<typename TimeseriesType::value_type > OUT(timeseries);  \
-  size_t cutoff(0);  \
-  if (arg[_distance|0]) cutoff = arg[_distance|0];  \
-  if (arg[_limit|0]) {  \
-    double limit = arg[_limit|0] * *timeseries.begin();  \
-    std::find_if(timeseries.begin(), timeseries.end(), ( ++boost::lambda::var(cutoff), boost::lambda::_1 <= limit ));  \
-    cutoff = alps::alea::size(timeseries) - cutoff;  \
-  }  \
-  OUT. name (cutoff);  \
-  return OUT;  \
+
+template <class TimeseriesType, class ArgumentPack>   
+mctimeseries_view<typename TimeseriesType::value_type > cut_head (const TimeseriesType& timeseries, ArgumentPack const& arg) {  
+  mctimeseries_view<typename TimeseriesType::value_type > OUT(timeseries);  
+  size_t cutoff(0);  
+  if (arg[_distance|0]) cutoff = arg[_distance|0];  
+  if (arg[_limit|0]) {  
+    double limit = arg[_limit|0] * *timeseries.begin();  
+    std::find_if(timeseries.begin(), timeseries.end(), ( ++boost::lambda::var(cutoff), boost::lambda::_1 <= limit ));   
+  }  
+  OUT.cut_head(cutoff);  
+  return OUT;  
 }
 
-ALPS_ALEA_CUT_HEAD_TAIL_IMPL(cut_head)
-ALPS_ALEA_CUT_HEAD_TAIL_IMPL(cut_tail)
-
-#undef ALPS_ALEA_CUT_HEAD_TAIL_IMPL
+template <class TimeseriesType, class ArgumentPack>   
+mctimeseries_view<typename TimeseriesType::value_type > cut_tail (const TimeseriesType& timeseries, ArgumentPack const& arg) {  
+  mctimeseries_view<typename TimeseriesType::value_type > OUT(timeseries);  
+  size_t cutoff(0);  
+  if (arg[_distance|0]) cutoff = arg[_distance|0];  
+  if (arg[_limit|0]) {  
+    double limit = arg[_limit|0] * *timeseries.begin();  
+    std::find_if(timeseries.begin(), timeseries.end(), ( ++boost::lambda::var(cutoff), boost::lambda::_1 <= limit ));  
+    cutoff = alps::alea::size(timeseries) - cutoff;  
+  }  
+  OUT.cut_tail(cutoff);  
+  return OUT;  
+}
 
 
 // MEAN

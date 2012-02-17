@@ -131,6 +131,20 @@ namespace alps {
       return boost::python::str(boost::python::str(self.mean()) + " +/- " + boost::python::str(self.error()));
     }
 
+
+    #define ALPS_ALEA_FUNCTION_NUMPY_WRAPPER(function_name) \
+    template <class T> \
+    boost::python::numeric::array function_name## _wrapper ( const T& arg1 ) { \
+      return alps::python::numpy::convert(function_name( arg1 )) ;  \
+    } 
+
+    ALPS_ALEA_FUNCTION_NUMPY_WRAPPER(mean)
+    ALPS_ALEA_FUNCTION_NUMPY_WRAPPER(variance)
+
+    #undef ALPS_ALEA_FUNCTION_NUMPY_WRAPPER
+
+
+
     template <class ValueType>
     mctimeseries<ValueType>::mctimeseries (boost::python::object IN):_timeseries(new std::vector<ValueType>( alps::python::numpy::convert2vector<ValueType>(IN) )) {}
 
@@ -239,7 +253,8 @@ ALPS_PY_EXPORT_SIMPLEOBSERVABLE(RealTimeSeriesObservable,timeseries_observable_d
 
 #define ALPS_MCANALYZE_EXPORT_MCTIMESERIES_CLASSES(type, name)                                                                  \
   class_<alps::alea::mctimeseries< type > >( QUOTEME(name) )                                                                       \
-    .def(init<boost::python::object>())                                                                                        \
+    .def(init<boost::python::object>())                                                                                 \
+    .def(init<alps::alea::mcdata< type > >())                                                                                                 \
     .def("timeseries", &alps::alea::mctimeseries< type >::timeseries_python)                                                          \
   ;                                                                                                                                     \
                                                                                                                                       \
@@ -259,7 +274,10 @@ ALPS_PY_EXPORT_SIMPLEOBSERVABLE(RealTimeSeriesObservable,timeseries_observable_d
     ALPS_MCANALYZE_EXPORT_HELPER( < container_type < std::vector < int > > > , function_name_py, function_name_c )                                        
 
 #define ALPS_MCANALYZE_EXPORT_SCALAR_ONLY(container_type, function_name_py, function_name_c)                                 \
-    ALPS_MCANALYZE_EXPORT_HELPER( < container_type < double > > , function_name_py, function_name_c )    
+    ALPS_MCANALYZE_EXPORT_HELPER( < container_type < double > > , function_name_py, function_name_c )  
+
+#define ALPS_MCANALYZE_EXPORT_VECTOR_ONLY(container_type, function_name_py, function_name_c)                                 \
+    ALPS_MCANALYZE_EXPORT_HELPER( < container_type < std::vector < double > > > , function_name_py, function_name_c )    
 
 #define ALPS_MCANALYZE_EXPORT_VALUETYPE_FUNCTION(function_name_py, function_name_c)                                          \
     ALPS_MCANALYZE_EXPORT_HELPER( < double > , function_name_py, function_name_c )                                           \
@@ -278,6 +296,11 @@ ALPS_PY_EXPORT_SIMPLEOBSERVABLE(RealTimeSeriesObservable,timeseries_observable_d
     ALPS_MCANALYZE_EXPORT_SCALAR_ONLY( alps::alea::mctimeseries , function_name_py, function_name_c )                   \
     ALPS_MCANALYZE_EXPORT_SCALAR_ONLY( alps::alea::mctimeseries_view , function_name_py, function_name_c )
 
+#define ALPS_MCANALYZE_EXPORT_TIMESERIES_FUNCTION_VECTOR_ONLY(function_name_py, function_name_c)                             \
+    ALPS_MCANALYZE_EXPORT_VECTOR_ONLY( alps::alea::mcdata , function_name_py, function_name_c )                              \
+    ALPS_MCANALYZE_EXPORT_VECTOR_ONLY( alps::alea::mctimeseries , function_name_py, function_name_c )                   \
+    ALPS_MCANALYZE_EXPORT_VECTOR_ONLY( alps::alea::mctimeseries_view , function_name_py, function_name_c )
+
 #define ALPS_MCANALYZE_EXPORT_MCTIMESERIES_FUNCTION_SCALAR_AND_VECTOR(function_name_py, function_name_c)                     \
     ALPS_MCANALYZE_EXPORT_SCALAR_AND_VECTOR( alps::alea::mctimeseries , function_name_py, function_name_c )             \
     ALPS_MCANALYZE_EXPORT_SCALAR_AND_VECTOR( alps::alea::mctimeseries_view , function_name_py, function_name_c )
@@ -293,6 +316,7 @@ class_<alps::alea::value_with_error<double> >( "ValueWithError", init< optional<
   .def("__repr__", &alps::alea::print_value_with_error<double>)         
 ;
 
+
 ALPS_MCANALYZE_EXPORT_MCTIMESERIES_CLASSES(double, MCScalarTimeseries)
 ALPS_MCANALYZE_EXPORT_MCTIMESERIES_CLASSES(std::vector<double>, MCVectorTimeseries)
 
@@ -300,15 +324,20 @@ ALPS_MCANALYZE_EXPORT_MCTIMESERIES_CLASSES(std::vector<double>, MCVectorTimeseri
 //ALPS_MCANALYZE_EXPORT_MCTIMESERIES_FUNCTION_SCALAR_AND_VECTOR(cut_tail, alps::alea::cut_tail)
 
 ALPS_MCANALYZE_EXPORT_TIMESERIES_FUNCTION_SCALAR_AND_VECTOR(size, alps::alea::size)
-ALPS_MCANALYZE_EXPORT_TIMESERIES_FUNCTION_SCALAR_AND_VECTOR(mean, alps::alea::mean)
-ALPS_MCANALYZE_EXPORT_TIMESERIES_FUNCTION_SCALAR_AND_VECTOR(variance, alps::alea::variance)  
-//ALPS_MCANALYZE_EXPORT_TIMESERIES_FUNCTION_SCALAR_AND_VECTOR(autocorrelation_range, alps::alea::autocorrelation_range)
-//ALPS_MCANALYZE_EXPORT_TIMESERIES_FUNCTION_SCALAR_AND_VECTOR(autocorrelation_decay, alps::alea::autocorrelation_decay)
+
+ALPS_MCANALYZE_EXPORT_TIMESERIES_FUNCTION_SCALAR_ONLY(mean, alps::alea::mean)
+ALPS_MCANALYZE_EXPORT_TIMESERIES_FUNCTION_VECTOR_ONLY(mean, alps::alea::mean_wrapper)
+
+ALPS_MCANALYZE_EXPORT_TIMESERIES_FUNCTION_SCALAR_ONLY(variance, alps::alea::variance)
+ALPS_MCANALYZE_EXPORT_TIMESERIES_FUNCTION_VECTOR_ONLY(variance, alps::alea::variance_wrapper)
+ 
+ALPS_MCANALYZE_EXPORT_TIMESERIES_FUNCTION_SCALAR_AND_VECTOR(autocorrelation_distance, alps::alea::autocorrelation_distance)
+ALPS_MCANALYZE_EXPORT_TIMESERIES_FUNCTION_SCALAR_AND_VECTOR(autocorrelation_limit, alps::alea::autocorrelation_limit)
 //ALPS_MCANALYZE_EXPORT_MCTIMESERIES_FUNCTION_SCALAR_ONLY(exponential_autocorrelation_time_range, alps::alea::exponential_autocorrelation_time_range)
 //ALPS_MCANALYZE_EXPORT_MCTIMESERIES_FUNCTION_SCALAR_ONLY(exponential_autocorrelation_time_decay, alps::alea::exponential_autocorrelation_time_decay)
 //ALPS_MCANALYZE_EXPORT_MCTIMESERIES_FUNCTION_SCALAR_ONLY(integrated_autocorrelation_time_range, alps::alea::integrated_autocorrelation_time_range)
 //ALPS_MCANALYZE_EXPORT_MCTIMESERIES_FUNCTION_SCALAR_ONLY(integrated_autocorrelation_time_decay, alps::alea::integrated_autocorrelation_time_decay)
-//ALPS_MCANALYZE_EXPORT_TIMESERIES_FUNCTION_SCALAR_AND_VECTOR(uncorrelated_error, alps::alea::uncorrelated_error)
+//ALPS_MCANALYZE_EXPORT_TIMESERIES_FUNCTION_SCALAR_AND_VECTOR(uncorrelated_error, alps::alea::error)
 //ALPS_MCANALYZE_EXPORT_TIMESERIES_FUNCTION_SCALAR_AND_VECTOR(binning_error, alps::alea::binning_error)
 //ALPS_MCANALYZE_EXPORT_TIMESERIES_FUNCTION_SCALAR_AND_VECTOR(running_mean, alps::alea::running_mean)
 //ALPS_MCANALYZE_EXPORT_TIMESERIES_FUNCTION_SCALAR_AND_VECTOR(cutoff_mean, alps::alea::cutoff_mean)
@@ -319,9 +348,11 @@ ALPS_MCANALYZE_EXPORT_TIMESERIES_FUNCTION_SCALAR_AND_VECTOR(variance, alps::alea
 #undef ALPS_MCANALYZE_EXPORT_HELPER
 #undef ALPS_MCANALYZE_EXPORT_SCALAR_AND_VECTOR
 #undef ALPS_MCANALYZE_EXPORT_SCALAR_ONLY
+#undef ALPS_MCANALYZE_EXPORT_VECTOR_ONLY
 #undef ALPS_MCANALYZE_EXPORT_VALUETYPE_FUNCTION
 #undef ALPS_MCANALYZE_EXPORT_TIMESERIES_FUNCTION_SCALAR_AND_VECTOR
 #undef ALPS_MCANALYZE_EXPORT_TIMESERIES_FUNCTION_SCALAR_ONLY
+#undef ALPS_MCANALYZE_EXPORT_TIMESERIES_FUNCTION_VECTOR_ONLY
 #undef ALPS_MCANALYZE_EXPORT_MCTIMESERIES_FUNCTION_SCALAR_AND_VECTOR
 #undef ALPS_MCANALYZE_EXPORT_MCTIMESERIES_FUNCTION_SCALAR_ONLY
 
