@@ -88,6 +88,37 @@ int main() {
     put(alps::edge_type_t(), g.back().first, e, 0);
     e = add_edge(0, 2,g.back().first).first;
     put(alps::edge_type_t(), g.back().first, e, 1);
+    
+    //
+    //  1...0...2
+    //
+    g.push_back(std::make_pair(graph_type(),0));
+    e = add_edge(0, 1,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 1);
+    e = add_edge(0, 2,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 1);
+    
+    //
+    //  1...0...2___3
+    //
+    g.push_back(std::make_pair(graph_type(),0));
+    e = add_edge(0, 1,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 1);
+    e = add_edge(0, 2,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 1);
+    e = add_edge(2, 3,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
+    
+    //
+    //  3...1...0___2
+    //
+    g.push_back(std::make_pair(graph_type(),0));
+    e = add_edge(0, 1,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
+    e = add_edge(0, 2,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 1);
+    e = add_edge(1, 3,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 1);
 
     /*
     parm["LATTICE"] = "anisotropic square lattice";
