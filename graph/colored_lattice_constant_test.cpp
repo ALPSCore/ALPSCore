@@ -41,7 +41,19 @@ int main() {
     std::vector<std::pair<graph_type,lc_type> > g;
 	boost::graph_traits<graph_type>::edge_descriptor e;
 
-    //
+	// edge color 0 ...
+    // edge color 1 ___
+    
+    //  0...1
+    g.push_back(std::make_pair(graph_type(), 3));
+    e = add_edge(0, 1, g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
+    
+	//  0___1
+    g.push_back(std::make_pair(graph_type(), 1));
+    e = add_edge(0, 1, g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 1);
+    
     //  0...1
     //  |   |
     //  2...3
@@ -55,6 +67,21 @@ int main() {
     put(alps::edge_type_t(), g.back().first, e, 0);
     e = add_edge(2, 0, g.back().first).first;
     put(alps::edge_type_t(), g.back().first, e, 1);
+    
+    //
+    //  0...1
+    //  :   :
+    //  2...3
+    //
+    g.push_back(std::make_pair(graph_type(), 1));
+    e = add_edge(0, 1, g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
+    e = add_edge(1, 3, g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
+    e = add_edge(3, 2, g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
+    e = add_edge(2, 0, g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
     
     //
     //  0...1
@@ -72,7 +99,7 @@ int main() {
     put(alps::edge_type_t(), g.back().first, e, 0);
 
     //
-    //  1___0___2
+    //  1...0...2
     //
     g.push_back(std::make_pair(graph_type(),6));
     e = add_edge(0, 1,g.back().first).first;
@@ -90,7 +117,7 @@ int main() {
     put(alps::edge_type_t(), g.back().first, e, 1);
     
     //
-    //  1...0...2
+    //  1___0___2
     //
     g.push_back(std::make_pair(graph_type(),0));
     e = add_edge(0, 1,g.back().first).first;
@@ -99,7 +126,7 @@ int main() {
     put(alps::edge_type_t(), g.back().first, e, 1);
     
     //
-    //  1...0...2___3
+    //  1___0___2...3
     //
     g.push_back(std::make_pair(graph_type(),0));
     e = add_edge(0, 1,g.back().first).first;
@@ -110,15 +137,118 @@ int main() {
     put(alps::edge_type_t(), g.back().first, e, 0);
     
     //
-    //  3...1...0___2
+    //  3___1...0___2
     //
-    g.push_back(std::make_pair(graph_type(),0));
+    g.push_back(std::make_pair(graph_type(),3));
     e = add_edge(0, 1,g.back().first).first;
     put(alps::edge_type_t(), g.back().first, e, 0);
     e = add_edge(0, 2,g.back().first).first;
     put(alps::edge_type_t(), g.back().first, e, 1);
     e = add_edge(1, 3,g.back().first).first;
     put(alps::edge_type_t(), g.back().first, e, 1);
+    
+    //
+    //  3...1___0...2
+    //
+    g.push_back(std::make_pair(graph_type(),9));
+    e = add_edge(0, 1,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 1);
+    e = add_edge(0, 2,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
+    e = add_edge(1, 3,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
+    
+    //
+    //  3...1...0___2
+    //
+    g.push_back(std::make_pair(graph_type(),12));
+    e = add_edge(0, 1,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
+    e = add_edge(0, 2,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 1);
+    e = add_edge(1, 3,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
+    
+    //          4
+    //          :
+    //  3___1...0___2
+    //
+    g.push_back(std::make_pair(graph_type(),12));
+    e = add_edge(0, 1,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
+    e = add_edge(0, 2,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 1);
+    e = add_edge(1, 3,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 1);
+    e = add_edge(0, 4,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
+    
+    //          4
+    //          :
+    //  3...1...0___2
+    //
+    g.push_back(std::make_pair(graph_type(),24));
+    e = add_edge(0, 1,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
+    e = add_edge(0, 2,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 1);
+    e = add_edge(1, 3,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
+    e = add_edge(0, 4,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
+    
+    //      4
+    //      :
+    //  3...1...0___2
+    //
+    g.push_back(std::make_pair(graph_type(),6));
+    e = add_edge(0, 1,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
+    e = add_edge(0, 2,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 1);
+    e = add_edge(1, 3,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
+    e = add_edge(1, 4,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);    
+    
+    //
+    //  3...1...0___2...4
+    //
+    g.push_back(std::make_pair(graph_type(),36));
+    e = add_edge(0, 1,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
+    e = add_edge(0, 2,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 1);
+    e = add_edge(1, 3,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
+    e = add_edge(2, 4,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
+    
+    //
+    //  3___1...0...2...4
+    //
+    g.push_back(std::make_pair(graph_type(),24));
+    e = add_edge(0, 1,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
+    e = add_edge(0, 2,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
+    e = add_edge(1, 3,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 1);
+    e = add_edge(2, 4,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
+    
+    //
+    //  3___1...0___2...4
+    //
+    g.push_back(std::make_pair(graph_type(),14));
+    e = add_edge(0, 1,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
+    e = add_edge(0, 2,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 1);
+    e = add_edge(1, 3,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 1);
+    e = add_edge(2, 4,g.back().first).first;
+    put(alps::edge_type_t(), g.back().first, e, 0);
 
     /*
     parm["LATTICE"] = "anisotropic square lattice";
