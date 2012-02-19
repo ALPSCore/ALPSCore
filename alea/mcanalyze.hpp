@@ -75,6 +75,24 @@ BOOST_PARAMETER_NAME(max)
 BOOST_PARAMETER_NAME(from)
 BOOST_PARAMETER_NAME(to)
 
+// object that can be compared to any numeric value and always returns false exept when compared to itself
+// needed for boost::parameter argument passing.
+class None_class {
+public:
+  None_class (): is_none(true) {}
+  None_class (const None_class& other): is_none(other.is_none) {} 
+  template <class T> None_class (const T&): is_none(false) {}
+
+  bool operator== (const None_class& other) const {return (is_none == other.is_none) ;}
+  bool operator!= (const None_class& other) const {return !(*this == other);}
+
+  operator int () {return 0;}
+
+private:
+  bool is_none;
+} None;
+
+
 // Declarations
 template <class ValueType>
 class mcdata;
@@ -168,9 +186,11 @@ public:
   boost::python::object timeseries_python() const;
 #endif
 
-  // DEBUG print
   void print () const {
-    std::copy(begin(), end(), std::ostream_iterator<ValueType>(std::cout, " "));
+    using alps::numeric::operator<<;
+    for (const_iterator it = begin(); it != end(); ++it) {
+    std::cout << *it;
+    }
   }
 
 private:
@@ -193,8 +213,14 @@ public:
   // constructors
   mctimeseries_view(const mctimeseries<ValueType>& timeseries): _timeseries(timeseries._timeseries), _front_cutoff(0), _back_cutoff(0) {};
 
-  void cut_head (size_t cutoff) {_front_cutoff += cutoff;}
-  void cut_tail (size_t cutoff) {_back_cutoff += cutoff;}
+  void cut_head (int cutoff) {
+    if (cutoff < 0) cutoff += size();
+    _front_cutoff += cutoff;
+  }
+  void cut_tail (int cutoff) {
+    if (cutoff < 0) cutoff += size();
+    _back_cutoff += cutoff;
+  }
 
   // begin + end
   inline const_iterator begin () const {return (*_timeseries).begin() + _front_cutoff;}
@@ -209,10 +235,16 @@ public:
 
   // this copies the sub-vector. is there a better way?
   inline std::vector<ValueType> timeseries() const {return std::vector<ValueType>(begin(), end());}
-
 #ifdef ALPS_HAVE_PYTHON
   boost::python::object timeseries_python() const;
 #endif
+
+  void print () const {
+    using alps::numeric::operator<<;
+    for (const_iterator it = begin(); it != end(); ++it) {
+    std::cout << *it;
+    }
+  }
 
 private:
   boost::shared_ptr< std::vector<ValueType> > _timeseries;
@@ -262,33 +294,38 @@ size_t size(const TimeseriesType& timeseries){
 
 // Cut Head / Tail
 
-template <class TimeseriesType, class ArgumentPack>   
-mctimeseries_view<typename TimeseriesType::value_type > cut_head (const TimeseriesType& timeseries, ArgumentPack const& arg) {  
+template <class TimeseriesType>
+mctimeseries_view<typename TimeseriesType::value_type > cut_head_distance (const TimeseriesType& timeseries, int cutoff) {
+  mctimeseries_view<typename TimeseriesType::value_type > OUT(timeseries);
+  OUT.cut_head(cutoff);
+  return OUT;
+}
+template <class TimeseriesType>
+mctimeseries_view<typename TimeseriesType::value_type > cut_tail_distance (const TimeseriesType& timeseries, int cutoff) {
+  mctimeseries_view<typename TimeseriesType::value_type > OUT(timeseries);
+  OUT.cut_tail(cutoff);
+  return OUT;
+}
+
+template <class TimeseriesType>   
+mctimeseries_view<typename TimeseriesType::value_type > cut_head_limit (const TimeseriesType& timeseries, double limit) {  
   mctimeseries_view<typename TimeseriesType::value_type > OUT(timeseries);  
-  size_t cutoff(0);  
-  if (arg[_distance|0]) cutoff = arg[_distance|0];  
-  if (arg[_limit|0]) {  
-    double limit = arg[_limit|0] * *timeseries.begin();  
-    std::find_if(timeseries.begin(), timeseries.end(), ( ++boost::lambda::var(cutoff), boost::lambda::_1 <= limit ));   
-  }  
+  int cutoff(0);
+  limit = limit * *OUT.begin();  
+  std::find_if(OUT.begin(), OUT.end(), ( ++boost::lambda::var(cutoff), boost::lambda::_1 <= limit ));  
   OUT.cut_head(cutoff);  
   return OUT;  
 }
-
-template <class TimeseriesType, class ArgumentPack>   
-mctimeseries_view<typename TimeseriesType::value_type > cut_tail (const TimeseriesType& timeseries, ArgumentPack const& arg) {  
+template <class TimeseriesType>   
+mctimeseries_view<typename TimeseriesType::value_type > cut_tail_limit (const TimeseriesType& timeseries, double limit) {  
   mctimeseries_view<typename TimeseriesType::value_type > OUT(timeseries);  
-  size_t cutoff(0);  
-  if (arg[_distance|0]) cutoff = arg[_distance|0];  
-  if (arg[_limit|0]) {  
-    double limit = arg[_limit|0] * *timeseries.begin();  
-    std::find_if(timeseries.begin(), timeseries.end(), ( ++boost::lambda::var(cutoff), boost::lambda::_1 <= limit ));  
-    cutoff = alps::alea::size(timeseries) - cutoff;  
-  }  
+  int cutoff(0);
+  limit = limit * *OUT.begin();  
+  std::find_if(OUT.begin(), OUT.end(), ( ++boost::lambda::var(cutoff), boost::lambda::_1 <= limit ));  
+  cutoff = OUT.size() - cutoff;
   OUT.cut_tail(cutoff);  
   return OUT;  
 }
-
 
 // MEAN
 template <class TimeseriesType>
@@ -370,7 +407,7 @@ mctimeseries< typename average_type< typename TimeseriesType::value_type >::type
 
 
 template <class TimeseriesType>
-mctimeseries< typename average_type< typename TimeseriesType::value_type >::type > autocorrelation_limit(const TimeseriesType& timeseries, double percentage) {
+mctimeseries< typename average_type< typename TimeseriesType::value_type >::type > autocorrelation_limit(const TimeseriesType& timeseries, double limit) {
   typedef typename average_type< typename TimeseriesType::value_type >::type average_type;
   using boost::numeric::operators::operator-;
   using boost::numeric::operators::operator*;
@@ -396,70 +433,25 @@ mctimeseries< typename average_type< typename TimeseriesType::value_type >::type
     }
     tmp = tmp / ( _variance * (_size - i) );
     OUT.push_back(tmp);
-    if ( alps::numeric::at_least_one( tmp, percentage * (*range_begin(OUT)) , (boost::lambda::_1 < boost::lambda::_2) )  ) break;
+    if ( alps::numeric::at_least_one( tmp, limit * (*range_begin(OUT)) , (boost::lambda::_1 < boost::lambda::_2) )  ) break;
     ++i;
   }
   return OUT;
 }
 
-template <class TimeseriesType, class ArgumentPack>
-mctimeseries< typename average_type<typename TimeseriesType::value_type >::type >
-      autocorrelation (const TimeseriesType& timeseries, ArgumentPack const& arg) {
 
-  if (arg[_distance|0]) {;
-    return autocorrelation_distance(timeseries, arg[_distance|0]);
-  }
+// EXPONENTIAL AUTOCORRELATION TIME
 
-  if (arg[_limit|0]) {
-    return autocorrelation_limit(timeseries, arg[_limit|0]);
-  }
-  std::cout << "nothing\n"; // limit = 0 problem!
-
-}
-
-
-// CORRELATION TIME
-
-template <class TimeseriesType, class ArgumentPack>
+template <class TimeseriesType>
 std::pair<typename average_type<typename TimeseriesType::value_type >::type, typename average_type<typename TimeseriesType::value_type >::type>
-          exponential_autocorrelation_time (const TimeseriesType& autocorrelation, ArgumentPack const& arg) {
-
+          exponential_autocorrelation_time_distance (const TimeseriesType& autocorrelation, int from, int to) {
   typedef typename average_type<typename TimeseriesType::value_type >::type average_type;
-
-  int from(0);
-  int to(0);
-
-  if (arg[_from|0] != arg[_to|0]) {
-    from = arg[_from|0];
-    to = arg[_to|0];
-
-    if (arg[_from|0] < 0) from = arg[_from|0] + alps::alea::size(autocorrelation);
-    if (arg[_to|0] < 0) to = arg[_to|0] + alps::alea::size(autocorrelation);
-  }
-
-  if (arg[_min|0] != arg[_max|0]) {
-    double min = arg[_min|0];
-    double max = arg[_max|0];
-
-    average_type first = *(autocorrelation.begin());
-    min *= first;
-    max *= first;
-
-    size_t from_int(0);
-    size_t to_int(0);
-
-    std::find_if(autocorrelation.begin(), autocorrelation.end(), ( ++boost::lambda::var(from_int), boost::lambda::_1 <= max ));
-    std::find_if(autocorrelation.begin(), autocorrelation.end(), ( ++boost::lambda::var(to_int), boost::lambda::_1 <= min ));
-
-    if ( (to_int - 1) < from_int) std::cout << "Warning: Invalid Range!\n";
-    from = from_int;
-    to = to_int - 1;
-  }
-
-
   using std::exp;
 
-  mctimeseries_view<average_type> autocorrelation_view = cut_head(cut_tail(autocorrelation, _distance = alps::alea::size(autocorrelation) - to), _distance = from - 1);
+  if (from < 0) from = from + alps::alea::size(autocorrelation);
+  if (to < 0) to = to + alps::alea::size(autocorrelation);
+
+  mctimeseries_view<average_type> autocorrelation_view = cut_head_distance(cut_tail_distance(autocorrelation, alps::alea::size(autocorrelation) - to), from - 1);
 
   std::pair<average_type, average_type> OUT( alps::numeric::exponential_timeseries_fit(autocorrelation_view.begin(), autocorrelation_view.end()) );
   OUT.first *= exp((-1.) * OUT.second * (from - 1));
@@ -468,8 +460,29 @@ std::pair<typename average_type<typename TimeseriesType::value_type >::type, typ
 }
 
 
+template <class TimeseriesType>
+std::pair<typename average_type<typename TimeseriesType::value_type >::type, typename average_type<typename TimeseriesType::value_type >::type>
+          exponential_autocorrelation_time_limit (const TimeseriesType& autocorrelation, double max, double min) {
+  typedef typename average_type<typename TimeseriesType::value_type >::type average_type;
 
-// Integrated Correlation Time
+  average_type first = *(autocorrelation.begin());
+  max *= first;
+  min *= first;
+
+  size_t from_int(0);
+  size_t to_int(0);
+
+  std::find_if(autocorrelation.begin(), autocorrelation.end(), ( ++boost::lambda::var(from_int), boost::lambda::_1 <= max ));
+  std::find_if(autocorrelation.begin(), autocorrelation.end(), ( ++boost::lambda::var(to_int), boost::lambda::_1 <= min ));
+
+  if ( (to_int - 1) < from_int) std::cout << "Warning: Invalid Range! If you want to fit a positive exponential, exchange min and max.\n";
+
+  return exponential_autocorrelation_time_distance (autocorrelation, from_int, to_int - 1);
+
+}
+
+
+// Integrated Autocorrelation Time
 template <class TimeseriesType>
 typename average_type< typename TimeseriesType::value_type >::type integrated_autocorrelation_time(
         const TimeseriesType&                                                       autocorrelation,
@@ -494,9 +507,8 @@ struct uncorrelated_selector {} uncorrelated;
 struct binning_selector {} binning;
 
 
-
 template <class TimeseriesType>
-typename average_type< typename TimeseriesType::value_type >::type error (const TimeseriesType& timeseries, const uncorrelated_selector& selector) {
+typename average_type< typename TimeseriesType::value_type >::type error (const TimeseriesType& timeseries, const uncorrelated_selector& selector = alps::alea::uncorrelated) {
   using std::sqrt;
   using alps::numeric::sqrt;
   using boost::numeric::operators::operator/;
@@ -520,7 +532,7 @@ typename average_type< typename TimeseriesType::value_type >::type error (const 
 }
 
 
-// second error() interface for python export and/or use in C++
+// error() interface for python export
 template <class TimeseriesType>
 inline typename average_type< typename TimeseriesType::value_type >::type uncorrelated_error (const TimeseriesType& timeseries) {return error(timeseries, uncorrelated);}
 
@@ -570,18 +582,80 @@ mctimeseries< typename average_type<typename TimeseriesType::value_type>::type >
 }
 
 
+// define distance/limit boost::parameter interface 
+
+#define ALPS_ALEA_IMPL_DISTANCE_LIMIT_FUNCTION(name) \
+ name (const TimeseriesType& timeseries, ArgumentPack const& arg) {  \
+\
+  if ( arg[_distance|None] != None) {  \
+    return name## _distance(timeseries, arg[_distance|None]);  \
+  } \
+  if ( arg[_limit|None] != None) { \
+    return name## _limit(timeseries, arg[_limit|None]);  \
+  } \
+\
+  boost::throw_exception(std::runtime_error("Either distance or limit must be specified!")); \
+}
+
+template <class TimeseriesType, class ArgumentPack>
+mctimeseries< typename average_type< typename TimeseriesType::value_type >::type >
+  ALPS_ALEA_IMPL_DISTANCE_LIMIT_FUNCTION(autocorrelation)
+
+template <class TimeseriesType, class ArgumentPack>
+mctimeseries_view<typename TimeseriesType::value_type >
+  ALPS_ALEA_IMPL_DISTANCE_LIMIT_FUNCTION(cut_head)
+
+template <class TimeseriesType, class ArgumentPack>
+mctimeseries_view<typename TimeseriesType::value_type >
+  ALPS_ALEA_IMPL_DISTANCE_LIMIT_FUNCTION(cut_tail)
+
+#undef ALPS_ALEA_IMPL_DISTANCE_LIMIT_FUNCTION
+
+
+// define from-to/min-max boost::parameter interface 
+// currently this is only needed for exponential_autocorrelation_time, but maybe future functions will need this too.
+
+#define ALPS_ALEA_IMPL_FROM_TO_MIN_MAX_FUNCTION(name) \
+ name (const TimeseriesType& timeseries, ArgumentPack1 const& arg1, ArgumentPack2 const& arg2) {  \
+\
+  boost::parameter::parameters< \
+    boost::parameter::optional<tag::from, boost::is_convertible<tag::from::_,int> > \
+    , boost::parameter::optional<tag::to, boost::is_convertible<tag::to::_,int> >  \
+    , boost::parameter::optional<tag::min, boost::is_convertible<tag::min::_,double> > \
+    , boost::parameter::optional<tag::max, boost::is_convertible<tag::max::_,double> > \
+  > spec; \
+\
+  if ( (spec(arg1,arg2)[_from|None] != None) && (spec(arg1,arg2)[_to|None] != None) ) {  \
+    return name## _distance(timeseries, spec(arg1,arg2)[_from|None], spec(arg1,arg2)[_to|None]);  \
+  } \
+  if ( (spec(arg1,arg2)[_max|None] != None) && (spec(arg1,arg2)[_min|None] != None) ) {  \
+    return name## _limit(timeseries, spec(arg1,arg2)[_max|None], spec(arg1,arg2)[_min|None]);  \
+  } \
+\
+  boost::throw_exception(std::runtime_error("Either max, min or from, to must be specified!")); \
+}
+
+template <class TimeseriesType, class ArgumentPack1, class ArgumentPack2>
+std::pair<typename average_type<typename TimeseriesType::value_type >::type, typename average_type<typename TimeseriesType::value_type >::type>
+  ALPS_ALEA_IMPL_FROM_TO_MIN_MAX_FUNCTION(exponential_autocorrelation_time)
+
+#undef ALPS_ALEA_IMPL_FROM_TO_MIN_MAX_FUNCTION
+
+
 // OStream
 #define ALPS_MCANALYZE_IMPLEMENT_OSTREAM(timeseries_type)                                                              \
 template <typename ValueType>                                                                                         \
 std::ostream& operator<<(std::ostream & out, timeseries_type <ValueType> const & timeseries) {                                  \
-  std::copy(range_begin(timeseries), range_end(timeseries), std::ostream_iterator<ValueType>(out, " "));             \
+  using alps::numeric::operator<<;  \
+  for (typename timeseries_type <ValueType>:: const_iterator it = timeseries.begin(); it != timeseries.end(); ++it) {  \
+    out << *it;             \
+  }  \
   return out;                                                                                                                 \
 }
-
 ALPS_MCANALYZE_IMPLEMENT_OSTREAM(mctimeseries)
 ALPS_MCANALYZE_IMPLEMENT_OSTREAM(mctimeseries_view)
-
 #undef ALPS_MCANALYZE_IMPLEMENT_OSTREAM
+
 
 } // ending namespace alea
 } // ending namespace alps
