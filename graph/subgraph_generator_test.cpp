@@ -15,10 +15,11 @@ void subgraph_generator_test(unsigned int order_ )
 {
     Graph lattice_;
 
+    std::ifstream in("../../lib/xml/lattices.xml");
     alps::Parameters parm;
     parm["LATTICE"] = "square lattice";
     parm["L"] = 2*order_+1;
-    alps::graph_helper<> alps_lattice(parm);
+    alps::graph_helper<> alps_lattice(in,parm);
 
     typedef alps::graph_traits<alps::graph_helper<>::lattice_type >::graph_type lattice_graph_type;
     boost::graph_traits<lattice_graph_type>::vertex_iterator vit,vend;

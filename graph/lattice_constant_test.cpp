@@ -20,9 +20,10 @@ int main() {
     alps::Parameters parm;
 	unsigned int side_length = 40;
 	
+    std::ifstream in("../../lib/xml/lattices.xml");
     parm["LATTICE"] = "square lattice";
     parm["L"] = side_length;
-    alps::graph_helper<> lattice(parm);
+    alps::graph_helper<> lattice(in,parm);
 	
 	graph_type lattice_graph(num_vertices(lattice.graph()));
 	boost::graph_traits<alps::graph_helper<>::graph_type>::edge_iterator it, et;

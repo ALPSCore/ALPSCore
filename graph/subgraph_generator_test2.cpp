@@ -14,9 +14,10 @@ template <typename Graph>
 void subgraph_generator_test2(unsigned int order_ )
 {
     alps::Parameters parm;
+    std::ifstream in("../../lib/xml/lattices.xml");
     parm["LATTICE"] = "square lattice";
     parm["L"] = 2*order_+1;
-    alps::graph_helper<> alps_lattice(parm);
+    alps::graph_helper<> alps_lattice(in,parm);
 
     typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS> lattice_graph_type;
     boost::graph_traits<alps::graph_helper<>::graph_type>::edge_iterator eit, eend;
