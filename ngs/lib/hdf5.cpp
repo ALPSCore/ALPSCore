@@ -233,43 +233,40 @@ namespace alps {
                     , large_(large)
 					, memory_(memory)
                     , filename_(filename)
-                {
-					if (memory && large)
-						ALPS_NGS_THROW_RUNTIME_ERROR("either memory or large file system can be used!")
-					else if (memory) {
-						detail::property_type prop_id(H5Pcreate(H5P_FILE_ACCESS));
-						detail::check_error(H5Pset_fapl_core(prop_id, 1 << 20, true));
-						#ifndef ALPS_HDF5_CLOSE_GREEDY
-							detail::check_error(H5Pset_fclose_degree(prop_id, H5F_CLOSE_SEMI));
-						#endif
-						if (write_) {
-							if ((file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDWR, prop_id)) < 0)
-								detail::check_error(file_id_ = H5Fcreate((filename_ + suffix_).c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, prop_id));
-						} else
-							detail::check_error(file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDONLY, prop_id));
-					} else {
-						if (replace_ && large)
-							ALPS_NGS_THROW_RUNTIME_ERROR("the combination 'wl' is not allowd!")
-						if (replace_)
-							for (std::size_t i = 0; boost::filesystem::exists(filename + (suffix_ = ".tmp." + convert<std::string>(i))); ++i);
-						if (write && replace && boost::filesystem::exists(filename_))
-							boost::filesystem::copy_file(filename_, filename_ + suffix_);
-						if (!write_) {
-							if (!boost::filesystem::exists(filename_ + suffix_))
-								ALPS_NGS_THROW_RUNTIME_ERROR("file does not exists: " + filename_ + suffix_)
-							if (detail::check_error(H5Fis_hdf5((filename_ + suffix_).c_str())) == 0)
-								ALPS_NGS_THROW_RUNTIME_ERROR("no valid hdf5 file: " + filename_ + suffix_)
-						}
-						if (large_) {
-							{
-								char filename0[4096], filename1[4096];
-								sprintf(filename0, filename.c_str(), 0);
-								sprintf(filename1, filename.c_str(), 1);
-								if (!strcmp(filename0, filename1))
-									ALPS_NGS_THROW_RUNTIME_ERROR("Large hdf5 archives need to have a '%d' part in the filename")
-							}
+				{
+					construct();
+				}
+
+                ~mccontext() {
+					destruct(true);
+                }
+				
+				void grant(bool write, bool replace) {
+					if (!write_ && (write || replace)) {
+						destruct(false);
+						write_ = write || replace;
+						replace_ = !memory_ && replace;
+						construct();
+					}
+				}
+				
+                bool compress_;
+                bool write_;
+                bool replace_;
+                bool large_;
+                bool memory_;
+                std::string filename_;
+                std::string suffix_;
+                hid_t file_id_;
+				
+				private:
+
+					void construct() {
+						if (memory_ && large_)
+							ALPS_NGS_THROW_RUNTIME_ERROR("either memory or large file system can be used!")
+						else if (memory_) {
 							detail::property_type prop_id(H5Pcreate(H5P_FILE_ACCESS));
-							detail::check_error(H5Pset_fapl_family(prop_id, 1 << 30, H5P_DEFAULT));
+							detail::check_error(H5Pset_fapl_core(prop_id, 1 << 20, true));
 							#ifndef ALPS_HDF5_CLOSE_GREEDY
 								detail::check_error(H5Pset_fclose_degree(prop_id, H5F_CLOSE_SEMI));
 							#endif
@@ -279,66 +276,92 @@ namespace alps {
 							} else
 								detail::check_error(file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDONLY, prop_id));
 						} else {
-							#ifndef ALPS_HDF5_CLOSE_GREEDY
-								detail::property_type ALPS_HDF5_FILE_ACCESS(H5Pcreate(H5P_FILE_ACCESS));
-								detail::check_error(H5Pset_fclose_degree(ALPS_HDF5_FILE_ACCESS, H5F_CLOSE_SEMI));
-							#else
-								#define ALPS_HDF5_FILE_ACCESS H5P_DEFAULT
-							#endif
-							if (write_) {
-								if ((file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDWR, ALPS_HDF5_FILE_ACCESS)) < 0)
-									detail::check_error(file_id_ = H5Fcreate((filename_ + suffix_).c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, ALPS_HDF5_FILE_ACCESS));
-							} else
-								detail::check_error(file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDONLY, ALPS_HDF5_FILE_ACCESS));
-							#ifdef ALPS_HDF5_CLOSE_GREEDY
-								#undef(ALPS_HDF5_FILE_ACCESS)
-							#endif
+							if (replace_ && large_)
+								ALPS_NGS_THROW_RUNTIME_ERROR("the combination 'wl' is not allowd!")
+							if (replace_)
+								for (std::size_t i = 0; boost::filesystem::exists(filename_ + (suffix_ = ".tmp." + convert<std::string>(i))); ++i);
+							if (write_ && replace_ && boost::filesystem::exists(filename_))
+								boost::filesystem::copy_file(filename_, filename_ + suffix_);
+							if (!write_) {
+								if (!boost::filesystem::exists(filename_ + suffix_))
+									ALPS_NGS_THROW_RUNTIME_ERROR("file does not exists: " + filename_ + suffix_)
+								if (detail::check_error(H5Fis_hdf5((filename_ + suffix_).c_str())) == 0)
+									ALPS_NGS_THROW_RUNTIME_ERROR("no valid hdf5 file: " + filename_ + suffix_)
+							}
+							if (large_) {
+								{
+									char filename0[4096], filename1[4096];
+									sprintf(filename0, filename_.c_str(), 0);
+									sprintf(filename1, filename_.c_str(), 1);
+									if (!strcmp(filename0, filename1))
+										ALPS_NGS_THROW_RUNTIME_ERROR("Large hdf5 archives need to have a '%d' part in the filename")
+								}
+								detail::property_type prop_id(H5Pcreate(H5P_FILE_ACCESS));
+								detail::check_error(H5Pset_fapl_family(prop_id, 1 << 30, H5P_DEFAULT));
+								#ifndef ALPS_HDF5_CLOSE_GREEDY
+									detail::check_error(H5Pset_fclose_degree(prop_id, H5F_CLOSE_SEMI));
+								#endif
+								if (write_) {
+									if ((file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDWR, prop_id)) < 0)
+										detail::check_error(file_id_ = H5Fcreate((filename_ + suffix_).c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, prop_id));
+								} else
+									detail::check_error(file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDONLY, prop_id));
+							} else {
+								#ifndef ALPS_HDF5_CLOSE_GREEDY
+									detail::property_type ALPS_HDF5_FILE_ACCESS(H5Pcreate(H5P_FILE_ACCESS));
+									detail::check_error(H5Pset_fclose_degree(ALPS_HDF5_FILE_ACCESS, H5F_CLOSE_SEMI));
+								#else
+									#define ALPS_HDF5_FILE_ACCESS H5P_DEFAULT
+								#endif
+								if (write_) {
+									if ((file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDWR, ALPS_HDF5_FILE_ACCESS)) < 0)
+										detail::check_error(file_id_ = H5Fcreate((filename_ + suffix_).c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, ALPS_HDF5_FILE_ACCESS));
+								} else
+									detail::check_error(file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDONLY, ALPS_HDF5_FILE_ACCESS));
+								#ifdef ALPS_HDF5_CLOSE_GREEDY
+									#undef(ALPS_HDF5_FILE_ACCESS)
+								#endif
+							}
 						}
 					}
-                }
 
-                ~mccontext() {
-                    try {
-                        H5Fflush(file_id_, H5F_SCOPE_GLOBAL);
-                        #ifndef ALPS_HDF5_CLOSE_GREEDY
-                            if (!ignore_python_destruct_errors && (
-                                   H5Fget_obj_count(file_id_, H5F_OBJ_DATATYPE) > 0
-                                || H5Fget_obj_count(file_id_, H5F_OBJ_ALL) - H5Fget_obj_count(file_id_, H5F_OBJ_FILE) > 0
-                            )) {
-                                std::cerr << "Not all resources closed in file '" << filename_ << suffix_ << "'" << std::endl;
-                                std::abort();
-                            }
-                        #endif
-                        if (H5Fclose(file_id_) < 0)
-                            std::cerr << "Error in " 
-                                      << __FILE__ 
-                                      << " on " 
-                                      << ALPS_NGS_STRINGIFY(__LINE__) 
-                                      << " in " 
-                                      << __FUNCTION__ 
-                                      << ":" 
-                                      << std::endl
-                                      << error().invoke(file_id_)
-                                      << std::endl;
-                        if (replace_) {
-                            if (boost::filesystem::exists(filename_))
-                                boost::filesystem::remove(filename_);
-                            boost::filesystem::rename(filename_ + suffix_, filename_);
-                        }
-                    } catch (std::exception & ex) {
-                        std::cerr << "Error destructing HDF5 context of file '" << filename_ << suffix_ << "'\n" << ex.what() << std::endl;
-                        std::abort();
-                    }
-                }
+					void destruct(bool abort) {
+						try {
+							H5Fflush(file_id_, H5F_SCOPE_GLOBAL);
+							#ifndef ALPS_HDF5_CLOSE_GREEDY
+								if (!ignore_python_destruct_errors && (
+									   H5Fget_obj_count(file_id_, H5F_OBJ_DATATYPE) > 0
+									|| H5Fget_obj_count(file_id_, H5F_OBJ_ALL) - H5Fget_obj_count(file_id_, H5F_OBJ_FILE) > 0
+								)) {
+									std::cerr << "Not all resources closed in file '" << filename_ << suffix_ << "'" << std::endl;
+									std::abort();
+								}
+							#endif
+							if (H5Fclose(file_id_) < 0)
+								std::cerr << "Error in " 
+										  << __FILE__ 
+										  << " on " 
+										  << ALPS_NGS_STRINGIFY(__LINE__) 
+										  << " in " 
+										  << __FUNCTION__ 
+										  << ":" 
+										  << std::endl
+										  << error().invoke(file_id_)
+										  << std::endl;
+							if (replace_) {
+								if (boost::filesystem::exists(filename_))
+									boost::filesystem::remove(filename_);
+								boost::filesystem::rename(filename_ + suffix_, filename_);
+							}
+						} catch (std::exception & ex) {
+							if (abort) {
+								std::cerr << "Error destructing HDF5 context of file '" << filename_ << suffix_ << "'\n" << ex.what() << std::endl;
+								std::abort();
+							} else
+								throw ex;
+						}
+					}
 
-                bool compress_;
-                bool write_;
-                bool replace_;
-                bool large_;
-                bool memory_;
-                std::string filename_;
-                std::string suffix_;
-                hid_t file_id_;
             };
 
         }
@@ -363,7 +386,7 @@ namespace alps {
         archive::archive(archive const & arg)
             : context_(arg.context_)
         {
-            ++ref_cnt_[file_key(context_->filename_, context_->write_, context_->compress_, context_->large_, context_->memory_)].second;
+            ++ref_cnt_[file_key(context_->filename_, context_->large_, context_->memory_)].second;
         }
 
         archive::~archive() {
@@ -373,8 +396,8 @@ namespace alps {
                 std::cerr << "Error destructing archive of file '" << context_->filename_ << "'\n" << ex.what() << std::endl;
                 std::abort();
             }
-            if (!--ref_cnt_[file_key(context_->filename_, context_->write_, context_->compress_, context_->large_, context_->large_)].second) {
-                ref_cnt_.erase(file_key(context_->filename_, context_->write_, context_->compress_, context_->large_, context_->large_));
+            if (!--ref_cnt_[file_key(context_->filename_, context_->large_, context_->memory_)].second) {
+                ref_cnt_.erase(file_key(context_->filename_, context_->large_, context_->memory_));
                 delete context_;
             }
         }
@@ -1188,19 +1211,20 @@ namespace alps {
                 detail::check_error(H5Zget_filter_info(H5Z_FILTER_SZIP, &flag));
                 props &= (flag & H5Z_FILTER_CONFIG_ENCODE_ENABLED ? ~0x00 : ~COMPRESS);
             }
-            if (ref_cnt_.find(file_key(filename, props & (WRITE | REPLACE), props & COMPRESS, props & LARGE, props & MEMORY)) == ref_cnt_.end())
+            if (ref_cnt_.find(file_key(filename, props & LARGE, props & MEMORY)) == ref_cnt_.end())
                 ref_cnt_.insert(std::make_pair(
-                      file_key(filename, props & (WRITE | REPLACE), props & COMPRESS, props & LARGE, props & MEMORY)
+                      file_key(filename, props & LARGE, props & MEMORY)
                     , std::make_pair(context_ = new detail::mccontext(filename, props & WRITE, props & REPLACE, props & COMPRESS, props & LARGE, props & MEMORY), 1)
                 ));
             else {
-                context_ = ref_cnt_.find(file_key(filename, props & (WRITE | REPLACE), props & COMPRESS, props & LARGE, props & MEMORY))->second.first;
-                ++ref_cnt_.find(file_key(filename, props & (WRITE | REPLACE), props & COMPRESS, props & LARGE, props & MEMORY))->second.second;
+                context_ = ref_cnt_.find(file_key(filename, props & LARGE, props & MEMORY))->second.first;
+				context_->grant(props & WRITE, props & REPLACE);
+                ++ref_cnt_.find(file_key(filename, props & LARGE, props & MEMORY))->second.second;
             }
         }
 
-        std::string archive::file_key(std::string filename, bool write, bool compress, bool large, bool memory) const {
-            return std::string(write ? "w" : "r") + (compress ? "c" : "_") + (large ? "l" : (memory ? "m" : "_")) + "@" + filename;
+        std::string archive::file_key(std::string filename, bool large, bool memory) const {
+            return (large ? "l" : (memory ? "m" : "_")) + filename;
         }
     
         std::map<std::string, std::pair<detail::mccontext *, std::size_t> > archive::ref_cnt_;

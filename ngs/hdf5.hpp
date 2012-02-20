@@ -176,7 +176,7 @@ namespace alps {
             private:
 
                 void construct(std::string const & filename, std::size_t props = READ);
-                std::string file_key(std::string filename, bool writeable, bool compressed, bool large, bool memory) const;
+                std::string file_key(std::string filename, bool large, bool memory) const;
 
                 std::string current_;
                 detail::mccontext * context_;
