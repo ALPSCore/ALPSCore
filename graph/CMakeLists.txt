@@ -19,7 +19,7 @@ IF (ALPS_BUILD_GRAPH_TESTS)
       add_alps_test(${name})
     ENDFOREACH(name)
 
-    FOREACH (name vli_test vli2_test vli_benchmark)
+    FOREACH (name vli_test vli2_test)
         add_executable(${name} ${name}.cpp ${PROJECT_SOURCE_DIR}/src/alps/graph/vli.asm.cpp)
         add_dependencies(${name} alps)
         target_link_libraries(${name} alps)

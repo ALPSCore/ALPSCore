@@ -404,7 +404,7 @@ int main() {
         if ( lc != it->second)
         {
             std::cerr<<"ERROR: lattice constant does not match!"<<std::endl;
-            std::cerr<<"Calculated: "<<lc<<"\tReference: "<<it->second<<std::endl<<std::endl;
+            std::cerr<<"Graph:"<<std::distance(g.begin(),it)<<" Calculated: "<<lc<<"\tReference: "<<it->second<<std::endl<<std::endl;
             success = -1;
         }
     }
