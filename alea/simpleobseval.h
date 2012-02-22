@@ -161,6 +161,8 @@ class ALPS_TEMPL_DECL SimpleObservableEvaluator : public AbstractSimpleObservabl
   count_type bin_size() const { return all_.bin_size(); }
   count_type count() const { return all_.count(); }
 
+  const std::vector<value_type>& bins() const { return all_.bins();  }
+
   Observable* clone() const { return new SimpleObservableEvaluator<T>(*this); }
 
   uint32_t get_thermalization() const { return all_.get_thermalization(); }

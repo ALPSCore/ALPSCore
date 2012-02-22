@@ -134,6 +134,10 @@ public:
     return values2_[i+discardedbins_];
   }
 
+  const std::vector<value_type>& bins() const {
+    return values_;
+  }
+
   template <class S>
   SimpleObservableData<typename element_type<T>::type> slice(S s) const
   {
