@@ -398,12 +398,12 @@ ALPS_MCANALYZE_EXPORT_TIMESERIES_FUNCTION_VECTOR_ONLY(variance, alps::alea::vari
 
 ALPS_MCANALYZE_EXPORT_MCTIMESERIES_FUNCTION_SCALAR_ONLY(integrated_autocorrelation_time, alps::alea::integrated_autocorrelation_time, integrated_autocorrelation_time_docstring)
 
-ALPS_MCANALYZE_EXPORT_TIMESERIES_FUNCTION_SCALAR_AND_VECTOR(running_mean, alps::alea::running_mean, running_mean_docstring)
-ALPS_MCANALYZE_EXPORT_TIMESERIES_FUNCTION_SCALAR_AND_VECTOR(reverse_running_mean, alps::alea::reverse_running_mean, reverse_running_mean_docstring)
+ALPS_MCANALYZE_EXPORT_TIMESERIES_FUNCTION_SCALAR_ONLY(running_mean, alps::alea::running_mean, running_mean_docstring)
+ALPS_MCANALYZE_EXPORT_TIMESERIES_FUNCTION_SCALAR_ONLY(reverse_running_mean, alps::alea::reverse_running_mean, reverse_running_mean_docstring)
 
 ALPS_MCANALYZE_EXPORT_MCTIMESERIES_CLASSES(double, MCScalarTimeseries)
 ALPS_MCANALYZE_EXPORT_MCTIMESERIES_CLASSES(std::vector<double>, MCVectorTimeseries)
-
+//ALPS_MCANALYZE_EXPORT_MCTIMESERIES_CLASSES(alps::alea::value_with_error<double>, MCScalarTimeseriesWithError)
 
 
 doc_options.disable_all(); // no doc
