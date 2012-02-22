@@ -34,6 +34,7 @@
 #include <boost/utility/enable_if.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/bind.hpp>
+#include <boost/bind.hpp>
 
 #include <algorithm>
 
