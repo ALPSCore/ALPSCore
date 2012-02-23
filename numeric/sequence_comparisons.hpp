@@ -33,7 +33,6 @@
 
 #include <boost/utility/enable_if.hpp>
 #include <boost/lambda/lambda.hpp>
-#include <boost/lambda/bind.hpp>
 #include <boost/bind.hpp>
 
 #include <algorithm>
@@ -50,19 +49,19 @@ namespace numeric {
   template <class X, class BinaryPredicate>                                                                                                                   
   inline typename boost::enable_if< is_sequence<X>, bool>::type                                                                          
         at_least_one (const X& sequence, const typename element_type<X>::type & value, const BinaryPredicate& pred) {                                                
-    return sequence.end() != std::find_if(sequence.begin(), sequence.end(), boost::bind<bool>(pred, _1, value) );                      
+    return sequence.end() != std::find_if(sequence.begin(), sequence.end(), boost::bind<bool>(pred, boost::lambda::_1, value) );                      
   }                                                                                                                                      
                                                                                                                                          
   template <class X, class BinaryPredicate>                                                                                                                   
   inline typename boost::enable_if< is_sequence<X>, bool>::type                                                                          
         at_least_one (const typename element_type<X>::type & value, const X& sequence, const BinaryPredicate& pred) {                                                
-    return sequence.end() != std::find_if(sequence.begin(), sequence.end(), boost::bind<bool>(pred, value, _1 ) );                      
+    return sequence.end() != std::find_if(sequence.begin(), sequence.end(), boost::bind<bool>(pred, value, boost::lambda::_1 ) );                      
   }                                                                                                                                      
                                                                                                                                          
   template <class X, class BinaryPredicate>                                                                                                                    
   inline typename boost::enable_if< is_sequence<X>, bool>::type                                                                          
         at_least_one (const X& sequence1, const X& sequence2, const BinaryPredicate& pred) {                                                                         
-    return !(std::equal(sequence1.begin(), sequence1.end(), sequence2.begin(), !boost::bind<bool>(pred, _1, _2)));     
+    return !(std::equal(sequence1.begin(), sequence1.end(), sequence2.begin(), !boost::bind<bool>(pred, boost::lambda::_1, boost::lambda::_2)));     
   }
 
 
