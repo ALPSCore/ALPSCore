@@ -141,7 +141,13 @@ namespace alps {
 
                 boost::python::object py_load(std::string const & path) {
                     import_numpy();
-                    if (is_scalar(path) || (is_datatype<double>(path) && is_complex(path) && extent(path).size() == 1 && extent(path)[0] == 2)) {
+					if (is_group(path)) {
+                        boost::python::dict result;
+						std::vector<std::string> list = list_children(path);
+						for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it)
+							boost::python::call_method<void>(result.ptr(), "__setitem__", *it, py_load(path + "/" + encode_segment(*it)));
+						return result;
+					} else if (is_scalar(path) || (is_datatype<double>(path) && is_complex(path) && extent(path).size() == 1 && extent(path)[0] == 2)) {
                         if (is_datatype<std::string>(path))
                             return load_scalar<std::string>(path);
                         else if (is_datatype<int>(path))
@@ -327,18 +333,17 @@ namespace alps {
 					}
 				}
 				void py_save_list(std::string const & path, boost::python::list data) {
-					alps::hdf5::archive & ar = static_cast<alps::hdf5::archive &>(*this);
 					boost::python::ssize_t size = boost::python::len(data);
 					if (size == 0)
-						ar.write(path, static_cast<int const *>(NULL), std::vector<std::size_t>());
+						write(path, static_cast<int const *>(NULL), std::vector<std::size_t>());
 					bool homogenious  = py_save_list_extent(data).first;
-					if (ar.is_group(path))
-						ar.delete_group(path);
+					if (is_group(path))
+						delete_group(path);
 					if (homogenious)
 						py_save_list_save(path, data);
 					else {
-						if (ar.is_data(path))
-							ar.delete_data(path);
+						if (is_data(path))
+							delete_data(path);
 						for(boost::python::ssize_t i = 0; i < size; i++)
 							py_save(path + "/" + convert<std::string>(i), data[i]);
 					
