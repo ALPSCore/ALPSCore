@@ -443,6 +443,8 @@ namespace alps {
         }
     
         std::string archive::complete_path(std::string path) const {
+			if (path.size() > 1 && *path.rbegin() == '/')
+				path = path.substr(0, path.size() - 1);
             if (path.size() && path[0] == '/')
                 return path;
             else if (path.size() < 2 || path.substr(0, 2) != "..")

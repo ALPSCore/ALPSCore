@@ -38,10 +38,14 @@
 #include <alps/python/make_copy.hpp>
 
 #include <boost/scoped_ptr.hpp>
+#include <boost/python/list.hpp>
+#include <boost/python/dict.hpp>
 #include <boost/python/numeric.hpp>
 #include <boost/python/to_python_converter.hpp>
 
 #include <numpy/arrayobject.h>
+
+#include <iterator>
 
 namespace alps {
     namespace detail {
@@ -102,58 +106,37 @@ namespace alps {
                     return result;
                 }
 
-                void py_save(std::string const & path, boost::python::object const & data, std::string const & dtype) {
-                    using alps::make_pvp;
+                void py_save(std::string const & path, boost::python::object const & data) {
                     import_numpy();
-                    if (false);
-                    #define NGS_PYTHON_HDF5_CHECK_SCALAR(N, T)                                                                                              \
-                        else if (dtype == N)                                                                                                                \
-                            static_cast<alps::hdf5::archive &>(*this) << make_pvp(path, boost::python::extract< T >(data)());
-                    NGS_PYTHON_HDF5_CHECK_SCALAR("bool", bool)
-                    NGS_PYTHON_HDF5_CHECK_SCALAR("int", int)
-                    NGS_PYTHON_HDF5_CHECK_SCALAR("long", long)
-                    NGS_PYTHON_HDF5_CHECK_SCALAR("float", double)
-                    NGS_PYTHON_HDF5_CHECK_SCALAR("complex", std::complex<double>)
-                    NGS_PYTHON_HDF5_CHECK_SCALAR("str", std::string)
-                    #undef NGS_PYTHON_HDF5_CHECK_SCALAR
-                    #define NGS_PYTHON_HDF5_CHECK_NUMPY(N, T)                                                                                               \
-                        else if (dtype == N) {                                                                                                              \
-                            if (PyArray_Check(data.ptr())) {                                                                                                \
-                                if (!PyArray_ISCONTIGUOUS(data.ptr()))                                                                                      \
-                                    ALPS_NGS_THROW_RUNTIME_ERROR("numpy array is not continous")                                                            \
-                                else if (!PyArray_ISNOTSWAPPED(data.ptr()))                                                                                 \
-                                    ALPS_NGS_THROW_RUNTIME_ERROR("numpy array is not native")                                                               \
-                                static_cast<alps::hdf5::archive &>(*this) << make_pvp(                                                                      \
-                                      path                                                                                                                  \
-                                    , std::make_pair(                                                                                                       \
-                                          static_cast< T const *>(PyArray_DATA(data.ptr()))                                                                 \
-                                        , std::vector<std::size_t>(PyArray_DIMS(data.ptr()), PyArray_DIMS(data.ptr()) + PyArray_NDIM(data.ptr()))           \
-                                    )                                                                                                                       \
-                                );                                                                                                                          \
-                            } else                                                                                                                          \
-                                static_cast<alps::hdf5::archive &>(*this) << make_pvp(path, boost::python::extract< T >(data)());                           \
-                        }
-                    NGS_PYTHON_HDF5_CHECK_NUMPY("bool", bool)
-                    NGS_PYTHON_HDF5_CHECK_NUMPY("string_", char)
-                    NGS_PYTHON_HDF5_CHECK_NUMPY("int8", short)
-                    NGS_PYTHON_HDF5_CHECK_NUMPY("uint8", unsigned short)
-                    NGS_PYTHON_HDF5_CHECK_NUMPY("int16", short)
-                    NGS_PYTHON_HDF5_CHECK_NUMPY("uint16", unsigned short)
-                    NGS_PYTHON_HDF5_CHECK_NUMPY("int32", int)
-                    NGS_PYTHON_HDF5_CHECK_NUMPY("uint32", unsigned int)
-                    NGS_PYTHON_HDF5_CHECK_NUMPY("float32", float)
-                    NGS_PYTHON_HDF5_CHECK_NUMPY("complex32", std::complex<float>)
-                    NGS_PYTHON_HDF5_CHECK_NUMPY("int", int)
-                    NGS_PYTHON_HDF5_CHECK_NUMPY("int64", long)
-                    NGS_PYTHON_HDF5_CHECK_NUMPY("uint64", unsigned long)
-                    NGS_PYTHON_HDF5_CHECK_NUMPY("float64", double)
-                    NGS_PYTHON_HDF5_CHECK_NUMPY("float", double)
-                    NGS_PYTHON_HDF5_CHECK_NUMPY("float128", long double)
-                    NGS_PYTHON_HDF5_CHECK_NUMPY("complex128", std::complex<long double>)
-                    NGS_PYTHON_HDF5_CHECK_NUMPY("complex", std::complex<long double>)
-                    #undef NGS_PYTHON_HDF5_CHECK_NUMPY
-                    else
-                        ALPS_NGS_THROW_RUNTIME_ERROR("Unsupported type")
+					std::string dtype = data.ptr()->ob_type->tp_name;					
+					if (dtype == "int") py_save_scalar(path, boost::python::extract<int>(data)());
+					else if (dtype == "long") py_save_scalar(path, boost::python::extract<long>(data)());
+					else if (dtype == "float") py_save_scalar(path, boost::python::extract<double>(data)());
+					else if (dtype == "complex") py_save_scalar(path, boost::python::extract<std::complex<double> >(data)());
+					else if (dtype == "str") py_save_scalar(path, boost::python::extract<std::string>(data)());
+					else if (dtype == "list") py_save_list(path, boost::python::extract<boost::python::list>(data)());
+					else if (dtype == "dict") py_save_dict(path, boost::python::extract<boost::python::dict>(data)());
+					else if (dtype == "numpy.ndarray") py_save_numpy(path, boost::python::extract<boost::python::numeric::array>(data)());
+					else if (dtype == "numpy.int8") py_save_scalar<boost::int8_t>(path, boost::python::call_method<long>(data.ptr(), "__long__"));
+					else if (dtype == "numpy.int16") py_save_scalar<boost::int16_t>(path, boost::python::call_method<long>(data.ptr(), "__long__"));
+					else if (dtype == "numpy.int32") py_save_scalar<boost::int32_t>(path, boost::python::call_method<long>(data.ptr(), "__long__"));
+					else if (dtype == "numpy.int64") py_save_scalar<boost::int64_t>(path, boost::python::call_method<long>(data.ptr(), "__long__"));
+					else if (dtype == "numpy.uint8") py_save_scalar<boost::uint8_t>(path, boost::python::call_method<long>(data.ptr(), "__long__"));
+					else if (dtype == "numpy.uint16") py_save_scalar<boost::uint16_t>(path, boost::python::call_method<long>(data.ptr(), "__long__"));
+					else if (dtype == "numpy.uint32") py_save_scalar<boost::uint32_t>(path, boost::python::call_method<long>(data.ptr(), "__long__"));
+					else if (dtype == "numpy.uint64") py_save_scalar<boost::uint64_t>(path, boost::python::call_method<long>(data.ptr(), "__long__"));
+					else if (dtype == "numpy.float32") py_save_scalar<float>(path, boost::python::call_method<double>(data.ptr(), "__float__"));
+					else if (dtype == "numpy.float64") py_save_scalar<double>(path, boost::python::call_method<double>(data.ptr(), "__float__"));
+ 					else if (dtype == "numpy.complex64") py_save_scalar(path, std::complex<float>(
+						  boost::python::call_method<double>(PyObject_GetAttr(data.ptr(), boost::python::str("real").ptr()), "__float__")
+						, boost::python::call_method<double>(PyObject_GetAttr(data.ptr(), boost::python::str("real").ptr()), "__float__")
+					));
+ 					else if (dtype == "numpy.complex128") py_save_scalar(path, std::complex<double>(
+						  boost::python::call_method<double>(PyObject_GetAttr(data.ptr(), boost::python::str("real").ptr()), "__float__")
+						, boost::python::call_method<double>(PyObject_GetAttr(data.ptr(), boost::python::str("real").ptr()), "__float__")
+					));
+					else
+						ALPS_NGS_THROW_RUNTIME_ERROR("Unsupported type: " + dtype)
                 }
 
                 boost::python::object py_load(std::string const & path) {
@@ -253,6 +236,161 @@ namespace alps {
                     return obj;
                 }
 
+				template<typename T> void py_save_scalar(std::string const & path, T data) {
+					using alps::make_pvp;
+					static_cast<alps::hdf5::archive &>(*this) << make_pvp(path, data);
+				}
+				std::pair<bool, std::vector<std::size_t> > py_save_list_extent(boost::python::list data) {
+					std::vector<std::string> scalar_types;
+					scalar_types.push_back("int");
+					scalar_types.push_back("long");
+					scalar_types.push_back("float");
+					scalar_types.push_back("complex");
+					scalar_types.push_back("str");
+					scalar_types.push_back("numpy.ndarray");
+					scalar_types.push_back("numpy.int8");
+					scalar_types.push_back("numpy.int16");
+					scalar_types.push_back("numpy.int32");
+					scalar_types.push_back("numpy.int64");
+					scalar_types.push_back("numpy.uint8");
+					scalar_types.push_back("numpy.uint16");
+					scalar_types.push_back("numpy.uint32");
+					scalar_types.push_back("numpy.uint64");
+					scalar_types.push_back("numpy.float32");
+					scalar_types.push_back("numpy.float64");
+					scalar_types.push_back("numpy.complex64");
+					scalar_types.push_back("numpy.complex128");
+
+					boost::python::ssize_t size = boost::python::len(data);
+					std::string first_dtype = boost::python::object(data[0]).ptr()->ob_type->tp_name;
+					bool first_homogenious = true, next_homogenious;
+					std::vector<std::size_t> first_extent, next_extent;
+					if (first_dtype == "list")
+						boost::tie(first_homogenious, first_extent) = py_save_list_extent(boost::python::extract<boost::python::list>(data[0]));
+					if (!first_homogenious)
+						return std::make_pair(false, std::vector<std::size_t>());
+					for(boost::python::ssize_t i = 0; i < size; i++) {
+						std::string dtype = boost::python::object(data[i]).ptr()->ob_type->tp_name;
+						if (dtype == "list") {
+							boost::tie(next_homogenious, next_extent) = py_save_list_extent(boost::python::extract<boost::python::list>(data[i]));
+							if (!next_homogenious || first_extent.size() != next_extent.size() || !equal(first_extent.begin(), first_extent.end(), next_extent.begin()))
+								return make_pair(false, std::vector<std::size_t>());
+						} else if (first_dtype != dtype || find(scalar_types.begin(), scalar_types.end(), dtype) == scalar_types.end())
+							return std::make_pair(false, std::vector<std::size_t>());
+					}
+					std::vector<std::size_t> extent(1, size);
+					if (first_dtype == "list")
+						copy(first_extent.begin(), first_extent.end(), back_inserter(extent));
+					return std::make_pair(true, extent);
+				}
+				void py_save_list_save(
+					  std::string const & path
+					, boost::python::list data
+					, std::vector<std::size_t> size = std::vector<std::size_t>()
+					, std::vector<std::size_t> chunk = std::vector<std::size_t>()
+					, std::vector<std::size_t> offset = std::vector<std::size_t>()
+				) {
+					size.push_back(boost::python::len(data));
+					chunk.push_back(1);
+					offset.push_back(0);
+					alps::hdf5::archive & ar = static_cast<alps::hdf5::archive &>(*this);
+					for(boost::python::ssize_t i = 0; i < boost::python::len(data); i++) {
+						offset.back() = i;
+						boost::python::object item = data[i];
+						std::string dtype = item.ptr()->ob_type->tp_name;
+						if (dtype == "list") py_save_list_save(path, boost::python::extract<boost::python::list>(item), size, chunk, offset);
+						else if (dtype == "int") save(ar, path, boost::python::extract<int>(item)(), size, chunk, offset);
+						else if (dtype == "long") save(ar, path, boost::python::extract<long>(item)(), size, chunk, offset);
+						else if (dtype == "float") save(ar, path, boost::python::extract<double>(item)(), size, chunk, offset);
+						else if (dtype == "complex") save(ar, path, boost::python::extract<std::complex<double> >(item)(), size, chunk, offset);
+						else if (dtype == "str") save(ar, path, boost::python::extract<std::string>(item)(), size, chunk, offset);
+						else if (dtype == "numpy.int8") save(ar, path, static_cast<boost::int8_t>(boost::python::call_method<long>(item.ptr(), "__long__")), size, chunk, offset);
+						else if (dtype == "numpy.int16") save(ar, path, static_cast<boost::int16_t>(boost::python::call_method<long>(item.ptr(), "__long__")), size, chunk, offset);
+						else if (dtype == "numpy.int32") save(ar, path, static_cast<boost::int32_t>(boost::python::call_method<long>(item.ptr(), "__long__")), size, chunk, offset);
+						else if (dtype == "numpy.int64") save(ar, path, static_cast<boost::int64_t>(boost::python::call_method<long>(item.ptr(), "__long__")), size, chunk, offset);
+						else if (dtype == "numpy.uint8") save(ar, path, static_cast<boost::uint8_t>(boost::python::call_method<long>(item.ptr(), "__long__")), size, chunk, offset);
+						else if (dtype == "numpy.uint16") save(ar, path, static_cast<boost::uint16_t>(boost::python::call_method<long>(item.ptr(), "__long__")), size, chunk, offset);
+						else if (dtype == "numpy.uint32") save(ar, path, static_cast<boost::uint32_t>(boost::python::call_method<long>(item.ptr(), "__long__")), size, chunk, offset);
+						else if (dtype == "numpy.uint64") save(ar, path, static_cast<boost::uint64_t>(boost::python::call_method<long>(item.ptr(), "__long__")), size, chunk, offset);
+						else if (dtype == "numpy.float32") save(ar, path, static_cast<float>(boost::python::call_method<double>(item.ptr(), "__float__")), size, chunk, offset);
+						else if (dtype == "numpy.float64") save(ar, path, static_cast<double>(boost::python::call_method<double>(item.ptr(), "__float__")), size, chunk, offset);
+						else if (dtype == "numpy.complex64") save(ar, path, std::complex<float>(
+							  boost::python::call_method<double>(PyObject_GetAttr(item.ptr(), boost::python::str("real").ptr()), "__float__")
+							, boost::python::call_method<double>(PyObject_GetAttr(item.ptr(), boost::python::str("real").ptr()), "__float__")
+						));
+						else if (dtype == "numpy.complex128") save(ar, path, std::complex<double>(
+							  boost::python::call_method<double>(PyObject_GetAttr(item.ptr(), boost::python::str("real").ptr()), "__float__")
+							, boost::python::call_method<double>(PyObject_GetAttr(item.ptr(), boost::python::str("real").ptr()), "__float__")
+						));
+						else
+							ALPS_NGS_THROW_RUNTIME_ERROR("Unsupported type: " + dtype)
+					}
+				}
+				void py_save_list(std::string const & path, boost::python::list data) {
+					alps::hdf5::archive & ar = static_cast<alps::hdf5::archive &>(*this);
+					boost::python::ssize_t size = boost::python::len(data);
+					if (size == 0)
+						ar.write(path, static_cast<int const *>(NULL), std::vector<std::size_t>());
+					bool homogenious  = py_save_list_extent(data).first;
+					if (ar.is_group(path))
+						ar.delete_group(path);
+					if (homogenious)
+						py_save_list_save(path, data);
+					else {
+						if (ar.is_data(path))
+							ar.delete_data(path);
+						for(boost::python::ssize_t i = 0; i < size; i++)
+							py_save(path + "/" + convert<std::string>(i), data[i]);
+					
+					}
+				}
+				void py_save_dict(std::string const & path, boost::python::dict data) {
+                    const boost::python::object kit = data.iterkeys();
+                    const boost::python::object vit = data.itervalues();
+					std::size_t size = boost::python::len(data);
+                    for (std::size_t i = 0; i < size; ++i)
+						py_save(
+							  path + "/" + encode_segment(boost::python::call_method<std::string>(kit.attr("next")().ptr(), "__str__"))
+							, vit.attr("next")()
+						);
+				}
+				void py_save_numpy(std::string const & path, boost::python::numeric::array data) {
+					if (!PyArray_Check(data.ptr()))
+						ALPS_NGS_THROW_RUNTIME_ERROR("invalid numpy data")
+					else if (!PyArray_ISCONTIGUOUS(data.ptr()))
+						ALPS_NGS_THROW_RUNTIME_ERROR("numpy array is not continous")
+					else if (!PyArray_ISNOTSWAPPED(data.ptr()))
+						ALPS_NGS_THROW_RUNTIME_ERROR("numpy array is not native")
+					#define NGS_PYTHON_HDF5_CHECK_NUMPY(T, N)																						\
+						else if (PyArray_DESCR(data.ptr())->type_num == N)																			\
+							static_cast<alps::hdf5::archive &>(*this) << make_pvp(																	\
+								  path																												\
+								, std::make_pair(																									\
+									  static_cast< T const *>(PyArray_DATA(data.ptr()))																\
+									, std::vector<std::size_t>(PyArray_DIMS(data.ptr()), PyArray_DIMS(data.ptr()) + PyArray_NDIM(data.ptr()))		\
+								)																													\
+							);
+					NGS_PYTHON_HDF5_CHECK_NUMPY(bool,PyArray_BOOL)
+					NGS_PYTHON_HDF5_CHECK_NUMPY(char, PyArray_CHAR)
+					NGS_PYTHON_HDF5_CHECK_NUMPY(unsigned char, PyArray_UBYTE)
+					NGS_PYTHON_HDF5_CHECK_NUMPY(signed char, PyArray_BYTE)
+					NGS_PYTHON_HDF5_CHECK_NUMPY(short, PyArray_SHORT)
+					NGS_PYTHON_HDF5_CHECK_NUMPY(unsigned short, PyArray_USHORT)
+					NGS_PYTHON_HDF5_CHECK_NUMPY(int, PyArray_INT)
+					NGS_PYTHON_HDF5_CHECK_NUMPY(unsigned int, PyArray_UINT)
+					NGS_PYTHON_HDF5_CHECK_NUMPY(long, PyArray_LONG)
+					NGS_PYTHON_HDF5_CHECK_NUMPY(long long, PyArray_LONGLONG)
+					NGS_PYTHON_HDF5_CHECK_NUMPY(unsigned long long, PyArray_ULONGLONG)
+					NGS_PYTHON_HDF5_CHECK_NUMPY(float, PyArray_FLOAT)
+					NGS_PYTHON_HDF5_CHECK_NUMPY(double, PyArray_DOUBLE)
+					NGS_PYTHON_HDF5_CHECK_NUMPY(long double, PyArray_LONGDOUBLE)
+					NGS_PYTHON_HDF5_CHECK_NUMPY(std::complex<float>, PyArray_CFLOAT)
+					NGS_PYTHON_HDF5_CHECK_NUMPY(std::complex<double>,PyArray_CDOUBLE)
+					NGS_PYTHON_HDF5_CHECK_NUMPY(std::complex<long double>, PyArray_CLONGDOUBLE)
+					#undef NGS_PYTHON_HDF5_CHECK_NUMPY
+					else
+						ALPS_NGS_THROW_RUNTIME_ERROR("unknown numpy element type")
+				}
          };
     }
 }
