@@ -50,3 +50,33 @@ ar["/complex"] = complex(1, 1)
 ar["/string"] = "str"
 ar["/inhomogenious"] = [[1, 2, 3], a, "gurke", [[a, 2, 3], ["x", complex(1, 1)]]]
 ar["/inhomogenious2"] = [[[1, 2], [3, 4]], [[1, 2], [3, 4]], [[1, 2], [3, 4]], [[1, 2], [3]]]
+
+del ar
+
+ar = ngs.h5ar('test.h5', 'r')
+
+l1 = ar["/list"]
+l2 = ar["/list2"]
+d1 = ar["/dict"]
+n1 = ar["/numpy"]
+n2 = ar["/numpy2"]
+n3 = ar["/numpy3"]
+e1 = ar["/numpyel"]
+e2 = ar["/numpyel2"]
+e3 = ar["/numpyel3"]
+s1 = ar["/int"]
+s2 = ar["/long"]
+s3 = ar["/double"]
+s4 = ar["/complex"]
+s5 = ar["/string"]
+i1 = ar["/inhomogenious"]
+i2 = ar["/inhomogenious2"]
+
+print(l1, l2)
+print(d1)
+print(n1, n2, n3)
+print(e1, e2, e3)
+print(s1, s2, s3, s4, s5)
+print(i1, i2)
+
+del ar
