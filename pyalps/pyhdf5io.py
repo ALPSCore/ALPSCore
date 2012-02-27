@@ -1,0 +1,52 @@
+ # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+ #                                                                                 #
+ # ALPS Project: Algorithms and Libraries for Physics Simulations                  #
+ #                                                                                 #
+ # ALPS Libraries                                                                  #
+ #                                                                                 #
+ # Copyright (C) 2010 - 2012 by Lukas Gamper <gamperl@gmail.com>                   #
+ #                                                                                 #
+ # This software is part of the ALPS libraries, published under the ALPS           #
+ # Library License; you can use, redistribute it and/or modify it under            #
+ # the terms of the license, either version 1 or (at your option) any later        #
+ # version.                                                                        #
+ #                                                                                 #
+ # You should have received a copy of the ALPS Library License along with          #
+ # the ALPS Libraries; see the file LICENSE.txt. If not, the license is also       #
+ # available from http://alps.comp-phys.org/.                                      #
+ #                                                                                 #
+ #  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR     #
+ # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        #
+ # FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT       #
+ # SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE       #
+ # FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,     #
+ # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER     #
+ # DEALINGS IN THE SOFTWARE.                                                       #
+ #                                                                                 #
+ # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+import numpy as np
+import pyalps.ngs as ngs
+
+ar = ngs.h5ar('test.h5', 'w')
+a = np.array([1, 2, 3]);
+b = np.array([1.1, 2.0, 3.5]);
+c = np.array([1.1 + 1j, 2.0j, 3.5]);
+d = {"a": a, 2 + 3j: "foo"}
+
+ar["/list"] = [1, 2, 3]
+ar["/list2"] = [[[1, 2], [3, 4]], [[1, 2], [3, 4]], [[1, 2], [3, 4]], [[1, 2], [3, 4]]]
+ar["/dict"] = {"scalar": 1, "numpy": a, "numpycpx": c, "list": [1, 2, 3], "string": "str", 1: 1, 4: d}
+ar["/numpy"] = a
+ar["/numpy2"] = b
+ar["/numpy3"] = c
+ar["/numpyel"] = a[0]
+ar["/numpyel2"] = b[0]
+ar["/numpyel3"] = c[0]
+ar["/int"] = int(1)
+ar["/long"] = long(1)
+ar["/double"] = float(1)
+ar["/complex"] = complex(1, 1)
+ar["/string"] = "str"
+ar["/inhomogenious"] = [[1, 2, 3], a, "gurke", [[a, 2, 3], ["x", complex(1, 1)]]]
+ar["/inhomogenious2"] = [[[1, 2], [3, 4]], [[1, 2], [3, 4]], [[1, 2], [3, 4]], [[1, 2], [3]]]
