@@ -40,7 +40,7 @@ struct non_pod {
   non_pod() {
     if (init_ == magic) throw std::logic_error("non_pod");
     init_ = magic;
-    data_ = -1.0;
+    data_ = 0;
   }
   non_pod(const non_pod& x) {
     if (init_ == magic) throw std::logic_error("non_pod");
@@ -54,6 +54,7 @@ struct non_pod {
   }
   ~non_pod() {
     if (init_ != magic) throw std::logic_error("non_pod");
+    if (data_ < 0) std::cerr << "warning\n";
     init_ = 0;
     data_ = -1.0;
   }
