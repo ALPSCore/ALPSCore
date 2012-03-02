@@ -133,7 +133,7 @@ if(ALPS_BUILD_FORTRAN)
   set(ALPS_FORTRAN_SOURCES fortran/fwrapper_impl.C)
   add_library(alps_fortran STATIC ${ALPS_FORTRAN_SOURCES})
   target_link_libraries(alps_fortran ${CMAKE_Fortran_RUNTIME_LIBRARIES})
-  set_target_properties(alps_fortran PROPERTIES COMPILE_DEFINITIONS "${ALPS_SATATIC_CPPFLAGS}")
+  set_target_properties(alps_fortran PROPERTIES COMPILE_DEFINITIONS "${ALPS_STATIC_CPPFLAGS}")
   if(NOT ALPS_FOR_VISTRAILS)
     install(TARGETS alps_fortran COMPONENT libraries
             ARCHIVE DESTINATION lib
