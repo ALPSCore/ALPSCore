@@ -28,6 +28,10 @@
 #ifndef ALPS_NGS_PARALLEL_HPP
 #define ALPS_NGS_PARALLEL_HPP
 
+#include <alps/ngs/stacktrace.hpp>
+
+#include <stdexcept>
+
 namespace alps {
 
     #ifdef ALPS_HAVE_MPI
@@ -38,7 +42,7 @@ namespace alps {
                 using Impl::collect_results;
                 
                 parallel(typename alps::parameters_type<Impl>::type const & p) {
-                    ALPS_NGS_THROW_RUNTIME_ERROR("No communicator passed");
+                    throw std::runtime_error("No communicator passed" + ALPS_STACKTRACE);
                 }
 
                 parallel(typename alps::parameters_type<Impl>::type const & p, boost::mpi::communicator const & c) 
@@ -74,7 +78,7 @@ namespace alps {
                 using Impl::collect_results;
                 
                 parallel2(typename alps::parameters_type<Impl>::type const & p) {
-                    ALPS_NGS_THROW_RUNTIME_ERROR("No communicator passed");
+                    throw std::runtime_error("No communicator passed" + ALPS_STACKTRACE);
                 }
 
                 parallel2(typename alps::parameters_type<Impl>::type const & p, boost::mpi::communicator const & c) 

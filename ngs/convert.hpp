@@ -37,8 +37,8 @@ namespace alps {
         return static_cast<U>(arg);
     }
 
-    #define ALPS_NGS_CONVERT_STRING(T, c)                                                                                                      \
-         template<> ALPS_DECL std::string convert<std::string, T >( T arg);																			   \
+    #define ALPS_NGS_CONVERT_STRING(T, c)                                           \
+         template<> ALPS_DECL std::string convert<std::string, T >( T arg);			\
          template<> ALPS_DECL T convert< T, std::string>(std::string arg);
     ALPS_NGS_CONVERT_STRING(short, "hd")
     ALPS_NGS_CONVERT_STRING(int, "d")
@@ -53,8 +53,8 @@ namespace alps {
     ALPS_NGS_CONVERT_STRING(unsigned long long, "llu")
     #undef ALPS_NGS_CONVERT_STRING
 
-    #define ALPS_NGS_CONVERT_STRING_CHAR(T, U)                                                                                                 \
-        template<> ALPS_DECL std::string convert<std::string, T >( T arg);                                                                               \
+    #define ALPS_NGS_CONVERT_STRING_CHAR(T, U)                                      \
+        template<> ALPS_DECL std::string convert<std::string, T >( T arg);          \
         template<> ALPS_DECL T convert<T, std::string>(std::string arg);
     ALPS_NGS_CONVERT_STRING_CHAR(bool, short)
     ALPS_NGS_CONVERT_STRING_CHAR(char, short)
@@ -62,14 +62,22 @@ namespace alps {
     ALPS_NGS_CONVERT_STRING_CHAR(unsigned char, unsigned short)
     #undef ALPS_NGS_CONVERT_STRING_CHAR
 
-    template<typename U, typename T> inline void convert(U const * src, U const * end, T * dest) {
+    template<typename U, typename T> inline void convert(
+		U const * src, U const * end, T * dest
+	) {
         std::copy(src, end, dest);
     }
 
-    #define ALPS_NGS_CONVERT_STRING_POINTER(T)                                                                                                 \
-        template<> ALPS_DECL void convert<std::string, T >(std::string const * src, std::string const * end, T * dest);                                  \
-        template<> ALPS_DECL void convert<char *, T >(char * const * src, char * const * end, T * dest);                                                 \
-        template<> ALPS_DECL void convert< T , std::string >(T const * src, T const * end, std::string * dest);
+    #define ALPS_NGS_CONVERT_STRING_POINTER(T)                                      \
+        template<> ALPS_DECL void convert<std::string, T >(							\
+			std::string const * src, std::string const * end, T * dest				\
+		);																			\
+        template<> ALPS_DECL void convert<char *, T >(								\
+			char * const * src, char * const * end, T * dest						\
+		);																			\
+        template<> ALPS_DECL void convert< T , std::string >(						\
+			T const * src, T const * end, std::string * dest						\
+		);
     ALPS_NGS_CONVERT_STRING_POINTER(bool)
     ALPS_NGS_CONVERT_STRING_POINTER(char)
     ALPS_NGS_CONVERT_STRING_POINTER(signed char)

@@ -25,10 +25,11 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/ngs/macros.hpp>
 #include <alps/ngs/convert.hpp>
+#include <alps/ngs/stacktrace.hpp>
 
 #include <stdio.h>
+#include <stdexcept>
 
 namespace alps {
 
@@ -36,13 +37,13 @@ namespace alps {
         template<> ALPS_DECL std::string convert<std::string, T >( T arg) {                                                                    \
             char buffer[255];                                                                                                                  \
             if (sprintf(buffer, "%" p "" c, arg) < 0)                                                                                          \
-                ALPS_NGS_THROW_RUNTIME_ERROR("error converting from " #T " to string");                                                        \
+                throw std::runtime_error("error converting from " #T " to string" + ALPS_STACKTRACE);                                                        \
             return buffer;                                                                                                                     \
         }                                                                                                                                      \
         template<> ALPS_DECL T convert< T, std::string>(std::string arg) {                                                                     \
             T value = 0;                                                                                                                       \
             if (arg.size() && sscanf(arg.c_str(), "%" c, &value) < 0)                                                                          \
-                ALPS_NGS_THROW_RUNTIME_ERROR("error converting from string to " #T ": " + arg);                                                \
+                throw std::runtime_error("error converting from string to " #T ": " + arg + ALPS_STACKTRACE);                                                \
             return value;                                                                                                                      \
         }
     ALPS_NGS_CONVERT_STRING(short, "", "hd")

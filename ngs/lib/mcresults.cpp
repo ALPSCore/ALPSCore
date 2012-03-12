@@ -26,8 +26,8 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <alps/ngs/hdf5.hpp>
-#include <alps/ngs/macros.hpp>
 #include <alps/ngs/mcresults.hpp>
+#include <alps/ngs/stacktrace.hpp>
 
 #include <alps/alea/observableset.h>
 
@@ -37,13 +37,13 @@ namespace alps {
 
     mcresult & mcresults::operator[](std::string const & name) {
         if (!has(name))
-            ALPS_NGS_THROW_OUT_OF_RANGE("No result found with the name: " + name);
+            throw std::out_of_range("No result found with the name: " + name + "\n" + ALPS_STACKTRACE);
         return std::map<std::string, mcresult>::find(name)->second;
     }
 
     mcresult const & mcresults::operator[](std::string const & name) const {
         if (!has(name))
-            ALPS_NGS_THROW_OUT_OF_RANGE("No result found with the name: " + name);
+            throw std::out_of_range("No result found with the name: " + name + "\n" + ALPS_STACKTRACE);
         return std::map<std::string, mcresult>::find(name)->second;
     }
 
@@ -53,7 +53,7 @@ namespace alps {
 
     void mcresults::insert(std::string const & name, mcresult res) {
         if (has(name))
-            ALPS_NGS_THROW_OUT_OF_RANGE("There exists alrady a result with the name: " + name);
+            throw std::out_of_range("There exists alrady a result with the name: " + name + "\n" + ALPS_STACKTRACE);
         std::map<std::string, mcresult>::insert(make_pair(name, res));
     }
 

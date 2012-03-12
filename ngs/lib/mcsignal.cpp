@@ -33,6 +33,8 @@
 #include <sstream>
 #include <cstdlib>
 #include <iostream>
+#include <stdexcept>
+
 #include <signal.h>
 
 namespace alps {

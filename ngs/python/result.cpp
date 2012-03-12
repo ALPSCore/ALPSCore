@@ -82,7 +82,7 @@ namespace alps {
                     + short_print_python(self.bins<std::vector<double> >()) + "#" + short_print_python(self.bin_size())
                 );
             else
-                ALPS_NGS_THROW_RUNTIME_ERROR("Unsupported type.")
+                throw std::runtime_error("Unsupported type." + ALPS_STACKTRACE);
         }
 
         boost::python::object mcresult_vector2np(std::vector<double> const & data) {
@@ -100,7 +100,7 @@ namespace alps {
             else if (self.is_type<std::vector<double> >())
                 return mcresult_vector2np(self.mean<std::vector<double> >());
             else
-                ALPS_NGS_THROW_RUNTIME_ERROR("Unsupported type.")
+                throw std::runtime_error("Unsupported type." + ALPS_STACKTRACE);
             return boost::python::object();
         }
 
@@ -110,7 +110,7 @@ namespace alps {
             else if (self.is_type<std::vector<double> >())
                 return mcresult_vector2np(self.error<std::vector<double> >());
             else
-                ALPS_NGS_THROW_RUNTIME_ERROR("Unsupported type.")
+                throw std::runtime_error("Unsupported type." + ALPS_STACKTRACE);
             return boost::python::object();
         }
 
@@ -120,7 +120,7 @@ namespace alps {
             else if (self.is_type<std::vector<double> >())
                 return mcresult_vector2np(self.tau<std::vector<double> >());
             else
-                ALPS_NGS_THROW_RUNTIME_ERROR("Unsupported type.")
+                throw std::runtime_error("Unsupported type." + ALPS_STACKTRACE);
             return boost::python::object();
         }
 
@@ -130,7 +130,7 @@ namespace alps {
             else if (self.is_type<std::vector<double> >())
                 return mcresult_vector2np(self.variance<std::vector<double> >());
             else
-                ALPS_NGS_THROW_RUNTIME_ERROR("Unsupported type.")
+                throw std::runtime_error("Unsupported type." + ALPS_STACKTRACE);
             return boost::python::object();
         }
 
@@ -140,7 +140,7 @@ namespace alps {
 //          else if (self.is_type<std::vector<double> >())
 //              return mcresult_vector2np(self.bins<std::vector<double> >());
             else
-                ALPS_NGS_THROW_RUNTIME_ERROR("Unsupported type.")
+                throw std::runtime_error("Unsupported type." + ALPS_STACKTRACE);
             return boost::python::object();
         }
 

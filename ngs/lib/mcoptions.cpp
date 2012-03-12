@@ -25,12 +25,13 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/ngs/macros.hpp>
 #include <alps/ngs/mcoptions.hpp>
+#include <alps/ngs/stacktrace.hpp>
 
 #include <boost/program_options.hpp>
 
 #include <iostream>
+#include <stdexcept>
 
 namespace alps {
 
@@ -58,19 +59,19 @@ namespace alps {
         if (!(valid = !vm.count("help")))
             std::cout << desc << std::endl;
         else if (input_file.empty())
-            ALPS_NGS_THROW_INVALID_ARGUMENT("No job file specified");
+            throw std::invalid_argument("No job file specified" + ALPS_STACKTRACE);
         if (vm.count("threaded") && vm.count("mpi"))
             type = HYBRID;
         else if (vm.count("threaded"))
             #ifdef ALPS_NGS_SINGLE_THREAD
-                ALPS_NGS_THROW_LOGIC_ERROR("Not build with multithread support");
+                throw std::logic_error("Not build with multithread support" + ALPS_STACKTRACE);
             #else
                 type = THREADED;
             #endif
         else if (vm.count("mpi")) {
             type = MPI;
             #ifndef ALPS_HAVE_MPI
-                ALPS_NGS_THROW_LOGIC_ERROR("Not build with MPI");
+                throw std::logic_error("Not build with MPI" + ALPS_STACKTRACE);
             #endif
         }
         if (vm.count("continue"))

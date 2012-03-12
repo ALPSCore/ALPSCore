@@ -26,9 +26,11 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <alps/ngs/hdf5.hpp>
-#include <alps/ngs/macros.hpp>
 #include <alps/ngs/convert.hpp>
 #include <alps/ngs/mcparams.hpp>
+#include <alps/ngs/stacktrace.hpp>
+
+#include <stdexcept>
 
 namespace alps {
 
@@ -101,7 +103,7 @@ namespace alps {
 
     mcparamvalue const & mcparams::operator[](std::string const & k) const {
         if (find(k) == end())
-            ALPS_NGS_THROW_INVALID_ARGUMENT("unknown argument: "  + k);
+            throw std::invalid_argument("unknown argument: "  + k + ALPS_STACKTRACE);
         return find(k)->second;
     }
 

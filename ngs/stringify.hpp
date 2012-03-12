@@ -25,73 +25,11 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/ngs/signal.hpp>
-#include <alps/ngs/stacktrace.hpp>
-#include <alps/ngs/hdf5.hpp>
+#ifndef ALPS_NGS_STRINGIFY_HPP
+#define ALPS_NGS_STRINGIFY_HPP
 
-#include <cstring>
-#include <sstream>
-#include <cstdlib>
-#include <iostream>
-#include <stdexcept>
+#define ALPS_NGS_STRINGIFY(arg) ALPS_NGS_STRINGIFY_HELPER(arg)
 
-#include <signal.h>
+#define ALPS_NGS_STRINGIFY_HELPER(arg) #arg
 
-namespace alps {
-    namespace ngs {
-
-        signal::signal() {
-            #if not ( defined BOOST_MSVC || defined ALPS_NGS_NO_SIGNALS )
-                static bool initialized;
-                if (!initialized) {
-                    initialized = true;
-
-                    static struct sigaction action;
-                    memset(&action, 0, sizeof(action));
-                    action.sa_handler = &signal::slot;
-                    sigaction(SIGINT, &action, NULL);
-                    sigaction(SIGTERM, &action, NULL);
-                    sigaction(SIGXCPU, &action, NULL);
-                    sigaction(SIGQUIT, &action, NULL);
-                    sigaction(SIGUSR1, &action, NULL);
-                    sigaction(SIGUSR2, &action, NULL);
-                    sigaction(SIGSTOP, &action, NULL);
-                    sigaction(SIGKILL, &action, NULL);
-
-                    static struct sigaction segv;
-                    memset(&segv, 0, sizeof(segv));
-                    segv.sa_handler = &signal::segfault;
-                    sigaction(SIGSEGV, &segv, NULL);
-                    sigaction(SIGBUS, &segv, NULL);
-                }
-            #endif
-        }
-
-        bool signal::empty() {
-            return !signals_.size();
-        }
-
-        int signal::top() {
-            return signals_.back();
-        }
-
-        void signal::pop() {
-            return signals_.pop_back();
-        }
-
-        void signal::slot(int signal) {
-            std::cerr << "Received signal " << signal << std::endl;
-            signals_.push_back(signal);
-        }
-
-        void signal::segfault(int signal) {
-            std::cerr << "Abort by signal " << signal << ":" << ngs::stacktrace() << std::endl;
-            signals_.push_back(signal);
-            hdf5::archive::abort();
-            std::abort();
-        }
-
-        std::vector<int> signal::signals_;
-
-    }
-}
+#endif

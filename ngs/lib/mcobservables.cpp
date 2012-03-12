@@ -26,7 +26,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <alps/ngs/hdf5.hpp>
-#include <alps/ngs/macros.hpp>
+#include <alps/ngs/stacktrace.hpp>
 #include <alps/ngs/mcobservables.hpp>
 
 #include <alps/alea/observable.h>
@@ -40,13 +40,13 @@ namespace alps {
 
     mcobservable & mcobservables::operator[](std::string const & name) {
         if (!has(name))
-            ALPS_NGS_THROW_OUT_OF_RANGE("No observable found with the name: " + name);
+            throw std::out_of_range("No observable found with the name: " + name + ALPS_STACKTRACE);
         return std::map<std::string, mcobservable>::find(name)->second;
     }
 
     mcobservable const & mcobservables::operator[](std::string const & name) const {
         if (!has(name))
-            ALPS_NGS_THROW_OUT_OF_RANGE("No observable found with the name: " + name);
+            throw std::out_of_range("No observable found with the name: " + name + ALPS_STACKTRACE);
         return std::map<std::string, mcobservable>::find(name)->second;
     }
 
@@ -56,7 +56,7 @@ namespace alps {
 
     void mcobservables::insert(std::string const & name, mcobservable obs) {
         if (has(name))
-            ALPS_NGS_THROW_OUT_OF_RANGE("There exists alrady a observable with the name: " + name);
+            throw std::out_of_range("There exists alrady a observable with the name: " + name + ALPS_STACKTRACE);
         std::map<std::string, mcobservable>::insert(make_pair(name, obs));
     }
 
@@ -121,28 +121,28 @@ namespace alps {
     void mcobservables::create_SignedRealObservable(std::string const & name, std::string sign, uint32_t binnum) {
         insert(name, boost::make_shared<SignedObservable<RealObservable> >(name, binnum).get());
         if (find(sign) == end())
-            ALPS_NGS_THROW_RUNTIME_ERROR("the sign " +  sign + " does not exists")
+            throw std::runtime_error("the sign " +  sign + " does not exists" + ALPS_STACKTRACE);
         operator[](name).get_impl()->set_sign(*(operator[](sign).get_impl()));
     }
 
     void mcobservables::create_SignedRealVectorObservable(std::string const & name, std::string sign, uint32_t binnum) {
         insert(name, boost::make_shared<SignedObservable<RealVectorObservable> >(name, binnum).get());
         if (find(sign) == end())
-            ALPS_NGS_THROW_RUNTIME_ERROR("the sign " +  sign + " does not exists")
+            throw std::runtime_error("the sign " +  sign + " does not exists" + ALPS_STACKTRACE);
         operator[](name).get_impl()->set_sign(*(operator[](sign).get_impl()));
     }
 
     void mcobservables::create_SignedSimpleRealObservable(std::string const & name, std::string sign) {
         insert(name, boost::make_shared<SignedObservable<SimpleRealObservable> >(name).get());
         if (find(sign) == end())
-            ALPS_NGS_THROW_RUNTIME_ERROR("the sign " +  sign + " does not exists")
+            throw std::runtime_error("the sign " +  sign + " does not exists" + ALPS_STACKTRACE);
         operator[](name).get_impl()->set_sign(*(operator[](sign).get_impl()));
     }
 
     void mcobservables::create_SignedSimpleRealVectorObservable(std::string const & name, std::string sign) {
         insert(name, boost::make_shared<SignedObservable<SimpleRealVectorObservable> >(name).get());
         if (find(sign) == end())
-            ALPS_NGS_THROW_RUNTIME_ERROR("the sign " +  sign + " does not exists")
+            throw std::runtime_error("the sign " +  sign + " does not exists" + ALPS_STACKTRACE);
         operator[](name).get_impl()->set_sign(*(operator[](sign).get_impl()));
     }
 

@@ -57,7 +57,7 @@ namespace alps {
 						if (!boost::is_scalar<typename std::valarray<T>::value_type>::value)
 							for (std::size_t i = 1; i < value.size(); ++i)
 								if (!std::equal(extent.begin(), extent.end(), get_extent(const_cast<std::valarray<T> &>(value)[i]).begin()))
-									ALPS_NGS_THROW_RUNTIME_ERROR("no rectengual matrix")
+									throw std::runtime_error("no rectengual matrix" + ALPS_STACKTRACE);
                         std::copy(extent.begin(), extent.end(), std::back_inserter(result));
                     }
                     return result;

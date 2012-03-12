@@ -33,7 +33,7 @@
 #ifndef ALPS_GRAPH_LATTICE_CONSTANT
 #define ALPS_GRAPH_LATTICE_CONSTANT
 
-#include <alps/ngs/macros.hpp>
+#include <alps/ngs/stacktrace.hpp>
 
 #include <alps/lattice/graph_helper.h>
 #include <alps/lattice/graphproperties.h>
@@ -48,6 +48,7 @@
 #include <vector>
 #include <cstring>
 #include <algorithm>
+#include <stdexcept>
 
 #if !defined(USE_COMPRESSED_EMBEDDING) && !defined(USE_COMPRESSED_EMBEDDING2) && !defined(USE_GENERIC_EMBEDDING)
 	#define USE_GENERIC_EMBEDDING

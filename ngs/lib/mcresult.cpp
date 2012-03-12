@@ -26,8 +26,8 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <alps/ngs/hdf5.hpp>
-#include <alps/ngs/macros.hpp>
 #include <alps/ngs/mcresult.hpp>
+#include <alps/ngs/stacktrace.hpp>
 #include <alps/ngs/lib/mcresult_impl_base.ipp>
 #include <alps/ngs/lib/mcresult_impl_derived.ipp>
 
@@ -35,6 +35,7 @@
 #include <alps/alea/abstractsimpleobservable.h>
 
 #include <iostream>
+#include <stdexcept>
 
 namespace alps {
 
@@ -181,7 +182,7 @@ namespace alps {
                 dynamic_cast<AbstractSimpleObservable<std::valarray<double> > const &>(*obs)
             );
         else
-            ALPS_NGS_THROW_RUNTIME_ERROR("unknown observable type");
+            throw std::runtime_error("unknown observable type" + ALPS_STACKTRACE);
         ref_cnt_[impl_] = 1;
     }
 

@@ -30,7 +30,7 @@
 
 #include <alps/ngs/param.hpp>
 #include <alps/ngs/config.hpp>
-#include <alps/ngs/macros.hpp>
+#include <alps/ngs/stacktrace.hpp>
 
 #include <boost/mpl/and.hpp>
 #include <boost/utility/enable_if.hpp>
@@ -42,6 +42,25 @@
 #include <vector>
 #include <string>
 #include <numeric>
+#include <stdexcept>
+
+#define ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(CALLBACK)                                                                                            \
+    CALLBACK(char)                                                                                                                             \
+    CALLBACK(signed char)                                                                                                                      \
+    CALLBACK(unsigned char)                                                                                                                    \
+    CALLBACK(short)                                                                                                                            \
+    CALLBACK(unsigned short)                                                                                                                   \
+    CALLBACK(int)                                                                                                                              \
+    CALLBACK(unsigned)                                                                                                                         \
+    CALLBACK(long)                                                                                                                             \
+    CALLBACK(unsigned long)                                                                                                                    \
+    CALLBACK(long long)                                                                                                                        \
+    CALLBACK(unsigned long long)                                                                                                               \
+    CALLBACK(float)                                                                                                                            \
+    CALLBACK(double)                                                                                                                           \
+    CALLBACK(long double)                                                                                                                      \
+    CALLBACK(bool)                                                                                                                             \
+    CALLBACK(std::string)
 
 namespace alps {
     namespace hdf5 {
@@ -55,7 +74,7 @@ namespace alps {
 
             template<typename A, typename T> struct is_datatype_caller {
                 static bool apply(A const & ar, std::string path) {
-                    ALPS_NGS_THROW_RUNTIME_ERROR("only native datatypes can be probed: " + path)
+                    throw std::runtime_error("only native datatypes can be probed: " + path + ALPS_STACKTRACE);
                     return false;
                 }
             };
@@ -136,7 +155,7 @@ namespace alps {
                     , std::vector<std::size_t>
                     , std::vector<std::size_t> = std::vector<std::size_t>()
                 ) const {
-                    ALPS_NGS_THROW_RUNTIME_ERROR("Invalid type on path: " + path)
+                    throw std::runtime_error("Invalid type on path: " + path + ALPS_STACKTRACE);
                 }
 
                 template<typename T> void write(
@@ -146,7 +165,7 @@ namespace alps {
                     , std::vector<std::size_t> chunk = std::vector<std::size_t>()
                     , std::vector<std::size_t> offset = std::vector<std::size_t>()
                 ) const {
-                    ALPS_NGS_THROW_RUNTIME_ERROR("Invalid type on path: " + path)
+                    throw std::runtime_error("Invalid type on path: " + path + ALPS_STACKTRACE);
                 }
 
                 #define ALPS_NGS_HDF5_DEFINE_API(T)                                                                                                                    \
@@ -274,7 +293,7 @@ namespace alps {
              , std::vector<std::size_t> offset = std::vector<std::size_t>()
         ) {
             if (chunk.size())
-                ALPS_NGS_THROW_RUNTIME_ERROR("user defined objects needs to be written continously");
+                throw std::runtime_error("user defined objects needs to be written continously" + ALPS_STACKTRACE);
             std::string context = ar.get_context();
             ar.set_context(ar.complete_path(path));
             value.save(ar);
@@ -289,7 +308,7 @@ namespace alps {
              , std::vector<std::size_t> offset = std::vector<std::size_t>()
         ) {
             if (chunk.size())
-                ALPS_NGS_THROW_RUNTIME_ERROR("user defined objects needs to be written continously");
+                throw std::runtime_error("user defined objects needs to be written continously" + ALPS_STACKTRACE);
             std::string context = ar.get_context();
             ar.set_context(ar.complete_path(path));
             value.load(ar);

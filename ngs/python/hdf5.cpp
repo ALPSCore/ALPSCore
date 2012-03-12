@@ -29,8 +29,8 @@
 #define PY_ARRAY_UNIQUE_SYMBOL pyngshdf5_PyArrayHandle
 
 #include <alps/ngs/hdf5.hpp>
-#include <alps/ngs/macros.hpp>
 #include <alps/ngs/hdf5/pair.hpp>
+#include <alps/ngs/stacktrace.hpp>
 #include <alps/ngs/hdf5/vector.hpp>
 #include <alps/ngs/hdf5/complex.hpp>
 #include <alps/ngs/boost_python.hpp>
@@ -45,7 +45,9 @@
 
 #include <numpy/arrayobject.h>
 
+#include <string>
 #include <iterator>
+#include <stdexcept>
 
 namespace alps {
     namespace detail {
@@ -108,8 +110,9 @@ namespace alps {
 
                 void py_save(std::string const & path, boost::python::object const & data) {
                     import_numpy();
-					std::string dtype = data.ptr()->ob_type->tp_name;					
-					if (dtype == "int") py_save_scalar(path, boost::python::extract<int>(data)());
+					std::string dtype = data.ptr()->ob_type->tp_name;
+					if (dtype == "bool") py_save_scalar(path, boost::python::extract<bool>(data)());
+					else if (dtype == "int") py_save_scalar(path, boost::python::extract<int>(data)());
 					else if (dtype == "long") py_save_scalar(path, boost::python::extract<long>(data)());
 					else if (dtype == "float") py_save_scalar(path, boost::python::extract<double>(data)());
 					else if (dtype == "complex") py_save_scalar(path, boost::python::extract<std::complex<double> >(data)());
@@ -117,6 +120,8 @@ namespace alps {
 					else if (dtype == "list") py_save_list(path, boost::python::extract<boost::python::list>(data)());
 					else if (dtype == "dict") py_save_dict(path, boost::python::extract<boost::python::dict>(data)());
 					else if (dtype == "numpy.ndarray") py_save_numpy(path, boost::python::extract<boost::python::numeric::array>(data)());
+					else if (dtype == "numpy.str") py_save_scalar(path, boost::python::call_method<std::string>(data.ptr(), "__str__"));
+					else if (dtype == "numpy.bool") py_save_scalar(path, boost::python::call_method<bool>(data.ptr(), "__bool__"));
 					else if (dtype == "numpy.int8") py_save_scalar<boost::int8_t>(path, boost::python::call_method<long>(data.ptr(), "__long__"));
 					else if (dtype == "numpy.int16") py_save_scalar<boost::int16_t>(path, boost::python::call_method<long>(data.ptr(), "__long__"));
 					else if (dtype == "numpy.int32") py_save_scalar<boost::int32_t>(path, boost::python::call_method<long>(data.ptr(), "__long__"));
@@ -129,19 +134,20 @@ namespace alps {
 					else if (dtype == "numpy.float64") py_save_scalar<double>(path, boost::python::call_method<double>(data.ptr(), "__float__"));
  					else if (dtype == "numpy.complex64") py_save_scalar(path, std::complex<float>(
 						  boost::python::call_method<double>(PyObject_GetAttr(data.ptr(), boost::python::str("real").ptr()), "__float__")
-						, boost::python::call_method<double>(PyObject_GetAttr(data.ptr(), boost::python::str("real").ptr()), "__float__")
+						, boost::python::call_method<double>(PyObject_GetAttr(data.ptr(), boost::python::str("imag").ptr()), "__float__")
 					));
  					else if (dtype == "numpy.complex128") py_save_scalar(path, std::complex<double>(
 						  boost::python::call_method<double>(PyObject_GetAttr(data.ptr(), boost::python::str("real").ptr()), "__float__")
-						, boost::python::call_method<double>(PyObject_GetAttr(data.ptr(), boost::python::str("real").ptr()), "__float__")
+						, boost::python::call_method<double>(PyObject_GetAttr(data.ptr(), boost::python::str("imag").ptr()), "__float__")
 					));
 					else
-						ALPS_NGS_THROW_RUNTIME_ERROR("Unsupported type: " + dtype)
+						throw std::runtime_error("Unsupported type: " + dtype + ALPS_STACKTRACE);
                 }
 
                 boost::python::object py_load(std::string const & path) {
                     import_numpy();
 					if (is_group(path)) {
+						// TODO: if keys are integers make a list out of it
                         boost::python::dict result;
 						std::vector<std::string> list = list_children(path);
 						for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it)
@@ -150,6 +156,8 @@ namespace alps {
 					} else if (is_scalar(path) || (is_datatype<double>(path) && is_complex(path) && extent(path).size() == 1 && extent(path)[0] == 2)) {
                         if (is_datatype<std::string>(path))
                             return load_scalar<std::string>(path);
+                        else if (is_datatype<bool>(path))
+                            return load_scalar<bool>(path);
                         else if (is_datatype<int>(path))
                             return load_scalar<int>(path);
                         else if (is_datatype<unsigned int>(path))
@@ -169,10 +177,10 @@ namespace alps {
                         else if (is_datatype<double>(path))
                             return load_scalar<double>(path);
                         else
-                            ALPS_NGS_THROW_RUNTIME_ERROR("Unsupported type.")
+                            throw std::runtime_error("Unsupported type." + ALPS_STACKTRACE);
                     } else if (is_datatype<std::string>(path)) {
                         if (dimensions(path) != 1)
-                            ALPS_NGS_THROW_RUNTIME_ERROR("More than 1 Dimension is not supported.")
+                            throw std::runtime_error("More than 1 Dimension is not supported." + ALPS_STACKTRACE);
                         boost::python::list result;
                         std::vector<std::string> data;
                         static_cast<alps::hdf5::archive &>(*this) >> make_pvp(path, data);
@@ -204,7 +212,7 @@ namespace alps {
                     else if (is_datatype<long double>(path))
                         return load_numpy<std::complex<long double> >(path, PyArray_LONGDOUBLE);
                     else
-                        ALPS_NGS_THROW_RUNTIME_ERROR("Unsupported type.")
+                        throw std::runtime_error("Unsupported type." + ALPS_STACKTRACE);
                     return boost::python::object();
                 }
 
@@ -254,6 +262,8 @@ namespace alps {
 					scalar_types.push_back("complex");
 					scalar_types.push_back("str");
 					scalar_types.push_back("numpy.ndarray");
+					scalar_types.push_back("numpy.str");
+					scalar_types.push_back("numpy.bool");
 					scalar_types.push_back("numpy.int8");
 					scalar_types.push_back("numpy.int16");
 					scalar_types.push_back("numpy.int32");
@@ -310,6 +320,8 @@ namespace alps {
 						else if (dtype == "float") save(ar, path, boost::python::extract<double>(item)(), size, chunk, offset);
 						else if (dtype == "complex") save(ar, path, boost::python::extract<std::complex<double> >(item)(), size, chunk, offset);
 						else if (dtype == "str") save(ar, path, boost::python::extract<std::string>(item)(), size, chunk, offset);
+						else if (dtype == "numpy.str") save(ar, path, boost::python::call_method<std::string>(item.ptr(), "__str__"), size, chunk, offset);
+						else if (dtype == "numpy.bool") save(ar, path, boost::python::call_method<bool>(item.ptr(), "__bool__"), size, chunk, offset);
 						else if (dtype == "numpy.int8") save(ar, path, static_cast<boost::int8_t>(boost::python::call_method<long>(item.ptr(), "__long__")), size, chunk, offset);
 						else if (dtype == "numpy.int16") save(ar, path, static_cast<boost::int16_t>(boost::python::call_method<long>(item.ptr(), "__long__")), size, chunk, offset);
 						else if (dtype == "numpy.int32") save(ar, path, static_cast<boost::int32_t>(boost::python::call_method<long>(item.ptr(), "__long__")), size, chunk, offset);
@@ -322,14 +334,14 @@ namespace alps {
 						else if (dtype == "numpy.float64") save(ar, path, static_cast<double>(boost::python::call_method<double>(item.ptr(), "__float__")), size, chunk, offset);
 						else if (dtype == "numpy.complex64") save(ar, path, std::complex<float>(
 							  boost::python::call_method<double>(PyObject_GetAttr(item.ptr(), boost::python::str("real").ptr()), "__float__")
-							, boost::python::call_method<double>(PyObject_GetAttr(item.ptr(), boost::python::str("real").ptr()), "__float__")
+							, boost::python::call_method<double>(PyObject_GetAttr(item.ptr(), boost::python::str("imag").ptr()), "__float__")
 						));
 						else if (dtype == "numpy.complex128") save(ar, path, std::complex<double>(
 							  boost::python::call_method<double>(PyObject_GetAttr(item.ptr(), boost::python::str("real").ptr()), "__float__")
-							, boost::python::call_method<double>(PyObject_GetAttr(item.ptr(), boost::python::str("real").ptr()), "__float__")
+							, boost::python::call_method<double>(PyObject_GetAttr(item.ptr(), boost::python::str("imag").ptr()), "__float__")
 						));
 						else
-							ALPS_NGS_THROW_RUNTIME_ERROR("Unsupported type: " + dtype)
+							throw std::runtime_error("Unsupported type: " + dtype + ALPS_STACKTRACE);
 					}
 				}
 				void py_save_list(std::string const & path, boost::python::list data) {
@@ -361,11 +373,11 @@ namespace alps {
 				}
 				void py_save_numpy(std::string const & path, boost::python::numeric::array data) {
 					if (!PyArray_Check(data.ptr()))
-						ALPS_NGS_THROW_RUNTIME_ERROR("invalid numpy data")
+						throw std::runtime_error("invalid numpy data" + ALPS_STACKTRACE);
 					else if (!PyArray_ISCONTIGUOUS(data.ptr()))
-						ALPS_NGS_THROW_RUNTIME_ERROR("numpy array is not continous")
+						throw std::runtime_error("numpy array is not continous" + ALPS_STACKTRACE);
 					else if (!PyArray_ISNOTSWAPPED(data.ptr()))
-						ALPS_NGS_THROW_RUNTIME_ERROR("numpy array is not native")
+						throw std::runtime_error("numpy array is not native" + ALPS_STACKTRACE);
 					#define NGS_PYTHON_HDF5_CHECK_NUMPY(T, N)																						\
 						else if (PyArray_DESCR(data.ptr())->type_num == N)																			\
 							static_cast<alps::hdf5::archive &>(*this) << make_pvp(																	\
@@ -394,7 +406,7 @@ namespace alps {
 					NGS_PYTHON_HDF5_CHECK_NUMPY(std::complex<long double>, PyArray_CLONGDOUBLE)
 					#undef NGS_PYTHON_HDF5_CHECK_NUMPY
 					else
-						ALPS_NGS_THROW_RUNTIME_ERROR("unknown numpy element type")
+						throw std::runtime_error("unknown numpy element type" + ALPS_STACKTRACE);
 				}
          };
     }

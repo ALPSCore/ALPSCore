@@ -92,7 +92,7 @@ namespace alps {
                     if (!is_continous<T>::value && value.second.size()) {
                         for (std::size_t i = 1; i < std::accumulate(value.second.begin(), value.second.end(), std::size_t(1), std::multiplies<std::size_t>()); ++i)
                             if (!std::equal(size.begin(), size.end(), get_extent(value.first[i]).begin()))
-                                ALPS_NGS_THROW_RUNTIME_ERROR("no rectengual matrix")
+                                throw std::runtime_error("no rectengual matrix" + ALPS_STACKTRACE);
                     }
                     std::copy(size.begin(), size.end(), std::back_inserter(extent));
                     return extent;
@@ -103,7 +103,7 @@ namespace alps {
                 static void apply(std::pair<T *, std::vector<std::size_t> > & value, std::vector<std::size_t> const & size) {
                     using alps::hdf5::set_extent;
                     if (value.second.size() > size.size() || !std::equal(value.second.begin(), value.second.end(), size.begin()))
-                        ALPS_NGS_THROW_RUNTIME_ERROR("invalid data size")
+                        throw std::runtime_error("invalid data size" + ALPS_STACKTRACE);
                     if (!is_continous<T>::value && value.second.size() && value.second.size() < size.size())
                         for (std::size_t i = 0; i < std::accumulate(value.second.begin(), value.second.end(), std::size_t(1), std::multiplies<std::size_t>()); ++i)
                              set_extent(value.first[i], std::vector<std::size_t>(size.begin() + value.second.size(), size.end()));
@@ -177,7 +177,7 @@ namespace alps {
                     }                                                                                                                                           \
                 } else {                                                                                                                                        \
                     if (path.find_last_of('@') != std::string::npos)                                                                                            \
-                        ALPS_NGS_THROW_RUNTIME_ERROR("attributes needs to be vectorizable: " + path)                                                            \
+                        throw std::runtime_error("attributes needs to be vectorizable: " + path + ALPS_STACKTRACE);                                                   \
                     if (ar.is_data(path))                                                                                                                       \
                         ar.delete_data(path);                                                                                                                   \
                     offset = std::vector<std::size_t>(value.second.size(), 0);                                                                                  \

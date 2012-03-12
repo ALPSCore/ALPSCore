@@ -63,7 +63,7 @@ namespace alps {
 									   first.size() != size.size()
 									|| !std::equal(first.begin(), first.end(), size.begin())
 								)
-									ALPS_NGS_THROW_RUNTIME_ERROR("no rectengual matrix")
+									throw std::runtime_error("no rectengual matrix" + ALPS_STACKTRACE);
 							}
                         std::copy(first.begin(), first.end(), std::back_inserter(result));
                     }

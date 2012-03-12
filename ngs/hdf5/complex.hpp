@@ -103,7 +103,7 @@ namespace alps {
                     offset.push_back(0);                                                                                                                                \
                     ar.write(path, get_pointer(value), size, chunk, offset);                                                                                            \
                 } else                                                                                                                                                  \
-                    ALPS_NGS_THROW_RUNTIME_ERROR("invalid type")                                                                                                        \
+                    throw std::runtime_error("invalid type" + ALPS_STACKTRACE);                                                                                               \
             }
         ALPS_NGS_HDF5_COMPLEX_SAVE(archive)
         #ifdef ALPS_HDF5_HAVE_DEPRECATED
@@ -120,9 +120,9 @@ namespace alps {
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                          \
             ) {                                                                                                                                                         \
                 if (ar.is_group(path) || !is_continous<T>::value)                                                                                                       \
-                    ALPS_NGS_THROW_RUNTIME_ERROR("invalid path")                                                                                                        \
+                    throw std::runtime_error("invalid path" + ALPS_STACKTRACE);                                                                                               \
                 else if (!ar.is_complex(path))																															\
-                    ALPS_NGS_THROW_RUNTIME_ERROR("no complex value in archive")                                                                                         \
+                    throw std::runtime_error("no complex value in archive" + ALPS_STACKTRACE);                                                                                \
                 else {                                                                                                                                                  \
                     chunk.push_back(2);                                                                                                                                 \
                     offset.push_back(0);                                                                                                                                \

@@ -25,7 +25,7 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/ngs/macros.hpp>
+#include <alps/ngs/stacktrace.hpp>
 
 #include <alps/lattice/graph_helper.h>
 #include <alps/lattice/graphproperties.h>
@@ -40,6 +40,7 @@
 #include <vector>
 #include <cstring>
 #include <algorithm>
+#include <stdexcept>
 
 //#include <emmintrin.h>
 

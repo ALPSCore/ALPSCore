@@ -65,6 +65,7 @@ namespace alps {
                     return boost::python::extract<std::size_t>(values_.attr("__len__")());
                 }
 
+				// TODO: save using generic python hdf5 interface
                 std::vector<std::string> keys() const {
                     std::vector<std::string> keys;
                     boost::python::extract<boost::python::dict> dict(values_);
@@ -82,7 +83,7 @@ namespace alps {
                         else if (std::string(key.ptr()->ob_type->tp_name) == "str")
                             keys.push_back(boost::python::extract<std::string>(key)());
                         else
-                            ALPS_NGS_THROW_INVALID_ARGUMENT("unknown type: "  + std::string(key.ptr()->ob_type->tp_name));
+                            throw std::invalid_argument("unknown type: "  + std::string(key.ptr()->ob_type->tp_name) + ALPS_STACKTRACE);
                     }
                     return keys;
                 }
@@ -96,7 +97,7 @@ namespace alps {
 
                 param const operator[](std::string const & key) const {
                     if (!defined(key))
-                        ALPS_NGS_THROW_INVALID_ARGUMENT("unknown argument: "  + key);
+                        throw std::invalid_argument("unknown argument: "  + key + ALPS_STACKTRACE);
                     return param(getter(key));
                 }
 
@@ -104,6 +105,7 @@ namespace alps {
                     return boost::python::call_method<bool>(values_.ptr(), "__contains__", key);
                 }
 
+				// TODO: save using generic python hdf5 interface
                 void save(hdf5::archive & ar) const {
                     boost::python::extract<boost::python::dict> dict(values_);
                     const boost::python::object kit = dict().iterkeys();
@@ -123,7 +125,7 @@ namespace alps {
                         else if (std::string(key.ptr()->ob_type->tp_name) == "str")
                             segment = boost::python::extract<std::string>(key)();
                         else
-                            ALPS_NGS_THROW_INVALID_ARGUMENT("unknown key type: "  + std::string(key.ptr()->ob_type->tp_name));
+                            throw std::invalid_argument("unknown key type: "  + std::string(key.ptr()->ob_type->tp_name) + ALPS_STACKTRACE);
                         if (std::string(value.ptr()->ob_type->tp_name) == "bool")
                             ar << make_pvp(segment, boost::python::extract<bool>(value)());
                         if (std::string(value.ptr()->ob_type->tp_name) == "int")
@@ -135,7 +137,7 @@ namespace alps {
                         else if (std::string(value.ptr()->ob_type->tp_name) == "str")
                             ar << make_pvp(segment, boost::python::extract<std::string>(value)());
                         else
-                            ALPS_NGS_THROW_INVALID_ARGUMENT("unknown value type: "  + std::string(value.ptr()->ob_type->tp_name));
+                            throw std::invalid_argument("unknown value type: "  + std::string(value.ptr()->ob_type->tp_name) + ALPS_STACKTRACE);
                     }
                 }
 
@@ -182,7 +184,7 @@ namespace alps {
 
 				#ifdef ALPS_HAVE_MPI
 					void broadcast(int root) {
-						ALPS_NGS_THROW_LOGIC_ERROR("no communicator available")
+						throw std::logic_error("no communicator available" + ALPS_STACKTRACE);
 					}
 				#endif
 
@@ -211,7 +213,7 @@ namespace alps {
                     else if (std::string(value.ptr()->ob_type->tp_name) == "str")
                     	return boost::python::extract<std::string>(value)();
                     else {
-                        ALPS_NGS_THROW_INVALID_ARGUMENT("unknown value type: "  + std::string(value.ptr()->ob_type->tp_name));
+                        throw std::invalid_argument("unknown value type: "  + std::string(value.ptr()->ob_type->tp_name) + ALPS_STACKTRACE);
                         return "";
                     }
                 }

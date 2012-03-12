@@ -30,8 +30,8 @@
 #define ALPS_NGS_MCRESULT_IMPL_DERIVED_IPP
 
 #include <alps/ngs/hdf5.hpp>
-#include <alps/ngs/macros.hpp>
 #include <alps/ngs/boost_mpi.hpp>
+#include <alps/ngs/stacktrace.hpp>
 #include <alps/ngs/short_print.hpp>
 
 #include <alps/alea/mcdata.hpp>
@@ -42,6 +42,7 @@
 
 #include <iomanip>
 #include <iostream>
+#include <stdexcept>
 
 namespace alps {
 
@@ -142,7 +143,7 @@ namespace alps {
                           typename boost::is_same<T, U >::type                                                                                 \
                       /*, typename boost::is_same<typename alea::mcdata<T>::element_type, U>::type*/                                           \
                     >::type NAME ## _assign (U const & rhs) {                                                                                  \
-                        ALPS_NGS_THROW_RUNTIME_ERROR("Invalid cast");                                                                          \
+                        throw std::runtime_error("Invalid cast" + ALPS_STACKTRACE);                                                                          \
                     }                                                                                                                          \
                                                                                                                                                \
                     void NAME ## _assign_virtual (B const * rhs) {                                                                             \
@@ -164,7 +165,7 @@ namespace alps {
                           typename boost::is_same<T, U>::type                                                                                  \
                       /* , typename boost::is_same<typename alea::mcdata<T>::element_type, U>::type*/                                          \
                     >::type, B *>::type NAME (U const & rhs) const {                                                                           \
-                        ALPS_NGS_THROW_RUNTIME_ERROR("Invalid cast");                                                                          \
+                        throw std::runtime_error("Invalid cast" + ALPS_STACKTRACE);                                                                          \
                         return NULL;                                                                                                           \
                     }                                                                                                                          \
                                                                                                                                                \
@@ -182,7 +183,7 @@ namespace alps {
                                    )                                                                                                           \
                             );                                                                                                                 \
                         else {                                                                                                                 \
-                            ALPS_NGS_THROW_RUNTIME_ERROR("Invalid cast");                                                                      \
+                            throw std::runtime_error("Invalid cast" + ALPS_STACKTRACE);                                                                      \
                             return new mcresult_impl_derived<B, U>(*this);                                                                     \
                         }                                                                                                                      \
                     }                                                                                                                          \
@@ -208,7 +209,7 @@ namespace alps {
                                    )                                                                                                           \
                             ));                                                                                                                \
                         else {                                                                                                                 \
-                            ALPS_NGS_THROW_RUNTIME_ERROR("Invalid cast");                                                                      \
+                            throw std::runtime_error("Invalid cast" + ALPS_STACKTRACE);                                                                      \
                             return new mcresult_impl_derived<B, U>(*this);                                                                     \
                         }                                                                                                                      \
                     }                                                                                                                          \
@@ -236,7 +237,7 @@ namespace alps {
 							, typename boost::is_same<typename alea::mcdata<T>::element_type, U>::type                                         \
 						>::type																												   \
                     >::type, B *>::type NAME ## _inverse(U const & rhs) const {                                                                \
-                        ALPS_NGS_THROW_RUNTIME_ERROR("Invalid cast");                                                                          \
+                        throw std::runtime_error("Invalid cast" + ALPS_STACKTRACE);                                                                          \
                         return NULL;                                                                                                           \
                     }
                 ALPS_NGS_MCRESULT_IMPL_DERIVED_OPERATOR(add, +, +=)

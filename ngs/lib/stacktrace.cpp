@@ -30,12 +30,13 @@
 #ifndef ALPS_NGS_NO_STACKTRACE
 
 #include <sstream>
+
 #include <cxxabi.h>
 #include <stdlib.h>
 #include <execinfo.h>
-		
+
 #endif
-		
+
 namespace alps {
 	namespace ngs {
 

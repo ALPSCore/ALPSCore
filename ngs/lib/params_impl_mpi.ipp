@@ -73,7 +73,7 @@ namespace alps {
 
                 param const operator[](std::string const & key) const {
                     if (!defined(key))
-                        ALPS_NGS_THROW_INVALID_ARGUMENT("unknown argument: "  + key);
+                        throw std::invalid_argument("unknown argument: "  + key + ALPS_STACKTRACE);
                     return param(Base::find(key)->second);
                 }
 

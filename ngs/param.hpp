@@ -28,15 +28,173 @@
 #ifndef ALPS_NGS_PARAM_HPP
 #define ALPS_NGS_PARAM_HPP
 
-#include <alps/ngs/macros.hpp>
 #include <alps/ngs/config.hpp>
 #include <alps/ngs/convert.hpp>
+#include <alps/ngs/stacktrace.hpp>
 
 #include <boost/function.hpp>
 #include <boost/optional/optional.hpp>
 
 #include <string>
 #include <iostream>
+#include <stdexcept>
+
+/*
+namespace alps {
+
+    namespace detail {
+        typedef boost::mpl::vector<std::string, int, double> mcparamvalue_types;
+        typedef boost::make_variant_over<mcparamvalue_types>::type mcparamvalue_base;
+    }
+
+    class mcparamvalue : public detail::mcparamvalue_base {
+
+        public:
+
+            mcparamvalue() {}
+
+            template <typename T> mcparamvalue(T const & v): detail::mcparamvalue_base(v) {}
+
+            mcparamvalue(mcparamvalue const & v): detail::mcparamvalue_base(static_cast<detail::mcparamvalue_base const &>(v)) {}
+
+            std::string str() const;
+
+            template <typename T> typename boost::enable_if<
+                  typename boost::mpl::contains<detail::mcparamvalue_types, T>::type
+                , mcparamvalue &
+            >::type operator=(T const & v) {
+                detail::mcparamvalue_base::operator=(v);
+                return *this;
+            }
+
+            template <typename T> typename boost::disable_if<
+                  typename boost::mpl::contains<detail::mcparamvalue_types, T>::type
+                , mcparamvalue &
+            >::type operator=(T const & v) {
+                detail::mcparamvalue_base::operator=(boost::lexical_cast<std::string>(v));
+                return *this;
+            }
+
+            #define ALPS_NGS_MCPARAMS_CAST_OPERATOR_DECL(T)    \
+                operator T () const;
+            ALPS_NGS_MCPARAMS_CAST_OPERATOR_DECL(short)
+            ALPS_NGS_MCPARAMS_CAST_OPERATOR_DECL(unsigned short)
+            ALPS_NGS_MCPARAMS_CAST_OPERATOR_DECL(int)
+            ALPS_NGS_MCPARAMS_CAST_OPERATOR_DECL(unsigned int)
+            ALPS_NGS_MCPARAMS_CAST_OPERATOR_DECL(long)
+            ALPS_NGS_MCPARAMS_CAST_OPERATOR_DECL(unsigned long)
+            ALPS_NGS_MCPARAMS_CAST_OPERATOR_DECL(long long)
+            ALPS_NGS_MCPARAMS_CAST_OPERATOR_DECL(unsigned long long)
+            ALPS_NGS_MCPARAMS_CAST_OPERATOR_DECL(float)
+            ALPS_NGS_MCPARAMS_CAST_OPERATOR_DECL(double)
+            ALPS_NGS_MCPARAMS_CAST_OPERATOR_DECL(long double)
+            ALPS_NGS_MCPARAMS_CAST_OPERATOR_DECL(bool)
+            ALPS_NGS_MCPARAMS_CAST_OPERATOR_DECL(std::string)
+            #undef ALPS_NGS_MCPARAMS_CAST_OPERATOR_DECL
+    };
+
+    // TODO: make possible to toke any base: std::map, python dict ...
+    // TODO: can we keep parameter ordering? like in curent class
+    class mcparams : public std::map<std::string, mcparamvalue> {
+
+        public: 
+
+            mcparams(std::string const & input_file);
+
+            mcparamvalue & operator[](std::string const & k);
+
+            mcparamvalue const & operator[](std::string const & k) const;
+
+            mcparamvalue value_or_default(std::string const & k, mcparamvalue const & v) const;
+
+            bool defined(std::string const & k) const;
+
+            void save(hdf5::archive & ar) const;
+
+            void load(hdf5::archive & ar);
+
+    };
+}
+
+    class ALPS_DECL param_proxy {
+
+        public:
+
+            param(param const & arg)
+                : value_(arg.value_)
+                , getter_(arg.getter_)
+                , setter_(arg.setter_)
+            {}
+
+            param(std::string const & value)
+                : value_(value)
+            {}
+
+            param(
+                  boost::function<std::string()> const & getter
+                , boost::function<void(std::string)> const & setter
+            )
+                : value_(boost::none_t())
+                , getter_(getter)
+                , setter_(setter)
+            {}
+
+			template<typename T> T cast() const {
+				 return convert<T>(value_ == boost::none_t() ? getter_() : *value_);
+            }
+
+            template<typename T> operator T() const {
+				return cast<T>();
+            }
+
+            template<typename T> param & operator=(T const & arg) {
+                if (value_ != boost::none_t())
+                    throw std::runtime_error("No reference available" + ALPS_STACKTRACE);
+                setter_(convert<std::string>(arg));
+                return *this;
+            }
+			
+			save
+			load
+
+        private:
+
+            boost::optional<std::string> value_;
+            boost::function<std::string()> getter_;
+            boost::function<void(std::string)> setter_;
+
+    };
+
+    ALPS_DECL std::ostream & operator<<(std::ostream & os, param const &);
+
+	#define ALPS_NGS_PARAM_ADD_OPERATOR(T)											\
+		ALPS_DECL T operator+(param const & p, T const & s);						\
+		ALPS_DECL T operator+(T const & s, param const & p);
+	ALPS_NGS_PARAM_ADD_OPERATOR(char)
+    ALPS_NGS_PARAM_ADD_OPERATOR(signed char)
+    ALPS_NGS_PARAM_ADD_OPERATOR(unsigned char)
+    ALPS_NGS_PARAM_ADD_OPERATOR(short)
+    ALPS_NGS_PARAM_ADD_OPERATOR(unsigned short)
+    ALPS_NGS_PARAM_ADD_OPERATOR(int)
+    ALPS_NGS_PARAM_ADD_OPERATOR(unsigned)
+    ALPS_NGS_PARAM_ADD_OPERATOR(long)
+    ALPS_NGS_PARAM_ADD_OPERATOR(unsigned long)
+    ALPS_NGS_PARAM_ADD_OPERATOR(long long)
+    ALPS_NGS_PARAM_ADD_OPERATOR(unsigned long long)
+    ALPS_NGS_PARAM_ADD_OPERATOR(float)
+    ALPS_NGS_PARAM_ADD_OPERATOR(double)
+    ALPS_NGS_PARAM_ADD_OPERATOR(long double)
+    ALPS_NGS_PARAM_ADD_OPERATOR(bool)
+    #undef ALPS_NGS_PARAM_ADD_OPERATOR
+
+    ALPS_DECL std::string operator+(param const & p, char const * s);
+    ALPS_DECL std::string operator+(char const * s, param const & p);
+
+    ALPS_DECL std::string operator+(param const & p, std::string const & s);
+    ALPS_DECL std::string operator+(std::string const & s, param const & p);
+
+}
+*/
 
 namespace alps {
 
@@ -79,7 +237,7 @@ namespace alps {
 
             template<typename T> param & operator=(T const & arg) {
                 if (value_ != boost::none_t())
-                    ALPS_NGS_THROW_RUNTIME_ERROR("No reference available");
+                    throw std::runtime_error("No reference available" + ALPS_STACKTRACE);
                 setter_(convert<std::string>(arg));
                 return *this;
             }

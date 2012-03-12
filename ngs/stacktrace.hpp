@@ -29,8 +29,16 @@
 #define ALPS_NGS_STACKTRACE_HPP
 
 #include <alps/ngs/config.hpp>
+#include <alps/ngs/stringify.hpp>
 
 #include <string>
+
+#define ALPS_STACKTRACE (                                                          \
+	  std::string("\nIn ") + __FILE__                                              \
+	+ " on " + ALPS_NGS_STRINGIFY(__LINE__)                                        \
+	+ " in " + __FUNCTION__ + "\n"                                                 \
+	+ ::alps::ngs::stacktrace()                                                    \
+)
 
 namespace alps {
 	namespace ngs {
