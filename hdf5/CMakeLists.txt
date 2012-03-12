@@ -15,7 +15,8 @@ IF (ALPS_BUILD_HDF5_TESTS)
     find_package(HDF5)
 
     # tests using ALPS
-    FOREACH (name hdf5_deprecated hdf5_complex hdf5_bool hdf5_replace hdf5_pair hdf5_parms hdf5_ising hdf5_family hdf5_large hdf5_observableset)
+    FOREACH (name hdf5_deprecated hdf5_complex hdf5_bool hdf5_replace hdf5_pair hdf5_parms hdf5_ising hdf5_family hdf5_large 
+                  hdf5_observableset hdf5_multi_array)
         add_executable(${name} ${name}.cpp)
         add_dependencies(${name} alps)
         target_link_libraries(${name} alps)
