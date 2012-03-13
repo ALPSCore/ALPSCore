@@ -56,6 +56,7 @@ public:
 
   void save(hdf5::archive &) const;
   void load(hdf5::archive &);
+  
 
 protected:
   void write_xml_body(oxstream&, const boost::filesystem::path&,bool) const;
@@ -65,8 +66,11 @@ protected:
   std::vector<EigenvectorMeasurements<value_type> > measurements_;
 
   std::vector<std::vector<std::pair<std::string,std::string> > > quantumnumbervalues_;
-private:
   
+  bool calc_vectors() const { return calc_averages() || print_vectors();}
+  bool print_vectors() const { return print_vectors_;}
+private:
+  bool print_vectors_;
   bool read_hdf5_;
 };
 
@@ -77,6 +81,7 @@ DiagTask<T,G>::DiagTask(const ProcessList& where , const boost::filesystem::path
     , model_helper<>(this->get_parameters())
     , MeasurementOperators(this->get_parameters())
     , read_hdf5_(false)
+    , print_vectors_(this->get_parameters().value_or_default("PRINT_EIGENVECTORS",false))
 { 
   if (!delay_construct)
     this->construct();

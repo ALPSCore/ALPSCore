@@ -77,6 +77,13 @@ public:
   const matrix_type& matrix() const {if (!built_matrix_) build(); return matrix_;}
   std::size_t dimension() const { if (!built_basis_) build_basis(); return uses_translation_invariance() ? bloch_states.size() : states.size();}
   void dostep();
+  void print_basis(std::ostream& os) const
+  {
+    if (uses_translation_invariance())
+      os << bloch_states_vector();
+    else
+      os << states_vector();
+  }
 
 
   template <class STATES, class V, class W>
