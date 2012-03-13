@@ -63,17 +63,17 @@ struct ObservableNamingHelper {
     typename boost::enable_if<boost::is_arithmetic<T> >::type* = 0) {
     return boost::lexical_cast<std::string, T>(t);
   }
+  
   template<typename T>
   static std::string generate(T const&,
     typename boost::disable_if<boost::is_arithmetic<T> >::type* = 0) {
     return "(unnamed object)";
   }
-#ifdef ALPS_HAVE_VALARRAY
+
   template<typename T>
   static std::string generate(std::valarray<T> const&) {
     return "(unnamed array)";
   }
-#endif
 };
 
 //=======================================================================
@@ -250,10 +250,8 @@ class ALPS_TEMPL_DECL SimpleObservableEvaluator : public AbstractSimpleObservabl
 typedef SimpleObservableEvaluator<double> RealObsevaluator;
 typedef SimpleObservableEvaluator<int32_t> IntObsevaluator;
 typedef SimpleObservableEvaluator<std::complex<double> > ComplexObsevaluator;
-#ifdef ALPS_HAVE_VALARRAY
 typedef SimpleObservableEvaluator<std::valarray<int32_t> > IntVectorObsevaluator;
 typedef SimpleObservableEvaluator<std::valarray<double> > RealVectorObsevaluator;
-#endif
 
 
 template <class T> template <class OPV /* , class OPR */>

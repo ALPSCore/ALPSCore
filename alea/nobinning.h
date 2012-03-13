@@ -107,13 +107,11 @@ typedef SimpleObservable<int32_t,NoBinning<int32_t> > SimpleIntObservable;
 typedef SimpleObservable<double,NoBinning<double> > SimpleRealObservable;
 typedef SimpleObservable<float,NoBinning<float> > SimpleFloatObservable;
 typedef SimpleObservable<std::complex<double>,NoBinning<std::complex<double> > > SimpleComplexObservable;
-#ifdef ALPS_HAVE_VALARRAY
 typedef SimpleObservable< std::valarray<int32_t> , NoBinning<std::valarray<int32_t> > > SimpleIntVectorObservable;
 typedef SimpleObservable< std::valarray<double> , NoBinning<std::valarray<double> > > SimpleRealVectorObservable;
 typedef SimpleObservable< std::valarray<float> , NoBinning<std::valarray<float> > > SimpleFloatVectorObservable;
 typedef SimpleObservable< std::valarray<std::complex<double> > ,
                          NoBinning<std::valarray<std::complex<double> > > > SimpleComplexVectorObservable;
-#endif
 
 //=======================================================================
 

@@ -35,10 +35,7 @@
 #include <algorithm>
 #include <iomanip>
 #include <sstream>
-
-#ifdef ALPS_HAVE_VALARRAY
-# include <valarray>
-#endif
+#include <valarray>
 
 namespace alps {
 
@@ -86,7 +83,6 @@ coordinates(const T[sz]& c)
 }
 */
 
-#ifdef ALPS_HAVE_VALARRAY
 template <class T>
 struct coordinate_traits<std::valarray<T> > {
   typedef T value_type;
@@ -109,7 +105,6 @@ coordinates(const std::valarray<T>& c)
     (&(const_cast<std::valarray<T>&>(c)[0]),
     &(const_cast<std::valarray<T>&>(c)[0])+c.size());
 }
-#endif
 
 
 template <class C>

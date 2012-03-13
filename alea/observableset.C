@@ -482,7 +482,6 @@ void RealObsevaluatorXMLHandler::end_child(std::string const& name, xml::tag_typ
 }
 
 
-#ifdef ALPS_HAVE_VALARRAY
 
 //
 // RealVectorObsevaluatorXMLHandler
@@ -528,7 +527,6 @@ void RealVectorObsevaluatorXMLHandler::end_child(std::string const& name, xml::t
   }
 }
 
-#endif
 
 //
 // RealHistogramEntryXMLHandler
@@ -575,14 +573,10 @@ void RealHistogramObservableXMLHandler::end_child(std::string const& name, xml::
 
 ObservableSetXMLHandler::ObservableSetXMLHandler(ObservableSet& obs) :
   CompositeXMLHandler("AVERAGES"), obs_(obs), robs_(), rhandler_(robs_, dummy_index_),
-#ifdef ALPS_HAVE_VALARRAY
   vobs_(), vhandler_(vobs_),
-#endif
   hobs_(), hhandler_(hobs_) {
   add_handler(rhandler_);
-#ifdef ALPS_HAVE_VALARRAY
   add_handler(vhandler_);
-#endif
   add_handler(hhandler_);
 }
 
@@ -591,10 +585,8 @@ void ObservableSetXMLHandler::end_child(std::string const& name,
   if (type == xml::element) {
     if (name == "SCALAR_AVERAGE")
       obs_ << robs_;
-#ifdef ALPS_HAVE_VALARRAY
     else if (name == "VECTOR_AVERAGE")
       obs_ << vobs_;
-#endif
     else if (name == "HISTOGRAM")
       obs_ << hobs_;
   }

@@ -57,7 +57,6 @@ ObservableFactory::ObservableFactory()
   register_observable<RealTimeSeriesObservable>();
   register_observable<SimpleRealObservable>();
   register_observable<SimpleIntObservable>();
-#ifdef ALPS_HAVE_VALARRAY
   register_observable<RealVectorObsevaluator>();
   register_observable<RealVectorObservable>();
   register_observable<SignedObservable<RealVectorObservable> >();
@@ -74,7 +73,6 @@ ObservableFactory::ObservableFactory()
   register_observable<RealHistogramObservable>();
   register_observable<IntHistogramObsevaluator>();
   register_observable<RealHistogramObsevaluator>();
-#endif
 /*
   register_observable<HistogramObservable<int32_t> >();
   register_observable<HistogramObservable<int32_t,double> >();

@@ -58,10 +58,7 @@
 #include <cmath>
 #include <iomanip>
 #include <utility>
-
-#ifdef ALPS_HAVE_VALARRAY
-# include <valarray>
-#endif
+#include <valarray>
 
 #ifndef ALPS_WITHOUT_OSIRIS
 # include <alps/osiris/dump.h>

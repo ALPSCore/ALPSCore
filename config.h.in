@@ -61,13 +61,6 @@
 #cmakedefine ALPS_HAVE_WINDOWS_H
 
 //
-// C++ headers
-//
-
-// Define to 1 if you have valarray<T>.
-#cmakedefine ALPS_HAVE_VALARRAY
-
-//
 // Libraries
 //
 

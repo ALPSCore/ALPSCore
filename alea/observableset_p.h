@@ -98,7 +98,6 @@ private:
   DummyXMLHandler sign_handler_;
 };
 
-#ifdef ALPS_HAVE_VALARRAY
 
 /// \brief XML parser for the RealVectorObsevaluator class
 class ALPS_DECL RealVectorObsevaluatorXMLHandler : public CompositeXMLHandler {
@@ -119,7 +118,6 @@ private:
   RealObsevaluatorXMLHandler robs_handler_;
 };
 
-#endif
 
 /// \brief XML parser for the entries for RealHistogramObservable class
 class ALPS_DECL RealHistogramEntryXMLHandler : public CompositeXMLHandler {
@@ -164,10 +162,8 @@ private:
   RealObsevaluator robs_;
   std::string dummy_index_;
   RealObsevaluatorXMLHandler rhandler_;
-#ifdef ALPS_HAVE_VALARRAY
   RealVectorObsevaluator vobs_;
   RealVectorObsevaluatorXMLHandler vhandler_;
-#endif
   RealHistogramObservable hobs_;
   RealHistogramObservableXMLHandler hhandler_;
 };

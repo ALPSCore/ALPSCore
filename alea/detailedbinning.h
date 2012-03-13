@@ -40,10 +40,7 @@
 #include <alps/type_traits/change_value_type.hpp>
 #include <alps/type_traits/average_type.hpp>
 #include <boost/config.hpp>
-
-#ifdef ALPS_HAVE_VALARRAY
-# include <valarray>
-#endif
+#include <valarray>
 
 //=======================================================================
 // DetailedBinning
@@ -134,7 +131,6 @@ typedef SimpleObservable<std::complex<double>,DetailedBinning<std::complex<doubl
 typedef SimpleObservable<double,FixedBinning<double> > RealTimeSeriesObservable;
 typedef SimpleObservable<int32_t,FixedBinning<int32_t> > IntTimeSeriesObservable;
 
-#ifdef ALPS_HAVE_VALARRAY
 typedef SimpleObservable< std::valarray<int32_t> , 
                          DetailedBinning<std::valarray<int32_t> > > IntVectorObservable;
 typedef SimpleObservable< std::valarray<double> , 
@@ -149,7 +145,6 @@ typedef SimpleObservable< std::valarray<double> ,
                          FixedBinning<std::valarray<double> > > RealVectorTimeSeriesObservable;
 //typedef SimpleObservable< std::valarray<std::complex<double> > , 
 //                         FixedBinning<std::valarray<std::complex<double> > > > ComplexVectorTimeSeriesObservable;
-#endif
 
 
 template <class T>
