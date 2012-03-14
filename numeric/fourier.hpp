@@ -63,15 +63,15 @@ struct fourier_real
         , boost::lambda::_1 * _2PIx_over_N
         );  
 
-      std::vector<T>  C = alps::numeric::cos(_2PInx_over_N);
-      std::vector<T>  S = alps::numeric::sin(_2PInx_over_N);
+      std::vector<T>  COS = alps::numeric::cos(_2PInx_over_N);
+      std::vector<T>  SIN = alps::numeric::sin(_2PInx_over_N);
 
       using alps::numeric::operator*;
 
-      C = C * A;
-      S = S * B;
+      COS = COS * A;
+      SIN = SIN * B;
 
-      return ( std::accumulate(C.begin(), C.end(), 0.) +  std::accumulate(S.begin()+1, S.end(), 0.) );
+      return ( std::accumulate(COS.begin(), COS.end(), 0.) +  std::accumulate(SIN.begin()+1, SIN.end(), 0.) );
     } // objective:  F(x) = a0 + a1 * cos(2\pix/N) + a2 * cos(4\pix/N) + ... + b1 * sin(2\pix/N) + b2 * sin(4\pix/N) + ...
 };
 
