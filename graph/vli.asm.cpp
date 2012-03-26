@@ -151,7 +151,7 @@ namespace alps {
 					"adcq  %%rdx, %%r15						\n" // C[3] += A[1] * B[1](64-127) + CB
 
 					"imulq %%r8, %%rbx						\n" // A[1] * B[2] -> rbx
-					"addq  %%rbx, %%r15						\n" // C[3] += A[1] * B[3]
+					"addq  %%rbx, %%r15						\n" // C[3] += A[1] * B[2]
 
 					"movq  0x08(%%rcx), %%rax				\n" // B[1] -> rax
 					"movq  0x10(%%rsi), %%rbx				\n" // A[2] -> rbx

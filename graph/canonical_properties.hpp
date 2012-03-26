@@ -535,7 +535,46 @@ namespace alps {
 				for (boost::tie(it, end) = vertices(G); it != end; ++it)
 					pi[std::find(color_vector.begin(), color_vector.end(), get(alps::vertex_type_t(), G)[*it]) - color_vector.begin()].push_back(*it);
 			}
+			
+			// uncolored initial partition with symmetry breaking vertex v
+			template<typename Graph> void initial_partition(
+				  Graph const & G
+				, typename partition_type<Graph>::type & pi
+				, typename boost::graph_traits<Graph>::vertex_descriptor v
+				, boost::mpl::false_
+			) {
+				pi.resize(2);
+				pi.back().push_back(v);
+				typename boost::graph_traits<Graph>::vertex_iterator it, end;
+				for (boost::tie(it, end) = vertices(G); it != end; ++it)
+					if (*it != v)
+						pi.front().push_back(*it);
+			}
 
+			// vertex colored initial partition with symmetry breaking vertex v
+			template<typename Graph> void initial_partition(
+				  Graph const & G
+				, typename partition_type<Graph>::type & pi
+				, typename boost::graph_traits<Graph>::vertex_descriptor v
+				, boost::mpl::true_
+			) {
+				std::set<typename boost::property_map<Graph, alps::vertex_type_t>::type::value_type> color_set;
+				typename boost::graph_traits<Graph>::vertex_iterator it, end;
+				for (boost::tie(it, end) = vertices(G); it != end; ++it)
+					color_set.insert(get(alps::vertex_type_t(), G)[*it]);
+				std::vector<typename boost::property_map<Graph, alps::vertex_type_t>::type::value_type> color_vector;
+				for (
+					  typename std::set<typename boost::property_map<Graph, alps::vertex_type_t>::type::value_type>::const_iterator jt = color_set.begin()
+					; jt != color_set.end()
+					; ++jt
+				)
+					color_vector.push_back(*jt);
+				pi.resize(color_vector.size() + 1);	
+				pi.back().push_back(v);
+				for (boost::tie(it, end) = vertices(G); it != end; ++it)
+					if (*it != v)
+						pi[std::find(color_vector.begin(), color_vector.end(), get(alps::vertex_type_t(), G)[*it]) - color_vector.begin()].push_back(*it);
+			}
 		}
 
         // Return type of the canonical_properties() function
@@ -550,10 +589,87 @@ namespace alps {
             > type;
         };
 
+		namespace detail {
+
+			// Input: graph G, inital partition pi
+			// Output: canonical ordering, canonical label and orbit of G
+			template<typename Graph>
+			typename canonical_properties_type<Graph>::type
+			canonical_properties_impl(Graph const & G, typename partition_type<Graph>::type const pi) {
+				using boost::get;
+				using boost::make_tuple;
+				typename partition_type<Graph>::type orbit, canonical_partition, first_partition;
+				typename graph_label<Graph>::type canonical_label, first_label, current_label;
+				std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t> Io;
+				// The orbit starts with a discrete partition (a partition with only trivial parts)
+				// orbit = (W1, W2, ..., Wr), Wi = (m1, m2, ..., mk), mi element of G
+				typename boost::graph_traits<Graph>::vertex_iterator vi, ve;
+				for (boost::tie(vi, ve) = vertices(G); vi != ve; ++vi)
+					orbit.push_back(typename partition_type<Graph>::type::value_type(1, *vi));
+				// Io = {(mi, j) : ni element of Vj
+				detail::partition_indeces(Io, orbit, G);
+				// Build first node of the search tree T(G)
+				std::vector<boost::tuple<typename partition_type<Graph>::type, std::size_t, std::size_t> > T(1, boost::make_tuple(pi, 0, 0));
+				detail::equitable_refinement(get<0>(T.back()), G);
+				T.push_back(boost::make_tuple(typename partition_type<Graph>::type(), 0, 0));
+				detail::terminal_node(T, G);
+				// Initialize partitions and labels
+				first_partition = canonical_partition = get<0>(T.back());
+				detail::assemble_label(canonical_label, canonical_partition, G);
+				first_label = current_label = canonical_label;
+				while(true) {
+					// Find next node in the search tree T(G). The last node is always a leaf.
+					while(T.size() > 1)
+						if (get<2>(T.back()) + 1 < get<0>(*(T.rbegin() + 1))[get<1>(T.back())].size()) {
+							++get<2>(T.back());
+							// Prune the search tree: if we have already visited a branch strating at an element in the 
+							// same part of the orbit, skip the current element
+							typename partition_type<Graph>::type::value_type & part = get<0>(*(T.rbegin() + 1))[get<1>(T.back())];
+							bool visited = false;
+							for (
+								typename partition_type<Graph>::type::value_type::const_iterator it = part.begin(); 
+								it != part.begin() + get<2>(T.back()); 
+								++it
+							)
+								visited = visited || (Io[*it] == Io[part[get<2>(T.back())]]);
+							if (!visited)
+								break;
+						} else
+							T.pop_back();
+					get<0>(T.back()).clear();
+					// all leafs have been checked
+					if (T.size() == 1)
+						break;
+					// TODO: add edge coloring to algorithym
+					detail::terminal_node(T, G);
+					detail::assemble_label(current_label, get<0>(T.back()), G);
+					// If two labels are the same, coarse orbit
+					if(first_label == current_label)
+						detail::coarse_orbit(orbit, Io, first_partition, get<0>(T.back()), G);
+					else if(canonical_label == current_label)
+						detail::coarse_orbit(orbit, Io, canonical_partition, get<0>(T.back()), G);
+					// Cl = min{ Gl: Gl graph label of G }
+					if (canonical_label > current_label) {
+						canonical_partition = get<0>(T.back());
+						canonical_label = current_label;
+					}
+				}
+				
+				std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> canonical_ordering;
+				for (typename partition_type<Graph>::type::const_iterator it = canonical_partition.begin(); it != canonical_partition.end(); ++it)
+					canonical_ordering.push_back((*it)[0]);
+				return boost::make_tuple(
+					  canonical_ordering
+					, canonical_label
+					, orbit
+				);
+			}
+		}
+
         // Enum to select the canonical properties with boost::get<enum>
         // TODO should we put this in some struct/namespace 'properties'?
         enum { ordering, label, partition };    
-
+		
 		// McKay’s canonical isomorph function Cm(G) is deﬁned to be
 		// Cm(G) = max{ Gpi: (pi, nu) is a leaf of T(G) }
 		// Input: graph G
@@ -561,79 +677,30 @@ namespace alps {
 		template<typename Graph>
         typename canonical_properties_type<Graph>::type
         canonical_properties(Graph const & G) {
-			using boost::get;
-			using boost::make_tuple;
-			typename partition_type<Graph>::type pi, orbit, canonical_partition, first_partition;
-			typename graph_label<Graph>::type canonical_label, first_label, current_label;
-			std::map<typename boost::graph_traits<Graph>::vertex_descriptor, std::size_t> Io;
+			typename partition_type<Graph>::type pi;
 			// pi = (V1, V2, ..., Vr), Vi = (n1, n2, ..., nk), ni element of G
 			// uncolored graphs: pi is a unit partition (pi has only one part)
 			// vertex colored graphs: pi has for each color one part
 			detail::initial_partition(G, pi, typename detail::has_coloring<typename boost::vertex_property_type<Graph>::type>::type());
-			// The orbit starts with a discrete partition (a partition with only trivial parts)
-			// orbit = (W1, W2, ..., Wr), Wi = (m1, m2, ..., mk), mi element of G
-			typename boost::graph_traits<Graph>::vertex_iterator vi, ve;
-			for (boost::tie(vi, ve) = vertices(G); vi != ve; ++vi)
-				orbit.push_back(typename partition_type<Graph>::type::value_type(1, *vi));
-			// Io = {(mi, j) : ni element of Vj
-			detail::partition_indeces(Io, orbit, G);
-			// Build first node of the search tree T(G)
-			std::vector<boost::tuple<typename partition_type<Graph>::type, std::size_t, std::size_t> > T(1, boost::make_tuple(pi, 0, 0));
-			detail::equitable_refinement(get<0>(T.back()), G);
-			T.push_back(boost::make_tuple(typename partition_type<Graph>::type(), 0, 0));
-			detail::terminal_node(T, G);
-			// Initialize partitions and labels
-			first_partition = canonical_partition = get<0>(T.back());
-			detail::assemble_label(canonical_label, canonical_partition, G);
-			first_label = current_label = canonical_label;
-			while(true) {
-				// Find next node in the search tree T(G). The last node is always a leaf.
-				while(T.size() > 1)
-					if (get<2>(T.back()) + 1 < get<0>(*(T.rbegin() + 1))[get<1>(T.back())].size()) {
-						++get<2>(T.back());
-						// Prune the search tree: if we have already visited a branch strating at an element in the 
-						// same part of the orbit, skip the current element
-						typename partition_type<Graph>::type::value_type & part = get<0>(*(T.rbegin() + 1))[get<1>(T.back())];
-						bool visited = false;
-						for (
-							typename partition_type<Graph>::type::value_type::const_iterator it = part.begin(); 
-							it != part.begin() + get<2>(T.back()); 
-							++it
-						)
-							visited = visited || (Io[*it] == Io[part[get<2>(T.back())]]);
-						if (!visited)
-							break;
-					} else
-						T.pop_back();
-				get<0>(T.back()).clear();
-				// all leafs have been checked
-				if (T.size() == 1)
-					break;
-				// TODO: add edge coloring to algorithym
-				detail::terminal_node(T, G);
-				detail::assemble_label(current_label, get<0>(T.back()), G);
-				// If two labels are the same, coarse orbit
-				if(first_label == current_label)
-					detail::coarse_orbit(orbit, Io, first_partition, get<0>(T.back()), G);
-				else if(canonical_label == current_label)
-					detail::coarse_orbit(orbit, Io, canonical_partition, get<0>(T.back()), G);
-				// Cl = min{ Gl: Gl graph label of G }
-				if (canonical_label > current_label) {
-					canonical_partition = get<0>(T.back());
-					canonical_label = current_label;
-				}
-			}
-			
-			std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> canonical_ordering;
-			for (typename partition_type<Graph>::type::const_iterator it = canonical_partition.begin(); it != canonical_partition.end(); ++it)
-				canonical_ordering.push_back((*it)[0]);
-			return boost::make_tuple(
-				  canonical_ordering
-				, canonical_label
-				, orbit
-			);
+			// create canonical properties
+			return detail::canonical_properties_impl(G, pi);
 		}
 
+		// McKay’s canonical isomorph function Cm(G) is deﬁned to be
+		// Cm(G) = max{ Gpi: (pi, nu) is a leaf of T(G) }
+		// Input: graph G, symmetry breaking vertex v
+		// Output: canonical ordering, canonical label and orbit of G
+		template<typename Graph>
+        typename canonical_properties_type<Graph>::type
+        canonical_properties(Graph const & G, typename boost::graph_traits<Graph>::vertex_descriptor v) {
+			typename partition_type<Graph>::type pi;
+			// pi = (V1, V2, ..., Vr), Vi = (n1, n2, ..., nk), ni element of G
+			// uncolored graphs: pi is a unit partition (pi has only one part)
+			// vertex colored graphs: pi has for each color one part
+			detail::initial_partition(G, pi, v, typename detail::has_coloring<typename boost::vertex_property_type<Graph>::type>::type());
+			// create canonical properties
+			return detail::canonical_properties_impl(G, pi);
+		}
 	}
 }
 
