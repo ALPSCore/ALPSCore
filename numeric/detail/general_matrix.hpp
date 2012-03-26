@@ -208,7 +208,7 @@ namespace blas{
             if((size1_!=other.size1_) || (size2_!=other.size2_) ) return false;
             std::vector<T> diff(total_memory_size_);
             transform(values_.begin(), values_.end(), other.values_.begin(), diff.begin(), std::minus<double>());
-            std::vector<double>::iterator it= find_if(diff.begin(),diff.end(),deviates<T>);
+            typename std::vector<T>::iterator it= find_if(diff.begin(),diff.end(),deviates<T>);
             return (it == diff.end());
         }
         bool operator!=(const general_matrix &other)const 

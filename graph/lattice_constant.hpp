@@ -40,6 +40,9 @@
 #include <alps/numeric/vector_functions.hpp>
 #include <alps/graph/canonical_properties.hpp>
 
+// TODO exchange matrix type to a more solid one...
+#include <alps/numeric/detail/general_matrix.hpp>
+
 #include <boost/array.hpp>
 #include <boost/unordered_set.hpp>
 #include <boost/functional/hash.hpp>
@@ -1069,6 +1072,17 @@ namespace alps {
 
 			return detail::lattice_constant_impl(S, G, V, distance_to_boarder, subgraph_orbit, unit_cell_size, boost::mpl::false_());
 		}
+
+        template<typename Subgraph, typename Graph, typename Lattice, typename Weight> blas::general_matrix<Weight> lattice_constant(
+            std::vector< std::pair<typename graph_label<Subgraph>::type, std::vector<Weight> > > const& w
+			, Subgraph const & S
+			, Graph const & G
+			, Lattice const & L
+			, typename alps::lattice_traits<Lattice>::cell_descriptor c
+		) {
+            // TODO
+            return blas::general_matrix<Weight>();
+        }
 
 		template<typename Subgraph, typename Graph> bool is_embeddable(
 			  Subgraph const & S
