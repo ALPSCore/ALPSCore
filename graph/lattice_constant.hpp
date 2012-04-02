@@ -507,7 +507,7 @@ namespace alps {
 			try {
 				std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> V(1, v);
 				boost::mpl::false_ no_argument;
-				detail::lattice_constant_impl(S, G, V, distance_to_boarder, subgraph_orbit, 1, no_argument, no_argument);
+				detail::lattice_constant_impl(S, G, V, distance_to_boarder, subgraph_orbit, 1, no_argument, boost::mpl::true_());
 				return false;
 			} catch (detail::embedding_found e) {
 				return true;
@@ -526,7 +526,7 @@ namespace alps {
 				boost::mpl::false_ no_argument;
 				for (boost::tie(vt, ve) = vertices(G); vt != ve; ++vt) {
 					std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> V(1, *vt);
-					detail::lattice_constant_impl(S, G, V, distance_to_boarder, subgraph_orbit, 1, no_argument, no_argument);
+					detail::lattice_constant_impl(S, G, V, distance_to_boarder, subgraph_orbit, 1, no_argument, boost::mpl::true_());
 				}
 				return false;
 			} catch (detail::embedding_found e) {
