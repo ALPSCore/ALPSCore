@@ -40,9 +40,6 @@
 #include <alps/numeric/vector_functions.hpp>
 #include <alps/graph/canonical_properties.hpp>
 
-// TODO exchange matrix type to a more solid one...
-#include <alps/numeric/detail/general_matrix.hpp>
-
 #include <boost/array.hpp>
 #include <boost/unordered_set.hpp>
 #include <boost/functional/hash.hpp>
@@ -478,13 +475,13 @@ namespace alps {
 		}
 
         template<typename Subgraph, typename Graph, typename Lattice, typename Weight> std::size_t lattice_constant(
-			  blas::general_matrix<Weight> & matrix
+			  std::vector<Weight> & lw 
 			, Subgraph const & S
 			, Graph const & G
 			, Lattice const & L
 			, typename alps::lattice_traits<Lattice>::cell_descriptor c
 			, typename partition_type<Subgraph>::type const & subgraph_orbit
-			, std::vector<Weight> const & w
+			, std::vector<Weight> const & gw
 		) {
 			// Get the possible translation in the lattice
 			std::vector<std::vector<boost::uint_t<8>::fast> > distance_to_boarder(dimension(L), std::vector<boost::uint_t<8>::fast>(num_vertices(G), num_vertices(G)));
@@ -496,7 +493,7 @@ namespace alps {
 			for(unsigned v = 0; v < unit_cell_size; ++v)
 				V.push_back(cell_id * unit_cell_size + v);
 
-			return detail::lattice_constant_impl(S, G, V, distance_to_boarder, subgraph_orbit, unit_cell_size, matrix, boost::mpl::false_());
+			return detail::lattice_constant_impl(S, G, V, distance_to_boarder, subgraph_orbit, unit_cell_size, lw, boost::mpl::false_());
         }
 
 		template<typename Subgraph, typename Graph> bool is_embeddable(
