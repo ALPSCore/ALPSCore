@@ -13,8 +13,8 @@ enum { test_graph_size = 10 };
 template <typename Graph>
 void subgraph_generator_test2(unsigned int order_ )
 {
-    alps::Parameters parm;
     std::ifstream in("../../lib/xml/lattices.xml");
+    alps::Parameters parm;
     parm["LATTICE"] = "square lattice";
     parm["L"] = 2*order_+1;
     alps::graph_helper<> alps_lattice(in,parm);
