@@ -89,7 +89,7 @@ namespace alps {
                             return false;
                         std::vector<std::size_t> first(get_extent(value[0]));
 						if (!boost::is_scalar<typename boost::numeric::ublas::vector<T, A>::value_type>::value)
-							for(typename boost::numeric::ublas::vector<T, A>::const_iterator it = value.begin(); it != value.end(); ++it)
+							for(typename boost::numeric::ublas::vector<T, A>::const_iterator it = value.begin(); it != value.end(); ++it){
 								if (!is_vectorizable(*it))
 									return false;
 								else {
@@ -100,6 +100,7 @@ namespace alps {
 									)
 										return false;
 								}
+              }
                     }
                     return true;
                 }
