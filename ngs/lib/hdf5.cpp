@@ -285,7 +285,7 @@ namespace alps {
 								boost::filesystem::copy_file(filename_, filename_ + suffix_);
 							if (!write_) {
 								if (!boost::filesystem::exists(filename_ + suffix_))
-									throw std::runtime_error("file does not exists: " + filename_ + suffix_ + ALPS_STACKTRACE);
+									throw std::runtime_error("file does not exist: " + filename_ + suffix_ + ALPS_STACKTRACE);
 								if (detail::check_error(H5Fis_hdf5((filename_ + suffix_).c_str())) == 0)
 									throw std::runtime_error("no valid hdf5 file: " + filename_ + suffix_ + ALPS_STACKTRACE);
 							}
@@ -566,7 +566,7 @@ namespace alps {
                 throw std::runtime_error("no group path: " + path + ALPS_STACKTRACE);
             std::vector<std::string> list;
             if (!is_group(path))
-                throw std::runtime_error("The group '" + path + "' does not exists." + ALPS_STACKTRACE);
+                throw std::runtime_error("The group '" + path + "' does not exist." + ALPS_STACKTRACE);
             detail::group_type group_id(H5Gopen2(context_->file_id_, path.c_str(), H5P_DEFAULT));
             detail::check_error(H5Literate(group_id, H5_INDEX_NAME, H5_ITER_NATIVE, NULL, detail::list_children_visitor, &list));
             return list;
@@ -583,7 +583,7 @@ namespace alps {
                 detail::data_type id(H5Dopen2(context_->file_id_, path.c_str(), H5P_DEFAULT));
                 detail::check_error(H5Aiterate2(id, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, NULL, detail::list_attributes_visitor, &list));
             } else
-                throw std::runtime_error("The path '" + path + "' does not exists." + ALPS_STACKTRACE);
+                throw std::runtime_error("The path '" + path + "' does not exist." + ALPS_STACKTRACE);
             return list;
         }
     
@@ -698,7 +698,7 @@ namespace alps {
             void archive::read(std::string path, T & value) const {                                                                                                    \
                 if ((path = complete_path(path)).find_last_of('@') == std::string::npos) {                                                                         \
                     if (!is_data(path))																																\
-                        throw std::runtime_error("the path does not exists: " + path + ALPS_STACKTRACE);																			\
+                        throw std::runtime_error("the path does not exist: " + path + ALPS_STACKTRACE);																			\
                     else if (!is_scalar(path))																														\
                         throw std::runtime_error("scalar - vector conflict in path: " + path + ALPS_STACKTRACE);                                                                  \
                     detail::data_type data_id(H5Dopen2(context_->file_id_, path.c_str(), H5P_DEFAULT));                                                            \
@@ -717,7 +717,7 @@ namespace alps {
                     } else throw std::runtime_error("invalid type" + ALPS_STACKTRACE);                                                                                            \
                 } else {                                                                                                                                           \
                     if (!is_attribute(path))																																\
-                        throw std::runtime_error("the path does not exists: " + path + ALPS_STACKTRACE);																			\
+                        throw std::runtime_error("the path does not exist: " + path + ALPS_STACKTRACE);																			\
                     else if (!is_scalar(path))																														\
                         throw std::runtime_error("scalar - vector conflict in path: " + path + ALPS_STACKTRACE);                                                                  \
                     hid_t parent_id;                                                                                                                               \
@@ -802,7 +802,7 @@ namespace alps {
                             throw std::runtime_error("size is zero in one dimension in path: " + path + ALPS_STACKTRACE);                                                         \
                     if ((path = complete_path(path)).find_last_of('@') == std::string::npos) {                                                                     \
 						if (!is_data(path))																															\
-							throw std::runtime_error("the path does not exists: " + path + ALPS_STACKTRACE);																		\
+							throw std::runtime_error("the path does not exist: " + path + ALPS_STACKTRACE);																		\
                         if (is_scalar(path))																														\
                             throw std::runtime_error("scalar - vector conflict in path: " + path + ALPS_STACKTRACE);                                                              \
                         detail::data_type data_id(H5Dopen2(context_->file_id_, path.c_str(), H5P_DEFAULT));                                                        \
@@ -833,7 +833,7 @@ namespace alps {
                         } else throw std::runtime_error("invalid type" + ALPS_STACKTRACE);                                                                                        \
                     } else {                                                                                                                                       \
 						if (!is_attribute(path))																													\
-							throw std::runtime_error("the path does not exists: " + path + ALPS_STACKTRACE);																		\
+							throw std::runtime_error("the path does not exist: " + path + ALPS_STACKTRACE);																		\
                         if (is_scalar(path))																														\
                             throw std::runtime_error("scalar - vector conflict in path: " + path + ALPS_STACKTRACE);                                                              \
                         hid_t parent_id;                                                                                                                           \
