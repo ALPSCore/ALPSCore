@@ -418,6 +418,7 @@ namespace alps {
 				for (typename std::vector<typename boost::graph_traits<Graph>::vertex_descriptor>::const_iterator it = V.begin(); it != V.end(); ++it)
 					for (typename partition_type<Subgraph>::type::const_iterator jt = subgraph_orbit.begin(); jt != subgraph_orbit.end(); ++jt)
 						if (out_degree(jt->front(), S) <= out_degree(*it, G)) {
+                            // TODO: shouldn't out_degree be just degree?
 							// TODO: use dynamicbitset
 							boost::dynamic_bitset<> placed(num_vertices(S));
 							boost::dynamic_bitset<> visited(num_vertices(G));
