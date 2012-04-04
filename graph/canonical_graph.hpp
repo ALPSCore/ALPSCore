@@ -40,7 +40,7 @@ class canonical_graph
     public:
 
         typedef Graph graph_type;
-        canonical_graph(Graph const& g)
+        explicit canonical_graph(Graph const& g)
             : graph_(g), properties_(canonical_properties(g))
         {
         }
@@ -99,7 +99,6 @@ std::ostream& operator << (std::ostream& os, alps::graph::canonical_graph<Graph>
     return os;
 } 
 
-
 template <typename Graph>
 typename graph_traits<canonical_graph<Graph> >::edges_size_type
 num_edges(canonical_graph<Graph> const& g){
@@ -145,8 +144,6 @@ vertices(canonical_graph<Graph> const& g) {
     return vertices(g.graph());
 }
 
-
-
 template <typename Graph>
 typename graph_traits<canonical_graph<Graph> >::degree_size_type
 degree(
@@ -181,19 +178,6 @@ get(Tag p, canonical_graph<Graph> const& g) {
     return get(p,g.graph());
 }
 
-//template <typename Graph, typename Tag, typename Key>
-//typename property_map<canonical_graph<Graph>, Tag>::const_type
-//get(Tag p, canonical_graph<Graph> const& g, Key const& key)
-//{
-//    return get(p,g.graph(),key);
-//}
-
-//template <typename Graph>
-//inline std::pair<typename graph_traits<Graph>::edge_iterator,typename graph_traits<Graph>::edge_iterator> edges(canonical_graph<Graph> const& g)
-//{
-//    return edges(g);
-//}
-
 } // namespace graph
 } // namspace alps
 
@@ -216,9 +200,6 @@ struct graph_traits<alps::graph::canonical_graph<Graph> > {
     typedef typename graph_traits<Graph>::vertices_size_type     vertices_size_type;
     typedef typename graph_traits<Graph>::edges_size_type        edges_size_type;
     typedef typename graph_traits<Graph>::degree_size_type       degree_size_type;
-
-//    typedef typename boost::graph_traits<Graph>::vertex_property_type   vertex_property_type;
-//    typedef typename boost::graph_traits<Graph>::edge_property_type     edge_property_type;
 };
 
 template <typename Graph>

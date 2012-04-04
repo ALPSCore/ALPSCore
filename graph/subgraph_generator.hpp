@@ -58,7 +58,7 @@ class subgraph_generator {
       * \param pins is a list of vertices of the supergraph. A subgraph is only embeddable if the subgraph can be embedded in such a way that all those vertices have corresponding vertices in the subgraph.
      */
     subgraph_generator(supergraph_type const& supergraph, typename graph_traits<supergraph_type>::vertex_descriptor pin)
-        :supergraph_(supergraph), graphs_(), max_degree_(0), non_embeddable_graphs_(), labels_(), pin_(pin) {
+        : supergraph_(supergraph), graphs_(), max_degree_(0), non_embeddable_graphs_(), labels_(), pin_(pin) {
         // We assume undirected graphs
         BOOST_STATIC_ASSERT(( boost::is_same<typename graph_traits<subgraph_type>::directed_category, boost::undirected_tag>::value ));
         BOOST_STATIC_ASSERT(( boost::is_same<typename graph_traits<supergraph_type>::directed_category, boost::undirected_tag>::value ));
@@ -132,9 +132,8 @@ class subgraph_generator {
     std::vector<subgraph_type> generate_graphs_with_additional_edge(iterator it, iterator const end) {
         using boost::get;
         typedef typename graph_traits<subgraph_type>::vertex_descriptor vertex_descriptor;
-        typedef typename canonical_properties_type<subgraph_type>::type canonical_properties_type;
-        enum { ordering = 0, label = 1, partition = 2 };
-        typedef typename partition_type<subgraph_type>::type partition_type;
+        typedef typename canonical_properties_type<subgraph_base_type>::type canonical_properties_type;
+        typedef typename partition_type<subgraph_base_type>::type partition_type;
 
         std::vector<subgraph_type> result;
         while( it != end ) {
@@ -200,8 +199,8 @@ class subgraph_generator {
       * \param p the canonical_properties of the graph to be checked
       * \return true is the graph(-label) was unknown, false if the label has been seen before.
       */
-    bool is_unknown(typename canonical_properties_type<subgraph_type>::type const& p) {
-        typename graph_label<subgraph_type>::type const& label(boost::get<1>(p));
+    bool is_unknown(typename canonical_properties_type<subgraph_base_type>::type const& p) {
+        typename graph_label<subgraph_base_type>::type const& label(boost::get<alps::graph::label>(p));
         // Try to insert the label and return true if it wasn't there yet
         return labels_.insert(make_tuple(boost::get<0>(label).size(),label)).second;
     }
@@ -214,20 +213,19 @@ class subgraph_generator {
       * \param prop the canonical properties of g
       * \return true if g is embeddable, false if g is not embeddable
       */
-    bool is_embeddable(subgraph_type const& g, typename canonical_properties_type<subgraph_type>::type const& prop) {
+    bool is_embeddable(subgraph_base_type const& g, typename canonical_properties_type<subgraph_base_type>::type const& prop) {
         assert(prop == alps::graph::canonical_properties(g));
         bool result = true;
         for(typename std::vector<subgraph_type>::iterator it = non_embeddable_graphs_.begin(); it != non_embeddable_graphs_.end(); ++it)
         {
             // If any of the non-embeddable graphs can be embedded
             // we can not embedd this graph either.
-//            if(alps::graph::is_embeddable(*it->first,g,boost::get<2>(it->second))) {
             if(alps::graph::is_embeddable(it->graph(),g,it->get_partition())) {
                 result = false;
                 break;
             }
         }
-        result = result && alps::graph::is_embeddable(g,supergraph_,pin_,boost::get<2>(prop));
+        result = result && alps::graph::is_embeddable(g,supergraph_,pin_,boost::get<alps::graph::partition>(prop));
         if(!result && num_edges(g) < 9)
             non_embeddable_graphs_.push_back(subgraph_type(g,prop));
         return result;
@@ -241,7 +239,7 @@ class subgraph_generator {
         max_degree_ = 0;
         typename graph_traits<supergraph_type>::vertex_iterator v_it, v_end;
         for(boost::tie(v_it,v_end) = vertices(supergraph_); v_it != v_end; ++v_it)
-            max_degree_ = std::max(max_degree_,out_degree(*v_it, supergraph_));
+            max_degree_ = std::max(max_degree_,degree(*v_it, supergraph_));
     }
     
     //
@@ -258,7 +256,7 @@ class subgraph_generator {
     std::vector<subgraph_type> non_embeddable_graphs_;
     
     /// a list of canonical graph labels of graphs that were seen
-    std::set<boost::tuple<std::size_t, typename graph_label<subgraph_type>::type> > labels_;
+    std::set<boost::tuple<std::size_t, typename graph_label<subgraph_base_type>::type> > labels_;
     /// A list of vertices of the supergraph which have to be found in an embeddable subgraph
     typename graph_traits<SuperGraph>::vertex_descriptor pin_;
 };
