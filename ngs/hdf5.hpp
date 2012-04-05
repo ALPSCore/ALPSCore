@@ -28,9 +28,9 @@
 #ifndef ALPS_NGS_HDF5_HPP
 #define ALPS_NGS_HDF5_HPP
 
-#include <alps/ngs/param.hpp>
 #include <alps/ngs/config.hpp>
 #include <alps/ngs/stacktrace.hpp>
+#include <alps/ngs/detail/type_wrapper.hpp>
 
 #include <boost/mpl/and.hpp>
 #include <boost/utility/enable_if.hpp>
@@ -68,10 +68,6 @@ namespace alps {
         namespace detail {
             struct mccontext;
 
-            template<typename T> struct type_wrapper {
-                typedef T type;
-            };
-
             template<typename A, typename T> struct is_datatype_caller {
                 static bool apply(A const & ar, std::string path) {
                     throw std::runtime_error("only native datatypes can be probed: " + path + ALPS_STACKTRACE);
@@ -81,7 +77,7 @@ namespace alps {
 
             #define ALPS_NGS_HDF5_IS_DATATYPE_CALLER(T)                                                                                                                \
                 template<typename A> struct is_datatype_caller<A, T > {                                                                                                \
-                    static bool apply(A const & ar, std::string path, T unused = type_wrapper<T>::type()) {                                                            \
+                    static bool apply(A const & ar, std::string path, T unused = alps::detail::type_wrapper<T>::type()) {                                              \
                         return ar.is_datatype_impl(path, unused);                                                                                                      \
                     }                                                                                                                                                  \
                 };
@@ -96,13 +92,20 @@ namespace alps {
 
             public:
 
-                typedef enum { READ = 0x00, WRITE = 0x01, REPLACE = 0x02, COMPRESS = 0x04, LARGE = 0x08, MEMORY = 0x10 } properties;
+				// TODO: make this private
+				typedef enum {
+					READ = 0x00, 
+					WRITE = 0x01, 
+					REPLACE = 0x02, 
+					COMPRESS = 0x04, 
+					LARGE = 0x08, 
+					MEMORY = 0x10 
+				} properties;
 
+				// TODO: add boost::filesystem constructor
                 archive(std::string const & filename, std::string mode = "r");
 				// TODO: remove that!
                 archive(std::string const & filename, std::size_t props);
-				// TODO: remove that!
-                archive(param const & filename, std::size_t props = READ);
                 archive(archive const & arg);
 
                 virtual ~archive();
@@ -264,7 +267,7 @@ namespace alps {
 
         }
 
-         template<typename T> typename scalar_type<T>::type * get_pointer(T & value) {
+		template<typename T> typename scalar_type<T>::type * get_pointer(T & value) {
             return detail::get_pointer<T>::apply(value);
         }
 

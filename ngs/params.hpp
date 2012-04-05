@@ -29,89 +29,98 @@
 #define ALPS_NGS_PARAMS_HPP
 
 #include <alps/ngs/hdf5.hpp>
-#include <alps/ngs/param.hpp>
 #include <alps/ngs/config.hpp>
-#include <alps/ngs/detail/params_impl_base.hpp>
-
-#include <boost/scoped_ptr.hpp>
+#include <alps/ngs/detail/paramvalue.hpp>
+#include <alps/ngs/detail/paramproxy.hpp>
+#include <alps/ngs/detail/paramiterator.hpp>
 
 #ifdef ALPS_HAVE_PYTHON
     #include <alps/ngs/boost_python.hpp>
 #endif
 
+#include <boost/filesystem.hpp>
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/string.hpp> 
+
 #ifdef ALPS_HAVE_MPI
-	#include <boost/mpi.hpp>
+	#include <alps/ngs/boost_mpi.hpp>
 #endif
 
+#include <map>
+#include <vector>
 #include <string>
 
 namespace alps {
 
-    namespace detail {
-
-        class params_impl_base;
-
-    }
-
     class ALPS_DECL params {
+
+		typedef std::map<std::string, detail::paramvalue>::value_type iterator_value_type;
+
+		friend class detail::paramiterator<params, iterator_value_type>;
+		friend class detail::paramiterator<params const, iterator_value_type const>;
 
         public:
 
-            params();
+			typedef detail::paramiterator<params, iterator_value_type> iterator;
+			typedef detail::paramiterator<params const, iterator_value_type const> const_iterator;
+			typedef detail::paramproxy value_type;
 
-            params(params const &);
+            params() {}
 
-            params(hdf5::archive const &);
+            params(params const & arg)
+				: keys(arg.keys)
+				, values(arg.values)
+			{}
 
-            params(std::string const &);
+			params(hdf5::archive ar, std::string const & path = "/parameters");
+
+            params(boost::filesystem::path const &);
 
             #ifdef ALPS_HAVE_PYTHON
                 params(boost::python::object const & arg);
             #endif
 
-            #ifdef ALPS_HAVE_MPI
-                params(boost::mpi::communicator const & arg);
-            #endif
-
-            virtual ~params();
-
             std::size_t size() const;
 
-            std::vector<std::string> keys() const;
+			// TODO: erase!
 
-            param operator[](std::string const &);
+            value_type operator[](std::string const &);
 
-            param const operator[](std::string const &) const;
-
-            template<typename T> param value_or_default(std::string const & key, T const & value) const {
-                return defined(key) 
-                    ? operator[](key) 
-                    : param(convert<std::string>(value))
-                ;
-            }
+            value_type const operator[](std::string const &) const;
 
             bool defined(std::string const &) const;
+
+			iterator begin();
+			const_iterator begin() const;
+
+			iterator end();
+			const_iterator end() const;
 
             void save(hdf5::archive &) const;
 
             void load(hdf5::archive &);
 
-            #ifdef ALPS_HAVE_PYTHON
-                // USE FOR PYTHON EXPORT ONLY!
-                detail::params_impl_base * get_impl();
-                detail::params_impl_base const * get_impl() const;
-            #endif
-
             #ifdef ALPS_HAVE_MPI
-                void broadcast(int root = 0);
+                void broadcast(boost::mpi::communicator const &, int = 0);
             #endif
-
-            // TODO: add boost serialization support
 
         private:
 
-            boost::scoped_ptr<detail::params_impl_base> impl_;
+			friend class boost::serialization::access;
+			
+			template<class Archive> void serialize(Archive & ar, const unsigned int) {
+				ar & keys 
+				   & values
+				;
+			}
 
+			void setter(std::string const &, detail::paramvalue const &);
+
+			std::string getter(std::string const &);
+
+			std::vector<std::string> keys;
+			std::map<std::string, detail::paramvalue> values;
     };
 
 }

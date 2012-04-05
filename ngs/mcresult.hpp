@@ -61,9 +61,10 @@ namespace alps {
     ALPS_DECL mcresult asin(mcresult rhs);
     ALPS_DECL mcresult acos(mcresult rhs);
     ALPS_DECL mcresult atan(mcresult rhs);
-    ALPS_DECL mcresult asinh(mcresult rhs);
-    ALPS_DECL mcresult acosh(mcresult rhs);
-    ALPS_DECL mcresult atanh(mcresult rhs);
+// asinh, aconsh and atanh are not part of C++03 standard
+//    ALPS_DECL mcresult asinh(mcresult rhs);
+//    ALPS_DECL mcresult acosh(mcresult rhs);
+//    ALPS_DECL mcresult atanh(mcresult rhs);
     ALPS_DECL mcresult abs(mcresult rhs);
     ALPS_DECL mcresult sq(mcresult rhs);
     ALPS_DECL mcresult cb(mcresult rhs);

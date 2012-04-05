@@ -30,9 +30,10 @@
 
 #include <alps/ngs/hdf5.hpp>
 #include <alps/ngs/params.hpp>
-#include <alps/ngs/lib/params_impl_dict.ipp>
 
 #include <alps/python/make_copy.hpp>
+
+#include <string>
 
 namespace alps {
     namespace detail {
@@ -41,45 +42,32 @@ namespace alps {
             return self.size();
         }
 
-        boost::python::object params_copy(alps::params & self) {
-            // TODO: implement for non params_impl_dict prams
-            return dynamic_cast<params_impl_dict &>(*self.get_impl()).native_copy();
-        }
-
         boost::python::object params_getitem(alps::params & self, boost::python::object const & key) {
-            if (dynamic_cast<params_impl_dict *>(self.get_impl()) == NULL)
-                return boost::python::str(self[PyString_AsString(key.ptr())]);
-            else
-                return dynamic_cast<params_impl_dict &>(*self.get_impl()).native_getitem(key);
+			return self[boost::python::call_method<std::string>(key.ptr(), "__str__")];
         }
 
         void params_setitem(alps::params & self, boost::python::object const & key, boost::python::object & value) {
-            if (dynamic_cast<params_impl_dict *>(self.get_impl()) == NULL)
-                self[PyString_AsString(key.ptr())] = PyString_AsString(value.ptr());
-            else
-                dynamic_cast<params_impl_dict &>(*self.get_impl()).native_setitem(key, value);
+			self[boost::python::call_method<std::string>(key.ptr(), "__str__")] = value;
         }
-
+/*
         void params_delitem(alps::params & self, boost::python::object const & key) {
             // TODO: implement for non params_impl_dict prams
             dynamic_cast<params_impl_dict &>(*self.get_impl()).native_delitem(key);
         }
-
+*/
         bool params_contains(alps::params & self, boost::python::object const & key) {
-            if (dynamic_cast<params_impl_dict *>(self.get_impl()) == NULL)
-                self.defined(PyString_AsString(key.ptr()));
-            else
-                return dynamic_cast<params_impl_dict &>(*self.get_impl()).native_contains(key);
+			return self.defined(boost::python::call_method<std::string>(key.ptr(), "__str__"));
         }
 
-        boost::python::object params_iter(alps::params & self) {
-            // TODO: implement for non params_impl_dict prams
+// TODO: implement!
+/*        boost::python::object params_iter(alps::params & self) {
+          // TODO: implement for non params_impl_dict prams
             return dynamic_cast<params_impl_dict &>(*self.get_impl()).native_iter();
         }
-
+*/
         boost::python::object value_or_default(alps::params & self, boost::python::object const & key, boost::python::object const & value) {
-            return params_contains(self, key) ? params_getitem(self, key) : value;
-        }
+			return params_contains(self, key) ? params_getitem(self, key) : value;
+		}
 
         void params_load(alps::params & self, alps::hdf5::archive & ar, std::string const & path = "/parameters") {
             std::string current = ar.get_context();
@@ -88,7 +76,6 @@ namespace alps {
             ar.set_context(current);
         }
         BOOST_PYTHON_FUNCTION_OVERLOADS(params_load_overloads, params_load, 2, 3)
-
     }
 }
 
@@ -99,15 +86,16 @@ BOOST_PYTHON_MODULE(pyngsparams_c) {
         boost::python::init<boost::python::object>()
     )
         .def("__len__", &alps::detail::params_len)
-        .def("__copy__", &alps::detail::params_copy)
+        .def("__deepcopy__", &alps::python::make_copy<alps::params>)
         .def("__getitem__", &alps::detail::params_getitem)
         .def("__setitem__", &alps::detail::params_setitem)
-        .def("__delitem__", &alps::detail::params_delitem)
+// TODO: implement
+//        .def("__delitem__", &alps::detail::params_delitem)
         .def("__contains__", &alps::detail::params_contains)
-        .def("__iter__", &alps::detail::params_iter)
+// TODO: implement
+//        .def("__iter__", &alps::detail::params_iter)
         .def("valueOrDefault", &alps::detail::value_or_default)
         .def("save", &alps::params::save)
         .def("load", &alps::detail::params_load, alps::detail::params_load_overloads())
     ;
-
 }

@@ -193,7 +193,7 @@ void clone::save() const{
     complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_);
   #pragma omp critical (hdf5io)
   {
-    hdf5::archive h5(dump_h5.string(), hdf5::archive::WRITE);
+    hdf5::archive h5(dump_h5.string(), "a");
     h5 << make_pvp("/", *this);
   }
   boost::filesystem::path dump = complete(boost::filesystem::path(info_.dumpfile()), basedir_);
@@ -435,7 +435,7 @@ void clone_mpi::save() const{
     complete(boost::filesystem::path(info_.dumpfile_h5()), basedir_);
   #pragma omp critical (hdf5io)
   {
-    hdf5::archive h5(dump_h5.string(), hdf5::archive::WRITE);
+    hdf5::archive h5(dump_h5.string(), "a");
     h5 << make_pvp("/", *this);
   }
   bool workerdump = (dump_policy_ == dump_policy::All) ||

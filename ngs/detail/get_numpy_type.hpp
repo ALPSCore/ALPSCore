@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2011 by Lukas Gamper <gamperl@gmail.com>                   *
+ * Copyright (C) 2010 - 2012 by Lukas Gamper <gamperl@gmail.com>                   *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -25,44 +25,42 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_MCMPISIM_HPP
-#define ALPS_NGS_MCMPISIM_HPP
+#ifndef ALPS_NGS_DETAIL_GET_NUMPY_TYPE_HPP
+#define ALPS_NGS_DETAIL_GET_NUMPY_TYPE_HPP
+
+#include <alps/ngs/config.hpp>
+
+#if !defined(ALPS_HAVE_PYTHON)
+	#error numpy is only available if python is enabled
+#endif
+
+#include <alps/ngs/boost_python.hpp>
+#include <alps/ngs/detail/numpy_import.hpp>
+
+#include <complex>
 
 namespace alps {
-    #ifdef ALPS_HAVE_MPI
+	namespace detail {
 
-        template<typename Impl> class mcmpisim : public Impl {
-            public:
-                using Impl::collect_results;
-                mcmpisim(typename alps::parameters_type<Impl>::type const & p,
-			             boost::mpi::communicator const & c) 
-                    : Impl(p, c.rank())
-                    , communicator(c)
-                    , binnumber(p["binnumber"] | std::min(128, 2 * c.size()))
-                {
-                    MPI_Errhandler_set(communicator, MPI_ERRORS_RETURN);
-                }
+		int get_numpy_type(bool);
+		int get_numpy_type(char);
+		int get_numpy_type(unsigned char);
+		int get_numpy_type(signed char);
+		int get_numpy_type(short);
+		int get_numpy_type(unsigned short);
+		int get_numpy_type(int);
+		int get_numpy_type(unsigned int);
+		int get_numpy_type(long);
+		int get_numpy_type(long long);
+		int get_numpy_type(unsigned long long);
+		int get_numpy_type(float);
+		int get_numpy_type(double);
+		int get_numpy_type(long double);
+		int get_numpy_type(std::complex<float>);
+		int get_numpy_type(std::complex<double>);
+		int get_numpy_type(std::complex<long double>);
 
-                double fraction_completed() const {
-                    return boost::mpi::all_reduce(communicator, Impl::fraction_completed(), std::plus<double>());
-                }
-
-                typename alps::results_type<Impl>::type collect_results(typename alps::result_names_type<Impl>::type const & names) const {
-                    typename alps::results_type<Impl>::type local_results = Impl::collect_results(names), partial_results;
-                    for(typename alps::results_type<Impl>::type::iterator it = local_results.begin(); it != local_results.end(); ++it)
-                        if (it->second.count())
-                            partial_results.insert(it->first, it->second.reduce(communicator, binnumber));
-                        else
-                            partial_results.insert(it->first, it->second);
-                    return partial_results;
-                }
-
-            private:
-                boost::mpi::communicator communicator;
-                std::size_t binnumber;
-        };
-
-    #endif
+	}
 }
 
 #endif

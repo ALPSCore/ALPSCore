@@ -32,24 +32,13 @@
 #include <alps/ngs/hdf5/complex.hpp>
 #include <alps/ngs/mcobservable.hpp>
 
-#include <boost/python/numeric.hpp>
 #include <alps/ngs/boost_python.hpp>
-
-#include <numpy/arrayobject.h>
+#include <alps/ngs/detail/numpy_import.hpp>
 
 #include <valarray>
 
 namespace alps {
     namespace detail {
-
-        void import_numpy() {
-            static bool inited = false;
-            if (!inited) {
-                import_array();  
-                boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
-                inited = true;
-            }
-        }
 
         void observable_append(alps::mcobservable & self, boost::python::object const & data) {
             import_numpy();

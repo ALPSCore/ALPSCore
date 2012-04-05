@@ -25,80 +25,24 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_PARAMPROXY_HPP
-#define ALPS_NGS_PARAMPROXY_HPP
-
-#include <alps/ngs/hdf5.hpp>
 #include <alps/ngs/config.hpp>
-#include <alps/ngs/detail/paramvalue.hpp>
+#include <alps/ngs/detail/numpy_import.hpp>
 
-#include <boost/function.hpp>
-#include <boost/optional/optional.hpp>
-
-#include <string>
-#include <iostream>
+#if defined(ALPS_HAVE_PYTHON)
+	#include <boost/python/numeric.hpp>
+	#include <numpy/arrayobject.h>
+#endif
 
 namespace alps {
+    namespace detail {
 
-    class ALPS_DECL paramproxy {
-
-        public:
-
-            paramproxy(detail::paramvalue const & v)
-                : value(v)
-            {}
-
-            paramproxy(
-                  boost::function<detail::paramvalue()> const & g
-                , boost::function<void(detail::paramvalue)> const & s
-            )
-                : getter(g)
-                , setter(s)
-            {}
-
-            paramproxy(paramproxy const & arg)
-                : value(arg.value)
-                , getter(arg.getter)
-                , setter(arg.setter)
-            {}
-
-			template<typename T> T cast() const {
-				if (!defined)
-					throw std::runtime_error(
-						"No reference to parameter available" + ALPS_STACKTRACE
-					);
-				return (!!value ? getter() : *value).cast<T>();
-			}
-
-			#define ALPS_NGS_PARAMPROXY_MEMBER_DECL(T)								\
-				operator T () const;												\
-				paramproxy & operator=(T const & arg);								\
-				T operator|( T v) const;
-			ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(ALPS_NGS_PARAMPROXY_MEMBER_DECL)
-			#undef ALPS_NGS_PARAMPROXY_MEMBER_DECL
-
-            void save(hdf5::archive & ar) const;
-            void load(hdf5::archive &);
-
-        private:
-
-			bool defined;
-            boost::optional<detail::paramvalue> value;
-            boost::function<detail::paramvalue()> getter;
-            boost::function<void(detail::paramvalue)> setter;
-    };
-
-    ALPS_DECL std::ostream & operator<<(std::ostream & os, paramproxy const &);
-
-	#define ALPS_NGS_PARAMPROXY_ADD_OPERATOR_DECL(T)								\
-		ALPS_DECL T operator+(param const & p, T s);								\
-		ALPS_DECL T operator+(T s, param const & p);
-	ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(ALPS_NGS_PARAMPROXY_ADD_OPERATOR_DECL)
-	#undef ALPS_NGS_PARAMPROXY_ADD_OPERATOR_DECL
-
-    ALPS_DECL std::string operator+(param const & p, char const * s);
-    ALPS_DECL std::string operator+(char const * s, param const & p);
-
+        void import_numpy() {
+            static bool inited = false;
+            if (!inited) {
+                import_array();  
+                boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
+                inited = true;
+            }
+        }
+    }
 }
-	
-#endif

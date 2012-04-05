@@ -58,7 +58,7 @@ namespace alps {
             base(parameters_type const & p, std::size_t seed_offset = 0)
                 : params(p)
                   // TODO: this ist not the best solution - any idea?
-                , random(boost::mt19937(p.value_or_default("SEED", 42) + seed_offset), boost::uniform_real<>())
+                , random(boost::mt19937(p["SEED"].or_default(42) + seed_offset), boost::uniform_real<>())
                 , fraction(0.)
                 , check_duration(8.)
                 , start_time_point(boost::chrono::high_resolution_clock::now())
@@ -73,13 +73,11 @@ namespace alps {
 
             virtual double fraction_completed() const = 0;
 
+			// TODO: add boost::filesystem version
             void save(std::string const & filename) const;
 
+			// TODO: add boost::filesystem version
             void load(std::string const & filename);
-
-            void save(alps::param const & filename) const;
-
-            void load(alps::param const & filename);
 
             virtual void save(alps::hdf5::archive & ar) const;
 

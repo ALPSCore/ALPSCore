@@ -260,7 +260,7 @@ void Task::checkpoint(const boost::filesystem::path& fn, bool writeallxml) const
   make_backup = make_backup || task_exists; 
 
   {
-    hdf5::archive ar(make_backup ? task_backup : task_path, hdf5::archive::WRITE);
+    hdf5::archive ar(make_backup ? task_backup : task_path, "a");
     ar << make_pvp("/",*this);
   } // close file
   
@@ -306,7 +306,7 @@ void Task::checkpoint_hdf5(const boost::filesystem::path& fn) const
   make_backup = make_backup || task_exists; 
 
   {
-    hdf5::archive ar(make_backup ? task_backup : task_path, hdf5::archive::WRITE);
+    hdf5::archive ar(make_backup ? task_backup : task_path, "a");
     ar << make_pvp("/",*this);
   } // close file
   

@@ -28,73 +28,176 @@
 #ifndef ALPS_NGS_CONVERT_HPP
 #define ALPS_NGS_CONVERT_HPP
 
-#include <string>
 #include <alps/ngs/config.hpp>
+#include <alps/ngs/stacktrace.hpp>
+
+#include <boost/bind.hpp>
+#include <boost/mpl/int.hpp>
+
+#include <string>
+#include <complex>
+#include <typeinfo>
+#include <algorithm>
+#include <stdexcept>
 
 namespace alps {
 
-    template<typename U, typename T> inline U convert(T arg) {
-        return static_cast<U>(arg);
+	namespace detail {
+		template<typename T> class convert_helper;
+	}
+
+	template<typename T> inline T convert(detail::convert_helper<T> data);
+
+	namespace detail {
+		
+		template<typename U, typename T> struct is_cast {
+			static T t;
+			static char check(U);
+			static double check(...);
+			enum { value = sizeof(check(t)) / sizeof(char) };
+		};
+
+		template<
+			typename U, typename T, typename X
+		> inline U convert_generic(T arg, X) {
+			throw std::runtime_error(
+				  std::string("cannot cast from ") 
+				+ typeid(T).name() 
+				+ " to " 
+				+ typeid(U).name() + ALPS_STACKTRACE
+			);
+			return U();
+		}
+
+		template<typename U, typename T> inline U convert_generic(
+			T arg, boost::mpl::int_<1>
+		) {
+			return arg;
+		}
+
+		template<typename U, typename T> struct convert_hook {
+			static inline U apply(T arg) {
+				return convert_generic<U, T>(
+					arg, boost::mpl::int_<is_cast<U, T>::value>()
+				);
+			}
+		};
+
+		#define ALPS_NGS_CONVERT_STRING(T, p, c)										\
+			template<> struct convert_hook<std::string, T > {							\
+				static inline std::string apply( T arg) {								\
+					char buffer[255];													\
+					if (sprintf(buffer, "%" p "" c, arg) < 0)							\
+						throw std::runtime_error(										\
+							"error converting from " #T " to string" + ALPS_STACKTRACE	\
+						);																\
+					return buffer;														\
+				}																		\
+			};																			\
+			template<> struct convert_hook< T, std::string> {							\
+				static inline T apply(std::string arg) {								\
+					T value = 0;														\
+					if (arg.size() && sscanf(arg.c_str(), "%" c, &value) < 0)			\
+						throw std::runtime_error(										\
+							  "error converting from string to " #T ": "				\
+							+ arg + ALPS_STACKTRACE										\
+						);																\
+					return value;														\
+				}																		\
+			};
+		ALPS_NGS_CONVERT_STRING(short, "", "hd")
+		ALPS_NGS_CONVERT_STRING(int, "", "d")
+		ALPS_NGS_CONVERT_STRING(long, "", "ld")
+		ALPS_NGS_CONVERT_STRING(unsigned short, "", "hu")
+		ALPS_NGS_CONVERT_STRING(unsigned int, "", "u")
+		ALPS_NGS_CONVERT_STRING(unsigned long, "", "lu")
+		ALPS_NGS_CONVERT_STRING(float, ".8", "e")
+		ALPS_NGS_CONVERT_STRING(double, ".16", "le")
+		ALPS_NGS_CONVERT_STRING(long double, ".32", "Le")
+		ALPS_NGS_CONVERT_STRING(long long, "", "lld")
+		ALPS_NGS_CONVERT_STRING(unsigned long long, "", "llu")
+		#undef ALPS_NGS_CONVERT_STRING
+
+		#define ALPS_NGS_CONVERT_STRING_CHAR(T, U)										\
+			template<> struct convert_hook<std::string, T > {							\
+				static inline std::string apply( T arg) {								\
+					return convert_hook<std::string, U>::apply(arg);					\
+				}																		\
+			};																			\
+			template<> struct convert_hook<T, std::string> {							\
+				static inline T apply(std::string arg) {								\
+					return convert_hook< U , std::string>::apply(arg);					\
+				}																		\
+			};
+		ALPS_NGS_CONVERT_STRING_CHAR(bool, short)
+		ALPS_NGS_CONVERT_STRING_CHAR(char, short)
+		ALPS_NGS_CONVERT_STRING_CHAR(signed char, short)
+		ALPS_NGS_CONVERT_STRING_CHAR(unsigned char, unsigned short)
+		#undef ALPS_NGS_CONVERT_STRING_CHAR
+
+		template<typename U, typename T> struct convert_hook<U, std::complex<T> > {
+			static inline U apply(std::complex<T> const & arg) {
+				return static_cast<U>(arg.real());
+			}
+		};
+
+		template<typename U, typename T> struct convert_hook<std::complex<U>, T> {
+			static inline std::complex<U> apply(T const & arg) {
+				return convert<U>(arg);
+			}
+		};
+
+		template<typename U, typename T> struct convert_hook<std::complex<U>, std::complex<T> > {
+			static inline std::complex<U> apply(std::complex<T> const & arg) {
+				return std::complex<U>(arg.real(), arg.imag());
+			}
+		};
+
+		template<typename T> struct convert_hook<std::string, std::complex<T> > {
+			static inline std::string apply(std::complex<T> const & arg) {
+				return convert<std::string>(arg.real()) + "+" + convert<std::string>(arg.imag()) + "i";
+			}
+		};
+
+		// TODO: also parse a+bi
+		template<typename T> struct convert_hook<std::complex<T>, std::string> {
+			static inline std::complex<T> apply(std::string const & arg) {
+				return convert<T>(arg);
+			}
+		};
+
+		template<typename U> class convert_helper {
+
+			public:
+
+				template<typename T> convert_helper(T arg)
+					: value(convert_hook<U, T>::apply(arg))
+				{}
+				
+				U const & operator()() {
+					return value;
+				}
+
+			private:
+
+				U value;
+		};
     }
 
-    #define ALPS_NGS_CONVERT_STRING(T, c)                                           \
-         template<> ALPS_DECL std::string convert<std::string, T >( T arg);			\
-         template<> ALPS_DECL T convert< T, std::string>(std::string arg);
-    ALPS_NGS_CONVERT_STRING(short, "hd")
-    ALPS_NGS_CONVERT_STRING(int, "d")
-    ALPS_NGS_CONVERT_STRING(long, "ld")
-    ALPS_NGS_CONVERT_STRING(unsigned short, "hu")
-    ALPS_NGS_CONVERT_STRING(unsigned int, "u")
-    ALPS_NGS_CONVERT_STRING(unsigned long, "lu")
-    ALPS_NGS_CONVERT_STRING(float, "f")
-    ALPS_NGS_CONVERT_STRING(double, "lf")
-    ALPS_NGS_CONVERT_STRING(long double, "Lf")
-    ALPS_NGS_CONVERT_STRING(long long, "lld")
-    ALPS_NGS_CONVERT_STRING(unsigned long long, "llu")
-    #undef ALPS_NGS_CONVERT_STRING
+	template<typename T> inline T convert(T const & data) {
+		return data;
+	}
 
-    #define ALPS_NGS_CONVERT_STRING_CHAR(T, U)                                      \
-        template<> ALPS_DECL std::string convert<std::string, T >( T arg);          \
-        template<> ALPS_DECL T convert<T, std::string>(std::string arg);
-    ALPS_NGS_CONVERT_STRING_CHAR(bool, short)
-    ALPS_NGS_CONVERT_STRING_CHAR(char, short)
-    ALPS_NGS_CONVERT_STRING_CHAR(signed char, short)
-    ALPS_NGS_CONVERT_STRING_CHAR(unsigned char, unsigned short)
-    #undef ALPS_NGS_CONVERT_STRING_CHAR
+	template<typename T> inline T convert(detail::convert_helper<T> data) {
+		return data();
+	}
 
     template<typename U, typename T> inline void convert(
 		U const * src, U const * end, T * dest
 	) {
-        std::copy(src, end, dest);
+		for (U const * it = src; it != end; ++it)
+			dest[it - src] = convert<T>(*it);
     }
-
-    #define ALPS_NGS_CONVERT_STRING_POINTER(T)                                      \
-        template<> ALPS_DECL void convert<std::string, T >(							\
-			std::string const * src, std::string const * end, T * dest				\
-		);																			\
-        template<> ALPS_DECL void convert<char *, T >(								\
-			char * const * src, char * const * end, T * dest						\
-		);																			\
-        template<> ALPS_DECL void convert< T , std::string >(						\
-			T const * src, T const * end, std::string * dest						\
-		);
-    ALPS_NGS_CONVERT_STRING_POINTER(bool)
-    ALPS_NGS_CONVERT_STRING_POINTER(char)
-    ALPS_NGS_CONVERT_STRING_POINTER(signed char)
-    ALPS_NGS_CONVERT_STRING_POINTER(unsigned char)
-    ALPS_NGS_CONVERT_STRING_POINTER(short)
-    ALPS_NGS_CONVERT_STRING_POINTER(unsigned short)
-    ALPS_NGS_CONVERT_STRING_POINTER(int)
-    ALPS_NGS_CONVERT_STRING_POINTER(unsigned)
-    ALPS_NGS_CONVERT_STRING_POINTER(long)
-    ALPS_NGS_CONVERT_STRING_POINTER(unsigned long)
-    ALPS_NGS_CONVERT_STRING_POINTER(long long)
-    ALPS_NGS_CONVERT_STRING_POINTER(unsigned long long)
-    ALPS_NGS_CONVERT_STRING_POINTER(float)
-    ALPS_NGS_CONVERT_STRING_POINTER(double)
-    ALPS_NGS_CONVERT_STRING_POINTER(long double)
-    #undef ALPS_NGS_CONVERT_STRING_POINTER
-
 }
 
 #endif

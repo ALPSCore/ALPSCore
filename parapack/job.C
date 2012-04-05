@@ -176,7 +176,7 @@ void task::save_observable(std::vector<std::vector<ObservableSet> > const& oss) 
         #pragma omp critical (hdf5io)
         {
           boost::filesystem::path file = complete(boost::filesystem::path(base_ + ".out.h5"), basedir_);
-          hdf5::archive h5(file.string(), alps::hdf5::archive::WRITE);
+          hdf5::archive h5(file.string(), "a");
           h5 << make_pvp("/parameters", params_tmp);
           h5 << make_pvp("/simulation/results", obs_[0]);
           // for (std::size_t n = 0; n < oss.size(); ++n)
@@ -191,7 +191,7 @@ void task::save_observable(std::vector<std::vector<ObservableSet> > const& oss) 
           {
             boost::filesystem::path file = complete(boost::filesystem::path(
               base_ + ".replica" + boost::lexical_cast<std::string>(i+1) + ".h5"), basedir_);
-            hdf5::archive h5(file.string(), alps::hdf5::archive::WRITE);
+            hdf5::archive h5(file.string(), "a");
             h5 << make_pvp("/parameters", p);
             h5 << make_pvp("/simulation/results", obs_[i]);
             // for (std::size_t n = 0; n < oss.size(); ++n)

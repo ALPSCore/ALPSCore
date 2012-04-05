@@ -28,7 +28,8 @@
 #ifndef ALPS_NGS_SHORT_PRINT_HPP
 #define ALPS_NGS_SHORT_PRINT_HPP
 
-#include <iostream>
+#include <vector>
+#include <ostream>
 
 namespace alps {
     namespace detail {
@@ -46,7 +47,7 @@ namespace alps {
 
     template <typename T> std::ostream & operator<<(std::ostream & os, detail::short_print_proxy<T> const & v) {
         return os << v.value;
-     }
+	}
 
     template <typename T> std::ostream & operator<<(std::ostream & os, detail::short_print_proxy<std::vector<T> const> const & v) {
         switch (v.value.size()) {

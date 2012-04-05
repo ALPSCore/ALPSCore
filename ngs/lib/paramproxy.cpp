@@ -25,83 +25,59 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/ngs/paramproxy.hpp>
+#include <alps/ngs/detail/paramproxy.hpp>
 
 #include <alps/numeric/vector_functions.hpp>
 
 #include <stdexcept>
 
 namespace alps {
+	namespace detail {
 
-	#define ALPS_NGS_PARAMPROXY_OPERATOR_T_IMPL(T)									\
-		paramproxy::operator T () const {											\
-			return cast<T>();														\
+		void paramproxy::save(hdf5::archive & ar) const {
+			if (!defined)
+				throw std::runtime_error(
+					"No reference to parameter available" + ALPS_STACKTRACE
+				);
+			ar << make_pvp("", !!value ? *value : getter());
 		}
-	ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(ALPS_NGS_PARAMPROXY_OPERATOR_T_IMPL)
-	#undef ALPS_NGS_PARAMPROXY_OPERATOR_T_IMPL
 
-	#define ALPS_NGS_PARAMPROXY_OPERATOR_EQ_IMPL(T)									\
-		paramproxy & paramproxy::operator=( T const & arg) {						\
-			if (!defined)															\
-				throw std::runtime_error(											\
-					"No reference to parameter available" + ALPS_STACKTRACE			\
-				);																	\
-			setter(detail::paramvalue(arg));										\
-			return *this;															\
+		void paramproxy::load(hdf5::archive & ar) {
+			if (!defined || !!value)
+				throw std::runtime_error(
+					"No reference to parameter available" + ALPS_STACKTRACE
+				);
+			if (!!value) {
+				detail::paramvalue value;
+				ar >> make_pvp("", value);
+				setter(value);
+			} else
+				ar >> make_pvp("", *value);
 		}
-	ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(ALPS_NGS_PARAMPROXY_OPERATOR_EQ_IMPL)
-	#undef ALPS_NGS_PARAMPROXY_OPERATOR_EQ_IMPL
 
-	#define ALPS_NGS_PARAMPROXY_OPERATOR_BIN_OR_IMPL(T)								\
-		T paramproxy::operator|( T value) const {									\
-			return defined ? cast<T>() : value;										\
+		std::ostream & operator<<(std::ostream & os, paramproxy const & v) {
+			return os << v.cast<std::string>();
 		}
-	ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(ALPS_NGS_PARAMPROXY_OPERATOR_BIN_OR_IMPL)
-	#undef ALPS_NGS_PARAMPROXY_OPERATOR_BIN_OR_IMPL
 
-	void paramproxy::save(hdf5::archive & ar) const {
-		if (!defined)
-			throw std::runtime_error(
-				"No reference to parameter available" + ALPS_STACKTRACE
-			);
-		ar << make_pvp("", !!value ? *value : getter());
+		#define ALPS_NGS_PARAMPROXY_ADD_OPERATOR_IMPL(T)							\
+			T operator+(paramproxy const & p, T s) {								\
+				using boost::numeric::operators::operator+=;						\
+				return s += p.cast< T >();											\
+			}																		\
+			T operator+(T s, paramproxy const & p) {								\
+				using boost::numeric::operators::operator+=;						\
+				return s += p.cast< T >();											\
+			}
+		ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(ALPS_NGS_PARAMPROXY_ADD_OPERATOR_IMPL)
+		#undef ALPS_NGS_PARAMPROXY_ADD_OPERATOR_IMPL
+
+		std::string operator+(paramproxy const & p, char const * s) {
+			return p.cast<std::string>() + s;
+		}
+
+		std::string operator+(char const * s, paramproxy const & p) {
+			return s + p.cast<std::string>();
+		}
+
 	}
-
-	void paramproxy::load(hdf5::archive & ar) {
-		if (!defined || !!value)
-			throw std::runtime_error(
-				"No reference to parameter available" + ALPS_STACKTRACE
-			);
-		if (!!value) {
-			detail::paramvalue value;
-			ar >> make_pvp("", value);
-			setter(value);
-		} else
-			ar >> make_pvp("", *value);
-	}
-
-    std::ostream & operator<<(std::ostream & os, paramproxy const & v) {
-        return os << v.cast<std::string>();
-    }
-
-	#define ALPS_NGS_PARAMPROXY_ADD_OPERATOR_IMPL(T)								\
-		T operator+(paramproxy const & p, T s) {									\
-			using boost::numeric::operators::operator+=;							\
-			return s += p.cast< T >();												\
-		}																			\
-		T operator+(T s, paramproxy const & p) {									\
-			using boost::numeric::operators::operator+=;							\
-			return s += p.cast< T >();												\
-		}
-	ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(ALPS_NGS_PARAMPROXY_ADD_OPERATOR_IMPL)
-	#undef ALPS_NGS_PARAMPROXY_ADD_OPERATOR_IMPL
-
-    std::string operator+(paramproxy const & p, char const * s) {
-        return p.cast<std::string>() + s;
-    }
-
-    std::string operator+(char const * s, paramproxy const & p) {
-        return s + p.cast<std::string>();
-    }
-
 }

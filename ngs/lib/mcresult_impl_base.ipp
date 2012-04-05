@@ -179,9 +179,10 @@ namespace alps {
                 virtual mcresult_impl_base * asin() const = 0;
                 virtual mcresult_impl_base * acos() const = 0;
                 virtual mcresult_impl_base * atan() const = 0;
-                virtual mcresult_impl_base * asinh() const = 0;
-                virtual mcresult_impl_base * acosh() const = 0;
-                virtual mcresult_impl_base * atanh() const = 0;
+// asinh, aconsh and atanh are not part of C++03 standard
+//                virtual mcresult_impl_base * asinh() const = 0;
+//                virtual mcresult_impl_base * acosh() const = 0;
+//                virtual mcresult_impl_base * atanh() const = 0;
                 virtual mcresult_impl_base * abs() const = 0;
                 virtual mcresult_impl_base * sq() const = 0;
                 virtual mcresult_impl_base * cb() const = 0;

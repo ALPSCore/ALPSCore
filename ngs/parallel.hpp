@@ -48,7 +48,7 @@ namespace alps {
                 parallel(typename alps::parameters_type<Impl>::type const & p, boost::mpi::communicator const & c) 
                     : Impl(p, c.rank())
                     , communicator(c)
-                    , binnumber(p.value_or_default("binnumber", std::min(128, 2 * c.size())))
+                    , binnumber(p["binnumber"] | std::min(128, 2 * c.size()))
                 {
                     MPI_Errhandler_set(communicator, MPI_ERRORS_RETURN);
                 }

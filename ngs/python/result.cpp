@@ -32,24 +32,16 @@
 #include <alps/ngs/convert.hpp>
 #include <alps/ngs/mcresult.hpp>
 
-#include <alps/python/make_copy.hpp>
-#include <alps/python/numpy_array.hpp>
-
 #include <alps/ngs/boost_python.hpp>
+#include <alps/ngs/detail/numpy_import.hpp>
+
+#include <alps/python/make_copy.hpp>
+
 
 namespace alps {
     namespace detail {
 
-        void import_numpy() {
-            static bool inited = false;
-            if (!inited) {
-                import_array();  
-                boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
-                inited = true;
-            }
-        }
-
-        template <typename T> std::string short_print_python(T const & value) {
+		template <typename T> std::string short_print_python(T const & value) {
             return convert<std::string>(value);
         }
 
@@ -209,9 +201,10 @@ BOOST_PYTHON_MODULE(pyngsresult_c) {
         .def("sinh", static_cast<alps::mcresult(*)(alps::mcresult)>(&sinh))
         .def("cosh", static_cast<alps::mcresult(*)(alps::mcresult)>(&cosh))
         .def("tanh", static_cast<alps::mcresult(*)(alps::mcresult)>(&tanh))
-        .def("asinh", static_cast<alps::mcresult(*)(alps::mcresult)>(&asinh))
-        .def("acosh", static_cast<alps::mcresult(*)(alps::mcresult)>(&acosh))
-        .def("atanh", static_cast<alps::mcresult(*)(alps::mcresult)>(&atanh))
+// asinh, aconsh and atanh are not part of C++03 standard
+//        .def("asinh", static_cast<alps::mcresult(*)(alps::mcresult)>(&asinh))
+//        .def("acosh", static_cast<alps::mcresult(*)(alps::mcresult)>(&acosh))
+//        .def("atanh", static_cast<alps::mcresult(*)(alps::mcresult)>(&atanh))
 
         .def("save", &alps::mcresult::save)
         .def("load", &alps::mcresult::load)

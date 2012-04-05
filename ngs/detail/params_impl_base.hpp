@@ -28,6 +28,8 @@
 #ifndef ALPS_NGS_DETAIL_PARAMS_IMPL_BASE_HPP
 #define ALPS_NGS_DETAIL_PARAMS_IMPL_BASE_HPP
 
+#warning this file is deprecated
+
 #include <string>
 
 namespace alps {

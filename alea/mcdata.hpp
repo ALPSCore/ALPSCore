@@ -462,7 +462,7 @@ namespace alps {
                 }
 
                 void save(std::string const & filename, std::string const & path) const {
-                    hdf5::archive ar(filename, hdf5::archive::WRITE);
+                    hdf5::archive ar(filename, "a");
                     ar << make_pvp(path, *this);
                 }
 
@@ -1020,13 +1020,13 @@ namespace alps {
                 using alps::numeric::acos;                                                                                                                 \
                 using std::atan;                                                                                                                           \
                 using alps::numeric::atan;                                                                                                                 \
-                using boost::math::asinh;                                                                                                                  \
+/*                using boost::math::asinh;                                                                                                                  \
                 using alps::numeric::asinh;                                                                                                                \
                 using boost::math::acosh;                                                                                                                  \
                 using alps::numeric::acosh;                                                                                                                \
                 using boost::math::atanh;                                                                                                                  \
                 using alps::numeric::atanh;                                                                                                                \
-                using boost::numeric::operators::operator+;                                                                                                \
+*/                using boost::numeric::operators::operator+;                                                                                                \
                 using boost::numeric::operators::operator-;                                                                                                \
                 using boost::numeric::operators::operator*;                                                                                                \
                 using boost::numeric::operators::operator/;                                                                                                \
@@ -1051,9 +1051,10 @@ namespace alps {
         ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(asin, abs(1. / sqrt(1. - rhs.mean() * rhs.mean()) * rhs.error()))
         ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(acos, abs(-1. / sqrt(1. - rhs.mean() * rhs.mean()) * rhs.error()));
         ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(atan, abs(1. / (1. + rhs.mean() * rhs.mean()) * rhs.error()));
-        ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(asinh, abs(1. / sqrt(rhs.mean() * rhs.mean() + 1.) * rhs.error()));
-        ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(acosh, abs(1. / sqrt(rhs.mean() * rhs.mean() - 1.) * rhs.error()));
-        ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(atanh, abs(1./(1. - rhs.mean() * rhs.mean()) * rhs.error()));
+// asinh, aconsh and atanh are not part of C++03 standard
+//        ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(asinh, abs(1. / sqrt(rhs.mean() * rhs.mean() + 1.) * rhs.error()));
+//        ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(acosh, abs(1. / sqrt(rhs.mean() * rhs.mean() - 1.) * rhs.error()));
+//        ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(atanh, abs(1./(1. - rhs.mean() * rhs.mean()) * rhs.error()));
         ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(abs, rhs.error());
         ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(sq, abs(2. * rhs.mean() * rhs.error()));
         ALPS_ALEA_MCDATA_IMPLEMENT_FUNCTION(cb, abs(3. * sq(rhs.mean()) * rhs.error()));

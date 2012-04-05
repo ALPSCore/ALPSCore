@@ -28,6 +28,8 @@
 #ifndef ALPS_NGS_MCDEPRECATED_HPP
 #define ALPS_NGS_MCDEPRECATED_HPP
 
+#error this file has been deprecated, do not used!
+
 #include <alps/ngs/mcbase.hpp>
 #include <alps/ngs/config.hpp>
 

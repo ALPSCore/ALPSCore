@@ -33,7 +33,9 @@
 #include <alps/ngs/stacktrace.hpp>
 #include <alps/ngs/hdf5/vector.hpp>
 #include <alps/ngs/hdf5/complex.hpp>
+
 #include <alps/ngs/boost_python.hpp>
+#include <alps/ngs/detail/numpy_import.hpp>
 
 #include <alps/python/make_copy.hpp>
 
@@ -51,15 +53,6 @@
 
 namespace alps {
     namespace detail {
-
-        void import_numpy() {
-            static bool inited = false;
-            if (!inited) {
-                import_array();  
-                boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
-                inited = true;
-            }
-        }
 
         struct std_string_to_python {
             static PyObject* convert(std::string const & value) {
@@ -285,7 +278,7 @@ namespace alps {
 						boost::tie(first_homogenious, first_extent) = py_save_list_extent(boost::python::extract<boost::python::list>(data[0]));
 					if (!first_homogenious)
 						return std::make_pair(false, std::vector<std::size_t>());
-					for(boost::python::ssize_t i = 0; i < size; i++) {
+					for(boost::python::ssize_t i = 0; i < size; ++i) {
 						std::string dtype = boost::python::object(data[i]).ptr()->ob_type->tp_name;
 						if (dtype == "list") {
 							boost::tie(next_homogenious, next_extent) = py_save_list_extent(boost::python::extract<boost::python::list>(data[i]));
@@ -310,7 +303,7 @@ namespace alps {
 					chunk.push_back(1);
 					offset.push_back(0);
 					alps::hdf5::archive & ar = static_cast<alps::hdf5::archive &>(*this);
-					for(boost::python::ssize_t i = 0; i < boost::python::len(data); i++) {
+					for(boost::python::ssize_t i = 0; i < boost::python::len(data); ++i) {
 						offset.back() = i;
 						boost::python::object item = data[i];
 						std::string dtype = item.ptr()->ob_type->tp_name;
@@ -356,7 +349,7 @@ namespace alps {
 					else {
 						if (is_data(path))
 							delete_data(path);
-						for(boost::python::ssize_t i = 0; i < size; i++)
+						for(boost::python::ssize_t i = 0; i < size; ++i)
 							py_save(path + "/" + convert<std::string>(i), data[i]);
 					
 					}

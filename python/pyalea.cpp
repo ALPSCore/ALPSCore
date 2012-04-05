@@ -98,7 +98,7 @@ namespace alps {
       }
       
       void save(std::string const & filename) const {
-          hdf5::archive ar(filename, hdf5::archive::WRITE);
+          hdf5::archive ar(filename, "a");
           ar << make_pvp("/simulation/results/"+obs.representation(), obs);
       }
 

@@ -35,7 +35,7 @@
 namespace alps { namespace python {
     
     template <typename Obs> void save_observable_to_hdf5(Obs const & obs, std::string const & filename) {
-        hdf5::archive ar(filename, hdf5::archive::WRITE);
+        hdf5::archive ar(filename, "a");
         ar << make_pvp("/simulation/results/"+obs.representation(), obs);
     }
         

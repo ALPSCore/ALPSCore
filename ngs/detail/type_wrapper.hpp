@@ -25,44 +25,17 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_MCMPISIM_HPP
-#define ALPS_NGS_MCMPISIM_HPP
+#ifndef ALPS_NGS_DETAIL_TYPE_WRAPPER_HPP
+#define ALPS_NGS_DETAIL_TYPE_WRAPPER_HPP
 
 namespace alps {
-    #ifdef ALPS_HAVE_MPI
 
-        template<typename Impl> class mcmpisim : public Impl {
-            public:
-                using Impl::collect_results;
-                mcmpisim(typename alps::parameters_type<Impl>::type const & p,
-			             boost::mpi::communicator const & c) 
-                    : Impl(p, c.rank())
-                    , communicator(c)
-                    , binnumber(p["binnumber"] | std::min(128, 2 * c.size()))
-                {
-                    MPI_Errhandler_set(communicator, MPI_ERRORS_RETURN);
-                }
+	namespace detail {
 
-                double fraction_completed() const {
-                    return boost::mpi::all_reduce(communicator, Impl::fraction_completed(), std::plus<double>());
-                }
+		template<typename T> struct type_wrapper {
+			typedef T type;
+		};
 
-                typename alps::results_type<Impl>::type collect_results(typename alps::result_names_type<Impl>::type const & names) const {
-                    typename alps::results_type<Impl>::type local_results = Impl::collect_results(names), partial_results;
-                    for(typename alps::results_type<Impl>::type::iterator it = local_results.begin(); it != local_results.end(); ++it)
-                        if (it->second.count())
-                            partial_results.insert(it->first, it->second.reduce(communicator, binnumber));
-                        else
-                            partial_results.insert(it->first, it->second);
-                    return partial_results;
-                }
-
-            private:
-                boost::mpi::communicator communicator;
-                std::size_t binnumber;
-        };
-
-    #endif
+	}
 }
-
 #endif

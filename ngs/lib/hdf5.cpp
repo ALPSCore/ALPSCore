@@ -367,10 +367,6 @@ namespace alps {
 
         }
 
-		archive::archive(param const & filename, std::size_t props) {
-			construct(filename.str(), props);
-		}
-
         archive::archive(std::string const & filename, std::size_t props) {
 			construct(filename, props);
         }
@@ -386,6 +382,7 @@ namespace alps {
 
         archive::archive(archive const & arg)
             : context_(arg.context_)
+			, current_(arg.current_)
         {
             ++ref_cnt_[file_key(context_->filename_, context_->large_, context_->memory_)].second;
         }
@@ -551,7 +548,7 @@ namespace alps {
         }
     
         bool archive::is_complex(std::string path) const {
-			if (path.find_last_of('@') != std::string::npos)
+			if ((path = complete_path(path)).find_last_of('@') != std::string::npos)
 				return is_attribute(path.substr(0, path.find_last_of('@')) + "@__complex__:" + path.substr(path.find_last_of('@') + 1))
 					&& is_scalar(path.substr(0, path.find_last_of('@')) + "@__complex__:" + path.substr(path.find_last_of('@') + 1));
 			else if (is_group(path)) {
@@ -682,14 +679,14 @@ namespace alps {
     
         #define ALPS_NGS_HDF5_READ_SCALAR_DATA_HELPER(U, T)                                                                                                            \
             } else if (detail::check_error(                                                                                                                            \
-                H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(detail::get_native_type(detail::type_wrapper< U >::type())))                         \
+                H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(detail::get_native_type(alps::detail::type_wrapper< U >::type())))                         \
             ) > 0) {                                                                                                                                                   \
                 U u;                                                                                                                                                   \
                 detail::check_error(H5Dread(data_id, native_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, &u));                                                                   \
                 value = convert< T >(u);
         #define ALPS_NGS_HDF5_READ_SCALAR_ATTRIBUTE_HELPER(U, T)                                                                                                       \
             } else if (detail::check_error(                                                                                                                            \
-                H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(detail::get_native_type(detail::type_wrapper< U >::type())))                         \
+                H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(detail::get_native_type(alps::detail::type_wrapper< U >::type())))                         \
             ) > 0) {                                                                                                                                                   \
                 U u;                                                                                                                                                   \
                 detail::check_error(H5Aread(attribute_id, native_id, &u));                                                                                             \
@@ -753,11 +750,11 @@ namespace alps {
     
         #define ALPS_NGS_HDF5_READ_VECTOR_DATA_HELPER(U, T)                                                                                                            \
             } else if (detail::check_error(                                                                                                                            \
-                H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(detail::get_native_type(detail::type_wrapper< U >::type())))                         \
+                H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(detail::get_native_type(alps::detail::type_wrapper< U >::type())))                         \
             ) > 0) {                                                                                                                                                   \
                 std::size_t len = std::accumulate(chunk.begin(), chunk.end(), std::size_t(1), std::multiplies<std::size_t>());                                         \
                 boost::scoped_array<U> raw(                                                                                                                            \
-                    new detail::type_wrapper< U >::type[len]                                                                                                           \
+                    new alps::detail::type_wrapper< U >::type[len]                                                                                                           \
                 );                                                                                                                                                     \
                 if (std::equal(chunk.begin(), chunk.end(), data_size.begin())) {                                                                                       \
                     detail::check_error(H5Dread(data_id, native_id, H5S_ALL, H5S_ALL, H5P_DEFAULT, raw.get()));                                                        \
@@ -773,11 +770,11 @@ namespace alps {
                 }
         #define ALPS_NGS_HDF5_READ_VECTOR_ATTRIBUTE_HELPER(U, T)                                                                                                       \
             } else if (detail::check_error(                                                                                                                            \
-                H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(detail::get_native_type(detail::type_wrapper< U >::type())))                         \
+                H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(detail::get_native_type(alps::detail::type_wrapper< U >::type())))                         \
             ) > 0) {                                                                                                                                                   \
                 std::size_t len = std::accumulate(chunk.begin(), chunk.end(), std::size_t(1), std::multiplies<std::size_t>());                                         \
                 boost::scoped_array<U> raw(                                                                                                                            \
-                    new detail::type_wrapper< U >::type[len]                                                                                                           \
+                    new alps::detail::type_wrapper< U >::type[len]                                                                                                           \
                 );                                                                                                                                                     \
                 if (std::equal(chunk.begin(), chunk.end(), data_size.begin())) {                                                                                       \
                     detail::check_error(H5Aread(attribute_id, native_id, raw.get()));                                                                                  \
@@ -900,7 +897,7 @@ namespace alps {
                             data_id = -1;                                                                                                                          \
                         }                                                                                                                                          \
                     }                                                                                                                                              \
-                    detail::type_type type_id(detail::get_native_type(detail::type_wrapper< T >::type()));                                                         \
+                    detail::type_type type_id(detail::get_native_type(alps::detail::type_wrapper< T >::type()));                                                         \
                     if (data_id < 0)                                                                                                                               \
                         data_id = H5Dcreate2(                                                                                                                      \
                               context_->file_id_                                                                                                                   \
@@ -935,7 +932,7 @@ namespace alps {
                             data_id = -1;                                                                                                                          \
                         }                                                                                                                                          \
                     }                                                                                                                                              \
-                    detail::type_type type_id(detail::get_native_type(detail::type_wrapper< T >::type()));                                                         \
+                    detail::type_type type_id(detail::get_native_type(alps::detail::type_wrapper< T >::type()));                                                         \
                     if (data_id < 0)                                                                                                                               \
                         data_id = H5Acreate2(                                                                                                                      \
                               parent_id                                                                                                                            \
@@ -994,7 +991,7 @@ namespace alps {
                             data_id = -1;                                                                                                                          \
                         }                                                                                                                                          \
                     }                                                                                                                                              \
-                    detail::type_type type_id(detail::get_native_type(detail::type_wrapper< T >::type()));                                                         \
+                    detail::type_type type_id(detail::get_native_type(alps::detail::type_wrapper< T >::type()));                                                         \
                     if (std::accumulate(size.begin(), size.end(), std::size_t(0)) == 0) {                                                                          \
                         if (data_id < 0)                                                                                                                           \
                             detail::check_data(H5Dcreate2(                                                                                                         \
@@ -1093,7 +1090,7 @@ namespace alps {
                             data_id = -1;                                                                                                                              \
                         }                                                                                                                                              \
                     }                                                                                                                                                  \
-                    detail::type_type type_id(detail::get_native_type(detail::type_wrapper< T >::type()));                                                             \
+                    detail::type_type type_id(detail::get_native_type(alps::detail::type_wrapper< T >::type()));                                                             \
                     if (std::accumulate(size.begin(), size.end(), std::size_t(0)) == 0) {                                                                              \
                         if (data_id < 0)                                                                                                                               \
                             detail::check_attribute(H5Acreate2(                                                                                                        \
@@ -1201,7 +1198,7 @@ namespace alps {
                 detail::type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));                                                                              \
                 detail::check_type(type_id);                                                                                                                           \
                 return detail::check_error(                                                                                                                            \
-                    H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(detail::get_native_type(detail::type_wrapper< T >::type())))                     \
+                    H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(detail::get_native_type(alps::detail::type_wrapper< T >::type())))                     \
                 ) > 0;                                                                                                                                                 \
             }
         ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_IS_DATATYPE_IMPL_IMPL)

@@ -25,30 +25,49 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include <alps/ngs/short_print.hpp>
+#include <alps/ngs/hdf5/vector.hpp>
+#include <alps/ngs/hdf5/complex.hpp>
+#include <alps/ngs/hdf5/pointer.hpp>
 #include <alps/ngs/detail/paramvalue.hpp>
+#include <alps/ngs/detail/type_wrapper.hpp>
 
 namespace alps {
     namespace detail {
 
-        template<typename T> struct paramvalue_reader 
-			: public boost::static_visitor<> 
-		{
+		#if defined(ALPS_HAVE_PYTHON)
+			struct paramvalue_save_python_visitor {
+			
+				paramvalue_save_python_visitor(hdf5::archive & a)
+					: ar(a) 
+				{}
 
-            paramvalue_reader(): value() {}
+				template <typename U> void operator()(U const & data) {
+					ar << make_pvp("", data);
+				}
+				
+				template <typename U> void operator()(U * const ptr, std::vector<std::size_t> const & size) {
+					ar << make_pvp("", ptr, size);
+				}
 
-            template <typename U> void operator()(U & v) const {
-				// TODO: implement!
-//                value = convert<T>(v);
-            }
+				void operator()(boost::python::list const & raw) {
+					std::vector<std::string> data;
+					for(boost::python::ssize_t i = 0; i < boost::python::len(raw); ++i) {
+						// TODO: also consider other types than strings ...
+						paramvalue_reader_visitor<std::string> scalar;
+						extract_from_pyobject(scalar, raw[i]);
+						data.push_back(scalar.value);
+					}
+					ar << make_pvp("", data);
+				}
 
-            void operator()(T & v) const { 
-                value = v; 
-            }
+				void operator()(boost::python::dict const &) {
+					throw std::invalid_argument("python dict cannot be used in alps::params" + ALPS_STACKTRACE);
+				}
 
-			// todo: customize for boost::python object ...
-
-            mutable T value;
-        };
+				hdf5::archive & ar;
+			};
+		#endif
 
         struct paramvalue_saver: public boost::static_visitor<> {
 
@@ -57,20 +76,45 @@ namespace alps {
             {}
 
             template<typename T> void operator()(T const & v) const {
-				// TODO: implement!
-//                ar << make_pvp("", v);
+				ar << make_pvp("", v);
             }
 			
-			// todo: customize for boost::python object ...
+			#if defined(ALPS_HAVE_PYTHON)
+				void operator()(boost::python::object const & v) const {
+					paramvalue_save_python_visitor visitor(ar);
+					extract_from_pyobject(visitor, v);
+				}
+			#endif
 
             hdf5::archive & ar;
         };
 
+		struct paramvalue_ostream : public boost::static_visitor<> {
+			public:
+
+				paramvalue_ostream(std::ostream & arg) : os(arg) {}
+
+				template <typename U> void operator()(U const & v) const {
+					using alps::operator<<;
+					os << short_print(v);
+				}
+				
+				#if defined(ALPS_HAVE_PYTHON)
+					void operator()(boost::python::object const & v) const {
+						os << boost::python::call_method<std::string>(v.ptr(), "__str__");
+					}
+				#endif
+
+			private:
+
+				std::ostream & os;
+        };
+
 		#define ALPS_NGS_PARAMVALUE_OPERATOR_T_IMPL(T)								\
 			paramvalue::operator T () const {										\
-				paramvalue_reader< T > visitor;								\
+				paramvalue_reader< T > visitor;										\
 				boost::apply_visitor(visitor, *this);                               \
-				return visitor.value;												\
+				return visitor.get_value();											\
 			}
 		ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(ALPS_NGS_PARAMVALUE_OPERATOR_T_IMPL)
 		#undef ALPS_NGS_PARAMVALUE_OPERATOR_T_IMPL
@@ -90,20 +134,41 @@ namespace alps {
 		}
 
 		void paramvalue::load(hdf5::archive & ar) {
-			// TODO: implement!
+			#define ALPS_NGS_PARAMVALUE_LOAD_HDF5(T)								\
+				{																	\
+					T value;														\
+					ar >> make_pvp("", value);										\
+					operator=(value);												\
+				}
+			#define ALPS_NGS_PARAMVALUE_LOAD_HDF5_CHECK(T, U)						\
+				else if (ar.is_datatype< T >(""))									\
+					ALPS_NGS_PARAMVALUE_LOAD_HDF5(U)
+			if (ar.is_scalar("")) {
+				if (ar.is_complex(""))
+					ALPS_NGS_PARAMVALUE_LOAD_HDF5(std::complex<double>)
+				ALPS_NGS_PARAMVALUE_LOAD_HDF5_CHECK(double, double)
+				ALPS_NGS_PARAMVALUE_LOAD_HDF5_CHECK(int, int)
+				ALPS_NGS_PARAMVALUE_LOAD_HDF5_CHECK(bool, bool)
+				ALPS_NGS_PARAMVALUE_LOAD_HDF5_CHECK(std::string, std::string)
+			} else {
+				if (ar.is_complex(""))
+					ALPS_NGS_PARAMVALUE_LOAD_HDF5(
+						std::vector<std::complex<double> >
+					)
+				ALPS_NGS_PARAMVALUE_LOAD_HDF5_CHECK(double, std::vector<double>)
+				ALPS_NGS_PARAMVALUE_LOAD_HDF5_CHECK(int, std::vector<int>)
+				ALPS_NGS_PARAMVALUE_LOAD_HDF5_CHECK(
+					std::string, std::vector<std::string>
+				)
+			}
+			#undef ALPS_NGS_PARAMVALUE_LOAD_HDF5
+			#undef ALPS_NGS_PARAMVALUE_LOAD_HDF5_CHECK
 		}
 
+		std::ostream & operator<<(std::ostream & os, paramvalue const & arg) {
+			paramvalue_ostream visitor(os);
+			boost::apply_visitor(visitor, arg);
+			return os;
+		}		
 	}
-
-	#define ALPS_NGS_PARAMETERVALUE_CONVERT_IMPL(T)                             \
-		template<> ALPS_DECL T convert(											\
-			detail::paramvalue const & arg										\
-		) {																		\
-			detail::paramvalue_reader< T > visitor;								\
-			boost::apply_visitor(visitor, arg);									\
-			return visitor.value;												\
-		}
-	ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(ALPS_NGS_PARAMETERVALUE_CONVERT_IMPL)
-	#undef ALPS_NGS_PARAMETERVALUE_CONVERT_IMPL
-
 }

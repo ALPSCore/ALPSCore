@@ -13,7 +13,7 @@ set(ALPS_STATIC_CPPFLAGS "")
 
 set(ALPS_SOURCES
     # utility
-    utility/encode.cpp utility/copyright.cpp utility/os.cpp utility/temporary_filename.cpp ngs/lib/convert.cpp ngs/lib/param.cpp
+    utility/encode.cpp utility/copyright.cpp utility/os.cpp utility/temporary_filename.cpp
     # alea
     alea/nan.C alea/observable.C alea/observablefactory.C alea/observableset.C 
     # expression
@@ -46,11 +46,15 @@ set(ALPS_SOURCES
 
 if (ALPS_BUILD_NGS)
   set(ALPS_SOURCES ${ALPS_SOURCES} 
-    ngs/lib/mcbase.cpp ngs/lib/mcparams.cpp ngs/lib/mcsignal.cpp ngs/lib/mcoptions.cpp ngs/lib/mcdeprecated.cpp 
+    ngs/lib/mcbase.cpp ngs/lib/mcparams.cpp ngs/lib/mcsignal.cpp ngs/lib/mcoptions.cpp  
     ngs/lib/mcresult.cpp ngs/lib/mcresults.cpp ngs/lib/api.cpp ngs/lib/mcobservables.cpp ngs/lib/mcobservable.cpp
     ngs/lib/observablewrappers.cpp ngs/lib/callback.cpp ngs/lib/signal.cpp
+    ngs/lib/measurement.cpp
     ngs/lib/paramvalue.cpp ngs/lib/paramproxy.cpp ngs/lib/params.cpp ngs/lib/base.cpp ngs/lib/make_deprecated_parameters.cpp
   )
+  if (ALPS_BUILD_PYTHON)
+    set(ALPS_SOURCES ${ALPS_SOURCES} ngs/lib/numpy_import.cpp ngs/lib/get_numpy_type.cpp)
+  endif (ALPS_BUILD_PYTHON)
 endif (ALPS_BUILD_NGS)
 
 if (NOT ALPS_FOR_VISTRAILS)

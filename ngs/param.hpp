@@ -28,6 +28,8 @@
 #ifndef ALPS_NGS_PARAM_HPP
 #define ALPS_NGS_PARAM_HPP
 
+#warning this file is deprecated
+
 #include <alps/ngs/config.hpp>
 #include <alps/ngs/convert.hpp>
 #include <alps/ngs/stacktrace.hpp>
@@ -38,6 +40,7 @@
 #include <string>
 #include <iostream>
 #include <stdexcept>
+
 
 /*
 namespace alps {
@@ -252,7 +255,7 @@ namespace alps {
 
     ALPS_DECL std::ostream & operator<<(std::ostream & os, param const &);
 
-	#define ALPS_NGS_PARAM_ADD_OPERATOR(T)								\
+	#define ALPS_NGS_PARAM_ADD_OPERATOR(T)											\
 		ALPS_DECL T operator+(param const & p, T const & s);						\
 		ALPS_DECL T operator+(T const & s, param const & p);
 	ALPS_NGS_PARAM_ADD_OPERATOR(char)

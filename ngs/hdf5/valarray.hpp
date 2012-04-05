@@ -83,7 +83,7 @@ namespace alps {
                             return false;
                         std::vector<std::size_t> first(get_extent(const_cast<std::valarray<T> &>(value)[0]));
 						if (!boost::is_scalar<typename std::valarray<T>::value_type>::value)
-							for(std::size_t i = 0; i < value.size(); ++i){
+							for(std::size_t i = 0; i < value.size(); ++i)
 								if (!is_vectorizable(const_cast<std::valarray<T> &>(value)[i]))
 									return false;
 								else {
@@ -94,7 +94,6 @@ namespace alps {
 									)
 										return false;
 								}
-              }
                     }
                     return true;
                 }

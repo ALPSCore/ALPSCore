@@ -46,9 +46,6 @@ namespace alps
         measurement::measurement(T arg): base_(new detail::accumulator_wrapper<T>(arg)) 
         {}
 
-        measurement::measurement(measurement const & arg): base_(arg.base_->clone()) 
-        {}
-
         template<typename T>
         measurement& measurement::operator<<(const T& value) 
         {
@@ -66,12 +63,6 @@ namespace alps
         {
             return dynamic_cast<detail::accumulator_wrapper<T>&>(*base_).accum_;
         }
-            
-        std::ostream& operator<<(std::ostream &out, const measurement& m)
-        {
-            (*(m.base_)).print(out);
-            return out;
-        }
-    }//end alea namespace 
+	}//end alea namespace 
 }//end alps namespace
 #endif // ALPS_NGS_ALEA_MEASUREMENT_HEADER

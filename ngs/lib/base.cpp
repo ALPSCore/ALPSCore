@@ -31,26 +31,20 @@
 
 namespace alps {
 
+	// TODO: make boost::filesystem version
     void base::save(std::string const & filename) const {
-        hdf5::archive ar(filename, hdf5::archive::REPLACE);
+        hdf5::archive ar(filename, "w");
         ar
             << make_pvp("/checkpoint", *this)
         ;
     }
 
+	// TODO: make boost::filesystem version
     void base::load(std::string const & filename) {
         hdf5::archive ar(filename);
         ar 
             >> make_pvp("/checkpoint", *this)
         ;
-    }
-
-    void base::save(alps::param const & filename) const {
-        save(filename.str());
-    }
-
-    void base::load(alps::param const & filename) {
-        load(filename.str());
     }
 
     void base::save(alps::hdf5::archive & ar) const {

@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2011 by Lukas Gamper <gamperl@gmail.com>                   *
+ * Copyright (C) 2010 - 2012 by Lukas Gamper <gamperl@gmail.com>                   *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -25,44 +25,58 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_MCMPISIM_HPP
-#define ALPS_NGS_MCMPISIM_HPP
+#include <string>
+#include <cassert>
 
 namespace alps {
-    #ifdef ALPS_HAVE_MPI
+    namespace detail {
 
-        template<typename Impl> class mcmpisim : public Impl {
-            public:
-                using Impl::collect_results;
-                mcmpisim(typename alps::parameters_type<Impl>::type const & p,
-			             boost::mpi::communicator const & c) 
-                    : Impl(p, c.rank())
-                    , communicator(c)
-                    , binnumber(p["binnumber"] | std::min(128, 2 * c.size()))
-                {
-                    MPI_Errhandler_set(communicator, MPI_ERRORS_RETURN);
-                }
+		template<typename params_type, typename value_type> class paramiterator
+			: public boost::forward_iterator_helper<
+				  paramiterator<params_type, value_type>
+				, value_type
+				, std::ptrdiff_t
+				, value_type *
+				, value_type &
+			>
+		{
+			public:
 
-                double fraction_completed() const {
-                    return boost::mpi::all_reduce(communicator, Impl::fraction_completed(), std::plus<double>());
-                }
+				paramiterator(paramiterator const & arg)
+					: it(arg.it)
+					, params(arg.params)
+				{}
 
-                typename alps::results_type<Impl>::type collect_results(typename alps::result_names_type<Impl>::type const & names) const {
-                    typename alps::results_type<Impl>::type local_results = Impl::collect_results(names), partial_results;
-                    for(typename alps::results_type<Impl>::type::iterator it = local_results.begin(); it != local_results.end(); ++it)
-                        if (it->second.count())
-                            partial_results.insert(it->first, it->second.reduce(communicator, binnumber));
-                        else
-                            partial_results.insert(it->first, it->second);
-                    return partial_results;
-                }
+				paramiterator(
+					  params_type & p
+					, std::vector<std::string>::const_iterator i
+				)
+					: params(p)
+					, it(i)
+				{}
 
-            private:
-                boost::mpi::communicator communicator;
-                std::size_t binnumber;
-        };
+				operator paramiterator<const params_type, const value_type>() const {
+					return paramiterator<const params_type, const value_type>(params, it);
+				}
 
-    #endif
+				value_type & operator*() const {
+					assert(params.values.find(*it) != params.values.end());
+					return *params.values.find(*it);
+				}
+
+				void operator++() {
+					++it;
+				}
+
+				bool operator==(paramiterator<params_type, value_type> const & arg) const {
+					return it == arg.it;
+				}
+
+			private:
+
+				params_type & params;
+				std::vector<std::string>::const_iterator it;
+		};
+
+	}
 }
-
-#endif

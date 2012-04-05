@@ -27,14 +27,15 @@
 
 #include <alps/ngs/make_deprecated_parameters.hpp>
 
+#include <string>
+
 namespace alps {
 
     Parameters make_deprecated_parameters(params const & arg) {
-        Parameters params;
-        std::vector<std::string> keys = arg.keys();
-        for (std::vector<std::string>::const_iterator it = keys.begin(); it != keys.end(); ++it)
-            params.push_back(*it, arg[*it].str());
-        return params;
+        Parameters par;
+		for (params::const_iterator it = arg.begin(); it != arg.end(); ++it)
+            par.push_back(it->first, it->second.cast<std::string>());
+        return par;
     }
 
 }

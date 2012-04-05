@@ -37,7 +37,7 @@ namespace alps {
         class oarchive : public archive {
             public:
                 oarchive(std::string const & file, bool compress = false) 
-                    : archive(file, archive::WRITE || (compress ? archive::COMPRESS : 0x00))
+                    : archive(file, WRITE || (compress ? COMPRESS : 0x00))
                 {}
                 oarchive(oarchive const & ar)
                     : archive(ar)
@@ -47,7 +47,7 @@ namespace alps {
         class iarchive : public archive {
             public:
                 iarchive(std::string const & file, bool compress = false) 
-                    : archive(file, archive::READ || (compress ? archive::COMPRESS : 0x00))
+                    : archive(file, READ || (compress ? COMPRESS : 0x00))
                 {}
                 iarchive(oarchive const & ar)
                     : archive(ar)

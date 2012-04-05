@@ -254,7 +254,7 @@ void Worker::save_to_file(const boost::filesystem::path& fnpath, const boost::fi
     boost::filesystem::path p = backup ? hdf5bakpath : hdf5path;
     if (boost::filesystem::exists(p))
       boost::filesystem::remove(p);
-    hdf5::archive worker_ar(p.string(), hdf5::archive::WRITE);
+    hdf5::archive worker_ar(p.string(), "a");
     worker_ar << make_pvp("/", *this);
   } // close file
   if (backup) {

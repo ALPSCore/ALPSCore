@@ -60,19 +60,39 @@ namespace alps {
 			, 0xb733d8d447c4fc98ULL, 0xba046a71218924caULL, 0xe52ab1cfdb374fe7ULL, 0x4159be29f8d2ba15ULL
 			, 0xa54605926d920368ULL, 0x259c2d36f57bfe14ULL, 0x8ee0255d05b96ceaULL, 0x88b135099e5360e4ULL
 			, 0x4bae76467fdbe749ULL, 0x5ec80497cf5ed18aULL, 0xf8a5e0031171f368ULL, 0x985144d8f72f7cc7ULL
-		};
+		}; // TODO: add alignment ...
 
-		boost::uint64_t h = 0;
+		boost::uint64_t h = 0, u = v;
 		// TODO: use SSE, AVX
-		for (std::size_t i = 0; i < 8 * sizeof(T); ++i) {
+		for (std::size_t i = 0; i < 64; ++i) {
 			// get parity bits from http://graphics.stanford.edu/~seander/bithacks.html
-			boost::uint64_t parity = v & M[i];
+			boost::uint64_t parity = u & M[i];
 			parity ^= parity >> 1;
 			parity ^= parity >> 2;
 			parity = (parity & 0x1111111111111111ULL) * 0x1111111111111111ULL;
 			h |= ((parity >> 60) & 1ULL) << i;
 		}
 		return h;
+/*
+#ifdef __SSE_X__FALSE
+		__m128i h = _mm_setzero_si128();
+		__m128i u = _mm_set_epi64(v, v);
+		__m128i o = _mm_set_epi64(1, 1);
+		for (std::size_t i = 0; i < 64; i += 2) {
+			__m128i r = _mm_load_si128((__m128i)(M + i));
+			r = _mm_and_si128(r, u);
+			r = _mm_xor_si128(r, _mm_srli_epi64(r, 32));
+			r = _mm_xor_si128(r, _mm_srli_epi64(r, 16));
+			r = _mm_xor_si128(r, _mm_srli_epi64(r, 8));
+			r = _mm_xor_si128(r, _mm_srli_epi64(r, 4));
+			r = _mm_xor_si128(r, _mm_srli_epi64(r, 2));
+			r = _mm_xor_si128(r, _mm_srli_epi64(r, 1));
+			r = _mm_and_si128(r, o);
+			h = _mm_or_si128(h, _mm_slli_epi64(r, 2 * i));
+		}
+		return _mm_extract_epi64(h, 0) | (_mm_extract_epi64(h, 1) << 1)
+#endif
+*/
 	}
 
 	inline std::size_t hash_value(float v) {
@@ -89,12 +109,6 @@ namespace alps {
 		return hash_value(reinterpret_cast<boost::uint_t<8 * sizeof(void *)>::exact>(v));
 	}
 
-	template <typename T> struct hash : public std::unary_function<T, std::size_t> {
-		std::size_t operator()(T v) const {
-			return hash_value(v);
-		}
-    };
-
 	template <typename T> inline typename boost::disable_if<typename boost::mpl::or_<
 		  typename boost::is_arithmetic<T>::type
 		, typename boost::is_pointer<T>::type
@@ -103,9 +117,15 @@ namespace alps {
 		return hasher(v);
 	}
 
+	template <typename T> struct hash : public std::unary_function<T, std::size_t> {
+		std::size_t operator()(T v) const {
+			return hash_value(v);
+		}
+    };
+
 	template<typename T> void hash_combine(size_t & s, T const & v) {
 		hash<T> hasher;
-		s ^= hasher(v) + 0x6dbc79f65d57ddf8ULL + (s << 12) + (s >> 4);
+		s ^= hasher(v) + 0x6dbc79f65d57ddf9ULL + (s << 12) + (s >> 4);
 	}
 
 	template<typename I> inline void hash_range(std::size_t & s, I f, I l) {

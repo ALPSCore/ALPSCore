@@ -29,7 +29,6 @@
 #define ALPS_NGS_API_HPP
 
 #include <alps/ngs/params.hpp>
-#include <alps/ngs/params.hpp>
 #include <alps/ngs/mcresults.hpp>
 #include <alps/ngs/mcobservables.hpp>
 
@@ -80,6 +79,11 @@ namespace alps {
     ALPS_DECL void save_results(mcresults const & results, params const & params, boost::filesystem::path const & filename, std::string const & path);
 
     ALPS_DECL void save_results(mcobservables const & observables, params const & params, boost::filesystem::path const & filename, std::string const & path);
+
+    // TODO: document!
+    template<typename C, typename P> void broadcast(C const & c, P & p, int r = 0) {
+    	p.broadcast(c, r);
+    }
 
 }
 
