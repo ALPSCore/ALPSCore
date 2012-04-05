@@ -40,11 +40,11 @@ int main() {
     if (boost::filesystem::exists(boost::filesystem::path(filename)))
         boost::filesystem::remove(boost::filesystem::path(filename));
     {
-        alps::hdf5::archive oar(filename, alps::hdf5::archive::WRITE);
+        alps::hdf5::archive oar(filename, "a");
     }
     {
         using namespace alps;
-        alps::hdf5::archive iar(filename, alps::hdf5::archive::READ);
+        alps::hdf5::archive iar(filename, "r");
         double test;
         try {
             iar >> make_pvp("/not/existing/path", test);

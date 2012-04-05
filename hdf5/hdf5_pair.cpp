@@ -5,7 +5,7 @@
 #include <alps/hdf5/vector.hpp>
 
 int main() {
-	alps::hdf5::archive ar("creal.h5",alps::hdf5::archive::WRITE);
+	alps::hdf5::archive ar("creal.h5", "a");
 	{
 		std::vector<double> a(1e6);
 		ar << alps::make_pvp("a",

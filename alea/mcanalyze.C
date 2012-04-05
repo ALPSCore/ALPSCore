@@ -60,7 +60,7 @@ int main() {
             //measurement["Vector"] << 1.0;
         }
         
-        alps::hdf5::archive oar(filename, alps::hdf5::archive::WRITE);
+        alps::hdf5::archive oar(filename, "a");
         oar << make_pvp("/test/result", measurement);
     }
     {

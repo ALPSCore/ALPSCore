@@ -46,7 +46,7 @@ int main()
 
     // Write
     {
-        alps::hdf5::archive ar("test.h5",alps::hdf5::archive::WRITE);
+        alps::hdf5::archive ar("test.h5","a");
         vector< multi_array<double,2> > v(2,a);
         ar << alps::make_pvp("uniform",v);
         v.push_back(b);
@@ -55,7 +55,7 @@ int main()
 
     // Read
     {
-        alps::hdf5::archive ar("test.h5",alps::hdf5::archive::READ);
+        alps::hdf5::archive ar("test.h5","r");
         vector< multi_array<double,2> > w;
         ar >> alps::make_pvp("nonuniform",w);
         cout << "read nonuniform" << endl;

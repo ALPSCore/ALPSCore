@@ -67,7 +67,7 @@ template<typename base_type> struct test {
             }
         }
         {
-            alps::hdf5::archive oar(filename, alps::hdf5::archive::WRITE | (SZIP_COMPRESS ? alps::hdf5::archive::COMPRESS : 0x00));
+            alps::hdf5::archive oar(filename, SZIP_COMPRESS ? "ca" : "a");
             if (IS_ATTRIBUTE)
                 oar
                     << alps::make_pvp("/data", 0)
@@ -86,7 +86,7 @@ template<typename base_type> struct test {
             base_type read_1_len_value[MATRIX_SIZE], read_1_value[MATRIX_SIZE];
             base_type read_2_value[MATRIX_SIZE][MATRIX_SIZE];
             base_type read_3_value[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE];
-            alps::hdf5::archive iar(filename, alps::hdf5::archive::READ | (SZIP_COMPRESS ? alps::hdf5::archive::COMPRESS : 0x00));
+            alps::hdf5::archive iar(filename, SZIP_COMPRESS ? "rc" : "r");
             iar
                 >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "len", &read_1_len_value[0], length)
                 >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "len_0", write_0_value, 0)
@@ -109,7 +109,7 @@ template<typename base_type> struct test {
         base_type special_write(creator<base_type>::special());
         bool result;
         {
-            alps::hdf5::archive oar(filename, alps::hdf5::archive::WRITE | (SZIP_COMPRESS ? alps::hdf5::archive::COMPRESS : 0x00));
+            alps::hdf5::archive oar(filename, SZIP_COMPRESS ? "ca" : "a");
             if (IS_ATTRIBUTE)
                 oar
                     << alps::make_pvp("/data", 0)
@@ -151,7 +151,7 @@ template<typename base_type> struct test {
     template<typename data_type> static bool overwrite_helper(std::string const & filename) {
         data_type random_write(creator<data_type>::random());
         bool result;
-        alps::hdf5::archive ar(filename, alps::hdf5::archive::WRITE | (SZIP_COMPRESS ? alps::hdf5::archive::COMPRESS : 0x00));
+        alps::hdf5::archive ar(filename, SZIP_COMPRESS ? "ca" : "a");
         {
             if (IS_ATTRIBUTE)
                 ar
@@ -204,7 +204,7 @@ template<typename T> struct test<boost::shared_array<T> > {
             }
         }
         {
-            alps::hdf5::archive oar(filename, alps::hdf5::archive::WRITE | (SZIP_COMPRESS ? alps::hdf5::archive::COMPRESS : 0x00));
+            alps::hdf5::archive oar(filename, SZIP_COMPRESS ? "ca" : "a");
             if (IS_ATTRIBUTE)
                 oar
                     << alps::make_pvp("/data", 0)
@@ -277,8 +277,8 @@ int main() {
         for (std::size_t i = 32; i && result; --i)
             result = test<boost::remove_pointer< TYPE >::type >::write(filename, boost::is_pointer< TYPE >::type());
         {
-            alps::hdf5::archive iar1(filename, alps::hdf5::archive::WRITE | (SZIP_COMPRESS ? alps::hdf5::archive::COMPRESS : 0x00));
-            alps::hdf5::archive iar2(filename, alps::hdf5::archive::WRITE | (SZIP_COMPRESS ? alps::hdf5::archive::COMPRESS : 0x00));
+            alps::hdf5::archive iar1(filename, SZIP_COMPRESS ? "ca" : "a");
+            alps::hdf5::archive iar2(filename, SZIP_COMPRESS ? "ca" : "a");
             alps::hdf5::archive iar3 = iar1;
             for (std::size_t i = 32; i && result; --i)
                 result = test<boost::remove_pointer< TYPE >::type >::overwrite(filename, boost::is_pointer< TYPE >::type());

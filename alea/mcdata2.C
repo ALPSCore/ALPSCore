@@ -138,9 +138,10 @@ int main(int argc, char** argv)
   std::cout << "\nsinh(a): \t" << sinh(a) << "\n";
   std::cout << "\ncosh(a): \t" << cosh(a) << "\n";
   std::cout << "\ntanh(a): \t" << tanh(a) << "\n";
-  std::cout << "\nasinh(a): \t" << asinh(a) << "\n";
-  std::cout << "\nacosh(b): \t" << acosh(b) << "\n";
-  std::cout << "\natanh(a): \t" << atanh(a) << "\n";
+// asinh, aconsh and atanh are not part of C++03 standard
+//  std::cout << "\nasinh(a): \t" << asinh(a) << "\n";
+//  std::cout << "\nacosh(b): \t" << acosh(b) << "\n";
+//  std::cout << "\natanh(a): \t" << atanh(a) << "\n";
 
 
   // test: mcdata<std::vector<double> >
@@ -254,9 +255,10 @@ int main(int argc, char** argv)
   std::cout << "\nsinh(A): \t" << sinh(vecA) << "\n";
   std::cout << "\ncosh(A): \t" << cosh(vecA) << "\n";
   std::cout << "\ntanh(A): \t" << tanh(vecA) << "\n";
-  std::cout << "\nasinh(A): \t" << asinh(vecA) << "\n";
-  std::cout << "\nacosh(B): \t" << acosh(vecB) << "\n";
-  std::cout << "\natanh(A): \t" << atanh(vecA) << "\n";
+// asinh, aconsh and atanh are not part of C++03 standard
+//  std::cout << "\nasinh(A): \t" << asinh(vecA) << "\n";
+//  std::cout << "\nacosh(B): \t" << acosh(vecB) << "\n";
+//  std::cout << "\natanh(A): \t" << atanh(vecA) << "\n";
 
 
   // TODO: do we need that?

@@ -18,11 +18,11 @@ int main ()
     p["d"] = 5.;
     
     {
-        alps::hdf5::archive ar("parms.h5", alps::hdf5::archive::WRITE);
+        alps::hdf5::archive ar("parms.h5", "a");
         ar << alps::make_pvp("/parameters", p);
     }
     {
-        alps::hdf5::archive ar("parms.h5", alps::hdf5::archive::READ);
+        alps::hdf5::archive ar("parms.h5", "r");
         alps::Parameters pin;
         ar >> alps::make_pvp("/parameters", pin);
         cout << "Reading 1:" << endl << pin;
@@ -33,11 +33,11 @@ int main ()
     p2["a"] = 10.5;
     p2["c"] = 5.2;
     {
-        alps::hdf5::archive ar("parms.h5", alps::hdf5::archive::WRITE);
+        alps::hdf5::archive ar("parms.h5", "a");
         ar << alps::make_pvp("/parameters", p2);
     }
     {
-        alps::hdf5::archive ar("parms.h5", alps::hdf5::archive::READ);
+        alps::hdf5::archive ar("parms.h5", "r");
         alps::Parameters pin;
         ar >> alps::make_pvp("/parameters", pin);
         cout << "Reading 2:" << endl << pin;
@@ -46,11 +46,11 @@ int main ()
     // "d" is modified from double to string
     p2["d"] = "newtype";
     {
-        alps::hdf5::archive ar("parms.h5", alps::hdf5::archive::WRITE);
+        alps::hdf5::archive ar("parms.h5", "a");
         ar << alps::make_pvp("/parameters", p2);
     }
     {
-        alps::hdf5::archive ar("parms.h5", alps::hdf5::archive::READ);
+        alps::hdf5::archive ar("parms.h5", "r");
         alps::Parameters pin;
         ar >> alps::make_pvp("/parameters", pin);
         cout << "Reading 3:" << endl << pin;

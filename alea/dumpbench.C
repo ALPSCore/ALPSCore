@@ -84,7 +84,7 @@ int main() {
   
   {
     boost::posix_time::ptime start = boost::posix_time::microsec_clock::local_time();
-    alps::hdf5::archive oar(hdf5_filename, alps::hdf5::archive::WRITE);
+    alps::hdf5::archive oar(hdf5_filename, "a");
     for (int c = 0; c < count; ++c) {
       oar << make_pvp("/test/" + boost::lexical_cast<std::string>(c) + "/result", measurement);
     }
@@ -105,7 +105,7 @@ int main() {
   measurement.clear();
   {
     boost::posix_time::ptime start = boost::posix_time::microsec_clock::local_time();
-    alps::hdf5::archive iar(hdf5_filename, alps::hdf5::archive::READ);
+    alps::hdf5::archive iar(hdf5_filename, "r");
     for (int c = 0; c < count; ++c) {
       iar >> make_pvp("/test/" + boost::lexical_cast<std::string>(c) + "/result", measurement);
     }
@@ -142,7 +142,7 @@ int main() {
   {
 	using namespace alps;
 	std::vector<double> data(size);
-	alps::hdf5::archive oar(hdf5_filename, alps::hdf5::archive::WRITE);
+	alps::hdf5::archive oar(hdf5_filename, "a");
     boost::posix_time::ptime start = boost::posix_time::microsec_clock::local_time();
 	{
 		for (int c = 0; c < count; ++c) {
@@ -163,7 +163,7 @@ int main() {
   {
 	using namespace alps;
 	std::vector<double> data;
-	alps::hdf5::archive iar(hdf5_filename, alps::hdf5::archive::READ);
+	alps::hdf5::archive iar(hdf5_filename, "r");
     boost::posix_time::ptime start = boost::posix_time::microsec_clock::local_time();
 	{
 		for (int c = 0; c < count; ++c)

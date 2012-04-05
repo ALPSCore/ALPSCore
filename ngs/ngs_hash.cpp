@@ -28,14 +28,37 @@
 
 #include <alps/ngs/hash.hpp>
 
+#include <stdio.h>
 #include <iostream>
 
-using namespace alps;
+class rng {
+	public:
+		rng(boost::uint64_t seed)
+			: state(seed)
+		{}
+		boost::uint64_t operator()() {
+			using alps::hash_value;
+			return state = hash_value(state);
+		}
+	private:
+		boost::uint64_t state;
+};
 
 int main() {
+	rng gen(42);
+
+	FILE * pFile = fopen("rng.bin", "wb");
+	for (std::size_t i = 0; i < 1500; ++i) {
+		boost::uint64_t value = gen();
+//		std::cout << value << std::endl;
+		fwrite(&value, sizeof(boost::uint64_t), 1, pFile);
+	}
+	fclose(pFile);
+/*
 	hash<double> hasher;
 	std::size_t h = hasher(1.);
 	std::cout << h << " ";
 	hash_combine(h, 4);
 	std::cout << h << std::endl;
+*/
 }

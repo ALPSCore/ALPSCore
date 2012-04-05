@@ -46,23 +46,23 @@ int main() {
     {
         using namespace alps;
         alps::hdf5::archive iar(filename);
-        alps::hdf5::archive oar(filename, alps::hdf5::archive::WRITE);
+        alps::hdf5::archive oar(filename, "a");
         oar << make_pvp("/data", 42);
     }
     {
         using namespace alps;
-        alps::hdf5::archive iar(filename, alps::hdf5::archive::READ);
+        alps::hdf5::archive iar(filename, "r");
         int test;
         iar >> make_pvp("/data", test);
         {
-            alps::hdf5::archive iar2(filename, alps::hdf5::archive::READ);
+            alps::hdf5::archive iar2(filename, "r");
             int test2;
             iar2 >> make_pvp("/data", test2);
             iar >> make_pvp("/data", test);
         }
         iar >> make_pvp("/data", test);
         {
-            alps::hdf5::archive iar3(filename, alps::hdf5::archive::READ);
+            alps::hdf5::archive iar3(filename, "r");
             int test3;
             iar >> make_pvp("/data", test);
             iar3 >> make_pvp("/data", test3);
@@ -71,7 +71,7 @@ int main() {
     }
     {
         using namespace alps;
-        alps::hdf5::archive iar4(filename, alps::hdf5::archive::READ);
+        alps::hdf5::archive iar4(filename, "r");
         int test4;
         iar4 >> make_pvp("/data", test4);
     }

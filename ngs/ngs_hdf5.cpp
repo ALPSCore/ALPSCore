@@ -37,61 +37,61 @@ using namespace alps;
 int main() {
 
      {
-          hdf5::archive ar("test.h5", hdf5::archive::WRITE);
+          hdf5::archive ar("test.h5", "a");
           ar << make_pvp("/to/to", 3.14159);
      }
      {
-          hdf5::archive ar("test.h5", hdf5::archive::READ);
+          hdf5::archive ar("test.h5", "r");
           double value;
           ar >> make_pvp("/to/to", value);
           std::cout << value << std::endl;
      }
 
      {
-          hdf5::archive ar("test.h5", hdf5::archive::WRITE);
+          hdf5::archive ar("test.h5", "a");
           ar << make_pvp("/to/my/vec/in/a/very/deep/path", std::vector<double>(17, 15.141));
      }
      {
-          hdf5::archive ar("test.h5", hdf5::archive::READ);
+          hdf5::archive ar("test.h5", "r");
           std::vector<unsigned> value;
           ar >> make_pvp("/to/my/vec/in/a/very/deep/path", value);
           std::cout << value[0] << std::endl;
      }
 
      {
-          hdf5::archive ar("test.h5", hdf5::archive::WRITE);
+          hdf5::archive ar("test.h5", "a");
           ar << make_pvp("/to/to", std::complex<double>(3.14159, 12.34));
      }
      {
-          hdf5::archive ar("test.h5", hdf5::archive::READ);
+          hdf5::archive ar("test.h5", "r");
           std::complex<double> value;
           ar >> make_pvp("/to/to", value);
           std::cout << value.real() << " " << value.imag() << std::endl;
      }
 
      {
-          hdf5::archive ar("test.h5", hdf5::archive::WRITE);
+          hdf5::archive ar("test.h5", "a");
           ar << make_pvp("/to/str", std::string("asdf"));
      }
      {
-          hdf5::archive ar("test.h5", hdf5::archive::READ);
+          hdf5::archive ar("test.h5", "r");
           std::string value;
           ar >> make_pvp("/to/str", value);
           std::cout << value << std::endl;
      }
 
      {
-          hdf5::archive ar("test.h5", hdf5::archive::WRITE);
+          hdf5::archive ar("test.h5", "a");
           ar << make_pvp("/to/char", "asdf");
      }
      {
-          hdf5::archive ar("test.h5", hdf5::archive::READ);
+          hdf5::archive ar("test.h5", "r");
           std::string value;
           ar >> make_pvp("/to/char", value);
           std::cout << value << std::endl;
      }
      {
-          hdf5::archive ar("test.h5", hdf5::archive::READ);
+          hdf5::archive ar("test.h5", "r");
           std::cout << (ar.is_datatype<double>("/to/to") ? "true" : "false") << std::endl;
      
      }

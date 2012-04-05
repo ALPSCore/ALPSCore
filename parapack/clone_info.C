@@ -62,7 +62,7 @@ try {
   boost::filesystem::path h5path("clone_info.h5");
   #pragma omp critical (hdf5io)
   {
-    alps::hdf5::archive ar(h5path.string(), alps::hdf5::archive::WRITE);
+    alps::hdf5::archive ar(h5path.string(), "a");
     ar << make_pvp("/info", info);
   }
   info = alps::clone_info();
