@@ -11,6 +11,7 @@ add_subdirectory(hdf5)
 add_subdirectory(model)
 if (ALPS_BUILD_NGS)
     add_subdirectory(ngs)
+    
 endif(ALPS_BUILD_NGS)
 add_subdirectory(osiris)
 add_subdirectory(parameter)

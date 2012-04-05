@@ -14,3 +14,5 @@ FOREACH (name ngs_hdf5 ngs_hash)
     target_link_libraries(${name} alps)
     add_alps_test(${name})
 ENDFOREACH(name)
+
+add_subdirectory(alea)
