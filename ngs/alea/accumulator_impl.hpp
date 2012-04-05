@@ -4,8 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2011 by Lukas Gamper <gamperl@gmail.com>                   *
- *                           Matthias Troyer <troyer@comp-phys.org>                *
+ * Copyright (C) 2011 - 2012 by Mario Koenz <mkoenz@ethz.ch>                       *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -26,38 +25,54 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_HPP
-#define ALPS_NGS_HPP
+#ifndef ALPS_NGS_ALEA_ACCUMULATOR_IMPL_HEADER
+#define ALPS_NGS_ALEA_ACCUMULATOR_IMPL_HEADER
 
-#include <alps/ngs/api.hpp>
-#include <alps/ngs/base.hpp>
-#include <alps/ngs/signal.hpp>
-#include <alps/ngs/convert.hpp>
-#include <alps/ngs/parallel.hpp>
-#include <alps/ngs/callback.hpp>
-#include <alps/ngs/boost_mpi.hpp>
-#include <alps/ngs/multithread.hpp>
-#include <alps/ngs/short_print.hpp>
-#include <alps/ngs/thread_interrupted.hpp>
-#include <alps/ngs/observablewrappers.hpp>
+#include <alps/ngs/alea/detail/accumulator_detail.hpp>
 
-// TODO: remove these deprecated headers:
-#include <alps/ngs/mcbase.hpp>
-#include <alps/ngs/mcmpisim.hpp>
-#include <alps/ngs/mcparams.hpp>
-#include <alps/ngs/mcsignal.hpp>
-#include <alps/ngs/mcresult.hpp>
-#include <alps/ngs/mcresults.hpp>
-#include <alps/ngs/mcoptions.hpp>
-#include <alps/ngs/mcobservable.hpp>
-#include <alps/ngs/mcobservables.hpp>
-#include <alps/ngs/mcthreadedsim.hpp>
+#include <boost/parameter.hpp>
 
-//alea includes:
-#include <alps/ngs/alea/type_traits.hpp>
-#include <alps/ngs/alea/detail/properties.hpp>
-#include <alps/ngs/alea/histogram.hpp>
-#include <alps/ngs/alea/accumulator.hpp>
-#include <alps/ngs/alea/measurement.hpp>
+// = = = = N A M E D   P A R A M E T E R   C T O R   D E F I N I T I O N = = = =
 
-#endif
+namespace alps
+{
+    namespace alea
+    {
+        //TODO: put the parameter in a namespace
+        BOOST_PARAMETER_NAME((bin_size, keywords) _bin_size)
+        BOOST_PARAMETER_NAME((bin_number, keywords) _bin_number)
+        BOOST_PARAMETER_NAME((bin_log, keywords) _bin_log)
+
+        template<
+              typename _0  = void
+            , typename _1  = void
+            , typename _2  = void
+            , typename _3  = void
+            , typename _4  = void
+            , typename _5  = void
+            , typename _6  = void
+            , typename _7  = void
+            , typename _8  = void
+            , typename _9  = void
+        > 
+        class accumulator: public detail::accumulator_impl<ValueType<_0>, _1, _2, _3, _4, _5, _6, _7, _8, _9>
+        {
+            typedef detail::accumulator_impl<ValueType<_0>, _1, _2, _3, _4, _5, _6, _7, _8, _9> base;
+            
+            public:
+                accumulator(accumulator const & arg): base(static_cast<base const &>(arg)) {}
+            
+                BOOST_PARAMETER_CONSTRUCTOR(
+                accumulator, 
+                (base),
+                keywords,
+                    (optional 
+                        (_bin_size, *)
+                        (_bin_number, *)
+                        (_bin_log, *)
+                    )
+                )
+        };
+    }//end alea namespace 
+}//end alps namespace
+#endif // ALPS_NGS_ALEA_ACCUMULATOR_IMPL_HEADER
