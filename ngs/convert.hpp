@@ -39,6 +39,7 @@
 #include <typeinfo>
 #include <algorithm>
 #include <stdexcept>
+#include <cstdio>
 
 namespace alps {
 
