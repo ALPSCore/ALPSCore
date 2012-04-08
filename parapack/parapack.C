@@ -473,7 +473,7 @@ int start_sgl(int argc, char** argv) {
         std::cout << "  master input file  = " << file_in.string() << std::endl
                   << "  master output file = " << file_out.string() << std::endl;
         print_taskinfo(std::cout, tasks);
-        #pragma omp parallel for
+        // #pragma omp parallel for
         for (int t = 0; t < tasks.size(); ++t) {
           tasks[t].evaluate();
         }
@@ -704,7 +704,7 @@ int start_sgl(int argc, char** argv) {
     if (opt.auto_evaluate) {
       std::cout << logger::header() << "starting evaluation on "
                 << alps::hostname() << std::endl;
-      #pragma omp parallel for
+      // #pragma omp parallel for
       for (int t = 0; t < tasks.size(); ++t) {
         tasks[t].evaluate();
       } // end omp parallel for
