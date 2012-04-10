@@ -14,5 +14,7 @@ FOREACH (name os sizeof xdrdump xdrdump2 boostdump boostdump2 boostdump3 boostdu
   add_executable(${name} ${name}.C)
   add_dependencies(${name} alps)
   target_link_libraries(${name} alps)
+  set_property(TARGET ${name} PROPERTY LABELS osiris)
   add_alps_test(${name})
+  set_property(TEST ${name} PROPERTY LABELS osiris)
 ENDFOREACH(name)

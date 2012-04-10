@@ -27,6 +27,7 @@ if (ALPS_BUILD_PYTHON AND BUILD_SHARED_LIBS)
                     -Dcmddir=${CMAKE_CURRENT_SOURCE_DIR}
                     -P ${CMAKE_CURRENT_SOURCE_DIR}/run_python_test.cmake
             )
+            set_property(TEST python_${name} PROPERTY LABELS pyalps)
         ENDFOREACH(name)
     ENDIF(ALPS_BUILD_NGS)
 
@@ -43,5 +44,6 @@ if (ALPS_BUILD_PYTHON AND BUILD_SHARED_LIBS)
                 -Dcmddir=${CMAKE_CURRENT_SOURCE_DIR}
                 -P ${CMAKE_CURRENT_SOURCE_DIR}/run_python_test.cmake
         )
+        set_property(TEST python_${name} PROPERTY LABELS pyalps)
     ENDFOREACH(name)
 ENDIF(ALPS_BUILD_PYTHON AND BUILD_SHARED_LIBS)
