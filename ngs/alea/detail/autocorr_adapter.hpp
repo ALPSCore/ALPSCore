@@ -88,9 +88,8 @@ namespace alps
                     {
                         base::operator<<(val);
                         
-                        using std::pow;
                         //TODO: Right implementation
-                        if(base::count() == pow(2, bin_size_now_))
+                        if(base::count() == 1<< bin_size_now_)
                         {
                             bin_.push_back(typename base::value_type());
                             partial_.push_back(partial_.back());
@@ -103,9 +102,9 @@ namespace alps
                         {
                             partial_[i] += val;
                             
-                            if(pos_now_ % int(pow(2, i)) == 0)
+                            if(pos_now_ % (1<<i) == 0)
                             {
-                                bin_[i] += pow(partial_[i], 2);
+                              bin_[i] += partial_[i]*partial_[i];
                                 partial_[i] = 0;
                             }
                         }

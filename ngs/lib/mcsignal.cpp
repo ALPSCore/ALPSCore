@@ -90,9 +90,6 @@ namespace alps {
         signals_.push_back(signal);
         hdf5::archive::abort();
         std::abort();
-        goto grats_you_found_the_easter_eggs;
-        grats_you_found_the_easter_eggs:
-        ; //svn blame will tell you to whom you need to report it ;)
     }
 
     std::vector<int> mcsignal::signals_;

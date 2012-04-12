@@ -162,7 +162,7 @@ namespace alps
                             info != typeid(value_type)
                         #endif
                          )
-                            std::runtime_error("wrong type added in accumulator_wrapper::add_value" + ALPS_STACKTRACE);
+                            boost::throw_exception(std::runtime_error("wrong type added in accumulator_wrapper::add_value" + ALPS_STACKTRACE));
                             //~ std::runtime_error("wrong type added in accumulator_wrapper::add_value"  + alps::ngs::stacktrace());
                         accum_ << *static_cast<const value_type*>(value);
                     }

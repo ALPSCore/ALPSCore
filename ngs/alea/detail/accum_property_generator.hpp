@@ -132,7 +132,7 @@ namespace alps
                     out << " has no ";\
                     out << #FCT;\
                     out << "-method"; \
-                    std::runtime_error(out.str() + ALPS_STACKTRACE); \
+                    boost::throw_exception(std::runtime_error(out.str() + ALPS_STACKTRACE)); \
                     return typename FCT ## _type<typename value_type<typename base::accum_type>::type >::type(0); \
                 } \
             };\
