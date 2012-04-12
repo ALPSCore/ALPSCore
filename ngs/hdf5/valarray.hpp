@@ -82,18 +82,20 @@ namespace alps {
                         if (!is_vectorizable(const_cast<std::valarray<T> &>(value)[0]))
                             return false;
                         std::vector<std::size_t> first(get_extent(const_cast<std::valarray<T> &>(value)[0]));
-						if (!boost::is_scalar<typename std::valarray<T>::value_type>::value)
+						if (!boost::is_scalar<typename std::valarray<T>::value_type>::value) {
 							for(std::size_t i = 0; i < value.size(); ++i)
-								if (!is_vectorizable(const_cast<std::valarray<T> &>(value)[i]))
+								if (!is_vectorizable(const_cast<std::valarray<T> &>(value)[i])) {
 									return false;
-								else {
+								} else {
 									std::vector<std::size_t> size(get_extent(const_cast<std::valarray<T> &>(value)[i]));
 									if (
 										   first.size() != size.size() 
 										|| !std::equal(first.begin(), first.end(), size.begin())
-									)
+									) {
 										return false;
+									}
 								}
+						}
                     }
                     return true;
                 }

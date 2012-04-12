@@ -5,6 +5,7 @@
  * ALPS Libraries                                                                  *
  *                                                                                 *
  * Copyright (C) 2011 - 2012 by Mario Koenz <mkoenz@ethz.ch>                       *
+ *                      2012 by Lukas Gamper <gamperl@gmail.com>                   *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -29,6 +30,7 @@
 #ifndef ALPS_NGS_ALEA_MEAN_TRAIT_HEADER
 #define ALPS_NGS_ALEA_MEAN_TRAIT_HEADER
 
+#include <boost/type_traits.hpp>
 #include <boost/static_assert.hpp>
 
 //= = = = = = = = = = = = = = = M E A N   T R A I T = = = = = = = = = = = = = = = =
@@ -58,7 +60,8 @@ namespace alps
             template <typename T>
             struct mean_type_impl<T, 3>
             {
-                BOOST_STATIC_ASSERT_MSG("mean_type trait failed", false);
+				typedef typename boost::is_same<T, T>::type false_type;
+                BOOST_STATIC_ASSERT_MSG(!false_type::value, "mean_type trait failed");
             };
         }
 

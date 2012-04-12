@@ -159,7 +159,9 @@ namespace alps {
 							ar >> value;											\
 							operator=(value);										\
 						}
-					ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(ALPS_NGS_PARAMVALUE_LOAD)
+					// TODO: fix python serialization!
+					// ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(ALPS_NGS_PARAMVALUE_LOAD)
+					ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE_NO_PYTHON(ALPS_NGS_PARAMVALUE_LOAD)
 					#undef ALPS_NGS_PARAMVALUE_LOAD
 					else
 						throw std::runtime_error("unknown type" + ALPS_STACKTRACE);
