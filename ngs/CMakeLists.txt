@@ -15,4 +15,5 @@ FOREACH (name ngs_hdf5 ngs_hash)
     add_alps_test(${name})
 ENDFOREACH(name)
 
-add_subdirectory(alea)
+#TODO: does not compile in clang
+#add_subdirectory(alea)
