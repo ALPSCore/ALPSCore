@@ -89,7 +89,7 @@ namespace alps
                         base::operator<<(val);
                         
                         //TODO: Right implementation
-                        if(base::count() == 1<< bin_size_now_)
+                        if(base::count() == (1 << bin_size_now_))
                         {
                             bin_.push_back(typename base::value_type());
                             partial_.push_back(partial_.back());
