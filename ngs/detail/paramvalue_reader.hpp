@@ -137,7 +137,7 @@ namespace alps {
 					visitor(&v.front(), std::vector<std::size_t>(1, v.size()));
 				}
 
-				void operator()(T const & v) const { 
+				void operator()(T const & v) const {
 					visitor.value = v; 
 				}
 
@@ -165,7 +165,7 @@ namespace alps {
 					template <typename U> void operator()(U const & v) const {
 						value = boost::python::object(v);
 					}
-					
+
 					template <typename U> void operator()(std::vector<U> const & v) const {
 						npy_intp npsize = v.size();
 						value = boost::python::object(boost::python::handle<>(PyArray_SimpleNew(1, &npsize, detail::get_numpy_type(U()))));
@@ -176,7 +176,7 @@ namespace alps {
 						value = boost::python::list(v);
 					}
 
-					void operator()(boost::python::object const & v) const { 
+					void operator()(boost::python::object const & v) const {
 						value = v; 
 					}
 

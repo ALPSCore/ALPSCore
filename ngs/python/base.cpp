@@ -52,13 +52,13 @@ namespace alps {
 
 			    #ifdef ALPS_HAVE_MPI
 
-					base_export(boost::python::object arg, std::size_t seed_offset = 42, boost::mpi::communicator = boost::mpi::communicator())
+					base_export(boost::python::dict arg, std::size_t seed_offset = 42, boost::mpi::communicator = boost::mpi::communicator())
 						: base(base::parameters_type(arg), seed_offset)
 					{}
 
                 #else
 
-					base_export(boost::python::object arg, std::size_t seed_offset = 42)
+					base_export(boost::python::dict arg, std::size_t seed_offset = 42)
 						: base(base::parameters_type(arg), seed_offset)
 					{}
 
@@ -115,9 +115,9 @@ BOOST_PYTHON_MODULE(pyngsbase_c) {
     boost::python::class_<alps::detail::base_export, boost::noncopyable>(
           "base_impl",
           #ifdef ALPS_HAVE_MPI
-	          boost::python::init<boost::python::object, boost::python::optional<std::size_t, boost::mpi::communicator> >()
+	          boost::python::init<boost::python::dict, boost::python::optional<std::size_t, boost::mpi::communicator> >()
 	      #else
-	          boost::python::init<boost::python::object, boost::python::optional<std::size_t> >()
+	          boost::python::init<boost::python::dict, boost::python::optional<std::size_t> >()
 	      #endif
     )
         .add_property("params", boost::python::make_function(&alps::detail::base_export::get_params, boost::python::return_internal_reference<>()))

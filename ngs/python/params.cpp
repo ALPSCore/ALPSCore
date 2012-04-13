@@ -33,6 +33,10 @@
 
 #include <alps/python/make_copy.hpp>
 
+#include <boost/python/iterator.hpp>
+#include <boost/python/tuple.hpp>
+#include <boost/python/to_python_converter.hpp>
+
 #include <string>
 
 namespace alps {
@@ -43,28 +47,24 @@ namespace alps {
         }
 
         boost::python::object params_getitem(alps::params & self, boost::python::object const & key) {
-			return self[boost::python::call_method<std::string>(key.ptr(), "__str__")];
+			if (self.defined(boost::python::call_method<std::string>(key.ptr(), "__str__")))
+				return self[boost::python::call_method<std::string>(key.ptr(), "__str__")].cast<boost::python::object>();
+			else
+				return boost::python::object();
         }
 
         void params_setitem(alps::params & self, boost::python::object const & key, boost::python::object & value) {
 			self[boost::python::call_method<std::string>(key.ptr(), "__str__")] = value;
         }
-/*
+
         void params_delitem(alps::params & self, boost::python::object const & key) {
-            // TODO: implement for non params_impl_dict prams
-            dynamic_cast<params_impl_dict &>(*self.get_impl()).native_delitem(key);
+			return self.erase(boost::python::call_method<std::string>(key.ptr(), "__str__"));
         }
-*/
+
         bool params_contains(alps::params & self, boost::python::object const & key) {
 			return self.defined(boost::python::call_method<std::string>(key.ptr(), "__str__"));
         }
 
-// TODO: implement!
-/*        boost::python::object params_iter(alps::params & self) {
-          // TODO: implement for non params_impl_dict prams
-            return dynamic_cast<params_impl_dict &>(*self.get_impl()).native_iter();
-        }
-*/
         boost::python::object value_or_default(alps::params & self, boost::python::object const & key, boost::python::object const & value) {
 			return params_contains(self, key) ? params_getitem(self, key) : value;
 		}
@@ -76,24 +76,34 @@ namespace alps {
             ar.set_context(current);
         }
         BOOST_PYTHON_FUNCTION_OVERLOADS(params_load_overloads, params_load, 2, 3)
+
+        struct param_iterator_to_python {
+            static PyObject* convert(std::pair<std::string const, alps::detail::paramvalue> const & value) {
+				return boost::python::incref(boost::python::str(value.first).ptr());
+            }
+        };
+
     }
 }
 
 BOOST_PYTHON_MODULE(pyngsparams_c) {
 
+    boost::python::to_python_converter<
+        std::pair<std::string const, alps::detail::paramvalue>,
+        alps::detail::param_iterator_to_python
+    >();
+
     boost::python::class_<alps::params>(
         "params",
-        boost::python::init<boost::python::object>()
+        boost::python::init<boost::python::optional<boost::python::dict> >()
     )
         .def("__len__", &alps::detail::params_len)
         .def("__deepcopy__", &alps::python::make_copy<alps::params>)
         .def("__getitem__", &alps::detail::params_getitem)
         .def("__setitem__", &alps::detail::params_setitem)
-// TODO: implement
-//        .def("__delitem__", &alps::detail::params_delitem)
+        .def("__delitem__", &alps::detail::params_delitem)
         .def("__contains__", &alps::detail::params_contains)
-// TODO: implement
-//        .def("__iter__", &alps::detail::params_iter)
+		.def("__iter__", boost::python::iterator<alps::params>())
         .def("valueOrDefault", &alps::detail::value_or_default)
         .def("save", &alps::params::save)
         .def("load", &alps::detail::params_load, alps::detail::params_load_overloads())

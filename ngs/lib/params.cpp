@@ -31,6 +31,8 @@
 
 #include <boost/bind.hpp>
 
+#include <algorithm>
+
 namespace alps {
 
 	params::params(hdf5::archive ar, std::string const & path) {
@@ -50,10 +52,10 @@ namespace alps {
 	}
 
 	#ifdef ALPS_HAVE_PYTHON
-		params::params(boost::python::object const & arg) {
+		params::params(boost::python::dict const & arg) {
 			boost::python::extract<boost::python::dict> dict(arg);
 			if (!dict.check())
-				throw std::invalid_argument("parameters can only be created from a dict");
+				throw std::invalid_argument("parameters can only be created from a dict" + ALPS_STACKTRACE);
 			const boost::python::object kit = dict().iterkeys();
 			const boost::python::object vit = dict().itervalues();
 			for (std::size_t i = 0; i < boost::python::len(dict()); ++i)
@@ -63,6 +65,13 @@ namespace alps {
 
 	std::size_t params::size() const {
 		return keys.size();
+	}
+
+	void params::erase(std::string const & key) {
+		if (!defined(key))
+			throw std::invalid_argument("the key " + key + " does not exists" + ALPS_STACKTRACE);
+		keys.erase(find(keys.begin(), keys.end(), key));
+		values.erase(key);
 	}
 
 	params::value_type params::operator[](std::string const & key) {
@@ -105,6 +114,8 @@ namespace alps {
 	}
 
 	void params::load(hdf5::archive & ar) {
+		keys.clear();
+		values.clear();
 		std::vector<std::string> list = ar.list_children(ar.get_context());
 		for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
 			detail::paramvalue value;
@@ -125,7 +136,7 @@ namespace alps {
 		values[key] = value;
 	}
 
-	std::string params::getter(std::string const & key) {
+	detail::paramvalue params::getter(std::string const & key) {
 		return values[key];
 	}
 }

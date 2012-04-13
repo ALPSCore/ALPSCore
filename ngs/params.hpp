@@ -36,6 +36,7 @@
 
 #ifdef ALPS_HAVE_PYTHON
     #include <alps/ngs/boost_python.hpp>
+    #include <boost/python/dict.hpp>
 #endif
 
 #include <boost/filesystem.hpp>
@@ -78,12 +79,12 @@ namespace alps {
             params(boost::filesystem::path const &);
 
             #ifdef ALPS_HAVE_PYTHON
-                params(boost::python::object const & arg);
+                params(boost::python::dict const & arg);
             #endif
 
             std::size_t size() const;
 
-			// TODO: erase!
+			void erase(std::string const &);
 
             value_type operator[](std::string const &);
 
@@ -117,7 +118,7 @@ namespace alps {
 
 			void setter(std::string const &, detail::paramvalue const &);
 
-			std::string getter(std::string const &);
+			detail::paramvalue getter(std::string const &);
 
 			std::vector<std::string> keys;
 			std::map<std::string, detail::paramvalue> values;
