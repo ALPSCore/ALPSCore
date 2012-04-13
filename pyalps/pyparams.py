@@ -25,18 +25,33 @@
  #                                                                                 #
  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-import pyalps.hdf5 as h5
+import pyalps.ngs as ngs
+import sys
 
-o = h5.oArchive('blubb')
-o.write('/a',0)
-del o
+p = ngs.params({
+	'val1' : 42,
+	'val2' : '42'
+})
+print type(p["val1"]), type(p["val2"]), type(p["undefined"])
 
-i = h5.iArchive('blubb')
-o = h5.oArchive('blubb')
-o.write('/a',0)
-del o
+oar = ngs.h5ar('parms1.h5', 'w')
+p.save(oar) # does not use path '/parameters'
+del oar
 
-del i
-o = h5.oArchive('blubb')
-o.write('/a',0)
-del o
+oar = ngs.h5ar('parms2.h5', 'w')
+
+print p.keys(), p.values()
+
+for key in p.keys():
+	print key
+	oar.write('parameters/' + key, p[key])
+del oar
+
+iar = ngs.h5ar('parms2.h5', 'r')
+p.load(iar)
+
+print type(p["val1"]), type(p["val2"])
+for key in p:
+	print key,p[key], type(p[key])
+
+del iar

@@ -32,7 +32,7 @@ if (ALPS_BUILD_PYTHON AND BUILD_SHARED_LIBS)
     ENDIF(ALPS_BUILD_NGS)
 
 #    FOREACH (name hlist_test mcdata pyhdf5 mcanalyze loadobs pyioarchive)
-    FOREACH (name hlist_test mcdata pyhdf5 mcanalyze)
+    FOREACH (name hlist_test mcdata pyhdf5 mcanalyze pyparams)
         add_test(python_${name}
             ${CMAKE_COMMAND}
                 -Dpython_interpreter=${PYTHON_INTERPRETER}
