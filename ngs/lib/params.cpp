@@ -76,6 +76,7 @@ namespace alps {
 
 	params::value_type params::operator[](std::string const & key) {
 		return value_type(
+			defined(key),
 			boost::bind(&params::getter, boost::ref(*this), key),
 			boost::bind(&params::setter, boost::ref(*this), key, _1)
 		);

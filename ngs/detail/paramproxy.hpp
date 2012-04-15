@@ -56,10 +56,11 @@ namespace alps {
 				{}
 
 				paramproxy(
-					  boost::function<paramvalue()> const & g
+					  bool d
+					, boost::function<paramvalue()> const & g
 					, boost::function<void(paramvalue)> const & s
 				)
-					: defined(true)
+					: defined(d)
 					, getter(g)
 					, setter(s)
 				{}
