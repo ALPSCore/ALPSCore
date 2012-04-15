@@ -4,18 +4,13 @@
 #      (See accompanying file LICENSE_1_0.txt or copy at
 #          http://www.boost.org/LICENSE_1_0.txt)
 
-
 include_directories(${PROJECT_BINARY_DIR}/src)
 include_directories(${PROJECT_SOURCE_DIR}/src)
 include_directories(${Boost_ROOT_DIR})
 
-FOREACH (name ngs_hdf5 ngs_hash)
-    add_executable(${name} ${name}.cpp)
-    add_dependencies(${name} alps)
-    target_link_libraries(${name} alps)
-    add_alps_test(${name})
+FOREACH (name default)
+    add_executable(param_${name} ${name}.cpp)
+    add_dependencies(param_${name} alps)
+    target_link_libraries(param_${name} alps)
+    add_alps_test(param_${name})
 ENDFOREACH(name)
-
-#TODO: does not compile in clang
-#add_subdirectory(alea)
-add_subdirectory(params)
