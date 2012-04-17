@@ -70,7 +70,7 @@ namespace alps {
 
             template<typename A, typename T> struct is_datatype_caller {
                 static bool apply(A const & ar, std::string path) {
-                    throw std::runtime_error("only native datatypes can be probed: " + path + ALPS_STACKTRACE);
+                    throw std::runtime_error("only native datatypes can be probed: " + path + ALPS_STACKTRACE); // std::logic_error
                     return false;
                 }
             };
@@ -158,7 +158,7 @@ namespace alps {
                     , std::vector<std::size_t>
                     , std::vector<std::size_t> = std::vector<std::size_t>()
                 ) const {
-                    throw std::runtime_error("Invalid type on path: " + path + ALPS_STACKTRACE);
+                    throw std::runtime_error("Invalid type on path: " + path + ALPS_STACKTRACE); // logic_error
                 }
 
                 template<typename T> void write(
@@ -168,7 +168,7 @@ namespace alps {
                     , std::vector<std::size_t> chunk = std::vector<std::size_t>()
                     , std::vector<std::size_t> offset = std::vector<std::size_t>()
                 ) const {
-                    throw std::runtime_error("Invalid type on path: " + path + ALPS_STACKTRACE);
+                    throw std::runtime_error("Invalid type on path: " + path + ALPS_STACKTRACE); // std::logic_error
                 }
 
                 #define ALPS_NGS_HDF5_DEFINE_API(T)                                                                                                                    \
@@ -296,7 +296,7 @@ namespace alps {
              , std::vector<std::size_t> offset = std::vector<std::size_t>()
         ) {
             if (chunk.size())
-                throw std::runtime_error("user defined objects needs to be written continously" + ALPS_STACKTRACE);
+                throw std::runtime_error("user defined objects needs to be written continously" + ALPS_STACKTRACE); // std::logic_error
             std::string context = ar.get_context();
             ar.set_context(ar.complete_path(path));
             value.save(ar);
@@ -311,7 +311,7 @@ namespace alps {
              , std::vector<std::size_t> offset = std::vector<std::size_t>()
         ) {
             if (chunk.size())
-                throw std::runtime_error("user defined objects needs to be written continously" + ALPS_STACKTRACE);
+                throw std::runtime_error("user defined objects needs to be written continously" + ALPS_STACKTRACE); // std::logic_error
             std::string context = ar.get_context();
             ar.set_context(ar.complete_path(path));
             value.load(ar);
