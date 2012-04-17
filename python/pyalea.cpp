@@ -387,7 +387,7 @@ class_<std::pair< double, double > > ( "StdPairDouble", std_pair_docstring, init
 
 doc_options.disable_cpp_signatures(); // no cpp signatures
 
-ALPS_MCANALYZE_EXPORT_TIMESERIES_FUNCTION_SCALAR_AND_VECTOR(size, alps::alea::size, size_docstring)
+ALPS_MCANALYZE_EXPORT_TIMESERIES_FUNCTION_SCALAR_AND_VECTOR(size, alps::size, size_docstring)
 
   // need scalar and vector seperate so that scalar -> float, vector -> numpy
 ALPS_MCANALYZE_EXPORT_TIMESERIES_FUNCTION_SCALAR_ONLY(mean, alps::alea::mean, mcanalyze_mean_docstring)

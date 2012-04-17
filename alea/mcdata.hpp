@@ -177,6 +177,8 @@ namespace alps {
                     mcdata(boost::python::object const & mean, boost::python::object const & error);
                 #endif
 
+                std::size_t size() const { return bins().size();}
+          
                 template <typename X, typename S> mcdata(mcdata<X> const & rhs, S s)
                   : count_(rhs.count_)
                   , binsize_(rhs.binsize_)
