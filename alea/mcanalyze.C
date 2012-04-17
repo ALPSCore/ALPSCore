@@ -29,6 +29,7 @@
 #include <alps/alea/mcanalyze.hpp>
 
 #include <alps/utility/encode.hpp>
+#include <alps/utility/size.hpp>
 
 #include <alps/hdf5.hpp>
 
@@ -43,6 +44,7 @@
 
 
 int main() {
+  using alps::size;
   try {
     std::string const filename = "test.h5";
     if (boost::filesystem::exists(boost::filesystem::path(filename)))
@@ -70,7 +72,7 @@ int main() {
         scalar_data.load(filename, "/test/result/Scalar");
         std::cout << scalar_data;
 
-        std::cout << alps::alea::size(scalar_data) << "\n";
+        std::cout << size(scalar_data) << "\n";
         std::cout << alps::alea::mean(scalar_data) << "\n";
 
 
