@@ -42,23 +42,23 @@
 namespace alps {
 	namespace detail {
 
-		int get_numpy_type(bool);
-		int get_numpy_type(char);
-		int get_numpy_type(unsigned char);
-		int get_numpy_type(signed char);
-		int get_numpy_type(short);
-		int get_numpy_type(unsigned short);
-		int get_numpy_type(int);
-		int get_numpy_type(unsigned int);
-		int get_numpy_type(long);
-		int get_numpy_type(long long);
-		int get_numpy_type(unsigned long long);
-		int get_numpy_type(float);
-		int get_numpy_type(double);
-		int get_numpy_type(long double);
-		int get_numpy_type(std::complex<float>);
-		int get_numpy_type(std::complex<double>);
-		int get_numpy_type(std::complex<long double>);
+		ALPS_DECL int get_numpy_type(bool);
+		ALPS_DECL int get_numpy_type(char);
+		ALPS_DECL int get_numpy_type(unsigned char);
+		ALPS_DECL int get_numpy_type(signed char);
+		ALPS_DECL int get_numpy_type(short);
+		ALPS_DECL int get_numpy_type(unsigned short);
+		ALPS_DECL int get_numpy_type(int);
+		ALPS_DECL int get_numpy_type(unsigned int);
+		ALPS_DECL int get_numpy_type(long);
+		ALPS_DECL int get_numpy_type(long long);
+		ALPS_DECL int get_numpy_type(unsigned long long);
+		ALPS_DECL int get_numpy_type(float);
+		ALPS_DECL int get_numpy_type(double);
+		ALPS_DECL int get_numpy_type(long double);
+		ALPS_DECL int get_numpy_type(std::complex<float>);
+		ALPS_DECL int get_numpy_type(std::complex<double>);
+		ALPS_DECL int get_numpy_type(std::complex<long double>);
 
 	}
 }

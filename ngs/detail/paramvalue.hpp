@@ -122,6 +122,11 @@ namespace alps {
 					: paramvalue_base(static_cast<paramvalue_base const &>(v))
 				{}
 
+				paramvalue const& operator=(paramvalue const& x)
+				{
+				  static_cast<paramvalue_base&>(*this) = static_cast<paramvalue_base const&>(x);
+				  return *this;
+				}
 				template<typename T> T cast() const {
 					return extract<T>(*this);
 				}
@@ -170,7 +175,7 @@ namespace alps {
 				BOOST_SERIALIZATION_SPLIT_MEMBER()
 		};
 
-		std::ostream & operator<<(std::ostream & os, paramvalue const & arg);
+		ALPS_DECL std::ostream & operator<<(std::ostream & os, paramvalue const & arg);
 
 		template<typename T> T extract_impl (paramvalue const & arg, T) {
 			paramvalue_reader< T > visitor;

@@ -41,7 +41,7 @@
 	namespace alps {
 		namespace detail {
 
-			void import_numpy();
+			ALPS_DECL void import_numpy();
 
 		}
 	}
