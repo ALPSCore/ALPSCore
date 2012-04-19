@@ -29,7 +29,7 @@
 #if defined(__GNUG__) && !defined(__ICC) && !defined(__FCC_VERSION)
 
 #define BOOST_TEST_MODULE vli_cpu
-#include <boost/test/included/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
 #include <boost/random/mersenne_twister.hpp>
@@ -44,16 +44,16 @@ typedef boost::mpl::list<alps::graph::vli<128>, alps::graph::vli<256> >::type vl
 boost::mt11213b rng;
 
 template <typename Vli>
-int64_t rnd_valid_int()
+boost::int64_t rnd_valid_int()
 {
-    static boost::uniform_int<int64_t> rnd(0,(0x01LL<<62)-1);
+    static boost::uniform_int<boost::int64_t> rnd(0,(0x01LL<<62)-1);
     return rnd(rng);
 }
 
 template <typename Vli>
-uint64_t rnd_digit()
+boost::uint64_t rnd_digit()
 {
-    static boost::uniform_int<uint64_t> rnd(0,(0x01ULL<<62)-1);
+    static boost::uniform_int<boost::uint64_t> rnd(0,(0x01ULL<<62)-1);
     return rnd(rng);
 }
 
@@ -163,8 +163,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_plus_equivalence_int, Vli, vli_types 
 {
     Vli a;
     fill_random(a);
-    int b = rnd_valid_int<Vli>();
-    int b_orig(b);
+    boost::int64_t b = rnd_valid_int<Vli>();
+    bost::int64_t b_orig(b);
 
     Vli ab = a + b;
     Vli ba = b + a;
