@@ -32,7 +32,7 @@
 #include <alps/ngs/api.hpp>
 #include <alps/ngs/base.hpp>
 #include <alps/ngs/signal.hpp>
-#include <alps/ngs/convert.hpp>
+#include <alps/ngs/cast.hpp>
 #include <alps/ngs/parallel.hpp>
 #include <alps/ngs/callback.hpp>
 #include <alps/ngs/boost_mpi.hpp>

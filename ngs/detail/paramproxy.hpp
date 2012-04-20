@@ -85,7 +85,7 @@ namespace alps {
 				}
 				
 				template<typename T> paramproxy & operator=(T const & arg) {
-					if (!value)
+					if (!!value)
 						throw std::runtime_error(
 							"No reference to parameter available" + ALPS_STACKTRACE
 						);

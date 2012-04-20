@@ -178,7 +178,7 @@ namespace alps {
 									if (false);
 									 #define PYHDF5_CHECK_LIST_SCALAR(T)                                                                                  \
 										else if (boost::python::extract< T >(list[i]).check())                                                            \
-											self << make_pvp(path + "/" + convert<std::string>(i), boost::python::extract< T >(list[i])());
+											self << make_pvp(path + "/" + cast<std::string>(i), boost::python::extract< T >(list[i])());
 									PYHDF5_CHECK_LIST_SCALAR(int)
 									PYHDF5_CHECK_LIST_SCALAR(long)
 									PYHDF5_CHECK_LIST_SCALAR(double)

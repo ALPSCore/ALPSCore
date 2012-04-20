@@ -30,7 +30,7 @@
 #define ALPS_NGS_HDF5_STD_MAP
 
 #include <alps/ngs/hdf5.hpp>
-#include <alps/ngs/convert.hpp>
+#include <alps/ngs/cast.hpp>
 
 #include <map>
 
@@ -47,7 +47,7 @@ namespace alps {
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
             ) {                                                                                                                                                 \
                 for(typename std::map<K, T, C, A>::const_iterator it = value.begin(); it != value.end(); ++it)                                                  \
-                    save(ar, ar.complete_path(path) + "/" + convert<std::string>(it->first), it->second);                                                       \
+                    save(ar, ar.complete_path(path) + "/" + cast<std::string>(it->first), it->second);                                                       \
             }
         ALPS_NGS_HDF5_MAP_SAVE(archive)
         #ifdef ALPS_HDF5_HAVE_DEPRECATED
@@ -65,7 +65,7 @@ namespace alps {
             ) {                                                                                                                                                 \
                 std::vector<std::string> children = ar.list_children(path);                                                                                     \
                 for (typename std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)                                       \
-                    load(ar, path + "/" + *it, value[convert<K>(*it)]);                                                                                         \
+                    load(ar, path + "/" + *it, value[cast<K>(*it)]);                                                                                         \
             }
         ALPS_NGS_HDF5_MAP_LOAD(archive)
         #ifdef ALPS_HDF5_HAVE_DEPRECATED

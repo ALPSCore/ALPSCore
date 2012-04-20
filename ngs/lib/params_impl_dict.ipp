@@ -73,13 +73,13 @@ namespace alps {
                     for (std::size_t i = 0; i < size(); ++i) {
                         boost::python::object key(it.attr("next")());
                         if (std::string(key.ptr()->ob_type->tp_name) == "bool")
-                            keys.push_back(convert<std::string>(boost::python::extract<bool>(key)()));
+                            keys.push_back(cast<std::string>(boost::python::extract<bool>(key)()));
                         if (std::string(key.ptr()->ob_type->tp_name) == "int")
-                            keys.push_back(convert<std::string>(boost::python::extract<int>(key)()));
+                            keys.push_back(cast<std::string>(boost::python::extract<int>(key)()));
                         else if (std::string(key.ptr()->ob_type->tp_name) == "long")
-                            keys.push_back(convert<std::string>(boost::python::extract<long>(key)()));
+                            keys.push_back(cast<std::string>(boost::python::extract<long>(key)()));
                         else if (std::string(key.ptr()->ob_type->tp_name) == "float")
-                            keys.push_back(convert<std::string>(boost::python::extract<double>(key)()));
+                            keys.push_back(cast<std::string>(boost::python::extract<double>(key)()));
                         else if (std::string(key.ptr()->ob_type->tp_name) == "str")
                             keys.push_back(boost::python::extract<std::string>(key)());
                         else
@@ -115,13 +115,13 @@ namespace alps {
                         boost::python::object value(vit.attr("next")());
                         std::string segment;
                         if (std::string(key.ptr()->ob_type->tp_name) == "bool")
-                            segment = convert<std::string>(boost::python::extract<bool>(key)());
+                            segment = cast<std::string>(boost::python::extract<bool>(key)());
                         if (std::string(key.ptr()->ob_type->tp_name) == "int")
-                            segment = convert<std::string>(boost::python::extract<int>(key)());
+                            segment = cast<std::string>(boost::python::extract<int>(key)());
                         else if (std::string(key.ptr()->ob_type->tp_name) == "long")
-                            segment = convert<std::string>(boost::python::extract<long>(key)());
+                            segment = cast<std::string>(boost::python::extract<long>(key)());
                         else if (std::string(key.ptr()->ob_type->tp_name) == "float")
-                            segment = convert<std::string>(boost::python::extract<double>(key)());
+                            segment = cast<std::string>(boost::python::extract<double>(key)());
                         else if (std::string(key.ptr()->ob_type->tp_name) == "str")
                             segment = boost::python::extract<std::string>(key)();
                         else
@@ -203,13 +203,13 @@ namespace alps {
                 std::string getter(std::string key) const {
                 	boost::python::object value(boost::python::call_method<boost::python::object>(values_.ptr(), "__getitem__", key));
                     if (std::string(value.ptr()->ob_type->tp_name) == "bool")
-                    	return convert<std::string>(boost::python::extract<bool>(value)());
+                    	return cast<std::string>(boost::python::extract<bool>(value)());
                     if (std::string(value.ptr()->ob_type->tp_name) == "int")
-                    	return convert<std::string>(boost::python::extract<int>(value)());
+                    	return cast<std::string>(boost::python::extract<int>(value)());
                     else if (std::string(value.ptr()->ob_type->tp_name) == "long")
-                    	return convert<std::string>(boost::python::extract<long>(value)());
+                    	return cast<std::string>(boost::python::extract<long>(value)());
                     else if (std::string(value.ptr()->ob_type->tp_name) == "float")
-                    	return convert<std::string>(boost::python::extract<double>(value)());
+                    	return cast<std::string>(boost::python::extract<double>(value)());
                     else if (std::string(value.ptr()->ob_type->tp_name) == "str")
                     	return boost::python::extract<std::string>(value)();
                     else {

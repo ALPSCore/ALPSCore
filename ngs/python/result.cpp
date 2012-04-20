@@ -29,7 +29,7 @@
 #define PY_ARRAY_UNIQUE_SYMBOL pyngsresult_PyArrayHandle
 
 #include <alps/ngs/hdf5.hpp>
-#include <alps/ngs/convert.hpp>
+#include <alps/ngs/cast.hpp>
 #include <alps/ngs/mcresult.hpp>
 
 #include <alps/ngs/boost_python.hpp>
@@ -42,7 +42,7 @@ namespace alps {
     namespace detail {
 
 		template <typename T> std::string short_print_python(T const & value) {
-            return convert<std::string>(value);
+            return cast<std::string>(value);
         }
 
         template <typename T> std::string short_print_python(std::vector<T> const & value) {

@@ -29,7 +29,7 @@
 #define ALPS_NGS_HDF5_STD_VALARRAY_HPP
 
 #include <alps/ngs/hdf5.hpp>
-#include <alps/ngs/convert.hpp>
+#include <alps/ngs/cast.hpp>
 
 #include <valarray>
 #include <iterator>
@@ -149,7 +149,7 @@ namespace alps {
 					if (ar.is_data(path))																														\
 						ar.delete_data(path);																													\
 					for(std::size_t i = 0; i < value.size(); ++i)																								\
-						save(ar, ar.complete_path(path) + "/" + convert<std::string>(i), const_cast<std::valarray<T> &>(value)[i]);								\
+						save(ar, ar.complete_path(path) + "/" + cast<std::string>(i), const_cast<std::valarray<T> &>(value)[i]);								\
 				}																																				\
 			}
         ALPS_NGS_HDF5_VALARRAY_IMPL_SAVE(archive)
@@ -170,7 +170,7 @@ namespace alps {
 					std::vector<std::string> children = ar.list_children(path);																					\
 					value.resize(children.size());																												\
 					for (typename std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)									\
-						load(ar, ar.complete_path(path) + "/" + *it, value[convert<std::size_t>(*it)]);															\
+						load(ar, ar.complete_path(path) + "/" + *it, value[cast<std::size_t>(*it)]);															\
 				} else {																																		\
 					std::vector<std::size_t> size(ar.extent(path));																								\
 					if (is_continous<T>::value) {																												\

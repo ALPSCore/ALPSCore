@@ -350,7 +350,7 @@ namespace alps {
 						if (is_data(path))
 							delete_data(path);
 						for(boost::python::ssize_t i = 0; i < size; ++i)
-							py_save(path + "/" + convert<std::string>(i), data[i]);
+							py_save(path + "/" + cast<std::string>(i), data[i]);
 					
 					}
 				}

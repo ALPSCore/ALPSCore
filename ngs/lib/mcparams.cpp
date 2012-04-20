@@ -26,7 +26,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <alps/ngs/hdf5.hpp>
-#include <alps/ngs/convert.hpp>
+#include <alps/ngs/cast.hpp>
 #include <alps/ngs/mcparams.hpp>
 #include <alps/ngs/stacktrace.hpp>
 
@@ -40,7 +40,7 @@ namespace alps {
             mcparamvalue_reader(): value() {}
 
             template <typename U> void operator()(U & v) const { 
-                value = convert<T>(v); 
+                value = cast<T>(v); 
             }
 
             void operator()(T & v) const { 

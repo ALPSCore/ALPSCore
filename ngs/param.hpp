@@ -31,7 +31,7 @@
 #warning this file is deprecated
 
 #include <alps/ngs/config.hpp>
-#include <alps/ngs/convert.hpp>
+#include <alps/ngs/cast.hpp>
 #include <alps/ngs/stacktrace.hpp>
 
 #include <boost/function.hpp>
@@ -143,7 +143,7 @@ namespace alps {
             {}
 
 			template<typename T> T cast() const {
-				 return convert<T>(value_ == boost::none_t() ? getter_() : *value_);
+				 return cast<T>(value_ == boost::none_t() ? getter_() : *value_);
             }
 
             template<typename T> operator T() const {
@@ -153,7 +153,7 @@ namespace alps {
             template<typename T> param & operator=(T const & arg) {
                 if (value_ != boost::none_t())
                     throw std::runtime_error("No reference available" + ALPS_STACKTRACE);
-                setter_(convert<std::string>(arg));
+                setter_(cast<std::string>(arg));
                 return *this;
             }
 			
@@ -225,11 +225,11 @@ namespace alps {
             {}
 
             template<typename T> operator T() const {
-                return convert<T>(value_ == boost::none_t() ? getter_() : *value_);
+                return cast<T>(value_ == boost::none_t() ? getter_() : *value_);
             }
 
 			template<typename T> T as() const {
-				 return convert<T>(value_ == boost::none_t() ? getter_() : *value_);
+				 return cast<T>(value_ == boost::none_t() ? getter_() : *value_);
             }
 
 			operator std::string() const { return str(); }
@@ -241,7 +241,7 @@ namespace alps {
             template<typename T> param & operator=(T const & arg) {
                 if (value_ != boost::none_t())
                     throw std::runtime_error("No reference available" + ALPS_STACKTRACE);
-                setter_(convert<std::string>(arg));
+                setter_(cast<std::string>(arg));
                 return *this;
             }
 

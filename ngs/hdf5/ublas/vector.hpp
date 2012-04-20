@@ -29,7 +29,7 @@
 #define ALPS_NGS_HDF5_BOOST_NUMERIC_UBLAS_VECTOR_HPP
 
 #include <alps/ngs/hdf5.hpp>
-#include <alps/ngs/convert.hpp>
+#include <alps/ngs/cast.hpp>
 
 #include <boost/numeric/ublas/vector.hpp>
 
@@ -130,7 +130,7 @@ namespace alps {
                 , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                   \
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
             ) {                                                                                                                                                 \
-                using alps::convert;                                                                                                                            \
+                using alps::cast;																																\
                 if (ar.is_group(path))                                                                                                                          \
                     ar.delete_group(path);                                                                                                                      \
                 if (is_continous<T>::value && value.size() == 0)                                                                                                \
@@ -155,7 +155,7 @@ namespace alps {
                     if (ar.is_data(path))                                                                                                                       \
                         ar.delete_data(path);                                                                                                                   \
                     for(typename boost::numeric::ublas::vector<T, A>::const_iterator it = value.begin(); it != value.end(); ++it)                               \
-                        save(ar, ar.complete_path(path) + "/" + convert<std::string>(it - value.begin()), *it);                                                 \
+                        save(ar, ar.complete_path(path) + "/" + cast<std::string>(it - value.begin()), *it);													\
                 }                                                                                                                                               \
             }
         ALPS_NGS_HDF5_BOOST_NUMERIC_UBLAS_VECTOR_SAVE(archive)
@@ -172,12 +172,12 @@ namespace alps {
                 , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                   \
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
             ) {                                                                                                                                                 \
-                using alps::convert;                                                                                                                            \
+                using alps::cast;																																\
                 if (ar.is_group(path)) {                                                                                                                        \
                     std::vector<std::string> children = ar.list_children(path);                                                                                 \
                     value.resize(children.size());                                                                                                              \
                     for (typename std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)                                   \
-                        load(ar, ar.complete_path(path) + "/" + *it, value[convert<std::size_t>(*it)]);                                                         \
+                        load(ar, ar.complete_path(path) + "/" + *it, value[cast<std::size_t>(*it)]);															\
                 } else {                                                                                                                                        \
                     std::vector<std::size_t> size(ar.extent(path));                                                                                             \
                     if (is_continous<T>::value) {                                                                                                               \

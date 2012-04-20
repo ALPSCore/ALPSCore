@@ -29,7 +29,7 @@
 #define ALPS_NGS_HDF5_STD_PAIR
 
 #include <alps/ngs/hdf5.hpp>
-#include <alps/ngs/convert.hpp>
+#include <alps/ngs/cast.hpp>
 
 #include <boost/type_traits/remove_cv.hpp>
 #include <boost/type_traits/remove_reference.hpp>
@@ -185,7 +185,7 @@ namespace alps {
                         std::size_t last = offset.size() - 1, pos = 0;                                                                                          \
                         std::string location = "";                                                                                                              \
                         for (std::vector<std::size_t>::const_iterator it = offset.begin(); it != offset.end(); ++it) {                                          \
-                            location += "/" + convert<std::string>(*it);                                                                                        \
+                            location += "/" + cast<std::string>(*it);                                                                                        \
                             pos += *it * std::accumulate(                                                                                                       \
                                 value.second.begin() + (it - offset.begin()) + 1,                                                                               \
                                 value.second.end(),                                                                                                             \
@@ -223,7 +223,7 @@ namespace alps {
                         std::size_t last = offset.size() - 1, pos = 0;                                                                                          \
                         std::string location = "";                                                                                                              \
                         for (std::vector<std::size_t>::const_iterator it = offset.begin(); it != offset.end(); ++it) {                                          \
-                            location += "/" + convert<std::string>(*it);                                                                                        \
+                            location += "/" + cast<std::string>(*it);                                                                                        \
                             pos += *it * std::accumulate(                                                                                                       \
                                 value.second.begin() + (it - offset.begin()) + 1,                                                                               \
                                 value.second.end(),                                                                                                             \

@@ -28,8 +28,8 @@
 #ifndef ALPS_NGS_DETAIL_PARAMVALUE_READER_HPP
 #define ALPS_NGS_DETAIL_PARAMVALUE_READER_HPP
 
+#include <alps/ngs/cast.hpp>
 #include <alps/ngs/config.hpp>
-#include <alps/ngs/convert.hpp>
 #include <alps/ngs/detail/get_numpy_type.hpp>
 #include <alps/ngs/detail/extract_from_pyobject.hpp>
 
@@ -45,7 +45,7 @@ namespace alps {
 		template<typename T> struct paramvalue_reader_visitor {
 			
 			template <typename U> void operator()(U const & data) {
-				value = convert<T>(data);
+				value = cast<T>(data);
 			}
 			
 			template <typename U> void operator()(U * const, std::vector<std::size_t>) {
@@ -68,7 +68,7 @@ namespace alps {
 		template<typename T> struct paramvalue_reader_visitor<std::vector<T> > {
 			
 			template <typename U> void operator()(U const & data) {
-				value.push_back(convert<T>(data));
+				value.push_back(cast<T>(data));
 			}
 
 			template <typename U> void operator()(U * const ptr, std::vector<std::size_t> size) {
@@ -99,7 +99,7 @@ namespace alps {
 		template<> struct paramvalue_reader_visitor<std::string> {
 			
 			template <typename U> void operator()(U const & data) {
-				value = convert<std::string>(data);
+				value = cast<std::string>(data);
 			}
 			
 			template <typename U> void operator()(U * const ptr, std::vector<std::size_t> size) {
@@ -107,7 +107,7 @@ namespace alps {
 					throw std::invalid_argument("only 1 D array are supported in alps::params" + ALPS_STACKTRACE);
 				else
 					for (U const * it = ptr; it != ptr + size[0]; ++it)
-						value += (it == ptr ? "," : "") + convert<std::string>(*it);
+						value += (it == ptr ? "," : "") + cast<std::string>(*it);
             }
 
 			#if defined(ALPS_HAVE_PYTHON)

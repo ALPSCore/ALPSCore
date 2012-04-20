@@ -30,8 +30,8 @@
 
 #if defined(ALPS_HAVE_PYTHON)
 
+	#include <alps/ngs/cast.hpp>
 	#include <alps/ngs/config.hpp>
-	#include <alps/ngs/convert.hpp>
 
 	#include <alps/ngs/boost_python.hpp>
 	#include <alps/ngs/detail/type_wrapper.hpp>
@@ -111,7 +111,7 @@
 					ALPS_NGS_EXTRACT_FROM_PYOBJECT_CHECK_NUMPY(std::complex<long double>)
 					#undef ALPS_NGS_EXTRACT_FROM_PYOBJECT_CHECK_NUMPY
 					else
-						throw std::runtime_error("Unknown numpy element type: " + convert<std::string>(PyArray_DESCR(data.ptr())->type_num) + ALPS_STACKTRACE);
+						throw std::runtime_error("Unknown numpy element type: " + cast<std::string>(PyArray_DESCR(data.ptr())->type_num) + ALPS_STACKTRACE);
 				} else
 					throw std::runtime_error("Unsupported type: " + dtype + ALPS_STACKTRACE);
 			}

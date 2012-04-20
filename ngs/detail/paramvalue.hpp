@@ -182,14 +182,13 @@ namespace alps {
 			boost::apply_visitor(visitor, arg);
 			return visitor.get_value();
 		}
-
-		template<typename T> struct convert_hook<T, paramvalue> {
-			static inline std::complex<T> apply(paramvalue const & arg) {
-				return extract<T>(arg);
-			}
-		};
-
     }
+
+	template<typename T> struct cast_hook<T, detail::paramvalue> {
+		static inline std::complex<T> apply(detail::paramvalue const & arg) {
+			return extract<T>(arg);
+		}
+	};
 
 	template<typename T> class extract {
 
