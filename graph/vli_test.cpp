@@ -5,6 +5,7 @@
  * ALPS Libraries                                                                  *
  *                                                                                 *
  * Copyright (C) 2010 - 2012 by Lukas Gamper <gamperl@gmail.com>                   *
+ *                              Andreas Hehn <hehn@phys.ethz.ch>                   *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -27,9 +28,8 @@
 
 // atm vli only works with GCC
 #if defined(__GNUG__) && !defined(__ICC) && !defined(__FCC_VERSION)
-
 #define BOOST_TEST_MODULE vli_cpu
-#include <boost/test/unit_test.hpp>
+#include <boost/test/included/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
 #include <boost/random/mersenne_twister.hpp>
@@ -164,7 +164,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_plus_equivalence_int, Vli, vli_types 
     Vli a;
     fill_random(a);
     boost::int64_t b = rnd_valid_int<Vli>();
-    bost::int64_t b_orig(b);
+    boost::int64_t b_orig(b);
 
     Vli ab = a + b;
     Vli ba = b + a;
