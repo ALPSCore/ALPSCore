@@ -182,11 +182,11 @@ template<typename T, typename U> class cast_type : public cast_type_base<T, U> {
         }
     private:
         bool compare(cast_type<T, U> const & v, boost::mpl::true_) const {
-            U diff = (base_type::has_u ? base_type::u : alps::convert<U>(base_type::t)) - (v.has_u ? v.u : alps::convert<U>(v.t));
-            return (diff > 0 ? diff : -diff) / ((base_type::has_u ? base_type::u : alps::convert<U>(base_type::t)) + (v.has_u ? v.u : alps::convert<U>(v.t))) / 2 < 1e-4;
+            U diff = (base_type::has_u ? base_type::u : alps::cast<U>(base_type::t)) - (v.has_u ? v.u : alps::cast<U>(v.t));
+            return (diff > 0 ? diff : -diff) / ((base_type::has_u ? base_type::u : alps::cast<U>(base_type::t)) + (v.has_u ? v.u : alps::cast<U>(v.t))) / 2 < 1e-4;
         }
         bool compare(cast_type<T, U> const & v, boost::mpl::false_) const {
-            return (base_type::has_u ? base_type::u : alps::convert<U>(base_type::t)) == (v.has_u ? v.u : alps::convert<U>(v.t));
+            return (base_type::has_u ? base_type::u : alps::cast<U>(base_type::t)) == (v.has_u ? v.u : alps::cast<U>(v.t));
         }
 };
 

@@ -5,6 +5,7 @@
  * ALPS Libraries                                                                  *
  *                                                                                 *
  * Copyright (C) 2010 - 2011 by Lukas Gamper <gamperl@gmail.com>                   *
+ *                              Matthias Troyer <troyer@comp-phys.org>             *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -25,59 +26,36 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/ngs/hash.hpp>
-#include <alps/ngs/stacktrace.hpp>
-
-#include <cmath>
-#include <stdio.h>
-#include <iostream>
-#include <stdexcept>
-
-// TODO: check if matrix is linear independant (mathematica)
-// tODO: improve hash
-// after 2^32 change matrix
-// if many independant generators are needed, take different matrecs. Differen meens diferent eigenvalues
-class rng {
-	public:
-		rng(boost::uint64_t seed = 42)
-			: state(seed)
-		{
-			if (seed == 0)
-				throw std::runtime_error("Seed 0 is not valid" + ALPS_STACKTRACE);
-		}
-		boost::uint64_t operator()() {
-			using alps::hash_value;
-			return state = hash_value(state);
-		}
-	private:
-		boost::uint64_t state;
-};
+#include <alps/ngs/hdf5.hpp>
+#include <alps/ngs/params.hpp>
 
 int main() {
-	rng gen(42);
-/*	boost::uint64_t i = 0, last = 0, next = gen();
-	for (; last != next && i < boost::uint64_t(-1); last = next, next = gen(), ++i)
-		if ((i & 0xFFFFFFULL) == 0ULL && i > 0) {
-			using std::log;
-			std::cout << log(i) / log(2) << std::endl;
-		}
-	if (last != next)
-		std::cout << "pass!" << std::endl;
-	else
-		std::cout << "fail: " << i << " " << last << std::endl;
-/*/
-//	FILE * pFile = fopen("rng.bin", "wb");
-	for (std::size_t i = 0; i < 100000; ++i) {
-		boost::uint64_t value = gen();
-		std::cout << value << std::endl;
-//		fwrite(&value, sizeof(boost::uint64_t), 1, pFile);
+	using alps::make_pvp;
+	{
+		alps::params parms;
+		parms["a"] = 6;
+		parms["x"] = 2;
+		parms["b"] = 3;
+		parms["w"] = 1;
+		
+		for (alps::params::const_iterator it = parms.begin(); it != parms.end(); ++it)
+			std::cout << it->first << " " << it->second << std::endl;
+
+		alps::hdf5::archive oar("test.h5", "w");
+		oar
+			<< make_pvp("/parameters", parms)
+		;
 	}
-//	fclose(pFile);
-/*
-	hash<double> hasher;
-	std::size_t h = hasher(1.);
-	std::cout << h << " ";
-	hash_combine(h, 4);
-	std::cout << h << std::endl;
-*/
+	std::cout << "= = = = =" << std::endl;
+	{
+		alps::params parms;
+		alps::hdf5::archive iar("test.h5", "r");
+		iar >> make_pvp("/parameters", parms);
+
+		alps::params::const_iterator it = parms.begin();
+		assert((it++)->first == "a");
+		assert((it++)->first == "x");
+		assert((it++)->first == "b");
+		assert((it++)->first == "w");
+	}
 }

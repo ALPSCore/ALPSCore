@@ -30,7 +30,10 @@ import sys
 
 p = ngs.params({
 	'val1' : 42,
-	'val2' : '42'
+	'val2' : '42',
+	'a' : 1,
+	'x' : 2,
+	'b' : 3
 })
 print type(p["val1"]), type(p["val2"]), type(p["undefined"])
 

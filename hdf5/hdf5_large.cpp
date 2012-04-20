@@ -18,7 +18,7 @@ int main () {
 	for (unsigned long long s = 1; s < (1ULL << 29); s <<= 1) {
 		std::cout << s << std::endl;
 		vector<double> vec(s, 10.);
-		ar << make_pvp("/" + convert<std::string>(s), vec);
+		ar << make_pvp("/" + cast<std::string>(s), vec);
 	}
 
     if (boost::filesystem::exists(boost::filesystem::path("large0.h5")))
