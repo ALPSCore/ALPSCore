@@ -116,12 +116,7 @@ print "a.tan()\t" + str(a.tan())
 print "a.asin()\t" + str(a.asin())
 print "a.acos()\t" + str(a.acos())
 print "a.atan()\t" + str(a.atan())
-print "a.sinh()\t" + str(a.sinh())
-print "a.cosh()\t" + str(a.cosh())
 print "a.tanh()\t" + str(a.tanh())
-print "a.asinh()\t" + str(a.asinh())
-print "b.acosh()\t" + str(b.acosh())
-# print "a.atanh()\t" + repr(a.atanh())
 
 print "\n"
 print "\nTesting MCVectorData"
@@ -171,7 +166,4 @@ print "X.atan():\n" + str(X.atan())
 print "X.sinh():\n" + str(X.sinh())
 print "X.cosh():\n" + str(X.cosh())
 print "X.tanh():\n" + str(X.tanh())
-print "X.asinh():\n" + str(X.asinh())
-print "Y.acosh():\n" + str(Y.acosh())
-# print "X.atanh():\n" + str(X.atanh())
 
