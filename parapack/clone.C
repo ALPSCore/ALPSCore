@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2011 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2012 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -108,6 +108,9 @@ clone::clone(boost::filesystem::path const& basedir, dump_policy_t dump_policy,
     timer_(check_interval) {
   params_["DIR_NAME"] = basedir_.string();
   params_["BASE_NAME"] = base;
+
+  params_["TASK_ID"] = task_id_ + 1;
+  params_["CLONE_ID"] = clone_id_ + 1;
 
   info_ = clone_info(clone_id_, params_, base);
   params_["WORKER_SEED"] = info_.worker_seed();
@@ -257,6 +260,9 @@ clone_mpi::clone_mpi(boost::mpi::communicator const& ctrl, boost::mpi::communica
   bool is_new = msg.is_new;
   params_["DIR_NAME"] = basedir;
   params_["BASE_NAME"] = msg.base;
+
+  params_["TASK_ID"] = task_id_ + 1;
+  params_["CLONE_ID"] = clone_id_ + 1;
 
   info_ = clone_info_mpi(work_, clone_id_, params_, msg.base);
   params_["WORKER_SEED"] = info_.worker_seed();
