@@ -12,7 +12,7 @@ mark_as_advanced(ALPS_BUILD_GRAPH_TESTS)
 
 IF (ALPS_BUILD_GRAPH_TESTS)
 
-    FOREACH (name iso_simple canonical_label_test lattice_constant_test subgraph_generator_test subgraph_generator_test2 colored_lattice_constant_test lattice_constant_matrix)
+    FOREACH (name iso_simple canonical_label_test lattice_constant_test subgraph_generator_test colored_lattice_constant_test colored_lattice_constant_test2 lattice_constant_matrix)
       add_executable(${name} ${name}.cpp)
       add_dependencies(${name} alps)
       target_link_libraries(${name} alps)
