@@ -28,7 +28,7 @@
 #ifndef ALPS_GRAPH_SUBGRAPH_GENERATOR_HPP
 #define ALPS_GRAPH_SUBGRAPH_GENERATOR_HPP
 #include <alps/lattice/graph_traits.h>
-#include <alps/graph/canonical_graph.hpp>
+#include <alps/graph/canonical_properties.hpp>
 #include <boost/static_assert.hpp>
 #include <alps/graph/lattice_constant.hpp>
 #include <vector>
@@ -46,10 +46,10 @@ namespace graph {
 template <typename SubGraph, typename SuperGraph>
 class subgraph_generator {
   public:
-    typedef SubGraph subgraph_base_type;
-    typedef alps::graph::canonical_graph<SubGraph> subgraph_type;
+    typedef SubGraph subgraph_type;
+    typedef std::pair<subgraph_type,typename canonical_properties_type<subgraph_type>::type> subgraph_properties_pair_type;
     typedef SuperGraph supergraph_type;
-    typedef typename std::vector<subgraph_type>::iterator iterator;
+    typedef typename std::vector<subgraph_properties_pair_type>::iterator iterator;
 
     /**
       * Constructor
@@ -64,9 +64,9 @@ class subgraph_generator {
         BOOST_STATIC_ASSERT(( boost::is_same<typename graph_traits<supergraph_type>::directed_category, boost::undirected_tag>::value ));
 
         //TODO get properties of the vertex from the lattice
-        subgraph_base_type g;
+        subgraph_type g;
         add_vertex(g);
-        graphs_.push_back(subgraph_type(g));
+        graphs_.push_back(std::make_pair(g,canonical_properties(g)));
 
         analyse_supergraph();
     }
@@ -82,16 +82,16 @@ class subgraph_generator {
         iterator last_end(graphs_.begin());
 
         // While the last graph has not the desired number of edges
-        while(num_edges(graphs_.back()) < n)
+        while(num_edges(graphs_.back().first) < n)
         {
             // Generate all graphs with N edges from the graphs with N-1 edges
-            std::vector<subgraph_type> new_graphs(generate_graphs_with_additional_edge(last_end, cur_end));
+            std::vector<subgraph_properties_pair_type> new_graphs(generate_graphs_with_additional_edge(last_end, cur_end));
 
             // Abort if no new graphs were found
             if(new_graphs.size() == 0)
                 break;
 
-            std::cout<<num_edges(new_graphs.back())<<":"<< new_graphs.size()<<std::endl;
+            std::cout<<num_edges(new_graphs.back().first)<<":"<< new_graphs.size()<<std::endl;
             
             // Reserve the space required to append the generated graphs to our graphs,
             // so our last_end iterator doesn't get invalidated
@@ -115,7 +115,7 @@ class subgraph_generator {
         assert( graphs_.size() >= 0 );
         // While the last graph has not the desired number of edges
         // and we found new graphs in the last iteration
-        while( (num_edges(graphs_.back()) < n) && (graphs_.size() == 0) )
+        while( (num_edges(graphs_.back().first) < n) && (graphs_.size() == 0) )
             graphs_ = generate_graphs_with_additional_edge(graphs_.begin(), graphs_.end());
 
         return std::make_pair(graphs_.begin(), graphs_.end() );
@@ -129,46 +129,46 @@ class subgraph_generator {
       * \param end the end of the range
       * \return a std::vector of the new graphs with the additional edge
       */
-    std::vector<subgraph_type> generate_graphs_with_additional_edge(iterator it, iterator const end) {
+    std::vector<subgraph_properties_pair_type> generate_graphs_with_additional_edge(iterator it, iterator const end) {
         using boost::get;
         typedef typename graph_traits<subgraph_type>::vertex_descriptor vertex_descriptor;
-        typedef typename canonical_properties_type<subgraph_base_type>::type canonical_properties_type;
-        typedef typename partition_type<subgraph_base_type>::type partition_type;
+        typedef typename canonical_properties_type<subgraph_type>::type canonical_properties_type;
+        typedef typename partition_type<subgraph_type>::type partition_type;
 
-        std::vector<subgraph_type> result;
+        std::vector<subgraph_properties_pair_type> result;
         while( it != end ) {
             // Get the partition and iterate over one vertex per orbit (and not every single vertex)
-            partition_type const graph_partition = it->get_partition();
+            partition_type const graph_partition = get<alps::graph::partition>(it->second);
             for (typename partition_type::const_iterator p_it = graph_partition.begin(); p_it != graph_partition.end(); ++p_it) {
                 vertex_descriptor v = *(p_it->begin());
                 // Skip the vertex if it can't have more edges
-                if(degree(v,*it) >= max_degree_)
+                if(degree(v,it->first) >= max_degree_)
                     continue;
                 
                 // Create a new graph by adding a edge to a new vertex
                 {
-                    subgraph_base_type new_graph(*it);
+                    subgraph_type new_graph(it->first);
                     add_edge( v, add_vertex(new_graph), new_graph);
-                    canonical_properties_type new_graph_prop = canonical_properties(new_graph);
+                    canonical_properties_type const new_graph_prop = canonical_properties(new_graph);
                     if( is_unknown(new_graph_prop) && is_embeddable(new_graph,new_graph_prop) )
-                        result.push_back(subgraph_type(new_graph,new_graph_prop));
+                        result.push_back(std::make_pair(new_graph,new_graph_prop));
                 }
             
                 // Create a new graph by drawing edges between existing vertices
                 for(typename partition_type::const_iterator p_it2 = graph_partition.begin(); p_it2 != p_it; ++p_it2) {
                     vertex_descriptor v2 = *(p_it2->begin());
                     // Skip the vertex if it can't have more edges
-                    if(degree(v2,*it) >= max_degree_)
+                    if(degree(v2,it->first) >= max_degree_)
                         continue;
 
                     // Add only edges between vertices which are not connected
                     // by an edge yet (prevent "double edges")
-                    if(!edge(v, v2, *it).second) {
-                        subgraph_base_type new_graph2(*it);
+                    if(!edge(v, v2, it->first).second) {
+                        subgraph_type new_graph2(it->first);
                         add_edge( v2, v, new_graph2);
-                        canonical_properties_type new_graph2_prop = canonical_properties(new_graph2);
+                        canonical_properties_type const new_graph2_prop = canonical_properties(new_graph2);
                         if( is_unknown(new_graph2_prop) && is_embeddable(new_graph2,new_graph2_prop) )
-                            result.push_back(subgraph_type(new_graph2, new_graph2_prop));
+                            result.push_back(std::make_pair(new_graph2,new_graph2_prop));
                     }
                 }
 
@@ -178,12 +178,12 @@ class subgraph_generator {
 
                     // Add only edges between vertices which are not connected
                     // by an edge yet (prevent "double edges")
-                    if(!edge(v, v2, *it).second) {
-                        subgraph_base_type new_graph2(*it);
+                    if(!edge(v, v2, it->first).second) {
+                        subgraph_type new_graph2(it->first);
                         add_edge( v2, v, new_graph2);
-                        canonical_properties_type new_graph2_prop = canonical_properties(new_graph2);
+                        canonical_properties_type const new_graph2_prop = canonical_properties(new_graph2);
                         if( is_unknown(new_graph2_prop) && is_embeddable(new_graph2,new_graph2_prop) )
-                            result.push_back(subgraph_type(new_graph2,new_graph2_prop));
+                            result.push_back(std::make_pair(new_graph2,new_graph2_prop));
                     }
                 }
             }
@@ -199,8 +199,8 @@ class subgraph_generator {
       * \param p the canonical_properties of the graph to be checked
       * \return true is the graph(-label) was unknown, false if the label has been seen before.
       */
-    bool is_unknown(typename canonical_properties_type<subgraph_base_type>::type const& p) {
-        typename graph_label<subgraph_base_type>::type const& label(boost::get<alps::graph::label>(p));
+    bool is_unknown(typename canonical_properties_type<subgraph_type>::type const& p) {
+        typename graph_label<subgraph_type>::type const& label(boost::get<alps::graph::label>(p));
         // Try to insert the label and return true if it wasn't there yet
         return labels_.insert(make_tuple(boost::get<0>(label).size(),label)).second;
     }
@@ -213,21 +213,21 @@ class subgraph_generator {
       * \param prop the canonical properties of g
       * \return true if g is embeddable, false if g is not embeddable
       */
-    bool is_embeddable(subgraph_base_type const& g, typename canonical_properties_type<subgraph_base_type>::type const& prop) {
+    bool is_embeddable(subgraph_type const& g, typename canonical_properties_type<subgraph_type>::type const& prop) {
         assert(prop == alps::graph::canonical_properties(g));
         bool result = true;
-        for(typename std::vector<subgraph_type>::iterator it = non_embeddable_graphs_.begin(); it != non_embeddable_graphs_.end(); ++it)
+        for(typename std::vector<subgraph_properties_pair_type>::iterator it= non_embeddable_graphs_.begin(); it != non_embeddable_graphs_.end(); ++it)
         {
             // If any of the non-embeddable graphs can be embedded
             // we can not embedd this graph either.
-            if(alps::graph::is_embeddable(it->graph(),g,it->get_partition())) {
+            if(alps::graph::is_embeddable(it->first,g,get<alps::graph::partition>(it->second))) {
                 result = false;
                 break;
             }
         }
         result = result && alps::graph::is_embeddable(g,supergraph_,pin_,boost::get<alps::graph::partition>(prop));
         if(!result && num_edges(g) < 9)
-            non_embeddable_graphs_.push_back(subgraph_type(g,prop));
+            non_embeddable_graphs_.push_back(std::make_pair(g,prop));
         return result;
     }
     
@@ -249,14 +249,14 @@ class subgraph_generator {
     /// The supergraph for which the subgraphs are generated
     supergraph_type const supergraph_;
     /// The list of subgraphs that were found
-    std::vector<subgraph_type> graphs_;
+    std::vector<subgraph_properties_pair_type> graphs_;
     /// properties of the supergraph for simple checks
     typename graph_traits<supergraph_type>::degree_size_type max_degree_;
     /// A list of small non-embeddable graphs for quick embedding checks of larger graphs
-    std::vector<subgraph_type> non_embeddable_graphs_;
+    std::vector<subgraph_properties_pair_type> non_embeddable_graphs_;
     
     /// a list of canonical graph labels of graphs that were seen
-    std::set<boost::tuple<std::size_t, typename graph_label<subgraph_base_type>::type> > labels_;
+    std::set<boost::tuple<std::size_t, typename graph_label<subgraph_type>::type> > labels_;
     /// A list of vertices of the supergraph which have to be found in an embeddable subgraph
     typename graph_traits<SuperGraph>::vertex_descriptor pin_;
 };
