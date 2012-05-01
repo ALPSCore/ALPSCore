@@ -5,6 +5,7 @@
  * ALPS Libraries                                                                  *
  *                                                                                 *
  * Copyright (C) 2011 - 2012 by Andreas Hehn <hehn@phys.ethz.ch>                   *
+ *                              Lukas Gamper <gamperl@gmail.com>                   *
  *                              Robin Jaeger <jaegerr@phys.ethz.ch>                *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
