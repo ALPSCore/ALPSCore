@@ -30,13 +30,13 @@
 
 #include <alps/ngs/cast.hpp>
 #include <alps/ngs/config.hpp>
-#include <alps/ngs/detail/get_numpy_type.hpp>
-#include <alps/ngs/detail/extract_from_pyobject.hpp>
 
 #include <boost/variant.hpp>
 
 #if defined(ALPS_HAVE_PYTHON)
-	#include <alps/ngs/boost_python.hpp>
+#include <alps/ngs/detail/get_numpy_type.hpp>
+#include <alps/ngs/detail/extract_from_pyobject.hpp>
+#include <alps/ngs/boost_python.hpp>
 #endif
 
 namespace alps {
