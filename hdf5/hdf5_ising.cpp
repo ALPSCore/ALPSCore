@@ -130,7 +130,7 @@ public:
         energy_ << E/double(L_*L_);
         double m = M/double(L_*L_);
         magnetization_ << m;
-        abs_magnetization_ << fabs(M)/double(L_*L_);
+        abs_magnetization_ << std::abs(M)/double(L_*L_);
         m2_ << m*m;
         m4_ << m*m*m*m;
     }
