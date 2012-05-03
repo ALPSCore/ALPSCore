@@ -58,7 +58,7 @@ std::string parse_parameter_name(std::istream& in)
   char c;
   in >> c;
   std::string name;
-  while (in && !in.eof() && detail::is_identifier_char(c) || c=='\''  || c=='[') {
+  while (in && !in.eof() && (detail::is_identifier_char(c) || c=='\''  || c=='[')) {
     name+=c;
         if (c=='[') 
           do {
