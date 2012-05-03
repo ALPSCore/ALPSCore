@@ -70,13 +70,13 @@
 
     #include <boost/python.hpp>
 
-	#ifdef tolower
-		#undef tolower
-	#endif
+    #ifdef tolower
+        #undef tolower
+    #endif
 
-	#ifdef toupper
-		#undef toupper
-	#endif
+    #ifdef toupper
+        #undef toupper
+    #endif
 
 #endif
 
@@ -88,7 +88,7 @@ namespace alps {
                 template <typename X> friend class mcdata;
                 typedef T value_type;
                 typedef typename alps::element_type_recursive<T>::type recursive_element_type;
-				typedef typename alps::element_type<T>::type element_type;
+                typedef typename alps::element_type<T>::type element_type;
                 typedef typename change_value_type<T, double>::type time_type;
                 typedef std::size_t size_type;
                 typedef double count_type;
@@ -474,7 +474,7 @@ namespace alps {
                 }
 
                 void merge(mcdata<T> const & rhs) {
-					*this << rhs;
+                    *this << rhs;
                 }
 
                 mcdata<T> & operator<<(mcdata<T> const & rhs) {

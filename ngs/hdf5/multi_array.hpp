@@ -66,20 +66,20 @@ namespace alps {
                     if (boost::multi_array<T, N, A>::dimensionality > size.size())
                         throw std::runtime_error("invalid data size");
                     if (!std::equal(value.shape(), value.shape() + boost::multi_array<T, N, A>::dimensionality, size.begin())) {
-						typename boost::multi_array<T, N, A>::extent_gen extents;
-						gen_extent(value, extents, size);
-					}
+                        typename boost::multi_array<T, N, A>::extent_gen extents;
+                        gen_extent(value, extents, size);
+                    }
                     if (!is_continous<T>::value && boost::multi_array<T, N, A>::dimensionality < size.size())
                         for (std::size_t i = 0; i < value.num_elements(); ++i)
                             set_extent(value.data()[i], std::vector<std::size_t>(size.begin() + boost::multi_array<T, N, A>::dimensionality, size.end()));
                 }
-				private:
-					template<std::size_t M> static void gen_extent(boost::multi_array<T, N, A> & value, boost::detail::multi_array::extent_gen<M> extents, std::vector<std::size_t> const & size) {
-						gen_extent(value, extents[size.front()], std::vector<std::size_t>(size.begin() + 1, size.end()));
-					}
-					static void gen_extent(boost::multi_array<T, N, A> & value, typename boost::detail::multi_array::extent_gen<N> extents, std::vector<std::size_t> const & size) {
-						value.resize(extents);
-					}
+                private:
+                    template<std::size_t M> static void gen_extent(boost::multi_array<T, N, A> & value, boost::detail::multi_array::extent_gen<M> extents, std::vector<std::size_t> const & size) {
+                        gen_extent(value, extents[size.front()], std::vector<std::size_t>(size.begin() + 1, size.end()));
+                    }
+                    static void gen_extent(boost::multi_array<T, N, A> & value, typename boost::detail::multi_array::extent_gen<N> extents, std::vector<std::size_t> const & size) {
+                        value.resize(extents);
+                    }
             };
 
             template<typename T, std::size_t N, typename A> struct is_vectorizable<boost::multi_array<T, N, A> > {
@@ -164,14 +164,14 @@ namespace alps {
                     throw std::runtime_error("invalid path");                                                                                                \
                 else {                                                                                                                                          \
                     std::vector<std::size_t> size(ar.extent(path));                                                                                             \
-					if (boost::multi_array<T, N, A>::dimensionality <= size.size())																				\
-						set_extent(value, std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));													\
-					if (is_continous<T>::value) {																												\
-						std::copy(size.begin() + chunk.size(), size.end(), std::back_inserter(chunk));															\
-						std::fill_n(std::back_inserter(offset), size.size() - offset.size(), 0);																\
-						ar.read(path, get_pointer(value), chunk, offset);																						\
-						\
-						\
+                    if (boost::multi_array<T, N, A>::dimensionality <= size.size())                                                                                \
+                        set_extent(value, std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));                                                    \
+                    if (is_continous<T>::value) {                                                                                                                \
+                        std::copy(size.begin() + chunk.size(), size.end(), std::back_inserter(chunk));                                                            \
+                        std::fill_n(std::back_inserter(offset), size.size() - offset.size(), 0);                                                                \
+                        ar.read(path, get_pointer(value), chunk, offset);                                                                                        \
+                        \
+                        \
                     } else {                                                                                                                                    \
                         std::fill_n(std::back_inserter(chunk), value.num_elements(), 1);                                                                        \
                         for (std::size_t i = 1; i < value.num_elements(); ++i) {                                                                                \

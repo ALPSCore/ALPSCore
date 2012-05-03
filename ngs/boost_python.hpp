@@ -31,11 +31,11 @@
 #include <boost/python.hpp>
 
 #ifdef tolower
-	#undef tolower
+    #undef tolower
 #endif
 
 #ifdef toupper
-	#undef toupper
+    #undef toupper
 #endif
 
 #endif

@@ -264,7 +264,7 @@ public:
   }
 
   static boost::filesystem::path observable_dumpfile(Parameters const& params) {
-	  boost::filesystem::path basedir = complete(boost::filesystem::path(static_cast<std::string>(params["DIR_NAME"])));
+      boost::filesystem::path basedir = complete(boost::filesystem::path(static_cast<std::string>(params["DIR_NAME"])));
     boost::filesystem::path dumpfile;
     if (params.defined("OBSERVABLE_DUMP_FILE"))
       dumpfile = complete(boost::filesystem::path(static_cast<std::string>(params["OBSERVABLE_DUMP_FILE"])), basedir);

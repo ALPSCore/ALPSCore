@@ -296,7 +296,7 @@ inline HistogramObservableEvaluator<T>::HistogramObservableEvaluator(const std::
     automatic_naming_(false),
     all_(infile,intag)
 {
-    supertype::set_range(all_.min(),all_.max(),all_.stepsize());
+    supertype::set_range(all_.min BOOST_PREVENT_MACRO_SUBSTITUTION (),all_.BOOST_PREVENT_MACRO_SUBSTITUTION max(),all_.stepsize());
     update_super();
 }
 

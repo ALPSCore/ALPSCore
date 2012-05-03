@@ -29,8 +29,8 @@
 #include <alps/ngs/detail/numpy_import.hpp>
 
 #if defined(ALPS_HAVE_PYTHON)
-	#include <boost/python/numeric.hpp>
-	#include <numpy/arrayobject.h>
+    #include <boost/python/numeric.hpp>
+    #include <numpy/arrayobject.h>
 #endif
 
 namespace alps {

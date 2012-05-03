@@ -98,20 +98,20 @@ namespace alps {
     } 
 
 
-	// fix for old xlc compilers
-    #define IMPLEMENT_ALPS_VECTOR_FUNCTION(LIB_HEADER, FUNCTION_NAME)										\
-		namespace detail {																					\
-			template<typename T> struct FUNCTION_NAME ## _VECTOR_OP_HELPER {										\
-				T operator() (T arg) {																		\
-					using LIB_HEADER :: FUNCTION_NAME;														\
-					return FUNCTION_NAME (arg);																\
-				}																							\
-			};																								\
-		}																									\
-		template<typename T> std::vector<T> FUNCTION_NAME(std::vector<T> vec) {								\
-			std::transform(vec.begin(), vec.end(), vec.begin(), detail:: FUNCTION_NAME ## _VECTOR_OP_HELPER<T>());	\
-			return vec;																						\
-		}
+    // fix for old xlc compilers
+    #define IMPLEMENT_ALPS_VECTOR_FUNCTION(LIB_HEADER, FUNCTION_NAME)                                        \
+        namespace detail {                                                                                    \
+            template<typename T> struct FUNCTION_NAME ## _VECTOR_OP_HELPER {                                        \
+                T operator() (T arg) {                                                                        \
+                    using LIB_HEADER :: FUNCTION_NAME;                                                        \
+                    return FUNCTION_NAME (arg);                                                                \
+                }                                                                                            \
+            };                                                                                                \
+        }                                                                                                    \
+        template<typename T> std::vector<T> FUNCTION_NAME(std::vector<T> vec) {                                \
+            std::transform(vec.begin(), vec.end(), vec.begin(), detail:: FUNCTION_NAME ## _VECTOR_OP_HELPER<T>());    \
+            return vec;                                                                                        \
+        }
 
     IMPLEMENT_ALPS_VECTOR_FUNCTION(std,abs)
     IMPLEMENT_ALPS_VECTOR_FUNCTION(alps::numeric,sq)

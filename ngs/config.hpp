@@ -41,22 +41,22 @@
 
 // blocksize in compressed hdf5. Default: 32
 #ifndef ALPS_HDF5_SZIP_BLOCK_SIZE
-	#define ALPS_HDF5_SZIP_BLOCK_SIZE 32
+    #define ALPS_HDF5_SZIP_BLOCK_SIZE 32
 #endif
 
 // maximal number of stack frames displayed in stacktrace. Default 63
 #ifndef ALPS_NGS_MAX_FRAMES
-	#define ALPS_NGS_MAX_FRAMES 63
+    #define ALPS_NGS_MAX_FRAMES 63
 #endif
 
 // prevent the signal object from registering signals
 #ifdef BOOST_MSVC
-	#define ALPS_NGS_NO_SIGNALS
+    #define ALPS_NGS_NO_SIGNALS
 #endif
 
 // do not print a stacktrace in error messages
 #ifndef __GNUC__
-	#define ALPS_NGS_NO_STACKTRACE
+    #define ALPS_NGS_NO_STACKTRACE
 #endif
 
 // TODO: have_python

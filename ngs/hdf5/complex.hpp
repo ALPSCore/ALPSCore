@@ -121,7 +121,7 @@ namespace alps {
             ) {                                                                                                                                                         \
                 if (ar.is_group(path) || !is_continous<T>::value)                                                                                                       \
                     throw std::runtime_error("invalid path" + ALPS_STACKTRACE);                                                                                               \
-                else if (!ar.is_complex(path))																															\
+                else if (!ar.is_complex(path))                                                                                                                            \
                     throw std::runtime_error("no complex value in archive" + ALPS_STACKTRACE);                                                                                \
                 else {                                                                                                                                                  \
                     chunk.push_back(2);                                                                                                                                 \

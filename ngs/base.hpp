@@ -73,10 +73,10 @@ namespace alps {
 
             virtual double fraction_completed() const = 0;
 
-			// TODO: add boost::filesystem version
+            // TODO: add boost::filesystem version
             void save(std::string const & filename) const;
 
-			// TODO: add boost::filesystem version
+            // TODO: add boost::filesystem version
             void load(std::string const & filename);
 
             virtual void save(alps::hdf5::archive & ar) const;

@@ -45,7 +45,7 @@
 #include <boost/serialization/string.hpp> 
 
 #ifdef ALPS_HAVE_MPI
-	#include <alps/ngs/boost_mpi.hpp>
+    #include <alps/ngs/boost_mpi.hpp>
 #endif
 
 #include <map>
@@ -56,25 +56,25 @@ namespace alps {
 
     class ALPS_DECL params {
 
-		typedef std::map<std::string, detail::paramvalue>::value_type iterator_value_type;
+        typedef std::map<std::string, detail::paramvalue>::value_type iterator_value_type;
 
-		friend class detail::paramiterator<params, iterator_value_type>;
-		friend class detail::paramiterator<params const, iterator_value_type const>;
+        friend class detail::paramiterator<params, iterator_value_type>;
+        friend class detail::paramiterator<params const, iterator_value_type const>;
 
         public:
 
-			typedef detail::paramiterator<params, iterator_value_type> iterator;
-			typedef detail::paramiterator<params const, iterator_value_type const> const_iterator;
-			typedef detail::paramproxy value_type;
+            typedef detail::paramiterator<params, iterator_value_type> iterator;
+            typedef detail::paramiterator<params const, iterator_value_type const> const_iterator;
+            typedef detail::paramproxy value_type;
 
             params() {}
 
             params(params const & arg)
-				: keys(arg.keys)
-				, values(arg.values)
-			{}
+                : keys(arg.keys)
+                , values(arg.values)
+            {}
 
-			params(hdf5::archive ar, std::string const & path = "/parameters");
+            params(hdf5::archive ar, std::string const & path = "/parameters");
 
             params(boost::filesystem::path const &);
 
@@ -84,7 +84,7 @@ namespace alps {
 
             std::size_t size() const;
 
-			void erase(std::string const &);
+            void erase(std::string const &);
 
             value_type operator[](std::string const &);
 
@@ -92,11 +92,11 @@ namespace alps {
 
             bool defined(std::string const &) const;
 
-			iterator begin();
-			const_iterator begin() const;
+            iterator begin();
+            const_iterator begin() const;
 
-			iterator end();
-			const_iterator end() const;
+            iterator end();
+            const_iterator end() const;
 
             void save(hdf5::archive &) const;
 
@@ -108,20 +108,20 @@ namespace alps {
 
         private:
 
-			friend class boost::serialization::access;
-			
-			template<class Archive> void serialize(Archive & ar, const unsigned int) {
-				ar & keys
-				   & values
-				;
-			}
+            friend class boost::serialization::access;
+            
+            template<class Archive> void serialize(Archive & ar, const unsigned int) {
+                ar & keys
+                   & values
+                ;
+            }
 
-			void setter(std::string const &, detail::paramvalue const &);
+            void setter(std::string const &, detail::paramvalue const &);
 
-			detail::paramvalue getter(std::string const &);
+            detail::paramvalue getter(std::string const &);
 
-			std::vector<std::string> keys;
-			std::map<std::string, detail::paramvalue> values;
+            std::vector<std::string> keys;
+            std::map<std::string, detail::paramvalue> values;
     };
 
 }

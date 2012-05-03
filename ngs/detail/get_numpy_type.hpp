@@ -31,7 +31,7 @@
 #include <alps/ngs/config.hpp>
 
 #if !defined(ALPS_HAVE_PYTHON)
-	#error numpy is only available if python is enabled
+    #error numpy is only available if python is enabled
 #endif
 
 #include <alps/ngs/boost_python.hpp>
@@ -40,27 +40,27 @@
 #include <complex>
 
 namespace alps {
-	namespace detail {
+    namespace detail {
 
-		ALPS_DECL int get_numpy_type(bool);
-		ALPS_DECL int get_numpy_type(char);
-		ALPS_DECL int get_numpy_type(unsigned char);
-		ALPS_DECL int get_numpy_type(signed char);
-		ALPS_DECL int get_numpy_type(short);
-		ALPS_DECL int get_numpy_type(unsigned short);
-		ALPS_DECL int get_numpy_type(int);
-		ALPS_DECL int get_numpy_type(unsigned int);
-		ALPS_DECL int get_numpy_type(long);
-		ALPS_DECL int get_numpy_type(long long);
-		ALPS_DECL int get_numpy_type(unsigned long long);
-		ALPS_DECL int get_numpy_type(float);
-		ALPS_DECL int get_numpy_type(double);
-		ALPS_DECL int get_numpy_type(long double);
-		ALPS_DECL int get_numpy_type(std::complex<float>);
-		ALPS_DECL int get_numpy_type(std::complex<double>);
-		ALPS_DECL int get_numpy_type(std::complex<long double>);
+        ALPS_DECL int get_numpy_type(bool);
+        ALPS_DECL int get_numpy_type(char);
+        ALPS_DECL int get_numpy_type(unsigned char);
+        ALPS_DECL int get_numpy_type(signed char);
+        ALPS_DECL int get_numpy_type(short);
+        ALPS_DECL int get_numpy_type(unsigned short);
+        ALPS_DECL int get_numpy_type(int);
+        ALPS_DECL int get_numpy_type(unsigned int);
+        ALPS_DECL int get_numpy_type(long);
+        ALPS_DECL int get_numpy_type(long long);
+        ALPS_DECL int get_numpy_type(unsigned long long);
+        ALPS_DECL int get_numpy_type(float);
+        ALPS_DECL int get_numpy_type(double);
+        ALPS_DECL int get_numpy_type(long double);
+        ALPS_DECL int get_numpy_type(std::complex<float>);
+        ALPS_DECL int get_numpy_type(std::complex<double>);
+        ALPS_DECL int get_numpy_type(std::complex<long double>);
 
-	}
+    }
 }
 
 #endif

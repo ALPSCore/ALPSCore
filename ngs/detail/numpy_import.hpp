@@ -30,21 +30,21 @@
 
 #if defined(ALPS_HAVE_PYTHON)
 
-	#include <alps/ngs/config.hpp>
+    #include <alps/ngs/config.hpp>
 
-	#include <alps/ngs/boost_python.hpp>
+    #include <alps/ngs/boost_python.hpp>
 
-	#include <boost/python/numeric.hpp>
+    #include <boost/python/numeric.hpp>
 
-	#include <numpy/arrayobject.h>
+    #include <numpy/arrayobject.h>
 
-	namespace alps {
-		namespace detail {
+    namespace alps {
+        namespace detail {
 
-			ALPS_DECL void import_numpy();
+            ALPS_DECL void import_numpy();
 
-		}
-	}
+        }
+    }
 
 #endif
 

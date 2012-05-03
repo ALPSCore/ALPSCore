@@ -35,7 +35,7 @@ namespace alps {
             public:
                 using Impl::collect_results;
                 mcmpisim(typename alps::parameters_type<Impl>::type const & p,
-			             boost::mpi::communicator const & c) 
+                         boost::mpi::communicator const & c) 
                     : Impl(p, c.rank())
                     , communicator(c)
                     , binnumber(p["binnumber"] | std::min(128, 2 * c.size()))

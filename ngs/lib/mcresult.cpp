@@ -66,9 +66,9 @@ namespace alps {
         ++ref_cnt_[impl_ = rhs.impl_];
         return *this;
     }
-	
+    
     #define ALPS_MCRESULT_TPL_IMPL(T)                                                                                     \
-		template<> ALPS_DECL bool mcresult::is_type< T >() const { return impl_->is_type< T >(); }								  \
+        template<> ALPS_DECL bool mcresult::is_type< T >() const { return impl_->is_type< T >(); }                                  \
         template<> ALPS_DECL std::vector< T > const & mcresult::bins< T >() const { return impl_->bins< T >(); }                    \
         template<> ALPS_DECL T const & mcresult::mean< T >() const { return impl_->mean< T >(); }                                   \
         template<> ALPS_DECL T const & mcresult::error< T >() const { return impl_->error< T >(); }                                 \
@@ -228,12 +228,12 @@ namespace alps {
     }
 
     #define ALPS_NGS_MCRESULT_FREE_OPERATOR_TPL_IMPL(T, OP, NAME)                  \
-        mcresult OP(mcresult const & lhs, T const & rhs) {						   \
+        mcresult OP(mcresult const & lhs, T const & rhs) {                           \
             mcresult res;                                                          \
             res.ref_cnt_[res.impl_ = lhs.impl_-> NAME (rhs)] = 1;                  \
             return res;                                                            \
         }                                                                          \
-        mcresult OP(T const & lhs, mcresult const & rhs) {						   \
+        mcresult OP(T const & lhs, mcresult const & rhs) {                           \
             mcresult res;                                                          \
             res.ref_cnt_[res.impl_ = rhs.impl_-> NAME ## _inverse (lhs)] = 1;      \
             return res;                                                            \

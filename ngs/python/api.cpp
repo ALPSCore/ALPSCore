@@ -35,7 +35,7 @@
 #include <alps/ngs/mcresults.hpp>
 
 namespace alps {
-	namespace detail {
+    namespace detail {
 
         void save_results_export(mcresults const & res, params const & par, alps::hdf5::archive & ar, std::string const & path) {
             ar

@@ -47,7 +47,7 @@ namespace alps {
 
     template <typename T> std::ostream & operator<<(std::ostream & os, detail::short_print_proxy<T> const & v) {
         return os << v.value;
-	}
+    }
 
     template <typename T> std::ostream & operator<<(std::ostream & os, detail::short_print_proxy<std::vector<T> const> const & v) {
         switch (v.value.size()) {

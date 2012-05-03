@@ -30,12 +30,12 @@
 
 namespace alps {
 
-	namespace detail {
+    namespace detail {
 
-		template<typename T> struct type_wrapper {
-			typedef T type;
-		};
+        template<typename T> struct type_wrapper {
+            typedef T type;
+        };
 
-	}
+    }
 }
 #endif

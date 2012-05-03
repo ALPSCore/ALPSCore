@@ -31,52 +31,52 @@
 namespace alps {
     namespace detail {
 
-		template<typename params_type, typename value_type> class paramiterator
-			: public boost::forward_iterator_helper<
-				  paramiterator<params_type, value_type>
-				, value_type
-				, std::ptrdiff_t
-				, value_type *
-				, value_type &
-			>
-		{
-			public:
+        template<typename params_type, typename value_type> class paramiterator
+            : public boost::forward_iterator_helper<
+                  paramiterator<params_type, value_type>
+                , value_type
+                , std::ptrdiff_t
+                , value_type *
+                , value_type &
+            >
+        {
+            public:
 
-				paramiterator(paramiterator const & arg)
-					: it(arg.it)
-					, params(arg.params)
-				{}
+                paramiterator(paramiterator const & arg)
+                    : it(arg.it)
+                    , params(arg.params)
+                {}
 
-				paramiterator(
-					  params_type & p
-					, std::vector<std::string>::const_iterator i
-				)
-					: params(p)
-					, it(i)
-				{}
+                paramiterator(
+                      params_type & p
+                    , std::vector<std::string>::const_iterator i
+                )
+                    : params(p)
+                    , it(i)
+                {}
 
-				operator paramiterator<const params_type, const value_type>() const {
-					return paramiterator<const params_type, const value_type>(params, it);
-				}
+                operator paramiterator<const params_type, const value_type>() const {
+                    return paramiterator<const params_type, const value_type>(params, it);
+                }
 
-				value_type & operator*() const {
-					assert(params.values.find(*it) != params.values.end());
-					return *params.values.find(*it);
-				}
+                value_type & operator*() const {
+                    assert(params.values.find(*it) != params.values.end());
+                    return *params.values.find(*it);
+                }
 
-				void operator++() {
-					++it;
-				}
+                void operator++() {
+                    ++it;
+                }
 
-				bool operator==(paramiterator<params_type, value_type> const & arg) const {
-					return it == arg.it;
-				}
+                bool operator==(paramiterator<params_type, value_type> const & arg) const {
+                    return it == arg.it;
+                }
 
-			private:
+            private:
 
-				params_type & params;
-				std::vector<std::string>::const_iterator it;
-		};
+                params_type & params;
+                std::vector<std::string>::const_iterator it;
+        };
 
-	}
+    }
 }

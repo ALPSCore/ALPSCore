@@ -63,6 +63,6 @@ namespace alps
         {
             return dynamic_cast<detail::accumulator_wrapper<T>&>(*base_).accum_;
         }
-	}//end alea namespace 
+    }//end alea namespace 
 }//end alps namespace
 #endif // ALPS_NGS_ALEA_MEASUREMENT_HEADER

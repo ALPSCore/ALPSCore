@@ -41,7 +41,7 @@
 namespace alps {
     namespace detail {
 
-		template <typename T> std::string short_print_python(T const & value) {
+        template <typename T> std::string short_print_python(T const & value) {
             return cast<std::string>(value);
         }
 

@@ -34,18 +34,18 @@
 #include <string>
 
 #define ALPS_STACKTRACE (                                                          \
-	  std::string("\nIn ") + __FILE__                                              \
-	+ " on " + ALPS_NGS_STRINGIFY(__LINE__)                                        \
-	+ " in " + __FUNCTION__ + "\n"                                                 \
-	+ ::alps::ngs::stacktrace()                                                    \
+      std::string("\nIn ") + __FILE__                                              \
+    + " on " + ALPS_NGS_STRINGIFY(__LINE__)                                        \
+    + " in " + __FUNCTION__ + "\n"                                                 \
+    + ::alps::ngs::stacktrace()                                                    \
 )
 
 namespace alps {
-	namespace ngs {
+    namespace ngs {
 
-		ALPS_DECL std::string stacktrace();
+        ALPS_DECL std::string stacktrace();
 
-	}
+    }
 }
 
 #endif

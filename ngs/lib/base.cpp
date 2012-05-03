@@ -31,7 +31,7 @@
 
 namespace alps {
 
-	// TODO: make boost::filesystem version
+    // TODO: make boost::filesystem version
     void base::save(std::string const & filename) const {
         hdf5::archive ar(filename, "w");
         ar
@@ -39,7 +39,7 @@ namespace alps {
         ;
     }
 
-	// TODO: make boost::filesystem version
+    // TODO: make boost::filesystem version
     void base::load(std::string const & filename) {
         hdf5::archive ar(filename);
         ar 

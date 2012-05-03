@@ -41,8 +41,8 @@ namespace alps {
             public:
                 
                 virtual ~params_impl_base() {};
-			
-				virtual std::size_t size() const = 0;
+            
+                virtual std::size_t size() const = 0;
 
                 virtual std::vector<std::string> keys() const = 0;
 
@@ -55,12 +55,12 @@ namespace alps {
                 virtual void save(hdf5::archive &) const = 0;
 
                 virtual void load(hdf5::archive &) = 0;
-				
-				virtual params_impl_base * clone() = 0;
+                
+                virtual params_impl_base * clone() = 0;
 
-				#ifdef ALPS_HAVE_MPI
-					virtual void broadcast(int root) = 0;
-				#endif
+                #ifdef ALPS_HAVE_MPI
+                    virtual void broadcast(int root) = 0;
+                #endif
 
         };
 

@@ -65,7 +65,7 @@ namespace alps {
                     return boost::python::extract<std::size_t>(values_.attr("__len__")());
                 }
 
-				// TODO: save using generic python hdf5 interface
+                // TODO: save using generic python hdf5 interface
                 std::vector<std::string> keys() const {
                     std::vector<std::string> keys;
                     boost::python::extract<boost::python::dict> dict(values_);
@@ -105,7 +105,7 @@ namespace alps {
                     return boost::python::call_method<bool>(values_.ptr(), "__contains__", key);
                 }
 
-				// TODO: save using generic python hdf5 interface
+                // TODO: save using generic python hdf5 interface
                 void save(hdf5::archive & ar) const {
                     boost::python::extract<boost::python::dict> dict(values_);
                     const boost::python::object kit = dict().iterkeys();
@@ -182,11 +182,11 @@ namespace alps {
                         return boost::python::call_method<boost::python::object>(values_.ptr(), "__iter__");
                 }
 
-				#ifdef ALPS_HAVE_MPI
-					void broadcast(int root) {
-						throw std::logic_error("no communicator available" + ALPS_STACKTRACE);
-					}
-				#endif
+                #ifdef ALPS_HAVE_MPI
+                    void broadcast(int root) {
+                        throw std::logic_error("no communicator available" + ALPS_STACKTRACE);
+                    }
+                #endif
 
             private:
 
@@ -201,17 +201,17 @@ namespace alps {
                 }
 
                 std::string getter(std::string key) const {
-                	boost::python::object value(boost::python::call_method<boost::python::object>(values_.ptr(), "__getitem__", key));
+                    boost::python::object value(boost::python::call_method<boost::python::object>(values_.ptr(), "__getitem__", key));
                     if (std::string(value.ptr()->ob_type->tp_name) == "bool")
-                    	return cast<std::string>(boost::python::extract<bool>(value)());
+                        return cast<std::string>(boost::python::extract<bool>(value)());
                     if (std::string(value.ptr()->ob_type->tp_name) == "int")
-                    	return cast<std::string>(boost::python::extract<int>(value)());
+                        return cast<std::string>(boost::python::extract<int>(value)());
                     else if (std::string(value.ptr()->ob_type->tp_name) == "long")
-                    	return cast<std::string>(boost::python::extract<long>(value)());
+                        return cast<std::string>(boost::python::extract<long>(value)());
                     else if (std::string(value.ptr()->ob_type->tp_name) == "float")
-                    	return cast<std::string>(boost::python::extract<double>(value)());
+                        return cast<std::string>(boost::python::extract<double>(value)());
                     else if (std::string(value.ptr()->ob_type->tp_name) == "str")
-                    	return boost::python::extract<std::string>(value)();
+                        return boost::python::extract<std::string>(value)();
                     else {
                         throw std::invalid_argument("unknown value type: "  + std::string(value.ptr()->ob_type->tp_name) + ALPS_STACKTRACE);
                         return "";

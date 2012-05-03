@@ -55,15 +55,15 @@ namespace alps {
                     std::vector<std::size_t> result(1, value.size());
                     if (value.size()) {
                         std::vector<std::size_t> first(get_extent(value[0]));
-						if (!boost::is_scalar<typename boost::numeric::ublas::vector<T, A>::value_type>::value)
-							for(typename boost::numeric::ublas::vector<T, A>::const_iterator it = value.begin() + 1; it != value.end(); ++it) {
-								std::vector<std::size_t> size(get_extent(*it));
-								if (
-									   first.size() != size.size()
-									|| !std::equal(first.begin(), first.end(), size.begin())
-								)
-									throw std::runtime_error("no rectengual matrix" + ALPS_STACKTRACE);
-							}
+                        if (!boost::is_scalar<typename boost::numeric::ublas::vector<T, A>::value_type>::value)
+                            for(typename boost::numeric::ublas::vector<T, A>::const_iterator it = value.begin() + 1; it != value.end(); ++it) {
+                                std::vector<std::size_t> size(get_extent(*it));
+                                if (
+                                       first.size() != size.size()
+                                    || !std::equal(first.begin(), first.end(), size.begin())
+                                )
+                                    throw std::runtime_error("no rectengual matrix" + ALPS_STACKTRACE);
+                            }
                         std::copy(first.begin(), first.end(), std::back_inserter(result));
                     }
                     return result;
@@ -88,18 +88,18 @@ namespace alps {
                         if (!is_vectorizable(value[0]))
                             return false;
                         std::vector<std::size_t> first(get_extent(value[0]));
-						if (!boost::is_scalar<typename boost::numeric::ublas::vector<T, A>::value_type>::value)
-							for(typename boost::numeric::ublas::vector<T, A>::const_iterator it = value.begin(); it != value.end(); ++it){
-								if (!is_vectorizable(*it))
-									return false;
-								else {
-									std::vector<std::size_t> size(get_extent(*it));
-									if (
-										   first.size() != size.size() 
-										|| !std::equal(first.begin(), first.end(), size.begin())
-									)
-										return false;
-								}
+                        if (!boost::is_scalar<typename boost::numeric::ublas::vector<T, A>::value_type>::value)
+                            for(typename boost::numeric::ublas::vector<T, A>::const_iterator it = value.begin(); it != value.end(); ++it){
+                                if (!is_vectorizable(*it))
+                                    return false;
+                                else {
+                                    std::vector<std::size_t> size(get_extent(*it));
+                                    if (
+                                           first.size() != size.size() 
+                                        || !std::equal(first.begin(), first.end(), size.begin())
+                                    )
+                                        return false;
+                                }
               }
                     }
                     return true;
@@ -130,7 +130,7 @@ namespace alps {
                 , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                   \
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
             ) {                                                                                                                                                 \
-                using alps::cast;																																\
+                using alps::cast;                                                                                                                                \
                 if (ar.is_group(path))                                                                                                                          \
                     ar.delete_group(path);                                                                                                                      \
                 if (is_continous<T>::value && value.size() == 0)                                                                                                \
@@ -155,7 +155,7 @@ namespace alps {
                     if (ar.is_data(path))                                                                                                                       \
                         ar.delete_data(path);                                                                                                                   \
                     for(typename boost::numeric::ublas::vector<T, A>::const_iterator it = value.begin(); it != value.end(); ++it)                               \
-                        save(ar, ar.complete_path(path) + "/" + cast<std::string>(it - value.begin()), *it);													\
+                        save(ar, ar.complete_path(path) + "/" + cast<std::string>(it - value.begin()), *it);                                                    \
                 }                                                                                                                                               \
             }
         ALPS_NGS_HDF5_BOOST_NUMERIC_UBLAS_VECTOR_SAVE(archive)
@@ -172,12 +172,12 @@ namespace alps {
                 , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                   \
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
             ) {                                                                                                                                                 \
-                using alps::cast;																																\
+                using alps::cast;                                                                                                                                \
                 if (ar.is_group(path)) {                                                                                                                        \
                     std::vector<std::string> children = ar.list_children(path);                                                                                 \
                     value.resize(children.size());                                                                                                              \
                     for (typename std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)                                   \
-                        load(ar, ar.complete_path(path) + "/" + *it, value[cast<std::size_t>(*it)]);															\
+                        load(ar, ar.complete_path(path) + "/" + *it, value[cast<std::size_t>(*it)]);                                                            \
                 } else {                                                                                                                                        \
                     std::vector<std::size_t> size(ar.extent(path));                                                                                             \
                     if (is_continous<T>::value) {                                                                                                               \

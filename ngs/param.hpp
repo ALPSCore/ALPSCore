@@ -142,12 +142,12 @@ namespace alps {
                 , setter_(setter)
             {}
 
-			template<typename T> T cast() const {
-				 return cast<T>(value_ == boost::none_t() ? getter_() : *value_);
+            template<typename T> T cast() const {
+                 return cast<T>(value_ == boost::none_t() ? getter_() : *value_);
             }
 
             template<typename T> operator T() const {
-				return cast<T>();
+                return cast<T>();
             }
 
             template<typename T> param & operator=(T const & arg) {
@@ -156,9 +156,9 @@ namespace alps {
                 setter_(cast<std::string>(arg));
                 return *this;
             }
-			
-			save
-			load
+            
+            save
+            load
 
         private:
 
@@ -170,10 +170,10 @@ namespace alps {
 
     ALPS_DECL std::ostream & operator<<(std::ostream & os, param const &);
 
-	#define ALPS_NGS_PARAM_ADD_OPERATOR(T)											\
-		ALPS_DECL T operator+(param const & p, T const & s);						\
-		ALPS_DECL T operator+(T const & s, param const & p);
-	ALPS_NGS_PARAM_ADD_OPERATOR(char)
+    #define ALPS_NGS_PARAM_ADD_OPERATOR(T)                                            \
+        ALPS_DECL T operator+(param const & p, T const & s);                        \
+        ALPS_DECL T operator+(T const & s, param const & p);
+    ALPS_NGS_PARAM_ADD_OPERATOR(char)
     ALPS_NGS_PARAM_ADD_OPERATOR(signed char)
     ALPS_NGS_PARAM_ADD_OPERATOR(unsigned char)
     ALPS_NGS_PARAM_ADD_OPERATOR(short)
@@ -228,11 +228,11 @@ namespace alps {
                 return cast<T>(value_ == boost::none_t() ? getter_() : *value_);
             }
 
-			template<typename T> T as() const {
-				 return cast<T>(value_ == boost::none_t() ? getter_() : *value_);
+            template<typename T> T as() const {
+                 return cast<T>(value_ == boost::none_t() ? getter_() : *value_);
             }
 
-			operator std::string() const { return str(); }
+            operator std::string() const { return str(); }
 
             std::string str() const {
                 return value_ == boost::none_t() ? getter_() : *value_;
@@ -255,10 +255,10 @@ namespace alps {
 
     ALPS_DECL std::ostream & operator<<(std::ostream & os, param const &);
 
-	#define ALPS_NGS_PARAM_ADD_OPERATOR(T)											\
-		ALPS_DECL T operator+(param const & p, T const & s);						\
-		ALPS_DECL T operator+(T const & s, param const & p);
-	ALPS_NGS_PARAM_ADD_OPERATOR(char)
+    #define ALPS_NGS_PARAM_ADD_OPERATOR(T)                                            \
+        ALPS_DECL T operator+(param const & p, T const & s);                        \
+        ALPS_DECL T operator+(T const & s, param const & p);
+    ALPS_NGS_PARAM_ADD_OPERATOR(char)
     ALPS_NGS_PARAM_ADD_OPERATOR(signed char)
     ALPS_NGS_PARAM_ADD_OPERATOR(unsigned char)
     ALPS_NGS_PARAM_ADD_OPERATOR(short)

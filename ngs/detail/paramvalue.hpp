@@ -33,7 +33,7 @@
 #include <alps/ngs/detail/paramvalue_reader.hpp>
 
 #if defined(ALPS_HAVE_PYTHON)
-	#include <alps/ngs/boost_python.hpp>
+    #include <alps/ngs/boost_python.hpp>
 #endif
 
 #include <boost/variant.hpp>
@@ -50,162 +50,162 @@
 #include <ostream>
 #include <stdexcept>
 
-#define ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE_NO_PYTHON(CALLBACK)					\
-	CALLBACK(double)																\
-	CALLBACK(int)																	\
-	CALLBACK(bool)																	\
-	CALLBACK(std::string)															\
-	CALLBACK(std::complex<double>)													\
-	CALLBACK(std::vector<double>)													\
-	CALLBACK(std::vector<int>)														\
-	CALLBACK(std::vector<std::string>)												\
-	CALLBACK(std::vector<std::complex<double> >)
+#define ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE_NO_PYTHON(CALLBACK)                    \
+    CALLBACK(double)                                                                \
+    CALLBACK(int)                                                                    \
+    CALLBACK(bool)                                                                    \
+    CALLBACK(std::string)                                                            \
+    CALLBACK(std::complex<double>)                                                    \
+    CALLBACK(std::vector<double>)                                                    \
+    CALLBACK(std::vector<int>)                                                        \
+    CALLBACK(std::vector<std::string>)                                                \
+    CALLBACK(std::vector<std::complex<double> >)
 
 #if defined(ALPS_HAVE_PYTHON)
-	#define ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(CALLBACK)							\
-		ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE_NO_PYTHON(CALLBACK)					\
-		CALLBACK(boost::python::object)
+    #define ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(CALLBACK)                            \
+        ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE_NO_PYTHON(CALLBACK)                    \
+        CALLBACK(boost::python::object)
 #else
-	#define ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(CALLBACK)							\
-		ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE_NO_PYTHON(CALLBACK)
+    #define ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(CALLBACK)                            \
+        ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE_NO_PYTHON(CALLBACK)
 #endif
 
 namespace alps {
 
-	namespace detail {
+    namespace detail {
 
-		class paramvalue;
+        class paramvalue;
 
-	}
-
-	template<typename T> class extract;
-
-	namespace detail {
-
-		template<class Archive> struct paramvalue_serializer 
-			: public boost::static_visitor<> 
-		{
-			public:
-
-				paramvalue_serializer(Archive & a)
-					: ar(a)
-				{}
-
-				template <typename U> void operator()(U & v) const {
-					std::string type(typeid(v).name());
-					ar
-						<< type
-						<< v;
-				}
-
-			private:
-
-				Archive & ar;
-        };
-
-		#define ALPS_NGS_PARAMVALUE_VARIANT_TYPE(T)	T,
-		typedef boost::mpl::pop_back<boost::mpl::vector<
-			ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(
-				ALPS_NGS_PARAMVALUE_VARIANT_TYPE
-			) void
-		>::type >::type paramvalue_types;
-		#undef ALPS_NGS_PARAMVALUE_VARIANT_TYPE
-        typedef boost::make_variant_over<paramvalue_types>::type paramvalue_base;
-
-		class paramvalue : public paramvalue_base {
-
-			public:
-
-				paramvalue() {}
-
-				paramvalue(paramvalue const & v)
-					: paramvalue_base(static_cast<paramvalue_base const &>(v))
-				{}
-
-				paramvalue const& operator=(paramvalue const& x)
-				{
-				  static_cast<paramvalue_base&>(*this) = static_cast<paramvalue_base const&>(x);
-				  return *this;
-				}
-				template<typename T> T cast() const {
-					return extract<T>(*this);
-				}
-
-				#define ALPS_NGS_PARAMVALUE_MEMBER_DECL(T)							\
-					paramvalue( T const & v) : paramvalue_base(v) {}				\
-					operator T () const;											\
-					paramvalue & operator=( T const &);
-				ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(ALPS_NGS_PARAMVALUE_MEMBER_DECL)
-				#undef ALPS_NGS_PARAMVALUE_MEMBER_DECL
-
-				void save(hdf5::archive &) const;
-				void load(hdf5::archive &);
-				
-			private:
-			
-				friend class boost::serialization::access;
-
-				template<class Archive> void save(
-					Archive & ar, const unsigned int version
-				) const {
-					paramvalue_serializer<Archive> visitor(ar);
-					boost::apply_visitor(visitor, *this);
-				}
-
-				template<class Archive> void load(
-					Archive & ar, const unsigned int
-				) {
-					std::string type;
-					ar >> type;
-					if (false);
-					#define ALPS_NGS_PARAMVALUE_LOAD(T)								\
-						else if (type == typeid( T ).name()) {						\
-							T value;												\
-							ar >> value;											\
-							operator=(value);										\
-						}
-					// TODO: fix python serialization!
-					// ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(ALPS_NGS_PARAMVALUE_LOAD)
-					ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE_NO_PYTHON(ALPS_NGS_PARAMVALUE_LOAD)
-					#undef ALPS_NGS_PARAMVALUE_LOAD
-					else
-						throw std::runtime_error("unknown type" + ALPS_STACKTRACE);
-				}
-
-				BOOST_SERIALIZATION_SPLIT_MEMBER()
-		};
-
-		ALPS_DECL std::ostream & operator<<(std::ostream & os, paramvalue const & arg);
-
-		template<typename T> T extract_impl (paramvalue const & arg, T) {
-			paramvalue_reader< T > visitor;
-			boost::apply_visitor(visitor, arg);
-			return visitor.get_value();
-		}
     }
 
-	template<typename T> struct cast_hook<T, detail::paramvalue> {
-		static inline std::complex<T> apply(detail::paramvalue const & arg) {
-			return extract<T>(arg);
-		}
-	};
+    template<typename T> class extract;
 
-	template<typename T> class extract {
+    namespace detail {
 
-		public:
+        template<class Archive> struct paramvalue_serializer 
+            : public boost::static_visitor<> 
+        {
+            public:
 
-			extract(detail::paramvalue const & arg) {
-				boost::apply_visitor(visitor, arg);
-			}
+                paramvalue_serializer(Archive & a)
+                    : ar(a)
+                {}
 
-			operator T const & () {
-				return visitor.get_value();
-			}
+                template <typename U> void operator()(U & v) const {
+                    std::string type(typeid(v).name());
+                    ar
+                        << type
+                        << v;
+                }
 
-		private:
+            private:
 
-			detail::paramvalue_reader< T > visitor;
-	};
+                Archive & ar;
+        };
+
+        #define ALPS_NGS_PARAMVALUE_VARIANT_TYPE(T)    T,
+        typedef boost::mpl::pop_back<boost::mpl::vector<
+            ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(
+                ALPS_NGS_PARAMVALUE_VARIANT_TYPE
+            ) void
+        >::type >::type paramvalue_types;
+        #undef ALPS_NGS_PARAMVALUE_VARIANT_TYPE
+        typedef boost::make_variant_over<paramvalue_types>::type paramvalue_base;
+
+        class paramvalue : public paramvalue_base {
+
+            public:
+
+                paramvalue() {}
+
+                paramvalue(paramvalue const & v)
+                    : paramvalue_base(static_cast<paramvalue_base const &>(v))
+                {}
+
+                paramvalue const& operator=(paramvalue const& x)
+                {
+                  static_cast<paramvalue_base&>(*this) = static_cast<paramvalue_base const&>(x);
+                  return *this;
+                }
+                template<typename T> T cast() const {
+                    return extract<T>(*this);
+                }
+
+                #define ALPS_NGS_PARAMVALUE_MEMBER_DECL(T)                            \
+                    paramvalue( T const & v) : paramvalue_base(v) {}                \
+                    operator T () const;                                            \
+                    paramvalue & operator=( T const &);
+                ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(ALPS_NGS_PARAMVALUE_MEMBER_DECL)
+                #undef ALPS_NGS_PARAMVALUE_MEMBER_DECL
+
+                void save(hdf5::archive &) const;
+                void load(hdf5::archive &);
+                
+            private:
+            
+                friend class boost::serialization::access;
+
+                template<class Archive> void save(
+                    Archive & ar, const unsigned int version
+                ) const {
+                    paramvalue_serializer<Archive> visitor(ar);
+                    boost::apply_visitor(visitor, *this);
+                }
+
+                template<class Archive> void load(
+                    Archive & ar, const unsigned int
+                ) {
+                    std::string type;
+                    ar >> type;
+                    if (false);
+                    #define ALPS_NGS_PARAMVALUE_LOAD(T)                                \
+                        else if (type == typeid( T ).name()) {                        \
+                            T value;                                                \
+                            ar >> value;                                            \
+                            operator=(value);                                        \
+                        }
+                    // TODO: fix python serialization!
+                    // ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(ALPS_NGS_PARAMVALUE_LOAD)
+                    ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE_NO_PYTHON(ALPS_NGS_PARAMVALUE_LOAD)
+                    #undef ALPS_NGS_PARAMVALUE_LOAD
+                    else
+                        throw std::runtime_error("unknown type" + ALPS_STACKTRACE);
+                }
+
+                BOOST_SERIALIZATION_SPLIT_MEMBER()
+        };
+
+        ALPS_DECL std::ostream & operator<<(std::ostream & os, paramvalue const & arg);
+
+        template<typename T> T extract_impl (paramvalue const & arg, T) {
+            paramvalue_reader< T > visitor;
+            boost::apply_visitor(visitor, arg);
+            return visitor.get_value();
+        }
+    }
+
+    template<typename T> struct cast_hook<T, detail::paramvalue> {
+        static inline std::complex<T> apply(detail::paramvalue const & arg) {
+            return extract<T>(arg);
+        }
+    };
+
+    template<typename T> class extract {
+
+        public:
+
+            extract(detail::paramvalue const & arg) {
+                boost::apply_visitor(visitor, arg);
+            }
+
+            operator T const & () {
+                return visitor.get_value();
+            }
+
+        private:
+
+            detail::paramvalue_reader< T > visitor;
+    };
 }
 
 #endif

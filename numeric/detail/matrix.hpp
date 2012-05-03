@@ -534,18 +534,18 @@ namespace blas{
             }
         }
 
-		void save(alps::hdf5::archive &ar) const
-		{
-			using namespace alps;
-			ar << make_pvp("", &values_.front(), std::vector<std::size_t>(2, size_));
-		}
+        void save(alps::hdf5::archive &ar) const
+        {
+            using namespace alps;
+            ar << make_pvp("", &values_.front(), std::vector<std::size_t>(2, size_));
+        }
 
-		void load(alps::hdf5::archive &ar)
-		{
-			using namespace alps;
-			resize(ar.extent("")[0]);
-			ar >> make_pvp("", &values_.front(), std::vector<std::size_t>(2, size_));
-		}
+        void load(alps::hdf5::archive &ar)
+        {
+            using namespace alps;
+            resize(ar.extent("")[0]);
+            ar >> make_pvp("", &values_.front(), std::vector<std::size_t>(2, size_));
+        }
 
     private:
         std::vector<double> values_;

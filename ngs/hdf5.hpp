@@ -92,19 +92,19 @@ namespace alps {
 
             public:
 
-				// TODO: make this private
-				typedef enum {
-					READ = 0x00, 
-					WRITE = 0x01, 
-					REPLACE = 0x02, 
-					COMPRESS = 0x04, 
-					LARGE = 0x08, 
-					MEMORY = 0x10 
-				} properties;
+                // TODO: make this private
+                typedef enum {
+                    READ = 0x00, 
+                    WRITE = 0x01, 
+                    REPLACE = 0x02, 
+                    COMPRESS = 0x04, 
+                    LARGE = 0x08, 
+                    MEMORY = 0x10 
+                } properties;
 
-				// TODO: add boost::filesystem constructor
+                // TODO: add boost::filesystem constructor
                 archive(std::string const & filename, std::string mode = "r");
-				// TODO: remove that!
+                // TODO: remove that!
                 archive(std::string const & filename, std::size_t props);
                 archive(archive const & arg);
 
@@ -267,7 +267,7 @@ namespace alps {
 
         }
 
-		template<typename T> typename scalar_type<T>::type * get_pointer(T & value) {
+        template<typename T> typename scalar_type<T>::type * get_pointer(T & value) {
             return detail::get_pointer<T>::apply(value);
         }
 

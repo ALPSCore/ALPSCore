@@ -101,11 +101,11 @@ namespace alps {
                     return new params_impl_map(*this);
                 }
 
-				#ifdef ALPS_HAVE_MPI
-					void broadcast(int root) {
-						throw std::logic_error("no communicator available" + ALPS_STACKTRACE);
-					}
-				#endif
+                #ifdef ALPS_HAVE_MPI
+                    void broadcast(int root) {
+                        throw std::logic_error("no communicator available" + ALPS_STACKTRACE);
+                    }
+                #endif
 
             private:
 

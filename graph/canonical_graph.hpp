@@ -48,7 +48,7 @@ class canonical_graph
         canonical_graph(Graph const& g, typename canonical_properties_type<Graph>::type const& p)
             : graph_(g), properties_(p)
         {
-            assert(p == alps::graph::canonical_properties(g));
+          std::assert(p == alps::graph::canonical_properties(g));
         }
 
         operator Graph const() const

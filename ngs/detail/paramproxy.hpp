@@ -39,95 +39,95 @@
 #include <iostream>
 
 namespace alps {
-	
-	namespace detail {
+    
+    namespace detail {
 
-		class ALPS_DECL paramproxy {
+        class ALPS_DECL paramproxy {
 
-			public:
+            public:
 
-				paramproxy()
-					: defined(false)
-				{}
+                paramproxy()
+                    : defined(false)
+                {}
 
-				paramproxy(paramvalue const & v)
-					: defined(true)
-					, value(v)
-				{}
+                paramproxy(paramvalue const & v)
+                    : defined(true)
+                    , value(v)
+                {}
 
-				paramproxy(
-					  bool d
-					, boost::function<paramvalue()> const & g
-					, boost::function<void(paramvalue)> const & s
-				)
-					: defined(d)
-					, getter(g)
-					, setter(s)
-				{}
+                paramproxy(
+                      bool d
+                    , boost::function<paramvalue()> const & g
+                    , boost::function<void(paramvalue)> const & s
+                )
+                    : defined(d)
+                    , getter(g)
+                    , setter(s)
+                {}
 
-				paramproxy(paramproxy const & arg)
-					: defined(arg.defined)
-					, value(arg.value)
-					, getter(arg.getter)
-					, setter(arg.setter)
-				{}
+                paramproxy(paramproxy const & arg)
+                    : defined(arg.defined)
+                    , value(arg.value)
+                    , getter(arg.getter)
+                    , setter(arg.setter)
+                {}
 
-				template<typename T> T cast() const {
-					if (!defined)
-						throw std::runtime_error(
-							"No parameter available" + ALPS_STACKTRACE
-						);
-					return (!value ? getter() : *value).cast<T>();
-				}
-				
-				template<typename T> operator T () const {
-					return cast<T>();
-				}
-				
-				template<typename T> paramproxy & operator=(T const & arg) {
-					if (!!value)
-						throw std::runtime_error(
-							"No reference to parameter available" + ALPS_STACKTRACE
-						);
-					setter(detail::paramvalue(arg));
-					return *this;
-				}
+                template<typename T> T cast() const {
+                    if (!defined)
+                        throw std::runtime_error(
+                            "No parameter available" + ALPS_STACKTRACE
+                        );
+                    return (!value ? getter() : *value).cast<T>();
+                }
+                
+                template<typename T> operator T () const {
+                    return cast<T>();
+                }
+                
+                template<typename T> paramproxy & operator=(T const & arg) {
+                    if (!!value)
+                        throw std::runtime_error(
+                            "No reference to parameter available" + ALPS_STACKTRACE
+                        );
+                    setter(detail::paramvalue(arg));
+                    return *this;
+                }
 
-				template<typename T> T or_default(T const & value) const {
-					return defined ? cast<T>() : value;
-				}
+                template<typename T> T or_default(T const & value) const {
+                    return defined ? cast<T>() : value;
+                }
 
-				template<typename T> T operator|( T const & value) const {
-					return or_default(value);
-				}
+                template<typename T> T operator|( T const & value) const {
+                    return or_default(value);
+                }
 
-				std::string operator|(char const * value) const {
-					return or_default(std::string(value));
-				}
+                std::string operator|(char const * value) const {
+                    return or_default(std::string(value));
+                }
 
-				void save(hdf5::archive & ar) const;
-				void load(hdf5::archive &);
+                void save(hdf5::archive & ar) const;
+                void load(hdf5::archive &);
 
-			private:
+            private:
 
-				bool defined;
-				boost::optional<paramvalue> value;
-				boost::function<paramvalue()> getter;
-				boost::function<void(paramvalue)> setter;
-		};
+                bool defined;
+                boost::optional<paramvalue> value;
+                boost::function<paramvalue()> getter;
+                boost::function<void(paramvalue)> setter;
+        };
 
-		ALPS_DECL std::ostream & operator<<(std::ostream & os, paramproxy const &);
+        ALPS_DECL std::ostream & operator<<(std::ostream & os, paramproxy const &);
 
-		#define ALPS_NGS_PARAMPROXY_ADD_OPERATOR_DECL(T)								\
-			ALPS_DECL T operator+(paramproxy const & p, T s);							\
-			ALPS_DECL T operator+(T s, paramproxy const & p);
-		ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(ALPS_NGS_PARAMPROXY_ADD_OPERATOR_DECL)
-		#undef ALPS_NGS_PARAMPROXY_ADD_OPERATOR_DECL
+        #define ALPS_NGS_PARAMPROXY_ADD_OPERATOR_DECL(T)                                \
+            ALPS_DECL T operator+(paramproxy const & p, T s);                            \
+            ALPS_DECL T operator+(T s, paramproxy const & p);
+        ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(ALPS_NGS_PARAMPROXY_ADD_OPERATOR_DECL)
+        #undef ALPS_NGS_PARAMPROXY_ADD_OPERATOR_DECL
 
-		ALPS_DECL std::string operator+(paramproxy const & p, char const * s);
-		ALPS_DECL std::string operator+(char const * s, paramproxy const & p);
+        ALPS_DECL std::string operator+(paramproxy const & p, char const * s);
+        ALPS_DECL std::string operator+(char const * s, paramproxy const & p);
 
-	}
+    }
 }
-	
+    
 #endif

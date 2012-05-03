@@ -52,7 +52,7 @@ struct element_type_helper<T,boost::mpl::false_>
 template <class T>
 struct element_type_helper<T,boost::mpl::true_> 
 {
-	typedef typename T::value_type type;
+    typedef typename T::value_type type;
 };
 
 template <class T, class F>
@@ -66,7 +66,7 @@ struct element_type_recursive_helper<T,boost::mpl::false_>
 
 template <class T>
 struct element_type_recursive_helper<T,boost::mpl::true_> 
-	: element_type_recursive<typename T::value_type>
+    : element_type_recursive<typename T::value_type>
 {
 };
 

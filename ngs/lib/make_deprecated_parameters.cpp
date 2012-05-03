@@ -33,7 +33,7 @@ namespace alps {
 
     Parameters make_deprecated_parameters(params const & arg) {
         Parameters par;
-		for (params::const_iterator it = arg.begin(); it != arg.end(); ++it)
+        for (params::const_iterator it = arg.begin(); it != arg.end(); ++it)
             par.push_back(it->first, it->second.cast<std::string>());
         return par;
     }

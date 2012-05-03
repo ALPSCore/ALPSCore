@@ -41,10 +41,10 @@
 #include <alps/parser/xmlstream.h>
 
 #ifdef tolower
-	#undef tolower
+    #undef tolower
 #endif
 #ifdef toupper
-	#undef toupper
+    #undef toupper
 #endif
 
 #include <boost/date_time/posix_time/posix_time.hpp>

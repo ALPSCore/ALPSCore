@@ -60,7 +60,7 @@ namespace alps
             template <typename T>
             struct mean_type_impl<T, 3>
             {
-				typedef typename boost::is_same<T, T>::type false_type;
+                typedef typename boost::is_same<T, T>::type false_type;
                 BOOST_STATIC_ASSERT_MSG(!false_type::value, "mean_type trait failed");
             };
         }

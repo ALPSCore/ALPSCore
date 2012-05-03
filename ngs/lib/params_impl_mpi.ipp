@@ -49,9 +49,9 @@ namespace alps {
 
                 typedef std::map<std::string, std::string> Base;
 
-				params_impl_mpi(boost::mpi::communicator const & comm)
-					: comm_(comm)
-				{}
+                params_impl_mpi(boost::mpi::communicator const & comm)
+                    : comm_(comm)
+                {}
 
                 std::size_t size() const {
                     return Base::size();
@@ -98,17 +98,17 @@ namespace alps {
                     return new params_impl_mpi(*this);
                 }
 
-				#ifdef ALPS_HAVE_MPI
-					void broadcast(int root) {
-						boost::mpi::broadcast(comm_, static_cast<Base &>(*this), root);
-					}
-				#endif
+                #ifdef ALPS_HAVE_MPI
+                    void broadcast(int root) {
+                        boost::mpi::broadcast(comm_, static_cast<Base &>(*this), root);
+                    }
+                #endif
 
             private:
 
                 params_impl_mpi(params_impl_mpi const & arg)
                     : Base(arg)
-					, comm_(arg.comm_)
+                    , comm_(arg.comm_)
                 {}
 
                 void setter(std::string key, std::string value) {
@@ -118,8 +118,8 @@ namespace alps {
                 std::string getter(std::string key) {
                     return Base::operator[](key);
                 }
-				
-				boost::mpi::communicator const & comm_;
+                
+                boost::mpi::communicator const & comm_;
         };
 
     }

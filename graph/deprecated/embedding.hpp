@@ -252,7 +252,7 @@ template<
       subgraph_vertex_descriptor subgraph_vertex
       , graph_vertex_descriptor graph_vertex
     ) {
-	  trace_.clear();
+      trace_.clear();
       std::deque<search_node> stack;
       subgraph_adjacency_iterator sit, send;
       graph_adjacency_iterator tend = adjacent_vertices(graph_vertex, *graph_).second;
