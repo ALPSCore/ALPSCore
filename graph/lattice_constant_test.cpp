@@ -45,17 +45,17 @@ int main() {
     typedef alps::graph_helper<>::edge_iterator edge_iterator;
 
     alps::Parameters parm;
-	unsigned int side_length = 40;
-	
+    unsigned int side_length = 40;
+    
     std::ifstream in("../../lib/xml/lattices.xml");
     parm["LATTICE"] = "square lattice";
     parm["L"] = side_length;
     alps::graph_helper<> lattice(in,parm);
-	
-	graph_type lattice_graph(num_vertices(lattice.graph()));
-	boost::graph_traits<alps::graph_helper<>::graph_type>::edge_iterator it, et;
-	for(boost::tie(it, et) = edges(lattice.graph()); it != et; ++it)
-		add_edge(source(*it, lattice.graph()), target(*it, lattice.graph()), lattice_graph);
+    
+    graph_type lattice_graph(num_vertices(lattice.graph()));
+    boost::graph_traits<alps::graph_helper<>::graph_type>::edge_iterator it, et;
+    for(boost::tie(it, et) = edges(lattice.graph()); it != et; ++it)
+        add_edge(source(*it, lattice.graph()), target(*it, lattice.graph()), lattice_graph);
 
     std::vector<std::pair<graph_type,lc_type> > g;
 
@@ -161,8 +161,8 @@ int main() {
     add_edge(2, 6,g.back().first);
     add_edge(4, 7,g.back().first);
 
-	// graph no. 32340
-	// 14	15	1	64272
+    // graph no. 32340
+    // 14    15    1    64272
     g.push_back(std::make_pair(graph_type(15),64272));
     add_edge(13, 14,g.back().first);
     add_edge(12, 14,g.back().first);
@@ -214,23 +214,23 @@ int main() {
 //    add_edge(18, 19, g.back().first);
 
     int success = 0;
-	{
-		boost::progress_timer timer;
-		for(std::vector<std::pair<graph_type,lc_type> >::iterator it= g.begin(); it != g.end(); ++it)
-		{
-			lc_type lc = alps::graph::lattice_constant(
-				  it->first
-				, lattice_graph
-				, lattice.lattice()
-				, side_length * side_length / 2 + side_length / 2 - 1
-			);
-			if (lc != it->second) {
-				std::cerr<<"ERROR: lattice constant does not match!"<<std::endl;
-				std::cerr<<"Calculated: "<<lc<<"\tReference: "<<it->second<<std::endl<<std::endl;
-				success = -1;
-			} else
-				std::cerr<<"SUCCES: "<<it->second<<std::endl;
-		}
+    {
+        boost::progress_timer timer;
+        for(std::vector<std::pair<graph_type,lc_type> >::iterator it= g.begin(); it != g.end(); ++it)
+        {
+            lc_type lc = alps::graph::lattice_constant(
+                  it->first
+                , lattice_graph
+                , lattice.lattice()
+                , side_length * side_length / 2 + side_length / 2 - 1
+            );
+            if (lc != it->second) {
+                std::cerr<<"ERROR: lattice constant does not match!"<<std::endl;
+                std::cerr<<"Calculated: "<<lc<<"\tReference: "<<it->second<<std::endl<<std::endl;
+                success = -1;
+            } else
+                std::cerr<<"SUCCES: "<<it->second<<std::endl;
+        }
     }
     return success;
 }

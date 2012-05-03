@@ -34,53 +34,53 @@
 #include <alps/graph/vli.hpp>
 
 int main() {
-	{
-		alps::graph::vli<256> b, a, c, d;
-		for (std::size_t i = 0; i < 4; ++i)
-			for (std::size_t j = 0; j < 4; ++j) {
-				a[0] = 0; a[1] = 0; a[2] = 0; a[3] = 0;
-				b[0] = 0; b[1] = 0; b[2] = 0; b[3] = 0;
-				d[0] = 0; d[1] = 0; d[2] = 0; d[3] = 0;
-				a[i] = 16;
-				b[j] = 16;
-				std::cout << "a: " << std::setbase(16) << a[0] << " " << a[1] << " " << a[2] << " " << a[3];
-				std::cout << ", b: " << std::setbase(16) << b[0] << " " << b[1] << " " << b[2] << " " << b[3];
-				c = a * b;
-				d.madd(a, b);
-				std::cout << ", a*b: " << std::setbase(16) << c[0] << " " << c[1] << " " << c[2] << " " << c[3];
-				std::cout << ", a+=a*b: " << std::setbase(16) << d[0] << " " << d[1] << " " << d[2] << " " << d[3] << std::endl;
-			}
-	}
-	{
-		alps::graph::vli<256> a(10), b(4);
-		std::cout << (a < b ? "true" : "false") << " " << (a == b ? "true" : "false") << " " << (a <= b ? "true" : "false") << " " << std::endl;
-	}
-	{
-		alps::graph::vli<256> a(1LL), b(-1LL);
-		for (std::size_t i = 0; i < 75; ++i)
-			std::cout << i << ": " << (a *= 10LL) << " " << (b *= 10LL) << std::endl;
-		
-		alps::graph::vli<256> f(1000000000000000000);
-		std::cout << f << std::endl;
-		std::cout << (f += 18947077082LL) << std::endl;
-		std::cout << (f *= 2LL) << std::endl;
-	}
-	{
-		alps::graph::vli<256> a(1141308421510392410LL), b(750164176105114121LL);
-		alps::graph::vli<256> ba = b - a;
-		a -= b;
-		a = a * (-1);
-		std::cout << a << " " << ba << std::endl;
-	}
-	{
-		alps::graph::vli<256> a(1), b(8264), c(-1), d(-862), e(100005), f(72677163250000LL);
-		std::cout << a << " " << b << " " << c << " " << d << " " << e << " " << (f += 18947077082LL) << std::endl;
-	}
-	{
-		alps::graph::vli<256> a(0);
-		a -= 854116085LL;
-		std::cout << a << std::endl;
-	}
+    {
+        alps::graph::vli<256> b, a, c, d;
+        for (std::size_t i = 0; i < 4; ++i)
+            for (std::size_t j = 0; j < 4; ++j) {
+                a[0] = 0; a[1] = 0; a[2] = 0; a[3] = 0;
+                b[0] = 0; b[1] = 0; b[2] = 0; b[3] = 0;
+                d[0] = 0; d[1] = 0; d[2] = 0; d[3] = 0;
+                a[i] = 16;
+                b[j] = 16;
+                std::cout << "a: " << std::setbase(16) << a[0] << " " << a[1] << " " << a[2] << " " << a[3];
+                std::cout << ", b: " << std::setbase(16) << b[0] << " " << b[1] << " " << b[2] << " " << b[3];
+                c = a * b;
+                d.madd(a, b);
+                std::cout << ", a*b: " << std::setbase(16) << c[0] << " " << c[1] << " " << c[2] << " " << c[3];
+                std::cout << ", a+=a*b: " << std::setbase(16) << d[0] << " " << d[1] << " " << d[2] << " " << d[3] << std::endl;
+            }
+    }
+    {
+        alps::graph::vli<256> a(10), b(4);
+        std::cout << (a < b ? "true" : "false") << " " << (a == b ? "true" : "false") << " " << (a <= b ? "true" : "false") << " " << std::endl;
+    }
+    {
+        alps::graph::vli<256> a(1LL), b(-1LL);
+        for (std::size_t i = 0; i < 75; ++i)
+            std::cout << i << ": " << (a *= 10LL) << " " << (b *= 10LL) << std::endl;
+        
+        alps::graph::vli<256> f(1000000000000000000);
+        std::cout << f << std::endl;
+        std::cout << (f += 18947077082LL) << std::endl;
+        std::cout << (f *= 2LL) << std::endl;
+    }
+    {
+        alps::graph::vli<256> a(1141308421510392410LL), b(750164176105114121LL);
+        alps::graph::vli<256> ba = b - a;
+        a -= b;
+        a = a * (-1);
+        std::cout << a << " " << ba << std::endl;
+    }
+    {
+        alps::graph::vli<256> a(1), b(8264), c(-1), d(-862), e(100005), f(72677163250000LL);
+        std::cout << a << " " << b << " " << c << " " << d << " " << e << " " << (f += 18947077082LL) << std::endl;
+    }
+    {
+        alps::graph::vli<256> a(0);
+        a -= 854116085LL;
+        std::cout << a << std::endl;
+    }
 };
 
 #else

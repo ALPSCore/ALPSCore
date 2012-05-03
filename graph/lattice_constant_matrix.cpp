@@ -46,17 +46,17 @@ int main() {
     typedef alps::graph_helper<>::edge_iterator edge_iterator;
     
     alps::Parameters parm;
-	unsigned int side_length = 40;
-	
+    unsigned int side_length = 40;
+    
     std::ifstream in("../../lib/xml/lattices.xml");
     parm["LATTICE"] = "square lattice";
     parm["L"] = side_length;
 
     alps::graph_helper<> lattice(in,parm);
-	
-	graph_type lattice_graph(num_vertices(lattice.graph()));
-	boost::graph_traits<alps::graph_helper<>::graph_type>::edge_iterator it, et;
-	for(boost::tie(it, et) = edges(lattice.graph()); it != et; ++it)
+    
+    graph_type lattice_graph(num_vertices(lattice.graph()));
+    boost::graph_traits<alps::graph_helper<>::graph_type>::edge_iterator it, et;
+    for(boost::tie(it, et) = edges(lattice.graph()); it != et; ++it)
     {
         boost::graph_traits<graph_type>::edge_descriptor  e = add_edge(source(*it, lattice.graph()), target(*it, lattice.graph()), lattice_graph).first;
     }
@@ -151,12 +151,12 @@ int main() {
         alps::graph::lattice_constant(
               output
             , get<0>(*it)
-			, lattice_graph
-			, lattice.lattice()
-			, alps::cell(std::vector<int>(2,side_length/2),lattice.lattice()) //side_length * side_length / 2 + side_length / 2 - 1
-			, get<alps::graph::partition>(get<1>(*it).first)
+            , lattice_graph
+            , lattice.lattice()
+            , alps::cell(std::vector<int>(2,side_length/2),lattice.lattice()) //side_length * side_length / 2 + side_length / 2 - 1
+            , get<alps::graph::partition>(get<1>(*it).first)
             , get<1>(*it).second
-		);
+        );
         output_type ref = get<2>(*it);
         if ( output != ref )
         {

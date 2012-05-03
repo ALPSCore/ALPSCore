@@ -29,11 +29,11 @@ import pyalps.ngs as ngs
 import sys
 
 p = ngs.params({
-	'val1' : 42,
-	'val2' : '42',
-	'a' : 1,
-	'x' : 2,
-	'b' : 3
+    'val1' : 42,
+    'val2' : '42',
+    'a' : 1,
+    'x' : 2,
+    'b' : 3
 })
 print type(p["val1"]), type(p["val2"]), type(p["undefined"])
 
@@ -46,8 +46,8 @@ oar = ngs.h5ar('parms2.h5', 'w')
 print p.keys(), p.values()
 
 for key in p.keys():
-	print key
-	oar.write('parameters/' + key, p[key])
+    print key
+    oar.write('parameters/' + key, p[key])
 del oar
 
 iar = ngs.h5ar('parms2.h5', 'r')
@@ -55,6 +55,6 @@ p.load(iar)
 
 print type(p["val1"]), type(p["val2"])
 for key in p:
-	print key,p[key], type(p[key])
+    print key,p[key], type(p[key])
 
 del iar

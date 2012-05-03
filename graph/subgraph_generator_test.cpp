@@ -49,7 +49,7 @@ void subgraph_generator_test(unsigned int order_ )
 
     typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS> lattice_graph_type;
     boost::graph_traits<alps::graph_helper<>::graph_type>::edge_iterator eit, eend;
-	lattice_graph_type lattice_graph(num_vertices(alps_lattice.graph()));
+    lattice_graph_type lattice_graph(num_vertices(alps_lattice.graph()));
     for(boost::tie(eit,eend) = edges(alps_lattice.graph()); eit != eend; ++eit)
         add_edge( static_cast<unsigned int>(source(*eit,alps_lattice.graph()))
                 , static_cast<unsigned int>(target(*eit,alps_lattice.graph()))

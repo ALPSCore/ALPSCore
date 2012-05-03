@@ -38,185 +38,185 @@ typedef boost::adjacency_list<
 > graph_type;
 
 typedef boost::adjacency_list<
-	  boost::vecS
-	, boost::vecS
-	, boost::undirectedS
-	, boost::property<alps::vertex_type_t, alps::type_type>
-	, boost::property<alps::edge_type_t, alps::type_type>
+      boost::vecS
+    , boost::vecS
+    , boost::undirectedS
+    , boost::property<alps::vertex_type_t, alps::type_type>
+    , boost::property<alps::edge_type_t, alps::type_type>
 > colored_graph_type;
 
 using namespace alps::graph;
 
 // ostream operator for partition_type
 template<typename Stream> Stream & operator<< (Stream & os, partition_type<colored_graph_type>::type const & pi) {
-	os << "(";
-	for (partition_type<colored_graph_type>::type::const_iterator it = pi.begin(); it != pi.end(); ++it) {
-		os << "(";
-		for (partition_type<colored_graph_type>::type::value_type::const_iterator jt = it->begin(); jt != it->end(); ++jt)
-			os << (jt == it->begin() ? "" : " ") << *jt;
-		os << ")";
-	}
-	os << ")";
-	return os;
+    os << "(";
+    for (partition_type<colored_graph_type>::type::const_iterator it = pi.begin(); it != pi.end(); ++it) {
+        os << "(";
+        for (partition_type<colored_graph_type>::type::value_type::const_iterator jt = it->begin(); jt != it->end(); ++jt)
+            os << (jt == it->begin() ? "" : " ") << *jt;
+        os << ")";
+    }
+    os << ")";
+    return os;
 }
 
 int main() {
-	{
-		enum { A, B, C, D, N };
+    {
+        enum { A, B, C, D, N };
 
-		colored_graph_type g(N), h(N);
-		
-		/*
-			A - B       A   B
-			| / |  vs.  | X |
-			C - D       C - D
-		*/
+        colored_graph_type g(N), h(N);
+        
+        /*
+            A - B       A   B
+            | / |  vs.  | X |
+            C - D       C - D
+        */
 
-		add_edge(A, B, g);
-		add_edge(A, C, g);
-		add_edge(B, C, g);
-		add_edge(B, D, g);
-		add_edge(C, D, g);
+        add_edge(A, B, g);
+        add_edge(A, C, g);
+        add_edge(B, C, g);
+        add_edge(B, D, g);
+        add_edge(C, D, g);
 
-		add_edge(A, C, h);
-		add_edge(A, D, h);
-		add_edge(B, C, h);
-		add_edge(B, D, h);
-		add_edge(C, D, h);
+        add_edge(A, C, h);
+        add_edge(A, D, h);
+        add_edge(B, C, h);
+        add_edge(B, D, h);
+        add_edge(C, D, h);
 
-		boost::property_map<colored_graph_type, alps::vertex_type_t>::type g_vertex_name = get(alps::vertex_type_t(), g);
-		g_vertex_name[A] = 0;
-		g_vertex_name[B] = 1;
-		g_vertex_name[C] = 1;
-		g_vertex_name[D] = 0;
+        boost::property_map<colored_graph_type, alps::vertex_type_t>::type g_vertex_name = get(alps::vertex_type_t(), g);
+        g_vertex_name[A] = 0;
+        g_vertex_name[B] = 1;
+        g_vertex_name[C] = 1;
+        g_vertex_name[D] = 0;
 
-		boost::property_map<colored_graph_type, alps::vertex_type_t>::type h_vertex_name = get(alps::vertex_type_t(), h);
-		h_vertex_name[A] = 0;
-		h_vertex_name[B] = 0;
-		h_vertex_name[C] = 1;
-		h_vertex_name[D] = 1;
-		
-		boost::graph_traits<colored_graph_type>::edge_iterator it, end;
+        boost::property_map<colored_graph_type, alps::vertex_type_t>::type h_vertex_name = get(alps::vertex_type_t(), h);
+        h_vertex_name[A] = 0;
+        h_vertex_name[B] = 0;
+        h_vertex_name[C] = 1;
+        h_vertex_name[D] = 1;
+        
+        boost::graph_traits<colored_graph_type>::edge_iterator it, end;
 
-		boost::property_map<colored_graph_type, alps::edge_type_t>::type g_edge_name = get(alps::edge_type_t(), g);
-		for (boost::tie(it, end) = edges(g); it != end; ++it)
-			g_edge_name[*it] = (source(*it, g) == B && target(*it, g) == C) ? 1 : 0;
+        boost::property_map<colored_graph_type, alps::edge_type_t>::type g_edge_name = get(alps::edge_type_t(), g);
+        for (boost::tie(it, end) = edges(g); it != end; ++it)
+            g_edge_name[*it] = (source(*it, g) == B && target(*it, g) == C) ? 1 : 0;
 
-		boost::property_map<colored_graph_type, alps::edge_type_t>::type h_edge_name = get(alps::edge_type_t(), h);
-		for (boost::tie(it, end) = edges(h); it != end; ++it)
-			h_edge_name[*it] = (source(*it, h) == C && target(*it, h) == D) ? 1 : 0;
+        boost::property_map<colored_graph_type, alps::edge_type_t>::type h_edge_name = get(alps::edge_type_t(), h);
+        for (boost::tie(it, end) = edges(h); it != end; ++it)
+            h_edge_name[*it] = (source(*it, h) == C && target(*it, h) == D) ? 1 : 0;
 
-		std::vector<boost::graph_traits<colored_graph_type>::vertex_descriptor> g_ordering, h_ordering;
-		graph_label<colored_graph_type>::type g_label, h_label;
-		partition_type<colored_graph_type>::type g_orbit, h_orbit;
-		boost::tie(g_ordering, g_label, g_orbit) = canonical_properties(g);
-		boost::tie(h_ordering, h_label, h_orbit) = canonical_properties(h);
+        std::vector<boost::graph_traits<colored_graph_type>::vertex_descriptor> g_ordering, h_ordering;
+        graph_label<colored_graph_type>::type g_label, h_label;
+        partition_type<colored_graph_type>::type g_orbit, h_orbit;
+        boost::tie(g_ordering, g_label, g_orbit) = canonical_properties(g);
+        boost::tie(h_ordering, h_label, h_orbit) = canonical_properties(h);
 
-		for (std::vector<boost::graph_traits<colored_graph_type>::vertex_descriptor>::const_iterator it = g_ordering.begin(); it != g_ordering.end(); ++it)
-			std::cout << (it != g_ordering.begin() ? " " : "(") << *it;
-		std::cout << ")" << std::endl;
-		for (std::vector<boost::graph_traits<colored_graph_type>::vertex_descriptor>::const_iterator it = h_ordering.begin(); it != h_ordering.end(); ++it)
-			std::cout << (it != h_ordering.begin() ? " " : "(") << *it;
-		std::cout << ")" << std::endl;
+        for (std::vector<boost::graph_traits<colored_graph_type>::vertex_descriptor>::const_iterator it = g_ordering.begin(); it != g_ordering.end(); ++it)
+            std::cout << (it != g_ordering.begin() ? " " : "(") << *it;
+        std::cout << ")" << std::endl;
+        for (std::vector<boost::graph_traits<colored_graph_type>::vertex_descriptor>::const_iterator it = h_ordering.begin(); it != h_ordering.end(); ++it)
+            std::cout << (it != h_ordering.begin() ? " " : "(") << *it;
+        std::cout << ")" << std::endl;
 
-		std::cout << g_orbit << std::endl;
-		std::cout << h_orbit << std::endl;
-	
-		std::cout << g_label << std::endl;
-		std::cout << h_label << std::endl;
-	}
+        std::cout << g_orbit << std::endl;
+        std::cout << h_orbit << std::endl;
+    
+        std::cout << g_label << std::endl;
+        std::cout << h_label << std::endl;
+    }
 
-	std::cout << std::endl;
+    std::cout << std::endl;
 
-	{
-		enum {A, B, C, D, E, F, G, H, I, N};
+    {
+        enum {A, B, C, D, E, F, G, H, I, N};
 
-		graph_type g(N);
-		
-		/*
-			A - B - C
-			|   |   |
-			D - E - F
-			|   |   |
-			G - H - I
-		*/
+        graph_type g(N);
+        
+        /*
+            A - B - C
+            |   |   |
+            D - E - F
+            |   |   |
+            G - H - I
+        */
 
-		add_edge(A, B, g);
-		add_edge(B, C, g);
-		
-		add_edge(A, D, g);
-		add_edge(B, E, g);
-		add_edge(C, F, g);
-		
-		add_edge(D, E, g);
-		add_edge(E, F, g);
-		
-		add_edge(D, G, g);
-		add_edge(E, H, g);
-		add_edge(F, I, g);
-		
-		add_edge(G, H, g);
-		add_edge(H, I, g);
+        add_edge(A, B, g);
+        add_edge(B, C, g);
+        
+        add_edge(A, D, g);
+        add_edge(B, E, g);
+        add_edge(C, F, g);
+        
+        add_edge(D, E, g);
+        add_edge(E, F, g);
+        
+        add_edge(D, G, g);
+        add_edge(E, H, g);
+        add_edge(F, I, g);
+        
+        add_edge(G, H, g);
+        add_edge(H, I, g);
 
-		std::vector<boost::graph_traits<graph_type>::vertex_descriptor> g_ordering;
-		graph_label<graph_type>::type g_label;
-		partition_type<graph_type>::type g_orbit;
-		boost::tie(g_ordering, g_label, g_orbit) = canonical_properties(g);
-		
-		for (std::vector<boost::graph_traits<graph_type>::vertex_descriptor>::const_iterator it = g_ordering.begin(); it != g_ordering.end(); ++it)
-			std::cout << (it != g_ordering.begin() ? " " : "(") << *it;
-		std::cout << ")" << std::endl;
+        std::vector<boost::graph_traits<graph_type>::vertex_descriptor> g_ordering;
+        graph_label<graph_type>::type g_label;
+        partition_type<graph_type>::type g_orbit;
+        boost::tie(g_ordering, g_label, g_orbit) = canonical_properties(g);
+        
+        for (std::vector<boost::graph_traits<graph_type>::vertex_descriptor>::const_iterator it = g_ordering.begin(); it != g_ordering.end(); ++it)
+            std::cout << (it != g_ordering.begin() ? " " : "(") << *it;
+        std::cout << ")" << std::endl;
 
-		std::cout << g_orbit << std::endl;
-		std::cout << g_label << std::endl;
-	}
+        std::cout << g_orbit << std::endl;
+        std::cout << g_label << std::endl;
+    }
 
-	std::cout << std::endl;
+    std::cout << std::endl;
 
-	{
-		enum { A, B, C, D, N };
+    {
+        enum { A, B, C, D, N };
 
-		graph_type g(N), h(N);
-		
-		/*
-			A - B       A   B
-			| / |  vs.  | X |
-			C - D       C - D
-		*/
-		
-		add_edge(A, B, g);
-		add_edge(A, C, g);
-		add_edge(B, C, g);
-		add_edge(B, D, g);
-		add_edge(C, D, g);
+        graph_type g(N), h(N);
+        
+        /*
+            A - B       A   B
+            | / |  vs.  | X |
+            C - D       C - D
+        */
+        
+        add_edge(A, B, g);
+        add_edge(A, C, g);
+        add_edge(B, C, g);
+        add_edge(B, D, g);
+        add_edge(C, D, g);
 
-		add_edge(A, C, h);
-		add_edge(A, D, h);
-		add_edge(B, C, h);
-		add_edge(B, D, h);
-		add_edge(C, D, h);
+        add_edge(A, C, h);
+        add_edge(A, D, h);
+        add_edge(B, C, h);
+        add_edge(B, D, h);
+        add_edge(C, D, h);
 
-		std::vector<boost::graph_traits<graph_type>::vertex_descriptor> g_ordering, h_ordering;
-		graph_label<graph_type>::type g_label, h_label;
-		partition_type<graph_type>::type g_orbit, h_orbit;
-		boost::tie(g_ordering, g_label, g_orbit) = canonical_properties(g);
-		boost::tie(h_ordering, h_label, h_orbit) = canonical_properties(h);
+        std::vector<boost::graph_traits<graph_type>::vertex_descriptor> g_ordering, h_ordering;
+        graph_label<graph_type>::type g_label, h_label;
+        partition_type<graph_type>::type g_orbit, h_orbit;
+        boost::tie(g_ordering, g_label, g_orbit) = canonical_properties(g);
+        boost::tie(h_ordering, h_label, h_orbit) = canonical_properties(h);
 
-		for (std::vector<boost::graph_traits<graph_type>::vertex_descriptor>::const_iterator it = g_ordering.begin(); it != g_ordering.end(); ++it)
-			std::cout << (it != g_ordering.begin() ? " " : "(") << *it;
-		std::cout << ")" << std::endl;
-		for (std::vector<boost::graph_traits<graph_type>::vertex_descriptor>::const_iterator it = h_ordering.begin(); it != h_ordering.end(); ++it)
-			std::cout << (it != h_ordering.begin() ? " " : "(") << *it;
-		std::cout << ")" << std::endl;
+        for (std::vector<boost::graph_traits<graph_type>::vertex_descriptor>::const_iterator it = g_ordering.begin(); it != g_ordering.end(); ++it)
+            std::cout << (it != g_ordering.begin() ? " " : "(") << *it;
+        std::cout << ")" << std::endl;
+        for (std::vector<boost::graph_traits<graph_type>::vertex_descriptor>::const_iterator it = h_ordering.begin(); it != h_ordering.end(); ++it)
+            std::cout << (it != h_ordering.begin() ? " " : "(") << *it;
+        std::cout << ")" << std::endl;
 
-		std::cout << g_orbit << std::endl;
-		std::cout << h_orbit << std::endl;
-		
-		std::cout << g_label << std::endl;
-		std::cout << h_label << std::endl;
-	}
+        std::cout << g_orbit << std::endl;
+        std::cout << h_orbit << std::endl;
+        
+        std::cout << g_label << std::endl;
+        std::cout << h_label << std::endl;
+    }
 
-	std::cout << std::endl;
+    std::cout << std::endl;
 
     {
         /*
@@ -261,56 +261,56 @@ int main() {
         add_edge(B,D,i);
         add_edge(B,E,i);
         add_edge(C,F,i);
-		
+        
         std::vector<boost::graph_traits<graph_type>::vertex_descriptor> g_ordering, h_ordering, i_ordering;
-		graph_label<graph_type>::type g_label, h_label, i_label;
-		partition_type<graph_type>::type g_orbit, h_orbit, i_orbit;
-		boost::tie(g_ordering, g_label, g_orbit) = canonical_properties(g);
-		boost::tie(h_ordering, h_label, h_orbit) = canonical_properties(h);
-		boost::tie(i_ordering, i_label, i_orbit) = canonical_properties(i);
+        graph_label<graph_type>::type g_label, h_label, i_label;
+        partition_type<graph_type>::type g_orbit, h_orbit, i_orbit;
+        boost::tie(g_ordering, g_label, g_orbit) = canonical_properties(g);
+        boost::tie(h_ordering, h_label, h_orbit) = canonical_properties(h);
+        boost::tie(i_ordering, i_label, i_orbit) = canonical_properties(i);
 
-		for (std::vector<boost::graph_traits<graph_type>::vertex_descriptor>::const_iterator it = g_ordering.begin(); it != g_ordering.end(); ++it)
-			std::cout << (it != g_ordering.begin() ? " " : "(") << *it;
-		std::cout << ")" << std::endl;
-		for (std::vector<boost::graph_traits<graph_type>::vertex_descriptor>::const_iterator it = h_ordering.begin(); it != h_ordering.end(); ++it)
-			std::cout << (it != h_ordering.begin() ? " " : "(") << *it;
-		std::cout << ")" << std::endl;
-		for (std::vector<boost::graph_traits<graph_type>::vertex_descriptor>::const_iterator it = i_ordering.begin(); it != i_ordering.end(); ++it)
-			std::cout << (it != i_ordering.begin() ? " " : "(") << *it;
-		std::cout << ")" << std::endl;
+        for (std::vector<boost::graph_traits<graph_type>::vertex_descriptor>::const_iterator it = g_ordering.begin(); it != g_ordering.end(); ++it)
+            std::cout << (it != g_ordering.begin() ? " " : "(") << *it;
+        std::cout << ")" << std::endl;
+        for (std::vector<boost::graph_traits<graph_type>::vertex_descriptor>::const_iterator it = h_ordering.begin(); it != h_ordering.end(); ++it)
+            std::cout << (it != h_ordering.begin() ? " " : "(") << *it;
+        std::cout << ")" << std::endl;
+        for (std::vector<boost::graph_traits<graph_type>::vertex_descriptor>::const_iterator it = i_ordering.begin(); it != i_ordering.end(); ++it)
+            std::cout << (it != i_ordering.begin() ? " " : "(") << *it;
+        std::cout << ")" << std::endl;
 
-		std::cout << g_orbit << std::endl;
-		std::cout << h_orbit << std::endl;
-		std::cout << i_orbit << std::endl;
-		
-		std::cout << g_label << std::endl;
-		std::cout << h_label << std::endl;
-		std::cout << i_label << std::endl;
+        std::cout << g_orbit << std::endl;
+        std::cout << h_orbit << std::endl;
+        std::cout << i_orbit << std::endl;
+        
+        std::cout << g_label << std::endl;
+        std::cout << h_label << std::endl;
+        std::cout << i_label << std::endl;
     }
 
-	std::cout << std::endl;
+    std::cout << std::endl;
 
-	{
-		enum { A, B, C, N };
+    {
+        enum { A, B, C, N };
 
-		graph_type g(N);
-		std::set<boost::dynamic_bitset<> > g_sub;
-		
-		/*
-			A - B
-			| /
-			C
-		*/
-		
-		add_edge(A, B, g);
-		add_edge(A, C, g);
-		add_edge(B, C, g);
-		
-		subgraphs(g_sub, g);
+        graph_type g(N);
+        std::set<boost::dynamic_bitset<> > g_sub;
+        
+        /*
+            A - B
+            | /
+            C
+        */
+        
+        add_edge(A, B, g);
+        add_edge(A, C, g);
+        add_edge(B, C, g);
+        
+        subgraphs(g_sub, g);
 
-		for (std::set<boost::dynamic_bitset<> >::const_iterator it = g_sub.begin(); it != g_sub.end(); ++it)
-			std::cout << *it << std::endl;
-	}
+        for (std::set<boost::dynamic_bitset<> >::const_iterator it = g_sub.begin(); it != g_sub.end(); ++it)
+            std::cout << *it << std::endl;
+    }
 
-	return EXIT_SUCCESS;	
+    return EXIT_SUCCESS;    
 }

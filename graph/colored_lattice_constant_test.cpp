@@ -46,30 +46,30 @@ int main() {
     typedef alps::graph_helper<>::edge_iterator edge_iterator;
 
     alps::Parameters parm;
-	unsigned int side_length = 40;
-	
+    unsigned int side_length = 40;
+    
     std::ifstream in("../../lib/xml/lattices.xml");
     parm["LATTICE"] = "coupled ladders";
     parm["L"] = side_length;
 
     parm["L"] = side_length;
     alps::graph_helper<> lattice(in,parm);
-	
-	graph_type lattice_graph(num_vertices(lattice.graph()));
-	boost::graph_traits<alps::graph_helper<>::graph_type>::edge_iterator it, et;
-	for(boost::tie(it, et) = edges(lattice.graph()); it != et; ++it)
+    
+    graph_type lattice_graph(num_vertices(lattice.graph()));
+    boost::graph_traits<alps::graph_helper<>::graph_type>::edge_iterator it, et;
+    for(boost::tie(it, et) = edges(lattice.graph()); it != et; ++it)
     {
         boost::graph_traits<graph_type>::edge_descriptor  e = add_edge(source(*it, lattice.graph()), target(*it, lattice.graph()), lattice_graph).first;
-		if(get(alps::edge_type_t(),lattice.graph(),*it) == 1)
-			put(alps::edge_type_t(), lattice_graph, e, 1);
-		else
-			put(alps::edge_type_t(), lattice_graph, e, 0);
-	}
+        if(get(alps::edge_type_t(),lattice.graph(),*it) == 1)
+            put(alps::edge_type_t(), lattice_graph, e, 1);
+        else
+            put(alps::edge_type_t(), lattice_graph, e, 0);
+    }
     
     std::vector<std::pair<graph_type,lc_type> > g;
-	boost::graph_traits<graph_type>::edge_descriptor e;
+    boost::graph_traits<graph_type>::edge_descriptor e;
 
-	// edge color 0 ...
+    // edge color 0 ...
     // edge color 1 ___
     
     //  0...1
@@ -77,7 +77,7 @@ int main() {
     e = add_edge(0, 1, g.back().first).first;
     put(alps::edge_type_t(), g.back().first, e, 0);
     
-	//  0___1
+    //  0___1
     g.push_back(std::make_pair(graph_type(), 1));
     e = add_edge(0, 1, g.back().first).first;
     put(alps::edge_type_t(), g.back().first, e, 1);
@@ -282,11 +282,11 @@ int main() {
     for(std::vector<std::pair<graph_type, lc_type> >::iterator it= g.begin(); it != g.end(); ++it)
     {
         lc_type lc = alps::graph::lattice_constant(
-			  it->first
-			, lattice_graph
-			, lattice.lattice()
-			, alps::cell(std::vector<int>(2,side_length/2),lattice.lattice()) //side_length * side_length / 2 + side_length / 2 - 1
-		);
+              it->first
+            , lattice_graph
+            , lattice.lattice()
+            , alps::cell(std::vector<int>(2,side_length/2),lattice.lattice()) //side_length * side_length / 2 + side_length / 2 - 1
+        );
         if ( lc != it->second)
         {
             std::cerr<<"ERROR: lattice constant does not match!"<<std::endl;

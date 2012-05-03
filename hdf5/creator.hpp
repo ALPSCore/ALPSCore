@@ -354,15 +354,15 @@ template<typename T, typename U> bool equal(                                    
 template<typename T, typename A> struct creator< C < boost::multi_array<T, 1, A> > > {             \
     typedef C < boost::multi_array<T, 1, A> > base_type;                                           \
     static base_type random() {                                                                    \
-        base_type value(																		   \
-			VECTOR_SIZE, boost::multi_array<T, 1, A>(boost::extents[MATRIX_SIZE])				   \
-		);																						   \
-		for (std::size_t i = 0; i < VECTOR_SIZE; ++i)											   \
-			for (std::size_t j = 0; j < MATRIX_SIZE; ++j)                                          \
-				if (boost::is_scalar<T>::value)                                                    \
-					initialize(value[i][j]);                                                       \
-				else                                                                               \
-					value[i][j] = creator<T>::random();                                            \
+        base_type value(                                                                           \
+            VECTOR_SIZE, boost::multi_array<T, 1, A>(boost::extents[MATRIX_SIZE])                   \
+        );                                                                                           \
+        for (std::size_t i = 0; i < VECTOR_SIZE; ++i)                                               \
+            for (std::size_t j = 0; j < MATRIX_SIZE; ++j)                                          \
+                if (boost::is_scalar<T>::value)                                                    \
+                    initialize(value[i][j]);                                                       \
+                else                                                                               \
+                    value[i][j] = creator<T>::random();                                            \
         return value;                                                                              \
     }                                                                                              \
     static base_type empty() { return base_type(); }                                               \
@@ -374,16 +374,16 @@ template<typename T, typename A> struct creator< C < boost::multi_array<T, 1, A>
 template<typename T, typename A> struct creator< C < boost::multi_array<T, 2, A> > > {             \
     typedef C < boost::multi_array<T, 2, A> > base_type;                                           \
     static base_type random() {                                                                    \
-        base_type value(																		   \
-			VECTOR_SIZE, boost::multi_array<T, 2, A>(boost::extents[MATRIX_SIZE][MATRIX_SIZE])	   \
-		);																						   \
-		for (std::size_t i = 0; i < VECTOR_SIZE; ++i)											   \
-			for (std::size_t j = 0; j < MATRIX_SIZE; ++j)                                          \
-				for (std::size_t k = 0; k < MATRIX_SIZE; ++k)                                      \
-					if (boost::is_scalar<T>::value)                                                \
-						initialize(value[i][j][k]);                                                \
-					else                                                                           \
-						value[i][j][k] = creator<T>::random();                                     \
+        base_type value(                                                                           \
+            VECTOR_SIZE, boost::multi_array<T, 2, A>(boost::extents[MATRIX_SIZE][MATRIX_SIZE])       \
+        );                                                                                           \
+        for (std::size_t i = 0; i < VECTOR_SIZE; ++i)                                               \
+            for (std::size_t j = 0; j < MATRIX_SIZE; ++j)                                          \
+                for (std::size_t k = 0; k < MATRIX_SIZE; ++k)                                      \
+                    if (boost::is_scalar<T>::value)                                                \
+                        initialize(value[i][j][k]);                                                \
+                    else                                                                           \
+                        value[i][j][k] = creator<T>::random();                                     \
         return value;                                                                              \
     }                                                                                              \
     static base_type empty() { return base_type(); }                                               \
@@ -395,19 +395,19 @@ template<typename T, typename A> struct creator< C < boost::multi_array<T, 2, A>
 template<typename T, typename A> struct creator< C < boost::multi_array<T, 3, A> > > {             \
     typedef C < boost::multi_array<T, 3, A> > base_type;                                           \
     static base_type random() {                                                                    \
-        base_type value(																		   \
-			VECTOR_SIZE, boost::multi_array<T, 3, A>(											   \
-				boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]							   \
-			)																					   \
-		);																						   \
-		for (std::size_t i = 0; i < VECTOR_SIZE; ++i)											   \
-			for (std::size_t j = 0; j < MATRIX_SIZE; ++j)                                          \
-				for (std::size_t k = 0; k < MATRIX_SIZE; ++k)                                      \
-					for (std::size_t l = 0; l < MATRIX_SIZE; ++l)                                  \
-						if (boost::is_scalar<T>::value)                                            \
-							initialize(value[i][j][k][l]);                                         \
-						else                                                                       \
-							value[i][j][k][l] = creator<T>::random();                              \
+        base_type value(                                                                           \
+            VECTOR_SIZE, boost::multi_array<T, 3, A>(                                               \
+                boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]                               \
+            )                                                                                       \
+        );                                                                                           \
+        for (std::size_t i = 0; i < VECTOR_SIZE; ++i)                                               \
+            for (std::size_t j = 0; j < MATRIX_SIZE; ++j)                                          \
+                for (std::size_t k = 0; k < MATRIX_SIZE; ++k)                                      \
+                    for (std::size_t l = 0; l < MATRIX_SIZE; ++l)                                  \
+                        if (boost::is_scalar<T>::value)                                            \
+                            initialize(value[i][j][k][l]);                                         \
+                        else                                                                       \
+                            value[i][j][k][l] = creator<T>::random();                              \
         return value;                                                                              \
     }                                                                                              \
     static base_type empty() { return base_type(); }                                               \
@@ -419,20 +419,20 @@ template<typename T, typename A> struct creator< C < boost::multi_array<T, 3, A>
 template<typename T, typename A> struct creator< C < boost::multi_array<T, 4, A> > > {             \
     typedef C < boost::multi_array<T, 4, A> > base_type;                                           \
     static base_type random() {                                                                    \
-        base_type value(																		   \
-			VECTOR_SIZE, boost::multi_array<T, 4, A>(											   \
-				boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]				   \
-			)	   																				   \
-		);																						   \
-		for (std::size_t i = 0; i < VECTOR_SIZE; ++i)											   \
-			for (std::size_t j = 0; j < MATRIX_SIZE; ++j)                                          \
-				for (std::size_t k = 0; k < MATRIX_SIZE; ++k)                                      \
-					for (std::size_t l = 0; l < MATRIX_SIZE; ++l)                                  \
-						for (std::size_t m = 0; m < MATRIX_SIZE; ++m)                              \
-							if (boost::is_scalar<T>::value)                                        \
-								initialize(value[i][j][k][l][m]);                                  \
-							else                                                                   \
-								value[i][j][k][l][m] = creator<T>::random();                       \
+        base_type value(                                                                           \
+            VECTOR_SIZE, boost::multi_array<T, 4, A>(                                               \
+                boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]                   \
+            )                                                                                          \
+        );                                                                                           \
+        for (std::size_t i = 0; i < VECTOR_SIZE; ++i)                                               \
+            for (std::size_t j = 0; j < MATRIX_SIZE; ++j)                                          \
+                for (std::size_t k = 0; k < MATRIX_SIZE; ++k)                                      \
+                    for (std::size_t l = 0; l < MATRIX_SIZE; ++l)                                  \
+                        for (std::size_t m = 0; m < MATRIX_SIZE; ++m)                              \
+                            if (boost::is_scalar<T>::value)                                        \
+                                initialize(value[i][j][k][l][m]);                                  \
+                            else                                                                   \
+                                value[i][j][k][l][m] = creator<T>::random();                       \
         return value;                                                                              \
     }                                                                                              \
     static base_type empty() { return base_type(); }                                               \
@@ -612,11 +612,11 @@ template<typename T, typename A> struct creator<boost::multi_array<T, 4, A> > {
         for (std::size_t i = 0; i < MATRIX_SIZE; ++i)
             for (std::size_t j = 0; j < MATRIX_SIZE; ++j)
                 for (std::size_t k = 0; k < MATRIX_SIZE; ++k)
-					for (std::size_t l = 0; l < MATRIX_SIZE; ++l)
-						if (boost::is_scalar<T>::value)
-							initialize(value[i][j][k][l]);
-						else
-							value[i][j][k][l] = creator<T>::random();
+                    for (std::size_t l = 0; l < MATRIX_SIZE; ++l)
+                        if (boost::is_scalar<T>::value)
+                            initialize(value[i][j][k][l]);
+                        else
+                            value[i][j][k][l] = creator<T>::random();
         return value;
     }
     static base_type empty() { return base_type(boost::extents[0][0][0]); }
@@ -631,9 +631,9 @@ template<typename T, typename A> bool equal(boost::multi_array<T, 4, A> const & 
     for (std::size_t i = 0; i < a.shape()[0]; ++i)
         for (std::size_t j = 0; j < a.shape()[1]; ++j)
             for (std::size_t k = 0; k < a.shape()[2]; ++k)
-				for (std::size_t l = 0; l < a.shape()[2]; ++l)
-					if (!equal(a[i][j][k][l], b[i][j][k][l]))
-						return false;
+                for (std::size_t l = 0; l < a.shape()[2]; ++l)
+                    if (!equal(a[i][j][k][l], b[i][j][k][l]))
+                        return false;
     return true;
 }
 

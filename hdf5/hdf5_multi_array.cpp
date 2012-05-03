@@ -62,7 +62,7 @@ int main()
         ar >> alps::make_pvp("uniform",w); // throws runtime_error
         cout << "read uniform" << endl;
     }
-	
+    
     if (boost::filesystem::exists(boost::filesystem::path("test.h5")))
         boost::filesystem::remove(boost::filesystem::path("test.h5"));
 }
