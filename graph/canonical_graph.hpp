@@ -29,7 +29,7 @@
 #define ALPS_GRAPH_CANONICAL_GRAPH_HPP
 #include <alps/graph/canonical_properties.hpp>
 #include <boost/graph/graph_traits.hpp>
-
+#include <cassert>
 
 namespace alps {
 namespace graph {
@@ -48,7 +48,7 @@ class canonical_graph
         canonical_graph(Graph const& g, typename canonical_properties_type<Graph>::type const& p)
             : graph_(g), properties_(p)
         {
-          std::assert(p == alps::graph::canonical_properties(g));
+            assert(p == alps::graph::canonical_properties(g));
         }
 
         operator Graph const() const
