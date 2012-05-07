@@ -51,7 +51,7 @@ int main() {
         } catch (std::exception& ex) {
             std::string str = ex.what();
             std::size_t start = str.find_first_of("\n");
-            std::cout << str.substr(start + 1, str.find_first_of("\n", start + 1) - start - 1) << std::endl;
+            std::cout << str.substr(0, start) << std::endl;
         }
     }
     boost::filesystem::remove(boost::filesystem::path(filename));
