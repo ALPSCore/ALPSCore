@@ -40,7 +40,7 @@ namespace alps {
         };
 
         template<typename T, std::size_t N, typename A> struct has_complex_elements<boost::multi_array<T, N, A> > 
-            : public has_complex_elements<typename detail::remove_cvr<T>::type>
+            : public has_complex_elements<typename alps::detail::remove_cvr<T>::type>
         {};
 
         namespace detail {

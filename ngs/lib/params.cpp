@@ -140,4 +140,11 @@ namespace alps {
     detail::paramvalue params::getter(std::string const & key) {
         return values[key];
     }
+    
+
+    std::ostream & operator<<(std::ostream & os, params const & v) {
+        for (params::const_iterator it = v.begin(); it != v.end(); ++it)
+            os << it->first << "\t" << it->second << std::endl;
+        return os;
+    }    
 }

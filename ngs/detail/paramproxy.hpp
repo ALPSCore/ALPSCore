@@ -83,7 +83,7 @@ namespace alps {
                 template<typename T> operator T () const {
                     return cast<T>();
                 }
-                
+
                 template<typename T> paramproxy & operator=(T const & arg) {
                     if (!!value)
                         throw std::runtime_error(
@@ -108,6 +108,8 @@ namespace alps {
                 void save(hdf5::archive & ar) const;
                 void load(hdf5::archive &);
 
+				void print(std::ostream &) const;
+
             private:
 
                 bool defined;
@@ -118,7 +120,7 @@ namespace alps {
 
         ALPS_DECL std::ostream & operator<<(std::ostream & os, paramproxy const &);
 
-        #define ALPS_NGS_PARAMPROXY_ADD_OPERATOR_DECL(T)                                \
+        #define ALPS_NGS_PARAMPROXY_ADD_OPERATOR_DECL(T)                                 \
             ALPS_DECL T operator+(paramproxy const & p, T s);                            \
             ALPS_DECL T operator+(T s, paramproxy const & p);
         ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(ALPS_NGS_PARAMPROXY_ADD_OPERATOR_DECL)

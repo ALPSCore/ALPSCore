@@ -124,6 +124,7 @@ namespace alps {
             std::map<std::string, detail::paramvalue> values;
     };
 
+    ALPS_DECL std::ostream & operator<<(std::ostream & os, params const & arg);
 }
 
 #endif

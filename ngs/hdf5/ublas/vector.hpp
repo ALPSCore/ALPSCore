@@ -44,7 +44,7 @@ namespace alps {
         };
 
         template<typename T, typename A> struct has_complex_elements<boost::numeric::ublas::vector<T, A> > 
-            : public has_complex_elements<typename detail::remove_cvr<typename boost::numeric::ublas::vector<T, A>::value_type>::type>
+            : public has_complex_elements<typename alps::detail::remove_cvr<typename boost::numeric::ublas::vector<T, A>::value_type>::type>
         {};
 
         namespace detail {

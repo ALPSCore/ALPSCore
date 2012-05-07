@@ -30,6 +30,7 @@
 
 #include <alps/ngs/hdf5.hpp>
 #include <alps/ngs/config.hpp>
+#include <alps/ngs/detail/remove_cvr.hpp>
 #include <alps/ngs/detail/paramvalue_reader.hpp>
 
 #if defined(ALPS_HAVE_PYTHON)
@@ -52,27 +53,61 @@
 
 #define ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE_NO_PYTHON(CALLBACK)                    \
     CALLBACK(double)                                                                \
-    CALLBACK(int)                                                                    \
-    CALLBACK(bool)                                                                    \
-    CALLBACK(std::string)                                                            \
-    CALLBACK(std::complex<double>)                                                    \
-    CALLBACK(std::vector<double>)                                                    \
-    CALLBACK(std::vector<int>)                                                        \
-    CALLBACK(std::vector<std::string>)                                                \
+    CALLBACK(int)                                                                   \
+    CALLBACK(bool)                                                                  \
+    CALLBACK(std::string)                                                           \
+    CALLBACK(std::complex<double>)                                                  \
+    CALLBACK(std::vector<double>)                                                   \
+    CALLBACK(std::vector<int>)                                                      \
+    CALLBACK(std::vector<std::string>)                                              \
     CALLBACK(std::vector<std::complex<double> >)
 
 #if defined(ALPS_HAVE_PYTHON)
-    #define ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(CALLBACK)                            \
+    #define ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(CALLBACK)                          \
         ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE_NO_PYTHON(CALLBACK)                    \
         CALLBACK(boost::python::object)
 #else
-    #define ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(CALLBACK)                            \
+    #define ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(CALLBACK)                          \
         ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE_NO_PYTHON(CALLBACK)
 #endif
 
 namespace alps {
 
     namespace detail {
+
+		template <typename T> struct paramvalue_index {};
+		template <> struct paramvalue_index<double> {
+			enum { value = 0 };
+		};
+		template <> struct paramvalue_index<int> {
+			enum { value = 1 };
+		};
+		template <> struct paramvalue_index<bool> {
+			enum { value = 2 };
+		};
+		template <> struct paramvalue_index<std::string> {
+			enum { value = 3 };
+		};
+		template <> struct paramvalue_index<std::complex<double> > {
+			enum { value = 4 };
+		};
+		template <> struct paramvalue_index<std::vector<double> > {
+			enum { value = 5 };
+		};
+		template <> struct paramvalue_index<std::vector<int> > {
+			enum { value = 6 };
+		};
+		template <> struct paramvalue_index<std::vector<std::string> > {
+			enum { value = 7 };
+		};
+		template <> struct paramvalue_index<std::vector<std::complex<double> > > {
+			enum { value = 8 };
+		};
+		#if defined(ALPS_HAVE_PYTHON)
+			template <> struct paramvalue_index<boost::python::object> {
+				enum { value = 9 };
+			};
+		#endif
 
         class paramvalue;
 
@@ -92,10 +127,11 @@ namespace alps {
                 {}
 
                 template <typename U> void operator()(U & v) const {
-                    std::string type(typeid(v).name());
+                    std::size_t type = paramvalue_index<typename remove_cvr<U>::type>::value;
                     ar
                         << type
-                        << v;
+                        << v
+                    ;
                 }
 
             private:
@@ -131,12 +167,43 @@ namespace alps {
                     return extract<T>(*this);
                 }
 
-                #define ALPS_NGS_PARAMVALUE_MEMBER_DECL(T)                            \
+                #define ALPS_NGS_PARAMVALUE_MEMBER_DECL(T)                          \
                     paramvalue( T const & v) : paramvalue_base(v) {}                \
                     operator T () const;                                            \
                     paramvalue & operator=( T const &);
                 ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(ALPS_NGS_PARAMVALUE_MEMBER_DECL)
                 #undef ALPS_NGS_PARAMVALUE_MEMBER_DECL
+
+                
+                #define ALPS_NGS_PARAMVALUE_MEMBER_DECL_CONVERT(T)                  \
+                    paramvalue(T const & value)                                     \
+                        : paramvalue_base(static_cast<int const &>(value))          \
+                    {}                                                              \
+                    paramvalue & operator=(T const & value) {                       \
+                        return *this = static_cast<int const &>(value);             \
+                    }
+                ALPS_NGS_PARAMVALUE_MEMBER_DECL_CONVERT(char)
+                ALPS_NGS_PARAMVALUE_MEMBER_DECL_CONVERT(unsigned char)
+                ALPS_NGS_PARAMVALUE_MEMBER_DECL_CONVERT(short)
+                ALPS_NGS_PARAMVALUE_MEMBER_DECL_CONVERT(unsigned short)
+                ALPS_NGS_PARAMVALUE_MEMBER_DECL_CONVERT(unsigned)
+                ALPS_NGS_PARAMVALUE_MEMBER_DECL_CONVERT(long)
+                ALPS_NGS_PARAMVALUE_MEMBER_DECL_CONVERT(unsigned long)
+                ALPS_NGS_PARAMVALUE_MEMBER_DECL_CONVERT(long long)
+                ALPS_NGS_PARAMVALUE_MEMBER_DECL_CONVERT(unsigned long long)
+                #undef ALPS_NGS_PARAMVALUE_MEMBER_DECL_CONVERT
+
+                paramvalue(long double const & value)
+                    : paramvalue_base(static_cast<double const &>(value))
+                {}
+                paramvalue & operator=(long double const & value) {
+                    return *this = static_cast<double const &>(value);
+                }
+
+                paramvalue(char const * v) : paramvalue_base(std::string(v)) {}
+                paramvalue & operator=(char const * value) { 
+                    return *this = std::string(value); 
+                }
 
                 void save(hdf5::archive &) const;
                 void load(hdf5::archive &);
@@ -155,14 +222,14 @@ namespace alps {
                 template<class Archive> void load(
                     Archive & ar, const unsigned int
                 ) {
-                    std::string type;
+                    std::size_t type;
                     ar >> type;
                     if (false);
-                    #define ALPS_NGS_PARAMVALUE_LOAD(T)                                \
-                        else if (type == typeid( T ).name()) {                        \
-                            T value;                                                \
-                            ar >> value;                                            \
-                            operator=(value);                                        \
+                    #define ALPS_NGS_PARAMVALUE_LOAD(T)                                 \
+                        else if (type == paramvalue_index< T >::value) {                \
+                            T value;                                                    \
+                            ar >> value;                                                \
+                            operator=(value);                                           \
                         }
                     // TODO: fix python serialization!
                     // ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(ALPS_NGS_PARAMVALUE_LOAD)

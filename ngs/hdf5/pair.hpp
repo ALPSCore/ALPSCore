@@ -79,7 +79,7 @@ namespace alps {
         };
 
         template<typename T> struct has_complex_elements<std::pair<T *, std::vector<std::size_t> > > 
-            : public has_complex_elements<typename detail::remove_cvr<T>::type>
+            : public has_complex_elements<typename alps::detail::remove_cvr<T>::type>
         {};
 
         namespace detail {

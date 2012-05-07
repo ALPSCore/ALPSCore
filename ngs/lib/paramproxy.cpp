@@ -55,9 +55,18 @@ namespace alps {
                 ar >> make_pvp("", *value);
         }
 
-        std::ostream & operator<<(std::ostream & os, paramproxy const & v) {
-            return os << v.cast<std::string>();
+        void paramproxy::print(std::ostream & os) const {
+			if (!defined)
+				throw std::runtime_error(
+					"No parameter available" + ALPS_STACKTRACE
+				);
+			os << (!value ? getter() : *value);
         }
+
+        std::ostream & operator<<(std::ostream & os, paramproxy const & v) {
+			v.print(os);
+            return os;
+		}
 
         #define ALPS_NGS_PARAMPROXY_ADD_OPERATOR_IMPL(T)                            \
             T operator+(paramproxy const & p, T s) {                                \
