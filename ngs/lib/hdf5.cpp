@@ -287,12 +287,6 @@ namespace alps {
                                 for (std::size_t i = 0; boost::filesystem::exists(filename_ + (suffix_ = ".tmp." + cast<std::string>(i))); ++i);
                             if (write_ && replace_ && boost::filesystem::exists(filename_))
                                 boost::filesystem::copy_file(filename_, filename_ + suffix_);
-                            if (!write_) {
-                                if (!boost::filesystem::exists(filename_ + suffix_))
-                                    throw std::runtime_error("file does not exist: " + filename_ + suffix_ + ALPS_STACKTRACE);
-                                if (detail::check_error(H5Fis_hdf5((filename_ + suffix_).c_str())) == 0)
-                                    throw std::runtime_error("no valid hdf5 file: " + filename_ + suffix_ + ALPS_STACKTRACE);
-                            }
                             if (large_) {
                                 {
                                     char filename0[4096], filename1[4096];
@@ -316,6 +310,12 @@ namespace alps {
                                 } else
                                     detail::check_error(file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDONLY, prop_id));
                             } else {
+                                if (!write_) {
+                                    if (!boost::filesystem::exists(filename_ + suffix_))
+                                        throw std::runtime_error("file does not exist: " + filename_ + suffix_ + ALPS_STACKTRACE);
+                                    if (detail::check_error(H5Fis_hdf5((filename_ + suffix_).c_str())) == 0)
+                                        throw std::runtime_error("no valid hdf5 file: " + filename_ + suffix_ + ALPS_STACKTRACE);
+                                }
                                 #ifndef ALPS_HDF5_CLOSE_GREEDY
                                     detail::property_type ALPS_HDF5_FILE_ACCESS(H5Pcreate(H5P_FILE_ACCESS));
                                     detail::check_error(H5Pset_fclose_degree(ALPS_HDF5_FILE_ACCESS, H5F_CLOSE_SEMI));
