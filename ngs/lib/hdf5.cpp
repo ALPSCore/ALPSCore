@@ -117,8 +117,10 @@ namespace alps {
                 public:
                     resource(): _id(-1) {}
                     resource(hid_t id): _id(id) {
-                        if (_id < 0)
+                        if (_id < 0) {
+							//std::cerr << error().invoke(_id) << "\n";
                             throw std::runtime_error(error().invoke(_id) + ALPS_STACKTRACE);
+						}
                     }
 
                     ~resource() {
@@ -1053,7 +1055,7 @@ namespace alps {
                             else {                                                                                                                                 \
                                 detail::check_error(H5Pset_fill_time(prop_id, H5D_FILL_TIME_NEVER));                                                               \
                                 std::size_t dataset_size = std::accumulate(size.begin(), size.end(), std::size_t(sizeof( T )), std::multiplies<std::size_t>());        \
-                                if (dataset_size < ALPS_HDF5_SZIP_BLOCK_SIZE)                                                                                        \
+                                if (dataset_size < ALPS_HDF5_SZIP_BLOCK_SIZE*sizeof( T ))                                                                                        \
                                     detail::check_error(H5Pset_layout(prop_id, H5D_COMPACT));                                                                        \
                                 else if (dataset_size < (1ULL<<32))                                                                                                    \
                                     detail::check_error(H5Pset_layout(prop_id, H5D_CONTIGUOUS));                                                                    \
@@ -1074,7 +1076,7 @@ namespace alps {
                                     detail::check_error(H5Pset_chunk(prop_id, static_cast<int>(max_chunk.size()), &max_chunk.front()));                            \
                                 }                                                                                                                                    \
                                 detail::check_error(H5Pset_chunk(prop_id, static_cast<int>(size_hid.size()), &size_hid.front()));                                  \
-                                if (context_->compress_ && dataset_size > ALPS_HDF5_SZIP_BLOCK_SIZE)                                                                \
+                                if (context_->compress_ && dataset_size > ALPS_HDF5_SZIP_BLOCK_SIZE*sizeof( T ))                                                                \
                                     detail::check_error(H5Pset_szip(prop_id, H5_SZIP_NN_OPTION_MASK, ALPS_HDF5_SZIP_BLOCK_SIZE));                                  \
                                 detail::check_error(H5Pset_attr_creation_order(prop_id, (H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED)));                            \
                                 detail::check_error(data_id = H5Dcreate2(                                                                                          \
