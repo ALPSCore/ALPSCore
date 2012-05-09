@@ -61,7 +61,7 @@ namespace alps {
                                        first.size() != size.size()
                                     || !std::equal(first.begin(), first.end(), size.begin())
                                 )
-                                    throw std::runtime_error("no rectengual matrix" + ALPS_STACKTRACE);
+                                    throw archive_error("no rectengual matrix" + ALPS_STACKTRACE);
                             }
                         std::copy(first.begin(), first.end(), std::back_inserter(extent));
                     }
@@ -125,7 +125,7 @@ namespace alps {
                     std::fill_n(std::back_inserter(offset), extent.size(), 0);                                                                                    \
                     ar.write(path, get_pointer(value), size, chunk, offset);                                                                                      \
                 } else {                                                                                                                                          \
-                    throw std::runtime_error("invalid type" + ALPS_STACKTRACE);                                                                                                  \
+                    throw wrong_type("invalid type" + ALPS_STACKTRACE);                                                                                                  \
                 }                                                                                                                                                 \
             }
         ALPS_NGS_HDF5_UBLAS_MATRIX_SAVE(archive)
@@ -143,7 +143,7 @@ namespace alps {
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                    \
             ) {                                                                                                                                                   \
                 if (ar.is_group(path))                                                                                                                            \
-                    throw std::runtime_error("invalid path" + ALPS_STACKTRACE);                                                                                                  \
+                    throw invalid_path("invalid path" + ALPS_STACKTRACE);                                                                                                  \
                 else {                                                                                                                                            \
                     std::vector<std::size_t> size(ar.extent(path));                                                                                               \
                     set_extent(value, std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));                                                         \
@@ -152,7 +152,7 @@ namespace alps {
                         std::fill_n(std::back_inserter(offset), size.size(), 0);                                                                                  \
                         ar.read(path, get_pointer(value), chunk, offset);                                                                                         \
                     } else                                                                                                                                        \
-                        throw std::runtime_error("invalid type" + ALPS_STACKTRACE);                                                                                              \
+                        throw invalid_path("invalid type" + ALPS_STACKTRACE);                                                                                              \
                 }                                                                                                                                                 \
             }
         ALPS_NGS_HDF5_UBLAS_MATRIX_LOAD(archive)

@@ -25,13 +25,34 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifndef ALPS_NGS_HDF5_ERROR_HPP
+#define ALPS_NGS_HDF5_ERROR_HPP
 
-/*
+#include <string>
+#include <stdexcept>
 
+namespace alps {
+    namespace hdf5 {
 
-hdf5_archive_error : public runtime_error
-invalid_path : archive_error
+        class archive_error : public std::runtime_error {
+            public:
+                archive_error(std::string const & what)
+                    : runtime_error(what) 
+                {}
+        };
 
+        #define DEFINE_ALPS_HDF5_EXCEPTION(name)                                    \
+            class name : public archive_error {                                     \
+                public:                                                             \
+                    name (std::string const & what)                                 \
+                        : archive_error(what)                                       \
+                    {}                                                              \
+            };
+        DEFINE_ALPS_HDF5_EXCEPTION(invalid_path)
+        DEFINE_ALPS_HDF5_EXCEPTION(path_not_found)
+        DEFINE_ALPS_HDF5_EXCEPTION(wrong_type)
+        #undef DEFINE_ALPS_HDF5_EXCEPTION
+    }
+};
 
-
-*/
+#endif

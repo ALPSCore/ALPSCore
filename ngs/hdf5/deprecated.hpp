@@ -82,7 +82,7 @@ namespace alps {
              , std::vector<std::size_t> offset = std::vector<std::size_t>()
         ) {
             if (chunk.size())
-                throw std::runtime_error("user defined objects needs to be written continously" + ALPS_STACKTRACE);
+                throw archive_error("user defined objects needs to be written continously" + ALPS_STACKTRACE);
             std::string context = ar.get_context();
             ar.set_context(ar.complete_path(path));
             value.serialize(ar);
@@ -97,7 +97,7 @@ namespace alps {
              , std::vector<std::size_t> offset = std::vector<std::size_t>()
         ) {
             if (chunk.size())
-                throw std::runtime_error("user defined objects needs to be written continously" + ALPS_STACKTRACE);
+                throw archive_error("user defined objects needs to be written continously" + ALPS_STACKTRACE);
             std::string context = ar.get_context();
             ar.set_context(ar.complete_path(path));
             value.serialize(ar);

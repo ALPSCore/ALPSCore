@@ -38,7 +38,6 @@
 #include <sstream>
 #include <iostream>
 #include <typeinfo>
-#include <stdexcept>
 
 #define ALPS_NGS_HDF5_FOREACH_NATIVE_TYPE_INTEGRAL(CALLBACK, ARG)                                                                                                  \
     CALLBACK(char, ARG)                                                                                                                                            \
@@ -117,10 +116,8 @@ namespace alps {
                 public:
                     resource(): _id(-1) {}
                     resource(hid_t id): _id(id) {
-                        if (_id < 0) {
-							//std::cerr << error().invoke(_id) << "\n";
-                            throw std::runtime_error(error().invoke(_id) + ALPS_STACKTRACE);
-						}
+                        if (_id < 0)
+                            throw archive_error(error().invoke(_id) + ALPS_STACKTRACE);
                     }
 
                     ~resource() {
@@ -145,7 +142,7 @@ namespace alps {
 
                     resource<F> & operator=(hid_t id) {
                         if ((_id = id) < 0) 
-                            throw std::runtime_error(error().invoke(_id) + ALPS_STACKTRACE);
+                            throw archive_error(error().invoke(_id) + ALPS_STACKTRACE);
                         return *this; 
                     }
 
@@ -197,7 +194,7 @@ namespace alps {
 
             hid_t open_attribute(archive const & ar, hid_t file_id, std::string path) {
                 if ((path = ar.complete_path(path)).find_last_of('@') == std::string::npos)
-                    throw std::runtime_error("no attribute path: " + path + ALPS_STACKTRACE); // invalid_path
+                    throw invalid_path("no attribute path: " + path + ALPS_STACKTRACE);
                 hid_t parent_id, attr_id;
                 if (ar.is_group(path.substr(0, path.find_last_of('@') - 1)))
                     parent_id = detail::check_error(H5Gopen2(file_id, path.substr(0, path.find_last_of('@') - 1).c_str(), H5P_DEFAULT));
@@ -207,7 +204,7 @@ namespace alps {
                     #ifdef ALPS_HDF5_READ_GREEDY
                         return false;
                     #else
-                        throw std::runtime_error("unknown path: " + path.substr(0, path.find_last_of('@') - 1) + ALPS_STACKTRACE); // path_not_found
+                        throw path_not_found("unknown path: " + path.substr(0, path.find_last_of('@') - 1) + ALPS_STACKTRACE);
                     #endif
                 attr_id = H5Aopen(parent_id, path.substr(path.find_last_of('@') + 1).c_str(), H5P_DEFAULT);
                 if (ar.is_group(path.substr(0, path.find_last_of('@') - 1)))
@@ -266,7 +263,7 @@ namespace alps {
 
                     void construct() {
                         if (memory_ && large_)
-                            throw std::runtime_error("either memory or large file system can be used!" + ALPS_STACKTRACE);
+                            throw archive_error("either memory or large file system can be used!" + ALPS_STACKTRACE);
                         else if (memory_) {
                             detail::property_type prop_id(H5Pcreate(H5P_FILE_ACCESS));
                             detail::check_error(H5Pset_fapl_core(prop_id, 1 << 20, true));
@@ -284,7 +281,7 @@ namespace alps {
                                 detail::check_error(file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDONLY, prop_id));
                         } else {
                             if (replace_ && large_)
-                                throw std::runtime_error("the combination 'wl' is not allowd!" + ALPS_STACKTRACE);
+                                archive_error("the combination 'wl' is not allowd!" + ALPS_STACKTRACE);
                             if (replace_)
                                 for (std::size_t i = 0; boost::filesystem::exists(filename_ + (suffix_ = ".tmp." + cast<std::string>(i))); ++i);
                             if (write_ && replace_ && boost::filesystem::exists(filename_))
@@ -295,7 +292,7 @@ namespace alps {
                                     sprintf(filename0, filename_.c_str(), 0);
                                     sprintf(filename1, filename_.c_str(), 1);
                                     if (!strcmp(filename0, filename1))
-                                        throw std::runtime_error("Large hdf5 archives need to have a '%d' part in the filename" + ALPS_STACKTRACE);
+                                        throw archive_error("Large hdf5 archives need to have a '%d' part in the filename" + ALPS_STACKTRACE);
                                 }
                                 detail::property_type prop_id(H5Pcreate(H5P_FILE_ACCESS));
                                 detail::check_error(H5Pset_fapl_family(prop_id, 1 << 30, H5P_DEFAULT));
@@ -314,9 +311,9 @@ namespace alps {
                             } else {
                                 if (!write_) {
                                     if (!boost::filesystem::exists(filename_ + suffix_))
-                                        throw std::runtime_error("file does not exist: " + filename_ + suffix_ + ALPS_STACKTRACE);
+                                        throw archive_error("file does not exist: " + filename_ + suffix_ + ALPS_STACKTRACE);
                                     if (detail::check_error(H5Fis_hdf5((filename_ + suffix_).c_str())) == 0)
-                                        throw std::runtime_error("no valid hdf5 file: " + filename_ + suffix_ + ALPS_STACKTRACE);
+                                        throw archive_error("no valid hdf5 file: " + filename_ + suffix_ + ALPS_STACKTRACE);
                                 }
                                 #ifndef ALPS_HDF5_CLOSE_GREEDY
                                     detail::property_type ALPS_HDF5_FILE_ACCESS(H5Pcreate(H5P_FILE_ACCESS));
@@ -473,7 +470,7 @@ namespace alps {
     
         bool archive::is_data(std::string path) const {
             if ((path = complete_path(path)).find_last_of('@') != std::string::npos)
-                throw std::runtime_error("no data path: " + path + ALPS_STACKTRACE); // invalid_path
+                throw invalid_path("no data path: " + path + ALPS_STACKTRACE);
             hid_t id = H5Dopen2(context_->file_id_, path.c_str(), H5P_DEFAULT);
             return id < 0 ? false : detail::check_data(id) != 0;
         }
@@ -490,7 +487,7 @@ namespace alps {
                 #ifdef ALPS_HDF5_READ_GREEDY
                     return false;
                 #else
-                    throw std::runtime_error("unknown path: " + path + ALPS_STACKTRACE); // path_not_found
+                    throw path_not_found("unknown path: " + path + ALPS_STACKTRACE);
                 #endif
             bool exists = detail::check_error(H5Aexists(parent_id, path.substr(path.find_last_of('@') + 1).c_str()));
             if (is_group(path.substr(0, path.find_last_of('@') - 1)))
@@ -520,12 +517,12 @@ namespace alps {
                 #ifdef ALPS_HDF5_READ_GREEDY
                     return false;
                 #else
-                    throw std::runtime_error("error reading path " + path + ALPS_STACKTRACE); // path_not_found
+                    throw path_not_found("error reading path " + path + ALPS_STACKTRACE);
                 #endif
             H5S_class_t type = H5Sget_simple_extent_type(space_id);
             detail::check_space(space_id);
             if (type == H5S_NO_CLASS)
-                throw std::runtime_error("error reading class " + path + ALPS_STACKTRACE);
+                throw archive_error("error reading class " + path + ALPS_STACKTRACE);
             return type == H5S_SCALAR;
         }
 
@@ -557,7 +554,7 @@ namespace alps {
             H5S_class_t type = H5Sget_simple_extent_type(space_id);
             detail::check_space(space_id);
             if (type == H5S_NO_CLASS)
-                throw std::runtime_error("error reading class " + path + ALPS_STACKTRACE);
+                throw archive_error("error reading class " + path + ALPS_STACKTRACE);
             return type == H5S_NULL;
         }
     
@@ -574,10 +571,10 @@ namespace alps {
     
         std::vector<std::string> archive::list_children(std::string path) const {
             if ((path = complete_path(path)).find_last_of('@') != std::string::npos)
-                throw std::runtime_error("no group path: " + path + ALPS_STACKTRACE); // invalid_path
+                throw invalid_path("no group path: " + path + ALPS_STACKTRACE);
             std::vector<std::string> list;
             if (!is_group(path))
-                throw std::runtime_error("The group '" + path + "' does not exist." + ALPS_STACKTRACE); // path_not_found
+                throw path_not_found("The group '" + path + "' does not exist." + ALPS_STACKTRACE);
             detail::group_type group_id(H5Gopen2(context_->file_id_, path.c_str(), H5P_DEFAULT));
             detail::check_error(H5Literate(group_id, H5_INDEX_NAME, H5_ITER_NATIVE, NULL, detail::list_children_visitor, &list));
             return list;
@@ -585,7 +582,7 @@ namespace alps {
     
         std::vector<std::string> archive::list_attributes(std::string path) const {
             if ((path = complete_path(path)).find_last_of('@') != std::string::npos)
-                throw std::runtime_error("no group or data path: " + path + ALPS_STACKTRACE); //invalid+path
+                throw invalid_path("no group or data path: " + path + ALPS_STACKTRACE);
             std::vector<std::string> list;
             if (is_group(path)) {
                 detail::group_type id(H5Gopen2(context_->file_id_, path.c_str(), H5P_DEFAULT));
@@ -594,7 +591,7 @@ namespace alps {
                 detail::data_type id(H5Dopen2(context_->file_id_, path.c_str(), H5P_DEFAULT));
                 detail::check_error(H5Aiterate2(id, H5_INDEX_CRT_ORDER, H5_ITER_NATIVE, NULL, detail::list_attributes_visitor, &list));
             } else
-                throw std::runtime_error("The path '" + path + "' does not exist." + ALPS_STACKTRACE); // path_not_found
+                throw path_not_found("The path '" + path + "' does not exist." + ALPS_STACKTRACE);
             return list;
         }
     
@@ -632,7 +629,7 @@ namespace alps {
     
         void archive::create_group(std::string path) const {
             if ((path = complete_path(path)).find_last_of('@') != std::string::npos)
-                throw std::runtime_error("no group path: " + path + ALPS_STACKTRACE); //invalid_path
+                throw invalid_path("no group path: " + path + ALPS_STACKTRACE);
             if (is_data(path))
                 delete_data(path);
             if (!is_group(path)) {
@@ -666,27 +663,27 @@ namespace alps {
     
         void archive::delete_data(std::string path) const {
             if ((path = complete_path(path)).find_last_of('@') != std::string::npos)
-                throw std::runtime_error("no data path: " + path + ALPS_STACKTRACE); //invalid_path
+                throw invalid_path("no data path: " + path + ALPS_STACKTRACE);
             if (is_data(path))
                 detail::check_error(H5Ldelete(context_->file_id_, path.c_str(), H5P_DEFAULT));
             else if (is_group(path))
-                throw std::runtime_error("the path contains a group: " + path + ALPS_STACKTRACE); //invalid_path
+                throw invalid_path("the path contains a group: " + path + ALPS_STACKTRACE);
         }
     
         void archive::delete_group(std::string path) const  {
             if ((path = complete_path(path)).find_last_of('@') != std::string::npos)
-                throw std::runtime_error("no group path: " + path + ALPS_STACKTRACE); //invalid_path
+                throw invalid_path("no group path: " + path + ALPS_STACKTRACE);
             if (is_group(path))
                 detail::check_error(H5Ldelete(context_->file_id_, path.c_str(), H5P_DEFAULT));
             else if (is_data(path))
-                throw std::runtime_error("the path contains a dataset: " + path + ALPS_STACKTRACE); //invalid_path
+                throw invalid_path("the path contains a dataset: " + path + ALPS_STACKTRACE);
         }
     
         void archive::delete_attribute(std::string path) const {
             if ((path = complete_path(path)).find_last_of('@') == std::string::npos)
-                throw std::runtime_error("no attribute path: " + path + ALPS_STACKTRACE); //invalid_path
+                throw invalid_path("no attribute path: " + path + ALPS_STACKTRACE);
             // TODO: implement
-            throw std::runtime_error("Not implemented!" + ALPS_STACKTRACE); //logic_error
+            throw std::logic_error("Not implemented!" + ALPS_STACKTRACE);
         }
     
         void archive::set_complex(std::string path) {
@@ -720,9 +717,9 @@ namespace alps {
             void archive::read(std::string path, T & value) const {                                                                                                    \
                 if ((path = complete_path(path)).find_last_of('@') == std::string::npos) {                                                                         \
                     if (!is_data(path))                                                                                                                                \
-                        throw std::runtime_error("the path does not exist: " + path + ALPS_STACKTRACE);        /* path_not_found */                                                                    \
+                        throw path_not_found("the path does not exist: " + path + ALPS_STACKTRACE);                                                                            \
                     else if (!is_scalar(path))                                                                                                                        \
-                        throw std::runtime_error("scalar - vector conflict in path: " + path + ALPS_STACKTRACE);   /* wrong_type */                                                               \
+                        throw wrong_type("scalar - vector conflict in path: " + path + ALPS_STACKTRACE);                                                                  \
                     detail::data_type data_id(H5Dopen2(context_->file_id_, path.c_str(), H5P_DEFAULT));                                                            \
                     detail::type_type type_id(H5Dget_type(data_id));                                                                                               \
                     detail::type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));                                                                      \
@@ -736,19 +733,19 @@ namespace alps {
                         value = cast< T >(std::string(raw));                                                                                                    \
                         detail::check_error(H5Dvlen_reclaim(type_id, detail::space_type(H5Dget_space(data_id)), H5P_DEFAULT, &raw));                               \
                     ALPS_NGS_HDF5_FOREACH_NATIVE_TYPE_INTEGRAL(ALPS_NGS_HDF5_READ_SCALAR_DATA_HELPER, T)                                                           \
-                    } else throw std::runtime_error("invalid type" + ALPS_STACKTRACE);                /* wrong_type */                                                                             \
+                    } else throw wrong_type("invalid type" + ALPS_STACKTRACE);                                                                                             \
                 } else {                                                                                                                                           \
                     if (!is_attribute(path))                                                                                                                                \
-                        throw std::runtime_error("the path does not exist: " + path + ALPS_STACKTRACE);                /* path_not_found */                                                            \
+                        throw path_not_found("the path does not exist: " + path + ALPS_STACKTRACE);                                                                           \
                     else if (!is_scalar(path))                                                                                                                        \
-                        throw std::runtime_error("scalar - vector conflict in path: " + path + ALPS_STACKTRACE);      /* wrong_type */                                                            \
+                        throw wrong_type("scalar - vector conflict in path: " + path + ALPS_STACKTRACE);                                                                  \
                     hid_t parent_id;                                                                                                                               \
                     if (is_group(path.substr(0, path.find_last_of('@') - 1)))                                                                                      \
                         parent_id = detail::check_error(H5Gopen2(context_->file_id_, path.substr(0, path.find_last_of('@') - 1).c_str(), H5P_DEFAULT));            \
                     else if (is_data(path.substr(0, path.find_last_of('@') - 1)))                                                                                  \
                         parent_id = detail::check_error(H5Dopen2(context_->file_id_, path.substr(0, path.find_last_of('@') - 1).c_str(), H5P_DEFAULT));            \
                     else                                                                                                                                           \
-                        throw std::runtime_error("unknown path: " + path.substr(0, path.find_last_of('@') - 1) + ALPS_STACKTRACE); /* path_not_found */                                               \
+                        throw path_not_found("unknown path: " + path.substr(0, path.find_last_of('@') - 1) + ALPS_STACKTRACE);                                                \
                     detail::attribute_type attribute_id(H5Aopen(parent_id, path.substr(path.find_last_of('@') + 1).c_str(), H5P_DEFAULT));                         \
                     detail::type_type type_id(H5Aget_type(attribute_id));                                                                                          \
                     detail::type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));                                                                      \
@@ -761,7 +758,7 @@ namespace alps {
                         detail::check_error(H5Aread(attribute_id, native_id, &raw));                                                                               \
                         value = cast< T >(std::string(raw));                                                                                                    \
                     ALPS_NGS_HDF5_FOREACH_NATIVE_TYPE_INTEGRAL(ALPS_NGS_HDF5_READ_SCALAR_ATTRIBUTE_HELPER, T)                                                      \
-                    } else throw std::runtime_error("invalid type" + ALPS_STACKTRACE);     /* wrong_type */                                                                                       \
+                    } else throw wrong_type("invalid type" + ALPS_STACKTRACE);                                                                                            \
                     if (is_group(path.substr(0, path.find_last_of('@') - 1)))                                                                                      \
                         detail::check_group(parent_id);                                                                                                            \
                     else                                                                                                                                           \
@@ -805,33 +802,33 @@ namespace alps {
                     detail::check_error(H5Aread(attribute_id, native_id, raw.get()));                                                                                  \
                     cast(raw.get(), raw.get() + len, value);                                                                                                        \
                 } else                                                                                                                                                 \
-                    throw std::runtime_error("Not Implemented, path: " + path + ALPS_STACKTRACE); // logic_error
+                    throw std::logic_error("Not Implemented, path: " + path + ALPS_STACKTRACE);
         #define ALPS_NGS_HDF5_READ_VECTOR(T)                                                                                                                           \
             void archive::read(std::string path, T * value, std::vector<std::size_t> chunk, std::vector<std::size_t> offset) const {                                   \
                 std::vector<std::size_t> data_size = extent(path);                                                                                                 \
                 if (offset.size() == 0)                                                                                                                            \
                     offset = std::vector<std::size_t>(dimensions(path), 0);                                                                                        \
                 if (data_size.size() != chunk.size() || data_size.size() != offset.size())                                                                         \
-                    throw std::runtime_error("wrong size or offset passed for path: " + path + ALPS_STACKTRACE);                                                                  \
+                    throw archive_error("wrong size or offset passed for path: " + path + ALPS_STACKTRACE);                                                                  \
                 for (std::size_t i = 0; i < data_size.size(); ++i)                                                                                                 \
                     if (data_size[i] < chunk[i] + offset[i])                                                                                                       \
-                        throw std::runtime_error("passed size of offset exeed data size for path: " + path + ALPS_STACKTRACE);                                                    \
+                        throw archive_error("passed size of offset exeed data size for path: " + path + ALPS_STACKTRACE);                                                    \
                 if (is_null(path))                                                                                                                                 \
                     value = NULL;                                                                                                                                  \
                 else {                                                                                                                                             \
                     for (std::size_t i = 0; i < data_size.size(); ++i)                                                                                             \
                         if (chunk[i] == 0)                                                                                                                         \
-                            throw std::runtime_error("size is zero in one dimension in path: " + path + ALPS_STACKTRACE);                                                         \
+                            throw archive_error("size is zero in one dimension in path: " + path + ALPS_STACKTRACE);                                                         \
                     if ((path = complete_path(path)).find_last_of('@') == std::string::npos) {                                                                     \
                         if (!is_data(path))                                                                                                                            \
-                            throw std::runtime_error("the path does not exist: " + path + ALPS_STACKTRACE);        /* path_not_found */                                                            \
+                            throw path_not_found("the path does not exist: " + path + ALPS_STACKTRACE);                                                                    \
                         if (is_scalar(path))                                                                                                                        \
-                            throw std::runtime_error("scalar - vector conflict in path: " + path + ALPS_STACKTRACE);                                                              \
+                            throw archive_error("scalar - vector conflict in path: " + path + ALPS_STACKTRACE);                                                              \
                         detail::data_type data_id(H5Dopen2(context_->file_id_, path.c_str(), H5P_DEFAULT));                                                        \
                         detail::type_type type_id(H5Dget_type(data_id));                                                                                           \
                         detail::type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));                                                                  \
                         if (H5Tget_class(native_id) == H5T_STRING && !detail::check_error(H5Tis_variable_str(type_id)))                                            \
-                            throw std::runtime_error("multidimensional dataset of fixed string datas is not implemented (" + path + ")" + ALPS_STACKTRACE);   /* logic_error */                    \
+                            throw std::logic_error("multidimensional dataset of fixed string datas is not implemented (" + path + ")" + ALPS_STACKTRACE);                       \
                         else if (H5Tget_class(native_id) == H5T_STRING) {                                                                                          \
                             std::size_t len = std::accumulate(chunk.begin(), chunk.end(), std::size_t(1), std::multiplies<std::size_t>());                         \
                             boost::scoped_array<char *> raw(                                                                                                       \
@@ -852,24 +849,24 @@ namespace alps {
                                                                 detail::check_error(H5Dvlen_reclaim(type_id, mem_id, H5P_DEFAULT, raw.get()));                     \
                             }                                                                                                                                      \
                         ALPS_NGS_HDF5_FOREACH_NATIVE_TYPE_INTEGRAL(ALPS_NGS_HDF5_READ_VECTOR_DATA_HELPER, T)                                                       \
-                        } else throw std::runtime_error("invalid type" + ALPS_STACKTRACE);         /* wrong_type */                                                                               \
+                        } else throw wrong_type("invalid type" + ALPS_STACKTRACE);                                                                                        \
                     } else {                                                                                                                                       \
                         if (!is_attribute(path))                                                                                                                    \
-                            throw std::runtime_error("the path does not exist: " + path + ALPS_STACKTRACE);                /* path_not_found */                                                        \
+                            throw path_not_found("the path does not exist: " + path + ALPS_STACKTRACE);                                                                        \
                         if (is_scalar(path))                                                                                                                        \
-                            throw std::runtime_error("scalar - vector conflict in path: " + path + ALPS_STACKTRACE);   /* wrong_type */                                                           \
+                            throw wrong_type("scalar - vector conflict in path: " + path + ALPS_STACKTRACE);                                                              \
                         hid_t parent_id;                                                                                                                           \
                         if (is_group(path.substr(0, path.find_last_of('@') - 1)))                                                                                  \
                             parent_id = detail::check_error(H5Gopen2(context_->file_id_, path.substr(0, path.find_last_of('@') - 1).c_str(), H5P_DEFAULT));        \
                         else if (is_data(path.substr(0, path.find_last_of('@') - 1)))                                                                              \
                             parent_id = detail::check_error(H5Dopen2(context_->file_id_, path.substr(0, path.find_last_of('@') - 1).c_str(), H5P_DEFAULT));        \
                         else                                                                                                                                       \
-                            throw std::runtime_error("unknown path: " + path.substr(0, path.find_last_of('@') - 1) + ALPS_STACKTRACE); /* path_not_found */                                           \
+                            throw path_not_found("unknown path: " + path.substr(0, path.find_last_of('@') - 1) + ALPS_STACKTRACE);                                            \
                         detail::attribute_type attribute_id(H5Aopen(parent_id, path.substr(path.find_last_of('@') + 1).c_str(), H5P_DEFAULT));                     \
                         detail::type_type type_id(H5Aget_type(attribute_id));                                                                                      \
                         detail::type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));                                                                  \
                         if (H5Tget_class(native_id) == H5T_STRING && !detail::check_error(H5Tis_variable_str(type_id)))                                            \
-                            throw std::runtime_error("multidimensional dataset of fixed string datas is not implemented (" + path + ")" + ALPS_STACKTRACE);    /* logic_error */                   \
+                            throw std::logic_error("multidimensional dataset of fixed string datas is not implemented (" + path + ")" + ALPS_STACKTRACE);                       \
                         else if (H5Tget_class(native_id) == H5T_STRING) {                                                                                          \
                             std::size_t len = std::accumulate(chunk.begin(), chunk.end(), std::size_t(1), std::multiplies<std::size_t>());                         \
                             boost::scoped_array<char *> raw(                                                                                                       \
@@ -879,14 +876,14 @@ namespace alps {
                                 detail::check_error(H5Aread(attribute_id, native_id, raw.get()));                                                                  \
                                 cast(raw.get(), raw.get() + len, value);                                                                                        \
                             } else                                                                                                                                 \
-                                throw std::runtime_error("non continous multidimensional dataset as attributes are not implemented (" + path + ")" + ALPS_STACKTRACE);            /* logic_error */ \
+                                throw std::logic_error("non continous multidimensional dataset as attributes are not implemented (" + path + ")" + ALPS_STACKTRACE);             \
                             detail::check_error(H5Dvlen_reclaim(type_id, detail::space_type(H5Aget_space(attribute_id)), H5P_DEFAULT, raw.get()));                 \
                         } else if (H5Tget_class(native_id) == H5T_STRING) {                                                                                        \
                             char ** raw = NULL;                                                                                                                    \
                             detail::check_error(H5Aread(attribute_id, native_id, raw));                                                                            \
-                            throw std::runtime_error("multidimensional dataset of variable len string datas is not implemented (" + path + ")" + ALPS_STACKTRACE);                /* logic_error */ \
+                            throw std::logic_error("multidimensional dataset of variable len string datas is not implemented (" + path + ")" + ALPS_STACKTRACE);                 \
                         ALPS_NGS_HDF5_FOREACH_NATIVE_TYPE_INTEGRAL(ALPS_NGS_HDF5_READ_VECTOR_ATTRIBUTE_HELPER, T)                                                  \
-                        } else throw std::runtime_error("invalid type" + ALPS_STACKTRACE);   /* wrong_type */                                                                                     \
+                        } else throw wrong_type("invalid type" + ALPS_STACKTRACE);                                                                                        \
                         if (is_group(path.substr(0, path.find_last_of('@') - 1)))                                                                                  \
                             detail::check_group(parent_id);                                                                                                        \
                         else                                                                                                                                       \
@@ -901,7 +898,7 @@ namespace alps {
         #define ALPS_NGS_HDF5_WRITE_SCALAR(T)                                                                                                                      \
             void archive::write(std::string path, T value) const {                                                                                                 \
                 if (!context_->write_)                                                                                                                             \
-                    throw std::runtime_error("the archive is not writeable" + ALPS_STACKTRACE);                                                                                   \
+                    throw archive_error("the archive is not writeable" + ALPS_STACKTRACE);                                                                                   \
                 hid_t data_id;                                                                                                                                     \
                 if ((path = complete_path(path)).find_last_of('@') == std::string::npos) {                                                                         \
                     if (is_group(path))                                                                                                                            \
@@ -946,7 +943,7 @@ namespace alps {
                     else if (is_data(path.substr(0, path.find_last_of('@') - 1)))                                                                                  \
                         parent_id = detail::check_error(H5Dopen2(context_->file_id_, path.substr(0, path.find_last_of('@') - 1).c_str(), H5P_DEFAULT));            \
                     else                                                                                                                                           \
-                        throw std::runtime_error("unknown path: " + path.substr(0, path.find_last_of('@') - 1) + ALPS_STACKTRACE);   /* path_not_found */                                             \
+                        throw path_not_found("unknown path: " + path.substr(0, path.find_last_of('@') - 1) + ALPS_STACKTRACE);                                                \
                     hid_t data_id = H5Aopen(parent_id, path.substr(path.find_last_of('@') + 1).c_str(), H5P_DEFAULT);                                              \
                     if (data_id >= 0) {                                                                                                                            \
                         H5S_class_t class_type;                                                                                                                    \
@@ -987,13 +984,13 @@ namespace alps {
                 std::string path, T const * value, std::vector<std::size_t> size, std::vector<std::size_t> chunk, std::vector<std::size_t> offset                  \
             ) const {                                                                                                                                              \
                 if (!context_->write_)                                                                                                                             \
-                    throw std::runtime_error("the archive is not writeable" + ALPS_STACKTRACE);                                                                                   \
+                    throw archive_error("the archive is not writeable" + ALPS_STACKTRACE);                                                                                   \
                 if (chunk.size() == 0)                                                                                                                             \
                     chunk = std::vector<std::size_t>(size.begin(), size.end());                                                                                    \
                 if (offset.size() == 0)                                                                                                                            \
                     offset = std::vector<std::size_t>(size.size(), 0);                                                                                             \
                 if (size.size() != offset.size())                                                                                                                  \
-                    throw std::runtime_error("wrong chunk or offset passed for path: " + path + ALPS_STACKTRACE);                                                                 \
+                    throw archive_error("wrong chunk or offset passed for path: " + path + ALPS_STACKTRACE);                                                                 \
                 hid_t data_id;                                                                                                                                     \
                 if ((path = complete_path(path)).find_last_of('@') == std::string::npos) {                                                                         \
                     if (is_group(path))                                                                                                                            \
@@ -1055,7 +1052,7 @@ namespace alps {
                             else {                                                                                                                                 \
                                 detail::check_error(H5Pset_fill_time(prop_id, H5D_FILL_TIME_NEVER));                                                               \
                                 std::size_t dataset_size = std::accumulate(size.begin(), size.end(), std::size_t(sizeof( T )), std::multiplies<std::size_t>());        \
-                                if (dataset_size < ALPS_HDF5_SZIP_BLOCK_SIZE*sizeof( T ))                                                                                        \
+                                if (dataset_size < ALPS_HDF5_SZIP_BLOCK_SIZE * sizeof( T ))                                                                                        \
                                     detail::check_error(H5Pset_layout(prop_id, H5D_COMPACT));                                                                        \
                                 else if (dataset_size < (1ULL<<32))                                                                                                    \
                                     detail::check_error(H5Pset_layout(prop_id, H5D_CONTIGUOUS));                                                                    \
@@ -1076,7 +1073,7 @@ namespace alps {
                                     detail::check_error(H5Pset_chunk(prop_id, static_cast<int>(max_chunk.size()), &max_chunk.front()));                            \
                                 }                                                                                                                                    \
                                 detail::check_error(H5Pset_chunk(prop_id, static_cast<int>(size_hid.size()), &size_hid.front()));                                  \
-                                if (context_->compress_ && dataset_size > ALPS_HDF5_SZIP_BLOCK_SIZE*sizeof( T ))                                                                \
+                                if (context_->compress_ && dataset_size > ALPS_HDF5_SZIP_BLOCK_SIZE * sizeof( T ))                                                                \
                                     detail::check_error(H5Pset_szip(prop_id, H5_SZIP_NN_OPTION_MASK, ALPS_HDF5_SZIP_BLOCK_SIZE));                                  \
                                 detail::check_error(H5Pset_attr_creation_order(prop_id, (H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED)));                            \
                                 detail::check_error(data_id = H5Dcreate2(                                                                                          \
@@ -1108,7 +1105,7 @@ namespace alps {
                     else if (is_data(path.substr(0, path.find_last_of('@') - 1)))                                                                                  \
                         parent_id = detail::check_error(H5Dopen2(context_->file_id_, path.substr(0, path.find_last_of('@') - 1).c_str(), H5P_DEFAULT));            \
                     else                                                                                                                                           \
-                        throw std::runtime_error("unknown path: " + path.substr(0, path.find_last_of('@') - 1) + ALPS_STACKTRACE);    /* path_not_found */                                            \
+                        throw path_not_found("unknown path: " + path.substr(0, path.find_last_of('@') - 1) + ALPS_STACKTRACE);                                                \
                     hid_t data_id = H5Aopen(parent_id, path.substr(path.find_last_of('@') + 1).c_str(), H5P_DEFAULT);                                              \
                     if (data_id >= 0) {                                                                                                                            \
                         H5S_class_t class_type;                                                                                                                    \
@@ -1156,7 +1153,7 @@ namespace alps {
                                                                 );                                                                                                     \
                                 detail::check_error(H5Awrite(raii_id, type_id, converter.apply(value)));                                                               \
                             } else                                                                                                                                     \
-                                throw std::runtime_error("Not Implemented, path: " + path + ALPS_STACKTRACE);    /* logic_error */                                                                     \
+                                throw std::logic_error("Not Implemented, path: " + path + ALPS_STACKTRACE);                                                                         \
                         }                                                                                                                                              \
                     }                                                                                                                                                  \
                     if (is_group(path.substr(0, path.find_last_of('@') - 1)))                                                                                          \
@@ -1226,7 +1223,7 @@ namespace alps {
                     detail::data_type data_id(H5Dopen2(context_->file_id_, path.c_str(), H5P_DEFAULT));                                                                \
                     type_id = H5Dget_type(data_id);                                                                                                                    \
                 } else                                                                                                                                                 \
-                    throw std::runtime_error("no valid path: " + path + ALPS_STACKTRACE);  /* path_not_found */                                                                                           \
+                    throw path_not_found("no valid path: " + path + ALPS_STACKTRACE);                                                                                             \
                 detail::type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));                                                                              \
                 detail::check_type(type_id);                                                                                                                           \
                 return detail::check_error(                                                                                                                            \

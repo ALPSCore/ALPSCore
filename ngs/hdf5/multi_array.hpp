@@ -53,7 +53,7 @@ namespace alps {
                         std::vector<std::size_t> extent(get_extent(*value.data()));
                         for (std::size_t i = 1; i < value.num_elements(); ++i)
                             if (!std::equal(extent.begin(), extent.end(), get_extent(value.data()[i]).begin()))
-                                throw std::runtime_error("no rectengual matrix");
+                                throw archive_error("no rectengual matrix");
                         std::copy(extent.begin(), extent.end(), std::back_inserter(result));
                     }
                     return result;
@@ -64,7 +64,7 @@ namespace alps {
                 static void apply(boost::multi_array<T, N, A> & value, std::vector<std::size_t> const & size) {
                     using alps::hdf5::set_extent;
                     if (boost::multi_array<T, N, A>::dimensionality > size.size())
-                        throw std::runtime_error("invalid data size");
+                        throw archive_error("invalid data size");
                     if (!std::equal(value.shape(), value.shape() + boost::multi_array<T, N, A>::dimensionality, size.begin())) {
                         typename boost::multi_array<T, N, A>::extent_gen extents;
                         gen_extent(value, extents, size);
@@ -144,7 +144,7 @@ namespace alps {
                         save(ar, path, value.data()[i], size, chunk, local_offset);                                                                             \
                     }                                                                                                                                           \
                 } else                                                                                                                                          \
-                    throw std::runtime_error("invalid type");                                                                                                \
+                    throw wrong_type("invalid type");                                                                                                \
             }
         ALPS_NGS_HDF5_MULTI_ARRAY_IMPL_SAVE(archive)
         #ifdef ALPS_HDF5_HAVE_DEPRECATED
@@ -161,7 +161,7 @@ namespace alps {
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
             ) {                                                                                                                                                 \
                 if (ar.is_group(path))                                                                                                                          \
-                    throw std::runtime_error("invalid path");                                                                                                \
+                    throw invalid_path("invalid path");                                                                                                \
                 else {                                                                                                                                          \
                     std::vector<std::size_t> size(ar.extent(path));                                                                                             \
                     if (boost::multi_array<T, N, A>::dimensionality <= size.size())                                                                                \

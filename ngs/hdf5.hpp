@@ -30,6 +30,7 @@
 
 #include <alps/ngs/config.hpp>
 #include <alps/ngs/stacktrace.hpp>
+#include <alps/ngs/hdf5_errors.hpp>
 #include <alps/ngs/detail/remove_cvr.hpp>
 #include <alps/ngs/detail/type_wrapper.hpp>
 
@@ -43,7 +44,6 @@
 #include <vector>
 #include <string>
 #include <numeric>
-#include <stdexcept>
 
 #define ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(CALLBACK)                                                                                            \
     CALLBACK(char)                                                                                                                             \
@@ -71,7 +71,7 @@ namespace alps {
 
             template<typename A, typename T> struct is_datatype_caller {
                 static bool apply(A const & ar, std::string path) {
-                    throw std::runtime_error("only native datatypes can be probed: " + path + ALPS_STACKTRACE); // std::logic_error
+                    throw std::logic_error("only native datatypes can be probed: " + path + ALPS_STACKTRACE);
                     return false;
                 }
             };
@@ -159,7 +159,7 @@ namespace alps {
                     , std::vector<std::size_t>
                     , std::vector<std::size_t> = std::vector<std::size_t>()
                 ) const {
-                    throw std::runtime_error("Invalid type on path: " + path + ALPS_STACKTRACE); // logic_error
+                    throw std::logic_error("Invalid type on path: " + path + ALPS_STACKTRACE);
                 }
 
                 template<typename T> void write(
@@ -169,7 +169,7 @@ namespace alps {
                     , std::vector<std::size_t> chunk = std::vector<std::size_t>()
                     , std::vector<std::size_t> offset = std::vector<std::size_t>()
                 ) const {
-                    throw std::runtime_error("Invalid type on path: " + path + ALPS_STACKTRACE); // std::logic_error
+                    throw std::logic_error("Invalid type on path: " + path + ALPS_STACKTRACE);
                 }
 
                 #define ALPS_NGS_HDF5_DEFINE_API(T)                                                                                                                    \
@@ -281,7 +281,7 @@ namespace alps {
              , std::vector<std::size_t> offset = std::vector<std::size_t>()
         ) {
             if (chunk.size())
-                throw std::runtime_error("user defined objects needs to be written continously" + ALPS_STACKTRACE); // std::logic_error
+                throw std::logic_error("user defined objects needs to be written continously" + ALPS_STACKTRACE);
             std::string context = ar.get_context();
             ar.set_context(ar.complete_path(path));
             value.save(ar);
@@ -296,7 +296,7 @@ namespace alps {
              , std::vector<std::size_t> offset = std::vector<std::size_t>()
         ) {
             if (chunk.size())
-                throw std::runtime_error("user defined objects needs to be written continously" + ALPS_STACKTRACE); // std::logic_error
+                throw std::logic_error("user defined objects needs to be written continously" + ALPS_STACKTRACE);
             std::string context = ar.get_context();
             ar.set_context(ar.complete_path(path));
             value.load(ar);
