@@ -85,6 +85,7 @@ int main() {
   catch (std::exception& e) {
     std::cerr << "Fatal error: " << e.what() << "\n"; 
   }
+  return 0;
 }
 
 

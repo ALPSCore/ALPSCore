@@ -100,5 +100,6 @@ catch (...) {
   return -2;
 }
 #endif
+  return 0;
 }
 
