@@ -49,7 +49,11 @@ namespace alps {
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
             ) {                                                                                                                                                 \
                 save(ar, ar.complete_path(path) + "/first", value.first);                                                                                       \
+                if (has_complex_elements<typename alps::detail::remove_cvr<T>::type>::value)                                                                    \
+                    ar.set_complex(ar.complete_path(path) + "/first");                                                                                          \
                 save(ar, ar.complete_path(path) + "/second", value.second);                                                                                     \
+                if (has_complex_elements<typename alps::detail::remove_cvr<U>::type>::value)                                                                    \
+                    ar.set_complex(ar.complete_path(path) + "/second");                                                                                         \
             }
         ALPS_NGS_HDF5_PAIR_SAVE(archive)
         #ifdef ALPS_HDF5_HAVE_DEPRECATED
