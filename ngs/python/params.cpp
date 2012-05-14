@@ -33,8 +33,8 @@
 
 #include <alps/python/make_copy.hpp>
 
-#include <boost/python/iterator.hpp>
 #include <boost/python/tuple.hpp>
+#include <boost/python/iterator.hpp>
 #include <boost/python/to_python_converter.hpp>
 
 #include <string>

@@ -27,6 +27,8 @@
 
 #include <alps/ngs/detail/get_numpy_type.hpp>
 
+#include <alps/ngs/lib/numpy_import.ipp>
+
 namespace alps {
     namespace detail {
 

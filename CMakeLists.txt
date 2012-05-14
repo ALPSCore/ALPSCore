@@ -53,7 +53,7 @@ if (ALPS_BUILD_NGS)
     ngs/lib/paramvalue.cpp ngs/lib/paramproxy.cpp ngs/lib/params.cpp ngs/lib/base.cpp ngs/lib/make_deprecated_parameters.cpp
   )
   if (ALPS_BUILD_PYTHON)
-    set(ALPS_SOURCES ${ALPS_SOURCES} ngs/lib/numpy_import.cpp ngs/lib/get_numpy_type.cpp)
+    set(ALPS_SOURCES ${ALPS_SOURCES} ngs/lib/get_numpy_type.cpp)
   endif (ALPS_BUILD_PYTHON)
 endif (ALPS_BUILD_NGS)
 
