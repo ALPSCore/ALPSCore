@@ -34,4 +34,5 @@ int main() {
             << "config username = " << ALPS_CONFIG_USER << std::endl
             << "exec hostname = " << alps::hostname() << std::endl
             << "exec username = " << alps::username() << std::endl;
+  return 0;
 }

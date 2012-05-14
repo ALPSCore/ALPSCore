@@ -30,4 +30,5 @@
 
 int main() {
   std::cerr << alps::parapack::alps_version() << std::endl;
+  return 0;
 }

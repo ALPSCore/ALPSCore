@@ -124,4 +124,5 @@ int main()
     exit(-2);
   }
 #endif
+  return 0;
 }

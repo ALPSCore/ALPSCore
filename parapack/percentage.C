@@ -38,4 +38,5 @@ int main() {
   test(" 10%");
   test(" 10 %  ");
   test("0.1%");
+  return 0;
 }

@@ -68,4 +68,5 @@ int main(int argc, char **argv) {
     oxs << info;
   }
   alps::comm_exit();
+  return 0;
 }

@@ -53,4 +53,6 @@ int main() {
 
   DO_TYPE(std::size_t)
   DO_TYPE(std::ptrdiff_t)
+
+  return 0;
 }

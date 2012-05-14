@@ -81,4 +81,5 @@ catch (std::exception& exp) {
   std::abort();
 }
 #endif
+  return 0;
 }

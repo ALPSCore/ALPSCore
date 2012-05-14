@@ -92,4 +92,5 @@ int main()
   std::cout << "union with " << w << ": ";
   try { std::cout << unify(t, w) << std::endl; }
   catch (std::exception& exp) { std::cout << exp.what() << std::endl; }
+  return 0;
 }

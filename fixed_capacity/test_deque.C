@@ -44,4 +44,5 @@ int main() {
             alps::fixed_capacity_deque<non_pod<double>, n>,
             std::deque<double> >(m, n);
   std::cout << "Test done successfully.\n";
+  return 0;
 }

@@ -78,4 +78,5 @@ catch (...)
   exit(-2);
 }
 #endif
+  return 0;
 }

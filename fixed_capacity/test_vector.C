@@ -42,4 +42,5 @@ int main() {
             alps::fixed_capacity_vector<non_pod<double>, n>,
             std::vector<double> >(m, n);
   std::cout << "Test done successfully.\n";
+  return 0;
 }

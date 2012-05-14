@@ -48,4 +48,5 @@ int main() {
   std::cerr << "footprint of myclass is " << alps::footprint(d) << std::endl;
   double* ptr;
   std::cerr << "footprint of double* is " << alps::footprint(ptr) << std::endl;
+  return 0;
 }
