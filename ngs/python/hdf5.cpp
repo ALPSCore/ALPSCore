@@ -35,7 +35,7 @@
 #include <alps/ngs/hdf5/complex.hpp>
 
 #include <alps/ngs/boost_python.hpp>
-#include <alps/ngs/detail/numpy_import.hpp>
+#include <alps/ngs/lib/numpy_import.ipp>
 
 #include <alps/python/make_copy.hpp>
 
@@ -44,8 +44,6 @@
 #include <boost/python/dict.hpp>
 #include <boost/python/numeric.hpp>
 #include <boost/python/to_python_converter.hpp>
-
-#include <numpy/arrayobject.h>
 
 #include <string>
 #include <iterator>
@@ -247,7 +245,7 @@ namespace alps {
                     using alps::make_pvp;
                     static_cast<alps::hdf5::archive &>(*this) << make_pvp(path, data);
                 }
-                std::pair<bool, std::vector<std::size_t> > py_save_list_extent(boost::python::list data) {
+                std::pair<bool, std::vector<std::size_t> > py_save_list_extent(boost::python::list const & data) {
                     std::vector<std::string> scalar_types;
                     scalar_types.push_back("int");
                     scalar_types.push_back("long");
@@ -337,7 +335,7 @@ namespace alps {
                             throw std::runtime_error("Unsupported type: " + dtype + ALPS_STACKTRACE);
                     }
                 }
-                void py_save_list(std::string const & path, boost::python::list data) {
+                void py_save_list(std::string const & path, boost::python::list const & data) {
                     boost::python::ssize_t size = boost::python::len(data);
                     if (size == 0)
                         write(path, static_cast<int const *>(NULL), std::vector<std::size_t>());
@@ -354,7 +352,7 @@ namespace alps {
                     
                     }
                 }
-                void py_save_dict(std::string const & path, boost::python::dict data) {
+                void py_save_dict(std::string const & path, boost::python::dict const & data) {
                     const boost::python::object kit = data.iterkeys();
                     const boost::python::object vit = data.itervalues();
                     std::size_t size = boost::python::len(data);
@@ -364,7 +362,7 @@ namespace alps {
                             , vit.attr("next")()
                         );
                 }
-                void py_save_numpy(std::string const & path, boost::python::numeric::array data) {
+                void py_save_numpy(std::string const & path, boost::python::numeric::array const & data) {
                     if (!PyArray_Check(data.ptr()))
                         throw std::runtime_error("invalid numpy data" + ALPS_STACKTRACE);
                     else if (!PyArray_ISCONTIGUOUS(data.ptr()))
@@ -418,7 +416,7 @@ BOOST_PYTHON_MODULE(pyngshdf5_c) {
         alps::detail::std_vector_string_to_python
     >();
 
-    boost::python::class_<alps::detail::hdf5_archive_export, boost::python::bases<alps::hdf5::archive> >(
+    boost::python::class_<alps::detail::hdf5_archive_export >(
           "hdf5_archive_impl",
           boost::python::init<std::string, std::string>()
     )
