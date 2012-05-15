@@ -252,7 +252,7 @@ namespace alps {
                     scalar_types.push_back("float");
                     scalar_types.push_back("complex");
                     scalar_types.push_back("str");
-                    scalar_types.push_back("numpy.ndarray");
+                    // scalar_types.push_back("numpy.ndarray");
                     scalar_types.push_back("numpy.str");
                     scalar_types.push_back("numpy.bool");
                     scalar_types.push_back("numpy.int8");
