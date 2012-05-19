@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2009 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2012 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -38,7 +38,7 @@
 namespace alps {
 
 struct simulation_xml_writer {
-  simulation_xml_writer(boost::filesystem::path file, bool make_backup,
+  simulation_xml_writer(boost::filesystem::path file, bool write_xml, bool make_backup,
     Parameters const& params, std::vector<ObservableSet> const& obs,
     std::deque<clone_info> const& info) {
     boost::filesystem::path file_bak(file.branch_path() / (file.filename().string() + ".bak"));
@@ -50,10 +50,12 @@ struct simulation_xml_writer {
        << xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
        << attribute("xsi:noNamespaceSchemaLocation", "http://xml.comp-phys.org/2002/10/ALPS.xsd");
     os << params;
-    if (obs.size() == 1) {
-      obs[0].write_xml(os);
-    } else {
-      for (std::size_t i = 0; i < obs.size(); ++i) obs[i].write_xml_with_id(os, i+1);
+    if (write_xml) {
+      if (obs.size() == 1) {
+        obs[0].write_xml(os);
+      } else {
+        for (std::size_t i = 0; i < obs.size(); ++i) obs[i].write_xml_with_id(os, i+1);
+      }
     }
     for (std::size_t i = 0; i < info.size(); ++i) os << info[i];
     os << end_tag("SIMULATION");

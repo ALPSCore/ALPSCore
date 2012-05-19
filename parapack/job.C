@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2012 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -134,7 +134,7 @@ void task::load() {
   status_ = calc_status();
 }
 
-void task::save() const {
+void task::save(bool write_xml) const {
   if (!on_memory()) boost::throw_exception(std::logic_error("task not loaded"));
   boost::filesystem::path file_out = complete(boost::filesystem::path(file_out_str_), basedir_);
   {
@@ -148,14 +148,15 @@ void task::save() const {
       simulation_xml_handler handler(params_tmp, obs_tmp, clone_info_tmp);
       XMLParser parser(handler);
       parser.parse(file_out);
-      simulation_xml_writer(file_out, true, params_, obs_tmp, clone_info_);
+      simulation_xml_writer(file_out, write_xml, true, params_, obs_tmp, clone_info_);
     } else {
-      simulation_xml_writer(file_out, true, params_, obs_, clone_info_);
+      simulation_xml_writer(file_out, write_xml, true, params_, obs_, clone_info_);
     }
   }
 }
 
-void task::save_observable(std::vector<std::vector<ObservableSet> > const& oss) const {
+void task::save_observable(bool write_xml,
+  std::vector<std::vector<ObservableSet> > const& oss) const {
   if (!on_memory()) boost::throw_exception(std::logic_error("task not loaded"));
   boost::filesystem::path file_out = complete(boost::filesystem::path(file_out_str_), basedir_);
   {
@@ -171,7 +172,7 @@ void task::save_observable(std::vector<std::vector<ObservableSet> > const& oss) 
       parser.parse(file_out);
       if (obs_.size() > 1 && !params_tmp.defined("NUM_REPLICAS"))
         params_tmp["NUM_REPLICAS"] = obs_.size();
-      simulation_xml_writer(file_out, true, params_tmp, obs_, clone_info_tmp);
+      simulation_xml_writer(file_out, write_xml, true, params_tmp, obs_, clone_info_tmp);
       if (obs_.size() == 1) {
         #pragma omp critical (hdf5io)
         {
@@ -237,7 +238,7 @@ void task::halt() {
   finished_.clear();
 }
 
-void task::check_parameter() {
+void task::check_parameter(bool write_xml) {
   // change in NUM_CLONES : keep old calculations and add new ones
   // change in SEED : ignored
   // change in other parameters : throw away all the old clones
@@ -290,7 +291,7 @@ void task::check_parameter() {
       progress_ = calc_progress();
       boost::tie(weight_, dump_weight_) = calc_weight();
       status_ = calc_status();
-      save();
+      save(write_xml);
     }
     halt();
   }
@@ -326,7 +327,7 @@ void task::clone_halted(cid_t cid) {
   obs_.clear();
 }
 
-void task::evaluate() {
+void task::evaluate(bool write_xml) {
   std::cout << "evaluating " << file_out_str() << std::endl;
 
   if (!on_memory()) load();
@@ -391,7 +392,7 @@ void task::evaluate() {
   std::cout << std::endl;
   if (clones.size() > 0) {
     evaluator->evaluate(obs_);
-    save_observable(oss);
+    save_observable(write_xml, oss);
   }
   halt();
 }

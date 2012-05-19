@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2011 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2012 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -39,20 +39,22 @@ struct option {
   option(int argc, char** argv);
   boost::program_options::options_description desc;
   bool has_time_limit;
-  boost::posix_time::time_duration time_limit, check_interval, checkpoint_interval, report_interval;
-  bool default_total_threads, auto_total_threads;
-  int num_total_threads, threads_per_clone;
+  boost::posix_time::time_duration time_limit;
+  boost::posix_time::time_duration check_interval, checkpoint_interval, report_interval;
   bool auto_evaluate, evaluate_only;
-  bool use_mpi;
+  dump_policy_t dump_policy;
+  bool write_xml;
+  bool use_mpi, default_total_threads, auto_total_threads;
+  int num_total_threads, threads_per_clone;
   std::vector<std::string> jobfiles;
   bool valid, show_help, show_license;
   void print(std::ostream& os) const;
-  dump_policy_t dump_policy;
 };
 
 struct evaluate_option {
   evaluate_option(int argc, char** argv);
   boost::program_options::options_description desc;
+  bool write_xml;
   std::vector<std::string> jobfiles;
   bool valid, show_help, show_license;
   std::string help() const;

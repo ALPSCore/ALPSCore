@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2011 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2012 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -65,11 +65,11 @@ public:
   double weight() const { return weight_; }
 
   void load();
-  void save() const;
-  void save_observable(std::vector<std::vector<ObservableSet> > const& oss) const;
+  void save(bool write_xml) const;
+  void save_observable(bool write_xml, std::vector<std::vector<ObservableSet> > const& oss) const;
   void halt();
 
-  void check_parameter();
+  void check_parameter(bool write_xml);
 
   bool can_dispatch() const;
 
@@ -121,7 +121,7 @@ public:
                   << logger::clone(task_id_, cid) << " is " << info.phase()
                   << " (" << precision(info.progress() * 100, 3) << "% done)\n";
         info_updated(cid, info);
-        // save();
+        // save(write_xml);
       }
     }
   }
@@ -140,7 +140,7 @@ public:
   }
 
   template<typename PROXY>
-  void suspend_remote_clones(PROXY& proxy) {
+  void suspend_remote_clones(PROXY& proxy, bool write_xml) {
     if (on_memory()) {
       BOOST_FOREACH(cid_t cid, running_) {
         if (clone_status_[cid] == clone_status::Running && !proxy.is_local(clone_master_[cid])) {
@@ -149,14 +149,14 @@ public:
         }
       }
       if (num_running() == 0) {
-        save();
+        save(write_xml);
         halt();
       }
     }
   }
 
   template<typename PROXY, typename GROUP>
-  void suspend_clone(PROXY& proxy, cid_t cid, GROUP const& g) {
+  void suspend_clone(PROXY& proxy, bool write_xml, cid_t cid, GROUP const& g) {
     if (clone_status_[cid] == clone_status::Running && proxy.is_local(clone_master_[cid])) {
       clone_status_[cid] = clone_status::Stopping;
       proxy.suspend(clone_master_[cid]);
@@ -164,14 +164,14 @@ public:
       clone_suspended(cid, g, info);
       proxy.destroy(clone_master_[cid]);
       if (num_running() == 0) {
-        save();
+        save(write_xml);
         halt();
       }
     }
   }
 
   template<typename PROXY, typename GROUP>
-  void halt_clone(PROXY& proxy, cid_t cid, GROUP const& g) {
+  void halt_clone(PROXY& proxy, bool write_xml, cid_t cid, GROUP const& g) {
     if (clone_status_[cid] == clone_status::Idling) {
       std::cout << logger::header() << logger::clone(task_id_, cid) << " finished"
                 << " on " << logger::group(g) << std::endl;
@@ -183,7 +183,7 @@ public:
       }
       proxy.destroy(clone_master_[cid]);
       if (num_running() == 0) {
-        save();
+        save(write_xml);
         halt();
       }
     }
@@ -206,7 +206,7 @@ public:
   void clone_halted(cid_t cid, clone_info const& info);
   void clone_halted(cid_t cid);
 
-  void evaluate();
+  void evaluate(bool write_xml);
 
   void write_xml_summary(oxstream& os) const;
   void write_xml_archive(oxstream& os) const;

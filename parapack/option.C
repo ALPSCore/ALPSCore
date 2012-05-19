@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2011 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2012 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -34,12 +34,14 @@ namespace po = boost::program_options;
 namespace pt = boost::posix_time;
 
 option::option(int argc, char** argv)
-  : desc("Allowed options"), has_time_limit(false), time_limit(), check_interval(pt::millisec(100)),
+  : desc("Allowed options"),
+    has_time_limit(false), time_limit(), check_interval(pt::millisec(100)),
     checkpoint_interval(pt::seconds(3600)), report_interval(pt::seconds(600)),
-    default_total_threads(true), auto_total_threads(false), num_total_threads(1),
-    threads_per_clone(1), auto_evaluate(true), evaluate_only(false),
-    use_mpi(false), jobfiles(), valid(true), show_help(false), show_license(false),
-    dump_policy(dump_policy::RunningOnly) {
+    auto_evaluate(true), evaluate_only(false),
+    dump_policy(dump_policy::RunningOnly), write_xml(false),
+    use_mpi(false), default_total_threads(true), auto_total_threads(false), 
+    num_total_threads(1), threads_per_clone(1), 
+    jobfiles(), valid(true), show_help(false), show_license(false) {
   desc.add_options()
     ("help,h", "produce help message")
     ("license,l", "print license conditions")
@@ -66,6 +68,7 @@ option::option(int argc, char** argv)
      "number of threads for each clone [default = 1]")
     ("total-threads,r", po::value<std::string>(),
      "total number of threads [integer or 'auto'; default = total number of processes]")
+    ("write-xml", "write results to XML files")
     ("input-file", po::value<std::vector<std::string> >(),
      "input master XML files");
   po::positional_options_description p;
@@ -126,6 +129,8 @@ option::option(int argc, char** argv)
       num_total_threads = boost::lexical_cast<int>(vm["total-threads"].as<std::string>());
     }
   }
+  if (vm.count("write-xml"))
+    write_xml = true;
   if (vm.count("input-file"))
     jobfiles = vm["input-file"].as<std::vector<std::string> >();
 }
@@ -133,10 +138,12 @@ option::option(int argc, char** argv)
 void option::print(std::ostream& os) const { desc.print(os); }
 
 evaluate_option::evaluate_option(int argc, char** argv)
-  : desc("Allowed options"), jobfiles(), valid(true), show_help(false), show_license(false) {
+  : desc("Allowed options"), write_xml(false), jobfiles(),
+    valid(true), show_help(false), show_license(false) {
   desc.add_options()
     ("help,h", "produce help message")
     ("license,l", "print license conditions")
+    ("write-xml", "write results to XML files")
     ("input-file", po::value<std::vector<std::string> >(), "input master XML files");
   po::positional_options_description p;
   p.add("input-file", -1);
@@ -155,6 +162,8 @@ evaluate_option::evaluate_option(int argc, char** argv)
     show_help = true;
   if (vm.count("license"))
     show_license = true;
+  if (vm.count("write-xml"))
+    write_xml = true;
   if (vm.count("input-file"))
     jobfiles = vm["input-file"].as<std::vector<std::string> >();
 }

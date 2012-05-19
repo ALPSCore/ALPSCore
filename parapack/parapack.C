@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2011 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2012 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -179,15 +179,15 @@ int evaluate(int argc, char **argv) {
         boost::filesystem::path file_in = complete(boost::filesystem::path(file_in_str), basedir);
         boost::filesystem::path file_out = complete(boost::filesystem::path(file_out_str), basedir);
         std::string simname;
-        load_tasks(file_in, file_out, basedir, simname, tasks, false);
+        load_tasks(file_in, file_out, basedir, simname, tasks, false, opt.write_xml);
         std::cout << "  master input file  = " << file_in.string() << std::endl
                   << "  master output file = " << file_out.string() << std::endl;
         print_taskinfo(std::cout, tasks);
-        BOOST_FOREACH(task& t, tasks) t.evaluate();
+        BOOST_FOREACH(task& t, tasks) t.evaluate(opt.write_xml);
       } else {
         // process one task
         task t(file);
-        t.evaluate();
+        t.evaluate(opt.write_xml);
       }
       std::cout << logger::header() << "all tasks evaluated\n";
     }
@@ -285,7 +285,7 @@ void load_version(boost::filesystem::path const& file,
 
 void load_tasks(boost::filesystem::path const& file_in, boost::filesystem::path const& file_out,
   boost::filesystem::path const& basedir, std::string& simname, std::vector<alps::task>& tasks,
-  bool check_parameter) {
+  bool check_parameter, bool write_xml) {
   tasks.clear();
   if (!exists(file_out)) {
     alps::job_tasks_xml_handler handler(simname, tasks, basedir);
@@ -310,7 +310,7 @@ void load_tasks(boost::filesystem::path const& file_in, boost::filesystem::path 
                     << " has been modified" << std::endl;
           tasks[i] = tasks_in[i];
         }
-        tasks[i].check_parameter();
+        tasks[i].check_parameter(write_xml);
       }
       if (tasks_in.size() > tasks.size()) {
         std::cout << "Info: number of parameter sets has been increased from " << tasks.size()
@@ -469,18 +469,18 @@ int start_sgl(int argc, char** argv) {
         file_in = complete(boost::filesystem::path(file_in_str), basedir);
         file_out = complete(boost::filesystem::path(file_out_str), basedir);
         std::string simname;
-        load_tasks(file_in, file_out, basedir, simname, tasks, false);
+        load_tasks(file_in, file_out, basedir, simname, tasks, false, opt.write_xml);
         std::cout << "  master input file  = " << file_in.string() << std::endl
                   << "  master output file = " << file_out.string() << std::endl;
         print_taskinfo(std::cout, tasks);
         // #pragma omp parallel for
         for (int t = 0; t < tasks.size(); ++t) {
-          tasks[t].evaluate();
+          tasks[t].evaluate(opt.write_xml);
         }
       } else {
         // process one task
         task t(file);
-        t.evaluate();
+        t.evaluate(opt.write_xml);
       }
       std::cout << logger::header() << "all tasks evaluated\n";
       return 0;
@@ -527,7 +527,7 @@ int start_sgl(int argc, char** argv) {
               << "  worker dump policy = "
               << dump_policy::to_string(opt.dump_policy) << std::endl;
 
-    load_tasks(file_in, file_out, basedir, simname, tasks);
+    load_tasks(file_in, file_out, basedir, simname, tasks, true, opt.write_xml);
     if (simname != "")
       std::cout << "  simulation name = " << simname << std::endl;
     BOOST_FOREACH(task const& t, tasks) {
@@ -571,7 +571,7 @@ int start_sgl(int argc, char** argv) {
             {
               double progress = tasks[tid].progress();
               tasks[tid].info_updated(cid, clone_ptr->info());
-              tasks[tid].halt_clone(proxy, cid, group);
+              tasks[tid].halt_clone(proxy, opt.write_xml, cid, group);
               if (progress < 1 && tasks[tid].progress() >= 1) ++num_finished_tasks;
               save_tasks(file_out, simname, file_in_str, file_out_str, tasks);
             } // end omp critical
@@ -580,7 +580,7 @@ int start_sgl(int argc, char** argv) {
             cid_t cid = clone_ptr->clone_id();
             #pragma omp critical
             {
-              tasks[tid].suspend_clone(proxy, cid, group);
+              tasks[tid].suspend_clone(proxy, opt.write_xml, cid, group);
             } // end omp critical
           } else if (!process.is_halting() && !clone_ptr) {
             tid_t tid = 0;
@@ -609,7 +609,7 @@ int start_sgl(int argc, char** argv) {
               {
                 std::cout << logger::header() << "checkpointing task files\n";
                 for (int t = 0; t < tasks.size(); ++t) {
-                  if (tasks[t].on_memory()) tasks[t].save();
+                  if (tasks[t].on_memory()) tasks[t].save(opt.write_xml);
                 }
                 std::cerr << "save task\n";
                 save_tasks(file_out, simname, file_in_str, file_out_str, tasks);
@@ -666,7 +666,8 @@ int start_sgl(int argc, char** argv) {
             if (to_halt) {
               #pragma omp critical
               {
-                for (int t = 0; t < tasks.size(); ++t) tasks[t].suspend_remote_clones(proxy);
+                for (int t = 0; t < tasks.size(); ++t)
+                  tasks[t].suspend_remote_clones(proxy, opt.write_xml);
               }
               process.halt();
             }
@@ -706,7 +707,7 @@ int start_sgl(int argc, char** argv) {
                 << alps::hostname() << std::endl;
       // #pragma omp parallel for
       for (int t = 0; t < tasks.size(); ++t) {
-        tasks[t].evaluate();
+        tasks[t].evaluate(opt.write_xml);
       } // end omp parallel for
       std::cout << logger::header() << "all tasks evaluated\n";
     }
@@ -881,15 +882,15 @@ int start_mpi(int argc, char** argv) {
           file_in = complete(boost::filesystem::path(file_in_str), basedir);
           file_out = complete(boost::filesystem::path(file_out_str), basedir);
           std::string simname;
-          load_tasks(file_in, file_out, basedir, simname, tasks);
+          load_tasks(file_in, file_out, basedir, simname, tasks, true, opt.write_xml);
           std::cout << "  master input file  = " << file_in.string() << std::endl
                     << "  master output file = " << file_out.string() << std::endl;
           print_taskinfo(std::cout, tasks);
-          BOOST_FOREACH(task& t, tasks) t.evaluate();
+          BOOST_FOREACH(task& t, tasks) t.evaluate(opt.write_xml);
         } else {
           // process one task
           task t(file);
-          t.evaluate();
+          t.evaluate(opt.write_xml);
         }
         std::cout << logger::header() << "all tasks evaluated\n";
       }
@@ -941,7 +942,7 @@ int start_mpi(int argc, char** argv) {
                 << "  worker dump policy = "
                 << dump_policy::to_string(opt.dump_policy) << std::endl;
 
-      load_tasks(file_in, file_out, basedir, simname, tasks);
+      load_tasks(file_in, file_out, basedir, simname, tasks, true, opt.write_xml);
       if (simname != "")
         std::cout << "  simulation name = " << simname << std::endl;
       BOOST_FOREACH(task const& t, tasks) {
@@ -997,7 +998,7 @@ int start_mpi(int argc, char** argv) {
               to_halt = true;
             }
             if (to_halt) {
-              BOOST_FOREACH(task& t, tasks) t.suspend_remote_clones(proxy);
+              BOOST_FOREACH(task& t, tasks) t.suspend_remote_clones(proxy, opt.write_xml);
               process.halt();
             }
           }
@@ -1016,7 +1017,8 @@ int start_mpi(int argc, char** argv) {
                             << " (" << precision(msg.info.progress() * 100, 3) << "% done)\n";
                 } else {
                   tasks[msg.task_id].info_updated(msg.clone_id, msg.info);
-                  tasks[msg.task_id].halt_clone(proxy, msg.clone_id, process_group(msg.group_id));
+                  tasks[msg.task_id].halt_clone(proxy, opt.write_xml, msg.clone_id,
+                                                process_group(msg.group_id));
                 }
               } else if (status->tag() == mcmp_tag::clone_checkpoint) {
                 clone_info_msg_t msg;
@@ -1032,7 +1034,7 @@ int start_mpi(int argc, char** argv) {
                 tasks[msg.task_id].clone_suspended(msg.clone_id, process_group(msg.group_id),
                                                    msg.info);
                 if (tasks[msg.task_id].num_running() == 0) {
-                  tasks[msg.task_id].save();
+                  tasks[msg.task_id].save(opt.write_xml);
                   tasks[msg.task_id].halt();
                   save_tasks(file_out, simname, file_in_str, file_out_str, tasks);
                 }
@@ -1047,7 +1049,7 @@ int start_mpi(int argc, char** argv) {
                      tasks[msg.task_id].status() == task_status::Idling))
                   ++num_finished_tasks;
                 if (tasks[msg.task_id].num_running() == 0) {
-                  tasks[msg.task_id].save();
+                  tasks[msg.task_id].save(opt.write_xml);
                   tasks[msg.task_id].halt();
                   save_tasks(file_out, simname, file_in_str, file_out_str, tasks);
                 }
@@ -1064,14 +1066,14 @@ int start_mpi(int argc, char** argv) {
               cid_t cid = clone_ptr->clone_id();
               double progress = tasks[tid].progress();
               tasks[tid].info_updated(cid, clone_ptr->info());
-              tasks[tid].halt_clone(proxy, cid, process_group(0));
+              tasks[tid].halt_clone(proxy, opt.write_xml, cid, process_group(0));
               if (progress < 1 && tasks[tid].progress() >= 1) ++num_finished_tasks;
               save_tasks(file_out, simname, file_in_str, file_out_str, tasks);
               process.release(0);
             } else if (clone_ptr && process.is_halting()) {
               tid_t tid = clone_ptr->task_id();
               cid_t cid = clone_ptr->clone_id();
-              tasks[tid].suspend_clone(proxy, cid, process_group());
+              tasks[tid].suspend_clone(proxy, opt.write_xml, cid, process_group());
               process.release(0);
             } else if (!process.is_halting() && process.num_free() && task_queue.size()) {
               process_group g = process.allocate();
@@ -1091,7 +1093,7 @@ int start_mpi(int argc, char** argv) {
               check_queue.pop();
               if (q.type == check_type::taskinfo) {
                 std::cout << logger::header() << "checkpointing task files\n";
-                BOOST_FOREACH(task const& t, tasks) { if (t.on_memory()) t.save(); }
+                BOOST_FOREACH(task const& t, tasks) { if (t.on_memory()) t.save(opt.write_xml); }
                 save_tasks(file_out, simname, file_in_str, file_out_str, tasks);
                 print_taskinfo(std::cout, tasks);
                 check_queue.push(next_taskinfo(opt.checkpoint_interval));
@@ -1143,7 +1145,7 @@ int start_mpi(int argc, char** argv) {
             if (opt.auto_evaluate) {
               std::cout << logger::header() << "starting evaluation on "
                         << alps::hostname() << std::endl;
-              BOOST_FOREACH(task& t, tasks) t.evaluate();
+              BOOST_FOREACH(task& t, tasks) t.evaluate(opt.write_xml);
               std::cout << logger::header() << "all tasks evaluated\n";
             }
           }
