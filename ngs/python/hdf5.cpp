@@ -138,12 +138,23 @@ namespace alps {
                 boost::python::object py_load(std::string const & path) {
                     import_numpy();
                     if (is_group(path)) {
-                        // TODO: if keys are integers make a list out of it
-                        boost::python::dict result;
                         std::vector<std::string> list = list_children(path);
-                        for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it)
-                            boost::python::call_method<void>(result.ptr(), "__setitem__", *it, py_load(path + "/" + encode_segment(*it)));
-                        return result;
+                        bool is_list = true;
+                        for (std::vector<std::string>::const_iterator it = list.begin(); is_list && it != list.end(); ++it)
+                            for (std::string::const_iterator jt = it->begin(); is_list && jt != it->end(); ++jt)
+                                if (std::string("1234567890").find_first_of(*jt) == std::string::npos || alps::cast<unsigned>(*jt) > list.size() - 1)
+                                    is_list = false;
+                        if (is_list && list.size()) {
+                            std::vector<boost::python::object> result;
+                            for (std::size_t i = 0; i < list.size(); ++i)
+                                result.push_back(py_load(path + "/" + alps::cast<std::string>(i)));
+                            return boost::python::list(result);
+                        } else {
+                            boost::python::dict result;
+                            for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it)
+                                boost::python::call_method<void>(result.ptr(), "__setitem__", *it, py_load(path + "/" + encode_segment(*it)));
+                            return result;
+                        }
                     } else if (is_scalar(path) || (is_datatype<double>(path) && is_complex(path) && extent(path).size() == 1 && extent(path)[0] == 2)) {
                         if (is_datatype<std::string>(path))
                             return load_scalar<std::string>(path);
@@ -252,7 +263,6 @@ namespace alps {
                     scalar_types.push_back("float");
                     scalar_types.push_back("complex");
                     scalar_types.push_back("str");
-                    // scalar_types.push_back("numpy.ndarray");
                     scalar_types.push_back("numpy.str");
                     scalar_types.push_back("numpy.bool");
                     scalar_types.push_back("numpy.int8");
@@ -281,6 +291,10 @@ namespace alps {
                         if (dtype == "list") {
                             boost::tie(next_homogenious, next_extent) = py_save_list_extent(boost::python::extract<boost::python::list>(data[i]));
                             if (!next_homogenious || first_extent.size() != next_extent.size() || !equal(first_extent.begin(), first_extent.end(), next_extent.begin()))
+                                return make_pair(false, std::vector<std::size_t>());
+                        } if (dtype == "numpy.ndarray") {
+                            next_extent = std::vector<std::size_t>(PyArray_DIMS(data.ptr()), PyArray_DIMS(data.ptr()) + PyArray_NDIM(data.ptr()));
+                            if (first_extent.size() != next_extent.size() || !equal(first_extent.begin(), first_extent.end(), next_extent.begin()))
                                 return make_pair(false, std::vector<std::size_t>());
                         } else if (first_dtype != dtype || find(scalar_types.begin(), scalar_types.end(), dtype) == scalar_types.end())
                             return std::make_pair(false, std::vector<std::size_t>());
