@@ -430,7 +430,7 @@ BOOST_PYTHON_MODULE(pyngshdf5_c) {
         alps::detail::std_vector_string_to_python
     >();
 
-    boost::python::class_<alps::detail::hdf5_archive_export >(
+    boost::python::class_<alps::detail::hdf5_archive_export, boost::python::bases<alps::hdf5::archive> >(
           "hdf5_archive_impl",
           boost::python::init<std::string, std::string>()
     )
