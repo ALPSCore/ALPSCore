@@ -27,6 +27,7 @@
 
 import numpy as np
 import pyalps.ngs as ngs
+import os
 
 ar=ngs.h5ar('foo%d.h5', 'al')
 s=2**10
@@ -36,3 +37,8 @@ while s < 2**29:
     a = np.empty(s)
     ar[str(s)] = a
     s *= 2
+
+i = 0
+while os.path.isfile('foo%d.h5'%i):
+    os.remove('foo%d.h5'%i)
+    ++i

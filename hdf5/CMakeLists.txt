@@ -10,30 +10,30 @@ include_directories(${Boost_ROOT_DIR})
 option(ALPS_BUILD_HDF5_TESTS "Build the hdf5 tests" OFF)
 mark_as_advanced(ALPS_BUILD_HDF5_TESTS)
 
+find_package(HDF5)
+
+# tests using ALPS
+FOREACH (name hdf5_deprecated hdf5_complex hdf5_bool hdf5_replace hdf5_pair hdf5_parms hdf5_ising hdf5_family hdf5_large hdf5_valgrind 
+              hdf5_observableset hdf5_multi_array hdf5_memory)
+    add_executable(${name} ${name}.cpp)
+    add_dependencies(${name} alps)
+    target_link_libraries(${name} alps)
+    add_alps_test(${name})
+ENDFOREACH(name)
+
+# tests not using ALPS
+FOREACH (name hdf5_exceptions hdf5_multiarchive)
+    add_executable(${name} ${name}.cpp)
+    if (Boost_FOUND)
+        target_link_libraries(${name} ${Boost_LIBRARIES} ${HDF5_LIBRARIES}) 
+    else(Boost_FOUND) 
+        add_dependencies(${name} boost) 
+        target_link_libraries(${name} alps ${ALPS_BOOST_LIBRARY_NAME} ${HDF5_LIBRARIES})
+    endif(Boost_FOUND) 
+    add_alps_test(${name})
+ENDFOREACH(name)
+
 IF (ALPS_BUILD_HDF5_TESTS)
-
-    find_package(HDF5)
-
-    # tests using ALPS
-    FOREACH (name hdf5_deprecated hdf5_complex hdf5_bool hdf5_replace hdf5_pair hdf5_parms hdf5_ising hdf5_family hdf5_large hdf5_valgrind 
-                  hdf5_observableset hdf5_multi_array)
-        add_executable(${name} ${name}.cpp)
-        add_dependencies(${name} alps)
-        target_link_libraries(${name} alps)
-        add_alps_test(${name})
-    ENDFOREACH(name)
-
-    # tests not using ALPS
-    FOREACH (name hdf5_exceptions hdf5_multiarchive)
-        add_executable(${name} ${name}.cpp)
-        if (Boost_FOUND)
-            target_link_libraries(${name} ${Boost_LIBRARIES} ${HDF5_LIBRARIES}) 
-        else(Boost_FOUND) 
-            add_dependencies(${name} boost) 
-            target_link_libraries(${name} alps ${ALPS_BOOST_LIBRARY_NAME} ${HDF5_LIBRARIES})
-        endif(Boost_FOUND) 
-        add_alps_test(${name})
-    ENDFOREACH(name)
 
     # texting type serialization
     SET(ALPS_HDF5_DATA_TYPES

@@ -29,25 +29,34 @@
 
 #include <boost/filesystem.hpp>
 
-#include <vector>
-
+#include <iostream>
 using namespace std;
-using namespace alps;
 
-int main () {
-
-    for (std::size_t i = 0; i < 100; ++i)
-        if (boost::filesystem::exists(boost::filesystem::path("large" + alps::cast<std::string>(i) + ".h5")))
-            boost::filesystem::remove(boost::filesystem::path("large" + alps::cast<std::string>(i) + ".h5"));
-
-    hdf5::archive ar("large%d.h5", "al");
-    for (unsigned long long s = 1; s < (1ULL << 29); s <<= 1) {
-        std::cout << s << std::endl;
-        vector<double> vec(s, 10.);
-        ar << make_pvp("/" + cast<std::string>(s), vec);
+int main()
+{
+    if (boost::filesystem::exists(boost::filesystem::path("test.h5")))
+        boost::filesystem::remove(boost::filesystem::path("test.h5"));
+    {
+        alps::hdf5::oarchive oa("test.h5");
+        std::vector<std::complex<double> > foo(3);
+        std::vector<double> foo2(3);
+        oa << alps::make_pvp("/foo", foo);
+        oa << alps::make_pvp("/foo2", foo2);
     }
-
-    for (std::size_t i = 0; i < 100; ++i)
-        if (boost::filesystem::exists(boost::filesystem::path("large" + alps::cast<std::string>(i) + ".h5")))
-            boost::filesystem::remove(boost::filesystem::path("large" + alps::cast<std::string>(i) + ".h5"));
+    
+    {
+        alps::hdf5::iarchive ia("test.h5");
+        std::vector<double> foo, foo2;
+        try {
+            ia >> alps::make_pvp("/foo", foo);
+            ia >> alps::make_pvp("/foo2", foo2);
+        } catch (exception e) {
+            cout << "Exception caught:" << endl;
+            cout << e.what() << endl;
+            boost::filesystem::remove(boost::filesystem::path("test.h5"));
+            return 0;
+        }
+        cout << "No exception." << endl;
+    }
+    //boost::filesystem::remove(boost::filesystem::path("test.h5"));
 }

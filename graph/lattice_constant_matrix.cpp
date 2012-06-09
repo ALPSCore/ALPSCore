@@ -48,7 +48,7 @@ int main() {
     alps::Parameters parm;
     unsigned int side_length = 40;
     
-    std::ifstream in("../../lib/xml/lattices.xml");
+    std::ifstream in("./lib/xml/lattices.xml");
     parm["LATTICE"] = "square lattice";
     parm["L"] = side_length;
 
@@ -78,7 +78,7 @@ int main() {
     {
         graph_type g;
         add_edge(0,1,g);
-        
+
         // Orbit partition: (0 1) -> [0] (1)
         unsigned int breaking_vertex = 0;
         std::vector<contrib_type> part_contrib(2);
@@ -91,7 +91,7 @@ int main() {
         out[0]  += 2*2*2;  // (0,0)
         out[1]  += 1*3;    // (1,0)
         out[40] += 1*3;    // (0,1)
-        
+
         test_graphs.push_back(boost::make_tuple(g,in,out));
     }
 
@@ -138,7 +138,7 @@ int main() {
             out[41] += 2*11; // (1,1)
             out[2]  += 1*11; // (2,0)
             out[80] += 1*11; // (0,2)
-            
+    
             test_graphs.push_back(boost::make_tuple(g,in,out));
         }
 
