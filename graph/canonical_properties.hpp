@@ -535,7 +535,7 @@ namespace alps {
                 for (boost::tie(it, end) = vertices(G); it != end; ++it)
                     pi[std::find(color_vector.begin(), color_vector.end(), get(alps::vertex_type_t(), G)[*it]) - color_vector.begin()].push_back(*it);
             }
-            
+
             // uncolored initial partition with symmetry breaking vertex v
             template<typename Graph> void initial_partition(
                   Graph const & G

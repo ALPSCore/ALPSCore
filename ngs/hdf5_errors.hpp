@@ -37,7 +37,7 @@ namespace alps {
         class archive_error : public std::runtime_error {
             public:
                 archive_error(std::string const & what)
-                    : runtime_error(what) 
+                    : std::runtime_error(what) 
                 {}
         };
 
