@@ -145,8 +145,7 @@ int main() {
     }
 
     int success = 0;
-    for(std::vector<boost::tuple<graph_type, input_type, output_type> >::iterator it = test_graphs.begin(); it != test_graphs.end(); ++it)
-    { // TODO: fixit ...
+    for(std::vector<boost::tuple<graph_type, input_type, output_type> >::iterator it = test_graphs.begin(); it != test_graphs.end(); ++it) {
         output_type output(init);
         alps::graph::lattice_constant(
               output
