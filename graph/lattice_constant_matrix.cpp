@@ -48,7 +48,7 @@ int main() {
     alps::Parameters parm;
     unsigned int side_length = 40;
     
-    std::ifstream in("./lib/xml/lattices.xml");
+    std::ifstream in("../../lib/xml/lattices.xml");
     parm["LATTICE"] = "square lattice";
     parm["L"] = side_length;
 
@@ -117,7 +117,7 @@ int main() {
 
             output_type out(init);
             out[0] += 4*2;  // (0,0)
-            out[1] += 3*2;  // (1,0)
+            out[1] += 3*3;  // (1,0)
             out[40] += 3*3; // (0,1)
 
             test_graphs.push_back(boost::make_tuple(g,in,out));
@@ -132,12 +132,12 @@ int main() {
             input_type in(canonical_properties(g,breaking_vertex), part_contrib);
         
             output_type out(init);
-            out[0]  += 4*5;  // (0,0)
-            out[1]  += 1*7;  // (1,0)
-            out[40] += 1*7;  // (0,1)
-            out[41] += 2*11; // (1,1)
-            out[2]  += 1*11; // (2,0)
-            out[80] += 1*11; // (0,2)
+            out[0]  += 12 * part_contrib[0];  // (0,0)
+            out[1]  += 3  * part_contrib[1];  // (1,0)
+            out[40] += 3  * part_contrib[1];  // (0,1)
+            out[41] += 4*11; // (1,1)
+            out[2]  += 2*11; // (2,0)
+            out[80] += 2*11; // (0,2)
     
             test_graphs.push_back(boost::make_tuple(g,in,out));
         }
@@ -165,7 +165,7 @@ int main() {
             for(std::size_t i=0; i != output.size(); ++i)
             {
                 if(output[i] != ref[i])
-                    std::cerr<<output[i]-init[i]<<"\t<->\t"<<ref[i]-init[i]<<std::endl;
+                    std::cerr<<"vertex: "<<i<<":\t"<<output[i]-init[i]<<"\t<->\t"<<ref[i]-init[i]<<std::endl;
             }
             std::cerr<<std::endl;
             success = -1;
