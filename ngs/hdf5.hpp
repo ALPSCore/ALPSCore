@@ -231,6 +231,16 @@ namespace alps {
             template<typename T> struct set_extent {
                  static void apply(T &, std::vector<std::size_t> const &) {}
             };
+            
+            #define ALPS_NGS_HDF5_DEFINE_SET_EXTENT(T)                                                                                                              \
+                template<> struct set_extent<T> {                                                                                                                   \
+                    static void apply(T &, std::vector<std::size_t> const & extent) {                                                                               \
+                        if (extent.size() > 0)                                                                                                                      \
+                            throw wrong_type("The extents do not match" + ALPS_STACKTRACE);                                                                         \
+                    }                                                                                                                                               \
+                };
+            ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_DEFINE_SET_EXTENT)
+            #undef ALPS_NGS_HDF5_DEFINE_SET_EXTENT
 
             template<typename T> struct is_vectorizable {
                  static bool apply(T const & value){
