@@ -142,39 +142,49 @@ namespace alps {
                 }
             }
 
-            template<typename GeometricInfo, typename Graph, typename Subgraph, typename GraphWeight> typename boost::disable_if<
+            template<typename GeometricInfo, typename Graph, typename Subgraph, typename GraphWeight, typename BreakingVertex> typename boost::disable_if<
                 boost::is_same<GeometricInfo, boost::false_type>
             >::type lattice_constant_geometry(
                   GeometricInfo & geometric_info
                 , Subgraph const & S
                 , Graph const & G
+                , std::vector<std::size_t> const & I
+                , std::vector<std::vector<boost::uint_t<8>::fast> > const & distance_to_boarder
                 , std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> const & pinning
                 , typename partition_type<Subgraph>::type const & subgraph_orbit
                 , GraphWeight const & graph_weight
+                , BreakingVertex const & breaking_vertex
                 , bool inserted
             ) {
                 if (inserted)
-                    for (typename std::vector<typename boost::graph_traits<Graph>::vertex_descriptor>::const_iterator it = pinning.begin(); it != pinning.end(); ++it)
-                        if (*it >= pinning[subgraph_orbit[0][0]])
-                            geometric_info[*it - pinning[subgraph_orbit[0][0]]] += graph_weight[it - pinning.begin()];
+                    for (typename std::vector<typename boost::graph_traits<Graph>::vertex_descriptor>::const_iterator it = pinning.begin(); it != pinning.end(); ++it) {
+                        bool is_valid = true;
+                        for(std::size_t d = 0; is_valid && d < distance_to_boarder.size(); ++d)
+                            is_valid = distance_to_boarder[d][pinning[breaking_vertex]] <= distance_to_boarder[d][*it];
+                        if (is_valid)
+                            geometric_info[*it - pinning[breaking_vertex]] += graph_weight[I[it - pinning.begin()]];
+                    }
             }
 
-            template<typename GeometricInfo, typename Graph, typename Subgraph, typename GraphWeight> typename boost::enable_if<
+            template<typename GeometricInfo, typename Graph, typename Subgraph, typename GraphWeight, typename BreakingVertex> typename boost::enable_if<
                 boost::is_same<GeometricInfo, boost::false_type>
             >::type lattice_constant_geometry(
                   GeometricInfo &
                 , Subgraph const & S
                 , Graph const &
+                , std::vector<std::size_t> const &
+                , std::vector<std::vector<boost::uint_t<8>::fast> > const &
                 , std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> const &
                 , typename partition_type<Subgraph>::type const &
-                , GraphWeight const & graph_weight
+                , GraphWeight const &
+                , BreakingVertex const &
                 , bool
             ) {}
 
             struct embedding_found {};
 
             // TODO: move back into main function after optimizing
-            template<typename Subgraph, typename Graph, unsigned SubVertexNum, unsigned CoordNum, typename GeometricInfo, typename GraphWeight> void lattice_constant_insert(
+            template<typename Subgraph, typename Graph, unsigned SubVertexNum, unsigned CoordNum, typename GeometricInfo, typename GraphWeight, typename BreakingVertex> void lattice_constant_insert(
                   Subgraph const & S
                 , Graph const & G
                 , std::vector<std::size_t> const & I
@@ -185,13 +195,14 @@ namespace alps {
                 , std::size_t unit_cell_size
                 , GeometricInfo & geometric_info
                 , GraphWeight const & graph_weight
+                , BreakingVertex
                 , boost::true_type
             ) {
                 throw embedding_found();
             }
 
             // TODO: move back into main function after optimizing
-            template<typename Subgraph, typename Graph, unsigned SubVertexNum, unsigned CoordNum, typename GeometricInfo, typename GraphWeight> void lattice_constant_insert(
+            template<typename Subgraph, typename Graph, unsigned SubVertexNum, unsigned CoordNum, typename GeometricInfo, typename GraphWeight, typename BreakingVertex> void lattice_constant_insert(
                   Subgraph const & S
                 , Graph const & G
                 , std::vector<std::size_t> const & I
@@ -202,6 +213,7 @@ namespace alps {
                 , std::size_t unit_cell_size
                 , GeometricInfo & geometric_info
                 , GraphWeight const & graph_weight
+                , BreakingVertex const & breaking_vertex
                 // TODO: make argument, to pass SubVertexNum and CoordNum, so no explicit call is needed ...
                 , boost::false_type
             ) {
@@ -255,7 +267,7 @@ namespace alps {
                     hash_combine(embedding_generic.hash, *it);
                 }
 
-                lattice_constant_geometry(geometric_info, S, G, pinning, subgraph_orbit, graph_weight, matches.insert(embedding_generic).second);
+                lattice_constant_geometry(geometric_info, S, G, I, distance_to_boarder, pinning, subgraph_orbit, graph_weight, breaking_vertex, matches.insert(embedding_generic).second);
             }
 
             template<typename Subgraph, typename Graph> bool lattice_constant_vertex_equal(
@@ -299,7 +311,7 @@ namespace alps {
             }
 
             // TODO: make an object out of walker
-            template<typename Subgraph, typename Graph, typename ExitOnMatch, typename GraphWeight, typename GeometricInfo> void lattice_constant_walker(
+            template<typename Subgraph, typename Graph, typename ExitOnMatch, typename GraphWeight, typename GeometricInfo, typename BreakingVertex> void lattice_constant_walker(
                   typename boost::graph_traits<Subgraph>::vertex_descriptor const & s
                 , typename boost::graph_traits<Graph>::vertex_descriptor const & g
                 , Subgraph const & S
@@ -318,6 +330,7 @@ namespace alps {
                 , std::size_t unit_cell_size
                 , GeometricInfo & geometric_info
                 , GraphWeight const & graph_weight
+                , BreakingVertex const & breaking_vertex
                 , ExitOnMatch exit_on_match
             ) {
                 typedef typename boost::graph_traits<Subgraph>::vertex_descriptor SubgraphVertex;
@@ -378,6 +391,7 @@ namespace alps {
                                 , unit_cell_size
                                 , geometric_info
                                 , graph_weight
+                                , breaking_vertex
                                 , exit_on_match
                             );
                 } else
@@ -392,6 +406,7 @@ namespace alps {
                         , unit_cell_size
                         , geometric_info
                         , graph_weight
+                        , breaking_vertex
                         , exit_on_match
                     );
                 pinning[s] = num_vertices(G);
@@ -400,7 +415,7 @@ namespace alps {
 
             // Input: Subgraph, Graph, vertices of G contained in mapping of S on G
             // Output: lattice_constant of S in G containing v
-            template<typename Subgraph, typename Graph, typename GeometricInfo, typename GraphWeight, typename ExitOnMatch> std::size_t lattice_constant_impl(
+            template<typename Subgraph, typename Graph, typename GeometricInfo, typename GraphWeight, typename BreakingVertex, typename ExitOnMatch> std::size_t lattice_constant_impl(
                   Subgraph const & S
                 , Graph const & G
                 , std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> const & V
@@ -409,6 +424,7 @@ namespace alps {
                 , std::size_t unit_cell_size
                 , GeometricInfo & geometric_info
                 , GraphWeight const & graph_weight
+                , BreakingVertex const & breaking_vertex
                 , ExitOnMatch exit_on_match
             ) {
                 // Assume the vertex desciptor is an unsigned integer type (since we want to use it as an index for a vector)
@@ -466,6 +482,7 @@ namespace alps {
                                 , unit_cell_size
                                 , geometric_info
                                 , graph_weight
+                                , breaking_vertex
                                 , exit_on_match
                             );
                             break;
@@ -495,7 +512,7 @@ namespace alps {
                 V.push_back(cell_id * unit_cell_size + v);
 
             boost::false_type no_argument;
-            return detail::lattice_constant_impl(S, G, V, distance_to_boarder, subgraph_orbit, unit_cell_size, no_argument, boost::false_type(), boost::false_type());
+            return detail::lattice_constant_impl(S, G, V, distance_to_boarder, subgraph_orbit, unit_cell_size, no_argument, boost::false_type(), boost::false_type(), boost::false_type());
         }
 
         template<typename Subgraph, typename Graph, typename Lattice, typename Weight> std::size_t lattice_constant(
@@ -504,6 +521,7 @@ namespace alps {
             , Graph const & G
             , Lattice const & L
             , typename alps::lattice_traits<Lattice>::cell_descriptor c
+            , typename boost::graph_traits<Subgraph>::vertex_descriptor b
             , typename partition_type<Subgraph>::type const & subgraph_orbit
             , std::vector<Weight> const & gw
         ) {
@@ -517,7 +535,7 @@ namespace alps {
             for(unsigned v = 0; v < unit_cell_size; ++v)
                 V.push_back(cell_id * unit_cell_size + v);
 
-            return detail::lattice_constant_impl(S, G, V, distance_to_boarder, subgraph_orbit, unit_cell_size, lw, gw, boost::false_type());
+            return detail::lattice_constant_impl(S, G, V, distance_to_boarder, subgraph_orbit, unit_cell_size, lw, gw, b, boost::false_type());
         }
 
         template<typename Subgraph, typename Graph> bool is_embeddable(
@@ -531,7 +549,7 @@ namespace alps {
             try {
                 std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> V(1, v);
                 boost::false_type no_argument;
-                detail::lattice_constant_impl(S, G, V, distance_to_boarder, subgraph_orbit, 1, no_argument, boost::false_type(), boost::true_type());
+                detail::lattice_constant_impl(S, G, V, distance_to_boarder, subgraph_orbit, 1, no_argument, boost::false_type(), boost::false_type(), boost::true_type());
                 return false;
             } catch (detail::embedding_found e) {
                 return true;
@@ -550,7 +568,7 @@ namespace alps {
                 boost::false_type no_argument;
                 for (boost::tie(vt, ve) = vertices(G); vt != ve; ++vt) {
                     std::vector<typename boost::graph_traits<Graph>::vertex_descriptor> V(1, *vt);
-                    detail::lattice_constant_impl(S, G, V, distance_to_boarder, subgraph_orbit, 1, no_argument, boost::false_type(), boost::true_type());
+                    detail::lattice_constant_impl(S, G, V, distance_to_boarder, subgraph_orbit, 1, no_argument, boost::false_type(), boost::false_type(),boost::true_type());
                 }
                 return false;
             } catch (detail::embedding_found e) {
