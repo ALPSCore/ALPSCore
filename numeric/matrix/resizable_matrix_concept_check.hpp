@@ -25,8 +25,8 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef __ALPS_RESIZABLE_MATRIX_CONCEPT_CHECK_HPP__
-#define __ALPS_RESIZABLE_MATRIX_CONCEPT_CHECK_HPP__
+#ifndef ALPS_RESIZABLE_MATRIX_CONCEPT_CHECK_HPP
+#define ALPS_RESIZABLE_MATRIX_CONCEPT_CHECK_HPP
 #include <boost/concept_check.hpp>
 #include <boost/type_traits/remove_const.hpp>
 #include <stdexcept>
@@ -71,4 +71,4 @@ namespace alps {
 
     }  // end namespace numeric
 } // end namespace alps
-#endif //__ALPS_RESIZABLE_MATRIX_CONCEPT_CHECK_HPP__
+#endif //ALPS_RESIZABLE_MATRIX_CONCEPT_CHECK_HPP

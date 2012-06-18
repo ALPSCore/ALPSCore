@@ -25,8 +25,8 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef __ALPS_MATRIX_INTERFACE_HPP__
-#define __ALPS_MATRIX_INTERFACE_HPP__
+#ifndef ALPS_MATRIX_INTERFACE_HPP
+#define ALPS_MATRIX_INTERFACE_HPP
 
 #include <alps/numeric/matrix/matrix_concept_check.hpp>
 
@@ -95,4 +95,4 @@ namespace alps {
     #undef COMMA
     } //namespace numeric 
 } //namespace alps     
-#endif //__ALPS_MATRIX_INTERFACE_HPP__
+#endif //ALPS_MATRIX_INTERFACE_HPP

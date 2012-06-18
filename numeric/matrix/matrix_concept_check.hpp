@@ -25,8 +25,8 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef __ALPS_MATRIX_CONCEPT_CHECK_HPP__
-#define __ALPS_MATRIX_CONCEPT_CHECK_HPP__
+#ifndef ALPS_MATRIX_CONCEPT_CHECK_HPP
+#define ALPS_MATRIX_CONCEPT_CHECK_HPP
 #include <boost/concept_check.hpp>
 #include <boost/type_traits/remove_const.hpp>
 
@@ -111,4 +111,4 @@ struct Matrix : boost::Assignable<X>
 } // namespace numeric
 } // namespace alps
 
-#endif //__ALPS_MATRIX_CONCEPT_CHECK_HPP__
+#endif //ALPS_MATRIX_CONCEPT_CHECK_HPP

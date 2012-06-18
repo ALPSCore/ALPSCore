@@ -25,8 +25,8 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef __ALPS_DENSE_MATRIX_ADAPTOR_HPP__
-#define __ALPS_DENSE_MATRIX_ADAPTOR_HPP__
+#ifndef ALPS_MATRIX_ADAPTOR_HPP
+#define ALPS_MATRIX_ADAPTOR_HPP
 
 #include <boost/numeric/bindings/detail/adaptor.hpp>
 #include <boost/numeric/bindings/detail/if_row_major.hpp>
@@ -92,4 +92,4 @@ namespace boost { namespace numeric { namespace bindings { namespace detail {
 
 }}}}
 
-#endif //__ALPS_DENSE_MATRIX_ADAPTOR_HPP__
+#endif //ALPS_DENSE_MATRIX_ADAPTOR_HPP

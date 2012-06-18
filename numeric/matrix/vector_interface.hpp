@@ -25,8 +25,8 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef __ALPS_VECTOR_INTERFACE_HPP__
-#define __ALPS_VECTOR_INTERFACE_HPP__
+#ifndef ALPS_VECTOR_INTERFACE_HPP
+#define ALPS_VECTOR_INTERFACE_HPP
 
 #include <vector>
 
@@ -47,5 +47,5 @@ return m.NAME VARS; \
 } // end namespace alps
 
 
-#endif
+#endif //ALPS_VECTOR_INTERFACE_HPP
 

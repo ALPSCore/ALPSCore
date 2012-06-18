@@ -25,8 +25,8 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef __ALPS_MATRIX_ELEMENT_ITERATOR_HPP__
-#define __ALPS_MATRIX_ELEMENT_ITERATOR_HPP__
+#ifndef ALPS_MATRIX_ELEMENT_ITERATOR_HPP
+#define ALPS_MATRIX_ELEMENT_ITERATOR_HPP
 
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/static_assert.hpp>
@@ -128,4 +128,4 @@ class matrix_element_iterator : public boost::iterator_facade<
 } // end namespace numeric
 } // end namespace alps
 
-#endif //__ALPS_MATRIX_ELEMENT_ITERATOR_HPP__
+#endif //ALPS_MATRIX_ELEMENT_ITERATOR_HPP

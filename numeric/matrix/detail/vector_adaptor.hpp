@@ -25,8 +25,8 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef __ALPS_VECTOR_ADAPTOR_HPP__
-#define __ALPS_VECTOR_ADAPTOR_HPP__
+#ifndef ALPS_VECTOR_ADAPTOR_HPP
+#define ALPS_VECTOR_ADAPTOR_HPP
 
 #include <boost/numeric/bindings/detail/adaptor.hpp>
 
@@ -69,4 +69,4 @@ namespace boost { namespace numeric { namespace bindings { namespace detail {
     };
 }}}}
 
-#endif // __ALPS_VECTOR_ADAPTOR_HPP__
+#endif // ALPS_VECTOR_ADAPTOR_HPP

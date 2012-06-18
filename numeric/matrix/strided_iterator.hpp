@@ -25,8 +25,8 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef __ALPS_STRIDED_ITERATOR_HPP__
-#define __ALPS_STRIDED_ITERATOR_HPP__
+#ifndef ALPS_STRIDED_ITERATOR_HPP
+#define ALPS_STRIDED_ITERATOR_HPP
 
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/static_assert.hpp>
@@ -111,4 +111,4 @@ class strided_iterator : public boost::iterator_facade<
 } // end namespace numeric
 } // end namespace alps
 
-#endif //__ALPS_STRIDED_ITERATOR_HPP__
+#endif //ALPS_STRIDED_ITERATOR_HPP
