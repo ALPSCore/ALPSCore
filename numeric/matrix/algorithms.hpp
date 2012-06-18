@@ -4,7 +4,8 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2012 by Andreas Hehn <hehn@phys.ethz.ch>                   *
+ * Copyright (C) 2010 - 2012 by Alex Kosenkov <alex.kosenkov@gmail.com>            *
+ *                              Andreas Hehn <hehn@phys.ethz.ch>                   *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -25,8 +26,8 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef __ALPS_DENSE_MATRIX_ALGO_ALGORITHMS_HPP__
-#define __ALPS_DENSE_MATRIX_ALGO_ALGORITHMS_HPP__
+#ifndef ALPS_MATRIX_ALGORITHMS_HPP
+#define ALPS_MATRIX_ALGORITHMS_HPP
 #include <vector>
 #include <stdexcept>
 #include <alps/numeric/matrix/matrix_concept_check.hpp>
@@ -270,4 +271,4 @@ namespace alps {
     } // end namspace numeric
 } //end namespace alps
 
-#endif //__ALPS_DENSE_MATRIX_ALGO_ALGORITHMS_HPP__
+#endif //ALPS_MATRIX_ALGORITHMS_HPP

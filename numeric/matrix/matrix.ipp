@@ -499,14 +499,11 @@ namespace alps {
     } 
 
     template<typename T, typename MemoryBlock, typename T2, typename MemoryBlock2>
-    const vector<typename MultiplyReturnType<T,MemoryBlock,T2,MemoryBlock2>::value_type,typename MultiplyReturnType<T,MemoryBlock,T2,MemoryBlock2>::memoryblock_type>
+    typename matrix_vector_multiplies_return_type<dense_matrix<T,MemoryBlock>,vector<T2,MemoryBlock2> >::type
     matrix_vector_multiply(dense_matrix<T,MemoryBlock> const& m, vector<T2,MemoryBlock2> const& v)
     {
         assert( m.num_cols() == v.size() );
-        vector<
-            typename MultiplyReturnType<T,MemoryBlock,T2,MemoryBlock2>::value_type,
-            typename MultiplyReturnType<T,MemoryBlock,T2,MemoryBlock2>::memoryblock_type
-            >
+        typename matrix_vector_multiplies_return_type<dense_matrix<T,MemoryBlock>,vector<T2,MemoryBlock2> >::type
             result(m.num_rows());
         // Simple Matrix * Vector
         for(typename dense_matrix<T,MemoryBlock>::size_type i = 0; i < m.num_rows(); ++i)
@@ -568,7 +565,7 @@ namespace alps {
     }
 	
     template<typename T, typename MemoryBlock, typename T2, typename MemoryBlock2>
-    const vector<typename MultiplyReturnType<T,MemoryBlock,T2,MemoryBlock2>::value_type, typename MultiplyReturnType<T,MemoryBlock,T2,MemoryBlock2>::memoryblock_type>
+    typename matrix_vector_multiplies_return_type<dense_matrix<T,MemoryBlock>,vector<T2,MemoryBlock2> >::type
     operator * (dense_matrix<T,MemoryBlock> const& m, vector<T2,MemoryBlock2> const& v)
     {
         return matrix_vector_multiply(m,v);

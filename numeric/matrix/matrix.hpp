@@ -25,20 +25,17 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef __ALPS_DENSE_MATRIX_HPP__
-#define __ALPS_DENSE_MATRIX_HPP__
+#ifndef ALPS_MATRIX_HPP
+#define ALPS_MATRIX_HPP
 
-//#include "utils/data_collector.hpp"
 #include <alps/numeric/matrix/strided_iterator.hpp>
 #include <alps/numeric/matrix/matrix_element_iterator.hpp>
 #include <alps/numeric/matrix/vector.hpp>
 #include <alps/numeric/matrix/detail/matrix_adaptor.hpp>
-//#include <alps/numeric/utils/traits.hpp>
+#include <alps/numeric/matrix/matrix_traits.hpp>
+#include <alps/numeric/real.hpp>
 
 //#include "utils/function_objects.h"
-//#include <utils/timings.h>
-
-//#include "types/dense_matrix/diagonal_matrix.h"
 
 #include <boost/lambda/lambda.hpp>
 #include <boost/typeof/typeof.hpp>
@@ -293,68 +290,6 @@ namespace alps {
     }  // namespace numeric 
 } // namespace alps 
 
-namespace alps {
-    namespace numeric {
-
-//    template<typename T, typename MemoryBlock>
-//    struct associated_diagonal_matrix<dense_matrix<T, MemoryBlock> >
-//    {
-//        typedef  diagonal_matrix<T> type;
-//    };
-//    
-//    template<typename T, typename MemoryBlock>
-//    struct associated_real_diagonal_matrix<dense_matrix<T, MemoryBlock> >
-//    {
-//        typedef diagonal_matrix<typename detail::real_type<T>::type> type;
-//    };
-//    
-//    //
-//    // std::vector are unfriendly with ambient, there we wrap as associated_diagonal_matrix
-//    //
-//    template<class T, class MemoryBlock>
-//    struct associated_vector<dense_matrix<T,MemoryBlock> >
-//    {
-//        typedef std::vector<T> type;
-//    };
-//    
-//    template<class T, class MemoryBlock>
-//    struct associated_real_vector<dense_matrix<T,MemoryBlock> >
-//    {
-//        typedef std::vector<typename detail::real_type<T>::type> type;
-//    };
-
-    }
-}
-
-
-//
-// Type promotion helper for mixed type matrix matrix and matrix vector operations
-//
-namespace alps {
-    namespace numeric {
-
-    template <typename T1, typename MemoryBlock1, typename T2, typename MemoryBlock2>
-    struct MultiplyReturnType
-    {
-        typedef char one;
-        typedef long unsigned int two;
-        static one test(T1 t) {return one();}
-        static two test(T2 t) {return two();}
-        typedef typename boost::mpl::if_<typename boost::mpl::bool_<(sizeof(test(T1()*T2())) == sizeof(one))>,T1,T2>::type value_type;
-        typedef typename boost::mpl::if_<typename boost::mpl::bool_<(sizeof(test(T1()*T2())) == sizeof(one))>,MemoryBlock1,MemoryBlock2>::type memoryblock_type;
-    };
-
-// Specialize for U and T being the same type
-    template <typename T,typename MemoryBlock1, typename MemoryBlock2>
-    struct MultiplyReturnType<T,MemoryBlock1,T,MemoryBlock2>
-    {
-        typedef T value_type;
-        typedef MemoryBlock2 memoryblock_type;
-    };
-
-    }
-}
-
 //
 // Function hooks
 //
@@ -365,7 +300,7 @@ namespace alps {
     const dense_matrix<T,MemoryBlock> matrix_matrix_multiply(dense_matrix<T,MemoryBlock> const& lhs, dense_matrix<T,MemoryBlock> const& rhs);
     
     template<typename T, typename MemoryBlock, typename T2, typename MemoryBlock2>
-    const vector<typename MultiplyReturnType<T,MemoryBlock,T2,MemoryBlock2>::value_type,typename MultiplyReturnType<T,MemoryBlock,T2,MemoryBlock2>::memoryblock_type>
+    typename matrix_vector_multiplies_return_type<dense_matrix<T,MemoryBlock>,vector<T2,MemoryBlock2> >::type
     matrix_vector_multiply(dense_matrix<T,MemoryBlock> const& m, vector<T2,MemoryBlock2> const& v);
     
     template <typename T,typename MemoryBlock>
@@ -396,7 +331,7 @@ namespace alps {
     const dense_matrix<T,MemoryBlock> operator - (dense_matrix<T,MemoryBlock> a);
 
     template<typename T, typename MemoryBlock, typename T2, typename MemoryBlock2>
-    const vector<typename MultiplyReturnType<T,MemoryBlock,T2,MemoryBlock2>::value_type, typename MultiplyReturnType<T,MemoryBlock,T2,MemoryBlock2>::memoryblock_type>
+    typename matrix_vector_multiplies_return_type<dense_matrix<T,MemoryBlock>,vector<T2,MemoryBlock2> >::type
     operator * (dense_matrix<T,MemoryBlock> const& m, vector<T2,MemoryBlock2> const& v);
    
     // TODO: adj(Vector) * Matrix, where adj is a proxy object
@@ -422,5 +357,56 @@ namespace alps {
     } // namespace numeric
 } // namespace alps
 
+
+//
+// Trait specializations
+//
+namespace alps {
+    namespace numeric {
+
+    //
+    // Forward declarations
+    //
+    template <typename T>
+    class diagonal_matrix;
+    
+    template <typename T, typename MemoryBlock>
+    class vector;
+
+    template<typename T, typename MemoryBlock>
+    struct associated_diagonal_matrix<dense_matrix<T, MemoryBlock> >
+    {
+        typedef  diagonal_matrix<T> type;
+    };
+    
+    template<typename T, typename MemoryBlock>
+    struct associated_real_diagonal_matrix<dense_matrix<T, MemoryBlock> >
+    {
+        typedef diagonal_matrix<typename real_type<T>::type> type;
+    };
+    
+    template <typename T1, typename MemoryBlock1, typename T2, typename MemoryBlock2>
+    struct matrix_vector_multiplies_return_type<dense_matrix<T1,MemoryBlock1>,vector<T2,MemoryBlock2> >
+    {
+        private:
+            typedef char one;
+            typedef long unsigned int two;
+            static one test(T1 t) {return one();}
+            static two test(T2 t) {return two();}
+            typedef typename boost::mpl::if_<typename boost::mpl::bool_<(sizeof(test(T1()*T2())) == sizeof(one))>,T1,T2>::type value_type;
+            typedef typename boost::mpl::if_<typename boost::mpl::bool_<(sizeof(test(T1()*T2())) == sizeof(one))>,MemoryBlock1,MemoryBlock2>::type memoryblock_type;
+        public:
+            typedef alps::numeric::vector<value_type,memoryblock_type> type;
+    };
+
+    template <typename T,typename MemoryBlock1, typename MemoryBlock2>
+    struct matrix_vector_multiplies_return_type<dense_matrix<T,MemoryBlock1>,vector<T,MemoryBlock2> >
+    {
+        typedef alps::numeric::vector<T,MemoryBlock2> type;
+    };
+
+    }
+}
+
 #include <alps/numeric/matrix/matrix.ipp>
-#endif //__ALPS_DENSE_MATRIX_HPP__
+#endif //ALPS_MATRIX_HPP

@@ -25,27 +25,45 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_MATRIX_BLASMACROS_HPP
-#define ALPS_MATRIX_BLASMACROS_HPP
 
-#include <boost/numeric/bindings/blas.hpp>
-#include <vector>
+#ifndef ALPS_MATRIX_TRAITS_HPP
+#define ALPS_MATRIX_TRAITS_HPP
 
-// provide overloads for types where blas can be used        
-    
 namespace alps {
-    namespace numeric {
+namespace numeric {
+
+    template <typename Matrix>
+    struct associated_diagonal_matrix
+    {
+    };
     
-    #define ALPS_IMPLEMENT_FOR_REAL_BLAS_TYPES(F) F(float) F(double)
+    template <typename Matrix>
+    struct associated_real_diagonal_matrix
+    {
+    };
     
-    #define ALPS_IMPLEMENT_FOR_COMPLEX_BLAS_TYPES(F) \
-    F(std::complex<float>) \
-    F(std::complex<double>)
-    
-    #define ALPS_IMPLEMENT_FOR_ALL_BLAS_TYPES(F) \
-    ALPS_IMPLEMENT_FOR_REAL_BLAS_TYPES(F) \
-    ALPS_IMPLEMENT_FOR_COMPLEX_BLAS_TYPES(F) 
-    } // namespave numeric
-} // namespace alps
-    
-#endif // ALPS_MATRIX_BLASMACROS_HPP
+    template <typename Matrix, typename Vector>
+    struct matrix_vector_multiplies_return_type
+    {
+    };
+
+
+//    
+//    //
+//    // std::vector are unfriendly with ambient, there we wrap as associated_diagonal_matrix
+//    //
+//    template<class T, class MemoryBlock>
+//    struct associated_vector<dense_matrix<T,MemoryBlock> >
+//    {
+//        typedef std::vector<T> type;
+//    };
+//    
+//    template<class T, class MemoryBlock>
+//    struct associated_real_vector<dense_matrix<T,MemoryBlock> >
+//    {
+//        typedef std::vector<typename detail::real_type<T>::type> type;
+//    };
+
+} // end namespace numeric
+} // end namespace alps
+#endif //ALPS_MATRIX_TRAITS_HPP

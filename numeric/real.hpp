@@ -5,7 +5,8 @@
 * ALPS Libraries
 *
 * Copyright (C) 1999-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
-*                            Synge Todo <wistaria@comp-phys.org>
+*                            Synge Todo <wistaria@comp-phys.org>,
+*                            Andreas Hehn <hehn@phys.ethz.ch>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -31,6 +32,8 @@
 #ifndef ALPS_NUMERIC_REAL_HPP
 #define ALPS_NUMERIC_REAL_HPP
 
+#include <boost/type_traits/is_fundamental.hpp>
+#include <boost/static_assert.hpp>
 #include <algorithm>
 #include <complex>
 #include <vector>
@@ -43,6 +46,19 @@ inline T real(T x) { return x;}
 
 template <class T>
 inline T real(std::complex<T> x) { return std::real(x);}
+
+template <class T>
+struct real_type
+{
+    BOOST_STATIC_ASSERT((boost::is_fundamental<T>::value));
+    typedef T type;
+};
+
+template <class T>
+struct real_type<std::complex<T> >
+{
+    typedef T type;
+};
 
 template <class T>
 inline std::vector<T> real(std::vector<std::complex<T> > x) 

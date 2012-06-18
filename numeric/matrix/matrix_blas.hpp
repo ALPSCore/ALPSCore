@@ -25,8 +25,8 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef __ALPS_DENSE_MATRIX_BLAS_HPP__
-#define __ALPS_DENSE_MATRIX_BLAS_HPP__
+#ifndef ALPS_MATRIX_BLAS_HPP
+#define ALPS_MATRIX_BLAS_HPP
 
 #include <alps/numeric/matrix/detail/blasmacros.hpp>
     
@@ -61,7 +61,7 @@ namespace alps {
                 ); \
             return result; \
         }
-    IMPLEMENT_FOR_ALL_BLAS_TYPES(MATRIX_MATRIX_MULTIPLY)
+    ALPS_IMPLEMENT_FOR_ALL_BLAS_TYPES(MATRIX_MATRIX_MULTIPLY)
     #undef MATRIX_MATRIX_MULTIPLY
     
     #define MATRIX_VECTOR_MULTIPLY(T) \
@@ -80,7 +80,7 @@ namespace alps {
                 ); \
             return result; \
         }
-    IMPLEMENT_FOR_ALL_BLAS_TYPES(MATRIX_VECTOR_MULTIPLY)
+    ALPS_IMPLEMENT_FOR_ALL_BLAS_TYPES(MATRIX_VECTOR_MULTIPLY)
     #undef MATRIX_VECTOR_MULTIPLY
     
     // This seems to be the best solution for the *_ASSIGN dispatchers at the moment even though they call functions within the detail namespace
@@ -105,7 +105,7 @@ namespace alps {
         template <typename MemoryBlock> \
         void minus_assign(dense_matrix<T,MemoryBlock>& m, dense_matrix<T,MemoryBlock> const& rhs) \
             { plus_and_minus_assign_impl(m, rhs, typename dense_matrix<T,MemoryBlock>::value_type(-1)); }
-    IMPLEMENT_FOR_ALL_BLAS_TYPES(PLUS_MINUS_ASSIGN)
+    ALPS_IMPLEMENT_FOR_ALL_BLAS_TYPES(PLUS_MINUS_ASSIGN)
     #undef PLUS_MINUS_ASSIGN
     
     #define MULTIPLIES_ASSIGN(T) \
@@ -122,10 +122,10 @@ namespace alps {
                     boost::numeric::bindings::blas::detail::scal( m.num_rows(), t, &(*m.column(j).first), 1 ); \
             } \
         }
-        IMPLEMENT_FOR_ALL_BLAS_TYPES(MULTIPLIES_ASSIGN)
+        ALPS_IMPLEMENT_FOR_ALL_BLAS_TYPES(MULTIPLIES_ASSIGN)
     #undef MULTIPLIES_ASSIGN
     
     } // end namespace numeric
 } // end namespace alps
 
-#endif // __ALPS_DENSE_MATRIX_BLAS_HPP__
+#endif // ALPS_MATRIX_BLAS_HPP
