@@ -28,15 +28,10 @@
 #ifndef __ALPS_MATRIX_ALGORITHMS_HPP__
 #define __ALPS_MATRIX_ALGORITHMS_HPP__
 
-#include <types/dense_matrix/matrix_concept_check.hpp>
+#include <alps/numeric/matrix/matrix_concept_check.hpp>
 
 #include <boost/numeric/bindings/lapack/driver/gesdd.hpp>
 #include <boost/numeric/bindings/std/vector.hpp>
-
-#include <types/dense_matrix/dense_matrix.h>
-#include <types/dense_matrix/diagonal_matrix.h> // remove?
-
-#include <utils/timings.h>
 
 
 namespace alps {

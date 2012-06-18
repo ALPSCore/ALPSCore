@@ -28,7 +28,7 @@
 #ifndef __ALPS_DENSE_MATRIX_BLAS_HPP__
 #define __ALPS_DENSE_MATRIX_BLAS_HPP__
 
-#include <alps/numeric/matrix/detail/blasmacros.h>
+#include <alps/numeric/matrix/detail/blasmacros.hpp>
     
 namespace alps {
     namespace numeric {
@@ -37,8 +37,6 @@ namespace alps {
     }
 }    
 
-// TODO (ask Alex what this is and remove it)
-#define DCOLLECTOR_ADD(x,y) 
 
     //
     // dense matrix blas function hooks
@@ -52,7 +50,6 @@ namespace alps {
             assert( !(lhs.num_cols() > rhs.num_rows()) ); \
             assert( !(lhs.num_cols() < rhs.num_rows()) ); \
             assert( lhs.num_cols() == rhs.num_rows() ); \
-            DCOLLECTOR_ADD(gemm_collector, lhs.num_cols()) \
             dense_matrix<T,MemoryBlock> result(lhs.num_rows(),rhs.num_cols()); \
             boost::numeric::bindings::blas::gemm \
                 ( \
@@ -131,5 +128,4 @@ namespace alps {
     } // end namespace numeric
 } // end namespace alps
 
-#undef DCOLLECTOR_ADD
 #endif // __ALPS_DENSE_MATRIX_BLAS_HPP__

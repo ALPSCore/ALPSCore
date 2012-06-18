@@ -32,7 +32,7 @@
 #include <alps/numeric/matrix/strided_iterator.hpp>
 #include <alps/numeric/matrix/matrix_element_iterator.hpp>
 #include <alps/numeric/matrix/vector.hpp>
-#include <alps/numeric/matrix/detail/dense_matrix_adaptor.hpp>
+#include <alps/numeric/matrix/detail/matrix_adaptor.hpp>
 //#include <alps/numeric/utils/traits.hpp>
 
 //#include "utils/function_objects.h"
@@ -262,15 +262,6 @@ namespace alps {
 
         void swap_cols(size_type j1, size_type j2);
 
-
-//        // Default implementations
-//        void plus_assign(dense_matrix const& rhs);
-//
-//        void minus_assign(dense_matrix const& rhs);
-//
-//        template <typename T2>
-//        void multiplies_assign (T2 const& t);
-        
         void inplace_conjugate();
 		
 		// Serialize functions to save dense_matrix with alps::hdf5

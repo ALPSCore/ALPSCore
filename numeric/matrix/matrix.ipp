@@ -408,20 +408,7 @@ namespace alps {
         std::swap_ranges(range.first, range.second, column(j2).first );
     }
 
-//    template <typename T, typename MemoryBlock>
-//    void dense_matrix<T, MemoryBlock>::plus_assign(dense_matrix const& rhs)
-//    {
-//    }
-
-//    template <typename T, typename MemoryBlock>
-//    void dense_matrix<T, MemoryBlock>::minus_assign(dense_matrix const& rhs)
-//    {
-//    }
-
-//    template <typename T, typename MemoryBlock>
-//    template <typename T2>
-//    void dense_matrix<T, MemoryBlock>::multiplies_assign (T2 const& t)
-    
+// TODO
 //    template <typename T, typename MemoryBlock>
 //    void dense_matrix<T, MemoryBlock>::inplace_conjugate()
 //    {

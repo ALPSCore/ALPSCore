@@ -29,12 +29,11 @@
 #define __ALPS_DENSE_MATRIX_ALGO_ALGORITHMS_HPP__
 #include <vector>
 #include <stdexcept>
-#include "utils/data_collector.hpp"
-#include "types/dense_matrix/matrix_concept_check.hpp"
-#include "types/dense_matrix/diagonal_matrix.h"
-#include "utils/function_objects.h"
-#include "types/dense_matrix/matrix_algorithms.hpp"
-#include "types/utils/iterator_blas1.h"
+#include <alps/numeric/matrix/matrix_concept_check.hpp>
+//#include "types/dense_matrix/diagonal_matrix.h
+//#include "utils/function_objects.h"
+#include <alps/numeric/matrix/matrix_algorithms.hpp>
+//#include "types/utils/iterator_blas1.h"
 
 #include <boost/numeric/bindings/lapack/driver/gesvd.hpp>
 #include <boost/numeric/bindings/lapack/driver/gesdd.hpp>
@@ -44,8 +43,6 @@
 #include <boost/numeric/bindings/std/vector.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/bind.hpp>
-
-#include <utils/timings.h>
 
 #include <alps/numeric/real.hpp>
 #include <alps/numeric/imag.hpp>
@@ -166,7 +163,6 @@ namespace alps {
                  typename associated_real_diagonal_matrix<dense_matrix<T, MemoryBlock> >::type& S)
         {
             BOOST_CONCEPT_ASSERT((alps::numeric::Matrix<dense_matrix<T, MemoryBlock> >));
-            DCOLLECTOR_ADD(svd_collector, M.num_cols())
             typename dense_matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_cols(M));
             resize(U, num_rows(M), k);
             resize(V, k, num_cols(M));

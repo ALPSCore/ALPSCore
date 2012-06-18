@@ -3,36 +3,37 @@
  * ALPS DMFT Project - BLAS Compatibility headers
  *  Square Matrix Class
  *
- * Copyright (C) 2005 - 2010 by 
- *                              Emanuel Gull <gull@phys.columbia.edu>,
+ * Copyright (C) 2005 - 2012 by 
+ *                              Emanuel Gull <gull@phys.columbia.edu>
  *                              Brigitte Surer <surerb@phys.ethz.ch>
+ *                              Andreas Hehn <hehn@phys.ethz.ch>
  *
  *
-* This software is part of the ALPS Applications, published under the ALPS
-* Application License; you can use, redistribute it and/or modify it under
-* the terms of the license, either version 1 or (at your option) any later
-* version.
-* 
-* You should have received a copy of the ALPS Application License along with
-* the ALPS Applications; see the file LICENSE.txt. If not, the license is also
-* available from http://alps.comp-phys.org/.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-* FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
-* SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
-* FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
-* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
-* DEALINGS IN THE SOFTWARE.
-*
-*****************************************************************************/
+ * This software is part of the ALPS Applications, published under the ALPS
+ * Application License; you can use, redistribute it and/or modify it under
+ * the terms of the license, either version 1 or (at your option) any later
+ * version.
+ * 
+ * You should have received a copy of the ALPS Application License along with
+ * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
+ * available from http://alps.comp-phys.org/.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * DEALINGS IN THE SOFTWARE.
+ *
+ *****************************************************************************/
  
 #ifndef __ALPS_VECTOR_HPP__
 #define __ALPS_VECTOR_HPP__
 
 #include <alps/numeric/matrix/detail/vector_adaptor.hpp>
 
-#include <alps/numeric/matrix/detail/blasmacros.h>
+#include <alps/numeric/matrix/detail/blasmacros.hpp>
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -192,7 +193,8 @@ namespace alps {
 #ifdef MKL
         mkl::vdExp(s,  &v[0], &result[0]);
 #else
-        std::transform(v.begin(), v.end(), result.begin(), static_cast<double(*)(double)> (&std::exp));
+        using std::exp;
+        std::transform(v.begin(), v.end(), result.begin(), static_cast<double(*)(double)> (&exp));
 #endif
 #endif
 #endif  
@@ -238,7 +240,7 @@ inline T scalar_product(const std::vector<T,MemoryBlock> v1, const std::vector<T
     { return boost::numeric::bindings::blas::detail::dot(v1.size(), &v1[0],1,&v2[0],1);}
     IMPLEMENT_FOR_ALL_BLAS_TYPES(SCALAR_PRODUCT)
 #undef SCALAR_PRODUCT
-   } //namespace types 
+   } //namespace numeric 
 } //namespace alps
 
 
