@@ -36,12 +36,7 @@
 
 #include <alps/numeric/matrix.hpp>
 #include <alps/numeric/matrix/matrix_interface.hpp>
-//#include "types/dense_matrix/dense_matrix.h"
-//#include "types/dense_matrix/dense_matrix_blas.hpp"
-//#include "types/dense_matrix/matrix_interface.hpp"
-//#include "types/dense_matrix/resizable_matrix_interface.hpp"
 #include <alps/numeric/matrix/vector.hpp>
-//#include "types/dense_matrix/vector.hpp"
 
 //
 // List of types T for which the dense_matrix<T> is tested
