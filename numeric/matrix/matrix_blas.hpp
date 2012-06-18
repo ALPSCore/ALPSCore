@@ -33,30 +33,30 @@
 namespace alps {
     namespace numeric {
         template <typename T, typename MemoryBlock>
-            class dense_matrix;
+            class matrix;
     }
 }    
 
 
     //
-    // dense matrix blas function hooks
+    // matrix blas function hooks
     //
 namespace alps {
     namespace numeric {
     #define MATRIX_MATRIX_MULTIPLY(T) \
         template <typename MemoryBlock> \
-        const dense_matrix<T,MemoryBlock> matrix_matrix_multiply(dense_matrix<T,MemoryBlock> const& lhs, dense_matrix<T,MemoryBlock> const& rhs) \
+        const matrix<T,MemoryBlock> matrix_matrix_multiply(matrix<T,MemoryBlock> const& lhs, matrix<T,MemoryBlock> const& rhs) \
         { \
             assert( !(lhs.num_cols() > rhs.num_rows()) ); \
             assert( !(lhs.num_cols() < rhs.num_rows()) ); \
             assert( lhs.num_cols() == rhs.num_rows() ); \
-            dense_matrix<T,MemoryBlock> result(lhs.num_rows(),rhs.num_cols()); \
+            matrix<T,MemoryBlock> result(lhs.num_rows(),rhs.num_cols()); \
             boost::numeric::bindings::blas::gemm \
                 ( \
-                   typename dense_matrix<T,MemoryBlock>::value_type(1), \
+                   typename matrix<T,MemoryBlock>::value_type(1), \
                    lhs, \
                    rhs, \
-                   typename dense_matrix<T,MemoryBlock>::value_type(0), \
+                   typename matrix<T,MemoryBlock>::value_type(0), \
                    result \
                 ); \
             return result; \
@@ -66,16 +66,16 @@ namespace alps {
     
     #define MATRIX_VECTOR_MULTIPLY(T) \
         template <typename MemoryBlock, typename MemoryBlock2> \
-        const vector<T,MemoryBlock2> matrix_vector_multiply(dense_matrix<T,MemoryBlock> const& m, vector<T,MemoryBlock2> const& v) \
+        const vector<T,MemoryBlock2> matrix_vector_multiply(matrix<T,MemoryBlock> const& m, vector<T,MemoryBlock2> const& v) \
         { \
             assert( m.num_cols() == v.size()); \
             vector<T,MemoryBlock2> result(m.num_rows()); \
             boost::numeric::bindings::blas::gemv \
                 ( \
-                  typename dense_matrix<T,MemoryBlock>::value_type(1), \
+                  typename matrix<T,MemoryBlock>::value_type(1), \
                   m, \
                   v, \
-                  typename dense_matrix<T,MemoryBlock>::value_type(0), \
+                  typename matrix<T,MemoryBlock>::value_type(0), \
                   result \
                 ); \
             return result; \
@@ -86,7 +86,7 @@ namespace alps {
     // This seems to be the best solution for the *_ASSIGN dispatchers at the moment even though they call functions within the detail namespace
     #define PLUS_MINUS_ASSIGN(T) \
         template <typename MemoryBlock> \
-        void plus_and_minus_assign_impl(dense_matrix<T,MemoryBlock>& m, dense_matrix<T,MemoryBlock> const& rhs, typename dense_matrix<T,MemoryBlock>::value_type const& sign) \
+        void plus_and_minus_assign_impl(matrix<T,MemoryBlock>& m, matrix<T,MemoryBlock> const& rhs, typename matrix<T,MemoryBlock>::value_type const& sign) \
         { \
             assert( m.num_cols() == rhs.num_cols() && m.num_rows() == rhs.num_rows() ); \
             if(!(m.is_shrinkable() || rhs.is_shrinkable()) ) \
@@ -100,17 +100,17 @@ namespace alps {
             } \
         } \
         template <typename MemoryBlock> \
-        void plus_assign(dense_matrix<T,MemoryBlock>& m, dense_matrix<T,MemoryBlock> const& rhs) \
-            { plus_and_minus_assign_impl(m, rhs, typename dense_matrix<T,MemoryBlock>::value_type(1)); } \
+        void plus_assign(matrix<T,MemoryBlock>& m, matrix<T,MemoryBlock> const& rhs) \
+            { plus_and_minus_assign_impl(m, rhs, typename matrix<T,MemoryBlock>::value_type(1)); } \
         template <typename MemoryBlock> \
-        void minus_assign(dense_matrix<T,MemoryBlock>& m, dense_matrix<T,MemoryBlock> const& rhs) \
-            { plus_and_minus_assign_impl(m, rhs, typename dense_matrix<T,MemoryBlock>::value_type(-1)); }
+        void minus_assign(matrix<T,MemoryBlock>& m, matrix<T,MemoryBlock> const& rhs) \
+            { plus_and_minus_assign_impl(m, rhs, typename matrix<T,MemoryBlock>::value_type(-1)); }
     ALPS_IMPLEMENT_FOR_ALL_BLAS_TYPES(PLUS_MINUS_ASSIGN)
     #undef PLUS_MINUS_ASSIGN
     
     #define MULTIPLIES_ASSIGN(T) \
         template <typename MemoryBlock> \
-        void multiplies_assign(dense_matrix<T,MemoryBlock>& m, T const& t) \
+        void multiplies_assign(matrix<T,MemoryBlock>& m, T const& t) \
         { \
             if( !(m.is_shrinkable()) ) \
             { \

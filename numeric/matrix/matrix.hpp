@@ -55,12 +55,12 @@ namespace alps {
     namespace numeric {
     /** A matrix template class
       *
-      * The dense_matrix class is a matrix which can take any type T
+      * The matrix class is a matrix which can take any type T
       * @param T the type of the elements to be stored in the matrix
       * @param MemoryBlock the underlying (continous) Memory structure
       */
     template <typename T, typename MemoryBlock = std::vector<T> >
-    class dense_matrix {
+    class matrix {
     public:
         // typedefs required for a std::container concept
         typedef T                       value_type;       // The type T of the elements of the matrix
@@ -75,24 +75,24 @@ namespace alps {
         // -typedefs iterator, const_iterator
 
         // typedefs for matrix specific iterators
-        typedef strided_iterator<dense_matrix,value_type>
+        typedef strided_iterator<matrix,value_type>
             row_element_iterator;                         // Iterator to iterate through the elements of a row of the matrix
-        typedef strided_iterator<const dense_matrix,const value_type>
+        typedef strided_iterator<const matrix,const value_type>
             const_row_element_iterator;                   // Const version of row_element_iterator
         typedef value_type*
             column_element_iterator;                      // Iterator to iterate through the elements of a columns of the matrix
         typedef value_type const*
             const_column_element_iterator;                // Const version of column_element_iterator       
-        typedef matrix_element_iterator<dense_matrix,value_type>
+        typedef matrix_element_iterator<matrix,value_type>
             element_iterator;                             // Iterator to iterate through all elements of the matrix (REALLY SLOW! USE row_-/column_iterators INSTEAD!)
-        typedef matrix_element_iterator<const dense_matrix,const value_type>
+        typedef matrix_element_iterator<const matrix,const value_type>
             const_element_iterator;                       // Const version of element_iterator (REALLY SLOW! USE row_-/column_iterators INSTEAD!)
 
         /**
           * Static function for creating identiy matrix
           *
           */
-        static dense_matrix<T,MemoryBlock> identity_matrix(size_type size);
+        static matrix<T,MemoryBlock> identity_matrix(size_type size);
 
         /**
           * The constructor
@@ -100,25 +100,25 @@ namespace alps {
           * @param columns the number of columns
           * @param init_value all matrix elements will be initialized to this value.
           */
-        explicit dense_matrix(size_type rows = 0, size_type cols = 0, T init_value = T());
+        explicit matrix(size_type rows = 0, size_type cols = 0, T init_value = T());
 
         /**
           * The copy constructor
           *
           */
         template <typename OtherMemoryBlock>
-        dense_matrix(dense_matrix<T,OtherMemoryBlock> const& m);
+        matrix(matrix<T,OtherMemoryBlock> const& m);
 
         /**
           * Non-throwing swap function
-          * @param r dense_matrix object which should be swapped with the dense_matrix (this)
+          * @param r matrix object which should be swapped with the matrix (this)
           */
-        void swap(dense_matrix & r);
+        void swap(matrix & r);
 
         /**
           * Swaps two dense_matrices
           */
-        friend void swap(dense_matrix & x, dense_matrix & y)
+        friend void swap(matrix & x, matrix & y)
         {
             x.swap(y);
         }
@@ -126,7 +126,7 @@ namespace alps {
         /**
           * Assigns the matrix to matrix rhs
           */
-        dense_matrix& operator = (dense_matrix rhs);
+        matrix& operator = (matrix rhs);
 
         /**
           * Access the element in row i, column j
@@ -142,17 +142,17 @@ namespace alps {
           */
         inline value_type const& operator()(const size_type i, const size_type j) const;
 
-        bool operator == (dense_matrix const& rhs) const;
+        bool operator == (matrix const& rhs) const;
 
-        dense_matrix<T,MemoryBlock>& operator += (dense_matrix const& rhs); 
+        matrix<T,MemoryBlock>& operator += (matrix const& rhs); 
 
-        dense_matrix<T,MemoryBlock>& operator -= (dense_matrix const& rhs);
+        matrix<T,MemoryBlock>& operator -= (matrix const& rhs);
         
         template <typename T2>
-        dense_matrix<T,MemoryBlock>& operator *= (T2 const& t);
+        matrix<T,MemoryBlock>& operator *= (T2 const& t);
         
         template <typename T2>
-        dense_matrix<T,MemoryBlock>& operator /= (T2 const& t);
+        matrix<T,MemoryBlock>& operator /= (T2 const& t);
 
         /**
           * Checks if a matrix is empty
@@ -261,7 +261,7 @@ namespace alps {
 
         void inplace_conjugate();
 		
-		// Serialize functions to save dense_matrix with alps::hdf5
+		// Serialize functions to save matrix with alps::hdf5
 #ifdef HAVE_ALPS_HDF5
         void load_impl(alps::hdf5::archive & ar, boost::mpl::true_);
         void load_impl(alps::hdf5::archive & ar, boost::mpl::false_);
@@ -275,7 +275,7 @@ namespace alps {
 
     private:
         template <typename OtherT,typename OtherMemoryBlock>
-        friend class dense_matrix;
+        friend class matrix;
 
 
         inline bool automatic_reserve(size_type size1, size_type size2, T const& init_value = T());
@@ -297,20 +297,20 @@ namespace alps {
     namespace numeric { 
 
     template <typename T, typename MemoryBlock>
-    const dense_matrix<T,MemoryBlock> matrix_matrix_multiply(dense_matrix<T,MemoryBlock> const& lhs, dense_matrix<T,MemoryBlock> const& rhs);
+    const matrix<T,MemoryBlock> matrix_matrix_multiply(matrix<T,MemoryBlock> const& lhs, matrix<T,MemoryBlock> const& rhs);
     
     template<typename T, typename MemoryBlock, typename T2, typename MemoryBlock2>
-    typename matrix_vector_multiplies_return_type<dense_matrix<T,MemoryBlock>,vector<T2,MemoryBlock2> >::type
-    matrix_vector_multiply(dense_matrix<T,MemoryBlock> const& m, vector<T2,MemoryBlock2> const& v);
+    typename matrix_vector_multiplies_return_type<matrix<T,MemoryBlock>,vector<T2,MemoryBlock2> >::type
+    matrix_vector_multiply(matrix<T,MemoryBlock> const& m, vector<T2,MemoryBlock2> const& v);
     
     template <typename T,typename MemoryBlock>
-    void plus_assign(dense_matrix<T,MemoryBlock>& m, dense_matrix<T,MemoryBlock> const& rhs);
+    void plus_assign(matrix<T,MemoryBlock>& m, matrix<T,MemoryBlock> const& rhs);
 
     template <typename T, typename MemoryBlock>
-    void minus_assign(dense_matrix<T,MemoryBlock>& m, dense_matrix<T,MemoryBlock> const& rhs);
+    void minus_assign(matrix<T,MemoryBlock>& m, matrix<T,MemoryBlock> const& rhs);
 
     template <typename T, typename MemoryBlock, typename T2>
-    void multiplies_assign(dense_matrix<T,MemoryBlock>& m, T2 const& t);
+    void multiplies_assign(matrix<T,MemoryBlock>& m, T2 const& t);
 
     }
 }
@@ -322,37 +322,37 @@ namespace alps {
     namespace numeric {
 
     template <typename T, typename MemoryBlock>
-    const dense_matrix<T,MemoryBlock> operator + (dense_matrix<T,MemoryBlock> a, dense_matrix<T,MemoryBlock> const& b);
+    const matrix<T,MemoryBlock> operator + (matrix<T,MemoryBlock> a, matrix<T,MemoryBlock> const& b);
     
     template <typename T, typename MemoryBlock>
-    const dense_matrix<T,MemoryBlock> operator - (dense_matrix<T,MemoryBlock> a, dense_matrix<T,MemoryBlock> const& b);
+    const matrix<T,MemoryBlock> operator - (matrix<T,MemoryBlock> a, matrix<T,MemoryBlock> const& b);
 
     template <typename T, typename MemoryBlock>
-    const dense_matrix<T,MemoryBlock> operator - (dense_matrix<T,MemoryBlock> a);
+    const matrix<T,MemoryBlock> operator - (matrix<T,MemoryBlock> a);
 
     template<typename T, typename MemoryBlock, typename T2, typename MemoryBlock2>
-    typename matrix_vector_multiplies_return_type<dense_matrix<T,MemoryBlock>,vector<T2,MemoryBlock2> >::type
-    operator * (dense_matrix<T,MemoryBlock> const& m, vector<T2,MemoryBlock2> const& v);
+    typename matrix_vector_multiplies_return_type<matrix<T,MemoryBlock>,vector<T2,MemoryBlock2> >::type
+    operator * (matrix<T,MemoryBlock> const& m, vector<T2,MemoryBlock2> const& v);
    
     // TODO: adj(Vector) * Matrix, where adj is a proxy object
 
     template<typename T,typename MemoryBlock, typename T2>
-    const dense_matrix<T,MemoryBlock> operator * (dense_matrix<T,MemoryBlock> m, T2 const& t);
+    const matrix<T,MemoryBlock> operator * (matrix<T,MemoryBlock> m, T2 const& t);
     
     template<typename T,typename MemoryBlock, typename T2>
-    const dense_matrix<T,MemoryBlock> operator * (T2 const& t, dense_matrix<T,MemoryBlock> m);
+    const matrix<T,MemoryBlock> operator * (T2 const& t, matrix<T,MemoryBlock> m);
 
     template<typename T, typename MemoryBlock>
-    const dense_matrix<T,MemoryBlock> operator * (dense_matrix<T,MemoryBlock> const& m1, dense_matrix<T,MemoryBlock> const& m2);
+    const matrix<T,MemoryBlock> operator * (matrix<T,MemoryBlock> const& m1, matrix<T,MemoryBlock> const& m2);
 
     template<typename T,typename MemoryBlock>
-    void gemm(dense_matrix<T,MemoryBlock> const & A, dense_matrix<T,MemoryBlock> const & B, dense_matrix<T,MemoryBlock> & C);
+    void gemm(matrix<T,MemoryBlock> const & A, matrix<T,MemoryBlock> const & B, matrix<T,MemoryBlock> & C);
     
     template<class T, class MemoryBlock>
-    std::size_t size_of(dense_matrix<T, MemoryBlock> const & m);
+    std::size_t size_of(matrix<T, MemoryBlock> const & m);
     
     template <typename T, typename MemoryBlock>
-    std::ostream& operator << (std::ostream& o, dense_matrix<T,MemoryBlock> const& m);
+    std::ostream& operator << (std::ostream& o, matrix<T,MemoryBlock> const& m);
 
     } // namespace numeric
 } // namespace alps
@@ -374,19 +374,19 @@ namespace alps {
     class vector;
 
     template<typename T, typename MemoryBlock>
-    struct associated_diagonal_matrix<dense_matrix<T, MemoryBlock> >
+    struct associated_diagonal_matrix<matrix<T, MemoryBlock> >
     {
         typedef  diagonal_matrix<T> type;
     };
     
     template<typename T, typename MemoryBlock>
-    struct associated_real_diagonal_matrix<dense_matrix<T, MemoryBlock> >
+    struct associated_real_diagonal_matrix<matrix<T, MemoryBlock> >
     {
         typedef diagonal_matrix<typename real_type<T>::type> type;
     };
     
     template <typename T1, typename MemoryBlock1, typename T2, typename MemoryBlock2>
-    struct matrix_vector_multiplies_return_type<dense_matrix<T1,MemoryBlock1>,vector<T2,MemoryBlock2> >
+    struct matrix_vector_multiplies_return_type<matrix<T1,MemoryBlock1>,vector<T2,MemoryBlock2> >
     {
         private:
             typedef char one;
@@ -400,7 +400,7 @@ namespace alps {
     };
 
     template <typename T,typename MemoryBlock1, typename MemoryBlock2>
-    struct matrix_vector_multiplies_return_type<dense_matrix<T,MemoryBlock1>,vector<T,MemoryBlock2> >
+    struct matrix_vector_multiplies_return_type<matrix<T,MemoryBlock1>,vector<T,MemoryBlock2> >
     {
         typedef alps::numeric::vector<T,MemoryBlock2> type;
     };

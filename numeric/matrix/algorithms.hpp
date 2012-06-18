@@ -53,7 +53,7 @@
 namespace alps {
     namespace numeric {
         template<class T>
-        class diagonal_matrix; 
+        class matrix; 
     }
 }
 
@@ -61,7 +61,7 @@ namespace alps {
     namespace numeric {
 
         template <typename T>
-        void reshape_r2l(dense_matrix<T>& left, const dense_matrix<T>& right,
+        void reshape_r2l(matrix<T>& left, const matrix<T>& right,
                          size_t left_offset, size_t right_offset, 
                          size_t sdim, size_t ldim, size_t rdim)
         {
@@ -76,7 +76,7 @@ namespace alps {
         }
         
         template <typename T>
-        void reshape_l2r(const dense_matrix<T>& left, dense_matrix<T>& right,
+        void reshape_l2r(const matrix<T>& left, matrix<T>& right,
                          size_t left_offset, size_t right_offset, 
                          size_t sdim, size_t ldim, size_t rdim)
         {
@@ -87,7 +87,7 @@ namespace alps {
         }
         
         template <typename T>
-        void lb_tensor_mpo(dense_matrix<T>& out, const dense_matrix<T>& in, const dense_matrix<T>& alfa,
+        void lb_tensor_mpo(matrix<T>& out, const matrix<T>& in, const matrix<T>& alfa,
                            size_t out_offset, size_t in_offset, 
                            size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
         {
@@ -104,7 +104,7 @@ namespace alps {
         }
         
         template <typename T>
-        void rb_tensor_mpo(dense_matrix<T>& out, const dense_matrix<T>& in, const dense_matrix<T>& alfa,
+        void rb_tensor_mpo(matrix<T>& out, const matrix<T>& in, const matrix<T>& alfa,
                            size_t out_offset, size_t in_offset, 
                            size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
         {
@@ -119,7 +119,7 @@ namespace alps {
         }
          
         template <typename T>
-        void scalar_norm(const dense_matrix<T>& M, typename dense_matrix<T>::value_type& ret){
+        void scalar_norm(const matrix<T>& M, typename matrix<T>::value_type& ret){
             using utils::conj; 
             for (std::size_t c = 0; c < num_cols(M); ++c)
                 for (std::size_t r = 0; r < num_rows(M); ++r)
@@ -127,7 +127,7 @@ namespace alps {
         }
         
         template <typename T>
-        void scalar_norm(dense_matrix<T> & M1, dense_matrix<T> & M2, typename dense_matrix<T>::value_type & ret){ // not const due to nullcut
+        void scalar_norm(matrix<T> & M1, matrix<T> & M2, typename matrix<T>::value_type & ret){ // not const due to nullcut
             using utils::conj; 
             for (std::size_t c = 0; c < num_cols(M1); ++c)
                 for (std::size_t r = 0; r < num_rows(M1); ++r)
@@ -135,7 +135,7 @@ namespace alps {
         }
         
         template <typename T>
-        void bond_renyi_entropies(const diagonal_matrix<T> & M, typename associated_real_vector<dense_matrix<T> >::type& sv){
+        void bond_renyi_entropies(const diagonal_matrix<T> & M, typename associated_real_vector<matrix<T> >::type& sv){
             for (typename diagonal_matrix<T>::const_element_iterator it = elements(M).first;
                  it != elements(M).second; ++it)
             {
@@ -146,7 +146,7 @@ namespace alps {
         }
         
         template <typename T>
-        void left_right_boundary_init(dense_matrix<T> & M){
+        void left_right_boundary_init(matrix<T> & M){
 //            memset((void*)&M(0,0),1,num_rows(M)*num_cols(M)*sizeof(T));
             for_each(elements(M).first,elements(M).second, boost::lambda::_1 = 1); // boost::lambda ^^' because iterable matrix concept 
         }
@@ -158,13 +158,13 @@ namespace alps {
         }
 
         template<typename T, class MemoryBlock>
-        void svd(dense_matrix<T, MemoryBlock> M,
-                 dense_matrix<T, MemoryBlock> & U,
-                 dense_matrix<T, MemoryBlock>& V,
-                 typename associated_real_diagonal_matrix<dense_matrix<T, MemoryBlock> >::type& S)
+        void svd(matrix<T, MemoryBlock> M,
+                 matrix<T, MemoryBlock> & U,
+                 matrix<T, MemoryBlock>& V,
+                 typename associated_real_diagonal_matrix<matrix<T, MemoryBlock> >::type& S)
         {
-            BOOST_CONCEPT_ASSERT((alps::numeric::Matrix<dense_matrix<T, MemoryBlock> >));
-            typename dense_matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_cols(M));
+            BOOST_CONCEPT_ASSERT((alps::numeric::Matrix<matrix<T, MemoryBlock> >));
+            typename matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_cols(M));
             resize(U, num_rows(M), k);
             resize(V, k, num_cols(M));
             resize(S, k, k);
@@ -174,13 +174,13 @@ namespace alps {
         }
         
         template<typename T, class MemoryBlock>
-        void qr(dense_matrix<T, MemoryBlock> M,
-                dense_matrix<T, MemoryBlock> & Q,
-                dense_matrix<T, MemoryBlock> & R)
+        void qr(matrix<T, MemoryBlock> M,
+                matrix<T, MemoryBlock> & Q,
+                matrix<T, MemoryBlock> & R)
         {
-            typename dense_matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_cols(M));
+            typename matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_cols(M));
     
-            typename associated_vector<dense_matrix<typename detail::sv_type<T>::type, MemoryBlock> >::type tau(k);
+            typename associated_vector<matrix<typename detail::sv_type<T>::type, MemoryBlock> >::type tau(k);
             
             int info = 0; //boost::numeric::bindings::lapack::geqrf(M, tau);
             if (info != 0)
@@ -201,14 +201,14 @@ namespace alps {
         }
         
         template<typename T, class MemoryBlock>
-        dense_matrix<T, MemoryBlock> exp (dense_matrix<T, MemoryBlock> M, T const & alpha=1)
+        matrix<T, MemoryBlock> exp (matrix<T, MemoryBlock> M, T const & alpha=1)
         {
-            dense_matrix<T, MemoryBlock> N, tmp;
-            typename associated_real_vector<dense_matrix<T, MemoryBlock> >::type Sv(num_rows(M));
+            matrix<T, MemoryBlock> N, tmp;
+            typename associated_real_vector<matrix<T, MemoryBlock> >::type Sv(num_rows(M));
             
             heev(M, N, Sv);
             
-            typename associated_diagonal_matrix<dense_matrix<T, MemoryBlock> >::type S(Sv);
+            typename associated_diagonal_matrix<matrix<T, MemoryBlock> >::type S(Sv);
             S = exp(alpha*S);
             gemm(N, S, tmp);
             gemm(tmp, conjugate(transpose(N)), M);
@@ -217,15 +217,15 @@ namespace alps {
         }
   
         template<typename T, class MemoryBlock, class Generator>
-        void generate(dense_matrix<T, MemoryBlock>& m, Generator g)
+        void generate(matrix<T, MemoryBlock>& m, Generator g)
         {
            std::generate(elements(m).first, elements(m).second, g);
         }
     
         template<typename T, class MemoryBlock>
-        void heev(dense_matrix<T, MemoryBlock> M,
-                  dense_matrix<T, MemoryBlock> & evecs,
-                  typename associated_real_vector<dense_matrix<T, MemoryBlock> >::type & evals) 
+        void heev(matrix<T, MemoryBlock> M,
+                  matrix<T, MemoryBlock> & evecs,
+                  typename associated_real_vector<matrix<T, MemoryBlock> >::type & evals) 
         {
             assert(num_rows(M) == num_cols(M));
             assert(evals.size() == num_rows(M));
@@ -246,19 +246,19 @@ namespace alps {
         }
         
         template<typename T, class MemoryBlock>
-        void heev(dense_matrix<T, MemoryBlock> M,
-                  dense_matrix<T, MemoryBlock> & evecs,
-                  typename associated_diagonal_matrix<dense_matrix<T, MemoryBlock> >::type & evals)
+        void heev(matrix<T, MemoryBlock> M,
+                  matrix<T, MemoryBlock> & evecs,
+                  typename associated_diagonal_matrix<matrix<T, MemoryBlock> >::type & evals)
         {
             assert(num_rows(M) == num_cols(M));
-            typename associated_real_vector<dense_matrix<T, MemoryBlock> >::type evals_(num_rows(M));
+            typename associated_real_vector<matrix<T, MemoryBlock> >::type evals_(num_rows(M));
             heev(M, evecs, evals_);
-            evals = typename associated_diagonal_matrix<dense_matrix<T, MemoryBlock> >::type(evals_);
+            evals = typename associated_diagonal_matrix<matrix<T, MemoryBlock> >::type(evals_);
         }
 
         template<typename T, class MemoryBlock, class ThirdArgument>
-        void syev(dense_matrix<T, MemoryBlock> M,
-                  dense_matrix<T, MemoryBlock> & evecs,
+        void syev(matrix<T, MemoryBlock> M,
+                  matrix<T, MemoryBlock> & evecs,
                   ThirdArgument & evals)
         {
             heev(M, evecs, evals);

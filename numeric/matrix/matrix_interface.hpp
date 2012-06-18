@@ -45,14 +45,14 @@ namespace alps {
     } 
     
     // num_rows(), num_cols(), swap_rows(), swap_cols()
-    IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, dense_matrix<T COMMA MemoryBlock>,
-                         typename dense_matrix<T COMMA MemoryBlock>::size_type, num_rows, (dense_matrix<T, MemoryBlock> const& m), () )
-    IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, dense_matrix<T COMMA MemoryBlock>,
-                         typename dense_matrix<T COMMA MemoryBlock>::size_type, num_cols, (dense_matrix<T, MemoryBlock> const& m), () )
-    IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, dense_matrix<T COMMA MemoryBlock>,
-                         void, swap_rows, (dense_matrix<T, MemoryBlock>& m, typename dense_matrix<T, MemoryBlock>::size_type i1, typename dense_matrix<T, MemoryBlock>::size_type i2), (i1,i2) )
-    IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, dense_matrix<T COMMA MemoryBlock>,
-                         void, swap_cols, (dense_matrix<T, MemoryBlock>& m, typename dense_matrix<T, MemoryBlock>::size_type i1, typename dense_matrix<T, MemoryBlock>::size_type i2), (i1,i2) )
+    IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, matrix<T COMMA MemoryBlock>,
+                         typename matrix<T COMMA MemoryBlock>::size_type, num_rows, (matrix<T, MemoryBlock> const& m), () )
+    IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, matrix<T COMMA MemoryBlock>,
+                         typename matrix<T COMMA MemoryBlock>::size_type, num_cols, (matrix<T, MemoryBlock> const& m), () )
+    IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, matrix<T COMMA MemoryBlock>,
+                         void, swap_rows, (matrix<T, MemoryBlock>& m, typename matrix<T, MemoryBlock>::size_type i1, typename matrix<T, MemoryBlock>::size_type i2), (i1,i2) )
+    IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, matrix<T COMMA MemoryBlock>,
+                         void, swap_cols, (matrix<T, MemoryBlock>& m, typename matrix<T, MemoryBlock>::size_type i1, typename matrix<T, MemoryBlock>::size_type i2), (i1,i2) )
         
     //
     // Matrix Iterator Interface
@@ -61,35 +61,35 @@ namespace alps {
     #define ITERATOR_PAIR(TYPE, ITERATOR) \
     std::pair<typename TYPE::ITERATOR, typename TYPE::ITERATOR>
     
-    IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, dense_matrix<T COMMA MemoryBlock>,
-                         ITERATOR_PAIR(dense_matrix<T COMMA MemoryBlock>, row_element_iterator), row,
-                         (dense_matrix<T COMMA MemoryBlock> & m,
-                          typename dense_matrix<T COMMA MemoryBlock>::size_type i),
+    IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, matrix<T COMMA MemoryBlock>,
+                         ITERATOR_PAIR(matrix<T COMMA MemoryBlock>, row_element_iterator), row,
+                         (matrix<T COMMA MemoryBlock> & m,
+                          typename matrix<T COMMA MemoryBlock>::size_type i),
                          (i) )
-    IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, dense_matrix<T COMMA MemoryBlock>,
-                         ITERATOR_PAIR(dense_matrix<T COMMA MemoryBlock>, const_row_element_iterator), row,
-                         (dense_matrix<T COMMA MemoryBlock> const& m,
-                          typename dense_matrix<T COMMA MemoryBlock>::size_type i),
+    IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, matrix<T COMMA MemoryBlock>,
+                         ITERATOR_PAIR(matrix<T COMMA MemoryBlock>, const_row_element_iterator), row,
+                         (matrix<T COMMA MemoryBlock> const& m,
+                          typename matrix<T COMMA MemoryBlock>::size_type i),
                          (i) )    
     
-    IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, dense_matrix<T COMMA MemoryBlock>,
-                         ITERATOR_PAIR(dense_matrix<T COMMA MemoryBlock>, column_element_iterator), column,
-                         (dense_matrix<T COMMA MemoryBlock> & m,
-                          typename dense_matrix<T COMMA MemoryBlock>::size_type i),
+    IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, matrix<T COMMA MemoryBlock>,
+                         ITERATOR_PAIR(matrix<T COMMA MemoryBlock>, column_element_iterator), column,
+                         (matrix<T COMMA MemoryBlock> & m,
+                          typename matrix<T COMMA MemoryBlock>::size_type i),
                          (i) )
-    IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, dense_matrix<T COMMA MemoryBlock>,
-                         ITERATOR_PAIR(dense_matrix<T COMMA MemoryBlock>, const_column_element_iterator), column,
-                         (dense_matrix<T COMMA MemoryBlock> const& m,
-                          typename dense_matrix<T COMMA MemoryBlock>::size_type i),
+    IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, matrix<T COMMA MemoryBlock>,
+                         ITERATOR_PAIR(matrix<T COMMA MemoryBlock>, const_column_element_iterator), column,
+                         (matrix<T COMMA MemoryBlock> const& m,
+                          typename matrix<T COMMA MemoryBlock>::size_type i),
                          (i) )  
     
-    IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, dense_matrix<T COMMA MemoryBlock>,
-                         ITERATOR_PAIR(dense_matrix<T COMMA MemoryBlock>, element_iterator), elements,
-                         (dense_matrix<T COMMA MemoryBlock>& m), () )
+    IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, matrix<T COMMA MemoryBlock>,
+                         ITERATOR_PAIR(matrix<T COMMA MemoryBlock>, element_iterator), elements,
+                         (matrix<T COMMA MemoryBlock>& m), () )
     
-    IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, dense_matrix<T COMMA MemoryBlock>,
-                         ITERATOR_PAIR(dense_matrix<T COMMA MemoryBlock>, const_element_iterator), elements,
-                         (dense_matrix<T COMMA MemoryBlock> const& m), () )
+    IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, matrix<T COMMA MemoryBlock>,
+                         ITERATOR_PAIR(matrix<T COMMA MemoryBlock>, const_element_iterator), elements,
+                         (matrix<T COMMA MemoryBlock> const& m), () )
     #undef ITERATOR_PAIR
     #undef IMPLEMENT_FORWARDING
     #undef COMMA

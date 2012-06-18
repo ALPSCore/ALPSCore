@@ -33,7 +33,7 @@
 
 namespace alps { namespace numeric {
     template <typename T, typename MemoryBlock> 
-    class dense_matrix;
+    class matrix;
 } }
 
 //
@@ -43,12 +43,12 @@ namespace alps { namespace numeric {
 namespace boost { namespace numeric { namespace bindings { namespace detail {
     
     template <typename T, typename MemoryBlock, typename Id, typename Enable>
-    struct adaptor< ::alps::numeric::dense_matrix<T,MemoryBlock>, Id, Enable>
+    struct adaptor< ::alps::numeric::matrix<T,MemoryBlock>, Id, Enable>
     {
         typedef typename copy_const< Id, T >::type              value_type;
         // TODO: fix the types of size and stride -> currently it's a workaround, since std::size_t causes problems with boost::numeric::bindings
-        //typedef typename ::alps::numeric::dense_matrix<T,Alloc>::size_type         size_type;
-        //typedef typename ::alps::numeric::dense_matrix<T,Alloc>::difference_type   difference_type;
+        //typedef typename ::alps::numeric::matrix<T,Alloc>::size_type         size_type;
+        //typedef typename ::alps::numeric::matrix<T,Alloc>::difference_type   difference_type;
         typedef std::ptrdiff_t  size_type;
         typedef std::ptrdiff_t  difference_type;
 

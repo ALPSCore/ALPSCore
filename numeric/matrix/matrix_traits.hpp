@@ -53,13 +53,13 @@ namespace numeric {
 //    // std::vector are unfriendly with ambient, there we wrap as associated_diagonal_matrix
 //    //
 //    template<class T, class MemoryBlock>
-//    struct associated_vector<dense_matrix<T,MemoryBlock> >
+//    struct associated_vector<matrix<T,MemoryBlock> >
 //    {
 //        typedef std::vector<T> type;
 //    };
 //    
 //    template<class T, class MemoryBlock>
-//    struct associated_real_vector<dense_matrix<T,MemoryBlock> >
+//    struct associated_real_vector<matrix<T,MemoryBlock> >
 //    {
 //        typedef std::vector<typename detail::real_type<T>::type> type;
 //    };

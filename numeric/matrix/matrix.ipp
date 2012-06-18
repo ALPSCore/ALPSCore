@@ -29,7 +29,7 @@ namespace alps {
     namespace numeric {
         namespace detail {
             template <typename T, typename MemoryBlock, typename Operation>
-            void op_assign_default_impl(dense_matrix<T,MemoryBlock>& lhs, dense_matrix<T,MemoryBlock> const& rhs, Operation op)
+            void op_assign_default_impl(matrix<T,MemoryBlock>& lhs, matrix<T,MemoryBlock> const& rhs, Operation op)
             {
                 assert(lhs.num_rows() == rhs.num_rows());
                 assert(lhs.num_cols() == rhs.num_cols());
@@ -40,9 +40,9 @@ namespace alps {
                 else
                 {
                     // Do the operation column by column
-                    for(typename dense_matrix<T,MemoryBlock>::size_type j=0; j < lhs.num_cols(); ++j)
+                    for(typename matrix<T,MemoryBlock>::size_type j=0; j < lhs.num_cols(); ++j)
                     {
-                        typedef typename dense_matrix<T,MemoryBlock>::column_element_iterator column_element_iterator;
+                        typedef typename matrix<T,MemoryBlock>::column_element_iterator column_element_iterator;
                         std::pair<column_element_iterator,column_element_iterator> range(lhs.column(j));
                         std::transform( range.first, range.second, rhs.column(j).first, range.first, op);
                     }
@@ -50,7 +50,7 @@ namespace alps {
             }
 
         template <typename T, typename MemoryBlock, typename T2>
-        void multiplies_assign_default_impl(dense_matrix<T,MemoryBlock>& lhs, T2 const& t)
+        void multiplies_assign_default_impl(matrix<T,MemoryBlock>& lhs, T2 const& t)
         {
             if(!(lhs.is_shrinkable()) )
             {
@@ -59,9 +59,9 @@ namespace alps {
             else
             {
                 // Do the operation column by column
-                for(typename dense_matrix<T,MemoryBlock>::size_type j=0; j < lhs.num_cols(); ++j)
+                for(typename matrix<T,MemoryBlock>::size_type j=0; j < lhs.num_cols(); ++j)
                 {
-                    typedef typename dense_matrix<T,MemoryBlock>::column_element_iterator column_element_iterator;
+                    typedef typename matrix<T,MemoryBlock>::column_element_iterator column_element_iterator;
                     std::pair<column_element_iterator,column_element_iterator> range(lhs.column(j));
                     std::for_each(range.first, range.second, boost::lambda::_1 *= t);
                 }
@@ -70,23 +70,23 @@ namespace alps {
     } // end namespace detail
 
     template <typename T, typename MemoryBlock>
-    dense_matrix<T, MemoryBlock> dense_matrix<T, MemoryBlock>::identity_matrix(size_type size)
+    matrix<T, MemoryBlock> matrix<T, MemoryBlock>::identity_matrix(size_type size)
     {
-        dense_matrix<T, MemoryBlock> ret(size, size);
+        matrix<T, MemoryBlock> ret(size, size);
         for (size_type k = 0; k < size; ++k)
         ret(k,k) = 1;
         return ret;
     }
 
     template <typename T, typename MemoryBlock>
-    dense_matrix<T, MemoryBlock>::dense_matrix(size_type rows, size_type cols, T init_value)
+    matrix<T, MemoryBlock>::matrix(size_type rows, size_type cols, T init_value)
     : size1_(rows), size2_(cols), reserved_size1_(rows), values_(rows*cols, init_value)
     {
     }
 
     template <typename T, typename MemoryBlock>
     template <typename OtherMemoryBlock>
-    dense_matrix<T, MemoryBlock>::dense_matrix(dense_matrix<T,OtherMemoryBlock> const& m)
+    matrix<T, MemoryBlock>::matrix(matrix<T,OtherMemoryBlock> const& m)
     : size1_(m.size1_), size2_(m.size2_), reserved_size1_(m.size1_), values_()
     {
         // If the size of the matrix corresponds to the allocated size of the matrix...
@@ -100,8 +100,8 @@ namespace alps {
             this->values_.reserve(m.size1_*m.size2_);
             for(size_type j=0; j < m.size2_; ++j)
             {
-                std::pair<typename dense_matrix<T,OtherMemoryBlock>::const_column_element_iterator,
-                          typename dense_matrix<T,OtherMemoryBlock>::const_column_element_iterator
+                std::pair<typename matrix<T,OtherMemoryBlock>::const_column_element_iterator,
+                          typename matrix<T,OtherMemoryBlock>::const_column_element_iterator
                          > range(m.column(j));
                 this->values_.insert(this->values_.end(), range.first, range.second);
             }
@@ -109,7 +109,7 @@ namespace alps {
     }
 
     template <typename T, typename MemoryBlock>
-    void dense_matrix<T, MemoryBlock>::swap(dense_matrix & r)
+    void matrix<T, MemoryBlock>::swap(matrix & r)
     {
         using std::swap;
         swap(this->values_, r.values_);
@@ -119,14 +119,14 @@ namespace alps {
     }
 
     template <typename T, typename MemoryBlock>
-    dense_matrix<T, MemoryBlock>& dense_matrix<T, MemoryBlock>::operator = (dense_matrix<T, MemoryBlock> rhs)
+    matrix<T, MemoryBlock>& matrix<T, MemoryBlock>::operator = (matrix<T, MemoryBlock> rhs)
     {
         this->swap(rhs);
         return *this;
     }
 
     template <typename T, typename MemoryBlock>
-    inline T& dense_matrix<T, MemoryBlock>::operator()(const size_type i, const size_type j)
+    inline T& matrix<T, MemoryBlock>::operator()(const size_type i, const size_type j)
     {
         assert(i < this->size1_);
         assert(j < this->size2_);
@@ -134,14 +134,14 @@ namespace alps {
     }
 
     template <typename T, typename MemoryBlock>
-    inline T const& dense_matrix<T, MemoryBlock>::operator()(const size_type i, const size_type j) const 
+    inline T const& matrix<T, MemoryBlock>::operator()(const size_type i, const size_type j) const 
     {
         assert((i < this->size1_) && (j < this->size2_));
         return this->values_[i+j*this->reserved_size1_];
     }
 
     template <typename T, typename MemoryBlock>
-    bool dense_matrix<T, MemoryBlock>::operator == (dense_matrix const& rhs) const
+    bool matrix<T, MemoryBlock>::operator == (matrix const& rhs) const
     {
         if(this->size1_ != rhs.size1_ || this->size2_ != rhs.size2_) return false;
         // TODO: reimplement or remove - this is just a quick ugly implementation
@@ -152,14 +152,14 @@ namespace alps {
     }
 
     template <typename T, typename MemoryBlock>
-    dense_matrix<T,MemoryBlock>& dense_matrix<T, MemoryBlock>::operator += (dense_matrix const& rhs) 
+    matrix<T,MemoryBlock>& matrix<T, MemoryBlock>::operator += (matrix const& rhs) 
     {
         plus_assign(*this,rhs);
         return *this;
     }
     
     template <typename T, typename MemoryBlock>
-    dense_matrix<T,MemoryBlock>& dense_matrix<T, MemoryBlock>::operator -= (dense_matrix const& rhs) 
+    matrix<T,MemoryBlock>& matrix<T, MemoryBlock>::operator -= (matrix const& rhs) 
     {
         minus_assign(*this,rhs);
         return *this;
@@ -167,7 +167,7 @@ namespace alps {
     
     template <typename T, typename MemoryBlock>
     template <typename T2>
-    dense_matrix<T,MemoryBlock>& dense_matrix<T, MemoryBlock>::operator *= (T2 const& t)
+    matrix<T,MemoryBlock>& matrix<T, MemoryBlock>::operator *= (T2 const& t)
     {
         multiplies_assign(*this, t);
         return *this;
@@ -175,44 +175,44 @@ namespace alps {
     
     template <typename T, typename MemoryBlock>
     template <typename T2>
-    dense_matrix<T,MemoryBlock>& dense_matrix<T, MemoryBlock>::operator /= (T2 const& t)
+    matrix<T,MemoryBlock>& matrix<T, MemoryBlock>::operator /= (T2 const& t)
     {
         multiplies_assign(*this, T(1)/t);
         return *this;
     }
 
     template <typename T, typename MemoryBlock>
-    inline bool dense_matrix<T, MemoryBlock>::empty() const
+    inline bool matrix<T, MemoryBlock>::empty() const
     {
         return (this->size1_ == 0 || this->size2_ == 0);
     }
 
     template <typename T, typename MemoryBlock>
-    inline std::size_t dense_matrix<T, MemoryBlock>::num_rows() const
+    inline std::size_t matrix<T, MemoryBlock>::num_rows() const
     {
         return this->size1_;
     }
 
     template <typename T, typename MemoryBlock>
-    inline std::size_t dense_matrix<T, MemoryBlock>::num_cols() const
+    inline std::size_t matrix<T, MemoryBlock>::num_cols() const
     {
         return this->size2_;
     }
 
     template <typename T, typename MemoryBlock>
-    inline std::ptrdiff_t dense_matrix<T, MemoryBlock>::stride1() const
+    inline std::ptrdiff_t matrix<T, MemoryBlock>::stride1() const
     {
         return 1;
     }
 
     template <typename T, typename MemoryBlock>
-    inline std::ptrdiff_t dense_matrix<T, MemoryBlock>::stride2() const
+    inline std::ptrdiff_t matrix<T, MemoryBlock>::stride2() const
     {
         return this->reserved_size1_;
     }
 
     template <typename T, typename MemoryBlock>
-    void dense_matrix<T, MemoryBlock>::resize(size_type size1, size_type size2, T const& init_value)
+    void matrix<T, MemoryBlock>::resize(size_type size1, size_type size2, T const& init_value)
     {
         assert(size1 > 0);
         assert(size2 > 0);
@@ -247,7 +247,7 @@ namespace alps {
     }
 
     template <typename T, typename MemoryBlock>
-    void dense_matrix<T, MemoryBlock>::reserve(size_type size1, size_type size2, T const& init_value)
+    void matrix<T, MemoryBlock>::reserve(size_type size1, size_type size2, T const& init_value)
     {
         // The init_value may seem a little weird in a reserve method,
         // but one has to initialize all matrix elements in the
@@ -278,7 +278,7 @@ namespace alps {
     }
 
     template <typename T, typename MemoryBlock>
-    std::pair<std::size_t,std::size_t> dense_matrix<T, MemoryBlock>::capacity() const
+    std::pair<std::size_t,std::size_t> matrix<T, MemoryBlock>::capacity() const
     {
         assert( this->values_.capacity() % this->reserved_size1_ == 0 );
         // Evaluate the maximal number of columns (with size reserved_size1_) that the underlying vector could hold.
@@ -291,7 +291,7 @@ namespace alps {
     }
 
     template <typename T, typename MemoryBlock>
-    bool dense_matrix<T, MemoryBlock>::is_shrinkable() const
+    bool matrix<T, MemoryBlock>::is_shrinkable() const
     {
         // This assertion should actually never fail
         assert( this->reserved_size1_*this->size2_ == this->values_.size() );
@@ -300,7 +300,7 @@ namespace alps {
     }
 
     template <typename T, typename MemoryBlock>
-    void dense_matrix<T, MemoryBlock>::clear()
+    void matrix<T, MemoryBlock>::clear()
     {
         // Clear the values vector and ensure the reserved size stays the way it was
         this->values_.clear();
@@ -311,7 +311,7 @@ namespace alps {
 
     template <typename T, typename MemoryBlock>
     template <typename InputIterator>
-    void dense_matrix<T, MemoryBlock>::append_cols(std::pair<InputIterator,InputIterator> const& range, difference_type k)
+    void matrix<T, MemoryBlock>::append_cols(std::pair<InputIterator,InputIterator> const& range, difference_type k)
     {
         assert( std::distance(range.first, range.second) == k*this->size1_ );
         // Reserve more space if needed
@@ -328,7 +328,7 @@ namespace alps {
 
     template <typename T, typename MemoryBlock>
     template <typename InputIterator>
-    void dense_matrix<T, MemoryBlock>::append_rows(std::pair<InputIterator,InputIterator> const& range, difference_type k)
+    void matrix<T, MemoryBlock>::append_rows(std::pair<InputIterator,InputIterator> const& range, difference_type k)
     {
         assert( std::distance(range.first, range.second) == k*this->size2_ );
         // Reserve more space if needed
@@ -341,7 +341,7 @@ namespace alps {
 
     template <typename T, typename MemoryBlock>
     template <typename InputIterator>
-    void dense_matrix<T, MemoryBlock>::insert_rows(size_type i, std::pair<InputIterator,InputIterator> const& range, difference_type k)
+    void matrix<T, MemoryBlock>::insert_rows(size_type i, std::pair<InputIterator,InputIterator> const& range, difference_type k)
     {
         assert( i <= this->size1_ );
         assert( std::distance(range.first, range.second) == k*this->size2_ );
@@ -358,7 +358,7 @@ namespace alps {
 
     template <typename T, typename MemoryBlock>
     template <typename InputIterator>
-    void dense_matrix<T, MemoryBlock>::insert_cols(size_type j, std::pair<InputIterator,InputIterator> const& range, difference_type k)
+    void matrix<T, MemoryBlock>::insert_cols(size_type j, std::pair<InputIterator,InputIterator> const& range, difference_type k)
     {
         assert( j <= this->size2_);
         assert( std::distance(range.first, range.second) == k*this->size1_ );
@@ -375,7 +375,7 @@ namespace alps {
     }
 
     template <typename T, typename MemoryBlock>
-    void dense_matrix<T, MemoryBlock>::remove_rows(size_type i, difference_type k)
+    void matrix<T, MemoryBlock>::remove_rows(size_type i, difference_type k)
     {
         assert( i+k <= this->size1_ );
         // for each column, copy the rows > i+k   k rows  up
@@ -385,7 +385,7 @@ namespace alps {
     }
 
     template <typename T, typename MemoryBlock>
-    void dense_matrix<T, MemoryBlock>::remove_cols(size_type j, difference_type k)
+    void matrix<T, MemoryBlock>::remove_cols(size_type j, difference_type k)
     {
         assert( j+k <= this->size2_ );
         this->values_.erase(this->values_.begin()+(this->reserved_size1_*j), this->values_.begin()+(this->reserved_size1_*(j+k)) );
@@ -393,7 +393,7 @@ namespace alps {
     }
 
     template <typename T, typename MemoryBlock>
-    void dense_matrix<T, MemoryBlock>::swap_rows(size_type i1, size_type i2)
+    void matrix<T, MemoryBlock>::swap_rows(size_type i1, size_type i2)
     {
         assert( i1 < this->size1_ && i2 < this->size1_ );
         std::pair<row_element_iterator, row_element_iterator> range( row(i1) );
@@ -401,7 +401,7 @@ namespace alps {
     }
 
     template <typename T, typename MemoryBlock>
-    void dense_matrix<T, MemoryBlock>::swap_cols(size_type j1, size_type j2)
+    void matrix<T, MemoryBlock>::swap_cols(size_type j1, size_type j2)
     {
         assert( j1 < this->size2_ && j2 < this->size2_ );
         std::pair<column_element_iterator, column_element_iterator> range( column(j1) );
@@ -410,7 +410,7 @@ namespace alps {
 
 // TODO
 //    template <typename T, typename MemoryBlock>
-//    void dense_matrix<T, MemoryBlock>::inplace_conjugate()
+//    void matrix<T, MemoryBlock>::inplace_conjugate()
 //    {
 //		// Do the operation column by column
 //		for(size_type j=0; j < this->size2_; ++j)
@@ -422,7 +422,7 @@ namespace alps {
 //    }
 
     template <typename T, typename MemoryBlock>
-    inline bool dense_matrix<T, MemoryBlock>::automatic_reserve(size_type size1, size_type size2, T const& init_value)
+    inline bool matrix<T, MemoryBlock>::automatic_reserve(size_type size1, size_type size2, T const& init_value)
     {
         // Do we need to reserve more space in any dimension?
         if(size1 > this->reserved_size1_ || this->reserved_size1_*size2 > this->values_.capacity())
@@ -438,11 +438,11 @@ namespace alps {
 
 #ifdef HAVE_ALPS_HDF5
 	template <typename T, typename MemoryBlock>
-    void dense_matrix<T, MemoryBlock>::load(alps::hdf5::archive & ar) {
+    void matrix<T, MemoryBlock>::load(alps::hdf5::archive & ar) {
         load_impl(ar, typename alps::is_complex<T>::type());
     }
 	template <typename T, typename MemoryBlock>
-    void dense_matrix<T, MemoryBlock>::load_impl(alps::hdf5::archive & ar, boost::mpl::true_)
+    void matrix<T, MemoryBlock>::load_impl(alps::hdf5::archive & ar, boost::mpl::true_)
     {
         ar >> alps::make_pvp("size1", size1_);
         ar >> alps::make_pvp("size2", size2_);
@@ -457,7 +457,7 @@ namespace alps {
         }
     }
 	template <typename T, typename MemoryBlock>
-    void dense_matrix<T, MemoryBlock>::load_impl(alps::hdf5::archive & ar, boost::mpl::false_)
+    void matrix<T, MemoryBlock>::load_impl(alps::hdf5::archive & ar, boost::mpl::false_)
     {
         ar >> alps::make_pvp("size1", size1_);
         ar >> alps::make_pvp("size2", size2_);
@@ -466,7 +466,7 @@ namespace alps {
     }
 
 	template <typename T, typename MemoryBlock>
-    inline void dense_matrix<T, MemoryBlock>::save(alps::hdf5::archive & ar) const
+    inline void matrix<T, MemoryBlock>::save(alps::hdf5::archive & ar) const
     {
 		ar << alps::make_pvp("size1", size1_);
 		ar << alps::make_pvp("size2", size2_);
@@ -476,14 +476,14 @@ namespace alps {
 #endif	
 
     template <typename T, typename MemoryBlock>
-    const dense_matrix<T,MemoryBlock> matrix_matrix_multiply(dense_matrix<T,MemoryBlock> const& lhs, dense_matrix<T,MemoryBlock> const& rhs)
+    const matrix<T,MemoryBlock> matrix_matrix_multiply(matrix<T,MemoryBlock> const& lhs, matrix<T,MemoryBlock> const& rhs)
     {
         assert( !(lhs.num_cols() > rhs.num_rows()) );
         assert( !(lhs.num_cols() < rhs.num_rows()) );
         assert( lhs.num_cols() == rhs.num_rows() );
         
         // Simple matrix matrix multiplication
-        dense_matrix<T,MemoryBlock> result(lhs.num_rows(),rhs.num_cols());
+        matrix<T,MemoryBlock> result(lhs.num_rows(),rhs.num_cols());
         for(std::size_t i=0; i < lhs.num_rows(); ++i)
         {
             for(std::size_t k=0; k<lhs.num_cols(); ++k)
@@ -499,16 +499,16 @@ namespace alps {
     } 
 
     template<typename T, typename MemoryBlock, typename T2, typename MemoryBlock2>
-    typename matrix_vector_multiplies_return_type<dense_matrix<T,MemoryBlock>,vector<T2,MemoryBlock2> >::type
-    matrix_vector_multiply(dense_matrix<T,MemoryBlock> const& m, vector<T2,MemoryBlock2> const& v)
+    typename matrix_vector_multiplies_return_type<matrix<T,MemoryBlock>,vector<T2,MemoryBlock2> >::type
+    matrix_vector_multiply(matrix<T,MemoryBlock> const& m, vector<T2,MemoryBlock2> const& v)
     {
         assert( m.num_cols() == v.size() );
-        typename matrix_vector_multiplies_return_type<dense_matrix<T,MemoryBlock>,vector<T2,MemoryBlock2> >::type
+        typename matrix_vector_multiplies_return_type<matrix<T,MemoryBlock>,vector<T2,MemoryBlock2> >::type
             result(m.num_rows());
         // Simple Matrix * Vector
-        for(typename dense_matrix<T,MemoryBlock>::size_type i = 0; i < m.num_rows(); ++i)
+        for(typename matrix<T,MemoryBlock>::size_type i = 0; i < m.num_rows(); ++i)
         {
-            for(typename dense_matrix<T,MemoryBlock>::size_type j=0; j <m.num_cols(); ++j)
+            for(typename matrix<T,MemoryBlock>::size_type j=0; j <m.num_cols(); ++j)
             {
                 result(i) += m(i,j) * v(j);
             }
@@ -517,19 +517,19 @@ namespace alps {
     }
 
     template <typename T,typename MemoryBlock>
-    void plus_assign(dense_matrix<T,MemoryBlock>& m, dense_matrix<T,MemoryBlock> const& rhs)
+    void plus_assign(matrix<T,MemoryBlock>& m, matrix<T,MemoryBlock> const& rhs)
     {
         detail::op_assign_default_impl(m,rhs,std::plus<T>());
     }
 
     template <typename T, typename MemoryBlock>
-    void minus_assign(dense_matrix<T,MemoryBlock>& m, dense_matrix<T,MemoryBlock> const& rhs)
+    void minus_assign(matrix<T,MemoryBlock>& m, matrix<T,MemoryBlock> const& rhs)
     {
         detail::op_assign_default_impl(m,rhs,std::minus<T>());
     }
 
     template <typename T, typename MemoryBlock, typename T2>
-    void multiplies_assign(dense_matrix<T,MemoryBlock>& m, T2 const& t)
+    void multiplies_assign(matrix<T,MemoryBlock>& m, T2 const& t)
     {
         detail::multiplies_assign_default_impl(m,t);
     }
@@ -537,27 +537,27 @@ namespace alps {
 //////////////////////////////////////////////////////////////////////////////
 
     template <typename T, typename MemoryBlock>
-    const dense_matrix<T,MemoryBlock> operator + (dense_matrix<T,MemoryBlock> a, dense_matrix<T,MemoryBlock> const& b)
+    const matrix<T,MemoryBlock> operator + (matrix<T,MemoryBlock> a, matrix<T,MemoryBlock> const& b)
     {
         a += b;
         return a;
     }
 
     template <typename T, typename MemoryBlock>
-    const dense_matrix<T,MemoryBlock> operator - (dense_matrix<T,MemoryBlock> a, dense_matrix<T,MemoryBlock> const& b)
+    const matrix<T,MemoryBlock> operator - (matrix<T,MemoryBlock> a, matrix<T,MemoryBlock> const& b)
     {
         a -= b;
         return a;
     }
 
     template <typename T, typename MemoryBlock>
-    const dense_matrix<T,MemoryBlock> operator - (dense_matrix<T,MemoryBlock> a)
+    const matrix<T,MemoryBlock> operator - (matrix<T,MemoryBlock> a)
     {
 		// Do the operation column by column
-		for(typename dense_matrix<T,MemoryBlock>::size_type j=0; j < a.num_cols(); ++j)
+		for(typename matrix<T,MemoryBlock>::size_type j=0; j < a.num_cols(); ++j)
 		{
-			std::pair<typename dense_matrix<T,MemoryBlock>::column_element_iterator,
-					  typename dense_matrix<T,MemoryBlock>::column_element_iterator> range(a.column(j));
+			std::pair<typename matrix<T,MemoryBlock>::column_element_iterator,
+					  typename matrix<T,MemoryBlock>::column_element_iterator> range(a.column(j));
 			std::transform(range.first, range.second,
 						   range.first, std::negate<T>());
 		}
@@ -565,48 +565,48 @@ namespace alps {
     }
 	
     template<typename T, typename MemoryBlock, typename T2, typename MemoryBlock2>
-    typename matrix_vector_multiplies_return_type<dense_matrix<T,MemoryBlock>,vector<T2,MemoryBlock2> >::type
-    operator * (dense_matrix<T,MemoryBlock> const& m, vector<T2,MemoryBlock2> const& v)
+    typename matrix_vector_multiplies_return_type<matrix<T,MemoryBlock>,vector<T2,MemoryBlock2> >::type
+    operator * (matrix<T,MemoryBlock> const& m, vector<T2,MemoryBlock2> const& v)
     {
         return matrix_vector_multiply(m,v);
     }
 
     template<typename T,typename MemoryBlock, typename T2>
-    const dense_matrix<T,MemoryBlock> operator * (dense_matrix<T,MemoryBlock> m, T2 const& t)
+    const matrix<T,MemoryBlock> operator * (matrix<T,MemoryBlock> m, T2 const& t)
     {
         return m*=t;
     }
 
     template<typename T,typename MemoryBlock, typename T2>
-    const dense_matrix<T,MemoryBlock> operator * (T2 const& t, dense_matrix<T,MemoryBlock> m)
+    const matrix<T,MemoryBlock> operator * (T2 const& t, matrix<T,MemoryBlock> m)
     {
         return m*=t;
     }
 
     template<typename T, typename MemoryBlock>
-    const dense_matrix<T,MemoryBlock> operator * (dense_matrix<T,MemoryBlock> const& m1, dense_matrix<T,MemoryBlock> const& m2)
+    const matrix<T,MemoryBlock> operator * (matrix<T,MemoryBlock> const& m1, matrix<T,MemoryBlock> const& m2)
     {
         return matrix_matrix_multiply(m1,m2);
     }
 
     template<typename T,typename MemoryBlock>
-    void gemm(dense_matrix<T,MemoryBlock> const & A, dense_matrix<T,MemoryBlock> const & B, dense_matrix<T,MemoryBlock> & C)
+    void gemm(matrix<T,MemoryBlock> const & A, matrix<T,MemoryBlock> const & B, matrix<T,MemoryBlock> & C)
     {
         C = matrix_matrix_multiply(A, B);
     }
     
     template<class T, class MemoryBlock>
-    std::size_t size_of(dense_matrix<T, MemoryBlock> const & m)
+    std::size_t size_of(matrix<T, MemoryBlock> const & m)
     {
         return num_rows(m)*num_cols(m)*sizeof(T);
     }
     
     template <typename T, typename MemoryBlock>
-    std::ostream& operator << (std::ostream& o, dense_matrix<T,MemoryBlock> const& m)
+    std::ostream& operator << (std::ostream& o, matrix<T,MemoryBlock> const& m)
     {
-        for(typename dense_matrix<T,MemoryBlock>::size_type i=0; i< m.num_rows(); ++i)
+        for(typename matrix<T,MemoryBlock>::size_type i=0; i< m.num_rows(); ++i)
         {
-            for(typename dense_matrix<T,MemoryBlock>::size_type j=0; j < m.num_cols(); ++j)
+            for(typename matrix<T,MemoryBlock>::size_type j=0; j < m.num_cols(); ++j)
                 o<<m(i,j)<<" ";
             o<<std::endl;
         }
@@ -614,13 +614,13 @@ namespace alps {
     }
 
    template <typename T, typename MemoryBlock>
-   const MemoryBlock& dense_matrix<T, MemoryBlock>::get_values() const
+   const MemoryBlock& matrix<T, MemoryBlock>::get_values() const
    {   
        return this->values_;
    }   
 
    template <typename T, typename MemoryBlock>
-   MemoryBlock& dense_matrix<T, MemoryBlock>::get_values()
+   MemoryBlock& matrix<T, MemoryBlock>::get_values()
    {   
        return this->values_;
    }   
