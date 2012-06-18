@@ -25,7 +25,7 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#define BOOST_TEST_MODULE alps::numeric::dense_matrix
+#define BOOST_TEST_MODULE alps::numeric::matrix
 #include <boost/test/included/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
@@ -39,7 +39,7 @@
 #include <alps/numeric/matrix/vector.hpp>
 
 //
-// List of types T for which the dense_matrix<T> is tested
+// List of types T for which the matrix<T> is tested
 //
 typedef boost::mpl::list<float, double, int, unsigned int, long unsigned int,std::complex<float>, std::complex<double> > test_types;
 // long long unsigned int causes problems in boost::iterator facade
@@ -87,33 +87,33 @@ T fill_range_with_numbers(OutputIterator begin, OutputIterator end, T iota)
 }
 
 template <typename T>
-T fill_matrix_with_numbers(alps::numeric::dense_matrix<T>& a)
+T fill_matrix_with_numbers(alps::numeric::matrix<T>& a)
 {
     T iota(0);
     for(unsigned int i=0; i<num_rows(a); ++i)
     {
-        std::pair<typename alps::numeric::dense_matrix<T>::row_element_iterator, typename alps::numeric::dense_matrix<T>::row_element_iterator> range(row(a,i));
+        std::pair<typename alps::numeric::matrix<T>::row_element_iterator, typename alps::numeric::matrix<T>::row_element_iterator> range(row(a,i));
         iota += fill_range_with_numbers(range.first,range.second,T(i));
     }
     return iota;
 }
 
-using alps::numeric::dense_matrix;
+using alps::numeric::matrix;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( constructors_test, T, test_types )
 {
-    dense_matrix<T> a;
+    matrix<T> a;
     BOOST_CHECK_EQUAL(num_rows(a), 0 );
     BOOST_CHECK_EQUAL(num_cols(a), 0 );
 
-    dense_matrix<T> b(10,10);
+    matrix<T> b(10,10);
     BOOST_CHECK_EQUAL(num_rows(b), 10 );
     BOOST_CHECK_EQUAL(num_cols(b), 10 );
     for(unsigned int i=0; i<10; ++i)
         for(unsigned int j=0; j<10; ++j)
             BOOST_CHECK_EQUAL(b(i,j), T());
 
-    dense_matrix<T> c(15,5,5);
+    matrix<T> c(15,5,5);
     BOOST_CHECK_EQUAL(num_rows(c), 15 );
     BOOST_CHECK_EQUAL(num_cols(c), 5 );
     for(unsigned int i=0; i<15; ++i)
@@ -123,10 +123,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors_test, T, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( copy_swap_test, T, test_types )
 {
-    dense_matrix<T> a(10,10,1);
-    dense_matrix<T> b(1,1,0);
-    dense_matrix<T> c(a);
-    dense_matrix<T> d(b);
+    matrix<T> a(10,10,1);
+    matrix<T> b(1,1,0);
+    matrix<T> c(a);
+    matrix<T> d(b);
     swap(a,b);
     BOOST_CHECK_EQUAL(a,d);
     BOOST_CHECK_EQUAL(b,c);
@@ -134,8 +134,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( copy_swap_test, T, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( assignement_test, T, test_types )
 {
-    dense_matrix<T> a(10,10,1);
-    dense_matrix<T> b(1,1,0);
+    matrix<T> a(10,10,1);
+    matrix<T> b(1,1,0);
     b = a;
     BOOST_CHECK_EQUAL(a,b);
     b(0,0) = 5;
@@ -144,14 +144,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignement_test, T, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( row_iterator_test, T, test_types )
 {
-    dense_matrix<T> a(10,20);
+    matrix<T> a(10,20);
     fill_matrix_with_numbers(a);
 
     for(unsigned int i=0; i<num_rows(a); ++i)
     {
-        std::pair<typename dense_matrix<T>::row_element_iterator, typename dense_matrix<T>::row_element_iterator> range(row(a,i));
+        std::pair<typename matrix<T>::row_element_iterator, typename matrix<T>::row_element_iterator> range(row(a,i));
         unsigned int j=0;
-        for(typename dense_matrix<T>::const_row_element_iterator it(range.first); it != range.second; ++it)
+        for(typename matrix<T>::const_row_element_iterator it(range.first); it != range.second; ++it)
         {
             BOOST_CHECK_EQUAL(a(i,j), *it);
             ++j;
@@ -164,13 +164,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( row_iterator_test, T, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( column_iterator_test, T, test_types )
 {
-    dense_matrix<T> a(10,20);
+    matrix<T> a(10,20);
     fill_matrix_with_numbers(a);
     for(unsigned int j=0; j<num_cols(a); ++j)
     {
-        std::pair<typename dense_matrix<T>::column_element_iterator, typename dense_matrix<T>::column_element_iterator> range(column(a,j));
+        std::pair<typename matrix<T>::column_element_iterator, typename matrix<T>::column_element_iterator> range(column(a,j));
         unsigned int i=0;
-        for(typename dense_matrix<T>::const_column_element_iterator it(range.first); it != range.second; ++it)
+        for(typename matrix<T>::const_column_element_iterator it(range.first); it != range.second; ++it)
         {
             BOOST_CHECK_EQUAL(a(i,j), *it);
             ++i;
@@ -183,9 +183,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( column_iterator_test, T, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( element_iterator_test, T, test_types )
 {
-    dense_matrix<T> a(10,20);
-    dense_matrix<T> b(10,20);
-    std::pair<typename dense_matrix<T>::element_iterator,typename dense_matrix<T>::element_iterator> range(elements(a));
+    matrix<T> a(10,20);
+    matrix<T> b(10,20);
+    std::pair<typename matrix<T>::element_iterator,typename matrix<T>::element_iterator> range(elements(a));
     fill_range_with_numbers(range.first,range.second,0);
 
     T k = T(0);
@@ -205,14 +205,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( element_iterator_test, T, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( resize_test, T, test_types )
 {
-    dense_matrix<T> a;
+    matrix<T> a;
 
     // Check primitive enlargement
     resize(a,10,5);
     BOOST_CHECK_EQUAL(num_rows(a),10);
     BOOST_CHECK_EQUAL(num_cols(a),5);
     fill_matrix_with_numbers(a);
-    dense_matrix<T> b(a);
+    matrix<T> b(a);
 
     // Resize case 1:
     // Enlargement out of the reserved range
@@ -251,15 +251,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( resize_test, T, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( resize_exception_test, T, test_types )
 {
-    dense_matrix<T> a(22,18);
+    matrix<T> a(22,18);
     fill_matrix_with_numbers(a);
     
     // What happens if an exception is thrown?
     // Remains the matrix unchanged if an exception is thrown during the resize process?
     // Case 1: size1 > reserved_size1_
-    dense_matrix<T> ref(a); 
-    dense_matrix<T> c(a); 
-    dense_matrix<T> d(a); 
+    matrix<T> ref(a); 
+    matrix<T> c(a); 
+    matrix<T> d(a); 
     std::vector<T> test;
     std::size_t max_size = test.max_size();
     try
@@ -289,7 +289,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( resize_exception_test, T, test_types )
     // size1 < reserved_size1
     // size1 > size1_
     resize(d,2,5);
-    dense_matrix<T> ref_d(d);
+    matrix<T> ref_d(d);
     try
     {
         resize(d,4,max_size/2+5);
@@ -302,10 +302,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( resize_exception_test, T, test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( reserve_test, T, test_types)
 {
-    dense_matrix<T> a(22,18);
+    matrix<T> a(22,18);
     fill_matrix_with_numbers(a);
     
-    dense_matrix<T> ref(a);
+    matrix<T> ref(a);
 
     // Case 1:
     // size1 > reserved_size1_
@@ -333,9 +333,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( reserve_test, T, test_types)
 BOOST_AUTO_TEST_CASE_TEMPLATE( append_rows_test, T, test_types)
 {
     const unsigned int initsize = 20;
-    dense_matrix<T> a(initsize,initsize);
+    matrix<T> a(initsize,initsize);
     fill_matrix_with_numbers(a);
-    dense_matrix<T> b(a);
+    matrix<T> b(a);
 
     std::vector<T> data_single(initsize,1);
     std::vector<T> data_multiple(3*initsize,2);
@@ -389,9 +389,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( append_rows_test, T, test_types)
 BOOST_AUTO_TEST_CASE_TEMPLATE( append_cols_test, T, test_types)
 {
     const unsigned int initsize = 20;
-    dense_matrix<T> a(initsize,initsize);
+    matrix<T> a(initsize,initsize);
     fill_matrix_with_numbers(a);
-    dense_matrix<T> b(a);
+    matrix<T> b(a);
 
     std::vector<T> data_single(initsize,1);
     std::vector<T> data_multiple(3*initsize,2);
@@ -444,9 +444,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( append_cols_test, T, test_types)
 BOOST_AUTO_TEST_CASE_TEMPLATE( remove_rows_test, T, test_types)
 {
     const unsigned int initsize = 20;
-    dense_matrix<T> a(initsize,initsize);
+    matrix<T> a(initsize,initsize);
     fill_matrix_with_numbers(a);
-    dense_matrix<T> b(a);
+    matrix<T> b(a);
 
     // remove the last row
     remove_rows(a,initsize-1);
@@ -469,16 +469,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remove_rows_test, T, test_types)
                 BOOST_CHECK_EQUAL(a(i,j),b(i+6,j));
         }
     
-    dense_matrix<T> c(b);
+    matrix<T> c(b);
 
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( remove_cols_test, T, test_types)
 {
     const unsigned int initsize = 20;
-    dense_matrix<T> a(initsize,initsize);
+    matrix<T> a(initsize,initsize);
     fill_matrix_with_numbers(a);
-    dense_matrix<T> b(a);
+    matrix<T> b(a);
 
     // remove the last row
     remove_cols(a,initsize-1);
@@ -501,16 +501,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remove_cols_test, T, test_types)
                 BOOST_CHECK_EQUAL(a(i,j),b(i,j+6));
         }
     
-    dense_matrix<T> c(b);
+    matrix<T> c(b);
 
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( insert_rows_test, T, test_types)
 {
     const unsigned int initsize = 20;
-    dense_matrix<T> a(initsize,initsize);
+    matrix<T> a(initsize,initsize);
     fill_matrix_with_numbers(a);
-    dense_matrix<T> b(a);
+    matrix<T> b(a);
 
     std::vector<T> data_single(20,1);
     std::vector<T> data_multiple(3*initsize,2);
@@ -552,9 +552,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( insert_rows_test, T, test_types)
 BOOST_AUTO_TEST_CASE_TEMPLATE( insert_cols_test, T, test_types)
 { 
     const unsigned int initsize = 20;
-    dense_matrix<T> a(initsize,initsize);
+    matrix<T> a(initsize,initsize);
     fill_matrix_with_numbers(a);
-    dense_matrix<T> b(a);
+    matrix<T> b(a);
 
     std::vector<T> data_single(20,1);
     std::vector<T> data_multiple(3*initsize,2);
@@ -595,9 +595,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( insert_cols_test, T, test_types)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_test, T, test_types)
 {
-    dense_matrix<T> a(20,30);
+    matrix<T> a(20,30);
     fill_matrix_with_numbers(a);
-    dense_matrix<T> b(a);
+    matrix<T> b(a);
     
     a += b;
     for(unsigned int i=0; i<num_rows(a); ++i)
@@ -612,10 +612,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( plus_assign_test, T, test_types)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_test, T, test_types)
 {
-    dense_matrix<T> a(20,30);
-    dense_matrix<T> zero(20,30,T(0));
+    matrix<T> a(20,30);
+    matrix<T> zero(20,30,T(0));
     fill_matrix_with_numbers(a);
-    dense_matrix<T> b(a);
+    matrix<T> b(a);
     a += b;
     a -= b;
     BOOST_CHECK_EQUAL(a,b);
@@ -626,10 +626,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minus_assign_test, T, test_types)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_test, T, test_types)
 {
-    dense_matrix<T> a(20,30);
-    dense_matrix<T> zero(20,30,T(0));
+    matrix<T> a(20,30);
+    matrix<T> zero(20,30,T(0));
     fill_matrix_with_numbers(a);
-    dense_matrix<T> b(a);
+    matrix<T> b(a);
     a *= T(1);
     BOOST_CHECK_EQUAL(a,b);
     a *= T(0);
@@ -644,53 +644,53 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_assign_test, T, test_types)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( plus_test, T, test_types)
 {
-    dense_matrix<T> a(20,30);
+    matrix<T> a(20,30);
     fill_matrix_with_numbers(a);
-    dense_matrix<T> b(a);
+    matrix<T> b(a);
 
-    dense_matrix<T> c = a + b;
+    matrix<T> c = a + b;
     a +=b;
     BOOST_CHECK_EQUAL(c,a);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( minus_test, T, test_types)
 {
-    dense_matrix<T> a(20,30);
+    matrix<T> a(20,30);
     fill_matrix_with_numbers(a);
-    dense_matrix<T> b(a);
+    matrix<T> b(a);
     a += b;
-    dense_matrix<T> c = a - b;
+    matrix<T> c = a - b;
     BOOST_CHECK_EQUAL(c,b);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_test, T, test_types)
 {
-    dense_matrix<T> a(20,30);
+    matrix<T> a(20,30);
     fill_matrix_with_numbers(a);
-    dense_matrix<T> b(a);
-    dense_matrix<T> ref_b(b);
+    matrix<T> b(a);
+    matrix<T> ref_b(b);
     a*= T(2);
-    dense_matrix<T> c = T(2) * b;
+    matrix<T> c = T(2) * b;
     //TODO Do we really want to assume commutative types?
-    dense_matrix<T> d = b * T(2);
+    matrix<T> d = b * T(2);
     BOOST_CHECK_EQUAL(c,a);
     BOOST_CHECK_EQUAL(d,a);
     BOOST_CHECK_EQUAL(b,ref_b);
 
     // Check whether or not it works with mixed types.
     // (value_type != T2 ) - at least for non integer types...
-    dense_matrix<T> e(b);
+    matrix<T> e(b);
     b*= 5;
     for(unsigned int i=0; i<num_rows(c); ++i)
         for(unsigned int j=0; j<num_cols(c); ++j)
         {
-            typename dense_matrix<T>::value_type tmp (e(i,j));
+            typename matrix<T>::value_type tmp (e(i,j));
             tmp *= 5;
             BOOST_CHECK_EQUAL(b(i,j),tmp);
         }
-    dense_matrix<T> ref_e(e);
-    dense_matrix<T> f ( e * 5 );
-    dense_matrix<T> g ( 5 * e );
+    matrix<T> ref_e(e);
+    matrix<T> f ( e * 5 );
+    matrix<T> g ( 5 * e );
     BOOST_CHECK_EQUAL(b,f);
     BOOST_CHECK_EQUAL(b,g);
     BOOST_CHECK_EQUAL(ref_e,e);
@@ -699,11 +699,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_test, T, test_types)
 
 // BOOST_AUTO_TEST_CASE_TEMPLATE( matrix_vector_multiply_test, T, test_types)
 // {
-//     alps::numeric::dense_matrix<T> a(20,30);
+//     alps::numeric::matrix<T> a(20,30);
 //     std::vector<T> v(30);
 //     fill_matrix_with_numbers(a);
 //     fill_range_with_numbers(v.begin(),v.end(),T(0));
-//     alps::numeric::dense_matrix<T> a_(a);
+//     alps::numeric::matrix<T> a_(a);
 //     std::vector<T> v_(v);
 //     
 //     std::vector<T> result(a*v);
@@ -722,13 +722,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_test, T, test_types)
 
 // BOOST_AUTO_TEST_CASE_TEMPLATE( matrix_vector_multiply_mixed_types_test, TPair, test_type_pairs)
 // {
-//     // -alps::numeric::dense_matrix<T> * std::vector<int>
+//     // -alps::numeric::matrix<T> * std::vector<int>
 //     
-//     alps::numeric::dense_matrix<typename TPair::first_type> a(20,30);
+//     alps::numeric::matrix<typename TPair::first_type> a(20,30);
 //     std::vector<typename TPair::second_type> v(30);
 //     fill_matrix_with_numbers(a);
 //     fill_range_with_numbers(v.begin(),v.end(),0);
-//     alps::numeric::dense_matrix<typename TPair::first_type> a_(a);
+//     alps::numeric::matrix<typename TPair::first_type> a_(a);
 //     std::vector<typename TPair::second_type> v_(v);
 //     
 //     std::vector<typename alps::numeric::MultiplyReturnType<typename TPair::first_type,std::vector<typename TPair::first_type>,typename TPair::second_type, std::vector<typename TPair::second_type> >::value_type> result(a*v);
@@ -746,12 +746,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_test, T, test_types)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( matrix_matrix_multiply_test, T, test_types)
 {
-    dense_matrix<T> a(20,30);
-    dense_matrix<T> b(30,50);
+    matrix<T> a(20,30);
+    matrix<T> b(30,50);
     fill_matrix_with_numbers(a);
     fill_matrix_with_numbers(b);
 
-    dense_matrix<T> c = a * b;
+    matrix<T> c = a * b;
 
     BOOST_CHECK_EQUAL(num_rows(c), num_rows(a));
     BOOST_CHECK_EQUAL(num_cols(c), num_cols(b));
