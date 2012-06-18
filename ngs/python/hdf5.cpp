@@ -284,6 +284,10 @@ namespace alps {
                     std::vector<std::size_t> first_extent, next_extent;
                     if (first_dtype == "list")
                         boost::tie(first_homogenious, first_extent) = py_save_list_extent(boost::python::extract<boost::python::list>(data[0]));
+                    // else if (first_dtype == "numpy.ndarray") {
+                    //     PyObject* arr = boost::python::object(data[0]).ptr();
+                    //     first_extent = std::vector<std::size_t>(PyArray_DIMS(arr), PyArray_DIMS(arr) + PyArray_NDIM(arr));
+                    // }
                     if (!first_homogenious)
                         return std::make_pair(false, std::vector<std::size_t>());
                     for(boost::python::ssize_t i = 0; i < size; ++i) {
@@ -292,8 +296,9 @@ namespace alps {
                             boost::tie(next_homogenious, next_extent) = py_save_list_extent(boost::python::extract<boost::python::list>(data[i]));
                             if (!next_homogenious || first_extent.size() != next_extent.size() || !equal(first_extent.begin(), first_extent.end(), next_extent.begin()))
                                 return make_pair(false, std::vector<std::size_t>());
-                        } if (dtype == "numpy.ndarray") {
-                            next_extent = std::vector<std::size_t>(PyArray_DIMS(data.ptr()), PyArray_DIMS(data.ptr()) + PyArray_NDIM(data.ptr()));
+                        } else if (dtype == "numpy.ndarray") {
+                            PyObject* arr = boost::python::object(data[i]).ptr();
+                            next_extent = std::vector<std::size_t>(PyArray_DIMS(arr), PyArray_DIMS(arr) + PyArray_NDIM(arr));
                             if (first_extent.size() != next_extent.size() || !equal(first_extent.begin(), first_extent.end(), next_extent.begin()))
                                 return make_pair(false, std::vector<std::size_t>());
                         } else if (first_dtype != dtype || find(scalar_types.begin(), scalar_types.end(), dtype) == scalar_types.end())
