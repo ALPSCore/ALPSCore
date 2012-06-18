@@ -15,7 +15,7 @@ include_directories(${Boost_ROOT_DIR})
 enable_testing()
 if (ALPS_BUILD_PYTHON AND BUILD_SHARED_LIBS)
     if (ALPS_BUILD_NGS)
-        FOREACH (name pyioarchive numpylarge pyparams)
+        FOREACH (name pyioarchive pyhdf5io numpylarge pyparams)
             add_test(python_${name}
                 ${CMAKE_COMMAND}
                     -Dpython_interpreter=${PYTHON_INTERPRETER}
