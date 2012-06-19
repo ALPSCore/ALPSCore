@@ -46,6 +46,17 @@
 
 namespace alps {
   namespace numeric {
+    namespace detail {
+        template <typename T, typename T2>
+        struct multiplies : public std::binary_function<T,T2,T>
+        {
+            inline T operator()(T t, T2 const& t2) const
+            {
+                return t*t2;
+            }
+        };
+    } // end namespace detail
+
   template<typename T, typename MemoryBlock = std::vector<T> >
   class vector : public MemoryBlock
   {
@@ -102,8 +113,9 @@ namespace alps {
           minus_assign(this->begin(), this->end(), rhs.begin());
           return *this;
       }
-      
-      vector& operator*=(T const& lambda) 
+   
+      template <typename T2>   
+      vector& operator *= (T2 const& lambda) 
       {
           multiplies_assign(this->begin(), this->end(), lambda);
           return *this;
@@ -148,7 +160,8 @@ namespace alps {
     template <class ForwardIterator, typename T>
     void multiplies_assign(ForwardIterator start1, ForwardIterator end1, T lambda) 
     {
-        std::transform(start1, end1, start1, std::bind2nd(std::multiplies<T>(), lambda));
+        using detail::multiplies;
+        std::transform(start1, end1, start1, std::bind2nd(multiplies<typename std::iterator_traits<ForwardIterator>::value_type, T>(), lambda));
     }
 
     template <typename T, typename MemoryBlock>
