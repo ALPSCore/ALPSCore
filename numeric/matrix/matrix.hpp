@@ -34,6 +34,7 @@
 #include <alps/numeric/matrix/detail/matrix_adaptor.hpp>
 #include <alps/numeric/matrix/matrix_traits.hpp>
 #include <alps/numeric/real.hpp>
+#include <alps/parser/xmlstream.h>
 
 //#include "utils/function_objects.h"
 
@@ -260,6 +261,8 @@ namespace alps {
         void swap_cols(size_type j1, size_type j2);
 
         void inplace_conjugate();
+        
+        void write_xml(oxstream& ox) const;
 		
 		// Serialize functions to save matrix with alps::hdf5
 #ifdef HAVE_ALPS_HDF5
@@ -271,6 +274,7 @@ namespace alps {
 #endif
         MemoryBlock const& get_values() const;       
         MemoryBlock & get_values();       
+
 
 
     private:
@@ -353,6 +357,9 @@ namespace alps {
     
     template <typename T, typename MemoryBlock>
     std::ostream& operator << (std::ostream& o, matrix<T,MemoryBlock> const& m);
+
+    template <typename T, typename MemoryBlock>
+    alps::oxstream& operator<<(alps::oxstream& xml, matrix<T,MemoryBlock> const& m);
 
     } // namespace numeric
 } // namespace alps
