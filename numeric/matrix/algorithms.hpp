@@ -47,19 +47,42 @@
 
 #include <alps/numeric/real.hpp>
 #include <alps/numeric/imag.hpp>
+#include <alps/numeric/conj.hpp>
 
 // forward declaration for nested specialization, be cautious of the namespace
 
 namespace alps {
     namespace numeric {
-        template<class T>
+        template <class T, class MemoryBlock>
         class matrix; 
     }
 }
 
 namespace alps {
     namespace numeric {
+        
+        namespace detail {
+            template<class InputIterator, class OutputIterator, class T>
+            void iterator_axpy(InputIterator in1, InputIterator in2,
+                               OutputIterator out1, T val)
+            {
+                std::transform(in1, in2, out1, out1, boost::lambda::_1*val+boost::lambda::_2);
+            }
 
+            inline void iterator_axpy(double const * in1, double const * in2,
+                                      double * out1, double val)
+            {
+                fortran_int_t one = 1, diff = in2-in1;
+                daxpy_(&diff, &val, in1, &one, out1, &one);
+            }
+
+            inline void iterator_axpy(std::complex<double> const * in1, std::complex<double> const * in2,
+                                      std::complex<double> * out1, double val)
+            {
+                throw std::runtime_error("Not implemented.");
+            }
+        }
+        
         template <typename T>
         void reshape_r2l(matrix<T>& left, const matrix<T>& right,
                          size_t left_offset, size_t right_offset, 
@@ -95,7 +118,7 @@ namespace alps {
                 for(size_t ss2 = 0; ss2 < sdim2; ++ss2) {
                     T alfa_t = alfa(ss1, ss2);
                     for(size_t rr = 0; rr < rdim; ++rr) {
-                        iterator_axpy(&in(in_offset + ss1*ldim, rr),
+                        detail::iterator_axpy(&in(in_offset + ss1*ldim, rr),
                                       &in(in_offset + ss1*ldim, rr) + ldim, // bugbug
                                       &out(out_offset + ss2*ldim, rr),
                                       alfa_t);
@@ -120,18 +143,16 @@ namespace alps {
          
         template <typename T>
         void scalar_norm(const matrix<T>& M, typename matrix<T>::value_type& ret){
-            using utils::conj; 
             for (std::size_t c = 0; c < num_cols(M); ++c)
                 for (std::size_t r = 0; r < num_rows(M); ++r)
-                    ret += conj(M(r,c)) * M(r,c);
+                    ret += alps::numeric::conj(M(r,c)) * M(r,c);
         }
         
         template <typename T>
         void scalar_norm(matrix<T> & M1, matrix<T> & M2, typename matrix<T>::value_type & ret){ // not const due to nullcut
-            using utils::conj; 
             for (std::size_t c = 0; c < num_cols(M1); ++c)
                 for (std::size_t r = 0; r < num_rows(M1); ++r)
-                    ret += conj(M1(r,c)) * M2(r,c);
+                    ret += alps::numeric::conj(M1(r,c)) * M2(r,c);
         }
         
         template <typename T>
@@ -232,7 +253,7 @@ namespace alps {
 #ifndef NDEBUG
             for (int i = 0; i < num_rows(M); ++i)
                 for (int j = 0; j < num_cols(M); ++j)
-                    assert( abs( M(i,j) - utils::conj(M(j,i)) ) < 1e-10 );
+                    assert( abs( M(i,j) - alps::numeric::conj(M(j,i)) ) < 1e-10 );
 #endif
             
             boost::numeric::bindings::lapack::heevd('V', M, evals);

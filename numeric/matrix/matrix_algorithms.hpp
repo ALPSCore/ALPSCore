@@ -25,8 +25,8 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_MATRIX_ALGORITHMS_HPP
-#define ALPS_MATRIX_ALGORITHMS_HPP
+#ifndef ALPS_MATRIX_MATRIX_ALGORITHMS_HPP
+#define ALPS_MATRIX_MATRIX_ALGORITHMS_HPP
 
 #include <alps/numeric/matrix/matrix_concept_check.hpp>
 

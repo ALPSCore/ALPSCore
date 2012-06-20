@@ -47,6 +47,15 @@ namespace numeric {
     {
     };
 
+    template<typename Matrix>
+    struct associated_vector
+    {
+    };
+    
+    template<typename Matrix>
+    struct associated_real_vector
+    {
+    };
 
 //    
 //    //

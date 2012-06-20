@@ -381,6 +381,18 @@ namespace alps {
     class vector;
 
     template<typename T, typename MemoryBlock>
+    struct associated_real_vector<matrix<T, MemoryBlock> >
+    {
+        typedef std::vector<typename real_type<T>::type> type;
+    };
+
+    template<class T, class MemoryBlock>
+    struct associated_vector<matrix<T,MemoryBlock> >
+    {
+        typedef std::vector<T> type;
+    };
+    
+    template<typename T, typename MemoryBlock>
     struct associated_diagonal_matrix<matrix<T, MemoryBlock> >
     {
         typedef  diagonal_matrix<T> type;

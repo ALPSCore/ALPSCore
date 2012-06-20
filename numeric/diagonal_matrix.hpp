@@ -34,10 +34,23 @@
 #include <cassert>
 #include <ostream>
 #include <boost/lambda/lambda.hpp>
-
+#include <cmath>
 
 namespace alps {
     namespace numeric {
+    
+    namespace detail {
+//        struct functor_##name { template<class T> return_type operator() (arg_type t) { return (static_cast<return_type (*) (arg_type)>(name))(t); } };
+        
+        #define DEFINE_FUNCTION_OBJECT(name, return_type, arg_type) \
+        struct functor_##name { template<class T> return_type operator() (arg_type t) {using std::name; return name(t); } };
+
+            DEFINE_FUNCTION_OBJECT(sqrt, T, T const &)
+            DEFINE_FUNCTION_OBJECT(exp, T, T const &)
+
+        #undef DEFINE_FUNCTION_OBJECT
+        
+    }
     
     template<typename T>
     class diagonal_matrix
@@ -218,14 +231,14 @@ namespace alps {
     template<typename T>
     diagonal_matrix<T> sqrt(diagonal_matrix<T> m)
     {
-        std::transform(m.elements().first, m.elements().second, m.elements().first, utils::functor_sqrt());
+        std::transform(m.elements().first, m.elements().second, m.elements().first, detail::functor_sqrt());
         return m;
     }
 
     template<typename T>
     diagonal_matrix<T> exp(diagonal_matrix<T> m)
     {
-        std::transform(m.elements().first, m.elements().second, m.elements().first, utils::functor_exp());
+        std::transform(m.elements().first, m.elements().second, m.elements().first, detail::functor_exp());
         return m;
     }
 
