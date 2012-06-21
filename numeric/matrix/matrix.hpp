@@ -104,9 +104,11 @@ namespace alps {
         explicit matrix(size_type rows = 0, size_type cols = 0, T init_value = T());
 
         /**
-          * The copy constructor
+          * The copy constructors
           *
           */
+        matrix(matrix const& m);
+        
         template <typename OtherMemoryBlock>
         matrix(matrix<T,OtherMemoryBlock> const& m);
 
@@ -281,6 +283,8 @@ namespace alps {
         template <typename OtherT,typename OtherMemoryBlock>
         friend class matrix;
 
+        template <typename OtherMemoryBlock>
+        MemoryBlock copy_values(matrix<T,OtherMemoryBlock> const& m);
 
         inline bool automatic_reserve(size_type size1, size_type size2, T const& init_value = T());
 

@@ -87,27 +87,39 @@ namespace alps {
     }
 
     template <typename T, typename MemoryBlock>
+    matrix<T, MemoryBlock>::matrix(matrix const& m)
+    : size1_(m.size1_), size2_(m.size2_), reserved_size1_(m.size1_), values_(copy_values(m))
+    { }
+
+    template <typename T, typename MemoryBlock>
     template <typename OtherMemoryBlock>
     matrix<T, MemoryBlock>::matrix(matrix<T,OtherMemoryBlock> const& m)
-    : size1_(m.size1_), size2_(m.size2_), reserved_size1_(m.size1_), values_()
+    : size1_(m.size1_), size2_(m.size2_), reserved_size1_(m.size1_), values_(copy_values(m))
+    { }
+
+    template <typename T, typename MemoryBlock>
+    template <typename OtherMemoryBlock>
+    MemoryBlock matrix<T, MemoryBlock>::copy_values(matrix<T,OtherMemoryBlock> const& m)
     {
+        MemoryBlock ret;
         // If the size of the matrix corresponds to the allocated size of the matrix...
         if(!m.is_shrinkable())
         {
-            this->values_.insert(this->values_.end(), m.values_.begin(), m.values_.end());
+            ret.insert(ret.end(), m.values_.begin(), m.values_.end());
         }
         else
         {
             // copy only a shrinked to size version of the original matrix
-            this->values_.reserve(m.size1_*m.size2_);
+            ret.reserve(m.size1_*m.size2_);
             for(size_type j=0; j < m.size2_; ++j)
             {
                 std::pair<typename matrix<T,OtherMemoryBlock>::const_column_element_iterator,
                           typename matrix<T,OtherMemoryBlock>::const_column_element_iterator
                          > range(m.column(j));
-                this->values_.insert(this->values_.end(), range.first, range.second);
+                ret.insert(ret.end(), range.first, range.second);
             }
         }
+        return ret;
     }
 
     template <typename T, typename MemoryBlock>
