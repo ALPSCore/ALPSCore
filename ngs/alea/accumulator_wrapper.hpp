@@ -65,9 +65,9 @@ namespace alps
             {
                 return (dynamic_cast<detail::accumulator_wrapper_derived<T>& >(*base_)).accum_;
             }
-            
+
             //TODO
-            boost::uint64_t accumulator_wrapper::count() const
+            inline boost::uint64_t accumulator_wrapper::count() const
             {
                 return (*base_).count();
             }
