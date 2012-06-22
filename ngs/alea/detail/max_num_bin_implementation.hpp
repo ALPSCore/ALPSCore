@@ -26,10 +26,11 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-#ifndef ALPS_NGS_ALEA_DETAIL_MAX_NUM_BIN_ADAPTER_HEADER
-#define ALPS_NGS_ALEA_DETAIL_MAX_NUM_BIN_ADAPTER_HEADER
+#ifndef ALPS_NGS_ALEA_DETAIL_MAX_NUM_BIN_IMPLEMENTATION_HEADER
+#define ALPS_NGS_ALEA_DETAIL_MAX_NUM_BIN_IMPLEMENTATION_HEADER
 
 #include <alps/ngs/alea/accumulator_impl.hpp>
+#include <alps/ngs/alea/max_num_bin_proxy.hpp>
 
 #include <vector>
 namespace alps
@@ -38,73 +39,78 @@ namespace alps
     {
         namespace detail
         {
-            //set up the dependencies for the MaxNumberBinning-Adapter
+            //set up the dependencies for the tag::max_num_binning-Implementation
             template<>
-            struct Dependencies<MaxNumberBinning> 
+            struct Dependencies<tag::max_num_binning> 
             {
-                typedef MakeList<Mean, Error>::type type;
+                typedef MakeList<tag::mean, tag::error>::type type;
             };
 
-            template<typename base> 
-            class Adapter<MaxNumberBinning, base> : public base 
+            template<typename base_type> 
+            class Implementation<tag::max_num_binning, base_type> : public base_type 
             {
-                typedef typename max_num_bin_type<typename base::value_type>::type num_bin_type;
-                typedef typename std::vector<typename base::value_type>::size_type size_type;
-                typedef Adapter<MaxNumberBinning, base> ThisType;
+                typedef typename base_type::value_type value_type_loc;
+                typedef typename max_num_bin_type<value_type_loc>::type num_bin_type;
+                typedef typename std::vector<value_type_loc>::size_type size_type;
+                typedef typename mean_type<value_type_loc>::type mean_type;
+                typedef Implementation<tag::max_num_binning, base_type> ThisType;
 
                 public:
-                    Adapter<MaxNumberBinning, base>(ThisType const & arg): base(arg)
+                    Implementation<tag::max_num_binning, base_type>(ThisType const & arg): base_type(arg)
                                                                   , bin_(arg.bin_)
                                                                   , partial_(arg.partial_)
                                                                   , elements_in_bin_(arg.elements_in_bin_)
                                                                   , pos_in_partial_(arg.pos_in_partial_)
-                                                                  , max_bin_number_(arg.max_bin_number_) 
+                                                                  , max_bin_num_(arg.max_bin_num_) 
                     {}
                     //TODO: set right default value 
                     
                     template<typename ArgumentPack>
-                    Adapter<MaxNumberBinning, base>(ArgumentPack const & args
+                    Implementation<tag::max_num_binning, base_type>(ArgumentPack const & args
                                                 , typename boost::disable_if<
                                                                               boost::is_base_of<ThisType, ArgumentPack>
                                                                             , int
                                                                             >::type = 0
-                                               ): base(args)
+                                               ): base_type(args)
                                                 , partial_()
                                                 , elements_in_bin_(1)
                                                 , pos_in_partial_(0)
-                                                , max_bin_number_(args[bin_number | 128])
+                                                , max_bin_num_(args[bin_num | 128]) //change doc if manipulated
                     {}
                     
-                    num_bin_type max_num_bin() const { return max_bin_number_;};
+                    inline num_bin_type const max_num_bin() const 
+                    { 
+                        return max_num_bin_proxy_type<value_type_loc>(bin_, max_bin_num_);
+                    }
               
-                    ThisType& operator <<(typename base::value_type val)
+                    inline ThisType& operator <<(value_type_loc val)
                     {
-                        base::operator <<(val);
+                        base_type::operator <<(val);
                         
                         partial_ = partial_ + val;
                         ++pos_in_partial_;
                         
                         if(pos_in_partial_ == elements_in_bin_)
                         {
-                            if(bin_.size() >= max_bin_number_)
+                            if(bin_.size() >= max_bin_num_)
                             {
-                                if(max_bin_number_ % 2 == 1)
+                                if(max_bin_num_ % 2 == 1)
                                 {
-                                    partial_ += bin_[max_bin_number_ - 1];
+                                    partial_ += bin_[max_bin_num_ - 1];
                                     pos_in_partial_ += elements_in_bin_;
                                 }
                                 
-                                for(unsigned int i = 0; i < max_bin_number_ / 2; ++i) //the rounding down here is intentional
-                                    bin_[i] = bin_[2*i] + bin_[2*i + 1];
+                                for(unsigned int i = 0; i < max_bin_num_ / 2; ++i) //the rounding down here is intentional
+                                    bin_[i] = (bin_[2*i] + bin_[2*i + 1])/2;
                                 
-                                bin_.erase(bin_.begin() + max_bin_number_ / 2, bin_.end());
+                                bin_.erase(bin_.begin() + max_bin_num_ / 2, bin_.end());
                                 
                                 elements_in_bin_ *= 2;
                             }
                             if(pos_in_partial_ == elements_in_bin_)
                             {
-                                bin_.push_back(partial_);
-                                partial_ = typename base::value_type();
+                                bin_.push_back(partial_ / elements_in_bin_);
+                                partial_ = value_type_loc();
                                 pos_in_partial_ = 0;
                             }
                         }
@@ -112,25 +118,26 @@ namespace alps
                     }
               
                     template<typename Stream> 
-                    void print(Stream & os) 
+                    inline void print(Stream & os) 
                     {
-                        base::print(os);
-                        os << "MaxBinningNumber: " << max_num_bin() << std::endl;
+                        base_type::print(os);
+                        os << "MaxBinningNumber: MaxBinNumber: " << max_bin_num_ << std::endl;
                         
-                        for (unsigned int i = 0; i < bin_.size(); ++i)
-                        {
-                            os << "bin[" << i << "] = " << bin_[i] << std::endl;
-                        }
+                        //~ os << std::endl;
+                        //~ for (unsigned int i = 0; i < bin_.size(); ++i)
+                        //~ {
+                            //~ os << "bin[" << i << "] = " << bin_[i] << std::endl;
+                        //~ }
                     }
               
                 private:
-                    std::vector<typename base::value_type> bin_;
-                    typename base::value_type partial_;
+                    std::vector<mean_type> bin_;
+                    value_type_loc partial_;
                     size_type elements_in_bin_;
                     size_type pos_in_partial_;
-                    size_type max_bin_number_;
+                    size_type max_bin_num_;
             };
         } // end namespace detail
     }//end alea namespace 
 }//end alps namespace
-#endif // ALPS_NGS_ALEA_DETAIL_MAX_NUM_BIN_ADAPTER
+#endif // ALPS_NGS_ALEA_DETAIL_MAX_NUM_BIN_IMPLEMENTATION

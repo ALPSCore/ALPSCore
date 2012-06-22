@@ -24,61 +24,69 @@
  * DEALINGS IN THE SOFTWARE.                                                       *
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-
-#ifndef ALPS_NGS_ALEA_DETAIL_VALUE_TYPE_ADAPTER_HEADER
-#define ALPS_NGS_ALEA_DETAIL_VALUE_TYPE_ADAPTER_HEADER
+ 
+#ifndef ALPS_NGS_ALEA_DETAIL_HISTOGRAM_IMPLEMENTATION_HEADER
+#define ALPS_NGS_ALEA_DETAIL_HISTOGRAM_IMPLEMENTATION_HEADER
 
 #include <alps/ngs/alea/accumulator_impl.hpp>
 
-#include <typeinfo>
 namespace alps
 {
     namespace alea
     {
         namespace detail
         {
-            //setting up the dependencies for value_type-Adapter isn't neccessary bc has none
-            
-            template<typename T, typename base> 
-            class Adapter<ValueType<T>, base>
+
+        //set up the dependencies for the tag::histogram-Implementation
+            template<> 
+            struct Dependencies<tag::histogram> 
             {
-                typedef Adapter<ValueType<T>, base> ThisType;
+                typedef MakeList<tag::mean, tag::error>::type type;
+            };
+
+            template<typename base_type> 
+            class Implementation<tag::histogram, base_type> : public base_type 
+            {
+                typedef typename base_type::value_type value_type_loc;
+                typedef typename histogram_type<value_type_loc>::type histogram_t;
+                typedef typename mean_type<value_type_loc>::type mean_type;
+                typedef Implementation<tag::histogram, base_type> ThisType;
+                
                 public:
-                    typedef T value_type;
+                    Implementation<tag::histogram, base_type>(ThisType const & arg): base_type(arg)
                     
-                    Adapter<ValueType<T>, base>(ThisType const & arg): count_(arg.count_) {}
-                    
-                    template <typename ArgumentPack>
-                    Adapter<ValueType<T>, base>(ArgumentPack const & args, typename boost::disable_if<
-                                                                                                  boost::is_base_of<ThisType, ArgumentPack>
-                                                                                                , int
-                                                                                                >::type = 0
-                                            ): count_() 
+                    {}
+                    template<typename ArgumentPack>
+                    Implementation<tag::histogram, base_type>(ArgumentPack const & args
+                                                 , typename boost::disable_if<
+                                                                              boost::is_base_of<ThisType, ArgumentPack>
+                                                                            , int
+                                                                            >::type = 0
+                                             ): base_type(args)
                     {}
                     
-                    ThisType& operator <<(value_type val) 
+                    inline histogram_t const histogram() const 
                     {
-                        ++count_;
+                        //TODO: implement
+                        return 272.15;
+                    }
+                    
+                    inline ThisType& operator <<(value_type_loc val) 
+                    {
+                        base_type::operator<<(val);
                         return *this;
                     }
                     
-                    boost::int64_t count() const 
-                    { 
-                        return count_; 
-                    }
-                
                     template<typename Stream> 
-                    void print(Stream & os) 
+                    inline void print(Stream & os) 
                     {
-                        os << "ValueType: " << typeid(value_type).name() << " ";
-                        os << "Count: " << count() << " ";
+                        base_type::print(os);
+                        os << "tag::histogram: " << std::endl;
                     }
-                
+                    
                 private:
-                    boost::int64_t count_;
             };
         } // end namespace detail
     }//end alea namespace 
 }//end alps namespace
-#endif // ALPS_NGS_ALEA_DETAIL_VALUE_TYPE_ADAPTER
+#endif //ALPS_NGS_ALEA_DETAIL_HISTOGRAM_IMPLEMENTATION_HEADER

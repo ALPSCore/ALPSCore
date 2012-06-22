@@ -26,8 +26,8 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-#ifndef ALPS_NGS_ALEA_DETAIL_ERROR_ADAPTER_HEADER
-#define ALPS_NGS_ALEA_DETAIL_ERROR_ADAPTER_HEADER
+#ifndef ALPS_NGS_ALEA_DETAIL_ERROR_IMPLEMENTATION_HEADER
+#define ALPS_NGS_ALEA_DETAIL_ERROR_IMPLEMENTATION_HEADER
 
 #include <alps/ngs/alea/accumulator_impl.hpp>
 
@@ -38,55 +38,56 @@ namespace alps
     {
         namespace detail
         {
-            //set up the dependencies for the Error-Adapter
+            //set up the dependencies for the tag::error-Implementation
             template<> 
-            struct Dependencies<Error> 
+            struct Dependencies<tag::error> 
             {
-                typedef MakeList<Mean>::type type;
+                typedef MakeList<tag::mean>::type type;
             };
 
-            template<typename base> 
-            class Adapter<Error, base> : public base 
+            template<typename base_type> 
+            class Implementation<tag::error, base_type> : public base_type 
             {
-                typedef typename error_type<typename base::value_type>::type error_type;
-                typedef Adapter<Error, base> ThisType;
+                typedef typename base_type::value_type value_type_loc;
+                typedef typename error_type<value_type_loc>::type error_type;
+                typedef Implementation<tag::error, base_type> ThisType;
                 
                 public:
-                    Adapter<Error, base>(ThisType const & arg): base(arg), mean2_(arg.mean2_) {}
+                    Implementation<tag::error, base_type>(ThisType const & arg): base_type(arg), sum2_(arg.sum2_) {}
                     
                     template<typename ArgumentPack>
-                    Adapter<Error, base>(ArgumentPack const & args, typename boost::disable_if<
+                    Implementation<tag::error, base_type>(ArgumentPack const & args, typename boost::disable_if<
                                                                                               boost::is_base_of<ThisType, ArgumentPack>
                                                                                             , int
                                                                                             >::type = 0
-                                        ): base(args)
-                                         , mean2_() 
+                                        ): base_type(args)
+                                         , sum2_() 
                     {}
                     
-                    error_type error() const 
+                    inline error_type const error() const 
                     { 
                         using std::sqrt;
-                        return sqrt((mean2_ - base::mean()*base::mean()) / ((base::count() - 1)));
-                    } 
+                        return sqrt((sum2_ / base_type::count() - base_type::mean()*base_type::mean()) / ((base_type::count() - 1)));
+                    }
                     
-                    ThisType& operator <<(typename base::value_type val) 
+                    inline ThisType& operator <<(value_type_loc val) 
                     {
-                        base::operator <<(val);
-                        mean2_ = ((base::count()-1) * mean2_ + val*val)/base::count();
+                        base_type::operator <<(val);
+                        sum2_ += val*val;
                         return *this;
                     }
                     
                     template<typename Stream> 
-                    void print(Stream & os) 
+                    inline void print(Stream & os) 
                     {
-                        base::print(os);
-                        os << "Error: " << error() << " ";
+                        base_type::print(os);
+                        os << "tag::error: " << error() << " " << std::endl;
                     }
                     
                 private:
-                    error_type mean2_;
+                    error_type sum2_;
             };
         } // end namespace detail
     }//end alea namespace 
 }//end alps namespace
-#endif // ALPS_NGS_ALEA_DETAIL_ERROR_ADAPTER
+#endif // ALPS_NGS_ALEA_DETAIL_ERROR_IMPLEMENTATION

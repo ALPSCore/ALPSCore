@@ -26,10 +26,11 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-#ifndef ALPS_NGS_ALEA_DETAIL_FIX_SIZE_BIN_ADAPTER_HEADER
-#define ALPS_NGS_ALEA_DETAIL_FIX_SIZE_BIN_ADAPTER_HEADER
+#ifndef ALPS_NGS_ALEA_DETAIL_FIX_SIZE_BIN_IMPLEMENTATION_HEADER
+#define ALPS_NGS_ALEA_DETAIL_FIX_SIZE_BIN_IMPLEMENTATION_HEADER
 
 #include <alps/ngs/alea/accumulator_impl.hpp>
+#include <alps/ngs/alea/fixed_size_bin_proxy.hpp>
 
 namespace alps
 {
@@ -37,22 +38,24 @@ namespace alps
     {
         namespace detail
         {
-            //set up the dependencies for the FixSizeBinning-Adapter
+            //set up the dependencies for the tag::fixed_size_binning-Implementation
             template<> 
-            struct Dependencies<FixSizeBinning> 
+            struct Dependencies<tag::fixed_size_binning> 
             {
-                typedef MakeList<Mean, Error>::type type;
+                typedef MakeList<tag::mean, tag::error>::type type;
             };
 
-            template<typename base> 
-            class Adapter<FixSizeBinning, base> : public base 
+            template<typename base_type> 
+            class Implementation<tag::fixed_size_binning, base_type> : public base_type 
             {
-                typedef typename fix_size_bin_type<typename base::value_type>::type fix_bin_type;
-                typedef typename std::vector<typename base::value_type>::size_type size_type;
-                typedef Adapter<FixSizeBinning, base> ThisType;
+                typedef typename base_type::value_type value_type_loc;
+                typedef typename fixed_size_bin_type<value_type_loc>::type fix_bin_type;
+                typedef typename std::vector<value_type_loc>::size_type size_type;
+                typedef typename mean_type<value_type_loc>::type mean_type;
+                typedef Implementation<tag::fixed_size_binning, base_type> ThisType;
                     
                 public:
-                    Adapter<FixSizeBinning, base>(ThisType const & arg):  base(arg)
+                    Implementation<tag::fixed_size_binning, base_type>(ThisType const & arg):  base_type(arg)
                                                                         , bin_(arg.bin_)
                                                                         , partial_(arg.partial_)
                                                                         , partial_count_(arg.partial_count_)
@@ -61,52 +64,57 @@ namespace alps
                     
                     // TODO: set right default value
                     template<typename ArgumentPack>
-                    Adapter<FixSizeBinning, base>(ArgumentPack const & args
+                    Implementation<tag::fixed_size_binning, base_type>(ArgumentPack const & args
                                              , typename boost::disable_if<
                                                                           boost::is_base_of<ThisType, ArgumentPack>
                                                                         , int
                                                                          >::type = 0
-                                            ): base(args)
+                                            ): base_type(args)
                                              , partial_()
                                              , partial_count_(0)
-                                             , bin_size_(args[bin_size | 128]) 
+                                             , bin_size_(args[bin_size | 128]) //change doc if modified
                     {}
                     
-                    fix_bin_type fix_size_bin() const 
+                    inline fix_bin_type const fixed_size_bin() const 
                     { 
-                        //TODO: Implementation
-                        return bin_size_; 
+                        return fixed_size_bin_proxy_type<value_type_loc>(bin_, bin_size_); 
                     }
               
-                    ThisType& operator <<(typename base::value_type val) 
+                    inline ThisType& operator <<(value_type_loc val) 
                     {
-                        base::operator << (val);
+                        base_type::operator << (val);
                         
                         partial_ += val;
                         ++partial_count_;
                         
                         if(partial_count_ == bin_size_)
                         {
-                            bin_.push_back(partial_);
+                            bin_.push_back(partial_ / bin_size_);
                             partial_count_ = 0;
-                            partial_ = typename base::value_type();
+                            partial_ = value_type_loc();
                         }
                         return *this;
                     }
               
                     template<typename Stream> 
-                    void print(Stream & os) 
+                    inline void print(Stream & os) 
                     {
-                        base::print(os);
-                        os << "FixBinSize: " << fix_size_bin() << " " << "BinNumber: " << bin_.size() << " ";
+                        base_type::print(os);
+                        os << "FixBinSize: BinNumber: " << bin_.size() << " " << std::endl;
+                        
+                        //~ os << std::endl;
+                        //~ for (unsigned int i = 0; i < bin_.size(); ++i)
+                        //~ {
+                            //~ os << "bin[" << i << "] = " << bin_[i] << std::endl;
+                        //~ }
                     }
                 private:
-                    std::vector<typename base::value_type> bin_;
-                    typename base::value_type partial_;
+                    std::vector<mean_type> bin_;
+                    value_type_loc partial_;
                     size_type partial_count_;
                     size_type bin_size_;
             };
         } // end namespace detail
     }//end alea namespace 
 }//end alps namespace
-#endif // ALPS_NGS_ALEA_DETAIL_FIX_SIZE_BIN_ADAPTER
+#endif // ALPS_NGS_ALEA_DETAIL_FIX_SIZE_BIN_IMPLEMENTATION

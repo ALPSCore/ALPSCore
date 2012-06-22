@@ -25,39 +25,74 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifndef ALPS_NGS_ALEA_AUTOCORR_PROXY_HEADER
+#define ALPS_NGS_ALEA_AUTOCORR_PROXY_HEADER
 
-#ifndef ALPS_NGS_ALEA_EXTERN_FUNCTION_HEADER
-#define ALPS_NGS_ALEA_EXTERN_FUNCTION_HEADER
+#include <vector>
+#include <ostream>
+#include <cmath>
+#include <algorithm>
 
-#include <alps/ngs/alea/accumulator_wrapper_fwd.hpp>
-#include <alps/ngs/alea/global_enum.hpp>
+
+#include <boost/cstdint.hpp>
+
+#include <alps/ngs/alea/mean_type_trait.hpp>
 
 namespace alps
 {
     namespace alea
     {
-        //------------------- for accumulator_wrapper -------------------
-        template <typename Accum>
-        Accum & extract(detail::accumulator_wrapper &m)
+        template<typename value_type>
+        class autocorr_proxy_type
         {
-            return m.extract<Accum>();
-        } 
-
-        template <typename Accum>
-        inline boost::uint64_t count(Accum const & arg)
-        {
-            return arg.count();
-        }
-
-        namespace detail
-        {
-            //this one is needed, bc of name-collision in accum_wrapper
-            template<typename Accum>
-            boost::uint64_t count_wrap(Accum const & arg)
+            typedef typename mean_type<value_type>::type mean_type;
+            static std::vector<value_type> unused;
+            static boost::int64_t unused2;
+        public:
+            autocorr_proxy_type(): bin2_(unused)
+                                , bin1_(unused)
+                                , count_(unused2) {}
+            autocorr_proxy_type(  std::vector<value_type> const & bin2
+                                , std::vector<value_type> const & bin1
+                                , boost::uint64_t const & count):
+                                                                  bin2_(bin2)
+                                                                , bin1_(bin1)
+                                                                , count_(count)
+            {}
+            
+            inline std::vector<value_type> const & bins() const 
             {
-                return count(arg);
+                return bin2_;
             }
-        }
+            inline std::vector<value_type> const & sum() const 
+            {
+                return bin1_;
+            }
+            
+            inline mean_type const error(boost::uint64_t level = -1) const
+            {
+                if(level == -1)
+                    level = std::max(bin2_.size() - 5, typename std::vector<value_type>::size_type(0));
+                using std::sqrt;
+                return sqrt((bin2_[level] - bin1_[level] * bin1_[level]) / (count_ - 1));
+            }
+            
+            template<typename T>
+            friend std::ostream & operator<<(std::ostream & os, autocorr_proxy_type<T> const & arg);
+        private:
+            std::vector<value_type> const & bin2_;
+            std::vector<value_type> const & bin1_;
+            boost::uint64_t const & count_;
+        };
+
+        template<typename T>
+        inline std::ostream & operator<<(std::ostream & os, autocorr_proxy_type<T> const & arg)
+        {
+            os << "autocorr_proxy" << std::endl;
+            return os;
+            
+        };
     }//end alea namespace 
 }//end alps namespace
-#endif //ALPS_NGS_ALEA_EXTERN_FUNCTION_HEADER
+
+#endif //ALPS_NGS_ALEA_AUTOCORR_PROXY_HEADER

@@ -38,10 +38,13 @@ namespace alps
     {
     IMPLEMENT_FUNCTION(mean)
     IMPLEMENT_FUNCTION(error)
-    IMPLEMENT_FUNCTION(fix_size_bin)
+    IMPLEMENT_FUNCTION(fixed_size_bin)
     IMPLEMENT_FUNCTION(max_num_bin)
     IMPLEMENT_FUNCTION(log_bin)
     IMPLEMENT_FUNCTION(autocorr)
+    IMPLEMENT_FUNCTION(tau)
+    IMPLEMENT_FUNCTION(converged)
+    IMPLEMENT_FUNCTION(histogram)
     }//end alea namespace 
 }//end alps namespace
 #endif // ALPS_NGS_ALEA_DETAIL_PROPERTIES_HEADER

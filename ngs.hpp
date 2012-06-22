@@ -58,6 +58,6 @@
 #include <alps/ngs/alea/detail/properties.hpp>
 #include <alps/ngs/alea/histogram.hpp>
 #include <alps/ngs/alea/accumulator.hpp>
-#include <alps/ngs/alea/measurement.hpp>
+#include <alps/ngs/alea/accumulator_wrapper.hpp>
 
 #endif

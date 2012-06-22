@@ -25,44 +25,60 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifndef ALPS_NGS_ALEA_MAX_NUM_BIN_PROXY_HEADER
+#define ALPS_NGS_ALEA_MAX_NUM_BIN_PROXY_HEADER
 
-#ifndef ALPS_NGS_ALEA_MEASUREMENT_HEADER
-#define ALPS_NGS_ALEA_MEASUREMENT_HEADER
+#include <vector>
+#include <ostream>
+#include <cmath>
+#include <algorithm>
 
-#include <alps/ngs/alea/measurement_fwd.hpp>
-#include <alps/ngs/alea/detail/accum_wrapper.hpp>
-#include <alps/ngs/alea/extern_function.hpp>
-#include <alps/ngs/stacktrace.hpp>
 
-#include <boost/shared_ptr.hpp>
-
+#include <alps/ngs/alea/mean_type_trait.hpp>
 
 namespace alps
 {
     namespace alea
     {
-        //class that holds the base_wrapper pointer
-        template<typename T> 
-        measurement::measurement(T arg): base_(new detail::accumulator_wrapper<T>(arg)) 
-        {}
+        template<typename value_type>
+        class max_num_bin_proxy_type
+        {
+            typedef typename mean_type<value_type>::type mean_type;
+            typedef typename std::vector<value_type>::size_type size_type;
+            static std::vector<mean_type> unused;
+        public:
+            max_num_bin_proxy_type(): bin_(unused) {}
+            
+            max_num_bin_proxy_type(  std::vector<mean_type> const & bin
+                                      , size_type const & bin_number):
+                                                                  bin_(bin)
+                                                                , bin_number_(bin_number)
+            {}
+            
+            inline std::vector<mean_type> const & bins() const 
+            {
+                return bin_;
+            }
+            
+            inline size_type const & bin_number() const
+            {
+                return bin_number_;
+            }
+            
+            template<typename T>
+            friend std::ostream & operator<<(std::ostream & os, max_num_bin_proxy_type<T> const & arg);
+        private:
+            std::vector<mean_type> const & bin_;
+            size_type bin_number_;
+        };
 
         template<typename T>
-        measurement& measurement::operator<<(const T& value) 
+        inline std::ostream & operator<<(std::ostream & os, max_num_bin_proxy_type<T> const & arg)
         {
-            (*base_) << value; return *this;
-        }
-
-        template<typename T>
-        detail::result_type_wrapper<T> &measurement::get() 
-        {
-            return (*base_).get<T>();
-        }
-
-        template <typename T>
-        T& measurement::extract() 
-        {
-            return dynamic_cast<detail::accumulator_wrapper<T>&>(*base_).accum_;
-        }
+            os << "max_num_bin_proxy" << std::endl;
+            return os;
+        };
     }//end alea namespace 
 }//end alps namespace
-#endif // ALPS_NGS_ALEA_MEASUREMENT_HEADER
+
+#endif //ALPS_NGS_ALEA_MAX_NUM_BIN_PROXY_HEADER

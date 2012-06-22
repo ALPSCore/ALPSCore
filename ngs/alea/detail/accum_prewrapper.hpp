@@ -38,16 +38,16 @@ namespace alps
         {
             //this class holds the actual accumulator
             template <typename Accum
-                    , typename result_type_base
+                    , typename result_type_base_type
                      > 
-            class accumulator_prewrapper: public result_type_base
+            class accumulator_prewrapper: public result_type_base_type
             {
                 public:
                     typedef Accum accum_type;
 
                     accumulator_prewrapper(Accum const & acc): accum_(acc) 
                     {}
-                protected:
+                //~ protected:
                     Accum accum_;
             };
         }

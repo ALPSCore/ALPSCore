@@ -32,6 +32,7 @@
 #include <alps/ngs/stacktrace.hpp>
 #include <alps/ngs/alea/detail/accum_prewrapper.hpp>
 
+
 #include <boost/utility.hpp>
 #include <boost/type_traits.hpp>
 
@@ -62,11 +63,18 @@
 *       Derives from the right detail::FCT_property_impl (with/without Accum::FCT) and implements the copy-ctor to pass 
 *       up the argumnets
 *   
+* 6. FCT(result_type_wrapper<T>)
+*       Function that just extracts the type other than FCT(Accum)
 */
 namespace alps
 {
     namespace alea
     {
+        namespace detail
+        {
+            template <typename value_type> 
+            class result_type_wrapper;
+        }
         #define IMPLEMENT_FUNCTION(FCT) \
         \
         /* = = = = = = = = = = I N F O   T R A I T = = = = = = = = = = */\
@@ -105,51 +113,51 @@ namespace alps
             \
         /* = = = = = = = = = = P R O P E R T Y   I M P L   W I T H   F C T = = = = = = = = = = */\
         \
-            template <typename base, bool> \
-            class FCT ## _property_impl: public base \
+            template <typename base_type, bool> \
+            class FCT ## _property_impl: public base_type \
             { \
             public:\
                 FCT ## _property_impl() {}\
-                FCT ## _property_impl(typename base::accum_type const & arg): base(arg) {}\
+                FCT ## _property_impl(typename base_type::accum_type const & arg): base_type(arg) {}\
                 \
-                typename FCT ## _type<typename value_type<typename base::accum_type>::type >::type FCT() const \
+                typename FCT ## _type<typename value_type<typename base_type::accum_type>::type >::type FCT() const \
                 { \
-                    return FCT ## _impl(base::accum_); \
+                    return FCT ## _impl(base_type::accum_); \
                 } \
             }; \
         /* = = = = = = = = = = P R O P E R T Y   I M P L   W I T H O U T   F C T = = = = = = = = = = */\
-            template <typename base> \
-            class FCT ## _property_impl<base, false>: public base \
+            template <typename base_type> \
+            class FCT ## _property_impl<base_type, false>: public base_type \
             { \
             public:\
                 FCT ## _property_impl() {}\
-                FCT ## _property_impl(typename base::accum_type const & arg): base(arg) {}\
+                FCT ## _property_impl(typename base_type::accum_type const & arg): base_type(arg) {}\
                 \
-                typename FCT ## _type<typename value_type<typename base::accum_type>::type >::type FCT() const \
+                typename FCT ## _type<typename value_type<typename base_type::accum_type>::type >::type FCT() const \
                 { \
                     std::stringstream out; \
-                    out << typeid(typename base::accum_type).name(); \
+                    out << typeid(typename base_type::accum_type).name(); \
                     out << " has no ";\
                     out << #FCT;\
                     out << "-method"; \
                     boost::throw_exception(std::runtime_error(out.str() + ALPS_STACKTRACE)); \
-                    return typename FCT ## _type<typename value_type<typename base::accum_type>::type >::type(0); \
+                    return typename FCT ## _type<typename value_type<typename base_type::accum_type>::type >::type(); \
                 } \
             };\
         } /*end namespace detail*/\
         \
         \
         /* = = = = = = D E R I V E   F R O M   T H E   R I G H T   F C T   I M P  L  = = = = = = */\
-        template <typename base> \
+        template <typename base_type> \
         class FCT ## _property: public detail::FCT ## _property_impl< \
-                                                              base \
-                                                            , has_ ## FCT<typename base::accum_type>::value \
+                                                              base_type \
+                                                            , has_ ## FCT<typename base_type::accum_type>::value \
                                                             > \
         {\
         public:\
-            FCT ## _property(typename base::accum_type const & acc): detail::FCT ## _property_impl< \
-                                                              base \
-                                                            , has_ ## FCT<typename base::accum_type>::value \
+            FCT ## _property(typename base_type::accum_type const & acc): detail::FCT ## _property_impl< \
+                                                              base_type \
+                                                            , has_ ## FCT<typename base_type::accum_type>::value \
                                                             >(acc) \
                                                             {}\
         };

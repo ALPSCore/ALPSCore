@@ -26,11 +26,15 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+//The whole file holds the meta-template code to calculate, 
+//from what base_types one needs to derive in order to get the 
+//requested feautures
+
 
 #ifndef ALPS_NGS_ALEA_DETAIL_ACCUMULATOR_DETAIL_HEADER
 #define ALPS_NGS_ALEA_DETAIL_ACCUMULATOR_DETAIL_HEADER
 
-#include <alps/ngs/alea/detail/adapter_fwd.hpp>
+#include <alps/ngs/alea/detail/implementation_fwd.hpp>
 #include <alps/ngs/alea/type_traits.hpp>
 
 #include <boost/static_assert.hpp>
@@ -47,8 +51,6 @@ namespace alps
         template<typename T> 
         struct ValueType {};
 
-        //The whole file holds the meta-template code to calculate, from what bases one needs to derive in order to get the 
-        //requested feautures
 
         namespace detail
         {
@@ -259,28 +261,28 @@ namespace alps
                 typedef ListEnd type;
             };
 
-        // = = = = = = A D A P T E R   T Y P E = = = = = = = = = = =
-        //every property specializes this template and contains the wanted method
-            template<typename property, typename base>
-            struct Adapter {};
+        // = = = = = = I M P L E M E N T A T I O N   T Y P E = = = = = = = = = = =
+        //every property specializes this template and contains the wanted implementation
+            template<typename property, typename base_type>
+            struct Implementation {};
 
-        // = = = = = = D E R I V E   F R O M   A D A P T E R S = = = = = = = = = = =
+        // = = = = = = D E R I V E   F R O M   I M P L E M E N T A T I O N S = = = = = = = = = = =
             template<
                       typename list
-                    , typename base
+                    , typename base_type
                     > 
             struct DeriveProperties 
             {
                 typedef typename DeriveProperties<
                                                 typename list::next
-                                                , Adapter<typename list::type, base> //the base is expanded here
+                                                , Implementation<typename list::type, base_type> //the base_type is expanded here
                                                 >::type type;
             };
             
-            template<typename base> 
-            struct DeriveProperties<ListEnd, base> 
+            template<typename base_type> 
+            struct DeriveProperties<ListEnd, base_type> 
             {
-                typedef base type; //here base will be Adapter<property1, Adapter<property2, ... Adapter<propertyN, UselessBase> > >
+                typedef base_type type; //here base_type will be Implementation<property1, Implementation<property2, ... Implementation<propertyN, UselessBase> > >
             };
 
             struct UselessBase {};
@@ -318,7 +320,7 @@ namespace alps
                                             >::type
                                         >::type
                                     >::type,UselessBase
-                                >::type base;
+                                >::type base_type;
                     
                     //disable_if is required bc of the named parameter. This template shouldn't act as a copy-ctor
                     template <typename ArgumentPack>
@@ -329,10 +331,10 @@ namespace alps
                                                                             , ArgumentPack>
                                                             , int
                                                             >::type = 0
-                                    ): base(args) {}
+                                    ): base_type(args) {}
                     
                     //copy-ctor
-                    accumulator_impl(accumulator_impl const & arg): base(arg) {}
+                    accumulator_impl(accumulator_impl const & arg): base_type(arg) {}
                 
             };
             
@@ -349,7 +351,7 @@ namespace alps
                 , typename _8
                 , typename _9
             > 
-            std::ostream & operator <<(std::ostream & os, accumulator_impl<_0, _1, _2, _3, _4, _5, _6, _7, _8, _9> & a)
+            inline std::ostream & operator <<(std::ostream & os, accumulator_impl<_0, _1, _2, _3, _4, _5, _6, _7, _8, _9> & a)
             {
                 a.print(os);
                 return os;

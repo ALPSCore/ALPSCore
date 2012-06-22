@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2011 by Lukas Gamper <gamperl@gmail.com>                   *
+ * Copyright (C) 2011 - 2012 by Mario Koenz <mkoenz@ethz.ch>                       *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -26,19 +26,29 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-#ifndef ALPS_NGS_ALEA_ACCUMULATOR_HEADER
-#define ALPS_NGS_ALEA_ACCUMULATOR_HEADER
+#ifndef ALPS_NGS_ALEA_DETAIL_IMPLEMENTATION_FWD_HEADER
+#define ALPS_NGS_ALEA_DETAIL_IMPLEMENTATION_FWD_HEADER
 
-#include <alps/ngs/alea/detail/value_type_implementation.hpp>
-#include <alps/ngs/alea/detail/mean_implementation.hpp>
-#include <alps/ngs/alea/detail/error_implementation.hpp>
-#include <alps/ngs/alea/detail/fixed_size_bin_implementation.hpp>
-#include <alps/ngs/alea/detail/max_num_bin_implementation.hpp>
-#include <alps/ngs/alea/detail/log_bin_implementation.hpp>
-#include <alps/ngs/alea/detail/autocorr_implementation.hpp>
-#include <alps/ngs/alea/detail/converged_implementation.hpp>
-#include <alps/ngs/alea/detail/tau_implementation.hpp>
-#include <alps/ngs/alea/detail/histogram_implementation.hpp>
-#include <alps/ngs/alea/accumulator_impl.hpp>
-
-#endif // ALPS_NGS_ALEA_ACCUMULATOR_HEADER
+namespace alps
+{
+    namespace alea
+    {
+        // = = = = = = = = = = I M P L E M E N T A T I O N   D E F I N I T I O N = = = = = = = = = =
+        namespace tag
+        {
+            struct mean;
+            struct error;
+            struct fixed_size_binning;
+            struct max_num_binning;
+            struct log_binning;
+            struct autocorrelation;
+            namespace detail
+            {
+                struct converged;
+                struct tau;
+            }
+            struct histogram;
+        }
+    }//end alea namespace 
+}//end alps namespace
+#endif // ALPS_NGS_ALEA_DETAIL_IMPLEMENTATION_FWD_HEADER

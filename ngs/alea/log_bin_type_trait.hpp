@@ -28,6 +28,8 @@
 #ifndef ALPS_NGS_ALEA_LOG_BIN_TRAIT_HEADER
 #define ALPS_NGS_ALEA_LOG_BIN_TRAIT_HEADER
 
+#include <vector>
+#include <alps/ngs/alea/log_bin_proxy.hpp>
 //= = = = = = = = = = = L O G   B I N   T R A I T = = = = = = = = = = = = = = = =
 
 namespace alps
@@ -37,8 +39,7 @@ namespace alps
         template <typename T>
         struct log_bin_type
         {
-            //TODO: give right type
-            typedef int type;
+            typedef log_bin_proxy_type<T> type;
         };
     }//end alea namespace 
 }//end alps namespace

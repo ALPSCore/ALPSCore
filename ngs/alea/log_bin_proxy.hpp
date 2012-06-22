@@ -25,47 +25,56 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifndef ALPS_NGS_ALEA_LOG_BIN_PROXY_HEADER
+#define ALPS_NGS_ALEA_LOG_BIN_PROXY_HEADER
 
-#ifndef ALPS_NGS_ALEA_MEASUREMENT_FWD_HEADER
-#define ALPS_NGS_ALEA_MEASUREMENT_FWD_HEADER
+#include <vector>
+#include <ostream>
+#include <cmath>
+#include <algorithm>
 
-#include <boost/shared_ptr.hpp>
-#include <boost/cstdint.hpp>
+
+#include <alps/ngs/alea/mean_type_trait.hpp>
 
 namespace alps
 {
     namespace alea
     {
-        namespace detail 
+        template<typename value_type>
+        class log_bin_proxy_type
         {
-            class base_wrapper;
-            template<typename Accum>
-            class result_type_wrapper;
-        }
+            typedef typename mean_type<value_type>::type mean_type;
+            typedef typename std::vector<value_type>::size_type size_type;
+            static std::vector<mean_type> unused;
+        public:
+            log_bin_proxy_type(): bin_(unused) {}
+            log_bin_proxy_type(std::vector<mean_type> const & bin): bin_(bin) {}
+            
+            inline std::vector<mean_type> const & bins() const 
+            {
+                return bin_;
+            }
+            
+            template<typename T>
+            friend std::ostream & operator<<(std::ostream & os, log_bin_proxy_type<T> const & arg);
+        private:
+            std::vector<mean_type> const & bin_;
+        };
 
-        //class that holds the base_wrapper pointer
-        class measurement {
-            public:
-                template<typename T> 
-                measurement(T arg);
-                measurement(measurement const & arg);
-                
-                template<typename T>
-                measurement& operator<<(const T& value);
-                    
-                
-                template<typename T>
-                detail::result_type_wrapper<T> &get();
-                
-                friend std::ostream& operator<<(std::ostream &out, const measurement& wrapper);
-                
-                template <typename T>
-                T& extract();
-                
-            private:
-                boost::shared_ptr<detail::base_wrapper> base_;
+        //~ template<typename value_type>
+        //~ log_bin_proxy_type<value_type> make_log_bin_proxy_type()
+        //~ {
+            //~ return log_bin_proxy_type<value_type>(unused);
+        //~ }
+        
+        template<typename T>
+        inline std::ostream & operator<<(std::ostream & os, log_bin_proxy_type<T> const & arg)
+        {
+            os << "log_bin_proxy" << std::endl;
+            return os;
+            
         };
     }//end alea namespace 
 }//end alps namespace
-#endif // ALPS_NGS_ALEA_MEASUREMENT_FWD_HEADER
 
+#endif //ALPS_NGS_ALEA_LOG_BIN_PROXY_HEADER

@@ -49,17 +49,17 @@ namespace alps
         {
         //= = = = = = = = = = = H I S T O G R A M   P R O X Y = = = = = = = = = = = = =
             template <typename Hist>
-            class histogram_proxy
+            class histogram_old_proxy
             {
                 typedef typename Hist::value_type value_type;
                 typedef typename Hist::weight_type weight_type;
                 
                 public:
                     //ctor with parameter
-                    histogram_proxy<Hist>(Hist & arg, value_type const pos): hist_ref_(arg), pos_(pos) 
+                    histogram_old_proxy<Hist>(Hist & arg, value_type const pos): hist_ref_(arg), pos_(pos) 
                     {}
                 
-                    histogram_proxy<Hist>(histogram_proxy const & arg): hist_ref_(arg.hist_ref_), pos_(arg.pos_) 
+                    histogram_old_proxy<Hist>(histogram_old_proxy const & arg): hist_ref_(arg.hist_ref_), pos_(arg.pos_) 
                     {}
                     
                     //add value via += operator
@@ -69,17 +69,17 @@ namespace alps
                     }
                 
                     //add value via ++pre operator
-                    histogram_proxy<Hist> & operator++()
+                    histogram_old_proxy<Hist> & operator++()
                     {
                         hist_ref_ << std::pair<value_type, weight_type>(pos_, weight_type(1));
                         return *this;
                     }
                     
                     //add value by post++
-                    histogram_proxy<Hist> operator++(int) 
+                    histogram_old_proxy<Hist> operator++(int) 
                     {
                         hist_ref_ << std::pair<value_type, weight_type>(pos_, weight_type(1));
-                        return histogram_proxy<Hist>(*this);
+                        return histogram_old_proxy<Hist>(*this);
                     }
                     
                     //caster to get value back
@@ -100,7 +100,7 @@ namespace alps
             };
 
             template <typename T>
-            std::ostream& operator<<(std::ostream& out,  const histogram_proxy<T>& d)
+            std::ostream& operator<<(std::ostream& out,  const histogram_old_proxy<T>& d)
             {
                 d.print(out);
                 return out;
@@ -110,7 +110,7 @@ namespace alps
         //= = = = = = = = = = = H I S T O G R A M   = = = = = = = = = = = = = = = = = =
 
         template <typename T, typename U = unsigned int>
-        class histogram
+        class histogram_old
         {
             typedef typename std::vector<U>::size_type size_type;
 
@@ -120,14 +120,14 @@ namespace alps
                 
                 //TODO: check int vs double behavior
                 template<typename V>
-                histogram(V start, V end, size_type size, typename boost::enable_if<boost::is_integral<V>, int>::type = 0)
+                histogram_old(V start, V end, size_type size, typename boost::enable_if<boost::is_integral<V>, int>::type = 0)
                                                                             : count_()
                                                                             , start_(start)
                                                                             , num_break_((end-start)/(size-1))
                                                                             , size_(size)
                                                                             , data_(size_, weight_type()) {}
                 template<typename V>
-                histogram(V start, V end, size_type size, typename boost::enable_if<boost::is_floating_point<V>, int>::type = 0)
+                histogram_old(V start, V end, size_type size, typename boost::enable_if<boost::is_floating_point<V>, int>::type = 0)
                                                                             : count_()
                                                                             , start_(start)
                                                                             , num_break_((end-start)/(size))
@@ -135,7 +135,7 @@ namespace alps
                                                                             , data_(size_, weight_type()) {}
                 
                 //copy ctor
-                histogram(histogram const & arg): count_(arg.count_)
+                histogram_old(histogram_old const & arg): count_(arg.count_)
                                                 , start_(arg.start_)
                                                 , num_break_(arg.num_break_)
                                                 , size_(arg.size_)
@@ -156,9 +156,9 @@ namespace alps
                 }
                 
                 //get the proxy
-                detail::histogram_proxy<histogram<T, U> > operator[](value_type const & arg)
+                detail::histogram_old_proxy<histogram_old<T, U> > operator[](value_type const & arg)
                 {
-                    return detail::histogram_proxy<histogram<T, U> >(*this, arg);
+                    return detail::histogram_old_proxy<histogram_old<T, U> >(*this, arg);
                 }
 
                 //const version
@@ -202,9 +202,9 @@ namespace alps
         };
 
         template <typename T, typename U>
-        std::ostream& operator<<(std::ostream& out,  const histogram<T, U>& d)
+        std::ostream& operator<<(std::ostream& out,  const histogram_old<T, U>& d)
         {
-            out << "histogram: ";
+            out << "histogram_old: ";
             out << "mean: ";
             out << d.mean();
             return out;

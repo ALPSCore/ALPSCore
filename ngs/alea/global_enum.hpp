@@ -25,21 +25,20 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifndef ALPS_NGS_ALEA_GLOBAL_ENUM_HEADER
+#define ALPS_NGS_ALEA_GLOBAL_ENUM_HEADER
 
-#ifndef ALPS_NGS_ALEA_DETAIL_ADAPTER_FWD_HEADER
-#define ALPS_NGS_ALEA_DETAIL_ADAPTER_FWD_HEADER
 
 namespace alps
 {
     namespace alea
     {
-        // = = = = = = = = = = A D A P T E R   D E F I N I T I O N = = = = = = = = = =
-        struct Mean;
-        struct Error;
-        struct FixSizeBinning;
-        struct MaxNumberBinning;
-        struct LogBinning;
-        struct Autocorrelation;
-    }//end alea namespace 
+    enum error_convergence
+        {
+              yes
+            , no
+            , maybe
+        };
+    }//end alea namespace
 }//end alps namespace
-#endif // ALPS_NGS_ALEA_DETAIL_ADAPTER_FWD_HEADER
+#endif //ALPS_NGS_ALEA_GLOBAL_ENUM_HEADER

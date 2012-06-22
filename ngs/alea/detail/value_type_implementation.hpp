@@ -26,38 +26,59 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-#ifndef ALPS_NGS_ALEA_EXTERN_FUNCTION_HEADER
-#define ALPS_NGS_ALEA_EXTERN_FUNCTION_HEADER
+#ifndef ALPS_NGS_ALEA_DETAIL_VALUE_TYPE_IMPLEMENTATION_HEADER
+#define ALPS_NGS_ALEA_DETAIL_VALUE_TYPE_IMPLEMENTATION_HEADER
 
-#include <alps/ngs/alea/accumulator_wrapper_fwd.hpp>
-#include <alps/ngs/alea/global_enum.hpp>
+#include <alps/ngs/alea/accumulator_impl.hpp>
 
+#include <typeinfo>
 namespace alps
 {
     namespace alea
     {
-        //------------------- for accumulator_wrapper -------------------
-        template <typename Accum>
-        Accum & extract(detail::accumulator_wrapper &m)
-        {
-            return m.extract<Accum>();
-        } 
-
-        template <typename Accum>
-        inline boost::uint64_t count(Accum const & arg)
-        {
-            return arg.count();
-        }
-
         namespace detail
         {
-            //this one is needed, bc of name-collision in accum_wrapper
-            template<typename Accum>
-            boost::uint64_t count_wrap(Accum const & arg)
+            //setting up the dependencies for value_type-Implementation isn't neccessary bc has none
+            
+            template<typename T, typename base_type> 
+            class Implementation<ValueType<T>, base_type>
             {
-                return count(arg);
-            }
-        }
+                typedef Implementation<ValueType<T>, base_type> ThisType;
+                public:
+                    typedef T value_type;
+                    
+                    Implementation<ValueType<T>, base_type>(ThisType const & arg): count_(arg.count_) {}
+                    
+                    template <typename ArgumentPack>
+                    Implementation<ValueType<T>, base_type>(ArgumentPack const & args, typename boost::disable_if<
+                                                                                                  boost::is_base_of<ThisType, ArgumentPack>
+                                                                                                , int
+                                                                                                >::type = 0
+                                            ): count_() 
+                    {}
+                    
+                    inline ThisType& operator <<(value_type val) 
+                    {
+                        ++count_;
+                        return *this;
+                    }
+                    
+                    inline boost::uint64_t const & count() const 
+                    { 
+                        return count_; 
+                    }
+                
+                    template<typename Stream> 
+                    inline void print(Stream & os) 
+                    {
+                        os << "ValueType: " << typeid(value_type).name() << " " << std::endl;
+                        os << "Count: " << count() << " " << std::endl;
+                    }
+                
+                private:
+                    boost::uint64_t count_;
+            };
+        } // end namespace detail
     }//end alea namespace 
 }//end alps namespace
-#endif //ALPS_NGS_ALEA_EXTERN_FUNCTION_HEADER
+#endif // ALPS_NGS_ALEA_DETAIL_VALUE_TYPE_IMPLEMENTATION

@@ -25,10 +25,11 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-
 #ifndef ALPS_NGS_ALEA_AUTOCORR_TRAIT_HEADER
 #define ALPS_NGS_ALEA_AUTOCORR_TRAIT_HEADER
 
+#include <vector>
+#include <alps/ngs/alea/autocorr_proxy.hpp>
 //= = = = = = = = = = = A U T O C O R R   T R A I T = = = = = = = = = = = = = = = =
 namespace alps
 {
@@ -37,9 +38,8 @@ namespace alps
         template <typename T>
         struct autocorr_type
         {
-            //TODO: give right type
-            typedef int type;
+            typedef autocorr_proxy_type<T> type;
         };
     }//end alea namespace 
-}
+}//end alps namespace
 #endif // ALPS_NGS_ALEA_AUTOCORR_TRAIT_HEADER

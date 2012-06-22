@@ -31,10 +31,13 @@
 
 #include <alps/ngs/alea/mean_type_trait.hpp>
 #include <alps/ngs/alea/error_type_trait.hpp>
-#include <alps/ngs/alea/fix_size_bin_type_trait.hpp>
+#include <alps/ngs/alea/fixed_size_bin_type_trait.hpp>
 #include <alps/ngs/alea/max_num_bin_type_trait.hpp>
 #include <alps/ngs/alea/log_bin_type_trait.hpp>
 #include <alps/ngs/alea/autocorr_type_trait.hpp>
+#include <alps/ngs/alea/converged_type_trait.hpp>
+#include <alps/ngs/alea/tau_type_trait.hpp>
+#include <alps/ngs/alea/histogram_type_trait.hpp>
 #include <alps/ngs/alea/value_type_trait.hpp>
 
 #endif // ALPS_NGS_ALEA_TYPE_TRAITS_HEADER

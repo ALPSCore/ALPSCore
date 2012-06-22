@@ -31,7 +31,7 @@
 
 #include <alps/ngs/stacktrace.hpp>
 #include <alps/ngs/alea/detail/accum_prewrapper.hpp>
-#include <alps/ngs/alea/measurement_fwd.hpp>
+#include <alps/ngs/alea/accumulator_wrapper_fwd.hpp>
 #include <alps/ngs/alea/extern_function.hpp>
 
 #include <alps/ngs/alea/detail/properties.hpp>
@@ -53,23 +53,25 @@ namespace alps
             template <typename value_type> 
             class result_type_wrapper;
             
-            //base of result_type_wrapper. Defines the usable interface
+            //base_type of result_type_wrapper. Defines the usable interface
             class base_wrapper {
                 public:
                     base_wrapper() {}
+                    virtual ~base_wrapper() {}
                     
                     template<typename value_type>
-                    void operator<<(value_type& value) 
+                    inline void operator<<(value_type& value) 
                     {
                         add_value(&value, typeid(value_type));
                     }
                     
                     template<typename value_type>
-                    result_type_wrapper<value_type> &get() 
+                    inline result_type_wrapper<value_type> &get() 
                     {
                         return dynamic_cast<result_type_wrapper<value_type>& >(*this);
                     }
                     
+                    virtual boost::uint64_t count() const = 0;
                     virtual base_wrapper* clone() = 0;  //needed for the copy-ctor
                     virtual void print(std::ostream & out) = 0;
                     
@@ -80,26 +82,33 @@ namespace alps
         //= = = = = = = = = = = = = = = = = = R E S U L T   T Y P E   W R A P P E R = = = = = = = = = = = = = = =
         //returns mean and other data that needs the type and therefore can't be implemented in base_wrapper
 
-            template <typename value_type> 
+            template <typename ValueType> 
             class result_type_wrapper: public base_wrapper 
             {
                 public:
+                    typedef ValueType value_type;
+                    virtual ~result_type_wrapper() {}
                     virtual typename mean_type<value_type>::type mean() const= 0;
                     virtual typename error_type<value_type>::type error() const = 0;
-                    virtual boost::int64_t count() const = 0;
-                    virtual typename fix_size_bin_type<value_type>::type fix_size_bin() const = 0;
+                    virtual typename fixed_size_bin_type<value_type>::type fixed_size_bin() const = 0;
                     virtual typename max_num_bin_type<value_type>::type max_num_bin() const = 0;
                     virtual typename log_bin_type<value_type>::type log_bin() const = 0;
                     virtual typename autocorr_type<value_type>::type autocorr() const = 0;
+                    virtual typename converged_type<value_type>::type converged() const = 0;
+                    virtual typename tau_type<value_type>::type tau() const = 0;
+                    virtual typename histogram_type<value_type>::type histogram() const = 0;
             };
         //= = = = = = = = = = = = = = = = = = A C C U M U L A T O R   W R A P P E R = = = = = = = = = = = = = = =
         //the effective wrapper
 
             template <typename Accum> 
-            class accumulator_wrapper: public   autocorr_property<
+            class accumulator_wrapper_derived: public histogram_property <
+                                              tau_property <
+                                               converged_property<
+                                                autocorr_property<
                                                  log_bin_property<
                                                   max_num_bin_property<
-                                                   fix_size_bin_property<
+                                                   fixed_size_bin_property<
                                                     error_property<
                                                      mean_property<
                                                       accumulator_prewrapper<
@@ -108,6 +117,9 @@ namespace alps
                                                                                                     typename value_type<Accum>::type
                                                                                                        >
                                                                             >
+                                                        >
+                                                       >
+                                                      >
                                                      >
                                                     >
                                                    >
@@ -117,43 +129,49 @@ namespace alps
             {
                     //for nicer syntax
                     typedef typename value_type<Accum>::type value_type;
-                    typedef autocorr_property<
+                    typedef histogram_property<
+                          tau_property <
+                           converged_property<
+                            autocorr_property<
                              log_bin_property<
                               max_num_bin_property<
-                               fix_size_bin_property<
+                               fixed_size_bin_property<
                                 error_property<
                                  mean_property<
                                   accumulator_prewrapper<
                                                         Accum
                                                       , result_type_wrapper<value_type> 
                                                         > 
+                                    > 
+                                   > 
+                                  > 
                                  > 
                                 >
                                >
                               >
                              >
-                            > base;
+                            > base_type;
                     
                     using accumulator_prewrapper<Accum, result_type_wrapper<value_type> >::accum_;
                     
                 public:
-                    accumulator_wrapper(): base() {}
+                    accumulator_wrapper_derived(): base_type() {}
                     
-                    accumulator_wrapper(Accum const & acc): base(acc) {}
+                    accumulator_wrapper_derived(Accum const & acc): base_type(acc) {}
                     
-                    detail::base_wrapper* clone() {return new accumulator_wrapper<Accum>(accum_);}
+                    inline detail::base_wrapper* clone() {return new accumulator_wrapper_derived<Accum>(accum_);}
                     
-                    boost::int64_t count() const
+                    inline boost::uint64_t count() const
                     {
-                        return detail::count_wrap(accum_);
+                        return count_wrap(accum_);
                     }
                     
-                    void print(std::ostream & out) {out << accum_;}
+                    inline void print(std::ostream & out) {out << accum_;}
                     
-                    friend Accum& measurement::extract<Accum>();
+                    friend Accum& accumulator_wrapper::extract<Accum>();
                 
                 protected:
-                    void add_value(const void* value, const std::type_info& info) //type-infusion
+                    inline void add_value(const void* value, const std::type_info& info) //type-infusion
                     {
                         if( &info != &typeid(value_type) &&
                         #ifdef BOOST_AUX_ANY_TYPE_ID_NAME

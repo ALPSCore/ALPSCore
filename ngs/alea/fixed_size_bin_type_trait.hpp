@@ -29,6 +29,8 @@
 #ifndef ALPS_NGS_ALEA_FIX_SIZE_BIN_TRAIT_HEADER
 #define ALPS_NGS_ALEA_FIX_SIZE_BIN_TRAIT_HEADER
 
+#include <vector>
+#include <alps/ngs/alea/fixed_size_bin_proxy.hpp>
 //= = = = = = = = = F I X   S I Z E   B I N   T R A I T = = = = = = = = = = =
 
 namespace alps
@@ -36,10 +38,9 @@ namespace alps
     namespace alea
     {
         template <typename T>
-        struct fix_size_bin_type
+        struct fixed_size_bin_type
         {
-            //TODO: give right type
-            typedef int type;
+            typedef fixed_size_bin_proxy_type<T> type;
         };
     }//end alea namespace 
 }//end alps namespace

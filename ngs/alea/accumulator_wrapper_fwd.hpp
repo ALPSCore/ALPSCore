@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2011 by Lukas Gamper <gamperl@gmail.com>                   *
+ * Copyright (C) 2011 - 2012 by Mario Koenz <mkoenz@ethz.ch>                       *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -26,19 +26,50 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-#ifndef ALPS_NGS_ALEA_ACCUMULATOR_HEADER
-#define ALPS_NGS_ALEA_ACCUMULATOR_HEADER
+#ifndef ALPS_NGS_ALEA_ACCUMULATOR_WRAPPER_FWD_HEADER
+#define ALPS_NGS_ALEA_ACCUMULATOR_WRAPPER_FWD_HEADER
 
-#include <alps/ngs/alea/detail/value_type_implementation.hpp>
-#include <alps/ngs/alea/detail/mean_implementation.hpp>
-#include <alps/ngs/alea/detail/error_implementation.hpp>
-#include <alps/ngs/alea/detail/fixed_size_bin_implementation.hpp>
-#include <alps/ngs/alea/detail/max_num_bin_implementation.hpp>
-#include <alps/ngs/alea/detail/log_bin_implementation.hpp>
-#include <alps/ngs/alea/detail/autocorr_implementation.hpp>
-#include <alps/ngs/alea/detail/converged_implementation.hpp>
-#include <alps/ngs/alea/detail/tau_implementation.hpp>
-#include <alps/ngs/alea/detail/histogram_implementation.hpp>
-#include <alps/ngs/alea/accumulator_impl.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/cstdint.hpp>
+#include <alps/ngs/alea/accumulator.hpp>
 
-#endif // ALPS_NGS_ALEA_ACCUMULATOR_HEADER
+namespace alps
+{
+    namespace alea
+    {
+        namespace detail
+        {
+            class base_wrapper;
+            template<typename Accum>
+            class result_type_wrapper;
+
+            //class that holds the base_wrapper pointer
+            class accumulator_wrapper {
+                public:
+                    template<typename T> 
+                    accumulator_wrapper(T arg);
+                    
+                    accumulator_wrapper(accumulator_wrapper const & arg);
+                    
+                    template<typename T>
+                    accumulator_wrapper& operator<<(const T& value);
+                        
+                    
+                    template<typename T>
+                    detail::result_type_wrapper<T> &get();//TODO
+                    
+                    friend std::ostream& operator<<(std::ostream &out, const accumulator_wrapper& wrapper);
+                    
+                    template <typename T>
+                    T & extract();
+                    
+                    boost::uint64_t count() const;
+                    
+                private:
+                    boost::shared_ptr<base_wrapper> base_;
+            };
+        }//end detail namespace 
+    }//end alea namespace 
+}//end alps namespace
+#endif // ALPS_NGS_ALEA_ACCUMULATOR_WRAPPER_FWD_HEADER
+

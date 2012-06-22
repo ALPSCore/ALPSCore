@@ -29,6 +29,7 @@
 #ifndef ALPS_NGS_ALEA_ERROR_TRAIT_HEADER
 #define ALPS_NGS_ALEA_ERROR_TRAIT_HEADER
 
+#include <alps/ngs/alea/mean_type_trait.hpp>
 //= = = = = = = = = = = = = E R R O R   T R A I T = = = = = = = = = = = = = = = =
 
 namespace alps
@@ -38,13 +39,7 @@ namespace alps
         template <typename T>
         struct error_type
         {
-            typedef T type;
-        };
-        template<>
-        struct error_type<int>
-        {
-            //TODO: give right type
-            typedef double type;
+            typedef typename mean_type<T>::type type;
         };
     }//end alea namespace 
 }//end alps namespace

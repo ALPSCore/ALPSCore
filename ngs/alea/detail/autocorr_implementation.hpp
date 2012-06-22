@@ -24,15 +24,16 @@
  * DEALINGS IN THE SOFTWARE.                                                       *
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ 
 
-
-#ifndef ALPS_NGS_ALEA_DETAIL_AUTOCORR_ADAPTER_HEADER
-#define ALPS_NGS_ALEA_DETAIL_AUTOCORR_ADAPTER_HEADER
+#ifndef ALPS_NGS_ALEA_DETAIL_AUTOCORR_IMPLEMENTATION_HEADER
+#define ALPS_NGS_ALEA_DETAIL_AUTOCORR_IMPLEMENTATION_HEADER
 
 #include <alps/ngs/alea/accumulator_impl.hpp>
+#include <alps/ngs/alea/global_enum.hpp>
+#include <alps/ngs/alea/autocorr_proxy.hpp>
 
 #include <boost/cstdint.hpp>
-#include <boost/lambda/lambda.hpp>
 
 #include <vector>
 #include <cmath>
@@ -44,68 +45,61 @@ namespace alps
         namespace detail
         {
 
-        //set up the dependencies for the Autocorrelation-Adapter
+        //set up the dependencies for the tag::autocorrelation-Implementation
             template<> 
-            struct Dependencies<Autocorrelation> 
+            struct Dependencies<tag::autocorrelation> 
             {
-                typedef MakeList<Mean, Error>::type type;
+                typedef MakeList<tag::mean, tag::error, tag::detail::tau, tag::detail::converged>::type type;
             };
 
-            template<typename base> 
-            class Adapter<Autocorrelation, base> : public base 
+            template<typename base_type> 
+            class Implementation<tag::autocorrelation, base_type> : public base_type 
             {
-                typedef typename autocorr_type<typename base::value_type>::type auto_bin_type;
-                typedef typename std::vector<typename base::value_type>::size_type size_type;
-                typedef Adapter<Autocorrelation, base> ThisType;
+                typedef typename base_type::value_type value_type_loc;
+                typedef typename autocorr_type<value_type_loc>::type autocorr_type;
+                typedef typename std::vector<value_type_loc>::size_type size_type;
+                typedef typename mean_type<value_type_loc>::type mean_type;
+                typedef Implementation<tag::autocorrelation, base_type> ThisType;
                 
                 public:
-                    Adapter<Autocorrelation, base>(ThisType const & arg): base(arg)
+                    Implementation<tag::autocorrelation, base_type>(ThisType const & arg): base_type(arg)
                                                                         , bin_(arg.bin_)
                                                                         , partial_(arg.partial_)
                                                                         , bin_size_now_(arg.bin_size_now_)
-                                                                        , pos_now_(arg.pos_now_)
                     {}
                     
                     template<typename ArgumentPack>
-                    Adapter<Autocorrelation, base>(ArgumentPack const & args
+                    Implementation<tag::autocorrelation, base_type>(ArgumentPack const & args
                                                  , typename boost::disable_if<
                                                                               boost::is_base_of<ThisType, ArgumentPack>
                                                                             , int
                                                                             >::type = 0
-                                             ): base(args)
-                                              , partial_(1, typename base::value_type())
+                                             ): base_type(args)
                                               , bin_size_now_(0)
-                                              , pos_now_(0)
                     {}
                     
-                    auto_bin_type autocorr() const 
+                    inline autocorr_type const autocorr() const 
                     { 
-                        //TODO: implementation
-                        return 0;
+                        return autocorr_proxy_type<value_type_loc>(bin_, partial_, base_type::count());
                     }
                     
-                    ThisType& operator <<(typename base::value_type val) 
+                    inline ThisType& operator <<(value_type_loc const &  val) 
                     {
-                        base::operator<<(val);
+                        base_type::operator<<(val);
                         
-                        //TODO: Right implementation
-                        if(base::count() == (1 << bin_size_now_))
+                        if(base_type::count() == (1 << bin_size_now_))
                         {
-                            bin_.push_back(typename base::value_type());
-                            partial_.push_back(partial_.back());
+                            bin_.push_back(value_type_loc());
+                            partial_.push_back(value_type_loc());
                             ++bin_size_now_;
-                            pos_now_ = 0;
-                            
                         }
-                        ++pos_now_;
                         for (unsigned i = 0; i < bin_size_now_; ++i)
                         {
-                            partial_[i] += val;
-                            
-                            if(pos_now_ % (1<<i) == 0)
+                            if(base_type::count() % (1lu<<i) == 0)
                             {
-                              bin_[i] += partial_[i]*partial_[i];
-                                partial_[i] = 0;
+                                partial_[i] = base_type::sum_ - partial_[i];
+                                bin_[i] += partial_[i]*partial_[i];
+                                partial_[i] = base_type::sum_;
                             }
                         }
                         
@@ -113,22 +107,25 @@ namespace alps
                     }
                     
                     template<typename Stream> 
-                    void print(Stream & os) 
+                    inline void print(Stream & os) 
                     {
-                        base::print(os);
-                        os << "Autocorrelation: ";
-                        os << autocorr() << "\t";
+                        base_type::print(os);
+                        os << "tag::autocorrelation: " << std::endl;
                         
-                        for_each(bin_.begin(), bin_.end(), (os << boost::lambda::_1 << " "));
+                        //~ os << std::endl;
+                        //~ for (unsigned int i = 0; i < bin_.size(); ++i)
+                        //~ {
+                            //~ os << "bin[" << i << "] = " << bin_[i] << std::endl;
+                        //~ }
                     }
                     
                 private:
-                    std::vector<typename base::value_type> bin_;
-                    std::vector<typename base::value_type> partial_;
+                    std::vector<value_type_loc> bin_;
+                    std::vector<value_type_loc> partial_;
                     size_type bin_size_now_;
-                    size_type pos_now_;
             };
+            
         } // end namespace detail
     }//end alea namespace 
 }//end alps namespace
-#endif // ALPS_NGS_ALEA_DETAIL_AUTOCORR_ADAPTER
+#endif // ALPS_NGS_ALEA_DETAIL_AUTOCORR_IMPLEMENTATION

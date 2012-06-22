@@ -26,73 +26,74 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-#ifndef ALPS_NGS_ALEA_DETAIL_LOG_BIN_ADAPTER_HEADER
-#define ALPS_NGS_ALEA_DETAIL_LOG_BIN_ADAPTER_HEADER
+#ifndef ALPS_NGS_ALEA_DETAIL_LOG_BIN_IMPLEMENTATION_HEADER
+#define ALPS_NGS_ALEA_DETAIL_LOG_BIN_IMPLEMENTATION_HEADER
 
 #include <alps/ngs/alea/accumulator_impl.hpp>
+#include <alps/ngs/alea/log_bin_proxy.hpp>
 
 #include <boost/cstdint.hpp>
 
 #include <vector>
+
 namespace alps
 {
     namespace alea
     {
         namespace detail
         {
-            //set up the dependencies for the LogBinning-Adapter
+            //set up the dependencies for the tag::log_binning-Implementation
             template<> 
-            struct Dependencies<LogBinning> 
+            struct Dependencies<tag::log_binning> 
             {
-                typedef MakeList<Mean, Error>::type type;
+                typedef MakeList<tag::mean, tag::error>::type type;
             };
 
-            template<typename base> 
-            class Adapter<LogBinning, base> : public base 
+            template<typename base_type> 
+            class Implementation<tag::log_binning, base_type> : public base_type 
             {
-                typedef typename log_bin_type<typename base::value_type>::type log_bin_type;
-                typedef typename std::vector<typename base::value_type>::size_type size_type;
-                typedef Adapter<LogBinning, base> ThisType;
+                typedef typename base_type::value_type value_type_loc;
+                typedef typename log_bin_type<value_type_loc>::type log_bin_type;
+                typedef typename std::vector<value_type_loc>::size_type size_type;
+                typedef typename mean_type<value_type_loc>::type mean_type;
+                typedef Implementation<tag::log_binning, base_type> ThisType;
           
                 public:    
-                    Adapter<LogBinning, base>(ThisType const & arg):  base(arg)
+                    Implementation<tag::log_binning, base_type>(ThisType const & arg):  base_type(arg)
                                                                     , bin_(arg.bin_)
                                                                     , partial_(arg.partial_)
                                                                     , pos_in_partial_(arg.pos_in_partial_)
                                                                     , bin_size_now_(arg.bin_size_now_) 
                     {}
                     
-                    //TODO: check if parameter is needed and if so, set right default value
                     template<typename ArgumentPack>
-                    Adapter<LogBinning, base>(ArgumentPack const & args
+                    Implementation<tag::log_binning, base_type>(ArgumentPack const & args
                                          , typename boost::disable_if<
                                                                       boost::is_base_of<ThisType, ArgumentPack>
                                                                     , int
                                                                     >::type = 0
-                                        ): base(args)
+                                        ): base_type(args)
                                          , partial_()
                                          , pos_in_partial_()
                                          , bin_size_now_(1)
                     {}
                     
-                    log_bin_type log_bin() const 
+                    inline log_bin_type const log_bin() const 
                     { 
-                        //TODO: Implementation
-                        return bin_.size(); 
+                        return log_bin_proxy_type<value_type_loc>(bin_);
                     }
               
-                    ThisType& operator <<(typename base::value_type val) 
+                    inline ThisType& operator <<(value_type_loc val) 
                     {
-                        base::operator <<(val);
+                        base_type::operator <<(val);
                         
-                        //TODO: Implementation
                         partial_ += val;
                         ++pos_in_partial_;
                         
                         if(pos_in_partial_ == bin_size_now_)
                         {
-                            bin_.push_back(partial_);
-                            partial_ = typename base::value_type();
+                            bin_.push_back(partial_ / bin_size_now_);
+                            partial_ = value_type_loc();
                             pos_in_partial_ = 0;
                             bin_size_now_ *= 2;
                         }
@@ -100,23 +101,25 @@ namespace alps
                     }
               
                     template<typename Stream>
-                    void print(Stream & os) 
+                    inline void print(Stream & os) 
                     {
+                        base_type::print(os);
+                        os << "Log Binning: " << std::endl;
                         
-                        base::print(os);
-                        os << "Log Binning: ";
-                        os << log_bin();
-                        //~ using namespace boost::lambda;
-                        //~ for_each(bin_.begin(), bin_.end(), (os << _1 << " "));
+                        //~ os << std::endl;
+                        //~ for (unsigned int i = 0; i < bin_.size(); ++i)
+                        //~ {
+                            //~ os << "bin[" << i << "] = " << bin_[i] << std::endl;
+                        //~ }
                     }
               
                 private:
-                    std::vector<typename base::value_type> bin_;
-                    typename base::value_type partial_;
+                    std::vector<mean_type> bin_;
+                    value_type_loc partial_;
                     size_type pos_in_partial_;
                     size_type bin_size_now_;
             };
         } // end namespace detail
     }//end alea namespace 
 }//end alps namespace
-#endif // ALPS_NGS_ALEA_DETAIL_LOG_BIN_ADAPTER
+#endif // ALPS_NGS_ALEA_DETAIL_LOG_BIN_IMPLEMENTATION

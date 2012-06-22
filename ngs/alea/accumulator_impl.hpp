@@ -38,38 +38,72 @@ namespace alps
 {
     namespace alea
     {
-        //TODO: put the parameter in a namespace
         BOOST_PARAMETER_NAME((bin_size, keywords) _bin_size)
-        BOOST_PARAMETER_NAME((bin_number, keywords) _bin_number)
-        BOOST_PARAMETER_NAME((bin_log, keywords) _bin_log)
-
-        template<
-              typename _0  = void
-            , typename _1  = void
-            , typename _2  = void
-            , typename _3  = void
-            , typename _4  = void
-            , typename _5  = void
-            , typename _6  = void
-            , typename _7  = void
-            , typename _8  = void
-            , typename _9  = void
-        > 
-        class accumulator: public detail::accumulator_impl<ValueType<_0>, _1, _2, _3, _4, _5, _6, _7, _8, _9>
+        BOOST_PARAMETER_NAME((bin_num, keywords) _bin_num)
+        //~ BOOST_PARAMETER_NAME((bin_log, keywords) _bin_log)
+        
+          template<
+              typename __0  = void
+            , typename __1  = void
+            , typename __2  = void
+            , typename __3  = void
+            , typename __4  = void
+            , typename __5  = void
+            , typename __6  = void
+            , typename __7  = void
+            , typename __8  = void
+        >
+        struct features
         {
-            typedef detail::accumulator_impl<ValueType<_0>, _1, _2, _3, _4, _5, _6, _7, _8, _9> base;
+            typedef __0 _0;
+            typedef __1 _1;
+            typedef __2 _2;
+            typedef __3 _3;
+            typedef __4 _4;
+            typedef __5 _5;
+            typedef __6 _6;
+            typedef __7 _7;
+            typedef __8 _8;
+        };
+        
+        template<
+              typename vt  = double
+            , typename features_input = features<tag::mean, tag::error>
+        >
+        class accumulator: public detail::accumulator_impl<ValueType<vt>, typename features_input::_0
+                                                                        , typename features_input::_1
+                                                                        , typename features_input::_2
+                                                                        , typename features_input::_3
+                                                                        , typename features_input::_4
+                                                                        , typename features_input::_5
+                                                                        , typename features_input::_6
+                                                                        , typename features_input::_7
+                                                                        , typename features_input::_8
+                                                                        >
+        {
+            typedef accumulator<vt, features_input> self_type;
+            typedef detail::accumulator_impl<ValueType<vt>,   typename features_input::_0
+                                                            , typename features_input::_1
+                                                            , typename features_input::_2
+                                                            , typename features_input::_3
+                                                            , typename features_input::_4
+                                                            , typename features_input::_5
+                                                            , typename features_input::_6
+                                                            , typename features_input::_7
+                                                            , typename features_input::_8
+                                                            > base_type;
             
             public:
-                accumulator(accumulator const & arg): base(static_cast<base const &>(arg)) {}
+                accumulator(accumulator const & arg): base_type(static_cast<base_type const &>(arg)) {}
             
                 BOOST_PARAMETER_CONSTRUCTOR(
                 accumulator, 
-                (base),
+                (base_type),
                 keywords,
                     (optional 
                         (_bin_size, *)
-                        (_bin_number, *)
-                        (_bin_log, *)
+                        (_bin_num, *)
+                        //~ (_bin_log, *)
                     )
                 )
         };

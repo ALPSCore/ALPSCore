@@ -25,56 +25,60 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifndef ALPS_NGS_ALEA_FIXED_SIZE_BIN_PROXY_HEADER
+#define ALPS_NGS_ALEA_FIXED_SIZE_BIN_PROXY_HEADER
 
-#ifndef ALPS_NGS_ALEA_DETAIL_MEAN_ADAPTER_HEADER
-#define ALPS_NGS_ALEA_DETAIL_MEAN_ADAPTER_HEADER
+#include <vector>
+#include <ostream>
+#include <cmath>
+#include <algorithm>
 
-#include <alps/ngs/alea/accumulator_impl.hpp>
+
+#include <alps/ngs/alea/mean_type_trait.hpp>
+
 namespace alps
 {
     namespace alea
     {
-        namespace detail
+        template<typename value_type>
+        class fixed_size_bin_proxy_type
         {
-            //setting up the dependencies for Mean-Adapter isn't neccessary bc has none
+            typedef typename mean_type<value_type>::type mean_type;
+            typedef typename std::vector<value_type>::size_type size_type;
+            static std::vector<mean_type> unused;
+        public:
+            fixed_size_bin_proxy_type(): bin_(unused) {}
+            fixed_size_bin_proxy_type(  std::vector<mean_type> const & bin
+                                      , size_type const & bin_size):
+                                                                  bin_(bin)
+                                                                , bin_size_(bin_size)
+            {}
             
-            template<typename base> 
-            class Adapter<Mean, base> : public base 
+            inline std::vector<mean_type> const & bins() const 
             {
-                typedef typename mean_type<typename base::value_type>::type mean_type;
-                typedef Adapter<Mean, base> ThisType;
-                public:
-                    Adapter<Mean, base>(ThisType const & arg): base(arg), mean_(arg.mean_) {}
-                    
-                    template<typename ArgumentPack>
-                    Adapter<Mean, base>(ArgumentPack const & args, typename boost::disable_if<
-                                                                                          boost::is_base_of<ThisType, ArgumentPack>
-                                                                                        , int
-                                                                                        >::type = 0
-                                        ): base(args)
-                                         , mean_() 
-                    {}
-                    
-                    mean_type mean() const { return mean_;};
+                return bin_;
+            }
             
-                    ThisType& operator <<(typename base::value_type val) 
-                    {
-                        base::operator <<(val);
-                        mean_ = ((base::count()-1) * mean_ + val) / base::count();
-                        return *this;
-                    }
+            inline size_type const & bin_size() const
+            {
+                return bin_size_;
+            }
             
-                    template<typename Stream> 
-                    void print(Stream & os) 
-                    {
-                        base::print(os);
-                        os << "Mean: " << mean() << " ";
-                    }
+            template<typename T>
+            friend std::ostream & operator<<(std::ostream & os, fixed_size_bin_proxy_type<T> const & arg);
+        private:
+            std::vector<mean_type> const & bin_;
+            size_type bin_size_;
+        };
+
+        template<typename T>
+        inline std::ostream & operator<<(std::ostream & os, fixed_size_bin_proxy_type<T> const & arg)
+        {
+            os << "fixed_size_bin_proxy" << std::endl;
+            return os;
             
-                private:
-                    mean_type mean_;
-            };
-        } // end namespace detail
+        };
     }//end alea namespace 
 }//end alps namespace
-#endif // ALPS_NGS_ALEA_DETAIL_MEAN_ADAPTER
+
+#endif //ALPS_NGS_ALEA_FIXED_SIZE_BIN_PROXY_HEADER

@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2011 by Lukas Gamper <gamperl@gmail.com>                   *
+ * Copyright (C) 2011 - 2012 by Mario Koenz <mkoenz@ethz.ch>                       *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -26,19 +26,21 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-#ifndef ALPS_NGS_ALEA_ACCUMULATOR_HEADER
-#define ALPS_NGS_ALEA_ACCUMULATOR_HEADER
+#ifndef ALPS_NGS_ALEA_CONVERGED_TRAIT_HEADER
+#define ALPS_NGS_ALEA_CONVERGED_TRAIT_HEADER
 
-#include <alps/ngs/alea/detail/value_type_implementation.hpp>
-#include <alps/ngs/alea/detail/mean_implementation.hpp>
-#include <alps/ngs/alea/detail/error_implementation.hpp>
-#include <alps/ngs/alea/detail/fixed_size_bin_implementation.hpp>
-#include <alps/ngs/alea/detail/max_num_bin_implementation.hpp>
-#include <alps/ngs/alea/detail/log_bin_implementation.hpp>
-#include <alps/ngs/alea/detail/autocorr_implementation.hpp>
-#include <alps/ngs/alea/detail/converged_implementation.hpp>
-#include <alps/ngs/alea/detail/tau_implementation.hpp>
-#include <alps/ngs/alea/detail/histogram_implementation.hpp>
-#include <alps/ngs/alea/accumulator_impl.hpp>
-
-#endif // ALPS_NGS_ALEA_ACCUMULATOR_HEADER
+#include <vector>
+#include <alps/ngs/alea/global_enum.hpp>
+//= = = = = = = = = = C O N V E R G E D   T R A I T = = = = = = = = = = = = = = = =
+namespace alps
+{
+    namespace alea
+    {
+        template <typename T>
+        struct converged_type
+        {
+            typedef error_convergence type;
+        };
+    }//end alea namespace 
+}//end alps namespace
+#endif // ALPS_NGS_ALEA_CONVERGED_TRAIT_HEADER

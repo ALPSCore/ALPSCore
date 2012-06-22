@@ -26,38 +26,60 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-#ifndef ALPS_NGS_ALEA_EXTERN_FUNCTION_HEADER
-#define ALPS_NGS_ALEA_EXTERN_FUNCTION_HEADER
+#ifndef ALPS_NGS_ALEA_DETAIL_MEAN_IMPLEMENTATION_HEADER
+#define ALPS_NGS_ALEA_DETAIL_MEAN_IMPLEMENTATION_HEADER
 
-#include <alps/ngs/alea/accumulator_wrapper_fwd.hpp>
-#include <alps/ngs/alea/global_enum.hpp>
-
+#include <alps/ngs/alea/accumulator_impl.hpp>
 namespace alps
 {
     namespace alea
     {
-        //------------------- for accumulator_wrapper -------------------
-        template <typename Accum>
-        Accum & extract(detail::accumulator_wrapper &m)
-        {
-            return m.extract<Accum>();
-        } 
-
-        template <typename Accum>
-        inline boost::uint64_t count(Accum const & arg)
-        {
-            return arg.count();
-        }
-
         namespace detail
         {
-            //this one is needed, bc of name-collision in accum_wrapper
-            template<typename Accum>
-            boost::uint64_t count_wrap(Accum const & arg)
+            //setting up the dependencies for tag::mean-Implementation isn't neccessary bc has none
+            
+            template<typename base_type> 
+            class Implementation<tag::mean, base_type> : public base_type 
             {
-                return count(arg);
-            }
-        }
+                typedef typename base_type::value_type value_type_loc;
+                typedef typename mean_type<value_type_loc>::type mean_type;
+                typedef Implementation<tag::mean, base_type> ThisType;
+                public:
+                    Implementation<tag::mean, base_type>(ThisType const & arg): base_type(arg), sum_(arg.sum_) {}
+                    
+                    template<typename ArgumentPack>
+                    Implementation<tag::mean, base_type>(ArgumentPack const & args, typename boost::disable_if<
+                                                                                          boost::is_base_of<ThisType, ArgumentPack>
+                                                                                        , int
+                                                                                        >::type = 0
+                                        ): base_type(args)
+                                         , sum_() 
+                    {}
+                    
+                    inline mean_type const  mean() const 
+                    { 
+                        return mean_type(sum_)/base_type::count();
+                    }
+            
+                    inline ThisType& operator <<(value_type_loc val) 
+                    {
+                        base_type::operator <<(val);
+                        sum_ += val;
+                        return *this;
+                    }
+            
+                    template<typename Stream> 
+                    inline void print(Stream & os) 
+                    {
+                        base_type::print(os);
+                        os << "tag::mean: " << mean() << " " << std::endl;
+                    }
+            
+                //~ private:
+                protected:
+                    mean_type sum_;
+            };
+        } // end namespace detail
     }//end alea namespace 
 }//end alps namespace
-#endif //ALPS_NGS_ALEA_EXTERN_FUNCTION_HEADER
+#endif // ALPS_NGS_ALEA_DETAIL_MEAN_IMPLEMENTATION
