@@ -39,7 +39,7 @@
 
 BOOST_AUTO_TEST_CASE(test_error_in_modular_accum)
 {
-    alps::alea::accumulator<int, alps::alea::Error> acci;
+    alps::alea::accumulator<int, alps::alea::features<alps::alea::tag::error> > acci;
     
     acci << 2;
     acci << 6;
@@ -47,11 +47,11 @@ BOOST_AUTO_TEST_CASE(test_error_in_modular_accum)
     BOOST_REQUIRE( error(acci) == 2.);
     
     
-    alps::alea::accumulator<double, alps::alea::Error> accd;
+    alps::alea::accumulator<double, alps::alea::features<alps::alea::tag::error> > accd;
     
     
     accd << .2;
     accd << .6;
     
-    //~ BOOST_REQUIRE_CLOSE(alps::alea::error(accd), 2.0, 0.01);
+    BOOST_REQUIRE_CLOSE(alps::alea::error(accd), 0.2, 0.01);
 }

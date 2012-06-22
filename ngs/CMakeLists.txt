@@ -17,5 +17,5 @@ FOREACH (name ngs_hdf5 ngs_hash)
 ENDFOREACH(name)
 
 #TODO: does not compile in clang
-#add_subdirectory(alea)
+add_subdirectory(alea)
 add_subdirectory(params)

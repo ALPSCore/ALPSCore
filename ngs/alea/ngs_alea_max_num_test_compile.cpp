@@ -37,19 +37,19 @@
  
 BOOST_AUTO_TEST_CASE(test_max_num_bin_with_error_archetype)
 {
-    alps::alea::accumulator<error_archetype, alps::alea::MaxNumberBinning> acci; //Default 128
+    alps::alea::accumulator<error_archetype, alps::alea::features<alps::alea::tag::max_num_binning> > acci; //Default 128
     
     acci << 2;
     acci << 6;
     
-    BOOST_REQUIRE( alps::alea::max_num_bin(acci) == 128);
+    BOOST_REQUIRE( alps::alea::max_num_bin(acci).bin_number() == 128);
     
-    alps::alea::accumulator<error_archetype, alps::alea::MaxNumberBinning> accd(alps::alea::bin_number = 10);
+    alps::alea::accumulator<error_archetype, alps::alea::features<alps::alea::tag::max_num_binning> > accd(alps::alea::bin_num = 10);
     
     accd << .2;
     accd << .6;
         
-    BOOST_REQUIRE( alps::alea::max_num_bin(accd) == 10);
+    BOOST_REQUIRE( alps::alea::max_num_bin(accd).bin_number() == 10);
     
     alps::alea::max_num_bin(accd);
     accd.max_num_bin();

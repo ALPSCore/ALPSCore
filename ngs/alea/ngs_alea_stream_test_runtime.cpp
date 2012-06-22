@@ -39,14 +39,14 @@
 
 BOOST_AUTO_TEST_CASE(test_stream_for_modular_accum)
 {
-    typedef alps::alea::accumulator<int, alps::alea::Mean> accum;
+    typedef alps::alea::accumulator<int, alps::alea::features<alps::alea::tag::mean> > accum;
     accum acc;
     
     acc << 1;
     acc << 2;
     std::cout << acc << std::endl;
     
-    alps::alea::measurement m(acc);
+    alps::alea::detail::accumulator_wrapper m(acc);
 
     std::cout << m << std::endl;   
 }

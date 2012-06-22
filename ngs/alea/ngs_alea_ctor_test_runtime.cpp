@@ -36,25 +36,26 @@
 BOOST_AUTO_TEST_CASE(test_ctor_in_modular_accum)
 {
     typedef alps::alea::accumulator<int
-                                    , alps::alea::FixSizeBinning
-                                    , alps::alea::MaxNumberBinning
-                                    , alps::alea::Autocorrelation
+                                    , alps::alea::features<
+                                          alps::alea::tag::fixed_size_binning
+                                        , alps::alea::tag::max_num_binning
+                                        , alps::alea::tag::autocorrelation>
                                     > accum;
-    accum acc(alps::alea::bin_number = 10, alps::alea::bin_size = 10);
+    accum acc(alps::alea::bin_num = 10, alps::alea::bin_size = 10);
     
     acc << 1;
     acc << 2;
     acc << 3;
     acc << 4;
     acc << 5;
-    
+    //~ 
     accum acc2(acc);
-        
-    BOOST_REQUIRE( alps::alea::count(acc2) == acc.count());
-    BOOST_REQUIRE( alps::alea::mean(acc2) == acc.mean());
-    BOOST_REQUIRE( alps::alea::error(acc2) == acc.error());
-    BOOST_REQUIRE( alps::alea::fix_size_bin(acc2) == acc.fix_size_bin());
-    BOOST_REQUIRE( alps::alea::max_num_bin(acc2) == acc.max_num_bin());
-    BOOST_REQUIRE( alps::alea::autocorr(acc2) == acc.autocorr());
+        //~ 
+    BOOST_REQUIRE(count(acc2) == acc.count());
+    BOOST_REQUIRE( mean(acc2) == acc.mean());
+    BOOST_REQUIRE( error(acc2) == acc.error());
+    BOOST_REQUIRE( fixed_size_bin(acc2).bins() == acc.fixed_size_bin().bins());
+    BOOST_REQUIRE( max_num_bin(acc2).bins() == acc.max_num_bin().bins());
+    BOOST_REQUIRE( autocorr(acc2).bins() == acc.autocorr().bins());
     
 }

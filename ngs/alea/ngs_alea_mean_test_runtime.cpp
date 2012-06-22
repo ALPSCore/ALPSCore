@@ -36,7 +36,7 @@
 
 BOOST_AUTO_TEST_CASE(test_mean_in_modular_accum)
 {
-    alps::alea::accumulator<int, alps::alea::Mean> acci;
+    alps::alea::accumulator<int, alps::alea::features<alps::alea::tag::mean> > acci;
     
     for(int i = 0; i < 101; ++i)
         acci << i;
@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE(test_mean_in_modular_accum)
     BOOST_REQUIRE( alps::alea::mean(acci) == 50);
     
     
-    alps::alea::accumulator<double, alps::alea::Mean> accd;
+    alps::alea::accumulator<double, alps::alea::features<alps::alea::tag::mean> > accd;
     
     for(double i = 0; i < 1.01; i += .01)
         accd << i;

@@ -34,20 +34,26 @@
 #include <boost/test/unit_test.hpp>
 
 
-BOOST_AUTO_TEST_CASE(test_fix_size_bin_in_modular_accum)
+BOOST_AUTO_TEST_CASE(test_fixed_size_bin_in_modular_accum)
 {
-    alps::alea::accumulator<int, alps::alea::FixSizeBinning> acci; //Default 128
+    alps::alea::accumulator<int, alps::alea::features<alps::alea::tag::fixed_size_binning> > acci; //Default 128
     
     acci << 2;
     acci << 6;
     
-    BOOST_REQUIRE( alps::alea::fix_size_bin(acci) == 128);
+    BOOST_REQUIRE( alps::alea::fixed_size_bin(acci).bin_size() == 128);
     
     
-    alps::alea::accumulator<double, alps::alea::FixSizeBinning> accd(alps::alea::bin_size = 10);
+    alps::alea::accumulator<double, alps::alea::features<alps::alea::tag::fixed_size_binning> > accd(alps::alea::bin_size = 10);
 
-    accd << .2;
-    accd << .6;
+    for(int i = 0; i < 100; ++i)
+    {
+        accd << 0.1*i;
+    }
+    
         
-    BOOST_REQUIRE( alps::alea::fix_size_bin(accd) == 10);
+        
+    BOOST_REQUIRE( alps::alea::fixed_size_bin(accd).bin_size() == 10);
+    alps::alea::fixed_size_bin(accd);
+    accd.fixed_size_bin();
 }

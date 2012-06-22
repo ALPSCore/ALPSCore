@@ -40,7 +40,7 @@
 
 BOOST_AUTO_TEST_CASE(test_hist_with_value_archetype)
 {
-    alps::alea::histogram<hist_archetype> acc(1, 6, 6);
+    alps::alea::histogram_old<hist_archetype> acc(1, 6, 6);
     
     for(int i = 0; i < 10; ++i)
         acc << hist_archetype();

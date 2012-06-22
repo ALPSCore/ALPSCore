@@ -38,13 +38,13 @@
 
 BOOST_AUTO_TEST_CASE(test_wrapper_with_mean_archetype)
 {
-    typedef alps::alea::accumulator<mean_archetype, alps::alea::Mean> accum;
+    typedef alps::alea::accumulator<mean_archetype, alps::alea::features<alps::alea::tag::mean> > accum;
     accum acc;
-    alps::alea::measurement m(acc);
+    alps::alea::detail::accumulator_wrapper m(acc);
     
     for(int i = 0; i < 10; ++i)
         m << mean_archetype();
         
-    alps::alea::measurement n(m);
+    alps::alea::detail::accumulator_wrapper n(m);
     alps::alea::mean(m.extract<accum>());
 }

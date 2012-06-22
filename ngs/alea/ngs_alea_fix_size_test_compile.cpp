@@ -36,23 +36,23 @@
 #include "error_archetype.hpp"
   
 
-BOOST_AUTO_TEST_CASE(test_fix_size_bin_with_error_archetype)
+BOOST_AUTO_TEST_CASE(test_fixed_size_bin_with_error_archetype)
 {
-    alps::alea::accumulator<error_archetype, alps::alea::FixSizeBinning> acci; //Default 128
+    alps::alea::accumulator<error_archetype, alps::alea::features<alps::alea::tag::fixed_size_binning> > acci; //Default 128
     
     acci << 2;
     acci << 6;
     
-    //~ BOOST_ERROR( fix_size_bin(acci) == 128);
+    //~ BOOST_ERROR( fixed_size_bin(acci).bin_size() == 128);
     
     
-    alps::alea::accumulator<error_archetype, alps::alea::FixSizeBinning> accd(alps::alea::bin_size = 10);
+    alps::alea::accumulator<error_archetype, alps::alea::features<alps::alea::tag::fixed_size_binning> > accd(alps::alea::bin_size = 10);
 
     accd << .2;
     accd << .6;
         
-    BOOST_REQUIRE( alps::alea::fix_size_bin(accd) == 10);
+    //~ BOOST_REQUIRE( alps::alea::fixed_size_bin(accd).bin_size() == 10);
     
-    alps::alea::fix_size_bin(accd);
-    accd.fix_size_bin();
+    alps::alea::fixed_size_bin(accd);
+    accd.fixed_size_bin();
 }

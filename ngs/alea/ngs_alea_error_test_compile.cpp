@@ -37,7 +37,7 @@
 
 BOOST_AUTO_TEST_CASE(test_error_with_error_archetype)
 {
-    typedef alps::alea::accumulator<error_archetype, alps::alea::Error> accum;
+    typedef alps::alea::accumulator<error_archetype, alps::alea::features<alps::alea::tag::error> > accum;
     accum acc;
     
     for(int i = 0; i < 10; ++i)

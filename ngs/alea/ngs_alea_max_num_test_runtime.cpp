@@ -37,19 +37,28 @@
 
 BOOST_AUTO_TEST_CASE(test_max_num_bin_in_modular_accum)
 {
-    alps::alea::accumulator<int, alps::alea::MaxNumberBinning> acci; //Default 128
+    alps::alea::accumulator<int, alps::alea::features<alps::alea::tag::max_num_binning> > acci; //Default 128
     
     acci << 2;
     acci << 6;
     
-    BOOST_REQUIRE( alps::alea::max_num_bin(acci) == 128);
+    BOOST_REQUIRE( alps::alea::max_num_bin(acci).bin_number() == 128);
     
     
-    alps::alea::accumulator<double, alps::alea::MaxNumberBinning> accd(alps::alea::bin_number = 10);
+    alps::alea::accumulator<double, alps::alea::features<alps::alea::tag::max_num_binning> > accd(alps::alea::bin_num = 10);
     
+    for(int i = 0; i < 96; ++i)
+    {
+        accd << 0.1*i;
+    }
     
-    accd << .2;
-    accd << .6;
+    std::vector<double> vec;
+    vec = max_num_bin(accd).bins();
+    
+    for(int i = 0; i < vec.size(); ++i)
+    {
+        std::cout << vec[i] << std::endl;
+    }
         
-    BOOST_REQUIRE( alps::alea::max_num_bin(accd) == 10);
+    BOOST_REQUIRE( alps::alea::max_num_bin(accd).bin_number() == 10);
 }

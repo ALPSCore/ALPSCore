@@ -36,16 +36,16 @@
 
 BOOST_AUTO_TEST_CASE(test_wrapper_for_modular_accum)
 {
-    typedef alps::alea::accumulator<int, alps::alea::Mean> accum;
+    typedef alps::alea::accumulator<int, alps::alea::features<alps::alea::tag::mean> > accum;
     accum acci;
     
-    alps::alea::measurement m(acci);
+    alps::alea::detail::accumulator_wrapper m(acci);
     
     for(int i = 0; i < 101; ++i)
     {
         m << i;
     }
-        
+        //~ 
     BOOST_REQUIRE( m.get<int>().mean() == 50);
     BOOST_REQUIRE( alps::alea::mean(alps::alea::extract<accum>(m)) == 50);
     BOOST_REQUIRE( alps::alea::mean(m.extract<accum>()) == 50);

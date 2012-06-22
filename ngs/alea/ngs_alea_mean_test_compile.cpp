@@ -38,7 +38,7 @@
 
 BOOST_AUTO_TEST_CASE(test_mean_archetype)
 {
-    alps::alea::accumulator<mean_archetype, alps::alea::Mean> acc;
+    alps::alea::accumulator<mean_archetype, alps::alea::features<alps::alea::tag::mean> > acc;
     
     for(int i = 0; i < 10; ++i)
         acc << mean_archetype();

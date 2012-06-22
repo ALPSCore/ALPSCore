@@ -19,6 +19,8 @@ FOREACH (name   ngs_alea_count_test_compile
                 ngs_alea_fix_size_test_runtime  
                 ngs_alea_max_num_test_compile  
                 ngs_alea_max_num_test_runtime  
+                ngs_alea_log_test_compile  
+                ngs_alea_log_test_runtime  
                 ngs_alea_mean_test_runtime  
                 ngs_alea_mean_test_compile  
                 ngs_alea_stream_test_compile  

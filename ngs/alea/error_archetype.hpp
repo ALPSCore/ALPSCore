@@ -46,7 +46,7 @@ struct error_archetype
     
     error_archetype(int const & arg){}
     
-    error_archetype operator/(double const & arg)
+    error_archetype operator/(double const & arg) const
     {
         return error_archetype();
     }
