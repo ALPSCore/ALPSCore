@@ -26,12 +26,39 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_MULTI_ARRAY_HPP
-#define ALPS_MULTI_ARRAY_HPP
+#ifndef ALPS_MULTI_ARRAY_SERIALIZATION_HPP
+#define ALPS_MULTI_ARRAY_SERIALIZATION_HPP
 
-#include <alps/multi_array/io.hpp>
-#include <alps/multi_array/functions.hpp>
-#include <alps/multi_array/operators.hpp>
-#include <alps/multi_array/serialization.hpp>
+#include <boost/mpi.hpp>
+#include <alps/multi_array/multi_array.hpp>
 
-#endif // ALPS_MULTI_ARRAY_HPP
+namespace alps{
+
+  template<typename Archive, typename T, std::size_t D> 
+  inline void save(Archive & ar, const multi_array<T, D> & t, const unsigned int file_version) 
+  { 
+    ar << boost::serialization::make_nvp("dimensions", boost::serialization::make_array(t.shape(), D)); 
+    ar << boost::serialization::make_nvp("data", boost::serialization::make_array(t.data(), t.num_elements())); 
+  } 
+
+  template<typename Archive, typename T, std::size_t D> 
+  inline void load(Archive & ar, multi_array<T, D> & t, const unsigned int file_version) 
+  { 
+    typedef typename multi_array<T, D>::size_type size_type; 
+
+    boost::array<size_type, D> dimensions; 
+    ar >> boost::serialization::make_nvp("dimensions", boost::serialization::make_array(dimensions.c_array(), D)); 
+    t.resize(dimensions); 
+    ar >> boost::serialization::make_nvp("data", boost::serialization::make_array(t.data(), t.num_elements())); 
+  } 
+
+  template<typename Archive, typename T, std::size_t D> 
+  inline void serialize(Archive & ar, multi_array<T, D>& t, const unsigned int file_version) 
+  { 
+    boost::serialization::split_free(ar, t, file_version); 
+  }
+
+
+}//namespace alps
+
+#endif // ALPS_MULTI_ARRAY_SERIALIZATION_HPP

@@ -26,12 +26,36 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_MULTI_ARRAY_HPP
-#define ALPS_MULTI_ARRAY_HPP
+#ifndef ALPS_MULTI_ARRAY_IO_HPP
+#define ALPS_MULTI_ARRAY_IO_HPP
 
-#include <alps/multi_array/io.hpp>
-#include <alps/multi_array/functions.hpp>
-#include <alps/multi_array/operators.hpp>
-#include <alps/multi_array/serialization.hpp>
+#include <alps/multi_array/multi_array.hpp>
 
-#endif // ALPS_MULTI_ARRAY_HPP
+namespace alps{
+
+  template <class T, std::size_t D>
+  std::ostream& operator<<(std::ostream& out, const multi_array<T, D>& a)
+  {
+    boost::array<typename boost::multi_array<T,D>::index, D> index;
+    T* rE = const_cast< T* >(a.data());
+    for(int i = 0; i < a.num_elements(); i++)
+      {
+	for(std::size_t dir = 0; dir < D; dir++ )
+	  index[dir] = (rE - a.origin()) / a.strides()[dir] % a.shape()[dir] +  a.index_bases()[dir];
+
+	std::cout << "(";
+
+	for(int d = 0; d < D; ++d)
+	  std::cout << index[d] << " ";
+
+	std::cout << "\b) --> ";
+
+	std::cout << a(index) << std::endl;
+
+	++rE;
+      }
+  }
+
+}//namespace alps
+
+#endif // ALPS_MULTI_ARRAY_IO_HPP

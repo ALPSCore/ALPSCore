@@ -26,12 +26,55 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_MULTI_ARRAY_HPP
-#define ALPS_MULTI_ARRAY_HPP
+#ifndef ALPS_MULTI_ARRAY_OPERATORS_HPP
+#define ALPS_MULTI_ARRAY_OPERATORS_HPP
 
-#include <alps/multi_array/io.hpp>
-#include <alps/multi_array/functions.hpp>
-#include <alps/multi_array/operators.hpp>
-#include <alps/multi_array/serialization.hpp>
+#include <alps/multi_array/multi_array.hpp>
 
-#endif // ALPS_MULTI_ARRAY_HPP
+namespace alps{
+
+  template <class T,std::size_t D>
+  multi_array<T,D> operator+(multi_array<T,D> a, const multi_array<T,D>& b)
+  {
+    a += b;
+    return a;
+  }
+
+  template <class T,std::size_t D>
+  multi_array<T,D> operator-(multi_array<T,D> a, const multi_array<T,D>& b)
+  {
+    a -= b;
+    return a;
+  }
+
+  template <class T,std::size_t D>
+  multi_array<T,D> operator*(multi_array<T,D> a, const multi_array<T,D>& b)
+  {
+    a *= b;
+    return a;
+  }
+
+  template <class T1, class T2, std::size_t D>
+  multi_array<T1,D> operator*(const T2& b, multi_array<T1,D> a)
+  {
+    a *= T1(b);
+    return a;
+  }
+
+  template <class T,std::size_t D>
+  multi_array<T,D> operator/(multi_array<T,D> a, const multi_array<T,D>& b)
+  {
+    a /= b;
+    return a;
+  }
+
+  template <class T1, class T2, std::size_t D>
+  multi_array<T1,D> operator/(multi_array<T1,D> a, const T2& b)
+  {
+    a /= T1(b);
+    return a;
+  }
+
+}//namespace alps
+
+#endif // ALPS_MULTI_ARRAY_OPERATORS_HPP
