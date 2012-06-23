@@ -152,9 +152,9 @@ namespace alps
                              >
                             > base_type;
                     
+                public:
                     using accumulator_prewrapper<Accum, result_type_wrapper<value_type> >::accum_;
                     
-                public:
                     accumulator_wrapper_derived(): base_type() {}
                     
                     accumulator_wrapper_derived(Accum const & acc): base_type(acc) {}

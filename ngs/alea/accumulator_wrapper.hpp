@@ -72,10 +72,10 @@ namespace alps
                 return (*base_).count();
             }
             
-            accumulator_wrapper::accumulator_wrapper(accumulator_wrapper const & arg): base_(arg.base_->clone()) 
+            inline accumulator_wrapper::accumulator_wrapper(accumulator_wrapper const & arg): base_(arg.base_->clone()) 
             {}
                 
-            std::ostream& operator<<(std::ostream &out, const accumulator_wrapper& m)
+            inline std::ostream& operator<<(std::ostream &out, const accumulator_wrapper& m)
             {
                 (*(m.base_)).print(out);
                 return out;
