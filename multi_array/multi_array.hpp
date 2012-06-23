@@ -62,18 +62,21 @@ namespace alps{
 
     multi_array<T,D>& operator+=(const multi_array<T,D>& a)
     {
+      assert(std::equal(this->shape(),this->shape()+D,a.shape()));
       std::transform((*this).data(),(*this).data()+(*this).num_elements(),a.data(),(*this).data(),std::plus<T>());
       return *this;
     }
 
     multi_array<T,D>& operator-=(const multi_array<T,D>& a)
     {
+      assert(std::equal(this->shape(),this->shape()+D,a.shape()));
       std::transform((*this).data(),(*this).data()+(*this).num_elements(),a.data(),(*this).data(),std::minus<T>());
       return *this;
     }
 
     multi_array<T,D>& operator*=(const multi_array<T,D>& a)
     {
+      assert(std::equal(this->shape(),this->shape()+D,a.shape()));
       std::transform((*this).data(),(*this).data()+(*this).num_elements(),a.data(),(*this).data(),std::multiplies<T>());
       return *this;
     }
@@ -86,6 +89,7 @@ namespace alps{
 
     multi_array<T,D>& operator/=(const multi_array<T,D>& a)
     {
+      assert(std::equal(this->shape(),this->shape()+D,a.shape()));
       std::transform((*this).data(),(*this).data()+(*this).num_elements(),a.data(),(*this).data(),std::divides<T>());
       return *this;
     }

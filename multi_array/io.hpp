@@ -54,6 +54,7 @@ namespace alps{
 
 	++rE;
       }
+    return out;
   }
 
 }//namespace alps
