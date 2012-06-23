@@ -101,7 +101,7 @@ public:
   const std::string& term() const { return term_;}
   const std::string& name() const { return name_;}
   template <class T, class I>
-  boost::multi_array<std::pair<T,bool>,2> matrix(const SiteBasisDescriptor<I>&,
+  multi_array<std::pair<T,bool>,2> matrix(const SiteBasisDescriptor<I>&,
                                           const Parameters& p=Parameters()) const;
 
   void substitute_operators(const ModelLibrary& m, const Parameters& p=Parameters());
@@ -122,16 +122,16 @@ private:
 
 
 template <class T, class I>
-inline boost::multi_array<std::pair<T,bool>,2> get_fermionic_matrix(T,const SiteOperator& m, const SiteBasisDescriptor<I>& basis1,  const Parameters& p=Parameters())
+inline multi_array<std::pair<T,bool>,2> get_fermionic_matrix(T,const SiteOperator& m, const SiteBasisDescriptor<I>& basis1,  const Parameters& p=Parameters())
 {
   return m.template matrix<T,I>(basis1,p);
 }
 
 template <class T, class I>
-boost::multi_array<T,2> get_matrix(T,const SiteOperator& m, const SiteBasisDescriptor<I>& basis1,  const Parameters& p=Parameters(), bool ignore_fermion=false)
+multi_array<T,2> get_matrix(T,const SiteOperator& m, const SiteBasisDescriptor<I>& basis1,  const Parameters& p=Parameters(), bool ignore_fermion=false)
 {
-  boost::multi_array<std::pair<T,bool>,2> f_matrix = m.template matrix<T,I>(basis1,p);
-  boost::multi_array<T,2> matrix(boost::extents[f_matrix.shape()[0]][f_matrix.shape()[1]]);
+  multi_array<std::pair<T,bool>,2> f_matrix = m.template matrix<T,I>(basis1,p);
+  multi_array<T,2> matrix(boost::extents[f_matrix.shape()[0]][f_matrix.shape()[1]]);
 
   for (std::size_t i=0;i<f_matrix.shape()[0];++i)
     for (std::size_t j=0;j<f_matrix.shape()[1];++j)
@@ -163,7 +163,7 @@ expression::Expression<T> SiteOperatorSplitter<I,T>::partial_evaluate_function(c
 }
 
 
-template <class T, class I> boost::multi_array<std::pair<T,bool>,2>
+template <class T, class I> multi_array<std::pair<T,bool>,2>
 SiteOperator::matrix(const SiteBasisDescriptor<I>& b,  const Parameters& p) const
 {
   typedef typename expression_value_type_traits<T>::value_type value_type;
@@ -172,7 +172,7 @@ SiteOperator::matrix(const SiteBasisDescriptor<I>& b,  const Parameters& p) cons
   Parameters parms(p);
   parms.copy_undefined(basis.get_parameters());
   std::size_t dim=basis.num_states();
-  boost::multi_array<std::pair<T,bool>,2> mat(boost::extents[dim][dim]);
+  multi_array<std::pair<T,bool>,2> mat(boost::extents[dim][dim]);
   // parse expression and store it as sum of terms
   expression::Expression<value_type> ex(term());
   ex.flatten();

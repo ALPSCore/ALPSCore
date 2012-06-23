@@ -116,7 +116,7 @@ public:
   void substitute_operators(const ModelLibrary& m, const Parameters& p=Parameters());
 
   template <class T, class I>
-  boost::multi_array<std::pair<T,bool>,4> matrix(const SiteBasisDescriptor<I>&, const SiteBasisDescriptor<I>&, const Parameters& =Parameters()) const;
+  multi_array<std::pair<T,bool>,4> matrix(const SiteBasisDescriptor<I>&, const SiteBasisDescriptor<I>&, const Parameters& =Parameters()) const;
 
   template <class T, class I>
   std::vector<boost::tuple<expression::Term<T>,SiteOperator,SiteOperator> > templated_split(SiteBasisDescriptor<I> const&, SiteBasisDescriptor<I> const&, const Parameters& = Parameters()) const;
@@ -166,16 +166,16 @@ expression::Expression<T> BondOperatorSplitter<I,T>::partial_evaluate_function(c
 
 
 template <class I, class T>
-boost::multi_array<std::pair<T,bool>,4> get_fermionic_matrix(T,const BondOperator& m, const SiteBasisDescriptor<I>& basis1, const SiteBasisDescriptor<I>& basis2, const Parameters& p=Parameters())
+multi_array<std::pair<T,bool>,4> get_fermionic_matrix(T,const BondOperator& m, const SiteBasisDescriptor<I>& basis1, const SiteBasisDescriptor<I>& basis2, const Parameters& p=Parameters())
 {
   return m.template matrix<T,I>(basis1,basis2,p);
 }
 
 template <class T, class I>
-boost::multi_array<T,4> get_matrix(T,const BondOperator& m, const SiteBasisDescriptor<I>& basis1, const SiteBasisDescriptor<I>& basis2, const Parameters& p=Parameters())
+multi_array<T,4> get_matrix(T,const BondOperator& m, const SiteBasisDescriptor<I>& basis1, const SiteBasisDescriptor<I>& basis2, const Parameters& p=Parameters())
 {
-  boost::multi_array<std::pair<T,bool>,4> f_matrix = m.template matrix<T,I>(basis1,basis2,p);
-  boost::multi_array<T,4> matrix(boost::extents[f_matrix.shape()[0]][f_matrix.shape()[1]][f_matrix.shape()[2]][f_matrix.shape()[3]]);
+  multi_array<std::pair<T,bool>,4> f_matrix = m.template matrix<T,I>(basis1,basis2,p);
+  multi_array<T,4> matrix(boost::extents[f_matrix.shape()[0]][f_matrix.shape()[1]][f_matrix.shape()[2]][f_matrix.shape()[3]]);
   for (unsigned int i=0;i<f_matrix.shape()[0];++i)
     for (unsigned int j=0;j<f_matrix.shape()[1];++j)
       for (unsigned int k=0;k<f_matrix.shape()[2];++k)
@@ -187,7 +187,7 @@ boost::multi_array<T,4> get_matrix(T,const BondOperator& m, const SiteBasisDescr
   return matrix;
 }
 
-template <class T, class I> boost::multi_array<std::pair<T,bool>,4>
+template <class T, class I> multi_array<std::pair<T,bool>,4>
 BondOperator::matrix(const SiteBasisDescriptor<I>& b1,
                               const SiteBasisDescriptor<I>& b2,
                               const Parameters& p) const
@@ -203,7 +203,7 @@ BondOperator::matrix(const SiteBasisDescriptor<I>& b1,
   parms.copy_undefined(basis2.get_parameters());
   std::size_t dim1=basis1.num_states();
   std::size_t dim2=basis2.num_states();
-  boost::multi_array<std::pair<T,bool>,4> mat(boost::extents[dim1][dim2][dim1][dim2]);
+  multi_array<std::pair<T,bool>,4> mat(boost::extents[dim1][dim2][dim1][dim2]);
   // parse expression and store it as sum of terms
   expression::Expression<value_type> ex(term());
   ex.flatten();

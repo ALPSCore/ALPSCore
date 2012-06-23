@@ -126,11 +126,11 @@ void bloch_basis_states<I,S,SS>::build(const translation_type& trans, const std:
   // AML/AH: prepare a list of partial maxima and minima for each
   // constraint
   //
-  boost::multi_array<half_integer<J>,2> local_max(boost::extents[constraints.size()][idx.size()]);
-  boost::multi_array<half_integer<J>,2> local_min(boost::extents[constraints.size()][idx.size()]);
+  multi_array<half_integer<J>,2> local_max(boost::extents[constraints.size()][idx.size()]);
+  multi_array<half_integer<J>,2> local_min(boost::extents[constraints.size()][idx.size()]);
   
-  boost::multi_array<half_integer<J>,2> max_partial_qn_value(boost::extents[constraints.size()][idx.size()-1]);
-  boost::multi_array<half_integer<J>,2>    min_partial_qn_value(boost::extents[constraints.size()][idx.size()-1]);
+  multi_array<half_integer<J>,2> max_partial_qn_value(boost::extents[constraints.size()][idx.size()-1]);
+  multi_array<half_integer<J>,2>    min_partial_qn_value(boost::extents[constraints.size()][idx.size()-1]);
   
   for (std::size_t ic=0;ic<constraints.size();++ic) {
       for(std::size_t is=0;is<idx.size();++is) {

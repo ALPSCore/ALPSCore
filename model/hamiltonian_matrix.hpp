@@ -38,9 +38,9 @@
 #include <alps/numeric/conj.hpp>
 #include <alps/numeric/is_nonzero.hpp>
 #include <alps/type_traits/is_symbolic.hpp>
+#include <alps/multi_array.hpp>
 
 #include <boost/numeric/ublas/vector.hpp>
-#include <boost/multi_array.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/matrix_sparse.hpp>
 #include <boost/numeric/ublas/vector.hpp>
@@ -187,9 +187,9 @@ public:
     apply_operator(op,s1,s2,v,v);
   }
 
-  boost::multi_array<value_type,2> local_matrix(const SiteOperator& op, site_descriptor s) const;
-  boost::multi_array<std::pair<value_type,bool>,4> local_matrix(const BondOperator& op, const bond_descriptor& b) const;
-  boost::multi_array<std::pair<value_type,bool>,4> local_matrix(const BondOperator& op, const site_descriptor& s1, const site_descriptor& s2) const;
+  multi_array<value_type,2> local_matrix(const SiteOperator& op, site_descriptor s) const;
+  multi_array<std::pair<value_type,bool>,4> local_matrix(const BondOperator& op, const bond_descriptor& b) const;
+  multi_array<std::pair<value_type,bool>,4> local_matrix(const BondOperator& op, const site_descriptor& s1, const site_descriptor& s2) const;
 
   template <class V, class W> 
   void apply_operator(const std::string& name, bond_descriptor b, const V& x, W& y) const
@@ -233,7 +233,7 @@ hamiltonian_matrix<M,G>::hamiltonian_matrix(Parameters const& p)
 
 
 template <class M, class G>
-boost::multi_array<typename hamiltonian_matrix<M,G>::value_type,2> hamiltonian_matrix<M,G>::local_matrix(const SiteOperator& op, site_descriptor s) const
+multi_array<typename hamiltonian_matrix<M,G>::value_type,2> hamiltonian_matrix<M,G>::local_matrix(const SiteOperator& op, site_descriptor s) const
 {
   Parameters p(parms);
   if (graph_.inhomogeneous_sites()) {
@@ -244,7 +244,7 @@ boost::multi_array<typename hamiltonian_matrix<M,G>::value_type,2> hamiltonian_m
 }
 
 template <class M, class G>
-boost::multi_array<std::pair<typename hamiltonian_matrix<M,G>::value_type,bool>,4> hamiltonian_matrix<M,G>::local_matrix(const BondOperator& op, const bond_descriptor& b) const
+multi_array<std::pair<typename hamiltonian_matrix<M,G>::value_type,bool>,4> hamiltonian_matrix<M,G>::local_matrix(const BondOperator& op, const bond_descriptor& b) const
 {
   unsigned int stype1 = graph_.site_type(graph_.source(b));
   unsigned int stype2 = graph_.site_type(graph_.target(b));
@@ -258,7 +258,7 @@ boost::multi_array<std::pair<typename hamiltonian_matrix<M,G>::value_type,bool>,
 }
 
 template <class M, class G>
-boost::multi_array<std::pair<typename hamiltonian_matrix<M,G>::value_type,bool>,4> hamiltonian_matrix<M,G>::local_matrix(const BondOperator& op, const site_descriptor& s1, const site_descriptor& s2) const
+multi_array<std::pair<typename hamiltonian_matrix<M,G>::value_type,bool>,4> hamiltonian_matrix<M,G>::local_matrix(const BondOperator& op, const site_descriptor& s1, const site_descriptor& s2) const
 {
   unsigned int stype1 = graph_.site_type(s1);
   unsigned int stype2 = graph_.site_type(s2);
@@ -269,7 +269,7 @@ boost::multi_array<std::pair<typename hamiltonian_matrix<M,G>::value_type,bool>,
 template <class M, class G> template <class STATES, class V, class W>
 void hamiltonian_matrix<M,G>::apply_operator(const STATES& states, const SiteOperator& op, site_descriptor s, const V& x, W& y) const
 {
-  boost::multi_array<value_type,2> mat = local_matrix(op,s);
+  multi_array<value_type,2> mat = local_matrix(op,s);
   for (unsigned int i=0;i<dimension();++i) {           // loop basis states
     state_type state=states[i];               // get source state
     int is=state[s];                          // get site basis index

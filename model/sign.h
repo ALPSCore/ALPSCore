@@ -303,7 +303,7 @@ bool has_sign_problem(const HamiltonianDescriptor<I>& ham,
     int stype2 = lattice.site_type(lattice.target(*it));
     if (bond_sign.find(boost::make_tuple(btype,stype1,stype2)) ==
         bond_sign.end()) {
-      boost::multi_array<double,4> mat =
+      multi_array<double,4> mat =
         get_matrix(0.,ham.bond_term(btype),ham.basis().site_basis(stype1),
                    ham.basis().site_basis(stype2),p);
       int dim1 = mat.shape()[0];
@@ -339,7 +339,7 @@ bool has_sign_problem(const HamiltonianDescriptor<I>& ham,
        ++it) {
     int stype = lattice.site_type(*it);
     if (site_sign.find(stype) == site_sign.end()) {
-      boost::multi_array<double,2> mat =
+      multi_array<double,2> mat =
         get_matrix(0., ham.site_term(stype), ham.basis().site_basis(stype), parms);
       int dim = mat.shape()[0];
       int sign = 0;
