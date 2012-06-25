@@ -29,7 +29,7 @@
 #ifndef ALPS_MULTI_ARRAY_SERIALIZATION_HPP
 #define ALPS_MULTI_ARRAY_SERIALIZATION_HPP
 
-#include <boost/mpi.hpp>
+#include <boost/serialization/serialization.hpp>
 #include <alps/multi_array/multi_array.hpp>
 
 namespace alps{
