@@ -61,86 +61,6 @@ namespace alps {
 namespace alps {
     namespace numeric {
         
-        namespace detail {
-            template<class InputIterator, class OutputIterator, class T>
-            void iterator_axpy(InputIterator in1, InputIterator in2,
-                               OutputIterator out1, T val)
-            {
-                std::transform(in1, in2, out1, out1, boost::lambda::_1*val+boost::lambda::_2);
-            }
-
-            inline void iterator_axpy(double const * in1, double const * in2,
-                                      double * out1, double val)
-            {
-                fortran_int_t one = 1, diff = in2-in1;
-                daxpy_(&diff, &val, in1, &one, out1, &one);
-            }
-
-            inline void iterator_axpy(std::complex<double> const * in1, std::complex<double> const * in2,
-                                      std::complex<double> * out1, double val)
-            {
-                throw std::runtime_error("Not implemented.");
-            }
-        }
-        
-        template <typename T>
-        void reshape_r2l(matrix<T>& left, const matrix<T>& right,
-                         size_t left_offset, size_t right_offset, 
-                         size_t sdim, size_t ldim, size_t rdim)
-        {
-             for (size_t ss = 0; ss < sdim; ++ss)
-                 for (size_t rr = 0; rr < rdim; ++rr)
-                    for(size_t ll = 0; ll < ldim; ++ll)
-                          left(left_offset + ss*ldim+ll, rr) = 
-                          right(ll, right_offset + ss*rdim+rr);
-                     // memcpy(&left(left_offset + ss*ldim, rr),
-                     //        &right(0, right_offset + ss*rdim+rr),
-                     //        sizeof(T) * ldim);
-        }
-        
-        template <typename T>
-        void reshape_l2r(const matrix<T>& left, matrix<T>& right,
-                         size_t left_offset, size_t right_offset, 
-                         size_t sdim, size_t ldim, size_t rdim)
-        {
-             for (size_t ss = 0; ss < sdim; ++ss)
-                 for (size_t rr = 0; rr < rdim; ++rr)
-                     for (size_t ll = 0; ll < ldim; ++ll)
-                         right(ll, right_offset + ss*rdim+rr) = left(left_offset + ss*ldim+ll, rr);
-        }
-        
-        template <typename T>
-        void lb_tensor_mpo(matrix<T>& out, const matrix<T>& in, const matrix<T>& alfa,
-                           size_t out_offset, size_t in_offset, 
-                           size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
-        {
-            for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
-                for(size_t ss2 = 0; ss2 < sdim2; ++ss2) {
-                    T alfa_t = alfa(ss1, ss2);
-                    for(size_t rr = 0; rr < rdim; ++rr) {
-                        detail::iterator_axpy(&in(in_offset + ss1*ldim, rr),
-                                      &in(in_offset + ss1*ldim, rr) + ldim, // bugbug
-                                      &out(out_offset + ss2*ldim, rr),
-                                      alfa_t);
-                    }
-                }
-        }
-        
-        template <typename T>
-        void rb_tensor_mpo(matrix<T>& out, const matrix<T>& in, const matrix<T>& alfa,
-                           size_t out_offset, size_t in_offset, 
-                           size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
-        {
-            for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
-                for(size_t ss2 = 0; ss2 < sdim2; ++ss2) {
-                    T alfa_t = alfa(ss1, ss2);
-                    for(size_t rr = 0; rr < rdim; ++rr)
-                        for(size_t ll = 0; ll < ldim; ++ll) {
-                            out(ll, out_offset + ss2*rdim+rr) += in(ll, in_offset + ss1*rdim+rr) * alfa_t;
-                        }
-                }
-        }
-         
         template <typename T>
         void norm(const matrix<T>& M, typename matrix<T>::value_type& ret){
             for (std::size_t c = 0; c < num_cols(M); ++c)
@@ -155,23 +75,6 @@ namespace alps {
                     ret += alps::numeric::conj(M1(r,c)) * M2(r,c);
         }
         
-        template <typename T>
-        void bond_renyi_entropies(const diagonal_matrix<T> & M, typename associated_real_vector<matrix<T> >::type& sv){
-            for (typename diagonal_matrix<T>::const_element_iterator it = elements(M).first;
-                 it != elements(M).second; ++it)
-            {
-                double a = std::abs(*it);
-                if (a > 1e-10)
-                    sv.push_back(a*a);
-            }
-        }
-        
-        template <typename T>
-        void left_right_boundary_init(matrix<T> & M){
-//            memset((void*)&M(0,0),1,num_rows(M)*num_cols(M)*sizeof(T));
-            for_each(elements(M).first,elements(M).second, boost::lambda::_1 = 1); // boost::lambda ^^' because iterable matrix concept 
-        }
-
         namespace detail {
             template<typename T> struct sv_type { typedef T type; };
             template<typename T>
