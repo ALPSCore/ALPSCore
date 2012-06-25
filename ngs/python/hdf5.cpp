@@ -67,6 +67,8 @@ namespace alps {
             }
         };
 
+        // TODO: move to hdf5/<name>.hpp
+        // make python objects serializable
         class hdf5_archive_export : public alps::hdf5::archive {
             using alps::hdf5::archive::extent;
             using alps::hdf5::archive::is_datatype;
@@ -284,10 +286,10 @@ namespace alps {
                     std::vector<std::size_t> first_extent, next_extent;
                     if (first_dtype == "list")
                         boost::tie(first_homogenious, first_extent) = py_save_list_extent(boost::python::extract<boost::python::list>(data[0]));
-                    // else if (first_dtype == "numpy.ndarray") {
-                    //     PyObject* arr = boost::python::object(data[0]).ptr();
-                    //     first_extent = std::vector<std::size_t>(PyArray_DIMS(arr), PyArray_DIMS(arr) + PyArray_NDIM(arr));
-                    // }
+                    else if (first_dtype == "numpy.ndarray") {
+                        PyObject* arr = boost::python::object(data[0]).ptr();
+                        first_extent = std::vector<std::size_t>(PyArray_DIMS(arr), PyArray_DIMS(arr) + PyArray_NDIM(arr));
+                    }
                     if (!first_homogenious)
                         return std::make_pair(false, std::vector<std::size_t>());
                     for(boost::python::ssize_t i = 0; i < size; ++i) {
@@ -307,6 +309,8 @@ namespace alps {
                     std::vector<std::size_t> extent(1, size);
                     if (first_dtype == "list")
                         copy(first_extent.begin(), first_extent.end(), back_inserter(extent));
+                    else if (first_dtype == "numpy.ndarray")
+                        copy(first_extent.begin(), first_extent.end(), back_inserter(extent));
                     return std::make_pair(true, extent);
                 }
                 void py_save_list_save(
@@ -324,12 +328,13 @@ namespace alps {
                         offset.back() = i;
                         boost::python::object item = data[i];
                         std::string dtype = item.ptr()->ob_type->tp_name;
-                        if (dtype == "list") py_save_list_save(path, boost::python::extract<boost::python::list>(item), size, chunk, offset);
+                        if (dtype == "list") py_save_list_save(path, boost::python::extract<boost::python::list>(item)(), size, chunk, offset);
                         else if (dtype == "int") save(ar, path, boost::python::extract<int>(item)(), size, chunk, offset);
                         else if (dtype == "long") save(ar, path, boost::python::extract<long>(item)(), size, chunk, offset);
                         else if (dtype == "float") save(ar, path, boost::python::extract<double>(item)(), size, chunk, offset);
                         else if (dtype == "complex") save(ar, path, boost::python::extract<std::complex<double> >(item)(), size, chunk, offset);
                         else if (dtype == "str") save(ar, path, boost::python::extract<std::string>(item)(), size, chunk, offset);
+                        else if (dtype == "numpy.ndarray") py_save_numpy(path, boost::python::extract<boost::python::numeric::array>(item)(), size, chunk, offset);
                         else if (dtype == "numpy.str") save(ar, path, boost::python::call_method<std::string>(item.ptr(), "__str__"), size, chunk, offset);
                         else if (dtype == "numpy.bool") save(ar, path, boost::python::call_method<bool>(item.ptr(), "__bool__"), size, chunk, offset);
                         else if (dtype == "numpy.int8") save(ar, path, static_cast<boost::int8_t>(boost::python::call_method<long>(item.ptr(), "__long__")), size, chunk, offset);
@@ -381,22 +386,28 @@ namespace alps {
                             , vit.attr("next")()
                         );
                 }
-                void py_save_numpy(std::string const & path, boost::python::numeric::array const & data) {
+                void py_save_numpy(
+                      std::string const & path
+                    , boost::python::numeric::array data
+                    , std::vector<std::size_t> size = std::vector<std::size_t>()
+                    , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+                    , std::vector<std::size_t> offset = std::vector<std::size_t>()
+                ) {
                     if (!PyArray_Check(data.ptr()))
                         throw std::runtime_error("invalid numpy data" + ALPS_STACKTRACE);
                     else if (!PyArray_ISCONTIGUOUS(data.ptr()))
                         throw std::runtime_error("numpy array is not continous" + ALPS_STACKTRACE);
                     else if (!PyArray_ISNOTSWAPPED(data.ptr()))
                         throw std::runtime_error("numpy array is not native" + ALPS_STACKTRACE);
-                    #define NGS_PYTHON_HDF5_CHECK_NUMPY(T, N)                                                                                        \
-                        else if (PyArray_DESCR(data.ptr())->type_num == N)                                                                            \
-                            static_cast<alps::hdf5::archive &>(*this) << make_pvp(                                                                    \
-                                  path                                                                                                                \
-                                , std::make_pair(                                                                                                    \
-                                      static_cast< T const *>(PyArray_DATA(data.ptr()))                                                                \
-                                    , std::vector<std::size_t>(PyArray_DIMS(data.ptr()), PyArray_DIMS(data.ptr()) + PyArray_NDIM(data.ptr()))        \
-                                )                                                                                                                    \
-                            );
+                    std::vector<std::size_t> extent(PyArray_DIMS(data.ptr()), PyArray_DIMS(data.ptr()) + PyArray_NDIM(data.ptr()));
+                    std::copy(extent.begin(), extent.end(), std::back_inserter(size));
+                    std::copy(extent.begin(), extent.end(), std::back_inserter(chunk));
+                    std::fill_n(std::back_inserter(offset), extent.size(), 0);
+                    alps::hdf5::archive & ar = static_cast<alps::hdf5::archive &>(*this);
+                    if (false);
+                    #define NGS_PYTHON_HDF5_CHECK_NUMPY(T, N)                                                                                       \
+                        else if (PyArray_DESCR(data.ptr())->type_num == N)                                                                          \
+                            save(ar, path, *static_cast< T const *>(PyArray_DATA(data.ptr())), size, chunk, offset);
                     NGS_PYTHON_HDF5_CHECK_NUMPY(bool,PyArray_BOOL)
                     NGS_PYTHON_HDF5_CHECK_NUMPY(char, PyArray_CHAR)
                     NGS_PYTHON_HDF5_CHECK_NUMPY(unsigned char, PyArray_UBYTE)
