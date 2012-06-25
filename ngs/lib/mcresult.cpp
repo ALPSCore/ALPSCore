@@ -67,14 +67,16 @@ namespace alps {
         return *this;
     }
     
-    #define ALPS_MCRESULT_TPL_IMPL(T)                                                                                     \
+    #define ALPS_MCRESULT_TPL_IMPL(T)                                                                                               \
         template<> ALPS_DECL bool mcresult::is_type< T >() const { return impl_->is_type< T >(); }                                  \
         template<> ALPS_DECL std::vector< T > const & mcresult::bins< T >() const { return impl_->bins< T >(); }                    \
         template<> ALPS_DECL T const & mcresult::mean< T >() const { return impl_->mean< T >(); }                                   \
         template<> ALPS_DECL T const & mcresult::error< T >() const { return impl_->error< T >(); }                                 \
         template<> ALPS_DECL T const & mcresult::variance< T >() const { return impl_->variance< T >(); }                           \
         template<> ALPS_DECL T const & mcresult::tau< T >() const { return impl_->tau< T >(); }                                     \
-        template<> ALPS_DECL T const & mcresult::covariance< T >() const { return impl_->error< T >(); }                            \
+        template<> ALPS_DECL covariance_type<T>::type mcresult::covariance< T >(mcresult const & arg) const {                       \
+            return impl_->covariance< T >(*arg.impl_);                                                                              \
+        }                                                                                                                           \
         template<> ALPS_DECL mcresult & mcresult::operator+=< T >( T const & rhs) { impl_->add_assign(rhs); return *this; }         \
         template<> ALPS_DECL mcresult & mcresult::operator-=< T >( T const & rhs) { impl_->sub_assign(rhs); return *this; }         \
         template<> ALPS_DECL mcresult & mcresult::operator*=< T >( T const & rhs) { impl_->mul_assign(rhs); return *this; }         \

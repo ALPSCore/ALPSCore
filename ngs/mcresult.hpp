@@ -33,6 +33,7 @@
 #include <alps/ngs/mcobservable.hpp>
 
 #include <alps/alea/observable_fwd.hpp>
+#include <alps/type_traits/covariance_type.hpp>
 
 #ifdef ALPS_HAVE_MPI
     #include <boost/mpi.hpp>
@@ -161,7 +162,7 @@ namespace alps {
             bool has_tau() const;
             template <typename T> T const & tau() const;
 
-            template <typename T> T const & covariance() const;
+            template <typename T> typename covariance_type<T>::type covariance(mcresult const &) const;
 
             #define ALPS_NGS_MCRESULT_ASSIGN_OPERATORS(OP)                                       \
                 template <typename T> mcresult & OP (T const & rhs);                             \

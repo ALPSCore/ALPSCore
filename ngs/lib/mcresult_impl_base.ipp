@@ -85,9 +85,11 @@ namespace alps {
                     return dynamic_cast<mcresult_impl_derived<mcresult_impl_base, T> const &>(*this).tau();
                 }
 
-//                template <typename T> T const & covariance() const {
-//                    return dynamic_cast<mcresult_impl_derived<mcresult_impl_base, T> const &>(*this).covariance();
-//                }
+                template <typename T> typename covariance_type<T>::type covariance(mcresult_impl_base const & arg) const {
+                    return dynamic_cast<mcresult_impl_derived<mcresult_impl_base, T> const &>(*this).covariance(
+                        dynamic_cast<mcresult_impl_derived<mcresult_impl_base, T> const &>(arg)
+                    );
+                }
                 
                 #define ALPS_NGS_MCRESULT_IMPL_BASE_OPERATOR(NAME)                                                                             \
                     template <typename T> typename boost::disable_if<                                                                          \

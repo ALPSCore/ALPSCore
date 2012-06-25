@@ -322,21 +322,26 @@ namespace alps {
                 }
 
                 covariance_type covariance(mcdata<T> const & obs) const {
+                    using boost::numeric::operators::operator/;
+                    using boost::numeric::operators::operator+;
                     fill_jack();
                     obs.fill_jack();
                     if (jack_.size() && obs.jack_.size()) {
-                        result_type unbiased_mean1_;
-                        result_type unbiased_mean2_;
-                        resize_same_as(unbiased_mean1_, jack_[0]);
-                        resize_same_as(unbiased_mean2_, obs.jack_[0]);
-                        if (jack_.size() != obs.jack_.size()) 
+                        if (jack_.size() != obs.jack_.size())
                             boost::throw_exception(std::runtime_error("unequal number of bins in calculation of covariance matrix"));
-                        unbiased_mean1_ = 0;
-                        unbiased_mean2_ = 0;
-                        unbiased_mean1_ = std::accumulate(jack_.begin()+1, jack_.end(), unbiased_mean1_);
-                        unbiased_mean2_ = std::accumulate(obs.jack_.begin()+1, obs.jack_.end(), unbiased_mean2_);
-                        unbiased_mean1_ /= count_type(bin_number());
-                        unbiased_mean2_ /= count_type(obs.bin_number());
+
+                        result_type unbiased_mean1_;
+                        resize_same_as(unbiased_mean1_, jack_[0]);
+                        set_zero(unbiased_mean1_);
+                        for (typename std::vector<result_type>::const_iterator it = jack_.begin() + 1; it != jack_.end(); ++it)
+                            unbiased_mean1_ = unbiased_mean1_ + *it / count_type(bin_number());
+                            
+                        result_type unbiased_mean2_;
+                        resize_same_as(unbiased_mean2_, obs.jack_[0]);
+                        set_zero(unbiased_mean2_);
+                        for (typename std::vector<result_type>::const_iterator it = obs.jack_.begin() + 1; it != obs.jack_.end(); ++it)
+                            unbiased_mean2_ = unbiased_mean2_ + *it / count_type(obs.bin_number());
+
                         using alps::numeric::outer_product;
                         covariance_type cov = outer_product(jack_[1],obs.jack_[1]);
                         for (uint32_t i = 1; i < bin_number(); ++i)
