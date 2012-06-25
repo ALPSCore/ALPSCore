@@ -142,14 +142,14 @@ namespace alps {
         }
          
         template <typename T>
-        void scalar_norm(const matrix<T>& M, typename matrix<T>::value_type& ret){
+        void norm(const matrix<T>& M, typename matrix<T>::value_type& ret){
             for (std::size_t c = 0; c < num_cols(M); ++c)
                 for (std::size_t r = 0; r < num_rows(M); ++r)
                     ret += alps::numeric::conj(M(r,c)) * M(r,c);
         }
         
         template <typename T>
-        void scalar_norm(matrix<T> & M1, matrix<T> & M2, typename matrix<T>::value_type & ret){ // not const due to nullcut
+        void overlap(matrix<T> & M1, matrix<T> & M2, typename matrix<T>::value_type & ret){ // not const due to nullcut
             for (std::size_t c = 0; c < num_cols(M1); ++c)
                 for (std::size_t r = 0; r < num_rows(M1); ++r)
                     ret += alps::numeric::conj(M1(r,c)) * M2(r,c);
