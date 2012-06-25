@@ -229,19 +229,31 @@ namespace alps {
     }
     
     template<typename T>
-    diagonal_matrix<T> sqrt(diagonal_matrix<T> m)
+    void sqrt_inplace(diagonal_matrix<T> & m)
     {
         std::transform(m.elements().first, m.elements().second, m.elements().first, detail::functor_sqrt());
+    }
+    
+    template<typename T>
+    diagonal_matrix<T> sqrt(diagonal_matrix<T> m)
+    {
+        sqrt_inplace(m);
         return m;
     }
-
+    
+    template<typename T>
+    void exp_inplace(diagonal_matrix<T> & m)
+    {
+        std::transform(m.elements().first, m.elements().second, m.elements().first, detail::functor_exp());
+    }
+    
     template<typename T>
     diagonal_matrix<T> exp(diagonal_matrix<T> m)
     {
-        std::transform(m.elements().first, m.elements().second, m.elements().first, detail::functor_exp());
+        exp_inplace(m);
         return m;
     }
-
+    
     template<typename T>
     std::ostream& operator<<(std::ostream& os, diagonal_matrix<T> const & m)
     {
