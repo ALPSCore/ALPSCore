@@ -38,22 +38,50 @@ namespace alps{
   {
     boost::array<typename boost::multi_array<T,D>::index, D> index;
     T* rE = const_cast< T* >(a.data());
+
+    for(std::size_t dir = 0; dir < D; dir++) out << "{";
+      
     for(int i = 0; i < a.num_elements(); i++)
       {
-	for(std::size_t dir = 0; dir < D; dir++ )
-	  index[dir] = (rE - a.origin()) / a.strides()[dir] % a.shape()[dir] +  a.index_bases()[dir];
+  	for(std::size_t dir = 0; dir < D; dir++ )
+  	  index[dir] = (rE - a.origin()) / a.strides()[dir] % a.shape()[dir] +  a.index_bases()[dir];
 
-	std::cout << "(";
+	int M = 0;
+	if(index[D-1] == a.shape()[D-1]-1){
+	  M = 1;
+	  for(std::size_t dir = D-1; dir > 0; --dir){
+	    if(index[dir-1] == a.shape()[dir-1]-1) M++;
+	    else break;
+	  }
+	}
 
-	for(int d = 0; d < D; ++d)
-	  std::cout << index[d] << " ";
+	out << a(index) << ", ";
 
-	std::cout << "\b) --> ";
+	if(M > 0){
 
-	std::cout << a(index) << std::endl;
+	  out << "\b\b";
 
-	++rE;
+	  for(int m = 0; m < M; ++m)
+	    out << "}";
+	
+	  if(M < D){
+	    
+	    if(M > 1 || M == D - 1)
+	      out << ",\n";
+	    else
+	      out << ", ";  
+
+	    for(int m = 0; m < M; ++m)
+	      out << "{";  
+
+	  }
+	}
+
+  	++rE;
       }
+
+    out << ";";
+
     return out;
   }
 
