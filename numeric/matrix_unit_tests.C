@@ -766,4 +766,20 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrix_matrix_multiply_test, T, test_types)
         }
 }
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( conjugate, T, test_types )
+{
+    using alps::numeric::conj;
+    matrix<T> a(10,20);
+    fill_matrix_with_numbers(a);
+
+    matrix<T> b(a);
+    conj_inplace(a);
+    for(unsigned int i=0; i<num_rows(a); ++i)
+        for(unsigned int j=0; j<num_cols(a); ++j)
+            BOOST_CHECK_EQUAL(a(i,j),conj(b(i,j)));
+
+    matrix<T> c(conj(a));
+
+    BOOST_CHECK_EQUAL(c,b);
+}
 
