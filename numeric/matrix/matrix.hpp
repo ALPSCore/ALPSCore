@@ -261,8 +261,6 @@ namespace alps {
         void swap_rows(size_type i1, size_type i2);
 
         void swap_cols(size_type j1, size_type j2);
-
-        void inplace_conjugate();
         
         void write_xml(oxstream& ox) const;
 		

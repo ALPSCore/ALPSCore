@@ -422,19 +422,6 @@ namespace alps {
         std::swap_ranges(range.first, range.second, column(j2).first );
     }
 
-   template <typename T, typename MemoryBlock>
-   void matrix<T, MemoryBlock>::inplace_conjugate()
-   {
-       using alps::numeric::conj;
-       // Do the operation column by column
-       for(size_type j=0; j < this->size2_; ++j)
-       {
-         std::pair<column_element_iterator,column_element_iterator> range(column(j));
-         std::transform(range.first, range.second,
-                  range.first, conj(boost::lambda::_1));
-       }
-   }
-
     template <typename T, typename MemoryBlock>
     inline bool matrix<T, MemoryBlock>::automatic_reserve(size_type size1, size_type size2, T const& init_value)
     {

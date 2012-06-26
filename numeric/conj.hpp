@@ -4,8 +4,9 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1999-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
-*                            Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1999-2012 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+*                            Synge Todo <wistaria@comp-phys.org>,
+*                            Andreas Hehn <hehn@phys.ethz.ch>                   
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -31,26 +32,35 @@
 #ifndef ALPS_NUMERIC_CONJ_HPP
 #define ALPS_NUMERIC_CONJ_HPP
 
-#include <algorithm>
 #include <complex>
-#include <vector>
+#include <boost/type_traits/is_fundamental.hpp>
+#include <boost/static_assert.hpp>
 
 namespace alps { namespace numeric {
 
 
 template <class T>
-T conj (T x) 
+T conj (T x)
 { 
+  BOOST_STATIC_ASSERT((boost::is_fundamental<T>::value));
   return x;
 }
 
+// if std::complex<T> is used std::conj will be called by argument dependent look-up
+
 template <class T>
-std::complex<T> conj (std::complex<T> x) 
-{ 
-  return std::conj(x);
+void conj_inplace(T& t)
+{
+  BOOST_STATIC_ASSERT((boost::is_fundamental<T>::value));
 }
 
-
+template <class T>
+void conj_inplace(std::complex<T>& x)
+{
+  BOOST_STATIC_ASSERT((boost::is_fundamental<T>::value));
+  using std::conj;
+  x = conj(x);
+}
 
 } }  // end namespace alps::numeric
 

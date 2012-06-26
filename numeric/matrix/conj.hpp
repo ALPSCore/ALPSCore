@@ -25,76 +25,41 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_MATRIX_MATRIX_ALGORITHMS_HPP
-#define ALPS_MATRIX_MATRIX_ALGORITHMS_HPP
+#ifndef ALPS_MATRIX_CONJ_HPP
+#define ALPS_MATRIX_CONJ_HPP
 
-#include <alps/numeric/matrix/matrix_concept_check.hpp>
-
-#include <boost/numeric/bindings/lapack/driver/gesdd.hpp>
-#include <boost/numeric/bindings/std/vector.hpp>
-
+#include <alps/numeric/conj.hpp>
 
 namespace alps {
-    namespace numeric {   
+namespace numeric {
+/**
+  * Does an conj_inplace on all elements of the matrix
+  */
+template <typename T, typename MemoryBlock>
+void conj_inplace(matrix<T,MemoryBlock>& m)
+{
+    // TODO discuss conj() for matrix may be misleading:
+    //      elementwise conj() <-> adjoint()
+    //
+    using std::for_each;
+    typedef typename matrix<T,MemoryBlock>::column_element_iterator column_element_iterator;
+    for(typename matrix<T,MemoryBlock>::size_type j=0; j < m.num_rows(); ++j)
+       for(std::pair<column_element_iterator,column_element_iterator> range = m.column(j); range.first != range.second; ++range.first)
+           conj_inplace(*range.first);
+}
 
-    template <typename Matrix>
-    Matrix transpose(Matrix const& m) 
-    {
-        
-        BOOST_CONCEPT_ASSERT((alps::numeric::Matrix<Matrix>)); 
-        // TODO: perhaps this could return a proxy object
-        Matrix tmp(num_cols(m), num_rows(m));
-        for(typename Matrix::size_type i=0; i < num_rows(m); ++i){
-            for(typename Matrix::size_type j=0; j < num_cols(m); ++j){
-                tmp(j,i) = m(i,j);
-            }
-        }
-        
-        return tmp;
-    }
+/**
+  * Returns a matrix containing a the complex conjugates of the original matrix.
+  * It does an element-wise conjugation.
+  */
+template <typename T, typename MemoryBlock>
+matrix<T,MemoryBlock> conj(matrix<T,MemoryBlock> m)
+{
+    conj_inplace(m);
+    return m;
+}
 
-    template <typename Matrix>
-    const typename Matrix::value_type trace(Matrix const& m)
-    {
-        BOOST_CONCEPT_ASSERT((alps::numeric::Matrix<Matrix>)); 
-        assert(num_rows(m) == num_cols(m));
-        typename Matrix::value_type tr(m(0,0));
-        for(typename Matrix::size_type i = 1; i<num_rows(m); ++i)
-            tr += m(i,i);
-        return tr;
-    }
-        
-    template<class Matrix>
-    Matrix identity_matrix(typename Matrix::size_type size)
-    {
-        return Matrix::identity_matrix(size);
-    }
- 
-    template<class Matrix>
-    Matrix conjugate(Matrix M)
-    {
-        M.inplace_conjugate();
-        return M;
-    }
+} // end namespace numeric
+} // end namespace alps 
 
-    template<class Matrix> Matrix join(Matrix const & a, Matrix const & b)
-    {
-        Matrix ret(num_rows(a)+num_rows(b), num_cols(a)+num_cols(b));
-        
-        typedef typename Matrix::size_type st;
-        
-        for (st r = 0; r < num_rows(a); ++r)
-            for (st c = 0; c < num_cols(a); ++c)
-                ret(r, c) = a(r, c);
-        
-        for (st r = 0; r < num_rows(b); ++r)
-            for (st c = 0; c < num_cols(b); ++c)
-                ret(r+num_rows(a), c+num_cols(a)) = b(r, c);
-        
-        return ret;
-    }
-
-    } // end namespace numeric
-} // end namespace alps
-
-#endif //ALPS_MATRIX_ALGORITHMS_HPP
+#endif //ALPS_MATRIX_CONJ_HPP
