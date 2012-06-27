@@ -6,6 +6,7 @@
  *                                                                                 *
  * Copyright (C) 2010 - 2012 by Alex Kosenkov <alex.kosenkov@gmail.com>            *
  *                              Andreas Hehn <hehn@phys.ethz.ch>                   *
+ *                              Michele Dolfi <dolfim@phys.ethz.ch>                *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
