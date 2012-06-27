@@ -42,6 +42,7 @@
 #include <boost/lambda/bind.hpp>
 #include <alps/numeric/real.hpp>
 #include <alps/numeric/imag.hpp>
+#include <alps/numeric/conj.hpp>
 
 // forward declaration for nested specialization, be cautious of the namespace
 
@@ -70,7 +71,53 @@ namespace alps {
             
             return tmp;
         }
-    
+
+        template <typename Matrix>
+        void transpose_inplace(Matrix & m) 
+        {
+            
+            BOOST_CONCEPT_ASSERT((alps::numeric::Matrix<Matrix>)); 
+            // TODO: perhaps this could return a proxy object
+            Matrix tmp(num_cols(m), num_rows(m));
+            for(typename Matrix::size_type i=0; i < num_rows(m); ++i){
+                for(typename Matrix::size_type j=0; j < num_cols(m); ++j){
+                    tmp(j,i) = m(i,j);
+                }
+            }
+            swap(tmp, m);
+        }
+
+        template <typename Matrix>
+        Matrix adjoint(Matrix const& m) 
+        {
+            
+            BOOST_CONCEPT_ASSERT((alps::numeric::Matrix<Matrix>)); 
+            // TODO: perhaps this could return a proxy object
+            Matrix tmp(num_cols(m), num_rows(m));
+            for(typename Matrix::size_type i=0; i < num_rows(m); ++i){
+                for(typename Matrix::size_type j=0; j < num_cols(m); ++j){
+                    tmp(j,i) = conj(m(i,j));
+                }
+            }
+            
+            return tmp;
+        }
+
+        template <typename Matrix>
+        void adjoint_inplace(Matrix & m) 
+        {
+            
+            BOOST_CONCEPT_ASSERT((alps::numeric::Matrix<Matrix>)); 
+            // TODO: perhaps this could return a proxy object
+            Matrix tmp(num_cols(m), num_rows(m));
+            for(typename Matrix::size_type i=0; i < num_rows(m); ++i){
+                for(typename Matrix::size_type j=0; j < num_cols(m); ++j){
+                    tmp(j,i) = conj(m(i,j));
+                }
+            }
+            swap(tmp, m);
+        }
+
         template <typename Matrix>
         typename Matrix::value_type trace(Matrix const& m)
         {
@@ -111,14 +158,14 @@ namespace alps {
         void norm(const matrix<T>& M, typename matrix<T>::value_type& ret){
             for (std::size_t c = 0; c < num_cols(M); ++c)
                 for (std::size_t r = 0; r < num_rows(M); ++r)
-                    ret += alps::numeric::conj(M(r,c)) * M(r,c);
+                    ret += conj(M(r,c)) * M(r,c);
         }
         
         template <typename T>
         void overlap(matrix<T> & M1, matrix<T> & M2, typename matrix<T>::value_type & ret){ // not const due to nullcut
             for (std::size_t c = 0; c < num_cols(M1); ++c)
                 for (std::size_t r = 0; r < num_rows(M1); ++r)
-                    ret += alps::numeric::conj(M1(r,c)) * M2(r,c);
+                    ret += conj(M1(r,c)) * M2(r,c);
         }
         
         namespace detail {
@@ -181,7 +228,7 @@ namespace alps {
             typename associated_diagonal_matrix<matrix<T, MemoryBlock> >::type S(Sv);
             S = exp(alpha*S);
             gemm(N, S, tmp);
-            gemm(tmp, conjugate(transpose(N)), M);
+            gemm(tmp, adjoint(N), M);
             
             return M;
         }
@@ -202,7 +249,7 @@ namespace alps {
 #ifndef NDEBUG
             for (int i = 0; i < num_rows(M); ++i)
                 for (int j = 0; j < num_cols(M); ++j)
-                    assert( abs( M(i,j) - alps::numeric::conj(M(j,i)) ) < 1e-10 );
+                    assert( abs( M(i,j) - conj(M(j,i)) ) < 1e-10 );
 #endif
             
             boost::numeric::bindings::lapack::heevd('V', M, evals);
