@@ -36,10 +36,6 @@
 #include <alps/numeric/real.hpp>
 #include <alps/parser/xmlstream.h>
 
-//#include "utils/function_objects.h"
-
-#include <boost/lambda/lambda.hpp>
-#include <boost/typeof/typeof.hpp>
 #include <ostream>
 #include <vector>
 #include <algorithm>
@@ -81,9 +77,9 @@ namespace alps {
         typedef strided_iterator<const matrix,const value_type>
             const_row_element_iterator;                   // Const version of row_element_iterator
         typedef value_type*
-            column_element_iterator;                      // Iterator to iterate through the elements of a columns of the matrix
+            col_element_iterator;                         // Iterator to iterate through the elements of a columns of the matrix
         typedef value_type const*
-            const_column_element_iterator;                // Const version of column_element_iterator       
+            const_col_element_iterator;                   // Const version of col_element_iterator       
         typedef matrix_element_iterator<matrix,value_type>
             element_iterator;                             // Iterator to iterate through all elements of the matrix (REALLY SLOW! USE row_-/column_iterators INSTEAD!)
         typedef matrix_element_iterator<const matrix,const value_type>
@@ -196,19 +192,19 @@ namespace alps {
           * As long as the assignment and copy operation of the T values don't throw an exception,
           * any exception will leave the matrix unchanged.
           * (Assuming the same behaviour of the underlying MemoryBlock. This is true for std::vector.)
-          * @param size1 new number of rows
-          * @param size2 new number of columns
+          * @param rows new number of rows
+          * @param cols new number of columns
           * @param init_value value to which the new elements will be initalized
           */
-        void resize(size_type size1, size_type size2, T const & init_value = T());
+        void resize(size_type rows, size_type cols, T const & init_value = T());
         
         /**
           * Reserves memory for anticipated enlargements of the matrix
-          * @param size1 For how many rows should memory be reserved, value is ignored if it's smaller than the current number of rows
-          * @param size2 For how many columns should memory be reserved, value is ignored if it's smaller than the current number of columns
+          * @param rows For how many rows should memory be reserved, value is ignored if it's smaller than the current number of rows
+          * @param cols For how many columns should memory be reserved, value is ignored if it's smaller than the current number of columns
           * @param init_value i
           */
-        void reserve(size_type size1, size_type size2, T const & init_value = T());
+        void reserve(size_type rows, size_type cols, T const & init_value = T());
 
         std::pair<size_type,size_type> capacity() const;
         
@@ -225,13 +221,13 @@ namespace alps {
         {
             return std::make_pair( const_row_element_iterator(&values_[row],reserved_size1_), const_row_element_iterator(&values_[row+reserved_size1_*size2_], reserved_size1_) );
         }
-        std::pair<column_element_iterator,column_element_iterator> column(size_type col = 0 )
+        std::pair<col_element_iterator,col_element_iterator> col(size_type col = 0 )
         {
-            return std::make_pair( column_element_iterator(&values_[col*reserved_size1_]), column_element_iterator(&values_[col*reserved_size1_+size1_]) );
+            return std::make_pair( col_element_iterator(&values_[col*reserved_size1_]), col_element_iterator(&values_[col*reserved_size1_+size1_]) );
         }
-        std::pair<const_column_element_iterator,const_column_element_iterator> column(size_type col = 0 ) const
+        std::pair<const_col_element_iterator,const_col_element_iterator> col(size_type col = 0 ) const
         {
-            return std::make_pair( const_column_element_iterator(&values_[col*reserved_size1_]), const_column_element_iterator(&values_[col*reserved_size1_+size1_]) );
+            return std::make_pair( const_col_element_iterator(&values_[col*reserved_size1_]), const_col_element_iterator(&values_[col*reserved_size1_+size1_]) );
         }
         std::pair<element_iterator,element_iterator> elements()
         {

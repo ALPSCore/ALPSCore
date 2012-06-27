@@ -42,9 +42,9 @@ void conj_inplace(matrix<T,MemoryBlock>& m)
     //      elementwise conj() <-> adjoint()
     //
     using std::for_each;
-    typedef typename matrix<T,MemoryBlock>::column_element_iterator column_element_iterator;
+    typedef typename matrix<T,MemoryBlock>::col_element_iterator col_element_iterator;
     for(typename matrix<T,MemoryBlock>::size_type j=0; j < m.num_rows(); ++j)
-       for(std::pair<column_element_iterator,column_element_iterator> range = m.column(j); range.first != range.second; ++range.first)
+       for(std::pair<col_element_iterator,col_element_iterator> range = m.col(j); range.first != range.second; ++range.first)
            conj_inplace(*range.first);
 }
 

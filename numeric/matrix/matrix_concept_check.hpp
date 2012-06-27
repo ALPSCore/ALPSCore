@@ -49,10 +49,10 @@ struct Matrix : boost::Assignable<X>
         BOOST_CONCEPT_ASSERT((boost::InputIterator<row_element_iterator>));
         typedef typename X::const_row_element_iterator          const_row_element_iterator;
         BOOST_CONCEPT_ASSERT((boost::InputIterator<const_row_element_iterator>));
-        typedef typename X::column_element_iterator             column_element_iterator;
-        BOOST_CONCEPT_ASSERT((boost::InputIterator<column_element_iterator>));
-        typedef typename X::const_column_element_iterator       const_column_element_iterator;
-        BOOST_CONCEPT_ASSERT((boost::InputIterator<const_column_element_iterator>));
+        typedef typename X::col_element_iterator             col_element_iterator;
+        BOOST_CONCEPT_ASSERT((boost::InputIterator<col_element_iterator>));
+        typedef typename X::const_col_element_iterator       const_col_element_iterator;
+        BOOST_CONCEPT_ASSERT((boost::InputIterator<const_col_element_iterator>));
         
 
     BOOST_CONCEPT_USAGE(Matrix)
@@ -80,9 +80,9 @@ struct Matrix : boost::Assignable<X>
         
         // Iterator functions
         std::pair<row_element_iterator,row_element_iterator>                    row_range = row(x,0);
-        std::pair<column_element_iterator,column_element_iterator>              column_range = column(x,0);
+        std::pair<col_element_iterator,col_element_iterator>                    col_range = col(x,0);
         std::pair<const_row_element_iterator,const_row_element_iterator>        const_row_range = row(y,0);
-        std::pair<const_column_element_iterator,const_column_element_iterator>  const_column_range = column(y,0);
+        std::pair<const_col_element_iterator,const_col_element_iterator>        const_col_range = col(y,0);
 
         // operators
         z = x;

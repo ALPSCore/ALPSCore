@@ -259,8 +259,8 @@ namespace alps {
             // and the same with the matrix
             evecs.resize(num_rows(M), num_cols(M));
             for (std::size_t c = 0; c < num_cols(M); ++c)
-            		std::copy(column(M, c).first, column(M, c).second,
-                          column(evecs, num_cols(M)-1-c).first);
+            		std::copy(col(M, c).first, col(M, c).second,
+                          col(evecs, num_cols(M)-1-c).first);
         }
         
         template<typename T, class MemoryBlock>

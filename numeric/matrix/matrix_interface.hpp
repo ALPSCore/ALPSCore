@@ -73,12 +73,12 @@ namespace alps {
                          (i) )    
     
     IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, matrix<T COMMA MemoryBlock>,
-                         ITERATOR_PAIR(matrix<T COMMA MemoryBlock>, column_element_iterator), column,
+                         ITERATOR_PAIR(matrix<T COMMA MemoryBlock>, col_element_iterator), col,
                          (matrix<T COMMA MemoryBlock> & m,
                           typename matrix<T COMMA MemoryBlock>::size_type i),
                          (i) )
     IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, matrix<T COMMA MemoryBlock>,
-                         ITERATOR_PAIR(matrix<T COMMA MemoryBlock>, const_column_element_iterator), column,
+                         ITERATOR_PAIR(matrix<T COMMA MemoryBlock>, const_col_element_iterator), col,
                          (matrix<T COMMA MemoryBlock> const& m,
                           typename matrix<T COMMA MemoryBlock>::size_type i),
                          (i) )  

@@ -73,11 +73,11 @@ namespace boost { namespace numeric { namespace bindings { namespace detail {
         }
 
         static value_type* begin_value( Id& id ) {
-            return &(*id.column(0).first);
+            return &(*id.col(0).first);
         }
 
         static value_type* end_value( Id& id ) {
-            return &(*(id.column(id.num_cols()-1).second-1));
+            return &(*(id.col(id.num_cols()-1).second-1));
         }
 
         static difference_type stride1( const Id& id ) {

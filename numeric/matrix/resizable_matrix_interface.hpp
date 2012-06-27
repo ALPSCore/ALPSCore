@@ -32,7 +32,7 @@
 
 namespace alps {
     namespace numeric { 
-    // resize(), remove_row(), remove_column()
+    // resize(), remove_rows(), remove_cols()
     template <typename T, typename MemoryBlock>
     void resize(matrix<T,MemoryBlock>& m, typename matrix<T,MemoryBlock>::size_type i, typename matrix<T,MemoryBlock>::size_type j)
     {
@@ -68,7 +68,7 @@ namespace alps {
         return m.remove_cols(j,k);
     }
     
-    //append_row(), append_column(), insert_row(), insert_column()
+    //append_rows(), append_cols(), insert_rows(), insert_cols()
     #define INPUT_ITERATOR_PAIR std::pair<InputIterator,InputIterator>
     
     template <typename T, typename MemoryBlock, typename InputIterator>

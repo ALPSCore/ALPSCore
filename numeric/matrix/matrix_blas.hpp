@@ -91,12 +91,12 @@ namespace alps {
             assert( m.num_cols() == rhs.num_cols() && m.num_rows() == rhs.num_rows() ); \
             if(!(m.is_shrinkable() || rhs.is_shrinkable()) ) \
             { \
-                boost::numeric::bindings::blas::detail::axpy( m.num_rows() * m.num_cols(), sign, &(*rhs.column(0).first), 1, &(*m.column(0).first), 1); \
+                boost::numeric::bindings::blas::detail::axpy( m.num_rows() * m.num_cols(), sign, &(*rhs.col(0).first), 1, &(*m.col(0).first), 1); \
             } \
             else \
             { \
                 for(std::size_t j=0; j < m.num_cols(); ++j) \
-                    boost::numeric::bindings::blas::detail::axpy( m.num_rows(), sign, &(*rhs.column(j).first), 1, &(*m.column(j).first), 1); \
+                    boost::numeric::bindings::blas::detail::axpy( m.num_rows(), sign, &(*rhs.col(j).first), 1, &(*m.col(j).first), 1); \
             } \
         } \
         template <typename MemoryBlock> \
@@ -114,12 +114,12 @@ namespace alps {
         { \
             if( !(m.is_shrinkable()) ) \
             { \
-                boost::numeric::bindings::blas::detail::scal( m.num_rows()*m.num_cols(), t, &(*m.column(0).first), 1 ); \
+                boost::numeric::bindings::blas::detail::scal( m.num_rows()*m.num_cols(), t, &(*m.col(0).first), 1 ); \
             } \
             else \
             { \
                 for(std::size_t j=0; j <m.num_cols(); ++j) \
-                    boost::numeric::bindings::blas::detail::scal( m.num_rows(), t, &(*m.column(j).first), 1 ); \
+                    boost::numeric::bindings::blas::detail::scal( m.num_rows(), t, &(*m.col(j).first), 1 ); \
             } \
         }
         ALPS_IMPLEMENT_FOR_ALL_BLAS_TYPES(MULTIPLIES_ASSIGN)
