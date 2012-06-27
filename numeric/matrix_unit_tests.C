@@ -162,15 +162,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( row_iterator_test, T, test_types )
             BOOST_CHECK_EQUAL(a(i,j),T(i+j));
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( column_iterator_test, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( col_iterator_test, T, test_types )
 {
     matrix<T> a(10,20);
     fill_matrix_with_numbers(a);
     for(unsigned int j=0; j<num_cols(a); ++j)
     {
-        std::pair<typename matrix<T>::column_element_iterator, typename matrix<T>::column_element_iterator> range(column(a,j));
+        std::pair<typename matrix<T>::col_element_iterator, typename matrix<T>::col_element_iterator> range(col(a,j));
         unsigned int i=0;
-        for(typename matrix<T>::const_column_element_iterator it(range.first); it != range.second; ++it)
+        for(typename matrix<T>::const_col_element_iterator it(range.first); it != range.second; ++it)
         {
             BOOST_CHECK_EQUAL(a(i,j), *it);
             ++i;
