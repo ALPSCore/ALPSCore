@@ -214,19 +214,23 @@ namespace alps {
 
         std::pair<row_element_iterator,row_element_iterator> row(size_type row = 0)
         {
+            assert(row < size1_);
             return std::make_pair( row_element_iterator(&values_[row],reserved_size1_), row_element_iterator(&values_[row+reserved_size1_*size2_], reserved_size1_) );
         }
 
         std::pair<const_row_element_iterator,const_row_element_iterator> row(size_type row = 0) const
         {
+            assert(row < size1_);
             return std::make_pair( const_row_element_iterator(&values_[row],reserved_size1_), const_row_element_iterator(&values_[row+reserved_size1_*size2_], reserved_size1_) );
         }
         std::pair<col_element_iterator,col_element_iterator> col(size_type col = 0 )
         {
+            assert(col < size2_);
             return std::make_pair( col_element_iterator(&values_[col*reserved_size1_]), col_element_iterator(&values_[col*reserved_size1_+size1_]) );
         }
         std::pair<const_col_element_iterator,const_col_element_iterator> col(size_type col = 0 ) const
         {
+            assert(col < size2_);
             return std::make_pair( const_col_element_iterator(&values_[col*reserved_size1_]), const_col_element_iterator(&values_[col*reserved_size1_+size1_]) );
         }
         std::pair<element_iterator,element_iterator> elements()

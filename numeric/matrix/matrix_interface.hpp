@@ -50,8 +50,8 @@ namespace alps {
                          typename matrix<T COMMA MemoryBlock>::size_type, num_cols, (matrix<T, MemoryBlock> const& m), () )
     IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, matrix<T COMMA MemoryBlock>,
                          void, swap_rows, (matrix<T, MemoryBlock>& m, typename matrix<T, MemoryBlock>::size_type i1, typename matrix<T, MemoryBlock>::size_type i2), (i1,i2) )
-    IMPLEMENT_FORWARDING((<typename T, class MemoryBlock>), matrix<T COMMA MemoryBlock>,
-                         void, swap_cols, (matrix<T, MemoryBlock>& m, typename matrix<T, MemoryBlock>::size_type i1, typename matrix<T, MemoryBlock>::size_type i2), (i1,i2) ) 
+    IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, matrix<T COMMA MemoryBlock>,
+                         void, swap_cols, (matrix<T, MemoryBlock>& m, typename matrix<T, MemoryBlock>::size_type i1, typename matrix<T, MemoryBlock>::size_type i2), (i1,i2) )
     //
     // Matrix Iterator Interface
     // 
