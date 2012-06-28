@@ -104,7 +104,7 @@ namespace alps {
           *
           */
         matrix(matrix const& m);
-        
+
         template <typename OtherMemoryBlock>
         matrix(matrix<T,OtherMemoryBlock> const& m);
 
@@ -134,7 +134,7 @@ namespace alps {
           * @return A mutable reference to the matrix element at position (i,j).
           */
         inline value_type& operator()(const size_type i, const size_type j);
-        
+
         /**
           * Access the element in row i, column j
           * @return A constant reference to the matrix element at position (i,j).
@@ -143,13 +143,13 @@ namespace alps {
 
         bool operator == (matrix const& rhs) const;
 
-        matrix<T,MemoryBlock>& operator += (matrix const& rhs); 
+        matrix<T,MemoryBlock>& operator += (matrix const& rhs);
 
         matrix<T,MemoryBlock>& operator -= (matrix const& rhs);
-        
+
         template <typename T2>
         matrix<T,MemoryBlock>& operator *= (T2 const& t);
-        
+
         template <typename T2>
         matrix<T,MemoryBlock>& operator /= (T2 const& t);
 
@@ -173,7 +173,7 @@ namespace alps {
           * @return The stride for moving to the next element along a row
           */
         inline difference_type stride1() const;
-        
+
         /**
           * @return The stride for moving to the next element along a column
           */
@@ -197,7 +197,7 @@ namespace alps {
           * @param init_value value to which the new elements will be initalized
           */
         void resize(size_type rows, size_type cols, T const & init_value = T());
-        
+
         /**
           * Reserves memory for anticipated enlargements of the matrix
           * @param rows For how many rows should memory be reserved, value is ignored if it's smaller than the current number of rows
@@ -207,7 +207,7 @@ namespace alps {
         void reserve(size_type rows, size_type cols, T const & init_value = T());
 
         std::pair<size_type,size_type> capacity() const;
-        
+
         bool is_shrinkable() const;
 
         void clear();
@@ -257,19 +257,19 @@ namespace alps {
         void swap_rows(size_type i1, size_type i2);
 
         void swap_cols(size_type j1, size_type j2);
-        
+
         void write_xml(oxstream& ox) const;
-		
-		// Serialize functions to save matrix with alps::hdf5
+
+        // Serialize functions to save matrix with alps::hdf5
 #ifdef HAVE_ALPS_HDF5
         void load_impl(alps::hdf5::archive & ar, boost::mpl::true_);
         void load_impl(alps::hdf5::archive & ar, boost::mpl::false_);
 
-		void load(alps::hdf5::archive & ar);
-		void save(alps::hdf5::archive & ar) const;
+        void load(alps::hdf5::archive & ar);
+        void save(alps::hdf5::archive & ar) const;
 #endif
-        MemoryBlock const& get_values() const;       
-        MemoryBlock & get_values();       
+        MemoryBlock const& get_values() const;
+        MemoryBlock & get_values();
 
 
 
@@ -288,7 +288,7 @@ namespace alps {
         // "reserved_size2_" is done automatically by underlying std::vector (see vector.reserve(), vector.capacity() )
         MemoryBlock values_;
     };
-    
+
     }  // namespace numeric 
 } // namespace alps 
 
@@ -296,15 +296,15 @@ namespace alps {
 // Function hooks
 //
 namespace alps {
-    namespace numeric { 
+    namespace numeric {
 
     template <typename T, typename MemoryBlock>
     const matrix<T,MemoryBlock> matrix_matrix_multiply(matrix<T,MemoryBlock> const& lhs, matrix<T,MemoryBlock> const& rhs);
-    
+
     template<typename T, typename MemoryBlock, typename T2, typename MemoryBlock2>
     typename matrix_vector_multiplies_return_type<matrix<T,MemoryBlock>,vector<T2,MemoryBlock2> >::type
     matrix_vector_multiply(matrix<T,MemoryBlock> const& m, vector<T2,MemoryBlock2> const& v);
-    
+
     template <typename T,typename MemoryBlock>
     void plus_assign(matrix<T,MemoryBlock>& m, matrix<T,MemoryBlock> const& rhs);
 
@@ -325,7 +325,7 @@ namespace alps {
 
     template <typename T, typename MemoryBlock>
     const matrix<T,MemoryBlock> operator + (matrix<T,MemoryBlock> a, matrix<T,MemoryBlock> const& b);
-    
+
     template <typename T, typename MemoryBlock>
     const matrix<T,MemoryBlock> operator - (matrix<T,MemoryBlock> a, matrix<T,MemoryBlock> const& b);
 
@@ -335,12 +335,12 @@ namespace alps {
     template<typename T, typename MemoryBlock, typename T2, typename MemoryBlock2>
     typename matrix_vector_multiplies_return_type<matrix<T,MemoryBlock>,vector<T2,MemoryBlock2> >::type
     operator * (matrix<T,MemoryBlock> const& m, vector<T2,MemoryBlock2> const& v);
-   
+
     // TODO: adj(Vector) * Matrix, where adj is a proxy object
 
     template<typename T,typename MemoryBlock, typename T2>
     const matrix<T,MemoryBlock> operator * (matrix<T,MemoryBlock> m, T2 const& t);
-    
+
     template<typename T,typename MemoryBlock, typename T2>
     const matrix<T,MemoryBlock> operator * (T2 const& t, matrix<T,MemoryBlock> m);
 
@@ -349,10 +349,10 @@ namespace alps {
 
     template<typename T,typename MemoryBlock>
     void gemm(matrix<T,MemoryBlock> const & A, matrix<T,MemoryBlock> const & B, matrix<T,MemoryBlock> & C);
-    
+
     template<class T, class MemoryBlock>
     std::size_t size_of(matrix<T, MemoryBlock> const & m);
-    
+
     template <typename T, typename MemoryBlock>
     std::ostream& operator << (std::ostream& o, matrix<T,MemoryBlock> const& m);
 
@@ -374,7 +374,7 @@ namespace alps {
     //
     template <typename T>
     class diagonal_matrix;
-    
+
     template <typename T, typename MemoryBlock>
     class vector;
 
@@ -389,19 +389,19 @@ namespace alps {
     {
         typedef std::vector<T> type;
     };
-    
+
     template<typename T, typename MemoryBlock>
     struct associated_diagonal_matrix<matrix<T, MemoryBlock> >
     {
         typedef  diagonal_matrix<T> type;
     };
-    
+
     template<typename T, typename MemoryBlock>
     struct associated_real_diagonal_matrix<matrix<T, MemoryBlock> >
     {
         typedef diagonal_matrix<typename real_type<T>::type> type;
     };
-    
+
     template <typename T1, typename MemoryBlock1, typename T2, typename MemoryBlock2>
     struct matrix_vector_multiplies_return_type<matrix<T1,MemoryBlock1>,vector<T2,MemoryBlock2> >
     {

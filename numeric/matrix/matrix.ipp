@@ -148,7 +148,7 @@ namespace alps {
     }
 
     template <typename T, typename MemoryBlock>
-    inline T const& matrix<T, MemoryBlock>::operator()(const size_type i, const size_type j) const 
+    inline T const& matrix<T, MemoryBlock>::operator()(const size_type i, const size_type j) const
     {
         assert((i < this->size1_) && (j < this->size2_));
         return this->values_[i+j*this->reserved_size1_];
@@ -166,19 +166,19 @@ namespace alps {
     }
 
     template <typename T, typename MemoryBlock>
-    matrix<T,MemoryBlock>& matrix<T, MemoryBlock>::operator += (matrix const& rhs) 
+    matrix<T,MemoryBlock>& matrix<T, MemoryBlock>::operator += (matrix const& rhs)
     {
         plus_assign(*this,rhs);
         return *this;
     }
-    
+
     template <typename T, typename MemoryBlock>
-    matrix<T,MemoryBlock>& matrix<T, MemoryBlock>::operator -= (matrix const& rhs) 
+    matrix<T,MemoryBlock>& matrix<T, MemoryBlock>::operator -= (matrix const& rhs)
     {
         minus_assign(*this,rhs);
         return *this;
     }
-    
+
     template <typename T, typename MemoryBlock>
     template <typename T2>
     matrix<T,MemoryBlock>& matrix<T, MemoryBlock>::operator *= (T2 const& t)
@@ -186,7 +186,7 @@ namespace alps {
         multiplies_assign(*this, t);
         return *this;
     }
-    
+
     template <typename T, typename MemoryBlock>
     template <typename T2>
     matrix<T,MemoryBlock>& matrix<T, MemoryBlock>::operator /= (T2 const& t)
@@ -271,7 +271,7 @@ namespace alps {
         // Ignore values that would shrink the matrix
         cols = std::max(cols, this->size2_);
         rows = std::max(rows, this->reserved_size1_);
-       
+
         // Is change of structure or size of the MemoryBlock necessary?
         if(rows > this->reserved_size1_ || rows*cols > this->values_.capacity() )
         {
@@ -376,7 +376,7 @@ namespace alps {
     {
         assert( j <= this->size2_);
         assert( std::distance(range.first, range.second) == k*this->size1_ );
-        
+
         // Append the column
         automatic_reserve(this->size1_,this->size2_+k);
 
@@ -436,7 +436,7 @@ namespace alps {
             return false;
         }
     }
-    
+
     template <typename T, typename MemoryBlock>
     void matrix<T, MemoryBlock>::write_xml(oxstream& xml) const
     {
@@ -450,7 +450,7 @@ namespace alps {
             {
                 std::stringstream sts;
                 sts << this->operator()(i,j);
-                
+
                 xml << start_tag("ELEMENT");
                 xml << sts.str();
                 xml << end_tag("ELEMENT");
@@ -461,18 +461,18 @@ namespace alps {
     }
 
 #ifdef HAVE_ALPS_HDF5
-	template <typename T, typename MemoryBlock>
+    template <typename T, typename MemoryBlock>
     void matrix<T, MemoryBlock>::load(alps::hdf5::archive & ar) {
         load_impl(ar, typename alps::is_complex<T>::type());
     }
-	template <typename T, typename MemoryBlock>
+    template <typename T, typename MemoryBlock>
     void matrix<T, MemoryBlock>::load_impl(alps::hdf5::archive & ar, boost::mpl::true_)
     {
         ar >> alps::make_pvp("size1", size1_);
         ar >> alps::make_pvp("size2", size2_);
         ar >> alps::make_pvp("reserved_size1", reserved_size1_);
         if (ar.is_complex("values"))
-            ar >> alps::make_pvp("values", values_);    
+            ar >> alps::make_pvp("values", values_);
         else {
             std::vector<typename T::value_type> data;
             ar >> alps::make_pvp("values", data);
@@ -480,7 +480,7 @@ namespace alps {
             std::copy(data.begin(), data.end(), values_.begin());
         }
     }
-	template <typename T, typename MemoryBlock>
+    template <typename T, typename MemoryBlock>
     void matrix<T, MemoryBlock>::load_impl(alps::hdf5::archive & ar, boost::mpl::false_)
     {
         ar >> alps::make_pvp("size1", size1_);
@@ -489,16 +489,16 @@ namespace alps {
         ar >> alps::make_pvp("values", values_);
     }
 
-	template <typename T, typename MemoryBlock>
+    template <typename T, typename MemoryBlock>
     inline void matrix<T, MemoryBlock>::save(alps::hdf5::archive & ar) const
     {
-		ar << alps::make_pvp("size1", size1_);
-		ar << alps::make_pvp("size2", size2_);
-		ar << alps::make_pvp("reserved_size1", reserved_size1_);
-		ar << alps::make_pvp("values", values_);
+        ar << alps::make_pvp("size1", size1_);
+        ar << alps::make_pvp("size2", size2_);
+        ar << alps::make_pvp("reserved_size1", reserved_size1_);
+        ar << alps::make_pvp("values", values_);
     }
-#endif	
-	
+#endif // HAVE_ALPS_HDF5
+
 
     template <typename T, typename MemoryBlock>
     const matrix<T,MemoryBlock> matrix_matrix_multiply(matrix<T,MemoryBlock> const& lhs, matrix<T,MemoryBlock> const& rhs)
@@ -506,7 +506,7 @@ namespace alps {
         assert( !(lhs.num_cols() > rhs.num_rows()) );
         assert( !(lhs.num_cols() < rhs.num_rows()) );
         assert( lhs.num_cols() == rhs.num_rows() );
-        
+
         // Simple matrix matrix multiplication
         matrix<T,MemoryBlock> result(lhs.num_rows(),rhs.num_cols());
         for(std::size_t i=0; i < lhs.num_rows(); ++i)
@@ -519,9 +519,9 @@ namespace alps {
                 }
             }
         }
-        
+
         return result;
-    } 
+    }
 
     template<typename T, typename MemoryBlock, typename T2, typename MemoryBlock2>
     typename matrix_vector_multiplies_return_type<matrix<T,MemoryBlock>,vector<T2,MemoryBlock2> >::type
@@ -578,17 +578,16 @@ namespace alps {
     template <typename T, typename MemoryBlock>
     const matrix<T,MemoryBlock> operator - (matrix<T,MemoryBlock> a)
     {
-		// Do the operation column by column
-		for(typename matrix<T,MemoryBlock>::size_type j=0; j < a.num_cols(); ++j)
-		{
-			std::pair<typename matrix<T,MemoryBlock>::col_element_iterator,
-					  typename matrix<T,MemoryBlock>::col_element_iterator> range(a.col(j));
-			std::transform(range.first, range.second,
-						   range.first, std::negate<T>());
-		}
-		return a;
+        // Do the operation column by column
+        for(typename matrix<T,MemoryBlock>::size_type j=0; j < a.num_cols(); ++j)
+        {
+            std::pair<typename matrix<T,MemoryBlock>::col_element_iterator,
+                typename matrix<T,MemoryBlock>::col_element_iterator> range(a.col(j));
+            std::transform(range.first, range.second,range.first, std::negate<T>());
+        }
+        return a;
     }
-	
+
     template<typename T, typename MemoryBlock, typename T2, typename MemoryBlock2>
     typename matrix_vector_multiplies_return_type<matrix<T,MemoryBlock>,vector<T2,MemoryBlock2> >::type
     operator * (matrix<T,MemoryBlock> const& m, vector<T2,MemoryBlock2> const& v)
@@ -619,13 +618,13 @@ namespace alps {
     {
         C = matrix_matrix_multiply(A, B);
     }
-    
+
     template<class T, class MemoryBlock>
     std::size_t size_of(matrix<T, MemoryBlock> const & m)
     {
         return num_rows(m)*num_cols(m)*sizeof(T);
     }
-    
+
     template <typename T, typename MemoryBlock>
     std::ostream& operator << (std::ostream& o, matrix<T,MemoryBlock> const& m)
     {
@@ -637,7 +636,7 @@ namespace alps {
         }
         return o;
     }
-    
+
     template <typename T, typename MemoryBlock>
     alps::oxstream& operator << (alps::oxstream& xml, matrix<T,MemoryBlock> const& m)
     {
@@ -647,15 +646,15 @@ namespace alps {
 
    template <typename T, typename MemoryBlock>
    const MemoryBlock& matrix<T, MemoryBlock>::get_values() const
-   {   
+   {
        return this->values_;
-   }   
+   }
 
    template <typename T, typename MemoryBlock>
    MemoryBlock& matrix<T, MemoryBlock>::get_values()
-   {   
+   {
        return this->values_;
-   }   
+   }
 
    } // end namespace numeric
 } // end namespace alps

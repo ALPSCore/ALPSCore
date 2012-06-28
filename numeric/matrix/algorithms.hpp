@@ -50,18 +50,16 @@
 namespace alps {
     namespace numeric {
         template <class T, class MemoryBlock>
-        class matrix; 
+        class matrix;
     }
 }
 
 namespace alps {
     namespace numeric {
-        
         template <typename Matrix>
-        Matrix transpose(Matrix const& m) 
+        Matrix transpose(Matrix const& m)
         {
-            
-            BOOST_CONCEPT_ASSERT((alps::numeric::Matrix<Matrix>)); 
+            BOOST_CONCEPT_ASSERT((alps::numeric::Matrix<Matrix>));
             // TODO: perhaps this could return a proxy object
             Matrix tmp(num_cols(m), num_rows(m));
             for(typename Matrix::size_type i=0; i < num_rows(m); ++i){
@@ -69,15 +67,13 @@ namespace alps {
                     tmp(j,i) = m(i,j);
                 }
             }
-            
             return tmp;
         }
 
         template <typename Matrix>
-        void transpose_inplace(Matrix & m) 
+        void transpose_inplace(Matrix & m)
         {
-            
-            BOOST_CONCEPT_ASSERT((alps::numeric::Matrix<Matrix>)); 
+            BOOST_CONCEPT_ASSERT((alps::numeric::Matrix<Matrix>));
             // TODO: perhaps this could return a proxy object
             Matrix tmp(num_cols(m), num_rows(m));
             for(typename Matrix::size_type i=0; i < num_rows(m); ++i){
@@ -89,10 +85,9 @@ namespace alps {
         }
 
         template <typename Matrix>
-        Matrix adjoint(Matrix const& m) 
+        Matrix adjoint(Matrix const& m)
         {
-            
-            BOOST_CONCEPT_ASSERT((alps::numeric::Matrix<Matrix>)); 
+            BOOST_CONCEPT_ASSERT((alps::numeric::Matrix<Matrix>));
             // TODO: perhaps this could return a proxy object
             Matrix tmp(num_cols(m), num_rows(m));
             for(typename Matrix::size_type i=0; i < num_rows(m); ++i){
@@ -100,15 +95,13 @@ namespace alps {
                     tmp(j,i) = conj(m(i,j));
                 }
             }
-            
             return tmp;
         }
 
         template <typename Matrix>
-        void adjoint_inplace(Matrix & m) 
+        void adjoint_inplace(Matrix & m)
         {
-            
-            BOOST_CONCEPT_ASSERT((alps::numeric::Matrix<Matrix>)); 
+            BOOST_CONCEPT_ASSERT((alps::numeric::Matrix<Matrix>));
             // TODO: perhaps this could return a proxy object
             Matrix tmp(num_cols(m), num_rows(m));
             for(typename Matrix::size_type i=0; i < num_rows(m); ++i){
@@ -122,7 +115,7 @@ namespace alps {
         template <typename Matrix>
         typename Matrix::value_type trace(Matrix const& m)
         {
-            BOOST_CONCEPT_ASSERT((alps::numeric::Matrix<Matrix>)); 
+            BOOST_CONCEPT_ASSERT((alps::numeric::Matrix<Matrix>));
             assert(num_rows(m) == num_cols(m));
             typename Matrix::value_type tr(m(0,0));
             for(typename Matrix::size_type i = 1; i<num_rows(m); ++i)
@@ -135,40 +128,35 @@ namespace alps {
         {
             return Matrix::identity_matrix(size);
         }
-     
 
         template<class Matrix>
         Matrix direct_sum(Matrix const & a, Matrix const & b)
         {
             Matrix ret(num_rows(a)+num_rows(b), num_cols(a)+num_cols(b));
-            
             typedef typename Matrix::size_type st;
-            
             for (st r = 0; r < num_rows(a); ++r)
                 for (st c = 0; c < num_cols(a); ++c)
                     ret(r, c) = a(r, c);
-            
             for (st r = 0; r < num_rows(b); ++r)
                 for (st c = 0; c < num_cols(b); ++c)
                     ret(r+num_rows(a), c+num_cols(a)) = b(r, c);
-            
             return ret;
         }
-        
+
         template <typename T>
         void norm(const matrix<T>& M, typename matrix<T>::value_type& ret){
             for (std::size_t c = 0; c < num_cols(M); ++c)
                 for (std::size_t r = 0; r < num_rows(M); ++r)
                     ret += conj(M(r,c)) * M(r,c);
         }
-        
+
         template <typename T>
         void overlap(matrix<T> & M1, matrix<T> & M2, typename matrix<T>::value_type & ret){ // not const due to nullcut
             for (std::size_t c = 0; c < num_cols(M1); ++c)
                 for (std::size_t r = 0; r < num_rows(M1); ++r)
                     ret += conj(M1(r,c)) * M2(r,c);
         }
-        
+
         namespace detail {
             template<typename T> struct sv_type { typedef T type; };
             template<typename T>
@@ -190,60 +178,57 @@ namespace alps {
             if (info != 0)
                 throw std::runtime_error("Error in SVD!");
         }
-        
+
         template<typename T, class MemoryBlock>
         void qr(matrix<T, MemoryBlock> M,
                 matrix<T, MemoryBlock> & Q,
                 matrix<T, MemoryBlock> & R)
         {
             typename matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_cols(M));
-    
             typename associated_vector<matrix<typename detail::sv_type<T>::type, MemoryBlock> >::type tau(k);
-            
             int info = 0; //boost::numeric::bindings::lapack::geqrf(M, tau);
             if (info != 0)
                 throw std::runtime_error("Error in geqrf");
-            
+
             resize(Q, num_rows(M), k);
             resize(R, k, num_cols(M));
-            
+
             // get R
             std::fill(elements(R).first, elements(R).second, 0);
             for (std::size_t c = 0; c < num_cols(M); ++c)
                 for (std::size_t r = 0; r <= c; ++r)
                     R(r, c) = M(r, c);
-            
+
             // get Q from householder reflections in M
             std::fill(elements(Q).first, elements(Q).second, 0);
-            
         }
-        
+
         template<typename T, class MemoryBlock>
         matrix<T, MemoryBlock> exp (matrix<T, MemoryBlock> M, T const & alpha=1)
         {
             matrix<T, MemoryBlock> N, tmp;
             typename associated_real_vector<matrix<T, MemoryBlock> >::type Sv(num_rows(M));
-            
+
             heev(M, N, Sv);
-            
+
             typename associated_diagonal_matrix<matrix<T, MemoryBlock> >::type S(Sv);
             S = exp(alpha*S);
             gemm(N, S, tmp);
             gemm(tmp, adjoint(N), M);
-            
             return M;
         }
-  
+
         template<typename T, class MemoryBlock, class Generator>
         void generate(matrix<T, MemoryBlock>& m, Generator g)
         {
            std::generate(elements(m).first, elements(m).second, g);
         }
-    
+
         template<typename T, class MemoryBlock>
-        void heev(matrix<T, MemoryBlock> M,
-                  matrix<T, MemoryBlock> & evecs,
-                  typename associated_real_vector<matrix<T, MemoryBlock> >::type & evals) 
+        void heev(matrix<T, MemoryBlock> M
+            , matrix<T, MemoryBlock> & evecs
+            , typename associated_real_vector<matrix<T, MemoryBlock> >::type & evals
+        )
         {
             assert(num_rows(M) == num_cols(M));
             assert(evals.size() == num_rows(M));
@@ -252,17 +237,16 @@ namespace alps {
                 for (int j = 0; j < num_cols(M); ++j)
                     assert( abs( M(i,j) - conj(M(j,i)) ) < 1e-10 );
 #endif
-            
             boost::numeric::bindings::lapack::heevd('V', M, evals);
             // to be consistent with the SVD, I reorder in decreasing order
             std::reverse(evals.begin(), evals.end());
             // and the same with the matrix
             evecs.resize(num_rows(M), num_cols(M));
             for (std::size_t c = 0; c < num_cols(M); ++c)
-            		std::copy(col(M, c).first, col(M, c).second,
+                std::copy(col(M, c).first, col(M, c).second,
                           col(evecs, num_cols(M)-1-c).first);
         }
-        
+
         template<typename T, class MemoryBlock>
         void heev(matrix<T, MemoryBlock> M,
                   matrix<T, MemoryBlock> & evecs,

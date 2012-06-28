@@ -29,13 +29,13 @@
 #define ALPS_MATRIX_BLAS_HPP
 
 #include <alps/numeric/matrix/detail/blasmacros.hpp>
-    
+
 namespace alps {
     namespace numeric {
         template <typename T, typename MemoryBlock>
             class matrix;
     }
-}    
+}
 
 
     //
@@ -63,7 +63,7 @@ namespace alps {
         }
     ALPS_IMPLEMENT_FOR_ALL_BLAS_TYPES(MATRIX_MATRIX_MULTIPLY)
     #undef MATRIX_MATRIX_MULTIPLY
-    
+
     #define MATRIX_VECTOR_MULTIPLY(T) \
         template <typename MemoryBlock, typename MemoryBlock2> \
         const vector<T,MemoryBlock2> matrix_vector_multiply(matrix<T,MemoryBlock> const& m, vector<T,MemoryBlock2> const& v) \
@@ -82,7 +82,7 @@ namespace alps {
         }
     ALPS_IMPLEMENT_FOR_ALL_BLAS_TYPES(MATRIX_VECTOR_MULTIPLY)
     #undef MATRIX_VECTOR_MULTIPLY
-    
+
     // This seems to be the best solution for the *_ASSIGN dispatchers at the moment even though they call functions within the detail namespace
     #define PLUS_MINUS_ASSIGN(T) \
         template <typename MemoryBlock> \
@@ -107,7 +107,7 @@ namespace alps {
             { plus_and_minus_assign_impl(m, rhs, typename matrix<T,MemoryBlock>::value_type(-1)); }
     ALPS_IMPLEMENT_FOR_ALL_BLAS_TYPES(PLUS_MINUS_ASSIGN)
     #undef PLUS_MINUS_ASSIGN
-    
+
     #define MULTIPLIES_ASSIGN(T) \
         template <typename MemoryBlock> \
         void multiplies_assign(matrix<T,MemoryBlock>& m, T const& t) \
@@ -124,7 +124,7 @@ namespace alps {
         }
         ALPS_IMPLEMENT_FOR_ALL_BLAS_TYPES(MULTIPLIES_ASSIGN)
     #undef MULTIPLIES_ASSIGN
-    
+
     } // end namespace numeric
 } // end namespace alps
 

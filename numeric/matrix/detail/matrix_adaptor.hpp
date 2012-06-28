@@ -32,7 +32,7 @@
 #include <boost/numeric/bindings/detail/if_row_major.hpp>
 
 namespace alps { namespace numeric {
-    template <typename T, typename MemoryBlock> 
+    template <typename T, typename MemoryBlock>
     class matrix;
 } }
 
@@ -41,7 +41,7 @@ namespace alps { namespace numeric {
 //
 
 namespace boost { namespace numeric { namespace bindings { namespace detail {
-    
+
     template <typename T, typename MemoryBlock, typename Id, typename Enable>
     struct adaptor< ::alps::numeric::matrix<T,MemoryBlock>, Id, Enable>
     {

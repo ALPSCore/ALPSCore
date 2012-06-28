@@ -36,12 +36,12 @@ namespace numeric {
     struct associated_diagonal_matrix
     {
     };
-    
+
     template <typename Matrix>
     struct associated_real_diagonal_matrix
     {
     };
-    
+
     template <typename Matrix, typename Vector>
     struct matrix_vector_multiplies_return_type
     {
@@ -51,7 +51,7 @@ namespace numeric {
     struct associated_vector
     {
     };
-    
+
     template<typename Matrix>
     struct associated_real_vector
     {

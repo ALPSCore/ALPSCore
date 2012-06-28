@@ -105,7 +105,7 @@ class strided_iterator : public boost::iterator_facade<
         }
 
         value_type* ptr;
-        typename Matrix::difference_type stride; 
+        typename Matrix::difference_type stride;
 };
 
 } // end namespace numeric

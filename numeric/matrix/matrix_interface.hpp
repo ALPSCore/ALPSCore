@@ -32,7 +32,6 @@
 
 namespace alps {
     namespace numeric {
-    
     // This macro creates free functions that call member functions with the same
     // name, e.g. swap_cols(A,i,j) -> A.swap_cols(i,j)
     #define COMMA ,
@@ -42,8 +41,8 @@ namespace alps {
     { \
         BOOST_CONCEPT_ASSERT((alps::numeric::Matrix<TYPE>)); \
         return m.NAME VARS; \
-    } 
-    
+    }
+
     // num_rows(), num_cols(), swap_rows(), swap_cols()
     IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, matrix<T COMMA MemoryBlock>,
                          typename matrix<T COMMA MemoryBlock>::size_type, num_rows, (matrix<T, MemoryBlock> const& m), () )
@@ -51,16 +50,14 @@ namespace alps {
                          typename matrix<T COMMA MemoryBlock>::size_type, num_cols, (matrix<T, MemoryBlock> const& m), () )
     IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, matrix<T COMMA MemoryBlock>,
                          void, swap_rows, (matrix<T, MemoryBlock>& m, typename matrix<T, MemoryBlock>::size_type i1, typename matrix<T, MemoryBlock>::size_type i2), (i1,i2) )
-    IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, matrix<T COMMA MemoryBlock>,
-                         void, swap_cols, (matrix<T, MemoryBlock>& m, typename matrix<T, MemoryBlock>::size_type i1, typename matrix<T, MemoryBlock>::size_type i2), (i1,i2) )
-        
+    IMPLEMENT_FORWARDING((<typename T, class MemoryBlock>), matrix<T COMMA MemoryBlock>,
+                         void, swap_cols, (matrix<T, MemoryBlock>& m, typename matrix<T, MemoryBlock>::size_type i1, typename matrix<T, MemoryBlock>::size_type i2), (i1,i2) ) 
     //
     // Matrix Iterator Interface
-    //
-    
+    // 
     #define ITERATOR_PAIR(TYPE, ITERATOR) \
     std::pair<typename TYPE::ITERATOR, typename TYPE::ITERATOR>
-    
+
     IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, matrix<T COMMA MemoryBlock>,
                          ITERATOR_PAIR(matrix<T COMMA MemoryBlock>, row_element_iterator), row,
                          (matrix<T COMMA MemoryBlock> & m,
@@ -70,8 +67,8 @@ namespace alps {
                          ITERATOR_PAIR(matrix<T COMMA MemoryBlock>, const_row_element_iterator), row,
                          (matrix<T COMMA MemoryBlock> const& m,
                           typename matrix<T COMMA MemoryBlock>::size_type i),
-                         (i) )    
-    
+                         (i) )
+
     IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, matrix<T COMMA MemoryBlock>,
                          ITERATOR_PAIR(matrix<T COMMA MemoryBlock>, col_element_iterator), col,
                          (matrix<T COMMA MemoryBlock> & m,
@@ -81,12 +78,12 @@ namespace alps {
                          ITERATOR_PAIR(matrix<T COMMA MemoryBlock>, const_col_element_iterator), col,
                          (matrix<T COMMA MemoryBlock> const& m,
                           typename matrix<T COMMA MemoryBlock>::size_type i),
-                         (i) )  
-    
+                         (i) )
+
     IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, matrix<T COMMA MemoryBlock>,
                          ITERATOR_PAIR(matrix<T COMMA MemoryBlock>, element_iterator), elements,
                          (matrix<T COMMA MemoryBlock>& m), () )
-    
+
     IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, matrix<T COMMA MemoryBlock>,
                          ITERATOR_PAIR(matrix<T COMMA MemoryBlock>, const_element_iterator), elements,
                          (matrix<T COMMA MemoryBlock> const& m), () )
