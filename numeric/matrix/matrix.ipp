@@ -26,6 +26,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <alps/numeric/conj.hpp>
+#include <boost/lambda/lambda.hpp>
 
 namespace alps {
     namespace numeric {
