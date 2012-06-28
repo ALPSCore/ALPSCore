@@ -43,7 +43,7 @@ void conj_inplace(matrix<T,MemoryBlock>& m)
     //
     using std::for_each;
     typedef typename matrix<T,MemoryBlock>::col_element_iterator col_element_iterator;
-    for(typename matrix<T,MemoryBlock>::size_type j=0; j < m.num_rows(); ++j)
+    for(typename matrix<T,MemoryBlock>::size_type j=0; j < m.num_cols(); ++j)
        for(std::pair<col_element_iterator,col_element_iterator> range = m.col(j); range.first != range.second; ++range.first)
            conj_inplace(*range.first);
 }
