@@ -52,7 +52,7 @@ namespace alps {
                     using alps::hdf5::get_extent;
                     std::vector<std::size_t> extent(2, value.size1());
                     extent[1] = value.size2();
-                    if (value.size1() + value.size2()) {
+                    if (value.size1() * value.size2()) {
                         std::vector<std::size_t> first(get_extent(value(0, 0)));
                         for (std::size_t i = 0; i < value.size1(); ++i)
                             for (std::size_t j = 0; j < value.size2(); ++j)  {
