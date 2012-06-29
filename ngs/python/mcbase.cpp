@@ -28,9 +28,10 @@
 
 #define PY_ARRAY_UNIQUE_SYMBOL pyngsbase_PyArrayHandle
 
-#include <alps/ngs/hdf5.hpp>
-#include <alps/ngs/base.hpp>
 #include <alps/ngs/boost_python.hpp>
+
+#include <alps/ngs/hdf5.hpp>
+#include <alps/ngs/scheduler/mcbase.hpp>
 
 #include <alps/python/make_copy.hpp>
 
@@ -46,56 +47,56 @@
 namespace alps {
     namespace detail {
 
-        class base_export : public base, public boost::python::wrapper<base> {
+        class mcbase_export : public mcbase, public boost::python::wrapper<mcbase> {
 
             public:
 
                 #ifdef ALPS_HAVE_MPI
 
-                    base_export(boost::python::dict arg, std::size_t seed_offset = 42, boost::mpi::communicator = boost::mpi::communicator())
-                        : base(base::parameters_type(arg), seed_offset)
+                    mcbase_export(boost::python::dict arg, std::size_t seed_offset = 42, boost::mpi::communicator = boost::mpi::communicator())
+                        : mcbase(mcbase::parameters_type(arg), seed_offset)
                     {}
 
                 #else
 
-                    base_export(boost::python::dict arg, std::size_t seed_offset = 42)
-                        : base(base::parameters_type(arg), seed_offset)
+                    mcbase_export(boost::python::dict arg, std::size_t seed_offset = 42)
+                        : mcbase(mcbase::parameters_type(arg), seed_offset)
                     {}
 
                 #endif
 
-                void do_update() {
-                    this->get_override("do_update")();
+                void update() {
+                    this->get_override("update")();
                 }
 
                 double fraction_completed() const {
                     return this->get_override("fraction_completed")();
                 }
 
-                void do_measurements() {
-                    this->get_override("do_measurements")();
+                void measure() {
+                    this->get_override("measure")();
                 }
 
                 bool run(boost::python::object stop_callback) {
-                    return base::run(boost::bind(base_export::callback_wrapper, stop_callback));
+                    return mcbase::run(boost::bind(mcbase_export::callback_wrapper, stop_callback));
                 }
 
-                base::parameters_type & get_params() {
-                    return base::params;
+                mcbase::parameters_type & get_params() {
+                    return mcbase::params;
                 }
 
                 mcobservables & get_measurements() {
-                    return base::measurements;
+                    return mcbase::measurements;
                 }
 
                 double get_random() {
-                    return base::random();
+                    return mcbase::random();
                 }
 
                 void load(hdf5::archive & ar, std::string const & path) {
                     std::string current = ar.get_context();
                     ar.set_context(path);
-                    base::load(ar);
+                    mcbase::load(ar);
                     ar.set_context(current);
                 }
 
@@ -112,23 +113,23 @@ namespace alps {
 
 BOOST_PYTHON_MODULE(pyngsbase_c) {
 
-    boost::python::class_<alps::detail::base_export, boost::noncopyable>(
-          "base_impl",
+    boost::python::class_<alps::detail::mcbase_export, boost::noncopyable>(
+          "mcbase_impl",
           #ifdef ALPS_HAVE_MPI
               boost::python::init<boost::python::dict, boost::python::optional<std::size_t, boost::mpi::communicator> >()
           #else
               boost::python::init<boost::python::dict, boost::python::optional<std::size_t> >()
           #endif
     )
-        .add_property("params", boost::python::make_function(&alps::detail::base_export::get_params, boost::python::return_internal_reference<>()))
-        .add_property("measurements", boost::python::make_function(&alps::detail::base_export::get_measurements, boost::python::return_internal_reference<>()))
-        .def("run", &alps::detail::base_export::run)
-        .def("random", &alps::detail::base_export::get_random)
-        .def("do_update", boost::python::pure_virtual(&alps::detail::base_export::do_update))
-        .def("do_measurements", boost::python::pure_virtual(&alps::detail::base_export::do_measurements))
-        .def("fraction_completed", boost::python::pure_virtual(&alps::detail::base_export::fraction_completed))
-        .def("save", static_cast<void(alps::detail::base_export::*)(alps::hdf5::archive &) const>(&alps::detail::base_export::save))
-        .def("load", static_cast<void(alps::detail::base_export::*)(alps::hdf5::archive &, std::string const &)>(&alps::detail::base_export::load))
+        .add_property("params", boost::python::make_function(&alps::detail::mcbase_export::get_params, boost::python::return_internal_reference<>()))
+        .add_property("measurements", boost::python::make_function(&alps::detail::mcbase_export::get_measurements, boost::python::return_internal_reference<>()))
+        .def("run", &alps::detail::mcbase_export::run)
+        .def("random", &alps::detail::mcbase_export::get_random)
+        .def("update", boost::python::pure_virtual(&alps::detail::mcbase_export::update))
+        .def("measure", boost::python::pure_virtual(&alps::detail::mcbase_export::measure))
+        .def("fraction_completed", boost::python::pure_virtual(&alps::detail::mcbase_export::fraction_completed))
+        .def("save", static_cast<void(alps::detail::mcbase_export::*)(alps::hdf5::archive &) const>(&alps::detail::mcbase_export::save))
+        .def("load", static_cast<void(alps::detail::mcbase_export::*)(alps::hdf5::archive &, std::string const &)>(&alps::detail::mcbase_export::load))
     ;
 
 }

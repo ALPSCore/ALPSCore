@@ -84,11 +84,13 @@ namespace alps {
                 static bool apply(boost::numeric::ublas::matrix<T, F, A> const & value) {
                     using alps::hdf5::get_extent;
                     using alps::hdf5::is_vectorizable;
-                    std::vector<std::size_t> size(get_extent(value(0, 0)));
-                    for (std::size_t i = 0; i < value.size1(); ++i)
-                        for (std::size_t j = 1; j < value.size2(); ++j)
-                            if (!is_vectorizable(value(i, j)) || !std::equal(size.begin(), size.end(), get_extent(value(i, j)).begin()))
-                                return false;
+                    if (!boost::is_scalar<typename boost::numeric::ublas::matrix<T, F, A>::value_type>::value) {
+                        std::vector<std::size_t> size(get_extent(value(0, 0)));
+                        for (std::size_t i = 0; i < value.size1(); ++i)
+                            for (std::size_t j = 1; j < value.size2(); ++j)
+                                if (!is_vectorizable(value(i, j)) || !std::equal(size.begin(), size.end(), get_extent(value(i, j)).begin()))
+                                    return false;
+                    }
                     return true;
                 }
             };

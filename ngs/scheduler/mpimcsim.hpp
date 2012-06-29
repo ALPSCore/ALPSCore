@@ -25,8 +25,8 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_PARALLEL_HPP
-#define ALPS_NGS_PARALLEL_HPP
+#ifndef ALPS_NGS_SCHEDULER_MPIMCSIM_HPP
+#define ALPS_NGS_SCHEDULER_MPIMCSIM_HPP
 
 #include <alps/ngs/stacktrace.hpp>
 
@@ -36,16 +36,15 @@ namespace alps {
 
     #ifdef ALPS_HAVE_MPI
 
-        // should be called 'bundle'?
-        template<typename Impl> class parallel : public Impl {
+        template<typename Impl> class mcmpisim : public Impl {
             public:
                 using Impl::collect_results;
                 
-                parallel(typename alps::parameters_type<Impl>::type const & p) {
+                mcmpisim(typename alps::parameters_type<Impl>::type const & p) {
                     throw std::runtime_error("No communicator passed" + ALPS_STACKTRACE);
                 }
 
-                parallel(typename alps::parameters_type<Impl>::type const & p, boost::mpi::communicator const & c) 
+                mcmpisim(typename alps::parameters_type<Impl>::type const & p, boost::mpi::communicator const & c) 
                     : Impl(p, c.rank())
                     , communicator(c)
                     , binnumber(p["binnumber"] | std::min(128, 2 * c.size()))
@@ -72,7 +71,7 @@ namespace alps {
                 std::size_t binnumber;
         };
 
-        // we should rename to a good one.  'parallel'?
+        // TODO: we should rename to a good one.  'parallel'?
         template<typename Impl> class parallel2 : public Impl {
             public:
                 using Impl::collect_results;

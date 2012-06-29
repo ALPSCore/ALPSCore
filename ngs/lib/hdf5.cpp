@@ -1119,7 +1119,7 @@ namespace alps {
                             data_id = -1;                                                                                                                              \
                         }                                                                                                                                              \
                     }                                                                                                                                                  \
-                    detail::type_type type_id(detail::get_native_type(alps::detail::type_wrapper< T >::type()));                                                             \
+                    detail::type_type type_id(detail::get_native_type(alps::detail::type_wrapper< T >::type()));                                                       \
                     if (std::accumulate(size.begin(), size.end(), std::size_t(0)) == 0) {                                                                              \
                         if (data_id < 0)                                                                                                                               \
                             detail::check_attribute(H5Acreate2(                                                                                                        \
@@ -1144,7 +1144,7 @@ namespace alps {
                                 , detail::space_type(H5Screate_simple(static_cast<int>(size_hid.size()), &size_hid.front(), NULL))                                     \
                                 , H5P_DEFAULT                                                                                                                          \
                                 , H5P_DEFAULT                                                                                                                          \
-                            ));                                                                                                                                         \
+                            ));                                                                                                                                        \
                         {                                                                                                                                              \
                             detail::attribute_type raii_id(data_id);                                                                                                   \
                             if (std::equal(chunk.begin(), chunk.end(), size.begin())) {                                                                                \
@@ -1153,7 +1153,7 @@ namespace alps {
                                                                 );                                                                                                     \
                                 detail::check_error(H5Awrite(raii_id, type_id, converter.apply(value)));                                                               \
                             } else                                                                                                                                     \
-                                throw std::logic_error("Not Implemented, path: " + path + ALPS_STACKTRACE);                                                                         \
+                                throw std::logic_error("Not Implemented, path: " + path + ALPS_STACKTRACE);                                                            \
                         }                                                                                                                                              \
                     }                                                                                                                                                  \
                     if (is_group(path.substr(0, path.find_last_of('@') - 1)))                                                                                          \
@@ -1223,11 +1223,11 @@ namespace alps {
                     detail::data_type data_id(H5Dopen2(context_->file_id_, path.c_str(), H5P_DEFAULT));                                                                \
                     type_id = H5Dget_type(data_id);                                                                                                                    \
                 } else                                                                                                                                                 \
-                    throw path_not_found("no valid path: " + path + ALPS_STACKTRACE);                                                                                             \
+                    throw path_not_found("no valid path: " + path + ALPS_STACKTRACE);                                                                                  \
                 detail::type_type native_id(H5Tget_native_type(type_id, H5T_DIR_ASCEND));                                                                              \
                 detail::check_type(type_id);                                                                                                                           \
                 return detail::check_error(                                                                                                                            \
-                    H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(detail::get_native_type(alps::detail::type_wrapper< T >::type())))                     \
+                    H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(detail::get_native_type(alps::detail::type_wrapper< T >::type())))               \
                 ) > 0;                                                                                                                                                 \
             }
         ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_IS_DATATYPE_IMPL_IMPL)

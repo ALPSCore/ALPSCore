@@ -144,7 +144,7 @@ namespace alps {
                         save(ar, path, value.data()[i], size, chunk, local_offset);                                                                             \
                     }                                                                                                                                           \
                 } else                                                                                                                                          \
-                    throw wrong_type("invalid type");                                                                                                \
+                    throw wrong_type("invalid type");                                                                                                           \
             }
         ALPS_NGS_HDF5_MULTI_ARRAY_IMPL_SAVE(archive)
         #ifdef ALPS_HDF5_HAVE_DEPRECATED
@@ -161,17 +161,15 @@ namespace alps {
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
             ) {                                                                                                                                                 \
                 if (ar.is_group(path))                                                                                                                          \
-                    throw invalid_path("invalid path");                                                                                                \
+                    throw invalid_path("invalid path");                                                                                                         \
                 else {                                                                                                                                          \
                     std::vector<std::size_t> size(ar.extent(path));                                                                                             \
-                    if (boost::multi_array<T, N, A>::dimensionality <= size.size())                                                                                \
-                        set_extent(value, std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));                                                    \
-                    if (is_continous<T>::value) {                                                                                                                \
-                        std::copy(size.begin() + chunk.size(), size.end(), std::back_inserter(chunk));                                                            \
+                    if (boost::multi_array<T, N, A>::dimensionality <= size.size())                                                                             \
+                        set_extent(value, std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));                                                   \
+                    if (is_continous<T>::value) {                                                                                                               \
+                        std::copy(size.begin() + chunk.size(), size.end(), std::back_inserter(chunk));                                                          \
                         std::fill_n(std::back_inserter(offset), size.size() - offset.size(), 0);                                                                \
-                        ar.read(path, get_pointer(value), chunk, offset);                                                                                        \
-                        \
-                        \
+                        ar.read(path, get_pointer(value), chunk, offset);                                                                                       \
                     } else {                                                                                                                                    \
                         std::fill_n(std::back_inserter(chunk), value.num_elements(), 1);                                                                        \
                         for (std::size_t i = 1; i < value.num_elements(); ++i) {                                                                                \

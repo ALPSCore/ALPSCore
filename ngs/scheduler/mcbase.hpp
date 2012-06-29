@@ -25,8 +25,8 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_BASE_HPP
-#define ALPS_NGS_BASE_HPP
+#ifndef ALPS_NGS_SCHEDULER_MCBASE_HPP
+#define ALPS_NGS_SCHEDULER_MCBASE_HPP
 
 #include <alps/ngs/hdf5.hpp>
 #include <alps/ngs/config.hpp>
@@ -47,7 +47,7 @@
 
 namespace alps {
 
-    class ALPS_DECL base {
+    class ALPS_DECL mcbase {
 
         public:
 
@@ -55,7 +55,7 @@ namespace alps {
             typedef alps::mcresults results_type;
             typedef std::vector<std::string> result_names_type;
 
-            base(parameters_type const & p, std::size_t seed_offset = 0)
+            mcbase(parameters_type const & p, std::size_t seed_offset = 0)
                 : params(p)
                   // TODO: this ist not the best solution - any idea?
                 , random(boost::mt19937(p["SEED"].or_default(42) + seed_offset), boost::uniform_real<>())
@@ -65,11 +65,11 @@ namespace alps {
                 , last_check_time_point(boost::chrono::high_resolution_clock::now())
             {}
 
-            virtual ~base() {}
+            virtual ~mcbase() {}
 
-            virtual void do_update() = 0;
+            virtual void update() = 0;
 
-            virtual void do_measurements() = 0;
+            virtual void measure() = 0;
 
             virtual double fraction_completed() const = 0;
 

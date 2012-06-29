@@ -28,11 +28,8 @@
 
 #define PY_ARRAY_UNIQUE_SYMBOL pyngsapi_PyArrayHandle
 
-#include <alps/ngs/api.hpp>
+#include <alps/ngs.hpp>
 #include <alps/ngs/hdf5.hpp>
-#include <alps/ngs/base.hpp>
-#include <alps/ngs/params.hpp>
-#include <alps/ngs/mcresults.hpp>
 
 namespace alps {
     namespace detail {
@@ -51,7 +48,7 @@ namespace alps {
 
 BOOST_PYTHON_MODULE(pyngsapi_c) {
 
-    boost::python::def("collectResults", static_cast<alps::results_type<alps::base>::type (*)(alps::base const &)>(&alps::collect_results<alps::base>));
+    boost::python::def("collectResults", static_cast<alps::results_type<alps::mcbase>::type (*)(alps::mcbase const &)>(&alps::collect_results<alps::mcbase>));
 
     boost::python::def("saveResults", &alps::detail::save_results_export);
 

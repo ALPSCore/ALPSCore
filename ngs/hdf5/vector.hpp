@@ -133,7 +133,7 @@ namespace alps {
                 , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                   \
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
             ) {                                                                                                                                                 \
-                using alps::cast;                                                                                                                                \
+                using alps::cast;                                                                                                                               \
                 if (ar.is_group(path))                                                                                                                          \
                     ar.delete_group(path);                                                                                                                      \
                 if (is_continous<T>::value && value.size() == 0)                                                                                                \
@@ -175,7 +175,7 @@ namespace alps {
                 , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                   \
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
             ) {                                                                                                                                                 \
-                using alps::cast;                                                                                                                                \
+                using alps::cast;                                                                                                                               \
                 if (ar.is_group(path)) {                                                                                                                        \
                     std::vector<std::string> children = ar.list_children(path);                                                                                 \
                     value.resize(children.size());                                                                                                              \

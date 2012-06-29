@@ -46,10 +46,15 @@ set(ALPS_SOURCES
 
 if (ALPS_BUILD_NGS)
   set(ALPS_SOURCES ${ALPS_SOURCES} 
-    ngs/lib/mcbase.cpp ngs/lib/mcparams.cpp ngs/lib/mcsignal.cpp ngs/lib/mcoptions.cpp  
-    ngs/lib/mcresult.cpp ngs/lib/mcresults.cpp ngs/lib/api.cpp ngs/lib/mcobservables.cpp ngs/lib/mcobservable.cpp
-    ngs/lib/observablewrappers.cpp ngs/lib/callback.cpp ngs/lib/signal.cpp
-    ngs/lib/paramvalue.cpp ngs/lib/paramproxy.cpp ngs/lib/params.cpp ngs/lib/base.cpp ngs/lib/make_deprecated_parameters.cpp
+    ngs/lib/callback.cpp ngs/lib/signal.cpp ngs/lib/api.cpp
+    # alea
+    # parameters
+    ngs/lib/paramvalue.cpp ngs/lib/paramproxy.cpp ngs/lib/params.cpp
+    # scheduler
+    ngs/lib/mcbase.cpp
+#deprecated
+    ngs/lib/mcoptions.cpp ngs/lib/observablewrappers.cpp ngs/lib/make_deprecated_parameters.cpp
+    ngs/lib/mcresult.cpp ngs/lib/mcresults.cpp ngs/lib/mcobservables.cpp ngs/lib/mcobservable.cpp
   )
   if (ALPS_BUILD_PYTHON)
     set(ALPS_SOURCES ${ALPS_SOURCES} ngs/lib/get_numpy_type.cpp)

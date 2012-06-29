@@ -27,23 +27,43 @@
 
 #include <alps/ngs/api.hpp>
 #include <alps/ngs/hdf5.hpp>
-#include <alps/ngs/mcbase.hpp>
+#include <alps/ngs/scheduler/mcbase.hpp>
 
 namespace alps {
 
-    void mcbase::save(boost::filesystem::path const & path) const {
-        save_results(measurements, params, path, "/simulation/realizations/0/clones/0/results");
+    // TODO: make boost::filesystem version
+    void mcbase::save(std::string const & filename) const {
+        hdf5::archive ar(filename, "w");
+        ar
+            << make_pvp("/checkpoint", *this)
+        ;
     }
 
-    void mcbase::load(boost::filesystem::path const & path) {
-        hdf5::archive ar(path.string(), "r");
-        ar >> make_pvp("/simulation/realizations/0/clones/0/results", measurements);
+    // TODO: make boost::filesystem version
+    void mcbase::load(std::string const & filename) {
+        hdf5::archive ar(filename);
+        ar 
+            >> make_pvp("/checkpoint", *this)
+        ;
+    }
+
+    void mcbase::save(alps::hdf5::archive & ar) const {
+        ar
+            << make_pvp("/parameters", params)
+            << make_pvp("/simulation/realizations/0/clones/0/results", measurements)
+        ;
+    }
+
+    void mcbase::load(alps::hdf5::archive & ar) {
+        ar 
+            >> make_pvp("/simulation/realizations/0/clones/0/results", measurements)
+        ;
     }
 
     bool mcbase::run(boost::function<bool ()> const & stop_callback) {
         do {
-            do_update();
-            do_measurements();
+            update();
+            measure();
         } while(!complete_callback(stop_callback));
         return !stop_callback();
     }
@@ -71,16 +91,17 @@ namespace alps {
     }
 
     bool mcbase::complete_callback(boost::function<bool ()> const & stop_callback) {
-        if (boost::posix_time::second_clock::local_time() > check_time) {
+        boost::chrono::high_resolution_clock::time_point now_time_point = boost::chrono::high_resolution_clock::now();
+        if (now_time_point - last_check_time_point > check_duration) {
             fraction = fraction_completed();
-            next_check = std::min(
-                2. * next_check, 
+            check_duration = boost::chrono::duration<double>(std::min(
+                2. *  check_duration.count(),
                 std::max(
-                      double(next_check)
-                    , 0.8 * (boost::posix_time::second_clock::local_time() - start_time).total_seconds() / fraction * (1 - fraction)
+                      double(check_duration.count())
+                    , 0.8 * (1 - fraction) / fraction * boost::chrono::duration_cast<boost::chrono::duration<double> >(now_time_point - start_time_point).count()
                 )
-            );
-           check_time = boost::posix_time::second_clock::local_time() + boost::posix_time::seconds(next_check);
+            ));
+            last_check_time_point = now_time_point;
         }
         return (stop_callback() || fraction >= 1.);
     }
