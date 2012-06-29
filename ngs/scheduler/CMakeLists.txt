@@ -4,19 +4,14 @@
 #      (See accompanying file LICENSE_1_0.txt or copy at
 #          http://www.boost.org/LICENSE_1_0.txt)
 
-
 include_directories(${PROJECT_BINARY_DIR}/src)
 include_directories(${PROJECT_SOURCE_DIR}/src)
 include_directories(${Boost_ROOT_DIR})
 
-FOREACH (name ngs_hdf5 ngs_hash)
-    add_executable(${name} ${name}.cpp)
-    add_dependencies(${name} alps)
-    target_link_libraries(${name} alps)
-    add_alps_test(${name})
-ENDFOREACH(name)
+add_executable(scheduler_sum_mpi sum_mpi.cpp)
+add_dependencies(scheduler_sum_mpi alps)
+target_link_libraries(scheduler_sum_mpi alps)
 
-#TODO: does not compile in clang
-add_subdirectory(alea)
-add_subdirectory(params)
-add_subdirectory(scheduler)
+add_executable(scheduler_sum_single sum_single.cpp)
+add_dependencies(scheduler_sum_single alps)
+target_link_libraries(scheduler_sum_single alps)
