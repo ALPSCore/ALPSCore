@@ -42,11 +42,6 @@
 #include <functional>
 #include <cassert>
 
-#ifdef HAVE_ALPS_HDF5
-#include <alps/hdf5.hpp>
-#include <boost/utility.hpp>
-#include <alps/type_traits/is_complex.hpp>
-#endif
 
 namespace alps {
     namespace numeric {
@@ -264,14 +259,6 @@ namespace alps {
 
         void write_xml(oxstream& ox) const;
 
-        // Serialize functions to save matrix with alps::hdf5
-#ifdef HAVE_ALPS_HDF5
-        void load_impl(alps::hdf5::archive & ar, boost::mpl::true_);
-        void load_impl(alps::hdf5::archive & ar, boost::mpl::false_);
-
-        void load(alps::hdf5::archive & ar);
-        void save(alps::hdf5::archive & ar) const;
-#endif
         MemoryBlock const& get_values() const;
         MemoryBlock & get_values();
 

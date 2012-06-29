@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2012 by Andreas Hehn <hehn@phys.ethz.ch>                   *
+ * Copyright (C) 2012 by Andreas Hehn <hehn@phys.ethz.ch>                          *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -25,9 +25,4 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/numeric/matrix/matrix.hpp>
-#include <alps/numeric/matrix/matrix_interface.hpp>
-#include <alps/numeric/matrix/resizable_matrix_interface.hpp>
-#include <alps/numeric/matrix/matrix_blas.hpp>
-#include <alps/numeric/matrix/conj.hpp>
 #include <alps/ngs/hdf5/matrix.hpp>

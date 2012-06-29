@@ -350,7 +350,7 @@ namespace alps {
         automatic_reserve(this->size1_+k, this->size2_);
         // The elements do already exists due to reserve, so we can just use (copy to) them.
         for(difference_type l=0; l<k; ++l)
-            std::copy( range.first+(l*this->size2_), range.first+((l+1)*this->size2_), row(this->size1_+l).first );
+            std::copy( range.first+(l*this->size2_), range.first+((l+1)*this->size2_), row_element_iterator(&values_[size1_+l],reserved_size1_) );
         this->size1_ += k;
     }
 
@@ -367,7 +367,7 @@ namespace alps {
         for(size_type j=0; j<this->size2_; ++j)
             std::copy_backward(&this->values_[this->reserved_size1_*j+i],&this->values_[this->reserved_size1_*j+this->size1_],&this->values_[this->reserved_size1_*j+this->size1_+k]);
         for(difference_type l=0; l<k; ++l)
-            std::copy(range.first+l*this->size2_,range.first+(l+1)*this->size2_,row(i+l).first);
+            std::copy(range.first+l*this->size2_,range.first+(l+1)*this->size2_,row_element_iterator(&values_[i+l],reserved_size1_) );
         this->size1_+=k;
     }
 
@@ -460,46 +460,6 @@ namespace alps {
         }
         xml << end_tag("MATRIX");
     }
-
-#ifdef HAVE_ALPS_HDF5
-    template <typename T, typename MemoryBlock>
-    void matrix<T, MemoryBlock>::load(alps::hdf5::archive & ar) {
-        load_impl(ar, typename alps::is_complex<T>::type());
-    }
-    template <typename T, typename MemoryBlock>
-    void matrix<T, MemoryBlock>::load_impl(alps::hdf5::archive & ar, boost::mpl::true_)
-    {
-        ar >> alps::make_pvp("size1", size1_);
-        ar >> alps::make_pvp("size2", size2_);
-        ar >> alps::make_pvp("reserved_size1", reserved_size1_);
-        if (ar.is_complex("values"))
-            ar >> alps::make_pvp("values", values_);
-        else {
-            std::vector<typename T::value_type> data;
-            ar >> alps::make_pvp("values", data);
-            values_.resize(data.size());
-            std::copy(data.begin(), data.end(), values_.begin());
-        }
-    }
-    template <typename T, typename MemoryBlock>
-    void matrix<T, MemoryBlock>::load_impl(alps::hdf5::archive & ar, boost::mpl::false_)
-    {
-        ar >> alps::make_pvp("size1", size1_);
-        ar >> alps::make_pvp("size2", size2_);
-        ar >> alps::make_pvp("reserved_size1", reserved_size1_);
-        ar >> alps::make_pvp("values", values_);
-    }
-
-    template <typename T, typename MemoryBlock>
-    inline void matrix<T, MemoryBlock>::save(alps::hdf5::archive & ar) const
-    {
-        ar << alps::make_pvp("size1", size1_);
-        ar << alps::make_pvp("size2", size2_);
-        ar << alps::make_pvp("reserved_size1", reserved_size1_);
-        ar << alps::make_pvp("values", values_);
-    }
-#endif // HAVE_ALPS_HDF5
-
 
     template <typename T, typename MemoryBlock>
     const matrix<T,MemoryBlock> matrix_matrix_multiply(matrix<T,MemoryBlock> const& lhs, matrix<T,MemoryBlock> const& rhs)
