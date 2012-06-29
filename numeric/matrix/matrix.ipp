@@ -614,10 +614,24 @@ namespace alps {
         return matrix_matrix_multiply(m1,m2);
     }
 
-    template<typename T,typename MemoryBlock>
+    template<typename T, typename MemoryBlock>
     void gemm(matrix<T,MemoryBlock> const & A, matrix<T,MemoryBlock> const & B, matrix<T,MemoryBlock> & C)
     {
         C = matrix_matrix_multiply(A, B);
+    }
+
+    template<class Tag1, class Tag2, class Matrix1, class Matrix2, class Matrix3>
+    void gemm(Matrix1 const & m1, Matrix2 const & m2, Matrix3 & m3){
+        gemm(Tag1::eval(m1), Tag2::eval(m2), m3);
+    }
+
+    template<class Tag1, class Tag2, typename T, typename MemoryBlock>
+    void gemm(matrix<T,MemoryBlock> const & a, matrix<T,MemoryBlock> const & b, matrix<T,MemoryBlock> & c)
+    {
+        using boost::numeric::bindings::tag::column_major;
+        boost::numeric::bindings::blas::detail::gemm(column_major(), typename Tag1::type(), typename Tag2::type(),
+                                                     c.num_rows(), c.num_cols(), Tag1::second(a), typename matrix<T,MemoryBlock>::value_type(1), &a(0,0),
+                                                     a.stride2(), &b(0,0), b.stride2(), typename matrix<T,MemoryBlock>::value_type(0), &c(0,0), c.stride2());
     }
 
     template<class T, class MemoryBlock>
