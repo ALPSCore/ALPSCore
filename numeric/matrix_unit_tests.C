@@ -26,7 +26,9 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #define BOOST_TEST_MODULE alps::numeric::matrix
+
 #include <boost/test/included/unit_test.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/mpl/list.hpp>
 
 #include <boost/lambda/lambda.hpp>
@@ -41,7 +43,15 @@
 //
 // List of types T for which the matrix<T> is tested
 //
-typedef boost::mpl::list<float, double, int, unsigned int, long unsigned int,std::complex<float>, std::complex<double> > test_types;
+typedef boost::mpl::list<
+      float
+    , double
+    , int
+    , unsigned int
+    , long unsigned int
+    , std::complex<float>
+    , std::complex<double>
+> test_types;
 // long long unsigned int causes problems in boost::iterator facade
 
 
@@ -248,18 +258,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( resize_test, T, test_types )
             else BOOST_CHECK_EQUAL(a(i,j), T(i+j));
         }
 }
-
 BOOST_AUTO_TEST_CASE_TEMPLATE( resize_exception_test, T, test_types )
 {
     matrix<T> a(22,18);
     fill_matrix_with_numbers(a);
-    
+
     // What happens if an exception is thrown?
     // Remains the matrix unchanged if an exception is thrown during the resize process?
     // Case 1: size1 > reserved_size1_
-    matrix<T> ref(a); 
-    matrix<T> c(a); 
-    matrix<T> d(a); 
+    matrix<T> ref(a);
+    matrix<T> c(a);
+    matrix<T> d(a);
     std::vector<T> test;
     std::size_t max_size = test.max_size();
     try
@@ -783,3 +792,30 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( conjugate, T, test_types )
     BOOST_CHECK_EQUAL(c,b);
 }
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( hdf5, T, test_types )
+{
+    std::string const filename = "alps_matrix_test.h5";
+    if (boost::filesystem::exists(boost::filesystem::path(filename)))
+        boost::filesystem::remove(boost::filesystem::path(filename));
+    matrix<T> a(10,20);
+    resize(a,40,40);
+    fill_matrix_with_numbers(a);
+    resize(a,10,20);
+    matrix<T> b(a);
+
+    BOOST_CHECK_EQUAL(a.capacity() > b.capacity(), true); // maybe this should be an assert instead
+
+    {
+        alps::hdf5::archive ar(filename, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
+        ar << alps::make_pvp("/matrix",a);
+    }
+
+    BOOST_CHECK_EQUAL(a,b);
+    matrix<T> c;
+    alps::hdf5::archive ar2(filename);
+    ar2 >> alps::make_pvp("/matrix",c);
+
+    BOOST_CHECK_EQUAL(a,c);
+    BOOST_CHECK_EQUAL(b,c);
+    boost::filesystem::remove(boost::filesystem::path(filename));
+}
