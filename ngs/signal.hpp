@@ -47,6 +47,8 @@ namespace alps {
 
                 void pop();
 
+                static void listen();
+
                 static void slot(int signal);
 
                 static void segfault(int signal);

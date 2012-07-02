@@ -25,77 +25,37 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/ngs/signal.hpp>
-#include <alps/ngs/stacktrace.hpp>
-#include <alps/ngs/hdf5.hpp>
+#ifndef ALPS_NGS_ARGPARSE_HPP
+#define ALPS_NGS_ARGPARSE_HPP
 
-#include <cstring>
-#include <sstream>
-#include <cstdlib>
-#include <iostream>
-#include <stdexcept>
+#include <alps/ngs/config.hpp>
 
-#include <signal.h>
+#include <string>
 
 namespace alps {
-    namespace ngs {
 
-        signal::signal() {
-            listen();
-        }
+      class ALPS_DECL argparse {
 
-        bool signal::empty() {
-            return !signals_.size();
-        }
+        public:
 
-        int signal::top() {
-            return signals_.back();
-        }
+            argparse(int argc, char* argv[], std::string title = "Allowed options")
+                : desc(title)
+            {}
 
-        void signal::pop() {
-            return signals_.pop_back();
-        }
+            bool valid; // TODO: which options do we need?
+            bool resume;
+            std::size_t time_limit;
+            std::string input_file;
+            std::string output_file;
 
-        void signal::listen() {
-            #if not ( defined BOOST_MSVC || defined ALPS_NGS_NO_SIGNALS )
-                static bool initialized;
-                if (!initialized) {
-                    initialized = true;
+        protected:
 
-                    static struct sigaction action;
-                    memset(&action, 0, sizeof(action));
-                    action.sa_handler = &signal::slot;
-                    sigaction(SIGINT, &action, NULL);
-                    sigaction(SIGTERM, &action, NULL);
-                    sigaction(SIGXCPU, &action, NULL);
-                    sigaction(SIGQUIT, &action, NULL);
-                    sigaction(SIGUSR1, &action, NULL);
-                    sigaction(SIGUSR2, &action, NULL);
-                    sigaction(SIGSTOP, &action, NULL);
-                    sigaction(SIGKILL, &action, NULL);
+            void parse();
 
-                    static struct sigaction segv;
-                    memset(&segv, 0, sizeof(segv));
-                    segv.sa_handler = &signal::segfault;
-                    sigaction(SIGSEGV, &segv, NULL);
-                    sigaction(SIGBUS, &segv, NULL);
-                }
-            #endif
-        }
+            boost::program_options::options_description description;
+            boost::program_options::positional_options_description positional;
 
-        void signal::slot(int signal) {
-            std::cerr << "Received signal " << signal << std::endl;
-            signals_.push_back(signal);
-        }
-
-        void signal::segfault(int signal) {
-            std::cerr << "Abort by signal " << signal << ":" << ngs::stacktrace() << std::endl;
-            signals_.push_back(signal);
-            hdf5::archive::abort();
-            std::abort();
-        }
-
-        std::vector<int> signal::signals_;
-
-    }
+    };
 }
+
+#endif

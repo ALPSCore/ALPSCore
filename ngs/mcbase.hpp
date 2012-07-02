@@ -59,7 +59,9 @@ namespace alps {
                 , next_check(8)
                 , start_time(boost::posix_time::second_clock::local_time())
                 , check_time(boost::posix_time::second_clock::local_time() + boost::posix_time::seconds(next_check))
-            {}
+            {
+                alps::ngs::signal::listen();
+            }
 
             virtual ~mcbase() {}
 
