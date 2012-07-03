@@ -144,17 +144,21 @@ namespace alps {
         }
 
         template <typename T>
-        void norm(const matrix<T>& M, typename matrix<T>::value_type& ret){
+        typename matrix<T>::value_type norm_square(const matrix<T>& M){
+            typename matrix<T>::value_type ret(0);
             for (std::size_t c = 0; c < num_cols(M); ++c)
                 for (std::size_t r = 0; r < num_rows(M); ++r)
                     ret += conj(M(r,c)) * M(r,c);
+            return ret;
         }
 
         template <typename T>
-        void overlap(matrix<T> & M1, matrix<T> & M2, typename matrix<T>::value_type & ret){ // not const due to nullcut
+        typename matrix<T>::value_type overlap(const matrix<T> & M1, const matrix<T> & M2){
+            typename matrix<T>::value_type ret(0);
             for (std::size_t c = 0; c < num_cols(M1); ++c)
                 for (std::size_t r = 0; r < num_rows(M1); ++r)
                     ret += conj(M1(r,c)) * M2(r,c);
+            return ret;
         }
 
         namespace detail {
