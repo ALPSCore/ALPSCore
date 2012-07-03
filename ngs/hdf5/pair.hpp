@@ -93,7 +93,7 @@ namespace alps {
                     using alps::hdf5::get_extent;
                     std::vector<std::size_t> extent(value.second);
                     std::vector<std::size_t> size(value.second.size() ? get_extent(*value.first) : std::vector<std::size_t>());
-                    if (!is_continous<T>::value && value.second.size()) {
+                    if (!is_continuous<T>::value && value.second.size()) {
                         for (std::size_t i = 1; i < std::accumulate(value.second.begin(), value.second.end(), std::size_t(1), std::multiplies<std::size_t>()); ++i)
                             if (!std::equal(size.begin(), size.end(), get_extent(value.first[i]).begin()))
                                 throw archive_error("no rectengual matrix" + ALPS_STACKTRACE);
@@ -108,7 +108,7 @@ namespace alps {
                     using alps::hdf5::set_extent;
                     if (value.second.size() > size.size() || !std::equal(value.second.begin(), value.second.end(), size.begin()))
                         throw archive_error("invalid data size" + ALPS_STACKTRACE);
-                    if (!is_continous<T>::value && value.second.size() && value.second.size() < size.size())
+                    if (!is_continuous<T>::value && value.second.size() && value.second.size() < size.size())
                         for (std::size_t i = 0; i < std::accumulate(value.second.begin(), value.second.end(), std::size_t(1), std::multiplies<std::size_t>()); ++i)
                              set_extent(value.first[i], std::vector<std::size_t>(size.begin() + value.second.size(), size.end()));
                 }
@@ -151,7 +151,7 @@ namespace alps {
                 , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                   \
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
             ) {                                                                                                                                                 \
-                if (is_continous<T>::value) {                                                                                                                   \
+                if (is_continuous<T>::value) {                                                                                                                  \
                     std::vector<std::size_t> extent(get_extent(value));                                                                                         \
                     std::copy(extent.begin(), extent.end(), std::back_inserter(size));                                                                          \
                     std::copy(extent.begin(), extent.end(), std::back_inserter(chunk));                                                                         \
@@ -246,7 +246,7 @@ namespace alps {
                 } else {                                                                                                                                        \
                     std::vector<std::size_t> size(ar.extent(path));                                                                                             \
                     set_extent(value, std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));                                                       \
-                    if (is_continous<T>::value) {                                                                                                               \
+                    if (is_continuous<T>::value) {                                                                                                              \
                         std::copy(size.begin(), size.end(), std::back_inserter(chunk));                                                                         \
                         std::fill_n(std::back_inserter(offset), size.size(), 0);                                                                                \
                         ar.read(path, get_pointer(value), chunk, offset);                                                                                       \

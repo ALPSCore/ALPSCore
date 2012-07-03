@@ -69,7 +69,7 @@ namespace alps {
                         typename boost::multi_array<T, N, A>::extent_gen extents;
                         gen_extent(value, extents, size);
                     }
-                    if (!is_continous<T>::value && boost::multi_array<T, N, A>::dimensionality < size.size())
+                    if (!is_continuous<T>::value && boost::multi_array<T, N, A>::dimensionality < size.size())
                         for (std::size_t i = 0; i < value.num_elements(); ++i)
                             set_extent(value.data()[i], std::vector<std::size_t>(size.begin() + boost::multi_array<T, N, A>::dimensionality, size.end()));
                 }
@@ -119,7 +119,7 @@ namespace alps {
                 , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                   \
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
             ) {                                                                                                                                                 \
-                if (is_continous<T>::value) {                                                                                                                   \
+                if (is_continuous<T>::value) {                                                                                                                  \
                     std::vector<std::size_t> extent(get_extent(value));                                                                                         \
                     std::copy(extent.begin(), extent.end(), std::back_inserter(size));                                                                          \
                     std::copy(extent.begin(), extent.end(), std::back_inserter(chunk));                                                                         \
@@ -166,7 +166,7 @@ namespace alps {
                     std::vector<std::size_t> size(ar.extent(path));                                                                                             \
                     if (boost::multi_array<T, N, A>::dimensionality <= size.size())                                                                             \
                         set_extent(value, std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));                                                   \
-                    if (is_continous<T>::value) {                                                                                                               \
+                    if (is_continuous<T>::value) {                                                                                                              \
                         std::copy(size.begin() + chunk.size(), size.end(), std::back_inserter(chunk));                                                          \
                         std::fill_n(std::back_inserter(offset), size.size() - offset.size(), 0);                                                                \
                         ar.read(path, get_pointer(value), chunk, offset);                                                                                       \

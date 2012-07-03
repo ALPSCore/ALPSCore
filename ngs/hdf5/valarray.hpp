@@ -127,9 +127,9 @@ namespace alps {
             ) {                                                                                                                                                    \
                 if (ar.is_group(path))                                                                                                                            \
                     ar.delete_group(path);                                                                                                                        \
-                if (is_continous<T>::value && value.size() == 0)                                                                                                \
+                if (is_continuous<T>::value && value.size() == 0)                                                                                                \
                     ar.write(path, static_cast<typename scalar_type<std::valarray<T> >::type const *>(NULL), std::vector<std::size_t>());                        \
-                else if (is_continous<T>::value) {                                                                                                                \
+                else if (is_continuous<T>::value) {                                                                                                                \
                     std::vector<std::size_t> extent(get_extent(value));                                                                                            \
                     std::copy(extent.begin(), extent.end(), std::back_inserter(size));                                                                            \
                     std::copy(extent.begin(), extent.end(), std::back_inserter(chunk));                                                                            \
@@ -173,7 +173,7 @@ namespace alps {
                         load(ar, ar.complete_path(path) + "/" + *it, value[cast<std::size_t>(*it)]);                                                            \
                 } else {                                                                                                                                        \
                     std::vector<std::size_t> size(ar.extent(path));                                                                                                \
-                    if (is_continous<T>::value) {                                                                                                                \
+                    if (is_continuous<T>::value) {                                                                                                                \
                         set_extent(value, std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));                                                    \
                         std::copy(size.begin() + chunk.size(), size.end(), std::back_inserter(chunk));                                                            \
                         std::fill_n(std::back_inserter(offset), size.size() - offset.size(), 0);                                                                \

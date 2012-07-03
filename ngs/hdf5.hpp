@@ -208,7 +208,7 @@ namespace alps {
 
         };
 
-        template<typename T> struct is_continous
+        template<typename T> struct is_continuous
             : public boost::false_type
         {};
 
@@ -314,10 +314,10 @@ namespace alps {
         }
 
         #define ALPS_NGS_HDF5_DEFINE_FREE_FUNCTIONS(T)                                                                                                                 \
-            template<> struct is_continous< T >                                                                                                                        \
+            template<> struct is_continuous< T >                                                                                                                       \
                 : public boost::true_type                                                                                                                              \
             {};                                                                                                                                                        \
-            template<> struct is_continous< T const >                                                                                                                  \
+            template<> struct is_continuous< T const >                                                                                                                 \
                 : public boost::true_type                                                                                                                              \
             {};                                                                                                                                                        \
                                                                                                                                                                        \

@@ -39,11 +39,11 @@ namespace alps {
             typedef typename scalar_type<typename std::complex<T>::value_type>::type type;
         };
 
-        template<typename T> struct is_continous<std::complex<T> >
-            : public is_continous<T>
+        template<typename T> struct is_continuous<std::complex<T> >
+            : public is_continuous<T>
         {};
-        template<typename T> struct is_continous<std::complex<T> const >
-            : public is_continous<T>
+        template<typename T> struct is_continuous<std::complex<T> const >
+            : public is_continuous<T>
         {};
 
         template<typename T> struct has_complex_elements<std::complex<T> >
@@ -97,13 +97,13 @@ namespace alps {
                 , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                           \
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                          \
             ) {                                                                                                                                                         \
-                if (is_continous<T>::value) {                                                                                                                           \
+                if (is_continuous<T>::value) {                                                                                                                          \
                     size.push_back(2);                                                                                                                                  \
                     chunk.push_back(2);                                                                                                                                 \
                     offset.push_back(0);                                                                                                                                \
                     ar.write(path, get_pointer(value), size, chunk, offset);                                                                                            \
                 } else                                                                                                                                                  \
-                    throw wrong_type("invalid type" + ALPS_STACKTRACE);                                                                                               \
+                    throw wrong_type("invalid type" + ALPS_STACKTRACE);                                                                                                 \
             }
         ALPS_NGS_HDF5_COMPLEX_SAVE(archive)
         #ifdef ALPS_HDF5_HAVE_DEPRECATED
@@ -119,10 +119,10 @@ namespace alps {
                 , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                           \
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                          \
             ) {                                                                                                                                                         \
-                if (ar.is_group(path) || !is_continous<T>::value)                                                                                                       \
-                    throw wrong_type("invalid path" + ALPS_STACKTRACE);                                                                                               \
-                else if (!ar.is_complex(path))                                                                                                                            \
-                    throw archive_error("no complex value in archive" + ALPS_STACKTRACE);                                                                                \
+                if (ar.is_group(path) || !is_continuous<T>::value)                                                                                                      \
+                    throw wrong_type("invalid path" + ALPS_STACKTRACE);                                                                                                 \
+                else if (!ar.is_complex(path))                                                                                                                          \
+                    throw archive_error("no complex value in archive" + ALPS_STACKTRACE);                                                                               \
                 else {                                                                                                                                                  \
                     chunk.push_back(2);                                                                                                                                 \
                     offset.push_back(0);                                                                                                                                \

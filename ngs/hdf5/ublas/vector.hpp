@@ -130,12 +130,12 @@ namespace alps {
                 , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                   \
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
             ) {                                                                                                                                                 \
-                using alps::cast;                                                                                                                                \
+                using alps::cast;                                                                                                                               \
                 if (ar.is_group(path))                                                                                                                          \
                     ar.delete_group(path);                                                                                                                      \
-                if (is_continous<T>::value && value.size() == 0)                                                                                                \
+                if (is_continuous<T>::value && value.size() == 0)                                                                                               \
                     ar.write(path, static_cast<typename scalar_type<boost::numeric::ublas::vector<T, A> >::type const *>(NULL), std::vector<std::size_t>());    \
-                else if (is_continous<T>::value) {                                                                                                              \
+                else if (is_continuous<T>::value) {                                                                                                             \
                     std::vector<std::size_t> extent(get_extent(value));                                                                                         \
                     std::copy(extent.begin(), extent.end(), std::back_inserter(size));                                                                          \
                     std::copy(extent.begin(), extent.end(), std::back_inserter(chunk));                                                                         \
@@ -172,7 +172,7 @@ namespace alps {
                 , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                   \
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
             ) {                                                                                                                                                 \
-                using alps::cast;                                                                                                                                \
+                using alps::cast;                                                                                                                               \
                 if (ar.is_group(path)) {                                                                                                                        \
                     std::vector<std::string> children = ar.list_children(path);                                                                                 \
                     value.resize(children.size());                                                                                                              \
@@ -180,7 +180,7 @@ namespace alps {
                         load(ar, ar.complete_path(path) + "/" + *it, value[cast<std::size_t>(*it)]);                                                            \
                 } else {                                                                                                                                        \
                     std::vector<std::size_t> size(ar.extent(path));                                                                                             \
-                    if (is_continous<T>::value) {                                                                                                               \
+                    if (is_continuous<T>::value) {                                                                                                              \
                         set_extent(value, std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));                                                   \
                         if (value.size()) {                                                                                                                     \
                             std::copy(size.begin() + chunk.size(), size.end(), std::back_inserter(chunk));                                                      \

@@ -73,7 +73,7 @@ namespace alps {
                 static void apply(boost::numeric::ublas::matrix<T, F, A> & value, std::vector<std::size_t> const & size) {
                     using alps::hdf5::set_extent;
                     value.resize(size[0], size[1], false);
-                    if (!is_continous<T>::value && size.size() != 2)
+                    if (!is_continuous<T>::value && size.size() != 2)
                         for (std::size_t i = 0; i < value.size1(); ++i)
                             for (std::size_t j = 0; j < value.size2(); ++j)
                                 set_extent(value(i, j), std::vector<std::size_t>(size.begin() + 2, size.end()));
@@ -120,7 +120,7 @@ namespace alps {
                 , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                     \
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                    \
             ) {                                                                                                                                                   \
-                if (is_continous<T>::value) {                                                                                                                     \
+                if (is_continuous<T>::value) {                                                                                                                    \
                     std::vector<std::size_t> extent(get_extent(value));                                                                                           \
                     std::copy(extent.begin(), extent.end(), std::back_inserter(size));                                                                            \
                     std::copy(extent.begin(), extent.end(), std::back_inserter(chunk));                                                                           \
@@ -149,7 +149,7 @@ namespace alps {
                 else {                                                                                                                                            \
                     std::vector<std::size_t> size(ar.extent(path));                                                                                               \
                     set_extent(value, std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));                                                         \
-                    if (is_continous<T>::value) {                                                                                                                 \
+                    if (is_continuous<T>::value) {                                                                                                                \
                         std::copy(size.begin(), size.end(), std::back_inserter(chunk));                                                                           \
                         std::fill_n(std::back_inserter(offset), size.size(), 0);                                                                                  \
                         ar.read(path, get_pointer(value), chunk, offset);                                                                                         \

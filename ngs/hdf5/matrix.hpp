@@ -92,7 +92,7 @@ namespace detail {
             m.reserve(size[1],size[0]);
             resize(m,size[1],size[0]);
             assert(m.capacity().first  == size[1]);
-            if( !is_continous<T>::value && (size.size() != 2))
+            if( !is_continuous<T>::value && (size.size() != 2))
                 for(std::size_t j=0; j < num_cols(m); ++j)
                     for(std::pair<col_iterator,col_iterator> r = col(m,j); r.first != r.second; ++r.first)
                         set_extent(*r.first, std::vector<std::size_t>(size.begin() + 2, size.end()));
@@ -130,7 +130,7 @@ namespace detail {
         using std::copy;
         using std::fill_n;
         typedef typename alps::numeric::matrix<T,MemoryBlock>::const_col_element_iterator col_iterator;
-        if(is_continous<T>::value) {
+        if(is_continuous<T>::value) {
             std::vector<std::size_t> extent(get_extent(m));
             copy(extent.begin(),extent.end(), std::back_inserter(size));
             // We want to write one column:
@@ -181,7 +181,7 @@ namespace detail {
             // The only way to ensure that is by creating a new matrix which has no reserved space.
             alps::numeric::matrix<T,MemoryBlock> m2;
             set_extent(m2,std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));
-            if(is_continous<T>::value) {
+            if(is_continuous<T>::value) {
 //                copy(size.begin()+chunk.size(), size.end(), std::back_inserter(chunk));
                 copy(size.begin()+chunk.size(), size.end(), std::back_inserter(chunk));
                 fill_n(std::back_inserter(offset), size.size() - offset.size(), 0);
