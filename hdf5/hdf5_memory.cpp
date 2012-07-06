@@ -37,7 +37,7 @@ int main()
     if (boost::filesystem::exists(boost::filesystem::path("test.h5")))
         boost::filesystem::remove(boost::filesystem::path("test.h5"));
     {
-        alps::hdf5::oarchive oa("test.h5");
+        alps::hdf5::archive oa("test.h5", "w");
         std::vector<std::complex<double> > foo(3);
         std::vector<double> foo2(3);
         oa << alps::make_pvp("/foo", foo);
@@ -45,7 +45,7 @@ int main()
     }
     
     {
-        alps::hdf5::iarchive ia("test.h5");
+        alps::hdf5::archive ia("test.h5");
         std::vector<double> foo, foo2;
         try {
             ia >> alps::make_pvp("/foo", foo);
@@ -54,9 +54,9 @@ int main()
             cout << "Exception caught:" << endl;
             cout << e.what() << endl;
             boost::filesystem::remove(boost::filesystem::path("test.h5"));
-            return 0;
+            return EXIT_SUCCESS;
         }
-        cout << "No exception." << endl;
     }
-    //boost::filesystem::remove(boost::filesystem::path("test.h5"));
+    boost::filesystem::remove(boost::filesystem::path("test.h5"));
+    return EXIT_SUCCESS;
 }

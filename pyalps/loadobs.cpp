@@ -36,7 +36,7 @@
 
 
 int main() {
-    alps::hdf5::iarchive iar("loadobs.h5");
+    alps::hdf5::archive iar("loadobs.h5");
 
     std::vector<std::string> list = iar.list_children("/simulation/results");
     for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {

@@ -44,12 +44,12 @@ struct foo {
     std::complex<double> scalar;
     std::vector<std::complex<double> > vec;
     
-    void serialize(alps::hdf5::iarchive & ar)
+    void load(alps::hdf5::archive & ar)
     {
         ar >> alps::make_pvp("scalar", scalar);
         ar >> alps::make_pvp("vector", vec);
     }
-    void serialize(alps::hdf5::oarchive & ar) const
+    void save(alps::hdf5::archive & ar) const
     {
         ar << alps::make_pvp("scalar", scalar);
         ar << alps::make_pvp("vector", vec);
@@ -62,14 +62,14 @@ int main () {
     b.scalar = std::complex<double>(3,4);
     b.vec = std::vector<std::complex<double> >(5, std::complex<double>(0,7));
     {
-        alps::hdf5::oarchive ar("test.h5");
+        alps::hdf5::archive ar("test.h5", "w");
         ar << alps::make_pvp("/test/foo", b);
     }
     
     // check
     {
         foo t_b;
-        alps::hdf5::iarchive ar("test.h5");
+        alps::hdf5::archive ar("test.h5", "r");
         ar >> alps::make_pvp("/test/foo", t_b);
         std::cout << "scalar (write): " << b.scalar << std::endl;
         std::cout << "scalar (read): " << t_b.scalar << std::endl;
