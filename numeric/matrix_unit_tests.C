@@ -835,7 +835,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transpose_test, T, test_types )
         }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( transpose_inplace_test, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( transpose_inplace_squared_test, T, test_types )
 {
     matrix<T> a(30,30);
     fill_matrix_with_numbers(a);
@@ -847,6 +847,29 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transpose_inplace_test, T, test_types )
     for(unsigned int j=0; j < num_cols(a); ++j)
         for(unsigned int i=0; i < num_rows(a); ++i)
             BOOST_CHECK_EQUAL(a(i,j),b(j,i));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( transpose_inplace_test, T, test_types )
+{
+    matrix<T> a(30,10);
+    fill_matrix_with_numbers(a);
+
+    matrix<T> b(a);
+
+    transpose_inplace(b);
+
+    for(unsigned int j=0; j < num_cols(a); ++j)
+        for(unsigned int i=0; i < num_rows(a); ++i)
+            BOOST_CHECK_EQUAL(a(i,j),b(j,i));
+
+    matrix<T> c(10,30);
+    fill_matrix_with_numbers(c);
+    matrix<T> d(c);
+
+    transpose_inplace(d);
+    for(unsigned int j=0; j < num_cols(c); ++j)
+        for(unsigned int i=0; i < num_rows(c); ++i)
+            BOOST_CHECK_EQUAL(c(i,j),d(j,i));
 }
 
 /* Doesn't work yet. 
