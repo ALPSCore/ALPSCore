@@ -47,14 +47,28 @@ namespace numeric {
     {
     };
 
-    template<typename Matrix>
+    template <typename Matrix>
     struct associated_vector
     {
     };
 
-    template<typename Matrix>
+    template <typename Matrix>
     struct associated_real_vector
     {
+    };
+
+    template <typename Matrix1, typename Matrix2>
+    struct matrix_matrix_multiply_return_type {
+    };
+
+    template <typename Matrix>
+    struct matrix_matrix_multiply_return_type<Matrix,Matrix> {
+        typedef Matrix type;
+    };
+
+    template <typename Matrix, typename T>
+    struct is_matrix_scalar_multiplication {
+        static bool const value = true;
     };
 
 //    

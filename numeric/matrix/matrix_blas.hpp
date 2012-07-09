@@ -34,6 +34,8 @@ namespace alps {
     namespace numeric {
         template <typename T, typename MemoryBlock>
             class matrix;
+        template <typename Matrix>
+            class transpose_view;
     }
 }
 
@@ -45,7 +47,58 @@ namespace alps {
     namespace numeric {
     #define MATRIX_MATRIX_MULTIPLY(T) \
         template <typename MemoryBlock> \
-        const matrix<T,MemoryBlock> matrix_matrix_multiply(matrix<T,MemoryBlock> const& lhs, matrix<T,MemoryBlock> const& rhs) \
+        matrix<T,MemoryBlock> matrix_matrix_multiply(matrix<T,MemoryBlock> const& lhs, matrix<T,MemoryBlock> const& rhs) \
+        { \
+            assert( !(lhs.num_cols() > rhs.num_rows()) ); \
+            assert( !(lhs.num_cols() < rhs.num_rows()) ); \
+            assert( lhs.num_cols() == rhs.num_rows() ); \
+            matrix<T,MemoryBlock> result(lhs.num_rows(),rhs.num_cols()); \
+            boost::numeric::bindings::blas::gemm \
+                ( \
+                   typename matrix<T,MemoryBlock>::value_type(1), \
+                   lhs, \
+                   rhs, \
+                   typename matrix<T,MemoryBlock>::value_type(0), \
+                   result \
+                ); \
+            return result; \
+        }\
+        template <typename MemoryBlock> \
+        matrix<T,MemoryBlock> matrix_matrix_multiply(matrix<T,MemoryBlock> const& lhs, transpose_view<matrix<T,MemoryBlock> > const& rhs) \
+        { \
+            assert( !(lhs.num_cols() > rhs.num_rows()) ); \
+            assert( !(lhs.num_cols() < rhs.num_rows()) ); \
+            assert( lhs.num_cols() == rhs.num_rows() ); \
+            matrix<T,MemoryBlock> result(lhs.num_rows(),rhs.num_cols()); \
+            boost::numeric::bindings::blas::gemm \
+                ( \
+                   typename matrix<T,MemoryBlock>::value_type(1), \
+                   lhs, \
+                   rhs, \
+                   typename matrix<T,MemoryBlock>::value_type(0), \
+                   result \
+                ); \
+            return result; \
+        } \
+        template <typename MemoryBlock> \
+        matrix<T,MemoryBlock> matrix_matrix_multiply(transpose_view<matrix<T,MemoryBlock> > const& lhs, matrix<T,MemoryBlock> const& rhs) \
+        { \
+            assert( !(lhs.num_cols() > rhs.num_rows()) ); \
+            assert( !(lhs.num_cols() < rhs.num_rows()) ); \
+            assert( lhs.num_cols() == rhs.num_rows() ); \
+            matrix<T,MemoryBlock> result(lhs.num_rows(),rhs.num_cols()); \
+            boost::numeric::bindings::blas::gemm \
+                ( \
+                   typename matrix<T,MemoryBlock>::value_type(1), \
+                   lhs, \
+                   rhs, \
+                   typename matrix<T,MemoryBlock>::value_type(0), \
+                   result \
+                ); \
+            return result; \
+        } \
+        template <typename MemoryBlock> \
+        matrix<T,MemoryBlock> matrix_matrix_multiply(transpose_view<matrix<T,MemoryBlock> > const& lhs, transpose_view<matrix<T,MemoryBlock> > const& rhs) \
         { \
             assert( !(lhs.num_cols() > rhs.num_rows()) ); \
             assert( !(lhs.num_cols() < rhs.num_rows()) ); \

@@ -30,66 +30,58 @@
 
 #include <alps/numeric/matrix/matrix_concept_check.hpp>
 
-namespace alps {
-    namespace numeric {
-    // This macro creates free functions that call member functions with the same
-    // name, e.g. swap_cols(A,i,j) -> A.swap_cols(i,j)
-    #define COMMA ,
-    #define IMPLEMENT_FORWARDING(TEMPLATE_PARS,TYPE,RET,NAME,ARGS,VARS) \
-    template TEMPLATE_PARS \
-    RET NAME ARGS \
-    { \
-        BOOST_CONCEPT_ASSERT((alps::numeric::Matrix<TYPE>)); \
-        return m.NAME VARS; \
+
+// BOOST_CONCEPT_ASSERT((MATRIX_TEMPLATE)); 
+// This macro creates free functions that call member functions with the same
+// name, e.g. swap_cols(A,i,j) -> A.swap_cols(i,j)
+#define ALPS_IMPLEMENT_MATRIX_INTERFACE(MATRIX_TEMPLATE, TEMPLATE_PARAMETERS) \
+    template TEMPLATE_PARAMETERS \
+    typename MATRIX_TEMPLATE::size_type num_rows(MATRIX_TEMPLATE const& m) { \
+        return m.num_rows(); \
+    } \
+    template TEMPLATE_PARAMETERS \
+    typename MATRIX_TEMPLATE::size_type num_cols(MATRIX_TEMPLATE const& m) { \
+        return m.num_cols(); \
+    } \
+    template TEMPLATE_PARAMETERS \
+    void swap_rows(MATRIX_TEMPLATE & m, typename MATRIX_TEMPLATE::size_type i1, typename MATRIX_TEMPLATE::size_type i2) { \
+        m.swap_rows(i1,i2); \
+    } \
+    template TEMPLATE_PARAMETERS \
+    void swap_cols(MATRIX_TEMPLATE & m, typename MATRIX_TEMPLATE::size_type i1, typename MATRIX_TEMPLATE::size_type i2) { \
+        m.swap_cols(i1,i2); \
+    } \
+    template TEMPLATE_PARAMETERS \
+    std::pair<typename MATRIX_TEMPLATE::row_element_iterator, typename MATRIX_TEMPLATE::row_element_iterator> \
+    row(MATRIX_TEMPLATE & m, typename MATRIX_TEMPLATE::size_type i) { \
+        return m.row(i); \
+    } \
+    template TEMPLATE_PARAMETERS \
+    std::pair<typename MATRIX_TEMPLATE::const_row_element_iterator, typename MATRIX_TEMPLATE::const_row_element_iterator> \
+    row(MATRIX_TEMPLATE const& m, typename MATRIX_TEMPLATE::size_type i) { \
+        return m.row(i); \
+    } \
+    template TEMPLATE_PARAMETERS \
+    std::pair<typename MATRIX_TEMPLATE::col_element_iterator, typename MATRIX_TEMPLATE::col_element_iterator> \
+    col(MATRIX_TEMPLATE & m, typename MATRIX_TEMPLATE::size_type j) { \
+        return m.col(j); \
+    } \
+    template TEMPLATE_PARAMETERS \
+    std::pair<typename MATRIX_TEMPLATE::const_col_element_iterator, typename MATRIX_TEMPLATE::const_col_element_iterator> \
+    col(MATRIX_TEMPLATE const& m, typename MATRIX_TEMPLATE::size_type j) { \
+        return m.col(j); \
     }
 
-    // num_rows(), num_cols(), swap_rows(), swap_cols()
-    IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, matrix<T COMMA MemoryBlock>,
-                         typename matrix<T COMMA MemoryBlock>::size_type, num_rows, (matrix<T, MemoryBlock> const& m), () )
-    IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, matrix<T COMMA MemoryBlock>,
-                         typename matrix<T COMMA MemoryBlock>::size_type, num_cols, (matrix<T, MemoryBlock> const& m), () )
-    IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, matrix<T COMMA MemoryBlock>,
-                         void, swap_rows, (matrix<T, MemoryBlock>& m, typename matrix<T, MemoryBlock>::size_type i1, typename matrix<T, MemoryBlock>::size_type i2), (i1,i2) )
-    IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, matrix<T COMMA MemoryBlock>,
-                         void, swap_cols, (matrix<T, MemoryBlock>& m, typename matrix<T, MemoryBlock>::size_type i1, typename matrix<T, MemoryBlock>::size_type i2), (i1,i2) )
-    //
-    // Matrix Iterator Interface
-    // 
-    #define ITERATOR_PAIR(TYPE, ITERATOR) \
-    std::pair<typename TYPE::ITERATOR, typename TYPE::ITERATOR>
+#define ALPS_IMPLEMENT_MATRIX_ELEMENT_ITERATOR_INTERFACE(MATRIX_TEMPLATE, TEMPLATE_PARAMETERS) \
+    template TEMPLATE_PARAMETERS \
+    std::pair<typename MATRIX_TEMPLATE::element_iterator, typename MATRIX_TEMPLATE::element_iterator> \
+    elements(MATRIX_TEMPLATE & m) { \
+        return m.elements(); \
+    } \
+    template TEMPLATE_PARAMETERS \
+    std::pair<typename MATRIX_TEMPLATE::const_element_iterator, typename MATRIX_TEMPLATE::const_element_iterator> \
+    elements(MATRIX_TEMPLATE const& m)  { \
+        return m.elements(); \
+    }
 
-    IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, matrix<T COMMA MemoryBlock>,
-                         ITERATOR_PAIR(matrix<T COMMA MemoryBlock>, row_element_iterator), row,
-                         (matrix<T COMMA MemoryBlock> & m,
-                          typename matrix<T COMMA MemoryBlock>::size_type i),
-                         (i) )
-    IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, matrix<T COMMA MemoryBlock>,
-                         ITERATOR_PAIR(matrix<T COMMA MemoryBlock>, const_row_element_iterator), row,
-                         (matrix<T COMMA MemoryBlock> const& m,
-                          typename matrix<T COMMA MemoryBlock>::size_type i),
-                         (i) )
-
-    IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, matrix<T COMMA MemoryBlock>,
-                         ITERATOR_PAIR(matrix<T COMMA MemoryBlock>, col_element_iterator), col,
-                         (matrix<T COMMA MemoryBlock> & m,
-                          typename matrix<T COMMA MemoryBlock>::size_type i),
-                         (i) )
-    IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, matrix<T COMMA MemoryBlock>,
-                         ITERATOR_PAIR(matrix<T COMMA MemoryBlock>, const_col_element_iterator), col,
-                         (matrix<T COMMA MemoryBlock> const& m,
-                          typename matrix<T COMMA MemoryBlock>::size_type i),
-                         (i) )
-
-    IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, matrix<T COMMA MemoryBlock>,
-                         ITERATOR_PAIR(matrix<T COMMA MemoryBlock>, element_iterator), elements,
-                         (matrix<T COMMA MemoryBlock>& m), () )
-
-    IMPLEMENT_FORWARDING(<typename T COMMA class MemoryBlock>, matrix<T COMMA MemoryBlock>,
-                         ITERATOR_PAIR(matrix<T COMMA MemoryBlock>, const_element_iterator), elements,
-                         (matrix<T COMMA MemoryBlock> const& m), () )
-    #undef ITERATOR_PAIR
-    #undef IMPLEMENT_FORWARDING
-    #undef COMMA
-    } //namespace numeric 
-} //namespace alps     
 #endif //ALPS_MATRIX_INTERFACE_HPP

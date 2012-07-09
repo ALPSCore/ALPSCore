@@ -99,6 +99,25 @@ namespace alps {
     { }
 
     template <typename T, typename MemoryBlock>
+    template <typename ForwardIterator>
+    matrix<T, MemoryBlock>::matrix(std::vector<std::pair<ForwardIterator,ForwardIterator> > const& columns)
+    : size1_(0), size2_(0), reserved_size1_(0), values_()
+    {
+        using std::distance;
+        using std::copy;
+        assert(columns.size() > 0);
+
+        size_type const reserve_rows = distance(columns.front().first, columns.front().second);
+        this->reserve(reserve_rows, columns.size() );
+        for(std::size_t i=0; i < columns.size(); ++i) {
+            assert(distance(columns[i].first,columns[i].second) == reserve_rows);
+            copy(columns[i].first, columns[i].second, col_element_iterator(&values_[i*reserved_size1_]));
+        }
+        size1_ = reserve_rows;
+        size2_ = columns.size();
+    }
+
+    template <typename T, typename MemoryBlock>
     template <typename OtherMemoryBlock>
     MemoryBlock matrix<T, MemoryBlock>::copy_values(matrix<T,OtherMemoryBlock> const& m)
     {
@@ -461,25 +480,17 @@ namespace alps {
         xml << end_tag("MATRIX");
     }
 
-    template <typename T, typename MemoryBlock>
-    const matrix<T,MemoryBlock> matrix_matrix_multiply(matrix<T,MemoryBlock> const& lhs, matrix<T,MemoryBlock> const& rhs)
+    template <typename Matrix1, typename Matrix2>
+    typename matrix_matrix_multiply_return_type<Matrix1,Matrix2>::type matrix_matrix_multiply(Matrix1 const& lhs, Matrix2 const& rhs)
     {
-        assert( !(lhs.num_cols() > rhs.num_rows()) );
-        assert( !(lhs.num_cols() < rhs.num_rows()) );
         assert( lhs.num_cols() == rhs.num_rows() );
 
         // Simple matrix matrix multiplication
-        matrix<T,MemoryBlock> result(lhs.num_rows(),rhs.num_cols());
-        for(std::size_t i=0; i < lhs.num_rows(); ++i)
-        {
+        typename matrix_matrix_multiply_return_type<Matrix1,Matrix2>::type result(lhs.num_rows(),rhs.num_cols());
+        for(std::size_t j=0; j<rhs.num_cols(); ++j)
             for(std::size_t k=0; k<lhs.num_cols(); ++k)
-            {
-                for(std::size_t j=0; j<rhs.num_cols(); ++j)
-                {
-                        result(i,j) += lhs(i,k) * rhs(k,j);
-                }
-            }
-        }
+                for(std::size_t i=0; i < lhs.num_rows(); ++i)
+                    result(i,j) += lhs(i,k) * rhs(k,j);
 
         return result;
     }
@@ -557,13 +568,13 @@ namespace alps {
     }
 
     template<typename T,typename MemoryBlock, typename T2>
-    const matrix<T,MemoryBlock> operator * (matrix<T,MemoryBlock> m, T2 const& t)
+    typename boost::enable_if<is_matrix_scalar_multiplication<matrix<T,MemoryBlock>,T2>, matrix<T,MemoryBlock> >::type operator * (matrix<T,MemoryBlock> m, T2 const& t)
     {
         return m*=t;
     }
 
     template<typename T,typename MemoryBlock, typename T2>
-    const matrix<T,MemoryBlock> operator * (T2 const& t, matrix<T,MemoryBlock> m)
+    typename boost::enable_if<is_matrix_scalar_multiplication<matrix<T,MemoryBlock>,T2>, matrix<T,MemoryBlock> >::type operator * (T2 const& t, matrix<T,MemoryBlock> m)
     {
         return m*=t;
     }

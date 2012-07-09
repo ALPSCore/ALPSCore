@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2012 by Andreas Hehn <hehn@phys.ethz.ch>                   *
+ * Copyright (C) 2012 by Andreas Hehn <hehn@phys.ethz.ch>                          *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -25,30 +25,18 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_MATRIX_BLASMACROS_HPP
-#define ALPS_MATRIX_BLASMACROS_HPP
-
-#include <boost/numeric/bindings/blas/level3/gemm.hpp>
-#include <boost/numeric/bindings/blas/level2/gemv.hpp>
-#include <boost/numeric/bindings/blas/level1/axpy.hpp>
-#include <boost/numeric/bindings/blas/level1/scal.hpp>
-#include <vector>
-
-// provide overloads for types where blas can be used        
+#ifndef ALPS_NUMERIC_MATRIX_TRANSPOSE_HPP
+#define ALPS_NUMERIC_MATRIX_TRANSPOSE_HPP
+#include <alps/numeric/matrix/transpose_view.hpp>
 
 namespace alps {
-    namespace numeric {
+namespace numeric {
 
-    #define ALPS_IMPLEMENT_FOR_REAL_BLAS_TYPES(F) F(float) F(double)
+template <typename Matrix>
+transpose_view<Matrix> transpose(Matrix& m) {
+    return transpose_view<Matrix>(m);
+}
 
-    #define ALPS_IMPLEMENT_FOR_COMPLEX_BLAS_TYPES(F) \
-    F(std::complex<float>) \
-    F(std::complex<double>)
-
-    #define ALPS_IMPLEMENT_FOR_ALL_BLAS_TYPES(F) \
-    ALPS_IMPLEMENT_FOR_REAL_BLAS_TYPES(F) \
-    ALPS_IMPLEMENT_FOR_COMPLEX_BLAS_TYPES(F)
-    } // namespave numeric
-} // namespace alps
-
-#endif // ALPS_MATRIX_BLASMACROS_HPP
+} // end namespace numeric
+} // end namespace alps
+#endif //ALPS_NUMERIC_MATRIX_TRANSPOSE_HPP

@@ -33,8 +33,10 @@
 #include <alps/numeric/matrix/vector.hpp>
 #include <alps/numeric/matrix/detail/matrix_adaptor.hpp>
 #include <alps/numeric/matrix/matrix_traits.hpp>
+#include <alps/numeric/matrix/matrix_interface.hpp>
 #include <alps/numeric/real.hpp>
 #include <alps/parser/xmlstream.h>
+#include <boost/utility/enable_if.hpp>
 
 #include <ostream>
 #include <vector>
@@ -95,13 +97,20 @@ namespace alps {
         explicit matrix(size_type rows = 0, size_type cols = 0, T init_value = T());
 
         /**
+          * Create a matrix from several columns
+          * @param colums a vector containing the column ranges (column element iterator pairs)
+          */
+        template <typename ForwardIterator>
+        explicit matrix(std::vector<std::pair<ForwardIterator,ForwardIterator> > const& columns);
+
+        /**
           * The copy constructors
           *
           */
         matrix(matrix const& m);
 
         template <typename OtherMemoryBlock>
-        matrix(matrix<T,OtherMemoryBlock> const& m);
+        explicit matrix(matrix<T,OtherMemoryBlock> const& m);
 
         /**
           * Non-throwing swap function
@@ -289,8 +298,8 @@ namespace alps {
 namespace alps {
     namespace numeric {
 
-    template <typename T, typename MemoryBlock>
-    const matrix<T,MemoryBlock> matrix_matrix_multiply(matrix<T,MemoryBlock> const& lhs, matrix<T,MemoryBlock> const& rhs);
+    template <typename Matrix1, typename Matrix2>
+    typename matrix_matrix_multiply_return_type<Matrix1,Matrix2>::type matrix_matrix_multiply(Matrix1 const& lhs, Matrix2 const& rhs);
 
     template<typename T, typename MemoryBlock, typename T2, typename MemoryBlock2>
     typename matrix_vector_multiplies_return_type<matrix<T,MemoryBlock>,vector<T2,MemoryBlock2> >::type
@@ -330,10 +339,10 @@ namespace alps {
     // TODO: adj(Vector) * Matrix, where adj is a proxy object
 
     template<typename T,typename MemoryBlock, typename T2>
-    const matrix<T,MemoryBlock> operator * (matrix<T,MemoryBlock> m, T2 const& t);
+    typename boost::enable_if<is_matrix_scalar_multiplication<matrix<T,MemoryBlock>,T2>, matrix<T,MemoryBlock> >::type operator * (matrix<T,MemoryBlock> m, T2 const& t);
 
     template<typename T,typename MemoryBlock, typename T2>
-    const matrix<T,MemoryBlock> operator * (T2 const& t, matrix<T,MemoryBlock> m);
+    typename boost::enable_if<is_matrix_scalar_multiplication<matrix<T,MemoryBlock>,T2>, matrix<T,MemoryBlock> >::type operator * (T2 const& t, matrix<T,MemoryBlock> m);
 
     template<typename T, typename MemoryBlock>
     const matrix<T,MemoryBlock> operator * (matrix<T,MemoryBlock> const& m1, matrix<T,MemoryBlock> const& m2);
@@ -415,6 +424,21 @@ namespace alps {
 
     }
 }
+
+
+//
+// Implement the default matrix interface
+//
+#define COMMA ,
+namespace alps {
+namespace numeric {
+// If someone has a better idea how to handle the comma, please improve these lines
+ALPS_IMPLEMENT_MATRIX_INTERFACE(matrix<T COMMA MemoryBlock>,<typename T COMMA typename MemoryBlock>)
+ALPS_IMPLEMENT_MATRIX_ELEMENT_ITERATOR_INTERFACE(matrix<T COMMA MemoryBlock>, <typename T COMMA typename MemoryBlock>)
+} // end namespace numeric
+} // end namespace alps 
+#undef COMMA
+
 
 #include <alps/numeric/matrix/matrix.ipp>
 #endif //ALPS_MATRIX_HPP

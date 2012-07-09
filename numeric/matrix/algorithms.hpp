@@ -56,33 +56,6 @@ namespace alps {
 
 namespace alps {
     namespace numeric {
-        template <typename Matrix>
-        Matrix transpose(Matrix const& m)
-        {
-            BOOST_CONCEPT_ASSERT((alps::numeric::Matrix<Matrix>));
-            // TODO: perhaps this could return a proxy object
-            Matrix tmp(num_cols(m), num_rows(m));
-            for(typename Matrix::size_type i=0; i < num_rows(m); ++i){
-                for(typename Matrix::size_type j=0; j < num_cols(m); ++j){
-                    tmp(j,i) = m(i,j);
-                }
-            }
-            return tmp;
-        }
-
-        template <typename Matrix>
-        void transpose_inplace(Matrix & m)
-        {
-            BOOST_CONCEPT_ASSERT((alps::numeric::Matrix<Matrix>));
-            // TODO: perhaps this could return a proxy object
-            Matrix tmp(num_cols(m), num_rows(m));
-            for(typename Matrix::size_type i=0; i < num_rows(m); ++i){
-                for(typename Matrix::size_type j=0; j < num_cols(m); ++j){
-                    tmp(j,i) = m(i,j);
-                }
-            }
-            swap(tmp, m);
-        }
 
         template <typename Matrix>
         Matrix adjoint(Matrix const& m)

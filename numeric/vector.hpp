@@ -39,6 +39,18 @@
 
 
 namespace blas{
+
+  template <class InputIterator1, class InputIterator2>
+  void plus_assign(InputIterator1 first1, InputIterator1 last1, InputIterator2 first2) 
+  {
+      std::transform(first1, last1, first2, first1, std::plus<typename std::iterator_traits<InputIterator2>::value_type >());
+  }
+    
+  template <class InputIterator1, class InputIterator2>
+  void minus_assign(InputIterator1 first1, InputIterator1 last1, InputIterator2 first2) 
+  {
+      std::transform(first1, last1, first2, first1, std::minus<typename std::iterator_traits<InputIterator2>::value_type >());
+  }
   template<typename T>
   class vector : public std::vector<T>  
   {
@@ -92,12 +104,6 @@ namespace blas{
         assert((i <= v.size()));
         v.insert(v.begin()+i,value);
     }
-
-    template <class InputIterator1, class InputIterator2>
-    void plus_assign(InputIterator1 first1, InputIterator1 last1, InputIterator2 first2) 
-    {
-        std::transform(first1, last1, first2, first1, std::plus<typename std::iterator_traits<InputIterator2>::value_type >());
-    }
    
     template<typename T>
     vector<T> operator+(vector<T> v1, const vector<T>& v2)  
@@ -105,12 +111,6 @@ namespace blas{
         assert(v1.size() == v2.size());
         v1 += v2;
         return v1;
-    }
-    
-    template <class InputIterator1, class InputIterator2>
-    void minus_assign(InputIterator1 first1, InputIterator1 last1, InputIterator2 first2) 
-    {
-        std::transform(first1, last1, first2, first1, std::minus<typename std::iterator_traits<InputIterator2>::value_type >());
     }
     
     template<typename T>

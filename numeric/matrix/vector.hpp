@@ -34,6 +34,7 @@
 #include <alps/numeric/matrix/detail/vector_adaptor.hpp>
 
 #include <alps/numeric/matrix/detail/blasmacros.hpp>
+#include <boost/numeric/bindings/blas/level1/dot.hpp>
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -56,6 +57,25 @@ namespace alps {
             }
         };
     } // end namespace detail
+
+    template <class InputIterator1, class InputIterator2>
+    void plus_assign(InputIterator1 first1, InputIterator1 last1, InputIterator2 first2)
+    {
+        std::transform(first1, last1, first2, first1, std::plus<typename std::iterator_traits<InputIterator2>::value_type >());
+    }
+
+    template <class InputIterator1, class InputIterator2>
+    void minus_assign(InputIterator1 first1, InputIterator1 last1, InputIterator2 first2)
+    {
+        std::transform(first1, last1, first2, first1, std::minus<typename std::iterator_traits<InputIterator2>::value_type >());
+    }
+
+    template <class ForwardIterator, typename T>
+    void multiplies_assign(ForwardIterator start1, ForwardIterator end1, T lambda)
+    {
+        using detail::multiplies;
+        std::transform(start1, end1, start1, std::bind2nd(multiplies<typename std::iterator_traits<ForwardIterator>::value_type, T>(), lambda));
+    }
 
   template<typename T, typename MemoryBlock = std::vector<T> >
   class vector : public MemoryBlock
@@ -129,12 +149,6 @@ namespace alps {
         v.insert(v.begin()+i,value);
     }
 
-    template <class InputIterator1, class InputIterator2>
-    void plus_assign(InputIterator1 first1, InputIterator1 last1, InputIterator2 first2)
-    {
-        std::transform(first1, last1, first2, first1, std::plus<typename std::iterator_traits<InputIterator2>::value_type >());
-    }
-
     template<typename T, typename MemoryBlock>
     vector<T,MemoryBlock> operator+(vector<T,MemoryBlock> v1, const vector<T,MemoryBlock>& v2)
     {
@@ -143,25 +157,12 @@ namespace alps {
         return v1;
     }
 
-    template <class InputIterator1, class InputIterator2>
-    void minus_assign(InputIterator1 first1, InputIterator1 last1, InputIterator2 first2)
-    {
-        std::transform(first1, last1, first2, first1, std::minus<typename std::iterator_traits<InputIterator2>::value_type >());
-    }
-
     template<typename T, typename MemoryBlock>
     vector<T,MemoryBlock> operator-(vector<T,MemoryBlock> v1, const vector<T,MemoryBlock>& v2)
     {
         assert(v1.size() == v2.size());
         v1 -= v2;
         return v1;
-    }
-
-    template <class ForwardIterator, typename T>
-    void multiplies_assign(ForwardIterator start1, ForwardIterator end1, T lambda)
-    {
-        using detail::multiplies;
-        std::transform(start1, end1, start1, std::bind2nd(multiplies<typename std::iterator_traits<ForwardIterator>::value_type, T>(), lambda));
     }
 
     template <typename T, typename MemoryBlock>

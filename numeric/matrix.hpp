@@ -30,4 +30,5 @@
 #include <alps/numeric/matrix/resizable_matrix_interface.hpp>
 #include <alps/numeric/matrix/matrix_blas.hpp>
 #include <alps/numeric/matrix/conj.hpp>
+#include <alps/numeric/matrix/transpose.hpp>
 #include <alps/ngs/hdf5/matrix.hpp>
