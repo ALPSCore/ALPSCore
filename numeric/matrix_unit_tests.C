@@ -131,6 +131,27 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructors_test, T, test_types )
             BOOST_CHECK_EQUAL(c(i,j), T(5));
 }
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( column_constructors_test, T, test_types )
+{
+    std::size_t num_of_cols = 20;
+    std::size_t num_of_rows = 30;
+    std::vector<std::vector<T> > original(num_of_cols,std::vector<T>(num_of_rows) );
+    T iota = 1;
+    for(std::size_t i=0; i < original.size(); ++i)
+        iota = fill_range_with_numbers(original[i].begin(),original[i].end(),iota);
+
+    typedef typename std::vector<T>::iterator iterator;
+    std::vector<std::pair<iterator,iterator> > columns;
+    for(std::size_t i=0; i < original.size(); ++i)
+        columns.push_back(std::make_pair(original[i].begin(),original[i].end()));
+
+    matrix<T> a(columns);
+
+    for(std::size_t j=0; j < num_of_cols; ++j)
+        for(std::size_t i=0; i < num_of_rows; ++i)
+            BOOST_CHECK_EQUAL(a(i,j),original[j][i]);
+}
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( copy_swap_test, T, test_types )
 {
     matrix<T> a(10,10,1);
@@ -258,6 +279,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( resize_test, T, test_types )
             else BOOST_CHECK_EQUAL(a(i,j), T(i+j));
         }
 }
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( resize_exception_test, T, test_types )
 {
     matrix<T> a(22,18);
@@ -775,7 +797,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrix_matrix_multiply_test, T, test_types)
         }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( conjugate, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( conjugate_test, T, test_types )
 {
     using alps::numeric::conj;
     matrix<T> a(10,20);
@@ -790,6 +812,101 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( conjugate, T, test_types )
     matrix<T> c(conj(a));
 
     BOOST_CHECK_EQUAL(c,b);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( transpose_test, T, test_types )
+{
+    matrix<T> a(30,20);
+    fill_matrix_with_numbers(a);
+
+    matrix<T> b;
+
+    b = transpose(a);
+
+    for(unsigned int j=0; j < num_cols(a); ++j)
+        for(unsigned int i=0; i < num_rows(a); ++i)
+            BOOST_CHECK_EQUAL(a(i,j),b(j,i));
+}
+
+/* Doesn't work yet. 
+BOOST_AUTO_TEST_CASE_TEMPLATE( transpose_plus_test, T, test_types )
+{
+    matrix<T> a(30,20);
+    matrix<T> b(20,30);
+    fill_matrix_with_numbers(a);
+    fill_matrix_with_numbers(b);
+
+    matrix<T> c = transpose(a) + b;
+
+    for(unsigned int j=0; j < num_cols(c); ++j)
+        for(unsigned int i=0; i < num_rows(c); ++i)
+            BOOST_CHECK_EQUAL(c(i,j), a(j,i)*b(i,j));
+}
+*/
+BOOST_AUTO_TEST_CASE_TEMPLATE( transpose_matrix_matrix_multiply_test, T, test_types )
+{
+    matrix<T> a(30,20);
+    matrix<T> b(30,50);
+    fill_matrix_with_numbers(a);
+    fill_matrix_with_numbers(b);
+
+    matrix<T> c = transpose(a) * b;
+
+    BOOST_CHECK_EQUAL(num_rows(c), num_cols(a));
+    BOOST_CHECK_EQUAL(num_cols(c), num_cols(b));
+
+    for(unsigned int i=0; i<num_rows(c); ++i)
+        for(unsigned int j=0; j<num_cols(c); ++j)
+        {
+            T result(0);
+            for(unsigned int k=0; k< num_rows(a); ++k)
+                result += a(k,i) * b(k,j);
+            BOOST_CHECK_EQUAL(c(i,j),result);
+        }
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( matrix_transpose_matrix_multiply_test, T, test_types )
+{
+    matrix<T> a(20,30);
+    matrix<T> b(50,30);
+    fill_matrix_with_numbers(a);
+    fill_matrix_with_numbers(b);
+
+    matrix<T> c = a * transpose(b);
+
+    BOOST_CHECK_EQUAL(num_rows(c), num_rows(a));
+    BOOST_CHECK_EQUAL(num_cols(c), num_rows(b));
+
+    for(unsigned int i=0; i<num_rows(c); ++i)
+        for(unsigned int j=0; j<num_cols(c); ++j)
+        {
+            T result(0);
+            for(unsigned int k=0; k< num_cols(a); ++k)
+                result += a(i,k) * b(j,k);
+            BOOST_CHECK_EQUAL(c(i,j),result);
+        }
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( transpose_transpose_multiply_test, T, test_types)
+{
+    matrix<T> a(50,60);
+    matrix<T> b(40,50);
+    fill_matrix_with_numbers(a);
+    fill_matrix_with_numbers(b);
+
+    matrix<T> c = transpose(a) * transpose(b);
+
+    BOOST_CHECK_EQUAL(num_rows(c), num_cols(a));
+    BOOST_CHECK_EQUAL(num_cols(c), num_rows(b));
+
+    for(unsigned int i=0; i<num_rows(c); ++i)
+        for(unsigned int j=0; j<num_cols(c); ++j)
+        {
+            T result(0);
+            for(unsigned int k=0; k< num_rows(a); ++k)
+                result += a(k,i) * b(j,k);
+            BOOST_CHECK_EQUAL(c(i,j),result);
+        }
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( hdf5, T, test_types )
