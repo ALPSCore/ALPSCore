@@ -35,6 +35,8 @@
 
 #include <alps/numeric/matrix/detail/blasmacros.hpp>
 #include <boost/numeric/bindings/blas/level1/dot.hpp>
+#include <boost/numeric/bindings/blas/level1/scal.hpp>
+#include <boost/numeric/bindings/blas/level1/axpy.hpp>
 #include <iostream>
 #include <vector>
 #include <algorithm>

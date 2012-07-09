@@ -29,6 +29,10 @@
 #define ALPS_MATRIX_BLAS_HPP
 
 #include <alps/numeric/matrix/detail/blasmacros.hpp>
+#include <boost/numeric/bindings/blas/level3/gemm.hpp>
+#include <boost/numeric/bindings/blas/level2/gemv.hpp>
+#include <boost/numeric/bindings/blas/level1/axpy.hpp>
+#include <boost/numeric/bindings/blas/level1/scal.hpp>
 
 namespace alps {
     namespace numeric {
@@ -45,77 +49,73 @@ namespace alps {
     //
 namespace alps {
     namespace numeric {
-    #define MATRIX_MATRIX_MULTIPLY(T) \
+    #define ALPS_MATRIX_GEMM(T) \
         template <typename MemoryBlock> \
-        matrix<T,MemoryBlock> matrix_matrix_multiply(matrix<T,MemoryBlock> const& lhs, matrix<T,MemoryBlock> const& rhs) \
+        void gemm( matrix<T,MemoryBlock> const& lhs, matrix<T,MemoryBlock> const& rhs, matrix<T,MemoryBlock> & result)\
         { \
             assert( !(lhs.num_cols() > rhs.num_rows()) ); \
             assert( !(lhs.num_cols() < rhs.num_rows()) ); \
             assert( lhs.num_cols() == rhs.num_rows() ); \
-            matrix<T,MemoryBlock> result(lhs.num_rows(),rhs.num_cols()); \
-            boost::numeric::bindings::blas::gemm \
-                ( \
-                   typename matrix<T,MemoryBlock>::value_type(1), \
-                   lhs, \
-                   rhs, \
-                   typename matrix<T,MemoryBlock>::value_type(0), \
-                   result \
-                ); \
-            return result; \
+            assert( result.num_rows() == lhs.num_rows() ); \
+            assert( result.num_cols() == rhs.num_cols() ); \
+            boost::numeric::bindings::blas::gemm ( \
+               typename matrix<T,MemoryBlock>::value_type(1), \
+               lhs, \
+               rhs, \
+               typename matrix<T,MemoryBlock>::value_type(0), \
+               result \
+            ); \
         }\
         template <typename MemoryBlock> \
-        matrix<T,MemoryBlock> matrix_matrix_multiply(matrix<T,MemoryBlock> const& lhs, transpose_view<matrix<T,MemoryBlock> > const& rhs) \
+        void gemm(matrix<T,MemoryBlock> const& lhs, transpose_view<matrix<T,MemoryBlock> > const& rhs, matrix<T,MemoryBlock> & result) \
         { \
             assert( !(lhs.num_cols() > rhs.num_rows()) ); \
             assert( !(lhs.num_cols() < rhs.num_rows()) ); \
             assert( lhs.num_cols() == rhs.num_rows() ); \
-            matrix<T,MemoryBlock> result(lhs.num_rows(),rhs.num_cols()); \
-            boost::numeric::bindings::blas::gemm \
-                ( \
-                   typename matrix<T,MemoryBlock>::value_type(1), \
-                   lhs, \
-                   rhs, \
-                   typename matrix<T,MemoryBlock>::value_type(0), \
-                   result \
-                ); \
-            return result; \
+            assert( result.num_rows() == lhs.num_rows() ); \
+            assert( result.num_cols() == rhs.num_cols() ); \
+            boost::numeric::bindings::blas::gemm( \
+               typename matrix<T,MemoryBlock>::value_type(1), \
+               lhs, \
+               rhs, \
+               typename matrix<T,MemoryBlock>::value_type(0), \
+               result \
+            ); \
         } \
         template <typename MemoryBlock> \
-        matrix<T,MemoryBlock> matrix_matrix_multiply(transpose_view<matrix<T,MemoryBlock> > const& lhs, matrix<T,MemoryBlock> const& rhs) \
+        void gemm(transpose_view<matrix<T,MemoryBlock> > const& lhs, matrix<T,MemoryBlock> const& rhs, matrix<T,MemoryBlock> & result) \
         { \
             assert( !(lhs.num_cols() > rhs.num_rows()) ); \
             assert( !(lhs.num_cols() < rhs.num_rows()) ); \
             assert( lhs.num_cols() == rhs.num_rows() ); \
-            matrix<T,MemoryBlock> result(lhs.num_rows(),rhs.num_cols()); \
-            boost::numeric::bindings::blas::gemm \
-                ( \
-                   typename matrix<T,MemoryBlock>::value_type(1), \
-                   lhs, \
-                   rhs, \
-                   typename matrix<T,MemoryBlock>::value_type(0), \
-                   result \
-                ); \
-            return result; \
+            assert( result.num_rows() == lhs.num_rows() ); \
+            assert( result.num_cols() == rhs.num_cols() ); \
+            boost::numeric::bindings::blas::gemm( \
+               typename matrix<T,MemoryBlock>::value_type(1), \
+               lhs, \
+               rhs, \
+               typename matrix<T,MemoryBlock>::value_type(0), \
+               result \
+            ); \
         } \
         template <typename MemoryBlock> \
-        matrix<T,MemoryBlock> matrix_matrix_multiply(transpose_view<matrix<T,MemoryBlock> > const& lhs, transpose_view<matrix<T,MemoryBlock> > const& rhs) \
+        void gemm(transpose_view<matrix<T,MemoryBlock> > const& lhs, transpose_view<matrix<T,MemoryBlock> > const& rhs, matrix<T,MemoryBlock> & result) \
         { \
             assert( !(lhs.num_cols() > rhs.num_rows()) ); \
             assert( !(lhs.num_cols() < rhs.num_rows()) ); \
             assert( lhs.num_cols() == rhs.num_rows() ); \
-            matrix<T,MemoryBlock> result(lhs.num_rows(),rhs.num_cols()); \
-            boost::numeric::bindings::blas::gemm \
-                ( \
-                   typename matrix<T,MemoryBlock>::value_type(1), \
-                   lhs, \
-                   rhs, \
-                   typename matrix<T,MemoryBlock>::value_type(0), \
-                   result \
-                ); \
-            return result; \
+            assert( result.num_rows() == lhs.num_rows() ); \
+            assert( result.num_cols() == rhs.num_cols() ); \
+            boost::numeric::bindings::blas::gemm( \
+               typename matrix<T,MemoryBlock>::value_type(1), \
+               lhs, \
+               rhs, \
+               typename matrix<T,MemoryBlock>::value_type(0), \
+               result \
+            ); \
         }
-    ALPS_IMPLEMENT_FOR_ALL_BLAS_TYPES(MATRIX_MATRIX_MULTIPLY)
-    #undef MATRIX_MATRIX_MULTIPLY
+    ALPS_IMPLEMENT_FOR_ALL_BLAS_TYPES(ALPS_MATRIX_GEMM)
+    #undef ALPS_MATRIX_GEMM
 
     #define MATRIX_VECTOR_MULTIPLY(T) \
         template <typename MemoryBlock, typename MemoryBlock2> \
@@ -123,14 +123,13 @@ namespace alps {
         { \
             assert( m.num_cols() == v.size()); \
             vector<T,MemoryBlock2> result(m.num_rows()); \
-            boost::numeric::bindings::blas::gemv \
-                ( \
-                  typename matrix<T,MemoryBlock>::value_type(1), \
-                  m, \
-                  v, \
-                  typename matrix<T,MemoryBlock>::value_type(0), \
-                  result \
-                ); \
+            boost::numeric::bindings::blas::gemv( \
+                typename matrix<T,MemoryBlock>::value_type(1), \
+                m, \
+                v, \
+                typename matrix<T,MemoryBlock>::value_type(0), \
+                result \
+            ); \
             return result; \
         }
     ALPS_IMPLEMENT_FOR_ALL_BLAS_TYPES(MATRIX_VECTOR_MULTIPLY)

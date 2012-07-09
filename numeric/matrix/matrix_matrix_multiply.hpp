@@ -25,24 +25,39 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_MATRIX_BLASMACROS_HPP
-#define ALPS_MATRIX_BLASMACROS_HPP
-
-// provide overloads for types where blas can be used        
 
 namespace alps {
-    namespace numeric {
+namespace numeric {
+    //
+    // Default matrix matrix multiplication implementations
+    // May be overlaoded for special Matrix types
+    //
 
-    #define ALPS_IMPLEMENT_FOR_REAL_BLAS_TYPES(F) F(float) F(double)
+    // The classic gemm - as known from Fortran - writing the result to argument c
+    template<typename MatrixA, typename MatrixB, typename MatrixC>
+    void gemm(MatrixA const & a, MatrixB const & b, MatrixC & c)
+    {
+        assert( num_cols(a) == num_rows(b) );
+        assert( num_rows(c) == num_rows(a) );
+        assert( num_cols(c) == num_cols(b) );
+        // Simple matrix matrix multiplication
+        for(std::size_t j=0; j < num_cols(b); ++j)
+            for(std::size_t k=0; k < num_cols(a); ++k)
+                for(std::size_t i=0; i < num_rows(a); ++i)
+                    c(i,j) += a(i,k) * b(k,j);
+    }
 
-    #define ALPS_IMPLEMENT_FOR_COMPLEX_BLAS_TYPES(F) \
-    F(std::complex<float>) \
-    F(std::complex<double>)
-
-    #define ALPS_IMPLEMENT_FOR_ALL_BLAS_TYPES(F) \
-    ALPS_IMPLEMENT_FOR_REAL_BLAS_TYPES(F) \
-    ALPS_IMPLEMENT_FOR_COMPLEX_BLAS_TYPES(F)
-    } // namespave numeric
-} // namespace alps
-
-#endif // ALPS_MATRIX_BLASMACROS_HPP
+    //
+    // A multiply function returning the resulting matrix
+    //
+    // In most cases you should prefer this function to the gemm().
+    //
+    template <typename Matrix1, typename Matrix2>
+    typename matrix_matrix_multiply_return_type<Matrix1,Matrix2>::type matrix_matrix_multiply(Matrix1 const& lhs, Matrix2 const& rhs)
+    {
+        typename matrix_matrix_multiply_return_type<Matrix1,Matrix2>::type result(lhs.num_rows(),rhs.num_cols());
+        gemm(lhs,rhs,result);
+        return result;
+    }
+} // end namespace numeric
+} // end namespace alps

@@ -34,6 +34,7 @@
 #include <alps/numeric/matrix/detail/matrix_adaptor.hpp>
 #include <alps/numeric/matrix/matrix_traits.hpp>
 #include <alps/numeric/matrix/matrix_interface.hpp>
+#include <alps/numeric/matrix/matrix_matrix_multiply.hpp>
 #include <alps/numeric/real.hpp>
 #include <alps/parser/xmlstream.h>
 #include <boost/utility/enable_if.hpp>
@@ -298,9 +299,6 @@ namespace alps {
 namespace alps {
     namespace numeric {
 
-    template <typename Matrix1, typename Matrix2>
-    typename matrix_matrix_multiply_return_type<Matrix1,Matrix2>::type matrix_matrix_multiply(Matrix1 const& lhs, Matrix2 const& rhs);
-
     template<typename T, typename MemoryBlock, typename T2, typename MemoryBlock2>
     typename matrix_vector_multiplies_return_type<matrix<T,MemoryBlock>,vector<T2,MemoryBlock2> >::type
     matrix_vector_multiply(matrix<T,MemoryBlock> const& m, vector<T2,MemoryBlock2> const& v);
@@ -346,9 +344,6 @@ namespace alps {
 
     template<typename T, typename MemoryBlock>
     const matrix<T,MemoryBlock> operator * (matrix<T,MemoryBlock> const& m1, matrix<T,MemoryBlock> const& m2);
-
-    template<typename T,typename MemoryBlock>
-    void gemm(matrix<T,MemoryBlock> const & A, matrix<T,MemoryBlock> const & B, matrix<T,MemoryBlock> & C);
 
     template<class T, class MemoryBlock>
     std::size_t size_of(matrix<T, MemoryBlock> const & m);
