@@ -41,11 +41,15 @@ template <typename Matrix>
 void transpose_inplace(Matrix& m) {
     typedef typename Matrix::size_type size_type;
     using std::swap;
-
-    assert( num_rows(m) == num_cols(m) );
-    for(size_type i = 0; i < num_rows(m); ++i)
-        for(size_type j = i+1; j < num_cols(m); ++j)
-            swap(m(i,j),m(j,i));
+    if(num_rows(m) == num_cols(m) ) {
+        for(size_type i = 0; i < num_rows(m); ++i)
+            for(size_type j = i+1; j < num_cols(m); ++j)
+                swap(m(i,j),m(j,i));
+    } else {
+        // TODO replace this code by an actual inplace implementation
+        Matrix m2 = transpose(m);
+        swap(m,m2);
+    }
 }
 
 } // end namespace numeric
