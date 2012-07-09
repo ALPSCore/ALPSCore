@@ -33,7 +33,7 @@
 
 namespace alps{
 
-#define ALPS_IMPLEMENT_FUNCTION(F) template <class T,std::size_t D> multi_array<T,D> F(multi_array<T,D> a) { std::transform(a.data(),a.data()+a.num_elements(),a.data(),std::ptr_fun<T,T>(std::F)); return a; }
+#define ALPS_IMPLEMENT_FUNCTION(F) template <class T, std::size_t D, class Allocator> multi_array<T,D,Allocator> F(multi_array<T,D,Allocator> a) { std::transform(a.data(),a.data()+a.num_elements(),a.data(),std::ptr_fun<T,T>(std::F)); return a; }
   
   ALPS_IMPLEMENT_FUNCTION(sqrt)
   ALPS_IMPLEMENT_FUNCTION(sin)
@@ -45,16 +45,16 @@ namespace alps{
 
 #undef ALPS_IMPLEMENT_FUNCTION
 
-    template <class T1,class T2,std::size_t D>
-    multi_array<T1,D> pow(multi_array<T1,D> a, T2 s)
+    template <class T1, class T2, std::size_t D, class Allocator>
+    multi_array<T1,D,Allocator> pow(multi_array<T1,D,Allocator> a, T2 s)
   {
     std::pointer_to_binary_function <T1,T2,T1> PowObject (std::ptr_fun<T1,T2,T1>(std::pow));
     std::transform(a.data(),a.data()+a.num_elements(),a.data(),std::bind2nd(PowObject,s));
     return a;
   }
 
-  template <class T,std::size_t D>
-  T sum(multi_array<T,D>& a)
+  template <class T, std::size_t D, class Allocator>
+  T sum(multi_array<T,D,Allocator>& a)
   {
     return std::accumulate(a.data(),a.data()+a.num_elements(),0.,std::plus<T>());
   }

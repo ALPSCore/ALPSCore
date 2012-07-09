@@ -33,10 +33,10 @@
 
 namespace alps{
 
-  template <class T, std::size_t D>
-  std::ostream& operator<<(std::ostream& out, const multi_array<T, D>& a)
+  template <class T, std::size_t D, class Allocator>
+  std::ostream& operator<<(std::ostream& out, const multi_array<T,D,Allocator>& a)
   {
-    boost::array<typename boost::multi_array<T,D>::index, D> index;
+    boost::array<typename boost::multi_array<T,D,Allocator>::index, D> index;
     T* rE = const_cast< T* >(a.data());
 
     for(std::size_t dir = 0; dir < D; dir++) out << "{";

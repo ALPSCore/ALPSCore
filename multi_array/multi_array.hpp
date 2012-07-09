@@ -33,13 +33,15 @@
 
 namespace alps{
 
-  template <class T,std::size_t D>
-  class multi_array : public boost::multi_array<T,D>
+  template <class T,std::size_t D, class Allocator = std::allocator<T> >
+  class multi_array : public boost::multi_array<T,D,Allocator>
   {
-    typedef boost::multi_array<T,D> base_type;
+    typedef boost::multi_array<T,D,Allocator> base_type;
+    typedef multi_array<T,D,Allocator> array_type;
 
   public:
 
+    multi_array(std::size_t N, std::size_t M, std::size_t K, std::size_t J, std::size_t I) : base_type(boost::extents[N][M][K][J][I]) {}
     multi_array(std::size_t N, std::size_t M, std::size_t K, std::size_t J) : base_type(boost::extents[N][M][K][J]) {}
     multi_array(std::size_t N, std::size_t M, std::size_t K) : base_type(boost::extents[N][M][K]) {}
     multi_array(std::size_t N, std::size_t M) : base_type(boost::extents[N][M]) {}
@@ -49,7 +51,7 @@ namespace alps{
 
     multi_array() : base_type() {}
 
-    multi_array<T,D>& operator=(const multi_array<T,D>& a)
+    array_type& operator=(const array_type& a)
     {
       if(this != &a){
       	std::vector<std::size_t> ext(a.shape(),a.shape()+a.num_dimensions());
@@ -60,41 +62,41 @@ namespace alps{
       return *this;
     }
 
-    multi_array<T,D>& operator+=(const multi_array<T,D>& a)
+    array_type& operator+=(const array_type& a)
     {
       assert(std::equal(this->shape(),this->shape()+D,a.shape()));
       std::transform((*this).data(),(*this).data()+(*this).num_elements(),a.data(),(*this).data(),std::plus<T>());
       return *this;
     }
 
-    multi_array<T,D>& operator-=(const multi_array<T,D>& a)
+    array_type& operator-=(const array_type& a)
     {
       assert(std::equal(this->shape(),this->shape()+D,a.shape()));
       std::transform((*this).data(),(*this).data()+(*this).num_elements(),a.data(),(*this).data(),std::minus<T>());
       return *this;
     }
 
-    multi_array<T,D>& operator*=(const multi_array<T,D>& a)
+    array_type& operator*=(const array_type& a)
     {
       assert(std::equal(this->shape(),this->shape()+D,a.shape()));
       std::transform((*this).data(),(*this).data()+(*this).num_elements(),a.data(),(*this).data(),std::multiplies<T>());
       return *this;
     }
 
-    multi_array<T,D>& operator*=(const T s)
+    array_type& operator*=(const T s)
     {
       std::transform((*this).data(),(*this).data()+(*this).num_elements(),(*this).data(),std::bind2nd(std::multiplies<T>(),s));
       return *this;
     }
 
-    multi_array<T,D>& operator/=(const multi_array<T,D>& a)
+    array_type& operator/=(const array_type& a)
     {
       assert(std::equal(this->shape(),this->shape()+D,a.shape()));
       std::transform((*this).data(),(*this).data()+(*this).num_elements(),a.data(),(*this).data(),std::divides<T>());
       return *this;
     }
 
-    multi_array<T,D>& operator/=(const T s)
+    array_type& operator/=(const T s)
     {
       std::transform((*this).data(),(*this).data()+(*this).num_elements(),(*this).data(),std::bind2nd(std::divides<T>(),s));
       return *this;

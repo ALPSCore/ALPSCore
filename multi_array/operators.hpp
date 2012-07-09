@@ -33,43 +33,43 @@
 
 namespace alps{
 
-  template <class T,std::size_t D>
-  multi_array<T,D> operator+(multi_array<T,D> a, const multi_array<T,D>& b)
+  template <class T, std::size_t D, class Allocator>
+  multi_array<T,D,Allocator> operator+(multi_array<T,D,Allocator> a, const multi_array<T,D,Allocator>& b)
   {
     a += b;
     return a;
   }
 
-  template <class T,std::size_t D>
-  multi_array<T,D> operator-(multi_array<T,D> a, const multi_array<T,D>& b)
+  template <class T, std::size_t D, class Allocator>
+  multi_array<T,D,Allocator> operator-(multi_array<T,D,Allocator> a, const multi_array<T,D,Allocator>& b)
   {
     a -= b;
     return a;
   }
 
-  template <class T,std::size_t D>
-  multi_array<T,D> operator*(multi_array<T,D> a, const multi_array<T,D>& b)
+  template <class T, std::size_t D, class Allocator>
+  multi_array<T,D,Allocator> operator*(multi_array<T,D,Allocator> a, const multi_array<T,D,Allocator>& b)
   {
     a *= b;
     return a;
   }
 
-  template <class T1, class T2, std::size_t D>
-  multi_array<T1,D> operator*(const T2& b, multi_array<T1,D> a)
-  {
-    a *= T1(b);
-    return a;
-  }
-
-  template <class T,std::size_t D>
-  multi_array<T,D> operator/(multi_array<T,D> a, const multi_array<T,D>& b)
+  template <class T, std::size_t D, class Allocator>
+  multi_array<T,D,Allocator> operator/(multi_array<T,D,Allocator> a, const multi_array<T,D,Allocator>& b)
   {
     a /= b;
     return a;
   }
 
-  template <class T1, class T2, std::size_t D>
-  multi_array<T1,D> operator/(multi_array<T1,D> a, const T2& b)
+  template <class T1, class T2, std::size_t D, class Allocator>
+  multi_array<T1,D,Allocator> operator*(const T2& b, multi_array<T1,D,Allocator> a)
+  {
+    a *= T1(b);
+    return a;
+  }
+
+  template <class T1, class T2, std::size_t D, class Allocator>
+  multi_array<T1,D,Allocator> operator/(multi_array<T1,D,Allocator> a, const T2& b)
   {
     a /= T1(b);
     return a;
