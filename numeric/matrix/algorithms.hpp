@@ -220,7 +220,7 @@ namespace alps {
            std::fill(elements(R).first, elements(R).second, 0);
 
            for (std::size_t c = 0; c < num_cols(R); ++c)
-               for (std::size_t r = 0; r <= c; ++r)
+               for (std::size_t r = 0; r <= c && r < num_rows(R); ++r)
                    R(r, c) = M(r, c); 
            // case M(m,n) with m < n, it will be useless if direct access to the lapack wrapper     
            // not pb because M is passed by copy !
@@ -251,9 +251,11 @@ namespace alps {
            
            // get L
            std::fill(elements(L).first, elements(L).second, 0);
+
            for (std::size_t c = 0; c < num_cols(L) ; ++c)
-               for (std::size_t r = c; r <= num_rows(L) ; ++r)
+               for (std::size_t r = c; r < num_rows(L) ; ++r)
                      L(r, c) = M(r, c); 
+
            // case M(m,n) with m > n, it will be useless if direct access to the lapack wrapper     
            // not pb because M is passed by copy !
            if( num_rows(M) > num_cols(M))
@@ -263,6 +265,7 @@ namespace alps {
            if (info != 0)
                throw std::runtime_error("Error in GRGLQ !");
            std::copy(elements(M).first, elements(M).second, elements(Q).first);
+
         }
 
         template<typename T, class MemoryBlock>
