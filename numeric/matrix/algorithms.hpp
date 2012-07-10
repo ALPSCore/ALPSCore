@@ -7,6 +7,7 @@
  * Copyright (C) 2010 - 2012 by Alex Kosenkov <alex.kosenkov@gmail.com>            *
  *                              Andreas Hehn <hehn@phys.ethz.ch>                   *
  *                              Michele Dolfi <dolfim@phys.ethz.ch>                *
+ *                              Tim Ewart <timothee.ewart@unige.ch>                *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -38,6 +39,11 @@
 #include <boost/numeric/bindings/lapack/driver/syevd.hpp>
 #include <boost/numeric/bindings/lapack/driver/heevd.hpp>
 #include <boost/numeric/bindings/lapack/computational/geqrf.hpp>
+#include <boost/numeric/bindings/lapack/computational/orgqr.hpp>
+#include <boost/numeric/bindings/lapack/computational/gelqf.hpp>
+#include <boost/numeric/bindings/lapack/computational/orglq.hpp>
+#include <boost/numeric/bindings/lapack/computational/ungqr.hpp>
+#include <boost/numeric/bindings/lapack/computational/unglq.hpp>
 #include <boost/numeric/bindings/std/vector.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/bind.hpp>
@@ -135,9 +141,47 @@ namespace alps {
         }
 
         namespace detail {
-            template<typename T> struct sv_type { typedef T type; };
+            template<typename T>  
+            struct sv_type { 
+                typedef T type;
+            };
+
+
             template<typename T>
-            struct sv_type<std::complex<T> > { typedef T type; };
+            struct sv_type<std::complex<T> > {
+                 typedef std::complex<T> type;
+            };
+
+            template<typename T, class memoryblock>
+            struct qrhelper{
+                int static getq(matrix<T, memoryblock> & q, typename associated_vector<matrix<typename detail::sv_type<T>::type, memoryblock> >::type & tau){
+                    return boost::numeric::bindings::lapack::orgqr(q, tau); 
+                };
+
+            };
+
+            template<typename T, class memoryblock>
+            struct qrhelper<std::complex<T>, memoryblock > {
+                int static getq(matrix<std::complex<T> , memoryblock> & q, typename associated_vector<matrix< std::complex<T>, memoryblock> >::type & tau){
+                   return boost::numeric::bindings::lapack::ungqr(q, tau); 
+               }
+            };  
+
+            template<typename T, class memoryblock>
+            struct lqhelper{
+                int static getq(matrix<T, memoryblock> & q, typename associated_vector<matrix<typename detail::sv_type<T>::type, memoryblock> >::type & tau){
+                    return boost::numeric::bindings::lapack::orglq(q, tau); 
+                };
+
+            };
+
+            template<typename T, class memoryblock>
+            struct lqhelper<std::complex<T>, memoryblock > {
+                int static getq(matrix<std::complex<T> , memoryblock> & q, typename associated_vector<matrix< std::complex<T>, memoryblock> >::type & tau){
+                   return boost::numeric::bindings::lapack::unglq(q, tau); 
+               }
+            };  
+
         }
 
         template<typename T, class MemoryBlock>
@@ -151,6 +195,7 @@ namespace alps {
             resize(U, num_rows(M), k);
             resize(V, k, num_cols(M));
             resize(S, k, k);
+
             int info = boost::numeric::bindings::lapack::gesvd('S', 'S', M, S.get_values(), U, V);
             if (info != 0)
                 throw std::runtime_error("Error in SVD!");
@@ -161,23 +206,63 @@ namespace alps {
                 matrix<T, MemoryBlock> & Q,
                 matrix<T, MemoryBlock> & R)
         {
-            typename matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_cols(M));
-            typename associated_vector<matrix<typename detail::sv_type<T>::type, MemoryBlock> >::type tau(k);
-            int info = 0; //boost::numeric::bindings::lapack::geqrf(M, tau);
-            if (info != 0)
-                throw std::runtime_error("Error in geqrf");
+           typename matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_cols(M));
+           typename associated_vector<matrix<typename detail::sv_type<T>::type, MemoryBlock> >::type tau(k);
 
-            resize(Q, num_rows(M), k);
-            resize(R, k, num_cols(M));
+           int info = boost::numeric::bindings::lapack::geqrf(M, tau);
+           if (info != 0)
+               throw std::runtime_error("Error in GEQRF !");
+   
+           resize(Q, num_rows(M), k);
+           resize(R, k, num_cols(M));
+           
+           // get R
+           std::fill(elements(R).first, elements(R).second, 0);
 
-            // get R
-            std::fill(elements(R).first, elements(R).second, 0);
-            for (std::size_t c = 0; c < num_cols(M); ++c)
-                for (std::size_t r = 0; r <= c; ++r)
-                    R(r, c) = M(r, c);
+           for (std::size_t c = 0; c < num_cols(R); ++c)
+               for (std::size_t r = 0; r <= c; ++r)
+                   R(r, c) = M(r, c); 
+           // case M(m,n) with m < n, it will be useless if direct access to the lapack wrapper     
+           // not pb because M is passed by copy !
+           if( num_rows(M) <  num_cols(M)){
+               resize(M,k,k);
+           }
+           // get Q
+           info = detail::qrhelper<T, MemoryBlock>::getq(M,tau);
+           if (info != 0)
+               throw std::runtime_error("Error in GRGQR !");
+           std::copy(elements(M).first, elements(M).second, elements(Q).first);
+        }
 
-            // get Q from householder reflections in M
-            std::fill(elements(Q).first, elements(Q).second, 0);
+        template<typename T, class MemoryBlock>
+        void lq(matrix<T, MemoryBlock> M,
+                matrix<T, MemoryBlock> & L,
+                matrix<T, MemoryBlock> & Q)
+        {
+           typename matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_cols(M));
+           typename associated_vector<matrix<typename detail::sv_type<T>::type, MemoryBlock> >::type tau(k);
+
+           int info = boost::numeric::bindings::lapack::gelqf(M, tau);
+           if (info != 0)
+               throw std::runtime_error("Error in GELQF !");
+   
+           resize(Q, k,num_cols(M));
+           resize(L, num_rows(M),k);
+           
+           // get L
+           std::fill(elements(L).first, elements(L).second, 0);
+           for (std::size_t c = 0; c < num_cols(L) ; ++c)
+               for (std::size_t r = c; r <= num_rows(L) ; ++r)
+                     L(r, c) = M(r, c); 
+           // case M(m,n) with m > n, it will be useless if direct access to the lapack wrapper     
+           // not pb because M is passed by copy !
+           if( num_rows(M) > num_cols(M))
+               resize(M,k,k);
+           // get Q
+           info = detail::lqhelper<T, MemoryBlock>::getq(M,tau);
+           if (info != 0)
+               throw std::runtime_error("Error in GRGLQ !");
+           std::copy(elements(M).first, elements(M).second, elements(Q).first);
         }
 
         template<typename T, class MemoryBlock>
