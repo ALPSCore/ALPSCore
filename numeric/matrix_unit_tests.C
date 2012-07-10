@@ -933,6 +933,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrix_transpose_matrix_multiply_test, T, test_ty
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( transpose_conugate_matrix_matrix_multiply_test, T, test_types )
 {
+    using alps::numeric::conj;
     matrix<T> a(30,20);
     matrix<T> b(30,50);
     fill_matrix_with_numbers(a);
