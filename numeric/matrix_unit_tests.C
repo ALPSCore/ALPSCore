@@ -931,6 +931,28 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrix_transpose_matrix_multiply_test, T, test_ty
         }
 }
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( transpose_conugate_matrix_matrix_multiply_test, T, test_types )
+{
+    matrix<T> a(30,20);
+    matrix<T> b(30,50);
+    fill_matrix_with_numbers(a);
+    fill_matrix_with_numbers(b);
+
+    matrix<T> c = transpose(conj(a)) * b;
+
+    BOOST_CHECK_EQUAL(num_rows(c), num_cols(a));
+    BOOST_CHECK_EQUAL(num_cols(c), num_cols(b));
+
+    for(unsigned int i=0; i<num_rows(c); ++i)
+        for(unsigned int j=0; j<num_cols(c); ++j)
+        {
+            T result(0);
+            for(unsigned int k=0; k< num_rows(a); ++k)
+                result += conj(a(k,i)) * b(k,j);
+            BOOST_CHECK_EQUAL(c(i,j),result);
+        }
+}
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( transpose_transpose_multiply_test, T, test_types)
 {
     matrix<T> a(50,60);
