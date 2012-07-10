@@ -63,6 +63,7 @@ struct size {
 
 typedef boost::mpl::list< size<4,0,double>, size<4,0,std::complex<double> >,  BOOST_PP_REPEAT(4,tuple1,~), BOOST_PP_REPEAT(4,tuple2,~), BOOST_PP_REPEAT(4,tuple3,~), BOOST_PP_REPEAT(4,tuple4,~) > test_types;
 //typedef boost::mpl::list< size<1,1,double>, size<1,-1,std::complex<double> > > test_types; //Dev line
+//typedef boost::mpl::list< size<1,-2,double> > test_types; //Dev line
 
 // Define a base random number generator and initialize it with a seed.
 boost::random::mt19937 rng(3); 
@@ -135,16 +136,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Transpose_test, T, test_types)
 {
     typedef matrix<typename T::value_type> Matrix;
     Matrix M(T::valuex,T::valuey);
+    InitHelper<typename T::value_type>::init(M);
     Matrix Mtt(T::valuex,T::valuey);
 
-//    Mtt = transpose(transpose(M));
-//    ValidateHelper<typename T::value_type>::validate(M,Mtt);
+    Mtt =transpose(M);
+    Mtt =transpose(Mtt);
+    ValidateHelper<typename T::value_type>::validate(M,Mtt);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Transpose_inplace_test, T, test_types)
 {
     typedef matrix<typename T::value_type> Matrix;
     Matrix M(T::valuex,T::valuey);
+    InitHelper<typename T::value_type>::init(M);
     Matrix Mcopy(M);
 
     transpose_inplace(M);
@@ -156,6 +160,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Adjoint_test, T, test_types)
 {
     typedef matrix<typename T::value_type> Matrix;
     Matrix M(T::valuex,T::valuey);
+    InitHelper<typename T::value_type>::init(M);
     Matrix Mtt(T::valuex,T::valuey);
 
     Mtt = adjoint(adjoint(M));
@@ -166,6 +171,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Adjoint_inplace_test, T, test_types)
 {
     typedef matrix<typename T::value_type> Matrix;
     Matrix M(T::valuex,T::valuey);
+    InitHelper<typename T::value_type>::init(M);
     Matrix Mcopy(M);
 
     adjoint_inplace(M);
@@ -224,6 +230,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(LQ_Q_ID_test, T, test_types)
     ValidateHelper<typename T::value_type>::validateid(D);
 }
 /*---------------------------------------------------------------------------- QR TESTS */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE(QR_test, T, test_types)
 {
     typedef matrix<typename T::value_type> Matrix;
@@ -233,6 +240,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(QR_test, T, test_types)
     Matrix R;
 
     InitHelper<typename T::value_type>::init(M);
+
     qr(M,Q,R);
 
     Matrix D(Q*R);
