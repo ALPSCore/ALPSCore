@@ -123,11 +123,11 @@ namespace alps {
         }
 
         template <typename T>
-        typename matrix<T>::value_type norm_square(const matrix<T>& M){
-            typename matrix<T>::value_type ret(0);
+        typename real_type<T>::type norm_square(const matrix<T>& M){
+            typename real_type<T>::type ret(0);
             for (std::size_t c = 0; c < num_cols(M); ++c)
                 for (std::size_t r = 0; r < num_rows(M); ++r)
-                    ret += conj(M(r,c)) * M(r,c);
+                    ret += alps::numeric::real(conj(M(r,c)) * M(r,c));
             return ret;
         }
 
