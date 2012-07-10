@@ -38,6 +38,11 @@ inline transpose_view<Matrix> transpose(Matrix& m) {
 }
 
 template <typename Matrix>
+inline transpose_view<Matrix const> transpose(Matrix const& m) {
+    return transpose_view<Matrix const>(m);
+}
+
+template <typename Matrix>
 void transpose_inplace(Matrix& m) {
     typedef typename Matrix::size_type size_type;
     using std::swap;

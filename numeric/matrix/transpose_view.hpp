@@ -29,6 +29,7 @@
 #define ALPS_MATRIX_TRANSPOSE_VIEW_HPP
 
 #include <boost/type_traits/add_const.hpp>
+#include <boost/type_traits/remove_const.hpp>
 #include <alps/numeric/matrix/detail/transpose_view_adaptor.hpp>
 
 namespace alps {
@@ -137,17 +138,17 @@ class transpose_view {
 };
 
 
-template <typename Matrix>
-Matrix operator * (Matrix const& m1, transpose_view<Matrix> const& m2) {
+template <typename Matrix1, typename Matrix2>
+typename matrix_matrix_multiply_return_type<Matrix1, transpose_view<Matrix2> >::type operator * (Matrix1 const& m1, transpose_view<Matrix2> const& m2) {
     return matrix_matrix_multiply(m1,m2);
 }
-template <typename Matrix>
-Matrix operator * (transpose_view<Matrix> const& m1, Matrix const& m2) {
+template <typename Matrix1, typename Matrix2>
+typename matrix_matrix_multiply_return_type<transpose_view<Matrix1>, Matrix2 >::type operator * (transpose_view<Matrix1> const& m1, Matrix2 const& m2) {
     return matrix_matrix_multiply(m1,m2);
 }
 
-template <typename Matrix>
-Matrix operator * (transpose_view<Matrix> const& m1, transpose_view<Matrix> const& m2) {
+template <typename Matrix1, typename Matrix2>
+typename matrix_matrix_multiply_return_type<transpose_view<Matrix1>, transpose_view<Matrix2> >::type operator * (transpose_view<Matrix1> const& m1, transpose_view<Matrix2> const& m2) {
     return matrix_matrix_multiply(m1,m2);
 }
 
@@ -161,22 +162,28 @@ ALPS_IMPLEMENT_MATRIX_INTERFACE(transpose_view<Matrix>,<typename Matrix>)
 // Specializations
 //
 
-template <typename Matrix>
-struct matrix_matrix_multiply_return_type<Matrix,transpose_view<Matrix> > {
-    typedef Matrix type;
+template <typename Matrix1, typename Matrix2>
+struct matrix_matrix_multiply_return_type<Matrix1, transpose_view<Matrix2> > {
+    typedef typename matrix_matrix_multiply_return_type<
+          typename boost::remove_const<Matrix1>::type
+        , typename boost::remove_const<Matrix2>::type
+    >::type type;
+};
+
+template <typename Matrix1, typename Matrix2>
+struct matrix_matrix_multiply_return_type<transpose_view<Matrix1>, Matrix2> {
+    typedef typename matrix_matrix_multiply_return_type<
+          typename boost::remove_const<Matrix1>::type
+        , typename boost::remove_const<Matrix2>::type
+    >::type type;
 };
 
 template <typename Matrix>
-struct matrix_matrix_multiply_return_type<transpose_view<Matrix>,Matrix > {
+struct matrix_matrix_multiply_return_type<transpose_view<Matrix>, transpose_view<Matrix> > {
     typedef Matrix type;
 };
-
-template <typename Matrix>
-struct matrix_matrix_multiply_return_type<transpose_view<Matrix>,transpose_view<Matrix> > {
-    typedef Matrix type;
-};
-template <typename Matrix>
-struct is_matrix_scalar_multiplication<Matrix,transpose_view<Matrix> > {
+template <typename Matrix1, typename Matrix2>
+struct is_matrix_scalar_multiplication<Matrix1,transpose_view<Matrix2> > {
     static bool const value = false;
 };
 
