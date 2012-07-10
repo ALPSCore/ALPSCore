@@ -33,11 +33,6 @@ namespace alps {
 namespace numeric {
 
 template <typename Matrix>
-inline transpose_view<Matrix> transpose(Matrix& m) {
-    return transpose_view<Matrix>(m);
-}
-
-template <typename Matrix>
 inline transpose_view<Matrix const> transpose(Matrix const& m) {
     return transpose_view<Matrix const>(m);
 }

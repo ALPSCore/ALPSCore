@@ -180,7 +180,7 @@ struct matrix_matrix_multiply_return_type<transpose_view<Matrix1>, Matrix2> {
 
 template <typename Matrix>
 struct matrix_matrix_multiply_return_type<transpose_view<Matrix>, transpose_view<Matrix> > {
-    typedef Matrix type;
+    typedef typename boost::remove_const<Matrix>::type type;
 };
 template <typename Matrix1, typename Matrix2>
 struct is_matrix_scalar_multiplication<Matrix1,transpose_view<Matrix2> > {
