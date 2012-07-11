@@ -46,20 +46,15 @@ namespace alps{
   	for(std::size_t dir = 0; dir < D; dir++ )
   	  index[dir] = (rE - a.origin()) / a.strides()[dir] % a.shape()[dir] +  a.index_bases()[dir];
 
-	int M = 0;
 	if(index[D-1] == a.shape()[D-1]-1){
-	  M = 1;
+
+	  int M = 1;
 	  for(std::size_t dir = D-1; dir > 0; --dir){
 	    if(index[dir-1] == a.shape()[dir-1]-1) M++;
 	    else break;
 	  }
-	}
 
-	out << a(index) << ", ";
-
-	if(M > 0){
-
-	  out << "\b\b";
+	  out << a(index);
 
 	  for(int m = 0; m < M; ++m)
 	    out << "}";
@@ -75,7 +70,10 @@ namespace alps{
 	      out << "{";  
 
 	  }
+
 	}
+	else 
+	  out << a(index) << ", ";
 
   	++rE;
       }
