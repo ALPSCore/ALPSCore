@@ -44,9 +44,9 @@ struct transpose_helper {
 };
 
 template <typename T, typename MemoryBlock>
-struct transpose_helper<matrix<T,MemoryBlock> const> {
-    static matrix<T,MemoryBlock> apply( transpose_view<matrix<T,MemoryBlock> const> const& v) {
-        typedef typename transpose_view<matrix<T,MemoryBlock> const>::const_col_element_iterator const_col_element_iterator;
+struct transpose_helper<matrix<T,MemoryBlock> > {
+    static matrix<T,MemoryBlock> apply( transpose_view<matrix<T,MemoryBlock> > const& v) {
+        typedef typename transpose_view<matrix<T,MemoryBlock> >::const_col_element_iterator const_col_element_iterator;
         std::vector<std::pair<const_col_element_iterator,const_col_element_iterator> > columns;
         for(std::size_t i=0; i < num_cols(v); ++i)
             columns.push_back(col(v,i));
@@ -83,12 +83,12 @@ class transpose_view {
 //    typedef matrix_element_iterator<const matrix,const value_type>
 //        const_element_iterator;                       // Const version of element_iterator (REALLY SLOW! USE row_-/column_iterators INSTEAD!)
 
-    explicit transpose_view(Matrix& m)
+    explicit transpose_view(Matrix const& m)
     : m_(m){
     };
 
     operator Matrix() const {
-        return transpose_helper<typename boost::add_const<Matrix>::type>::apply(transpose_view<typename boost::add_const<Matrix>::type>(const_cast<Matrix const&>(m_)));
+        return transpose_helper<Matrix>::apply(*this);
     }
 
     inline value_type& operator()(size_type i, size_type j) {
@@ -134,7 +134,7 @@ class transpose_view {
     }
 
   private:
-    Matrix& m_;
+    Matrix const& m_;
 };
 
 

@@ -41,7 +41,6 @@ namespace numeric {
         assert( num_rows(c) == num_rows(a) );
         assert( num_cols(c) == num_cols(b) );
         // Simple matrix matrix multiplication
-        std::cerr << "Warning: unoptimized version of GEMM is being used!\n";
         for(std::size_t j=0; j < num_cols(b); ++j)
             for(std::size_t k=0; k < num_cols(a); ++k)
                 for(std::size_t i=0; i < num_rows(a); ++i)
