@@ -139,18 +139,19 @@ EigenvectorMeasurements<ValueType>::EigenvectorMeasurements(LatticeModel const& 
 template <class ValueType>
 void EigenvectorMeasurements<ValueType>::save(alps::hdf5::archive& ar) const
 {
+  using alps::numeric::real;
 
   for (typename std::map<std::string,std::vector<value_type> >::const_iterator
     it=average_values.begin();it!=average_values.end();++it) 
   {
     std::string path = "results/"+ hdf5_name_encode(it->first);
-    ar << make_pvp(path+"/mean/value", alps::numeric::real(it->second));
+    ar << make_pvp(path+"/mean/value", real(it->second));
   }    
 
   for (typename std::map<std::string,std::vector<std::vector<value_type> > >::const_iterator 
           it=local_values.begin();it!=local_values.end();++it) {
     std::string path = "results/"+ hdf5_name_encode(it->first);
-    ar << make_pvp(path+"/mean/value", alps::numeric::real(it->second));
+    ar << make_pvp(path+"/mean/value", real(it->second));
     if (bond_operator_[it->first])
       ar << make_pvp(path+"/labels", bondlabel_);
     else
@@ -160,14 +161,14 @@ void EigenvectorMeasurements<ValueType>::save(alps::hdf5::archive& ar) const
   for (typename std::map<std::string,std::vector<std::vector<value_type> > >::const_iterator 
         it=correlation_values.begin();it!=correlation_values.end();++it) {
     std::string path = "results/"+ hdf5_name_encode(it->first);
-    ar << make_pvp(path+"/mean/value", alps::numeric::real(it->second));
+    ar << make_pvp(path+"/mean/value", real(it->second));
     ar << make_pvp(path+"/labels", distlabel_);
   }
 
   for (typename std::map<std::string,std::vector<std::vector<value_type> > >::const_iterator 
         it=structurefactor_values.begin();it!=structurefactor_values.end();++it) {
     std::string path = "results/"+ hdf5_name_encode(it->first);
-    ar << make_pvp(path+"/mean/value", alps::numeric::real(it->second));
+    ar << make_pvp(path+"/mean/value", real(it->second));
     ar << make_pvp(path+"/labels", momentumlabel_);
   }
 
@@ -222,11 +223,13 @@ template <class ValueType>
 void EigenvectorMeasurements<ValueType>::write_xml_one_vector(
     oxstream& out, const boost::filesystem::path&, std::size_t j) const
 {
+  using alps::numeric::real;
+
   for (typename std::map<std::string,std::vector<value_type> >::const_iterator 
     it=average_values.begin();it!=average_values.end();++it)
     if (j<it->second.size())
         out << start_tag("SCALAR_AVERAGE") <<  attribute("name",it->first) << no_linebreak
-            << start_tag("MEAN") <<  no_linebreak << alps::numeric::real(it->second[j]) << end_tag("MEAN")
+            << start_tag("MEAN") <<  no_linebreak << real(it->second[j]) << end_tag("MEAN")
             << end_tag("SCALAR_AVERAGE");
 
   for (typename std::map<std::string,std::vector<std::vector<value_type> > >::const_iterator 
@@ -238,14 +241,14 @@ void EigenvectorMeasurements<ValueType>::write_xml_one_vector(
         for (unsigned nb=0; nb < bondlabel_.size() && vit != it->second[j].end() ; ++vit, ++nb)
           out << start_tag("SCALAR_AVERAGE")
               << attribute("indexvalue",bondlabel_[nb]) << no_linebreak
-              << start_tag("MEAN") << no_linebreak <<  alps::numeric::real(*vit) << end_tag("MEAN")
+              << start_tag("MEAN") << no_linebreak <<  real(*vit) << end_tag("MEAN")
               << end_tag("SCALAR_AVERAGE");
       }
       else {
         for (unsigned ns=0; ns < sitelabel_.size() && vit != it->second[j].end() ; ++vit, ++ns)
           out << start_tag("SCALAR_AVERAGE")
               << attribute("indexvalue",sitelabel_[ns]) << no_linebreak
-              << start_tag("MEAN") << no_linebreak <<  alps::numeric::real(*vit) << end_tag("MEAN")
+              << start_tag("MEAN") << no_linebreak <<  real(*vit) << end_tag("MEAN")
               << end_tag("SCALAR_AVERAGE");
       }
       out << end_tag("VECTOR_AVERAGE");
@@ -259,7 +262,7 @@ void EigenvectorMeasurements<ValueType>::write_xml_one_vector(
       for (unsigned d=0;d<distlabel_.size() && vit != it->second[j].end();++d,++vit)
         out << start_tag("SCALAR_AVERAGE") 
             << attribute("indexvalue",distlabel_[d]) << no_linebreak
-            << start_tag("MEAN") << no_linebreak <<  alps::numeric::real(*vit) << end_tag("MEAN")
+            << start_tag("MEAN") << no_linebreak <<  real(*vit) << end_tag("MEAN")
             << end_tag("SCALAR_AVERAGE");
       out << end_tag("VECTOR_AVERAGE");
     }
@@ -272,7 +275,7 @@ void EigenvectorMeasurements<ValueType>::write_xml_one_vector(
       for (unsigned d=0;d<momentumlabel_.size() && vit != it->second[j].end();++d,++vit)
         out << start_tag("SCALAR_AVERAGE") 
             << attribute("indexvalue",momentumlabel_[d]) << no_linebreak
-            << start_tag("MEAN") << no_linebreak <<  alps::numeric::real(*vit) << end_tag("MEAN")
+            << start_tag("MEAN") << no_linebreak <<  real(*vit) << end_tag("MEAN")
             << end_tag("SCALAR_AVERAGE");
       out << end_tag("VECTOR_AVERAGE");
     }

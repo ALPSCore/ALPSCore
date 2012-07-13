@@ -40,12 +40,12 @@
 
 namespace alps { namespace numeric {
 
-
 template <class T>
 inline T real(T x) { return x;}
 
-template <class T>
-inline T real(std::complex<T> x) { return std::real(x);}
+using std::real;
+
+// if std::complex<T> is used std::real will be called by argument dependent look-up
 
 template <class T>
 struct real_type
@@ -61,12 +61,13 @@ struct real_type<std::complex<T> >
 };
 
 template <class T>
-inline std::vector<T> real(std::vector<std::complex<T> > x) 
+inline std::vector<T> real(std::vector<std::complex<T> > const & x) 
 {
+  using std::real;
   std::vector<T> re;
   re.reserve(x.size());
   std::transform(x.begin(),x.end(),std::back_inserter(re),
-                 static_cast<T (*)(std::complex<T>)>(&real));
+                 static_cast<T const & (*)(std::complex<T> const &)>(&real));
   return re;
 }
 
@@ -76,7 +77,7 @@ std::vector<std::vector<T> > real(std::vector<std::vector<std::complex<T> > >con
   std::vector<std::vector< T > > re;
   re.reserve(x.size());
   std::transform(x.begin(),x.end(),std::back_inserter(re),
-                 static_cast<std::vector<T> (*)(std::vector<std::complex<T> >)>(&real));
+                 static_cast<std::vector<T> (*)(std::vector<std::complex<T> > const &)>(&real));
   return re;
 }
 

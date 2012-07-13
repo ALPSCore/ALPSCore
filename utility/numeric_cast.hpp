@@ -60,7 +60,7 @@ template <class T, class U>
 struct numeric_cast<T,std::complex<U> >
 {
   typedef T return_type;
-  static return_type cast( std::complex<U> const& u) { return alps::numeric::real(u);}
+  static return_type cast( std::complex<U> const& u) {using alps::numeric::real; return real(u);}
 };
 
 template <class T, class U >
