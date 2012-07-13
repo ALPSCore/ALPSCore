@@ -85,6 +85,11 @@ IF (ALPS_BUILD_HDF5_TESTS)
             "boost::multi_array<double, 3>" "boost::multi_array<int, 3>" "boost::multi_array<std::complex<double>, 3>" "boost::multi_array<std::string, 3>"
             "std::vector<boost::multi_array<double, 2> >" "std::vector<boost::multi_array<double, 3> >" "std::vector<boost::multi_array<double, 4> >" 
 #			"std::pair<boost::multi_array<std::complex<double>, 3> *, std::vector<std::size_t> >" "boost::multi_array<std::complex<double>, 1> *"
+            "alps::multi_array<double, 1>" "alps::multi_array<int, 1>" "alps::multi_array<std::complex<double>, 1>" "alps::multi_array<std::string, 1>"
+            "alps::multi_array<double, 2>" "alps::multi_array<int, 2>" "alps::multi_array<std::complex<double>, 2>" "alps::multi_array<std::string, 2>"
+            "alps::multi_array<double, 3>" "alps::multi_array<int, 3>" "alps::multi_array<std::complex<double>, 3>" "alps::multi_array<std::string, 3>"
+            "std::vector<alps::multi_array<double, 2> >" "std::vector<alps::multi_array<double, 3> >" "std::vector<alps::multi_array<double, 4> >" 
+#			"std::pair<alps::multi_array<std::complex<double>, 3> *, std::vector<std::size_t> >" "alps::multi_array<std::complex<double>, 1> *"
         )
     endif(ALPS_BUILD_NGS)
     

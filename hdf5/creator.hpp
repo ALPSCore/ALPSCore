@@ -301,6 +301,99 @@ template<typename T> bool equal(T const & a, T const & b) {
     return a == b;
 }
 
+
+#define HDF5_DEFINE_MULTI_ARRAY_TYPE(P, C)                                                         \
+template<typename T, typename A> struct creator< C < P ::multi_array<T, 1, A> > > {                \
+    typedef C < P ::multi_array<T, 1, A> > base_type;                                              \
+    static base_type random() {                                                                    \
+        base_type value(                                                                           \
+            VECTOR_SIZE, P ::multi_array<T, 1, A>(boost::extents[MATRIX_SIZE])                     \
+        );                                                                                         \
+        for (std::size_t i = 0; i < VECTOR_SIZE; ++i)                                              \
+            for (std::size_t j = 0; j < MATRIX_SIZE; ++j)                                          \
+                if (boost::is_scalar<T>::value)                                                    \
+                    initialize(value[i][j]);                                                       \
+                else                                                                               \
+                    value[i][j] = creator<T>::random();                                            \
+        return value;                                                                              \
+    }                                                                                              \
+    static base_type empty() { return base_type(); }                                               \
+    static base_type special() { return base_type(); }                                             \
+    template<typename X> static base_type random(X const &) { return base_type(); }                \
+    template<typename X> static base_type empty(X const &) { return base_type(); }                 \
+    template<typename X> static base_type special(X const &) { return base_type(); }               \
+};                                                                                                 \
+template<typename T, typename A> struct creator< C < P ::multi_array<T, 2, A> > > {                \
+    typedef C < P ::multi_array<T, 2, A> > base_type;                                              \
+    static base_type random() {                                                                    \
+        base_type value(                                                                           \
+            VECTOR_SIZE, P ::multi_array<T, 2, A>(boost::extents[MATRIX_SIZE][MATRIX_SIZE])        \
+        );                                                                                         \
+        for (std::size_t i = 0; i < VECTOR_SIZE; ++i)                                              \
+            for (std::size_t j = 0; j < MATRIX_SIZE; ++j)                                          \
+                for (std::size_t k = 0; k < MATRIX_SIZE; ++k)                                      \
+                    if (boost::is_scalar<T>::value)                                                \
+                        initialize(value[i][j][k]);                                                \
+                    else                                                                           \
+                        value[i][j][k] = creator<T>::random();                                     \
+        return value;                                                                              \
+    }                                                                                              \
+    static base_type empty() { return base_type(); }                                               \
+    static base_type special() { return base_type(); }                                             \
+    template<typename X> static base_type random(X const &) { return base_type(); }                \
+    template<typename X> static base_type empty(X const &) { return base_type(); }                 \
+    template<typename X> static base_type special(X const &) { return base_type(); }               \
+};                                                                                                 \
+template<typename T, typename A> struct creator< C < P ::multi_array<T, 3, A> > > {                \
+    typedef C < P ::multi_array<T, 3, A> > base_type;                                              \
+    static base_type random() {                                                                    \
+        base_type value(                                                                           \
+            VECTOR_SIZE, P ::multi_array<T, 3, A>(                                                 \
+                boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]                              \
+            )                                                                                      \
+        );                                                                                         \
+        for (std::size_t i = 0; i < VECTOR_SIZE; ++i)                                              \
+            for (std::size_t j = 0; j < MATRIX_SIZE; ++j)                                          \
+                for (std::size_t k = 0; k < MATRIX_SIZE; ++k)                                      \
+                    for (std::size_t l = 0; l < MATRIX_SIZE; ++l)                                  \
+                        if (boost::is_scalar<T>::value)                                            \
+                            initialize(value[i][j][k][l]);                                         \
+                        else                                                                       \
+                            value[i][j][k][l] = creator<T>::random();                              \
+        return value;                                                                              \
+    }                                                                                              \
+    static base_type empty() { return base_type(); }                                               \
+    static base_type special() { return base_type(); }                                             \
+    template<typename X> static base_type random(X const &) { return base_type(); }                \
+    template<typename X> static base_type empty(X const &) { return base_type(); }                 \
+    template<typename X> static base_type special(X const &) { return base_type(); }               \
+};                                                                                                 \
+template<typename T, typename A> struct creator< C < P ::multi_array<T, 4, A> > > {                \
+    typedef C < P ::multi_array<T, 4, A> > base_type;                                              \
+    static base_type random() {                                                                    \
+        base_type value(                                                                           \
+            VECTOR_SIZE, P ::multi_array<T, 4, A>(                                                 \
+                boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]                 \
+            )                                                                                      \
+        );                                                                                         \
+        for (std::size_t i = 0; i < VECTOR_SIZE; ++i)                                              \
+            for (std::size_t j = 0; j < MATRIX_SIZE; ++j)                                          \
+                for (std::size_t k = 0; k < MATRIX_SIZE; ++k)                                      \
+                    for (std::size_t l = 0; l < MATRIX_SIZE; ++l)                                  \
+                        for (std::size_t m = 0; m < MATRIX_SIZE; ++m)                              \
+                            if (boost::is_scalar<T>::value)                                        \
+                                initialize(value[i][j][k][l][m]);                                  \
+                            else                                                                   \
+                                value[i][j][k][l][m] = creator<T>::random();                       \
+        return value;                                                                              \
+    }                                                                                              \
+    static base_type empty() { return base_type(); }                                               \
+    static base_type special() { return base_type(); }                                             \
+    template<typename X> static base_type random(X const &) { return base_type(); }                \
+    template<typename X> static base_type empty(X const &) { return base_type(); }                 \
+    template<typename X> static base_type special(X const &) { return base_type(); }               \
+};
+
 #undef HDF5_DEFINE_VECTOR_TYPE
 #define HDF5_DEFINE_VECTOR_TYPE(C)                                                                 \
 template<typename T> struct creator< C <T> > {                                                     \
@@ -373,101 +466,15 @@ template<typename T> struct creator< C < alps::numeric::matrix<T> > > {         
     template<typename X> static base_type empty(X const &) { return base_type(); }                 \
     template<typename X> static base_type special(X const &) { return base_type(); }               \
 };                                                                                                 \
-template<typename T, typename A> struct creator< C < boost::multi_array<T, 1, A> > > {             \
-    typedef C < boost::multi_array<T, 1, A> > base_type;                                           \
-    static base_type random() {                                                                    \
-        base_type value(                                                                           \
-            VECTOR_SIZE, boost::multi_array<T, 1, A>(boost::extents[MATRIX_SIZE])                  \
-        );                                                                                         \
-        for (std::size_t i = 0; i < VECTOR_SIZE; ++i)                                              \
-            for (std::size_t j = 0; j < MATRIX_SIZE; ++j)                                          \
-                if (boost::is_scalar<T>::value)                                                    \
-                    initialize(value[i][j]);                                                       \
-                else                                                                               \
-                    value[i][j] = creator<T>::random();                                            \
-        return value;                                                                              \
-    }                                                                                              \
-    static base_type empty() { return base_type(); }                                               \
-    static base_type special() { return base_type(); }                                             \
-    template<typename X> static base_type random(X const &) { return base_type(); }                \
-    template<typename X> static base_type empty(X const &) { return base_type(); }                 \
-    template<typename X> static base_type special(X const &) { return base_type(); }               \
-};                                                                                                 \
-template<typename T, typename A> struct creator< C < boost::multi_array<T, 2, A> > > {             \
-    typedef C < boost::multi_array<T, 2, A> > base_type;                                           \
-    static base_type random() {                                                                    \
-        base_type value(                                                                           \
-            VECTOR_SIZE, boost::multi_array<T, 2, A>(boost::extents[MATRIX_SIZE][MATRIX_SIZE])     \
-        );                                                                                         \
-        for (std::size_t i = 0; i < VECTOR_SIZE; ++i)                                              \
-            for (std::size_t j = 0; j < MATRIX_SIZE; ++j)                                          \
-                for (std::size_t k = 0; k < MATRIX_SIZE; ++k)                                      \
-                    if (boost::is_scalar<T>::value)                                                \
-                        initialize(value[i][j][k]);                                                \
-                    else                                                                           \
-                        value[i][j][k] = creator<T>::random();                                     \
-        return value;                                                                              \
-    }                                                                                              \
-    static base_type empty() { return base_type(); }                                               \
-    static base_type special() { return base_type(); }                                             \
-    template<typename X> static base_type random(X const &) { return base_type(); }                \
-    template<typename X> static base_type empty(X const &) { return base_type(); }                 \
-    template<typename X> static base_type special(X const &) { return base_type(); }               \
-};                                                                                                 \
-template<typename T, typename A> struct creator< C < boost::multi_array<T, 3, A> > > {             \
-    typedef C < boost::multi_array<T, 3, A> > base_type;                                           \
-    static base_type random() {                                                                    \
-        base_type value(                                                                           \
-            VECTOR_SIZE, boost::multi_array<T, 3, A>(                                              \
-                boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]                              \
-            )                                                                                      \
-        );                                                                                         \
-        for (std::size_t i = 0; i < VECTOR_SIZE; ++i)                                              \
-            for (std::size_t j = 0; j < MATRIX_SIZE; ++j)                                          \
-                for (std::size_t k = 0; k < MATRIX_SIZE; ++k)                                      \
-                    for (std::size_t l = 0; l < MATRIX_SIZE; ++l)                                  \
-                        if (boost::is_scalar<T>::value)                                            \
-                            initialize(value[i][j][k][l]);                                         \
-                        else                                                                       \
-                            value[i][j][k][l] = creator<T>::random();                              \
-        return value;                                                                              \
-    }                                                                                              \
-    static base_type empty() { return base_type(); }                                               \
-    static base_type special() { return base_type(); }                                             \
-    template<typename X> static base_type random(X const &) { return base_type(); }                \
-    template<typename X> static base_type empty(X const &) { return base_type(); }                 \
-    template<typename X> static base_type special(X const &) { return base_type(); }               \
-};                                                                                                 \
-template<typename T, typename A> struct creator< C < boost::multi_array<T, 4, A> > > {             \
-    typedef C < boost::multi_array<T, 4, A> > base_type;                                           \
-    static base_type random() {                                                                    \
-        base_type value(                                                                           \
-            VECTOR_SIZE, boost::multi_array<T, 4, A>(                                              \
-                boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]                 \
-            )                                                                                      \
-        );                                                                                         \
-        for (std::size_t i = 0; i < VECTOR_SIZE; ++i)                                              \
-            for (std::size_t j = 0; j < MATRIX_SIZE; ++j)                                          \
-                for (std::size_t k = 0; k < MATRIX_SIZE; ++k)                                      \
-                    for (std::size_t l = 0; l < MATRIX_SIZE; ++l)                                  \
-                        for (std::size_t m = 0; m < MATRIX_SIZE; ++m)                              \
-                            if (boost::is_scalar<T>::value)                                        \
-                                initialize(value[i][j][k][l][m]);                                  \
-                            else                                                                   \
-                                value[i][j][k][l][m] = creator<T>::random();                       \
-        return value;                                                                              \
-    }                                                                                              \
-    static base_type empty() { return base_type(); }                                               \
-    static base_type special() { return base_type(); }                                             \
-    template<typename X> static base_type random(X const &) { return base_type(); }                \
-    template<typename X> static base_type empty(X const &) { return base_type(); }                 \
-    template<typename X> static base_type special(X const &) { return base_type(); }               \
-};
+HDF5_DEFINE_MULTI_ARRAY_TYPE(boost, C)                                                             \
+HDF5_DEFINE_MULTI_ARRAY_TYPE(alps, C)
+
 HDF5_DEFINE_VECTOR_TYPE(std::vector)
 HDF5_DEFINE_VECTOR_TYPE(std::valarray)
 HDF5_DEFINE_VECTOR_TYPE(std::deque)
 HDF5_DEFINE_VECTOR_TYPE(boost::numeric::ublas::vector)
 #undef HDF5_DEFINE_VECTOR_TYPE
+#undef HDF5_DEFINE_MULTI_ARRAY_TYPE
 
 template<typename T, typename U> struct creator<std::pair<T, U> > {
     typedef std::pair<T, U> base_type;
@@ -543,121 +550,124 @@ template<typename T, typename U> bool equal(std::pair<T *, std::vector<U> > cons
         return false;
 }
 
-template<typename T, typename A> struct creator<boost::multi_array<T, 1, A> > {
-    typedef boost::multi_array<T, 1, A> base_type;
-    static base_type random() {
-        base_type value(boost::extents[VECTOR_SIZE]);
-        for (std::size_t i = 0; i < VECTOR_SIZE; ++i)
-            if (boost::is_scalar<T>::value)
-                initialize(value[i]);
-            else
-                value[i] = creator<T>::random();
-        return value;
+#define HDF5_DEFINE_MULTI_ARRAY_TYPE(P)                                                                                                             \
+    template<typename T, typename A> struct creator< P ::multi_array<T, 1, A> > {                                                                   \
+        typedef  P ::multi_array<T, 1, A> base_type;                                                                                                \
+        static base_type random() {                                                                                                                 \
+            base_type value(boost::extents[VECTOR_SIZE]);                                                                                           \
+            for (std::size_t i = 0; i < VECTOR_SIZE; ++i)                                                                                           \
+                if (boost::is_scalar<T>::value)                                                                                                     \
+                    initialize(value[i]);                                                                                                           \
+                else                                                                                                                                \
+                    value[i] = creator<T>::random();                                                                                                \
+            return value;                                                                                                                           \
+        }                                                                                                                                           \
+        static base_type empty() { return base_type(boost::extents[0]); }                                                                           \
+        static base_type special() { return base_type(boost::extents[VECTOR_SIZE]); }                                                               \
+        template<typename X> static base_type random(X const &) { return base_type(boost::extents[VECTOR_SIZE]); }                                  \
+        template<typename X> static base_type empty(X const &) { return base_type(boost::extents[0]); }                                             \
+        template<typename X> static base_type special(X const &) { return base_type(boost::extents[VECTOR_SIZE]); }                                 \
+    };                                                                                                                                              \
+    template<typename T, typename A> bool equal( P ::multi_array<T, 1, A> const & a,   P ::multi_array<T, 1, A> const & b) {                        \
+        if (!std::equal(a.shape(), a.shape() +  P ::multi_array<T, 1, A>::dimensionality, b.shape()))                                               \
+            return false;                                                                                                                           \
+        for (std::size_t i = 0; i < a.shape()[0]; ++i)                                                                                              \
+            if (!equal(a[i], b[i]))                                                                                                                 \
+                return false;                                                                                                                       \
+        return true;                                                                                                                                \
+    }                                                                                                                                               \
+                                                                                                                                                    \
+    template<typename T, typename A> struct creator< P ::multi_array<T, 2, A> > {                                                                   \
+        typedef  P ::multi_array<T, 2, A> base_type;                                                                                                \
+        static base_type random() {                                                                                                                 \
+            base_type value(boost::extents[MATRIX_SIZE][MATRIX_SIZE]);                                                                              \
+            for (std::size_t i = 0; i < MATRIX_SIZE; ++i)                                                                                           \
+                for (std::size_t j = 0; j < MATRIX_SIZE; ++j)                                                                                       \
+                    if (boost::is_scalar<T>::value)                                                                                                 \
+                        initialize(value[i][j]);                                                                                                    \
+                    else                                                                                                                            \
+                        value[i][j] = creator<T>::random();                                                                                         \
+            return value;                                                                                                                           \
+        }                                                                                                                                           \
+        static base_type empty() { return base_type(boost::extents[0][0]); }                                                                        \
+        static base_type special() { return base_type(boost::extents[MATRIX_SIZE][MATRIX_SIZE]); }                                                  \
+        template<typename X> static base_type random(X const &) { return base_type(boost::extents[5][5]); }                                         \
+        template<typename X> static base_type empty(X const &) { return base_type(boost::extents[0][0]); }                                          \
+        template<typename X> static base_type special(X const &) { return base_type(boost::extents[MATRIX_SIZE][MATRIX_SIZE]); }                    \
+    };                                                                                                                                              \
+    template<typename T, typename A> bool equal( P ::multi_array<T, 2, A> const & a,   P ::multi_array<T, 2, A> const & b) {                        \
+        if (!std::equal(a.shape(), a.shape() +  P ::multi_array<T, 2, A>::dimensionality, b.shape()))                                               \
+            return false;                                                                                                                           \
+        for (std::size_t i = 0; i < a.shape()[0]; ++i)                                                                                              \
+            for (std::size_t j = 0; j < a.shape()[1]; ++j)                                                                                          \
+                if (!equal(a[i][j], b[i][j]))                                                                                                       \
+                    return false;                                                                                                                   \
+        return true;                                                                                                                                \
+    }                                                                                                                                               \
+                                                                                                                                                    \
+    template<typename T, typename A> struct creator< P ::multi_array<T, 3, A> > {                                                                   \
+        typedef  P ::multi_array<T, 3, A> base_type;                                                                                                \
+        static base_type random() {                                                                                                                 \
+            base_type value(boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]);                                                                 \
+            for (std::size_t i = 0; i < MATRIX_SIZE; ++i)                                                                                           \
+                for (std::size_t j = 0; j < MATRIX_SIZE; ++j)                                                                                       \
+                    for (std::size_t k = 0; k < MATRIX_SIZE; ++k)                                                                                   \
+                        if (boost::is_scalar<T>::value)                                                                                             \
+                            initialize(value[i][j][k]);                                                                                             \
+                        else                                                                                                                        \
+                            value[i][j][k] = creator<T>::random();                                                                                  \
+            return value;                                                                                                                           \
+        }                                                                                                                                           \
+        static base_type empty() { return base_type(boost::extents[0][0][0]); }                                                                     \
+        static base_type special() { return base_type(boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]); }                                     \
+        template<typename X> static base_type random(X const &) { return base_type(boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]); }        \
+        template<typename X> static base_type empty(X const &) { return base_type(boost::extents[0][0][0]); }                                       \
+        template<typename X> static base_type special(X const &) { return base_type(boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]); }       \
+    };                                                                                                                                              \
+    template<typename T, typename A> bool equal( P ::multi_array<T, 3, A> const & a,   P ::multi_array<T, 3, A> const & b) {                        \
+        if (!std::equal(a.shape(), a.shape() +  P ::multi_array<T, 3, A>::dimensionality, b.shape()))                                               \
+            return false;                                                                                                                           \
+        for (std::size_t i = 0; i < a.shape()[0]; ++i)                                                                                              \
+            for (std::size_t j = 0; j < a.shape()[1]; ++j)                                                                                          \
+                for (std::size_t k = 0; k < a.shape()[2]; ++k)                                                                                      \
+                    if (!equal(a[i][j][k], b[i][j][k]))                                                                                             \
+                        return false;                                                                                                               \
+        return true;                                                                                                                                \
+    }                                                                                                                                               \
+                                                                                                                                                    \
+    template<typename T, typename A> struct creator< P ::multi_array<T, 4, A> > {                                                                   \
+        typedef  P ::multi_array<T, 4, A> base_type;                                                                                                \
+        static base_type random() {                                                                                                                 \
+            base_type value(boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]);                                                    \
+            for (std::size_t i = 0; i < MATRIX_SIZE; ++i)                                                                                           \
+                for (std::size_t j = 0; j < MATRIX_SIZE; ++j)                                                                                       \
+                    for (std::size_t k = 0; k < MATRIX_SIZE; ++k)                                                                                   \
+                        for (std::size_t l = 0; l < MATRIX_SIZE; ++l)                                                                               \
+                            if (boost::is_scalar<T>::value)                                                                                         \
+                                initialize(value[i][j][k][l]);                                                                                      \
+                            else                                                                                                                    \
+                                value[i][j][k][l] = creator<T>::random();                                                                           \
+            return value;                                                                                                                           \
+        }                                                                                                                                           \
+        static base_type empty() { return base_type(boost::extents[0][0][0]); }                                                                     \
+        static base_type special() { return base_type(boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]); }                                     \
+        template<typename X> static base_type random(X const &) { return base_type(boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]); }        \
+        template<typename X> static base_type empty(X const &) { return base_type(boost::extents[0][0][0]); }                                       \
+        template<typename X> static base_type special(X const &) { return base_type(boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]); }       \
+    };                                                                                                                                              \
+    template<typename T, typename A> bool equal( P ::multi_array<T, 4, A> const & a,   P ::multi_array<T, 4, A> const & b) {                        \
+        if (!std::equal(a.shape(), a.shape() +  P ::multi_array<T, 4, A>::dimensionality, b.shape()))                                               \
+            return false;                                                                                                                           \
+        for (std::size_t i = 0; i < a.shape()[0]; ++i)                                                                                              \
+            for (std::size_t j = 0; j < a.shape()[1]; ++j)                                                                                          \
+                for (std::size_t k = 0; k < a.shape()[2]; ++k)                                                                                      \
+                    for (std::size_t l = 0; l < a.shape()[2]; ++l)                                                                                  \
+                        if (!equal(a[i][j][k][l], b[i][j][k][l]))                                                                                   \
+                            return false;                                                                                                           \
+        return true;                                                                                                                                \
     }
-    static base_type empty() { return base_type(boost::extents[0]); }
-    static base_type special() { return base_type(boost::extents[VECTOR_SIZE]); }
-    template<typename X> static base_type random(X const &) { return base_type(boost::extents[VECTOR_SIZE]); }
-    template<typename X> static base_type empty(X const &) { return base_type(boost::extents[0]); }
-    template<typename X> static base_type special(X const &) { return base_type(boost::extents[VECTOR_SIZE]); }
-};
-template<typename T, typename A> bool equal(boost::multi_array<T, 1, A> const & a,  boost::multi_array<T, 1, A> const & b) {
-    if (!std::equal(a.shape(), a.shape() + boost::multi_array<T, 1, A>::dimensionality, b.shape()))
-        return false;
-    for (std::size_t i = 0; i < a.shape()[0]; ++i)
-        if (!equal(a[i], b[i]))
-            return false;
-    return true;
-}
-
-template<typename T, typename A> struct creator<boost::multi_array<T, 2, A> > {
-    typedef boost::multi_array<T, 2, A> base_type;
-    static base_type random() {
-        base_type value(boost::extents[MATRIX_SIZE][MATRIX_SIZE]);
-        for (std::size_t i = 0; i < MATRIX_SIZE; ++i)
-            for (std::size_t j = 0; j < MATRIX_SIZE; ++j)
-                if (boost::is_scalar<T>::value)
-                    initialize(value[i][j]);
-                else
-                    value[i][j] = creator<T>::random();
-        return value;
-    }
-    static base_type empty() { return base_type(boost::extents[0][0]); }
-    static base_type special() { return base_type(boost::extents[MATRIX_SIZE][MATRIX_SIZE]); }
-    template<typename X> static base_type random(X const &) { return base_type(boost::extents[5][5]); }
-    template<typename X> static base_type empty(X const &) { return base_type(boost::extents[0][0]); }
-    template<typename X> static base_type special(X const &) { return base_type(boost::extents[MATRIX_SIZE][MATRIX_SIZE]); }
-};
-template<typename T, typename A> bool equal(boost::multi_array<T, 2, A> const & a,  boost::multi_array<T, 2, A> const & b) {
-    if (!std::equal(a.shape(), a.shape() + boost::multi_array<T, 2, A>::dimensionality, b.shape()))
-        return false;
-    for (std::size_t i = 0; i < a.shape()[0]; ++i)
-        for (std::size_t j = 0; j < a.shape()[1]; ++j)
-            if (!equal(a[i][j], b[i][j]))
-                return false;
-    return true;
-}
-
-template<typename T, typename A> struct creator<boost::multi_array<T, 3, A> > {
-    typedef boost::multi_array<T, 3, A> base_type;
-    static base_type random() {
-        base_type value(boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]);
-        for (std::size_t i = 0; i < MATRIX_SIZE; ++i)
-            for (std::size_t j = 0; j < MATRIX_SIZE; ++j)
-                for (std::size_t k = 0; k < MATRIX_SIZE; ++k)
-                    if (boost::is_scalar<T>::value)
-                        initialize(value[i][j][k]);
-                    else
-                        value[i][j][k] = creator<T>::random();
-        return value;
-    }
-    static base_type empty() { return base_type(boost::extents[0][0][0]); }
-    static base_type special() { return base_type(boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]); }
-    template<typename X> static base_type random(X const &) { return base_type(boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]); }
-    template<typename X> static base_type empty(X const &) { return base_type(boost::extents[0][0][0]); }
-    template<typename X> static base_type special(X const &) { return base_type(boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]); }
-};
-template<typename T, typename A> bool equal(boost::multi_array<T, 3, A> const & a,  boost::multi_array<T, 3, A> const & b) {
-    if (!std::equal(a.shape(), a.shape() + boost::multi_array<T, 3, A>::dimensionality, b.shape()))
-        return false;
-    for (std::size_t i = 0; i < a.shape()[0]; ++i)
-        for (std::size_t j = 0; j < a.shape()[1]; ++j)
-            for (std::size_t k = 0; k < a.shape()[2]; ++k)
-                if (!equal(a[i][j][k], b[i][j][k]))
-                    return false;
-    return true;
-}
-
-template<typename T, typename A> struct creator<boost::multi_array<T, 4, A> > {
-    typedef boost::multi_array<T, 4, A> base_type;
-    static base_type random() {
-        base_type value(boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]);
-        for (std::size_t i = 0; i < MATRIX_SIZE; ++i)
-            for (std::size_t j = 0; j < MATRIX_SIZE; ++j)
-                for (std::size_t k = 0; k < MATRIX_SIZE; ++k)
-                    for (std::size_t l = 0; l < MATRIX_SIZE; ++l)
-                        if (boost::is_scalar<T>::value)
-                            initialize(value[i][j][k][l]);
-                        else
-                            value[i][j][k][l] = creator<T>::random();
-        return value;
-    }
-    static base_type empty() { return base_type(boost::extents[0][0][0]); }
-    static base_type special() { return base_type(boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]); }
-    template<typename X> static base_type random(X const &) { return base_type(boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]); }
-    template<typename X> static base_type empty(X const &) { return base_type(boost::extents[0][0][0]); }
-    template<typename X> static base_type special(X const &) { return base_type(boost::extents[MATRIX_SIZE][MATRIX_SIZE][MATRIX_SIZE]); }
-};
-template<typename T, typename A> bool equal(boost::multi_array<T, 4, A> const & a,  boost::multi_array<T, 4, A> const & b) {
-    if (!std::equal(a.shape(), a.shape() + boost::multi_array<T, 4, A>::dimensionality, b.shape()))
-        return false;
-    for (std::size_t i = 0; i < a.shape()[0]; ++i)
-        for (std::size_t j = 0; j < a.shape()[1]; ++j)
-            for (std::size_t k = 0; k < a.shape()[2]; ++k)
-                for (std::size_t l = 0; l < a.shape()[2]; ++l)
-                    if (!equal(a[i][j][k][l], b[i][j][k][l]))
-                        return false;
-    return true;
-}
+HDF5_DEFINE_MULTI_ARRAY_TYPE(boost)
+HDF5_DEFINE_MULTI_ARRAY_TYPE(alps)
 
 template<typename T> struct creator<boost::numeric::ublas::matrix<T, boost::numeric::ublas::column_major> > {
     typedef boost::numeric::ublas::matrix<T, boost::numeric::ublas::column_major> base_type;
