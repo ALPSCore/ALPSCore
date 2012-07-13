@@ -258,6 +258,7 @@ template<typename T> struct skip_attribute<boost::numeric::ublas::vector<std::ve
 template<typename T> struct skip_attribute<boost::numeric::ublas::vector<std::valarray<T> > >: public boost::mpl::true_ {};
 
 template<typename T, std::size_t N, typename A> struct skip_attribute<std::vector<boost::multi_array<T, N, A> > >: public boost::mpl::true_ {};
+template<typename T, std::size_t N, typename A> struct skip_attribute<std::vector<alps::multi_array<T, N, A> > >: public boost::mpl::true_ {};
 
 template<typename T> struct skip_attribute<alps::numeric::matrix<T> >: public boost::mpl::true_ {};
 
