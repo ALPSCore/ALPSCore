@@ -85,8 +85,32 @@ namespace alps {
             ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_IS_DATATYPE_CALLER)
             #undef ALPS_NGS_HDF5_IS_DATATYPE_CALLER
 
+            // TODO: remove!
             ALPS_DECL void set_ignore_python_destruct_errors(bool);
 
+            template<typename A> struct archive_proxy {
+
+                explicit archive_proxy(std::string const & path, A & ar)
+                    : path_(path), ar_(ar)
+                {}
+
+                template<typename T> archive_proxy & operator=(T const & value) {
+                    ar_ << make_pvp(path_, value);
+                    return *this;
+                }
+
+                template<typename T> archive_proxy & operator<<(T const & value) {
+                    return *this = value;
+                }
+                
+                template <typename T> archive_proxy & operator>> (T const & value) {
+                    ar_ >> make_pvp(path_, value);
+                    return *this;
+                }
+
+                std::string path_;
+                A ar_;
+            };
         }
 
         class ALPS_DECL archive {
@@ -152,6 +176,8 @@ namespace alps {
                 void move_data(std::string current_path, std::string new_path) const;
                 void move_attribute(std::string current_path, std::string new_path) const;
 */
+
+                detail::archive_proxy<archive> operator[](std::string const & path);
 
                 template<typename T> void read(
                       std::string path
@@ -361,18 +387,16 @@ namespace alps {
 
             template<typename T> struct make_pvp_proxy {
 
-                public:
+                explicit make_pvp_proxy(std::string const & path, T value)
+                    : path_(path), value_(value)
+                {}
 
-                    explicit make_pvp_proxy(std::string const & path, T value)
-                        : path_(path), value_(value)
-                    {}
+                make_pvp_proxy(make_pvp_proxy<T> const & arg)
+                    : path_(arg.path_), value_(arg.value_) 
+                {}
 
-                    make_pvp_proxy(make_pvp_proxy<T> const & arg)
-                        : path_(arg.path_), value_(arg.value_) 
-                    {}
-
-                    std::string path_;
-                    T value_;
+                std::string path_;
+                T value_;
             };
 
         }

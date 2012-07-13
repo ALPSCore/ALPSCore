@@ -701,6 +701,10 @@ namespace alps {
             }
         }
     
+        detail::archive_proxy<archive> archive::operator[](std::string const & path) {
+            return detail::archive_proxy<archive>(path, *this);
+        }
+    
         #define ALPS_NGS_HDF5_READ_SCALAR_DATA_HELPER(U, T)                                                                                                             \
             } else if (detail::check_error(                                                                                                                             \
                 H5Tequal(detail::type_type(H5Tcopy(native_id)), detail::type_type(detail::get_native_type(alps::detail::type_wrapper< U >::type())))                    \

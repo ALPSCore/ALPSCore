@@ -30,7 +30,7 @@
 
 #include <alps/ngs/hdf5.hpp>
 
-//#include <alps/multi_array.hpp>
+#include <alps/multi_array.hpp>
 
 #include <boost/multi_array.hpp>
 
@@ -40,17 +40,17 @@ namespace alps {
         template<typename T, std::size_t N, typename A> struct scalar_type<boost::multi_array<T, N, A> > {
             typedef typename scalar_type<typename boost::remove_reference<typename boost::remove_cv<T>::type>::type>::type type;
         };
-  /*      template<typename T, std::size_t N, typename A> struct scalar_type<alps::multi_array<T, N, A> > 
+        template<typename T, std::size_t N, typename A> struct scalar_type<alps::multi_array<T, N, A> > 
             : public scalar_type<boost::multi_array<T, N, A> > 
         {};
-*/
+
         template<typename T, std::size_t N, typename A> struct has_complex_elements<boost::multi_array<T, N, A> > 
             : public has_complex_elements<typename alps::detail::remove_cvr<T>::type>
         {};
-/*        template<typename T, std::size_t N, typename A> struct has_complex_elements<boost::multi_array<T, N, A> > 
+        template<typename T, std::size_t N, typename A> struct has_complex_elements<alps::multi_array<T, N, A> > 
             : public has_complex_elements<boost::multi_array<T, N, A> > 
         {};
-*/
+
         namespace detail {
 
             template<typename T, std::size_t N, typename A> struct get_extent<boost::multi_array<T, N, A> > {
@@ -67,10 +67,10 @@ namespace alps {
                     return result;
                 }
             };
-/*            template<typename T, std::size_t N, typename A> struct get_extent<boost::multi_array<T, N, A> > {
+            template<typename T, std::size_t N, typename A> struct get_extent<alps::multi_array<T, N, A> >
                 : public get_extent<boost::multi_array<T, N, A> > 
             {};
-*/
+
             template<typename T, std::size_t N, typename A> struct set_extent<boost::multi_array<T, N, A> > {
                 static void apply(boost::multi_array<T, N, A> & value, std::vector<std::size_t> const & size) {
                     using alps::hdf5::set_extent;
@@ -92,10 +92,10 @@ namespace alps {
                         value.resize(extents);
                     }
             };
-/*            template<typename T, std::size_t N, typename A> struct set_extent<boost::multi_array<T, N, A> > {
+            template<typename T, std::size_t N, typename A> struct set_extent<alps::multi_array<T, N, A> >
                 : public set_extent<boost::multi_array<T, N, A> > 
             {};
-*/
+
             template<typename T, std::size_t N, typename A> struct is_vectorizable<boost::multi_array<T, N, A> > {
                 static bool apply(boost::multi_array<T, N, A> const & value) {
                     using alps::hdf5::get_extent;
@@ -107,30 +107,30 @@ namespace alps {
                     return true;
                 }
             };
-  /*          template<typename T, std::size_t N, typename A> struct is_vectorizable<boost::multi_array<T, N, A> > {
+            template<typename T, std::size_t N, typename A> struct is_vectorizable<alps::multi_array<T, N, A> >
                 : public is_vectorizable<boost::multi_array<T, N, A> > 
             {};
-*/
+
             template<typename T, std::size_t N, typename A> struct get_pointer<boost::multi_array<T, N, A> > {
                 static typename alps::hdf5::scalar_type<boost::multi_array<T, N, A> >::type * apply(boost::multi_array<T, N, A> & value) {
                     using alps::hdf5::get_pointer;
                     return get_pointer(*value.data());
                 }
             };
-/*            template<typename T, std::size_t N, typename A> struct get_pointer<boost::multi_array<T, N, A> > {
+            template<typename T, std::size_t N, typename A> struct get_pointer<alps::multi_array<T, N, A> >
                 : public get_pointer<boost::multi_array<T, N, A> > 
             {};
-*/
+
             template<typename T, std::size_t N, typename A> struct get_pointer<boost::multi_array<T, N, A> const> {
                 static typename alps::hdf5::scalar_type<boost::multi_array<T, N, A> >::type const * apply(boost::multi_array<T, N, A> const & value) {
                     using alps::hdf5::get_pointer;
                     return get_pointer(*value.data());
                 }
             };
-/*            template<typename T, std::size_t N, typename A> struct get_pointer<boost::multi_array<T, N, A> const> {
+            template<typename T, std::size_t N, typename A> struct get_pointer<alps::multi_array<T, N, A> const>
                 : public get_pointer<boost::multi_array<T, N, A> const> 
             {};
-*/
+
         }
 
         #define ALPS_NGS_HDF5_MULTI_ARRAY_IMPL_SAVE(ARCHIVE)                                                                                                    \
@@ -168,7 +168,7 @@ namespace alps {
                     }                                                                                                                                           \
                 } else                                                                                                                                          \
                     throw wrong_type("invalid type");                                                                                                           \
-            }  /*                                                                                                                                                 \
+            }                                                                                                                                                   \
             template<typename T, std::size_t N, typename A> void save(                                                                                          \
                   ARCHIVE & ar                                                                                                                                  \
                 , std::string const & path                                                                                                                      \
@@ -177,8 +177,8 @@ namespace alps {
                 , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                   \
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
             ) {                                                                                                                                                 \
-                save(ar, path, dynamic_cast<boost::multi_array<T, N, A> >(value), size, chunk, offset);                                                         \
-            }*/
+                save(ar, path, static_cast<boost::multi_array<T, N, A> const &>(value), size, chunk, offset);                                                   \
+            }
         ALPS_NGS_HDF5_MULTI_ARRAY_IMPL_SAVE(archive)
         #ifdef ALPS_HDF5_HAVE_DEPRECATED
             ALPS_NGS_HDF5_MULTI_ARRAY_IMPL_SAVE(iarchive)
@@ -222,7 +222,7 @@ namespace alps {
                         }                                                                                                                                       \
                     }                                                                                                                                           \
                 }                                                                                                                                               \
-            } /*                                                                                                                                                  \
+            }                                                                                                                                                   \
             template<typename T, std::size_t N, typename A> void load(                                                                                          \
                   ARCHIVE & ar                                                                                                                                  \
                 , std::string const & path                                                                                                                      \
@@ -230,8 +230,8 @@ namespace alps {
                 , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                   \
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
             ) {                                                                                                                                                 \
-                load(ar, path, dynamic_cast<boost::multi_array<T, N, A> >(value), chunk, offset);                                                               \
-            }*/
+                load(ar, path, static_cast<boost::multi_array<T, N, A> &>(value), chunk, offset);                                                               \
+            }
         ALPS_NGS_HDF5_MULTI_ARRAY_IMPL_LOAD(archive)
         #ifdef ALPS_HDF5_HAVE_DEPRECATED
             ALPS_NGS_HDF5_MULTI_ARRAY_IMPL_LOAD(iarchive)

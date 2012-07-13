@@ -41,6 +41,24 @@ namespace alps {
     namespace ngs {
 
         signal::signal() {
+            #if not ( defined BOOST_MSVC || defined ALPS_NGS_NO_SIGNALS )
+                static bool initialized;
+                if (!initialized) {
+                    initialized = true;
+
+                    static struct sigaction action;
+                    memset(&action, 0, sizeof(action));
+                    action.sa_handler = &signal::slot;
+                    sigaction(SIGINT, &action, NULL);
+                    sigaction(SIGTERM, &action, NULL);
+                    sigaction(SIGXCPU, &action, NULL);
+                    sigaction(SIGQUIT, &action, NULL);
+                    sigaction(SIGUSR1, &action, NULL);
+                    sigaction(SIGUSR2, &action, NULL);
+                    sigaction(SIGSTOP, &action, NULL);
+                    sigaction(SIGKILL, &action, NULL);
+                }
+            #endif
             listen();
         }
 
@@ -64,21 +82,9 @@ namespace alps {
 
                     static struct sigaction action;
                     memset(&action, 0, sizeof(action));
-                    action.sa_handler = &signal::slot;
-                    sigaction(SIGINT, &action, NULL);
-                    sigaction(SIGTERM, &action, NULL);
-                    sigaction(SIGXCPU, &action, NULL);
-                    sigaction(SIGQUIT, &action, NULL);
-                    sigaction(SIGUSR1, &action, NULL);
-                    sigaction(SIGUSR2, &action, NULL);
-                    sigaction(SIGSTOP, &action, NULL);
-                    sigaction(SIGKILL, &action, NULL);
-
-                    static struct sigaction segv;
-                    memset(&segv, 0, sizeof(segv));
-                    segv.sa_handler = &signal::segfault;
-                    sigaction(SIGSEGV, &segv, NULL);
-                    sigaction(SIGBUS, &segv, NULL);
+                    action.sa_handler = &signal::segfault;
+                    sigaction(SIGSEGV, &action, NULL);
+                    sigaction(SIGBUS, &action, NULL);
                 }
             #endif
         }
