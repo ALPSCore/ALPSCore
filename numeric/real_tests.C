@@ -88,7 +88,9 @@ void fill (T & v)
 }
 template <typename T>
 void fill (std::complex<T> & v) {
-    v = std::complex<T>((fill_val++), (fill_val++));
+    T real_part = fill_val++;
+    T imag_part = fill_val++;
+    v = std::complex<T>(real_part,imag_part);
 }
 template <typename T>
 void fill (std::vector<T> & v)
