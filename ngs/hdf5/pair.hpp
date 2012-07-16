@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2011 by Lukas Gamper <gamperl@gmail.com>                   *
+ * Copyright (C) 2010 - 2012 by Lukas Gamper <gamperl@gmail.com>                   *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -30,9 +30,7 @@
 
 #include <alps/ngs/hdf5.hpp>
 #include <alps/ngs/cast.hpp>
-
-#include <boost/type_traits/remove_cv.hpp>
-#include <boost/type_traits/remove_reference.hpp>
+#include <alps/ngs/detail/remove_cvr.hpp>
 
 #include <utility>
 
@@ -48,12 +46,12 @@ namespace alps {
                 , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                   \
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
             ) {                                                                                                                                                 \
-                save(ar, ar.complete_path(path) + "/first", value.first);                                                                                       \
+                save(ar, ar.complete_path(path) + "/0", value.first);                                                                                           \
                 if (has_complex_elements<typename alps::detail::remove_cvr<T>::type>::value)                                                                    \
-                    ar.set_complex(ar.complete_path(path) + "/first");                                                                                          \
-                save(ar, ar.complete_path(path) + "/second", value.second);                                                                                     \
+                    ar.set_complex(ar.complete_path(path) + "/0");                                                                                              \
+                save(ar, ar.complete_path(path) + "/1", value.second);                                                                                          \
                 if (has_complex_elements<typename alps::detail::remove_cvr<U>::type>::value)                                                                    \
-                    ar.set_complex(ar.complete_path(path) + "/second");                                                                                         \
+                    ar.set_complex(ar.complete_path(path) + "/1");                                                                                              \
             }
         ALPS_NGS_HDF5_PAIR_SAVE(archive)
         #ifdef ALPS_HDF5_HAVE_DEPRECATED
@@ -69,8 +67,8 @@ namespace alps {
                 , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                   \
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
             ) {                                                                                                                                                 \
-                load(ar, ar.complete_path(path) + "/first", value.first);                                                                                       \
-                load(ar, ar.complete_path(path) + "/second", value.second);                                                                                     \
+                load(ar, ar.complete_path(path) + "/0", value.first);                                                                                           \
+                load(ar, ar.complete_path(path) + "/1", value.second);                                                                                          \
             }
         ALPS_NGS_HDF5_PAIR_LOAD(archive)
         #ifdef ALPS_HDF5_HAVE_DEPRECATED
@@ -79,7 +77,7 @@ namespace alps {
         #undef ALPS_NGS_HDF5_PAIR_LOAD
 
         template<typename T> struct scalar_type<std::pair<T *, std::vector<std::size_t> > > {
-            typedef typename scalar_type<typename boost::remove_reference<typename boost::remove_cv<T>::type>::type>::type type;
+            typedef typename scalar_type<typename alps::detail::remove_cvr<T>::type>::type type;
         };
 
         template<typename T> struct has_complex_elements<std::pair<T *, std::vector<std::size_t> > > 
@@ -181,7 +179,7 @@ namespace alps {
                     }                                                                                                                                           \
                 } else {                                                                                                                                        \
                     if (path.find_last_of('@') != std::string::npos)                                                                                            \
-                        throw archive_error("attributes needs to be vectorizable: " + path + ALPS_STACKTRACE);                                                   \
+                        throw archive_error("attributes needs to be vectorizable: " + path + ALPS_STACKTRACE);                                                  \
                     if (ar.is_data(path))                                                                                                                       \
                         ar.delete_data(path);                                                                                                                   \
                     offset = std::vector<std::size_t>(value.second.size(), 0);                                                                                  \
@@ -189,7 +187,7 @@ namespace alps {
                         std::size_t last = offset.size() - 1, pos = 0;                                                                                          \
                         std::string location = "";                                                                                                              \
                         for (std::vector<std::size_t>::const_iterator it = offset.begin(); it != offset.end(); ++it) {                                          \
-                            location += "/" + cast<std::string>(*it);                                                                                        \
+                            location += "/" + cast<std::string>(*it);                                                                                           \
                             pos += *it * std::accumulate(                                                                                                       \
                                 value.second.begin() + (it - offset.begin()) + 1,                                                                               \
                                 value.second.end(),                                                                                                             \
@@ -227,7 +225,7 @@ namespace alps {
                         std::size_t last = offset.size() - 1, pos = 0;                                                                                          \
                         std::string location = "";                                                                                                              \
                         for (std::vector<std::size_t>::const_iterator it = offset.begin(); it != offset.end(); ++it) {                                          \
-                            location += "/" + cast<std::string>(*it);                                                                                        \
+                            location += "/" + cast<std::string>(*it);                                                                                           \
                             pos += *it * std::accumulate(                                                                                                       \
                                 value.second.begin() + (it - offset.begin()) + 1,                                                                               \
                                 value.second.end(),                                                                                                             \

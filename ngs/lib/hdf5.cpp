@@ -279,11 +279,13 @@ namespace alps {
                                     detail::check_error(H5Pset_attr_creation_order(fcrt_id, (H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED)));
                                     detail::check_error(file_id_ = H5Fcreate((filename_ + suffix_).c_str(), H5F_ACC_TRUNC, fcrt_id, prop_id));
                                 }
-                            } else
-                                detail::check_error(file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDONLY, prop_id));
+                            } else if ((file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDONLY, prop_id)) < 0)
+                                throw archive_not_found("file does not exists or is not a valid hdf5 archive: " + filename_ + suffix_ + ALPS_STACKTRACE);
+                            else
+                                detail::check_error(file_id_);
                         } else {
                             if (replace_ && large_)
-                                archive_error("the combination 'wl' is not allowd!" + ALPS_STACKTRACE);
+                                throw archive_error("the combination 'wl' is not allowd!" + ALPS_STACKTRACE);
                             if (replace_)
                                 for (std::size_t i = 0; boost::filesystem::exists(filename_ + (suffix_ = ".tmp." + cast<std::string>(i))); ++i);
                             if (write_ && replace_ && boost::filesystem::exists(filename_))
@@ -308,12 +310,14 @@ namespace alps {
                                         detail::check_error(H5Pset_attr_creation_order(fcrt_id, (H5P_CRT_ORDER_TRACKED | H5P_CRT_ORDER_INDEXED)));
                                         detail::check_error(file_id_ = H5Fcreate((filename_ + suffix_).c_str(), H5F_ACC_TRUNC, fcrt_id, prop_id));
                                     }
-                                } else
-                                    detail::check_error(file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDONLY, prop_id));
+                                } else if ((file_id_ = H5Fopen((filename_ + suffix_).c_str(), H5F_ACC_RDONLY, prop_id)) < 0)
+                                    throw archive_not_found("file does not exists or is not a valid hdf5 archive: " + filename_ + suffix_ + ALPS_STACKTRACE);
+                                else
+                                    detail::check_error(file_id_);
                             } else {
                                 if (!write_) {
                                     if (!boost::filesystem::exists(filename_ + suffix_))
-                                        throw archive_error("file does not exist: " + filename_ + suffix_ + ALPS_STACKTRACE);
+                                        throw archive_not_found("file does not exist: " + filename_ + suffix_ + ALPS_STACKTRACE);
                                     if (detail::check_error(H5Fis_hdf5((filename_ + suffix_).c_str())) == 0)
                                         throw archive_error("no valid hdf5 file: " + filename_ + suffix_ + ALPS_STACKTRACE);
                                 }
@@ -694,10 +698,10 @@ namespace alps {
             else {
                 if (is_group(path)) {
                     std::vector<std::string> children = list_children(path);
-                    if (children.size())
-                        return set_complex(path + "/" + children[0]);
-                }
-                write(path + "/@__complex__", true);
+                    for (std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)
+                        set_complex(path + "/" + *it);
+                } else
+                    write(path + "/@__complex__", true);
             }
         }
     

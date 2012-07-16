@@ -86,22 +86,20 @@ namespace alps {
                     using alps::hdf5::get_extent;
                     using alps::hdf5::is_vectorizable;
                     if (value.size()) {
-                        if (!is_vectorizable(value[0])) {
+                        if (!is_vectorizable(value[0]))
                             return false;
-                        }
                         std::vector<std::size_t> first(get_extent(value[0]));
                         if (!boost::is_scalar<typename std::vector<T, A>::value_type>::value) {
                             for(typename std::vector<T, A>::const_iterator it = value.begin(); it != value.end(); ++it)
-                                if (!is_vectorizable(*it)) {
+                                if (!is_vectorizable(*it))
                                     return false;
-                                } else {
+                                else {
                                     std::vector<std::size_t> size(get_extent(*it));
                                     if (
                                            first.size() != size.size() 
                                         || !std::equal(first.begin(), first.end(), size.begin())
-                                    ) {
+                                    )
                                         return false;
-                                    }
                                 }
                         }
                     }
