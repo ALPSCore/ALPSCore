@@ -14,7 +14,7 @@ find_package(HDF5)
 
 # tests using ALPS
 FOREACH (name hdf5_deprecated hdf5_complex hdf5_bool hdf5_replace hdf5_pair hdf5_parms hdf5_ising hdf5_family hdf5_large hdf5_valgrind 
-              hdf5_observableset hdf5_multi_array hdf5_memory hdf5_misc)
+              hdf5_observableset hdf5_multi_array hdf5_memory hdf5_misc hdf5_vecveccplx)
     add_executable(${name} ${name}.cpp)
     add_dependencies(${name} alps)
     target_link_libraries(${name} alps)
@@ -84,12 +84,15 @@ IF (ALPS_BUILD_HDF5_TESTS)
             "boost::multi_array<double, 2>" "boost::multi_array<int, 2>" "boost::multi_array<std::complex<double>, 2>" "boost::multi_array<std::string, 2>"
             "boost::multi_array<double, 3>" "boost::multi_array<int, 3>" "boost::multi_array<std::complex<double>, 3>" "boost::multi_array<std::string, 3>"
             "std::vector<boost::multi_array<double, 2> >" "std::vector<boost::multi_array<double, 3> >" "std::vector<boost::multi_array<double, 4> >" 
-#			"std::pair<boost::multi_array<std::complex<double>, 3> *, std::vector<std::size_t> >" "boost::multi_array<std::complex<double>, 1> *"
+#           "std::pair<boost::multi_array<std::complex<double>, 3> *, std::vector<std::size_t> >" "boost::multi_array<std::complex<double>, 1> *"
             "alps::multi_array<double, 1>" "alps::multi_array<int, 1>" "alps::multi_array<std::complex<double>, 1>" "alps::multi_array<std::string, 1>"
             "alps::multi_array<double, 2>" "alps::multi_array<int, 2>" "alps::multi_array<std::complex<double>, 2>" "alps::multi_array<std::string, 2>"
             "alps::multi_array<double, 3>" "alps::multi_array<int, 3>" "alps::multi_array<std::complex<double>, 3>" "alps::multi_array<std::string, 3>"
             "std::vector<alps::multi_array<double, 2> >" "std::vector<alps::multi_array<double, 3> >" "std::vector<alps::multi_array<double, 4> >" 
-#			"std::pair<alps::multi_array<std::complex<double>, 3> *, std::vector<std::size_t> >" "alps::multi_array<std::complex<double>, 1> *"
+#           "std::pair<alps::multi_array<std::complex<double>, 3> *, std::vector<std::size_t> >" "alps::multi_array<std::complex<double>, 1> *"
+            "boost::array<int, 20>" "boost::array<long double, 20>" "boost::array<float, 20>" "boost::array<unsigned long long, 20>"
+            "std::vector<boost::array<int, 20> >" "boost::array<std::vector<int>, 20>" "std::vector<boost::array<std::vector<int>, 20> >"
+            "boost::tuple<int, double, float, std::complex<double> >" "std::vector<boost::tuple<char, bool, long long> >"
         )
     endif(ALPS_BUILD_NGS)
     

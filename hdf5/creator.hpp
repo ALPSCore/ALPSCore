@@ -29,6 +29,8 @@
 #include <alps/hdf5/pointer.hpp>
 #include <alps/hdf5/map.hpp>
 #include <alps/hdf5/pair.hpp>
+#include <alps/hdf5/array.hpp>
+#include <alps/hdf5/tuple.hpp>
 #include <alps/hdf5/vector.hpp>
 #include <alps/hdf5/complex.hpp>
 #include <alps/hdf5/valarray.hpp>
@@ -46,6 +48,7 @@
 #include <boost/random.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/tuple/tuple_comparison.hpp>
 
 template<class T> class custom_allocator : public std::allocator<T> {
     protected:
@@ -102,6 +105,33 @@ template<typename T> void initialize(std::complex<T> & v) {
 }
 void initialize(std::string & v) {
     v = boost::lexical_cast<std::string>(rng());
+}
+template<typename T, std::size_t N> void initialize(boost::array<T, N> & v) {
+    for (typename boost::array<T, N>::iterator it = v.begin(); it != v.end(); ++it)
+        initialize(*it);
+}
+template<
+    int N, typename T0, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9
+> void initialize_tuple_value(boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> & v, boost::false_type) {
+    using boost::get;
+    initialize(get<N>(v));
+}
+template<
+    int N, typename T0, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9
+> void initialize_tuple_value(boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> & v, boost::true_type) {}
+template<
+    typename T0, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9
+> void initialize(boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> & v) {
+    initialize_tuple_value<0, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T0, boost::tuples::null_type>::type());
+    initialize_tuple_value<1, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T1, boost::tuples::null_type>::type());
+    initialize_tuple_value<2, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T2, boost::tuples::null_type>::type());
+    initialize_tuple_value<3, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T3, boost::tuples::null_type>::type());
+    initialize_tuple_value<4, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T4, boost::tuples::null_type>::type());
+    initialize_tuple_value<5, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T5, boost::tuples::null_type>::type());
+    initialize_tuple_value<6, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T6, boost::tuples::null_type>::type());
+    initialize_tuple_value<7, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T7, boost::tuples::null_type>::type());
+    initialize_tuple_value<8, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T8, boost::tuples::null_type>::type());
+    initialize_tuple_value<9, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(v, typename boost::is_same<T9, boost::tuples::null_type>::type());
 }
 void initialize(enum_type & v) {
     v = static_cast<std::size_t>(rng()) % 2 == 0 ? PLUS : MINUS;
