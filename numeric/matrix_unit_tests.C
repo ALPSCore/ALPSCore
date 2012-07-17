@@ -61,24 +61,28 @@ struct DComplexDouble
 {
     typedef std::complex<double> first_type;
     typedef double second_type;
+    typedef std::complex<double> result_type;
 };
 
 struct DoubleDComplex
 {
     typedef double first_type;
     typedef std::complex<double> second_type;
+    typedef std::complex<double> result_type;
 };
 
 struct IntDouble
 {
     typedef int first_type;
     typedef double second_type;
+    typedef double result_type;
 };
 
 struct DoubleInt
 {
     typedef double first_type;
     typedef int second_type;
+    typedef double result_type;
 };
 };
 
@@ -728,52 +732,54 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( multiplies_test, T, test_types)
 
 }
 
-// BOOST_AUTO_TEST_CASE_TEMPLATE( matrix_vector_multiply_test, T, test_types)
-// {
-//     alps::numeric::matrix<T> a(20,30);
-//     std::vector<T> v(30);
-//     fill_matrix_with_numbers(a);
-//     fill_range_with_numbers(v.begin(),v.end(),T(0));
-//     alps::numeric::matrix<T> a_(a);
-//     std::vector<T> v_(v);
-//     
-//     std::vector<T> result(a*v);
-//     BOOST_CHECK_EQUAL(result.size(),num_rows(a));
-//     BOOST_CHECK_EQUAL(a,a_);
-//     BOOST_CHECK_EQUAL(v,v_);
-//     for(unsigned int i=0; i<num_rows(a); ++i)
-//     {
-//         T row_result(0);
-//         for(unsigned int j=0; j<num_cols(a); ++j)
-//             row_result += a(i,j)*v(j);
-//         BOOST_CHECK_EQUAL(result(i),row_result);
-//     }
-// 
-// }
+BOOST_AUTO_TEST_CASE_TEMPLATE( matrix_vector_multiply_test, T, test_types)
+{
+    alps::numeric::matrix<T> a(20,30);
+    alps::numeric::vector<T> v(30);
+    fill_matrix_with_numbers(a);
+    fill_range_with_numbers(v.begin(),v.end(),T(0));
+    alps::numeric::matrix<T> a_(a);
+    alps::numeric::vector<T> v_(v);
 
-// BOOST_AUTO_TEST_CASE_TEMPLATE( matrix_vector_multiply_mixed_types_test, TPair, test_type_pairs)
-// {
-//     // -alps::numeric::matrix<T> * std::vector<int>
-//     
-//     alps::numeric::matrix<typename TPair::first_type> a(20,30);
-//     std::vector<typename TPair::second_type> v(30);
-//     fill_matrix_with_numbers(a);
-//     fill_range_with_numbers(v.begin(),v.end(),0);
-//     alps::numeric::matrix<typename TPair::first_type> a_(a);
-//     std::vector<typename TPair::second_type> v_(v);
-//     
-//     std::vector<typename alps::numeric::MultiplyReturnType<typename TPair::first_type,std::vector<typename TPair::first_type>,typename TPair::second_type, std::vector<typename TPair::second_type> >::value_type> result(a*v);
-//     BOOST_CHECK_EQUAL(result.size(),num_rows(a));
-//     BOOST_CHECK_EQUAL(a,a_);
-//     BOOST_CHECK_EQUAL(v,v_);
-//     for(unsigned int i=0; i<num_rows(a); ++i)
-//     {
-//         typename alps::numeric::MultiplyReturnType<typename TPair::first_type, std::vector<typename TPair::first_type>,typename TPair::second_type, std::vector<typename TPair::second_type> >::value_type row_result(0);
-//         for(unsigned int j=0; j<num_cols(a); ++j)
-//             row_result += a(i,j)*v(j);
-//         BOOST_CHECK_EQUAL(result(i),row_result);
-//     }
-// }
+    alps::numeric::vector<T> result(a*v);
+    BOOST_CHECK_EQUAL(result.size(),num_rows(a));
+    BOOST_CHECK_EQUAL(a,a_);
+    BOOST_CHECK_EQUAL(v,v_);
+    for(unsigned int i=0; i<num_rows(a); ++i)
+    {
+        T row_result(0);
+        for(unsigned int j=0; j<num_cols(a); ++j)
+            row_result += a(i,j)*v(j);
+        BOOST_CHECK_EQUAL(result(i),row_result);
+    }
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( matrix_vector_multiply_mixed_types_test, TPair, test_type_pairs)
+{
+    // -alps::numeric::matrix<T> * std::vector<int>
+    typedef typename TPair::first_type     first_type;
+    typedef typename TPair::second_type    second_type;
+    typedef typename TPair::result_type    result_type;
+
+    alps::numeric::matrix<first_type> a(20,30);
+    alps::numeric::vector<second_type> v(30);
+    fill_matrix_with_numbers(a);
+    fill_range_with_numbers(v.begin(),v.end(),0);
+    alps::numeric::matrix<first_type> a_(a);
+    alps::numeric::vector<second_type> v_(v);
+
+    alps::numeric::vector<result_type> result = a*v;
+    BOOST_CHECK_EQUAL(result.size(),num_rows(a));
+    BOOST_CHECK_EQUAL(a,a_);
+    BOOST_CHECK_EQUAL(v,v_);
+    for(unsigned int i=0; i<num_rows(a); ++i)
+    {
+        result_type row_result(0);
+        for(unsigned int j=0; j<num_cols(a); ++j)
+            row_result += a(i,j)*v(j);
+        BOOST_CHECK_EQUAL(result(i),row_result);
+    }
+}
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( matrix_matrix_multiply_test, T, test_types)
 {
