@@ -97,12 +97,21 @@ namespace alps {
         return hasher(v);
     }
 
-    template <typename T> struct hash : public std::unary_function<T, std::size_t> {
-        std::size_t operator()(T v) const {
+
+    template <typename T> 
+    struct hash : public std::unary_function<T, std::size_t> {
+      /*!
+Generates a hash. 
+\return Returns an unsigned integer of type std::size_t.
+       */
+       std::size_t operator()(T v) const {
             return hash_value(v);
         }
     };
 
+  /*!
+Combines a hash with the hash of a value. 
+   */
     template<typename T> void hash_combine(size_t & s, T const & v) {
         hash<T> hasher;
         s ^= hasher(v) + 0x6dbc79f65d57ddf9ULL + (s << 12) + (s >> 4);

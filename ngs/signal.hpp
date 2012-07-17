@@ -33,31 +33,55 @@
 #include <vector>
 
 namespace alps {
-    namespace ngs {
+  namespace ngs {
 
-        class ALPS_DECL signal{
+    class ALPS_DECL signal{
 
-            public:
+    public:
 
-                signal();
+      /*!
+Listen to the following posix signals SIGINT, SIGTERM, SIGXCPU, SIGQUIT, SIGUSR1, SIGUSR2, SIGSTOP SIGKILL. Those signals can be check by empty, top, pop
 
-                bool empty();
+\verbatim embed:rst
+.. note::
+   If a SIGSEGV (segfault) or SIGBUS (bus error) occures, a stacktrace
+   is printed an all open hdf5 archives are closed before it exits.
+\endverbatim
+      */
+      signal();
 
-                int top();
+      /*!
+Returns if a signal has been captured.
+      */
+      bool empty();
 
-                void pop();
+      /*!
+Returns the last signal that has been captured .
+      */
+      int top();
 
-                static void listen();
 
-                static void slot(int signal);
+      /*!
+Pops a signal form the stack.
+       */
+      void pop();
 
-                static void segfault(int signal);
+      /*!
+Listen to the signals SIGSEGV (segfault) and SIGBUS (bus error). If one
+of these signals are captured, a stacktrace is printed an all open hdf5
+archives are closed before it exits. 
+      */
+      static void listen();
 
-            private:
+      static void slot(int signal);
 
-                static std::vector<int> signals_;
-        };
-    }
+      static void segfault(int signal);
+
+    private:
+
+      static std::vector<int> signals_;
+    };
+  }
 }
 
 #endif
