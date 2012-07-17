@@ -90,13 +90,42 @@ namespace detail {
             using alps::hdf5::set_extent;
             typedef typename alps::numeric::matrix<T,MemoryBlock>::const_col_element_iterator col_iterator;
             m.reserve(size[1],size[0]);
-            resize(m,size[1],size[0]);
+            m.resize(size[1],size[0]);
             assert(m.capacity().first  == size[1]);
             if( !is_continuous<T>::value && (size.size() != 2))
                 for(std::size_t j=0; j < num_cols(m); ++j)
                     for(std::pair<col_iterator,col_iterator> r = col(m,j); r.first != r.second; ++r.first)
                         set_extent(*r.first, std::vector<std::size_t>(size.begin() + 2, size.end()));
                         // We assumed that all elements share the same extent information
+        }
+    };
+
+    template <typename T, typename MemoryBlock>
+    struct is_vectorizable<alps::numeric::matrix<T,MemoryBlock> > {
+        static bool apply(alps::numeric::matrix<T,MemoryBlock> const& m) {
+            typedef typename alps::numeric::matrix<T,MemoryBlock>::const_col_element_iterator col_iterator;
+            using alps::hdf5::get_extent;
+            using std::equal;
+            if(boost::is_scalar<typename alps::numeric::matrix<T,MemoryBlock>::value_type>::value || m.empty())
+                return true;
+            else {
+                std::vector<std::size_t> first_element_extent(get_extent(m(0,0)));
+                for(std::size_t j=0; j < num_cols(m); ++j) {
+                    for(std::pair<col_iterator,col_iterator> r = col(m,j); r.first != r.second; ++r.first) {
+                        if(!is_vectorizable(*r.first)) {
+                            return false;
+                        } else {
+                            std::vector<std::size_t> element_extent(get_extent(*r.first));
+                            if(
+                                   first_element_extent.size() != element_extent.size()
+                                || !equal(first_element_extent.begin(), first_element_extent.end(), element_extent.begin())
+                            )
+                                return false;
+                        }
+                    }
+                }
+                return true;
+            }
         }
     };
 
@@ -168,7 +197,7 @@ namespace detail {
             alps::numeric::matrix<T,MemoryBlock> m2(reserved_size1,size2);
             assert(m2.capacity().first  == reserved_size1);
             copy(data.begin(), data.end(), col(m2,0).first);
-            resize(m2,size1,size2);
+            m2.resize(size1,size2);
             swap(m,m2);
             return;
         }

@@ -77,7 +77,6 @@ class subgraph_generator {
       * \return a std::pair of iterators pointing to the beginning and the end of the list of subgraphs
       */
     std::pair<iterator,iterator> generate_up_to_n_edges(unsigned int n) {
-        assert( graphs_.size() >=0 );
         iterator cur_end(graphs_.end());
         iterator last_end(graphs_.begin());
 
@@ -102,7 +101,7 @@ class subgraph_generator {
             graphs_.insert( graphs_.end(), new_graphs.begin(), new_graphs.end() );
             cur_end = graphs_.end();
         }
-        return std::make_pair(graphs_.begin()+1,graphs_.end());
+        return std::make_pair(graphs_.begin(),graphs_.end());
     }
 
 

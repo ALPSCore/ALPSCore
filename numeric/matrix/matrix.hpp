@@ -58,11 +58,11 @@ namespace alps {
     class matrix {
     public:
         // typedefs required for a std::container concept
-        typedef T                       value_type;       // The type T of the elements of the matrix
-        typedef T&                      reference;        // Reference to value_type
-        typedef T const&                const_reference;  // Const reference to value_type
-        typedef std::size_t             size_type;        // Unsigned integer type that represents the dimensions of the matrix
-        typedef std::ptrdiff_t          difference_type;  // Signed integer type to represent the distance of two elements in the memory
+        typedef T                       value_type;       ///< The type T of the elements of the matrix
+        typedef T&                      reference;        ///< Reference to value_type
+        typedef T const&                const_reference;  ///< Const reference to value_type
+        typedef std::size_t             size_type;        ///< Unsigned integer type that represents the dimensions of the matrix
+        typedef std::ptrdiff_t          difference_type;  ///< Signed integer type to represent the distance of two elements in the memory
 
         // for compliance with an std::container one would also need
         // -operators == != < > <= >=
@@ -71,17 +71,17 @@ namespace alps {
 
         // typedefs for matrix specific iterators
         typedef strided_iterator<matrix,value_type>
-            row_element_iterator;                         // Iterator to iterate through the elements of a row of the matrix
+            row_element_iterator;                         ///< Iterator to iterate through the elements of a row of the matrix
         typedef strided_iterator<const matrix,const value_type>
-            const_row_element_iterator;                   // Const version of row_element_iterator
+            const_row_element_iterator;                   ///< Const version of row_element_iterator
         typedef value_type*
-            col_element_iterator;                         // Iterator to iterate through the elements of a columns of the matrix
+            col_element_iterator;                         ///< Iterator to iterate through the elements of a columns of the matrix
         typedef value_type const*
-            const_col_element_iterator;                   // Const version of col_element_iterator       
+            const_col_element_iterator;                   ///< Const version of col_element_iterator
         typedef matrix_element_iterator<matrix,value_type>
-            element_iterator;                             // Iterator to iterate through all elements of the matrix (REALLY SLOW! USE row_-/column_iterators INSTEAD!)
+            element_iterator;                             ///< Iterator to iterate through all elements of the matrix (REALLY SLOW! USE row_-/column_iterators INSTEAD!)
         typedef matrix_element_iterator<const matrix,const value_type>
-            const_element_iterator;                       // Const version of element_iterator (REALLY SLOW! USE row_-/column_iterators INSTEAD!)
+            const_element_iterator;                       ///< Const version of element_iterator (REALLY SLOW! USE row_-/column_iterators INSTEAD!)
 
         /**
           * Static function for creating identiy matrix
@@ -99,7 +99,7 @@ namespace alps {
 
         /**
           * Create a matrix from several columns
-          * @param colums a vector containing the column ranges (column element iterator pairs)
+          * @param colums a vector containing the column ranges (ForwardIterator pairs marking the begin and end of the data to be stored in a column)
           */
         template <typename ForwardIterator>
         explicit matrix(std::vector<std::pair<ForwardIterator,ForwardIterator> > const& columns);
@@ -120,7 +120,7 @@ namespace alps {
         void swap(matrix & r);
 
         /**
-          * Swaps two dense_matrices
+          * Swaps two matrices
           */
         friend void swap(matrix & x, matrix & y)
         {
@@ -211,12 +211,47 @@ namespace alps {
           */
         void reserve(size_type rows, size_type cols, T const & init_value = T());
 
+        /**
+          * Returns how many rows and columns are reserved in memory for the matrix.
+          * Any resize to a size smaller than this value won't move any of the matrix elements in memory.
+          * @return A pair p of size_type, where p.first == reserved rows, p.second == reserved_columns
+          */
         std::pair<size_type,size_type> capacity() const;
 
+        /**
+          * Checks if the matrix has reserved more space than it currently uses.
+          * @return true iff (capacity().first == num_rows() && capacity().second == num_cols()), false otherwise
+          */
         bool is_shrinkable() const;
 
+        /**
+          * Deletes all entries, and sets the matrix size to (0,0).
+          * The reserved space remains untouched, i.e. capacity() is an invariant.
+          */
         void clear();
 
+        /**
+          * Iterate through the elements of a column.
+          * Since the matrix is column-major these iterators are the best choice for a fast traversal though the matrix.
+          * @parm col Index of the column to be iterated through (starting from col=0).
+          * @return a pair of random access iterators marking the begin and end of the column.
+          */
+        std::pair<col_element_iterator,col_element_iterator> col(size_type col = 0 )
+        {
+            assert(col < size2_);
+            return std::make_pair( col_element_iterator(&values_[col*reserved_size1_]), col_element_iterator(&values_[col*reserved_size1_+size1_]) );
+        }
+        std::pair<const_col_element_iterator,const_col_element_iterator> col(size_type col = 0 ) const
+        {
+            assert(col < size2_);
+            return std::make_pair( const_col_element_iterator(&values_[col*reserved_size1_]), const_col_element_iterator(&values_[col*reserved_size1_+size1_]) );
+        }
+
+        /**
+          * Iterate through the elements of a row
+          * @parm row Index of the row to be iterated through (starting from row=0).
+          * @return a pair of random access iterators marking the begin and end of the row.
+          */
         std::pair<row_element_iterator,row_element_iterator> row(size_type row = 0)
         {
             assert(row < size1_);
@@ -228,16 +263,14 @@ namespace alps {
             assert(row < size1_);
             return std::make_pair( const_row_element_iterator(&values_[row],reserved_size1_), const_row_element_iterator(&values_[row+reserved_size1_*size2_], reserved_size1_) );
         }
-        std::pair<col_element_iterator,col_element_iterator> col(size_type col = 0 )
-        {
-            assert(col < size2_);
-            return std::make_pair( col_element_iterator(&values_[col*reserved_size1_]), col_element_iterator(&values_[col*reserved_size1_+size1_]) );
-        }
-        std::pair<const_col_element_iterator,const_col_element_iterator> col(size_type col = 0 ) const
-        {
-            assert(col < size2_);
-            return std::make_pair( const_col_element_iterator(&values_[col*reserved_size1_]), const_col_element_iterator(&values_[col*reserved_size1_+size1_]) );
-        }
+
+        /**
+          * Iterate through the elements the whole matrix.
+          * These iterators are very slow and should be used for initalizing.
+          * You should consider using col_element_iterators to iterate through a column and loop over each column of the matrix.
+          * @return a pair of random access iterators marking the begin and the end of the matrix.
+          * The iterators iterate column first and advance to the next row if the end of a column is reached.
+          */
         std::pair<element_iterator,element_iterator> elements()
         {
             return std::make_pair( element_iterator(this,0,0), element_iterator(this,0, num_cols()) );
@@ -247,25 +280,58 @@ namespace alps {
             return std::make_pair( const_element_iterator(this,0,0), const_element_iterator(this,0,num_cols() ) );
         }
 
+        /**
+          * Append `k` columns using the data given by the iterator pair range, where distance(range.first,range.second) == k*num_rows(m).
+          * @parm range a pair of InputIterators containing the data for the new columns
+          * @parm k the number of columns to append
+          */
         template <typename InputIterator>
         void append_cols(std::pair<InputIterator,InputIterator> const& range, difference_type k = 1);
 
+        /**
+          * Append `k` rows using the data given by the iterator pair range, where distance(range.first,range.second) == k*num_cols(m).
+          * @parm range a pair of InputIterators containing the data for the new rows
+          * @parm k the number of rows to append
+          */
         template <typename InputIterator>
         void append_rows(std::pair<InputIterator,InputIterator> const& range, difference_type k = 1);
 
-        template <typename InputIterator>
-        void insert_rows(size_type i, std::pair<InputIterator,InputIterator> const& range, difference_type k = 1);
-
+        /**
+          * Inserts new cols before column `j` using the data given by range moving all columns further to the right (j -> j+k).
+          * @parm j index of the column before which the new rows will be inserted (i.e. the first new column will have index `j`)
+          * @parm range a InputIterator pair containing the data for the new rows, where distance(range.first,range.second == k*num_cols(m).
+          * @parm k the number of rows to insert.
+          */
         template <typename InputIterator>
         void insert_cols(size_type j, std::pair<InputIterator,InputIterator> const& range, difference_type k = 1);
 
+        /**
+          * Inserts new rows before row `i` using the data given by range moving all rows further down (i -> i+k).
+          * @parm i index of the row before which the new rows will be inserted
+          * @parm range a InputIterator pair containing the data for the new rows, where distance(range.first,range.second == k*num_cols(m).
+          * @parm k the number of rows to insert.
+          */
+        template <typename InputIterator>
+        void insert_rows(size_type i, std::pair<InputIterator,InputIterator> const& range, difference_type k = 1);
+
+        /**
+          * Removes the cols [j,j+k[
+          */
+        void remove_cols(size_type j, difference_type k = 1);
+        /**
+          * Removes the rows [i,j+k[
+          */
         void remove_rows(size_type i, difference_type k = 1);
 
-        void remove_cols(size_type j, difference_type k = 1);
-
-        void swap_rows(size_type i1, size_type i2);
-
+        /**
+          * Swaps the columns j1 and j2
+          */
         void swap_cols(size_type j1, size_type j2);
+
+        /**
+          * Swaps the rows i1 and i2
+          */
+        void swap_rows(size_type i1, size_type i2);
 
         void write_xml(oxstream& ox) const;
 
