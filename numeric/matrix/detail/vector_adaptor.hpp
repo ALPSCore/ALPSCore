@@ -46,7 +46,7 @@ namespace boost { namespace numeric { namespace bindings { namespace detail {
     {
         typedef typename copy_const< Id, T >::type value_type;
         typedef std::ptrdiff_t  size_type;
-        
+
         typedef mpl::map<
             mpl::pair< tag::value_type,     value_type >,
             mpl::pair< tag::entity,         tag::vector >,

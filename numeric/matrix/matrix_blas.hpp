@@ -121,6 +121,7 @@ namespace alps {
         template <typename MemoryBlock, typename MemoryBlock2> \
         const vector<T,MemoryBlock2> matrix_vector_multiply(matrix<T,MemoryBlock> const& m, vector<T,MemoryBlock2> const& v) \
         { \
+            assert( m.num_cols() > 0 ); \
             assert( m.num_cols() == v.size()); \
             vector<T,MemoryBlock2> result(m.num_rows()); \
             boost::numeric::bindings::blas::gemv( \

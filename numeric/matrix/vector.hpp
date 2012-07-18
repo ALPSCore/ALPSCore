@@ -179,11 +179,6 @@ namespace alps {
         return v *= t;
     }
 
-    template <typename T, typename MemoryBlock>
-    inline T scalar_product(const vector<T,MemoryBlock>& v1, const vector<T,MemoryBlock>& v2)
-    {
-        return alps::numeric::scalar_product(v1,v2);
-    }
 
     template <typename T, typename MemoryBlock>
     inline vector<T,MemoryBlock> exp(T c, vector<T,MemoryBlock> v)
