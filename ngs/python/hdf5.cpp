@@ -408,6 +408,11 @@ namespace alps {
                     #define NGS_PYTHON_HDF5_CHECK_NUMPY(T, N)                                                                                       \
                         else if (PyArray_DESCR(data.ptr())->type_num == N)                                                                          \
                             save(ar, path, *static_cast< T const *>(PyArray_DATA(data.ptr())), size, chunk, offset);
+                    #define NGS_PYTHON_HDF5_CHECK_NUMPY_CPLX(T, N)                                                                                  \
+                        else if (PyArray_DESCR(data.ptr())->type_num == N) {                                                                        \
+                            save(ar, path, *static_cast< T const *>(PyArray_DATA(data.ptr())), size, chunk, offset);                                \
+                            ar.set_complex(path);                                                                                                   \
+                        }
                     NGS_PYTHON_HDF5_CHECK_NUMPY(bool,PyArray_BOOL)
                     NGS_PYTHON_HDF5_CHECK_NUMPY(char, PyArray_CHAR)
                     NGS_PYTHON_HDF5_CHECK_NUMPY(unsigned char, PyArray_UBYTE)
@@ -422,10 +427,11 @@ namespace alps {
                     NGS_PYTHON_HDF5_CHECK_NUMPY(float, PyArray_FLOAT)
                     NGS_PYTHON_HDF5_CHECK_NUMPY(double, PyArray_DOUBLE)
                     NGS_PYTHON_HDF5_CHECK_NUMPY(long double, PyArray_LONGDOUBLE)
-                    NGS_PYTHON_HDF5_CHECK_NUMPY(std::complex<float>, PyArray_CFLOAT)
-                    NGS_PYTHON_HDF5_CHECK_NUMPY(std::complex<double>,PyArray_CDOUBLE)
-                    NGS_PYTHON_HDF5_CHECK_NUMPY(std::complex<long double>, PyArray_CLONGDOUBLE)
+                    NGS_PYTHON_HDF5_CHECK_NUMPY_CPLX(std::complex<float>, PyArray_CFLOAT)
+                    NGS_PYTHON_HDF5_CHECK_NUMPY_CPLX(std::complex<double>,PyArray_CDOUBLE)
+                    NGS_PYTHON_HDF5_CHECK_NUMPY_CPLX(std::complex<long double>, PyArray_CLONGDOUBLE)
                     #undef NGS_PYTHON_HDF5_CHECK_NUMPY
+                    #undef NGS_PYTHON_HDF5_CHECK_NUMPY_CPLX
                     else
                         throw std::runtime_error("unknown numpy element type" + ALPS_STACKTRACE);
                 }
