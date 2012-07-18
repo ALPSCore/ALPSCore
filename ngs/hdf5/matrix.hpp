@@ -105,6 +105,7 @@ namespace detail {
         static bool apply(alps::numeric::matrix<T,MemoryBlock> const& m) {
             typedef typename alps::numeric::matrix<T,MemoryBlock>::const_col_element_iterator col_iterator;
             using alps::hdf5::get_extent;
+            using alps::hdf5::is_vectorizable;
             using std::equal;
             if(boost::is_scalar<typename alps::numeric::matrix<T,MemoryBlock>::value_type>::value || m.empty())
                 return true;
