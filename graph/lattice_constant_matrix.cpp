@@ -28,7 +28,6 @@
 
 #include <alps/lattice/lattice.h>
 #include <alps/graph/lattice_constant.hpp>
-#include <alps/numeric/detail/general_matrix.hpp>
 
 #include <boost/graph/adjacency_list.hpp>
 
