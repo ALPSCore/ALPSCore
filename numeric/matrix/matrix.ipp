@@ -181,7 +181,7 @@ namespace alps {
         // TODO: reimplement or remove - this is just a quick ugly implementation
         for(size_type i=0; i< this->size1_; ++i)
             for(size_type j=0; j < this->size2_; ++j)
-                if(operator()(i,j) != rhs(i,j)) return false;
+                if(!(operator()(i,j) == rhs(i,j))) return false;
         return true;
     }
 

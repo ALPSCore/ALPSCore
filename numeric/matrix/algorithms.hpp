@@ -32,6 +32,7 @@
 #define ALPS_MATRIX_ALGORITHMS_HPP
 #include <vector>
 #include <stdexcept>
+#include <numeric>
 #include <alps/numeric/matrix/matrix_concept_check.hpp>
 
 #include <boost/numeric/bindings/lapack/driver/gesvd.hpp>
@@ -96,9 +97,8 @@ namespace alps {
         {
             BOOST_CONCEPT_ASSERT((alps::numeric::Matrix<Matrix>));
             assert(num_rows(m) == num_cols(m));
-            typename Matrix::value_type tr(m(0,0));
-            for(typename Matrix::size_type i = 1; i<num_rows(m); ++i)
-                tr += m(i,i);
+            using std::accumulate;
+            typename Matrix::value_type tr = accumulate(diagonal(m).first,diagonal(m).second,typename Matrix::value_type(0));
             return tr;
         }
 

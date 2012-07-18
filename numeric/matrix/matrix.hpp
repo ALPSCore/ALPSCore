@@ -78,6 +78,10 @@ namespace alps {
             col_element_iterator;                         ///< Iterator to iterate through the elements of a columns of the matrix
         typedef value_type const*
             const_col_element_iterator;                   ///< Const version of col_element_iterator
+        typedef strided_iterator<matrix,value_type>
+            diagonal_iterator;                            ///< Iterator to iterate through the elements on the diagonal of the matrix
+        typedef strided_iterator<const matrix, const value_type>
+            const_diagonal_iterator;                      ///< Const version of the diagonal_iterator
         typedef matrix_element_iterator<matrix,value_type>
             element_iterator;                             ///< Iterator to iterate through all elements of the matrix (REALLY SLOW! USE row_-/column_iterators INSTEAD!)
         typedef matrix_element_iterator<const matrix,const value_type>
@@ -233,7 +237,7 @@ namespace alps {
         /**
           * Iterate through the elements of a column.
           * Since the matrix is column-major these iterators are the best choice for a fast traversal though the matrix.
-          * @parm col Index of the column to be iterated through (starting from col=0).
+          * @param col Index of the column to be iterated through (starting from col=0).
           * @return a pair of random access iterators marking the begin and end of the column.
           */
         std::pair<col_element_iterator,col_element_iterator> col(size_type col = 0 )
@@ -249,7 +253,7 @@ namespace alps {
 
         /**
           * Iterate through the elements of a row
-          * @parm row Index of the row to be iterated through (starting from row=0).
+          * @param row Index of the row to be iterated through (starting from row=0).
           * @return a pair of random access iterators marking the begin and end of the row.
           */
         std::pair<row_element_iterator,row_element_iterator> row(size_type row = 0)
@@ -262,6 +266,24 @@ namespace alps {
         {
             assert(row < size1_);
             return std::make_pair( const_row_element_iterator(&values_[row],reserved_size1_), const_row_element_iterator(&values_[row+reserved_size1_*size2_], reserved_size1_) );
+        }
+
+        /**
+          * Iterate through the elements of the diagonal of the matrix.
+          *
+          * In case of a non-squared matrix, it will return the diagonal of the upper left square part.
+          * @return a pair of random access iterators marking the begin and end of the diagonal.
+          */
+        std::pair<diagonal_iterator,diagonal_iterator> diagonal()
+        {
+            size_type const square_part = (std::min)(size1_,size2_);
+            return std::make_pair( diagonal_iterator(&values_[0],reserved_size1_+1), diagonal_iterator(&values_[square_part*reserved_size1_+square_part], reserved_size1_+1) );
+        }
+
+        std::pair<const_diagonal_iterator,const_diagonal_iterator> diagonal() const
+        {
+            size_type const square_part = (std::min)(size1_,size2_);
+            return std::make_pair( const_diagonal_iterator(&values_[0],reserved_size1_+1), const_diagonal_iterator(&values_[square_part*reserved_size1_+square_part], reserved_size1_+1) );
         }
 
         /**
@@ -281,35 +303,35 @@ namespace alps {
         }
 
         /**
-          * Append `k` columns using the data given by the iterator pair range, where distance(range.first,range.second) == k*num_rows(m).
-          * @parm range a pair of InputIterators containing the data for the new columns
-          * @parm k the number of columns to append
+          * Append k columns using the data given by the iterator pair range, where distance(range.first,range.second) == k*num_rows(m).
+          * @param range a pair of InputIterators containing the data for the new columns
+          * @param k the number of columns to append
           */
         template <typename InputIterator>
         void append_cols(std::pair<InputIterator,InputIterator> const& range, difference_type k = 1);
 
         /**
-          * Append `k` rows using the data given by the iterator pair range, where distance(range.first,range.second) == k*num_cols(m).
-          * @parm range a pair of InputIterators containing the data for the new rows
-          * @parm k the number of rows to append
+          * Append k rows using the data given by the iterator pair range, where distance(range.first,range.second) == k*num_cols(m).
+          * @param range a pair of InputIterators containing the data for the new rows
+          * @param k the number of rows to append
           */
         template <typename InputIterator>
         void append_rows(std::pair<InputIterator,InputIterator> const& range, difference_type k = 1);
 
         /**
           * Inserts new cols before column `j` using the data given by range moving all columns further to the right (j -> j+k).
-          * @parm j index of the column before which the new rows will be inserted (i.e. the first new column will have index `j`)
-          * @parm range a InputIterator pair containing the data for the new rows, where distance(range.first,range.second == k*num_cols(m).
-          * @parm k the number of rows to insert.
+          * @param j index of the column before which the new rows will be inserted (i.e. the first new column will have index `j`)
+          * @param range a InputIterator pair containing the data for the new rows, where distance(range.first,range.second == k*num_cols(m).
+          * @param k the number of rows to insert.
           */
         template <typename InputIterator>
         void insert_cols(size_type j, std::pair<InputIterator,InputIterator> const& range, difference_type k = 1);
 
         /**
           * Inserts new rows before row `i` using the data given by range moving all rows further down (i -> i+k).
-          * @parm i index of the row before which the new rows will be inserted
-          * @parm range a InputIterator pair containing the data for the new rows, where distance(range.first,range.second == k*num_cols(m).
-          * @parm k the number of rows to insert.
+          * @param i index of the row before which the new rows will be inserted
+          * @param range a InputIterator pair containing the data for the new rows, where distance(range.first,range.second == k*num_cols(m).
+          * @param k the number of rows to insert.
           */
         template <typename InputIterator>
         void insert_rows(size_type i, std::pair<InputIterator,InputIterator> const& range, difference_type k = 1);
@@ -495,6 +517,7 @@ namespace alps {
 namespace numeric {
 // If someone has a better idea how to handle the comma, please improve these lines
 ALPS_IMPLEMENT_MATRIX_INTERFACE(matrix<T COMMA MemoryBlock>,<typename T COMMA typename MemoryBlock>)
+ALPS_IMPLEMENT_MATRIX_DIAGONAL_ITERATOR_INTERFACE(matrix<T COMMA MemoryBlock>, <typename T COMMA typename MemoryBlock>)
 ALPS_IMPLEMENT_MATRIX_ELEMENT_ITERATOR_INTERFACE(matrix<T COMMA MemoryBlock>, <typename T COMMA typename MemoryBlock>)
 } // end namespace numeric
 } // end namespace alps 

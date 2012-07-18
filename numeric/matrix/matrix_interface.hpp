@@ -72,6 +72,18 @@
         return m.col(j); \
     }
 
+#define ALPS_IMPLEMENT_MATRIX_DIAGONAL_ITERATOR_INTERFACE(MATRIX_TEMPLATE, TEMPLATE_PARAMETERS) \
+    template TEMPLATE_PARAMETERS \
+    std::pair<typename MATRIX_TEMPLATE::diagonal_iterator, typename MATRIX_TEMPLATE::diagonal_iterator> \
+    diagonal(MATRIX_TEMPLATE & m) { \
+        return m.diagonal(); \
+    } \
+    template TEMPLATE_PARAMETERS \
+    std::pair<typename MATRIX_TEMPLATE::const_diagonal_iterator, typename MATRIX_TEMPLATE::const_diagonal_iterator> \
+    diagonal(MATRIX_TEMPLATE const& m)  { \
+        return m.diagonal(); \
+    }
+
 #define ALPS_IMPLEMENT_MATRIX_ELEMENT_ITERATOR_INTERFACE(MATRIX_TEMPLATE, TEMPLATE_PARAMETERS) \
     template TEMPLATE_PARAMETERS \
     std::pair<typename MATRIX_TEMPLATE::element_iterator, typename MATRIX_TEMPLATE::element_iterator> \
