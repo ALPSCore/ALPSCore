@@ -216,6 +216,34 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( col_iterator_test, T, test_types )
             BOOST_CHECK_EQUAL(a(i,j),T(i+j));
 }
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( diagonal_iterator_test, T, test_types )
+{
+    typedef typename matrix<T>::diagonal_iterator       diagonal_iterator;
+    typedef typename matrix<T>::const_diagonal_iterator const_diagonal_iterator;
+    using std::distance;
+
+    unsigned int const dim[] = {10,20};
+    for(int i = 0; i < 2; ++i)
+    {
+        matrix<T> a(dim[i],dim[1-i]);
+        fill_matrix_with_numbers(a);
+        matrix<T> const b(a);
+
+        unsigned int i = 0;
+        std::pair<diagonal_iterator,diagonal_iterator> r_a = diagonal(a);
+        std::pair<const_diagonal_iterator,const_diagonal_iterator> r_b = diagonal(b);
+        BOOST_CHECK_EQUAL(distance(r_a.first,r_a.second), (std::min)(num_rows(a),num_cols(a)));
+        BOOST_CHECK_EQUAL(distance(r_b.first,r_b.second),(std::min)(num_rows(a),num_cols(a)));
+        while(r_a.first != r_a.second) {
+            BOOST_CHECK_EQUAL(a(i,i), *r_a.first);
+            BOOST_CHECK_EQUAL(a(i,i), *r_b.first);
+            ++r_a.first;
+            ++r_b.first;
+            ++i;
+        }
+    }
+}
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( element_iterator_test, T, test_types )
 {
     matrix<T> a(10,20);
@@ -1002,6 +1030,41 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( hdf5, T, test_types )
 
     BOOST_CHECK_EQUAL(a,b);
     matrix<T> c;
+    alps::hdf5::archive ar2(filename);
+    ar2 >> alps::make_pvp("/matrix",c);
+
+    BOOST_CHECK_EQUAL(a,c);
+    BOOST_CHECK_EQUAL(b,c);
+    boost::filesystem::remove(boost::filesystem::path(filename));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( hdf5_matrix_matrix, T, test_types )
+{
+    typedef typename matrix<matrix<T> >::col_element_iterator col_iterator;
+
+    std::string const filename = "alps_matrix_test.h5";
+    if (boost::filesystem::exists(boost::filesystem::path(filename)))
+        boost::filesystem::remove(boost::filesystem::path(filename));
+    matrix<matrix<T> > a(10,20);
+    a.resize(40,40);
+    for(std::size_t j=0; j < num_cols(a); ++j) {
+        for(std::pair<col_iterator,col_iterator> r = col(a,j); r.first != r.second; ++r.first) {
+            resize(*r.first,3,5);
+            fill_matrix_with_numbers(*r.first);
+        }
+    }
+    a.resize(10,20);
+    matrix<matrix<T> > b(a);
+
+    BOOST_CHECK_EQUAL(a.capacity() > b.capacity(), true); // maybe this should be an assert instead
+
+    {
+        alps::hdf5::archive ar(filename, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
+        ar << alps::make_pvp("/matrix",a);
+    }
+
+    BOOST_CHECK_EQUAL(a,b);
+    matrix<matrix<T> > c;
     alps::hdf5::archive ar2(filename);
     ar2 >> alps::make_pvp("/matrix",c);
 

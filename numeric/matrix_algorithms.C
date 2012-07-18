@@ -131,6 +131,16 @@ struct InitHelper<std::complex<T> > {
    }
 };
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( trace_test, T, test_types)
+{
+    matrix<typename T::value_type> m(T::valuex, T::valuex);
+    InitHelper<typename T::value_type>::init(m);
+    typename T::value_type tr = trace(m);
+    typename T::value_type check = 0;
+    for(std::size_t i=0; i < num_rows(m); ++i)
+        check += m(i,i);
+    BOOST_CHECK_EQUAL(tr,check);
+}
 /*---------------------------------------------------------------------- tranpose TESTS */
 BOOST_AUTO_TEST_CASE_TEMPLATE(Transpose_test, T, test_types)
 {
