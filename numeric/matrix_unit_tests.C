@@ -229,17 +229,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( diagonal_iterator_test, T, test_types )
         fill_matrix_with_numbers(a);
         matrix<T> const b(a);
 
-        unsigned int i = 0;
+        unsigned int k = 0;
         std::pair<diagonal_iterator,diagonal_iterator> r_a = diagonal(a);
         std::pair<const_diagonal_iterator,const_diagonal_iterator> r_b = diagonal(b);
         BOOST_CHECK_EQUAL(distance(r_a.first,r_a.second), (std::min)(num_rows(a),num_cols(a)));
         BOOST_CHECK_EQUAL(distance(r_b.first,r_b.second),(std::min)(num_rows(a),num_cols(a)));
         while(r_a.first != r_a.second) {
-            BOOST_CHECK_EQUAL(a(i,i), *r_a.first);
-            BOOST_CHECK_EQUAL(a(i,i), *r_b.first);
+            BOOST_CHECK_EQUAL(a(k,k), *r_a.first);
+            BOOST_CHECK_EQUAL(a(k,k), *r_b.first);
             ++r_a.first;
             ++r_b.first;
-            ++i;
+            ++k;
         }
     }
 }
