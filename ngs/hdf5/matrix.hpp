@@ -28,9 +28,10 @@
 #ifndef ALPS_NGS_HDF5_ALPS_MATRIX_HPP
 #define ALPS_NGS_HDF5_ALPS_MATRIX_HPP
 
-#include <alps/numeric/matrix.hpp>
 #include <alps/ngs/hdf5.hpp>
+#include <alps/ngs/cast.hpp>
 #include <alps/ngs/hdf5/complex.hpp>
+#include <alps/numeric/matrix.hpp>
 
 // This one is only required for the old matrix hdf5 format
 #include <alps/ngs/hdf5/vector.hpp>
@@ -159,6 +160,7 @@ namespace detail {
     ) {
         using std::copy;
         using std::fill_n;
+        using alps::cast;
         typedef typename alps::numeric::matrix<T,MemoryBlock>::const_col_element_iterator col_iterator;
         if(is_continuous<T>::value) {
             std::vector<std::size_t> extent(get_extent(m));
@@ -167,15 +169,36 @@ namespace detail {
             chunk.push_back(1);
             // How much memory does the column and the elements it contains need?
             copy(extent.begin()+1,extent.end(), std::back_inserter(chunk));
-            std::size_t offset_col_index = offset.size();
+            std::size_t const offset_col_index = offset.size();
             fill_n(std::back_inserter(offset), extent.size(), 0);
             // Write column by column
             for(std::size_t j=0; j < num_cols(m); ++j) {
                 offset[offset_col_index] = j;
                 ar.write(path,get_pointer(*(col(m,j).first)),size,chunk,offset);
             }
+        } else if( is_vectorizable(m) ){
+            size.push_back(num_cols(m));
+            size.push_back(num_rows(m));
+            // We want to write element by element:
+            chunk.push_back(1);
+            chunk.push_back(1);
+            std::size_t const offset_col_index = offset.size();
+            std::size_t const offset_row_index = offset.size()+1;
+            offset.push_back(0);
+            offset.push_back(0);
+            for(std::size_t j=0; j < num_cols(m); ++j) {
+                offset[offset_col_index] = j;
+                for(std::size_t i=0; i< num_rows(m); ++i) {
+                    offset[offset_row_index] = i;
+                    save(ar, path, m(i,j), size, chunk, offset);
+                }
+            }
         } else {
-            throw wrong_type("type not implemented. => continuous value_types only!" + ALPS_STACKTRACE);
+            if( ar.is_data(path) )
+                ar.delete_data(path);
+            for(std::size_t j=0; j < num_cols(m); ++j)
+                for(std::size_t i=0; i < num_rows(m); ++i)
+                    save(ar, ar.complete_path(path) + "/" + cast<std::string>(j) + "/" + cast<std::string>(i), m(i,j) );
         }
     }
 
@@ -203,24 +226,51 @@ namespace detail {
             return;
         }
 
-        if(ar.is_group(path) )
-            throw invalid_path("invalid path" + ALPS_STACKTRACE);
-        else {
+        alps::numeric::matrix<T,MemoryBlock> m2;
+        if( ar.is_group(path) ) {
+            std::vector<std::string> const columns = ar.list_children(path);
+            std::vector<std::string> const rows = ar.list_children(path + "/" +columns[0]);
+            m2.resize(rows.size(), columns.size());
+            // Check if all columns have the same number of elements
+            for(std::vector<std::string>::const_iterator it = columns.begin(); it != columns.end(); ++it) {
+                std::vector<std::string> const elements = ar.list_children(path + "/" + *it);
+                if(elements.size() != rows.size())
+                    throw invalid_path("invalid path" + ALPS_STACKTRACE);
+                for(std::vector<std::string>::const_iterator eit = elements.begin(); eit != elements.end(); ++eit) {
+                    load(ar, ar.complete_path(path) + "/" + *it + "/" + *eit, m2(cast<std::size_t>(*eit),cast<std::size_t>(*it)));
+                }
+            }
+        } else {
             std::vector<std::size_t> size(ar.extent(path));
-            // We need to make sure that reserve() will reserve exactly the num_rows() we asked for.
-            // The only way to ensure that is by creating a new matrix which has no reserved space.
-            alps::numeric::matrix<T,MemoryBlock> m2;
-            set_extent(m2,std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));
             if(is_continuous<T>::value) {
-//                copy(size.begin()+chunk.size(), size.end(), std::back_inserter(chunk));
+                // We need to make sure that reserve() will reserve exactly the num_rows() we asked for.
+                // The only way to ensure that is by creating a new matrix which has no reserved space.
+                set_extent(m2,std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));
                 copy(size.begin()+chunk.size(), size.end(), std::back_inserter(chunk));
                 fill_n(std::back_inserter(offset), size.size() - offset.size(), 0);
                 ar.read(path,get_pointer(m2(0,0)),chunk,offset);
-                swap(m,m2);
-            } else {
-                throw invalid_path("type not implemented. => continuous value_types only!" + ALPS_STACKTRACE);
+            } else { // i.e. is_vectorizable
+                std::vector<std::size_t> mysize;
+                mysize.push_back(*(size.begin() + chunk.size()));
+                mysize.push_back(*(size.begin() + chunk.size()+1));
+                set_extent(m2, mysize);
+                // Read in the matrix element by element
+                chunk.push_back(1);
+                chunk.push_back(1);
+                std::size_t const offset_col_index = offset.size();
+                std::size_t const offset_row_index = offset.size()+1;
+                offset.push_back(0);
+                offset.push_back(0);
+                for(std::size_t j=0; j < num_cols(m2); ++j) {
+                    offset[offset_col_index] = j;
+                    for(std::size_t i=0; i < num_rows(m2); ++i) {
+                        offset[offset_row_index] = i;
+                        load(ar, path, m2(i,j), chunk, offset);
+                    }
+                }
             }
         }
+        swap(m,m2);
     }
 } // end namespace hdf5
 } // end namespace alps

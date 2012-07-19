@@ -177,11 +177,13 @@ namespace alps {
     template <typename T, typename MemoryBlock>
     bool matrix<T, MemoryBlock>::operator == (matrix const& rhs) const
     {
-        if(this->size1_ != rhs.size1_ || this->size2_ != rhs.size2_) return false;
-        // TODO: reimplement or remove - this is just a quick ugly implementation
-        for(size_type i=0; i< this->size1_; ++i)
-            for(size_type j=0; j < this->size2_; ++j)
-                if(!(operator()(i,j) == rhs(i,j))) return false;
+        // TODO this is not really good for floats and doubles
+        using std::equal;
+        if(this->size1_ != rhs.size1_ || this->size2_ != rhs.size2_)
+            return false;
+        for(size_type j=0; j < this->size2_; ++j)
+            if( !equal(this->col(j).first, this->col(j).second, rhs.col(j).first) )
+                return false;
         return true;
     }
 
