@@ -1047,10 +1047,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( hdf5_matrix_matrix, T, test_types )
         boost::filesystem::remove(boost::filesystem::path(filename));
     matrix<matrix<T> > a(10,20);
     a.resize(40,40);
+    T iota = 0;
     for(std::size_t j=0; j < num_cols(a); ++j) {
         for(std::pair<col_iterator,col_iterator> r = col(a,j); r.first != r.second; ++r.first) {
             resize(*r.first,3,5);
-            fill_matrix_with_numbers(*r.first);
+            for(std::size_t j=0; j < num_cols(*r.first); ++j) {
+                for(std::pair<typename matrix<T>::col_element_iterator,typename matrix<T>::col_element_iterator> rm = col(*r.first,j); rm.first != rm.second; ++rm.first) {
+                    *rm.first = iota;
+                    iota += 1;
+                }
+            }
         }
     }
     a.resize(10,20);

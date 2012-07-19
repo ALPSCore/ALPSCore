@@ -72,6 +72,7 @@ IF (ALPS_BUILD_HDF5_TESTS)
         "std::pair<std::vector<cast_type<int, std::string> >, std::pair<double, int> >" "std::pair<std::pair<std::vector<enum_type> *, std::vector<std::size_t> >, enum_type>"
         "alps::numeric::matrix<unsigned int>" alps::numeric::matrix<float> alps::numeric::matrix<double> "alps::numeric::matrix<std::complex<float> >" "alps::numeric::matrix<std::complex<double> >"
         "std::vector<alps::numeric::matrix<unsigned int> >" "std::vector<alps::numeric::matrix<float> >" "std::vector<alps::numeric::matrix<double> >" " std::vector<alps::numeric::matrix<std::complex<float> > >" "std::vector<alps::numeric::matrix<std::complex<double> > >"
+#        "alps::numeric::matrix<std::vector<double> >" "alps::numeric::matrix<std::vector<std::complex<float> >" "alps::numeric::matrix<alps::numeric::matrix<int> >" "alps::numeric::matrix<alps::numeric::matrix<double> >" "alps::numeric::matrix<alps::numeric::matrix<std::complex<double> > >"
     )
     if (ALPS_BUILD_NGS)
         SET(ALPS_HDF5_DATA_TYPES ${ALPS_HDF5_DATA_TYPES}
