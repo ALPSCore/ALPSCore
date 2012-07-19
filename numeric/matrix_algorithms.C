@@ -125,8 +125,9 @@ struct InitHelper<std::complex<T> > {
     void static init(matrix<std::complex<T> > & M){
         for(int i(0); i< num_rows(M); ++i) 
             for(int j(0); j< num_cols(M); ++j){ 
-               M(i,j).real() = uniDblGen();
-               M(i,j).imag() = uniDblGen();
+               T r = uniDblGen();
+               T m = uniDblGen();
+               M(i,j) = std::complex<T>(r, m);
             }
    }
 };
