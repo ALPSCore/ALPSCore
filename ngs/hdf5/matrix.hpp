@@ -33,6 +33,8 @@
 #include <alps/ngs/hdf5/complex.hpp>
 #include <alps/numeric/matrix.hpp>
 
+#include <algorithm>
+
 // This one is only required for the old matrix hdf5 format
 #include <alps/ngs/hdf5/vector.hpp>
 
