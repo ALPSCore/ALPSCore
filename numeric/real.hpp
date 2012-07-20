@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1999-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1999-2012 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>,
 *                            Andreas Hehn <hehn@phys.ethz.ch>
 *
@@ -41,7 +41,7 @@
 namespace alps { namespace numeric {
 
 template <class T>
-inline T real(T x) { return x;}
+inline T real(T x) { return x; }
 
 using std::real;
 
@@ -63,24 +63,28 @@ struct real_type<std::complex<T> >
 template <class T>
 inline std::vector<T> real(std::vector<std::complex<T> > const & x) 
 {
-  using std::real;
   std::vector<T> re;
   re.reserve(x.size());
+#if defined(__GLIBCPP__) || defined(__GLIBCXX__)
   std::transform(x.begin(),x.end(),std::back_inserter(re),
                  static_cast<T const & (*)(std::complex<T> const &)>(&real));
+#else
+  std::transform(x.begin(),x.end(),std::back_inserter(re),
+                 static_cast<T (*)(std::complex<T> const &)>(&real));
+#endif
   return re;
 }
 
 template <class T>
 std::vector<std::vector<T> > real(std::vector<std::vector<std::complex<T> > >const & x) 
 {
-  std::vector<std::vector< T > > re;
+  std::vector<std::vector<T> > re;
   re.reserve(x.size());
   std::transform(x.begin(),x.end(),std::back_inserter(re),
                  static_cast<std::vector<T> (*)(std::vector<std::complex<T> > const &)>(&real));
   return re;
 }
 
-} }  // end namespace alps::numeric
+} } // end namespace alps::numeric
 
 #endif // ALPS_MATH_HPP
