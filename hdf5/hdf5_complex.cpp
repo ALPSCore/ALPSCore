@@ -77,4 +77,5 @@ int main () {
         std::cout << "vector (read): " << t_b.vec << std::endl;
     }
     
+    return 0;
 }

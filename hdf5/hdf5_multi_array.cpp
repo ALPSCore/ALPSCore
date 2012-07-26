@@ -65,4 +65,5 @@ int main()
     
     if (boost::filesystem::exists(boost::filesystem::path("test_hdf5_multi_array.h5")))
         boost::filesystem::remove(boost::filesystem::path("test_hdf5_multi_array.h5"));
+    return 0;
 }

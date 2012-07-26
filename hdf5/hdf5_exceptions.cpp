@@ -55,4 +55,5 @@ int main() {
         }
     }
     boost::filesystem::remove(boost::filesystem::path(filename));
+    return 0;
 }

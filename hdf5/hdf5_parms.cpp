@@ -83,4 +83,5 @@ int main ()
         cout << "Reading 3:" << endl << pin;
     }
     
+    return 0;
 }

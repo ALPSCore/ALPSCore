@@ -49,4 +49,5 @@ int main () {
        h5ar >> alps::make_pvp("/vec2", tmp);
    }
 
+    return 0;
 }

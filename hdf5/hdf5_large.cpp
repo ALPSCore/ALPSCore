@@ -50,4 +50,5 @@ int main () {
     for (std::size_t i = 0; i < 100; ++i)
         if (boost::filesystem::exists(boost::filesystem::path("large" + alps::cast<std::string>(i) + ".h5")))
             boost::filesystem::remove(boost::filesystem::path("large" + alps::cast<std::string>(i) + ".h5"));
+    return 0;
 }

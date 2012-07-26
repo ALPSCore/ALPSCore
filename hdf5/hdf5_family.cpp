@@ -75,4 +75,5 @@ int main() {
         iar4 >> make_pvp("/data", test4);
     }
     boost::filesystem::remove(boost::filesystem::path(filename));
+    return 0;
 }

@@ -39,4 +39,5 @@ int main() {
         ss << "/vec" << i;
         ar << alps::make_pvp(ss.str(), vec);
     }
+    return 0;
 }

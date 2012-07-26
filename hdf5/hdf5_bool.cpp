@@ -108,4 +108,5 @@ int main()
         cout << "Read bt=" << bt << ", should be " << true << endl;
         cout << "Read bf=" << bf << ", should be " << false << endl;
     }
+    return 0;
 }

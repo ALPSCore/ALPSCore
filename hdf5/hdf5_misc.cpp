@@ -134,4 +134,5 @@ int main () {
     }
 
     boost::filesystem::remove(boost::filesystem::path("data.h5"));
+    return 0;
 }
