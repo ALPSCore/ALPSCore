@@ -34,10 +34,10 @@ using namespace std;
 
 int main()
 {
-    if (boost::filesystem::exists(boost::filesystem::path("test.h5")))
-        boost::filesystem::remove(boost::filesystem::path("test.h5"));
+    if (boost::filesystem::exists(boost::filesystem::path("test_hdf5_memory.h5")))
+        boost::filesystem::remove(boost::filesystem::path("test_hdf5_memory.h5"));
     {
-        alps::hdf5::archive oa("test.h5", "w");
+        alps::hdf5::archive oa("test_hdf5_memory.h5", "w");
         std::vector<std::complex<double> > foo(3);
         std::vector<double> foo2(3);
         oa << alps::make_pvp("/foo", foo);
@@ -45,7 +45,7 @@ int main()
     }
     
     {
-        alps::hdf5::archive ia("test.h5");
+        alps::hdf5::archive ia("test_hdf5_memory.h5");
         std::vector<double> foo, foo2;
         try {
             ia >> alps::make_pvp("/foo", foo);
@@ -53,10 +53,10 @@ int main()
         } catch (exception e) {
             cout << "Exception caught:" << endl;
             cout << e.what() << endl;
-            boost::filesystem::remove(boost::filesystem::path("test.h5"));
+            boost::filesystem::remove(boost::filesystem::path("test_hdf5_memory.h5"));
             return EXIT_SUCCESS;
         }
     }
-    boost::filesystem::remove(boost::filesystem::path("test.h5"));
+    boost::filesystem::remove(boost::filesystem::path("test_hdf5_memory.h5"));
     return EXIT_SUCCESS;
 }

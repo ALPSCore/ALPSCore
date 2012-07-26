@@ -123,7 +123,7 @@ void load(
 }
 
 int main() {
-    std::string const filename = "test.h5";
+    std::string const filename = "test_hdf5_deprecated.h5";
     if (boost::filesystem::exists(boost::filesystem::path(filename)))
         boost::filesystem::remove(boost::filesystem::path(filename));
     userdefined_class<double> scalar_read, scalar_write;

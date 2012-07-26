@@ -62,14 +62,14 @@ int main () {
     b.scalar = std::complex<double>(3,4);
     b.vec = std::vector<std::complex<double> >(5, std::complex<double>(0,7));
     {
-        alps::hdf5::archive ar("test.h5", "w");
+        alps::hdf5::archive ar("test_hdf5_complex.h5", "w");
         ar << alps::make_pvp("/test/foo", b);
     }
     
     // check
     {
         foo t_b;
-        alps::hdf5::archive ar("test.h5", "r");
+        alps::hdf5::archive ar("test_hdf5_complex.h5", "r");
         ar >> alps::make_pvp("/test/foo", t_b);
         std::cout << "scalar (write): " << b.scalar << std::endl;
         std::cout << "scalar (read): " << t_b.scalar << std::endl;

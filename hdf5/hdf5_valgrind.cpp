@@ -34,7 +34,7 @@ int main() {
 
     for (int i=0; i<100; ++i) {
         std::vector<double> vec(10,2.);
-        alps::hdf5::archive ar("test.h5", "w");
+        alps::hdf5::archive ar("test_hdf5_valgrind.h5", "w");
         std::ostringstream ss;
         ss << "/vec" << i;
         ar << alps::make_pvp(ss.str(), vec);

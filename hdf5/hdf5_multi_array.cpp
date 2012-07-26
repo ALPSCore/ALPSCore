@@ -38,15 +38,15 @@ using boost::multi_array;
 
 int main()
 {
-    if (boost::filesystem::exists(boost::filesystem::path("test.h5")))
-        boost::filesystem::remove(boost::filesystem::path("test.h5"));
+    if (boost::filesystem::exists(boost::filesystem::path("test_hdf5_multi_array.h5")))
+        boost::filesystem::remove(boost::filesystem::path("test_hdf5_multi_array.h5"));
 
     multi_array<double,2> a( boost::extents[3][3] );
     multi_array<double,2> b( boost::extents[4][4] );
 
     // Write
     {
-        alps::hdf5::archive ar("test.h5","a");
+        alps::hdf5::archive ar("test_hdf5_multi_array.h5","a");
         vector< multi_array<double,2> > v(2,a);
         ar << alps::make_pvp("uniform",v);
         v.push_back(b);
@@ -55,7 +55,7 @@ int main()
 
     // Read
     {
-        alps::hdf5::archive ar("test.h5","r");
+        alps::hdf5::archive ar("test_hdf5_multi_array.h5","r");
         vector< multi_array<double,2> > w;
         ar >> alps::make_pvp("nonuniform",w);
         cout << "read nonuniform" << endl;
@@ -63,6 +63,6 @@ int main()
         cout << "read uniform" << endl;
     }
     
-    if (boost::filesystem::exists(boost::filesystem::path("test.h5")))
-        boost::filesystem::remove(boost::filesystem::path("test.h5"));
+    if (boost::filesystem::exists(boost::filesystem::path("test_hdf5_multi_array.h5")))
+        boost::filesystem::remove(boost::filesystem::path("test_hdf5_multi_array.h5"));
 }
