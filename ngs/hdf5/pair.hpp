@@ -67,8 +67,13 @@ namespace alps {
                 , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                   \
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
             ) {                                                                                                                                                 \
-                load(ar, ar.complete_path(path) + "/0", value.first);                                                                                           \
-                load(ar, ar.complete_path(path) + "/1", value.second);                                                                                          \
+                try {                                                                                                                                           \
+                    load(ar, ar.complete_path(path) + "/0", value.first);                                                                                       \
+                    load(ar, ar.complete_path(path) + "/1", value.second);                                                                                      \
+                } catch (path_not_found exc) {                                                                                                                  \
+                    load(ar, ar.complete_path(path) + "/first", value.first);                                                                                   \
+                    load(ar, ar.complete_path(path) + "/second", value.second);                                                                                 \
+                }                                                                                                                                               \
             }
         ALPS_NGS_HDF5_PAIR_LOAD(archive)
         #ifdef ALPS_HDF5_HAVE_DEPRECATED
