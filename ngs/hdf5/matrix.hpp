@@ -216,11 +216,11 @@ namespace detail {
         if(ar.is_data(path + "/size1") && ar.is_scalar(path + "/size1") && ar.is_datatype<std::size_t>(path + "/size1")) {
             // Old matrix hdf5 format
             std::size_t size1(0), size2(0), reserved_size1(0);
-            ar >> alps::make_pvp("size1", size1);
-            ar >> alps::make_pvp("size2", size2);
-            ar >> alps::make_pvp("reserved_size1", reserved_size1);
+            ar >> alps::make_pvp(path + "/size1", size1);
+            ar >> alps::make_pvp(path + "/size2", size2);
+            ar >> alps::make_pvp(path + "/reserved_size1", reserved_size1);
             std::vector<T> data;
-            ar >> alps::make_pvp("values", data);
+            ar >> alps::make_pvp(path + "/values", data);
             alps::numeric::matrix<T,MemoryBlock> m2(reserved_size1,size2);
             assert(m2.capacity().first  == reserved_size1);
             copy(data.begin(), data.end(), col(m2,0).first);
