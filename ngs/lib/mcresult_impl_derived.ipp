@@ -127,7 +127,7 @@ namespace alps {
                     return alea::mcdata<T>::tau();
                 }
 
-                typename covariance_type<T>::type covariance(mcresult_impl_derived<B, T> const & arg) const {
+				typename ::alps::covariance_type<T>::type covariance(mcresult_impl_derived<B, T> const & arg) const {
                     return alea::mcdata<T>::covariance(static_cast<alea::mcdata<T> const &>(arg));
                 }
 

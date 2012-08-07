@@ -28,7 +28,8 @@
 #ifndef ALPS_NGS_MADE_DEPRECATED_PARAMETERS_HPP
 #define ALPS_NGS_MADE_DEPRECATED_PARAMETERS_HPP
 
-#warning this file is deprecated and will be remove in a future release
+// #warning is not C/C++ standard, and not supported by MSVC++
+//#warning this file is deprecated and will be remove in a future release
 
 #include <alps/ngs/params.hpp>
 
