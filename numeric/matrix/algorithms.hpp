@@ -329,12 +329,12 @@ namespace alps {
         template<typename T, class MemoryBlock>
         void heev(matrix<T, MemoryBlock> M,
                   matrix<T, MemoryBlock> & evecs,
-                  typename associated_diagonal_matrix<matrix<T, MemoryBlock> >::type & evals)
+                  typename associated_real_diagonal_matrix<matrix<T, MemoryBlock> >::type & evals)
         {
             assert(num_rows(M) == num_cols(M));
             typename associated_real_vector<matrix<T, MemoryBlock> >::type evals_(num_rows(M));
             heev(M, evecs, evals_);
-            evals = typename associated_diagonal_matrix<matrix<T, MemoryBlock> >::type(evals_);
+            evals = typename associated_real_diagonal_matrix<matrix<T, MemoryBlock> >::type(evals_);
         }
 
         template<typename T, class MemoryBlock, class ThirdArgument>
