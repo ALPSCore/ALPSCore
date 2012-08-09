@@ -122,6 +122,19 @@ namespace alps {
             return ret;
         }
 
+        template<class Matrix>
+        bool is_hermitian(Matrix const& M)
+        {
+            using alps::numeric::conj;
+            if (num_rows(M) != num_cols(M))
+                return false;
+            for (size_t i=0; i<num_rows(M); ++i)
+                for(size_t j=0; j<num_cols(M); ++j)
+                    if ( M(i,j) != conj(M(j,i)) )
+                        return false;
+            return true;
+        }
+
         template <typename T>
         typename real_type<T>::type norm_square(const matrix<T>& M){
             using alps::numeric::real;
