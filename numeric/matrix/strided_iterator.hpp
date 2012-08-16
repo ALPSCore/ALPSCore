@@ -79,10 +79,7 @@ class strided_iterator : public boost::iterator_facade<
                         typename boost::add_const<Matrix>::type,
                         typename boost::add_const<Matrix2>::type
                         >::value ));
-            if(ptr == y.ptr)
-                return true;
-            else
-                return false;
+            return (ptr == y.ptr);
         }
         void increment()
         {
