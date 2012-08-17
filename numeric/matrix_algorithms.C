@@ -132,16 +132,6 @@ struct InitHelper<std::complex<T> > {
    }
 };
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( identity_matrix_test, T, test_types)
-{
-    matrix<typename T::value_type> id = identity_matrix(matrix<typename T::value_type>(),T::valuex);
-
-    matrix<typename T::value_type> ref(T::valuex, T::valuex);
-    for(std::size_t i=0; i < num_rows(ref); ++i)
-        ref(i,i) = 1;
-    BOOST_CHECK_EQUAL(id,ref);
-}
-
 BOOST_AUTO_TEST_CASE_TEMPLATE( trace_test, T, test_types)
 {
     matrix<typename T::value_type> m(T::valuex, T::valuex);
