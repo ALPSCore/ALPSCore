@@ -73,6 +73,15 @@ namespace alps {
     } // end namespace detail
 
     template <typename T, typename MemoryBlock>
+    matrix<T, MemoryBlock> matrix<T, MemoryBlock>::identity_matrix(size_type size)
+    {
+        matrix<T, MemoryBlock> ret(size, size);
+        for (size_type k = 0; k < size; ++k)
+        ret(k,k) = 1;
+        return ret;
+    }
+
+    template <typename T, typename MemoryBlock>
     matrix<T, MemoryBlock>::matrix(size_type rows, size_type cols, T init_value)
     : size1_(rows), size2_(cols), reserved_size1_(rows), values_(rows*cols, init_value)
     {
