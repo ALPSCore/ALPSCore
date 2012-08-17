@@ -88,12 +88,6 @@ namespace alps {
             const_element_iterator;                       ///< Const version of element_iterator (REALLY SLOW! USE row_-/column_iterators INSTEAD!)
 
         /**
-          * Static function for creating identiy matrix
-          *
-          */
-        static matrix<T,MemoryBlock> identity_matrix(size_type size);
-
-        /**
           * The constructor
           * @param rows the number of rows
           * @param columns the number of columns

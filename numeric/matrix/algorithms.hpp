@@ -103,9 +103,13 @@ namespace alps {
         }
 
         template<class Matrix>
-        Matrix identity_matrix(typename Matrix::size_type size)
+        Matrix identity_matrix(Matrix const& dummy, typename Matrix::size_type size)
         {
-            return Matrix::identity_matrix(size);
+            typedef typename Matrix::diagonal_iterator diagonal_iterator;
+            Matrix m(size,size);
+            for(std::pair<diagonal_iterator,diagonal_iterator> r=m.diagonal(); r.first != r.second; ++r.first)
+                *r.first = typename Matrix::value_type(1);
+            return m;
         }
 
         template<class Matrix>
