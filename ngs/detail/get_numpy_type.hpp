@@ -39,27 +39,32 @@
 
 #include <complex>
 
+#define ALPS_NGS_FOREACH_NATIVE_NUMPY_TYPE(CALLBACK)                                                                                            \
+    CALLBACK(bool)                                                                                                                              \
+    CALLBACK(char)                                                                                                                              \
+    CALLBACK(signed char)                                                                                                                       \
+    CALLBACK(unsigned char)                                                                                                                     \
+    CALLBACK(short)                                                                                                                             \
+    CALLBACK(unsigned short)                                                                                                                    \
+    CALLBACK(int)                                                                                                                               \
+    CALLBACK(unsigned)                                                                                                                          \
+    CALLBACK(long)                                                                                                                              \
+    CALLBACK(unsigned long)                                                                                                                     \
+    CALLBACK(long long)                                                                                                                         \
+    CALLBACK(unsigned long long)                                                                                                                \
+    CALLBACK(float)                                                                                                                             \
+    CALLBACK(double)                                                                                                                            \
+    CALLBACK(long double)                                                                                                                       \
+    CALLBACK(std::complex<float>)                                                                                                               \
+    CALLBACK(std::complex<double>)                                                                                                              \
+    CALLBACK(std::complex<long double>)
+
 namespace alps {
     namespace detail {
-
-        ALPS_DECL int get_numpy_type(bool);
-        ALPS_DECL int get_numpy_type(char);
-        ALPS_DECL int get_numpy_type(unsigned char);
-        ALPS_DECL int get_numpy_type(signed char);
-        ALPS_DECL int get_numpy_type(short);
-        ALPS_DECL int get_numpy_type(unsigned short);
-        ALPS_DECL int get_numpy_type(int);
-        ALPS_DECL int get_numpy_type(unsigned int);
-        ALPS_DECL int get_numpy_type(long);
-        ALPS_DECL int get_numpy_type(long long);
-        ALPS_DECL int get_numpy_type(unsigned long long);
-        ALPS_DECL int get_numpy_type(float);
-        ALPS_DECL int get_numpy_type(double);
-        ALPS_DECL int get_numpy_type(long double);
-        ALPS_DECL int get_numpy_type(std::complex<float>);
-        ALPS_DECL int get_numpy_type(std::complex<double>);
-        ALPS_DECL int get_numpy_type(std::complex<long double>);
-
+        #define ALPS_NGS_DECL_NUMPY_TYPE(T)                                                                                                     \
+            ALPS_DECL int get_numpy_type(T);
+        ALPS_NGS_FOREACH_NATIVE_NUMPY_TYPE(ALPS_NGS_DECL_NUMPY_TYPE)
+        #undef ALPS_NGS_DECL_NUMPY_TYPE
     }
 }
 

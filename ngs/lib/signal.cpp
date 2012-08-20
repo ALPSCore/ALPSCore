@@ -95,7 +95,7 @@ namespace alps {
         }
 
         void signal::segfault(int signal) {
-            std::cerr << "Abort by signal " << signal << ":" << ngs::stacktrace() << std::endl;
+            std::cerr << "Abort by signal " << signal << ALPS_STACKTRACE << std::endl;
             signals_.push_back(signal);
             hdf5::archive::abort();
             std::abort();

@@ -33,7 +33,7 @@
 #include <alps/ngs/mcresult.hpp>
 
 #include <alps/ngs/boost_python.hpp>
-#include <alps/ngs/lib/numpy_import.ipp>
+#include <alps/ngs/detail/numpy_import.hpp>
 
 #include <alps/python/make_copy.hpp>
 

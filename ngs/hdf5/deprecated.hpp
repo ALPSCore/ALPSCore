@@ -29,6 +29,9 @@
 #ifndef ALPS_NGS_HDF5_DEPRECATED
 #define ALPS_NGS_HDF5_DEPRECATED
 
+//TODO: remove deprecated class
+//#warning "hdf5::iarchive and hdf5::oarchive are deprecated, please use hdf5::archive"
+
 #include <alps/ngs/hdf5.hpp>
 
 namespace alps {
@@ -69,6 +72,10 @@ namespace alps {
 #include <alps/ngs/hdf5/shared_array.hpp>
 #include <alps/ngs/hdf5/ublas/matrix.hpp>
 #include <alps/ngs/hdf5/ublas/vector.hpp>
+
+#ifdef ALPS_HAVE_PYTHON
+    #include <alps/ngs/hdf5/python.hpp>
+#endif
 
 namespace alps {
     namespace hdf5 {

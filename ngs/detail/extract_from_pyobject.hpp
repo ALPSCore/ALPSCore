@@ -69,12 +69,12 @@
                 else if (dtype == "numpy.float32") visitor(static_cast<float>(boost::python::call_method<double>(data.ptr(), "__float__")));
                 else if (dtype == "numpy.float64") visitor(static_cast<double>(boost::python::call_method<double>(data.ptr(), "__float__")));
                 else if (dtype == "numpy.complex64") 
-                    visitor(static_cast<std::complex<float> >(
+                    visitor(std::complex<float>(
                           boost::python::call_method<double>(PyObject_GetAttr(data.ptr(), boost::python::str("real").ptr()), "__float__")
                         , boost::python::call_method<double>(PyObject_GetAttr(data.ptr(), boost::python::str("imag").ptr()), "__float__")
                     ));
-                else if (dtype == "numpy.complex128") 
-                    visitor(static_cast<std::complex<double> >(
+                else if (dtype == "numpy.complex128")
+                    visitor(std::complex<double>(
                           boost::python::call_method<double>(PyObject_GetAttr(data.ptr(), boost::python::str("real").ptr()), "__float__")
                         , boost::python::call_method<double>(PyObject_GetAttr(data.ptr(), boost::python::str("imag").ptr()), "__float__")
                     ));
@@ -85,30 +85,13 @@
                         throw std::runtime_error("numpy array is not continous" + ALPS_STACKTRACE);
                     else if (!PyArray_ISNOTSWAPPED(data.ptr()))
                         throw std::runtime_error("numpy array is not native" + ALPS_STACKTRACE);
-                    #define ALPS_NGS_EXTRACT_FROM_PYOBJECT_CHECK_NUMPY(T)                                                                            \
-                        else if (PyArray_DESCR(data.ptr())->type_num == detail::get_numpy_type(type_wrapper< T >::type()))                            \
-                            visitor(                                                                                                                \
-                                  static_cast< T const *>(PyArray_DATA(data.ptr()))                                                                    \
-                                , std::vector<std::size_t>(PyArray_DIMS(data.ptr()), PyArray_DIMS(data.ptr()) + PyArray_NDIM(data.ptr()))            \
+                    #define ALPS_NGS_EXTRACT_FROM_PYOBJECT_CHECK_NUMPY(T)                                                                               \
+                        else if (PyArray_DESCR(data.ptr())->type_num == detail::get_numpy_type(type_wrapper< T >::type()))                              \
+                            visitor(                                                                                                                    \
+                                  static_cast< T const *>(PyArray_DATA(data.ptr()))                                                                     \
+                                , std::vector<std::size_t>(PyArray_DIMS(data.ptr()), PyArray_DIMS(data.ptr()) + PyArray_NDIM(data.ptr()))               \
                             );
-                    // TODO: make foreach numpy type
-                    ALPS_NGS_EXTRACT_FROM_PYOBJECT_CHECK_NUMPY(bool)
-                    ALPS_NGS_EXTRACT_FROM_PYOBJECT_CHECK_NUMPY(char)
-                    ALPS_NGS_EXTRACT_FROM_PYOBJECT_CHECK_NUMPY(unsigned char)
-                    ALPS_NGS_EXTRACT_FROM_PYOBJECT_CHECK_NUMPY(signed char)
-                    ALPS_NGS_EXTRACT_FROM_PYOBJECT_CHECK_NUMPY(short)
-                    ALPS_NGS_EXTRACT_FROM_PYOBJECT_CHECK_NUMPY(unsigned short)
-                    ALPS_NGS_EXTRACT_FROM_PYOBJECT_CHECK_NUMPY(int)
-                    ALPS_NGS_EXTRACT_FROM_PYOBJECT_CHECK_NUMPY(unsigned int)
-                    ALPS_NGS_EXTRACT_FROM_PYOBJECT_CHECK_NUMPY(long)
-                    ALPS_NGS_EXTRACT_FROM_PYOBJECT_CHECK_NUMPY(long long)
-                    ALPS_NGS_EXTRACT_FROM_PYOBJECT_CHECK_NUMPY(unsigned long long)
-                    ALPS_NGS_EXTRACT_FROM_PYOBJECT_CHECK_NUMPY(float)
-                    ALPS_NGS_EXTRACT_FROM_PYOBJECT_CHECK_NUMPY(double)
-                    ALPS_NGS_EXTRACT_FROM_PYOBJECT_CHECK_NUMPY(long double)
-                    ALPS_NGS_EXTRACT_FROM_PYOBJECT_CHECK_NUMPY(std::complex<float>)
-                    ALPS_NGS_EXTRACT_FROM_PYOBJECT_CHECK_NUMPY(std::complex<double>)
-                    ALPS_NGS_EXTRACT_FROM_PYOBJECT_CHECK_NUMPY(std::complex<long double>)
+                    ALPS_NGS_FOREACH_NATIVE_NUMPY_TYPE(ALPS_NGS_EXTRACT_FROM_PYOBJECT_CHECK_NUMPY)
                     #undef ALPS_NGS_EXTRACT_FROM_PYOBJECT_CHECK_NUMPY
                     else
                         throw std::runtime_error("Unknown numpy element type: " + cast<std::string>(PyArray_DESCR(data.ptr())->type_num) + ALPS_STACKTRACE);

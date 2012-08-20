@@ -85,28 +85,15 @@ namespace alps {
             ALPS_NGS_FOREACH_NATIVE_HDF5_TYPE(ALPS_NGS_HDF5_IS_DATATYPE_CALLER)
             #undef ALPS_NGS_HDF5_IS_DATATYPE_CALLER
 
-            // TODO: remove!
-            ALPS_DECL void set_ignore_python_destruct_errors(bool);
-
             template<typename A> struct archive_proxy {
 
                 explicit archive_proxy(std::string const & path, A & ar)
                     : path_(path), ar_(ar)
                 {}
 
-                template<typename T> archive_proxy & operator=(T const & value) {
-                    ar_ << make_pvp(path_, value);
-                    return *this;
-                }
-
-                template<typename T> archive_proxy & operator<<(T const & value) {
-                    return *this = value;
-                }
-                
-                template <typename T> archive_proxy & operator>> (T const & value) {
-                    ar_ >> make_pvp(path_, value);
-                    return *this;
-                }
+                template<typename T> archive_proxy & operator=(T const & value);
+                template<typename T> archive_proxy & operator<<(T const & value);
+                template <typename T> archive_proxy & operator>> (T & value);
 
                 std::string path_;
                 A ar_;
@@ -443,6 +430,25 @@ namespace alps {
         return hdf5::detail::make_pvp_proxy<std::string const>(path, value);
     }
 
+    namespace hdf5 {
+        namespace detail {
+
+            template<typename A> template<typename T> archive_proxy<A> & archive_proxy<A>::operator=(T const & value) {
+                ar_ << make_pvp(path_, value);
+                return *this;
+            }
+
+            template<typename A> template<typename T> archive_proxy<A> & archive_proxy<A>::operator<<(T const & value) {
+                return *this = value;
+            }
+            
+            template<typename A> template <typename T> archive_proxy<A> & archive_proxy<A>::operator>> (T & value) {
+                ar_ >> make_pvp(path_, value);
+                return *this;
+            }
+
+        }
+    }
 }
 
 #endif

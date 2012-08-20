@@ -1,11 +1,10 @@
-
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                                 *
  * ALPS Project: Algorithms and Libraries for Physics Simulations                  *
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2011 by Lukas Gamper <gamperl@gmail.com>                   *
+ * Copyright (C) 2010 - 2012 by Lukas Gamper <gamperl@gmail.com>                   *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -47,7 +46,7 @@ namespace alps {
                 , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
             ) {                                                                                                                                                 \
                 for(typename std::map<K, T, C, A>::const_iterator it = value.begin(); it != value.end(); ++it)                                                  \
-                    save(ar, ar.complete_path(path) + "/" + cast<std::string>(it->first), it->second);                                                       \
+                    save(ar, ar.complete_path(path) + "/" + encode_segment(cast<std::string>(it->first)), it->second);                                          \
             }
         ALPS_NGS_HDF5_MAP_SAVE(archive)
         #ifdef ALPS_HDF5_HAVE_DEPRECATED
@@ -65,7 +64,7 @@ namespace alps {
             ) {                                                                                                                                                 \
                 std::vector<std::string> children = ar.list_children(path);                                                                                     \
                 for (typename std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)                                       \
-                    load(ar, path + "/" + *it, value[cast<K>(*it)]);                                                                                         \
+                    load(ar, path + "/" +  *it, value[decode_segment(cast<K>(*it))]);                                                                           \
             }
         ALPS_NGS_HDF5_MAP_LOAD(archive)
         #ifdef ALPS_HDF5_HAVE_DEPRECATED

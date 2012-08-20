@@ -32,7 +32,8 @@ set(ALPS_SOURCES
     parser/parser.C parser/xmlattributes.C parser/xmlhandler.C parser/xmlparser.C
     parser/xmlstream.C parser/xslt_path.C
     #hdf5
-    ngs/lib/hdf5.cpp ngs/lib/signal.cpp ngs/lib/hdf5/deprecated.cpp ngs/lib/stacktrace.cpp
+    ngs/lib/hdf5.cpp ngs/lib/signal.cpp ngs/lib/hdf5/deprecated.cpp
+    ngs/lib/stacktrace.cpp
     # random
     random/rngfactory.C random/parallel/get_prime.cpp random/parallel/primelist_64.cpp
     # scheduler
@@ -57,7 +58,7 @@ if (ALPS_BUILD_NGS)
     ngs/lib/mcresult.cpp ngs/lib/mcresults.cpp ngs/lib/mcobservables.cpp ngs/lib/mcobservable.cpp
   )
   if (ALPS_BUILD_PYTHON)
-    set(ALPS_SOURCES ${ALPS_SOURCES} ngs/lib/get_numpy_type.cpp)
+    set(ALPS_SOURCES ${ALPS_SOURCES} ngs/lib/get_numpy_type.cpp ngs/lib/hdf5/python.cpp)
   endif (ALPS_BUILD_PYTHON)
 endif (ALPS_BUILD_NGS)
 
