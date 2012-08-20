@@ -61,23 +61,22 @@ def read(ar):
         raise Exception('invalid type')
     if i != 9 or d - 9.123 > 0.001 or s != "test" or np.any(n != np.array([1, 2, 3])):
         raise Exception('invalid scalar value')
+        
     if np.any(x[0] != np.array([1 + 1j,2 +2j])) or np.any(x[1] != np.array([3 + 3j,4 + 4j])):
         raise Exception('invalid array value')
 
 try:
-    oar = h5.archive("test.h5", 1) # TODO: this is ugly, remove the number
+    oar = h5.oArchive("test.h5")
     write(oar)
     del oar
     
-    iar = h5.archive("test.h5", 0) # TODO: this is ugly, remove the number
+    iar = h5.iArchive("test.h5")
     if iar.is_complex("/int") or not iar.is_complex("/cplx") or not iar.extent("/np/cplx"):
         raise Exception('invalid complex detection')
     read(iar)
     del iar
     
-    h5.ignoreHDF5DestroyErrors();
-    
-    ar = h5.archive("test.h5", 1) # TODO: this is ugly, remove the number
+    ar = h5.oArchive("test.h5")
     write(ar)
     read(ar)
     del ar

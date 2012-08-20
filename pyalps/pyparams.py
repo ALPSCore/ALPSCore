@@ -47,7 +47,7 @@ print p.keys(), p.values()
 
 for key in p.keys():
     print key
-    oar.write('parameters/' + key, p[key])
+    oar['parameters/' + key] = p[key]
 del oar
 
 iar = ngs.h5ar('parms2.h5', 'r')

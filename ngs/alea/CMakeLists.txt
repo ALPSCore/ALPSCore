@@ -8,29 +8,29 @@ include_directories(${PROJECT_BINARY_DIR}/src)
 include_directories(${PROJECT_SOURCE_DIR}/src)
 include_directories(${Boost_ROOT_DIR})
 
-FOREACH (name   ngs_alea_count_test_compile 
-                ngs_alea_count_test_runtime 
-                ngs_alea_ctor_test_compile  
+#FOREACH (name   ngs_alea_count_test_compile
+#                ngs_alea_count_test_runtime
+#                ngs_alea_ctor_test_compile
 #                ngs_alea_ctor_test_runtime  
 #                ngs_alea_error_test_compile  
 #                ngs_alea_error_test_runtime  
-                ngs_alea_fix_size_test_compile  
-                ngs_alea_fix_size_test_runtime  
-                ngs_alea_max_num_test_compile  
-                ngs_alea_max_num_test_runtime  
-                ngs_alea_log_test_compile  
-                ngs_alea_log_test_runtime  
-                ngs_alea_mean_test_runtime  
-                ngs_alea_mean_test_compile  
+#                ngs_alea_fix_size_test_compile
+#                ngs_alea_fix_size_test_runtime
+#                ngs_alea_max_num_test_compile
+#                ngs_alea_max_num_test_runtime
+#                ngs_alea_log_test_compile
+#                ngs_alea_log_test_runtime
+#                ngs_alea_mean_test_runtime
+#                ngs_alea_mean_test_compile
 #                ngs_alea_stream_test_compile  
 #                ngs_alea_stream_test_runtime  
 #                ngs_alea_value_type_test  
 #                ngs_alea_weight_type_test  
 #                ngs_alea_wrapper_test_compile  
 #                ngs_alea_wrapper_test_runtime 
-)
-    add_executable(${name} ${name}.cpp)
-    target_link_libraries(${name} alps)
-    target_link_libraries(${name} boost_unit_test_framework)
-    add_alps_test(${name})
-ENDFOREACH(name)
+#)
+#    add_executable(${name} ${name}.cpp)
+#    target_link_libraries(${name} alps)
+#    target_link_libraries(${name} boost_unit_test_framework)
+#    add_alps_test(${name})
+#ENDFOREACH(name)
