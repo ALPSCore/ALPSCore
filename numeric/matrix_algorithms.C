@@ -80,16 +80,17 @@ struct ValidateHelper{
     void static validate(matrix<T> const & M1, matrix<T> const & M2){
         BOOST_CHECK_EQUAL(num_rows(M1),num_rows(M2));
         BOOST_CHECK_EQUAL(num_cols(M1),num_cols(M2));
-        for(int i(0); i< num_rows(M1); ++i) 
-            for(int j(0); j< num_cols(M1); ++j)  
+        for(int j(0); j< num_cols(M1); ++j)  
+            for(int i(0); i< num_rows(M1); ++i)
                 BOOST_CHECK_CLOSE(M1(i,j),M2(i,j),1e-6); 
     };
-
     void static validateid(matrix<T> const & M1){
-        int m =  num_rows(M1) < num_cols(M1) ? num_rows(M1) : num_cols(M1); // thin QR or LQ Q is not necessarily square 
-        for(int i(0); i< m; ++i){ 
-            BOOST_CHECK_CLOSE(M1(i,i),1.0,1e-6); 
-        }
+        for(int j(0); j< num_cols(M1); ++j)
+            for(int i(0); i< num_rows(M1); ++i)         
+                if (i==j)
+                    BOOST_CHECK_CLOSE(M1(i,j),1.0,1e-6);  // checks relative difference
+                else
+                    BOOST_CHECK_SMALL(M1(i,j),1e-6);      // checks absolute smallness
     };
 };
 
@@ -97,19 +98,22 @@ template<typename T>
 struct ValidateHelper<std::complex<T> > {
     void static validate(matrix<std::complex<T> > const & M1,matrix<std::complex<T> > const & M2){
         BOOST_CHECK_EQUAL(num_rows(M1),num_rows(M2));
-        BOOST_CHECK_EQUAL(num_cols(M1),num_cols(M2));
-        for(int i(0); i< num_rows(M1); ++i) 
-            for(int j(0); j< num_cols(M1); ++j){ 
+        BOOST_CHECK_EQUAL(num_cols(M1),num_cols(M2));        
+        for(int j(0); j< num_cols(M1); ++j)
+            for(int i(0); i< num_rows(M1); ++i){
                 BOOST_CHECK_CLOSE(M1(i,j).real(),M2(i,j).real(),1e-6); 
                 BOOST_CHECK_CLOSE(M1(i,j).imag(),M2(i,j).imag(),1e-6); 
             }
     }
-    void static validateid(matrix<std::complex<T> > const & M1){
-        int m =  num_rows(M1) < num_cols(M1) ? num_rows(M1) : num_cols(M1); // thin QR or LQ Q is not necessarily square 
-        for(int i(0); i< m; ++i){ 
-            BOOST_CHECK_CLOSE(M1(i,i).real(),1,1e-6); 
-            BOOST_CHECK_CLOSE(M1(i,i).imag(),0,1e-6); 
-        }
+    void static validateid(matrix<std::complex<T> > const & M1){ 
+        for(int j(0); j< num_cols(M1); ++j)
+            for(int i(0); i< num_rows(M1); ++i){
+                if (i==j)
+                    BOOST_CHECK_CLOSE(M1(i,j).real(),1.0,1e-6);
+                else
+                    BOOST_CHECK_SMALL(M1(i,j).real(),1e-6);
+                BOOST_CHECK_SMALL(M1(i,j).imag(),1e-6); 
+            }
     }
 };
 
@@ -258,7 +262,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(QR_test, T, test_types)
     ValidateHelper<typename T::value_type>::validate(M,D);
 }
 
-// second test we check Q is an Id matrix, cautions we implemented the thin QR so onli Qt*Q is equal to one
+// second test we check Q is an Id matrix, cautions we implemented the thin QR so only Qt*Q is equal to one
 BOOST_AUTO_TEST_CASE_TEMPLATE(QR_Q_ID_test, T, test_types)
 {
     typedef matrix<typename T::value_type> Matrix;
@@ -270,7 +274,20 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(QR_Q_ID_test, T, test_types)
     InitHelper<typename T::value_type>::init(M);
     qr(M,Q,R);
 
-    Matrix D(adjoint(Q)*Q); //complex needs conjusgate
+    Matrix D(adjoint(Q)*Q); //complex needs conjugate
     ValidateHelper<typename T::value_type>::validateid(D);
 }
 
+/*---------------------------------------------------------------------------- Inverse TESTS */
+BOOST_AUTO_TEST_CASE_TEMPLATE(Inverse_test, T, test_types)
+{
+    typedef matrix<typename T::value_type> Matrix;
+
+    Matrix M(T::valuex,T::valuex);
+
+    InitHelper<typename T::value_type>::init(M);
+    Matrix invM = inverse(M);
+
+    Matrix D(M*invM);
+    ValidateHelper<typename T::value_type>::validateid(D);
+}
