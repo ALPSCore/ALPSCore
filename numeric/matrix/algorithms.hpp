@@ -45,6 +45,8 @@
 #include <boost/numeric/bindings/lapack/computational/orglq.hpp>
 #include <boost/numeric/bindings/lapack/computational/ungqr.hpp>
 #include <boost/numeric/bindings/lapack/computational/unglq.hpp>
+#include <boost/numeric/bindings/lapack/computational/getrf.hpp>
+#include <boost/numeric/bindings/lapack/computational/getri.hpp>
 #include <boost/numeric/bindings/std/vector.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/bind.hpp>
@@ -106,6 +108,22 @@ namespace alps {
         Matrix identity_matrix(typename Matrix::size_type size)
         {
             return Matrix::identity_matrix(size);
+        }
+        
+        template<class Matrix>
+        Matrix inverse(Matrix M)
+        {
+            std::vector<int> ipiv(num_rows(M));
+    
+            int info = boost::numeric::bindings::lapack::getrf(M,ipiv);
+            if (info != 0)
+              throw std::runtime_error("Error in GETRF !");
+    
+            info = boost::numeric::bindings::lapack::getri(M,ipiv);
+            if (info != 0)
+              throw std::runtime_error("Error in GETRI !");
+    
+            return M;
         }
 
         template<class Matrix>
