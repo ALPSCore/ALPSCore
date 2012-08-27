@@ -42,8 +42,8 @@ int main() {
   int count = 100;
   int size = 10000;
   
-  std::string const xdr_filename = "test.dump";
-  std::string const hdf5_filename = "test.h5";
+  std::string const xdr_filename = "dumpbench.dump";
+  std::string const hdf5_filename = "dumpbench.h5";
   if (boost::filesystem::exists(boost::filesystem::path(xdr_filename)))
     boost::filesystem::remove(boost::filesystem::path(xdr_filename));
   if (boost::filesystem::exists(boost::filesystem::path(hdf5_filename)))

@@ -28,7 +28,7 @@
 import numpy as np
 import pyalps.ngs as ngs
 
-ar = ngs.h5ar('test.h5', 'w')
+ar = ngs.h5ar('pyngs.h5', 'w')
 a = np.array([1, 2, 3]);
 b = np.array([1.1, 2.0, 3.5]);
 c = np.array([1.1 + 1j, 2.0j, 3.5]);
@@ -55,7 +55,7 @@ ar["/numpylist2"] = [np.arange(5), np.arange(10)]
 
 del ar
 
-ar = ngs.h5ar('test.h5', 'r')
+ar = ngs.h5ar('pyngs.h5', 'r')
 
 l1 = ar["/list"]
 l2 = ar["/list2"]
