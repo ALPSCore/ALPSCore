@@ -79,8 +79,9 @@ option::option(int argc, char** argv)
     po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
     po::notify(vm);
   }
-  catch (...) {
+  catch (std::exception& e) {
     valid = false;
+    std::cerr << e.what() << std::endl;
     return;
   }
 
