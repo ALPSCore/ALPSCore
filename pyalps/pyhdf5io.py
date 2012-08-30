@@ -57,6 +57,7 @@ del ar
 
 ar = ngs.h5ar('pyngs.h5', 'r')
 
+childs = ar.list_children('/')
 l1 = ar["/list"]
 l2 = ar["/list2"]
 d1 = ar["/dict"]
@@ -76,6 +77,7 @@ i2 = ar["/inhomogenious2"]
 nl1 = ar["/numpylist1"]
 nl2 = ar["/numpylist2"]
 
+print len(childs)
 print(l1, l2)
 print(d1)
 print(n1, n2, n3)

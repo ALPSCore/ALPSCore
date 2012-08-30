@@ -46,13 +46,16 @@ def write(ar):
     ar.delete_data("/my/double")
 
 def read(ar):
+    childs = ar.list_children('/')
     i = ar.read("/int")
     d = ar.read("/double")
     c = ar.read("/cplx")
     s = ar.read("/str")
     n = ar.read("/np/int")
     x = ar.read("/np/cplx")
-
+    
+    if len(childs) != 7:
+        raise Exception('invalid length of \'/\'')
     if len(ar.extent("/int")) != 1 or ar.extent("/int")[0] != 1 or len(ar.extent("/cplx")) != 1 or ar.extent("/cplx")[0] != 1:
         raise Exception('invalid scalar extent')
     if len(ar.extent("/np/int")) != 1 or ar.extent("/cplx")[0] != 1 or len(ar.extent("/np/cplx")) != 2 or ar.extent("/np/cplx")[0] != 2 or ar.extent("/np/cplx")[1] != 2:
