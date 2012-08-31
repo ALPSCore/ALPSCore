@@ -43,10 +43,7 @@ set(ALPS_SOURCES
     scheduler/remote_task.C scheduler/remote_worker.C scheduler/scheduler.C
     scheduler/serial_scheduler.C scheduler/signal.C scheduler/single_scheduler.C
     scheduler/slave_task.C scheduler/task.C scheduler/worker.C scheduler/workertask.C
-)
-
-if (ALPS_BUILD_NGS)
-  set(ALPS_SOURCES ${ALPS_SOURCES} 
+    # ngs sources
     ngs/lib/callback.cpp ngs/lib/api.cpp
     # alea
     # parameters
@@ -60,7 +57,6 @@ if (ALPS_BUILD_NGS)
   if (ALPS_BUILD_PYTHON)
     set(ALPS_SOURCES ${ALPS_SOURCES} ngs/lib/get_numpy_type.cpp ngs/lib/hdf5/python.cpp)
   endif (ALPS_BUILD_PYTHON)
-endif (ALPS_BUILD_NGS)
 
 if (NOT ALPS_FOR_VISTRAILS)
   set(ALPS_SOURCES ${ALPS_SOURCES} 
