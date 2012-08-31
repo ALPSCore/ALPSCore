@@ -73,10 +73,6 @@ namespace alps {
 #include <alps/ngs/hdf5/ublas/matrix.hpp>
 #include <alps/ngs/hdf5/ublas/vector.hpp>
 
-#ifdef ALPS_HAVE_PYTHON
-    #include <alps/ngs/hdf5/python.hpp>
-#endif
-
 namespace alps {
     namespace hdf5 {
 
