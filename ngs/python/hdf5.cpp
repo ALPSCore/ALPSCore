@@ -53,6 +53,21 @@
 namespace alps {
     namespace detail {
 
+        struct std_string_to_python {
+            static PyObject* convert(std::string const & value) {
+                return boost::python::incref(boost::python::str(value).ptr());
+            }
+        };
+
+        struct std_vector_string_to_python {
+            static PyObject* convert(std::vector<std::string> const & value) {
+                boost::python::list result;
+                for (std::vector<std::string>::const_iterator it = value.begin(); it != value.end(); ++it)
+                    result.append(boost::python::str(*it));
+                return boost::python::incref(result.ptr());
+            }
+        };
+
         boost::python::str python_hdf5_get_filename(alps::hdf5::archive & ar) {
             return boost::python::str(ar.get_filename());
         }
@@ -86,6 +101,17 @@ namespace alps {
 }
 
 BOOST_PYTHON_MODULE(pyngshdf5_c) {
+
+    // TODO: move to ownl cpp file and include everywhere
+    boost::python::to_python_converter<
+      std::string,
+      alps::detail::std_string_to_python
+    >();
+
+    boost::python::to_python_converter<
+        std::vector<std::string>,
+        alps::detail::std_vector_string_to_python
+    >();
 
     boost::python::class_<alps::hdf5::archive>(
           "hdf5_archive_impl",
