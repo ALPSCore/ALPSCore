@@ -374,7 +374,7 @@ namespace alps {
                         out << short_print(mean(), 6) << " +/- "
                             << short_print(error(), 3);
                         if(tau_opt_)
-                            out << "; tau = " << (alps::numeric::is_nonzero<2>(error()) ? short_print(*tau_opt_, 3) : 0);
+                            out << "; tau = " << short_print((alps::numeric::is_nonzero<2>(error()) ? *tau_opt_ : 0), 3);
                         out << std::endl;
                     }
                 }
