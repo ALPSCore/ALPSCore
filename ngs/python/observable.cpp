@@ -33,7 +33,7 @@
 #include <alps/ngs/mcobservable.hpp>
 
 #include <alps/ngs/boost_python.hpp>
-#include <alps/ngs/detail/numpy_import.hpp>
+#include <alps/ngs/detail/numpy_import.ipp>
 
 #include <valarray>
 

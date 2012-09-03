@@ -44,7 +44,7 @@ set(ALPS_SOURCES
     scheduler/serial_scheduler.C scheduler/signal.C scheduler/single_scheduler.C
     scheduler/slave_task.C scheduler/task.C scheduler/worker.C scheduler/workertask.C
     # ngs sources
-    ngs/lib/callback.cpp ngs/lib/api.cpp
+    ngs/lib/callback.cpp ngs/lib/api.cpp ngs/lib/short_print.cpp
     # alea
     # parameters
     ngs/lib/paramvalue.cpp ngs/lib/paramproxy.cpp ngs/lib/params.cpp

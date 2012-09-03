@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2011 by Lukas Gamper <gamperl@gmail.com>                   *
+ * Copyright (C) 2010 - 2012 by Lukas Gamper <gamperl@gmail.com>                   *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -25,47 +25,27 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_SHORT_PRINT_HPP
-#define ALPS_NGS_SHORT_PRINT_HPP
-
-#include <vector>
-#include <ostream>
+#include <alps/ngs/short_print.hpp>
 
 namespace alps {
-    namespace detail {
-        template<typename T> struct short_print_proxy {
-            public:
-                explicit short_print_proxy(T const & v, std::size_t p): value(v), precision(p) {};
-                short_print_proxy(short_print_proxy<T> const & rhs): value(rhs.value) {};
-                T const & value;
-                std::size_t precision;
-        };
+    std::ostream & operator<<(std::ostream & os, detail::short_print_proxy<float> const & v) {
+        std::streamsize precision = os.precision(v.precision);
+        os << v.value;
+        os.precision(precision);
+        return os;
+    }
+    
+    std::ostream & operator<<(std::ostream & os, detail::short_print_proxy<double> const & v) {
+        std::streamsize precision = os.precision(v.precision);
+        os << v.value;
+        os.precision(precision);
+        return os;
     }
 
-    template<typename T> detail::short_print_proxy<T const> short_print(T const & v, std::size_t p = 6) {
-        return detail::short_print_proxy<T const>(v, p);
-    }
-
-    template <typename T> std::ostream & operator<<(std::ostream & os, detail::short_print_proxy<T> const & v) {
-        return os << v.value;
-    }
-
-    std::ostream & operator<<(std::ostream & os, detail::short_print_proxy<float> const & v);
-    std::ostream & operator<<(std::ostream & os, detail::short_print_proxy<double> const & v);
-    std::ostream & operator<<(std::ostream & os, detail::short_print_proxy<long double> const & v);
-
-    template <typename T> std::ostream & operator<<(std::ostream & os, detail::short_print_proxy<std::vector<T> const> const & v) {
-        switch (v.value.size()) {
-            case 0: 
-                return os << "[]";
-            case 1: 
-                return os << "[" << short_print(v.value.front()) << "]";
-            case 2: 
-                return os << "[" << short_print(v.value.front()) << "," << short_print(v.value.back()) << "]";
-            default: 
-                return os << "[" << short_print(v.value.front()) << ",.." << short_print(v.value.size()) << "..," << short_print(v.value.back()) << "]";
-        }
+    std::ostream & operator<<(std::ostream & os, detail::short_print_proxy<long double> const & v) {
+        std::streamsize precision = os.precision(v.precision);
+        os << v.value;
+        os.precision(precision);
+        return os;
     }
 }
-
-#endif

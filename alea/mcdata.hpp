@@ -36,6 +36,8 @@
 #ifndef ALPS_ALEA_MCDATA_HPP
 #define ALPS_ALEA_MCDATA_HPP
 
+#include <alps/ngs/short_print.hpp>
+
 #include <alps/config.h>
 #include <alps/alea/nan.h>
 #include <alps/parser/parser.h>
@@ -365,30 +367,16 @@ namespace alps {
                     collect_bins(( values_.size() - 1 ) / bin_number + 1 );
                 }
 
-                void output(std::ostream& out, boost::mpl::true_) const {
+                void output(std::ostream& out) const {
                     if(count() == 0)
                         out << "no measurements" << std::endl;
                     else {
-                        out << std::setprecision(6) << alps::numeric::round<2>(mean()) << " +/- "
-                            << std::setprecision(3) << alps::numeric::round<2>(error());
+                        out << short_print(mean(), 6) << " +/- "
+                            << short_print(error(), 3);
                         if(tau_opt_)
-                            out << std::setprecision(3) <<  "; tau = " << (alps::numeric::is_nonzero<2>(error()) ? *tau_opt_ : 0);
-                        out << std::setprecision(6) << std::endl;
+                            out << "; tau = " << (alps::numeric::is_nonzero<2>(error()) ? short_print(*tau_opt_, 3) : 0);
+                        out << std::endl;
                     }
-                }
-
-                void output(std::ostream& out, boost::mpl::false_) const {
-                    if(count() == 0)
-                        out << "no measurements" << std::endl;
-                    else
-                        for (typename alps::slice_index<result_type>::type it= slices(mean_).first; it != slices(mean_).second; ++it) {
-                            out << "Entry[" << slice_name(mean_, it) << "]: "
-                                << alps::numeric::round<2>(slice_value(mean_, it)) << " +/- "
-                                << alps::numeric::round<2>(slice_value(error_, it));
-                            if(tau_opt_)
-                                out << "; tau = " << (alps::numeric::is_nonzero<2>(slice_value(error_, it)) ? slice_value(*tau_opt_, it) : 0);
-                            out << std::endl;
-                        }
                 }
 
                 void save(hdf5::archive & ar) const {
@@ -856,7 +844,7 @@ namespace alps {
         };
 
         template <typename T> inline std::ostream& operator<<(std::ostream & out, mcdata<T> const & obs) {
-            obs.output(out, typename boost::is_scalar<T>::type());
+            obs.output(out);
             return out;
         }
 

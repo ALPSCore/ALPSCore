@@ -271,9 +271,9 @@ namespace alps {
                         ;
                     else {
                         os 
-                            << std::fixed << std::setprecision(5) << short_print(alea::mcdata<T>::mean()) << "(" << count() << ") "
-                            << "+/-" << short_print(alea::mcdata<T>::error()) << " "
-                            << short_print(alea::mcdata<T>::bins()) 
+                            << short_print(alea::mcdata<T>::mean(), 6) << "(" << count() << ") "
+                            << "+/-" << short_print(alea::mcdata<T>::error(), 3) << " "
+                            << short_print(alea::mcdata<T>::bins(), 4) 
                             << "#" << alea::mcdata<T>::bin_size()
                         ;
                     }
