@@ -113,7 +113,7 @@ HamiltonianDescriptor<I>::HamiltonianDescriptor(const XMLTag& intag, std::istrea
     }
     tag = parse_tag(is);
     if (tag.name=="HAMILTONIANOPERATOR") {
-      operator_name_==tag.attributes["ref"];
+      operator_name_=tag.attributes["ref"];
       if (ops.find(operator_name_)==ops.end())
         boost::throw_exception(std::runtime_error("unknown operator: " + operator_name_ + " in <HAMILTONIAN>"));
       static_cast<GlobalOperator&>(*this) = ops.find(operator_name_)->second;
