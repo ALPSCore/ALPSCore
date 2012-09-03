@@ -60,6 +60,7 @@ IF (ALPS_BUILD_HDF5_TESTS)
         "std::pair<std::vector<cast_type<int, std::string> >, std::pair<double, int> >" "std::pair<std::pair<std::vector<enum_type> *, std::vector<std::size_t> >, enum_type>"
         "alps::numeric::matrix<unsigned int>" alps::numeric::matrix<float> alps::numeric::matrix<double> "alps::numeric::matrix<std::complex<float> >" "alps::numeric::matrix<std::complex<double> >"
         "std::vector<alps::numeric::matrix<unsigned int> >" "std::vector<alps::numeric::matrix<float> >" "std::vector<alps::numeric::matrix<double> >" " std::vector<alps::numeric::matrix<std::complex<float> > >" "std::vector<alps::numeric::matrix<std::complex<double> > >"
+# TODO: fix this
 #        "alps::numeric::matrix<std::vector<double> >" "alps::numeric::matrix<std::vector<std::complex<float> >" "alps::numeric::matrix<alps::numeric::matrix<int> >"
 #        "alps::numeric::matrix<alps::numeric::matrix<double> >" "alps::numeric::matrix<alps::numeric::matrix<std::complex<double> > >"
         "std::vector<std::size_t, std::allocator<std::size_t> >" "std::vector<short, std::allocator<short> >" "std::vector<int, std::allocator<int> >" "std::vector<long, std::allocator<long> >" 
@@ -71,14 +72,18 @@ IF (ALPS_BUILD_HDF5_TESTS)
         "boost::multi_array<double, 2>" "boost::multi_array<int, 2>" "boost::multi_array<std::complex<double>, 2>" "boost::multi_array<std::string, 2>"
         "boost::multi_array<double, 3>" "boost::multi_array<int, 3>" "boost::multi_array<std::complex<double>, 3>" "boost::multi_array<std::string, 3>"
         "std::vector<boost::multi_array<double, 2> >" "std::vector<boost::multi_array<double, 3> >" "std::vector<boost::multi_array<double, 4> >" 
+# TODO: fix this
 #           "std::pair<boost::multi_array<std::complex<double>, 3> *, std::vector<std::size_t> >" "boost::multi_array<std::complex<double>, 1> *"
         "alps::multi_array<double, 1>" "alps::multi_array<int, 1>" "alps::multi_array<std::complex<double>, 1>" "alps::multi_array<std::string, 1>"
         "alps::multi_array<double, 2>" "alps::multi_array<int, 2>" "alps::multi_array<std::complex<double>, 2>" "alps::multi_array<std::string, 2>"
         "alps::multi_array<double, 3>" "alps::multi_array<int, 3>" "alps::multi_array<std::complex<double>, 3>" "alps::multi_array<std::string, 3>"
         "std::vector<alps::multi_array<double, 2> >" "std::vector<alps::multi_array<double, 3> >" "std::vector<alps::multi_array<double, 4> >" 
+# TODO: fix this
 #           "std::pair<alps::multi_array<std::complex<double>, 3> *, std::vector<std::size_t> >" "alps::multi_array<std::complex<double>, 1> *"
-        "boost::array<int, 20>" "boost::array<long double, 20>" "boost::array<float, 20>" "boost::array<unsigned long long, 20>"
-        "std::vector<boost::array<int, 20> >" "boost::array<std::vector<int>, 20>" "std::vector<boost::array<std::vector<int>, 20> >"
+        "boost::array<int, 20>" "boost::array<long double, 20>" "boost::array<float, 20>" "boost::array<unsigned long long, 20>" 
+        "boost::array<boost::array<std::complex<double>, 20>, 20>"
+# TODO: fix this
+#        "std::vector<boost::array<int, 4> >" "boost::array<std::vector<int>, 4>" "std::vector<boost::array<std::vector<int>, 4> >"
         "boost::tuple<int, double, float, std::complex<double> >" "std::vector<boost::tuple<char, bool, long long> >"
     )
     
@@ -106,6 +111,7 @@ IF (ALPS_BUILD_HDF5_TESTS)
         STRING(REGEX REPLACE "_boost_shared_array_" "_shrdarr_" test_name ${test_name})
         STRING(REGEX REPLACE "_boost_int" "_bint" test_name ${test_name})
         STRING(REGEX REPLACE "_boost_uint" "_buint" test_name ${test_name})
+        STRING(REGEX REPLACE "_boost_array" "_barr" test_name ${test_name})
         STRING(REGEX REPLACE "_userdefined_class_" "_usrcls_" test_name ${test_name})
         STRING(REGEX REPLACE "_pair_" "_pr_" test_name ${test_name})
 
