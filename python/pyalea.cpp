@@ -330,8 +330,8 @@ ALPS_PY_EXPORT_SIMPLEOBSERVABLE(RealTimeSeriesObservable,timeseries_observable_d
 #define ALPS_MCANALYZE_EXPORT_SCALAR_AND_VECTOR(container_type, function_name_py, function_name_c, docstring)                           \
     ALPS_MCANALYZE_EXPORT_HELPER( < container_type < double > > , function_name_py, function_name_c , docstring)                        \
     ALPS_MCANALYZE_EXPORT_HELPER( < container_type < std::vector < double > > > , function_name_py, function_name_c , docstring)                                        
-//    ALPS_MCANALYZE_EXPORT_HELPER( < container_type < int > > , function_name_py, function_name_c , docstring)                         \
-    ALPS_MCANALYZE_EXPORT_HELPER( < container_type < std::vector < int > > > , function_name_py, function_name_c , docstring)                                        
+/*    ALPS_MCANALYZE_EXPORT_HELPER( < container_type < int > > , function_name_py, function_name_c , docstring)                         \
+    ALPS_MCANALYZE_EXPORT_HELPER( < container_type < std::vector < int > > > , function_name_py, function_name_c , docstring)*/
 
 #define ALPS_MCANALYZE_EXPORT_SCALAR_ONLY(container_type, function_name_py, function_name_c, docstring)                                 \
     ALPS_MCANALYZE_EXPORT_HELPER( < container_type < double > > , function_name_py, function_name_c , docstring)  
@@ -342,8 +342,8 @@ ALPS_PY_EXPORT_SIMPLEOBSERVABLE(RealTimeSeriesObservable,timeseries_observable_d
 #define ALPS_MCANALYZE_EXPORT_VALUETYPE_FUNCTION(function_name_py, function_name_c, docstring)                                          \
     ALPS_MCANALYZE_EXPORT_HELPER( < double > , function_name_py, function_name_c , docstring)                                           \
     ALPS_MCANALYZE_EXPORT_HELPER( < std::vector < double > > , function_name_py, function_name_c , docstring)
-//    ALPS_MCANALYZE_EXPORT_HELPER( < int > , function_name_py, function_name_c , docstring)                                            \
-    ALPS_MCANALYZE_EXPORT_HELPER( < std::vector < int > > , function_name_py, function_name_c , docstring)   
+/*    ALPS_MCANALYZE_EXPORT_HELPER( < int > , function_name_py, function_name_c , docstring)                                            \
+    ALPS_MCANALYZE_EXPORT_HELPER( < std::vector < int > > , function_name_py, function_name_c , docstring)*/
 
 
 #define ALPS_MCANALYZE_EXPORT_TIMESERIES_FUNCTION_SCALAR_AND_VECTOR(function_name_py, function_name_c, docstring)                       \

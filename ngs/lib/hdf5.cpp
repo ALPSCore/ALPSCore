@@ -393,8 +393,8 @@ namespace alps {
         }
 
         archive::archive(archive const & arg)
-            : context_(arg.context_)
-            , current_(arg.current_)
+            : current_(arg.current_)
+            , context_(arg.context_)
         {
             ++ref_cnt_[file_key(context_->filename_, context_->large_, context_->memory_)].second;
         }

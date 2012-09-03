@@ -37,8 +37,8 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graph_traits.hpp>
 #include <boost/any.hpp>
+#include <boost/version.hpp>
 #include <boost/mpl/if.hpp>
-
 
 #include <string>
 #include <vector>

@@ -152,24 +152,24 @@ namespace alps {
 
                 mcdata()
                     : count_(0)
-                    , mean_()
-                    , error_()
                     , binsize_(0)
                     , max_bin_number_(0)
                     , data_is_analyzed_(true)
                     , jacknife_bins_valid_(true)
                     , cannot_rebin_(false)
+                    , mean_()
+                    , error_()
                 {}
 
                 mcdata(result_type mean, result_type error = result_type())
                     : count_(1)
-                    , mean_(mean)
-                    , error_(error)
                     , binsize_(0)
                     , max_bin_number_(0)
                     , data_is_analyzed_(true)
                     , jacknife_bins_valid_(true)
                     , cannot_rebin_(false)
+                    , mean_(mean)
+                    , error_(error)
                 {}
 
                 #ifdef ALPS_HAVE_PYTHON
@@ -718,15 +718,15 @@ namespace alps {
                     , std::vector<value_type> const & values
                 )
                     : count_(count)
-                    , mean_(mean)
-                    , error_(error)
-                    , variance_opt_(variance_opt)
-                    , tau_opt_(tau_opt)
                     , binsize_(binsize)
                     , max_bin_number_(0)
                     , data_is_analyzed_(true)
                     , jacknife_bins_valid_(false)
                     , cannot_rebin_(false)
+                    , mean_(mean)
+                    , error_(error)
+                    , variance_opt_(variance_opt)
+                    , tau_opt_(tau_opt)
                     , values_(values)
                 {}
 

@@ -137,11 +137,12 @@ public:
       obs["Overall Histogram"] << bin2index(bin);
       if (direction_ == ascending) obs["Histogram of Ascending Walker"] << bin2index(bin);
     }
-    if (walk_range_.is_included(bin))
+    if (walk_range_.is_included(bin)) {
       if (measure_range_.is_included(bin))
         weight_[bin2index(bin)] *= factor;
       else
         weight_[bin2index(bin)] *= pow(factor, penalty_);
+    }
   }
   void measure(ObservableSet& obs, int bin) {
     if (measure_range_.is_included(bin))

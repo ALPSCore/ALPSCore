@@ -80,9 +80,9 @@ DiagTask<T,G>::DiagTask(const ProcessList& where , const boost::filesystem::path
     , graph_helper<G>(this->get_parameters())
     , model_helper<>(this->get_parameters())
     , MeasurementOperators(this->get_parameters())
-    , read_hdf5_(false)
     , print_vectors_(this->get_parameters().value_or_default("PRINT_EIGENVECTORS",false))
-{ 
+    , read_hdf5_(false)
+{
   if (!delay_construct)
     this->construct();
 }

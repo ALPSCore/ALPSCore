@@ -43,8 +43,8 @@ namespace alps {
             public:
 
                 paramiterator(paramiterator const & arg)
-                    : it(arg.it)
-                    , params(arg.params)
+                    : params(arg.params)
+                    , it(arg.it)
                 {}
 
                 paramiterator(

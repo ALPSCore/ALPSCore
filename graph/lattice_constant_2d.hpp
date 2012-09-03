@@ -109,6 +109,7 @@ namespace alps {
                             } else if((mem[N * key] & mask) == offset + 1)
                                 if ((data[0] & ~mask) == (mem[N * key] & ~mask) && data[1] == mem[N * key + 1])
                                     return false;
+                        return false;
                     }
 
                     std::size_t inline size() {
@@ -546,7 +547,7 @@ namespace alps {
                               typename boost::graph_traits<Subgraph>::vertex_descriptor
                             , typename boost::graph_traits<Graph>::vertex_descriptor
                         > > stack;
-                        boost::array<boost::uint16_t, 5> pinning_proto = { num_vertices(G), 0, 0, 0, 0 };
+                        boost::array<boost::uint16_t, 5> pinning_proto = {{ num_vertices(G), 0, 0, 0, 0 }};
                         std::vector<boost::array<boost::uint16_t, 5> > pinning(num_vertices(S), pinning_proto);
                         boost::uint32_t placed = 0x01ul << it->front();
                         std::vector<typename boost::graph_traits<Subgraph>::vertex_descriptor> s_stack(1, it->front());
