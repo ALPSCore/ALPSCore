@@ -413,7 +413,7 @@ namespace alps {
                     throw std::runtime_error("Unsupported type." + ALPS_STACKTRACE);
             } else if (ar.is_datatype<std::string>(path)) {
                 value = boost::python::list();
-                load(ar, path, boost::python::extract<boost::python::list &>(value)(), chunk, offset);
+                load(ar, path, static_cast<boost::python::list &>(value), chunk, offset);
             } else {
                 boost::python::numeric::array array(boost::python::make_tuple());
                 load(ar, path, array, chunk, offset);
