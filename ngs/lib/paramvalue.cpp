@@ -95,7 +95,6 @@ namespace alps {
                 paramvalue_ostream(std::ostream & arg) : os(arg) {}
 
                 template <typename U> void operator()(U const & v) const {
-                    using alps::operator<<;
                     os << short_print(v);
                 }
                 

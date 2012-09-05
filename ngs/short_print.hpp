@@ -40,31 +40,31 @@ namespace alps {
                 T const & value;
                 std::size_t precision;
         };
+
+        template <typename T> std::ostream & operator<<(std::ostream & os, short_print_proxy<T> const & v) {
+            return os << v.value;
+        }
+
+        std::ostream & operator<<(std::ostream & os, short_print_proxy<float> const & v);
+        std::ostream & operator<<(std::ostream & os, short_print_proxy<double> const & v);
+        std::ostream & operator<<(std::ostream & os, short_print_proxy<long double> const & v);
+
+        template <typename T> std::ostream & operator<<(std::ostream & os, short_print_proxy<std::vector<T> const> const & v) {
+            switch (v.value.size()) {
+                case 0: 
+                    return os << "[]";
+                case 1: 
+                    return os << "[" << short_print(v.value.front()) << "]";
+                case 2: 
+                    return os << "[" << short_print(v.value.front()) << "," << short_print(v.value.back()) << "]";
+                default: 
+                    return os << "[" << short_print(v.value.front()) << ",.." << short_print(v.value.size()) << "..," << short_print(v.value.back()) << "]";
+            }
+        }
     }
 
     template<typename T> detail::short_print_proxy<T const> short_print(T const & v, std::size_t p = 6) {
         return detail::short_print_proxy<T const>(v, p);
-    }
-
-    template <typename T> std::ostream & operator<<(std::ostream & os, detail::short_print_proxy<T> const & v) {
-        return os << v.value;
-    }
-
-    std::ostream & operator<<(std::ostream & os, detail::short_print_proxy<float> const & v);
-    std::ostream & operator<<(std::ostream & os, detail::short_print_proxy<double> const & v);
-    std::ostream & operator<<(std::ostream & os, detail::short_print_proxy<long double> const & v);
-
-    template <typename T> std::ostream & operator<<(std::ostream & os, detail::short_print_proxy<std::vector<T> const> const & v) {
-        switch (v.value.size()) {
-            case 0: 
-                return os << "[]";
-            case 1: 
-                return os << "[" << short_print(v.value.front()) << "]";
-            case 2: 
-                return os << "[" << short_print(v.value.front()) << "," << short_print(v.value.back()) << "]";
-            default: 
-                return os << "[" << short_print(v.value.front()) << ",.." << short_print(v.value.size()) << "..," << short_print(v.value.back()) << "]";
-        }
     }
 }
 
