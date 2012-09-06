@@ -44,7 +44,14 @@ namespace alps {
         template <typename T> std::ostream & operator<<(std::ostream & os, short_print_proxy<T> const & v) {
             return os << v.value;
         }
+    }
 
+    template<typename T> detail::short_print_proxy<T const> short_print(T const & v, std::size_t p = 6) 
+    {
+        return detail::short_print_proxy<T const>(v, p);
+    }
+    
+    namespace detail {
         std::ostream & operator<<(std::ostream & os, short_print_proxy<float> const & v);
         std::ostream & operator<<(std::ostream & os, short_print_proxy<double> const & v);
         std::ostream & operator<<(std::ostream & os, short_print_proxy<long double> const & v);
@@ -61,10 +68,6 @@ namespace alps {
                     return os << "[" << short_print(v.value.front()) << ",.." << short_print(v.value.size()) << "..," << short_print(v.value.back()) << "]";
             }
         }
-    }
-
-    template<typename T> detail::short_print_proxy<T const> short_print(T const & v, std::size_t p = 6) {
-        return detail::short_print_proxy<T const>(v, p);
     }
 }
 
