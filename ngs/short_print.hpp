@@ -46,8 +46,7 @@ namespace alps {
         }
     }
 
-    template<typename T> detail::short_print_proxy<T const> short_print(T const & v, std::size_t p = 6) 
-    {
+    template<typename T> detail::short_print_proxy<T const> short_print(T const & v, std::size_t p = 6) {
         return detail::short_print_proxy<T const>(v, p);
     }
     
