@@ -59,5 +59,7 @@ int main()
   queue.push(alps::next_checkpoint(0, 0, 0, boost::posix_time::seconds(5)));
   queue.push(alps::next_checkpoint(0, 0, 0, boost::posix_time::seconds(1)));
   std::cerr << to_simple_string(queue.top().time) << std::endl;
+
+  return 0;
 }
 

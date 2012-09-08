@@ -65,7 +65,7 @@ try {
   }
   std::cout << dynamic_cast<alps::RealObservable&>(obs_3["obs"]).mean() << " +/- "
             << dynamic_cast<alps::RealObservable&>(obs_3["obs"]).error() << std::endl;
-
+  return 0;
 #ifndef BOOST_NO_EXCEPTIONS
 }
 catch (std::exception& exc) {

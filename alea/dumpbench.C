@@ -194,4 +194,5 @@ int main() {
     std::cerr << "Writing Vector to HDF5 Native    : " << 0.001 * (stop - start).total_milliseconds() << " sec\n";
   }
   boost::filesystem::remove(boost::filesystem::path(hdf5_filename));
+  return 0;
 }
