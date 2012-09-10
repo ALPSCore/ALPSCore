@@ -50,17 +50,17 @@ namespace alps {
                     bool next_homogenious;
                     std::vector<std::size_t> first_extent;
                     if (first_dtype == "list") {
-                        if (!is_vectorizable<boost::python::list>::apply(static_cast<boost::python::list const &>(value[0])))
+                        if (!is_vectorizable<boost::python::list>::apply(boost::python::extract<boost::python::list>(value[0])))
                             return false;
-                        first_extent = get_extent(static_cast<boost::python::list const &>(value[0]));
+                        first_extent = get_extent(boost::python::extract<boost::python::list>(value[0]));
                     } else if (first_dtype == "numpy.ndarray")
                         first_extent = get_extent(boost::python::extract<boost::python::numeric::array>(value[0]));
                     for(boost::python::ssize_t i = 0; i < size; ++i) {
                         std::string dtype = boost::python::object(value[i]).ptr()->ob_type->tp_name;
                         if (dtype == "list") {
-                            if (!is_vectorizable<boost::python::list>::apply(static_cast<boost::python::list const &>(value[0])))
+                            if (!is_vectorizable<boost::python::list>::apply(boost::python::extract<boost::python::list>(value[0])))
                                 return false;
-                            std::vector<std::size_t> extent = get_extent(static_cast<boost::python::list const &>(value[i]));
+                            std::vector<std::size_t> extent = get_extent(boost::python::extract<boost::python::list>(value[i]));
                             if (first_extent.size() != extent.size() || !equal(first_extent.begin(), first_extent.end(), extent.begin()))
                                 return false;
                         } else if (dtype == "numpy.ndarray") {
@@ -82,7 +82,7 @@ namespace alps {
                 std::vector<std::size_t> extent(1, len(value));
                 std::string first_dtype = boost::python::object(value[0]).ptr()->ob_type->tp_name;
                 if (first_dtype == "list") {
-                    std::vector<std::size_t> first_extent(get_extent(static_cast<boost::python::list const &>(value[0])));
+                    std::vector<std::size_t> first_extent(get_extent(boost::python::extract<boost::python::list>(value[0])));
                     copy(first_extent.begin(), first_extent.end(), back_inserter(extent));
                 } else if (first_dtype == "numpy.ndarray") {
                     std::vector<std::size_t> first_extent = get_extent(boost::python::extract<boost::python::numeric::array>(value[0]));
@@ -283,7 +283,7 @@ namespace alps {
                     , "numpy.uint16", "numpy.uint32", "numpy.uint64", "numpy.float32", "numpy.float64", "numpy.complex64", "numpy.complex128" };
                 std::string dtype = value.ptr()->ob_type->tp_name;
                 if (dtype == "list")
-                    return is_vectorizable<boost::python::list>::apply(static_cast<boost::python::list const &>(value));
+                    return is_vectorizable<boost::python::list>::apply(boost::python::extract<boost::python::list>(value));
                 else if (dtype == "numpy.ndarray")
                     return is_vectorizable<boost::python::numeric::array>::apply(boost::python::extract<boost::python::numeric::array>(value)());
                 return find(scalar_types, scalar_types + 19, dtype) < scalar_types + 19;
@@ -295,7 +295,7 @@ namespace alps {
                 if (!is_vectorizable<boost::python::object>::apply(value))
                     throw archive_error("no rectengual matrix" + ALPS_STACKTRACE);
                 if (dtype == "list")
-                    return get_extent(static_cast<boost::python::list const &>(value));
+                    return get_extent(boost::python::extract<boost::python::list>(value));
                 else if (dtype == "numpy.ndarray")
                     return get_extent(boost::python::extract<boost::python::numeric::array>(value)());
                 else
