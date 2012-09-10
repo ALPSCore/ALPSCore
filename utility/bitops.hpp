@@ -161,7 +161,7 @@ inline T ibset(T i, U p) { return i | (1 << p); }
 /// \param b the value of the bit to be set
 /// \return the integer i with the bit at position p set to to the specified value
 template <class T, class U, class V>
-inline T ibset(T i, U p, V b) { return i & (~(1 << p)) | ((b & 1) << p); }
+inline T ibset(T i, U p, V b) { return (i & (~(1 << p))) | ((b & 1) << p); }
 
 } // end namespace alps
 #endif // ALPS_UTILITY_BITOPS_HPP
