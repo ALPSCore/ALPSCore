@@ -39,7 +39,7 @@ int main()
 #ifndef BOOST_NO_EXCEPTIONS
 try {
 #endif
-  // std::cout << std::setprecision(10);
+  std::cout.precision(10);
 
   //DEFINE RANDOM NUMBER GENERATOR
   //------------------------------
