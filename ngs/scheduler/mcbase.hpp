@@ -34,6 +34,10 @@
 #include <alps/ngs/mcresults.hpp>
 #include <alps/ngs/mcobservables.hpp>
 
+#ifdef ALPS_HAVE_PYTHON
+    #include <alps/ngs/boost_python.hpp>
+#endif
+
 #include <alps/random/mersenne_twister.hpp>
 
 #include <boost/chrono.hpp>
@@ -55,15 +59,7 @@ namespace alps {
             typedef alps::mcresults results_type;
             typedef std::vector<std::string> result_names_type;
 
-            mcbase(parameters_type const & p, std::size_t seed_offset = 0)
-                : params(p)
-                  // TODO: this ist not the best solution - any idea?
-                , random(boost::mt19937(p["SEED"].or_default(42) + seed_offset), boost::uniform_real<>())
-                , fraction(0.)
-                , check_duration(8.)
-                , start_time_point(boost::chrono::high_resolution_clock::now())
-                , last_check_time_point(boost::chrono::high_resolution_clock::now())
-            {}
+            mcbase(parameters_type const & p, std::size_t seed_offset = 0);
 
             virtual ~mcbase() {}
 
@@ -73,17 +69,19 @@ namespace alps {
 
             virtual double fraction_completed() const = 0;
 
-            // TODO: add boost::filesystem version
-            void save(std::string const & filename) const;
+            void save(boost::filesystem::path const & path) const;
 
-            // TODO: add boost::filesystem version
-            void load(std::string const & filename);
+            void load(boost::filesystem::path const & path);
 
             virtual void save(alps::hdf5::archive & ar) const;
 
             virtual void load(alps::hdf5::archive & ar);
 
             bool run(boost::function<bool ()> const & stop_callback);
+            
+            #ifdef ALPS_HAVE_PYTHON
+                bool run(boost::python::object stop_callback);
+            #endif
 
             result_names_type result_names() const;
 
@@ -92,6 +90,15 @@ namespace alps {
             results_type collect_results() const;
 
             virtual results_type collect_results(result_names_type const & names) const;
+
+            // TODO: add function parameters_type & params() { reutrn m_params; } and rename params to m_params
+            parameters_type & get_params();
+
+            // TODO: add function parameters_type & measurements() { reutrn m_measurements; } and rename measurements to m_measurements
+            mcobservables & get_measurements();
+            
+            // TODO: add function double random() { reutrn m_random; } and rename random to m_random
+            double get_random();
 
         protected:
 
@@ -103,11 +110,14 @@ namespace alps {
 
         private:
 
+            #ifdef ALPS_HAVE_PYTHON
+                static bool callback_wrapper(boost::python::object stop_callback);
+            #endif
+
             double fraction;
             boost::chrono::duration<double> check_duration;
             boost::chrono::high_resolution_clock::time_point start_time_point;
             boost::chrono::high_resolution_clock::time_point last_check_time_point;
-
     };
 }
 

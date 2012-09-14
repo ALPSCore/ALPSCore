@@ -383,13 +383,15 @@ namespace alps {
             construct(filename, props);
         }
 
-        archive::archive(std::string const & filename, std::string mode) {
-            construct(filename,    (mode.find_last_of('w') == std::string::npos ? 0 : WRITE | REPLACE)
+        archive::archive(boost::filesystem::path const & filename, std::string mode) {
+            construct(filename.string(),
+                  (mode.find_last_of('w') == std::string::npos ? 0 : WRITE | REPLACE)
                 | (mode.find_last_of('a') == std::string::npos ? 0 : WRITE)
                 | (mode.find_last_of('c') == std::string::npos ? 0 : COMPRESS)
                 | (mode.find_last_of('l') == std::string::npos ? 0 : LARGE)
                 | (mode.find_last_of('m') == std::string::npos ? 0 : MEMORY)
             );
+            
         }
 
         archive::archive(archive const & arg)

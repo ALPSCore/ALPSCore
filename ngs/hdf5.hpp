@@ -35,6 +35,7 @@
 #include <alps/ngs/detail/type_wrapper.hpp>
 
 #include <boost/mpl/and.hpp>
+#include <boost/filesystem/path.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/type_traits/is_array.hpp>
@@ -114,8 +115,7 @@ namespace alps {
                     MEMORY = 0x10 
                 } properties;
 
-                // TODO: add boost::filesystem constructor
-                archive(std::string const & filename, std::string mode = "r");
+                archive(boost::filesystem::path const & filename, std::string mode = "r");
                 // TODO: remove that!
                 archive(std::string const & filename, std::size_t props);
                 archive(archive const & arg);

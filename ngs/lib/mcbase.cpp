@@ -27,20 +27,33 @@
 
 #include <alps/ngs/api.hpp>
 #include <alps/ngs/hdf5.hpp>
+#include <alps/ngs/signal.hpp>
 #include <alps/ngs/scheduler/mcbase.hpp>
+
+#include <boost/filesystem/path.hpp>
 
 namespace alps {
 
-    // TODO: make boost::filesystem version
-    void mcbase::save(std::string const & filename) const {
+    mcbase::mcbase(parameters_type const & p, std::size_t seed_offset)
+        : params(p)
+          // TODO: this ist not the best solution - any idea?
+        , random(boost::mt19937((p["SEED"] | 42) + seed_offset), boost::uniform_real<>())
+        , fraction(0.)
+        , check_duration(8.)
+        , start_time_point(boost::chrono::high_resolution_clock::now())
+        , last_check_time_point(boost::chrono::high_resolution_clock::now())
+    {
+        alps::ngs::signal::listen();
+    }
+
+    void mcbase::save(boost::filesystem::path const & filename) const {
         hdf5::archive ar(filename, "w");
         ar
             << make_pvp("/checkpoint", *this)
         ;
     }
 
-    // TODO: make boost::filesystem version
-    void mcbase::load(std::string const & filename) {
+    void mcbase::load(boost::filesystem::path const & filename) {
         hdf5::archive ar(filename);
         ar 
             >> make_pvp("/checkpoint", *this)
@@ -68,6 +81,12 @@ namespace alps {
         return !stop_callback();
     }
 
+    #ifdef ALPS_HAVE_PYTHON
+        bool mcbase::run(boost::python::object stop_callback) {
+            return run(boost::bind(callback_wrapper, stop_callback));
+        }
+    #endif
+
     mcbase::result_names_type mcbase::result_names() const {
         result_names_type names;
         for(mcobservables::const_iterator it = measurements.begin(); it != measurements.end(); ++it)
@@ -90,6 +109,18 @@ namespace alps {
         return partial_results;
     }
 
+    mcbase::parameters_type & mcbase::get_params() {
+        return params;
+    }
+
+    mcobservables & mcbase::get_measurements() {
+        return measurements;
+    }
+    
+    double mcbase::get_random() {
+        return random();
+    }
+
     bool mcbase::complete_callback(boost::function<bool ()> const & stop_callback) {
         boost::chrono::high_resolution_clock::time_point now_time_point = boost::chrono::high_resolution_clock::now();
         if (now_time_point - last_check_time_point > check_duration) {
@@ -106,4 +137,9 @@ namespace alps {
         return (stop_callback() || fraction >= 1.);
     }
 
+    #ifdef ALPS_HAVE_PYTHON
+        bool mcbase::callback_wrapper(boost::python::object stop_callback) {
+           return boost::python::call<bool>(stop_callback.ptr());
+        }
+    #endif
 }
