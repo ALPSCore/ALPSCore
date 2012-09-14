@@ -41,19 +41,15 @@
 
 #include<boost/random/uniform_01.hpp>
 
-typedef boost::variate_generator<boost::mt19937&, boost::uniform_01<double> > random_01;
+typedef boost::variate_generator<boost::mt19937, boost::uniform_01<double> > random_01;
 
 class WrappedRNG : public random_01
 {
 public:
     WrappedRNG(int seed=0)
-    :eng(seed), dist(), random_01(eng, dist)
+    : random_01(boost::mt19937(seed), boost::uniform_01<double>())
     {
     }
-    unsigned int seed;
-    boost::mt19937 eng;
-    boost::uniform_01<double> dist;
-    
 };
 
 const char convert2xml_docstring[] = 
