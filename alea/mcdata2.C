@@ -41,6 +41,8 @@ int main(int argc, char** argv)
 {
   using namespace alps::alea;
 
+  std::cout.precision(10);
+
   // test: mcdata<double>
 
   mcdata<double> a(0.81,0.1);
