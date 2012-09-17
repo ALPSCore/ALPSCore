@@ -37,49 +37,37 @@
 namespace alps {
     namespace hdf5 {
 
-        #define ALPS_NGS_HDF5_PAIR_SAVE(ARCHIVE)                                                                                                                \
-            template <typename T, typename U> void save(                                                                                                        \
-                  ARCHIVE & ar                                                                                                                                  \
-                , std::string const & path                                                                                                                      \
-                , std::pair<T, U> const & value                                                                                                                 \
-                , std::vector<std::size_t> size = std::vector<std::size_t>()                                                                                    \
-                , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                   \
-                , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
-            ) {                                                                                                                                                 \
-                save(ar, ar.complete_path(path) + "/0", value.first);                                                                                           \
-                if (has_complex_elements<typename alps::detail::remove_cvr<T>::type>::value)                                                                    \
-                    ar.set_complex(ar.complete_path(path) + "/0");                                                                                              \
-                save(ar, ar.complete_path(path) + "/1", value.second);                                                                                          \
-                if (has_complex_elements<typename alps::detail::remove_cvr<U>::type>::value)                                                                    \
-                    ar.set_complex(ar.complete_path(path) + "/1");                                                                                              \
-            }
-        ALPS_NGS_HDF5_PAIR_SAVE(archive)
-        #ifdef ALPS_HDF5_HAVE_DEPRECATED
-            ALPS_NGS_HDF5_PAIR_SAVE(oarchive)
-        #endif
-        #undef ALPS_NGS_HDF5_PAIR_SAVE
+        template <typename T, typename U> void save(
+              archive & ar
+            , std::string const & path
+            , std::pair<T, U> const & value
+            , std::vector<std::size_t> size = std::vector<std::size_t>()
+            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+            , std::vector<std::size_t> offset = std::vector<std::size_t>()
+        ) {
+            save(ar, ar.complete_path(path) + "/0", value.first);
+            if (has_complex_elements<typename alps::detail::remove_cvr<T>::type>::value)
+                ar.set_complex(ar.complete_path(path) + "/0");
+            save(ar, ar.complete_path(path) + "/1", value.second);
+            if (has_complex_elements<typename alps::detail::remove_cvr<U>::type>::value)
+                ar.set_complex(ar.complete_path(path) + "/1");
+        }
 
-        #define ALPS_NGS_HDF5_PAIR_LOAD(ARCHIVE)                                                                                                                \
-            template <typename T, typename U> void load(                                                                                                        \
-                  ARCHIVE & ar                                                                                                                                  \
-                , std::string const & path                                                                                                                      \
-                , std::pair<T, U> & value                                                                                                                       \
-                , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                   \
-                , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
-            ) {                                                                                                                                                 \
-                try {                                                                                                                                           \
-                    load(ar, ar.complete_path(path) + "/0", value.first);                                                                                       \
-                    load(ar, ar.complete_path(path) + "/1", value.second);                                                                                      \
-                } catch (path_not_found exc) {                                                                                                                  \
-                    load(ar, ar.complete_path(path) + "/first", value.first);                                                                                   \
-                    load(ar, ar.complete_path(path) + "/second", value.second);                                                                                 \
-                }                                                                                                                                               \
+        template <typename T, typename U> void load(
+              archive & ar
+            , std::string const & path
+            , std::pair<T, U> & value
+            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+            , std::vector<std::size_t> offset = std::vector<std::size_t>()
+        ) {
+            try {
+                load(ar, ar.complete_path(path) + "/0", value.first);
+                load(ar, ar.complete_path(path) + "/1", value.second);
+            } catch (path_not_found exc) {
+                load(ar, ar.complete_path(path) + "/first", value.first);
+                load(ar, ar.complete_path(path) + "/second", value.second);
             }
-        ALPS_NGS_HDF5_PAIR_LOAD(archive)
-        #ifdef ALPS_HDF5_HAVE_DEPRECATED
-            ALPS_NGS_HDF5_PAIR_LOAD(iarchive)
-        #endif
-        #undef ALPS_NGS_HDF5_PAIR_LOAD
+        }
 
         template<typename T> struct scalar_type<std::pair<T *, std::vector<std::size_t> > > {
             typedef typename scalar_type<typename alps::detail::remove_cvr<T>::type>::type type;
@@ -145,142 +133,129 @@ namespace alps {
 
         }
 
-        #define ALPS_NGS_HDF5_PAIR_VECTOR_SAVE(ARCHIVE)                                                                                                         \
-            template<typename T> void save(                                                                                                                     \
-                  ARCHIVE & ar                                                                                                                                  \
-                , std::string const & path                                                                                                                      \
-                , std::pair<T *, std::vector<std::size_t> > const & value                                                                                       \
-                , std::vector<std::size_t> size = std::vector<std::size_t>()                                                                                    \
-                , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                   \
-                , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
-            ) {                                                                                                                                                 \
-                if (is_continuous<T>::value) {                                                                                                                  \
-                    std::vector<std::size_t> extent(get_extent(value));                                                                                         \
-                    std::copy(extent.begin(), extent.end(), std::back_inserter(size));                                                                          \
-                    std::copy(extent.begin(), extent.end(), std::back_inserter(chunk));                                                                         \
-                    std::fill_n(std::back_inserter(offset), extent.size(), 0);                                                                                  \
-                    ar.write(path, get_pointer(value), size, chunk, offset);                                                                                    \
-                } else if (value.second.size() == 0)                                                                                                            \
-                    ar.write(path, static_cast<int const *>(NULL), std::vector<std::size_t>());                                                                 \
-                else if (is_vectorizable(value)) {                                                                                                              \
-                    std::copy(value.second.begin(), value.second.end(), std::back_inserter(size));                                                              \
-                    std::fill_n(std::back_inserter(chunk), value.second.size(), 1);                                                                             \
-                    for (                                                                                                                                       \
-                        std::size_t i = 0;                                                                                                                      \
-                        i < std::accumulate(value.second.begin(), value.second.end(), std::size_t(1), std::multiplies<std::size_t>());                          \
-                        ++i                                                                                                                                     \
-                    ) {                                                                                                                                         \
-                        std::vector<std::size_t> local_offset(offset);                                                                                          \
-                        local_offset.push_back(                                                                                                                 \
-                            i / std::accumulate(value.second.begin() + 1, value.second.end(), std::size_t(1), std::multiplies<std::size_t>())                   \
-                        );                                                                                                                                      \
-                        for (std::vector<std::size_t>::const_iterator it = value.second.begin() + 1; it != value.second.end(); ++it)                            \
-                            local_offset.push_back((i % std::accumulate(                                                                                        \
-                                it, value.second.end(), std::size_t(1), std::multiplies<std::size_t>()                                                          \
-                            )) / std::accumulate(                                                                                                               \
-                                it + 1, value.second.end(), std::size_t(1), std::multiplies<std::size_t>()                                                      \
-                            ));                                                                                                                                 \
-                        save(ar, path, value.first[i], size, chunk, local_offset);                                                                              \
-                    }                                                                                                                                           \
-                } else {                                                                                                                                        \
-                    if (path.find_last_of('@') != std::string::npos)                                                                                            \
-                        throw archive_error("attributes needs to be vectorizable: " + path + ALPS_STACKTRACE);                                                  \
-                    if (ar.is_data(path))                                                                                                                       \
-                        ar.delete_data(path);                                                                                                                   \
-                    offset = std::vector<std::size_t>(value.second.size(), 0);                                                                                  \
-                    do {                                                                                                                                        \
-                        std::size_t last = offset.size() - 1, pos = 0;                                                                                          \
-                        std::string location = "";                                                                                                              \
-                        for (std::vector<std::size_t>::const_iterator it = offset.begin(); it != offset.end(); ++it) {                                          \
-                            location += "/" + cast<std::string>(*it);                                                                                           \
-                            pos += *it * std::accumulate(                                                                                                       \
-                                value.second.begin() + (it - offset.begin()) + 1,                                                                               \
-                                value.second.end(),                                                                                                             \
-                                std::size_t(1),                                                                                                                 \
-                                std::multiplies<std::size_t>()                                                                                                  \
-                            );                                                                                                                                  \
-                        }                                                                                                                                       \
-                        save(ar, path + location, value.first[pos]);                                                                                            \
-                        if (offset[last] + 1 == value.second[last] && last) {                                                                                   \
-                            for (pos = last; ++offset[pos] == value.second[pos] && pos; --pos);                                                                 \
-                            for (++pos; pos <= last; ++pos)                                                                                                     \
-                                offset[pos] = 0;                                                                                                                \
-                        } else                                                                                                                                  \
-                            ++offset[last];                                                                                                                     \
-                    } while (offset[0] < value.second[0]);                                                                                                      \
-                }                                                                                                                                               \
+        template<typename T> void save(
+              archive & ar                                                               
+            , std::string const & path
+            , std::pair<T *, std::vector<std::size_t> > const & value
+            , std::vector<std::size_t> size = std::vector<std::size_t>()
+            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+            , std::vector<std::size_t> offset = std::vector<std::size_t>()
+        ) {
+            if (is_continuous<T>::value) {
+                std::vector<std::size_t> extent(get_extent(value));
+                std::copy(extent.begin(), extent.end(), std::back_inserter(size));
+                std::copy(extent.begin(), extent.end(), std::back_inserter(chunk));
+                std::fill_n(std::back_inserter(offset), extent.size(), 0);
+                ar.write(path, get_pointer(value), size, chunk, offset);
+            } else if (value.second.size() == 0)
+                ar.write(path, static_cast<int const *>(NULL), std::vector<std::size_t>());
+            else if (is_vectorizable(value)) {
+                std::copy(value.second.begin(), value.second.end(), std::back_inserter(size));
+                std::fill_n(std::back_inserter(chunk), value.second.size(), 1);
+                for (
+                    std::size_t i = 0;
+                    i < std::accumulate(value.second.begin(), value.second.end(), std::size_t(1), std::multiplies<std::size_t>());
+                    ++i
+                ) {
+                    std::vector<std::size_t> local_offset(offset);
+                    local_offset.push_back(
+                        i / std::accumulate(value.second.begin() + 1, value.second.end(), std::size_t(1), std::multiplies<std::size_t>())
+                    );
+                    for (std::vector<std::size_t>::const_iterator it = value.second.begin() + 1; it != value.second.end(); ++it)
+                        local_offset.push_back((i % std::accumulate(
+                            it, value.second.end(), std::size_t(1), std::multiplies<std::size_t>()
+                        )) / std::accumulate(
+                            it + 1, value.second.end(), std::size_t(1), std::multiplies<std::size_t>()
+                        ));
+                    save(ar, path, value.first[i], size, chunk, local_offset);
+                }
+            } else {
+                if (path.find_last_of('@') != std::string::npos)
+                    throw archive_error("attributes needs to be vectorizable: " + path + ALPS_STACKTRACE);
+                if (ar.is_data(path))
+                    ar.delete_data(path);
+                offset = std::vector<std::size_t>(value.second.size(), 0);
+                do {
+                    std::size_t last = offset.size() - 1, pos = 0;
+                    std::string location = "";
+                    for (std::vector<std::size_t>::const_iterator it = offset.begin(); it != offset.end(); ++it) {
+                        location += "/" + cast<std::string>(*it);
+                        pos += *it * std::accumulate(
+                            value.second.begin() + (it - offset.begin()) + 1,
+                            value.second.end(),
+                            std::size_t(1),
+                            std::multiplies<std::size_t>()
+                        );
+                    }
+                    save(ar, path + location, value.first[pos]);
+                    if (offset[last] + 1 == value.second[last] && last) {
+                        for (pos = last; ++offset[pos] == value.second[pos] && pos; --pos);
+                        for (++pos; pos <= last; ++pos)
+                            offset[pos] = 0;
+                    } else
+                        ++offset[last];
+                } while (offset[0] < value.second[0]);
             }
-        ALPS_NGS_HDF5_PAIR_VECTOR_SAVE(archive)
-        #ifdef ALPS_HDF5_HAVE_DEPRECATED
-            ALPS_NGS_HDF5_PAIR_VECTOR_SAVE(oarchive)
-        #endif
-        #undef ALPS_NGS_HDF5_PAIR_VECTOR_SAVE
+        }
 
-        #define ALPS_NGS_HDF5_PAIR_VECTOR_LOAD(ARCHIVE)                                                                                                         \
-            template<typename T> void load(                                                                                                                     \
-                  ARCHIVE & ar                                                                                                                                  \
-                , std::string const & path                                                                                                                      \
-                , std::pair<T *, std::vector<std::size_t> > & value                                                                                             \
-                , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                   \
-                , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
-            ) {                                                                                                                                                 \
-                if (ar.is_group(path)) {                                                                                                                        \
-                    offset = std::vector<std::size_t>(value.second.size(), 0);                                                                                  \
-                    do {                                                                                                                                        \
-                        std::size_t last = offset.size() - 1, pos = 0;                                                                                          \
-                        std::string location = "";                                                                                                              \
-                        for (std::vector<std::size_t>::const_iterator it = offset.begin(); it != offset.end(); ++it) {                                          \
-                            location += "/" + cast<std::string>(*it);                                                                                           \
-                            pos += *it * std::accumulate(                                                                                                       \
-                                value.second.begin() + (it - offset.begin()) + 1,                                                                               \
-                                value.second.end(),                                                                                                             \
-                                std::size_t(1),                                                                                                                 \
-                                std::multiplies<std::size_t>()                                                                                                  \
-                            );                                                                                                                                  \
-                        }                                                                                                                                       \
-                        load(ar, path + location, value.first[pos]);                                                                                            \
-                        if (offset[last] + 1 == value.second[last] && last) {                                                                                   \
-                            for (pos = last; ++offset[pos] == value.second[pos] && pos; --pos);                                                                 \
-                            for (++pos; pos <= last; ++pos)                                                                                                     \
-                                offset[pos] = 0;                                                                                                                \
-                        } else                                                                                                                                  \
-                            ++offset[last];                                                                                                                     \
-                    } while (offset[0] < value.second[0]);                                                                                                      \
-                } else {                                                                                                                                        \
-                    std::vector<std::size_t> size(ar.extent(path));                                                                                             \
-                    set_extent(value, std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));                                                       \
-                    if (is_continuous<T>::value) {                                                                                                              \
-                        std::copy(size.begin(), size.end(), std::back_inserter(chunk));                                                                         \
-                        std::fill_n(std::back_inserter(offset), size.size(), 0);                                                                                \
-                        ar.read(path, get_pointer(value), chunk, offset);                                                                                       \
-                    } else if (value.second.size()) {                                                                                                           \
-                        std::fill_n(std::back_inserter(chunk), value.second.size(), 1);                                                                         \
-                        for (                                                                                                                                   \
-                            std::size_t i = 0;                                                                                                                  \
-                            i < std::accumulate(value.second.begin(), value.second.end(), std::size_t(1), std::multiplies<std::size_t>());                      \
-                            ++i                                                                                                                                 \
-                        ) {                                                                                                                                     \
-                            std::vector<std::size_t> local_offset(offset);                                                                                      \
-                            local_offset.push_back(                                                                                                             \
-                                i / std::accumulate(value.second.begin() + 1, value.second.end(), std::size_t(1), std::multiplies<std::size_t>())               \
-                            );                                                                                                                                  \
-                            for (std::vector<std::size_t>::iterator it = value.second.begin() + 1; it != value.second.end(); ++it)                              \
-                                local_offset.push_back((i % std::accumulate(                                                                                    \
-                                    it, value.second.end(), std::size_t(1), std::multiplies<std::size_t>()                                                      \
-                                )) / std::accumulate(                                                                                                           \
-                                    it + 1, value.second.end(), std::size_t(1), std::multiplies<std::size_t>()                                                  \
-                                ));                                                                                                                             \
-                            load(ar, path, value.first[i], chunk, local_offset);                                                                                \
-                        }                                                                                                                                       \
-                    }                                                                                                                                           \
-                }                                                                                                                                               \
-            }
-        ALPS_NGS_HDF5_PAIR_VECTOR_LOAD(archive)
-        #ifdef ALPS_HDF5_HAVE_DEPRECATED
-            ALPS_NGS_HDF5_PAIR_VECTOR_LOAD(iarchive)
-        #endif
-        #undef ALPS_NGS_HDF5_PAIR_VECTOR_SAVE
-
+        template<typename T> void load(
+              archive & ar
+            , std::string const & path
+            , std::pair<T *, std::vector<std::size_t> > & value
+            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+            , std::vector<std::size_t> offset = std::vector<std::size_t>()
+        ) {
+            if (ar.is_group(path)) {
+                offset = std::vector<std::size_t>(value.second.size(), 0);
+                do {
+                    std::size_t last = offset.size() - 1, pos = 0;
+                    std::string location = "";
+                    for (std::vector<std::size_t>::const_iterator it = offset.begin(); it != offset.end(); ++it) {
+                        location += "/" + cast<std::string>(*it);
+                        pos += *it * std::accumulate(
+                            value.second.begin() + (it - offset.begin()) + 1,
+                            value.second.end(),
+                            std::size_t(1),
+                            std::multiplies<std::size_t>()
+                        );
+                    }
+                    load(ar, path + location, value.first[pos]);
+                    if (offset[last] + 1 == value.second[last] && last) {
+                        for (pos = last; ++offset[pos] == value.second[pos] && pos; --pos);
+                        for (++pos; pos <= last; ++pos)
+                            offset[pos] = 0;
+                    } else
+                        ++offset[last];
+                } while (offset[0] < value.second[0]);
+            } else {
+                std::vector<std::size_t> size(ar.extent(path));
+                set_extent(value, std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));
+                if (is_continuous<T>::value) {
+                    std::copy(size.begin(), size.end(), std::back_inserter(chunk));
+                    std::fill_n(std::back_inserter(offset), size.size(), 0);
+                    ar.read(path, get_pointer(value), chunk, offset);
+                } else if (value.second.size()) {
+                    std::fill_n(std::back_inserter(chunk), value.second.size(), 1);
+                    for (
+                        std::size_t i = 0;
+                        i < std::accumulate(value.second.begin(), value.second.end(), std::size_t(1), std::multiplies<std::size_t>());
+                        ++i
+                    ) {
+                        std::vector<std::size_t> local_offset(offset);
+                        local_offset.push_back(
+                            i / std::accumulate(value.second.begin() + 1, value.second.end(), std::size_t(1), std::multiplies<std::size_t>())
+                        );
+                        for (std::vector<std::size_t>::iterator it = value.second.begin() + 1; it != value.second.end(); ++it)
+                            local_offset.push_back((i % std::accumulate(
+                                it, value.second.end(), std::size_t(1), std::multiplies<std::size_t>()
+                            )) / std::accumulate(
+                                it + 1, value.second.end(), std::size_t(1), std::multiplies<std::size_t>()
+                            ));
+                        load(ar, path, value.first[i], chunk, local_offset);
+                    }
+                }
+            }                                                                            
+        }
     }
 }
 

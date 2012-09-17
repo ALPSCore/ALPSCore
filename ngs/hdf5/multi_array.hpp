@@ -133,110 +133,98 @@ namespace alps {
 
         }
 
-        #define ALPS_NGS_HDF5_MULTI_ARRAY_IMPL_SAVE(ARCHIVE)                                                                                                    \
-            template<typename T, std::size_t N, typename A> void save(                                                                                          \
-                  ARCHIVE & ar                                                                                                                                  \
-                , std::string const & path                                                                                                                      \
-                , boost::multi_array<T, N, A> const & value                                                                                                     \
-                , std::vector<std::size_t> size = std::vector<std::size_t>()                                                                                    \
-                , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                   \
-                , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
-            ) {                                                                                                                                                 \
-                if (is_continuous<T>::value) {                                                                                                                  \
-                    std::vector<std::size_t> extent(get_extent(value));                                                                                         \
-                    std::copy(extent.begin(), extent.end(), std::back_inserter(size));                                                                          \
-                    std::copy(extent.begin(), extent.end(), std::back_inserter(chunk));                                                                         \
-                    std::fill_n(std::back_inserter(offset), extent.size(), 0);                                                                                  \
-                    ar.write(path, get_pointer(value), size, chunk, offset);                                                                                    \
-                } else if (is_vectorizable(value)) {                                                                                                            \
-                    std::copy(value.shape(), value.shape() + boost::multi_array<T, N, A>::dimensionality, std::back_inserter(size));                            \
-                    std::fill_n(std::back_inserter(chunk), value.num_elements(), 1);                                                                            \
-                    for (std::size_t i = 1; i < value.num_elements(); ++i) {                                                                                    \
-                        std::vector<std::size_t> local_offset(offset);                                                                                          \
-                        local_offset.push_back(i / value.num_elements() * *value.shape());                                                                      \
-                        for (                                                                                                                                   \
-                            typename boost::multi_array<T, N, A>::size_type const * it = value.shape() + 1;                                                     \
-                            it != value.shape() + boost::multi_array<T, N, A>::dimensionality;                                                                  \
-                            ++it                                                                                                                                \
-                        )                                                                                                                                       \
-                            local_offset.push_back((i % std::accumulate(                                                                                        \
-                                it, value.shape() + boost::multi_array<T, N, A>::dimensionality, std::size_t(1), std::multiplies<std::size_t>()                 \
-                            )) / std::accumulate(                                                                                                               \
-                                it + 1, value.shape() + boost::multi_array<T, N, A>::dimensionality, std::size_t(1), std::multiplies<std::size_t>()             \
-                            ));                                                                                                                                 \
-                        save(ar, path, value.data()[i], size, chunk, local_offset);                                                                             \
-                    }                                                                                                                                           \
-                } else                                                                                                                                          \
-                    throw wrong_type("invalid type");                                                                                                           \
-            }                                                                                                                                                   \
-            template<typename T, std::size_t N, typename A> void save(                                                                                          \
-                  ARCHIVE & ar                                                                                                                                  \
-                , std::string const & path                                                                                                                      \
-                , alps::multi_array<T, N, A> const & value                                                                                                      \
-                , std::vector<std::size_t> size = std::vector<std::size_t>()                                                                                    \
-                , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                   \
-                , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
-            ) {                                                                                                                                                 \
-                save(ar, path, static_cast<boost::multi_array<T, N, A> const &>(value), size, chunk, offset);                                                   \
-            }
-        ALPS_NGS_HDF5_MULTI_ARRAY_IMPL_SAVE(archive)
-        #ifdef ALPS_HDF5_HAVE_DEPRECATED
-            ALPS_NGS_HDF5_MULTI_ARRAY_IMPL_SAVE(iarchive)
-        #endif
-        #undef ALPS_NGS_HDF5_MULTI_ARRAY_IMPL_SAVE
+        template<typename T, std::size_t N, typename A> void save(
+              archive & ar
+            , std::string const & path
+            , boost::multi_array<T, N, A> const & value
+            , std::vector<std::size_t> size = std::vector<std::size_t>()
+            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+            , std::vector<std::size_t> offset = std::vector<std::size_t>()
+        ) {
+            if (is_continuous<T>::value) {
+                std::vector<std::size_t> extent(get_extent(value));
+                std::copy(extent.begin(), extent.end(), std::back_inserter(size));
+                std::copy(extent.begin(), extent.end(), std::back_inserter(chunk));
+                std::fill_n(std::back_inserter(offset), extent.size(), 0);
+                ar.write(path, get_pointer(value), size, chunk, offset);
+            } else if (is_vectorizable(value)) {
+                std::copy(value.shape(), value.shape() + boost::multi_array<T, N, A>::dimensionality, std::back_inserter(size));
+                std::fill_n(std::back_inserter(chunk), value.num_elements(), 1);
+                for (std::size_t i = 1; i < value.num_elements(); ++i) {
+                    std::vector<std::size_t> local_offset(offset);
+                    local_offset.push_back(i / value.num_elements() * *value.shape());
+                    for (
+                        typename boost::multi_array<T, N, A>::size_type const * it = value.shape() + 1;
+                        it != value.shape() + boost::multi_array<T, N, A>::dimensionality;
+                        ++it
+                    )
+                        local_offset.push_back((i % std::accumulate(
+                            it, value.shape() + boost::multi_array<T, N, A>::dimensionality, std::size_t(1), std::multiplies<std::size_t>()
+                        )) / std::accumulate(
+                            it + 1, value.shape() + boost::multi_array<T, N, A>::dimensionality, std::size_t(1), std::multiplies<std::size_t>()
+                        ));
+                    save(ar, path, value.data()[i], size, chunk, local_offset);
+                }
+            } else
+                throw wrong_type("invalid type");
+        }
+        template<typename T, std::size_t N, typename A> void save(
+              archive & ar
+            , std::string const & path
+            , alps::multi_array<T, N, A> const & value
+            , std::vector<std::size_t> size = std::vector<std::size_t>()
+            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+            , std::vector<std::size_t> offset = std::vector<std::size_t>()
+        ) {
+            save(ar, path, static_cast<boost::multi_array<T, N, A> const &>(value), size, chunk, offset);
+        }
 
-        #define ALPS_NGS_HDF5_MULTI_ARRAY_IMPL_LOAD(ARCHIVE)                                                                                                    \
-            template<typename T, std::size_t N, typename A> void load(                                                                                          \
-                  ARCHIVE & ar                                                                                                                                  \
-                , std::string const & path                                                                                                                      \
-                , boost::multi_array<T, N, A> & value                                                                                                           \
-                , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                   \
-                , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
-            ) {                                                                                                                                                 \
-                if (ar.is_group(path))                                                                                                                          \
-                    throw invalid_path("invalid path");                                                                                                         \
-                else {                                                                                                                                          \
-                    std::vector<std::size_t> size(ar.extent(path));                                                                                             \
-                    if (boost::multi_array<T, N, A>::dimensionality <= size.size())                                                                             \
-                        set_extent(value, std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));                                                   \
-                    if (is_continuous<T>::value) {                                                                                                              \
-                        std::copy(size.begin() + chunk.size(), size.end(), std::back_inserter(chunk));                                                          \
-                        std::fill_n(std::back_inserter(offset), size.size() - offset.size(), 0);                                                                \
-                        ar.read(path, get_pointer(value), chunk, offset);                                                                                       \
-                    } else {                                                                                                                                    \
-                        std::fill_n(std::back_inserter(chunk), value.num_elements(), 1);                                                                        \
-                        for (std::size_t i = 1; i < value.num_elements(); ++i) {                                                                                \
-                            std::vector<std::size_t> local_offset(offset);                                                                                      \
-                            local_offset.push_back(i / value.num_elements() * *value.shape());                                                                  \
-                            for (                                                                                                                               \
-                                typename boost::multi_array<T, N, A>::size_type const * it = value.shape() + 1;                                                 \
-                                it != value.shape() + boost::multi_array<T, N, A>::dimensionality;                                                              \
-                                ++it                                                                                                                            \
-                            )                                                                                                                                   \
-                                local_offset.push_back((i % std::accumulate(                                                                                    \
-                                    it, value.shape() + boost::multi_array<T, N, A>::dimensionality, std::size_t(1), std::multiplies<std::size_t>()             \
-                                )) / std::accumulate(                                                                                                           \
-                                    it + 1, value.shape() + boost::multi_array<T, N, A>::dimensionality, std::size_t(1), std::multiplies<std::size_t>()         \
-                                ));                                                                                                                             \
-                            load(ar, path, value.data()[i], chunk, local_offset);                                                                               \
-                        }                                                                                                                                       \
-                    }                                                                                                                                           \
-                }                                                                                                                                               \
-            }                                                                                                                                                   \
-            template<typename T, std::size_t N, typename A> void load(                                                                                          \
-                  ARCHIVE & ar                                                                                                                                  \
-                , std::string const & path                                                                                                                      \
-                , alps::multi_array<T, N, A> & value                                                                                                            \
-                , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                   \
-                , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
-            ) {                                                                                                                                                 \
-                load(ar, path, static_cast<boost::multi_array<T, N, A> &>(value), chunk, offset);                                                               \
+        template<typename T, std::size_t N, typename A> void load(
+              archive & ar
+            , std::string const & path
+            , boost::multi_array<T, N, A> & value
+            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+            , std::vector<std::size_t> offset = std::vector<std::size_t>()
+        ) {
+            if (ar.is_group(path))
+                throw invalid_path("invalid path");
+            else {
+                std::vector<std::size_t> size(ar.extent(path));
+                if (boost::multi_array<T, N, A>::dimensionality <= size.size())
+                    set_extent(value, std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));
+                if (is_continuous<T>::value) {
+                    std::copy(size.begin() + chunk.size(), size.end(), std::back_inserter(chunk));
+                    std::fill_n(std::back_inserter(offset), size.size() - offset.size(), 0);
+                    ar.read(path, get_pointer(value), chunk, offset);
+                } else {
+                    std::fill_n(std::back_inserter(chunk), value.num_elements(), 1);
+                    for (std::size_t i = 1; i < value.num_elements(); ++i) {
+                        std::vector<std::size_t> local_offset(offset);
+                        local_offset.push_back(i / value.num_elements() * *value.shape());
+                        for (
+                            typename boost::multi_array<T, N, A>::size_type const * it = value.shape() + 1;
+                            it != value.shape() + boost::multi_array<T, N, A>::dimensionality;
+                            ++it
+                        )
+                            local_offset.push_back((i % std::accumulate(
+                                it, value.shape() + boost::multi_array<T, N, A>::dimensionality, std::size_t(1), std::multiplies<std::size_t>()
+                            )) / std::accumulate(
+                                it + 1, value.shape() + boost::multi_array<T, N, A>::dimensionality, std::size_t(1), std::multiplies<std::size_t>()
+                            ));
+                        load(ar, path, value.data()[i], chunk, local_offset);
+                    }
+                }
             }
-        ALPS_NGS_HDF5_MULTI_ARRAY_IMPL_LOAD(archive)
-        #ifdef ALPS_HDF5_HAVE_DEPRECATED
-            ALPS_NGS_HDF5_MULTI_ARRAY_IMPL_LOAD(iarchive)
-        #endif
-        #undef ALPS_NGS_HDF5_MULTI_ARRAY_IMPL_LOAD
+        }
+        template<typename T, std::size_t N, typename A> void load(
+              archive & ar
+            , std::string const & path
+            , alps::multi_array<T, N, A> & value
+            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+            , std::vector<std::size_t> offset = std::vector<std::size_t>()
+        ) {
+            load(ar, path, static_cast<boost::multi_array<T, N, A> &>(value), chunk, offset);                                                   
+        }
    }
 }
 

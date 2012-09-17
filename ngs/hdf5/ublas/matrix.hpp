@@ -111,58 +111,45 @@ namespace alps {
 
         }
 
-        #define ALPS_NGS_HDF5_UBLAS_MATRIX_SAVE(ARCHIVE)                                                                                                          \
-            template <typename T, typename F, typename A> void save(                                                                                              \
-                  ARCHIVE & ar                                                                                                                                    \
-                , std::string const & path                                                                                                                        \
-                , boost::numeric::ublas::matrix<T, F, A> const & value                                                                                            \
-                , std::vector<std::size_t> size = std::vector<std::size_t>()                                                                                      \
-                , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                     \
-                , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                    \
-            ) {                                                                                                                                                   \
-                if (is_continuous<T>::value) {                                                                                                                    \
-                    std::vector<std::size_t> extent(get_extent(value));                                                                                           \
-                    std::copy(extent.begin(), extent.end(), std::back_inserter(size));                                                                            \
-                    std::copy(extent.begin(), extent.end(), std::back_inserter(chunk));                                                                           \
-                    std::fill_n(std::back_inserter(offset), extent.size(), 0);                                                                                    \
-                    ar.write(path, get_pointer(value), size, chunk, offset);                                                                                      \
-                } else {                                                                                                                                          \
-                    throw wrong_type("invalid type" + ALPS_STACKTRACE);                                                                                                  \
-                }                                                                                                                                                 \
+        template <typename T, typename F, typename A> void save(
+              archive & ar
+            , std::string const & path
+            , boost::numeric::ublas::matrix<T, F, A> const & value
+            , std::vector<std::size_t> size = std::vector<std::size_t>()
+            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+            , std::vector<std::size_t> offset = std::vector<std::size_t>()
+        ) {
+            if (is_continuous<T>::value) {
+                std::vector<std::size_t> extent(get_extent(value));
+                std::copy(extent.begin(), extent.end(), std::back_inserter(size));
+                std::copy(extent.begin(), extent.end(), std::back_inserter(chunk));
+                std::fill_n(std::back_inserter(offset), extent.size(), 0);
+                ar.write(path, get_pointer(value), size, chunk, offset);
+            } else {
+                throw wrong_type("invalid type" + ALPS_STACKTRACE);
             }
-        ALPS_NGS_HDF5_UBLAS_MATRIX_SAVE(archive)
-        #ifdef ALPS_HDF5_HAVE_DEPRECATED
-            ALPS_NGS_HDF5_UBLAS_MATRIX_SAVE(oarchive)
-        #endif
-        #undef ALPS_NGS_HDF5_UBLAS_MATRIX_SAVE
+        }
 
-        #define ALPS_NGS_HDF5_UBLAS_MATRIX_LOAD(ARCHIVE)                                                                                                          \
-            template <typename T, typename F, typename A> void load(                                                                                              \
-                  ARCHIVE & ar                                                                                                                                    \
-                , std::string const & path                                                                                                                        \
-                , boost::numeric::ublas::matrix<T, F, A> & value                                                                                                  \
-                , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                     \
-                , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                    \
-            ) {                                                                                                                                                   \
-                if (ar.is_group(path))                                                                                                                            \
-                    throw invalid_path("invalid path" + ALPS_STACKTRACE);                                                                                                  \
-                else {                                                                                                                                            \
-                    std::vector<std::size_t> size(ar.extent(path));                                                                                               \
-                    set_extent(value, std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));                                                         \
-                    if (is_continuous<T>::value) {                                                                                                                \
-                        std::copy(size.begin(), size.end(), std::back_inserter(chunk));                                                                           \
-                        std::fill_n(std::back_inserter(offset), size.size(), 0);                                                                                  \
-                        ar.read(path, get_pointer(value), chunk, offset);                                                                                         \
-                    } else                                                                                                                                        \
-                        throw invalid_path("invalid type" + ALPS_STACKTRACE);                                                                                              \
-                }                                                                                                                                                 \
+        template <typename T, typename F, typename A> void load(
+              archive & ar
+            , std::string const & path
+            , boost::numeric::ublas::matrix<T, F, A> & value
+            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+            , std::vector<std::size_t> offset = std::vector<std::size_t>()
+        ) {
+            if (ar.is_group(path))
+                throw invalid_path("invalid path" + ALPS_STACKTRACE);
+            else {
+                std::vector<std::size_t> size(ar.extent(path));
+                set_extent(value, std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));
+                if (is_continuous<T>::value) {
+                    std::copy(size.begin(), size.end(), std::back_inserter(chunk));
+                    std::fill_n(std::back_inserter(offset), size.size(), 0);
+                    ar.read(path, get_pointer(value), chunk, offset);
+                } else
+                    throw invalid_path("invalid type" + ALPS_STACKTRACE);
             }
-        ALPS_NGS_HDF5_UBLAS_MATRIX_LOAD(archive)
-        #ifdef ALPS_HDF5_HAVE_DEPRECATED
-            ALPS_NGS_HDF5_UBLAS_MATRIX_LOAD(oarchive)
-        #endif
-        #undef ALPS_NGS_HDF5_UBLAS_MATRIX_LOAD
-
+        }
     }
 }
 

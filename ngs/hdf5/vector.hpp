@@ -122,89 +122,76 @@ namespace alps {
             };
         }
 
-        #define ALPS_NGS_HDF5_STD_VECTOR_SAVE(ARCHIVE)                                                                                                          \
-            template<typename T, typename A> void save(                                                                                                         \
-                  ARCHIVE & ar                                                                                                                                  \
-                , std::string const & path                                                                                                                      \
-                , std::vector<T, A> const & value                                                                                                               \
-                , std::vector<std::size_t> size = std::vector<std::size_t>()                                                                                    \
-                , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                   \
-                , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
-            ) {                                                                                                                                                 \
-                using alps::cast;                                                                                                                               \
-                if (ar.is_group(path))                                                                                                                          \
-                    ar.delete_group(path);                                                                                                                      \
-                if (is_continuous<T>::value && value.size() == 0)                                                                                               \
-                    ar.write(path, static_cast<typename scalar_type<std::vector<T, A> >::type const *>(NULL), std::vector<std::size_t>());                      \
-                else if (is_continuous<T>::value) {                                                                                                             \
-                    std::vector<std::size_t> extent(get_extent(value));                                                                                         \
-                    std::copy(extent.begin(), extent.end(), std::back_inserter(size));                                                                          \
-                    std::copy(extent.begin(), extent.end(), std::back_inserter(chunk));                                                                         \
-                    std::fill_n(std::back_inserter(offset), extent.size(), 0);                                                                                  \
-                    ar.write(path, get_pointer(value), size, chunk, offset);                                                                                    \
-                } else if (value.size() == 0)                                                                                                                   \
-                    ar.write(path, static_cast<int const *>(NULL), std::vector<std::size_t>());                                                                 \
-                else if (is_vectorizable(value)) {                                                                                                              \
-                    size.push_back(value.size());                                                                                                               \
-                    chunk.push_back(1);                                                                                                                         \
-                    offset.push_back(0);                                                                                                                        \
-                    for(typename std::vector<T, A>::const_iterator it = value.begin(); it != value.end(); ++it) {                                               \
-                        offset.back() = it - value.begin();                                                                                                     \
-                        save(ar, path, *it, size, chunk, offset);                                                                                               \
-                    }                                                                                                                                           \
-                } else {                                                                                                                                        \
-                    if (ar.is_data(path))                                                                                                                       \
-                        ar.delete_data(path);                                                                                                                   \
-                    for(typename std::vector<T, A>::const_iterator it = value.begin(); it != value.end(); ++it)                                                 \
-                        save(ar, ar.complete_path(path) + "/" + cast<std::string>(it - value.begin()), *it);                                                    \
-                }                                                                                                                                               \
+        template<typename T, typename A> void save(
+              archive & ar
+            , std::string const & path
+            , std::vector<T, A> const & value
+            , std::vector<std::size_t> size = std::vector<std::size_t>()
+            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+            , std::vector<std::size_t> offset = std::vector<std::size_t>()
+        ) {
+            using alps::cast;
+            if (ar.is_group(path))
+                ar.delete_group(path);
+            if (is_continuous<T>::value && value.size() == 0)
+                ar.write(path, static_cast<typename scalar_type<std::vector<T, A> >::type const *>(NULL), std::vector<std::size_t>());
+            else if (is_continuous<T>::value) {
+                std::vector<std::size_t> extent(get_extent(value));
+                std::copy(extent.begin(), extent.end(), std::back_inserter(size));
+                std::copy(extent.begin(), extent.end(), std::back_inserter(chunk));
+                std::fill_n(std::back_inserter(offset), extent.size(), 0);
+                ar.write(path, get_pointer(value), size, chunk, offset);
+            } else if (value.size() == 0)
+                ar.write(path, static_cast<int const *>(NULL), std::vector<std::size_t>());
+            else if (is_vectorizable(value)) {
+                size.push_back(value.size());
+                chunk.push_back(1);
+                offset.push_back(0);
+                for(typename std::vector<T, A>::const_iterator it = value.begin(); it != value.end(); ++it) {
+                    offset.back() = it - value.begin();
+                    save(ar, path, *it, size, chunk, offset);
+                }
+            } else {
+                if (ar.is_data(path))
+                    ar.delete_data(path);
+                for(typename std::vector<T, A>::const_iterator it = value.begin(); it != value.end(); ++it)
+                    save(ar, ar.complete_path(path) + "/" + cast<std::string>(it - value.begin()), *it);
             }
-        ALPS_NGS_HDF5_STD_VECTOR_SAVE(archive)
-        #ifdef ALPS_HDF5_HAVE_DEPRECATED
-            ALPS_NGS_HDF5_STD_VECTOR_SAVE(oarchive)
-        #endif
-        #undef ALPS_NGS_HDF5_STD_VECTOR_SAVE
+        }
 
-        #define ALPS_NGS_HDF5_STD_VECTOR_LOAD(ARCHIVE)                                                                                                          \
-            template<typename T, typename A> void load(                                                                                                         \
-                  ARCHIVE & ar                                                                                                                                  \
-                , std::string const & path                                                                                                                      \
-                , std::vector<T, A> & value                                                                                                                     \
-                , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                   \
-                , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                  \
-            ) {                                                                                                                                                 \
-                using alps::cast;                                                                                                                               \
-                if (ar.is_group(path)) {                                                                                                                        \
-                    std::vector<std::string> children = ar.list_children(path);                                                                                 \
-                    value.resize(children.size());                                                                                                              \
-                    for (typename std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)                                   \
-                        load(ar, ar.complete_path(path) + "/" + *it, value[cast<std::size_t>(*it)]);                                                            \
-                } else {                                                                                                                                        \
-                    std::vector<std::size_t> size(ar.extent(path));                                                                                             \
-                    if (is_continuous<T>::value) {                                                                                                              \
-                        set_extent(value, std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));                                                   \
-                        if (value.size()) {                                                                                                                     \
-                            std::copy(size.begin() + chunk.size(), size.end(), std::back_inserter(chunk));                                                      \
-                            std::fill_n(std::back_inserter(offset), size.size() - offset.size(), 0);                                                            \
-                            ar.read(path, get_pointer(value), chunk, offset);                                                                                   \
-                        }                                                                                                                                       \
-                    } else {                                                                                                                                    \
-                        set_extent(value, std::vector<std::size_t>(1, *(size.begin() + chunk.size())));                                                         \
-                        chunk.push_back(1);                                                                                                                     \
-                        offset.push_back(0);                                                                                                                    \
-                        for(typename std::vector<T, A>::iterator it = value.begin(); it != value.end(); ++it) {                                                 \
-                            offset.back() = it - value.begin();                                                                                                 \
-                            load(ar, path, *it, chunk, offset);                                                                                                 \
-                        }                                                                                                                                       \
-                    }                                                                                                                                           \
-                }                                                                                                                                               \
+        template<typename T, typename A> void load(
+              archive & ar
+            , std::string const & path
+            , std::vector<T, A> & value
+            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+            , std::vector<std::size_t> offset = std::vector<std::size_t>()
+        ) {
+            using alps::cast;
+            if (ar.is_group(path)) {
+                std::vector<std::string> children = ar.list_children(path);
+                value.resize(children.size());
+                for (typename std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)
+                    load(ar, ar.complete_path(path) + "/" + *it, value[cast<std::size_t>(*it)]);
+            } else {
+                std::vector<std::size_t> size(ar.extent(path));
+                if (is_continuous<T>::value) {
+                    set_extent(value, std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));
+                    if (value.size()) {
+                        std::copy(size.begin() + chunk.size(), size.end(), std::back_inserter(chunk));
+                        std::fill_n(std::back_inserter(offset), size.size() - offset.size(), 0);
+                        ar.read(path, get_pointer(value), chunk, offset);
+                    }
+                } else {
+                    set_extent(value, std::vector<std::size_t>(1, *(size.begin() + chunk.size())));
+                    chunk.push_back(1);
+                    offset.push_back(0);
+                    for(typename std::vector<T, A>::iterator it = value.begin(); it != value.end(); ++it) {
+                        offset.back() = it - value.begin();
+                        load(ar, path, *it, chunk, offset);
+                    }
+                }
             }
-        ALPS_NGS_HDF5_STD_VECTOR_LOAD(archive)
-        #ifdef ALPS_HDF5_HAVE_DEPRECATED
-            ALPS_NGS_HDF5_STD_VECTOR_LOAD(iarchive)
-        #endif
-        #undef ALPS_NGS_HDF5_STD_VECTOR_LOAD
-
+        }
     }
 }
 

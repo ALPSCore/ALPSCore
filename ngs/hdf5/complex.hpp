@@ -88,53 +88,40 @@ namespace alps {
             };
         }
 
-        #define ALPS_NGS_HDF5_COMPLEX_SAVE(ARCHIVE)                                                                                                                     \
-            template<typename T> void save(                                                                                                                             \
-                  ARCHIVE & ar                                                                                                                                          \
-                , std::string const & path                                                                                                                              \
-                , std::complex<T> const & value                                                                                                                         \
-                , std::vector<std::size_t> size = std::vector<std::size_t>()                                                                                            \
-                , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                           \
-                , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                          \
-            ) {                                                                                                                                                         \
-                if (is_continuous<T>::value) {                                                                                                                          \
-                    size.push_back(2);                                                                                                                                  \
-                    chunk.push_back(2);                                                                                                                                 \
-                    offset.push_back(0);                                                                                                                                \
-                    ar.write(path, get_pointer(value), size, chunk, offset);                                                                                            \
-                } else                                                                                                                                                  \
-                    throw wrong_type("invalid type" + ALPS_STACKTRACE);                                                                                                 \
-            }
-        ALPS_NGS_HDF5_COMPLEX_SAVE(archive)
-        #ifdef ALPS_HDF5_HAVE_DEPRECATED
-            ALPS_NGS_HDF5_COMPLEX_SAVE(oarchive)
-        #endif
-        #undef ALPS_NGS_HDF5_COMPLEX_SAVE
+        template<typename T> void save(
+              archive & ar
+            , std::string const & path
+            , std::complex<T> const & value
+            , std::vector<std::size_t> size = std::vector<std::size_t>()
+            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+            , std::vector<std::size_t> offset = std::vector<std::size_t>()
+        ) {
+            if (is_continuous<T>::value) {
+                size.push_back(2);
+                chunk.push_back(2);
+                offset.push_back(0);
+                ar.write(path, get_pointer(value), size, chunk, offset);
+            } else
+                throw wrong_type("invalid type" + ALPS_STACKTRACE);
+        }
 
-        #define ALPS_NGS_HDF5_COMPLEX_LOAD(ARCHIVE)                                                                                                                     \
-            template<typename T> void load(                                                                                                                             \
-                  ARCHIVE & ar                                                                                                                                          \
-                , std::string const & path                                                                                                                              \
-                , std::complex<T> & value                                                                                                                               \
-                , std::vector<std::size_t> chunk = std::vector<std::size_t>()                                                                                           \
-                , std::vector<std::size_t> offset = std::vector<std::size_t>()                                                                                          \
-            ) {                                                                                                                                                         \
-                if (ar.is_group(path) || !is_continuous<T>::value)                                                                                                      \
-                    throw wrong_type("invalid path" + ALPS_STACKTRACE);                                                                                                 \
-                else if (!ar.is_complex(path))                                                                                                                          \
-                    throw archive_error("no complex value in archive" + ALPS_STACKTRACE);                                                                               \
-                else {                                                                                                                                                  \
-                    chunk.push_back(2);                                                                                                                                 \
-                    offset.push_back(0);                                                                                                                                \
-                    ar.read(path, get_pointer(value), chunk, offset);                                                                                                   \
-                }                                                                                                                                                       \
+        template<typename T> void load(
+              archive & ar
+            , std::string const & path
+            , std::complex<T> & value
+            , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+            , std::vector<std::size_t> offset = std::vector<std::size_t>()
+        ) {
+            if (ar.is_group(path) || !is_continuous<T>::value)
+                throw wrong_type("invalid path" + ALPS_STACKTRACE);
+            else if (!ar.is_complex(path))
+                throw archive_error("no complex value in archive" + ALPS_STACKTRACE);
+            else {
+                chunk.push_back(2);
+                offset.push_back(0);
+                ar.read(path, get_pointer(value), chunk, offset);
             }
-        ALPS_NGS_HDF5_COMPLEX_LOAD(archive)
-        #ifdef ALPS_HDF5_HAVE_DEPRECATED
-            ALPS_NGS_HDF5_COMPLEX_LOAD(iarchive)
-        #endif
-        #undef ALPS_NGS_HDF5_COMPLEX_LOAD
-
+        }
     }
 }
 
