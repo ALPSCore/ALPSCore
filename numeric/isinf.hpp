@@ -43,7 +43,7 @@ namespace alps { namespace numeric {
 #if defined( BOOST_MSVC)
   template <class T>
   bool isinf(T x) { return !_finite(x) && !_isnan(x);}
-#elif defined (_CRAYC) || defined(__FCC_VERSION)
+#elif defined(__INTEL_COMPILER) || defined(_CRAYC) || defined(__FCC_VERSION)
   using ::isinf;
 #else
   using std::isinf;
