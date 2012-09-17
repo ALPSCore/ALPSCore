@@ -177,10 +177,10 @@ namespace alps {
                 
                 #define ALPS_NGS_PARAMVALUE_MEMBER_DECL_CONVERT(T)                  \
                     paramvalue(T const & value)                                     \
-                        : paramvalue_base(static_cast<int const &>(value))          \
+                        : paramvalue_base(static_cast<int>(value))                  \
                     {}                                                              \
                     paramvalue & operator=(T const & value) {                       \
-                        return *this = static_cast<int const &>(value);             \
+                        return *this = static_cast<int>(value);                     \
                     }
                 ALPS_NGS_PARAMVALUE_MEMBER_DECL_CONVERT(char)
                 ALPS_NGS_PARAMVALUE_MEMBER_DECL_CONVERT(unsigned char)
@@ -194,10 +194,10 @@ namespace alps {
                 #undef ALPS_NGS_PARAMVALUE_MEMBER_DECL_CONVERT
 
                 paramvalue(long double const & value)
-                    : paramvalue_base(static_cast<double const &>(value))
+                    : paramvalue_base(static_cast<double>(value))
                 {}
                 paramvalue & operator=(long double const & value) {
-                    return *this = static_cast<double const &>(value);
+                    return *this = static_cast<double>(value);
                 }
 
                 paramvalue(char const * v) : paramvalue_base(std::string(v)) {}
