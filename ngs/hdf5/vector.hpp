@@ -152,8 +152,10 @@ namespace alps {
                     save(ar, path, *it, size, chunk, offset);
                 }
             } else {
-                if (ar.is_data(path))
+                if (path.find_last_of('@') == std::string::npos && ar.is_data(path))
                     ar.delete_data(path);
+                else if (path.find_last_of('@') != std::string::npos && ar.is_attribute(path))
+                    ar.delete_attribute(path);
                 for(typename std::vector<T, A>::const_iterator it = value.begin(); it != value.end(); ++it)
                     save(ar, ar.complete_path(path) + "/" + cast<std::string>(it - value.begin()), *it);
             }
