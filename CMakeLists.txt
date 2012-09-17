@@ -32,8 +32,7 @@ set(ALPS_SOURCES
     parser/parser.C parser/xmlattributes.C parser/xmlhandler.C parser/xmlparser.C
     parser/xmlstream.C parser/xslt_path.C
     #hdf5
-    ngs/lib/hdf5.cpp ngs/lib/signal.cpp ngs/lib/hdf5/deprecated.cpp
-    ngs/lib/stacktrace.cpp
+    ngs/lib/hdf5.cpp ngs/lib/signal.cpp ngs/lib/stacktrace.cpp
     # random
     random/rngfactory.C random/parallel/get_prime.cpp random/parallel/primelist_64.cpp
     # scheduler

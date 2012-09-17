@@ -25,5 +25,14 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/ngs/hdf5/deprecated.hpp>
 #include <alps/ngs/hdf5.hpp>
+#include <alps/ngs/hdf5/map.hpp>
+#include <alps/ngs/hdf5/pair.hpp>
+#include <alps/ngs/hdf5/vector.hpp>
+#include <alps/ngs/hdf5/pointer.hpp>
+#include <alps/ngs/hdf5/complex.hpp>
+#include <alps/ngs/hdf5/valarray.hpp>
+#include <alps/ngs/hdf5/multi_array.hpp>
+#include <alps/ngs/hdf5/shared_array.hpp>
+#include <alps/ngs/hdf5/ublas/matrix.hpp>
+#include <alps/ngs/hdf5/ublas/vector.hpp>
