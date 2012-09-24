@@ -509,8 +509,7 @@ namespace alps {
     
         bool archive::is_scalar(std::string path) const {
             hid_t space_id;
-            path = complete_path(path);
-            if (path.find_last_of('@') != std::string::npos && is_attribute(path)) {
+            if ((path = complete_path(path)).find_last_of('@') != std::string::npos && is_attribute(path)) {
                 detail::attribute_type attr_id(detail::open_attribute(*this, context_->file_id_, path));
                 space_id = H5Aget_space(attr_id);
             } else if (path.find_last_of('@') == std::string::npos && is_data(path)) {
@@ -531,8 +530,7 @@ namespace alps {
 
         bool archive::is_string(std::string path) const {
             hid_t type_id;
-            path = complete_path(path);
-            if (path.find_last_of('@') != std::string::npos) {
+            if ((path = complete_path(path)).find_last_of('@') != std::string::npos) {
                 detail::attribute_type attr_id(detail::open_attribute(*this, context_->file_id_, path));
                 type_id = H5Aget_type(attr_id);
             } else {
@@ -546,8 +544,7 @@ namespace alps {
     
         bool archive::is_null(std::string path) const {
             hid_t space_id;
-            path = complete_path(path);
-            if (path.find_last_of('@') != std::string::npos) {
+            if ((path = complete_path(path)).find_last_of('@') != std::string::npos) {
                 detail::attribute_type attr_id(detail::open_attribute(*this, context_->file_id_, path));
                 space_id = H5Aget_space(attr_id);
             } else {
@@ -599,8 +596,7 @@ namespace alps {
         }
     
         std::vector<std::size_t> archive::extent(std::string path) const {
-            path = complete_path(path);
-            if (is_null(path))
+            if (is_null(path = complete_path(path)))
                 return std::vector<std::size_t>(1, 0);
             else if (is_scalar(path))
                 return std::vector<std::size_t>(1, 1);
@@ -620,8 +616,7 @@ namespace alps {
         }
     
         std::size_t archive::dimensions(std::string path) const {
-            path = complete_path(path);
-            if (path.find_last_of('@') != std::string::npos) {
+            if ((path = complete_path(path)).find_last_of('@') != std::string::npos) {
                 detail::attribute_type attr_id(detail::open_attribute(*this, context_->file_id_, path));
                 return detail::check_error(H5Sget_simple_extent_dims(detail::space_type(H5Aget_space(attr_id)), NULL, NULL));
             } else {
