@@ -4,8 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2011 by Lukas Gamper <gamperl@gmail.com>                   *
- *                           Matthias Troyer <troyer@comp-phys.org>                *
+ * Copyright (C) 2011 - 2012 by Mario Koenz <mkoenz@ethz.ch>                       *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -26,29 +25,13 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_HPP
-#define ALPS_NGS_HPP
+#ifndef ALPS_NGS_ALEA_HPP
+#define ALPS_NGS_ALEA_HPP
 
-#include <alps/ngs/api.hpp>
-#include <alps/ngs/signal.hpp>
-#include <alps/ngs/cast.hpp>
-#include <alps/ngs/callback.hpp>
-#include <alps/ngs/boost_mpi.hpp>
-#include <alps/ngs/multithread.hpp>
-#include <alps/ngs/short_print.hpp>
-#include <alps/ngs/thread_interrupted.hpp>
-#include <alps/ngs/observablewrappers.hpp>
+#include <alps/ngs/alea/type_traits.hpp>
+#include <alps/ngs/alea/detail/properties.hpp>
+#include <alps/ngs/alea/histogram.hpp>
+#include <alps/ngs/alea/accumulator.hpp>
+#include <alps/ngs/alea/accumulator_wrapper.hpp>
 
-#include <alps/ngs/alea.hpp>
-
-#include <alps/ngs/scheduler/mcbase.hpp>
-#include <alps/ngs/scheduler/mpimcsim.hpp>
-
-// TODO: remove these deprecated headers:
-#include <alps/ngs/mcresult.hpp>
-#include <alps/ngs/mcresults.hpp>
-#include <alps/ngs/mcoptions.hpp>
-#include <alps/ngs/mcobservable.hpp>
-#include <alps/ngs/mcobservables.hpp> // TODO: rethink this!
-
-#endif
+#endif //ALPS_NGS_ALEA_HPP
