@@ -99,7 +99,7 @@ namespace alps {
       
       void save(std::string const & filename) const {
           hdf5::archive ar(filename, "a");
-          ar << make_pvp("/simulation/results/"+obs.representation(), obs);
+          ar["/simulation/results/"+obs.representation()] << obs;
       }
 
       typename T::count_type count() const 

@@ -268,7 +268,7 @@ namespace alps {
                   , std::vector<std::size_t> chunk = std::vector<std::size_t>()
                   , std::vector<std::size_t> offset = std::vector<std::size_t>()
                   ) {
-            ar << make_pvp(path, MemoryBlock(value.begin(), value.end()));
+            ar[path] << MemoryBlock(value.begin(), value.end());
         }
         template <typename T, typename MemoryBlock>
         void load(
@@ -279,7 +279,7 @@ namespace alps {
                   , std::vector<std::size_t> offset = std::vector<std::size_t>()
                   ) {
             MemoryBlock tmp;
-            ar >> make_pvp(path, tmp);
+            ar[path] >> tmp;
             value = alps::numeric::vector<T, MemoryBlock>(tmp.begin(), tmp.end());
         }
 

@@ -43,7 +43,7 @@ namespace alps {
                 {}
 
                 template <typename U> void operator()(U const & data) {
-                    ar << make_pvp("", data);
+                    ar[""] << data;
                 }
                 
                 template <typename U> void operator()(U * const ptr, std::vector<std::size_t> const & size) {
@@ -58,7 +58,7 @@ namespace alps {
                         extract_from_pyobject(scalar, raw[i]);
                         data.push_back(scalar.value);
                     }
-                    ar << make_pvp("", data);
+                    ar[""] << data;
                 }
 
                 void operator()(boost::python::dict const &) {
@@ -76,7 +76,7 @@ namespace alps {
             {}
 
             template<typename T> void operator()(T const & v) const {
-                ar << make_pvp("", v);
+                ar[""] << v;
             }
             
             #if defined(ALPS_HAVE_PYTHON)
@@ -136,7 +136,7 @@ namespace alps {
             #define ALPS_NGS_PARAMVALUE_LOAD_HDF5(T)                                \
                 {                                                                    \
                     T value;                                                        \
-                    ar >> make_pvp("", value);                                        \
+                    ar[""] >> value;                                        \
                     operator=(value);                                                \
                 }
             #define ALPS_NGS_PARAMVALUE_LOAD_HDF5_CHECK(T, U)                        \

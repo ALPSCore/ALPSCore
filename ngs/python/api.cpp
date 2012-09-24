@@ -35,13 +35,9 @@ namespace alps {
     namespace detail {
 
         void save_results_export(mcresults const & res, params const & par, alps::hdf5::archive & ar, std::string const & path) {
-            ar
-                << make_pvp("/parameters", par)
-            ;
+            ar["/parameters"] << par;
             if (res.size())
-                ar
-                    << make_pvp(path, res)
-                ;
+                ar[path] << res;
         }
     }
 }

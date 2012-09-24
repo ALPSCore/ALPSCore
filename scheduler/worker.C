@@ -158,16 +158,16 @@ void Worker::load(hdf5::archive & ar)
 {
   std::string state;
   std::string rngname;
-  ar  >> make_pvp("/parameters", parms)
-      >> make_pvp("/rng", state)
-      >> make_pvp("/rng/@name", rngname);
+  ar["/parameters"] >> parms;
+  ar["/rng"] >> state;
+  ar["/rng/@name"] >> rngname;
 
   std::stringstream rngstream(state);
   if (rngname != rng_name())
     boost::throw_exception(std::runtime_error("Created RNG " + rng_name() + " but attenprint to load " + rngname));
   engine_ptr->read(rngstream);
   if(node == 0)
-      ar >> make_pvp("/log/alps", info);
+      ar["/log/alps"] >> info;
   Disorder::seed(parms.value_or_default("DISORDERSEED",0));
 }
 
@@ -175,11 +175,11 @@ void Worker::save(hdf5::archive & ar) const
 {
   std::ostringstream rngstream;
   rngstream << *engine_ptr;
-  ar << make_pvp("/parameters", parms) 
-      << make_pvp("/rng", rngstream.str())
-      << make_pvp("/rng/@name", rng_name());
+  ar["/parameters"] << parms;
+  ar["/rng"] << rngstream.str();
+  ar["/rng/@name"] << rng_name();
   if(node == 0)
-      ar << make_pvp("/log/alps", info);
+      ar["/log/alps"] << info;
 }
 
 TaskInfo Worker::get_info() const
@@ -235,7 +235,7 @@ void Worker::load_from_file(const boost::filesystem::path& fn,const boost::files
 #ifdef ALPS_HAVE_HDF5
   if (boost::filesystem::exists(hdf5path)) {
       hdf5::archive ar(hdf5path.string());
-      ar >> make_pvp("/", *this);
+      ar["/"] >> *this;
   }
 #endif
   IXDRFileDump dump(fn);
@@ -255,7 +255,7 @@ void Worker::save_to_file(const boost::filesystem::path& fnpath, const boost::fi
     if (boost::filesystem::exists(p))
       boost::filesystem::remove(p);
     hdf5::archive worker_ar(p.string(), "a");
-    worker_ar << make_pvp("/", *this);
+    worker_ar["/"] << *this;
   } // close file
   if (backup) {
     if (boost::filesystem::exists(hdf5path))

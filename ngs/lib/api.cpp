@@ -36,10 +36,8 @@ namespace alps {
         template<typename R, typename P> void save_results_impl(R const & results, P const & params, boost::filesystem::path const & filename, std::string const & path) {
             if (results.size()) {
                 hdf5::archive ar(filename.string(), "w");
-                ar
-                    << make_pvp("/parameters", params)
-                    << make_pvp(path, results)
-                ;
+                ar["/parameters"] << params;
+                ar[path] << results;
             }
         }
     }

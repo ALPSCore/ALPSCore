@@ -95,9 +95,9 @@ void Task::parse_task_file(bool read_parms_only)
   if (boost::filesystem::exists(boost::filesystem::path(h5name))) {
     hdf5::archive ar(h5name);
     if (read_parms_only)
-      ar >> make_pvp("/parameters",parms);
+      ar["/parameters"] >> parms;
     else 
-      ar >> make_pvp("", *this);
+      ar[""] >> *this;
   } 
 #endif
   if (read_xml) {
@@ -160,10 +160,10 @@ Parameters Task::parse_ext_task_file(std::string infilename)
 }
 
 void Task::load(hdf5::archive & ar) {
-    ar >> make_pvp("/parameters", parms);
+    ar["/parameters"] >> parms;
 }
 void Task::save(hdf5::archive & ar) const {
-    ar << make_pvp("/parameters", parms);
+    ar["/parameters"] << parms;
 }
 
 void Task::handle_tag(std::istream& infile, const XMLTag& tag)
@@ -261,7 +261,7 @@ void Task::checkpoint(const boost::filesystem::path& fn, bool writeallxml) const
 
   {
     hdf5::archive ar(make_backup ? task_backup : task_path, "a");
-    ar << make_pvp("/",*this);
+    ar["/"] << *this;
   } // close file
   
 #endif
@@ -307,7 +307,7 @@ void Task::checkpoint_hdf5(const boost::filesystem::path& fn) const
 
   {
     hdf5::archive ar(make_backup ? task_backup : task_path, "a");
-    ar << make_pvp("/",*this);
+    ar["/"] << *this;
   } // close file
   
   if(make_backup) {

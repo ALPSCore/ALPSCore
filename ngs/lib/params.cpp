@@ -111,7 +111,7 @@ namespace alps {
 
     void params::save(hdf5::archive & ar) const {
         for (params::const_iterator it = begin(); it != end(); ++it)
-            ar << make_pvp(it->first, it->second);
+            ar[it->first] << it->second;
     }
 
     void params::load(hdf5::archive & ar) {
@@ -120,7 +120,7 @@ namespace alps {
         std::vector<std::string> list = ar.list_children(ar.get_context());
         for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
             detail::paramvalue value;
-            ar >> make_pvp(*it, value);
+            ar[*it] >> value;
             setter(*it, value);
         }
     }

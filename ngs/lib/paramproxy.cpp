@@ -39,7 +39,7 @@ namespace alps {
                 throw std::runtime_error(
                     "No reference to parameter available" + ALPS_STACKTRACE
                 );
-            ar << make_pvp("", !!value ? *value : getter());
+            ar[""] << (!!value ? *value : getter());
         }
 
         void paramproxy::load(hdf5::archive & ar) {
@@ -49,10 +49,10 @@ namespace alps {
                 );
             if (!!value) {
                 detail::paramvalue value;
-                ar >> make_pvp("", value);
+                ar[""] >> value;
                 setter(value);
             } else
-                ar >> make_pvp("", *value);
+                ar[""] >> *value;
         }
 
         void paramproxy::print(std::ostream & os) const {

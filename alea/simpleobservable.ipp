@@ -41,26 +41,26 @@ template <class T,class BINNING>
 void SimpleObservable<T,BINNING>::save(hdf5::archive & ar) const 
 {
   AbstractSimpleObservable<T>::save(ar);
-  ar << make_pvp("", b_);
+  ar[""] << b_;
 }
 
 template <class T,class BINNING> 
 void SimpleObservable<T,BINNING>::load(hdf5::archive & ar) 
 {
   AbstractSimpleObservable<T>::load(ar);
-  ar >> make_pvp("", b_);
+  ar[""] >> b_;
 }
 
 template <class T,class BINNING> 
 hdf5::archive & operator<<(hdf5::archive & ar,  SimpleObservable<T,BINNING> const& obs) 
 {
-  return ar << make_pvp("/simulation/results/" + obs.representation(), obs);
+  return ar["/simulation/results/" + obs.representation()] << obs;
 }
 
 template <class T,class BINNING> 
 hdf5::archive & operator>>(hdf5::archive & ar,  SimpleObservable<T,BINNING>& obs) 
 {
-  return ar >> make_pvp("/simulation/results/" + obs.representation(), obs);
+  return ar["/simulation/results/" + obs.representation()] >> obs;
 }
 
 } // end namespace alps

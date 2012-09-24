@@ -266,22 +266,17 @@ inline void NoBinning<T>::load(IDump& dump)
 
 
 template <class T> inline void NoBinning<T>::save(hdf5::archive & ar) const {
-  ar
-      << make_pvp("sum", sum_)
-      << make_pvp("sum2", sum2_)
-      << make_pvp("count", count_)
-  ;
+  ar["sum"] << sum_;
+  ar["sum2"] << sum2_;
+  ar["count"] << count_;
 }
 
 template <class T> inline void NoBinning<T>::load(hdf5::archive & ar) {
-  ar
-      >> make_pvp("count", count_)
-  ;
-  if (count_ > 0)
-      ar
-          >> make_pvp("sum", sum_)
-          >> make_pvp("sum2", sum2_)
-      ;
+  ar["count"] >> count_;
+  if (count_ > 0) {
+      ar["sum"] >> sum_;
+      ar["sum2"] >> sum2_;
+  }
 }
 
 } // end namespace alps
