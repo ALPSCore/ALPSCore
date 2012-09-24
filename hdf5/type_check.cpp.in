@@ -69,9 +69,7 @@ template<typename base_type> struct test {
         {
             alps::hdf5::archive oar(filename, SZIP_COMPRESS ? "ca" : "a");
             if (IS_ATTRIBUTE)
-                oar
-                    << alps::make_pvp("/data", 0)
-                ;
+                oar["/data"] << 0;
             oar
                 << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "len", &write_1_value[0], length)
                 << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "len_0", write_0_value, 0)
@@ -111,31 +109,21 @@ template<typename base_type> struct test {
         {
             alps::hdf5::archive oar(filename, SZIP_COMPRESS ? "ca" : "a");
             if (IS_ATTRIBUTE)
-                oar
-                    << alps::make_pvp("/data", 0)
-                ;
-            oar
-                << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "random", random_write)
-                << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "empty", empty_write)
-            ;
+                oar["/data"] << 0;
+            oar[std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "random"] << random_write;
+            oar[std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "empty"]<< empty_write;
             if (!IS_ATTRIBUTE)
-                oar
-                    << alps::make_pvp("/special", special_write)
-                ;
+                oar["/special"] << special_write;
         }
         {
             alps::hdf5::archive iar(filename);
             base_type random_read(creator<base_type>::random(iar));
             base_type empty_read(creator<base_type>::empty(iar));
             base_type special_read(creator<base_type>::special(iar));
-            iar
-                >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "random", random_read)
-                >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "empty", empty_read)
-            ;
+            iar[std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "random"] >> random_read;
+            iar[std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "empty"] >> empty_read;
             if (!IS_ATTRIBUTE)
-                iar
-                    >> alps::make_pvp("/special", special_read)
-                ;
+                iar["/special"] >> special_read;
             result = equal(random_write, random_read) && equal(empty_write, empty_read) && (IS_ATTRIBUTE || equal(special_write, special_read));
             destructor<base_type>::apply(random_read);
             destructor<base_type>::apply(empty_read);
@@ -154,18 +142,12 @@ template<typename base_type> struct test {
         alps::hdf5::archive ar(filename, SZIP_COMPRESS ? "ca" : "a");
         {
             if (IS_ATTRIBUTE)
-                ar
-                    << alps::make_pvp("/data", 0)
-                ;
-            ar
-                << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "overwrite", random_write)
-            ;
+                ar["/data"] << 0;
+            ar[std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "overwrite"] << random_write;
         }
         {
             data_type random_read(creator<data_type>::random(ar));
-            ar
-                >> alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "overwrite", random_read)
-            ;
+            ar[std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "overwrite"] >> random_read;
             result = equal(random_write, random_read);
             destructor<data_type>::apply(random_read);
         }
@@ -206,9 +188,7 @@ template<typename T> struct test<boost::shared_array<T> > {
         {
             alps::hdf5::archive oar(filename, SZIP_COMPRESS ? "ca" : "a");
             if (IS_ATTRIBUTE)
-                oar
-                    << alps::make_pvp("/data", 0)
-                ;
+                oar["/data"] << 0;
             oar
                 << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "len", write_1_value, length)
                 << alps::make_pvp(std::string(IS_ATTRIBUTE ? "/data/@" : "/") + "ptr_1", write_1_value, size_1)

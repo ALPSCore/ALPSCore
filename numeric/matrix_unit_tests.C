@@ -1025,13 +1025,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( hdf5, T, test_types )
 
     {
         alps::hdf5::archive ar(filename, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-        ar << alps::make_pvp("/matrix",a);
+        ar["/matrix"] << a;
     }
 
     BOOST_CHECK_EQUAL(a,b);
     matrix<T> c;
     alps::hdf5::archive ar2(filename);
-    ar2 >> alps::make_pvp("/matrix",c);
+    ar2["/matrix"] >> c;
 
     BOOST_CHECK_EQUAL(a,c);
     BOOST_CHECK_EQUAL(b,c);
@@ -1066,13 +1066,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( hdf5_matrix_matrix, T, test_types )
 
     {
         alps::hdf5::archive ar(filename, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-        ar << alps::make_pvp("/matrix",a);
+        ar["/matrix"] << a;
     }
 
     BOOST_CHECK_EQUAL(a,b);
     matrix<matrix<T> > c;
     alps::hdf5::archive ar2(filename);
-    ar2 >> alps::make_pvp("/matrix",c);
+    ar2["/matrix"] >> c;
 
     BOOST_CHECK_EQUAL(a,c);
     BOOST_CHECK_EQUAL(b,c);

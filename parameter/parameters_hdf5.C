@@ -42,12 +42,12 @@ try {
   std::cout << params;
   {
     alps::hdf5::archive h5(file, "a");
-    h5 << make_pvp("/parameters", params);
+    h5["/parameters"] << params;
   }
   params.clear();
   {
     alps::hdf5::archive h5(file, "a");
-    h5 >> make_pvp("/parameters", params);
+    h5["/parameters"] >> params;
   }
   std::cout << params;
   boost::filesystem::remove(boost::filesystem::path(file));

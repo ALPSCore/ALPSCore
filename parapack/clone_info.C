@@ -63,13 +63,13 @@ try {
   #pragma omp critical (hdf5io)
   {
     alps::hdf5::archive ar(h5path.string(), "a");
-    ar << make_pvp("/info", info);
+    ar["/info"] << info;
   }
   info = alps::clone_info();
   #pragma omp critical (hdf5io)
   {
     alps::hdf5::archive ar(h5path.string());
-    ar >> make_pvp("/info", info);
+    ar["/info"] >> info;
   }
   ox << info;
   boost::filesystem::remove(h5path);

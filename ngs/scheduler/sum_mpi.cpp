@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
     alps::parameters_type<alps::mcmpisim<my_sim_type> >::type params;
     if (c.rank() == 0) { // read parameters only in master
         alps::hdf5::archive ar(options.input_file);
-        ar >> make_pvp("/parameters", params);
+        ar["/parameters"] >> params;
     }
     broadcast(c, params); // send parameters to all clones
 

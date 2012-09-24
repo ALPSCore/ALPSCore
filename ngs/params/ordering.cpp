@@ -33,7 +33,6 @@ int main() {
     std::string const filename = "odering";
     if (boost::filesystem::exists(boost::filesystem::path(filename)))
         boost::filesystem::remove(boost::filesystem::path(filename));
-    using alps::make_pvp;
     {
         alps::params parms;
         parms["a"] = 6;
@@ -45,15 +44,13 @@ int main() {
             std::cout << it->first << " " << it->second << std::endl;
 
         alps::hdf5::archive oar(filename, "w");
-        oar
-            << make_pvp("/parameters", parms)
-        ;
+        oar["/parameters"] << parms;
     }
     std::cout << "= = = = =" << std::endl;
     {
         alps::params parms;
         alps::hdf5::archive iar(filename, "r");
-        iar >> make_pvp("/parameters", parms);
+        iar["/parameters"] >> parms;
 
         alps::params::const_iterator it = parms.begin();
         assert((it++)->first == "a");
