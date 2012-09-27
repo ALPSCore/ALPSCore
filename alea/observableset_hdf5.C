@@ -69,7 +69,7 @@ int main() {
         measurement.addObservable(ratio);
         
         alps::hdf5::archive oar(filename, "a");
-        oar << make_pvp("/test/0/result", measurement);
+        oar["/test/0/result"] << measurement;
         
         alps::IntHistogramObsevaluator eval = measurement["Histogram"];
     }
@@ -80,14 +80,14 @@ int main() {
                     << alps::RealObservable("No Measurements")
                     << alps::IntHistogramObservable("Histogram", 0, 10);
         alps::hdf5::archive iar(filename, "r");
-        iar >> make_pvp("/test/0/result", measurement);
+        iar["/test/0/result"] >> measurement;
         std::cout << measurement;
         alps::IntHistogramObsevaluator eval = measurement["Histogram"];
     }
     {
         alps::ObservableSet measurement;
         alps::hdf5::archive iar(filename, "r");
-        iar >> make_pvp("/test/0/result", measurement);
+        iar["/test/0/result"] >> measurement;
         std::cout << measurement;
         alps::IntHistogramObsevaluator eval = measurement["Histogram"];
     }
