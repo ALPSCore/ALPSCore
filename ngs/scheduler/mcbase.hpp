@@ -31,8 +31,8 @@
 #include <alps/ngs/hdf5.hpp>
 #include <alps/ngs/config.hpp>
 #include <alps/ngs/params.hpp>
-#include <alps/ngs/mcresults.hpp>
-#include <alps/ngs/mcobservables.hpp>
+#include <alps/ngs/mcresults.hpp> // TODO: replace by new alea
+#include <alps/ngs/mcobservables.hpp> // TODO: replace by new alea
 
 #ifdef ALPS_HAVE_PYTHON
     #include <alps/ngs/boost_python.hpp>
@@ -40,7 +40,6 @@
 
 #include <alps/random/mersenne_twister.hpp>
 
-#include <boost/chrono.hpp>
 #include <boost/function.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/random/uniform_real.hpp>
@@ -68,7 +67,7 @@ namespace alps {
             virtual void measure() = 0;
 
             virtual double fraction_completed() const = 0;
-
+        
             void save(boost::filesystem::path const & path) const;
 
             void load(boost::filesystem::path const & path);
@@ -102,7 +101,11 @@ namespace alps {
 
         protected:
 
-            virtual bool complete_callback(boost::function<bool ()> const & stop_callback);
+            virtual void lock_data();
+            virtual void unlock_data();
+        
+            virtual void lock_results();
+            virtual void unlock_results();
 
             parameters_type params;
             mcobservables measurements;
@@ -113,11 +116,6 @@ namespace alps {
             #ifdef ALPS_HAVE_PYTHON
                 static bool callback_wrapper(boost::python::object stop_callback);
             #endif
-
-            double fraction;
-            boost::chrono::duration<double> check_duration;
-            boost::chrono::high_resolution_clock::time_point start_time_point;
-            boost::chrono::high_resolution_clock::time_point last_check_time_point;
     };
 }
 

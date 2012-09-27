@@ -5,7 +5,6 @@
  * ALPS Libraries                                                                  *
  *                                                                                 *
  * Copyright (C) 2010 - 2011 by Lukas Gamper <gamperl@gmail.com>                   *
- *                           Matthias Troyer <troyer@comp-phys.org>                *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -26,30 +25,47 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_HPP
-#define ALPS_NGS_HPP
+#ifndef ALPS_NGS_SCHEDULER_MPIPARALLELIM_HPP
+#define ALPS_NGS_SCHEDULER_MPIPARALLELIM_HPP
 
-#include <alps/ngs/api.hpp>
-#include <alps/ngs/signal.hpp>
-#include <alps/ngs/cast.hpp>
-#include <alps/ngs/callback.hpp>
-#include <alps/ngs/boost_mpi.hpp>
-#include <alps/ngs/multithread.hpp>
-#include <alps/ngs/short_print.hpp>
-#include <alps/ngs/thread_interrupted.hpp>
-#include <alps/ngs/observablewrappers.hpp>
+#include <alps/ngs/stacktrace.hpp>
 
-#include <alps/ngs/alea.hpp>
+#include <boost/mpi.hpp>
 
-#include <alps/ngs/scheduler/mcbase.hpp>
-#include <alps/ngs/scheduler/mpimcsim.hpp>
-#include <alps/ngs/scheduler/mpiparallelsim.hpp>
+#include <stdexcept>
 
-// TODO: remove these deprecated headers:
-#include <alps/ngs/mcresult.hpp>
-#include <alps/ngs/mcresults.hpp>
-#include <alps/ngs/mcoptions.hpp>
-#include <alps/ngs/mcobservable.hpp>
-#include <alps/ngs/mcobservables.hpp> // TODO: rethink this!
+namespace alps {
+
+    #ifdef ALPS_HAVE_MPI
+
+        template<typename Impl> class mpiparallelsim : public Impl {
+            public:
+                using Impl::collect_results;
+                
+                mpiparallelsim(typename alps::parameters_type<Impl>::type const & p) {
+                    throw std::runtime_error("No communicator passed" + ALPS_STACKTRACE);
+                }
+
+                mpiparallelsim(typename alps::parameters_type<Impl>::type const & p, boost::mpi::communicator const & c) 
+                    : Impl(p, c)
+                    , communicator(c)
+                {
+                    MPI_Errhandler_set(communicator, MPI_ERRORS_RETURN);
+                }
+
+                double fraction_completed() const {
+                    return Impl::fraction_completed();
+                }
+
+                typename results_type<Impl>::type collect_results(typename result_names_type<Impl>::type const & names) const {
+                    return Impl::collect_results(names);
+                }
+
+            private:
+                boost::mpi::communicator communicator;
+        };
+
+    #endif
+}
 
 #endif

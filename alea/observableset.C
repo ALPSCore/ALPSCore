@@ -72,9 +72,7 @@ void ObservableSet::load(IDump& dump)
 void ObservableSet::save(hdf5::archive & ar) const {
     for(base_type::const_iterator it = base_type::begin(); it != base_type::end(); ++it)
         if(it->second)
-            ar 
-                << make_pvp(hdf5_name_encode(it->second->name()), *it->second)
-            ;
+            ar[hdf5_name_encode(it->second->name())] << *it->second;
 }
 
 void ObservableSet::load(hdf5::archive & ar) {
@@ -84,7 +82,7 @@ void ObservableSet::load(hdf5::archive & ar) {
         std::string obsname = hdf5_name_decode(*it);
         if (ar.is_attribute(*it + "/@sign")) {
             std::string signname;
-            ar >> make_pvp(*it + "/@sign", signname);
+            ar[*it + "/@sign"] >> signname;
             skip.insert(signname + " * " + obsname);
         }
     }
@@ -101,7 +99,7 @@ void ObservableSet::load(hdf5::archive & ar) {
                 bool is_signed = ar.is_attribute(*it + "/@sign");
                 std::string signname;
                 if (is_signed)
-                    ar >> make_pvp(*it + "/@sign", signname);
+                    ar[*it + "/@sign"] >> signname;
                 bool is_simple_real = ar.is_data((is_signed ? (signname + " * " + *it) : *it) + "/sum");
                 bool is_real = ar.is_data((is_signed ? (signname + " * " + *it) : *it) + "/timeseries/logbinning") && ar.is_data((is_signed ? (signname + " * " + *it) : *it) + "/timeseries/data");
                 bool is_histogram = ar.is_attribute(*it + "/@min") && ar.is_attribute(*it + "/@max") && ar.is_attribute(*it + "/@stepsize");
@@ -138,9 +136,7 @@ void ObservableSet::load(hdf5::archive & ar) {
                         addObservable(RealVectorObsevaluator(obsname));
                 }
             }
-            ar 
-                >> make_pvp(*it, operator[](obsname))
-            ;
+            ar[*it] >> operator[](obsname);
         }
     }
     update_signs();

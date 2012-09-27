@@ -30,6 +30,9 @@
 
 #include <alps/ngs/stacktrace.hpp>
 
+#include <boost/mpi.hpp>
+#include <boost/chrono.hpp>
+
 #include <stdexcept>
 
 namespace alps {
@@ -48,12 +51,18 @@ namespace alps {
                     : Impl(p, c.rank())
                     , communicator(c)
                     , binnumber(p["binnumber"] | std::min(128, 2 * c.size()))
+                    , data_locked(false)
+                    , results_locked(false)
+                    , fraction(0.)
+                    , check_duration(8.)
+                    , start_time_point(boost::chrono::high_resolution_clock::now())
+                    , last_check_time_point(boost::chrono::high_resolution_clock::now())
                 {
                     MPI_Errhandler_set(communicator, MPI_ERRORS_RETURN);
                 }
 
                 double fraction_completed() const {
-                    return boost::mpi::all_reduce(communicator, Impl::fraction_completed(), std::plus<double>());
+                    return fraction;
                 }
 
                 typename alps::results_type<Impl>::type collect_results(typename alps::result_names_type<Impl>::type const & names) const {
@@ -66,37 +75,53 @@ namespace alps {
                     return partial_results;
                 }
 
+            protected:
+
+                void lock_data() {
+                    data_locked = true;
+                    if (results_locked)
+                        check_fraction();
+                }
+            
+                void unlock_data() {
+                    data_locked = false;
+                }
+            
+                void lock_results() {
+                    results_locked = true;
+                    if (data_locked)
+                        check_fraction();
+                }
+            
+                void unlock_results() {
+                    results_locked = false;
+                }
+
             private:
+
+                void check_fraction() {
+                    boost::chrono::high_resolution_clock::time_point now_time_point = boost::chrono::high_resolution_clock::now();
+                    if (now_time_point - last_check_time_point > check_duration) {
+                        fraction = boost::mpi::all_reduce(communicator, Impl::fraction_completed(), std::plus<double>());
+                        check_duration = boost::chrono::duration<double>(std::min(
+                            2. *  check_duration.count(),
+                            std::max(
+                                  double(check_duration.count())
+                                , 0.8 * (1 - fraction) / fraction * boost::chrono::duration_cast<boost::chrono::duration<double> >(now_time_point - start_time_point).count()
+                            )
+                        ));
+                        last_check_time_point = now_time_point;
+                    }
+                }
+
                 boost::mpi::communicator communicator;
                 std::size_t binnumber;
-        };
-
-        // TODO: we should rename to a good one.  'parallel'?
-        template<typename Impl> class parallel2 : public Impl {
-            public:
-                using Impl::collect_results;
-                
-                parallel2(typename alps::parameters_type<Impl>::type const & p) {
-                    throw std::runtime_error("No communicator passed" + ALPS_STACKTRACE);
-                }
-
-                parallel2(typename alps::parameters_type<Impl>::type const & p, boost::mpi::communicator const & c) 
-                    : Impl(p, c)
-                    , communicator(c)
-                {
-                    MPI_Errhandler_set(communicator, MPI_ERRORS_RETURN);
-                }
-
-                double fraction_completed() const {
-                    return Impl::fraction_completed();
-                }
-
-                typename results_type<Impl>::type collect_results(typename result_names_type<Impl>::type const & names) const {
-                    return Impl::collect_results(names);
-                }
-
-            private:
-                boost::mpi::communicator communicator;
+                bool data_locked;
+                bool results_locked;
+                double fraction;
+                boost::chrono::duration<double> check_duration;
+                boost::chrono::high_resolution_clock::time_point start_time_point;
+                boost::chrono::high_resolution_clock::time_point last_check_time_point;
         };
 
     #endif

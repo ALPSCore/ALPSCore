@@ -52,6 +52,14 @@ namespace alps {
             return set;
         }
 
+#ifdef ALPS_NGS_USE_NEW_ALEA
+        alps::alea::accumulator_set & operator<< (alps::alea::accumulator_set & set, RealObservable const & obs) {
+            using namespace alps::alea::tag;
+            set.insert(name, new alps::alea::accumulator<double, alps::alea::features<mean, error, fixed_nun_bin> > >(bin_num=binnum));
+            return set;
+        }
+#endif        
+
         alps::mcobservables & operator<< (alps::mcobservables & set, RealVectorObservable const & obs) {
             set.create_RealVectorObservable(obs.getName(), obs.getBinnum());
             return set;

@@ -71,6 +71,10 @@ namespace alps {
         };
 
         ALPS_DECL alps::mcobservables & operator<< (alps::mcobservables & set, RealObservable const & obs);
+        
+#ifdef ALPS_NGS_USE_NEW_ALEA
+        ALPS_DECL alps::alea::accumulator_set & operator<< (alps::alea::accumulator_set & set, RealObservable const & obs);
+#endif
 
         class ALPS_DECL RealVectorObservable : public detail::ObservableWapper {
             public:
