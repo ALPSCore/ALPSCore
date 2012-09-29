@@ -30,7 +30,7 @@
 #define ALPS_NGS_ALEA_DETAIL_ACCUM_WRAPPER_MACRO_HEADER
 
 #include <alps/ngs/stacktrace.hpp>
-#include <alps/ngs/alea/detail/accum_prewrapper.hpp>
+#include <alps/ngs/alea/wrapper/accum_prewrapper.hpp>
 
 
 #include <boost/utility.hpp>

@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2011 by Lukas Gamper <gamperl@gmail.com>                   *
+ * Copyright (C) 2011 - 2012 by Mario Koenz <mkoenz@ethz.ch>                       *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -26,10 +26,25 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-#ifndef ALPS_NGS_ALEA_ACCUMULATOR_HEADER
-#define ALPS_NGS_ALEA_ACCUMULATOR_HEADER
+#ifndef ALPS_NGS_ALEA_DETAIL_PROPERTIES_HEADER
+#define ALPS_NGS_ALEA_DETAIL_PROPERTIES_HEADER
 
 #include <alps/ngs/alea/features.hpp>
-#include <alps/ngs/alea/accumulator/accumulator_impl.hpp>
+#include <alps/ngs/alea/accumulator/accum_property_generator.hpp>
 
-#endif // ALPS_NGS_ALEA_ACCUMULATOR_HEADER
+namespace alps
+{
+    namespace alea
+    {
+    IMPLEMENT_FUNCTION(mean)
+    IMPLEMENT_FUNCTION(error)
+    IMPLEMENT_FUNCTION(fixed_size_bin)
+    IMPLEMENT_FUNCTION(max_num_bin)
+    IMPLEMENT_FUNCTION(log_bin)
+    IMPLEMENT_FUNCTION(autocorr)
+    IMPLEMENT_FUNCTION(tau)
+    IMPLEMENT_FUNCTION(converged)
+    IMPLEMENT_FUNCTION(histogram)
+    }//end alea namespace 
+}//end alps namespace
+#endif // ALPS_NGS_ALEA_DETAIL_PROPERTIES_HEADER

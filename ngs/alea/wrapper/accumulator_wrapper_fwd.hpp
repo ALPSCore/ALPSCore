@@ -26,59 +26,50 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-#ifndef ALPS_NGS_ALEA_DETAIL_VALUE_TYPE_IMPLEMENTATION_HEADER
-#define ALPS_NGS_ALEA_DETAIL_VALUE_TYPE_IMPLEMENTATION_HEADER
+#ifndef ALPS_NGS_ALEA_ACCUMULATOR_WRAPPER_FWD_HEADER
+#define ALPS_NGS_ALEA_ACCUMULATOR_WRAPPER_FWD_HEADER
 
-#include <alps/ngs/alea/accumulator_impl.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/cstdint.hpp>
+#include <alps/ngs/alea/accumulator.hpp>
 
-#include <typeinfo>
 namespace alps
 {
     namespace alea
     {
         namespace detail
         {
-            //setting up the dependencies for value_type-Implementation isn't neccessary bc has none
-            
-            template<typename T, typename base_type> 
-            class Implementation<ValueType<T>, base_type>
-            {
-                typedef Implementation<ValueType<T>, base_type> ThisType;
+            class base_wrapper;
+            template<typename Accum>
+            class result_type_wrapper;
+
+            //class that holds the base_wrapper pointer
+            class accumulator_wrapper {
                 public:
-                    typedef T value_type;
+                    template<typename T> 
+                    accumulator_wrapper(T arg);
                     
-                    Implementation<ValueType<T>, base_type>(ThisType const & arg): count_(arg.count_) {}
+                    accumulator_wrapper(accumulator_wrapper const & arg);
                     
-                    template <typename ArgumentPack>
-                    Implementation<ValueType<T>, base_type>(ArgumentPack const & args, typename boost::disable_if<
-                                                                                                  boost::is_base_of<ThisType, ArgumentPack>
-                                                                                                , int
-                                                                                                >::type = 0
-                                            ): count_() 
-                    {}
+                    template<typename T>
+                    accumulator_wrapper& operator<<(const T& value);
+                        
                     
-                    inline ThisType& operator <<(value_type val) 
-                    {
-                        ++count_;
-                        return *this;
-                    }
+                    template<typename T>
+                    detail::result_type_wrapper<T> &get();//TODO
                     
-                    inline boost::uint64_t const & count() const 
-                    { 
-                        return count_; 
-                    }
-                
-                    template<typename Stream> 
-                    inline void print(Stream & os) 
-                    {
-                        os << "ValueType: " << typeid(value_type).name() << " " << std::endl;
-                        os << "Count: " << count() << " " << std::endl;
-                    }
-                
+                    friend std::ostream& operator<<(std::ostream &out, const accumulator_wrapper& wrapper);
+                    
+                    template <typename T>
+                    T & extract();
+                    
+                    boost::uint64_t count() const;
+                    
                 private:
-                    boost::uint64_t count_;
+                    boost::shared_ptr<base_wrapper> base_;
             };
-        } // end namespace detail
+        }//end detail namespace 
     }//end alea namespace 
 }//end alps namespace
-#endif // ALPS_NGS_ALEA_DETAIL_VALUE_TYPE_IMPLEMENTATION
+#endif // ALPS_NGS_ALEA_ACCUMULATOR_WRAPPER_FWD_HEADER
+

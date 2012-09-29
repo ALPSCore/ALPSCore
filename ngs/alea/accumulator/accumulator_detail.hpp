@@ -34,8 +34,8 @@
 #ifndef ALPS_NGS_ALEA_DETAIL_ACCUMULATOR_DETAIL_HEADER
 #define ALPS_NGS_ALEA_DETAIL_ACCUMULATOR_DETAIL_HEADER
 
-#include <alps/ngs/alea/detail/implementation_fwd.hpp>
-#include <alps/ngs/alea/type_traits.hpp>
+#include <alps/ngs/alea/feature/feature_tags.hpp>
+#include <alps/ngs/alea/features.hpp>
 
 #include <boost/static_assert.hpp>
 #include <boost/parameter.hpp>

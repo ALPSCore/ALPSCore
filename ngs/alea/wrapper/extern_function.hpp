@@ -26,25 +26,38 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-#ifndef ALPS_NGS_ALEA_DETAIL_PROPERTIES_HEADER
-#define ALPS_NGS_ALEA_DETAIL_PROPERTIES_HEADER
+#ifndef ALPS_NGS_ALEA_EXTERN_FUNCTION_HEADER
+#define ALPS_NGS_ALEA_EXTERN_FUNCTION_HEADER
 
-#include <alps/ngs/alea/type_traits.hpp>
+#include <alps/ngs/alea/wrapper/accumulator_wrapper_fwd.hpp>
+#include <alps/ngs/alea/global_enum.hpp>
 
-#include "accum_property_generator.hpp"
 namespace alps
 {
     namespace alea
     {
-    IMPLEMENT_FUNCTION(mean)
-    IMPLEMENT_FUNCTION(error)
-    IMPLEMENT_FUNCTION(fixed_size_bin)
-    IMPLEMENT_FUNCTION(max_num_bin)
-    IMPLEMENT_FUNCTION(log_bin)
-    IMPLEMENT_FUNCTION(autocorr)
-    IMPLEMENT_FUNCTION(tau)
-    IMPLEMENT_FUNCTION(converged)
-    IMPLEMENT_FUNCTION(histogram)
+        //------------------- for accumulator_wrapper -------------------
+        template <typename Accum>
+        Accum & extract(detail::accumulator_wrapper &m)
+        {
+            return m.extract<Accum>();
+        } 
+
+        template <typename Accum>
+        inline boost::uint64_t count(Accum const & arg)
+        {
+            return arg.count();
+        }
+
+        namespace detail
+        {
+            //this one is needed, bc of name-collision in accum_wrapper
+            template<typename Accum>
+            boost::uint64_t count_wrap(Accum const & arg)
+            {
+                return count(arg);
+            }
+        }
     }//end alea namespace 
 }//end alps namespace
-#endif // ALPS_NGS_ALEA_DETAIL_PROPERTIES_HEADER
+#endif //ALPS_NGS_ALEA_EXTERN_FUNCTION_HEADER

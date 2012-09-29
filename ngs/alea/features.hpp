@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2011 by Lukas Gamper <gamperl@gmail.com>                   *
+ * Copyright (C) 2011 - 2012 by Mario Koenz <mkoenz@ethz.ch>                       *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -26,10 +26,18 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-#ifndef ALPS_NGS_ALEA_ACCUMULATOR_HEADER
-#define ALPS_NGS_ALEA_ACCUMULATOR_HEADER
+#ifndef ALPS_NGS_ALEA_TYPE_TRAITS_HEADER
+#define ALPS_NGS_ALEA_TYPE_TRAITS_HEADER
 
-#include <alps/ngs/alea/features.hpp>
-#include <alps/ngs/alea/accumulator/accumulator_impl.hpp>
+#include <alps/ngs/alea/feature/value_type_feature.hpp>
+#include <alps/ngs/alea/feature/mean_feature.hpp>
+#include <alps/ngs/alea/feature/error_feature.hpp>
+#include <alps/ngs/alea/feature/fixed_size_bin_feature.hpp>
+#include <alps/ngs/alea/feature/max_num_bin_feature.hpp>
+#include <alps/ngs/alea/feature/log_bin_feature.hpp>
+#include <alps/ngs/alea/feature/autocorr_feature.hpp>
+#include <alps/ngs/alea/feature/converged_feature.hpp>
+#include <alps/ngs/alea/feature/tau_feature.hpp>
+#include <alps/ngs/alea/feature/histogram_feature.hpp>
 
-#endif // ALPS_NGS_ALEA_ACCUMULATOR_HEADER
+#endif // ALPS_NGS_ALEA_TYPE_TRAITS_HEADER

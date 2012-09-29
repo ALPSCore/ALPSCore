@@ -29,13 +29,64 @@
 #ifndef ALPS_NGS_ALEA_DETAIL_FIX_SIZE_BIN_IMPLEMENTATION_HEADER
 #define ALPS_NGS_ALEA_DETAIL_FIX_SIZE_BIN_IMPLEMENTATION_HEADER
 
-#include <alps/ngs/alea/accumulator_impl.hpp>
-#include <alps/ngs/alea/fixed_size_bin_proxy.hpp>
+#include <alps/ngs/alea/accumulator/accumulator_impl.hpp>
+#include <alps/ngs/alea/features.hpp>
+
+#include <vector>
+#include <ostream>
+#include <cmath>
+#include <algorithm>
 
 namespace alps
 {
     namespace alea
     {
+        //=================== fixed_size_bin proxy ===================
+        template<typename value_type>
+        class fixed_size_bin_proxy_type
+        {
+            typedef typename mean_type<value_type>::type mean_type;
+            typedef typename std::vector<value_type>::size_type size_type;
+            static std::vector<mean_type> unused;
+        public:
+            fixed_size_bin_proxy_type(): bin_(unused) {}
+            fixed_size_bin_proxy_type(  std::vector<mean_type> const & bin
+                                      , size_type const & bin_size):
+                                                                  bin_(bin)
+                                                                , bin_size_(bin_size)
+            {}
+            
+            inline std::vector<mean_type> const & bins() const 
+            {
+                return bin_;
+            }
+            
+            inline size_type const & bin_size() const
+            {
+                return bin_size_;
+            }
+            
+            template<typename T>
+            friend std::ostream & operator<<(std::ostream & os, fixed_size_bin_proxy_type<T> const & arg);
+        private:
+            std::vector<mean_type> const & bin_;
+            size_type bin_size_;
+        };
+
+        template<typename T>
+        inline std::ostream & operator<<(std::ostream & os, fixed_size_bin_proxy_type<T> const & arg)
+        {
+            os << "fixed_size_bin_proxy" << std::endl;
+            return os;
+            
+        };
+        //=================== fixed_size_bin trait ===================
+        template <typename T>
+        struct fixed_size_bin_type
+        {
+            typedef fixed_size_bin_proxy_type<T> type;
+        };
+        //=================== fixed_size_bin implementation ===================
         namespace detail
         {
             //set up the dependencies for the tag::fixed_size_binning-Implementation

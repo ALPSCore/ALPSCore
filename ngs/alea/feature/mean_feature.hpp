@@ -29,11 +29,63 @@
 #ifndef ALPS_NGS_ALEA_DETAIL_MEAN_IMPLEMENTATION_HEADER
 #define ALPS_NGS_ALEA_DETAIL_MEAN_IMPLEMENTATION_HEADER
 
-#include <alps/ngs/alea/accumulator_impl.hpp>
+#include <alps/ngs/alea/accumulator/accumulator_impl.hpp>
+
+#include <boost/type_traits.hpp>
+#include <boost/static_assert.hpp>
+
 namespace alps
 {
     namespace alea
     {
+        //=================== mean trait ===================
+        namespace detail
+        {
+            template<unsigned n> struct static_array
+            {
+                char type[n];
+            };
+            
+            template <typename T, int>
+            struct mean_type_impl
+            {
+                typedef T type;
+            };
+         
+            template <typename T>
+            struct mean_type_impl<T, 2>
+            {
+                typedef double type;
+            };
+         
+            template <typename T>
+            struct mean_type_impl<T, 3>
+            {
+                typedef typename boost::is_same<T, T>::type false_type;
+                BOOST_STATIC_ASSERT_MSG(!false_type::value, "mean_type trait failed");
+            };
+        }
+
+        template <typename value_type>
+        struct mean_type
+        {
+            private:
+                typedef value_type T;
+                static T t;
+                static detail::static_array<1> test(T);
+                static detail::static_array<2> test(double);
+                static detail::static_array<3> test(...);
+            public:
+                typedef typename detail::mean_type_impl<T, sizeof(test((t+t)/double(1)))/sizeof(char)>::type type;
+        };
+
+        template<>
+        struct mean_type<double>
+        {
+            public:
+                typedef double type;
+        };
+        //=================== mean implementation ===================
         namespace detail
         {
             //setting up the dependencies for tag::mean-Implementation isn't neccessary bc has none

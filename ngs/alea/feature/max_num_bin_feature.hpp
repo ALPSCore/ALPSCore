@@ -29,14 +29,64 @@
 #ifndef ALPS_NGS_ALEA_DETAIL_MAX_NUM_BIN_IMPLEMENTATION_HEADER
 #define ALPS_NGS_ALEA_DETAIL_MAX_NUM_BIN_IMPLEMENTATION_HEADER
 
-#include <alps/ngs/alea/accumulator_impl.hpp>
-#include <alps/ngs/alea/max_num_bin_proxy.hpp>
+#include <alps/ngs/alea/accumulator/accumulator_impl.hpp>
+#include <alps/ngs/alea/features.hpp>
 
 #include <vector>
+#include <ostream>
+#include <cmath>
+#include <algorithm>
+
 namespace alps
 {
     namespace alea
     {
+        //=================== max_num_bin proxy ===================
+        template<typename value_type>
+        class max_num_bin_proxy_type
+        {
+            typedef typename mean_type<value_type>::type mean_type;
+            typedef typename std::vector<value_type>::size_type size_type;
+            static std::vector<mean_type> unused;
+        public:
+            max_num_bin_proxy_type(): bin_(unused) {}
+            
+            max_num_bin_proxy_type(  std::vector<mean_type> const & bin
+                                      , size_type const & bin_number):
+                                                                  bin_(bin)
+                                                                , bin_number_(bin_number)
+            {}
+            
+            inline std::vector<mean_type> const & bins() const 
+            {
+                return bin_;
+            }
+            
+            inline size_type const & bin_number() const
+            {
+                return bin_number_;
+            }
+            
+            template<typename T>
+            friend std::ostream & operator<<(std::ostream & os, max_num_bin_proxy_type<T> const & arg);
+        private:
+            std::vector<mean_type> const & bin_;
+            size_type bin_number_;
+        };
+
+        template<typename T>
+        inline std::ostream & operator<<(std::ostream & os, max_num_bin_proxy_type<T> const & arg)
+        {
+            os << "max_num_bin_proxy" << std::endl;
+            return os;
+        };
+        //=================== max_num_bin trait ===================
+        template <typename T>
+        struct max_num_bin_type
+        {
+            typedef max_num_bin_proxy_type<T> type;
+        };
+        //=================== max_num_bin implementation ===================
         namespace detail
         {
             //set up the dependencies for the tag::max_num_binning-Implementation
@@ -106,8 +156,15 @@ namespace alps
                                 bin_.erase(bin_.begin() + max_bin_num_ / 2, bin_.end());
                                 
                                 elements_in_bin_ *= 2;
+                                
+                                if(pos_in_partial_ == elements_in_bin_)
+                                {
+                                    bin_.push_back(partial_ / elements_in_bin_);
+                                    partial_ = value_type_loc();
+                                    pos_in_partial_ = 0;
+                                }
                             }
-                            if(pos_in_partial_ == elements_in_bin_)
+                            else
                             {
                                 bin_.push_back(partial_ / elements_in_bin_);
                                 partial_ = value_type_loc();

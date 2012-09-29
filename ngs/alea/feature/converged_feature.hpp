@@ -25,39 +25,48 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
  
-#ifndef ALPS_NGS_ALEA_DETAIL_HISTOGRAM_IMPLEMENTATION_HEADER
-#define ALPS_NGS_ALEA_DETAIL_HISTOGRAM_IMPLEMENTATION_HEADER
+#ifndef ALPS_NGS_ALEA_DETAIL_CONVERGED_IMPLEMENTATION_HEADER
+#define ALPS_NGS_ALEA_DETAIL_CONVERGED_IMPLEMENTATION_HEADER
 
-#include <alps/ngs/alea/accumulator_impl.hpp>
+#include <alps/ngs/alea/accumulator/accumulator_impl.hpp>
+#include <alps/ngs/alea/global_enum.hpp>
 
 namespace alps
 {
     namespace alea
     {
+        //=================== converged proxy ===================
+        //=================== converged trait ===================
+        template <typename T>
+        struct converged_type
+        {
+            typedef error_convergence type;
+        };
+        //=================== converged implementation ===================
         namespace detail
         {
 
-        //set up the dependencies for the tag::histogram-Implementation
+        //set up the dependencies for the tag::autocorrelation-Implementation
             template<> 
-            struct Dependencies<tag::histogram> 
+            struct Dependencies<tag::detail::converged> 
             {
-                typedef MakeList<tag::mean, tag::error>::type type;
+                typedef MakeList<>::type type;
             };
 
             template<typename base_type> 
-            class Implementation<tag::histogram, base_type> : public base_type 
+            class Implementation<tag::detail::converged, base_type> : public base_type 
             {
                 typedef typename base_type::value_type value_type_loc;
-                typedef typename histogram_type<value_type_loc>::type histogram_t;
+                typedef typename converged_type<value_type_loc>::type converged_type;
                 typedef typename mean_type<value_type_loc>::type mean_type;
-                typedef Implementation<tag::histogram, base_type> ThisType;
+                typedef Implementation<tag::detail::converged, base_type> ThisType;
                 
                 public:
-                    Implementation<tag::histogram, base_type>(ThisType const & arg): base_type(arg)
+                    Implementation<tag::detail::converged, base_type>(ThisType const & arg): base_type(arg)
                     
                     {}
                     template<typename ArgumentPack>
-                    Implementation<tag::histogram, base_type>(ArgumentPack const & args
+                    Implementation<tag::detail::converged, base_type>(ArgumentPack const & args
                                                  , typename boost::disable_if<
                                                                               boost::is_base_of<ThisType, ArgumentPack>
                                                                             , int
@@ -65,10 +74,42 @@ namespace alps
                                              ): base_type(args)
                     {}
                     
-                    inline histogram_t const histogram() const 
+                    inline converged_type const converged() const 
                     {
+                        //~ //Simplebinning.h Zeile 300
+                        //~ template <class T>
+                        //~ typename SimpleBinning<T>::convergence_type SimpleBinning<T>::converged_errors() const
+                        //~ {
+                          //~ convergence_type conv;
+                          //~ result_type err=error();
+                          //~ resize_same_as(conv,err);
+                          //~ const unsigned int range=4;
+                          //~ typename slice_index<convergence_type>::type it;
+                          //~ if (binning_depth()<range) {
+                            //~ for (it= slices(conv).first; it!= slices(conv).second; ++it)
+                              //~ slice_value(conv,it) = MAYBE_CONVERGED;
+                          //~ }
+                          //~ else {
+                            //~ for (it= slices(conv).first; it!= slices(conv).second; ++it)
+                              //~ slice_value(conv,it) = CONVERGED;
+                        //~ 
+                            //~ for (unsigned int i=binning_depth()-range;i<binning_depth()-1;++i) {
+                              //~ result_type this_err(error(i));
+                              //~ for (it= slices(conv).first; it!= slices(conv).second; ++it)
+                                //~ if (std::abs(slice_value(this_err,it)) >= std::abs(slice_value(err,it)))
+                                  //~ slice_value(conv,it)=CONVERGED;
+                                //~ else if (std::abs(slice_value(this_err,it)) < 0.824 * std::abs(slice_value(err,it)))
+                                  //~ slice_value(conv,it)=NOT_CONVERGED;
+                                //~ else if (std::abs(slice_value(this_err,it)) <0.9* std::abs(slice_value(err,it))  &&
+                                    //~ slice_value(conv,it)!=NOT_CONVERGED)
+                                  //~ slice_value(conv,it)=MAYBE_CONVERGED;
+                            //~ }
+                          //~ }
+                          //~ return conv;
+                        //~ }
+                        
                         //TODO: implement
-                        return 272.15;
+                        return maybe;
                     }
                     
                     inline ThisType& operator <<(value_type_loc val) 
@@ -81,7 +122,7 @@ namespace alps
                     inline void print(Stream & os) 
                     {
                         base_type::print(os);
-                        os << "tag::histogram: " << std::endl;
+                        os << "tag::detail::converged: " << std::endl;
                     }
                     
                 private:
@@ -89,4 +130,4 @@ namespace alps
         } // end namespace detail
     }//end alea namespace 
 }//end alps namespace
-#endif //ALPS_NGS_ALEA_DETAIL_HISTOGRAM_IMPLEMENTATION_HEADER
+#endif //ALPS_NGS_ALEA_DETAIL_CONVERGED_IMPLEMENTATION_HEADER

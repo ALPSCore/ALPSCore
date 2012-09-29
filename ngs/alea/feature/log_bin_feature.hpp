@@ -29,17 +29,62 @@
 #ifndef ALPS_NGS_ALEA_DETAIL_LOG_BIN_IMPLEMENTATION_HEADER
 #define ALPS_NGS_ALEA_DETAIL_LOG_BIN_IMPLEMENTATION_HEADER
 
-#include <alps/ngs/alea/accumulator_impl.hpp>
-#include <alps/ngs/alea/log_bin_proxy.hpp>
+#include <alps/ngs/alea/accumulator/accumulator_impl.hpp>
+#include <alps/ngs/alea/features.hpp>
 
 #include <boost/cstdint.hpp>
 
 #include <vector>
+#include <ostream>
+#include <cmath>
+#include <algorithm>
 
 namespace alps
 {
     namespace alea
     {
+        //=================== log_bin proxy ===================
+        template<typename value_type>
+        class log_bin_proxy_type
+        {
+            typedef typename mean_type<value_type>::type mean_type;
+            typedef typename std::vector<value_type>::size_type size_type;
+            static std::vector<mean_type> unused;
+        public:
+            log_bin_proxy_type(): bin_(unused) {}
+            log_bin_proxy_type(std::vector<mean_type> const & bin): bin_(bin) {}
+            
+            inline std::vector<mean_type> const & bins() const 
+            {
+                return bin_;
+            }
+            
+            template<typename T>
+            friend std::ostream & operator<<(std::ostream & os, log_bin_proxy_type<T> const & arg);
+        private:
+            std::vector<mean_type> const & bin_;
+        };
+
+        //~ template<typename value_type>
+        //~ log_bin_proxy_type<value_type> make_log_bin_proxy_type()
+        //~ {
+            //~ return log_bin_proxy_type<value_type>(unused);
+        //~ }
+        
+        template<typename T>
+        inline std::ostream & operator<<(std::ostream & os, log_bin_proxy_type<T> const & arg)
+        {
+            os << "log_bin_proxy" << std::endl;
+            return os;
+            
+        };
+        //=================== log_bin trait ===================
+        template <typename T>
+        struct log_bin_type
+        {
+            typedef log_bin_proxy_type<T> type;
+        };
+        //=================== log_bin implementation ===================
         namespace detail
         {
             //set up the dependencies for the tag::log_binning-Implementation

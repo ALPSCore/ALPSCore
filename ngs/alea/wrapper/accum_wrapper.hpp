@@ -30,11 +30,11 @@
 #define ALPS_NGS_ALEA_DETAIL_ACCUM_WRAPPER_HEADER
 
 #include <alps/ngs/stacktrace.hpp>
-#include <alps/ngs/alea/detail/accum_prewrapper.hpp>
-#include <alps/ngs/alea/accumulator_wrapper_fwd.hpp>
-#include <alps/ngs/alea/extern_function.hpp>
+#include <alps/ngs/alea/wrapper/accum_prewrapper.hpp>
+#include <alps/ngs/alea/wrapper/accumulator_wrapper_fwd.hpp>
+#include <alps/ngs/alea/wrapper/extern_function.hpp>
 
-#include <alps/ngs/alea/detail/properties.hpp>
+#include <alps/ngs/alea/accumulator/properties.hpp>
 
 #include <boost/cstdint.hpp>
 

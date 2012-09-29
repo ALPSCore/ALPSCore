@@ -24,17 +24,19 @@
  * DEALINGS IN THE SOFTWARE.                                                       *
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
- 
+
 
 #ifndef ALPS_NGS_ALEA_DETAIL_AUTOCORR_IMPLEMENTATION_HEADER
 #define ALPS_NGS_ALEA_DETAIL_AUTOCORR_IMPLEMENTATION_HEADER
 
-#include <alps/ngs/alea/accumulator_impl.hpp>
+#include <alps/ngs/alea/accumulator/accumulator_impl.hpp>
 #include <alps/ngs/alea/global_enum.hpp>
-#include <alps/ngs/alea/autocorr_proxy.hpp>
+#include <alps/ngs/alea/features.hpp>
 
 #include <boost/cstdint.hpp>
 
+#include <ostream>
+#include <algorithm>
 #include <vector>
 #include <cmath>
 
@@ -42,6 +44,64 @@ namespace alps
 {
     namespace alea
     {
+        //=================== autocorr proxy ===================
+        template<typename value_type>
+        class autocorr_proxy_type
+        {
+            typedef typename mean_type<value_type>::type mean_type;
+            static std::vector<value_type> unused;
+        public:
+            autocorr_proxy_type(): bin2_(unused)
+                                , bin1_(unused)
+                                , count_(0) 
+            {}
+            autocorr_proxy_type(  std::vector<value_type> const & bin2
+                                , std::vector<value_type> const & bin1
+                                , boost::uint64_t const & count):
+                                                                  bin2_(bin2)
+                                                                , bin1_(bin1)
+                                                                , count_(count)
+            {}
+            
+            inline std::vector<value_type> const & bins() const 
+            {
+                return bin2_;
+            }
+            inline std::vector<value_type> const & sum() const 
+            {
+                return bin1_;
+            }
+            
+            inline mean_type const error(boost::uint64_t level = -1) const
+            {
+                if(level == -1)
+                    level = std::max(bin2_.size() - 5, typename std::vector<value_type>::size_type(0));
+                using std::sqrt;
+                return sqrt((bin2_[level] - bin1_[level] * bin1_[level]) / (count_ - 1));
+            }
+            
+            template<typename T>
+            friend std::ostream & operator<<(std::ostream & os, autocorr_proxy_type<T> const & arg);
+        private:
+            std::vector<value_type> const & bin2_;
+            std::vector<value_type> const & bin1_;
+            boost::uint64_t const count_;
+        };
+        
+        template<typename T>
+        inline std::ostream & operator<<(std::ostream & os, autocorr_proxy_type<T> const & arg)
+        {
+            os << "autocorr_proxy" << std::endl;
+            return os;
+            
+        };
+        //=================== autocorr trait ===================
+        template <typename T>
+        struct autocorr_type
+        {
+            typedef autocorr_proxy_type<T> type;
+        };
+        //=================== autocorr implementation ===================
         namespace detail
         {
 

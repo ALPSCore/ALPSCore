@@ -4,7 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2011 by Lukas Gamper <gamperl@gmail.com>                   *
+ * Copyright (C) 2011 - 2012 by Mario Koenz <mkoenz@ethz.ch>                       *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -26,10 +26,61 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
-#ifndef ALPS_NGS_ALEA_ACCUMULATOR_HEADER
-#define ALPS_NGS_ALEA_ACCUMULATOR_HEADER
+#ifndef ALPS_NGS_ALEA_ACCUMULATOR_WRAPPER_HEADER
+#define ALPS_NGS_ALEA_ACCUMULATOR_WRAPPER_HEADER
 
-#include <alps/ngs/alea/features.hpp>
-#include <alps/ngs/alea/accumulator/accumulator_impl.hpp>
+#include <alps/ngs/alea/wrapper/accum_wrapper.hpp>
+#include <alps/ngs/alea/wrapper/extern_function.hpp>
+#include <alps/ngs/stacktrace.hpp>
+#include <alps/ngs/alea/wrapper/accumulator_wrapper_fwd.hpp>
 
-#endif // ALPS_NGS_ALEA_ACCUMULATOR_HEADER
+#include <boost/shared_ptr.hpp>
+
+
+namespace alps
+{
+    namespace alea
+    {
+        namespace detail
+        {
+            //class that holds the base_wrapper pointer
+            template<typename T> 
+            accumulator_wrapper::accumulator_wrapper(T arg): base_(new accumulator_wrapper_derived<T>(arg)) 
+            {}
+
+            template<typename T>
+            accumulator_wrapper& accumulator_wrapper::operator<<(const T& value) 
+            {
+                (*base_) << value; return *this;
+            }
+
+            template<typename T>
+            result_type_wrapper<T> &accumulator_wrapper::get() 
+            {
+                return (*base_).get<T>();
+            }
+
+            template <typename T>
+            T & accumulator_wrapper::extract() 
+            {
+                return (dynamic_cast<detail::accumulator_wrapper_derived<T>& >(*base_)).accum_;
+            }
+
+            //TODO
+            inline boost::uint64_t accumulator_wrapper::count() const
+            {
+                return (*base_).count();
+            }
+            
+            inline accumulator_wrapper::accumulator_wrapper(accumulator_wrapper const & arg): base_(arg.base_->clone()) 
+            {}
+                
+            inline std::ostream& operator<<(std::ostream &out, const accumulator_wrapper& m)
+            {
+                (*(m.base_)).print(out);
+                return out;
+            }
+        }//end detail namespace 
+    }//end alea namespace 
+}//end alps namespace
+#endif // ALPS_NGS_ALEA_ACCUMULATOR_WRAPPER_HEADER

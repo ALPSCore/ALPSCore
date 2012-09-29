@@ -24,56 +24,97 @@
  * DEALINGS IN THE SOFTWARE.                                                       *
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+#ifndef ALPS_NGS_ALEA_DETAIL_TAU_IMPLEMENTATION_HEADER
+#define ALPS_NGS_ALEA_DETAIL_TAU_IMPLEMENTATION_HEADER
 
 
-#ifndef ALPS_NGS_ALEA_DETAIL_ERROR_IMPLEMENTATION_HEADER
-#define ALPS_NGS_ALEA_DETAIL_ERROR_IMPLEMENTATION_HEADER
 
-#include <alps/ngs/alea/accumulator_impl.hpp>
 
+
+#include <alps/ngs/alea/accumulator/accumulator_impl.hpp>
+#include <alps/ngs/alea/global_enum.hpp>
+
+#include <boost/cstdint.hpp>
+
+#include <vector>
 #include <cmath>
+
 namespace alps
 {
     namespace alea
     {
+        //=================== tau proxy ===================
+        //=================== tau trait ===================
+        template <typename T>
+        struct tau_type
+        {
+            typedef double type;
+        };
+        //=================== tau implementation ===================
         namespace detail
         {
-            //set up the dependencies for the tag::error-Implementation
+        //set up the dependencies for the tag::autocorrelation-Implementation
             template<> 
-            struct Dependencies<tag::error> 
+            struct Dependencies<tag::detail::tau> 
             {
-                typedef MakeList<tag::mean>::type type;
+                typedef MakeList<>::type type;
             };
 
             template<typename base_type> 
-            class Implementation<tag::error, base_type> : public base_type 
+            class Implementation<tag::detail::tau, base_type> : public base_type 
             {
                 typedef typename base_type::value_type value_type_loc;
-                typedef typename error_type<value_type_loc>::type error_type;
-                typedef Implementation<tag::error, base_type> ThisType;
+                typedef typename tau_type<value_type_loc>::type tau_type;
+                typedef typename mean_type<value_type_loc>::type mean_type;
+                typedef Implementation<tag::detail::tau, base_type> ThisType;
                 
                 public:
-                    Implementation<tag::error, base_type>(ThisType const & arg): base_type(arg), sum2_(arg.sum2_) {}
-                    
-                    template<typename ArgumentPack>
-                    Implementation<tag::error, base_type>(ArgumentPack const & args, typename boost::disable_if<
-                                                                                              boost::is_base_of<ThisType, ArgumentPack>
-                                                                                            , int
-                                                                                            >::type = 0
-                                        ): base_type(args)
-                                         , sum2_() 
+                    Implementation<tag::detail::tau, base_type>(ThisType const & arg): base_type(arg)
                     {}
                     
-                    inline error_type const error() const 
-                    { 
-                        using std::sqrt;
-                        return sqrt((sum2_ / base_type::count() - base_type::mean()*base_type::mean()) / ((base_type::count() - 1)));
+                    template<typename ArgumentPack>
+                    Implementation<tag::detail::tau, base_type>(ArgumentPack const & args
+                                                 , typename boost::disable_if<
+                                                                              boost::is_base_of<ThisType, ArgumentPack>
+                                                                            , int
+                                                                            >::type = 0
+                                             ): base_type(args)
+                    {}
+                    
+                    inline tau_type const tau() const 
+                    {
+                        //~ //Simplebinning.h Zeile 475
+                        //~ template <class T>
+                        //~ inline typename SimpleBinning<T>::time_type SimpleBinning<T>::tau() const
+                        //~ {
+                          //~ if (count()==0)
+                            //~ boost::throw_exception(NoMeasurementstag::error());
+                        //~ 
+                          //~ if( binning_depth() >= 2 )
+                          //~ {
+                            //~ count_type factor =count()-1;
+                            //~ time_type er(std::abs(error()));
+                            //~ er *=er*factor;
+                            //~ er /= std::abs(variance());
+                            //~ er -=1.;
+                            //~ return 0.5*er;
+                          //~ }
+                          //~ else
+                          //~ {
+                            //~ time_type retval;
+                            //~ resize_same_as(retval,sum_[0]);
+                            //~ retval=inf();
+                            //~ return retval;
+                          //~ }
+                        //~ }
+
+                        //TODO: implement
+                        return 42;
                     }
                     
                     inline ThisType& operator <<(value_type_loc val) 
                     {
-                        base_type::operator <<(val);
-                        sum2_ += val*val;
+                        base_type::operator<<(val);
                         return *this;
                     }
                     
@@ -81,13 +122,12 @@ namespace alps
                     inline void print(Stream & os) 
                     {
                         base_type::print(os);
-                        os << "tag::error: " << error() << " " << std::endl;
+                        os << "tag::detail::tau: " << std::endl;
                     }
                     
                 private:
-                    error_type sum2_;
             };
         } // end namespace detail
     }//end alea namespace 
 }//end alps namespace
-#endif // ALPS_NGS_ALEA_DETAIL_ERROR_IMPLEMENTATION
+#endif //ALPS_NGS_ALEA_DETAIL_TAU_IMPLEMENTATION_HEADER
