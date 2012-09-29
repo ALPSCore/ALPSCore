@@ -11,9 +11,9 @@ include_directories(${Boost_ROOT_DIR})
 FOREACH (name   ngs_alea_count_test_compile
                 ngs_alea_count_test_runtime
                 ngs_alea_ctor_test_compile
-                ngs_alea_ctor_test_runtime  
-                ngs_alea_error_test_compile  
-                ngs_alea_error_test_runtime  
+                ngs_alea_ctor_test_runtime
+                ngs_alea_error_test_compile
+                ngs_alea_error_test_runtime
                 ngs_alea_fix_size_test_compile
                 ngs_alea_fix_size_test_runtime
                 ngs_alea_max_num_test_compile
