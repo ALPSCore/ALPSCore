@@ -40,6 +40,9 @@
 
 #include <alps/random/mersenne_twister.hpp>
 
+#include <alps/ngs/config_alea.hpp>
+
+#include <boost/chrono.hpp>
 #include <boost/function.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/random/uniform_real.hpp>
@@ -108,7 +111,10 @@ namespace alps {
             virtual void unlock_results();
 
             parameters_type params;
+            
+            //TODO ifdef
             mcobservables measurements;
+            
             boost::variate_generator<boost::mt19937, boost::uniform_real<> > random;
 
         private:

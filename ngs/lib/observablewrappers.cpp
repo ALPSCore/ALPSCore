@@ -46,7 +46,8 @@ namespace alps {
             }
 
         }
-
+        
+        //TODO
         alps::mcobservables & operator<< (alps::mcobservables & set, RealObservable const & obs) {
             set.create_RealObservable(obs.getName(), obs.getBinnum());
             return set;
