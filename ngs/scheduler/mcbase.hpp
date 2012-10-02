@@ -40,7 +40,7 @@
 
 #include <alps/random/mersenne_twister.hpp>
 
-#include <alps/ngs/config_alea.hpp>
+// #include <alps/ngs/config_alea.hpp> TODO: this file does not exits!
 
 #include <boost/chrono.hpp>
 #include <boost/function.hpp>
