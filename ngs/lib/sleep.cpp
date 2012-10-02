@@ -25,21 +25,17 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_THREAD_INTERRUPTED_HPP
-#define ALPS_NGS_THREAD_INTERRUPTED_HPP
+#include <alps/sleep.hpp>
 
-#ifdef ALPS_NGS_SINGLE_THREAD
+#include <boost/thread/xtime.hpp>
 
-namespace boost {
+namespace alps {
 
-    struct thread_interrupted {};
-
+    void sleep(std::size_t nanoseconds) {
+        boost::xtime xt;
+        boost::xtime_get(&xt, boost::TIME_UTC);
+        xt.nsec += nanoseconds;
+        boost::thread::sleep(xt);
+    }
+    
 }
-
-#else
-
-    #include <boost/thread/exceptions.hpp>
-
-#endif
-
-#endif

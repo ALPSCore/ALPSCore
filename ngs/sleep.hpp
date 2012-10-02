@@ -25,21 +25,13 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_THREAD_INTERRUPTED_HPP
-#define ALPS_NGS_THREAD_INTERRUPTED_HPP
+#ifndef ALPS_NGS_SLEEP_HPP
+#define ALPS_NGS_SLEEP_HPP
 
-#ifdef ALPS_NGS_SINGLE_THREAD
+namespace alps {
 
-namespace boost {
-
-    struct thread_interrupted {};
-
+    void sleep(std::size_t nanoseconds);
+    
 }
-
-#else
-
-    #include <boost/thread/exceptions.hpp>
-
-#endif
 
 #endif

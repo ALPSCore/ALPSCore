@@ -30,11 +30,11 @@
 #define ALPS_NGS_HPP
 
 #include <alps/ngs/api.hpp>
-#include <alps/ngs/signal.hpp>
 #include <alps/ngs/cast.hpp>
+#include <alps/ngs/sleep.hpp>
+#include <alps/ngs/signal.hpp>
 #include <alps/ngs/callback.hpp>
 #include <alps/ngs/boost_mpi.hpp>
-#include <alps/ngs/multithread.hpp>
 #include <alps/ngs/short_print.hpp>
 #include <alps/ngs/thread_interrupted.hpp>
 #include <alps/ngs/observablewrappers.hpp>
@@ -44,6 +44,7 @@
 #include <alps/ngs/scheduler/mcbase.hpp>
 #include <alps/ngs/scheduler/mpimcsim.hpp>
 #include <alps/ngs/scheduler/mpiparallelsim.hpp>
+//#include <alps/ngs/scheduler/multithreadedsim.hpp>
 
 // TODO: remove these deprecated headers:
 #include <alps/ngs/mcresult.hpp>

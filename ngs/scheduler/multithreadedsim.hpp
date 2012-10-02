@@ -25,8 +25,8 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_MULTITHREAD_HPP
-#define ALPS_NGS_MULTITHREAD_HPP
+#ifndef ALPS_NGS_MULTITHREADEDSIM_HPP
+#define ALPS_NGS_MULTITHREADEDSIM_HPP
 
 #include <alps/ngs/api.hpp>
 #ifndef ALPS_NGS_SINGLE_THREAD
@@ -35,7 +35,7 @@
     #include <boost/thread.hpp>
 
 #endif
-
+/*
 namespace alps {
 
     #ifndef ALPS_NGS_SINGLE_THREAD
@@ -59,17 +59,6 @@ namespace alps {
                     Impl::load(ar);
                 }
 
-                void do_update() {
-                    boost::lock_guard<boost::mutex> glock(global_mutex);
-                    static_cast<Impl &>(*this).do_update();
-                }
-
-                void do_measurements() {
-                    boost::lock_guard<boost::mutex> mlock(measurements_mutex);
-                    boost::lock_guard<boost::mutex> glock(global_mutex);
-                    static_cast<Impl &>(*this).do_measurements();
-                }
-
                 using Impl::collect_results;
 
                 typename Impl::results_type collect_results(typename Impl::result_names_type const & names) const {
@@ -78,18 +67,35 @@ namespace alps {
                     return Impl::collect_results(names);
                 }
 
-                double fraction_completed() const {
-                    boost::lock_guard<boost::mutex> glock(global_mutex);
-                    return static_cast<Impl const &>(*this).fraction_completed();
+
+
+            protected:
+
+                void lock_data() {
+                    data_guard.reset(new boost::lock_guard<boost::mutex> data_lock(data_mutex));
+                }
+
+                void unlock_data() {
+                    data_guard.reset();
+                }
+            
+                void lock_results() {
+                    data_guard.reset(new boost::lock_guard<boost::mutex> result_guard(result_mutex));
+                }
+            
+                void unlock_results() {
+                    result_guard.reset();
                 }
 
             private:
 
-                boost::mutex mutable global_mutex;
-                boost::mutex mutable measurements_mutex;
+                boost::mutex mutable data_mutex;
+                boost::mutex mutable result_mutex;
 
+                scoped_ptr<boost::lock_guard<boost::mutex> > data_guard;
+                scoped_ptr<boost::lock_guard<boost::mutex> > result_guard;
         };
     #endif
 }
-
+*/
 #endif
