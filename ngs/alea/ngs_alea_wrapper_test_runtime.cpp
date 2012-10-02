@@ -25,13 +25,11 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#define BOOST_TEST_MODULE alps::ngs::alea
 
-#include <alps/ngs/alea.hpp>
+#include <alps/ngs.hpp>
 
-//these two flags will create the int main() together with unit_test.hpp
-#define BOOST_TEST_MAIN
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/unit_test.hpp>
+#include <boost/test/included/unit_test.hpp>
 
 template<typename T>
 alps::alea::autocorr_proxy_type<T> fct()

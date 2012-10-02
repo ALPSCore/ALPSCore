@@ -25,17 +25,13 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#define BOOST_TEST_MODULE alps::ngs::alea
 
 #include <alps/ngs.hpp>
-#include <iostream>
 
-//these two flags will create the int main() together with unit_test.hpp
-#define BOOST_TEST_MAIN
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/unit_test.hpp>
+#include <boost/test/included/unit_test.hpp>
 
 #include <iostream>
-
 
 BOOST_AUTO_TEST_CASE(test_stream_for_modular_accum)
 {
