@@ -32,7 +32,6 @@
 
 
 #include <alps/ngs/alea/accumulator/accumulator_impl.hpp>
-#include <alps/ngs/alea/global_enum.hpp>
 
 #include <boost/cstdint.hpp>
 

@@ -30,7 +30,6 @@
 #define ALPS_NGS_ALEA_EXTERN_FUNCTION_HEADER
 
 #include <alps/ngs/alea/wrapper/accumulator_wrapper_fwd.hpp>
-#include <alps/ngs/alea/global_enum.hpp>
 
 namespace alps
 {

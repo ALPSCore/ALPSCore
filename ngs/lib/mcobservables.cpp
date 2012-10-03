@@ -37,7 +37,75 @@
 #include <stdexcept>
 
 namespace alps {
+    
+    #ifdef ALPS_NGS_USE_NEW_ALEA
+        namespace alea
+        {
+            detail::accumulator_wrapper & accumulator_set::operator[](std::string const & name)
+            {
+                if (!has(name))
+                    throw std::out_of_range("No observable found with the name: " + name + ALPS_STACKTRACE);
+                return *(storage.find(name)->second);
+            }
 
+            detail::accumulator_wrapper const & accumulator_set::operator[](std::string const & name) const
+            {
+                if (!has(name))
+                    throw std::out_of_range("No observable found with the name: " + name + ALPS_STACKTRACE);
+                return *(storage.find(name)->second);
+            }
+
+            bool accumulator_set::has(std::string const & name) const
+            {
+                return storage.find(name) != storage.end();
+            }
+            
+            void accumulator_set::insert(std::string const & name, boost::shared_ptr<detail::accumulator_wrapper> ptr)
+            {
+                if (has(name))
+                    throw std::out_of_range("There exists alrady an accumulator with the name: " + name + ALPS_STACKTRACE);
+                storage.insert(make_pair(name, ptr));
+            }
+
+            void accumulator_set::insert(std::string const & name, detail::accumulator_wrapper const * obs)
+            {
+                
+            }
+
+            void accumulator_set::reset(bool equilibrated)
+            {
+            }
+
+            void accumulator_set::save(hdf5::archive & ar) const
+            {
+            }
+
+            void accumulator_set::load(hdf5::archive & ar)
+            {
+            }
+
+            void accumulator_set::merge(accumulator_set const &)
+            {
+            }
+
+            void accumulator_set::output(std::ostream & os) const
+            {
+            }
+            
+            //~ map operations
+            accumulator_set::iterator accumulator_set::begin() const
+            {
+                return storage.begin();
+            }
+            
+            accumulator_set::iterator accumulator_set::end() const
+            {
+                return storage.end();
+            }
+            
+        } //end namespace alea
+    #endif
+    
     mcobservable & mcobservables::operator[](std::string const & name) {
         if (!has(name))
             throw std::out_of_range("No observable found with the name: " + name + ALPS_STACKTRACE);

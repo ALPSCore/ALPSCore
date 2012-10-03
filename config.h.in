@@ -60,6 +60,8 @@
 // Define to 1 if you have the <windows.h> header file.
 #cmakedefine ALPS_HAVE_WINDOWS_H
 
+// If defined, the new ngs alea will be used, instead of the old alea
+#cmakedefine ALPS_NGS_USE_NEW_ALEA
 //
 // Libraries
 //

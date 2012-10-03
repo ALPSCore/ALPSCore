@@ -97,7 +97,12 @@ namespace alps {
             parameters_type & get_params();
 
             // TODO: add function parameters_type & measurements() { reutrn m_measurements; } and rename measurements to m_measurements
+            #ifdef ALPS_NGS_USE_NEW_ALEA
+            alea::accumulator_set & get_measurements();
+            #else
             mcobservables & get_measurements();
+            #endif
+            
             
             // TODO: add function double random() { reutrn m_random; } and rename random to m_random
             double get_random();
@@ -112,9 +117,11 @@ namespace alps {
 
             parameters_type params;
             
-            //TODO ifdef
-            mcobservables measurements;
-            
+            #ifdef ALPS_NGS_USE_NEW_ALEA
+                alea::accumulator_set measurements;
+            #else
+                mcobservables measurements;
+            #endif
             boost::variate_generator<boost::mt19937, boost::uniform_real<> > random;
 
         private:

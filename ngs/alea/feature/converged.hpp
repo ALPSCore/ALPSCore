@@ -29,12 +29,17 @@
 #define ALPS_NGS_ALEA_DETAIL_CONVERGED_IMPLEMENTATION_HEADER
 
 #include <alps/ngs/alea/accumulator/accumulator_impl.hpp>
-#include <alps/ngs/alea/global_enum.hpp>
 
 namespace alps
 {
     namespace alea
     {
+        enum error_convergence
+        {
+              yes
+            , no
+            , maybe
+        };
         //=================== converged proxy ===================
         //=================== converged trait ===================
         template <typename T>

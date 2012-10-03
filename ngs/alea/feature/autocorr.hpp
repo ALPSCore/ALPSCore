@@ -30,7 +30,6 @@
 #define ALPS_NGS_ALEA_DETAIL_AUTOCORR_IMPLEMENTATION_HEADER
 
 #include <alps/ngs/alea/accumulator/accumulator_impl.hpp>
-#include <alps/ngs/alea/global_enum.hpp>
 #include <alps/ngs/alea/features.hpp>
 
 #include <boost/cstdint.hpp>

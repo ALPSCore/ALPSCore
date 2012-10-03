@@ -26,6 +26,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <alps/ngs/observablewrappers.hpp>
+#include <alps/ngs/alea.hpp>
 
 namespace alps {
 
@@ -53,13 +54,31 @@ namespace alps {
             return set;
         }
 
-#ifdef ALPS_NGS_USE_NEW_ALEA
-        alps::alea::accumulator_set & operator<< (alps::alea::accumulator_set & set, RealObservable const & obs) {
-            using namespace alps::alea::tag;
-            set.insert(name, new alps::alea::accumulator<double, alps::alea::features<mean, error, fixed_nun_bin> > >(bin_num=binnum));
-            return set;
-        }
-#endif        
+        #ifdef ALPS_NGS_USE_NEW_ALEA
+            alps::alea::accumulator_set & operator<< (alps::alea::accumulator_set & set, RealObservable const & obs) {
+                using namespace alps::alea::tag;
+                
+                typedef alea::accumulator<double, alea::features<mean, error, fixed_size_binning> > accum_type;
+                typedef alea::detail::accumulator_wrapper wrapper_type;
+                
+                set.insert(obs.getName(), boost::shared_ptr<wrapper_type>(new wrapper_type(accum_type(alea::bin_num = obs.getBinnum()))));
+                std::cout << "name" << obs.getName() << std::endl;
+
+                return set;
+            }
+            
+            alps::alea::accumulator_set & operator<< (alps::alea::accumulator_set & set, RealVectorObservable const & obs) {
+                using namespace alps::alea::tag;
+                
+                typedef alea::accumulator<double, alea::features<mean, error, fixed_size_binning> > accum_type;
+                typedef alea::detail::accumulator_wrapper wrapper_type;
+                
+                set.insert(obs.getName(), boost::shared_ptr<wrapper_type>(new wrapper_type(accum_type(alea::bin_num = obs.getBinnum()))));
+                std::cout << "name" << obs.getName() << std::endl;
+
+                return set;
+            }
+        #endif        
 
         alps::mcobservables & operator<< (alps::mcobservables & set, RealVectorObservable const & obs) {
             set.create_RealVectorObservable(obs.getName(), obs.getBinnum());

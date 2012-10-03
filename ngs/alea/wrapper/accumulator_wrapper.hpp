@@ -45,7 +45,7 @@ namespace alps
         {
             //class that holds the base_wrapper pointer
             template<typename T> 
-            accumulator_wrapper::accumulator_wrapper(T arg): base_(new accumulator_wrapper_derived<T>(arg)) 
+            accumulator_wrapper::accumulator_wrapper(T arg): base_(new accumulator_wrapper_derived<T>(arg))
             {}
 
             template<typename T>
@@ -58,6 +58,12 @@ namespace alps
             result_type_wrapper<T> &accumulator_wrapper::get() 
             {
                 return (*base_).get<T>();
+            }
+            
+            template<typename T>
+            typename mean_type<T>::type accumulator_wrapper::mean() 
+            {
+                return (*base_).get<T>().mean();
             }
 
             template <typename T>

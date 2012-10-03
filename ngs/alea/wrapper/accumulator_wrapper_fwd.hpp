@@ -56,7 +56,12 @@ namespace alps
                         
                     
                     template<typename T>
-                    detail::result_type_wrapper<T> &get();//TODO
+                    detail::result_type_wrapper<T> & get();//TODO
+                    
+                    template<typename T>
+                    typename mean_type<T>::type mean();
+                    
+                    
                     
                     friend std::ostream& operator<<(std::ostream &out, const accumulator_wrapper& wrapper);
                     

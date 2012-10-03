@@ -29,15 +29,17 @@
 #ifndef ALPS_NGS_ALEA_TYPE_TRAITS_HEADER
 #define ALPS_NGS_ALEA_TYPE_TRAITS_HEADER
 
-#include <alps/ngs/alea/feature/value_type_feature.hpp>
-#include <alps/ngs/alea/feature/mean_feature.hpp>
-#include <alps/ngs/alea/feature/error_feature.hpp>
-#include <alps/ngs/alea/feature/fixed_size_bin_feature.hpp>
-#include <alps/ngs/alea/feature/max_num_bin_feature.hpp>
-#include <alps/ngs/alea/feature/log_bin_feature.hpp>
-#include <alps/ngs/alea/feature/autocorr_feature.hpp>
-#include <alps/ngs/alea/feature/converged_feature.hpp>
-#include <alps/ngs/alea/feature/tau_feature.hpp>
-#include <alps/ngs/alea/feature/histogram_feature.hpp>
+#include <alps/ngs/alea/feature/tags.hpp>
+
+#include <alps/ngs/alea/feature/value_type.hpp>
+#include <alps/ngs/alea/feature/mean.hpp>
+#include <alps/ngs/alea/feature/error.hpp>
+#include <alps/ngs/alea/feature/fixed_size_bin.hpp>
+#include <alps/ngs/alea/feature/max_num_bin.hpp>
+#include <alps/ngs/alea/feature/log_bin.hpp>
+#include <alps/ngs/alea/feature/autocorr.hpp>
+#include <alps/ngs/alea/feature/converged.hpp>
+#include <alps/ngs/alea/feature/tau.hpp>
+#include <alps/ngs/alea/feature/histogram.hpp>
 
 #endif // ALPS_NGS_ALEA_TYPE_TRAITS_HEADER
