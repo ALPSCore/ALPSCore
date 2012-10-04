@@ -99,7 +99,7 @@ namespace alps {
     mcbase::result_names_type mcbase::result_names() const {
         result_names_type names;
         #ifdef ALPS_NGS_USE_NEW_ALEA
-        for(alea::accumulator_set::iterator it = measurements.begin(); it != measurements.end(); ++it)
+        for(alea::accumulator_set::const_iterator it = measurements.begin(); it != measurements.end(); ++it)
             names.push_back(it->first);
         #else
         for(mcobservables::const_iterator it = measurements.begin(); it != measurements.end(); ++it)
@@ -120,6 +120,7 @@ namespace alps {
         results_type partial_results;
         
         #ifdef ALPS_NGS_USE_NEW_ALEA
+        //TODO
         #else
         for(result_names_type::const_iterator it = names.begin(); it != names.end(); ++it)
             partial_results.insert(*it, mcresult(measurements[*it]));

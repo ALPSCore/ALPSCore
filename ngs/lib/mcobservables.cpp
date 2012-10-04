@@ -67,15 +67,6 @@ namespace alps {
                 storage.insert(make_pair(name, ptr));
             }
 
-            void accumulator_set::insert(std::string const & name, detail::accumulator_wrapper const * obs)
-            {
-                
-            }
-
-            void accumulator_set::reset(bool equilibrated)
-            {
-            }
-
             void accumulator_set::save(hdf5::archive & ar) const
             {
             }
@@ -93,12 +84,21 @@ namespace alps {
             }
             
             //~ map operations
-            accumulator_set::iterator accumulator_set::begin() const
+            accumulator_set::iterator accumulator_set::begin()
             {
                 return storage.begin();
             }
             
-            accumulator_set::iterator accumulator_set::end() const
+            accumulator_set::iterator accumulator_set::end()
+            {
+                return storage.end();
+            }
+            accumulator_set::const_iterator accumulator_set::begin() const
+            {
+                return storage.begin();
+            }
+            
+            accumulator_set::const_iterator accumulator_set::end() const
             {
                 return storage.end();
             }

@@ -62,7 +62,6 @@ namespace alps {
                 typedef alea::detail::accumulator_wrapper wrapper_type;
                 
                 set.insert(obs.getName(), boost::shared_ptr<wrapper_type>(new wrapper_type(accum_type(alea::bin_num = obs.getBinnum()))));
-                std::cout << "name" << obs.getName() << std::endl;
 
                 return set;
             }
@@ -70,11 +69,11 @@ namespace alps {
             alps::alea::accumulator_set & operator<< (alps::alea::accumulator_set & set, RealVectorObservable const & obs) {
                 using namespace alps::alea::tag;
                 
+                //TODO: change type to std::vector<double>
                 typedef alea::accumulator<double, alea::features<mean, error, fixed_size_binning> > accum_type;
                 typedef alea::detail::accumulator_wrapper wrapper_type;
                 
                 set.insert(obs.getName(), boost::shared_ptr<wrapper_type>(new wrapper_type(accum_type(alea::bin_num = obs.getBinnum()))));
-                std::cout << "name" << obs.getName() << std::endl;
 
                 return set;
             }

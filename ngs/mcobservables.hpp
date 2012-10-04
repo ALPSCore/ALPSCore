@@ -46,7 +46,9 @@ namespace alps {
                 
             public: 
                 typedef std::map<std::string, boost::shared_ptr<detail::accumulator_wrapper> > map_type;
-                typedef map_type::const_iterator iterator;
+                //TODO
+                typedef map_type::iterator iterator;
+                typedef map_type::const_iterator const_iterator;
 
                 detail::accumulator_wrapper & operator[](std::string const & name);
 
@@ -56,10 +58,6 @@ namespace alps {
                 
                 void insert(std::string const & name, boost::shared_ptr<detail::accumulator_wrapper> ptr);
 
-                void insert(std::string const & name, detail::accumulator_wrapper const * obs);
-
-                void reset(bool equilibrated = false);
-
                 void save(hdf5::archive & ar) const;
 
                 void load(hdf5::archive & ar);
@@ -68,21 +66,10 @@ namespace alps {
 
                 void output(std::ostream & os) const;
                 
-                
-                iterator begin() const;
-                iterator end() const;
-                
-            
-            //empty for now
-            void clear() {};
-            void create_RealObservable(std::string const & name, uint32_t binnum = 0){}
-            void create_RealVectorObservable(std::string const & name, uint32_t binnum = 0){}
-            void create_SimpleRealObservable(std::string const & name){}
-            void create_SimpleRealVectorObservable(std::string const & name){}
-            void create_SignedRealObservable(std::string const & name, std::string sign = "Sign", uint32_t binnum = 0){}
-            void create_SignedRealVectorObservable(std::string const & name, std::string sign = "Sign", uint32_t binnum = 0){}
-            void create_SignedSimpleRealObservable(std::string const & name, std::string sign = "Sign"){}
-            void create_SignedSimpleRealVectorObservable(std::string const & name, std::string sign = "Sign"){}
+                iterator begin();
+                iterator end();
+                const_iterator begin() const;
+                const_iterator end() const;
                 
             private:
                 std::map<std::string, boost::shared_ptr<detail::accumulator_wrapper> > storage;

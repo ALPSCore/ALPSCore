@@ -60,12 +60,6 @@ namespace alps
                 return (*base_).get<T>();
             }
             
-            template<typename T>
-            typename mean_type<T>::type accumulator_wrapper::mean() 
-            {
-                return (*base_).get<T>().mean();
-            }
-
             template <typename T>
             T & accumulator_wrapper::extract() 
             {
