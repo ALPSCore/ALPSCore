@@ -17,7 +17,9 @@ FOREACH (name hdf5_complex hdf5_bool hdf5_replace hdf5_pair hdf5_parms hdf5_isin
     add_executable(${name} ${name}.cpp)
     add_dependencies(${name} alps)
     target_link_libraries(${name} alps)
+    set_property(TARGET ${name} PROPERTY LABELS hdf5)
     add_alps_test(${name})
+    set_property(TEST ${name} PROPERTY LABELS hdf5)
 ENDFOREACH(name)
 
 IF (ALPS_BUILD_HDF5_TESTS)
