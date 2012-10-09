@@ -8,6 +8,9 @@ namespace concepts {
 template <typename T>
 class matrix_archetype
 {
+  /**
+     \brief Class docs?
+   **/
 private:
     typedef matrix_archetype self;
 public:
@@ -22,7 +25,14 @@ public:
       * @param i row index of the element
       * @param j column index of the element
       * Returns a reference to the element located at (i,j)
-      * @precond i < num_rows(m) && j < num_cols(m) 
+      *
+      * @precond i < num_rows(m) && j < num_cols(m)
+      * @postcond i < num_rows(m) && j < num_cols(m)
+      *
+      * @new_in{2.1}
+      * We have introduced concept archetypes with automatic 
+      * documentation derivation as well the ability to list new and 
+      * changed things.
       **/
     value_type& operator()(size_type i, size_type j) { return value_type(); }
 
@@ -30,7 +40,8 @@ public:
       * \brief Element access (constant)
       * @param i row index of the element
       * @param j column index of the element
-      * @precond i < num_rows(m) && j < num_cols(m) 
+      * @precond i < num_rows(m) && j < num_cols(m)
+      * @new_in{2.3}
       * Returns a const reference to the element located at (i,j)
       **/
     value_type const& operator()(size_type i, size_type j) const { return value_type(); }
@@ -39,17 +50,21 @@ public:
       * \brief Assignement operator
       * Assigns the matrix to the argument
       * @return A reference to this.
+      *
       * @postcond The matrix has the same dimensions as m and the same coefficients.
       * @invariant m remains unchanged.
+      *
       **/
     matrix_archetype& operator = (matrix_archetype const& m) { return *this; }
 
     /**
       * \brief Plus-assignemnt
       * Adds the matrix m to the matrix
-      * @return A reference to this.
+      *
       * @precond The matrices have the same dimensions
       * @postcond TODO
+      *
+      * @return A reference to this.
       */
     matrix_archetype& operator += (matrix_archetype const& m){ return *this; }
 
