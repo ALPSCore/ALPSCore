@@ -189,6 +189,8 @@ namespace alps {
             if (ar.is_group(path))
                 throw invalid_path("invalid path");
             else {
+                if (ar.is_complex(path) != has_complex_elements<T>::value)
+                    throw archive_error("no complex value in archive" + ALPS_STACKTRACE);
                 std::vector<std::size_t> size(ar.extent(path));
                 if (boost::multi_array<T, N, A>::dimensionality <= size.size())
                     set_extent(value, std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));

@@ -206,9 +206,9 @@ namespace detail {
 
     template <typename T, typename MemoryBlock>
     void load(
-          archive& ar
-        , std::string const& path
-        , alps::numeric::matrix<T,MemoryBlock>& m
+          archive & ar
+        , std::string const & path
+        , alps::numeric::matrix<T,MemoryBlock> & m
         , std::vector<std::size_t> chunk  = std::vector<std::size_t>()
         , std::vector<std::size_t> offset = std::vector<std::size_t>()
     ){
@@ -230,7 +230,7 @@ namespace detail {
         }
 
         alps::numeric::matrix<T,MemoryBlock> m2;
-        if( ar.is_group(path) ) {
+        if(ar.is_group(path)) {
             std::vector<std::string> const columns = ar.list_children(path);
             std::vector<std::string> const rows = ar.list_children(path + "/" +columns[0]);
             m2.resize(rows.size(), columns.size());
@@ -244,6 +244,8 @@ namespace detail {
                 }
             }
         } else {
+            if (ar.is_complex(path) != has_complex_elements<T>::value)
+                throw archive_error("no complex value in archive" + ALPS_STACKTRACE);
             std::vector<std::size_t> size(ar.extent(path));
             if(is_continuous<T>::value) {
                 // We need to make sure that reserve() will reserve exactly the num_rows() we asked for.

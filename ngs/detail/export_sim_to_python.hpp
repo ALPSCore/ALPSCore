@@ -37,16 +37,20 @@
 #include <boost/python/wrapper.hpp>
 #include <boost/python/return_internal_reference.hpp>
 
-#define ALPS_EXPORT_SIM_TO_PYTHON(NAME, CLASS)                                                                                                                  \
-    boost::python::class_< CLASS <alps::mcbase>, boost::noncopyable, boost::python::bases<alps::mcbase> >(                                                      \
-          #NAME ,                                                                                                                                               \
-          boost::python::init< CLASS <alps::mcbase>::parameters_type const &, boost::python::optional<std::size_t> >()                                          \
-    )                                                                                                                                                           \
-        .add_property("params", boost::python::make_function(& CLASS <alps::mcbase>::get_params, boost::python::return_internal_reference<>()))                 \
-        .add_property("measurements", boost::python::make_function(& CLASS <alps::mcbase>::get_measurements, boost::python::return_internal_reference<>()))     \
-        .def("run", static_cast<bool( CLASS <alps::mcbase>::*)(boost::python::object)>(& CLASS <alps::mcbase>::run))                                            \
-        .def("random", & CLASS <alps::mcbase>::get_random)                                                                                                      \
-        .def("save", static_cast<void( CLASS <alps::mcbase>::*)(alps::hdf5::archive &) const>(& CLASS <alps::mcbase>::save))                                    \
-        .def("load", static_cast<void( CLASS <alps::mcbase>::*)(alps::hdf5::archive &)>(& CLASS <alps::mcbase>::load))                                          \
+#define ALPS_EXPORT_SIM_TO_PYTHON(NAME, CLASS)                                                                                                      \
+    boost::python::class_< CLASS , boost::noncopyable, boost::python::bases<alps::mcbase_ng> >(                                                     \
+          #NAME ,                                                                                                                                   \
+          boost::python::init< CLASS ::parameters_type const &, boost::python::optional<std::size_t> >()                                            \
+    )                                                                                                                                               \
+        .add_property("params", boost::python::make_function(                                                                                       \
+            static_cast<alps::mcbase_ng::parameters_type &( CLASS ::*)()>(& CLASS ::params), boost::python::return_internal_reference<>()           \
+         ))                                                                                                                                         \
+        .add_property("measurements", boost::python::make_function(                                                                                 \
+            static_cast<alps::mcobservables &( CLASS ::*)()>(& CLASS ::measurements), boost::python::return_internal_reference<>()                  \
+         ))                                                                                                                                         \
+        .def("run", static_cast<bool( CLASS ::*)(boost::python::object)>(& CLASS ::run))                                                            \
+        .def("random", & CLASS ::random)                                                                                                            \
+        .def("save", static_cast<void( CLASS ::*)(alps::hdf5::archive &) const>(& CLASS ::save))                                                    \
+        .def("load", static_cast<void( CLASS ::*)(alps::hdf5::archive &)>(& CLASS ::load))                                                          \
 
 #endif

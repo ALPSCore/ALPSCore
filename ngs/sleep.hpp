@@ -28,10 +28,12 @@
 #ifndef ALPS_NGS_SLEEP_HPP
 #define ALPS_NGS_SLEEP_HPP
 
+#include <cstddef>
+
 namespace alps {
 
     void sleep(std::size_t nanoseconds);
-    
+
 }
 
 #endif

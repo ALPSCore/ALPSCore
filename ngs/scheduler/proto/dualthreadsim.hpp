@@ -25,42 +25,68 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_CALLBACK_HPP
-#define ALPS_NGS_CALLBACK_HPP
+#if !defined(ALPS_NGS_SCHEDULER_DUALTHREADSIM_NG_HPP) && !defined(ALPS_NGS_SINGLE_THREAD)
+#define ALPS_NGS_SCHEDULER_DUALTHREADSIM_NG_HPP
 
-#include <alps/ngs/config.hpp>
+#include <alps/ngs/api.hpp>
 
-#ifndef ALPS_NGS_SINGLE_THREAD
-    #include <alps/ngs/atomic.hpp>
-#endif
+#include <boost/thread.hpp>
 
 namespace alps {
 
-    ALPS_DECL bool basic_stop_callback(int time_limit = 0);
+    template<typename Impl> class dualthreadsim_ng : public Impl {
+        public:
+            dualthreadsim_ng(typename alps::parameters_type<Impl>::type const & p, std::size_t seed_offset = 0)
+                : Impl(p, seed_offset)
+            {}
 
-    #ifndef ALPS_NGS_SINGLE_THREAD
+            virtual bool finished() {
+                return m_finished;
+            }
 
-        class ALPS_DECL threaded_callback_wrapper {
+        protected:
 
-            public:
+            template<typename T> class atomic {
+                public:
 
-                threaded_callback_wrapper(boost::function<bool ()> const & callback)
-                    : stop_flag(false)
-                    , stop_callback(callback)
-                {}
+                    atomic() {}
+                    atomic(T const & v): value(v) {}
+                    atomic(atomic<T> const & v): value(v.value) {}
 
-                bool check();
+                    atomic<T> & operator=(T const & v) {
+                        boost::lock_guard<boost::mutex> lock(atomic_mutex);
+                        value = v;
+                        return *this;
+                    }
 
-                bool operator()();
+                    operator T() const {
+                        boost::lock_guard<boost::mutex> lock(atomic_mutex);
+                        return value;
+                    }
 
-            private:
+                private:
 
-                atomic<bool> mutable stop_flag;
-                boost::function<bool ()> stop_callback;
+                    T volatile value;
+                    boost::mutex mutable atomic_mutex;
+            };
 
-        };
+            virtual void finish() {
+                m_finished = true;
+            }
 
-    #endif
+            // TODO: brauchen wir die protected mutex, nun haben wir 2 muteces, was alles etwas verwirrend macht?  wollen wir den nicht in den type reinwrappen?
+            boost::shared_ptr<void> get_data_guard() const { return boost::shared_ptr<void>(new boost::lock_guard<boost::mutex>(native_data_mutex)); }
+
+            boost::shared_ptr<void> get_result_guard() const { return boost::shared_ptr<void>(new boost::lock_guard<boost::mutex>(native_result_mutex)); }
+        
+        private:
+
+            atomic<bool> m_finished;
+
+            boost::mutex mutable native_data_mutex;
+            boost::mutex mutable native_result_mutex;
+    };
+
 }
 
 #endif

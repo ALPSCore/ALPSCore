@@ -31,8 +31,8 @@
 #include <alps/ngs/api.hpp>
 #ifndef ALPS_NGS_SINGLE_THREAD
 
-    #include <alps/ngs/atomic.hpp>
-    #include <boost/thread.hpp>
+//    #include <alps/ngs/atomic.hpp>
+//    #include <boost/thread.hpp>
 
 #endif
 /*

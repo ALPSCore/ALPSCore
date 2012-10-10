@@ -25,17 +25,38 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/sleep.hpp>
+#include <alps/ngs/sleep.hpp>
 
+#ifndef ALPS_NGS_SINGLE_THREAD
+
+#include <boost/thread.hpp>
 #include <boost/thread/xtime.hpp>
 
 namespace alps {
 
     void sleep(std::size_t nanoseconds) {
         boost::xtime xt;
-        boost::xtime_get(&xt, boost::TIME_UTC);
+        boost::xtime_get(&xt, boost::TIME_UTC_);
         xt.nsec += nanoseconds;
         boost::thread::sleep(xt);
     }
-    
 }
+
+#else
+
+#include <ctime>
+#include <stdexcept>
+
+namespace alps {
+
+    void sleep(std::size_t nanoseconds) {
+
+        struct timespec tim, tim2;
+        tim.tv_nsec = nanoseconds;
+
+        if(nanosleep(&tim , &tim2) < 0)
+            throw std::runtime_error("Nano sleep failed");
+    }
+}
+
+#endif

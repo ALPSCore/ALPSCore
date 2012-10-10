@@ -25,32 +25,23 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/ngs/signal.hpp>
-#include <alps/ngs/callback.hpp>
+#ifndef ALPS_NGS_THREAD_INTERRUPTED_HPP
+#define ALPS_NGS_THREAD_INTERRUPTED_HPP
 
-#include <boost/date_time/gregorian/gregorian.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
+#ifdef ALPS_NGS_SINGLE_THREAD
 
-namespace alps {
+namespace boost {
 
-    bool basic_stop_callback(int time_limit) {
-        static alps::ngs::signal signals;
-        static boost::posix_time::ptime start_time = boost::posix_time::second_clock::local_time();
-        return !signals.empty() 
-            || (time_limit > 0 && boost::posix_time::second_clock::local_time() > start_time + boost::posix_time::seconds(time_limit));
-    }
+    struct thread_interrupted {};
 
-    #ifndef ALPS_NGS_SINGLE_THREAD
-
-        bool threaded_callback_wrapper::check() {
-            return stop_flag;
-        }
-
-        bool threaded_callback_wrapper::operator()() {
-            stop_flag = stop_callback();
-            return stop_flag;
-        }
-
-    #endif
+    struct lock_error : public std::logical_error {};
 
 }
+
+#else
+
+#include <boost/thread/exceptions.hpp>
+
+#endif
+
+#endif

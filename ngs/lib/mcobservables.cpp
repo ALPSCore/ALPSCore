@@ -39,6 +39,7 @@
 namespace alps {
     
     #ifdef ALPS_NGS_USE_NEW_ALEA
+        // TODO: remove to separate file
         namespace alea
         {
             detail::accumulator_wrapper & accumulator_set::operator[](std::string const & name)

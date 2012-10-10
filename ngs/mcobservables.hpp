@@ -40,6 +40,7 @@
 
 namespace alps {
     #ifdef ALPS_NGS_USE_NEW_ALEA
+        // TODO: remove to separate file
         namespace alea
         {
             class ALPS_DECL accumulator_set {

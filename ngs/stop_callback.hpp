@@ -25,21 +25,15 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_THREAD_INTERRUPTED_HPP
-#define ALPS_NGS_THREAD_INTERRUPTED_HPP
+#ifndef ALPS_NGS_CALLBACK_HPP
+#define ALPS_NGS_CALLBACK_HPP
 
-#ifdef ALPS_NGS_SINGLE_THREAD
+#include <alps/ngs/config.hpp>
 
-namespace boost {
+namespace alps {
 
-    struct thread_interrupted {};
+    ALPS_DECL bool stop_callback(int time_limit = 0);
 
 }
-
-#else
-
-    #include <boost/thread/exceptions.hpp>
-
-#endif
 
 #endif

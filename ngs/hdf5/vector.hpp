@@ -78,6 +78,8 @@ namespace alps {
                     if (extent.size() > 1)
                         for(typename std::vector<T, A>::iterator it = value.begin(); it != value.end(); ++it)
                             set_extent(*it, std::vector<std::size_t>(extent.begin() + 1, extent.end()));
+                    else if (extent.size() == 0 && !boost::is_same<typename scalar_type<T>::type, T>::value)
+                        throw archive_error("dimensions do not match" + ALPS_STACKTRACE);
                 }
             };
 
@@ -175,6 +177,8 @@ namespace alps {
                 for (typename std::vector<std::string>::const_iterator it = children.begin(); it != children.end(); ++it)
                     load(ar, ar.complete_path(path) + "/" + *it, value[cast<std::size_t>(*it)]);
             } else {
+                if (ar.is_complex(path) != has_complex_elements<T>::value)
+                    throw archive_error("no complex value in archive" + ALPS_STACKTRACE);
                 std::vector<std::size_t> size(ar.extent(path));
                 if (is_continuous<T>::value) {
                     set_extent(value, std::vector<std::size_t>(size.begin() + chunk.size(), size.end()));

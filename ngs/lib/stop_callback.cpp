@@ -25,42 +25,19 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_ATOMIC_HPP
-#define ALPS_NGS_ATOMIC_HPP
+#include <alps/ngs/signal.hpp>
+#include <alps/ngs/stop_callback.hpp>
 
-#ifdef ALPS_NGS_SINGLE_THREAD
-    #error alps::atomic is always multithreaded
-#endif
-
-
-#include <boost/thread.hpp>
-#include <boost/thread/mutex.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace alps {
 
-    template<typename T> class atomic {
-        public:
+    bool stop_callback(int time_limit) {
+        static alps::ngs::signal signals;
+        static boost::posix_time::ptime start_time = boost::posix_time::second_clock::local_time();
+        return !signals.empty() 
+            || (time_limit > 0 && boost::posix_time::second_clock::local_time() > start_time + boost::posix_time::seconds(time_limit));
+    }
 
-            atomic() {}
-            atomic(T const & v): value(v) {}
-            atomic(atomic<T> const & v): value(v.value) {}
-
-            atomic<T> & operator=(T const & v) {
-                boost::lock_guard<boost::mutex> lock(mutex);
-                value = v;
-                return *this;
-            }
-
-            operator T() const {
-                boost::lock_guard<boost::mutex> lock(mutex);
-                return value;
-            }
-
-        private:
-
-            T volatile value;
-            boost::mutex mutable mutex;
-    };
 }
-
-#endif

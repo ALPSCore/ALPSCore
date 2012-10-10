@@ -59,7 +59,7 @@ namespace alps {
             };
 
             template<typename T> struct set_extent<std::complex<T> > {
-                static void apply(std::complex<T> &, std::vector<std::size_t> const &) {}
+                static void apply(std::complex<T> & value, std::vector<std::size_t> const & extent) {}
             };
 
             template<typename T> struct is_vectorizable<std::complex<T> > {
