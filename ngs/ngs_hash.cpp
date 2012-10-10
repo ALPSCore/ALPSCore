@@ -80,4 +80,5 @@ int main() {
     hash_combine(h, 4);
     std::cout << h << std::endl;
 */
+    return 0;
 }

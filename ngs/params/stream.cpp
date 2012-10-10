@@ -36,5 +36,5 @@ int main() {
     alps::params parms;
     parms["string_value"] = "test";
     std::cout << parms["string_value"] << std::endl;
-
+    return 0;
 }

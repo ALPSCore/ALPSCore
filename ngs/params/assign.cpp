@@ -49,5 +49,5 @@ int main() {
     parms["std::string"] = std::string("asdf");
 
     std::cout << parms << std::endl;
-
+    return 0;
 }

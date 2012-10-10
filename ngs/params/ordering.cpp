@@ -59,4 +59,5 @@ int main() {
         assert((it++)->first == "w");
     }
     boost::filesystem::remove(boost::filesystem::path(filename));
+    return 0;
 }

@@ -100,4 +100,5 @@ int main() {
         std::cout << (ar.is_datatype<double>("/to/to") ? "true" : "false") << std::endl;
     }
     boost::filesystem::remove(boost::filesystem::path(filename));
+    return 0;
 }

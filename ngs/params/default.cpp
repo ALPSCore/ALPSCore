@@ -36,5 +36,5 @@ int main() {
     alps::params parms;
     std::string strg = parms["non_existent_parameter"] | "substitution_string";
     std::cout << strg << std::endl;
-
+    return 0;
 }
