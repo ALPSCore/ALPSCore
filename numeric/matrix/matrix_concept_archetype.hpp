@@ -10,6 +10,7 @@ class matrix_archetype
 {
   /**
      \brief Class docs?
+
    **/
 private:
     typedef matrix_archetype self;
