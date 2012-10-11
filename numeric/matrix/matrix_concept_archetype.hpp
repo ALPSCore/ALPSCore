@@ -29,11 +29,14 @@ public:
       *
       * @precond i < num_rows(m) && j < num_cols(m)
       * @postcond i < num_rows(m) && j < num_cols(m)
-      *
+      * @semantics No idea what to put here
       * @new_in{2.1}
       * We have introduced concept archetypes with automatic 
       * documentation derivation as well the ability to list new and 
       * changed things.
+      * @complexity_worst{n^2} if the implementation is wrong
+      * @complexity_worst{n} if only parts of the implementation is wrong
+      * @complexity_average{1} if you implemented the routine nicely.
       **/
     value_type& operator()(size_type i, size_type j) { return value_type(); }
 
@@ -44,6 +47,9 @@ public:
       * @precond i < num_rows(m) && j < num_cols(m)
       * @new_in{2.3}
       * Returns a const reference to the element located at (i,j)
+      * @requirement{i} should be bigger than 100000
+      * @requirement{j} should be bigger than 100000. Otherwise 
+      * you are just solving toy problems. 
       **/
     value_type const& operator()(size_type i, size_type j) const { return value_type(); }
 
@@ -54,6 +60,7 @@ public:
       *
       * @postcond The matrix has the same dimensions as m and the same coefficients.
       * @invariant m remains unchanged.
+      * @concepttitle{Assign}
       *
       **/
     matrix_archetype& operator = (matrix_archetype const& m) { return *this; }
@@ -66,6 +73,7 @@ public:
       * @postcond TODO
       *
       * @return A reference to this.
+      * @concepttitle{Plus assign}
       */
     matrix_archetype& operator += (matrix_archetype const& m){ return *this; }
 
@@ -74,7 +82,11 @@ public:
 
 /**
   * \brief Returns the number of rows
+
   * @invariant m remains unchanged
+  * @concepttitle{Row count}
+  * @complexity_worst{n^n} 
+  * @complexity_average{1}
  **/
 template <typename T>
 typename matrix_archetype<T>::size_type num_rows(matrix_archetype<T> const& m) { return typename matrix_archetype<T>::size_type(0); }
@@ -82,6 +94,7 @@ typename matrix_archetype<T>::size_type num_rows(matrix_archetype<T> const& m) {
 /**
   * \brief Returns the number of columns
   * @invariant m remains unchanged
+  * @concepttitle{Col. count}
  **/
 template <typename T>
 typename matrix_archetype<T>::size_type num_cols(matrix_archetype<T> const& m) { return typename matrix_archetype<T>::size_type(0); }
