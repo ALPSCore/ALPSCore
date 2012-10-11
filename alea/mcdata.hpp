@@ -807,8 +807,8 @@ namespace alps {
                                 error_ = error_ + (jack_[i + 1] - unbiased_mean_) * (jack_[i+1] - unbiased_mean_);
                             error_ = sqrt(error_ / count_type(bin_number()) *  count_type(bin_number() - 1));
                         }
-                        variance_opt_ = boost::none_t();
-                        tau_opt_ = boost::none_t();
+                        // variance_opt_ = boost::none_t();
+                        // tau_opt_ = boost::none_t();
                     }
                     data_is_analyzed_ = true;
                 }
