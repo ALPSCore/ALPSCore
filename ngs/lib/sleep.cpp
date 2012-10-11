@@ -36,7 +36,11 @@ namespace alps {
 
     void sleep(std::size_t nanoseconds) {
         boost::xtime xt;
+#if BOOST_VERSION < 105000
+        boost::xtime_get(&xt, boost::TIME_UTC);
+#else
         boost::xtime_get(&xt, boost::TIME_UTC_);
+#endif
         xt.nsec += nanoseconds;
         boost::thread::sleep(xt);
     }
