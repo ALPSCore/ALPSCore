@@ -46,6 +46,7 @@ struct option {
   bool write_xml;
   bool use_mpi, default_total_threads, auto_total_threads;
   int num_total_threads, threads_per_clone;
+  task_range_t task_range;
   std::vector<std::string> jobfiles;
   bool valid, show_help, show_license;
   void print(std::ostream& os) const;
@@ -55,6 +56,7 @@ struct evaluate_option {
   evaluate_option(int argc, char** argv);
   boost::program_options::options_description desc;
   bool write_xml;
+  task_range_t task_range;
   std::vector<std::string> jobfiles;
   bool valid, show_help, show_license;
   std::string help() const;

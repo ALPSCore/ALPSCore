@@ -59,7 +59,8 @@ ALPS_DECL void print_license(std::ostream& os = std::cout);
 
 ALPS_DECL std::string alps_version();
 
-ALPS_DECL void print_taskinfo(std::ostream& os, std::vector<alps::task> const& tasks);
+ALPS_DECL void print_taskinfo(std::ostream& os, std::vector<alps::task> const& tasks,
+  task_range_t const& task_range);
 
 // return 1 for job XML (<JOB>) file or 2 for task XML (<SIMULATION>)
 ALPS_DECL int load_filename(boost::filesystem::path const& file, std::string& file_in_str,

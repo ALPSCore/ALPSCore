@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2011 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2012 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -29,6 +29,7 @@
 #define PARAPACK_TYPES_H
 
 #include <alps/scheduler.h>
+#include "integer_range.h"
 
 namespace alps {
 
@@ -121,6 +122,8 @@ typedef uint32_t cid_t;
 typedef uint32_t gid_t;
 
 typedef uint32_t seed_t;
+
+typedef integer_range<uint32_t> task_range_t;
 
 } // end namespace alps
 

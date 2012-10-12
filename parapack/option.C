@@ -40,7 +40,7 @@ option::option(int argc, char** argv)
     auto_evaluate(true), evaluate_only(false),
     dump_policy(dump_policy::RunningOnly), write_xml(false),
     use_mpi(false), default_total_threads(true), auto_total_threads(false), 
-    num_total_threads(1), threads_per_clone(1), 
+    num_total_threads(1), threads_per_clone(1), task_range(),
     jobfiles(), valid(true), show_help(false), show_license(false) {
   desc.add_options()
     ("help,h", "produce help message")
@@ -60,6 +60,8 @@ option::option(int argc, char** argv)
     ("no-evaluate", "prevent evaluating observables upon halting")
     ("report-interval", po::value<int>(),
      "time between progress report of clones [unit = sec; default = 600s]")
+    ("task-range", po::value<std::string>(),
+     "specify range of task indices to be processed, e.g. [2:5]")
     ("time-limit,T", po::value<int>(),
      "time limit for the simulation [unit = sec; default = no time limit]")
     ("Tmin", "obsolete")
@@ -116,6 +118,8 @@ option::option(int argc, char** argv)
     use_mpi = true;
   if (vm.count("evaluate"))
     evaluate_only = true;
+  if (vm.count("task-range"))
+    task_range = task_range_t(vm["task-range"].as<std::string>());
   if (vm.count("time-limit")) {
     has_time_limit = true;
     time_limit = pt::seconds(vm["time-limit"].as<int>());
@@ -139,11 +143,13 @@ option::option(int argc, char** argv)
 void option::print(std::ostream& os) const { desc.print(os); }
 
 evaluate_option::evaluate_option(int argc, char** argv)
-  : desc("Allowed options"), write_xml(false), jobfiles(),
+  : desc("Allowed options"), write_xml(false), task_range(), jobfiles(),
     valid(true), show_help(false), show_license(false) {
   desc.add_options()
     ("help,h", "produce help message")
     ("license,l", "print license conditions")
+    ("task-range", po::value<std::string>(),
+     "specify range of task indices to be processed, e.g. [2:5]")
     ("write-xml", "write results to XML files")
     ("input-file", po::value<std::vector<std::string> >(), "input master XML files");
   po::positional_options_description p;
@@ -163,6 +169,8 @@ evaluate_option::evaluate_option(int argc, char** argv)
     show_help = true;
   if (vm.count("license"))
     show_license = true;
+  if (vm.count("task-range"))
+    task_range = task_range_t(vm["task-range"].as<std::string>());
   if (vm.count("write-xml"))
     write_xml = true;
   if (vm.count("input-file"))

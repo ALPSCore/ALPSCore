@@ -182,12 +182,16 @@ int evaluate(int argc, char **argv) {
         load_tasks(file_in, file_out, basedir, simname, tasks, false, opt.write_xml);
         std::cout << "  master input file  = " << file_in.string() << std::endl
                   << "  master output file = " << file_out.string() << std::endl;
-        print_taskinfo(std::cout, tasks);
-        BOOST_FOREACH(task& t, tasks) t.evaluate(opt.write_xml);
+        print_taskinfo(std::cout, tasks, opt.task_range);
+        BOOST_FOREACH(task& t, tasks) {
+          if (!opt.task_range.valid() || opt.task_range.is_included(t.task_id()+1))
+            t.evaluate(opt.write_xml);
+        }
       } else {
         // process one task
         task t(file);
-        t.evaluate(opt.write_xml);
+        if (!opt.task_range.valid() || opt.task_range.is_included(t.task_id()+1))
+          t.evaluate(opt.write_xml);
       }
       std::cout << logger::header() << "all tasks evaluated\n";
     }
@@ -220,35 +224,41 @@ std::string alps_version() {
     " by " + config_user() + "; compiled on " + compile_date();
 }
 
-void print_taskinfo(std::ostream& os, std::vector<alps::task> const& tasks) {
+void print_taskinfo(std::ostream& os, std::vector<alps::task> const& tasks,
+  task_range_t const& task_range) {
   uint32_t num_new = 0;
   uint32_t num_running = 0;
   uint32_t num_continuing = 0;
   uint32_t num_suspended = 0;
   uint32_t num_finished = 0;
   uint32_t num_completed = 0;
+  uint32_t num_skipped = 0;
   BOOST_FOREACH(alps::task const& t, tasks) {
-    switch (t.status()) {
-    case alps::task_status::NotStarted :
-      ++num_new;
-      break;
-    case alps::task_status::Running :
-      ++num_running;
-      break;
-    case alps::task_status::Continuing :
-      ++num_continuing;
-      break;
-    case alps::task_status::Suspended :
-      ++num_suspended;
-      break;
-    case alps::task_status::Finished :
-      ++num_finished;
-      break;
-    case alps::task_status::Completed :
-      ++num_completed;
-      break;
-    default :
-      break;
+    if (!task_range.valid() || task_range.is_included(t.task_id()+1)) {
+      switch (t.status()) {
+      case alps::task_status::NotStarted :
+        ++num_new;
+        break;
+      case alps::task_status::Running :
+        ++num_running;
+        break;
+      case alps::task_status::Continuing :
+        ++num_continuing;
+        break;
+      case alps::task_status::Suspended :
+        ++num_suspended;
+        break;
+      case alps::task_status::Finished :
+        ++num_finished;
+        break;
+      case alps::task_status::Completed :
+        ++num_completed;
+        break;
+      default :
+        break;
+      }
+    } else {
+      ++num_skipped;
     }
   }
   os << logger::header() << "task status: "
@@ -258,7 +268,8 @@ void print_taskinfo(std::ostream& os, std::vector<alps::task> const& tasks) {
      << ", continuing = " << num_continuing
      << ", suspended = " << num_suspended
      << ", finished = " << num_finished
-     << ", completed = " << num_completed << std::endl;
+     << ", completed = " << num_completed
+     << ", skipped = " << num_skipped << std::endl;
 }
 
 int load_filename(boost::filesystem::path const& file, std::string& file_in_str,
@@ -472,15 +483,17 @@ int start_sgl(int argc, char** argv) {
         load_tasks(file_in, file_out, basedir, simname, tasks, false, opt.write_xml);
         std::cout << "  master input file  = " << file_in.string() << std::endl
                   << "  master output file = " << file_out.string() << std::endl;
-        print_taskinfo(std::cout, tasks);
+        print_taskinfo(std::cout, tasks, opt.task_range);
         // #pragma omp parallel for
         for (int t = 0; t < tasks.size(); ++t) {
-          tasks[t].evaluate(opt.write_xml);
+          if (!opt.task_range.valid() || opt.task_range.is_included(t+1))
+            tasks[t].evaluate(opt.write_xml);
         }
       } else {
         // process one task
         task t(file);
-        t.evaluate(opt.write_xml);
+        if (!opt.task_range.valid() || opt.task_range.is_included(t.task_id()+1))
+          t.evaluate(opt.write_xml);
       }
       std::cout << logger::header() << "all tasks evaluated\n";
       return 0;
@@ -523,21 +536,25 @@ int start_sgl(int argc, char** argv) {
     std::cout << "  interval between checkpointing  = "
               << opt.checkpoint_interval.total_seconds() << " seconds\n"
               << "  interval between progress report = "
-              << opt.report_interval.total_seconds() << " seconds\n"
-              << "  worker dump policy = "
+              << opt.report_interval.total_seconds() << " seconds\n";
+    if (opt.task_range.valid())
+      std::cout<< "  task range = " << opt.task_range << std::endl;
+    std::cout << "  worker dump policy = "
               << dump_policy::to_string(opt.dump_policy) << std::endl;
 
     load_tasks(file_in, file_out, basedir, simname, tasks, true, opt.write_xml);
     if (simname != "")
       std::cout << "  simulation name = " << simname << std::endl;
     BOOST_FOREACH(task const& t, tasks) {
-      if (t.status() == task_status::NotStarted || t.status() == task_status::Suspended ||
-          t.status() == task_status::Finished)
+      if ((t.status() == task_status::NotStarted || t.status() == task_status::Suspended ||
+           t.status() == task_status::Finished) &&
+          (!opt.task_range.valid() || opt.task_range.is_included(t.task_id()+1))) {
         task_queue.push(task_queue_t::value_type(t));
-      if (t.status() == task_status::Finished || t.status() == task_status::Completed)
+      } else {
         ++num_finished_tasks;
+      }
     }
-    print_taskinfo(std::cout, tasks);
+    print_taskinfo(std::cout, tasks, opt.task_range);
     if (tasks.size() == 0) std::cout << "Warning: no tasks found\n";
 
     #pragma omp parallel num_threads(num_groups)
@@ -613,7 +630,7 @@ int start_sgl(int argc, char** argv) {
                 }
                 std::cerr << "save task\n";
                 save_tasks(file_out, simname, file_in_str, file_out_str, tasks);
-                print_taskinfo(std::cout, tasks);
+                print_taskinfo(std::cout, tasks, opt.task_range);
               } // end omp critical
               check_queue.push(next_taskinfo(opt.checkpoint_interval));
             } else if (q.type == check_type::checkpoint) {
@@ -700,14 +717,15 @@ int start_sgl(int argc, char** argv) {
       }
     } // end omp parallel
 
-    print_taskinfo(std::cout, tasks);
+    print_taskinfo(std::cout, tasks, opt.task_range);
     std::cout << logger::header() << "all threads halted\n";
     if (opt.auto_evaluate) {
       std::cout << logger::header() << "starting evaluation on "
                 << alps::hostname() << std::endl;
       // #pragma omp parallel for
       for (int t = 0; t < tasks.size(); ++t) {
-        tasks[t].evaluate(opt.write_xml);
+        if (!opt.task_range.valid() || opt.task_range.is_included(t+1))
+          tasks[t].evaluate(opt.write_xml);
       } // end omp parallel for
       std::cout << logger::header() << "all tasks evaluated\n";
     }
@@ -885,12 +903,16 @@ int start_mpi(int argc, char** argv) {
           load_tasks(file_in, file_out, basedir, simname, tasks, true, opt.write_xml);
           std::cout << "  master input file  = " << file_in.string() << std::endl
                     << "  master output file = " << file_out.string() << std::endl;
-          print_taskinfo(std::cout, tasks);
-          BOOST_FOREACH(task& t, tasks) t.evaluate(opt.write_xml);
+          print_taskinfo(std::cout, tasks, opt.task_range);
+          BOOST_FOREACH(task& t, tasks) {
+            if (!opt.task_range.valid() || opt.task_range.is_included(t.task_id()+1))
+              t.evaluate(opt.write_xml);
+          }
         } else {
           // process one task
           task t(file);
-          t.evaluate(opt.write_xml);
+          if (!opt.task_range.valid() || opt.task_range.is_included(t.task_id()+1))
+            t.evaluate(opt.write_xml);
         }
         std::cout << logger::header() << "all tasks evaluated\n";
       }
@@ -946,13 +968,15 @@ int start_mpi(int argc, char** argv) {
       if (simname != "")
         std::cout << "  simulation name = " << simname << std::endl;
       BOOST_FOREACH(task const& t, tasks) {
-        if (t.status() == task_status::NotStarted || t.status() == task_status::Suspended ||
-            t.status() == task_status::Finished)
+        if ((t.status() == task_status::NotStarted || t.status() == task_status::Suspended ||
+             t.status() == task_status::Finished) &&
+            (!opt.task_range.valid() || opt.task_range.is_included(t.task_id()+1))) {
           task_queue.push(task_queue_t::value_type(t));
-        if (t.status() == task_status::Finished || t.status() == task_status::Completed)
+        } else {
           ++num_finished_tasks;
+        }
       }
-      print_taskinfo(std::cout, tasks);
+      print_taskinfo(std::cout, tasks, opt.task_range);
       if (tasks.size() == 0) std::cout << "Warning: no tasks found\n";
       check_queue.push(next_taskinfo(opt.checkpoint_interval / 10));
     }
@@ -1095,7 +1119,7 @@ int start_mpi(int argc, char** argv) {
                 std::cout << logger::header() << "checkpointing task files\n";
                 BOOST_FOREACH(task const& t, tasks) { if (t.on_memory()) t.save(opt.write_xml); }
                 save_tasks(file_out, simname, file_in_str, file_out_str, tasks);
-                print_taskinfo(std::cout, tasks);
+                print_taskinfo(std::cout, tasks, opt.task_range);
                 check_queue.push(next_taskinfo(opt.checkpoint_interval));
               } else if (q.type == check_type::checkpoint) {
                 if (tasks[q.task_id].on_memory() && tasks[q.task_id].is_running(q.clone_id)) {
@@ -1140,12 +1164,15 @@ int start_mpi(int argc, char** argv) {
         // check if all processes are halted
         if (process.check_halted()) {
           if (world.rank() == 0) {
-            print_taskinfo(std::cout, tasks);
+            print_taskinfo(std::cout, tasks, opt.task_range);
             std::cout << logger::header() << "all processes halted\n";
             if (opt.auto_evaluate) {
               std::cout << logger::header() << "starting evaluation on "
                         << alps::hostname() << std::endl;
-              BOOST_FOREACH(task& t, tasks) t.evaluate(opt.write_xml);
+              BOOST_FOREACH(task& t, tasks) {
+                if (!opt.task_range.valid() || opt.task_range.is_included(t.task_id()+1))
+                  t.evaluate(opt.write_xml);
+              }
               std::cout << logger::header() << "all tasks evaluated\n";
             }
           }
