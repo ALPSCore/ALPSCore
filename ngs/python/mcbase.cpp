@@ -47,6 +47,7 @@
 namespace alps {
     namespace detail {
 
+        // TODO: remove wrapper!
         class mcbase_export : public mcbase, public boost::python::wrapper<mcbase> {
 
             public:

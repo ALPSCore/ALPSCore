@@ -25,8 +25,8 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#if !defined(ALPS_NGS_SCHEDULER_DUALTHREADSIM_NG_HPP) && !defined(ALPS_NGS_SINGLE_THREAD)
-#define ALPS_NGS_SCHEDULER_DUALTHREADSIM_NG_HPP
+#if !defined(ALPS_NGS_SCHEDULER_CONTROLTHREADSIM_NG_HPP) && !defined(ALPS_NGS_SINGLE_THREAD)
+#define ALPS_NGS_SCHEDULER_CONTROLTHREADSIM_NG_HPP
 
 #include <alps/ngs/api.hpp>
 
@@ -34,14 +34,15 @@
 
 namespace alps {
 
-    template<typename Impl> class dualthreadsim_ng : public Impl {
+    template<typename Impl> class controlthreadsim_ng : public Impl {
         public:
-            dualthreadsim_ng(typename alps::parameters_type<Impl>::type const & p, std::size_t seed_offset = 0)
+            controlthreadsim_ng(typename alps::parameters_type<Impl>::type const & p, std::size_t seed_offset = 0)
                 : Impl(p, seed_offset)
+                , m_status(Impl::initialized)
             {}
 
-            virtual bool finished() {
-                return m_finished;
+            typename Impl::status_type status() const {
+                return m_status;
             }
 
         protected:
@@ -70,18 +71,22 @@ namespace alps {
                     boost::mutex mutable atomic_mutex;
             };
 
-            virtual void finish() {
-                m_finished = true;
+            void set_status(typename Impl::status_type status) {
+                m_status = status;
             }
 
             // TODO: brauchen wir die protected mutex, nun haben wir 2 muteces, was alles etwas verwirrend macht?  wollen wir den nicht in den type reinwrappen?
-            boost::shared_ptr<void> get_data_guard() const { return boost::shared_ptr<void>(new boost::lock_guard<boost::mutex>(native_data_mutex)); }
+            boost::shared_ptr<void> get_data_guard() const {
+                return boost::shared_ptr<void>(new boost::lock_guard<boost::mutex>(native_data_mutex));
+            }
 
-            boost::shared_ptr<void> get_result_guard() const { return boost::shared_ptr<void>(new boost::lock_guard<boost::mutex>(native_result_mutex)); }
+            boost::shared_ptr<void> get_result_guard() const {
+                return boost::shared_ptr<void>(new boost::lock_guard<boost::mutex>(native_result_mutex));
+            }
         
         private:
 
-            atomic<bool> m_finished;
+            atomic<typename Impl::status_type> m_status;
 
             boost::mutex mutable native_data_mutex;
             boost::mutex mutable native_result_mutex;

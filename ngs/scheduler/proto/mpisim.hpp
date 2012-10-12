@@ -38,11 +38,11 @@
 namespace alps {
 
     template<typename Impl> class mpisim_ng : public Impl {
-    
-        typedef enum { INITIALIZED, RUNNING, STOP, FINISHED } state_type;
+
         typedef enum { NOOP_TAG, CHECKPOINT_TAG, FRACTION_TAG, STOP_TAG } tag_type;
-    
+        
         public:
+    
             using Impl::collect_results;
         
             mpisim_ng(typename alps::parameters_type<Impl>::type const & p) {
@@ -54,7 +54,6 @@ namespace alps {
                 , communicator(c)
                 , binnumber(p["binnumber"] | std::min(128, 2 * c.size()))
                 , fraction(0.)
-                , state(INITIALIZED)
                 , fraction_duration(2.)
                 , start_time_point(boost::chrono::high_resolution_clock::now())
                 , last_time_point(boost::chrono::high_resolution_clock::now())
@@ -68,7 +67,7 @@ namespace alps {
             }
 
             void save(boost::filesystem::path const & filename) const {
-                if (state != STOP) {
+                if (this->status() != Impl::interrupted) {
                     if (!communicator.rank()) {
                         tag_type tag = CHECKPOINT_TAG;
                         // TODO: make root a parameter
@@ -76,17 +75,17 @@ namespace alps {
                         boost::mpi::broadcast(communicator, tag, 0);
                         std::string filename_str = filename.string();
                         boost::mpi::broadcast(communicator, filename_str, 0);
-                        Impl::save(filename);
+                        dynamic_cast<Impl const &>(*this).save(filename_str + "." + cast<std::string>(communicator.rank()));
                     } else
-                        const_cast<mpisim_ng<Impl> &>(*this).check_callback();
+                        const_cast<mpisim_ng<Impl> &>(*this).check_communication();
                 }
             }
 
             bool run(boost::function<bool ()> const & stop_callback) {
                 user_stop_callback = stop_callback;
-                state = RUNNING;
+                this->set_status(Impl::running);
                 Impl::run(boost::bind<bool>(&mpisim_ng<Impl>::mpi_stop_callback, boost::ref(*this)));
-                state = FINISHED;
+                this->set_status(Impl::finished);
                 return stop_callback();
             }
 
@@ -100,19 +99,21 @@ namespace alps {
                 return partial_results;
             }
 
-            void check_callback() {
-                if (state != STOP) {
+            void check_communication() {
+                if (this->status() != Impl::interrupted) {
                     boost::chrono::high_resolution_clock::time_point now_time_point = boost::chrono::high_resolution_clock::now();
-                    // TODO: make duration a parameter
-                    if (now_time_point - last_time_point > boost::chrono::duration<int>(1)) {
+                    // TODO: make duration a parameter, if running in single thread mpi mode, only check every minute or so ...
+                    if (this->status() != Impl::running || now_time_point - last_time_point > boost::chrono::duration<int>(1)) {
                         tag_type tag = NOOP_TAG;
                         if (!communicator.rank()) {
-                            if (state == RUNNING && user_stop_callback())
+                            if (this->status() == Impl::running && user_stop_callback())
                                 tag = STOP_TAG;
                             else if (now_time_point - fraction_time_point > fraction_duration) {
                                 tag = FRACTION_TAG;
+                                // TODO: add mincheck, maxcheck
                                 fraction_duration = boost::chrono::duration<double>(std::min(
                                     2. *  fraction_duration.count(),
+                                    // TODO: make interval also smaller ...
                                     std::max(
                                           double(fraction_duration.count())
                                         , 0.8 * (1 - fraction) / fraction * boost::chrono::duration_cast<boost::chrono::duration<double> >(now_time_point - start_time_point).count()
@@ -123,14 +124,13 @@ namespace alps {
                             }
                         }
                         // TODO: make root a parameter
-                        // TODO: use iBcast ...
                         boost::mpi::broadcast(communicator, tag, 0);
                         switch (tag) {
                             case CHECKPOINT_TAG:
                                 {
                                     std::string filename;
                                     boost::mpi::broadcast(communicator, filename, 0);
-                                    save(filename + "." + cast<std::string>(communicator.rank()));
+                                    dynamic_cast<Impl &>(*this).save(filename + "." + cast<std::string>(communicator.rank()));
                                 }
                                 break;
                             case FRACTION_TAG:
@@ -141,15 +141,14 @@ namespace alps {
                                     if (fraction >= 1.) {
                                         tag = STOP_TAG;
                                         // TODO: make root a parameter
-                                        // TODO: use iBcast ...
                                         boost::mpi::broadcast(communicator, tag, 0);
-                                        state = STOP;
+                                        this->set_status(Impl::interrupted);
                                     }
                                 } else
                                     reduce(communicator, Impl::fraction_completed(), std::plus<double>(), 0);
                                 break;
                             case STOP_TAG:
-                                state = STOP;
+                                this->set_status(Impl::interrupted);
                                 break;
                             case NOOP_TAG:
                                 break;
@@ -168,13 +167,12 @@ namespace alps {
         private:
 
             bool mpi_stop_callback() const {
-                return state == STOP;
+                return this->status() == Impl::interrupted;
             }
 
             boost::mpi::communicator communicator;
             std::size_t binnumber;
             typename Impl::template atomic<double> fraction;
-            state_type state;
             boost::chrono::duration<double> fraction_duration;
             boost::chrono::high_resolution_clock::time_point start_time_point;
             boost::chrono::high_resolution_clock::time_point last_time_point;

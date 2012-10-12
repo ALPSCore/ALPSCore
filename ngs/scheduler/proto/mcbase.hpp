@@ -111,6 +111,8 @@ namespace alps {
                 mutex_type & mutex;
             };
 
+            typedef enum { initialized, running, interrupted, finished } status_type;
+
             typedef alps::params parameters_type;
             typedef alps::mcresults results_type;
             typedef std::vector<std::string> result_names_type;
@@ -118,8 +120,8 @@ namespace alps {
             mcbase_ng(parameters_type const & p, std::size_t seed_offset = 0)
                 : data_mutex(*this, mutex_type::DATA)
                 , result_mutex(*this, mutex_type::RESULT)
-                , m_finished(false)
-                , m_params(p)
+                , params(p)
+                , m_status(initialized)
                   // TODO: this ist not the best solution - any idea?
                 , m_random(boost::mt19937((p["SEED"] | 42) + seed_offset), boost::uniform_real<>())
             {
@@ -142,14 +144,14 @@ namespace alps {
 
             virtual void save(alps::hdf5::archive & ar) const {
                 lock_guard_type result_lock(result_mutex);
-                ar["/parameters"] << m_params;
-                ar["/simulation/realizations/0/clones/0/results"] << m_measurements;
+                ar["/parameters"] << params;
+                ar["/simulation/realizations/0/clones/0/results"] << measurements;
             }
 
             // TODO: do we want to load the parameters?
             virtual void load(alps::hdf5::archive & ar) {
                 lock_guard_type result_lock(result_mutex);
-                ar["/simulation/realizations/0/clones/0/results"] >> m_measurements;
+                ar["/simulation/realizations/0/clones/0/results"] >> measurements;
             }
 
             bool run(boost::function<bool ()> const & stop_callback) {
@@ -164,7 +166,7 @@ namespace alps {
                         measure();
                     }
                 } while(!stop_callback() && !work_done());
-                finish();
+                set_status(finished); // TODO: remove this!
                 return !stop_callback();
             }
 
@@ -176,7 +178,7 @@ namespace alps {
 
             result_names_type result_names() const {
                 result_names_type names;
-                for(mcobservables::const_iterator it = measurements().begin(); it != measurements().end(); ++it)
+                for(mcobservables::const_iterator it = measurements.begin(); it != measurements.end(); ++it)
                     names.push_back(it->first);
                 return names;
             }
@@ -193,21 +195,21 @@ namespace alps {
                 results_type partial_results;
                 for(result_names_type::const_iterator it = names.begin(); it != names.end(); ++it)
                     // CHECK: this is ugly make measurements[*it]
-                    partial_results.insert(*it, mcresult(measurements()[*it]));
+                    partial_results.insert(*it, mcresult(measurements[*it]));
                 return partial_results;
             }
 
             // CHECK: how do we handle locks here? Do we need const/nonconst versions?
-            parameters_type & params() { return m_params; }
-            parameters_type const & params() const { return m_params; }
+            parameters_type & get_params() { return params; }
+            parameters_type const & get_params() const { return params; }
 
             // CHECK: how do we handle locks here? Do we need const/nonconst versions?
             #ifdef ALPS_NGS_USE_NEW_ALEA
-                alea::accumulator_set & measurements() { return m_measurements; }
-                alea::accumulator_set const & measurements() const { return m_measurements; }
+                alea::accumulator_set & get_measurements() { return measurements; }
+                alea::accumulator_set const & get_measurements() const { return measurements; }
             #else
-                mcobservables & measurements() { return m_measurements; }
-                mcobservables const & measurements() const { return m_measurements; }
+                mcobservables & get_measurements() { return measurements; }
+                mcobservables const & get_measurements() const { return measurements; }
             #endif
 
         
@@ -215,11 +217,11 @@ namespace alps {
             double random() const { return m_random(); }
         
             // CHECK: how do we handle locks here? Do we need const/nonconst versions?
-            virtual void check_callback() {}
+            virtual void check_communication() {}
 
-            // CHECK: this is ugly, can we add a better hook to dualthread
-            virtual bool finished() {
-                return m_finished;
+            // CHECK: this is ugly, can we add a better hook to controlthread
+            virtual status_type status() const {
+                return m_status;
             }
 
         protected:
@@ -252,25 +254,37 @@ namespace alps {
                 return fraction_completed() >= 1.;
             }
 
-            // CHECK: this is ugly, can we add a better hook to dualthread
-            virtual void finish() {
-                m_finished = true;
+            // CHECK: this is ugly, can we add a better hook to controlthread
+            virtual void set_status(status_type status) {
+                m_status = status;
             }
 
-            virtual boost::shared_ptr<void> get_data_guard() const { return boost::shared_ptr<void>(new noop_lock_guard(*this)); }
+            virtual boost::shared_ptr<void> get_data_guard() const {
+                return boost::shared_ptr<void>(new noop_lock_guard(*this));
+            }
 
-            virtual boost::shared_ptr<void> get_result_guard() const { return boost::shared_ptr<void>(new noop_lock_guard(*this)); }
+            virtual boost::shared_ptr<void> get_result_guard() const {
+                return boost::shared_ptr<void>(new noop_lock_guard(*this));
+            }
 
             // CHECK: do we want to expose this to the derived class?
             mutex_type mutable data_mutex;
             mutex_type mutable result_mutex;
+
+            parameters_type params; // rename to params
+
+            #ifdef ALPS_NGS_USE_NEW_ALEA
+                alea::accumulator_set measurements;
+            #else
+                mcobservables measurements;
+            #endif
 
         private:
         
             struct noop_lock_guard {
                 noop_lock_guard(mcbase_ng const & target) {
                     if (target.data_guard_ptr.expired() && target.result_guard_ptr.expired())
-                        const_cast<mcbase_ng &>(target).check_callback();
+                        const_cast<mcbase_ng &>(target).check_communication();
                 }
             };
 
@@ -280,14 +294,7 @@ namespace alps {
                 }
             #endif
 
-            bool m_finished;
-            parameters_type m_params;
-
-            #ifdef ALPS_NGS_USE_NEW_ALEA
-                alea::accumulator_set m_measurements;
-            #else
-                mcobservables m_measurements;
-            #endif
+            status_type m_status;
 
             boost::variate_generator<boost::mt19937, boost::uniform_real<> > mutable m_random;
 

@@ -43,10 +43,10 @@
           boost::python::init< CLASS ::parameters_type const &, boost::python::optional<std::size_t> >()                                            \
     )                                                                                                                                               \
         .add_property("params", boost::python::make_function(                                                                                       \
-            static_cast<alps::mcbase_ng::parameters_type &( CLASS ::*)()>(& CLASS ::params), boost::python::return_internal_reference<>()           \
+            static_cast<alps::mcbase_ng::parameters_type &( CLASS ::*)()>(& CLASS ::get_params), boost::python::return_internal_reference<>()       \
          ))                                                                                                                                         \
         .add_property("measurements", boost::python::make_function(                                                                                 \
-            static_cast<alps::mcobservables &( CLASS ::*)()>(& CLASS ::measurements), boost::python::return_internal_reference<>()                  \
+            static_cast<alps::mcobservables &( CLASS ::*)()>(& CLASS ::get_measurements), boost::python::return_internal_reference<>()              \
          ))                                                                                                                                         \
         .def("run", static_cast<bool( CLASS ::*)(boost::python::object)>(& CLASS ::run))                                                            \
         .def("random", & CLASS ::random)                                                                                                            \
