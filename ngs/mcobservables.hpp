@@ -28,55 +28,17 @@
 #ifndef ALPS_NGS_MCOBSERVABLES_HPP
 #define ALPS_NGS_MCOBSERVABLES_HPP
 
-#include <alps/ngs/hdf5.hpp>
 #include <alps/ngs/config.hpp>
+
+#include <alps/ngs/hdf5.hpp>
 #include <alps/ngs/mcobservable.hpp>
 
 #include <alps/alea/observable_fwd.hpp>
-#include <alps/ngs/alea/wrapper/accumulator_wrapper_fwd.hpp>
 
 #include <map>
 #include <string>
 
 namespace alps {
-    #ifdef ALPS_NGS_USE_NEW_ALEA
-        // TODO: remove to separate file
-        namespace alea
-        {
-            class ALPS_DECL accumulator_set {
-                
-            public: 
-                typedef std::map<std::string, boost::shared_ptr<detail::accumulator_wrapper> > map_type;
-                //TODO
-                typedef map_type::iterator iterator;
-                typedef map_type::const_iterator const_iterator;
-
-                detail::accumulator_wrapper & operator[](std::string const & name);
-
-                detail::accumulator_wrapper const & operator[](std::string const & name) const;
-
-                bool has(std::string const & name) const;
-                
-                void insert(std::string const & name, boost::shared_ptr<detail::accumulator_wrapper> ptr);
-
-                void save(hdf5::archive & ar) const;
-
-                void load(hdf5::archive & ar);
-
-                void merge(accumulator_set const &);
-
-                void output(std::ostream & os) const;
-                
-                iterator begin();
-                iterator end();
-                const_iterator begin() const;
-                const_iterator end() const;
-                
-            private:
-                std::map<std::string, boost::shared_ptr<detail::accumulator_wrapper> > storage;
-            };
-        } //end namespace alea
-    #endif
     class ALPS_DECL mcobservables : public std::map<std::string, mcobservable> {
 
         public: 

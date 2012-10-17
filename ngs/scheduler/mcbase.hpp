@@ -32,6 +32,10 @@
 #include <alps/ngs/config.hpp>
 #include <alps/ngs/params.hpp>
 #include <alps/ngs/mcresults.hpp> // TODO: replace by new alea
+
+#ifdef ALPS_NGS_USE_NEW_ALEA
+    #include <alps/ngs/accumulator_set.hpp>
+#endif
 #include <alps/ngs/mcobservables.hpp> // TODO: replace by new alea
 
 #ifdef ALPS_HAVE_PYTHON
@@ -39,8 +43,6 @@
 #endif
 
 #include <alps/random/mersenne_twister.hpp>
-
-// #include <alps/ngs/config_alea.hpp> TODO: this file does not exits!
 
 #include <boost/chrono.hpp>
 #include <boost/function.hpp>

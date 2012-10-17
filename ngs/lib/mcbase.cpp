@@ -100,11 +100,10 @@ namespace alps {
         result_names_type names;
         #ifdef ALPS_NGS_USE_NEW_ALEA
         for(alea::accumulator_set::const_iterator it = measurements.begin(); it != measurements.end(); ++it)
-            names.push_back(it->first);
         #else
         for(mcobservables::const_iterator it = measurements.begin(); it != measurements.end(); ++it)
-            names.push_back(it->first);
         #endif
+            names.push_back(it->first);
         return names;
     }
 
