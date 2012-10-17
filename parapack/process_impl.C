@@ -27,6 +27,7 @@
 
 #include "process.h"
 #ifdef ALPS_HAVE_MPI
+#include "staging.h"
 # include <boost/lexical_cast.hpp>
 # include <boost/throw_exception.hpp>
 # include <algorithm>
@@ -67,7 +68,7 @@ process_helper_mpi::process_helper_mpi(boost::mpi::communicator const& comm, int
     for (int i = 0; i < comm.size(); ++i)
       if (colors[i] != MPI_UNDEFINED)
         procs_[colors[i]].push_back(alps::Process(i));
-    for (int g = 0; g < ng; ++g) free_.push(g);
+    for (int g = 0; g < ng; ++g) free_.push_back(g);
   }
 }
 
@@ -81,8 +82,22 @@ process_group process_helper_mpi::allocate() {
     boost::throw_exception(std::logic_error("no free processe groups available"));
   }
   int g = free_.front();
-  free_.pop();
+  free_.pop_front();
   status_[g] = Active;
+  return process_group(g, procs_[g]);
+}
+
+process_group process_helper_mpi::allocate(parapack::suspended_queue_t& sq) {
+  if (free_.empty()) {
+    std::cerr << "no free processe groups available\n";
+    boost::throw_exception(std::logic_error("no free processe groups available"));
+  }
+ 
+  std::list<int>::iterator ig = std::find(free_.begin(), free_.end(), sq.get<2>());
+  int g = *ig;
+  free_.erase(ig);
+  status_[g] = Active;
+    
   return process_group(g, procs_[g]);
 }
 
@@ -92,7 +107,7 @@ void process_helper_mpi::release(gid_t gid) {
     boost::throw_exception(std::logic_error("process group is not active"));
   }
   status_[gid] = Free;
-  free_.push(gid);
+  free_.push_back(gid);
 }
 
 void process_helper_mpi::release(process_group const& g) {

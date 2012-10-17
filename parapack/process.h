@@ -29,6 +29,7 @@
 #define PARAPACK_PROCESS_H
 
 #include "types.h"
+#include "staging.h"
 #include <alps/osiris.h>
 #include <queue>
 #include <set>
@@ -116,6 +117,7 @@ public:
   int num_allocated() const { return num_groups() - num_free(); }
 
   process_group allocate();
+  process_group allocate(parapack::suspended_queue_t& sq);
   void release(gid_t gid);
   void release(process_group const& g);
 
@@ -136,7 +138,8 @@ private:
   std::vector<group_state> status_;
 
   // list of free gruops
-  std::queue<int> free_;
+  // std::queue<int> free_;
+  std::list<int> free_;
 
   // 0: normal
   // 1: waiting for allocated group
@@ -146,6 +149,7 @@ private:
 
   // work array for halting
   int num_halted_;
+
 };
 
 //

@@ -32,6 +32,7 @@
 #include "job_p.h"
 #include "logger.h"
 #include "queue.h"
+#include "staging.h"
 #include "version.h"
 
 #include <alps/config.h>
@@ -335,6 +336,7 @@ void load_tasks(boost::filesystem::path const& file_in, boost::filesystem::path 
     }
   }
 }
+
 
 void save_tasks(boost::filesystem::path const& file, std::string const& simname,
   std::string const& file_in_str, std::string const& file_out_str,
@@ -878,9 +880,11 @@ int start_mpi(int argc, char** argv) {
     signal_handler signals;
     std::string file_in_str;
     std::string file_out_str;
+    std::string file_chp_str;
     boost::filesystem::path file_in;   // xxx.in.xml
     boost::filesystem::path file_out;  // xxx.out.xml
     boost::filesystem::path file_term; // xxx.term
+    boost::filesystem::path file_chp; // xxx.checkpoints
     filelock master_lock;
     std::string simname;
     std::vector<task> tasks;
@@ -888,6 +892,7 @@ int start_mpi(int argc, char** argv) {
     check_queue_t check_queue;
     int num_finished_tasks = 0;
 
+    std::queue<suspended_queue_t> suspended_queue;
     //
     // evaluation only
     //
@@ -934,6 +939,8 @@ int start_mpi(int argc, char** argv) {
       file_out = complete(boost::filesystem::path(file_out_str), basedir);
       file_term = complete(boost::filesystem::path(regex_replace(file_out_str,
                     boost::regex("\\.out\\.xml$"), ".term")), basedir);
+      file_chp = complete(boost::filesystem::path(regex_replace(file_out_str,
+                    boost::regex("\\.out\\.xml$"), ".checkpoints")), basedir);
 
       master_lock.set_file(file_out);
       master_lock.lock(0);
@@ -965,6 +972,7 @@ int start_mpi(int argc, char** argv) {
                 << dump_policy::to_string(opt.dump_policy) << std::endl;
 
       load_tasks(file_in, file_out, basedir, simname, tasks, true, opt.write_xml);
+      load_checkpoints(file_chp, basedir, suspended_queue);
       if (simname != "")
         std::cout << "  simulation name = " << simname << std::endl;
       BOOST_FOREACH(task const& t, tasks) {
@@ -1100,7 +1108,13 @@ int start_mpi(int argc, char** argv) {
               tasks[tid].suspend_clone(proxy, opt.write_xml, cid, process_group());
               process.release(0);
             } else if (!process.is_halting() && process.num_free() && task_queue.size()) {
-              process_group g = process.allocate();
+              process_group g;
+	      if (suspended_queue.empty()) {
+		g = process.allocate();
+	      } else {
+		g = process.allocate(suspended_queue.front());
+		suspended_queue.pop();
+	      }
               tid_t tid = task_queue.top().task_id;
               task_queue.pop();
               boost::optional<cid_t> cid = tasks[tid].dispatch_clone(proxy, g);

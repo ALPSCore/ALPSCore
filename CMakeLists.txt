@@ -64,6 +64,7 @@ if (NOT ALPS_FOR_VISTRAILS)
       parapack/job.C parapack/mc_worker.C parapack/measurement.C parapack/process_impl.C
       parapack/option.C parapack/parapack.C parapack/queue.C parapack/rng_helper.C
       parapack/types.C parapack/util.C parapack/version.C parapack/worker_factory.C
+      parapack/staging.C
   )
 endif(NOT ALPS_FOR_VISTRAILS)
 
