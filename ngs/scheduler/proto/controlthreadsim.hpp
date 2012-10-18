@@ -41,10 +41,15 @@ namespace alps {
                 , m_status(Impl::initialized)
             {}
 
+            double fraction_completed() const {
+                typename Impl::lock_guard_type data_lock(this->data_mutex);
+                return Impl::fraction_completed();
+            }
+
             typename Impl::status_type status() const {
                 return m_status;
             }
-
+        
         protected:
 
             template<typename T> class atomic {

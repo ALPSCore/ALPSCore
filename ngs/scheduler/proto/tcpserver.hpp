@@ -5,7 +5,6 @@
  * ALPS Libraries                                                                  *
  *                                                                                 *
  * Copyright (C) 2010 - 2011 by Lukas Gamper <gamperl@gmail.com>                   *
- *                              Matthias Troyer <troyer@comp-phys.org>             *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -26,27 +25,71 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#define PY_ARRAY_UNIQUE_SYMBOL pyngsapi_PyArrayHandle
+#ifndef ALPS_NGS_TCPSERVER_HPP
+#define ALPS_NGS_TCPSERVER_HPP
 
-#include <alps/ngs.hpp>
-#include <alps/ngs/hdf5.hpp>
-#include <alps/ngs/scheduler/proto/mcbase.hpp>
+#include <alps/ngs/detail/tcpsession.hpp>
+
+#include <boost/bind.hpp>
+#include <boost/asio.hpp>
+#include <boost/function.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/lexical_cast.hpp>
+
+#include <map>
+#include <string>
 
 namespace alps {
-    namespace detail {
 
-        void save_results_export(mcresults const & res, params const & par, alps::hdf5::archive & ar, std::string const & path) {
-            ar["/parameters"] << par;
-            if (res.size())
-                ar[path] << res;
-        }
-    }
+    class tcpserver {
+        
+        public:
+        
+            typedef std::map<std::string, boost::function<std::string()> > actions_type;
+
+            tcpserver(short port, actions_type const & a = actions_type())
+                : actions(a)
+                , io_service()
+                , acceptor(io_service, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port))
+            {
+                start();
+            }
+        
+            void add_action(std::string const & name, boost::function<std::string()> const & action) {
+                actions[name] = action;
+            }
+        
+            void poll() {
+                io_service.poll();
+            }
+        
+            void stop() {
+                io_service.stop();
+            }
+
+        private:
+
+            void start() {
+                detail::tcpsession * new_sess = new detail::tcpsession(actions, io_service); // TODO: use shared_ptr and manage the sockets manually
+                acceptor.async_accept(
+                      new_sess->get_socket()
+                    , boost::bind(&tcpserver::handler, this, new_sess, boost::asio::placeholders::error)
+                );
+            }
+
+            void handler(detail::tcpsession * new_sess, boost::system::error_code const & error) {
+                if (!error)
+                    new_sess->start();
+                else
+                    delete new_sess;
+                start();
+            }
+
+            actions_type actions;
+            boost::asio::io_service io_service;
+            boost::asio::ip::tcp::acceptor acceptor;
+    };
+
 }
 
-BOOST_PYTHON_MODULE(pyngsapi_c) {
-
-    boost::python::def("collectResults", static_cast<alps::results_type<alps::mcbase_ng>::type (*)(alps::mcbase_ng const &)>(&alps::collect_results<alps::mcbase_ng>));
-
-    boost::python::def("saveResults", &alps::detail::save_results_export);
-
-}
+#endif

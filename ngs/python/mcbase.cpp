@@ -31,7 +31,7 @@
 #include <alps/ngs/boost_python.hpp>
 
 #include <alps/ngs/hdf5.hpp>
-#include <alps/ngs/scheduler/mcbase.hpp>
+#include <alps/ngs/scheduler/proto/mcbase.hpp>
 
 #include <alps/python/make_copy.hpp>
 
@@ -48,20 +48,20 @@ namespace alps {
     namespace detail {
 
         // TODO: remove wrapper!
-        class mcbase_export : public mcbase, public boost::python::wrapper<mcbase> {
+        class mcbase_export : public mcbase_ng, public boost::python::wrapper<mcbase_ng> {
 
             public:
 
                 #ifdef ALPS_HAVE_MPI
 
                     mcbase_export(boost::python::dict arg, std::size_t seed_offset = 42, boost::mpi::communicator = boost::mpi::communicator())
-                        : mcbase(mcbase::parameters_type(arg), seed_offset)
+                        : mcbase_ng(mcbase_ng::parameters_type(arg), seed_offset)
                     {}
 
                 #else
 
                     mcbase_export(boost::python::dict arg, std::size_t seed_offset = 42)
-                        : mcbase(mcbase::parameters_type(arg), seed_offset)
+                        : mcbase_ng(mcbase_ng::parameters_type(arg), seed_offset)
                     {}
 
                 #endif
@@ -79,25 +79,25 @@ namespace alps {
                 }
 
                 bool run(boost::python::object stop_callback) {
-                    return mcbase::run(boost::bind(mcbase_export::callback_wrapper, stop_callback));
+                    return mcbase_ng::run(boost::bind(mcbase_export::callback_wrapper, stop_callback));
                 }
 
-                mcbase::parameters_type & get_params() {
-                    return mcbase::params;
+                mcbase_ng::parameters_type & get_params() {
+                    return mcbase_ng::params;
                 }
 
                 mcobservables & get_measurements() {
-                    return mcbase::measurements;
+                    return mcbase_ng::measurements;
                 }
 
                 double get_random() {
-                    return mcbase::random();
+                    return mcbase_ng::random();
                 }
 
                 void load(hdf5::archive & ar, std::string const & path) {
                     std::string current = ar.get_context();
                     ar.set_context(path);
-                    mcbase::load(ar);
+                    mcbase_ng::load(ar);
                     ar.set_context(current);
                 }
 

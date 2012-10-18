@@ -30,6 +30,7 @@
 
 #include <alps/ngs/hdf5.hpp>
 #include <alps/ngs/config.hpp>
+#include <alps/ngs/signal.hpp>
 #include <alps/ngs/params.hpp>
 #include <alps/ngs/mcresults.hpp> // TODO: replace by new alea
 #include <alps/ngs/mcobservables.hpp> // TODO: replace by new alea
@@ -56,6 +57,13 @@ namespace alps {
     class ALPS_DECL mcbase_ng {
 
         private:
+
+/* TODO:
+create adobe pattern with mutex (mutex ->(shared_ptr) mutex_base ->(derived)mutex_derived<T>)
+T is eigther mutex below or native mutex
+base class has a virtual function to create a mutex
+check_communication is called in the destructor of lock_guard and checks himself if the muteces are free (with locked)
+*/
 
              struct mutex_type {
                 typedef enum { DATA, RESULT } kind_type;

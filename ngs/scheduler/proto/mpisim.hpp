@@ -101,13 +101,16 @@ namespace alps {
 
             void check_communication() {
                 if (this->status() != Impl::interrupted) {
+
                     boost::chrono::high_resolution_clock::time_point now_time_point = boost::chrono::high_resolution_clock::now();
                     // TODO: make duration a parameter, if running in single thread mpi mode, only check every minute or so ...
-                    if (this->status() != Impl::running || now_time_point - last_time_point > boost::chrono::duration<int>(1)) {
+                    // TODO: measure how long a communication takes and make checking adaptive ...
+                    if (this->status() != Impl::running || now_time_point - last_time_point > boost::chrono::duration<double>(1)) {
                         tag_type tag = NOOP_TAG;
-                        if (!communicator.rank()) {
-                            if (this->status() == Impl::running && user_stop_callback())
+                        if (this->status() == Impl::running && !communicator.rank()) {
+                            if (user_stop_callback())
                                 tag = STOP_TAG;
+                            // TODO: get fraction on each broadcast!
                             else if (now_time_point - fraction_time_point > fraction_duration) {
                                 tag = FRACTION_TAG;
                                 // TODO: add mincheck, maxcheck
