@@ -1,6 +1,8 @@
 #include "staging.h"
+
 #include <string>
 #include <fstream>
+#include <iostream>
 
 namespace alps {
 namespace parapack {
