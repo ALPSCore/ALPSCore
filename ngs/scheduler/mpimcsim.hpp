@@ -25,7 +25,7 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_SCHEDULER_MPIMCSIM_HPP
+#if !defined(ALPS_NGS_SCHEDULER_MPIMCSIM_HPP) && defined(ALPS_HAVE_MPI)
 #define ALPS_NGS_SCHEDULER_MPIMCSIM_HPP
 
 #include <alps/ngs/stacktrace.hpp>
@@ -37,94 +37,90 @@
 
 namespace alps {
 
-    #ifdef ALPS_HAVE_MPI
-
-        template<typename Impl> class mcmpisim : public Impl {
-            public:
-                using Impl::collect_results;
-                
-                mcmpisim(typename alps::parameters_type<Impl>::type const & p) {
-                    throw std::runtime_error("No communicator passed" + ALPS_STACKTRACE);
-                }
-
-                mcmpisim(typename alps::parameters_type<Impl>::type const & p, boost::mpi::communicator const & c) 
-                    : Impl(p, c.rank())
-                    , communicator(c)
-                    , binnumber(p["binnumber"] | std::min(128, 2 * c.size()))
-                    , data_locked(false)
-                    , results_locked(false)
-                    , fraction(0.)
-                    , check_duration(8.)
-                    , start_time_point(boost::chrono::high_resolution_clock::now())
-                    , last_check_time_point(boost::chrono::high_resolution_clock::now())
-                {
-                    MPI_Errhandler_set(communicator, MPI_ERRORS_RETURN);
-                }
-
-                double fraction_completed() const {
-                    return fraction;
-                }
-
-                typename alps::results_type<Impl>::type collect_results(typename alps::result_names_type<Impl>::type const & names) const {
-                    typename alps::results_type<Impl>::type local_results = Impl::collect_results(names), partial_results;
-                    for(typename alps::results_type<Impl>::type::iterator it = local_results.begin(); it != local_results.end(); ++it)
-                        if (it->second.count())
-                            partial_results.insert(it->first, it->second.reduce(communicator, binnumber));
-                        else
-                            partial_results.insert(it->first, it->second);
-                    return partial_results;
-                }
-
-            protected:
-
-                void lock_data() {
-                    data_locked = true;
-                    if (results_locked)
-                        check_fraction();
-                }
+    template<typename Impl> class mcmpisim : public Impl {
+        public:
+            using Impl::collect_results;
             
-                void unlock_data() {
-                    data_locked = false;
-                }
-            
-                void lock_results() {
-                    results_locked = true;
-                    if (data_locked)
-                        check_fraction();
-                }
-            
-                void unlock_results() {
-                    results_locked = false;
-                }
+            mcmpisim(typename alps::parameters_type<Impl>::type const & p) {
+                throw std::runtime_error("No communicator passed" + ALPS_STACKTRACE);
+            }
 
-            private:
+            mcmpisim(typename alps::parameters_type<Impl>::type const & p, boost::mpi::communicator const & c) 
+                : Impl(p, c.rank())
+                , communicator(c)
+                , binnumber(p["binnumber"] | std::min(128, 2 * c.size()))
+                , data_locked(false)
+                , results_locked(false)
+                , fraction(0.)
+                , check_duration(8.)
+                , start_time_point(boost::chrono::high_resolution_clock::now())
+                , last_check_time_point(boost::chrono::high_resolution_clock::now())
+            {
+                MPI_Errhandler_set(communicator, MPI_ERRORS_RETURN);
+            }
 
-                void check_fraction() {
-                    boost::chrono::high_resolution_clock::time_point now_time_point = boost::chrono::high_resolution_clock::now();
-                    if (now_time_point - last_check_time_point > check_duration) {
-                        fraction = boost::mpi::all_reduce(communicator, Impl::fraction_completed(), std::plus<double>());
-                        check_duration = boost::chrono::duration<double>(std::min(
-                            2. *  check_duration.count(),
-                            std::max(
-                                  double(check_duration.count())
-                                , 0.8 * (1 - fraction) / fraction * boost::chrono::duration_cast<boost::chrono::duration<double> >(now_time_point - start_time_point).count()
-                            )
-                        ));
-                        last_check_time_point = now_time_point;
-                    }
+            double fraction_completed() const {
+                return fraction;
+            }
+
+            typename alps::results_type<Impl>::type collect_results(typename alps::result_names_type<Impl>::type const & names) const {
+                typename alps::results_type<Impl>::type local_results = Impl::collect_results(names), partial_results;
+                for(typename alps::results_type<Impl>::type::iterator it = local_results.begin(); it != local_results.end(); ++it)
+                    if (it->second.count())
+                        partial_results.insert(it->first, it->second.reduce(communicator, binnumber));
+                    else
+                        partial_results.insert(it->first, it->second);
+                return partial_results;
+            }
+
+        protected:
+
+            void lock_data() {
+                data_locked = true;
+                if (results_locked)
+                    check_fraction();
+            }
+        
+            void unlock_data() {
+                data_locked = false;
+            }
+        
+            void lock_results() {
+                results_locked = true;
+                if (data_locked)
+                    check_fraction();
+            }
+        
+            void unlock_results() {
+                results_locked = false;
+            }
+
+        private:
+
+            void check_fraction() {
+                boost::chrono::high_resolution_clock::time_point now_time_point = boost::chrono::high_resolution_clock::now();
+                if (now_time_point - last_check_time_point > check_duration) {
+                    fraction = boost::mpi::all_reduce(communicator, Impl::fraction_completed(), std::plus<double>());
+                    check_duration = boost::chrono::duration<double>(std::min(
+                        2. *  check_duration.count(),
+                        std::max(
+                              double(check_duration.count())
+                            , 0.8 * (1 - fraction) / fraction * boost::chrono::duration_cast<boost::chrono::duration<double> >(now_time_point - start_time_point).count()
+                        )
+                    ));
+                    last_check_time_point = now_time_point;
                 }
+            }
 
-                boost::mpi::communicator communicator;
-                std::size_t binnumber;
-                bool data_locked;
-                bool results_locked;
-                double fraction;
-                boost::chrono::duration<double> check_duration;
-                boost::chrono::high_resolution_clock::time_point start_time_point;
-                boost::chrono::high_resolution_clock::time_point last_check_time_point;
-        };
-
-    #endif
+            boost::mpi::communicator communicator;
+            std::size_t binnumber;
+            bool data_locked;
+            bool results_locked;
+            double fraction;
+            boost::chrono::duration<double> check_duration;
+            boost::chrono::high_resolution_clock::time_point start_time_point;
+            boost::chrono::high_resolution_clock::time_point last_check_time_point;
+    };
 }
 
 #endif
