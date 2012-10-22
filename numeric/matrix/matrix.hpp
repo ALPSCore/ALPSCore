@@ -114,8 +114,8 @@ namespace alps {
           */
         matrix(matrix const& m);
 
-        template <typename OtherMemoryBlock>
-        explicit matrix(matrix<T,OtherMemoryBlock> const& m);
+        template <typename T2, typename OtherMemoryBlock>
+        explicit matrix(matrix<T2,OtherMemoryBlock> const& m);
 
         /**
           * Non-throwing swap function
@@ -366,8 +366,8 @@ namespace alps {
         template <typename OtherT,typename OtherMemoryBlock>
         friend class matrix;
 
-        template <typename OtherMemoryBlock>
-        MemoryBlock copy_values(matrix<T,OtherMemoryBlock> const& m);
+        template <typename T2, typename OtherMemoryBlock>
+        MemoryBlock copy_values(matrix<T2,OtherMemoryBlock> const& m);
 
         inline bool automatic_reserve(size_type size1, size_type size2, T const& init_value = T());
 
