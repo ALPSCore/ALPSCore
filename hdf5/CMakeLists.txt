@@ -12,7 +12,7 @@ mark_as_advanced(ALPS_BUILD_HDF5_TESTS)
 
 find_package(HDF5)
 
-FOREACH (name hdf5_complex hdf5_real_complex hdf5_bool hdf5_replace hdf5_pair hdf5_parms hdf5_ising hdf5_family hdf5_large hdf5_valgrind 
+FOREACH (name hdf5_complex hdf5_real_complex_vec hdf5_real_complex_matrix hdf5_bool hdf5_replace hdf5_pair hdf5_parms hdf5_ising hdf5_family hdf5_large hdf5_valgrind 
               hdf5_observableset hdf5_multi_array hdf5_memory hdf5_misc hdf5_vecveccplx hdf5_exceptions hdf5_multiarchive)
     add_executable(${name} ${name}.cpp)
     add_dependencies(${name} alps)
