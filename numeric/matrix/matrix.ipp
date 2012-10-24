@@ -27,10 +27,37 @@
 
 #include <alps/numeric/conj.hpp>
 #include <boost/lambda/lambda.hpp>
+#include <boost/iterator/transform_iterator.hpp>
+#include <alps/utility/numeric_cast.hpp>
 
 namespace alps {
     namespace numeric {
         namespace detail {
+
+            template <typename T, typename T2>
+            struct insert_cast_helper
+            {
+                template <typename MemoryBlock, typename InputIterator>
+                static void apply(MemoryBlock& mem, InputIterator it, InputIterator end)
+                {
+                    mem.insert(
+                        mem.end()
+                        , boost::make_transform_iterator( it, numeric_cast<T,T2>)
+                        , boost::make_transform_iterator(end, numeric_cast<T,T2>)
+                    );
+                }
+            };
+
+            template <typename T>
+            struct insert_cast_helper<T,T>
+            {
+                template <typename MemoryBlock, typename InputIterator>
+                static void apply(MemoryBlock& mem, InputIterator it, InputIterator end)
+                {
+                    mem.insert( mem.end() , it, end);
+                }
+            };
+
             template <typename T, typename MemoryBlock, typename Operation>
             void op_assign_default_impl(matrix<T,MemoryBlock>& lhs, matrix<T,MemoryBlock> const& rhs, Operation op)
             {
@@ -77,7 +104,7 @@ namespace alps {
     {
         matrix<T, MemoryBlock> ret(size, size);
         for (size_type k = 0; k < size; ++k)
-        ret(k,k) = 1;
+            ret(k,k) = 1;
         return ret;
     }
 
@@ -125,7 +152,7 @@ namespace alps {
         // If the size of the matrix corresponds to the allocated size of the matrix...
         if(!m.is_shrinkable())
         {
-            ret.insert(ret.end(), m.values_.begin(), m.values_.end());
+            detail::insert_cast_helper<T,T2>::apply(ret, m.values_.begin(), m.values_.end());
         }
         else
         {
@@ -136,7 +163,7 @@ namespace alps {
                 std::pair<typename matrix<T2,OtherMemoryBlock>::const_col_element_iterator,
                 typename matrix<T2,OtherMemoryBlock>::const_col_element_iterator
                 > range(m.col(j));
-                ret.insert(ret.end(), range.first, range.second);
+                detail::insert_cast_helper<T,T2>::apply(ret, range.first, range.second);
             }
         }
         return ret;
