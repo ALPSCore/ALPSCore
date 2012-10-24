@@ -31,6 +31,8 @@
 #include <alps/ngs/hdf5.hpp>
 #include <alps/ngs/cast.hpp>
 #include <alps/ngs/hdf5/complex.hpp>
+#include <alps/numeric/real.hpp>
+#include <alps/type_traits/is_complex.hpp>
 #include <alps/numeric/matrix.hpp>
 
 #include <algorithm>
@@ -205,7 +207,7 @@ namespace detail {
     }
 
     template <typename T, typename MemoryBlock>
-    void load(
+    void load_impl(
           archive & ar
         , std::string const & path
         , alps::numeric::matrix<T,MemoryBlock> & m
@@ -277,6 +279,31 @@ namespace detail {
         }
         swap(m,m2);
     }
+    
+    template <typename T, typename MemoryBlock>
+    inline void load(
+                   archive & ar
+                   , std::string const & path
+                   , alps::numeric::matrix<T,MemoryBlock> & m
+                   , std::vector<std::size_t> chunk  = std::vector<std::size_t>()
+                   , std::vector<std::size_t> offset = std::vector<std::size_t>()
+                   ){
+        if (
+               !alps::is_complex<T>()
+            || (ar.is_data(path + "/size1") && ar.is_scalar(path + "/size1") && ar.is_datatype<std::size_t>(path + "/size1")
+                && ar.is_complex(path + "/values")) // old matrix type with complex data
+            || ar.is_group(path) // reading of matrix elements will be dispatched to value_type
+            || ar.is_complex(path) // vectorizable complex data
+        )
+            load_impl(ar, path, m, chunk, offset);
+        else
+        {
+            alps::numeric::matrix<typename alps::numeric::real_type<T>::type> m2;
+            load_impl(ar, path, m2, chunk, offset);
+            m = alps::numeric::matrix<T, MemoryBlock>(m2);
+        }
+    }
+
 } // end namespace hdf5
 } // end namespace alps
 

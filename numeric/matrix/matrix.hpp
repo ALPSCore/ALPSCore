@@ -460,14 +460,20 @@ namespace alps {
 
     template <typename T, typename MemoryBlock>
     class vector;
-
+    
+    template <typename T>
+    struct real_type<matrix<T> >
+    {
+        typedef matrix<typename real_type<T>::type> type;
+    };
+    
     template<typename T, typename MemoryBlock>
     struct associated_real_vector<matrix<T, MemoryBlock> >
     {
         typedef std::vector<typename real_type<T>::type> type;
     };
 
-    template<class T, class MemoryBlock>
+    template<typename T, typename MemoryBlock>
     struct associated_vector<matrix<T,MemoryBlock> >
     {
         typedef std::vector<T> type;

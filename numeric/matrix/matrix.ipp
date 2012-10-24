@@ -161,8 +161,8 @@ namespace alps {
             for(size_type j=0; j < m.size2_; ++j)
             {
                 std::pair<typename matrix<T2,OtherMemoryBlock>::const_col_element_iterator,
-                typename matrix<T2,OtherMemoryBlock>::const_col_element_iterator
-                > range(m.col(j));
+                          typename matrix<T2,OtherMemoryBlock>::const_col_element_iterator
+                         > range(m.col(j));
                 detail::insert_cast_helper<T,T2>::apply(ret, range.first, range.second);
             }
         }
