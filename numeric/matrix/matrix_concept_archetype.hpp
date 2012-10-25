@@ -15,10 +15,14 @@ class matrix_archetype
 private:
     typedef matrix_archetype self;
 public:
-    typedef T               value_type;     //< The type of the coefficients stored in the matrix
-    typedef std::size_t     size_type;      //< An unsigned integral type used to represent the size (num_rows, num_cols) of the matrix
-    typedef std::ptrdiff_t  difference_type;//< A signed integral type used to represent the distance between two of the container's iterators
+    typedef T               value_type;      //< The type of the coefficients stored in the matrix
+    typedef std::size_t     size_type;       //< An unsigned integral type used to represent the size (num_rows, num_cols) of the matrix
+    typedef std::ptrdiff_t  difference_type; //< A signed integral type used to represent the distance between two of the container's iterators
 
+    typedef mutable_random_access_iterator_archetype<T> row_element_iterator;            //< An iterator that iterates over the elements of a row
+    typedef random_access_iterator_archetype<T>         const_row_element_iterator;      //< A constant version of the row_element_iteratior
+    typedef mutable_random_access_iterator_archetype<T> col_element_iterator;            //< An iterator that iterates over the elements of a column
+    typedef random_access_iterator_archetype<T>         const_col_element_iterator;      //< A constant version of the col_element_iterator
     // TODO more typedefs
 
     /**
@@ -98,6 +102,44 @@ typename matrix_archetype<T>::size_type num_rows(matrix_archetype<T> const& m) {
  **/
 template <typename T>
 typename matrix_archetype<T>::size_type num_cols(matrix_archetype<T> const& m) { return typename matrix_archetype<T>::size_type(0); }
+
+/**
+  * \brief Addition
+  * @return Sum of the matrices a and b
+  */
+template <typename T>
+matrix_archetype<T> operator + (matrix_archetype<T> a, matrix_archetype<T> const& b) { return matrix_archetype<T>(); }
+
+
+/**
+  * \brief Row access
+  * @invariant all other rows remain untouched
+  * @return a pair of row iterators indicating the begin and end of row i
+  */
+template <typename T>
+std::pair<typename matrix_archetype<T>::row_element_iterator,typename matrix_archetype<T>::row_element_iterator>
+row(matrix_archetype<T>& m, typename matrix_archetype<T>::size_type i)
+{ return typename matrix_archetype<T>::row_element_iterator(); }
+
+template <typename T>
+std::pair<typename matrix_archetype<T>::const_row_element_iterator,typename matrix_archetype<T>::const_row_element_iterator>
+row(matrix_archetype<T> const& m, typename matrix_archetype<T>::size_type i)
+{ return typename matrix_archetype<T>::const_row_element_iterator(); }
+
+/**
+  * \brief Column access
+  * @invariant all other columns remain untouched
+  * @return a pair of column iterators indicating the begin and end of the column j
+  */
+template <typename T>
+std::pair<typename matrix_archetype<T>::col_element_iterator,typename matrix_archetype<T>::col_element_iterator>
+col(matrix_archetype<T>& m, typename matrix_archetype<T>::size_type j)
+{ return typename matrix_archetype<T>::col_element_iterator(); }
+
+template <typename T>
+std::pair<typename matrix_archetype<T>::const_col_element_iterator,typename matrix_archetype<T>::const_col_element_iterator>
+col(matrix_archetype<T> const& m, typename matrix_archetype<T>::size_type j)
+{ return typename matrix_archetype<T>::const_col_element_iterator(); }
 
 } // end namespace concepts
 } // end namespace numeric
