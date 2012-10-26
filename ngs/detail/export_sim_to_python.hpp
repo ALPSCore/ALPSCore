@@ -49,7 +49,7 @@
             static_cast<alps::mcobservables &( CLASS ::*)()>(& CLASS ::get_measurements), boost::python::return_internal_reference<>()              \
          ))                                                                                                                                         \
         .def("run", static_cast<bool( CLASS ::*)(boost::python::object)>(& CLASS ::run))                                                            \
-        .def("random", & CLASS ::random)                                                                                                            \
+        .def("random", & CLASS ::get_random)                                                                                                        \
         .def("save", static_cast<void( CLASS ::*)(alps::hdf5::archive &) const>(& CLASS ::save))                                                    \
         .def("load", static_cast<void( CLASS ::*)(alps::hdf5::archive &)>(& CLASS ::load))                                                          \
 

@@ -29,6 +29,7 @@
 #define ALPS_NGS_SCHEDULER_MCBASE_NG_HPP
 
 #include <alps/ngs/hdf5.hpp>
+#include <alps/ngs/mutex.hpp>
 #include <alps/ngs/config.hpp>
 #include <alps/ngs/signal.hpp>
 #include <alps/ngs/params.hpp>
@@ -58,66 +59,30 @@ namespace alps {
 
         private:
 
-/* TODO:
-create adobe pattern with mutex (mutex ->(shared_ptr) mutex_base ->(derived)mutex_derived<T>)
-T is eigther mutex below or native mutex
-base class has a virtual function to create a mutex
-check_communication is called in the destructor of lock_guard and checks himself if the muteces are free (with locked)
-*/
+            struct lock_guard_impl : boost::noncopyable {
 
-             struct mutex_type {
-                typedef enum { DATA, RESULT } kind_type;
-
-                mutex_type(mcbase_ng & arg1, kind_type arg2) : kind(arg2), target(arg1) {}
-
-                operator const void*() { return guard.get(); }
-
-                bool locked() const { return guard; }
-
-                void lock() {
-                    boost::shared_ptr<void> ptr;
-                    switch (kind) {
-                        case DATA:
-                            ptr = target.get_data_guard();
-                            break;
-                        case RESULT:
-                            ptr = target.get_result_guard();
-                            break;
-                        default:
-                            throw std::logic_error("Invalid kind " + ALPS_STACKTRACE);
-                    }
-                    if (locked())
-                        throw boost::lock_error();
-                    target.data_guard_ptr = (guard = ptr);
+                lock_guard_impl(mutex & arg1, mcbase_ng & arg2)
+                    : mtx(arg1)
+                    , sim(arg2)
+                {
+                    mtx.lock();
                 }
 
-                void unlock() {
-                    if (!locked())
-                        throw boost::lock_error();
-                    guard.reset();
+                ~lock_guard_impl() {
+                    mtx.unlock();
+
+                    // TODO: this is ugly, can we avoid that?
+                    if (!sim.data_mutex.locked() && !sim.result_mutex.locked())
+                        sim.on_unlock();
                 }
                 
-                kind_type kind;
-                mcbase_ng & target;
-                boost::shared_ptr<void> guard;
+                mutex & mtx;
+                mcbase_ng & sim;
             };
 
         public:
         
-            struct lock_guard_type {
-
-                lock_guard_type(mutex_type & m)
-                    : mutex(m)
-                {
-                    mutex.lock();
-                }
-
-                ~lock_guard_type() {
-                    mutex.unlock();
-                }
-                
-                mutex_type & mutex;
-            };
+            typedef boost::shared_ptr<lock_guard_impl> lock_guard;
 
             typedef enum { initialized, running, interrupted, finished } status_type;
 
@@ -126,12 +91,12 @@ check_communication is called in the destructor of lock_guard and checks himself
             typedef std::vector<std::string> result_names_type;
 
             mcbase_ng(parameters_type const & p, std::size_t seed_offset = 0)
-                : data_mutex(*this, mutex_type::DATA)
-                , result_mutex(*this, mutex_type::RESULT)
-                , params(p)
-                , m_status(initialized)
                   // TODO: this ist not the best solution - any idea?
-                , m_random(boost::mt19937((p["SEED"] | 42) + seed_offset), boost::uniform_real<>())
+                : random(boost::mt19937((p["SEED"] | 42) + seed_offset), boost::uniform_real<>())
+                , params(p)
+                , data_mutex(new noop_lockable())
+                , result_mutex(new noop_lockable())
+                , m_status(initialized)
             {
                 alps::ngs::signal::listen();
             }
@@ -141,36 +106,36 @@ check_communication is called in the destructor of lock_guard and checks himself
             virtual double fraction_completed() const = 0;
         
             void save(boost::filesystem::path const & filename) const {
-                hdf5::archive ar(filename, "w");
+                hdf5::archive ar(filename.string() + file_suffix(), "w");
                 ar["/checkpoint"] << *this;
             }
 
             void load(boost::filesystem::path const & filename) {
-                hdf5::archive ar(filename);
+                hdf5::archive ar(filename.string() + file_suffix());
                 ar["/checkpoint"] >> *this;
             }
 
             virtual void save(alps::hdf5::archive & ar) const {
-                lock_guard_type result_lock(result_mutex);
+                lock_guard result_lock(get_result_lock());
                 ar["/parameters"] << params;
                 ar["/simulation/realizations/0/clones/0/results"] << measurements;
             }
 
             // TODO: do we want to load the parameters?
             virtual void load(alps::hdf5::archive & ar) {
-                lock_guard_type result_lock(result_mutex);
+                lock_guard result_lock(get_result_lock());
                 ar["/simulation/realizations/0/clones/0/results"] >> measurements;
             }
 
             bool run(boost::function<bool ()> const & stop_callback) {
                 do {
                     {
-                        lock_guard_type data_lock(data_mutex);
+                        lock_guard data_lock(get_data_lock());
                         update();
                     }
                     {
-                        lock_guard_type data_lock(data_mutex);
-                        lock_guard_type result_lock(result_mutex);
+                        lock_guard data_lock(get_data_lock());
+                        lock_guard result_lock(get_result_lock());
                         measure();
                     }
                 } while(!stop_callback() && !work_done());
@@ -208,6 +173,9 @@ check_communication is called in the destructor of lock_guard and checks himself
             }
 
             // CHECK: how do we handle locks here? Do we need const/nonconst versions?
+            double get_random() const { return random(); }
+
+            // CHECK: how do we handle locks here? Do we need const/nonconst versions?
             parameters_type & get_params() { return params; }
             parameters_type const & get_params() const { return params; }
 
@@ -220,16 +188,16 @@ check_communication is called in the destructor of lock_guard and checks himself
                 mcobservables const & get_measurements() const { return measurements; }
             #endif
 
-        
-            // CHECK: how do we handle locks here? Do we need const/nonconst versions?
-            double random() const { return m_random(); }
-        
             // CHECK: how do we handle locks here? Do we need const/nonconst versions?
             virtual void check_communication() {}
 
             // CHECK: this is ugly, can we add a better hook to controlthread
             virtual status_type status() const {
                 return m_status;
+            }
+        
+            virtual std::string file_suffix() const {
+                return "";
             }
 
         protected:
@@ -261,23 +229,28 @@ check_communication is called in the destructor of lock_guard and checks himself
             virtual bool work_done() {
                 return fraction_completed() >= 1.;
             }
+        
+            // CHECK: this is ugly, make this nicer!
+            virtual void on_unlock() {
+                check_communication();
+            }
 
             // CHECK: this is ugly, can we add a better hook to controlthread
             virtual void set_status(status_type status) {
                 m_status = status;
             }
 
-            virtual boost::shared_ptr<void> get_data_guard() const {
-                return boost::shared_ptr<void>(new noop_lock_guard(*this));
+            lock_guard get_data_lock() const {
+                return lock_guard(new lock_guard_impl(data_mutex, const_cast<mcbase_ng &>(*this)));
             }
 
-            virtual boost::shared_ptr<void> get_result_guard() const {
-                return boost::shared_ptr<void>(new noop_lock_guard(*this));
+            lock_guard get_result_lock() const {
+                return lock_guard(new lock_guard_impl(result_mutex, const_cast<mcbase_ng &>(*this)));
             }
 
             // CHECK: do we want to expose this to the derived class?
-            mutex_type mutable data_mutex;
-            mutex_type mutable result_mutex;
+            // CHECK: how do we handle locks here?
+            boost::variate_generator<boost::mt19937, boost::uniform_real<> > mutable random;
 
             parameters_type params; // rename to params
 
@@ -287,15 +260,12 @@ check_communication is called in the destructor of lock_guard and checks himself
                 mcobservables measurements;
             #endif
 
+            // CHECK: do we want to expose this to the derived class? virtual functions do not work form base constructor
+            mutex mutable data_mutex;
+            mutex mutable result_mutex;
+
         private:
         
-            struct noop_lock_guard {
-                noop_lock_guard(mcbase_ng const & target) {
-                    if (target.data_guard_ptr.expired() && target.result_guard_ptr.expired())
-                        const_cast<mcbase_ng &>(target).check_communication();
-                }
-            };
-
             #ifdef ALPS_HAVE_PYTHON
                 static bool callback_wrapper(boost::python::object stop_callback) {
                    return boost::python::call<bool>(stop_callback.ptr());
@@ -303,11 +273,6 @@ check_communication is called in the destructor of lock_guard and checks himself
             #endif
 
             status_type m_status;
-
-            boost::variate_generator<boost::mt19937, boost::uniform_real<> > mutable m_random;
-
-            boost::weak_ptr<void> data_guard_ptr;
-            boost::weak_ptr<void> result_guard_ptr;
     };
 }
 

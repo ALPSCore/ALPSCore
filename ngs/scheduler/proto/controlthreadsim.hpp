@@ -39,10 +39,14 @@ namespace alps {
             controlthreadsim_ng(typename alps::parameters_type<Impl>::type const & p, std::size_t seed_offset = 0)
                 : Impl(p, seed_offset)
                 , m_status(Impl::initialized)
-            {}
+            {
+                // TODO: this is ugly, but virtual functions do not work in constructor of base class
+                Impl::data_mutex = mutex(new native_lockable());
+                Impl::result_mutex = mutex(new native_lockable());
+            }
 
             double fraction_completed() const {
-                typename Impl::lock_guard_type data_lock(this->data_mutex);
+                typename Impl::lock_guard data_lock(Impl::get_data_lock());
                 return Impl::fraction_completed();
             }
 
@@ -76,25 +80,15 @@ namespace alps {
                     boost::mutex mutable atomic_mutex;
             };
 
+            void on_unlock() {}
+
             void set_status(typename Impl::status_type status) {
                 m_status = status;
             }
 
-            // TODO: brauchen wir die protected mutex, nun haben wir 2 muteces, was alles etwas verwirrend macht?  wollen wir den nicht in den type reinwrappen?
-            boost::shared_ptr<void> get_data_guard() const {
-                return boost::shared_ptr<void>(new boost::lock_guard<boost::mutex>(native_data_mutex));
-            }
-
-            boost::shared_ptr<void> get_result_guard() const {
-                return boost::shared_ptr<void>(new boost::lock_guard<boost::mutex>(native_result_mutex));
-            }
-        
         private:
 
             atomic<typename Impl::status_type> m_status;
-
-            boost::mutex mutable native_data_mutex;
-            boost::mutex mutable native_result_mutex;
     };
 
 }

@@ -53,6 +53,7 @@ namespace alps {
                 : Impl(p, c.rank())
                 , communicator(c)
                 , binnumber(p["binnumber"] | std::min(128, 2 * c.size()))
+                , suffix("." + cast<std::string>(c.rank()))
                 , fraction(0.)
                 , fraction_duration(2.)
                 , start_time_point(boost::chrono::high_resolution_clock::now())
@@ -75,7 +76,7 @@ namespace alps {
                         boost::mpi::broadcast(communicator, tag, 0);
                         std::string filename_str = filename.string();
                         boost::mpi::broadcast(communicator, filename_str, 0);
-                        dynamic_cast<Impl const &>(*this).save(filename_str + "." + cast<std::string>(communicator.rank()));
+                        dynamic_cast<Impl const &>(*this).save(filename_str);
                     } else
                         const_cast<mpisim_ng<Impl> &>(*this).check_communication();
                 }
@@ -104,7 +105,7 @@ namespace alps {
 
                     boost::chrono::high_resolution_clock::time_point now_time_point = boost::chrono::high_resolution_clock::now();
                     // TODO: make duration a parameter, if running in single thread mpi mode, only check every minute or so ...
-                    // TODO: measure how long a communication takes and make checking adaptive ...
+                    // TODO: measure how long a communication takes and make checking adaptive ... (always on dualthread, every minute on singlethread)
                     if (this->status() != Impl::running || now_time_point - last_time_point > boost::chrono::duration<double>(1)) {
                         tag_type tag = NOOP_TAG;
                         if (this->status() == Impl::running && !communicator.rank()) {
@@ -133,7 +134,7 @@ namespace alps {
                                 {
                                     std::string filename;
                                     boost::mpi::broadcast(communicator, filename, 0);
-                                    dynamic_cast<Impl &>(*this).save(filename + "." + cast<std::string>(communicator.rank()));
+                                    dynamic_cast<Impl &>(*this).save(filename);
                                 }
                                 break;
                             case FRACTION_TAG:
@@ -160,7 +161,11 @@ namespace alps {
                     }
                 }
             }
-        
+
+            std::string file_suffix() const {
+                return suffix;
+            }
+
         protected:
         
             virtual bool work_done() {
@@ -175,6 +180,7 @@ namespace alps {
 
             boost::mpi::communicator communicator;
             std::size_t binnumber;
+            std::string suffix;
             typename Impl::template atomic<double> fraction;
             boost::chrono::duration<double> fraction_duration;
             boost::chrono::high_resolution_clock::time_point start_time_point;
