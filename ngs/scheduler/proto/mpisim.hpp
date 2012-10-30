@@ -33,6 +33,8 @@
 
 #include <boost/chrono.hpp>
 
+#include <iomanip>
+#include <iostream>
 #include <stdexcept>
 
 namespace alps {
@@ -49,12 +51,15 @@ namespace alps {
                 throw std::runtime_error("No communicator passed" + ALPS_STACKTRACE);
             }
 
-            mpisim_ng(typename alps::parameters_type<Impl>::type const & p, boost::mpi::communicator const & c)
+            mpisim_ng(typename alps::parameters_type<Impl>::type const & p, boost::mpi::communicator const & c, double Tmin = 1, double Tmax = 600)
                 : Impl(p, c.rank())
                 , communicator(c)
                 , binnumber(p["binnumber"] | std::min(128, 2 * c.size()))
                 , suffix("." + cast<std::string>(c.rank()))
                 , fraction(0.)
+                , min_check(Tmin)
+                , max_check(Tmax)
+                , next_check(Tmin)
                 , fraction_duration(2.)
                 , start_time_point(boost::chrono::high_resolution_clock::now())
                 , last_time_point(boost::chrono::high_resolution_clock::now())
@@ -102,31 +107,13 @@ namespace alps {
 
             void check_communication() {
                 if (this->status() != Impl::interrupted) {
-
                     boost::chrono::high_resolution_clock::time_point now_time_point = boost::chrono::high_resolution_clock::now();
                     // TODO: make duration a parameter, if running in single thread mpi mode, only check every minute or so ...
                     // TODO: measure how long a communication takes and make checking adaptive ... (always on dualthread, every minute on singlethread)
-                    if (this->status() != Impl::running || now_time_point - last_time_point > boost::chrono::duration<double>(1)) {
+                    if (this->status() != Impl::running || now_time_point - last_time_point > boost::chrono::duration<double>(next_check) || user_stop_callback()) {
                         tag_type tag = NOOP_TAG;
-                        if (this->status() == Impl::running && !communicator.rank()) {
-                            if (user_stop_callback())
-                                tag = STOP_TAG;
-                            // TODO: get fraction on each broadcast!
-                            else if (now_time_point - fraction_time_point > fraction_duration) {
-                                tag = FRACTION_TAG;
-                                // TODO: add mincheck, maxcheck
-                                fraction_duration = boost::chrono::duration<double>(std::min(
-                                    2. *  fraction_duration.count(),
-                                    // TODO: make interval also smaller ...
-                                    std::max(
-                                          double(fraction_duration.count())
-                                        , 0.8 * (1 - fraction) / fraction * boost::chrono::duration_cast<boost::chrono::duration<double> >(now_time_point - start_time_point).count()
-                                    )
-                                ));
-                                std::cout << "Check complete fraction. Next check in " << fraction_duration.count() << "s" << std::endl;
-                                fraction_time_point = boost::chrono::high_resolution_clock::now();
-                            }
-                        }
+                        if (this->status() == Impl::running && !communicator.rank())
+                            tag = user_stop_callback() ?  STOP_TAG : FRACTION_TAG;
                         // TODO: make root a parameter
                         boost::mpi::broadcast(communicator, tag, 0);
                         switch (tag) {
@@ -147,9 +134,26 @@ namespace alps {
                                         // TODO: make root a parameter
                                         boost::mpi::broadcast(communicator, tag, 0);
                                         this->set_status(Impl::interrupted);
+                                    } else {
+                                        double elapsed = boost::chrono::duration_cast<boost::chrono::duration<double> >(now_time_point - start_time_point).count();
+                                        next_check = std::max(
+                                              min_check
+                                            , std::min(
+                                                  max_check
+                                                , std::min(
+                                                      2 * next_check
+                                                    , std::max(
+                                                          next_check/ 2
+                                                        , elapsed
+                                                      )
+                                                  )
+                                              )
+                                          );
+                                        std::cout << std::setprecision(2) << 100 * collected << "% done, next check in " << static_cast<std::size_t>(next_check) << "s" << std::endl;
                                     }
                                 } else
                                     reduce(communicator, Impl::fraction_completed(), std::plus<double>(), 0);
+                                boost::mpi::broadcast(communicator, next_check, 0);
                                 break;
                             case STOP_TAG:
                                 this->set_status(Impl::interrupted);
@@ -182,6 +186,9 @@ namespace alps {
             std::size_t binnumber;
             std::string suffix;
             typename Impl::template atomic<double> fraction;
+            double min_check;
+            double max_check;
+            double next_check;
             boost::chrono::duration<double> fraction_duration;
             boost::chrono::high_resolution_clock::time_point start_time_point;
             boost::chrono::high_resolution_clock::time_point last_time_point;
