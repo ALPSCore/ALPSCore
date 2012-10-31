@@ -60,6 +60,8 @@ namespace alps {
       template <>   PyArray_TYPES inline getEnum<double>()              {  return PyArray_DOUBLE;      }
       template <>   PyArray_TYPES inline getEnum<long double>()         {  return PyArray_LONGDOUBLE;  }
       template <>   PyArray_TYPES inline getEnum<int>()                 {  return PyArray_INT;         }
+      template <>   PyArray_TYPES inline getEnum<unsigned int>()        {  return PyArray_INT;         }
+      template <>   PyArray_TYPES inline getEnum<unsigned short>()      {  return PyArray_INT;         }
       template <>   PyArray_TYPES inline getEnum<long>()                {  return PyArray_LONG;        }
       template <>   PyArray_TYPES inline getEnum<long long>()           {  return PyArray_LONG;        }
       template <>   PyArray_TYPES inline getEnum<unsigned long long>()  {  return PyArray_LONG;        }
