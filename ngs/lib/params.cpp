@@ -89,10 +89,27 @@ namespace alps {
         ;
     }
 
-    params::value_type params::value_or_default(std::string const & key, std::string const & default_value) const {
+    template <>
+    bool params::value_or_default<bool>(std::string const & key, bool const & default_value) const {
         return defined(key) 
-            ? (*this)[key]
-            : params::value_type(default_value)
+            ? bool((*this)[key])
+            : default_value
+        ;
+    }
+
+    template <>
+    int params::value_or_default<int>(std::string const & key, int const & default_value) const {
+        return defined(key) 
+            ? int((*this)[key])
+            : default_value
+        ;
+    }
+
+    template <>
+    double params::value_or_default<double>(std::string const & key, double const & default_value) const {
+        return defined(key)
+            ? double((*this)[key])
+            : default_value
         ;
     }
 
