@@ -90,6 +90,8 @@ namespace alps {
 
             value_type const operator[](std::string const &) const;
 
+            value_type value_or_default(std::string const &, value_type const &) const;
+
             bool defined(std::string const &) const;
 
             iterator begin();

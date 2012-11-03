@@ -89,6 +89,13 @@ namespace alps {
         ;
     }
 
+    params::value_type params::value_or_default(std::string const & key, params::value_type const & default_value) const {
+        return defined(key) 
+            ? params::value_type(values.find(key)->second)
+            : default_value
+        ;
+    }
+
     bool params::defined(std::string const & key) const {
         return values.find(key) != values.end();
     }
