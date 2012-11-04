@@ -159,11 +159,23 @@ void Parameters::save(hdf5::archive & ar) const {
     }
 }
 void Parameters::load(hdf5::archive & ar) {
-    std::vector<std::string> list = ar.list_children(ar.get_context());
-    for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
+    try { 
+      std::vector<std::string> list = ar.list_children(ar.get_context());
+
+      for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
         std::string v;
         ar >> make_pvp(*it, v);
         operator[](*it) = v;
+      }
+    }
+    catch(...) {      // Quick fix done by tamama 
+      std::vector<std::string> list = ar.list_children("/parameters");      
+
+      for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it) {
+        std::string v;
+        ar >> make_pvp("/parameters/" + (*it), v);
+        operator[](*it) = v;
+      }
     }
 }
 
