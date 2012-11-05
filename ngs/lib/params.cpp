@@ -113,6 +113,14 @@ namespace alps {
         ;
     }
 
+    template <>
+    std::string params::value_or_default<std::string>(std::string const & key, std::string const & default_value) const {
+        return defined(key)
+            ? boost::lexical_cast<std::string>((*this)[key])
+            : default_value
+        ;
+    }
+
     bool params::defined(std::string const & key) const {
         return values.find(key) != values.end();
     }

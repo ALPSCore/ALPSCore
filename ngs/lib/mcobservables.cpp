@@ -80,7 +80,7 @@ namespace alps {
 
     void mcobservables::load(hdf5::archive & ar)  {
         ObservableSet set;
-        ar >> make_pvp("/simulation/realizations/0/clones/0/results", set);
+        ar >> make_pvp(ar.get_context(), set);
         for(ObservableSet::const_iterator it = set.begin(); it != set.end(); ++it)
             if (has(it->first))
                 operator[](it->first) = mcobservable(it->second);
