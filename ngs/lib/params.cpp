@@ -89,38 +89,6 @@ namespace alps {
         ;
     }
 
-    template <>
-    bool params::value_or_default<bool>(std::string const & key, bool const & default_value) const {
-        return defined(key) 
-            ? bool((*this)[key])
-            : default_value
-        ;
-    }
-
-    template <>
-    int params::value_or_default<int>(std::string const & key, int const & default_value) const {
-        return defined(key) 
-            ? int((*this)[key])
-            : default_value
-        ;
-    }
-
-    template <>
-    double params::value_or_default<double>(std::string const & key, double const & default_value) const {
-        return defined(key)
-            ? double((*this)[key])
-            : default_value
-        ;
-    }
-
-    template <>
-    std::string params::value_or_default<std::string>(std::string const & key, std::string const & default_value) const {
-        return defined(key)
-            ? boost::lexical_cast<std::string>((*this)[key])
-            : default_value
-        ;
-    }
-
     bool params::defined(std::string const & key) const {
         return values.find(key) != values.end();
     }

@@ -90,9 +90,6 @@ namespace alps {
 
             value_type const operator[](std::string const &) const;
 
-            template <class default_value_type>
-            default_value_type value_or_default(std::string const &, default_value_type const &) const;
-
             bool defined(std::string const &) const;
 
             iterator begin();
