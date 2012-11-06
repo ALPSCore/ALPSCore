@@ -55,6 +55,12 @@ namespace alps {
                     , value(v)
                 {}
 
+                paramproxy(paramvalue const & v, std::string const & k)
+                    : defined(true)
+                    , key(k)
+                    , value(v)
+                {}
+
                 paramproxy(
                       bool d
                     , boost::function<paramvalue()> const & g
@@ -65,8 +71,21 @@ namespace alps {
                     , setter(s)
                 {}
 
+                paramproxy(
+                      bool d
+                    , boost::function<paramvalue()> const & g
+                    , boost::function<void(paramvalue)> const & s
+                    , std::string const & k
+                )
+                    : defined(d)
+                    , key(k)
+                    , getter(g)
+                    , setter(s)
+                {}
+
                 paramproxy(paramproxy const & arg)
                     : defined(arg.defined)
+                    , key(arg.key)
                     , value(arg.value)
                     , getter(arg.getter)
                     , setter(arg.setter)
@@ -74,9 +93,9 @@ namespace alps {
 
                 template<typename T> T cast() const {
                     if (!defined)
-                        throw std::runtime_error(
-                            "No parameter available" + ALPS_STACKTRACE
-                        );
+                        throw std::runtime_error("No parameter " + std::string(
+                            !!key ? "'" + *key + "'" : ""
+                        ) + " available" + ALPS_STACKTRACE);
                     return (!value ? getter() : *value).cast<T>();
                 }
                 
@@ -86,9 +105,9 @@ namespace alps {
 
                 template<typename T> paramproxy & operator=(T const & arg) {
                     if (!!value)
-                        throw std::runtime_error(
-                            "No reference to parameter available" + ALPS_STACKTRACE
-                        );
+                        throw std::runtime_error("No reference to parameter " + std::string(
+                            !!key ? "'" + *key + "'" : ""
+                        ) + " available" + ALPS_STACKTRACE);
                     setter(detail::paramvalue(arg));
                     return *this;
                 }
@@ -113,6 +132,7 @@ namespace alps {
             private:
 
                 bool defined;
+                boost::optional<std::string> key;
                 boost::optional<paramvalue> value;
                 boost::function<paramvalue()> getter;
                 boost::function<void(paramvalue)> setter;

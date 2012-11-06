@@ -36,17 +36,17 @@ namespace alps {
 
         void paramproxy::save(hdf5::archive & ar) const {
             if (!defined)
-                throw std::runtime_error(
-                    "No reference to parameter available" + ALPS_STACKTRACE
-                );
+                throw std::runtime_error("No reference to parameter " + std::string(
+                    !!key ? "'" + *key + "'" : ""
+                ) + " available" + ALPS_STACKTRACE);
             ar[""] << (!!value ? *value : getter());
         }
 
         void paramproxy::load(hdf5::archive & ar) {
             if (!defined || !!value)
-                throw std::runtime_error(
-                    "No reference to parameter available" + ALPS_STACKTRACE
-                );
+                throw std::runtime_error("No reference to parameter " + std::string(
+                    !!key ? "'" + *key + "'" : ""
+                ) + " available" + ALPS_STACKTRACE);
             if (!!value) {
                 detail::paramvalue value;
                 ar[""] >> value;
@@ -57,9 +57,9 @@ namespace alps {
 
         void paramproxy::print(std::ostream & os) const {
 			if (!defined)
-				throw std::runtime_error(
-					"No parameter available" + ALPS_STACKTRACE
-				);
+				throw std::runtime_error("No parameter " + std::string(
+                    !!key ? "'" + *key + "'" : ""
+                ) + " available" + ALPS_STACKTRACE);
 			os << (!value ? getter() : *value);
         }
 
@@ -68,14 +68,14 @@ namespace alps {
             return os;
 		}
 
-        #define ALPS_NGS_PARAMPROXY_ADD_OPERATOR_IMPL(T)                            \
-            T operator+(paramproxy const & p, T s) {                                \
-                using boost::numeric::operators::operator+=;                        \
-                return s += p.cast< T >();                                            \
-            }                                                                        \
-            T operator+(T s, paramproxy const & p) {                                \
-                using boost::numeric::operators::operator+=;                        \
-                return s += p.cast< T >();                                            \
+        #define ALPS_NGS_PARAMPROXY_ADD_OPERATOR_IMPL(T)                                \
+            T operator+(paramproxy const & p, T s) {                                    \
+                using boost::numeric::operators::operator+=;                            \
+                return s += p.cast< T >();                                              \
+            }                                                                           \
+            T operator+(T s, paramproxy const & p) {                                    \
+                using boost::numeric::operators::operator+=;                            \
+                return s += p.cast< T >();                                              \
             }
         ALPS_NGS_FOREACH_PARAMETERVALUE_TYPE(ALPS_NGS_PARAMPROXY_ADD_OPERATOR_IMPL)
         #undef ALPS_NGS_PARAMPROXY_ADD_OPERATOR_IMPL
