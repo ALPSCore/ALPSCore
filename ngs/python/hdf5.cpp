@@ -124,6 +124,8 @@ BOOST_PYTHON_MODULE(pyngshdf5_c) {
         .def("is_group", &alps::hdf5::archive::is_group)
         .def("is_data", &alps::hdf5::archive::is_data)
         .def("is_attribute", &alps::hdf5::archive::is_attribute)
+        .def("is_open", &alps::hdf5::archive::is_open)
+        .def("close", &alps::hdf5::archive::close)
         .def("extent", &alps::detail::python_hdf5_extent)
         .def("dimensions", &alps::hdf5::archive::dimensions)
         .def("is_scalar", &alps::hdf5::archive::is_scalar)

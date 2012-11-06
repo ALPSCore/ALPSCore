@@ -132,6 +132,9 @@ namespace alps {
                 void set_context(std::string const & context);
                 std::string complete_path(std::string path) const;
 
+                void close();
+                bool is_open();
+
                 bool is_data(std::string path) const;
                 bool is_attribute(std::string path) const;
                 bool is_group(std::string path) const;

@@ -138,13 +138,13 @@ namespace alps {
                     }
 
                     operator hid_t() const {
-                        return _id; 
+                        return _id;
                     }
 
                     resource<F> & operator=(hid_t id) {
                         if ((_id = id) < 0) 
                             throw archive_error(error().invoke(_id) + ALPS_STACKTRACE);
-                        return *this; 
+                        return *this;
                     }
 
                 private:
@@ -398,20 +398,18 @@ namespace alps {
             : current_(arg.current_)
             , context_(arg.context_)
         {
-            ++ref_cnt_[file_key(context_->filename_, context_->large_, context_->memory_)].second;
+            if (context_ != NULL)
+                ++ref_cnt_[file_key(context_->filename_, context_->large_, context_->memory_)].second;
         }
 
         archive::~archive() {
-            try {
-                H5Fflush(context_->file_id_, H5F_SCOPE_GLOBAL);
-            } catch (std::exception & ex) {
-                std::cerr << "Error destructing archive of file '" << context_->filename_ << "'\n" << ex.what() << std::endl;
-                std::abort();
-            }
-            if (!--ref_cnt_[file_key(context_->filename_, context_->large_, context_->memory_)].second) {
-                ref_cnt_.erase(file_key(context_->filename_, context_->large_, context_->memory_));
-                delete context_;
-            }
+            if (context_ != NULL)
+                try {
+                    close();
+                } catch (std::exception & ex) {
+                    std::cerr << "Error destructing archive of file '" << ex.what() << std::endl;
+                    std::abort();
+                }
         }
 
         void archive::abort() {
@@ -426,7 +424,24 @@ namespace alps {
             ref_cnt_.clear();
         }
 
+        void archive::close() {
+            if (context_ == NULL)
+                throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
+            H5Fflush(context_->file_id_, H5F_SCOPE_GLOBAL);
+            if (!--ref_cnt_[file_key(context_->filename_, context_->large_, context_->memory_)].second) {
+                ref_cnt_.erase(file_key(context_->filename_, context_->large_, context_->memory_));
+                delete context_;
+            }
+            context_ = NULL;
+        }
+        
+        bool archive::is_open() {
+            return context_ != NULL;
+        }
+
         std::string const & archive::get_filename() const {
+            if (context_ == NULL)
+                throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
             return context_->filename_;
         }
 
@@ -472,6 +487,8 @@ namespace alps {
         }
     
         bool archive::is_data(std::string path) const {
+            if (context_ == NULL)
+                throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
             if ((path = complete_path(path)).find_last_of('@') != std::string::npos)
                 throw invalid_path("no data path: " + path + ALPS_STACKTRACE);
             hid_t id = H5Dopen2(context_->file_id_, path.c_str(), H5P_DEFAULT);
@@ -479,6 +496,8 @@ namespace alps {
         }
     
         bool archive::is_attribute(std::string path) const {
+            if (context_ == NULL)
+                throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
             if ((path = complete_path(path)).find_last_of('@') == std::string::npos)
                 return false;
             hid_t parent_id;
@@ -501,6 +520,8 @@ namespace alps {
         }
     
         bool archive::is_group(std::string path) const {
+            if (context_ == NULL)
+                throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
             if ((path = complete_path(path)).find_last_of('@') != std::string::npos)
                 return false;
             hid_t id = H5Gopen2(context_->file_id_, path.c_str(), H5P_DEFAULT);
@@ -509,6 +530,8 @@ namespace alps {
     
         bool archive::is_scalar(std::string path) const {
             hid_t space_id;
+            if (context_ == NULL)
+                throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
             if ((path = complete_path(path)).find_last_of('@') != std::string::npos && is_attribute(path)) {
                 detail::attribute_type attr_id(detail::open_attribute(*this, context_->file_id_, path));
                 space_id = H5Aget_space(attr_id);
@@ -530,6 +553,8 @@ namespace alps {
 
         bool archive::is_string(std::string path) const {
             hid_t type_id;
+            if (context_ == NULL)
+                throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
             if ((path = complete_path(path)).find_last_of('@') != std::string::npos) {
                 detail::attribute_type attr_id(detail::open_attribute(*this, context_->file_id_, path));
                 type_id = H5Aget_type(attr_id);
@@ -544,6 +569,8 @@ namespace alps {
     
         bool archive::is_null(std::string path) const {
             hid_t space_id;
+            if (context_ == NULL)
+                throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
             if ((path = complete_path(path)).find_last_of('@') != std::string::npos) {
                 detail::attribute_type attr_id(detail::open_attribute(*this, context_->file_id_, path));
                 space_id = H5Aget_space(attr_id);
@@ -559,6 +586,8 @@ namespace alps {
         }
     
         bool archive::is_complex(std::string path) const {
+            if (context_ == NULL)
+                throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
             if ((path = complete_path(path)).find_last_of('@') != std::string::npos)
                 return is_attribute(path.substr(0, path.find_last_of('@')) + "@__complex__:" + path.substr(path.find_last_of('@') + 1))
                     && is_scalar(path.substr(0, path.find_last_of('@')) + "@__complex__:" + path.substr(path.find_last_of('@') + 1));
@@ -570,6 +599,8 @@ namespace alps {
         }
     
         std::vector<std::string> archive::list_children(std::string path) const {
+            if (context_ == NULL)
+                throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
             if ((path = complete_path(path)).find_last_of('@') != std::string::npos)
                 throw invalid_path("no group path: " + path + ALPS_STACKTRACE);
             std::vector<std::string> list;
@@ -581,6 +612,8 @@ namespace alps {
         }
     
         std::vector<std::string> archive::list_attributes(std::string path) const {
+            if (context_ == NULL)
+                throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
             if ((path = complete_path(path)).find_last_of('@') != std::string::npos)
                 throw invalid_path("no group or data path: " + path + ALPS_STACKTRACE);
             std::vector<std::string> list;
@@ -596,6 +629,8 @@ namespace alps {
         }
     
         std::vector<std::size_t> archive::extent(std::string path) const {
+            if (context_ == NULL)
+                throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
             if (is_null(path = complete_path(path)))
                 return std::vector<std::size_t>(1, 0);
             else if (is_scalar(path))
@@ -616,6 +651,8 @@ namespace alps {
         }
     
         std::size_t archive::dimensions(std::string path) const {
+            if (context_ == NULL)
+                throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
             if ((path = complete_path(path)).find_last_of('@') != std::string::npos) {
                 detail::attribute_type attr_id(detail::open_attribute(*this, context_->file_id_, path));
                 return detail::check_error(H5Sget_simple_extent_dims(detail::space_type(H5Aget_space(attr_id)), NULL, NULL));
@@ -626,6 +663,8 @@ namespace alps {
         }
     
         void archive::create_group(std::string path) const {
+            if (context_ == NULL)
+                throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
             if ((path = complete_path(path)).find_last_of('@') != std::string::npos)
                 throw invalid_path("no group path: " + path + ALPS_STACKTRACE);
             if (is_data(path))
@@ -660,6 +699,8 @@ namespace alps {
         }
     
         void archive::delete_data(std::string path) const {
+            if (context_ == NULL)
+                throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
             if ((path = complete_path(path)).find_last_of('@') != std::string::npos)
                 throw invalid_path("no data path: " + path + ALPS_STACKTRACE);
             if (is_data(path))
@@ -669,6 +710,8 @@ namespace alps {
         }
     
         void archive::delete_group(std::string path) const  {
+            if (context_ == NULL)
+                throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
             if ((path = complete_path(path)).find_last_of('@') != std::string::npos)
                 throw invalid_path("no group path: " + path + ALPS_STACKTRACE);
             if (is_group(path))
@@ -678,6 +721,8 @@ namespace alps {
         }
     
         void archive::delete_attribute(std::string path) const {
+            if (context_ == NULL)
+                throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
             if ((path = complete_path(path)).find_last_of('@') == std::string::npos)
                 throw invalid_path("no attribute path: " + path + ALPS_STACKTRACE);
             // TODO: implement
@@ -685,6 +730,8 @@ namespace alps {
         }
     
         void archive::set_complex(std::string path) {
+            if (context_ == NULL)
+                throw archive_closed("the archive is closed" + ALPS_STACKTRACE);
             if (path.find_last_of('@') != std::string::npos)
                 write(path.substr(0, path.find_last_of('@')) + "@__complex__:" + path.substr(path.find_last_of('@') + 1), true);
             else {
@@ -717,6 +764,8 @@ namespace alps {
                 value = cast< T >(u);
         #define ALPS_NGS_HDF5_READ_SCALAR(T)                                                                                                                            \
             void archive::read(std::string path, T & value) const {                                                                                                     \
+                if (context_ == NULL)                                                                                                                                   \
+                    throw archive_closed("the archive is closed" + ALPS_STACKTRACE);                                                                                    \
                 if ((path = complete_path(path)).find_last_of('@') == std::string::npos) {                                                                              \
                     if (!is_data(path))                                                                                                                                 \
                         throw path_not_found("the path does not exist: " + path + ALPS_STACKTRACE);                                                                     \
@@ -807,6 +856,8 @@ namespace alps {
                     throw std::logic_error("Not Implemented, path: " + path + ALPS_STACKTRACE);
         #define ALPS_NGS_HDF5_READ_VECTOR(T)                                                                                                                            \
             void archive::read(std::string path, T * value, std::vector<std::size_t> chunk, std::vector<std::size_t> offset) const {                                    \
+                if (context_ == NULL)                                                                                                                                   \
+                    throw archive_closed("the archive is closed" + ALPS_STACKTRACE);                                                                                    \
                 std::vector<std::size_t> data_size = extent(path);                                                                                                      \
                 if (offset.size() == 0)                                                                                                                                 \
                     offset = std::vector<std::size_t>(dimensions(path), 0);                                                                                             \
@@ -899,6 +950,8 @@ namespace alps {
     
         #define ALPS_NGS_HDF5_WRITE_SCALAR(T)                                                                                                                           \
             void archive::write(std::string path, T value) const {                                                                                                      \
+                if (context_ == NULL)                                                                                                                                   \
+                    throw archive_closed("the archive is closed" + ALPS_STACKTRACE);                                                                                    \
                 if (!context_->write_)                                                                                                                                  \
                     throw archive_error("the archive is not writeable" + ALPS_STACKTRACE);                                                                              \
                 hid_t data_id;                                                                                                                                          \
@@ -985,6 +1038,8 @@ namespace alps {
             void archive::write(                                                                                                                                        \
                 std::string path, T const * value, std::vector<std::size_t> size, std::vector<std::size_t> chunk, std::vector<std::size_t> offset                       \
             ) const {                                                                                                                                                   \
+                if (context_ == NULL)                                                                                                                                   \
+                    throw archive_closed("the archive is closed" + ALPS_STACKTRACE);                                                                                    \
                 if (!context_->write_)                                                                                                                                  \
                     throw archive_error("the archive is not writeable" + ALPS_STACKTRACE);                                                                              \
                 if (chunk.size() == 0)                                                                                                                                  \
@@ -1218,6 +1273,8 @@ namespace alps {
             bool archive::is_datatype_impl(std::string path, T) const {                                                                                                 \
                 hid_t type_id;                                                                                                                                          \
                 path = complete_path(path);                                                                                                                             \
+                if (context_ == NULL)                                                                                                                                   \
+                    throw archive_closed("the archive is closed" + ALPS_STACKTRACE);                                                                                    \
                 if (path.find_last_of('@') != std::string::npos && is_attribute(path)) {                                                                                \
                     detail::attribute_type attr_id(detail::open_attribute(*this, context_->file_id_, path));                                                            \
                     type_id = H5Aget_type(attr_id);                                                                                                                     \
