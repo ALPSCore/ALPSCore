@@ -36,17 +36,13 @@ namespace alps {
 
         void paramproxy::save(hdf5::archive & ar) const {
             if (!defined)
-                throw std::runtime_error("No reference to parameter " + std::string(
-                    !!key ? "'" + *key + "'" : ""
-                ) + " available" + ALPS_STACKTRACE);
+                throw std::runtime_error("No reference to parameter '" + key + "' available" + ALPS_STACKTRACE);
             ar[""] << (!!value ? *value : getter());
         }
 
         void paramproxy::load(hdf5::archive & ar) {
             if (!defined || !!value)
-                throw std::runtime_error("No reference to parameter " + std::string(
-                    !!key ? "'" + *key + "'" : ""
-                ) + " available" + ALPS_STACKTRACE);
+                throw std::runtime_error("No reference to parameter '" + key + "' available" + ALPS_STACKTRACE);
             if (!!value) {
                 detail::paramvalue value;
                 ar[""] >> value;
@@ -57,9 +53,7 @@ namespace alps {
 
         void paramproxy::print(std::ostream & os) const {
 			if (!defined)
-				throw std::runtime_error("No parameter " + std::string(
-                    !!key ? "'" + *key + "'" : ""
-                ) + " available" + ALPS_STACKTRACE);
+				throw std::runtime_error("No parameter '" + key + "' available" + ALPS_STACKTRACE);
 			os << (!value ? getter() : *value);
         }
 

@@ -78,14 +78,15 @@ namespace alps {
         return value_type(
             defined(key),
             boost::bind(&params::getter, boost::ref(*this), key),
-            boost::bind(&params::setter, boost::ref(*this), key, _1)
+            boost::bind(&params::setter, boost::ref(*this), key, _1),
+            key
         );
     }
 
     params::value_type const params::operator[](std::string const & key) const {
         return defined(key)
-            ? value_type(values.find(key)->second)
-            : value_type()
+            ? value_type(values.find(key)->second, key)
+            : value_type(key)
         ;
     }
 
