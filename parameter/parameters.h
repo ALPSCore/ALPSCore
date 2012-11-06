@@ -99,7 +99,12 @@ public:
   /// parameters read from a text file
   Parameters(std::istream& is) { parse(is); }
   /// paramaters read from a hdf5 file
-  Parameters(alps::hdf5::archive & ar) { load(ar); }
+  Parameters(alps::hdf5::archive & ar) {
+    std::string context = ar.get_context();
+    ar.set_context("/parameters");
+    load(ar);
+    ar.set_context(context);
+  }
 
   /// copy constructor
   Parameters(Parameters const& params) : list_(params.list_), map_() {

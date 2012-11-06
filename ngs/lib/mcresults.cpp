@@ -67,6 +67,7 @@ namespace alps {
 
     void mcresults::load(hdf5::archive & ar)  {
         ObservableSet set;
+        // TODO: do not use hard coded path!
         ar >> make_pvp("/simulation/realizations/0/clones/0/results", set);
         for(ObservableSet::const_iterator it = set.begin(); it != set.end(); ++it)
             insert(it->first, mcresult(it->second));
