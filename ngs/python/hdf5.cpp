@@ -97,6 +97,25 @@ namespace alps {
                 result.append(*it);
             return result;
         }
+    
+        boost::array<PyObject *, 6> exception_type;
+    
+        #define TRANSLATE_CPP_ERROR_TO_PYTHON(T, ID)                                                            \
+        void translate_ ## T (hdf5:: T const & e) {                                                             \
+            std::string message = std::string(e.what()).substr(0, std::string(e.what()).find_first_of('\n'));   \
+            PyErr_SetString(exception_type[ID], const_cast<char *>(message.c_str()));                           \
+        }
+        TRANSLATE_CPP_ERROR_TO_PYTHON(archive_error, 0)
+        TRANSLATE_CPP_ERROR_TO_PYTHON(archive_not_found, 1)
+        TRANSLATE_CPP_ERROR_TO_PYTHON(archive_closed, 2)
+        TRANSLATE_CPP_ERROR_TO_PYTHON(invalid_path, 3)
+        TRANSLATE_CPP_ERROR_TO_PYTHON(path_not_found, 4)
+        TRANSLATE_CPP_ERROR_TO_PYTHON(wrong_type, 5)
+
+        void register_exception_type(int id, boost::python::object type) {
+            Py_INCREF(type.ptr());
+            exception_type[id] = type.ptr();
+        }
     }
 }
 
@@ -113,6 +132,16 @@ BOOST_PYTHON_MODULE(pyngshdf5_c) {
         alps::detail::std_vector_string_to_python
     >();
 
+
+    boost::python::register_exception_translator<alps::hdf5::archive_error>(&alps::detail::translate_archive_error);
+    boost::python::register_exception_translator<alps::hdf5::archive_not_found>(&alps::detail::translate_archive_not_found);
+    boost::python::register_exception_translator<alps::hdf5::archive_closed>(&alps::detail::translate_archive_closed);
+    boost::python::register_exception_translator<alps::hdf5::invalid_path>(&alps::detail::translate_invalid_path);
+    boost::python::register_exception_translator<alps::hdf5::path_not_found>(&alps::detail::translate_path_not_found);
+    boost::python::register_exception_translator<alps::hdf5::wrong_type>(&alps::detail::translate_wrong_type);
+
+    boost::python::def("register_archive_exception_type", &alps::detail::register_exception_type);    
+
     boost::python::class_<alps::hdf5::archive>(
           "hdf5_archive_impl",
           boost::python::init<std::string, std::string>()
@@ -120,6 +149,7 @@ BOOST_PYTHON_MODULE(pyngshdf5_c) {
         .def("__deepcopy__", &alps::python::make_copy<alps::hdf5::archive>)
         .add_property("filename", &alps::detail::python_hdf5_get_filename)
         .add_property("context", &alps::hdf5::archive::get_context)
+        .add_property("closed", &alps::hdf5::archive::is_open)
         .def("set_context", &alps::hdf5::archive::set_context)
         .def("is_group", &alps::hdf5::archive::is_group)
         .def("is_data", &alps::hdf5::archive::is_data)
