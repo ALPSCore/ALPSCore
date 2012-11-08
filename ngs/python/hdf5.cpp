@@ -45,6 +45,7 @@
 #include <boost/python/dict.hpp>
 #include <boost/python/numeric.hpp>
 #include <boost/python/to_python_converter.hpp>
+#include <boost/array.hpp>
 
 #include <string>
 #include <iterator>
