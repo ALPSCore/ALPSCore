@@ -95,6 +95,9 @@ namespace alps {
             // TODO: shold be solved using friends
             void create_SignedSimpleRealVectorObservable(std::string const & name, std::string sign = "Sign");
 
+            // DO NOT USE! use set << ngs::RealTimeSeriesObservable(name);
+            // TODO: shold be solved using friends
+            void create_RealTimeSeriesObservable(std::string const & name);
     };
 
     std::ostream & operator<<(std::ostream & os, mcobservables const & observables);

@@ -148,6 +148,10 @@ namespace alps {
         operator[](name).get_impl()->set_sign(*(operator[](sign).get_impl()));
     }
 
+    void mcobservables::create_RealTimeSeriesObservable(std::string const & name) {
+        insert(name, boost::make_shared<RealTimeSeriesObservable>(name).get());
+    }
+
     std::ostream & operator<<(std::ostream & os, mcobservables const & results) {
         results.output(os);
         return os;

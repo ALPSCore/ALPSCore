@@ -129,6 +129,13 @@ namespace alps {
 
         ALPS_DECL alps::mcobservables & operator<< (alps::mcobservables & set, SignedSimpleRealVectorObservable const & obs);
 
+        class ALPS_DECL RealTimeSeriesObservable : public detail::ObservableWapper {
+            public:
+                RealTimeSeriesObservable(std::string const & name): ObservableWapper(name) {}
+        };
+
+        ALPS_DECL alps::mcobservables & operator<< (alps::mcobservables & set, RealTimeSeriesObservable const & obs);
+
     };
 
 }
