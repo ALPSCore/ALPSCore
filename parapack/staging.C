@@ -11,7 +11,11 @@ void load_checkpoints(boost::filesystem::path const& file_chp,
 		      boost::filesystem::path const& basedir,
 		      std::queue<suspended_queue_t>& suspended_queue) {
   FILE* fp;
+#ifdef _WIN32
+  if ((fp = _wfopen(file_chp.c_str(), L"r")) == NULL) {
+#else
   if ((fp = fopen(file_chp.c_str(), "r")) == NULL) {
+#endif
     std::cerr << " can't open " << file_chp << "!" << std::endl;
     
   } else {
