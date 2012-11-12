@@ -87,10 +87,11 @@ namespace alps {
                 }
             }
 
-            bool run(boost::function<bool ()> const & stop_callback) {
+            // TODO: implement progress_callback
+            bool run(boost::function<bool ()> const & stop_callback) { //, boost::function<void (double)> const & progress_callback = boost::function<void (double)>()) {
                 user_stop_callback = stop_callback;
                 this->set_status(Impl::running);
-                Impl::run(boost::bind<bool>(&mpisim_ng<Impl>::mpi_stop_callback, boost::ref(*this)));
+                Impl::run(boost::bind<bool>(&mpisim_ng<Impl>::mpi_stop_callback, boost::ref(*this)));//, progress_callback);
                 this->set_status(Impl::finished);
                 return stop_callback();
             }
@@ -136,6 +137,7 @@ namespace alps {
                                         this->set_status(Impl::interrupted);
                                     } else {
                                         double elapsed = boost::chrono::duration_cast<boost::chrono::duration<double> >(now_time_point - start_time_point).count();
+                                        double start_fraction = 0; // TODO: save first fraction (if loaded from checkpoint ...)
                                         next_check = std::max(
                                               min_check
                                             , std::min(
@@ -144,7 +146,7 @@ namespace alps {
                                                       2 * next_check
                                                     , std::max(
                                                           next_check/ 2
-                                                        , elapsed
+                                                        , elapsed / 4. * (1 - fraction) / (fraction - start_fraction)
                                                       )
                                                   )
                                               )

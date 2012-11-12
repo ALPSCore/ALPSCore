@@ -35,7 +35,6 @@
 #include <alps/ngs/signal.hpp>
 #include <alps/ngs/boost_mpi.hpp>
 #include <alps/ngs/short_print.hpp>
-#include <alps/ngs/stop_callback.hpp>
 #include <alps/ngs/thread_exceptions.hpp>
 #include <alps/ngs/observablewrappers.hpp>
 
@@ -43,6 +42,7 @@
 
 #include <alps/ngs/scheduler/mcbase.hpp>
 #include <alps/ngs/scheduler/mpimcsim.hpp>
+#include <alps/ngs/scheduler/stop_callback.hpp>
 //#include <alps/ngs/scheduler/mpiparallelsim.hpp>
 //#include <alps/ngs/scheduler/multithreadedsim.hpp>
 
