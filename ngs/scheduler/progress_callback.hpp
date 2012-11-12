@@ -4,8 +4,7 @@
  *                                                                                 *
  * ALPS Libraries                                                                  *
  *                                                                                 *
- * Copyright (C) 2010 - 2011 by Lukas Gamper <gamperl@gmail.com>                   *
- *                           Matthias Troyer <troyer@comp-phys.org>                *
+ * Copyright (C) 2012 by Jan Gukelberger <gukel@comp-phys.org>                     *
  *                                                                                 *
  * This software is part of the ALPS libraries, published under the ALPS           *
  * Library License; you can use, redistribute it and/or modify it under            *
@@ -26,32 +25,40 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef ALPS_NGS_HPP
-#define ALPS_NGS_HPP
+#ifndef ALPS_NGS_SCHEDULER_PROGRESS_CALLBACK_HPP
+#define ALPS_NGS_SCHEDULER_PROGRESS_CALLBACK_HPP
 
-#include <alps/ngs/api.hpp>
-#include <alps/ngs/cast.hpp>
-#include <alps/ngs/sleep.hpp>
-#include <alps/ngs/signal.hpp>
-#include <alps/ngs/boost_mpi.hpp>
-#include <alps/ngs/short_print.hpp>
-#include <alps/ngs/thread_exceptions.hpp>
-#include <alps/ngs/observablewrappers.hpp>
+#include <alps/ngs/scheduler/check_schedule.hpp>
+#include <iostream>
 
-#include <alps/ngs/alea.hpp>
+namespace alps {
+    
+    class ALPS_DECL progress_callback
+    {
+    public:
+        progress_callback(double tmin=60., double tmax=900.) : schedule_(tmin,tmax) {}
+    
+        /// print current progress fraction to cout if schedule says we should
+        void operator()(double fraction)
+        {
+            if( schedule_.pending() )
+            {
+                schedule_.update(fraction);
 
-#include <alps/ngs/scheduler/mcbase.hpp>
-#include <alps/ngs/scheduler/mpimcsim.hpp>
-#include <alps/ngs/scheduler/stop_callback.hpp>
-#include <alps/ngs/scheduler/progress_callback.hpp>
-//#include <alps/ngs/scheduler/mpiparallelsim.hpp>
-//#include <alps/ngs/scheduler/multithreadedsim.hpp>
+                std::streamsize oldprec = std::cout.precision(3);
+                std::cout << "Completed " << 100*fraction << "%.";
+                if( fraction < 1. ) 
+                    std::cout << " Next check in " << schedule_.check_interval() << " seconds." << std::endl;
+                else
+                    std::cout << " Done." << std::endl;
+                std::cout.precision(oldprec);
+            }
+        }
+    
+    private:
+        check_schedule schedule_;
+    };
 
-// TODO: remove these deprecated headers:
-#include <alps/ngs/mcresult.hpp>
-#include <alps/ngs/mcresults.hpp>
-#include <alps/ngs/mcoptions.hpp>
-#include <alps/ngs/mcobservable.hpp>
-#include <alps/ngs/mcobservables.hpp> // TODO: rethink this!
+}
 
-#endif
+#endif // !defined ALPS_NGS_SCHEDULER_PROGRESS_CALLBACK_HPP
