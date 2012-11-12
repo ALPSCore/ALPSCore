@@ -86,14 +86,16 @@ namespace alps {
                         const_cast<mpisim_ng<Impl> &>(*this).check_communication();
                 }
             }
+        
+            using Impl::run;
 
             bool run(
                   boost::function<bool ()> const & stop_callback
-                , boost::function<void (double)> const & progress_callback = boost::function<void (double)>()
+                , boost::function<void (double)> const & progress_callback
             ) {
                 user_stop_callback = stop_callback;
                 this->set_status(Impl::running);
-                Impl::run(boost::bind<bool>(&mpisim_ng<Impl>::mpi_stop_callback, boost::ref(*this)));//, progress_callback);
+                Impl::run(boost::bind<bool>(&mpisim_ng<Impl>::mpi_stop_callback, boost::ref(*this)), progress_callback);
                 this->set_status(Impl::finished);
                 return stop_callback();
             }

@@ -129,7 +129,13 @@ namespace alps {
 
             virtual bool run(
                   boost::function<bool ()> const & stop_callback
-                , boost::function<void (double)> const & progress_callback = boost::function<void (double)>()
+            ) {
+                return run(stop_callback, boost::function<void (double)>());
+            }
+
+            virtual bool run(
+                  boost::function<bool ()> const & stop_callback
+                , boost::function<void (double)> const & progress_callback
             ) {
                 do {
                     {
@@ -149,7 +155,9 @@ namespace alps {
             }
 
             #ifdef ALPS_HAVE_PYTHON
-                bool run(boost::python::object stop_callback) {
+                bool run(
+                    boost::python::object stop_callback
+                ) {
                     return run(boost::bind(callback_wrapper, stop_callback));
                 }
             #endif
