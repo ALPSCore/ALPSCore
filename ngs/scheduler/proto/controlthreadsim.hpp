@@ -50,6 +50,19 @@ namespace alps {
                 return Impl::fraction_completed();
             }
 
+            bool run(
+                  boost::function<bool ()> const & stop_callback
+                , boost::function<void (double)> const & progress_callback = boost::function<void (double)>()
+            ) {
+                m_thread = boost::shared_ptr<boost::thread>(new boost::thread(
+                      static_cast<bool(Impl::*)(boost::function<bool ()> const &, boost::function<void (double)> const &)>(&Impl::run)
+                    , boost::ref(dynamic_cast<Impl &>(*this))
+                    , stop_callback
+                    , progress_callback
+                ));
+                return false;
+            }
+
             typename Impl::status_type status() const {
                 return m_status;
             }
@@ -89,6 +102,7 @@ namespace alps {
         private:
 
             atomic<typename Impl::status_type> m_status;
+            boost::shared_ptr<boost::thread> m_thread;
     };
 
 }

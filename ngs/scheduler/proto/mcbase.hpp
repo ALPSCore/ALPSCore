@@ -127,7 +127,10 @@ namespace alps {
                 ar["/simulation/realizations/0/clones/0/results"] >> measurements;
             }
 
-            virtual bool run(boost::function<bool ()> const & stop_callback) {//, boost::function<void (double)> const & progress_callback = boost::function<void (double)>()) {
+            virtual bool run(
+                  boost::function<bool ()> const & stop_callback
+                , boost::function<void (double)> const & progress_callback = boost::function<void (double)>()
+            ) {
                 do {
                     {
                         lock_guard data_lock(get_data_lock());
@@ -138,9 +141,8 @@ namespace alps {
                         lock_guard result_lock(get_result_lock());
                         measure();
                     }
-                    // TODO: implement!
-//                    if (progress_callback)
-//                        progress_callback(fraction_completed());
+                    if (progress_callback)
+                        progress_callback(fraction_completed());
                 } while(!stop_callback() && !work_done());
                 set_status(finished); // TODO: remove this!
                 return !stop_callback();
