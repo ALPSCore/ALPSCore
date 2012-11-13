@@ -383,7 +383,7 @@ SimpleObservableData<T>::SimpleObservableData(std::istream& infile, const XMLTag
 
 inline double text_to_double(const std::string& val)
 {
-  return ((val=="NaN" || val=="nan" || val=="NaNQ") ? alps::nan() :
+  return ((val=="NaN" || val=="nan" || val=="NaNQ" || val == "-nan") ? alps::nan() :
           ((val=="INF" || val=="Inf" || val == "inf") ? alps::inf() :
            ((val=="-INF" || val=="-Inf" || val == "-inf") ? alps::ninf() :
             boost::lexical_cast<double, std::string>(val))));
