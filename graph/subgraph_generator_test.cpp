@@ -29,7 +29,6 @@
 //#define USE_COMPRESSED_EMBEDDING2
 
 #include <alps/graph/subgraph_generator.hpp>
-#include <alps/lattice/graph_helper.h>
 #include <boost/graph/adjacency_list.hpp>
 #include <iostream>
 

@@ -26,7 +26,7 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <alps/lattice/lattice.h>
+#include <alps/lattice.h>
 #include <alps/graph/lattice_constant.hpp>
 
 #include <boost/graph/adjacency_list.hpp>
