@@ -43,6 +43,7 @@
 #include <boost/graph/graph_traits.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
+#include <boost/multi_array.hpp>
 
 #include <alps/lattice/graphproperties.h>
 
@@ -180,18 +181,26 @@ namespace alps {
                 using boost::make_tuple;
                 using std::make_pair;
                 // B = {(i, j): Vj shatters Vi}
+                std::size_t maxsize = 0;
+                for (typename partition_type<Graph>::type::const_iterator it = pi.begin(); it != pi.end(); ++it)
+                    maxsize = std::max(maxsize,it->size());
+                boost::multi_array<std::size_t,2> adjacent_numbers(boost::extents[pi.size()][maxsize]);
                 for (typename partition_type<Graph>::type::const_iterator it = pi.begin(); it != pi.end(); ++it) {
-                    std::vector<std::vector<std::size_t> > adjacent_numbers = std::vector<std::vector<std::size_t> >(pi.size(), std::vector<std::size_t>(it->size(), 0));
+                    std::fill_n(adjacent_numbers.data(),adjacent_numbers.num_elements(),0);
                     for (typename partition_type<Graph>::type::value_type::const_iterator jt = it->begin(); jt != it->end(); ++jt) {
                         typename boost::graph_traits<Graph>::adjacency_iterator ai, ae;
                         for (boost::tie(ai, ae) = adjacent_vertices(*jt, G); ai != ae; ++ai)
                             ++adjacent_numbers[I.find(*ai)->second][jt - it->begin()];
                     }
-                    for (std::vector<std::vector<std::size_t> >::const_iterator jt = adjacent_numbers.begin(); jt != adjacent_numbers.end(); ++jt)
-                        if (!std::equal(jt->begin(), jt->end(), std::vector<std::size_t>(jt->size(), jt->front()).begin()))
-                            // Return the minimum element of B under the lexicographic order
-                            return make_pair(it - pi.begin(), jt - adjacent_numbers.begin());
+                    for (boost::multi_array<std::size_t,2>::const_iterator jt = adjacent_numbers.begin(); jt != adjacent_numbers.end(); ++jt)
+                    {
+                        for (std::size_t k = 0; k < it->size(); ++k)
+                            if( *(jt->begin() + k) != *jt->begin() )
+                                // Return the minimum element of B under the lexicographic order
+                                return make_pair(it - pi.begin(), jt - adjacent_numbers.begin());
+                    }
                 }
+                
                 // no shattering found
                 return std::make_pair(pi.size(), 0);
             }
