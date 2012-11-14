@@ -27,7 +27,7 @@
 
 #ifndef ALPS_GRAPH_SUBGRAPH_GENERATOR_HPP
 #define ALPS_GRAPH_SUBGRAPH_GENERATOR_HPP
-#include <alps/lattice/graph_traits.h>
+#include <alps/lattice.h>
 #include <alps/graph/canonical_properties.hpp>
 #include <boost/static_assert.hpp>
 #include <alps/graph/lattice_constant.hpp>

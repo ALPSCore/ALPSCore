@@ -43,84 +43,11 @@
 #include <string>
 #include <vector>
 
-namespace alps {
+#if BOOST_VERSION == 105100
 
-template <class V, class K=boost::any> // singleton_property_map and constant_property_map
-class singleton_property_map {
-public:
-  typedef K key_type;
-  typedef V value_type;
-  typedef V& reference;
-  typedef boost::lvalue_property_map_tag category;
-
-  singleton_property_map(V v=V()) : v_(v) {}
-
-  operator V () const { return v_;}
-  V value() const { return v_;}
-
-  const singleton_property_map<V,K>& operator=(const V& v) { v_=v; return *this;}
-
-  template <class T>
-  V& operator[](T ) { return v_;}
-
-  template <class T>
-  const V& operator[](T ) const { return v_;}
-private:
-  V v_;
-};
-
-} // end namespace
-
-namespace boost {
-template <class V, class K>
-V get(const alps::singleton_property_map<V,K>& m, const K&) { return m.value();}
-
-template <class V, class K>
-void put(alps::singleton_property_map<V,K>& m, const K& k, const V& v) { m[k]=v;}
-}
-
-namespace alps {
-namespace detail {
-
-// helper functions to probe for graph properties
-/*
-template <class T, class DEFAULT=int>
-struct existing_property {
-  BOOST_STATIC_CONSTANT(bool, result=true);
-  typedef T type;
-};
-
-template <class DEFAULT>
-struct existing_property<boost::detail::error_property_not_found,DEFAULT> {
-  BOOST_STATIC_CONSTANT(bool, result=false);
-  typedef DEFAULT type;
-};
-*/
-
-// boost 1.51 changed the boost::property_value interface
-#if BOOST_VERSION < 105100
-
-template <class T, class DEFAULT=int>
-struct existing_property_internal {
-  BOOST_STATIC_CONSTANT(bool, result=true);
-  typedef T type;
-};
-
-template <class DEFAULT>
-struct existing_property_internal<boost::detail::error_property_not_found,DEFAULT> {
-  BOOST_STATIC_CONSTANT(bool, result=false);
-  typedef DEFAULT type;
-};
-
-template <class PropertyList, class Tag, class Default=int> struct existing_property
-    : public existing_property_internal<typename boost::property_value<PropertyList, Tag>::type, Default>
-{};
-
-#else
-
-}
-}
-
+//
+// The workaround/patch by Lukas for boost bug https://svn.boost.org/trac/boost/ticket/7378 in boost 1.51.0
+// 
 namespace boost {
 
   template <typename Tag, typename T, typename PropName>
@@ -163,24 +90,89 @@ BGL_PATCH_ALL_PROP(graph_bundle_t)
   };
 
 }
+#endif // BOOST_VERSION
+
+namespace alps {
+
+template <class V, class K=boost::any> // singleton_property_map and constant_property_map
+class singleton_property_map {
+public:
+  typedef K key_type;
+  typedef V value_type;
+  typedef V& reference;
+  typedef boost::lvalue_property_map_tag category;
+
+  singleton_property_map(V v=V()) : v_(v) {}
+
+  operator V () const { return v_;}
+  V value() const { return v_;}
+
+  const singleton_property_map<V,K>& operator=(const V& v) { v_=v; return *this;}
+
+  template <class T>
+  V& operator[](T ) { return v_;}
+
+  template <class T>
+  const V& operator[](T ) const { return v_;}
+private:
+  V v_;
+};
+
+} // end namespace
+
+namespace boost {
+template <class V, class K>
+V get(const alps::singleton_property_map<V,K>& m, const K&) { return m.value();}
+
+template <class V, class K>
+void put(alps::singleton_property_map<V,K>& m, const K& k, const V& v) { m[k]=v;}
+}
 
 namespace alps {
 namespace detail {
 
-template <bool, class PropertyList, class Tag, class Default> struct existing_property_internal {
-    typedef typename boost::property_value<PropertyList, Tag>::type type;
+template <class T>
+struct get_const_type_member {
+    typedef typename T::const_type type;
 };
 
-template <class PropertyList, class Tag, class Default> struct existing_property_internal<false, PropertyList, Tag, Default> {
-    typedef Default type;
+template <bool Found, class PropertyList, class Tag, class Default>
+struct found_property_type_or_default_impl {
+  BOOST_STATIC_CONSTANT(bool, found=false);
+  typedef Default type;
 };
 
-template <class PropertyList, class Tag, class Default=int> struct existing_property {
-    BOOST_STATIC_CONSTANT(bool, result = (boost::property_value<PropertyList, Tag>::found));
-    typedef typename existing_property_internal<boost::property_value<PropertyList, Tag>::found, PropertyList, Tag, Default>::type type;
+template <class PropertyList, class Tag, class Default>
+struct found_property_type_or_default_impl<true,PropertyList,Tag,Default> {
+  BOOST_STATIC_CONSTANT(bool, found=true);
+  typedef typename boost::property_value<PropertyList,Tag>::type type;
 };
+// helper functions to probe for graph properties
 
-#endif
+#if BOOST_VERSION > 105000
+
+template <class PropertyList, class Tag, class Default=int>
+struct found_property_type_or_default
+: found_property_type_or_default_impl<
+      boost::lookup_one_property<PropertyList,Tag>::found
+    , PropertyList
+    , Tag
+    , Default
+> {};
+
+#else //BOOST_VERSION
+
+template <class PropertyList, class Tag, class Default=int>
+struct found_property_type_or_default
+: found_property_type_or_default_impl<
+      !boost::is_same<typename boost::property_value<PropertyList,Tag>::type, boost::detail::error_property_not_found>::value
+    , PropertyList
+    , Tag
+    , Default
+> {};
+
+#endif //BOOST_VERSION
+
 
 } // end namespace detail
 
@@ -207,15 +199,15 @@ template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, 
 struct has_property<P, boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>, D>
 {
   typedef boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4> Graph;
-  BOOST_STATIC_CONSTANT(bool, vertex_property = (detail::existing_property<VP,P,D>::result));
-  BOOST_STATIC_CONSTANT(bool, edge_property = (detail::existing_property<EP,P,D>::result));
-  BOOST_STATIC_CONSTANT(bool, graph_property = (detail::existing_property<GP,P,D>::result));
+  BOOST_STATIC_CONSTANT(bool, vertex_property = (detail::found_property_type_or_default<VP,P,D>::found));
+  BOOST_STATIC_CONSTANT(bool, edge_property   = (detail::found_property_type_or_default<EP,P,D>::found));
+  BOOST_STATIC_CONSTANT(bool, graph_property  = (detail::found_property_type_or_default<GP,P,D>::found));
   BOOST_STATIC_CONSTANT(bool, any_property = (edge_property || vertex_property || graph_property));
   BOOST_STATIC_CONSTANT(bool, site_property = vertex_property);
   BOOST_STATIC_CONSTANT(bool, bond_property = edge_property);
-  typedef typename detail::existing_property<VP,P,D>::type vertex_property_type;
-  typedef typename detail::existing_property<EP,P,D>::type edge_property_type;
-  typedef typename detail::existing_property<GP,P,D>::type graph_property_type;
+  typedef typename detail::found_property_type_or_default<VP,P,D>::type vertex_property_type;
+  typedef typename detail::found_property_type_or_default<EP,P,D>::type edge_property_type;
+  typedef typename detail::found_property_type_or_default<GP,P,D>::type graph_property_type;
   typedef typename boost::mpl::if_c<edge_property,edge_property_type,
     typename boost::mpl::if_c<vertex_property,vertex_property_type,
     graph_property_type>::type>::type property_type;
@@ -243,16 +235,16 @@ template <class s1, class s2, class s3, class VP, class EP, class GP, class s4, 
 struct has_property<P, const boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>, D>
 {
   typedef boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4> Graph;
-  BOOST_STATIC_CONSTANT(bool, vertex_property = (detail::existing_property<VP,P,D>::result));
-  BOOST_STATIC_CONSTANT(bool, edge_property = (detail::existing_property<EP,P,D>::result));
-  BOOST_STATIC_CONSTANT(bool, graph_property = (detail::existing_property<GP,P,D>::result));
+  BOOST_STATIC_CONSTANT(bool, vertex_property = (detail::found_property_type_or_default<VP,P,D>::found));
+  BOOST_STATIC_CONSTANT(bool, edge_property   = (detail::found_property_type_or_default<EP,P,D>::found));
+  BOOST_STATIC_CONSTANT(bool, graph_property  = (detail::found_property_type_or_default<GP,P,D>::found));
   BOOST_STATIC_CONSTANT(bool, any_property =
     (edge_property || vertex_property || graph_property));
   BOOST_STATIC_CONSTANT(bool, site_property = vertex_property);
   BOOST_STATIC_CONSTANT(bool, bond_property = edge_property);
-  typedef typename detail::existing_property<VP,P,D>::type vertex_property_type;
-  typedef typename detail::existing_property<EP,P,D>::type edge_property_type;
-  typedef typename detail::existing_property<GP,P,D>::type graph_property_type;
+  typedef typename detail::found_property_type_or_default<VP,P,D>::type vertex_property_type;
+  typedef typename detail::found_property_type_or_default<EP,P,D>::type edge_property_type;
+  typedef typename detail::found_property_type_or_default<GP,P,D>::type graph_property_type;
   typedef typename boost::mpl::if_c<edge_property,edge_property_type,
     typename boost::mpl::if_c<vertex_property,vertex_property_type,
     graph_property_type>::type>::type property_type;
@@ -279,36 +271,39 @@ const bool has_property<P, const boost::adjacency_list<s1,s2,s3,VP,EP,GP,s4>,D>:
 template <class P, class G, class Default>
 struct property_map
 {
-  typedef 
-    typename boost::mpl::if_c<has_property<P,G>::graph_property,
-      typename boost::graph_property<G,P>::type&,
-      typename boost::mpl::if_c<has_property<P,G>::any_property,
-        typename boost::property_map<G,P>::type,
-        singleton_property_map<Default> 
-      >::type
-    >::type type;
+  typedef typename boost::mpl::eval_if_c<
+      has_property<P,G>::graph_property
+    , boost::add_reference<typename boost::graph_property<G,P>::type>
+    , boost::mpl::eval_if_c<
+          has_property<P,G>::any_property
+        , boost::property_map<G,P>
+        , boost::mpl::identity<singleton_property_map<Default> >
+    >
+  >::type type;
 
-  typedef
-    typename boost::mpl::if_c<has_property<P,G>::graph_property,
-      typename boost::graph_property<G,P>::type const&,
-      typename boost::mpl::if_c<has_property<P,G>::any_property,
-        typename boost::property_map<G,P>::const_type,
-        singleton_property_map<Default>
-      >::type
-    >::type const_type;
+  typedef typename boost::mpl::eval_if_c<
+      has_property<P,G>::graph_property
+    , boost::add_reference<typename boost::graph_property<G,P>::type const>
+    , boost::mpl::eval_if_c<
+          has_property<P,G>::any_property
+        , detail::get_const_type_member< boost::property_map<G,P> >
+        , boost::mpl::identity<singleton_property_map<Default> >
+    >
+  >::type const_type;
 };
 
 template <class P, class G, class Default>
 struct property_map<P, const G, Default>
 {
-  typedef
-    typename boost::mpl::if_c<has_property<P,G>::graph_property,
-      typename boost::graph_property<G,P>::type const&,
-      typename boost::mpl::if_c<has_property<P,G>::any_property,
-        typename boost::property_map<G,P>::const_type,
-        singleton_property_map<Default>
-      >::type
-    >::type type;
+  typedef typename boost::mpl::eval_if_c<
+      has_property<P,G>::graph_property
+    , boost::add_reference<typename boost::graph_property<G,P>::type const>
+    , boost::mpl::eval_if_c<
+          has_property<P,G>::any_property
+        , detail::get_const_type_member< boost::property_map<G,P> >
+        , boost::mpl::identity<singleton_property_map<Default> >
+    >
+  >::type type;
 
   typedef type const_type;
 };

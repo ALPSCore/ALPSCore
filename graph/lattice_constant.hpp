@@ -35,8 +35,7 @@
 
 #include <alps/ngs/stacktrace.hpp>
 
-#include <alps/lattice/graph_helper.h>
-#include <alps/lattice/graphproperties.h>
+#include <alps/lattice.h>
 #include <alps/numeric/vector_functions.hpp>
 #include <alps/graph/canonical_properties.hpp>
 
@@ -218,13 +217,13 @@ namespace alps {
                 , boost::false_type
             ) {
                 embedding_generic_type embedding_generic(subgraph_orbit.size(), num_vertices(S) * (num_vertices(S) + 1) / 2);
-            
+
                 for (std::vector<std::vector<boost::uint16_t> >::iterator it = embedding_generic.vertices->begin(); it != embedding_generic.vertices->end(); ++it)
                     it->reserve(subgraph_orbit[it - embedding_generic.vertices->begin()].size());
 
                 std::size_t bits_per_dim = 0;
-                while ((0x01 << ++bits_per_dim) < num_vertices(S));
-                assert((0x01 << (distance_to_boarder.size() * bits_per_dim)) < boost::integer_traits<boost::uint16_t>::const_max);
+                while ((0x01u << ++bits_per_dim) < num_vertices(S));
+                assert((0x01u << (distance_to_boarder.size() * bits_per_dim)) < boost::integer_traits<boost::uint16_t>::const_max);
 
                 std::vector<boost::uint_t<8>::fast> distances(distance_to_boarder.size(), num_vertices(G));
                 for (typename std::vector<typename boost::graph_traits<Graph>::vertex_descriptor>::const_iterator it = pinning.begin(); it != pinning.end(); ++it)
