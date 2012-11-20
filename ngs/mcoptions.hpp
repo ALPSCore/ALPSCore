@@ -47,6 +47,7 @@ namespace alps {
             std::size_t time_limit;
             std::string input_file;
             std::string output_file;
+            std::string checkpoint_file;
             execution_types type;
     };
 }

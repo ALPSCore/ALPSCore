@@ -83,7 +83,7 @@ archives are closed before it exits.
 
       static std::size_t begin_;
       static std::size_t end_;
-      static boost::array<int, 32> signals_;
+      static boost::array<int, 0x20> signals_;
     };
   }
 }

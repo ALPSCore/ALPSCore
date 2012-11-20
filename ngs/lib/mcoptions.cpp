@@ -49,10 +49,12 @@ namespace alps {
             ("continue", "load simulation from checkpoint")
             ("time-limit,T", boost::program_options::value<std::size_t>(&time_limit)->default_value(0), "time limit for the simulation")
             ("input-file", boost::program_options::value<std::string>(&input_file), "input file in hdf5 format")
-            ("output-file", boost::program_options::value<std::string>(&output_file)->default_value("<unspecified>"), "output file in hdf5 format");
+            ("output-file", boost::program_options::value<std::string>(&output_file)->default_value("<unspecified>"), "output file in hdf5 format")
+            ("checkpoint-file", boost::program_options::value<std::string>(&checkpoint_file)->default_value(""), "checkpoint file in hdf5 format");
         boost::program_options::positional_options_description p;
         p.add("input-file", 1);
-        p.add("output-file", 2);
+        p.add("output-file", 1);
+        p.add("checkpoint-file", 1);
         boost::program_options::variables_map vm;
         boost::program_options::store(boost::program_options::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
         boost::program_options::notify(vm);
