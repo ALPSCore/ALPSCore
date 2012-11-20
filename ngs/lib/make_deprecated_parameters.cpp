@@ -37,5 +37,4 @@ namespace alps {
             par.push_back(it->first, it->second.cast<std::string>());
         return par;
     }
-
 }

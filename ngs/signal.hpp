@@ -30,6 +30,8 @@
 
 #include <alps/ngs/config.hpp>
 
+#include <boost/array.hpp>
+
 #include <vector>
 
 namespace alps {
@@ -79,7 +81,9 @@ archives are closed before it exits.
 
     private:
 
-      static std::vector<int> signals_;
+      static std::size_t begin_;
+      static std::size_t end_;
+      static boost::array<int, 32> signals_;
     };
   }
 }

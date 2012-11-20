@@ -63,15 +63,15 @@ namespace alps {
         }
 
         bool signal::empty() {
-            return !signals_.size();
+            return end_  == begin_;
         }
 
         int signal::top() {
-            return signals_.back();
+            return signals_[(end_ - 1) & 0x1F];
         }
 
         void signal::pop() {
-            return signals_.pop_back();
+            --end_ &= 0x1F;
         }
 
         void signal::listen() {
@@ -90,18 +90,22 @@ namespace alps {
         }
 
         void signal::slot(int signal) {
-            std::cerr << "Received signal " << signal << std::endl;
-            signals_.push_back(signal);
+            fprintf(stderr, "Received signal %i\n", signal);
+            signals_[end_] = signal;
+            ++end_ &= 0x1F;
+            if (begin_ == end_)
+                ++begin_ &= 0x1F;
         }
 
         void signal::segfault(int signal) {
-            std::cerr << "Abort by signal " << signal << ALPS_STACKTRACE << std::endl;
-            signals_.push_back(signal);
             hdf5::archive::abort();
+            fprintf(stderr, "Abort by signal %i\n", signal);
+            std::cerr << ALPS_STACKTRACE;
             std::abort();
         }
 
-        std::vector<int> signal::signals_;
-
+        std::size_t signal::begin_ = 0;
+        std::size_t signal::end_ = 0;
+        boost::array<int, 32> signal::signals_;
     }
 }

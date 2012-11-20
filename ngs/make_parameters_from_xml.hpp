@@ -34,7 +34,7 @@
 
 namespace alps {
 
-    Parameters make_deprecated_parameters(params const & arg);
+    params make_parameters_from_xml(boost::filesystem::path const & filename);
 
 }
 

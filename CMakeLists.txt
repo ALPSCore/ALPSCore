@@ -50,7 +50,7 @@ set(ALPS_SOURCES
     # scheduler
     ngs/lib/mcbase.cpp
 #deprecated, TODO: replace by new alea
-    ngs/lib/mcoptions.cpp ngs/lib/observablewrappers.cpp ngs/lib/make_deprecated_parameters.cpp
+    ngs/lib/mcoptions.cpp ngs/lib/observablewrappers.cpp ngs/lib/make_deprecated_parameters.cpp ngs/lib/make_parameters_from_xml.cpp
     ngs/lib/mcresult.cpp ngs/lib/mcresults.cpp ngs/lib/mcobservables.cpp ngs/lib/mcobservable.cpp
     # new alea
     ngs/lib/alea/accumulator_set.cpp
