@@ -526,7 +526,8 @@ int start_sgl(int argc, char** argv) {
 
     std::cout << "  master input file  = " << file_in.string() << std::endl
               << "  master output file = " << file_out.string() << std::endl
-              << "  termination file   = " << file_term.string() << std::endl
+              << "  termination file   = "
+              << (opt.use_termfile ? file_term.string() : "[disabled]") << std::endl
               << "  total number of thread(s) = " << num_total_threads << std::endl
               << "  thread(s) per clone       = " << opt.threads_per_clone << std::endl
               << "  number of thread group(s) = " << num_groups << std::endl
@@ -677,7 +678,7 @@ int start_sgl(int argc, char** argv) {
               std::cout << logger::header() << "signal received\n";
               to_halt = true;
             }
-            if (exists(file_term)) {
+            if (opt.use_termfile && exists(file_term)) {
               std::cout << logger::header() << "termination file detected\n";
               remove(file_term);
               to_halt = true;
@@ -952,7 +953,8 @@ int start_mpi(int argc, char** argv) {
 
       std::cout << "  master input file  = " << file_in.string() << std::endl
                 << "  master output file = " << file_out.string() << std::endl
-                << "  termination file   = " << file_term.string() << std::endl
+                << "  termination file   = "
+                << (opt.use_termfile ? file_term.string() : "[disabled]") << std::endl
                 << "  total number of process(es)/thread(s) = "
                 << process.num_total_processes() << "/" << num_total_threads << std::endl
                 << "  process(es)/thread(s) per clone       = "
@@ -1024,7 +1026,7 @@ int start_mpi(int argc, char** argv) {
               std::cout << logger::header() << "signal received\n";
               to_halt = true;
             }
-            if (exists(file_term)) {
+            if (opt.use_termfile && exists(file_term)) {
               std::cout << logger::header() << "termination file detected\n";
               remove(file_term);
               to_halt = true;

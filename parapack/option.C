@@ -37,7 +37,7 @@ option::option(int argc, char** argv)
   : desc("Allowed options"),
     has_time_limit(false), time_limit(), check_interval(pt::millisec(100)),
     checkpoint_interval(pt::seconds(3600)), report_interval(pt::seconds(600)),
-    auto_evaluate(true), evaluate_only(false),
+    use_termfile(false), auto_evaluate(true), evaluate_only(false),
     dump_policy(dump_policy::RunningOnly), write_xml(false),
     use_mpi(false), default_total_threads(true), auto_total_threads(false), 
     num_total_threads(1), threads_per_clone(1), task_range(),
@@ -53,6 +53,7 @@ option::option(int argc, char** argv)
      "time between checkpointing [unit = sec; default = 3600s]")
     ("dump-policy", po::value<std::string>(),
      "policy for dumping user checkpoint data [running (default), never, all]")
+    ("enable-termination-file", "enable termination file support (*.term)")
     ("evaluate", "evaluation mode")
     ("mpi", "run in parallel using MPI")
     ("Nmin", "obsolete")
@@ -99,6 +100,8 @@ option::option(int argc, char** argv)
     check_interval = pt::millisec(vm["check-interval"].as<int>());
   if (vm.count("checkpoint-interval"))
     checkpoint_interval = pt::seconds(vm["checkpoint-interval"].as<int>());
+  if (vm.count("enable-termination-file"))
+    use_termfile = true;
   if (vm.count("dump-policy")) {
     std::string value = vm["dump-policy"].as<std::string>();
     if (value == "never")

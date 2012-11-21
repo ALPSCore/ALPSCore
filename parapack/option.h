@@ -41,6 +41,7 @@ struct option {
   bool has_time_limit;
   boost::posix_time::time_duration time_limit;
   boost::posix_time::time_duration check_interval, checkpoint_interval, report_interval;
+  bool use_termfile;
   bool auto_evaluate, evaluate_only;
   dump_policy_t dump_policy;
   bool write_xml;
