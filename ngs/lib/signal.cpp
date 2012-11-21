@@ -34,6 +34,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <stdexcept>
+#include <cstdio>
 
 #include <signal.h>
 
