@@ -72,7 +72,7 @@ namespace alps {
                 // estimate remaining time; propose to run 1/4 of that time
                 duration old_check = next_check_;
                 next_check_ = 0.25 * (1 - fraction) * (now - start_time_) / (fraction - start_fraction_);
-                if( next_check_ > 2*old_check ) next_check_ = 2*old_check;
+                if( next_check_ > 2*old_check ) next_check_ = 2 * old_check;
                 if( next_check_ < min_check_ ) next_check_ = min_check_;
                 if( next_check_ > max_check_ ) next_check_ = max_check_;
             }
