@@ -94,7 +94,7 @@ namespace alps {
 
                 template<typename T> archive_proxy & operator=(T const & value);
                 template<typename T> archive_proxy & operator<<(T const & value);
-                template <typename T> archive_proxy & operator>> (T & value);
+                template <typename T> archive_proxy & operator>>(T & value);
 
                 std::string path_;
                 A ar_;
@@ -168,6 +168,15 @@ namespace alps {
 */
 
                 detail::archive_proxy<archive> operator[](std::string const & path);
+
+                template<typename T> archive & operator<<(T const & value) {
+                    (*this)["/"] << value;
+                    return *this;
+                }
+                template <typename T> archive & operator>>(T & value) {
+                    (*this)["/"] >> value;
+                    return *this;
+                }
 
                 template<typename T> void read(
                       std::string path
