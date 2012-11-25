@@ -25,6 +25,7 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#define BOOST_TEST_SOURCE
 #define BOOST_TEST_MODULE alps::numeric::matrix
 
 #include <boost/test/included/unit_test.hpp>

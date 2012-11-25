@@ -31,6 +31,7 @@
 #include <vector>
 #include <alps/numeric/real.hpp>
 
+#define BOOST_TEST_SOURCE
 #define BOOST_TEST_MODULE alps::numeric::real
 #include <boost/test/included/unit_test.hpp>
 #include <boost/mpl/list.hpp>
