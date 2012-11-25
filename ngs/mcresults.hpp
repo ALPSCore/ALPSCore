@@ -57,7 +57,7 @@ namespace alps {
 
     };
 
-    std::ostream & operator<<(std::ostream & os, mcresults const & results);
+    ALPS_DECL std::ostream & operator<<(std::ostream & os, mcresults const & results);
 }
 
 #endif

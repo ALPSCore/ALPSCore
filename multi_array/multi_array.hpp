@@ -48,7 +48,11 @@ namespace alps{
         multi_array(size_type N, size_type M) : base_type(boost::extents[N][M]) {}
         multi_array(size_type N) : base_type(boost::extents[N]) {}
 
-        multi_array(const boost::detail::multi_array::extent_gen<D>& ext) : base_type(ext) {}
+
+	multi_array(multi_array const& a) : base_type(static_cast<base_type const&>(a)) {}
+	multi_array(base_type const& a) : base_type(a) {}
+    multi_array(const boost::detail::multi_array::extent_gen<D>& ext) : base_type(ext) {}
+
 
         multi_array() : base_type() {}
 

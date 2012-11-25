@@ -223,7 +223,7 @@ namespace alps {
                  typename associated_real_diagonal_matrix<matrix<T, MemoryBlock> >::type& S)
         {
             BOOST_CONCEPT_ASSERT((alps::numeric::Matrix<matrix<T, MemoryBlock> >));
-            typename matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_cols(M));
+            typename matrix<T, MemoryBlock>::size_type k = (std::min)(num_rows(M), num_cols(M));
             resize(U, num_rows(M), k);
             resize(V, k, num_cols(M));
             resize(S, k, k);
@@ -238,7 +238,7 @@ namespace alps {
                 matrix<T, MemoryBlock> & Q,
                 matrix<T, MemoryBlock> & R)
         {
-           typename matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_cols(M));
+           typename matrix<T, MemoryBlock>::size_type k = (std::min)(num_rows(M), num_cols(M));
            typename associated_vector<matrix<typename detail::sv_type<T>::type, MemoryBlock> >::type tau(k);
 
            int info = boost::numeric::bindings::lapack::geqrf(M, tau);
@@ -271,7 +271,7 @@ namespace alps {
                 matrix<T, MemoryBlock> & L,
                 matrix<T, MemoryBlock> & Q)
         {
-           typename matrix<T, MemoryBlock>::size_type k = std::min(num_rows(M), num_cols(M));
+           typename matrix<T, MemoryBlock>::size_type k = (std::min)(num_rows(M), num_cols(M));
            typename associated_vector<matrix<typename detail::sv_type<T>::type, MemoryBlock> >::type tau(k);
 
            int info = boost::numeric::bindings::lapack::gelqf(M, tau);

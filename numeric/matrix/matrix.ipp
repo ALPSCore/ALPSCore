@@ -295,7 +295,7 @@ namespace alps {
                 // rows of already existing columns to init_value
                 // For all elements of new columns this is already done by
                 // values_.resize() (->after this if statement)
-                size_type num_of_cols = std::min(cols, this->size2_);
+                size_type num_of_cols = (std::min)(cols, this->size2_);
                 for(size_type j=0; j < num_of_cols; ++j)
                     std::fill(
                             this->values_.begin()+j*this->reserved_size1_ + this->size1_,
@@ -318,8 +318,8 @@ namespace alps {
         // of the underlying MemoryBlock (e.g. std::vector)
         using std::swap;
         // Ignore values that would shrink the matrix
-        cols = std::max(cols, this->size2_);
-        rows = std::max(rows, this->reserved_size1_);
+        cols = (std::max)(cols, this->size2_);
+        rows = (std::max)(rows, this->reserved_size1_);
 
         // Is change of structure or size of the MemoryBlock necessary?
         if(rows > this->reserved_size1_ || rows*cols > this->values_.capacity() )

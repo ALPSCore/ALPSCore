@@ -91,7 +91,7 @@ namespace alps {
         };
     }
 
-    class ALPS_DECL mutex {
+    class /*ALPS_DECL*/ mutex {
 
         public:
 
