@@ -54,6 +54,8 @@ set(ALPS_SOURCES
     ngs/lib/mcresult.cpp ngs/lib/mcresults.cpp ngs/lib/mcobservables.cpp ngs/lib/mcobservable.cpp
     # new alea
     ngs/lib/alea/accumulator_set.cpp
+    # ngs-parapack
+    ngs/lib/clone.cpp ngs/lib/clone_info.cpp ngs/lib/job.cpp ngs/lib/parapack.cpp ngs/lib/worker_factory.cpp
   )
   if (ALPS_BUILD_PYTHON)
     set(ALPS_SOURCES ${ALPS_SOURCES} ngs/lib/get_numpy_type.cpp ngs/lib/hdf5/python.cpp)
