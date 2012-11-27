@@ -41,4 +41,4 @@ while s < 2**29:
 i = 0
 while os.path.isfile('foo%d.h5'%i):
     os.remove('foo%d.h5'%i)
-    ++i
+    i += 1
