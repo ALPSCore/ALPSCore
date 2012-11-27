@@ -358,7 +358,7 @@ namespace alps {
             std::string dtype = value.ptr()->ob_type->tp_name;
             if (dtype == "numpy.ndarray")
                 save(ar, path, boost::python::extract<boost::python::numeric::array>(value)(), size, chunk, offset);
-            else if (PyObject_HasAttrString(value.ptr(), "save") && std::string(PyObject_GetAttrString(value.ptr(), "save")->ob_type->tp_name) == "MethodType") {
+            else if (PyObject_HasAttrString(value.ptr(), "save") && std::string(PyObject_GetAttrString(value.ptr(), "save")->ob_type->tp_name) == "instancemethod") {
                 std::string context = ar.get_context();
                 ar.set_context(ar.complete_path(path));
                 boost::python::call_method<void>(value.ptr(), "save", boost::python::object(ar));
