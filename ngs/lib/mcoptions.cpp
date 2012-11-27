@@ -46,7 +46,7 @@ namespace alps {
             #ifdef ALPS_HAVE_MPI
                 ("mpi", "run in parallel using MPI")
             #endif
-            ("continue", "load simulation from checkpoint")
+            ("continue,c", "load simulation from checkpoint")
             ("time-limit,T", boost::program_options::value<std::size_t>(&time_limit)->default_value(0), "time limit for the simulation")
             ("input-file", boost::program_options::value<std::string>(&input_file), "input file in hdf5 format")
             ("output-file", boost::program_options::value<std::string>(&output_file)->default_value("<unspecified>"), "output file in hdf5 format")
