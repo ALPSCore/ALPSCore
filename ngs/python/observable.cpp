@@ -35,6 +35,10 @@
 #include <alps/ngs/boost_python.hpp>
 #include <alps/ngs/detail/numpy_import.ipp>
 
+#include <alps/alea/detailedbinning.h>
+
+#include <boost/make_shared.hpp>
+
 #include <valarray>
 
 namespace alps {
@@ -67,10 +71,20 @@ namespace alps {
             ar.set_context(current);
         }
 
+        alps::mcobservable create_RealObservable_export(std::string name) {
+            return alps::mcobservable(boost::make_shared<alps::RealObservable>(name).get());
+        }
+
+        alps::mcobservable create_RealVectorObservable_export(std::string name) {
+            return alps::mcobservable(boost::make_shared<alps::RealVectorObservable>(name).get());
+        }
     }
 }
 
 BOOST_PYTHON_MODULE(pyngsobservable_c) {
+
+    boost::python::def("createRealObservable", &alps::detail::create_RealObservable_export);
+    boost::python::def("createRealVectorObservable", &alps::detail::create_RealVectorObservable_export);
 
     boost::python::class_<alps::mcobservable>(
         "observable",

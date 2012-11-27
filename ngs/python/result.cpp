@@ -135,6 +135,10 @@ namespace alps {
                 throw std::runtime_error("Unsupported type." + ALPS_STACKTRACE);
             return boost::python::object();
         }
+        
+        alps::mcresult observable2result_export(alps::mcobservable const & obs) {
+            return alps::mcresult(obs);
+        }
 
     }
 }
@@ -142,6 +146,8 @@ namespace alps {
 BOOST_PYTHON_MODULE(pyngsresult_c) {
     using boost::python::self;
     using namespace alps;
+
+    boost::python::def("observable2result", &alps::detail::observable2result_export);
 
     boost::python::class_<alps::mcresult>(
         "result",
