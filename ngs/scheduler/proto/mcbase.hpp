@@ -55,7 +55,7 @@
 
 namespace alps {
 
-    class /*ALPS_DECL*/ mcbase_ng {
+    class mcbase_ng {
 
         private:
 
