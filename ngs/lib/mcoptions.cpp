@@ -41,7 +41,7 @@ namespace alps {
             ("help", "produce help message")
             ("single", "run single process")
             #ifndef ALPS_NGS_SINGLE_THREAD
-                ("threaded", "run in multithread envirement")
+                ("threaded", "run in multithread environment")
             #endif
             #ifdef ALPS_HAVE_MPI
                 ("mpi", "run in parallel using MPI")

@@ -123,28 +123,28 @@ namespace alps {
     void mcobservables::create_SignedRealObservable(std::string const & name, std::string sign, uint32_t binnum) {
         insert(name, boost::make_shared<SignedObservable<RealObservable> >(name, binnum).get());
         if (find(sign) == end())
-            throw std::runtime_error("the sign " +  sign + " does not exists" + ALPS_STACKTRACE);
+            throw std::runtime_error("the sign " +  sign + " does not exist" + ALPS_STACKTRACE);
         operator[](name).get_impl()->set_sign(*(operator[](sign).get_impl()));
     }
 
     void mcobservables::create_SignedRealVectorObservable(std::string const & name, std::string sign, uint32_t binnum) {
         insert(name, boost::make_shared<SignedObservable<RealVectorObservable> >(name, binnum).get());
         if (find(sign) == end())
-            throw std::runtime_error("the sign " +  sign + " does not exists" + ALPS_STACKTRACE);
+            throw std::runtime_error("the sign " +  sign + " does not exist" + ALPS_STACKTRACE);
         operator[](name).get_impl()->set_sign(*(operator[](sign).get_impl()));
     }
 
     void mcobservables::create_SignedSimpleRealObservable(std::string const & name, std::string sign) {
         insert(name, boost::make_shared<SignedObservable<SimpleRealObservable> >(name).get());
         if (find(sign) == end())
-            throw std::runtime_error("the sign " +  sign + " does not exists" + ALPS_STACKTRACE);
+            throw std::runtime_error("the sign " +  sign + " does not exist" + ALPS_STACKTRACE);
         operator[](name).get_impl()->set_sign(*(operator[](sign).get_impl()));
     }
 
     void mcobservables::create_SignedSimpleRealVectorObservable(std::string const & name, std::string sign) {
         insert(name, boost::make_shared<SignedObservable<SimpleRealVectorObservable> >(name).get());
         if (find(sign) == end())
-            throw std::runtime_error("the sign " +  sign + " does not exists" + ALPS_STACKTRACE);
+            throw std::runtime_error("the sign " +  sign + " does not exist" + ALPS_STACKTRACE);
         operator[](name).get_impl()->set_sign(*(operator[](sign).get_impl()));
     }
 
