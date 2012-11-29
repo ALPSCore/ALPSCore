@@ -53,10 +53,12 @@ struct non_pod {
     data_ = x;
   }
   ~non_pod() {
-    if (init_ != magic) throw std::logic_error("non_pod");
-    if (data_ < 0) std::cerr << "warning\n";
+    int init = init_;
+    T data = data_;
     init_ = 0;
     data_ = -1.0;
+    if (init != magic) throw std::logic_error("non_pod");
+    if (data < 0) std::cerr << "warning\n";
   }
   non_pod& operator=(const non_pod& x) {
     if (init_ != magic) throw std::logic_error("non_pod");
