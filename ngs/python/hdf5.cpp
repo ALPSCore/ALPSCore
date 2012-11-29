@@ -150,7 +150,7 @@ BOOST_PYTHON_MODULE(pyngshdf5_c) {
         .def("__deepcopy__", &alps::python::make_copy<alps::hdf5::archive>)
         .add_property("filename", &alps::detail::python_hdf5_get_filename)
         .add_property("context", &alps::hdf5::archive::get_context)
-        .add_property("closed", &alps::hdf5::archive::is_open)
+        .add_property("is_open", &alps::hdf5::archive::is_open)
         .def("set_context", &alps::hdf5::archive::set_context)
         .def("is_group", &alps::hdf5::archive::is_group)
         .def("is_data", &alps::hdf5::archive::is_data)
