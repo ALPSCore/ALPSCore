@@ -20,4 +20,6 @@ int main(int argc, char** argv){
         std::string w = e.what();
         std::cout << w.substr(0, w.find_first_of('\n')) << std::endl;
     }
+
+    return 0;
 }
