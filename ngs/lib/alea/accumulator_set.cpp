@@ -24,7 +24,7 @@
  * DEALINGS IN THE SOFTWARE.                                                       *
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-#include <alps/ngs/accumulator_set.hpp>
+#include <alps/ngs/alea/accumulator_set.hpp>
 
 namespace alps {
     namespace alea
@@ -71,6 +71,11 @@ namespace alps {
         {
         }
         
+        //~ void accumulator_set::reset(bool equilibrated)
+        //~ {
+            //~ //TODO implement
+        //~ }
+        
         //~ map operations
         accumulator_set::iterator accumulator_set::begin()
         {
@@ -91,5 +96,9 @@ namespace alps {
             return storage.end();
         }
         
+        void accumulator_set::clear()
+        {
+            
+        }
     } //end namespace alea
 } //end namespace alps

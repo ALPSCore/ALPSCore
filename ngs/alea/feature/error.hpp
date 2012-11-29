@@ -30,7 +30,10 @@
 #define ALPS_NGS_ALEA_DETAIL_ERROR_IMPLEMENTATION_HEADER
 
 #include <alps/ngs/alea/accumulator/accumulator_impl.hpp>
+#include <alps/ngs/short_print.hpp>
 #include <alps/ngs/alea/features.hpp>
+#include <alps/ngs/numeric/vector.hpp>
+#include <alps/ngs/numeric/array.hpp>
 
 #include <cmath>
 namespace alps
@@ -75,12 +78,20 @@ namespace alps
                     
                     inline error_type const error() const 
                     { 
+                        using alps::ngs::numeric::sqrt;
                         using std::sqrt;
+                        using alps::ngs::numeric::operator/;
+                        using alps::ngs::numeric::operator-;
+                        using alps::ngs::numeric::operator*;
+
                         return sqrt((sum2_ / base_type::count() - base_type::mean()*base_type::mean()) / ((base_type::count() - 1)));
                     }
                     
                     inline ThisType& operator <<(value_type_loc val) 
                     {
+                        using alps::ngs::numeric::operator+=;
+                        using alps::ngs::numeric::operator*;
+                        
                         base_type::operator <<(val);
                         sum2_ += val*val;
                         return *this;
@@ -90,7 +101,7 @@ namespace alps
                     inline void print(Stream & os) 
                     {
                         base_type::print(os);
-                        os << "tag::error: " << error() << " " << std::endl;
+                        os << "tag::error: " << alps::short_print(error()) << " " << std::endl;
                     }
                     
                 private:

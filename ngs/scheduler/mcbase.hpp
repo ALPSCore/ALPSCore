@@ -34,7 +34,7 @@
 #include <alps/ngs/mcresults.hpp> // TODO: replace by new alea
 
 #ifdef ALPS_NGS_USE_NEW_ALEA
-    #include <alps/ngs/accumulator_set.hpp>
+    #include <alps/ngs/alea/accumulator_set.hpp>
 #endif
 #include <alps/ngs/mcobservables.hpp> // TODO: replace by new alea
 
@@ -58,7 +58,11 @@ namespace alps {
     class ALPS_DECL mcbase {
 
         public:
-
+            #ifdef ALPS_NGS_USE_NEW_ALEA
+                typedef alea::accumulator_set observables_type;
+            #else
+                typedef mcobservables observables_type;
+            #endif
             typedef alps::params parameters_type;
             typedef alps::mcresults results_type;
             typedef std::vector<std::string> result_names_type;
@@ -99,12 +103,8 @@ namespace alps {
             parameters_type & get_params();
 
             // TODO: add function parameters_type & measurements() { reutrn m_measurements; } and rename measurements to m_measurements
-            #ifdef ALPS_NGS_USE_NEW_ALEA
-            alea::accumulator_set & get_measurements();
-            #else
-            mcobservables & get_measurements();
-            #endif
             
+            observables_type & get_measurements();
             
             // TODO: add function double random() { reutrn m_random; } and rename random to m_random
             double get_random();
@@ -119,11 +119,8 @@ namespace alps {
 
             parameters_type params;
             
-            #ifdef ALPS_NGS_USE_NEW_ALEA
-                alea::accumulator_set measurements;
-            #else
-                mcobservables measurements;
-            #endif
+            observables_type measurements;
+
             boost::variate_generator<boost::mt19937, boost::uniform_real<> > random;
 
         private:

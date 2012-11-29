@@ -85,9 +85,12 @@ namespace alps {
                 mcbase_ng::parameters_type & get_params() {
                     return mcbase_ng::params;
                 }
-
-                mcobservables & get_measurements() {
-                    return mcbase_ng::measurements;
+                #ifdef ALPS_NGS_USE_NEW_ALEA
+                    alea::accumulator_set & get_measurements() {
+                #else
+                    mcobservables & get_measurements() {
+                #endif
+                        return mcbase_ng::measurements;
                 }
 
                 double get_random() {

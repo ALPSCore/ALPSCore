@@ -29,7 +29,7 @@
 #define ALPS_NGS_OBSERVABLEWRAPPERS_HPP
 
 #include <alps/ngs/mcobservables.hpp>
-#include <alps/ngs/accumulator_set.hpp>
+#include <alps/ngs/alea/accumulator_set.hpp>
 
 #include <string>
 

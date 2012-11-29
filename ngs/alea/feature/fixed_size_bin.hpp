@@ -133,8 +133,11 @@ namespace alps
               
                     inline ThisType& operator <<(value_type_loc val) 
                     {
+                        using namespace alps::ngs::numeric;
+                        
                         base_type::operator << (val);
                         
+                        init_vector(partial_, val);
                         partial_ += val;
                         ++partial_count_;
                         

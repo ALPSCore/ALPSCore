@@ -56,12 +56,12 @@ namespace alps
                         
                     
                     template<typename T>
-                    detail::result_type_wrapper<T> & get();//TODO
+                    detail::result_type_wrapper<T> & get() const;//TODO
                     
                     friend std::ostream& operator<<(std::ostream &out, const accumulator_wrapper& wrapper);
                     
                     template <typename T>
-                    T & extract();
+                    T & extract() const;
                     
                     boost::uint64_t count() const;
                     

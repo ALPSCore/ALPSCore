@@ -31,7 +31,7 @@
 #include <alps/ngs/scheduler/mcbase.hpp>
 
 namespace alps {
-
+    
     mcbase::mcbase(parameters_type const & p, std::size_t seed_offset)
         : params(p)
           // TODO: this ist not the best solution - any idea?
@@ -118,12 +118,9 @@ namespace alps {
     mcbase::results_type mcbase::collect_results(result_names_type const & names) const {
         results_type partial_results;
         
-        #ifdef ALPS_NGS_USE_NEW_ALEA
-        //TODO
-        #else
         for(result_names_type::const_iterator it = names.begin(); it != names.end(); ++it)
             partial_results.insert(*it, mcresult(measurements[*it]));
-        #endif
+        
         return partial_results;
     }
 
@@ -131,11 +128,7 @@ namespace alps {
         return params;
     }
     
-    #ifdef ALPS_NGS_USE_NEW_ALEA
-    alea::accumulator_set & mcbase::get_measurements() {
-    #else
-    mcobservables & mcbase::get_measurements() {
-    #endif
+    mcbase::observables_type & mcbase::get_measurements() {
         return measurements;
     }
     

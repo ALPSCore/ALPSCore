@@ -135,6 +135,8 @@ namespace alps
               
                     inline ThisType& operator <<(value_type_loc val)
                     {
+                        using namespace alps::ngs::numeric;
+                        
                         base_type::operator <<(val);
                         
                         partial_ = partial_ + val;

@@ -29,6 +29,9 @@
 #ifndef ALPS_NGS_ALEA_TYPE_TRAITS_HEADER
 #define ALPS_NGS_ALEA_TYPE_TRAITS_HEADER
 
+#include <alps/ngs/numeric/vector.hpp>
+#include <alps/ngs/numeric/array.hpp>
+#include <alps/ngs/numeric/multi_array.hpp>
 #include <alps/ngs/alea/feature/tags.hpp>
 
 #include <alps/ngs/alea/feature/value_type.hpp>

@@ -52,14 +52,17 @@ set(ALPS_SOURCES
 #deprecated, TODO: replace by new alea
     ngs/lib/mcoptions.cpp ngs/lib/observablewrappers.cpp ngs/lib/make_deprecated_parameters.cpp ngs/lib/make_parameters_from_xml.cpp
     ngs/lib/mcresult.cpp ngs/lib/mcresults.cpp ngs/lib/mcobservables.cpp ngs/lib/mcobservable.cpp
-    # new alea
-    ngs/lib/alea/accumulator_set.cpp
     # ngs-parapack
     ngs/lib/clone.cpp ngs/lib/clone_info.cpp ngs/lib/job.cpp ngs/lib/parapack.cpp ngs/lib/worker_factory.cpp
   )
   if (ALPS_BUILD_PYTHON)
     set(ALPS_SOURCES ${ALPS_SOURCES} ngs/lib/get_numpy_type.cpp ngs/lib/hdf5/python.cpp)
   endif (ALPS_BUILD_PYTHON)
+  
+# new alea
+  if (ALPS_NGS_USE_NEW_ALEA)
+    set(ALPS_SOURCES ${ALPS_SOURCES} ngs/lib/alea/accumulator_set.cpp)
+  endif (ALPS_NGS_USE_NEW_ALEA)
 
 if (NOT ALPS_FOR_VISTRAILS)
   set(ALPS_SOURCES ${ALPS_SOURCES} 

@@ -30,6 +30,7 @@
 #include <alps/ngs/stacktrace.hpp>
 #include <alps/ngs/lib/mcresult_impl_base.ipp>
 #include <alps/ngs/lib/mcresult_impl_derived.ipp>
+#include <alps/ngs/alea/accumulator_set.hpp>
 
 #include <alps/alea/observable.h>
 #include <alps/alea/abstractsimpleobservable.h>
@@ -46,7 +47,36 @@ namespace alps {
     mcresult::mcresult(Observable const * obs) {
         construct(obs);
     }
-
+    
+    //TODO2 & TODO3 wrapper ? realObs or realVecObs -> acc -> mcresult_impl_derived<...>(acc)
+    #ifdef ALPS_NGS_USE_NEW_ALEA
+    template<typename T>
+    bool has_cast(alps::alea::detail::accumulator_wrapper const & acc_wrapper)
+    { 
+        try 
+        { 
+            acc_wrapper.get<T>();
+            return true;
+        } 
+        catch(std::bad_cast) 
+        { 
+            return false;
+        }
+    }
+    
+    mcresult::mcresult(alps::alea::detail::accumulator_wrapper const & acc_wrapper)
+    {
+        if(has_cast<double>(acc_wrapper))
+            impl_ = new detail::mcresult_impl_derived<detail::mcresult_impl_base, double>(acc_wrapper);
+        else
+        {
+            if(has_cast<std::vector<double> >(acc_wrapper))
+                impl_ = new detail::mcresult_impl_derived<detail::mcresult_impl_base, std::vector<double> >(acc_wrapper);
+            else
+                boost::throw_exception(std::runtime_error("type not supported" + ALPS_STACKTRACE));
+        }
+    }
+    #endif
     mcresult::mcresult(mcresult const & rhs) {
         ++ref_cnt_[impl_ = rhs.impl_];
     }
@@ -187,6 +217,7 @@ namespace alps {
             throw std::runtime_error("unknown observable type" + ALPS_STACKTRACE);
         ref_cnt_[impl_] = 1;
     }
+    
 
     std::map<detail::mcresult_impl_base *, std::size_t> mcresult::ref_cnt_;
 

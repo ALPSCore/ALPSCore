@@ -168,7 +168,7 @@ namespace alps
                     
                     inline void print(std::ostream & out) {out << accum_;}
                     
-                    friend Accum& accumulator_wrapper::extract<Accum>();
+                    //~ friend Accum& accumulator_wrapper::extract<Accum>();
                 
                 protected:
                     inline void add_value(const void* value, const std::type_info& info) //type-infusion

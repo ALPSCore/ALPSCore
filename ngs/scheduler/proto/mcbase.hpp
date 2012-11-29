@@ -56,7 +56,12 @@
 namespace alps {
 
     class mcbase_ng {
-
+        public:
+            #ifdef ALPS_NGS_USE_NEW_ALEA
+                typedef alea::accumulator_set observables_type;
+            #else
+                typedef mcobservables observables_type;
+            #endif
         private:
 
             struct lock_guard_impl : boost::noncopyable {
@@ -164,7 +169,8 @@ namespace alps {
 
             result_names_type result_names() const {
                 result_names_type names;
-                for(mcobservables::const_iterator it = measurements.begin(); it != measurements.end(); ++it)
+                
+                for(observables_type::const_iterator it = measurements.begin(); it != measurements.end(); ++it)
                     names.push_back(it->first);
                 return names;
             }
@@ -193,13 +199,8 @@ namespace alps {
             parameters_type const & get_params() const { return params; }
 
             // CHECK: how do we handle locks here? Do we need const/nonconst versions?
-            #ifdef ALPS_NGS_USE_NEW_ALEA
-                alea::accumulator_set & get_measurements() { return measurements; }
-                alea::accumulator_set const & get_measurements() const { return measurements; }
-            #else
-                mcobservables & get_measurements() { return measurements; }
-                mcobservables const & get_measurements() const { return measurements; }
-            #endif
+            observables_type & get_measurements() { return measurements; }
+            observables_type const & get_measurements() const { return measurements; }
 
             // CHECK: how do we handle locks here? Do we need const/nonconst versions?
             virtual void check_communication() {}
@@ -267,11 +268,7 @@ namespace alps {
 
             parameters_type params; // rename to params
 
-            #ifdef ALPS_NGS_USE_NEW_ALEA
-                alea::accumulator_set measurements;
-            #else
-                mcobservables measurements;
-            #endif
+            observables_type measurements;
 
             // CHECK: do we want to expose this to the derived class? virtual functions do not work form base constructor
             mutex mutable data_mutex;

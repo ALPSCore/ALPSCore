@@ -29,6 +29,8 @@
 #define ALPS_NGS_SHORT_PRINT_HPP
 
 #include <vector>
+#include <boost/array.hpp>
+#include <boost/multi_array.hpp>
 #include <ostream>
 
 namespace alps {
@@ -55,16 +57,38 @@ namespace alps {
         std::ostream & operator<<(std::ostream & os, short_print_proxy<double> const & v);
         std::ostream & operator<<(std::ostream & os, short_print_proxy<long double> const & v);
 
-        template <typename T> std::ostream & operator<<(std::ostream & os, short_print_proxy<std::vector<T> const> const & v) {
-            switch (v.value.size()) {
+        #define IMPL_FOR_SEQUENCE \
+            switch (v.value.size()) {\
+                case 0: \
+                    return os << "[]";\
+                case 1: \
+                    return os << "[" << short_print(v.value.front()) << "]";\
+                case 2: \
+                    return os << "[" << short_print(v.value.front()) << "," << short_print(v.value.back()) << "]";\
+                default: \
+                    return os << "[" << short_print(v.value.front()) << ",.." << short_print(v.value.size()) << "..," << short_print(v.value.back()) << "]";\
+            }
+        
+        template <typename T> std::ostream & operator<<(std::ostream & os, short_print_proxy<std::vector<T> const> const & v) 
+        {
+            IMPL_FOR_SEQUENCE
+        }
+        
+        template <typename T, std::size_t N> std::ostream & operator<<(std::ostream & os, short_print_proxy<boost::array<T, N> const> const & v)
+        {
+            IMPL_FOR_SEQUENCE
+        }
+        
+        template <typename T, std::size_t N> std::ostream & operator<<(std::ostream & os, short_print_proxy<boost::multi_array<T, N> const> const & v) {
+            switch (v.value.num_elements()) {
                 case 0: 
                     return os << "[]";
                 case 1: 
-                    return os << "[" << short_print(v.value.front()) << "]";
+                    return os << "[" << short_print(*(v.value.origin())) << "]";
                 case 2: 
-                    return os << "[" << short_print(v.value.front()) << "," << short_print(v.value.back()) << "]";
+                    return os << "[" << short_print(*(v.value.origin())) << "," << short_print(*(v.value.origin()+v.value.num_elements()-1)) << "]";
                 default: 
-                    return os << "[" << short_print(v.value.front()) << ",.." << short_print(v.value.size()) << "..," << short_print(v.value.back()) << "]";
+                    return os << "[" << short_print(*(v.value.origin())) << ",.." << short_print(v.value.num_elements()) << "..," << short_print(*(v.value.origin()+v.value.num_elements()-1)) << "]";
             }
         }
     }

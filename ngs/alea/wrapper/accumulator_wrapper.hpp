@@ -55,13 +55,13 @@ namespace alps
             }
 
             template<typename T>
-            result_type_wrapper<T> &accumulator_wrapper::get() 
+            result_type_wrapper<T> &accumulator_wrapper::get() const
             {
                 return (*base_).get<T>();
             }
             
             template <typename T>
-            T & accumulator_wrapper::extract() 
+            T & accumulator_wrapper::extract() const
             {
                 return (dynamic_cast<detail::accumulator_wrapper_derived<T>& >(*base_)).accum_;
             }

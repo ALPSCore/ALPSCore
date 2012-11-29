@@ -34,6 +34,7 @@
 #include <alps/ngs/short_print.hpp>
 
 #include <alps/alea/mcdata.hpp>
+#include <alps/ngs/alea.hpp>
 
 #ifdef ALPS_HAVE_MPI
     #include <boost/mpi.hpp>
@@ -57,7 +58,15 @@ namespace alps {
                 template<typename U> mcresult_impl_derived(AbstractSimpleObservable<U> const & obs)
                     : alea::mcdata<T>(obs) 
                 {}
-
+                
+                #ifdef ALPS_NGS_USE_NEW_ALEA
+                //TODO4 just pass to mcdata<..>..
+                mcresult_impl_derived(alea::detail::accumulator_wrapper const & acc_wrapper)
+                    : alea::mcdata<T>(acc_wrapper.extract<alea::accumulator<T, alea::features<alea::tag::mean, alea::tag::error, alea::tag::fixed_size_binning> > >())
+                {
+                }
+                #endif
+                
                 mcresult_impl_derived(alea::mcdata<T> const & data)
                     : alea::mcdata<T>(data) 
                 {}

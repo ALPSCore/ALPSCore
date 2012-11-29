@@ -57,6 +57,8 @@
 #include <alps/numeric/vector_valarray_conversion.hpp>
 #include <alps/utility/data.hpp>
 
+#include <alps/ngs/alea/accumulator.hpp>
+
 #include <boost/config.hpp>
 #include <boost/functional.hpp>
 #include <boost/lambda/bind.hpp>
@@ -222,7 +224,23 @@ namespace alps {
                         for (typename std::vector<result_type>::const_iterator it = rhs.jack_.begin(); it != rhs.jack_.end(); ++it)
                             jack_.push_back(result_type(it->begin() + from, it->begin() + to));
                 }
-
+                
+                #ifdef ALPS_NGS_USE_NEW_ALEA
+                //TODO5: impl for acc
+                template <typename X> mcdata(alps::alea::accumulator<T, X> const & acc) //TODO: explicit
+                    : count_(acc.count())
+                    , binsize_(acc.fixed_size_bin().bin_size())
+                    //~ , max_bin_number_(acc.fixed_size_bin().bins().size()) TODO
+                    , data_is_analyzed_(true)
+                    , jacknife_bins_valid_(false)
+                    , cannot_rebin_(false)
+                    , mean_(acc.mean())
+                    , error_(acc.error())
+                {
+                    //TODO autocorr, tau, variance...
+                }
+                #endif
+                
                 template <typename X> mcdata(AbstractSimpleObservable<X> const & obs)
                     : count_(obs.count())
                     , binsize_(obs.bin_size())

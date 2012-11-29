@@ -30,6 +30,9 @@
 #define ALPS_NGS_ALEA_DETAIL_MEAN_IMPLEMENTATION_HEADER
 
 #include <alps/ngs/alea/accumulator/accumulator_impl.hpp>
+#include <alps/ngs/short_print.hpp>
+
+#include <alps/ngs/alea/features.hpp>
 
 #include <boost/type_traits.hpp>
 #include <boost/static_assert.hpp>
@@ -65,7 +68,9 @@ namespace alps
                 BOOST_STATIC_ASSERT_MSG(!false_type::value, "mean_type trait failed");
             };
         }
-
+        
+        //~ using namespace alps::numeric;
+        
         template <typename value_type>
         struct mean_type
         {
@@ -85,10 +90,44 @@ namespace alps
             public:
                 typedef double type;
         };
+        
+        template<typename T>
+        struct mean_type<std::vector<T> >
+        {
+            public:
+                typedef std::vector<typename mean_type<T>::type > type;
+        };
+        
+        template<typename T, std::size_t N>
+        struct mean_type<boost::array<T, N> >
+        {
+            public:
+                typedef boost::array<typename mean_type<T>::type, N> type;
+        };
+        
+        template<typename T, std::size_t N>
+        struct mean_type<boost::multi_array<T, N> >
+        {
+            public:
+                typedef boost::multi_array<typename mean_type<T>::type, N> type;
+        };
         //=================== mean implementation ===================
         namespace detail
         {
             //setting up the dependencies for tag::mean-Implementation isn't neccessary bc has none
+            
+            //for vector<T>
+            template<typename T>
+            void init_vector(T & sum, T const & val)
+            {
+                
+            }
+            template<typename T> //TODO: set_size
+            void init_vector(std::vector<T> & sum, std::vector<T> const & val)
+            {
+                if(sum.size() == 0)
+                    sum = std::vector<T>(val.size(),T());
+            }
             
             template<typename base_type> 
             class Implementation<tag::mean, base_type> : public base_type 
@@ -105,16 +144,20 @@ namespace alps
                                                                                         , int
                                                                                         >::type = 0
                                         ): base_type(args)
-                                         , sum_() 
+                                         , sum_()
                     {}
                     
                     inline mean_type const  mean() const 
                     { 
+                        using alps::ngs::numeric::operator/;
+                        
                         return mean_type(sum_)/base_type::count();
                     }
             
                     inline ThisType& operator <<(value_type_loc val) 
                     {
+                        using alps::ngs::numeric::operator+=;
+
                         base_type::operator <<(val);
                         sum_ += val;
                         return *this;
@@ -124,12 +167,12 @@ namespace alps
                     inline void print(Stream & os) 
                     {
                         base_type::print(os);
-                        os << "tag::mean: " << mean() << " " << std::endl;
+                        os << "tag::mean: " << alps::short_print(mean()) << " " << std::endl;
                     }
             
                 //~ private:
                 protected:
-                    mean_type sum_;
+                    value_type_loc sum_;
             };
         } // end namespace detail
     }//end alea namespace 
