@@ -60,23 +60,23 @@ namespace alps {
         };
     } // end namespace detail
 
-    template <class InputIterator1, class InputIterator2>
-    void plus_assign(InputIterator1 first1, InputIterator1 last1, InputIterator2 first2)
+    template <typename T1, typename T2, class MemoryBlock1, class MemoryBlock2>
+    void plus_assign(vector<T1, MemoryBlock1> & lhs, const vector<T2, MemoryBlock2> & rhs)
     {
-        std::transform(first1, last1, first2, first1, std::plus<typename std::iterator_traits<InputIterator2>::value_type >());
+        std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), std::plus<typename vector<T2, MemoryBlock2>::value_type>());
     }
 
-    template <class InputIterator1, class InputIterator2>
-    void minus_assign(InputIterator1 first1, InputIterator1 last1, InputIterator2 first2)
+    template <typename T1, typename T2, class MemoryBlock1, class MemoryBlock2>
+    void minus_assign(vector<T1, MemoryBlock1> & lhs, const vector<T2, MemoryBlock2> & rhs)
     {
-        std::transform(first1, last1, first2, first1, std::minus<typename std::iterator_traits<InputIterator2>::value_type >());
+        std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), std::minus<typename vector<T2, MemoryBlock2>::value_type>());
     }
 
-    template <class ForwardIterator, typename T>
-    void multiplies_assign(ForwardIterator start1, ForwardIterator end1, T lambda)
+    template <typename T1, typename T2, class MemoryBlock>
+    void multiplies_assign(vector<T1, MemoryBlock> & lhs, T2 lambda)
     {
         using detail::multiplies;
-        std::transform(start1, end1, start1, std::bind2nd(multiplies<typename std::iterator_traits<ForwardIterator>::value_type, T>(), lambda));
+        std::transform(lhs.begin(), lhs.end(), lhs.begin(), std::bind2nd(multiplies<typename vector<T1, MemoryBlock>::value_type, T2>(), lambda));
     }
 
   template<typename T, typename MemoryBlock = std::vector<T> >
@@ -125,21 +125,21 @@ namespace alps {
       vector& operator+=(const vector& rhs)
       {
           assert(rhs.size() == this->size());
-          plus_assign(this->begin(), this->end(), rhs.begin());
+          plus_assign(*this, rhs);
           return *this;
       }
 
       vector& operator-=(const vector& rhs)
       {
           assert(rhs.size() == this->size());
-          minus_assign(this->begin(), this->end(), rhs.begin());
+          minus_assign(*this, rhs);
           return *this;
       }
 
       template <typename T2>
       vector& operator *= (T2 const& lambda)
       {
-          multiplies_assign(this->begin(), this->end(), lambda);
+          multiplies_assign(*this, lambda);
           return *this;
       }
   };
@@ -167,14 +167,14 @@ namespace alps {
         return v1;
     }
 
-    template <typename T, typename MemoryBlock>
-    vector<T,MemoryBlock> operator * (T const& t, vector<T,MemoryBlock> v)
+    template <typename T1, typename T2, typename MemoryBlock>
+    vector<T2,MemoryBlock> operator * (T1 const& t, vector<T2,MemoryBlock> v)
     {
         return v *= t;
     }
 
-    template <typename T, typename MemoryBlock>
-    vector<T,MemoryBlock> operator * (vector<T,MemoryBlock> v, T const& t)
+    template <typename T1, typename T2, typename MemoryBlock>
+    vector<T1,MemoryBlock> operator * (vector<T1,MemoryBlock> v, T2 const& t)
     {
         return v *= t;
     }
@@ -225,29 +225,29 @@ namespace alps {
 
 #define PLUS_ASSIGN(T) \
 template <typename MemoryBlock> \
-void plus_assign(typename std::vector<T,MemoryBlock>::iterator first1, typename std::vector<T,MemoryBlock>::iterator last1, typename std::vector<T,MemoryBlock>::const_iterator first2) \
-{ boost::numeric::bindings::blas::detail::axpy(last1-first1, 1., &*first2, 1, &*first1, 1);}
+void plus_assign(vector<T,MemoryBlock> & lhs, const vector<T,MemoryBlock> & rhs) \
+{ boost::numeric::bindings::blas::detail::axpy(lhs.end()-lhs.begin(), 1., &*rhs.begin(), 1, &*lhs.begin(), 1);}
     ALPS_IMPLEMENT_FOR_ALL_BLAS_TYPES(PLUS_ASSIGN)
 #undef PLUS_ASSIGN
 
 
 #define MINUS_ASSIGN(T) \
 template <typename MemoryBlock> \
-void minus_assign(typename std::vector<T,MemoryBlock>::iterator first1, typename std::vector<T,MemoryBlock>::iterator last1, typename std::vector<T,MemoryBlock>::const_iterator first2) \
-{ boost::numeric::bindings::blas::detail::axpy(last1-first1, -1., &*first2, 1, &*first1, 1);}
+void minus_assign(vector<T, MemoryBlock> & lhs, const vector<T,MemoryBlock> & rhs) \
+{ boost::numeric::bindings::blas::detail::axpy(lhs.end()-lhs.begin(), -1., &*rhs.begin(), 1, &*lhs.begin(), 1);}
     ALPS_IMPLEMENT_FOR_ALL_BLAS_TYPES(MINUS_ASSIGN)
 #undef MINUS_ASSIGN
 
 #define MULTIPLIES_ASSIGN(T) \
-template <typename MemoryBlock> \
-void multiplies_assign(typename std::vector<T,MemoryBlock>::iterator start1, typename std::vector<T,MemoryBlock>::iterator end1, T lambda) \
-    { boost::numeric::bindings::blas::detail::scal(end1-start1, lambda, &*start1, 1);}
+template <typename MemoryBlock, typename T1> \
+void multiplies_assign(vector<T, MemoryBlock> & rhs, T1 lambda) \
+    { boost::numeric::bindings::blas::detail::scal(rhs.end()-rhs.begin(), lambda, &*rhs.begin(), 1);}
     ALPS_IMPLEMENT_FOR_ALL_BLAS_TYPES(MULTIPLIES_ASSIGN)
 #undef MULTIPLIES_ASSIGN
 
 #define SCALAR_PRODUCT(T) \
 template <typename MemoryBlock> \
-inline T scalar_product(const std::vector<T,MemoryBlock> v1, const std::vector<T,MemoryBlock> v2) \
+inline T scalar_product(const vector<T,MemoryBlock> v1, const vector<T,MemoryBlock> v2) \
     { return boost::numeric::bindings::blas::detail::dot(v1.size(), &v1[0],1,&v2[0],1);}
     ALPS_IMPLEMENT_FOR_ALL_BLAS_TYPES(SCALAR_PRODUCT)
 #undef SCALAR_PRODUCT

@@ -34,6 +34,7 @@
 #include <alps/numeric/matrix/detail/matrix_adaptor.hpp>
 #include <alps/numeric/matrix/matrix_traits.hpp>
 #include <alps/numeric/matrix/matrix_interface.hpp>
+#include <alps/numeric/matrix/matrix_blas.hpp>
 #include <alps/numeric/matrix/matrix_matrix_multiply.hpp>
 #include <alps/numeric/real.hpp>
 #include <alps/parser/xmlstream.h>
