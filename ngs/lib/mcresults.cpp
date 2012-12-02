@@ -57,6 +57,12 @@ namespace alps {
         std::map<std::string, mcresult>::insert(make_pair(name, res));
     }
 
+    void mcresults::erase(std::string const & name) {
+        if (!has(name))
+            throw std::out_of_range("There is no result with the name: " + name + "\n" + ALPS_STACKTRACE);
+        std::map<std::string, mcresult>::erase(name);
+    }
+
     void mcresults::save(hdf5::archive & ar) const {
         for(std::map<std::string, mcresult>::const_iterator it = std::map<std::string, mcresult>::begin(); it != std::map<std::string, mcresult>::end(); ++it)
             if (it->second.count())

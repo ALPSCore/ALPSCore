@@ -49,6 +49,8 @@ namespace alps {
 
             void insert(std::string const & name, mcresult res);
 
+            void erase(std::string const & name);
+
             void save(hdf5::archive & ar) const;
 
             void load(hdf5::archive & ar);
