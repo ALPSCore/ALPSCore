@@ -48,6 +48,8 @@ ALPS_DECL int start_impl(int argc, char **argv);
 
 template<typename SERIAL, typename PARALLEL = alps::no_worker>
 struct start;
+
+#ifdef ALPS_HAVE_MPI
   
 template<typename SERIAL, typename PARALLEL>
 struct start {
@@ -71,6 +73,8 @@ struct start<alps::no_worker, PARALLEL> {
 private:
   int ret;
 };
+
+#endif
 
 template<typename SERIAL>
 struct start<SERIAL, alps::no_worker> {
