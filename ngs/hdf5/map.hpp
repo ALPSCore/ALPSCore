@@ -44,6 +44,8 @@ namespace alps {
             , std::vector<std::size_t> chunk = std::vector<std::size_t>()
             , std::vector<std::size_t> offset = std::vector<std::size_t>()
         ) {
+            if (ar.is_group(path))
+                ar.delete_group(path);
             for(typename std::map<K, T, C, A>::const_iterator it = value.begin(); it != value.end(); ++it)
                 save(ar, ar.complete_path(path) + "/" + ar.encode_segment(cast<std::string>(it->first)), it->second);
         }

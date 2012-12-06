@@ -250,9 +250,11 @@ namespace alps {
             , std::vector<std::size_t> chunk
             , std::vector<std::size_t> offset
         ) {
-            using boost::python::len;
+            if (ar.is_group(path))
+                ar.delete_group(path);
             const boost::python::object kit = value.iterkeys();
             const boost::python::object vit = value.itervalues();
+            using boost::python::len;
             for (boost::python::ssize_t i = 0; i < len(value); ++i)
                 save(
                       ar
@@ -398,7 +400,7 @@ namespace alps {
                     load(ar, path, static_cast<boost::python::list &>(value), chunk, offset);
                 } else {
                     value = boost::python::dict();
-                    load(ar, path, boost::python::extract<boost::python::dict &>(value)(), chunk, offset);
+                    load(ar, path, static_cast<boost::python::dict &>(value), chunk, offset);
                 }
             } else if (ar.is_scalar(path) || (ar.is_datatype<double>(path) && ar.is_complex(path) && ar.extent(path).size() == 1 && ar.extent(path)[0] == 2)) {
                 if (ar.is_datatype<std::string>(path)) {
