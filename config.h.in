@@ -62,6 +62,10 @@
 
 // If defined, the new ngs alea will be used, instead of the old alea
 #cmakedefine ALPS_NGS_USE_NEW_ALEA
+
+// If defined, the openmpi specific ulfm is used.
+#cmakedefine ALPS_NGS_OPENMPI_ULFM
+
 //
 // Libraries
 //
