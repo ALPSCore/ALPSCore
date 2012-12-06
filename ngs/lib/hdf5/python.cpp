@@ -137,7 +137,8 @@ namespace alps {
                 if (list.size()) {
                     std::vector<boost::python::object> data;
                     load(ar, path, data, chunk, offset);
-                    value = boost::python::list(data);
+                    for (std::vector<boost::python::object>::const_iterator it = data.begin(); it != data.end(); ++it)
+                         value.append(*it);
                 }
             } else if (!ar.is_scalar(path) && ar.is_datatype<std::string>(path)) {
                 if (ar.dimensions(path) != 1)
@@ -384,15 +385,15 @@ namespace alps {
                 ar.set_context(context);
             } else if (ar.is_group(path)) {
                 std::vector<std::string> list = ar.list_children(path);
-                for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it)
-                    for (std::string::const_iterator jt = it->begin(); jt != it->end(); ++jt)
-                        if (std::string("1234567890").find_first_of(*jt) == std::string::npos || alps::cast<unsigned>(*jt) > list.size() - 1) {
-                            boost::python::dict dict;
-                            load(ar, path, dict, chunk, offset);
-                            value = dict;
-                            return;
-                        }
-                if (list.size()) {
+                bool is_list = list.size();
+                for (std::vector<std::string>::const_iterator it = list.begin(); is_list && it != list.end(); ++it) {
+                    for (std::string::const_iterator jt = it->begin(); is_list && jt != it->end(); ++jt)
+                        if (std::string("1234567890").find_first_of(*jt) == std::string::npos)
+                            is_list = false;
+                    if (is_list && alps::cast<unsigned>(*it) > list.size() - 1)
+                        is_list = false;
+                }
+                if (is_list) {
                     value = boost::python::list();
                     load(ar, path, static_cast<boost::python::list &>(value), chunk, offset);
                 } else {
