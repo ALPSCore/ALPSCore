@@ -48,14 +48,14 @@ ALPS_DECL int start_impl(int argc, char **argv);
 
 template<typename SERIAL, typename PARALLEL = alps::no_worker>
 struct start;
-
-#ifdef ALPS_HAVE_MPI
   
 template<typename SERIAL, typename PARALLEL>
 struct start {
   start(int argc, char **argv) {
     worker_factory::register_worker<SERIAL>();
+#ifdef ALPS_HAVE_MPI
     parallel_worker_factory::register_worker<PARALLEL>();
+#endif
     ret = start_impl(argc, argv);
   }
   operator int() { return ret; }
@@ -66,15 +66,15 @@ private:
 template<typename PARALLEL>
 struct start<alps::no_worker, PARALLEL> {
   start(int argc, char **argv) {
+#ifdef ALPS_HAVE_MPI
     parallel_worker_factory::register_worker<PARALLEL>();
+#endif
     ret = start_impl(argc, argv);
   }
   operator int() { return ret; }
 private:
   int ret;
 };
-
-#endif
 
 template<typename SERIAL>
 struct start<SERIAL, alps::no_worker> {
