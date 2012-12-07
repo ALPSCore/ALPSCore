@@ -36,12 +36,13 @@
 #include <boost/array.hpp>
 
 #include <algorithm>
+#include <functional>
 #include <cmath>
 #include <stdexcept>
 
 namespace alps
 {
-    namespace ngs
+    namespace ngs //merged with alps/numerics/vector_function.hpp
     {
         namespace numeric
         {
@@ -56,7 +57,7 @@ namespace alps
                 }
                 else
                 {
-                    std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), boost::lambda::_1 + boost::lambda::_2);
+                    std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), std::plus<T>() );
 
                     return lhs;
                 }
@@ -72,7 +73,7 @@ namespace alps
                 }
                 else
                 {
-                    std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), boost::lambda::_1 + boost::lambda::_2);
+                    std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), std::plus<T>() );
                     
                     return lhs;
                 }
@@ -88,7 +89,7 @@ namespace alps
                 }
                 else
                 {
-                    std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), boost::lambda::_1 - boost::lambda::_2);
+                    std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), std::minus<T>() );
                     
                     return lhs;
                 }
@@ -104,16 +105,27 @@ namespace alps
                 }
                 else
                 {
-                    std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), boost::lambda::_1 * boost::lambda::_2);
+                    std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(), std::multiplies<T>());
                     
                     return lhs;
                 }
             }
             //------------------- operator / with scalar -------------------
+            //TODO: remove fix. Had a problem with the lambda and mac clang...
+            template<typename T, typename U>
+            class quick_fix_devide
+            {
+            public:
+                quick_fix_devide(U const sca): sca_(sca) {}
+                T operator()(T in) {return in/sca_;}
+                U sca_;
+            };
+        
             template<typename T, std::size_t N, typename U>
             boost::array<T, N> operator / (boost::array<T, N> lhs, U const & scalar)
             {
-                std::transform(lhs.begin(), lhs.end(), lhs.begin(), boost::lambda::_1 / scalar);
+                //using boost::lambda::_1;
+                std::transform(lhs.begin(), lhs.end(), lhs.begin(), quick_fix_devide<T,U>(scalar));
                 
                 return lhs;
             }
@@ -123,7 +135,7 @@ namespace alps
             {
                 using std::sqrt;
                 
-                std::transform(lhs.begin(), lhs.end(), lhs.begin(), static_cast<double (*)(double)>(sqrt));
+                std::transform(lhs.begin(), lhs.end(), lhs.begin(), static_cast<double (*)(double)>(&sqrt));
                 
                 return lhs;
             }

@@ -81,7 +81,10 @@ namespace alps
                         os << "ValueType: " << typeid(value_type).name() << " " << std::endl;
                         os << "Count: " << count() << " " << std::endl;
                     }
-                
+                    inline void reset()
+                    {
+                        count_ = 0;
+                    }
                 private:
                     boost::uint64_t count_;
             };

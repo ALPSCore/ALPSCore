@@ -188,13 +188,20 @@ namespace alps
                             //~ os << "bin[" << i << "] = " << bin_[i] << std::endl;
                         //~ }
                     }
-              
+                    inline void reset()
+                    {
+                        base_type::reset();
+                        bin_.clear();
+                        partial_ = value_type_loc();
+                        elements_in_bin_ = 0;
+                        pos_in_partial_ = 0;
+                    }
                 private:
                     std::vector<mean_type> bin_;
                     value_type_loc partial_;
                     size_type elements_in_bin_;
                     size_type pos_in_partial_;
-                    size_type max_bin_num_;
+                    size_type const max_bin_num_;
             };
         } // end namespace detail
     }//end alea namespace 

@@ -123,7 +123,7 @@ namespace alps
             std::vector<T> sqrt(std::vector<T> vec)
             {
                 using std::sqrt;
-                std::transform(vec.begin(), vec.end(), vec.begin(), static_cast<double (*)(double)>(sqrt));
+                std::transform(vec.begin(), vec.end(), vec.begin(), static_cast<double (*)(double)>(&sqrt));
                 return vec;
             }
             

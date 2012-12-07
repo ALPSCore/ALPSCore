@@ -31,7 +31,7 @@
 
 #include <alps/ngs/numeric/vector.hpp>
 #include <alps/ngs/numeric/array.hpp>
-#include <alps/ngs/numeric/multi_array.hpp>
+#include <alps/multi_array.hpp>
 #include <alps/ngs/alea/feature/tags.hpp>
 
 #include <alps/ngs/alea/feature/value_type.hpp>

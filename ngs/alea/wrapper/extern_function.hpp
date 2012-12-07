@@ -47,6 +47,12 @@ namespace alps
         {
             return arg.count();
         }
+        
+        template <typename Accum>
+        void reset(Accum & arg)
+        {
+            return arg.reset();
+        }
 
         namespace detail
         {
@@ -55,6 +61,12 @@ namespace alps
             boost::uint64_t count_wrap(Accum const & arg)
             {
                 return count(arg);
+            }
+            
+            template<typename Accum>
+            void reset_wrap(Accum & arg)
+            {
+                return reset(arg);
             }
         }
     }//end alea namespace 

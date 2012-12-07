@@ -38,6 +38,16 @@ namespace alps
 {
     namespace alea
     {
+        struct make_accumulator
+        {
+            template<typename T>
+            make_accumulator(T const & accum, std::string const name): acc_wrapper(accum), name(name) {}
+            
+            detail::accumulator_wrapper acc_wrapper;
+            std::string name;
+        };
+        
+        
         class ALPS_DECL accumulator_set {
             
         public: 
@@ -58,12 +68,12 @@ namespace alps
 
             void load(hdf5::archive & ar);
             
-            //~ void reset(bool equilibrated = false);
+            void reset(bool equilibrated = false);
             
-            template<typename T, typename Features>
-            accumulator_set & operator<< (accumulator<T, Features> const & acc)
+            //~ template<typename T, typename Features>
+            accumulator_set & operator<< (make_accumulator const & make_acc)
             {
-                insert("unnamed", boost::shared_ptr<detail::accumulator_wrapper>(new detail::accumulator_wrapper(acc)));
+                insert(make_acc.name, boost::shared_ptr<detail::accumulator_wrapper>(new detail::accumulator_wrapper(make_acc.acc_wrapper)));
                 return *this;
             }
             

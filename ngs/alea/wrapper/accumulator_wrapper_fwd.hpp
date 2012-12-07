@@ -65,6 +65,8 @@ namespace alps
                     
                     boost::uint64_t count() const;
                     
+                    inline void reset();
+                    
                 private:
                     boost::shared_ptr<base_wrapper> base_;
             };

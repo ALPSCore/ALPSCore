@@ -72,6 +72,7 @@ namespace alps
                     }
                     
                     virtual boost::uint64_t count() const = 0;
+                    virtual void reset() = 0;
                     virtual base_wrapper* clone() = 0;  //needed for the copy-ctor
                     virtual void print(std::ostream & out) = 0;
                     
@@ -165,11 +166,14 @@ namespace alps
                     {
                         return count_wrap(accum_);
                     }
+
+                    void reset()
+                    {
+                        reset_wrap(accum_);
+                    }
                     
                     inline void print(std::ostream & out) {out << accum_;}
                     
-                    //~ friend Accum& accumulator_wrapper::extract<Accum>();
-                
                 protected:
                     inline void add_value(const void* value, const std::type_info& info) //type-infusion
                     {
@@ -181,7 +185,6 @@ namespace alps
                         #endif
                          )
                             boost::throw_exception(std::runtime_error("wrong type added in accumulator_wrapper::add_value" + ALPS_STACKTRACE));
-                            //~ std::runtime_error("wrong type added in accumulator_wrapper::add_value"  + alps::ngs::stacktrace());
                         accum_ << *static_cast<const value_type*>(value);
                     }
             };

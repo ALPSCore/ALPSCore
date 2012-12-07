@@ -169,8 +169,11 @@ namespace alps
                         base_type::print(os);
                         os << "tag::mean: " << alps::short_print(mean()) << " " << std::endl;
                     }
-            
-                //~ private:
+                    inline void reset()
+                    {
+                        base_type::reset();
+                        sum_ = value_type_loc();
+                    }
                 protected:
                     value_type_loc sum_;
             };

@@ -159,7 +159,14 @@ namespace alps
                             //~ os << "bin[" << i << "] = " << bin_[i] << std::endl;
                         //~ }
                     }
-              
+                    inline void reset()
+                    {
+                        base_type::reset();
+                        bin_.clear();
+                        partial_ = value_type_loc();
+                        pos_in_partial_ = 0;
+                        bin_size_now_ = 1;
+                    }
                 private:
                     std::vector<mean_type> bin_;
                     value_type_loc partial_;

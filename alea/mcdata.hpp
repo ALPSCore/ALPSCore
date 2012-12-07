@@ -227,9 +227,25 @@ namespace alps {
                 
                 #ifdef ALPS_NGS_USE_NEW_ALEA
                 //TODO5: impl for acc
-                template <typename X> mcdata(alps::alea::accumulator<T, X> const & acc) //TODO: explicit
+                
+                //------------------- for RealObservable and RealVectorObservable -------------------
+                mcdata(alps::alea::accumulator<T, alea::features<alea::tag::mean, alea::tag::error, alea::tag::fixed_size_binning> > const & acc) //TODO: explicit
                     : count_(acc.count())
                     , binsize_(acc.fixed_size_bin().bin_size())
+                    //~ , max_bin_number_(acc.fixed_size_bin().bins().size()) TODO
+                    , data_is_analyzed_(true)
+                    , jacknife_bins_valid_(false)
+                    , cannot_rebin_(false)
+                    , mean_(acc.mean())
+                    , error_(acc.error())
+                {
+                    //TODO autocorr, tau, variance...
+                }
+                //------------------- for SimpleRealObservable and SimpleRealVectorObservable -------------------
+                
+                mcdata(alps::alea::accumulator<T, alea::features<alea::tag::mean, alea::tag::error> > const & acc) //TODO: explicit
+                    : count_(acc.count())
+                    , binsize_(0)
                     //~ , max_bin_number_(acc.fixed_size_bin().bins().size()) TODO
                     , data_is_analyzed_(true)
                     , jacknife_bins_valid_(false)

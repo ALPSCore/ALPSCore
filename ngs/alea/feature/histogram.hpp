@@ -271,7 +271,10 @@ namespace alps
                         base_type::print(os);
                         os << "tag::histogram: " << std::endl;
                     }
-                    
+                    inline void reset()
+                    {
+                        base_type::reset();
+                    }
                 private:
             };
         } // end namespace detail

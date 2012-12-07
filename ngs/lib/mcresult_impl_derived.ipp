@@ -65,6 +65,10 @@ namespace alps {
                     : alea::mcdata<T>(acc_wrapper.extract<alea::accumulator<T, alea::features<alea::tag::mean, alea::tag::error, alea::tag::fixed_size_binning> > >())
                 {
                 }
+                //mcresult_impl_derived(alea::detail::accumulator_wrapper const & acc_wrapper)
+                //    : alea::mcdata<T>(acc_wrapper.extract<alea::accumulator<T, alea::features<alea::tag::mean, alea::tag::error> > >())
+                //{
+                //}
                 #endif
                 
                 mcresult_impl_derived(alea::mcdata<T> const & data)

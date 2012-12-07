@@ -71,10 +71,13 @@ namespace alps {
         {
         }
         
-        //~ void accumulator_set::reset(bool equilibrated)
-        //~ {
-            //~ //TODO implement
-        //~ }
+        void accumulator_set::reset(bool equilibrated)
+        {
+            for(iterator it = begin(); it != end(); ++it)
+            {
+                it->second->reset();
+            }
+        }
         
         //~ map operations
         accumulator_set::iterator accumulator_set::begin()
@@ -98,7 +101,7 @@ namespace alps {
         
         void accumulator_set::clear()
         {
-            
+            storage.clear(); //should be ok b/c shared_ptr
         }
     } //end namespace alea
 } //end namespace alps

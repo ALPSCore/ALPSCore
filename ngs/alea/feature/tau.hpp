@@ -123,7 +123,10 @@ namespace alps
                         base_type::print(os);
                         os << "tag::detail::tau: " << std::endl;
                     }
-                    
+                    inline void reset()
+                    {
+                        base_type::reset();
+                    }
                 private:
             };
         } // end namespace detail

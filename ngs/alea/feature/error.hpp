@@ -103,7 +103,11 @@ namespace alps
                         base_type::print(os);
                         os << "tag::error: " << alps::short_print(error()) << " " << std::endl;
                     }
-                    
+                    inline void reset()
+                    {
+                        sum2_ = error_type();
+                        base_type::reset();
+                    }
                 private:
                     error_type sum2_;
             };

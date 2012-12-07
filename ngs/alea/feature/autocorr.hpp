@@ -193,6 +193,14 @@ namespace alps
                         //~ }
                     }
                     
+                    inline void reset()
+                    {
+                        base_type::reset();
+                        bin_.clear();
+                        partial_.clear();
+                        bin_size_now_ = 0;
+                    }
+                    
                 private:
                     std::vector<value_type_loc> bin_;
                     std::vector<value_type_loc> partial_;
