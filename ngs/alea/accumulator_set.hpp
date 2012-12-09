@@ -41,7 +41,7 @@ namespace alps
         struct make_accumulator
         {
             template<typename T>
-            make_accumulator(T const & accum, std::string const name): acc_wrapper(accum), name(name) {}
+            make_accumulator(std::string const name, T const & accum): acc_wrapper(accum), name(name) {}
             
             detail::accumulator_wrapper acc_wrapper;
             std::string name;
