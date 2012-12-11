@@ -466,7 +466,7 @@ namespace alps {
         }
     
         void archive::set_context(std::string const & context) {
-            current_ = context;
+            current_ = complete_path(context);
         }
     
         std::string archive::complete_path(std::string path) const {

@@ -85,6 +85,12 @@ namespace alps{
 
         array_type& operator+=(const array_type& a)
         {
+            // TODO: how do we handle that?
+            if (std::accumulate(this->shape(), this->shape() + D, size_type(0)) == 0) {
+                boost::array<T, D> extent;
+                std::copy(a.shape(), a.shape() + D, extent.begin());
+                this->resize(extent);
+            }
             assert(std::equal(this->shape(),this->shape()+D,a.shape()));
             std::transform((*this).data(),(*this).data()+(*this).num_elements(),a.data(),(*this).data(),std::plus<T>());
             return *this;
