@@ -34,7 +34,7 @@ namespace boost {
 
     struct thread_interrupted {};
 
-    struct lock_error : public std::logical_error {};
+    struct lock_error : public std::logic_error {};
 
 }
 
