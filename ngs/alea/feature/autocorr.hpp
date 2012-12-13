@@ -48,10 +48,9 @@ namespace alps
         class autocorr_proxy_type
         {
             typedef typename mean_type<value_type>::type mean_type;
-            static std::vector<value_type> unused;
         public:
-            autocorr_proxy_type(): bin2_(unused)
-                                , bin1_(unused)
+            autocorr_proxy_type(): bin2_(std::vector<value_type>())
+                                , bin1_(std::vector<value_type>())
                                 , count_(0) 
             {}
             autocorr_proxy_type(  std::vector<value_type> const & bin2

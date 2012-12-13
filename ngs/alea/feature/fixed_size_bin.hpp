@@ -47,9 +47,8 @@ namespace alps
         {
             typedef typename mean_type<value_type>::type mean_type;
             typedef typename std::vector<value_type>::size_type size_type;
-            static std::vector<mean_type> unused;
         public:
-            fixed_size_bin_proxy_type(): bin_(unused) {}
+            fixed_size_bin_proxy_type(): bin_(std::vector<mean_type>()) {}
             fixed_size_bin_proxy_type(  std::vector<mean_type> const & bin
                                       , size_type const & bin_size):
                                                                   bin_(bin)
