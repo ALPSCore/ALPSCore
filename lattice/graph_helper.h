@@ -696,7 +696,7 @@ G* graph_helper<G>::make_graph(const Parameters& parms)
     have_lattice_=true;
   }
   else{
-    boost::throw_exception(std::runtime_error("could not find graph/lattice specified in parameters"));
+    boost::throw_exception(std::runtime_error("could not find graph/lattice specified in parameters: name was: \'"+name+"\'"));
     g=NULL;
   }
   return g;
