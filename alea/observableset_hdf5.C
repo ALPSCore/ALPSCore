@@ -4,7 +4,8 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 2010 by Lukas Gamper <gamperl -at- gmail.com>
+* Copyright (C) 2010-2012 by Lukas Gamper <gamperl -at- gmail.com>,
+*                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -44,8 +45,6 @@ int main() {
     if (boost::filesystem::exists(boost::filesystem::path(filename)))
         boost::filesystem::remove(boost::filesystem::path(filename));
     {
-        boost::minstd_rand0 engine;
-        boost::uniform_01<boost::minstd_rand0> random(engine);
         alps::ObservableSet measurement;
         measurement << alps::make_observable(alps::RealObservable("Test"), true)
                     << alps::RealObservable("Sign")
@@ -54,13 +53,22 @@ int main() {
                     << alps::RealObservable("Test 2")
                     << alps::RealObservable("Test 3")
                     << alps::SimpleRealObservable("Test 4");
+        alps::hdf5::archive oar(filename, "a");
+        oar["/test/0/result"] << measurement;
+    }
+    {
+        boost::minstd_rand0 engine;
+        boost::uniform_01<boost::minstd_rand0> random(engine);
+        alps::ObservableSet measurement;
+        alps::hdf5::archive iar(filename, "r");
+        iar["/test/0/result"] >> measurement;
         for (int i = 0; i < 10000; ++i) {
-            measurement["Test"] << random();
-            measurement["Sign"] << 1.0;
-            measurement["Histogram"] << static_cast<int>(10*random());
-            measurement["Test 2"] << random();
-            measurement["Test 3"] << random();
-            measurement["Test 4"] << random();
+          measurement["Test"] << random();
+          measurement["Sign"] << 1.0;
+          measurement["Histogram"] << static_cast<int>(10*random());
+          measurement["Test 2"] << random();
+          measurement["Test 3"] << random();
+          measurement["Test 4"] << random();
         }
         alps::RealObsevaluator e2 = measurement["Test 2"];
         alps::RealObsevaluator e4 = measurement["Test 3"];
