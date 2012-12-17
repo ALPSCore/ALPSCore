@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2012 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
@@ -45,13 +45,15 @@ template <class T>
 void AbstractSimpleObservable<T>::save(hdf5::archive & ar) const 
 {
   Observable::save(ar);
-  if (count() > 0) {
-      if (label_.size())
-          ar
-              << make_pvp("labels", label_)
-          ;
+  if (label_.size())
       ar
-          << make_pvp("count", count())
+          << make_pvp("labels", label_)
+      ;
+  ar
+      << make_pvp("count", count())
+      ;
+  if (count() > 0) {
+      ar
           << make_pvp("mean/value", mean())
       ;
   }
@@ -80,4 +82,5 @@ void AbstractSimpleObservable<T>::load(hdf5::archive & ar)
 }
 
 }
+
 #endif // ALPS_ALEA_ABSTRACTSIMPLEOBSERVABLE_IPP

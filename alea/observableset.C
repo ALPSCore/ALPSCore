@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2012 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -90,16 +90,16 @@ void ObservableSet::load(hdf5::archive & ar) {
         std::string obsname = hdf5_name_decode(*it);
         if (skip.find(obsname) == skip.end()) {
             if (!has(obsname)) {
-                bool is_scalar = (ar.is_data(*it + "/mean/value") 
-                    ? ar.is_scalar(*it + "/mean/value")
-                    : (ar.is_data(*it + "/timeseries/logbinning") ? ar.dimensions(*it + "/timeseries/logbinning") == 1 
-                    : (ar.is_data(*it + "/sum") ? ar.is_scalar(*it + "/sum") : false)
-                  )
-                );
                 bool is_signed = ar.is_attribute(*it + "/@sign");
                 std::string signname;
                 if (is_signed)
                     ar[*it + "/@sign"] >> signname;
+                bool is_scalar = (ar.is_data((is_signed ? (signname + " * " + *it) : *it) + "/mean/value") 
+                    ? ar.is_scalar((is_signed ? (signname + " * " + *it) : *it) + "/mean/value")
+                    : (ar.is_data((is_signed ? (signname + " * " + *it) : *it) + "/timeseries/logbinning") ? ar.dimensions((is_signed ? (signname + " * " + *it) : *it) + "/timeseries/logbinning") <= 1 
+                    : (ar.is_data((is_signed ? (signname + " * " + *it) : *it) + "/sum") ? ar.is_scalar((is_signed ? (signname + " * " + *it) : *it) + "/sum") : false)
+                  )
+                );
                 bool is_simple_real = ar.is_data((is_signed ? (signname + " * " + *it) : *it) + "/sum");
                 bool is_real = ar.is_data((is_signed ? (signname + " * " + *it) : *it) + "/timeseries/logbinning") && ar.is_data((is_signed ? (signname + " * " + *it) : *it) + "/timeseries/data");
                 bool is_histogram = ar.is_attribute(*it + "/@min") && ar.is_attribute(*it + "/@max") && ar.is_attribute(*it + "/@stepsize");

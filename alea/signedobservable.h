@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2010 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
+* Copyright (C) 1994-2012 by Matthias Troyer <troyer@itp.phys.ethz.ch>,
 *                            Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
@@ -293,11 +293,10 @@ void AbstractSignedObservable<OBS,SIGN>::load(IDump& dump)
 
 template <class OBS, class SIGN> void AbstractSignedObservable<OBS,SIGN>::save(hdf5::archive & ar) const {
     super_type::save(ar);
-    if (obs_.count())
-        ar
-            << make_pvp("@sign", sign_name_)
-            << make_pvp("../" + obs_.name(), obs_)
-        ;
+    ar
+        << make_pvp("@sign", sign_name_)
+        << make_pvp("../" + obs_.name(), obs_)
+    ;
 }
 template <class OBS, class SIGN>
 void AbstractSignedObservable<OBS,SIGN>::load(hdf5::archive & ar) {

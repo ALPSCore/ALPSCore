@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1994-2010 by Matthias Troyer <troyer@comp-phys.org>,
+* Copyright (C) 1994-2012 by Matthias Troyer <troyer@comp-phys.org>,
 *                            Beat Ammon <ammon@ginnan.issp.u-tokyo.ac.jp>,
 *                            Andreas Laeuchli <laeuchli@comp-phys.org>,
 *                            Synge Todo <wistaria@comp-phys.org>
@@ -326,6 +326,19 @@ template <class T> inline void BasicDetailedBinning<T>::save(hdf5::archive & ar)
         ;
         const_cast<BasicDetailedBinning<T> *>(this)->values_.push_back(value);
         const_cast<BasicDetailedBinning<T> *>(this)->values2_.push_back(value2);
+    } else {
+        ar
+            << make_pvp("timeseries/data", values_)
+            << make_pvp("timeseries/data/@binningtype", "linear")
+            << make_pvp("timeseries/data/@minbinsize", minbinsize_)
+            << make_pvp("timeseries/data/@binsize", binsize_)
+            << make_pvp("timeseries/data/@maxbinnum", maxbinnum_)
+            << make_pvp("timeseries/data2", values2_)
+            << make_pvp("timeseries/data2/@binningtype", "linear")
+            << make_pvp("timeseries/data2/@minbinsize", minbinsize_)
+            << make_pvp("timeseries/data2/@binsize", binsize_)
+            << make_pvp("timeseries/data2/@maxbinnum", maxbinnum_)
+        ;
     }
 }
 
@@ -338,14 +351,16 @@ template <class T> inline void BasicDetailedBinning<T>::load(hdf5::archive & ar)
         >> make_pvp("timeseries/data/@maxbinnum", maxbinnum_)
         >> make_pvp("timeseries/data2", values2_)
     ;
-    value_type value, value2;
-    ar 
-        >> make_pvp("timeseries/partialbin", value)
-        >> make_pvp("timeseries/partialbin2", value2)
-        >> make_pvp("timeseries/partialbin/@count", binentries_)
-    ;
-    values_.push_back(value);
-    values2_.push_back(value2);
+    if (ar.is_data("timeseries/partialbin")) {
+        value_type value, value2;
+        ar 
+            >> make_pvp("timeseries/partialbin", value)
+            >> make_pvp("timeseries/partialbin2", value2)
+            >> make_pvp("timeseries/partialbin/@count", binentries_)
+        ;
+        values_.push_back(value);
+        values2_.push_back(value2);
+    }
 }
 
 } // end namespace alps
