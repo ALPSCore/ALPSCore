@@ -94,7 +94,7 @@ namespace alps {
     }
 
     void mcobservable::load(hdf5::archive & ar) {
-        impl_->save(ar);
+        impl_->load(ar);
     }
 
     void mcobservable::merge(mcobservable const & obs) {
