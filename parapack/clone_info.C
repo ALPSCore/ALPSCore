@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2012 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -93,17 +93,20 @@ void clone_phase::save(ODump& dp) const {
 }
 
 void clone_phase::save(hdf5::archive & ar) const {
-  ar << make_pvp("user", user_) << make_pvp("phase", phase_)
-     << make_pvp("from", boost::posix_time::to_iso_string(startt_))
-     << make_pvp("to", boost::posix_time::to_iso_string(stopt_));
+  ar["user"] << user_;
+  ar["phase"] << phase_;
+  ar["from"] << boost::posix_time::to_iso_string(startt_);
+  ar["to"] << boost::posix_time::to_iso_string(stopt_);
   for (std::size_t i = 0; i < hosts_.size(); ++i)
-    ar << make_pvp("machine/" + boost::lexical_cast<std::string>(i) + "/name", hosts_[i]);
+    ar["machine/" + boost::lexical_cast<std::string>(i) + "/name"] << hosts_[i];
 }
 
 void clone_phase::load(hdf5::archive & ar) {
-  ar >> make_pvp("user", user_) >> make_pvp("phase", phase_);
+  ar["user"] >> user_;
+  ar["phase"] >> phase_;
   std::string start_str, stop_str;
-  ar >> make_pvp("from", start_str) >> make_pvp("to", stop_str);
+  ar["from"] >> start_str;
+  ar["to"] >> stop_str;
   startt_ = boost::posix_time::from_iso_string(start_str);
   stopt_ = boost::posix_time::from_iso_string(stop_str);
   hosts_.clear();
@@ -111,7 +114,7 @@ void clone_phase::load(hdf5::archive & ar) {
     std::string p = "machine/" + boost::lexical_cast<std::string>(i) + "/name";
     if (ar.is_data(p)) {
       hosts_.push_back(std::string());
-      ar >> make_pvp(p, hosts_.back());
+      ar[p] >> hosts_.back();
     } else {
       break;
     }
@@ -276,22 +279,22 @@ void clone_info::set_hosts(std::vector<std::string>& hosts, bool& is_master) {
 }
 
 void clone_info::save(hdf5::archive & ar) const {
-  ar << make_pvp("clone", clone_id_)
-     << make_pvp("progress", progress_)
-     << make_pvp("workerseed", worker_seed_)
-     << make_pvp("disorderseed", disorder_seed_);
+  ar["clone"] << clone_id_;
+  ar["progress"] << progress_;
+  ar["workerseed"] << worker_seed_;
+  ar["disorderseed"] << disorder_seed_;
   for (unsigned int i = 0 ;i < phases_.size() ;++i)
-    ar << make_pvp(boost::lexical_cast<std::string>(i), phases_[i]);
+    ar[boost::lexical_cast<std::string>(i)] << phases_[i];
   for (unsigned int i = 0 ;i < dumpfiles_.size() ;++i)
-    ar << make_pvp("dumpfile/" + boost::lexical_cast<std::string>(i), dumpfiles_[i]);
+    ar["dumpfile/" + boost::lexical_cast<std::string>(i)] << dumpfiles_[i];
 }
 
 void clone_info::load(hdf5::archive & ar) {
   cid_t cid;
-  ar >> make_pvp("clone", cid)
-     >> make_pvp("progress", progress_)
-     >> make_pvp("workerseed", worker_seed_)
-     >> make_pvp("disorderseed", disorder_seed_);
+  ar["clone"] >> clone_id_;
+  ar["progress"] >> progress_;
+  ar["workerseed"] >> worker_seed_;
+  ar["disorderseed"] >> disorder_seed_;
   if (clone_id_ != 0 && clone_id_ != cid)
     std::cerr << "Warning: inconsistent clone id in dump file: current = " << clone_id_
               << ", dumped = " << cid << std::endl;
@@ -301,7 +304,7 @@ void clone_info::load(hdf5::archive & ar) {
     std::string p = boost::lexical_cast<std::string>(i);
     if (ar.is_group(p)) {
       phases_.push_back(clone_phase());
-      ar >> make_pvp(p, phases_.back());
+      ar[p] >> phases_.back();
     } else {
       break;
     }
@@ -311,7 +314,7 @@ void clone_info::load(hdf5::archive & ar) {
     std::string p = "dumpfile/" + boost::lexical_cast<std::string>(i);
     if (ar.is_data(p)) {
       dumpfiles_.push_back(std::string());
-      ar >> make_pvp(p, dumpfiles_.back());
+      ar[p] >> dumpfiles_.back();
     } else {
       break;
     }

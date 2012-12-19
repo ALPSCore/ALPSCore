@@ -178,11 +178,11 @@ void task::save_observable(bool write_xml,
         {
           boost::filesystem::path file = complete(boost::filesystem::path(base_ + ".out.h5"), basedir_);
           hdf5::archive h5(file.string(), "a");
-          h5 << make_pvp("/parameters", params_tmp);
-          h5 << make_pvp("/simulation/results", obs_[0]);
+          h5["/parameters"] << params_tmp;
+          h5["/simulation/results"] << obs_[0];
           // for (std::size_t n = 0; n < oss.size(); ++n)
-          //   h5 << make_pvp("/simulation/realizations/0/clones/" +
-          //                  boost::lexical_cast<std::string>(n) + "/results", oss[n][0]);
+          //   h5["/simulation/realizations/0/clones/" +
+          //      boost::lexical_cast<std::string>(n) + "/results"] << oss[n][0];
         }
       } else {
         for (std::size_t i = 0; i < obs_.size(); ++i) {
@@ -193,11 +193,11 @@ void task::save_observable(bool write_xml,
             boost::filesystem::path file = complete(boost::filesystem::path(
               base_ + ".replica" + boost::lexical_cast<std::string>(i+1) + ".h5"), basedir_);
             hdf5::archive h5(file.string(), "a");
-            h5 << make_pvp("/parameters", p);
-            h5 << make_pvp("/simulation/results", obs_[i]);
+            h5["/parameters"] << p;
+            h5["/simulation/results"] << obs_[i];
             // for (std::size_t n = 0; n < oss.size(); ++n)
-            //   h5 << make_pvp("/simulation/realizations/0/clones/" +
-            //                  boost::lexical_cast<std::string>(n) + "/results", oss[n][i]);
+            //   h5["/simulation/realizations/0/clones/" +
+            //      boost::lexical_cast<std::string>(n) + "/results"] << oss[n][i];
           }
         }
       }
