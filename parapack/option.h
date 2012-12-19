@@ -38,7 +38,6 @@ namespace parapack {
 struct option {
   option(int argc, char** argv);
   boost::program_options::options_description desc;
-  bool has_time_limit;
   boost::posix_time::time_duration time_limit;
   boost::posix_time::time_duration check_interval, checkpoint_interval, report_interval;
   boost::posix_time::time_duration vmusage_interval;

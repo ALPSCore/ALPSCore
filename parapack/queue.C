@@ -68,4 +68,9 @@ check_queue_element_t next_report(tid_t tid, cid_t cid, gid_t gid,
   return check_queue_element_t(check_type::report, check, tid, cid, gid);
 }
 
+check_queue_element_t next_vmusage(boost::posix_time::time_duration const& interval) {
+  boost::posix_time::ptime check =  boost::posix_time::second_clock::local_time() + interval;
+  return check_queue_element_t(check_type::vmusage, check, 0, 0, 0);
+}
+
 } // end namespace alps

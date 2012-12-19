@@ -38,6 +38,7 @@
 #include <alps/config.h>
 #include <alps/utility/copyright.hpp>
 #include <alps/utility/os.hpp>
+#include <alps/utility/vmusage.hpp>
 #include <alps/osiris/comm.h>
 
 // some file (probably a python header) defines a tolower macro ...
@@ -563,6 +564,7 @@ int start_sgl(int argc, char** argv) {
       #pragma omp master
       {
         check_queue.push(next_taskinfo(opt.checkpoint_interval / 10));
+        check_queue.push(next_vmusage(opt.vmusage_interval));
       } // end omp master
 
       clone* clone_ptr = 0;
@@ -632,7 +634,7 @@ int start_sgl(int argc, char** argv) {
                 check_queue.push(next_checkpoint(q.task_id, q.clone_id, q.group_id,
                                                  opt.checkpoint_interval));
               }
-            } else {
+            } else if (q.type == check_type::report) {
               if (tasks[q.task_id].on_memory() && tasks[q.task_id].is_running(q.clone_id)) {
                 #pragma omp critical
                 {
@@ -641,6 +643,12 @@ int start_sgl(int argc, char** argv) {
                 check_queue.push(next_report(q.task_id, q.clone_id, q.group_id,
                                              opt.report_interval));
               }
+            } else if (q.type == check_type::vmusage) {
+              vmusage_type usage = alps::vmusage();
+              std::cout << logger::header() << "vmusage repport: "
+                        << logger::usage(alps::vmusage()) << std::endl;
+              check_queue.push(next_vmusage(opt.vmusage_interval));
+            } else {
             }
           } else {
             break;
@@ -655,8 +663,7 @@ int start_sgl(int argc, char** argv) {
               std::cout << logger::header() << "all tasks have been finished\n";
               to_halt = true;
             }
-            if (opt.time_limit != boost::posix_time::time_duration() &&
-                boost::posix_time::second_clock::local_time() > end_time) {
+            if (boost::posix_time::second_clock::local_time() > end_time) {
               std::cout << logger::header() << "time limit reached\n";
               to_halt = true;
             }
@@ -967,6 +974,9 @@ int start_mpi(int argc, char** argv) {
       check_queue.push(next_taskinfo(opt.checkpoint_interval / 10));
     }
 
+    // vmusage will be checked in all the processes
+    check_queue.push(next_vmusage(opt.vmusage_interval / 10));
+    
 #if defined(_OPENMP) && defined(__APPLE_CC__) && __GNUC__ == 4 && __GNUC_MINOR__ == 2
     // g++ on Mac OS X Snow Leopard requires the following OpenMP directive
     omp_set_nested(true);
@@ -992,8 +1002,7 @@ int start_mpi(int argc, char** argv) {
               std::cout << logger::header() << "all tasks have been finished\n";
               to_halt = true;
             }
-            if (opt.time_limit != boost::posix_time::time_duration() &&
-                boost::posix_time::second_clock::local_time() > end_time) {
+            if (boost::posix_time::second_clock::local_time() > end_time) {
               std::cout << logger::header() << "time limit reached\n";
               to_halt = true;
             }
@@ -1014,12 +1023,11 @@ int start_mpi(int argc, char** argv) {
           }
 
           while (!process.is_halting() || process.num_allocated() > 0) {
-            boost::optional<boost::mpi::status> status
-              = process.comm_ctrl().iprobe(boost::mpi::any_source, boost::mpi::any_tag);
-            if (status) {
+            boost::optional<boost::mpi::status> status;
+            if (status = process.comm_ctrl().iprobe(boost::mpi::any_source, boost::mpi::any_tag)) {
               if (status->tag() == mcmp_tag::clone_info) {
                 clone_info_msg_t msg;
-                process.comm_ctrl().recv(boost::mpi::any_source, status->tag(), msg);
+                process.comm_ctrl().recv(status->source(), status->tag(), msg);
                 if (msg.info.progress() < 1) {
                   std::cout << logger::header() << "progress report: "
                             << logger::clone(msg.task_id, msg.clone_id) << " is "
@@ -1032,7 +1040,7 @@ int start_mpi(int argc, char** argv) {
                 }
               } else if (status->tag() == mcmp_tag::clone_checkpoint) {
                 clone_info_msg_t msg;
-                process.comm_ctrl().recv(boost::mpi::any_source, status->tag(), msg);
+                process.comm_ctrl().recv(status->source(), status->tag(), msg);
                 std::cout << logger::header() << "regular checkpoint: "
                           << logger::clone(msg.task_id, msg.clone_id) << " is " << msg.info.phase()
                           << " (" << precision(msg.info.progress() * 100, 3) << "% done)\n";
@@ -1040,7 +1048,7 @@ int start_mpi(int argc, char** argv) {
                   tasks[msg.task_id].info_updated(msg.clone_id, msg.info);
               } else if (status->tag() == mcmp_tag::clone_suspend) {
                 clone_info_msg_t msg;
-                process.comm_ctrl().recv(boost::mpi::any_source, status->tag(), msg);
+                process.comm_ctrl().recv(status->source(), status->tag(), msg);
                 tasks[msg.task_id].clone_suspended(msg.clone_id, process_group(msg.group_id),
                                                    msg.info);
                 if (tasks[msg.task_id].num_running() == 0) {
@@ -1051,7 +1059,7 @@ int start_mpi(int argc, char** argv) {
                 process.release(msg.group_id);
               } else if (status->tag() == mcmp_tag::clone_halt) {
                 clone_halt_msg_t msg;
-                process.comm_ctrl().recv(boost::mpi::any_source, status->tag(), msg);
+                process.comm_ctrl().recv(status->source(), status->tag(), msg);
                 task_status_t old_status = tasks[msg.task_id].status();
                 tasks[msg.task_id].clone_halted(msg.clone_id);
                 if (old_status != task_status::Continuing && old_status != task_status::Idling &&
@@ -1068,8 +1076,18 @@ int start_mpi(int argc, char** argv) {
                 //// 2008-11-14 ST workaround for bug in process_mpi (or boost.MPI ?)
                 break;
               } else {
-                std::cout << "Warning: ignoring a message with an unknown tag " << status->tag()
-                          << std::endl;
+                std::cout << "Warning: ignoring a message in comm_ctrl with an unknown tag "
+                          << status->tag() << std::endl;
+              }
+            } else if (status = world.iprobe(boost::mpi::any_source, boost::mpi::any_tag)) {
+              if (status->tag() == mcmp_tag::process_vmusage) {
+                std::string u;
+                world.recv(status->source(), status->tag(), u);
+                std::cout << logger::header() << "vmusage repport: " << " rank = "
+                          << status->source() << ", " << u << std::endl;
+              } else {
+                std::cout << "Warning: ignoring a message in comm_world with an unknown tag "
+                          << status->tag() << std::endl;
               }
             } else if (clone_ptr && clone_ptr->halted()) {
               tid_t tid = clone_ptr->task_id();
@@ -1119,15 +1137,30 @@ int start_mpi(int argc, char** argv) {
                   check_queue.push(next_checkpoint(q.task_id, q.clone_id, q.group_id,
                                                    opt.checkpoint_interval));
                 }
-              } else {
+              } else if (q.type == check_type::report) {
                 if (tasks[q.task_id].on_memory() && tasks[q.task_id].is_running(q.clone_id)) {
                   tasks[q.task_id].report(proxy, q.clone_id);
                   check_queue.push(next_report(q.task_id, q.clone_id, q.group_id,
                                                opt.report_interval));
                 }
+              } else if (q.type == check_type::vmusage) {
+                vmusage_type usage = alps::vmusage();
+                std::cout << logger::header() << "vmusage repport: " << " rank = 0, "
+                          << logger::usage(alps::vmusage()) << std::endl;
+                check_queue.push(next_vmusage(opt.vmusage_interval));
+              } else {
               }
             } else {
               break;
+            }
+          }
+        } else {
+          if (check_queue.size() && check_queue.top().due()) {
+            check_queue_t::value_type q = check_queue.top();
+            check_queue.pop();
+            if (q.type == check_type::vmusage) {
+              world.send(0, mcmp_tag::process_vmusage, logger::usage(alps::vmusage()));
+              check_queue.push(next_vmusage(opt.vmusage_interval));
             }
           }
         }

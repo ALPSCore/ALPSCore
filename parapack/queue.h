@@ -63,7 +63,8 @@ struct check_type {
   enum check_type_t {
     taskinfo,
     checkpoint,
-    report
+    report,
+    vmusage
   };
 };
 typedef check_type::check_type_t check_type_t;
@@ -89,6 +90,8 @@ ALPS_DECL check_queue_element_t next_checkpoint(tid_t tid, cid_t cid, gid_t gid,
 
 ALPS_DECL check_queue_element_t next_report(tid_t tid, cid_t cid, gid_t gid,
   boost::posix_time::time_duration const& interval);
+
+ALPS_DECL check_queue_element_t next_vmusage(boost::posix_time::time_duration const& interval);
 
 typedef std::priority_queue<check_queue_element_t> check_queue_t;
 

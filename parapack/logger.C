@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2012 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -45,6 +45,15 @@ std::string logger::group(alps::process_group g) {
 }
 std::string logger::group(alps::thread_group g) {
   return std::string("threadgroup[") + boost::lexical_cast<std::string>(g.group_id+1) + ']';
+}
+
+std::string logger::usage(alps::vmusage_type const& u) {
+  return std::string("Process ID = ") +
+    boost::lexical_cast<std::string>(u.find("Pid")->second) + ", " +
+    "VmPeak = " + boost::lexical_cast<std::string>(u.find("VmPeak")->second) + " [kB], " +
+    "VmSize = " + boost::lexical_cast<std::string>(u.find("VmSize")->second) + " [kB], " +
+    "VmHWM = " + boost::lexical_cast<std::string>(u.find("VmHWM")->second) + " [kB], " +
+    "VmRSS = " + boost::lexical_cast<std::string>(u.find("VmRSS")->second) + " [kB]";
 }
 
 } // namespace alps

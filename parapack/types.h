@@ -77,6 +77,8 @@ struct mcmp_tag {
     clone_suspend,
     clone_halt,
 
+    process_vmusage,
+
     do_step,
     do_nothing
   };

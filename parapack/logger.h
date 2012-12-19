@@ -4,7 +4,7 @@
 *
 * ALPS Libraries
 *
-* Copyright (C) 1997-2010 by Synge Todo <wistaria@comp-phys.org>
+* Copyright (C) 1997-2012 by Synge Todo <wistaria@comp-phys.org>
 *
 * This software is part of the ALPS libraries, published under the ALPS
 * Library License; you can use, redistribute it and/or modify it under
@@ -30,6 +30,7 @@
 
 #include <alps/parapack/process.h>
 #include <alps/parapack/types.h>
+#include <alps/utility/vmusage.hpp>
 #include <iostream>
 #include <string>
 
@@ -41,6 +42,7 @@ struct logger {
   static std::string clone(alps::tid_t tid, alps::cid_t cid);
   static std::string group(alps::process_group g);
   static std::string group(alps::thread_group g);
+  static std::string usage(alps::vmusage_type const& u);
 };
 
 } // namespace alps

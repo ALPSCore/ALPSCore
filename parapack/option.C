@@ -35,9 +35,9 @@ namespace pt = boost::posix_time;
 
 option::option(int argc, char** argv)
   : desc("Allowed options"),
-    has_time_limit(false), time_limit(), check_interval(pt::millisec(100)),
+    time_limit(pt::pos_infin), check_interval(pt::millisec(100)),
     checkpoint_interval(pt::seconds(3600)), report_interval(pt::seconds(600)),
-    vmusage_interval(),
+    vmusage_interval(pt::pos_infin),
     use_termfile(false), auto_evaluate(true), evaluate_only(false),
     dump_policy(dump_policy::RunningOnly), write_xml(false),
     use_mpi(false), default_total_threads(true), auto_total_threads(false), 
@@ -128,10 +128,8 @@ option::option(int argc, char** argv)
     evaluate_only = true;
   if (vm.count("task-range"))
     task_range = task_range_t(vm["task-range"].as<std::string>());
-  if (vm.count("time-limit")) {
-    has_time_limit = true;
+  if (vm.count("time-limit"))
     time_limit = pt::seconds(vm["time-limit"].as<int>());
-  }
   if (vm.count("threads-per-clone"))
     threads_per_clone = vm["threads-per-clone"].as<int>();
   if (vm.count("total-threads")) {
@@ -153,7 +151,7 @@ void option::print(std::ostream& os) const { desc.print(os); }
 void option::print_summary(std::ostream& os, std::string const& prefix) const {
   os << prefix << "auto evaluation = " << (auto_evaluate ? "yes" : "no") << std::endl;
   os << prefix << "time limit = ";
-  if (has_time_limit)
+  if (!time_limit.is_special())
     os << time_limit.total_seconds() << " seconds\n";
   else
     os << "unlimited\n";
@@ -162,7 +160,7 @@ void option::print_summary(std::ostream& os, std::string const& prefix) const {
   os << prefix << "interval between progress report = "
      << report_interval.total_seconds() << " seconds\n";
   os << prefix << "interval between vmusage report = ";
-  if (vmusage_interval.total_seconds() > 0)
+  if (!vmusage_interval.is_special())
     os << vmusage_interval.total_seconds() << " seconds\n";
   else
     os << "infinity\n";
