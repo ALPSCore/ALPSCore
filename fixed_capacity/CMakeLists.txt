@@ -12,4 +12,5 @@ FOREACH (name fixed_capacity_deque fixed_capacity_traits fixed_capacity_vector t
   add_dependencies(${name} alps)
   target_link_libraries(${name} alps)
   add_alps_test(${name})	
+  set_property(TEST ${name} PROPERTY LABELS fixed_capacity)
 ENDFOREACH(name)
