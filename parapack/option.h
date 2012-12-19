@@ -41,6 +41,7 @@ struct option {
   bool has_time_limit;
   boost::posix_time::time_duration time_limit;
   boost::posix_time::time_duration check_interval, checkpoint_interval, report_interval;
+  boost::posix_time::time_duration vmusage_interval;
   bool use_termfile;
   bool auto_evaluate, evaluate_only;
   dump_policy_t dump_policy;
@@ -51,6 +52,7 @@ struct option {
   std::vector<std::string> jobfiles;
   bool valid, show_help, show_license;
   void print(std::ostream& os) const;
+  void print_summary(std::ostream& os, std::string const& prefix = "") const;
 };
 
 struct evaluate_option {

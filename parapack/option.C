@@ -37,6 +37,7 @@ option::option(int argc, char** argv)
   : desc("Allowed options"),
     has_time_limit(false), time_limit(), check_interval(pt::millisec(100)),
     checkpoint_interval(pt::seconds(3600)), report_interval(pt::seconds(600)),
+    vmusage_interval(),
     use_termfile(false), auto_evaluate(true), evaluate_only(false),
     dump_policy(dump_policy::RunningOnly), write_xml(false),
     use_mpi(false), default_total_threads(true), auto_total_threads(false), 
@@ -61,6 +62,8 @@ option::option(int argc, char** argv)
     ("no-evaluate", "prevent evaluating observables upon halting")
     ("report-interval", po::value<int>(),
      "time between progress report of clones [unit = sec; default = 600s]")
+    ("vmusage-interval", po::value<int>(),
+     "time between virtual memory usage report of processes [unit = sec; default = none]")
     ("task-range", po::value<std::string>(),
      "specify range of task indices to be processed, e.g. [2:5]")
     ("time-limit,T", po::value<int>(),
@@ -117,6 +120,8 @@ option::option(int argc, char** argv)
   }
   if (vm.count("report-interval"))
     report_interval = pt::seconds(vm["report-interval"].as<int>());
+  if (vm.count("vmusage-interval"))
+    vmusage_interval = pt::seconds(vm["vmusage-interval"].as<int>());
   if (vm.count("mpi"))
     use_mpi = true;
   if (vm.count("evaluate"))
@@ -144,6 +149,30 @@ option::option(int argc, char** argv)
 }
 
 void option::print(std::ostream& os) const { desc.print(os); }
+
+void option::print_summary(std::ostream& os, std::string const& prefix) const {
+  os << prefix << "auto evaluation = " << (auto_evaluate ? "yes" : "no") << std::endl;
+  os << prefix << "time limit = ";
+  if (has_time_limit)
+    os << time_limit.total_seconds() << " seconds\n";
+  else
+    os << "unlimited\n";
+  os << prefix << "interval between checkpointing  = "
+     << checkpoint_interval.total_seconds() << " seconds\n";
+  os << prefix << "interval between progress report = "
+     << report_interval.total_seconds() << " seconds\n";
+  os << prefix << "interval between vmusage report = ";
+  if (vmusage_interval.total_seconds() > 0)
+    os << vmusage_interval.total_seconds() << " seconds\n";
+  else
+    os << "infinity\n";
+  os << prefix << "task range = ";
+  if (task_range.valid())
+    os << task_range << std::endl;
+  else
+    os << "all\n";
+  os << prefix << "worker dump policy = " << dump_policy::to_string(dump_policy) << std::endl;
+}
 
 evaluate_option::evaluate_option(int argc, char** argv)
   : desc("Allowed options"), write_xml(false), task_range(), jobfiles(),

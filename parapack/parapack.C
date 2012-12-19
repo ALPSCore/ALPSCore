@@ -530,21 +530,8 @@ int start_sgl(int argc, char** argv) {
               << (opt.use_termfile ? file_term.string() : "[disabled]") << std::endl
               << "  total number of thread(s) = " << num_total_threads << std::endl
               << "  thread(s) per clone       = " << opt.threads_per_clone << std::endl
-              << "  number of thread group(s) = " << num_groups << std::endl
-              << "  auto evaluation = " << (opt.auto_evaluate ? "yes" : "no") << std::endl;
-    if (opt.has_time_limit)
-      std::cout << "  time limit = " << opt.time_limit.total_seconds() << " seconds\n";
-    else
-      std::cout << "  time limit = unlimited\n";
-    std::cout << "  interval between checkpointing  = "
-              << opt.checkpoint_interval.total_seconds() << " seconds\n"
-              << "  interval between progress report = "
-              << opt.report_interval.total_seconds() << " seconds\n";
-    if (opt.task_range.valid())
-      std::cout<< "  task range = " << opt.task_range << std::endl;
-    std::cout << "  worker dump policy = "
-              << dump_policy::to_string(opt.dump_policy) << std::endl;
-
+              << "  number of thread group(s) = " << num_groups << std::endl;
+    opt.print_summary(std::cout, "  ");
     load_tasks(file_in, file_out, basedir, simname, tasks, true, opt.write_xml);
     if (simname != "")
       std::cout << "  simulation name = " << simname << std::endl;
@@ -960,19 +947,8 @@ int start_mpi(int argc, char** argv) {
                 << "  process(es)/thread(s) per clone       = "
                 << process.num_procs_per_group() << "/" << opt.threads_per_clone << std::endl
                 << "  number of process group(s)            = "
-                << process.num_groups() << std::endl
-                << "  auto evaluation = " << (opt.auto_evaluate ? "yes" : "no") << std::endl;
-      if (opt.time_limit != boost::posix_time::time_duration())
-        std::cout << "  time limit = " << opt.time_limit.total_seconds() << " seconds\n";
-      else
-        std::cout << "  time limit = unlimited\n";
-      std::cout << "  interval between checkpointing  = "
-                << opt.checkpoint_interval.total_seconds() << " seconds\n"
-                << "  interval between progress report = "
-                << opt.report_interval.total_seconds() << " seconds\n"
-                << "  worker dump policy = "
-                << dump_policy::to_string(opt.dump_policy) << std::endl;
-
+                << process.num_groups() << std::endl;
+      opt.print_summary(std::cout, "  ");
       load_tasks(file_in, file_out, basedir, simname, tasks, true, opt.write_xml);
       load_checkpoints(file_chp, basedir, suspended_queue);
       if (simname != "")
