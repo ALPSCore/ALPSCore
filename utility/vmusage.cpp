@@ -42,18 +42,19 @@
 #endif
 
 namespace alps {
-  
+
 vmusage_type vmusage(int pid) {
   vmusage_type usage;
-  usage["Pid"] = -1;
+  usage["Pid"] = 0;
   usage["VmPeak"] = 0;
   usage["VmSize"] = 0;
   usage["VmHWM"] = 0;
   usage["VmRSS"] = 0;
-  
+
   if (pid == -1) pid = getpid();
   if (pid < 0) return usage;
-  
+  usage["Pid"] = pid;
+
   // open /proc/${PID}/status
   std::string file =
     std::string("/proc/") + boost::lexical_cast<std::string>(pid) + std::string("/status");
