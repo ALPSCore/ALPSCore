@@ -25,7 +25,7 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#define BOOST_TEST_MODULE alps::ngs::alea
+#define BOOST_TEST_MODULE alps::ngs::accumulator
 
 #include <alps/ngs.hpp>
 
@@ -35,14 +35,14 @@
 
 BOOST_AUTO_TEST_CASE(test_stream_for_modular_accum)
 {
-    typedef alps::alea::accumulator<int, alps::alea::features<alps::alea::tag::mean> > accum;
+    typedef alps::accumulator::accumulator<int, alps::accumulator::features<alps::accumulator::tag::mean> > accum;
     accum acc;
     
     acc << 1;
     acc << 2;
     std::cout << acc << std::endl;
     
-    alps::alea::detail::accumulator_wrapper m(acc);
+    alps::accumulator::detail::accumulator_wrapper m(acc);
 
     std::cout << m << std::endl;   
 }

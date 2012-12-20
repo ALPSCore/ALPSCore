@@ -25,7 +25,7 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#define BOOST_TEST_MODULE alps::ngs::alea
+#define BOOST_TEST_MODULE alps::ngs::accumulator
 
 #include <alps/ngs.hpp>
 
@@ -35,20 +35,20 @@
  
 BOOST_AUTO_TEST_CASE(test_log_bin_with_error_archetype)
 {
-    alps::alea::accumulator<error_archetype, alps::alea::features<alps::alea::tag::log_binning> > acci;
+    alps::accumulator::accumulator<error_archetype, alps::accumulator::features<alps::accumulator::tag::log_binning> > acci;
     
     acci << 2;
     acci << 6;
     
-    //~ BOOST_REQUIRE( alps::alea::max_num_bin(acci).bin_number() == 128);
+    //~ BOOST_REQUIRE( alps::accumulator::max_num_bin(acci).bin_number() == 128);
     
-    alps::alea::accumulator<error_archetype, alps::alea::features<alps::alea::tag::log_binning> > accd;
+    alps::accumulator::accumulator<error_archetype, alps::accumulator::features<alps::accumulator::tag::log_binning> > accd;
     
     accd << .2;
     accd << .6;
         
-    //~ BOOST_REQUIRE( alps::alea::max_num_bin(accd).bin_number() == 10);
+    //~ BOOST_REQUIRE( alps::accumulator::max_num_bin(accd).bin_number() == 10);
     
-    alps::alea::log_bin(accd);
+    alps::accumulator::log_bin(accd);
     accd.log_bin();
 }

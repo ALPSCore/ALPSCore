@@ -25,7 +25,7 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#define BOOST_TEST_MODULE alps::ngs::alea
+#define BOOST_TEST_MODULE alps::ngs::accumulator
 
 #include <alps/ngs.hpp>
 
@@ -35,7 +35,7 @@
 
 BOOST_AUTO_TEST_CASE(test_error_with_error_archetype)
 {
-    typedef alps::alea::accumulator<error_archetype, alps::alea::features<alps::alea::tag::error> > accum;
+    typedef alps::accumulator::accumulator<error_archetype, alps::accumulator::features<alps::accumulator::tag::error> > accum;
     accum acc;
     
     for(int i = 0; i < 10; ++i)

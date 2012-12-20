@@ -25,7 +25,7 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#define BOOST_TEST_MODULE alps::ngs::alea
+#define BOOST_TEST_MODULE alps::ngs::accumulator
 
 #include <alps/ngs.hpp>
 
@@ -33,19 +33,19 @@
 
 BOOST_AUTO_TEST_CASE(test_mean_in_modular_accum)
 {
-    alps::alea::accumulator<int, alps::alea::features<alps::alea::tag::mean> > acci;
+    alps::accumulator::accumulator<int, alps::accumulator::features<alps::accumulator::tag::mean> > acci;
     
     for(int i = 0; i < 101; ++i)
         acci << i;
         
-    BOOST_REQUIRE( alps::alea::mean(acci) == 50);
+    BOOST_REQUIRE( alps::accumulator::mean(acci) == 50);
     
     
-    alps::alea::accumulator<double, alps::alea::features<alps::alea::tag::mean> > accd;
+    alps::accumulator::accumulator<double, alps::accumulator::features<alps::accumulator::tag::mean> > accd;
     
     for(double i = 0; i < 1.01; i += .01)
         accd << i;
         
-    BOOST_REQUIRE( alps::alea::mean(accd) > .49999999999);
-    BOOST_REQUIRE( alps::alea::mean(accd) < .50000000001);
+    BOOST_REQUIRE( alps::accumulator::mean(accd) > .49999999999);
+    BOOST_REQUIRE( alps::accumulator::mean(accd) < .50000000001);
 }

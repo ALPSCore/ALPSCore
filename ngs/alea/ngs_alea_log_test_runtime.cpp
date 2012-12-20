@@ -25,7 +25,7 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#define BOOST_TEST_MODULE alps::ngs::alea
+#define BOOST_TEST_MODULE alps::ngs::accumulator
 
 #include <alps/ngs.hpp>
 
@@ -33,15 +33,15 @@
 
 BOOST_AUTO_TEST_CASE(test_log_bin_in_modular_accum)
 {
-    alps::alea::accumulator<int, alps::alea::features<alps::alea::tag::log_binning> > acci; //Default 128
+    alps::accumulator::accumulator<int, alps::accumulator::features<alps::accumulator::tag::log_binning> > acci; //Default 128
     
     acci << 2;
     acci << 6;
     
-    //~ BOOST_REQUIRE( alps::alea::max_num_bin(acci) == 128);
+    //~ BOOST_REQUIRE( alps::accumulator::max_num_bin(acci) == 128);
     
     
-    alps::alea::accumulator<double, alps::alea::features<alps::alea::tag::log_binning> > accd;
+    alps::accumulator::accumulator<double, alps::accumulator::features<alps::accumulator::tag::log_binning> > accd;
     
     for(int i = 0; i < 96; ++i)
     {
@@ -56,5 +56,5 @@ BOOST_AUTO_TEST_CASE(test_log_bin_in_modular_accum)
         std::cout << vec[i] << std::endl;
     }
         
-    //~ BOOST_REQUIRE( alps::alea::max_num_bin(accd) == 10);
+    //~ BOOST_REQUIRE( alps::accumulator::max_num_bin(accd) == 10);
 }

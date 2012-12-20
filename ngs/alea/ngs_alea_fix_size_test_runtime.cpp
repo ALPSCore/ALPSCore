@@ -25,7 +25,7 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#define BOOST_TEST_MODULE alps::ngs::alea
+#define BOOST_TEST_MODULE alps::ngs::accumulator
 
 #include <alps/ngs.hpp>
 
@@ -33,15 +33,15 @@
 
 BOOST_AUTO_TEST_CASE(test_fixed_size_bin_in_modular_accum)
 {
-    alps::alea::accumulator<int, alps::alea::features<alps::alea::tag::fixed_size_binning> > acci; //Default 128
+    alps::accumulator::accumulator<int, alps::accumulator::features<alps::accumulator::tag::fixed_size_binning> > acci; //Default 128
     
     acci << 2;
     acci << 6;
     
-    BOOST_REQUIRE( alps::alea::fixed_size_bin(acci).bin_size() == 128);
+    BOOST_REQUIRE( alps::accumulator::fixed_size_bin(acci).bin_size() == 128);
     
     
-    alps::alea::accumulator<double, alps::alea::features<alps::alea::tag::fixed_size_binning> > accd(alps::alea::bin_size = 10);
+    alps::accumulator::accumulator<double, alps::accumulator::features<alps::accumulator::tag::fixed_size_binning> > accd(alps::accumulator::bin_size = 10);
 
     for(int i = 0; i < 100; ++i)
     {
@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(test_fixed_size_bin_in_modular_accum)
     
         
         
-    BOOST_REQUIRE( alps::alea::fixed_size_bin(accd).bin_size() == 10);
-    alps::alea::fixed_size_bin(accd);
+    BOOST_REQUIRE( alps::accumulator::fixed_size_bin(accd).bin_size() == 10);
+    alps::accumulator::fixed_size_bin(accd);
     accd.fixed_size_bin();
 }

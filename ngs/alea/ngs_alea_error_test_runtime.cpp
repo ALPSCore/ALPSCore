@@ -25,7 +25,7 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#define BOOST_TEST_MODULE alps::ngs::alea
+#define BOOST_TEST_MODULE alps::ngs::accumulator
 
 #include <alps/ngs.hpp>
 
@@ -34,7 +34,7 @@
 
 BOOST_AUTO_TEST_CASE(test_error_in_modular_accum)
 {
-    alps::alea::accumulator<int, alps::alea::features<alps::alea::tag::error> > acci;
+    alps::accumulator::accumulator<int, alps::accumulator::features<alps::accumulator::tag::error> > acci;
     
     acci << 2;
     acci << 6;
@@ -42,11 +42,11 @@ BOOST_AUTO_TEST_CASE(test_error_in_modular_accum)
     BOOST_REQUIRE( error(acci) == 2.);
     
     
-    alps::alea::accumulator<double, alps::alea::features<alps::alea::tag::error> > accd;
+    alps::accumulator::accumulator<double, alps::accumulator::features<alps::accumulator::tag::error> > accd;
     
     
     accd << .2;
     accd << .6;
     
-    BOOST_REQUIRE_CLOSE(alps::alea::error(accd), 0.2, 0.01);
+    BOOST_REQUIRE_CLOSE(alps::accumulator::error(accd), 0.2, 0.01);
 }

@@ -25,7 +25,7 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#define BOOST_TEST_MODULE alps::ngs::alea
+#define BOOST_TEST_MODULE alps::ngs::accumulator
 
 #include <alps/ngs.hpp>
 
@@ -38,7 +38,7 @@
 
 BOOST_AUTO_TEST_CASE(test_hist_with_weight_archetype)
 {
-    alps::alea::histogram_old<int, hist_archetype> acc(1, 6, 6);
+    alps::accumulator::histogram_old<int, hist_archetype> acc(1, 6, 6);
     
     for(int i = 0; i < 10; ++i)
         acc << i;

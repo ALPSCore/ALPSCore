@@ -25,7 +25,7 @@
  *                                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#define BOOST_TEST_MODULE alps::ngs::alea
+#define BOOST_TEST_MODULE alps::ngs::accumulator
 
 #include <alps/ngs.hpp>
 
@@ -36,10 +36,10 @@
 
 BOOST_AUTO_TEST_CASE(test_cctor_with_mean_archetype)
 {
-    alps::alea::accumulator<mean_archetype, alps::alea::features<alps::alea::tag::mean> > acc;
+    alps::accumulator::accumulator<mean_archetype, alps::accumulator::features<alps::accumulator::tag::mean> > acc;
     
     for(int i = 0; i < 10; ++i)
         acc << i;
         
-    alps::alea::accumulator<mean_archetype, alps::alea::features<alps::alea::tag::mean> > acc2(acc);
+    alps::accumulator::accumulator<mean_archetype, alps::accumulator::features<alps::accumulator::tag::mean> > acc2(acc);
 }
